@@ -496,6 +496,7 @@ namespace {
         }
 
     }
+
     /*!
      * @brief Save the GeoModel into a dedicated format bm
      * @todo Write the description of the BM format
@@ -653,18 +654,6 @@ namespace {
         out << std::endl << "0" << std::endl << "0" << std::endl ;
     }
 
-    static double read_double( GEO::LineInput& in, index_t field )
-    {
-        double result ;
-        std::istringstream iss( in.field( field ) ) ;
-        iss >> result >> std::ws ;
-        return result ;
-    }
-
-}
-
-namespace RINGMesh {
-
     /************************************************************************/
 
     class MLIOHandler: public IOHandler {
@@ -696,6 +685,7 @@ namespace RINGMesh {
 
         virtual void save( const GeoModel& model, const std::string& filename )
         {
+
             std::ofstream out( filename.c_str() ) ;
             save_gocad_model3d( model, out ) ;
         }
@@ -795,133 +785,9 @@ namespace RINGMesh {
         }
     } ;
 
-    void save_mesh_element_attributes(
-        const std::string& filename,
-        const GEO::MeshSubElementsStore& mesh_element )
-    {
-
-        GEO::vector< std::string > attribute_names ;
-        mesh_element.attributes().list_attribute_names( attribute_names ) ;
-        for( index_t att = 0; att < mesh_element.attributes().nb(); att++ ) {
-
-            DEBUG(attribute_names[att]) ;
-            //TODO: this is temps ! Waiting for clean attribute type manager
-            //by Bruno, for the moment we only deal with double
-            if( !is_attribute_a_double( mesh_element.attributes(),
-                attribute_names[att] ) ) {
-                break ;
-            }
-            std::ofstream out( filename.c_str(), std::ios::out | std::ios::app ) ;
-            out.precision( 16 ) ;
-            GEO::Attribute< double > cur_att( mesh_element.attributes(),
-                attribute_names[att] ) ;
-            index_t attribute_dim = cur_att.dimension() ;
-            out << "# " << attribute_names[att] << " double " << attribute_dim
-                << std::endl ;
-
-            for( index_t el = 0; el < mesh_element.nb(); el++ ) {
-                for( index_t dim = 0; dim < attribute_dim; dim++ ) {
-                    out << cur_att[el * attribute_dim + dim] << " " ;
-                }
-                out << std::endl ;
-            }
-
-        }
-
-    }
-
-    void save_geo_mesh_attributes(
-        const std::string& root_name,
-        const GEO::Mesh& mesh,
-        zipFile zf )
-    {
-        std::string vertices_attributes_file_name = root_name
-            + "_vertices_attributes.txt" ;
-        std::string edges_attributes_file_name = root_name
-            + "_edges_attributes.txt" ;
-        std::string facets_attributes_file_name = root_name
-            + "_facets_attributes.txt" ;
-        std::string cells_attributes_file_name = root_name
-            + "_cells_attributes.txt" ;
-
-        save_mesh_element_attributes( vertices_attributes_file_name,
-            mesh.vertices ) ;
-        if( GEO::FileSystem::is_file( vertices_attributes_file_name ) ) {
-            zip_file( zf, vertices_attributes_file_name ) ;
-            GEO::FileSystem::delete_file( vertices_attributes_file_name ) ;
-        }
-
-        save_mesh_element_attributes( edges_attributes_file_name, mesh.edges ) ;
-        if( GEO::FileSystem::is_file( edges_attributes_file_name ) ) {
-            zip_file( zf, edges_attributes_file_name ) ;
-            GEO::FileSystem::delete_file( edges_attributes_file_name ) ;
-        }
-
-        save_mesh_element_attributes( facets_attributes_file_name, mesh.facets ) ;
-        if( GEO::FileSystem::is_file( facets_attributes_file_name ) ) {
-            zip_file( zf, facets_attributes_file_name ) ;
-            GEO::FileSystem::delete_file( facets_attributes_file_name ) ;
-        }
-        save_mesh_element_attributes( cells_attributes_file_name, mesh.cells ) ;
-        if( GEO::FileSystem::is_file( cells_attributes_file_name ) ) {
-            zip_file( zf, cells_attributes_file_name ) ;
-            GEO::FileSystem::delete_file( cells_attributes_file_name ) ;
-        }
-    }
-
-    void save_geo_model_element(
-        const GeoModelMeshElement& geo_model_element_mesh,
-        zipFile zf )
-    {
-        GME::TYPE type = geo_model_element_mesh.type() ;
-        std::string type_str = geo_model_element_mesh.type_name( type ) ;
-        std::string index_str = GEO::String::to_string(
-            geo_model_element_mesh.index() ) ;
-        std::string root_name = type_str + "_" + index_str ;
-        std::string mesh_handler = ".meshb" ;
-
-        GEO::mesh_save( geo_model_element_mesh.mesh(), root_name + mesh_handler ) ;
-        zip_file( zf, root_name + mesh_handler ) ;
-        GEO::FileSystem::delete_file( root_name + mesh_handler ) ;
-
-        save_geo_mesh_attributes( root_name, geo_model_element_mesh.mesh(), zf ) ;
-    }
-
-    class GeoModelHandler: public IOHandler {
-        virtual void load( const std::string& filename, GeoModel& model )
-        {
-
-        }
-        virtual void save( const GeoModel& model, const std::string& filename )
-        {
-            std::string pwd = GEO::FileSystem::get_current_working_directory() ;
-            GEO::FileSystem::set_current_working_directory(
-                GEO::FileSystem::dir_name( filename ) ) ;
-
-            zipFile zf = zipOpen( filename.c_str(), APPEND_STATUS_CREATE ) ;
-
-            save_topology( model, "topology.txt" ) ;
-            zip_file( zf, "topology.txt" ) ;
-            GEO::FileSystem::delete_file( "topology.txt" ) ;
-
-            for( index_t t = GME::CORNER; t <= GME::REGION; t++ ) {
-                GME::TYPE type = static_cast< GME::TYPE >( t ) ;
-                for( index_t e = 0; e < model.nb_elements( type ); e++ ) {
-                    save_geo_model_element( model.mesh_element( type, e ), zf ) ;
-                }
-            }
-
-            zipClose( zf, NULL ) ;
-            GEO::FileSystem::set_current_working_directory( pwd ) ;
-
-        }
-
-    } ;
-
-
-
-    /************************************************************************/
-
+}
+/************************************************************************/
+namespace RINGMesh {
     /*!
      * Loads a GeoModel from a file
      * @param[in] filename the file to load
@@ -962,11 +828,10 @@ namespace RINGMesh {
     /*
      * Initializes the possible handlers for IO GeoModel files
      */
-    void IOHandler::initialize_boundary_model_output()
+    void IOHandler::initialize_boundary_geomodel_output()
     {
-        ringmesh_register_IOHandler_creator( MLIOHandler, "ml" );
-    ringmesh_register_IOHandler_creator( BMIOHandler, "bm" ) ;
-//        ringmesh_register_IOHandler_creator( UCDIOHandler, "inp" );
-    ringmesh_register_IOHandler_creator( GeoModelHandler, "gm" ) ;
-}
+        ringmesh_register_IOHandler_creator( MLIOHandler, "ml" ) ;
+        ringmesh_register_IOHandler_creator( BMIOHandler, "bm" ) ;
+        ringmesh_register_IOHandler_creator( UCDIOHandler, "inp" );
+    }
 }

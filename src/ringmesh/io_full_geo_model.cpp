@@ -53,7 +53,7 @@
 #include <ringmesh/geogram_extension.h>
 #include <ringmesh/geometry.h>
 #include <ringmesh/well.h>
-
+#include <ringmesh/utils.h>
 
 /*!
  * @file Implementation of classes loading volumetric GeoModels
@@ -63,21 +63,81 @@
 namespace {
     using namespace RINGMesh ;
 
-    double read_double( GEO::LineInput& in, index_t field )
-    {
-        double result ;
-        std::istringstream iss( in.field( field ) ) ;
-        iss >> result >> std::ws ;
-        return result ;
-    }
-
     static std::string TAB = "\t" ;
     static std::string SPACE = " " ;
+    /*!
+     * @brief Write in the out stream things to save for CONTACT, INTERFACE and LAYERS
+     */
+    void save_high_level_bme( std::ofstream& out, const GeoModelElement& E )
+    {
+        /// First line:  TYPE - ID - NAME - GEOL
+        out << E.gme_id() << " " ;
+        if( E.has_name() ) {
+            out << E.name() << " " ;
+        } else {
+            out << "no_name " ;
+        }
+        out << GeoModelElement::geol_name( E.geological_feature() ) << std::endl ;
 
+        /// Second line:  IDS of children
+        for( index_t j = 0; j < E.nb_children(); ++j ) {
+            out << " " << E.child_id( j ).index ;
+        }
+        out << std::endl ;
+    }
 
+    void save_topology( const GeoModel& M, const std::string& file_name )
+    {
+        std::ofstream out( file_name.c_str() ) ;
+        out.precision( 16 ) ;
+        if( out.bad() ) {
+            throw RINGMeshException( "I/O",
+                "Error when opening the file: " + file_name ) ;
+        }
+
+        out << "RINGMESH BOUNDARY MODEL" << std::endl ;
+        out << "NAME " << M.name() << std::endl ;
+
+        // Numbers of the different types of elements
+        for( index_t i = GME::CORNER; i < GME::NO_TYPE; i++ ) {
+            GME::TYPE type = static_cast< GME::TYPE >( i ) ;
+            out << "NB_" << GME::type_name( type ) << " " << M.nb_elements( type )
+                << std::endl ;
+        }
+        // Write high-level elements
+        for( index_t i = GME::CONTACT; i < GME::NO_TYPE; i++ ) {
+            GME::TYPE type = static_cast< GME::TYPE >( i ) ;
+            index_t nb = M.nb_elements( type ) ;
+            for( index_t j = 0; j < nb; ++j ) {
+                save_high_level_bme( out, M.element( GME::gme_t( type, j ) ) ) ;
+            }
+        }
+        // Regions
+        for( index_t i = 0; i < M.nb_regions(); ++i ) {
+            const Region& E = M.region( i ) ;
+            // Save ID - NAME
+            out << E.gme_id() << " " ;
+            if( E.has_name() ) {
+                out << E.name() ;
+            } else {
+                out << "no_name" ;
+            }
+            out << std::endl ;
+            // Second line Signed ids of boundary surfaces
+            for( index_t j = 0; j < E.nb_boundaries(); ++j ) {
+                if( E.side( j ) ) {
+                    out << "+" ;
+                } else {
+                    out << "-" ;
+                }
+                out << E.boundary_gme( j ).index << " " ;
+            }
+            out << std::endl ;
+        }
+
+    }
 
     /************************************************************************/
-
     class AsterIOHandler: public IOHandler {
     public:
         virtual void load( const std::string& filename, GeoModel& mesh )
@@ -94,8 +154,8 @@ namespace {
             std::ofstream out( filename.c_str() ) ;
             out.precision( 16 ) ;
             std::vector< bool > vertex_exported( gm.mesh.vertices.nb(), false ) ;
-            std::vector< bool > atom_exported( gm.mesh.cells.nb_duplicated_vertices(),
-                false ) ;
+            std::vector< bool > atom_exported(
+                gm.mesh.cells.nb_duplicated_vertices(), false ) ;
 
             index_t nb_vertices_exported = 0 ;
             index_t cur_cell = 0 ;
@@ -203,6 +263,131 @@ namespace {
 
     /************************************************************************/
 
+    void save_mesh_element_attributes(
+        const std::string& filename,
+        const GEO::MeshSubElementsStore& mesh_element )
+    {
+
+        GEO::vector< std::string > attribute_names ;
+        mesh_element.attributes().list_attribute_names( attribute_names ) ;
+        for( index_t att = 0; att < mesh_element.attributes().nb(); att++ ) {
+
+            DEBUG(attribute_names[att]) ;
+            //TODO: this is temps ! Waiting for clean attribute type manager
+            //by Bruno, for the moment we only deal with double
+            if( !is_attribute_a_double( mesh_element.attributes(),
+                attribute_names[att] ) ) {
+                continue ;
+            }
+            std::ofstream out( filename.c_str(), std::ios::out | std::ios::app ) ;
+            out.precision( 16 ) ;
+            GEO::Attribute< double > cur_att( mesh_element.attributes(),
+                attribute_names[att] ) ;
+            index_t attribute_dim = cur_att.dimension() ;
+            out << "# " << attribute_names[att] << " double " << attribute_dim
+                << std::endl ;
+
+            for( index_t el = 0; el < mesh_element.nb(); el++ ) {
+                for( index_t dim = 0; dim < attribute_dim; dim++ ) {
+                    out << cur_att[el * attribute_dim + dim] << " " ;
+                }
+                out << std::endl ;
+            }
+
+        }
+
+    }
+
+    void save_geo_mesh_attributes(
+        const std::string& root_name,
+        const GEO::Mesh& mesh,
+        zipFile zf )
+    {
+        std::string vertices_attributes_file_name = root_name
+            + "_vertices_attributes.txt" ;
+        std::string edges_attributes_file_name = root_name
+            + "_edges_attributes.txt" ;
+        std::string facets_attributes_file_name = root_name
+            + "_facets_attributes.txt" ;
+        std::string cells_attributes_file_name = root_name
+            + "_cells_attributes.txt" ;
+
+        save_mesh_element_attributes( vertices_attributes_file_name,
+            mesh.vertices ) ;
+        if( GEO::FileSystem::is_file( vertices_attributes_file_name ) ) {
+            zip_file( zf, vertices_attributes_file_name ) ;
+            GEO::FileSystem::delete_file( vertices_attributes_file_name ) ;
+        }
+
+        save_mesh_element_attributes( edges_attributes_file_name, mesh.edges ) ;
+        if( GEO::FileSystem::is_file( edges_attributes_file_name ) ) {
+            zip_file( zf, edges_attributes_file_name ) ;
+            GEO::FileSystem::delete_file( edges_attributes_file_name ) ;
+        }
+
+        save_mesh_element_attributes( facets_attributes_file_name, mesh.facets ) ;
+        if( GEO::FileSystem::is_file( facets_attributes_file_name ) ) {
+            zip_file( zf, facets_attributes_file_name ) ;
+            GEO::FileSystem::delete_file( facets_attributes_file_name ) ;
+        }
+        save_mesh_element_attributes( cells_attributes_file_name, mesh.cells ) ;
+        if( GEO::FileSystem::is_file( cells_attributes_file_name ) ) {
+            zip_file( zf, cells_attributes_file_name ) ;
+            GEO::FileSystem::delete_file( cells_attributes_file_name ) ;
+        }
+    }
+
+    void save_geo_model_element(
+        const GeoModelMeshElement& geo_model_element_mesh,
+        zipFile zf )
+    {
+        GME::TYPE type = geo_model_element_mesh.type() ;
+        std::string type_str = geo_model_element_mesh.type_name( type ) ;
+        std::string index_str = GEO::String::to_string(
+            geo_model_element_mesh.index() ) ;
+        std::string root_name = type_str + "_" + index_str ;
+        std::string mesh_handler = ".meshb" ;
+
+        GEO::mesh_save( geo_model_element_mesh.mesh(), root_name + mesh_handler ) ;
+        zip_file( zf, root_name + mesh_handler ) ;
+        GEO::FileSystem::delete_file( root_name + mesh_handler ) ;
+
+        save_geo_mesh_attributes( root_name, geo_model_element_mesh.mesh(), zf ) ;
+    }
+
+    class GeoModelHandler: public IOHandler {
+        virtual void load( const std::string& filename, GeoModel& model )
+        {
+
+        }
+        virtual void save( const GeoModel& model, const std::string& filename )
+        {
+            std::string pwd = GEO::FileSystem::get_current_working_directory() ;
+            GEO::FileSystem::set_current_working_directory(
+                GEO::FileSystem::dir_name( filename ) ) ;
+
+            zipFile zf = zipOpen( filename.c_str(), APPEND_STATUS_CREATE ) ;
+
+            save_topology( model, "topology.txt" ) ;
+            zip_file( zf, "topology.txt" ) ;
+            GEO::FileSystem::delete_file( "topology.txt" ) ;
+
+            for( index_t t = GME::CORNER; t <= GME::REGION; t++ ) {
+                GME::TYPE type = static_cast< GME::TYPE >( t ) ;
+                for( index_t e = 0; e < model.nb_elements( type ); e++ ) {
+                    save_geo_model_element( model.mesh_element( type, e ), zf ) ;
+                }
+            }
+
+            zipClose( zf, NULL ) ;
+            GEO::FileSystem::set_current_working_directory( pwd ) ;
+
+        }
+
+    } ;
+
+    /************************************************************************/
+
     class MMIOHandler: public IOHandler {
     public:
         virtual void load( const std::string& filename, GeoModel& gm )
@@ -211,7 +396,8 @@ namespace {
             unz_global_info global_info ;
             if( unzGetGlobalInfo( uz, &global_info ) != UNZ_OK ) {
                 unzClose( uz ) ;
-                throw RINGMeshException( "ZLIB", "Could not read file global info" ) ;
+                throw RINGMeshException( "ZLIB",
+                    "Could not read file global info" ) ;
             }
             for( index_t r = 0; r < gm.nb_regions(); r++ ) {
                 char filename[MAX_FILENAME] ;
@@ -235,7 +421,8 @@ namespace {
                 if( ( r + 1 ) < global_info.number_entry ) {
                     if( unzGoToNextFile( uz ) != UNZ_OK ) {
                         unzClose( uz ) ;
-                        throw RINGMeshException( "ZLIB", "Could not read next file" ) ;
+                        throw RINGMeshException( "ZLIB",
+                            "Could not read next file" ) ;
                     }
                 }
             }
@@ -406,7 +593,8 @@ namespace {
             for( index_t m = 0; m < gm.nb_regions(); m++ ) {
                 for( index_t c = 0; c < mesh.cells.nb_cells( m ); c++ ) {
                     index_t cell = mesh.cells.cell( m, c ) ;
-                    out << cell_type( mesh.cells.type( cell, not_used ) ) << std::endl ;
+                    out << cell_type( mesh.cells.type( cell, not_used ) )
+                        << std::endl ;
                 }
             }
             out << std::endl ;
@@ -461,9 +649,8 @@ namespace {
 
                 time( &end_load ) ;
 
-                GEO::Logger::out( "I/O" )
-                    << " Loaded model " << model.name() << " from " << std::endl
-                    << filename << " timing: "
+                GEO::Logger::out( "I/O" ) << " Loaded model " << model.name()
+                    << " from " << std::endl << filename << " timing: "
                     << difftime( end_load, start_load ) << "sec" << std::endl ;
             } else {
                 throw RINGMeshException( "I/O",
@@ -714,8 +901,7 @@ namespace {
             reset_line( count, data ) ;
 
             index_t nb_families = 0 ;
-            std::vector< index_t > nb_triangle_interface( gm.nb_interfaces(),
-                0 ) ;
+            std::vector< index_t > nb_triangle_interface( gm.nb_interfaces(), 0 ) ;
             std::vector< index_t > nb_quad_interface( gm.nb_interfaces(), 0 ) ;
             for( index_t i = 0; i < gm.nb_interfaces(); i++ ) {
                 const GeoModelElement& interf = gm.one_interface( i ) ;
@@ -741,7 +927,8 @@ namespace {
             for( index_t r = 0; r < gm.nb_regions(); r++ ) {
                 const RINGMesh::GeoModelElement& region = gm.region( r ) ;
                 regions << region.name() << std::endl ;
-                std::string element_type[4] = { "TETRA_4", "HEXA_8", "PENTA_6", "PYRA_5" } ;
+                std::string element_type[4] = {
+                    "TETRA_4", "HEXA_8", "PENTA_6", "PYRA_5" } ;
                 for( index_t type = GEO::MESH_TET; type < GEO::MESH_CONNECTOR;
                     type++ ) {
                     GEO::MeshCellType T = static_cast< GEO::MeshCellType >( type ) ;
@@ -785,12 +972,13 @@ namespace {
             }
             reset_line( count, data ) ;
 
-            index_t nb_total_elements = mesh.cells.nb_cells() + mesh.facets.nb_facets()
-                + mesh.edges.nb_edges() ;
+            index_t nb_total_elements = mesh.cells.nb_cells()
+                + mesh.facets.nb_facets() + mesh.edges.nb_edges() ;
             data << nb_total_elements << " # PELEMENT" << std::endl ;
             for( index_t r = 0; r < gm.nb_regions(); r++ ) {
                 index_t element_type[4] = { 4, 6, 12, 18 } ;
-                for( index_t type = GEO::MESH_TET; type < GEO::MESH_CONNECTOR; type++ ) {
+                for( index_t type = GEO::MESH_TET; type < GEO::MESH_CONNECTOR;
+                    type++ ) {
                     GEO::MeshCellType T = static_cast< GEO::MeshCellType >( type ) ;
                     for( index_t el = 0; el < mesh.cells.nb_cells( r, T ); el++ ) {
                         data << " " << std::setw( 3 ) << element_type[type] ;
@@ -825,7 +1013,8 @@ namespace {
             index_t cur_cell = 0 ;
             for( index_t r = 0; r < gm.nb_regions(); r++ ) {
                 const RINGMesh::GeoModelElement& region = gm.region( r ) ;
-                std::string element_type[4] = { "TETRA_4", "HEXA_8", "PENTA_6", "PYRA_5" } ;
+                std::string element_type[4] = {
+                    "TETRA_4", "HEXA_8", "PENTA_6", "PYRA_5" } ;
                 for( index_t type = GEO::MESH_TET; type < GEO::MESH_CONNECTOR;
                     type++ ) {
                     GEO::MeshCellType T = static_cast< GEO::MeshCellType >( type ) ;
@@ -874,10 +1063,10 @@ namespace {
                 }
             }
 
-            index_t nb_plist = 3 * mesh.facets.nb_triangle() + 4 * mesh.facets.nb_quad()
-                + 4 * mesh.cells.nb_tet() + 5 * mesh.cells.nb_pyramid()
-                + 6 * mesh.cells.nb_prism() + 8 * mesh.cells.nb_hex()
-                + 2 * mesh.edges.nb_edges() ;
+            index_t nb_plist = 3 * mesh.facets.nb_triangle()
+                + 4 * mesh.facets.nb_quad() + 4 * mesh.cells.nb_tet()
+                + 5 * mesh.cells.nb_pyramid() + 6 * mesh.cells.nb_prism()
+                + 8 * mesh.cells.nb_hex() + 2 * mesh.edges.nb_edges() ;
             data << nb_plist << " # PLIST" << std::endl ;
             for( index_t r = 0; r < gm.nb_regions(); r++ ) {
                 for( index_t type = GEO::MESH_TET; type < GEO::MESH_CONNECTOR;
@@ -899,7 +1088,8 @@ namespace {
                 const GeoModelElement& interf = gm.one_interface( i ) ;
                 for( index_t s = 0; s < interf.nb_children(); s++ ) {
                     index_t s_id = interf.child_id( s ).index ;
-                    for( index_t el = 0; el < mesh.facets.nb_triangle( s_id ); el++ ) {
+                    for( index_t el = 0; el < mesh.facets.nb_triangle( s_id );
+                        el++ ) {
                         index_t tri = mesh.facets.triangle( s_id, el ) ;
                         for( index_t p = 0; p < mesh.facets.nb_vertices( tri );
                             p++ ) {
@@ -924,16 +1114,16 @@ namespace {
                     for( index_t v = 0; v < 2; v++ ) {
                         index_t vertex_id = mesh.edges.vertex( w, e, v ) ;
                         data << " " << std::setw( 7 ) << vertex_id ;
-                            new_line( count, 10, data ) ;
+                        new_line( count, 10, data ) ;
                     }
                 }
             }
             reset_line( count, data ) ;
 
-            index_t nb_facets = 3 * mesh.facets.nb_triangle() + 4 * mesh.facets.nb_quad()
-                + 4 * mesh.cells.nb_tet() + 5 * mesh.cells.nb_pyramid()
-                + 5 * mesh.cells.nb_prism() + 6 * mesh.cells.nb_hex()
-                + 2 * mesh.edges.nb_edges() ;
+            index_t nb_facets = 3 * mesh.facets.nb_triangle()
+                + 4 * mesh.facets.nb_quad() + 4 * mesh.cells.nb_tet()
+                + 5 * mesh.cells.nb_pyramid() + 5 * mesh.cells.nb_prism()
+                + 6 * mesh.cells.nb_hex() + 2 * mesh.edges.nb_edges() ;
             data << nb_facets << " # PFVERTS" << std::endl ;
             for( index_t r = 0; r < gm.nb_regions(); r++ ) {
                 for( index_t type = GEO::MESH_TET; type < GEO::MESH_CONNECTOR;
@@ -959,10 +1149,10 @@ namespace {
                 const GeoModelElement& interf = gm.one_interface( i ) ;
                 for( index_t s = 0; s < interf.nb_children(); s++ ) {
                     index_t s_id = interf.child_id( s ).index ;
-                    for( index_t el = 0; el < mesh.facets.nb_triangle( s_id ); el++ ) {
+                    for( index_t el = 0; el < mesh.facets.nb_triangle( s_id );
+                        el++ ) {
                         index_t tri = mesh.facets.triangle( s_id, el ) ;
-                        for( index_t e = 0;
-                            e < mesh.facets.nb_vertices( tri );
+                        for( index_t e = 0; e < mesh.facets.nb_vertices( tri );
                             e++ ) {
                             index_t adj = mesh.facets.adjacent( tri, e ) ;
                             if( adj == GEO::NO_FACET ) {
@@ -1032,9 +1222,7 @@ namespace {
                 out << std::endl ;
             }
         }
-        void reset_line(
-            index_t& count,
-            std::ofstream& out ) const
+        void reset_line( index_t& count, std::ofstream& out ) const
         {
             if( count != 0 ) {
                 count = 0 ;
@@ -1103,7 +1291,8 @@ namespace {
                     } else if( keyword == "RIGHT" ) {
                         right_ = interface_id ;
                     } else {
-                        throw RINGMeshException( "I/O", "Unknown keyword: " + keyword ) ;
+                        throw RINGMeshException( "I/O",
+                            "Unknown keyword: " + keyword ) ;
                     }
                     parser.get_line() ;
                     parser.get_fields() ;
@@ -1111,7 +1300,8 @@ namespace {
 
                 if( back_ == NO_ID || top_ == NO_ID || front_ == NO_ID
                     || bottom_ == NO_ID || left_ == NO_ID || right_ == NO_ID ) {
-                    throw RINGMeshException( "I/O", "Missing box shape information" ) ;
+                    throw RINGMeshException( "I/O",
+                        "Missing box shape information" ) ;
                 }
 
                 surface_boundary_flags_[back_] = -7 ;
@@ -1217,7 +1407,8 @@ namespace {
                 index_t interface_id = model.surface( s ).parent_id().index ;
                 for( index_t f = 0; f < gm.mesh.facets.nb_facets( s ); f++ ) {
                     index_t f_id = gm.mesh.facets.facet( s, f ) ;
-                    for( index_t v = 0; v < gm.mesh.facets.nb_vertices( f_id ); v++ ) {
+                    for( index_t v = 0; v < gm.mesh.facets.nb_vertices( f_id );
+                        v++ ) {
                         index_t vertex_id = gm.mesh.facets.vertex( f_id, v ) ;
                         point_boundaries_[vertex_id].insert( interface_id ) ;
                     }
@@ -1339,9 +1530,9 @@ namespace {
                 for( index_t f = 0; f < mesh.cells.nb_facets( c ); f++ ) {
                     index_t facet = NO_ID ;
                     bool not_used ;
-                    if( mesh.cells.is_cell_facet_on_surface( c, f, facet, not_used ) ) {
-                        pipes.push_back(
-                            Pipe( c, facet + cell_offset ) ) ;
+                    if( mesh.cells.is_cell_facet_on_surface( c, f, facet,
+                        not_used ) ) {
+                        pipes.push_back( Pipe( c, facet + cell_offset ) ) ;
                     } else {
                         index_t adj = mesh.cells.adjacent( c, f ) ;
                         if( adj != GEO::NO_CELL && adj < c ) {
@@ -1762,8 +1953,7 @@ namespace RINGMesh {
         GEO::Logger::out( "I/O" ) << "Loading file " << filename << "..."
             << std::endl ;
 
-        IOHandler_var handler = IOHandler::get_handler(
-            filename ) ;
+        IOHandler_var handler = IOHandler::get_handler( filename ) ;
         handler->load( filename, model ) ;
     }
 
@@ -1777,27 +1967,26 @@ namespace RINGMesh {
         GEO::Logger::out( "I/O" ) << "Saving file " << filename << "..."
             << std::endl ;
 
-        IOHandler_var handler = IOHandler::get_handler(
-            filename ) ;
-         handler->save( model, filename ) ;
+        IOHandler_var handler = IOHandler::get_handler( filename ) ;
+        handler->save( model, filename ) ;
     }
     /************************************************************************/
-
 
     /*
      * Initializes the possible handler for IO files
      */
-    void IOHandler::initialize_volumetric_mesh_output()
+    void IOHandler::initialize_full_geomodel_output()
     {
-        ringmesh_register_IOHandler_creator( MMIOHandler, "mm" ) ;
-        ringmesh_register_IOHandler_creator( LMIOHandler, "meshb" ) ;
-        ringmesh_register_IOHandler_creator( LMIOHandler, "mesh" ) ;
-        ringmesh_register_IOHandler_creator( TetGenIOHandler, "tetgen" ) ;
-        ringmesh_register_IOHandler_creator( TSolidIOHandler, "so" ) ;
-        ringmesh_register_IOHandler_creator( CSMPIOHandler, "csmp" ) ;
-        ringmesh_register_IOHandler_creator( AsterIOHandler, "mail" ) ;
-        ringmesh_register_IOHandler_creator( VTKIOHandler, "vtk" ) ;
-        ringmesh_register_IOHandler_creator( GPRSIOHandler, "gprs" ) ;
-        ringmesh_register_IOHandler_creator( MSHIOHandler, "msh" ) ;
-    }
+        ringmesh_register_IOHandler_creator( MMIOHandler, "mm" );
+    ringmesh_register_IOHandler_creator( LMIOHandler, "meshb" ) ;
+    ringmesh_register_IOHandler_creator( LMIOHandler, "mesh" ) ;
+    ringmesh_register_IOHandler_creator( TetGenIOHandler, "tetgen" ) ;
+    ringmesh_register_IOHandler_creator( TSolidIOHandler, "so" ) ;
+    ringmesh_register_IOHandler_creator( CSMPIOHandler, "csmp" ) ;
+    ringmesh_register_IOHandler_creator( AsterIOHandler, "mail" ) ;
+    ringmesh_register_IOHandler_creator( VTKIOHandler, "vtk" ) ;
+    ringmesh_register_IOHandler_creator( GPRSIOHandler, "gprs" ) ;
+    ringmesh_register_IOHandler_creator( MSHIOHandler, "msh" ) ;
+    ringmesh_register_IOHandler_creator( GeoModelHandler, "gm" ) ;}
+
 }

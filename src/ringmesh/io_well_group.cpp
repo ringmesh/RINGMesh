@@ -49,14 +49,6 @@
 namespace {
     using namespace RINGMesh ;
 
-    double read_double( GEO::LineInput& in, index_t field )
-    {
-        double result ;
-        std::istringstream iss( in.field( field ) ) ;
-        iss >> result >> std::ws ;
-        return result ;
-    }
-
     static std::string TAB = "\t" ;
     static std::string SPACE = " " ;
 
@@ -85,16 +77,16 @@ namespace {
                         z_sign = -1.0 ;
                     }
                 } else if( in.field_matches( 0, "WREF" ) ) {
-                    vertex_ref[0] = read_double( in, 1 ) ;
-                    vertex_ref[1] = read_double( in, 2 ) ;
-                    vertex_ref[2] = z_sign * read_double( in, 3 ) ;
+                    vertex_ref[0] =in.field_as_double(1) ;
+                    vertex_ref[1] = in.field_as_double(2);
+                    vertex_ref[2] = z_sign *in.field_as_double(3) ;
                     mesh.vertices.create_vertex( vertex_ref ) ;
                 } else if( in.field_matches( 0, "PATH" ) ) {
-                    if( read_double( in, 1 ) == 0. ) continue ;
+                    if( in.field_as_double(1) == 0. ) continue ;
                     double vertex[3] ;
-                    vertex[2] = z_sign * read_double( in, 2 ) ;
-                    vertex[0] = read_double( in, 3 ) + vertex_ref[0] ;
-                    vertex[1] = read_double( in, 4 ) + vertex_ref[1] ;
+                    vertex[2] = z_sign * in.field_as_double(2);
+                    vertex[0] = in.field_as_double(3) + vertex_ref[0] ;
+                    vertex[1] = in.field_as_double(4) + vertex_ref[1] ;
                     index_t id = mesh.vertices.create_vertex( vertex ) ;
                     mesh.edges.create_edge( id - 1, id ) ;
                 } else if( in.field_matches( 0, "END" ) ) {
