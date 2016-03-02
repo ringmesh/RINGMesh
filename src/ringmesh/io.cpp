@@ -39,8 +39,6 @@
 #include <geogram/mesh/mesh.h>
 #include <geogram/basic/string.h>
 
-
-
 #include <cstring>
 #include <fstream>
 
@@ -86,8 +84,8 @@ namespace RINGMesh {
 
     void mesh_initialize()
     {
-        IOHandler::initialize_volumetric_mesh_output() ;
-        IOHandler::initialize_boundary_model_output() ;
+        IOHandler::initialize_full_geomodel_output() ;
+        IOHandler::initialize_boundary_geomodel_output() ;
         WellGroupIOHandler::initialize() ;
     }
 
@@ -151,6 +149,7 @@ namespace RINGMesh {
     }
 
     /***************************************************************************/
+
 
 
     IOHandler* IOHandler::create( const std::string& format )

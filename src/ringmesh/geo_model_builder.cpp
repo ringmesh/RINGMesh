@@ -73,14 +73,6 @@ namespace {
     typedef GeoModelElement::gme_t gme_t ;
     typedef GeoModelMeshElement GMME ;
 
-    double read_double( GEO::LineInput& in_, index_t field )
-    {
-        double result ;
-        std::istringstream iss( in_.field( field ) ) ;
-        iss >> result >> std::ws ;
-        return result ;
-    }
-
     void get_element_vertices_and_update_corners(
         std::vector< index_t >& corners,
         std::vector< index_t >& vertices )
@@ -1251,7 +1243,7 @@ namespace RINGMesh {
         const std::vector< vec3 >& points,
         const std::vector< index_t >& tetras )
     {
-        set_element_vertices( gme_t(GME::REGION, region_id), points, false ) ;
+        set_element_vertices( gme_t( GME::REGION, region_id ), points, false ) ;
         assign_region_tet_mesh( region_id, tetras ) ;
     }
 
@@ -1966,7 +1958,6 @@ namespace RINGMesh {
             add_element_child( contact_id, gme_t( GME::LINE, i ) ) ;
         }
     }
-
 
     /*************************************************************************/
 
@@ -2691,16 +2682,19 @@ namespace RINGMesh {
                         // And its key facet that give the orientation of the surface part
                         file_.get_line() ;
                         file_.get_fields() ;
-                        vec3 p0( read_double( file_, 0 ), read_double( file_, 1 ),
-                            read_double( file_, 2 ) ) ;
+                        vec3 p0( file_.field_as_double( 0 ),
+                            file_.field_as_double( 1 ),
+                            file_.field_as_double( 2 ) ) ;
                         file_.get_line() ;
                         file_.get_fields() ;
-                        vec3 p1( read_double( file_, 0 ), read_double( file_, 1 ),
-                            read_double( file_, 2 ) ) ;
+                        vec3 p1( file_.field_as_double( 0 ),
+                            file_.field_as_double( 1 ),
+                            file_.field_as_double( 2 ) ) ;
                         file_.get_line() ;
                         file_.get_fields() ;
-                        vec3 p2( read_double( file_, 0 ), read_double( file_, 1 ),
-                            read_double( file_, 2 ) ) ;
+                        vec3 p2( file_.field_as_double( 0 ),
+                            file_.field_as_double( 1 ),
+                            file_.field_as_double( 2 ) ) ;
 
                         create_surface( interface_name, geol, p0, p1, p2 ) ;
                         nb_tface++ ;
@@ -2842,9 +2836,9 @@ namespace RINGMesh {
                     /// 2.1 Read the surface vertices and facets (only triangles in Gocad Model3d files)
                     else if( file_.field_matches( 0, "VRTX" ) || file_.field_matches( 0, "PVRTX" ) )
                     {
-                        vec3 p( read_double( file_, 2 ),
-                            read_double( file_, 3 ),
-                            z_sign * read_double( file_, 4 ) ) ;
+                        vec3 p( file_.field_as_double(2),
+                            file_.field_as_double(3),
+                            z_sign * file_.field_as_double(4)) ;
                         tsurf_vertices.push_back( p ) ;
                     } else if( file_.field_matches( 0,"PATOM" ) || file_.field_matches( 0, "ATOM" )
                     ) {
@@ -3289,8 +3283,8 @@ namespace RINGMesh {
                                 + " CORNER, index, and X, Y, Z coordinates " ) ;
                     }
                     index_t id = file_.field_as_uint( 1 ) ;
-                    vec3 point( read_double( file_, 2 ), read_double( file_, 3 ),
-                        read_double( file_, 4 ) ) ;
+                    vec3 point( file_.field_as_double( 2 ),
+                        file_.field_as_double( 3 ), file_.field_as_double( 4 ) ) ;
                     set_corner( id, point ) ;
                 }
 
@@ -3309,8 +3303,9 @@ namespace RINGMesh {
                     for( index_t i = 0; i < nb_vertices; i++ ) {
                         file_.get_line() ;
                         file_.get_fields() ;
-                        vec3 point( read_double( file_, 0 ), read_double( file_, 1 ),
-                            read_double( file_, 2 ) ) ;
+                        vec3 point( file_.field_as_double( 0 ),
+                            file_.field_as_double( 1 ),
+                            file_.field_as_double( 2 ) ) ;
                         vertices[i] = point ;
                     }
 
@@ -3389,8 +3384,9 @@ namespace RINGMesh {
                     for( index_t i = 0; i < nb_vertices; i++ ) {
                         file_.get_line() ;
                         file_.get_fields() ;
-                        vec3 point( read_double( file_, 0 ), read_double( file_, 1 ),
-                            read_double( file_, 2 ) ) ;
+                        vec3 point( file_.field_as_double( 0 ),
+                            file_.field_as_double( 1 ),
+                            file_.field_as_double( 2 ) ) ;
                         vertices[i] = point ;
                     }
 

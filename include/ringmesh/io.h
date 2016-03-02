@@ -71,16 +71,19 @@ namespace RINGMesh {
 
     void RINGMESH_API geomodel_volume_save( const GeoModel& model, const std::string& filename ) ;
 
+    void RINGMESH_API geomodel_load(const GeoModel& model, const std::string& filename) ;
+
+    void RINGMESH_API geomodel_save(const GeoModel& model, const std::string& filename) ;
+
     void RINGMESH_API well_load( const std::string& filename, WellGroup& wells ) ;
 
 
 
     class RINGMESH_API IOHandler: public GEO::Counted {
     public:
-        static void initialize_volumetric_mesh_output() ;
+        static void initialize_full_geomodel_output() ;
 
-        static void initialize_boundary_model_output() ;
-
+        static void initialize_boundary_geomodel_output() ;
 
         static IOHandler* create( const std::string& format ) ;
 
@@ -88,7 +91,7 @@ namespace RINGMesh {
 
         virtual void load( const std::string& filename, GeoModel& model ) = 0 ;
 
-        virtual void save( const GeoModel& model, const std::string& filename ) = 0 ;
+        virtual void save( const GeoModel& model, const std::string& filename) = 0 ;
 
     protected:
         IOHandler()

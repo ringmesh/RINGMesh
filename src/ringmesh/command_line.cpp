@@ -56,6 +56,9 @@ namespace RINGMesh {
             GEO::CmdLine::declare_arg(
                 "in:mesh", "",
                 "Filename of the input volumetric mesh" ) ;
+            GEO::CmdLine::declare_arg(
+                "in:geomodel", "",
+                "Filename of the input geological model" ) ;
         }
 
         void import_arg_group_out()

@@ -1981,7 +1981,7 @@ namespace RINGMesh {
 
             if( !is_attribute_a_double( vertex_attribute_manager(),
                 att_v_names[att_v] ) ) {
-                break ;
+                continue ;
             }
             att_v_double_names.push_back( att_v_names[att_v] ) ;
             for( index_t reg = 0; reg < geo_model_.nb_regions(); reg++ ) {
@@ -1991,7 +1991,7 @@ namespace RINGMesh {
                     GEO::Logger::warn( "Transfer attribute" ) << "The attribute "
                         << att_v_names[att_v] << " already exist on the region "
                         << reg << std::endl ;
-                    break ;
+                    continue ;
                 }
                 GEO::Attribute< double > cur_v_att ;
                 cur_v_att.create_vector_attribute(
@@ -2040,16 +2040,19 @@ namespace RINGMesh {
     {
 
         GEO::vector< std::string > att_c_names ;
-        std::vector< std::string > att_c_double_names ;
         cell_attribute_manager().list_attribute_names( att_c_names ) ;
 
         ColocaterANN ann( *mesh_, ColocaterANN::CELLS ) ;
 
-        for( index_t att_c = 0; att_c < cell_attribute_manager().nb(); att_c++ ) {
+
+        for (index_t i = 0 ; i < att_c_names.size() ; i++) {
+            DEBUG(att_c_names[i]) ;
+        }
+        for( index_t att_c = 0; att_c < att_c_names.size(); att_c++ ) {
             DEBUG(att_c_names[att_c]) ;
             if( !is_attribute_a_double( cell_attribute_manager(),
                 att_c_names[att_c] ) ) {
-                break ;
+                continue ;
             }
             GEO::Attribute< double > cur_att_on_geo_model_mesh(
                 cell_attribute_manager(), att_c_names[att_c] ) ;
@@ -2061,7 +2064,7 @@ namespace RINGMesh {
                     GEO::Logger::warn( "Transfer attribute" ) << "The attribute "
                         << att_c_names[att_c] << " already exist on the region "
                         << reg << std::endl ;
-                    break ;
+                    continue ;
                 }
                 GEO::Attribute< double > cur_att_on_geo_model_mesh_element ;
                 cur_att_on_geo_model_mesh_element.create_vector_attribute(
