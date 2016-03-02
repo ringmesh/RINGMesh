@@ -513,7 +513,7 @@ namespace RINGMesh {
          */
         index_t model_vertex_id( index_t v = 0 ) const
         {
-            ringmesh_debug_assert( v < nb_vertices() ) ;
+            ringmesh_assert( v < nb_vertices() ) ;
             return model_vertex_id_[v] ;
         }
 
@@ -528,7 +528,7 @@ namespace RINGMesh {
          */
         const vec3& vertex( index_t v = 0 ) const
         {
-            ringmesh_debug_assert( v < nb_vertices() ) ;
+            ringmesh_assert( v < nb_vertices() ) ;
             return mesh_.vertices.point( v ) ;
         }
 
@@ -671,8 +671,8 @@ namespace RINGMesh {
          */
         virtual index_t gmme_vertex_index( index_t me, index_t lv ) const
         {
-            ringmesh_debug_assert( me < nb_cells() ) ;
-            ringmesh_debug_assert( lv < 2 ) ;
+            ringmesh_assert( me < nb_cells() ) ;
+            ringmesh_assert( lv < 2 ) ;
             return mesh_.edges.vertex( me, lv ) ;
         }
 
@@ -681,7 +681,7 @@ namespace RINGMesh {
          */
         bool is_closed() const
         {
-            ringmesh_debug_assert( nb_boundaries() == 2 ) ;
+            ringmesh_assert( nb_boundaries() == 2 ) ;
             return ( boundaries_[0].is_defined() )
                 && ( boundaries_[0] == boundaries_[1] ) ;
         }
@@ -746,8 +746,8 @@ namespace RINGMesh {
          */
         virtual index_t gmme_vertex_index( index_t me, index_t lv ) const
         {
-            ringmesh_debug_assert( me < nb_cells() ) ;
-            ringmesh_debug_assert( lv < mesh_.facets.nb_vertices( me ) ) ;
+            ringmesh_assert( me < nb_cells() ) ;
+            ringmesh_assert( lv < mesh_.facets.nb_vertices( me ) ) ;
             return mesh_.facets.vertex( me, lv ) ;
         }
 
@@ -780,7 +780,7 @@ namespace RINGMesh {
 
         index_t next_in_facet( index_t f, index_t v ) const
         {
-            ringmesh_debug_assert( v < nb_vertices_in_facet( f ) ) ;
+            ringmesh_assert( v < nb_vertices_in_facet( f ) ) ;
             if( v != nb_vertices_in_facet( f ) - 1 ) {
                 return v + 1 ;
             } else {
@@ -790,7 +790,7 @@ namespace RINGMesh {
 
         index_t prev_in_facet( index_t f, index_t v ) const
         {
-            ringmesh_debug_assert( v < nb_vertices_in_facet( f ) ) ;
+            ringmesh_assert( v < nb_vertices_in_facet( f ) ) ;
             if( v > 0 ) {
                 return v - 1 ;
             } else {
@@ -877,7 +877,7 @@ namespace RINGMesh {
          *  along the edge starting at \param v */
         index_t adjacent( index_t f, index_t v ) const
         {
-            ringmesh_debug_assert( v < nb_vertices_in_facet( f ) ) ;
+            ringmesh_assert( v < nb_vertices_in_facet( f ) ) ;
             return mesh_.facets.adjacent( f, v ) ;
         }
 
@@ -891,7 +891,7 @@ namespace RINGMesh {
 
         bool is_on_border( index_t f, index_t v ) const
         {
-            ringmesh_debug_assert( v < nb_vertices_in_facet( f ) ) ;
+            ringmesh_assert( v < nb_vertices_in_facet( f ) ) ;
             return adjacent( f, v ) == GEO::NO_CELL ;
         }
 
@@ -991,8 +991,8 @@ namespace RINGMesh {
         }
         virtual index_t gmme_vertex_index( index_t me, index_t lv ) const
         {
-            ringmesh_debug_assert( me < nb_cells() ) ;
-            ringmesh_debug_assert( lv < mesh_.cells.nb() ) ;
+            ringmesh_assert( me < nb_cells() ) ;
+            ringmesh_assert( lv < mesh_.cells.nb() ) ;
             return mesh_.cells.vertex( me, lv ) ;
         }
 
