@@ -244,6 +244,34 @@ namespace GEO {
             RVD_->set_facets_range(facets_begin, facets_end);
         }
 
+        /**
+         * \brief Makes this CentroidalVoronoiTesselation the current one.
+         * \details The Optimizer uses global variables, therefore there can
+         *  be only one CentroidalVoronoiTesselation simultaneously active. 
+         *  This function can be used to change the currently active 
+         *  CentroidalVoronoiTesselation.
+         * \note Most users will not need to use this function.
+         * \pre There is no current CentroidalVoronoiTesselation.
+         */
+        void make_current() {
+            geo_assert(instance_ == nil);
+            instance_ = this;
+        }
+
+        /**
+         * \brief Resets the current CentroidalVoronoiTesselation to nil.
+         * \details The Optimizer uses global variables, therefore there can
+         *  be only one CentroidalVoronoiTesselation simultaneously active. 
+         *  This function can be used to change the currently active 
+         *  CentroidalVoronoiTesselation.
+         * \note Most users will not need to use this function.
+         * \pre This CentroidalVoronoiTesselation is the current one.
+         */
+        void done_current() {
+            geo_assert(instance_ == this);
+            instance_ = nil;
+        }
+        
     public:
         /**
          * \brief Callback for the numerical solver.

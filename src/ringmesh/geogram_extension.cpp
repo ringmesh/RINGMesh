@@ -1,53 +1,53 @@
 /*
-* Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
-* All rights reserved.
-*
-* Redistribution and use in source and binary forms, with or without
-* modification, are permitted provided that the following conditions are met:
-*     * Redistributions of source code must retain the above copyright
-*       notice, this list of conditions and the following disclaimer.
-*     * Redistributions in binary form must reproduce the above copyright
-*       notice, this list of conditions and the following disclaimer in the
-*       documentation and/or other materials provided with the distribution.
-*     * Neither the name of the <organization> nor the
-*       names of its contributors may be used to endorse or promote products
-*       derived from this software without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-* ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-* WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
-* DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-* (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-* LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-* ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-* (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-* SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*
-*
-*
-*
-*
-*
-*     http://www.ring-team.org
-*
-*     RING Project
-*     Ecole Nationale Superieure de Geologie - GeoRessources
-*     2 Rue du Doyen Marcel Roubault - TSA 70605
-*     54518 VANDOEUVRE-LES-NANCY
-*     FRANCE
-*/
+ * Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of ASGA nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ *     http://www.ring-team.org
+ *
+ *     RING Project
+ *     Ecole Nationale Superieure de Geologie - GeoRessources
+ *     2 Rue du Doyen Marcel Roubault - TSA 70605
+ *     54518 VANDOEUVRE-LES-NANCY
+ *     FRANCE
+ */
 
 #include <ringmesh/geogram_extension.h>
 
+#include <geogram/basic/line_stream.h>
+#include <geogram/basic/logger.h>
+
 #include <geogram/mesh/mesh.h>
-#include <geogram/mesh/mesh_io.h>
 #include <geogram/mesh/mesh_geometry.h>
+#include <geogram/mesh/mesh_io.h>
 #include <geogram/mesh/mesh_repair.h>
 
-#include <geogram/basic/logger.h>
-#include <geogram/basic/line_stream.h>
 #include <geogram/points/colocate.h>
+
+/*!
+ * @todo Re-orgarnize this mess
+ */
 
 namespace RINGMesh {
 
@@ -122,6 +122,7 @@ namespace RINGMesh {
         }
 
     private:
+        // This function read the z_sign too [PA]
         void read_number_of_vertices_and_triangles()
         {
             GEO::LineInput in( filename_ ) ;
@@ -299,10 +300,46 @@ namespace RINGMesh {
     void TetgenMesher::tetrahedralize()
     {
         try {
-            GEO_3rdParty::tetrahedralize( &tetgen_args_, &tetgen_in_, &tetgen_out_ );
-        } catch( std::exception& e ) {
-            GEO::Logger::err( "Tetgen" )
-                << "Encountered a problem" << e.what() << std::endl ;
+            GEO_3rdParty::tetrahedralize( &tetgen_args_, &tetgen_in_,
+                &tetgen_out_ ) ;
+        } catch( int code ) {
+            GEO::Logger::err( "Tetgen" ) << "Encountered a problem: " ;
+            switch( code ) {
+                case 1:
+                    GEO::Logger::err( "Tetgen" ) << "Out of memory" ;
+                    break ;
+                case 2:
+                    GEO::Logger::err( "Tetgen" )
+                        << "Please report this bug to Hang.Si@wias-berlin.de. Include\n" ;
+                    GEO::Logger::err( "Tetgen" )
+                        << "  the message above, your input data set, and the exact\n" ;
+                    GEO::Logger::err( "Tetgen" )
+                        << "  command line you used to run this program, thank you" ;
+                    break ;
+                case 3:
+                    GEO::Logger::err( "Tetgen" )
+                        << "A self-intersection was detected. Program stopped\n" ;
+                    GEO::Logger::err( "Tetgen" )
+                        << "Hint: use -d option to detect all self-intersections" ;
+                    break ;
+                case 4:
+                    GEO::Logger::err( "Tetgen" )
+                        << "A very small input feature size was detected. Program stopped.\n" ;
+                    GEO::Logger::err( "Tetgen" )
+                        << "Hint: use -T option to set a smaller tolerance." ;
+                    break ;
+                case 5:
+                    GEO::Logger::err( "Tetgen" )
+                        << "Two very close input facets were detected. Program stopped.\n" ;
+                    GEO::Logger::err( "Tetgen" )
+                        << "Hint: use -Y option to avoid adding Steiner points in boundary." ;
+                    break ;
+                case 10:
+                    GEO::Logger::err( "Tetgen" )
+                        << "An input error was detected. Program stopped." ;
+                    break ;
+            }
+            GEO::Logger::err( "Tetgen" ) << std::endl ;
         }
     }
 
@@ -417,6 +454,7 @@ namespace RINGMesh {
         index_t nb_points( tetgen_out_.numberofpoints ) ;
         points.resize( 3 * nb_points ) ;
         double* points_ptr = tetgen_out_.pointlist ;
+        RINGMESH_PARALLEL_LOOP
         for( index_t i = 0; i < 3 * nb_points; ++i ) {
             points[ i ] = points_ptr[ i ] ;
         }
@@ -429,6 +467,7 @@ namespace RINGMesh {
 
         int* tets_ptr = tetgen_out_.tetrahedronlist ;
         int one_tet_size = tetgen_out_.numberofcorners ;
+        RINGMESH_PARALLEL_LOOP
         for( index_t i = 0; i < nb_tets; ++i ) {
             tets[ 4 * i + 0 ] = index_t( tets_ptr[ one_tet_size*i + 0 ] ) ;
             tets[ 4 * i + 1 ] = index_t( tets_ptr[ one_tet_size*i + 1 ] ) ;
@@ -437,14 +476,18 @@ namespace RINGMesh {
         }
     }
 
-    bool tetrahedralize_mesh_tetgen( GEO::Mesh& M, bool refine, double quality ) 
+    void tetrahedralize_mesh_tetgen( GEO::Mesh& M, bool refine, double quality )
     {
-        if (!is_mesh_tetrahedralizable(M)) {
-            return false ;
+        if( !is_mesh_tetrahedralizable( M ) ) {
+            throw RINGMeshException( "TetGen", "Mesh cannot be tetrahedralized" ) ;
         }               
         TetgenMesher mesher ;
-        mesher.tetrahedralize( M, "QpYA", M ) ;     
-        return true ;
+        if( refine ) {
+            mesher.tetrahedralize( M, "QpYAq" + GEO::String::to_string( quality ),
+                M ) ;
+        } else {
+            mesher.tetrahedralize( M, "QpYYA", M ) ;
+        }
     }
 #endif
     
@@ -512,7 +555,7 @@ namespace RINGMesh {
                             return 0 ;
                     }
                 }
-                ringmesh_debug_assert( volume > 0 ) ;
+                ringmesh_assert( volume > 0 ) ;
                 return volume ;
             }
             default:
@@ -537,24 +580,6 @@ namespace RINGMesh {
         ringmesh_assert( nb_vertices > 0 );
 
         return result/ nb_vertices ;
-    }
-
-    /*!
-    * Computes the Mesh cell facet normal
-    * @pasram[in] M the mesh
-    * @param[in] c the cell index
-    * @param[in] f the facet index in the cell
-    * @return the cell facet normal
-    */
-    vec3 mesh_cell_facet_normal( const GEO::Mesh& M, index_t c, index_t f )
-    {
-        const vec3& p1 = GEO::Geom::mesh_vertex( M,
-                                                 M.cells.facet_vertex( c, f, 0 ) ) ;
-        const vec3& p2 = GEO::Geom::mesh_vertex( M,
-                                                 M.cells.facet_vertex( c, f, 1 ) ) ;
-        const vec3& p3 = GEO::Geom::mesh_vertex( M,
-                                                 M.cells.facet_vertex( c, f, 2 ) ) ;
-        return cross( p2 - p1, p3 - p1 ) ;
     }
 
     /*!
@@ -754,7 +779,7 @@ namespace RINGMesh {
             for( index_t i = 0; i < 3; i++ ) {
                 mesh.vertices.point_ptr( v )[ i ] = new_coords[ i ] ;
             }
-            ringmesh_debug_assert( new_coords[ 3 ] == 1. ) ;
+            ringmesh_assert( new_coords[ 3 ] == 1. ) ;
         }
     }
 

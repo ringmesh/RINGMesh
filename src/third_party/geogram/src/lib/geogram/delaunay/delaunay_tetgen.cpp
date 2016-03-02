@@ -138,7 +138,6 @@ namespace GEO {
 
         tetgen_out_.deinitialize();
 
-
         // Q: quiet
         // p: input data is surfacic
         // n: output tet neighbors
@@ -263,12 +262,13 @@ namespace GEO {
         tetgen_in_.numberoffacets = 0;
         delete[] polygons;
 
-        // Determine which region is the one incident to
+        // Determine which regions are incident to
         // the 'exterior' (neighbor = -1 or tet is adjacent to
         // a tet in region 0).
         // The region Id of tet t is determined by:
-        //  tetgen_out_.tetrahedronattributelist[t] 
-        double good_region = 0.0;
+        //  tetgen_out_.tetrahedronattributelist[t]
+
+        std::set<double> good_regions;
         for(
             index_t t = 0; 
             t < index_t(tetgen_out_.numberoftetrahedra); ++t
@@ -276,7 +276,9 @@ namespace GEO {
             for(index_t f=0; f<4; ++f) {
                 signed_index_t n = (tetgen_out_.neighborlist[t*4+f]);
                 if(n == -1 || tetgen_out_.tetrahedronattributelist[n] == 0.0) {
-                    good_region = tetgen_out_.tetrahedronattributelist[t];
+                    good_regions.insert(
+                        tetgen_out_.tetrahedronattributelist[t]
+                    );
                     break;
                 }
             }
@@ -291,7 +293,11 @@ namespace GEO {
             index_t t = 0; 
             t < index_t(tetgen_out_.numberoftetrahedra); ++t
         ) {        
-            if(tetgen_out_.tetrahedronattributelist[t] == good_region) {
+            if(
+                good_regions.find(
+                    tetgen_out_.tetrahedronattributelist[t]
+                ) != good_regions.end()
+            ) {
                 if(t != nb_tets) {
                     Memory::copy(
                         &tetgen_out_.tetrahedronlist[nb_tets * 4],

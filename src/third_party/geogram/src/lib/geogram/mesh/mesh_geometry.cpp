@@ -296,15 +296,51 @@ namespace GEO {
     double mesh_cell_volume(
         const Mesh& M, index_t c
     ) {
-        // Only implemented for tetrahedra
-        // TODO: other cell types
-        geo_assert(M.cells.type(c) == MESH_TET);
         geo_assert(M.vertices.dimension() >= 3);
-        const double* p0 = M.vertices.point_ptr(M.cells.vertex(c,0));
-        const double* p1 = M.vertices.point_ptr(M.cells.vertex(c,1));
-        const double* p2 = M.vertices.point_ptr(M.cells.vertex(c,2));
-        const double* p3 = M.vertices.point_ptr(M.cells.vertex(c,3));
-        return ::fabs(Geom::tetra_signed_volume(p0,p1,p2,p3));
+
+        //   Connectors are virtual cells, they
+        //  do not have a geometry.
+        if(M.cells.type(c) == MESH_CONNECTOR) {
+            return 0.0;
+        }
+        
+        //   Easy case: tetrahedra.
+        if(M.cells.type(c) == MESH_TET) {
+            const double* p0 = M.vertices.point_ptr(M.cells.vertex(c,0));
+            const double* p1 = M.vertices.point_ptr(M.cells.vertex(c,1));
+            const double* p2 = M.vertices.point_ptr(M.cells.vertex(c,2));
+            const double* p3 = M.vertices.point_ptr(M.cells.vertex(c,3));
+            return ::fabs(Geom::tetra_signed_volume(p0,p1,p2,p3));
+        }
+
+
+        //   For an arbitrary cell, we (virtually) triangulate each
+        // facet of the cell, and compute the signed area of the
+        // tetrahedra connecting each triangle with an arbitrary
+        // point (here the origin). The volume outside the cell is
+        // counted twice, once with a positive sign and once with
+        // a negative sign, therefore it cancels-out and one gets
+        // in the end the volume of the cells.
+        
+        double result = 0.0;
+        double origin[3];
+        origin[0] = origin[1] = origin[2] = 0.0;
+
+        for(index_t lf=0; lf<M.cells.nb_facets(c); ++lf) {
+            index_t v1 = M.cells.facet_vertex(c,lf,0);
+            index_t v2 = M.cells.facet_vertex(c,lf,1);            
+            const double* p1 = M.vertices.point_ptr(v1);
+            const double* p2 = M.vertices.point_ptr(v2);            
+            for(index_t lv=2; lv<M.cells.facet_nb_vertices(c,lf); ++lv) {
+                index_t v3 = M.cells.facet_vertex(c,lf,lv);
+                const double* p3 = M.vertices.point_ptr(v3);
+                result += Geom::tetra_signed_volume(
+                    origin, p1, p2, p3
+                );
+            }
+        }
+
+        return ::fabs(result);
     }
 
     
@@ -312,6 +348,51 @@ namespace GEO {
         double result = 0.0;
         for(index_t c=0; c<M.cells.nb(); ++c) {
             result += mesh_cell_volume(M,c);
+        }
+        return result;
+    }
+
+    vec3 GEOGRAM_API mesh_cell_facet_normal(
+        const Mesh& M, index_t c, index_t lf
+    ) {
+        geo_debug_assert(M.vertices.dimension() >= 3);
+        geo_debug_assert(c < M.cells.nb());
+        geo_debug_assert(lf < M.cells.nb_facets(c));
+
+        index_t v1 = M.cells.facet_vertex(c,lf,0);
+        index_t v2 = M.cells.facet_vertex(c,lf,1);
+        index_t v3 = M.cells.facet_vertex(c,lf,2);
+
+        const vec3& p1 = Geom::mesh_vertex(M,v1);
+        const vec3& p2 = Geom::mesh_vertex(M,v2);
+        const vec3& p3 = Geom::mesh_vertex(M,v3);
+
+        return cross(p2 - p1, p3 - p1);        
+    }
+    
+
+    
+    double surface_average_edge_length(const Mesh& M) {
+        double result = 0.0;
+        index_t count = 0;
+        for(index_t f=0; f<M.facets.nb(); ++f) {
+            for(
+                index_t c1=M.facets.corners_begin(f);
+                c1<M.facets.corners_end(f); ++c1
+            ) {
+                index_t c2 = M.facets.next_corner_around_facet(f,c1);
+                index_t v1 = M.facet_corners.vertex(c1);
+                index_t v2 = M.facet_corners.vertex(c2);
+                result += Geom::distance2(
+                    M.vertices.point_ptr(v1),
+                    M.vertices.point_ptr(v2),
+                    coord_index_t(M.vertices.dimension())
+                );
+                ++count;
+            }
+        }
+        if(count != 0) {
+            result /= double(count);
         }
         return result;
     }

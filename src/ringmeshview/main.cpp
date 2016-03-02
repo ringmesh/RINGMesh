@@ -54,14 +54,14 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the <organization> nor the
+ *     * Neither the name of ASGA nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
  * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
@@ -69,12 +69,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *
- *
- *
- *
- *
- *     http:www.ring-team.org
+ *     http://www.ring-team.org
  *
  *     RING Project
  *     Ecole Nationale Superieure de Geologie - GeoRessources
@@ -100,9 +95,10 @@
 #include <algorithm>
 
 namespace {
+    using namespace RINGMesh ;
 
-    RINGMesh::GeoModel GM ;
-    RINGMesh::GeoModelGfx GM_gfx ;
+    GeoModel GM ;
+    GeoModelGfx GM_gfx ;
 
     bool show_borders = false ;
     bool white_bg = true ;
@@ -125,7 +121,7 @@ namespace {
      */
     void toggle_points()
     {
-        show_points = !show_points ; 
+        show_points = !show_points ;
         GM_gfx.set_vertex_regions_visibility( show_points ) ;
     }
 
@@ -354,9 +350,7 @@ namespace {
      */
     void load_mesh()
     {
-        if( !RINGMesh::geomodel_surface_load( GEO::CmdLine::get_arg( "model" ), GM ) ) {
-            return ;
-        }
+        geomodel_surface_load( GEO::CmdLine::get_arg( "model" ), GM ) ;
 
         double xyzmin[3] ;
         double xyzmax[3] ;
@@ -365,10 +359,8 @@ namespace {
             xyzmax[c] = GEO::Numeric::min_float64() ;
         }
 
-        if( GEO::CmdLine::get_arg( "mesh" ) != "" ) {
-            if( !RINGMesh::geomodel_volume_load( GEO::CmdLine::get_arg( "mesh" ), GM ) ) {
-                return ;
-            }
+        if( !GEO::CmdLine::get_arg( "mesh" ).empty() ) {
+            RINGMesh::geomodel_volume_load( GEO::CmdLine::get_arg( "mesh" ), GM ) ;
             meshed_regions = true ;
         }
         get_bbox( GM, xyzmin, xyzmax ) ;
@@ -408,77 +400,91 @@ namespace {
 
 int main( int argc, char** argv )
 {
-    GEO::Logger::div( "RINGMeshView" ) ;
-    GEO::Logger::out( "" ) << "Welcome to RINGMeshView !" << std::endl ;
-    GEO::Logger::out( "" ) << "People working on the project in RING" << std::endl ;
-    GEO::Logger::out( "" ) << "Arnaud Botella <arnaud.botella@univ-lorraine.fr> "
-        << std::endl ;
-    GEO::Logger::out( "" ) << "Benjamin Chauvin <benjamin.chauvin@univ-lorraine.fr> "
-        << std::endl ;
-    GEO::Logger::out( "" ) << "Antoine Mazuyer <antoine.mazuyer@univ-lorraine.fr> "
-        << std::endl ;
+    using namespace RINGMesh ;
 
-    GEO::CmdLine::declare_arg( "model", "", "filename of the structural model" ) ;
-    GEO::CmdLine::declare_arg( "mesh", "", "filename of the volumetric mesh" ) ;
+    try {
 
-    if( argc == 1 ) {
-        GEO::CmdLine::show_usage() ;
-        return 0 ;
-    }
+        GEO::Logger::div( "RINGMeshView" ) ;
+        GEO::Logger::out( "" ) << "Welcome to RINGMeshView !" << std::endl ;
+        GEO::Logger::out( "" ) << "People working on the project in RING"
+            << std::endl ;
+        GEO::Logger::out( "" ) << "Arnaud Botella <arnaud.botella@univ-lorraine.fr> "
+            << std::endl ;
+        GEO::Logger::out( "" )
+            << "Benjamin Chauvin <benjamin.chauvin@univ-lorraine.fr> " << std::endl ;
+        GEO::Logger::out( "" )
+            << "Antoine Mazuyer <antoine.mazuyer@univ-lorraine.fr> " << std::endl ;
 
-    std::vector< std::string > filenames ;
-    if( !GEO::CmdLine::parse( argc, argv, filenames ) ) {
-        return 1 ;
-    }
+        GEO::CmdLine::declare_arg( "model", "",
+            "filename of the structural model" ) ;
+        GEO::CmdLine::declare_arg( "mesh", "", "filename of the volumetric mesh" ) ;
 
-    load_mesh() ;
+        if( argc == 1 ) {
+            GEO::CmdLine::show_usage() ;
+            return 0 ;
+        }
 
-    if( meshed_regions ) {
-        toggle_volume() ;
-    }
+        std::vector< std::string > filenames ;
+        if( !GEO::CmdLine::parse( argc, argv, filenames ) ) {
+            return 1 ;
+        }
 
-    glut_viewer_set_window_title( (char*) "RINGMeshView" ) ;
-    glut_viewer_set_init_func( init ) ;
-    glut_viewer_set_display_func( display ) ;
-    glut_viewer_add_toggle( 'c', &show_corners, "corners" ) ;
-    glut_viewer_add_toggle( 'e', &show_lines, "lines" ) ;
-    glut_viewer_add_toggle( 's', &show_surface, "surface" ) ;
-    glut_viewer_add_key_func( 'r', &toggle_colored_regions,
-        "toggle colored regions" ) ;
-    glut_viewer_add_key_func( 'p', &toggle_points, "toggle points" ) ;
-    glut_viewer_add_key_func( 'v', &toggle_volume, "toggle volume" ) ;
-    glut_viewer_add_key_func( 'w', &toggle_wells, "toggle wells" ) ;
-    glut_viewer_add_key_func( 'V', toggle_voi, "toggle VOI" ) ;
-    glut_viewer_add_key_func( 'L', toggle_lighting, "toggle lighting" ) ;
-    glut_viewer_add_key_func( 'n', invert_normals, "invert normals" ) ;
-    glut_viewer_add_key_func( 'X', dec_shrink, "unshrink cells" ) ;
-    glut_viewer_add_key_func( 'x', inc_shrink, "shrink cells" ) ;
-    glut_viewer_add_key_func( 'C', toggle_colored_cells, "toggle colored cells" ) ;
+        load_mesh() ;
 
-    if( GEO::CmdLine::get_arg_bool( "gfx:full_screen" ) ) {
-        glut_viewer_enable( GLUT_VIEWER_FULL_SCREEN ) ;
-    }
+        if( meshed_regions ) {
+            toggle_volume() ;
+        }
+
+        glut_viewer_set_window_title( (char*) "RINGMeshView" ) ;
+        glut_viewer_set_init_func( init ) ;
+        glut_viewer_set_display_func( display ) ;
+        glut_viewer_add_toggle( 'c', &show_corners, "corners" ) ;
+        glut_viewer_add_toggle( 'e', &show_lines, "lines" ) ;
+        glut_viewer_add_toggle( 's', &show_surface, "surface" ) ;
+        glut_viewer_add_key_func( 'r', &toggle_colored_regions,
+            "toggle colored regions" ) ;
+        glut_viewer_add_key_func( 'p', &toggle_points, "toggle points" ) ;
+        glut_viewer_add_key_func( 'v', &toggle_volume, "toggle volume" ) ;
+        glut_viewer_add_key_func( 'w', &toggle_wells, "toggle wells" ) ;
+        glut_viewer_add_key_func( 'V', toggle_voi, "toggle VOI" ) ;
+        glut_viewer_add_key_func( 'L', toggle_lighting, "toggle lighting" ) ;
+        glut_viewer_add_key_func( 'n', invert_normals, "invert normals" ) ;
+        glut_viewer_add_key_func( 'X', dec_shrink, "unshrink cells" ) ;
+        glut_viewer_add_key_func( 'x', inc_shrink, "shrink cells" ) ;
+        glut_viewer_add_key_func( 'C', toggle_colored_cells,
+            "toggle colored cells" ) ;
+
+        if( GEO::CmdLine::get_arg_bool( "gfx:full_screen" ) ) {
+            glut_viewer_enable( GLUT_VIEWER_FULL_SCREEN ) ;
+        }
 
 //    GM_gfx.set_points_color( 0.0, 1.0, 0.0 ) ;
 
-    glut_viewer_main_loop( argc, argv ) ;
+        glut_viewer_main_loop( argc, argv ) ;
 
-    // Note: when 'q' is pressed, exit() is called
-    // because there is no simple way of exiting from
-    // glut's event loop, therefore this line is not
-    // reached and memory is not properly freed on exit.
-    // TODO: add a function in freeglut to exit event loop.
+        // Note: when 'q' is pressed, exit() is called
+        // because there is no simple way of exiting from
+        // glut's event loop, therefore this line is not
+        // reached and memory is not properly freed on exit.
+        // TODO: add a function in freeglut to exit event loop.
 
+    } catch( const RINGMeshException& e ) {
+        GEO::Logger::err( e.category() ) << e.what() << std::endl ;
+        return 1 ;
+    } catch( const std::exception& e ) {
+        GEO::Logger::err( "Exception" ) << e.what() << std::endl ;
+        return 1 ;
+    }
     return 0 ;
 }
 
 #else
 #include <geogram/basic/logger.h>
 int main() {
-    GEO::Logger::out("RINGMeshView") 
-        << "To compile RINGMesh viewer you need to configure " 
-        << "the project with the RINGMESH_WITH_GRAPHICS option ON"
-        << std::endl ;
+    GEO::Logger::out("RINGMeshView")
+    << "To compile RINGMesh viewer you need to configure "
+    << "the project with the RINGMESH_WITH_GRAPHICS option ON"
+    << std::endl ;
     return 0 ;
 }
 #endif

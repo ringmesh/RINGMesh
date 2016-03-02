@@ -9,25 +9,20 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the <organization> nor the
+ *     * Neither the name of ASGA nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
  * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- *
- * 
- * 
- *
  *
  *     http://www.ring-team.org
  *
@@ -39,31 +34,37 @@
  */
 
 #include <ringmesh/tetra_gen.h>
-#include <ringmesh/geo_model_element.h>
-#include <ringmesh/geo_model_api.h>
-#include <ringmesh/geo_model.h>
-#include <ringmesh/well.h>
-#include <ringmesh/algorithm.h>
-#include <ringmesh/geometry.h>
 
-#include <geogram/basic/logger.h>
-#include <geogram/mesh/mesh.h>
-#include <geogram/mesh/mesh_io.h>
-#include <geogram/mesh/mesh_repair.h>
-#include <geogram/mesh/mesh_geometry.h>
-#include <geogram/mesh/mesh_tetrahedralize.h>
-#include <geogram/mesh/mesh_AABB.h>
-
+#include <cstdio>
 #include <iomanip>
 #include <stack>
 #include <sstream>
-#include <cstdio>
 
 #ifdef WIN32
-#include <io.h>
+#   include <io.h>
 #endif 
 
-namespace RINGMesh {
+
+#include <geogram/mesh/mesh.h>
+#include <geogram/mesh/mesh_AABB.h>
+#include <geogram/mesh/mesh_geometry.h>
+#include <geogram/mesh/mesh_repair.h>
+
+#include <ringmesh/algorithm.h>
+#include <ringmesh/geo_model.h>
+#include <ringmesh/geo_model_api.h>
+#include <ringmesh/geo_model_element.h>
+#include <ringmesh/geometry.h>
+#include <ringmesh/well.h>
+
+/*!
+ * @file Implementation of tetrahedral meshing region per region of a GeoModel
+ * @author Arnaud Botella
+ */
+
+namespace {
+    using namespace RINGMesh ;
+
     /*!
      * Tests if two adjacent facets have the same orientation
      * @param[in] mesh the mesh
@@ -283,7 +284,7 @@ namespace RINGMesh {
             vec3 nearest_point ;
             float64 distance ;
             index_t f = aabb.nearest_facet( barycenter, nearest_point, distance ) ;
-            ringmesh_debug_assert( surface.index() == attribute[f] ) ;
+            ringmesh_assert( surface.index() == attribute[f] ) ;
 
             vec3 ori_normal = surface.facet_normal( 0 ) ;
             vec3 test_normal = GEO::Geom::mesh_facet_normal( mesh, f ) ;
@@ -302,6 +303,11 @@ namespace RINGMesh {
         }
     }
 
+}
+
+namespace RINGMesh {
+
+#ifdef RINGMESH_WITH_TETGEN
     class RINGMESH_API TetraGen_TetGen: public TetraGen {
     public:
         TetraGen_TetGen()
@@ -314,11 +320,12 @@ namespace RINGMesh {
 
         virtual bool tetrahedralize( bool refine )
         {
-            GEO::mesh_tetrahedralize( *tetmesh_, false, refine, 1.0 ) ;
+            tetrahedralize_mesh_tetgen( *tetmesh_, refine, 1.0 ) ;
             check_and_repair_mesh_consistency( *region_, *tetmesh_ ) ;
             return true ;
         }
     } ;
+#endif
 
 #ifdef USE_MG_TETRA
 
@@ -631,11 +638,23 @@ namespace RINGMesh {
     {
         TetraGen* mesher = TetraGenFactory::create_object( algo_name ) ;
         if( !mesher ) {
+#ifdef RINGMESH_WITH_TETGEN
             GEO::Logger::warn( "TetraGen" ) << "Could not create TetraGen mesher: "
                 << algo_name << std::endl ;
             GEO::Logger::warn( "TetraGen" ) << "Falling back to TetGen mode"
                 << std::endl ;
             mesher = new TetraGen_TetGen() ;
+#else
+            std::vector< std::string > names ;
+            TetraGenFactory::list_creators( names ) ;
+            GEO::Logger::err( "I/O" ) << "Currently supported mesher are: " ;
+            for( index_t i = 0; i < names.size(); i++ ) {
+                GEO::Logger::out( "I/O" ) << " " << names[ i ] ;
+            }
+            GEO::Logger::out( "I/O" ) << std::endl ;
+            throw RINGMeshException( "TetraGen", "Could not create TetraGen mesher: "
+                + algo_name ) ;
+#endif
         }
 
         mesher->set_mesh( tetmesh ) ;
@@ -741,7 +760,7 @@ namespace RINGMesh {
                 dynamic_cast< const Surface& >( *unique_surfaces[s] ) ;
             RINGMESH_PARALLEL_LOOP
             for( index_t t = 0; t < surface.nb_cells(); t++ ) {
-                ringmesh_debug_assert( surface.is_triangle( t ) ) ;
+                ringmesh_assert( surface.is_triangle( t ) ) ;
                 for( index_t v = 0; v < 3; v++ ) {
                     tetmesh_->facets.set_vertex( offset_facets + t, v,
                         starting_index
@@ -801,7 +820,9 @@ namespace RINGMesh {
 
     void TetraGen::initialize()
     {
+#ifdef RINGMESH_WITH_TETGEN
         ringmesh_register_tetragen( TetraGen_TetGen, "TetGen" ) ;
+#endif
 
 #ifdef USE_MG_TETRA
         ringmesh_register_tetragen( TetraGen_MG_Tetra, "MG_Tetra" );

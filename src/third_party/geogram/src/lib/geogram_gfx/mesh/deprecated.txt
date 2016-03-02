@@ -1,7 +1,7 @@
 http://www.davidbishop.org/oglmeta
 http://www.geeks3d.com/3dfr/20140703/uniform-buffers-objects-opengl-31-tutorial/
 
-Remplacement des variables d'etat du vieuw pipeline OpenGL:
+Remplacement des variables d'etat du vieux pipeline OpenGL:
    Utiliser des "Uniform Buffer Object" est peut-etre pas mal,
  parceque ca peut etre partage entre differents shaders.
 

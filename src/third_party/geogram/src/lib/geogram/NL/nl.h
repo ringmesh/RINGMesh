@@ -1181,6 +1181,17 @@ typedef void* NLContext ;
  */
     NLAPI NLboolean NLAPIENTRY nlSolve() ;
 
+
+/**
+ * \brief Updates the right hand side of the constructed system in
+ *  one call.
+ * \param[in] values a pointer to an array of N doubles, where N 
+ *  corresponds to the number of not locked variables.
+ * \details If the current state is solved, it resets the current
+ *  state to constructed.
+ */
+    NLAPI void NLAPIENTRY nlUpdateRightHandSide(NLdouble* values);
+    
 /**
  * @}
  */    
