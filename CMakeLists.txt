@@ -224,6 +224,11 @@ ExternalProject_Add(geogram_ext
   INSTALL_COMMAND "" 
 )
 
+ExternalProject_Add_Step(geogram_ext forcebuild
+    DEPENDERS build
+    ALWAYS 1
+  )
+
 # Add geogram include directories to the current ones
 include_directories(${GEOGRAM_PATH}/src/lib)
 
