@@ -56,6 +56,10 @@ int main( int argc, char** argv )
 
     try {
 
+        GEO::initialize() ;
+        configure_geogram() ;
+        configure_ringmesh() ;
+
         std::string file_name = ringmesh_test_data_path ;
         file_name += "modelA6.mesh" ;
 

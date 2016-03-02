@@ -51,6 +51,10 @@ int main( int argc, char** argv )
 
     try {
 
+        GEO::initialize() ;
+        configure_geogram() ;
+        configure_ringmesh() ;
+
         GEO::Logger::out( "TEST" ) << "Test MakeUnique" << std::endl ;
 
         GeoModel in ;

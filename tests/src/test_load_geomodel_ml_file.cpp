@@ -53,6 +53,10 @@ int main( int argc, char** argv )
 
     try {
 
+        GEO::initialize() ;
+        configure_geogram() ;
+        configure_ringmesh() ;
+
         // Set an output log file
         std::string log_file( ringmesh_test_output_path ) ;
         log_file += "log.txt" ;
