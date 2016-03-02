@@ -9,25 +9,20 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the <organization> nor the
+ *     * Neither the name of ASGA nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
  * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- *
- *
- *
- *
  *
  *     http://www.ring-team.org
  *
@@ -38,8 +33,8 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_GEO_MESH__
-#define __RINGMESH_GEO_MESH__
+#ifndef __RINGMESH_MESH__
+#define __RINGMESH_MESH__
 
 #include <ringmesh/common.h>
 
@@ -52,12 +47,12 @@ namespace RINGMesh {
      * @brief class to encapsulate mesh structure in order to provide an API on which we base the RINGMesh algorithm 
      * @note For now, we encapsulate the GEO::Mesh class. We can develop the concept using a factory to build several encapsulating classes. 
      */
-    class RINGMESH_API GeoMesh {
-    ringmesh_disable_copy( GeoMesh ) ;
+    class RINGMESH_API Mesh {
+    ringmesh_disable_copy( Mesh ) ;
 
     public:
-        GeoMesh() ;
-        ~GeoMesh() ;
+        Mesh() ;
+        ~Mesh() ;
 
         /*
          * @brief Gets a point.
@@ -67,9 +62,9 @@ namespace RINGMesh {
         const vec3& vertex( index_t v_id ) const ;
 
         /*
-         * @brief Gets the number of point in the GeoMesh.
+         * @brief Gets the number of point in the Mesh.
          */
-        index_t nb_vetices() const ;
+        index_t nb_vertices() const ;
 
         /*
          * @brief Gets the index of an edge vertex.
@@ -89,18 +84,18 @@ namespace RINGMesh {
         }
 
         /*
-         * @brief Gets the number of edges in the GeoMesh.
+         * @brief Gets the number of all the edges in the whole Mesh.
          */
         index_t nb_edges() const ;
 
         /*
-         * @brief Gets a vertex by facet and local vertex index.
+         * @brief Gets an adjacent facet index by facet index and local edge index.
          * @param[in] facet_id the facet index.
-         * @param[in] vertex_id the local vertex index in \param facet_id.
-         * @return the global vertex index.
-         * @precondition vertex_id < nomber of vertices of the facet.
+         * @param[in] edge_id the local edge index in \param facet_id.
+         * @return the global facet index adjacent to the \param edge_id of the facet \param facet_id.
+         * @precondition  \param edge_id < number of edge of the facet \param facet_id .
          */
-        index_t facet_vertex( index_t facet_id, index_t vertex_id ) const ;
+        index_t facet_vertex( index_t facet_id, index_t edge_id ) const ;
 
         /*
          * @return the index of the adjacent facet of \param facet_id
@@ -109,7 +104,7 @@ namespace RINGMesh {
         index_t facet_adjacent( index_t facet_id, index_t vertex_id ) const ;
 
         /*
-         * @brief Gets the number of facets in the GeoMesh.
+         * @brief Gets the number of all facets in the whole Mesh.
          */
         index_t nb_facets() const ;
 
@@ -118,14 +113,14 @@ namespace RINGMesh {
          * @param[in] cell_id the cell index.
          * @param[in] vertex_id the local vertex index in \param cell_id.
          * @return the global vertex index.
-         * @precondition vertex_id<nomber of vertices of the cell.
+         * @precondition vertex_id<number of vertices of the cell.
          */
         index_t cell_vertex( index_t cell_id, index_t vertex_id ) const ;
 
         /*
          * @brief Gets a vertex by cell facet and local vertex index.
-         * @parma[in] cell_id index of the cell
-         * @parma[in] facet_id index of the facet in the cell \param cell_id
+         * @param[in] cell_id index of the cell
+         * @param[in] facet_id index of the facet in the cell \param cell_id
          * @param[in] vertex_id index of the vertex in the facet \param facet_id
          * @return the global vertex index.
          * @precondition vertex_id < number of vertices in the facet \param facet_id and facet_id number of facet in th cell \param cell_id
@@ -145,18 +140,18 @@ namespace RINGMesh {
          * @param[in] cell_id index of the cell
          * @return the number of facet of the cell \param cell_id
          */
-        index_t nb_cell_facet( index_t cell_id ) const ;
+        index_t nb_cell_facets( index_t cell_id ) const ;
 
         /*
          * @brief Gets the number of the facet in a cell
-         * @parma[in] cell_id index of the cell
-         * @parma[in] facet_id index of the facet in the cell \param cell_id
+         * @param[in] cell_id index of the cell
+         * @param[in] facet_id index of the facet in the cell \param cell_id
          * @return the number of vertices in the facet \param facet_id in the cell \param cell_id
          */
         index_t nb_cell_facet_vertices( index_t cell_id, index_t facet_id ) const ;
 
         /*
-         * @brief Gets the number of cells in the GeoMesh.
+         * @brief Gets the number of cells in the Mesh.
          */
         index_t nb_cells() const ;
 
