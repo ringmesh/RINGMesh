@@ -527,7 +527,7 @@ namespace RINGMesh {
      */
     void GeoModelGfx::initialize()
     {
-        ringmesh_debug_assert( model_ ) ;
+        ringmesh_assert( model_ ) ;
         if( corners_.empty() && lines_.empty() && surfaces_.empty() ) {
             corners_.resize( model_->nb_corners(), nil ) ;
             lines_.resize( model_->nb_lines(), nil ) ;
@@ -1069,7 +1069,7 @@ namespace RINGMesh {
      */
     void GeoModelGfx::set_vertex_region_color( index_t m, float r, float g, float b )
     {
-        ringmesh_debug_assert( m < regions_.size() ) ;
+        ringmesh_assert( m < regions_.size() ) ;
         regions_[m]->set_points_color( r, g, b ) ;
     }
 
@@ -1091,7 +1091,7 @@ namespace RINGMesh {
      */
     void GeoModelGfx::set_vertex_region_visibility( index_t m, bool b )
     {
-        ringmesh_debug_assert( m < regions_.size() ) ;
+        ringmesh_assert( m < regions_.size() ) ;
         regions_[m]->set_vertices_visible( b ) ;
     }
 
@@ -1113,7 +1113,7 @@ namespace RINGMesh {
      */
     void GeoModelGfx::set_vertex_region_size( index_t m, index_t s )
     {
-        ringmesh_debug_assert( m < regions_.size() ) ;
+        ringmesh_assert( m < regions_.size() ) ;
         regions_[m]->set_points_size( s ) ;
     }
 
@@ -1138,7 +1138,7 @@ namespace RINGMesh {
      */
     void GeoModelGfx::set_edge_region_color( index_t m, float r, float g, float b )
     {
-        ringmesh_debug_assert( m < regions_.size() ) ;
+        ringmesh_assert( m < regions_.size() ) ;
         regions_[m]->set_mesh_color( r, g, b ) ; //TODO function not good?
     }
     /*!
@@ -1158,7 +1158,7 @@ namespace RINGMesh {
      */
     void GeoModelGfx::set_edge_region_visibility( index_t m, bool b )
     {
-        ringmesh_debug_assert( m < regions_.size() ) ;
+        ringmesh_assert( m < regions_.size() ) ;
         regions_[m]->set_edges_visible( b ) ;
     }
     /*!
@@ -1178,7 +1178,7 @@ namespace RINGMesh {
      */
     void GeoModelGfx::set_edge_region_size( index_t l, index_t s )
     {
-        ringmesh_debug_assert( l < regions_.size() ) ;
+        ringmesh_assert( l < regions_.size() ) ;
         regions_[l]->set_mesh_width( s ) ;
     }
 
@@ -1207,7 +1207,7 @@ namespace RINGMesh {
         float g,
         float b )
     {
-        ringmesh_debug_assert( reg < regions_.size() ) ;
+        ringmesh_assert( reg < regions_.size() ) ;
         regions_[reg]->set_surface_color( r, g, b ) ;
     }
     /*!
@@ -1235,7 +1235,7 @@ namespace RINGMesh {
         float g,
         float b )
     {
-        ringmesh_debug_assert( reg < regions_.size() ) ;
+        ringmesh_assert( reg < regions_.size() ) ;
         regions_[reg]->set_backface_surface_color( r, g, b ) ;
     }
     /*!
@@ -1255,7 +1255,7 @@ namespace RINGMesh {
      */
     void GeoModelGfx::set_surface_region_visibility( index_t r, bool b )
     {
-        ringmesh_debug_assert( r < regions_.size() ) ;
+        ringmesh_assert( r < regions_.size() ) ;
         surfaces_[r]->set_surface_visible( b ) ;
     }
     /*!
@@ -1283,7 +1283,7 @@ namespace RINGMesh {
         float g,
         float b )
     {
-        ringmesh_debug_assert( reg < regions_.size() ) ;
+        ringmesh_assert( reg < regions_.size() ) ;
         surfaces_[reg]->set_mesh_color( r, g, b ) ;
     }
     /*!
@@ -1303,7 +1303,7 @@ namespace RINGMesh {
      */
     void GeoModelGfx::set_mesh_surface_region_visibility( index_t r, bool b )
     {
-        ringmesh_debug_assert( r < regions_.size() ) ;
+        ringmesh_assert( r < regions_.size() ) ;
         regions_[r]->set_show_mesh( b ) ;
     }
     /*!
@@ -1323,7 +1323,7 @@ namespace RINGMesh {
      */
     void GeoModelGfx::set_mesh_surface_region_size( index_t r, index_t size )
     {
-        ringmesh_debug_assert( r < regions_.size() ) ;
+        ringmesh_assert( r < regions_.size() ) ;
         regions_[r]->set_mesh_width( size ) ;
     }
 
@@ -1353,7 +1353,7 @@ namespace RINGMesh {
         float g,
         float b )
     {
-        ringmesh_debug_assert( m < regions_.size() ) ;
+        ringmesh_assert( m < regions_.size() ) ;
         regions_[m]->set_mesh_color( r, g, b ) ;
     }
 
@@ -1373,7 +1373,7 @@ namespace RINGMesh {
      */
     void GeoModelGfx::set_cell_region_color_type( index_t m )
     {
-        ringmesh_debug_assert( m < regions_.size() ) ;
+        ringmesh_assert( m < regions_.size() ) ;
         regions_[m]->set_cells_colors_by_type() ;
     }
 
@@ -1395,7 +1395,7 @@ namespace RINGMesh {
      */
     void GeoModelGfx::set_cell_mesh_region_visibility( index_t m, bool b )
     {
-        ringmesh_debug_assert( m < regions_.size() ) ;
+        ringmesh_assert( m < regions_.size() ) ;
         regions_[m]->set_show_mesh( b ) ;
     }
 
@@ -1417,7 +1417,7 @@ namespace RINGMesh {
      */
     void GeoModelGfx::set_cell_mesh_region_size( index_t m, index_t s )
     {
-        ringmesh_debug_assert( m < regions_.size() ) ;
+        ringmesh_assert( m < regions_.size() ) ;
         regions_[m]->set_mesh_width( s ) ;
     }
 
@@ -1443,7 +1443,7 @@ namespace RINGMesh {
      */
     void GeoModelGfx::set_cell_region_color( index_t m, float r, float g, float b )
     {
-        ringmesh_debug_assert( m < regions_.size() ) ;
+        ringmesh_assert( m < regions_.size() ) ;
         regions_[m]->set_cells_color( r, g, b ) ;
     }
 
@@ -1465,7 +1465,7 @@ namespace RINGMesh {
      */
     void GeoModelGfx::set_cell_region_visibility( index_t m, bool b )
     {
-        ringmesh_debug_assert( m < regions_.size() ) ;
+        ringmesh_assert( m < regions_.size() ) ;
         regions_[m]->set_region_visible( b ) ;
     }
     void GeoModelGfx::set_cell_regions_type_visibility( GEO::MeshCellType t, bool b )
@@ -1479,7 +1479,7 @@ namespace RINGMesh {
         GEO::MeshCellType t,
         bool b )
     {
-        ringmesh_debug_assert( m < regions_.size() ) ;
+        ringmesh_assert( m < regions_.size() ) ;
         regions_[m]->set_draw_cells( t, b ) ;
     }
 
@@ -1501,7 +1501,7 @@ namespace RINGMesh {
      */
     void GeoModelGfx::set_cell_region_shrink( index_t m, double s )
     {
-        ringmesh_debug_assert( m < regions_.size() ) ;
+        ringmesh_assert( m < regions_.size() ) ;
         regions_[m]->set_shrink( s ) ;
     }
 
