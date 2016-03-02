@@ -37,12 +37,16 @@
 #define __RINGMESH_MESH__
 
 #include <ringmesh/common.h>
+#include <geogram/mesh/mesh.h>
+#include <geogram/mesh/mesh_io.h>
 
-namespace GEO {
-    class Mesh ;
-}
+
 
 namespace RINGMesh {
+
+
+
+
     /* 
      * @brief class to encapsulate mesh structure in order to provide an API on which we base the RINGMesh algorithm 
      * @note For now, we encapsulate the GEO::Mesh class. We can develop the concept using a factory to build several encapsulating classes. 
@@ -51,8 +55,29 @@ namespace RINGMesh {
     ringmesh_disable_copy( Mesh ) ;
 
     public:
-        Mesh() ;
+
+        /*
+         * @brief Mesh constructor.
+         * @param[in] dimension dimension of the vertices.
+         * @parm[in] single_precision if true, vertices are stored in single precision (float), else they are stored as double precision (double)..
+         */
+        Mesh( index_t dimension, bool single_precision ) ;
         ~Mesh() ;
+
+        /*
+         * @brief Copy a mesh into this one.
+         * @param[in] rhs a const reference to the mesh to be copied.
+         * @parm[in] copy_attributes if true, all attributes are copied.
+         * @param[in] what a combination of MESH_VERTICES, MESH_EDGES, MESH_FACETS, MESH_CELLS flags. Set to MESH_ALL_ELEMENTS to copy everything (default). If MESH_VERTICES is not set, then the mesh is cleared.
+         * @return a modifiable reference to the point that corresponds to the vertex.
+         */
+        void copy( const Mesh& rhs //,
+            //bool copy_attributes,
+            //MeshElementsFlags what
+            )
+        {
+            mesh_->copy( *rhs.mesh_ ) ;
+        }
 
         /*
          * @brief Gets a point.
@@ -159,7 +184,9 @@ namespace RINGMesh {
         GEO::Mesh* mesh_ ;
 
     } ;
-
+    void mesh_save( const Mesh& mesh, const std::string filename ){
+        GEO::mesh_save(mesh.mesh_, filename);
+    }
 }
 
 #endif
