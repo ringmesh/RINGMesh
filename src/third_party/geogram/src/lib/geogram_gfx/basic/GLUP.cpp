@@ -53,6 +53,18 @@
 namespace GLUP {
     using namespace GEO;
     static Context* current_context_ = nil;
+    static std::set<Context*> all_contexts_;
+    static bool initialized_ = false;
+    void cleanup() {
+        for(
+            std::set<Context*>::iterator it=all_contexts_.begin();
+            it != all_contexts_.end(); ++it
+        ) {
+            delete *it;
+        }
+        all_contexts_.clear();
+    }
+    
 }
 
 /*****************************************************************************/
@@ -68,6 +80,11 @@ void GLUP_API glupBindUniformState(GLUPuint program) {
 
 GLUPcontext glupCreateContext() {
 
+    if(!GLUP::initialized_) {
+        GLUP::initialized_ = true;
+        atexit(GLUP::cleanup);
+    }
+    
     std::string GLUP_profile = GEO::CmdLine::get_arg("gfx:GLUP_profile");
     GLUP::Context* result = nil;
 
@@ -124,6 +141,8 @@ GLUPcontext glupCreateContext() {
         result = new GLUP::Context_VanillaGL;
         result->setup();
     }
+
+    GLUP::all_contexts_.insert(result);
     
     return result;
 }
@@ -131,6 +150,11 @@ GLUPcontext glupCreateContext() {
 void glupDeleteContext(GLUPcontext context_in) {
     GLUP::Context* context =
         reinterpret_cast<GLUP::Context*>(context_in);
+
+    std::set<GLUP::Context*>::iterator it = GLUP::all_contexts_.find(context);
+    geo_assert(it != GLUP::all_contexts_.end());
+    GLUP::all_contexts_.erase(it);
+    
     if(GLUP::current_context_ == context) {
         GLUP::current_context_ = nil;
     }
@@ -372,13 +396,16 @@ void glupClipPlane(const GLUPdouble* eqn_in) {
                              << std::endl;
         GLUP::show_matrix(modelview);
     }
+    GLfloat* state_world_clip_plane =
+        GLUP::current_context_->uniform_state().world_clip_plane.get_pointer();
     GLfloat* state_clip_plane =
         GLUP::current_context_->uniform_state().clip_plane.get_pointer();
-    GLfloat eqn[4];
     for(GEO::index_t i=0; i<4; ++i) {
-        eqn[i] = float(eqn_in[i]);
+        state_world_clip_plane[i] = float(eqn_in[i]);
     }
-    GLUP::mult_matrix_vector(state_clip_plane,modelview_invert, eqn);
+    GLUP::mult_matrix_vector(
+        state_clip_plane,modelview_invert,state_world_clip_plane
+    );
 }
 
 void glupGetClipPlane(GLUPdouble* eqn) {
