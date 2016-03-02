@@ -178,6 +178,7 @@ namespace RINGMesh {
      * \li "fault"
      * \li "top"
      * \li "none"
+     * \li "topographic"
      * \li "unconformity"
      * \li "boundary"
      * Other strings will end up in \p NO_GEOL
@@ -198,6 +199,8 @@ namespace RINGMesh {
         } else if( in == "none" ) {
             // This might seem strange - but it seems that what's
             // Gocad is doing
+            return STRATI ;
+        } else if( in == "topographic" ) {
             return STRATI ;
         } else if( in == "unconformity" ) {
             return UNCONFORMITY ;
