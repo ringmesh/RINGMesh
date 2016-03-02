@@ -37,13 +37,17 @@
 #define __RINGMESH_IO__
 
 #include <ringmesh/common.h>
+#include <ringmesh/geo_model_element.h>
+
+#include <geogram/basic/string.h>
+
+
 #include <third_party/zlib/unzip.h>
 #include <third_party/zlib/zip.h>
 
 #include <geogram/basic/factory.h>
 #define MAX_FILENAME 512
 #define READ_SIZE 8192
-
 
 /*!
  * @file Global input - ouput functions of RINGMesh
@@ -64,21 +68,34 @@ namespace RINGMesh {
     bool RINGMESH_API compare_files( const std::string& f1, const std::string& f2 ) ;
 
     ///TODO 4 nest function are gonna disappear...
-    void RINGMESH_API geomodel_surface_load( const std::string& filename, GeoModel& model ) ;
+    void RINGMESH_API geomodel_surface_load(
+        const std::string& filename,
+        GeoModel& model ) ;
 
-    void RINGMESH_API geomodel_surface_save( const GeoModel& model, const std::string& filename ) ;
+    void RINGMESH_API geomodel_surface_save(
+        const GeoModel& model,
+        const std::string& filename ) ;
 
-    void RINGMESH_API geomodel_volume_load( const std::string& filename, GeoModel& model ) ;
+    void RINGMESH_API geomodel_volume_load(
+        const std::string& filename,
+        GeoModel& model ) ;
 
-    void RINGMESH_API geomodel_volume_save( const GeoModel& model, const std::string& filename ) ;
-
+    void RINGMESH_API geomodel_volume_save(
+        const GeoModel& model,
+        const std::string& filename ) ;
 
     //TOFO we will keep only these both
-    void RINGMESH_API geomodel_load(const GeoModel& model, const std::string& filename) ;
+    void RINGMESH_API geomodel_load(
+        const GeoModel& model,
+        const std::string& filename ) ;
 
-    void RINGMESH_API geomodel_save(const GeoModel& model, const std::string& filename) ;
+    void RINGMESH_API geomodel_save(
+        const GeoModel& model,
+        const std::string& filename ) ;
 
     void RINGMESH_API well_load( const std::string& filename, WellGroup& wells ) ;
+
+
 
     class RINGMESH_API GeoModelIOHandler: public GEO::Counted {
     public:
@@ -92,7 +109,7 @@ namespace RINGMesh {
 
         virtual void load( const std::string& filename, GeoModel& model ) = 0 ;
 
-        virtual void save( const GeoModel& model, const std::string& filename) = 0 ;
+        virtual void save( const GeoModel& model, const std::string& filename ) = 0 ;
 
     protected:
         GeoModelIOHandler()
@@ -110,9 +127,7 @@ namespace RINGMesh {
 #define ringmesh_register_IOHandler_creator( type, name ) \
     geo_register_creator( IOHandlerFactory, type, name )
 
-
     /***************************************************************************/
-
     class RINGMESH_API WellGroupIOHandler: public GEO::Counted {
     public:
         static void initialize() ;
@@ -134,7 +149,6 @@ namespace RINGMesh {
         {
         }
     } ;
-
     typedef GEO::SmartPointer< WellGroupIOHandler > WellGroupIOHandler_var ;
     typedef GEO::Factory0< WellGroupIOHandler > WellGroupIOHandlerFactory ;
 
@@ -146,7 +160,6 @@ namespace RINGMesh {
     void RINGMESH_API mesh_initialize() ;
 
     void zip_file( zipFile zf, const std::string& name ) ;
-
 
     void unzip_file( unzFile uz, char filename[MAX_FILENAME] ) ;
 

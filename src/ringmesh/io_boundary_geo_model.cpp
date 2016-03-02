@@ -495,6 +495,19 @@ namespace {
             out << std::endl ;
         }
 
+        // Universe
+        out << "UNIVERSE " << std::endl ;
+        for( index_t j = 0; j < M.universe().nb_boundaries(); ++j ) {
+            if( M.universe().side( j ) ) {
+                out << "+" ;
+            } else {
+                out << "-" ;
+            }
+            out << M.universe().boundary_gme( j ).index << " " ;
+        }
+        out << std::endl ;
+
+
     }
 
     /*!
@@ -508,18 +521,6 @@ namespace {
         std::ofstream out( file_name.c_str(), std::ios::out | std::ios::app ) ;
 
         out.precision( 16 ) ;
-
-        // Universe
-        out << "UNIVERSE " << std::endl ;
-        for( index_t j = 0; j < M.universe().nb_boundaries(); ++j ) {
-            if( M.universe().side( j ) ) {
-                out << "+" ;
-            } else {
-                out << "-" ;
-            }
-            out << M.universe().boundary_gme( j ).index << " " ;
-        }
-        out << std::endl ;
 
         /// @todo Review: delete commented code [AB]
         //        // Vertices and attributes on vertices

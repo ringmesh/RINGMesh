@@ -42,15 +42,15 @@
 #include <set>
 #include <stack>
 
-#include <third_party/zlib/unzip.h>
-
 #include <geogram/basic/line_stream.h>
 #include <geogram/basic/logger.h>
 
 #include <geogram/mesh/mesh_repair.h>
 
 #include <geogram/points/colocate.h>
+#include <geogram/mesh/mesh_io.h>
 
+#include <ringmesh/io.h>
 #include <ringmesh/algorithm.h>
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_api.h>
@@ -2574,6 +2574,33 @@ namespace RINGMesh {
 
     }
 
+    GME::TYPE GeoModelBuilderFile::match_nb_elements( const char* s )
+    {
+        // Check that the first 3 characters are NB_
+        if( strncmp( s, "NB_", 3 ) != 0 ) {
+            return GME::NO_TYPE ;
+        } else {
+            for( index_t i = GME::CORNER; i < GME::NO_TYPE; i++ ) {
+                GME::TYPE type = (GME::TYPE) i ;
+                if( strstr( s, GME::type_name( type ).data() ) != NULL ) {
+                    return type ;
+                }
+            }
+            return GME::NO_TYPE ;
+        }
+    }
+
+    GME::TYPE GeoModelBuilderFile::match_type( const char* s )
+    {
+        for( index_t i = GME::CORNER; i < GME::NO_TYPE; i++ ) {
+            GME::TYPE type = (GME::TYPE) i ;
+            if( strcmp( s, GME::type_name( type ).data() ) == 0 ) {
+                return type ;
+            }
+        }
+        return GME::NO_TYPE ;
+    }
+
     /*************************************************************************/
 
     /*!
@@ -3148,7 +3175,7 @@ namespace RINGMesh {
             return -1 ;
         } else {
             ringmesh_assert_not_reached;
-            return 0;
+            return 0 ;
         }
     }
 
@@ -3166,7 +3193,8 @@ namespace RINGMesh {
                     }
                 }
                 // Number of elements of a given type
-                else if( match_nb_elements( file_line_.field( 0 ) ) != GME::NO_TYPE ) {
+                else if( match_nb_elements( file_line_.field( 0 ) )
+                    != GME::NO_TYPE ) {
                     // Allocate the space
                     if( file_line_.nb_fields() > 1 ) {
                         resize_elements( match_nb_elements( file_line_.field( 0 ) ),
@@ -3283,7 +3311,8 @@ namespace RINGMesh {
                     }
                     index_t id = file_line_.field_as_uint( 1 ) ;
                     vec3 point( file_line_.field_as_double( 2 ),
-                        file_line_.field_as_double( 3 ), file_line_.field_as_double( 4 ) ) ;
+                        file_line_.field_as_double( 3 ),
+                        file_line_.field_as_double( 4 ) ) ;
                     set_corner( id, point ) ;
                 }
 
@@ -3361,7 +3390,8 @@ namespace RINGMesh {
                     // Finally we have the in_boundary information
                     file_line_.get_line() ;
                     file_line_.get_fields() ;
-                    ringmesh_debug_assert( file_line_.field_matches( 0, "IN_BOUNDARY" ) ) ;
+                    ringmesh_debug_assert(
+                        file_line_.field_matches( 0, "IN_BOUNDARY" ) ) ;
                     for( index_t b = 1; b < file_line_.nb_fields(); b++ ) {
                         add_element_in_boundary( cur_element,
                             gme_t( GME::SURFACE, file_line_.field_as_uint( b ) ) ) ;
@@ -3462,44 +3492,176 @@ namespace RINGMesh {
         }
     }
 
-    GME::TYPE GeoModelBuilderBM::match_nb_elements( const char* s )
-    {
-        // Check that the first 3 characters are NB_
-        if( strncmp( s, "NB_", 3 ) != 0 ) {
-            return GME::NO_TYPE ;
-        } else {
-            for( index_t i = GME::CORNER; i < GME::NO_TYPE; i++ ) {
-                GME::TYPE type = (GME::TYPE) i ;
-                if( strstr( s, GME::type_name( type ).data() ) != NULL ) {
-                    return type ;
-                }
-            }
-            return GME::NO_TYPE ;
-        }
-    }
-
-    GME::TYPE GeoModelBuilderBM::match_type( const char* s )
-    {
-        for( index_t i = GME::CORNER; i < GME::NO_TYPE; i++ ) {
-            GME::TYPE type = (GME::TYPE) i ;
-            if( strcmp( s, GME::type_name( type ).data() ) == 0 ) {
-                return type ;
-            }
-        }
-        return GME::NO_TYPE ;
-    }
-
     /*************************************************************************/
 
+    void GeoModelBuilderGM::load_topology( GEO::LineInput& file_line )
+    {
+        while( !file_line.eof() && file_line.get_line() ) {
+
+            file_line.get_fields() ;
+            if( file_line.nb_fields() > 0 ) {
+                // Name of the model
+                if( file_line.field_matches( 0, "NAME" ) ) {
+                    if( file_line.nb_fields() > 1 ) {
+                        set_model_name( file_line.field( 1 ) ) ;
+                    }
+                }
+                // Number of elements of a given type
+                else if( match_nb_elements( file_line.field( 0 ) )
+                    != GME::NO_TYPE ) {
+                    // Allocate the space
+                    if( file_line.nb_fields() > 1 ) {
+                        resize_elements( match_nb_elements( file_line.field( 0 ) ),
+                            file_line.field_as_uint( 1 ) ) ;
+                    }
+                }
+
+                // High-level elements
+                else if( match_high_level_type( file_line.field( 0 ) ) ) {
+                    // Read this element
+                    // First line : type - id - name - geol_feature
+                    if( file_line.nb_fields() < 4 ) {
+                        throw RINGMeshException( "I/O",
+                            "Invalid line: "
+                                + GEO::String::to_string( file_line.line_number() )
+                                + ", 4 fields are expected, the type, id, name, and geological feature" ) ;
+                    }
+                    GME::TYPE t = match_type( file_line.field( 0 ) ) ;
+                    index_t id = file_line.field_as_uint( 1 ) ;
+                    gme_t element( t, id ) ;
+                    set_element_name( element, file_line.field( 2 ) ) ;
+                    set_element_geol_feature( element,
+                        GME::determine_geological_type( file_line.field( 3 ) ) ) ;
+                    // Second line : indices of its children
+                    file_line.get_line() ;
+                    file_line.get_fields() ;
+                    for( index_t c = 0; c < file_line.nb_fields(); c++ ) {
+                        add_element_child( element,
+                            gme_t( GME::child_type( t ),
+                                file_line.field_as_uint( c ) ) ) ;
+                    }
+                }
+                // Regions
+                else if( match_type( file_line.field( 0 ) ) == GME::REGION ) {
+                    // First line : type - id - name
+                    if( file_line.nb_fields() < 3 ) {
+                        throw RINGMeshException( "I/O",
+                            "Invalid line: "
+                                + GEO::String::to_string( file_line.line_number() )
+                                + ", 3 fields are expected to describe a region: REGION, id, and name" ) ;
+                    }
+                    index_t id = file_line.field_as_uint( 1 ) ;
+                    gme_t element( GME::REGION, id ) ;
+                    set_element_name( element, file_line.field( 2 ) ) ;
+                    // Second line : signed indices of boundaries
+                    file_line.get_line() ;
+                    file_line.get_fields() ;
+                    for( index_t c = 0; c < file_line.nb_fields(); c++ ) {
+                        bool side = false ;
+                        if( strncmp( file_line.field( c ), "+", 1 ) == 0 ) {
+                            side = true ;
+                        }
+                        index_t s ;
+                        GEO::String::from_string( &file_line.field( c )[1], s ) ;
+
+                        add_element_boundary( element, gme_t( GME::SURFACE, s ),
+                            side ) ;
+                    }
+                }
+
+                // Universe
+                else if( file_line.field_matches( 0, "UNIVERSE" ) ) {
+                    // Second line: signed indices of boundaries
+                    file_line.get_line() ;
+                    file_line.get_fields() ;
+                    for( index_t c = 0; c < file_line.nb_fields(); c++ ) {
+                        bool side = false ;
+                        if( strncmp( file_line.field( c ), "+", 1 ) == 0 ) {
+                            side = true ;
+                        }
+                        index_t s ;
+                        GEO::String::from_string( &file_line.field( c )[1], s ) ;
+
+                        add_element_boundary( gme_t( GME::REGION, NO_ID ),
+                            gme_t( GME::SURFACE, s ), side ) ;
+                    }
+                }
+
+            }
+        }
+    }
     void GeoModelBuilderGM::load_file()
     {
         unzFile uz = unzOpen( filename_.c_str() ) ;
         unz_global_info global_info ;
         if( unzGetGlobalInfo( uz, &global_info ) != UNZ_OK ) {
             unzClose( uz ) ;
-            throw RINGMeshException( "ZLIB",
-                "Could not read file global info" ) ;
+            throw RINGMeshException( "ZLIB", "Could not read file global info" ) ;
         }
+
+        std::string topology = "topology.txt" ;
+        unzip_one_file( uz, topology.c_str() ) ;
+
+        GEO::LineInput line_topo( topology ) ;
+
+        load_topology( line_topo ) ;
+
+    }
+
+    void GeoModelBuilderGM::load_elements( GME::TYPE gme_t, unzFile uz )
+    {
+        for( index_t el = 0; el < model_.nb_elements( gme_t ); el++ ) {
+            std::string file_to_extract_and_load ;
+            build_string_for_geo_model_element_export( gme_t, el,
+                file_to_extract_and_load ) ;
+            unzip_one_file( uz, file_to_extract_and_load.c_str() ) ;
+            GEO::Mesh& cur_mesh = model_.mesh_element( gme_t, el ).mesh() ;
+            GEO::MeshIOFlags flags ;
+            flags.set_element( GEO::MESH_FACETS ) ;
+            flags.set_element( GEO::MESH_CELLS ) ;
+            flags.set_element( GEO::MESH_EDGES ) ;
+            flags.set_attribute( GEO::MESH_FACET_REGION ) ;
+            GEO::Logger::instance()->set_minimal( true ) ;
+            GEO::mesh_load( file_to_extract_and_load, cur_mesh, flags ) ;
+            GEO::Logger::instance()->set_minimal( false ) ;
+            GEO::FileSystem::delete_file( file_to_extract_and_load ) ;
+        }
+
+    }
+
+    void GeoModelBuilderGM::unzip_one_file(
+        unzFile uz,
+        const char filename[MAX_FILENAME] )
+    {
+        unzLocateFile( uz, filename, 0 ) ;
+        char read_buffer[ READ_SIZE] ;
+
+        if( unzOpenCurrentFile( uz ) != UNZ_OK ) {
+            unzClose( uz ) ;
+            throw RINGMeshException( "ZLIB", "Could not open file" ) ;
+        }
+        FILE *out = fopen( filename, "wb" ) ;
+        if( out == NULL ) {
+            unzCloseCurrentFile( uz ) ;
+            unzClose( uz ) ;
+            throw RINGMeshException( "ZLIB", "Could not open destination file" ) ;
+        }
+        int error = UNZ_OK ;
+        do {
+            error = unzReadCurrentFile( uz, read_buffer, READ_SIZE ) ;
+            if( error < 0 ) {
+                unzCloseCurrentFile( uz ) ;
+                unzClose( uz ) ;
+                fclose( out ) ;
+                throw RINGMeshException( "ZLIB",
+                    "Invalid error: " + GEO::String::to_string( error ) ) ;
+            }
+            if( error > 0 ) {
+                fwrite( read_buffer, error, 1, out ) ;
+            }
+        } while( error > 0 ) ;
+        fclose( out ) ;
+        unzCloseCurrentFile( uz ) ;
 
     }
 

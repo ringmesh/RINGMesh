@@ -37,6 +37,7 @@
 #define __RINGMESH_GEO_MODEL_BUILDER__
 
 #include <ringmesh/common.h>
+#include <third_party/zlib/unzip.h>
 
 #include <vector>
 #include <string>
@@ -45,7 +46,8 @@
 #include <geogram/basic/line_stream.h>
 
 #include <ringmesh/geo_model_editor.h>
-
+#define MAX_FILENAME 512
+#define READ_SIZE 8192
 /*!
  * @file ringmesh/geo_model_builder.h
  * @brief Classes to build GeoModel from various inputs
@@ -372,6 +374,16 @@ namespace RINGMesh {
             load_file() ;
             end_model() ;
         }
+
+        ///TODO these are temporary protected here. after they will be only in GeoModelBuilderGM
+    protected:
+        static GME::TYPE match_nb_elements( const char* s ) ;
+        static GME::TYPE match_type( const char* s ) ;
+        static bool match_high_level_type( const char* s )
+        {
+            return GME::child_allowed( match_type( s ) ) ;
+        }
+
     private:
         virtual void load_file() = 0 ;
         /*! @todo Implement function to read the lines of the 
@@ -472,13 +484,6 @@ protected:
     private:
         void load_file() ;
 
-        static GME::TYPE match_nb_elements( const char* s ) ;
-        static GME::TYPE match_type( const char* s ) ;
-        static bool match_high_level_type( const char* s )
-        {
-            return GME::child_allowed( match_type( s ) ) ;
-        }
-
     private:
         GEO::LineInput file_line_ ;
 
@@ -495,7 +500,10 @@ protected:
         }
 
     private:
+        void load_elements(GME::TYPE gme_t, unzFile uz) ;
         void load_file() ;
+        void unzip_one_file( unzFile uz,const char filename[MAX_FILENAME] );
+        void load_topology( GEO::LineInput& file_line ) ;
     } ;
 }
 

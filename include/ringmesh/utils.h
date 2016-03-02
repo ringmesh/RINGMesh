@@ -37,6 +37,7 @@
 #define __RINGMESH_UTILS__
 
 #include <ringmesh/common.h>
+#include <ringmesh/geo_model_element.h>
 
 #include <geogram/basic/geometry.h>
 #include <geogram/basic/attributes.h>
@@ -45,6 +46,7 @@
  * @file Box3D class declaration
  * @author Arnaud Botella
  */
+
 
 namespace RINGMesh {
 
@@ -182,6 +184,12 @@ namespace RINGMesh {
     bool is_attribute_a_double(
         GEO::AttributesManager& att_manager,
         const std::string& att_name ) ;
+
+    //TODO i dont know where to put it :(
+    void build_string_for_geo_model_element_export(
+        GME::TYPE gme_t,
+        index_t gme_id,
+        std::string& name ) ;
 }
 
 #endif
