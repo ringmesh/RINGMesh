@@ -739,7 +739,7 @@ namespace RINGMesh {
             double new_p[4] = { 0, 0, 0, 1. } ;
             GEO::mult( rot_mat, old, new_p ) ;
             /*! @todo You need an epsilon tolerance here [JP] */
-            ringmesh_debug_assert( new_p[3] == 1. ) ;
+            ringmesh_assert( new_p[3] == 1. ) ;
 
             M.mesh.vertices.update_point( v, vec3( new_p[0], new_p[1], new_p[2] ) ) ;
         }
