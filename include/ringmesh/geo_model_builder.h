@@ -150,7 +150,6 @@ namespace RINGMesh {
             const std::vector< vec3 >& points,
             const std::vector< index_t >& tetras ) ;
 
-
         /*! @}
          * \name Set element geometry using global GeoModel vertices
          * @{
@@ -378,8 +377,8 @@ namespace RINGMesh {
         /*! @todo Implement function to read the lines of the 
          *        file and wrap the GEO::LineInput which is not that easy to use 
          */
-    protected:
-        GEO::LineInput file_ ;
+protected:
+        std::string filename_;
     } ;
 
     /*!
@@ -388,8 +387,11 @@ namespace RINGMesh {
     class RINGMESH_API GeoModelBuilderGocad: public GeoModelBuilderFile {
     public:
         GeoModelBuilderGocad( GeoModel& model, const std::string& filename )
-            : GeoModelBuilderFile( model, filename )
+            : GeoModelBuilderFile( model, filename ), file_line_(filename)
         {
+            if( !file_line_.OK() ) {
+                throw RINGMeshException( "I/O", "Failed to open file " + filename ) ;
+            }
         }
         virtual ~GeoModelBuilderGocad()
         {
@@ -424,14 +426,16 @@ namespace RINGMesh {
             bool& same_orientation ) const ;
 
         /*!
-        * Read the coordinates system information of files exported from Gocad.
-        * @param[in] in The orientation of z-axis in Gocad. "Elevation" for
-        * increasing z toward top and "Depth" for increasing z toward bottom.
-        * @return Return 1 if Elevation direction, -1 if Depth direction.
-        */
+         * Read the coordinates system information of files exported from Gocad.
+         * @param[in] in The orientation of z-axis in Gocad. "Elevation" for
+         * increasing z toward top and "Depth" for increasing z toward bottom.
+         * @return Return 1 if Elevation direction, -1 if Depth direction.
+         */
         int read_gocad_coordinates_system( const std::string& in ) ;
 
     private:
+        GEO::LineInput file_line_ ;
+
         /*!
          * @brief Triangle that set the orientation of a TFACE
          *        in a .ml file
@@ -450,12 +454,16 @@ namespace RINGMesh {
 
     /*!
      * @brief Build a GeoModel from a file_model.bm
+     * TODO this class gonna disapear soon
      */
     class RINGMESH_API GeoModelBuilderBM: public GeoModelBuilderFile {
     public:
         GeoModelBuilderBM( GeoModel& model, const std::string& filename )
-            : GeoModelBuilderFile( model, filename )
-        {
+            : GeoModelBuilderFile( model, filename ), file_line_(filename)
+    {
+        if( !file_line_.OK() ) {
+            throw RINGMeshException( "I/O", "Failed to open file " + filename ) ;
+        }
         }
         virtual ~GeoModelBuilderBM()
         {
@@ -470,6 +478,24 @@ namespace RINGMesh {
         {
             return GME::child_allowed( match_type( s ) ) ;
         }
+
+    private:
+        GEO::LineInput file_line_ ;
+
+    } ;
+
+    class RINGMESH_API GeoModelBuilderGM: public GeoModelBuilderFile {
+    public:
+        GeoModelBuilderGM( GeoModel& model, const std::string& filename )
+            : GeoModelBuilderFile( model, filename )
+        {
+        }
+        virtual ~GeoModelBuilderGM()
+        {
+        }
+
+    private:
+        void load_file() ;
     } ;
 }
 
