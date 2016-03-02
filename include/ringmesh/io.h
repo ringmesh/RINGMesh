@@ -63,6 +63,7 @@ namespace RINGMesh {
 
     bool RINGMESH_API compare_files( const std::string& f1, const std::string& f2 ) ;
 
+    ///TODO 4 nest function are gonna disappear...
     void RINGMESH_API geomodel_surface_load( const std::string& filename, GeoModel& model ) ;
 
     void RINGMESH_API geomodel_surface_save( const GeoModel& model, const std::string& filename ) ;
@@ -71,40 +72,40 @@ namespace RINGMesh {
 
     void RINGMESH_API geomodel_volume_save( const GeoModel& model, const std::string& filename ) ;
 
+
+    //TOFO we will keep only these both
     void RINGMESH_API geomodel_load(const GeoModel& model, const std::string& filename) ;
 
     void RINGMESH_API geomodel_save(const GeoModel& model, const std::string& filename) ;
 
     void RINGMESH_API well_load( const std::string& filename, WellGroup& wells ) ;
 
-
-
-    class RINGMESH_API IOHandler: public GEO::Counted {
+    class RINGMESH_API GeoModelIOHandler: public GEO::Counted {
     public:
         static void initialize_full_geomodel_output() ;
 
         static void initialize_boundary_geomodel_output() ;
 
-        static IOHandler* create( const std::string& format ) ;
+        static GeoModelIOHandler* create( const std::string& format ) ;
 
-        static IOHandler* get_handler( const std::string& filename ) ;
+        static GeoModelIOHandler* get_handler( const std::string& filename ) ;
 
         virtual void load( const std::string& filename, GeoModel& model ) = 0 ;
 
         virtual void save( const GeoModel& model, const std::string& filename) = 0 ;
 
     protected:
-        IOHandler()
+        GeoModelIOHandler()
         {
         }
 
-        virtual ~IOHandler()
+        virtual ~GeoModelIOHandler()
         {
         }
     } ;
 
-    typedef GEO::SmartPointer< IOHandler > IOHandler_var ;
-    typedef GEO::Factory0< IOHandler > IOHandlerFactory ;
+    typedef GEO::SmartPointer< GeoModelIOHandler > IOHandler_var ;
+    typedef GEO::Factory0< GeoModelIOHandler > IOHandlerFactory ;
 
 #define ringmesh_register_IOHandler_creator( type, name ) \
     geo_register_creator( IOHandlerFactory, type, name )

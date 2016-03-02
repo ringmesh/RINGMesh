@@ -656,7 +656,7 @@ namespace {
 
     /************************************************************************/
 
-    class MLIOHandler: public IOHandler {
+    class MLIOHandler: public GeoModelIOHandler {
     public:
         /*! Load a .ml (Gocad file)
          * @pre Filename is valid
@@ -691,7 +691,7 @@ namespace {
         }
     } ;
 
-    class BMIOHandler: public IOHandler {
+    class BMIOHandler: public GeoModelIOHandler {
     public:
         virtual void load( const std::string& filename, GeoModel& model )
         {
@@ -713,7 +713,7 @@ namespace {
         }
     } ;
 
-    class UCDIOHandler: public IOHandler {
+    class UCDIOHandler: public GeoModelIOHandler {
     public:
         virtual void load( const std::string& filename, GeoModel& model )
         {
@@ -806,7 +806,7 @@ namespace RINGMesh {
 
         GEO::Logger::out( "I/O" ) << "Loading file: " << filename << std::endl ;
 
-        IOHandler_var handler = IOHandler::get_handler( filename ) ;
+        IOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
         handler->load( filename, model ) ;
     }
 
@@ -819,7 +819,7 @@ namespace RINGMesh {
     {
         GEO::Logger::out( "I/O" ) << "Saving file " << filename << std::endl ;
 
-        IOHandler_var handler = IOHandler::get_handler( filename ) ;
+        IOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
         handler->save( model, filename ) ;
     }
 
@@ -828,7 +828,7 @@ namespace RINGMesh {
     /*
      * Initializes the possible handlers for IO GeoModel files
      */
-    void IOHandler::initialize_boundary_geomodel_output()
+    void GeoModelIOHandler::initialize_boundary_geomodel_output()
     {
         ringmesh_register_IOHandler_creator( MLIOHandler, "ml" ) ;
         ringmesh_register_IOHandler_creator( BMIOHandler, "bm" ) ;

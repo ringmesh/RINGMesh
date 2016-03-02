@@ -138,7 +138,7 @@ namespace {
     }
 
     /************************************************************************/
-    class AsterIOHandler: public IOHandler {
+    class AsterIOHandler: public GeoModelIOHandler {
     public:
         virtual void load( const std::string& filename, GeoModel& mesh )
         {
@@ -355,7 +355,7 @@ namespace {
         save_geo_mesh_attributes( root_name, geo_model_element_mesh.mesh(), zf ) ;
     }
 
-    class GeoModelHandler: public IOHandler {
+    class GeoModelHandler: public GeoModelIOHandler {
         virtual void load( const std::string& filename, GeoModel& model )
         {
 
@@ -388,7 +388,7 @@ namespace {
 
     /************************************************************************/
 
-    class MMIOHandler: public IOHandler {
+    class MMIOHandler: public GeoModelIOHandler {
     public:
         virtual void load( const std::string& filename, GeoModel& gm )
         {
@@ -464,7 +464,7 @@ namespace {
 
     /************************************************************************/
 
-    class LMIOHandler: public IOHandler {
+    class LMIOHandler: public GeoModelIOHandler {
     public:
         virtual void load( const std::string& filename, GeoModel& mesh )
         {
@@ -487,7 +487,7 @@ namespace {
     } ;
 
     /************************************************************************/
-    class TetGenIOHandler: public IOHandler {
+    class TetGenIOHandler: public GeoModelIOHandler {
     public:
         virtual void load( const std::string& filename, GeoModel& mesh )
         {
@@ -547,7 +547,7 @@ namespace {
 
     /************************************************************************/
 
-    class VTKIOHandler: public IOHandler {
+    class VTKIOHandler: public GeoModelIOHandler {
     public:
         virtual void load( const std::string& filename, GeoModel& mesh )
         {
@@ -631,7 +631,7 @@ namespace {
 
         /************************************************************************/
 
-    class TSolidIOHandler: public IOHandler {
+    class TSolidIOHandler: public GeoModelIOHandler {
     public:
         virtual void load( const std::string& filename, GeoModel& model )
         {
@@ -845,7 +845,7 @@ namespace {
     static RINGMesh2CSMP* cell_type_to_cell_descriptor[4] = {
         &tet_descriptor, &hex_descriptor, &prism_descriptor, &pyramid_descriptor } ;
 
-    class CSMPIOHandler: public IOHandler {
+    class CSMPIOHandler: public GeoModelIOHandler {
     public:
         CSMPIOHandler()
         {
@@ -1482,7 +1482,7 @@ namespace {
 
     /************************************************************************/
 
-    class GPRSIOHandler: public IOHandler {
+    class GPRSIOHandler: public GeoModelIOHandler {
     public:
         struct Pipe {
             Pipe( index_t v0_in, index_t v1_in )
@@ -1691,7 +1691,7 @@ namespace {
 //                   { 3, 3, 3, 3, 4 },  // nb vertices in facet
 //                   { 1, 3, 4, 2, 0 },  // facets
 //                   { { 0, 1, 2, 3 }, { 0, 4, 1 }, { 0, 3, 4 }, { 2, 4, 3 }, { 2, 1, 4 } } } ;
-    class MSHIOHandler: public IOHandler {
+    class MSHIOHandler: public GeoModelIOHandler {
     public:
         virtual void load( const std::string& filename, GeoModel& mesh )
         {
@@ -1953,7 +1953,7 @@ namespace RINGMesh {
         GEO::Logger::out( "I/O" ) << "Loading file " << filename << "..."
             << std::endl ;
 
-        IOHandler_var handler = IOHandler::get_handler( filename ) ;
+        IOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
         handler->load( filename, model ) ;
     }
 
@@ -1967,7 +1967,7 @@ namespace RINGMesh {
         GEO::Logger::out( "I/O" ) << "Saving file " << filename << "..."
             << std::endl ;
 
-        IOHandler_var handler = IOHandler::get_handler( filename ) ;
+        IOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
         handler->save( model, filename ) ;
     }
     /************************************************************************/
@@ -1975,7 +1975,7 @@ namespace RINGMesh {
     /*
      * Initializes the possible handler for IO files
      */
-    void IOHandler::initialize_full_geomodel_output()
+    void GeoModelIOHandler::initialize_full_geomodel_output()
     {
         ringmesh_register_IOHandler_creator( MMIOHandler, "mm" );
     ringmesh_register_IOHandler_creator( LMIOHandler, "meshb" ) ;

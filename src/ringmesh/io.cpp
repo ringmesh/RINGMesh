@@ -84,8 +84,8 @@ namespace RINGMesh {
 
     void mesh_initialize()
     {
-        IOHandler::initialize_full_geomodel_output() ;
-        IOHandler::initialize_boundary_geomodel_output() ;
+        GeoModelIOHandler::initialize_full_geomodel_output() ;
+        GeoModelIOHandler::initialize_boundary_geomodel_output() ;
         WellGroupIOHandler::initialize() ;
     }
 
@@ -152,9 +152,9 @@ namespace RINGMesh {
 
 
 
-    IOHandler* IOHandler::create( const std::string& format )
+    GeoModelIOHandler* GeoModelIOHandler::create( const std::string& format )
     {
-        IOHandler* handler = IOHandlerFactory::create_object(
+        GeoModelIOHandler* handler = IOHandlerFactory::create_object(
             format ) ;
         if( !handler ) {
             std::vector< std::string > names ;
@@ -170,7 +170,7 @@ namespace RINGMesh {
         return handler ;
     }
 
-    IOHandler* IOHandler::get_handler(
+    GeoModelIOHandler* GeoModelIOHandler::get_handler(
         const std::string& filename )
     {
         std::string ext = GEO::FileSystem::extension( filename ) ;
