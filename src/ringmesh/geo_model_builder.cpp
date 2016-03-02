@@ -42,6 +42,8 @@
 #include <set>
 #include <stack>
 
+#include <third_party/zlib/unzip.h>
+
 #include <geogram/basic/line_stream.h>
 #include <geogram/basic/logger.h>
 
@@ -967,9 +969,7 @@ namespace RINGMesh {
     {
         return mesh.cells.nb() != 0 ;
     }
-}
 
-namespace RINGMesh {
     /*! Delete all GeoModelRegionFromSurfaces owned by the builder
      */
     GeoModelBuilder::~GeoModelBuilder()
@@ -2569,11 +2569,9 @@ namespace RINGMesh {
     GeoModelBuilderFile::GeoModelBuilderFile(
         GeoModel& model,
         const std::string& filename )
-        : GeoModelBuilder( model ), file_( filename )
+        : GeoModelBuilder( model ), filename_( filename )
     {
-        if( !file_.OK() ) {
-            throw RINGMeshException( "I/O", "Failed to open file " + filename ) ;
-        }
+
     }
 
     /*************************************************************************/
@@ -2643,74 +2641,74 @@ namespace RINGMesh {
 
         ///@todo Add assert everywhere when doing substraction operations on unsigned int [JP]
 
-        while( !file_.eof() && file_.get_line() ) {
-            file_.get_fields() ;
-            if( file_.nb_fields() > 0 ) {
+        while( !file_line_.eof() && file_line_.get_line() ) {
+            file_line_.get_fields() ;
+            if( file_line_.nb_fields() > 0 ) {
                 if( read_model ) {
-                    if( strncmp( file_.field( 0 ), "name:", 5 ) == 0 ) {
+                    if( strncmp( file_line_.field( 0 ), "name:", 5 ) == 0 ) {
                         // Sometimes there is a space after name:
                         // Sometimes not
-                        if( file_.nb_fields() > 1 ) {
-                            set_model_name( file_.field( 1 ) ) ;
+                        if( file_line_.nb_fields() > 1 ) {
+                            set_model_name( file_line_.field( 1 ) ) ;
                         } else {
-                            set_model_name( &file_.field( 0 )[5] ) ;
+                            set_model_name( &file_line_.field( 0 )[5] ) ;
                         }
-                    } else if( file_.field_matches( 0, "TSURF" ) ) {
+                    } else if( file_line_.field_matches( 0, "TSURF" ) ) {
                         /// 1.1 Create Interface from its name
                         index_t f = 1 ;
                         std::ostringstream oss ;
                         do {
-                            oss << file_.field( f++ ) ;
-                        } while( f < file_.nb_fields() ) ;
+                            oss << file_line_.field( f++ ) ;
+                        } while( f < file_line_.nb_fields() ) ;
                         // Create an interface and set its name
                         set_element_name( create_element( GME::INTERFACE ),
                             oss.str() ) ;
 
                         nb_tsurf++ ;
-                    } else if( file_.field_matches( 0, "TFACE" ) ) {
+                    } else if( file_line_.field_matches( 0, "TFACE" ) ) {
                         /// 1.2 Create Surface from the name of its parent Interface
                         /// and its geological feature
-                        index_t id = file_.field_as_uint( 1 ) ;
-                        std::string geol = file_.field( 2 ) ;
+                        index_t id = file_line_.field_as_uint( 1 ) ;
+                        std::string geol = file_line_.field( 2 ) ;
                         index_t f = 3 ;
                         std::ostringstream oss ;
                         do {
-                            oss << file_.field( f++ ) ;
-                        } while( f < file_.nb_fields() ) ;
+                            oss << file_line_.field( f++ ) ;
+                        } while( f < file_line_.nb_fields() ) ;
                         std::string interface_name = oss.str() ;
 
                         // And its key facet that give the orientation of the surface part
-                        file_.get_line() ;
-                        file_.get_fields() ;
-                        vec3 p0( file_.field_as_double( 0 ),
-                            file_.field_as_double( 1 ),
-                            file_.field_as_double( 2 ) ) ;
-                        file_.get_line() ;
-                        file_.get_fields() ;
-                        vec3 p1( file_.field_as_double( 0 ),
-                            file_.field_as_double( 1 ),
-                            file_.field_as_double( 2 ) ) ;
-                        file_.get_line() ;
-                        file_.get_fields() ;
-                        vec3 p2( file_.field_as_double( 0 ),
-                            file_.field_as_double( 1 ),
-                            file_.field_as_double( 2 ) ) ;
+                        file_line_.get_line() ;
+                        file_line_.get_fields() ;
+                        vec3 p0( file_line_.field_as_double( 0 ),
+                            file_line_.field_as_double( 1 ),
+                            file_line_.field_as_double( 2 ) ) ;
+                        file_line_.get_line() ;
+                        file_line_.get_fields() ;
+                        vec3 p1( file_line_.field_as_double( 0 ),
+                            file_line_.field_as_double( 1 ),
+                            file_line_.field_as_double( 2 ) ) ;
+                        file_line_.get_line() ;
+                        file_line_.get_fields() ;
+                        vec3 p2( file_line_.field_as_double( 0 ),
+                            file_line_.field_as_double( 1 ),
+                            file_line_.field_as_double( 2 ) ) ;
 
                         create_surface( interface_name, geol, p0, p1, p2 ) ;
                         nb_tface++ ;
-                    } else if( file_.field_matches( 0, "REGION" ) ) {
+                    } else if( file_line_.field_matches( 0, "REGION" ) ) {
                         /// 1.3 Read Region information and create them from their name,
                         /// and the surfaces on their boundary
-                        index_t id = file_.field_as_uint( 1 ) ;
-                        std::string name = file_.field( 2 ) ;
+                        index_t id = file_line_.field_as_uint( 1 ) ;
+                        std::string name = file_line_.field( 2 ) ;
 
                         std::vector< std::pair< index_t, bool > > region_boundaries ;
                         bool end_region = false ;
                         while( !end_region ) {
-                            file_.get_line() ;
-                            file_.get_fields() ;
+                            file_line_.get_line() ;
+                            file_line_.get_fields() ;
                             for( index_t i = 0; i < 5; ++i ) {
-                                int s = file_.field_as_int( i ) ;
+                                int s = file_line_.field_as_int( i ) ;
                                 if( s == 0 ) {
                                     end_region = true ;
                                     break ;
@@ -2739,17 +2737,17 @@ namespace RINGMesh {
                                 gme_t( GME::SURFACE, region_boundaries[i].first ),
                                 region_boundaries[i].second ) ;
                         }
-                    } else if( file_.field_matches( 0, "LAYER" ) ) {
+                    } else if( file_line_.field_matches( 0, "LAYER" ) ) {
                         /// 1.4 Build the volumetric layers from their name and
                         /// the ids of the regions they contain
                         gme_t layer_id = create_element( GME::LAYER ) ;
-                        set_element_name( layer_id, file_.field( 1 ) ) ;
+                        set_element_name( layer_id, file_line_.field( 1 ) ) ;
                         bool end_layer = false ;
                         while( !end_layer ) {
-                            file_.get_line() ;
-                            file_.get_fields() ;
+                            file_line_.get_line() ;
+                            file_line_.get_fields() ;
                             for( index_t i = 0; i < 5; ++i ) {
-                                index_t region_id = file_.field_as_uint( i ) ;
+                                index_t region_id = file_line_.field_as_uint( i ) ;
                                 if( region_id == 0 ) {
                                     end_layer = true ;
                                     break ;
@@ -2761,25 +2759,25 @@ namespace RINGMesh {
                                 }
                             }
                         }
-                    } else if( file_.field_matches( 0, "END" ) ) {
+                    } else if( file_line_.field_matches( 0, "END" ) ) {
                         // End of the high level information on the model
                         // Switch to reading the geometry of the model surfaces
                         read_model = false ;
                         continue ;
                     }
                 } else {
-                    if( file_.field_matches( 0, "GOCAD" ) ) {
+                    if( file_line_.field_matches( 0, "GOCAD" ) ) {
                         // This is the beginning of a new TSurf = Interface
                         tsurf_count++ ;
                     }
-                    if( file_.field_matches( 0, "ZPOSITIVE" ) ) {
-                        if( file_.field_matches( 1, "Elevation" ) ) {
+                    if( file_line_.field_matches( 0, "ZPOSITIVE" ) ) {
+                        if( file_line_.field_matches( 1, "Elevation" ) ) {
                             z_sign = 1 ;
-                        } else if( file_.field_matches( 1, "Depth" ) ) {
+                        } else if( file_line_.field_matches( 1, "Depth" ) ) {
                             z_sign = -1 ;
                         } else {
                             ringmesh_assert_not_reached;}
-                    } else if( file_.field_matches( 0, "END" ) ) {
+                    } else if( file_line_.field_matches( 0, "END" ) ) {
                         // This the END of a TSurf
                         if( tsurf_count > 0 ) {
                             // End the last TFace - Surface of this TSurf
@@ -2805,7 +2803,7 @@ namespace RINGMesh {
                             tsurf_vertices.clear() ;
                             tface_vertex_start.clear() ;
                         }
-                    } else if( file_.field_matches( 0, "TFACE" ) ) {
+                    } else if( file_line_.field_matches( 0, "TFACE" ) ) {
                         // Beginning of a new TFace - Surface
                         if( tface_vertex_start.size() > 0 ) {
                             // End the previous TFace - Surface  (copy from line 1180)
@@ -2834,32 +2832,32 @@ namespace RINGMesh {
                     }
 
                     /// 2.1 Read the surface vertices and facets (only triangles in Gocad Model3d files)
-                    else if( file_.field_matches( 0, "VRTX" ) || file_.field_matches( 0, "PVRTX" ) )
+                    else if( file_line_.field_matches( 0, "VRTX" ) || file_line_.field_matches( 0, "PVRTX" ) )
                     {
-                        vec3 p( file_.field_as_double(2),
-                            file_.field_as_double(3),
-                            z_sign * file_.field_as_double(4)) ;
+                        vec3 p( file_line_.field_as_double(2),
+                            file_line_.field_as_double(3),
+                            z_sign * file_line_.field_as_double(4)) ;
                         tsurf_vertices.push_back( p ) ;
-                    } else if( file_.field_matches( 0,"PATOM" ) || file_.field_matches( 0, "ATOM" )
+                    } else if( file_line_.field_matches( 0,"PATOM" ) || file_line_.field_matches( 0, "ATOM" )
                     ) {
                         tsurf_vertices.push_back( tsurf_vertices[
-                            file_.field_as_uint( 2 ) - 1 ] ) ;
-                    } else if( file_.field_matches( 0, "TRGL" ) ) {
+                            file_line_.field_as_uint( 2 ) - 1 ] ) ;
+                    } else if( file_line_.field_matches( 0, "TRGL" ) ) {
                         // Read ids of the vertices of each triangle in the TSurf
                         // and switch to ids in the TFace
-                        tface_facets.push_back( (index_t) file_.field_as_uint(
+                        tface_facets.push_back( (index_t) file_line_.field_as_uint(
                                 1 ) - tface_vertex_start.back() - 1 ) ;
-                        tface_facets.push_back( (index_t) file_.field_as_uint(
+                        tface_facets.push_back( (index_t) file_line_.field_as_uint(
                                 2 ) - tface_vertex_start.back() - 1 ) ;
-                        tface_facets.push_back( (index_t) file_.field_as_uint(
+                        tface_facets.push_back( (index_t) file_line_.field_as_uint(
                                 3 ) - tface_vertex_start.back() - 1 ) ;
                         tface_facets_ptr.push_back( tface_facets.size() ) ;
                     }
 
                     // 2.2 Build the corners from their position and the surface parts
                     //    containing them
-                    else if( file_.field_matches( 0, "BSTONE" ) && !options_.compute_corners ) {
-                        index_t v_id = file_.field_as_uint( 1 ) - 1 ;
+                    else if( file_line_.field_matches( 0, "BSTONE" ) && !options_.compute_corners ) {
+                        index_t v_id = file_line_.field_as_uint( 1 ) - 1 ;
                         if( !find_corner(model_, tsurf_vertices[v_id]).is_defined() ) {
                             // Create the corner
                             gme_t corner_gme = create_element( GME::CORNER ) ;
@@ -2868,9 +2866,9 @@ namespace RINGMesh {
                     }
 
                     /// 2.3 Read the Border information and store it
-                    else if( file_.field_matches( 0, "BORDER" ) && !options_.compute_lines ) {
-                        index_t p1 = file_.field_as_uint( 2 ) - 1 ;
-                        index_t p2 = file_.field_as_uint( 3 ) - 1 ;
+                    else if( file_line_.field_matches( 0, "BORDER" ) && !options_.compute_lines ) {
+                        index_t p1 = file_line_.field_as_uint( 2 ) - 1 ;
+                        index_t p2 = file_line_.field_as_uint( 3 ) - 1 ;
 
                         // Get the global corner id
                         gme_t corner_id = find_corner(model_, tsurf_vertices[ p1 ] ) ;
@@ -3150,6 +3148,7 @@ namespace RINGMesh {
             return -1 ;
         } else {
             ringmesh_assert_not_reached;
+            return 0;
         }
     }
 
@@ -3157,71 +3156,71 @@ namespace RINGMesh {
 
     void GeoModelBuilderBM::load_file()
     {
-        while( !file_.eof() && file_.get_line() ) {
-            file_.get_fields() ;
-            if( file_.nb_fields() > 0 ) {
+        while( !file_line_.eof() && file_line_.get_line() ) {
+            file_line_.get_fields() ;
+            if( file_line_.nb_fields() > 0 ) {
                 // Name of the model
-                if( file_.field_matches( 0, "NAME" ) ) {
-                    if( file_.nb_fields() > 1 ) {
-                        set_model_name( file_.field( 1 ) ) ;
+                if( file_line_.field_matches( 0, "NAME" ) ) {
+                    if( file_line_.nb_fields() > 1 ) {
+                        set_model_name( file_line_.field( 1 ) ) ;
                     }
                 }
                 // Number of elements of a given type
-                else if( match_nb_elements( file_.field( 0 ) ) != GME::NO_TYPE ) {
+                else if( match_nb_elements( file_line_.field( 0 ) ) != GME::NO_TYPE ) {
                     // Allocate the space
-                    if( file_.nb_fields() > 1 ) {
-                        resize_elements( match_nb_elements( file_.field( 0 ) ),
-                            file_.field_as_uint( 1 ) ) ;
+                    if( file_line_.nb_fields() > 1 ) {
+                        resize_elements( match_nb_elements( file_line_.field( 0 ) ),
+                            file_line_.field_as_uint( 1 ) ) ;
                     }
                 }
 
                 // High-level elements
-                else if( match_high_level_type( file_.field( 0 ) ) ) {
+                else if( match_high_level_type( file_line_.field( 0 ) ) ) {
                     // Read this element
                     // First line : type - id - name - geol_feature
-                    if( file_.nb_fields() < 4 ) {
+                    if( file_line_.nb_fields() < 4 ) {
                         throw RINGMeshException( "I/O",
                             "Invalid line: "
-                                + GEO::String::to_string( file_.line_number() )
+                                + GEO::String::to_string( file_line_.line_number() )
                                 + ", 4 fields are expected, the type, id, name, and geological feature" ) ;
                     }
-                    GME::TYPE t = match_type( file_.field( 0 ) ) ;
-                    index_t id = file_.field_as_uint( 1 ) ;
+                    GME::TYPE t = match_type( file_line_.field( 0 ) ) ;
+                    index_t id = file_line_.field_as_uint( 1 ) ;
                     gme_t element( t, id ) ;
-                    set_element_name( element, file_.field( 2 ) ) ;
+                    set_element_name( element, file_line_.field( 2 ) ) ;
                     set_element_geol_feature( element,
-                        GME::determine_geological_type( file_.field( 3 ) ) ) ;
+                        GME::determine_geological_type( file_line_.field( 3 ) ) ) ;
                     // Second line : indices of its children
-                    file_.get_line() ;
-                    file_.get_fields() ;
-                    for( index_t c = 0; c < file_.nb_fields(); c++ ) {
+                    file_line_.get_line() ;
+                    file_line_.get_fields() ;
+                    for( index_t c = 0; c < file_line_.nb_fields(); c++ ) {
                         add_element_child( element,
                             gme_t( GME::child_type( t ),
-                                file_.field_as_uint( c ) ) ) ;
+                                file_line_.field_as_uint( c ) ) ) ;
                     }
                 }
                 // Regions
-                else if( match_type( file_.field( 0 ) ) == GME::REGION ) {
+                else if( match_type( file_line_.field( 0 ) ) == GME::REGION ) {
                     // First line : type - id - name
-                    if( file_.nb_fields() < 3 ) {
+                    if( file_line_.nb_fields() < 3 ) {
                         throw RINGMeshException( "I/O",
                             "Invalid line: "
-                                + GEO::String::to_string( file_.line_number() )
+                                + GEO::String::to_string( file_line_.line_number() )
                                 + ", 3 fields are expected to describe a region: REGION, id, and name" ) ;
                     }
-                    index_t id = file_.field_as_uint( 1 ) ;
+                    index_t id = file_line_.field_as_uint( 1 ) ;
                     gme_t element( GME::REGION, id ) ;
-                    set_element_name( element, file_.field( 2 ) ) ;
+                    set_element_name( element, file_line_.field( 2 ) ) ;
                     // Second line : signed indices of boundaries
-                    file_.get_line() ;
-                    file_.get_fields() ;
-                    for( index_t c = 0; c < file_.nb_fields(); c++ ) {
+                    file_line_.get_line() ;
+                    file_line_.get_fields() ;
+                    for( index_t c = 0; c < file_line_.nb_fields(); c++ ) {
                         bool side = false ;
-                        if( strncmp( file_.field( c ), "+", 1 ) == 0 ) {
+                        if( strncmp( file_line_.field( c ), "+", 1 ) == 0 ) {
                             side = true ;
                         }
                         index_t s ;
-                        GEO::String::from_string( &file_.field( c )[1], s ) ;
+                        GEO::String::from_string( &file_line_.field( c )[1], s ) ;
 
                         add_element_boundary( element, gme_t( GME::SURFACE, s ),
                             side ) ;
@@ -3229,17 +3228,17 @@ namespace RINGMesh {
                 }
 
                 // Universe
-                else if( file_.field_matches( 0, "UNIVERSE" ) ) {
+                else if( file_line_.field_matches( 0, "UNIVERSE" ) ) {
                     // Second line: signed indices of boundaries
-                    file_.get_line() ;
-                    file_.get_fields() ;
-                    for( index_t c = 0; c < file_.nb_fields(); c++ ) {
+                    file_line_.get_line() ;
+                    file_line_.get_fields() ;
+                    for( index_t c = 0; c < file_line_.nb_fields(); c++ ) {
                         bool side = false ;
-                        if( strncmp( file_.field( c ), "+", 1 ) == 0 ) {
+                        if( strncmp( file_line_.field( c ), "+", 1 ) == 0 ) {
                             side = true ;
                         }
                         index_t s ;
-                        GEO::String::from_string( &file_.field( c )[1], s ) ;
+                        GEO::String::from_string( &file_line_.field( c )[1], s ) ;
 
                         add_element_boundary( gme_t( GME::REGION, NO_ID ),
                             gme_t( GME::SURFACE, s ), side ) ;
@@ -3273,39 +3272,39 @@ namespace RINGMesh {
 //                }
 
                 // Corners
-                else if( match_type( file_.field( 0 ) ) == GME::CORNER ) {
+                else if( match_type( file_line_.field( 0 ) ) == GME::CORNER ) {
                     // First line: CORNER - id - vertex id
-                    if( file_.nb_fields() < 5 ) {
+                    if( file_line_.nb_fields() < 5 ) {
                         throw RINGMeshException( "I/O",
                             "Invalid line: "
-                                + GEO::String::to_string( file_.line_number() )
+                                + GEO::String::to_string( file_line_.line_number() )
                                 + ", 5 fields are expected to describe a corner: "
                                 + " CORNER, index, and X, Y, Z coordinates " ) ;
                     }
-                    index_t id = file_.field_as_uint( 1 ) ;
-                    vec3 point( file_.field_as_double( 2 ),
-                        file_.field_as_double( 3 ), file_.field_as_double( 4 ) ) ;
+                    index_t id = file_line_.field_as_uint( 1 ) ;
+                    vec3 point( file_line_.field_as_double( 2 ),
+                        file_line_.field_as_double( 3 ), file_line_.field_as_double( 4 ) ) ;
                     set_corner( id, point ) ;
                 }
 
                 // Lines
-                else if( match_type( file_.field( 0 ) ) == GME::LINE ) {
-                    index_t id = file_.field_as_uint( 1 ) ;
+                else if( match_type( file_line_.field( 0 ) ) == GME::LINE ) {
+                    index_t id = file_line_.field_as_uint( 1 ) ;
                     gme_t cur_element( GME::LINE, id ) ;
 
                     // Following information: vertices of the line
-                    file_.get_line() ;
-                    file_.get_fields() ;
+                    file_line_.get_line() ;
+                    file_line_.get_fields() ;
                     ringmesh_debug_assert(
-                        file_.field_matches( 0, "LINE_VERTICES" ) ) ;
-                    index_t nb_vertices = file_.field_as_uint( 1 ) ;
+                        file_line_.field_matches( 0, "LINE_VERTICES" ) ) ;
+                    index_t nb_vertices = file_line_.field_as_uint( 1 ) ;
                     std::vector< vec3 > vertices( nb_vertices ) ;
                     for( index_t i = 0; i < nb_vertices; i++ ) {
-                        file_.get_line() ;
-                        file_.get_fields() ;
-                        vec3 point( file_.field_as_double( 0 ),
-                            file_.field_as_double( 1 ),
-                            file_.field_as_double( 2 ) ) ;
+                        file_line_.get_line() ;
+                        file_line_.get_fields() ;
+                        vec3 point( file_line_.field_as_double( 0 ),
+                            file_line_.field_as_double( 1 ),
+                            file_line_.field_as_double( 2 ) ) ;
                         vertices[i] = point ;
                     }
 
@@ -3360,33 +3359,33 @@ namespace RINGMesh {
                         find_corner( model(), vertices.back() ) ) ;
 
                     // Finally we have the in_boundary information
-                    file_.get_line() ;
-                    file_.get_fields() ;
-                    ringmesh_debug_assert( file_.field_matches( 0, "IN_BOUNDARY" ) ) ;
-                    for( index_t b = 1; b < file_.nb_fields(); b++ ) {
+                    file_line_.get_line() ;
+                    file_line_.get_fields() ;
+                    ringmesh_debug_assert( file_line_.field_matches( 0, "IN_BOUNDARY" ) ) ;
+                    for( index_t b = 1; b < file_line_.nb_fields(); b++ ) {
                         add_element_in_boundary( cur_element,
-                            gme_t( GME::SURFACE, file_.field_as_uint( b ) ) ) ;
+                            gme_t( GME::SURFACE, file_line_.field_as_uint( b ) ) ) ;
                     }
                 }
 
                 // Surfaces
-                else if( match_type( file_.field( 0 ) ) == GME::SURFACE ) {
-                    index_t id = file_.field_as_uint( 1 ) ;
+                else if( match_type( file_line_.field( 0 ) ) == GME::SURFACE ) {
+                    index_t id = file_line_.field_as_uint( 1 ) ;
                     gme_t cur_element( GME::SURFACE, id ) ;
 
                     // Read the surface vertices and their attributes
-                    file_.get_line() ;
-                    file_.get_fields() ;
+                    file_line_.get_line() ;
+                    file_line_.get_fields() ;
                     ringmesh_debug_assert(
-                        file_.field_matches( 0, "SURFACE_VERTICES" ) ) ;
-                    index_t nb_vertices = file_.field_as_uint( 1 ) ;
+                        file_line_.field_matches( 0, "SURFACE_VERTICES" ) ) ;
+                    index_t nb_vertices = file_line_.field_as_uint( 1 ) ;
                     std::vector< vec3 > vertices( nb_vertices ) ;
                     for( index_t i = 0; i < nb_vertices; i++ ) {
-                        file_.get_line() ;
-                        file_.get_fields() ;
-                        vec3 point( file_.field_as_double( 0 ),
-                            file_.field_as_double( 1 ),
-                            file_.field_as_double( 2 ) ) ;
+                        file_line_.get_line() ;
+                        file_line_.get_fields() ;
+                        vec3 point( file_line_.field_as_double( 0 ),
+                            file_line_.field_as_double( 1 ),
+                            file_line_.field_as_double( 2 ) ) ;
                         vertices[i] = point ;
                     }
 
@@ -3413,17 +3412,17 @@ namespace RINGMesh {
 //                    }
 
                     // Read the surface facets
-                    file_.get_line() ;
-                    file_.get_fields() ;
+                    file_line_.get_line() ;
+                    file_line_.get_fields() ;
                     ringmesh_debug_assert(
-                        file_.field_matches( 0, "SURFACE_CORNERS" ) ) ;
-                    index_t nb_corners = file_.field_as_uint( 1 ) ;
+                        file_line_.field_matches( 0, "SURFACE_CORNERS" ) ) ;
+                    index_t nb_corners = file_line_.field_as_uint( 1 ) ;
 
-                    file_.get_line() ;
-                    file_.get_fields() ;
+                    file_line_.get_line() ;
+                    file_line_.get_fields() ;
                     ringmesh_debug_assert(
-                        file_.field_matches( 0, "SURFACE_FACETS" ) ) ;
-                    index_t nb_facets = file_.field_as_uint( 1 ) ;
+                        file_line_.field_matches( 0, "SURFACE_FACETS" ) ) ;
+                    index_t nb_facets = file_line_.field_as_uint( 1 ) ;
 
 //                    in_.get_line() ;
 //                    in_.get_fields() ;
@@ -3443,11 +3442,11 @@ namespace RINGMesh {
                     std::vector< index_t > facet_ptr( nb_facets + 1, 0 ) ;
                     index_t count_facets = 0 ;
                     for( index_t f = 0; f < nb_facets; f++ ) {
-                        file_.get_line() ;
-                        file_.get_fields() ;
-                        index_t nb_v = file_.field_as_uint( 0 ) ;
+                        file_line_.get_line() ;
+                        file_line_.get_fields() ;
+                        index_t nb_v = file_line_.field_as_uint( 0 ) ;
                         for( index_t v = 0; v < nb_v; ++v ) {
-                            corners[count_facets + v] = file_.field_as_uint(
+                            corners[count_facets + v] = file_line_.field_as_uint(
                                 v + 1 ) ;
                         }
                         count_facets += nb_v ;
@@ -3488,6 +3487,20 @@ namespace RINGMesh {
             }
         }
         return GME::NO_TYPE ;
+    }
+
+    /*************************************************************************/
+
+    void GeoModelBuilderGM::load_file()
+    {
+        unzFile uz = unzOpen( filename_.c_str() ) ;
+        unz_global_info global_info ;
+        if( unzGetGlobalInfo( uz, &global_info ) != UNZ_OK ) {
+            unzClose( uz ) ;
+            throw RINGMeshException( "ZLIB",
+                "Could not read file global info" ) ;
+        }
+
     }
 
 } // namespace

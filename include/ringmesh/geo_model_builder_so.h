@@ -33,7 +33,6 @@
  *     FRANCE
  */
 
-
 #ifndef __RINGMESH_GEO_MODEL_BUILDER_SO__
 #define __RINGMESH_GEO_MODEL_BUILDER_SO__
 
@@ -66,7 +65,8 @@ namespace RINGMesh {
             TSolidLoadingStorage& load_storage ) = 0 ;
 
     protected:
-        TSolidLineParser() : Counted(), builder_( nil ), geomodel_( nil )
+        TSolidLineParser()
+            : Counted(), builder_( nil ), geomodel_( nil )
         {
         }
         virtual ~TSolidLineParser()
@@ -111,12 +111,17 @@ namespace RINGMesh {
     /*!
      * @brief Builds a meshed GeoModel from a Gocad TSolid (file.so)
      */
-    class RINGMESH_API GeoModelBuilderTSolid : public GeoModelBuilderFile {
+    class RINGMESH_API GeoModelBuilderTSolid: public GeoModelBuilderFile {
     public:
         GeoModelBuilderTSolid( GeoModel& model, const std::string& filename )
-            : GeoModelBuilderFile( model, filename )
+            :
+                GeoModelBuilderFile( model, filename ),
+                filename_( filename ),
+                file_line_( filename )
         {
-            filename_ = filename ;
+            if( !file_line_.OK() ) {
+                throw RINGMeshException( "I/O", "Failed to open file " + filename ) ;
+            }
         }
         virtual ~GeoModelBuilderTSolid()
         {
@@ -143,6 +148,7 @@ namespace RINGMesh {
 
     private:
         std::string filename_ ;
+        GEO::LineInput file_line_ ;
         friend class RINGMesh::TSolidLineParser ;
     } ;
 }
