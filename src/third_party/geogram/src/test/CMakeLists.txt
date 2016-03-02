@@ -15,3 +15,7 @@ endif()
 
 add_subdirectory(test_RVC)
 #add_subdirectory(test_RVC2)
+
+if(GEOGRAM_WITH_GRAPHICS)
+   add_subdirectory(test_GLUP)
+endif()

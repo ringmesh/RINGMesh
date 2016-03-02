@@ -9,25 +9,20 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the <organization> nor the
+ *     * Neither the name of ASGA nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
  * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- *
- *
- *
- *
  *
  *     http://www.ring-team.org
  *
@@ -51,6 +46,11 @@
 #include <cmath>
 #include <stack>
 
+/*!
+ * @file Implementation of Wells
+ * @author Arnaud Botella
+ */
+
 namespace {
     using namespace RINGMesh ;
 
@@ -63,7 +63,7 @@ namespace {
     */
     index_t find_region( const GeoModel& BM, index_t surface_part_id, bool side )
     {
-        ringmesh_debug_assert( surface_part_id < BM.nb_surfaces() ) ;
+        ringmesh_assert( surface_part_id < BM.nb_surfaces() ) ;
         GME::gme_t cur_surface( GME::SURFACE, surface_part_id ) ;
         /// @todo It would be better to directly check the region
         /// adjacent to the Surface.
@@ -415,7 +415,7 @@ namespace RINGMesh {
      */
     void WellGroup::add_well( const GEO::Mesh& mesh, const std::string& name )
     {
-        ringmesh_debug_assert( model() ) ;
+        ringmesh_assert( model() ) ;
         if( find_well( name ) != NO_ID ) return ;
         wells_.push_back( new Well ) ;
         Well& new_well = *wells_.back() ;
@@ -607,7 +607,7 @@ namespace RINGMesh {
             well_part.set_corner( 0, corner0 ) ;
 //            index_t corner1 = new_well.find_corner(
 //                well_points.back() ) ;
-            ringmesh_debug_assert( new_well.find_corner(
+            ringmesh_assert( new_well.find_corner(
                 well_points.back() ) == NO_ID ) ;
 //            if( corner1 == NO_ID ) {
                 WellCorner::corner_info_t corner_info ;

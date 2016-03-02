@@ -9,25 +9,20 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the <organization> nor the
+ *     * Neither the name of ASGA nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
  * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- *
- *
- *
- *
  *
  *     http://www.ring-team.org
  *
@@ -45,6 +40,11 @@
 
 #include <geogram/basic/factory.h>
 
+/*!
+ * @file Global input - ouput functions of RINGMesh
+ * @author Various
+ */
+
 namespace RINGMesh {
     class GeoModel ;
     class WellGroup ;
@@ -54,15 +54,15 @@ namespace RINGMesh {
 
     bool RINGMESH_API compare_files( const std::string& f1, const std::string& f2 ) ;
 
-    bool RINGMESH_API geomodel_surface_load( const std::string& filename, GeoModel& model ) ;
+    void RINGMESH_API geomodel_surface_load( const std::string& filename, GeoModel& model ) ;
 
-    bool RINGMESH_API geomodel_surface_save( const GeoModel& model, const std::string& filename ) ;
+    void RINGMESH_API geomodel_surface_save( const GeoModel& model, const std::string& filename ) ;
 
-    bool RINGMESH_API geomodel_volume_load( const std::string& filename, GeoModel& model ) ;
+    void RINGMESH_API geomodel_volume_load( const std::string& filename, GeoModel& model ) ;
 
-    bool RINGMESH_API geomodel_volume_save( const GeoModel& model, const std::string& filename ) ;
+    void RINGMESH_API geomodel_volume_save( const GeoModel& model, const std::string& filename ) ;
 
-    bool RINGMESH_API well_load( const std::string& filename, WellGroup& wells ) ;
+    void RINGMESH_API well_load( const std::string& filename, WellGroup& wells ) ;
 
 
     class RINGMESH_API GeoModelSurfaceIOHandler: public GEO::Counted {
@@ -73,9 +73,9 @@ namespace RINGMesh {
 
         static GeoModelSurfaceIOHandler* get_handler( const std::string& filename ) ;
 
-        virtual bool load( const std::string& filename, GeoModel& model ) = 0 ;
+        virtual void load( const std::string& filename, GeoModel& model ) = 0 ;
 
-        virtual bool save( const GeoModel& model, const std::string& filename ) = 0 ;
+        virtual void save( const GeoModel& model, const std::string& filename ) = 0 ;
 
     protected:
         GeoModelSurfaceIOHandler()
@@ -103,9 +103,9 @@ namespace RINGMesh {
 
         static GeoModelVolumeIOHandler* get_handler( const std::string& filename ) ;
 
-        virtual bool load( const std::string& filename, GeoModel& mesh ) = 0 ;
+        virtual void load( const std::string& filename, GeoModel& mesh ) = 0 ;
 
-        virtual bool save( const GeoModel& mesh, const std::string& filename ) = 0 ;
+        virtual void save( const GeoModel& mesh, const std::string& filename ) = 0 ;
 
     protected:
         GeoModelVolumeIOHandler()
@@ -133,9 +133,9 @@ namespace RINGMesh {
 
         static WellGroupIOHandler* get_handler( const std::string& filename ) ;
 
-        virtual bool load( const std::string& filename, WellGroup& mesh ) = 0 ;
+        virtual void load( const std::string& filename, WellGroup& mesh ) = 0 ;
 
-        virtual bool save( const WellGroup& mesh, const std::string& filename ) = 0 ;
+        virtual void save( const WellGroup& mesh, const std::string& filename ) = 0 ;
 
     protected:
         WellGroupIOHandler()

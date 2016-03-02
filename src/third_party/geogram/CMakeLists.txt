@@ -21,12 +21,14 @@ endif()
 
 # Optional modules
 # (can be overriden in CMakeOptions.txt)
-# RINGMesh modifications: the 2 set
-# below are commented because they overwrite
-# the options defined in the CMakeLists.txt
-# in RINGMesh.
-#set(GEOGRAM_WITH_MEDIT TRUE)
-#set(GEOGRAM_WITH_GRAPHICS TRUE)
+
+if(NOT DEFINED GEOGRAM_WITH_MEDIT)
+    set(GEOGRAM_WITH_MEDIT TRUE)
+endif()
+
+if(NOT DEFINED GEOGRAM_WITH_GRAPHICS) 
+    set(GEOGRAM_WITH_GRAPHICS TRUE)
+endif()    
 
 include(cmake/geogram.cmake)
 
@@ -83,17 +85,15 @@ endif()
 if(GEOGRAM_WITH_GRAPHICS)
    add_subdirectory(src/lib/geogram_gfx)
    add_subdirectory(src/bin/vorpaview)
-
    if(GEOGRAM_WITH_MEDIT)
        add_subdirectory(src/bin/medit)
    endif()
-
 endif()
 
-# On veut une option # [Jeanne]
-#add_subdirectory(src/test) # [Jeanne]
-#add_subdirectory(doc)# [Jeanne]
-#add_subdirectory(tests) # [Jeanne]
+add_subdirectory(src/lib/third_party)
+add_subdirectory(src/test)
+add_subdirectory(doc)
+add_subdirectory(tests)
 
 ##############################################################################
 # Cleanup from previous builds

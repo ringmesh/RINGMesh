@@ -44,6 +44,8 @@
  */
 
 #include <geogram_gfx/basic/common.h>
+#include <geogram_gfx/basic/GLSL.h>
+#include <geogram/basic/logger.h>
 #include <cstdlib>
 
 namespace GEO {
@@ -52,11 +54,16 @@ namespace GEO {
     namespace Graphics {
 
         void initialize() {
-            glewInit();
+            if(!gladLoadGL()) {
+                Logger::err("GLAD") << "Could not load OpenGL"
+                                   << std::endl;
+            }
+            GLSL::initialize();
             atexit(GEO::Graphics::terminate);            
         }
 
         void terminate() {
+            GLSL::terminate();            
         }
         
     }

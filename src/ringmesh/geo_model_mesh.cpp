@@ -9,25 +9,20 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the <organization> nor the
+ *     * Neither the name of ASGA nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
  * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- *
- *
- *
- *
  *
  *     http://www.ring-team.org
  *
@@ -39,19 +34,26 @@
  */
 
 #include <ringmesh/geo_model_mesh.h>
-#include <ringmesh/geo_model.h>
-#include <ringmesh/geo_model_builder.h>
-#include <ringmesh/geometry.h>
-#include <ringmesh/well.h>
-#include <ringmesh/algorithm.h>
-#include <ringmesh/geogram_extension.h>
-
-#include <geogram/basic/algorithm.h>
-#include <geogram/mesh/mesh_geometry.h>
-#include <geogram/mesh/mesh_repair.h>
-#include <geogram/points/colocate.h>
 
 #include <stack>
+
+#include <geogram/basic/algorithm.h>
+
+#include <geogram/mesh/mesh_geometry.h>
+#include <geogram/mesh/mesh_repair.h>
+
+#include <geogram/points/colocate.h>
+
+#include <ringmesh/algorithm.h>
+#include <ringmesh/geo_model.h>
+#include <ringmesh/geo_model_builder.h>
+#include <ringmesh/geogram_extension.h>
+#include <ringmesh/geometry.h>
+#include <ringmesh/well.h>
+
+/*!
+ * @author Arnaud Botella - Jeanne Pellerin - Antoine Mazuyer
+ */
 
 namespace {
     using namespace RINGMesh ;
@@ -178,7 +180,7 @@ namespace RINGMesh {
         mesh_.clear() ;
 
         // Total number of vertices in the
-        // Corners, Lines, and Surfaces of the GeoModel
+        // Corners, Lines, Surfaces and Regions of the GeoModel
         index_t nb = 0 ;
         for( index_t t = GME::CORNER; t <= GME::REGION; ++t ) {
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;
@@ -209,9 +211,9 @@ namespace RINGMesh {
                     GeoModelMeshElement::model_vertex_id_att_name() ) ;
                 for( index_t v = 0; v < E.nb_vertices(); v++ ) {
                     // Global index stored at BME level
-                    att[ v ] = count ;
+                    att[v] = count ;
                     // Index in the BME stored at global level
-                    gme_vertices_[ count ].push_back( GMEVertex( E.gme_id(), v ) ) ;
+                    gme_vertices_[count].push_back( GMEVertex( E.gme_id(), v ) ) ;
                     // Global vertex index increment
                     count++ ;
                 }
@@ -261,7 +263,7 @@ namespace RINGMesh {
 #ifdef RINGMESH_DEBUG
         // Paranoia
         GEO::vector< index_t > old2new ;
-        ringmesh_debug_assert(
+        ringmesh_assert(
             GEO::Geom::colocate( mesh_.vertices.point_ptr( 0 ), 3,
                 mesh_.vertices.nb(), old2new, epsilon, mesh_.vertices.dimension() )
                 == mesh_.vertices.nb() ) ;
@@ -271,14 +273,14 @@ namespace RINGMesh {
     index_t GeoModelMeshVertices::nb() const
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( gme_vertices_.size() == mesh_.vertices.nb() ) ;
+        ringmesh_assert( gme_vertices_.size() == mesh_.vertices.nb() ) ;
         return mesh_.vertices.nb() ;
     }
 
     const vec3& GeoModelMeshVertices::vertex( index_t v ) const
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( v < nb() ) ;
+        ringmesh_assert( v < nb() ) ;
         return mesh_.vertices.point( v ) ;
     }
 
@@ -290,7 +292,7 @@ namespace RINGMesh {
         if( vertices.empty() ) {
             return NO_ID ;
         } else {
-            ringmesh_debug_assert( vertices.size() == 1 ) ;
+            ringmesh_assert( vertices.size() == 1 ) ;
             return vertices[0] ;
         }
     }
@@ -312,10 +314,10 @@ namespace RINGMesh {
     void GeoModelMeshVertices::add_to_bme( index_t v, const GMEVertex& v_gme )
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( v < nb() ) ;
-        ringmesh_debug_assert( gme_vertices_.size() == nb() ) ;
+        ringmesh_assert( v < nb() ) ;
+        ringmesh_assert( gme_vertices_.size() == nb() ) ;
         // Assert if adding twice the same thing - not a normal behavior
-        ringmesh_debug_assert(
+        ringmesh_assert(
             std::find( gme_vertices_[v].begin(), gme_vertices_[v].end(), v_gme )
                 == gme_vertices_[v].end() ) ;
 
@@ -328,15 +330,15 @@ namespace RINGMesh {
         const GMEVertex& v )
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( unique_id < nb() ) ;
-        ringmesh_debug_assert( k < gme_vertices( unique_id ).size() ) ;
+        ringmesh_assert( unique_id < nb() ) ;
+        ringmesh_assert( k < gme_vertices( unique_id ).size() ) ;
         gme_vertices_[unique_id][k] = v ;
     }
 
     void GeoModelMeshVertices::update_point( index_t v, const vec3& point )
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( v < nb() ) ;
+        ringmesh_assert( v < nb() ) ;
         // Change the position of the unique_vertex
         mesh_.vertices.point( v ) = point ;
         clear_kdtree() ;
@@ -358,10 +360,8 @@ namespace RINGMesh {
         }
         // Identify and invalidate colocated vertices
         GEO::vector< index_t > old2new ;
-        if( GEO::Geom::colocate( mesh_.vertices.point_ptr( 0 ), 3, 
-                                 mesh_.vertices.nb(), old2new, epsilon)
-            != mesh_.vertices.nb() 
-        ) {
+        if( GEO::Geom::colocate( mesh_.vertices.point_ptr( 0 ), 3,
+            mesh_.vertices.nb(), old2new, epsilon ) != mesh_.vertices.nb() ) {
             std::vector< index_t > stupid_copy( old2new.begin(), old2new.end() ) ;
             erase_vertices( stupid_copy ) ;
         }
@@ -408,7 +408,7 @@ namespace RINGMesh {
 
     void GeoModelMeshVertices::erase_vertices( std::vector< index_t >& to_delete )
     {
-        ringmesh_debug_assert( to_delete.size() == nb() ) ;
+        ringmesh_assert( to_delete.size() == nb() ) ;
 
         // For mesh vertices deletion
         GEO::vector< index_t > to_delete_geo( nb(), 0 ) ;
@@ -424,7 +424,7 @@ namespace RINGMesh {
                 to_delete_geo[v] = 1 ;
                 nb_todelete++ ;
                 if( to_delete[v] != NO_ID ) {
-                    ringmesh_debug_assert( to_delete[v] < v ) ;
+                    ringmesh_assert( to_delete[v] < v ) ;
                     to_delete[v] = to_delete[to_delete[v]] ;
                 }
             } else {
@@ -460,12 +460,12 @@ namespace RINGMesh {
         // Paranoia - check that we have the same mapping than the
         // delete_elements function in Geogram
         for( index_t v = 0; v < nb(); ++v ) {
-            ringmesh_debug_assert(
+            ringmesh_assert(
                 to_delete_geo[v] == NO_ID || to_delete_geo[v] == to_delete[v] ) ;
         }
 #endif
 
-        // Update model_vertex_ids in BMME
+        // Update model_vertex_ids in GMME
         for( index_t t = GME::CORNER; t <= GME::REGION; ++t ) {
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;
 
@@ -478,8 +478,8 @@ namespace RINGMesh {
                     index_t old_id = E.model_vertex_id( v ) ;
                     index_t new_id = to_delete[old_id] ;
                     // If new_id is NO_ID the vertex should be removed afterwards
-                    // from the BMME
-                    ringmesh_debug_assert( new_id != NO_ID ) ;
+                    // from the GMME
+                    ringmesh_assert( new_id != NO_ID ) ;
                     att[v] = new_id ;
 
                     /*!
@@ -533,7 +533,8 @@ namespace RINGMesh {
     void GeoModelMeshCells::initialize()
     {
         gmm_.vertices.test_and_initialize() ;
-        region_cell_ptr_.resize( gm_.nb_regions() * GEO::MESH_NB_CELL_TYPES + 1, 0 ) ;
+        region_cell_ptr_.resize( gm_.nb_regions() * GEO::MESH_NB_CELL_TYPES + 1,
+            0 ) ;
 
         // Total number of  cells
         std::vector< index_t > nb_cells_per_type( GEO::MESH_NB_CELL_TYPES, 0 ) ;
@@ -668,29 +669,29 @@ namespace RINGMesh {
     index_t GeoModelMeshCells::nb_vertices( index_t c ) const
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( c < mesh_.cells.nb() ) ;
+        ringmesh_assert( c < mesh_.cells.nb() ) ;
         return mesh_.cells.nb_vertices( c ) ;
     }
 
     index_t GeoModelMeshCells::vertex( index_t c, index_t v ) const
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( c < mesh_.cells.nb() ) ;
-        ringmesh_debug_assert( v < mesh_.cells.nb_vertices( c ) ) ;
+        ringmesh_assert( c < mesh_.cells.nb() ) ;
+        ringmesh_assert( v < mesh_.cells.nb_vertices( c ) ) ;
         return mesh_.cells.vertex( c, v ) ;
     }
 
     index_t GeoModelMeshCells::nb_edges( index_t c ) const
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( c < mesh_.cells.nb() ) ;
+        ringmesh_assert( c < mesh_.cells.nb() ) ;
         return mesh_.cells.nb_edges( c ) ;
     }
 
     index_t GeoModelMeshCells::nb_facets( index_t c ) const
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( c < mesh_.cells.nb() ) ;
+        ringmesh_assert( c < mesh_.cells.nb() ) ;
         return mesh_.cells.nb_facets( c ) ;
     }
 
@@ -704,29 +705,29 @@ namespace RINGMesh {
     index_t GeoModelMeshCells::adjacent( index_t c, index_t f ) const
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( c < mesh_.cells.nb() ) ;
-        ringmesh_debug_assert( f < mesh_.cells.nb_facets( c ) ) ;
+        ringmesh_assert( c < mesh_.cells.nb() ) ;
+        ringmesh_assert( f < mesh_.cells.nb_facets( c ) ) ;
         return mesh_.cells.adjacent( c, f ) ;
     }
 
     index_t GeoModelMeshCells::region( index_t c ) const
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( c < mesh_.cells.nb() ) ;
+        ringmesh_assert( c < mesh_.cells.nb() ) ;
         return region_id_[c] ;
     }
 
     index_t GeoModelMeshCells::index_in_region( index_t c ) const
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( c < mesh_.cells.nb() ) ;
+        ringmesh_assert( c < mesh_.cells.nb() ) ;
         return c - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * region( c )] ;
     }
 
     GEO::MeshCellType GeoModelMeshCells::type( index_t c, index_t& index ) const
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( c < mesh_.cells.nb() ) ;
+        ringmesh_assert( c < mesh_.cells.nb() ) ;
         index_t cell = index_in_region( c ) ;
         index_t r = region( c ) ;
         for( index_t t = GEO::MESH_TET; t < GEO::MESH_NB_CELL_TYPES; t++ ) {
@@ -821,7 +822,7 @@ namespace RINGMesh {
     index_t GeoModelMeshCells::nb_tet( index_t r ) const
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( r < gm_.nb_regions() ) ;
+        ringmesh_assert( r < gm_.nb_regions() ) ;
         return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + ( GEO::MESH_TET + 1 )]
             - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_TET] ;
     }
@@ -829,7 +830,7 @@ namespace RINGMesh {
     index_t GeoModelMeshCells::tet( index_t r, index_t t ) const
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( r < gm_.nb_regions() ) ;
+        ringmesh_assert( r < gm_.nb_regions() ) ;
         return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_TET] + t ;
     }
 
@@ -842,7 +843,7 @@ namespace RINGMesh {
     index_t GeoModelMeshCells::nb_hex( index_t r ) const
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( r < gm_.nb_regions() ) ;
+        ringmesh_assert( r < gm_.nb_regions() ) ;
         return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + ( GEO::MESH_HEX + 1 )]
             - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_HEX] ;
     }
@@ -850,7 +851,7 @@ namespace RINGMesh {
     index_t GeoModelMeshCells::hex( index_t r, index_t h ) const
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( r < gm_.nb_regions() ) ;
+        ringmesh_assert( r < gm_.nb_regions() ) ;
         return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_HEX] + h ;
     }
 
@@ -863,7 +864,7 @@ namespace RINGMesh {
     index_t GeoModelMeshCells::nb_prism( index_t r ) const
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( r < gm_.nb_regions() ) ;
+        ringmesh_assert( r < gm_.nb_regions() ) ;
         return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + ( GEO::MESH_PRISM + 1 )]
             - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_PRISM] ;
     }
@@ -871,7 +872,7 @@ namespace RINGMesh {
     index_t GeoModelMeshCells::prism( index_t r, index_t p ) const
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( r < gm_.nb_regions() ) ;
+        ringmesh_assert( r < gm_.nb_regions() ) ;
         return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_PRISM] + p ;
     }
 
@@ -884,7 +885,7 @@ namespace RINGMesh {
     index_t GeoModelMeshCells::nb_pyramid( index_t r ) const
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( r < gm_.nb_regions() ) ;
+        ringmesh_assert( r < gm_.nb_regions() ) ;
         return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r
             + ( GEO::MESH_PYRAMID + 1 )]
             - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_PYRAMID] ;
@@ -893,7 +894,7 @@ namespace RINGMesh {
     index_t GeoModelMeshCells::pyramid( index_t r, index_t p ) const
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( r < gm_.nb_regions() ) ;
+        ringmesh_assert( r < gm_.nb_regions() ) ;
         return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_PYRAMID] + p ;
     }
 
@@ -906,7 +907,7 @@ namespace RINGMesh {
     index_t GeoModelMeshCells::nb_connector( index_t r ) const
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( r < gm_.nb_regions() ) ;
+        ringmesh_assert( r < gm_.nb_regions() ) ;
         return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r
             + ( GEO::MESH_CONNECTOR + 1 )]
             - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_CONNECTOR] ;
@@ -915,7 +916,7 @@ namespace RINGMesh {
     index_t GeoModelMeshCells::connector( index_t r, index_t c ) const
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( r < gm_.nb_regions() ) ;
+        ringmesh_assert( r < gm_.nb_regions() ) ;
         return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r + GEO::MESH_CONNECTOR]
             + c ;
     }
@@ -1007,7 +1008,7 @@ namespace RINGMesh {
                     S.pop() ;
                     // Find which corner of the current cell matches vertex_id
                     index_t cur_co = find_corner( mesh_, cur_c, vertex_id ) ;
-                    ringmesh_debug_assert( cur_co != NO_ID ) ;
+                    ringmesh_assert( cur_co != NO_ID ) ;
                     is_vertex_to_duplicate[cur_co] = false ;
                     corner_used.push_back( cur_co ) ;
 
@@ -1076,7 +1077,7 @@ namespace RINGMesh {
         facet = facet_id_[mesh_.cells.facet( c, f )] ;
         if( facet != NO_ID ) {
             vec3 facet_normal = GEO::Geom::mesh_facet_normal( mesh_, facet ) ;
-            vec3 cell_facet_normal = mesh_cell_facet_normal( mesh_, c, f ) ;
+            vec3 cell_facet_normal = GEO::mesh_cell_facet_normal( mesh_, c, f ) ;
             side = dot( facet_normal, cell_facet_normal ) > 0 ;
         }
         return facet != NO_ID ;
@@ -1095,7 +1096,7 @@ namespace RINGMesh {
         for( index_t i = 1; i < surfaces.size(); i++ ) {
             if( surfaces[i - 1].first == surfaces[i].first ) {
                 // Found free border -> skip
-                ringmesh_debug_assert( surfaces[i - 1].second != surfaces[i].second ) ;
+                ringmesh_assert( surfaces[i - 1].second != surfaces[i].second ) ;
                 i++ ; // skip the action_on_surface (i-1) and i
             } else {
                 temp_surfaces.push_back( surfaces[i - 1] ) ;
@@ -1112,7 +1113,7 @@ namespace RINGMesh {
                     // First time we encounter this surface, do not duplicate
                     // this side but wait to see if we encounter the other.
                     // In the case of surfaces in the VOI, it is encountered only once
-                    ringmesh_debug_assert( temp_surfaces[i].second > TO_PROCESS )
+                    ringmesh_assert( temp_surfaces[i].second > TO_PROCESS )
                     ;
                     info[s] = ActionOnSurface( !temp_surfaces[i].second ) ;
                     break ;
@@ -1158,8 +1159,8 @@ namespace RINGMesh {
         index_t& duplicate_vertex_index ) const
     {
         test_and_initialize_duplication() ;
-        ringmesh_debug_assert( c < mesh_.cells.nb() ) ;
-        ringmesh_debug_assert( v < mesh_.cells.nb_vertices( c ) ) ;
+        ringmesh_assert( c < mesh_.cells.nb() ) ;
+        ringmesh_assert( v < mesh_.cells.nb_vertices( c ) ) ;
         index_t corner_value = mesh_.cells.vertex( c, v ) ;
         if( corner_value < mesh_.vertices.nb() ) {
             return false ;
@@ -1173,7 +1174,7 @@ namespace RINGMesh {
         index_t duplicate_vertex_index ) const
     {
         test_and_initialize_duplication() ;
-        ringmesh_debug_assert(
+        ringmesh_assert(
             duplicate_vertex_index < duplicated_vertex_indices_.size() ) ;
         return duplicated_vertex_indices_[duplicate_vertex_index] ;
     }
@@ -1215,7 +1216,7 @@ namespace RINGMesh {
     }
 
     /* @todo Review : The use of geometrical computation (barycenter) is
-    * very much bug prone. Vertex indices should be used instead. [Jeanne] */
+     * very much bug prone. Vertex indices should be used instead. [Jeanne] */
     void GeoModelMeshCells::initialize_cell_facet()
     {
         gmm_.facets.test_and_initialize() ;
@@ -1227,15 +1228,14 @@ namespace RINGMesh {
             for( index_t f = 0; f < mesh_.cells.nb_facets( c ); f++ ) {
                 std::vector< index_t > result ;
                 if( ann.get_colocated( mesh_cell_facet_center( mesh_, c, f ),
-                    result ) ) {                    
+                    result ) ) {
                     facet_id_[mesh_.cells.facet( c, f )] = result[0] ;
                     // If there are more than 1 matching facet, this is WRONG
                     // and the vertex indices should be checked too [Jeanne]
-                    ringmesh_assert( result.size() == 1 );
+                    ringmesh_assert( result.size() == 1 ) ;
                 }
             }
         }
-
     }
 
     vec3 GeoModelMeshCells::center( index_t c ) const
@@ -1296,37 +1296,37 @@ namespace RINGMesh {
     index_t GeoModelMeshFacets::nb_vertices( index_t f ) const
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( f < mesh_.facets.nb() ) ;
+        ringmesh_assert( f < mesh_.facets.nb() ) ;
         return mesh_.facets.nb_vertices( f ) ;
     }
 
     index_t GeoModelMeshFacets::vertex( index_t f, index_t v ) const
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( f < mesh_.facets.nb() ) ;
-        ringmesh_debug_assert( v < mesh_.facets.nb_vertices( f ) ) ;
+        ringmesh_assert( f < mesh_.facets.nb() ) ;
+        ringmesh_assert( v < mesh_.facets.nb_vertices( f ) ) ;
         return mesh_.facets.vertex( f, v ) ;
     }
 
     index_t GeoModelMeshFacets::adjacent( index_t f, index_t e ) const
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( f < mesh_.facets.nb() ) ;
-        ringmesh_debug_assert( e < mesh_.facets.nb_vertices( f ) ) ;
+        ringmesh_assert( f < mesh_.facets.nb() ) ;
+        ringmesh_assert( e < mesh_.facets.nb_vertices( f ) ) ;
         return mesh_.facets.adjacent( f, e ) ;
     }
 
     index_t GeoModelMeshFacets::surface( index_t f ) const
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( f < mesh_.facets.nb() ) ;
+        ringmesh_assert( f < mesh_.facets.nb() ) ;
         return surface_id_[f] ;
     }
 
     index_t GeoModelMeshFacets::index_in_surface( index_t f ) const
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( f < mesh_.facets.nb() ) ;
+        ringmesh_assert( f < mesh_.facets.nb() ) ;
         return f - surface_facet_ptr_[ALL * surface( f )] ;
     }
 
@@ -1335,7 +1335,7 @@ namespace RINGMesh {
         index_t& index ) const
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( f < mesh_.facets.nb() ) ;
+        ringmesh_assert( f < mesh_.facets.nb() ) ;
         index_t facet = index_in_surface( f ) ;
         index_t s = surface( f ) ;
         for( index_t t = TRIANGLE; t < ALL; t++ ) {
@@ -1372,7 +1372,7 @@ namespace RINGMesh {
     index_t GeoModelMeshFacets::nb_facets( index_t s, FacetType type ) const
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( s < gm_.nb_surfaces() ) ;
+        ringmesh_assert( s < gm_.nb_surfaces() ) ;
         switch( type ) {
             case TRIANGLE:
                 return nb_triangle( s ) ;
@@ -1392,7 +1392,7 @@ namespace RINGMesh {
     index_t GeoModelMeshFacets::facet( index_t s, index_t f, FacetType type ) const
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( s < gm_.nb_surfaces() ) ;
+        ringmesh_assert( s < gm_.nb_surfaces() ) ;
         switch( type ) {
             case TRIANGLE:
                 return triangle( s, f ) ;
@@ -1417,7 +1417,7 @@ namespace RINGMesh {
     index_t GeoModelMeshFacets::nb_triangle( index_t s ) const
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( s < gm_.nb_surfaces() ) ;
+        ringmesh_assert( s < gm_.nb_surfaces() ) ;
         return surface_facet_ptr_[ALL * s + ( TRIANGLE + 1 )]
             - surface_facet_ptr_[ALL * s + TRIANGLE] ;
     }
@@ -1425,7 +1425,7 @@ namespace RINGMesh {
     index_t GeoModelMeshFacets::triangle( index_t s, index_t t ) const
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( s < gm_.nb_surfaces() ) ;
+        ringmesh_assert( s < gm_.nb_surfaces() ) ;
         return surface_facet_ptr_[ALL * s + TRIANGLE] + t ;
     }
 
@@ -1438,7 +1438,7 @@ namespace RINGMesh {
     index_t GeoModelMeshFacets::nb_quad( index_t s ) const
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( s < gm_.nb_surfaces() ) ;
+        ringmesh_assert( s < gm_.nb_surfaces() ) ;
         return surface_facet_ptr_[ALL * s + ( QUAD + 1 )]
             - surface_facet_ptr_[ALL * s + QUAD] ;
     }
@@ -1446,7 +1446,7 @@ namespace RINGMesh {
     index_t GeoModelMeshFacets::quad( index_t s, index_t q ) const
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( s < gm_.nb_surfaces() ) ;
+        ringmesh_assert( s < gm_.nb_surfaces() ) ;
         return surface_facet_ptr_[ALL * s + QUAD] + q ;
     }
 
@@ -1459,7 +1459,7 @@ namespace RINGMesh {
     index_t GeoModelMeshFacets::nb_polygon( index_t s ) const
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( s < gm_.nb_surfaces() ) ;
+        ringmesh_assert( s < gm_.nb_surfaces() ) ;
         return surface_facet_ptr_[ALL * s + ( POLYGON + 1 )]
             - surface_facet_ptr_[ALL * s + POLYGON] ;
     }
@@ -1467,7 +1467,7 @@ namespace RINGMesh {
     index_t GeoModelMeshFacets::polygon( index_t s, index_t p ) const
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( s < gm_.nb_surfaces() ) ;
+        ringmesh_assert( s < gm_.nb_surfaces() ) ;
         return surface_facet_ptr_[ALL * s + POLYGON] + p ;
     }
 
@@ -1821,7 +1821,7 @@ namespace RINGMesh {
                         std::vector< index_t > colocated_vertices ;
                         index_t real_vertex_indice = ann.get_colocated(
                             new_points_in_edge[v], colocated_vertices ) ;
-                        ringmesh_debug_assert( colocated_vertices.size() == 1 ) ;
+                        ringmesh_assert( colocated_vertices.size() == 1 ) ;
 
                         order_vertices_facet[f * max_new_points_on_facet_ + e + v] =
                             colocated_vertices[0] + nb_vertices_ ;
@@ -1866,8 +1866,8 @@ namespace RINGMesh {
     index_t GeoModelMeshOrder::indice_on_cell( index_t c, index_t component ) const
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( c < gmm_.cells.nb() ) ;
-        ringmesh_debug_assert( component < max_new_points_on_cell_ ) ;
+        ringmesh_assert( c < gmm_.cells.nb() ) ;
+        ringmesh_assert( component < max_new_points_on_cell_ ) ;
         GEO::Attribute< index_t > order_vertices_cell ;
         ( gmm_.cell_attribute_manager(), order_att_name ) ;
         return order_vertices_cell[max_new_points_on_cell_ * c + component] ;
@@ -1876,8 +1876,8 @@ namespace RINGMesh {
     index_t GeoModelMeshOrder::indice_on_facet( index_t f, index_t component ) const
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( f < gmm_.facets.nb_facets() ) ;
-        ringmesh_debug_assert( component < max_new_points_on_cell_ ) ;
+        ringmesh_assert( f < gmm_.facets.nb_facets() ) ;
+        ringmesh_assert( component < max_new_points_on_cell_ ) ;
         GEO::Attribute< index_t > order_vertices_facet ;
         ( gmm_.facet_attribute_manager(), order_att_name ) ;
         return order_vertices_facet[max_new_points_on_cell_ * f + component] ;
@@ -1933,14 +1933,14 @@ namespace RINGMesh {
     index_t GeoModelMeshOrder::nb_high_order_vertices_per_facet( index_t f ) const
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( f < gmm_.facets.nb() ) ;
+        ringmesh_assert( f < gmm_.facets.nb() ) ;
         return nb_high_order_points_per_facet_type_[gmm_.facets.nb_vertices( f ) - 3] ;
     }
 
     index_t GeoModelMeshOrder::nb_high_order_vertices_per_cell( index_t c ) const
     {
         test_and_initialize() ;
-        ringmesh_debug_assert( c < gmm_.cells.nb() ) ;
+        ringmesh_assert( c < gmm_.cells.nb() ) ;
         index_t not_used ;
         return nb_high_order_points_per_cell_type_[gmm_.cells.type( c, not_used )] ;
     }
@@ -1958,11 +1958,11 @@ namespace RINGMesh {
             facets( *this, *mesh_ ),
             cells( *this, *mesh_ ),
             order( *this, *mesh_ )
-            /*! @todo I am no expert but this initialization list looks like
-             * a ticking bomb (like those in GEO::Mesh, btw I don not understand how these can work) 
-             * If these classes are derived one day, I don't know what will happen [JP]*/
+    /*! @todo I am no expert but this initialization list looks like
+     * a ticking bomb (like those in GEO::Mesh, btw I don not understand how these can work)
+     * If these classes are derived one day, I don't know what will happen [JP]*/
     {
-         
+
     }
 
     GeoModelMesh::~GeoModelMesh()

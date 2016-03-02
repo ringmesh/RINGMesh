@@ -44,7 +44,9 @@
  */
 
 #include <geogram_gfx/basic/GL.h>
+#include <geogram_gfx/basic/GLUP.h>
 #include <geogram/basic/logger.h>
+#include <geogram/basic/command_line.h>
 
 namespace {
     using namespace GEO;
@@ -75,6 +77,7 @@ namespace {
 }
 
 namespace GEO {
+    
     void glLoadMatrix(const mat4& m) {
         glLoadMatrixd(convert_matrix(m));
     }
@@ -83,6 +86,14 @@ namespace GEO {
         glMultMatrixd(convert_matrix(m));
     }
 
+    void glupLoadMatrix(const mat4& m) {
+        glupLoadMatrixd(convert_matrix(m));
+    }
+
+    void glupMultMatrix(const mat4& m) {
+        glupMultMatrixd(convert_matrix(m));
+    }
+    
 
     GLint64 get_size_of_bound_buffer_object(GLenum target) {
         static bool init = false;
@@ -106,6 +117,10 @@ namespace GEO {
                     << "Buggy Intel driver detected (working around...)"
                     << std::endl;
             }
+            // Does not seem to be implemented under OpenGL ES
+            if(CmdLine::get_arg("gfx:GL_profile") == "ES") {
+                use_glGetBufferParameteri64v = false;
+            }
         }
         GLint64 result=0;
         if(use_glGetBufferParameteri64v) {
@@ -120,7 +135,8 @@ namespace GEO {
 
 
     void update_buffer_object(
-        GLuint& buffer_id, GLenum target, size_t new_size, const void* data
+        GLuint& buffer_id, GLenum target, size_t new_size, const void* data,
+        bool streaming
     ) {
         if(new_size == 0) {
             if(buffer_id != 0) {
@@ -140,7 +156,17 @@ namespace GEO {
         }
         
         if(new_size == size_t(size)) {
-            glBufferSubData(target, 0, GLsizeiptr(size), data);
+            if(streaming) {
+                //   Binding nil makes the GPU-side allocated buffer "orphan",
+                // if there was a rendering operation currently using it, then
+                // it can safely continue.
+                glBufferData(target, GLsizeiptr(size), nil, GL_STREAM_DRAW);
+                //   And here we bind a fresh new block of GPU-side memory.
+                // See https://www.opengl.org/wiki/Buffer_Object_Streaming
+                glBufferData(target, GLsizeiptr(size), data, GL_STREAM_DRAW);
+            } else {
+                glBufferSubData(target, 0, GLsizeiptr(size), data);
+            }
         } else {
             glBufferData(
                 target, GLsizeiptr(new_size), data, GL_STATIC_DRAW
@@ -170,5 +196,20 @@ namespace GEO {
                 update_buffer_object(buffer_id, target, new_size, data);
             }
         }
+    }
+
+    void check_gl(const char* file, int line) {
+        GLenum error_code = glGetError() ;
+        bool has_opengl_errors = false ;
+        while(error_code != GL_NO_ERROR) {
+            has_opengl_errors = true ;
+            Logger::err("OpenGL")
+                << file << ":" << line << " " 
+//                << (char*)(gluErrorString(error_code)) << std::endl ;
+                << std::endl;
+            error_code = glGetError() ;
+        }
+        geo_argused(has_opengl_errors);
+        // geo_debug_assert(!has_opengl_errors);
     }
 }

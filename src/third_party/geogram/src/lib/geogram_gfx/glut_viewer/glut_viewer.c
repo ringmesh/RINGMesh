@@ -1198,6 +1198,11 @@ static void inc_exposure() {
 
 static void init() {
 
+    if(!gladLoadGL()) {
+        printf("GLAD: could not load OpenGL\n");
+        exit(-1);
+    }
+
 #ifdef WITH_HDR
     if(glut_viewer_is_enabled(GLUT_VIEWER_HDR)) {
         glut_viewer_hdr_init();
@@ -2003,10 +2008,16 @@ void glTexImage2DXPM(const char** xpm_data) {
     gluBuild2DMipmaps(
         GL_TEXTURE_2D, GL_RGBA, width, height, GL_RGBA, GL_UNSIGNED_BYTE, rgba
     );
+    /*
+    glTexImage2D(
+        GL_TEXTURE_2D, 0,
+        GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgba
+    );
+    */
     free(rgba);
 }
 
-/*--------------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 
 #ifdef WITH_PNG
 static GLboolean glut_viewer_load_image_PNG(

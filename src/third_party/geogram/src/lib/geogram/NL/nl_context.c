@@ -142,6 +142,8 @@ static void nlSetupPreconditioner() {
     case NL_PRECOND_SSOR:
         nlCurrentContext->precond_vector_prod = nlPreconditioner_SSOR ;
         break ;
+    case NL_PRECOND_USER:
+        break ;
     default:
         nl_assert_not_reached ;
         break ;

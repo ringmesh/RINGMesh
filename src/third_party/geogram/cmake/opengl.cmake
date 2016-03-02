@@ -33,5 +33,8 @@ if(WIN32)
 else()
     find_package(X11)
     list(APPEND OPENGL_LIBRARIES X11)
+    
+    # GLAD needs the dynamic linker to query symbols in OpenGL lib
+    list(APPEND OPENGL_LIBRARIES dl)
 endif()
 
