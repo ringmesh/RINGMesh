@@ -177,7 +177,6 @@ namespace RINGMesh {
      * \li "normal_fault"
      * \li "fault"
      * \li "top"
-     * \li "topographic"
      * \li "none"
      * \li "unconformity"
      * \li "boundary"
@@ -199,8 +198,6 @@ namespace RINGMesh {
         } else if( in == "none" ) {
             // This might seem strange - but it seems that what's
             // Gocad is doing
-            return STRATI ;
-        } else if( in == "topographic" ) {
             return STRATI ;
         } else if( in == "unconformity" ) {
             return UNCONFORMITY ;
