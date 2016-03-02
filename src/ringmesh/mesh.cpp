@@ -35,7 +35,7 @@
 
 /*! \author Francois Bonneau */
 
-#include <ringmesh/geo_mesh.h>
+#include <ringmesh/mesh.h>
 #include <geogram/mesh/mesh.h>
 
 namespace RINGMesh {
