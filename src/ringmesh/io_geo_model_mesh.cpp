@@ -1302,23 +1302,23 @@ namespace {
         }
         signed_index_t point_boundary( index_t p )
         {
-            ringmesh_debug_assert( p < point_boundaries_.size() ) ;
+            ringmesh_assert( p < point_boundaries_.size() ) ;
             const std::set< unsigned int >& boundaries = point_boundaries_[p] ;
             if( box_model_ ) {
                 if( boundaries.size() == 1 ) {
                     std::map< unsigned int, int >::iterator it =
                         surface_boundary_flags_.find( *boundaries.begin() ) ;
-                    ringmesh_debug_assert( it != surface_boundary_flags_.end() ) ;
+                    ringmesh_assert( it != surface_boundary_flags_.end() ) ;
                     return it->second ;
                 } else if( boundaries.size() == 2 ) {
                     std::map< std::set< unsigned int >, int >::iterator it =
                         edge_boundary_flags_.find( boundaries ) ;
-                    ringmesh_debug_assert( it != edge_boundary_flags_.end() ) ;
+                    ringmesh_assert( it != edge_boundary_flags_.end() ) ;
                     return it->second ;
                 } else if( boundaries.size() == 3 ) {
                     std::map< std::set< unsigned int >, int >::iterator it =
                         corner_boundary_flags_.find( boundaries ) ;
-                    ringmesh_debug_assert( it != corner_boundary_flags_.end() ) ;
+                    ringmesh_assert( it != corner_boundary_flags_.end() ) ;
                     return it->second ;
                 } else {
                     return 0 ;
