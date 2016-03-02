@@ -49,7 +49,7 @@
 #include <geogram_gfx/basic/GLUP.h>
 #include <geogram_gfx/basic/common.h>
 #include <geogram/basic/logger.h>
-
+#include <geogram/mesh/mesh.h> // For cell descriptors / marching cells.
 /**
  * \file geogram_gfx/basic/GLUP_private.h
  * \brief Implementation classes for the GLUP API.
@@ -149,6 +149,12 @@ namespace GLUP {
      */
     void show_matrix(const GLfloat m[16]);
 
+    /**
+     * \brief For debugging, outputs a vector to the standard error.
+     * \param[in] v the vector to be displayed
+     */
+    void show_vector(const GLfloat v[4]);
+    
     /**
      * \brief Resets a matrix to the identity matrix.
      * \param[out] out the matrix to be reset.
@@ -857,6 +863,7 @@ namespace GLUP {
         StateVariable<GLint>               texture_mode;
         StateVariable<GLint>               texture_type;        
         VectorStateVariable                clip_plane;
+        VectorStateVariable                world_clip_plane;
         FloatsArrayStateVariable           modelview_matrix;
         FloatsArrayStateVariable           modelviewprojection_matrix;
         FloatsArrayStateVariable           normal_matrix;
@@ -911,6 +918,286 @@ namespace GLUP {
         bool vertex_gather_mode;
         bool implemented;
     };
+    
+    /**********************************************************************/
+
+    /**
+     * \brief Implements the MarchingCells algorithm.
+     * \details MarchingCell compute the intersection between
+     *  a cell and a plane, using only combinatorial information.
+     *  It uses the static tables from the Mesh class, so that cell
+     *  numberings are coherent between storage and graphics.
+     */
+    class MarchingCell {
+    public:
+
+        /**
+         * \brief MarchingCell constructor
+         * \param[in] prim the GLUP volumetric primitive, should be one
+         *  of GLUP_TETRAHEDRA, GLUP_HEXAHEDRA, GLUP_PRISMS, GLUP_PYRAMIDS.
+         */
+        MarchingCell(GLUPprimitive prim);
+
+        /**
+         * \brief MarchingCell destructor.
+         */
+        ~MarchingCell();
+
+        /**
+         * \brief Gets the number of vertices.
+         * \return the number of vertices in a cell
+         */
+        index_t nb_vertices() const {
+            return nb_vertices_;
+        }
+
+        /**
+         * \brief Gets the number of edges.
+         * \return the number of edges in a cell
+         */
+        index_t nb_edges() const {
+            return nb_edges_;
+        }
+
+
+        /**
+         * \brief Gets the number of configurations.
+         * \return the number of configurations
+         */
+        index_t nb_configs() const {
+            return nb_configs_;
+        }
+        
+        /**
+         * \brief Gets a vertex by edge index and local vertex index.
+         * \param[in] e the index of the edge
+         * \param[in] lv the local vertex index in the edge, one of 0,1
+         * \return the vertex index 
+         */
+        index_t edge_vertex(index_t e, index_t lv) const {
+            geo_debug_assert(e < nb_edges());
+            geo_debug_assert(lv < 2);
+            return edge_[e*2+lv];
+        }
+
+        /**
+         * \brief Gets the number of intersected edges in a configuration.
+         * \param[in] config the vertex configuration bitcode. The
+         *  bit corresponding to vertex v is set if v is on the positive
+         *  side of the intersection plane.
+         * \return the number of intersected edges in configuration \p config
+         */
+        index_t config_size(index_t config) const {
+            geo_debug_assert(config < nb_configs());
+            return config_size_[config];
+        }
+
+        /**
+         * \brief Gets the maximum configuration size.
+         * \return the largest number of vertices in an intersection polygon
+         */
+        index_t max_config_size() const {
+            return max_config_size_;
+        }
+
+        /**
+         * \brief Gets the list of intersected edges in a configuration.
+         * \param[in] config the vertex configuration bitcode. The
+         *  bit corresponding to vertex v is set if v is on the positive
+         *  side of the intersection plane.
+         * \return a pointer to the array of edge indices that correspond to
+         *  this configuration, of size config_size()
+         */
+        const index_t* config_edges(index_t config) const {
+            geo_debug_assert(config < nb_configs());
+            return config_ + config * nb_edges_;
+        }
+
+        /**
+         * \brief Gets the GLSL declaration of marching cell uniform state.
+         * \return a pointer to GLSL source code that declares this
+         *  marching cell's uniform state.
+         */
+        const char* GLSL_uniform_state_declaration() const {
+            return GLSL_uniform_state_declaration_.c_str();
+        }
+
+        /**
+         * \brief Gets the GLSL declaration of the function that
+         *  computes the intersections.
+         * \return a pointer to GLSL source code.
+         */
+        const char* GLSL_compute_intersections() const {
+            return GLSL_compute_intersections_.c_str();
+        }
+
+        
+        /**
+         * \brief Gets the binding point of the uniform buffer that
+         *  contains the tables for the marching cell.
+         * \return the uniform binding point
+         */
+        GLuint uniform_binding_point() const {
+            return uniform_binding_point_;
+        }
+
+        /**
+         * \brief Creates a Uniform Buffer Object that contains
+         *  the tables for the marching cell.
+         */
+        GLuint create_UBO();
+
+        /**
+         * \brief Binds the uniform state marching cell variables
+         *  to a given program.
+         */
+        void bind_uniform_state(GLuint program);
+        
+    protected:
+
+        /**
+         * \brief Computes the intersection polygon for a configuration.
+         * \param[in] config the vertex configuration bitcode. The
+         *  bit corresponding to vertex v is set if v is on the positive
+         *  side of the intersection plane.
+         */
+        void compute_config(index_t config);
+        
+        /**
+         * \brief Moves from a given halfedge to the next halfege.
+         * \details The halfedge is refered to as a facet index and a
+         *  local vertex index within the facet.
+         * \param[in,out] f the index of the facet
+         * \param[in,out] lv the local index of the vertex in the facet.
+         */
+        void move_to_next(index_t& f, index_t& lv) {
+            lv = (lv+1) % desc_->nb_vertices_in_facet[f];
+        }
+
+        /**
+         * \brief Gets the origin vertex of a halfedge.
+         * \details The halfedge is refered to as a facet index and a
+         *  local vertex index within the facet.
+         * \param[in] f the index of the facet
+         * \param[in] lv the local index of the vertex in the facet.
+         * \return the index of the origin vertex of the halfedge
+         */
+        index_t origin_vertex(index_t f, index_t lv) {
+            return desc_->facet_vertex[f][lv];
+        }
+
+        /**
+         * \brief Gets the destination vertex of a halfedge.
+         * \details The halfedge is refered to as a facet index and a
+         *  local vertex index within the facet.
+         * \param[in] f the index of the facet
+         * \param[in] lv the local index of the vertex in the facet.
+         * \return the index of the destination vertex of the halfedge
+         */
+        index_t destination_vertex(index_t f, index_t lv) {
+            move_to_next(f, lv);
+            return origin_vertex(f, lv);
+        }
+
+        /**
+         * \brief Gets the edge index that corresponds to a given halfedge.
+         * \details The halfedge is refered to as a facet index and a
+         *  local vertex index within the facet.
+         * \param[in] f the index of the facet
+         * \param[in] lv the local index of the vertex in the facet.
+         * \return the index of the edge.
+         */
+        index_t edge(index_t f, index_t lv) {
+            index_t v1 = origin_vertex(f, lv);
+            index_t v2 = destination_vertex(f, lv);
+            index_t result = vv_to_e_[v1*desc_->nb_vertices+v2];
+            geo_debug_assert(result != index_t(-1));
+            return result;
+        }
+
+        /**
+         * \brief Moves from a given halfedge to the opposite halfege.
+         * \details The halfedge is refered to as a facet index and a
+         *  local vertex index within the facet.
+         * \param[in,out] f the index of the facet
+         * \param[in,out] lv the local index of the vertex in the facet.
+         */
+        void move_to_opposite(index_t& f, index_t& lv);
+
+        /**
+         * \brief Tests whether a given edge is intersected.
+         * \details The halfedge is refered to as a facet index and a
+         *  local vertex index within the facet.
+         * \param[in] f the index of the facet
+         * \param[in] lv the local index of the vertex in the facet.
+         * \param[in] config the vertex configuration bitcode. The
+         *  bit corresponding to vertex v is set if v is on the positive
+         *  side of the intersection plane.
+         * \retval true if the edge is intersected
+         * \retval false otherwise
+         */
+        bool edge_is_intersected(index_t f, index_t lv, index_t config) {
+            index_t v1 = origin_vertex(f, lv);
+            index_t v2 = destination_vertex(f, lv);
+            bool v1_in = ((config & 1u<<v1) != 0);
+            bool v2_in = ((config & 1u<<v2) != 0);
+            return (v1_in != v2_in);
+        }
+
+        /**
+         * \brief Tests whether a vertex configuration bitcode is
+         *  ambiguous.
+         * \details A configuration is ambiguous if it results in several
+         *  intersection polygons.
+         * \param[in] config the vertex configuration bitcode. The
+         *  bit corresponding to vertex v is set if v is on the positive
+         *  side of the intersection plane.
+         * \retval true if the configuration is ambiguous
+         * \retval false otherwise
+         */
+        bool config_is_ambiguous(index_t config);
+        
+        /**
+         * \brief Gets the first intersected halfedge given a 
+         *  vertex configuration.
+         * \param[out] f the facet of the first intersected halfedge
+         * \param[out] lv the local vertex index of the first intersected
+         *  halfedge
+         * \param[in] config the vertex configuration bitcode. The
+         *  bit corresponding to vertex v is set if v is on the positive
+         *  side of the intersection plane.
+         * \retval true if there was an intersection
+         * \retval false otherwise
+         */
+        bool get_first_edge(index_t& f, index_t& lv, index_t config);
+
+    private:
+        /**
+         * \brief Forbids copy.
+         */
+        MarchingCell(const MarchingCell& rhs);
+        
+        /**
+         * \brief Forbids copy.
+         */
+        MarchingCell& operator=(const MarchingCell& rhs);
+        
+    private:
+        const CellDescriptor* desc_;
+        index_t vv_to_e_[64];
+        index_t nb_vertices_;
+        index_t nb_configs_;
+        index_t* config_size_;
+        index_t max_config_size_;
+        index_t* config_;
+        index_t nb_edges_;
+        index_t* edge_;
+        std::string GLSL_uniform_state_declaration_;
+        std::string GLSL_compute_intersections_;
+        GLuint uniform_binding_point_;
+        GLuint UBO_;
+    };
+    
     
     /**********************************************************************/
     
@@ -1224,7 +1511,7 @@ namespace GLUP {
          *  the profile-dependent declarations.
          */
         const char* profile_dependent_declarations();
-        
+
         /**
          * \brief This function is called before starting to
          *  render primitives. It is called by begin(), draw_arrays()
@@ -1334,18 +1621,6 @@ namespace GLUP {
          */
         virtual void flush_immediate_buffers();
             
-        /**
-         * \brief Gets the offset of a variable within a uniform 
-         *   block
-         * \param[in] program the id of a GLSL program that uses the
-         *   uniform block
-         * \param[in] name the name of the variable.
-         * \return the offset of the variable within its uniform block.
-         */
-        static size_t get_uniform_offset(
-            GLuint program, const char* name
-        );
-
         /**
          * \brief Copies GLUP uniform state to OpenGL.
          */
@@ -1460,6 +1735,14 @@ namespace GLUP {
         // draw a primitive of a given type).
         vector<PrimitiveInfo> primitive_info_;
 
+        // The marching cells, for computing
+        // intersections when clipping mode
+        // is GLUP_CLIP_SLICE_CELLS
+        MarchingCell marching_tet_;
+        MarchingCell marching_hex_;
+        MarchingCell marching_prism_;
+        MarchingCell marching_pyramid_;
+        
         GLuint user_program_;
         
         index_t toggles_config_;
@@ -1488,6 +1771,11 @@ namespace GLUP {
          * \copydoc Context::profile_name()
          */
         virtual const char* profile_name() const;
+
+        /**
+         * \copydoc Context::setup()
+         */
+        virtual void setup();
         
     protected:
         /**
@@ -1613,14 +1901,23 @@ namespace GLUP {
         void configure_OpenGL_lighting();
 
         /**
+         * \brief Configures clipping-related OpenGL state
+         *  variables according to the GLUP state variables.
+         * \details This function is called by begin(). 
+         */
+        void configure_OpenGL_clipping();
+        
+        /**
          * \brief Configures lighting-related OpenGL state
          *  variables according to the GLUP state variables.
          * \details This function is called by begin(). It needs
-         *  to be called last, since it overrides texturing and
+         *  to be called after configure_OpenGL_texturing() and
+         *  configure_OpenGL_lighting() since it overrides texturing and
          *  lighting settings.
          */
         void configure_OpenGL_picking();        
-       
+
+        
         /**
          * \copydoc Context::setup()
          */
@@ -1679,8 +1976,26 @@ namespace GLUP {
          * \brief Tests whether the cell starting at a given vertex
          *  in the immediate buffer is clipped, according to current
          *  clipping mode and current primitive type.
+         * \param[in] first_v index of the first vertex of the cell in
+         *  the immediate buffer
+         * \retval true if the cell starting at \p first_v in the 
+         *  immediate buffer is clipped-out
+         * \retval false otherwise
          */
         bool cell_is_clipped(index_t first_v);
+
+        /**
+         * \brief Tests whether cells should be sliced.
+         * \retval true if cells should be sliced
+         * \retval false otherwise
+         */
+        bool clip_slice_cells() const {
+            return (
+                uniform_state_.toggle[GLUP_CLIPPING].get() &&
+                uniform_state_.clipping_mode.get() == GLUP_CLIP_SLICE_CELLS &&
+                immediate_state_.primitive() >= GLUP_TETRAHEDRA
+            ) ;
+        }
         
         /**
          * \brief Sends a vertex and its optional attributes to OpenGL.
@@ -1808,6 +2123,98 @@ namespace GLUP {
          *  OpenGL, as pyramid primitives.
          */
         void draw_immediate_buffer_GLUP_PYRAMIDS();
+
+        /**
+         * \brief Computes the intersection between the clipping plane and
+         *  a segment.
+         * \param[in] v1 index of the first extremity of the segment in the
+         *  immediate buffer
+         * \param[in] v2 index of the second extremity of the segment in the
+         *  immediate buffer
+         * \param[in] v1 index of where to wrote the intersection in the 
+         *  isect_xxx arrays
+         */
+        void compute_intersection(index_t v1, index_t v2, index_t vi) {
+            const GLUPfloat* eqn = world_clip_plane_;
+            const GLUPfloat* p1 = immediate_state_.buffer[0].element_ptr(v1);
+            const GLUPfloat* p2 = immediate_state_.buffer[0].element_ptr(v2);
+            
+            GLUPfloat t = -eqn[3] -(
+                eqn[0]*p1[0] +
+                eqn[1]*p1[1] +
+                eqn[2]*p1[2]
+            );
+
+            GLUPfloat d =
+                eqn[0]*(p2[0]-p1[0]) +
+                eqn[1]*(p2[1]-p1[1]) +
+                eqn[2]*(p2[2]-p1[2]) ;
+            
+            if(fabs(d) < 1e-6) {
+                t = 0.5f;
+            } else {
+                t /= d;
+            }
+
+            GLUPfloat s = 1.0f - t;
+            
+            isect_point_[4*vi+0] = s*p1[0] + t*p2[0];
+            isect_point_[4*vi+1] = s*p1[1] + t*p2[1];
+            isect_point_[4*vi+2] = s*p1[2] + t*p2[2];
+            isect_point_[4*vi+3] = 1.0f;
+            
+            if(immediate_state_.buffer[1].is_enabled()) {
+                const GLUPfloat* c1 =
+                    immediate_state_.buffer[1].element_ptr(v1);
+                const GLUPfloat* c2 =
+                    immediate_state_.buffer[1].element_ptr(v2);
+                isect_color_[4*vi+0] = s*c1[0] + t*c2[0];
+                isect_color_[4*vi+1] = s*c1[1] + t*c2[1];
+                isect_color_[4*vi+2] = s*c1[2] + t*c2[2];
+                isect_color_[4*vi+3] = s*c1[3] + t*c2[3];                
+            }
+            
+            if(immediate_state_.buffer[2].is_enabled()) {
+                const GLUPfloat* tex1 =
+                    immediate_state_.buffer[2].element_ptr(v1);
+                const GLUPfloat* tex2 =
+                    immediate_state_.buffer[2].element_ptr(v2);
+                
+                isect_tex_coord_[4*vi+0] = s*tex1[0] + t*tex2[0];
+                isect_tex_coord_[4*vi+1] = s*tex1[1] + t*tex2[1];
+                isect_tex_coord_[4*vi+2] = s*tex1[2] + t*tex2[2];
+                isect_tex_coord_[4*vi+3] = s*tex1[3] + t*tex2[3];
+            }
+        }
+
+        /**
+         * \brief Assemble the configuration code of a primitive
+         *  relative to the clipping plane.
+         * \param[in] first_v index of the first vertex of the 
+         *  primitive in the immediate buffer
+         * \param[in] nb_v number of vertices of the primitive
+         * \return an integer with the i-th bit set if vertex i
+         *  is visible, and unset if it is clipped.
+         */
+        index_t get_config(index_t first_v, index_t nb_v) {
+            index_t result = 0;
+            for(index_t lv=0; lv<nb_v; ++lv) {
+                if(v_is_visible_[first_v+lv]) {
+                    result = result | (1u << lv);
+                }
+            }
+            return result;
+        }
+
+        /**
+         * \brief Draws all the primitives from the immediate buffer using
+         *  the marching cells algorithm.
+         * \details This function is used when clipping is enabled and when
+         *  clippping mode is GLUP_CLIP_SLICE_CELLS
+         */
+        void draw_immediate_buffer_with_marching_cells(
+            const MarchingCell& cell
+        );
         
     private:
         std::map<std::string, GLsizei> variable_to_offset_;
@@ -1823,6 +2230,30 @@ namespace GLUP {
          *  OpenGL for each primitive.
          */
         bool pick_primitives_;
+
+        /**
+         * \brief computed intersections.
+         * \details Used when clipping mode is GLUP_CLIP_SLICE_CELLS.
+         */
+        GLUPfloat isect_point_[12*4];
+
+        /**
+         * \brief computed colors of intersections.
+         * \details Used when clipping mode is GLUP_CLIP_SLICE_CELLS.
+         */
+        GLUPfloat isect_color_[12*4];
+
+        /**
+         * \brief computed texture coordinates of intersections.
+         * \details Used when clipping mode is GLUP_CLIP_SLICE_CELLS.
+         */
+        GLUPfloat isect_tex_coord_[12*4];
+
+
+        /**
+         * \brief Cached pointer to uniform state variable.
+         */
+        GLUPfloat* world_clip_plane_;
     };
 
     /*********************************************************************/
