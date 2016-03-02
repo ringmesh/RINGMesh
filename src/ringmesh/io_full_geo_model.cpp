@@ -54,6 +54,8 @@
 #include <ringmesh/geometry.h>
 #include <ringmesh/well.h>
 #include <ringmesh/utils.h>
+#include <ringmesh/io.h>
+
 
 /*!
  * @file Implementation of classes loading volumetric GeoModels
@@ -342,16 +344,17 @@ namespace {
         zipFile zf )
     {
         GME::TYPE type = geo_model_element_mesh.type() ;
-        std::string type_str = geo_model_element_mesh.type_name( type ) ;
-        std::string index_str = GEO::String::to_string(
-            geo_model_element_mesh.index() ) ;
-        std::string root_name = type_str + "_" + index_str ;
-        std::string mesh_handler = ".meshb" ;
 
-        GEO::mesh_save( geo_model_element_mesh.mesh(), root_name + mesh_handler ) ;
-        zip_file( zf, root_name + mesh_handler ) ;
-        GEO::FileSystem::delete_file( root_name + mesh_handler ) ;
+        std::string name ;
+        build_string_for_geo_model_element_export(type,geo_model_element_mesh.index(), name) ;
+        GEO::mesh_save( geo_model_element_mesh.mesh(), name) ;
+        zip_file( zf, name) ;
+        GEO::FileSystem::delete_file( name ) ;
 
+        std::string root_name ;
+        std::string handler ;
+        char separator = '.' ;
+        GEO::String::split_string(name,separator,root_name,handler) ;
         save_geo_mesh_attributes( root_name, geo_model_element_mesh.mesh(), zf ) ;
     }
 
