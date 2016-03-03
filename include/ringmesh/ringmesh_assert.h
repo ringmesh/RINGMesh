@@ -70,24 +70,20 @@ namespace RINGMesh {
     }
 }
 
-#define ringmesh_assert( x ) \
+#ifdef RINGMESH_DEBUG
+  #define ringmesh_assert( x )  \
     {                                        \
         if( !( x ) ) {                                                 \
             ::RINGMesh::ringmesh_assertion_failed( # x, __FILE__, __LINE__ ) ;   \
         }                                                          \
     }
-
-#define ringmesh_assert_not_reached \
+  #define ringmesh_assert_not_reached \
     {                               \
         ::RINGMesh::ringmesh_should_not_have_reached( __FILE__, __LINE__ ) ;   \
     }
-
-#ifdef RINGMESH_DEBUG
-  #define ringmesh_debug_assert( x ) ringmesh_assert( x )
-  #define ringmesh_debug_assert_not_reached ringmesh_assert_not_reached
 #else
-  #define ringmesh_debug_assert( x )
-  #define ringmesh_debug_assert_not_reached
+  #define ringmesh_assert( x )
+  #define ringmesh_assert_not_reached
 #endif
 
 #endif

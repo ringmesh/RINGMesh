@@ -63,7 +63,7 @@ namespace {
     */
     index_t find_region( const GeoModel& BM, index_t surface_part_id, bool side )
     {
-        ringmesh_debug_assert( surface_part_id < BM.nb_surfaces() ) ;
+        ringmesh_assert( surface_part_id < BM.nb_surfaces() ) ;
         GME::gme_t cur_surface( GME::SURFACE, surface_part_id ) ;
         /// @todo It would be better to directly check the region
         /// adjacent to the Surface.
@@ -415,7 +415,7 @@ namespace RINGMesh {
      */
     void WellGroup::add_well( const GEO::Mesh& mesh, const std::string& name )
     {
-        ringmesh_debug_assert( model() ) ;
+        ringmesh_assert( model() ) ;
         if( find_well( name ) != NO_ID ) return ;
         wells_.push_back( new Well ) ;
         Well& new_well = *wells_.back() ;
@@ -607,7 +607,7 @@ namespace RINGMesh {
             well_part.set_corner( 0, corner0 ) ;
 //            index_t corner1 = new_well.find_corner(
 //                well_points.back() ) ;
-            ringmesh_debug_assert( new_well.find_corner(
+            ringmesh_assert( new_well.find_corner(
                 well_points.back() ) == NO_ID ) ;
 //            if( corner1 == NO_ID ) {
                 WellCorner::corner_info_t corner_info ;
