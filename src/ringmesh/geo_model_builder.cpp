@@ -3624,9 +3624,6 @@ namespace RINGMesh {
 
     void GeoModelBuilderGM::load_connectivities(  GEO::LineInput& file_line  )
     {
-
-
-
         while( !file_line.eof() && file_line.get_line() ) {
             file_line.get_fields() ;
             if( file_line.nb_fields() > 0 ) {
