@@ -86,6 +86,12 @@ namespace {
         }
         out << std::endl ;
     }
+
+    /*!
+     * @brief Save the connectivity of a GeoModelin in a file
+     * @param[in] M the GeoModel
+     * @param[in] file_name the file name (lol)
+     */
     void save_connectivity( const GeoModel& M, const std::string& file_name )
     {
         std::ofstream out( file_name.c_str() ) ;
@@ -113,6 +119,11 @@ namespace {
         }
     }
 
+    /*!
+     * @brief Save the topology of a GeoModelin a file
+     * @param[in] M the GeoModel
+     * @param[in] file_name the file name (lol)
+     */
     void save_topology( const GeoModel& M, const std::string& file_name )
     {
         std::ofstream out( file_name.c_str() ) ;
@@ -302,6 +313,11 @@ namespace {
 
     /************************************************************************/
 
+    /*!
+     * @brief Save the attribute of one GeomModelElement
+     * @param[in] filename path to the text file
+     * @param[in] mesh_element the MeshElement of the original GEO::Mesh
+     */
     void save_mesh_element_attributes(
         const std::string& filename,
         const GEO::MeshSubElementsStore& mesh_element )
@@ -311,7 +327,6 @@ namespace {
         mesh_element.attributes().list_attribute_names( attribute_names ) ;
         for( index_t att = 0; att < mesh_element.attributes().nb(); att++ ) {
 
-            DEBUG(attribute_names[att]) ;
             //TODO: this is temps ! Waiting for clean attribute type manager
             //by Bruno, for the moment we only deal with double
             if( !is_attribute_a_double( mesh_element.attributes(),
@@ -337,10 +352,16 @@ namespace {
 
     }
 
+    /*!
+     * @brief Save the attribute of all the GeomModelElement
+     * @param[in] root_name it contains the GeoModelElement type and its id
+     * @param[in] mesh the mesh on which the attribute are stored
+     * @param[in] zf the zip file
+     */
     void save_geo_mesh_attributes(
         const std::string& root_name,
         const GEO::Mesh& mesh,
-        zipFile zf )
+        zipFile& zf )
     {
         std::string vertices_attributes_file_name = root_name
             + "_vertices_attributes.txt" ;
@@ -376,16 +397,25 @@ namespace {
         }
     }
 
-    void save_geo_model_element(
+    /*!
+     * @brief Save the GeoModelMeshElement in a meshb file
+     * @param[in] geo_model_element_mesh the GeoModelMeshElement you want to save
+     * @param[in] zf the zip file
+     */
+    void save_geo_model_mesh_element(
         const GeoModelMeshElement& geo_model_element_mesh,
-        zipFile zf )
+        zipFile& zf )
     {
         GME::TYPE type = geo_model_element_mesh.type() ;
 
         std::string name ;
         build_string_for_geo_model_element_export( type,
             geo_model_element_mesh.index(), name ) ;
+        GEO::Logger* logger = GEO::Logger::instance() ;
+        logger->set_quiet(true) ;
         GEO::mesh_save( geo_model_element_mesh.mesh(), name ) ;
+        logger->set_quiet(false) ;
+
         zip_file( zf, name ) ;
         GEO::FileSystem::delete_file( name ) ;
 
@@ -415,6 +445,7 @@ namespace {
 
             zipFile zf = zipOpen( filename.c_str(), APPEND_STATUS_CREATE ) ;
 
+
             save_topology( model, "topology.txt" ) ;
             zip_file( zf, "topology.txt" ) ;
             GEO::FileSystem::delete_file( "topology.txt" ) ;
@@ -426,7 +457,7 @@ namespace {
             for( index_t t = GME::CORNER; t <= GME::REGION; t++ ) {
                 GME::TYPE type = static_cast< GME::TYPE >( t ) ;
                 for( index_t e = 0; e < model.nb_elements( type ); e++ ) {
-                    save_geo_model_element( model.mesh_element( type, e ), zf ) ;
+                    save_geo_model_mesh_element( model.mesh_element( type, e ), zf ) ;
                 }
             }
 

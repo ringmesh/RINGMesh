@@ -51,12 +51,6 @@ namespace RINGMesh {
         {
             GEO::CmdLine::declare_arg_group( "in", "Input data" ) ;
             GEO::CmdLine::declare_arg(
-                "in:model", "",
-                "Filename of the input structural model" ) ;
-            GEO::CmdLine::declare_arg(
-                "in:mesh", "",
-                "Filename of the input volumetric mesh" ) ;
-            GEO::CmdLine::declare_arg(
                 "in:geomodel", "",
                 "Filename of the input geological model" ) ;
         }
@@ -64,12 +58,7 @@ namespace RINGMesh {
         void import_arg_group_out()
         {
             GEO::CmdLine::declare_arg_group( "out", "Output data" ) ;
-            GEO::CmdLine::declare_arg(
-                "out:model", "",
-                "Saves the structural model" ) ;
-            GEO::CmdLine::declare_arg(
-                "out:mesh", "",
-                "Saves the volumetric mesh of the structural model" ) ;
+
             GEO::CmdLine::declare_arg(
                 "out:geomodel", "",
                 "Saves the geological model" ) ;
