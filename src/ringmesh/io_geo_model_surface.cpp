@@ -219,7 +219,7 @@ namespace {
             for( index_t j = 0; j < S.nb_vertices_in_facet( i ); ++j ) {
                 index_t v0 = S.surf_vertex_id( i, j ) ;
                 index_t v1 = S.surf_vertex_id( i, S.next_in_facet( i, j ) ) ;
-                if( v0 == v0_in && v1 == v1_in || v0 == v1_in && v1 == v0_in ) {
+                if( ( v0 == v0_in && v1 == v1_in ) || ( v0 == v1_in && v1 == v0_in ) ) {
                     return true ;
                 }
             }

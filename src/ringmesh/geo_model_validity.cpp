@@ -196,7 +196,8 @@ namespace {
                 std::swap( lv0, lv1 ) ;
             }
             // Casts are here to avoid a compiler warning [JP]
-            int delta_i = static_cast< int >( lv1 ) - static_cast< int >( lv0 ) ;
+//            index_t delta_i = static_cast< int >( lv1 ) - static_cast< int >( lv0 ) ;
+            index_t delta_i = lv1 - lv0 ;
 
             if( delta_i == 1 ) {
                 // There is an edge if their indices in the Line are i and i+1
@@ -757,7 +758,7 @@ namespace {
 
             bool valid = true ;
             index_t nb_cc = GEO::mesh_nb_connected_components( mesh ) ;
-            index_t nb_b = GEO::mesh_nb_borders( mesh ) ;
+            signed_index_t nb_b = GEO::mesh_nb_borders( mesh ) ;
             if( nb_cc != 1 ) {
                 GEO::Logger::warn( "GeoModel" ) << " Surface boundary of "
                     << region.gme_id() << " has " << nb_cc

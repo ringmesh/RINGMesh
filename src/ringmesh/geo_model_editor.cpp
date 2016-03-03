@@ -232,7 +232,7 @@ namespace RINGMesh {
      */
     bool GeoModelEditor::get_dependent_elements( std::set< gme_t >& in ) const
     {
-        index_t input_size = in.size() ;
+        index_t input_size = static_cast< index_t >( in.size() ) ;
 
         for( std::set< gme_t >::iterator it( in.begin() ); it != in.end(); ++it ) {
             gme_t cur = *it ;

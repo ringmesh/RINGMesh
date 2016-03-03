@@ -103,7 +103,7 @@ namespace RINGMesh {
         index_t nb_elements( GME::TYPE type ) const
         {
             if( type < GME::NO_TYPE ) {
-                return elements( type ).size() ;
+                return static_cast< index_t >( elements( type ).size() ) ;
             } else if( type == GME::ALL_TYPES ) {
                 ringmesh_assert( !nb_elements_per_type_.empty() ) ;
                 return nb_elements_per_type_.back() ;

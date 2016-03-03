@@ -154,10 +154,11 @@ namespace RINGMesh {
      * @note Tricky algorithm, used over and over in Geogram
      */
     template< typename T >
-    inline index_t determine_unique_values_indices( const std::vector< T >& input_values, 
-                                                    std::vector< index_t >& unique_value_indices )
+    inline index_t determine_unique_values_indices(
+        const std::vector< T >& input_values,
+        std::vector< index_t >& unique_value_indices )
     {
-        index_t nb_values = input_values.size() ;
+        index_t nb_values = static_cast< index_t >( input_values.size() ) ;
         std::vector< index_t > sorted_indices( nb_values ) ;
         for( index_t i = 0; i < nb_values; ++i ) {
             sorted_indices[ i ] = i ;
@@ -192,12 +193,13 @@ namespace RINGMesh {
      *          input2unique_values = 0 1 2 3 1 3  
      */
      template< typename T >
-     inline void get_unique_input_values_and_mapping( const std::vector< T >& input_values,
-                                                      std::vector< T >& unique_values,
-                                                      std::vector< index_t >& input2unique_values )
-     {
-         unique_values.resize(0) ;
-         index_t nb_values = input_values.size() ;
+    inline void get_unique_input_values_and_mapping(
+        const std::vector< T >& input_values,
+        std::vector< T >& unique_values,
+        std::vector< index_t >& input2unique_values )
+    {
+        unique_values.resize( 0 ) ;
+         index_t nb_values = static_cast< index_t >( input_values.size() ) ;
          input2unique_values.resize( nb_values, NO_ID ) ;
 
          std::vector< index_t > unique_value_indices ;
@@ -205,9 +207,10 @@ namespace RINGMesh {
          unique_values.reserve( nb_unique_values ) ;
 
          for( index_t i = 0; i < nb_values; ++i ) {
-             if( unique_value_indices[ i ] == i ) {
-                 input2unique_values[ i ] = unique_values.size() ;
-                 unique_values.push_back( input_values[ i ] ) ;
+            if( unique_value_indices[i] == i ) {
+                input2unique_values[i] =
+                    static_cast< index_t >( unique_values.size() ) ;
+                unique_values.push_back( input_values[i] ) ;
              } else {
                  input2unique_values[ i ] = input2unique_values[ unique_value_indices[ i ] ] ;
              }
@@ -219,12 +222,14 @@ namespace RINGMesh {
      * @param[in,out] container the container to sort
      * @param[in] cmp a comparator function
      */
-    template< typename CONTAINER, typename CMP > inline void sort_unique(
+    template< typename CONTAINER, typename CMP >
+    inline void sort_unique(
         CONTAINER& container,
         const CMP& cmp )
     {
         std::sort( container.begin(), container.end(), cmp ) ;
-        container.erase( std::unique( container.begin(), container.end(), cmp ), container.end() ) ;
+        container.erase( std::unique( container.begin(), container.end(), cmp ),
+            container.end() ) ;
     }
 }
 
