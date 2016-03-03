@@ -500,10 +500,26 @@ protected:
         }
 
     private:
-        void load_connectivities(unzFile& uz ) ;
+        /*!
+         * @brief Load the connectivities
+         */
+        void load_connectivities( GEO::LineInput& file_line  ) ;
+        /*!
+         * @brief Load elements of one type from a zip file
+         * @param[in] gme_t the GeoModelElement type
+         * @param[in] uz the zip file
+         */
         void load_elements(GME::TYPE gme_t, unzFile& uz) ;
+
         void load_file() ;
+        /*!
+         * @brief Unzip a file in a zip file and set it to the current unZIP file
+         */
         void unzip_one_file( unzFile& uz,const char filename[MAX_FILENAME] );
+
+        /*!
+         * @brief Load the topology
+         */
         void load_topology( GEO::LineInput& file_line ) ;
     } ;
 }

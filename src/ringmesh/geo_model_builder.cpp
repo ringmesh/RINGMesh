@@ -3605,23 +3605,27 @@ namespace RINGMesh {
         GEO::LineInput line_topo( topology ) ;
 
         load_topology( line_topo ) ;
+        GEO::FileSystem::delete_file( topology ) ;
 
         for( index_t t = GME::CORNER; t <= GME::REGION; t++ ) {
             GME::TYPE type = static_cast< GME::TYPE >( t ) ;
             load_elements( type, uz ) ;
         }
 
-        load_connectivities(uz) ;
+        std::string connectivity = "connectivity.txt" ;
+        unzip_one_file( uz, connectivity.c_str() ) ;
+
+        GEO::LineInput line_connectivity( connectivity ) ;
+        load_connectivities(line_connectivity) ;
+        GEO::FileSystem::delete_file( connectivity ) ;
+
 
     }
 
-    void GeoModelBuilderGM::load_connectivities( unzFile& uz )
+    void GeoModelBuilderGM::load_connectivities(  GEO::LineInput& file_line  )
     {
 
-        std::string file_name = "connectivity.txt" ;
-        unzip_one_file( uz, file_name.c_str() ) ;
 
-        GEO::LineInput file_line( file_name ) ;
 
         while( !file_line.eof() && file_line.get_line() ) {
             file_line.get_fields() ;
@@ -3644,7 +3648,6 @@ namespace RINGMesh {
             }
 
         }
-        GEO::FileSystem::delete_file( file_name ) ;
 
     }
 

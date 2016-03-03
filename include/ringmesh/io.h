@@ -67,7 +67,7 @@ namespace RINGMesh {
 
     bool RINGMESH_API compare_files( const std::string& f1, const std::string& f2 ) ;
 
-    ///TODO 4 nest function are gonna disappear...
+    ///TODO 4 next function are gonna disappear...
     void RINGMESH_API geomodel_surface_load(
         const std::string& filename,
         GeoModel& model ) ;
