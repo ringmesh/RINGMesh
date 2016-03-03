@@ -500,9 +500,10 @@ protected:
         }
 
     private:
-        void load_elements(GME::TYPE gme_t, unzFile uz) ;
+        void load_connectivities(unzFile& uz ) ;
+        void load_elements(GME::TYPE gme_t, unzFile& uz) ;
         void load_file() ;
-        void unzip_one_file( unzFile uz,const char filename[MAX_FILENAME] );
+        void unzip_one_file( unzFile& uz,const char filename[MAX_FILENAME] );
         void load_topology( GEO::LineInput& file_line ) ;
     } ;
 }

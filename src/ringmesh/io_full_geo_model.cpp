@@ -56,7 +56,6 @@
 #include <ringmesh/utils.h>
 #include <ringmesh/io.h>
 
-
 /*!
  * @file Implementation of classes loading volumetric GeoModels
  * @author Arnaud Botella and Antoine Mazuyer
@@ -86,6 +85,29 @@ namespace {
             out << " " << E.child_id( j ).index ;
         }
         out << std::endl ;
+    }
+    void save_connectivity( const GeoModel& M, const std::string& file_name )
+    {
+        std::ofstream out( file_name.c_str() ) ;
+        out.precision( 16 ) ;
+        if( out.bad() ) {
+            throw RINGMeshException( "I/O",
+                "Error when opening the file: " + file_name ) ;
+        }
+
+        for( index_t t = GME::CORNER; t < GME::REGION; t++ ) {
+            GME::TYPE type = static_cast< GME::TYPE >( t ) ;
+            for( index_t e = 0; e < M.nb_elements( type ); e++ ) {
+                const GeoModelMeshElement& cur_geo_model_element = M.mesh_element(
+                    type, e ) ;
+                out << "GME"<< " "<<cur_geo_model_element.type_name(type) << " " << e <<std::endl ;
+                for( index_t in_b = 0; in_b < cur_geo_model_element.nb_in_boundary(); in_b++ ) {
+                    out << cur_geo_model_element.in_boundary_gme( in_b ).index << " " ;
+                }
+                out << std::endl ;
+            }
+
+        }
     }
 
     void save_topology( const GeoModel& M, const std::string& file_name )
@@ -136,6 +158,18 @@ namespace {
             }
             out << std::endl ;
         }
+
+        // Universe
+        out << "UNIVERSE " << std::endl ;
+        for( index_t j = 0; j < M.universe().nb_boundaries(); ++j ) {
+            if( M.universe().side( j ) ) {
+                out << "+" ;
+            } else {
+                out << "-" ;
+            }
+            out << M.universe().boundary_gme( j ).index << " " ;
+        }
+        out << std::endl ;
 
     }
 
@@ -346,29 +380,28 @@ namespace {
         GME::TYPE type = geo_model_element_mesh.type() ;
 
         std::string name ;
-        build_string_for_geo_model_element_export(type,geo_model_element_mesh.index(), name) ;
-        GEO::mesh_save( geo_model_element_mesh.mesh(), name) ;
-        zip_file( zf, name) ;
+        build_string_for_geo_model_element_export( type,
+            geo_model_element_mesh.index(), name ) ;
+        GEO::mesh_save( geo_model_element_mesh.mesh(), name ) ;
+        zip_file( zf, name ) ;
         GEO::FileSystem::delete_file( name ) ;
 
         std::string root_name ;
         std::string handler ;
         char separator = '.' ;
-        GEO::String::split_string(name,separator,root_name,handler) ;
+        GEO::String::split_string( name, separator, root_name, handler ) ;
         save_geo_mesh_attributes( root_name, geo_model_element_mesh.mesh(), zf ) ;
     }
 
     class GeoModelHandler: public GeoModelIOHandler {
         virtual void load( const std::string& filename, GeoModel& model )
         {
-            unzFile uz = unzOpen( filename.c_str() ) ;
-            unz_global_info global_info ;
-            if( unzGetGlobalInfo( uz, &global_info ) != UNZ_OK ) {
-                unzClose( uz ) ;
-                throw RINGMeshException( "ZLIB",
-                    "Could not read file global info" ) ;
-            }
-
+            GeoModelBuilderGM builder( model, filename ) ;
+            builder.build_model() ;
+            GEO::Logger::out( "I/O" ) << " Loaded model " << model.name() << " from "
+                << filename << std::endl ;
+            print_geomodel( model ) ;
+            is_geomodel_valid( model ) ;
 
         }
         virtual void save( const GeoModel& model, const std::string& filename )
@@ -381,7 +414,11 @@ namespace {
 
             save_topology( model, "topology.txt" ) ;
             zip_file( zf, "topology.txt" ) ;
-            GEO::FileSystem::delete_file( "topology.txt" ) ;
+            GEO::FileSystem::delete_file( "topology.txt"  ) ;
+
+            save_connectivity( model, "connectivity.txt" ) ;
+            zip_file( zf, "connectivity.txt" ) ;
+            GEO::FileSystem::delete_file( "connectivity.txt" ) ;
 
             for( index_t t = GME::CORNER; t <= GME::REGION; t++ ) {
                 GME::TYPE type = static_cast< GME::TYPE >( t ) ;
