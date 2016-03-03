@@ -3606,16 +3606,56 @@ namespace RINGMesh {
 
         load_topology( line_topo ) ;
 
+        for( index_t t = GME::CORNER; t <= GME::REGION; t++ ) {
+            GME::TYPE type = static_cast< GME::TYPE >( t ) ;
+            load_elements( type, uz ) ;
+        }
+
+        load_connectivities(uz) ;
+
     }
 
-    void GeoModelBuilderGM::load_elements( GME::TYPE gme_t, unzFile uz )
+    void GeoModelBuilderGM::load_connectivities( unzFile& uz )
+    {
+
+        std::string file_name = "connectivity.txt" ;
+        unzip_one_file( uz, file_name.c_str() ) ;
+
+        GEO::LineInput file_line( file_name ) ;
+
+        while( !file_line.eof() && file_line.get_line() ) {
+            file_line.get_fields() ;
+            if( file_line.nb_fields() > 0 ) {
+                if( file_line.field_matches( 0, "GME" ) ) {
+                    GME::TYPE t = match_type( file_line.field( 1 ) ) ;
+                    index_t id = file_line.field_as_uint( 2 ) ;
+                    file_line.get_line() ;
+                    file_line.get_fields() ;
+                    const GeoModelMeshElement& cur_gme = model_.mesh_element( t,
+                        id ) ;
+                    gme_t cur_gme_type( t, id ) ;
+                    for( index_t in_b = 0; in_b < file_line.nb_fields(); in_b++ ) {
+                        add_element_in_boundary( cur_gme_type,
+                            gme_t( cur_gme.in_boundary_type( t ),
+                                file_line.field_as_uint( in_b ) ) ) ;
+                    }
+                }
+
+            }
+
+        }
+        GEO::FileSystem::delete_file( file_name ) ;
+
+    }
+
+    void GeoModelBuilderGM::load_elements( GME::TYPE gme_t, unzFile& uz )
     {
         for( index_t el = 0; el < model_.nb_elements( gme_t ); el++ ) {
             std::string file_to_extract_and_load ;
             build_string_for_geo_model_element_export( gme_t, el,
                 file_to_extract_and_load ) ;
             unzip_one_file( uz, file_to_extract_and_load.c_str() ) ;
-            GEO::Mesh& cur_mesh = model_.mesh_element( gme_t, el ).mesh() ;
+            GEO::Mesh cur_mesh ;
             GEO::MeshIOFlags flags ;
             flags.set_element( GEO::MESH_FACETS ) ;
             flags.set_element( GEO::MESH_CELLS ) ;
@@ -3623,14 +3663,20 @@ namespace RINGMesh {
             flags.set_attribute( GEO::MESH_FACET_REGION ) ;
             GEO::Logger::instance()->set_minimal( true ) ;
             GEO::mesh_load( file_to_extract_and_load, cur_mesh, flags ) ;
+            assign_mesh_to_element( cur_mesh,
+                model_.element( gme_t, el ).gme_id() ) ;
             GEO::Logger::instance()->set_minimal( false ) ;
+
+            unzip_one_file( uz, file_to_extract_and_load.c_str() ) ;
+
+//            set_connectivities
             GEO::FileSystem::delete_file( file_to_extract_and_load ) ;
         }
 
     }
 
     void GeoModelBuilderGM::unzip_one_file(
-        unzFile uz,
+        unzFile& uz,
         const char filename[MAX_FILENAME] )
     {
         unzLocateFile( uz, filename, 0 ) ;
