@@ -100,9 +100,12 @@ namespace {
             for( index_t e = 0; e < M.nb_elements( type ); e++ ) {
                 const GeoModelMeshElement& cur_geo_model_element = M.mesh_element(
                     type, e ) ;
-                out << "GME"<< " "<<cur_geo_model_element.type_name(type) << " " << e <<std::endl ;
-                for( index_t in_b = 0; in_b < cur_geo_model_element.nb_in_boundary(); in_b++ ) {
-                    out << cur_geo_model_element.in_boundary_gme( in_b ).index << " " ;
+                out << "GME" << " " << cur_geo_model_element.type_name( type ) << " "
+                    << e << std::endl ;
+                for( index_t in_b = 0; in_b < cur_geo_model_element.nb_in_boundary();
+                    in_b++ ) {
+                    out << cur_geo_model_element.in_boundary_gme( in_b ).index
+                        << " " ;
                 }
                 out << std::endl ;
             }
@@ -414,7 +417,7 @@ namespace {
 
             save_topology( model, "topology.txt" ) ;
             zip_file( zf, "topology.txt" ) ;
-            GEO::FileSystem::delete_file( "topology.txt"  ) ;
+            GEO::FileSystem::delete_file( "topology.txt" ) ;
 
             save_connectivity( model, "connectivity.txt" ) ;
             zip_file( zf, "connectivity.txt" ) ;
@@ -2018,6 +2021,26 @@ namespace RINGMesh {
         IOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
         handler->save( model, filename ) ;
     }
+
+    void geomodel_load( GeoModel& model, const std::string& filename )
+    {
+        GEO::Logger::out( "I/O" ) << "Loading file " << filename << "..."
+            << std::endl ;
+
+        IOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
+        handler->load( filename, model ) ;
+    }
+
+    void geomodel_save( const GeoModel& model, const std::string& filename )
+    {
+        GEO::Logger::out( "I/O" ) << "Saving file " << filename << "..."
+            << std::endl ;
+
+        IOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
+        handler->save( model, filename ) ;
+
+    }
+
     /************************************************************************/
 
     /*
@@ -2025,16 +2048,16 @@ namespace RINGMesh {
      */
     void GeoModelIOHandler::initialize_full_geomodel_output()
     {
-        ringmesh_register_IOHandler_creator( MMIOHandler, "mm" ) ;
-        ringmesh_register_IOHandler_creator( LMIOHandler, "meshb" );
-        ringmesh_register_IOHandler_creator( LMIOHandler, "mesh" );
-        ringmesh_register_IOHandler_creator( TetGenIOHandler, "tetgen" );
-        ringmesh_register_IOHandler_creator( TSolidIOHandler, "so" );
-        ringmesh_register_IOHandler_creator( CSMPIOHandler, "csmp" );
-        ringmesh_register_IOHandler_creator( AsterIOHandler, "mail" );
-        ringmesh_register_IOHandler_creator( VTKIOHandler, "vtk" );
-        ringmesh_register_IOHandler_creator( GPRSIOHandler, "gprs" );
-        ringmesh_register_IOHandler_creator( MSHIOHandler, "msh" );
-        ringmesh_register_IOHandler_creator( GeoModelHandler, "gm" );}
+        ringmesh_register_IOHandler_creator( MMIOHandler, "mm" );
+    ringmesh_register_IOHandler_creator( LMIOHandler, "meshb" ) ;
+    ringmesh_register_IOHandler_creator( LMIOHandler, "mesh" ) ;
+    ringmesh_register_IOHandler_creator( TetGenIOHandler, "tetgen" ) ;
+    ringmesh_register_IOHandler_creator( TSolidIOHandler, "so" ) ;
+    ringmesh_register_IOHandler_creator( CSMPIOHandler, "csmp" ) ;
+    ringmesh_register_IOHandler_creator( AsterIOHandler, "mail" ) ;
+    ringmesh_register_IOHandler_creator( VTKIOHandler, "vtk" ) ;
+    ringmesh_register_IOHandler_creator( GPRSIOHandler, "gprs" ) ;
+    ringmesh_register_IOHandler_creator( MSHIOHandler, "msh" ) ;
+    ringmesh_register_IOHandler_creator( GeoModelHandler, "gm" ) ;}
 
 }

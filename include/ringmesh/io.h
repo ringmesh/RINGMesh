@@ -84,9 +84,9 @@ namespace RINGMesh {
         const GeoModel& model,
         const std::string& filename ) ;
 
-    //TOFO we will keep only these both
+    //TODO we will keep only these both
     void RINGMESH_API geomodel_load(
-        const GeoModel& model,
+        GeoModel& model,
         const std::string& filename ) ;
 
     void RINGMESH_API geomodel_save(
