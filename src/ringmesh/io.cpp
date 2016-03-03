@@ -65,7 +65,7 @@ namespace RINGMesh {
         do {
             lFile.read( lBuffer, MAX_LINE_LEN ) ;
             rFile.read( rBuffer, MAX_LINE_LEN ) ;
-            unsigned int numberOfRead = lFile.gcount() ;
+            size_t numberOfRead = lFile.gcount() ;
 
             if( std::memcmp( lBuffer, rBuffer, numberOfRead ) != 0 ) {
                 delete[] lBuffer ;

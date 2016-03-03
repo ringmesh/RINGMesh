@@ -45,7 +45,7 @@
 * @author Pierre Anquez
 */
 
-int main( int argc, char** argv )
+int main()
 {
     using namespace RINGMesh ;
 

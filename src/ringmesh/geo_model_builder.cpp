@@ -569,6 +569,7 @@ namespace RINGMesh {
                 }
             }
             ringmesh_assert_not_reached;
+            return sorted_triangles_.front() ;
         }
 
     private:
@@ -920,8 +921,8 @@ namespace RINGMesh {
                 visited_[j] = true ;
                 j++ ;
             }
-            signed_index_t k = i - 1 ;
-            while( k > -1 && border_triangles_[i].same_edge( border_triangles_[k] ) ) {
+            index_t k = i - 1 ;
+            while( k != NO_ID && border_triangles_[i].same_edge( border_triangles_[k] ) ) {
                 visited_[k] = true ;
                 k-- ;
             }
@@ -943,8 +944,8 @@ namespace RINGMesh {
                 j++ ;
             }
 
-            signed_index_t k = i - 1 ;
-            while( k > -1 && border_triangles_[i].same_edge( border_triangles_[k] ) ) {
+            index_t k = i - 1 ;
+            while( k != NO_ID && border_triangles_[i].same_edge( border_triangles_[k] ) ) {
                 adjacent_surfaces.push_back( border_triangles_[k].surface_ ) ;
                 k-- ;
             }
@@ -1520,6 +1521,7 @@ namespace RINGMesh {
             index_t f = NO_ID ;
             index_t v = NO_ID ;
             bool found = find_facet_and_edge( ann, S, p0, p1, f, v ) ;
+            ringmesh_unused( found ) ;
             ringmesh_assert( found && f != NO_ID && v != NO_ID ) ;
 
             index_t f2 = S.adjacent( f, v ) ;
@@ -1556,6 +1558,7 @@ namespace RINGMesh {
 
         index_t v( NO_ID ) ;
         bool found = find_facet_and_edge( ann, S, p0, p1, facet_index, v ) ;
+        ringmesh_unused( found ) ;
         ringmesh_assert( found && facet_index != NO_ID && v != NO_ID ) ;
 
         surface_vertex_0 = S.surf_vertex_id( facet_index, v ) ;
@@ -2613,7 +2616,6 @@ namespace RINGMesh {
         index_t tsurf_count = 0 ;
         index_t tface_count = 0 ;
 
-        index_t current_nb_tfaces = 0 ;
         index_t nb_tface_in_prev_tsurf = 0 ;
 
         /// The file contains 2 parts and is read in 2 steps
@@ -2679,7 +2681,6 @@ namespace RINGMesh {
                     } else if( file_.field_matches( 0, "TFACE" ) ) {
                         /// 1.2 Create Surface from the name of its parent Interface
                         /// and its geological feature
-                        index_t id = file_.field_as_uint( 1 ) ;
                         std::string geol = file_.field( 2 ) ;
                         index_t f = 3 ;
                         std::ostringstream oss ;
@@ -2707,7 +2708,6 @@ namespace RINGMesh {
                     } else if( file_.field_matches( 0, "REGION" ) ) {
                         /// 1.3 Read Region information and create them from their name,
                         /// and the surfaces on their boundary
-                        index_t id = file_.field_as_uint( 1 ) ;
                         std::string name = file_.field( 2 ) ;
 
                         std::vector< std::pair< index_t, bool > > region_boundaries ;
@@ -2716,19 +2716,15 @@ namespace RINGMesh {
                             file_.get_line() ;
                             file_.get_fields() ;
                             for( index_t i = 0; i < 5; ++i ) {
-                                int s = file_.field_as_int( i ) ;
-                                if( s == 0 ) {
+                                signed_index_t signed_id = file_.field_as_int( i ) ;
+                                if( signed_id == 0 ) {
                                     end_region = true ;
                                     break ;
                                 }
-                                bool side = s > 0 ;
-                                if( s > 0 ) {
-                                    s -= 1 ;
-                                } else {
-                                    s = -s - 1 ;
-                                }
+                                bool side = signed_id > 0 ;
+                                index_t id( std::abs( signed_id ) - 1 ) ;
                                 region_boundaries.push_back(
-                                    std::pair< index_t, bool >( s, side ) ) ;
+                                    std::pair< index_t, bool >( id, side ) ) ;
                             }
                         }
 
@@ -3156,6 +3152,7 @@ namespace RINGMesh {
             return -1 ;
         } else {
             ringmesh_assert_not_reached;
+            return 0 ;
         }
     }
 

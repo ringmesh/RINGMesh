@@ -335,7 +335,7 @@ namespace RINGMesh {
      */
     void GeoModelGfx::set_corner_size( index_t c, index_t s )
     {
-        corners_[c]->gfx().set_points_size( s ) ;
+        corners_[c]->gfx().set_points_size( float(s) ) ;
     }
 
     /*!
@@ -468,7 +468,7 @@ namespace RINGMesh {
      */
     void GeoModelGfx::set_vertex_line_size( index_t l, index_t s )
     {
-        lines_[l]->gfx().set_points_size( s ) ;
+        lines_[l]->gfx().set_points_size( float(s) ) ;
     }
 
     /*!
@@ -675,7 +675,7 @@ namespace RINGMesh {
      */
     void GeoModelGfx::set_vertex_surface_size( index_t s, index_t size )
     {
-        surfaces_[s]->gfx().set_points_size( size ) ;
+        surfaces_[s]->gfx().set_points_size( float(size) ) ;
     }
 
     /*!
@@ -759,7 +759,7 @@ namespace RINGMesh {
     void GeoModelGfx::set_vertex_region_size( index_t m, index_t s )
     {
         ringmesh_assert( m < regions_.size() ) ;
-        regions_[m]->gfx().set_points_size( s ) ;
+        regions_[m]->gfx().set_points_size( float(s) ) ;
     }
 
     /*!
