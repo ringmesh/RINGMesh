@@ -70,6 +70,9 @@ namespace RINGMesh {
             GEO::CmdLine::declare_arg(
                 "out:mesh", "",
                 "Saves the volumetric mesh of the structural model" ) ;
+            GEO::CmdLine::declare_arg(
+                "out:geomodel", "",
+                "Saves the geological model" ) ;
         }
 
         void import_arg_group_stats()

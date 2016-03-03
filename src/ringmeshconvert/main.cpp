@@ -46,6 +46,22 @@
  * @author Arnaud Botella
  */
 
+namespace RINGMesh {
+
+    namespace CmdLine {
+        void import_temp_in_out()
+        {
+            GEO::CmdLine::declare_arg( "in:model", "",
+                "Filename of the input structural model" ) ;
+            GEO::CmdLine::declare_arg( "in:mesh", "",
+                "Filename of the input volumetric mesh" ) ;
+            GEO::CmdLine::declare_arg( "out:model", "",
+                "Saves the structural model" ) ;
+            GEO::CmdLine::declare_arg( "out:mesh", "",
+                "Saves the volumetric mesh of the structural model" ) ;
+        }
+    }
+}
 int main( int argc, char** argv )
 {
     using namespace RINGMesh ;
@@ -60,7 +76,7 @@ int main( int argc, char** argv )
 
         CmdLine::import_arg_group( "in" ) ;
         CmdLine::import_arg_group( "out" ) ;
-
+        CmdLine::import_temp_in_out() ;
         if( argc == 1 ) {
             GEO::CmdLine::show_usage() ;
             return 0 ;
@@ -73,26 +89,41 @@ int main( int argc, char** argv )
 
         GEO::Stopwatch total( "Total time" ) ;
 
-        std::string model_in_name = GEO::CmdLine::get_arg( "in:model" ) ;
-        if( model_in_name.empty() ) {
-            throw RINGMeshException( "I/O", "Give at least a filename in in:model" ) ;
-        }
         GeoModel model_in ;
-        geomodel_surface_load( model_in_name, model_in ) ;
 
-        std::string mesh_in_name = GEO::CmdLine::get_arg( "in:mesh" ) ;
-        if( !mesh_in_name.empty() ) {
-            geomodel_volume_load( mesh_in_name, model_in ) ;
+        std::string geomodel_in_name = GEO::CmdLine::get_arg( "in:geomodel" ) ;
+        if( geomodel_in_name.empty() ) {
+            geomodel_in_name = GEO::CmdLine::get_arg( "in:model" ) ;
+            if( geomodel_in_name.empty() ) {
+                throw RINGMeshException( "I/O",
+                    "Give at least a filename in in:model or in:geomodel" ) ;
+            } else {
+                geomodel_surface_load( geomodel_in_name, model_in ) ;
+            }
+        } else {
+            geomodel_load( model_in, geomodel_in_name ) ;
         }
 
-        std::string model_out_name = GEO::CmdLine::get_arg( "out:model" ) ;
-        if( !model_out_name.empty() ) {
-            geomodel_surface_save( model_in, model_out_name ) ;
+        if( GEO::CmdLine::get_arg( "in:geomodel" ).empty() ) {
+            std::string mesh_in_name = GEO::CmdLine::get_arg( "in:mesh" ) ;
+            if( !mesh_in_name.empty() ) {
+                geomodel_volume_load( mesh_in_name, model_in ) ;
+            }
         }
 
-        std::string mesh_out_name = GEO::CmdLine::get_arg( "out:mesh" ) ;
-        if( !mesh_out_name.empty() ) {
-            geomodel_volume_save( model_in, mesh_out_name ) ;
+        std::string geomodel_out_name = GEO::CmdLine::get_arg( "out:geomodel" ) ;
+        if(geomodel_out_name.empty()) {
+            std::string model_out_name = GEO::CmdLine::get_arg( "out:model" ) ;
+            std::string mesh_out_name = GEO::CmdLine::get_arg( "out:mesh" ) ;
+            if( !model_out_name.empty() ) {
+                geomodel_surface_save( model_in, model_out_name ) ;
+            }
+            if( !mesh_out_name.empty() ) {
+                 geomodel_volume_save( model_in, mesh_out_name ) ;
+             }
+        }
+        else {
+            geomodel_save(model_in,geomodel_out_name) ;
         }
 
     } catch( const RINGMeshException& e ) {
