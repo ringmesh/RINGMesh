@@ -128,7 +128,7 @@ namespace RINGMesh {
          */
         index_t corner( index_t c ) const
         {
-            ringmesh_debug_assert( c < 2 ) ;
+            ringmesh_assert( c < 2 ) ;
             return corners_[ c ] ;
         }
 
@@ -214,7 +214,7 @@ namespace RINGMesh {
          */
         const WellCorner& corner( index_t c ) const
         {
-            ringmesh_debug_assert( c < corners_.size() ) ;
+            ringmesh_assert( c < corners_.size() ) ;
             return *corners_[ c ] ;
         }
 
@@ -235,7 +235,7 @@ namespace RINGMesh {
          */
         const WellPart& part( index_t part ) const
         {
-            ringmesh_debug_assert( part < parts_.size() ) ;
+            ringmesh_assert( part < parts_.size() ) ;
             return *parts_[ part ] ;
         }
         /*!
@@ -244,7 +244,7 @@ namespace RINGMesh {
          */
         WellPart& part( index_t part )
         {
-            ringmesh_debug_assert( part < parts_.size() ) ;
+            ringmesh_assert( part < parts_.size() ) ;
             return *parts_[ part ] ;
         }
         /*!
@@ -254,7 +254,7 @@ namespace RINGMesh {
          */
         index_t part_region_id( index_t part ) const
         {
-            ringmesh_debug_assert( part < nb_parts() ) ;
+            ringmesh_assert( part < nb_parts() ) ;
             return part_region_id_[ part ] ;
         }
 

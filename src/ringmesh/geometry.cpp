@@ -774,7 +774,7 @@ namespace RINGMesh {
         GEO::Matrix< float64, 4 >& rot_mat )
     {
         // Note: Rotation is impossible about an axis with null length.
-        ringmesh_debug_assert( axis != vec3() ) ;
+        ringmesh_assert( axis != vec3() ) ;
 
         if( degrees ) {
             float64 pi = 3.141592653589793 ;
@@ -782,7 +782,7 @@ namespace RINGMesh {
         }
 
         float64 axis_length = axis.length() ;
-        ringmesh_debug_assert( axis_length > 0. ) ;
+        ringmesh_assert( axis_length > 0. ) ;
         float64 x1 = origin[0] ;
         float64 y1 = origin[1] ;
         float64 z1 = origin[2] ;
@@ -832,22 +832,22 @@ namespace RINGMesh {
 #ifdef RINGMESH_DEBUG
         GEO::Matrix< float64, 4 > computed_inv_T = T.inverse() ;
 #endif
-        ringmesh_debug_assert( inv_T( 0, 0 ) == computed_inv_T( 0, 0 ) ) ;
-        ringmesh_debug_assert( inv_T( 0, 1 ) == computed_inv_T( 0, 1 ) ) ;
-        ringmesh_debug_assert( inv_T( 0, 2 ) == computed_inv_T( 0, 2 ) ) ;
-        ringmesh_debug_assert( inv_T( 0, 3 ) == computed_inv_T( 0, 3 ) ) ;
-        ringmesh_debug_assert( inv_T( 1, 0 ) == computed_inv_T( 1, 0 ) ) ;
-        ringmesh_debug_assert( inv_T( 1, 1 ) == computed_inv_T( 1, 1 ) ) ;
-        ringmesh_debug_assert( inv_T( 1, 2 ) == computed_inv_T( 1, 2 ) ) ;
-        ringmesh_debug_assert( inv_T( 1, 3 ) == computed_inv_T( 1, 3 ) ) ;
-        ringmesh_debug_assert( inv_T( 2, 0 ) == computed_inv_T( 2, 0 ) ) ;
-        ringmesh_debug_assert( inv_T( 2, 1 ) == computed_inv_T( 2, 1 ) ) ;
-        ringmesh_debug_assert( inv_T( 2, 2 ) == computed_inv_T( 2, 2 ) ) ;
-        ringmesh_debug_assert( inv_T( 2, 3 ) == computed_inv_T( 2, 3 ) ) ;
-        ringmesh_debug_assert( inv_T( 3, 0 ) == computed_inv_T( 3, 0 ) ) ;
-        ringmesh_debug_assert( inv_T( 3, 1 ) == computed_inv_T( 3, 1 ) ) ;
-        ringmesh_debug_assert( inv_T( 3, 2 ) == computed_inv_T( 3, 2 ) ) ;
-        ringmesh_debug_assert( inv_T( 3, 3 ) == computed_inv_T( 3, 3 ) ) ;
+        ringmesh_assert( inv_T( 0, 0 ) == computed_inv_T( 0, 0 ) ) ;
+        ringmesh_assert( inv_T( 0, 1 ) == computed_inv_T( 0, 1 ) ) ;
+        ringmesh_assert( inv_T( 0, 2 ) == computed_inv_T( 0, 2 ) ) ;
+        ringmesh_assert( inv_T( 0, 3 ) == computed_inv_T( 0, 3 ) ) ;
+        ringmesh_assert( inv_T( 1, 0 ) == computed_inv_T( 1, 0 ) ) ;
+        ringmesh_assert( inv_T( 1, 1 ) == computed_inv_T( 1, 1 ) ) ;
+        ringmesh_assert( inv_T( 1, 2 ) == computed_inv_T( 1, 2 ) ) ;
+        ringmesh_assert( inv_T( 1, 3 ) == computed_inv_T( 1, 3 ) ) ;
+        ringmesh_assert( inv_T( 2, 0 ) == computed_inv_T( 2, 0 ) ) ;
+        ringmesh_assert( inv_T( 2, 1 ) == computed_inv_T( 2, 1 ) ) ;
+        ringmesh_assert( inv_T( 2, 2 ) == computed_inv_T( 2, 2 ) ) ;
+        ringmesh_assert( inv_T( 2, 3 ) == computed_inv_T( 2, 3 ) ) ;
+        ringmesh_assert( inv_T( 3, 0 ) == computed_inv_T( 3, 0 ) ) ;
+        ringmesh_assert( inv_T( 3, 1 ) == computed_inv_T( 3, 1 ) ) ;
+        ringmesh_assert( inv_T( 3, 2 ) == computed_inv_T( 3, 2 ) ) ;
+        ringmesh_assert( inv_T( 3, 3 ) == computed_inv_T( 3, 3 ) ) ;
 
         // Note: If d = 0, so rotation is along x axis. So Rx = inv_Rx = Id
         GEO::Matrix< float64, 4 > Rx ;
@@ -903,22 +903,22 @@ namespace RINGMesh {
 #ifdef RINGMESH_DEBUG
         GEO::Matrix< float64, 4 > computed_inv_Rx = Rx.inverse() ;
 #endif
-        ringmesh_debug_assert( inv_Rx( 0, 0 ) == computed_inv_Rx( 0, 0 ) ) ;
-        ringmesh_debug_assert( inv_Rx( 0, 1 ) == computed_inv_Rx( 0, 1 ) ) ;
-        ringmesh_debug_assert( inv_Rx( 0, 2 ) == computed_inv_Rx( 0, 2 ) ) ;
-        ringmesh_debug_assert( inv_Rx( 0, 3 ) == computed_inv_Rx( 0, 3 ) ) ;
-        ringmesh_debug_assert( inv_Rx( 1, 0 ) == computed_inv_Rx( 1, 0 ) ) ;
-        ringmesh_debug_assert( inv_Rx( 1, 1 ) == computed_inv_Rx( 1, 1 ) ) ;
-        ringmesh_debug_assert( inv_Rx( 1, 2 ) == computed_inv_Rx( 1, 2 ) ) ;
-        ringmesh_debug_assert( inv_Rx( 1, 3 ) == computed_inv_Rx( 1, 3 ) ) ;
-        ringmesh_debug_assert( inv_Rx( 2, 0 ) == computed_inv_Rx( 2, 0 ) ) ;
-        ringmesh_debug_assert( inv_Rx( 2, 1 ) == computed_inv_Rx( 2, 1 ) ) ;
-        ringmesh_debug_assert( inv_Rx( 2, 2 ) == computed_inv_Rx( 2, 2 ) ) ;
-        ringmesh_debug_assert( inv_Rx( 2, 3 ) == computed_inv_Rx( 2, 3 ) ) ;
-        ringmesh_debug_assert( inv_Rx( 3, 0 ) == computed_inv_Rx( 3, 0 ) ) ;
-        ringmesh_debug_assert( inv_Rx( 3, 1 ) == computed_inv_Rx( 3, 1 ) ) ;
-        ringmesh_debug_assert( inv_Rx( 3, 2 ) == computed_inv_Rx( 3, 2 ) ) ;
-        ringmesh_debug_assert( inv_Rx( 3, 3 ) == computed_inv_Rx( 3, 3 ) ) ;
+        ringmesh_assert( inv_Rx( 0, 0 ) == computed_inv_Rx( 0, 0 ) ) ;
+        ringmesh_assert( inv_Rx( 0, 1 ) == computed_inv_Rx( 0, 1 ) ) ;
+        ringmesh_assert( inv_Rx( 0, 2 ) == computed_inv_Rx( 0, 2 ) ) ;
+        ringmesh_assert( inv_Rx( 0, 3 ) == computed_inv_Rx( 0, 3 ) ) ;
+        ringmesh_assert( inv_Rx( 1, 0 ) == computed_inv_Rx( 1, 0 ) ) ;
+        ringmesh_assert( inv_Rx( 1, 1 ) == computed_inv_Rx( 1, 1 ) ) ;
+        ringmesh_assert( inv_Rx( 1, 2 ) == computed_inv_Rx( 1, 2 ) ) ;
+        ringmesh_assert( inv_Rx( 1, 3 ) == computed_inv_Rx( 1, 3 ) ) ;
+        ringmesh_assert( inv_Rx( 2, 0 ) == computed_inv_Rx( 2, 0 ) ) ;
+        ringmesh_assert( inv_Rx( 2, 1 ) == computed_inv_Rx( 2, 1 ) ) ;
+        ringmesh_assert( inv_Rx( 2, 2 ) == computed_inv_Rx( 2, 2 ) ) ;
+        ringmesh_assert( inv_Rx( 2, 3 ) == computed_inv_Rx( 2, 3 ) ) ;
+        ringmesh_assert( inv_Rx( 3, 0 ) == computed_inv_Rx( 3, 0 ) ) ;
+        ringmesh_assert( inv_Rx( 3, 1 ) == computed_inv_Rx( 3, 1 ) ) ;
+        ringmesh_assert( inv_Rx( 3, 2 ) == computed_inv_Rx( 3, 2 ) ) ;
+        ringmesh_assert( inv_Rx( 3, 3 ) == computed_inv_Rx( 3, 3 ) ) ;
 
         GEO::Matrix< float64, 4 > Ry ;
         Ry( 0, 0 ) = d ;
@@ -959,22 +959,22 @@ namespace RINGMesh {
 #ifdef RINGMESH_DEBUG
         GEO::Matrix< float64, 4 > computed_inv_Ry = Ry.inverse() ;
 #endif
-        ringmesh_debug_assert( inv_Ry( 0, 0 ) == computed_inv_Ry( 0, 0 ) ) ;
-        ringmesh_debug_assert( inv_Ry( 0, 1 ) == computed_inv_Ry( 0, 1 ) ) ;
-        ringmesh_debug_assert( inv_Ry( 0, 2 ) == computed_inv_Ry( 0, 2 ) ) ;
-        ringmesh_debug_assert( inv_Ry( 0, 3 ) == computed_inv_Ry( 0, 3 ) ) ;
-        ringmesh_debug_assert( inv_Ry( 1, 0 ) == computed_inv_Ry( 1, 0 ) ) ;
-        ringmesh_debug_assert( inv_Ry( 1, 1 ) == computed_inv_Ry( 1, 1 ) ) ;
-        ringmesh_debug_assert( inv_Ry( 1, 2 ) == computed_inv_Ry( 1, 2 ) ) ;
-        ringmesh_debug_assert( inv_Ry( 1, 3 ) == computed_inv_Ry( 1, 3 ) ) ;
-        ringmesh_debug_assert( inv_Ry( 2, 0 ) == computed_inv_Ry( 2, 0 ) ) ;
-        ringmesh_debug_assert( inv_Ry( 2, 1 ) == computed_inv_Ry( 2, 1 ) ) ;
-        ringmesh_debug_assert( inv_Ry( 2, 2 ) == computed_inv_Ry( 2, 2 ) ) ;
-        ringmesh_debug_assert( inv_Ry( 2, 3 ) == computed_inv_Ry( 2, 3 ) ) ;
-        ringmesh_debug_assert( inv_Ry( 3, 0 ) == computed_inv_Ry( 3, 0 ) ) ;
-        ringmesh_debug_assert( inv_Ry( 3, 1 ) == computed_inv_Ry( 3, 1 ) ) ;
-        ringmesh_debug_assert( inv_Ry( 3, 2 ) == computed_inv_Ry( 3, 2 ) ) ;
-        ringmesh_debug_assert( inv_Ry( 3, 3 ) == computed_inv_Ry( 3, 3 ) ) ;
+        ringmesh_assert( inv_Ry( 0, 0 ) == computed_inv_Ry( 0, 0 ) ) ;
+        ringmesh_assert( inv_Ry( 0, 1 ) == computed_inv_Ry( 0, 1 ) ) ;
+        ringmesh_assert( inv_Ry( 0, 2 ) == computed_inv_Ry( 0, 2 ) ) ;
+        ringmesh_assert( inv_Ry( 0, 3 ) == computed_inv_Ry( 0, 3 ) ) ;
+        ringmesh_assert( inv_Ry( 1, 0 ) == computed_inv_Ry( 1, 0 ) ) ;
+        ringmesh_assert( inv_Ry( 1, 1 ) == computed_inv_Ry( 1, 1 ) ) ;
+        ringmesh_assert( inv_Ry( 1, 2 ) == computed_inv_Ry( 1, 2 ) ) ;
+        ringmesh_assert( inv_Ry( 1, 3 ) == computed_inv_Ry( 1, 3 ) ) ;
+        ringmesh_assert( inv_Ry( 2, 0 ) == computed_inv_Ry( 2, 0 ) ) ;
+        ringmesh_assert( inv_Ry( 2, 1 ) == computed_inv_Ry( 2, 1 ) ) ;
+        ringmesh_assert( inv_Ry( 2, 2 ) == computed_inv_Ry( 2, 2 ) ) ;
+        ringmesh_assert( inv_Ry( 2, 3 ) == computed_inv_Ry( 2, 3 ) ) ;
+        ringmesh_assert( inv_Ry( 3, 0 ) == computed_inv_Ry( 3, 0 ) ) ;
+        ringmesh_assert( inv_Ry( 3, 1 ) == computed_inv_Ry( 3, 1 ) ) ;
+        ringmesh_assert( inv_Ry( 3, 2 ) == computed_inv_Ry( 3, 2 ) ) ;
+        ringmesh_assert( inv_Ry( 3, 3 ) == computed_inv_Ry( 3, 3 ) ) ;
 
         GEO::Matrix< float64, 4 > Rz ;
         Rz( 0, 0 ) = cos_angle ;
