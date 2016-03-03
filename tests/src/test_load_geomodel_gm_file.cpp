@@ -60,13 +60,13 @@ int main( int argc, char** argv )
 
         geomodel_surface_load( input_model_file_name, in ) ;
         std::string output_model_file_name( ringmesh_test_output_path ) ;
-        output_model_file_name += "modelA1_saved_out.bm" ;
+        output_model_file_name += "modelA1_saved_out.gm" ;
         geomodel_surface_save( in, output_model_file_name ) ;
 
         GeoModel in2 ;
         geomodel_surface_load( output_model_file_name, in2 ) ;
         std::string output_model_file_name_bis( ringmesh_test_output_path ) ;
-        output_model_file_name_bis += "modelA1_saved_out_bis.bm" ;
+        output_model_file_name_bis += "modelA1_saved_out_bis.gm" ;
         geomodel_surface_save( in2, output_model_file_name_bis ) ;
 
         if( !compare_files( output_model_file_name, output_model_file_name_bis ) ) {
