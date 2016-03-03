@@ -346,9 +346,9 @@ namespace RINGMesh {
                     angle_( -99999 ),
                     side_( false )
             {
-                ringmesh_debug_assert( p0 != p1 ) ;
-                ringmesh_debug_assert( p0 != p2 ) ;
-                ringmesh_debug_assert( p1 != p2 ) ;
+                ringmesh_assert( p0 != p1 ) ;
+                ringmesh_assert( p0 != p2 ) ;
+                ringmesh_assert( p1 != p2 ) ;
 
                 vec3 e1 = normalize( p1 - p0 ) ;
                 vec3 e2 = normalize( p2 - p0 ) ;
