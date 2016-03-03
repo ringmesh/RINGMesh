@@ -222,6 +222,10 @@ namespace RINGMesh {
 
     /***********************************************************************/
 #ifdef RINGMESH_WITH_TETGEN
+#ifdef __GNUC__
+#   pragma GCC diagnostic push
+#   pragma GCC diagnostic ignored "-Wsign-conversion"
+#endif
 
     bool is_mesh_tetrahedralizable( const GEO::Mesh& M ) 
     {         
@@ -489,6 +493,10 @@ namespace RINGMesh {
             mesher.tetrahedralize( M, "QpYYA", M ) ;
         }
     }
+
+#ifdef __GNUC__
+#   pragma GCC diagnostic pop
+#endif
 #endif
     
     /***********************************************************************/
@@ -741,7 +749,7 @@ namespace RINGMesh {
         index_t t )
     {
         float64 dist = GEO::Numeric::max_float64() ;
-        index_t result = -1 ;
+        index_t result = NO_ID ;
         for( index_t v = 0; v < mesh.cells.nb_vertices( t ); v++ ) {
             float64 distance = length2(
                 GEO::Geom::mesh_vertex( mesh, mesh.cells.vertex( t, v ) ) - p ) ;

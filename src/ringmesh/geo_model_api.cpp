@@ -652,7 +652,6 @@ namespace RINGMesh {
             }
             case GeoModelElement::LINE: {
                 const Line& L = dynamic_cast< const Line& >( E ) ;
-                const GEO::Mesh& mesh = L.mesh() ;
                 return GEO::Geom::distance( L.vertex( c, 0 ), L.vertex( c, 1 ) ) ;
             }
             default:

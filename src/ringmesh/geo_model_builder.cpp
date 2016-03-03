@@ -2722,7 +2722,7 @@ namespace RINGMesh {
                                     break ;
                                 }
                                 bool side = signed_id > 0 ;
-                                index_t id( std::abs( signed_id ) - 1 ) ;
+                                index_t id = static_cast< index_t >( std::abs( signed_id ) - 1 ) ;
                                 region_boundaries.push_back(
                                     std::pair< index_t, bool >( id, side ) ) ;
                             }
