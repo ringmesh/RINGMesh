@@ -81,7 +81,7 @@ namespace {
 
     void zip_file( zipFile zf, const std::string& name )
     {
-        zip_fileinfo zfi = { 0 } ;
+        zip_fileinfo zfi ;
         std::fstream file( name.c_str(), std::ios::in | std::ios::binary ) ;
         file.seekg( 0, std::ios::end ) ;
         long size = file.tellg() ;
@@ -156,7 +156,6 @@ namespace {
 
             index_t nb_vertices_exported = 0 ;
             index_t cur_cell = 0 ;
-            index_t cur_facet = 0 ;
 
             const GeoModelMesh& mesh = gm.mesh ;
             /// 1. Write the vertices coordinates (with the duplicate ones)
@@ -186,7 +185,6 @@ namespace {
             out << "TETRA4" << std::endl ;
             for( index_t r = 0; r < gm.nb_regions(); r++ ) {
                 for( index_t c = 0; c < mesh.cells.nb_tet( r ); c++ ) {
-                    index_t cur_tet = mesh.cells.tet( r, c ) ;
                     out << "C" << cur_cell++ << " " ;
                     for( index_t v = 0; v < mesh.cells.nb_vertices( c ); v++ ) {
                         index_t atom_id ;

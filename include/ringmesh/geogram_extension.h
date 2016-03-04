@@ -85,7 +85,6 @@ namespace RINGMesh {
         ringmesh_assert( from < to ) ;
         index_t nb_to_copy( to - from ) ;
         out.resize( nb_to_copy ) ;
-        index_t count = 0 ;
         for( index_t i = 0; i != nb_to_copy; ++i ) {
             out[i] = in[from + i] ;
         }
