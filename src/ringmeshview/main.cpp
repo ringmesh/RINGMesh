@@ -100,7 +100,6 @@
 #include <ringmesh/utils.h>
 
 namespace {
-
     using namespace RINGMesh ;
 
     GeoModel GM ;
@@ -352,7 +351,6 @@ namespace {
      */
     void load_mesh()
     {
-        geomodel_surface_load( GEO::CmdLine::get_arg( "model" ), GM ) ;
 
         double xyzmin[3] ;
         double xyzmax[3] ;
@@ -362,10 +360,13 @@ namespace {
         }
 
         if( !GEO::CmdLine::get_arg( "mesh" ).empty() ) {
-            RINGMesh::geomodel_volume_load( GEO::CmdLine::get_arg( "mesh" ), GM ) ;
+            RINGMesh::geomodel_volume_load( GEO::CmdLine::get_arg( "geomodel" ), GM ) ;
             meshed_regions = true ;
         }
-
+        else{
+            throw RINGMeshException( "I/O",
+                "Give at least a filename in geomodel" ) ;
+        }
         get_bbox( GM, xyzmin, xyzmax ) ;
 
         glut_viewer_set_region_of_interest( float( xyzmin[0] ), float( xyzmin[1] ),
@@ -421,10 +422,10 @@ int main( int argc, char** argv )
         GEO::Logger::out( "" )
             << "Antoine Mazuyer <antoine.mazuyer@univ-lorraine.fr> " << std::endl ;
 
-        GEO::CmdLine::declare_arg( "model", "",
+        GEO::CmdLine::declare_arg( "geomodel", "",
             "filename of the structural model" ) ;
-        GEO::CmdLine::declare_arg( "mesh", "", "filename of the volumetric mesh" ) ;
         CmdLine::import_arg_group( "attr" ) ;
+
 
         if( argc == 1 ) {
             GEO::CmdLine::show_usage() ;

@@ -79,17 +79,13 @@ int main( int argc, char** argv )
 
         GEO::Stopwatch total( "Total time" ) ;
 
-        std::string model_name = GEO::CmdLine::get_arg( "in:model" ) ;
+        std::string model_name = GEO::CmdLine::get_arg( "in:geomodel" ) ;
         if( model_name.empty() ) {
-            throw RINGMeshException( "I/O", "Give at least a filename in in:model" ) ;
+            throw RINGMeshException( "I/O",
+                "Give at least a filename in in:model" ) ;
         }
         GeoModel geomodel ;
-        geomodel_surface_load( model_name, geomodel ) ;
-
-        std::string mesh_name = GEO::CmdLine::get_arg( "in:mesh" ) ;
-        if( !mesh_name.empty() ) {
-            geomodel_volume_load( mesh_name, geomodel ) ;
-        }
+        geomodel_load( geomodel, model_name ) ;
 
         if( GEO::CmdLine::get_arg_bool( "stats:nb" ) ) {
             print_geomodel_mesh_stats( geomodel ) ;
