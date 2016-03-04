@@ -1653,10 +1653,18 @@ namespace GLUP {
          *   setup_shader_source_for_toggles(). In the initial configuration,
          *   all the toggles are read from the state.
          * \see setup_shaders_source_for_toggles()
+         * \return a const char pointer to the GLSL declaration.
          */
         const char* toggles_declaration() const {
             return toggles_shader_source_.c_str();
         }
+
+        /**
+         * \brief Gets the GLSL declaration  of the constant that
+         *  indicates the current primitive.
+         * \return a string with the GLSL declaration.
+         */
+        std::string primitive_declaration(GLUPprimitive prim) const;
         
         /**
          * \brief Sets the string that describes the settings of
