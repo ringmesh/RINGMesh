@@ -389,8 +389,8 @@ namespace RINGMesh {
         /*! @todo Implement function to read the lines of the 
          *        file and wrap the GEO::LineInput which is not that easy to use 
          */
-protected:
-        std::string filename_;
+    protected:
+        std::string filename_ ;
     } ;
 
     /*!
@@ -399,7 +399,7 @@ protected:
     class RINGMESH_API GeoModelBuilderGocad: public GeoModelBuilderFile {
     public:
         GeoModelBuilderGocad( GeoModel& model, const std::string& filename )
-            : GeoModelBuilderFile( model, filename ), file_line_(filename)
+            : GeoModelBuilderFile( model, filename ), file_line_( filename )
         {
             if( !file_line_.OK() ) {
                 throw RINGMeshException( "I/O", "Failed to open file " + filename ) ;
@@ -466,16 +466,16 @@ protected:
 
     /*!
      * @brief Build a GeoModel from a file_model.bm
-     * TODO this class gonna disapear soon
+     * @TODO this class gonna disapear soon
      */
     class RINGMESH_API GeoModelBuilderBM: public GeoModelBuilderFile {
     public:
         GeoModelBuilderBM( GeoModel& model, const std::string& filename )
-            : GeoModelBuilderFile( model, filename ), file_line_(filename)
-    {
-        if( !file_line_.OK() ) {
-            throw RINGMeshException( "I/O", "Failed to open file " + filename ) ;
-        }
+            : GeoModelBuilderFile( model, filename ), file_line_( filename )
+        {
+            if( !file_line_.OK() ) {
+                throw RINGMeshException( "I/O", "Failed to open file " + filename ) ;
+            }
         }
         virtual ~GeoModelBuilderBM()
         {
@@ -501,24 +501,28 @@ protected:
 
     private:
         /*!
-         * @brief Load the connectivities
+         * @brief Load the connectivities. These are how corners are
+         * connected to lines, lines connected to surfaces and surfaces
+         * connected to regions
          */
-        void load_connectivities( GEO::LineInput& file_line  ) ;
+        void load_connectivities( GEO::LineInput& file_line ) ;
         /*!
          * @brief Load elements of one type from a zip file
          * @param[in] gme_t the GeoModelElement type
          * @param[in] uz the zip file
          */
-        void load_elements(GME::TYPE gme_t, unzFile& uz) ;
+        void load_elements( GME::TYPE gme_t, unzFile& uz ) ;
 
         void load_file() ;
         /*!
          * @brief Unzip a file in a zip file and set it to the current unZIP file
          */
-        void unzip_one_file( unzFile& uz,const char filename[MAX_FILENAME] );
+        void unzip_one_file( unzFile& uz, const char filename[MAX_FILENAME] ) ;
 
         /*!
-         * @brief Load the topology
+         * @brief Load the topology. Topology is how corners, lines, surfaces and
+         * regions are organized into contacts, interfaces and layers. It also contains
+         * basics information on the GeoModel.
          */
         void load_topology( GEO::LineInput& file_line ) ;
     } ;
