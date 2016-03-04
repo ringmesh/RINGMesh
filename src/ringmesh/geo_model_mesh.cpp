@@ -2045,10 +2045,6 @@ namespace RINGMesh {
 
         ColocaterANN ann( *mesh_, ColocaterANN::CELLS ) ;
 
-
-        for (index_t i = 0 ; i < att_c_names.size() ; i++) {
-            DEBUG(att_c_names[i]) ;
-        }
         for( index_t att_c = 0; att_c < att_c_names.size(); att_c++ ) {
             DEBUG(att_c_names[att_c]) ;
             if( !is_attribute_a_double( cell_attribute_manager(),
