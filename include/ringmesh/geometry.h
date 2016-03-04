@@ -52,20 +52,9 @@ namespace GEO {
 
 namespace RINGMesh {
 
-    static bool operator==( const vec3& u, const vec3& v )
-    {
-        return u.x == v.x && u.y == v.y && u.z == v.z ;
-    }
-
-    static bool operator<( const vec3& u, const vec3& v )
-    {
-        return u.x < v.x && u.y < v.y && u.z < v.z ;
-    }
-
-    static bool operator!=( const vec3& u, const vec3& v )
-    {
-        return u.x != v.x || u.y != v.y || u.z != v.z ;
-    }
+    bool operator==( const vec3& u, const vec3& v ) ;
+    bool operator<( const vec3& u, const vec3& v ) ;
+    bool operator!=( const vec3& u, const vec3& v ) ;
 
     /* @warning Duplicate from Geogram/basic/numeric.h */
     enum Sign {
