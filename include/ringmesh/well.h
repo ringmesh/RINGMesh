@@ -204,8 +204,9 @@ namespace RINGMesh {
             const vec3& p,
             const WellCorner::corner_info_t& corner_info)
         {
+            index_t corner_id = static_cast< index_t >( corners_.size() ) ;
             corners_.push_back( new WellCorner( this, p, corner_info ) ) ;
-            return corners_.size() - 1 ;
+            return corner_id ;
         }
         index_t find_corner( const vec3& p ) const ;
         /*!
@@ -225,9 +226,10 @@ namespace RINGMesh {
          */
         index_t create_part( index_t region )
         {
-            parts_.push_back( new WellPart( this, parts_.size() ) ) ;
+            index_t part_id = static_cast< index_t >( parts_.size() ) ;
+            parts_.push_back( new WellPart( this, part_id ) ) ;
             part_region_id_.push_back( region ) ;
-            return parts_.size() - 1 ;
+            return part_id ;
         }
         /*!
          * Gets a part
@@ -261,11 +263,17 @@ namespace RINGMesh {
         /*!
          * Gets the number of corners
          */
-        index_t nb_corners() const { return corners_.size() ;}
+        index_t nb_corners() const
+        {
+            return static_cast< index_t >( corners_.size() ) ;
+        }
         /*!
          * Gets the number of parts
          */
-        index_t nb_parts() const { return parts_.size() ;}
+        index_t nb_parts() const
+        {
+            return static_cast< index_t >( parts_.size() ) ;
+        }
         index_t nb_edges() const ;
         /*!
          * Sets the well name
@@ -328,7 +336,10 @@ namespace RINGMesh {
         /*!
          * Gets the number of wells
          */
-        index_t nb_wells() const { return wells_.size() ;}
+        index_t nb_wells() const
+        {
+            return static_cast< index_t >( wells_.size() ) ;
+        }
         /*!
          * Gets the well
          * @param[in] w the well id

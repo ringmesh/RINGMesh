@@ -268,6 +268,10 @@ namespace RINGMesh {
 
     /***********************************************************************/
 #ifdef RINGMESH_WITH_TETGEN
+#ifdef __GNUC__
+#   pragma GCC diagnostic push
+#   pragma GCC diagnostic ignored "-Wsign-conversion"
+#endif
 
     bool is_mesh_tetrahedralizable( const GEO::Mesh& M ) 
     {         
@@ -443,7 +447,7 @@ namespace RINGMesh {
 
             GEO_3rdParty::tetgenio::polygon& P = F.polygonlist[ 0 ] ;
             GEO_3rdParty::tetgenio::init( &P ) ;
-            P.numberofvertices = M.facets.nb_corners( f ) ;
+            P.numberofvertices = static_cast< int >( M.facets.nb_corners( f ) ) ;
             P.vertexlist = &polygon_corners_[ M.facets.corners_begin( f ) ] ;
         }
     }
@@ -451,7 +455,7 @@ namespace RINGMesh {
     void TetgenMesher::set_regions( const std::vector< vec3 >& one_point_in_each_region ) 
     {
         index_t nb_regions = one_point_in_each_region.size() ;
-        tetgen_in_.numberofregions = nb_regions ;
+        tetgen_in_.numberofregions = static_cast< int >( nb_regions ) ;
         tetgen_in_.regionlist = new double[5*nb_regions] ;
 
         for( index_t i = 0; i != nb_regions; ++i ){
@@ -471,7 +475,7 @@ namespace RINGMesh {
         for( index_t i = 0; i < M.cells.nb(); ++i ) {
             // Nothing says where it is, so we hope that the shell id is the first 
             // attribute stored in tetgen [JP]
-            region_id[ i ] = index_t( tet_attributes[ one_tet_attribute_size*i ] ) ;
+            region_id[ i ] = tet_attributes[ one_tet_attribute_size*i ] ;
         }
         region_id.unbind() ;
     }
@@ -497,7 +501,7 @@ namespace RINGMesh {
 
     void TetgenMesher::get_result_tetmesh_points( GEO::vector< double >& points ) const
     {
-        index_t nb_points( tetgen_out_.numberofpoints ) ;
+        index_t nb_points = static_cast< index_t >( tetgen_out_.numberofpoints ) ;
         points.resize( 3 * nb_points ) ;
         double* points_ptr = tetgen_out_.pointlist ;
         RINGMESH_PARALLEL_LOOP
@@ -508,17 +512,17 @@ namespace RINGMesh {
 
     void TetgenMesher::get_result_tetmesh_tets( GEO::vector< index_t>& tets ) const
     {
-        index_t nb_tets( tetgen_out_.numberoftetrahedra );
+        index_t nb_tets = static_cast< index_t >( tetgen_out_.numberoftetrahedra );
         tets.resize( 4 * nb_tets );
 
         int* tets_ptr = tetgen_out_.tetrahedronlist ;
         int one_tet_size = tetgen_out_.numberofcorners ;
         RINGMESH_PARALLEL_LOOP
         for( index_t i = 0; i < nb_tets; ++i ) {
-            tets[ 4 * i + 0 ] = index_t( tets_ptr[ one_tet_size*i + 0 ] ) ;
-            tets[ 4 * i + 1 ] = index_t( tets_ptr[ one_tet_size*i + 1 ] ) ;
-            tets[ 4 * i + 2 ] = index_t( tets_ptr[ one_tet_size*i + 2 ] ) ;
-            tets[ 4 * i + 3 ] = index_t( tets_ptr[ one_tet_size*i + 3 ] ) ;
+            tets[ 4 * i + 0 ] = tets_ptr[ one_tet_size*i + 0 ] ;
+            tets[ 4 * i + 1 ] = tets_ptr[ one_tet_size*i + 1 ] ;
+            tets[ 4 * i + 2 ] = tets_ptr[ one_tet_size*i + 2 ] ;
+            tets[ 4 * i + 3 ] = tets_ptr[ one_tet_size*i + 3 ] ;
         }
     }
 
@@ -535,6 +539,10 @@ namespace RINGMesh {
             mesher.tetrahedralize( M, "QpYYA", M ) ;
         }
     }
+
+#ifdef __GNUC__
+#   pragma GCC diagnostic pop
+#endif
 #endif
     
     /***********************************************************************/
@@ -721,7 +729,7 @@ namespace RINGMesh {
         std::vector< index_t >& result )
     {
         index_t prev = t ;
-        int cur = t ;
+        index_t cur = t ;
         do {
             index_t info = next_around_edge( mesh, cur, prev, p0, p1 ) ;
             if( info == GEO::NO_CELL ) return ;
@@ -787,7 +795,7 @@ namespace RINGMesh {
         index_t t )
     {
         float64 dist = GEO::Numeric::max_float64() ;
-        index_t result = -1 ;
+        index_t result = NO_ID ;
         for( index_t v = 0; v < mesh.cells.nb_vertices( t ); v++ ) {
             float64 distance = length2(
                 GEO::Geom::mesh_vertex( mesh, mesh.cells.vertex( t, v ) ) - p ) ;

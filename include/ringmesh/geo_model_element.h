@@ -310,7 +310,7 @@ namespace RINGMesh {
          */
         index_t nb_boundaries() const
         {
-            return boundaries_.size() ;
+            return static_cast< index_t >( boundaries_.size() ) ;
         }
         const gme_t& boundary_gme( index_t x ) const
         {
@@ -320,7 +320,7 @@ namespace RINGMesh {
 
         index_t nb_in_boundary() const
         {
-            return in_boundary_.size() ;
+            return static_cast< index_t >( in_boundary_.size() ) ;
         }
         const gme_t& in_boundary_gme( index_t x ) const
         {
@@ -347,7 +347,7 @@ namespace RINGMesh {
 
         index_t nb_children() const
         {
-            return children_.size() ;
+            return static_cast< index_t >( children_.size() ) ;
         }
         const gme_t& child_id( index_t x ) const
         {

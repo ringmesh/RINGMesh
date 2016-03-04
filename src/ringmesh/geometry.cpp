@@ -70,47 +70,6 @@ namespace {
 
 namespace RINGMesh {
 
-    /*! 
-     * @todo  Comment these descriptors [JP]
-     */
-    GEO::CellDescriptor tetra_descriptor = { 4,         // nb_vertices
-        4,         // nb_facets
-        { 3, 3, 3, 3 }, // nb_vertices in facet
-        {          // facets
-        { 1, 3, 2 }, { 0, 2, 3 }, { 3, 1, 0 }, { 0, 1, 2 } }, 6,         // nb_edges
-        {          // edges
-        { 1, 2 }, { 2, 3 }, { 3, 1 }, { 0, 1 }, { 0, 2 }, { 0, 3 } } } ;
-
-    GEO::CellDescriptor hex_descriptor = { 8,             // nb_vertices
-        6,             // nb_facets
-        { 4, 4, 4, 4, 4, 4 }, // nb_vertices in facet
-        {              // facets
-            { 0, 2, 6, 4 }, { 3, 1, 5, 7 }, { 1, 0, 4, 5 }, { 2, 3, 7, 6 }, {
-                1, 3, 2, 0 }, { 4, 6, 7, 5 } }, 12,            // nb_edges
-        {              // edges
-            { 0, 1 }, { 1, 3 }, { 3, 2 }, { 2, 0 }, { 4, 5 }, { 5, 7 }, { 7, 6 }, {
-                6, 4 }, { 0, 4 }, { 1, 5 }, { 3, 7 }, { 2, 6 } } } ;
-
-    GEO::CellDescriptor prism_descriptor = {
-        6,             // nb_vertices
-        5,             // nb_facets
-        { 3, 3, 4, 4, 4 },   // nb_vertices in facet
-        {              // facets
-        { 0, 1, 2 }, { 3, 5, 4 }, { 0, 3, 4, 1 }, { 0, 2, 5, 3 }, { 1, 4, 5, 2 } },
-        9,             // nb_edges
-        {              // edges
-            { 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 4 }, { 4, 5 }, { 5, 3 }, { 0, 3 }, {
-                1, 4 }, { 2, 5 } } } ;
-
-    GEO::CellDescriptor pyramid_descriptor = { 5,             // nb_vertices
-        5,             // nb_facets
-        { 4, 3, 3, 3, 3 },   // nb_vertices in facet
-        {              // facets
-        { 0, 1, 2, 3 }, { 0, 4, 1 }, { 0, 3, 4 }, { 2, 4, 3 }, { 2, 1, 4 } }, 8, // nb_edges
-        {              // edges
-            { 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 0 }, { 0, 4 }, { 1, 4 }, { 2, 4 }, {
-                3, 4 } } } ;
-
     /*!
      * Computes the distance between a point and a tetrahedron
      * @param[in] p the point
@@ -121,7 +80,7 @@ namespace RINGMesh {
      * @param[out] nearest_p the nearest point on the tetrahedron
      * @return the distance between the point and the tetrahedron facets
      */
-    float64 point_tetra_distance(
+    double point_tetra_distance(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
@@ -130,14 +89,15 @@ namespace RINGMesh {
         vec3& nearest_p )
     {
         vec3 vertices[4] = { p0, p1, p2, p3 } ;
-        float64 not_used0, not_used1, not_used2 ;
-        float64 dist = max_float64() ;
-        for( GEO::Numeric::uint8 f = 0; f < tetra_descriptor.nb_facets; f++ ) {
+        double not_used0, not_used1, not_used2 ;
+        double dist = max_float64() ;
+        for( index_t f = 0; f < GEO::MeshCellDescriptors::tet_descriptor.nb_facets;
+            f++ ) {
             vec3 cur_p ;
-            float64 distance = point_triangle_distance( p,
-                vertices[tetra_descriptor.facet_vertex[f][0]],
-                vertices[tetra_descriptor.facet_vertex[f][1]],
-                vertices[tetra_descriptor.facet_vertex[f][2]], cur_p, not_used0,
+            double distance = point_triangle_distance( p,
+                vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][0]],
+                vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][1]],
+                vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][2]], cur_p, not_used0,
                 not_used1, not_used2 ) ;
             if( distance < dist ) {
                 dist = distance ;
@@ -158,7 +118,7 @@ namespace RINGMesh {
      * @param[out] nearest_p the nearest point on the pyramid
      * @return the distance between the point and the pyramid facets
      */
-    float64 point_pyramid_distance(
+    double point_pyramid_distance(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
@@ -168,25 +128,25 @@ namespace RINGMesh {
         vec3& nearest_p )
     {
         vec3 vertices[5] = { p0, p1, p2, p3, p4 } ;
-        float64 not_used0, not_used1, not_used2 ;
-        float64 dist = max_float64() ;
-        for( GEO::Numeric::uint8 f = 0; f < pyramid_descriptor.nb_facets; f++ ) {
+        double not_used0, not_used1, not_used2 ;
+        double dist = max_float64() ;
+        for( index_t f = 0; f < GEO::MeshCellDescriptors::pyramid_descriptor.nb_facets; f++ ) {
             vec3 cur_p ;
-            float64 distance ;
+            double distance ;
             GEO::Numeric::uint8 nb_vertices =
-                pyramid_descriptor.nb_vertices_in_facet[f] ;
+                GEO::MeshCellDescriptors::pyramid_descriptor.nb_vertices_in_facet[f] ;
             if( nb_vertices == 3 ) {
                 distance = point_triangle_distance( p,
-                    vertices[pyramid_descriptor.facet_vertex[f][0]],
-                    vertices[pyramid_descriptor.facet_vertex[f][1]],
-                    vertices[pyramid_descriptor.facet_vertex[f][2]], cur_p,
+                    vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][0]],
+                    vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][1]],
+                    vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][2]], cur_p,
                     not_used0, not_used1, not_used2 ) ;
             } else if( nb_vertices == 4 ) {
                 distance = point_quad_distance( p,
-                    vertices[pyramid_descriptor.facet_vertex[f][0]],
-                    vertices[pyramid_descriptor.facet_vertex[f][1]],
-                    vertices[pyramid_descriptor.facet_vertex[f][2]],
-                    vertices[pyramid_descriptor.facet_vertex[f][3]], cur_p ) ;
+                    vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][0]],
+                    vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][1]],
+                    vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][2]],
+                    vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][3]], cur_p ) ;
             } else {
                 ringmesh_assert_not_reached;
             }
@@ -210,7 +170,7 @@ namespace RINGMesh {
      * @param[out] nearest_p the nearest point on the prism
      * @return the distance between the point and the prism facets
      */
-    float64 point_prism_distance(
+    double point_prism_distance(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
@@ -221,26 +181,26 @@ namespace RINGMesh {
         vec3& nearest_p )
     {
         vec3 vertices[6] = { p0, p1, p2, p3, p4, p5 } ;
-        float64 not_used0, not_used1, not_used2 ;
+        double not_used0, not_used1, not_used2 ;
 
-        float64 dist = max_float64() ;
-        for( GEO::Numeric::uint8 f = 0; f < prism_descriptor.nb_facets; f++ ) {
+        double dist = max_float64() ;
+        for( index_t f = 0; f < GEO::MeshCellDescriptors::prism_descriptor.nb_facets; f++ ) {
             vec3 cur_p ;
-            float64 distance ;
+            double distance ;
             GEO::Numeric::uint8 nb_vertices =
-                prism_descriptor.nb_vertices_in_facet[f] ;
+                GEO::MeshCellDescriptors::prism_descriptor.nb_vertices_in_facet[f] ;
             if( nb_vertices == 3 ) {
                 distance = point_triangle_distance( p,
-                    vertices[prism_descriptor.facet_vertex[f][0]],
-                    vertices[prism_descriptor.facet_vertex[f][1]],
-                    vertices[prism_descriptor.facet_vertex[f][2]], cur_p, not_used0,
+                    vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][0]],
+                    vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][1]],
+                    vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][2]], cur_p, not_used0,
                     not_used1, not_used2 ) ;
             } else if( nb_vertices == 4 ) {
                 distance = point_quad_distance( p,
-                    vertices[prism_descriptor.facet_vertex[f][0]],
-                    vertices[prism_descriptor.facet_vertex[f][1]],
-                    vertices[prism_descriptor.facet_vertex[f][2]],
-                    vertices[prism_descriptor.facet_vertex[f][3]], cur_p ) ;
+                    vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][0]],
+                    vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][1]],
+                    vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][2]],
+                    vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][3]], cur_p ) ;
             } else {
                 ringmesh_assert_not_reached;
             }
@@ -265,7 +225,7 @@ namespace RINGMesh {
      * @param[out] nearest_p the nearest point on the hexahedron
      * @return the distance between the point and the hexahedron facets
      */
-    float64 point_hexa_distance(
+    double point_hexa_distance(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
@@ -279,14 +239,14 @@ namespace RINGMesh {
     {
         /// Review: Why not input an array ?
         vec3 vertices[8] = { p0, p1, p2, p3, p4, p5, p6, p7 } ;
-        float64 dist = max_float64() ;
-        for( GEO::Numeric::uint8 f = 0; f < hex_descriptor.nb_facets; f++ ) {
+        double dist = max_float64() ;
+        for( index_t f = 0; f < GEO::MeshCellDescriptors::hex_descriptor.nb_facets; f++ ) {
             vec3 cur_p ;
-            float64 distance = point_quad_distance( p,
-                vertices[hex_descriptor.facet_vertex[f][0]],
-                vertices[hex_descriptor.facet_vertex[f][1]],
-                vertices[hex_descriptor.facet_vertex[f][2]],
-                vertices[hex_descriptor.facet_vertex[f][3]], cur_p ) ;
+            double distance = point_quad_distance( p,
+                vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][0]],
+                vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][1]],
+                vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][2]],
+                vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][3]], cur_p ) ;
             if( distance < dist ) {
                 dist = distance ;
                 nearest_p = cur_p ;
@@ -312,16 +272,17 @@ namespace RINGMesh {
         const vec3& p3 )
     {
         vec3 vertices[4] = { p0, p1, p2, p3 } ;
-        for( GEO::Numeric::uint8 f = 0; f < tetra_descriptor.nb_facets; f++ ) {
+        for( GEO::Numeric::uint8 f = 0;
+            f < GEO::MeshCellDescriptors::tet_descriptor.nb_facets; f++ ) {
             vec3 N = cross(
-                vertices[tetra_descriptor.facet_vertex[f][1]]
-                    - vertices[tetra_descriptor.facet_vertex[f][0]],
-                vertices[tetra_descriptor.facet_vertex[f][2]]
-                    - vertices[tetra_descriptor.facet_vertex[f][0]] ) ;
+                vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][1]]
+                    - vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][0]],
+                vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][2]]
+                    - vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][0]] ) ;
             vec3 n = p
-                - ( ( vertices[tetra_descriptor.facet_vertex[f][0]]
-                    + vertices[tetra_descriptor.facet_vertex[f][1]]
-                    + vertices[tetra_descriptor.facet_vertex[f][2]] ) / 3. ) ;
+                - ( ( vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][0]]
+                    + vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][1]]
+                    + vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][2]] ) / 3. ) ;
             if( dot( N, n ) > 0 ) return false ;
         }
         return true ;
@@ -346,26 +307,27 @@ namespace RINGMesh {
         const vec3& p4 )
     {
         vec3 vertices[5] = { p0, p1, p2, p3, p4 } ;
-        for( GEO::Numeric::uint8 f = 0; f < pyramid_descriptor.nb_facets; f++ ) {
+        for( index_t f = 0; f < GEO::MeshCellDescriptors::pyramid_descriptor.nb_facets; f++ ) {
             vec3 N = cross(
-                vertices[pyramid_descriptor.facet_vertex[f][1]]
-                    - vertices[pyramid_descriptor.facet_vertex[f][0]],
-                vertices[pyramid_descriptor.facet_vertex[f][2]]
-                    - vertices[pyramid_descriptor.facet_vertex[f][0]] ) ;
-            GEO::Numeric::uint8 nb_vertices =
-                pyramid_descriptor.nb_vertices_in_facet[f] ;
+                vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][1]]
+                    - vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][0]],
+                vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][2]]
+                    - vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][0]] ) ;
+            index_t nb_vertices =
+                GEO::MeshCellDescriptors::pyramid_descriptor.nb_vertices_in_facet[f] ;
             vec3 barycenter( 0., 0., 0. ) ;
             if( nb_vertices == 3 )
-                barycenter = ( ( vertices[pyramid_descriptor.facet_vertex[f][0]]
-                    + vertices[pyramid_descriptor.facet_vertex[f][1]]
-                    + vertices[pyramid_descriptor.facet_vertex[f][2]] ) / 3. ) ;
+                barycenter = ( ( vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][0]]
+                    + vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][1]]
+                    + vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][2]] ) / 3. ) ;
             else if( nb_vertices == 4 )
-                barycenter = ( ( vertices[pyramid_descriptor.facet_vertex[f][0]]
-                    + vertices[pyramid_descriptor.facet_vertex[f][1]]
-                    + vertices[pyramid_descriptor.facet_vertex[f][2]]
-                    + vertices[pyramid_descriptor.facet_vertex[f][3]] ) / 4. ) ;
-            else
+                barycenter = ( ( vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][0]]
+                    + vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][1]]
+                    + vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][2]]
+                    + vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][3]] ) / 4. ) ;
+            else {
                 ringmesh_assert_not_reached;
+            }
             vec3 n = p - barycenter ;
             if( dot( N, n ) > 0 ) return false ;
         }
@@ -393,26 +355,27 @@ namespace RINGMesh {
         const vec3& p5 )
     {
         vec3 vertices[6] = { p0, p1, p2, p3, p4, p5 } ;
-        for( GEO::Numeric::uint8 f = 0; f < prism_descriptor.nb_facets; f++ ) {
+        for( index_t f = 0; f < GEO::MeshCellDescriptors::prism_descriptor.nb_facets; f++ ) {
             vec3 N = cross(
-                vertices[prism_descriptor.facet_vertex[f][1]]
-                    - vertices[prism_descriptor.facet_vertex[f][0]],
-                vertices[prism_descriptor.facet_vertex[f][2]]
-                    - vertices[prism_descriptor.facet_vertex[f][0]] ) ;
-            GEO::Numeric::uint8 nb_vertices =
-                prism_descriptor.nb_vertices_in_facet[f] ;
+                vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][1]]
+                    - vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][0]],
+                vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][2]]
+                    - vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][0]] ) ;
+            index_t nb_vertices =
+                GEO::MeshCellDescriptors::prism_descriptor.nb_vertices_in_facet[f] ;
             vec3 barycenter( 0., 0., 0. ) ;
             if( nb_vertices == 3 )
-                barycenter = ( ( vertices[prism_descriptor.facet_vertex[f][0]]
-                    + vertices[prism_descriptor.facet_vertex[f][1]]
-                    + vertices[prism_descriptor.facet_vertex[f][2]] ) / 3. ) ;
+                barycenter = ( ( vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][0]]
+                    + vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][1]]
+                    + vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][2]] ) / 3. ) ;
             else if( nb_vertices == 4 )
-                barycenter = ( ( vertices[prism_descriptor.facet_vertex[f][0]]
-                    + vertices[prism_descriptor.facet_vertex[f][1]]
-                    + vertices[prism_descriptor.facet_vertex[f][2]]
-                    + vertices[prism_descriptor.facet_vertex[f][3]] ) / 4. ) ;
-            else
+                barycenter = ( ( vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][0]]
+                    + vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][1]]
+                    + vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][2]]
+                    + vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][3]] ) / 4. ) ;
+            else {
                 ringmesh_assert_not_reached;
+            }
             vec3 n = p - barycenter ;
             if( dot( N, n ) > 0 ) return false ;
         }
@@ -443,16 +406,16 @@ namespace RINGMesh {
         const vec3& p7 )
     {
         vec3 vertices[8] = { p0, p1, p2, p3, p4, p5, p6, p7 } ;
-        for( GEO::Numeric::uint8 f = 0; f < hex_descriptor.nb_facets; f++ ) {
+        for( index_t f = 0; f < GEO::MeshCellDescriptors::hex_descriptor.nb_facets; f++ ) {
             vec3 N = cross(
-                vertices[hex_descriptor.facet_vertex[f][1]]
-                    - vertices[hex_descriptor.facet_vertex[f][0]],
-                vertices[hex_descriptor.facet_vertex[f][2]]
-                    - vertices[hex_descriptor.facet_vertex[f][0]] ) ;
-            vec3 barycenter = ( ( vertices[hex_descriptor.facet_vertex[f][0]]
-                + vertices[hex_descriptor.facet_vertex[f][1]]
-                + vertices[hex_descriptor.facet_vertex[f][2]]
-                + vertices[hex_descriptor.facet_vertex[f][3]] ) / 4. ) ;
+                vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][1]]
+                    - vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][0]],
+                vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][2]]
+                    - vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][0]] ) ;
+            vec3 barycenter = ( ( vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][0]]
+                + vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][1]]
+                + vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][2]]
+                + vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][3]] ) / 4. ) ;
             vec3 n = p - barycenter ;
             if( dot( N, n ) > 0 ) return false ;
         }
@@ -474,7 +437,7 @@ namespace RINGMesh {
         const vec3& N_plane,
         const vec3& O_circle,
         const vec3& N_circle,
-        float64 r,
+        double r,
         std::vector< vec3 >& result )
     {
         vec3 O_inter, D_inter ;
@@ -489,19 +452,19 @@ namespace RINGMesh {
         // then r^2 = |t*D+P-C|^2 = |D|^2*t^2 + 2*Dot(D,P-C)*t + |P-C|^2.  This
         // is a quadratic equation of the form:  a2*t^2 + 2*a1*t + a0 = 0.
         vec3 diff = O_inter - O_circle ;
-        float64 a2 = D_inter.length2() ;
-        float64 a1 = dot( diff, D_inter ) ;
-        float64 a0 = diff.length2() - r * r ;
+        double a2 = D_inter.length2() ;
+        double a1 = dot( diff, D_inter ) ;
+        double a0 = diff.length2() - r * r ;
 
-        float64 discr = a1 * a1 - a0 * a2 ;
+        double discr = a1 * a1 - a0 * a2 ;
         if( discr < 0.0 ) return false ;
 
         if( fabs( a2 ) < epsilon ) return false ;
-        float64 inv = 1.0 / a2 ;
+        double inv = 1.0 / a2 ;
         if( discr < epsilon ) {
             result.push_back( vec3( O_inter - ( a1 * inv ) * D_inter ) ) ;
         } else {
-            float64 root = sqrt( discr ) ;
+            double root = sqrt( discr ) ;
             result.push_back( vec3( O_inter - ( ( a1 + root ) * inv ) * D_inter ) ) ;
             result.push_back( vec3( O_inter - ( ( a1 - root ) * inv ) * D_inter ) ) ;
         }
@@ -541,14 +504,14 @@ namespace RINGMesh {
         //   c1 = (d1 - d*d0)/det
         // where det = 1 - d^2.
 
-        float64 d = dot( N_P0, N_P1 ) ;
+        double d = dot( N_P0, N_P1 ) ;
         if( fabs( d - 1 ) < epsilon ) return false ;
 
-        float64 invDet = 1.0 / ( 1.0 - d * d ) ;
-        float64 const_P0 = dot( N_P0, O_P0 ) ;
-        float64 const_P1 = dot( N_P1, O_P1 ) ;
-        float64 c0 = ( const_P0 - d * const_P1 ) * invDet ;
-        float64 c1 = ( const_P1 - d * const_P0 ) * invDet ;
+        double invDet = 1.0 / ( 1.0 - d * d ) ;
+        double const_P0 = dot( N_P0, O_P0 ) ;
+        double const_P1 = dot( N_P1, O_P1 ) ;
+        double c0 = ( const_P0 - d * const_P1 ) * invDet ;
+        double c1 = ( const_P1 - d * const_P0 ) * invDet ;
         O_inter = c0 * N_P0 + c1 * N_P1 ;
         D_inter = cross( N_P0, N_P1 ) ;
         return true ;
@@ -571,7 +534,7 @@ namespace RINGMesh {
         const vec3& p2,
         const vec3& O_circle,
         const vec3& N_circle,
-        float64 r,
+        double r,
         std::vector< vec3 >& result )
     {
         vec3 N_triangle = normalize( cross( p1 - p0, p2 - p0 ) ) ;
@@ -606,9 +569,9 @@ namespace RINGMesh {
         vec3 center = ( p0 + p1 ) * 0.5 ;
         vec3 diff = p - center ;
         vec3 edge = p1 - p0 ;
-        float64 extent = 0.5 * edge.length() ;
+        double extent = 0.5 * edge.length() ;
         edge = normalize( edge ) ;
-        float64 d = dot( edge, diff ) ;
+        double d = dot( edge, diff ) ;
 
         if( fabs( d ) <= extent ) {
             new_p = center + d * edge ;
@@ -627,7 +590,7 @@ namespace RINGMesh {
      * @param[out] nearest_p the closest point on the quad
      * @return the smallest distance
      */
-    float64 point_quad_distance(
+    double point_quad_distance(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
@@ -639,14 +602,14 @@ namespace RINGMesh {
         vec3 edge0( p1 - p0 ) ;
         vec3 edge1( p3 - p0 ) ;
         vec3 axis[2] = { normalize( edge0 ), normalize( edge1 ) } ;
-        float64 extent[2] = { 0.5 * edge0.length(), 0.5 * edge1.length() } ;
+        double extent[2] = { 0.5 * edge0.length(), 0.5 * edge1.length() } ;
 
         vec3 diff = center - p ;
-        float64 b0 = dot( diff, axis[0] ) ;
-        float64 b1 = dot( diff, axis[1] ) ;
-        float64 s0 = -b0 ;
-        float64 s1 = -b1 ;
-        float64 sqrDistance = dot( diff, diff ) ;
+        double b0 = dot( diff, axis[0] ) ;
+        double b1 = dot( diff, axis[1] ) ;
+        double s0 = -b0 ;
+        double s1 = -b1 ;
+        double sqrDistance = dot( diff, diff ) ;
 
         if( s0 < -extent[0] ) {
             s0 = -extent[0] ;
@@ -667,7 +630,7 @@ namespace RINGMesh {
             sqrDistance = 0 ;
         }
 
-        float64 distance = sqrt( sqrDistance ) ;
+        double distance = sqrt( sqrDistance ) ;
         nearest_p = center ;
         nearest_p += s0 * axis[0] ;
         nearest_p += s1 * axis[1] ;
@@ -707,7 +670,7 @@ namespace RINGMesh {
         //   |Dot(D,N)|*b2 = sign(Dot(D,N))*Dot(D,Cross(E1,Q))
         //   |Dot(D,N)|*t = -sign(Dot(D,N))*Dot(Q,N)
         vec3 D = normalize( seg1 - seg0 ) ;
-        float64 DdN = dot( D, normal ) ;
+        double DdN = dot( D, normal ) ;
         signed_index_t sign ;
         if( DdN > epsilon ) {
             sign = 1 ;
@@ -720,18 +683,18 @@ namespace RINGMesh {
             return false ;
         }
 
-        float64 DdQxE2 = sign * dot( D, cross( diff, edge2 ) ) ;
+        double DdQxE2 = sign * dot( D, cross( diff, edge2 ) ) ;
         if( DdQxE2 >= 0 ) {
-            float64 DdE1xQ = sign * dot( D, cross( edge1, diff ) ) ;
+            double DdE1xQ = sign * dot( D, cross( edge1, diff ) ) ;
             if( DdE1xQ >= 0 ) {
                 if( DdQxE2 + DdE1xQ <= DdN ) {
                     // Line intersects triangle, check if segment does.
-                    float64 QdN = -sign * dot( diff, normal ) ;
-                    float64 extDdN = length( seg1 - seg0 ) * DdN / 2. ;
+                    double QdN = -sign * dot( diff, normal ) ;
+                    double extDdN = length( seg1 - seg0 ) * DdN / 2. ;
                     if( -extDdN <= QdN && QdN <= extDdN ) {
                         // Segment intersects triangle.
-                        float64 inv = 1. / DdN ;
-                        float64 seg_parameter = QdN * inv ;
+                        double inv = 1. / DdN ;
+                        double seg_parameter = QdN * inv ;
 
                         result = seg_center + seg_parameter * D ;
                         return true ;
@@ -769,7 +732,7 @@ namespace RINGMesh {
     void rotation_matrix_about_arbitrary_axis(
         const vec3& origin,
         const vec3& axis,
-        float64 theta,
+        double theta,
         bool degrees,
         GEO::Matrix< float64, 4 >& rot_mat )
     {
@@ -777,21 +740,21 @@ namespace RINGMesh {
         ringmesh_assert( axis != vec3() ) ;
 
         if( degrees ) {
-            float64 pi = 3.141592653589793 ;
+            double pi = 3.141592653589793 ;
             theta = theta * pi / 180. ;
         }
 
-        float64 axis_length = axis.length() ;
+        double axis_length = axis.length() ;
         ringmesh_assert( axis_length > 0. ) ;
-        float64 x1 = origin[0] ;
-        float64 y1 = origin[1] ;
-        float64 z1 = origin[2] ;
-        float64 a = axis[0] / axis_length ;
-        float64 b = axis[1] / axis_length ;
-        float64 c = axis[2] / axis_length ;
-        float64 d = std::sqrt( b * b + c * c ) ;
-        float64 cos_angle = std::cos( theta ) ;
-        float64 sin_angle = std::sin( theta ) ;
+        double x1 = origin[0] ;
+        double y1 = origin[1] ;
+        double z1 = origin[2] ;
+        double a = axis[0] / axis_length ;
+        double b = axis[1] / axis_length ;
+        double c = axis[2] / axis_length ;
+        double d = std::sqrt( b * b + c * c ) ;
+        double cos_angle = std::cos( theta ) ;
+        double sin_angle = std::sin( theta ) ;
 
         GEO::Matrix< float64, 4 > T ;
         T( 0, 0 ) = 1 ;
@@ -1085,7 +1048,7 @@ namespace RINGMesh {
     void MakeUnique::unique_points( std::vector< vec3 >& results ) const
     {
         results.reserve( indices_.size() ) ;
-        signed_index_t offset = 0, cur_id = 0 ;
+        index_t offset = 0, cur_id = 0 ;
         for( index_t p = 0; p < indices_.size(); p++ ) {
             if( cur_id == indices_[p] ) {
                 cur_id++ ;
@@ -1129,10 +1092,11 @@ namespace RINGMesh {
     void MakeUnique::add_edges(
         const std::vector< std::pair< vec3, vec3 > >& points )
     {
-        signed_index_t offset = points_.size() ;
-        points_.resize( offset + ( points.size() * 2 ) ) ;
-        indices_.resize( offset + ( points.size() * 2 ) ) ;
-        for( index_t p = 0; p < points.size(); p++ ) {
+        index_t offset = static_cast< index_t >( points_.size() ) ;
+        index_t nb_points = static_cast< index_t >( points.size() ) ;
+        points_.resize( offset + ( nb_points * 2 ) ) ;
+        indices_.resize( offset + ( nb_points * 2 ) ) ;
+        for( index_t p = 0; p < nb_points; p++ ) {
             points_[offset] = points[p].first ;
             indices_[offset] = offset ;
             offset++ ;
@@ -1147,10 +1111,11 @@ namespace RINGMesh {
      */
     void MakeUnique::add_points( const std::vector< vec3 >& points )
     {
-        signed_index_t offset = points_.size() ;
-        points_.resize( offset + points.size() ) ;
-        indices_.resize( offset + points.size() ) ;
-        for( index_t p = 0; p < points.size(); p++, offset++ ) {
+        index_t offset = static_cast< index_t >( points_.size() ) ;
+        index_t nb_points = static_cast< index_t >( points.size() ) ;
+        points_.resize( offset + nb_points ) ;
+        indices_.resize( offset + nb_points ) ;
+        for( index_t p = 0; p < nb_points; p++, offset++ ) {
             points_[offset] = points[p] ;
             indices_[offset] = offset ;
         }

@@ -1134,10 +1134,13 @@ namespace RINGMesh {
         switch( gmm_.duplicate_mode() ) {
             case ALL:
                 return true ;
-            case FAULT:
+            case FAULT: {
                 GeoModelElement::GEOL_FEATURE feature =
                     gm_.surface( surface_id ).geological_feature() ;
                 return GME::is_fault( feature ) ;
+            }
+            default:
+                return false ;
         }
         return false ;
     }
@@ -1819,8 +1822,6 @@ namespace RINGMesh {
                     divide_edge_in_parts( node0, node1, order, new_points_in_edge ) ;
                     for( index_t v = 0; v < new_points_in_edge.size(); v++ ) {
                         std::vector< index_t > colocated_vertices ;
-                        index_t real_vertex_indice = ann.get_colocated(
-                            new_points_in_edge[v], colocated_vertices ) ;
                         ringmesh_assert( colocated_vertices.size() == 1 ) ;
 
                         order_vertices_facet[f * max_new_points_on_facet_ + e + v] =

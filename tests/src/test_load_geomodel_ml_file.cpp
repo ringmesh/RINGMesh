@@ -47,7 +47,7 @@
  * @returns 0 if success or an error code if not. 
  * @author Arnaud Botella
  */
-int main( int argc, char** argv )
+int main()
 {
     using namespace RINGMesh ;
 
