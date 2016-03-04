@@ -234,7 +234,7 @@ namespace RINGMesh {
      */
     bool GeoModelEditor::get_dependent_elements( std::set< gme_t >& in ) const
     {
-        index_t input_size = in.size() ;
+        index_t input_size = static_cast< index_t >( in.size() ) ;
 
         for( std::set< gme_t >::iterator it( in.begin() ); it != in.end(); ++it ) {
             gme_t cur = *it ;
@@ -613,8 +613,9 @@ namespace RINGMesh {
         GME::TYPE T = E.type() ;
         if( E.nb_children() > 0 ) {
             gme_t invalid_child( E.child_type( T ), NO_ID ) ;
-            if( std::count( E.children_.begin(), E.children_.end(), invalid_child )
-                == E.children_.size() ) {
+            index_t nb_found = static_cast< index_t >( std::count(
+                E.children_.begin(), E.children_.end(), invalid_child ) ) ;
+            if( nb_found == E.children_.size() ) {
                 // Calling erase on all elements -> undefined behavior
                 E.children_.clear() ;
             } else {
@@ -657,8 +658,9 @@ namespace RINGMesh {
         }
         if( E.nb_in_boundary() > 0 ) {
             gme_t invalid_in_boundary( E.in_boundary_type( T ), NO_ID ) ;
-            if( std::count( E.in_boundary_.begin(), E.in_boundary_.end(),
-                invalid_in_boundary ) == E.in_boundary_.size() ) {
+            index_t nb_found = static_cast< index_t >( std::count(
+                E.in_boundary_.begin(), E.in_boundary_.end(), invalid_in_boundary ) ) ;
+            if( nb_found == E.in_boundary_.size() ) {
                 E.in_boundary_.clear() ;
             } else {
                 E.in_boundary_.erase(

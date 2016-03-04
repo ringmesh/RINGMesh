@@ -69,7 +69,7 @@ namespace RINGMesh {
     /*! 
      * @brief TSurfMeshIOHandler for importing .ts files into a mesh.
      */
-    class RINGMESH_API TSurfMeshIOHandler : public GEO::MeshIOHandler {
+    class TSurfMeshIOHandler : public GEO::MeshIOHandler {
     public:   
         TSurfMeshIOHandler() :
             mesh_dimension_(3),
@@ -213,13 +213,67 @@ namespace RINGMesh {
         GEO::vector< index_t > triangles_ ;
     } ;
 
-    void RINGMESH_API ringmesh_mesh_io_initialize()
+    class LINMeshIOHandler: public GEO::MeshIOHandler {
+    public:
+        virtual bool load(
+            const std::string& filename,
+            GEO::Mesh& mesh,
+            const GEO::MeshIOFlags& flag = GEO::MeshIOFlags() )
+        {
+            GEO::LineInput file( filename ) ;
+
+            while( !file.eof() && file.get_line() ) {
+                file.get_fields() ;
+                if( file.nb_fields() > 0 ) {
+                    if( file.field_matches( 0, "v" ) ) {
+                        vec3 vertex = load_vertex( file, 1 ) ;
+                        mesh.vertices.create_vertex( vertex.data() ) ;
+                    } else if( file.field_matches( 0, "s" ) ) {
+                        mesh.edges.create_edge(
+                            file.field_as_uint( 1 ) - 1,
+                            file.field_as_uint( 2 ) - 1 ) ;
+                    }
+                }
+            }
+            return true ;
+
+        }
+        virtual bool save(
+            const GEO::Mesh& M,
+            const std::string& filename,
+            const GEO::MeshIOFlags& ioflags = GEO::MeshIOFlags() )
+        {
+            throw RINGMeshException( "I/O",
+                "Saving a Mesh into .lin format not implemented yet" ) ;
+            return false ;
+        }
+
+    private:
+        vec3 load_vertex( GEO::LineInput& file, index_t field ) const
+        {
+            double x = file.field_as_double( field++ ) ;
+            double y = file.field_as_double( field++ ) ;
+            double z = file.field_as_double( field++ ) ;
+            return vec3( x, y, z ) ;
+        }
+    } ;
+
+    void ringmesh_mesh_io_initialize()
     {
         geo_register_MeshIOHandler_creator( TSurfMeshIOHandler, "ts" ) ;
+        geo_register_MeshIOHandler_creator( LINMeshIOHandler, "lin" ) ;
     }
 
  
     /***********************************************************************/
+#ifdef __GNUC__
+#   pragma GCC diagnostic push
+#   pragma GCC diagnostic ignored "-Wsign-conversion"
+#endif
+
+#ifdef __GNUC__
+#   pragma GCC diagnostic pop
+#endif
 
     /*!
     * Computes the volume of a Mesh cell
@@ -412,7 +466,7 @@ namespace RINGMesh {
         std::vector< index_t >& result )
     {
         index_t prev = t ;
-        int cur = t ;
+        index_t cur = t ;
         do {
             index_t info = next_around_edge( mesh, cur, prev, p0, p1 ) ;
             if( info == GEO::NO_CELL ) return ;
@@ -478,7 +532,7 @@ namespace RINGMesh {
         index_t t )
     {
         float64 dist = GEO::Numeric::max_float64() ;
-        index_t result = -1 ;
+        index_t result = NO_ID ;
         for( index_t v = 0; v < mesh.cells.nb_vertices( t ); v++ ) {
             float64 distance = length2(
                 GEO::Geom::mesh_vertex( mesh, mesh.cells.vertex( t, v ) ) - p ) ;

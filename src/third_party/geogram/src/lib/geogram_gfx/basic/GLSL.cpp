@@ -223,7 +223,7 @@ namespace GEO {
             }
 
             if(GLSL_version == 0.0) {
-                Logger::warn("GLSL") << "Could not determine GLSL mversion"
+                Logger::warn("GLSL") << "Could not determine GLSL version"
                                      << std::endl;
             } else {
                 Logger::out("GLSL") << "GLSL version = "

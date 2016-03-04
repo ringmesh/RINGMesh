@@ -81,20 +81,26 @@
 
 #ifdef RINGMESH_WITH_GRAPHICS
 
-#include <ringmesh/geo_model.h>
-#include <ringmesh/gfx.h>
-#include <ringmesh/io.h>
+#include <algorithm>
 
 #include <geogram_gfx/basic/GLSL.h>
 #include <geogram_gfx/glut_viewer/glut_viewer.h>
+#include <geogram_gfx/third_party/freeglut/glut.h>
+#include <geogram_gfx/third_party/freeglut/freeglut_ext.h>
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/command_line_args.h>
 #include <geogram/basic/file_system.h>
 #include <geogram/basic/logger.h>
 
-#include <algorithm>
+#include <ringmesh/command_line.h>
+#include <ringmesh/geo_model.h>
+#include <ringmesh/geogram_extension.h>
+#include <ringmesh/gfx.h>
+#include <ringmesh/io.h>
+#include <ringmesh/utils.h>
 
 namespace {
+
     using namespace RINGMesh ;
 
     GeoModel GM ;
@@ -250,6 +256,8 @@ namespace {
         glut_viewer_disable( GLUT_VIEWER_TWEAKBARS ) ;
         glut_viewer_disable( GLUT_VIEWER_BACKGROUND ) ;
         glut_viewer_add_key_func( 'm', toggle_mesh, "mesh" ) ;
+
+        GM_gfx.set_geo_model( GM ) ;
     }
 
     /**
@@ -258,10 +266,6 @@ namespace {
      */
     void display()
     {
-
-        if( GM_gfx.geo_model() != &GM ) {
-            GM_gfx.set_geo_model( GM ) ;
-        }
 
         GLfloat shininess = 20.0f ;
         glMaterialfv( GL_FRONT_AND_BACK, GL_SHININESS, &shininess ) ;
@@ -287,7 +291,6 @@ namespace {
 
             GM_gfx.set_vertex_regions_color( 1.0, 1.0, 1.0 ) ;
         }
-        GM_gfx.set_vertex_regions_size( 1 ) ;
 
         if( show_corners ) {
             GM_gfx.draw_corners() ;
@@ -304,7 +307,6 @@ namespace {
         if( show_volume || show_wells ) {
             GM_gfx.draw_regions() ;
         }
-
     }
 
     /**
@@ -363,6 +365,7 @@ namespace {
             RINGMesh::geomodel_volume_load( GEO::CmdLine::get_arg( "mesh" ), GM ) ;
             meshed_regions = true ;
         }
+
         get_bbox( GM, xyzmin, xyzmax ) ;
 
         glut_viewer_set_region_of_interest( float( xyzmin[0] ), float( xyzmin[1] ),
@@ -404,6 +407,9 @@ int main( int argc, char** argv )
 
     try {
 
+        GEO::initialize() ;
+        configure_geogram() ;
+        configure_ringmesh() ;
         GEO::Logger::div( "RINGMeshView" ) ;
         GEO::Logger::out( "" ) << "Welcome to RINGMeshView !" << std::endl ;
         GEO::Logger::out( "" ) << "People working on the project in RING"
@@ -418,6 +424,7 @@ int main( int argc, char** argv )
         GEO::CmdLine::declare_arg( "model", "",
             "filename of the structural model" ) ;
         GEO::CmdLine::declare_arg( "mesh", "", "filename of the volumetric mesh" ) ;
+        CmdLine::import_arg_group( "attr" ) ;
 
         if( argc == 1 ) {
             GEO::CmdLine::show_usage() ;
@@ -481,6 +488,9 @@ int main( int argc, char** argv )
 #else
 #include <geogram/basic/logger.h>
 int main() {
+
+    configure_geogram() ;
+    configure_ringmesh() ;
     GEO::Logger::out("RINGMeshView")
     << "To compile RINGMesh viewer you need to configure "
     << "the project with the RINGMESH_WITH_GRAPHICS option ON"

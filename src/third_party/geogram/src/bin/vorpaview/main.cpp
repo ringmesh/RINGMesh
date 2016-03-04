@@ -189,7 +189,6 @@ namespace {
      * \details Specifed as glut_viewer_set_display_func() callback.
      */
     void display() {
-
         if(M_gfx.mesh() != &M) {
             M_gfx.set_mesh(&M);
         }
@@ -197,6 +196,7 @@ namespace {
         if(show_borders) {
             M_gfx.draw_surface_borders();
         }
+
 
         M_gfx.set_draw_cells(GEO::MESH_HEX, hexes);
         

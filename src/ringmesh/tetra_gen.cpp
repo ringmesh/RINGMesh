@@ -175,7 +175,7 @@ namespace {
             unique.unique() ;
             const std::vector< index_t > indices = unique.indices() ;
             GEO::vector< index_t > facet_to_remove( mesh.facets.nb(), 0 ) ;
-            signed_index_t cur_id = 0 ;
+            index_t cur_id = 0 ;
             for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
                 if( cur_id == indices[f] ) {
                     cur_id++ ;
@@ -815,7 +815,8 @@ namespace RINGMesh {
     {
         index_t corner_begin = tetmesh_->cells.corners_begin( index ) ;
         for( index_t v = 0; v < 4; v++ ) {
-            tetmesh_->cell_corners.set_vertex( corner_begin++, tet[v] - 1 ) ;
+            index_t tet_id = static_cast< index_t >( tet[v] - 1 ) ;
+            tetmesh_->cell_corners.set_vertex( corner_begin++, tet_id ) ;
         }
     }
 
