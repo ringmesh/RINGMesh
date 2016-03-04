@@ -2735,7 +2735,7 @@ namespace RINGMesh {
                             file_line_.get_line() ;
                             file_line_.get_fields() ;
                             for( index_t i = 0; i < 5; ++i ) {
-                                signed_index_t signed_id = file_.field_as_int( i ) ;
+                                signed_index_t signed_id = file_line_.field_as_int( i ) ;
                                 if( signed_id == 0 ) {
                                     end_region = true ;
                                     break ;
