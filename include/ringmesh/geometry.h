@@ -486,7 +486,7 @@ namespace RINGMesh {
         */
         index_t nb_points() const
         {
-            return points_.size() ;
+            return static_cast< index_t >( points_.size() ) ;
         }
 
         void unique_points( std::vector< vec3 >& results ) const ;

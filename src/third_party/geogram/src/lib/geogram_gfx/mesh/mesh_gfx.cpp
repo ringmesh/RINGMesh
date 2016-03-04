@@ -190,6 +190,7 @@ namespace GEO {
         set_GLUP_parameters();
         set_GLUP_picking(MESH_EDGES);
         update_buffer_objects_if_needed();
+        
         glupSetColor3fv(GLUP_FRONT_COLOR, mesh_color_);
         glLineWidth(GLfloat(mesh_width_));
         if(glupPrimitiveSupportsArrayMode(GLUP_LINES) && edges_VAO_ != 0) {
@@ -352,8 +353,9 @@ namespace GEO {
                 return;
             }
             glupSetColor3fv(GLUP_FRONT_AND_BACK_COLOR, cells_color_[MESH_TET]);
+            update_buffer_objects_if_needed();
             if(
-                facets_VAO_ != 0 &&
+                cells_VAO_ != 0 &&
                 glupPrimitiveSupportsArrayMode(GLUP_TETRAHEDRA)
             ) {
                 glBindVertexArray(cells_VAO_);
@@ -434,8 +436,6 @@ namespace GEO {
             glupDisable(GLUP_LIGHTING);
         }
 
-        glupClipMode(GLUP_CLIP_WHOLE_CELLS); // TODO: maybe remove that...
-        
         do_animation_ =
             (animate_ && mesh_->vertices.dimension() >= 6);
     }

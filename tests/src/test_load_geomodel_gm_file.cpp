@@ -46,11 +46,15 @@
  * @author Arnaud Botella
  */
 
-int main( int argc, char** argv )
+int main()
 {
     using namespace RINGMesh ;
 
     try {
+
+        GEO::initialize() ;
+        configure_geogram() ;
+        configure_ringmesh() ;
 
         GEO::Logger::out( "TEST" ) << "Test IO for a GeoModel in .bm" << std::endl ;
 

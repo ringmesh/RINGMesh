@@ -154,11 +154,22 @@ if(WIN32)
 	# Select the CMAKE_CONFIGURATION_TYPES from Visual Studio
     set(COMPILATION_OPTION --config ${CMAKE_CFG_INTDIR})
 elseif(UNIX)
-    # If you really need it, please comment [JP]
-    # Maybe rather test the compiler than the system
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-    set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+    set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
+    add_compile_options(-Wall -Wextra -Wno-long-long -Wconversion)
+    
+    # Determine gcc version and activate additional warnings available in latest versions
+    execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
 
+    if (GCC_VERSION VERSION_GREATER 4.3 OR GCC_VERSION VERSION_EQUAL 4.3)
+        message(STATUS "GCC version >= 4.3, activating sign conversion warnings")
+        add_compile_options(-Wsign-conversion)
+    endif()
+
+    if (GCC_VERSION VERSION_GREATER 4.6 OR GCC_VERSION VERSION_EQUAL 4.6)
+        message(STATUS "GCC version >= 4.6, activating double promotion warnings")
+        add_compile_options(-Wdouble-promotion)
+    endif()
+    
     # Enable parallel computation
     set(COMPILATION_OPTION -- -j4)    
 else(WIN32)

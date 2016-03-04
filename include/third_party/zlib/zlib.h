@@ -33,6 +33,13 @@
 
 #include "zconf.h"
 
+#ifdef __GNUC__
+#   pragma GCC diagnostic ignored "-Wsign-conversion"
+#   pragma GCC diagnostic ignored "-Wconversion"
+#   pragma GCC diagnostic ignored "-Wunused-parameter"
+#   pragma GCC diagnostic ignored "-Wimplicit-function-declaration"
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

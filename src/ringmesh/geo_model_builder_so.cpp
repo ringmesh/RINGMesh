@@ -86,8 +86,6 @@ namespace {
         index_t cur_region = NO_ID ;
         index_t nb_vertices_in_region = 0 ;
         index_t nb_tetras_in_region = 0 ;
-        index_t nb_surfaces_in_bmodel = 0 ;
-        index_t nb_triangles_in_bmodel = 0 ;
 
         // Reading file
         while( !line_input.eof() && line_input.get_line() ) {
@@ -150,12 +148,12 @@ namespace RINGMesh {
         {
         }
 
-        const index_t local_id( index_t gocad_vertex_id ) const
+        index_t local_id( index_t gocad_vertex_id ) const
         {
             return gocad_vertices2region_vertices_[gocad_vertex_id] ;
         }
 
-        const index_t region( index_t gocad_vertex_id ) const
+        index_t region( index_t gocad_vertex_id ) const
         {
             return gocad_vertices2region_id_[gocad_vertex_id] ;
         }
@@ -166,7 +164,7 @@ namespace RINGMesh {
             gocad_vertices2region_id_.push_back( region_id ) ;
         }
 
-        const index_t nb_vertex() const
+        index_t nb_vertex() const
         {
             ringmesh_assert(
                 gocad_vertices2region_vertices_.size()

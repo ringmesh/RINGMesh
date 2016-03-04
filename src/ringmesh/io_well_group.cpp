@@ -97,6 +97,8 @@ namespace {
         }
         virtual void save( const WellGroup& wells, const std::string& filename )
         {
+            ringmesh_unused( wells ) ;
+            ringmesh_unused( filename ) ;
             throw RINGMeshException( "I/O",
                 "Saving of a WellGroup from Gocad not implemented yet" ) ;
         }

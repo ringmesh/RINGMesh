@@ -61,7 +61,7 @@ namespace RINGMesh {
     /*! 
      * @brief TSurfMeshIOHandler for importing .ts files into a mesh.
      */
-    class RINGMESH_API TSurfMeshIOHandler : public GEO::MeshIOHandler {
+    class TSurfMeshIOHandler : public GEO::MeshIOHandler {
     public:   
         TSurfMeshIOHandler() :
             mesh_dimension_(3),
@@ -205,14 +205,64 @@ namespace RINGMesh {
         GEO::vector< index_t > triangles_ ;
     } ;
 
-    void RINGMESH_API ringmesh_mesh_io_initialize()
+    class LINMeshIOHandler: public GEO::MeshIOHandler {
+    public:
+        virtual bool load(
+            const std::string& filename,
+            GEO::Mesh& mesh,
+            const GEO::MeshIOFlags& flag = GEO::MeshIOFlags() )
+        {
+            GEO::LineInput file( filename ) ;
+
+            while( !file.eof() && file.get_line() ) {
+                file.get_fields() ;
+                if( file.nb_fields() > 0 ) {
+                    if( file.field_matches( 0, "v" ) ) {
+                        vec3 vertex = load_vertex( file, 1 ) ;
+                        mesh.vertices.create_vertex( vertex.data() ) ;
+                    } else if( file.field_matches( 0, "s" ) ) {
+                        mesh.edges.create_edge(
+                            file.field_as_uint( 1 ) - 1,
+                            file.field_as_uint( 2 ) - 1 ) ;
+                    }
+                }
+            }
+            return true ;
+
+        }
+        virtual bool save(
+            const GEO::Mesh& M,
+            const std::string& filename,
+            const GEO::MeshIOFlags& ioflags = GEO::MeshIOFlags() )
+        {
+            throw RINGMeshException( "I/O",
+                "Saving a Mesh into .lin format not implemented yet" ) ;
+            return false ;
+        }
+
+    private:
+        vec3 load_vertex( GEO::LineInput& file, index_t field ) const
+        {
+            double x = file.field_as_double( field++ ) ;
+            double y = file.field_as_double( field++ ) ;
+            double z = file.field_as_double( field++ ) ;
+            return vec3( x, y, z ) ;
+        }
+    } ;
+
+    void ringmesh_mesh_io_initialize()
     {
         geo_register_MeshIOHandler_creator( TSurfMeshIOHandler, "ts" ) ;
+        geo_register_MeshIOHandler_creator( LINMeshIOHandler, "lin" ) ;
     }
 
 
     /***********************************************************************/
 #ifdef RINGMESH_WITH_TETGEN
+#ifdef __GNUC__
+#   pragma GCC diagnostic push
+#   pragma GCC diagnostic ignored "-Wsign-conversion"
+#endif
 
     bool is_mesh_tetrahedralizable( const GEO::Mesh& M ) 
     {         
@@ -388,7 +438,7 @@ namespace RINGMesh {
 
             GEO_3rdParty::tetgenio::polygon& P = F.polygonlist[ 0 ] ;
             GEO_3rdParty::tetgenio::init( &P ) ;
-            P.numberofvertices = M.facets.nb_corners( f ) ;
+            P.numberofvertices = static_cast< int >( M.facets.nb_corners( f ) ) ;
             P.vertexlist = &polygon_corners_[ M.facets.corners_begin( f ) ] ;
         }
     }
@@ -396,7 +446,7 @@ namespace RINGMesh {
     void TetgenMesher::set_regions( const std::vector< vec3 >& one_point_in_each_region ) 
     {
         index_t nb_regions = one_point_in_each_region.size() ;
-        tetgen_in_.numberofregions = nb_regions ;
+        tetgen_in_.numberofregions = static_cast< int >( nb_regions ) ;
         tetgen_in_.regionlist = new double[5*nb_regions] ;
 
         for( index_t i = 0; i != nb_regions; ++i ){
@@ -416,7 +466,7 @@ namespace RINGMesh {
         for( index_t i = 0; i < M.cells.nb(); ++i ) {
             // Nothing says where it is, so we hope that the shell id is the first 
             // attribute stored in tetgen [JP]
-            region_id[ i ] = index_t( tet_attributes[ one_tet_attribute_size*i ] ) ;
+            region_id[ i ] = tet_attributes[ one_tet_attribute_size*i ] ;
         }
         region_id.unbind() ;
     }
@@ -442,7 +492,7 @@ namespace RINGMesh {
 
     void TetgenMesher::get_result_tetmesh_points( GEO::vector< double >& points ) const
     {
-        index_t nb_points( tetgen_out_.numberofpoints ) ;
+        index_t nb_points = static_cast< index_t >( tetgen_out_.numberofpoints ) ;
         points.resize( 3 * nb_points ) ;
         double* points_ptr = tetgen_out_.pointlist ;
         RINGMESH_PARALLEL_LOOP
@@ -453,17 +503,17 @@ namespace RINGMesh {
 
     void TetgenMesher::get_result_tetmesh_tets( GEO::vector< index_t>& tets ) const
     {
-        index_t nb_tets( tetgen_out_.numberoftetrahedra );
+        index_t nb_tets = static_cast< index_t >( tetgen_out_.numberoftetrahedra );
         tets.resize( 4 * nb_tets );
 
         int* tets_ptr = tetgen_out_.tetrahedronlist ;
         int one_tet_size = tetgen_out_.numberofcorners ;
         RINGMESH_PARALLEL_LOOP
         for( index_t i = 0; i < nb_tets; ++i ) {
-            tets[ 4 * i + 0 ] = index_t( tets_ptr[ one_tet_size*i + 0 ] ) ;
-            tets[ 4 * i + 1 ] = index_t( tets_ptr[ one_tet_size*i + 1 ] ) ;
-            tets[ 4 * i + 2 ] = index_t( tets_ptr[ one_tet_size*i + 2 ] ) ;
-            tets[ 4 * i + 3 ] = index_t( tets_ptr[ one_tet_size*i + 3 ] ) ;
+            tets[ 4 * i + 0 ] = tets_ptr[ one_tet_size*i + 0 ] ;
+            tets[ 4 * i + 1 ] = tets_ptr[ one_tet_size*i + 1 ] ;
+            tets[ 4 * i + 2 ] = tets_ptr[ one_tet_size*i + 2 ] ;
+            tets[ 4 * i + 3 ] = tets_ptr[ one_tet_size*i + 3 ] ;
         }
     }
 
@@ -480,6 +530,10 @@ namespace RINGMesh {
             mesher.tetrahedralize( M, "QpYYA", M ) ;
         }
     }
+
+#ifdef __GNUC__
+#   pragma GCC diagnostic pop
+#endif
 #endif
     
     /***********************************************************************/
@@ -666,7 +720,7 @@ namespace RINGMesh {
         std::vector< index_t >& result )
     {
         index_t prev = t ;
-        int cur = t ;
+        index_t cur = t ;
         do {
             index_t info = next_around_edge( mesh, cur, prev, p0, p1 ) ;
             if( info == GEO::NO_CELL ) return ;
@@ -732,7 +786,7 @@ namespace RINGMesh {
         index_t t )
     {
         float64 dist = GEO::Numeric::max_float64() ;
-        index_t result = -1 ;
+        index_t result = NO_ID ;
         for( index_t v = 0; v < mesh.cells.nb_vertices( t ); v++ ) {
             float64 distance = length2(
                 GEO::Geom::mesh_vertex( mesh, mesh.cells.vertex( t, v ) ) - p ) ;
