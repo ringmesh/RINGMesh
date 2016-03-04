@@ -367,21 +367,30 @@ namespace RINGMesh {
     * @param[in] p1 Second vertex index of the edge
     * @return The edge index
     * \pre the mesh needs to be tetrahedralized
+    *
+    * @todo Review: Are these functions really used ? They should be rewritten [JP]
     */
     index_t next_around_edge(
         const GEO::Mesh& mesh,
-        index_t t,
-        index_t prev,
-        index_t p0,
-        index_t p1 )
+        index_t tet,
+        index_t prev_tet,
+        index_t v0,
+        index_t v1 )
     {
-        for( index_t adj = 0; adj < mesh.cells.nb_facets( t ); adj++ ) {
-            index_t t_adj = mesh.cells.adjacent( t, adj ) ;
-            if( t_adj == GEO::NO_CELL || t_adj == prev ) continue ;
+        index_t nb_facets = mesh.cells.nb_facets( tet );
+        ringmesh_assert( nb_facets == 4 );
+        /* @todo handles any cell type and change that algorithm to check adjacencies
+         * only on the facets adjacent to the edge in the input tet 
+         * [JP]
+         */
+        for( index_t f = 0; f < nb_facets ; f++ ) {
+            index_t adjacent_tet = mesh.cells.adjacent( t, f ) ;
+            if( adjacent_tet == GEO::NO_CELL || adjacent_tet == prev_tet ) {
+                continue ;
+            }
             index_t edge ;
-            if( has_edge( mesh, t_adj, p0, p1, edge ) ) {
-                //todo handles any cell type
-                return 6 * t_adj + edge ;
+            if( has_edge( mesh, t_adj, p0, p1, edge ) ) {                
+                return 6 * adjacent_tet + edge ;
             }
         }
         return GEO::NO_CELL ;
