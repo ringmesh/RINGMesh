@@ -1053,8 +1053,7 @@ namespace RINGMesh {
             // From the edge that is on boundary get the next vertex on this boundary
             // If the edge starting at p_in_next is on boundary, new_vertex is its next
             // If the edge ending at p_in_next is on boundary, new vertex is its prev
-            next_in_next =
-                e0_on_boundary ?
+            next_in_next = e0_on_boundary ?
                     next_in_facet( next_f, v_in_next ) : prev_v_in_next ;
         } else if( nb_around == 1 ) {
             // V must be in two border edges of facet f

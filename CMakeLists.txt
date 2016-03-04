@@ -72,7 +72,8 @@ if(RINGMESH_WITH_TESTS)
     set(TEST_DIRECTORY ${CMAKE_SOURCE_DIR}/tests)
     set(TEST_SOURCE_DIRECTORY ${TEST_DIRECTORY}/src)
     set(TEST_DATA_INPUT_DIRECTORY "${TEST_DIRECTORY}/data" CACHE PATH "Input data location")
-set(TEST_DATA_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/tests/output")
+    # PROJECT_BINARY_DIR not defined at this point
+    set(TEST_DATA_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/build/tests/output" CACHE PATH "Output data location")
 endif()
 
 # Turn on the ability to create folders to organize projects and files

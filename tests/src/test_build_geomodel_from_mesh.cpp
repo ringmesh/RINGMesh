@@ -40,6 +40,7 @@
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_api.h>
 #include <ringmesh/geo_model_builder.h>
+#include <ringmesh/geo_model_validity.h>
 #include <ringmesh/ringmesh_tests_config.h>
 #include <ringmesh/io.h>
 
@@ -84,10 +85,15 @@ int main( int argc, char** argv )
 
             GeoModel geomodel ;
             GeoModelBuilderMesh builder( geomodel, mesh, "region", "" ) ;
+            RINGMesh::GeoModelBuildingFlags building_flags ;
+            building_flags.compute_regions_brep = true ;
+            builder.set_options( building_flags ) ;
+
             builder.create_and_build_surfaces() ;
             builder.build_model_from_surfaces() ;
 
             print_geomodel( geomodel ) ;
+            is_geomodel_valid( geomodel ) ;
             geomodel_surface_save( geomodel, result_file_name ) ;
         }
 
@@ -101,10 +107,16 @@ int main( int argc, char** argv )
             GeoModelBuilderMesh::prepare_surface_mesh_from_connected_components(
                 mesh, "region" ) ;
             GeoModelBuilderMesh builder( geomodel, mesh, "region", "" ) ;
+            RINGMesh::GeoModelBuildingFlags building_flags ;
+            building_flags.compute_regions_brep = true ;
+            builder.set_options( building_flags ) ;
+
             builder.create_and_build_surfaces() ;
             builder.build_model_from_surfaces() ;
 
             print_geomodel( geomodel ) ;
+            is_geomodel_valid( geomodel ) ;
+
         }
 
         /*!
