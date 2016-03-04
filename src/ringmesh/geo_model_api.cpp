@@ -771,7 +771,7 @@ namespace RINGMesh {
         const Surface& first_boundary_surface = geomodel.surface( region.boundary_gme( 0 ).index ) ; 
         vec3 barycenter = first_boundary_surface.facet_barycenter( 0 ) ;                
         /// @todo Check that this is the right condition to have a correct enough barycenter
-        ringmesh_assert( facet_area > epsilon ) ;
+        ringmesh_assert( first_boundary_surface.facet_area( 0 ) > epsilon ) ;
 
         double minimum_distance = DBL_MAX ;
         vec3 nearest_point ;        
