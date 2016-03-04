@@ -147,7 +147,7 @@ namespace RINGMesh {
         double dist = max_float64() ;
         for( index_t f = 0; f < GEO::MeshCellDescriptors::pyramid_descriptor.nb_facets; f++ ) {
             vec3 cur_p ;
-            double distance ;
+            double distance = max_float64() ;
             GEO::Numeric::uint8 nb_vertices =
                 GEO::MeshCellDescriptors::pyramid_descriptor.nb_vertices_in_facet[f] ;
             if( nb_vertices == 3 ) {
@@ -201,7 +201,7 @@ namespace RINGMesh {
         double dist = max_float64() ;
         for( index_t f = 0; f < GEO::MeshCellDescriptors::prism_descriptor.nb_facets; f++ ) {
             vec3 cur_p ;
-            double distance ;
+            double distance = max_float64() ;
             GEO::Numeric::uint8 nb_vertices =
                 GEO::MeshCellDescriptors::prism_descriptor.nb_vertices_in_facet[f] ;
             if( nb_vertices == 3 ) {
