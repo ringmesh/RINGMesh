@@ -147,7 +147,12 @@ namespace GEO {
             const char* source12 = nil,
             const char* source13 = nil,
             const char* source14 = nil,
-            const char* source15 = nil            
+            const char* source15 = nil,
+            const char* source16 = nil,
+            const char* source17 = nil,
+            const char* source18 = nil,
+            const char* source19 = nil,
+            const char* source20 = nil            
         );
 
         

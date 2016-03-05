@@ -58,7 +58,6 @@
 
 // TODO: documenter un peu tout ca (en particulier le "vertex_gather_mode")
 
-// http://github.prideout.net/modern-opengl-prezo/
 
 // TODO: for points: early fragment tests,   depth greater
 // (+ vertex shader qui "ramene le point devant" comme \c{c}a le
@@ -68,16 +67,20 @@
 //  layout(depth_greater) out float gl_FragDepth;
 
 // TODO: implanter GLUP_POLYGON? (ou pas..., peut-etre plutot GLUP_TRIANGLE_FAN)
-// TODO: implanter glup clip mode slice
+
 // TODO: j'ai beaucoup de doutes sur matrice / transpose(matrice), dans le
 //  code de GLUP.cpp j'ai plein de corrections "a posteriori", en particulier
 //  - dans toutes les fonctions qui creent des matrice (transposees apres)
 //  - dans glupUnProject()
 //  experimentalement c'est bon (fait la meme chose qu'OpenGL), mais faudrait
 //  mieux piger tout ca...
+
 // TODO: clarifier dans les shaders quels sont les sommets en
 //  "world coordinates" et ceux qui sont transform\'es. 
 
+// TODO: unifier les "mots clefs reserves" de GLUP dans les shaders GLSL
+//  (pour le moment c'est vraiment pas coherent, ca va etre dur de s'y
+//   retrouver...)
 
 namespace GLUP {
     using namespace GEO;
@@ -103,6 +106,7 @@ namespace GLUP {
         return offset;
     }
 
+    /*******************************************************************/
     
     MarchingCell::MarchingCell(GLUPprimitive prim) {
         UBO_ = 0;
@@ -303,11 +307,15 @@ namespace GLUP {
 
     GLuint MarchingCell::create_UBO() {
         
-        // Step 1: create a program that uses the UBO
+        // Create a program that uses the UBO
 
         static const char* shader_source_header_ =
             "#version 150 core \n" ;
 
+        // This program is stupid, it is only meant to make sure
+        // that all variables in the UBO are used (else some
+        // GLSL compilers optimize-it out and we can no-longer
+        // query variable offsets from it)
         static const char* vertex_shader_source_ =
             "in vec3 position;                              \n"
             "void main() {                                  \n"
@@ -345,7 +353,7 @@ namespace GLUP {
             0
         );
 
-        // Get UBO size
+        // Get UBO size and offsets
 
         GLuint UBO_index =
             glGetUniformBlockIndex(program, "MarchingCellStateBlock");
@@ -372,6 +380,7 @@ namespace GLUP {
         );
 
         // Create UBO
+        
         Memory::byte* UBO_data = new Memory::byte[uniform_buffer_size];
         Memory::clear(UBO_data, size_t(uniform_buffer_size));
 
@@ -421,7 +430,8 @@ namespace GLUP {
                 program, UBO_index, uniform_binding_point_
             );
         } else {
-            Logger::warn("GLUP") << "MarchingCellStateBlock not found" << std::endl;
+            Logger::warn("GLUP")
+                << "MarchingCellStateBlock not found" << std::endl;
         }
     }
     
@@ -482,7 +492,7 @@ namespace GLUP {
         return result;
     }
     
-    const char* primitive_name[] = {
+    const char* primitive_name[GLUP_NB_PRIMITIVES] = {
         "GLUP_POINTS",
         "GLUP_LINES",
         "GLUP_TRIANGLES",
@@ -491,6 +501,16 @@ namespace GLUP {
         "GLUP_HEXAHEDRA",
         "GLUP_PRISMS",
         "GLUP_PYRAMIDS"
+    };
+
+    index_t primitive_dimension[GLUP_NB_PRIMITIVES] = {
+        0,
+        1,
+        2,
+        2,
+        3,
+        3,
+        3
     };
     
     
@@ -550,6 +570,17 @@ namespace GLUP {
         "                                              \n"
         "  const int GLUP_PICK_PRIMITIVE   = 1;        \n"
         "  const int GLUP_PICK_CONSTANT    = 2;        \n"
+
+        "  const int GLUP_POINTS     =0;               \n"
+        "  const int GLUP_LINES      =1;               \n"
+        "  const int GLUP_TRIANGLES  =2;               \n"
+        "  const int GLUP_QUADS      =3;               \n"
+        "  const int GLUP_TETRAHEDRA =4;               \n"
+        "  const int GLUP_HEXAHEDRA  =5;               \n"
+        "  const int GLUP_PRISMS     =6;               \n"
+        "  const int GLUP_PYRAMIDS   =7;               \n"
+        "  const int GLUP_NB_PRIMITIVES = 8;           \n"
+                     
         ;
     
     
@@ -1713,6 +1744,16 @@ namespace GLUP {
         }
     }
 
+    std::string Context::primitive_declaration(GLUPprimitive prim) const {
+        std::string result =
+            std::string("  const int glup_primitive = ") +
+            primitive_name[prim] + ";\n"                 +
+            "  const int glup_primitive_dimension = "   +
+            String::to_string(primitive_dimension[prim]) +
+            ";\n";
+        return result;
+    }
+    
     void Context::update_toggles_config() {
         if(uniform_state_.toggle[GLUP_PICKING].get()) {
             toggles_config_ = (1u << GLUP_PICKING);
@@ -1960,7 +2001,8 @@ namespace GLUP {
         "void output_lighting(in float diff, in float spec) {                \n"
         "   float s = gl_FrontFacing ? 1.0 : -1.0 ;                          \n"
         "   float sdiffuse = s * diff;                                       \n"
-        "   if(clipping_enabled() &&                                         \n"
+        "   if((glup_primitive_dimension == 3) &&                            \n"
+        "      clipping_enabled() &&                                         \n"
         "      GLUP.clipping_mode == GLUP_CLIP_SLICE_CELLS) {                \n"
         "       sdiffuse = abs(sdiffuse);                                    \n"
         "   }                                                                \n"
@@ -1983,10 +2025,11 @@ namespace GLUP {
         "}                                                                   \n"
         ;
     
-#define GLUP150_std                       \
-        GLUP150_shader_source_header,     \
-        profile_dependent_declarations(), \
-        GLUP_uniform_state_source,        \
+#define GLUP150_std(prim)                    \
+        GLUP150_shader_source_header,        \
+        profile_dependent_declarations(),    \
+        GLUP_uniform_state_source,           \
+        primitive_declaration(prim).c_str(), \
         toggles_declaration()
 
     // GLUP_POINTS ********************************************************
@@ -2055,7 +2098,7 @@ namespace GLUP {
         
         GLuint vshader = GLSL::compile_shader(
             GL_VERTEX_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_POINTS),
             GLUP150_vshader_in_out_declaration,
             GLUP150_points_and_lines_vshader_source,
             0
@@ -2063,7 +2106,7 @@ namespace GLUP {
 
         GLuint fshader = GLSL::compile_shader(
             GL_FRAGMENT_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_POINTS),
             GLUP150_simple_fshader_in_out_declaration,
             GLUP150_fshader_utils,
             GLUP150_points_fshader_source,
@@ -2096,7 +2139,7 @@ namespace GLUP {
         
         GLuint vshader = GLSL::compile_shader(
             GL_VERTEX_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_LINES),
             GLUP150_vshader_in_out_declaration,
             GLUP150_points_and_lines_vshader_source,
             0
@@ -2104,7 +2147,7 @@ namespace GLUP {
         
         GLuint fshader = GLSL::compile_shader(
             GL_FRAGMENT_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_LINES),
             GLUP150_simple_fshader_in_out_declaration,
             GLUP150_fshader_utils,                        
             GLUP150_lines_fshader_source,
@@ -2175,7 +2218,12 @@ namespace GLUP {
         "                                                                   \n"
         "void project_vertices() {                                          \n"
         "   for(int i=0; i<nb_vertices; ++i) {                              \n"
-        "     projected[i] = transformed_in(i);                             \n"
+        "     if((glup_primitive_dimension == 3) && clipping_enabled()) {   \n"
+        "        projected[i] =                                             \n"
+        "                  GLUP.modelviewprojection_matrix * vertex_in(i);  \n"
+        "     } else {                                                      \n"
+        "        projected[i] = transformed_in(i);                          \n"
+        "     }                                                             \n"
         "   }                                                               \n"
         "   if(GLUP.cells_shrink != 0.0) {                                  \n"
         "       vec4 g = vec4(0.0, 0.0, 0.0, 0.0);                          \n"
@@ -2199,6 +2247,7 @@ namespace GLUP {
         "     return true;                                                  \n"
         "  }                                                                \n"
         "  if(                                                              \n"
+        "     (glup_primitive_dimension != 3) ||                            \n"
         "     !clipping_enabled() ||                                        \n"
         "     GLUP.clipping_mode==GLUP_CLIP_STANDARD  ||                    \n"
         "     GLUP.clipping_mode==GLUP_CLIP_SLICE_CELLS                     \n" 
@@ -2308,8 +2357,13 @@ namespace GLUP {
         "     if(texturing_enabled()) {                                     \n"
         "        VertexOut.tex_coord = GLUP.texture_matrix * tex_coord_in;  \n"
         "     }                                                             \n"
-        "     VertexOut.transformed =                                       \n"
+        "     if(                                                           \n"
+        "         glup_primitive_dimension != 3 ||                          \n"
+        "         !clipping_enabled()                                       \n"
+        "     ) {                                                           \n"
+        "        VertexOut.transformed =                                    \n"
         "                      GLUP.modelviewprojection_matrix * vertex_in; \n"
+        "     }                                                             \n"
         "     gl_Position = vertex_in;                                      \n"
         " }                                                                 \n";
 
@@ -2328,7 +2382,7 @@ namespace GLUP {
 
         GLuint vshader = GLSL::compile_shader(
             GL_VERTEX_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_TRIANGLES),
             GLUP150_vshader_in_out_declaration,
             GLUP150_vshader_transform_source,
             0
@@ -2336,7 +2390,7 @@ namespace GLUP {
         
         GLuint gshader = GLSL::compile_shader(
             GL_GEOMETRY_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_TRIANGLES),
             "layout(triangles) in;                         \n",
             "layout(triangle_strip, max_vertices = 3) out; \n",
             GLUP150_gshader_in_out_declaration,
@@ -2348,7 +2402,7 @@ namespace GLUP {
 
         GLuint fshader = GLSL::compile_shader(
             GL_FRAGMENT_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_TRIANGLES),
             GLUP150_fshader_in_out_declaration,
             GLUP150_fshader_utils,
             GLUP150_triangle_fshader_source,
@@ -2384,7 +2438,7 @@ namespace GLUP {
 
         GLuint vshader = GLSL::compile_shader(
             GL_VERTEX_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_QUADS),
             GLUP150_vshader_in_out_declaration,
             GLUP150_vshader_transform_source,
             0
@@ -2393,7 +2447,7 @@ namespace GLUP {
         
         GLuint gshader = GLSL::compile_shader(
             GL_GEOMETRY_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_QUADS),
             "layout(lines_adjacency) in;                   \n",
             "layout(triangle_strip, max_vertices = 4) out; \n",
             GLUP150_gshader_in_out_declaration,
@@ -2405,7 +2459,7 @@ namespace GLUP {
 
         GLuint fshader = GLSL::compile_shader(
             GL_FRAGMENT_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_QUADS),
             GLUP150_fshader_in_out_declaration,
             GLUP150_fshader_utils,                        
             GLUP150_triangle_fshader_source,
@@ -2431,7 +2485,7 @@ namespace GLUP {
        "  int result = 0;                                    \n"
        "  for(int v=0; v<cell_nb_vertices; ++v) {            \n"
        "    if(                                              \n"
-       "      dot(vertex_in(v),GLUP.world_clip_plane) >= 0.0 \n"
+       "      dot(vertex_in(v),GLUP.world_clip_plane) > 0.0  \n"
        "    ) {                                              \n"
        "       result = result | (1 << v);                   \n"
        "    }                                                \n"
@@ -2519,12 +2573,12 @@ namespace GLUP {
         "        return;                                                    \n"
         "    }                                                              \n"
         "    gl_PrimitiveID = gl_PrimitiveIDIn;                             \n"
-        "    project_vertices();                                            \n"
         "    if(clipping_enabled() &&                                       \n"
         "        GLUP.clipping_mode == GLUP_CLIP_SLICE_CELLS) {             \n"
         "       draw_marching_cell();                                       \n"
         "       return;                                                     \n"
         "    }                                                              \n"
+        "    project_vertices();                                            \n"
         "    bool do_clip = (clipping_enabled() &&                          \n"
         "                    GLUP.clipping_mode==GLUP_CLIP_STANDARD);       \n"
         "    flat_shaded_triangle(0,1,2,do_clip);                           \n"
@@ -2538,7 +2592,7 @@ namespace GLUP {
 
         GLuint vshader = GLSL::compile_shader(
             GL_VERTEX_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_TETRAHEDRA),
             GLUP150_vshader_in_out_declaration,
             GLUP150_vshader_transform_source,
             0
@@ -2546,7 +2600,7 @@ namespace GLUP {
 
         GLuint gshader = GLSL::compile_shader(
             GL_GEOMETRY_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_TETRAHEDRA),
             marching_tet_.GLSL_uniform_state_declaration(),
             "layout(lines_adjacency) in;                    \n",
             "layout(triangle_strip, max_vertices = 12) out; \n",
@@ -2561,7 +2615,7 @@ namespace GLUP {
 
         GLuint fshader = GLSL::compile_shader(
             GL_FRAGMENT_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_TETRAHEDRA),
             GLUP150_fshader_in_out_declaration,
             GLUP150_fshader_utils,                        
             GLUP150_triangle_fshader_source,
@@ -2595,12 +2649,12 @@ namespace GLUP {
         "        return;                                                    \n"
         "    }                                                              \n"
         "    gl_PrimitiveID = gl_PrimitiveIDIn;                             \n"
-        "    project_vertices();                                            \n"
         "    if(clipping_enabled() &&                                       \n"
         "        GLUP.clipping_mode == GLUP_CLIP_SLICE_CELLS) {             \n"
         "       draw_marching_cell();                                       \n"
         "       return;                                                     \n"
         "    }                                                              \n"
+        "    project_vertices();                                            \n"
         "    bool do_clip = (clipping_enabled() &&                          \n"
         "                    GLUP.clipping_mode==GLUP_CLIP_STANDARD);       \n"
         "    flat_shaded_triangle(0,1,2,do_clip);                           \n"
@@ -2615,7 +2669,7 @@ namespace GLUP {
         
         GLuint vshader = GLSL::compile_shader(
             GL_VERTEX_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_PRISMS),
             GLUP150_vshader_in_out_declaration,
             GLUP150_vshader_transform_source,
             0
@@ -2623,7 +2677,7 @@ namespace GLUP {
 
         GLuint gshader = GLSL::compile_shader(
             GL_GEOMETRY_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_PRISMS),
             marching_prism_.GLSL_uniform_state_declaration(),
             "layout(triangles_adjacency) in;",
             "layout(triangle_strip, max_vertices = 18) out;",
@@ -2638,7 +2692,7 @@ namespace GLUP {
 
         GLuint fshader = GLSL::compile_shader(
             GL_FRAGMENT_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_PRISMS),
             GLUP150_fshader_in_out_declaration,
             GLUP150_fshader_utils,                        
             GLUP150_triangle_fshader_source,
@@ -2762,12 +2816,12 @@ namespace GLUP {
         "        return;                                                    \n"
         "    }                                                              \n"
         "    gl_PrimitiveID = gl_PrimitiveIDIn;                             \n"
-        "    project_vertices();                                            \n"
         "    if(clipping_enabled() &&                                       \n"
         "        GLUP.clipping_mode == GLUP_CLIP_SLICE_CELLS) {             \n"
         "       draw_marching_cell();                                       \n"
         "       return;                                                     \n"
         "    }                                                              \n"
+        "    project_vertices();                                            \n"
         "    bool do_clip = (clipping_enabled() &&                          \n"
         "                    GLUP.clipping_mode==GLUP_CLIP_STANDARD);       \n"
         "    flat_shaded_quad(0,2,4,6,do_clip);                             \n"
@@ -2782,7 +2836,7 @@ namespace GLUP {
 
         GLuint vshader = GLSL::compile_shader(
             GL_VERTEX_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_HEXAHEDRA),
             "const int nb_vertices = 8;",
             "const int nb_vertices_GL = 4;",
             GLUP150_vshader_gather_source,
@@ -2791,7 +2845,7 @@ namespace GLUP {
 
         GLuint gshader = GLSL::compile_shader(
             GL_GEOMETRY_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_HEXAHEDRA),
             marching_hex_.GLSL_uniform_state_declaration(),            
             "const int nb_vertices = 8;",
             "const int nb_vertices_GL = 4;",
@@ -2807,7 +2861,7 @@ namespace GLUP {
 
         GLuint fshader = GLSL::compile_shader(
             GL_FRAGMENT_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_HEXAHEDRA),
             GLUP150_fshader_in_out_declaration,
             GLUP150_fshader_utils,                        
             GLUP150_triangle_fshader_source,
@@ -2843,12 +2897,12 @@ namespace GLUP {
         "        return;                                                    \n"
         "    }                                                              \n"
         "    gl_PrimitiveID = gl_PrimitiveIDIn;                             \n"
-        "    project_vertices();                                            \n"
         "    if(clipping_enabled() &&                                       \n"
         "        GLUP.clipping_mode == GLUP_CLIP_SLICE_CELLS) {             \n"
         "       draw_marching_cell();                                       \n"
         "       return;                                                     \n"
         "    }                                                              \n"
+        "    project_vertices();                                            \n"
         "    bool do_clip = (clipping_enabled() &&                          \n"
         "                    GLUP.clipping_mode==GLUP_CLIP_STANDARD);       \n"
         "    flat_shaded_quad(0,1,3,2,do_clip);                             \n"
@@ -2862,7 +2916,7 @@ namespace GLUP {
 
         GLuint vshader = GLSL::compile_shader(
             GL_VERTEX_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_PYRAMIDS),
             "const int nb_vertices = 5;",
             "const int nb_vertices_GL = 1;",            
             GLUP150_vshader_gather_source,
@@ -2871,7 +2925,7 @@ namespace GLUP {
 
         GLuint gshader = GLSL::compile_shader(
             GL_GEOMETRY_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_PYRAMIDS),
             marching_pyramid_.GLSL_uniform_state_declaration(),            
             "const int nb_vertices = 5;",
             "const int nb_vertices_GL = 1;",
@@ -2887,7 +2941,7 @@ namespace GLUP {
 
         GLuint fshader = GLSL::compile_shader(
             GL_FRAGMENT_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_PYRAMIDS),
             GLUP150_fshader_in_out_declaration,
             GLUP150_fshader_utils,                        
             GLUP150_triangle_fshader_source,
@@ -2924,10 +2978,11 @@ namespace GLUP {
         "#version 440 core \n"
         ;
 
-#define GLUP440_std                       \
-        GLUP440_shader_source_header,     \
-        profile_dependent_declarations(), \
-        GLUP_uniform_state_source,        \
+#define GLUP440_std(prim)                    \
+        GLUP440_shader_source_header,        \
+        profile_dependent_declarations(),    \
+        GLUP_uniform_state_source,           \
+        primitive_declaration(prim).c_str(), \
         toggles_declaration()
 
      // This version of the tesselation shader gathers all input vertices into
@@ -3085,7 +3140,7 @@ namespace GLUP {
 
         GLuint vshader = GLSL::compile_shader(
             GL_VERTEX_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_HEXAHEDRA),
             GLUP150_vshader_in_out_declaration,
             GLUP150_vshader_transform_source,
             0
@@ -3093,7 +3148,7 @@ namespace GLUP {
 
         GLuint teshader = GLSL::compile_shader(
             GL_TESS_EVALUATION_SHADER,
-            GLUP440_std,
+            GLUP440_std(GLUP_HEXAHEDRA),
             "const int nb_vertices = 8;",
             "const int nb_vertices_GL = 2;",
             GLUP440_teshader_gather_multi_vertices_source,
@@ -3102,7 +3157,7 @@ namespace GLUP {
         
         GLuint gshader = GLSL::compile_shader(
             GL_GEOMETRY_SHADER,
-            GLUP440_std,
+            GLUP440_std(GLUP_HEXAHEDRA),
             marching_hex_.GLSL_uniform_state_declaration(),              
             "const int nb_vertices = 8;",
             "const int nb_vertices_GL = 2;",
@@ -3118,7 +3173,7 @@ namespace GLUP {
 
         GLuint fshader = GLSL::compile_shader(
             GL_FRAGMENT_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_HEXAHEDRA),
             GLUP150_fshader_in_out_declaration,
             GLUP150_fshader_utils,                        
             GLUP150_triangle_fshader_source,
@@ -3151,7 +3206,7 @@ namespace GLUP {
 
         GLuint teshader = GLSL::compile_shader(
             GL_TESS_EVALUATION_SHADER,
-            GLUP440_std,
+            GLUP440_std(GLUP_PYRAMIDS),
             "const int nb_vertices = 5;",
             "const int nb_vertices_GL = 1;",            
             GLUP440_teshader_gather_single_vertex_source,
@@ -3160,7 +3215,7 @@ namespace GLUP {
 
         GLuint vshader = GLSL::compile_shader(
             GL_VERTEX_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_PYRAMIDS),
             GLUP150_vshader_in_out_declaration,
             GLUP150_vshader_transform_source,
             0
@@ -3168,7 +3223,7 @@ namespace GLUP {
         
         GLuint gshader = GLSL::compile_shader(
             GL_GEOMETRY_SHADER,
-            GLUP440_std,
+            GLUP440_std(GLUP_PYRAMIDS),
             marching_pyramid_.GLSL_uniform_state_declaration(),              
             "const int nb_vertices = 5;",
             "const int nb_vertices_GL = 1;",
@@ -3184,7 +3239,7 @@ namespace GLUP {
 
         GLuint fshader = GLSL::compile_shader(
             GL_FRAGMENT_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_PYRAMIDS),
             GLUP150_fshader_in_out_declaration,
             GLUP150_fshader_utils,                        
             GLUP150_triangle_fshader_source,
@@ -3466,9 +3521,11 @@ namespace GLUP {
 
     void Context_VanillaGL::shrink_cells_in_immediate_buffers() {
         if(
-            uniform_state_.cells_shrink.get() == 0.0f ||
+            uniform_state_.cells_shrink.get() == 0.0f   ||
             immediate_state_.primitive() == GLUP_POINTS ||
-            immediate_state_.primitive() == GLUP_LINES
+            immediate_state_.primitive() == GLUP_LINES  ||
+            (uniform_state_.clipping_mode.get() == GLUP_CLIP_SLICE_CELLS &&
+             uniform_state_.toggle[GLUP_CLIPPING].get())
         ) {
             return;
         }
