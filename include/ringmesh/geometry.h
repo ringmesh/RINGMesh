@@ -550,6 +550,10 @@ namespace RINGMesh {
             double* dist = nil ) const ;
 
     private:
+        void build_colocater_ann_vertices( const GEO::Mesh& mesh, bool copy ) ;
+        void build_colocater_ann_edges( const GEO::Mesh& mesh ) ;
+        void build_colocater_ann_facets( const GEO::Mesh& mesh ) ;
+        void build_colocater_ann_cells( const GEO::Mesh& mesh ) ;
         void fill_ann_points(
             index_t index_in_ann,
             const vec3& center ) ;
