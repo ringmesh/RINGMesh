@@ -512,12 +512,12 @@ namespace RINGMesh {
         ringmesh_disable_copy( ColocaterANN ) ;
     public:
         enum MeshLocation {
-            VERTICES, FACETS, CELLS
+            VERTICES, EDGES, FACETS, CELLS
         } ;
         ColocaterANN() ;
         ColocaterANN(
             const GEO::Mesh& mesh,
-            const MeshLocation& location = VERTICES,
+            const MeshLocation& location,
             bool copy = false ) ;
         ColocaterANN( const std::vector< vec3 >& vertices, bool copy = true ) ;
 
@@ -548,6 +548,11 @@ namespace RINGMesh {
             index_t nb_neighbors,
             std::vector< index_t >& result,
             double* dist = nil ) const ;
+
+    private:
+        void fill_ann_points(
+            index_t index_in_ann,
+            const vec3& center ) ;
 
     private:
         /// KdTree to compute the nearest neighbor search
