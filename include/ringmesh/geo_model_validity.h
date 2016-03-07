@@ -63,7 +63,7 @@ namespace RINGMesh {
      * invalid elements shall be stored
      * @details If directory does not exist keep the previous value.
      */
-    void set_validity_errors_directory( const std::string& directory ) ;
+    void RINGMESH_API set_validity_errors_directory( const std::string& directory ) ;
 
     /*!
     * @brief Check global model validity
