@@ -77,14 +77,14 @@ namespace GEO {
      * sub-arrays.
      *
      * A classical read operation mode would be:
-     * - lock an sub-array
+     * - lock a sub-array
      * - read the sub-array by value
      * - unlock the sub-array
      * - access sub-array elements
      *
      * A classical write operation mode would be:
      * - prepare or modify sub-array elements
-     * - lock an sub-array
+     * - lock a sub-array
      * - write sub-the array by value
      * - unlock the sub-array
      *
