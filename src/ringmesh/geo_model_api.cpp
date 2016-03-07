@@ -48,8 +48,10 @@
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_builder.h>
 #include <ringmesh/geogram_extension.h>
+#include <ringmesh/geogram_mesh_repair.h>
 #include <ringmesh/geometry.h>
 #include <ringmesh/tetra_gen.h>
+#include <ringmesh/tetgen_mesher.h>
 
 /*!
  * @file Bunch of functions that shouldn't be there
@@ -374,7 +376,8 @@ namespace RINGMesh {
         return true ;
     }
 
-
+    /*******************************************************************************/
+    /*******************************************************************************/
     /// @todo A class encapsulating the copy from a GeoModel to a Mesh ?
     /// See what has been done in GeoModelMeshBuilder
 
@@ -560,7 +563,6 @@ namespace RINGMesh {
         }
     }
 
-
     void build_mesh_from_geomodel( const GeoModel& geomodel, GEO::Mesh& M )
     {
         // Keep the attributes when clearing the mesh, otherwise we crash
@@ -572,6 +574,17 @@ namespace RINGMesh {
         add_geomodel_region_tets_to_mesh( geomodel, M ) ;
     }
 
+    void build_mesh_from_geomodel( const GeoModel& model, GEO::Mesh& M, bool connect_facets )
+    {
+        build_mesh_from_geomodel( model, M ) ;        
+        if( connect_facets ) {
+            connect_mesh_facets_except_on_mesh_edges( M ) ;
+        }
+    }
+
+
+    /*******************************************************************************/
+    /*******************************************************************************/
 
     double model_element_size( const GeoModelElement& E )
     {
