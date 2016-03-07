@@ -47,8 +47,8 @@
  * @todo Do we really need them ? [JP]
  */
 
-namespace RINGMesh {
-    static void ringmesh_assertion_failed(
+namespace {
+    void ringmesh_assertion_failed(
         const std::string& condition_string,
         const std::string& file,
         int line )
@@ -59,7 +59,7 @@ namespace RINGMesh {
         GEO::geo_assertion_failed( condition_string, file, line ) ;
     }
 
-    static void ringmesh_should_not_have_reached(
+    void ringmesh_should_not_have_reached(
         const std::string& file,
         int line )
     {
@@ -74,12 +74,12 @@ namespace RINGMesh {
   #define ringmesh_assert( x )  \
     {                                        \
         if( !( x ) ) {                                                 \
-            ::RINGMesh::ringmesh_assertion_failed( # x, __FILE__, __LINE__ ) ;   \
+            ::ringmesh_assertion_failed( # x, __FILE__, __LINE__ ) ;   \
         }                                                          \
     }
   #define ringmesh_assert_not_reached \
     {                               \
-        ::RINGMesh::ringmesh_should_not_have_reached( __FILE__, __LINE__ ) ;   \
+        ::ringmesh_should_not_have_reached( __FILE__, __LINE__ ) ;   \
     }
 #else
   #define ringmesh_assert( x )

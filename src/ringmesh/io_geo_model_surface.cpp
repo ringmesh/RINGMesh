@@ -639,7 +639,7 @@ namespace {
         out << std::endl << "0" << std::endl << "0" << std::endl ;
     }
 
-    static double read_double( GEO::LineInput& in, index_t field )
+    double read_double( GEO::LineInput& in, index_t field )
     {
         double result ;
         std::istringstream iss( in.field( field ) ) ;

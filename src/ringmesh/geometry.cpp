@@ -70,6 +70,21 @@ namespace {
 
 namespace RINGMesh {
 
+    bool operator==( const vec3& u, const vec3& v )
+    {
+        return u.x == v.x && u.y == v.y && u.z == v.z ;
+    }
+
+    bool operator<( const vec3& u, const vec3& v )
+    {
+        return u.x < v.x && u.y < v.y && u.z < v.z ;
+    }
+
+    bool operator!=( const vec3& u, const vec3& v )
+    {
+        return u.x != v.x || u.y != v.y || u.z != v.z ;
+    }
+
     /*!
      * Computes the distance between a point and a tetrahedron
      * @param[in] p the point
@@ -132,7 +147,7 @@ namespace RINGMesh {
         double dist = max_float64() ;
         for( index_t f = 0; f < GEO::MeshCellDescriptors::pyramid_descriptor.nb_facets; f++ ) {
             vec3 cur_p ;
-            double distance ;
+            double distance = max_float64() ;
             GEO::Numeric::uint8 nb_vertices =
                 GEO::MeshCellDescriptors::pyramid_descriptor.nb_vertices_in_facet[f] ;
             if( nb_vertices == 3 ) {
@@ -186,7 +201,7 @@ namespace RINGMesh {
         double dist = max_float64() ;
         for( index_t f = 0; f < GEO::MeshCellDescriptors::prism_descriptor.nb_facets; f++ ) {
             vec3 cur_p ;
-            double distance ;
+            double distance = max_float64() ;
             GEO::Numeric::uint8 nb_vertices =
                 GEO::MeshCellDescriptors::prism_descriptor.nb_vertices_in_facet[f] ;
             if( nb_vertices == 3 ) {
