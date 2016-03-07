@@ -259,7 +259,7 @@ namespace RINGMesh {
 
     void GeoModelMeshVertices::initialize_kdtree()
     {
-        kdtree_ = new ColocaterANN( mesh_ ) ;
+        kdtree_ = new ColocaterANN( mesh_, ColocaterANN::VERTICES ) ;
 #ifdef RINGMESH_DEBUG
         // Paranoia
         GEO::vector< index_t > old2new ;
