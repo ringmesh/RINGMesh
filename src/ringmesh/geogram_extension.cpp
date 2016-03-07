@@ -438,12 +438,12 @@ namespace RINGMesh {
          * [JP]
          */
         for( index_t f = 0; f < nb_facets ; f++ ) {
-            index_t adjacent_tet = mesh.cells.adjacent( t, f ) ;
+            index_t adjacent_tet = mesh.cells.adjacent( tet, f ) ;
             if( adjacent_tet == GEO::NO_CELL || adjacent_tet == prev_tet ) {
                 continue ;
             }
             index_t edge ;
-            if( has_edge( mesh, t_adj, p0, p1, edge ) ) {                
+            if( has_edge( mesh, adjacent_tet, v0, v1, edge ) ) {                
                 return 6 * adjacent_tet + edge ;
             }
         }
