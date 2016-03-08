@@ -1,0 +1,12 @@
+# Doxygen configuration file for generating
+# the standard developer RINGMesh documentation excluding geogram
+
+OUTPUT_DIRECTORY       = @doc_output_dir@/devkit-lite
+PROJECT_NUMBER         = "Version @RINGMesh_VERSION@"
+@INCLUDE               = @CMAKE_SOURCE_DIR@/doc/common.dox
+WARN_LOGFILE           = @doc_output_dir@/devkit-lite.log
+IMAGE_PATH             = @CMAKE_SOURCE_DIR@/doc
+
+# Input files
+INPUT                  = @CMAKE_SOURCE_DIR@/include/ringmesh @CMAKE_SOURCE_DIR@/src/ringmesh @CMAKE_SOURCE_DIR@/doc/dox @CMAKE_SOURCE_DIR@/tests/src/
+
