@@ -562,7 +562,8 @@ namespace RINGMesh {
                     }
                 }
             }
-            ringmesh_assert_not_reached;
+            ringmesh_assert_not_reached
+            ;
             return sorted_triangles_.front() ;
         }
 
@@ -2803,18 +2804,18 @@ namespace RINGMesh {
                         } else if( file_line_.field_matches( 1, "Depth" ) ) {
                             z_sign = -1 ;
                         } else {
-                            ringmesh_assert_not_reached;}
+                            ringmesh_assert_not_reached
+                            ;
+                        }
                     } else if( file_line_.field_matches( 0, "END" ) ) {
                         // This the END of a TSurf
                         if( tsurf_count > 0 ) {
                             // End the last TFace - Surface of this TSurf
-                            set_surface_geometry(
-                                tface_count - 1,
+                            set_surface_geometry( tface_count - 1,
                                 std::vector< vec3 >(
-                                    tsurf_vertices.begin() +
-                                    tface_vertex_start.back(),
-                                    tsurf_vertices.end() ),
-                                tface_facets,
+                                    tsurf_vertices.begin()
+                                        + tface_vertex_start.back(),
+                                    tsurf_vertices.end() ), tface_facets,
                                 tface_facets_ptr ) ;
 
                             if( !check_key_facet_orientation( tface_count - 1 ) ) {
@@ -2834,13 +2835,11 @@ namespace RINGMesh {
                         // Beginning of a new TFace - Surface
                         if( tface_vertex_start.size() > 0 ) {
                             // End the previous TFace - Surface  (copy from line 1180)
-                            set_surface_geometry(
-                                tface_count - 1,
+                            set_surface_geometry( tface_count - 1,
                                 std::vector< vec3 >(
-                                    tsurf_vertices.begin() +
-                                    tface_vertex_start.back(),
-                                    tsurf_vertices.end() ),
-                                tface_facets,
+                                    tsurf_vertices.begin()
+                                        + tface_vertex_start.back(),
+                                    tsurf_vertices.end() ), tface_facets,
                                 tface_facets_ptr ) ;
 
                             if( !check_key_facet_orientation( tface_count - 1 ) ) {
@@ -2859,57 +2858,62 @@ namespace RINGMesh {
                     }
 
                     /// 2.1 Read the surface vertices and facets (only triangles in Gocad Model3d files)
-                    else if( file_line_.field_matches( 0, "VRTX" ) || file_line_.field_matches( 0, "PVRTX" ) )
-                    {
-                        vec3 p( file_line_.field_as_double(2),
-                            file_line_.field_as_double(3),
-                            z_sign * file_line_.field_as_double(4)) ;
+                    else if( file_line_.field_matches( 0, "VRTX" )
+                        || file_line_.field_matches( 0, "PVRTX" ) ) {
+                        vec3 p( file_line_.field_as_double( 2 ),
+                            file_line_.field_as_double( 3 ),
+                            z_sign * file_line_.field_as_double( 4 ) ) ;
                         tsurf_vertices.push_back( p ) ;
-                    } else if( file_line_.field_matches( 0,"PATOM" ) || file_line_.field_matches( 0, "ATOM" )
-                    ) {
-                        tsurf_vertices.push_back( tsurf_vertices[
-                            file_line_.field_as_uint( 2 ) - 1 ] ) ;
+                    } else if( file_line_.field_matches( 0, "PATOM" )
+                        || file_line_.field_matches( 0, "ATOM" ) ) {
+                        tsurf_vertices.push_back(
+                            tsurf_vertices[file_line_.field_as_uint( 2 ) - 1] ) ;
                     } else if( file_line_.field_matches( 0, "TRGL" ) ) {
                         // Read ids of the vertices of each triangle in the TSurf
                         // and switch to ids in the TFace
-                        tface_facets.push_back( (index_t) file_line_.field_as_uint(
-                                1 ) - tface_vertex_start.back() - 1 ) ;
-                        tface_facets.push_back( (index_t) file_line_.field_as_uint(
-                                2 ) - tface_vertex_start.back() - 1 ) ;
-                        tface_facets.push_back( (index_t) file_line_.field_as_uint(
-                                3 ) - tface_vertex_start.back() - 1 ) ;
+                        tface_facets.push_back(
+                            (index_t) file_line_.field_as_uint( 1 )
+                                - tface_vertex_start.back() - 1 ) ;
+                        tface_facets.push_back(
+                            (index_t) file_line_.field_as_uint( 2 )
+                                - tface_vertex_start.back() - 1 ) ;
+                        tface_facets.push_back(
+                            (index_t) file_line_.field_as_uint( 3 )
+                                - tface_vertex_start.back() - 1 ) ;
                         tface_facets_ptr.push_back( tface_facets.size() ) ;
                     }
 
                     // 2.2 Build the corners from their position and the surface parts
                     //    containing them
-                    else if( file_line_.field_matches( 0, "BSTONE" ) && !options_.compute_corners ) {
+                    else if( file_line_.field_matches( 0, "BSTONE" )
+                        && !options_.compute_corners ) {
                         index_t v_id = file_line_.field_as_uint( 1 ) - 1 ;
-                        if( !find_corner(model_, tsurf_vertices[v_id]).is_defined() ) {
+                        if( !find_corner( model_, tsurf_vertices[v_id] ).is_defined() ) {
                             // Create the corner
                             gme_t corner_gme = create_element( GME::CORNER ) ;
-                            set_corner( corner_gme.index , tsurf_vertices[ v_id ] ) ;
+                            set_corner( corner_gme.index, tsurf_vertices[v_id] ) ;
                         }
                     }
 
                     /// 2.3 Read the Border information and store it
-                    else if( file_line_.field_matches( 0, "BORDER" ) && !options_.compute_lines ) {
+                    else if( file_line_.field_matches( 0, "BORDER" )
+                        && !options_.compute_lines ) {
                         index_t p1 = file_line_.field_as_uint( 2 ) - 1 ;
                         index_t p2 = file_line_.field_as_uint( 3 ) - 1 ;
 
                         // Get the global corner id
-                        gme_t corner_id = find_corner(model_, tsurf_vertices[ p1 ] ) ;
+                        gme_t corner_id = find_corner( model_, tsurf_vertices[p1] ) ;
                         ringmesh_assert( corner_id.is_defined() ) ;
 
                         // Get the surface
                         index_t part_id = NO_ID ;
-                        for( index_t i = 0 ; i < tface_vertex_start.size() ; ++i ) {
-                            if( p1 < tface_vertex_start[ i ] ) {
-                                ringmesh_assert( p2 < tface_vertex_start[ i ] ) ;
+                        for( index_t i = 0; i < tface_vertex_start.size(); ++i ) {
+                            if( p1 < tface_vertex_start[i] ) {
+                                ringmesh_assert( p2 < tface_vertex_start[i] ) ;
 
                                 // Get vertices ids in the surface
-                                p1 = p1 - tface_vertex_start[ i - 1 ] ;
-                                p2 = p2 - tface_vertex_start[ i - 1 ] ;
+                                p1 = p1 - tface_vertex_start[i - 1] ;
+                                p2 = p2 - tface_vertex_start[i - 1] ;
 
                                 // i-1 is the id of the TFace in this TSurf
                                 part_id = i - 1 ;
@@ -2918,8 +2922,10 @@ namespace RINGMesh {
                         }
                         if( part_id == NO_ID ) {
                             // It is in the last built Tface
-                            p1 = p1 - tface_vertex_start[ tface_vertex_start.size() - 1 ] ;
-                            p2 = p2 - tface_vertex_start[ tface_vertex_start.size() - 1 ] ;
+                            p1 = p1
+                                - tface_vertex_start[tface_vertex_start.size() - 1] ;
+                            p2 = p2
+                                - tface_vertex_start[tface_vertex_start.size() - 1] ;
 
                             part_id = tface_vertex_start.size() - 1 ;
                         }
@@ -3173,7 +3179,8 @@ namespace RINGMesh {
         } else if( in == "Depth" ) {
             return -1 ;
         } else {
-            ringmesh_assert_not_reached;
+            ringmesh_assert_not_reached
+            ;
             return 0 ;
         }
     }
@@ -3618,7 +3625,7 @@ namespace RINGMesh {
         GEO::FileSystem::delete_file( connectivity ) ;
 
         load_attributes( uz ) ;
-        zipClose( uz, NULL ) ;
+        unzClose( uz ) ;
 
     }
 
@@ -3689,10 +3696,8 @@ namespace RINGMesh {
 //
 //            std::cout << std::endl ;
 //        }
-        DEBUG(countt) ;
         while( !att_file.eof() && att_file.get_line() ) {
             att_file.get_fields() ;
-            DEBUG(att_file.field( 0 )) ;
             if( att_file.field_matches( 0, "#" ) ) {
 
                 //@TODO double is hardcoded here temporary
@@ -3701,15 +3706,12 @@ namespace RINGMesh {
                 cur_att.create_vector_attribute( attribute_manager,
                     att_file.field( 1 ), att_dim ) ;
 
-                index_t count = 0 ;
-                while( !att_file.eof() && att_file.get_line()
-                    && !att_file.field_matches( 0, "#" ) ) {
+                for( index_t el = 0; el < cur_att.size(); el++ ) {
+                    att_file.get_line() ;
                     att_file.get_fields() ;
                     for( index_t i = 0; i < att_dim; i++ ) {
-                        cur_att[att_dim * count + i] = att_file.field_as_double(
-                            i ) ;
+                        cur_att[att_dim * el + i] = att_file.field_as_double( i ) ;
                     }
-                    count++ ;
                 }
             }
         }
@@ -3728,6 +3730,7 @@ namespace RINGMesh {
 
             if( unzLocateFile( uz, cell_att_file.c_str(), 0 ) == UNZ_OK ) {
                 unzip_one_file( uz, cell_att_file.c_str() ) ;
+
                 GEO::LineInput att_file( cell_att_file ) ;
                 write_on_attribute_manager(
                     model_.region( r ).mesh().cells.attributes(), att_file ) ;
@@ -3736,7 +3739,6 @@ namespace RINGMesh {
 
             if( unzLocateFile( uz, vertices_att_file.c_str(), 0 ) == UNZ_OK ) {
                 unzip_one_file( uz, vertices_att_file.c_str() ) ;
-                DEBUG(vertices_att_file) ;
                 GEO::LineInput att_file( vertices_att_file ) ;
                 write_on_attribute_manager(
                     model_.region( r ).mesh().vertices.attributes(), att_file ) ;
