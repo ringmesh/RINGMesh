@@ -424,8 +424,8 @@ namespace RINGMesh {
 
                 glBindBuffer( GL_ARRAY_BUFFER, cell_vertices_VB_ ) ;
                 glEnableVertexAttribArray( 0 ) ;
-                glVertexAttribPointer( 0, 3, GL_DOUBLE, GL_FALSE, 3 * sizeof(double),
-                    0 ) ;
+                GLsizei nb_value_per_vertex = static_cast< GLsizei >( 3 * sizeof(double) ) ;
+                glVertexAttribPointer( 0, 3, GL_DOUBLE, GL_FALSE, nb_value_per_vertex, 0 ) ;
                 GEO::update_buffer_object( cell_indices_VB_, GL_ELEMENT_ARRAY_BUFFER,
                     size * sizeof(index_t), indices ) ;
 
@@ -576,8 +576,8 @@ namespace RINGMesh {
                     "Cannot find color " + colors[c] ) ;
             }
         }
-
-        gluBuild1DMipmaps( GL_TEXTURE_1D, GL_RGB, colormap.size(), GL_RGB,
+        GLsizei nb_colors = static_cast< GLsizei >( colormap.size() ) ;
+        gluBuild1DMipmaps( GL_TEXTURE_1D, GL_RGB, nb_colors, GL_RGB,
             GL_UNSIGNED_BYTE, colormap.data() ) ;
     }
 

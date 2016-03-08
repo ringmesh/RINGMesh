@@ -525,6 +525,12 @@ namespace RINGMesh {
          * basics information on the GeoModel.
          */
         void load_topology( GEO::LineInput& file_line ) ;
+
+        void load_attributes(unzFile& uz) ;
+
+        void write_on_attribute_manager(
+                GEO::AttributesManager& attribute_manager,
+                GEO::LineInput& att_file ) ;
     } ;
 }
 

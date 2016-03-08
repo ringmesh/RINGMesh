@@ -916,7 +916,8 @@ namespace RINGMesh {
                 j++ ;
             }
             index_t k = i - 1 ;
-            while( k != NO_ID && border_triangles_[i].same_edge( border_triangles_[k] ) ) {
+            while( k != NO_ID
+                && border_triangles_[i].same_edge( border_triangles_[k] ) ) {
                 visited_[k] = true ;
                 k-- ;
             }
@@ -939,7 +940,8 @@ namespace RINGMesh {
             }
 
             index_t k = i - 1 ;
-            while( k != NO_ID && border_triangles_[i].same_edge( border_triangles_[k] ) ) {
+            while( k != NO_ID
+                && border_triangles_[i].same_edge( border_triangles_[k] ) ) {
                 adjacent_surfaces.push_back( border_triangles_[k].surface_ ) ;
                 k-- ;
             }
@@ -2735,13 +2737,15 @@ namespace RINGMesh {
                             file_line_.get_line() ;
                             file_line_.get_fields() ;
                             for( index_t i = 0; i < 5; ++i ) {
-                                signed_index_t signed_id = file_line_.field_as_int( i ) ;
+                                signed_index_t signed_id = file_line_.field_as_int(
+                                    i ) ;
                                 if( signed_id == 0 ) {
                                     end_region = true ;
                                     break ;
                                 }
                                 bool side = signed_id > 0 ;
-                                index_t id = static_cast< index_t >( std::abs( signed_id ) - 1 ) ;
+                                index_t id = static_cast< index_t >( std::abs(
+                                    signed_id ) - 1 ) ;
                                 region_boundaries.push_back(
                                     std::pair< index_t, bool >( id, side ) ) ;
                             }
@@ -2942,9 +2946,8 @@ namespace RINGMesh {
                 // 1- Build the boundary : construct the vector
                 // of vertices on the border
                 const Surface& S = model_.surface( b.part_id_ ) ;
-                gme_t end_corner_id = determine_line_vertices( S, b.p0_, b.p1_,
-                    line_vertices ) ;
-                if( line_vertices.size() == 0 ) {
+                determine_line_vertices( S, b.p0_, b.p1_, line_vertices ) ;
+                if( line_vertices.empty() ) {
                     GEO::Logger::out( "I/O" )
                         << "One Line vertices determination failed in SURFACE "
                         << S.index() << std::endl ;
@@ -3320,8 +3323,7 @@ namespace RINGMesh {
                     // Following information: vertices of the line
                     file_line_.get_line() ;
                     file_line_.get_fields() ;
-                    ringmesh_assert(
-                        file_line_.field_matches( 0, "LINE_VERTICES" ) ) ;
+                    ringmesh_assert( file_line_.field_matches( 0, "LINE_VERTICES" ) ) ;
                     index_t nb_vertices = file_line_.field_as_uint( 1 ) ;
                     std::vector< vec3 > vertices( nb_vertices ) ;
                     for( index_t i = 0; i < nb_vertices; i++ ) {
@@ -3386,8 +3388,7 @@ namespace RINGMesh {
                     // Finally we have the in_boundary information
                     file_line_.get_line() ;
                     file_line_.get_fields() ;
-                    ringmesh_assert(
-                        file_line_.field_matches( 0, "IN_BOUNDARY" ) ) ;
+                    ringmesh_assert( file_line_.field_matches( 0, "IN_BOUNDARY" ) ) ;
                     for( index_t b = 1; b < file_line_.nb_fields(); b++ ) {
                         add_element_in_boundary( cur_element,
                             gme_t( GME::SURFACE, file_line_.field_as_uint( b ) ) ) ;
@@ -3588,6 +3589,7 @@ namespace RINGMesh {
     }
     void GeoModelBuilderGM::load_file()
     {
+
         unzFile uz = unzOpen( filename_.c_str() ) ;
         unz_global_info global_info ;
         if( unzGetGlobalInfo( uz, &global_info ) != UNZ_OK ) {
@@ -3612,13 +3614,15 @@ namespace RINGMesh {
         unzip_one_file( uz, connectivity.c_str() ) ;
 
         GEO::LineInput line_connectivity( connectivity ) ;
-        load_connectivities(line_connectivity) ;
+        load_connectivities( line_connectivity ) ;
         GEO::FileSystem::delete_file( connectivity ) ;
 
+        load_attributes( uz ) ;
+        zipClose( uz, NULL ) ;
 
     }
 
-    void GeoModelBuilderGM::load_connectivities(  GEO::LineInput& file_line  )
+    void GeoModelBuilderGM::load_connectivities( GEO::LineInput& file_line )
     {
         while( !file_line.eof() && file_line.get_line() ) {
             file_line.get_fields() ;
@@ -3667,6 +3671,87 @@ namespace RINGMesh {
 
 //            set_connectivities
             GEO::FileSystem::delete_file( file_to_extract_and_load ) ;
+        }
+
+    }
+
+    void GeoModelBuilderGM::write_on_attribute_manager(
+        GEO::AttributesManager& attribute_manager,
+        GEO::LineInput& att_file )
+    {
+        index_t countt = 0 ;
+//        while( !att_file.eof() && att_file.get_line() ) {
+//            for( index_t i = 0; i < att_file.nb_fields(); i++ ) {
+//                std::cout << att_file.field( i ) << " " ;
+//            }
+//            countt++ ;
+//
+//
+//            std::cout << std::endl ;
+//        }
+        DEBUG(countt) ;
+        while( !att_file.eof() && att_file.get_line() ) {
+            att_file.get_fields() ;
+            DEBUG(att_file.field( 0 )) ;
+            if( att_file.field_matches( 0, "#" ) ) {
+
+                //@TODO double is hardcoded here temporary
+                GEO::Attribute< double > cur_att ;
+                index_t att_dim = att_file.field_as_uint( 3 ) ;
+                cur_att.create_vector_attribute( attribute_manager,
+                    att_file.field( 1 ), att_dim ) ;
+
+                index_t count = 0 ;
+                while( !att_file.eof() && att_file.get_line()
+                    && !att_file.field_matches( 0, "#" ) ) {
+                    att_file.get_fields() ;
+                    for( index_t i = 0; i < att_dim; i++ ) {
+                        cur_att[att_dim * count + i] = att_file.field_as_double(
+                            i ) ;
+                    }
+                    count++ ;
+                }
+            }
+        }
+
+    }
+
+    void GeoModelBuilderGM::load_attributes( unzFile& uz )
+    {
+
+        for( index_t r = 0; r < model_.nb_regions(); r++ ) {
+            std::string root_name = GeoModelMeshElement::type_name( GME::REGION )
+                + "_" + GEO::String::to_string( r ) ;
+            std::string cell_att_file = root_name + "_cells_attributes.txt" ;
+            std::string vertices_att_file = root_name + "_vertices_attributes.txt" ;
+            std::string facets_att_file = root_name + "_facets_attributes.txt" ;
+
+            if( unzLocateFile( uz, cell_att_file.c_str(), 0 ) == UNZ_OK ) {
+                unzip_one_file( uz, cell_att_file.c_str() ) ;
+                GEO::LineInput att_file( cell_att_file ) ;
+                write_on_attribute_manager(
+                    model_.region( r ).mesh().cells.attributes(), att_file ) ;
+                GEO::FileSystem::delete_file( cell_att_file ) ;
+            }
+
+            if( unzLocateFile( uz, vertices_att_file.c_str(), 0 ) == UNZ_OK ) {
+                unzip_one_file( uz, vertices_att_file.c_str() ) ;
+                DEBUG(vertices_att_file) ;
+                GEO::LineInput att_file( vertices_att_file ) ;
+                write_on_attribute_manager(
+                    model_.region( r ).mesh().vertices.attributes(), att_file ) ;
+                GEO::FileSystem::delete_file( vertices_att_file ) ;
+
+            }
+
+            if( unzLocateFile( uz, facets_att_file.c_str(), 0 ) == UNZ_OK ) {
+                unzip_one_file( uz, facets_att_file.c_str() ) ;
+                GEO::LineInput att_file( facets_att_file ) ;
+                write_on_attribute_manager(
+                    model_.region( r ).mesh().facets.attributes(), att_file ) ;
+                GEO::FileSystem::delete_file( facets_att_file ) ;
+
+            }
         }
 
     }

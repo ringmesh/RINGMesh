@@ -429,12 +429,16 @@ namespace {
     class GeoModelHandler: public GeoModelIOHandler {
         virtual void load( const std::string& filename, GeoModel& model )
         {
+            std::string pwd = GEO::FileSystem::get_current_working_directory() ;
+            GEO::FileSystem::set_current_working_directory(
+                GEO::FileSystem::dir_name( filename ) ) ;
             GeoModelBuilderGM builder( model, filename ) ;
             builder.build_model() ;
             GEO::Logger::out( "I/O" ) << " Loaded model " << model.name() << " from "
                 << filename << std::endl ;
             print_geomodel( model ) ;
             is_geomodel_valid( model ) ;
+            GEO::FileSystem::set_current_working_directory( pwd ) ;
 
         }
         virtual void save( const GeoModel& model, const std::string& filename )
@@ -461,8 +465,7 @@ namespace {
                 }
             }
 
-            zipClose( zf, NULL ) ;
-            GEO::FileSystem::set_current_working_directory( pwd ) ;
+
 
         }
 

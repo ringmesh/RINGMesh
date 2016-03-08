@@ -52,20 +52,9 @@ namespace GEO {
 
 namespace RINGMesh {
 
-    static bool operator==( const vec3& u, const vec3& v )
-    {
-        return u.x == v.x && u.y == v.y && u.z == v.z ;
-    }
-
-    static bool operator<( const vec3& u, const vec3& v )
-    {
-        return u.x < v.x && u.y < v.y && u.z < v.z ;
-    }
-
-    static bool operator!=( const vec3& u, const vec3& v )
-    {
-        return u.x != v.x || u.y != v.y || u.z != v.z ;
-    }
+    bool RINGMESH_API operator==( const vec3& u, const vec3& v ) ;
+    bool RINGMESH_API operator<( const vec3& u, const vec3& v ) ;
+    bool RINGMESH_API operator!=( const vec3& u, const vec3& v ) ;
 
     /* @warning Duplicate from Geogram/basic/numeric.h */
     enum Sign {
@@ -512,12 +501,12 @@ namespace RINGMesh {
         ringmesh_disable_copy( ColocaterANN ) ;
     public:
         enum MeshLocation {
-            VERTICES, FACETS, CELLS
+            VERTICES, EDGES, FACETS, CELLS
         } ;
         ColocaterANN() ;
         ColocaterANN(
             const GEO::Mesh& mesh,
-            const MeshLocation& location = VERTICES,
+            const MeshLocation& location,
             bool copy = false ) ;
         ColocaterANN( const std::vector< vec3 >& vertices, bool copy = true ) ;
 
@@ -548,6 +537,15 @@ namespace RINGMesh {
             index_t nb_neighbors,
             std::vector< index_t >& result,
             double* dist = nil ) const ;
+
+    private:
+        void build_colocater_ann_vertices( const GEO::Mesh& mesh, bool copy ) ;
+        void build_colocater_ann_edges( const GEO::Mesh& mesh ) ;
+        void build_colocater_ann_facets( const GEO::Mesh& mesh ) ;
+        void build_colocater_ann_cells( const GEO::Mesh& mesh ) ;
+        void fill_ann_points(
+            index_t index_in_ann,
+            const vec3& center ) ;
 
     private:
         /// KdTree to compute the nearest neighbor search
