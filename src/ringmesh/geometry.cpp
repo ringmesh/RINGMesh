@@ -70,6 +70,21 @@ namespace {
 
 namespace RINGMesh {
 
+    bool operator==( const vec3& u, const vec3& v )
+    {
+        return u.x == v.x && u.y == v.y && u.z == v.z ;
+    }
+
+    bool operator<( const vec3& u, const vec3& v )
+    {
+        return u.x < v.x && u.y < v.y && u.z < v.z ;
+    }
+
+    bool operator!=( const vec3& u, const vec3& v )
+    {
+        return u.x != v.x || u.y != v.y || u.z != v.z ;
+    }
+
     /*!
      * Computes the distance between a point and a tetrahedron
      * @param[in] p the point
@@ -132,7 +147,7 @@ namespace RINGMesh {
         double dist = max_float64() ;
         for( index_t f = 0; f < GEO::MeshCellDescriptors::pyramid_descriptor.nb_facets; f++ ) {
             vec3 cur_p ;
-            double distance ;
+            double distance = max_float64() ;
             GEO::Numeric::uint8 nb_vertices =
                 GEO::MeshCellDescriptors::pyramid_descriptor.nb_vertices_in_facet[f] ;
             if( nb_vertices == 3 ) {
@@ -186,7 +201,7 @@ namespace RINGMesh {
         double dist = max_float64() ;
         for( index_t f = 0; f < GEO::MeshCellDescriptors::prism_descriptor.nb_facets; f++ ) {
             vec3 cur_p ;
-            double distance ;
+            double distance = max_float64() ;
             GEO::Numeric::uint8 nb_vertices =
                 GEO::MeshCellDescriptors::prism_descriptor.nb_vertices_in_facet[f] ;
             if( nb_vertices == 3 ) {
@@ -1134,43 +1149,19 @@ namespace RINGMesh {
         ann_tree_ = GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
         switch( location ) {
             case VERTICES: {
-                if( !copy ) {
-                    ann_points_ = nil ;
-                    ann_tree_->set_points( mesh.vertices.nb(),
-                        mesh.vertices.point_ptr( 0 ) ) ;
-                } else {
-                    index_t nb_vertices = mesh.vertices.nb() ;
-                    ann_points_ = new double[nb_vertices * 3] ;
-                    GEO::Memory::copy( ann_points_, mesh.vertices.point_ptr( 0 ),
-                        nb_vertices * 3 * sizeof(double) ) ;
-                    ann_tree_->set_points( nb_vertices, ann_points_ ) ;
-                }
+                build_colocater_ann_vertices( mesh, copy ) ;
+                break ;
+            }
+            case EDGES: {
+                build_colocater_ann_edges( mesh ) ;
                 break ;
             }
             case FACETS: {
-                index_t nb_vertices = mesh.facets.nb() ;
-                ann_points_ = new double[nb_vertices * 3] ;
-                for( index_t i = 0; i < mesh.facets.nb(); i++ ) {
-                    vec3 center = GEO::Geom::mesh_facet_center( mesh, i ) ;
-                    index_t index_in_ann = 3 * i ;
-                    ann_points_[index_in_ann] = center.x ;
-                    ann_points_[index_in_ann + 1] = center.y ;
-                    ann_points_[index_in_ann + 2] = center.z ;
-                }
-                ann_tree_->set_points( nb_vertices, ann_points_ ) ;
+                build_colocater_ann_facets( mesh ) ;
                 break ;
             }
             case CELLS: {
-                index_t nb_vertices = mesh.cells.nb() ;
-                ann_points_ = new double[nb_vertices * 3] ;
-                for( index_t i = 0; i < mesh.cells.nb(); i++ ) {
-                    vec3 center = mesh_cell_center( mesh, i ) ;
-                    index_t index_in_ann = 3 * i ;
-                    ann_points_[index_in_ann] = center.x ;
-                    ann_points_[index_in_ann + 1] = center.y ;
-                    ann_points_[index_in_ann + 2] = center.z ;
-                }
-                ann_tree_->set_points( nb_vertices, ann_points_ ) ;
+                build_colocater_ann_cells( mesh ) ;
                 break ;
             }
         }
@@ -1247,5 +1238,75 @@ namespace RINGMesh {
         ann_tree_->get_nearest_neighbors( nb_neighbors, v.data(), &result[0],
             dist ) ;
         return nb_neighbors ;
+    }
+
+    void ColocaterANN::build_colocater_ann_vertices(
+        const GEO::Mesh& mesh,
+        bool copy )
+    {
+        if( !copy ) {
+            ann_points_ = nil ;
+            ann_tree_->set_points( mesh.vertices.nb(),
+                mesh.vertices.point_ptr( 0 ) ) ;
+        } else {
+            index_t nb_vertices = mesh.vertices.nb() ;
+            ann_points_ = new double[nb_vertices * 3] ;
+            GEO::Memory::copy( ann_points_, mesh.vertices.point_ptr( 0 ),
+                nb_vertices * 3 * sizeof(double) ) ;
+            ann_tree_->set_points( nb_vertices, ann_points_ ) ;
+        }
+    }
+
+    void ColocaterANN::build_colocater_ann_edges( const GEO::Mesh& mesh )
+    {
+        const GEO::MeshEdges& mesh_edges = mesh.edges ;
+        index_t nb_vertices = mesh_edges.nb() ;
+        ann_points_ = new double[nb_vertices * 3] ;
+        for( index_t i = 0; i < mesh_edges.nb(); i++ ) {
+            index_t first_vertex_id = mesh_edges.vertex( i, 0 ) ;
+            const vec3& first_vertex_vec =
+                mesh.vertices.point( first_vertex_id ) ;
+            index_t second_vertex_id = mesh.edges.vertex( i, 1 ) ;
+            const vec3& second_vertex_vec =
+                mesh.vertices.point( second_vertex_id ) ;
+
+            vec3 center = ( first_vertex_vec + second_vertex_vec ) / 2. ;
+            index_t index_in_ann = 3 * i ;
+            fill_ann_points( index_in_ann, center ) ;
+        }
+        ann_tree_->set_points( nb_vertices, ann_points_ ) ;
+    }
+
+    void ColocaterANN::build_colocater_ann_facets( const GEO::Mesh& mesh )
+    {
+        index_t nb_vertices = mesh.facets.nb() ;
+        ann_points_ = new double[nb_vertices * 3] ;
+        for( index_t i = 0; i < mesh.facets.nb(); i++ ) {
+            vec3 center = GEO::Geom::mesh_facet_center( mesh, i ) ;
+            index_t index_in_ann = 3 * i ;
+            fill_ann_points( index_in_ann, center ) ;
+        }
+        ann_tree_->set_points( nb_vertices, ann_points_ ) ;
+    }
+
+    void ColocaterANN::build_colocater_ann_cells( const GEO::Mesh& mesh )
+    {
+        index_t nb_vertices = mesh.cells.nb() ;
+        ann_points_ = new double[nb_vertices * 3] ;
+        for( index_t i = 0; i < mesh.cells.nb(); i++ ) {
+            vec3 center = mesh_cell_center( mesh, i ) ;
+            index_t index_in_ann = 3 * i ;
+            fill_ann_points( index_in_ann, center ) ;
+        }
+        ann_tree_->set_points( nb_vertices, ann_points_ ) ;
+    }
+
+    void ColocaterANN::fill_ann_points(
+        index_t index_in_ann,
+        const vec3& center )
+    {
+        ann_points_[index_in_ann] = center.x ;
+        ann_points_[index_in_ann + 1] = center.y ;
+        ann_points_[index_in_ann + 2] = center.z ;
     }
 }

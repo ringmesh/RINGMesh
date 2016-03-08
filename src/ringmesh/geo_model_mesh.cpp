@@ -259,7 +259,7 @@ namespace RINGMesh {
 
     void GeoModelMeshVertices::initialize_kdtree()
     {
-        kdtree_ = new ColocaterANN( mesh_ ) ;
+        kdtree_ = new ColocaterANN( mesh_, ColocaterANN::VERTICES ) ;
 #ifdef RINGMESH_DEBUG
         // Paranoia
         GEO::vector< index_t > old2new ;
@@ -1894,10 +1894,10 @@ namespace RINGMesh {
 
     void GeoModelMeshOrder::test_point_list_initialized()
     {
-        if( high_order_vertices_.size() == 0 ) {
+        if( high_order_vertices_.empty() ) {
             index_t order = gmm_.get_order() ;
 
-            if( high_order_vertices_.size() == 0 && order > 1 ) {
+            if( high_order_vertices_.empty() && order > 1 ) {
                 index_t offset = 0 ;
                 index_t nb_total_edges = 0 ;
                 for( index_t c = 0; c < gmm_.cells.nb(); c++ ) {

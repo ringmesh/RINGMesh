@@ -63,18 +63,7 @@ namespace RINGMesh {
      * invalid elements shall be stored
      * @details If directory does not exist keep the previous value.
      */
-    static void set_validity_errors_directory( const std::string& directory )
-    {
-        // If trailing / or \ is not removed, the test fails on Windows
-        std::string copy( directory ) ;
-        if( *copy.rbegin() == '/' ||
-            *copy.rbegin() == '\\' ) {
-            copy.erase( copy.end()-1 ) ;
-        }
-        if( GEO::FileSystem::is_directory( copy ) ) {
-            validity_errors_directory = copy + '/' ;
-        }
-    }
+    void RINGMESH_API set_validity_errors_directory( const std::string& directory ) ;
 
     /*!
     * @brief Check global model validity
