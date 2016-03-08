@@ -562,8 +562,7 @@ namespace RINGMesh {
                     }
                 }
             }
-            ringmesh_assert_not_reached
-            ;
+            ringmesh_assert_not_reached ;
             return sorted_triangles_.front() ;
         }
 
