@@ -90,7 +90,8 @@ namespace {
             vertices_( std::min( v0, v1 ), std::max( v0, v1 ) )
         {}
         Edge( std::pair<index_t, index_t> edge ) :
-            Edge( edge.first, edge.second )
+            vertices_(  std::min( edge.first, edge.second ), 
+                        std::max( edge.first, edge.second ) )  
         {}
         Edge() : vertices_( NO_ID, NO_ID )
         {} 

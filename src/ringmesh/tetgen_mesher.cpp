@@ -33,6 +33,7 @@
 *     FRANCE
 */
 
+#include <cstring>
 
 #include <ringmesh/tetgen_mesher.h>
 
