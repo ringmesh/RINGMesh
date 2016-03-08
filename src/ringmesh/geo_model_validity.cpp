@@ -452,8 +452,8 @@ namespace {
     /*----------------------------------------------------------------------------*/
 
     /*!
-    * @brief Get the GMME defining the boundaries of an element
-    */
+     * @brief Get the GMME defining the boundaries of an element
+     */
     void boundary_gmme(
         const GME& E,
         std::vector< GME::gme_t >& borders,
@@ -490,10 +490,10 @@ namespace {
     }
 
     /*!
-    * @brief Get the elements in the boundary of which @param E is
-    * @details For GMME, get the contents of the in_boundary vector
-    *          For high level elements, determine in_boundary high level elements
-    */
+     * @brief Get the elements in the boundary of which @param E is
+     * @details For GMME, get the contents of the in_boundary vector
+     *          For high level elements, determine in_boundary high level elements
+     */
     void in_boundary_gme( const GME& E, std::vector< GME::gme_t >& in_boundary )
     {
         in_boundary.clear() ;
@@ -536,7 +536,7 @@ namespace {
         } else {
             std::vector< GME::gme_t > borders ;
             boundary_gmme( E, borders, false ) ;
-            if( borders.size() == 0 ) {
+            if( borders.empty() ) {
                 return ;
             } else {
                 if( T == GME::LINE || T == GME::CONTACT ) {
@@ -992,6 +992,18 @@ namespace RINGMesh {
         save_edges( file_name, geomodel, edge_vertices ) ;
     }
 
+    void set_validity_errors_directory( const std::string& directory )
+    {
+        // If trailing / or \ is not removed, the test fails on Windows
+        std::string copy( directory ) ;
+        if( *copy.rbegin() == '/' || *copy.rbegin() == '\\' ) {
+            copy.erase( copy.end() - 1 ) ;
+        }
+        if( GEO::FileSystem::is_directory( copy ) ) {
+            validity_errors_directory = copy + '/' ;
+        }
+    }
+
     bool are_geomodel_elements_valid( const GeoModel& GM )
     {
         std::vector< bool > valid( GM.nb_elements( GME::ALL_TYPES ), true ) ;
@@ -1043,7 +1055,7 @@ namespace RINGMesh {
         for( index_t i = 0; i < GM.nb_interfaces(); ++i ) {
             std::vector< GME::gme_t > layers ;
             in_boundary_gme( GM.one_interface( i ), layers ) ;
-            if( layers.size() == 0 ) {
+            if( layers.empty() ) {
                 GEO::Logger::warn( "GeoModel" ) << " Invalid interface: "
                     << GM.one_interface( i ).gme_id()
                     << " is in the boundary of no Layer " << std::endl ;

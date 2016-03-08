@@ -3048,9 +3048,8 @@ namespace RINGMesh {
                 // 1- Build the boundary : construct the vector
                 // of vertices on the border
                 const Surface& S = model_.surface( b.part_id_ ) ;
-                gme_t end_corner_id = determine_line_vertices( S, b.p0_, b.p1_,
-                    line_vertices ) ;
-                if( line_vertices.size() == 0 ) {
+                determine_line_vertices( S, b.p0_, b.p1_, line_vertices ) ;
+                if( line_vertices.empty() ) {
                     GEO::Logger::out( "I/O" )
                         << "One Line vertices determination failed in SURFACE "
                         << S.index() << std::endl ;
