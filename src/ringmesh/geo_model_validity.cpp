@@ -1255,15 +1255,17 @@ namespace RINGMesh {
 
         /// 6. Check there is no surface-surface intersection
         ///    except along Line boundaries.
+        if( check_surface_intersections ) {
 
-        // The global triangulated mesh corresponding to this model
-        // is used again 
-        // If the model has non-planar polygonal facets ...
-        index_t nb_intersections = detect_intersecting_facets( GM, model_mesh ) ;
-        if( nb_intersections > 0 ) {
-            GEO::Logger::warn( "GeoModel" ) << nb_intersections
-                << " facet intersections " << std::endl ;
-            valid = false ;
+            // The global triangulated mesh corresponding to this model
+            // is used again
+            // If the model has non-planar polygonal facets ...
+            index_t nb_intersections = detect_intersecting_facets( GM, model_mesh ) ;
+            if( nb_intersections > 0 ) {
+                GEO::Logger::warn( "GeoModel" ) << nb_intersections
+                    << " facet intersections " << std::endl ;
+                valid = false ;
+            }
         }
 
         // Feedback 
