@@ -260,7 +260,6 @@ namespace RINGMesh {
     /***********************************************************************/
 #ifdef RINGMESH_WITH_TETGEN
 #ifdef __GNUC__
-#   pragma GCC diagnostic push
 #   pragma GCC diagnostic ignored "-Wsign-conversion"
 #endif
 
@@ -532,7 +531,7 @@ namespace RINGMesh {
     }
 
 #ifdef __GNUC__
-#   pragma GCC diagnostic pop
+#   pragma GCC diagnostic warning "-Wsign-conversion"
 #endif
 #endif
     
