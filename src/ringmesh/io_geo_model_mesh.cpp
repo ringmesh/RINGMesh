@@ -349,11 +349,8 @@ namespace {
             gm.mesh.facets.test_and_initialize() ;
             gm.mesh.cells.test_and_initialize() ;
 
-            Mesh mesh( 3, false ) ;
-            gm.mesh.copy_mesh( mesh ) ;
-
             GEO::Logger::instance()->set_minimal( true ) ;
-            mesh_save( mesh, filename ) ;
+            gm.mesh.save_mesh( filename ) ;
             GEO::Logger::instance()->set_minimal( false ) ;
         }
     } ;
@@ -1886,6 +1883,5 @@ namespace RINGMesh {
     ringmesh_register_GeoModelVolumeIOHandler_creator( AsterIOHandler, "mail" ) ;
     ringmesh_register_GeoModelVolumeIOHandler_creator( VTKIOHandler, "vtk" ) ;
     ringmesh_register_GeoModelVolumeIOHandler_creator( GPRSIOHandler, "gprs" ) ;
-    ringmesh_register_GeoModelVolumeIOHandler_creator( MSHIOHandler, "msh" ) ;
-}
+    ringmesh_register_GeoModelVolumeIOHandler_creator( MSHIOHandler, "msh" ) ;}
 }

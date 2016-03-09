@@ -72,7 +72,7 @@ namespace {
             if( surface_id_[i] != surface_id_[j] ) {
                 return surface_id_[i] < surface_id_[j] ;
             } else {
-                return mesh_.facets.nb_vertices( i ) < mesh_.facets.nb_vertices( j ) ;
+                return mesh_.facet_nb_vertices( i ) < mesh_.facet_nb_vertices( j ) ;
             }
         }
     private:
@@ -94,7 +94,7 @@ namespace {
             if( region_id_[i] != region_id_[j] ) {
                 return region_id_[i] < region_id_[j] ;
             } else {
-                return mesh_.cells.type( i ) < mesh_.cells.type( j ) ;
+                return mesh_.cell_type( i ) < mesh_.cell_type( j ) ;
             }
         }
     private:
@@ -111,11 +111,11 @@ namespace {
             GME::gme_t( T, i ) ) ) ) ;
     }
 
-    index_t find_corner( const Mesh& mesh, index_t cell, index_t vertex_id )
+    index_t find_local_vertex_id( const Mesh& mesh, index_t cell, index_t vertex_id )
     {
-        for( index_t v = 0; v < mesh.cells.nb_vertices( cell ); v++ ) {
-            if( mesh.cells.vertex( cell, v ) == vertex_id ) {
-                return mesh.cells.corners_begin( cell ) + v ;
+        for( index_t v = 0; v < mesh.nb_cell_vertices( cell ); v++ ) {
+            if( mesh.cell_vertex( cell, v ) == vertex_id ) {
+                return v ;
             }
         }
         return NO_ID ;
