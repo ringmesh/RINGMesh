@@ -73,6 +73,7 @@ namespace RINGMesh {
     * @param check_surface_intersections Optional expensive check of the
     *        intersections between the model surfaces
     * @todo Check the consistency of gme_vertices vs. model_vertex_id
+    * @todo Add options to expensive tests
     */
     bool RINGMESH_API is_geomodel_valid(
         const GeoModel& GM, 
