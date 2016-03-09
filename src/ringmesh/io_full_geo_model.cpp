@@ -465,8 +465,7 @@ namespace {
                 }
             }
 
-
-
+            zipClose(zf, NULL) ;
         }
 
     } ;
