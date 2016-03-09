@@ -870,9 +870,9 @@ namespace RINGMesh {
     {
         TSolidLoadingStorage load_storage( filename_ ) ;
 
-        while( !file_.eof() && file_.get_line() ) {
-            file_.get_fields() ;
-            if( file_.nb_fields() > 0 ) {
+        while( !file_line_.eof() && file_line_.get_line() ) {
+            file_line_.get_fields() ;
+            if( file_line_.nb_fields() > 0 ) {
                 read_line( load_storage ) ;
             }
         }
@@ -880,11 +880,11 @@ namespace RINGMesh {
 
     void GeoModelBuilderTSolid::read_line( TSolidLoadingStorage& load_storage )
     {
-        std::string keyword = file_.field( 0 ) ;
+        std::string keyword = file_line_.field( 0 ) ;
         TSolidLineParser_var parser = TSolidLineParser::create( keyword, *this,
             model_ ) ;
         if( parser ) {
-            parser->execute( file_, load_storage ) ;
+            parser->execute( file_line_, load_storage ) ;
         }
     }
 

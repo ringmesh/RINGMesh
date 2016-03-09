@@ -34,6 +34,7 @@
  */
 
 #include <ringmesh/utils.h>
+#include <geogram/basic/string.h>
 
 #include <algorithm> 
 
@@ -50,19 +51,19 @@ namespace RINGMesh {
     {
         return x * x ;
     }
-   
+
     void Box3d::add_point( const vec3& p )
     {
         if( !initialized_ ) {
             for( index_t i = 0; i < 3; i++ ) {
-                xyz_min[ i ] = p[ i ] ;
-                xyz_max[ i ] = p[ i ] ;
+                xyz_min[i] = p[i] ;
+                xyz_max[i] = p[i] ;
             }
             initialized_ = true ;
         } else {
             for( index_t i = 0; i < 3; i++ ) {
-                xyz_min[ i ] = std::min( xyz_min[ i ], p[ i ] ) ;
-                xyz_max[ i ] = std::max( xyz_max[ i ], p[ i ] ) ;
+                xyz_min[i] = std::min( xyz_min[i], p[i] ) ;
+                xyz_max[i] = std::max( xyz_max[i], p[i] ) ;
             }
         }
     }
@@ -74,26 +75,25 @@ namespace RINGMesh {
         vec3 minimum = min() ;
         vec3 maximum = max() ;
         for( index_t c = 0; c < 3; c++ ) {
-            if( p[ c ] < minimum[ c ] ) {
+            if( p[c] < minimum[c] ) {
                 inside = false ;
-                result += sqr( p[ c ] - minimum[ c ] ) ;
-            } else if( p[ c ] > maximum[ c ] ) {
+                result += sqr( p[c] - minimum[c] ) ;
+            } else if( p[c] > maximum[c] ) {
                 inside = false ;
-                result += sqr( p[ c ] - maximum[ c ] ) ;
+                result += sqr( p[c] - maximum[c] ) ;
             }
         }
         if( inside ) {
-            result = sqr( p[ 0 ] - minimum[ 0 ] ) ;
-            result = std::min( result, sqr( p[ 0 ] - maximum[ 0 ] ) ) ;
+            result = sqr( p[0] - minimum[0] ) ;
+            result = std::min( result, sqr( p[0] - maximum[0] ) ) ;
             for( index_t c = 1; c < 3; ++c ) {
-                result = std::min( result, sqr( p[ c ] - minimum[ c ] ) ) ;
-                result = std::min( result, sqr( p[ c ] - maximum[ c ] ) ) ;
+                result = std::min( result, sqr( p[c] - minimum[c] ) ) ;
+                result = std::min( result, sqr( p[c] - maximum[c] ) ) ;
             }
             result = -result ;
         }
         return result ;
     }
-
 
     float64 Box3d::distance_to_center( const vec3& p ) const
     {
@@ -101,10 +101,26 @@ namespace RINGMesh {
         vec3 minimum = min() ;
         vec3 maximum = max() ;
         for( index_t c = 0; c < 3; ++c ) {
-            float64 d = p[ c ] - 0.5 * ( minimum[ c ] + maximum[ c ] ) ;
+            float64 d = p[c] - 0.5 * ( minimum[c] + maximum[c] ) ;
             result += sqr( d ) ;
         }
         return result ;
     }
 
+    bool is_attribute_a_double(
+        GEO::AttributesManager& att_manager,
+        const std::string& att_name )
+    {
+        return GEO::Attribute< double >::is_defined( att_manager, att_name ) ;
+    }
+
+    void build_string_for_geo_model_element_export(
+        GME::TYPE gme_t,
+        index_t gme_id,
+        std::string& name )
+    {
+        name += GeoModelMeshElement::type_name( gme_t ) + "_"
+            + GEO::String::to_string( gme_id ) + ".meshb" ;
+    }
 }
+
