@@ -69,6 +69,7 @@
  * @file ringmesh/geo_model_validity.cpp
  * @brief Implementation of functions to check the validity of GeoModels
  * @author Jeanne Pellerin
+ * @todo Refactor the functions - reorganize to have a cleaner code.
  */
 
 namespace {
@@ -1078,15 +1079,17 @@ namespace RINGMesh {
 
 
     /*!
-     * @brief Implementation class for validity check on a GeoModel
+     * @brief Implementation class for validity checks on a GeoModel
      */
     class GeoModelValidityCheck {
     public:
-        GeoModelValidityCheck( const GeoModel& geomodel ) :
-            geomodel_(geomodel), valid_(true)
+        GeoModelValidityCheck( const GeoModel& geomodel, bool check_surface_intersections ) :
+            geomodel_(geomodel),
+            valid_(true), 
+            check_surface_intersections_(check_surface_intersections )
         {
             // Ensure that the model vertices are computed and up-to-date
-            // Without them we cannot do anything        
+            // Without that we cannot do anything        
             geomodel_.mesh.vertices.test_and_initialize() ;
             do_check_validity() ;
         }
@@ -1115,7 +1118,9 @@ namespace RINGMesh {
             }
         }
         
-        // Verify the validity of all GeoModelElements
+        /*! 
+         * @brief Verify the validity of all GeoModelElements
+         */
         void test_model_elements_validity()
         {
             if( !are_geomodel_elements_valid( geomodel_ ) ) {
@@ -1123,8 +1128,9 @@ namespace RINGMesh {
             }
         }
 
-        // Verify the geological validity if the model has
-        // interfaces and layers
+        /*!
+         * Verify the geological validity if the model has interfaces and layers
+         */
         void test_geological_validity()
         {
             if( geomodel().nb_interfaces() > 0 && geomodel().nb_layers() > 0 ) {                
@@ -1133,25 +1139,31 @@ namespace RINGMesh {
                 }
             }
         }
-        // Check that the model has a finite extension 
-        // The boundary of the universe region is a one connected component 
-        //  manifold closed surface 
+        /*!
+         * @brief Check that the model has a finite extension 
+         * @details The boundary of the universe region is a one connected component 
+         * manifold closed surface.
+         */
         void test_finite_extension()
         {
             if( !is_region_valid( geomodel().universe() ) ) {
                 set_invalid_model() ;                
             }
         }
-        // Check geometrical-connectivity consistency
+        /*!
+         * Check geometrical-connectivity consistency
+         * @todo Add consistency test for facets on boundary of Regions 
+         * @todo Check that all Line segments correspond to a Surface
+         *  edge that is on the boundary.
+         */
         void test_geometry_connectivity_consistency()
         {
-            // Powerful check on relationships between GeoModelElements
-            // containing the same point of the model
+            // Check relationships between GeoModelElements
+            // sharing the same point of the model
             if( !check_model_points_validity( geomodel() ) ) {
                 set_invalid_model() ;
             }
-            // Check on the edges - Only for Surfaces - A boundary edge has to be in a Line
-            /// @todo Add consistency test for facets on boundary of Regions 
+            // Check on that Surface edges are in a Line
             for( index_t i = 0; i < geomodel().nb_surfaces(); ++i ) {
                 if( !surface_boundary_valid( geomodel().surface( i ) ) ) {
                     set_invalid_model() ;
@@ -1159,10 +1171,6 @@ namespace RINGMesh {
             }
         }
 
-        /// @todo Check that all Line segments correspond to a Surface
-        /// edge that is on the boundary
-        // With the current tests, it is possible we miss this problem,
-        // but I am not sure (JP - 08/2015)
         void do_check_validity()
         {           
             test_global_element_access() ; 
@@ -1171,10 +1179,14 @@ namespace RINGMesh {
             test_finite_extension() ;
             test_geometry_connectivity_consistency() ;          
             test_non_manifold_edges() ;
-            test_facet_intersections() ;
+            if( check_surface_intersections_ ) {
+                test_facet_intersections() ;
+            }
         }
     
-        // Creates a Mesh from the GeoModel and triangulates it
+        /*! 
+         * @brief Creates a Mesh from the GeoModel and triangulates it
+         */
         void create_model_mesh()
         {
             GEO::Logger::instance()->set_quiet( true ) ;
@@ -1210,7 +1222,7 @@ namespace RINGMesh {
         }
 
         /*!
-        * @brief Returns true if there intersections between facets
+        * @brief Returns true if there are intersections between facets
         * @details Operates on the global mesh
         * @note This is a very expensive test.
         */
@@ -1234,20 +1246,19 @@ namespace RINGMesh {
     private:
         const GeoModel& geomodel_ ;
         bool valid_ ;
+        bool check_surface_intersections_;
 
-        // Intermediate stuff used to compute validity
+        // Global mesh of the GeoModel used for some validity checks
         GEO::Mesh triangulated_global_model_mesh_ ;
     };
 
  
     bool is_geomodel_valid( const GeoModel& GM, bool check_surface_intersections )
-    {
-        /// @todo Set some options here
-        GeoModelValidityCheck validity_checker( GM ) ;
+    {       
+        GeoModelValidityCheck validity_checker( GM, check_surface_intersections ) ;
 
         bool valid = validity_checker.is_geomodel_valid() ;
 
-        // Feedback 
         if( valid ) {
             GEO::Logger::out( "GeoModel" ) << "Model " << GM.name() << " is valid "
                 << std::endl << std::endl ;
