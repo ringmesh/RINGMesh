@@ -464,7 +464,6 @@ namespace {
                     save_geo_model_mesh_element( model.mesh_element( type, e ), zf ) ;
                 }
             }
-
             zipClose(zf, NULL) ;
         }
 
