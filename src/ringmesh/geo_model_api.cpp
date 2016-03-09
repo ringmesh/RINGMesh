@@ -48,8 +48,10 @@
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_builder.h>
 #include <ringmesh/geogram_extension.h>
+#include <ringmesh/geogram_mesh_repair.h>
 #include <ringmesh/geometry.h>
 #include <ringmesh/tetra_gen.h>
+#include <ringmesh/tetgen_mesher.h>
 
 /*!
  * @file Bunch of functions that shouldn't be there
@@ -374,7 +376,8 @@ namespace RINGMesh {
         return true ;
     }
 
-
+    /*******************************************************************************/
+    /*******************************************************************************/
     /// @todo A class encapsulating the copy from a GeoModel to a Mesh ?
     /// See what has been done in GeoModelMeshBuilder
 
@@ -560,7 +563,6 @@ namespace RINGMesh {
         }
     }
 
-
     void build_mesh_from_geomodel( const GeoModel& geomodel, GEO::Mesh& M )
     {
         // Keep the attributes when clearing the mesh, otherwise we crash
@@ -572,6 +574,17 @@ namespace RINGMesh {
         add_geomodel_region_tets_to_mesh( geomodel, M ) ;
     }
 
+    void build_mesh_from_geomodel( const GeoModel& model, GEO::Mesh& M, bool connect_facets )
+    {
+        build_mesh_from_geomodel( model, M ) ;        
+        if( connect_facets ) {
+            connect_mesh_facets_except_on_mesh_edges( M ) ;
+        }
+    }
+
+
+    /*******************************************************************************/
+    /*******************************************************************************/
 
     double model_element_size( const GeoModelElement& E )
     {
@@ -619,13 +632,16 @@ namespace RINGMesh {
                     const Line& L = dynamic_cast< const Line& >( E ) ;
                     for( index_t i = 1; i < L.nb_vertices(); ++i ) {
                         result += GEO::Geom::distance( L.vertex( i ),
-                                                       L.vertex( i - 1 ) ) ;
+                            L.vertex( i - 1 ) ) ;
                     }
                     return result ;
                 }
                 case GeoModelElement::CORNER: {
                     return 0 ;
                 }
+                default:
+                    ringmesh_assert_not_reached ;
+                    return result ;
             }
             ringmesh_assert_not_reached;
             return result ;
@@ -649,9 +665,11 @@ namespace RINGMesh {
             }
             case GeoModelElement::LINE: {
                 const Line& L = dynamic_cast< const Line& >( E ) ;
-                const GEO::Mesh& mesh = L.mesh() ;
                 return GEO::Geom::distance( L.vertex( c, 0 ), L.vertex( c, 1 ) ) ;
             }
+            default:
+                ringmesh_assert_not_reached ;
+                return result ;
         }
         ringmesh_assert_not_reached ;
         return result ;
@@ -704,6 +722,10 @@ namespace RINGMesh {
             case GeoModelElement::CORNER: {
                 return mesh.vertices.point(0) ;
             }
+            default:
+                ringmesh_assert_not_reached ;
+                return result ;
+
         }
         ringmesh_assert_not_reached ;
         return result ;
@@ -760,10 +782,9 @@ namespace RINGMesh {
         
         const GeoModel& geomodel = region.model() ;
         const Surface& first_boundary_surface = geomodel.surface( region.boundary_gme( 0 ).index ) ; 
-        double facet_area = first_boundary_surface.facet_area( 0 ) ; 
         vec3 barycenter = first_boundary_surface.facet_barycenter( 0 ) ;                
         /// @todo Check that this is the right condition to have a correct enough barycenter
-        ringmesh_assert( facet_area > epsilon ) ;
+        ringmesh_assert( first_boundary_surface.facet_area( 0 ) > epsilon ) ;
 
         double minimum_distance = DBL_MAX ;
         vec3 nearest_point ;        

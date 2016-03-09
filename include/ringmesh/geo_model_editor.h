@@ -58,7 +58,7 @@ namespace RINGMesh {
     class RINGMESH_API GeoModelEditor {
     public:
         GeoModelEditor( GeoModel& M )
-            : model_( M )
+            : model_(M), create_element_allowed_(true)
         {
         }
 
@@ -72,6 +72,15 @@ namespace RINGMesh {
          *@brief Set the name of the model
          */
         void set_model_name( const std::string& name ) ;
+
+        /*! 
+         * @brief When model_topolgy is fixed, any attempt to modify by it 
+         *        will throw an assertion/exception
+         */
+        void forbid_element_creation()
+        {
+            create_element_allowed_ = false ;
+        }
 
         GME::gme_t create_element( GME::TYPE e_type ) ;
 
@@ -282,6 +291,11 @@ namespace RINGMesh {
 
         void erase_invalid_element_references( GeoModelElement& E ) ;
 
+        void assert_element_creation_allowed()
+        {
+            ringmesh_assert( create_element_allowed_ ) ;
+        }
+
     private:
         void copy_element_topology(
             GeoModelElement& lhs,
@@ -295,6 +309,7 @@ namespace RINGMesh {
 
     protected:
         GeoModel& model_ ;
+        bool create_element_allowed_ ;
     } ;
 }
 

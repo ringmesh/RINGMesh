@@ -67,7 +67,8 @@ namespace RINGMesh {
      * @return The index of the created element
      */
     gme_t GeoModelEditor::create_element( GME::TYPE type )
-    {        
+    {   
+        assert_element_creation_allowed() ;
         if( type >= GME::CORNER && type < GME::NO_TYPE ) {
             GME* E = new_element( type ) ;
             ringmesh_assert( E != nil ) ;
@@ -82,6 +83,7 @@ namespace RINGMesh {
 
     void GeoModelEditor::resize_elements( GME::TYPE type, index_t nb )
     {
+        assert_element_creation_allowed() ;
         if( type >= GME::NO_TYPE ) {
             return ;
         }
@@ -232,7 +234,7 @@ namespace RINGMesh {
      */
     bool GeoModelEditor::get_dependent_elements( std::set< gme_t >& in ) const
     {
-        index_t input_size = in.size() ;
+        index_t input_size = static_cast< index_t >( in.size() ) ;
 
         for( std::set< gme_t >::iterator it( in.begin() ); it != in.end(); ++it ) {
             gme_t cur = *it ;
@@ -561,6 +563,7 @@ namespace RINGMesh {
      */
     void GeoModelEditor::copy_macro_topology( const GeoModel& from )
     {
+        assert_element_creation_allowed() ;
         for( index_t t = GME::CORNER; t < GME::NO_TYPE; ++t ) {
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;
             std::vector< GME* >& store = model_.modifiable_elements( T ) ;
@@ -610,8 +613,9 @@ namespace RINGMesh {
         GME::TYPE T = E.type() ;
         if( E.nb_children() > 0 ) {
             gme_t invalid_child( E.child_type( T ), NO_ID ) ;
-            if( std::count( E.children_.begin(), E.children_.end(), invalid_child )
-                == E.children_.size() ) {
+            index_t nb_found = static_cast< index_t >( std::count(
+                E.children_.begin(), E.children_.end(), invalid_child ) ) ;
+            if( nb_found == E.children_.size() ) {
                 // Calling erase on all elements -> undefined behavior
                 E.children_.clear() ;
             } else {
@@ -654,8 +658,9 @@ namespace RINGMesh {
         }
         if( E.nb_in_boundary() > 0 ) {
             gme_t invalid_in_boundary( E.in_boundary_type( T ), NO_ID ) ;
-            if( std::count( E.in_boundary_.begin(), E.in_boundary_.end(),
-                invalid_in_boundary ) == E.in_boundary_.size() ) {
+            index_t nb_found = static_cast< index_t >( std::count(
+                E.in_boundary_.begin(), E.in_boundary_.end(), invalid_in_boundary ) ) ;
+            if( nb_found == E.in_boundary_.size() ) {
                 E.in_boundary_.clear() ;
             } else {
                 E.in_boundary_.erase(
@@ -667,6 +672,7 @@ namespace RINGMesh {
 
     GME* GeoModelEditor::new_element( GME::TYPE T, index_t id )
     {
+        assert_element_creation_allowed() ;
         if( T == GME::CORNER ) {
             return new Corner( model(), id ) ;
         } else if( T == GME::LINE ) {

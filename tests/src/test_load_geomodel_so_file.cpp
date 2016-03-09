@@ -41,49 +41,53 @@
 #include <geogram/basic/logger.h>
 
 /*!
-* @file Test GeoModel building from a mesh loaded from a .so file
-* @author Pierre Anquez
-*/
+ * @file Test GeoModel building from a mesh loaded from a .so file
+ * @author Pierre Anquez
+ */
 
-int main( int argc, char** argv )
+int main()
 {
     using namespace RINGMesh ;
 
-    GEO::Logger::out( "TEST" ) <<
-        "Import a meshed GeoModel from .so" << std::endl ;
+    try {
 
-    std::string file_name( ringmesh_test_data_path ) ;
-    file_name += "modelA4.so" ;
+        GEO::initialize() ;
+        configure_geogram() ;
+        configure_ringmesh() ;
+        GEO::Logger::out( "TEST" ) << "Import a meshed GeoModel from .so"
+            << std::endl ;
 
-    GeoModel model ;
-    geomodel_volume_load( file_name, model ) ;
+        std::string file_name( ringmesh_test_data_path ) ;
+        file_name += "modelA4.so" ;
 
-    std::string output_surf_file_name( ringmesh_test_output_path ) ;
-    output_surf_file_name += "modelA4_surf.bm" ;
-    geomodel_surface_save( model, output_surf_file_name ) ;
+        GeoModel model ;
+        geomodel_volume_load( file_name, model ) ;
 
-    std::string output_vol_file_name( ringmesh_test_output_path ) ;
-    output_vol_file_name += "modelA4_vol.gm" ;
-    geomodel_volume_save( model, output_vol_file_name ) ;
+        std::string output_surf_file_name( ringmesh_test_output_path ) ;
+        output_surf_file_name += "modelA4_surf.bm" ;
+        geomodel_surface_save( model, output_surf_file_name ) ;
 
-    bool res = true ;
-    // Check number of elements in the imported GeoModel (from TSolid file)
-    if ( model.nb_corners() != 52 ||
-         model.nb_lines() != 98 ||
-         model.nb_surfaces() != 55 ||
-         model.nb_regions() != 8 ||
-         model.nb_interfaces() != 11 ||
-         model.nb_contacts() != 38 ||
-         model.mesh.vertices.nb() != 6691 ||
-         model.mesh.facets.nb() != 10049 ||
-         model.mesh.cells.nb() != 34540 ) {
-        res = false ;
+        std::string output_vol_file_name( ringmesh_test_output_path ) ;
+        output_vol_file_name += "modelA4_vol.gm" ;
+        geomodel_volume_save( model, output_vol_file_name ) ;
+
+        // Check number of elements in the imported GeoModel (from TSolid file)
+        if( model.nb_corners() != 52 || model.nb_lines() != 98
+            || model.nb_surfaces() != 55 || model.nb_regions() != 8
+            || model.nb_interfaces() != 11 || model.nb_contacts() != 38
+            || model.mesh.vertices.nb() != 6691 || model.mesh.facets.nb() != 10049
+            || model.mesh.cells.nb() != 34540 ) {
+            throw RINGMeshException( "TEST", "FAILED" ) ;
+        }
+
+    } catch( const RINGMeshException& e ) {
+        GEO::Logger::err( e.category() ) << e.what() << std::endl ;
+        return 1 ;
+    } catch( const std::exception& e ) {
+        GEO::Logger::err( "Exception" ) << e.what() << std::endl ;
+        return 1 ;
     }
-    if( res ) {
-        GEO::Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
-    } else {
-        GEO::Logger::out( "TEST" ) << "FAILED" << std::endl ;
-    }
+    GEO::Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
+    return 0 ;
 
-    return !res ;
 }

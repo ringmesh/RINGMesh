@@ -51,6 +51,11 @@ int main( int argc, char** argv )
     using namespace RINGMesh ;
 
     try {
+
+        GEO::initialize() ;
+        configure_geogram() ;
+        configure_ringmesh() ;
+
         GEO::Logger::div( "RINGMeshConvert" ) ;
         GEO::Logger::out( "" ) << "Welcome to RINGMeshConvert !" << std::endl ;
         GEO::Logger::out( "" ) << "People working on the project in RING"

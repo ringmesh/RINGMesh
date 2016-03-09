@@ -76,7 +76,7 @@ namespace {
                 }
             }
         }
-        return GME::NO_ID ;
+        return NO_ID ;
     }
 }
 
@@ -159,13 +159,15 @@ namespace RINGMesh {
      */
     void WellPart::set_points( const std::vector< vec3 >& points )
     {
-        mesh_.vertices.create_vertices( points.size() ) ;
-        for( index_t p = 0; p < points.size(); p++ ) {
+        index_t nb_points = static_cast< index_t >( points.size() ) ;
+        mesh_.vertices.create_vertices( nb_points ) ;
+        for( index_t p = 0; p < nb_points; p++ ) {
             mesh_.vertices.point( p ) = points[p] ;
         }
 
-        mesh_.edges.create_edges( points.size() - 1 ) ;
-        for( index_t e = 0; e < points.size() - 1; e++ ) {
+        index_t nb_edges = nb_points - 1 ;
+        mesh_.edges.create_edges( nb_edges ) ;
+        for( index_t e = 0; e < nb_edges; e++ ) {
             mesh_.edges.set_vertex( e, 0, e ) ;
             mesh_.edges.set_vertex( e, 1, e + 1 ) ;
         }

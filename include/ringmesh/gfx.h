@@ -40,6 +40,9 @@
 
 #ifdef RINGMESH_WITH_GRAPHICS
 
+#include <geogram/basic/factory.h>
+#include <geogram/basic/command_line.h>
+
 #include <geogram_gfx/mesh/mesh_gfx.h>
 
 /*!
@@ -49,17 +52,42 @@
 
 namespace RINGMesh {
     class GeoModel ;
-    class MacroMesh ;
     class CornerGfx ;
     class LineGfx ;
     class SurfaceGfx ;
     class RegionGfx ;
+    class MeshElementGfx ;
 }
 
 namespace RINGMesh {
 
+
+    struct Color {
+        Color( unsigned char r_, unsigned char g_, unsigned char b_ )
+            : r( r_ ), g( g_ ), b( b_ )
+        {
+        }
+        unsigned char r ;
+        unsigned char g ;
+        unsigned char b ;
+    } ;
+
+    class GetColor {
+    public:
+        virtual ~GetColor()
+        {
+        }
+        virtual Color get_color() = 0 ;
+    } ;
+    typedef GEO::Factory0< GetColor > ColorFactory ;
+#define ringmesh_register_color_creator( type, name ) \
+    geo_register_creator( ColorFactory, type, name )
+
+
     class RINGMESH_API GeoModelGfx {
     ringmesh_disable_copy( GeoModelGfx ) ;
+    friend class MeshElementGfx ;
+    friend class RegionGfx ;
     public:
         GeoModelGfx() ;
         ~GeoModelGfx() ;
@@ -67,6 +95,10 @@ namespace RINGMesh {
         void set_geo_model( const GeoModel& model ) ;
         const GeoModel* geo_model() const ;
         void initialize() ;
+
+        void compute_colormap() ;
+        void bind_cell_vertex_attribute( const std::string& name ) ;
+        void bind_cell_attribute( const std::string& name ) ;
 
         void draw_corners() ;
         void draw_lines() ;
@@ -172,6 +204,10 @@ namespace RINGMesh {
         void set_cell_region_shrink( index_t m, double s ) ;
 
     private:
+        void compute_cell_vertex_attribute_range() ;
+        void compute_cell_attribute_range() ;
+
+    private:
         /// The GeoModel associated to the graphics
         const GeoModel* model_ ;
 
@@ -183,6 +219,10 @@ namespace RINGMesh {
         std::vector< SurfaceGfx* > surfaces_ ;
         /// The graphics associated to each Region
         std::vector< RegionGfx* > regions_ ;
+        double cell_vertex_min_attr_ ;
+        double cell_vertex_max_attr_ ;
+        double cell_min_attr_ ;
+        double cell_max_attr_ ;
     } ;
 
 }

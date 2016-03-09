@@ -91,6 +91,8 @@ namespace RINGMesh {
     */
     void RINGMESH_API build_mesh_from_geomodel( const GeoModel& model, GEO::Mesh& M ) ;
 
+    void RINGMESH_API build_mesh_from_geomodel( const GeoModel& model, GEO::Mesh& M, bool connect_facets ) ;
+
 
     /*! 
      * @brief Bind named GEO::Attribute on the GeoModel element facets

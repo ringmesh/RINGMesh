@@ -43,7 +43,6 @@
 #include <geogram/mesh/mesh_io.h>
 #include <geogram/mesh/mesh_repair.h>
 
-#include <geogram/points/colocate.h>
 
 /*!
  * @todo Re-orgarnize this mess
@@ -70,7 +69,7 @@ namespace RINGMesh {
     /*! 
      * @brief TSurfMeshIOHandler for importing .ts files into a mesh.
      */
-    class RINGMESH_API TSurfMeshIOHandler : public GEO::MeshIOHandler {
+    class TSurfMeshIOHandler : public GEO::MeshIOHandler {
     public:   
         TSurfMeshIOHandler() :
             mesh_dimension_(3),
@@ -214,284 +213,66 @@ namespace RINGMesh {
         GEO::vector< index_t > triangles_ ;
     } ;
 
-    void RINGMESH_API ringmesh_mesh_io_initialize()
+    class LINMeshIOHandler: public GEO::MeshIOHandler {
+    public:
+        virtual bool load(
+            const std::string& filename,
+            GEO::Mesh& mesh,
+            const GEO::MeshIOFlags& flag = GEO::MeshIOFlags() )
+        {
+            GEO::LineInput file( filename ) ;
+
+            while( !file.eof() && file.get_line() ) {
+                file.get_fields() ;
+                if( file.nb_fields() > 0 ) {
+                    if( file.field_matches( 0, "v" ) ) {
+                        vec3 vertex = load_vertex( file, 1 ) ;
+                        mesh.vertices.create_vertex( vertex.data() ) ;
+                    } else if( file.field_matches( 0, "s" ) ) {
+                        mesh.edges.create_edge(
+                            file.field_as_uint( 1 ) - 1,
+                            file.field_as_uint( 2 ) - 1 ) ;
+                    }
+                }
+            }
+            return true ;
+
+        }
+        virtual bool save(
+            const GEO::Mesh& M,
+            const std::string& filename,
+            const GEO::MeshIOFlags& ioflags = GEO::MeshIOFlags() )
+        {
+            throw RINGMeshException( "I/O",
+                "Saving a Mesh into .lin format not implemented yet" ) ;
+            return false ;
+        }
+
+    private:
+        vec3 load_vertex( GEO::LineInput& file, index_t field ) const
+        {
+            double x = file.field_as_double( field++ ) ;
+            double y = file.field_as_double( field++ ) ;
+            double z = file.field_as_double( field++ ) ;
+            return vec3( x, y, z ) ;
+        }
+    } ;
+
+    void ringmesh_mesh_io_initialize()
     {
         geo_register_MeshIOHandler_creator( TSurfMeshIOHandler, "ts" ) ;
+        geo_register_MeshIOHandler_creator( LINMeshIOHandler, "lin" ) ;
     }
 
-
+ 
     /***********************************************************************/
-#ifdef RINGMESH_WITH_TETGEN
-
-    bool is_mesh_tetrahedralizable( const GEO::Mesh& M ) 
-    {         
-        if( M.facets.nb() == 0 ) {
-            GEO::Logger::err( "RING" ) << "Mesh to tetrahedralize has no facets "
-                << std::endl ;
-            return false ;
-        }
-        if( !M.facets.are_simplices() ) {
-            GEO::Logger::err( "RING" ) << "Mesh to tetrahedralize is not triangulated"
-                << std::endl ;
-            return false ;
-        }
-        if( M.cells.nb() != 0 ) {
-            GEO::Logger::warn( "RING" ) << "Mesh to tetrahedralize already have cells"
-                << std::endl ;         
-        }
-        return true ;
-    }
-
-
-    TetgenMesher::~TetgenMesher()
-    {
-        // Take over facet deletion of tetgen that does not set to 
-        // nil pointers to polygonlist or holelist in facet
-        delete[] tetgen_in_.facetlist ;
-        tetgen_in_.facetlist = nil ;
-        tetgen_in_.numberoffacets = 0 ;
-
-        delete[] polygon_corners_ ;
-        polygon_corners_ = nil ;
-
-        delete[] polygons_ ;
-        polygons_ = nil ;
-    }
-
-    void TetgenMesher::tetrahedralize( const Mesh& input_mesh, 
-                                       const std::string& command_line,
-                                       Mesh& output_mesh )
-    {
-        set_command_line( command_line ) ;
-        initialize() ;
-        copy_mesh_to_tetgen_input( input_mesh ) ;
-        tetrahedralize() ;
-        assign_result_tetmesh_to_mesh( output_mesh ) ;
-    }
-
-    void  TetgenMesher::tetrahedralize( const GEO::Mesh& input_mesh,
-                                        const std::vector< vec3 >& one_point_per_region,
-                                        const std::string& command_line,
-                                        GEO::Mesh& output_mesh ) 
-    {
-        set_command_line( command_line ) ;
-        initialize() ;
-        copy_mesh_to_tetgen_input( input_mesh ) ;
-        set_regions( one_point_per_region ) ;
-        tetrahedralize() ;
-        assign_result_tetmesh_to_mesh( output_mesh ) ;
-        fill_region_attribute_on_mesh_cells( output_mesh, "region" ) ;
-    }
-
-
-
-    void TetgenMesher::initialize()
-    {
-        initialize_tetgen_args() ;
-        tetgen_in_.initialize() ;
-        tetgen_out_.initialize() ;
-    }
-
-    void TetgenMesher::set_command_line( const std::string& command_line )
-    {
-        tetgen_command_line_ = command_line.c_str() ;
-    }
-
-    void TetgenMesher::tetrahedralize()
-    {
-        try {
-            GEO_3rdParty::tetrahedralize( &tetgen_args_, &tetgen_in_,
-                &tetgen_out_ ) ;
-        } catch( int code ) {
-            GEO::Logger::err( "Tetgen" ) << "Encountered a problem: " ;
-            switch( code ) {
-                case 1:
-                    GEO::Logger::err( "Tetgen" ) << "Out of memory" ;
-                    break ;
-                case 2:
-                    GEO::Logger::err( "Tetgen" )
-                        << "Please report this bug to Hang.Si@wias-berlin.de. Include\n" ;
-                    GEO::Logger::err( "Tetgen" )
-                        << "  the message above, your input data set, and the exact\n" ;
-                    GEO::Logger::err( "Tetgen" )
-                        << "  command line you used to run this program, thank you" ;
-                    break ;
-                case 3:
-                    GEO::Logger::err( "Tetgen" )
-                        << "A self-intersection was detected. Program stopped\n" ;
-                    GEO::Logger::err( "Tetgen" )
-                        << "Hint: use -d option to detect all self-intersections" ;
-                    break ;
-                case 4:
-                    GEO::Logger::err( "Tetgen" )
-                        << "A very small input feature size was detected. Program stopped.\n" ;
-                    GEO::Logger::err( "Tetgen" )
-                        << "Hint: use -T option to set a smaller tolerance." ;
-                    break ;
-                case 5:
-                    GEO::Logger::err( "Tetgen" )
-                        << "Two very close input facets were detected. Program stopped.\n" ;
-                    GEO::Logger::err( "Tetgen" )
-                        << "Hint: use -Y option to avoid adding Steiner points in boundary." ;
-                    break ;
-                case 10:
-                    GEO::Logger::err( "Tetgen" )
-                        << "An input error was detected. Program stopped." ;
-                    break ;
-            }
-            GEO::Logger::err( "Tetgen" ) << std::endl ;
-        }
-    }
-
-    void TetgenMesher::copy_mesh_to_tetgen_input( const GEO::Mesh& M )
-    {
-        if( M.vertices.nb() != 0 ) {
-            copy_vertices_to_tetgen_input( M ) ;
-        }
-        if( M.edges.nb() != 0 ) {
-            copy_edges_to_tetgen_input( M ) ;
-        }
-        if( M.facets.nb() != 0 ) {
-            copy_facets_to_tetgen_input( M ) ;
-        }
-    }
-
-    void TetgenMesher::copy_vertices_to_tetgen_input( const GEO::Mesh& M )
-    {
-        tetgen_in_.numberofpoints = static_cast<int>(M.vertices.nb()) ;
-        tetgen_in_.pointlist = new double[ 3 * tetgen_in_.numberofpoints ] ;
-        GEO::Memory::copy(
-            tetgen_in_.pointlist, M.vertices.point_ptr( 0 ),
-            M.vertices.nb() * 3 * sizeof( double )
-            ) ;
-    }
-
-    void TetgenMesher::copy_edges_to_tetgen_input( const GEO::Mesh& M )
-    {
-        tetgen_in_.numberofedges = static_cast<int>(M.edges.nb()) ;
-        tetgen_in_.edgelist = new int[ 2 * tetgen_in_.numberofedges ] ;
-        GEO::Memory::copy(
-            tetgen_in_.edgelist, M.edges.vertex_index_ptr( 0 ),
-            M.edges.nb() * 2 * sizeof( int )
-            ) ;
-    }
-
-    void TetgenMesher::copy_facets_to_tetgen_input( const GEO::Mesh& M )
-    {
-        polygons_ = new GEO_3rdParty::tetgenio::polygon[ M.facets.nb() ] ;
-
-        tetgen_in_.numberoffacets = static_cast<int>(M.facets.nb()) ;
-        tetgen_in_.facetlist = new GEO_3rdParty::tetgenio::facet[ tetgen_in_.numberoffacets ] ;
-
-        polygon_corners_ = new int[ M.facet_corners.nb() ] ;
-        GEO::Memory::copy(
-            polygon_corners_, M.facet_corners.vertex_index_ptr( 0 ),
-            M.facet_corners.nb()*sizeof( int )
-            ) ;
-
-        for( index_t f = 0; f < M.facets.nb(); ++f ) {
-            GEO_3rdParty::tetgenio::facet& F = tetgen_in_.facetlist[ f ] ;
-            GEO_3rdParty::tetgenio::init( &F ) ;
-            F.numberofpolygons = 1 ;
-            F.polygonlist = &polygons_[ f ] ;
-
-            GEO_3rdParty::tetgenio::polygon& P = F.polygonlist[ 0 ] ;
-            GEO_3rdParty::tetgenio::init( &P ) ;
-            P.numberofvertices = M.facets.nb_corners( f ) ;
-            P.vertexlist = &polygon_corners_[ M.facets.corners_begin( f ) ] ;
-        }
-    }
-
-    void TetgenMesher::set_regions( const std::vector< vec3 >& one_point_in_each_region ) 
-    {
-        index_t nb_regions = one_point_in_each_region.size() ;
-        tetgen_in_.numberofregions = nb_regions ;
-        tetgen_in_.regionlist = new double[5*nb_regions] ;
-
-        for( index_t i = 0; i != nb_regions; ++i ){
-            tetgen_in_.regionlist[5*i] = one_point_in_each_region[i].x ;
-            tetgen_in_.regionlist[5*i+1] = one_point_in_each_region[i].y ;
-            tetgen_in_.regionlist[5*i+2] = one_point_in_each_region[i].z ;
-            tetgen_in_.regionlist[5*i+3] = i ;
-            tetgen_in_.regionlist[5*i+4] = DBL_MAX ; // Used only with the a switch
-        }
-    }
-
-    void TetgenMesher::fill_region_attribute_on_mesh_cells( GEO::Mesh& M, const std::string& attribute_name ) const
-    {
-        double* tet_attributes = tetgen_out_.tetrahedronattributelist ;
-        int one_tet_attribute_size = tetgen_out_.numberoftetrahedronattributes ;
-        GEO::Attribute< index_t > region_id( M.cells.attributes(), attribute_name ) ;
-        for( index_t i = 0; i < M.cells.nb(); ++i ) {
-            // Nothing says where it is, so we hope that the shell id is the first 
-            // attribute stored in tetgen [JP]
-            region_id[ i ] = index_t( tet_attributes[ one_tet_attribute_size*i ] ) ;
-        }
-        region_id.unbind() ;
-    }
-
-    void TetgenMesher::initialize_tetgen_args()
-    {
-        char* copy = new char[ tetgen_command_line_.length() + 1 ] ;
-        std::strcpy( copy, tetgen_command_line_.c_str() ) ;
-        tetgen_args_.parse_commandline( copy ) ;
-    }
-
-    void TetgenMesher::assign_result_tetmesh_to_mesh( GEO::Mesh& M ) const
-    {
-        GEO::vector<double> points ;
-        get_result_tetmesh_points( points ) ;
-
-        GEO::vector<index_t> tets ;
-        get_result_tetmesh_tets( tets ) ;
-
-        M.cells.assign_tet_mesh( 3, points, tets, true ) ;
-        M.cells.connect() ;
-    }
-
-    void TetgenMesher::get_result_tetmesh_points( GEO::vector< double >& points ) const
-    {
-        index_t nb_points( tetgen_out_.numberofpoints ) ;
-        points.resize( 3 * nb_points ) ;
-        double* points_ptr = tetgen_out_.pointlist ;
-        RINGMESH_PARALLEL_LOOP
-        for( index_t i = 0; i < 3 * nb_points; ++i ) {
-            points[ i ] = points_ptr[ i ] ;
-        }
-    }
-
-    void TetgenMesher::get_result_tetmesh_tets( GEO::vector< index_t>& tets ) const
-    {
-        index_t nb_tets( tetgen_out_.numberoftetrahedra );
-        tets.resize( 4 * nb_tets );
-
-        int* tets_ptr = tetgen_out_.tetrahedronlist ;
-        int one_tet_size = tetgen_out_.numberofcorners ;
-        RINGMESH_PARALLEL_LOOP
-        for( index_t i = 0; i < nb_tets; ++i ) {
-            tets[ 4 * i + 0 ] = index_t( tets_ptr[ one_tet_size*i + 0 ] ) ;
-            tets[ 4 * i + 1 ] = index_t( tets_ptr[ one_tet_size*i + 1 ] ) ;
-            tets[ 4 * i + 2 ] = index_t( tets_ptr[ one_tet_size*i + 2 ] ) ;
-            tets[ 4 * i + 3 ] = index_t( tets_ptr[ one_tet_size*i + 3 ] ) ;
-        }
-    }
-
-    void tetrahedralize_mesh_tetgen( GEO::Mesh& M, bool refine, double quality )
-    {
-        if( !is_mesh_tetrahedralizable( M ) ) {
-            throw RINGMeshException( "TetGen", "Mesh cannot be tetrahedralized" ) ;
-        }               
-        TetgenMesher mesher ;
-        if( refine ) {
-            mesher.tetrahedralize( M, "QpYAq" + GEO::String::to_string( quality ),
-                M ) ;
-        } else {
-            mesher.tetrahedralize( M, "QpYYA", M ) ;
-        }
-    }
+#ifdef __GNUC__
+#   pragma GCC diagnostic ignored "-Wsign-conversion"
 #endif
-    
-    /***********************************************************************/
+
+#ifdef __GNUC__
+#   pragma GCC diagnostic warning "-Wsign-conversion"
+#endif
 
     /*!
     * Computes the volume of a Mesh cell
@@ -639,21 +420,30 @@ namespace RINGMesh {
     * @param[in] p1 Second vertex index of the edge
     * @return The edge index
     * \pre the mesh needs to be tetrahedralized
+    *
+    * @todo Review: Are these functions really used ? They should be rewritten [JP]
     */
     index_t next_around_edge(
         const GEO::Mesh& mesh,
-        index_t t,
-        index_t prev,
-        index_t p0,
-        index_t p1 )
+        index_t tet,
+        index_t prev_tet,
+        index_t v0,
+        index_t v1 )
     {
-        for( index_t adj = 0; adj < mesh.cells.nb_facets( t ); adj++ ) {
-            index_t t_adj = mesh.cells.adjacent( t, adj ) ;
-            if( t_adj == GEO::NO_CELL || t_adj == prev ) continue ;
+        index_t nb_facets = mesh.cells.nb_facets( tet );
+        ringmesh_assert( nb_facets == 4 );
+        /* @todo handles any cell type and change that algorithm to check adjacencies
+         * only on the facets adjacent to the edge in the input tet 
+         * [JP]
+         */
+        for( index_t f = 0; f < nb_facets ; f++ ) {
+            index_t adjacent_tet = mesh.cells.adjacent( tet, f ) ;
+            if( adjacent_tet == GEO::NO_CELL || adjacent_tet == prev_tet ) {
+                continue ;
+            }
             index_t edge ;
-            if( has_edge( mesh, t_adj, p0, p1, edge ) ) {
-                //todo handles any cell type
-                return 6 * t_adj + edge ;
+            if( has_edge( mesh, adjacent_tet, v0, v1, edge ) ) {                
+                return 6 * adjacent_tet + edge ;
             }
         }
         return GEO::NO_CELL ;
@@ -675,7 +465,7 @@ namespace RINGMesh {
         std::vector< index_t >& result )
     {
         index_t prev = t ;
-        int cur = t ;
+        index_t cur = t ;
         do {
             index_t info = next_around_edge( mesh, cur, prev, p0, p1 ) ;
             if( info == GEO::NO_CELL ) return ;
@@ -741,7 +531,7 @@ namespace RINGMesh {
         index_t t )
     {
         float64 dist = GEO::Numeric::max_float64() ;
-        index_t result = -1 ;
+        index_t result = NO_ID ;
         for( index_t v = 0; v < mesh.cells.nb_vertices( t ); v++ ) {
             float64 distance = length2(
                 GEO::Geom::mesh_vertex( mesh, mesh.cells.vertex( t, v ) ) - p ) ;
@@ -951,92 +741,4 @@ namespace RINGMesh {
         }
     }
 
-
-
-    /*
-    * @note Code modified from geogram/mesh/mesh_repair.cpp
-    */
-    index_t detect_mesh_colocated_vertices(
-        const GEO::Mesh& M, double tolerance, GEO::vector< index_t >& old2new )
-    {
-        index_t nb_unique_vertices = 0 ;
-        if( tolerance == 0.0 ) {
-            nb_unique_vertices = GEO::Geom::colocate_by_lexico_sort(
-                M.vertices.point_ptr( 0 ), 3, M.vertices.nb(), old2new,
-                M.vertices.dimension() ) ;
-        } else {
-            nb_unique_vertices = GEO::Geom::colocate(
-                M.vertices.point_ptr( 0 ), 3, M.vertices.nb(), old2new,
-                tolerance, M.vertices.dimension() ) ;
-        }
-        index_t nb_colocated_vertices( M.vertices.nb() - nb_unique_vertices) ;
-        return nb_colocated_vertices ;
-    }
-
-    bool has_mesh_colocate_vertices( const GEO::Mesh& M, double tolerance )
-    {
-        GEO::vector< index_t > old2new ;
-        index_t nb_colocated_vertices = detect_mesh_colocated_vertices( M, tolerance, old2new ) ;
-        if( nb_colocated_vertices == 0 ) {
-            return false ;
-        } else {
-            return true ;
-        }
-    }
-
-    void update_mesh_edges_vertices( GEO::Mesh& M, const GEO::vector<index_t>& old2new)
-    {
-        for( index_t e = 0; e < M.edges.nb(); ++e ) {
-            M.edges.set_vertex( e, 0, old2new[ M.edges.vertex( e, 0 ) ] );
-            M.edges.set_vertex( e, 1, old2new[ M.edges.vertex( e, 1 ) ] );
-        }
-    }
-    void update_mesh_facets_vertices( GEO::Mesh& M, const GEO::vector<index_t>& old2new )
-    {
-        for( index_t c = 0; c < M.facet_corners.nb(); ++c ) {
-            M.facet_corners.set_vertex( c, old2new[ M.facet_corners.vertex( c ) ] );
-        }
-    }
-
-    void update_mesh_cells_vertices( GEO::Mesh& M, const GEO::vector<index_t>& old2new )
-    {
-        for( index_t ce = 0; ce < M.cells.nb(); ++ce ) {
-            for( index_t c = M.cells.corners_begin( ce );
-                c<M.cells.corners_end( ce ); ++c
-             ) {
-                M.cell_corners.set_vertex( c, old2new[ M.cell_corners.vertex( c ) ] );
-            }
-        }
-    }
-    void delete_colocated_vertices( GEO::Mesh& M, GEO::vector< index_t >& old2new )
-    {       
-        for( index_t i = 0; i < old2new.size(); i++ ) {
-            if( old2new[ i ] == i ) {
-                old2new[ i ] = 0;
-            } else {
-                old2new[ i ] = 1;
-            }
-        }
-        M.vertices.delete_elements( old2new );
-    }
-
-   
-    void repair_colocate_vertices( GEO::Mesh& M, double colocate_epsilon )
-    {
-        GEO::vector<index_t> old2new;
-        index_t nb_colocated_vertices = detect_mesh_colocated_vertices( M, colocate_epsilon, old2new ) ;
-        if( nb_colocated_vertices == 0 ) {
-            return ;
-        }
-
-        GEO::Logger::out( "GeoModel" ) << "Removing "
-            << nb_colocated_vertices
-            << " duplicated vertices" << std::endl;
-
-        update_mesh_edges_vertices( M, old2new ) ;
-        update_mesh_facets_vertices( M, old2new ) ;
-        update_mesh_cells_vertices( M, old2new ) ;
-  
-        delete_colocated_vertices( M, old2new ) ;       
-    }
 }

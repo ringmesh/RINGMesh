@@ -259,7 +259,7 @@ namespace RINGMesh {
 
     void GeoModelMeshVertices::initialize_kdtree()
     {
-        kdtree_ = new ColocaterANN( mesh_ ) ;
+        kdtree_ = new ColocaterANN( mesh_, ColocaterANN::VERTICES ) ;
 #ifdef RINGMESH_DEBUG
         // Paranoia
         GEO::vector< index_t > old2new ;
@@ -1134,10 +1134,13 @@ namespace RINGMesh {
         switch( gmm_.duplicate_mode() ) {
             case ALL:
                 return true ;
-            case FAULT:
+            case FAULT: {
                 GeoModelElement::GEOL_FEATURE feature =
                     gm_.surface( surface_id ).geological_feature() ;
                 return GME::is_fault( feature ) ;
+            }
+            default:
+                return false ;
         }
         return false ;
     }
@@ -1819,8 +1822,6 @@ namespace RINGMesh {
                     divide_edge_in_parts( node0, node1, order, new_points_in_edge ) ;
                     for( index_t v = 0; v < new_points_in_edge.size(); v++ ) {
                         std::vector< index_t > colocated_vertices ;
-                        index_t real_vertex_indice = ann.get_colocated(
-                            new_points_in_edge[v], colocated_vertices ) ;
                         ringmesh_assert( colocated_vertices.size() == 1 ) ;
 
                         order_vertices_facet[f * max_new_points_on_facet_ + e + v] =
@@ -1893,10 +1894,10 @@ namespace RINGMesh {
 
     void GeoModelMeshOrder::test_point_list_initialized()
     {
-        if( high_order_vertices_.size() == 0 ) {
+        if( high_order_vertices_.empty() ) {
             index_t order = gmm_.get_order() ;
 
-            if( high_order_vertices_.size() == 0 && order > 1 ) {
+            if( high_order_vertices_.empty() && order > 1 ) {
                 index_t offset = 0 ;
                 index_t nb_total_edges = 0 ;
                 for( index_t c = 0; c < gmm_.cells.nb(); c++ ) {

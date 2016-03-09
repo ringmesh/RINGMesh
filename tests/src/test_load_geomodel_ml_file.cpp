@@ -47,11 +47,15 @@
  * @returns 0 if success or an error code if not. 
  * @author Arnaud Botella
  */
-int main( int argc, char** argv )
+int main()
 {
     using namespace RINGMesh ;
 
     try {
+
+        GEO::initialize() ;
+        configure_geogram() ;
+        configure_ringmesh() ;
 
         // Set an output log file
         std::string log_file( ringmesh_test_output_path ) ;

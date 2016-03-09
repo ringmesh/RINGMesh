@@ -116,7 +116,7 @@ namespace {
     {
         std::vector< index_t > corners( S.nb_vertices_in_facet( f ), NO_ID ) ;
         std::vector< index_t > corners_global( S.nb_vertices_in_facet( f ), NO_ID ) ;
-        int v = 0 ;
+        index_t v = 0 ;
         for( index_t c = S.facet_begin( f ); c < S.facet_end( f ); ++c ) {
             corners[v] = c ;
             corners_global[v] = S.model_vertex_id( f, v ) ;
@@ -1046,16 +1046,14 @@ namespace RINGMesh {
             index_t prev_v_in_next = prev_in_facet( next_f, v_in_next ) ;
 
             bool e0_on_boundary = is_on_border( next_f, v_in_next ) ;
-            bool e1_on_boundary = is_on_border( next_f, prev_v_in_next ) ;
 
             // Only one must be on the boundary otherwise there is a corner missing
-            ringmesh_assert( e0_on_boundary != e1_on_boundary ) ;
+            ringmesh_assert( e0_on_boundary != is_on_border( next_f, prev_v_in_next ) ) ;
 
             // From the edge that is on boundary get the next vertex on this boundary
             // If the edge starting at p_in_next is on boundary, new_vertex is its next
             // If the edge ending at p_in_next is on boundary, new vertex is its prev
-            next_in_next =
-                e0_on_boundary ?
+            next_in_next = e0_on_boundary ?
                     next_in_facet( next_f, v_in_next ) : prev_v_in_next ;
         } else if( nb_around == 1 ) {
             // V must be in two border edges of facet f

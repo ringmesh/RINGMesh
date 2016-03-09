@@ -600,6 +600,11 @@ namespace {
         glupTextureType(GLUP_TEXTURE_2D);
         glupTextureMode(GLUP_TEXTURE_REPLACE);
         glupClipMode(GLUP_CLIP_WHOLE_CELLS);
+
+        /*
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
+        */
     }
 
     void display_points() {

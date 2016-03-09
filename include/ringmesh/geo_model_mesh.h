@@ -1095,7 +1095,7 @@ namespace RINGMesh {
          * Gets the mesh elements order
          * @return the const order
          */
-        const index_t get_order() const
+        index_t get_order() const
         {
             return order_value_ ;
         }

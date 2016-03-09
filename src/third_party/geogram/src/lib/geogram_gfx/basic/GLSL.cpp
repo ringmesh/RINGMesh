@@ -223,7 +223,7 @@ namespace GEO {
             }
 
             if(GLSL_version == 0.0) {
-                Logger::warn("GLSL") << "Could not determine GLSL mversion"
+                Logger::warn("GLSL") << "Could not determine GLSL version"
                                      << std::endl;
             } else {
                 Logger::out("GLSL") << "GLSL version = "
@@ -310,6 +310,14 @@ namespace GEO {
                 Logger::err("GLSL")
                     << "compiler message:"
                     << compiler_message << std::endl;
+
+                Logger::out("GLSL") << "Erroneous program source:"
+                                    << std::endl;
+                for(index_t i=0; i<nb_sources; ++i) {
+                    Logger::out("GLSL") << sources[i] << std::endl;
+                }
+
+                
                 glDeleteShader(s_handle);
                 s_handle = 0;
                 throw GLSLCompileError();
@@ -333,7 +341,12 @@ namespace GEO {
             const char* source12,
             const char* source13,
             const char* source14,
-            const char* source15            
+            const char* source15,
+            const char* source16,
+            const char* source17,
+            const char* source18,
+            const char* source19,
+            const char* source20
         ) {
             vector<const char*> sources;
             geo_assert(source1 != nil);
@@ -381,6 +394,21 @@ namespace GEO {
             }
             if(source15 != nil) {
                 sources.push_back(source15);
+            }
+            if(source16 != nil) {
+                sources.push_back(source16);
+            }
+            if(source17 != nil) {
+                sources.push_back(source17);
+            }
+            if(source18 != nil) {
+                sources.push_back(source18);
+            }
+            if(source19 != nil) {
+                sources.push_back(source19);
+            }
+            if(source20 != nil) {
+                sources.push_back(source20);
             }
             return compile_shader(target, &sources[0], sources.size());
         }

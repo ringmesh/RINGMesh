@@ -72,7 +72,8 @@ if(RINGMESH_WITH_TESTS)
     set(TEST_DIRECTORY ${CMAKE_SOURCE_DIR}/tests)
     set(TEST_SOURCE_DIRECTORY ${TEST_DIRECTORY}/src)
     set(TEST_DATA_INPUT_DIRECTORY "${TEST_DIRECTORY}/data" CACHE PATH "Input data location")
-set(TEST_DATA_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/tests/output")
+    # PROJECT_BINARY_DIR not defined at this point
+    set(TEST_DATA_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/build/tests/output" CACHE PATH "Output data location")
 endif()
 
 # Turn on the ability to create folders to organize projects and files
@@ -154,11 +155,22 @@ if(WIN32)
 	# Select the CMAKE_CONFIGURATION_TYPES from Visual Studio
     set(COMPILATION_OPTION --config ${CMAKE_CFG_INTDIR})
 elseif(UNIX)
-    # If you really need it, please comment [JP]
-    # Maybe rather test the compiler than the system
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-    set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+    set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
+    add_compile_options(-Wall -Wextra -Wno-long-long -Wconversion)
+    
+    # Determine gcc version and activate additional warnings available in latest versions
+    execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
 
+    if (GCC_VERSION VERSION_GREATER 4.3 OR GCC_VERSION VERSION_EQUAL 4.3)
+        message(STATUS "GCC version >= 4.3, activating sign conversion warnings")
+        add_compile_options(-Wsign-conversion)
+    endif()
+
+    if (GCC_VERSION VERSION_GREATER 4.6 OR GCC_VERSION VERSION_EQUAL 4.6)
+        message(STATUS "GCC version >= 4.6, activating double promotion warnings")
+        add_compile_options(-Wdouble-promotion)
+    endif()
+    
     # Enable parallel computation
     set(COMPILATION_OPTION -- -j4)    
 else(WIN32)
@@ -235,7 +247,8 @@ include_directories(${GEOGRAM_PATH}/src/lib)
 # Add geogram project libs to the libs with which RINGMesh will link
 set(EXTRA_LIBS ${EXTRA_LIBS} geogram)
 if(RINGMESH_WITH_GRAPHICS)
-    set(EXTRA_LIBS ${EXTRA_LIBS} geogram_gfx)
+    include(${GEOGRAM_PATH}/cmake/opengl.cmake)
+    set(EXTRA_LIBS ${EXTRA_LIBS} geogram_gfx ${OPENGL_LIBRARIES})
 endif(RINGMESH_WITH_GRAPHICS)
     
 # Add geogram bin directories to the current ones 

@@ -58,7 +58,6 @@
 
 // TODO: documenter un peu tout ca (en particulier le "vertex_gather_mode")
 
-// http://github.prideout.net/modern-opengl-prezo/
 
 // TODO: for points: early fragment tests,   depth greater
 // (+ vertex shader qui "ramene le point devant" comme \c{c}a le
@@ -68,22 +67,375 @@
 //  layout(depth_greater) out float gl_FragDepth;
 
 // TODO: implanter GLUP_POLYGON? (ou pas..., peut-etre plutot GLUP_TRIANGLE_FAN)
-// TODO: implanter glup clip mode slice
-// TODO: clip mode standard pour OpenGL ES
-//    On utilise en interne le mode GLUP_CLIP_WHOLE_CELLS, et dans le
-//    fragment shader on "discard" si clip_coord[0] < 0
+
 // TODO: j'ai beaucoup de doutes sur matrice / transpose(matrice), dans le
 //  code de GLUP.cpp j'ai plein de corrections "a posteriori", en particulier
 //  - dans toutes les fonctions qui creent des matrice (transposees apres)
 //  - dans glupUnProject()
 //  experimentalement c'est bon (fait la meme chose qu'OpenGL), mais faudrait
 //  mieux piger tout ca...
-// TODO: clarifier dans les shaders quels sont les sommets en "world coordinates"
-//  et ceux qui sont transform\'es. 
+
+// TODO: clarifier dans les shaders quels sont les sommets en
+//  "world coordinates" et ceux qui sont transform\'es. 
+
+// TODO: unifier les "mots clefs reserves" de GLUP dans les shaders GLSL
+//  (pour le moment c'est vraiment pas coherent, ca va etre dur de s'y
+//   retrouver...)
 
 namespace GLUP {
     using namespace GEO;
 
+    static GLint get_uniform_variable_offset(
+        GLuint program, const char* varname
+    ) {
+        GLuint index = GL_INVALID_INDEX;
+        glGetUniformIndices(program, 1, &varname, &index);
+        if(index == GL_INVALID_INDEX) {
+            Logger::err("GLUP")
+                << varname 
+                << ":did not find uniform state variable"
+                << std::endl;
+            throw GLSL::GLSLCompileError();
+        }
+        geo_assert(index != GL_INVALID_INDEX);
+        GLint offset = -1;
+        glGetActiveUniformsiv(
+            program, 1, &index, GL_UNIFORM_OFFSET, &offset
+        );
+        geo_assert(offset != -1);
+        return offset;
+    }
+
+    /*******************************************************************/
+    
+    MarchingCell::MarchingCell(GLUPprimitive prim) {
+        UBO_ = 0;
+        desc_ = nil;
+        switch(prim) {
+        case GLUP_TETRAHEDRA:
+            desc_ =
+                &MeshCellsStore::cell_type_to_cell_descriptor(MESH_TET);
+            uniform_binding_point_ = 2;
+            break;
+        case GLUP_HEXAHEDRA:
+            desc_ =
+                &MeshCellsStore::cell_type_to_cell_descriptor(MESH_HEX);
+            uniform_binding_point_ = 3;            
+            break;
+        case GLUP_PRISMS:
+            desc_ =
+                &MeshCellsStore::cell_type_to_cell_descriptor(MESH_PRISM);
+            uniform_binding_point_ = 4;                        
+            break;
+        case GLUP_PYRAMIDS:
+            desc_ =
+                &MeshCellsStore::cell_type_to_cell_descriptor(MESH_PYRAMID);
+            uniform_binding_point_ = 5;                        
+            break;
+        default:
+            geo_assert_not_reached;
+            break;
+        }
+            
+        index_t nb_v = desc_->nb_vertices;
+        for(index_t i=0; i<nb_v*nb_v; ++i) {
+            vv_to_e_[i] = index_t(-1);
+        }
+            
+        for(index_t e=0; e<desc_->nb_edges; ++e) {
+            index_t v1 = desc_->edge_vertex[e][0];
+            index_t v2 = desc_->edge_vertex[e][1];
+            vv_to_e_[v1*nb_v+v2] = e;
+            vv_to_e_[v2*nb_v+v1] = e;                
+        }
+            
+        nb_vertices_ = desc_->nb_vertices;
+        nb_configs_ = 1u << nb_vertices_;
+        nb_edges_ = desc_->nb_edges;
+        edge_ = new index_t[nb_edges_*2];
+        config_ = new index_t[nb_configs_*nb_edges_];
+        config_size_ = new index_t[nb_configs_];
+        
+        for(index_t e=0; e<nb_edges_; ++e) {
+            edge_[2*e] = desc_->edge_vertex[e][0];
+            edge_[2*e+1] = desc_->edge_vertex[e][1];                
+        }
+
+        max_config_size_=0;
+        for(index_t config=0; config<nb_configs_; ++config) {
+            compute_config(config);
+            max_config_size_=geo_max(max_config_size_,config_size(config));
+        }
+
+        GLSL_uniform_state_declaration_ = std::string() +
+        "  const int cell_nb_vertices = "        +
+            String::to_string(nb_vertices())     + ";\n"
+        "  const int cell_nb_edges = "           +
+            String::to_string(nb_edges())        + ";\n"
+        "  const int cell_nb_configs = "         +
+            String::to_string(nb_configs())      + ";\n"
+        "  const int cell_max_config_size = "    +
+            String::to_string(max_config_size()) + ";\n" +
+        "  layout(shared)                                          \n" 
+        "  uniform MarchingCellStateBlock {                        \n" 
+        "     int config_size[cell_nb_configs];                    \n" 
+        "     int config[cell_nb_configs*cell_max_config_size];    \n"  
+        "  } MarchingCell;                                         \n"
+        "  int config_size(int i) {                                \n"
+        "    return MarchingCell.config_size[i];                   \n"
+        "  }                                                       \n"
+        "  int config_edge(int i, int j) {                         \n"
+        "    return MarchingCell.config[i*cell_max_config_size+j]; \n"
+        "  }                                                       \n"
+        ;
+
+        GLSL_compute_intersections_ = std::string() +
+        "  vec4 isect_point[cell_nb_edges];                   \n"
+        "  vec4 isect_color[cell_nb_edges];                   \n"
+        "  vec4 isect_tex_coord[cell_nb_edges];               \n"
+        "  void compute_intersection(int i, int v1, int v2) { \n"
+        "      vec4 p1 = vertex_in(v1);                       \n"
+        "      vec4 p2 = vertex_in(v2);                       \n"
+        "      float t = -dot(p1, GLUP.world_clip_plane);     \n"
+        "      float d = dot(p2-p1, GLUP.world_clip_plane);   \n"
+        "      if(abs(d) < 1e-6) { t = 0.5; } else { t /= d; }\n"
+        "      isect_point[i] =                               \n"
+        "        GLUP.modelviewprojection_matrix*mix(p1,p2,t);\n"
+        "      if(vertex_colors_enabled()) {                  \n"
+        "         isect_color[i] = mix(                       \n"
+        "             color_in(v1), color_in(v2), t           \n"
+        "         );                                          \n"    
+        "      }                                              \n"
+        "      if(texturing_enabled()) {                      \n"
+        "         isect_tex_coord[i] = mix(                   \n"
+        "             tex_coord_in(v1), tex_coord_in(v2), t   \n"
+        "         );                                          \n"    
+        "      }                                              \n"    
+        "  }                                                  \n"    
+        "  void compute_intersections() {                     \n"
+        ;
+
+        for(index_t e=0; e<nb_edges(); ++e) {
+            GLSL_compute_intersections_ +=
+                "   compute_intersection(" +
+                String::to_string(e) + "," +
+                String::to_string(edge_vertex(e,0)) + "," +
+                String::to_string(edge_vertex(e,1)) + ");\n" ;
+        }
+        
+        GLSL_compute_intersections_  += 
+        "  }                                       \n"
+        ;
+    }
+
+    
+    MarchingCell::~MarchingCell() {
+        delete[] edge_;
+        delete[] config_;
+        delete[] config_size_;
+    }
+
+    void MarchingCell::compute_config(index_t config) {
+        config_size_[config] = 0;
+        index_t* config_out = config_ + config * nb_edges_;
+        if(config_is_ambiguous(config)) {
+            return;
+        }
+        index_t first_f = index_t(-1);
+        index_t f = index_t(-1);
+        index_t lv = index_t(-1);
+        if(!get_first_edge(first_f,lv,config)) {
+            return;
+        }
+        f = first_f;
+        do {
+            geo_debug_assert(config_size_[config] < nb_edges_);
+            config_out[config_size_[config]] = edge(f,lv);
+            ++config_size_[config];
+            do {
+                move_to_next(f,lv);
+            } while(!edge_is_intersected(f,lv,config));
+            move_to_opposite(f,lv);
+        } while(f != first_f);
+    }
+        
+    void MarchingCell::move_to_opposite(index_t& f, index_t& lv) {
+        index_t v = destination_vertex(f, lv);
+        index_t e = edge(f, lv);
+        geo_debug_assert(
+            desc_->edge_adjacent_facet[e][0] == f ||
+            desc_->edge_adjacent_facet[e][1] == f
+        );
+        if(desc_->edge_adjacent_facet[e][0] == f) {
+            f = desc_->edge_adjacent_facet[e][1];
+        } else {
+            f = desc_->edge_adjacent_facet[e][0];
+        }
+        for(lv = 0; lv < desc_->nb_vertices_in_facet[f]; ++lv) {
+            if(desc_->facet_vertex[f][lv] == v) {
+                return;
+            }
+        }
+        geo_assert_not_reached;
+    }
+
+    bool MarchingCell::config_is_ambiguous(index_t config) {
+        for(index_t f=0; f<desc_->nb_facets; ++f) {
+            index_t nb_isect_in_f = 0;
+            for(index_t lv=0; lv<desc_->nb_vertices_in_facet[f]; ++lv) {
+                if(edge_is_intersected(f, lv, config)) {
+                    ++nb_isect_in_f;
+                }
+            }
+            if(nb_isect_in_f > 2) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool MarchingCell::get_first_edge(index_t& f, index_t& lv, index_t config) {
+        for(f=0; f<desc_->nb_facets; ++f) {
+            for(lv=0; lv<desc_->nb_vertices_in_facet[f]; ++lv) {
+                if(edge_is_intersected(f, lv, config)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    GLuint MarchingCell::create_UBO() {
+        
+        // Create a program that uses the UBO
+
+        static const char* shader_source_header_ =
+            "#version 150 core \n" ;
+
+        // This program is stupid, it is only meant to make sure
+        // that all variables in the UBO are used (else some
+        // GLSL compilers optimize-it out and we can no-longer
+        // query variable offsets from it)
+        static const char* vertex_shader_source_ =
+            "in vec3 position;                              \n"
+            "void main() {                                  \n"
+            "  gl_Position.x = MarchingCell.config_size[0]; \n"
+            "  gl_Position.y = MarchingCell.config[0];      \n"
+            "  gl_Position.z = MarchingCell.config[1];      \n"
+            "  gl_Position.w = MarchingCell.config[1];      \n"
+            "}                                              \n"
+            ;
+        
+        static const char* fragment_shader_source_ =
+            "out vec4 colorOut;                      \n"
+            "void main() {                           \n"
+            "   colorOut = vec4(1.0, 1.0, 1.0, 1.0); \n" 
+            "}                                       \n";
+
+        GLuint vertex_shader = GLSL::compile_shader(
+            GL_VERTEX_SHADER,
+            shader_source_header_,
+            GLSL_uniform_state_declaration(),
+            vertex_shader_source_,
+            0
+        );
+
+        GLuint fragment_shader = GLSL::compile_shader(
+            GL_FRAGMENT_SHADER,
+            shader_source_header_,
+            fragment_shader_source_,
+            0
+        );
+
+        GLuint program = GLSL::create_program_from_shaders(
+            vertex_shader,
+            fragment_shader,
+            0
+        );
+
+        // Get UBO size and offsets
+
+        GLuint UBO_index =
+            glGetUniformBlockIndex(program, "MarchingCellStateBlock");
+        
+        glUniformBlockBinding(
+            program, UBO_index, uniform_binding_point_
+        );
+
+        GLint uniform_buffer_size;
+        
+        glGetActiveUniformBlockiv(
+            program, UBO_index,
+            GL_UNIFORM_BLOCK_DATA_SIZE,
+            &uniform_buffer_size
+        );
+
+
+        GLint config_size_offset = get_uniform_variable_offset(
+            program, "MarchingCellStateBlock.config_size"
+        );
+
+        GLint config_offset = get_uniform_variable_offset(
+            program, "MarchingCellStateBlock.config"
+        );
+
+        // Create UBO
+        
+        Memory::byte* UBO_data = new Memory::byte[uniform_buffer_size];
+        Memory::clear(UBO_data, size_t(uniform_buffer_size));
+
+        index_t* config_size_ptr = (index_t*)(UBO_data + config_size_offset);
+        index_t* config_ptr = (index_t*)(UBO_data + config_offset);
+
+        for(index_t i=0; i<nb_configs(); ++i) {
+            config_size_ptr[i] = config_size(i);
+            for(index_t j=0; j<config_size(i); ++j) {
+                config_ptr[i*max_config_size()+j] = config_edges(i)[j];
+            }
+        }
+
+        glGenBuffers(1, &UBO_);
+        glBindBuffer(GL_UNIFORM_BUFFER, UBO_);
+        glBufferData(
+            GL_UNIFORM_BUFFER,
+            uniform_buffer_size,
+            UBO_data,
+            GL_STATIC_DRAW
+        );
+
+        glBindBufferBase(
+            GL_UNIFORM_BUFFER,
+            uniform_binding_point_,
+            UBO_
+        );
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+        // Delete temporary UBO data
+        delete[] UBO_data;
+        
+        // Delete program and shaders
+        glDeleteShader(vertex_shader);
+        glDeleteShader(fragment_shader);
+        glDeleteProgram(program);
+
+        return UBO_;
+    }
+
+    void MarchingCell::bind_uniform_state(GLuint program) {
+        GLuint UBO_index = glGetUniformBlockIndex(
+            program, "MarchingCellStateBlock"
+        );
+        if(UBO_index != GL_INVALID_INDEX) {
+            glUniformBlockBinding(
+                program, UBO_index, uniform_binding_point_
+            );
+        } else {
+            Logger::warn("GLUP")
+                << "MarchingCellStateBlock not found" << std::endl;
+        }
+    }
+    
+    /*************************************************************************/
     
     void show_matrix(const GLfloat M[16]) {
         for(index_t i=0; i<4; ++i) {
@@ -92,6 +444,13 @@ namespace GLUP {
             }
             std::cerr << std::endl;
         }
+    }
+
+    void show_vector(const GLfloat v[4]) {
+        for(index_t i=0; i<4; ++i) {
+            std::cerr << v[i] << ' ';
+        }
+        std::cerr << std::endl;        
     }
     
     // Used to determine maximum vertex index, that needs
@@ -133,7 +492,7 @@ namespace GLUP {
         return result;
     }
     
-    const char* primitive_name[] = {
+    const char* primitive_name[GLUP_NB_PRIMITIVES] = {
         "GLUP_POINTS",
         "GLUP_LINES",
         "GLUP_TRIANGLES",
@@ -142,6 +501,16 @@ namespace GLUP {
         "GLUP_HEXAHEDRA",
         "GLUP_PRISMS",
         "GLUP_PYRAMIDS"
+    };
+
+    index_t primitive_dimension[GLUP_NB_PRIMITIVES] = {
+        0,
+        1,
+        2,
+        2,
+        3,
+        3,
+        3
     };
     
     
@@ -176,6 +545,8 @@ namespace GLUP {
         "     bool clipping_enabled;                   \n"
         "     int   clipping_mode;                     \n"
         "     vec4  clip_plane;                        \n"
+        "     vec4  world_clip_plane;                  \n"
+                                         
         "                                              \n"        
         "     mat4 modelviewprojection_matrix;         \n"
         "     mat4 modelview_matrix;                   \n"
@@ -199,6 +570,17 @@ namespace GLUP {
         "                                              \n"
         "  const int GLUP_PICK_PRIMITIVE   = 1;        \n"
         "  const int GLUP_PICK_CONSTANT    = 2;        \n"
+
+        "  const int GLUP_POINTS     =0;               \n"
+        "  const int GLUP_LINES      =1;               \n"
+        "  const int GLUP_TRIANGLES  =2;               \n"
+        "  const int GLUP_QUADS      =3;               \n"
+        "  const int GLUP_TETRAHEDRA =4;               \n"
+        "  const int GLUP_HEXAHEDRA  =5;               \n"
+        "  const int GLUP_PRISMS     =6;               \n"
+        "  const int GLUP_PYRAMIDS   =7;               \n"
+        "  const int GLUP_NB_PRIMITIVES = 8;           \n"
+                     
         ;
     
     
@@ -419,7 +801,11 @@ namespace GLUP {
         return GLUP_uniform_state_source;
     }
     
-    Context::Context() {
+    Context::Context() :
+        marching_tet_(GLUP_TETRAHEDRA),
+        marching_hex_(GLUP_HEXAHEDRA),
+        marching_prism_(GLUP_PRISMS),
+        marching_pyramid_(GLUP_PYRAMIDS) {
         matrices_dirty_=true;        
         default_program_ = 0;
         uniform_buffer_=0;
@@ -453,16 +839,17 @@ namespace GLUP {
 
     const char* Context::profile_dependent_declarations() {
         static const char* nothing_to_declare =
-            "// Nothing special to declare \n";
+            "const bool ES_profile = false; \n";
 
         static const char* ES_declarations =
             "#extension GL_OES_texture_3D : enable \n"
             "#extension GL_OES_standard_derivatives : enable \n"
-            "#extension GL_OES_geometry_shader : enable \n";
+            "#extension GL_OES_geometry_shader : enable \n"
+            "const bool ES_profile = true; \n";
         
         return use_ES_profile_ ? ES_declarations : nothing_to_declare;
     }
-    
+
     bool Context::primitive_supports_array_mode(GLUPprimitive prim) const {
         return primitive_info_[prim].implemented &&
             !primitive_info_[prim].vertex_gather_mode;
@@ -505,11 +892,11 @@ namespace GLUP {
                 } else if(vartype == "int") {
                     output << "   M[0].x += float(GLUP." << varname << ");\n";
                 } else if(vartype == "float") {
-                    output << "   M[0].x += GLUP." << varname << ";\n";                    
+                    output << "   M[0].x += GLUP." << varname << ";\n";
                 } else if(vartype == "vec3") {
-                    output << "   M[0].xyz += GLUP." << varname << ";\n";                                        
+                    output << "   M[0].xyz += GLUP." << varname << ";\n";
                 } else if(vartype == "vec4") {
-                    output << "   M[0] += GLUP." << varname << ";\n";                                                            
+                    output << "   M[0] += GLUP." << varname << ";\n";
                 } else if(vartype == "mat3") {
                     output << "   M[0].xyz += GLUP." << varname << "[0];\n";
                 } else if(vartype == "mat4") {
@@ -536,10 +923,9 @@ namespace GLUP {
         // Note: it needs to use all the variables of the uniform state,
         // else, depending on the OpenGL driver / library,
         // some variables may be optimized-out and glGetUnformIndices()
-        // returns GL_INVALID_INDEX (stupid !).
-        
-        // We need to write a code that generates automatically a code
-        // that uses all the variables from the state.
+        // returns GL_INVALID_INDEX (stupid !), this is why there is
+        // this (weird) function
+        //  create_vertex_program_that_uses_all_UBO_variables()        
 
         static const char* shader_source_header_ =
             "#version 150 core \n" ;
@@ -549,8 +935,6 @@ namespace GLUP {
             "void main() {                           \n"
             "   colorOut = vec4(1.0, 1.0, 1.0, 1.0); \n" 
             "}                                       \n";
-
-        // Create a GLSL program that uses the UBO
 
         GLuint GLUP_vertex_shader = GLSL::compile_shader(
             GL_VERTEX_SHADER,
@@ -662,9 +1046,12 @@ namespace GLUP {
         uniform_state_.base_picking_id.initialize(this, "base_picking_id", 0);
 
         uniform_state_.clipping_mode.initialize(
-            this, "clipping_mode", GLUP_CLIP_STANDARD
+            this, "clipping_mode", GLUP_CLIP_WHOLE_CELLS
         );
         uniform_state_.clip_plane.initialize(this, "clip_plane", 4);
+        uniform_state_.world_clip_plane.initialize(
+            this, "world_clip_plane", 4
+        );        
 
         uniform_state_.texture_mode.initialize(
             this, "texture_mode", GLUP_TEXTURE_MODULATE
@@ -729,25 +1116,13 @@ namespace GLUP {
         }
         glBindBuffer(GL_ARRAY_BUFFER,0);        
     }
+
     
     Memory::pointer Context::get_state_variable_address(const char* name_in) {
         std::string name = std::string("GLUPStateBlock.") + name_in;
-        GLuint index = GL_INVALID_INDEX;
-        const char* pname = name.c_str();
-        glGetUniformIndices(default_program_, 1, &pname, &index);
-        if(index == GL_INVALID_INDEX) {
-            Logger::err("GLUP")
-                << name_in 
-                << ":did not find uniform state variable"
-                << std::endl;
-            throw GLSL::GLSLCompileError();
-        }
-        geo_assert(index != GL_INVALID_INDEX);
-        GLint offset;
-        glGetActiveUniformsiv(
-            default_program_, 1, &index, GL_UNIFORM_OFFSET, &offset
+        GLint offset = get_uniform_variable_offset(
+            default_program_, name.c_str()
         );
-        geo_assert(offset != -1);
         return uniform_buffer_data_ + offset;
     }
 
@@ -789,6 +1164,11 @@ namespace GLUP {
             glGetClipPlane(GL_CLIP_PLANE0, clip_plane_d);
             copy_vector(
                 uniform_state_.clip_plane.get_pointer(), clip_plane_d, 4
+            );
+            mult_matrix_vector(
+                uniform_state_.world_clip_plane.get_pointer(),
+                uniform_state_.modelview_matrix.get_pointer(),
+                uniform_state_.clip_plane.get_pointer()            
             );
         }
         
@@ -1105,6 +1485,12 @@ namespace GLUP {
             16
         );
 
+        mult_matrix_vector(
+            uniform_state_.world_clip_plane.get_pointer(),
+            uniform_state_.modelview_matrix.get_pointer(),
+            uniform_state_.clip_plane.get_pointer()            
+        );
+        
         matrices_dirty_ = false;
     }
 
@@ -1358,6 +1744,16 @@ namespace GLUP {
         }
     }
 
+    std::string Context::primitive_declaration(GLUPprimitive prim) const {
+        std::string result =
+            std::string("  const int glup_primitive = ") +
+            primitive_name[prim] + ";\n"                 +
+            "  const int glup_primitive_dimension = "   +
+            String::to_string(primitive_dimension[prim]) +
+            ";\n";
+        return result;
+    }
+    
     void Context::update_toggles_config() {
         if(uniform_state_.toggle[GLUP_PICKING].get()) {
             toggles_config_ = (1u << GLUP_PICKING);
@@ -1435,6 +1831,14 @@ namespace GLUP {
     /***********************************************************************/
     /***********************************************************************/
 
+    void Context_GLSL150::setup() {
+        Context::setup();
+        marching_tet_.create_UBO();        
+        marching_hex_.create_UBO();        
+        marching_prism_.create_UBO();
+        marching_pyramid_.create_UBO();                        
+    }
+    
     const char* Context_GLSL150::profile_name() const {
         return "GLUP150";
     }
@@ -1456,8 +1860,8 @@ namespace GLUP {
 
     // The geometry shader gets the input geometry and
     // attributes (color, tex_coords) through the functions
-    // vertex_in(), color_in() (and tex_coord_in() in the
-    // future) and the predicate prim_is_discarded().
+    // vertex_in(), color_in() and tex_coord_in(),
+    // and the predicate prim_is_discarded().
     // There can be other ways of implementing these
     // functions, see vertex_gather_mode and gather
     // tesselation evaluation shader.
@@ -1505,6 +1909,7 @@ namespace GLUP {
    
     const char* GLUP150_fshader_in_out_declaration =
         "out vec4 frag_color ;                      \n"
+        "in float gl_ClipDistance[];                \n"        
         "                                           \n"
         "in FragmentData {                          \n"
         "   vec4 color;                             \n"
@@ -1527,6 +1932,7 @@ namespace GLUP {
      */
     const char* GLUP150_simple_fshader_in_out_declaration =
         "out vec4 frag_color ;                      \n"
+        "in float gl_ClipDistance[];                \n"                
         "                                           \n"
         "in VertexData {                            \n"
         "   vec4 transformed;                       \n"
@@ -1594,7 +2000,12 @@ namespace GLUP {
         "                                                                    \n"
         "void output_lighting(in float diff, in float spec) {                \n"
         "   float s = gl_FrontFacing ? 1.0 : -1.0 ;                          \n"
-        "   float sdiffuse = s * diff ;                                      \n"
+        "   float sdiffuse = s * diff;                                       \n"
+        "   if((glup_primitive_dimension == 3) &&                            \n"
+        "      clipping_enabled() &&                                         \n"
+        "      GLUP.clipping_mode == GLUP_CLIP_SLICE_CELLS) {                \n"
+        "       sdiffuse = abs(sdiffuse);                                    \n"
+        "   }                                                                \n"
         "   if(sdiffuse > 0.0) {                                             \n"
         "       vec3 vspec = spec*vec3(1.0,1.0,1.0);                         \n"
         "       frag_color = sdiffuse*frag_color + vec4(vspec,1.0);          \n"
@@ -1603,12 +2014,22 @@ namespace GLUP {
         "       frag_color = vec4(0.2, 0.2, 0.2, 1.0);                       \n"
         "   }                                                                \n"
         "}                                                                   \n"
+        "                                                                    \n"
+        "void clip_fragment() {                                              \n"
+        "   if(ES_profile &&                                                 \n"
+        "      clipping_enabled() &&                                         \n"
+        "      gl_ClipDistance[0] < 0.0                                      \n"
+        "   ) {                                                              \n"
+        "     discard;                                                       \n"
+        "   }                                                                \n"
+        "}                                                                   \n"
         ;
     
-#define GLUP150_std                       \
-        GLUP150_shader_source_header,     \
-        profile_dependent_declarations(), \
-        GLUP_uniform_state_source,        \
+#define GLUP150_std(prim)                    \
+        GLUP150_shader_source_header,        \
+        profile_dependent_declarations(),    \
+        GLUP_uniform_state_source,           \
+        primitive_declaration(prim).c_str(), \
         toggles_declaration()
 
     // GLUP_POINTS ********************************************************
@@ -1617,8 +2038,7 @@ namespace GLUP {
         "void main() {                                              \n"
         "    if(clipping_enabled()) {                               \n"
         "       gl_ClipDistance[0] = dot(                           \n"
-        "          GLUP.modelview_matrix*vertex_in,                 \n"
-        "          GLUP.clip_plane                                  \n"
+        "            vertex_in, GLUP.world_clip_plane               \n"
         "       );                                                  \n"
         "   } else {                                                \n"
         "      gl_ClipDistance[0] = 0.0;                            \n"
@@ -1644,6 +2064,7 @@ namespace GLUP {
         "layout (depth_less) out float gl_FragDepth;                        \n"
         "                                                                   \n"
         "void main() {                                                      \n"
+        "   clip_fragment();                                                \n"
         "   vec2 V = 2.0*(gl_PointCoord - vec2(0.5, 0.5));                  \n"
         "   float one_minus_r2 = 1.0 - dot(V,V);                            \n"
         "   if(one_minus_r2 < 0.0) {                                        \n"
@@ -1665,13 +2086,19 @@ namespace GLUP {
         "}                                                                  \n";
 
     void Context_GLSL150::setup_GLUP_POINTS() {
-        glEnable(GL_POINT_SPRITE);
-        glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
-        glEnable(GL_POINT_SMOOTH);
+
+        // TODO: check whether texture coordinates are always
+        // generated in points with OpenGL ES profile (it seems
+        // to be OK, at least on NVidia), because GL_POINT_SPRITE
+        // does not seem to exist under OpenGL ES...
+        if(!use_ES_profile_) {
+            glEnable(GL_POINT_SPRITE);
+            glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
+        }
         
         GLuint vshader = GLSL::compile_shader(
             GL_VERTEX_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_POINTS),
             GLUP150_vshader_in_out_declaration,
             GLUP150_points_and_lines_vshader_source,
             0
@@ -1679,7 +2106,7 @@ namespace GLUP {
 
         GLuint fshader = GLSL::compile_shader(
             GL_FRAGMENT_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_POINTS),
             GLUP150_simple_fshader_in_out_declaration,
             GLUP150_fshader_utils,
             GLUP150_points_fshader_source,
@@ -1694,14 +2121,13 @@ namespace GLUP {
 
         glDeleteShader(vshader);
         glDeleteShader(fshader);
-
-        glupPrimitiveSupportsArrayMode(GLUP_POINTS);
     }
 
     // GLUP_LINES *******************************************************
 
     const char* GLUP150_lines_fshader_source =
         "void main() {                                              \n"
+        "   clip_fragment();                                        \n"
         "   if(picking_enabled()) {                                 \n"
         "      output_picking_id();                                 \n"
         "   } else {                                                \n"
@@ -1713,7 +2139,7 @@ namespace GLUP {
         
         GLuint vshader = GLSL::compile_shader(
             GL_VERTEX_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_LINES),
             GLUP150_vshader_in_out_declaration,
             GLUP150_points_and_lines_vshader_source,
             0
@@ -1721,7 +2147,7 @@ namespace GLUP {
         
         GLuint fshader = GLSL::compile_shader(
             GL_FRAGMENT_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_LINES),
             GLUP150_simple_fshader_in_out_declaration,
             GLUP150_fshader_utils,                        
             GLUP150_lines_fshader_source,
@@ -1760,6 +2186,7 @@ namespace GLUP {
         "}                                                                  \n"
         "                                                                   \n"
         "void main() {                                                      \n"
+        "    clip_fragment();                                               \n"
         "    if(picking_enabled()) {                                        \n"
         "        output_picking_id();                                       \n"
         "    } else {                                                       \n"
@@ -1791,7 +2218,12 @@ namespace GLUP {
         "                                                                   \n"
         "void project_vertices() {                                          \n"
         "   for(int i=0; i<nb_vertices; ++i) {                              \n"
-        "     projected[i] = transformed_in(i);                             \n"
+        "     if((glup_primitive_dimension == 3) && clipping_enabled()) {   \n"
+        "        projected[i] =                                             \n"
+        "                  GLUP.modelviewprojection_matrix * vertex_in(i);  \n"
+        "     } else {                                                      \n"
+        "        projected[i] = transformed_in(i);                          \n"
+        "     }                                                             \n"
         "   }                                                               \n"
         "   if(GLUP.cells_shrink != 0.0) {                                  \n"
         "       vec4 g = vec4(0.0, 0.0, 0.0, 0.0);                          \n"
@@ -1807,7 +2239,7 @@ namespace GLUP {
         "}                                                                  \n"
         "                                                                   \n"
         "float clip(in vec4 V, in bool do_clip) {                           \n"
-        "  return do_clip?dot(GLUP.modelview_matrix*V,GLUP.clip_plane):1.0; \n"
+        "    return do_clip?dot(V,GLUP.world_clip_plane):1.0;               \n"
         "}                                                                  \n"
         "                                                                   \n"
         "bool cell_is_clipped() {                                           \n"
@@ -1815,8 +2247,10 @@ namespace GLUP {
         "     return true;                                                  \n"
         "  }                                                                \n"
         "  if(                                                              \n"
+        "     (glup_primitive_dimension != 3) ||                            \n"
         "     !clipping_enabled() ||                                        \n"
-        "     GLUP.clipping_mode==GLUP_CLIP_STANDARD                        \n"
+        "     GLUP.clipping_mode==GLUP_CLIP_STANDARD  ||                    \n"
+        "     GLUP.clipping_mode==GLUP_CLIP_SLICE_CELLS                     \n" 
         "  ) {                                                              \n"
         "     return false;                                                 \n"
         "  }                                                                \n"
@@ -1923,8 +2357,13 @@ namespace GLUP {
         "     if(texturing_enabled()) {                                     \n"
         "        VertexOut.tex_coord = GLUP.texture_matrix * tex_coord_in;  \n"
         "     }                                                             \n"
-        "     VertexOut.transformed =                                       \n"
+        "     if(                                                           \n"
+        "         glup_primitive_dimension != 3 ||                          \n"
+        "         !clipping_enabled()                                       \n"
+        "     ) {                                                           \n"
+        "        VertexOut.transformed =                                    \n"
         "                      GLUP.modelviewprojection_matrix * vertex_in; \n"
+        "     }                                                             \n"
         "     gl_Position = vertex_in;                                      \n"
         " }                                                                 \n";
 
@@ -1943,7 +2382,7 @@ namespace GLUP {
 
         GLuint vshader = GLSL::compile_shader(
             GL_VERTEX_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_TRIANGLES),
             GLUP150_vshader_in_out_declaration,
             GLUP150_vshader_transform_source,
             0
@@ -1951,7 +2390,7 @@ namespace GLUP {
         
         GLuint gshader = GLSL::compile_shader(
             GL_GEOMETRY_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_TRIANGLES),
             "layout(triangles) in;                         \n",
             "layout(triangle_strip, max_vertices = 3) out; \n",
             GLUP150_gshader_in_out_declaration,
@@ -1963,7 +2402,7 @@ namespace GLUP {
 
         GLuint fshader = GLSL::compile_shader(
             GL_FRAGMENT_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_TRIANGLES),
             GLUP150_fshader_in_out_declaration,
             GLUP150_fshader_utils,
             GLUP150_triangle_fshader_source,
@@ -1999,7 +2438,7 @@ namespace GLUP {
 
         GLuint vshader = GLSL::compile_shader(
             GL_VERTEX_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_QUADS),
             GLUP150_vshader_in_out_declaration,
             GLUP150_vshader_transform_source,
             0
@@ -2008,7 +2447,7 @@ namespace GLUP {
         
         GLuint gshader = GLSL::compile_shader(
             GL_GEOMETRY_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_QUADS),
             "layout(lines_adjacency) in;                   \n",
             "layout(triangle_strip, max_vertices = 4) out; \n",
             GLUP150_gshader_in_out_declaration,
@@ -2020,7 +2459,7 @@ namespace GLUP {
 
         GLuint fshader = GLSL::compile_shader(
             GL_FRAGMENT_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_QUADS),
             GLUP150_fshader_in_out_declaration,
             GLUP150_fshader_utils,                        
             GLUP150_triangle_fshader_source,
@@ -2041,6 +2480,89 @@ namespace GLUP {
 
     // GLUP_TETRAHEDRA ******************************************************
 
+    const char* GLUP150_marching_cells_utils =
+       "int compute_config() {                               \n"
+       "  int result = 0;                                    \n"
+       "  for(int v=0; v<cell_nb_vertices; ++v) {            \n"
+       "    if(                                              \n"
+       "      dot(vertex_in(v),GLUP.world_clip_plane) > 0.0  \n"
+       "    ) {                                              \n"
+       "       result = result | (1 << v);                   \n"
+       "    }                                                \n"
+       "  }                                                  \n" 
+       "  return result;                                     \n" 
+       "}                                                    \n"
+       "void emit_isect_vertex(in int i) {                   \n"
+       "   gl_ClipDistance[0] = 1.0;                         \n"
+       "   gl_Position = isect_point[i];                     \n"
+       "   if(vertex_colors_enabled()) {                     \n"
+       "      FragmentOut.color = isect_color[i];            \n"
+       "   }                                                 \n"
+       "   if(texturing_enabled()) {                         \n"
+       "      FragmentOut.tex_coord = isect_tex_coord[i];    \n"
+       "   }                                                 \n"
+       "   EmitVertex();                                     \n"
+       "}                                                    \n"
+       "void isect_triangle(int i, int j, int k) {           \n"
+       "   FragmentOut.bary = vec2(0.0,0.0);                 \n"
+       "   emit_isect_vertex(i);                             \n"
+       "   FragmentOut.bary = vec2(0.0,1.0);                 \n"        
+       "   emit_isect_vertex(j);                             \n"
+       "   FragmentOut.bary = vec2(1.0,0.0);                 \n"                
+       "   emit_isect_vertex(k);                             \n"
+       "   EndPrimitive();                                   \n"
+       "}                                                    \n"
+       "void draw_marching_cell() {                          \n"
+       "   int config = compute_config();                    \n"
+       "   if(config_size(config) == 0) { return; }          \n"
+       "   compute_intersections();                          \n"
+       "   if(lighting_enabled() && !picking_enabled()) {    \n"
+       "      compute_lighting(GLUP.world_clip_plane.xyz);   \n"
+       "   }                                                 \n"
+       "   int size = config_size(config);                   \n"
+       "   if(draw_mesh_enabled()) {                         \n"
+       "      if(size == 3) {                                \n"
+       "        FragmentOut.edge_mask = vec3(1.0,1.0,1.0);   \n"
+       "        isect_triangle(                              \n"
+       "           config_edge(config,0),                    \n"
+       "           config_edge(config,1),                    \n"
+       "           config_edge(config,2)                     \n"
+       "        );                                           \n"
+       "      } else {                                       \n"
+       "        FragmentOut.edge_mask = vec3(1.0,0.0,1.0);   \n"
+       "        isect_triangle(                              \n"
+       "           config_edge(config,0),                    \n"
+       "           config_edge(config,1),                    \n"
+       "           config_edge(config,2)                     \n"
+       "        );                                           \n"
+       "        FragmentOut.edge_mask = vec3(0.0,0.0,1.0);   \n"        
+       "        for(int i=1; i+2<size; ++i) {                \n"
+       "          isect_triangle(                            \n"
+       "             config_edge(config,0),                  \n"
+       "             config_edge(config,i),                  \n"
+       "             config_edge(config,i+1)                 \n"
+       "          );                                         \n"
+       "        }                                            \n"
+       "        FragmentOut.edge_mask = vec3(0.0,1.0,1.0);   \n"
+       "        isect_triangle(                              \n"
+       "           config_edge(config,0),                    \n"
+       "           config_edge(config,size-2),               \n"
+       "           config_edge(config,size-1)                \n"
+       "        );                                           \n"
+       "      }                                              \n" 
+       "   } else {                                          \n"
+       "      FragmentOut.edge_mask = vec3(1.0,1.0,1.0);     \n"        
+       "      for(int i=1; i+1<size; ++i) {                  \n"
+       "        isect_triangle(                              \n"
+       "           config_edge(config,0),                    \n"
+       "           config_edge(config,i),                    \n"
+       "           config_edge(config,i+1)                   \n"
+       "        );                                           \n"
+       "      }                                              \n"
+       "   }                                                 \n" 
+       "}                                                    \n"
+       ;
+    
     /**
      * \brief The geometry shader for tetrahedra.
      * \details Uses v_shader_transform and gshader_utils.
@@ -2051,8 +2573,14 @@ namespace GLUP {
         "        return;                                                    \n"
         "    }                                                              \n"
         "    gl_PrimitiveID = gl_PrimitiveIDIn;                             \n"
+        "    if(clipping_enabled() &&                                       \n"
+        "        GLUP.clipping_mode == GLUP_CLIP_SLICE_CELLS) {             \n"
+        "       draw_marching_cell();                                       \n"
+        "       return;                                                     \n"
+        "    }                                                              \n"
         "    project_vertices();                                            \n"
-        "    bool do_clip = (GLUP.clipping_mode == GLUP_CLIP_STANDARD);     \n"
+        "    bool do_clip = (clipping_enabled() &&                          \n"
+        "                    GLUP.clipping_mode==GLUP_CLIP_STANDARD);       \n"
         "    flat_shaded_triangle(0,1,2,do_clip);                           \n"
         "    flat_shaded_triangle(1,0,3,do_clip);                           \n"
         "    flat_shaded_triangle(0,2,3,do_clip);                           \n"
@@ -2064,7 +2592,7 @@ namespace GLUP {
 
         GLuint vshader = GLSL::compile_shader(
             GL_VERTEX_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_TETRAHEDRA),
             GLUP150_vshader_in_out_declaration,
             GLUP150_vshader_transform_source,
             0
@@ -2072,19 +2600,22 @@ namespace GLUP {
 
         GLuint gshader = GLSL::compile_shader(
             GL_GEOMETRY_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_TETRAHEDRA),
+            marching_tet_.GLSL_uniform_state_declaration(),
             "layout(lines_adjacency) in;                    \n",
             "layout(triangle_strip, max_vertices = 12) out; \n",
             GLUP150_gshader_in_out_declaration,
             "const int nb_vertices = 4; ",
             GLUP150_gshader_utils_source,
+            marching_tet_.GLSL_compute_intersections(),
+            GLUP150_marching_cells_utils,
             GLUP150_gshader_tet_source,
             0
         );
 
         GLuint fshader = GLSL::compile_shader(
             GL_FRAGMENT_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_TETRAHEDRA),
             GLUP150_fshader_in_out_declaration,
             GLUP150_fshader_utils,                        
             GLUP150_triangle_fshader_source,
@@ -2095,6 +2626,8 @@ namespace GLUP {
             GLSL::create_program_from_shaders(
                 vshader, gshader, fshader, 0 
             );
+
+        marching_tet_.bind_uniform_state(program);
         
         set_primitive_info(GLUP_TETRAHEDRA, GL_LINES_ADJACENCY, program);
         
@@ -2116,8 +2649,14 @@ namespace GLUP {
         "        return;                                                    \n"
         "    }                                                              \n"
         "    gl_PrimitiveID = gl_PrimitiveIDIn;                             \n"
+        "    if(clipping_enabled() &&                                       \n"
+        "        GLUP.clipping_mode == GLUP_CLIP_SLICE_CELLS) {             \n"
+        "       draw_marching_cell();                                       \n"
+        "       return;                                                     \n"
+        "    }                                                              \n"
         "    project_vertices();                                            \n"
-        "    bool do_clip = (GLUP.clipping_mode == GLUP_CLIP_STANDARD);     \n"        
+        "    bool do_clip = (clipping_enabled() &&                          \n"
+        "                    GLUP.clipping_mode==GLUP_CLIP_STANDARD);       \n"
         "    flat_shaded_triangle(0,1,2,do_clip);                           \n"
         "    flat_shaded_triangle(5,4,3,do_clip);                           \n"
         "    flat_shaded_quad(0,3,1,4,do_clip);                             \n"
@@ -2130,7 +2669,7 @@ namespace GLUP {
         
         GLuint vshader = GLSL::compile_shader(
             GL_VERTEX_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_PRISMS),
             GLUP150_vshader_in_out_declaration,
             GLUP150_vshader_transform_source,
             0
@@ -2138,19 +2677,22 @@ namespace GLUP {
 
         GLuint gshader = GLSL::compile_shader(
             GL_GEOMETRY_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_PRISMS),
+            marching_prism_.GLSL_uniform_state_declaration(),
             "layout(triangles_adjacency) in;",
             "layout(triangle_strip, max_vertices = 18) out;",
             GLUP150_gshader_in_out_declaration,
             "const int nb_vertices = 6; ",
             GLUP150_gshader_utils_source,
+            marching_prism_.GLSL_compute_intersections(),
+            GLUP150_marching_cells_utils,
             GLUP150_gshader_prism_source,
             0
         );
 
         GLuint fshader = GLSL::compile_shader(
             GL_FRAGMENT_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_PRISMS),
             GLUP150_fshader_in_out_declaration,
             GLUP150_fshader_utils,                        
             GLUP150_triangle_fshader_source,
@@ -2162,6 +2704,8 @@ namespace GLUP {
                 vshader, gshader, fshader, 0 
             );
 
+        marching_prism_.bind_uniform_state(program);
+        
         set_primitive_info(GLUP_PRISMS, GL_TRIANGLES_ADJACENCY, program);
         
         glDeleteShader(vshader);
@@ -2267,14 +2811,19 @@ namespace GLUP {
      * \details Uses v_shader_gather and gshader_utils.
      */
     const char* GLUP150_gshader_hex_source =
-        "                                                                   \n"
         "void main() {                                                      \n"
         "    if(cell_is_clipped()) {                                        \n"
         "        return;                                                    \n"
         "    }                                                              \n"
         "    gl_PrimitiveID = gl_PrimitiveIDIn;                             \n"
+        "    if(clipping_enabled() &&                                       \n"
+        "        GLUP.clipping_mode == GLUP_CLIP_SLICE_CELLS) {             \n"
+        "       draw_marching_cell();                                       \n"
+        "       return;                                                     \n"
+        "    }                                                              \n"
         "    project_vertices();                                            \n"
-        "    bool do_clip = (GLUP.clipping_mode == GLUP_CLIP_STANDARD);     \n"                
+        "    bool do_clip = (clipping_enabled() &&                          \n"
+        "                    GLUP.clipping_mode==GLUP_CLIP_STANDARD);       \n"
         "    flat_shaded_quad(0,2,4,6,do_clip);                             \n"
         "    flat_shaded_quad(3,1,7,5,do_clip);                             \n"
         "    flat_shaded_quad(1,0,5,4,do_clip);                             \n"
@@ -2287,7 +2836,7 @@ namespace GLUP {
 
         GLuint vshader = GLSL::compile_shader(
             GL_VERTEX_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_HEXAHEDRA),
             "const int nb_vertices = 8;",
             "const int nb_vertices_GL = 4;",
             GLUP150_vshader_gather_source,
@@ -2296,20 +2845,23 @@ namespace GLUP {
 
         GLuint gshader = GLSL::compile_shader(
             GL_GEOMETRY_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_HEXAHEDRA),
+            marching_hex_.GLSL_uniform_state_declaration(),            
             "const int nb_vertices = 8;",
             "const int nb_vertices_GL = 4;",
             "layout(lines_adjacency) in;",
             "layout(triangle_strip, max_vertices = 24) out;",
             GLUP150_gshader_gather_in_out_declaration,
             GLUP150_gshader_utils_source,
+            marching_hex_.GLSL_compute_intersections(),
+            GLUP150_marching_cells_utils,
             GLUP150_gshader_hex_source,
             0
         );
 
         GLuint fshader = GLSL::compile_shader(
             GL_FRAGMENT_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_HEXAHEDRA),
             GLUP150_fshader_in_out_declaration,
             GLUP150_fshader_utils,                        
             GLUP150_triangle_fshader_source,
@@ -2321,9 +2873,12 @@ namespace GLUP {
                 vshader, gshader, fshader, 0 
             );
 
+        marching_hex_.bind_uniform_state(program);
+        
         set_primitive_info_vertex_gather_mode(
             GLUP_HEXAHEDRA, GL_LINES_ADJACENCY, program
         );
+
         
         glDeleteShader(vshader);
         glDeleteShader(gshader);
@@ -2342,8 +2897,14 @@ namespace GLUP {
         "        return;                                                    \n"
         "    }                                                              \n"
         "    gl_PrimitiveID = gl_PrimitiveIDIn;                             \n"
+        "    if(clipping_enabled() &&                                       \n"
+        "        GLUP.clipping_mode == GLUP_CLIP_SLICE_CELLS) {             \n"
+        "       draw_marching_cell();                                       \n"
+        "       return;                                                     \n"
+        "    }                                                              \n"
         "    project_vertices();                                            \n"
-        "    bool do_clip = (GLUP.clipping_mode == GLUP_CLIP_STANDARD);     \n"                        
+        "    bool do_clip = (clipping_enabled() &&                          \n"
+        "                    GLUP.clipping_mode==GLUP_CLIP_STANDARD);       \n"
         "    flat_shaded_quad(0,1,3,2,do_clip);                             \n"
         "    flat_shaded_triangle(0,4,1,do_clip);                           \n"
         "    flat_shaded_triangle(0,3,4,do_clip);                           \n"
@@ -2355,7 +2916,7 @@ namespace GLUP {
 
         GLuint vshader = GLSL::compile_shader(
             GL_VERTEX_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_PYRAMIDS),
             "const int nb_vertices = 5;",
             "const int nb_vertices_GL = 1;",            
             GLUP150_vshader_gather_source,
@@ -2364,20 +2925,23 @@ namespace GLUP {
 
         GLuint gshader = GLSL::compile_shader(
             GL_GEOMETRY_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_PYRAMIDS),
+            marching_pyramid_.GLSL_uniform_state_declaration(),            
             "const int nb_vertices = 5;",
             "const int nb_vertices_GL = 1;",
             "layout(points) in;",
             "layout(triangle_strip, max_vertices = 28) out;",
             GLUP150_gshader_gather_in_out_declaration,
             GLUP150_gshader_utils_source,
+            marching_pyramid_.GLSL_compute_intersections(),
+            GLUP150_marching_cells_utils,
             GLUP150_gshader_pyramid_source,
             0
         );
 
         GLuint fshader = GLSL::compile_shader(
             GL_FRAGMENT_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_PYRAMIDS),
             GLUP150_fshader_in_out_declaration,
             GLUP150_fshader_utils,                        
             GLUP150_triangle_fshader_source,
@@ -2389,6 +2953,8 @@ namespace GLUP {
                 vshader, gshader, fshader, 0 
             );
 
+        marching_pyramid_.bind_uniform_state(program);
+        
         set_primitive_info_vertex_gather_mode(
             GLUP_PYRAMIDS, GL_POINTS, program
         );
@@ -2412,10 +2978,11 @@ namespace GLUP {
         "#version 440 core \n"
         ;
 
-#define GLUP440_std                       \
-        GLUP440_shader_source_header,     \
-        profile_dependent_declarations(), \
-        GLUP_uniform_state_source,        \
+#define GLUP440_std(prim)                    \
+        GLUP440_shader_source_header,        \
+        profile_dependent_declarations(),    \
+        GLUP_uniform_state_source,           \
+        primitive_declaration(prim).c_str(), \
         toggles_declaration()
 
      // This version of the tesselation shader gathers all input vertices into
@@ -2489,13 +3056,13 @@ namespace GLUP {
         "   }                                                               \n"
         "   if(vertex_colors_enabled()) {                                   \n"
         "     for(int i1=0; i1<nb_vertices_per_GL; ++i1) {                  \n"
-        "        int i = i0*nb_vertices_per_GL + i1;                        \n"         
+        "        int i = i0*nb_vertices_per_GL + i1;                        \n"
         "        VertexOut.color[i1] = VertexIn[i].color;                   \n"
         "     }                                                             \n"
         "   }                                                               \n"
         "   if(texturing_enabled()) {                                       \n"
         "     for(int i1=0; i1<nb_vertices_per_GL; ++i1) {                  \n"
-        "        int i = i0*nb_vertices_per_GL + i1;                        \n"                  
+        "        int i = i0*nb_vertices_per_GL + i1;                        \n"
         "        VertexOut.tex_coord[i1] = VertexIn[i].tex_coord;           \n"
         "     }                                                             \n"
         "   }                                                               \n"
@@ -2573,7 +3140,7 @@ namespace GLUP {
 
         GLuint vshader = GLSL::compile_shader(
             GL_VERTEX_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_HEXAHEDRA),
             GLUP150_vshader_in_out_declaration,
             GLUP150_vshader_transform_source,
             0
@@ -2581,7 +3148,7 @@ namespace GLUP {
 
         GLuint teshader = GLSL::compile_shader(
             GL_TESS_EVALUATION_SHADER,
-            GLUP440_std,
+            GLUP440_std(GLUP_HEXAHEDRA),
             "const int nb_vertices = 8;",
             "const int nb_vertices_GL = 2;",
             GLUP440_teshader_gather_multi_vertices_source,
@@ -2590,20 +3157,23 @@ namespace GLUP {
         
         GLuint gshader = GLSL::compile_shader(
             GL_GEOMETRY_SHADER,
-            GLUP440_std,
+            GLUP440_std(GLUP_HEXAHEDRA),
+            marching_hex_.GLSL_uniform_state_declaration(),              
             "const int nb_vertices = 8;",
             "const int nb_vertices_GL = 2;",
             "layout(lines) in;",
             "layout(triangle_strip, max_vertices = 24) out;",
             GLUP440_gshader_tegather_in_out_declaration,            
             GLUP150_gshader_utils_source,
+            marching_hex_.GLSL_compute_intersections(),
+            GLUP150_marching_cells_utils,
             GLUP150_gshader_hex_source,
             0
         );
 
         GLuint fshader = GLSL::compile_shader(
             GL_FRAGMENT_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_HEXAHEDRA),
             GLUP150_fshader_in_out_declaration,
             GLUP150_fshader_utils,                        
             GLUP150_triangle_fshader_source,
@@ -2615,6 +3185,8 @@ namespace GLUP {
                 vshader, teshader, gshader, fshader, 0 
             );
 
+        marching_hex_.bind_uniform_state(program);
+        
         set_primitive_info(
             GLUP_HEXAHEDRA, GL_PATCHES, program
         );
@@ -2634,7 +3206,7 @@ namespace GLUP {
 
         GLuint teshader = GLSL::compile_shader(
             GL_TESS_EVALUATION_SHADER,
-            GLUP440_std,
+            GLUP440_std(GLUP_PYRAMIDS),
             "const int nb_vertices = 5;",
             "const int nb_vertices_GL = 1;",            
             GLUP440_teshader_gather_single_vertex_source,
@@ -2643,7 +3215,7 @@ namespace GLUP {
 
         GLuint vshader = GLSL::compile_shader(
             GL_VERTEX_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_PYRAMIDS),
             GLUP150_vshader_in_out_declaration,
             GLUP150_vshader_transform_source,
             0
@@ -2651,20 +3223,23 @@ namespace GLUP {
         
         GLuint gshader = GLSL::compile_shader(
             GL_GEOMETRY_SHADER,
-            GLUP440_std,
+            GLUP440_std(GLUP_PYRAMIDS),
+            marching_pyramid_.GLSL_uniform_state_declaration(),              
             "const int nb_vertices = 5;",
             "const int nb_vertices_GL = 1;",
             "layout(points) in;",            
             "layout(triangle_strip, max_vertices = 28) out;",            
             GLUP440_gshader_tegather_in_out_declaration,            
             GLUP150_gshader_utils_source,
+            marching_pyramid_.GLSL_compute_intersections(),
+            GLUP150_marching_cells_utils,
             GLUP150_gshader_pyramid_source,
             0
         );
 
         GLuint fshader = GLSL::compile_shader(
             GL_FRAGMENT_SHADER,
-            GLUP150_std,
+            GLUP150_std(GLUP_PYRAMIDS),
             GLUP150_fshader_in_out_declaration,
             GLUP150_fshader_utils,                        
             GLUP150_triangle_fshader_source,
@@ -2676,6 +3251,8 @@ namespace GLUP {
                 vshader, teshader, gshader, fshader, 0 
             );
 
+        marching_pyramid_.bind_uniform_state(program);
+        
         set_primitive_info(
             GLUP_PYRAMIDS, GL_PATCHES, program
         );
@@ -2689,7 +3266,6 @@ namespace GLUP {
     /***********************************************************************/
 
     Context_VanillaGL::Context_VanillaGL() {
-        
     }
 
     const char* Context_VanillaGL::profile_name() const {
@@ -2723,6 +3299,7 @@ namespace GLUP {
         prepare_to_draw(primitive);
         configure_OpenGL_texturing();
         configure_OpenGL_lighting();
+        configure_OpenGL_clipping();        
         configure_OpenGL_picking();
     }
 
@@ -2823,6 +3400,11 @@ namespace GLUP {
             immediate_state_.buffer[1].disable();
             immediate_state_.buffer[2].disable();
 
+            //   Disable buffers for interpolated clipping
+            // attributes.
+            glDisableClientState(GL_COLOR_ARRAY);
+            glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+            
             uniform_state_.base_picking_id.set(0);
             
             switch(uniform_state_.picking_mode.get()) {
@@ -2838,9 +3420,56 @@ namespace GLUP {
             pick_primitives_ = false;
         }
     }
+
+    void Context_VanillaGL::configure_OpenGL_clipping() {
+        if(clip_slice_cells()) {
+            glNormal3f(
+                -world_clip_plane_[0],
+                -world_clip_plane_[1],
+                -world_clip_plane_[2]            
+            );
+            glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_FALSE);
+            
+            // Bind the intersection buffers as vertex array, colors and texture
+            // coordinates (if enabled for the last two ones).
+            glEnableClientState(GL_VERTEX_ARRAY);
+        
+            glVertexPointer(
+                4,
+                GL_FLOAT,
+                0,  // stride
+                isect_point_ 
+            );
+        
+            if(immediate_state_.buffer[1].is_enabled()) {
+                glEnableClientState(GL_COLOR_ARRAY);
+                glColorPointer(
+                    4,
+                    GL_FLOAT,
+                    0,  // stride
+                    isect_color_ 
+                );
+            }
+        
+            if(immediate_state_.buffer[2].is_enabled()) {
+                glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+                glTexCoordPointer(
+                    4,
+                    GL_FLOAT,
+                    0,  // stride
+                    isect_tex_coord_ 
+                );
+            }
+        }
+    }
     
     void Context_VanillaGL::end() {
         flush_immediate_buffers();
+        if(clip_slice_cells()) {
+            glDisableClientState(GL_VERTEX_ARRAY);
+            glDisableClientState(GL_COLOR_ARRAY);
+            glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+        }
     }
     
     void Context_VanillaGL::setup() {
@@ -2886,13 +3515,17 @@ namespace GLUP {
         setup_state_variables();
         setup_immediate_buffers();
         setup_primitives();
+
+        world_clip_plane_ = uniform_state_.world_clip_plane.get_pointer();
     }
 
     void Context_VanillaGL::shrink_cells_in_immediate_buffers() {
         if(
-            uniform_state_.cells_shrink.get() == 0.0f ||
+            uniform_state_.cells_shrink.get() == 0.0f   ||
             immediate_state_.primitive() == GLUP_POINTS ||
-            immediate_state_.primitive() == GLUP_LINES
+            immediate_state_.primitive() == GLUP_LINES  ||
+            (uniform_state_.clipping_mode.get() == GLUP_CLIP_SLICE_CELLS &&
+             uniform_state_.toggle[GLUP_CLIPPING].get())
         ) {
             return;
         }
@@ -2940,22 +3573,11 @@ namespace GLUP {
             return;
         }
 
-        // Note: it should be "transpose_matrix", but it
-        // seems that matrix multiplication is inversed
-        // as compared to GLSL. To be fixed. Maybe
-        // it should be inverse transpose ? Probably...
-        float transformed_clipping_plane[4];
-        mult_matrix_vector(
-            transformed_clipping_plane,
-            uniform_state_.modelview_matrix.get_pointer(),
-            uniform_state_.clip_plane.get_pointer()            
-        );
-        
         for(index_t v=0; v<immediate_state_.nb_vertices(); ++v) {
             float* p = immediate_state_.buffer[0].element_ptr(v);
             float s = 0.0;
             for(index_t i=0; i<4; ++i) {
-                s += transformed_clipping_plane[i]*p[i];
+                s += world_clip_plane_[i]*p[i];
             }
             v_is_visible_[v] = (s >= 0);
         }
@@ -2989,8 +3611,8 @@ namespace GLUP {
     }
 
     void Context_VanillaGL::flush_immediate_buffers() {
-        classify_vertices_in_immediate_buffers();        
         shrink_cells_in_immediate_buffers();
+        classify_vertices_in_immediate_buffers();        
 
         glPushAttrib(
             GL_ENABLE_BIT | GL_LIGHTING_BIT | GL_POLYGON_BIT | GL_TEXTURE_BIT
@@ -3033,6 +3655,11 @@ namespace GLUP {
             immediate_state_.buffer[1].disable();
             immediate_state_.buffer[2].disable();
 
+            if(clip_slice_cells()) {
+                glDisableClientState(GL_COLOR_ARRAY);
+                glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+            }
+            
             glColor3fv(uniform_state_.color[GLUP_MESH_COLOR].get_pointer());
             glLineWidth(uniform_state_.mesh_width.get());
             glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
@@ -3042,9 +3669,15 @@ namespace GLUP {
             // Restore previous state for vertex attributes.
             if(va1_enabled) {
                 immediate_state_.buffer[1].enable();
+                if(clip_slice_cells()) {
+                    glEnableClientState(GL_COLOR_ARRAY);                    
+                }
             }
             if(va2_enabled) {
                 immediate_state_.buffer[2].enable();
+                if(clip_slice_cells()) {
+                    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+                }
             }
         }
         glPopAttrib();        
@@ -3160,117 +3793,172 @@ namespace GLUP {
         glEnd();
     }
 
-    void Context_VanillaGL::draw_immediate_buffer_GLUP_TETRAHEDRA() {
-        glBegin(GL_TRIANGLES);
-        index_t v0 = 0;
+
+    void Context_VanillaGL::draw_immediate_buffer_with_marching_cells(
+        const MarchingCell& cell
+    ) {
+        
+        index_t v0=0;
         while(v0 < immediate_state_.nb_vertices()) {
-            if(!cell_is_clipped(v0)) {
-                output_picking_id(v0/4);                
-                index_t v1 = v0+1;
-                index_t v2 = v0+2;
-                index_t v3 = v0+3;
-                flat_shaded_triangle(v0,v1,v2);                           
-                flat_shaded_triangle(v1,v0,v3);                             
-                flat_shaded_triangle(v0,v2,v3);                             
-                flat_shaded_triangle(v2,v1,v3);
+            index_t config = get_config(v0, cell.nb_vertices());
+
+            //   Compute all the intersection vertices (plus their
+            // attributes if enabled).
+            for(index_t i=0; i<cell.config_size(config); ++i) {
+                index_t e = cell.config_edges(config)[i];
+                compute_intersection(
+                    v0+cell.edge_vertex(e,0), v0+cell.edge_vertex(e,1), e
+                );
+            }            
+
+
+            if(cell.config_size(config) != 0) {
+                output_picking_id(v0/cell.nb_vertices());
+            
+                //   With the bound intersection buffer,
+                // we can draw the intersection polygon with
+                // a single OpenGL call ! The marching cells table directly
+                // refers to the vertices in the intersection buffer.
+                glDrawElements(
+                    GL_POLYGON,
+                    GLsizei(cell.config_size(config)),
+                    GL_UNSIGNED_INT,
+                    cell.config_edges(config)
+                );
             }
-            v0 += 4;
+            
+            v0 += cell.nb_vertices();
         }
-        glEnd();
+
+    }
+    
+    void Context_VanillaGL::draw_immediate_buffer_GLUP_TETRAHEDRA() {
+        if(clip_slice_cells()) {
+            draw_immediate_buffer_with_marching_cells(marching_tet_);
+        } else {
+            glBegin(GL_TRIANGLES);
+            index_t v0 = 0;
+            while(v0 < immediate_state_.nb_vertices()) {            
+                if(!cell_is_clipped(v0)) {
+                    output_picking_id(v0/4);                
+                    index_t v1 = v0+1;
+                    index_t v2 = v0+2;
+                    index_t v3 = v0+3;
+                    flat_shaded_triangle(v0,v1,v2);                           
+                    flat_shaded_triangle(v1,v0,v3);                             
+                    flat_shaded_triangle(v0,v2,v3);                             
+                    flat_shaded_triangle(v2,v1,v3);
+                }
+                v0 += 4;
+            }
+            glEnd();
+        }
     }
 
     void Context_VanillaGL::draw_immediate_buffer_GLUP_HEXAHEDRA() {
-        glBegin(GL_QUADS);
-        index_t v0 = 0;
-        while(v0 < immediate_state_.nb_vertices()) {
-            if(!cell_is_clipped(v0)) {
-                output_picking_id(v0/8);                
-                index_t v1 = v0+1;
-                index_t v2 = v0+2;
-                index_t v3 = v0+3;
-                index_t v4 = v0+4;
-                index_t v5 = v0+5;
-                index_t v6 = v0+6;
-                index_t v7 = v0+7;
-                flat_shaded_quad(v0,v2,v4,v6);                               
-                flat_shaded_quad(v3,v1,v7,v5);                               
-                flat_shaded_quad(v1,v0,v5,v4);                               
-                flat_shaded_quad(v2,v3,v6,v7);                               
-                flat_shaded_quad(v1,v3,v0,v2);                               
-                flat_shaded_quad(v4,v6,v5,v7);
+        if(clip_slice_cells()) {
+            draw_immediate_buffer_with_marching_cells(marching_hex_);
+        } else {
+            glBegin(GL_QUADS);
+            index_t v0 = 0;
+            while(v0 < immediate_state_.nb_vertices()) {
+                if(!cell_is_clipped(v0)) {
+                    output_picking_id(v0/8);                
+                    index_t v1 = v0+1;
+                    index_t v2 = v0+2;
+                    index_t v3 = v0+3;
+                    index_t v4 = v0+4;
+                    index_t v5 = v0+5;
+                    index_t v6 = v0+6;
+                    index_t v7 = v0+7;
+                    flat_shaded_quad(v0,v2,v4,v6);
+                    flat_shaded_quad(v3,v1,v7,v5);
+                    flat_shaded_quad(v1,v0,v5,v4);
+                    flat_shaded_quad(v2,v3,v6,v7);
+                    flat_shaded_quad(v1,v3,v0,v2);
+                    flat_shaded_quad(v4,v6,v5,v7);
+                }
+                v0 += 8;
             }
-            v0 += 8;
+            glEnd();
         }
-        glEnd();
     }
 
     void Context_VanillaGL::draw_immediate_buffer_GLUP_PRISMS() {
-        glBegin(GL_QUADS);
-        index_t v0 = 0;
-        while(v0 < immediate_state_.nb_vertices()) {
-            if(!cell_is_clipped(v0)) {
-                output_picking_id(v0/6);                
-                index_t v1 = v0+1;
-                index_t v2 = v0+2;
-                index_t v3 = v0+3;
-                index_t v4 = v0+4;
-                index_t v5 = v0+5;
-                flat_shaded_quad(v0,v3,v1,v4);
-                flat_shaded_quad(v0,v2,v3,v5);
-                flat_shaded_quad(v1,v4,v2,v5);
+        if(clip_slice_cells()) {
+            draw_immediate_buffer_with_marching_cells(marching_prism_);
+        } else {
+            glBegin(GL_QUADS);
+            index_t v0 = 0;
+            while(v0 < immediate_state_.nb_vertices()) {
+                if(!cell_is_clipped(v0)) {
+                    output_picking_id(v0/6);                
+                    index_t v1 = v0+1;
+                    index_t v2 = v0+2;
+                    index_t v3 = v0+3;
+                    index_t v4 = v0+4;
+                    index_t v5 = v0+5;
+                    flat_shaded_quad(v0,v3,v1,v4);
+                    flat_shaded_quad(v0,v2,v3,v5);
+                    flat_shaded_quad(v1,v4,v2,v5);
+                }
+                v0 += 6;
             }
-            v0 += 6;
-        }
-        glEnd();
-        glBegin(GL_TRIANGLES);
-        v0 = 0;
-        while(v0 < immediate_state_.nb_vertices()) {
-            if(!cell_is_clipped(v0)) {
-                output_picking_id(v0/6);                                
-                index_t v1 = v0+1;
-                index_t v2 = v0+2;
-                index_t v3 = v0+3;
-                index_t v4 = v0+4;
-                index_t v5 = v0+5;
-                flat_shaded_triangle(v0,v1,v2);
-                flat_shaded_triangle(v5,v4,v3);
+            glEnd();
+            glBegin(GL_TRIANGLES);
+            v0 = 0;
+            while(v0 < immediate_state_.nb_vertices()) {
+                if(!cell_is_clipped(v0)) {
+                    output_picking_id(v0/6);                                
+                    index_t v1 = v0+1;
+                    index_t v2 = v0+2;
+                    index_t v3 = v0+3;
+                    index_t v4 = v0+4;
+                    index_t v5 = v0+5;
+                    flat_shaded_triangle(v0,v1,v2);
+                    flat_shaded_triangle(v5,v4,v3);
+                }
+                v0 += 6;
             }
-            v0 += 6;
+            glEnd();
         }
-        glEnd();
     }
 
     void Context_VanillaGL::draw_immediate_buffer_GLUP_PYRAMIDS() {
-        glBegin(GL_QUADS);
-        index_t v0 = 0;
-        while(v0 < immediate_state_.nb_vertices()) {
-            if(!cell_is_clipped(v0)) {
-                output_picking_id(v0/5);                                
-                index_t v1 = v0+1;
-                index_t v2 = v0+2;
-                index_t v3 = v0+3;
-                flat_shaded_quad(v0,v1,v3,v2);
+        if(clip_slice_cells()) {
+            draw_immediate_buffer_with_marching_cells(marching_pyramid_);
+        } else {
+            glBegin(GL_QUADS);
+            index_t v0 = 0;
+            while(v0 < immediate_state_.nb_vertices()) {
+                if(!cell_is_clipped(v0)) {
+                    output_picking_id(v0/5);                                
+                    index_t v1 = v0+1;
+                    index_t v2 = v0+2;
+                    index_t v3 = v0+3;
+                    flat_shaded_quad(v0,v1,v3,v2);
+                }
+                v0 += 5;
             }
-            v0 += 5;
-        }
-        glEnd();
-        glBegin(GL_TRIANGLES);
-        v0 = 0;
-        while(v0 < immediate_state_.nb_vertices()) {
-            if(!cell_is_clipped(v0)) {
-                output_picking_id(v0/5);                
-                index_t v1 = v0+1;
-                index_t v2 = v0+2;
-                index_t v3 = v0+3;
-                index_t v4 = v0+4;
-                flat_shaded_triangle(v0,v4,v1);
-                flat_shaded_triangle(v0,v3,v4);
-                flat_shaded_triangle(v2,v4,v3);
-                flat_shaded_triangle(v2,v1,v4);
+            glEnd();
+            glBegin(GL_TRIANGLES);
+            v0 = 0;
+            while(v0 < immediate_state_.nb_vertices()) {
+                if(!cell_is_clipped(v0)) {
+                    output_picking_id(v0/5);                
+                    index_t v1 = v0+1;
+                    index_t v2 = v0+2;
+                    index_t v3 = v0+3;
+                    index_t v4 = v0+4;
+                    flat_shaded_triangle(v0,v4,v1);
+                    flat_shaded_triangle(v0,v3,v4);
+                    flat_shaded_triangle(v2,v4,v3);
+                    flat_shaded_triangle(v2,v1,v4);
+                }
+                v0 += 5;
             }
-            v0 += 5;
+            glEnd();
         }
-        glEnd();
     }
     
     void Context_VanillaGL::output_normal(index_t v1, index_t v2, index_t v3) {
@@ -3340,6 +4028,5 @@ namespace GLUP {
             (U1[0]*V1[1]-U1[1]*V1[0]) - (U2[0]*V2[1]-U2[1]*V2[0])               
         );
     }
-    
 }
 
