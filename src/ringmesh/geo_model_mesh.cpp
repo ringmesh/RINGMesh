@@ -61,7 +61,7 @@ namespace {
     class GeoModelMeshFacetsSort {
     public:
         GeoModelMeshFacetsSort(
-            const GEO::Mesh& mesh,
+            const Mesh& mesh,
             const GEO::Attribute< index_t >& surface_id )
             : mesh_( mesh ), surface_id_( surface_id )
         {
@@ -72,18 +72,18 @@ namespace {
             if( surface_id_[i] != surface_id_[j] ) {
                 return surface_id_[i] < surface_id_[j] ;
             } else {
-                return mesh_.facets.nb_vertices( i ) < mesh_.facets.nb_vertices( j ) ;
+                return mesh_.facet_nb_vertices( i ) < mesh_.facet_nb_vertices( j ) ;
             }
         }
     private:
-        const GEO::Mesh& mesh_ ;
+        const Mesh& mesh_ ;
         const GEO::Attribute< index_t >& surface_id_ ;
     } ;
 
     class GeoModelMeshCellsSort {
     public:
         GeoModelMeshCellsSort(
-            const GEO::Mesh& mesh,
+            const Mesh& mesh,
             const GEO::Attribute< index_t >& region_id )
             : mesh_( mesh ), region_id_( region_id )
         {
@@ -94,11 +94,11 @@ namespace {
             if( region_id_[i] != region_id_[j] ) {
                 return region_id_[i] < region_id_[j] ;
             } else {
-                return mesh_.cells.type( i ) < mesh_.cells.type( j ) ;
+                return mesh_.cell_type( i ) < mesh_.cell_type( j ) ;
             }
         }
     private:
-        const GEO::Mesh& mesh_ ;
+        const Mesh& mesh_ ;
         const GEO::Attribute< index_t >& region_id_ ;
     } ;
 
@@ -111,18 +111,18 @@ namespace {
             GME::gme_t( T, i ) ) ) ) ;
     }
 
-    index_t find_corner( const GEO::Mesh& mesh, index_t cell, index_t vertex_id )
+    index_t find_local_vertex_id( const Mesh& mesh, index_t cell, index_t vertex_id )
     {
-        for( index_t v = 0; v < mesh.cells.nb_vertices( cell ); v++ ) {
-            if( mesh.cells.vertex( cell, v ) == vertex_id ) {
-                return mesh.cells.corners_begin( cell ) + v ;
+        for( index_t v = 0; v < mesh.nb_cell_vertices( cell ); v++ ) {
+            if( mesh.cell_vertex( cell, v ) == vertex_id ) {
+                return v ;
             }
         }
         return NO_ID ;
     }
 
     void cell_facets_around_vertex(
-        const GEO::Mesh& mesh,
+        const Mesh& mesh,
         index_t cell,
         index_t vertex_id,
         std::vector< index_t >& facets )
@@ -145,7 +145,7 @@ namespace RINGMesh {
     GeoModelMeshVertices::GeoModelMeshVertices(
         GeoModelMesh& gmm,
         GeoModel& gm,
-        GEO::Mesh& mesh )
+        Mesh& mesh )
         : gmm_( gmm ), gm_( gm ), mesh_( mesh ), kdtree_( nil )
     {
     }
@@ -504,7 +504,7 @@ namespace RINGMesh {
 
     /*******************************************************************************/
 
-    GeoModelMeshCells::GeoModelMeshCells( GeoModelMesh& gmm, GEO::Mesh& mesh )
+    GeoModelMeshCells::GeoModelMeshCells( GeoModelMesh& gmm, Mesh& mesh )
         :
             gmm_( gmm ),
             gm_( gmm.model() ),
@@ -552,7 +552,7 @@ namespace RINGMesh {
         // Compute the number of cell per type and per region
         for( index_t r = 0; r < gm_.nb_regions(); ++r ) {
             const Region& cur_region = gm_.region( r ) ;
-            const GEO::Mesh& cur_region_mesh = cur_region.mesh() ;
+            const Mesh& cur_region_mesh = cur_region.mesh() ;
             for( index_t c = 0; c < gm_.region( r ).nb_cells(); ++c ) {
                 GEO::MeshCellType cur_cell_type = cur_region_mesh.cells.type( c ) ;
                 switch( cur_cell_type ) {
@@ -609,7 +609,7 @@ namespace RINGMesh {
         std::vector< index_t > cur_cell_per_type( GEO::MESH_NB_CELL_TYPES, 0 ) ;
         for( index_t r = 0; r < gm_.nb_regions(); ++r ) {
             const Region& cur_region = gm_.region( r ) ;
-            const GEO::Mesh& cur_region_mesh = cur_region.mesh() ;
+            const Mesh& cur_region_mesh = cur_region.mesh() ;
             for( index_t c = 0; c < gm_.region( r ).nb_cells(); ++c ) {
                 GEO::MeshCellType cur_cell_type = cur_region_mesh.cells.type( c ) ;
                 index_t cur_cell = cells_offset_per_type[cur_cell_type]
@@ -1255,7 +1255,7 @@ namespace RINGMesh {
 
     /*******************************************************************************/
 
-    GeoModelMeshFacets::GeoModelMeshFacets( GeoModelMesh& gmm, GEO::Mesh& mesh )
+    GeoModelMeshFacets::GeoModelMeshFacets( GeoModelMesh& gmm, Mesh& mesh )
         :
             gmm_( gmm ),
             gm_( gmm.model() ),
@@ -1601,7 +1601,7 @@ namespace RINGMesh {
     }
     /*******************************************************************************/
 
-    GeoModelMeshEdges::GeoModelMeshEdges( GeoModelMesh& gmm, GEO::Mesh& mesh )
+    GeoModelMeshEdges::GeoModelMeshEdges( GeoModelMesh& gmm, Mesh& mesh )
         : gmm_( gmm ), gm_( gmm.model() ), mesh_( mesh )
     {
     }
@@ -1680,7 +1680,7 @@ namespace RINGMesh {
         for( index_t w = 0; w < wells.nb_wells(); w++ ) {
             const Well& well = wells.well( w ) ;
             for( index_t p = 0; p < well.nb_parts(); p++ ) {
-                const GEO::Mesh& part = well.part( p ).mesh() ;
+                const Mesh& part = well.part( p ).mesh() ;
                 for( index_t e = 0; e < part.edges.nb(); e++ ) {
                     const vec3& e0 = GEO::Geom::mesh_vertex( part,
                         part.edges.vertex( e, 0 ) ) ;
@@ -1698,7 +1698,7 @@ namespace RINGMesh {
 
     /*******************************************************************************/
 
-    GeoModelMeshOrder::GeoModelMeshOrder( GeoModelMesh& gmm, GEO::Mesh& mesh )
+    GeoModelMeshOrder::GeoModelMeshOrder( GeoModelMesh& gmm, Mesh& mesh )
         :
             gmm_( gmm ),
             gm_( gmm.model() ),
@@ -1951,7 +1951,7 @@ namespace RINGMesh {
     GeoModelMesh::GeoModelMesh( GeoModel& gm )
         :
             gm_( gm ),
-            mesh_( new GEO::Mesh ),
+            mesh_( new Mesh ),
             mode_( GeoModelMeshCells::NONE ),
             order_value_( 1 ),
             vertices( *this, gm, *mesh_ ),
@@ -1960,7 +1960,7 @@ namespace RINGMesh {
             cells( *this, *mesh_ ),
             order( *this, *mesh_ )
     /*! @todo I am no expert but this initialization list looks like
-     * a ticking bomb (like those in GEO::Mesh, btw I don not understand how these can work)
+     * a ticking bomb (like those in Mesh, btw I don not understand how these can work)
      * If these classes are derived one day, I don't know what will happen [JP]*/
     {
 
