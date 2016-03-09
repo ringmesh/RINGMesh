@@ -2803,8 +2803,7 @@ namespace RINGMesh {
                         } else if( file_line_.field_matches( 1, "Depth" ) ) {
                             z_sign = -1 ;
                         } else {
-                            ringmesh_assert_not_reached
-                            ;
+                            ringmesh_assert_not_reached ;
                         }
                     } else if( file_line_.field_matches( 0, "END" ) ) {
                         // This the END of a TSurf
@@ -3178,8 +3177,7 @@ namespace RINGMesh {
         } else if( in == "Depth" ) {
             return -1 ;
         } else {
-            ringmesh_assert_not_reached
-            ;
+            ringmesh_assert_not_reached ;
             return 0 ;
         }
     }
