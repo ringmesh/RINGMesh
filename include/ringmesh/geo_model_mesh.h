@@ -1029,22 +1029,26 @@ namespace RINGMesh {
          */
         void copy_mesh( Mesh& mesh ) const
         {
-            mesh.copy( *mesh_ ) ;
+            mesh.copy( *mesh_, false, GEO::MESH_ALL_ELEMENTS ) ;
+        }
+        void save_mesh( const std::string& filename ) const
+        {
+            mesh_->save_mesh( filename ) ;
         }
 
-      /*  GEO::AttributesManager& vertex_attribute_manager() const
+        GEO::AttributesManager& vertex_attribute_manager() const
         {
-            return mesh_->vertices.attributes() ;
+            return mesh_->vertex_attribute_manager() ;
         }
         GEO::AttributesManager& facet_attribute_manager() const
         {
-            return mesh_->facets.attributes() ;
+            return mesh_->facet_attribute_manager() ;
         }
         GEO::AttributesManager& cell_attribute_manager() const
         {
-            return mesh_->cells.attributes() ;
+            return mesh_->cell_attribute_manager() ;
         }
-*/
+
         /*!
          * Access the DuplicateMode
          * @return the current DuplicateMode

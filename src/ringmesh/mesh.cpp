@@ -36,86 +36,58 @@
 /*! \author Francois Bonneau */
 
 #include <ringmesh/mesh.h>
+#include <ringmesh/geo_model.h>
+#include <geogram/mesh/mesh_AABB.h>
+
+
 //#include <geogram/mesh/mesh.h>
 
 namespace RINGMesh {
 
-    Mesh::Mesh( index_t dimension, bool single_precision )
+    const GEO::MeshFacetsAABB& Mesh::facets_aabb() const
     {
-        mesh_ = new GEO::Mesh( dimension, single_precision ) ;
+        GeoModel& M = const_cast< GeoModel& >( geo_model_elment_.model() ) ;
+        if( M.mesh.vertices.is_initialized() ) {
+            GEO::Logger::warn( "AABB" )
+                << "Creation of AABB results in deletion of the GeoModelMeshVertices"
+                << std::endl ;
+            M.mesh.vertices.clear() ;
+        }
+        if( facets_aabb_ == nil ) {
+            // Geogram triangulates the Mesh when creating the AABB tree
+            ringmesh_assert( mesh_->facets.are_simplices() ) ;
+
+            // Very bad side effect
+            // The root cause of the problem is the duplication of many things
+            // in our GeoModel structure [JP]
+            M.mesh.vertices.clear() ;
+
+            GEO::MeshFacetsAABB* facets_aabb_ = new GEO::MeshFacetsAABB( *mesh_ ) ;
+        }
+        return *facets_aabb_ ;
     }
 
-    Mesh::~Mesh()
+    const GEO::MeshCellsAABB& Mesh::cells_aabb() const
     {
-        delete mesh_ ;
-    }
+        GeoModel& M = const_cast< GeoModel& >( geo_model_elment_.model() ) ;
+        if( M.mesh.vertices.is_initialized() ) {
+            GEO::Logger::warn( "AABB" )
+                << "Creation of AABB results in deletion of the GeoModelMeshVertices"
+                << std::endl ;
+            M.mesh.vertices.clear() ;
+        }
+        if( cells_aabb_ == nil ) {
+            // Geogram triangulates the Mesh when creating the AABB tree
+            ringmesh_assert( mesh_->facets.are_simplices() ) ;
 
-    const vec3& Mesh::vertex( index_t v_id ) const
-    {
-        return mesh_->vertices.point( v_id ) ;
-    }
+            // Very bad side effect
+            // The root cause of the problem is the duplication of many things
+            // in our GeoModel structure [JP]
+            M.mesh.vertices.clear() ;
 
-    index_t Mesh::nb_vertices() const
-    {
-        return mesh_->vertices.nb() ;
-    }
-
-    index_t Mesh::edge_vertex( index_t edge_id, index_t vertex_id ) const
-    {
-        return mesh_->edges.vertex( edge_id, vertex_id ) ;
-    }
-
-    index_t Mesh::nb_edges() const
-    {
-        return mesh_->edges.nb() ;
-    }
-
-    index_t Mesh::facet_vertex( index_t facet_id, index_t vertex_id ) const
-    {
-        return mesh_->facets.vertex( facet_id, vertex_id ) ;
-    }
-
-    index_t Mesh::facet_adjacent( index_t facet_id, index_t vertex_id ) const
-    {
-        return mesh_->facets.adjacent( facet_id, vertex_id ) ;
-    }
-
-    index_t Mesh::nb_facets() const
-    {
-        return mesh_->facets.nb() ;
-    }
-
-    index_t Mesh::cell_vertex( index_t cell_id, index_t vertex_id ) const
-    {
-        return mesh_->cells.vertex( cell_id, vertex_id ) ;
-    }
-
-    index_t Mesh::cell_facet_vertex(
-        index_t cell_id,
-        index_t facet_id,
-        index_t vertex_id ) const
-    {
-        return mesh_->cells.facet_vertex( cell_id, facet_id, vertex_id ) ;
-    }
-
-    index_t Mesh::cell_adjacent( index_t cell_id, index_t facet_id ) const
-    {
-        return mesh_->cells.adjacent( cell_id, facet_id ) ;
-    }
-
-    index_t Mesh::nb_cell_facets( index_t cell_id ) const
-    {
-        return mesh_->cells.nb_facets( cell_id ) ;
-    }
-
-    index_t Mesh::nb_cell_facet_vertices( index_t cell_id, index_t facet_id ) const
-    {
-        return mesh_->cells.facet_nb_vertices( cell_id, facet_id ) ;
-    }
-
-    index_t Mesh::nb_cells() const
-    {
-        return mesh_->cells.nb() ;
+            GEO::MeshCellsAABB* cells_aabb_ = new GEO::MeshCellsAABB( *mesh_ ) ;
+        }
+        return *cells_aabb_ ;
     }
 
 } // namespace

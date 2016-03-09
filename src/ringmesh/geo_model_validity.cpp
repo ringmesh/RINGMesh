@@ -59,6 +59,7 @@
 
 #include <geogram/points/colocate.h>
 
+#include <ringmesh/mesh.h>
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_api.h>
 #include <ringmesh/geogram_extension.h>
@@ -72,7 +73,6 @@
 
 namespace {
 
-    using namespace GEO ;
     using namespace RINGMesh ;
     using GEO::index_t ;
     using GEO::vec3 ;
@@ -125,23 +125,18 @@ namespace {
         const Mesh& M,
         index_t f1,
         index_t f2,
-        vector< TriangleIsect >& sym )
+        GEO::vector< GEO::TriangleIsect >& sym )
     {
-        ringmesh_assert( M.facets.nb_vertices( f1 ) == 3 ) ;
-        ringmesh_assert( M.facets.nb_vertices( f2 ) == 3 ) ;
-        index_t c1 = M.facets.corners_begin( f1 ) ;
-        const vec3& p1 = GEO::Geom::mesh_vertex( M, M.facet_corners.vertex( c1 ) ) ;
-        const vec3& p2 = GEO::Geom::mesh_vertex( M,
-            M.facet_corners.vertex( c1 + 1 ) ) ;
-        const vec3& p3 = GEO::Geom::mesh_vertex( M,
-            M.facet_corners.vertex( c1 + 2 ) ) ;
+        ringmesh_assert( M.facet_nb_vertices( f1 ) == 3 ) ;
+        ringmesh_assert( M.facet_nb_vertices( f2 ) == 3 ) ;
+        const vec3& p1 = M.vertex( M.facet_vertex( f1, 0 ) ) ;
+        const vec3& p2 = M.vertex( M.facet_vertex( f1, 1 ) ) ;
+        const vec3& p3 = M.vertex( M.facet_vertex( f1, 2 ) ) ;
 
-        index_t c2 = M.facets.corners_begin( f2 ) ;
-        const vec3& q1 = GEO::Geom::mesh_vertex( M, M.facet_corners.vertex( c2 ) ) ;
-        const vec3& q2 = GEO::Geom::mesh_vertex( M,
-            M.facet_corners.vertex( c2 + 1 ) ) ;
-        const vec3& q3 = GEO::Geom::mesh_vertex( M,
-            M.facet_corners.vertex( c2 + 2 ) ) ;
+        const vec3& q1 = M.vertex( M.facet_vertex( f2, 0 ) ) ;
+        const vec3& q2 = M.vertex( M.facet_vertex( f2, 1 ) ) ;
+        const vec3& q3 = M.vertex( M.facet_vertex( f2, 2 ) ) ;
+
         return triangles_intersections( p1, p2, p3, q1, q2, q3, sym ) ;
     }
 
@@ -243,23 +238,21 @@ namespace {
         index_t f1,
         index_t f2 )
     {
-        ringmesh_assert( M.facets.nb_vertices( f1 ) == 3 ) ;
-        ringmesh_assert( M.facets.nb_vertices( f2 ) == 3 ) ;
+        ringmesh_assert( M.facet_nb_vertices( f1 ) == 3 ) ;
+        ringmesh_assert( M.facet_nb_vertices( f2 ) == 3 ) ;
 
         // I only want to test the edges that are on boundary 
         for( index_t i = 0; i < 3; ++i ) {
-            if( M.facets.adjacent( f1, i ) == NO_ID ) {
+            if( M.facet_adjacent( f1, i ) == NO_ID ) {
                 for( index_t j = 0; j < 3; ++j ) {
-                    if( M.facets.adjacent( f2, j ) == NO_ID ) {
-                        const vec3& p10 = M.vertices.point(
-                            M.facets.vertex( f1, i ) ) ;
-                        const vec3& p11 = M.vertices.point(
-                            M.facets.vertex( f1, i == 2 ? 0 : i + 1 ) ) ;
+                    if( M.facet_adjacent( f2, j ) == NO_ID ) {
+                        const vec3& p10 = M.vertex( M.facet_vertex( f1, i ) ) ;
+                        const vec3& p11 = M.vertex(
+                            M.facet_vertex( f1, i == 2 ? 0 : i + 1 ) ) ;
 
-                        const vec3& p20 = M.vertices.point(
-                            M.facets.vertex( f2, j ) ) ;
-                        const vec3& p21 = M.vertices.point(
-                            M.facets.vertex( f2, j == 2 ? 0 : j + 1 ) ) ;
+                        const vec3& p20 = M.vertex( M.facet_vertex( f2, j ) ) ;
+                        const vec3& p21 = M.vertex(
+                            M.facet_vertex( f2, j == 2 ? 0 : j + 1 ) ) ;
 
                         index_t v10 = BM.mesh.vertices.index( p10 ) ;
                         index_t v11 = BM.mesh.vertices.index( p11 ) ;
@@ -299,9 +292,8 @@ namespace {
         if( f1 == f2 ) {
             return true ;
         }
-        for( index_t c = M.facets.corners_begin( f1 );
-            c != M.facets.corners_end( f1 ); ++c ) {
-            if( M.facet_corners.adjacent_facet( c ) == f2 ) {
+        for( index_t c = 0; c != M.facet_nb_vertices( f1 ); ++c ) {
+            if( M.facet_adjacent( f1, c ) == f2 ) {
                 return true ;
             }
         }
@@ -323,10 +315,10 @@ namespace {
         StoreIntersections(
             const Mesh& M,
             const GeoModel& BM,
-            vector< index_t >& has_isect )
+            GEO::vector< index_t >& has_isect )
             : M_( M ), BM_( BM ), has_intersection_( has_isect )
         {
-            has_intersection_.assign( M.facets.nb(), 0 ) ;
+            has_intersection_.assign( M.nb_facets(), 0 ) ;
         }
 
         /**
@@ -348,8 +340,8 @@ namespace {
     private:
         const Mesh& M_ ;
         const GeoModel& BM_ ;
-        vector< index_t >& has_intersection_ ;
-        vector< TriangleIsect > sym_ ;
+        GEO::vector< index_t >& has_intersection_ ;
+        GEO::vector< GEO::TriangleIsect > sym_ ;
     } ;
 
     /** \note Copied from geogram
@@ -359,11 +351,11 @@ namespace {
      */
     index_t detect_intersecting_facets( const GeoModel& model, Mesh& M )
     {
-        geo_assert( M.vertices.dimension() >= 3 ) ;
+        geo_assert( M.vertices_dimension() >= 3 ) ;
 
-        vector< index_t > has_intersection ;
+        GEO::vector< index_t > has_intersection ;
         StoreIntersections action( M, model, has_intersection ) ;
-        MeshFacetsAABB AABB( M ) ;
+        const GEO::MeshFacetsAABB& AABB = M.facets_aabb() ;
         AABB.compute_facet_bbox_intersections( action ) ;
 
         index_t nb_intersections = static_cast< index_t >( std::count(
@@ -375,9 +367,9 @@ namespace {
                 if( !has_intersection[f] ) continue ;
                 GEO::vector< index_t > vertices ;
                 vertices.reserve( 3 ) ;
-                for( index_t v = 0; v < M.facets.nb_vertices( f ); v++ ) {
+                for( index_t v = 0; v < M.facet_nb_vertices( f ); v++ ) {
                     index_t id = mesh.vertices.create_vertex(
-                        M.vertices.point_ptr( M.facets.vertex( f, v ) ) ) ;
+                        M.vertex( M.facet_vertex( f, v ) ).data() ) ;
                     vertices.push_back( id ) ;
                 }
                 mesh.facets.create_polygon( vertices ) ;
@@ -456,7 +448,7 @@ namespace {
      *       bool operator() (index_t v1, index_t v2) const ;
      */
     template< typename P >
-    void repair_connect_facets( Mesh& M, P is_border )
+    void repair_connect_facets( GEO::Mesh& M, P is_border )
     {
         const index_t NO_FACET = index_t( -1 ) ;
         const index_t NO_CORNER = index_t( -1 ) ;
@@ -464,17 +456,17 @@ namespace {
 
         // Reset all facet-facet adjacencies.
         for( index_t c = 0; c < M.facet_corners.nb(); ++c ) {
-            M.facet_corners.set_adjacent_facet( c, NO_FACET ) ;
+            M.facet_corners.set_adjacent_facet( c, GEO::NO_FACET ) ;
         }
 
         // For each vertex v, v2c[v] gives the index of a 
         // corner incident to vertex v.
-        vector< index_t > v2c( M.vertices.nb(), NO_CORNER ) ;
+        GEO::vector< index_t > v2c( M.vertices.nb(), GEO::NO_CORNER ) ;
 
         // For each corner c, next_c_around_v[c] is the 
         // linked list of all the corners incident to 
         // vertex v.
-        vector< index_t > next_c_around_v( M.facet_corners.nb(), NO_CORNER ) ;
+        GEO::vector< index_t > next_c_around_v( M.facet_corners.nb(), NO_CORNER ) ;
 
         // Compute v2c and next_c_around_v
         for( index_t c = 0; c < M.facet_corners.nb(); ++c ) {
@@ -554,7 +546,7 @@ namespace {
      */
     class EdgeOnLine {
     public:
-        EdgeOnLine( const GeoModel& model, Mesh& non_manifold )
+        EdgeOnLine( const GeoModel& model, GEO::Mesh& non_manifold )
             : M_( model ), non_manifold_( non_manifold )
         {
         }
@@ -577,8 +569,8 @@ namespace {
     /*----------------------------------------------------------------------------*/
 
     /*!
-    * @brief Get the GMME defining the boundaries of an element
-    */
+     * @brief Get the GMME defining the boundaries of an element
+     */
     void boundary_gmme(
         const GME& E,
         std::vector< GME::gme_t >& borders,
@@ -615,10 +607,10 @@ namespace {
     }
 
     /*!
-    * @brief Get the elements in the boundary of which @param E is
-    * @details For GMME, get the contents of the in_boundary vector
-    *          For high level elements, determine in_boundary high level elements
-    */
+     * @brief Get the elements in the boundary of which @param E is
+     * @details For GMME, get the contents of the in_boundary vector
+     *          For high level elements, determine in_boundary high level elements
+     */
     void in_boundary_gme( const GME& E, std::vector< GME::gme_t >& in_boundary )
     {
         in_boundary.clear() ;
