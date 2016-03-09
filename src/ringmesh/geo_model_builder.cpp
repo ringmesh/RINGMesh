@@ -3683,16 +3683,6 @@ namespace RINGMesh {
         GEO::AttributesManager& attribute_manager,
         GEO::LineInput& att_file )
     {
-        index_t countt = 0 ;
-//        while( !att_file.eof() && att_file.get_line() ) {
-//            for( index_t i = 0; i < att_file.nb_fields(); i++ ) {
-//                std::cout << att_file.field( i ) << " " ;
-//            }
-//            countt++ ;
-//
-//
-//            std::cout << std::endl ;
-//        }
         while( !att_file.eof() && att_file.get_line() ) {
             att_file.get_fields() ;
             if( att_file.field_matches( 0, "#" ) ) {
