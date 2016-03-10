@@ -62,18 +62,18 @@
 
 namespace RINGMesh {
 
-    define_color( yellow, 0xff, 0xff, 0x00 );
-    define_color( violet, 0x7f, 0x00, 0x7f );
-    define_color( indigo, 0xbf, 0x00, 0xbf );
-    define_color( blue, 0x00, 0x00, 0xff );
-    define_color( black, 0x00, 0x00, 0x00 );
-    define_color( orange, 0xff, 0x7f, 0x00 );
-    define_color( white, 0xff, 0xff, 0xff );
-    define_color( red, 0xff, 0x00, 0x00 );
-    define_color( green, 0x00, 0xff, 0x00 );
-    define_color( brown, 0x66, 0x33, 0x00 );
-    define_color( purple, 0xa0, 0x20, 0xf0 );
-    define_color( pink, 0xff, 0x69, 0xb4 );
+    define_color( yellow, 0xff, 0xff, 0x00 ) ;
+    define_color( violet, 0x7f, 0x00, 0x7f ) ;
+    define_color( indigo, 0xbf, 0x00, 0xbf ) ;
+    define_color( blue, 0x00, 0x00, 0xff ) ;
+    define_color( black, 0x00, 0x00, 0x00 ) ;
+    define_color( orange, 0xff, 0x7f, 0x00 ) ;
+    define_color( white, 0xff, 0xff, 0xff ) ;
+    define_color( red, 0xff, 0x00, 0x00 ) ;
+    define_color( green, 0x00, 0xff, 0x00 ) ;
+    define_color( brown, 0x66, 0x33, 0x00 ) ;
+    define_color( purple, 0xa0, 0x20, 0xf0 ) ;
+    define_color( pink, 0xff, 0x69, 0xb4 ) ;
 
     class MeshElementGfx: public GEO::MeshGfx {
     ringmesh_disable_copy( MeshElementGfx ) ;
@@ -134,17 +134,20 @@ namespace RINGMesh {
                 }
             }
         }
-        void compute_vertex_attribute_range( double& min, double& max, index_t coordinate )
+        void compute_vertex_attribute_range(
+            double& min,
+            double& max,
+            index_t coordinate )
         {
             if( !vertex_attr_.is_bound() ) return ;
             index_t att_dim = vertex_attr_.dimension() ;
             for( index_t v = 0; v < mesh()->vertices.nb(); v++ ) {
-                const double& value = vertex_attr_[att_dim*v +coordinate] ;
+                const double& value = vertex_attr_[att_dim * v + coordinate] ;
                 if( value < min ) min = value ;
                 if( value > max ) max = value ;
             }
         }
-        void compute_vertex_attribute_buffer(index_t coordinate)
+        void compute_vertex_attribute_buffer( index_t coordinate )
         {
             if( strcmp( glupCurrentProfileName(), "VanillaGL" )
                 && mesh()->vertices.nb() > 0 && vertex_attr_.is_bound() ) {
@@ -154,7 +157,8 @@ namespace RINGMesh {
 
                 for( index_t v = 0; v < mesh()->vertices.nb(); v++ ) {
                     data[v] =
-                        ( vertex_attr_[att_dim*v + coordinate] - gfx_.cell_vertex_min_attr_ )
+                        ( vertex_attr_[att_dim * v + coordinate]
+                            - gfx_.cell_vertex_min_attr_ )
                             / ( gfx_.cell_vertex_max_attr_
                                 - gfx_.cell_vertex_min_attr_ ) ;
                 }
@@ -396,7 +400,7 @@ namespace RINGMesh {
             return region_visible_ ;
         }
 
-        void compute_cell_attribute_buffer(index_t coordinate)
+        void compute_cell_attribute_buffer( index_t coordinate )
         {
             if( strcmp( glupCurrentProfileName(), "VanillaGL" )
                 && mesh()->cells.nb() > 0 && mesh()->cells.are_simplices()
@@ -413,7 +417,8 @@ namespace RINGMesh {
                     vertices[3 * c + 1] = vertex.y ;
                     vertices[3 * c + 2] = vertex.z ;
                     indices[c] = c ;
-                    data[c] = ( cell_attr_[att_dim*(c / 4) + coordinate] - gfx_.cell_min_attr_ )
+                    data[c] = ( cell_attr_[att_dim * ( c / 4 ) + coordinate]
+                        - gfx_.cell_min_attr_ )
                         / ( gfx_.cell_max_attr_ - gfx_.cell_min_attr_ ) ;
                 }
 
@@ -448,7 +453,7 @@ namespace RINGMesh {
             }
         }
 
-        void bind_cell_attribute( const std::string& name  )
+        void bind_cell_attribute( const std::string& name )
         {
             if( !cell_attr_.is_bound() || cell_attr_name_ != name ) {
                 vertex_attr_name_ = name ;
@@ -461,12 +466,15 @@ namespace RINGMesh {
                 }
             }
         }
-        void compute_cell_attribute_range( double& min, double& max,index_t coordinate )
+        void compute_cell_attribute_range(
+            double& min,
+            double& max,
+            index_t coordinate )
         {
             if( !cell_attr_.is_bound() ) return ;
             index_t att_dim = cell_attr_.dimension() ;
             for( index_t c = 0; c < mesh()->cells.nb(); c++ ) {
-                const double& value = cell_attr_[att_dim*c+coordinate] ;
+                const double& value = cell_attr_[att_dim * c + coordinate] ;
                 if( value < min ) min = value ;
                 if( value > max ) max = value ;
             }
@@ -586,7 +594,7 @@ namespace RINGMesh {
         GL_UNSIGNED_BYTE, colormap.data() ) ;
     }
 
-    void GeoModelGfx::compute_cell_vertex_attribute_range(index_t coordinate)
+    void GeoModelGfx::compute_cell_vertex_attribute_range( index_t coordinate )
     {
         cell_vertex_min_attr_ = max_float64() ;
         cell_vertex_max_attr_ = min_float64() ;
@@ -596,13 +604,13 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelGfx::compute_cell_attribute_range(index_t coordinate)
+    void GeoModelGfx::compute_cell_attribute_range( index_t coordinate )
     {
         cell_min_attr_ = max_float64() ;
         cell_max_attr_ = min_float64() ;
         for( index_t r = 0; r < regions_.size(); r++ ) {
             regions_[r]->compute_cell_attribute_range( cell_min_attr_,
-                cell_max_attr_,coordinate ) ;
+                cell_max_attr_, coordinate ) ;
         }
     }
 
@@ -613,9 +621,9 @@ namespace RINGMesh {
         for( index_t r = 0; r < regions_.size(); r++ ) {
             regions_[r]->bind_vertex_attribute( name ) ;
         }
-        compute_cell_vertex_attribute_range(coordinate) ;
+        compute_cell_vertex_attribute_range( coordinate ) ;
         for( index_t r = 0; r < regions_.size(); r++ ) {
-            regions_[r]->compute_vertex_attribute_buffer(coordinate) ;
+            regions_[r]->compute_vertex_attribute_buffer( coordinate ) ;
         }
     }
 
@@ -626,9 +634,9 @@ namespace RINGMesh {
         for( index_t r = 0; r < regions_.size(); r++ ) {
             regions_[r]->bind_cell_attribute( name ) ;
         }
-        compute_cell_attribute_range( coordinate) ;
+        compute_cell_attribute_range( coordinate ) ;
         for( index_t r = 0; r < regions_.size(); r++ ) {
-            regions_[r]->compute_cell_attribute_buffer(coordinate) ;
+            regions_[r]->compute_cell_attribute_buffer( coordinate ) ;
         }
     }
 
