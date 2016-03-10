@@ -584,16 +584,17 @@ namespace RINGMesh {
                     default:
                         ringmesh_assert_not_reached;
                         break ;
-                    }
                 }
             }
+        }
 
-            // Compute the cell offsets
+        // Compute the cell offsets
         std::vector< index_t > cells_offset_per_type( GEO::MESH_NB_CELL_TYPES, 0 ) ;
         for( index_t t = GEO::MESH_TET + 1; t < GEO::MESH_NB_CELL_TYPES; t++ ) {
             cells_offset_per_type[t] += cells_offset_per_type[t - 1] ;
-            cells_offset_per_type[t] += nb_cells_per_type[t] ;
+            cells_offset_per_type[t] += nb_cells_per_type[t - 1] ;
         }
+
         for( index_t i = 1; i < region_cell_ptr_.size() - 1; i++ ) {
             region_cell_ptr_[i + 1] += region_cell_ptr_[i] ;
         }
@@ -610,11 +611,11 @@ namespace RINGMesh {
         for( index_t r = 0; r < gm_.nb_regions(); ++r ) {
             const Region& cur_region = gm_.region( r ) ;
             const GEO::Mesh& cur_region_mesh = cur_region.mesh() ;
-            for( index_t c = 0; c < gm_.region( r ).nb_cells(); ++c ) {
+            for( index_t c = 0; c < cur_region.nb_cells(); ++c ) {
                 GEO::MeshCellType cur_cell_type = cur_region_mesh.cells.type( c ) ;
                 index_t cur_cell = cells_offset_per_type[cur_cell_type]
                     + cur_cell_per_type[cur_cell_type]++ ;
-                for( index_t v = 0; v < mesh_.cells.nb_vertices( cur_cell ); v++ ) {
+                for( index_t v = 0; v < cur_region_mesh.cells.nb_vertices( c ); v++ ) {
                     mesh_.cells.set_vertex( cur_cell, v,
                         cur_region.model_vertex_id(
                             cur_region_mesh.cells.vertex( c, v ) ) ) ;
@@ -724,23 +725,11 @@ namespace RINGMesh {
         return c - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * region( c )] ;
     }
 
-    GEO::MeshCellType GeoModelMeshCells::type( index_t c, index_t& index ) const
+    GEO::MeshCellType GeoModelMeshCells::type( index_t c ) const
     {
         test_and_initialize() ;
         ringmesh_assert( c < mesh_.cells.nb() ) ;
-        index_t cell = index_in_region( c ) ;
-        index_t r = region( c ) ;
-        for( index_t t = GEO::MESH_TET; t < GEO::MESH_NB_CELL_TYPES; t++ ) {
-            GEO::MeshCellType T = static_cast< GEO::MeshCellType >( t ) ;
-            if( cell < nb_cells( r, T ) ) {
-                index = cell ;
-                return T ;
-            }
-            cell -= nb_cells( r, T ) ;
-        }
-        index = NO_ID ;
-        ringmesh_assert_not_reached;
-        return GEO::MESH_NB_CELL_TYPES ;
+        return mesh_.cells.type( c ) ;
     }
 
     index_t GeoModelMeshCells::nb_cells( GEO::MeshCellType type ) const
@@ -780,6 +769,9 @@ namespace RINGMesh {
             case GEO::MESH_CONNECTOR:
                 return nb_connector( r ) ;
             case GEO::MESH_NB_CELL_TYPES:
+                ringmesh_assert( region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * ( r + 1 )]
+                    - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r]
+                    == gm_.region( r ).nb_cells() ) ;
                 return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * ( r + 1 )]
                     - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r] ;
             default:
@@ -1942,8 +1934,7 @@ namespace RINGMesh {
     {
         test_and_initialize() ;
         ringmesh_assert( c < gmm_.cells.nb() ) ;
-        index_t not_used ;
-        return nb_high_order_points_per_cell_type_[gmm_.cells.type( c, not_used )] ;
+        return nb_high_order_points_per_cell_type_[gmm_.cells.type( c )] ;
     }
 
     /*******************************************************************************/
