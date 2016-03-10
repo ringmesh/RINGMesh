@@ -37,6 +37,7 @@
 #define __RINGMESH_GEO_MODEL_BUILDER__
 
 #include <ringmesh/common.h>
+#include <third_party/zlib/unzip.h>
 
 #include <vector>
 #include <string>
@@ -45,7 +46,8 @@
 #include <geogram/basic/line_stream.h>
 
 #include <ringmesh/geo_model_editor.h>
-
+#define MAX_FILENAME 512
+#define READ_SIZE 8192
 /*!
  * @file ringmesh/geo_model_builder.h
  * @brief Classes to build GeoModel from various inputs
@@ -149,7 +151,6 @@ namespace RINGMesh {
             index_t region_id,
             const std::vector< vec3 >& points,
             const std::vector< index_t >& tetras ) ;
-
 
         /*! @}
          * \name Set element geometry using global GeoModel vertices
@@ -383,13 +384,23 @@ namespace RINGMesh {
             load_file() ;
             end_model() ;
         }
+
+        ///TODO these are temporary protected here. after they will be only in GeoModelBuilderGM
+    protected:
+        static GME::TYPE match_nb_elements( const char* s ) ;
+        static GME::TYPE match_type( const char* s ) ;
+        static bool match_high_level_type( const char* s )
+        {
+            return GME::child_allowed( match_type( s ) ) ;
+        }
+
     private:
         virtual void load_file() = 0 ;
         /*! @todo Implement function to read the lines of the 
          *        file and wrap the GEO::LineInput which is not that easy to use 
          */
     protected:
-        GEO::LineInput file_ ;
+        std::string filename_ ;
     } ;
 
     /*!
@@ -398,8 +409,11 @@ namespace RINGMesh {
     class RINGMESH_API GeoModelBuilderGocad: public GeoModelBuilderFile {
     public:
         GeoModelBuilderGocad( GeoModel& model, const std::string& filename )
-            : GeoModelBuilderFile( model, filename )
+            : GeoModelBuilderFile( model, filename ), file_line_( filename )
         {
+            if( !file_line_.OK() ) {
+                throw RINGMeshException( "I/O", "Failed to open file " + filename ) ;
+            }
         }
         virtual ~GeoModelBuilderGocad()
         {
@@ -434,14 +448,16 @@ namespace RINGMesh {
             bool& same_orientation ) const ;
 
         /*!
-        * Read the coordinates system information of files exported from Gocad.
-        * @param[in] in The orientation of z-axis in Gocad. "Elevation" for
-        * increasing z toward top and "Depth" for increasing z toward bottom.
-        * @return Return 1 if Elevation direction, -1 if Depth direction.
-        */
+         * Read the coordinates system information of files exported from Gocad.
+         * @param[in] in The orientation of z-axis in Gocad. "Elevation" for
+         * increasing z toward top and "Depth" for increasing z toward bottom.
+         * @return Return 1 if Elevation direction, -1 if Depth direction.
+         */
         int read_gocad_coordinates_system( const std::string& in ) ;
 
     private:
+        GEO::LineInput file_line_ ;
+
         /*!
          * @brief Triangle that set the orientation of a TFACE
          *        in a .ml file
@@ -460,12 +476,16 @@ namespace RINGMesh {
 
     /*!
      * @brief Build a GeoModel from a file_model.bm
+     * @TODO this class gonna disapear soon
      */
     class RINGMESH_API GeoModelBuilderBM: public GeoModelBuilderFile {
     public:
         GeoModelBuilderBM( GeoModel& model, const std::string& filename )
-            : GeoModelBuilderFile( model, filename )
+            : GeoModelBuilderFile( model, filename ), file_line_( filename )
         {
+            if( !file_line_.OK() ) {
+                throw RINGMeshException( "I/O", "Failed to open file " + filename ) ;
+            }
         }
         virtual ~GeoModelBuilderBM()
         {
@@ -474,12 +494,53 @@ namespace RINGMesh {
     private:
         void load_file() ;
 
-        static GME::TYPE match_nb_elements( const char* s ) ;
-        static GME::TYPE match_type( const char* s ) ;
-        static bool match_high_level_type( const char* s )
+    private:
+        GEO::LineInput file_line_ ;
+
+    } ;
+
+    class RINGMESH_API GeoModelBuilderGM: public GeoModelBuilderFile {
+    public:
+        GeoModelBuilderGM( GeoModel& model, const std::string& filename )
+            : GeoModelBuilderFile( model, filename )
         {
-            return GME::child_allowed( match_type( s ) ) ;
         }
+        virtual ~GeoModelBuilderGM()
+        {
+        }
+
+    private:
+        /*!
+         * @brief Load the connectivities. These are how corners are
+         * connected to lines, lines connected to surfaces and surfaces
+         * connected to regions
+         */
+        void load_connectivities( GEO::LineInput& file_line ) ;
+        /*!
+         * @brief Load elements of one type from a zip file
+         * @param[in] gme_t the GeoModelElement type
+         * @param[in] uz the zip file
+         */
+        void load_elements( GME::TYPE gme_t, unzFile& uz ) ;
+
+        void load_file() ;
+        /*!
+         * @brief Unzip a file in a zip file and set it to the current unZIP file
+         */
+        void unzip_one_file( unzFile& uz, const char filename[MAX_FILENAME] ) ;
+
+        /*!
+         * @brief Load the topology. Topology is how corners, lines, surfaces and
+         * regions are organized into contacts, interfaces and layers. It also contains
+         * basics information on the GeoModel.
+         */
+        void load_topology( GEO::LineInput& file_line ) ;
+
+        void load_attributes(unzFile& uz) ;
+
+        void write_on_attribute_manager(
+                GEO::AttributesManager& attribute_manager,
+                GEO::LineInput& att_file ) ;
     } ;
 }
 

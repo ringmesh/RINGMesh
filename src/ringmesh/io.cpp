@@ -35,6 +35,10 @@
 
 #include <ringmesh/io.h>
 
+#include <geogram/basic/file_system.h>
+#include <geogram/mesh/mesh.h>
+#include <geogram/basic/string.h>
+
 #include <cstring>
 #include <fstream>
 
@@ -77,11 +81,99 @@ namespace RINGMesh {
         delete[] rBuffer ;
         return true ;
     }
-   
+
     void mesh_initialize()
     {
-        GeoModelSurfaceIOHandler::initialize() ;
-        GeoModelVolumeIOHandler::initialize() ;
+        GeoModelIOHandler::initialize_full_geomodel_output() ;
+        GeoModelIOHandler::initialize_boundary_geomodel_output() ;
         WellGroupIOHandler::initialize() ;
+    }
+
+
+    /***************************************************************************/
+
+
+
+    void zip_file( zipFile zf, const std::string& name )
+    {
+        zip_fileinfo zfi = { 0 } ;
+        std::fstream file( name.c_str(), std::ios::in | std::ios::binary ) ;
+        file.seekg( 0, std::ios::end ) ;
+        long size = file.tellg() ;
+        file.seekg( 0, std::ios::beg ) ;
+        std::vector< char > buffer( size ) ;
+        file.read( &buffer[0], size ) ;
+        zipOpenNewFileInZip( zf, name.c_str(), &zfi,
+        NULL, 0, NULL, 0, NULL, Z_DEFLATED, Z_DEFAULT_COMPRESSION ) ;
+        zipWriteInFileInZip( zf, size == 0 ? "" : &buffer[0], size ) ;
+        zipCloseFileInZip( zf ) ;
+        file.close() ;
+    }
+
+    void unzip_file( unzFile uz, char filename[MAX_FILENAME] )
+    {
+        char read_buffer[ READ_SIZE] ;
+        unz_file_info file_info ;
+        if( unzGetCurrentFileInfo( uz, &file_info, filename,
+        MAX_FILENAME,
+        NULL, 0, NULL, 0 ) != UNZ_OK ) {
+            unzClose( uz ) ;
+            throw RINGMeshException( "ZLIB", "Could not read file global info" ) ;
+        }
+        if( unzOpenCurrentFile( uz ) != UNZ_OK ) {
+            unzClose( uz ) ;
+            throw RINGMeshException( "ZLIB", "Could not open file" ) ;
+        }
+        FILE *out = fopen( filename, "wb" ) ;
+        if( out == NULL ) {
+            unzCloseCurrentFile( uz ) ;
+            unzClose( uz ) ;
+            throw RINGMeshException( "ZLIB", "Could not open destination file" ) ;
+        }
+        int error = UNZ_OK ;
+        do {
+            error = unzReadCurrentFile( uz, read_buffer, READ_SIZE ) ;
+            if( error < 0 ) {
+                unzCloseCurrentFile( uz ) ;
+                unzClose( uz ) ;
+                fclose( out ) ;
+                throw RINGMeshException( "ZLIB",
+                    "Invalid error: " + GEO::String::to_string( error ) ) ;
+            }
+            if( error > 0 ) {
+                fwrite( read_buffer, error, 1, out ) ;
+            }
+        } while( error > 0 ) ;
+        fclose( out ) ;
+        unzCloseCurrentFile( uz ) ;
+    }
+
+    /***************************************************************************/
+
+
+
+    GeoModelIOHandler* GeoModelIOHandler::create( const std::string& format )
+    {
+        GeoModelIOHandler* handler = IOHandlerFactory::create_object(
+            format ) ;
+        if( !handler ) {
+            std::vector< std::string > names ;
+            IOHandlerFactory::list_creators( names ) ;
+            GEO::Logger::err( "I/O" ) << "Currently supported file formats are: " ;
+            for( index_t i = 0; i < names.size(); i++ ) {
+                GEO::Logger::err( "I/O" ) << " " << names[i] ;
+            }
+            GEO::Logger::err( "I/O" ) << std::endl ;
+
+            throw RINGMeshException( "I/O", "Unsupported file format: " + format ) ;
+        }
+        return handler ;
+    }
+
+    GeoModelIOHandler* GeoModelIOHandler::get_handler(
+        const std::string& filename )
+    {
+        std::string ext = GEO::FileSystem::extension( filename ) ;
+        return create( ext ) ;
     }
 }
