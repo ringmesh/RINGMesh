@@ -97,7 +97,7 @@ namespace RINGMesh {
         void initialize() ;
 
         void compute_colormap() ;
-        void bind_cell_vertex_attribute( const std::string& name, index_t coordinate  ) ;
+        void bind_cell_vertex_attribute( const std::string& name, index_t coordinate ) ;
         void bind_cell_attribute( const std::string& name, index_t coordinate ) ;
 
         void draw_corners() ;
@@ -204,7 +204,7 @@ namespace RINGMesh {
         void set_cell_region_shrink( index_t m, double s ) ;
 
     private:
-        void compute_cell_vertex_attribute_range(index_t coordinate) ;
+        void compute_cell_vertex_attribute_range( index_t coordinate ) ;
         void compute_cell_attribute_range( index_t coordinate) ;
 
     private:
