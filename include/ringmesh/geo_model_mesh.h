@@ -621,7 +621,7 @@ namespace RINGMesh {
          * of the corresponding type of \p c in the owing region
          * @return the type of the cell \p f
          */
-        GEO::MeshCellType type( index_t c, index_t& index ) const ;
+        GEO::MeshCellType type( index_t c ) const ;
 
         /*!
          * Get the number of cells of the corresponding type
