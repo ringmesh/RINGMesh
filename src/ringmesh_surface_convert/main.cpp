@@ -78,6 +78,8 @@ int main( int argc, char** argv )
                 << std::endl
                 << "out_format: a non empty list of output format amongst:"
                 << "obj mesh meshb ply off stl " << std::endl
+                << "Sould be launched in the directory that contains the .ts " <<
+                "files to convert"<< std::endl
                 << "This will create a directory for each selected output format "
                 << "in the directory one level above the current one,"
                 << " and create a new file with the corresponding format for "
@@ -118,9 +120,13 @@ int main( int argc, char** argv )
         if( !GEO::FileSystem::set_current_working_directory( ".." ) ) {
             throw RINGMeshException( "I/O", "Can't access parent directory." ) ;
         }
+        
+        std::string saving_directory =
+            GEO::FileSystem::get_current_working_directory() ;
         for( index_t format_itr = 0; format_itr < output_formats.size();
             ++format_itr ) {
-            if( !GEO::FileSystem::create_directory( output_formats[format_itr] ) ) {
+            if( !GEO::FileSystem::create_directory(
+                saving_directory + "/" + output_formats[format_itr] ) ) {
                 throw RINGMeshException( "I/O",
                     "Can't create " + output_formats[format_itr] + " directory." ) ;
             }
