@@ -542,7 +542,8 @@ namespace {
             } else {
                 if( T == GME::LINE || T == GME::CONTACT ) {
                     // There are only points to add
-                    M.vertices.create_vertices( borders.size() ) ;
+                    M.vertices.create_vertices(
+                        static_cast<index_t> ( borders.size() ) ) ;
                     for( index_t i = 0; i < borders.size(); ++i ) {
                         M.vertices.point( i ) =
                             E.model().mesh_element( borders[i] ).vertex() ;
