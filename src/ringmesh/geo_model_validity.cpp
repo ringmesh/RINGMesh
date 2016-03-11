@@ -540,11 +540,11 @@ namespace {
             if( borders.empty() ) {
                 return ;
             } else {
+                const index_t nb_borders = static_cast<index_t> ( borders.size() ) ;
                 if( T == GME::LINE || T == GME::CONTACT ) {
                     // There are only points to add
-                    M.vertices.create_vertices(
-                        static_cast<index_t> ( borders.size() ) ) ;
-                    for( index_t i = 0; i < borders.size(); ++i ) {
+                    M.vertices.create_vertices( nb_borders ) ;
+                    for( index_t i = 0; i < nb_borders; ++i ) {
                         M.vertices.point( i ) =
                             E.model().mesh_element( borders[i] ).vertex() ;
                     }
@@ -558,7 +558,7 @@ namespace {
                     old2new.fill( NO_ID ) ;
 
                     // Add the vertices 
-                    for( index_t i = 0; i < borders.size(); ++i ) {
+                    for( index_t i = 0; i < nb_borders; ++i ) {
                         const GMME& b = model.mesh_element( borders[i] ) ;
                         for( index_t v = 0; v < b.nb_vertices(); ++v ) {
                             index_t global_v = b.model_vertex_id( v ) ;
@@ -571,7 +571,7 @@ namespace {
 
                     if( T == GME::SURFACE || T == GME::INTERFACE ) {
                         // Build edges
-                        for( index_t i = 0; i < borders.size(); ++i ) {
+                        for( index_t i = 0; i < nb_borders; ++i ) {
                             ringmesh_assert( borders[i].type == GME::LINE ) ;
                             const Line& L = model.line( borders[i].index ) ;
                             index_t off = M.edges.create_edges(
@@ -588,7 +588,7 @@ namespace {
 
                     } else if( T == GME::REGION ) {
                         // Build facets              
-                        for( index_t i = 0; i < borders.size(); ++i ) {
+                        for( index_t i = 0; i < nb_borders; ++i ) {
                             ringmesh_assert( borders[i].type == GME::SURFACE ) ;
                             const Surface& S = model.surface( borders[i].index ) ;
                             for( index_t f = 0; f < S.nb_cells(); ++f ) {
