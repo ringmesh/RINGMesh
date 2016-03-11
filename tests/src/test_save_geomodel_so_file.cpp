@@ -58,19 +58,11 @@ int main()
         GEO::Logger::out( "TEST" ) <<
             "Save a model of a beam in .so" << std::endl ;
 
-        std::string input_bm_file( ringmesh_test_data_path ) ;
-        input_bm_file += "poutre_global_3.bm" ;
-
         std::string input_gm_file( ringmesh_test_data_path ) ;
-        input_gm_file += "poutre_global_3.gm" ;
+        input_gm_file += "beam_model.gm" ;
 
         GeoModel beam_model ;
-        geomodel_surface_load( input_bm_file, beam_model ) ;
-        geomodel_volume_load( input_gm_file, beam_model ) ;
-
-        RINGMesh::is_geomodel_valid( beam_model, true ) ;
-        GEO::Mesh& mesh = beam_model.region(0).mesh() ;
-        mesh.show_stats() ;
+        geomodel_load( beam_model, input_gm_file ) ;
 
         std::string output_so_file( ringmesh_test_output_path ) ;
         output_so_file += "beam_model.so" ;
