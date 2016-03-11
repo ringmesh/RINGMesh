@@ -82,7 +82,7 @@ int main( int argc, char** argv )
         std::string model_name = GEO::CmdLine::get_arg( "in:geomodel" ) ;
         if( model_name.empty() ) {
             throw RINGMeshException( "I/O",
-                "Give at least a filename in in:model" ) ;
+                "Give at least a filename in in:geomodel" ) ;
         }
         GeoModel geomodel ;
         geomodel_load( geomodel, model_name ) ;
