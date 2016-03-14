@@ -70,17 +70,17 @@ int main()
             << input_model_file_name << std::endl ;
 
         GeoModel in ;
-        geomodel_surface_load( input_model_file_name, in ) ;
+        geomodel_load( in, input_model_file_name ) ;
 
         std::string output_model_file_name( ringmesh_test_output_path ) ;
         output_model_file_name += in.name() + "_saved_out.ml" ;
-        geomodel_surface_save( in, output_model_file_name ) ;
+        geomodel_save( in, output_model_file_name ) ;
 
         GeoModel in2 ;
-        geomodel_surface_load( output_model_file_name, in2 ) ;
+        geomodel_load( in2, output_model_file_name ) ;
         std::string output_model_file_name_bis( ringmesh_test_output_path ) ;
         output_model_file_name_bis += in.name() + "_saved_out_bis.ml" ;
-        geomodel_surface_save( in2, output_model_file_name_bis ) ;
+        geomodel_save( in2, output_model_file_name_bis ) ;
 
         if( !compare_files( output_model_file_name, output_model_file_name_bis ) ) {
             throw RINGMeshException( "TEST", "FAILED" ) ;
