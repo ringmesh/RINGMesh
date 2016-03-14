@@ -60,6 +60,9 @@ namespace RINGMesh {
             GEO::CmdLine::declare_arg(
                 "in:geomodel", "",
                 "Filename of the input geological model" ) ;
+            GEO::CmdLine::declare_arg(
+                "in:wells", "",
+                "Filename of the input wells" ) ;
         }
 
         void import_arg_group_out()
