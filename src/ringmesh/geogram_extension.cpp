@@ -86,6 +86,7 @@ namespace RINGMesh {
             const GEO::MeshIOFlags& flag = GEO::MeshIOFlags()
             )
         {
+            ringmesh_unused( flag ) ;
             filename_ = filename ;
             if( !is_file_valid()) {
                 return false ;
@@ -168,7 +169,8 @@ namespace RINGMesh {
 
         void assign_and_repair_mesh( GEO::Mesh& mesh )
         {
-            mesh.facets.assign_triangle_mesh( mesh_dimension_, vertices_, triangles_, true ) ;
+            GEO::coord_index_t dimension = static_cast< GEO::coord_index_t >( mesh_dimension_ ) ;
+            mesh.facets.assign_triangle_mesh( dimension, vertices_, triangles_, true ) ;
             // Do not use GEO::MESH_REPAIR_DEFAULT because it glues the 
             // disconnected edges along internal boundaries
             GEO::mesh_repair( mesh, GEO::MESH_REPAIR_DUP_F ) ;
@@ -211,6 +213,7 @@ namespace RINGMesh {
             GEO::Mesh& mesh,
             const GEO::MeshIOFlags& flag = GEO::MeshIOFlags() )
         {
+            ringmesh_unused( flag ) ;
             GEO::LineInput file( filename ) ;
 
             while( !file.eof() && file.get_line() ) {
@@ -234,6 +237,9 @@ namespace RINGMesh {
             const std::string& filename,
             const GEO::MeshIOFlags& ioflags = GEO::MeshIOFlags() )
         {
+            ringmesh_unused( M ) ;
+            ringmesh_unused( filename ) ;
+            ringmesh_unused( ioflags ) ;
             throw RINGMeshException( "I/O",
                 "Saving a Mesh into .lin format not implemented yet" ) ;
             return false ;

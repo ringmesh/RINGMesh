@@ -176,11 +176,16 @@ namespace {
     public:
         bool operator()( index_t v0, index_t v1 ) const
         {
+            ringmesh_unused( v0 ) ;
+            ringmesh_unused( v1 ) ;
             return false ;
         }
         void non_manifold( index_t v0, index_t v1 ) const
-        {}
-    };
+        {
+            ringmesh_unused( v0 ) ;
+            ringmesh_unused( v1 ) ;
+        }
+    } ;
 
     /*!
     * @brief Connects the facets in a GEO::Mesh.
