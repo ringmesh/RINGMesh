@@ -51,7 +51,6 @@
 
 #include <geogram/basic/logger.h>
 
-
 #define define_color( name, r, g, b )\
     class name: public GetColor {\
     public:\
@@ -75,7 +74,6 @@ namespace RINGMesh {
     define_color( brown, 0x66, 0x33, 0x00 ) ;
     define_color( purple, 0xa0, 0x20, 0xf0 ) ;
     define_color( pink, 0xff, 0x69, 0xb4 ) ;
-
 
     class MeshElementGfx: public GEO::MeshGfx {
     ringmesh_disable_copy( MeshElementGfx ) ;
@@ -136,24 +134,31 @@ namespace RINGMesh {
                 }
             }
         }
-        void compute_vertex_attribute_range( double& min, double& max )
+        void compute_vertex_attribute_range(
+            double& min,
+            double& max,
+            index_t coordinate )
         {
             if( !vertex_attr_.is_bound() ) return ;
+            index_t att_dim = vertex_attr_.dimension() ;
             for( index_t v = 0; v < mesh()->vertices.nb(); v++ ) {
-                const double& value = vertex_attr_[v] ;
+                const double& value = vertex_attr_[att_dim * v + coordinate] ;
                 if( value < min ) min = value ;
                 if( value > max ) max = value ;
             }
         }
-        void compute_vertex_attribute_buffer()
+        void compute_vertex_attribute_buffer( index_t coordinate )
         {
             if( strcmp( glupCurrentProfileName(), "VanillaGL" )
                 && mesh()->vertices.nb() > 0 && vertex_attr_.is_bound() ) {
                 size_t size = mesh()->vertices.nb() ;
                 double* data = new double[size] ;
+                index_t att_dim = vertex_attr_.dimension() ;
+
                 for( index_t v = 0; v < mesh()->vertices.nb(); v++ ) {
                     data[v] =
-                        ( vertex_attr_[v] - gfx_.cell_vertex_min_attr_ )
+                        ( vertex_attr_[att_dim * v + coordinate]
+                            - gfx_.cell_vertex_min_attr_ )
                             / ( gfx_.cell_vertex_max_attr_
                                 - gfx_.cell_vertex_min_attr_ ) ;
                 }
@@ -395,11 +400,12 @@ namespace RINGMesh {
             return region_visible_ ;
         }
 
-        void compute_cell_attribute_buffer()
+        void compute_cell_attribute_buffer( index_t coordinate )
         {
             if( strcmp( glupCurrentProfileName(), "VanillaGL" )
                 && mesh()->cells.nb() > 0 && mesh()->cells.are_simplices()
                 && cell_attr_.is_bound() ) {
+                index_t att_dim = cell_attr_.dimension() ;
                 size_t size = mesh()->cell_corners.nb() ;
                 double* vertices = new double[size * 3] ;
                 double* data = new double[size] ;
@@ -411,7 +417,8 @@ namespace RINGMesh {
                     vertices[3 * c + 1] = vertex.y ;
                     vertices[3 * c + 2] = vertex.z ;
                     indices[c] = c ;
-                    data[c] = ( cell_attr_[c / 4] - gfx_.cell_min_attr_ )
+                    data[c] = ( cell_attr_[att_dim * ( c / 4 ) + coordinate]
+                        - gfx_.cell_min_attr_ )
                         / ( gfx_.cell_max_attr_ - gfx_.cell_min_attr_ ) ;
                 }
 
@@ -424,8 +431,10 @@ namespace RINGMesh {
 
                 glBindBuffer( GL_ARRAY_BUFFER, cell_vertices_VB_ ) ;
                 glEnableVertexAttribArray( 0 ) ;
-                GLsizei nb_value_per_vertex = static_cast< GLsizei >( 3 * sizeof(double) ) ;
-                glVertexAttribPointer( 0, 3, GL_DOUBLE, GL_FALSE, nb_value_per_vertex, 0 ) ;
+                GLsizei nb_value_per_vertex = static_cast< GLsizei >( 3
+                    * sizeof(double) ) ;
+                glVertexAttribPointer( 0, 3, GL_DOUBLE, GL_FALSE,
+                    nb_value_per_vertex, 0 ) ;
                 GEO::update_buffer_object( cell_indices_VB_, GL_ELEMENT_ARRAY_BUFFER,
                     size * sizeof(index_t), indices ) ;
 
@@ -457,11 +466,15 @@ namespace RINGMesh {
                 }
             }
         }
-        void compute_cell_attribute_range( double& min, double& max )
+        void compute_cell_attribute_range(
+            double& min,
+            double& max,
+            index_t coordinate )
         {
             if( !cell_attr_.is_bound() ) return ;
+            index_t att_dim = cell_attr_.dimension() ;
             for( index_t c = 0; c < mesh()->cells.nb(); c++ ) {
-                const double& value = cell_attr_[c] ;
+                const double& value = cell_attr_[att_dim * c + coordinate] ;
                 if( value < min ) min = value ;
                 if( value > max ) max = value ;
             }
@@ -578,48 +591,52 @@ namespace RINGMesh {
         }
         GLsizei nb_colors = static_cast< GLsizei >( colormap.size() ) ;
         gluBuild1DMipmaps( GL_TEXTURE_1D, GL_RGB, nb_colors, GL_RGB,
-            GL_UNSIGNED_BYTE, colormap.data() ) ;
+        GL_UNSIGNED_BYTE, colormap.data() ) ;
     }
 
-    void GeoModelGfx::compute_cell_vertex_attribute_range()
+    void GeoModelGfx::compute_cell_vertex_attribute_range( index_t coordinate )
     {
         cell_vertex_min_attr_ = max_float64() ;
         cell_vertex_max_attr_ = min_float64() ;
         for( index_t r = 0; r < regions_.size(); r++ ) {
             regions_[r]->compute_vertex_attribute_range( cell_vertex_min_attr_,
-                cell_vertex_max_attr_ ) ;
+                cell_vertex_max_attr_, coordinate ) ;
         }
     }
 
-    void GeoModelGfx::compute_cell_attribute_range()
+    void GeoModelGfx::compute_cell_attribute_range( index_t coordinate )
     {
         cell_min_attr_ = max_float64() ;
         cell_max_attr_ = min_float64() ;
         for( index_t r = 0; r < regions_.size(); r++ ) {
             regions_[r]->compute_cell_attribute_range( cell_min_attr_,
-                cell_max_attr_ ) ;
+                cell_max_attr_, coordinate ) ;
         }
     }
 
-    void GeoModelGfx::bind_cell_vertex_attribute( const std::string& name )
+    void GeoModelGfx::bind_cell_vertex_attribute(
+        const std::string& name,
+        index_t coordinate )
     {
         for( index_t r = 0; r < regions_.size(); r++ ) {
             regions_[r]->bind_vertex_attribute( name ) ;
         }
-        compute_cell_vertex_attribute_range() ;
+        compute_cell_vertex_attribute_range( coordinate ) ;
         for( index_t r = 0; r < regions_.size(); r++ ) {
-            regions_[r]->compute_vertex_attribute_buffer() ;
+            regions_[r]->compute_vertex_attribute_buffer( coordinate ) ;
         }
     }
 
-    void GeoModelGfx::bind_cell_attribute( const std::string& name )
+    void GeoModelGfx::bind_cell_attribute(
+        const std::string& name,
+        index_t coordinate )
     {
         for( index_t r = 0; r < regions_.size(); r++ ) {
             regions_[r]->bind_cell_attribute( name ) ;
         }
-        compute_cell_attribute_range() ;
+        compute_cell_attribute_range( coordinate ) ;
         for( index_t r = 0; r < regions_.size(); r++ ) {
-            regions_[r]->compute_cell_attribute_buffer() ;
+            regions_[r]->compute_cell_attribute_buffer( coordinate ) ;
         }
     }
 
@@ -691,7 +708,7 @@ namespace RINGMesh {
      */
     void GeoModelGfx::set_corner_size( index_t c, index_t s )
     {
-        corners_[c]->set_points_size( float(s) ) ;
+        corners_[c]->set_points_size( float( s ) ) ;
     }
 
     /*!
@@ -824,7 +841,7 @@ namespace RINGMesh {
      */
     void GeoModelGfx::set_vertex_line_size( index_t l, index_t s )
     {
-        lines_[l]->set_points_size( float(s) ) ;
+        lines_[l]->set_points_size( float( s ) ) ;
     }
 
     /*!
@@ -1031,7 +1048,7 @@ namespace RINGMesh {
      */
     void GeoModelGfx::set_vertex_surface_size( index_t s, index_t size )
     {
-        surfaces_[s]->set_points_size( float(size) ) ;
+        surfaces_[s]->set_points_size( float( size ) ) ;
     }
 
     /*!
@@ -1114,7 +1131,7 @@ namespace RINGMesh {
     void GeoModelGfx::set_vertex_region_size( index_t m, index_t s )
     {
         ringmesh_assert( m < regions_.size() ) ;
-        regions_[m]->set_points_size( float(s) ) ;
+        regions_[m]->set_points_size( float( s ) ) ;
     }
 
     /*!
