@@ -78,7 +78,7 @@ int main( int argc, char** argv )
                 << std::endl
                 << "out_format: a non empty list of output format amongst:"
                 << "obj mesh meshb ply off stl " << std::endl
-                << "Sould be launched in the directory that contains the .ts " 
+                << "Should be launched in the directory that contains the .ts " 
                 << "files to convert" << std::endl
                 << "This will create a directory for each selected output format "
                 << "in the directory one level above the current one,"
