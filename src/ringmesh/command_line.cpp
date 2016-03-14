@@ -68,7 +68,6 @@ namespace RINGMesh {
         void import_arg_group_out()
         {
             GEO::CmdLine::declare_arg_group( "out", "Output data" ) ;
-
             GEO::CmdLine::declare_arg(
                 "out:geomodel", "",
                 "Saves the geological model" ) ;
