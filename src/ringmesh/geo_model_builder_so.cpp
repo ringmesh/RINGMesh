@@ -682,10 +682,11 @@ namespace {
                     surface_sides[2 * geomodel.region( r ).boundary( s ).index()] =
                         true ;
                 } else {
-                    ringmesh_assert_not_reached}
-                    }
+                    ringmesh_assert_not_reached ;
                 }
             }
+        }
+    }
 
     /*!
      * @brief Sets the boundaries of region Universe
