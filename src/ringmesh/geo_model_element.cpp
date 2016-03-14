@@ -1385,7 +1385,7 @@ namespace RINGMesh {
             }
         } while( !S.empty() ) ;
 
-        return result.size() ;
+        return static_cast<index_t> ( result.size() ) ;
     }
 
     /*!

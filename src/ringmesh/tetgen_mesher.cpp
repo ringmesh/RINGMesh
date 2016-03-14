@@ -221,7 +221,7 @@ namespace RINGMesh {
 
             GEO_3rdParty::tetgenio::polygon& P = F.polygonlist[0] ;
             GEO_3rdParty::tetgenio::init( &P ) ;
-            P.numberofvertices = M.facets.nb_corners( f ) ;
+            P.numberofvertices = static_cast<int> (M.facets.nb_corners( f ) ) ;
             P.vertexlist = &polygon_corners_[M.facets.corners_begin( f )] ;
         }
     }
@@ -229,7 +229,7 @@ namespace RINGMesh {
     void TetgenMesher::set_regions( const std::vector< vec3 >& one_point_in_each_region )
     {
         index_t nb_regions = one_point_in_each_region.size() ;
-        tetgen_in_.numberofregions = nb_regions ;
+        tetgen_in_.numberofregions = static_cast<int> ( nb_regions ) ;
         tetgen_in_.regionlist = new double[5*nb_regions] ;
 
         for( index_t i = 0; i != nb_regions; ++i ) {
@@ -244,12 +244,17 @@ namespace RINGMesh {
     void TetgenMesher::fill_region_attribute_on_mesh_cells( Mesh& M, const std::string& attribute_name ) const
     {
         double* tet_attributes = tetgen_out_.tetrahedronattributelist ;
-        int one_tet_attribute_size = tetgen_out_.numberoftetrahedronattributes ;
+        index_t one_tet_attribute_size = static_cast<index_t>
+            ( tetgen_out_.numberoftetrahedronattributes ) ;
         GEO::Attribute< index_t > region_id( M.cells.attributes(), attribute_name ) ;
         for( index_t i = 0; i < M.cells.nb(); ++i ) {
             // Nothing says where it is, so we hope that the shell id is the first 
             // attribute stored in tetgen [JP]
-            region_id[i] = index_t( tet_attributes[one_tet_attribute_size*i] ) ;
+            // Assert to detect if the double is not an index_t [BC]
+            ringmesh_assert( std::abs( static_cast<index_t> (
+                tet_attributes[one_tet_attribute_size*i] )
+                - tet_attributes[one_tet_attribute_size*i] ) < epsilon ) ;
+            region_id[i] = static_cast<index_t> ( tet_attributes[one_tet_attribute_size*i] ) ;
         }
         region_id.unbind() ;
     }
@@ -275,7 +280,7 @@ namespace RINGMesh {
 
     void TetgenMesher::get_result_tetmesh_points( GEO::vector< double >& points ) const
     {
-        index_t nb_points( tetgen_out_.numberofpoints ) ;
+        index_t nb_points = static_cast<index_t> ( tetgen_out_.numberofpoints ) ;
         points.resize( 3 * nb_points ) ;
         double* points_ptr = tetgen_out_.pointlist ;
         RINGMESH_PARALLEL_LOOP
@@ -286,17 +291,17 @@ namespace RINGMesh {
 
     void TetgenMesher::get_result_tetmesh_tets( GEO::vector< index_t>& tets ) const
     {
-        index_t nb_tets( tetgen_out_.numberoftetrahedra );
+        index_t nb_tets = static_cast<index_t> ( tetgen_out_.numberoftetrahedra );
         tets.resize( 4 * nb_tets );
 
         int* tets_ptr = tetgen_out_.tetrahedronlist ;
-        int one_tet_size = tetgen_out_.numberofcorners ;
+        index_t one_tet_size = static_cast<index_t> ( tetgen_out_.numberofcorners ) ;
         RINGMESH_PARALLEL_LOOP
             for( index_t i = 0; i < nb_tets; ++i ) {
-                tets[4 * i + 0] = index_t( tets_ptr[one_tet_size*i + 0] ) ;
-                tets[4 * i + 1] = index_t( tets_ptr[one_tet_size*i + 1] ) ;
-                tets[4 * i + 2] = index_t( tets_ptr[one_tet_size*i + 2] ) ;
-                tets[4 * i + 3] = index_t( tets_ptr[one_tet_size*i + 3] ) ;
+                tets[4 * i + 0] = static_cast<index_t> ( tets_ptr[one_tet_size*i + 0] ) ;
+                tets[4 * i + 1] = static_cast<index_t> ( tets_ptr[one_tet_size*i + 1] ) ;
+                tets[4 * i + 2] = static_cast<index_t> ( tets_ptr[one_tet_size*i + 2] ) ;
+                tets[4 * i + 3] = static_cast<index_t> ( tets_ptr[one_tet_size*i + 3] ) ;
             }
     }
 
