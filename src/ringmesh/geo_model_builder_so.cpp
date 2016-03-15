@@ -168,7 +168,7 @@ namespace RINGMesh {
         {
             ringmesh_assert(
                 gocad_vertices2region_vertices_.size()
-                    == gocad_vertices2region_id_.size() )
+                    == gocad_vertices2region_id_.size() ) ;
             return gocad_vertices2region_vertices_.size() ;
         }
 
@@ -682,10 +682,11 @@ namespace {
                     surface_sides[2 * geomodel.region( r ).boundary( s ).index()] =
                         true ;
                 } else {
-                    ringmesh_assert_not_reached}
-                    }
+                    ringmesh_assert_not_reached ;
                 }
             }
+        }
+    }
 
     /*!
      * @brief Sets the boundaries of region Universe

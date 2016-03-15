@@ -359,7 +359,7 @@ namespace {
             xyzmax[c] = GEO::Numeric::min_float64() ;
         }
 
-        if( !GEO::CmdLine::get_arg( "mesh" ).empty() ) {
+        if( !GEO::CmdLine::get_arg( "geomodel" ).empty() ) {
             RINGMesh::geomodel_volume_load( GEO::CmdLine::get_arg( "geomodel" ), GM ) ;
             meshed_regions = true ;
         }

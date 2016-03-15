@@ -209,7 +209,6 @@ namespace {
 
             index_t nb_vertices_exported = 0 ;
             index_t cur_cell = 0 ;
-            index_t cur_facet = 0 ;
 
             const GeoModelMesh& mesh = gm.mesh ;
             /// 1. Write the vertices coordinates (with the duplicate ones)
@@ -239,7 +238,6 @@ namespace {
             out << "TETRA4" << std::endl ;
             for( index_t r = 0; r < gm.nb_regions(); r++ ) {
                 for( index_t c = 0; c < mesh.cells.nb_tet( r ); c++ ) {
-                    index_t cur_tet = mesh.cells.tet( r, c ) ;
                     out << "C" << cur_cell++ << " " ;
                     for( index_t v = 0; v < mesh.cells.nb_vertices( c ); v++ ) {
                         index_t atom_id ;
@@ -672,11 +670,10 @@ namespace {
             }
 
             out << "CELL_TYPES " << mesh.cells.nb() << std::endl ;
-            index_t not_used ;
             for( index_t m = 0; m < gm.nb_regions(); m++ ) {
                 for( index_t c = 0; c < mesh.cells.nb_cells( m ); c++ ) {
                     index_t cell = mesh.cells.cell( m, c ) ;
-                    out << cell_type( mesh.cells.type( cell, not_used ) )
+                    out << cell_type( mesh.cells.type( cell ) )
                         << std::endl ;
                 }
             }
