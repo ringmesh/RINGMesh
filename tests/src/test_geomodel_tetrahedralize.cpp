@@ -79,7 +79,7 @@ int main( int argc, char** argv )
         result_file_name += "geomodel_tet_mesh.mesh" ;
 
         GeoModel geomodel ;
-        geomodel_surface_load( file_name, geomodel ) ;
+        geomodel_load( geomodel, file_name ) ;
         tetgen_tetrahedralize_geomodel_regions( geomodel ) ;
 
         // Save volumetric mesh with cell region attribute
