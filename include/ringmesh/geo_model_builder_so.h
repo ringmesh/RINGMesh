@@ -115,9 +115,7 @@ namespace RINGMesh {
     public:
         GeoModelBuilderTSolid( GeoModel& model, const std::string& filename )
             :
-                GeoModelBuilderFile( model, filename ),
-                filename_( filename ),
-                file_line_( filename )
+                GeoModelBuilderFile( model, filename ), file_line_( filename )
         {
             if( !file_line_.OK() ) {
                 throw RINGMeshException( "I/O", "Failed to open file " + filename ) ;
@@ -147,7 +145,6 @@ namespace RINGMesh {
         void read_line( TSolidLoadingStorage& load_utils ) ;
 
     private:
-        std::string filename_ ;
         GEO::LineInput file_line_ ;
         friend class RINGMesh::TSolidLineParser ;
     } ;
