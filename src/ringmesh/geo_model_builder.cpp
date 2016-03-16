@@ -1139,7 +1139,7 @@ namespace RINGMesh {
         if( update ) {
             model_.mesh.vertices.update_point( E.model_vertex_id( v ), point ) ;
         } else {
-            E.mesh_.vertices.point( v ) = point ;
+            E.mesh_.vertex( v ) = point ;
         }
     }
 
@@ -1568,8 +1568,8 @@ namespace RINGMesh {
         Surface& S,
         const Line& L )
     {
-        ColocaterANN ann( S.mesh(), ColocaterANN::FACETS ) ;
-        for( index_t i = 0; i + 1 < L.nb_vertices(); ++i ) {
+        const ColocaterANN& ann = S.mesh().colotater_ann( ColocaterANN::FACETS ) ;
+        for( index_t i = 0; i + 1 < L.mesh().nb_vertices(); ++i ) {
             index_t p0 = L.model_vertex_id( i ) ;
             index_t p1 = L.model_vertex_id( i + 1 ) ;
 
@@ -1579,7 +1579,7 @@ namespace RINGMesh {
             ringmesh_unused( found ) ;
             ringmesh_assert( found && f != NO_ID && v != NO_ID ) ;
 
-            index_t f2 = S.adjacent( f, v ) ;
+            index_t f2 = S.mesh().facet_adjacent( f, v ) ;
             if( f2 != NO_ID ) {
                 index_t v2 = NO_ID ;
                 // Get the edge in facet f2 matching model indices p0-p1
@@ -1588,8 +1588,9 @@ namespace RINGMesh {
                     S.oriented_edge_from_model_vertex_ids( p1, p0, f2, v2 ) ;
                     ringmesh_assert( v2 != NO_ID ) ;
                 }
-                S.mesh_.facets.set_adjacent( f, v, Surface::NO_ADJACENT ) ;
-                S.mesh_.facets.set_adjacent( f2, v2, Surface::NO_ADJACENT ) ;
+                MeshBuilder builder(S.mesh());
+                builder.set_facet_adjacent( f, v, Surface::NO_ADJACENT ) ;
+                builder.set_facet_adjacent( f2, v2, Surface::NO_ADJACENT ) ;
             }
         }
     }
@@ -1607,7 +1608,7 @@ namespace RINGMesh {
         surface_vertex_0 = NO_ID ;
         surface_vertex_1 = NO_ID ;
 
-        ColocaterANN ann( S.mesh(), ColocaterANN::FACETS ) ;
+        const ColocaterANN& ann = S.mesh().colotater_ann( ColocaterANN::FACETS ) ;
         index_t p0 = L.model_vertex_id( 0 ) ;
         index_t p1 = L.model_vertex_id( 1 ) ;
 
@@ -1617,8 +1618,8 @@ namespace RINGMesh {
         ringmesh_assert( found && facet_index != NO_ID && v != NO_ID ) ;
 
         surface_vertex_0 = S.surf_vertex_id( facet_index, v ) ;
-        surface_vertex_1 = S.surf_vertex_id( facet_index,
-            S.next_in_facet( facet_index, v ) ) ;
+        surface_vertex_1 = S.mesh().facet_vertex( facet_index,
+            S.mesh().next_facet_vertex( facet_index, v ) ) ;
     }
 
     /*!
@@ -3108,7 +3109,7 @@ namespace RINGMesh {
         const Surface& surface = model_.surface( surface_id ) ;
         same_sign = false ;
 
-        for( index_t t = 0; t < surface.nb_cells(); ++t ) {
+        for( index_t t = 0; t < surface.mesh().nb_cells(); ++t ) {
             const vec3& pp0 = surface.vertex( t, 0 ) ;
             const vec3& pp1 = surface.vertex( t, 1 ) ;
             const vec3& pp2 = surface.vertex( t, 2 ) ;
@@ -3194,7 +3195,7 @@ namespace RINGMesh {
         index_t id1,
         std::vector< vec3 >& border_vertex_model_vertices ) const
     {
-        ringmesh_assert( id0 < S.nb_vertices() && id1 < S.nb_vertices() ) ;
+        ringmesh_assert( id0 < S.mesh().nb_vertices() && id1 < S.mesh().nb_vertices() ) ;
 
         border_vertex_model_vertices.resize( 0 ) ;
 
@@ -3206,8 +3207,8 @@ namespace RINGMesh {
             return gme_t() ;
         }
 
-        vec3 p0 = S.vertex( id0 ) ;
-        vec3 p1 = S.vertex( id1 ) ;
+        vec3 p0 = S.mesh().vertex( id0 ) ;
+        vec3 p1 = S.mesh().vertex( id1 ) ;
 
         border_vertex_model_vertices.push_back( p0 ) ;
         border_vertex_model_vertices.push_back( p1 ) ;
@@ -3235,7 +3236,7 @@ namespace RINGMesh {
             id0 = id1 ;
             id1 = next_id1 ;
 
-            p1 = S.vertex( next_id1 ) ;
+            p1 = S.mesh().vertex( next_id1 ) ;
             border_vertex_model_vertices.push_back( p1 ) ;
             p1_corner = find_corner( model(), p1 ) ;
         }

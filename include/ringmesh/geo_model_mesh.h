@@ -1033,7 +1033,7 @@ namespace RINGMesh {
         }
         void save_mesh( const std::string& filename ) const
         {
-            mesh_->save_mesh( filename ) ;
+            mesh_->save_mesh( filename, GEO::MeshIOFlags() ) ;
         }
 
         GEO::AttributesManager& vertex_attribute_manager() const

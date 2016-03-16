@@ -303,7 +303,7 @@ namespace {
         index_t point_local_id = vertex_map.local_id( point_gocad_id ) ;
         index_t point_region = vertex_map.region( point_gocad_id ) ;
 
-        return geomodel.region( point_region ).vertex( point_local_id ) ;
+        return geomodel.region( point_region ).mesh().vertex( point_local_id ) ;
     }
 
     /*!
@@ -410,12 +410,12 @@ namespace {
         std::vector< vec3 >& cell_facet_centers )
     {
         const Region& region = geomodel.region( region_id ) ;
-        const index_t nb_cells = region.nb_cells() ;
+        const index_t nb_cells = region.mesh().nb_cells() ;
         cell_facet_centers.reserve( 4 * nb_cells ) ;
         for( index_t c = 0; c < nb_cells; ++c ) {
             for( index_t f = 0; f <= 3; ++f ) {
                 cell_facet_centers.push_back(
-                    mesh_cell_facet_center( region.mesh(), c, f ) ) ;
+                    region.mesh().cell_facet_center( c, f ) ) ;
             }
         }
     }
@@ -478,8 +478,7 @@ namespace {
     {
         index_t local_facet_id = cell_facet_center_id % 4 ;
         index_t cell_id = ( cell_facet_center_id - local_facet_id ) / 4 ;
-        vec3 cell_facet_normal = GEO::mesh_cell_facet_normal(
-            geomodel.region( region_id ).mesh(), cell_id, local_facet_id ) ;
+        vec3 cell_facet_normal = geomodel.region( region_id ).mesh().cell_facet_normal( cell_id, local_facet_id ) ;
         vec3 first_facet_normal = geomodel.surface( surface_id ).facet_normal( 0 ) ;
         return dot( first_facet_normal, cell_facet_normal ) > 0 ;
     }
@@ -760,13 +759,14 @@ namespace {
         const std::vector< Box3d >& surface_boxes )
     {
         const Surface& S = geomodel.surface( surface_id ) ;
-        for( index_t f = 0; f < S.nb_cells(); ++f ) {
+        for( index_t f = 0; f < S.mesh().nb_cells(); ++f ) {
             for( index_t e = 0; e < 3; ++e ) {
                 if( !S.is_on_border( f, e ) ) {
                     bool internal_border = is_edge_in_several_surfaces( geomodel,
                         surface_id, f, e, surface_anns, surface_boxes ) ;
                     if( internal_border ) {
-                        S.mesh().facets.set_adjacent( f, e, GEO::NO_FACET ) ;
+                        MeshBuilder builder(S.mesh());
+                        builder.set_facet_adjacent( f, e, GEO::NO_FACET ) ;
                     }
                 }
             }
@@ -786,7 +786,7 @@ namespace {
         std::vector< vec3 >& border_edge_barycenters )
     {
         const Surface& S = geomodel.surface( surface_id ) ;
-        for( index_t f = 0; f < S.nb_cells(); ++f ) {
+        for( index_t f = 0; f < S.mesh().nb_cells(); ++f ) {
             for( index_t e = 0; e < 3; ++e ) {
                 if( S.is_on_border( f, e ) ) {
                     const vec3 barycenter = GEO::Geom::barycenter( S.vertex( f, e ),
@@ -811,8 +811,8 @@ namespace {
     {
         for( index_t s = 0; s < geomodel.nb_surfaces(); ++s ) {
             const Surface& S = geomodel.surface( s ) ;
-            for( index_t p = 0; p < S.nb_vertices(); p++ ) {
-                surface_boxes[s].add_point( S.vertex( p ) ) ;
+            for( index_t p = 0; p < S.mesh().nb_vertices(); p++ ) {
+                surface_boxes[s].add_point( S.mesh().vertex( p ) ) ;
             }
             std::vector< vec3 > border_edge_barycenters ;
             get_surface_border_edge_barycenters( geomodel, s,
@@ -1035,7 +1035,7 @@ namespace RINGMesh {
                 // acting like for a vertex
                 vertex_map.add_vertex( region_vertices.size(), region_id ) ;
                 region_vertices.push_back(
-                    geomodel.region( referred_vertex_region_id ).vertex(
+                    geomodel.region( referred_vertex_region_id ).mesh().vertex(
                         referred_vertex_local_id ) ) ;
             } else {
                 // If the atom referred to an atom of the same region
