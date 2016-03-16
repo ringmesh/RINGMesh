@@ -36,11 +36,10 @@
 /*! \author Francois Bonneau */
 
 #include <ringmesh/mesh.h>
+#include <ringmesh/geo_model_element.h>
 #include <ringmesh/geo_model.h>
+
 #include <geogram/mesh/mesh_AABB.h>
-
-
-//#include <geogram/mesh/mesh.h>
 
 namespace RINGMesh {
 
@@ -61,6 +60,12 @@ namespace RINGMesh {
             // The root cause of the problem is the duplication of many things
             // in our GeoModel structure [JP]
             M.mesh.vertices.clear() ;
+            for(index_t i =0; i <= ColocaterANN::FACETS ;i++){
+                if (ann_[i]) {
+                    delete ann_[i] ;
+                    ann_[i] = nil ;
+                }
+            }
 
             GEO::MeshFacetsAABB* facets_aabb_ = new GEO::MeshFacetsAABB( *mesh_ ) ;
         }
@@ -84,6 +89,12 @@ namespace RINGMesh {
             // The root cause of the problem is the duplication of many things
             // in our GeoModel structure [JP]
             M.mesh.vertices.clear() ;
+            for(index_t i =0; i <= ColocaterANN::CELLS ;i++){
+                if (ann_[i]) {
+                    delete ann_[i] ;
+                    ann_[i] = nil ;
+                }
+            }
 
             GEO::MeshCellsAABB* cells_aabb_ = new GEO::MeshCellsAABB( *mesh_ ) ;
         }

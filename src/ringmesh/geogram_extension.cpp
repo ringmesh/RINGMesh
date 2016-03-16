@@ -354,7 +354,7 @@ namespace RINGMesh {
     vec3 mesh_cell_facet_center( const GEO::Mesh& M, index_t cell, index_t f )
     {
         vec3 result( 0., 0., 0. ) ;
-        index_t nb_vertices = M.cells.facet_nb_vertices( cell, f ) ;        
+        index_t nb_vertices = M.cells.facet_nb_vertices( cell, f ) ;
         for( index_t v = 0; v < nb_vertices; ++v ) {
             result += GEO::Geom::mesh_vertex( M, M.cells.facet_vertex( cell, f, v ) ) ;
         }
