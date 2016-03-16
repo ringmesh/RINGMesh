@@ -108,7 +108,8 @@ namespace RINGMesh {
                 ringmesh_assert( !nb_elements_per_type_.empty() ) ;
                 return nb_elements_per_type_.back() ;
             } else {
-                ringmesh_assert_not_reached;
+                ringmesh_assert_not_reached
+                ;
                 return 0 ;
             }
         }
@@ -119,17 +120,27 @@ namespace RINGMesh {
          * pair (Region, NO_ID) universe region is returned.
          * @pre Element identification is valid.
          */
-        const GeoModelElement& element( GME::gme_t id ) const
+        GeoModelElement& element( GME::gme_t id )
         {
             return *element_ptr( id ) ;
+        }
+        const GeoModelElement& element( GME::gme_t id ) const
+        {
+            return element( id ) ;
         }
 
         /*!
          * Convenient overload of element( GME::gme_t id )
          */
-        const GeoModelElement& element( GME::TYPE element_type, index_t element_index ) const
+        GeoModelElement& element( GME::TYPE element_type, index_t element_index )
         {
             return element( GME::gme_t( element_type, element_index ) ) ;
+        }
+        const GeoModelElement& element(
+            GME::TYPE element_type,
+            index_t element_index ) const
+        {
+            return element( element_type, element_index ) ;
         }
 
         /*!
@@ -145,7 +156,9 @@ namespace RINGMesh {
         /*!
          * Convenient overload of element( GME::gme_t id )
          */
-        const GeoModelMeshElement& mesh_element( GME::TYPE element_type, index_t element_index ) const
+        const GeoModelMeshElement& mesh_element(
+            GME::TYPE element_type,
+            index_t element_index ) const
         {
             return mesh_element( GME::gme_t( element_type, element_index ) ) ;
         }
@@ -189,19 +202,32 @@ namespace RINGMesh {
             return dynamic_cast< const Corner& >( *corners_.at( index ) ) ;
         }
 
+        Line& line( index_t index )
+        {
+            return dynamic_cast< Line& >( element( GME::LINE, index ) ) ;
+        }
         const Line& line( index_t index ) const
         {
-            return dynamic_cast< const Line& >( element( GME::LINE, index ) ) ;
+            return line( index ) ;
         }
 
+
+        Surface& surface( index_t index )
+        {
+            return dynamic_cast< Surface& >( element( GME::SURFACE, index ) ) ;
+        }
         const Surface& surface( index_t index ) const
         {
-            return dynamic_cast< const Surface& >( element( GME::SURFACE, index ) ) ;
+            return surface ( index  ) ;
         }
 
+        Region& region( index_t index )
+        {
+            return dynamic_cast< Region& >( element( GME::REGION, index ) ) ;
+        }
         const Region& region( index_t index ) const
         {
-            return dynamic_cast<const Region&>( element( GME::REGION, index ) ) ;
+            return region( index )  ;
         }
 
         const GeoModelElement& contact( index_t index ) const
@@ -221,7 +247,7 @@ namespace RINGMesh {
 
         const Region& universe() const
         {
-            return dynamic_cast<const Region&>( element( GME::REGION, NO_ID ) ) ;
+            return dynamic_cast< const Region& >( element( GME::REGION, NO_ID ) ) ;
         }
 
         /*!
@@ -248,7 +274,7 @@ namespace RINGMesh {
             ringmesh_assert( global.type == GME::ALL_TYPES ) ;
 
             index_t t = NO_ID ;
-            for( index_t i = 1 ; i < nb_elements_per_type_.size() ; i++ ) {
+            for( index_t i = 1; i < nb_elements_per_type_.size(); i++ ) {
                 if( global.index >= nb_elements_per_type_[i - 1]
                     && global.index < nb_elements_per_type_[i] ) {
                     t = i - 1 ;
@@ -260,7 +286,8 @@ namespace RINGMesh {
                 index_t i = global.index - nb_elements_per_type_[t] ;
                 return GME::gme_t( T, i ) ;
             } else {
-                ringmesh_assert_not_reached ;
+                ringmesh_assert_not_reached
+                ;
                 return GME::gme_t() ;
             }
         }
@@ -296,7 +323,8 @@ namespace RINGMesh {
                 case GME::LAYER:
                     return layers_ ;
                 default:
-                    ringmesh_assert_not_reached ;
+                    ringmesh_assert_not_reached
+                    ;
                     return surfaces_ ;
             }
         }
@@ -311,16 +339,17 @@ namespace RINGMesh {
         GeoModelElement* element_ptr( const GME::gme_t& id ) const
         {
             if( id.type == GME::REGION && id.index == NO_ID ) {
-                return const_cast< Region*> ( &universe_ ) ;
+                return const_cast< Region* >( &universe_ ) ;
             } else {
                 if( id.type < GME::NO_TYPE ) {
                     ringmesh_assert( id.index < nb_elements( id.type ) ) ;
-                    return elements( id.type )[ id.index ] ;
+                    return elements( id.type )[id.index] ;
                 } else if( id.type == GME::ALL_TYPES ) {
                     return element_ptr( global_to_typed_id( id ) ) ;
                 } else {
-                    ringmesh_assert_not_reached ;
-                    return const_cast< Region*> ( &universe_ ) ;
+                    ringmesh_assert_not_reached
+                    ;
+                    return const_cast< Region* >( &universe_ ) ;
                 }
             }
         }
@@ -329,8 +358,7 @@ namespace RINGMesh {
          * @brief Reference to a modifiable element of the model
          * @pre The id must refer to a valid element of the model
          */
-        GeoModelElement& modifiable_element(
-            const GME::gme_t& id ) const
+        GeoModelElement& modifiable_element( const GME::gme_t& id ) const
         {
             return *element_ptr( id ) ;
         }
@@ -344,7 +372,7 @@ namespace RINGMesh {
             const GME::gme_t& id ) const
         {
             ringmesh_assert( GME::has_mesh( id.type ) ) ;
-            return dynamic_cast<GeoModelMeshElement&>( modifiable_element( id ) ) ;
+            return dynamic_cast< GeoModelMeshElement& >( modifiable_element( id ) ) ;
         }
 
         /*!
@@ -357,8 +385,8 @@ namespace RINGMesh {
 
             index_t count = 0 ;
             nb_elements_per_type_.push_back( count ) ;
-            for( index_t type = GME::CORNER ; type < GME::NO_TYPE ; type++ ) {
-                count += nb_elements( ( GME::TYPE ) type ) ;
+            for( index_t type = GME::CORNER; type < GME::NO_TYPE; type++ ) {
+                count += nb_elements( (GME::TYPE) type ) ;
                 nb_elements_per_type_.push_back( count ) ;
             }
         }

@@ -120,22 +120,22 @@ namespace {
     }
 
     bool edge_is_degenerate(
-        const GEO::Mesh& M,
+        const Mesh& M,
         index_t e,
         GEO::vector< index_t >& colocated_vertices )
     {
-        index_t v1 = colocated_vertices[ M.edges.vertex( e, 0 ) ] ;
-        index_t v2 = colocated_vertices[ M.edges.vertex( e, 1 ) ] ;
+        index_t v1 = colocated_vertices[ M.edge_vertex( e, 0 ) ] ;
+        index_t v2 = colocated_vertices[ M.edge_vertex( e, 1 ) ] ;
         return v1 == v2 ;
     }
 
     void mesh_detect_degenerate_edges(
-        const GEO::Mesh& M,
+        const Mesh& M,
         GEO::vector< index_t >& e_is_degenerate,
         GEO::vector< index_t >& colocated_vertices )
     {
-        e_is_degenerate.resize( M.edges.nb() ) ;
-        for( index_t e = 0; e < M.edges.nb(); ++e ) {
+        e_is_degenerate.resize( M.nb_edges() ) ;
+        for( index_t e = 0; e < M.nb_edges(); ++e ) {
             e_is_degenerate[ e ] = edge_is_degenerate( M, e, colocated_vertices ) ;
         }
     }
@@ -143,56 +143,58 @@ namespace {
     /*!
     * @brief Detect and remove degenerated edges in a Mesh
     */
-    index_t repair_line_mesh( GEO::Mesh& M )
+    index_t repair_line_mesh( Mesh& M )
     {
         GEO::vector< index_t > colocated ;
-        GEO::mesh_detect_colocated_vertices( M, colocated ) ;
+        const ColocaterANN& kdtree = M.colotater_ann(ColocaterANN::VERTICES) ;
+        kdtree.get_colocated_index_mapping(colocated);
 
         GEO::vector< index_t > degenerate ;
         mesh_detect_degenerate_edges( M, degenerate, colocated ) ;
         index_t nb = static_cast< index_t >( std::count( degenerate.begin(), degenerate.end(), 1 ) ) ;
         /// We have a problem if some vertices are left isolated
-        /// If we ermove them here we can kill all indices correspondances
-        M.edges.delete_elements( degenerate, false ) ;
+        /// If we remove them here we can kill all indices correspondances
+        MeshBuilder builder(M);
+        builder.delete_edges( degenerate, false ) ;
         return nb ;
     }
 
     /*!
     * @brief Remove degenerate facets and edges from the Surface
     *        and Line of the model.
-    * @param[in,out] BM Model to fix
+    * @param[in,out] GM Model to fix
     * @param[out] to_remove Ids of the elements of the model that are
     *  are emtpy once degenerate elements are removed
     * @pre Colocated vertices have already been removed
     */
     void remove_degenerate_facet_and_edges(
-        GeoModel& BM,
+        GeoModel& GM,
         std::set< gme_t >& to_remove )
     {
         to_remove.clear() ;
-        for( index_t i = 0; i < BM.nb_lines(); ++i ) {
-            index_t nb = repair_line_mesh( BM.line( i ).mesh() ) ;
+        for( index_t i = 0; i < GM.nb_lines(); ++i ) {
+            index_t nb = repair_line_mesh( GM.line( i ).mesh() ) ;
             if( nb > 0 ) {
                 GEO::Logger::out( "GeoModel" ) << nb
                     << " degenerated edges removed in LINE " << i << std::endl ;
                 // If the Line is set it to remove
-                if( BM.line( i ).nb_cells() == 0 ) {
-                    to_remove.insert( BM.line( i ).gme_id() ) ;
+                if( GM.line( i ).mesh().nb_cells() == 0 ) {
+                    to_remove.insert( GM.line( i ).gme_id() ) ;
                 }
             }
         }
         // The builder might be needed
-        GeoModelBuilder builder( BM ) ;
+        GeoModelBuilder builder( GM ) ;
 
-        for( index_t i = 0; i < BM.nb_surfaces(); ++i ) {
-            GEO::Mesh& M = BM.surface( i ).mesh() ;
+        for( index_t i = 0; i < GM.nb_surfaces(); ++i ) {
+            const Surface& surface = GM.surface( i ) ;
             index_t nb = detect_degenerate_facets( M ) ;
             /// @todo Check if that cannot be simplified 
             if( nb > 0 ) {
                 // If there are some degenerated facets 
                 // Using repair function of geogram
                 // Warning - This triangulates the mesh
-                if( M.vertices.nb() > 0 ) {
+                if( surface.nb_vertices() > 0 ) {
                     // Colocated vertices must be processed before
                     // MESH_REPAIR_DUP_F 2 ;
                     GEO::MeshRepairMode mode =
@@ -204,19 +206,19 @@ namespace {
                     GEO::remove_small_connected_components( M, epsilon_sq, 3 ) ;
 
                     // Alright, this is a bit of an overkill [JP]
-                    if( M.vertices.nb() > 0 ) {
+                    if( surface.nb_vertices() > 0 ) {
                         GEO::mesh_repair( M, mode ) ;
                     }
                 }
-                if( M.vertices.nb() == 0 || M.facets.nb() == 0 ) {
-                    to_remove.insert( BM.surface( i ).gme_id() ) ;
+                if( surface.nb_vertices()() == 0 || surface.nb_facets() == 0 ) {
+                    to_remove.insert( GM.surface( i ).gme_id() ) ;
                 } else {
                     // If the Surface has internal boundaries, we need to 
                     // re-cut the Surface along these lines
-                    Surface& S = const_cast< Surface& >( BM.surface( i ) ) ;
+                    Surface& S = const_cast< Surface& >( GM.surface( i ) ) ;
                     std::set< index_t > cutting_lines ;
                     for( index_t l = 0; l < S.nb_boundaries(); ++l ) {
-                        const Line& L = BM.line( S.boundary_gme( l ).index ) ;
+                        const Line& L = GM.line( S.boundary_gme( l ).index ) ;
                         if( to_remove.count( L.gme_id() ) == 0 &&
                             L.is_inside_border( S )
                             ) {
@@ -228,8 +230,8 @@ namespace {
                          ) {
                         // Force the recomputing of the model vertices
                         // before performing the cut. 
-                        BM.mesh.vertices.clear() ;                        
-                        builder.cut_surface_by_line( S, BM.line( *it ) ) ;
+                        GM.mesh.vertices.clear() ;                        
+                        builder.cut_surface_by_line( S, GM.line( *it ) ) ;
                     }
                 }
             }
@@ -251,7 +253,7 @@ namespace {
         }
         if( E.type() == GME::LINE ) {
             if( E.boundary( 0 ).is_inside_border( E ) ) {
-                vertices.insert( E.nb_vertices() - 1 ) ;
+                vertices.insert( E.mesh().nb_vertices() - 1 ) ;
             }
             return ;
         }
@@ -266,13 +268,14 @@ namespace {
             // We want to get the indices of the vertices in E
             // that are colocated with those of the inside boundary
             // We assume that the model vertices are not computed
-            ColocaterANN kdtree( E.mesh(), ColocaterANN::VERTICES ) ;
+            const ColocaterANN& kdtree = E.mesh().vertices_colotater_ann() ;
+            //ColocaterANN kdtree( E.mesh(), ColocaterANN::VERTICES ) ;
 
             for( index_t i = 0; i < inside_border.size(); ++i ) {
-                const GEO::Mesh& m = inside_border[ i ]->mesh() ;
-                for( index_t v = 0; v < m.vertices.nb(); ++v ) {
+                const Mesh& m = inside_border[ i ]->mesh() ;
+                for( index_t v = 0; v < m.nb_vertices(); ++v ) {
                     std::vector< index_t > colocated_indices ;
-                    kdtree.get_colocated( m.vertices.point( v ),
+                    kdtree.get_colocated( m.vertex( v ),
                                           colocated_indices ) ;
                     if( colocated_indices.size() > 1 ) {
                         std::sort( colocated_indices.begin(), colocated_indices.end() ) ;
@@ -300,9 +303,11 @@ namespace {
                 const GMME& E = dynamic_cast< const GMME& >( GM.element(
                     gme_t( T, e ) ) ) ;
 
-                GEO::Mesh& M = E.mesh() ;
-                GEO::vector< index_t > colocated ;
-                GEO::mesh_detect_colocated_vertices( M, colocated, epsilon ) ;
+                const Mesh& M = E.mesh() ;
+                const ColocaterANN& kdtree = M.vertices_colotater_ann() ;
+                std::vector< index_t > colocated ;
+                kdtree.get_colocated_index_mapping( colocated) ;
+//                GEO::mesh_detect_colocated_vertices( M, colocated, epsilon ) ;
 
                 // Get the vertices to delete
                 std::set< index_t > inside_border ;
@@ -313,7 +318,7 @@ namespace {
                 index_t nb_todelete = 0 ;
                 index_t cur = 0 ;
                 for( index_t v = 0; v < colocated.size(); ++v ) {
-                    if( colocated[ v ] == v
+                    if( colocated[ v ] == cur
                         || inside_border.find( v ) != inside_border.end() ) {
                         // This point is kept 
                         // No colocated or on an inside boundary

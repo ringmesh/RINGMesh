@@ -34,6 +34,9 @@
  */
 
 #include <ringmesh/geometry.h>
+//#include <ringmesh/mesh.h>
+
+#include <geogram/mesh/mesh.h>
 
 #include <geogram/mesh/mesh_AABB.h>
 #include <geogram/mesh/mesh_geometry.h>
@@ -1167,7 +1170,7 @@ namespace RINGMesh {
         }
     }
 
-    ColocaterANN::ColocaterANN( const std::vector< vec3 >& vertices, bool copy )
+    ColocaterANN::ColocaterANN( const GEO::vector< vec3 >& vertices, bool copy )
     {
         index_t nb_vertices = static_cast<index_t> ( vertices.size() ) ;
         ann_tree_ = GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
@@ -1214,6 +1217,50 @@ namespace RINGMesh {
         return !result.empty() ;
     }
 
+    void ColocaterANN::get_colocated_index_mapping( GEO::vector< index_t >& index_map ) const
+    {
+        index_map.resize( ann_tree_->nb_points() ) ;
+        for( index_t i = 0; i < index_map.size(); i++ ) {
+            if( index_map[i] != i ) continue ;
+            std::vector< index_t > results ;
+            vec3 query( ann_points_[3 * i], ann_points_[3 * i + 1],
+                ann_points_[3 * i + 2] ) ;
+            get_colocated( query, results ) ;
+            index_t id = *std::min_element( results.begin(), results.end() ) ;
+            for( index_t j = 0; j < results.size(); j++ ) {
+                if( id == results[j] ) continue ;
+                index_map[results[j]] = id ;
+            }
+        }
+        index_t offset = 0 ;
+        for( index_t i = 0; i < index_map.size(); i++ ) {
+            if( index_map[i] != i ) {
+                index_map[i] = index_map[index_map[i]] ;
+                offset++ ;
+            } else {
+                index_map[i] -= offset ;
+            }
+        }
+    }
+
+    void ColocaterANN::get_colocated_index_mapping( GEO::vector< index_t >& index_map, GEO::vector< vec3 >& unique_points ) const
+    {
+        get_colocated_index_mapping( index_map ) ;
+        unique_points.reserve( index_map.size() ) ;
+        index_t offset = 0, cur_id = 0 ;
+        for( index_t p = 0; p < index_map.size(); p++ ) {
+            if( cur_id == index_map[p] ) {
+                cur_id++ ;
+                vec3 new_point( ann_points_[3 * index_map[p] + offset],
+                    ann_points_[3 * index_map[p] + offset + 1],
+                    ann_points_[3 * index_map[p] + offset + 2] ) ;
+                unique_points.push_back( new_point ) ;
+            } else {
+                offset++ ;
+            }
+        }
+    }
+
     /*!
      * Gets the neighboring points of a given one sorted by increasing distance
      * @param[in] v the point to test
@@ -1241,7 +1288,7 @@ namespace RINGMesh {
     }
 
     void ColocaterANN::build_colocater_ann_vertices(
-        const GEO::Mesh& mesh,
+        const Mesh& mesh,
         bool copy )
     {
         if( !copy ) {
@@ -1257,7 +1304,7 @@ namespace RINGMesh {
         }
     }
 
-    void ColocaterANN::build_colocater_ann_edges( const GEO::Mesh& mesh )
+    void ColocaterANN::build_colocater_ann_edges( const Mesh& mesh )
     {
         const GEO::MeshEdges& mesh_edges = mesh.edges ;
         index_t nb_vertices = mesh_edges.nb() ;
@@ -1277,7 +1324,7 @@ namespace RINGMesh {
         ann_tree_->set_points( nb_vertices, ann_points_ ) ;
     }
 
-    void ColocaterANN::build_colocater_ann_facets( const GEO::Mesh& mesh )
+    void ColocaterANN::build_colocater_ann_facets( const Mesh& mesh )
     {
         index_t nb_vertices = mesh.facets.nb() ;
         ann_points_ = new double[nb_vertices * 3] ;
@@ -1289,7 +1336,7 @@ namespace RINGMesh {
         ann_tree_->set_points( nb_vertices, ann_points_ ) ;
     }
 
-    void ColocaterANN::build_colocater_ann_cells( const GEO::Mesh& mesh )
+    void ColocaterANN::build_colocater_ann_cells( const Mesh& mesh )
     {
         index_t nb_vertices = mesh.cells.nb() ;
         ann_points_ = new double[nb_vertices * 3] ;

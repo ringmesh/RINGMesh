@@ -59,6 +59,7 @@
 
 #include <geogram/points/colocate.h>
 
+#include <ringmesh/mesh.h>
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_api.h>
 #include <ringmesh/geogram_extension.h>
@@ -74,7 +75,6 @@
 
 namespace {
 
-    using namespace GEO ;
     using namespace RINGMesh ;
     using GEO::index_t ;
     using GEO::vec3 ;
@@ -124,10 +124,10 @@ namespace {
      *  otherwise
      */
     bool triangles_intersect(
-        const Mesh& M,
+        const GEO::Mesh& M,
         index_t f1,
         index_t f2,
-        vector< TriangleIsect >& sym )
+        GEO::vector< GEO::TriangleIsect >& sym )
     {
         ringmesh_assert( M.facets.nb_vertices( f1 ) == 3 ) ;
         ringmesh_assert( M.facets.nb_vertices( f2 ) == 3 ) ;
@@ -241,7 +241,7 @@ namespace {
      *
      */
     bool facets_share_line_edge(
-        const Mesh& M,
+        const GEO::Mesh& M,
         const GeoModel& BM,
         index_t f1,
         index_t f2 )
@@ -297,7 +297,7 @@ namespace {
      * \return true if facets \p f1 and \p f2 share an edge, false
      *  otherwise
      */
-    bool facets_are_adjacent( const Mesh& M, index_t f1, index_t f2 )
+    bool facets_are_adjacent( const GEO::Mesh& M, index_t f1, index_t f2 )
     {
         if( f1 == f2 ) {
             return true ;
@@ -324,9 +324,9 @@ namespace {
          *  whether it has intersections
          */
         StoreIntersections(
-            const Mesh& M,
+            const GEO::Mesh& M,
             const GeoModel& BM,
-            vector< index_t >& has_isect )
+            GEO::vector< index_t >& has_isect )
             : M_( M ), BM_( BM ), has_intersection_( has_isect )
         {
             has_intersection_.assign( M.facets.nb(), 0 ) ;
@@ -349,10 +349,10 @@ namespace {
         }
 
     private:
-        const Mesh& M_ ;
+        const GEO::Mesh& M_ ;
         const GeoModel& BM_ ;
-        vector< index_t >& has_intersection_ ;
-        vector< TriangleIsect > sym_ ;
+        GEO::vector< index_t >& has_intersection_ ;
+        GEO::vector< GEO::TriangleIsect > sym_ ;
     } ;
 
     /** \note Copied from geogram
@@ -360,13 +360,13 @@ namespace {
      * \param[in] M the mesh
      * \return number of intersecting facets
      */
-    index_t detect_intersecting_facets( const GeoModel& model, Mesh& M )
+    index_t detect_intersecting_facets( const GeoModel& model, GEO::Mesh& M )
     {
         geo_assert( M.vertices.dimension() >= 3 ) ;
 
-        vector< index_t > has_intersection ;
+        GEO::vector< index_t > has_intersection ;
         StoreIntersections action( M, model, has_intersection ) ;
-        MeshFacetsAABB AABB( M ) ;
+        GEO::MeshFacetsAABB AABB( M ) ;
         AABB.compute_facet_bbox_intersections( action ) ;
 
         index_t nb_intersections = static_cast< index_t >( std::count(
@@ -527,7 +527,7 @@ namespace {
      * @details Inside borders are ignored. Adjacencies are not set.
      * Client should call mesh repair functions afterwards.
      */
-    void mesh_from_element_boundaries( const GME& E, Mesh& M )
+    void mesh_from_element_boundaries( const GME& E, GEO::Mesh& M )
     {
         M.clear() ;
 
@@ -626,7 +626,7 @@ namespace {
                 << " has no boundary Surface" << std::endl ;
             return false ;
         } else {
-            Mesh mesh ;
+            GEO::Mesh mesh ;
             GEO::Logger::instance()->set_quiet( true ) ;
             mesh_from_element_boundaries( region, mesh ) ;
             GEO::mesh_repair( mesh ) ;
@@ -1195,7 +1195,7 @@ namespace RINGMesh {
             bool connect_facets = false ;
             build_mesh_from_geomodel( geomodel(),
                 triangulated_global_model_mesh_, connect_facets ) ;
-            GEO::mesh_repair( triangulated_global_model_mesh_, MESH_REPAIR_TRIANGULATE ) ;
+            GEO::mesh_repair( triangulated_global_model_mesh_, GEO::MESH_REPAIR_TRIANGULATE ) ;
 
             GEO::Logger::instance()->set_quiet( false ) ;
         }

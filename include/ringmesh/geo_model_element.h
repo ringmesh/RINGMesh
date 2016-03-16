@@ -33,7 +33,7 @@
  *     FRANCE
  */
 
- /*!
+/*!
  * @file Declaration of GeoModelElement and all its children classes
  * @author Jeanne Pellerin  and Arnaud Botella 
  */
@@ -42,20 +42,13 @@
 #define __RINGMESH_GEO_MODEL_ELEMENT__
 
 #include <ringmesh/common.h>
+#include <ringmesh/mesh.h>
 
 #include <vector>
 #include <string>
 
-#include <geogram/mesh/mesh.h>
-
-namespace GEO {
-    class MeshFacetsAABB ;
-    class MeshCellsAABB ;
-}
-
 namespace RINGMesh {
     class GeoModel ;
-    class ColocaterANN ;
 }
 
 namespace RINGMesh {
@@ -446,7 +439,7 @@ namespace RINGMesh {
     /*!
      * @brief Abstract base class for GeoModelElement 
      *        which have a geometrical representation
-     * @details This representation is stored as a GEO::Mesh
+     * @details This representation is stored as a RINGMesh::Mesh
      */
     class RINGMESH_API GeoModelMeshElement: public GeoModelElement {
     ringmesh_disable_copy( GeoModelMeshElement ) ;
@@ -465,9 +458,11 @@ namespace RINGMesh {
             index_t id,
             const std::string& name = "",
             GEOL_FEATURE geological_feature = NO_GEOL )
-            : GeoModelElement( model, element_type, id, name, geological_feature )
+            :
+                mesh_( *this, 3, false ),
+                GeoModelElement( model, element_type, id, name, geological_feature )
         {
-            model_vertex_id_.bind( mesh_.vertices.attributes(),
+            model_vertex_id_.bind( mesh_.vertex_attribute_manager(),
                 model_vertex_id_att_name() ) ;
         }
 
@@ -489,8 +484,8 @@ namespace RINGMesh {
          * vertices for Corner, edges for Line,
          * facets for Surface, cells for Region.
          */
-        virtual index_t nb_cells() const = 0 ;
-
+        /*        virtual index_t nb_cells() const = 0 ;
+         */
         /*! 
          * @brief Correspondance of vertex index \param lv in a mesh element \param me
          * and vertex index in the GMME
@@ -499,21 +494,13 @@ namespace RINGMesh {
         virtual index_t gmme_vertex_index( index_t me, index_t lv ) const = 0 ;
 
         /*!
-         * @brief Number of vertices of the mesh
-         */
-        index_t nb_vertices() const
-        {
-            return mesh_.vertices.nb() ;
-        }
-
-        /*!
          * @brief Global index in GeoModelMesh from the
          * the local one
          * @param[in] v Vertex index in the GeoModelMeshElement
          */
         index_t model_vertex_id( index_t v = 0 ) const
         {
-            ringmesh_assert( v < nb_vertices() ) ;
+            ringmesh_assert( v < mesh_.nb_vertices() ) ;
             return model_vertex_id_[v] ;
         }
 
@@ -523,18 +510,11 @@ namespace RINGMesh {
         }
 
         /*!
-         * @brief Coordinates of a GeoModelMeshElement
-         * @param[in] v Index of the vertex in the GeoModelMeshElement
+         * @brief return the coordinate of a \param lv vertex in the model element \param me
          */
-        const vec3& vertex( index_t v = 0 ) const
-        {
-            ringmesh_assert( v < nb_vertices() ) ;
-            return mesh_.vertices.point( v ) ;
-        }
-
         const vec3& vertex( index_t me, index_t lv ) const
         {
-            return vertex( gmme_vertex_index( me, lv ) ) ;
+            return mesh_.vertex( gmme_vertex_index( me, lv ) ) ;
         }
 
         /*!
@@ -548,23 +528,6 @@ namespace RINGMesh {
 
         std::vector< index_t > gme_vertex_indices( index_t model_vertex_id ) const ;
 
-        /*!
-         * @}
-         * \name Attribute management
-         * @{
-         */
-        GEO::AttributesManager& vertex_attribute_manager() const
-        {
-            return mesh_.vertices.attributes() ;
-        }
-        GEO::AttributesManager& facet_attribute_manager() const
-        {
-            return mesh_.facets.attributes() ;
-        }
-        GEO::AttributesManager& cell_attribute_manager() const
-        {
-            return mesh_.cells.attributes() ;
-        }
         void bind_attributes() ;
         void unbind_attributes() ;
 
@@ -577,9 +540,14 @@ namespace RINGMesh {
          * @warning DO NOT directly call this function to modify the facets, edges,
          * or vertices of the element.
          */
-        GEO::Mesh& mesh() const
+        const Mesh& mesh() const
         {
-            return const_cast< GEO::Mesh& >( mesh_ ) ;
+            return mesh_ ;
+        }
+
+        Mesh& mesh()
+        {
+            return mesh_ ;
         }
 
     protected:
@@ -596,7 +564,7 @@ namespace RINGMesh {
 
     protected:
         /// Mesh of the element
-        GEO::Mesh mesh_ ;
+        Mesh mesh_ ;
         /*! Attribute on the Mesh vertices storing the index of
          *  the vertex in the the GeoModel owning this element 
          */
@@ -617,17 +585,12 @@ namespace RINGMesh {
         Corner( const GeoModel& model, index_t id )
             : GeoModelMeshElement( model, CORNER, id )
         {
-            mesh_.vertices.create_vertex() ;
+            MeshBuilder builder( mesh_ ) ;
+            builder.create_vertex() ;
         }
 
         ~Corner()
         {
-        }
-
-        virtual index_t nb_cells() const
-        {
-            // A Corner (dim 0) has points
-            return mesh_.vertices.nb() ;
         }
 
         // Only one possible local index 
@@ -658,22 +621,14 @@ namespace RINGMesh {
         }
 
         /*!
-         * @brief Number of edges
-         */
-        virtual index_t nb_cells() const
-        {
-            return mesh_.edges.nb() ;
-        }
-
-        /*!
          * @brief Correspondance of vertex index \param lv in a mesh element \param me
          * and vertex index in the GMME
          */
         virtual index_t gmme_vertex_index( index_t me, index_t lv ) const
         {
-            ringmesh_assert( me < nb_cells() ) ;
+            ringmesh_assert( me < mesh_.nb_cells() ) ;
             ringmesh_assert( lv < 2 ) ;
-            return mesh_.edges.vertex( me, lv ) ;
+            return mesh_.edge_vertex( me, lv ) ;
         }
 
         /*!
@@ -691,27 +646,6 @@ namespace RINGMesh {
 
     } ;
 
-    // Forward declaration
-    class Surface ;
-
-    /*
-     * @todo Comment
-     */
-    class RINGMESH_API SurfaceTools {
-    public:
-        SurfaceTools( const Surface& surface ) ;
-        ~SurfaceTools() ;
-
-        const GEO::MeshFacetsAABB& aabb() const ;
-        const ColocaterANN& ann() const ;
-
-    private:
-        const Surface& surface_ ;
-
-        mutable GEO::MeshFacetsAABB* aabb_ ;
-        mutable ColocaterANN* ann_ ;
-    } ;
-
     /*!
      * @brief A GeoModelElement of type SURFACE
      *
@@ -724,20 +658,12 @@ namespace RINGMesh {
         static const index_t NO_ADJACENT = index_t( -1 ) ;
 
         Surface( const GeoModel& model, index_t id )
-            : GeoModelMeshElement( model, SURFACE, id ), tools( *this )
+            : GeoModelMeshElement( model, SURFACE, id )
         {
         }
 
         ~Surface()
         {
-        }
-
-        /*!
-         * @brief Number of facets
-         */
-        virtual index_t nb_cells() const
-        {
-            return mesh_.facets.nb() ;
         }
 
         /*!
@@ -747,68 +673,39 @@ namespace RINGMesh {
         virtual index_t gmme_vertex_index( index_t me, index_t lv ) const
         {
             ringmesh_assert( me < nb_cells() ) ;
-            ringmesh_assert( lv < mesh_.facets.nb_vertices( me ) ) ;
-            return mesh_.facets.vertex( me, lv ) ;
+            ringmesh_assert( lv < mesh_.nb_facet_vertices( me ) ) ;
+            return mesh_.facet_vertex( me, lv ) ;
         }
 
         bool is_simplicial() const
         {
-            return mesh_.facets.are_simplices() ;
+            return mesh_.facets_are_simplicies() ;
         }
 
         /*!
          * \name Accessors to facet and vertices
          * @{
          */
-        index_t facet_begin( index_t f ) const
-        {
-            return mesh_.facets.corners_begin( f ) ;
-        }
-        index_t facet_end( index_t f ) const
-        {
-            return mesh_.facets.corners_end( f ) ;
-        }
-        index_t nb_vertices_in_facet( index_t f ) const
-        {
-            return mesh_.facets.nb_vertices( f ) ;
-        }
+        /*               index_t facet_begin( index_t f ) const
+         {
+         return mesh_.facets.corners_begin( f ) ;
+         }
+         index_t facet_end( index_t f ) const
+         {
+         return mesh_.facets.corners_end( f ) ;
+         }*/
 
-        bool is_triangle( index_t f ) const
-        {
-            return nb_vertices_in_facet( f ) == 3 ;
-        }
-
-        index_t next_in_facet( index_t f, index_t v ) const
-        {
-            ringmesh_assert( v < nb_vertices_in_facet( f ) ) ;
-            if( v != nb_vertices_in_facet( f ) - 1 ) {
-                return v + 1 ;
-            } else {
-                return 0 ;
-            }
-        }
-
-        index_t prev_in_facet( index_t f, index_t v ) const
-        {
-            ringmesh_assert( v < nb_vertices_in_facet( f ) ) ;
-            if( v > 0 ) {
-                return v - 1 ;
-            } else {
-                return nb_vertices_in_facet( f ) - 1 ;
-            }
-        }
-
-        index_t nb_facet_corners() const
-        {
-            return mesh_.facet_corners.nb() ;
-        }
-
-        index_t model_vertex_id_at_facet_corner( index_t corner ) const
-        {
-            return GeoModelMeshElement::model_vertex_id(
-                mesh_.facet_corners.vertex( corner ) ) ;
-        }
-
+        /*       index_t nb_facet_corners() const
+         {
+         return mesh_.facet_corners.nb() ;
+         }
+         */
+        /*       index_t model_vertex_id_at_facet_corner( index_t corner ) const
+         {
+         return GeoModelMeshElement::model_vertex_id(
+         mesh_.facet_corners.vertex( corner ) ) ;
+         }
+         */
         /*!
          * @brief Returns the surface index of vertex \param v in facet \param f
          */
@@ -869,35 +766,14 @@ namespace RINGMesh {
             index_t facet_index,
             const vec3& to_point ) const ;
 
-        /*! @}
-         * \name Adjacencies request
-         * @{
-         */
-        /*! @brief Returns the index of the adjacent facet of \param f in this surface
-         *  along the edge starting at \param v */
-        index_t adjacent( index_t f, index_t v ) const
-        {
-            ringmesh_assert( v < nb_vertices_in_facet( f ) ) ;
-            return mesh_.facets.adjacent( f, v ) ;
-        }
-
-        /*! @brief Returns the index of the adjacent facet at the given corner
-         */
-        index_t adjacent( index_t c ) const
-        {
-            ringmesh_assert( c < mesh_.facet_corners.nb() ) ;
-            return mesh_.facet_corners.adjacent_facet( c ) ;
-        }
-
         bool is_on_border( index_t f, index_t v ) const
         {
-            ringmesh_assert( v < nb_vertices_in_facet( f ) ) ;
-            return adjacent( f, v ) == GEO::NO_CELL ;
+            return mesh_.facet_adjacent( f, v ) == GEO::NO_CELL ;
         }
 
         bool is_on_border( index_t f ) const
         {
-            for( index_t adj = 0; adj < nb_vertices_in_facet( f ); adj++ ) {
+            for( index_t adj = 0; adj < mesh_.nb_facet_vertices( f ); adj++ ) {
                 if( is_on_border( f, adj ) ) {
                     return true ;
                 }
@@ -919,32 +795,9 @@ namespace RINGMesh {
             index_t& next_f,
             index_t& next_e ) const ;
 
-    public:
-        SurfaceTools tools ;
-
     private:
         virtual bool is_mesh_valid() const ;
 
-    } ;
-
-    // Defined just after this class
-    class Region ;
-    /*
-     * @todo Comment 
-     */
-    class RINGMESH_API RegionTools {
-    public:
-        RegionTools( const Region& region ) ;
-        ~RegionTools() ;
-
-        const GEO::MeshCellsAABB& aabb() const ;
-        const ColocaterANN& ann() const ;
-
-    private:
-        const Region& region_ ;
-
-        mutable GEO::MeshCellsAABB* aabb_ ;
-        mutable ColocaterANN* ann_ ;
     } ;
 
     /*!
@@ -958,7 +811,7 @@ namespace RINGMesh {
         friend class GeoModelBuilder ;
     public:
         Region( const GeoModel& model, index_t id )
-            : GeoModelMeshElement( model, REGION, id ), tools( *this )
+            : GeoModelMeshElement( model, REGION, id )
         {
         }
 
@@ -968,8 +821,7 @@ namespace RINGMesh {
             const std::string& name,
             GEOL_FEATURE geological_feature )
             :
-                GeoModelMeshElement( model, REGION, id, name, geological_feature ),
-                tools( *this )
+                GeoModelMeshElement( model, REGION, id, name, geological_feature )
         {
         }
 
@@ -977,48 +829,26 @@ namespace RINGMesh {
         {
         }
 
-        /*!
-         * Get the number of cells
-         */
-        virtual index_t nb_cells() const
-        {
-            return mesh_.cells.nb() ;
-        }
-
-        index_t nb_vertices_in_cell( index_t c ) const
-        {
-            return mesh_.cells.nb_vertices( c ) ;
-        }
         virtual index_t gmme_vertex_index( index_t me, index_t lv ) const
         {
-            ringmesh_assert( me < nb_cells() ) ;
-            ringmesh_assert( lv < mesh_.cells.nb() ) ;
-            return mesh_.cells.vertex( me, lv ) ;
+            ringmesh_assert( me < mesh_.nb_cells() ) ;
+            ringmesh_assert( lv < mesh_.nb_cell_vertices( me ) ) ;
+            return mesh_.cell_vertex( me, lv ) ;
         }
 
         bool is_on_border( index_t cell, index_t facet ) const
         {
-            return adjacent_cell( cell, facet ) == GEO::NO_CELL ;
-        }
-
-        index_t adjacent_cell( index_t cell, index_t facet ) const
-        {
-            return mesh_.cells.adjacent( cell, facet ) ;
+            return mesh_.cell_adjacent( cell, facet ) == GEO::NO_CELL ;
         }
 
         bool is_meshed() const
         {
-            return mesh().cells.nb() > 0 ;
+            return mesh_.nb_cells() > 0 ;
         }
 
         bool side( index_t i ) const
         {
             return sides_[i] ;
-        }
-
-        bool is_simplicial() const
-        {
-            return mesh().cells.are_simplices() ;
         }
 
         /*!
@@ -1042,9 +872,6 @@ namespace RINGMesh {
          * The size of this vector must be the same than boundary_
          */
         std::vector< bool > sides_ ;
-
-    public:
-        RegionTools tools ;
     } ;
 
 } // namespace
