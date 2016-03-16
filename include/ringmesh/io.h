@@ -67,24 +67,6 @@ namespace RINGMesh {
 
     bool RINGMESH_API compare_files( const std::string& f1, const std::string& f2 ) ;
 
-    ///TODO 4 next function are gonna disappear...
-    void RINGMESH_API geomodel_surface_load(
-        const std::string& filename,
-        GeoModel& model ) ;
-
-    void RINGMESH_API geomodel_surface_save(
-        const GeoModel& model,
-        const std::string& filename ) ;
-
-    void RINGMESH_API geomodel_volume_load(
-        const std::string& filename,
-        GeoModel& model ) ;
-
-    void RINGMESH_API geomodel_volume_save(
-        const GeoModel& model,
-        const std::string& filename ) ;
-
-    //TODO we will keep only these both
     void RINGMESH_API geomodel_load(
         GeoModel& model,
         const std::string& filename ) ;
@@ -94,8 +76,6 @@ namespace RINGMesh {
         const std::string& filename ) ;
 
     void RINGMESH_API well_load( const std::string& filename, WellGroup& wells ) ;
-
-
 
     class RINGMESH_API GeoModelIOHandler: public GEO::Counted {
     public:
@@ -159,9 +139,9 @@ namespace RINGMesh {
 
     void RINGMESH_API mesh_initialize() ;
 
-    void zip_file( zipFile zf, const std::string& name ) ;
+    void RINGMESH_API zip_file( zipFile zf, const std::string& name ) ;
 
-    void unzip_file( unzFile uz, char filename[MAX_FILENAME] ) ;
+    void RINGMESH_API unzip_file( unzFile uz, char filename[MAX_FILENAME] ) ;
 
 }
 #endif

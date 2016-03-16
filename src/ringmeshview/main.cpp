@@ -360,7 +360,7 @@ namespace {
         }
 
         if( !GEO::CmdLine::get_arg( "geomodel" ).empty() ) {
-            RINGMesh::geomodel_volume_load( GEO::CmdLine::get_arg( "geomodel" ), GM ) ;
+            RINGMesh::geomodel_load( GM, GEO::CmdLine::get_arg( "geomodel" ) ) ;
             meshed_regions = true ;
         }
         else{
