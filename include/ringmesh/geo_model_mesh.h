@@ -621,7 +621,7 @@ namespace RINGMesh {
          * of the corresponding type of \p c in the owing region
          * @return the type of the cell \p f
          */
-        GEO::MeshCellType type( index_t c, index_t& index ) const ;
+        GEO::MeshCellType type( index_t c ) const ;
 
         /*!
          * Get the number of cells of the corresponding type
@@ -1020,7 +1020,7 @@ namespace RINGMesh {
 
         const GeoModel& model() const
         {
-            return gm_ ;
+            return geo_model_ ;
         }
 
         /*!
@@ -1048,6 +1048,24 @@ namespace RINGMesh {
         {
             return mesh_->cell_attribute_manager() ;
         }
+
+        /*!
+         * @brief Transfer attributes from the GeoModelMesh to the
+         * GeoModel
+         */
+        void transfert_attributes() const ;
+
+        /*!
+         * @brief Transfer attributes from the GeoModelMeshCell to the
+         * GeoModel
+         */
+        void transfert_cell_attributes() const ;
+        /*!
+         * @brief Transfer attributes from the GeoModelMeshVertices to the
+         * GeoModel
+         */
+        void transfert_vertex_attributes() const ;
+
 
         /*!
          * Access the DuplicateMode
@@ -1114,7 +1132,7 @@ namespace RINGMesh {
 
     private:
         /*! Attached GeoModel */
-        const GeoModel& gm_ ;
+        const GeoModel& geo_model_ ;
         /*!
          * @brief Mesh owned by the GeoModelMesh, stores unique vertices, edges, 
          * facets and cells.

@@ -151,7 +151,7 @@ namespace RINGMesh {
         for( index_t f = 0; f < GEO::MeshCellDescriptors::pyramid_descriptor.nb_facets; f++ ) {
             vec3 cur_p ;
             double distance = max_float64() ;
-            GEO::Numeric::uint8 nb_vertices =
+            index_t nb_vertices =
                 GEO::MeshCellDescriptors::pyramid_descriptor.nb_vertices_in_facet[f] ;
             if( nb_vertices == 3 ) {
                 distance = point_triangle_distance( p,
@@ -205,7 +205,7 @@ namespace RINGMesh {
         for( index_t f = 0; f < GEO::MeshCellDescriptors::prism_descriptor.nb_facets; f++ ) {
             vec3 cur_p ;
             double distance = max_float64() ;
-            GEO::Numeric::uint8 nb_vertices =
+            index_t nb_vertices =
                 GEO::MeshCellDescriptors::prism_descriptor.nb_vertices_in_facet[f] ;
             if( nb_vertices == 3 ) {
                 distance = point_triangle_distance( p,
@@ -1052,7 +1052,7 @@ namespace RINGMesh {
     MakeUnique::MakeUnique( const std::vector< vec3 >& points )
         : points_( points )
     {
-        index_t nb_points = points_.size() ;
+        index_t nb_points = static_cast<index_t> ( points_.size() ) ;
         indices_.resize( nb_points ) ;
         for( index_t i = 0; i < nb_points; i++ ) {
             indices_[i] = i ;
@@ -1172,7 +1172,7 @@ namespace RINGMesh {
 
     ColocaterANN::ColocaterANN( const GEO::vector< vec3 >& vertices, bool copy )
     {
-        index_t nb_vertices = vertices.size() ;
+        index_t nb_vertices = static_cast<index_t> ( vertices.size() ) ;
         ann_tree_ = GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
         if( copy ) {
             ann_points_ = new double[nb_vertices * 3] ;

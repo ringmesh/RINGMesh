@@ -440,6 +440,7 @@ namespace RINGMesh {
             const std::vector< T >& data,
             bool T_is_a_pointer )
         {
+            ringmesh_unused( T_is_a_pointer ) ;
             index_t nb_points = 0 ;
             for( index_t i = 0; i < data.size(); i++ ) {
                 nb_points += data[ i ]->nb_vertices() ;

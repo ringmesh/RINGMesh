@@ -54,15 +54,6 @@ namespace RINGMesh {
     using GEO::Mesh ;
         
 
-    // Copied from geo_model_builder.cpp. Still needed ?? check Geogram
-    static double read_double( GEO::LineInput& in, index_t field )
-    {
-        double result ;
-        std::istringstream iss( in.field( field ) ) ;
-        iss >> result >> std::ws ;
-        return result ;
-    }
-    
     /***********************************************************************/
     /* Loading and saving a GEO::Mesh                                      */
 
@@ -95,6 +86,7 @@ namespace RINGMesh {
             const GEO::MeshIOFlags& flag = GEO::MeshIOFlags()
             )
         {
+            ringmesh_unused( flag ) ;
             filename_ = filename ;
             if( !is_file_valid()) {
                 return false ;
@@ -155,9 +147,9 @@ namespace RINGMesh {
                 in.get_fields() ;
                 if( in.nb_fields() > 0 ) {
                     if( in.field_matches( 0, "VRTX" ) || in.field_matches( 0, "PVRTX" ) ) {
-                        vertices_[ mesh_dimension_*v ]     = read_double( in, 2 ) ;
-                        vertices_[ mesh_dimension_*v + 1 ] = read_double( in, 3 ) ;
-                        vertices_[ mesh_dimension_*v + 2 ] = read_double( in, 4 ) * z_sign_ ;
+                        vertices_[ mesh_dimension_*v ]     =  in.field_as_double(2);
+                        vertices_[ mesh_dimension_*v + 1 ] = in.field_as_double(3);
+                        vertices_[ mesh_dimension_*v + 2 ] = in.field_as_double(4) * z_sign_ ;
                         ++v ;
                     } else if( in.field_matches( 0, "PATOM" ) || in.field_matches( 0, "ATOM" ) ) {
                         index_t v0 = in.field_as_uint( 2 ) - 1 ;
@@ -177,7 +169,8 @@ namespace RINGMesh {
 
         void assign_and_repair_mesh( GEO::Mesh& mesh )
         {
-            mesh.facets.assign_triangle_mesh( mesh_dimension_, vertices_, triangles_, true ) ;
+            GEO::coord_index_t dimension = static_cast< GEO::coord_index_t >( mesh_dimension_ ) ;
+            mesh.facets.assign_triangle_mesh( dimension, vertices_, triangles_, true ) ;
             // Do not use GEO::MESH_REPAIR_DEFAULT because it glues the 
             // disconnected edges along internal boundaries
             GEO::mesh_repair( mesh, GEO::MESH_REPAIR_DUP_F ) ;
@@ -220,6 +213,7 @@ namespace RINGMesh {
             GEO::Mesh& mesh,
             const GEO::MeshIOFlags& flag = GEO::MeshIOFlags() )
         {
+            ringmesh_unused( flag ) ;
             GEO::LineInput file( filename ) ;
 
             while( !file.eof() && file.get_line() ) {
@@ -243,6 +237,9 @@ namespace RINGMesh {
             const std::string& filename,
             const GEO::MeshIOFlags& ioflags = GEO::MeshIOFlags() )
         {
+            ringmesh_unused( M ) ;
+            ringmesh_unused( filename ) ;
+            ringmesh_unused( ioflags ) ;
             throw RINGMeshException( "I/O",
                 "Saving a Mesh into .lin format not implemented yet" ) ;
             return false ;
