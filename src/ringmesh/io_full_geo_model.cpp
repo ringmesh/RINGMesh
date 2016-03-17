@@ -412,9 +412,9 @@ namespace {
         build_string_for_geo_model_element_export( type,
             geo_model_element_mesh.index(), name ) ;
         GEO::Logger* logger = GEO::Logger::instance() ;
-        logger->set_quiet(true) ;
+        logger->set_quiet( true ) ;
         GEO::mesh_save( geo_model_element_mesh.mesh(), name ) ;
-        logger->set_quiet(false) ;
+        logger->set_quiet( false ) ;
 
         zip_file( zf, name ) ;
         GEO::FileSystem::delete_file( name ) ;
@@ -449,7 +449,6 @@ namespace {
 
             zipFile zf = zipOpen( filename.c_str(), APPEND_STATUS_CREATE ) ;
 
-
             save_topology( model, "topology.txt" ) ;
             zip_file( zf, "topology.txt" ) ;
             GEO::FileSystem::delete_file( "topology.txt" ) ;
@@ -458,13 +457,21 @@ namespace {
             zip_file( zf, "connectivity.txt" ) ;
             GEO::FileSystem::delete_file( "connectivity.txt" ) ;
 
-            for( index_t t = GME::CORNER; t <= GME::REGION; t++ ) {
+            for( index_t t = GME::CORNER; t < GME::REGION; t++ ) {
                 GME::TYPE type = static_cast< GME::TYPE >( t ) ;
                 for( index_t e = 0; e < model.nb_elements( type ); e++ ) {
-                    save_geo_model_mesh_element( model.mesh_element( type, e ), zf ) ;
+                    save_geo_model_mesh_element( model.mesh_element( type, e ),
+                        zf ) ;
                 }
             }
-            zipClose(zf, NULL) ;
+
+            for( index_t r = 0; r < model.nb_regions(); r++ ) {
+                if( model.region( r ).is_meshed() ) {
+                    save_geo_model_mesh_element(
+                        model.mesh_element( GME::REGION, r ), zf ) ;
+                }
+            }
+            zipClose( zf, NULL ) ;
         }
 
     } ;
@@ -497,7 +504,8 @@ namespace {
                     GEO::mesh_load( GEO::String::to_string( filename ), m, flags ) ;
                     GEO::Logger::instance()->set_minimal( false ) ;
                 } else {
-                    ringmesh_assert_not_reached;
+                    ringmesh_assert_not_reached
+                    ;
                 }
                 GEO::FileSystem::delete_file( filename ) ;  // WHY ?? [Jeanne]
 
@@ -706,13 +714,14 @@ namespace {
                 case GEO::MESH_HEX:
                     return 12 ;
                 default:
-                    ringmesh_assert_not_reached;
+                    ringmesh_assert_not_reached
+                    ;
                     return NO_ID ;
-                }
             }
-        } ;
+        }
+    } ;
 
-        /************************************************************************/
+    /************************************************************************/
 
     class TSolidIOHandler: public GeoModelIOHandler {
     public:
@@ -1660,7 +1669,8 @@ namespace {
                         if( ann.get_colocated( query, results ) ) {
                             edges[results[0]].push_back( cell_offset + f ) ;
                         } else {
-                            ringmesh_assert_not_reached;
+                            ringmesh_assert_not_reached
+                            ;
                         }
                     }
                 }
@@ -1721,14 +1731,15 @@ namespace {
                 case 10:
                     return 45 ;
                 default:
-                    ringmesh_assert_not_reached;
+                    ringmesh_assert_not_reached
+                    ;
                     return 0 ;
 
-                }
             }
-        } ;
+        }
+    } ;
 
-        /************************************************************************/
+    /************************************************************************/
 
 //        struct RINGMesh2GMSH {
 //                   index_t element_type ;
@@ -2080,16 +2091,16 @@ namespace RINGMesh {
      */
     void GeoModelIOHandler::initialize_full_geomodel_output()
     {
-        ringmesh_register_IOHandler_creator( MMIOHandler, "mm" );
-    ringmesh_register_IOHandler_creator( LMIOHandler, "meshb" ) ;
-    ringmesh_register_IOHandler_creator( LMIOHandler, "mesh" ) ;
-    ringmesh_register_IOHandler_creator( TetGenIOHandler, "tetgen" ) ;
-    ringmesh_register_IOHandler_creator( TSolidIOHandler, "so" ) ;
-    ringmesh_register_IOHandler_creator( CSMPIOHandler, "csmp" ) ;
-    ringmesh_register_IOHandler_creator( AsterIOHandler, "mail" ) ;
-    ringmesh_register_IOHandler_creator( VTKIOHandler, "vtk" ) ;
-    ringmesh_register_IOHandler_creator( GPRSIOHandler, "gprs" ) ;
-    ringmesh_register_IOHandler_creator( MSHIOHandler, "msh" ) ;
-    ringmesh_register_IOHandler_creator( GeoModelHandler, "gm" ) ;}
+        ringmesh_register_IOHandler_creator( MMIOHandler, "mm" ) ;
+        ringmesh_register_IOHandler_creator( LMIOHandler, "meshb" );
+        ringmesh_register_IOHandler_creator( LMIOHandler, "mesh" );
+        ringmesh_register_IOHandler_creator( TetGenIOHandler, "tetgen" );
+        ringmesh_register_IOHandler_creator( TSolidIOHandler, "so" );
+        ringmesh_register_IOHandler_creator( CSMPIOHandler, "csmp" );
+        ringmesh_register_IOHandler_creator( AsterIOHandler, "mail" );
+        ringmesh_register_IOHandler_creator( VTKIOHandler, "vtk" );
+        ringmesh_register_IOHandler_creator( GPRSIOHandler, "gprs" );
+        ringmesh_register_IOHandler_creator( MSHIOHandler, "msh" );
+        ringmesh_register_IOHandler_creator( GeoModelHandler, "gm" );}
 
 }
