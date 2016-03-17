@@ -227,7 +227,7 @@ namespace RINGMesh {
         }
         const Region& region( index_t index ) const
         {
-            return region( index )  ;
+            return region( index ) ;
         }
 
         const GeoModelElement& contact( index_t index ) const
