@@ -410,9 +410,9 @@ namespace {
         build_string_for_geo_model_element_export( type,
             geo_model_element_mesh.index(), name ) ;
         GEO::Logger* logger = GEO::Logger::instance() ;
-        logger->set_quiet(true) ;
+        logger->set_quiet( true ) ;
         GEO::mesh_save( geo_model_element_mesh.mesh(), name ) ;
-        logger->set_quiet(false) ;
+        logger->set_quiet( false ) ;
 
         zip_file( zf, name ) ;
         GEO::FileSystem::delete_file( name ) ;
@@ -447,7 +447,6 @@ namespace {
 
             zipFile zf = zipOpen( filename.c_str(), APPEND_STATUS_CREATE ) ;
 
-
             save_topology( model, "topology.txt" ) ;
             zip_file( zf, "topology.txt" ) ;
             GEO::FileSystem::delete_file( "topology.txt" ) ;
@@ -459,10 +458,11 @@ namespace {
             for( index_t t = GME::CORNER; t <= GME::REGION; t++ ) {
                 GME::TYPE type = static_cast< GME::TYPE >( t ) ;
                 for( index_t e = 0; e < model.nb_elements( type ); e++ ) {
-                    save_geo_model_mesh_element( model.mesh_element( type, e ), zf ) ;
+                    save_geo_model_mesh_element( model.mesh_element( type, e ),
+                        zf ) ;
                 }
             }
-            zipClose(zf, NULL) ;
+            zipClose( zf, NULL ) ;
         }
 
     } ;
@@ -495,7 +495,7 @@ namespace {
                     GEO::mesh_load( GEO::String::to_string( filename ), m, flags ) ;
                     GEO::Logger::instance()->set_minimal( false ) ;
                 } else {
-                    ringmesh_assert_not_reached;
+                    ringmesh_assert_not_reached ;
                 }
                 GEO::FileSystem::delete_file( filename ) ;  // WHY ?? [Jeanne]
 
@@ -628,6 +628,31 @@ namespace {
 
     /************************************************************************/
 
+    struct RINGMesh2VTK {
+        index_t element_type ;
+        index_t vertices[8] ;
+    } ;
+
+    static RINGMesh2VTK tet_descriptor_vtk = { 10,                  // type
+        { 0, 1, 2, 3 }     // vertices
+    } ;
+
+    static RINGMesh2VTK hex_descriptor_vtk = { 12,                         // type
+        { 0, 4, 5, 1, 2, 6, 7, 3 }     // vertices
+    } ;
+
+    static RINGMesh2VTK prism_descriptor_vtk = { 13,                     // type
+        { 0, 2, 1, 3, 5, 4 }   // vertices
+    } ;
+
+    static RINGMesh2VTK pyramid_descriptor_vtk = { 14,                 // type
+        { 0, 1, 2, 3, 4 }  // vertices
+    } ;
+
+    static RINGMesh2VTK* cell_type_to_cell_descriptor_vtk[4] = {
+        &tet_descriptor_vtk, &hex_descriptor_vtk, &prism_descriptor_vtk,
+        &pyramid_descriptor_vtk } ;
+
     class VTKIOHandler: public GeoModelIOHandler {
     public:
         virtual void load( const std::string& filename, GeoModel& mesh )
@@ -658,58 +683,36 @@ namespace {
                 + ( 8 + 1 ) * mesh.cells.nb_hex() ;
             out << "CELLS " << mesh.cells.nb_cells() << SPACE << total_corners
                 << std::endl ;
-            for( index_t m = 0; m < gm.nb_regions(); m++ ) {
-                for( index_t c = 0; c < mesh.cells.nb_cells( m ); c++ ) {
-                    index_t cell = mesh.cells.cell( m, c ) ;
-                    out << mesh.cells.nb_vertices( cell ) ;
-                    for( index_t v = 0; v < mesh.cells.nb_vertices( cell ); v++ ) {
-                        out << SPACE << mesh.cells.vertex( cell, v ) ;
-                    }
-                    out << std::endl ;
+            for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
+                out << mesh.cells.nb_vertices( c ) ;
+                const RINGMesh2VTK& descriptor =
+                    *cell_type_to_cell_descriptor_vtk[mesh.cells.type( c )] ;
+                for( index_t v = 0; v < mesh.cells.nb_vertices( c ); v++ ) {
+                    index_t vertex_id = descriptor.vertices[v] ;
+                    out << SPACE << mesh.cells.vertex( c, vertex_id ) ;
                 }
+                out << std::endl ;
             }
 
             out << "CELL_TYPES " << mesh.cells.nb() << std::endl ;
-            for( index_t m = 0; m < gm.nb_regions(); m++ ) {
-                for( index_t c = 0; c < mesh.cells.nb_cells( m ); c++ ) {
-                    index_t cell = mesh.cells.cell( m, c ) ;
-                    out << cell_type( mesh.cells.type( cell ) )
-                        << std::endl ;
-                }
+            for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
+                const RINGMesh2VTK& descriptor =
+                    *cell_type_to_cell_descriptor_vtk[mesh.cells.type( c )] ;
+                out << descriptor.element_type << std::endl ;
             }
             out << std::endl ;
 
             out << "CELL_DATA " << mesh.cells.nb() << std::endl ;
             out << "SCALARS region int 1" << std::endl ;
             out << "LOOKUP_TABLE default" << std::endl ;
-            for( index_t m = 0; m < gm.nb_regions(); m++ ) {
-                for( index_t c = 0; c < mesh.cells.nb_cells( m ); c++ ) {
-                    out << m << std::endl ;
-                }
+            for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
+                out << mesh.cells.region( c ) << std::endl ;
             }
             out << std::endl ;
         }
+    } ;
 
-    private:
-        index_t cell_type( GEO::MeshCellType t ) const
-        {
-            switch( t ) {
-                case GEO::MESH_TET:
-                    return 10 ;
-                case GEO::MESH_PYRAMID:
-                    return 14 ;
-                case GEO::MESH_PRISM:
-                    return 13 ;
-                case GEO::MESH_HEX:
-                    return 12 ;
-                default:
-                    ringmesh_assert_not_reached;
-                    return NO_ID ;
-                }
-            }
-        } ;
-
-        /************************************************************************/
+    /************************************************************************/
 
     class TSolidIOHandler: public GeoModelIOHandler {
     public:
@@ -1657,7 +1660,7 @@ namespace {
                         if( ann.get_colocated( query, results ) ) {
                             edges[results[0]].push_back( cell_offset + f ) ;
                         } else {
-                            ringmesh_assert_not_reached;
+                            ringmesh_assert_not_reached ;
                         }
                     }
                 }
@@ -1718,14 +1721,14 @@ namespace {
                 case 10:
                     return 45 ;
                 default:
-                    ringmesh_assert_not_reached;
+                    ringmesh_assert_not_reached ;
                     return 0 ;
 
-                }
             }
-        } ;
+        }
+    } ;
 
-        /************************************************************************/
+    /************************************************************************/
 
 //        struct RINGMesh2GMSH {
 //                   index_t element_type ;
