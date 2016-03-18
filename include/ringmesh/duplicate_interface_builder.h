@@ -58,6 +58,7 @@ namespace RINGMesh {
     public:
         DuplicateInterfaceBuilder( GeoModel& model ) ;
         virtual ~DuplicateInterfaceBuilder() ;
+        void duplicate_interface( index_t interface_id_to_duplicate ) ;
     } ;
 
 }

@@ -54,4 +54,10 @@ namespace RINGMesh {
     {
 
     }
+
+    void DuplicateInterfaceBuilder::duplicate_interface(
+        index_t interface_id_to_duplicate )
+    {
+
+    }
 }
