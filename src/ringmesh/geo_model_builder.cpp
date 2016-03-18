@@ -3326,7 +3326,7 @@ namespace RINGMesh {
                     != GME::NO_TYPE ) {
                     // Allocate the space
                     if( file_line_.nb_fields() > 1 ) {
-                        resize_elements( match_nb_elements( file_line_.field( 0 ) ),
+                        create_elements( match_nb_elements( file_line_.field( 0 ) ),
                             file_line_.field_as_uint( 1 ) ) ;
                     }
                 }
@@ -3638,7 +3638,7 @@ namespace RINGMesh {
                     != GME::NO_TYPE ) {
                     // Allocate the space
                     if( file_line.nb_fields() > 1 ) {
-                        resize_elements( match_nb_elements( file_line.field( 0 ) ),
+                        create_elements( match_nb_elements( file_line.field( 0 ) ),
                             file_line.field_as_uint( 1 ) ) ;
                     }
                 }

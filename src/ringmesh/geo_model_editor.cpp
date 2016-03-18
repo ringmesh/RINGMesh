@@ -81,15 +81,18 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelEditor::resize_elements( GME::TYPE type, index_t nb )
+    void GeoModelEditor::create_elements( GME::TYPE type, index_t nb )
     {
         assert_element_creation_allowed() ;
         if( type >= GME::NO_TYPE ) {
             return ;
         }
         std::vector< GME* >& store = model_.modifiable_elements( type ) ;
-        store.resize( nb, nil ) ;
-        for( index_t i = 0; i < nb; i++ ) {
+        index_t old_size = static_cast<index_t> ( store.size() ) ;
+        index_t new_size = old_size + nb ;
+        store.resize( new_size, nil ) ;
+        for( index_t i = old_size; i < new_size; i++ ) {
+            ringmesh_assert( store[i] == nil ) ;
             store[i] = new_element( type, i ) ;
         }
     }

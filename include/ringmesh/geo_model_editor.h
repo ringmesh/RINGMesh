@@ -287,7 +287,7 @@ namespace RINGMesh {
 
         void delete_elements( std::vector< std::vector< index_t > >& to_erase ) ;
 
-        void resize_elements( GME::TYPE type, index_t nb ) ;
+        void create_elements( GME::TYPE type, index_t nb ) ;
 
         void erase_invalid_element_references( GeoModelElement& E ) ;
 
