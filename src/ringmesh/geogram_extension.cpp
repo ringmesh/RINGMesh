@@ -576,11 +576,13 @@ namespace RINGMesh {
                 facet_vertex_itr ) ;
             const vec3& cur_vertex_vec = mesh_vertices.point( cur_vertex_id ) ;
 
-            const index_t prev_id = mesh_facets.prev_corner_around_facet( facet,
+            const index_t prev_local_id = mesh_facets.prev_corner_around_facet( facet,
                 cur_vertex_id ) ;
+            const index_t prev_id = mesh_facets.vertex( facet, prev_local_id ) ;
             const vec3& prev_vec = mesh_vertices.point( prev_id ) ;
-            const index_t next_id = mesh_facets.next_corner_around_facet( facet,
+            const index_t next_local_id = mesh_facets.next_corner_around_facet( facet,
                 cur_vertex_id ) ;
+            const index_t next_id = mesh_facets.vertex( facet, next_local_id ) ;
             const vec3& next_vec = mesh_vertices.point( next_id ) ;
 
             const double numerator = ( cotangent( point_inside_facet, cur_vertex_vec,
