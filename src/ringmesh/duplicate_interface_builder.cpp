@@ -58,6 +58,22 @@ namespace RINGMesh {
     void DuplicateInterfaceBuilder::duplicate_interface(
         index_t interface_id_to_duplicate )
     {
+        ringmesh_assert(interface_id_to_duplicate < model_.nb_interfaces()) ;
 
+        const GeoModelElement& interface_to_duplicate = model_.one_interface(
+            interface_id_to_duplicate ) ;
+
+        index_t interface_to_duplicate_nb_children =
+            interface_to_duplicate.nb_children() ;
+
+        resize_elements(GME::SURFACE, interface_to_duplicate_nb_children) ;
+
+        for( index_t interface_child_itr = 0;
+            interface_child_itr < interface_to_duplicate.nb_children();
+            ++interface_child_itr ) {
+            const GeoModelElement& cur_child = interface_to_duplicate.child(
+                interface_child_itr ) ;
+            ringmesh_assert( cur_child.type() == GME::SURFACE ) ;
+        }
     }
 }
