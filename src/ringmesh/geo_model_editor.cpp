@@ -85,7 +85,7 @@ namespace RINGMesh {
     {
         assert_element_creation_allowed() ;
         if( type >= GME::NO_TYPE ) {
-            return ;
+            return NO_ID ;
         }
         std::vector< GME* >& store = model_.modifiable_elements( type ) ;
         index_t old_size = static_cast<index_t> ( store.size() ) ;
