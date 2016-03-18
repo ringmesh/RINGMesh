@@ -81,7 +81,7 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelEditor::create_elements( GME::TYPE type, index_t nb )
+    index_t GeoModelEditor::create_elements( GME::TYPE type, index_t nb )
     {
         assert_element_creation_allowed() ;
         if( type >= GME::NO_TYPE ) {
@@ -95,6 +95,7 @@ namespace RINGMesh {
             ringmesh_assert( store[i] == nil ) ;
             store[i] = new_element( type, i ) ;
         }
+        return old_size ;
     }
 
     /*! @details For all 7 types of elements, check what information is available
