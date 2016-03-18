@@ -156,6 +156,11 @@ namespace RINGMesh {
 
     void RINGMESH_API mesh_facet_connect( GEO::Mesh& mesh ) ;
 
+    void RINGMESH_API barycentric_coordinates_point_inside_mesh_facet(
+        const vec3& point_inside_facet,
+        const GEO::Mesh& mesh,
+        index_t facet,
+        std::vector<double>& barycentric_coordinates ) ;
  
 
     /*!

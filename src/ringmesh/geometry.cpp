@@ -613,7 +613,7 @@ namespace RINGMesh {
         const vec3& p3,
         vec3& nearest_p )
     {
-        const vec3 center( ( p0 + p1 + p2 + p3 ) / 4. ) ;
+        const vec3 center( ( p0 + p1 + p2 + p3 ) * 0.25 ) ;
         vec3 edge0( p1 - p0 ) ;
         vec3 edge1( p3 - p0 ) ;
         vec3 axis[2] = { normalize( edge0 ), normalize( edge1 ) } ;
@@ -645,7 +645,7 @@ namespace RINGMesh {
             sqrDistance = 0 ;
         }
 
-        double distance = sqrt( sqrDistance ) ;
+        double distance = std::sqrt( sqrDistance ) ;
         nearest_p = center ;
         nearest_p += s0 * axis[0] ;
         nearest_p += s1 * axis[1] ;
