@@ -291,8 +291,8 @@ namespace RINGMesh {
          * @brief Adds \p nb new elements of type \p type
          * @details Adds \p nb new elements at the end of the
          * vector of elements of type \p type.
-         * @param type the type of element to add.
-         * @param nb the number of new elements.
+         * @param[in] type the type of element to add.
+         * @param[in] nb the number of new elements.
          * @return the old number of elements of the type \p type.
          * It corresponds to the index of the first new element.
          */
