@@ -61,7 +61,7 @@ namespace RINGMesh {
         void duplicate_interface( index_t interface_id_to_duplicate ) ;
 
     private:
-//        void get_surfaces_t
+        void get_new_surfaces( index_t interface_id_to_duplicate ) const ;
     } ;
 
 }

@@ -66,7 +66,7 @@ namespace RINGMesh {
         index_t interface_to_duplicate_nb_children =
             interface_to_duplicate.nb_children() ;
 
-        resize_elements(GME::SURFACE, interface_to_duplicate_nb_children) ;
+        resize_elements( GME::SURFACE, interface_to_duplicate_nb_children ) ;
 
         for( index_t interface_child_itr = 0;
             interface_child_itr < interface_to_duplicate.nb_children();
@@ -74,6 +74,36 @@ namespace RINGMesh {
             const GeoModelElement& cur_child = interface_to_duplicate.child(
                 interface_child_itr ) ;
             ringmesh_assert( cur_child.type() == GME::SURFACE ) ;
+        }
+    }
+
+    void DuplicateInterfaceBuilder::get_new_surfaces(
+        index_t interface_id_to_duplicate ) const
+    {
+        ringmesh_assert(interface_id_to_duplicate < model_.nb_interfaces()) ;
+
+        const GeoModelElement& interface_to_duplicate = model_.one_interface(
+            interface_id_to_duplicate ) ;
+
+        index_t interface_to_duplicate_nb_children =
+            interface_to_duplicate.nb_children() ;
+        ringmesh_assert(interface_to_duplicate_nb_children >= 1) ;
+
+        for( index_t interface_child_itr = 0;
+            interface_child_itr < interface_to_duplicate.nb_children();
+            ++interface_child_itr ) {
+            const GeoModelElement& cur_child = interface_to_duplicate.child(
+                interface_child_itr ) ;
+            ringmesh_assert( cur_child.type() == GME::SURFACE ) ;
+
+            index_t nb_in_boundary_cur_child = cur_child.nb_in_boundary() ;
+            for( index_t in_boundary_itr = 0;
+                in_boundary_itr < nb_in_boundary_cur_child; ++in_boundary_itr ) {
+
+                const GeoModelElement& cur_in_boundary = cur_child.in_boundary(
+                    in_boundary_itr ) ;
+                ringmesh_assert( cur_in_boundary.type()==GME::REGION ) ;
+            }
         }
     }
 }
