@@ -85,10 +85,13 @@ namespace RINGMesh {
         const GeoModelElement& interface_to_duplicate = model_.one_interface(
             interface_id_to_duplicate ) ;
 
-        index_t interface_to_duplicate_nb_children =
+        const index_t interface_to_duplicate_nb_children =
             interface_to_duplicate.nb_children() ;
         ringmesh_assert(interface_to_duplicate_nb_children >= 1) ;
 
+        std::map< index_t, std::vector< index_t > > surfaces_boundary_regions ;
+
+        // Find for each region, what surfaces are in boundary.
         for( index_t interface_child_itr = 0;
             interface_child_itr < interface_to_duplicate.nb_children();
             ++interface_child_itr ) {
@@ -96,14 +99,20 @@ namespace RINGMesh {
                 interface_child_itr ) ;
             ringmesh_assert( cur_child.type() == GME::SURFACE ) ;
 
-            index_t nb_in_boundary_cur_child = cur_child.nb_in_boundary() ;
+            const index_t nb_in_boundary_cur_child = cur_child.nb_in_boundary() ;
+            ringmesh_assert( nb_in_boundary_cur_child == 1 || nb_in_boundary_cur_child == 2 ) ;
             for( index_t in_boundary_itr = 0;
                 in_boundary_itr < nb_in_boundary_cur_child; ++in_boundary_itr ) {
 
                 const GeoModelElement& cur_in_boundary = cur_child.in_boundary(
                     in_boundary_itr ) ;
-                ringmesh_assert( cur_in_boundary.type()==GME::REGION ) ;
+                ringmesh_assert( cur_in_boundary.type() == GME::REGION ) ;
+
+                surfaces_boundary_regions[cur_in_boundary.index()].push_back(
+                    cur_child.index() ) ;
             }
         }
+
+
     }
 }
