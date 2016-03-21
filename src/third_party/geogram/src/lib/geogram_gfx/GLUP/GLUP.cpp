@@ -43,7 +43,9 @@
  *
  */
 
-#include <geogram_gfx/basic/GLUP_private.h>
+#include <geogram_gfx/GLUP/GLUP.h>
+#include <geogram_gfx/GLUP/GLUP_context_GLSL.h>
+#include <geogram_gfx/GLUP/GLUP_context_VanillaGL.h>
 #include <geogram_gfx/basic/GLSL.h>
 #include <geogram/basic/logger.h>
 #include <geogram/basic/command_line.h>
@@ -78,6 +80,29 @@ void GLUP_API glupBindUniformState(GLUPuint program) {
 }
 
 
+/**
+ * \brief Tests whether tessellation shaders are supported by OpenGL.
+ * \details Some drivers may declare to be OpenGL 4.5 compliant whereas
+ *  they do not have tesselation shader (for instance, I have an old
+ *  NVidia quadro that does that...)
+ * \retval true if tessellation shaders are supported
+ * \retval false otherwise
+ */
+bool supports_tessellation_shader() {
+    bool result = true;
+    GLuint s_handle = glCreateShader(GL_TESS_CONTROL_SHADER);
+    result = result && (s_handle != 0);
+    if (s_handle != 0) {
+        glDeleteShader(s_handle);
+    }
+
+    // Clear OpenGL error flag.
+    while(glGetError() != GL_NO_ERROR) {
+    }
+
+    return result;
+}
+
 GLUPcontext glupCreateContext() {
 
     if(!GLUP::initialized_) {
@@ -91,18 +116,35 @@ GLUPcontext glupCreateContext() {
     if(GLUP_profile == "auto") {
         double GLSL_version = GEO::GLSL::supported_language_version();
         const GLubyte* vendor = glGetString(GL_VENDOR);
-        if(!GEO::String::string_starts_with(std::string((const char*)vendor), "NVIDIA")) {
+        if(!GEO::String::string_starts_with(
+               std::string((const char*)vendor), "NVIDIA")
+        ) {
             GEO::Logger::out("GLUP") << "Non-NVIDIA GPU" << std::endl;
 
             if(GEO::CmdLine::get_arg("gfx:GL_profile") == "compatibility") {
-                GEO::Logger::out("GLUP") << "Switching to VanillaGL" << std::endl;
-                GEO::Logger::out("GLUP") << "Use gfx:GLUP_profile to override"
-                                         << std::endl;
+                GEO::Logger::out("GLUP")
+                    << "Switching to VanillaGL" << std::endl;
+                GEO::Logger::out("GLUP")
+                    << "Use gfx:GLUP_profile to override"
+                    << std::endl;
                 GLSL_version = 0.0;
             } else {
-                GEO::Logger::warn("GLUP") << "Cannot switch to VanillaGL" << std::endl;
-                GEO::Logger::warn("GLUP") << "Needs gfx:GL_profile=compatibility" << std::endl;
-                GEO::Logger::warn("GLUP") << "(trying anyway with GLUP150/GLUP440)" << std::endl;
+                GEO::Logger::warn("GLUP")
+                    << "Cannot switch to VanillaGL" << std::endl;
+                GEO::Logger::warn("GLUP")
+                    << "Needs gfx:GL_profile=compatibility" << std::endl;
+                GEO::Logger::warn("GLUP")
+                    << "(trying anyway with GLUP150/GLUP440)" << std::endl;
+            }
+        }
+        if (GLSL_version >= 4.4) {
+            if (!supports_tessellation_shader()) {
+                GEO::Logger::out("GLUP")
+                    << "GLSL version >= 4.4 but tessellation unsupported"
+                    << std::endl;
+                GEO::Logger::out("GLUP") << "Downgrading to GLUP 150..."
+                                         << std::endl;
+                GLSL_version = 1.5;
             }
         }
         if(GLSL_version < 1.5) {

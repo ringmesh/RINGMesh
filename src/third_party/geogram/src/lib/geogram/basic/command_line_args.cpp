@@ -298,6 +298,10 @@ namespace {
             "Uses double precision in output .mesh files"
         );
         declare_arg(
+            "sys:compression_level", 3,
+            "Compression level for created .geogram files, in [0..9]"
+        );
+        declare_arg(
             "sys:lowmem", false,
             "Reduces RAM consumption (but slower)"
         );
@@ -385,6 +389,10 @@ namespace {
         declare_arg(
            "co3ne:strict", false,
            "enforce combinatorial tests for triangles seen from 3 seeds as well"
+        );
+        declare_arg(
+            "co3ne:use_normals", true,
+            "Use existing normal attached to data if available"
         );
     }
 

@@ -60,6 +60,9 @@
 
 namespace GEO {
 
+    class InputGeoFile;
+    class OutputGeoFile;
+    
     /**
      * \brief Indicates the attributes stored in a mesh and attached
      *  to the mesh elements (vertices, facets or volumes).
@@ -228,6 +231,23 @@ namespace GEO {
         const MeshIOFlags& ioflags = MeshIOFlags()
     );
 
+    /**
+     * \brief Loads a mesh from a GeoFile ('.geogram' file format).
+     * \details
+     * Loads the contents of the InputGeoFile \p geofile and stores the
+     * resulting mesh to \p M. This function can be used to load several
+     * meshes that are stored in the same GeoFile.
+     * \param[in] geofile a reference to the InputGeoFile
+     * \param[out] M the loaded mesh
+     * \param[in] ioflags specifies which attributes and 
+     *  elements should be loaded
+     * \return true on success, false otherwise.
+     */
+    bool GEOGRAM_API mesh_load(
+        InputGeoFile& geofile, Mesh& M,
+        const MeshIOFlags& ioflags = MeshIOFlags()
+    );
+    
 
     /**
      * \brief Saves a mesh to a file.
@@ -247,6 +267,22 @@ namespace GEO {
         const MeshIOFlags& ioflags = MeshIOFlags()
     );
 
+    /**
+     * \brief Saves a mesh to a GeoFile ('.geogram' file format)
+     * \details
+     * Saves mesh \p M to the GeoFile \p geofile. This function can be
+     * used to write several meshes into the same GeoFile.
+     * \param[in] M the mesh to save
+     * \param[in] geofile a reference to the OutputGeoFile
+     * \param[in] ioflags specifies which attributes and elements 
+     *  should be saved
+     * \return true on success, false otherwise.
+     */
+    bool GEOGRAM_API mesh_save(
+        const Mesh& M, OutputGeoFile& geofile,
+        const MeshIOFlags& ioflags = MeshIOFlags()
+    );
+    
     
     /*************************************************************************/
 
