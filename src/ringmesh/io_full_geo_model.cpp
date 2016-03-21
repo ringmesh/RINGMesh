@@ -1950,34 +1950,6 @@ namespace {
 
 namespace RINGMesh {
 
-    /*!
-     * Loads a GeoModel from a file
-     * @param[in] filename the file to load
-     * @param][out] model the mesh to fill
-     */
-    void geomodel_volume_load( const std::string& filename, GeoModel& model )
-    {
-        GEO::Logger::out( "I/O" ) << "Loading file " << filename << "..."
-            << std::endl ;
-
-        IOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
-        handler->load( filename, model ) ;
-    }
-
-    /*!
-     * Saves a GeoModel in a file
-     * @param[in] model the mesh to save
-     * @param[in] filename the file where to save
-     */
-    void geomodel_volume_save( const GeoModel& model, const std::string& filename )
-    {
-        GEO::Logger::out( "I/O" ) << "Saving file " << filename << "..."
-            << std::endl ;
-
-        IOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
-        handler->save( model, filename ) ;
-    }
-
     void geomodel_load( GeoModel& model, const std::string& filename )
     {
         GEO::Logger::out( "I/O" ) << "Loading file " << filename << "..."
