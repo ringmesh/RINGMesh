@@ -20,7 +20,6 @@
 /* #define WITH_PNG  */
 /* #define WITH_GEEX */
 
-// #include <geogram_gfx/third_party/glew/glew.h>
 #include <geogram_gfx/third_party/glad/glad.h>
 
 #if defined(_MSC_VER) && defined(GEO_DYNAMIC_LIBS)

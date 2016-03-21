@@ -43,83 +43,90 @@
  *
  */
 
-#ifndef __GEOGRAM_GFX_BASIC_GLUP_PRIVATE__
-#define __GEOGRAM_GFX_BASIC_GLUP_PRIVATE__
+#ifndef __GEOGRAM_GFX_GLUP_GLUP_CONTEXT__
+#define __GEOGRAM_GFX_GLUP_GLUP_CONTEXT__
 
-#include <geogram_gfx/basic/GLUP.h>
 #include <geogram_gfx/basic/common.h>
-#include <geogram/basic/logger.h>
+#include <geogram_gfx/GLUP/GLUP.h>
+#include <geogram_gfx/GLUP/GLUP_marching_cells.h>
 
 /**
- * \file geogram_gfx/basic/GLUP_private.h
- * \brief Implementation classes for the GLUP API.
+ * \file geogram_gfx/GLUP/GLUP_context.h
+ * \brief Internal implementation of GLUP context.
  */
 
 namespace GLUP {
     using namespace GEO;
 
-
-    
     /**
      * \brief Computes the inverse of a 4x4 matrix.
-     * \param[in] m pointer to the input matrix
      * \param[out] inv the computed inverse of \p m
+     * \param[in] m pointer to the input matrix
      * \retval GL_TRUE if the matrix \p m is invertible
      * \retval GL_FALSE if the matrix \p m is singular. Then
      *   \p inv receives the transpose of the comatrix of \p m
      */
-    GLboolean invert_matrix(
-        const GLfloat m[16], GLfloat inv[16]
-    );
+    GLboolean invert_matrix(GLfloat inv[16], const GLfloat m[16]);
 
     /**
      * \brief Computes the inverse of a 4x4 matrix.
-     * \param[in] m pointer to the input matrix
      * \param[out] inv the computed inverse of \p m
+     * \param[in] m pointer to the input matrix
      * \retval GL_TRUE if the matrix \p m is invertible
      * \retval GL_FALSE if the matrix \p m is singular. Then
      *   \p inv receives the transpose of the comatrix of \p m
      */
-    GLboolean invert_matrix(
-        const GLdouble m[16], GLdouble inv[16]
-    );
+    GLboolean invert_matrix(GLdouble inv[16], const GLdouble m[16]);
     
     /**
      * \brief Computes the product of two 4x4 matrices
-     * \param[in] m1,m2 pointers to the input matrices
      * \param[out] out the computed product \p m1 * \p m2
+     * \param[in] m1,m2 pointers to the input matrices
      */
     void mult_matrices(
-        const GLfloat m1[16], const GLfloat m2[16], GLfloat out[16]
+        GLfloat out[16], const GLfloat m1[16], const GLfloat m2[16]
     );
 
     /**
      * \brief Computes the product of two 4x4 matrices
-     * \param[in] m1,m2 pointers to the input matrices
      * \param[out] out the computed product \p m1 * \p m2
+     * \param[in] m1,m2 pointers to the input matrices
      */
     void mult_matrices(
-        const GLdouble m1[16], const GLdouble m2[16], GLdouble out[16]
+        GLdouble out[16], const GLdouble m1[16], const GLdouble m2[16]
     );
 
     /**
      * \brief Computes the product of a 4x4 matrix and a vector.
+     * \param[out] out the computed product \p m * \p v
      * \param[in] m pointer to the input matrix
      * \param[in] v pointer to the input vector
-     * \param[out] out the computed product \p m * \p v
      */
     void mult_matrix_vector(
-        const GLfloat m[16], const GLfloat v[4], GLfloat out[4]
+        GLfloat out[4], const GLfloat m[16], const GLfloat v[4]
     );
 
+
     /**
-     * \brief Computes the product of a 4x4 matrix and a vector.
+     * \brief Computes the product of the transpose of a 
+     *   4x4 matrix and a vector.
+     * \param[out] out the computed product \p m * \p v
      * \param[in] m pointer to the input matrix
      * \param[in] v pointer to the input vector
+     * \TODO: it seems that in GLSL, w = M*v uses this one !!
+     */
+    void mult_transpose_matrix_vector(
+        GLfloat out[4], const GLfloat m[16], const GLfloat v[4]
+    );
+    
+    /**
+     * \brief Computes the product of a 4x4 matrix and a vector.
      * \param[out] out the computed product \p m * \p v
+     * \param[in] m pointer to the input matrix
+     * \param[in] v pointer to the input vector
      */
     void mult_matrix_vector(
-        const GLdouble m[16], const GLdouble v[4], GLdouble out[4]
+        GLdouble out[4], const GLdouble m[16], const GLdouble v[4] 
     );
 
     /**
@@ -142,6 +149,12 @@ namespace GLUP {
      */
     void show_matrix(const GLfloat m[16]);
 
+    /**
+     * \brief For debugging, outputs a vector to the standard error.
+     * \param[in] v the vector to be displayed
+     */
+    void show_vector(const GLfloat v[4]);
+    
     /**
      * \brief Resets a matrix to the identity matrix.
      * \param[out] out the matrix to be reset.
@@ -184,9 +197,10 @@ namespace GLUP {
     
     /**
      * \brief Normalizes a vector.
-     * \param[in,out] v the vector to be normalized.
+     * \param[in,out] v a pointer to the 3 coordinates of the 3d 
+     *  vector to be normalized.
      */
-    inline void normalize_vector(GLfloat* v) {
+    inline void normalize_vector(GLfloat v[3]) {
         GLfloat s = 1.0f / ::sqrtf(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
         v[0] *= s;
         v[1] *= s;
@@ -194,6 +208,11 @@ namespace GLUP {
     }
 
 
+    /**
+     * \brief Gives the number of vertices for each GLUP primitive.
+     * \details The array is indexed by the GLUP primitive type
+     *  (one of GLUP_POINTS, GLUP_LINES, ...)
+     */
     extern index_t nb_vertices_per_primitive[];
     
     /**********************************************************************/
@@ -202,7 +221,7 @@ namespace GLUP {
     
     /**
      * \brief A Matrix stack.
-     * \details There are threeo matrix stacks in a context,
+     * \details There are three matrix stacks in a context,
      *  for modelview matrices, projection matrices and
      *  texture coordinates.
      */
@@ -844,12 +863,11 @@ namespace GLUP {
         StateVariable<GLint>               texture_mode;
         StateVariable<GLint>               texture_type;        
         VectorStateVariable                clip_plane;
+        VectorStateVariable                world_clip_plane;
         FloatsArrayStateVariable           modelview_matrix;
         FloatsArrayStateVariable           modelviewprojection_matrix;
         FloatsArrayStateVariable           normal_matrix;
         FloatsArrayStateVariable           texture_matrix;
-        FloatsArrayStateVariable           inverse_modelviewprojection_matrix;
-        FloatsArrayStateVariable           transpose_modelviewprojection_matrix;        
     };
     
     /**********************************************************************/
@@ -931,6 +949,11 @@ namespace GLUP {
 
 
         /**
+         * \brief Gets the profile name associated with this context.
+         */
+        virtual const char* profile_name() const = 0; 
+        
+        /**
          * \brief Tests whether a given GLUP primitive supports array mode.
          * \details If array mode is supported, then one can use glupDrawArray()
          *  and glupDrawElements() with the specified primitive.
@@ -1007,7 +1030,7 @@ namespace GLUP {
          */
         void mult_matrix(const GLfloat m[16]) {
             GLfloat product[16];
-            mult_matrices(m,matrix_stack_[matrix_mode_].top(), product);
+            mult_matrices(product,m,matrix_stack_[matrix_mode_].top());
             load_matrix(product);
         }
 
@@ -1082,7 +1105,7 @@ namespace GLUP {
          * \param[in] s,t,u,v the current texture coordinates.
          */
         void immediate_tex_coord(
-            GLfloat s, GLfloat t=0.0f, GLfloat u=0.0f, GLfloat v=0.0f
+            GLfloat s, GLfloat t=0.0f, GLfloat u=0.0f, GLfloat v=1.0f
         ) {
             immediate_state_.buffer[GLUP_TEX_COORD_ATTRIBUTE].set_current(
                 s,t,u,v
@@ -1198,9 +1221,24 @@ namespace GLUP {
             geo_debug_assert(matrix < 3);
             return matrix_stack_[matrix].top();
         }
-        
-        
+
     protected:
+
+        /**
+         * \brief Gets the name of a primitive by GLUPprimitive.
+         * \param[in] prim a GLUPprimitive
+         * \return the name of the primitive, as a const char pointer
+         */
+        const char* glup_primitive_name(GLUPprimitive prim);
+        
+        /**
+         * \brief Gets some GLSL declarations that depend on the current
+         *  profile.
+         * \return a const pointer to a string with the GLSL sources of
+         *  the profile-dependent declarations.
+         */
+        const char* profile_dependent_declarations();
+
         /**
          * \brief This function is called before starting to
          *  render primitives. It is called by begin(), draw_arrays()
@@ -1311,18 +1349,6 @@ namespace GLUP {
         virtual void flush_immediate_buffers();
             
         /**
-         * \brief Gets the offset of a variable within a uniform 
-         *   block
-         * \param[in] program the id of a GLSL program that uses the
-         *   uniform block
-         * \param[in] name the name of the variable.
-         * \return the offset of the variable within its uniform block.
-         */
-        static size_t get_uniform_offset(
-            GLuint program, const char* name
-        );
-
-        /**
          * \brief Copies GLUP uniform state to OpenGL.
          */
         void update_uniform_buffer();
@@ -1354,10 +1380,18 @@ namespace GLUP {
          *   setup_shader_source_for_toggles(). In the initial configuration,
          *   all the toggles are read from the state.
          * \see setup_shaders_source_for_toggles()
+         * \return a const char pointer to the GLSL declaration.
          */
         const char* toggles_declaration() const {
             return toggles_shader_source_.c_str();
         }
+
+        /**
+         * \brief Gets the GLSL declaration  of the constant that
+         *  indicates the current primitive.
+         * \return a string with the GLSL declaration.
+         */
+        std::string primitive_declaration(GLUPprimitive prim) const;
         
         /**
          * \brief Sets the string that describes the settings of
@@ -1436,6 +1470,15 @@ namespace GLUP {
         // draw a primitive of a given type).
         vector<PrimitiveInfo> primitive_info_;
 
+        // The marching cells, for computing
+        // intersections when clipping mode
+        // is GLUP_CLIP_SLICE_CELLS
+        MarchingCell marching_tet_;
+        MarchingCell marching_hex_;
+        MarchingCell marching_prism_;
+        MarchingCell marching_pyramid_;
+        MarchingCell marching_connector_;
+        
         GLuint user_program_;
         
         index_t toggles_config_;
@@ -1444,142 +1487,10 @@ namespace GLUP {
         bool precompile_shaders_;
 
         bool use_core_profile_;
+        bool use_ES_profile_;
     };
 
     /*********************************************************************/
-
-    /**
-     * \brief Implementation of GLUP using modern OpenGL with GLSL 1.50
-     *  shaders. 
-     * \details All the primitives are implemented with good performance.
-     *  Hexahedra and prisms do not support array mode (glupDrawArrays(),
-     *  glupDrawElements()). This is because there is no standard OpenGL
-     *  primitive with 8 or 5 vertices (except the configurable GL_PATCH
-     *  that requires GLSL 4.40).
-     */
-    class Context_GLSL150 : public Context {
-    public:
-    protected:
-        /**
-         * \copydoc Context::setup_GLUP_POINTS()
-         */
-        virtual void setup_GLUP_POINTS();
-
-        /**
-         * \copydoc Context::setup_GLUP_LINES()
-         */
-        virtual void setup_GLUP_LINES();
-
-        /**
-         * \copydoc Context::setup_GLUP_TRIANGLES()
-         */
-        virtual void setup_GLUP_TRIANGLES();
-
-        /**
-         * \copydoc Context::setup_GLUP_QUADS()
-         */
-        virtual void setup_GLUP_QUADS();
-
-        /**
-         * \copydoc Context::setup_GLUP_TETRAHEDRA()
-         */
-        virtual void setup_GLUP_TETRAHEDRA();
-
-        /**
-         * \copydoc Context::setup_GLUP_PRISMS()
-         */
-        virtual void setup_GLUP_PRISMS();
-
-        /**
-         * \copydoc Context::setup_GLUP_HEXAHEDRA()
-         */
-        virtual void setup_GLUP_HEXAHEDRA();
-
-        /**
-         * \copydoc Context::setup_GLUP_PYRAMIDS()
-         */
-        virtual void setup_GLUP_PYRAMIDS();
-    };
-
-    /*********************************************************************/
-
-    /**
-     * \brief Implementation of GLUP using modern OpenGL with GLSL 4.40
-     *  shaders. 
-     * \details This mostly reuses the GLSL 1.50 implementation, except
-     *  for hexahedra and prisms, where it uses a tessellation shader to
-     *  fetch the vertices. This is because GL_PATCH has a configurable
-     *  number of vertices.
-     */
-    class Context_GLSL440 : public Context_GLSL150 {
-    public:
-    protected:
-        /**
-         * \copydoc Context::setup_GLUP_HEXAHEDRA()
-         */
-        virtual void setup_GLUP_HEXAHEDRA();
-
-        /**
-         * \copydoc Context::setup_GLUP_PYRAMIDS()
-         */
-        virtual void setup_GLUP_PYRAMIDS();
-    };
-
-    /*********************************************************************/
-
-    /**
-     * \brief Implementation of GLUP using Vanilla (old-style) OpenGL.
-     * \details This implementation does not use any shader. It is used
-     *  as a fallback when the initialization of the other ones fails.
-     *  Some primitive may be not implemented, degraded or of very low
-     *  performance.
-     */
-    class Context_VanillaGL : public Context {
-    public:
-        /**
-         * \copydoc Context::primitive_supports_array_mode()
-         */
-        virtual bool primitive_supports_array_mode(GLUPprimitive prim) const;
-        
-    protected:
-
-        /**
-         * \copydoc Context::setup()
-         */
-        virtual void setup();
-        
-        /**
-         * \copydoc Context::flush_immediate_buffers()
-         */
-        virtual void flush_immediate_buffers();
-
-        /**
-         * \copydoc Context::setup_immediate_buffers()
-         */
-        virtual void setup_immediate_buffers();
-
-
-        /**
-         * \copydoc Context::setup_primitives()
-         */
-        virtual void setup_primitives();
-        
-        /**
-         * \copydoc Context::get_state_variable_address()
-         */
-        Memory::pointer get_state_variable_address(const char* name);
-
-
-        void draw_immediate_buffer_GLUP_POINTS();
-        void draw_immediate_buffer_GLUP_LINES();        
-        
-    private:
-        std::map<std::string, GLsizei> variable_to_offset_;
-    };
-
-    /*********************************************************************/
-
-    
 }
 
 #endif

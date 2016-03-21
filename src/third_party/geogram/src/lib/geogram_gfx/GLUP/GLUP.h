@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_GFX_BASIC_GLUP__
-#define __GEOGRAM_GFX_BASIC_GLUP__
+#ifndef __GEOGRAM_GFX_GLUP_GLUP__
+#define __GEOGRAM_GFX_GLUP_GLUP__
 
 #include <geogram_gfx/api/defs.h>
 #define GLUP_API GEOGRAM_GFX_API
@@ -54,7 +54,7 @@ extern "C" {
 #endif
 
     /**
-     * \file geogram_gfx/basic/GLUP.h
+     * \file geogram_gfx/GLUP/GLUP.h
      * \brief GLUP: GL Useful Primitives
      */
 
@@ -468,7 +468,8 @@ extern "C" {
         GLUP_HEXAHEDRA  =5,
         GLUP_PRISMS     =6,
         GLUP_PYRAMIDS   =7,
-        GLUP_NB_PRIMITIVES = 8
+        GLUP_CONNECTORS =8,
+        GLUP_NB_PRIMITIVES = 9
     } GLUPprimitive;
 
     /**
