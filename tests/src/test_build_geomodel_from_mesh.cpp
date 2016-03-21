@@ -73,7 +73,7 @@ int main( int argc, char** argv )
             std::string file_name( ringmesh_test_data_path ) ;
             file_name += "split_cube.eobj" ;
             std::string result_file_name( ringmesh_test_output_path ) ;
-            result_file_name += "split_cube_rebuilt.bm" ;
+            result_file_name += "split_cube_rebuilt.gm" ;
 
             // GeoModel from Surface with Attribute
             GEO::Mesh mesh ;
@@ -94,7 +94,7 @@ int main( int argc, char** argv )
 
             print_geomodel( geomodel ) ;
             is_geomodel_valid( geomodel ) ;
-            geomodel_surface_save( geomodel, result_file_name ) ;
+            geomodel_save( geomodel, result_file_name ) ;
         }
 
         {

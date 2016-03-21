@@ -1527,7 +1527,7 @@ namespace RINGMesh {
         std::vector< index_t > facet_offset_per_type( ALL, 0 ) ;
         for( index_t t = TRIANGLE + 1; t < ALL; t++ ) {
             facet_offset_per_type[t] += facet_offset_per_type[t - 1] ;
-            facet_offset_per_type[t] += nb_facet_per_type[t] ;
+            facet_offset_per_type[t] += nb_facet_per_type[t-1] ;
         }
         for( index_t i = 1; i < surface_facet_ptr_.size() - 1; i++ ) {
             surface_facet_ptr_[i + 1] += surface_facet_ptr_[i] ;

@@ -469,82 +469,6 @@ namespace {
 
     /************************************************************************/
 
-    class MMIOHandler: public GeoModelIOHandler {
-    public:
-        virtual void load( const std::string& filename, GeoModel& gm )
-        {
-            unzFile uz = unzOpen( filename.c_str() ) ;
-            unz_global_info global_info ;
-            if( unzGetGlobalInfo( uz, &global_info ) != UNZ_OK ) {
-                unzClose( uz ) ;
-                throw RINGMeshException( "ZLIB",
-                    "Could not read file global info" ) ;
-            }
-            for( index_t r = 0; r < gm.nb_regions(); r++ ) {
-                char filename[MAX_FILENAME] ;
-                unzip_file( uz, filename ) ;
-                GEO::MeshIOFlags flags ;
-                flags.set_element( GEO::MESH_FACETS ) ;
-                flags.set_element( GEO::MESH_CELLS ) ;
-                flags.set_element( GEO::MESH_EDGES ) ;
-                flags.set_attribute( GEO::MESH_FACET_REGION ) ;
-                GEO::Mesh& m = gm.region( r ).mesh() ;
-                std::string ext = GEO::FileSystem::extension( filename ) ;
-                if( ext == "meshb" ) {
-                    GEO::Logger::instance()->set_minimal( true ) ;
-                    GEO::mesh_load( GEO::String::to_string( filename ), m, flags ) ;
-                    GEO::Logger::instance()->set_minimal( false ) ;
-                } else {
-                    ringmesh_assert_not_reached ;
-                }
-                GEO::FileSystem::delete_file( filename ) ;  // WHY ?? [Jeanne]
-
-                if( ( r + 1 ) < global_info.number_entry ) {
-                    if( unzGoToNextFile( uz ) != UNZ_OK ) {
-                        unzClose( uz ) ;
-                        throw RINGMeshException( "ZLIB",
-                            "Could not read next file" ) ;
-                    }
-                }
-            }
-            unzClose( uz ) ;
-        }
-
-        /// Save a \param[in] gm macro mesh in a .zip file which contains all the mesh file. Type of the export is
-        /// determined by the extension given in \param[in] filename
-        virtual void save( const GeoModel& gm, const std::string& filename )
-        {
-            std::string pwd = GEO::FileSystem::get_current_working_directory() ;
-            GEO::FileSystem::set_current_working_directory(
-                GEO::FileSystem::dir_name( filename ) ) ;
-            zipFile zf = zipOpen( filename.c_str(), APPEND_STATUS_CREATE ) ;
-            for( index_t m = 0; m < gm.nb_regions(); m++ ) {
-                GEO::MeshIOFlags flags ;
-                flags.set_element( GEO::MESH_FACETS ) ;
-                flags.set_element( GEO::MESH_CELLS ) ;
-                flags.set_element( GEO::MESH_EDGES ) ;
-                flags.set_attribute( GEO::MESH_FACET_REGION ) ;
-
-                const GEO::Mesh& cur_mesh = gm.region( m ).mesh() ;
-                std::string name_mesh_file = "region_" + GEO::String::to_string( m )
-                    + ".meshb" ;
-
-                GEO::Logger::instance()->set_quiet( true ) ;
-                GEO::mesh_save( cur_mesh, name_mesh_file, flags ) ;
-                GEO::Logger::instance()->set_quiet( false ) ;
-
-                zip_file( zf, name_mesh_file ) ;
-
-                GEO::FileSystem::delete_file( name_mesh_file ) ;
-
-            }
-            zipClose( zf, NULL ) ;
-            GEO::FileSystem::set_current_working_directory( pwd ) ;
-        }
-    } ;
-
-    /************************************************************************/
-
     class LMIOHandler: public GeoModelIOHandler {
     public:
         virtual void load( const std::string& filename, GeoModel& mesh )
@@ -2080,7 +2004,6 @@ namespace RINGMesh {
      */
     void GeoModelIOHandler::initialize_full_geomodel_output()
     {
-        ringmesh_register_IOHandler_creator( MMIOHandler, "mm" );
     ringmesh_register_IOHandler_creator( LMIOHandler, "meshb" ) ;
     ringmesh_register_IOHandler_creator( LMIOHandler, "mesh" ) ;
     ringmesh_register_IOHandler_creator( TetGenIOHandler, "tetgen" ) ;
