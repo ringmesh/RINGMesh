@@ -80,7 +80,7 @@ namespace RINGMesh {
                 "stats:volume", false,
                 "Print statistics on the volume" ) ;
             GEO::CmdLine::declare_arg(
-                "stats:nb", false,
+                "stats:nb", true,
                 "Print statistics on the number of elements" ) ;
         }
 
