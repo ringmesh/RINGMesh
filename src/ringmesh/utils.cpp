@@ -117,11 +117,10 @@ namespace RINGMesh {
     void build_string_for_geo_model_element_export(
         GME::TYPE gme_t,
         index_t gme_id,
-        std::string& name,
-        const std::string& extension)
+        std::string& name)
     {
         name += GeoModelMeshElement::type_name( gme_t ) + "_"
-            + GEO::String::to_string( gme_id ) + "."+ extension ;
+            + GEO::String::to_string( gme_id ) ;
     }
 }
 

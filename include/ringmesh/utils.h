@@ -47,7 +47,6 @@
  * @author Arnaud Botella
  */
 
-
 namespace RINGMesh {
 
     /*! @brief A safer narrow casting function of type S to type T
@@ -61,7 +60,7 @@ namespace RINGMesh {
     {
         T r = static_cast< T >( in ) ;
         if( static_cast< S >( r ) != in ) {
-            ringmesh_assert_not_reached;
+            ringmesh_assert_not_reached ;
         }
         return r ;
     }
@@ -189,8 +188,7 @@ namespace RINGMesh {
     void build_string_for_geo_model_element_export(
         GME::TYPE gme_t,
         index_t gme_id,
-        std::string& name,
-        const std::string& extension) ;
+        std::string& name ) ;
 }
 
 #endif

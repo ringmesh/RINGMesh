@@ -505,9 +505,8 @@ namespace RINGMesh {
 
     class RINGMESH_API GeoModelBuilderGM: public GeoModelBuilderFile {
     public:
-        GeoModelBuilderGM( GeoModel& model, const std::string& filename,
-            const std::string& extension )
-            : GeoModelBuilderFile( model, filename ), extension_(extension)
+        GeoModelBuilderGM( GeoModel& model, const std::string& filename)
+            : GeoModelBuilderFile( model, filename )
         {
         }
         virtual ~GeoModelBuilderGM()
@@ -540,11 +539,6 @@ namespace RINGMesh {
          * basics information on the GeoModel.
          */
         void load_topology( GEO::LineInput& file_line ) ;
-    private:
-
-        /// This is temp for letting people convert old geomodel to new
-        const std::string& extension_ ;
-
     } ;
 }
 
