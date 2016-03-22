@@ -34,6 +34,7 @@
 /* [Bruno] full path to geogram to avoid including wrong zlib header */
 #include <geogram/third_party/zlib/zconf.h>
 
+/* Toooo many warnings... [RINGMesh] */
 #ifdef __GNUC__
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #pragma GCC diagnostic ignored "-Wunused-variable"
