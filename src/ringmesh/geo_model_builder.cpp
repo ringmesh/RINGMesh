@@ -3747,7 +3747,6 @@ namespace RINGMesh {
         load_connectivities( line_connectivity ) ;
         GEO::FileSystem::delete_file( connectivity ) ;
 
-        load_attributes( uz ) ;
         unzClose( uz ) ;
 
     }
@@ -3783,7 +3782,7 @@ namespace RINGMesh {
         for( index_t el = 0; el < model_.nb_elements( gme_t ); el++ ) {
             std::string file_to_extract_and_load ;
             build_string_for_geo_model_element_export( gme_t, el,
-                file_to_extract_and_load ) ;
+                file_to_extract_and_load, "geogram" ) ;
             unzip_one_file( uz, file_to_extract_and_load.c_str() ) ;
             GEO::Mesh cur_mesh ;
             GEO::MeshIOFlags flags ;
@@ -3798,72 +3797,6 @@ namespace RINGMesh {
 
 //            set_connectivities
             GEO::FileSystem::delete_file( file_to_extract_and_load ) ;
-        }
-
-    }
-
-    void GeoModelBuilderGM::write_on_attribute_manager(
-        GEO::AttributesManager& attribute_manager,
-        GEO::LineInput& att_file )
-    {
-        while( !att_file.eof() && att_file.get_line() ) {
-            att_file.get_fields() ;
-            if( att_file.field_matches( 0, "#" ) ) {
-
-                //@TODO double is hardcoded here temporary
-                GEO::Attribute< double > cur_att ;
-                index_t att_dim = att_file.field_as_uint( 3 ) ;
-                cur_att.create_vector_attribute( attribute_manager,
-                    att_file.field( 1 ), att_dim ) ;
-
-                for( index_t el = 0; el < cur_att.size(); el++ ) {
-                    att_file.get_line() ;
-                    att_file.get_fields() ;
-                    for( index_t i = 0; i < att_dim; i++ ) {
-                        cur_att[att_dim * el + i] = att_file.field_as_double( i ) ;
-                    }
-                }
-            }
-        }
-
-    }
-
-    void GeoModelBuilderGM::load_attributes( unzFile& uz )
-    {
-
-        for( index_t r = 0; r < model_.nb_regions(); r++ ) {
-            std::string root_name = GeoModelMeshElement::type_name( GME::REGION )
-                + "_" + GEO::String::to_string( r ) ;
-            std::string cell_att_file = root_name + "_cells_attributes.txt" ;
-            std::string vertices_att_file = root_name + "_vertices_attributes.txt" ;
-            std::string facets_att_file = root_name + "_facets_attributes.txt" ;
-
-            if( unzLocateFile( uz, cell_att_file.c_str(), 0 ) == UNZ_OK ) {
-                unzip_one_file( uz, cell_att_file.c_str() ) ;
-
-                GEO::LineInput att_file( cell_att_file ) ;
-                write_on_attribute_manager(
-                    model_.region( r ).mesh().cells.attributes(), att_file ) ;
-                GEO::FileSystem::delete_file( cell_att_file ) ;
-            }
-
-            if( unzLocateFile( uz, vertices_att_file.c_str(), 0 ) == UNZ_OK ) {
-                unzip_one_file( uz, vertices_att_file.c_str() ) ;
-                GEO::LineInput att_file( vertices_att_file ) ;
-                write_on_attribute_manager(
-                    model_.region( r ).mesh().vertices.attributes(), att_file ) ;
-                GEO::FileSystem::delete_file( vertices_att_file ) ;
-
-            }
-
-            if( unzLocateFile( uz, facets_att_file.c_str(), 0 ) == UNZ_OK ) {
-                unzip_one_file( uz, facets_att_file.c_str() ) ;
-                GEO::LineInput att_file( facets_att_file ) ;
-                write_on_attribute_manager(
-                    model_.region( r ).mesh().facets.attributes(), att_file ) ;
-                GEO::FileSystem::delete_file( facets_att_file ) ;
-
-            }
         }
 
     }

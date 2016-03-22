@@ -408,7 +408,7 @@ namespace {
 
         std::string name ;
         build_string_for_geo_model_element_export( type,
-            geo_model_element_mesh.index(), name ) ;
+            geo_model_element_mesh.index(), name, "geogram" ) ;
         GEO::Logger* logger = GEO::Logger::instance() ;
         logger->set_quiet( true ) ;
         GEO::MeshIOFlags flags ;
@@ -432,7 +432,7 @@ namespace {
             std::string pwd = GEO::FileSystem::get_current_working_directory() ;
             GEO::FileSystem::set_current_working_directory(
                 GEO::FileSystem::dir_name( filename ) ) ;
-            GeoModelBuilderGM builder( model, filename ) ;
+            GeoModelBuilderGM builder( model, filename, "geogram" ) ;
             builder.build_model() ;
             GEO::Logger::out( "I/O" ) << " Loaded model " << model.name() << " from "
                 << filename << std::endl ;
@@ -465,6 +465,31 @@ namespace {
                 }
             }
             zipClose( zf, NULL ) ;
+        }
+
+    } ;
+
+    /// This class is temp too for letting the people to convert the
+    /// old .gm to the new one
+    class OldGeoModelHandler: public GeoModelIOHandler {
+        virtual void load( const std::string& filename, GeoModel& model )
+        {
+            std::string pwd = GEO::FileSystem::get_current_working_directory() ;
+            GEO::FileSystem::set_current_working_directory(
+                GEO::FileSystem::dir_name( filename ) ) ;
+            GeoModelBuilderGM builder( model, filename, ".meshb" ) ;
+            builder.build_model() ;
+            GEO::Logger::out( "I/O" ) << " Loaded model " << model.name() << " from "
+                << filename << std::endl ;
+            print_geomodel( model ) ;
+            is_geomodel_valid( model ) ;
+            GEO::FileSystem::set_current_working_directory( pwd ) ;
+
+        }
+        virtual void save( const GeoModel& model, const std::string& filename )
+        {
+            throw RINGMeshException( "I/O",
+                "You can't save old GM, please convert it to new one" ) ;
         }
 
     } ;
