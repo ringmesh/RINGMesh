@@ -359,8 +359,8 @@ namespace {
             xyzmax[c] = GEO::Numeric::min_float64() ;
         }
 
-        if( !GEO::CmdLine::get_arg( "geomodel" ).empty() ) {
-            RINGMesh::geomodel_load( GM, GEO::CmdLine::get_arg( "geomodel" ) ) ;
+        if( !GEO::CmdLine::get_arg( "in:geomodel" ).empty() ) {
+            RINGMesh::geomodel_load( GM, GEO::CmdLine::get_arg( "in:geomodel" ) ) ;
             meshed_regions = true ;
         }
         else{
@@ -422,10 +422,8 @@ int main( int argc, char** argv )
         GEO::Logger::out( "" )
             << "Antoine Mazuyer <antoine.mazuyer@univ-lorraine.fr> " << std::endl ;
 
-        GEO::CmdLine::declare_arg( "geomodel", "",
-            "filename of the structural model" ) ;
         CmdLine::import_arg_group( "attr" ) ;
-
+        CmdLine::import_arg_group( "in" ) ;
 
         if( argc == 1 ) {
             GEO::CmdLine::show_usage() ;
