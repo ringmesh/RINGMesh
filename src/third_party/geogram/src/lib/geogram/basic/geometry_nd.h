@@ -441,10 +441,6 @@ namespace GEO {
          * \param[in] V1 second extremity of the segment
          * \param[out] closest_point the point closest to \p point in the
          *  segment [\p V0, \p V1]
-         * \param[out] lambda0 barycentric coordinate of the closest point
-         *  relative to \p V0
-         * \param[out] lambda1 barycentric coordinate of the closest point
-         *  relative to \p V1
          * \tparam VEC the class that represents the points.
          * \return the squared distance between the point and
          *  the segment [\p V0, \p V1]

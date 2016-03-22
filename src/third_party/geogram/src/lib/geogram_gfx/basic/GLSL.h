@@ -101,7 +101,9 @@ namespace GEO {
          *  functions, but OpenGL documentation does not recommend
          *  to do so (and it did not seem to work). Errors are detected and 
          *  displayed to std::err.
-         * \param[in] target the OpenGL shader target ()
+         * \param[in] target the OpenGL shader target (one of GL_COMPUTE_SHADER,
+         *   GL_VERTEX_SHADER, GL_TESS_CONTROL_SHADER, 
+         *   GL_TESS_EVALUATION_SHADER, GL_GEOMETRY_SHADER, GL_FRAGMENT_SHADER)
          * \param[in] sources an array of pointer to ASCII strings that contain 
          *    the source of the shader 
          * \param[in] nb_sources number of strings in \p sources
@@ -121,7 +123,9 @@ namespace GEO {
          *  functions, but OpenGL documentation does not recommend
          *  to do so (and it did not seem to work). Errors are detected and 
          *  displayed to std::err.
-         * \param[in] target the OpenGL shader target ()
+         * \param[in] target the OpenGL shader target (one of GL_COMPUTE_SHADER,
+         *   GL_VERTEX_SHADER, GL_TESS_CONTROL_SHADER, 
+         *   GL_TESS_EVALUATION_SHADER, GL_GEOMETRY_SHADER, GL_FRAGMENT_SHADER)
          * \param[in] source1, source2, ... ASCII strings that will be 
          *  concatened to form the source of the shader. It needs to be
          *  terminated by 0.
@@ -291,6 +295,19 @@ namespace GEO {
             glUseProgram(0);
             return true;
         }
+
+        /**
+         * \brief Gets the offset of a uniform variable relative
+         *  to the uniform block it is declared in.
+         * \param[in] program a GLSL program handle
+         * \param[in] varname the name of the variable
+         * \return the offset of the variable relative to the beginning
+         *  of the uniform block it is declared in, in bytes.
+         */
+        GLint GEOGRAM_GFX_API get_uniform_variable_offset(
+            GLuint program, const char* varname
+        );
+        
     }
 }
 

@@ -587,6 +587,7 @@ namespace GEO {
         Attribute<float> point_fp32_;
 
         friend class Mesh;
+        friend class GeogramIOHandler;        
     };
     
     /*************************************************************************/
@@ -713,7 +714,8 @@ namespace GEO {
         }
         
         vector<index_t> edge_vertex_;
-        friend class Mesh;        
+        friend class Mesh;
+        friend class GeogramIOHandler;
     };
     
     /**************************************************************************/
@@ -781,7 +783,7 @@ namespace GEO {
         bool are_simplices() const {
             return is_simplicial_;
         }
-
+        
     protected:
         virtual void clear_store(
             bool keep_attributes, bool keep_memory = false
@@ -814,7 +816,8 @@ namespace GEO {
     protected:
         bool is_simplicial_;
         vector<index_t> facet_ptr_;
-        friend class Mesh;        
+        friend class Mesh;
+        friend class GeogramIOHandler;
     };
 
     /*************************************************************************/
@@ -911,7 +914,7 @@ namespace GEO {
             geo_debug_assert(c < nb());
             return &(corner_vertex_[c]);
         }
-        
+
     protected:
         virtual void clear_store(
             bool keep_attributes, bool keep_memory = false
@@ -949,7 +952,8 @@ namespace GEO {
         vector<index_t> corner_adjacent_facet_;
 
         friend class MeshFacets;
-        friend class Mesh;        
+        friend class Mesh;
+        friend class GeogramIOHandler;        
     };
 
     /*************************************************************************/
@@ -1276,7 +1280,8 @@ namespace GEO {
     protected:
         MeshVertices& vertices_;        
         MeshFacetCornersStore& facet_corners_;
-        friend class Mesh;        
+        friend class Mesh;
+        friend class GeogramIOHandler;                
     };
     
     /*************************************************************************/
@@ -1551,7 +1556,8 @@ namespace GEO {
         vector<index_t> cell_ptr_;
 
     protected:
-        friend class Mesh;        
+        friend class Mesh;
+        friend class GeogramIOHandler;                
     };
     
     /*************************************************************************/
@@ -1640,7 +1646,8 @@ namespace GEO {
         vector<index_t> corner_vertex_;
 
         friend class MeshCells;
-        friend class Mesh;        
+        friend class Mesh;
+        friend class GeogramIOHandler;                
     };
 
     /*************************************************************************/
@@ -1714,7 +1721,8 @@ namespace GEO {
         vector<index_t> adjacent_cell_;
 
         friend class MeshCells;
-        friend class Mesh;        
+        friend class Mesh;
+        friend class GeogramIOHandler;                
     };
 
     /*************************************************************************/
@@ -1862,11 +1870,11 @@ namespace GEO {
          */
         index_t create_cells(index_t nb_cells, MeshCellType type) {
 
-	    if(nb_cells == 0) {
-	        return NO_CELL;
-	    }
-	   
-	   
+            if(nb_cells == 0) {
+                return NO_CELL;
+            }
+           
+           
             if(type != MESH_TET) {
                 is_not_simplicial();
             }
@@ -2410,7 +2418,8 @@ namespace GEO {
         MeshVertices& vertices_;
         MeshCellCornersStore& cell_corners_;
         MeshCellFacetsStore& cell_facets_;
-        friend class Mesh;        
+        friend class Mesh;
+        friend class GeogramIOHandler;                
     };
     
     /*************************************************************************/
@@ -2428,7 +2437,11 @@ namespace GEO {
         MESH_FACETS = 2,
         MESH_EDGES  = 4,
         MESH_CELLS  = 8,
-        MESH_ALL_ELEMENTS = 15
+        MESH_ALL_ELEMENTS = 15,
+        MESH_FACET_CORNERS = 16,
+        MESH_CELL_CORNERS = 32,        
+        MESH_CELL_FACETS = 64,
+        MESH_ALL_SUBELEMENTS = 65
     };
 
     /*************************************************************************/
@@ -2500,6 +2513,66 @@ namespace GEO {
             const Mesh& rhs,
             bool copy_attributes=true,
             MeshElementsFlags what=MESH_ALL_ELEMENTS
+        );
+
+
+        /**
+         * \brief Gets the number of subelements types.
+         * \return the number of subelements types.
+         */
+        index_t nb_subelements_types() const;
+
+        /**
+         * \brief Gets a MeshSubElementsStore by index.
+         * \param[in] i index of the subelements
+         * \return a reference to the corresponding MeshSubElementsStore
+         * \pre i < nb_subelements_types()
+         */
+        MeshSubElementsStore& get_subelements_by_index(index_t i);
+
+        /**
+         * \brief Gets a MeshSubElementsStore by index.
+         * \param[in] i index of the subelements
+         * \return a const reference to the corresponding MeshSubElementsStore
+         * \pre i < nb_subelements_types()
+         */
+        const MeshSubElementsStore& get_subelements_by_index(index_t i) const;
+        
+        
+        /**
+         * \brief Gets a MeshSubElementsStore by subelements type.
+         * \param[in] what one of MESH_VERTICES, MESH_EDGES, MESH_FACETS,
+         *  MESH_FACET_CORNERS, MESH_CELLS, MESH_CELL_CORNERS, MESH_CELL_FACETS
+         * \return a reference to the corresponding MeshSubElementsStore
+         */
+        MeshSubElementsStore& get_subelements_by_type(MeshElementsFlags what);
+
+        /**
+         * \brief Gets a MeshSubElementsStore by subelements type.
+         * \param[in] what one of MESH_VERTICES, MESH_EDGES, MESH_FACETS,
+         *  MESH_FACET_CORNERS, MESH_CELLS, MESH_CELL_CORNERS, MESH_CELL_FACETS
+         * \return a const reference to the corresponding MeshSubElementsStore
+         */
+        const MeshSubElementsStore& get_subelements_by_type(
+            MeshElementsFlags what
+        ) const;
+
+        /**
+         * \brief Gets a subelement name by subelement type.
+         * \param[in] what one of MESH_VERTICES, MESH_EDGES, MESH_FACETS,
+         *  MESH_FACET_CORNERS, MESH_CELLS, MESH_CELL_CORNERS, MESH_CELL_FACETS
+         * \return a string with the name of the subelement.
+         */
+        static std::string subelements_type_to_name(MeshElementsFlags what);
+
+        /**
+         * \brief Gets a subelement type by subelement name.
+         * \param[in] name the name of the subelement as a string
+         * \return one of MESH_VERTICES, MESH_EDGES, MESH_FACETS,
+         *  MESH_FACET_CORNERS, MESH_CELLS, MESH_CELL_CORNERS, MESH_CELL_FACETS
+         */
+        static MeshElementsFlags name_to_subelements_type(
+            const std::string& name
         );
         
     protected:

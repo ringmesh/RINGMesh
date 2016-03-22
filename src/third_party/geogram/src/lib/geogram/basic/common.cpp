@@ -87,6 +87,14 @@ namespace GEO {
         
         // Clear last system error
         errno = 0;
+
+        // Register attribute types that can be saved into files.
+        geo_register_attribute_type<Numeric::uint8>("bool");                
+        geo_register_attribute_type<char>("char");        
+        geo_register_attribute_type<int>("int");
+        geo_register_attribute_type<index_t>("index_t");
+        geo_register_attribute_type<float>("float");
+        geo_register_attribute_type<double>("double");
     }
 
     void terminate() {

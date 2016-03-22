@@ -3787,10 +3787,7 @@ namespace RINGMesh {
             unzip_one_file( uz, file_to_extract_and_load.c_str() ) ;
             GEO::Mesh cur_mesh ;
             GEO::MeshIOFlags flags ;
-            flags.set_element( GEO::MESH_FACETS ) ;
-            flags.set_element( GEO::MESH_CELLS ) ;
-            flags.set_element( GEO::MESH_EDGES ) ;
-            flags.set_attribute( GEO::MESH_FACET_REGION ) ;
+//            flags.set_attribute( GEO::MESH_ALL_ATTRIBUTES ) ;
             GEO::Logger::instance()->set_minimal( true ) ;
             GEO::mesh_load( file_to_extract_and_load, cur_mesh, flags ) ;
             assign_mesh_to_element( cur_mesh,

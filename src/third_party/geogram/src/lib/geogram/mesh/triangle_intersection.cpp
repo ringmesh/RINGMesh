@@ -68,7 +68,6 @@ namespace {
          *  that are not implemented yet.
          */
         ~Stats() {
-            /* Comment this nosy output on every program ending [AB]
             if(nb_ET2 > 0) {
                 Logger::warn("Isect")
                     << nb_ET2 << " calls to ET2() (not implemented yet)"
@@ -79,7 +78,6 @@ namespace {
                     << nb_TT2 << " calls to TT2() (not implemented yet)"
                     << std::endl;
             }
-            */
         }
     } stats;
     

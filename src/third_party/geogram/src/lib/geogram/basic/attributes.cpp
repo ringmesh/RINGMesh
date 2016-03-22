@@ -45,6 +45,7 @@
 
 #include <geogram/basic/attributes.h>
 #include <geogram/basic/permutation.h>
+#include <geogram/basic/string.h>
 #include <algorithm>
 
 namespace GEO {
@@ -57,6 +58,16 @@ namespace GEO {
         store->unregister_observer(this);        
     }
 
+    /******************************************************************/
+
+    std::map<std::string, AttributeStoreCreator_var>
+         AttributeStore::type_name_to_creator_;
+
+    std::map<std::string, std::string>
+         AttributeStore::typeid_name_to_type_name_;
+
+    std::map<std::string, std::string>
+         AttributeStore::type_name_to_typeid_name_;
     
     AttributeStore::AttributeStore(
         index_t elemsize,
@@ -224,6 +235,17 @@ namespace GEO {
         return it->second;
     }
 
+    const AttributeStore* AttributesManager::find_attribute_store(
+        const std::string& name
+    ) const {
+        std::map<std::string, AttributeStore*>::const_iterator
+            it = attributes_.find(name);
+        if(it == attributes_.end()) {
+            return nil;
+        }
+        return it->second;
+    }
+    
 
     void AttributesManager::delete_attribute_store(const std::string& name) {
         std::map<std::string, AttributeStore*>::iterator
@@ -302,6 +324,141 @@ namespace GEO {
         ) {
             it->second->copy_item(to,from);
         }        
+    }
+    
+    /************************************************************************/ 
+
+    std::string ReadOnlyScalarAttributeAdapter::attribute_base_name(
+        const std::string& name
+    ) {
+        size_t pos = name.find('[');
+        if(pos == std::string::npos) {
+            return name;
+        }
+        return name.substr(0,pos);
+    }
+
+    index_t ReadOnlyScalarAttributeAdapter::attribute_element_index(
+        const std::string& name
+    ) {
+        index_t result = 0;
+        size_t pos = name.find('[');
+        if(pos != std::string::npos) {
+            try {
+                if(pos+2 > name.length()) {
+                    result = index_t(-1);
+                } else {
+                    result = String::to_uint(
+                        name.substr(pos+1, name.length()-pos-2)
+                    );
+                }
+            } catch(...) {
+                result = index_t(-1);
+            }
+        }
+        return result;
+    }
+
+    ReadOnlyScalarAttributeAdapter::ElementType
+    ReadOnlyScalarAttributeAdapter::element_type(const AttributeStore* store) {
+        if(store->element_typeid_name() == typeid(Numeric::uint8).name()) {
+            return ET_UINT8;
+        }
+
+        if(
+            store->element_typeid_name() == typeid(char).name() ||
+            store->element_typeid_name() == typeid(Numeric::int8).name()
+        ) {
+            return ET_INT8;
+        }
+
+        if(
+            store->element_typeid_name() == typeid(Numeric::uint32).name() ||
+            store->element_typeid_name() == typeid(index_t).name() ||
+            store->element_typeid_name() == typeid(unsigned int).name()
+        ) {
+            return ET_UINT32;
+        }
+
+        if(
+            store->element_typeid_name() == typeid(Numeric::int32).name() ||
+            store->element_typeid_name() == typeid(int).name() 
+        ) {
+            return ET_INT32;                
+        }
+
+        if(
+            store->element_typeid_name() == typeid(Numeric::float32).name() ||
+            store->element_typeid_name() == typeid(float).name() 
+        ) {
+            return ET_FLOAT32;
+        }
+
+        if(
+            store->element_typeid_name() == typeid(Numeric::float64).name() ||
+            store->element_typeid_name() == typeid(double).name() 
+        ) {
+            return ET_FLOAT64;
+        }
+
+        return ET_NONE;
+    }
+    
+    void ReadOnlyScalarAttributeAdapter::bind_if_is_defined(
+        const AttributesManager& manager, const std::string& name
+    ) {
+        geo_assert(!is_bound());
+        manager_ = &manager;
+        element_index_ = attribute_element_index(name);
+        store_ = manager_->find_attribute_store(attribute_base_name(name));
+
+        if(
+            store_ == nil ||
+            element_index_ == index_t(-1) ||
+            element_index_ >= store_->dimension()
+        ) {
+            store_ = nil;
+            element_index_ = index_t(-1);
+            return;
+        }
+
+        element_type_ = element_type(store_);
+
+        if(element_type_ == ET_NONE) {
+            store_ = nil;
+            element_index_ = index_t(-1);
+            return;
+        }
+        
+        register_me(const_cast<AttributeStore*>(store_));                
+    }
+
+    bool ReadOnlyScalarAttributeAdapter::is_defined(
+        const AttributesManager& manager, const std::string& name
+    ) {
+        std::string attribute_name = attribute_base_name(name);
+        const AttributeStore* store = manager.find_attribute_store(
+            attribute_name
+        );
+        
+        if(store == nil) {
+            return false;
+        }
+        
+        index_t element_index = attribute_element_index(name);
+        if(element_index == index_t(-1)) {
+            return false;
+        }
+
+        if(element_index >= store->dimension()) {
+            return false;
+        }
+
+        if(element_type(store) == ET_NONE) {
+            return false;
+        }
+        
+        return true;
     }
     
     /************************************************************************/ 
