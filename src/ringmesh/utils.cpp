@@ -120,7 +120,7 @@ namespace RINGMesh {
         std::string& name )
     {
         name += GeoModelMeshElement::type_name( gme_t ) + "_"
-            + GEO::String::to_string( gme_id ) + ".meshb" ;
+            + GEO::String::to_string( gme_id ) + ".geogram" ;
     }
 }
 

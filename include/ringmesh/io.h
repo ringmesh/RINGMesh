@@ -42,8 +42,8 @@
 #include <geogram/basic/string.h>
 
 
-#include <third_party/zlib/unzip.h>
-#include <third_party/zlib/zip.h>
+#include <third_party/minizip/zip.h>
+#include <third_party/minizip/unzip.h>
 
 #include <geogram/basic/factory.h>
 #define MAX_FILENAME 512
