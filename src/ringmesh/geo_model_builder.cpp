@@ -3815,7 +3815,7 @@ namespace RINGMesh {
             unzip_one_file( uz, str_try.c_str() ) ;
             GEO::Mesh cur_mesh ;
             GEO::MeshIOFlags flags ;
-//            flags.set_attribute( GEO::MESH_ALL_ATTRIBUTES ) ;
+            flags.set_attribute( GEO::MESH_ALL_ATTRIBUTES ) ;
             GEO::Logger::instance()->set_minimal( true ) ;
             GEO::mesh_load( str_try, cur_mesh, flags ) ;
             assign_mesh_to_element( cur_mesh,
