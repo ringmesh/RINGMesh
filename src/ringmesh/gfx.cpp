@@ -63,17 +63,23 @@
 namespace {
     using namespace RINGMesh ;
 
+    std::string get_attribute_name_with_coordinate(
+        const std::string& name,
+        index_t coordinate )
+    {
+        return name + "[" + GEO::String::to_string( coordinate ) + "]" ;
+    }
+
     void compute_attribute_range(
         GEO::ReadOnlyScalarAttributeAdapter& attribute,
-        index_t coordinate,
         double& min,
         double& max )
     {
         if( attribute.is_bound() ) {
-            index_t dim = attribute.dimension() ;
             for( index_t i = 0; i < attribute.size(); ++i ) {
-                min = GEO::geo_min( min, attribute[i * dim + coordinate] ) ;
-                max = GEO::geo_max( max, attribute[i * dim + coordinate] ) ;
+                double value = attribute[i] ;
+                min = GEO::geo_min( min, value ) ;
+                max = GEO::geo_max( max, value ) ;
             }
         }
     }
@@ -102,16 +108,12 @@ namespace RINGMesh {
             bool vertice_visible )
             :
                 vertices_visible_( vertice_visible ),
-                tex_vertex_coord_VB_( 0 ),
                 gfx_( gfx )
         {
             set_mesh( &mesh ) ;
         }
         virtual ~MeshElementGfx()
         {
-            if( vertex_attr_.is_bound() ) {
-                vertex_attr_.unbind() ;
-            }
         }
 
         void draw_vertices()
@@ -135,53 +137,8 @@ namespace RINGMesh {
             return vertices_visible_ ;
         }
 
-        void bind_vertex_attribute( const std::string& name )
-        {
-
-            if( !vertex_attr_.is_bound() || vertex_attr_name_ != name ) {
-                vertex_attr_name_ = name ;
-                if( vertex_attr_.is_bound() ) {
-                    vertex_attr_.unbind() ;
-
-                    glBindVertexArray( cells_VAO_ ) ;
-                    glDisableVertexAttribArray( 2 ) ;
-                    glBindVertexArray( 0 ) ;
-                }
-                if( GEO::Attribute< double >::is_defined(
-                    mesh()->vertices.attributes(), name ) ) {
-                    vertex_attr_.bind( mesh()->vertices.attributes(), name ) ;
-                }
-            }
-        }
-        void compute_vertex_attribute_range(
-            double& min,
-            double& max,
-            index_t coordinate,
-            const std::string& name )
-        {
-            if( !vertex_attr_.is_bound() ) return ;
-            index_t att_dim = vertex_attr_.dimension() ;
-            for( index_t v = 0; v < mesh()->vertices.nb(); v++ ) {
-                const double& value = vertex_attr_[att_dim * v + coordinate] ;
-                if( value < min ) min = value ;
-                if( value > max ) max = value ;
-            }
-        }
-
-    protected:
-        inline void draw_attribute_vertex( index_t v )
-        {
-            double d = ( vertex_attr_[v] - gfx_.attribute_min_ )
-                / ( gfx_.attribute_max_ - gfx_.attribute_min_ ) ;
-            glupTexCoord1d( d ) ;
-            draw_vertex( v ) ;
-        }
-
     protected:
         bool vertices_visible_ ;
-        GLuint tex_vertex_coord_VB_ ;
-        GEO::Attribute< double > vertex_attr_ ;
-        std::string vertex_attr_name_ ;
 
         const GeoModelGfx& gfx_ ;
 
@@ -289,8 +246,8 @@ namespace RINGMesh {
     GeoModelGfx::GeoModelGfx()
         : model_( nil ), corners_(), lines_(), surfaces_(), regions_()
     {
-        attribute_min_ = max_float64() ;
-        attribute_max_ = min_float64() ;
+        attribute_min_ = 0. ;
+        attribute_max_ = 0. ;
     }
 
     GeoModelGfx::~GeoModelGfx()
@@ -391,12 +348,16 @@ namespace RINGMesh {
         index_t coordinate,
         const std::string& name )
     {
+        DEBUG( coordinate ) ;
         attribute_min_ = max_float64() ;
         attribute_max_ = min_float64() ;
+        std::string attribute_name = get_attribute_name_with_coordinate( name,
+            coordinate ) ;
+        DEBUG( attribute_name ) ;
         for( index_t r = 0; r < regions_.size(); r++ ) {
             GEO::ReadOnlyScalarAttributeAdapter attribute(
-                model_->region( r ).vertex_attribute_manager(), name ) ;
-            compute_attribute_range( attribute, coordinate, attribute_min_,
+                model_->region( r ).vertex_attribute_manager(), attribute_name ) ;
+            compute_attribute_range( attribute, attribute_min_,
                 attribute_max_ ) ;
         }
     }
@@ -407,11 +368,12 @@ namespace RINGMesh {
     {
         attribute_min_ = max_float64() ;
         attribute_max_ = min_float64() ;
-
+        std::string attribute_name = get_attribute_name_with_coordinate( name,
+            coordinate ) ;
         for( index_t r = 0; r < regions_.size(); r++ ) {
             GEO::ReadOnlyScalarAttributeAdapter attribute(
-                model_->region( r ).cell_attribute_manager(), name ) ;
-            compute_attribute_range( attribute, coordinate, attribute_min_,
+                model_->region( r ).cell_attribute_manager(), attribute_name ) ;
+            compute_attribute_range( attribute, attribute_min_,
                 attribute_max_ ) ;
         }
     }
@@ -421,14 +383,12 @@ namespace RINGMesh {
         index_t coordinate,
         GLuint colormap_texture )
     {
-        compute_cell_vertex_attribute_range( coordinate, name ) ;
-
+        std::string attribute_name = get_attribute_name_with_coordinate( name,
+            coordinate ) ;
         for( index_t r = 0; r < regions_.size(); r++ ) {
-            regions_[r]->bind_vertex_attribute( name ) ;
+            regions_[r]->set_scalar_attribute( GEO::MESH_VERTICES, attribute_name, attribute_min_,
+                attribute_max_, colormap_texture ) ;
         }
-        compute_cell_vertex_attribute_range( coordinate, name ) ;
-        std::string attribute_vector = name + "["
-            + GEO::String::to_string( coordinate ) + "]" ;
 
     }
 
@@ -437,11 +397,10 @@ namespace RINGMesh {
         index_t coordinate,
         GLuint colormap_texture )
     {
-        compute_cell_attribute_range( coordinate, name ) ;
-        std::string attribute_vector = name + "["
-            + GEO::String::to_string( coordinate ) + "]" ;
+        std::string attribute_name = get_attribute_name_with_coordinate( name,
+            coordinate ) ;
         for( index_t r = 0; r < regions_.size(); r++ ) {
-            regions_[r]->set_scalar_attribute( GEO::MESH_CELLS, name, attribute_min_,
+            regions_[r]->set_scalar_attribute( GEO::MESH_CELLS, attribute_name, attribute_min_,
                 attribute_max_, colormap_texture ) ;
         }
 
