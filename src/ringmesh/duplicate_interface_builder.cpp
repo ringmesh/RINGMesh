@@ -143,6 +143,43 @@ namespace RINGMesh {
             }
 
             GEO::mesh_save( new_mesh,
+                "merged_surf_reg_" + GEO::String::to_string( region_index )
+                    + ".meshb" ) ;
+
+            // To complete the region, add the other surfaces of the region to
+            // the newly built merged surface. The surfaces before the merge must
+            // not be added.
+            for( index_t surf_reg_itr = 0;
+                surf_reg_itr < model_.region( region_index ).nb_boundaries();
+                ++surf_reg_itr ) {
+
+                const GeoModelElement& cur_elt =
+                    model_.region( region_index ).boundary( surf_reg_itr ) ;
+                ringmesh_assert( cur_elt.type()==GME::SURFACE ) ;
+                std::vector< index_t >::iterator found = std::find(
+                    map_itr->second.begin(), map_itr->second.end(),
+                    cur_elt.index() ) ;
+                // One surface used for previous merging. Avoided.
+                if( found != map_itr->second.end() ) {
+                    continue ;
+                }
+
+                // Add the facets for debugging for now. But I found all the
+                // surfaces of the regions.
+                const Surface& cur_surf2 = dynamic_cast< const Surface& >( cur_elt ) ;
+                const GEO::Mesh& cur_surf_mesh2 = cur_surf2.mesh() ;
+                for( index_t facet_itr = 0; facet_itr < cur_surf_mesh2.facets.nb();
+                    ++facet_itr ) {
+                    index_t one = find_or_create_vertex( cur_surf_mesh2, facet_itr,
+                        0, new_mesh ) ;
+                    index_t two = find_or_create_vertex( cur_surf_mesh2, facet_itr,
+                        1, new_mesh ) ;
+                    index_t three = find_or_create_vertex( cur_surf_mesh2, facet_itr,
+                        2, new_mesh ) ;
+                    new_mesh.facets.create_triangle( one, two, three ) ;
+                }
+            }
+            GEO::mesh_save( new_mesh,
                 "surf_reg_" + GEO::String::to_string( region_index ) + ".meshb" ) ;
         }
 
