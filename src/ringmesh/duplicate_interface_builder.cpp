@@ -35,6 +35,9 @@
 
 #include <ringmesh/duplicate_interface_builder.h>
 
+#include <geogram/mesh/mesh_io.h>
+#include <ringmesh/geometry.h>
+
 /*!
  * @file ringmesh/duplicate_interface_builder.cpp
  * @brief Class to duplicate GeoModel Interface to
@@ -113,6 +116,54 @@ namespace RINGMesh {
             }
         }
 
+        for( std::map< index_t, std::vector< index_t > >::iterator map_itr =
+            surfaces_boundary_regions.begin();
+            map_itr != surfaces_boundary_regions.end(); ++map_itr ) {
 
+            GEO::Mesh new_mesh ;
+
+            index_t region_index = map_itr->first ;
+            for( std::vector< index_t >::iterator surf_itr = map_itr->second.begin();
+                surf_itr != map_itr->second.end(); ++surf_itr ) {
+                index_t surf_id = *surf_itr ;
+
+                const Surface& cur_surf = model_.surface( surf_id ) ;
+                const GEO::Mesh& cur_surf_mesh = cur_surf.mesh() ;
+
+                for( index_t facet_itr = 0; facet_itr < cur_surf_mesh.facets.nb();
+                    ++facet_itr ) {
+                    index_t one = find_or_create_vertex( cur_surf_mesh, facet_itr, 0,
+                        new_mesh ) ;
+                    index_t two = find_or_create_vertex( cur_surf_mesh, facet_itr, 1,
+                        new_mesh ) ;
+                    index_t three = find_or_create_vertex( cur_surf_mesh, facet_itr,
+                        2, new_mesh ) ;
+                    new_mesh.facets.create_triangle( one, two, three ) ;
+                }
+            }
+
+            GEO::mesh_save( new_mesh,
+                "surf_reg_" + GEO::String::to_string( region_index ) + ".meshb" ) ;
+        }
+
+    }
+
+    index_t DuplicateInterfaceBuilder::find_or_create_vertex(
+        const GEO::Mesh& cur_surf_mesh,
+        index_t facet_itr,
+        index_t v,
+        GEO::Mesh& new_mesh ) const
+    {
+        const GEO::MeshFacets& cur_surf_mesh_facets = cur_surf_mesh.facets ;
+        const GEO::MeshVertices& cur_surf_mesh_verticess = cur_surf_mesh.vertices ;
+        ColocaterANN ann( new_mesh, ColocaterANN::VERTICES ) ;
+        std::vector< index_t > colocated ;
+        const vec3& cur_point = cur_surf_mesh.vertices.point(
+            cur_surf_mesh_facets.vertex( facet_itr, v ) ) ;
+        if( ann.get_colocated( cur_point, colocated ) ) {
+            ringmesh_assert( colocated.size() == 1 ) ;
+            return colocated[0] ;
+        }
+        return new_mesh.vertices.create_vertex( cur_point.data() ) ;
     }
 }

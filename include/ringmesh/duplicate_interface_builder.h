@@ -51,6 +51,10 @@ namespace RINGMesh {
     class GeoModel ;
 }
 
+namespace GEO {
+    class Mesh ;
+}
+
 namespace RINGMesh {
 
     class RINGMESH_API DuplicateInterfaceBuilder: public GeoModelBuilder {
@@ -60,8 +64,14 @@ namespace RINGMesh {
         virtual ~DuplicateInterfaceBuilder() ;
         void duplicate_interface( index_t interface_id_to_duplicate ) ;
 
-    private:
+    public:
         void get_new_surfaces( index_t interface_id_to_duplicate ) const ;
+    private:
+        index_t find_or_create_vertex(
+            const GEO::Mesh& cur_surf_mesh,
+            index_t facet_itr,
+            index_t v,
+            GEO::Mesh& new_mesh ) const ;
     } ;
 
 }
