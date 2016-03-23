@@ -91,6 +91,7 @@ namespace RINGMesh {
         void set_geo_model( const GeoModel& model ) ;
         const GeoModel* geo_model() const ;
         void initialize() ;
+        void need_to_update() ;
 
         void compute_colormap() ;
 

@@ -115,6 +115,11 @@ namespace RINGMesh {
         virtual ~MeshElementGfx()
         {
         }
+        void need_to_update()
+        {
+            buffer_objects_dirty_ = true ;
+            attributes_buffer_objects_dirty_ = true ;
+        }
 
         void draw_vertices()
         {
@@ -312,6 +317,22 @@ namespace RINGMesh {
         }
     }
 
+    void GeoModelGfx::need_to_update()
+    {
+        for( index_t c = 0; c < corners_.size(); c++ ) {
+            corners_[c]->need_to_update() ;
+        }
+        for( index_t l = 0; l < lines_.size(); l++ ) {
+            lines_[l]->need_to_update() ;
+        }
+        for( index_t s = 0; s < surfaces_.size(); s++ ) {
+            surfaces_[s]->need_to_update() ;
+        }
+        for( index_t r = 0; r < model_->nb_regions(); r++ ) {
+            regions_[r]->need_to_update() ;
+        }
+    }
+
     void GeoModelGfx::compute_colormap()
     {
         std::string command = GEO::CmdLine::get_arg( "attr:colormap" ) ;
@@ -348,12 +369,10 @@ namespace RINGMesh {
         index_t coordinate,
         const std::string& name )
     {
-        DEBUG( coordinate ) ;
         attribute_min_ = max_float64() ;
         attribute_max_ = min_float64() ;
         std::string attribute_name = get_attribute_name_with_coordinate( name,
             coordinate ) ;
-        DEBUG( attribute_name ) ;
         for( index_t r = 0; r < regions_.size(); r++ ) {
             GEO::ReadOnlyScalarAttributeAdapter attribute(
                 model_->region( r ).vertex_attribute_manager(), attribute_name ) ;
