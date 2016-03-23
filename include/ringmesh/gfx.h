@@ -61,7 +61,6 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
-
     struct Color {
         Color( unsigned char r_, unsigned char g_, unsigned char b_ )
             : r( r_ ), g( g_ ), b( b_ )
@@ -83,11 +82,10 @@ namespace RINGMesh {
 #define ringmesh_register_color_creator( type, name ) \
     geo_register_creator( ColorFactory, type, name )
 
-
     class RINGMESH_API GeoModelGfx {
     ringmesh_disable_copy( GeoModelGfx ) ;
-    friend class MeshElementGfx ;
-    friend class RegionGfx ;
+        friend class MeshElementGfx ;
+        friend class RegionGfx ;
     public:
         GeoModelGfx() ;
         ~GeoModelGfx() ;
@@ -97,8 +95,25 @@ namespace RINGMesh {
         void initialize() ;
 
         void compute_colormap() ;
-        void bind_cell_vertex_attribute( const std::string& name, index_t coordinate ) ;
-        void bind_cell_attribute( const std::string& name, index_t coordinate ) ;
+
+//        void set_scalar_attribute()
+        void set_cell_vertex_attribute(
+            const std::string& name,
+            index_t coordinate,
+            GLuint colormap_texture) ;
+        void set_cell_attribute(
+            const std::string& name,
+            index_t coordinate,
+            GLuint colormap_texture ) ;
+        void bind_facet_vertex_attribute(
+            const std::string& name,
+            index_t coordinate ) ;
+        void bind_facet_attribute( const std::string& name, index_t coordinate ) ;
+
+        void bind_edge_vertex_attribute(
+            const std::string& name,
+            index_t coordinate ) ;
+        void bind_edge_attribute( const std::string& name, index_t coordinate ) ;
 
         void draw_corners() ;
         void draw_lines() ;
@@ -176,7 +191,11 @@ namespace RINGMesh {
         void set_surface_regions_visibility( bool b ) ;
         void set_surface_region_visibility( index_t r, bool b ) ;
         void set_mesh_surface_regions_color( float r, float g, float b ) ;
-        void set_mesh_surface_region_color( index_t reg, float r, float g, float b ) ;
+        void set_mesh_surface_region_color(
+            index_t reg,
+            float r,
+            float g,
+            float b ) ;
         void set_mesh_surface_regions_visibility( bool b ) ;
         void set_mesh_surface_region_visibility( index_t r, bool b ) ;
         void set_mesh_surface_regions_size( index_t s ) ;
@@ -204,8 +223,11 @@ namespace RINGMesh {
         void set_cell_region_shrink( index_t m, double s ) ;
 
     private:
-        void compute_cell_vertex_attribute_range( index_t coordinate ) ;
-        void compute_cell_attribute_range( index_t coordinate) ;
+        void compute_cell_vertex_attribute_range( index_t coordinate,
+            const std::string& name ) ;
+        void compute_cell_attribute_range(
+            index_t coordinate,
+            const std::string& name ) ;
 
     private:
         /// The GeoModel associated to the graphics
@@ -219,10 +241,8 @@ namespace RINGMesh {
         std::vector< SurfaceGfx* > surfaces_ ;
         /// The graphics associated to each Region
         std::vector< RegionGfx* > regions_ ;
-        double cell_vertex_min_attr_ ;
-        double cell_vertex_max_attr_ ;
-        double cell_min_attr_ ;
-        double cell_max_attr_ ;
+        double attribute_max_ ;
+        double attribute_min_ ;
     } ;
 
 }
