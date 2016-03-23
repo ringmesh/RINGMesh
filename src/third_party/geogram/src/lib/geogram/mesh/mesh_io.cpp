@@ -2938,7 +2938,7 @@ namespace GEO {
                 ioflags.has_element(MESH_EDGES)
             ) {
                 M.edges.resize_store(nb_items);
-            }else if(
+            } else if(
                 name == "GEO::Mesh::facets" &&
                 ioflags.has_element(MESH_FACETS)
             ) {
@@ -3009,7 +3009,7 @@ namespace GEO {
             } else if(set_name == "GEO::Mesh::edges") {
                 if(ioflags.has_element(MESH_EDGES)) {
                     read_attribute(in, M.edges.attributes());
-                }
+                } 
             } else if(set_name == "GEO::Mesh::facets") {
                 if(ioflags.has_element(MESH_FACETS)) {
                     read_attribute(in, M.facets.attributes());
@@ -3062,8 +3062,12 @@ namespace GEO {
                     << std::endl;
                 return;
             }
-            
-            if(name == "GEO::Mesh::facets::facet_ptr") {
+            if(name == "GEO::Mesh::edges::edge_vertex") {
+                if(ioflags.has_element(MESH_EDGES)) {
+                    M.edges.edge_vertex_.resize(M.edges.nb()*2);
+                    in.read_attribute(M.edges.edge_vertex_.data());
+                }
+            } else if(name == "GEO::Mesh::facets::facet_ptr") {
                 if(ioflags.has_element(MESH_FACETS)) {
                     M.facets.is_simplicial_ = false;
                     M.facets.facet_ptr_.resize(M.facets.nb()+1);
@@ -3081,10 +3085,6 @@ namespace GEO {
                         M.facet_corners.corner_adjacent_facet_.data()
                     );
                 } 
-            } else if(name == "GEO::Mesh::edges::edge_vertex") {
-                if(ioflags.has_element(MESH_EDGES)) {
-                    in.read_attribute(M.edges.edge_vertex_.data());
-                }
             } else if(name == "GEO::Mesh::cells::cell_type") {
                 if(ioflags.has_element(MESH_CELLS)) {
                     M.cells.is_simplicial_ = false;
