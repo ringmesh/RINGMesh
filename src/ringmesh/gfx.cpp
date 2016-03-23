@@ -640,6 +640,12 @@ namespace RINGMesh {
             if( surfaces_[s]->get_surface_visible() ) surfaces_[s]->draw_surface() ;
         }
     }
+    void GeoModelGfx::set_surfaces_lighting( bool value )
+    {
+        for( index_t s = 0; s < surfaces_.size(); s++ ) {
+            surfaces_[s]->set_lighting( value ) ;
+        }
+    }
     /*!
      * Sets the surface color to all the surfaces
      * @param[in] r the red component of the color in [0.0, 1.0]
@@ -984,149 +990,12 @@ namespace RINGMesh {
         regions_[l]->set_mesh_width( s ) ;
     }
 
-    /*!
-     * Sets the surface color to all the surfaces
-     * @param[in] r the red component of the color in [0.0, 1.0]
-     * @param[in] g the green component of the color in [0.0, 1.0]
-     * @param[in] b the blue component of the color in [0.0, 1.0]
-     */
-    void GeoModelGfx::set_surface_regions_color( float r, float g, float b )
-    {
-        for( index_t reg = 0; reg < regions_.size(); reg++ ) {
-            set_surface_region_color( reg, r, g, b ) ;
-        }
-    }
-    /*!
-     * Sets the surface color
-     * @param[in] s the surface index
-     * @param[in] r the red component of the color in [0.0, 1.0]
-     * @param[in] g the green component of the color in [0.0, 1.0]
-     * @param[in] b the blue component of the color in [0.0, 1.0]
-     */
-    void GeoModelGfx::set_surface_region_color(
-        index_t reg,
-        float r,
-        float g,
-        float b )
-    {
-        ringmesh_assert( reg < regions_.size() ) ;
-        regions_[reg]->set_surface_color( r, g, b ) ;
-    }
-    /*!
-     * Sets the backface surface color to all the surfaces
-     * @param[in] r the red component of the color in [0.0, 1.0]
-     * @param[in] g the green component of the color in [0.0, 1.0]
-     * @param[in] b the blue component of the color in [0.0, 1.0]
-     */
-    void GeoModelGfx::set_backface_surface_regions_color( float r, float g, float b )
-    {
-        for( index_t reg = 0; reg < regions_.size(); reg++ ) {
-            set_backface_surface_region_color( reg, r, g, b ) ;
-        }
-    }
-    /*!
-     * Sets the backsurface surface color
-     * @param[in] s the surface index
-     * @param[in] r the red component of the color in [0.0, 1.0]
-     * @param[in] g the green component of the color in [0.0, 1.0]
-     * @param[in] b the blue component of the color in [0.0, 1.0]
-     */
-    void GeoModelGfx::set_backface_surface_region_color(
-        index_t reg,
-        float r,
-        float g,
-        float b )
-    {
-        ringmesh_assert( reg < regions_.size() ) ;
-        regions_[reg]->set_backface_surface_color( r, g, b ) ;
-    }
-    /*!
-     * Sets the surface visibility to all the surfaces
-     * @param[in] b the visibility
-     */
-    void GeoModelGfx::set_surface_regions_visibility( bool b )
+
+    void GeoModelGfx::set_cell_regions_lighting( bool value )
     {
         for( index_t r = 0; r < regions_.size(); r++ ) {
-            set_surface_region_visibility( r, b ) ;
+            regions_[r]->set_lighting( value ) ;
         }
-    }
-    /*!
-     * Sets the surface visibility
-     * @param[in] s the surface index
-     * @param[in] b the visibility
-     */
-    void GeoModelGfx::set_surface_region_visibility( index_t r, bool b )
-    {
-        ringmesh_assert( r < regions_.size() ) ;
-        surfaces_[r]->set_surface_visible( b ) ;
-    }
-    /*!
-     * Sets the mesh surface color to all the surfaces
-     * @param[in] r the red component of the color in [0.0, 1.0]
-     * @param[in] g the green component of the color in [0.0, 1.0]
-     * @param[in] b the blue component of the color in [0.0, 1.0]
-     */
-    void GeoModelGfx::set_mesh_surface_regions_color( float r, float g, float b )
-    {
-        for( index_t reg = 0; reg < regions_.size(); reg++ ) {
-            set_mesh_surface_region_color( reg, r, g, b ) ;
-        }
-    }
-    /*!
-     * Sets the mesh surface color
-     * @param[in] s the surface index
-     * @param[in] r the red component of the color in [0.0, 1.0]
-     * @param[in] g the green component of the color in [0.0, 1.0]
-     * @param[in] b the blue component of the color in [0.0, 1.0]
-     */
-    void GeoModelGfx::set_mesh_surface_region_color(
-        index_t reg,
-        float r,
-        float g,
-        float b )
-    {
-        ringmesh_assert( reg < regions_.size() ) ;
-        surfaces_[reg]->set_mesh_color( r, g, b ) ;
-    }
-    /*!
-     * Sets the mesh surface visibility to all the surfaces
-     * @param[in] b the visibility
-     */
-    void GeoModelGfx::set_mesh_surface_regions_visibility( bool b )
-    {
-        for( index_t r = 0; r < regions_.size(); r++ ) {
-            set_mesh_surface_region_visibility( r, b ) ;
-        }
-    }
-    /*!
-     * Sets the mesh surface visibility
-     * @param[in] s the surface index
-     * @param[in] b the visibility
-     */
-    void GeoModelGfx::set_mesh_surface_region_visibility( index_t r, bool b )
-    {
-        ringmesh_assert( r < regions_.size() ) ;
-        regions_[r]->set_show_mesh( b ) ;
-    }
-    /*!
-     * Sets the mesh surface size to all the surfaces
-     * @param[in] size the size
-     */
-    void GeoModelGfx::set_mesh_surface_regions_size( index_t size )
-    {
-        for( index_t r = 0; r < regions_.size(); r++ ) {
-            set_mesh_surface_region_size( r, size ) ;
-        }
-    }
-    /*!
-     * Sets the mesh surface size
-     * @param[in] s the surface index
-     * @param[in] size the size
-     */
-    void GeoModelGfx::set_mesh_surface_region_size( index_t r, index_t size )
-    {
-        ringmesh_assert( r < regions_.size() ) ;
-        regions_[r]->set_mesh_width( size ) ;
     }
 
     /*!
