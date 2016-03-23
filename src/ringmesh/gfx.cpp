@@ -64,7 +64,7 @@ namespace {
     using namespace RINGMesh ;
 
     void compute_attribute_range(
-        const GEO::ReadOnlyScalarAttributeAdapter& attribute,
+        GEO::ReadOnlyScalarAttributeAdapter& attribute,
         index_t coordinate,
         double& min,
         double& max )
@@ -80,18 +80,18 @@ namespace {
 }
 namespace RINGMesh {
 
-    define_color( yellow, 0xff, 0xff, 0x00 ) ;
-    define_color( violet, 0x7f, 0x00, 0x7f ) ;
-    define_color( indigo, 0xbf, 0x00, 0xbf ) ;
-    define_color( blue, 0x00, 0x00, 0xff ) ;
-    define_color( black, 0x00, 0x00, 0x00 ) ;
-    define_color( orange, 0xff, 0x7f, 0x00 ) ;
-    define_color( white, 0xff, 0xff, 0xff ) ;
-    define_color( red, 0xff, 0x00, 0x00 ) ;
-    define_color( green, 0x00, 0xff, 0x00 ) ;
-    define_color( brown, 0x66, 0x33, 0x00 ) ;
-    define_color( purple, 0xa0, 0x20, 0xf0 ) ;
-    define_color( pink, 0xff, 0x69, 0xb4 ) ;
+    define_color( yellow, 0xff, 0xff, 0x00 );
+    define_color( violet, 0x7f, 0x00, 0x7f );
+    define_color( indigo, 0xbf, 0x00, 0xbf );
+    define_color( blue, 0x00, 0x00, 0xff );
+    define_color( black, 0x00, 0x00, 0x00 );
+    define_color( orange, 0xff, 0x7f, 0x00 );
+    define_color( white, 0xff, 0xff, 0xff );
+    define_color( red, 0xff, 0x00, 0x00 );
+    define_color( green, 0x00, 0xff, 0x00 );
+    define_color( brown, 0x66, 0x33, 0x00 );
+    define_color( purple, 0xa0, 0x20, 0xf0 );
+    define_color( pink, 0xff, 0x69, 0xb4 );
 
     class MeshElementGfx: public GEO::MeshGfx {
     ringmesh_disable_copy( MeshElementGfx ) ;
@@ -250,11 +250,7 @@ namespace RINGMesh {
                 MeshElementGfx( gfx, region.mesh(), false ),
                 region_visible_( true ),
                 surface_visible_( false ),
-                edges_visible_( false ),
-                c_VAO_( 0 ),
-                cell_vertices_VB_( 0 ),
-                cell_indices_VB_( 0 ),
-                tex_cell_coord_VB_( 0 )
+                edges_visible_( false )
         {
             set_points_color( 0.0, 0.0, 0.0 ) ;
         }
@@ -293,6 +289,8 @@ namespace RINGMesh {
     GeoModelGfx::GeoModelGfx()
         : model_( nil ), corners_(), lines_(), surfaces_(), regions_()
     {
+        attribute_min_ = max_float64() ;
+        attribute_max_ = min_float64() ;
     }
 
     GeoModelGfx::~GeoModelGfx()
@@ -396,8 +394,10 @@ namespace RINGMesh {
         attribute_min_ = max_float64() ;
         attribute_max_ = min_float64() ;
         for( index_t r = 0; r < regions_.size(); r++ ) {
-            regions_[r]->compute_vertex_attribute_range( attribute_min_,
-                attribute_max_, coordinate, name ) ;
+            GEO::ReadOnlyScalarAttributeAdapter attribute(
+                model_->region( r ).vertex_attribute_manager(), name ) ;
+            compute_attribute_range( attribute, coordinate, attribute_min_,
+                attribute_max_ ) ;
         }
     }
 
@@ -409,8 +409,10 @@ namespace RINGMesh {
         attribute_max_ = min_float64() ;
 
         for( index_t r = 0; r < regions_.size(); r++ ) {
-            regions_[r]->compute_cell_attribute_range( attribute_min_,
-                attribute_max_, coordinate, name ) ;
+            GEO::ReadOnlyScalarAttributeAdapter attribute(
+                model_->region( r ).cell_attribute_manager(), name ) ;
+            compute_attribute_range( attribute, coordinate, attribute_min_,
+                attribute_max_ ) ;
         }
     }
 
@@ -419,6 +421,8 @@ namespace RINGMesh {
         index_t coordinate,
         GLuint colormap_texture )
     {
+        compute_cell_vertex_attribute_range( coordinate, name ) ;
+
         for( index_t r = 0; r < regions_.size(); r++ ) {
             regions_[r]->bind_vertex_attribute( name ) ;
         }
@@ -437,8 +441,8 @@ namespace RINGMesh {
         std::string attribute_vector = name + "["
             + GEO::String::to_string( coordinate ) + "]" ;
         for( index_t r = 0; r < regions_.size(); r++ ) {
-            regions_[r]->set_scalar_attribute( GEO::MESH_CELLS, name, attribute_min_, attribute_max_,
-                colormap_texture ) ;
+            regions_[r]->set_scalar_attribute( GEO::MESH_CELLS, name, attribute_min_,
+                attribute_max_, colormap_texture ) ;
         }
 
     }
