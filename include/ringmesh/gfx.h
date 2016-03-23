@@ -153,6 +153,7 @@ namespace RINGMesh {
         void set_vertex_line_size( index_t c, index_t s ) ;
 
         // Settings for the surfaces
+        void set_surfaces_lighting( bool value ) ;
         void set_surfaces_color( float r, float g, float b ) ;
         void set_surface_color( index_t c, float r, float g, float b ) ;
         void set_backface_surfaces_color( float r, float g, float b ) ;
@@ -189,27 +190,6 @@ namespace RINGMesh {
         void set_edge_regions_size( index_t s ) ;
         void set_edge_region_size( index_t l, index_t s ) ;
 
-        void set_surface_regions_color( float r, float g, float b ) ;
-        void set_surface_region_color( index_t m, float r, float g, float b ) ;
-        void set_backface_surface_regions_color( float r, float g, float b ) ;
-        void set_backface_surface_region_color(
-            index_t m,
-            float r,
-            float g,
-            float b ) ;
-        void set_surface_regions_visibility( bool b ) ;
-        void set_surface_region_visibility( index_t r, bool b ) ;
-        void set_mesh_surface_regions_color( float r, float g, float b ) ;
-        void set_mesh_surface_region_color(
-            index_t reg,
-            float r,
-            float g,
-            float b ) ;
-        void set_mesh_surface_regions_visibility( bool b ) ;
-        void set_mesh_surface_region_visibility( index_t r, bool b ) ;
-        void set_mesh_surface_regions_size( index_t s ) ;
-        void set_mesh_surface_region_size( index_t r, index_t s ) ;
-
         void set_cell_mesh_regions_color( float r, float g, float b ) ;
         void set_cell_mesh_region_color( index_t m, float r, float g, float b ) ;
         void set_cell_mesh_regions_visibility( bool b ) ;
@@ -217,6 +197,7 @@ namespace RINGMesh {
         void set_cell_mesh_regions_size( index_t s ) ;
         void set_cell_mesh_region_size( index_t m, index_t s ) ;
 
+        void set_cell_regions_lighting( bool value )  ;
         void set_cell_regions_color( float m, float g, float b ) ;
         void set_cell_region_color( index_t m, float r, float g, float b ) ;
         void set_cell_regions_color_type() ;
