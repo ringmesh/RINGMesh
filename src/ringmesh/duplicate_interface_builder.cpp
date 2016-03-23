@@ -66,7 +66,7 @@ namespace RINGMesh {
         index_t interface_to_duplicate_nb_children =
             interface_to_duplicate.nb_children() ;
 
-        resize_elements( GME::SURFACE, interface_to_duplicate_nb_children ) ;
+        create_elements( GME::SURFACE, interface_to_duplicate_nb_children ) ;
 
         for( index_t interface_child_itr = 0;
             interface_child_itr < interface_to_duplicate.nb_children();
