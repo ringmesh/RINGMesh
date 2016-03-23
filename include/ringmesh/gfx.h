@@ -84,8 +84,6 @@ namespace RINGMesh {
 
     class RINGMESH_API GeoModelGfx {
     ringmesh_disable_copy( GeoModelGfx ) ;
-        friend class MeshElementGfx ;
-        friend class RegionGfx ;
     public:
         GeoModelGfx() ;
         ~GeoModelGfx() ;
@@ -105,15 +103,25 @@ namespace RINGMesh {
             const std::string& name,
             index_t coordinate,
             GLuint colormap_texture ) ;
-        void bind_facet_vertex_attribute(
-            const std::string& name,
-            index_t coordinate ) ;
-        void bind_facet_attribute( const std::string& name, index_t coordinate ) ;
 
-        void bind_edge_vertex_attribute(
-            const std::string& name,
-            index_t coordinate ) ;
-        void bind_edge_attribute( const std::string& name, index_t coordinate ) ;
+        void compute_cell_vertex_attribute_range( index_t coordinate,
+            const std::string& name ) ;
+        void compute_cell_attribute_range(
+            index_t coordinate,
+            const std::string& name ) ;
+
+        void set_attribute_max( double max ) {
+            attribute_max_ = max ;
+        }
+        double get_attribute_max() const {
+            return attribute_max_ ;
+        }
+        void set_attribute_min( double min ) {
+            attribute_min_ = min ;
+        }
+        double get_attribute_min() const {
+            return attribute_min_ ;
+        }
 
         void draw_corners() ;
         void draw_lines() ;
@@ -223,11 +231,6 @@ namespace RINGMesh {
         void set_cell_region_shrink( index_t m, double s ) ;
 
     private:
-        void compute_cell_vertex_attribute_range( index_t coordinate,
-            const std::string& name ) ;
-        void compute_cell_attribute_range(
-            index_t coordinate,
-            const std::string& name ) ;
 
     private:
         /// The GeoModel associated to the graphics
