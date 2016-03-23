@@ -1193,12 +1193,12 @@ namespace RINGMesh {
         std::vector< index_t >& result ) const
     {
         index_t nb_points = ann_tree_->nb_points() ;
+        result.clear() ;
         if( nb_points == 0 )
         {
             return false ;
         }
         index_t nb_neighbors = std::min( index_t( 5 ), nb_points ) ;
-        result.clear() ;
         std::vector< index_t > neighbors ;
         index_t cur_neighbor = 0 ;
         index_t prev_neighbor = 0 ;
