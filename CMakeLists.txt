@@ -299,7 +299,7 @@ set(ringmesh_include ${ringmesh_include} ${generated_configure_file})
 # Group files of a project in directories
 # For this to work, all the files should be added to the sources of the project
 # and the global property USE_FOLDERS must be ON
-source_group("Zlib" FILES ${minizip_src} ${minizip_include})
+source_group("Minizip" FILES ${minizip_src} ${minizip_include})
 source_group("Source Files" FILES ${ringmesh_src})
 source_group("Header Files" FILES ${ringmesh_include})
 
