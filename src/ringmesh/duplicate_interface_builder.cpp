@@ -160,6 +160,7 @@ namespace RINGMesh {
                     map_itr->second.begin(), map_itr->second.end(),
                     cur_elt.index() ) ;
                 // One surface used for previous merging. Avoided.
+                // THESE SURFACES MUST BE REMOVED.
                 if( found != map_itr->second.end() ) {
                     continue ;
                 }
