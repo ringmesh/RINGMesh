@@ -87,6 +87,35 @@ namespace {
         return true ;
     }
 
+    index_t compute_nb_volume_connected_components( const GEO::Mesh& M )
+    {
+        static const index_t NO_COMPONENT = index_t( -1 ) ;
+        std::vector< index_t > component( M.cells.nb(), NO_COMPONENT ) ;
+        index_t nb_components = 0 ;
+        for( index_t c = 0; c < M.cells.nb(); c++ ) {
+            if( component[c] == NO_COMPONENT ) {
+                std::stack< index_t > S ;
+                S.push( c ) ;
+                component[c] = nb_components ;
+                do {
+                    index_t cur_c = S.top() ;
+                    S.pop() ;
+                    for( index_t c = M.cells.corners_begin( cur_c );
+                        c != M.cells.corners_end( cur_c ); c++ ) {
+                        index_t adj_c = M.cell_facets.adjacent_cell( c ) ;
+                        if( adj_c != GEO::NO_CELL
+                            && component[adj_c] == NO_COMPONENT ) {
+                            S.push( index_t( adj_c ) ) ;
+                            component[adj_c] = nb_components ;
+                        }
+                    }
+                } while( !S.empty() ) ;
+                nb_components++ ;
+            }
+        }
+        return nb_components ;
+    }
+
     /*!
      * @brief Count the number of times each vertex is in an edge or facet
      *
@@ -107,6 +136,34 @@ namespace {
                 ++nb[M.facet_corners.vertex( co )] ;
             }
         }
+        for( index_t f = 0; f < M.cells.nb(); ++f ) {
+            for( index_t co = M.cells.corners_begin( f );
+                co < M.cells.corners_end( f ); ++co ) {
+                ++nb[M.cell_corners.vertex( co )] ;
+            }
+        }
+    }
+
+    bool check_mesh_element_vertices_are_different(
+        std::vector< index_t >& vertices,
+        std::vector< index_t >& vertices_global )
+    {
+        ringmesh_assert(
+            std::count( vertices.begin(), vertices.end(), NO_ID ) == 0 ) ;
+        ringmesh_assert(
+            std::count( vertices_global.begin(), vertices_global.end(), NO_ID ) == 0 ) ;
+        // 0 is the default value of the model_vertex_id
+        // If we have only 0 either this is a degenerate facets, but most certainly
+        // model vertex ids are not good
+        ringmesh_assert(
+            std::count( vertices_global.begin(), vertices_global.end(), 0 )
+            != vertices_global.size() ) ;
+
+        std::sort( vertices.begin(), vertices.end() ) ;
+        std::sort( vertices_global.begin(), vertices_global.end() ) ;
+        return std::unique( vertices.begin(), vertices.end() ) != vertices.end()
+            || std::unique( vertices_global.begin(), vertices_global.end() )
+                != vertices_global.end() ;
     }
 
     /*!
@@ -122,22 +179,25 @@ namespace {
             corners_global[v] = S.model_vertex_id( f, v ) ;
             v++ ;
         }
-        ringmesh_assert(
-            std::count( corners.begin(), corners.end(), NO_ID ) == 0 ) ;
-        ringmesh_assert(
-            std::count( corners_global.begin(), corners_global.end(), NO_ID ) == 0 ) ;
-        // 0 is the default value of the model_vertex_id
-        // If we have only 0 either this is a degenerate facets, but most certainly
-        // model vertex ids are not good 
-        ringmesh_assert(
-            std::count( corners_global.begin(), corners_global.end(), 0 )
-                != corners_global.size() ) ;
+        return check_mesh_element_vertices_are_different( corners, corners_global ) ;
+    }
 
-        std::sort( corners.begin(), corners.end() ) ;
-        std::sort( corners_global.begin(), corners_global.end() ) ;
-        return std::unique( corners.begin(), corners.end() ) != corners.end()
-            || std::unique( corners_global.begin(), corners_global.end() )
-                != corners_global.end() ;
+    /*!
+     * @brief Returns true if the region cell is incident twice to the same vertex
+     * or if the cell volume is negative or inferior to epsilon
+     */
+    bool cell_is_degenerate( const Region& region, index_t c )
+    {
+        index_t nb_vertices_in_cell = region.nb_vertices_in_cell( c ) ;
+        std::vector< index_t > vertices( nb_vertices_in_cell, NO_ID ) ;
+        std::vector< index_t > vertices_global( nb_vertices_in_cell, NO_ID ) ;
+        for( index_t v = 0; v < nb_vertices_in_cell; v++ ) {
+            vertices[v] = region.gmme_vertex_index( c, v ) ;
+            vertices_global[v] = region.model_vertex_id( c, v ) ;
+        }
+        double volume = RINGMesh::mesh_cell_signed_volume( region.mesh(), c ) ;
+        return check_mesh_element_vertices_are_different( vertices, vertices_global )
+            || volume < epsilon ;
     }
 
     /*!
@@ -490,8 +550,9 @@ namespace RINGMesh {
 
         // Parent - High level elements are not mandatory
         // But if the model has elements of the parent type, the element must have a parent
-        if( parent_allowed( T ) ) {                   
-            bool model_has_parent_elements( model().nb_elements( parent_type( T ) ) > 0 ) ;
+        if( parent_allowed( T ) ) {
+            bool model_has_parent_elements(
+                model().nb_elements( parent_type( T ) ) > 0 ) ;
             if( model_has_parent_elements ) {
                 if( has_parent() ) {
                     const GME& E = parent() ;
@@ -946,9 +1007,9 @@ namespace RINGMesh {
                 << " isolated vertices " << std::endl ;
             valid = false ;
         }
-
         // No zero area facet
         // No facet incident to the same vertex check local and global indices
+
         index_t nb_degenerate = 0 ;
         for( index_t f = 0; f < mesh_.facets.nb(); f++ ) {
             if( facet_is_degenerate( *this, f ) ) {
@@ -1053,7 +1114,8 @@ namespace RINGMesh {
             // From the edge that is on boundary get the next vertex on this boundary
             // If the edge starting at p_in_next is on boundary, new_vertex is its next
             // If the edge ending at p_in_next is on boundary, new vertex is its prev
-            next_in_next = e0_on_boundary ?
+            next_in_next =
+                e0_on_boundary ?
                     next_in_facet( next_f, v_in_next ) : prev_v_in_next ;
         } else if( nb_around == 1 ) {
             // V must be in two border edges of facet f
@@ -1385,7 +1447,7 @@ namespace RINGMesh {
             }
         } while( !S.empty() ) ;
 
-        return static_cast<index_t> ( result.size() ) ;
+        return static_cast< index_t >( result.size() ) ;
     }
 
     /*!
@@ -1435,10 +1497,53 @@ namespace RINGMesh {
         if( !is_meshed() ) {
             return true ;
         } else {
-            GEO::Logger::warn( "GeoModel" )
-                << "TO DO : Mesh validity function on Regions is to implement "
-                << std::endl ;
-            return true ;
+            bool valid = true ;
+            // Check that the GEO::Mesh has the expected elements
+            // at least 3 vertices and one cell.
+            if( mesh_.vertices.nb() < 4 ) {
+                GEO::Logger::warn( "GeoModelElement" ) << gme_id()
+                    << " has less than 4 vertices " << std::endl ;
+                valid = false ;
+            }
+            if( mesh_.cells.nb() == 0 ) {
+                GEO::Logger::warn( "GeoModelElement" ) << gme_id()
+                    << " has no cells " << std::endl ;
+                valid = false ;
+            }
+
+            // No isolated vertices
+            std::vector< index_t > nb ;
+            count_vertex_occurences( mesh(), nb ) ;
+            index_t nb0 = static_cast< index_t >( std::count( nb.begin(), nb.end(),
+                0 ) ) ;
+            if( nb0 > 0 ) {
+                GEO::Logger::warn( "GeoModelElement" ) << gme_id() << " mesh has "
+                    << nb0 << " isolated vertices " << std::endl ;
+                valid = false ;
+            }
+
+            // No cell with negative volume
+            // No cell incident to the same vertex check local and global indices
+            index_t nb_degenerate = 0 ;
+            for( index_t c = 0; c < mesh_.cells.nb(); c++ ) {
+                if( cell_is_degenerate( *this, c ) ) {
+                    nb_degenerate++ ;
+                }
+            }
+            if( nb_degenerate != 0 ) {
+                GEO::Logger::warn( "GeoModelElement" ) << gme_id() << " mesh has "
+                    << nb_degenerate << " degenerate cells " << std::endl ;
+                valid = false ;
+            }
+
+            // One connected component
+            index_t cc = compute_nb_volume_connected_components( mesh_ ) ;
+            if( cc != 1 ) {
+                GEO::Logger::warn( "GeoModelElement" ) << gme_id() << " mesh has "
+                    << cc << " connected components " << std::endl ;
+                valid = false ;
+            }
+            return valid ;
         }
     }
 
@@ -1455,7 +1560,7 @@ namespace RINGMesh {
         if( ann_ ) delete ann_ ;
     }
 
-    /*! 
+    /*!
      * @brief Create an AABB tree for a Surface
      * @pre The Surface mesh must be simplicial
      * @warning SIDE EFFECTS: The Surface mesh vertices are reordered.
@@ -1475,7 +1580,7 @@ namespace RINGMesh {
             ringmesh_assert( surface_.mesh().facets.are_simplices() ) ;
 
             // Very bad side effect
-            // The root cause of the problem is the duplication of many things 
+            // The root cause of the problem is the duplication of many things
             // in our GeoModel structure [JP]
             M.mesh.vertices.clear() ;
 

@@ -1164,6 +1164,10 @@ namespace RINGMesh {
                 build_colocater_ann_cells( mesh ) ;
                 break ;
             }
+            case CELL_FACETS: {
+                build_colocater_ann_cell_facets( mesh ) ;
+                break ;
+            }
         }
     }
 
@@ -1290,6 +1294,21 @@ namespace RINGMesh {
             vec3 center = GEO::Geom::mesh_facet_center( mesh, i ) ;
             index_t index_in_ann = 3 * i ;
             fill_ann_points( index_in_ann, center ) ;
+        }
+        ann_tree_->set_points( nb_vertices, ann_points_ ) ;
+    }
+
+    void ColocaterANN::build_colocater_ann_cell_facets( const GEO::Mesh& mesh )
+    {
+        index_t nb_vertices = mesh.cell_facets.nb() ;
+        ann_points_ = new double[nb_vertices * 3] ;
+        index_t index_in_ann = 0 ;
+        for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
+            for( index_t f = 0; f < mesh.cells.nb_facets( c ); f++ ) {
+                vec3 center = mesh_cell_facet_center( mesh, c, f ) ;
+                fill_ann_points( index_in_ann, center ) ;
+                index_in_ann += 3 ;
+            }
         }
         ann_tree_->set_points( nb_vertices, ann_points_ ) ;
     }
