@@ -1505,11 +1505,6 @@ namespace RINGMesh {
                     << " has less than 4 vertices " << std::endl ;
                 valid = false ;
             }
-            if( mesh_.cells.nb() == 0 ) {
-                GEO::Logger::warn( "GeoModelElement" ) << gme_id()
-                    << " has no cells " << std::endl ;
-                valid = false ;
-            }
 
             // No isolated vertices
             std::vector< index_t > nb ;
