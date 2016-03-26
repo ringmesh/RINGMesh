@@ -1132,13 +1132,16 @@ namespace {
                     set_invalid_model() ;
                 }
             }
-            // Check the consistency between Surface facets and Region cell facets
-            GEO::Mesh mesh ;
-            geomodel().mesh.copy_mesh( mesh ) ;
-            ColocaterANN ann( mesh, ColocaterANN::CELL_FACETS ) ;
-            for( index_t i = 0; i < geomodel().nb_surfaces(); ++i ) {
-                if( !is_surface_conformal_to_volume( geomodel().surface( i ), ann ) ) {
-                    set_invalid_model() ;
+            if( geomodel().mesh.cells.nb() > 0 ) {
+                // Check the consistency between Surface facets and Region cell facets
+                GEO::Mesh mesh ;
+                geomodel().mesh.copy_mesh( mesh ) ;
+                ColocaterANN ann( mesh, ColocaterANN::CELL_FACETS ) ;
+                for( index_t i = 0; i < geomodel().nb_surfaces(); ++i ) {
+                    if( !is_surface_conformal_to_volume( geomodel().surface( i ),
+                        ann ) ) {
+                        set_invalid_model() ;
+                    }
                 }
             }
         }
