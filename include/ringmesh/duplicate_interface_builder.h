@@ -67,9 +67,14 @@ namespace RINGMesh {
     public:
         void get_new_surfaces( index_t interface_id_to_duplicate ) const ;
     private:
-        index_t find_or_create_vertex(
+        index_t find_or_create_vertex_facet(
             const GEO::Mesh& cur_surf_mesh,
             index_t facet_itr,
+            index_t v,
+            GEO::Mesh& new_mesh ) const ;
+        index_t find_or_create_vertex_edge(
+            const GEO::Mesh& cur_line_mesh,
+            index_t edge_itr,
             index_t v,
             GEO::Mesh& new_mesh ) const ;
     } ;
