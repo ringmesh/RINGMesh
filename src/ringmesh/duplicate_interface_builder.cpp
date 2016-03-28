@@ -123,8 +123,6 @@ namespace RINGMesh {
             GEO::Mesh new_surface_mesh ;
             // first = line index in geomodel, second = count.
             std::map< index_t, index_t > all_surface_lines ; // TODO better to handle that with boolean?
-            // first = contact index in geomodel, second = vector of line indexes.
-            std::map< index_t, std::vector< index_t > > contact_to_lines ;
 
             index_t region_index = map_itr->first ;
             for( std::vector< index_t >::iterator surf_itr = map_itr->second.begin();
@@ -163,15 +161,6 @@ namespace RINGMesh {
                         all_surface_lines[cur_line_gme.index()] = 0 ; // initialization
                     }
                     ++all_surface_lines[cur_line_gme.index()] ;
-                    const GeoModelElement& cur_parent_gme = cur_line_gme.parent() ;
-                    ringmesh_assert( cur_parent_gme.type() == GME::CONTACT ) ;
-                    if( contact_to_lines.find( cur_parent_gme.index() )
-                        == contact_to_lines.end() ) {
-                        contact_to_lines[cur_parent_gme.index()] = std::vector<
-                            index_t >() ; // TODO necessary???
-                    }
-                    contact_to_lines[cur_parent_gme.index()].push_back(
-                        cur_line_gme.index() ) ;
                 }
             }
 
@@ -193,49 +182,7 @@ namespace RINGMesh {
                     name += ".meshb" ;
                     GEO::mesh_save(
                         model_.line( all_surface_lines_itr->first ).mesh(), name ) ;
-                    std::map< index_t, std::vector< index_t > >::iterator bad_contact =
-                        contact_to_lines.find(
-                            model_.line( all_surface_lines_itr->first ).parent().index() ) ;
-                    if( bad_contact != contact_to_lines.end() ) {
-                        contact_to_lines.erase( bad_contact ) ;
-                    }
                 }
-            }
-
-            // All the lines good and to merged (bad have been deleted in the previous
-            // for loop.
-            index_t oo = 0 ;
-            for( std::map< index_t, std::vector< index_t > >::iterator contact_to_lines_itr =
-                contact_to_lines.begin();
-                contact_to_lines_itr != contact_to_lines.end();
-                ++contact_to_lines_itr ) {
-
-                index_t cur_contact_id = contact_to_lines_itr->first ;
-                GEO::Mesh new_line_mesh ;
-                for( std::vector< index_t >::iterator contact_line_itr =
-                    contact_to_lines_itr->second.begin();
-                    contact_line_itr != contact_to_lines_itr->second.end();
-                    ++contact_line_itr ) {
-                    index_t cur_line = *contact_line_itr ;
-                    const GEO::Mesh& cur_line_mesh = model_.line( cur_line ).mesh() ;
-
-                    for( index_t edge_itr = 0; edge_itr < cur_line_mesh.edges.nb();
-                        ++edge_itr ) {
-                        index_t one = find_or_create_vertex_edge( cur_line_mesh,
-                            edge_itr, 0, new_line_mesh ) ;
-                        index_t two = find_or_create_vertex_edge( cur_line_mesh,
-                            edge_itr, 1, new_line_mesh ) ;
-                        new_surface_mesh.edges.create_edge( one, two ) ;
-                    }
-                }
-
-                std::string name = "merged_line_contact_" ;
-                name += GEO::String::to_string( cur_contact_id ) ;
-                name += "_nb_" ;
-                name += GEO::String::to_string( oo ) ;
-                name += ".meshb" ;
-                GEO::mesh_save( new_line_mesh, name ) ;
-                ++oo ;
             }
 
 #if 0
