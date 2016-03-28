@@ -505,6 +505,7 @@ namespace GLUP {
             "#extension GL_OES_texture_3D : enable \n"
             "#extension GL_OES_standard_derivatives : enable \n"
             "#extension GL_OES_geometry_shader : enable \n"
+            "#extension GL_OES_tessellation_shader : enable \n"            
             "const bool ES_profile = true; \n";
         
         return use_ES_profile_ ? ES_declarations : nothing_to_declare;
