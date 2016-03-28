@@ -103,6 +103,7 @@ namespace GEO {
         attribute_min_ = 0.0;
         attribute_max_ = 0.0;
         attribute_colormap_texture_ = 0;
+        attribute_repeat_ = 1;
     }
 
     MeshGfx::~MeshGfx() {
@@ -828,7 +829,8 @@ namespace GEO {
         MeshElementsFlags subelements,
         const std::string& name,
         double attr_min, double attr_max,
-        GLuint colormap_texture
+        GLuint colormap_texture,
+        index_t repeat
     ) {
         if(
             subelements != attribute_subelements_ ||
@@ -840,6 +842,7 @@ namespace GEO {
         attribute_name_ = name;
         attribute_min_ = attr_min;
         attribute_max_ = attr_max;
+        attribute_repeat_ = repeat;
         attribute_colormap_texture_ = colormap_texture;
 
         const MeshSubElementsStore& mesh_subelements =
@@ -967,11 +970,6 @@ namespace GEO {
         glupTextureType(GLUP_TEXTURE_2D); // TODO: 1D
         glupTextureMode(GLUP_TEXTURE_REPLACE);
 
-        // TODO: specify filtering mode from API
-        // Last parameter changed to GL_LINEAR for smooth rendering [RINGMesh]
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, attribute_colormap_texture_);
 
@@ -986,6 +984,7 @@ namespace GEO {
         } else {
             d = 1.0 / d;
         }
+        d *= double(geo_max(attribute_repeat_, 1u));
         M[0] =  d;
         M[12] = -d*attribute_min_;
         M[15] = 1.0;

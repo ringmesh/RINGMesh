@@ -566,7 +566,8 @@ namespace GEO {
             MeshElementsFlags subelements,
             const std::string& name,
             double attr_min, double attr_max,
-            GLuint colormap_texture
+            GLuint colormap_texture,
+            index_t repeat = 1
         );
 
         /**
@@ -577,6 +578,7 @@ namespace GEO {
             attribute_min_ = 0.0;
             attribute_max_ = 0.0;
             attribute_colormap_texture_ = 0;
+            attribute_repeat_ = 1;
         }
         
     protected:
@@ -801,6 +803,7 @@ namespace GEO {
         double attribute_min_;
         double attribute_max_;
         GLuint attribute_colormap_texture_;
+        index_t attribute_repeat_;
         ReadOnlyScalarAttributeAdapter attribute_;
     };
 

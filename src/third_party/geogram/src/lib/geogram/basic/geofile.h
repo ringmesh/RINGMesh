@@ -128,8 +128,15 @@ namespace GEO {
         const std::string& current_chunk_class() const {
             return current_chunk_class_;
         }
+
+        /**
+         * \brief Gets the size of the current chunk.
+         * \return the size of the current chunk, in bytes
+         */
+        long current_chunk_size() const {
+            return current_chunk_size_;
+        }
         
-    protected:
         /**
          * \brief Internal representation of attributes.
          */

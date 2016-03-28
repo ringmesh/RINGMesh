@@ -81,10 +81,10 @@ int main(int argc, char** argv) {
         }
 
         CmdLine::declare_arg(
-            "reorder", false,
-            "reorder tets and vertices (for comparing algos)"
+            "convex_hull", false,
+            "compute just the convex hull of the points"
         );
-
+        
         if(
             !CmdLine::parse(
                 argc, argv, filenames, "pointsfile <outputfile|none>"
@@ -123,11 +123,22 @@ int main(int argc, char** argv) {
         Logger::out("Delaunay")
             << "Using " << CmdLine::get_arg("algo:delaunay") << std::endl;
 
-
+        bool convex_hull_only = CmdLine::get_arg_bool("convex_hull");
+        
         Delaunay_var delaunay = Delaunay::create(3);
 
         {
             Stopwatch W("Delaunay");
+
+            //   If we want the convex hull, we keep the infinite facets,
+            // because the convex hull can be retreived as the finite facets
+            // of the infinite cells (note: it would be also possible to
+            // throw away the infinite cells and get the convex hull as
+            // the facets adjacent to no cell).
+            if(convex_hull_only) {
+                delaunay->set_keeps_infinite(true);
+            }
+            
             delaunay->set_vertices(
                 M_in.vertices.nb(), M_in.vertices.point_ptr(0)
             );
@@ -138,40 +149,63 @@ int main(int argc, char** argv) {
 
         if(output) {
             vector<double> pts(delaunay->nb_vertices() * 3);
-            vector<index_t> tet2v(delaunay->nb_cells() * 4);
             for(index_t v = 0; v < delaunay->nb_vertices(); ++v) {
                 pts[3 * v] = delaunay->vertex_ptr(v)[0];
                 pts[3 * v + 1] = delaunay->vertex_ptr(v)[1];
                 pts[3 * v + 2] = delaunay->vertex_ptr(v)[2];
             }
-            for(index_t t = 0; t < delaunay->nb_cells(); ++t) {
-                tet2v[4 * t] = index_t(delaunay->cell_vertex(t, 0));
-                tet2v[4 * t + 1] = index_t(delaunay->cell_vertex(t, 1));
-                tet2v[4 * t + 2] = index_t(delaunay->cell_vertex(t, 2));
-                tet2v[4 * t + 3] = index_t(delaunay->cell_vertex(t, 3));
-            }
-            M_out.cells.assign_tet_mesh(3, pts, tet2v, true);
-            M_out.show_stats();
 
-            //  Reorder the tetrahedra and the vertices indices
-            // in the tetrahedra, to allow comparing different
-            // algorithms.
-            if(CmdLine::get_arg_bool("reorder")) {
-                Logger::div("Re-ordering the mesh");
-                // TODO
-                geo_assert_not_reached;
-                /*
-                vector<index_t>& tet_vertices =
-                    MeshMutator::tet_vertices(M_out);
-                for(index_t t = 0; t < M_out.nb_tets(); ++t) {
-                    std::sort(
-                        tet_vertices.begin() + std::ptrdiff_t(4 * t),
-                        tet_vertices.begin() + std::ptrdiff_t(4 * (t + 1))
-                    );
+            if(convex_hull_only) {
+                
+                // The convex hull can be retrieved as the finite facets
+                // of the infinite cells (note: it would be also possible to
+                // throw away the infinite cells and get the convex hull as
+                // the facets adjacent to no cell). Here we use the infinite
+                // cells to show an example with them.
+
+
+                // This block is just a sanity check
+                {
+                    for(index_t t=0; t < delaunay->nb_finite_cells(); ++t) {
+                        geo_debug_assert(delaunay->cell_is_finite(t));
+                    }
+                
+                    for(index_t t=delaunay->nb_finite_cells();
+                        t < delaunay->nb_cells(); ++t) {
+                        geo_debug_assert(delaunay->cell_is_infinite(t));
+                    }
                 }
-                */
-            }
+                
+                vector<index_t> tri2v;
 
+                // This iterates on the infinite cells
+                for(
+                    index_t t = delaunay->nb_finite_cells();
+                    t < delaunay->nb_cells(); ++t
+                ) {
+                    if(delaunay->cell_is_infinite(t)) {
+                        for(index_t lv=0; lv<4; ++lv) {
+                            signed_index_t v = delaunay->cell_vertex(t,lv);
+                            if(v != -1) {
+                                tri2v.push_back(index_t(v));
+                            }
+                        }
+                    }
+                }
+                M_out.facets.assign_triangle_mesh(3, pts, tri2v, true);
+                
+            } else {
+                vector<index_t> tet2v(delaunay->nb_cells() * 4);
+                for(index_t t = 0; t < delaunay->nb_cells(); ++t) {
+                    tet2v[4 * t] = index_t(delaunay->cell_vertex(t, 0));
+                    tet2v[4 * t + 1] = index_t(delaunay->cell_vertex(t, 1));
+                    tet2v[4 * t + 2] = index_t(delaunay->cell_vertex(t, 2));
+                    tet2v[4 * t + 3] = index_t(delaunay->cell_vertex(t, 3));
+                }
+                M_out.cells.assign_tet_mesh(3, pts, tet2v, true);
+            }
+            M_out.show_stats();
+                
             Logger::div("Saving the result");
             MeshIOFlags flags;
             flags.set_element(MESH_CELLS);

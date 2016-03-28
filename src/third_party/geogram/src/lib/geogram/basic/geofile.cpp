@@ -260,12 +260,12 @@ namespace GEO {
 
     const std::string& InputGeoFile::next_chunk() {
 
-        // If the file pointer did not advance between
-        // two consecutive calls of next_chunk, it
+        // If the file pointer did not advance as expected
+        // between two consecutive calls of next_chunk, it
         // means that the client code does not want to
         // read the current chunk, then it needs to be
         // skipped.
-        if(gztell(file_) == current_chunk_file_pos_) {
+        if(gztell(file_) != current_chunk_file_pos_ + current_chunk_size_) {
             skip_chunk();
         }
 
@@ -338,15 +338,20 @@ namespace GEO {
         if(size_t(check) != size) {
             throw GeoFileException(
                 "Could not read attribute " + current_attribute_->name +
-                " in set " + current_attribute_set_->name
+                " in set " + current_attribute_set_->name +
+                " (" + String::to_string(check) + "/"
+                + String::to_string(size) + " bytes read)"
             );
         }
         check_chunk_size();
     }
 
     void InputGeoFile::skip_chunk() {
-        geo_assert(gztell(file_) == current_chunk_file_pos_);
-        gzseek(file_, current_chunk_size_, SEEK_CUR);
+        gzseek(
+            file_,
+            current_chunk_size_ + current_chunk_file_pos_,
+            SEEK_SET
+        );
     }
 
     void InputGeoFile::skip_attribute_set() {
