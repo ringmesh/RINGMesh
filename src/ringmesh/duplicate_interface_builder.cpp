@@ -152,8 +152,14 @@ namespace RINGMesh {
                     const GeoModelElement& cur_line_gme = cur_surf.boundary(
                         line_itr ) ;
                     ringmesh_assert( cur_line_gme.type() == GME::LINE ) ;
+
+                    const Line& ll = dynamic_cast< const Line& >( cur_line_gme ) ;
+                    GEO::mesh_save( ll.mesh(),
+                        "line_" + GEO::String::to_string( line_itr ) + ".meshb" ) ;
+
                     if( all_surface_lines.find( cur_line_gme.index() )
                         == all_surface_lines.end() ) {
+                        DEBUG("initialization") ;
                         all_surface_lines[cur_line_gme.index()] = 0 ; // initialization
                     }
                     ++all_surface_lines[cur_line_gme.index()] ;
