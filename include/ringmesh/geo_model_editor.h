@@ -310,10 +310,6 @@ namespace RINGMesh {
             GeoModelElement& lhs,
             const GeoModelElement& rhs ) ;
 
-        /*!
-         * @brief Creates an empty element of the right type in the GeoModel
-         */
-        GME* new_element( GME::TYPE type, index_t id ) ;
         GME* new_element( GME::TYPE type ) ;
 
     protected:

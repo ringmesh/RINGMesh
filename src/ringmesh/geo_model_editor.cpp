@@ -73,7 +73,7 @@ namespace RINGMesh {
             GME* E = new_element( type ) ;
             ringmesh_assert( E != nil ) ;
 
-            model_.modifiable_elements( type ).push_back( E ) ;                
+            model_.modifiable_elements( type ).push_back( E ) ;
             return E->gme_id();
         } else {
             ringmesh_assert_not_reached;
@@ -87,7 +87,7 @@ namespace RINGMesh {
         if( type >= GME::NO_TYPE ) {
             return NO_ID ;
         }
-        const GeoModelElementFactory& gmef = model_.X( type ) ;
+        const GeoModel::GeoModelElementFactory& gmef = model_.X( type ) ;
         std::vector< GME* >& store = model_.modifiable_elements( type ) ;
         index_t old_size = static_cast<index_t> ( store.size() ) ;
         index_t new_size = old_size + nb ;
@@ -95,7 +95,6 @@ namespace RINGMesh {
         for( index_t i = old_size; i < new_size; i++ ) {
             ringmesh_assert( store[i] == nil ) ;
             store[i] = gmef.new_element( i ) ;
-//            store[i] = new_element( type, i ) ;
         }
         return old_size ;
     }
@@ -572,11 +571,12 @@ namespace RINGMesh {
         assert_element_creation_allowed() ;
         for( index_t t = GME::CORNER; t < GME::NO_TYPE; ++t ) {
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;
+            const GeoModel::GeoModelElementFactory& gmef = model_.X( T ) ;
             std::vector< GME* >& store = model_.modifiable_elements( T ) ;
-            store.resize( from.nb_elements( T ), nil ) ;
+            store.resize( from.nb_elements( T ), nil ) ;//@todo use create_elements???
 
             for( index_t e = 0; e < model_.nb_elements( T ); ++e ) {
-                store[e] = new_element( T, e ) ;
+                store[e] = gmef.new_element( e ) ;
                 ringmesh_assert( store[ e ] != nil ) ;
             }
             RINGMESH_PARALLEL_LOOP
@@ -676,28 +676,11 @@ namespace RINGMesh {
         }
     }
 
-    GME* GeoModelEditor::new_element( GME::TYPE T, index_t id )
-    {
-        assert_element_creation_allowed() ;
-        if( T == GME::CORNER ) {
-            return new Corner( model(), id ) ;
-        } else if( T == GME::LINE ) {
-            return new Line( model(), id ) ;
-        } else if( T == GME::SURFACE ) {
-            return new Surface( model(), id ) ;
-        } else if( T == GME::REGION ) {
-            return new Region( model(), id ) ;
-        } else if( T > GME::REGION && T < GME::NO_TYPE ) {
-            return new GeoModelElement( model(), T, id ) ;
-        } else {
-            return nil ;
-        }
-    }
-    
     GME* GeoModelEditor::new_element( GME::TYPE T )
     {
         index_t id = model_.nb_elements( T ) ;
-        return new_element( T, id ) ;
+        const GeoModel::GeoModelElementFactory& gmef = model_.X( T ) ;
+        return gmef.new_element( id ) ;
     }
 
 
