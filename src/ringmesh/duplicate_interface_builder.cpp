@@ -108,6 +108,20 @@ namespace RINGMesh {
             interface_to_duplicate.nb_children() ;
         ringmesh_assert(interface_to_duplicate_nb_children >= 1) ;
 
+        //////////////////////////////////////////
+        // copy paste from void GeoModelEditor::remove_elements( const std::set< gme_t >& elements )
+        std::vector< std::vector< index_t > > to_erase_by_type ;
+        to_erase_by_type.reserve( GME::NO_TYPE ) ;
+        for( index_t i = GME::CORNER; i < GME::NO_TYPE; ++i ) {
+            to_erase_by_type.push_back(
+                std::vector< index_t >(
+                    model_.nb_elements( static_cast< GME::TYPE >( i ) ), 0 ) ) ;
+        }
+        // Delete of the interface (will be replaced by a custom interface with
+        // side informations)
+        to_erase_by_type[GME::INTERFACE][interface_id_to_duplicate] = NO_ID ;
+        //////////////////////////////////////////
+
         // minus = false, plus = true
         std::map< index_t, std::vector< index_t > > surfaces_boundary_regions_side_minus ;
         std::map< index_t, std::vector< index_t > > surfaces_boundary_regions_side_plus ;

@@ -1047,6 +1047,44 @@ namespace RINGMesh {
         RegionTools tools ;
     } ;
 
+
+    class RINGMESH_API TwoSideInterface: public GeoModelMeshElement {
+        friend class GeoModelEditor ;
+        friend class GeoModelBuilder ;
+    public:
+        TwoSideInterface( const GeoModel& model, index_t id )
+            : GeoModelMeshElement( model, INTERFACE, id )
+        {
+        }
+
+        TwoSideInterface(
+            const GeoModel& model,
+            index_t id,
+            const std::string& name,
+            GEOL_FEATURE geological_feature )
+            : GeoModelMeshElement( model, INTERFACE, id, name, geological_feature )
+        {
+        }
+
+        ~TwoSideInterface()
+        {
+        }
+
+        const std::vector< index_t >& side_plus() const
+        {
+            return side_plus_ ;
+        }
+
+        const std::vector< index_t >& side_minus() const
+        {
+            return side_minus_ ;
+        }
+
+    private :
+        std::vector< index_t > side_plus_ ;
+        std::vector< index_t > side_minus_ ;
+    } ;
+
 } // namespace
 
 #endif
