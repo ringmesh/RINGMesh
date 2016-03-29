@@ -265,6 +265,11 @@ namespace RINGMesh {
                 }
             }
 
+            // Create RINGMesh::Surface and fill it.
+            const_cast< DuplicateInterfaceBuilder* >( this )->create_elements(
+                GME::SURFACE, 1 ) ;
+            // todo fill the surface this boundaries...
+            to_erase_by_type[GME::SURFACE].push_back( 0 ) ;
             GEO::mesh_save( new_surface_mesh,
                 "merged_surf_reg_" + GEO::String::to_string( region_index )
                     + side_name + ".meshb" ) ;
