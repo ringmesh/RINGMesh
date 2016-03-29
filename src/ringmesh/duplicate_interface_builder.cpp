@@ -133,7 +133,7 @@ namespace RINGMesh {
             const GeoModelElement& cur_child = interface_to_duplicate.child(
                 interface_child_itr ) ;
             ringmesh_assert( cur_child.type() == GME::SURFACE ) ;
-            DEBUG(cur_child.index()) ;
+            to_erase_by_type[GME::SURFACE][cur_child.index()] = NO_ID ;
 
             const index_t nb_in_boundary_cur_child = cur_child.nb_in_boundary() ;
             ringmesh_assert( nb_in_boundary_cur_child == 1 || nb_in_boundary_cur_child == 2 ) ;
@@ -204,15 +204,17 @@ namespace RINGMesh {
             }
         }
 
-        build_merged_and_bad_lines( surfaces_boundary_regions_side_plus, "_plus" ) ;
-        build_merged_and_bad_lines( surfaces_boundary_regions_side_minus,
-            "_minus" ) ;
+        build_merged_and_bad_lines( surfaces_boundary_regions_side_plus, "_plus",
+            to_erase_by_type ) ;
+        build_merged_and_bad_lines( surfaces_boundary_regions_side_minus, "_minus",
+            to_erase_by_type ) ;
 
     }
 
     void DuplicateInterfaceBuilder::build_merged_and_bad_lines(
         const std::map< index_t, std::vector< index_t > >& surfaces_boundary_regions,
-        const std::string& side_name ) const
+        const std::string& side_name,
+        std::vector< std::vector< index_t > >& to_erase_by_type ) const
     {
         for( std::map< index_t, std::vector< index_t > >::const_iterator map_itr =
             surfaces_boundary_regions.begin();
@@ -282,6 +284,8 @@ namespace RINGMesh {
                     name += ".meshb" ;
                     GEO::mesh_save(
                         model_.line( all_surface_lines_itr->first ).mesh(), name ) ;
+                    to_erase_by_type[GME::LINE][all_surface_lines_itr->first] =
+                        NO_ID ;
                 }
             }
         }
