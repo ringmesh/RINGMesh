@@ -234,6 +234,12 @@ namespace RINGMesh {
             return wells_ ;
         }
 
+        const GeoModelElementFactory& X( GME::TYPE type ) const {
+            ringmesh_assert( type < GME::NO_TYPE ) ;
+            ringmesh_assert( X_[type] != nil ) ;
+            return *X_[type] ;
+        }
+
     private:
         /*!
          * @brief Convert a global BME index into a typed index
@@ -433,6 +439,8 @@ namespace RINGMesh {
          * @todo Does it really have to be an attribute of GeoModel ? [JP]
          */
         const WellGroup* wells_ ;
+
+        GeoModelElementFactory* X_[GME::NO_TYPE] ;
     } ;
 
 }

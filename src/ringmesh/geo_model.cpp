@@ -53,6 +53,7 @@ namespace RINGMesh {
             wells_( nil )
     {
         /// @todo Review: This usage of this pointer in initialization list is a time bomb [JP]
+        X_[GME::CORNER] = new CornerFactory( *this ) ;
     }
 
     GeoModel::~GeoModel()

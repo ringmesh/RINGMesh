@@ -1047,6 +1047,31 @@ namespace RINGMesh {
         RegionTools tools ;
     } ;
 
-} // namespace
+    class RINGMESH_API GeoModelElementFactory {
+    ringmesh_disable_copy( GeoModelElementFactory ) ;
+    public:
+        virtual GME* new_element( index_t id ) const = 0 ;
+
+    protected:
+        GeoModelElementFactory( const GeoModel& model )
+            : model_( model )
+        {
+        }
+        virtual ~GeoModelElementFactory()
+        {
+        }
+
+    protected:
+        const GeoModel& model_ ;
+    } ;
+
+    class RINGMESH_API CornerFactory: public GeoModelElementFactory {
+    ringmesh_disable_copy( CornerFactory ) ;
+    public:
+        CornerFactory( const GeoModel& model ) ;
+        GME* new_element( index_t id ) const ;
+    } ;
+
+}
 
 #endif

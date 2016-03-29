@@ -1555,4 +1555,14 @@ namespace RINGMesh {
         return *ann_ ;
     }
 
+    CornerFactory::CornerFactory( const GeoModel& model )
+        : GeoModelElementFactory( model )
+    {
+    }
+
+    GME* CornerFactory::new_element( index_t id ) const
+    {
+        return new Corner( model_, id ) ;
+    }
+
 }
