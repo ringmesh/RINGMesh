@@ -77,6 +77,9 @@ namespace RINGMesh {
             index_t edge_itr,
             index_t v,
             GEO::Mesh& new_mesh ) const ;
+        void build_merged_and_bad_lines(
+            const std::map< index_t, std::vector< index_t > >& surfaces_boundary_regions,
+            const std::string& side_name ) const ;
     } ;
 
 }

@@ -80,6 +80,22 @@ namespace RINGMesh {
         }
     }
 
+    index_t find_local_boundary_id(
+        const GeoModelElement& reg,
+        const GeoModelElement& surf )
+    {
+        ringmesh_assert(reg.type()==GME::REGION) ;
+        ringmesh_assert(surf.type()==GME::SURFACE) ;
+        for( index_t boundary_i = 0; boundary_i < reg.nb_boundaries();
+            ++boundary_i ) {
+            if( reg.boundary( boundary_i ).index() == surf.index() ) {
+                return boundary_i ;
+            }
+        }
+
+        return NO_ID ;
+    }
+
     void DuplicateInterfaceBuilder::get_new_surfaces(
         index_t interface_id_to_duplicate ) const
     {
@@ -92,7 +108,9 @@ namespace RINGMesh {
             interface_to_duplicate.nb_children() ;
         ringmesh_assert(interface_to_duplicate_nb_children >= 1) ;
 
-        std::map< index_t, std::vector< index_t > > surfaces_boundary_regions ;
+        // minus = false, plus = true
+        std::map< index_t, std::vector< index_t > > surfaces_boundary_regions_side_minus ;
+        std::map< index_t, std::vector< index_t > > surfaces_boundary_regions_side_plus ;
 
         // Find for each region, what surfaces are in boundary.
         for( index_t interface_child_itr = 0;
@@ -101,22 +119,88 @@ namespace RINGMesh {
             const GeoModelElement& cur_child = interface_to_duplicate.child(
                 interface_child_itr ) ;
             ringmesh_assert( cur_child.type() == GME::SURFACE ) ;
+            DEBUG(cur_child.index()) ;
 
             const index_t nb_in_boundary_cur_child = cur_child.nb_in_boundary() ;
             ringmesh_assert( nb_in_boundary_cur_child == 1 || nb_in_boundary_cur_child == 2 ) ;
-            for( index_t in_boundary_itr = 0;
-                in_boundary_itr < nb_in_boundary_cur_child; ++in_boundary_itr ) {
-
-                const GeoModelElement& cur_in_boundary = cur_child.in_boundary(
-                    in_boundary_itr ) ;
+            if( nb_in_boundary_cur_child == 2 ) {
+                ringmesh_assert( !cur_child.is_on_voi() ) ;
+                const GeoModelElement& cur_in_boundary = cur_child.in_boundary( 0 ) ;
                 ringmesh_assert( cur_in_boundary.type() == GME::REGION ) ;
+                const Region& cur_reg =
+                    dynamic_cast< const Region& >( cur_in_boundary ) ;
 
-                surfaces_boundary_regions[cur_in_boundary.index()].push_back(
-                    cur_child.index() ) ;
+                const GeoModelElement& cur_in_boundary2 = cur_child.in_boundary(
+                    1 ) ;
+                ringmesh_assert( cur_in_boundary2.type() == GME::REGION ) ;
+                const Region& cur_reg2 =
+                    dynamic_cast< const Region& >( cur_in_boundary2 ) ;
+
+                if( cur_in_boundary.index() == cur_in_boundary2.index() ) {
+                    // if same region there is 2 in_boundarie even if they are the same
+                    // The surface is internal and on the both side there is the
+                    // same region. This surface is duplicated.
+                    surfaces_boundary_regions_side_plus[cur_in_boundary.index()].push_back(
+                        cur_child.index() ) ;
+                    surfaces_boundary_regions_side_minus[cur_in_boundary.index()].push_back(
+                        cur_child.index() ) ;
+                } else {
+                    index_t local_boundary_id = find_local_boundary_id(
+                        cur_in_boundary, cur_child ) ;
+
+#ifdef RINGMESH_DEBUG
+                    index_t local_boundary_id2 = find_local_boundary_id(
+                        cur_in_boundary2, cur_child ) ;
+                    ringmesh_assert(
+                        cur_reg.side( local_boundary_id )
+                        != cur_reg2.side( local_boundary_id2 ) ) ;
+#endif
+
+                    if( cur_reg.side( local_boundary_id ) ) {
+                        surfaces_boundary_regions_side_plus[cur_in_boundary.index()].push_back(
+                            cur_child.index() ) ;
+                        surfaces_boundary_regions_side_minus[cur_in_boundary2.index()].push_back(
+                            cur_child.index() ) ;
+                    } else {
+                        surfaces_boundary_regions_side_minus[cur_in_boundary.index()].push_back(
+                            cur_child.index() ) ;
+                        surfaces_boundary_regions_side_plus[cur_in_boundary2.index()].push_back(
+                            cur_child.index() ) ;
+                    }
+                }
+            } else {
+                ringmesh_assert( nb_in_boundary_cur_child == 1 ) ;
+                if( cur_child.is_on_voi() ) {
+                    const GeoModelElement& cur_in_boundary = cur_child.in_boundary(
+                        0 ) ;
+                    ringmesh_assert( cur_in_boundary.type() == GME::REGION ) ;
+                    const Region& cur_reg =
+                        dynamic_cast< const Region& >( cur_in_boundary ) ;
+
+                    index_t local_boundary_id = find_local_boundary_id(
+                        cur_in_boundary, cur_child ) ;
+                    if( cur_reg.side( local_boundary_id ) ) {
+                        surfaces_boundary_regions_side_plus[cur_in_boundary.index()].push_back(
+                            cur_child.index() ) ;
+                    } else {
+                        surfaces_boundary_regions_side_minus[cur_in_boundary.index()].push_back(
+                            cur_child.index() ) ;
+                    }
+                }
             }
         }
 
-        for( std::map< index_t, std::vector< index_t > >::iterator map_itr =
+        build_merged_and_bad_lines( surfaces_boundary_regions_side_plus, "_plus" ) ;
+        build_merged_and_bad_lines( surfaces_boundary_regions_side_minus,
+            "_minus" ) ;
+
+    }
+
+    void DuplicateInterfaceBuilder::build_merged_and_bad_lines(
+        const std::map< index_t, std::vector< index_t > >& surfaces_boundary_regions,
+        const std::string& side_name ) const
+    {
+        for( std::map< index_t, std::vector< index_t > >::const_iterator map_itr =
             surfaces_boundary_regions.begin();
             map_itr != surfaces_boundary_regions.end(); ++map_itr ) {
 
@@ -125,8 +209,9 @@ namespace RINGMesh {
             std::map< index_t, index_t > all_surface_lines ; // TODO better to handle that with boolean?
 
             index_t region_index = map_itr->first ;
-            for( std::vector< index_t >::iterator surf_itr = map_itr->second.begin();
-                surf_itr != map_itr->second.end(); ++surf_itr ) {
+            for( std::vector< index_t >::const_iterator surf_itr =
+                map_itr->second.begin(); surf_itr != map_itr->second.end();
+                ++surf_itr ) {
                 index_t surf_id = *surf_itr ;
 
                 const Surface& cur_surf = model_.surface( surf_id ) ;
@@ -166,7 +251,7 @@ namespace RINGMesh {
 
             GEO::mesh_save( new_surface_mesh,
                 "merged_surf_reg_" + GEO::String::to_string( region_index )
-                    + ".meshb" ) ;
+                    + side_name + ".meshb" ) ;
 
             // Lines not boundary of the final merged surface
             for( std::map< index_t, index_t >::iterator all_surface_lines_itr =
@@ -179,52 +264,13 @@ namespace RINGMesh {
                     name += GEO::String::to_string( region_index ) ;
                     name += "_index_" ;
                     name += GEO::String::to_string( all_surface_lines_itr->first ) ;
+                    name += side_name ;
                     name += ".meshb" ;
                     GEO::mesh_save(
                         model_.line( all_surface_lines_itr->first ).mesh(), name ) ;
                 }
             }
-
-#if 0
-            // To complete the region, add the other surfaces of the region to
-            // the newly built merged surface. The surfaces before the merge must
-            // not be added.
-            for( index_t surf_reg_itr = 0 ;
-                surf_reg_itr < model_.region( region_index ).nb_boundaries() ;
-                ++surf_reg_itr ) {
-
-                const GeoModelElement& cur_elt =
-                model_.region( region_index ).boundary( surf_reg_itr ) ;
-                ringmesh_assert( cur_elt.type()==GME::SURFACE ) ;
-                std::vector< index_t >::iterator found = std::find(
-                    map_itr->second.begin(), map_itr->second.end(),
-                    cur_elt.index() ) ;
-                // One surface used for previous merging. Avoided.
-                // THESE SURFACES MUST BE REMOVED.
-                if( found != map_itr->second.end() ) {
-                    continue ;
-                }
-
-                // Add the facets for debugging for now. But I found all the
-                // surfaces of the regions.
-                const Surface& cur_surf2 = dynamic_cast< const Surface& >( cur_elt ) ;
-                const GEO::Mesh& cur_surf_mesh2 = cur_surf2.mesh() ;
-                for( index_t facet_itr = 0 ; facet_itr < cur_surf_mesh2.facets.nb() ;
-                    ++facet_itr ) {
-                    index_t one = find_or_create_vertex( cur_surf_mesh2, facet_itr,
-                        0, new_mesh ) ;
-                    index_t two = find_or_create_vertex( cur_surf_mesh2, facet_itr,
-                        1, new_mesh ) ;
-                    index_t three = find_or_create_vertex( cur_surf_mesh2, facet_itr,
-                        2, new_mesh ) ;
-                    new_mesh.facets.create_triangle( one, two, three ) ;
-                }
-            }
-            GEO::mesh_save( new_mesh,
-                "surf_reg_" + GEO::String::to_string( region_index ) + ".meshb" ) ;
-#endif
         }
-
     }
 
     index_t DuplicateInterfaceBuilder::find_or_create_vertex_facet(
