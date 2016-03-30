@@ -125,6 +125,10 @@ namespace RINGMesh {
         // minus = false, plus = true
         std::map< index_t, std::vector< index_t > > surfaces_boundary_regions_side_minus ;
         std::map< index_t, std::vector< index_t > > surfaces_boundary_regions_side_plus ;
+        GME::gme_t interface_minus_gme_t = create_element( GME::INTERFACE ) ;
+        GME::gme_t interface_plus_gme_t = create_element( GME::INTERFACE ) ;
+        to_erase_by_type[GME::INTERFACE].push_back( 0 ) ;
+        to_erase_by_type[GME::INTERFACE].push_back( 0 ) ;
 
         // Find for each region, what surfaces are in boundary.
         for( index_t interface_child_itr = 0;
@@ -205,16 +209,18 @@ namespace RINGMesh {
         }
 
         build_merged_and_bad_lines( surfaces_boundary_regions_side_plus, "_plus",
-            to_erase_by_type ) ;
+            to_erase_by_type, interface_plus_gme_t ) ;
         build_merged_and_bad_lines( surfaces_boundary_regions_side_minus, "_minus",
-            to_erase_by_type ) ;
+            to_erase_by_type, interface_minus_gme_t ) ;
 
+        delete_elements( to_erase_by_type ) ;
     }
 
     void DuplicateInterfaceBuilder::build_merged_and_bad_lines(
         const std::map< index_t, std::vector< index_t > >& surfaces_boundary_regions,
         const std::string& side_name,
-        std::vector< std::vector< index_t > >& to_erase_by_type )
+        std::vector< std::vector< index_t > >& to_erase_by_type,
+        const GME::gme_t& sided_interface_gme_t )
     {
         for( std::map< index_t, std::vector< index_t > >::const_iterator map_itr =
             surfaces_boundary_regions.begin();
@@ -264,7 +270,7 @@ namespace RINGMesh {
                         point_i < cur_surf.nb_vertices_in_facet( facet_itr );
                         ++point_i ) {
 
-                        index_t index = cur_surf.facet_vertex_id( facet_itr,
+                        index_t index = cur_surf.surf_vertex_id( facet_itr,
                             point_i ) ;
                         facet_indices.push_back(
                             unique_id[index + offset_vertices] ) ;
@@ -275,7 +281,7 @@ namespace RINGMesh {
                     facet_ptr.push_back( count_facet_vertices ) ;
                 }
 
-                // Update the lines in common and to merge
+                // Update the lines in common
                 for( index_t line_itr = 0; line_itr < cur_surf.nb_boundaries();
                     ++line_itr ) {
                     const GeoModelElement& cur_line_gme = cur_surf.boundary(
@@ -288,7 +294,6 @@ namespace RINGMesh {
 
                     if( all_surface_lines.find( cur_line_gme.index() )
                         == all_surface_lines.end() ) {
-                        DEBUG("initialization") ;
                         all_surface_lines[cur_line_gme.index()] = 0 ; // initialization
                     }
                     ++all_surface_lines[cur_line_gme.index()] ;
@@ -297,15 +302,21 @@ namespace RINGMesh {
             }
 
             // Create RINGMesh::Surface and fill it.
-            index_t new_surface_id = create_elements( GME::SURFACE, 1 ) ;
-            set_surface_geometry( new_surface_id, facet_points, facet_indices,
-                facet_ptr ) ;
-            // todo fill the surface this boundaries...
+            GME::gme_t new_surface_gme_t = create_element( GME::SURFACE ) ;
+            set_surface_geometry( new_surface_gme_t.index, facet_points,
+                facet_indices, facet_ptr ) ;
+            set_element_parent( new_surface_gme_t, sided_interface_gme_t ) ;
+            add_element_child( sided_interface_gme_t, new_surface_gme_t ) ;
+            add_element_in_boundary( new_surface_gme_t,
+                GME::gme_t( GME::REGION, region_index ) ) ;
+            bool side = ( side_name == "_plus" ) ;
+            add_element_boundary( GME::gme_t( GME::REGION, region_index ),
+                new_surface_gme_t, side ) ;
             // no child
             // boundaries = all the lines of the previous surfaces excepted the
             // one in common
             // parent = the new interface
-            // in_boundaries = the 2 regions or just one if on border
+            // in_boundaries = as the interface is duplicated there is only one single region as in_boundary
             to_erase_by_type[GME::SURFACE].push_back( 0 ) ;
             GEO::mesh_save( new_surface_mesh,
                 "merged_surf_reg_" + GEO::String::to_string( region_index )
@@ -326,8 +337,13 @@ namespace RINGMesh {
                     name += ".meshb" ;
                     GEO::mesh_save(
                         model_.line( all_surface_lines_itr->first ).mesh(), name ) ;
-                    to_erase_by_type[GME::LINE][all_surface_lines_itr->first] =
-                        NO_ID ;
+                    /*to_erase_by_type[GME::LINE][all_surface_lines_itr->first] =
+                     NO_ID ;*/
+                } else {
+                    GME::gme_t line_gme_t( GME::LINE,
+                        all_surface_lines_itr->first ) ;
+                    add_element_boundary( new_surface_gme_t, line_gme_t ) ;
+                    add_element_in_boundary( line_gme_t, new_surface_gme_t ) ;
                 }
             }
         }
