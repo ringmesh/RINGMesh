@@ -62,16 +62,16 @@ namespace RINGMesh {
     public:
         DuplicateInterfaceBuilder( GeoModel& model ) ;
         virtual ~DuplicateInterfaceBuilder() ;
-        void duplicate_interface( index_t interface_id_to_duplicate ) ;
-
-    public:
         void get_new_surfaces( index_t interface_id_to_duplicate ) ;
     private:
         void build_merged_and_bad_lines(
             const std::map< index_t, std::vector< index_t > >& surfaces_boundary_regions,
             const std::string& side_name,
             std::vector< std::vector< index_t > >& to_erase_by_type,
-            const GME::gme_t& sided_interface_gme_t) ;
+            const GME::gme_t& sided_interface_gme_t ) ;
+        void translate_new_interface_by_epsilon_to_avoid_colocation(
+            const GME::gme_t& interface_gme_t,
+            const std::vector< std::vector< index_t > >& to_erase_by_type ) ;
     } ;
 
 }

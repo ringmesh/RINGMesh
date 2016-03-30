@@ -58,28 +58,6 @@ namespace RINGMesh {
 
     }
 
-    void DuplicateInterfaceBuilder::duplicate_interface(
-        index_t interface_id_to_duplicate )
-    {
-        ringmesh_assert(interface_id_to_duplicate < model_.nb_interfaces()) ;
-
-        const GeoModelElement& interface_to_duplicate = model_.one_interface(
-            interface_id_to_duplicate ) ;
-
-        index_t interface_to_duplicate_nb_children =
-            interface_to_duplicate.nb_children() ;
-
-        create_elements( GME::SURFACE, interface_to_duplicate_nb_children ) ;
-
-        for( index_t interface_child_itr = 0;
-            interface_child_itr < interface_to_duplicate.nb_children();
-            ++interface_child_itr ) {
-            const GeoModelElement& cur_child = interface_to_duplicate.child(
-                interface_child_itr ) ;
-            ringmesh_assert( cur_child.type() == GME::SURFACE ) ;
-        }
-    }
-
     index_t find_local_boundary_id(
         const GeoModelElement& reg,
         const GeoModelElement& surf )
@@ -213,7 +191,13 @@ namespace RINGMesh {
         build_merged_and_bad_lines( surfaces_boundary_regions_side_minus, "_minus",
             to_erase_by_type, interface_minus_gme_t ) ;
 
+        translate_new_interface_by_epsilon_to_avoid_colocation( interface_plus_gme_t,
+            to_erase_by_type ) ;
+        translate_new_interface_by_epsilon_to_avoid_colocation(
+            interface_minus_gme_t, to_erase_by_type ) ;
+
         delete_elements( to_erase_by_type ) ;
+
     }
 
     void DuplicateInterfaceBuilder::build_merged_and_bad_lines(
@@ -345,5 +329,118 @@ namespace RINGMesh {
                 }
             }
         }
+    }
+
+    void DuplicateInterfaceBuilder::translate_new_interface_by_epsilon_to_avoid_colocation(
+        const GME::gme_t& interface_gme_t,
+        const std::vector< std::vector< index_t > >& to_erase_by_type )
+    {
+        // Clear to take into account the new gme in the geomodel.
+        model_.mesh.vertices.clear() ;
+
+        // Initialization of the mapping to know which GME of the interface to move.
+        std::vector< std::vector< bool > > gme_to_move ;
+        std::vector< std::vector< index_t > > gme_in_interface ;
+        gme_to_move.resize( GME::REGION ) ; // 4 = Corner, Line, Surface, Region (same as enum GME::TYPE)
+        gme_in_interface.resize( GME::REGION ) ; // 4 = Corner, Line, Surface, Region (same as enum GME::TYPE)
+
+        index_t new_nb_surfaces = 0 ;
+        for( index_t child_itr = 0;
+            child_itr < model_.one_interface( interface_gme_t.index ).nb_children();
+            ++child_itr ) {
+            const GeoModelElement& child_gme = model_.one_interface(
+                interface_gme_t.index ).child( child_itr ) ;
+            index_t child_id = child_gme.index() ;
+            ringmesh_assert( child_gme.type()==GME::SURFACE ) ;
+            if( to_erase_by_type[GME::SURFACE][child_id] != NO_ID ) {
+                ringmesh_assert( to_erase_by_type[GME::SURFACE][child_id] == 0 ) ;
+                ++new_nb_surfaces ;
+                gme_in_interface[GME::SURFACE].push_back( child_id ) ;
+                ringmesh_assert(child_gme.nb_in_boundary()==1) ;
+                index_t in_boundary_id = child_gme.in_boundary( 0 ).index() ;
+                // In theory the surfaces have no in_boundary (region) in common.
+                ringmesh_assert(std::find(gme_in_interface[GME::REGION].begin(),
+                        gme_in_interface[GME::REGION].end(),in_boundary_id)==gme_in_interface[GME::REGION].end()) ;
+                gme_in_interface[GME::REGION].push_back( in_boundary_id ) ;
+
+                for( index_t line_itr = 0; line_itr < child_gme.nb_boundaries();
+                    ++line_itr ) {
+                    const GeoModelElement& line_gme = child_gme.boundary(
+                        line_itr ) ;
+                    ringmesh_assert( line_gme.type() == GME::LINE ) ;
+                    // For now no line is removed.
+                    ringmesh_assert(to_erase_by_type[GME::LINE][line_gme.index()]==0) ;
+                    ringmesh_assert(to_erase_by_type[GME::LINE][line_gme.index()]!=NO_ID) ;
+
+                    bool is_line_somewhere_else = false ;
+                    for( index_t child_itr2 = 0;
+                        child_itr2
+                            < model_.one_interface( interface_gme_t.index ).nb_children();
+                        ++child_itr2 ) {
+                        if( child_itr == child_itr2 ) {
+                            continue ;
+                        }
+                        const GeoModelElement& child_gme2 = model_.one_interface(
+                            interface_gme_t.index ).child( child_itr2 ) ;
+                        for( index_t line_itr2 = 0;
+                            line_itr2 < child_gme2.nb_boundaries(); ++line_itr2 ) {
+
+                            if( child_gme2.boundary( line_itr2 ).index()
+                                == line_gme.index() ) {
+                                is_line_somewhere_else = true ;
+                                break ;
+                            }
+                        }
+                        if( is_line_somewhere_else ) {
+                            break ;
+                        }
+                    }
+
+                    if( !is_line_somewhere_else ) {
+                        // As the line is not shared by another surface of the
+                        // interface, it cannot be already in the vector.
+                        ringmesh_assert(std::find(gme_in_interface[GME::LINE].begin(),
+                                gme_in_interface[GME::LINE].end(),line_gme.index())==gme_in_interface[GME::LINE].end()) ;
+                        gme_in_interface[GME::LINE].push_back( line_gme.index() ) ;
+                        gme_to_move[GME::LINE].push_back( false ) ;
+                    } else {
+                        // Not added twice.
+                        if( std::find( gme_in_interface[GME::LINE].begin(),
+                            gme_in_interface[GME::LINE].end(), line_gme.index() )
+                            == gme_in_interface[GME::LINE].end() ) {
+                            gme_in_interface[GME::LINE].push_back(
+                                line_gme.index() ) ;
+                            gme_to_move[GME::LINE].push_back( true ) ;
+                        }
+                    }
+
+                    /// @TODO I have a lot of std::find which is very dirty.
+                    /// @TODO When it works, find a better way.
+
+                    for( index_t corner_itr = 0;
+                        corner_itr < line_gme.nb_boundaries(); ++corner_itr ) {
+                        const GeoModelElement& corner_gme = line_gme.boundary(
+                            corner_itr ) ;
+                        index_t corner_id = corner_gme.index() ;
+                        ringmesh_assert( corner_gme.type() == GME::CORNER ) ;
+                        if( std::find( gme_in_interface[GME::CORNER].begin(),
+                            gme_in_interface[GME::CORNER].end(), corner_id )
+                            == gme_in_interface[GME::CORNER].end() ) {
+                            gme_in_interface[GME::CORNER].push_back( corner_id ) ;
+                            gme_to_move[GME::CORNER].push_back( false ) ; // for now no motion of the corner
+                        }
+                    }
+                }
+            }
+        }
+        ringmesh_assert( new_nb_surfaces != 0 ) ;
+
+        // Surfaces and regions move
+        gme_to_move[GME::SURFACE].resize( new_nb_surfaces, true ) ;
+        // Each surface on the duplicated interface has only one single region has in_boundary.
+        gme_to_move[GME::REGION].resize( new_nb_surfaces, true ) ;
+
+        /*const std::vector< GMEVertex >& bmes = M.mesh.vertices.gme_vertices(
+         i ) ;*/
     }
 }
