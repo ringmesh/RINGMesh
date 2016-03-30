@@ -1017,8 +1017,8 @@ namespace RINGMesh {
     void GeoModelBuilder::copy_meshes( const GeoModel& from, GME::TYPE element_type )
     {
         ///@todo use GeoModel::nb_elements on model_ directly?
-        const GeoModel::GeoModelElementFactory& gmef = model_.X( element_type ) ;
-        for( index_t i = 0; i < gmef.elements().size(); ++i ) {
+        const GeoModel::GeoModelElementModifier& gmem = model_.gme_modifier( element_type ) ;
+        for( index_t i = 0; i < gmem.elements().size(); ++i ) {
             const GeoModelMeshElement& from_E = from.mesh_element( element_type,
                 i ) ;
             assign_mesh_to_element( from_E.mesh(), gme_t( element_type, i ) ) ;

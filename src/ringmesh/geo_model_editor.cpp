@@ -87,14 +87,14 @@ namespace RINGMesh {
         if( type >= GME::NO_TYPE ) {
             return NO_ID ;
         }
-        const GeoModel::GeoModelElementFactory& gmef = model_.X( type ) ;
+        const GeoModel::GeoModelElementModifier& gmem = model_.gme_modifier( type ) ;
         std::vector< GME* >& store = model_.modifiable_elements( type ) ;
         index_t old_size = static_cast<index_t> ( store.size() ) ;
         index_t new_size = old_size + nb ;
         store.resize( new_size, nil ) ;
         for( index_t i = old_size; i < new_size; i++ ) {
             ringmesh_assert( store[i] == nil ) ;
-            store[i] = gmef.new_element( i ) ;
+            store[i] = gmem.new_element( i ) ;
         }
         return old_size ;
     }
@@ -571,12 +571,12 @@ namespace RINGMesh {
         assert_element_creation_allowed() ;
         for( index_t t = GME::CORNER; t < GME::NO_TYPE; ++t ) {
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;
-            const GeoModel::GeoModelElementFactory& gmef = model_.X( T ) ;
+            const GeoModel::GeoModelElementModifier& gmem = model_.gme_modifier( T ) ;
             std::vector< GME* >& store = model_.modifiable_elements( T ) ;
             store.resize( from.nb_elements( T ), nil ) ;//@todo use create_elements???
 
             for( index_t e = 0; e < model_.nb_elements( T ); ++e ) {
-                store[e] = gmef.new_element( e ) ;
+                store[e] = gmem.new_element( e ) ;
                 ringmesh_assert( store[ e ] != nil ) ;
             }
             RINGMESH_PARALLEL_LOOP
@@ -679,8 +679,8 @@ namespace RINGMesh {
     GME* GeoModelEditor::new_element( GME::TYPE T )
     {
         index_t id = model_.nb_elements( T ) ;
-        const GeoModel::GeoModelElementFactory& gmef = model_.X( T ) ;
-        return gmef.new_element( id ) ;
+        const GeoModel::GeoModelElementModifier& gmem = model_.gme_modifier( T ) ;
+        return gmem.new_element( id ) ;
     }
 
 

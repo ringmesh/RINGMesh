@@ -56,23 +56,23 @@ namespace RINGMesh {
 #ifdef RINGMESH_DEBUG
         for( index_t gme_type_itr = 0; gme_type_itr < GME::NO_TYPE;
             ++gme_type_itr ) {
-            X_[gme_type_itr] = nil ;
+            gme_modifiers_[gme_type_itr] = nil ;
         }
 #endif
         /// @todo Review: This usage of this pointer in initialization list is a time bomb [JP]
-        X_[GME::CORNER] = new CornerFactory( *this ) ;
-        X_[GME::LINE] = new LineFactory( *this ) ;
-        X_[GME::SURFACE] = new SurfaceFactory( *this ) ;
-        X_[GME::REGION] = new RegionFactory( *this ) ;
-        X_[GME::CONTACT] = new ContactFactory( *this ) ;
-        X_[GME::INTERFACE] = new InterfaceFactory( *this ) ;
-        X_[GME::LAYER] = new LayerFactory( *this ) ;
+        gme_modifiers_[GME::CORNER] = new CornerModifier( *this ) ;
+        gme_modifiers_[GME::LINE] = new LineModifier( *this ) ;
+        gme_modifiers_[GME::SURFACE] = new SurfaceModifier( *this ) ;
+        gme_modifiers_[GME::REGION] = new RegionModifier( *this ) ;
+        gme_modifiers_[GME::CONTACT] = new ContactModifier( *this ) ;
+        gme_modifiers_[GME::INTERFACE] = new InterfaceModifier( *this ) ;
+        gme_modifiers_[GME::LAYER] = new LayerModifier( *this ) ;
 
         // Test to check that no new GME::TYPE has been forgotten
 #ifdef RINGMESH_DEBUG
         for( index_t gme_type_itr = 0; gme_type_itr < GME::NO_TYPE;
             ++gme_type_itr ) {
-            ringmesh_assert( X_[gme_type_itr] != nil ) ;
+            ringmesh_assert( gme_modifiers_[gme_type_itr] != nil ) ;
         }
 #endif
     }
@@ -81,7 +81,7 @@ namespace RINGMesh {
     {
         for( index_t t = GME::CORNER; t < GME::NO_TYPE; ++t ) {
             GME::TYPE T = (GME::TYPE) t ;
-            const GeoModelElementFactory& gmef = X( T ) ;
+            const GeoModelElementModifier& gmef = gme_modifier( T ) ;
             for( index_t i = 0; i < nb_elements( T ); ++i ) {
                 delete gmef.elements()[i] ;
             }
@@ -114,107 +114,107 @@ namespace RINGMesh {
         wells_ = wells ;
     }
 
-    GeoModel::CornerFactory::CornerFactory( GeoModel& model )
-        : GeoModelElementFactory( model )
+    GeoModel::CornerModifier::CornerModifier( GeoModel& model )
+        : GeoModelElementModifier( model )
     {
     }
 
-    GME* GeoModel::CornerFactory::new_element( index_t id ) const
+    GME* GeoModel::CornerModifier::new_element( index_t id ) const
     {
         return new Corner( model_, id ) ;
     }
 
-    std::vector< GME* >& GeoModel::CornerFactory::elements()
+    std::vector< GME* >& GeoModel::CornerModifier::elements()
     {
         return model_.corners_ ;
     }
 
-    GeoModel::LineFactory::LineFactory( GeoModel& model )
-        : GeoModelElementFactory( model )
+    GeoModel::LineModifier::LineModifier( GeoModel& model )
+        : GeoModelElementModifier( model )
     {
     }
 
-    GME* GeoModel::LineFactory::new_element( index_t id ) const
+    GME* GeoModel::LineModifier::new_element( index_t id ) const
     {
         return new Line( model_, id ) ;
     }
 
-    std::vector< GME* >& GeoModel::LineFactory::elements()
+    std::vector< GME* >& GeoModel::LineModifier::elements()
     {
         return model_.lines_ ;
     }
 
-    GeoModel::SurfaceFactory::SurfaceFactory( GeoModel& model )
-        : GeoModelElementFactory( model )
+    GeoModel::SurfaceModifier::SurfaceModifier( GeoModel& model )
+        : GeoModelElementModifier( model )
     {
     }
 
-    GME* GeoModel::SurfaceFactory::new_element( index_t id ) const
+    GME* GeoModel::SurfaceModifier::new_element( index_t id ) const
     {
         return new Surface( model_, id ) ;
     }
 
-    std::vector< GME* >& GeoModel::SurfaceFactory::elements()
+    std::vector< GME* >& GeoModel::SurfaceModifier::elements()
     {
         return model_.surfaces_ ;
     }
 
-    GeoModel::RegionFactory::RegionFactory( GeoModel& model )
-        : GeoModelElementFactory( model )
+    GeoModel::RegionModifier::RegionModifier( GeoModel& model )
+        : GeoModelElementModifier( model )
     {
     }
 
-    GME* GeoModel::RegionFactory::new_element( index_t id ) const
+    GME* GeoModel::RegionModifier::new_element( index_t id ) const
     {
         return new Region( model_, id ) ;
     }
 
-    std::vector< GME* >& GeoModel::RegionFactory::elements()
+    std::vector< GME* >& GeoModel::RegionModifier::elements()
     {
         return model_.regions_ ;
     }
 
-    GeoModel::ContactFactory::ContactFactory( GeoModel& model )
-        : GeoModelElementFactory( model )
+    GeoModel::ContactModifier::ContactModifier( GeoModel& model )
+        : GeoModelElementModifier( model )
     {
     }
 
-    std::vector< GME* >& GeoModel::ContactFactory::elements()
+    std::vector< GME* >& GeoModel::ContactModifier::elements()
     {
         return model_.contacts_ ;
     }
 
-    GME* GeoModel::ContactFactory::new_element( index_t id ) const
+    GME* GeoModel::ContactModifier::new_element( index_t id ) const
     {
         return new GeoModelElement( model_, GME::CONTACT, id ) ;
     }
 
-    GeoModel::InterfaceFactory::InterfaceFactory( GeoModel& model )
-        : GeoModelElementFactory( model )
+    GeoModel::InterfaceModifier::InterfaceModifier( GeoModel& model )
+        : GeoModelElementModifier( model )
     {
     }
 
-    GME* GeoModel::InterfaceFactory::new_element( index_t id ) const
+    GME* GeoModel::InterfaceModifier::new_element( index_t id ) const
     {
         return new GeoModelElement( model_, GME::INTERFACE, id ) ;
     }
 
-    std::vector< GME* >& GeoModel::InterfaceFactory::elements()
+    std::vector< GME* >& GeoModel::InterfaceModifier::elements()
     {
         return model_.interfaces_ ;
     }
 
-    GeoModel::LayerFactory::LayerFactory( GeoModel& model )
-        : GeoModelElementFactory( model )
+    GeoModel::LayerModifier::LayerModifier( GeoModel& model )
+        : GeoModelElementModifier( model )
     {
     }
 
-    GME* GeoModel::LayerFactory::new_element( index_t id ) const
+    GME* GeoModel::LayerModifier::new_element( index_t id ) const
     {
         return new GeoModelElement( model_, GME::LAYER, id ) ;
     }
 
-    std::vector< GME* >& GeoModel::LayerFactory::elements()
+    std::vector< GME* >& GeoModel::LayerModifier::elements()
     {
         return model_.layers_ ;
     }
