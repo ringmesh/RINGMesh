@@ -337,8 +337,6 @@ namespace RINGMesh {
                     name += ".meshb" ;
                     GEO::mesh_save(
                         model_.line( all_surface_lines_itr->first ).mesh(), name ) ;
-                    /*to_erase_by_type[GME::LINE][all_surface_lines_itr->first] =
-                     NO_ID ;*/
                 } else {
                     GME::gme_t line_gme_t( GME::LINE,
                         all_surface_lines_itr->first ) ;
