@@ -297,9 +297,7 @@ namespace RINGMesh {
             }
 
             // Create RINGMesh::Surface and fill it.
-            index_t new_surface_id =
-                const_cast< DuplicateInterfaceBuilder* >( this )->create_elements(
-                    GME::SURFACE, 1 ) ;
+            index_t new_surface_id = create_elements( GME::SURFACE, 1 ) ;
             set_surface_geometry( new_surface_id, facet_points, facet_indices,
                 facet_ptr ) ;
             // todo fill the surface this boundaries...
