@@ -114,7 +114,7 @@ namespace RINGMesh {
         wells_ = wells ;
     }
 
-    GeoModel::CornerFactory::CornerFactory( const GeoModel& model )
+    GeoModel::CornerFactory::CornerFactory( GeoModel& model )
         : GeoModelElementFactory( model )
     {
     }
@@ -124,12 +124,12 @@ namespace RINGMesh {
         return new Corner( model_, id ) ;
     }
 
-    const std::vector< GME* >& GeoModel::CornerFactory::elements() const
+    std::vector< GME* >& GeoModel::CornerFactory::elements()
     {
         return model_.corners_ ;
     }
 
-    GeoModel::LineFactory::LineFactory( const GeoModel& model )
+    GeoModel::LineFactory::LineFactory( GeoModel& model )
         : GeoModelElementFactory( model )
     {
     }
@@ -139,12 +139,12 @@ namespace RINGMesh {
         return new Line( model_, id ) ;
     }
 
-    const std::vector< GME* >& GeoModel::LineFactory::elements() const
+    std::vector< GME* >& GeoModel::LineFactory::elements()
     {
         return model_.lines_ ;
     }
 
-    GeoModel::SurfaceFactory::SurfaceFactory( const GeoModel& model )
+    GeoModel::SurfaceFactory::SurfaceFactory( GeoModel& model )
         : GeoModelElementFactory( model )
     {
     }
@@ -154,12 +154,12 @@ namespace RINGMesh {
         return new Surface( model_, id ) ;
     }
 
-    const std::vector< GME* >& GeoModel::SurfaceFactory::elements() const
+    std::vector< GME* >& GeoModel::SurfaceFactory::elements()
     {
         return model_.surfaces_ ;
     }
 
-    GeoModel::RegionFactory::RegionFactory( const GeoModel& model )
+    GeoModel::RegionFactory::RegionFactory( GeoModel& model )
         : GeoModelElementFactory( model )
     {
     }
@@ -169,17 +169,17 @@ namespace RINGMesh {
         return new Region( model_, id ) ;
     }
 
-    const std::vector< GME* >& GeoModel::RegionFactory::elements() const
+    std::vector< GME* >& GeoModel::RegionFactory::elements()
     {
         return model_.regions_ ;
     }
 
-    GeoModel::ContactFactory::ContactFactory( const GeoModel& model )
+    GeoModel::ContactFactory::ContactFactory( GeoModel& model )
         : GeoModelElementFactory( model )
     {
     }
 
-    const std::vector< GME* >& GeoModel::ContactFactory::elements() const
+    std::vector< GME* >& GeoModel::ContactFactory::elements()
     {
         return model_.contacts_ ;
     }
@@ -189,7 +189,7 @@ namespace RINGMesh {
         return new GeoModelElement( model_, GME::CONTACT, id ) ;
     }
 
-    GeoModel::InterfaceFactory::InterfaceFactory( const GeoModel& model )
+    GeoModel::InterfaceFactory::InterfaceFactory( GeoModel& model )
         : GeoModelElementFactory( model )
     {
     }
@@ -199,12 +199,12 @@ namespace RINGMesh {
         return new GeoModelElement( model_, GME::INTERFACE, id ) ;
     }
 
-    const std::vector< GME* >& GeoModel::InterfaceFactory::elements() const
+    std::vector< GME* >& GeoModel::InterfaceFactory::elements()
     {
         return model_.interfaces_ ;
     }
 
-    GeoModel::LayerFactory::LayerFactory( const GeoModel& model )
+    GeoModel::LayerFactory::LayerFactory( GeoModel& model )
         : GeoModelElementFactory( model )
     {
     }
@@ -214,7 +214,7 @@ namespace RINGMesh {
         return new GeoModelElement( model_, GME::LAYER, id ) ;
     }
 
-    const std::vector< GME* >& GeoModel::LayerFactory::elements() const
+    std::vector< GME* >& GeoModel::LayerFactory::elements()
     {
         return model_.layers_ ;
     }

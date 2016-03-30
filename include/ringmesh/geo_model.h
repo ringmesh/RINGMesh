@@ -241,89 +241,97 @@ namespace RINGMesh {
         ringmesh_disable_copy( GeoModelElementFactory ) ;
         public:
             virtual GME* new_element( index_t id ) const = 0 ;
-            virtual const std::vector< GME* >& elements() const = 0 ;
+            const std::vector< GME* >& elements() const {
+                return elements() ;
+            }
+            virtual std::vector< GME* >& elements() = 0 ;
             virtual ~GeoModelElementFactory()
             {
             }
 
         protected:
-            GeoModelElementFactory( const GeoModel& model )
+            GeoModelElementFactory( GeoModel& model )
                 : model_( model )
             {
             }
 
         protected:
-            const GeoModel& model_ ;
+            GeoModel& model_ ;
         } ;
 
         class CornerFactory: public GeoModelElementFactory {
         ringmesh_disable_copy( CornerFactory ) ;
         public:
-            CornerFactory( const GeoModel& model ) ;
+            CornerFactory( GeoModel& model ) ;
             virtual ~CornerFactory() {}
             virtual GME* new_element( index_t id ) const ;
-            virtual const std::vector< GME* >& elements() const ;
+            virtual std::vector< GME* >& elements() ;
         } ;
 
         class LineFactory: public GeoModelElementFactory {
         ringmesh_disable_copy( LineFactory ) ;
         public:
-            LineFactory( const GeoModel& model ) ;
+            LineFactory( GeoModel& model ) ;
             virtual ~LineFactory() {}
             virtual GME* new_element( index_t id ) const ;
-            virtual const std::vector< GME* >& elements() const ;
+            virtual std::vector< GME* >& elements() ;
         } ;
 
         class SurfaceFactory: public GeoModelElementFactory {
         ringmesh_disable_copy( SurfaceFactory ) ;
         public:
-            SurfaceFactory( const GeoModel& model ) ;
+            SurfaceFactory( GeoModel& model ) ;
             virtual ~SurfaceFactory() {}
             virtual GME* new_element( index_t id ) const ;
-            virtual const std::vector< GME* >& elements() const ;
+            virtual std::vector< GME* >& elements() ;
         } ;
 
         class RegionFactory: public GeoModelElementFactory {
         ringmesh_disable_copy( RegionFactory ) ;
         public:
-            RegionFactory( const GeoModel& model ) ;
+            RegionFactory( GeoModel& model ) ;
             virtual ~RegionFactory() {}
             virtual GME* new_element( index_t id ) const ;
-            virtual const std::vector< GME* >& elements() const ;
+            virtual std::vector< GME* >& elements() ;
         } ;
 
         class ContactFactory: public GeoModelElementFactory {
         ringmesh_disable_copy( ContactFactory ) ;
         public:
-            ContactFactory( const GeoModel& model ) ;
+            ContactFactory( GeoModel& model ) ;
             virtual ~ContactFactory() {}
             virtual GME* new_element( index_t id ) const ;
-            virtual const std::vector< GME* >& elements() const ;
+            virtual std::vector< GME* >& elements() ;
         } ;
 
         class InterfaceFactory: public GeoModelElementFactory {
         ringmesh_disable_copy( InterfaceFactory ) ;
         public:
-            InterfaceFactory( const GeoModel& model ) ;
+            InterfaceFactory( GeoModel& model ) ;
             virtual ~InterfaceFactory() {}
             virtual GME* new_element( index_t id ) const ;
-            virtual const std::vector< GME* >& elements() const ;
+            virtual std::vector< GME* >& elements() ;
         } ;
 
         class LayerFactory: public GeoModelElementFactory {
         ringmesh_disable_copy( LayerFactory ) ;
         public:
-            LayerFactory( const GeoModel& model ) ;
+            LayerFactory( GeoModel& model ) ;
             virtual ~LayerFactory() {}
             virtual GME* new_element( index_t id ) const ;
-            virtual const std::vector< GME* >& elements() const ;
+            virtual std::vector< GME* >& elements() ;
         } ;
 
-        const GeoModelElementFactory& X( GME::TYPE type ) const
+        GeoModelElementFactory& X( GME::TYPE type )
         {
             ringmesh_assert( type < GME::NO_TYPE ) ;
             ringmesh_assert( X_[type] != nil ) ;
             return *X_[type] ;
+        }
+
+        const GeoModelElementFactory& X( GME::TYPE type ) const
+        {
+            return X( type ) ;
         }
 
     private:
@@ -363,8 +371,8 @@ namespace RINGMesh {
          */
         inline std::vector< GME* >& modifiable_elements( GME::TYPE type )
         {
-            const GeoModelElementFactory& gmef = X( type ) ;
-            return const_cast< std::vector< GME* >& >( gmef.elements() ) ;
+            GeoModelElementFactory& gmef = X( type ) ;
+            return gmef.elements() ;
         }
 
         /*!
