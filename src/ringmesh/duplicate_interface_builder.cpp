@@ -97,7 +97,7 @@ namespace RINGMesh {
     }
 
     void DuplicateInterfaceBuilder::get_new_surfaces(
-        index_t interface_id_to_duplicate ) const
+        index_t interface_id_to_duplicate )
     {
         ringmesh_assert(interface_id_to_duplicate < model_.nb_interfaces()) ;
 
@@ -214,7 +214,7 @@ namespace RINGMesh {
     void DuplicateInterfaceBuilder::build_merged_and_bad_lines(
         const std::map< index_t, std::vector< index_t > >& surfaces_boundary_regions,
         const std::string& side_name,
-        std::vector< std::vector< index_t > >& to_erase_by_type ) const
+        std::vector< std::vector< index_t > >& to_erase_by_type )
     {
         for( std::map< index_t, std::vector< index_t > >::const_iterator map_itr =
             surfaces_boundary_regions.begin();
@@ -225,6 +225,30 @@ namespace RINGMesh {
             std::map< index_t, index_t > all_surface_lines ; // TODO better to handle that with boolean?
 
             index_t region_index = map_itr->first ;
+            std::vector< vec3 > all_points ;
+            for( std::vector< index_t >::const_iterator surf_itr =
+                map_itr->second.begin(); surf_itr != map_itr->second.end();
+                ++surf_itr ) {
+                index_t surf_id = *surf_itr ;
+
+                const Surface& cur_surf = model_.surface( surf_id ) ;
+
+                for( index_t vertex_surf_i = 0;
+                    vertex_surf_i < cur_surf.nb_vertices(); ++vertex_surf_i ) {
+                    all_points.push_back( cur_surf.vertex( vertex_surf_i ) ) ;
+                }
+            }
+
+            MakeUnique make_unique_surf( all_points ) ;
+            make_unique_surf.unique() ;
+            std::vector< vec3 > facet_points ;
+            make_unique_surf.unique_points( facet_points ) ;
+            const std::vector< index_t >& unique_id = make_unique_surf.indices() ;
+            index_t offset_vertices = 0 ;
+            std::vector< index_t > facet_indices ;
+            std::vector< index_t > facet_ptr ;
+            index_t count_facet_vertices = 0 ;
+            facet_ptr.push_back( count_facet_vertices ) ;
             for( std::vector< index_t >::const_iterator surf_itr =
                 map_itr->second.begin(); surf_itr != map_itr->second.end();
                 ++surf_itr ) {
@@ -236,13 +260,19 @@ namespace RINGMesh {
                 // Add current surface to merged surface
                 for( index_t facet_itr = 0; facet_itr < cur_surf_mesh.facets.nb();
                     ++facet_itr ) {
-                    index_t one = find_or_create_vertex_facet( cur_surf_mesh,
-                        facet_itr, 0, new_surface_mesh ) ;
-                    index_t two = find_or_create_vertex_facet( cur_surf_mesh,
-                        facet_itr, 1, new_surface_mesh ) ;
-                    index_t three = find_or_create_vertex_facet( cur_surf_mesh,
-                        facet_itr, 2, new_surface_mesh ) ;
-                    new_surface_mesh.facets.create_triangle( one, two, three ) ;
+                    for( index_t point_i = 0;
+                        point_i < cur_surf.nb_vertices_in_facet( facet_itr );
+                        ++point_i ) {
+
+                        index_t index = cur_surf.facet_vertex_id( facet_itr,
+                            point_i ) ;
+                        facet_indices.push_back(
+                            unique_id[index + offset_vertices] ) ;
+
+                    }
+                    count_facet_vertices += cur_surf.nb_vertices_in_facet(
+                        facet_itr ) ;
+                    facet_ptr.push_back( count_facet_vertices ) ;
                 }
 
                 // Update the lines in common and to merge
@@ -263,12 +293,21 @@ namespace RINGMesh {
                     }
                     ++all_surface_lines[cur_line_gme.index()] ;
                 }
+                offset_vertices += cur_surf.nb_vertices() ;
             }
 
             // Create RINGMesh::Surface and fill it.
-            const_cast< DuplicateInterfaceBuilder* >( this )->create_elements(
-                GME::SURFACE, 1 ) ;
+            index_t new_surface_id =
+                const_cast< DuplicateInterfaceBuilder* >( this )->create_elements(
+                    GME::SURFACE, 1 ) ;
+            set_surface_geometry( new_surface_id, facet_points, facet_indices,
+                facet_ptr ) ;
             // todo fill the surface this boundaries...
+            // no child
+            // boundaries = all the lines of the previous surfaces excepted the
+            // one in common
+            // parent = the new interface
+            // in_boundaries = the 2 regions or just one if on border
             to_erase_by_type[GME::SURFACE].push_back( 0 ) ;
             GEO::mesh_save( new_surface_mesh,
                 "merged_surf_reg_" + GEO::String::to_string( region_index )
@@ -294,43 +333,5 @@ namespace RINGMesh {
                 }
             }
         }
-    }
-
-    index_t DuplicateInterfaceBuilder::find_or_create_vertex_facet(
-        const GEO::Mesh& cur_surf_mesh,
-        index_t facet_itr,
-        index_t v,
-        GEO::Mesh& new_mesh ) const
-    {
-        const GEO::MeshFacets& cur_surf_mesh_facets = cur_surf_mesh.facets ;
-        const GEO::MeshVertices& cur_surf_mesh_verticess = cur_surf_mesh.vertices ;
-        ColocaterANN ann( new_mesh, ColocaterANN::VERTICES ) ;
-        std::vector< index_t > colocated ;
-        const vec3& cur_point = cur_surf_mesh.vertices.point(
-            cur_surf_mesh_facets.vertex( facet_itr, v ) ) ;
-        if( ann.get_colocated( cur_point, colocated ) ) {
-            ringmesh_assert( colocated.size() == 1 ) ;
-            return colocated[0] ;
-        }
-        return new_mesh.vertices.create_vertex( cur_point.data() ) ;
-    }
-
-    index_t DuplicateInterfaceBuilder::find_or_create_vertex_edge(
-        const GEO::Mesh& cur_line_mesh,
-        index_t edge_itr,
-        index_t v,
-        GEO::Mesh& new_mesh ) const
-    {
-        const GEO::MeshEdges& cur_line_mesh_edges = cur_line_mesh.edges ;
-        const GEO::MeshVertices& cur_line_mesh_vertices = cur_line_mesh.vertices ;
-        ColocaterANN ann( new_mesh, ColocaterANN::VERTICES ) ;
-        std::vector< index_t > colocated ;
-        const vec3& cur_point = cur_line_mesh.vertices.point(
-            cur_line_mesh_edges.vertex( edge_itr, v ) ) ;
-        if( ann.get_colocated( cur_point, colocated ) ) {
-            ringmesh_assert( colocated.size() == 1 ) ;
-            return colocated[0] ;
-        }
-        return new_mesh.vertices.create_vertex( cur_point.data() ) ;
     }
 }

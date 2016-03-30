@@ -65,22 +65,12 @@ namespace RINGMesh {
         void duplicate_interface( index_t interface_id_to_duplicate ) ;
 
     public:
-        void get_new_surfaces( index_t interface_id_to_duplicate ) const ;
+        void get_new_surfaces( index_t interface_id_to_duplicate ) ;
     private:
-        index_t find_or_create_vertex_facet(
-            const GEO::Mesh& cur_surf_mesh,
-            index_t facet_itr,
-            index_t v,
-            GEO::Mesh& new_mesh ) const ;
-        index_t find_or_create_vertex_edge(
-            const GEO::Mesh& cur_line_mesh,
-            index_t edge_itr,
-            index_t v,
-            GEO::Mesh& new_mesh ) const ;
         void build_merged_and_bad_lines(
             const std::map< index_t, std::vector< index_t > >& surfaces_boundary_regions,
             const std::string& side_name,
-            std::vector< std::vector< index_t > >& to_erase_by_type ) const ;
+            std::vector< std::vector< index_t > >& to_erase_by_type ) ;
     } ;
 
 }
