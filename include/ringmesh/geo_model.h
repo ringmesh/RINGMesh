@@ -259,68 +259,24 @@ namespace RINGMesh {
             GeoModel& model_ ;
         } ;
 
-        class CornerModifier: public GeoModelElementModifier {
-        ringmesh_disable_copy( CornerModifier ) ;
-        public:
-            CornerModifier( GeoModel& model ) ;
-            virtual ~CornerModifier() {}
-            virtual GME* new_element( index_t id ) const ;
-            virtual std::vector< GME* >& elements() ;
-        } ;
+#define geo_model_element_modifier_impl( Class ) \
+    class Class##Modifier: public GeoModelElementModifier { \
+    ringmesh_disable_copy( Class##Modifier ) ; \
+    public: \
+        Class##Modifier( GeoModel& model ) \
+        : GeoModelElementModifier( model ){} \
+          virtual ~Class##Modifier() {} ; \
+          virtual GME* new_element( index_t id ) const ; \
+          virtual std::vector< GME* >& elements() ; \
+    }
 
-        class LineModifier: public GeoModelElementModifier {
-        ringmesh_disable_copy( LineModifier ) ;
-        public:
-            LineModifier( GeoModel& model ) ;
-            virtual ~LineModifier() {}
-            virtual GME* new_element( index_t id ) const ;
-            virtual std::vector< GME* >& elements() ;
-        } ;
-
-        class SurfaceModifier: public GeoModelElementModifier {
-        ringmesh_disable_copy( SurfaceModifier ) ;
-        public:
-            SurfaceModifier( GeoModel& model ) ;
-            virtual ~SurfaceModifier() {}
-            virtual GME* new_element( index_t id ) const ;
-            virtual std::vector< GME* >& elements() ;
-        } ;
-
-        class RegionModifier: public GeoModelElementModifier {
-        ringmesh_disable_copy( RegionModifier ) ;
-        public:
-            RegionModifier( GeoModel& model ) ;
-            virtual ~RegionModifier() {}
-            virtual GME* new_element( index_t id ) const ;
-            virtual std::vector< GME* >& elements() ;
-        } ;
-
-        class ContactModifier: public GeoModelElementModifier {
-        ringmesh_disable_copy( ContactModifier ) ;
-        public:
-            ContactModifier( GeoModel& model ) ;
-            virtual ~ContactModifier() {}
-            virtual GME* new_element( index_t id ) const ;
-            virtual std::vector< GME* >& elements() ;
-        } ;
-
-        class InterfaceModifier: public GeoModelElementModifier {
-        ringmesh_disable_copy( InterfaceModifier ) ;
-        public:
-            InterfaceModifier( GeoModel& model ) ;
-            virtual ~InterfaceModifier() {}
-            virtual GME* new_element( index_t id ) const ;
-            virtual std::vector< GME* >& elements() ;
-        } ;
-
-        class LayerModifier: public GeoModelElementModifier {
-        ringmesh_disable_copy( LayerModifier ) ;
-        public:
-            LayerModifier( GeoModel& model ) ;
-            virtual ~LayerModifier() {}
-            virtual GME* new_element( index_t id ) const ;
-            virtual std::vector< GME* >& elements() ;
-        } ;
+        geo_model_element_modifier_impl(Corner) ;
+        geo_model_element_modifier_impl(Line) ;
+        geo_model_element_modifier_impl(Surface) ;
+        geo_model_element_modifier_impl(Region) ;
+        geo_model_element_modifier_impl(Contact) ;
+        geo_model_element_modifier_impl(Interface) ;
+        geo_model_element_modifier_impl(Layer) ;
 
         GeoModelElementModifier& gme_modifier( GME::TYPE type )
         {

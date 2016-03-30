@@ -114,10 +114,10 @@ namespace RINGMesh {
         wells_ = wells ;
     }
 
-    GeoModel::CornerModifier::CornerModifier( GeoModel& model )
+    /*GeoModel::CornerModifier::CornerModifier( GeoModel& model )
         : GeoModelElementModifier( model )
     {
-    }
+    }*/
 
     GME* GeoModel::CornerModifier::new_element( index_t id ) const
     {
@@ -127,11 +127,6 @@ namespace RINGMesh {
     std::vector< GME* >& GeoModel::CornerModifier::elements()
     {
         return model_.corners_ ;
-    }
-
-    GeoModel::LineModifier::LineModifier( GeoModel& model )
-        : GeoModelElementModifier( model )
-    {
     }
 
     GME* GeoModel::LineModifier::new_element( index_t id ) const
@@ -144,11 +139,6 @@ namespace RINGMesh {
         return model_.lines_ ;
     }
 
-    GeoModel::SurfaceModifier::SurfaceModifier( GeoModel& model )
-        : GeoModelElementModifier( model )
-    {
-    }
-
     GME* GeoModel::SurfaceModifier::new_element( index_t id ) const
     {
         return new Surface( model_, id ) ;
@@ -157,11 +147,6 @@ namespace RINGMesh {
     std::vector< GME* >& GeoModel::SurfaceModifier::elements()
     {
         return model_.surfaces_ ;
-    }
-
-    GeoModel::RegionModifier::RegionModifier( GeoModel& model )
-        : GeoModelElementModifier( model )
-    {
     }
 
     GME* GeoModel::RegionModifier::new_element( index_t id ) const
@@ -174,11 +159,6 @@ namespace RINGMesh {
         return model_.regions_ ;
     }
 
-    GeoModel::ContactModifier::ContactModifier( GeoModel& model )
-        : GeoModelElementModifier( model )
-    {
-    }
-
     std::vector< GME* >& GeoModel::ContactModifier::elements()
     {
         return model_.contacts_ ;
@@ -189,11 +169,6 @@ namespace RINGMesh {
         return new GeoModelElement( model_, GME::CONTACT, id ) ;
     }
 
-    GeoModel::InterfaceModifier::InterfaceModifier( GeoModel& model )
-        : GeoModelElementModifier( model )
-    {
-    }
-
     GME* GeoModel::InterfaceModifier::new_element( index_t id ) const
     {
         return new GeoModelElement( model_, GME::INTERFACE, id ) ;
@@ -202,11 +177,6 @@ namespace RINGMesh {
     std::vector< GME* >& GeoModel::InterfaceModifier::elements()
     {
         return model_.interfaces_ ;
-    }
-
-    GeoModel::LayerModifier::LayerModifier( GeoModel& model )
-        : GeoModelElementModifier( model )
-    {
     }
 
     GME* GeoModel::LayerModifier::new_element( index_t id ) const
