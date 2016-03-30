@@ -114,11 +114,6 @@ namespace RINGMesh {
         wells_ = wells ;
     }
 
-    /*GeoModel::CornerModifier::CornerModifier( GeoModel& model )
-        : GeoModelElementModifier( model )
-    {
-    }*/
-
     GME* GeoModel::CornerModifier::new_element( index_t id ) const
     {
         return new Corner( model_, id ) ;
