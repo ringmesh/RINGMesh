@@ -37,6 +37,7 @@
 
 #include <geogram/mesh/mesh_io.h>
 #include <ringmesh/geometry.h>
+#include <ringmesh/algorithm.h>
 
 /*!
  * @file ringmesh/duplicate_interface_builder.cpp
@@ -336,12 +337,14 @@ namespace RINGMesh {
         const std::vector< std::vector< index_t > >& to_erase_by_type )
     {
         // Clear to take into account the new gme in the geomodel.
-        model_.mesh.vertices.clear() ;
+        model_.mesh.vertices.clear() ; ///@todo do it in DuplicateInterfaceBuilder::apply_translation_on_gme_to_move ???
 
         // Initialization of the mapping to know which GME of the interface to move.
         std::vector< std::vector< bool > > gme_to_move ;
         std::vector< std::vector< index_t > > gme_in_interface ;
         fill_info_gme_interfation_motion( interface_gme_t, to_erase_by_type,
+            gme_to_move, gme_in_interface ) ;
+        apply_translation_on_gme_to_move( interface_gme_t, to_erase_by_type,
             gme_to_move, gme_in_interface ) ;
 
         /*const std::vector< GMEVertex >& bmes = M.mesh.vertices.gme_vertices(
@@ -429,6 +432,7 @@ namespace RINGMesh {
 
                     /// @TODO I have a lot of std::find which is very dirty.
                     /// @TODO When it works, find a better way.
+                    /// @todo see RINGMesh::contains in algorithm.h.
 
                     for( index_t corner_itr = 0;
                         corner_itr < line_gme.nb_boundaries(); ++corner_itr ) {
@@ -440,7 +444,7 @@ namespace RINGMesh {
                             gme_in_interface[GME::CORNER].end(), corner_id )
                             == gme_in_interface[GME::CORNER].end() ) {
                             gme_in_interface[GME::CORNER].push_back( corner_id ) ;
-                            gme_to_move[GME::CORNER].push_back( false ) ; // for now no motion of the corner
+                            gme_to_move[GME::CORNER].push_back( false ) ; // for now no motion of the corners
                         }
                     }
                 }
@@ -452,5 +456,104 @@ namespace RINGMesh {
         gme_to_move[GME::SURFACE].resize( new_nb_surfaces, true ) ;
         // Each surface on the duplicated interface has only one single region has in_boundary.
         gme_to_move[GME::REGION].resize( new_nb_surfaces, true ) ;
+    }
+
+    void DuplicateInterfaceBuilder::apply_translation_on_gme_to_move(
+        const GME::gme_t& interface_gme_t,
+        const std::vector< std::vector< index_t > >& to_erase_by_type,
+        const std::vector< std::vector< bool > >& gme_to_move,
+        const std::vector< std::vector< index_t > >& gme_in_interface )
+    {
+        const GeoModelMeshVertices& gmmv = model_.mesh.vertices ;
+        // In this function we iterate on all the nodes of the interface
+        // by iterating on all the nodes of all the children (surfaces).
+        // Some nodes are shared between among these surfaces (lines in common).
+        // To avoid to iterate twice on these nodes, this vector stores if
+        // the corresponding node in the GeoModelMesh is moved (for a node in
+        // common between 2 surfaces, there are 2 nodes colocated (one by surface)
+        // and so just one in the GeoModelMesh.
+        std::vector< bool > has_moved( gmmv.nb(), false ) ; /// @todo treated is a better than moved since motion is not mandatory
+
+        const GeoModelElement& interface_gme = model_.one_interface(
+            interface_gme_t.index ) ;
+        for( index_t child_itr = 0; child_itr < interface_gme.nb_children();
+            ++child_itr ) {
+            const GeoModelElement& cur_child = interface_gme.child( child_itr ) ;
+            ringmesh_assert(cur_child.type() == GME::SURFACE) ;
+            const Surface& cur_surface = model_.surface( cur_child.index() ) ; // avoid dynamic_cast of cur_child
+            for( index_t surf_vertex_itr = 0;
+                surf_vertex_itr < cur_surface.nb_vertices(); ++surf_vertex_itr ) {
+                index_t vertex_id_in_gmm = cur_surface.model_vertex_id(
+                    surf_vertex_itr ) ;
+                if( has_moved[vertex_id_in_gmm] ) {
+                    continue ;
+                }
+
+                has_moved[vertex_id_in_gmm] = true ;
+                // Gets all the GME with a vertex colocated to the one of vertex_id_in_gmm
+                const std::vector< GMEVertex >& gme_vertices = gmmv.gme_vertices(
+                    vertex_id_in_gmm ) ;
+
+                // The idea of these commented lines was the store separately
+                // the corners, the lines, the surfaces and the regions and then
+                // check the motion by order of priority. If the corner cannot
+                // move so no motion. If it may move so motion. So the motion is
+                // imposed by the corner if any. If no corner so the motion is imposed
+                // by the lines if any...
+                // For now I do not do that. For now if at least one gme forbids
+                // the motion so no motion. We will see if it works.
+                /*std::vector< std::vector< index_t > > only_kept_gme ;
+                 only_kept_gme.resize( GME::REGION ) ;
+
+                 for( index_t type_itr = 0; type_itr < GME::REGION; ++type_itr ) {
+                 only_kept_gme[type_itr].reserve( gme_vertices.size() ) ; // a little large but no implicit resize
+                 // needed to ensure if there are both corner and lines.... to evaluate motion priority
+                 ringmesh_assert(only_kept_gme[type_itr].size()==0) ;
+                 }*/
+
+                bool to_move = true ;
+                std::vector< GMEVertex > only_kept_gme_vertices ;
+                only_kept_gme_vertices.reserve( gme_vertices.size() ) ; // a little large but no implicit resize
+                for( index_t gme_vertex_itr = 0;
+                    gme_vertex_itr < gme_vertices.size(); ++gme_vertex_itr ) {
+                    const GME::gme_t& cur_gme_t = gme_vertices[gme_vertex_itr].gme_id ;
+                    if( to_erase_by_type[cur_gme_t.type][cur_gme_t.index]
+                        == NO_ID ) {
+                        continue ; // It is an old element to remove.
+                    }
+                    ringmesh_assert(
+                        to_erase_by_type[cur_gme_t.type][cur_gme_t.index] == 0 ) ;
+                    //only_kept_gme[cur_gme_t.type].push_back( cur_gme_t.index ) ;
+
+                    index_t pos = RINGMesh::find( gme_in_interface[cur_gme_t.type],
+                        cur_gme_t.index ) ;
+                    if( pos == NO_ID ) {
+                        // It is a gme not inside the interface but which has a
+                        // node with the same location (example: an horizon in
+                        // contact with a fault interface).
+                        continue ;
+                    }
+                    only_kept_gme_vertices.push_back(
+                        gme_vertices[gme_vertex_itr] ) ;
+                    if( !gme_to_move[cur_gme_t.type][pos] ) {
+                        to_move = false ;
+                        break ;
+                    }
+                }
+
+                if( to_move ) {
+                    // move all the gme.
+                    for( index_t gme_vertex_itr = 0;
+                        gme_vertex_itr < only_kept_gme_vertices.size();
+                        ++gme_vertex_itr ) {
+
+                        // Move only_kept_gme_vertices[gme_vertex_itr].gme_t
+                        // at vertex only_kept_gme_vertices[gme_vertex_itr].v_id
+
+                        /// @todo find the correct displacement
+                    }
+                }
+            }
+        }
     }
 }

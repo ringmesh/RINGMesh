@@ -77,6 +77,11 @@ namespace RINGMesh {
             const std::vector< std::vector< index_t > >& to_erase_by_type,
             std::vector< std::vector< bool > >& gme_to_move,
             std::vector< std::vector< index_t > >& gme_in_interface ) ;
+        void apply_translation_on_gme_to_move(
+            const GME::gme_t& interface_gme_t,
+            const std::vector< std::vector< index_t > >& to_erase_by_type,
+            const std::vector< std::vector< bool > >& gme_to_move,
+            const std::vector< std::vector< index_t > >& gme_in_interface ) ;
     } ;
 
 }
