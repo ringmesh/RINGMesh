@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
     GEO::Logger::instance()->set_quiet(false);
     GEO::CmdLine::import_arg_group("standard");
     std::vector<std::string> filenames;
-    if(!GEO::CmdLine::parse(argc, argv, filenames, "<filename>")) {
+    if(!GEO::CmdLine::parse(argc, argv, filenames, "filename")) {
         return 1;
     }
     try {

@@ -797,7 +797,7 @@ namespace GLUP {
         
         //  I observed that without these instructions,
         // glGet() does not always
-        // returns the latest set values under Windows.
+        // return the latest set values under Windows.
         glFlush();
         glFinish();
 

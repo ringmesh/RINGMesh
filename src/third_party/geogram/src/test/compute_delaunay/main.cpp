@@ -183,12 +183,10 @@ int main(int argc, char** argv) {
                     index_t t = delaunay->nb_finite_cells();
                     t < delaunay->nb_cells(); ++t
                 ) {
-                    if(delaunay->cell_is_infinite(t)) {
-                        for(index_t lv=0; lv<4; ++lv) {
-                            signed_index_t v = delaunay->cell_vertex(t,lv);
-                            if(v != -1) {
-                                tri2v.push_back(index_t(v));
-                            }
+                    for(index_t lv=0; lv<4; ++lv) {
+                        signed_index_t v = delaunay->cell_vertex(t,lv);
+                        if(v != -1) {
+                            tri2v.push_back(index_t(v));
                         }
                     }
                 }

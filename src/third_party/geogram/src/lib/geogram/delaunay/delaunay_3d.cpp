@@ -292,97 +292,16 @@ namespace GEO {
         // we reuse it for storing the conversion array that
         // maps old tet indices to new tet indices
         // Note: tet_is_real() uses the previous value of 
-        // cell_next(), but:
-        //   when keep_infinite_ is true, we lookup the value
-        // of cell_next() only once before modifying it.
-        //   when keep_infinite_ is false, we are processing indices
+        // cell_next(), but we are processing indices
         // in increasing order and since old2new[t] is always
         // smaller or equal to t, we never overwrite a value
         // before needing it.
-        vector<index_t>& old2new = cell_next_;
-
-        index_t nb_tets = 0;
-
-
-        // In "keep_infinite" mode, we reorder the cells in such
-        // a way that finite cells have indices [0..nb_finite_cells_-1]
-        // and infinite cells have indices [nb_finite_cells_ .. nb_cells_-1]
         
-        if(keep_infinite_) {
-
-            // Count finite tets -> nb_finite_cells_
-            // Count total number fo tets ->
-            //    nb_tets = nb_finite_cells + nb infinite cells
-            nb_finite_cells_ = 0;
-            for(index_t t = 0; t < max_t(); ++t) {
-                if(!tet_is_free(t)) {
-                    if(tet_is_real(t)) {
-                        ++nb_finite_cells_;
-                    }
-                    ++nb_tets;
-                }
-            }
-
-            // Compute permutation
-            
-            index_t cur_real_t = 0;
-            index_t cur_infinite_t = nb_finite_cells_;
-            index_t cur_free_t = nb_tets;
-
-            for(index_t t = 0; t < max_t(); ++t) {
-                if(tet_is_free(t)) {
-                    old2new[t] = cur_free_t;
-                    ++cur_free_t;
-                } else {
-                    if(tet_is_real(t)) {
-                        old2new[t] = cur_real_t;
-                        ++cur_real_t;
-                    } else {
-                        old2new[t] = cur_infinite_t;
-                        ++cur_infinite_t;
-                    }
-                }
-            }
-
-            // Update the cell-to-cell links
-
-            for(index_t t=0; t<max_t(); ++t) {
-                if(!tet_is_free(t)) {
-                    for(index_t lv=0; lv<4; ++lv) {
-                        index_t i = t+lv;
-                        signed_index_t t = cell_to_cell_store_[i];
-                        geo_debug_assert(t != -1);
-                        t = signed_index_t(old2new[t]);
-                        geo_debug_assert(t != -1);
-                        cell_to_cell_store_[i] = t;
-                    }
-                }
-            }
-
-            // The permutation applied to the cells
-            // is the inverse of the lookup applied
-            // to the cell-to-cell links at the
-            // previous step (as in the permute_elements()
-            // function of the Mesh class).
-            
-            Permutation::invert(old2new);
-            
-            Permutation::apply(
-                cell_to_cell_store_.data(),
-                old2new,
-                index_t(sizeof(index_t)*4)
-            );
-
-            Permutation::apply(
-                cell_to_v_store_.data(),
-                old2new,
-                index_t(sizeof(index_t)*4)
-            );
-            
-            cell_to_v_store_.resize(4 * nb_tets);
-            cell_to_cell_store_.resize(4 * nb_tets);
-            
-        } else {
+        vector<index_t>& old2new = cell_next_;
+        index_t nb_tets = 0;
+        index_t nb_tets_to_delete = 0;
+        
+        {
             for(index_t t = 0; t < max_t(); ++t) {
                 if(
                     (keep_infinite_ && !tet_is_free(t)) ||
@@ -404,13 +323,14 @@ namespace GEO {
                     ++nb_tets;
                 } else {
                     old2new[t] = index_t(-1);
+                    ++nb_tets_to_delete;
                 }
             }
             cell_to_v_store_.resize(4 * nb_tets);
             cell_to_cell_store_.resize(4 * nb_tets);
             for(index_t i = 0; i < 4 * nb_tets; ++i) {
                 signed_index_t t = cell_to_cell_store_[i];
-                geo_debug_assert(t != -1);
+                geo_debug_assert(t >= 0);
                 t = signed_index_t(old2new[t]);
                 // Note: t can be equal to -1 when a real tet is
                 // adjacent to a virtual one (and this is how the
@@ -419,8 +339,67 @@ namespace GEO {
                 cell_to_cell_store_[i] = t;
             }
         }
-        
 
+        // In "keep_infinite" mode, we reorder the cells in such
+        // a way that finite cells have indices [0..nb_finite_cells_-1]
+        // and infinite cells have indices [nb_finite_cells_ .. nb_cells_-1]
+        
+        if(keep_infinite_) {
+            nb_finite_cells_ = 0;
+            index_t finite_ptr = 0;
+            index_t infinite_ptr = nb_tets - 1;
+            for(;;) {
+                while(tet_is_finite(finite_ptr)) {
+                    old2new[finite_ptr] = finite_ptr;
+                    ++finite_ptr;
+                    ++nb_finite_cells_;
+                }
+                while(!tet_is_finite(infinite_ptr)) {
+                    old2new[infinite_ptr] = infinite_ptr;
+                    --infinite_ptr;
+                }
+                if(finite_ptr > infinite_ptr) {
+                    break;
+                }
+                old2new[finite_ptr] = infinite_ptr;
+                old2new[infinite_ptr] = finite_ptr;
+                ++nb_finite_cells_;
+                for(index_t lf=0; lf<4; ++lf) {
+                    geo_swap(
+                        cell_to_cell_store_[4*finite_ptr + lf],
+                        cell_to_cell_store_[4*infinite_ptr + lf]
+                    );
+                }
+                for(index_t lv=0; lv<4; ++lv) {
+                    geo_swap(
+                        cell_to_v_store_[4*finite_ptr + lv],
+                        cell_to_v_store_[4*infinite_ptr + lv]
+                    );
+                }
+                ++finite_ptr;
+                --infinite_ptr;
+            }
+            for(index_t i = 0; i < 4 * nb_tets; ++i) {
+                signed_index_t t = cell_to_cell_store_[i];
+                geo_debug_assert(t >= 0);
+                t = signed_index_t(old2new[t]);
+                geo_debug_assert(t >= 0);
+                cell_to_cell_store_[i] = t;
+            }
+        }
+
+        if(benchmark_mode_) {
+            if(keep_infinite_) {
+                Logger::out("DelCompress") 
+                    << "Removed " << nb_tets_to_delete 
+                    << " tets (free list)" << std::endl;
+            } else {
+                Logger::out("DelCompress") 
+                    << "Removed " << nb_tets_to_delete 
+                    << " tets (free list and infinite)" << std::endl;
+            }
+        }
+        
         set_arrays(
             nb_tets,
             cell_to_v_store_.data(), cell_to_cell_store_.data()
