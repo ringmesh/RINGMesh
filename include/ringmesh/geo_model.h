@@ -241,8 +241,9 @@ namespace RINGMesh {
         ringmesh_disable_copy( GeoModelElementModifier ) ;
         public:
             virtual GME* new_element( index_t id ) const = 0 ;
-            const std::vector< GME* >& elements() const {
-                return elements() ;
+            const std::vector< GME* >& elements() const
+            {
+                return const_cast< GeoModelElementModifier* >( this )->elements() ;
             }
             virtual std::vector< GME* >& elements() = 0 ;
             virtual ~GeoModelElementModifier()
@@ -287,7 +288,7 @@ namespace RINGMesh {
 
         const GeoModelElementModifier& gme_modifier( GME::TYPE type ) const
         {
-            return gme_modifier( type ) ;
+            return const_cast< GeoModel* >( this )->gme_modifier( type ) ;
         }
 
     private:
