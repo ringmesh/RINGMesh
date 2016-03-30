@@ -341,6 +341,19 @@ namespace RINGMesh {
         // Initialization of the mapping to know which GME of the interface to move.
         std::vector< std::vector< bool > > gme_to_move ;
         std::vector< std::vector< index_t > > gme_in_interface ;
+        fill_info_gme_interfation_motion( interface_gme_t, to_erase_by_type,
+            gme_to_move, gme_in_interface ) ;
+
+        /*const std::vector< GMEVertex >& bmes = M.mesh.vertices.gme_vertices(
+         i ) ;*/
+    }
+
+    void DuplicateInterfaceBuilder::fill_info_gme_interfation_motion(
+        const GME::gme_t& interface_gme_t,
+        const std::vector< std::vector< index_t > >& to_erase_by_type,
+        std::vector< std::vector< bool > >& gme_to_move,
+        std::vector< std::vector< index_t > >& gme_in_interface )
+    {
         gme_to_move.resize( GME::REGION ) ; // 4 = Corner, Line, Surface, Region (same as enum GME::TYPE)
         gme_in_interface.resize( GME::REGION ) ; // 4 = Corner, Line, Surface, Region (same as enum GME::TYPE)
 
@@ -439,8 +452,5 @@ namespace RINGMesh {
         gme_to_move[GME::SURFACE].resize( new_nb_surfaces, true ) ;
         // Each surface on the duplicated interface has only one single region has in_boundary.
         gme_to_move[GME::REGION].resize( new_nb_surfaces, true ) ;
-
-        /*const std::vector< GMEVertex >& bmes = M.mesh.vertices.gme_vertices(
-         i ) ;*/
     }
 }

@@ -72,6 +72,11 @@ namespace RINGMesh {
         void translate_new_interface_by_epsilon_to_avoid_colocation(
             const GME::gme_t& interface_gme_t,
             const std::vector< std::vector< index_t > >& to_erase_by_type ) ;
+        void fill_info_gme_interfation_motion(
+            const GME::gme_t& interface_gme_t,
+            const std::vector< std::vector< index_t > >& to_erase_by_type,
+            std::vector< std::vector< bool > >& gme_to_move,
+            std::vector< std::vector< index_t > >& gme_in_interface ) ;
     } ;
 
 }
