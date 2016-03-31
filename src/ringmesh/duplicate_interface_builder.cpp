@@ -38,6 +38,8 @@
 #include <geogram/mesh/mesh_io.h>
 #include <ringmesh/geometry.h>
 #include <ringmesh/algorithm.h>
+#include <geogram/basic/geometry.h>
+#include <geogram/mesh/mesh_geometry.h>
 
 /*!
  * @file ringmesh/duplicate_interface_builder.cpp
@@ -192,10 +194,10 @@ namespace RINGMesh {
         build_merged_and_bad_lines( surfaces_boundary_regions_side_minus, "_minus",
             to_erase_by_type, interface_minus_gme_t ) ;
 
-        translate_new_interface_by_epsilon_to_avoid_colocation( interface_plus_gme_t,
+        /*translate_new_interface_by_epsilon_to_avoid_colocation( interface_plus_gme_t,
             to_erase_by_type ) ;
         translate_new_interface_by_epsilon_to_avoid_colocation(
-            interface_minus_gme_t, to_erase_by_type ) ;
+            interface_minus_gme_t, to_erase_by_type ) ;*/
 
         delete_elements( to_erase_by_type ) ;
 
@@ -346,9 +348,6 @@ namespace RINGMesh {
             gme_to_move, gme_in_interface ) ;
         apply_translation_on_gme_to_move( interface_gme_t, to_erase_by_type,
             gme_to_move, gme_in_interface ) ;
-
-        /*const std::vector< GMEVertex >& bmes = M.mesh.vertices.gme_vertices(
-         i ) ;*/
     }
 
     void DuplicateInterfaceBuilder::fill_info_gme_interfation_motion(
@@ -357,8 +356,8 @@ namespace RINGMesh {
         std::vector< std::vector< bool > >& gme_to_move,
         std::vector< std::vector< index_t > >& gme_in_interface )
     {
-        gme_to_move.resize( GME::REGION ) ; // 4 = Corner, Line, Surface, Region (same as enum GME::TYPE)
-        gme_in_interface.resize( GME::REGION ) ; // 4 = Corner, Line, Surface, Region (same as enum GME::TYPE)
+        gme_to_move.resize( GME::REGION + 1 ) ; // 4 = Corner, Line, Surface, Region (same as enum GME::TYPE)
+        gme_in_interface.resize( GME::REGION + 1 ) ; // 4 = Corner, Line, Surface, Region (same as enum GME::TYPE)
 
         index_t new_nb_surfaces = 0 ;
         for( index_t child_itr = 0;
@@ -464,6 +463,17 @@ namespace RINGMesh {
         const std::vector< std::vector< bool > >& gme_to_move,
         const std::vector< std::vector< index_t > >& gme_in_interface )
     {
+        const GeoModelElement& interface_gme = model_.one_interface(
+            interface_gme_t.index ) ;
+        for( index_t child_itr = 0; child_itr < interface_gme.nb_children();
+            ++child_itr ) {
+            const GeoModelElement& cur_child = interface_gme.child( child_itr ) ;
+            ringmesh_assert(cur_child.type() == GME::SURFACE) ;
+            const Surface& cur_surface = model_.surface( cur_child.index() ) ;
+            GEO::Mesh& cur_surf_mesh = cur_surface.mesh() ;
+            GEO::compute_normals( cur_surf_mesh ) ;
+        }
+
         const GeoModelMeshVertices& gmmv = model_.mesh.vertices ;
         // In this function we iterate on all the nodes of the interface
         // by iterating on all the nodes of all the children (surfaces).
@@ -474,8 +484,6 @@ namespace RINGMesh {
         // and so just one in the GeoModelMesh.
         std::vector< bool > has_moved( gmmv.nb(), false ) ; /// @todo treated is a better than moved since motion is not mandatory
 
-        const GeoModelElement& interface_gme = model_.one_interface(
-            interface_gme_t.index ) ;
         for( index_t child_itr = 0; child_itr < interface_gme.nb_children();
             ++child_itr ) {
             const GeoModelElement& cur_child = interface_gme.child( child_itr ) ;
@@ -541,17 +549,52 @@ namespace RINGMesh {
                     }
                 }
 
-                if( to_move ) {
-                    // move all the gme.
-                    for( index_t gme_vertex_itr = 0;
-                        gme_vertex_itr < only_kept_gme_vertices.size();
-                        ++gme_vertex_itr ) {
+                if( !to_move ) {
+                    continue ;
+                }
 
-                        // Move only_kept_gme_vertices[gme_vertex_itr].gme_t
-                        // at vertex only_kept_gme_vertices[gme_vertex_itr].v_id
-
-                        /// @todo find the correct displacement
+                // Finds normal and side of displacement
+                vec3 displacement ;
+                for( index_t gme_vertex_itr = 0;
+                    gme_vertex_itr < only_kept_gme_vertices.size();
+                    ++gme_vertex_itr ) {
+                    const GME::gme_t& cur_gme_t =
+                        only_kept_gme_vertices[gme_vertex_itr].gme_id ;
+                    if( cur_gme_t.type == GME::SURFACE ) {
+                        const Surface& cur_surf = model_.surface( cur_gme_t.index ) ;
+                        // only one side for the sided interface
+                        ringmesh_assert( cur_surf.nb_in_boundary() == 1 ) ;
+                        const GeoModelElement& in_boun = cur_surf.in_boundary( 0 ) ;
+                        ringmesh_assert( in_boun.type() == GME::REGION ) ;
+                        const Region& cur_reg = model_.region( in_boun.index() ) ;
+                        index_t local_surf_id = find_local_boundary_id( cur_reg,
+                            cur_surf ) ;
+                        bool side = cur_reg.side( local_surf_id ) ;
+                        const vec3& normal = GEO::Geom::mesh_vertex_normal(
+                            cur_surf.mesh(),
+                            only_kept_gme_vertices[gme_vertex_itr].v_id ) ;
+                        if( side ) {
+                            displacement = normal ;
+                        } else {
+                            displacement = -1 * normal ;
+                        }
+                        displacement *= 0.6 * 5 ; // @todo change to epsilon, 5 to see something in debugging
+                        break ;
                     }
+                }
+
+                // move all the gme.
+                for( index_t gme_vertex_itr = 0;
+                    gme_vertex_itr < only_kept_gme_vertices.size();
+                    ++gme_vertex_itr ) {
+
+                    // Move only_kept_gme_vertices[gme_vertex_itr].gme_t
+                    // at vertex only_kept_gme_vertices[gme_vertex_itr].v_id
+                    GEO::Mesh& cur_mesh = model_.mesh_element(
+                        only_kept_gme_vertices[gme_vertex_itr].gme_id ).mesh() ;
+                    vec3& cur_pos = cur_mesh.vertices.point(
+                        only_kept_gme_vertices[gme_vertex_itr].v_id ) ;
+                    cur_pos += displacement ;
                 }
             }
         }
