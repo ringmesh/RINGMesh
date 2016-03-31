@@ -275,10 +275,6 @@ namespace RINGMesh {
                         line_itr ) ;
                     ringmesh_assert( cur_line_gme.type() == GME::LINE ) ;
 
-                    const Line& ll = dynamic_cast< const Line& >( cur_line_gme ) ;
-                    GEO::mesh_save( ll.mesh(),
-                        "line_" + GEO::String::to_string( line_itr ) + ".meshb" ) ;
-
                     if( all_surface_lines.find( cur_line_gme.index() )
                         == all_surface_lines.end() ) {
                         all_surface_lines[cur_line_gme.index()] = 0 ; // initialization
@@ -468,11 +464,46 @@ namespace RINGMesh {
             ringmesh_assert(cur_child.type() == GME::SURFACE) ;
             const Surface& cur_surface = model_.surface( cur_child.index() ) ;
             GEO::Mesh& cur_surf_mesh = cur_surface.mesh() ;
-            GEO::compute_normals( cur_surf_mesh ) ;
+            // GEO::compute_normals cannot be used because the dimension
+            // of the vertices from 3 to 6 and that provokes a problem
+            // of copying in GeoModelMeshVertices::initialize
+            // with GEO::Memory::copy( mesh_.vertices.point_ptr( count ),
+            // E.vertex( 0 ).data(), 3 * E.nb_vertices() * sizeof(double) ) ;
+            // 3 means vertices of dimension 3 and not another dimension.
+            GEO::Attribute< double > normal_att_x(
+                cur_surf_mesh.vertices.attributes(), "normal_attr_x" ) ;
+            GEO::Attribute< double > normal_att_y(
+                cur_surf_mesh.vertices.attributes(), "normal_attr_y" ) ;
+            GEO::Attribute< double > normal_att_z(
+                cur_surf_mesh.vertices.attributes(), "normal_attr_z" ) ;
+            normal_att_x.fill( 0. ) ;
+            normal_att_y.fill( 0. ) ;
+            normal_att_z.fill( 0. ) ;
+            // begin copy paste from GEO::compute_normals
+            for( index_t f = 0; f < cur_surf_mesh.facets.nb(); f++ ) {
+                vec3 N = GEO::Geom::mesh_facet_normal( cur_surf_mesh, f ) ;
+                for( index_t corner = cur_surf_mesh.facets.corners_begin( f );
+                    corner < cur_surf_mesh.facets.corners_end( f ); corner++ ) {
+                    index_t v = cur_surf_mesh.facet_corners.vertex( corner ) ;
+                    normal_att_x[v] += N.x ;
+                    normal_att_y[v] += N.y ;
+                    normal_att_z[v] += N.z ;
+                }
+            }
+            for( index_t i = 0; i < cur_surf_mesh.vertices.nb(); i++ ) {
+                vec3 cur_normal( normal_att_x[i], normal_att_y[i],
+                    normal_att_z[i] ) ;
+                cur_normal = normalize( cur_normal ) ;
+                normal_att_x[i] = cur_normal.x ;
+                normal_att_y[i] = cur_normal.y ;
+                normal_att_z[i] = cur_normal.z ;
+            }
+            // end copy paste from GEO::compute_normals
         }
 
         // Clear to take into account the new gme in the geomodel.
         model_.mesh.vertices.clear() ;
+
         const GeoModelMeshVertices& gmmv = model_.mesh.vertices ;
         // In this function we iterate on all the nodes of the interface
         // by iterating on all the nodes of all the children (surfaces).
@@ -500,23 +531,6 @@ namespace RINGMesh {
                 // Gets all the GME with a vertex colocated to the one of vertex_id_in_gmm
                 const std::vector< GMEVertex >& gme_vertices = gmmv.gme_vertices(
                     vertex_id_in_gmm ) ;
-
-                // The idea of these commented lines was the store separately
-                // the corners, the lines, the surfaces and the regions and then
-                // check the motion by order of priority. If the corner cannot
-                // move so no motion. If it may move so motion. So the motion is
-                // imposed by the corner if any. If no corner so the motion is imposed
-                // by the lines if any...
-                // For now I do not do that. For now if at least one gme forbids
-                // the motion so no motion. We will see if it works.
-                /*std::vector< std::vector< index_t > > only_kept_gme ;
-                 only_kept_gme.resize( GME::REGION ) ;
-
-                 for( index_t type_itr = 0; type_itr < GME::REGION; ++type_itr ) {
-                 only_kept_gme[type_itr].reserve( gme_vertices.size() ) ; // a little large but no implicit resize
-                 // needed to ensure if there are both corner and lines.... to evaluate motion priority
-                 ringmesh_assert(only_kept_gme[type_itr].size()==0) ;
-                 }*/
 
                 bool to_move = true ;
                 std::vector< GMEVertex > only_kept_gme_vertices ;
@@ -569,16 +583,28 @@ namespace RINGMesh {
                         index_t local_surf_id = find_local_boundary_id( cur_reg,
                             cur_surf ) ;
                         bool side = cur_reg.side( local_surf_id ) ;
-                        const vec3& normal = GEO::Geom::mesh_vertex_normal(
-                            cur_surf.mesh(),
-                            only_kept_gme_vertices[gme_vertex_itr].v_id ) ;
+
+                        GEO::Attribute< double > normal_att_x(
+                            cur_surf.mesh().vertices.attributes(),
+                            "normal_attr_x" ) ;
+                        GEO::Attribute< double > normal_att_y(
+                            cur_surf.mesh().vertices.attributes(),
+                            "normal_attr_y" ) ;
+                        GEO::Attribute< double > normal_att_z(
+                            cur_surf.mesh().vertices.attributes(),
+                            "normal_attr_z" ) ;
+                        vec3 normal(
+                            normal_att_x[only_kept_gme_vertices[gme_vertex_itr].v_id],
+                            normal_att_y[only_kept_gme_vertices[gme_vertex_itr].v_id],
+                            normal_att_z[only_kept_gme_vertices[gme_vertex_itr].v_id] ) ;
+
                         ringmesh_assert( std::abs(normal.length() -1.)<epsilon ) ;
                         if( side ) {
                             displacement = normal ;
                         } else {
                             displacement = -1 * normal ;
                         }
-                        displacement *= 1.5 * 200 ;
+                        displacement *= 1.5 * epsilon ;
                         break ;
                     }
                 }
