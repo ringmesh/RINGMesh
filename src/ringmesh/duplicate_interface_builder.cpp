@@ -194,10 +194,10 @@ namespace RINGMesh {
         build_merged_and_bad_lines( surfaces_boundary_regions_side_minus, "_minus",
             to_erase_by_type, interface_minus_gme_t ) ;
 
-        /*translate_new_interface_by_epsilon_to_avoid_colocation( interface_plus_gme_t,
+        translate_new_interface_by_epsilon_to_avoid_colocation( interface_plus_gme_t,
             to_erase_by_type ) ;
         translate_new_interface_by_epsilon_to_avoid_colocation(
-            interface_minus_gme_t, to_erase_by_type ) ;*/
+            interface_minus_gme_t, to_erase_by_type ) ;
 
         delete_elements( to_erase_by_type ) ;
 
@@ -338,9 +338,6 @@ namespace RINGMesh {
         const GME::gme_t& interface_gme_t,
         const std::vector< std::vector< index_t > >& to_erase_by_type )
     {
-        // Clear to take into account the new gme in the geomodel.
-        model_.mesh.vertices.clear() ; ///@todo do it in DuplicateInterfaceBuilder::apply_translation_on_gme_to_move ???
-
         // Initialization of the mapping to know which GME of the interface to move.
         std::vector< std::vector< bool > > gme_to_move ;
         std::vector< std::vector< index_t > > gme_in_interface ;
@@ -474,6 +471,8 @@ namespace RINGMesh {
             GEO::compute_normals( cur_surf_mesh ) ;
         }
 
+        // Clear to take into account the new gme in the geomodel.
+        model_.mesh.vertices.clear() ;
         const GeoModelMeshVertices& gmmv = model_.mesh.vertices ;
         // In this function we iterate on all the nodes of the interface
         // by iterating on all the nodes of all the children (surfaces).
@@ -573,12 +572,13 @@ namespace RINGMesh {
                         const vec3& normal = GEO::Geom::mesh_vertex_normal(
                             cur_surf.mesh(),
                             only_kept_gme_vertices[gme_vertex_itr].v_id ) ;
+                        ringmesh_assert( std::abs(normal.length() -1.)<epsilon ) ;
                         if( side ) {
                             displacement = normal ;
                         } else {
                             displacement = -1 * normal ;
                         }
-                        displacement *= 0.6 * 5 ; // @todo change to epsilon, 5 to see something in debugging
+                        displacement *= 1.5 * 200 ;
                         break ;
                     }
                 }
