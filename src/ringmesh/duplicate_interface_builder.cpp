@@ -418,7 +418,13 @@ namespace RINGMesh {
                             == gme_in_interface[GME::LINE].end() ) {
                             gme_in_interface[GME::LINE].push_back(
                                 line_gme.index() ) ;
-                            gme_to_move[GME::LINE].push_back( true ) ;
+                            // If there is no duplicated line in the other
+                            // side, it is not necessary to move this line.
+                            gme_to_move[GME::LINE].push_back( false ) ;
+                            // If one day we decide to move such line, do not
+                            // forget to also move its in_boundaries which are
+                            // not necessarily on the fault interface (horizon)
+//                            gme_to_move[GME::LINE].push_back( true ) ;
                         }
                     }
 
