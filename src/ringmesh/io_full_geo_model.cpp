@@ -415,6 +415,14 @@ namespace {
         logger->set_quiet( true ) ;
         GEO::MeshIOFlags flags ;
 //        flags.set_attribute( GEO::MESH_ALL_ATTRIBUTES ) ;
+        if( geo_model_element_mesh.type() == GME::REGION ) {
+            const Region& region = geo_model_element_mesh.model().region(
+                geo_model_element_mesh.index() ) ;
+            if( !region.is_meshed() ) {
+                // a region is not necessary meshed.
+                return ;
+            }
+        }
         GEO::mesh_save( geo_model_element_mesh.mesh(), name, flags ) ;
         logger->set_quiet( false ) ;
 
