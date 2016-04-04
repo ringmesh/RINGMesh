@@ -774,11 +774,16 @@ namespace RINGMesh {
      * @details Returns the midpoint of A: the barycenter of the 1st facet of the 1st Surface 
      * and B: the closest point of a A in the other Surfaces defining the Region.
      * @warning Incomplete implementation.
+     * @warning: If the Region is a non-convex bubble point may not be inside.
      */
     vec3 generate_point_in_region( const Region& region )
     {
-        /// @todo To implement for bubbles
-        ringmesh_assert( region.nb_boundaries() > 1 ) ;
+        if( region.nb_boundaries() == 1 ) {                    
+            /// @todo This might fail if the Region is non-convex
+            return model_element_center( region.boundary(0) );
+        }
+
+        ringmesh_assert( region.nb_boundaries() > 0 ) ;
         
         const GeoModel& geomodel = region.model() ;
         const Surface& first_boundary_surface = geomodel.surface( region.boundary_gme( 0 ).index ) ; 
