@@ -7,6 +7,7 @@ aux_source_directories(SOURCES "Source Files\\glut_viewer" glut_viewer)
 aux_source_directories(SOURCES "Source Files\\api"         api)
 aux_source_directories(SOURCES "Source Files\\basic"       basic)
 aux_source_directories(SOURCES "Source Files\\mesh"        mesh)
+aux_source_directories(SOURCES "Source Files\\GLUP"        GLUP)
 
 add_library(geogram_gfx ${SOURCES} $<TARGET_OBJECTS:geogram_gfx_third_party>)
 

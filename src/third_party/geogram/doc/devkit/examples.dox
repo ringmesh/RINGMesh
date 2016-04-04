@@ -130,12 +130,12 @@ Remeshing (graded):
 
 Repair:
 \code
-   vorpaline profile=repair input_surface.meshb output_surface.meshb
+   vorpalite profile=repair input_surface.meshb output_surface.meshb
 \endcode
 
 Tetrahedral meshing (through bundled TetGen, by Hang Si):
 \code
-   vorpaline profile=tet input_surface.meshb output_tetrahedral_mesh.meshb
+   vorpalite profile=tet input_surface.meshb output_tetrahedral_mesh.meshb
 \endcode
 
 compute_delaunay

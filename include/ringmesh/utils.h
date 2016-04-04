@@ -47,7 +47,6 @@
  * @author Arnaud Botella
  */
 
-
 namespace RINGMesh {
 
     /*! @brief A safer narrow casting function of type S to type T
@@ -61,7 +60,7 @@ namespace RINGMesh {
     {
         T r = static_cast< T >( in ) ;
         if( static_cast< S >( r ) != in ) {
-            ringmesh_assert_not_reached;
+            ringmesh_assert_not_reached ;
         }
         return r ;
     }

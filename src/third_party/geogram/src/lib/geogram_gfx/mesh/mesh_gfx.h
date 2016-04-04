@@ -47,7 +47,7 @@
 #define __GEOGRAM_GFX_MESH_GFX__
 
 #include <geogram_gfx/basic/common.h>
-#include <geogram_gfx/basic/GLUP.h>
+#include <geogram_gfx/GLUP/GLUP.h>
 #include <geogram/mesh/mesh.h>
 
 /**
@@ -436,10 +436,11 @@ namespace GEO {
          */
         void set_cells_colors_by_type() {
             cells_colors_by_type_ = true;
-            set_cells_color(MESH_TET,     1.0f, 0.0f, 0.0f);
-            set_cells_color(MESH_HEX,     0.9f, 0.9f, 0.9f);
-            set_cells_color(MESH_PRISM,   0.0f, 1.0f, 0.0f);
-            set_cells_color(MESH_PYRAMID, 0.0f, 0.0f, 1.0f);            
+            set_cells_color(MESH_TET,       1.0f, 0.0f, 0.0f);
+            set_cells_color(MESH_HEX,       0.9f, 0.9f, 0.9f);
+            set_cells_color(MESH_PRISM,     0.0f, 1.0f, 0.0f);
+            set_cells_color(MESH_PYRAMID,   0.0f, 0.0f, 1.0f);
+            set_cells_color(MESH_CONNECTOR, 1.0f, 0.8f, 0.0f);            
         }
         
         /**
@@ -544,16 +545,136 @@ namespace GEO {
         const std::string& get_vertices_selection() const {
             return vertices_selection_;
         }
+
+        /**
+         * \brief Sets the parameters for displaying a
+         *  scalar attribute using texture mapping.
+         * \param[in] subelement one of MESH_VERTICES, MESH_FACETS,
+         *  MESH_FACET_CORNERS, MESH_CELLS, MESH_CELL_CORNERS,
+         *  MESH_CELL_FACETS
+         * \param[in] name name of the attribute with an optional index,
+         *   for instance, "foobar[5]" refers to the 5th coordinate of
+         *   the "foobar" vector attribute.
+         * \param[in] attr_min value of the attribute that is bound to 
+         *   the leftmost color in the colormap
+         * \param[in] attr_max value of the attribute that is bound to
+         *   the rightmost color in the colormap
+         * \param[in] colormap_texture the texture to be used to display
+         *   the attribute colors
+         */
+        void set_scalar_attribute(
+            MeshElementsFlags subelements,
+            const std::string& name,
+            double attr_min, double attr_max,
+            GLuint colormap_texture,
+            index_t repeat = 1
+        );
+
+        /**
+         * \brief Unsets scalar attribute display.
+         */
+        void unset_scalar_attribute() {
+            attribute_subelements_ = MESH_NONE;
+            attribute_min_ = 0.0;
+            attribute_max_ = 0.0;
+            attribute_colormap_texture_ = 0;
+            attribute_repeat_ = 1;
+        }
         
     protected:
+        
+        void draw_vertices_array();
+        void draw_vertices_immediate_plain();
+        void draw_vertices_immediate_attrib();
+        void draw_vertices_selection();
+        
+        void draw_edges_array();
+        void draw_edges_immediate_plain();
+        void draw_edges_immediate_attrib();
 
+        void draw_triangles();
+        void draw_triangles_array();
+        void draw_triangles_immediate_plain();
+        void draw_triangles_immediate_attrib();
+
+        void draw_triangles_and_quads();
+        void draw_triangles_and_quads_array();
+        void draw_triangles_and_quads_immediate_plain();
+        void draw_triangles_and_quads_immediate_attrib();
+
+        void draw_polygons();
+        void draw_polygons_plain();
+        void draw_polygons_attrib();
+
+        void draw_tets();
+        void draw_tets_array();
+        void draw_tets_immediate_plain();
+        void draw_tets_immediate_attrib();
+        
+        void draw_hybrid();
+        void draw_hybrid_array();
+        void draw_hybrid_immediate_plain();
+        void draw_hybrid_immediate_attrib();
+        
         void set_cells_color(MeshCellType type, float r, float g, float b) {
             cells_color_[type][0] = r;
             cells_color_[type][1] = g;
             cells_color_[type][2] = b;            
         }
-        
-        inline void draw_vertex(index_t v) {
+
+        void draw_vertex_with_attribute(index_t vertex) {
+            if(
+                picking_mode_ == MESH_NONE &&
+                attribute_subelements_ == MESH_VERTICES
+            ) {
+                glupTexCoord1d(attribute_[vertex]);
+            }
+            draw_vertex(vertex);
+        }
+
+        void draw_surface_vertex_with_attribute(
+            index_t vertex, index_t facet, index_t corner
+        ) {
+            if(picking_mode_ == MESH_NONE) {
+                switch(attribute_subelements_) {
+                case MESH_VERTICES:
+                    glupTexCoord1d(attribute_[vertex]);
+                    break;
+                case MESH_FACETS:
+                    glupTexCoord1d(attribute_[facet]);
+                    break;
+                case MESH_FACET_CORNERS:
+                    glupTexCoord1d(attribute_[corner]);                
+                    break;
+                default:
+                    break;
+                }
+            }
+            draw_vertex(vertex);
+        }
+
+        void draw_volume_vertex_with_attribute(
+            index_t vertex, index_t cell, index_t cell_corner
+        ) {
+            if(picking_mode_ == MESH_NONE) {
+                switch(attribute_subelements_) {
+                case MESH_VERTICES:
+                    glupTexCoord1d(attribute_[vertex]);
+                    break;
+                case MESH_CELLS:
+                    glupTexCoord1d(attribute_[cell]);
+                    break;
+                case MESH_CELL_CORNERS:
+                    glupTexCoord1d(attribute_[cell_corner]);
+                    break;
+                default:
+                    break;
+                }
+            }
+            draw_vertex(vertex);
+        }
+
+        void draw_vertex(index_t v) {
             if(do_animation_) {
                 if(mesh_->vertices.single_precision()) {
                     const GLUPfloat* p =
@@ -586,6 +707,8 @@ namespace GEO {
                 }
             }
         }
+
+        void draw_surface_mesh_with_lines();
         
         /**
          * \brief Sets GLUP drawing parameters.
@@ -619,10 +742,63 @@ namespace GEO {
          */
         void update_buffer_objects_if_needed();
 
+
+        /**
+         * \brief Updates the buffer objects used to display attributes.
+         * \details The buffer objects are updated if 
+         *  attribute_buffer_objects_dirty_
+         *  is set, then attribute_buffer_objects_dirty_ is reset. If 
+         *  attribute_buffer_objects_dirty_ is not set, it checks whether 
+         *  the sizes of the buffer objects match the size of the mesh arrays.
+         */
+        void update_attribute_buffer_objects_if_needed();
+
+
+        /**
+         * \brief Binds the attribute buffer object to a Vertex Array
+         *  Object.
+         * \param[in] VAO one of vertices_VAO_, edges_VAO_, facets_VAO_
+         *  or cells_VAO_. If zero, the function does nothing.
+         * \pre attribute_.is_bound()
+         */
+        void bind_attribute_buffer_object(GLuint VAO);
+
+
+        /**
+         * \brief Unbinds the attribute buffer object from a Vertex
+         *   Array Object.
+         * \param[in] VAO one of vertices_VAO_, edges_VAO_, facets_VAO_
+         *  or cells_VAO_. If zero, the function does nothing.
+         */
+        void unbind_attribute_buffer_object(GLuint VAO);
+        
         /**
          * \brief Binds the vertices VBO to the current VAO.
          */
         void bind_vertices_VBO();
+
+        /**
+         * \brief Setups drawing for attributes.
+         * \details If no attribute is bound, does nothing.
+         */
+        void begin_attributes();
+
+        /**
+         * \brief Deactivates drawing for attributes.
+         */
+        void end_attributes();
+
+
+        /**
+         * \brief Tests whether array mode can be used
+         *  to draw a specified GLUP primitive.
+         * \param[in] prim the GLUP primitive
+         */
+        bool can_use_array_mode(GLUPprimitive prim) const;
+
+        void update_surface_elements();
+        
+        void update_volume_elements();
         
         /**
          * \brief Forbids MeshGfx copy..
@@ -665,6 +841,7 @@ namespace GEO {
         bool triangles_and_quads_;
 
         bool buffer_objects_dirty_;
+        bool attributes_buffer_objects_dirty_;
 
         GLuint vertices_VAO_;
         GLuint edges_VAO_;
@@ -675,6 +852,15 @@ namespace GEO {
         GLuint edge_indices_VBO_;
         GLuint facet_indices_VBO_;
         GLuint cell_indices_VBO_;
+        GLuint vertices_attribute_VBO_;
+        
+        MeshElementsFlags attribute_subelements_;
+        std::string attribute_name_;
+        double attribute_min_;
+        double attribute_max_;
+        GLuint attribute_colormap_texture_;
+        index_t attribute_repeat_;
+        ReadOnlyScalarAttributeAdapter attribute_;
     };
 
 }

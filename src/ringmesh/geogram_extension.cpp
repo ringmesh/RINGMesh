@@ -48,6 +48,24 @@
  * @todo Re-orgarnize this mess
  */
 
+namespace {
+    using namespace RINGMesh ;
+
+    /*!
+     * @return the cotangent (inverse of the tangent) at point b
+     * in the triangle abc.
+     */
+    double cotangent( const vec3& a, const vec3& b, const vec3& c )
+    {
+        const vec3 ba = a - b ;
+        const vec3 bc = c - b ;
+        const vec3 bc_cross_ba = GEO::cross( bc, ba ) ;
+        const double bc_dot_ba = GEO::dot( bc, ba ) ;
+        ringmesh_assert( bc_cross_ba.length() > epsilon ) ;
+        return bc_dot_ba / bc_cross_ba.length() ;
+    }
+}
+
 namespace RINGMesh {
 
     using GEO::vec3 ;
@@ -539,7 +557,49 @@ namespace RINGMesh {
         return result ;
     }
 
+    void barycentric_coordinates_point_inside_mesh_facet(
+        const vec3& point_inside_facet,
+        const GEO::Mesh& mesh,
+        index_t facet,
+        std::vector< double >& barycentric_coordinates )
+    {
+        const GEO::MeshVertices& mesh_vertices = mesh.vertices ;
+        const GEO::MeshFacets& mesh_facets = mesh.facets ;
+        ringmesh_assert( facet < mesh_facets.nb() ) ;
+        const index_t nb_vertices = mesh_facets.nb_vertices( facet ) ;
+        barycentric_coordinates.resize( nb_vertices, 0. ) ;
+        double sum = 0. ;
+        for( index_t facet_vertex_itr = 0;
+            facet_vertex_itr < mesh_facets.nb_vertices( facet );
+            ++facet_vertex_itr ) {
+            const index_t cur_vertex_id = mesh_facets.vertex( facet,
+                facet_vertex_itr ) ;
+            const vec3& cur_vertex_vec = mesh_vertices.point( cur_vertex_id ) ;
 
+            const index_t prev_local_id = mesh_facets.prev_corner_around_facet( facet,
+                cur_vertex_id ) ;
+            const index_t prev_id = mesh_facets.vertex( facet, prev_local_id ) ;
+            const vec3& prev_vec = mesh_vertices.point( prev_id ) ;
+            const index_t next_local_id = mesh_facets.next_corner_around_facet( facet,
+                cur_vertex_id ) ;
+            const index_t next_id = mesh_facets.vertex( facet, next_local_id ) ;
+            const vec3& next_vec = mesh_vertices.point( next_id ) ;
+
+            const double numerator = ( cotangent( point_inside_facet, cur_vertex_vec,
+                prev_vec )
+                + cotangent( point_inside_facet, cur_vertex_vec, next_vec ) ) ;
+            const double denominator =
+                ( point_inside_facet - cur_vertex_vec ).length2() ;
+            ringmesh_assert( denominator > epsilon ) ;
+            barycentric_coordinates[facet_vertex_itr] = numerator / denominator ;
+            sum += barycentric_coordinates[facet_vertex_itr] ;
+        }
+
+        ringmesh_assert( sum > epsilon ) ;
+        for( index_t i = 0; i < nb_vertices; ++i ) {
+            barycentric_coordinates[i] /= sum ;
+        }
+    }
 
 
     /*!

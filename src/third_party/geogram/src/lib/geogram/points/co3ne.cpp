@@ -2374,6 +2374,10 @@ namespace {
             min_cos_angle_ = ::cos(alpha);
         }
 
+        Mesh& mesh() {
+            return mesh_;
+        }
+        
     private:
         Mesh& mesh_;
         vector<double> new_vertices_;
@@ -2448,6 +2452,14 @@ namespace {
     }
 
     void Co3NeThread::run_normals_and_reconstruct() {
+
+        Attribute<double> normal;
+        if(CmdLine::get_arg_bool("co3ne:use_normals")) {
+            Process::enter_critical_section();
+            normal.bind_if_is_defined(master_->mesh().vertices.attributes(), "normal");
+            Process::leave_critical_section();
+        }
+        
         std::ofstream RVD_file; 
         bool debug_RVD = false;
         if(
@@ -2477,15 +2489,25 @@ namespace {
         Co3NeRestrictedVoronoiDiagram::Polygon P(100);
         Co3NeRestrictedVoronoiDiagram::Polygon Q(100);
         for(index_t i = from_; i < to_; i++) {
-            RVD.get_neighbors(
-                i, neigh, sq_dist, nb_neigh
-            );
-            least_squares_normal_.begin();
-            for(index_t jj = 0; jj < neigh.size(); jj++) {
-                least_squares_normal_.add_point(RVD.point(neigh[jj]));
+
+            vec3 N;
+            if(normal.is_bound()) {
+                RVD.get_neighbors(
+                    i, neigh, sq_dist, nb_neigh
+                );
+                N = vec3(normal[3*i], normal[3*i+1], normal[3*i+2]);
+            } else {
+                RVD.get_neighbors(
+                    i, neigh, sq_dist, nb_neigh
+                );
+                least_squares_normal_.begin();
+                for(index_t jj = 0; jj < neigh.size(); jj++) {
+                    least_squares_normal_.add_point(RVD.point(neigh[jj]));
+                }
+                least_squares_normal_.end();
+                N = least_squares_normal_.get_normal();
             }
-            least_squares_normal_.end();
-            vec3 N = least_squares_normal_.get_normal();
+            
             RVD.get_RVC(i, N, P, Q, neigh, sq_dist);
             if(debug_RVD) {
                 for(index_t v = 0; v < P.nb_vertices(); ++v) {
@@ -2522,6 +2544,12 @@ namespace {
                     triangles_.push_back(index_t(k));
                 }
             }
+        }
+
+        if(normal.is_bound()) {
+            Process::enter_critical_section();
+            normal.unbind();
+            Process::leave_critical_section();
         }
     }
 }
@@ -2562,6 +2590,31 @@ namespace GEO {
     void Co3Ne_smooth_and_reconstruct(
         Mesh& M, index_t nb_neighbors, index_t nb_iterations, double radius
     ) {
+        if(CmdLine::get_arg_bool("co3ne:use_normals")) {
+            Attribute<double> normal;
+            normal.bind_if_is_defined(M.vertices.attributes(), "normal");
+            if(normal.is_bound() && normal.dimension() == 3) {
+                Logger::out("Co3Ne") << "Using existing normal attribute"
+                                     << std::endl;
+
+                /*
+                M.vertices.set_dimension(6);
+                for(index_t v=0; v<M.vertices.nb(); ++v) {
+                    M.vertices.point_ptr(v)[3] = normal[3*v];
+                    M.vertices.point_ptr(v)[4] = normal[3*v+1];
+                    M.vertices.point_ptr(v)[5] = normal[3*v+2];
+                }
+                mesh_save(M,"debug.geogram");
+                */
+            } else {
+                Logger::out("Co3Ne") << "No \'normal\' vertex attribute found"
+                                      << std::endl;
+                Logger::out("Co3Ne") << "(estimating normals)"
+                                      << std::endl;
+            }
+        }
+
+        
         Co3Ne co3ne(M);
         if(nb_iterations != 0) {
             try {

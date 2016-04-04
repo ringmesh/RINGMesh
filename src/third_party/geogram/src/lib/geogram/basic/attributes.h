@@ -131,6 +131,33 @@ namespace GEO {
 
 
     /*********************************************************************/
+
+    class AttributeStore;
+
+    /**
+     * \brief Internal class for creating an AttributeStore
+     *  from the type name of its elements.
+     */
+    class GEOGRAM_API AttributeStoreCreator : public Counted {
+    public:
+
+        /**
+         * \brief Creates a new attribute store.
+         * \param[in] dimension number of elements in each item
+         * \return a pointer to the newly created AttributeStore
+         */
+        virtual AttributeStore* create_attribute_store(index_t dimension) = 0;
+        
+    private:
+        std::string element_type_name_;            
+        std::string element_typeid_name_;
+    };
+
+    /**
+     * \brief An automatic reference-counted pointer to 
+     *  an AttributeStoreCreator.
+     */
+    typedef SmartPointer<AttributeStoreCreator> AttributeStoreCreator_var;
     
     /**
      * \brief Notifies a set of AttributeStoreObservers 
@@ -170,6 +197,13 @@ namespace GEO {
         ) const = 0;
 
         /**
+         * \brief Gets the typeid name of the element type stored
+         *  in this AttributeStore.
+         * \return the typeid name, as a string.
+         */
+        virtual std::string element_typeid_name() const = 0;
+        
+        /**
          * \brief Gets the size.
          * \return the number of items
          */
@@ -182,7 +216,6 @@ namespace GEO {
          * \param[in] new_size new number of items
          */
         virtual void resize(index_t new_size) = 0;
-
 
         /**
          * \brief Resizes this AttributeStore to 0.
@@ -293,6 +326,130 @@ namespace GEO {
                 item_size
             );
         }
+
+        /**
+         * \brief Gets a pointer to the stored data.
+         * \return A pointer to the memory block
+         */
+        void* data() {
+            return cached_base_addr_;
+        }
+
+        /**
+         * \brief Gets a pointer to the stored data.
+         * \return A const pointer to the memory block
+         */
+        const void* data() const {
+            return cached_base_addr_;
+        }
+        
+        /**
+         * \brief Gets the element size.
+         * \return the size of an element, in bytes
+         */
+        size_t element_size() const {
+            return size_t(element_size_);
+        }
+
+        /**
+         * \brief Tests whether a given element type is registered in
+         *   the system.
+         * \param[in] element_type_name a const reference to a string
+         *   with the C++ type name
+         * \retval true if the element type was registered
+         * \retval false otherwise
+         */
+        static bool element_type_name_is_known(
+            const std::string& element_type_name
+        ) {
+            return (
+                type_name_to_creator_.find(element_type_name) !=
+                type_name_to_creator_.end()
+            );
+        }
+
+        /**
+         * \brief Tests whether a given element type is registered in
+         *   the system.
+         * \param[in] element_typeid_name a const reference to a string
+         *   with the mangled type, as given by typeid(T).name()
+         * \retval true if the element type was registered
+         * \retval false otherwise
+         */
+        static bool element_typeid_name_is_known(
+            const std::string& element_typeid_name
+        ) {
+            return (
+                typeid_name_to_type_name_.find(element_typeid_name) !=
+                typeid_name_to_type_name_.end()
+            );
+        }
+
+        /**
+         * \brief Creates an attribute store of a given type
+         * \param[in] element_type_name a const reference to a string with
+         *  the C++ type of the elements to be stored in the attribute
+         * \param[in] dimension number of elements in each item
+         */
+        static AttributeStore* create_attribute_store_by_element_type_name(
+            const std::string& element_type_name,
+            index_t dimension
+        ) {
+            geo_assert(element_type_name_is_known(element_type_name));
+            return type_name_to_creator_[element_type_name]->
+                create_attribute_store(dimension);
+        }
+
+
+        /**
+         * \brief Gets an element type name from its mangled name
+         * \param[in] element_typeid_name a const reference to a
+         *  string with the mangled type name, as given by typeid(T).name()
+         * \return a string with the C++ type name
+         * \pre element_typeid_name_is_known(element_typeid_name)
+         */
+        static std::string element_type_name_by_element_typeid_name(
+            const std::string& element_typeid_name
+        ) {
+            geo_assert(element_typeid_name_is_known(element_typeid_name));
+            return typeid_name_to_type_name_[element_typeid_name];
+        }
+
+        /**
+         * \brief Gets an element mangled type name from its C++ name.
+         * \param[in] element_type_name a reference to a string with
+         *  the C++ type name
+         * \return a string with the mangled type name, as given by
+         *  typeid(T).name()
+         * \pre element_type_name_is_known(element_type_name)
+         */
+        static std::string element_typeid_name_by_element_type_name(
+            const std::string& element_type_name
+        ) {
+            geo_assert(element_type_name_is_known(element_type_name));
+            return type_name_to_typeid_name_[element_type_name];
+        }
+
+        /**
+         * \brief Registers a new element type
+         * \note One should use geo_register_attribute_type instead
+         * \param[in] creator a pointer to the AttributeStoreCreator
+         * \param[in] element_type_name a const reference to a string with the 
+         *  C++ type name of the elements
+         * \param[in] element_typeid_name a const reference to a string with
+         *  the mangled type name of the elements, as given by typeid(T).name()
+         */
+        static void register_attribute_creator(
+            AttributeStoreCreator* creator,
+            const std::string& element_type_name,
+            const std::string& element_typeid_name
+        ) {
+            geo_assert(!element_type_name_is_known(element_type_name));
+            geo_assert(!element_typeid_name_is_known(element_typeid_name));   
+            type_name_to_creator_[element_type_name] = creator;
+            typeid_name_to_type_name_[element_typeid_name] = element_type_name;
+            type_name_to_typeid_name_[element_type_name] = element_typeid_name;
+        }
         
     protected:
         /**
@@ -303,7 +460,9 @@ namespace GEO {
          * \param[in] size the new size
          * \param[in] dim the new dimension
          */
-        virtual void notify(Memory::pointer base_addr, index_t size, index_t dim);
+        virtual void notify(
+            Memory::pointer base_addr, index_t size, index_t dim
+        );
 
         /**
          * \brief Registers an observer.
@@ -323,6 +482,7 @@ namespace GEO {
          * \pre \p observer is registered.
          */
         void unregister_observer(AttributeStoreObserver* observer);
+
         
     protected:
         index_t element_size_;
@@ -331,6 +491,15 @@ namespace GEO {
         index_t cached_size_;
         std::set<AttributeStoreObserver*> observers_;
         Process::spinlock lock_;
+
+        static std::map<std::string, AttributeStoreCreator_var>
+            type_name_to_creator_;
+
+        static std::map<std::string, std::string>
+            typeid_name_to_type_name_;
+
+        static std::map<std::string, std::string>
+            type_name_to_typeid_name_;
         
         friend class AttributeStoreObserver;
     };
@@ -397,6 +566,10 @@ namespace GEO {
             return type_name == typeid(T).name();
         }
 
+        virtual std::string element_typeid_name() const {
+            return typeid(T).name();
+        }
+        
         virtual AttributeStore* clone() const {
             TypedAttributeStore<T>* result =
                 new TypedAttributeStore<T>(dimension());
@@ -405,8 +578,14 @@ namespace GEO {
             return result;
         }
 
+        vector<T>& get_vector() {
+            return store_;
+        }
+        
     protected:
-        virtual void notify(Memory::pointer base_addr, index_t size, index_t dim) {
+        virtual void notify(
+            Memory::pointer base_addr, index_t size, index_t dim
+        ) {
             AttributeStore::notify(base_addr, size, dim);
             geo_assert(size*dim <= store_.size());
         }
@@ -415,7 +594,43 @@ namespace GEO {
         vector<T> store_;
     };
 
+    /*********************************************************************/    
 
+    /**
+     * \brief Implementation of AttributeStoreCreator for a specific type.
+     * \tparam T type of the elements
+     */
+    template <class T>
+    class TypedAttributeStoreCreator : public AttributeStoreCreator {
+    public:
+        /**
+         * \copydoc AttributeStoreCreator::create_attribute_store()
+         */
+        virtual AttributeStore* create_attribute_store(index_t dim) {
+            return new TypedAttributeStore<T>(dim);
+        }
+    };
+
+    /*********************************************************************/
+
+    /**
+     * \brief Helper class to register new attribute types
+     * \tparam T attribute element type
+     */
+    template <class T> class geo_register_attribute_type {
+    public:
+        /**
+         * \brief geo_register_attribute_type constructor
+         * \param[in] type_name a const reference to a string with
+         *  the C++ type name.
+         */
+        geo_register_attribute_type(const std::string& type_name) {
+            AttributeStore::register_attribute_creator(
+                new TypedAttributeStoreCreator<T>, type_name, typeid(T).name()
+            );
+        };
+    };
+    
     /*********************************************************************/    
 
     /**
@@ -438,7 +653,7 @@ namespace GEO {
         /**
          * \brief Gets the number of attributes.
          * \return The number of attributes managed by this
-         *   AttributeManager.
+         *   AttributesManager.
          */
         index_t nb() const {
             return index_t(attributes_.size());
@@ -453,7 +668,7 @@ namespace GEO {
         
         /**
          * \brief Gets the size.
-         * \details All attributes stored in an AttributeManager have
+         * \details All attributes stored in an AttributesManager have
          *  the same number of items.
          * \return the number of items of each attribute.
          */
@@ -463,14 +678,14 @@ namespace GEO {
         
         /**
          * \brief Resizes all the attributes managed by this
-         *  AttributeManager.
+         *  AttributesManager.
          * \param(in] new_size the new number of items for
          *  all attributes.
          */
         void resize(index_t new_size);
 
         /**
-         * \brief Clears this AttributeManager
+         * \brief Clears this AttributesManager
          * \param[in] keep_attributes if true, then all
          *  attributes are resized to 0 but their names are
          *  kept.
@@ -502,6 +717,17 @@ namespace GEO {
          */
         AttributeStore* find_attribute_store(const std::string& name);
 
+        /**
+         * \brief Finds an AttributeStore by name.
+         * \param[in] name the name under which the AttributeStore was bound
+         * \return a const pointer to the attribute store or nil if is is 
+         *  undefined.
+         */
+        const AttributeStore* find_attribute_store(
+            const std::string& name
+        ) const;
+
+        
         /**
          * \brief Tests whether an attribute is defined.
          * \param[in] name name of the attribute
@@ -607,7 +833,7 @@ namespace GEO {
 
     /**
      * \brief Base class for Attributes, that manipulates an 
-     *  attribute stored in an AttributeManager.
+     *  attribute stored in an AttributesManager.
      */
     template <class T> class AttributeBase : public AttributeStoreObserver {
     public:
@@ -680,7 +906,7 @@ namespace GEO {
 
         /**
          * \brief Binds this Attribute to an AttributesManager if it
-         *  already exists in the AttributeManager.
+         *  already exists in the AttributesManager.
          * \param[in] manager a reference to the AttributesManager
          * \param[in] name name of the attribute
          * \pre !is_bound()
@@ -717,9 +943,9 @@ namespace GEO {
         }
         
         /**
-         * \brief Destroys this attribute in the AttributeManager.
+         * \brief Destroys this attribute in the AttributesManager.
          * \details On exit, the attribute is no-longer accessible in
-         *  the AttributeManager, its name is available again, and
+         *  the AttributesManager, its name is available again, and
          *  this attribute is in the unbound state.
          */
         void destroy() {
@@ -794,7 +1020,52 @@ namespace GEO {
             store_->zero();
         }
 
-    private:
+        /**
+         * \brief Tests whether get_vector() can be called on this
+         *  Attribute.
+         * \details get_vector() can be called if this attribute is
+         *  bound and if type T corresponds to the type used to create
+         *  the attribute.
+         * \note Advanced users only. Most client code will not need
+         *  to use this function.
+         */
+        bool can_get_vector() {
+            return(
+                dynamic_cast<TypedAttributeStore<T>*>(store_) != nil
+            );
+        }
+
+        /**
+         * \brief Gets a reference to the internal vector<T> used to 
+         *  store the attribute.
+         * \details It is forbidden to modify the size of the returned
+         *  vector.
+         * \return a reference to the vector<T> used to store the 
+         *  attribute.
+         * \note Advanced users only. Most client code will not need
+         *  to use this function.
+         */
+        vector<T>& get_vector() {
+            TypedAttributeStore<T>* typed_store =
+                dynamic_cast<TypedAttributeStore<T>*>(store_);
+            geo_assert(typed_store != nil);
+            return typed_store->get_vector();
+        }
+
+        /**
+         * \brief Gets a const reference to the internal vector<T> used to 
+         *  store the attribute.
+         * \return a const reference to the vector<T> used to store the 
+         *  attribute.
+         */
+        const vector<T>& get_vector() const {
+            TypedAttributeStore<T>* typed_store =
+                dynamic_cast<TypedAttributeStore<T>*>(store_);
+            geo_assert(typed_store != nil);
+            return typed_store->get_vector();
+        }
+        
+    protected:
         AttributesManager* manager_;
         AttributeStore* store_;
     } ;
@@ -905,8 +1176,8 @@ namespace GEO {
             BoolAttributeAccessor(
                 Attribute<bool>& attribute,
                 index_t index
-                ) :
-                attribute_(attribute),
+            ) :
+                attribute_(&attribute),
                 index_(index) {
             }
 
@@ -915,7 +1186,7 @@ namespace GEO {
              * \details Performs the actual lookup.
              */
             operator bool() const {
-                return (attribute_.element(index_) != 0);
+                return (attribute_->element(index_) != 0);
             }
 
             /**
@@ -923,12 +1194,12 @@ namespace GEO {
              * \details Stores the boolean into the Attribute.
              */
             BoolAttributeAccessor& operator=(bool x) {
-                attribute_.element(index_) = Numeric::uint8(x);
+                attribute_->element(index_) = Numeric::uint8(x);
                 return *this;
             }
             
         private:
-            Attribute<bool>& attribute_;
+            Attribute<bool>* attribute_;
             index_t index_;
         };
 
@@ -946,7 +1217,7 @@ namespace GEO {
                 const Attribute<bool>& attribute,
                 index_t index
             ) :
-                attribute_(attribute),
+                attribute_(&attribute),
                 index_(index) {
             }
 
@@ -955,11 +1226,11 @@ namespace GEO {
              * \details Performs the actual lookup.
              */
             operator bool() const {
-                return (attribute_.element(index_) != 0);
+                return (attribute_->element(index_) != 0);
             }
 
         private:
-            const Attribute<bool>& attribute_;
+            const Attribute<bool>* attribute_;
             index_t index_;
         };
         
@@ -1134,7 +1405,237 @@ namespace GEO {
         }
     };
     
-    
+    /***********************************************************/
+
+    /**
+     * \brief Access to an attribute as a double regardless its type.
+     * \details The attribute can be an element of a vector attribute.
+     */
+    class GEOGRAM_API ReadOnlyScalarAttributeAdapter :
+        public AttributeStoreObserver {
+
+    public:
+        /** 
+         * \brief Internal representation of the attribute.
+         */
+        enum ElementType {
+            ET_NONE=0,
+            ET_UINT8=1,
+            ET_INT8=2,
+            ET_UINT32=3,
+            ET_INT32=4,
+            ET_FLOAT32=5,
+            ET_FLOAT64=6
+        };
+
+        /**
+         * \brief ReadOnlyScalarAttributeAdapter constructor.
+         */
+        ReadOnlyScalarAttributeAdapter() :
+            manager_(nil),
+            store_(nil),
+            element_type_(ET_NONE),
+            element_index_(index_t(-1)) {
+        }
+        
+        /**
+         * \brief ReadOnlyScalarAttributeAdapter constructor.
+         * \details Retreives a persistent attribute attached to 
+         *  a given AttributesManager.
+         * \param[in] manager a reference to the AttributesManager
+         * \param[in] name name of the attribute with an optional index,
+         *   for instance, "foobar[5]" refers to the 5th coordinate of
+         *   the "foobar" vector attribute.
+         */
+        ReadOnlyScalarAttributeAdapter(
+            const AttributesManager& manager, const std::string& name
+        ) :
+            manager_(nil),
+            store_(nil) {
+            bind_if_is_defined(manager, name);
+        }
+
+        /**
+         * \brief Tests whether an Attribute is bound.
+         * \retval true if this Attribute is bound
+         * \retval false otherwise
+         */
+        bool is_bound() const {
+            return (store_ != nil);
+        }
+
+        /**
+         * \brief Unbinds this Attribute.
+         * \pre is_bound()
+         */
+        void unbind() {
+            geo_assert(is_bound());
+            unregister_me(const_cast<AttributeStore*>(store_));
+            manager_ = nil;
+            store_ = nil;
+            element_type_ = ET_NONE;
+            element_index_ = index_t(-1);
+        }
+
+        /**
+         * \brief Binds this Attribute to an AttributesManager if it
+         *  already exists in the AttributesManager.
+         * \param[in] manager a reference to the AttributesManager
+         * \param[in] name name of the attribute with an optional index,
+         *   for instance, "foobar[5]" refers to the 5th coordinate of
+         *   the "foobar" vector attribute.
+         * \pre !is_bound()
+         */
+        void bind_if_is_defined(
+            const AttributesManager& manager, const std::string& name
+        );
+
+        /**
+         * \brief ReadonlyScalarAttributeAdapter destructor
+         * \details 
+         *  The attribute is not destroyed, it can be retreived later 
+         *  by binding with the same name. To destroy the attribute,
+         *  use detroy() instead.
+         */
+        ~ReadOnlyScalarAttributeAdapter() {
+            if(is_bound()) {
+                unbind();
+            }
+        }
+
+        /**
+         * \brief Tests whether an attribute with the specified name and with
+         *  a type that can be converted to double exists in an 
+         *  AttributesManager.
+         * \param[in] manager a reference to the AttributesManager
+         * \param[in] name the name of the attribute with an optional index,
+         *   for instance, "foobar[5]" refers to the 5th coordinate of
+         *   the "foobar" vector attribute.
+         */
+        static bool is_defined(
+            const AttributesManager& manager, const std::string& name
+        );
+
+        /**
+         * \brief Gets the size.
+         * \return The number of items in this attribute.
+         */
+        index_t size() const {
+            return (store_ == nil) ? 0 : store_->size();
+        }
+
+        /**
+         * \brief Gets the internal representation of the 
+         *  elements.
+         * \return one of ET_NONE (if unbound), ET_UINT8,
+         *  ET_INT8, ET_UINT32, ET_INT32, ET_FLOAT32, 
+         *  ET_FLOAT64.
+         */
+        ElementType element_type() const {
+            return element_type_;
+        }
+
+        /**
+         * \brief Gets the element index.
+         * \return the index of the elements accessed in
+         *  the bound attribute, or 0 if the bound attribute
+         *  is scalar.
+         */
+        index_t element_index() const {
+            return element_index_;
+        }
+        
+        /**
+         * \brief Gets the AttributeStore.
+         * \return a const pointer to the AttributeStore.
+         */
+        const AttributeStore* attribute_store() const {
+            return store_;
+        }
+        
+        /**
+         * \brief Gets a property value
+         * \param[in] i the index of the item
+         * \return the value of the property, convertex
+         *  into a double
+         * \pre is_bound() && i < size()
+         */
+        double operator[](index_t i) {
+            switch(element_type_) {
+            case ET_UINT8:
+                return get_element<Numeric::uint8>(i);
+            case ET_INT8:
+                return get_element<Numeric::int8>(i);                
+            case ET_UINT32:
+                return get_element<Numeric::uint32>(i);
+            case ET_INT32:
+                return get_element<Numeric::int32>(i);                
+            case ET_FLOAT32:
+                return get_element<Numeric::float32>(i);                
+            case ET_FLOAT64:
+                return get_element<Numeric::float64>(i);
+            default:
+                geo_assert_not_reached;
+            }
+            return 0.0;
+        }
+
+        /**
+         * \brief Tests whether a ReadOnlyScalarAttributeAdapter can
+         *  be bound to a given attribute store.
+         * \retval true if it can be bound
+         * \retval false otherwise
+         */
+        static bool can_be_bound_to(const AttributeStore* store) {
+            return element_type(store) != ET_NONE;
+        }
+        
+    protected:
+        /**
+         * \brief Gets the base attribute name from a compound name.
+         * \param[in] name the string with the attribute name and optional
+         *  index. For instance, "foobar[5]" refers to the 5th coordinate of
+         *  the "foobar" vector attribute.
+         * \return the attribute name. For instance, for "foobar[5]", it 
+         *  returns "foobar".
+         */
+        static std::string attribute_base_name(const std::string& name);
+
+        /**
+         * \brief Gets the base attribute name from a compound name.
+         * \param[in] name the string with the attribute name and optional
+         *  index. For instance, "foobar[5]" refers to the 5th coordinate of
+         *  the "foobar" vector attribute.
+         * \return the index or zero if no index was specified. For instance,
+         *  for "foobar[5]" it returns 5, and for "foobar" it returns 0
+         */
+        static index_t attribute_element_index(const std::string& name);
+
+        /**
+         * \brief Gets the element type stored in an AttributeStore.
+         * \param[in] store a const pointer to the AttributeStore
+         * \return one of ET_UINT8, ET_INT8, ET_UINT32, ET_INT32, 
+         *  ET_FLOAT32, ET_FLOAT64 if the type of the attribute is
+         *  compatible with those types, or ET_NONE if it is incompatible.
+         */
+        static ElementType element_type(const AttributeStore* store);
+
+        template <class T> double get_element(index_t i) {
+            geo_debug_assert(is_bound());
+            geo_debug_assert(i < size());
+            return static_cast<const T*>(store_->data())[
+                i * store_->dimension() + element_index_
+            ];
+        }
+        
+    private:
+        const AttributesManager* manager_;
+        const AttributeStore* store_;
+        ElementType element_type_;
+        index_t element_index_;
+    };
+
+    /***********************************************************/
 }
 
 #endif

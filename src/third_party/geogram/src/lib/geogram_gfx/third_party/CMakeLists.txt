@@ -11,10 +11,10 @@ if(BUILD_SHARED_LIBS)
 endif()
 
 aux_source_directories(SOURCES "Source Files"              .)
-#aux_source_directories(SOURCES "Source Files\\glew"        glew)
 aux_source_directories(SOURCES "Source Files\\glad"        glad)
 aux_source_directories(SOURCES "Source Files\\freeglut"    freeglut)
 aux_source_directories(SOURCES "Source Files\\AntTweakBar" AntTweakBar)
+aux_source_directories(SOURCES "Source Files\\quick"       quicktext)
 
 add_library(geogram_gfx_third_party OBJECT ${SOURCES})
 

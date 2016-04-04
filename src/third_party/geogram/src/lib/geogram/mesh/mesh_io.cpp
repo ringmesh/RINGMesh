@@ -47,11 +47,13 @@
 #include <geogram/mesh/mesh.h>
 #include <geogram/basic/line_stream.h>
 #include <geogram/basic/b_stream.h>
+#include <geogram/basic/geofile.h>
 #include <geogram/basic/file_system.h>
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/argused.h>
 #include <geogram/basic/logger.h>
 #include <geogram/basic/geometry.h>
+
 #include <fstream>
 
 extern "C" {
@@ -63,9 +65,7 @@ extern "C" {
 // TODO: take into account selected mesh elements
 // in loaders and exporters.
 
-namespace {
-    using namespace GEO;
-
+namespace GEO {
 
     inline void set_mesh_point(
         Mesh& M, index_t v, const double* coords, index_t dim
@@ -1843,7 +1843,9 @@ namespace {
                 } else if(in.field_matches(0, "endloop")) {
                     facet_opened = false;
                     if(ioflags.has_element(MESH_FACETS)) {
-                        index_t f = M.facets.create_polygon(facet_vertices.size());
+                        index_t f = M.facets.create_polygon(
+                            facet_vertices.size()
+                        );
                         for(index_t lv=0; lv<facet_vertices.size(); ++lv) {
                             M.facets.set_vertex(f,lv,facet_vertices[lv]);
                         }
@@ -2104,6 +2106,9 @@ namespace {
             if(!in.OK()) {
                 return false;
             }
+            
+            Attribute<double> normal;
+            
             index_t cur_v = 0;
             while(!in.eof() && in.get_line()) {
                 in.get_fields();
@@ -2126,6 +2131,18 @@ namespace {
                             M.vertices.create_vertices(cur_v+1-M.vertices.nb());
                         }
                         set_mesh_point(M,cur_v,xyz,3);
+
+                        if(in.nb_fields() == 6) {
+                            if(!normal.is_bound()) {
+                                normal.create_vector_attribute(
+                                    M.vertices.attributes(), "normal", 3
+                                );
+                            }
+                            normal[3*cur_v]   = in.field_as_double(3);
+                            normal[3*cur_v+1] = in.field_as_double(4);
+                            normal[3*cur_v+2] = in.field_as_double(5);
+                        }
+                        
                         ++cur_v;
                     }
                     break;
@@ -2588,7 +2605,596 @@ namespace {
         TET6IOHandler() : TETIOHandler(6) {
         }
     };
-    
+
+    /************************************************************************/
+
+    /**
+     * \brief IO handler for the geogram native file format.
+     */
+    class GEOGRAM_API GeogramIOHandler : public MeshIOHandler {
+    public:
+
+
+        /**
+         * \brief Loads a mesh from a GeoFile ('.geogram' file format).
+         * \details
+         * Loads the contents of the InputGeoFile \p geofile and stores the
+         * resulting mesh to \p M. This function can be used to load several
+         * meshes that are stored in the same GeoFile.
+         * \param[in] in a reference to the InputGeoFile
+         * \param[out] M the loaded mesh
+         * \param[in] ioflags specifies which attributes and 
+         *  elements should be loaded
+         * \return true on success, false otherwise.
+         */
+        bool load(
+            InputGeoFile& in,
+            Mesh& M,
+            const MeshIOFlags& ioflags = MeshIOFlags()
+        ) {
+            M.clear();
+            try {
+                
+                for(
+                    std::string chunk_class = in.next_chunk();
+                    chunk_class != "EOFL" && chunk_class != "SPTR";
+                    chunk_class = in.next_chunk()
+                ) {
+
+                    if(chunk_class == "ATTS") {
+                        read_attribute_set(in, M, ioflags);
+                    } else if(chunk_class == "ATTR") {
+                        if(
+                            String::string_starts_with(
+                                in.current_attribute().name, "GEO::Mesh::"
+                            )
+                        ) {
+                            read_internal_attribute(in, M, ioflags);
+                        } else {
+                            read_user_attribute(in, M, ioflags);
+                        }
+                    } 
+                }
+            } catch(const GeoFileException& exc) {
+                Logger::err("I/O") << exc.what() << std::endl;
+                M.clear();
+                return false;
+            } catch(...) {
+                Logger::err("I/O") << "Caught exception" << std::endl;
+                M.clear();                
+                return false;
+            }
+
+            // Create facet "sentry"
+            if(!M.facets.are_simplices()) {
+                M.facets.facet_ptr_[M.facets.nb()] = M.facet_corners.nb();
+            }
+
+            // Create cell "sentry"
+            if(!M.cells.are_simplices()) {
+                M.cells.cell_ptr_[M.cells.nb()] = M.cell_corners.nb();
+            }
+            
+            return true;
+        }
+
+        /**
+         * \brief Saves a mesh to a GeoFile ('.geogram' file format)
+         * \details
+         * Saves mesh \p M to the GeoFile \p geofile. This function can be
+         * used to write several meshes into the same GeoFile.
+         * \param[in] M the mesh to save
+         * \param[in] out a reference to the OutputGeoFile
+         * \param[in] ioflags specifies which attributes and elements 
+         *  should be saved
+         * \return true on success, false otherwise.
+         */
+        virtual bool save(
+            const Mesh& M, OutputGeoFile& out,
+            const MeshIOFlags& ioflags = MeshIOFlags(),
+            bool save_command_line = false
+        ) {
+            try {
+
+                if(save_command_line) {
+                    // Save command line in file
+                    std::vector<std::string> args;
+                    CmdLine::get_args(args);
+                    out.write_command_line(args);
+                }
+                
+                if(ioflags.has_element(MESH_VERTICES) && M.vertices.nb() != 0) {
+                    out.write_attribute_set(
+                        "GEO::Mesh::vertices",
+                        M.vertices.nb()
+                    );
+                    save_attributes(
+                        out, "GEO::Mesh::vertices", M.vertices.attributes()
+                    );
+                }
+
+                if(ioflags.has_element(MESH_EDGES) && M.edges.nb() != 0) {
+                    out.write_attribute_set(
+                        "GEO::Mesh::edges",
+                        M.edges.nb()
+                    );
+
+                    out.write_attribute(
+                        "GEO::Mesh::edges",
+                        "GEO::Mesh::edges::edge_vertex",
+                        "index_t",
+                        sizeof(index_t),
+                        2,
+                        M.edges.edge_vertex_.data()
+                    );
+                    
+                    save_attributes(
+                        out, "GEO::Mesh::edges", M.edges.attributes()
+                    );
+                }
+
+                if(ioflags.has_element(MESH_FACETS) && M.facets.nb() != 0) {
+                    out.write_attribute_set(
+                        "GEO::Mesh::facets",
+                        M.facets.nb()
+                    );
+
+                    save_attributes(
+                        out, "GEO::Mesh::facets", M.facets.attributes()
+                    );
+
+                    if(!M.facets.are_simplices()) {
+                        out.write_attribute(
+                            "GEO::Mesh::facets",
+                            "GEO::Mesh::facets::facet_ptr",
+                            "index_t",
+                            sizeof(index_t),
+                            1,
+                            M.facets.facet_ptr_.data()
+                        );
+                    }
+                    
+                    out.write_attribute_set(
+                        "GEO::Mesh::facet_corners",
+                        M.facet_corners.nb()
+                    );
+
+                    out.write_attribute(
+                        "GEO::Mesh::facet_corners",
+                        "GEO::Mesh::facet_corners::corner_vertex",
+                        "index_t",
+                        sizeof(index_t),
+                        1,
+                        M.facet_corners.corner_vertex_.data()
+                    );
+
+                    out.write_attribute(
+                        "GEO::Mesh::facet_corners",
+                        "GEO::Mesh::facet_corners::corner_adjacent_facet",
+                        "index_t",
+                        sizeof(index_t),
+                        1,
+                        M.facet_corners.corner_adjacent_facet_.data()
+                    );
+                    
+                    save_attributes(
+                        out, "GEO::Mesh::facet_corners",
+                        M.facet_corners.attributes()
+                    );
+                    
+                }
+                
+                if(ioflags.has_element(MESH_CELLS) && M.cells.nb() != 0) {
+                    out.write_attribute_set(
+                        "GEO::Mesh::cells",
+                        M.cells.nb()
+                    );
+
+                    save_attributes(
+                        out, "GEO::Mesh::cells",
+                        M.cells.attributes()
+                    );
+                    
+                    if(!M.cells.are_simplices()) {
+                        
+                        out.write_attribute(
+                            "GEO::Mesh::cells",
+                            "GEO::Mesh::cells::cell_type",
+                            "char",
+                            sizeof(char),
+                            1,
+                            M.cells.cell_type_.data()
+                        );
+                        
+                        out.write_attribute(
+                            "GEO::Mesh::cells",
+                            "GEO::Mesh::cells::cell_ptr",
+                            "index_t",
+                            sizeof(index_t),
+                            1,
+                            M.cells.cell_ptr_.data()
+                        );
+                    }
+
+                    out.write_attribute_set(
+                        "GEO::Mesh::cell_corners",
+                        M.cell_corners.nb()
+                    );
+
+                    out.write_attribute(
+                        "GEO::Mesh::cell_corners",
+                        "GEO::Mesh::cell_corners::corner_vertex",
+                        "index_t",
+                        sizeof(index_t),
+                        1,
+                        M.cell_corners.corner_vertex_.data()
+                    );
+
+                    save_attributes(
+                        out,
+                        "GEO::Mesh::cell_corners",
+                        M.cell_corners.attributes()
+                    );
+
+                    out.write_attribute_set(
+                        "GEO::Mesh::cell_facets",
+                        M.cell_facets.nb()
+                    );
+
+                    out.write_attribute(
+                        "GEO::Mesh::cell_facets",
+                        "GEO::Mesh::cell_facets::adjacent_cell",
+                        "index_t",
+                        sizeof(index_t),
+                        1,
+                        M.cell_facets.adjacent_cell_.data()
+                    );
+
+                    save_attributes(
+                        out,
+                        "GEO::Mesh::cell_facets",
+                        M.cell_facets.attributes()
+                    );
+                }
+                
+            } catch(const GeoFileException& exc) {
+                Logger::err("I/O") << exc.what() << std::endl;
+                return false;
+            }
+            return true;
+        }
+        
+        /**
+         * \copydoc MeshIOHandler::load()
+         */
+        virtual bool load(
+            const std::string& filename, Mesh& M,
+            const MeshIOFlags& ioflags = MeshIOFlags()
+        ) {
+            bool result = true;
+            try {
+                InputGeoFile in(filename);
+                result = load(in, M, ioflags);
+            }  catch(const GeoFileException& exc) {
+                Logger::err("I/O") << exc.what() << std::endl;
+                result = false;
+            } catch(...) {
+                Logger::err("I/O") << "Caught exception" << std::endl;
+                result = false;
+            }
+            return result;
+        }
+
+        /**
+         * \copydoc MeshIOHandler::save()
+         */
+        virtual bool save(
+            const Mesh& M, const std::string& filename,
+            const MeshIOFlags& ioflags = MeshIOFlags()
+        ) {
+            bool result = true;
+            try {
+                OutputGeoFile out(
+                    filename,
+                    index_t(CmdLine::get_arg_int("sys:compression_level"))
+                );
+                result = save(M, out, ioflags, true);
+            }  catch(const GeoFileException& exc) {
+                Logger::err("I/O") << exc.what() << std::endl;
+                result = false;
+            } catch(...) {
+                Logger::err("I/O") << "Caught exception" << std::endl;
+                result = false;
+            }
+            return result;
+        }
+
+    protected:
+
+        /**
+         * \brief Reads an attribute set from a geogram file and
+         *  creates the relevant elements in a mesh.
+         * \param[in] in a reference to the InputGeoFile
+         * \param[in] M a reference to the Mesh
+         * \param[in] ioflags the MeshIOFlags that specify which
+         *  attributes and mesh elements should be read
+         */
+        void read_attribute_set(
+            InputGeoFile& in,
+            Mesh& M,
+            const MeshIOFlags& ioflags
+        ) {
+            const std::string& name =
+                in.current_attribute_set().name;
+            index_t nb_items = in.current_attribute_set().nb_items;
+
+            if(
+                name == "GEO::Mesh::vertices" &&
+                ioflags.has_element(MESH_VERTICES)
+            ) {
+                M.vertices.resize_store(nb_items);
+            } else if(
+                name == "GEO::Mesh::edges" &&
+                ioflags.has_element(MESH_EDGES)
+            ) {
+                M.edges.resize_store(nb_items);
+            } else if(
+                name == "GEO::Mesh::facets" &&
+                ioflags.has_element(MESH_FACETS)
+            ) {
+                M.facets.resize_store(nb_items);
+            } else if(
+                name == "GEO::Mesh::facet_corners" &&
+                ioflags.has_element(MESH_FACETS)
+            ) {
+                M.facet_corners.resize_store(nb_items);
+            } else if(
+                name == "GEO::Mesh::cells" &&
+                ioflags.has_element(MESH_CELLS)
+            ) {
+                M.cells.resize_store(nb_items);
+            } else if(
+                name == "GEO::Mesh::cell_corners" &&
+                ioflags.has_element(MESH_CELLS)
+            ) {
+                M.cell_corners.resize_store(nb_items);
+            } else if(
+                name == "GEO::Mesh::cell_facets" &&
+                ioflags.has_element(MESH_CELLS)
+            ) {
+                M.cell_facets.resize_store(nb_items);
+            }
+        }
+
+        /**
+         * \brief Reads a user attribute from a geogram file and
+         *  stores it in a mesh.
+         * \param[in] in a reference to the InputGeoFile
+         * \param[in] M a reference to the Mesh
+         * \param[in] ioflags the MeshIOFlags that specify which
+         *  attributes and mesh elements should be read
+         */
+        void read_user_attribute(
+            InputGeoFile& in,
+            Mesh& M,
+            const MeshIOFlags& ioflags
+        ) {
+            const std::string& name =
+                in.current_attribute().name;
+            const std::string& set_name =
+                in.current_attribute_set().name;
+            if(set_name == "GEO::Mesh::vertices") {
+                if(ioflags.has_element(MESH_VERTICES)) {
+                    //   Vertex geometry is a special attribute, already
+                    // created by the Mesh class, therefore we cannot use
+                    // the generic read_attribute() function.
+                    if(name == "point") {
+                        M.vertices.set_double_precision();
+                        M.vertices.set_dimension(
+                            in.current_attribute().dimension
+                        );
+                        in.read_attribute(M.vertices.point_ptr(0));
+                    } else if(name == "point_fp32") {
+                        M.vertices.set_single_precision();
+                        M.vertices.set_dimension(
+                            in.current_attribute().dimension
+                        );
+                        in.read_attribute(
+                            M.vertices.single_precision_point_ptr(0)
+                        );                                    
+                    } else {
+                        read_attribute(in, M.vertices.attributes());
+                    }
+                } 
+            } else if(set_name == "GEO::Mesh::edges") {
+                if(ioflags.has_element(MESH_EDGES)) {
+                    read_attribute(in, M.edges.attributes());
+                } 
+            } else if(set_name == "GEO::Mesh::facets") {
+                if(ioflags.has_element(MESH_FACETS)) {
+                    read_attribute(in, M.facets.attributes());
+                } 
+            } else if(set_name == "GEO::Mesh::facet_corners") {
+                if(ioflags.has_element(MESH_FACETS)) {
+                    read_attribute(
+                        in, M.facet_corners.attributes()
+                    );
+                } 
+            } else if(set_name == "GEO::Mesh::cells") {
+                if(ioflags.has_element(MESH_CELLS)) {
+                    read_attribute(in, M.cells.attributes());
+                } 
+            } else if(set_name == "GEO::Mesh::cell_corners") {
+                if(ioflags.has_element(MESH_CELLS)) {
+                    read_attribute(in, M.cell_corners.attributes());
+                } 
+            } else if(set_name == "GEO::Mesh::cell_facets") {
+                if(ioflags.has_element(MESH_CELLS)) {
+                    read_attribute(in, M.cell_facets.attributes());
+                } 
+            } 
+        }
+
+        /**
+         * \brief Reads an internal attribute from a geogram file and
+         *  stores it in a mesh.
+         * \param[in] in a reference to the InputGeoFile
+         * \param[in] M a reference to the Mesh
+         * \param[in] ioflags the MeshIOFlags that specify which
+         *  attributes and mesh elements should be read
+         */
+        void read_internal_attribute(
+            InputGeoFile& in,
+            Mesh& M,
+            const MeshIOFlags& ioflags
+        ) {
+            const std::string& name =
+                in.current_attribute().name;
+
+            const std::string& set_name =
+                in.current_attribute_set().name;
+
+            if(!String::string_starts_with(name, set_name + "::")) {
+                Logger::warn("I/O")
+                    << "Invalid internal attribute (GEO::Mesh:: scoped): "
+                    << name << " does not start with "
+                    << set_name
+                    << std::endl;
+                return;
+            }
+            if(name == "GEO::Mesh::edges::edge_vertex") {
+                if(ioflags.has_element(MESH_EDGES)) {
+                    M.edges.edge_vertex_.resize(M.edges.nb()*2);
+                    in.read_attribute(M.edges.edge_vertex_.data());
+                }
+            } else if(name == "GEO::Mesh::facets::facet_ptr") {
+                if(ioflags.has_element(MESH_FACETS)) {
+                    M.facets.is_simplicial_ = false;
+                    M.facets.facet_ptr_.resize(M.facets.nb()+1);
+                    in.read_attribute(M.facets.facet_ptr_.data());
+                } 
+            } else if(name == "GEO::Mesh::facet_corners::corner_vertex") {
+                if(ioflags.has_element(MESH_FACETS)) {
+                    in.read_attribute(M.facet_corners.corner_vertex_.data());
+                } 
+            } else if(
+                name == "GEO::Mesh::facet_corners::corner_adjacent_facet"
+            ) {
+                if(ioflags.has_element(MESH_FACETS)) {
+                    in.read_attribute(
+                        M.facet_corners.corner_adjacent_facet_.data()
+                    );
+                } 
+            } else if(name == "GEO::Mesh::cells::cell_type") {
+                if(ioflags.has_element(MESH_CELLS)) {
+                    M.cells.is_simplicial_ = false;
+                    M.cells.cell_type_.resize(M.cells.nb());
+                    in.read_attribute(M.cells.cell_type_.data());
+                } 
+            } else if(name == "GEO::Mesh::cells::cell_ptr") {
+                if(ioflags.has_element(MESH_CELLS)) {
+                    M.cells.is_simplicial_ = false;
+                    M.cells.cell_ptr_.resize(M.cells.nb()+1);
+                    in.read_attribute(M.cells.cell_ptr_.data());
+                } 
+            } else if(name == "GEO::Mesh::cell_corners::corner_vertex") {
+                if(ioflags.has_element(MESH_CELLS)) {
+                    in.read_attribute(M.cell_corners.corner_vertex_.data());
+                } 
+            } else if(name == "GEO::Mesh::cell_facets::adjacent_cell") {
+                if(ioflags.has_element(MESH_CELLS)) {
+                    in.read_attribute(M.cell_facets.adjacent_cell_.data());
+                } 
+            } 
+        }
+
+        /**
+         * \brief Reads a user attribute from a geogram file and 
+         *  stores it in an AttributesManager
+         * \param[in] a reference to the InputGeoFile
+         * \param[in] attributes a reference to the AttributesManager
+         *  where the read attribute should be stored
+         */
+        void read_attribute(
+            InputGeoFile& in,
+            AttributesManager& attributes
+        ) {
+            if(
+                !AttributeStore::element_type_name_is_known(
+                    in.current_attribute().element_type
+                )
+            ) {
+                Logger::warn("I/O") << "Skipping attribute "
+                                    << in.current_attribute().name
+                                    << ":"
+                                    << in.current_attribute().element_type
+                                    << " (unknown type)"
+                                    << std::endl;
+                return;
+            }
+            AttributeStore* store =
+                AttributeStore::create_attribute_store_by_element_type_name(
+                    in.current_attribute().element_type,
+                    in.current_attribute().dimension
+                );
+            attributes.bind_attribute_store(in.current_attribute().name,store);
+            in.read_attribute(store->data());
+        }
+
+        /**
+         * \brief Writes all the user attributes of an AttributesManager
+         *  into a geogram file.
+         * \param[out] out a reference to the OutputGeoFile
+         * \param[in] attribute_set_name the name to be used for the attribute
+         *  set in the geogram file
+         * \param[in] attributes a reference to the AttributesManager
+         */
+        void save_attributes(
+            OutputGeoFile& out,
+            const std::string& attribute_set_name,
+            AttributesManager& attributes
+        ) {
+            vector<std::string> attribute_names;
+            attributes.list_attribute_names(attribute_names);
+            for(index_t i=0; i<attribute_names.size(); ++i) {
+                AttributeStore* store = attributes.find_attribute_store(
+                    attribute_names[i]
+                );
+                if(
+                    AttributeStore::element_typeid_name_is_known(
+                        store->element_typeid_name()
+                    )
+                ) {
+                    std::string element_type = 
+                      AttributeStore::element_type_name_by_element_typeid_name(
+                          store->element_typeid_name()
+                      );
+
+                    out.write_attribute(
+                        attribute_set_name,
+                        attribute_names[i],
+                        element_type,
+                        store->element_size(),
+                        store->dimension(),
+                        store->data()
+                    );
+                } else {
+                    Logger::warn("I/O")
+                        << "Skipping attribute: "
+                        << attribute_names[i]
+                        << " on "
+                        << attribute_set_name
+                        << std::endl;
+                    Logger::warn("I/O")
+                        << "Typeid "
+                        << store->element_typeid_name()
+                        << " unknown"
+                        << std::endl;
+                }
+            }
+        }
+    };
+
 }
 
 /****************************************************************************/
@@ -2648,10 +3254,12 @@ namespace GEO {
             }
         }
 
-        M.facets.connect();
-        M.cells.connect();
-        if(M.cells.nb() != 0 && M.facets.nb() == 0) {
-            M.cells.compute_borders();
+        if(FileSystem::extension(filename) != "geogram") {
+            M.facets.connect();
+            M.cells.connect();
+            if(M.cells.nb() != 0 && M.facets.nb() == 0) {
+                M.cells.compute_borders();
+            }
         }
 
         M.show_stats("I/O");
@@ -2765,6 +3373,24 @@ namespace GEO {
         geo_register_MeshIOHandler_creator(PTSIOHandler,  "pts");
         geo_register_MeshIOHandler_creator(TETIOHandler,  "tet");
         geo_register_MeshIOHandler_creator(TET6IOHandler, "tet6");
+        geo_register_MeshIOHandler_creator(GeogramIOHandler, "geogram");        
+    }
+
+    
+    bool GEOGRAM_API mesh_load(
+        InputGeoFile& geofile, Mesh& M,
+        const MeshIOFlags& ioflags 
+    ) {
+        GeogramIOHandler geogram;
+        return geogram.load(geofile, M, ioflags);
+    }
+
+    bool GEOGRAM_API mesh_save(
+        const Mesh& M, OutputGeoFile& geofile,
+        const MeshIOFlags& ioflags 
+    ) {
+        GeogramIOHandler geogram;
+        return geogram.save(M, geofile, ioflags);
     }
     
 }

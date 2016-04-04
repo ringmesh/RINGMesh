@@ -68,7 +68,7 @@ namespace {
          *  that are not implemented yet.
          */
         ~Stats() {
-            /* Comment this nosy output on every program ending [AB]
+            /* Comment this nosy output on every program ending [RINGMesh]
             if(nb_ET2 > 0) {
                 Logger::warn("Isect")
                     << nb_ET2 << " calls to ET2() (not implemented yet)"

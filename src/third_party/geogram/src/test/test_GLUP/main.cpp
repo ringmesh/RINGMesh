@@ -44,7 +44,7 @@
  */
 
 #include <geogram_gfx/basic/GLSL.h>
-#include <geogram_gfx/basic/GLUP.h>
+#include <geogram_gfx/GLUP/GLUP.h>
 #include <geogram_gfx/glut_viewer/glut_viewer.h>
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/command_line_args.h>
@@ -294,86 +294,6 @@ namespace {
         VBO_nb_vertices = GLsizei(nb_hex * 8);
     }
     
-
-    void save_mesh() {
-        GEO::Mesh M;
-        GEO::index_t nb_vertices = n*n*n;
-        M.vertices.set_dimension(3);
-        M.vertices.create_vertices(nb_vertices);
-
-        {
-            double* ptr = M.vertices.point_ptr(0);
-            for(GEO::index_t i=0; i<n; ++i) {
-                for(GEO::index_t j=0; j<n; ++j) {
-                    for(GEO::index_t k=0; k<n; ++k) {
-                        ptr[0] = double(i)/double(n);
-                        ptr[1] = double(j)/double(n);
-                        ptr[2] = double(k)/double(n);
-                        ptr += 3;
-                    }
-                }
-            }
-        }
-
-
-        if(false) {
-            GEO::index_t nb_tets = (n-1)*(n-1)*(n-1);        
-            M.cells.create_tets(nb_tets);
-            GEO::index_t* ptr = M.cell_corners.vertex_index_ptr(0);
-            for(GEO::index_t i=0; i<n-1; ++i) {
-                for(GEO::index_t j=0; j<n-1; ++j) {
-                    for(GEO::index_t k=0; k<n-1; ++k) {                
-                        GEO::index_t idx000 = (i  )*n*n+(j  )*n+(k  );
-                        GEO::index_t idx100 = (i+1)*n*n+(j  )*n+(k  );
-                        GEO::index_t idx010 = (i  )*n*n+(j+1)*n+(k  );
-                        GEO::index_t idx001 = (i  )*n*n+(j  )*n+(k+1);
-                        ptr[0] = GLuint(idx000);
-                        ptr[1] = GLuint(idx001);
-                        ptr[2] = GLuint(idx010);
-                        ptr[3] = GLuint(idx100);
-                        ptr += 4;
-                    }
-                }
-            }
-        }
-
-        if(true) {
-            GEO::index_t nb_hex = (n-1)*(n-1)*(n-1);        
-            M.cells.create_hexes(nb_hex);
-            GEO::index_t* ptr = M.cell_corners.vertex_index_ptr(0);
-            for(GEO::index_t i=0; i<n-1; ++i) {
-                for(GEO::index_t j=0; j<n-1; ++j) {
-                    for(GEO::index_t k=0; k<n-1; ++k) {
-
-                        GEO::index_t idx000 = (i  )*n*n+(j  )*n+(k  );
-                        GEO::index_t idx001 = (i  )*n*n+(j  )*n+(k+1);
-                        GEO::index_t idx010 = (i  )*n*n+(j+1)*n+(k  );
-                        GEO::index_t idx011 = (i  )*n*n+(j+1)*n+(k+1);
-                        GEO::index_t idx100 = (i+1)*n*n+(j  )*n+(k  );
-                        GEO::index_t idx101 = (i+1)*n*n+(j  )*n+(k+1);
-                        GEO::index_t idx110 = (i+1)*n*n+(j+1)*n+(k  );
-                        GEO::index_t idx111 = (i+1)*n*n+(j+1)*n+(k+1);
-                        
-                        ptr[0] = GLuint(idx000);
-                        ptr[1] = GLuint(idx010);
-                        ptr[2] = GLuint(idx100);
-                        ptr[3] = GLuint(idx110);
-                        ptr[4] = GLuint(idx001);
-                        ptr[5] = GLuint(idx011);
-                        ptr[6] = GLuint(idx101);
-                        ptr[7] = GLuint(idx111);
-                        ptr += 8;
-                    }
-                }
-            }
-        }
-
-        
-        GEO::mesh_save(M, "out.meshb");
-        
-    }
-    
-    
     void toggle_VBOs() {
         if(VBO_mode) {
             reset_VBOs();
@@ -600,11 +520,6 @@ namespace {
         glupTextureType(GLUP_TEXTURE_2D);
         glupTextureMode(GLUP_TEXTURE_REPLACE);
         glupClipMode(GLUP_CLIP_WHOLE_CELLS);
-
-        /*
-        glEnable(GL_CULL_FACE);
-        glCullFace(GL_BACK);
-        */
     }
 
     void display_points() {
@@ -914,7 +829,6 @@ int main(int argc, char** argv) {
     glut_viewer_add_key_func('t', toggle_texturing, "toggle texturing");
     glut_viewer_add_key_func('y', cycle_texturing_mode, "texturing mode");
     glut_viewer_add_key_func('C', cycle_clipping_mode, "clipping mode");    
-    glut_viewer_add_key_func('S', save_mesh, "save mesh");
     
     if(GEO::CmdLine::get_arg_bool("gfx:full_screen")) {
        glut_viewer_enable(GLUT_VIEWER_FULL_SCREEN);

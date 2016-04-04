@@ -1151,9 +1151,12 @@ namespace GEO {
 
             for(index_t new_cell = 0; new_cell<nb(); ++new_cell) {
                 index_t old_cell = permutation[new_cell];
-                index_t cell_size = geo_max(nb_vertices(old_cell), nb_facets(old_cell));
+                index_t cell_size =
+                    geo_max(nb_vertices(old_cell), nb_facets(old_cell));
                 for(index_t i=0; i<cell_size; ++i) {
-                    cell_corner_facets_permutation.push_back(cell_ptr_[old_cell]+i);
+                    cell_corner_facets_permutation.push_back(
+                        cell_ptr_[old_cell]+i
+                    );
                 }
             }
             
@@ -1206,7 +1209,9 @@ namespace GEO {
             for(index_t new_c=0; new_c<nb(); ++new_c) {
                 index_t old_c = permutation[new_c];
                 index_t old_ptr = cell_ptr_[old_c];
-                index_t cell_size = geo_max(nb_vertices(old_c), nb_facets(old_c));
+                index_t cell_size = geo_max(
+                    nb_vertices(old_c), nb_facets(old_c)
+                );
                 new_cell_ptr[new_c] = new_ptr;
                 for(index_t i=0; i<cell_size; ++i) {
                     new_corner_vertex[new_ptr+i] = corner_vertex[old_ptr+i];
@@ -1879,6 +1884,147 @@ namespace GEO {
         }
     }
 
+    index_t Mesh::nb_subelements_types() const {
+        return 7;
+    }
+
+    MeshSubElementsStore& Mesh::get_subelements_by_index(
+        index_t i
+    ) {
+        switch(i) {
+        case 0:
+            return vertices;
+        case 1:
+            return edges;
+        case 2:
+            return facets;
+        case 3:
+            return facet_corners;
+        case 4:
+            return cells;
+        case 5:
+            return cell_corners;
+        case 6:
+            return cell_facets;
+        default:
+            geo_assert_not_reached;
+        }
+        return *(MeshSubElementsStore*)nil;
+    }
+
+    const MeshSubElementsStore& Mesh::get_subelements_by_index(
+        index_t i
+    ) const {
+        switch(i) {
+        case 0:
+            return vertices;
+        case 1:
+            return edges;
+        case 2:
+            return facets;
+        case 3:
+            return facet_corners;
+        case 4:
+            return cells;
+        case 5:
+            return cell_corners;
+        case 6:
+            return cell_facets;
+        default:
+            geo_assert_not_reached;
+        }
+        return *(MeshSubElementsStore*)nil;
+    }
+    
+    MeshSubElementsStore& Mesh::get_subelements_by_type(
+        MeshElementsFlags what
+    ) {
+        switch(what) {
+        case MESH_VERTICES:
+            return vertices;
+        case MESH_EDGES:
+            return edges;
+        case MESH_FACETS:
+            return facets;
+        case MESH_FACET_CORNERS:
+            return facet_corners;
+        case MESH_CELLS:
+            return cells;
+        case MESH_CELL_CORNERS:
+            return cell_corners;
+        case MESH_CELL_FACETS:
+            return cell_facets;
+        default:
+            geo_assert_not_reached;
+        }
+        return *(MeshSubElementsStore*)nil;
+    }
+    
+    const MeshSubElementsStore& Mesh::get_subelements_by_type(
+        MeshElementsFlags what
+    ) const {
+        switch(what) {
+        case MESH_VERTICES:
+            return vertices;
+        case MESH_EDGES:
+            return edges;
+        case MESH_FACETS:
+            return facets;
+        case MESH_FACET_CORNERS:
+            return facet_corners;
+        case MESH_CELLS:
+            return cells;
+        case MESH_CELL_CORNERS:
+            return cell_corners;
+        case MESH_CELL_FACETS:
+            return cell_facets;
+        default:
+            geo_assert_not_reached;
+        }
+        return *(MeshSubElementsStore*)nil;
+    }
+    
+    std::string Mesh::subelements_type_to_name(MeshElementsFlags what) {
+        switch(what) {
+        case MESH_VERTICES:
+            return "vertices";
+        case MESH_EDGES:
+            return "edges";
+        case MESH_FACETS:
+            return "facets";
+        case MESH_FACET_CORNERS:
+            return "facet_corners";
+        case MESH_CELLS:
+            return "cells";
+        case MESH_CELL_CORNERS:
+            return "cell_corners";
+        case MESH_CELL_FACETS:
+            return "cell_facets";
+        default:
+            geo_assert_not_reached;
+        }
+        return "";
+    }
+    
+    MeshElementsFlags Mesh::name_to_subelements_type(const std::string& name) {
+        if(name == "vertices") {
+            return MESH_VERTICES;
+        } else if(name == "edges") {
+            return MESH_EDGES;
+        } else if(name == "facets") {
+            return MESH_FACETS;
+        } else if(name == "facet_corners") {
+            return MESH_FACET_CORNERS;
+        } else if(name == "cells") {
+            return MESH_CELLS;
+        } else if(name == "cell_corners") {
+            return MESH_CELL_CORNERS;
+        } else if(name == "cell_facets") {
+            return MESH_CELL_FACETS;
+        }
+        return MESH_NONE;
+    }
+    
     
     /**************************************************************************/
     

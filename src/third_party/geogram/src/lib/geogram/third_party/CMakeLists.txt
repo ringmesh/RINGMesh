@@ -15,6 +15,8 @@ aux_source_directories(SOURCES "Source Files\\HLBFGS"   HLBFGS)
 aux_source_directories(SOURCES "Source Files\\LM6"      LM6)
 aux_source_directories(SOURCES "Source Files\\rply"     rply)
 aux_source_directories(SOURCES "Source Files\\shewchuk" shewchuk)
+aux_source_directories(SOURCES "Source Files\\zlib"     zlib)
+aux_source_directories(SOURCES "Source Files\\gzstream" gzstream)
 
 if(GEOGRAM_WITH_TETGEN)
     aux_source_directories(SOURCES "Source Files\\tetgen" tetgen)
