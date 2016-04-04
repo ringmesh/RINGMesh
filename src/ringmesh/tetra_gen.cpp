@@ -766,7 +766,7 @@ namespace RINGMesh {
                     tetmesh_->facets.set_vertex( offset_facets + t, v,
                         starting_index
                             + unique_indices[offset_vertices
-                                + surface.surf_vertex_id( t, v )] ) ;
+                                + surface.polytop_vertex_index( t, v )] ) ;
                 }
                 surface_region[offset_facets + t] = surface.index() ;
 

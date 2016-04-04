@@ -291,7 +291,7 @@ namespace {
             index_t cur_f = facets[i] ;
             for( index_t cur_v = 0; cur_v < S.nb_vertices_in_facet( cur_f );
                 cur_v++ ) {
-                if( S.surf_vertex_id( cur_f, cur_v ) == old ) {
+                if( S.polytop_vertex_index( cur_f, cur_v ) == old ) {
                     S.mesh().facets.set_vertex( cur_f, cur_v, neu ) ;
                 }
             }
@@ -1480,7 +1480,7 @@ namespace RINGMesh {
 
         for( index_t f = 0; f < nb_facets; ++f ) {
             for( index_t v = 0; v < S.nb_vertices_in_facet( f ); v++ ) {
-                vertex_to_facets[S.surf_vertex_id( f, v )].push_back( f ) ;
+                vertex_to_facets[S.polytop_vertex_index( f, v )].push_back( f ) ;
             }
         }
         for( index_t p = 0; p < nb_vertices; ++p ) {
@@ -1489,8 +1489,8 @@ namespace RINGMesh {
 
         for( index_t f = 0; f < nb_facets; ++f ) {
             for( index_t v = 0; v < S.nb_vertices_in_facet( f ); v++ ) {
-                index_t cur = S.surf_vertex_id( f, v ) ;
-                index_t prev = S.surf_vertex_id( f, S.prev_in_facet( f, v ) ) ;
+                index_t cur = S.polytop_vertex_index( f, v ) ;
+                index_t prev = S.polytop_vertex_index( f, S.prev_in_facet( f, v ) ) ;
 
                 const std::vector< index_t >& f_prev = vertex_to_facets[prev] ;
                 const std::vector< index_t >& f_cur = vertex_to_facets[cur] ;
@@ -1611,7 +1611,7 @@ namespace RINGMesh {
         ringmesh_unused( found ) ;
         ringmesh_assert( found && facet_index != NO_ID && v != NO_ID ) ;
 
-        surface_vertex_0 = S.surf_vertex_id( facet_index, v ) ;
+        surface_vertex_0 = S.polytop_vertex_index( facet_index, v ) ;
         surface_vertex_1 = S.mesh().facet_vertex( facet_index,
             S.mesh().next_facet_vertex( facet_index, v ) ) ;
     }
@@ -1647,14 +1647,14 @@ namespace RINGMesh {
             index_t id1_in_next( NO_ID ) ;
             index_t next_id1_in_next( NO_ID ) ;
 
-            S.next_on_border( f, S.facet_vertex_id( f, id0 ),
-                S.facet_vertex_id( f, id1 ), next_f, id1_in_next,
+            S.next_on_border( f, S.vertex_index_in_facet( f, id0 ),
+                S.vertex_index_in_facet( f, id1 ), next_f, id1_in_next,
                 next_id1_in_next ) ;
             ringmesh_assert(
                 next_f != NO_ID && id1_in_next != NO_ID
                     && next_id1_in_next != NO_ID ) ;
 
-            index_t next_id1 = S.surf_vertex_id( next_f, next_id1_in_next ) ;
+            index_t next_id1 = S.polytop_vertex_index( next_f, next_id1_in_next ) ;
 
             // Duplicate the vertex at id1
             // After having determined the next 1 we can probably get both at the same time
@@ -3248,15 +3248,15 @@ namespace RINGMesh {
 
             // We want the next triangle that is on the boundary and share p1
             // If there is no such triangle, the third vertex of the current triangle is to add
-            S.next_on_border( f, S.facet_vertex_id( f, id0 ),
-                S.facet_vertex_id( f, id1 ), next_f, id1_in_next,
+            S.next_on_border( f, S.vertex_index_in_facet( f, id0 ),
+                S.vertex_index_in_facet( f, id1 ), next_f, id1_in_next,
                 next_id1_in_next ) ;
 
             ringmesh_assert(
                 next_f != NO_ID && id1_in_next != NO_ID
                     && next_id1_in_next != NO_ID ) ;
 
-            index_t next_id1 = S.surf_vertex_id( next_f, next_id1_in_next ) ;
+            index_t next_id1 = S.polytop_vertex_index( next_f, next_id1_in_next ) ;
 
             // Update
             f = next_f ;

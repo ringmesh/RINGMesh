@@ -42,6 +42,7 @@
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_io.h>
 #include <geogram/mesh/mesh_geometry.h>
+#include <geogram/mesh/mesh_topology.h>
 
 namespace GEO {
     class MeshFacetsAABB ;
@@ -107,9 +108,9 @@ namespace RINGMesh {
         {
             mesh_->copy( *rhs.mesh_, copy_attributes, what ) ;
         }
-        void save_mesh( const std::string filename, const GEO::MeshIOFlags& ioflags)
+        void save_mesh( const std::string filename, const GEO::MeshIOFlags& ioflags )
         {
-            GEO::mesh_save( *mesh_, filename,  ioflags ) ;
+            GEO::mesh_save( *mesh_, filename, ioflags ) ;
         }
         /*!
          * @brief return the ColocaterANN at the given ColocaterANN::MeshLocation
@@ -124,6 +125,10 @@ namespace RINGMesh {
             return *ann_[location] ;
         }
 
+        index_t nb_connected_components() const
+        {
+            return GEO::mesh_nb_connected_components( *mesh_ ) ;
+        }
         /*!
          * \name Vertex methods
          * @{
@@ -135,7 +140,7 @@ namespace RINGMesh {
          */
         const vec3& vertex( index_t v_id ) const
         {
-            ringmesh_assert( v_id < nb_vertices() )
+            ringmesh_assert( v_id < nb_vertices() ) ;
             return mesh_->vertices.point( v_id ) ;
         }
         /*
@@ -240,7 +245,6 @@ namespace RINGMesh {
          */
         index_t facet_adjacent( index_t facet_id, index_t edge_id ) const
         {
-            ringmesh_assert( edge_id < nb_facet_vertices( facet_id ) ) ;
             return mesh_->facets.adjacent( facet_id, edge_id ) ;
         }
         GEO::AttributesManager& facet_attribute_manager() const
@@ -269,7 +273,33 @@ namespace RINGMesh {
          * @warning calling this function will destroy the ColocaterANN.
          */
         const GEO::MeshFacetsAABB& facets_aabb() const ;
-
+        /*!
+         * Computes the Mesh facet normal
+         * @param[in] facet_id the facet index
+         * @return the facet normal
+         */
+        vec3 facet_normal( index_t facet_id ) const
+        {
+            return normalize( GEO::Geom::mesh_facet_normal( *mesh_, facet_id ) ) ;
+        }
+        /*!
+         * Computes the Mesh facet barycenter
+         * @param[in] facet_id the facet index
+         * @return the facet center
+         */
+        vec3 facet_barycenter( index_t facet_id ) const
+        {
+            return GEO::Geom::mesh_facet_center( *mesh_, facet_id ) ;
+        }
+        /*!
+         * Computes the Mesh facet area
+         * @param[in] facet_id the facet index
+         * @return the facet area
+         */
+        double facet_area( index_t facet_id ) const
+        {
+            return GEO::Geom::mesh_facet_area( *mesh_, facet_id ) ;
+        }
         /*! @}
          * \name Cells methods
          * @{
@@ -400,7 +430,7 @@ namespace RINGMesh {
          * @param[in] facet_id the facet index in the cell
          * @return the cell facet center
          */
-        vec3 cell_facet_center( index_t cell_id, index_t facet_id ) const
+        vec3 cell_facet_barycenter( index_t cell_id, index_t facet_id ) const
         {
             vec3 result( 0., 0., 0. ) ;
             index_t nb_vertices = nb_cell_facet_vertices( cell_id, facet_id ) ;
@@ -459,7 +489,8 @@ namespace RINGMesh {
         }
 
         /*!
-         * \section Vertex methods
+         * \name Vertex methods
+         * @{
          */
         /*!
          * @brief Gets a point.
@@ -522,8 +553,9 @@ namespace RINGMesh {
             mesh_.mesh_->vertices.clear( keep_attributes, keep_memory ) ;
         }
 
-        /*!
+        /*!@}
          * \section Edge methods
+         * @{
          */
         /*!
          * @brief Deletes a set of edges.
@@ -540,8 +572,9 @@ namespace RINGMesh {
                 remove_isolated_vertices ) ;
         }
 
-        /*!
+        /*!@}
          * \section Facet methods
+         * @{
          */
         /*!
          * @brief Sets a vertex of a facet by local vertex index.
@@ -570,8 +603,9 @@ namespace RINGMesh {
             mesh_.mesh_->facets.set_adjacent( facet_id, edge_id, specifies ) ;
         }
 
-        /*!
+        /*!@}
          * \section Cells methods
+         * @{
          */
         /*!
          * @brief Creates a contiguous chunk of cells of the same type.
@@ -619,6 +653,10 @@ namespace RINGMesh {
         {
             mesh_.mesh_->cells.permute_elements( permutation ) ;
         }
+        /*!
+         * @}
+         */
+
     private:
         Mesh& mesh_ ;
 
