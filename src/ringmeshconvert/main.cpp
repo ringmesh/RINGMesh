@@ -185,7 +185,7 @@ namespace {
             for( index_t j = 0; j < S.nb_cells(); ++j ) {
                 out << S.nb_vertices_in_facet( j ) << " " ;
                 for( index_t v = 0; v < S.nb_vertices_in_facet( j ); ++v ) {
-                    out << S.surf_vertex_id( j, v ) << " " ;
+                    out << S.polytop_vertex_index( j, v ) << " " ;
                 }
                 out << std::endl ;
             }

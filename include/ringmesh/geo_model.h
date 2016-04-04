@@ -108,8 +108,7 @@ namespace RINGMesh {
                 ringmesh_assert( !nb_elements_per_type_.empty() ) ;
                 return nb_elements_per_type_.back() ;
             } else {
-                ringmesh_assert_not_reached
-                ;
+                ringmesh_assert_not_reached ;
                 return 0 ;
             }
         }
@@ -199,31 +198,15 @@ namespace RINGMesh {
         const Corner& corner( index_t index ) const
         {
             // Yes, we could use static_cast, but I trust nobody and check [JP]
-            return dynamic_cast< const Corner& >( *corners_.at( index ) ) ;
-        }
-
-        Line& line( index_t index )
-        {
-            return dynamic_cast< Line& >( element( GME::LINE, index ) ) ;
+            return corner( index ) ;
         }
         const Line& line( index_t index ) const
         {
             return line( index ) ;
         }
-
-
-        Surface& surface( index_t index )
-        {
-            return dynamic_cast< Surface& >( element( GME::SURFACE, index ) ) ;
-        }
         const Surface& surface( index_t index ) const
         {
-            return surface ( index  ) ;
-        }
-
-        Region& region( index_t index )
-        {
-            return dynamic_cast< Region& >( element( GME::REGION, index ) ) ;
+            return surface( index ) ;
         }
         const Region& region( index_t index ) const
         {
@@ -286,12 +269,27 @@ namespace RINGMesh {
                 index_t i = global.index - nb_elements_per_type_[t] ;
                 return GME::gme_t( T, i ) ;
             } else {
-                ringmesh_assert_not_reached
-                ;
+                ringmesh_assert_not_reached ;
                 return GME::gme_t() ;
             }
         }
 
+        Corner& corner( index_t index )
+        {
+            return dynamic_cast< Corner& >( *corners_.at( index ) ) ;
+        }
+        Line& line( index_t index )
+        {
+            return dynamic_cast< Line& >( element( GME::LINE, index ) ) ;
+        }
+        Surface& surface( index_t index )
+        {
+            return dynamic_cast< Surface& >( element( GME::SURFACE, index ) ) ;
+        }
+        Region& region( index_t index )
+        {
+            return dynamic_cast< Region& >( element( GME::REGION, index ) ) ;
+        }
         /*!
          * @brief Generic accessor to the storage of elements of the given type
          * @pre The type must be valid NO_TYPE or ALL_TYPES will throw an assertion
@@ -323,8 +321,7 @@ namespace RINGMesh {
                 case GME::LAYER:
                     return layers_ ;
                 default:
-                    ringmesh_assert_not_reached
-                    ;
+                    ringmesh_assert_not_reached ;
                     return surfaces_ ;
             }
         }
@@ -347,8 +344,7 @@ namespace RINGMesh {
                 } else if( id.type == GME::ALL_TYPES ) {
                     return element_ptr( global_to_typed_id( id ) ) ;
                 } else {
-                    ringmesh_assert_not_reached
-                    ;
+                    ringmesh_assert_not_reached ;
                     return const_cast< Region* >( &universe_ ) ;
                 }
             }
