@@ -221,8 +221,8 @@ namespace {
     {
         for( index_t i = 0; i < S.nb_cells(); ++i ) {
             for( index_t j = 0; j < S.nb_vertices_in_facet( i ); ++j ) {
-                index_t v0 = S.surf_vertex_id( i, j ) ;
-                index_t v1 = S.surf_vertex_id( i, S.next_in_facet( i, j ) ) ;
+                index_t v0 = S.polytop_vertex_index( i, j ) ;
+                index_t v1 = S.polytop_vertex_index( i, S.next_in_facet( i, j ) ) ;
                 if( ( v0 == v0_in && v1 == v1_in ) || ( v0 == v1_in && v1 == v0_in ) ) {
                     return true ;
                 }
@@ -323,9 +323,9 @@ namespace {
                     vertex_count++ ;
                 }
                 for( index_t k = 0; k < S.nb_cells(); ++k ) {
-                    out << "TRGL " << S.surf_vertex_id( k, 0 ) + offset << " "
-                        << S.surf_vertex_id( k, 1 ) + offset << " "
-                        << S.surf_vertex_id( k, 2 ) + offset << std::endl ;
+                    out << "TRGL " << S.polytop_vertex_index( k, 0 ) + offset << " "
+                        << S.polytop_vertex_index( k, 1 ) + offset << " "
+                        << S.polytop_vertex_index( k, 2 ) + offset << std::endl ;
                 }
                 for( index_t k = 0; k < S.nb_boundaries(); ++k ) {
                     const Line& L = dynamic_cast< const Line& >( S.boundary( k ) ) ;
@@ -542,7 +542,7 @@ namespace {
                     out << f << " 0 tri" ;
                     for( index_t v = 0; v < surface.nb_vertices_in_facet( f );
                         v++ ) {
-                        out << " " << surface.surf_vertex_id( f, v ) ;
+                        out << " " << surface.polytop_vertex_index( f, v ) ;
                     }
                     out << std::endl ;
                 }

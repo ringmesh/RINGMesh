@@ -427,8 +427,8 @@ namespace RINGMesh {
         for( index_t s = 0; s < model()->nb_surfaces(); s++ ) {
             Box3d& box = boxes[s] ;
             const Surface& surface = model()->surface( s ) ;
-            for( unsigned int p = 0; p < surface.nb_vertices(); p++ ) {
-                box.add_point( surface.vertex( p ) ) ;
+            for( unsigned int p = 0; p < surface.mesh().nb_vertices(); p++ ) {
+                box.add_point( surface.mesh().vertex( p ) ) ;
             }
         }
 
@@ -453,7 +453,7 @@ namespace RINGMesh {
                 index_t s_id = potential_surfaces[s] ;
                 const Surface& surface = model_->surface( s_id ) ;
                 EdgeConformerAction action( surface, v_from, v_to, intersections ) ;
-                surface.tools.aabb().compute_bbox_facet_bbox_intersections( box,
+                surface.mesh().facets_aabb().compute_bbox_facet_bbox_intersections( box,
                     action ) ;
             }
             if( !intersections.empty() ) {
@@ -530,8 +530,8 @@ namespace RINGMesh {
             Box3d box ;
             for( index_t s = 0; s < model()->nb_surfaces(); s++ ) {
                 const Surface& surface = model()->surface( s ) ;
-                for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
-                    box.add_point( surface.vertex( v ) ) ;
+                for( index_t v = 0; v < surface.mesh().nb_vertices(); v++ ) {
+                    box.add_point( surface.mesh().vertex( v ) ) ;
                 }
             }
             vec3 diag_box = box.max() - box.min() ;
@@ -552,7 +552,7 @@ namespace RINGMesh {
                 index_t s_id = potential_surfaces[s] ;
                 const Surface& surface = model_->surface( s_id ) ;
                 EdgeConformerAction action( surface, v_from, v_to, intersections ) ;
-                surface.tools.aabb().compute_bbox_facet_bbox_intersections( box,
+                surface.mesh().facets_aabb().compute_bbox_facet_bbox_intersections( box,
                     action ) ;
             }
             if( !intersections.empty() ) {
