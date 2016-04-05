@@ -194,6 +194,13 @@ namespace RINGMesh {
             return mesh_->facets.vertex( facet_id, vertex_id ) ;
         }
         /*!
+         * @brief return the vertex index of the corner \param corner_id
+         */
+        index_t facet_corner_vertex( index_t corner_id ) const
+        {
+            return mesh_->facet_corners.vertex( corner_id ) ;
+        }
+        /*!
          * @brief Gets the number of all facets in the whole Mesh.
          */
         index_t nb_facets() const
@@ -207,6 +214,13 @@ namespace RINGMesh {
         index_t nb_facet_vertices( index_t facet_id ) const
         {
             return mesh_->facets.nb_vertices( facet_id ) ;
+        }
+        /*!
+         * Get the number of corners of all facets
+         */
+        index_t nb_facet_corners() const
+        {
+            return mesh_->facet_corners.nb() ;
         }
         /*!
          * @brief Gets the next vertex index in the facet \param facet_id.
@@ -558,6 +572,19 @@ namespace RINGMesh {
          * @{
          */
         /*!
+         * @brief Sets a vertex of a facet by local vertex index.
+         * @param[in] edge_id index of the edge, in 0..nb()-1.
+         * @param[in] local_vertex_id index of the vertex in the facet. Local index between 0 and nb_vertices(cell_id)-1.
+         * @param[in] vertex_id specifies the vertex \param local_vertex_id of facet \param of the facet facet_id. Index between 0 and nb()-1.
+         */
+        void set_edge_vertex(
+            index_t edge_id,
+            index_t local_vertex_id,
+            index_t vertex_id )
+        {
+            mesh_.mesh_->edges.set_vertex( edge_id, local_vertex_id, vertex_id ) ;
+        }
+        /*!
          * @brief Deletes a set of edges.
          * @param[in] to_delete a vector of size nb(). If to_delete[e] is different from 0,
          * then element e will be destroyed, else it will be kept. On exit, to_delete is modified
@@ -588,6 +615,15 @@ namespace RINGMesh {
             index_t vertex_id )
         {
             mesh_.mesh_->facets.set_vertex( facet_id, local_vertex_id, vertex_id ) ;
+        }
+        /*!
+         * @brief Sets a vertex of a facet by local vertex index.
+         * @param[in] corner_id index of the corner.
+         * @param[in] global_vertex_id.
+         */
+        void set_facet_corner( index_t corner_id, index_t vertex_id )
+        {
+            mesh_.mesh_->facet_corners.set_vertex( corner_id, vertex_id ) ;
         }
         /*!
          * @brief Sets an adjacent facet by facet and local edge index.
