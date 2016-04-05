@@ -63,6 +63,7 @@ namespace RINGMesh {
     ringmesh_disable_copy( GeoModel ) ;
         friend class GeoModelBuilder ;
         friend class GeoModelEditor ;
+        friend class GeoModelRepair ;
 
     public:
         static const index_t NO_ID = index_t( -1 ) ;

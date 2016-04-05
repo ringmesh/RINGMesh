@@ -447,6 +447,7 @@ namespace RINGMesh {
     ringmesh_disable_copy( GeoModelMeshElement ) ;
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
+        friend class GeoModelRepair ;
     public:
 
         GeoModelMeshElement(
@@ -550,7 +551,7 @@ namespace RINGMesh {
          */
         index_t model_vertex_id( index_t gmme_vertex_index = 0 ) const
         {
-            ringmesh_assert( gmme_vertex_index < mesh_.nb_vertices() ) ;
+            ringmesh_assert( gmme_vertex_index < nb_vertices() ) ;
             return model_vertex_id_[gmme_vertex_index] ;
         }
         /*!
@@ -652,7 +653,7 @@ namespace RINGMesh {
         /*!
          * Get the number of edges of the Line
          */
-        virtual index_t nb_n_polytope() const
+        virtual index_t nb_polytope() const
         {
             return mesh_.nb_edges() ;
         }
@@ -672,7 +673,7 @@ namespace RINGMesh {
             index_t edge_index,
             index_t vertex_index ) const
         {
-            ringmesh_assert( edge_index < nb_n_polytope() ) ;
+            ringmesh_assert( edge_index < nb_polytope() ) ;
             ringmesh_assert( vertex_index < 2 ) ;
             return mesh_.edge_vertex( edge_index, vertex_index ) ;
         }
@@ -721,42 +722,10 @@ namespace RINGMesh {
         }
 
         /*!
-         * \name Accessors to Surface edges and vertices
+         * \name Accessors to Surface facets, edges and vertices
          * @{
          */
-        /*!
-         * @brief get the number of edges in the Surface
-         */
-        index_t nb_edges() const
-        {
-            return mesh_.nb_edges() ;
-        }
-        /*!
-         * @brief get the index of a vertex in a Surface at the \param vertex_index on the edge: \param edge_index.
-         */
-        index_t edge_vertex_index( index_t edge_index, index_t vertex_index ) const
-        {
-            return mesh_.edge_vertex( edge_index, vertex_index ) ;
-        }
-        void edge_from_model_vertex_ids(
-            index_t i0,
-            index_t i1,
-            index_t& f,
-            index_t& e ) const ;
 
-        void oriented_edge_from_model_vertex_ids(
-            index_t i0,
-            index_t i1,
-            index_t& facet,
-            index_t& edge ) const ;
-        /*!
-         * }@
-         */
-
-        /*!
-         * \name Accessors to Surface facets and vertices
-         * @{
-         */
         /*!
          * Get the number of facets of the Surface.
          */
@@ -770,6 +739,7 @@ namespace RINGMesh {
          */
         virtual index_t nb_polytope_vertices( index_t facet_index ) const
         {
+            ringmesh_assert( facet_index < nb_polytope() ) ;
             return mesh_.nb_facet_vertices( facet_index ) ;
         }
         /*!
@@ -784,23 +754,32 @@ namespace RINGMesh {
             ringmesh_assert( vertex_index < nb_polytope_vertices( facet_index ) ) ;
             return mesh_.facet_vertex( facet_index, vertex_index ) ;
         }
+
         /*!
          * @brief Gets the next vertex index in the facet \param facet_id.
          * @param[in] facet_id facet index
          * @param[in] vertex_id current index
          */
-        index_t next_facet_vertex_index( index_t facet_id, index_t vertex_id ) const
+        index_t next_facet_vertex_index(
+            index_t facet_index,
+            index_t vertex_index ) const
         {
-            return mesh_.next_facet_vertex( facet_id, vertex_id ) ;
+            ringmesh_assert( facet_index < nb_polytope() ) ;
+            ringmesh_assert( vertex_index < nb_polytope_vertices( facet_index ) ) ;
+            return mesh_.next_facet_vertex( facet_index, vertex_index ) ;
         }
         /*!
          * @brief Gets the previous vertex index in the facet \param facet_id.
          * @param[in] facet_id facet index
          * @param[in] vertex_id current index
          */
-        index_t prev_facet_vertex_index( index_t facet_id, index_t vertex_id ) const
+        index_t prev_facet_vertex_index(
+            index_t facet_index,
+            index_t vertex_index ) const
         {
-            return mesh_.prev_facet_vertex( facet_id, vertex_id ) ;
+            ringmesh_assert( facet_index < nb_polytope() ) ;
+            ringmesh_assert( vertex_index < nb_polytope_vertices( facet_index ) ) ;
+            return mesh_.prev_facet_vertex( facet_index, vertex_index ) ;
         }
         /*!
          * @brief Gets an adjacent facet index by facet index and local edge index.
@@ -809,12 +788,12 @@ namespace RINGMesh {
          * @return the global facet index adjacent to the \param edge_id of the facet \param facet_id.
          * @precondition  \param edge_id < number of edge of the facet \param facet_id .
          */
-        index_t facet_adjacent_index( index_t facet_id, index_t edge_id ) const
+        index_t facet_adjacent_index( index_t facet_index, index_t edge_index ) const
         {
-            ringmesh_assert( edge_id < nb_polytope_vertices( facet_id ) ) ;
-            return mesh_.facet_adjacent( facet_id, edge_id ) ;
+            ringmesh_assert( facet_index < nb_polytope() ) ;
+            ringmesh_assert( edge_index < nb_polytope_vertices( facet_index ) ) ;
+            return mesh_.facet_adjacent( facet_index, edge_index ) ;
         }
-
         void next_on_border(
             index_t f,
             index_t from,
@@ -822,7 +801,6 @@ namespace RINGMesh {
             index_t& next_f,
             index_t& v_in_next,
             index_t& to ) const ;
-
         void next_on_border(
             index_t f,
             index_t e,
@@ -830,15 +808,18 @@ namespace RINGMesh {
             index_t& next_e ) const ;
 
         /*!
-          * @brief Get the local vertex index in the facet /param facet_index from its index in the Surface /param surface_vertex_index
-          * @param[in] facet_index Index of the facet
-          * @param[in] surface_vertex_index Index of the vertex in the surface
-          * @return NO_ID or index of the vertex in the facet
-          */
-        index_t vertex_index_in_facet( index_t facet_index, index_t surface_vertex_index ) const
+         * @brief Get the local vertex index in the facet /param facet_index from its index in the Surface /param surface_vertex_index
+         * @param[in] facet_index Index of the facet
+         * @param[in] surface_vertex_index Index of the vertex in the surface
+         * @return NO_ID or index of the vertex in the facet
+         */
+        index_t vertex_index_in_facet(
+            index_t facet_index,
+            index_t surface_vertex_index ) const
         {
             for( index_t v = 0; v < nb_polytope_vertices( facet_index ); v++ ) {
-                if( polytope_vertex_index( facet_index, v ) == surface_vertex_index ) {
+                if( polytope_vertex_index( facet_index, v )
+                    == surface_vertex_index ) {
                     return v ;
                 }
             }
@@ -855,10 +836,21 @@ namespace RINGMesh {
             std::vector< index_t >& result,
             bool border_only,
             index_t first_facet ) const ;
+
         /*! @}
-         * \name Accessors to facet and vertices from the GeoModelMesh index
+         * \name Linking to GeoModelMesh indexing
          * @{
          */
+        void edge_from_model_vertex_ids(
+            index_t i0,
+            index_t i1,
+            index_t& f,
+            index_t& e ) const ;
+        void oriented_edge_from_model_vertex_ids(
+            index_t i0,
+            index_t i1,
+            index_t& facet,
+            index_t& edge ) const ;
         /*!
          * @brief Convert model vertex index to an index in a facet
          * @param[in] f Index of the facet
@@ -887,6 +879,7 @@ namespace RINGMesh {
          */
         vec3 facet_normal( index_t facet_index ) const
         {
+            ringmesh_assert( facet_index < nb_polytope() ) ;
             return mesh_.facet_normal( facet_index ) ;
         }
         /*!
@@ -896,8 +889,15 @@ namespace RINGMesh {
          */
         vec3 facet_barycenter( index_t facet_index ) const
         {
-            mesh_.facet_barycenter( facet_index ) ;
+            ringmesh_assert( facet_index < nb_polytope() ) ;
+            return mesh_.facet_barycenter( facet_index ) ;
         }
+        bool facet_is_triangle( index_t facet_index )
+        {
+            ringmesh_assert( facet_index < nb_polytope() ) ;
+            return mesh_.is_triangle( facet_index ) ;
+        }
+
         /*!
          * Computes the Mesh facet area
          * @param[in] facet_id the facet index
@@ -905,16 +905,22 @@ namespace RINGMesh {
          */
         double facet_area( index_t facet_index ) const
         {
-            mesh_.facet_area( facet_index ) ;
+            ringmesh_assert( facet_index < nb_polytope() ) ;
+            return mesh_.facet_area( facet_index ) ;
         }
         index_t closest_vertex_in_facet(
             index_t facet_index,
             const vec3& to_point ) const ;
+        /*!
+         * @return true if the edge starting at the vertex \param v of the facet \param f is on the Surface Border.
+         */
         bool is_on_border( index_t f, index_t v ) const
         {
-            return mesh_.facet_adjacent( f, v ) == GEO::NO_CELL ;
+            return facet_adjacent_index( f, v ) == GEO::NO_CELL ;
         }
-
+        /*!
+         * @return true if on edge of the facet \param f is on the Surface border.
+         */
         bool is_on_border( index_t f ) const
         {
             for( index_t adj = 0; adj < mesh_.nb_facet_vertices( f ); adj++ ) {
@@ -959,8 +965,29 @@ namespace RINGMesh {
         {
         }
 
+        bool is_meshed() const
+        {
+            return mesh_.nb_cells() > 0 ;
+        }
+        bool is_simplicial() const
+        {
+            return mesh_.cells_are_simplicies() ;
+        }
+        const GEO::MeshCellsAABB& cells_aabb() const
+        {
+            return mesh_.cells_aabb() ;
+        }
+        GEO::AttributesManager& cell_attribute_manager() const
+        {
+            return mesh_.cell_attribute_manager() ;
+        }
+        bool side( index_t i ) const
+        {
+            return sides_[i] ;
+        }
+
         /*!
-         * \name Accessors to Region cells and vertices
+         * \name Accessors to Region cells, facets, edges and vertices
          * @{
          */
         /*!
@@ -970,18 +997,38 @@ namespace RINGMesh {
         {
             return mesh_.nb_cells() ;
         }
+        index_t nb_cell_edges( index_t cell_index ) const
+        {
+            ringmesh_assert( cell_index < nb_polytope() ) ;
+            return mesh_.nb_cell_edges( cell_index ) ;
+        }
+        index_t nb_cell_facets( index_t cell_index ) const
+        {
+            ringmesh_assert( cell_index < nb_polytope() ) ;
+            return mesh_.nb_cell_facets( cell_index ) ;
+        }
+        index_t nb_cell_facet_vertices(
+            index_t cell_index,
+            index_t facet_index ) const
+        {
+            ringmesh_assert( cell_index < nb_polytope() ) ;
+            ringmesh_assert( facet_index < nb_cell_facets(cell_index) ) ;
+            return mesh_.nb_cell_facet_vertices( cell_index, facet_index ) ;
+        }
         /*!
          * Get the number of vertex in the cell \param cell_index of the Region.
          *
          */
         virtual index_t nb_polytope_vertices( index_t cell_index ) const
         {
+            ringmesh_assert( cell_index < nb_polytope() ) ;
             return mesh_.nb_cell_vertices( cell_index ) ;
         }
         /*!
          * @brief Get the index of a vertex in the Region from the vertex index \param vertex_index
          * in a given cell \param cell_index.
          */
+
         virtual index_t polytope_vertex_index(
             index_t cell_index,
             index_t vertex_index ) const
@@ -990,27 +1037,64 @@ namespace RINGMesh {
             ringmesh_assert( vertex_index < nb_polytope_vertices( cell_index ) ) ;
             return mesh_.cell_vertex( cell_index, vertex_index ) ;
         }
-
-
-        bool is_on_border( index_t cell, index_t facet ) const
+        index_t cell_edge_vertex_index(
+            index_t cell_index,
+            index_t edge_index,
+            index_t vertex_index ) const
         {
-            return mesh_.cell_adjacent( cell, facet ) == GEO::NO_CELL ;
+            ringmesh_assert( cell_index < nb_polytope() ) ;
+            ringmesh_assert( edge_index < nb_cell_edges( cell_index ) ) ;
+            ringmesh_assert( vertex_index < nb_polytope_vertices( cell_index ) ) ;
+            return mesh_.cell_edge_vertex( cell_index, edge_index, vertex_index ) ;
+        }
+        index_t cell_facet_vertex_index(
+            index_t cell_index,
+            index_t facet_index,
+            index_t vertex_index )
+        {
+            ringmesh_assert( cell_index < nb_polytope() ) ;
+            ringmesh_assert( facet_index < nb_cell_facets( cell_index ) ) ;
+            ringmesh_assert( vertex_index < nb_polytope_vertices( cell_index ) ) ;
+            return mesh_.cell_facet_vertex( cell_index, facet_index, vertex_index ) ;
         }
 
-        bool is_meshed() const
+        index_t cell_adjacent_index( index_t cell_index, index_t facet_index ) const
         {
-            return mesh_.nb_cells() > 0 ;
+            ringmesh_assert( cell_index < nb_polytope() ) ;
+            ringmesh_assert( facet_index < nb_cell_facets( cell_index ) ) ;
+            return mesh_.cell_adjacent( cell_index, facet_index ) ;
         }
 
-        bool side( index_t i ) const
+        /*! @}
+         * \name Geometrical request on Region Element
+         * @{
+         */
+        bool is_facet_on_border( index_t cell_index, index_t facet_index ) const
         {
-            return sides_[i] ;
+            ringmesh_assert( cell_index < nb_polytope() ) ;
+            ringmesh_assert( facet_index < nb_cell_facets( cell_index ) ) ;
+            return mesh_.cell_adjacent( cell_index, facet_index ) == GEO::NO_CELL ;
         }
+        GEO::MeshCellType cell_type( index_t cell_index ) const
+        {
+            ringmesh_assert( cell_index < nb_polytope() ) ;
+            return mesh_.cell_type( cell_index ) ;
+        }
+        vec3 cell_facet_barycenter( index_t cell_index, index_t facet_index ) const
+        {
+            ringmesh_assert( cell_index < nb_polytope() ) ;
+            ringmesh_assert( facet_index < nb_cell_facets( cell_index ) ) ;
+            return mesh_.cell_facet_barycenter( cell_index, facet_index ) ;
+        }
+        vec3 cell_facet_normal( index_t cell_index, index_t facet_index ) const
+        {
+            ringmesh_assert( cell_index < nb_polytope() ) ;
+            ringmesh_assert( facet_index < nb_cell_facets( cell_index ) ) ;
+            return mesh_.cell_facet_normal( cell_index, facet_index ) ;
+        }
+        /*! @}
+         */
 
-        const GEO::MeshCellsAABB& cells_aabb() const
-        {
-            return mesh_.cells_aabb() ;
-        }
         /*!
          * \todo Is connectivity valid should be virtual and we should 
          * reimplement here to check 

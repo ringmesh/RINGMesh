@@ -134,7 +134,7 @@ namespace {
     gme_t find_corner( const GeoModel& geomodel, const vec3& point )
     {
         for( index_t i = 0; i < geomodel.nb_corners(); ++i ) {
-            if( geomodel.corner( i ).vertex() == point ) {
+            if( geomodel.corner( i ).vertex(0) == point ) {
                 return gme_t( GME::CORNER, i ) ;
             }
         }
@@ -241,23 +241,23 @@ namespace {
         const vec3& v1 = surface.model().mesh.vertices.vertex( model_v1 ) ;
         vec3 v_bary = 0.5 * ( v0 + v1 ) ;
 
-        index_t nb_neighbors = std::min( index_t( 5 ), surface.nb_cells() ) ;
+        index_t nb_neighbors = std::min( index_t( 5 ), surface.nb_polytope() ) ;
         std::vector< index_t > neighbors ;
         index_t cur_neighbor = 0 ;
         index_t prev_neighbor = 0 ;
         do {
             prev_neighbor = cur_neighbor ;
             cur_neighbor += nb_neighbors ;
-            cur_neighbor = std::min( cur_neighbor, surface.nb_cells() ) ;
+            cur_neighbor = std::min( cur_neighbor, surface.nb_polytope() ) ;
             neighbors.resize( cur_neighbor ) ;
             double* dist = (double*) alloca( sizeof(double) * cur_neighbor ) ;
             nb_neighbors = ann.get_neighbors( v_bary, cur_neighbor, neighbors,
                 dist ) ;
             for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
                 f = neighbors[i] ;
-                for( index_t j = 0; j < surface.nb_vertices_in_facet( f ); j++ ) {
+                for( index_t j = 0; j < surface.nb_polytope_vertices( f ); j++ ) {
                     if( surface.model_vertex_id( f, j ) == model_v0 ) {
-                        index_t j_next = surface.next_in_facet( f, j ) ;
+                        index_t j_next = surface.next_facet_vertex_index( f, j ) ;
                         if( surface.model_vertex_id( f, j_next ) == model_v1 ) {
                             e = j ;
                             return true ;
@@ -265,7 +265,7 @@ namespace {
                     }
                 }
             }
-        } while( surface.nb_cells() != cur_neighbor ) ;
+        } while( surface.nb_polytope() != cur_neighbor ) ;
 
         f = Surface::NO_ID ;
         e = Surface::NO_ID ;
@@ -289,9 +289,9 @@ namespace {
     {
         for( index_t i = 0; i < facets.size(); ++i ) {
             index_t cur_f = facets[i] ;
-            for( index_t cur_v = 0; cur_v < S.nb_vertices_in_facet( cur_f );
+            for( index_t cur_v = 0; cur_v < S.nb_polytope_vertices( cur_f );
                 cur_v++ ) {
-                if( S.polytop_vertex_index( cur_f, cur_v ) == old ) {
+                if( S.polytope_vertex_index( cur_f, cur_v ) == old ) {
                     S.mesh().facets.set_vertex( cur_f, cur_v, neu ) ;
                 }
             }
@@ -3096,7 +3096,7 @@ namespace RINGMesh {
                 const Border& b = borders_to_build[i] ;
                 // 1- Build the boundary : construct the vector
                 // of vertices on the border
-                const Surface& S = model_.surface( b.part_id_ ) ;
+                const Surface& S = model().surface( b.part_id_ ) ;
                 determine_line_vertices( S, b.p0_, b.p1_, line_vertices ) ;
                 if( line_vertices.empty() ) {
                     GEO::Logger::out( "I/O" )
