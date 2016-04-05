@@ -62,26 +62,33 @@ namespace RINGMesh {
     public:
         DuplicateInterfaceBuilder( GeoModel& model ) ;
         virtual ~DuplicateInterfaceBuilder() ;
-        void get_new_surfaces( index_t interface_id_to_duplicate ) ;
+        void duplicate_fault_network() ;
     private:
+        void get_new_surfaces(
+            const GeoModelElement& interface_to_duplicate,
+            std::vector< std::vector< index_t > >& to_erase_by_type ) ;
         void build_merged_and_bad_lines(
             const std::map< index_t, std::vector< index_t > >& surfaces_boundary_regions,
             const std::string& side_name,
             std::vector< std::vector< index_t > >& to_erase_by_type,
             const GME::gme_t& sided_interface_gme_t ) ;
-        void translate_new_interface_by_epsilon_to_avoid_colocation(
-            const GME::gme_t& interface_gme_t,
+        void compute_translation_vectors_duplicated_fault_network(
+            index_t first_new_interface_index,
             const std::vector< std::vector< index_t > >& to_erase_by_type ) ;
-        void fill_info_gme_interfation_motion(
-            const GME::gme_t& interface_gme_t,
+        void translate_duplicated_fault_network(
+            const std::vector< std::vector< index_t > >& to_erase_by_type ) ;
+        void save_normals_on_one_new_interface(
             const std::vector< std::vector< index_t > >& to_erase_by_type,
-            std::vector< std::vector< bool > >& gme_to_move,
-            std::vector< std::vector< index_t > >& gme_in_interface ) ;
-        void apply_translation_on_gme_to_move(
-            const GME::gme_t& interface_gme_t,
-            const std::vector< std::vector< index_t > >& to_erase_by_type,
-            const std::vector< std::vector< bool > >& gme_to_move,
-            const std::vector< std::vector< index_t > >& gme_in_interface ) ;
+            const GeoModelElement& interface_gme ) const ;
+        vec3 get_local_translation_vector(
+            const Surface& surface,
+            index_t vertex_id_in_surface ) const ;
+        void store_displacement_in_gme(
+            const GeoModelMeshElement& gmme,
+            index_t vertex_id_in_gmme,
+            const vec3& translation ) const ;
+        void initialize_translation_attributes(
+            const std::vector< std::vector< index_t > >& to_erase_by_type ) ;
     } ;
 
 }
