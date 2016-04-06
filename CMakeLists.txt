@@ -299,7 +299,7 @@ set(ringmesh_include ${ringmesh_include} ${generated_configure_file})
 # Group files of a project in directories
 # For this to work, all the files should be added to the sources of the project
 # and the global property USE_FOLDERS must be ON
-source_group("Zlib" FILES ${minizip_src} ${minizip_include})
+source_group("Minizip" FILES ${minizip_src} ${minizip_include})
 source_group("Source Files" FILES ${ringmesh_src})
 source_group("Header Files" FILES ${ringmesh_include})
 
@@ -317,8 +317,9 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 add_library(RINGMesh SHARED
     ${ringmesh_include} 
     ${ringmesh_src} 
-    ${minizip_src}
-    ${minizip_include})
+    #${minizip_src} # To put back when MINIZIP windows compilation is fixed. 
+    #${minizip_include}
+)
 
 # RINGMesh depends on Geogram
 add_dependencies(RINGMesh geogram_ext)

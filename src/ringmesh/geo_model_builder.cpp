@@ -3740,6 +3740,7 @@ namespace RINGMesh {
     }
     void GeoModelBuilderGM::load_file()
     {
+#ifdef MINIZIP_FIXED
 
         unzFile uz = unzOpen( filename_.c_str() ) ;
         unz_global_info global_info ;
@@ -3769,7 +3770,7 @@ namespace RINGMesh {
         GEO::FileSystem::delete_file( connectivity ) ;
 
         unzClose( uz ) ;
-
+#endif
     }
 
     void GeoModelBuilderGM::load_connectivities( GEO::LineInput& file_line )
@@ -3797,7 +3798,7 @@ namespace RINGMesh {
         }
 
     }
-
+#ifdef MINIZIP_FIXED
     void GeoModelBuilderGM::load_elements( GME::TYPE gme_t, unzFile& uz )
     {
         for( index_t el = 0; el < model_.nb_elements( gme_t ); el++ ) {
@@ -3865,5 +3866,5 @@ namespace RINGMesh {
         unzCloseCurrentFile( uz ) ;
 
     }
-
+#endif
 } // namespace

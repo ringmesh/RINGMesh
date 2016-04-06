@@ -93,7 +93,7 @@ namespace RINGMesh {
     /***************************************************************************/
 
 
-
+#ifdef MINIZIP_FIXED
     void zip_file( zipFile zf, const std::string& name )
     {
         zip_fileinfo zfi = {} ;
@@ -147,7 +147,7 @@ namespace RINGMesh {
         fclose( out ) ;
         unzCloseCurrentFile( uz ) ;
     }
-
+#endif
     /***************************************************************************/
 
 

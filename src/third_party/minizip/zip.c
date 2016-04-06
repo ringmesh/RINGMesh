@@ -9,6 +9,7 @@
    Read zip.h for more info
 */
 
+#define NOUNCRYPT
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,7 +17,7 @@
 #include <time.h>
 #include <geogram/third_party/zlib/zlib.h>
 #include <third_party/minizip/zip.h>
-#include <third_party/minizip/crypt.h>
+//#include <third_party/minizip/crypt.h>
 
 #ifdef STDC
 #  include <stddef.h>
@@ -155,7 +156,7 @@ typedef struct
 
 #ifndef NOCRYPT
 #define INCLUDECRYPTINGCODE_IFCRYPTALLOWED
-#include "crypt.h"
+#include <third_party/minizip/crypt.h>
 #endif
 
 local linkedlist_datablock_internal* allocate_new_datablock()

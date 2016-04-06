@@ -214,7 +214,7 @@ namespace {
         }
     } ;
 
-
+#ifdef MINIZIP_FIXED
     class MMIOHandler: public GeoModelIOHandler {
     public:
         virtual void load( const std::string& filename, GeoModel& gm )
@@ -288,6 +288,7 @@ namespace {
             GEO::FileSystem::set_current_working_directory( pwd ) ;
         }
     } ;
+#endif
 
     /************************************************************************/
     /*!
@@ -373,7 +374,9 @@ namespace RINGMesh {
             GEO::CmdLine::declare_arg( "in:old_geomodel", "",
                 "Saves the volumetric mesh of the structural model" ) ;
             ringmesh_register_IOHandler_creator( BMIOHandler, "bm" ) ;
+#ifdef MINIZIP_FIXED
             ringmesh_register_IOHandler_creator( MMIOHandler, "mm" );
+#endif
         }
     }
 }
