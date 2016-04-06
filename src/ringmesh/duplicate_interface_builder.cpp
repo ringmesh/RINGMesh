@@ -131,64 +131,12 @@ namespace RINGMesh {
         fill_vect_with_NO_ID( to_erase_by_type[GME::LINE] ) ;
         fill_vect_with_NO_ID( to_erase_by_type[GME::CONTACT] ) ;
 
-        model_.mesh.vertices.clear() ;
-        model_.mesh.vertices.test_and_initialize() ;
-
-        DEBUG( model_.nb_regions() ) ;
-
+        recompute_geomodel_mesh() ;
         delete_elements( to_erase_by_type ) ;
-
-        /*model_.mesh.vertices.clear() ;
-         model_.mesh.vertices.test_and_initialize() ;
-         build_model_from_surfaces() ;
-         build_contacts() ;
-         return;*/
-
-        DEBUG( model_.nb_regions() ) ;
-
-        model_.mesh.vertices.clear() ;
-        model_.mesh.vertices.test_and_initialize() ;
-
+        recompute_geomodel_mesh() ;
         build_lines_and_corners_from_surfaces() ;
-        DEBUG( model_.nb_regions() ) ;
-
-        model_.mesh.vertices.clear() ;
-        model_.mesh.vertices.test_and_initialize() ;
-
-        /*build_brep_regions_from_surfaces() ;
-         DEBUG( model_.nb_regions() ) ;
-         model_.mesh.vertices.clear() ;
-         model_.mesh.vertices.test_and_initialize() ;*/
-        fill_elements_boundaries( GME::SURFACE ) ;
-
+        complete_element_connectivity() ;
         build_contacts() ;
-        DEBUG( model_.nb_regions() ) ;
-        model_.mesh.vertices.clear() ;
-        model_.mesh.vertices.test_and_initialize() ;
-
-        // To debug a tmp result
-        for( index_t corner_itr = 0; corner_itr < model_.nb_corners();
-            ++corner_itr ) {
-            const Corner& cur_corner = model_.corner( corner_itr ) ;
-            const GEO::Mesh& cur_mesh = cur_corner.mesh() ;
-            GEO::mesh_save( cur_mesh,
-                "mesh_corner_" + GEO::String::to_string( corner_itr ) + ".meshb" ) ;
-        }
-
-        for( index_t line_itr = 0; line_itr < model_.nb_lines(); ++line_itr ) {
-            const Line& cur_line = model_.line( line_itr ) ;
-            const GEO::Mesh& cur_mesh = cur_line.mesh() ;
-            GEO::mesh_save( cur_mesh,
-                "mesh_line_" + GEO::String::to_string( line_itr ) + ".meshb" ) ;
-        }
-
-        for( index_t surf_itr = 0; surf_itr < model_.nb_surfaces(); ++surf_itr ) {
-            const Surface& cur_surf = model_.surface( surf_itr ) ;
-            const GEO::Mesh& cur_mesh = cur_surf.mesh() ;
-            GEO::mesh_save( cur_mesh,
-                "mesh_surf_" + GEO::String::to_string( surf_itr ) + ".meshb" ) ;
-        }
-        // To debug a tmp result
     }
 
     void DuplicateInterfaceBuilder::get_new_surfaces(
