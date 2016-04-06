@@ -225,7 +225,8 @@ ExternalProject_Add(geogram_ext
         -DGEOGRAM_WITH_TETGEN:BOOL=${RINGMESH_WITH_TETGEN} 
         -DGEOGRAM_WITH_MEDIT:BOOL=${RINGMESH_WITH_GRAPHICS}
         -DGEOGRAM_WITH_GRAPHICS:BOOL=${RINGMESH_WITH_GRAPHICS}
-        -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}  
+        -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+		-DVORPALINE_BUILD_DYNAMIC:BOOL=TRUE
   
   #--Build step-----------------
   BINARY_DIR ${GEOGRAM_PATH_BIN}
@@ -299,7 +300,7 @@ set(ringmesh_include ${ringmesh_include} ${generated_configure_file})
 # Group files of a project in directories
 # For this to work, all the files should be added to the sources of the project
 # and the global property USE_FOLDERS must be ON
-source_group("Zlib" FILES ${minizip_src} ${minizip_include})
+source_group("Minizip" FILES ${minizip_src} ${minizip_include})
 source_group("Source Files" FILES ${ringmesh_src})
 source_group("Header Files" FILES ${ringmesh_include})
 
