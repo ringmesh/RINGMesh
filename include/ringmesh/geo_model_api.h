@@ -225,9 +225,7 @@ namespace RINGMesh {
     double RINGMESH_API model_element_cell_size( const GeoModelElement& E, index_t c ) ;
 
     /*!
-     * @brief Compute the center of a GeoModelElement
-     * @param[in] E Element to evaluate
-     * @return The coordinates of the center
+     * @brief Compute the barycenter of the vertices of a GeoModelElement
      */
     vec3 RINGMESH_API model_element_center( const GeoModelElement& E ) ;
 
