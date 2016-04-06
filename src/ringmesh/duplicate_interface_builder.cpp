@@ -336,15 +336,7 @@ namespace RINGMesh {
             bool side = ( side_name == "_plus" ) ;
             add_element_boundary( GME::gme_t( GME::REGION, region_index ),
                 new_surface_gme_t, side ) ;
-            // no child
-            // boundaries = all the lines of the previous surfaces excepted the
-            // one in common
-            // parent = the new interface
-            // in_boundaries = as the interface is duplicated there is only one single region as in_boundary
             to_erase_by_type[GME::SURFACE].push_back( 0 ) ;
-            GEO::mesh_save( new_surface_mesh,
-                "merged_surf_reg_" + GEO::String::to_string( region_index )
-                    + side_name + ".meshb" ) ;
 
             // Lines not boundary of the final merged surface
             for( std::map< index_t, index_t >::iterator all_surface_lines_itr =
@@ -352,16 +344,7 @@ namespace RINGMesh {
                 all_surface_lines_itr != all_surface_lines.end();
                 ++all_surface_lines_itr ) {
 
-                if( all_surface_lines_itr->second > 1 ) {
-                    std::string name = "line_not_kept_merged_surf_" ;
-                    name += GEO::String::to_string( region_index ) ;
-                    name += "_index_" ;
-                    name += GEO::String::to_string( all_surface_lines_itr->first ) ;
-                    name += side_name ;
-                    name += ".meshb" ;
-                    GEO::mesh_save(
-                        model_.line( all_surface_lines_itr->first ).mesh(), name ) ;
-                } else {
+                if( all_surface_lines_itr->second == 1 ) {
                     GME::gme_t line_gme_t( GME::LINE,
                         all_surface_lines_itr->first ) ;
                     add_element_boundary( new_surface_gme_t, line_gme_t ) ;
