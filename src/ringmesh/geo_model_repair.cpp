@@ -139,12 +139,12 @@ namespace RINGMesh {
         kdtree.get_colocated_index_mapping( colocated ) ;
 
         GEO::vector< index_t > degenerate ;
-        mesh_detect_degenerate_edges( line., degenerate, colocated ) ;
+        mesh_detect_degenerate_edges( line.mesh_, degenerate, colocated ) ;
         index_t nb = static_cast< index_t >( std::count( degenerate.begin(),
             degenerate.end(), 1 ) ) ;
         /// We have a problem if some vertices are left isolated
         /// If we remove them here we can kill all indices correspondances
-        MeshBuilder builder( line ) ;
+        MeshBuilder builder( line.mesh_ ) ;
         builder.delete_edges( degenerate, false ) ;
         return nb ;
     }
@@ -173,41 +173,40 @@ namespace RINGMesh {
             }
         }
         // The builder might be needed
-        GeoModelBuilder builder( GM ) ;
 
-        for( index_t i = 0; i < GM.nb_surfaces(); ++i ) {
-            Surface& surface = GM.surface( i ) ;
-            index_t nb = detect_degenerate_facets( surface.mesh() ) ;
+        for( index_t i = 0; i < model_.nb_surfaces(); ++i ) {
+            Surface& surface = model_.surface( i ) ;
+            index_t nb = detect_degenerate_facets( surface.mesh_ ) ;
             /// @todo Check if that cannot be simplified 
             if( nb > 0 ) {
                 // If there are some degenerated facets 
                 // Using repair function of geogram
                 // Warning - This triangulates the mesh
-                if( surface.mesh().nb_vertices() > 0 ) {
+                if( surface.nb_vertices() > 0 ) {
                     // Colocated vertices must be processed before
                     // MESH_REPAIR_DUP_F 2 ;
                     GEO::MeshRepairMode mode =
                         static_cast< GEO::MeshRepairMode >( 2 ) ;
-                    GEO::mesh_repair( M, mode ) ;
+                    GEO::mesh_repair( *surface.mesh_, mode ) ;
 
                     // This might create some small components - remove them
                     /// @todo How to choose the epsilon ? and the maximum number of facets ?
                     GEO::remove_small_connected_components( M, epsilon_sq, 3 ) ;
 
                     // Alright, this is a bit of an overkill [JP]
-                    if( surface.mesh().nb_vertices() > 0 ) {
+                    if( surface.nb_vertices() > 0 ) {
                         GEO::mesh_repair( M, mode ) ;
                     }
                 }
-                if( surface.mesh().nb_vertices() == 0 || surface.mesh().nb_facets() == 0 ) {
-                    to_remove.insert( GM.surface( i ).gme_id() ) ;
+                if( surface.nb_vertices() == 0 || surface.nb_polytope() == 0 ) {
+                    to_remove.insert( model_.surface( i ).gme_id() ) ;
                 } else {
                     // If the Surface has internal boundaries, we need to 
                     // re-cut the Surface along these lines
-                    Surface& S = const_cast< Surface& >( GM.surface( i ) ) ;
+                    Surface& S =  model_.surface( i ) ;
                     std::set< index_t > cutting_lines ;
                     for( index_t l = 0; l < S.nb_boundaries(); ++l ) {
-                        const Line& L = GM.line( S.boundary_gme( l ).index ) ;
+                        const Line& L = model_.line( S.boundary_gme( l ).index ) ;
                         if( to_remove.count( L.gme_id() ) == 0
                             && L.is_inside_border( S ) ) {
                             cutting_lines.insert( L.index() ) ;
@@ -217,8 +216,8 @@ namespace RINGMesh {
                         it != cutting_lines.end(); ++it ) {
                         // Force the recomputing of the model vertices
                         // before performing the cut. 
-                        GM.mesh.vertices.clear() ;
-                        builder.cut_surface_by_line( S, GM.line( *it ) ) ;
+                        model_.mesh.vertices.clear() ;
+                        cut_surface_by_line( S, model_.line( *it ) ) ;
                     }
                 }
             }
@@ -360,7 +359,7 @@ namespace RINGMesh {
         }
 
         // Basic mesh repair for surfaces and lines
-        remove_degenerate_facet_and_edges( model_, empty_elements ) ;
+        remove_degenerate_facet_and_edges( empty_elements ) ;
         if( !empty_elements.empty() ) {
             get_dependent_elements( empty_elements ) ;
             remove_elements( empty_elements ) ;

@@ -38,6 +38,7 @@
 
 #include <ringmesh/common.h>
 #include <ringmesh/geometry.h>
+#include <ringmesh/geogram_extension.h>
 
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_io.h>
@@ -71,11 +72,9 @@ namespace RINGMesh {
          * @parm[in] single_precision if true, vertices are stored in single precision (float), else they are stored as double precision (double)..
          */
         Mesh(
-            const GeoModelElement& geo_model_elment,
             index_t dimension,
             bool single_precision )
             :
-                geo_model_elment_( geo_model_elment ),
                 facets_aabb_( nil ),
                 cells_aabb_( nil )
         {
@@ -107,6 +106,12 @@ namespace RINGMesh {
             GEO::MeshElementsFlags what )
         {
             mesh_->copy( *rhs.mesh_, copy_attributes, what ) ;
+        }
+        void load_mesh(
+            const std::string& filename,
+            const GEO::MeshIOFlags& ioflags )
+        {
+            GEO::mesh_load( filename, *mesh_, ioflags ) ;
         }
         void save_mesh( const std::string filename, const GEO::MeshIOFlags& ioflags )
         {
@@ -143,6 +148,7 @@ namespace RINGMesh {
             ringmesh_assert( v_id < nb_vertices() ) ;
             return mesh_->vertices.point( v_id ) ;
         }
+
         /*
          * @brief Gets the number of point in the Mesh.
          */
@@ -221,6 +227,22 @@ namespace RINGMesh {
         index_t nb_facet_corners() const
         {
             return mesh_->facet_corners.nb() ;
+        }
+        /*!
+         * @brief Get the first vertex index of a facet.
+         * @param[in] facet_id facet index
+         */
+        index_t facet_begin( index_t facet_id ) const
+        {
+            return mesh_->facets.corners_begin( facet_id ) ;
+        }
+        /*!
+         * @brief Get the last vertex index of a facet.
+         * @param[in] facet_id facet index
+         */
+        index_t facet_end( index_t facet_id ) const
+        {
+            return mesh_->facets.corners_end( facet_id ) ;
         }
         /*!
          * @brief Gets the next vertex index in the facet \param facet_id.
@@ -472,7 +494,6 @@ namespace RINGMesh {
 
     private:
         mutable GEO::Mesh* mesh_ ;
-        const GeoModelElement& geo_model_elment_ ;
 
         mutable GEO::MeshFacetsAABB* facets_aabb_ ;
         mutable GEO::MeshCellsAABB* cells_aabb_ ;
@@ -514,6 +535,17 @@ namespace RINGMesh {
         vec3& vertex( index_t v_id )
         {
             return mesh_.mesh_->vertices.point( v_id ) ;
+        }
+        /*!
+         * \brief Gets a point
+         * \param[in] v_id the vertex, in 0..nb()-1
+         * \return a pointer to the coordinates of the point
+         *  that correspond to the vertex
+         * \pre !single_precision()
+         */
+        double* point_ptr( index_t v_id )
+        {
+            return mesh_.mesh_->vertices.point_ptr( v_id ) ;
         }
         /*!
          * @brief Creates a new vertex.
@@ -572,6 +604,15 @@ namespace RINGMesh {
          * @{
          */
         /*!
+         * @brief Create a new edge.
+         * @param[in] v1_id index of the starting vertex.
+         * @param[in] v2_id index of the ending vertex.
+         */
+        void create_edge( index_t v1_id, index_t v2_id )
+        {
+            mesh_.mesh_->edges.create_edge( v1_id, v2_id ) ;
+        }
+        /*!
          * @brief Sets a vertex of a facet by local vertex index.
          * @param[in] edge_id index of the edge, in 0..nb()-1.
          * @param[in] local_vertex_id index of the vertex in the facet. Local index between 0 and nb_vertices(cell_id)-1.
@@ -604,6 +645,24 @@ namespace RINGMesh {
          * @{
          */
         /*!
+         * brief create facet polygons
+         * @param[in] facets is the vector of vertex index for each facet
+         * @param[in] facet_ptr is the vector addressing the first facet vertex for each facet.
+         */
+        void create_facet_polygons(
+            const std::vector< index_t >& facets,
+            const std::vector< index_t >& facet_ptr )
+        {
+            for( index_t f = 0; f + 1 < facet_ptr.size(); f++ ) {
+                index_t start = facet_ptr[f] ;
+                index_t end = facet_ptr[f + 1] ;
+                GEO::vector< index_t > facet_vertices ;
+                copy_std_vector_to_geo_vector( facets, start, end, facet_vertices ) ;
+
+                mesh_.mesh_->facets.create_polygon( facet_vertices ) ;
+            }
+        }
+        /*!
          * @brief Sets a vertex of a facet by local vertex index.
          * @param[in] facet_id index of the facet, in 0..nb()-1.
          * @param[in] local_vertex_id index of the vertex in the facet. Local index between 0 and nb_vertices(cell_id)-1.
@@ -626,6 +685,15 @@ namespace RINGMesh {
             mesh_.mesh_->facet_corners.set_vertex( corner_id, vertex_id ) ;
         }
         /*!
+         * @brief Sets an adjacent facet by corner index.
+         * @param[in] corner_id the corner index starting edge.
+         * @param[in] specifies the facet incident to f along edge le or GEO::NO_FACET if \p edge_id is on the border.
+         */
+        void set_facet_corners_adjacent( index_t corner_id, index_t specifies )
+        {
+            mesh_.mesh_->facet_corners.set_adjacent_facet( corner_id, specifies ) ;
+        }
+        /*!
          * @brief Sets an adjacent facet by facet and local edge index.
          * @param[in] facet_id the facet index
          * @param[in] edge_id the local index of an edge in facet \p facet_id
@@ -637,6 +705,23 @@ namespace RINGMesh {
             index_t specifies )
         {
             mesh_.mesh_->facets.set_adjacent( facet_id, edge_id, specifies ) ;
+        }
+        /*
+         * \brief Copies a triangle mesh into this Mesh.
+         * \details Facet adjacence are not computed.
+         *   Facet and corner attributes are zeroed.
+         * \param[in] triangles facet to vertex links
+         * \param[in] steal_args if set, vertices and triangles
+         * are 'stolen' from the arguments
+         * (using vector::swap).
+         */
+        void assign_facet_triangle_mesh(
+            const std::vector< index_t >& triangles,
+            bool steal_args )
+        {
+            GEO::vector< index_t > copy ;
+            copy_std_vector_to_geo_vector( triangles, copy ) ;
+            mesh_.mesh_->facets.assign_triangle_mesh( copy, steal_args ) ;
         }
 
         /*!@}
@@ -654,6 +739,24 @@ namespace RINGMesh {
         {
             return mesh_.mesh_->cells.create_cells( nb_cells, type ) ;
         }
+        /*
+         * \brief Copies a tets mesh into this Mesh.
+         * \details Cells adjacence are not computed.
+         *   cell and corner attributes are zeroed.
+         * \param[in] tets cells to vertex links
+         * \param[in] steal_args if set, vertices and tets
+         * are 'stolen' from the arguments
+         * (using vector::swap).
+         */
+        void assign_cell_tet_mesh(
+            const std::vector< index_t >& tets,
+            bool steal_args )
+        {
+            GEO::vector< index_t > copy ;
+            copy_std_vector_to_geo_vector( tets, copy ) ;
+            mesh_.mesh_->cells.assign_tet_mesh( copy, steal_args ) ;
+        }
+
         /*!
          * @brief Sets a vertex of a cell by local vertex index.
          * @param[in] cell_id index of the cell, in 0..nb()-1.

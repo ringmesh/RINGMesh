@@ -89,7 +89,7 @@ namespace {
     {
         index_t result = 0 ;
         for( index_t i = 0; i < BM.nb_surfaces(); ++i ) {
-            result += BM.surface( i ).nb_cells() ;
+            result += BM.surface( i ).nb_polytope() ;
         }
         return result ;
     }
@@ -219,10 +219,10 @@ namespace {
     /*! Brute force inefficient but I am debugging !!!! */
     bool has_surface_edge( const Surface& S, index_t v0_in, index_t v1_in )
     {
-        for( index_t i = 0; i < S.nb_cells(); ++i ) {
-            for( index_t j = 0; j < S.nb_vertices_in_facet( i ); ++j ) {
-                index_t v0 = S.polytop_vertex_index( i, j ) ;
-                index_t v1 = S.polytop_vertex_index( i, S.next_in_facet( i, j ) ) ;
+        for( index_t i = 0; i < S.nb_polytope(); ++i ) {
+            for( index_t j = 0; j < S.nb_polytope_vertices( i ); ++j ) {
+                index_t v0 = S.polytope_vertex_index( i, j ) ;
+                index_t v1 = S.polytope_vertex_index( i, S.next_facet_vertex_index( i, j ) ) ;
                 if( ( v0 == v0_in && v1 == v1_in ) || ( v0 == v1_in && v1 == v0_in ) ) {
                     return true ;
                 }
@@ -266,9 +266,9 @@ namespace {
 
             // Print the key facet which is the first three
             // vertices of the first facet
-            out << "  " << s.vertex( 0, 0 ) << std::endl ;
-            out << "  " << s.vertex( 0, 1 ) << std::endl ;
-            out << "  " << s.vertex( 0, 2 ) << std::endl ;
+            out << "  " << s.polytope_vertex( 0, 0 ) << std::endl ;
+            out << "  " << s.polytope_vertex( 0, 1 ) << std::endl ;
+            out << "  " << s.polytope_vertex( 0, 2 ) << std::endl ;
 
             ++count ;
         }
@@ -322,10 +322,10 @@ namespace {
                         << std::endl ;
                     vertex_count++ ;
                 }
-                for( index_t k = 0; k < S.nb_cells(); ++k ) {
-                    out << "TRGL " << S.polytop_vertex_index( k, 0 ) + offset << " "
-                        << S.polytop_vertex_index( k, 1 ) + offset << " "
-                        << S.polytop_vertex_index( k, 2 ) + offset << std::endl ;
+                for( index_t k = 0; k < S.nb_polytope(); ++k ) {
+                    out << "TRGL " << S.polytope_vertex_index( k, 0 ) + offset << " "
+                        << S.polytope_vertex_index( k, 1 ) + offset << " "
+                        << S.polytope_vertex_index( k, 2 ) + offset << std::endl ;
                 }
                 for( index_t k = 0; k < S.nb_boundaries(); ++k ) {
                     const Line& L = dynamic_cast< const Line& >( S.boundary( k ) ) ;
@@ -383,7 +383,7 @@ namespace {
                     const Corner& c1 =
                         dynamic_cast< const Corner& >( L.boundary( 1 ) ) ;
                     corners.insert(
-                        S.surf_vertex_id( c1.model_vertex_id() ) + offset ) ;
+                        S.gmme_vertex_index_from_model( c1.model_vertex_id() ) + offset ) ;
                 }
             }
             // Add the remaining bstones that are not already in bstones
@@ -457,9 +457,9 @@ namespace {
 
         for( index_t i = 0; i < M.nb_surfaces(); ++i ) {
             const Surface& S = M.surface( i ) ;
-            for( index_t f = 0; f < S.nb_cells(); f++ ) {
-                out << S.nb_vertices_in_facet( f ) << " " ;
-                for( index_t v = 0; v < S.nb_vertices_in_facet( f ); v++ ) {
+            for( index_t f = 0; f < S.nb_polytope(); f++ ) {
+                out << S.nb_polytope_vertices( f ) << " " ;
+                for( index_t v = 0; v < S.nb_polytope_vertices( f ); v++ ) {
                     out << S.model_vertex_id( f, v ) << " " ;
                 }
                 out << std::endl ;
@@ -532,17 +532,17 @@ namespace {
                 out.precision( 16 ) ;
 
                 const Surface& surface = model.surface( s ) ;
-                out << surface.nb_vertices() << " " << surface.nb_cells() << " 0 0 0"
+                out << surface.nb_vertices() << " " << surface.nb_polytope() << " 0 0 0"
                     << std::endl ;
                 for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
                     out << v << " " << surface.vertex( v ) << std::endl ;
                 }
 
-                for( index_t f = 0; f < surface.nb_cells(); f++ ) {
+                for( index_t f = 0; f < surface.nb_polytope(); f++ ) {
                     out << f << " 0 tri" ;
-                    for( index_t v = 0; v < surface.nb_vertices_in_facet( f );
+                    for( index_t v = 0; v < surface.nb_polytope_vertices( f );
                         v++ ) {
-                        out << " " << surface.polytop_vertex_index( f, v ) ;
+                        out << " " << surface.polytope_vertex_index( f, v ) ;
                     }
                     out << std::endl ;
                 }
