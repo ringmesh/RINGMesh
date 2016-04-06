@@ -65,6 +65,7 @@ namespace GEO {
 
     namespace {
         AssertMode assert_mode_ = ASSERT_THROW;
+        bool aborting = false;
     }
 
     void set_assert_mode(AssertMode mode) {
@@ -76,15 +77,12 @@ namespace GEO {
     }
 
     void geo_abort() {
-        Process::show_stack_trace();
-#ifdef GEO_OS_WINDOWS
-        // Under windows, rather than calling abort(),
-        // we trigger a seg fault by deferencing the null pointer,
-        // because abort() is more difficult to see in the debugger.
-        *((int*) 0) = 0xbadbeef;
-#else
+        // Avoid assert in assert !!
+        if(aborting) {
+            Process::brute_force_kill();
+        }
+        aborting = true;
         abort();
-#endif
     }
 
     void geo_assertion_failed(

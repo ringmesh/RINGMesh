@@ -1354,22 +1354,34 @@ namespace GLUP {
         virtual void flush_immediate_buffers();
             
         /**
-         * \brief Copies GLUP uniform state to OpenGL.
+         * \brief Copies GLUP uniform state to OpenGL
+         *  if required.
          */
-        void update_uniform_buffer();
+        void update_uniform_buffer() {
+            if(uniform_buffer_dirty_) {
+                do_update_uniform_buffer();
+            }
+        }
 
+        /**
+         * \brief Copies GLUP uniform state to OpenGL.
+         * \details This is the implementation of 
+         *  update_uniform_buffer().
+         */
+        virtual void do_update_uniform_buffer();
+        
         /**
          * \brief Updates the matrices in the uniform state
          *  from the matrices in the stacks.
          */
-        void update_matrices();
+        virtual void update_matrices();
 
         /**
          * \brief Updates the lighting in the uniform state.
          * \details Computes the half vector from the lighting
          *  vector.
          */
-        void update_lighting();
+        virtual void update_lighting();
 
         /**
          * \brief Updates the base picking id and sends it to

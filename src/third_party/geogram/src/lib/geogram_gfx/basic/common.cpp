@@ -58,12 +58,14 @@ namespace GEO {
                 Logger::err("GLAD") << "Could not load OpenGL"
                                    << std::endl;
             }
+            GL::initialize();
             GLSL::initialize();
             atexit(GEO::Graphics::terminate);            
         }
 
         void terminate() {
-            GLSL::terminate();            
+            GLSL::terminate();
+            GL::terminate();
         }
         
     }

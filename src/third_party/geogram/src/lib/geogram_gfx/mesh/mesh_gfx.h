@@ -597,6 +597,11 @@ namespace GEO {
         void draw_triangles_immediate_plain();
         void draw_triangles_immediate_attrib();
 
+        void draw_quads();
+        void draw_quads_array();
+        void draw_quads_immediate_plain();
+        void draw_quads_immediate_attrib();
+        
         void draw_triangles_and_quads();
         void draw_triangles_and_quads_array();
         void draw_triangles_and_quads_immediate_plain();
@@ -839,6 +844,7 @@ namespace GEO {
         
         const Mesh* mesh_;
         bool triangles_and_quads_;
+        bool quads_;
 
         bool buffer_objects_dirty_;
         bool attributes_buffer_objects_dirty_;
@@ -861,6 +867,10 @@ namespace GEO {
         GLuint attribute_colormap_texture_;
         index_t attribute_repeat_;
         ReadOnlyScalarAttributeAdapter attribute_;
+
+        //   If true, copies OpenGL state automatically
+        // at each rendering operation.
+        bool auto_GL_interop_;
     };
 
 }

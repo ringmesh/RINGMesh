@@ -53,6 +53,11 @@ test_isect.obj (profile=convert, isect=true)
     [Tags]    daily_valgrind
     Run Test    test_isect.obj    profile=convert    post=true    post:isect=true
 
+three_holes.obj (profile=tet)
+    [Tags]    daily_valgrind
+    Run Test    three_holes.obj     profile=tet
+
+
 *** Keywords ***
 Run Test
     [Arguments]    ${input_name}=${TEST NAME}    @{options}

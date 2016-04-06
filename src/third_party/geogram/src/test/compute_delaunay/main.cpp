@@ -74,16 +74,16 @@ int main(int argc, char** argv) {
         CmdLine::import_arg_group("standard");
         CmdLine::import_arg_group("algo");
 
-        if(DelaunayFactory::has_creator("PDEL")) {
-            CmdLine::set_arg("algo:delaunay", "PDEL");
-        } else {
-            CmdLine::set_arg("algo:delaunay", "BDEL");
-        }
-
         CmdLine::declare_arg(
             "convex_hull", false,
             "compute just the convex hull of the points"
         );
+
+        CmdLine::declare_arg(
+            "dimension", 3, "3 for 3D, 2 for 2D"
+        );
+
+        CmdLine::set_arg("algo:delaunay","default");
         
         if(
             !CmdLine::parse(
@@ -92,7 +92,6 @@ int main(int argc, char** argv) {
         ) {
             return 1;
         }
-
 
 
         std::string points_filename = filenames[0];
@@ -118,15 +117,38 @@ int main(int argc, char** argv) {
             }
         }
 
+        bool convex_hull_only = CmdLine::get_arg_bool("convex_hull");
+        index_t dimension = index_t(CmdLine::get_arg_int("dimension"));
+
+        std::string del = CmdLine::get_arg("algo:delaunay");
+        if(del == "default") {
+            if(dimension == 3) {
+                if(DelaunayFactory::has_creator("PDEL")) {
+                    CmdLine::set_arg("algo:delaunay", "PDEL");
+                } else {
+                    CmdLine::set_arg("algo:delaunay", "BDEL");
+                }
+            } else if(dimension == 2) {
+                CmdLine::set_arg("algo:delaunay", "triangle");                
+            }
+        }
+
+        if(convex_hull_only && dimension != 3) {
+            Logger::err("Delaunay")
+                << "Convex hull only implemented in dimension 3"
+                << std::endl;
+            return 1;
+        }
+        
         Logger::div("Computing 3D Delaunay triangulation");
 
         Logger::out("Delaunay")
             << "Using " << CmdLine::get_arg("algo:delaunay") << std::endl;
 
-        bool convex_hull_only = CmdLine::get_arg_bool("convex_hull");
-        
-        Delaunay_var delaunay = Delaunay::create(3);
+        Delaunay_var delaunay = Delaunay::create(coord_index_t(dimension));
 
+        M_in.vertices.set_dimension(dimension);
+        
         {
             Stopwatch W("Delaunay");
 
@@ -152,7 +174,7 @@ int main(int argc, char** argv) {
             for(index_t v = 0; v < delaunay->nb_vertices(); ++v) {
                 pts[3 * v] = delaunay->vertex_ptr(v)[0];
                 pts[3 * v + 1] = delaunay->vertex_ptr(v)[1];
-                pts[3 * v + 2] = delaunay->vertex_ptr(v)[2];
+                pts[3 * v + 2] = (dimension == 3) ? delaunay->vertex_ptr(v)[2] : 0.0;
             }
 
             if(convex_hull_only) {
@@ -192,7 +214,7 @@ int main(int argc, char** argv) {
                 }
                 M_out.facets.assign_triangle_mesh(3, pts, tri2v, true);
                 
-            } else {
+            } else if(dimension == 3) {
                 vector<index_t> tet2v(delaunay->nb_cells() * 4);
                 for(index_t t = 0; t < delaunay->nb_cells(); ++t) {
                     tet2v[4 * t] = index_t(delaunay->cell_vertex(t, 0));
@@ -201,11 +223,20 @@ int main(int argc, char** argv) {
                     tet2v[4 * t + 3] = index_t(delaunay->cell_vertex(t, 3));
                 }
                 M_out.cells.assign_tet_mesh(3, pts, tet2v, true);
+            } else if(dimension == 2) {
+                vector<index_t> tri2v(delaunay->nb_cells() * 3);
+                for(index_t t = 0; t < delaunay->nb_cells(); ++t) {
+                    tri2v[3 * t] = index_t(delaunay->cell_vertex(t, 0));
+                    tri2v[3 * t + 1] = index_t(delaunay->cell_vertex(t, 1));
+                    tri2v[3 * t + 2] = index_t(delaunay->cell_vertex(t, 2));
+                }
+                M_out.facets.assign_triangle_mesh(3, pts, tri2v, true);
             }
             M_out.show_stats();
                 
             Logger::div("Saving the result");
             MeshIOFlags flags;
+            flags.set_element(MESH_FACETS);            
             flags.set_element(MESH_CELLS);
             mesh_save(M_out, output_filename, flags);
         }

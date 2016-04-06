@@ -766,12 +766,11 @@ namespace GLUP {
                 immediate_state_.buffer[i].is_enabled() &&
                 immediate_state_.buffer[i].VBO() != 0
             ) {
-                update_buffer_object(
+                stream_buffer_object(
                     immediate_state_.buffer[i].VBO(),
                     GL_ARRAY_BUFFER,
                     immediate_state_.buffer[i].size_in_bytes(),
-                    immediate_state_.buffer[i].data(),
-                    true // streaming enabled.
+                    immediate_state_.buffer[i].data()
                 );
             }
         }
@@ -859,43 +858,53 @@ namespace GLUP {
         if(use_core_profile_) {
             return;
         }
-        
+
+        GLint matrix_mode_save;
+        glGetIntegerv(GL_MATRIX_MODE, &matrix_mode_save);
+
         if(which_attributes & GLUP_MATRICES_ATTRIBUTES_BIT) {
-            GLint mode_save;
-            glGetIntegerv(GL_MATRIX_MODE, &mode_save);
             glMatrixMode(GL_PROJECTION);
             glLoadMatrixf(matrix_stack_[GLUP_PROJECTION_MATRIX].top());
             glMatrixMode(GL_MODELVIEW);
             glLoadMatrixf(matrix_stack_[GLUP_MODELVIEW_MATRIX].top());
             glMatrixMode(GL_TEXTURE);
             glLoadMatrixf(matrix_stack_[GLUP_TEXTURE_MATRIX].top());
-            glMatrixMode(GLenum(mode_save));
         }
 
         if(which_attributes & GLUP_CLIPPING_ATTRIBUTES_BIT) {
             if(uniform_state_.toggle[GLUP_CLIPPING].get()) {
                 glEnable(GL_CLIP_PLANE0);
             } else {
-                glDisable(GL_CLIP_PLANE0);                
+                glDisable(GL_CLIP_PLANE0);
             }
             GLdouble clip_plane_d[4];
             glGetClipPlane(GL_CLIP_PLANE0, clip_plane_d);
             copy_vector(
                 clip_plane_d, uniform_state_.clip_plane.get_pointer(), 4
-            );            
+            );
+            glMatrixMode(GL_MODELVIEW);
+            glPushMatrix();
+            glLoadIdentity();
             glClipPlane(GL_CLIP_PLANE0, clip_plane_d);
+            glPopMatrix();
         }
 
         if(which_attributes & GLUP_LIGHTING_ATTRIBUTES_BIT) {
             if(uniform_state_.toggle[GLUP_LIGHTING].get()) {
                 glEnable(GL_LIGHTING);
+                glEnable(GL_LIGHT0);
             } else {
                 glDisable(GL_LIGHTING);
+                glDisable(GL_LIGHT0);
             }
             GLfloat light[4];
             copy_vector(light, uniform_state_.light_vector.get_pointer(), 3);
             light[3] = 0.0f;
+            glMatrixMode(GL_MODELVIEW);
+            glPushMatrix();
+            glLoadIdentity();
             glLightfv(GL_LIGHT0, GL_POSITION, light);
+            glPopMatrix();
         }
 
         if(which_attributes & GLUP_COLORS_ATTRIBUTES_BIT) {
@@ -908,6 +917,8 @@ namespace GLUP {
                 uniform_state_.color[GLUP_BACK_COLOR].get_pointer()
             );
         }
+
+        glMatrixMode(GLenum(matrix_mode_save));
     }
     
     void Context::bind_uniform_state(GLuint program) {
@@ -1193,12 +1204,23 @@ namespace GLUP {
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
     }
     
-    void Context::update_uniform_buffer() {
+    void Context::do_update_uniform_buffer() {
         if(!uniform_buffer_dirty_) {
             return;
         }
-        update_matrices();
-        update_lighting();
+        if(matrices_dirty_) {
+            update_matrices();
+        }
+        if(lighting_dirty_) {
+            update_lighting();
+        }
+        if(!use_ES_profile_) {
+            if(uniform_state_.toggle[GLUP_CLIPPING].get()) {
+                glEnable(GL_CLIP_DISTANCE0);
+            } else {
+                glDisable(GL_CLIP_DISTANCE0);
+            }
+        }
         if(uniform_buffer_ != 0) {
             glBindBuffer(GL_UNIFORM_BUFFER, uniform_buffer_);
             glBufferSubData(

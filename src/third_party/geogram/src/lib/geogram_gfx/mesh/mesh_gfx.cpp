@@ -82,6 +82,7 @@ namespace GEO {
         object_picking_id_ = index_t(-1);
         mesh_ = nil;
         triangles_and_quads_ = true;
+        quads_ = true;
 
         buffer_objects_dirty_ = false;
         attributes_buffer_objects_dirty_ = false;
@@ -104,6 +105,8 @@ namespace GEO {
         attribute_max_ = 0.0;
         attribute_colormap_texture_ = 0;
         attribute_repeat_ = 1;
+
+        auto_GL_interop_ = false;
     }
 
     MeshGfx::~MeshGfx() {
@@ -384,6 +387,65 @@ namespace GEO {
         end_attributes();        
     }
     
+    void MeshGfx::draw_quads() {
+        if(can_use_array_mode(GLUP_QUADS) && facets_VAO_ != 0) {
+            draw_quads_array();
+        } else {
+            if(
+                attribute_subelements_ == MESH_VERTICES ||
+                attribute_subelements_ == MESH_FACETS   ||
+                attribute_subelements_ == MESH_FACET_CORNERS
+            ) {
+                draw_quads_immediate_attrib();
+            } else {
+                draw_quads_immediate_plain();
+            }
+        }
+    }
+
+    void MeshGfx::draw_quads_array() {
+        glBindVertexArray(facets_VAO_);
+        if(attribute_subelements_ == MESH_VERTICES) {
+            begin_attributes();
+        }
+        glupDrawElements(
+            GLUP_QUADS,
+            GLUPsizei(mesh_->facets.nb()*4),
+            GL_UNSIGNED_INT,
+            0
+        );
+        if(attribute_subelements_ == MESH_VERTICES) {
+            end_attributes();
+        }
+        glBindVertexArray(0);
+    }
+
+    void MeshGfx::draw_quads_immediate_plain() {
+        glupBegin(GLUP_QUADS);
+        for(index_t q=0; q<mesh_->facets.nb(); ++q) {
+            draw_vertex(mesh_->facets.vertex(q,0));
+            draw_vertex(mesh_->facets.vertex(q,1));
+            draw_vertex(mesh_->facets.vertex(q,2));
+            draw_vertex(mesh_->facets.vertex(q,3));            
+        }
+        glupEnd();
+    }
+
+    void MeshGfx::draw_quads_immediate_attrib() {
+        begin_attributes();
+        glupBegin(GLUP_QUADS);
+        for(index_t q=0; q<mesh_->facets.nb(); ++q) {
+            for(
+                index_t c=mesh_->facets.corners_begin(q);
+                c<mesh_->facets.corners_end(q); ++c) {
+                index_t v=mesh_->facet_corners.vertex(c);
+                draw_surface_vertex_with_attribute(v,q,c);
+            }
+        }
+        glupEnd();
+        end_attributes();        
+    }
+
     void MeshGfx::draw_triangles_and_quads() {
         
         if(picking_mode_ != MESH_NONE) {
@@ -621,6 +683,8 @@ namespace GEO {
 
         if(mesh_->facets.are_simplices()) {
             draw_triangles(); 
+        } else if(quads_) {
+            draw_quads();
         } else if(triangles_and_quads_) {
             draw_triangles_and_quads(); 
         } else {
@@ -925,12 +989,15 @@ namespace GEO {
     void MeshGfx::set_mesh(const Mesh* mesh) {
         mesh_ = mesh;
         triangles_and_quads_ = true;
+        quads_ = true;
         if(mesh_ != nil) {
             for(index_t f = 0; f<mesh_->facets.nb(); ++f) {
                 index_t nb = mesh_->facets.nb_vertices(f);
                 if(nb != 3 && nb != 4) {
                     triangles_and_quads_ = false;
-                    break;
+                }
+                if(nb != 4) {
+                    quads_ = false;
                 }
             }
         }
@@ -939,10 +1006,25 @@ namespace GEO {
     }
     
     void MeshGfx::set_GLUP_parameters() {
+
+        //   If there was no GLUP context when this
+        // MeshGfx was first used, then we assume
+        // that the client code is using OpenGL
+        // fixed functionality pipeline, therefore
+        // we do two things:
+        //   - create the GLUP context
+        //   - activate automatic synchronization with
+        //      OpenGL fixed state.
+        
         if(glupCurrentContext() == nil) {
             glupMakeCurrent(glupCreateContext());
+            auto_GL_interop_ = true;
         }
-        glupCopyFromGLState(GLUP_ALL_ATTRIBUTES);
+        
+        if(auto_GL_interop_) {
+            glupCopyFromGLState(GLUP_ALL_ATTRIBUTES);            
+        }
+        
         if(show_mesh_) {
             glupEnable(GLUP_DRAW_MESH);
         } else {

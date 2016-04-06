@@ -43,40 +43,64 @@
  *
  */
 
+#ifndef __GEOGRAM_DELAUNAY_DELAUNAY_TRIANGLE__
+#define __GEOGRAM_DELAUNAY_DELAUNAY_TRIANGLE__
+
+/**
+ * \file geogram/delaunay/delaunay_triangle.h
+ * \brief Implementation of Delaunay in 2D using the triangle library
+ *  by Jonathan Shewchuk.
+ */
+
+#ifdef GEOGRAM_WITH_TRIANGLE
+
 #include <geogram/basic/common.h>
+#include <geogram/delaunay/delaunay.h>
 
-#ifdef GEO_OS_ANDROID
-
-#include <geogram/basic/stacktrace.h>
-#include <geogram/basic/argused.h>
+extern "C" {
+#define REAL double
+#define ANSI_DECLARATORS
+#define VOID void    
+#include <geogram/third_party/triangle/triangle.h>
+}
 
 namespace GEO {
 
-    void StackTrace::initialize() {
-    }
+    /**
+     * \brief Implementation of Delaunay using Hang Si's tetgen library.
+     */
+    class GEOGRAM_API DelaunayTriangle : public Delaunay {
+    public:
+        /**
+         * \brief Creates a new DelaunayTriangle.
+         * \details DelaunayTetgen triangulations are only supported for
+         * dimension 2. If a different dimension is specified in the
+         * constructor, a InvalidDimension exception is thrown.
+         * \param[in] dim dimension of the triangulation
+         * \throw InvalidDimension This exception is thrown if dimension is
+         * different than 2.
+         */
+        DelaunayTriangle(coord_index_t dimension = 2);
 
-    void StackTrace::print_stack_trace(int skip) {
-        geo_argused(skip);
-        std::cerr << "Stacktrace::print_stack_trace()"
-            << "not implemented yet under Android"
-            << std::endl;
-    }
+        /**
+         * \copydoc Delaunay::set_vertices()
+         */
+        virtual void set_vertices(
+            index_t nb_vertices, const double* vertices
+        );
 
-    void StackTrace::print_stack_trace(std::ostream& os, int skip) {
-        geo_argused(os);
-        geo_argused(skip);
-        std::cerr << "Stacktrace::print_stack_trace()"
-            << "not implemented yet under Android"
-            << std::endl;
-    }
+        /**
+         * \brief DelaunayTriangle destructor.
+         */
+        virtual ~DelaunayTriangle();
+
+    protected:
+        struct triangulateio triangle_out_ ;
+        struct triangulateio triangle_in_ ;
+    };
 }
 
-#else 
-
-// Declare a dummy variable so that
-// MSVC does not complain that it 
-// generated an empty object file.
-int dummy_stacktrace_android_compiled = 1;
+#endif
 
 #endif
 

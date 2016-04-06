@@ -189,6 +189,7 @@ namespace {
      * \details Specifed as glut_viewer_set_display_func() callback.
      */
     void display() {
+
         if(M_gfx.mesh() != &M) {
             M_gfx.set_mesh(&M);
         }
@@ -197,7 +198,10 @@ namespace {
             M_gfx.draw_surface_borders();
         }
 
-
+        if(M_gfx.get_show_mesh()) {
+            M_gfx.draw_edges();
+        }
+        
         M_gfx.set_draw_cells(GEO::MESH_HEX, hexes);
         
         GLfloat shininess = 20.0f;

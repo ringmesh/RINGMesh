@@ -524,12 +524,6 @@ namespace GEO {
         bool GEOGRAM_API cancel_enabled();
 
         /**
-         * \brief Outputs the stack trace to the terminal.
-         */
-        void GEOGRAM_API show_stack_trace();
-
-
-        /**
          * \brief Gets the currently used memory.
          * \return the used memory in bytes
          */

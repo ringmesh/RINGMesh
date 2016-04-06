@@ -90,6 +90,16 @@ void GLUP_API glupBindUniformState(GLUPuint program) {
  */
 bool supports_tessellation_shader() {
     bool result = true;
+
+    // Note: I experienced crashes with glPatchParameterfv() with
+    // the OpenGL es profile, so I'm deactivating it if detected.
+    if(GEO::CmdLine::get_arg("gfx:GL_profile") == "ES") {
+        GEO::Logger::out("GLUP")
+            << "Deactivating tesselation shader under OpenGL ES profile"
+            << std::endl;
+        return false;
+    }
+    
     GLuint s_handle = glCreateShader(GL_TESS_CONTROL_SHADER);
     result = result && (s_handle != 0);
     if (s_handle != 0) {

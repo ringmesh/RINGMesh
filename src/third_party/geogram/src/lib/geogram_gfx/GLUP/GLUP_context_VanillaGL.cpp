@@ -49,12 +49,19 @@
 #include <geogram/basic/progress.h>
 #include <geogram/basic/logger.h>
 
+namespace {
+    using namespace GEO;
+}
+
+
 namespace GLUP {
     using namespace GEO;
 
     /***********************************************************************/
 
     Context_VanillaGL::Context_VanillaGL() {
+        use_core_profile_ = false;
+        use_ES_profile_ = false;
     }
 
     const char* Context_VanillaGL::profile_name() const {
@@ -92,6 +99,26 @@ namespace GLUP {
         configure_OpenGL_picking();
     }
 
+    void Context_VanillaGL::do_update_uniform_buffer() {
+        copy_to_GL_state(GLUP_CLIPPING_ATTRIBUTES_BIT);
+        copy_to_GL_state(GLUP_COLORS_ATTRIBUTES_BIT);
+        Context::do_update_uniform_buffer();
+    }
+    
+    void Context_VanillaGL::update_matrices() {
+        if(matrices_dirty_) {
+            Context::update_matrices();
+            copy_to_GL_state(GLUP_MATRICES_ATTRIBUTES_BIT);
+        }
+    }
+
+    void Context_VanillaGL::update_lighting() {
+        if(lighting_dirty_) {
+            Context::update_matrices();
+            copy_to_GL_state(GLUP_LIGHTING_ATTRIBUTES_BIT);
+        }
+    }
+    
     void Context_VanillaGL::configure_OpenGL_texturing() {
         glDisable(GL_TEXTURE_1D);
         glDisable(GL_TEXTURE_2D);
@@ -420,7 +447,8 @@ namespace GLUP {
             GL_ENABLE_BIT | GL_LIGHTING_BIT |
             GL_POLYGON_BIT | GL_TEXTURE_BIT |
             GL_CURRENT_BIT
-        );        
+        );
+        
         if(
             uniform_state_.clipping_mode.get() != GLUP_CLIP_STANDARD &&
             immediate_state_.primitive() != GLUP_POINTS &&
@@ -484,7 +512,10 @@ namespace GLUP {
                 }
             }
         }
+
+        glColor3f(1.0f, 1.0f, 1.0f);
         glPopAttrib();        
+
         immediate_state_.reset();        
     }
     

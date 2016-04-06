@@ -1690,13 +1690,16 @@ namespace GEO {
             // TODO: reserve facets
             
             for(index_t i = 0; i < nb_vertices; i++) {
-                if(!in.get_line()) {
-                    Logger::err("I/O")
-                        << "Line " << in.line_number()
-                        << ": unexpected end of file"
-                        << std::endl;
-                    return false;
+                do {
+                    if(!in.get_line()) {
+                        Logger::err("I/O")
+                            << "Line " << in.line_number()
+                            << ": unexpected end of file"
+                            << std::endl;
+                        return false;
+                    }
                 }
+                while(in.current_line()[0] == '#');
                 in.get_fields();
                 if(in.nb_fields() != 3) {
                     Logger::err("I/O")
@@ -1727,7 +1730,13 @@ namespace GEO {
                         return false;
                     }
                     index_t nb_facet_vertices = in.field_as_uint(0);
-                    if(in.nb_fields() != nb_facet_vertices + 1) {
+                    
+                    // Note: there can be more fields than the number
+                    // of vertices, for instance some OFF files have
+                    // a RGB color for each facet stored right after
+                    // the vertices indices (we ignore it, thus the
+                    // test here is '<' instead of '!=').
+                    if(in.nb_fields() < nb_facet_vertices + 1) {
                         Logger::err("I/O")
                             << "Line " << in.line_number()
                             << ": facet has " << in.nb_fields() - 1
@@ -2116,6 +2125,7 @@ namespace GEO {
                     case 1:
                         M.vertices.create_vertices(in.field_as_uint(0));
                         break;
+                    case 2:
                     case 3:
                     case 4:
                     case 6:
@@ -2123,7 +2133,8 @@ namespace GEO {
                         double xyz[3];
                         xyz[0] = in.field_as_double(0);
                         xyz[1] = in.field_as_double(1);
-                        xyz[2] = in.field_as_double(2);
+                        xyz[2] =
+                            (in.nb_fields() >= 3) ? in.field_as_double(2) : 0.0;
                         //   Not all xyz files have the number of vertices
                         // specified on the first line. If it is unknown,
                         // then vertices are created dynamically.
@@ -2180,14 +2191,31 @@ namespace GEO {
                 return false;
             }
 
+            Attribute<double> normal;
+            normal.bind_if_is_defined(M.vertices.attributes(), "normal");
+            if(normal.is_bound() && normal.dimension() != 3) {
+                normal.unbind();
+            }
+            
             out << M.vertices.nb() << std::endl;
             
             for(index_t v=0; v<M.vertices.nb(); ++v) {
                 double point[3];
                 get_mesh_point(M,v,point,3);
-                out << point[0] << ' '
-                    << point[1] << ' '
-                    << point[2] << std::endl;
+                if(normal.is_bound()) {
+                    out << point[0] << ' '
+                        << point[1] << ' '
+                        << point[2] << ' '
+                        << normal[3*v]   << ' ' 
+                        << normal[3*v+1] << ' '
+                        << normal[3*v+2] << ' '
+                        << std::endl;
+                    
+                } else {
+                    out << point[0] << ' '
+                        << point[1] << ' '
+                        << point[2] << std::endl;
+                }
             }
             
             return true;

@@ -50,7 +50,6 @@
 #include <geogram/basic/process.h>
 #include <geogram/basic/atomics.h>
 #include <geogram/basic/logger.h>
-#include <geogram/basic/stacktrace.h>
 #include <geogram/basic/progress.h>
 #include <geogram/basic/line_stream.h>
 
@@ -229,8 +228,8 @@ namespace {
 
     /**
      * \brief Abnormal termination handler
-     * \details Prints a stacktrace and exits the program. If \p message is
-     * non null, the following message is printed before the stacktrace:
+     * \details If \p message is
+     * non null, the following message is printed before exiting.
      * <em>Abnormal program termination: message</em>
      * \param[in] message optional message to print
      */
@@ -241,14 +240,12 @@ namespace {
                 << "Abnormal program termination: "
                 << message << std::endl;
         }
-
-        Process::show_stack_trace();
         exit(1);
     }
 
     /**
      * \brief Signal handler
-     * \details The handler prints a stack trace and exits the application
+     * \details The handler exits the application
      * \param[in] signal signal number
      */
     void signal_handler(int signal) {
@@ -260,7 +257,7 @@ namespace {
 
     /**
      * \brief Floating point error handler
-     * \details The handler prints a stack trace and exits the application
+     * \details The handler exits the application
      * \param[in] signal signal number
      * \param[in] si signal information structure
      * \param[in] data additional data (unused)

@@ -48,11 +48,8 @@
 
 #include <geogram_gfx/basic/common.h>
 #include <geogram_gfx/api/defs.h>
-
-#ifndef GEO_NO_GLEW
-//#include <geogram_gfx/third_party/glew/glew.h>
 #include <geogram_gfx/third_party/glad/glad.h>
-#endif
+#include <geogram_gfx/GLUP/GLUP.h>
 
 #include <geogram/basic/geometry.h>
 
@@ -62,13 +59,29 @@
  */
 
 namespace GEO {
+
+    namespace GL {
+        /**
+         * \brief Initializes some GL functions and objects.
+         * \details Called by GEO::Graphics::initialize()
+         */  
+        void GEOGRAM_GFX_API initialize();
+
+        /**
+         * \brief Terminates GL functions and objects.
+         * \details Called by GEO::Graphics::terminate()
+         */  
+        void GEOGRAM_GFX_API terminate();
+    }
+    
     /**
      * \brief Sends a vertex to OpenGL.
      * \param[in] v a const reference to the vertex to be sent.
      * \note This uses the old pipeline (glBegin() / glEnd() calls).
+     * \deprecated use glupVertex(), glupBegin(), glupEnd() instead
      */
-    inline void glVertex(const vec3& v) {
-        glVertex3dv(v.data());
+    inline void glupVertex(const vec3& v) {
+        glupVertex3dv(v.data());
     }
 
     /**
@@ -76,77 +89,32 @@ namespace GEO {
      * \param[in] v a const reference to the vertex to be sent, in
      *  homogeneous coordinates (4d).
      * \note This uses the old pipeline (glBegin() / glEnd() calls).
+     * \deprecated use glupVertex(), glupBegin(), glupEnd() instead
      */
-    inline void glVertex(const vec4& v) {
-        glVertex4dv(v.data());
+    inline void glupVertex(const vec4& v) {
+        glupVertex4dv(v.data());
     }
 
     /**
      * \brief Sends a RGB color to OpenGL.
      * \param[in] v a const reference to the color to be sent.
      * \note This uses the old pipeline (glBegin() / glEnd() calls).
+     * \deprecated use glupVertex(), glupBegin(), glupEnd() instead
      */
-    inline void glColor(const vec3& v) {
-        glColor3dv(v.data());
+    inline void glupColor(const vec3& v) {
+        glupColor3dv(v.data());
     }
 
     /**
      * \brief Sends a RGBA color to OpenGL.
      * \param[in] v a const reference to the color to be sent.
      * \note This uses the old pipeline (glBegin() / glEnd() calls).
+     * \deprecated use glupVertex(), glupBegin(), glupEnd() instead
      */
-    inline void glColor(const vec4& v) {
-        glColor4dv(v.data());
-    }
-
-    /**
-     * \brief Encodes a 32 bits integer into the 
-     *  current OpenGL color.
-     * \details This function is used by the 
-     *  picking mechanism.
-     * \param[in] id the picking id to be encoded as 
-     *  the current OpenGL color
-     */
-    inline void glPickingIdAsColor(index_t id) {
-        GLubyte r = GLubyte( id        & 255);
-        GLubyte g = GLubyte((id >> 8)  & 255);
-        GLubyte b = GLubyte((id >> 16) & 255);
-        GLubyte a = GLubyte((id >> 24) & 255);
-        glColor4ub(r,g,b,a);
+    inline void glupColor(const vec4& v) {
+        glupColor4dv(v.data());
     }
     
-    /**
-     * \brief Sends a normal to OpenGL.
-     * \param[in] v a const reference to the normal to be sent.
-     * \note This uses the old pipeline (glBegin() / glEnd() calls).
-     */
-    inline void glNormal(const vec3& v) {
-        glNormal3dv(v.data());
-    }
-
-    /**
-     * \brief Multiplies the current OpenGL matrix
-     *   with another one.
-     * \param[in] m a const reference to the matrix.
-     * \note m is transposed before being sent to OpenGL
-     *  because Geogram uses the convention with column
-     *  vectors and OpenGL the convention with row vectors
-     *  to represent the transformed points.
-     */
-    void GEOGRAM_GFX_API glMultMatrix(const mat4& m);
-
-    /**
-     * \brief Replaces the current OpenGL matrix
-     *   with a user defined one.
-     * \param[in] m a const reference to the matrix.
-     * \note m is transposed before being sent to OpenGL
-     *  because Geogram uses the convention with column
-     *  vectors and OpenGL the convention with row vectors
-     *  to represent the transformed points.
-     */
-    void GEOGRAM_GFX_API glLoadMatrix(const mat4& m);
-
-
     /**
      * \brief Multiplies the current GLUP matrix
      *   with another one.
@@ -195,10 +163,30 @@ namespace GEO {
      *  meaning that there will be many updates
      */
     void GEOGRAM_GFX_API update_buffer_object(
-        GLuint& buffer_id, GLenum target, size_t new_size, const void* data,
-        bool streaming = false
+        GLuint& buffer_id, GLenum target, size_t new_size, const void* data
     );
 
+    /**
+     * \brief Updates the content of an OpenGL buffer object in streaming
+     *   mode.
+     * \details Streaming mode means that there will be many updates of
+     *   the contents of the same buffer object. stream_buffer_object()
+     *   does the same thing as update_buffer_object(), but may
+     *   be faster than update_buffer_object() in this situation.
+     * \param[in,out] buffer_id OpenGL opaque id of the buffer object. 
+     *   0 means uninitialized.
+     *   may be changed on exit if the buffer needed to be created or
+     *   destroyed.
+     * \param[in] target buffer object target 
+     *   (GL_ARRAY_BUFFER, GL_INDEX_BUFFER ...)
+     * \param[in] new_size of the buffer data, in bytes
+     * \param[in] data pointer to the data to be copied into the buffer, 
+     *  of length new_size
+     */
+    void GEOGRAM_GFX_API stream_buffer_object(
+        GLuint& buffer_id, GLenum target, size_t new_size, const void* data
+    );
+    
 
     /**
      * \brief Updates the content of an OpenGL buffer object, 
@@ -214,9 +202,8 @@ namespace GEO {
      * \param[in] data pointer to the data to be copied into the buffer, 
      *  of length new_size
      * \param[in] update 
-     *  - if false, the buffer will be updated, and resized
-     *    if need be. 
-     *  - if true, the size of the buffer will be tested, and an error 
+     *  - if true, the buffer will be updated, and resized if need be. 
+     *  - if false, the size of the buffer will be tested, and an error 
      *    message will be displayed in the logger if it does not match
      *    the specified size (and update will be forced).
      */
@@ -224,7 +211,6 @@ namespace GEO {
         GLuint& buffer_id, GLenum target, size_t new_size, const void* data,
         bool update
     );
-
 
     /**
      * \brief Tests for OpenGL errors and displays a message if
@@ -234,8 +220,106 @@ namespace GEO {
      */
     void GEOGRAM_GFX_API check_gl(const char* file, int line);
 
-    #define GEO_CHECK_GL() ::GEO::check_gl(__FILE__,__LINE__)
+    /**
+     * \brief Draws a textured quad.
+     * \details The textured quad spans the [-1,1]x[-1,1] square with
+     *  texture coordinates in [0,1]x[0,1]. If no program is currently
+     *  bound, then a default one is used, and it uses the texture bind
+     *  to unit 0 of GL_TEXTURE_2D. If a program is bound, then it is used.
+     *  Vertices coordinates are sent to vertex attribute 0 and texture 
+     *  coordinates to vertex attribute 1.
+     */
+    void GEOGRAM_GFX_API draw_unit_textured_quad();
     
+    /**
+     * \brief Tests for OpenGL errors. 
+     * \details If an OpenGL error was flagged, display it together
+     *  with current file and line number.
+     */
+    #define GEO_CHECK_GL() ::GEO::check_gl(__FILE__,__LINE__)
+
+    /***********************************************************/
+
+#ifdef GEO_USE_DEPRECATED_GL
+    
+    /**
+     * \brief Sends a vertex to OpenGL.
+     * \param[in] v a const reference to the vertex to be sent.
+     * \note This uses the old pipeline (glBegin() / glEnd() calls).
+     * \deprecated use glupVertex(), glupBegin(), glupEnd() instead
+     */
+    inline void glVertex(const vec3& v) {
+        glVertex3dv(v.data());
+    }
+
+    /**
+     * \brief Sends a vertex to OpenGL.
+     * \param[in] v a const reference to the vertex to be sent, in
+     *  homogeneous coordinates (4d).
+     * \note This uses the old pipeline (glBegin() / glEnd() calls).
+     * \deprecated use glupVertex(), glupBegin(), glupEnd() instead
+     */
+    inline void glVertex(const vec4& v) {
+        glVertex4dv(v.data());
+    }
+
+    /**
+     * \brief Sends a RGB color to OpenGL.
+     * \param[in] v a const reference to the color to be sent.
+     * \note This uses the old pipeline (glBegin() / glEnd() calls).
+     * \deprecated use glupColor(), glupBegin(), glupEnd() instead
+     */
+    inline void glColor(const vec3& v) {
+        glColor3dv(v.data());
+    }
+
+    /**
+     * \brief Sends a RGBA color to OpenGL.
+     * \param[in] v a const reference to the color to be sent.
+     * \note This uses the old pipeline (glBegin() / glEnd() calls).
+     * \deprecated use glupColor(), glupBegin(), glupEnd() instead
+     */
+    inline void glColor(const vec4& v) {
+        glColor4dv(v.data());
+    }
+
+    /**
+     * \brief Sends a normal to OpenGL.
+     * \param[in] v a const reference to the normal to be sent.
+     * \note This uses the old pipeline (glBegin() / glEnd() calls).
+     * \deprecated 
+     */
+    inline void glNormal(const vec3& v) {
+        glNormal3dv(v.data());
+    }
+
+    /**
+     * \brief Multiplies the current OpenGL matrix
+     *   with another one.
+     * \param[in] m a const reference to the matrix.
+     * \note m is transposed before being sent to OpenGL
+     *  because Geogram uses the convention with column
+     *  vectors and OpenGL the convention with row vectors
+     *  to represent the transformed points.
+     * \deprecated use glupMultMatrix() instead.
+     */
+    void GEOGRAM_GFX_API glMultMatrix(const mat4& m);
+
+    /**
+     * \brief Replaces the current OpenGL matrix
+     *   with a user defined one.
+     * \param[in] m a const reference to the matrix.
+     * \note m is transposed before being sent to OpenGL
+     *  because Geogram uses the convention with column
+     *  vectors and OpenGL the convention with row vectors
+     *  to represent the transformed points.
+     * \deprecated use glupLoadMatrix() instead.
+     */
+    void GEOGRAM_GFX_API glLoadMatrix(const mat4& m);
+
+    /*******************************************************/
+
+#endif
 }
 
 #endif

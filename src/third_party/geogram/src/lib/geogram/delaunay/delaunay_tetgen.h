@@ -48,7 +48,8 @@
 
 /**
  * \file geogram/delaunay/delaunay_tetgen.h
- * \brief Implementation of Delaunay using the tetgen library
+ * \brief Implementation of Delaunay in 3D using the tetgen library
+ *  by Hang Si.
  */
 
 #ifdef GEOGRAM_WITH_TETGEN
@@ -116,6 +117,7 @@ namespace GEO {
          */
         virtual ~DelaunayTetgen();
 
+    protected:
         GEO_3rdParty::tetgenio tetgen_out_;
         GEO_3rdParty::tetgenio tetgen_in_;
         GEO_3rdParty::tetgenbehavior tetgen_args_;

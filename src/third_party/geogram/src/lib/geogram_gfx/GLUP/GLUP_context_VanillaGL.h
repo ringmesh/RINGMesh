@@ -97,6 +97,21 @@ namespace GLUP {
     protected:
 
         /**
+         * \copydoc Context::do_update_uniform_buffer()
+         */
+        virtual void do_update_uniform_buffer();
+        
+        /**
+         * \copydoc Context::update_matrices()
+         */
+        virtual void update_matrices();
+
+        /**
+         * \copydoc Context::update_lighting()
+         */
+        virtual void update_lighting();
+        
+        /**
          * \brief Configures texturing-related OpenGL state
          *  variables according to the GLUP state variables.
          * \details This function is called by begin()
@@ -255,6 +270,22 @@ namespace GLUP {
                     index_t(uniform_state_.base_picking_id.get()) + id
                 );
             }
+        }
+
+        /**
+         * \brief Encodes a 32 bits integer into the 
+         *  current OpenGL color.
+         * \details This function is used by the 
+         *  picking mechanism.
+         * \param[in] id the picking id to be encoded as 
+         *  the current OpenGL color
+         */
+        static void glPickingIdAsColor(index_t id) {
+            GLubyte r = GLubyte( id        & 255);
+            GLubyte g = GLubyte((id >> 8)  & 255);
+            GLubyte b = GLubyte((id >> 16) & 255);
+            GLubyte a = GLubyte((id >> 24) & 255);
+            glColor4ub(r,g,b,a);
         }
         
         /**

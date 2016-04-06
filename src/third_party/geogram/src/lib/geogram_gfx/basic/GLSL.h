@@ -59,14 +59,14 @@ namespace GEO {
     namespace GLSL {
 
         /**
-         * \brief Initializes geogram_gfx functions and objects
-         * \details This function needs to be created once an 
-         *  OpenGL context is available.
+         * \brief Initializes some GLSL functions and objects.
+         * \details Called by GEO::Graphics::initialize()
          */  
         void GEOGRAM_GFX_API initialize();
 
         /**
-         * \brief Terminates geogram_gfx functions and objects
+         * \brief Terminates GLSL functions and objects.
+         * \details Called by GEO::Graphics::terminate()
          */  
         void GEOGRAM_GFX_API terminate();
         
