@@ -486,11 +486,11 @@ namespace {
             gm.mesh.facets.test_and_initialize() ;
             gm.mesh.cells.test_and_initialize() ;
 
-            GEO::Mesh mesh( 3 ) ;
+            Mesh mesh( 3, false ) ;
             gm.mesh.copy_mesh( mesh ) ;
 
             GEO::Logger::instance()->set_minimal( true ) ;
-            GEO::mesh_save( mesh, filename ) ;
+            mesh.save_mesh( filename, GEO::MeshIOFlags) ;
             GEO::Logger::instance()->set_minimal( false ) ;
         }
     } ;
@@ -1555,7 +1555,7 @@ namespace {
 
             index_t nb_edges = 0 ;
             for( index_t l = 0; l < gm.nb_lines(); l++ ) {
-                nb_edges += gm.line( l ).nb_cells() ;
+                nb_edges += gm.line( l ).nb_polytope() ;
             }
             std::vector< index_t > temp ;
             temp.reserve( 3 ) ;
@@ -1564,7 +1564,7 @@ namespace {
             index_t count_edge = 0 ;
             for( index_t l = 0; l < gm.nb_lines(); l++ ) {
                 const Line& line = gm.line( l ) ;
-                for( index_t e = 0; e < line.nb_cells(); e++ ) {
+                for( index_t e = 0; e < line.nb_polytope(); e++ ) {
                     edge_vertices[count_edge++ ] = 0.5
                         * ( line.vertex( e ) + line.vertex( e + 1 ) ) ;
                 }

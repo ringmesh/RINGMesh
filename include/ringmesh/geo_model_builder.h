@@ -120,7 +120,7 @@ namespace RINGMesh {
 
         void copy_meshes( const GeoModel& from, GME::TYPE element_type ) ;
 
-        void assign_mesh_to_element( const GEO::Mesh& mesh, GME::gme_t to ) ;
+        void assign_mesh_to_element( const Mesh& mesh, GME::gme_t to ) ;
 
         /*!
          * \name Set element geometry from geometrical positions
@@ -266,7 +266,11 @@ namespace RINGMesh {
         void assign_surface_triangle_mesh(
             index_t surface_id,
             const std::vector< index_t >& triangle_vertices ) ;
-
+        void update_facet_corner(
+            Surface& S,
+            const std::vector< index_t >& facets,
+            index_t old,
+            index_t neu ) ;
         void assign_surface_triangle_mesh(
             index_t surface_id,
             const std::vector< index_t >& triangle_vertices,
@@ -480,12 +484,8 @@ namespace RINGMesh {
      */
     class RINGMESH_API GeoModelBuilderBM: public GeoModelBuilderFile {
     public:
-        GeoModelBuilderBM(
-            GeoModel& model,
-            const std::string& filename )
-            :
-                GeoModelBuilderFile( model, filename ),
-                file_line_( filename )
+        GeoModelBuilderBM( GeoModel& model, const std::string& filename )
+            : GeoModelBuilderFile( model, filename ), file_line_( filename )
         {
             if( !file_line_.OK() ) {
                 throw RINGMeshException( "I/O", "Failed to open file " + filename ) ;
@@ -505,7 +505,7 @@ namespace RINGMesh {
 
     class RINGMESH_API GeoModelBuilderGM: public GeoModelBuilderFile {
     public:
-        GeoModelBuilderGM( GeoModel& model, const std::string& filename)
+        GeoModelBuilderGM( GeoModel& model, const std::string& filename )
             : GeoModelBuilderFile( model, filename )
         {
         }

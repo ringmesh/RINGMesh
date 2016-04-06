@@ -457,7 +457,7 @@ namespace RINGMesh {
             const std::string& name = "",
             GEOL_FEATURE geological_feature = NO_GEOL )
             :
-                mesh_( *this, 3, false ),
+                mesh_( 3, false ),
                 GeoModelElement( model, element_type, id, name, geological_feature )
         {
             model_vertex_id_.bind( mesh_.vertex_attribute_manager(),
@@ -539,13 +539,13 @@ namespace RINGMesh {
          * \name Linking to GeoModelMesh indexing
          * @{
          */
+
         /*!
          * @brief Name of the attribute storing the global index of a vertex in the GeoModel.
          * @details it computes the global index value over all GeoModelMeshElement of a GeoModel.
          */
         static const std::string model_vertex_id_att_name() ;
-        void bind_attributes() ;
-        void unbind_attributes() ;
+
         /*!
          * @brief Get the global GeoModelMesh index of the vertex indexed @param[in] gmme_vertex_index in the current GeoModelMeshElement.
          */
@@ -575,9 +575,28 @@ namespace RINGMesh {
          */
         index_t gmme_vertex_index_from_model( index_t model_vertex_id ) const ;
         std::vector< index_t > gme_vertex_indices( index_t model_vertex_id ) const ;
+
+        /*!
+         * @}
+         * \name Attribute management
+         * @{
+         */
+        GEO::AttributesManager& vertex_attribute_manager() const
+        {
+            return mesh_.vertex_attribute_manager() ;
+        }
+        GEO::AttributesManager& facet_attribute_manager() const
+        {
+            return mesh_.facet_attribute_manager() ;
+        }
+        GEO::AttributesManager& cell_attribute_manager() const
+        {
+            return mesh_.cell_attribute_manager() ;
+        }
+        void bind_attributes() ;
+        void unbind_attributes() ;
         /*! @}
          */
-
     protected:
         /*!
          * @brief Check if the mesh stored is valid.
@@ -627,6 +646,20 @@ namespace RINGMesh {
         virtual index_t polytope_vertex_index( index_t, index_t ) const
         {
             return 0 ;
+        }
+        /*!
+         * @return 0, no polytope are defined for corners.
+         */
+        virtual index_t nb_polytope() const
+        {
+            return 0 ;
+        }
+        /*!
+         * @return 1 the number of vertices of the Corner
+         */
+        virtual index_t nb_polytope_vertices( index_t polytope_index ) const
+        {
+            return 1 ;
         }
 
     protected:
@@ -720,7 +753,13 @@ namespace RINGMesh {
         {
             return mesh_.facets_aabb() ;
         }
-
+        /*!
+         * brief  return the ColocaterANN at located at ColocaterANN::VERTICES of the current GeoModelMeshElement.
+         */
+        const ColocaterANN& facet_colocater_ann() const
+        {
+            return mesh_.colotater_ann( ColocaterANN::FACETS ) ;
+        }
         /*!
          * \name Accessors to Surface facets, edges and vertices
          * @{
@@ -755,6 +794,22 @@ namespace RINGMesh {
             return mesh_.facet_vertex( facet_index, vertex_index ) ;
         }
 
+        /*!
+         * @brief Get the first vertex index of a facet in a Surface.
+         * @param[in] facet_id facet index
+         */
+        index_t facet_begin( index_t facet_id ) const
+        {
+            return mesh_.facet_begin( facet_id ) ;
+        }
+        /*!
+         * @brief Get the last vertex index of a facet in a surface.
+         * @param[in] facet_id facet index
+         */
+        index_t facet_end( index_t facet_id ) const
+        {
+            return mesh_.facet_end( facet_id ) ;
+        }
         /*!
          * @brief Gets the next vertex index in the facet \param facet_id.
          * @param[in] facet_id facet index
