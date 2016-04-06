@@ -282,10 +282,6 @@ namespace RINGMesh {
         {
             return name_ ;
         }
-        void set_name( const std::string& new_name )
-        {
-            name_ = new_name ;
-        }
         const gme_t& gme_id() const
         {
             return id_ ;
@@ -305,10 +301,6 @@ namespace RINGMesh {
         GEOL_FEATURE geological_feature() const
         {
             return geol_feature_ ;
-        }
-        void set_geological_feature( GEOL_FEATURE new_geol_feature)
-        {
-            geol_feature_ = new_geol_feature ;
         }
         bool is_on_voi() const ;
 

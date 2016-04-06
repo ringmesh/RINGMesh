@@ -199,18 +199,14 @@ namespace RINGMesh {
         std::map< index_t, std::vector< index_t > > surfaces_boundary_regions_side_minus ;
         std::map< index_t, std::vector< index_t > > surfaces_boundary_regions_side_plus ;
         GME::gme_t interface_minus_gme_t = create_element( GME::INTERFACE ) ;
-        const_cast< GeoModelElement& >( model_.one_interface(
-            interface_minus_gme_t.index ) ).set_name(
+        set_element_name( interface_minus_gme_t,
             interface_to_duplicate.name() + "_side_minus" ) ;
-        const_cast< GeoModelElement& >( model_.one_interface(
-            interface_minus_gme_t.index ) ).set_geological_feature(
+        set_element_geol_feature( interface_minus_gme_t,
             interface_to_duplicate.geological_feature() ) ;
         GME::gme_t interface_plus_gme_t = create_element( GME::INTERFACE ) ;
-        const_cast< GeoModelElement& >( model_.one_interface(
-            interface_plus_gme_t.index ) ).set_name(
+        set_element_name( interface_plus_gme_t,
             interface_to_duplicate.name() + "_side_plus" ) ;
-        const_cast< GeoModelElement& >( model_.one_interface(
-            interface_plus_gme_t.index ) ).set_geological_feature(
+        set_element_geol_feature( interface_plus_gme_t,
             interface_to_duplicate.geological_feature() ) ;
         to_erase_by_type[GME::INTERFACE].push_back( 0 ) ;
         to_erase_by_type[GME::INTERFACE].push_back( 0 ) ;
