@@ -89,6 +89,12 @@ namespace RINGMesh {
             const vec3& translation ) const ;
         void initialize_translation_attributes(
             const std::vector< std::vector< index_t > >& to_erase_by_type ) ;
+        bool is_region_on_right_side_of_sided_interface(
+            index_t sided_interface_id,
+            index_t region_to_check_id ) const ;
+        bool is_surface_on_right_side_of_sided_interface(
+            index_t sided_interface_id,
+            index_t surface_to_check_id ) const ;
     } ;
 
 }

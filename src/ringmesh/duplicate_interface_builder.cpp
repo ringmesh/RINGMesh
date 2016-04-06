@@ -570,7 +570,8 @@ namespace RINGMesh {
                             if( !model_.region( cur_gme_t.index ).is_meshed() ) {
                                 continue ;
                             }
-                            if( cur_gme_t.index != surf_in_boun_reg ) {
+                            if( !is_region_on_right_side_of_sided_interface(
+                                interface_gme.index(), cur_gme_t.index ) ) {
                                 // Region on the other side of the fault
                                 continue ;
                             }
@@ -580,28 +581,12 @@ namespace RINGMesh {
                                 local_translation_vector ) ;
                         } else {
                             ringmesh_assert(cur_gme_t.type == GME::SURFACE) ;
-                            const Surface& cur_gme_surf = model_.surface(
-                                cur_gme_t.index ) ;
-                            bool ok = false ;
-                            for( index_t cur_gme_surf_in_boun_itr = 0;
-                                cur_gme_surf_in_boun_itr
-                                    < cur_gme_surf.nb_in_boundary();
-                                ++cur_gme_surf_in_boun_itr ) {
-                                const GeoModelElement& cur_gme_surf_in_boun =
-                                    cur_gme_surf.in_boundary(
-                                        cur_gme_surf_in_boun_itr ) ;
-                                ringmesh_assert(
-                                    cur_gme_surf_in_boun.type() == GME::REGION ) ;
-                                if( cur_gme_surf_in_boun.index()
-                                    == surf_in_boun_reg ) {
-                                    ok = true ;
-                                    break ;
-                                }
-                            }
-
-                            if( !ok ) {
+                            if( !is_surface_on_right_side_of_sided_interface(
+                                interface_gme.index(), cur_gme_t.index ) ) {
                                 continue ;
                             }
+                            const Surface& cur_gme_surf = model_.surface(
+                                cur_gme_t.index ) ;
                             store_displacement_in_gme( cur_gme_surf,
                                 gme_vertices[gme_vertex_itr].v_id,
                                 local_translation_vector ) ;
@@ -611,6 +596,66 @@ namespace RINGMesh {
                 }
             }
         }
+    }
+
+    bool DuplicateInterfaceBuilder::is_region_on_right_side_of_sided_interface(
+        index_t sided_interface_id,
+        index_t region_to_check_id ) const
+    {
+        ringmesh_assert(sided_interface_id<model_.nb_interfaces()) ;
+        ringmesh_assert(region_to_check_id<model_.nb_regions()) ;
+        const GME& interface_gme = model_.one_interface( sided_interface_id ) ;
+        for( index_t child_itr = 0; child_itr < interface_gme.nb_children();
+            ++child_itr ) {
+            const GeoModelElement& cur_child = interface_gme.child( child_itr ) ;
+            ringmesh_assert(cur_child.type() == GME::SURFACE) ;
+            ringmesh_assert(cur_child.nb_in_boundary() == 1) ;
+            ringmesh_assert(cur_child.in_boundary(0).type()==GME::REGION) ;
+            if( cur_child.in_boundary( 0 ).index() == region_to_check_id ) {
+                return true ;
+            }
+        }
+        return false ;
+    }
+
+    bool DuplicateInterfaceBuilder::is_surface_on_right_side_of_sided_interface(
+        index_t sided_interface_id,
+        index_t surface_to_check_id ) const
+    {
+        ringmesh_assert(sided_interface_id<model_.nb_interfaces()) ;
+        ringmesh_assert(surface_to_check_id<model_.nb_surfaces()) ;
+
+        const Surface& surface_to_check = model_.surface( surface_to_check_id ) ;
+        ringmesh_assert(surface_to_check.nb_in_boundary()==1 || surface_to_check.nb_in_boundary()==2) ;
+        std::vector< index_t > surface_to_check_in_boundaries ;
+        surface_to_check_in_boundaries.reserve( surface_to_check.nb_in_boundary() ) ;
+        for( index_t surface_to_check_in_boundary_itr = 0;
+            surface_to_check_in_boundary_itr < surface_to_check.nb_in_boundary();
+            ++surface_to_check_in_boundary_itr ) {
+            surface_to_check_in_boundaries.push_back(
+                surface_to_check.in_boundary( surface_to_check_in_boundary_itr ).index() ) ;
+        }
+
+        const GME& interface_gme = model_.one_interface( sided_interface_id ) ;
+        for( index_t child_itr = 0; child_itr < interface_gme.nb_children();
+            ++child_itr ) {
+            const GeoModelElement& cur_child = interface_gme.child( child_itr ) ;
+            ringmesh_assert(cur_child.type() == GME::SURFACE) ;
+            ringmesh_assert(cur_child.nb_in_boundary() == 1) ;
+            ringmesh_assert(cur_child.in_boundary(0).type()==GME::REGION) ;
+
+            if( cur_child.index() == surface_to_check_id ) {
+                return true ;
+            }
+
+            if( std::find( surface_to_check_in_boundaries.begin(),
+                surface_to_check_in_boundaries.end(),
+                cur_child.in_boundary( 0 ).index() )
+                != surface_to_check_in_boundaries.end() ) {
+                return true ;
+            }
+        }
+        return false ;
     }
 
     void DuplicateInterfaceBuilder::store_displacement_in_gme(
