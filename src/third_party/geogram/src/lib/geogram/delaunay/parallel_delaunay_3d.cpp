@@ -51,6 +51,7 @@
 #include <geogram/basic/geometry.h>
 #include <geogram/basic/stopwatch.h>
 #include <geogram/basic/command_line.h>
+#include <geogram/basic/permutation.h>
 
 #ifdef GEO_OS_WINDOWS
 
@@ -353,7 +354,7 @@ namespace GEO {
          *  used tetrahedron index) and max_t_ (maximum valid tetrahedron
          *  index).
          */
-        void initialize(const Delaunay3dThread* rhs) {
+        void initialize_from(const Delaunay3dThread* rhs) {
             max_used_t_ = rhs->max_used_t_;
             max_t_ = rhs->max_t_;
             v1_ = rhs->v1_;
@@ -531,7 +532,24 @@ namespace GEO {
             return max_t_;
         }
 
-
+        /**
+         * \brief Tests whether a given tetrahedron
+         *   is a finite one.
+         * \details Infinite tetrahedra are the ones
+         *   that are incident to the infinite vertex
+         *   (index -1)
+         * \param[in] t the index of the tetrahedron
+         * \retval true if \p t is finite
+         * \retval false otherwise
+         */
+        bool tet_is_finite(index_t t) const {
+            return 
+                cell_to_v_store_[4 * t]     >= 0 &&
+                cell_to_v_store_[4 * t + 1] >= 0 &&
+                cell_to_v_store_[4 * t + 2] >= 0 &&
+                cell_to_v_store_[4 * t + 3] >= 0;
+        }
+        
         /**
          * \brief Tests whether a tetrahedron is
          *  a real one.
@@ -544,14 +562,23 @@ namespace GEO {
          * \retval false otherwise
          */
         bool tet_is_real(index_t t) const {
-            return
-                !tet_is_free(t) &&
-                cell_to_v_store_[4 * t] >= 0 &&
-                cell_to_v_store_[4 * t + 1] >= 0 &&
-                cell_to_v_store_[4 * t + 2] >= 0 &&
-                cell_to_v_store_[4 * t + 3] >= 0;
+            return !tet_is_free(t) && tet_is_finite(t);
         }
 
+        /**
+         * \brief Tests whether a tetrahedron is
+         *  in the free list.
+         * \details Deleted tetrahedra are recycled
+         *  in a free list.
+         * \param[in] t index of the tetrahedron
+         * \retval true if tetrahedron \p t is in
+         * the free list
+         * \retval false otherwise
+         */
+        bool tet_is_free(index_t t) const {
+            return tet_is_in_list(t);
+        }
+        
         /**
          * \brief Tests whether a tetrahedron is contained
          *  by a given linked list.
@@ -1778,20 +1805,6 @@ namespace GEO {
                 cell_to_v_store_[4 * t + 3] == VERTEX_AT_INFINITY) ;
         }
 
-        /**
-         * \brief Tests whether a tetrahedron is
-         *  in the free list.
-         * \details Deleted tetrahedra are recycled
-         *  in a free list.
-         * \param[in] t index of the tetrahedron
-         * \retval true if tetrahedron \p t is in
-         * the free list
-         * \retval false otherwise
-         */
-        bool tet_is_free(index_t t) const {
-            return tet_is_in_list(t);
-        }
-
         
         /**
          * \brief Returns the local index of a vertex by 
@@ -2288,19 +2301,15 @@ namespace GEO {
             std::vector<bool> v_has_tet(nb_vertices(), false);
             for(index_t t = 0; t < max_t(); ++t) {
                 if(tet_is_free(t)) {
-/*
                     if(verbose) {
                         std::cerr << "-Deleted tet: ";
                         show_tet(t);
                     }
-*/
                 } else {
-/*
                     if(verbose) {
                         std::cerr << "Checking tet: ";
                         show_tet(t);
                     }
-*/
                     for(index_t lf = 0; lf < 4; ++lf) {
                         if(tet_adjacent(t, lf) == -1) {
                             std::cerr << lf << ":Missing adjacent tet"
@@ -2431,7 +2440,7 @@ namespace GEO {
         index_t e_hint_;
         bool finished_;
 
-        //  Whenever acquire_tet() is uncessful, contains
+        //  Whenever acquire_tet() is unsuccessful, contains
         // the index of the thread that was interfering
         // (shifted to the left by 1 !!)
         thread_index_t interfering_thread_;
@@ -2629,8 +2638,11 @@ namespace GEO {
                 index_t e = t == threads_.size()-1 ? lvl_e : b+work_size;
                 Delaunay3dThread* thread = 
                     static_cast<Delaunay3dThread*>(threads_[t].get());
+                
+                // Copy the indices of the first created tetrahedron
+                // and the maximum valid tetrahedron index max_t_
                 if(lvl == first_lvl && t!=0) {
-                    thread->initialize(thread0);
+                    thread->initialize_from(thread0);
                 }
                 thread->set_work(b,e);
                 b = e;
@@ -2676,11 +2688,29 @@ namespace GEO {
                 // since the memory pool may have grown.
                 Delaunay3dThread* t2 = 
                     static_cast<Delaunay3dThread*>(threads_[t-1].get());
-                t1->initialize(t2);
+                t1->initialize_from(t2);
             }
             t1->run();
         }
 
+        //  If some tetrahedra were created in sequential mode, then
+        // the maximum valid tetrahedron index was increased by all
+        // the threads in increasing number, so we copy it from the
+        // last thread into thread0 since we use thread0 afterwards
+        // to do the "compaction" afterwards.
+        
+        if(nb_sequential_points != 0) {
+            Delaunay3dThread* t0 = 
+                static_cast<Delaunay3dThread*>(threads_[0].get());
+            Delaunay3dThread* tn = 
+                static_cast<Delaunay3dThread*>(
+                    threads_[threads_.size()-1].get()
+                );
+            t0->initialize_from(tn);
+        }
+        
+
+        
         if(benchmark_mode_) {
             if(nb_sequential_points != 0) {
                 Logger::out("PDEL") << "Local thread memory overflow occured:"
@@ -2705,6 +2735,13 @@ namespace GEO {
         if(debug_mode_) {
             Delaunay3dThread* thread0 = 
                 static_cast<Delaunay3dThread*>(threads_[0].get());
+            
+            for(index_t i=0; i<threads_.size(); ++i) {
+                std::cerr << i << " : " <<
+                    static_cast<Delaunay3dThread*>(threads_[i].get())
+                    ->max_t() << std::endl;
+            }
+            
             thread0->check_combinatorics(verbose_debug_mode_);
             thread0->check_geometry(verbose_debug_mode_);
         }
@@ -2719,53 +2756,115 @@ namespace GEO {
         // we reuse it for storing the conversion array that
         // maps old tet indices to new tet indices
         // Note: tet_is_real() uses the previous value of 
-        // cell_next(), but since we are processing indices
+        // cell_next(), but we are processing indices
         // in increasing order and since old2new[t] is always
         // smaller or equal to t, we never overwrite a value
         // before needing it.
+        
         vector<index_t>& old2new = cell_next_;
-
         index_t nb_tets = 0;
         index_t nb_tets_to_delete = 0;
-        for(index_t t = 0; t < thread0->max_t(); ++t) {
-            if(thread0->tet_is_real(t)) {
-                if(t != nb_tets) {
-                    Memory::copy(
-                        &cell_to_v_store_[nb_tets * 4],
-                        &cell_to_v_store_[t * 4],
-                        4 * sizeof(signed_index_t)
-                    );
-                    Memory::copy(
-                        &cell_to_cell_store_[nb_tets * 4],
-                        &cell_to_cell_store_[t * 4],
-                        4 * sizeof(signed_index_t)
-                    );
+
+        {
+            for(index_t t = 0; t < thread0->max_t(); ++t) {
+                if(
+                    (keep_infinite_ && !thread0->tet_is_free(t)) ||
+                    thread0->tet_is_real(t)
+                ) {
+                    if(t != nb_tets) {
+                        Memory::copy(
+                            &cell_to_v_store_[nb_tets * 4],
+                            &cell_to_v_store_[t * 4],
+                            4 * sizeof(signed_index_t)
+                        );
+                        Memory::copy(
+                            &cell_to_cell_store_[nb_tets * 4],
+                            &cell_to_cell_store_[t * 4],
+                            4 * sizeof(signed_index_t)
+                        );
+                    }
+                    old2new[t] = nb_tets;
+                    ++nb_tets;
+                } else {
+                    old2new[t] = index_t(-1);
+                    ++nb_tets_to_delete;
                 }
-                old2new[t] = nb_tets;
-                ++nb_tets;
-            } else {
-                old2new[t] = index_t(-1);
-                ++nb_tets_to_delete;
+            }
+
+            cell_to_v_store_.resize(4 * nb_tets);
+            cell_to_cell_store_.resize(4 * nb_tets);
+            for(index_t i = 0; i < 4 * nb_tets; ++i) {
+                signed_index_t t = cell_to_cell_store_[i];
+                geo_debug_assert(t >= 0);
+                t = signed_index_t(old2new[t]);
+                // Note: t can be equal to -1 when a real tet is
+                // adjacent to a virtual one (and this is how the
+                // rest of Vorpaline expects to see tets on the
+                // border).
+                geo_debug_assert(!(keep_infinite_ && t < 0));
+                cell_to_cell_store_[i] = t;
             }
         }
 
-        cell_to_v_store_.resize(4 * nb_tets);
-        cell_to_cell_store_.resize(4 * nb_tets);
-        for(index_t i = 0; i < 4 * nb_tets; ++i) {
-            signed_index_t t = cell_to_cell_store_[i];
-            geo_debug_assert(t != -1);
-            t = signed_index_t(old2new[t]);
-            // Note: t can be equal to -1 when a real tet is
-            // adjacent to a virtual one (and this is how the
-            // rest of Vorpaline expects to see tets on the
-            // border).
-            cell_to_cell_store_[i] = t;
+        // In "keep_infinite" mode, we reorder the cells in such
+        // a way that finite cells have indices [0..nb_finite_cells_-1]
+        // and infinite cells have indices [nb_finite_cells_ .. nb_cells_-1]
+        
+        if(keep_infinite_) {
+            nb_finite_cells_ = 0;
+            index_t finite_ptr = 0;
+            index_t infinite_ptr = nb_tets - 1;
+            for(;;) {
+                while(thread0->tet_is_finite(finite_ptr)) {
+                    old2new[finite_ptr] = finite_ptr;
+                    ++finite_ptr;
+                    ++nb_finite_cells_;
+                }
+                while(!thread0->tet_is_finite(infinite_ptr)) {
+                    old2new[infinite_ptr] = infinite_ptr;
+                    --infinite_ptr;
+                }
+                if(finite_ptr > infinite_ptr) {
+                    break;
+                }
+                old2new[finite_ptr] = infinite_ptr;
+                old2new[infinite_ptr] = finite_ptr;
+                ++nb_finite_cells_;
+                for(index_t lf=0; lf<4; ++lf) {
+                    geo_swap(
+                        cell_to_cell_store_[4*finite_ptr + lf],
+                        cell_to_cell_store_[4*infinite_ptr + lf]
+                    );
+                }
+                for(index_t lv=0; lv<4; ++lv) {
+                    geo_swap(
+                        cell_to_v_store_[4*finite_ptr + lv],
+                        cell_to_v_store_[4*infinite_ptr + lv]
+                    );
+                }
+                ++finite_ptr;
+                --infinite_ptr;
+            }
+            for(index_t i = 0; i < 4 * nb_tets; ++i) {
+                signed_index_t t = cell_to_cell_store_[i];
+                geo_debug_assert(t >= 0);
+                t = signed_index_t(old2new[t]);
+                geo_debug_assert(t >= 0);
+                cell_to_cell_store_[i] = t;
+            }
         }
-
+        
+        
         if(benchmark_mode_) {
-            Logger::out("DelCompress") 
-                << "Removed " << nb_tets_to_delete 
-                << " tets (virtual and free list)" << std::endl;
+            if(keep_infinite_) {
+                Logger::out("DelCompress") 
+                    << "Removed " << nb_tets_to_delete 
+                    << " tets (free list)" << std::endl;
+            } else {
+                Logger::out("DelCompress") 
+                    << "Removed " << nb_tets_to_delete 
+                    << " tets (free list and infinite)" << std::endl;
+            }
         }
 
         delete W;

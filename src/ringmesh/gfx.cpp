@@ -60,20 +60,44 @@
     }; \
     ringmesh_register_color_creator( name, #name ) \
 
+namespace {
+    using namespace RINGMesh ;
+
+    std::string get_attribute_name_with_coordinate(
+        const std::string& name,
+        index_t coordinate )
+    {
+        return name + "[" + GEO::String::to_string( coordinate ) + "]" ;
+    }
+
+    void compute_attribute_range(
+        GEO::ReadOnlyScalarAttributeAdapter& attribute,
+        double& min,
+        double& max )
+    {
+        if( attribute.is_bound() ) {
+            for( index_t i = 0; i < attribute.size(); ++i ) {
+                double value = attribute[i] ;
+                min = GEO::geo_min( min, value ) ;
+                max = GEO::geo_max( max, value ) ;
+            }
+        }
+    }
+}
 namespace RINGMesh {
 
-    define_color( yellow, 0xff, 0xff, 0x00 ) ;
-    define_color( violet, 0x7f, 0x00, 0x7f ) ;
-    define_color( indigo, 0xbf, 0x00, 0xbf ) ;
-    define_color( blue, 0x00, 0x00, 0xff ) ;
-    define_color( black, 0x00, 0x00, 0x00 ) ;
-    define_color( orange, 0xff, 0x7f, 0x00 ) ;
-    define_color( white, 0xff, 0xff, 0xff ) ;
-    define_color( red, 0xff, 0x00, 0x00 ) ;
-    define_color( green, 0x00, 0xff, 0x00 ) ;
-    define_color( brown, 0x66, 0x33, 0x00 ) ;
-    define_color( purple, 0xa0, 0x20, 0xf0 ) ;
-    define_color( pink, 0xff, 0x69, 0xb4 ) ;
+    define_color( yellow, 0xff, 0xff, 0x00 );
+    define_color( violet, 0x7f, 0x00, 0x7f );
+    define_color( indigo, 0xbf, 0x00, 0xbf );
+    define_color( blue, 0x00, 0x00, 0xff );
+    define_color( black, 0x00, 0x00, 0x00 );
+    define_color( orange, 0xff, 0x7f, 0x00 );
+    define_color( white, 0xff, 0xff, 0xff );
+    define_color( red, 0xff, 0x00, 0x00 );
+    define_color( green, 0x00, 0xff, 0x00 );
+    define_color( brown, 0x66, 0x33, 0x00 );
+    define_color( purple, 0xa0, 0x20, 0xf0 );
+    define_color( pink, 0xff, 0x69, 0xb4 );
 
     class MeshElementGfx: public GEO::MeshGfx {
     ringmesh_disable_copy( MeshElementGfx ) ;
@@ -84,16 +108,17 @@ namespace RINGMesh {
             bool vertice_visible )
             :
                 vertices_visible_( vertice_visible ),
-                tex_vertex_coord_VB_( 0 ),
                 gfx_( gfx )
         {
             set_mesh( &mesh ) ;
         }
         virtual ~MeshElementGfx()
         {
-            if( vertex_attr_.is_bound() ) {
-                vertex_attr_.unbind() ;
-            }
+        }
+        void need_to_update()
+        {
+            buffer_objects_dirty_ = true ;
+            attributes_buffer_objects_dirty_ = true ;
         }
 
         void draw_vertices()
@@ -117,78 +142,8 @@ namespace RINGMesh {
             return vertices_visible_ ;
         }
 
-        void bind_vertex_attribute( const std::string& name )
-        {
-            if( !vertex_attr_.is_bound() || vertex_attr_name_ != name ) {
-                vertex_attr_name_ = name ;
-                if( vertex_attr_.is_bound() ) {
-                    vertex_attr_.unbind() ;
-
-                    glBindVertexArray( cells_VAO_ ) ;
-                    glDisableVertexAttribArray( 2 ) ;
-                    glBindVertexArray( 0 ) ;
-                }
-                if( GEO::Attribute< double >::is_defined(
-                    mesh()->vertices.attributes(), name ) ) {
-                    vertex_attr_.bind( mesh()->vertices.attributes(), name ) ;
-                }
-            }
-        }
-        void compute_vertex_attribute_range(
-            double& min,
-            double& max,
-            index_t coordinate )
-        {
-            if( !vertex_attr_.is_bound() ) return ;
-            index_t att_dim = vertex_attr_.dimension() ;
-            for( index_t v = 0; v < mesh()->vertices.nb(); v++ ) {
-                const double& value = vertex_attr_[att_dim * v + coordinate] ;
-                if( value < min ) min = value ;
-                if( value > max ) max = value ;
-            }
-        }
-        void compute_vertex_attribute_buffer( index_t coordinate )
-        {
-            if( strcmp( glupCurrentProfileName(), "VanillaGL" )
-                && mesh()->vertices.nb() > 0 && vertex_attr_.is_bound() ) {
-                size_t size = mesh()->vertices.nb() ;
-                double* data = new double[size] ;
-                index_t att_dim = vertex_attr_.dimension() ;
-
-                for( index_t v = 0; v < mesh()->vertices.nb(); v++ ) {
-                    data[v] =
-                        ( vertex_attr_[att_dim * v + coordinate]
-                            - gfx_.cell_vertex_min_attr_ )
-                            / ( gfx_.cell_vertex_max_attr_
-                                - gfx_.cell_vertex_min_attr_ ) ;
-                }
-                GEO::update_buffer_object( tex_vertex_coord_VB_, GL_ARRAY_BUFFER,
-                    size * sizeof(double), data ) ;
-                delete[] data ;
-
-                update_buffer_objects_if_needed() ;
-                glBindVertexArray( cells_VAO_ ) ;
-                glBindBuffer( GL_ARRAY_BUFFER, tex_vertex_coord_VB_ ) ;
-                glEnableVertexAttribArray( 2 ) ;
-                glVertexAttribPointer( 2, 1, GL_DOUBLE, GL_FALSE, 0, 0 ) ;
-                glBindVertexArray( 0 ) ;
-            }
-        }
-
-    protected:
-        inline void draw_attribute_vertex( index_t v )
-        {
-            double d = ( vertex_attr_[v] - gfx_.cell_vertex_min_attr_ )
-                / ( gfx_.cell_vertex_max_attr_ - gfx_.cell_vertex_min_attr_ ) ;
-            glupTexCoord1d( d ) ;
-            draw_vertex( v ) ;
-        }
-
     protected:
         bool vertices_visible_ ;
-        GLuint tex_vertex_coord_VB_ ;
-        GEO::Attribute< double > vertex_attr_ ;
-        std::string vertex_attr_name_ ;
 
         const GeoModelGfx& gfx_ ;
 
@@ -257,124 +212,10 @@ namespace RINGMesh {
                 MeshElementGfx( gfx, region.mesh(), false ),
                 region_visible_( true ),
                 surface_visible_( false ),
-                edges_visible_( false ),
-                c_VAO_( 0 ),
-                cell_vertices_VB_( 0 ),
-                cell_indices_VB_( 0 ),
-                tex_cell_coord_VB_( 0 )
+                edges_visible_( false )
         {
             set_points_color( 0.0, 0.0, 0.0 ) ;
         }
-        virtual void draw_volume()
-        {
-            if( mesh()->cells.nb() == 0 ) {
-                return ;
-            }
-            if( vertex_attr_.is_bound() ) {
-                set_GLUP_parameters() ;
-                update_buffer_objects_if_needed() ;
-                glupSetCellsShrink( GLUPfloat( shrink_ ) ) ;
-                if( mesh()->cells.are_simplices() ) {
-                    if( !draw_cells_[GEO::MESH_TET] ) {
-                        return ;
-                    }
-                    if( cells_VAO_ != 0
-                        && glupPrimitiveSupportsArrayMode( GLUP_TETRAHEDRA ) ) {
-                        glBindVertexArray( cells_VAO_ ) ;
-                        glupDrawElements( GLUP_TETRAHEDRA,
-                            GLUPsizei( mesh()->cells.nb() * 4 ), GL_UNSIGNED_INT,
-                            0 ) ;
-                        glBindVertexArray( 0 ) ;
-                    } else {
-                        glupBegin( GLUP_TETRAHEDRA ) ;
-                        for( index_t t = 0; t < mesh()->cells.nb(); ++t ) {
-                            draw_attribute_vertex( mesh()->cells.vertex( t, 0 ) ) ;
-                            draw_attribute_vertex( mesh()->cells.vertex( t, 1 ) ) ;
-                            draw_attribute_vertex( mesh()->cells.vertex( t, 2 ) ) ;
-                            draw_attribute_vertex( mesh()->cells.vertex( t, 3 ) ) ;
-                        }
-                        glupEnd() ;
-                    }
-                } else {
-                    static GLUPprimitive geogram_to_glup[GEO::MESH_NB_CELL_TYPES] = {
-                        GLUP_TETRAHEDRA, GLUP_HEXAHEDRA, GLUP_PRISMS, GLUP_PYRAMIDS,
-                        GLUP_POINTS } ;
-                    for( index_t type = GEO::MESH_TET; type != GEO::MESH_CONNECTOR;
-                        ++type ) {
-                        if( !draw_cells_[type] ) {
-                            continue ;
-                        }
-                        glupBegin( geogram_to_glup[type] ) ;
-                        for( index_t cell = 0; cell < mesh()->cells.nb(); ++cell ) {
-                            if( index_t( mesh()->cells.type( cell ) ) != type ) {
-                                continue ;
-                            }
-                            for( index_t lv = 0;
-                                lv < mesh()->cells.nb_vertices( cell ); ++lv ) {
-                                draw_attribute_vertex(
-                                    mesh()->cells.vertex( cell, lv ) ) ;
-                            }
-                        }
-                        glupEnd() ;
-                    }
-                }
-            } else if( cell_attr_.is_bound() ) {
-                set_GLUP_parameters() ;
-                glupSetCellsShrink( GLUPfloat( shrink_ ) ) ;
-                if( mesh()->cells.are_simplices() ) {
-                    if( !draw_cells_[GEO::MESH_TET] ) {
-                        return ;
-                    }
-                    if( c_VAO_ != 0
-                        && glupPrimitiveSupportsArrayMode( GLUP_TETRAHEDRA ) ) {
-                        glBindVertexArray( c_VAO_ ) ;
-                        glupDrawElements( GLUP_TETRAHEDRA,
-                            GLUPsizei( mesh()->cells.nb() * 4 ), GL_UNSIGNED_INT,
-                            0 ) ;
-                        glBindVertexArray( 0 ) ;
-                    } else {
-                        glupBegin( GLUP_TETRAHEDRA ) ;
-                        for( index_t t = 0; t < mesh()->cells.nb(); ++t ) {
-                            double d = ( cell_attr_[t] - gfx_.cell_min_attr_ )
-                                / ( gfx_.cell_max_attr_ - gfx_.cell_min_attr_ ) ;
-                            glupTexCoord1d( d ) ;
-                            draw_vertex( mesh()->cells.vertex( t, 0 ) ) ;
-                            draw_vertex( mesh()->cells.vertex( t, 1 ) ) ;
-                            draw_vertex( mesh()->cells.vertex( t, 2 ) ) ;
-                            draw_vertex( mesh()->cells.vertex( t, 3 ) ) ;
-                        }
-                        glupEnd() ;
-                    }
-                } else {
-                    static GLUPprimitive geogram_to_glup[GEO::MESH_NB_CELL_TYPES] = {
-                        GLUP_TETRAHEDRA, GLUP_HEXAHEDRA, GLUP_PRISMS, GLUP_PYRAMIDS,
-                        GLUP_POINTS } ;
-                    for( index_t type = GEO::MESH_TET; type != GEO::MESH_CONNECTOR;
-                        ++type ) {
-                        if( !draw_cells_[type] ) {
-                            continue ;
-                        }
-                        glupBegin( geogram_to_glup[type] ) ;
-                        for( index_t cell = 0; cell < mesh()->cells.nb(); ++cell ) {
-                            if( index_t( mesh()->cells.type( cell ) ) != type ) {
-                                continue ;
-                            }
-                            double d = ( cell_attr_[cell] - gfx_.cell_min_attr_ )
-                                / ( gfx_.cell_max_attr_ - gfx_.cell_min_attr_ ) ;
-                            glupTexCoord1d( d ) ;
-                            for( index_t lv = 0;
-                                lv < mesh()->cells.nb_vertices( cell ); ++lv ) {
-                                draw_vertex( mesh()->cells.vertex( cell, lv ) ) ;
-                            }
-                        }
-                        glupEnd() ;
-                    }
-                }
-            } else {
-                GEO::MeshGfx::draw_volume() ;
-            }
-        }
-
         void set_edges_visible( bool b )
         {
             edges_visible_ = b ;
@@ -400,104 +241,18 @@ namespace RINGMesh {
             return region_visible_ ;
         }
 
-        void compute_cell_attribute_buffer( index_t coordinate )
-        {
-            if( strcmp( glupCurrentProfileName(), "VanillaGL" )
-                && mesh()->cells.nb() > 0 && mesh()->cells.are_simplices()
-                && cell_attr_.is_bound() ) {
-                index_t att_dim = cell_attr_.dimension() ;
-                size_t size = mesh()->cell_corners.nb() ;
-                double* vertices = new double[size * 3] ;
-                double* data = new double[size] ;
-                index_t* indices = new index_t[size] ;
-                for( index_t c = 0; c < mesh()->cell_corners.nb(); c++ ) {
-                    const vec3& vertex = GEO::Geom::mesh_vertex( *mesh(),
-                        mesh()->cell_corners.vertex( c ) ) ;
-                    vertices[3 * c] = vertex.x ;
-                    vertices[3 * c + 1] = vertex.y ;
-                    vertices[3 * c + 2] = vertex.z ;
-                    indices[c] = c ;
-                    data[c] = ( cell_attr_[att_dim * ( c / 4 ) + coordinate]
-                        - gfx_.cell_min_attr_ )
-                        / ( gfx_.cell_max_attr_ - gfx_.cell_min_attr_ ) ;
-                }
-
-                if( c_VAO_ == 0 ) {
-                    glGenVertexArrays( 1, &c_VAO_ ) ;
-                }
-                glBindVertexArray( c_VAO_ ) ;
-                GEO::update_buffer_object( cell_vertices_VB_, GL_ARRAY_BUFFER,
-                    size * 3 * sizeof(double), vertices ) ;
-
-                glBindBuffer( GL_ARRAY_BUFFER, cell_vertices_VB_ ) ;
-                glEnableVertexAttribArray( 0 ) ;
-                GLsizei nb_value_per_vertex = static_cast< GLsizei >( 3
-                    * sizeof(double) ) ;
-                glVertexAttribPointer( 0, 3, GL_DOUBLE, GL_FALSE,
-                    nb_value_per_vertex, 0 ) ;
-                GEO::update_buffer_object( cell_indices_VB_, GL_ELEMENT_ARRAY_BUFFER,
-                    size * sizeof(index_t), indices ) ;
-
-                glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, cell_indices_VB_ ) ;
-
-                GEO::update_buffer_object( tex_cell_coord_VB_, GL_ARRAY_BUFFER,
-                    size * sizeof(double), data ) ;
-                glBindBuffer( GL_ARRAY_BUFFER, tex_cell_coord_VB_ ) ;
-                glEnableVertexAttribArray( 2 ) ;
-                glVertexAttribPointer( 2, 1, GL_DOUBLE, GL_FALSE, 0, 0 ) ;
-
-                glBindVertexArray( 0 ) ;
-                delete[] vertices ;
-                delete[] indices ;
-                delete[] data ;
-            }
-        }
-
-        void bind_cell_attribute( const std::string& name )
-        {
-            if( !cell_attr_.is_bound() || cell_attr_name_ != name ) {
-                vertex_attr_name_ = name ;
-                if( cell_attr_.is_bound() ) {
-                    cell_attr_.unbind() ;
-                }
-                if( GEO::Attribute< double >::is_defined( mesh()->cells.attributes(),
-                    name ) ) {
-                    cell_attr_.bind( mesh()->cells.attributes(), name ) ;
-                }
-            }
-        }
-        void compute_cell_attribute_range(
-            double& min,
-            double& max,
-            index_t coordinate )
-        {
-            if( !cell_attr_.is_bound() ) return ;
-            index_t att_dim = cell_attr_.dimension() ;
-            for( index_t c = 0; c < mesh()->cells.nb(); c++ ) {
-                const double& value = cell_attr_[att_dim * c + coordinate] ;
-                if( value < min ) min = value ;
-                if( value > max ) max = value ;
-            }
-        }
-
     private:
         bool region_visible_ ;
         bool surface_visible_ ;
         bool edges_visible_ ;
 
-        GEO::Attribute< double > cell_attr_ ;
-        std::string cell_attr_name_ ;
-
-        GLuint c_VAO_ ;
-
-        GLuint cell_vertices_VB_ ;
-        GLuint cell_indices_VB_ ;
-        GLuint tex_cell_coord_VB_ ;
     } ;
 
     GeoModelGfx::GeoModelGfx()
         : model_( nil ), corners_(), lines_(), surfaces_(), regions_()
     {
+        attribute_min_ = 0. ;
+        attribute_max_ = 0. ;
     }
 
     GeoModelGfx::~GeoModelGfx()
@@ -562,6 +317,22 @@ namespace RINGMesh {
         }
     }
 
+    void GeoModelGfx::need_to_update()
+    {
+        for( index_t c = 0; c < corners_.size(); c++ ) {
+            corners_[c]->need_to_update() ;
+        }
+        for( index_t l = 0; l < lines_.size(); l++ ) {
+            lines_[l]->need_to_update() ;
+        }
+        for( index_t s = 0; s < surfaces_.size(); s++ ) {
+            surfaces_[s]->need_to_update() ;
+        }
+        for( index_t r = 0; r < model_->nb_regions(); r++ ) {
+            regions_[r]->need_to_update() ;
+        }
+    }
+
     void GeoModelGfx::compute_colormap()
     {
         std::string command = GEO::CmdLine::get_arg( "attr:colormap" ) ;
@@ -594,50 +365,64 @@ namespace RINGMesh {
         GL_UNSIGNED_BYTE, colormap.data() ) ;
     }
 
-    void GeoModelGfx::compute_cell_vertex_attribute_range( index_t coordinate )
+    void GeoModelGfx::compute_cell_vertex_attribute_range(
+        index_t coordinate,
+        const std::string& name )
     {
-        cell_vertex_min_attr_ = max_float64() ;
-        cell_vertex_max_attr_ = min_float64() ;
+        attribute_min_ = max_float64() ;
+        attribute_max_ = min_float64() ;
+        std::string attribute_name = get_attribute_name_with_coordinate( name,
+            coordinate ) ;
         for( index_t r = 0; r < regions_.size(); r++ ) {
-            regions_[r]->compute_vertex_attribute_range( cell_vertex_min_attr_,
-                cell_vertex_max_attr_, coordinate ) ;
+            GEO::ReadOnlyScalarAttributeAdapter attribute(
+                model_->region( r ).vertex_attribute_manager(), attribute_name ) ;
+            compute_attribute_range( attribute, attribute_min_,
+                attribute_max_ ) ;
         }
     }
 
-    void GeoModelGfx::compute_cell_attribute_range( index_t coordinate )
+    void GeoModelGfx::compute_cell_attribute_range(
+        index_t coordinate,
+        const std::string& name )
     {
-        cell_min_attr_ = max_float64() ;
-        cell_max_attr_ = min_float64() ;
+        attribute_min_ = max_float64() ;
+        attribute_max_ = min_float64() ;
+        std::string attribute_name = get_attribute_name_with_coordinate( name,
+            coordinate ) ;
         for( index_t r = 0; r < regions_.size(); r++ ) {
-            regions_[r]->compute_cell_attribute_range( cell_min_attr_,
-                cell_max_attr_, coordinate ) ;
+            GEO::ReadOnlyScalarAttributeAdapter attribute(
+                model_->region( r ).cell_attribute_manager(), attribute_name ) ;
+            compute_attribute_range( attribute, attribute_min_,
+                attribute_max_ ) ;
         }
     }
 
-    void GeoModelGfx::bind_cell_vertex_attribute(
+    void GeoModelGfx::set_cell_vertex_attribute(
         const std::string& name,
-        index_t coordinate )
+        index_t coordinate,
+        GLuint colormap_texture )
     {
+        std::string attribute_name = get_attribute_name_with_coordinate( name,
+            coordinate ) ;
         for( index_t r = 0; r < regions_.size(); r++ ) {
-            regions_[r]->bind_vertex_attribute( name ) ;
+            regions_[r]->set_scalar_attribute( GEO::MESH_VERTICES, attribute_name, attribute_min_,
+                attribute_max_, colormap_texture ) ;
         }
-        compute_cell_vertex_attribute_range( coordinate ) ;
-        for( index_t r = 0; r < regions_.size(); r++ ) {
-            regions_[r]->compute_vertex_attribute_buffer( coordinate ) ;
-        }
+
     }
 
-    void GeoModelGfx::bind_cell_attribute(
+    void GeoModelGfx::set_cell_attribute(
         const std::string& name,
-        index_t coordinate )
+        index_t coordinate,
+        GLuint colormap_texture )
     {
+        std::string attribute_name = get_attribute_name_with_coordinate( name,
+            coordinate ) ;
         for( index_t r = 0; r < regions_.size(); r++ ) {
-            regions_[r]->bind_cell_attribute( name ) ;
+            regions_[r]->set_scalar_attribute( GEO::MESH_CELLS, attribute_name, attribute_min_,
+                attribute_max_, colormap_texture ) ;
         }
-        compute_cell_attribute_range( coordinate ) ;
-        for( index_t r = 0; r < regions_.size(); r++ ) {
-            regions_[r]->compute_cell_attribute_buffer( coordinate ) ;
-        }
+
     }
 
     /*!
@@ -853,6 +638,12 @@ namespace RINGMesh {
             if( surfaces_[s]->get_vertices_visible() )
                 surfaces_[s]->draw_vertices() ;
             if( surfaces_[s]->get_surface_visible() ) surfaces_[s]->draw_surface() ;
+        }
+    }
+    void GeoModelGfx::set_surfaces_lighting( bool value )
+    {
+        for( index_t s = 0; s < surfaces_.size(); s++ ) {
+            surfaces_[s]->set_lighting( value ) ;
         }
     }
     /*!
@@ -1199,149 +990,12 @@ namespace RINGMesh {
         regions_[l]->set_mesh_width( s ) ;
     }
 
-    /*!
-     * Sets the surface color to all the surfaces
-     * @param[in] r the red component of the color in [0.0, 1.0]
-     * @param[in] g the green component of the color in [0.0, 1.0]
-     * @param[in] b the blue component of the color in [0.0, 1.0]
-     */
-    void GeoModelGfx::set_surface_regions_color( float r, float g, float b )
-    {
-        for( index_t reg = 0; reg < regions_.size(); reg++ ) {
-            set_surface_region_color( reg, r, g, b ) ;
-        }
-    }
-    /*!
-     * Sets the surface color
-     * @param[in] s the surface index
-     * @param[in] r the red component of the color in [0.0, 1.0]
-     * @param[in] g the green component of the color in [0.0, 1.0]
-     * @param[in] b the blue component of the color in [0.0, 1.0]
-     */
-    void GeoModelGfx::set_surface_region_color(
-        index_t reg,
-        float r,
-        float g,
-        float b )
-    {
-        ringmesh_assert( reg < regions_.size() ) ;
-        regions_[reg]->set_surface_color( r, g, b ) ;
-    }
-    /*!
-     * Sets the backface surface color to all the surfaces
-     * @param[in] r the red component of the color in [0.0, 1.0]
-     * @param[in] g the green component of the color in [0.0, 1.0]
-     * @param[in] b the blue component of the color in [0.0, 1.0]
-     */
-    void GeoModelGfx::set_backface_surface_regions_color( float r, float g, float b )
-    {
-        for( index_t reg = 0; reg < regions_.size(); reg++ ) {
-            set_backface_surface_region_color( reg, r, g, b ) ;
-        }
-    }
-    /*!
-     * Sets the backsurface surface color
-     * @param[in] s the surface index
-     * @param[in] r the red component of the color in [0.0, 1.0]
-     * @param[in] g the green component of the color in [0.0, 1.0]
-     * @param[in] b the blue component of the color in [0.0, 1.0]
-     */
-    void GeoModelGfx::set_backface_surface_region_color(
-        index_t reg,
-        float r,
-        float g,
-        float b )
-    {
-        ringmesh_assert( reg < regions_.size() ) ;
-        regions_[reg]->set_backface_surface_color( r, g, b ) ;
-    }
-    /*!
-     * Sets the surface visibility to all the surfaces
-     * @param[in] b the visibility
-     */
-    void GeoModelGfx::set_surface_regions_visibility( bool b )
+
+    void GeoModelGfx::set_cell_regions_lighting( bool value )
     {
         for( index_t r = 0; r < regions_.size(); r++ ) {
-            set_surface_region_visibility( r, b ) ;
+            regions_[r]->set_lighting( value ) ;
         }
-    }
-    /*!
-     * Sets the surface visibility
-     * @param[in] s the surface index
-     * @param[in] b the visibility
-     */
-    void GeoModelGfx::set_surface_region_visibility( index_t r, bool b )
-    {
-        ringmesh_assert( r < regions_.size() ) ;
-        surfaces_[r]->set_surface_visible( b ) ;
-    }
-    /*!
-     * Sets the mesh surface color to all the surfaces
-     * @param[in] r the red component of the color in [0.0, 1.0]
-     * @param[in] g the green component of the color in [0.0, 1.0]
-     * @param[in] b the blue component of the color in [0.0, 1.0]
-     */
-    void GeoModelGfx::set_mesh_surface_regions_color( float r, float g, float b )
-    {
-        for( index_t reg = 0; reg < regions_.size(); reg++ ) {
-            set_mesh_surface_region_color( reg, r, g, b ) ;
-        }
-    }
-    /*!
-     * Sets the mesh surface color
-     * @param[in] s the surface index
-     * @param[in] r the red component of the color in [0.0, 1.0]
-     * @param[in] g the green component of the color in [0.0, 1.0]
-     * @param[in] b the blue component of the color in [0.0, 1.0]
-     */
-    void GeoModelGfx::set_mesh_surface_region_color(
-        index_t reg,
-        float r,
-        float g,
-        float b )
-    {
-        ringmesh_assert( reg < regions_.size() ) ;
-        surfaces_[reg]->set_mesh_color( r, g, b ) ;
-    }
-    /*!
-     * Sets the mesh surface visibility to all the surfaces
-     * @param[in] b the visibility
-     */
-    void GeoModelGfx::set_mesh_surface_regions_visibility( bool b )
-    {
-        for( index_t r = 0; r < regions_.size(); r++ ) {
-            set_mesh_surface_region_visibility( r, b ) ;
-        }
-    }
-    /*!
-     * Sets the mesh surface visibility
-     * @param[in] s the surface index
-     * @param[in] b the visibility
-     */
-    void GeoModelGfx::set_mesh_surface_region_visibility( index_t r, bool b )
-    {
-        ringmesh_assert( r < regions_.size() ) ;
-        regions_[r]->set_show_mesh( b ) ;
-    }
-    /*!
-     * Sets the mesh surface size to all the surfaces
-     * @param[in] size the size
-     */
-    void GeoModelGfx::set_mesh_surface_regions_size( index_t size )
-    {
-        for( index_t r = 0; r < regions_.size(); r++ ) {
-            set_mesh_surface_region_size( r, size ) ;
-        }
-    }
-    /*!
-     * Sets the mesh surface size
-     * @param[in] s the surface index
-     * @param[in] size the size
-     */
-    void GeoModelGfx::set_mesh_surface_region_size( index_t r, index_t size )
-    {
-        ringmesh_assert( r < regions_.size() ) ;
-        regions_[r]->set_mesh_width( size ) ;
     }
 
     /*!

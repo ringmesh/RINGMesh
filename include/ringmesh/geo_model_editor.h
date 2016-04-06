@@ -287,7 +287,16 @@ namespace RINGMesh {
 
         void delete_elements( std::vector< std::vector< index_t > >& to_erase ) ;
 
-        void resize_elements( GME::TYPE type, index_t nb ) ;
+        /*!
+         * @brief Adds \p nb new elements of type \p type
+         * @details Adds \p nb new elements at the end of the
+         * vector of elements of type \p type.
+         * @param[in] type the type of element to add.
+         * @param[in] nb the number of new elements.
+         * @return the old number of elements of the type \p type.
+         * It corresponds to the index of the first new element.
+         */
+        index_t create_elements( GME::TYPE type, index_t nb ) ;
 
         void erase_invalid_element_references( GeoModelElement& E ) ;
 

@@ -291,9 +291,43 @@ namespace GEO {
         ) {
             GLuint s_handle = glCreateShader(target);
             if(s_handle == 0) {
-                Logger::err("GLSL") << "Could not create shader"
+                Logger::err("GLSL") << "Could not create shader for target"
                                     << std::endl;
-                exit(1);
+                switch(target) {
+                case GL_COMPUTE_SHADER:
+                    Logger::err("GLSL") << " (target = GL_COMPUTE_SHADER)"
+                                        << std::endl;
+                    break;
+                case GL_VERTEX_SHADER:
+                    Logger::err("GLSL") << " (target = GL_VERTEX_SHADER)"
+                                        << std::endl;
+                    break;
+                case GL_TESS_CONTROL_SHADER:
+                    Logger::err("GLSL") << " (target = GL_TESS_CONTROL_SHADER)"
+                                        << std::endl;
+                    break;
+                case GL_TESS_EVALUATION_SHADER:
+                    Logger::err("GLSL")
+                        << " (target = GL_TESS_EVALUATION_SHADER)"
+                        << std::endl;
+                    break;
+                case GL_GEOMETRY_SHADER:
+                    Logger::err("GLSL")
+                        << " (target = GL_GEOMETRY_SHADER)"
+                        << std::endl;
+                    break;
+                case GL_FRAGMENT_SHADER:
+                    Logger::err("GLSL")
+                        << " (target = GL_FRAGMENT_SHADER)"
+                        << std::endl;
+                    break;
+                default:
+                    Logger::err("GLSL")
+                        << " (unknown target)"
+                        << std::endl;
+                    break;
+                }
+                throw GLSL::GLSLCompileError();
             }
             glShaderSource(s_handle, (GLsizei)nb_sources, sources, 0);
             glCompileShader(s_handle);
@@ -582,6 +616,29 @@ namespace GEO {
                 throw;
             }
             return result;
+        }
+
+        /*****************************************************************/
+
+        GLint GEOGRAM_GFX_API get_uniform_variable_offset(
+            GLuint program, const char* varname
+        ) {
+            GLuint index = GL_INVALID_INDEX;
+            glGetUniformIndices(program, 1, &varname, &index);
+            if(index == GL_INVALID_INDEX) {
+                Logger::err("GLUP")
+                    << varname 
+                    << ":did not find uniform state variable"
+                    << std::endl;
+                throw GLSL::GLSLCompileError();
+            }
+            geo_assert(index != GL_INVALID_INDEX);
+            GLint offset = -1;
+            glGetActiveUniformsiv(
+                program, 1, &index, GL_UNIFORM_OFFSET, &offset
+            );
+            geo_assert(offset != -1);
+            return offset;
         }
         
     }

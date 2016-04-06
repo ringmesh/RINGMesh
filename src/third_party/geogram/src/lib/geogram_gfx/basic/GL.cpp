@@ -44,7 +44,7 @@
  */
 
 #include <geogram_gfx/basic/GL.h>
-#include <geogram_gfx/basic/GLUP.h>
+#include <geogram_gfx/GLUP/GLUP.h>
 #include <geogram/basic/logger.h>
 #include <geogram/basic/command_line.h>
 

@@ -37,7 +37,7 @@
 #define __RINGMESH_GEO_MODEL_BUILDER__
 
 #include <ringmesh/common.h>
-#include <third_party/zlib/unzip.h>
+#include <third_party/minizip/unzip.h>
 
 #include <vector>
 #include <string>
@@ -480,8 +480,12 @@ namespace RINGMesh {
      */
     class RINGMESH_API GeoModelBuilderBM: public GeoModelBuilderFile {
     public:
-        GeoModelBuilderBM( GeoModel& model, const std::string& filename )
-            : GeoModelBuilderFile( model, filename ), file_line_( filename )
+        GeoModelBuilderBM(
+            GeoModel& model,
+            const std::string& filename )
+            :
+                GeoModelBuilderFile( model, filename ),
+                file_line_( filename )
         {
             if( !file_line_.OK() ) {
                 throw RINGMeshException( "I/O", "Failed to open file " + filename ) ;
@@ -501,7 +505,7 @@ namespace RINGMesh {
 
     class RINGMESH_API GeoModelBuilderGM: public GeoModelBuilderFile {
     public:
-        GeoModelBuilderGM( GeoModel& model, const std::string& filename )
+        GeoModelBuilderGM( GeoModel& model, const std::string& filename)
             : GeoModelBuilderFile( model, filename )
         {
         }
@@ -535,12 +539,6 @@ namespace RINGMesh {
          * basics information on the GeoModel.
          */
         void load_topology( GEO::LineInput& file_line ) ;
-
-        void load_attributes(unzFile& uz) ;
-
-        void write_on_attribute_manager(
-                GEO::AttributesManager& attribute_manager,
-                GEO::LineInput& att_file ) ;
     } ;
 }
 

@@ -552,7 +552,7 @@ namespace RINGMesh {
                     } else {
                         ringmesh_assert(
                             sorted_triangles_[i - 1].first
-                                == sorted_triangles_[i].first ) ;
+                            == sorted_triangles_[i].first ) ;
                         if( sorted_triangles_[i - 1].second
                             != sorted_triangles_[i].second ) {
                             return sorted_triangles_[i + 1] ;
@@ -620,7 +620,7 @@ namespace RINGMesh {
          * @brief Returns the vertices of the last line built 
          */
         const std::vector< index_t >& vertices() const
-        {                         
+        {
             return cur_line_vertices_ ;
         }
 
@@ -962,28 +962,30 @@ namespace RINGMesh {
         std::vector< index_t > cur_line_adjacent_surfaces_ ;
         RINGMesh::GeoModelRegionFromSurfaces cur_line_region_information_ ;
     } ;
-    
-    void reorder_line_vertices_to_start_at_corner( 
-        const GeoModel& geomodel, std::vector< index_t >& line_vertices )
+
+    void reorder_line_vertices_to_start_at_corner(
+        const GeoModel& geomodel,
+        std::vector< index_t >& line_vertices )
     {
-        if( geomodel.nb_corners() ==  0 ) {
+        if( geomodel.nb_corners() == 0 ) {
             // Maybe should throw an assertion, but I am not sure [JP]
             return ;
         }
         for( index_t i = 1; i + 1 < line_vertices.size(); ++i ) {
-            gme_t corner = find_corner( geomodel, line_vertices[ i ] ) ;
-            if( corner.is_defined() ) {                
+            gme_t corner = find_corner( geomodel, line_vertices[i] ) ;
+            if( corner.is_defined() ) {
                 std::vector< index_t > shuffled_vertices( line_vertices.size() ) ;
-                std::copy( line_vertices.begin()+i, line_vertices.end(),
-                           shuffled_vertices.begin() ) ;
-                index_t nb_copied( line_vertices.end()-line_vertices.begin()-i ) ;
-                std::copy( line_vertices.begin()+1, line_vertices.begin()+i+1,
-                           shuffled_vertices.begin() + nb_copied ) ;
+                std::copy( line_vertices.begin() + i, line_vertices.end(),
+                    shuffled_vertices.begin() ) ;
+                index_t nb_copied(
+                    line_vertices.end() - line_vertices.begin() - i ) ;
+                std::copy( line_vertices.begin() + 1, line_vertices.begin() + i + 1,
+                    shuffled_vertices.begin() + nb_copied ) ;
                 line_vertices = shuffled_vertices ;
                 break ;
             }
         }
-    }   
+    }
 
     bool is_surface_mesh( const GEO::Mesh& mesh )
     {
@@ -1376,7 +1378,8 @@ namespace RINGMesh {
 
         set_element_vertices( gme_t( GME::SURFACE, surface_id ), vertices, false ) ;
 
-        assign_surface_triangle_mesh( surface_id, new_triangle_corners, adjacent_triangles ) ;
+        assign_surface_triangle_mesh( surface_id, new_triangle_corners,
+            adjacent_triangles ) ;
     }
 
     void GeoModelBuilder::set_region_geometry(
@@ -1414,10 +1417,10 @@ namespace RINGMesh {
         GEO::vector< index_t > copy ;
         copy_std_vector_to_geo_vector( triangle_vertices, copy ) ;
         M.facets.assign_triangle_mesh( copy, true ) ;
-        
+
         ringmesh_assert( adjacent_triangles.size() == M.facet_corners.nb() ) ;
         for( index_t i = 0; i < adjacent_triangles.size(); i++ ) {
-            M.facet_corners.set_adjacent_facet( i, adjacent_triangles[ i ] ) ;
+            M.facet_corners.set_adjacent_facet( i, adjacent_triangles[i] ) ;
         }
     }
 
@@ -1651,7 +1654,7 @@ namespace RINGMesh {
                 next_id1_in_next ) ;
             ringmesh_assert(
                 next_f != NO_ID && id1_in_next != NO_ID
-                    && next_id1_in_next != NO_ID ) ;
+                && next_id1_in_next != NO_ID ) ;
 
             index_t next_id1 = S.surf_vertex_id( next_f, next_id1_in_next ) ;
 
@@ -1778,16 +1781,17 @@ namespace RINGMesh {
             new_line_was_built = line_computer.compute_next_line_geometry() ;
 
             // I know this is a copy - but should'nt be too big [JP]
-            std::vector< index_t > vertices = line_computer.vertices() ;            
-            bool is_line_closed = vertices.front()==vertices.back() ;
+            std::vector< index_t > vertices = line_computer.vertices() ;
+            bool is_line_closed = vertices.front() == vertices.back() ;
             if( is_line_closed ) {
                 // Vertices can begin and end at any vertex
                 reorder_line_vertices_to_start_at_corner( model_, vertices ) ;
             }
-            
+
             GME::gme_t first_corner = find_or_create_corner( vertices.front() ) ;
             GME::gme_t second_corner = find_or_create_corner( vertices.back() ) ;
-            const std::vector< index_t >& adjacent_surfaces = line_computer.adjacent_surfaces() ;
+            const std::vector< index_t >& adjacent_surfaces =
+                line_computer.adjacent_surfaces() ;
 
             index_t backup_nb_lines = model().nb_lines() ;
             gme_t line_index = find_or_create_line( adjacent_surfaces, first_corner,
@@ -2123,13 +2127,15 @@ namespace RINGMesh {
                     index_t gme_id = attribute_value_to_gme_id_[attribute_value] ;
                     index_t gme_simplex_id = gme_simplex_counter_[gme_id] ;
 
-                    assign_one_gme_simplex_vertices( mesh_simplex, gme_id, gme_simplex_id ) ;                    
-                    assign_mesh_simplex_to_gme_simplex( mesh_simplex, gme_id, gme_simplex_id ) ;
+                    assign_one_gme_simplex_vertices( mesh_simplex, gme_id,
+                        gme_simplex_id ) ;
+                    assign_mesh_simplex_to_gme_simplex( mesh_simplex, gme_id,
+                        gme_simplex_id ) ;
                     ++gme_simplex_counter_[gme_id] ;
                 } else {
                     assign_mesh_simplex_to_no_gme_simplex( mesh_simplex ) ;
                 }
-            }           
+            }
         }
 
         /*!
@@ -2140,12 +2146,12 @@ namespace RINGMesh {
         {
             if( gme_simplex_vertices_.empty() ) {
                 return ;
-            }            
+            }
             allocate_gme_corner_adjacent_gme_simplex() ;
 
             index_t nb = nb_mesh_simplexes() ;
             for( index_t mesh_simplex = 0; mesh_simplex < nb; ++mesh_simplex ) {
-                GMESimplex gme = mesh_simplex_to_gme_simplex_[ mesh_simplex ];
+                GMESimplex gme = mesh_simplex_to_gme_simplex_[mesh_simplex] ;
                 index_t gme_id = gme.gme_id ;
                 index_t gme_simplex = gme.gme_simplex_id ;
 
@@ -2154,17 +2160,21 @@ namespace RINGMesh {
                 }
 
                 for( index_t v = 0; v < nb_vertices_per_simplex(); ++v ) {
-                    index_t gme_vertex = nb_vertices_per_simplex()*gme_simplex + v ;
-                    index_t mesh_vertex = nb_vertices_per_simplex()*mesh_simplex + v ;
+                    index_t gme_vertex = nb_vertices_per_simplex() * gme_simplex
+                        + v ;
+                    index_t mesh_vertex = nb_vertices_per_simplex() * mesh_simplex
+                        + v ;
                     // Number of vertices = number of edges / number of facets
-                    index_t adjacent_simplex = adjacent_simplex_index( mesh_vertex ) ;
+                    index_t adjacent_simplex = adjacent_simplex_index(
+                        mesh_vertex ) ;
 
                     GMESimplex adjacent_gme_simplex ;
                     if( adjacent_simplex != NO_ID ) {
-                        adjacent_gme_simplex = mesh_simplex_to_gme_simplex_[ adjacent_simplex ] ;
+                        adjacent_gme_simplex =
+                            mesh_simplex_to_gme_simplex_[adjacent_simplex] ;
                     }
                     if( adjacent_gme_simplex.gme_id == gme_id ) {
-                        gme_corner_adjacent_gme_simplex_[ gme_id ][ gme_vertex ] =
+                        gme_corner_adjacent_gme_simplex_[gme_id][gme_vertex] =
                             adjacent_gme_simplex.gme_simplex_id ;
                     }
                 }
@@ -2271,8 +2281,8 @@ namespace RINGMesh {
         {
             gme_corner_adjacent_gme_simplex_.resize( nb_gme() ) ;
             for( index_t i = 0; i < nb_gme(); ++i ) {
-                gme_corner_adjacent_gme_simplex_[ i ].resize( 
-                    gme_simplex_vertices_[ i ].size(), NO_ID ) ;                
+                gme_corner_adjacent_gme_simplex_[i].resize(
+                    gme_simplex_vertices_[i].size(), NO_ID ) ;
             }
         }
 
@@ -2310,8 +2320,11 @@ namespace RINGMesh {
         virtual index_t nb_mesh_simplexes() const = 0 ;
         virtual GEO::AttributesManager& mesh_simplex_attribute_manager() = 0 ;
         virtual index_t nb_vertices_per_simplex() const = 0 ;
-        virtual index_t mesh_vertex_index( index_t simplex_id, index_t lv ) const = 0 ;
-        virtual index_t adjacent_simplex_index( index_t facet_or_edge_id ) const = 0 ;
+        virtual index_t mesh_vertex_index(
+            index_t simplex_id,
+            index_t lv ) const = 0 ;
+        virtual index_t adjacent_simplex_index(
+            index_t facet_or_edge_id ) const = 0 ;
 
     protected:
         // THE Mesh
@@ -2327,13 +2340,12 @@ namespace RINGMesh {
         // Mapping from a GME index in a GeoModel to the attribute value on the Mesh  
         std::vector< index_t > gme_id_to_attribute_value_ ;
         // Vertex indices (in the Mesh) of the corners of the simplices per GME
-        std::vector< std::vector< index_t > > gme_simplex_vertices_ ;        
+        std::vector< std::vector< index_t > > gme_simplex_vertices_ ;
         // Mapping from a mesh simplex index to a simplex index in a GME
         std::vector< GMESimplex > mesh_simplex_to_gme_simplex_ ;
         // For each GME, store the adjacent simplex (in the GME) for each simplex corner
-        std::vector< std::vector < index_t > > gme_corner_adjacent_gme_simplex_ ;
+        std::vector< std::vector< index_t > > gme_corner_adjacent_gme_simplex_ ;
     } ;
-
 
     class GeoModelSurfaceFromMesh: public GeoModelElementFromMesh {
     public:
@@ -2418,48 +2430,55 @@ namespace RINGMesh {
     {
         bool valid = true ;
         if( !is_surface_mesh( mesh_ ) ) {
-            Logger::warn("GMBuilder") << "The given mesh is not a surface mesh " << std::endl ;
+            Logger::warn( "GMBuilder" ) << "The given mesh is not a surface mesh "
+                << std::endl ;
             valid = false ;
         }
         if( !mesh_.facets.are_simplices() ) {
-            Logger::warn("GMBuilder") << "The given mesh is not triangulated" << std::endl ;
+            Logger::warn( "GMBuilder" ) << "The given mesh is not triangulated"
+                << std::endl ;
             valid = false ;
         }
         if( !mesh_.facets.attributes().is_defined( surface_attribute_name_ ) ) {
-            Logger::warn("GMBuilder") << "The attribute " <<  surface_attribute_name_
-                << " is not defined on the Mesh facets"  << std::endl ;
+            Logger::warn( "GMBuilder" ) << "The attribute "
+                << surface_attribute_name_ << " is not defined on the Mesh facets"
+                << std::endl ;
             valid = false ;
         }
         if( RINGMesh::has_mesh_colocate_vertices( mesh_, epsilon ) ) {
-            Logger::warn("GMBuilder")
-                << " The Mesh has colocated vertices. Repair it beforehand " << std::endl ;
+            Logger::warn( "GMBuilder" )
+                << " The Mesh has colocated vertices. Repair it beforehand "
+                << std::endl ;
             valid = false ;
         }
-        return valid ;  
+        return valid ;
     }
 
     bool GeoModelBuilderMesh::is_mesh_valid_for_region_building() const
     {
         bool valid = true ;
         if( !is_volume_mesh( mesh_ ) ) {
-            Logger::warn("GMBuilder") << "The given mesh is not a volumetric mesh " << std::endl ;
+            Logger::warn( "GMBuilder" ) << "The given mesh is not a volumetric mesh "
+                << std::endl ;
             valid = false ;
         }
         if( !mesh_.cells.are_simplices() ) {
-            Logger::warn("GMBuilder") << "The given mesh is not tetrahedralized" << std::endl ;
+            Logger::warn( "GMBuilder" ) << "The given mesh is not tetrahedralized"
+                << std::endl ;
             valid = false ;
         }
         if( !mesh_.cells.attributes().is_defined( region_attribute_name_ ) ) {
-            Logger::warn("GMBuilder") << "The attribute " <<  region_attribute_name_
+            Logger::warn( "GMBuilder" ) << "The attribute " << region_attribute_name_
                 << " is not defined on the Mesh cells " << std::endl ;
             valid = false ;
         }
         if( RINGMesh::has_mesh_colocate_vertices( mesh_, epsilon ) ) {
-            Logger::warn("GMBuilder")
-                << " The Mesh has colocated vertices. Repair it beforehand. " << std::endl ;
+            Logger::warn( "GMBuilder" )
+                << " The Mesh has colocated vertices. Repair it beforehand. "
+                << std::endl ;
             valid = false ;
         }
-        return valid ;  
+        return valid ;
     }
 
     void create_and_fill_connected_component_attribute(
@@ -2603,14 +2622,15 @@ namespace RINGMesh {
         surface_builder_->compute_gme_adjacencies() ;
         for( index_t i = 0; i != nb_surfaces; ++i ) {
             const std::vector< index_t >& triangle_vertices =
-                surface_builder_->gme_simplices(i) ;
-            const std::vector< index_t >& adjacent_triangles = 
-                surface_builder_->adjacent_gme_simplices(i) ;
+                surface_builder_->gme_simplices( i ) ;
+            const std::vector< index_t >& adjacent_triangles =
+                surface_builder_->adjacent_gme_simplices( i ) ;
             // Set the Surface facets
             // Set the adjacencies so that internal boundaries are not lost 
             // when connecting the surface facets.
-            set_surface_geometry_with_adjacencies( i, triangle_vertices, adjacent_triangles ) ;
-        } 
+            set_surface_geometry_with_adjacencies( i, triangle_vertices,
+                adjacent_triangles ) ;
+        }
     }
 
     void GeoModelBuilderMesh::create_and_build_regions()
@@ -2646,7 +2666,8 @@ namespace RINGMesh {
 
     void GeoModelBuilderMesh::initialize_surface_builder()
     {
-        surface_builder_ = new GeoModelSurfaceFromMesh( mesh_, surface_attribute_name_ ) ;
+        surface_builder_ = new GeoModelSurfaceFromMesh( mesh_,
+            surface_attribute_name_ ) ;
         surface_builder_->initialize() ;
         nb_surface_attribute_values_ =
             surface_builder_->count_attribute_values_and_simplexes() ;
@@ -3253,7 +3274,7 @@ namespace RINGMesh {
 
             ringmesh_assert(
                 next_f != NO_ID && id1_in_next != NO_ID
-                    && next_id1_in_next != NO_ID ) ;
+                && next_id1_in_next != NO_ID ) ;
 
             index_t next_id1 = S.surf_vertex_id( next_f, next_id1_in_next ) ;
 
@@ -3326,7 +3347,7 @@ namespace RINGMesh {
                     != GME::NO_TYPE ) {
                     // Allocate the space
                     if( file_line_.nb_fields() > 1 ) {
-                        resize_elements( match_nb_elements( file_line_.field( 0 ) ),
+                        create_elements( match_nb_elements( file_line_.field( 0 ) ),
                             file_line_.field_as_uint( 1 ) ) ;
                     }
                 }
@@ -3638,7 +3659,7 @@ namespace RINGMesh {
                     != GME::NO_TYPE ) {
                     // Allocate the space
                     if( file_line.nb_fields() > 1 ) {
-                        resize_elements( match_nb_elements( file_line.field( 0 ) ),
+                        create_elements( match_nb_elements( file_line.field( 0 ) ),
                             file_line.field_as_uint( 1 ) ) ;
                     }
                 }
@@ -3747,7 +3768,6 @@ namespace RINGMesh {
         load_connectivities( line_connectivity ) ;
         GEO::FileSystem::delete_file( connectivity ) ;
 
-        load_attributes( uz ) ;
         unzClose( uz ) ;
 
     }
@@ -3784,89 +3804,28 @@ namespace RINGMesh {
             std::string file_to_extract_and_load ;
             build_string_for_geo_model_element_export( gme_t, el,
                 file_to_extract_and_load ) ;
-            unzip_one_file( uz, file_to_extract_and_load.c_str() ) ;
+            std::string str_try = file_to_extract_and_load + ".geogram" ;
+            if( unzLocateFile( uz, str_try.c_str(), 0 ) != UNZ_OK ) {
+                GEO::Logger::warn( "I/O" )
+                    << "You try to open a old .gm with meshb inside it. If you launch it form ringmeshconvert it's ok, if not, be careful it will be not supported soon, convert in to the new gm gile using ringmeshconvert in:geomodel=old_geomodel.gm out:geomodel=new_geomodel.gm."
+                    << std::endl ;
+               str_try = file_to_extract_and_load + ".meshb" ;
+
+            }
+            unzip_one_file( uz, str_try.c_str() ) ;
             GEO::Mesh cur_mesh ;
             GEO::MeshIOFlags flags ;
-            flags.set_element( GEO::MESH_FACETS ) ;
-            flags.set_element( GEO::MESH_CELLS ) ;
-            flags.set_element( GEO::MESH_EDGES ) ;
-            flags.set_attribute( GEO::MESH_FACET_REGION ) ;
+            flags.set_attribute( GEO::MESH_ALL_ATTRIBUTES ) ;
             GEO::Logger::instance()->set_minimal( true ) ;
-            GEO::mesh_load( file_to_extract_and_load, cur_mesh, flags ) ;
+            GEO::mesh_load( str_try, cur_mesh, flags ) ;
             assign_mesh_to_element( cur_mesh,
                 model_.element( gme_t, el ).gme_id() ) ;
             GEO::Logger::instance()->set_minimal( false ) ;
 
-            unzip_one_file( uz, file_to_extract_and_load.c_str() ) ;
+            unzip_one_file( uz, str_try.c_str() ) ;
 
 //            set_connectivities
-            GEO::FileSystem::delete_file( file_to_extract_and_load ) ;
-        }
-
-    }
-
-    void GeoModelBuilderGM::write_on_attribute_manager(
-        GEO::AttributesManager& attribute_manager,
-        GEO::LineInput& att_file )
-    {
-        while( !att_file.eof() && att_file.get_line() ) {
-            att_file.get_fields() ;
-            if( att_file.field_matches( 0, "#" ) ) {
-
-                //@TODO double is hardcoded here temporary
-                GEO::Attribute< double > cur_att ;
-                index_t att_dim = att_file.field_as_uint( 3 ) ;
-                cur_att.create_vector_attribute( attribute_manager,
-                    att_file.field( 1 ), att_dim ) ;
-
-                for( index_t el = 0; el < cur_att.size(); el++ ) {
-                    att_file.get_line() ;
-                    att_file.get_fields() ;
-                    for( index_t i = 0; i < att_dim; i++ ) {
-                        cur_att[att_dim * el + i] = att_file.field_as_double( i ) ;
-                    }
-                }
-            }
-        }
-
-    }
-
-    void GeoModelBuilderGM::load_attributes( unzFile& uz )
-    {
-
-        for( index_t r = 0; r < model_.nb_regions(); r++ ) {
-            std::string root_name = GeoModelMeshElement::type_name( GME::REGION )
-                + "_" + GEO::String::to_string( r ) ;
-            std::string cell_att_file = root_name + "_cells_attributes.txt" ;
-            std::string vertices_att_file = root_name + "_vertices_attributes.txt" ;
-            std::string facets_att_file = root_name + "_facets_attributes.txt" ;
-
-            if( unzLocateFile( uz, cell_att_file.c_str(), 0 ) == UNZ_OK ) {
-                unzip_one_file( uz, cell_att_file.c_str() ) ;
-
-                GEO::LineInput att_file( cell_att_file ) ;
-                write_on_attribute_manager(
-                    model_.region( r ).mesh().cells.attributes(), att_file ) ;
-                GEO::FileSystem::delete_file( cell_att_file ) ;
-            }
-
-            if( unzLocateFile( uz, vertices_att_file.c_str(), 0 ) == UNZ_OK ) {
-                unzip_one_file( uz, vertices_att_file.c_str() ) ;
-                GEO::LineInput att_file( vertices_att_file ) ;
-                write_on_attribute_manager(
-                    model_.region( r ).mesh().vertices.attributes(), att_file ) ;
-                GEO::FileSystem::delete_file( vertices_att_file ) ;
-
-            }
-
-            if( unzLocateFile( uz, facets_att_file.c_str(), 0 ) == UNZ_OK ) {
-                unzip_one_file( uz, facets_att_file.c_str() ) ;
-                GEO::LineInput att_file( facets_att_file ) ;
-                write_on_attribute_manager(
-                    model_.region( r ).mesh().facets.attributes(), att_file ) ;
-                GEO::FileSystem::delete_file( facets_att_file ) ;
-
-            }
+            GEO::FileSystem::delete_file( str_try ) ;
         }
 
     }

@@ -162,6 +162,8 @@ namespace GEO {
         refine_ = false;
         quality_ = 2.0;
         store_cicl_ = false;
+        keep_infinite_ = false;
+        nb_finite_cells_ = 0;
     }
 
     Delaunay::~Delaunay() {
@@ -294,22 +296,33 @@ namespace GEO {
         geo_assert(!is_locked_);  // Not thread-safe
         is_locked_ = true;
         cicl_.resize(cell_size() * nb_cells());
-        for(index_t v = 0; v < nb_vertices(); v++) {
+        for(index_t v = 0; v < nb_vertices(); ++v) {
             signed_index_t t = v_to_cell_[v];
             if(t != -1) {
                 index_t lv = index(index_t(t), signed_index_t(v));
                 set_next_around_vertex(index_t(t), lv, index_t(t));
             }
         }
-        for(index_t t = 0; t < nb_cells(); t++) {
-            for(index_t lv = 0; lv < cell_size(); lv++) {
-                index_t v = index_t(cell_vertex(t, lv));
-                if(v_to_cell_[v] != signed_index_t(t)) {
-                    index_t t1 = index_t(v_to_cell_[v]);
-                    index_t lv1 = index(t1, signed_index_t(v));
-                    index_t t2 = index_t(next_around_vertex(t1, lv1));
-                    set_next_around_vertex(t1, lv1, t);
-                    set_next_around_vertex(t, lv, t2);
+        for(index_t t = 0; t < nb_cells(); ++t) {
+            bool skip = false;
+            if(keep_infinite_) {
+                for(index_t lv=0; lv < cell_size(); ++lv) {
+                    if(cell_vertex(t,lv) < 0) {
+                        skip = true;
+                        break;
+                    }
+                }
+            }
+            if(!skip) {
+                for(index_t lv = 0; lv < cell_size(); ++lv) {
+                    index_t v = index_t(cell_vertex(t, lv));
+                    if(v_to_cell_[v] != signed_index_t(t)) {
+                        index_t t1 = index_t(v_to_cell_[v]);
+                        index_t lv1 = index(t1, signed_index_t(v));
+                        index_t t2 = index_t(next_around_vertex(t1, lv1));
+                        set_next_around_vertex(t1, lv1, t);
+                        set_next_around_vertex(t, lv, t2);
+                    }
                 }
             }
         }
@@ -329,5 +342,16 @@ namespace GEO {
             out << i << " " << histogram[i] << std::endl;
         }
     }
+
+    bool Delaunay::cell_is_infinite(index_t c) const {
+        geo_debug_assert(c < nb_cells());
+        for(index_t lv=0; lv < cell_size(); ++lv) {
+            if(cell_vertex(c,lv) == -1) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
 }
 
