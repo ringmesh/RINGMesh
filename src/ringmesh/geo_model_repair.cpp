@@ -55,7 +55,7 @@
 
 namespace RINGMesh {
 
-   // using namespace RINGMesh ;
+    // using namespace RINGMesh ;
 
     typedef GeoModelMeshElement GMME ;
 
@@ -82,9 +82,9 @@ namespace RINGMesh {
             return std::unique( vertices, vertices + nb_vertices )
                 != vertices + nb_vertices ;
         }
-        index_t v1 = colocated_vertices[M.facet_vertex( f,0 )] ;
-        index_t v2 = colocated_vertices[M.facet_vertex( f,1 )] ;
-        index_t v3 = colocated_vertices[M.facet_vertex( f,2 )] ;
+        index_t v1 = colocated_vertices[M.facet_vertex( f, 0 )] ;
+        index_t v2 = colocated_vertices[M.facet_vertex( f, 1 )] ;
+        index_t v3 = colocated_vertices[M.facet_vertex( f, 2 )] ;
         return v1 == v2 || v2 == v3 || v3 == v1 ;
     }
 
@@ -107,8 +107,8 @@ namespace RINGMesh {
     index_t GeoModelRepair::detect_degenerate_facets( Mesh& M )
     {
         GEO::vector< index_t > colocated ;
-        const ColocaterANN& kdtree = M.colotater_ann(ColocaterANN::VERTICES);
-        kdtree.get_colocated_index_mapping(colocated);
+        const ColocaterANN& kdtree = M.colotater_ann( ColocaterANN::VERTICES ) ;
+        kdtree.get_colocated_index_mapping( colocated ) ;
 //        GEO::mesh_detect_colocated_vertices( M, colocated ) ;
 
         GEO::vector< index_t > degenerate ;
@@ -116,7 +116,6 @@ namespace RINGMesh {
         return static_cast< index_t >( std::count( degenerate.begin(),
             degenerate.end(), 1 ) ) ;
     }
-
 
     void GeoModelRepair::mesh_detect_degenerate_edges(
         const Mesh& M,
@@ -135,7 +134,7 @@ namespace RINGMesh {
     index_t GeoModelRepair::repair_line_mesh( Line& line )
     {
         GEO::vector< index_t > colocated ;
-        const ColocaterANN& kdtree = line.vertex_colocater_ann( ) ;
+        const ColocaterANN& kdtree = line.vertex_colocater_ann() ;
         kdtree.get_colocated_index_mapping( colocated ) ;
 
         GEO::vector< index_t > degenerate ;
@@ -187,15 +186,16 @@ namespace RINGMesh {
                     // MESH_REPAIR_DUP_F 2 ;
                     GEO::MeshRepairMode mode =
                         static_cast< GEO::MeshRepairMode >( 2 ) ;
-                    GEO::mesh_repair( *surface.mesh_, mode ) ;
+                    MeshBuilder builder( surface.mesh_ ) ;
+                    builder.mesh_repair( mode, 0.0 ) ;
 
                     // This might create some small components - remove them
                     /// @todo How to choose the epsilon ? and the maximum number of facets ?
-                    GEO::remove_small_connected_components( M, epsilon_sq, 3 ) ;
+                    builder.remove_small_connected_components( epsilon_sq, 3 ) ;
 
                     // Alright, this is a bit of an overkill [JP]
                     if( surface.nb_vertices() > 0 ) {
-                        GEO::mesh_repair( M, mode ) ;
+                        builder.mesh_repair( mode, 0.0 ) ;
                     }
                 }
                 if( surface.nb_vertices() == 0 || surface.nb_polytope() == 0 ) {
@@ -203,7 +203,7 @@ namespace RINGMesh {
                 } else {
                     // If the Surface has internal boundaries, we need to 
                     // re-cut the Surface along these lines
-                    Surface& S =  model_.surface( i ) ;
+                    Surface& S = model_.surface( i ) ;
                     std::set< index_t > cutting_lines ;
                     for( index_t l = 0; l < S.nb_boundaries(); ++l ) {
                         const Line& L = model_.line( S.boundary_gme( l ).index ) ;
@@ -254,12 +254,13 @@ namespace RINGMesh {
             // We want to get the indices of the vertices in E
             // that are colocated with those of the inside boundary
             // We assume that the model vertices are not computed
-            const ColocaterANN& kdtree = E.vertex_colocater_ann();
+            const ColocaterANN& kdtree = E.vertex_colocater_ann() ;
 
             for( index_t i = 0; i < inside_border.size(); ++i ) {
                 for( index_t v = 0; v < inside_border[i]->nb_vertices(); ++v ) {
                     std::vector< index_t > colocated_indices ;
-                    kdtree.get_colocated( inside_border[i]->vertex( v ), colocated_indices ) ;
+                    kdtree.get_colocated( inside_border[i]->vertex( v ),
+                        colocated_indices ) ;
                     if( colocated_indices.size() > 1 ) {
                         std::sort( colocated_indices.begin(),
                             colocated_indices.end() ) ;
@@ -275,7 +276,8 @@ namespace RINGMesh {
     /*!
      * @details Global GeoModel mesh is supposed to be empty
      */
-    void GeoModelRepair::remove_colocated_element_vertices( std::set< gme_t >& to_remove )
+    void GeoModelRepair::remove_colocated_element_vertices(
+        std::set< gme_t >& to_remove )
     {
         to_remove.clear() ;
         // For all Lines and Surfaces
@@ -286,7 +288,7 @@ namespace RINGMesh {
                 const GMME& E = dynamic_cast< const GMME& >( model_.element(
                     gme_t( T, e ) ) ) ;
 
-                const ColocaterANN& kdtree = E.vertex_colocater_ann( ) ;
+                const ColocaterANN& kdtree = E.vertex_colocater_ann() ;
                 GEO::vector< index_t > colocated ;
                 kdtree.get_colocated_index_mapping( colocated ) ;
 //                GEO::mesh_detect_colocated_vertices( M, colocated, epsilon ) ;
@@ -323,8 +325,8 @@ namespace RINGMesh {
                     continue ;
                 } else {
                     GMME& ME = dynamic_cast< GMME& >( model_.modifiable_element(
-                                        gme_t( T, e ) ) );
-                    MeshBuilder builder(ME.mesh_);
+                        gme_t( T, e ) ) ) ;
+                    MeshBuilder builder( ME.mesh_ ) ;
                     for( index_t c = 0; c < E.mesh_.nb_facet_corners(); c++ ) {
                         builder.set_facet_corner( c,
                             colocated[E.mesh_.facet_corner_vertex( c )] ) ;
@@ -344,7 +346,7 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelRepair::geo_model_mesh_repair(  )
+    void GeoModelRepair::geo_model_mesh_repair()
     {
 
         // Force removal of global vertices - Bugs ? I do not know where [JP]

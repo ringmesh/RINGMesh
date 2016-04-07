@@ -1408,6 +1408,22 @@ namespace RINGMesh {
         }
     }
 
+    void GeoModelBuilder::set_surface_facet_adjacencies(
+        index_t surface_id,
+        const std::vector< index_t >& facets_id,
+        const std::vector< index_t >& edges_id,
+        const std::vector< index_t >& adjacent_triangles )
+    {
+        Mesh& M = mesh_element( GME::SURFACE, surface_id ).mesh_ ;
+        ringmesh_assert( M.nb_vertices() > 0 ) ;
+        MeshBuilder builder( M ) ;
+        ringmesh_assert( facets_id.size() == edges_id.size() == adjacent_triangles.size() ) ;
+        for( int i = 0; i < facets_id.size(); ++i ) {
+            builder.set_facet_adjacent( facets_id[i], edges_id[i],
+                adjacent_triangles[i] ) ;
+        }
+    }
+
     void GeoModelBuilder::assign_surface_mesh_facets(
         index_t surface_id,
         const std::vector< index_t >& facets,
@@ -3813,11 +3829,12 @@ namespace RINGMesh {
 
             }
             unzip_one_file( uz, str_try.c_str() ) ;
-            Mesh cur_mesh( 3, false ) ;
+            Mesh cur_mesh( model_, 3, false ) ;
             GEO::MeshIOFlags flags ;
             flags.set_attribute( GEO::MESH_ALL_ATTRIBUTES ) ;
             GEO::Logger::instance()->set_minimal( true ) ;
-            cur_mesh.load_mesh( str_try, flags ) ;
+            MeshBuilder builder(cur_mesh);
+            builder.load_mesh( str_try, flags ) ;
             assign_mesh_to_element( cur_mesh,
                 model().element( gme_t, el ).gme_id() ) ;
             GEO::Logger::instance()->set_minimal( false ) ;

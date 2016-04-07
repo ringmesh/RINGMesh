@@ -249,6 +249,11 @@ namespace RINGMesh {
 
     protected:
         void build_contacts() ;
+        void set_surface_facet_adjacencies(
+                index_t surface_id,
+                const std::vector< index_t >& facets_id,
+                const std::vector< index_t >& edges_id,
+                const std::vector< index_t >& adjacent_triangles );
 
     protected:
         /*! Elements to compute from the available elements */

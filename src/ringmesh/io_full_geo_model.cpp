@@ -415,7 +415,7 @@ namespace {
         logger->set_quiet( true ) ;
         GEO::MeshIOFlags flags ;
 //        flags.set_attribute( GEO::MESH_ALL_ATTRIBUTES ) ;
-        GEO::mesh_save( geo_model_element_mesh.mesh(), name, flags ) ;
+        geo_model_element_mesh.save(name,flags);
         logger->set_quiet( false ) ;
 
         zip_file( zf, name ) ;
@@ -486,11 +486,11 @@ namespace {
             gm.mesh.facets.test_and_initialize() ;
             gm.mesh.cells.test_and_initialize() ;
 
-            Mesh mesh( 3, false ) ;
+            Mesh mesh(gm, 3, false ) ;
             gm.mesh.copy_mesh( mesh ) ;
 
             GEO::Logger::instance()->set_minimal( true ) ;
-            mesh.save_mesh( filename, GEO::MeshIOFlags) ;
+            mesh.save_mesh( filename, GEO::MeshIOFlags()) ;
             GEO::Logger::instance()->set_minimal( false ) ;
         }
     } ;

@@ -457,7 +457,7 @@ namespace RINGMesh {
             const std::string& name = "",
             GEOL_FEATURE geological_feature = NO_GEOL )
             :
-                mesh_( 3, false ),
+                mesh_( model, 3, false ),
                 GeoModelElement( model, element_type, id, name, geological_feature )
         {
             model_vertex_id_.bind( mesh_.vertex_attribute_manager(),
@@ -475,6 +475,12 @@ namespace RINGMesh {
             /// \todo Test and add the model vertex validity test            
             /// (no time right now JP)
             // are_model_vertex_indices_valid() ;
+        }
+        void save(
+            const std::string filename,
+            const GEO::MeshIOFlags& ioflags ) const
+        {
+            mesh_.save_mesh( filename, ioflags ) ;
         }
         /*!
          * brief  return the ColocaterANN at located at ColocaterANN::VERTICES of the current GeoModelMeshElement.
@@ -947,7 +953,7 @@ namespace RINGMesh {
             ringmesh_assert( facet_index < nb_polytope() ) ;
             return mesh_.facet_barycenter( facet_index ) ;
         }
-        bool facet_is_triangle( index_t facet_index )
+        bool facet_is_triangle( index_t facet_index ) const
         {
             ringmesh_assert( facet_index < nb_polytope() ) ;
             return mesh_.is_triangle( facet_index ) ;
@@ -1147,6 +1153,18 @@ namespace RINGMesh {
             ringmesh_assert( facet_index < nb_cell_facets( cell_index ) ) ;
             return mesh_.cell_facet_normal( cell_index, facet_index ) ;
         }
+        double region_cell_volume( index_t cell_index ) const
+        {
+            return mesh_.cell_volume( cell_index ) ;
+        }
+
+        void compute_region_volumes_per_cell_type(
+            double& tet_volume,
+            double& pyramid_volume,
+            double& prism_volume,
+            double& hex_volume,
+            double& poly_volume ) const ;
+
         /*! @}
          */
 

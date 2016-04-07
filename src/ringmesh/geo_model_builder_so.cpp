@@ -168,7 +168,7 @@ namespace RINGMesh {
         {
             ringmesh_assert(
                 gocad_vertices2region_vertices_.size()
-                    == gocad_vertices2region_id_.size() ) ;
+                == gocad_vertices2region_id_.size() ) ;
             return gocad_vertices2region_vertices_.size() ;
         }
 
@@ -195,11 +195,12 @@ namespace RINGMesh {
      * @brief Structure used to load a GeoModel by GeoModelBuilderTSolid
      */
     struct TSolidLoadingStorage {
-        TSolidLoadingStorage( const std::string& filename ) :
-            z_sign_( 1 ),
-            cur_region_( NO_ID ),
-            cur_interface_( NO_ID ),
-            cur_surface_( NO_ID )
+        TSolidLoadingStorage( const std::string& filename )
+            :
+                z_sign_( 1 ),
+                cur_region_( NO_ID ),
+                cur_interface_( NO_ID ),
+                cur_surface_( NO_ID )
         {
             nb_vertices_in_model_ = count_nb_vertices_and_tetras_per_region(
                 filename, nb_elements_per_region_ ) ;
@@ -233,8 +234,10 @@ namespace RINGMesh {
             index_t nb_vertices_in_next_region = 0 ;
             index_t nb_tetras_in_next_region = 0 ;
             if( 2 * cur_region_ < nb_elements_per_region_.size() ) {
-                nb_vertices_in_next_region = nb_elements_per_region_[2 * cur_region_] ;
-                nb_tetras_in_next_region = nb_elements_per_region_[2 * cur_region_ + 1] ;
+                nb_vertices_in_next_region =
+                    nb_elements_per_region_[2 * cur_region_] ;
+                nb_tetras_in_next_region = nb_elements_per_region_[2 * cur_region_
+                    + 1] ;
             }
             region_vertices_.clear() ;
             tetra_corners_.clear() ;
@@ -361,8 +364,8 @@ namespace {
     {
         std::vector< index_t > gocad_vertices2cur_surf_points(
             load_storage.nb_vertices_in_model_, NO_ID ) ;
-        for( index_t co = 0; co < load_storage.cur_surf_facet_corners_gocad_id_.size();
-            ++co ) {
+        for( index_t co = 0;
+            co < load_storage.cur_surf_facet_corners_gocad_id_.size(); ++co ) {
             const index_t corner_gocad_id =
                 load_storage.cur_surf_facet_corners_gocad_id_[co] ;
             get_surface_point_and_facet_from_gocad_index( corner_gocad_id, geomodel,
@@ -478,7 +481,8 @@ namespace {
     {
         index_t local_facet_id = cell_facet_center_id % 4 ;
         index_t cell_id = ( cell_facet_center_id - local_facet_id ) / 4 ;
-        vec3 cell_facet_normal = geomodel.region( region_id ).cell_facet_normal( cell_id, local_facet_id ) ;
+        vec3 cell_facet_normal = geomodel.region( region_id ).cell_facet_normal(
+            cell_id, local_facet_id ) ;
         vec3 first_facet_normal = geomodel.surface( surface_id ).facet_normal( 0 ) ;
         return dot( first_facet_normal, cell_facet_normal ) > 0 ;
     }
@@ -575,9 +579,9 @@ namespace {
                     geomodel_builder ) ;
                 break ;
             default:
-                ringmesh_assert_not_reached;
-            }
+                ringmesh_assert_not_reached ;
         }
+    }
 
     /*!
      * @brief Sets the given surface as regions boundaries
@@ -610,7 +614,7 @@ namespace {
             ++cur_region ;
         }
         if( nb_added_surf_sides == 0 ) {
-            ringmesh_assert_not_reached;
+            ringmesh_assert_not_reached ;
         }
     }
 
@@ -731,7 +735,8 @@ namespace {
     {
         /// @todo Replace "S.vertex( facet, ( edge + 1 ) % 3 )" [PA]
         const Surface& S = geomodel.surface( surface_id ) ;
-        const vec3 barycenter = GEO::Geom::barycenter( S.polytope_vertex( facet, edge ),
+        const vec3 barycenter = GEO::Geom::barycenter(
+            S.polytope_vertex( facet, edge ),
             S.polytope_vertex( facet, ( edge + 1 ) % 3 ) ) ;
         std::vector< index_t > result ;
         index_t tested_surf = 0 ;
@@ -742,36 +747,6 @@ namespace {
             ++tested_surf ;
         }
         return !result.empty() ;
-    }
-
-    /*!
-     * @brief Computes internal borders of a given surface
-     * @details A surface facet edge is an internal border if it is shared
-     * by at least two surfaces. Adjacency of such a facet edge is set to
-     * GEO::NO_FACET.
-     * @param[in] geomodel GeoModel to consider
-     * @param[in] surface_id Index of the surface
-     * @param[in] surface_anns Pointers to the ColocaterANNs of surfaces
-     */
-    void compute_surface_internal_borders(
-        const GeoModel& geomodel,
-        index_t surface_id,
-        const std::vector< ColocaterANN* >& surface_anns,
-        const std::vector< Box3d >& surface_boxes )
-    {
-        const Surface& S = geomodel.surface( surface_id ) ;
-        for( index_t f = 0; f < S.nb_polytope(); ++f ) {
-            for( index_t e = 0; e < 3; ++e ) {
-                if( !S.is_on_border( f, e ) ) {
-                    bool internal_border = is_edge_in_several_surfaces( geomodel,
-                        surface_id, f, e, surface_anns, surface_boxes ) ;
-                    if( internal_border ) {
-                        MeshBuilder builder(S.mesh_);
-                        builder.set_facet_adjacent( f, e, GEO::NO_FACET ) ;
-                    }
-                }
-            }
-        }
     }
 
     /*!
@@ -790,7 +765,8 @@ namespace {
         for( index_t f = 0; f < S.nb_polytope(); ++f ) {
             for( index_t e = 0; e < 3; ++e ) {
                 if( S.is_on_border( f, e ) ) {
-                    const vec3 barycenter = GEO::Geom::barycenter( S.polytope_vertex( f, e ),
+                    const vec3 barycenter = GEO::Geom::barycenter(
+                        S.polytope_vertex( f, e ),
                         S.polytope_vertex( f, ( e + 1 ) % 3 ) ) ;
                     border_edge_barycenters.push_back( barycenter ) ;
                 }
@@ -798,49 +774,6 @@ namespace {
         }
     }
 
-    /*!
-     * @brief Computes the colocaters of the centers of facet edges for
-     * each surface and their Box3d
-     * @param[in] geomodel GeoModel to consider
-     * @param[out] surface_anns Pointers to the ColocaterANNs of surfaces
-     * @param[out] surface_boxes Bounding Box of surfaces
-     */
-    void compute_facet_edge_centers_anns_and_surface_boxes(
-        const GeoModel& geomodel,
-        std::vector< ColocaterANN* >& surface_anns,
-        std::vector< Box3d >& surface_boxes )
-    {
-        for( index_t s = 0; s < geomodel.nb_surfaces(); ++s ) {
-            const Surface& S = geomodel.surface( s ) ;
-            for( index_t p = 0; p < S.nb_vertices(); p++ ) {
-                surface_boxes[s].add_point( S.vertex( p ) ) ;
-            }
-            std::vector< vec3 > border_edge_barycenters ;
-            get_surface_border_edge_barycenters( geomodel, s,
-                border_edge_barycenters ) ;
-            surface_anns[s] = new ColocaterANN( border_edge_barycenters, true ) ;
-        }
-    }
-
-    /*!
-     * @brief Computes internal borders of the model surfaces
-     * @details An surface facet edge is an internal border if it is shared
-     * by at least two surfaces. Adjacency of such a facet edge is set to
-     * GEO::NO_FACET.
-     * @param[in] geomodel GeoModel to consider
-     */
-    void compute_surfaces_internal_borders( const GeoModel& geomodel )
-    {
-        std::vector< ColocaterANN* > anns( geomodel.nb_surfaces(), nil ) ;
-        std::vector< Box3d > boxes( geomodel.nb_surfaces() ) ;
-        compute_facet_edge_centers_anns_and_surface_boxes( geomodel, anns, boxes ) ;
-        for( index_t s = 0; s < geomodel.nb_surfaces(); ++s ) {
-            compute_surface_internal_borders( geomodel, s, anns, boxes ) ;
-        }
-        for( index_t s = 0; s < geomodel.nb_surfaces(); ++s ) {
-            delete anns[s] ;
-        }
-    }
 } // anonymous namespace
 
 namespace RINGMesh {
@@ -851,7 +784,7 @@ namespace RINGMesh {
 
         // Compute internal borders (by removing adjacencies on
         // triangle edges common to at least two surfaces)
-        compute_surfaces_internal_borders( ( *this ).model() ) ;
+        compute_surfaces_internal_borders( ) ;
 
         // Build GeoModel Lines and Corners from the surfaces
         model_.mesh.vertices.test_and_initialize() ;
@@ -889,6 +822,62 @@ namespace RINGMesh {
         }
     }
 
+    void GeoModelBuilderTSolid::compute_surface_internal_borders(
+        index_t surface_id,
+        const std::vector< ColocaterANN* >& surface_anns,
+        const std::vector< Box3d >& surface_boxes )
+    {
+        const Surface& S = model().surface( surface_id ) ;
+        std::vector< index_t > facets_id ;
+        std::vector< index_t > edges_id ;
+
+        for( index_t f = 0; f < S.nb_polytope(); ++f ) {
+            for( index_t e = 0; e < 3; ++e ) {
+                if( !S.is_on_border( f, e ) ) {
+                    bool internal_border = is_edge_in_several_surfaces( model(), surface_id,
+                        f, e, surface_anns, surface_boxes ) ;
+                    if( internal_border ) {
+                        facets_id.push_back( f ) ;
+                        edges_id.push_back( e ) ;
+                    }
+                }
+            }
+        }
+        std::vector< index_t > adjacent_triangles_id( GEO::NO_FACET,
+            facets_id.size() ) ;
+        set_surface_facet_adjacencies( surface_id, facets_id, edges_id,
+            adjacent_triangles_id ) ;
+
+    }
+
+    void GeoModelBuilderTSolid::compute_facet_edge_centers_anns_and_surface_boxes(
+        std::vector< ColocaterANN* >& surface_anns,
+        std::vector< Box3d >& surface_boxes )
+    {
+        for( index_t s = 0; s < model_.nb_surfaces(); ++s ) {
+            const Surface& S = model().surface( s ) ;
+            for( index_t p = 0; p < S.nb_vertices(); p++ ) {
+                surface_boxes[s].add_point( S.vertex( p ) ) ;
+            }
+            std::vector< vec3 > border_edge_barycenters ;
+            get_surface_border_edge_barycenters( model(), s, border_edge_barycenters ) ;
+            surface_anns[s] = new ColocaterANN( border_edge_barycenters, true ) ;
+        }
+    }
+
+    void GeoModelBuilderTSolid::compute_surfaces_internal_borders()
+    {
+        std::vector< ColocaterANN* > anns( model_.nb_surfaces(), nil ) ;
+        std::vector< Box3d > boxes( model_.nb_surfaces() ) ;
+        compute_facet_edge_centers_anns_and_surface_boxes( anns, boxes ) ;
+        for( index_t s = 0; s < model_.nb_surfaces(); ++s ) {
+            compute_surface_internal_borders( s, anns, boxes ) ;
+        }
+        for( index_t s = 0; s < model_.nb_surfaces(); ++s ) {
+            delete anns[s] ;
+        }
+    }
+
     class LoadZSign: public TSolidLineParser {
     public:
         LoadZSign()
@@ -905,7 +894,7 @@ namespace RINGMesh {
             } else if( line.field_matches( 1, "Depth" ) ) {
                 load_storage.z_sign_ = -1 ;
             } else {
-                ringmesh_assert_not_reached;
+                ringmesh_assert_not_reached ;
             }
         }
     } ;
@@ -971,8 +960,8 @@ namespace RINGMesh {
             const GEO::LineInput& line,
             TSolidLoadingStorage& load_storage )
         {
-            load_storage.vertex_map_.add_vertex( load_storage.region_vertices_.size(),
-                load_storage.cur_region_ ) ;
+            load_storage.vertex_map_.add_vertex(
+                load_storage.region_vertices_.size(), load_storage.cur_region_ ) ;
             vec3 vertex = read_vertex_coordinates( line, load_storage.z_sign_ ) ;
             load_storage.region_vertices_.push_back( vertex ) ;
         }

@@ -45,7 +45,7 @@ namespace RINGMesh {
 
     const GEO::MeshFacetsAABB& Mesh::facets_aabb() const
     {
-        GeoModel& M = const_cast< GeoModel& >( geo_model_elment_.model() ) ;
+        GeoModel& M = const_cast< GeoModel& >( geo_model_ ) ;
         if( M.mesh.vertices.is_initialized() ) {
             GEO::Logger::warn( "AABB" )
                 << "Creation of AABB results in deletion of the GeoModelMeshVertices"
@@ -74,7 +74,7 @@ namespace RINGMesh {
 
     const GEO::MeshCellsAABB& Mesh::cells_aabb() const
     {
-        GeoModel& M = const_cast< GeoModel& >( geo_model_elment_.model() ) ;
+        GeoModel& M = const_cast< GeoModel& >( geo_model_ ) ;
         if( M.mesh.vertices.is_initialized() ) {
             GEO::Logger::warn( "AABB" )
                 << "Creation of AABB results in deletion of the GeoModelMeshVertices"
