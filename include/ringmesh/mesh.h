@@ -44,6 +44,8 @@
 #include <geogram/mesh/mesh_io.h>
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/mesh/mesh_topology.h>
+#include <geogram/mesh/mesh_repair.h>
+#include <geogram/mesh/mesh_preprocessing.h>
 
 namespace GEO {
     class MeshFacetsAABB ;
@@ -51,7 +53,7 @@ namespace GEO {
 }
 
 namespace RINGMesh {
-    class GeoModelElement ;
+    class GeoModel ;
 //    class ColocaterANN ;
 }
 
@@ -71,12 +73,8 @@ namespace RINGMesh {
          * @param[in] dimension dimension of the vertices.
          * @parm[in] single_precision if true, vertices are stored in single precision (float), else they are stored as double precision (double)..
          */
-        Mesh(
-            index_t dimension,
-            bool single_precision )
-            :
-                facets_aabb_( nil ),
-                cells_aabb_( nil )
+        Mesh( const GeoModel& geo_model, index_t dimension, bool single_precision )
+            : geo_model_( geo_model ), facets_aabb_( nil ), cells_aabb_( nil )
         {
             mesh_ = new GEO::Mesh( dimension, single_precision ) ;
             for( index_t i = 0; i < ColocaterANN::NB_LOCATION; i++ ) {
@@ -103,17 +101,14 @@ namespace RINGMesh {
         void copy(
             const Mesh& rhs,
             bool copy_attributes,
-            GEO::MeshElementsFlags what )
+            GEO::MeshElementsFlags what ) const
         {
             mesh_->copy( *rhs.mesh_, copy_attributes, what ) ;
         }
-        void load_mesh(
-            const std::string& filename,
-            const GEO::MeshIOFlags& ioflags )
-        {
-            GEO::mesh_load( filename, *mesh_, ioflags ) ;
-        }
-        void save_mesh( const std::string filename, const GEO::MeshIOFlags& ioflags )
+
+        void save_mesh(
+            const std::string filename,
+            const GEO::MeshIOFlags& ioflags ) const
         {
             GEO::mesh_save( *mesh_, filename, ioflags ) ;
         }
@@ -134,6 +129,13 @@ namespace RINGMesh {
         {
             return GEO::mesh_nb_connected_components( *mesh_ ) ;
         }
+
+        //TODO maybe reimplement the function with a RINGMesh::Mesh??
+        void print_mesh_bounded_attributes()
+        {
+            print_bounded_attributes( *mesh_ ) ;
+        }
+
         /*!
          * \name Vertex methods
          * @{
@@ -182,6 +184,10 @@ namespace RINGMesh {
         index_t nb_edges() const
         {
             return mesh_->edges.nb() ;
+        }
+        GEO::AttributesManager& edge_attribute_manager() const
+        {
+            return mesh_->edges.attributes() ;
         }
 
         /*! @}
@@ -487,6 +493,13 @@ namespace RINGMesh {
         {
             return GEO::mesh_cell_facet_normal( *mesh_, cell_id, facet_id ) ;
         }
+        /*!
+         * @brief compute the volume of the cell \param cell_id.
+         */
+        double cell_volume( index_t cell_id ) const
+        {
+            return RINGMesh::mesh_cell_volume( *mesh_, cell_id ) ;
+        }
 
         /*!
          * @}
@@ -494,6 +507,7 @@ namespace RINGMesh {
 
     private:
         mutable GEO::Mesh* mesh_ ;
+        const GeoModel& geo_model_ ;
 
         mutable GEO::MeshFacetsAABB* facets_aabb_ ;
         mutable GEO::MeshCellsAABB* cells_aabb_ ;
@@ -511,6 +525,12 @@ namespace RINGMesh {
         }
         ~MeshBuilder() ;
 
+        void load_mesh(
+            const std::string& filename,
+            const GEO::MeshIOFlags& ioflags )
+        {
+            GEO::mesh_load( filename, *mesh_.mesh_, ioflags ) ;
+        }
         /*!
          * @brief Removes all the elements and attributes of this mesh.
          * @param[in] keep_attributes if true, then all the existing attribute
@@ -521,6 +541,31 @@ namespace RINGMesh {
         void clear( bool keep_attributes, bool keep_memory )
         {
             mesh_.mesh_->clear( keep_attributes, keep_memory ) ;
+        }
+        /**
+         * \brief Fixes some defaults in a mesh.
+         * \param[in] mode a combination of #MeshRepairMode flags.
+         *  Combine them with the 'bitwise or' (|) operator.
+         * \param[in] colocate_epsilon tolerance used to colocate vertices
+         *  (if #MESH_REPAIR_COLOCATE is set in mode).
+         */
+        void mesh_repair( GEO::MeshRepairMode mode, double colocate_epsilon )
+        {
+            GEO::mesh_repair( *mesh_.mesh_, mode, colocate_epsilon ) ;
+
+        }
+        /**
+         * \brief Removes the connected components that have an area
+         *  smaller than a given threshold.
+         * \param[in] min_component_area the connected components with an
+         *  area smaller than this threshold are removed
+         * \param[in] min_component_facets the connected components with
+         *  less than min_component_facets facets are removed
+         */
+        void remove_small_connected_components( double min_area, index_t min_facets )
+        {
+            GEO::remove_small_connected_components( *mesh_.mesh_, min_area,
+                min_facets ) ;
         }
 
         /*!

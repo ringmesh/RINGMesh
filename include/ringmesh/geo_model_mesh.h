@@ -206,7 +206,7 @@ namespace RINGMesh {
          */
         std::vector< std::vector< GMEVertex > > gme_vertices_ ;
         /// Kd-tree of the model vertices
-        ColocaterANN* kdtree_ ;
+        const ColocaterANN& kdtree_ ;
 
     } ;
 

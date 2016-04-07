@@ -661,7 +661,7 @@ namespace RINGMesh {
     {
         unbind_attributes() ;
 #ifdef RINGMESH_DEBUG
-        print_bounded_attributes( mesh_ ) ;
+        mesh_.print_mesh_bounded_attributes() ;
 #endif
     }
 
@@ -1371,8 +1371,8 @@ namespace RINGMesh {
     {
         index_t result = 0 ;
         double dist = DBL_MAX ;
-        for( index_t p = 0; p < nb_vertices_in_facet( f ); p++ ) {
-            double distance = length2( v - vertex( f, p ) ) ;
+        for( index_t p = 0; p < nb_polytope_vertices( f ); p++ ) {
+            double distance = length2( v - polytope_vertex( f, p ) ) ;
             if( dist > distance ) {
                 dist = distance ;
                 result = p ;
@@ -1392,6 +1392,35 @@ namespace RINGMesh {
                 << "TO DO : Mesh validity function on Regions is to implement "
                 << std::endl ;
             return true ;
+        }
+    }
+    void Region::compute_region_volumes_per_cell_type(
+        double& tet_volume,
+        double& pyramid_volume,
+        double& prism_volume,
+        double& hex_volume,
+        double& poly_volume ) const
+    {
+        for( index_t c = 0; c < nb_polytope(); c++ ) {
+            index_t nb_vertices = nb_polytope_vertices( c ) ;
+            double volume = mesh_.cell_volume( c ) ;
+            switch( nb_vertices ) {
+                case 4:
+                    tet_volume += volume ;
+                    break ;
+                case 5:
+                    pyramid_volume += volume ;
+                    break ;
+                case 6:
+                    prism_volume += volume ;
+                    break ;
+                case 8:
+                    hex_volume += volume ;
+                    break ;
+                default:
+                    poly_volume += volume ;
+                    break ;
+            }
         }
     }
 

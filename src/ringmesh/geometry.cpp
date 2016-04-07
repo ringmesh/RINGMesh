@@ -1171,7 +1171,7 @@ namespace RINGMesh {
         }
     }
 
-    ColocaterANN::ColocaterANN( const GEO::vector< vec3 >& vertices, bool copy )
+    ColocaterANN::ColocaterANN( const std::vector< vec3 >& vertices, bool copy )
     {
         index_t nb_vertices = static_cast<index_t> ( vertices.size() ) ;
         ann_tree_ = GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
@@ -1294,7 +1294,7 @@ namespace RINGMesh {
     }
 
     void ColocaterANN::build_colocater_ann_vertices(
-        const Mesh& mesh,
+        const GEO::Mesh& mesh,
         bool copy )
     {
         const GEO::MeshVertices& mesh_vertices = mesh.vertices ;
@@ -1314,7 +1314,7 @@ namespace RINGMesh {
         }
     }
 
-    void ColocaterANN::build_colocater_ann_edges( const Mesh& mesh )
+    void ColocaterANN::build_colocater_ann_edges( const GEO::Mesh& mesh )
     {
         const GEO::MeshEdges& mesh_edges = mesh.edges ;
         index_t nb_edges = mesh_edges.nb() ;
@@ -1337,7 +1337,7 @@ namespace RINGMesh {
         ann_tree_->set_points( nb_edges, ann_points_ ) ;
     }
 
-    void ColocaterANN::build_colocater_ann_facets( const Mesh& mesh )
+    void ColocaterANN::build_colocater_ann_facets( const GEO::Mesh& mesh )
     {
         index_t nb_facets = mesh.facets.nb() ;
         if( nb_facets == 0 ) {
@@ -1352,7 +1352,7 @@ namespace RINGMesh {
         ann_tree_->set_points( nb_facets, ann_points_ ) ;
     }
 
-    void ColocaterANN::build_colocater_ann_cells( const Mesh& mesh )
+    void ColocaterANN::build_colocater_ann_cells( const GEO::Mesh& mesh )
     {
         index_t nb_cells = mesh.cells.nb() ;
         if( nb_cells == 0 ) {
