@@ -120,6 +120,7 @@ namespace RINGMesh {
             to_erase_by_type ) ;
         // set no translation on fault real extension (only on fault ending inside
         // the model).
+        set_no_displacement_on_fault_real_extension() ;
         // apply translation
         translate_duplicated_fault_network( to_erase_by_type ) ;
 
@@ -488,6 +489,8 @@ namespace RINGMesh {
     {
         initialize_translation_attributes( to_erase_by_type ) ;
 
+        int step_to_other_side = 1 ;
+        ringmesh_assert( model_.nb_interfaces() - first_new_interface_index >= 2 ) ;
         for( index_t new_interface_itr = first_new_interface_index;
             new_interface_itr < model_.nb_interfaces(); ++new_interface_itr ) {
             ringmesh_assert( to_erase_by_type[GME::INTERFACE][new_interface_itr] != NO_ID ) ;
@@ -495,6 +498,11 @@ namespace RINGMesh {
 
             const GeoModelElement& interface_gme = model_.one_interface(
                 new_interface_itr ) ;
+            ringmesh_assert( new_interface_itr + step_to_other_side >=first_new_interface_index ) ;
+            ringmesh_assert( new_interface_itr + step_to_other_side <model_.nb_interfaces()) ;
+            const GeoModelElement& other_side_interface_gme = model_.one_interface(
+                new_interface_itr + step_to_other_side ) ;
+            step_to_other_side *= -1 ;
 
             save_normals_on_one_new_interface( to_erase_by_type, interface_gme ) ;
 
@@ -556,7 +564,8 @@ namespace RINGMesh {
                         if( is_surface_or_region_on_the_right_side_of_the_fault(
                             cur_gme_t, local_translation_normal,
                             gme_vertices[gme_vertex_itr].v_id,
-                            model_.mesh.vertices.vertex( vertex_id_in_gmm ) ) ) {
+                            model_.mesh.vertices.vertex( vertex_id_in_gmm ),
+                            interface_gme, other_side_interface_gme ) ) {
                             store_displacement_in_gme(
                                 model_.mesh_element( cur_gme_t ),
                                 gme_vertices[gme_vertex_itr].v_id,
@@ -572,7 +581,9 @@ namespace RINGMesh {
         const GME::gme_t& cur_gme_t,
         const vec3& normal_on_vertex_interface,
         index_t vertex_id_in_gmme,
-        const vec3& vertex_pos ) const
+        const vec3& vertex_pos,
+        const GeoModelElement& interface_gme,
+        const GeoModelElement& other_side_interface_gme ) const
     {
         if( cur_gme_t.type == GME::REGION ) {
             if( !model_.region( cur_gme_t.index ).is_meshed() ) {
@@ -585,6 +596,32 @@ namespace RINGMesh {
             }
         } else {
             ringmesh_assert(cur_gme_t.type == GME::SURFACE) ;
+            ringmesh_assert( interface_gme.type() == GME::INTERFACE ) ;
+            for( index_t interface__child_itr = 0;
+                interface__child_itr < interface_gme.nb_children();
+                ++interface__child_itr ) {
+                const GeoModelElement& cur_child = interface_gme.child(
+                    interface__child_itr ) ;
+                ringmesh_assert( cur_child.type() == GME::SURFACE ) ;
+                if( cur_child.index() == cur_gme_t.index ) {
+                    return true ;
+                }
+            }
+
+            ringmesh_assert( other_side_interface_gme.type() == GME::INTERFACE ) ;
+            for( index_t other_side_interface__child_itr = 0;
+                other_side_interface__child_itr
+                    < other_side_interface_gme.nb_children();
+                ++other_side_interface__child_itr ) {
+                const GeoModelElement& cur_other_side_child =
+                    other_side_interface_gme.child(
+                        other_side_interface__child_itr ) ;
+                ringmesh_assert( cur_other_side_child.type() == GME::SURFACE ) ;
+                if( cur_other_side_child.index() == cur_gme_t.index ) {
+                    return false ;
+                }
+            }
+
             if( !is_surface_on_right_side_of_sided_interface( cur_gme_t.index,
                 normal_on_vertex_interface, vertex_id_in_gmme, vertex_pos ) ) {
                 return false ;
@@ -611,6 +648,7 @@ namespace RINGMesh {
         vec3 region_to_check_mean_normal_on_vertex( 0., 0., 0. ) ;
         for( index_t cells_around_itr = 0; cells_around_itr < cells_around.size();
             ++cells_around_itr ) {
+
             index_t cur_cell_id_in_region = cells_around[cells_around_itr] ;
             vec3 cur_cell_barycenter = region_to_check.cell_barycenter(
                 cur_cell_id_in_region ) ;
@@ -660,7 +698,7 @@ namespace RINGMesh {
             std::abs(surf_to_check_mean_normal_on_vertex.y ) > epsilon ||
             std::abs(surf_to_check_mean_normal_on_vertex.z ) > epsilon ) ;
 
-        if( GEO::dot( normal_on_vertex_interface,
+        if( GEO::dot( 50 * normal_on_vertex_interface,
             surf_to_check_mean_normal_on_vertex ) > epsilon ) {
             return true ;
         }
@@ -733,6 +771,23 @@ namespace RINGMesh {
                     translation_att_y[vertex_itr] ;
                 surf_mesh.vertices.point( vertex_itr ).z +=
                     translation_att_z[vertex_itr] ;
+            }
+        }
+    }
+
+    void DuplicateInterfaceBuilder::set_no_displacement_on_fault_real_extension()
+    {
+
+        for( index_t line_itr = 0; line_itr < model_.nb_lines(); ++line_itr ) {
+            const Line& cur_line = model_.line( line_itr ) ;
+            if( cur_line.nb_in_boundary() != 1 ) { // TODO perhaps not one if I put the new interface surfaces as in boundary... to check
+                continue ;
+            }
+            // cur_line.nb_in_boundary() == 1 means fault extension
+            /// @todo put assert to check that it is indeed a fault
+            for( index_t line_vertex_itr = 0;
+                line_vertex_itr < cur_line.nb_vertices(); ++line_vertex_itr ) {
+
             }
         }
     }

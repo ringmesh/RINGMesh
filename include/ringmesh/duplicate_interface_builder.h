@@ -104,7 +104,10 @@ namespace RINGMesh {
             const GME::gme_t& cur_gme_t,
             const vec3& normal_on_vertex_interface,
             index_t vertex_id_in_gmme,
-            const vec3& vertex_pos ) const ;
+            const vec3& vertex_pos,
+            const GeoModelElement& interface_gme,
+            const GeoModelElement& other_side_interface_gme ) const ;
+        void set_no_displacement_on_fault_real_extension() ;
     } ;
 
 }
