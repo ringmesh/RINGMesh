@@ -496,8 +496,7 @@ namespace RINGMesh {
             save_normals_on_one_new_interface( to_erase_by_type, interface_gme ) ;
 
             // Clear to take into account the new gme in the geomodel.
-            model_.mesh.vertices.clear() ;
-            model_.mesh.vertices.test_and_initialize() ; // not done in model_vertex_id
+            recompute_geomodel_mesh() ; // not done in model_vertex_id
 
             const GeoModelMeshVertices& gmmv = model_.mesh.vertices ;
 
@@ -549,36 +548,40 @@ namespace RINGMesh {
                             continue ;
                         }
 
-                        if( cur_gme_t.type == GME::REGION ) {
-                            if( !model_.region( cur_gme_t.index ).is_meshed() ) {
-                                continue ;
-                            }
-                            if( !is_region_on_right_side_of_sided_interface(
-                                interface_gme.index(), cur_gme_t.index ) ) {
-                                // Region on the other side of the fault
-                                continue ;
-                            }
+                        if( is_surface_or_region_on_the_right_side_of_the_fault(
+                            cur_gme_t, interface_gme ) ) {
                             store_displacement_in_gme(
-                                model_.region( cur_gme_t.index ),
-                                gme_vertices[gme_vertex_itr].v_id,
-                                local_translation_vector ) ;
-                        } else {
-                            ringmesh_assert(cur_gme_t.type == GME::SURFACE) ;
-                            if( !is_surface_on_right_side_of_sided_interface(
-                                interface_gme.index(), cur_gme_t.index ) ) {
-                                continue ;
-                            }
-                            const Surface& cur_gme_surf = model_.surface(
-                                cur_gme_t.index ) ;
-                            store_displacement_in_gme( cur_gme_surf,
+                                model_.mesh_element( cur_gme_t ),
                                 gme_vertices[gme_vertex_itr].v_id,
                                 local_translation_vector ) ;
                         }
-
                     }
                 }
             }
         }
+    }
+
+    bool DuplicateInterfaceBuilder::is_surface_or_region_on_the_right_side_of_the_fault(
+        const GME::gme_t& cur_gme_t,
+        const GeoModelElement& interface_gme ) const
+    {
+        if( cur_gme_t.type == GME::REGION ) {
+            if( !model_.region( cur_gme_t.index ).is_meshed() ) {
+                return false ;
+            }
+            if( !is_region_on_right_side_of_sided_interface( interface_gme.index(),
+                cur_gme_t.index ) ) {
+                // Region on the other side of the fault
+                return false ;
+            }
+        } else {
+            ringmesh_assert(cur_gme_t.type == GME::SURFACE) ;
+            if( !is_surface_on_right_side_of_sided_interface( interface_gme.index(),
+                cur_gme_t.index ) ) {
+                return false ;
+            }
+        }
+        return true ;
     }
 
     bool DuplicateInterfaceBuilder::is_region_on_right_side_of_sided_interface(

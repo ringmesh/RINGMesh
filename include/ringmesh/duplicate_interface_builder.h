@@ -95,6 +95,7 @@ namespace RINGMesh {
         bool is_surface_on_right_side_of_sided_interface(
             index_t sided_interface_id,
             index_t surface_to_check_id ) const ;
+        bool is_surface_or_region_on_the_right_side_of_the_fault( const GME::gme_t& cur_gme_t, const GeoModelElement& interface_gme ) const ;
     } ;
 
 }
