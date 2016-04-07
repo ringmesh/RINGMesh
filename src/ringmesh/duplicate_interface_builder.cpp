@@ -448,11 +448,10 @@ namespace RINGMesh {
         }
     }
 
-    vec3 DuplicateInterfaceBuilder::get_local_translation_vector(
+    vec3 DuplicateInterfaceBuilder::get_local_translation_normal(
         const Surface& surface,
         index_t vertex_id_in_surface ) const
     {
-        vec3 displacement ;
         // only one side for the sided interface
         ringmesh_assert( surface.nb_in_boundary() == 1 ) ;
         const GeoModelElement& in_boun = surface.in_boundary( 0 ) ;
@@ -470,12 +469,16 @@ namespace RINGMesh {
             normal_att_z[vertex_id_in_surface] ) ;
 
         ringmesh_assert( std::abs(normal.length() -1.)<epsilon ) ;
-        if( side ) {
-            displacement = normal ;
-        } else {
-            displacement = -1 * normal ;
+        if( !side ) {
+            normal *= -1 ;
         }
-        displacement *= 1.5 * epsilon ;
+        return normal ;
+    }
+
+    vec3 DuplicateInterfaceBuilder::get_local_translation_vector(
+        const vec3& normal ) const
+    {
+        vec3 displacement = normal * 1.5 * epsilon ;
         return displacement ;
     }
 
@@ -528,9 +531,11 @@ namespace RINGMesh {
                             GMEVertex(GME::gme_t(GME::SURFACE,cur_child.index()), surf_vertex_itr))
                         != gme_vertices.end()) ;
 
-                    const vec3 local_translation_vector =
-                        get_local_translation_vector( cur_surface,
+                    const vec3 local_translation_normal =
+                        get_local_translation_normal( cur_surface,
                             surf_vertex_itr ) ;
+                    const vec3 local_translation_vector =
+                        get_local_translation_vector( local_translation_normal ) ;
 
                     for( index_t gme_vertex_itr = 0;
                         gme_vertex_itr < gme_vertices.size(); ++gme_vertex_itr ) {
@@ -549,7 +554,9 @@ namespace RINGMesh {
                         }
 
                         if( is_surface_or_region_on_the_right_side_of_the_fault(
-                            cur_gme_t, interface_gme ) ) {
+                            cur_gme_t, local_translation_normal,
+                            gme_vertices[gme_vertex_itr].v_id,
+                            model_.mesh.vertices.vertex( vertex_id_in_gmm ) ) ) {
                             store_displacement_in_gme(
                                 model_.mesh_element( cur_gme_t ),
                                 gme_vertices[gme_vertex_itr].v_id,
@@ -563,21 +570,23 @@ namespace RINGMesh {
 
     bool DuplicateInterfaceBuilder::is_surface_or_region_on_the_right_side_of_the_fault(
         const GME::gme_t& cur_gme_t,
-        const GeoModelElement& interface_gme ) const
+        const vec3& normal_on_vertex_interface,
+        index_t vertex_id_in_gmme,
+        const vec3& vertex_pos ) const
     {
         if( cur_gme_t.type == GME::REGION ) {
             if( !model_.region( cur_gme_t.index ).is_meshed() ) {
                 return false ;
             }
-            if( !is_region_on_right_side_of_sided_interface( interface_gme.index(),
-                cur_gme_t.index ) ) {
+            if( !is_region_on_right_side_of_sided_interface( cur_gme_t.index,
+                normal_on_vertex_interface, vertex_id_in_gmme, vertex_pos ) ) {
                 // Region on the other side of the fault
                 return false ;
             }
         } else {
             ringmesh_assert(cur_gme_t.type == GME::SURFACE) ;
-            if( !is_surface_on_right_side_of_sided_interface( interface_gme.index(),
-                cur_gme_t.index ) ) {
+            if( !is_surface_on_right_side_of_sided_interface( cur_gme_t.index,
+                normal_on_vertex_interface, vertex_id_in_gmme, vertex_pos ) ) {
                 return false ;
             }
         }
@@ -585,61 +594,75 @@ namespace RINGMesh {
     }
 
     bool DuplicateInterfaceBuilder::is_region_on_right_side_of_sided_interface(
-        index_t sided_interface_id,
-        index_t region_to_check_id ) const
+        index_t region_to_check_id,
+        const vec3& normal_on_vertex_interface,
+        index_t vertex_id_in_region,
+        const vec3& vertex_pos ) const
     {
-        ringmesh_assert(sided_interface_id<model_.nb_interfaces()) ;
         ringmesh_assert(region_to_check_id<model_.nb_regions()) ;
-        const GME& interface_gme = model_.one_interface( sided_interface_id ) ;
-        for( index_t child_itr = 0; child_itr < interface_gme.nb_children();
-            ++child_itr ) {
-            const GeoModelElement& cur_child = interface_gme.child( child_itr ) ;
-            ringmesh_assert(cur_child.type() == GME::SURFACE) ;
-            ringmesh_assert(cur_child.nb_in_boundary() == 1) ;
-            ringmesh_assert(cur_child.in_boundary(0).type()==GME::REGION) ;
-            if( cur_child.in_boundary( 0 ).index() == region_to_check_id ) {
-                return true ;
-            }
+
+        const Region& region_to_check = model_.region( region_to_check_id ) ;
+        std::vector< index_t > cells_around ;
+        cells_around.reserve( 10 ) ;
+        region_to_check.cells_around_vertex( vertex_id_in_region, cells_around,
+            false ) ;
+        ringmesh_assert( !cells_around.empty() ) ;
+
+        vec3 region_to_check_mean_normal_on_vertex( 0., 0., 0. ) ;
+        for( index_t cells_around_itr = 0; cells_around_itr < cells_around.size();
+            ++cells_around_itr ) {
+            index_t cur_cell_id_in_region = cells_around[cells_around_itr] ;
+            vec3 cur_cell_barycenter = region_to_check.cell_barycenter(
+                cur_cell_id_in_region ) ;
+            vec3 p = cur_cell_barycenter - vertex_pos ;
+            region_to_check_mean_normal_on_vertex += p ;
+        }
+        ringmesh_assert(
+            std::abs(region_to_check_mean_normal_on_vertex.x ) > epsilon ||
+            std::abs(region_to_check_mean_normal_on_vertex.y ) > epsilon ||
+            std::abs(region_to_check_mean_normal_on_vertex.z ) > epsilon ) ;
+
+        if( GEO::dot( normal_on_vertex_interface,
+            region_to_check_mean_normal_on_vertex ) > epsilon ) {
+            return true ;
         }
         return false ;
     }
 
     bool DuplicateInterfaceBuilder::is_surface_on_right_side_of_sided_interface(
-        index_t sided_interface_id,
-        index_t surface_to_check_id ) const
+        index_t surface_to_check_id,
+        const vec3& normal_on_vertex_interface,
+        index_t vertex_id_in_surface,
+        const vec3& vertex_pos ) const
     {
-        ringmesh_assert(sided_interface_id<model_.nb_interfaces()) ;
         ringmesh_assert(surface_to_check_id<model_.nb_surfaces()) ;
 
         const Surface& surface_to_check = model_.surface( surface_to_check_id ) ;
         ringmesh_assert(surface_to_check.nb_in_boundary()==1 || surface_to_check.nb_in_boundary()==2) ;
-        std::vector< index_t > surface_to_check_in_boundaries ;
-        surface_to_check_in_boundaries.reserve( surface_to_check.nb_in_boundary() ) ;
-        for( index_t surface_to_check_in_boundary_itr = 0;
-            surface_to_check_in_boundary_itr < surface_to_check.nb_in_boundary();
-            ++surface_to_check_in_boundary_itr ) {
-            surface_to_check_in_boundaries.push_back(
-                surface_to_check.in_boundary( surface_to_check_in_boundary_itr ).index() ) ;
+
+        std::vector< index_t > facets_around ;
+        facets_around.reserve( 10 ) ;
+        surface_to_check.facets_around_vertex( vertex_id_in_surface, facets_around,
+            false ) ;
+        ringmesh_assert( !facets_around.empty() ) ;
+
+        vec3 surf_to_check_mean_normal_on_vertex( 0., 0., 0. ) ;
+        for( index_t facets_around_itr = 0; facets_around_itr < facets_around.size();
+            ++facets_around_itr ) {
+            index_t cur_facet_id_in_surf = facets_around[facets_around_itr] ;
+            vec3 cur_facet_barycenter = surface_to_check.facet_barycenter(
+                cur_facet_id_in_surf ) ;
+            vec3 p = cur_facet_barycenter - vertex_pos ;
+            surf_to_check_mean_normal_on_vertex += p ;
         }
+        ringmesh_assert(
+            std::abs(surf_to_check_mean_normal_on_vertex.x ) > epsilon ||
+            std::abs(surf_to_check_mean_normal_on_vertex.y ) > epsilon ||
+            std::abs(surf_to_check_mean_normal_on_vertex.z ) > epsilon ) ;
 
-        const GME& interface_gme = model_.one_interface( sided_interface_id ) ;
-        for( index_t child_itr = 0; child_itr < interface_gme.nb_children();
-            ++child_itr ) {
-            const GeoModelElement& cur_child = interface_gme.child( child_itr ) ;
-            ringmesh_assert(cur_child.type() == GME::SURFACE) ;
-            ringmesh_assert(cur_child.nb_in_boundary() == 1) ;
-            ringmesh_assert(cur_child.in_boundary(0).type()==GME::REGION) ;
-
-            if( cur_child.index() == surface_to_check_id ) {
-                return true ;
-            }
-
-            if( std::find( surface_to_check_in_boundaries.begin(),
-                surface_to_check_in_boundaries.end(),
-                cur_child.in_boundary( 0 ).index() )
-                != surface_to_check_in_boundaries.end() ) {
-                return true ;
-            }
+        if( GEO::dot( normal_on_vertex_interface,
+            surf_to_check_mean_normal_on_vertex ) > epsilon ) {
+            return true ;
         }
         return false ;
     }

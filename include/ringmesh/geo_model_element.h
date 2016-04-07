@@ -957,6 +957,7 @@ namespace RINGMesh {
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
     public:
+        static const index_t NO_ADJACENT = index_t( -1 ) ;
         Region( const GeoModel& model, index_t id )
             : GeoModelMeshElement( model, REGION, id ), tools( *this )
         {
@@ -1032,6 +1033,28 @@ namespace RINGMesh {
          *     }
 
          */
+
+        index_t nb_facets_in_cell( index_t c ) const {
+            return mesh_.cells.nb_facets( c ) ;
+        }
+
+        index_t facet_nb_vertices( index_t c, index_t f ) const
+        {
+            return mesh_.cells.facet_nb_vertices( c, f ) ;
+        }
+
+        index_t cells_around_vertex(
+            index_t region_vertex_id,
+            std::vector< index_t >& result,
+            bool border_only ) const ;
+
+        index_t cells_around_vertex(
+            index_t region_vertex_id,
+            std::vector< index_t >& result,
+            bool border_only,
+            index_t first_cell ) const ;
+
+        vec3 cell_barycenter( index_t cell_index_in_region ) const ;
 
     private:
         virtual bool is_mesh_valid() const ;

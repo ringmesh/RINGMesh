@@ -80,9 +80,10 @@ namespace RINGMesh {
         void save_normals_on_one_new_interface(
             const std::vector< std::vector< index_t > >& to_erase_by_type,
             const GeoModelElement& interface_gme ) const ;
-        vec3 get_local_translation_vector(
+        vec3 get_local_translation_normal(
             const Surface& surface,
             index_t vertex_id_in_surface ) const ;
+        vec3 get_local_translation_vector( const vec3& normal ) const ;
         void store_displacement_in_gme(
             const GeoModelMeshElement& gmme,
             index_t vertex_id_in_gmme,
@@ -90,12 +91,20 @@ namespace RINGMesh {
         void initialize_translation_attributes(
             const std::vector< std::vector< index_t > >& to_erase_by_type ) ;
         bool is_region_on_right_side_of_sided_interface(
-            index_t sided_interface_id,
-            index_t region_to_check_id ) const ;
+            index_t region_to_check_id,
+            const vec3& normal_on_vertex_interface,
+            index_t vertex_id_in_region,
+            const vec3& vertex_pos ) const ;
         bool is_surface_on_right_side_of_sided_interface(
-            index_t sided_interface_id,
-            index_t surface_to_check_id ) const ;
-        bool is_surface_or_region_on_the_right_side_of_the_fault( const GME::gme_t& cur_gme_t, const GeoModelElement& interface_gme ) const ;
+            index_t surface_to_check_id,
+            const vec3& normal_on_vertex_interface,
+            index_t vertex_id_in_surface,
+            const vec3& vertex_pos ) const ;
+        bool is_surface_or_region_on_the_right_side_of_the_fault(
+            const GME::gme_t& cur_gme_t,
+            const vec3& normal_on_vertex_interface,
+            index_t vertex_id_in_gmme,
+            const vec3& vertex_pos ) const ;
     } ;
 
 }

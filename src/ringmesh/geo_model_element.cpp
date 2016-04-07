@@ -1442,6 +1442,125 @@ namespace RINGMesh {
         }
     }
 
+
+    /*!
+     * @brief Determines the cells around a vertex
+     *
+     * @param[in] region_vertex_id Index ot the vertex in the region
+     * @param[in] result Indices of the cells containing @param region_vertex_id
+     * @param[in] border_only If true only cells on the border are considered
+     * @return The number of cells found
+     */
+    index_t Region::cells_around_vertex(
+        index_t region_vertex_id,
+        std::vector< index_t >& result,
+        bool border_only ) const
+    {
+        ringmesh_assert( is_meshed() ) ;
+        index_t cell_id_in_region = NO_ID ;
+
+        // So, we are back to the brute force stupid approach
+        for( index_t i = 0; i < nb_cells(); ++i ) {
+            for( index_t lv = 0; lv < nb_vertices_in_cell( i ); lv++ ) {
+                if( gmme_vertex_index( i, lv ) == region_vertex_id ) {
+                    cell_id_in_region = i ;
+                    break ;
+                }
+            }
+        }
+        ringmesh_assert( cell_id_in_region != NO_ID ) ;
+        return cells_around_vertex( region_vertex_id, result, border_only,
+            cell_id_in_region ) ;
+    }
+
+    /*!
+     * @brief Determines the cells around a vertex
+     *
+     * @param[in] region_vertex_id Index of the vertex in the region
+     * @param[in] result Indices of the cells containing @param region_vertex_id
+     * @param[in] border_only If true only cells on the border are considered
+     * @param[in] first_cell Index of one cell containing the vertex @param region_vertex_id
+     * @return The number of cells found
+     *
+     * @todo Evaluate if this is fast enough !!
+     */
+    index_t Region::cells_around_vertex(
+        index_t region_vertex_id,
+        std::vector< index_t >& result,
+        bool border_only,
+        index_t first_cell ) const
+    {
+        result.resize( 0 ) ;
+
+        ringmesh_assert( first_cell != NO_ID ) ;
+
+        // Flag the visited cells
+        std::vector< index_t > visited ;
+        visited.reserve( 10 ) ;
+
+        // Stack of the adjacent cells
+        std::stack< index_t > S ;
+        S.push( first_cell ) ;
+        visited.push_back( first_cell ) ;
+
+        do {
+            index_t c = S.top() ;
+            S.pop() ;
+
+            for( index_t v = 0; v < nb_vertices_in_cell( c ); ++v ) {
+                if( gmme_vertex_index( c, v ) == region_vertex_id ) {
+
+                    std::vector< index_t > adjacent_cells ;
+                    adjacent_cells.reserve( 3 ) ; // for tet and quad max 3 adjacent cells
+                    for( index_t f = 0; f < nb_facets_in_cell( c ); ++f ) {
+                        for( index_t v_in_f_itr = 0;
+                            v_in_f_itr < facet_nb_vertices( c, f ); ++v_in_f_itr ) {
+                            if( gmme_vertex_index( c, v_in_f_itr )
+                                == region_vertex_id ) {
+                                adjacent_cells.push_back( adjacent_cell( c, f ) ) ;
+                                break ;
+                            }
+                        }
+                    }
+
+                    index_t nb_no_adjacents = 0 ;
+                    for( index_t adjacent_cells_itr = 0;
+                        adjacent_cells_itr < adjacent_cells.size();
+                        ++adjacent_cells_itr ) {
+                        index_t cur_adjacent_cell_id =
+                            adjacent_cells[adjacent_cells_itr] ;
+                        if( cur_adjacent_cell_id != NO_ADJACENT ) {
+                            if( !contains( visited, cur_adjacent_cell_id ) ) {
+                                S.push( cur_adjacent_cell_id ) ;
+                                visited.push_back( cur_adjacent_cell_id ) ;
+                            }
+                        } else {
+                            ++nb_no_adjacents ;
+                        }
+                    }
+
+                    if( border_only ) {
+                        if( nb_no_adjacents == adjacent_cells.size() ) {
+                            result.push_back( c ) ;
+                        }
+                    } else {
+                        result.push_back( c ) ;
+                    }
+
+                    // We are done with this cell
+                    break ;
+                }
+            }
+        } while( !S.empty() ) ;
+
+        return static_cast< index_t >( result.size() ) ;
+    }
+
+    vec3 Region::cell_barycenter( index_t cell_index_in_region ) const {
+        ringmesh_assert( cell_index_in_region < nb_cells() ) ;
+        return RINGMesh::mesh_cell_center( mesh_, cell_index_in_region ) ;
+    }
+
     /********************************************************************/
 
     SurfaceTools::SurfaceTools( const Surface& surface )
