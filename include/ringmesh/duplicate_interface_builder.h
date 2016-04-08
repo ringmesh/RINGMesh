@@ -107,7 +107,8 @@ namespace RINGMesh {
             const vec3& vertex_pos,
             const GeoModelElement& interface_gme,
             const GeoModelElement& other_side_interface_gme ) const ;
-        void set_no_displacement_on_fault_real_extension() ;
+        void set_no_displacement_on_fault_real_extension(
+            const std::vector< std::vector< index_t > >& to_erase_by_type ) ;
     } ;
 
 }

@@ -120,7 +120,7 @@ namespace RINGMesh {
             to_erase_by_type ) ;
         // set no translation on fault real extension (only on fault ending inside
         // the model).
-//        set_no_displacement_on_fault_real_extension() ;
+        set_no_displacement_on_fault_real_extension( to_erase_by_type ) ;
         // apply translation
         translate_duplicated_fault_network( to_erase_by_type ) ;
 
@@ -311,6 +311,7 @@ namespace RINGMesh {
                 }
 
                 // Update the lines in common
+                /// @todo this line part seems to be not necessary any more
                 for( index_t line_itr = 0; line_itr < cur_surf.nb_boundaries();
                     ++line_itr ) {
                     const GeoModelElement& cur_line_gme = cur_surf.boundary(
@@ -341,17 +342,17 @@ namespace RINGMesh {
 
             // Lines not boundary of the final merged surface
             /*for( std::map< index_t, index_t >::iterator all_surface_lines_itr =
-                all_surface_lines.begin();
-                all_surface_lines_itr != all_surface_lines.end();
-                ++all_surface_lines_itr ) {
+             all_surface_lines.begin();
+             all_surface_lines_itr != all_surface_lines.end();
+             ++all_surface_lines_itr ) {
 
-                if( all_surface_lines_itr->second == 1 ) {
-                    GME::gme_t line_gme_t( GME::LINE,
-                        all_surface_lines_itr->first ) ;
-                    add_element_boundary( new_surface_gme_t, line_gme_t ) ;
-                    add_element_in_boundary( line_gme_t, new_surface_gme_t ) ;
-                }
-            }*/
+             if( all_surface_lines_itr->second == 1 ) {
+             GME::gme_t line_gme_t( GME::LINE,
+             all_surface_lines_itr->first ) ;
+             add_element_boundary( new_surface_gme_t, line_gme_t ) ;
+             add_element_in_boundary( line_gme_t, new_surface_gme_t ) ;
+             }
+             }*/
         }
     }
 
@@ -775,19 +776,50 @@ namespace RINGMesh {
         }
     }
 
-    void DuplicateInterfaceBuilder::set_no_displacement_on_fault_real_extension()
+    void DuplicateInterfaceBuilder::set_no_displacement_on_fault_real_extension(
+        const std::vector< std::vector< index_t > >& to_erase_by_type )
     {
 
         for( index_t line_itr = 0; line_itr < model_.nb_lines(); ++line_itr ) {
             const Line& cur_line = model_.line( line_itr ) ;
-            if( cur_line.nb_in_boundary() != 1 ) { // TODO perhaps not one if I put the new interface surfaces as in boundary... to check
+            if( cur_line.nb_in_boundary() != 1 ) {
                 continue ;
             }
             // cur_line.nb_in_boundary() == 1 means fault extension
             /// @todo put assert to check that it is indeed a fault
             for( index_t line_vertex_itr = 0;
                 line_vertex_itr < cur_line.nb_vertices(); ++line_vertex_itr ) {
+                index_t vertex_id_in_gmm = cur_line.model_vertex_id(
+                    line_vertex_itr ) ;
+                const std::vector< GMEVertex >& gme_vertices =
+                    model_.mesh.vertices.gme_vertices( vertex_id_in_gmm ) ;
+                for( index_t gme_vertex_itr = 0;
+                    gme_vertex_itr < gme_vertices.size(); ++gme_vertex_itr ) {
 
+                    const GMEVertex& cur_gme_vertex = gme_vertices[gme_vertex_itr] ;
+                    if( cur_gme_vertex.gme_id.type != GME::SURFACE
+                        && cur_gme_vertex.gme_id.type != GME::REGION ) {
+                        continue ;
+                    }
+                    if( to_erase_by_type[cur_gme_vertex.gme_id.type][cur_gme_vertex.gme_id.index]
+                        == NO_ID ) {
+                        continue ;
+                    }
+                    ringmesh_assert( to_erase_by_type[cur_gme_vertex.gme_id.type][cur_gme_vertex.gme_id.index] == 0 ) ;
+                    const GeoModelMeshElement& gmme = model_.mesh_element(
+                        cur_gme_vertex.gme_id ) ;
+                    GEO::AttributesManager& att_mgr =
+                        gmme.mesh().vertices.attributes() ;
+                    GEO::Attribute< double > translation_att_x( att_mgr,
+                        "translation_attr_x" ) ;
+                    translation_att_x[cur_gme_vertex.v_id] = 0 ;
+                    GEO::Attribute< double > translation_att_y( att_mgr,
+                        "translation_attr_y" ) ;
+                    translation_att_y[cur_gme_vertex.v_id] = 0 ;
+                    GEO::Attribute< double > translation_att_z( att_mgr,
+                        "translation_attr_z" ) ;
+                    translation_att_z[cur_gme_vertex.v_id] = 0 ;
+                }
             }
         }
     }
