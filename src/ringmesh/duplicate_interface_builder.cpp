@@ -120,7 +120,7 @@ namespace RINGMesh {
             to_erase_by_type ) ;
         // set no translation on fault real extension (only on fault ending inside
         // the model).
-        set_no_displacement_on_fault_real_extension() ;
+//        set_no_displacement_on_fault_real_extension() ;
         // apply translation
         translate_duplicated_fault_network( to_erase_by_type ) ;
 
@@ -340,7 +340,7 @@ namespace RINGMesh {
             to_erase_by_type[GME::SURFACE].push_back( 0 ) ;
 
             // Lines not boundary of the final merged surface
-            for( std::map< index_t, index_t >::iterator all_surface_lines_itr =
+            /*for( std::map< index_t, index_t >::iterator all_surface_lines_itr =
                 all_surface_lines.begin();
                 all_surface_lines_itr != all_surface_lines.end();
                 ++all_surface_lines_itr ) {
@@ -351,7 +351,7 @@ namespace RINGMesh {
                     add_element_boundary( new_surface_gme_t, line_gme_t ) ;
                     add_element_in_boundary( line_gme_t, new_surface_gme_t ) ;
                 }
-            }
+            }*/
         }
     }
 
