@@ -1385,6 +1385,13 @@ namespace RINGMesh {
             }
         } while( !S.empty() ) ;
 
+        ringmesh_assert( !result.empty() ) ;
+#ifdef RINGMESH_DEBUG
+        for( index_t result_itr = 0; result_itr < result.size(); ++result_itr ) {
+            int nb = std::count( result.begin(), result.end(), result[result_itr] ) ;
+            ringmesh_assert( nb == 1 ) ;
+        }
+#endif
         return static_cast<index_t> ( result.size() ) ;
     }
 
@@ -1553,6 +1560,13 @@ namespace RINGMesh {
             }
         } while( !S.empty() ) ;
 
+        ringmesh_assert( !result.empty() ) ;
+#ifdef RINGMESH_DEBUG
+        for( index_t result_itr = 0; result_itr < result.size(); ++result_itr ) {
+            int nb = std::count( result.begin(), result.end(), result[result_itr] ) ;
+            ringmesh_assert( nb == 1 ) ;
+        }
+#endif
         return static_cast< index_t >( result.size() ) ;
     }
 
