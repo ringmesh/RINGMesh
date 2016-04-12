@@ -1043,6 +1043,10 @@ namespace RINGMesh {
             return mesh_.cells.facet_nb_vertices( c, f ) ;
         }
 
+        index_t facet_vertex( index_t c, index_t lf, index_t lv ) const {
+            return mesh_.cells.facet_vertex( c, lf, lv ) ;
+        }
+
         index_t cells_around_vertex(
             index_t region_vertex_id,
             std::vector< index_t >& result,

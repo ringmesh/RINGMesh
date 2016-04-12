@@ -95,6 +95,7 @@ namespace RINGMesh {
         }
         //////////////////////////////////////////
 
+        index_t nb_faults = 0 ;
         const index_t nb_initial_interfaces = model_.nb_interfaces() ;
         // Loop to nb_initial_interfaces. model_.nb_interfaces() cannot be inside
         // the for statement since the number of interfaces will increase during
@@ -106,11 +107,18 @@ namespace RINGMesh {
             if( !GeoModelElement::is_fault( cur_interface.geological_feature() ) ) {
                 continue ;
             }
+            ++nb_faults ;
 
             // Delete of the interface (will be replaced by a custom interface with
             // side informations)
             to_erase_by_type[GME::INTERFACE][cur_interface.index()] = NO_ID ;
             get_new_surfaces( cur_interface, to_erase_by_type ) ;
+        }
+
+        if( nb_faults == 0) {
+            std::string message = "There is no fault inside the model.\n" ;
+            message += "Assign your fault interfaces to fault geological features." ;
+            throw std::runtime_error( message ) ;
         }
 
         /// @todo a clear of the geomodelmesh vertices may be necessary somewhere
@@ -480,7 +488,7 @@ namespace RINGMesh {
     vec3 DuplicateInterfaceBuilder::get_local_translation_vector(
         const vec3& normal ) const
     {
-        vec3 displacement = normal * 1.5 * epsilon ;
+        vec3 displacement = normal * 1.5 * 200 ;
         return displacement ;
     }
 
