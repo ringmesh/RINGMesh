@@ -287,6 +287,7 @@ namespace RINGMesh {
             const Surface& S ) ;
         void duplicate_one_facet(
             Region& R,
+            const Surface& S,
             index_t c,
             index_t f,
             index_t initial_nb_vertices,

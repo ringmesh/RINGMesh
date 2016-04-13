@@ -1901,7 +1901,7 @@ namespace RINGMesh {
 
 
         const index_t initial_nb_vertices = R.nb_vertices() ;
-        duplicate_one_facet( R, c, f, initial_nb_vertices, flag_to_duplicate,
+        duplicate_one_facet( R, S, c, f, initial_nb_vertices, flag_to_duplicate,
             visited_cells, only_for_debug ) ;
 
         GEO::mesh_save(only_for_debug, "only_for_debug.meshb");
@@ -1909,6 +1909,7 @@ namespace RINGMesh {
 
     void GeoModelBuilder::duplicate_one_facet(
         Region& R,
+        const Surface& S,
         index_t c,
         index_t f,
         index_t initial_nb_vertices,
@@ -1933,13 +1934,14 @@ namespace RINGMesh {
             } else {
                 // a copy of the coordinates is necessary, otherwise crash if use
                 // of mesh_v.point( v_id_in_reg ).data() in mesh_v.create_vertex
-                double coords[3];
+                double coords[3] ;
                 coords[0] = mesh_v.point( v_id_in_reg ).x ;
                 coords[1] = mesh_v.point( v_id_in_reg ).y ;
                 coords[2] = mesh_v.point( v_id_in_reg ).z ;
                 index_t new_v_id = mesh_v.create_vertex( coords ) ;
                 v_id_new_facet.push_back( new_v_id ) ;
                 std::vector< index_t > surrounding_cells ;
+                // Not only cells in border have a vertex id to be modified
                 R.cells_around_vertex( v_id_in_reg, surrounding_cells, false, c ) ;
                 for( index_t cav_itr = 0; cav_itr < surrounding_cells.size();
                     ++cav_itr ) {
@@ -1972,50 +1974,65 @@ namespace RINGMesh {
         }
         region_mesh.facets.create_polygon( v_id_new_facet ) ;
 
-        for( index_t facet_itr = 0; facet_itr < R.nb_facets_in_cell( c );
-            ++facet_itr ) {
-            if( facet_itr == f ) {
-                continue ;
-            }
-            index_t adj_cell_id = R.adjacent_cell( c, facet_itr ) ;
-            if( adj_cell_id == NO_ID ) {
-                continue ; // facet on border
-            }
-            if( contains( visited_cells, adj_cell_id ) ) {
-                continue ;
-            }
-            visited_cells.push_back( adj_cell_id ) ;
-            bool ok = false ;
-            index_t facet_in_border = NO_ID ;
-            for( index_t adj_cell_facet_itr = 0;
-                adj_cell_facet_itr < R.nb_facets_in_cell( adj_cell_id );
-                ++adj_cell_facet_itr ) {
-                if( R.is_on_border( adj_cell_id, adj_cell_facet_itr ) ) {
-                    ok = true ;
-                    facet_in_border = adj_cell_facet_itr ;
-                    break ;
+        for( index_t v = 0; v < R.facet_nb_vertices( c, f ); ++v ) {
+            index_t v_id_in_reg = R.facet_vertex( c, f, v ) ;
+
+            std::vector< index_t > surrounding_cells ;
+            // Only the cells on the border have facets on common with the
+            // cutting surface
+            R.cells_around_vertex( v_id_in_reg, surrounding_cells, true, c ) ;
+
+            for( index_t cav_itr = 0; cav_itr < surrounding_cells.size();
+                ++cav_itr ) {
+                index_t cur_sur_cell_id = surrounding_cells[cav_itr] ;
+                if( contains( visited_cells, cur_sur_cell_id ) ) {
+                    continue ;
                 }
-            }
-            if( ok ) {
-                // debug
-                index_t p0 = only_for_debug.vertices.create_vertex(
-                    R.mesh().vertices.point(
-                        R.mesh().cells.vertex( adj_cell_id, 0 ) ).data() ) ;
-                index_t p1 = only_for_debug.vertices.create_vertex(
-                    R.mesh().vertices.point(
-                        R.mesh().cells.vertex( adj_cell_id, 1 ) ).data() ) ;
-                index_t p2 = only_for_debug.vertices.create_vertex(
-                    R.mesh().vertices.point(
-                        R.mesh().cells.vertex( adj_cell_id, 2 ) ).data() ) ;
-                index_t p3 = only_for_debug.vertices.create_vertex(
-                    R.mesh().vertices.point(
-                        R.mesh().cells.vertex( adj_cell_id, 3 ) ).data() ) ;
-                only_for_debug.cells.create_tet( p0, p1, p2, p3 ) ;
-                // debug
-                ringmesh_assert( facet_in_border != NO_ID ) ;
-                duplicate_one_facet( R, adj_cell_id, facet_in_border,
-                    initial_nb_vertices, flag_to_duplicate, visited_cells,
-                    only_for_debug ) ;
+
+                // A cell may be on the border but not the one corresponding
+                // to the cutting surface
+                visited_cells.push_back( cur_sur_cell_id ) ;
+                bool ok = false ;
+                index_t facet_in_border = NO_ID ;
+                for( index_t cur_sur_cell_facet_itr = 0;
+                    cur_sur_cell_facet_itr < R.nb_facets_in_cell( cur_sur_cell_id );
+                    ++cur_sur_cell_facet_itr ) {
+                    if( R.is_on_border( cur_sur_cell_id, cur_sur_cell_facet_itr ) ) {
+                        vec3 facet_bary = mesh_cell_facet_center( R.mesh(),
+                            cur_sur_cell_id, cur_sur_cell_facet_itr ) ;
+                        ColocaterANN ann( S.mesh(), ColocaterANN::FACETS ) ;
+                        std::vector< index_t > colocated_result ;
+                        if( ann.get_colocated( facet_bary, colocated_result ) ) {
+
+                            ringmesh_assert( colocated_result.size() == 1 ) ;
+                            facet_in_border = cur_sur_cell_facet_itr ;
+                            ok = true ;
+                            break ;
+                        }
+                    }
+                }
+
+                if( ok ) {
+                    // debug
+                    index_t p0 = only_for_debug.vertices.create_vertex(
+                        R.mesh().vertices.point(
+                            R.mesh().cells.vertex( cur_sur_cell_id, 0 ) ).data() ) ;
+                    index_t p1 = only_for_debug.vertices.create_vertex(
+                        R.mesh().vertices.point(
+                            R.mesh().cells.vertex( cur_sur_cell_id, 1 ) ).data() ) ;
+                    index_t p2 = only_for_debug.vertices.create_vertex(
+                        R.mesh().vertices.point(
+                            R.mesh().cells.vertex( cur_sur_cell_id, 2 ) ).data() ) ;
+                    index_t p3 = only_for_debug.vertices.create_vertex(
+                        R.mesh().vertices.point(
+                            R.mesh().cells.vertex( cur_sur_cell_id, 3 ) ).data() ) ;
+                    only_for_debug.cells.create_tet( p0, p1, p2, p3 ) ;
+                    // debug
+                    ringmesh_assert( facet_in_border != NO_ID ) ;
+                    duplicate_one_facet( R, S, cur_sur_cell_id, facet_in_border,
+                        initial_nb_vertices, flag_to_duplicate, visited_cells,
+                        only_for_debug ) ;
+                }
             }
         }
     }

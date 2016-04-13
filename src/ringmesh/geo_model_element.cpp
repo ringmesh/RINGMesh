@@ -1522,7 +1522,7 @@ namespace RINGMesh {
                     for( index_t f = 0; f < nb_facets_in_cell( c ); ++f ) {
                         for( index_t v_in_f_itr = 0;
                             v_in_f_itr < facet_nb_vertices( c, f ); ++v_in_f_itr ) {
-                            if( gmme_vertex_index( c, v_in_f_itr )
+                            if( facet_vertex( c, f, v_in_f_itr )
                                 == region_vertex_id ) {
                                 adjacent_cells.push_back( adjacent_cell( c, f ) ) ;
                                 break ;
@@ -1530,7 +1530,7 @@ namespace RINGMesh {
                         }
                     }
 
-                    index_t nb_no_adjacents = 0 ;
+                    bool on_border = false ;
                     for( index_t adjacent_cells_itr = 0;
                         adjacent_cells_itr < adjacent_cells.size();
                         ++adjacent_cells_itr ) {
@@ -1542,12 +1542,12 @@ namespace RINGMesh {
                                 visited.push_back( cur_adjacent_cell_id ) ;
                             }
                         } else {
-                            ++nb_no_adjacents ;
+                            on_border = true ;
                         }
                     }
 
                     if( border_only ) {
-                        if( nb_no_adjacents == adjacent_cells.size() ) {
+                        if( on_border ) {
                             result.push_back( c ) ;
                         }
                     } else {

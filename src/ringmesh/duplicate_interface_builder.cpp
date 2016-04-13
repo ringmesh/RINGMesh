@@ -488,7 +488,7 @@ namespace RINGMesh {
     vec3 DuplicateInterfaceBuilder::get_local_translation_vector(
         const vec3& normal ) const
     {
-        vec3 displacement = normal * 1.5 * 200 ;
+        vec3 displacement = normal * 1.5 * epsilon ;
         return displacement ;
     }
 
