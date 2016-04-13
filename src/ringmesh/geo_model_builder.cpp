@@ -1873,38 +1873,9 @@ namespace RINGMesh {
         visited_cells.push_back( c ) ;
         GEO::MeshVertices& mesh_v = region_mesh.vertices ;
 
-
-        GEO::Mesh only_for_debug ;
-        GEO::Mesh only_for_debug_seed ;
-        // debug
-        index_t p0 = only_for_debug.vertices.create_vertex(
-            R.mesh().vertices.point( R.mesh().cells.vertex( c, 0 ) ).data() ) ;
-        index_t p1 = only_for_debug.vertices.create_vertex(
-            R.mesh().vertices.point( R.mesh().cells.vertex( c, 1 ) ).data() ) ;
-        index_t p2 = only_for_debug.vertices.create_vertex(
-            R.mesh().vertices.point( R.mesh().cells.vertex( c, 2 ) ).data() ) ;
-        index_t p3 = only_for_debug.vertices.create_vertex(
-            R.mesh().vertices.point( R.mesh().cells.vertex( c, 3 ) ).data() ) ;
-        only_for_debug.cells.create_tet( p0, p1, p2, p3 ) ;
-
-        p0 = only_for_debug_seed.vertices.create_vertex(
-            R.mesh().vertices.point( R.mesh().cells.vertex( c, 0 ) ).data() ) ;
-        p1 = only_for_debug_seed.vertices.create_vertex(
-            R.mesh().vertices.point( R.mesh().cells.vertex( c, 1 ) ).data() ) ;
-        p2 = only_for_debug_seed.vertices.create_vertex(
-            R.mesh().vertices.point( R.mesh().cells.vertex( c, 2 ) ).data() ) ;
-        p3 = only_for_debug_seed.vertices.create_vertex(
-            R.mesh().vertices.point( R.mesh().cells.vertex( c, 3 ) ).data() ) ;
-        only_for_debug_seed.cells.create_tet( p0, p1, p2, p3 ) ;
-        GEO::mesh_save(only_for_debug_seed, "only_for_debug_seed.meshb");
-        // debug
-
-
         const index_t initial_nb_vertices = R.nb_vertices() ;
         duplicate_one_facet( R, S, c, f, initial_nb_vertices, flag_to_duplicate,
-            visited_cells, only_for_debug ) ;
-
-        GEO::mesh_save(only_for_debug, "only_for_debug.meshb");
+            visited_cells ) ;
     }
 
     void GeoModelBuilder::duplicate_one_facet(
@@ -1914,8 +1885,7 @@ namespace RINGMesh {
         index_t f,
         index_t initial_nb_vertices,
         GEO::Attribute< bool >& flag_to_duplicate,
-        std::vector< index_t >& visited_cells,
-        GEO::Mesh& only_for_debug )
+        std::vector< index_t >& visited_cells )
     {
         GEO::Mesh& region_mesh = R.mesh() ;
         GEO::MeshVertices& mesh_v = region_mesh.vertices ;
@@ -2013,25 +1983,9 @@ namespace RINGMesh {
                 }
 
                 if( ok ) {
-                    // debug
-                    index_t p0 = only_for_debug.vertices.create_vertex(
-                        R.mesh().vertices.point(
-                            R.mesh().cells.vertex( cur_sur_cell_id, 0 ) ).data() ) ;
-                    index_t p1 = only_for_debug.vertices.create_vertex(
-                        R.mesh().vertices.point(
-                            R.mesh().cells.vertex( cur_sur_cell_id, 1 ) ).data() ) ;
-                    index_t p2 = only_for_debug.vertices.create_vertex(
-                        R.mesh().vertices.point(
-                            R.mesh().cells.vertex( cur_sur_cell_id, 2 ) ).data() ) ;
-                    index_t p3 = only_for_debug.vertices.create_vertex(
-                        R.mesh().vertices.point(
-                            R.mesh().cells.vertex( cur_sur_cell_id, 3 ) ).data() ) ;
-                    only_for_debug.cells.create_tet( p0, p1, p2, p3 ) ;
-                    // debug
                     ringmesh_assert( facet_in_border != NO_ID ) ;
                     duplicate_one_facet( R, S, cur_sur_cell_id, facet_in_border,
-                        initial_nb_vertices, flag_to_duplicate, visited_cells,
-                        only_for_debug ) ;
+                        initial_nb_vertices, flag_to_duplicate, visited_cells ) ;
                 }
             }
         }

@@ -292,8 +292,7 @@ namespace RINGMesh {
             index_t f,
             index_t initial_nb_vertices,
             GEO::Attribute< bool >& flag_to_duplicate,
-            std::vector< index_t >& visited_cells,
-            GEO::Mesh& only_for_debug ) ;
+            std::vector< index_t >& visited_cells ) ;
     } ;
 
     /*!
