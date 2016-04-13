@@ -2147,6 +2147,9 @@ namespace RINGMesh {
             // If the Region has internal boundaries, we need to
             // re-cut the Region along these surfaces
             Region& R = const_cast< Region& >( model_.region( i ) ) ;
+            if( !R.is_meshed() ) {
+                continue ;
+            }
             std::set< index_t > cutting_surfaces ;
             for( index_t s = 0; s < R.nb_boundaries(); ++s ) {
                 const Surface& S = model_.surface( R.boundary_gme( s ).index ) ;
