@@ -291,18 +291,17 @@ endif(USE_OPENMP)
 # Collect the library files
 file(GLOB ringmesh_src "${PROJECT_SOURCE_DIR}/src/ringmesh/*.cpp")
 file(GLOB ringmesh_include "${PROJECT_SOURCE_DIR}/include/ringmesh/*.h")
-file(GLOB minizip_src "${PROJECT_SOURCE_DIR}/src/third_party/minizip/*.c")
-file(GLOB minizip_include "${PROJECT_SOURCE_DIR}/include/third_party/minizip/*.h")
-
+file(GLOB zlib_src "${PROJECT_SOURCE_DIR}/src/third_party/zlib/*.c")
+file(GLOB zlib_include "${PROJECT_SOURCE_DIR}/include/third_party/zlib/*.h")
 # Add configure file to ringmesh includes
 set(ringmesh_include ${ringmesh_include} ${generated_configure_file})
 
 # Group files of a project in directories
 # For this to work, all the files should be added to the sources of the project
 # and the global property USE_FOLDERS must be ON
-source_group("Minizip" FILES ${minizip_src} ${minizip_include})
 source_group("Source Files" FILES ${ringmesh_src})
 source_group("Header Files" FILES ${ringmesh_include})
+source_group("Zlib" FILES ${zlib_src} ${zlib_include})
 
 #------------------------------------------------------------------------------------------------
 # Build configuration
@@ -318,8 +317,8 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 add_library(RINGMesh SHARED
     ${ringmesh_include} 
     ${ringmesh_src} 
-    ${minizip_src}
-    ${minizip_include})
+    ${zlib_src}
+    ${zlib_include})
 
 # RINGMesh depends on Geogram
 add_dependencies(RINGMesh geogram_ext)
