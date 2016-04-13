@@ -2056,6 +2056,7 @@ namespace RINGMesh {
             model().mesh.vertices.test_and_initialize() ;
         }
 
+        DEBUG("cut_surface_by_line");
         disconnect_surface_facets_along_line_edges( S, L ) ;
         duplicate_surface_vertices_along_line( S, L ) ;
 
@@ -2074,8 +2075,10 @@ namespace RINGMesh {
             model().mesh.vertices.test_and_initialize() ;
         }
 
+        DEBUG("cut_region_by_surface") ;
         disconnect_region_cells_along_surface_facets( R, S ) ;
         duplicate_region_vertices_along_surface( R, S ) ;
+        // Rebuild the mesh facets of the region
         R.mesh().cells.compute_borders() ;
         GEO::mesh_save( R.mesh(), "new_r_mesh.meshb" ) ;
 
