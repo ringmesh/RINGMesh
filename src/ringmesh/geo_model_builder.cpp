@@ -1677,6 +1677,7 @@ namespace RINGMesh {
             ringmesh_assert( found && c != NO_ID && f != NO_ID ) ;
 
             index_t c2 = R.adjacent_cell( c, f ) ;
+            ringmesh_assert( c2 != NO_ID ) ;
             if( c2 != NO_ID ) {
                 index_t f2 = NO_ID ;
                 for( index_t f2_itr = 0; f2_itr < R.nb_facets_in_cell( c2 );
