@@ -322,6 +322,9 @@ namespace {
 } // anonymous namespace
 
 namespace RINGMesh {
+
+    GEO::Mesh debug_mesh ;
+
     /*!
      * @brief Utility class to sort a set of oriented triangles around a common edge
      * Used in GeoModelBuilderSurface.
@@ -1869,6 +1872,19 @@ namespace RINGMesh {
         bool found = find_cell_and_facet( ann, R, S, 0, c, f ) ;
         ringmesh_unused( found ) ;
         ringmesh_assert( found && c != NO_ID && f != NO_ID ) ;
+
+        vec3 first_facet_normal = GEO::Geom::mesh_facet_normal( S.mesh(), 0 ) ;
+        vec3 first_cell_facet_normal = GEO::mesh_cell_facet_normal( R.mesh(), c,
+            f ) ;
+        double dot_product = GEO::dot( first_cell_facet_normal,
+            first_facet_normal ) ;
+#ifdef RINGMESH_DEBUG
+        dot_product /= first_facet_normal.length() ;
+        dot_product /= first_cell_facet_normal.length() ;
+        ringmesh_assert( std::abs(std::abs(dot_product) -1)<epsilon ) ;
+#endif
+        int side = dot_product >= 0 ? 1 : -1 ;
+
         std::vector< index_t > visited_cells ;
         visited_cells.reserve( R.nb_cells() ) ;
         visited_cells.push_back( c ) ;
@@ -1876,7 +1892,8 @@ namespace RINGMesh {
 
         const index_t initial_nb_vertices = R.nb_vertices() ;
         duplicate_one_facet( R, S, c, f, initial_nb_vertices, flag_to_duplicate,
-            visited_cells ) ;
+            visited_cells, side ) ;
+        GEO::mesh_save( debug_mesh, "debug_mesh.meshb" ) ;
     }
 
     void GeoModelBuilder::duplicate_one_facet(
@@ -1886,21 +1903,34 @@ namespace RINGMesh {
         index_t f,
         index_t initial_nb_vertices,
         GEO::Attribute< bool >& flag_to_duplicate,
-        std::vector< index_t >& visited_cells )
+        std::vector< index_t >& visited_cells,
+        int side )
     {
+        // debug
+        index_t p0 = debug_mesh.vertices.create_vertex(
+            R.mesh().vertices.point( R.mesh().cells.vertex( c, 0 ) ).data() ) ;
+        index_t p1 = debug_mesh.vertices.create_vertex(
+            R.mesh().vertices.point( R.mesh().cells.vertex( c, 1 ) ).data() ) ;
+        index_t p2 = debug_mesh.vertices.create_vertex(
+            R.mesh().vertices.point( R.mesh().cells.vertex( c, 2 ) ).data() ) ;
+        index_t p3 = debug_mesh.vertices.create_vertex(
+            R.mesh().vertices.point( R.mesh().cells.vertex( c, 3 ) ).data() ) ;
+        debug_mesh.cells.create_tet( p0, p1, p2, p3 ) ;
+        // debug
+
         GEO::Mesh& region_mesh = R.mesh() ;
         GEO::MeshVertices& mesh_v = region_mesh.vertices ;
-        GEO::vector< index_t > v_id_new_facet ;
-        v_id_new_facet.reserve( 4 ) ;
+//        GEO::vector< index_t > v_id_new_facet ;
+//        v_id_new_facet.reserve( 4 ) ;
         for( index_t v = 0; v < R.facet_nb_vertices( c, f ); ++v ) {
             index_t v_id_in_reg = R.facet_vertex( c, f, v ) ;
             if( !flag_to_duplicate[v_id_in_reg] ) {
-                v_id_new_facet.push_back( v_id_in_reg ) ;
+//                v_id_new_facet.push_back( v_id_in_reg ) ;
                 continue ;
             }
 
             if( v_id_in_reg >= initial_nb_vertices ) { // already duplicated vertex
-                v_id_new_facet.push_back( v_id_in_reg ) ;
+//                v_id_new_facet.push_back( v_id_in_reg ) ;
                 continue ;
             } else {
                 // a copy of the coordinates is necessary, otherwise crash if use
@@ -1910,7 +1940,7 @@ namespace RINGMesh {
                 coords[1] = mesh_v.point( v_id_in_reg ).y ;
                 coords[2] = mesh_v.point( v_id_in_reg ).z ;
                 index_t new_v_id = mesh_v.create_vertex( coords ) ;
-                v_id_new_facet.push_back( new_v_id ) ;
+//                v_id_new_facet.push_back( new_v_id ) ;
                 std::vector< index_t > surrounding_cells ;
                 // Not only cells in border have a vertex id to be modified
                 R.cells_around_vertex( v_id_in_reg, surrounding_cells, false, c ) ;
@@ -1943,7 +1973,7 @@ namespace RINGMesh {
                 flag_to_duplicate[v_id_in_reg] = false ; // to not duplicate it twice
             }
         }
-        region_mesh.facets.create_polygon( v_id_new_facet ) ;
+//        region_mesh.facets.create_polygon( v_id_new_facet ) ;
 
         for( index_t v = 0; v < R.facet_nb_vertices( c, f ); ++v ) {
             index_t v_id_in_reg = R.facet_vertex( c, f, v ) ;
@@ -1973,20 +2003,40 @@ namespace RINGMesh {
                             cur_sur_cell_id, cur_sur_cell_facet_itr ) ;
                         ColocaterANN ann( S.mesh(), ColocaterANN::FACETS ) ;
                         std::vector< index_t > colocated_result ;
-                        if( ann.get_colocated( facet_bary, colocated_result ) ) {
-
-                            ringmesh_assert( colocated_result.size() == 1 ) ;
-                            facet_in_border = cur_sur_cell_facet_itr ;
-                            ok = true ;
-                            break ;
+                        if( !ann.get_colocated( facet_bary, colocated_result ) ) {
+                            continue ;
                         }
+                        ringmesh_assert( colocated_result.size() == 1 ) ;
+
+                        vec3 surf_facet_normal = GEO::Geom::mesh_facet_normal(
+                            S.mesh(), colocated_result[0] ) ;
+                        vec3 cell_facet_normal = GEO::mesh_cell_facet_normal(
+                            R.mesh(), cur_sur_cell_id, cur_sur_cell_facet_itr ) ;
+
+                        double dot_product = GEO::dot( cell_facet_normal,
+                            surf_facet_normal ) ;
+
+
+#ifdef RINGMESH_DEBUG
+                        dot_product /= surf_facet_normal.length() ;
+                        dot_product /= cell_facet_normal.length() ;
+                        ringmesh_assert( std::abs(std::abs(dot_product) -1)<epsilon ) ;
+#endif
+
+                        if( dot_product * side < 0 ) {
+                            continue ;
+                        }
+
+                        facet_in_border = cur_sur_cell_facet_itr ;
+                        ok = true ;
+                        break ;
                     }
                 }
 
                 if( ok ) {
                     ringmesh_assert( facet_in_border != NO_ID ) ;
                     duplicate_one_facet( R, S, cur_sur_cell_id, facet_in_border,
-                        initial_nb_vertices, flag_to_duplicate, visited_cells ) ;
+                        initial_nb_vertices, flag_to_duplicate, visited_cells, side ) ;
                 }
             }
         }
@@ -2026,6 +2076,8 @@ namespace RINGMesh {
 
         disconnect_region_cells_along_surface_facets( R, S ) ;
         duplicate_region_vertices_along_surface( R, S ) ;
+        R.mesh().cells.compute_borders() ;
+        GEO::mesh_save( R.mesh(), "new_r_mesh.meshb" ) ;
 
         if( !model_vertices_initialized ) {
             const_cast< GeoModel& >( model() ).mesh.vertices.clear() ;
