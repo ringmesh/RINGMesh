@@ -1529,6 +1529,7 @@ namespace RINGMesh {
                             }
                         }
                     }
+                    ringmesh_assert( adjacent_cells.size() <= 3 ) ;
 
                     bool on_border = false ;
                     for( index_t adjacent_cells_itr = 0;
