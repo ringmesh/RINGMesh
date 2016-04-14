@@ -263,10 +263,6 @@ namespace RINGMesh {
             surfaces_boundary_regions.begin();
             map_itr != surfaces_boundary_regions.end(); ++map_itr ) {
 
-            GEO::Mesh new_surface_mesh ;
-            // first = line index in geomodel, second = count.
-            std::map< index_t, index_t > all_surface_lines ; // TODO better to handle that with boolean?
-
             index_t region_index = map_itr->first ;
             std::vector< vec3 > all_points ;
             for( std::vector< index_t >::const_iterator surf_itr =
@@ -318,20 +314,6 @@ namespace RINGMesh {
                     facet_ptr.push_back( count_facet_vertices ) ;
                 }
 
-                // Update the lines in common
-                /// @todo this line part seems to be not necessary any more
-                for( index_t line_itr = 0; line_itr < cur_surf.nb_boundaries();
-                    ++line_itr ) {
-                    const GeoModelElement& cur_line_gme = cur_surf.boundary(
-                        line_itr ) ;
-                    ringmesh_assert( cur_line_gme.type() == GME::LINE ) ;
-
-                    if( all_surface_lines.find( cur_line_gme.index() )
-                        == all_surface_lines.end() ) {
-                        all_surface_lines[cur_line_gme.index()] = 0 ; // initialization
-                    }
-                    ++all_surface_lines[cur_line_gme.index()] ;
-                }
                 offset_vertices += cur_surf.nb_vertices() ;
             }
 
@@ -347,20 +329,6 @@ namespace RINGMesh {
             add_element_boundary( GME::gme_t( GME::REGION, region_index ),
                 new_surface_gme_t, side ) ;
             to_erase_by_type[GME::SURFACE].push_back( 0 ) ;
-
-            // Lines not boundary of the final merged surface
-            /*for( std::map< index_t, index_t >::iterator all_surface_lines_itr =
-             all_surface_lines.begin();
-             all_surface_lines_itr != all_surface_lines.end();
-             ++all_surface_lines_itr ) {
-
-             if( all_surface_lines_itr->second == 1 ) {
-             GME::gme_t line_gme_t( GME::LINE,
-             all_surface_lines_itr->first ) ;
-             add_element_boundary( new_surface_gme_t, line_gme_t ) ;
-             add_element_in_boundary( line_gme_t, new_surface_gme_t ) ;
-             }
-             }*/
         }
     }
 
