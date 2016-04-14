@@ -115,7 +115,7 @@ namespace RINGMesh {
             get_new_surfaces( cur_interface, to_erase_by_type ) ;
         }
 
-        if( nb_faults == 0) {
+        if( nb_faults == 0 ) {
             std::string message = "There is no fault inside the model.\n" ;
             message += "Assign your fault interfaces to fault geological features." ;
             throw std::runtime_error( message ) ;
@@ -328,6 +328,11 @@ namespace RINGMesh {
             bool side = ( side_name == "_plus" ) ;
             add_element_boundary( GME::gme_t( GME::REGION, region_index ),
                 new_surface_gme_t, side ) ;
+
+            // Add to universe (other side of the surface)
+            add_element_boundary( model_.universe().gme_id(), new_surface_gme_t,
+                !side ) ;
+
             to_erase_by_type[GME::SURFACE].push_back( 0 ) ;
         }
     }
