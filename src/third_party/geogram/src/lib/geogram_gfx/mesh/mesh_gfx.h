@@ -566,7 +566,8 @@ namespace GEO {
             MeshElementsFlags subelements,
             const std::string& name,
             double attr_min, double attr_max,
-            GLuint colormap_texture
+            GLuint colormap_texture,
+            index_t repeat = 1
         );
 
         /**
@@ -577,10 +578,44 @@ namespace GEO {
             attribute_min_ = 0.0;
             attribute_max_ = 0.0;
             attribute_colormap_texture_ = 0;
+            attribute_repeat_ = 1;
         }
         
     protected:
+        
+        void draw_vertices_array();
+        void draw_vertices_immediate_plain();
+        void draw_vertices_immediate_attrib();
+        void draw_vertices_selection();
+        
+        void draw_edges_array();
+        void draw_edges_immediate_plain();
+        void draw_edges_immediate_attrib();
 
+        void draw_triangles();
+        void draw_triangles_array();
+        void draw_triangles_immediate_plain();
+        void draw_triangles_immediate_attrib();
+
+        void draw_triangles_and_quads();
+        void draw_triangles_and_quads_array();
+        void draw_triangles_and_quads_immediate_plain();
+        void draw_triangles_and_quads_immediate_attrib();
+
+        void draw_polygons();
+        void draw_polygons_plain();
+        void draw_polygons_attrib();
+
+        void draw_tets();
+        void draw_tets_array();
+        void draw_tets_immediate_plain();
+        void draw_tets_immediate_attrib();
+        
+        void draw_hybrid();
+        void draw_hybrid_array();
+        void draw_hybrid_immediate_plain();
+        void draw_hybrid_immediate_attrib();
+        
         void set_cells_color(MeshCellType type, float r, float g, float b) {
             cells_color_[type][0] = r;
             cells_color_[type][1] = g;
@@ -717,6 +752,25 @@ namespace GEO {
          *  the sizes of the buffer objects match the size of the mesh arrays.
          */
         void update_attribute_buffer_objects_if_needed();
+
+
+        /**
+         * \brief Binds the attribute buffer object to a Vertex Array
+         *  Object.
+         * \param[in] VAO one of vertices_VAO_, edges_VAO_, facets_VAO_
+         *  or cells_VAO_. If zero, the function does nothing.
+         * \pre attribute_.is_bound()
+         */
+        void bind_attribute_buffer_object(GLuint VAO);
+
+
+        /**
+         * \brief Unbinds the attribute buffer object from a Vertex
+         *   Array Object.
+         * \param[in] VAO one of vertices_VAO_, edges_VAO_, facets_VAO_
+         *  or cells_VAO_. If zero, the function does nothing.
+         */
+        void unbind_attribute_buffer_object(GLuint VAO);
         
         /**
          * \brief Binds the vertices VBO to the current VAO.
@@ -741,6 +795,10 @@ namespace GEO {
          * \param[in] prim the GLUP primitive
          */
         bool can_use_array_mode(GLUPprimitive prim) const;
+
+        void update_surface_elements();
+        
+        void update_volume_elements();
         
         /**
          * \brief Forbids MeshGfx copy..
@@ -801,6 +859,7 @@ namespace GEO {
         double attribute_min_;
         double attribute_max_;
         GLuint attribute_colormap_texture_;
+        index_t attribute_repeat_;
         ReadOnlyScalarAttributeAdapter attribute_;
     };
 

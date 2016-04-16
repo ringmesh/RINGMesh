@@ -94,6 +94,7 @@ namespace RINGMesh {
         for( index_t i = old_size; i < new_size; i++ ) {
             ringmesh_assert( store[i] == nil ) ;
             store[i] = new_element( type, i ) ;
+            ringmesh_assert( store[i] != nil ) ;
         }
         return old_size ;
     }

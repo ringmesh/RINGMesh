@@ -1176,8 +1176,8 @@ namespace GEO {
             BoolAttributeAccessor(
                 Attribute<bool>& attribute,
                 index_t index
-                ) :
-                attribute_(attribute),
+            ) :
+                attribute_(&attribute),
                 index_(index) {
             }
 
@@ -1186,7 +1186,7 @@ namespace GEO {
              * \details Performs the actual lookup.
              */
             operator bool() const {
-                return (attribute_.element(index_) != 0);
+                return (attribute_->element(index_) != 0);
             }
 
             /**
@@ -1194,12 +1194,12 @@ namespace GEO {
              * \details Stores the boolean into the Attribute.
              */
             BoolAttributeAccessor& operator=(bool x) {
-                attribute_.element(index_) = Numeric::uint8(x);
+                attribute_->element(index_) = Numeric::uint8(x);
                 return *this;
             }
             
         private:
-            Attribute<bool>& attribute_;
+            Attribute<bool>* attribute_;
             index_t index_;
         };
 
@@ -1217,7 +1217,7 @@ namespace GEO {
                 const Attribute<bool>& attribute,
                 index_t index
             ) :
-                attribute_(attribute),
+                attribute_(&attribute),
                 index_(index) {
             }
 
@@ -1226,11 +1226,11 @@ namespace GEO {
              * \details Performs the actual lookup.
              */
             operator bool() const {
-                return (attribute_.element(index_) != 0);
+                return (attribute_->element(index_) != 0);
             }
 
         private:
-            const Attribute<bool>& attribute_;
+            const Attribute<bool>* attribute_;
             index_t index_;
         };
         
@@ -1411,7 +1411,8 @@ namespace GEO {
      * \brief Access to an attribute as a double regardless its type.
      * \details The attribute can be an element of a vector attribute.
      */
-    class GEOGRAM_API ReadOnlyScalarAttributeAdapter : public AttributeStoreObserver {
+    class GEOGRAM_API ReadOnlyScalarAttributeAdapter :
+        public AttributeStoreObserver {
 
     public:
         /** 

@@ -47,6 +47,7 @@
 #include <geogram/mesh/mesh_repair.h>
 #include <geogram/points/colocate.h>
 #include <geogram/mesh/mesh_io.h>
+#include <geogram/mesh/mesh_geometry.h>
 
 #include <ringmesh/io.h>
 #include <ringmesh/algorithm.h>
@@ -274,7 +275,16 @@ namespace {
 
     bool is_corner_to_duplicate( const GeoModel& geomodel, index_t corner_id )
     {
-        if( geomodel.corner( corner_id ).nb_in_boundary() > 3 ) {
+        if( geomodel.corner( corner_id ).nb_in_boundary() > 3 ) { // 2 instead of 3, tmp BC
+            return true ;
+        } else {
+            return false ;
+        }
+    }
+
+    bool is_line_to_duplicate( const GeoModel& geomodel, index_t line_id )
+    {
+        if( geomodel.line( line_id ).nb_in_boundary() > 2 ) {
             return true ;
         } else {
             return false ;
@@ -312,6 +322,9 @@ namespace {
 } // anonymous namespace
 
 namespace RINGMesh {
+
+    GEO::Mesh debug_mesh ;
+
     /*!
      * @brief Utility class to sort a set of oriented triangles around a common edge
      * Used in GeoModelBuilderSurface.
@@ -1541,6 +1554,7 @@ namespace RINGMesh {
                 }
             }
         }
+        ringmesh_assert( duplicate == NO_ID ) ; /// @todo is that may happen???
         if( duplicate == NO_ID ) {
             // Duplicate the vertex in the surface
             duplicate = E.mesh_.vertices.create_vertex(
@@ -1587,6 +1601,118 @@ namespace RINGMesh {
                 }
                 S.mesh_.facets.set_adjacent( f, v, Surface::NO_ADJACENT ) ;
                 S.mesh_.facets.set_adjacent( f2, v2, Surface::NO_ADJACENT ) ;
+            }
+        }
+    }
+
+    bool find_cell_and_facet(
+        const ColocaterANN& ann,
+        const Region& region,
+        const Surface& surf,
+        index_t f_id_in_surface,
+        index_t& c,
+        index_t& f )
+    {
+        ringmesh_assert( region.is_meshed() ) ;
+        vec3 v_bary = GEO::Geom::mesh_facet_center( surf.mesh(), f_id_in_surface ) ;
+
+        index_t nb_neighbors = std::min( index_t( 5 ), region.nb_cells() ) ;
+        std::vector< index_t > neighbors ;
+        index_t cur_neighbor = 0 ;
+        index_t prev_neighbor = 0 ;
+        do {
+            prev_neighbor = cur_neighbor ;
+            cur_neighbor += nb_neighbors ;
+            cur_neighbor = std::min( cur_neighbor, region.nb_cells() ) ;
+            neighbors.resize( cur_neighbor ) ;
+            double* dist = (double*) alloca( sizeof(double) * cur_neighbor ) ;
+            nb_neighbors = ann.get_neighbors( v_bary, cur_neighbor, neighbors,
+                dist ) ;
+            for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
+                c = neighbors[i] ;
+                for( index_t j = 0; j < region.nb_facets_in_cell( c ); j++ ) {
+                    if( region.facet_nb_vertices( c, j )
+                        != surf.nb_vertices_in_facet( f_id_in_surface ) ) {
+                        continue ;
+                    }
+                    bool ok = true ;
+                    for( index_t k = 0; k < region.facet_nb_vertices( c, j ); ++k ) {
+                        index_t vertex_id_in_region = region.facet_vertex( c, j,
+                            k ) ;
+                        index_t vertex_id_in_gmm = region.model_vertex_id(
+                            vertex_id_in_region ) ;
+                        bool ok2 = false ;
+                        for( index_t l = 0;
+                            l < surf.nb_vertices_in_facet( f_id_in_surface ); ++l ) {
+                            if( surf.model_vertex_id(f_id_in_surface,l) == vertex_id_in_gmm ) {
+                                ok2 = true ;
+                                break ;
+                            }
+                        }
+                        if( !ok2 ) {
+                            ok = false ;
+                            break ;
+                        }
+                    }
+                    if( ok ) {
+                        f = j ;
+                        return true ;
+                    }
+                }
+            }
+    } while( region.nb_cells() != cur_neighbor ) ;
+
+        c = Surface::NO_ID ;
+        f = Surface::NO_ID ;
+        return false ;
+    }
+
+    void GeoModelBuilder::disconnect_region_cells_along_surface_facets(
+        Region& R,
+        const Surface& S )
+    {
+        ColocaterANN ann( R.mesh(), ColocaterANN::CELLS ) ;
+        for( index_t f_itr = 0; f_itr < S.nb_cells(); ++f_itr ) {
+            index_t c = NO_ID ;
+            index_t f = NO_ID ;
+            bool found = find_cell_and_facet( ann, R, S, f_itr, c, f ) ;
+            ringmesh_unused( found ) ;
+            ringmesh_assert( found && c != NO_ID && f != NO_ID ) ;
+
+            index_t c2 = R.adjacent_cell( c, f ) ;
+            ringmesh_assert( c2 != NO_ID ) ;
+            if( c2 != NO_ID ) {
+                index_t f2 = NO_ID ;
+                for( index_t f2_itr = 0; f2_itr < R.nb_facets_in_cell( c2 );
+                    ++f2_itr ) {
+                    bool ok = true ;
+                    for( index_t v_in_f2_itr = 0;
+                        v_in_f2_itr < R.facet_nb_vertices( c2, f2_itr );
+                        ++v_in_f2_itr ) {
+                        index_t v_id_in_region = R.facet_vertex( c2, f2_itr,
+                            v_in_f2_itr ) ;
+                        bool ok2 = false ;
+                        for( index_t v_in_f_itr = 0;
+                            v_in_f_itr < R.facet_nb_vertices( c, f );
+                            ++v_in_f_itr ) {
+                            if( v_id_in_region
+                                == R.facet_vertex( c, f, v_in_f_itr ) ) {
+                                ok2 = true ;
+                                break ;
+                            }
+                        }
+                        if( !ok2 ) {
+                            ok = false ;
+                            break ;
+                        }
+                    }
+                    if( ok ) {
+                        f2 = f2_itr ;
+                    }
+                }
+                ringmesh_assert( f2 != NO_ID ) ;
+                R.mesh_.cells.set_adjacent( c, f, Region::NO_ADJACENT ) ;
+                R.mesh_.cells.set_adjacent( c2, f2, Region::NO_ADJACENT ) ;
             }
         }
     }
@@ -1710,6 +1836,213 @@ namespace RINGMesh {
         }
     }
 
+    void GeoModelBuilder::duplicate_region_vertices_along_surface(
+        Region& R,
+        const Surface& S )
+    {
+        GEO::Mesh& region_mesh = R.mesh() ;
+        // Flag to know if a line vertex must be duplicated or not
+        GEO::Attribute< bool > flag_to_duplicate( region_mesh.vertices.attributes(),
+            "flag_to_duplicate" ) ;
+        flag_to_duplicate.fill( true ) ;
+        recompute_geomodel_mesh() ;
+        for( index_t surf_boun_line_itr = 0; surf_boun_line_itr < S.nb_boundaries();
+            ++surf_boun_line_itr ) {
+            const GeoModelElement& cur_gme = S.boundary( surf_boun_line_itr ) ;
+            ringmesh_assert( cur_gme.type() == GME::LINE ) ;
+            const Line& cur_line = model_.line( cur_gme.index() ) ;
+            if( !is_line_to_duplicate( model_, cur_line.index() ) ) {
+                for( index_t v = 0; v < cur_line.nb_vertices(); ++v ) {
+                    const std::vector< GMEVertex >& gme_vertices =
+                        model_.mesh.vertices.gme_vertices(
+                            cur_line.model_vertex_id( v ) ) ;
+                    for( index_t gme_v = 0; gme_v < gme_vertices.size(); ++gme_v ) {
+                        if( gme_vertices[gme_v].gme_id == R.gme_id() ) {
+
+                            flag_to_duplicate[gme_vertices[gme_v].v_id] = false ;
+                        }
+                    }
+                }
+            }
+        }
+
+        ColocaterANN ann( R.mesh(), ColocaterANN::CELLS ) ;
+        index_t c = NO_ID ;
+        index_t f = NO_ID ;
+        bool found = find_cell_and_facet( ann, R, S, 0, c, f ) ;
+        ringmesh_unused( found ) ;
+        ringmesh_assert( found && c != NO_ID && f != NO_ID ) ;
+
+        vec3 first_facet_normal = GEO::Geom::mesh_facet_normal( S.mesh(), 0 ) ;
+        vec3 first_cell_facet_normal = GEO::mesh_cell_facet_normal( R.mesh(), c,
+            f ) ;
+        double dot_product = GEO::dot( first_cell_facet_normal,
+            first_facet_normal ) ;
+#ifdef RINGMESH_DEBUG
+        dot_product /= first_facet_normal.length() ;
+        dot_product /= first_cell_facet_normal.length() ;
+        ringmesh_assert( std::abs(std::abs(dot_product) -1)<epsilon ) ;
+#endif
+        int side = dot_product >= 0 ? 1 : -1 ;
+
+        std::vector< index_t > visited_cells ;
+        visited_cells.reserve( R.nb_cells() ) ;
+        visited_cells.push_back( c ) ;
+
+        const index_t initial_nb_vertices = R.nb_vertices() ;
+        duplicate_one_facet( R, S, c, f, initial_nb_vertices, flag_to_duplicate,
+            visited_cells, side ) ;
+        GEO::mesh_save( debug_mesh, "debug_mesh.meshb" ) ;
+    }
+
+    void GeoModelBuilder::duplicate_one_facet(
+        Region& R,
+        const Surface& S,
+        index_t c,
+        index_t f,
+        index_t initial_nb_vertices,
+        GEO::Attribute< bool >& flag_to_duplicate,
+        std::vector< index_t >& visited_cells,
+        int side )
+    {
+        // debug
+        index_t p0 = debug_mesh.vertices.create_vertex(
+            R.mesh().vertices.point( R.mesh().cells.vertex( c, 0 ) ).data() ) ;
+        index_t p1 = debug_mesh.vertices.create_vertex(
+            R.mesh().vertices.point( R.mesh().cells.vertex( c, 1 ) ).data() ) ;
+        index_t p2 = debug_mesh.vertices.create_vertex(
+            R.mesh().vertices.point( R.mesh().cells.vertex( c, 2 ) ).data() ) ;
+        index_t p3 = debug_mesh.vertices.create_vertex(
+            R.mesh().vertices.point( R.mesh().cells.vertex( c, 3 ) ).data() ) ;
+        debug_mesh.cells.create_tet( p0, p1, p2, p3 ) ;
+        // debug
+
+        GEO::Mesh& region_mesh = R.mesh() ;
+        GEO::MeshVertices& mesh_v = region_mesh.vertices ;
+//        GEO::vector< index_t > v_id_new_facet ;
+//        v_id_new_facet.reserve( 4 ) ;
+        for( index_t v = 0; v < R.facet_nb_vertices( c, f ); ++v ) {
+            index_t v_id_in_reg = R.facet_vertex( c, f, v ) ;
+            if( !flag_to_duplicate[v_id_in_reg] ) {
+//                v_id_new_facet.push_back( v_id_in_reg ) ;
+                continue ;
+            }
+
+            if( v_id_in_reg >= initial_nb_vertices ) { // already duplicated vertex
+//                v_id_new_facet.push_back( v_id_in_reg ) ;
+                continue ;
+            } else {
+                // a copy of the coordinates is necessary, otherwise crash if use
+                // of mesh_v.point( v_id_in_reg ).data() in mesh_v.create_vertex
+                double coords[3] ;
+                coords[0] = mesh_v.point( v_id_in_reg ).x ;
+                coords[1] = mesh_v.point( v_id_in_reg ).y ;
+                coords[2] = mesh_v.point( v_id_in_reg ).z ;
+                index_t new_v_id = mesh_v.create_vertex( coords ) ;
+//                v_id_new_facet.push_back( new_v_id ) ;
+                std::vector< index_t > surrounding_cells ;
+                // Not only cells in border have a vertex id to be modified
+                R.cells_around_vertex( v_id_in_reg, surrounding_cells, false, c ) ;
+                for( index_t cav_itr = 0; cav_itr < surrounding_cells.size();
+                    ++cav_itr ) {
+                    for( index_t v_in_cell_itr = 0;
+                        v_in_cell_itr
+                            < R.nb_vertices_in_cell( surrounding_cells[cav_itr] );
+                        ++v_in_cell_itr ) {
+                        if( R.gmme_vertex_index( surrounding_cells[cav_itr],
+                            v_in_cell_itr ) == v_id_in_reg ) {
+                            index_t local_v_id_in_cell = NO_ID ;
+                            for( index_t lv = 0;
+                                lv
+                                    < R.nb_vertices_in_cell(
+                                        surrounding_cells[cav_itr] ); ++lv ) {
+                                if( R.gmme_vertex_index( surrounding_cells[cav_itr],
+                                    lv ) == v_id_in_reg ) {
+                                    local_v_id_in_cell = lv ;
+                                }
+                            }
+                            ringmesh_assert(local_v_id_in_cell != NO_ID) ;
+                            region_mesh.cells.set_vertex( surrounding_cells[cav_itr],
+                                local_v_id_in_cell, new_v_id ) ;
+                            break ;
+                        }
+                    }
+                }
+
+                /// @todo check if that is necessary. A priori no because
+                /// above I check if the current vertex is a new one.
+                flag_to_duplicate[v_id_in_reg] = false ; // to not duplicate it twice
+            }
+        }
+//        region_mesh.facets.create_polygon( v_id_new_facet ) ;
+
+        for( index_t v = 0; v < R.facet_nb_vertices( c, f ); ++v ) {
+            index_t v_id_in_reg = R.facet_vertex( c, f, v ) ;
+
+            std::vector< index_t > surrounding_cells ;
+            // Only the cells on the border have facets on common with the
+            // cutting surface
+            R.cells_around_vertex( v_id_in_reg, surrounding_cells, true, c ) ;
+
+            for( index_t cav_itr = 0; cav_itr < surrounding_cells.size();
+                ++cav_itr ) {
+                index_t cur_sur_cell_id = surrounding_cells[cav_itr] ;
+                if( contains( visited_cells, cur_sur_cell_id ) ) {
+                    continue ;
+                }
+
+                // A cell may be on the border but not the one corresponding
+                // to the cutting surface
+                visited_cells.push_back( cur_sur_cell_id ) ;
+                bool ok = false ;
+                index_t facet_in_border = NO_ID ;
+                for( index_t cur_sur_cell_facet_itr = 0;
+                    cur_sur_cell_facet_itr < R.nb_facets_in_cell( cur_sur_cell_id );
+                    ++cur_sur_cell_facet_itr ) {
+                    if( R.is_on_border( cur_sur_cell_id, cur_sur_cell_facet_itr ) ) {
+                        vec3 facet_bary = mesh_cell_facet_center( R.mesh(),
+                            cur_sur_cell_id, cur_sur_cell_facet_itr ) ;
+                        ColocaterANN ann( S.mesh(), ColocaterANN::FACETS ) ;
+                        std::vector< index_t > colocated_result ;
+                        if( !ann.get_colocated( facet_bary, colocated_result ) ) {
+                            continue ;
+                        }
+                        ringmesh_assert( colocated_result.size() == 1 ) ;
+
+                        vec3 surf_facet_normal = GEO::Geom::mesh_facet_normal(
+                            S.mesh(), colocated_result[0] ) ;
+                        vec3 cell_facet_normal = GEO::mesh_cell_facet_normal(
+                            R.mesh(), cur_sur_cell_id, cur_sur_cell_facet_itr ) ;
+
+                        double dot_product = GEO::dot( cell_facet_normal,
+                            surf_facet_normal ) ;
+
+
+#ifdef RINGMESH_DEBUG
+                        dot_product /= surf_facet_normal.length() ;
+                        dot_product /= cell_facet_normal.length() ;
+                        ringmesh_assert( std::abs(std::abs(dot_product) -1)<epsilon ) ;
+#endif
+
+                        if( dot_product * side < 0 ) {
+                            continue ;
+                        }
+
+                        facet_in_border = cur_sur_cell_facet_itr ;
+                        ok = true ;
+                        break ;
+                    }
+                }
+
+                if( ok ) {
+                    ringmesh_assert( facet_in_border != NO_ID ) ;
+                    duplicate_one_facet( R, S, cur_sur_cell_id, facet_in_border,
+                        initial_nb_vertices, flag_to_duplicate, visited_cells, side ) ;
+                }
+            }
+        }
+    }
+
     /*!
      * @brief Cuts a Surface along a Line assuming that the edges of the Line are edges of the Surface
      * @pre Surface is not already cut. Line L does not cut the Surface S into 2 connected components.
@@ -1724,8 +2057,31 @@ namespace RINGMesh {
             model().mesh.vertices.test_and_initialize() ;
         }
 
+        DEBUG("cut_surface_by_line");
         disconnect_surface_facets_along_line_edges( S, L ) ;
         duplicate_surface_vertices_along_line( S, L ) ;
+
+        if( !model_vertices_initialized ) {
+            const_cast< GeoModel& >( model() ).mesh.vertices.clear() ;
+        }
+    }
+
+
+    void GeoModelBuilder::cut_region_by_surface( Region& R, const Surface& S )
+    {
+        /// @todo Replace the use of the model vertices by only a colocater
+        /// of the surface vertices and the line vertices
+        bool model_vertices_initialized = model().mesh.vertices.is_initialized() ;
+        if( !model_vertices_initialized ) {
+            model().mesh.vertices.test_and_initialize() ;
+        }
+
+        DEBUG("cut_region_by_surface") ;
+        disconnect_region_cells_along_surface_facets( R, S ) ;
+        duplicate_region_vertices_along_surface( R, S ) ;
+        // Rebuild the mesh facets of the region
+        R.mesh().cells.compute_borders() ;
+        GEO::mesh_save( R.mesh(), "new_r_mesh.meshb" ) ;
 
         if( !model_vertices_initialized ) {
             const_cast< GeoModel& >( model() ).mesh.vertices.clear() ;
@@ -1759,6 +2115,69 @@ namespace RINGMesh {
                         E.child( 0 ).geological_feature() ) ;
                 }
             }
+        }
+
+
+//        geo_model_mesh_repair( model_ ) ;
+        // ========= bad copy paste from geo model repair
+        for( index_t i = 0; i < model_.nb_surfaces(); ++i ) {
+            GEO::Mesh& M = model_.surface( i ).mesh() ;
+            // If the Surface has internal boundaries, we need to
+            // re-cut the Surface along these lines
+            Surface& S = const_cast< Surface& >( model_.surface( i ) ) ;
+            std::set< index_t > cutting_lines ;
+            for( index_t l = 0; l < S.nb_boundaries(); ++l ) {
+                const Line& L = model_.line( S.boundary_gme( l ).index ) ;
+                if( /*to_remove.count( L.gme_id() ) == 0 &&*/L.is_inside_border(
+                    S ) ) {
+                    cutting_lines.insert( L.index() ) ;
+                }
+            }
+            for( std::set< index_t >::iterator it = cutting_lines.begin();
+                it != cutting_lines.end(); ++it ) {
+                // Force the recomputing of the model vertices
+                // before performing the cut.
+                model_.mesh.vertices.clear() ;
+                cut_surface_by_line( S, model_.line( *it ) ) ;
+            }
+        }
+        // ========= bad copy paste from geo model repair
+
+        //=================== Cut the region by the surfaces
+        for( index_t i = 0; i < model_.nb_regions(); ++i ) {
+            GEO::Mesh& M = model_.region( i ).mesh() ;
+            // If the Region has internal boundaries, we need to
+            // re-cut the Region along these surfaces
+            Region& R = const_cast< Region& >( model_.region( i ) ) ;
+            if( !R.is_meshed() ) {
+                continue ;
+            }
+            // the std::set avoids that a region is cut twice by the same
+            // surface (internal borner is defined by twice the region in the
+            // in boundaries of the surface.
+            std::set< index_t > cutting_surfaces ;
+            for( index_t s = 0; s < R.nb_boundaries(); ++s ) {
+                const Surface& S = model_.surface( R.boundary_gme( s ).index ) ;
+                if( /*to_remove.count( L.gme_id() ) == 0 &&*/S.is_inside_border(
+                    R ) ) {
+                    cutting_surfaces.insert( S.index() ) ;
+                }
+            }
+            for( std::set< index_t >::iterator it = cutting_surfaces.begin();
+                it != cutting_surfaces.end(); ++it ) {
+                // Force the recomputing of the model vertices
+                // before performing the cut.
+                model_.mesh.vertices.clear() ;
+                cut_region_by_surface( R, model_.surface( *it ) ) ;
+            }
+        }
+        //=================== Cut the region by the surfaces
+
+
+        for( index_t reg_itr = 0; reg_itr < model_.nb_regions(); ++reg_itr ) {
+            DEBUG(model_.region( reg_itr ).nb_vertices()) ;
+            model_.region( reg_itr ).mesh().vertices.remove_isolated() ;
+            DEBUG(model_.region( reg_itr ).nb_vertices()) ;
         }
 
         // Deliberate clear of the model vertices used for model building

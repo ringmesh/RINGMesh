@@ -70,6 +70,7 @@ endif()
 add_subdirectory(src/lib/geogram)
 add_subdirectory(src/bin/vorpastat)
 add_subdirectory(src/bin/vorpacomp)
+add_subdirectory(src/bin/geodump)
 
 if(GEOGRAM_WITH_FPG)
    add_subdirectory(src/bin/fpg)
