@@ -350,6 +350,8 @@ if(RINGMESH_WITH_UTILITIES)
     add_subdirectory(src/ringmeshconvert)
     add_subdirectory(src/ringmesh_surface_convert)
     add_subdirectory(src/ringmeshstats)
+    add_subdirectory(src/ringmesh_duplicate_faults)
+    add_subdirectory(src/ringmesh_remove_gme)
 endif(RINGMESH_WITH_UTILITIES)
 
 if(RINGMESH_WITH_TESTS)

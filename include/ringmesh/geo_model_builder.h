@@ -206,6 +206,7 @@ namespace RINGMesh {
             index_t surface_vertex_id ) ;
 
         void cut_surface_by_line( Surface& S, const Line& L ) ;
+        void cut_region_by_surface( Region& R, const Surface& S ) ;
 
         void compute_surface_adjacencies( index_t surface_id ) ;
 
@@ -277,9 +278,22 @@ namespace RINGMesh {
             const std::vector< index_t >& tet_vertices ) const ;
 
         void duplicate_surface_vertices_along_line( Surface& S, const Line& L ) ;
+        void duplicate_region_vertices_along_surface( Region& R, const Surface& S ) ;
         void disconnect_surface_facets_along_line_edges(
             Surface& S,
             const Line& L ) ;
+        void disconnect_region_cells_along_surface_facets(
+            Region& R,
+            const Surface& S ) ;
+        void duplicate_one_facet(
+            Region& R,
+            const Surface& S,
+            index_t c,
+            index_t f,
+            index_t initial_nb_vertices,
+            GEO::Attribute< bool >& flag_to_duplicate,
+            std::vector< index_t >& visited_cells,
+            int side ) ;
     } ;
 
     /*!

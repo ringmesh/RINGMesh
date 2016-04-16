@@ -957,6 +957,7 @@ namespace RINGMesh {
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
     public:
+        static const index_t NO_ADJACENT = index_t( -1 ) ;
         Region( const GeoModel& model, index_t id )
             : GeoModelMeshElement( model, REGION, id ), tools( *this )
         {
@@ -1033,6 +1034,32 @@ namespace RINGMesh {
 
          */
 
+        index_t nb_facets_in_cell( index_t c ) const {
+            return mesh_.cells.nb_facets( c ) ;
+        }
+
+        index_t facet_nb_vertices( index_t c, index_t f ) const
+        {
+            return mesh_.cells.facet_nb_vertices( c, f ) ;
+        }
+
+        index_t facet_vertex( index_t c, index_t lf, index_t lv ) const {
+            return mesh_.cells.facet_vertex( c, lf, lv ) ;
+        }
+
+        index_t cells_around_vertex(
+            index_t region_vertex_id,
+            std::vector< index_t >& result,
+            bool border_only ) const ;
+
+        index_t cells_around_vertex(
+            index_t region_vertex_id,
+            std::vector< index_t >& result,
+            bool border_only,
+            index_t first_cell ) const ;
+
+        vec3 cell_barycenter( index_t cell_index_in_region ) const ;
+
     private:
         virtual bool is_mesh_valid() const ;
 
@@ -1045,6 +1072,44 @@ namespace RINGMesh {
 
     public:
         RegionTools tools ;
+    } ;
+
+
+    class RINGMESH_API TwoSideInterface: public GeoModelMeshElement {
+        friend class GeoModelEditor ;
+        friend class GeoModelBuilder ;
+    public:
+        TwoSideInterface( const GeoModel& model, index_t id )
+            : GeoModelMeshElement( model, INTERFACE, id )
+        {
+        }
+
+        TwoSideInterface(
+            const GeoModel& model,
+            index_t id,
+            const std::string& name,
+            GEOL_FEATURE geological_feature )
+            : GeoModelMeshElement( model, INTERFACE, id, name, geological_feature )
+        {
+        }
+
+        ~TwoSideInterface()
+        {
+        }
+
+        const std::vector< index_t >& side_plus() const
+        {
+            return side_plus_ ;
+        }
+
+        const std::vector< index_t >& side_minus() const
+        {
+            return side_minus_ ;
+        }
+
+    private :
+        std::vector< index_t > side_plus_ ;
+        std::vector< index_t > side_minus_ ;
     } ;
 
 } // namespace
