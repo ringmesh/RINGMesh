@@ -200,9 +200,11 @@ namespace RINGMesh {
                 vec3 second_normal = get_normal_on_surface_vertex( cur_surf_in_boun,
                     v_id_in_second_surf ) ;
                 // As the normals are computed on different surfaces, they cannot
-                // be exactly the same. However they should be very close.
+                // be exactly the same. However they should be very close (0.1 here is arbitrary).
+                ringmesh_assert( std::abs( first_normal.length() - 1 ) < epsilon ) ;
+                ringmesh_assert( std::abs( second_normal.length() - 1 ) < epsilon ) ;
                 double dot_product = GEO::dot( first_normal, second_normal ) ;
-                ringmesh_assert( std::abs( std::abs( dot_product ) -1 ) < 1e-4 ) ;
+                ringmesh_assert( std::abs( std::abs( dot_product ) -1 ) < 1e-1 ) ;
                 if( dot_product < 0 ) {
                     surfaces_to_inverse_normals.push_back(
                         cur_surf_in_boun.index() ) ;
