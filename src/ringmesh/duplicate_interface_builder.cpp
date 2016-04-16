@@ -40,6 +40,7 @@
 #include <ringmesh/algorithm.h>
 #include <geogram/basic/geometry.h>
 #include <geogram/mesh/mesh_geometry.h>
+#include <geogram/mesh/mesh_preprocessing.h>
 
 /*!
  * @file ringmesh/duplicate_interface_builder.cpp
@@ -82,6 +83,270 @@ namespace RINGMesh {
         std::fill( to_fill.begin(), to_fill.end(), NO_ID ) ;
     }
 
+    void DuplicateInterfaceBuilder::homogenize_normal_orientation_surface_all_interfaces()
+    {
+        std::vector< index_t > surfaces_to_inverse_normals ;
+        surfaces_to_inverse_normals.reserve( model_.nb_surfaces() ) ;
+        for( index_t interface_itr = 0; interface_itr < model_.nb_interfaces();
+            ++interface_itr ) {
+            const GeoModelElement& cur_interface = model_.one_interface(
+                interface_itr ) ;
+            if( !GeoModelElement::is_fault( cur_interface.geological_feature() ) ) {
+                continue ;
+            }
+            save_normals_on_one_old_interface( cur_interface ) ;
+            homogenize_normal_orientation_surface_one_interface( cur_interface,
+                surfaces_to_inverse_normals ) ;
+        }
+
+        for( index_t to_inverse_itr = 0;
+            to_inverse_itr < surfaces_to_inverse_normals.size(); ++to_inverse_itr ) {
+            const Surface& surface = model_.surface(
+                surfaces_to_inverse_normals[to_inverse_itr] ) ;
+            GEO::invert_normals( surface.mesh() ) ;
+        }
+        recompute_geomodel_mesh() ;
+    }
+
+    void DuplicateInterfaceBuilder::homogenize_normal_orientation_surface_one_interface(
+        const GeoModelElement& fault_interface,
+        std::vector< index_t >& surfaces_to_inverse_normals )
+    {
+        ringmesh_assert( fault_interface.type() == GME::INTERFACE ) ;
+        ringmesh_assert( GeoModelElement::is_fault( fault_interface.geological_feature() ) ) ;
+        ringmesh_assert( fault_interface.nb_children() >= 1 ) ;
+        if( fault_interface.nb_children() == 1 ) {
+            return ;
+        }
+
+        std::vector< bool > already_seen( model_.nb_surfaces(), false ) ;
+
+        const Surface& first_child = model_.surface(
+            fault_interface.child( 0 ).index() ) ;
+        already_seen[first_child.index()] = true ;
+        /// @todo for now I assume that all the surfaces of the fault interface
+        /// form one connected component. What happens in case of a fault cut into
+        /// 2 distinct parts by another fault??? A trick would be to define each part
+        /// as a different fault interface...
+        homogenize_surfaces_around_surface( fault_interface, first_child,
+            already_seen, surfaces_to_inverse_normals ) ;
+    }
+
+    void DuplicateInterfaceBuilder::homogenize_surfaces_around_surface(
+        const GeoModelElement& fault_interface,
+        const Surface& first_child,
+        std::vector< bool >& already_seen,
+        std::vector< index_t >& surfaces_to_inverse_normals )
+    {
+        for( index_t line_boundary_itr = 0;
+            line_boundary_itr < first_child.nb_boundaries(); ++line_boundary_itr ) {
+            const GeoModelElement& cur_line_boun = first_child.boundary(
+                line_boundary_itr ) ;
+            ringmesh_assert(cur_line_boun.type() == GME::LINE) ;
+            for( index_t surf_in_boun_itr = 0;
+                surf_in_boun_itr < cur_line_boun.nb_in_boundary();
+                ++surf_in_boun_itr ) {
+                const GeoModelElement& cur_in_boun = cur_line_boun.in_boundary(
+                    surf_in_boun_itr ) ;
+                ringmesh_assert( cur_in_boun.type() == GME::SURFACE ) ;
+                const Surface& cur_surf_in_boun = model_.surface(
+                    cur_in_boun.index() ) ;
+                if( cur_surf_in_boun.index() == first_child.index() ) {
+                    continue ;
+                }
+                if( !does_surface_belong_to_interface( cur_surf_in_boun,
+                    fault_interface ) ) {
+                    continue ;
+                }
+
+                if( already_seen[cur_in_boun.index()] ) {
+                    continue ;
+                }
+
+                const Line& cur_line = model_.line( cur_line_boun.index() ) ;
+                ringmesh_assert(cur_line.nb_vertices()>0) ;
+                index_t first_line_vertex_id_in_gmm = cur_line.model_vertex_id( 0 ) ;
+                const std::vector< GMEVertex >& gme_vertices =
+                    model_.mesh.vertices.gme_vertices(
+                        first_line_vertex_id_in_gmm ) ;
+                index_t v_id_in_first_surf = NO_ID ;
+                bool v_id_in_second_surf = NO_ID ;
+                for( index_t gme_vertex_itr = 0;
+                    gme_vertex_itr < gme_vertices.size(); ++gme_vertex_itr ) {
+                    const GMEVertex& cur_gme_vertex = gme_vertices[gme_vertex_itr] ;
+                    if( cur_gme_vertex.gme_id.type != GME::SURFACE ) {
+                        continue ;
+                    }
+                    if( cur_gme_vertex.gme_id.index == first_child.index() ) {
+                        v_id_in_first_surf = cur_gme_vertex.v_id ;
+                    } else if( cur_gme_vertex.gme_id.index
+                        == cur_surf_in_boun.index() ) {
+                        v_id_in_second_surf = cur_gme_vertex.v_id ;
+                    } else {
+                        continue ;
+                    }
+
+                    if( v_id_in_first_surf != NO_ID
+                        && v_id_in_second_surf != NO_ID ) {
+                        break ;
+                    }
+                }
+
+                ringmesh_assert(
+                    v_id_in_first_surf != NO_ID && v_id_in_second_surf != NO_ID ) ;
+
+                vec3 first_normal = get_normal_on_surface_vertex( first_child,
+                    v_id_in_first_surf ) ;
+                vec3 second_normal = get_normal_on_surface_vertex( cur_surf_in_boun,
+                    v_id_in_second_surf ) ;
+                // As the normals are computed on different surfaces, they cannot
+                // be exactly the same. However they should be very close.
+                double dot_product = GEO::dot( first_normal, second_normal ) ;
+                ringmesh_assert( std::abs( std::abs( dot_product ) -1 ) < 1e-4 ) ;
+                if( dot_product < 0 ) {
+                    surfaces_to_inverse_normals.push_back(
+                        cur_surf_in_boun.index() ) ;
+                    inverse_normal_attribute_one_surface( cur_surf_in_boun ) ;
+                    update_region_polarity( cur_surf_in_boun ) ;
+                }
+                already_seen[cur_surf_in_boun.index()] = true ;
+                homogenize_surfaces_around_surface( fault_interface,
+                    cur_surf_in_boun, already_seen, surfaces_to_inverse_normals ) ;
+                break ;
+            }
+        }
+    }
+
+    void DuplicateInterfaceBuilder::update_region_polarity( const Surface& surface )
+    {
+        index_t nb_in_boundaries = surface.nb_in_boundary() ;
+        ringmesh_assert( nb_in_boundaries == 1 || nb_in_boundaries == 2 ) ;
+        if( nb_in_boundaries == 1 ) {
+            const GeoModelElement& reg_gme = surface.in_boundary( 0 ) ;
+            index_t boundary_id = find_local_boundary_id( reg_gme, surface ) ;
+            Region& reg = const_cast< Region& >( model_.region( reg_gme.index() ) ) ;
+            bool cur_side = reg.side( boundary_id ) ;
+            set_region_side( reg, boundary_id, !cur_side ) ;
+
+            // Add to universe (other side of the surface)
+            boundary_id = find_local_boundary_id( model_.universe(), surface ) ;
+            ringmesh_assert(model_.universe().side(boundary_id) != cur_side) ;
+            set_region_side( const_cast< Region& >( model_.universe() ), boundary_id,
+                cur_side ) ;
+        } else {
+            const GeoModelElement& reg_gme1 = surface.in_boundary( 0 ) ;
+            index_t boundary_id1 = find_local_boundary_id( reg_gme1, surface ) ;
+            Region& reg1 = const_cast< Region& >( model_.region( reg_gme1.index() ) ) ;
+            bool cur_side1 = reg1.side( boundary_id1 ) ;
+
+            const GeoModelElement& reg_gme2 = surface.in_boundary( 1 ) ;
+            index_t boundary_id2 = find_local_boundary_id( reg_gme2, surface ) ;
+            Region& reg2 = const_cast< Region& >( model_.region( reg_gme2.index() ) ) ;
+            bool cur_side2 = reg2.side( boundary_id2 ) ;
+            // to check. if reg1 == reg2 no side in particular.
+//            ringmesh_assert( cur_side1 != cur_side2 ) ;
+
+            set_region_side( reg1, boundary_id1, !cur_side1 ) ;
+            set_region_side( reg2, boundary_id2, !cur_side2 ) ;
+        }
+    }
+
+    vec3 DuplicateInterfaceBuilder::get_normal_on_surface_vertex(
+        const Surface& surface,
+        index_t vertex_id_on_surface ) const
+    {
+        ringmesh_assert( vertex_id_on_surface < surface.nb_vertices() ) ;
+        GEO::AttributesManager& att_mgr = surface.mesh().vertices.attributes() ;
+        GEO::Attribute< double > normal_att_x( att_mgr, "normal_attr_x" ) ;
+        GEO::Attribute< double > normal_att_y( att_mgr, "normal_attr_y" ) ;
+        GEO::Attribute< double > normal_att_z( att_mgr, "normal_attr_z" ) ;
+        return vec3( normal_att_x[vertex_id_on_surface],
+            normal_att_y[vertex_id_on_surface], normal_att_z[vertex_id_on_surface] ) ;
+    }
+
+    void DuplicateInterfaceBuilder::inverse_normal_attribute_one_surface(
+        const Surface& surface ) const
+    {
+        GEO::AttributesManager& att_mgr = surface.mesh().vertices.attributes() ;
+        GEO::Attribute< double > normal_att_x( att_mgr, "normal_attr_x" ) ;
+        GEO::Attribute< double > normal_att_y( att_mgr, "normal_attr_y" ) ;
+        GEO::Attribute< double > normal_att_z( att_mgr, "normal_attr_z" ) ;
+        for( index_t vertex_id_on_surface = 0;
+            vertex_id_on_surface < surface.nb_vertices(); ++vertex_id_on_surface ) {
+            normal_att_x[vertex_id_on_surface] *= -1 ;
+            normal_att_y[vertex_id_on_surface] *= -1 ;
+            normal_att_z[vertex_id_on_surface] *= -1 ;
+        }
+    }
+
+    /// @todo COPY PASTE OF save_normals_on_one_new_interface
+    /// @todo TO REFACTORE
+    void DuplicateInterfaceBuilder::save_normals_on_one_old_interface(
+        const GeoModelElement& interface_gme ) const
+    {
+        for( index_t child_itr = 0; child_itr < interface_gme.nb_children();
+            ++child_itr ) {
+            const GeoModelElement& cur_child = interface_gme.child( child_itr ) ;
+            ringmesh_assert(cur_child.type() == GME::SURFACE) ;
+            // As the loop begins at the first new interface, no surface
+            // met in this loop should be to delete.
+            const Surface& cur_surface = model_.surface( cur_child.index() ) ;
+            GEO::Mesh& cur_surf_mesh = cur_surface.mesh() ;
+            // GEO::compute_normals cannot be used because the dimension
+            // of the vertices from 3 to 6 and that provokes a problem
+            // of copying in GeoModelMeshVertices::initialize
+            // with GEO::Memory::copy( mesh_.vertices.point_ptr( count ),
+            // E.vertex( 0 ).data(), 3 * E.nb_vertices() * sizeof(double) ) ;
+            // 3 means vertices of dimension 3 and not another dimension.
+            GEO::AttributesManager& att_mgr = cur_surf_mesh.vertices.attributes() ;
+            GEO::Attribute< double > normal_att_x( att_mgr, "normal_attr_x" ) ;
+            GEO::Attribute< double > normal_att_y( att_mgr, "normal_attr_y" ) ;
+            GEO::Attribute< double > normal_att_z( att_mgr, "normal_attr_z" ) ;
+            normal_att_x.fill( 0. ) ;
+            normal_att_y.fill( 0. ) ;
+            normal_att_z.fill( 0. ) ;
+            // begin copy paste from GEO::compute_normals
+            for( index_t f = 0; f < cur_surf_mesh.facets.nb(); f++ ) {
+                vec3 N = GEO::Geom::mesh_facet_normal( cur_surf_mesh, f ) ;
+                for( index_t corner = cur_surf_mesh.facets.corners_begin( f );
+                    corner < cur_surf_mesh.facets.corners_end( f ); corner++ ) {
+                    index_t v = cur_surf_mesh.facet_corners.vertex( corner ) ;
+                    normal_att_x[v] += N.x ;
+                    normal_att_y[v] += N.y ;
+                    normal_att_z[v] += N.z ;
+                }
+            }
+            for( index_t i = 0; i < cur_surf_mesh.vertices.nb(); i++ ) {
+                vec3 cur_normal( normal_att_x[i], normal_att_y[i],
+                    normal_att_z[i] ) ;
+                cur_normal = normalize( cur_normal ) ;
+                normal_att_x[i] = cur_normal.x ;
+                normal_att_y[i] = cur_normal.y ;
+                normal_att_z[i] = cur_normal.z ;
+            }
+            // end copy paste from GEO::compute_normals
+        }
+    }
+
+    /// @todo could be inside an unamed namespace.
+    /// @todo could a more generic function (is_child_of ?)
+    /// @todo such function exists?
+    bool DuplicateInterfaceBuilder::does_surface_belong_to_interface(
+        const Surface& surface,
+        const GeoModelElement& interface ) const
+    {
+        ringmesh_assert( interface.type() == GME::INTERFACE ) ;
+        for( index_t child_itr = 0; child_itr < interface.nb_children();
+            ++child_itr ) {
+            const GeoModelElement& cur_child = interface.child( child_itr ) ;
+            ringmesh_assert( cur_child.type() == GME::SURFACE ) ;
+            if( cur_child.index() == surface.index() ) {
+                return true ;
+            }
+        }
+        return false ;
+    }
+
     void DuplicateInterfaceBuilder::duplicate_fault_network()
     {
         //////////////////////////////////////////
@@ -94,6 +359,8 @@ namespace RINGMesh {
                     model_.nb_elements( static_cast< GME::TYPE >( i ) ), 0 ) ) ;
         }
         //////////////////////////////////////////
+
+        homogenize_normal_orientation_surface_all_interfaces() ;
 
         index_t nb_faults = 0 ;
         const index_t nb_initial_interfaces = model_.nb_interfaces() ;
@@ -195,6 +462,8 @@ namespace RINGMesh {
                 const Region& cur_reg2 =
                     dynamic_cast< const Region& >( cur_in_boundary2 ) ;
 
+                /// @todo it seems that this if statement is contained in the else
+                /// case. To check and simplify if necessary.
                 if( cur_in_boundary.index() == cur_in_boundary2.index() ) {
                     // if same region there is 2 in_boundarie even if they are the same
                     // The surface is internal and on the both side there is the
@@ -247,13 +516,13 @@ namespace RINGMesh {
             }
         }
 
-        build_merged_and_bad_lines( surfaces_boundary_regions_side_plus, "_plus",
+        build_merged_surfaces( surfaces_boundary_regions_side_plus, "_plus",
             to_erase_by_type, interface_plus_gme_t ) ;
-        build_merged_and_bad_lines( surfaces_boundary_regions_side_minus, "_minus",
+        build_merged_surfaces( surfaces_boundary_regions_side_minus, "_minus",
             to_erase_by_type, interface_minus_gme_t ) ;
     }
 
-    void DuplicateInterfaceBuilder::build_merged_and_bad_lines(
+    void DuplicateInterfaceBuilder::build_merged_surfaces(
         const std::map< index_t, std::vector< index_t > >& surfaces_boundary_regions,
         const std::string& side_name,
         std::vector< std::vector< index_t > >& to_erase_by_type,
@@ -271,6 +540,9 @@ namespace RINGMesh {
                 index_t surf_id = *surf_itr ;
 
                 const Surface& cur_surf = model_.surface( surf_id ) ;
+                GEO::mesh_save( cur_surf.mesh(),
+                    "used_to_merge_surf_id_"
+                        + GEO::String::to_string( cur_surf.index() ) + ".meshb" ) ;
 
                 for( index_t vertex_surf_i = 0;
                     vertex_surf_i < cur_surf.nb_vertices(); ++vertex_surf_i ) {
@@ -321,6 +593,9 @@ namespace RINGMesh {
             GME::gme_t new_surface_gme_t = create_element( GME::SURFACE ) ;
             set_surface_geometry( new_surface_gme_t.index, facet_points,
                 facet_indices, facet_ptr ) ;
+            GEO::mesh_save( model_.surface( new_surface_gme_t.index ).mesh(),
+                "merged_surf_id_" + GEO::String::to_string( new_surface_gme_t.index )
+                    + ".meshb" ) ;
             set_element_parent( new_surface_gme_t, sided_interface_gme_t ) ;
             add_element_child( sided_interface_gme_t, new_surface_gme_t ) ;
             add_element_in_boundary( new_surface_gme_t,

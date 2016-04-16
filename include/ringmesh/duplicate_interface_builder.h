@@ -64,10 +64,14 @@ namespace RINGMesh {
         virtual ~DuplicateInterfaceBuilder() ;
         void duplicate_fault_network() ;
     private:
+        void homogenize_normal_orientation_surface_all_interfaces() ;
+        void homogenize_normal_orientation_surface_one_interface(
+            const GeoModelElement& fault_interface,
+            std::vector< index_t >& surfaces_to_inverse_normals ) ;
         void get_new_surfaces(
             const GeoModelElement& interface_to_duplicate,
             std::vector< std::vector< index_t > >& to_erase_by_type ) ;
-        void build_merged_and_bad_lines(
+        void build_merged_surfaces(
             const std::map< index_t, std::vector< index_t > >& surfaces_boundary_regions,
             const std::string& side_name,
             std::vector< std::vector< index_t > >& to_erase_by_type,
@@ -109,6 +113,21 @@ namespace RINGMesh {
             const GeoModelElement& other_side_interface_gme ) const ;
         void set_no_displacement_on_fault_real_extension(
             const std::vector< std::vector< index_t > >& to_erase_by_type ) ;
+        bool does_surface_belong_to_interface(
+            const Surface& surface,
+            const GeoModelElement& interface ) const ;
+        void save_normals_on_one_old_interface(
+            const GeoModelElement& interface_gme ) const ;
+        vec3 get_normal_on_surface_vertex(
+            const Surface& surface,
+            index_t vertex_id_on_surface ) const ;
+        void homogenize_surfaces_around_surface(
+            const GeoModelElement& fault_interface,
+            const Surface& first_child,
+            std::vector< bool >& already_seen,
+            std::vector< index_t >& surfaces_to_inverse_normals ) ;
+        void inverse_normal_attribute_one_surface( const Surface& surface ) const ;
+        void update_region_polarity( const Surface& surface) ;
     } ;
 
 }

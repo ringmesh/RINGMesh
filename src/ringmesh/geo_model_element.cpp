@@ -1474,6 +1474,9 @@ namespace RINGMesh {
                     break ;
                 }
             }
+            if( cell_id_in_region != NO_ID ) {
+                break ;
+            }
         }
         ringmesh_assert( cell_id_in_region != NO_ID ) ;
         return cells_around_vertex( region_vertex_id, result, border_only,

@@ -1888,7 +1888,6 @@ namespace RINGMesh {
         std::vector< index_t > visited_cells ;
         visited_cells.reserve( R.nb_cells() ) ;
         visited_cells.push_back( c ) ;
-        GEO::MeshVertices& mesh_v = region_mesh.vertices ;
 
         const index_t initial_nb_vertices = R.nb_vertices() ;
         duplicate_one_facet( R, S, c, f, initial_nb_vertices, flag_to_duplicate,
@@ -1970,6 +1969,8 @@ namespace RINGMesh {
                     }
                 }
 
+                /// @todo check if that is necessary. A priori no because
+                /// above I check if the current vertex is a new one.
                 flag_to_duplicate[v_id_in_reg] = false ; // to not duplicate it twice
             }
         }
@@ -2116,6 +2117,7 @@ namespace RINGMesh {
             }
         }
 
+
 //        geo_model_mesh_repair( model_ ) ;
         // ========= bad copy paste from geo model repair
         for( index_t i = 0; i < model_.nb_surfaces(); ++i ) {
@@ -2150,6 +2152,9 @@ namespace RINGMesh {
             if( !R.is_meshed() ) {
                 continue ;
             }
+            // the std::set avoids that a region is cut twice by the same
+            // surface (internal borner is defined by twice the region in the
+            // in boundaries of the surface.
             std::set< index_t > cutting_surfaces ;
             for( index_t s = 0; s < R.nb_boundaries(); ++s ) {
                 const Surface& S = model_.surface( R.boundary_gme( s ).index ) ;
@@ -2167,6 +2172,13 @@ namespace RINGMesh {
             }
         }
         //=================== Cut the region by the surfaces
+
+
+        for( index_t reg_itr = 0; reg_itr < model_.nb_regions(); ++reg_itr ) {
+            DEBUG(model_.region( reg_itr ).nb_vertices()) ;
+            model_.region( reg_itr ).mesh().vertices.remove_isolated() ;
+            DEBUG(model_.region( reg_itr ).nb_vertices()) ;
+        }
 
         // Deliberate clear of the model vertices used for model building
         model_.mesh.vertices.clear() ;
