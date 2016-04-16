@@ -779,8 +779,6 @@ namespace RINGMesh {
 
                 ringmesh_assert(cur_surface.nb_in_boundary()==1) ;
                 ringmesh_assert(cur_surface.in_boundary(0).type()==GME::REGION) ;
-                const index_t surf_in_boun_reg =
-                    cur_surface.in_boundary( 0 ).index() ;
                 for( index_t surf_vertex_itr = 0;
                     surf_vertex_itr < cur_surface.nb_vertices();
                     ++surf_vertex_itr ) {

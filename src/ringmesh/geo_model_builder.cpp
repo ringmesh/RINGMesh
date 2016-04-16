@@ -2121,7 +2121,6 @@ namespace RINGMesh {
 //        geo_model_mesh_repair( model_ ) ;
         // ========= bad copy paste from geo model repair
         for( index_t i = 0; i < model_.nb_surfaces(); ++i ) {
-            GEO::Mesh& M = model_.surface( i ).mesh() ;
             // If the Surface has internal boundaries, we need to
             // re-cut the Surface along these lines
             Surface& S = const_cast< Surface& >( model_.surface( i ) ) ;
@@ -2145,7 +2144,6 @@ namespace RINGMesh {
 
         //=================== Cut the region by the surfaces
         for( index_t i = 0; i < model_.nb_regions(); ++i ) {
-            GEO::Mesh& M = model_.region( i ).mesh() ;
             // If the Region has internal boundaries, we need to
             // re-cut the Region along these surfaces
             Region& R = const_cast< Region& >( model_.region( i ) ) ;

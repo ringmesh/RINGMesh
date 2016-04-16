@@ -156,7 +156,7 @@ namespace {
         // model vertex ids are not good
         ringmesh_assert(
             std::count( vertices_global.begin(), vertices_global.end(), 0 )
-            != vertices_global.size() ) ;
+            != static_cast<index_t> ( vertices_global.size() ) ) ;
 
         std::sort( vertices.begin(), vertices.end() ) ;
         std::sort( vertices_global.begin(), vertices_global.end() ) ;
@@ -1449,7 +1449,8 @@ namespace RINGMesh {
         ringmesh_assert( !result.empty() ) ;
 #ifdef RINGMESH_DEBUG
         for( index_t result_itr = 0; result_itr < result.size(); ++result_itr ) {
-            int nb = std::count( result.begin(), result.end(), result[result_itr] ) ;
+            index_t nb = static_cast< index_t >( std::count( result.begin(),
+                result.end(), result[result_itr] ) ) ;
             ringmesh_assert( nb == 1 ) ;
         }
 #endif
@@ -1665,7 +1666,8 @@ namespace RINGMesh {
         ringmesh_assert( !result.empty() ) ;
 #ifdef RINGMESH_DEBUG
         for( index_t result_itr = 0; result_itr < result.size(); ++result_itr ) {
-            int nb = std::count( result.begin(), result.end(), result[result_itr] ) ;
+            int nb = static_cast< index_t >( std::count( result.begin(),
+                result.end(), result[result_itr] ) ) ;
             ringmesh_assert( nb == 1 ) ;
         }
 #endif
