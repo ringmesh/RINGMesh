@@ -75,7 +75,8 @@ namespace RINGMesh {
             const std::map< index_t, std::vector< index_t > >& surfaces_boundary_regions,
             const std::string& side_name,
             std::vector< std::vector< index_t > >& to_erase_by_type,
-            const GME::gme_t& sided_interface_gme_t ) ;
+            const GME::gme_t& sided_interface_gme_t,
+            const GeoModelElement& interface_to_duplicate ) ;
         void compute_translation_vectors_duplicated_fault_network(
             index_t first_new_interface_index,
             const std::vector< std::vector< index_t > >& to_erase_by_type ) ;
@@ -127,9 +128,21 @@ namespace RINGMesh {
             std::vector< bool >& already_seen,
             std::vector< index_t >& surfaces_to_inverse_normals ) ;
         void inverse_normal_attribute_one_surface( const Surface& surface ) const ;
-        void update_region_polarity( const Surface& surface) ;
+        void update_region_polarity( const Surface& surface ) ;
+        void mutual_cut_between_new_merged_surfaces(
+            index_t first_new_interface_index,
+            const std::vector< std::vector< index_t > >& to_erase_by_type ) ;
+        void cut_surface_by_fault_network(
+            const Surface& surface_to_cut,
+            index_t first_new_interface_index ) ;
+        void add_fake_internal_boudnary_lines_to_merged_surface(
+            const std::map< index_t, index_t >& all_surface_lines,
+            const std::string& side_name,
+            const GME::gme_t& sided_interface_gme_t,
+            const GeoModelElement& interface_to_duplicate,
+            const GME::gme_t& new_surface_gme_t ) ;
+        void save_normal_on_one_surface( const Surface& surface ) const ;
     } ;
-
 }
 
 #endif

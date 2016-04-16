@@ -293,40 +293,7 @@ namespace RINGMesh {
             // As the loop begins at the first new interface, no surface
             // met in this loop should be to delete.
             const Surface& cur_surface = model_.surface( cur_child.index() ) ;
-            GEO::Mesh& cur_surf_mesh = cur_surface.mesh() ;
-            // GEO::compute_normals cannot be used because the dimension
-            // of the vertices from 3 to 6 and that provokes a problem
-            // of copying in GeoModelMeshVertices::initialize
-            // with GEO::Memory::copy( mesh_.vertices.point_ptr( count ),
-            // E.vertex( 0 ).data(), 3 * E.nb_vertices() * sizeof(double) ) ;
-            // 3 means vertices of dimension 3 and not another dimension.
-            GEO::AttributesManager& att_mgr = cur_surf_mesh.vertices.attributes() ;
-            GEO::Attribute< double > normal_att_x( att_mgr, "normal_attr_x" ) ;
-            GEO::Attribute< double > normal_att_y( att_mgr, "normal_attr_y" ) ;
-            GEO::Attribute< double > normal_att_z( att_mgr, "normal_attr_z" ) ;
-            normal_att_x.fill( 0. ) ;
-            normal_att_y.fill( 0. ) ;
-            normal_att_z.fill( 0. ) ;
-            // begin copy paste from GEO::compute_normals
-            for( index_t f = 0; f < cur_surf_mesh.facets.nb(); f++ ) {
-                vec3 N = GEO::Geom::mesh_facet_normal( cur_surf_mesh, f ) ;
-                for( index_t corner = cur_surf_mesh.facets.corners_begin( f );
-                    corner < cur_surf_mesh.facets.corners_end( f ); corner++ ) {
-                    index_t v = cur_surf_mesh.facet_corners.vertex( corner ) ;
-                    normal_att_x[v] += N.x ;
-                    normal_att_y[v] += N.y ;
-                    normal_att_z[v] += N.z ;
-                }
-            }
-            for( index_t i = 0; i < cur_surf_mesh.vertices.nb(); i++ ) {
-                vec3 cur_normal( normal_att_x[i], normal_att_y[i],
-                    normal_att_z[i] ) ;
-                cur_normal = normalize( cur_normal ) ;
-                normal_att_x[i] = cur_normal.x ;
-                normal_att_y[i] = cur_normal.y ;
-                normal_att_z[i] = cur_normal.z ;
-            }
-            // end copy paste from GEO::compute_normals
+            save_normal_on_one_surface( cur_surface ) ;
         }
     }
 
@@ -390,7 +357,12 @@ namespace RINGMesh {
             throw std::runtime_error( message ) ;
         }
 
-        /// @todo a clear of the geomodelmesh vertices may be necessary somewhere
+        // The new surfaces has no internal borders made by the intersections
+        // with other new surfaces. Some of these may cut some of these
+        // new surfaces by two (two connected components). In this last case,
+        // two new surfaces are built to replace the new uncut surface.
+        /*mutual_cut_between_new_merged_surfaces( nb_initial_interfaces,
+         to_erase_by_type ) ;*/
 
         // compute translation vectors
         compute_translation_vectors_duplicated_fault_network( nb_initial_interfaces,
@@ -415,6 +387,55 @@ namespace RINGMesh {
         build_lines_and_corners_from_surfaces() ;
         complete_element_connectivity() ;
         build_contacts() ;
+    }
+
+    void DuplicateInterfaceBuilder::mutual_cut_between_new_merged_surfaces(
+        index_t first_new_interface_index,
+        const std::vector< std::vector< index_t > >& to_erase_by_type )
+    {
+        ringmesh_assert( model_.nb_interfaces() - first_new_interface_index >= 2 ) ;
+        for( index_t new_interface_itr = first_new_interface_index;
+            new_interface_itr < model_.nb_interfaces(); ++new_interface_itr ) {
+            ringmesh_assert( to_erase_by_type[GME::INTERFACE][new_interface_itr] != NO_ID ) ;
+            ringmesh_assert( to_erase_by_type[GME::INTERFACE][new_interface_itr] == 0 ) ;
+
+            const GeoModelElement& interface_gme = model_.one_interface(
+                new_interface_itr ) ;
+            for( index_t child_itr = 0; child_itr < interface_gme.nb_children();
+                ++child_itr ) {
+                const GME::gme_t& cur_gme_t = interface_gme.boundary_gme(
+                    child_itr ) ;
+                ringmesh_assert( cur_gme_t.type == GME::SURFACE ) ;
+                const Surface& cur_surface = model_.surface( cur_gme_t.index ) ;
+                cut_surface_by_fault_network( cur_surface,
+                    first_new_interface_index ) ;
+            }
+        }
+    }
+
+    void DuplicateInterfaceBuilder::cut_surface_by_fault_network(
+        const Surface& surface_to_cut,
+        index_t first_new_interface_index )
+    {
+        ringmesh_assert( model_.nb_interfaces() - first_new_interface_index >= 2 ) ;
+        for( index_t new_interface_itr = first_new_interface_index;
+            new_interface_itr < model_.nb_interfaces(); ++new_interface_itr ) {
+
+            if( new_interface_itr == surface_to_cut.parent().index() ) {
+                // Cannot cut an interface by itself
+                continue ;
+            }
+
+            const GeoModelElement& interface_gme = model_.one_interface(
+                new_interface_itr ) ;
+            for( index_t child_itr = 0; child_itr < interface_gme.nb_children();
+                ++child_itr ) {
+                const GME::gme_t& cur_gme_t = interface_gme.boundary_gme(
+                    child_itr ) ;
+                ringmesh_assert( cur_gme_t.type == GME::SURFACE ) ;
+                const Surface& cur_surface = model_.surface( cur_gme_t.index ) ;
+            }
+        }
     }
 
     void DuplicateInterfaceBuilder::get_new_surfaces(
@@ -519,20 +540,24 @@ namespace RINGMesh {
         }
 
         build_merged_surfaces( surfaces_boundary_regions_side_plus, "_plus",
-            to_erase_by_type, interface_plus_gme_t ) ;
+            to_erase_by_type, interface_plus_gme_t, interface_to_duplicate ) ;
         build_merged_surfaces( surfaces_boundary_regions_side_minus, "_minus",
-            to_erase_by_type, interface_minus_gme_t ) ;
+            to_erase_by_type, interface_minus_gme_t, interface_to_duplicate ) ;
     }
 
     void DuplicateInterfaceBuilder::build_merged_surfaces(
         const std::map< index_t, std::vector< index_t > >& surfaces_boundary_regions,
         const std::string& side_name,
         std::vector< std::vector< index_t > >& to_erase_by_type,
-        const GME::gme_t& sided_interface_gme_t )
+        const GME::gme_t& sided_interface_gme_t,
+        const GeoModelElement& interface_to_duplicate )
     {
         for( std::map< index_t, std::vector< index_t > >::const_iterator map_itr =
             surfaces_boundary_regions.begin();
             map_itr != surfaces_boundary_regions.end(); ++map_itr ) {
+
+            // first = line index in geomodel, second = count.
+            std::map< index_t, index_t > all_surface_lines ;
 
             index_t region_index = map_itr->first ;
             std::vector< vec3 > all_points ;
@@ -588,6 +613,22 @@ namespace RINGMesh {
                     facet_ptr.push_back( count_facet_vertices ) ;
                 }
 
+                // Update the lines in common
+                /// @todo this line part is necessary if used for the mutural cut
+                /// else delete it.
+                for( index_t line_itr = 0; line_itr < cur_surf.nb_boundaries();
+                    ++line_itr ) {
+                    const GeoModelElement& cur_line_gme = cur_surf.boundary(
+                        line_itr ) ;
+                    ringmesh_assert( cur_line_gme.type() == GME::LINE ) ;
+
+                    if( all_surface_lines.find( cur_line_gme.index() )
+                        == all_surface_lines.end() ) {
+                        all_surface_lines[cur_line_gme.index()] = 0 ; // initialization
+                    }
+                    ++all_surface_lines[cur_line_gme.index()] ;
+                }
+
                 offset_vertices += cur_surf.nb_vertices() ;
             }
 
@@ -611,6 +652,195 @@ namespace RINGMesh {
                 !side ) ;
 
             to_erase_by_type[GME::SURFACE].push_back( 0 ) ;
+
+            add_fake_internal_boudnary_lines_to_merged_surface( all_surface_lines,
+                side_name, sided_interface_gme_t, interface_to_duplicate,
+                new_surface_gme_t ) ;
+        }
+    }
+
+    void DuplicateInterfaceBuilder::add_fake_internal_boudnary_lines_to_merged_surface(
+        const std::map< index_t, index_t >& all_surface_lines,
+        const std::string& side_name,
+        const GME::gme_t& sided_interface_gme_t,
+        const GeoModelElement& interface_to_duplicate,
+        const GME::gme_t& new_surface_gme_t )
+    {
+        DEBUG( "====================================================" ) ;
+        DEBUG( "====================================================" ) ;
+        DEBUG( "====================================================" ) ;
+        DEBUG( "====================================================" ) ;
+        DEBUG("add_fake_internal_boudnary_lines_to_merged_surface") ;
+        recompute_geomodel_mesh() ; // to take into account the new surface in gme_vertices.
+        save_normal_on_one_surface( model_.surface( new_surface_gme_t.index ) ) ;
+        // I DO THAT HERE BUT MAYBE IT IS SIMPLIER TO DO THAT AFTER HAVING
+        // CREATED ALL THE NEW INTERFACES.
+        // Add all the lines of the old surfaces, which served to build the
+        // new merged surface, to the new merged surface. These lines will be
+        // removed, they are here only to ease the mutual cut when the new
+        // interfaces are all built (see mutual_cut_between_new_merged_surfaces)
+        // IN FACT I ADD ONLY THE LINES RESPONSIBLE OF INTERNAL BORDER OR CUTTING
+        // THE SURFACE INTO TWO SURFACES.
+        for( std::map< index_t, index_t >::const_iterator all_surface_lines_itr =
+            all_surface_lines.begin();
+            all_surface_lines_itr != all_surface_lines.end();
+            ++all_surface_lines_itr ) {
+            if( all_surface_lines_itr->second == 1 ) {
+                // Line on the border of the new surface (not internal border)
+                continue ;
+            }
+            ringmesh_assert( all_surface_lines_itr->second != 0 ) ;
+            const Line& cur_line = model_.line( all_surface_lines_itr->first ) ;
+            DEBUG( "====================================================" ) ;
+            DEBUG( cur_line.index() ) ;
+            // As the line is not on the border, its number of in boundaries
+            // superior to 1 strictly.
+            ringmesh_assert( cur_line.nb_in_boundary() > 1 ) ;
+            bool good_line = false ;
+            for( index_t in_boun_itr = 0; in_boun_itr < cur_line.nb_in_boundary();
+                ++in_boun_itr ) {
+                DEBUG( "----------------------------------" ) ;
+                const GeoModelElement& cur_in_boun_gme = cur_line.in_boundary(
+                    in_boun_itr ) ;
+                ringmesh_assert( cur_in_boun_gme.type() == GME::SURFACE ) ;
+
+                DEBUG("Before surface belongs new interface test") ;
+                if( does_surface_belong_to_interface(
+                    model_.surface( cur_in_boun_gme.index() ),
+                    model_.one_interface( sided_interface_gme_t.index ) ) ) {
+                    continue ;
+                }
+
+                DEBUG("Before minus test") ;
+                // minus side is done before the plus side
+                if( side_name == "_minus" ) {
+                    DEBUG( "do_minus_test" ) ;
+
+                    ringmesh_assert(sided_interface_gme_t.index + 1 < model_.nb_interfaces()) ;
+                    const GeoModelElement& plus_side_gme = model_.one_interface(
+                        sided_interface_gme_t.index + 1 ) ;
+                    GEO::mesh_save(
+                        model_.surface( plus_side_gme.child( 0 ).index() ).mesh(),
+                        "plus_child_"
+                            + GEO::String::to_string( plus_side_gme.index() )
+                            + "_cur_line_"
+                            + GEO::String::to_string( cur_line.index() )
+                            + ".meshb" ) ;
+
+                    if( does_surface_belong_to_interface(
+                        model_.surface( cur_in_boun_gme.index() ),
+                        plus_side_gme ) ) {
+                        continue ;
+                    }
+                }
+                // Is is not necessary to check the minus side since plus is done
+                // before so no line attached to the minus side yet.
+                /*else {
+                 DEBUG( "do_minus_test" ) ;
+
+                 ringmesh_assert(sided_interface_gme_t.index - 1 >= 0) ;
+                 const GeoModelElement& plus_side_gme = model_.one_interface(
+                 sided_interface_gme_t.index - 1 ) ;
+                 GEO::mesh_save(
+                 model_.surface( plus_side_gme.child( 0 ).index() ).mesh(),
+                 "plus_child_"
+                 + GEO::String::to_string( plus_side_gme.index() )
+                 + "_cur_line_"
+                 + GEO::String::to_string( cur_line.index() )
+                 + ".meshb" ) ;
+
+                 if( does_surface_belong_to_interface(
+                 model_.surface( cur_in_boun_gme.index() ),
+                 plus_side_gme ) ) {
+                 continue ;
+                 }
+                 }*/
+
+                DEBUG("Before old interface to duplicate test") ;
+                // Check if the surface is not from the old interface to
+                // duplicate.
+                if( does_surface_belong_to_interface(
+                    model_.surface( cur_in_boun_gme.index() ),
+                    interface_to_duplicate ) ) {
+                    continue ;
+                }
+
+                DEBUG("Before geol feature test") ;
+                GME::GEOL_FEATURE parent_geol_feature =
+                    cur_in_boun_gme.parent().geological_feature() ;
+                if( !GME::is_fault( parent_geol_feature ) ) {
+                    continue ;
+                }
+
+                // Check if the found fault is on the right side
+                ringmesh_assert( cur_line.nb_vertices() > 0 ) ;
+                index_t first_vertex_id_in_gmm = cur_line.model_vertex_id( 0 ) ;
+                const std::vector< GMEVertex >& gme_vertices =
+                    model_.mesh.vertices.gme_vertices( first_vertex_id_in_gmm ) ;
+                ringmesh_assert( !gme_vertices.empty() ) ; /// @todo I think that this assert may be more restrictive
+                index_t vertex_id_in_new_surface = NO_ID ;
+                index_t vertex_id_in_found_surface = NO_ID ;
+                for( index_t gme_vertices_itr = 0;
+                    gme_vertices_itr < gme_vertices.size(); ++gme_vertices_itr ) {
+                    const GMEVertex& cur_gme_vertex = gme_vertices[gme_vertices_itr] ;
+                    if( cur_gme_vertex.gme_id.type != GME::SURFACE ) {
+                        continue ;
+                    }
+                    if( cur_gme_vertex.gme_id.index == new_surface_gme_t.index ) {
+                        vertex_id_in_new_surface = cur_gme_vertex.v_id ;
+                    } else if( cur_gme_vertex.gme_id.index
+                        == cur_in_boun_gme.index() ) {
+                        vertex_id_in_found_surface = cur_gme_vertex.v_id ;
+                    }
+                    if( vertex_id_in_new_surface != NO_ID
+                        && vertex_id_in_found_surface != NO_ID ) {
+                        break ;
+                    }
+                }
+                ringmesh_assert(
+                    vertex_id_in_new_surface != NO_ID
+                    && vertex_id_in_found_surface != NO_ID ) ;
+
+                // On the found surface, the normal has been computed before
+                // for the homogenization of normals.
+
+                const vec3 local_translation_normal = get_local_translation_normal(
+                    model_.surface( new_surface_gme_t.index ),
+                    vertex_id_in_new_surface ) ;
+
+                vec3 vertex_pos = model_.surface( new_surface_gme_t.index ).vertex(
+                    vertex_id_in_new_surface ) ;
+                DEBUG( vertex_pos ) ;
+                DEBUG( vertex_pos + local_translation_normal ) ;
+                DEBUG("Before right side test") ;
+                GEO::mesh_save( cur_line.mesh(),
+                    "potential_side" + side_name + "_line_internal_line_id_"
+                        + GEO::String::to_string( cur_line.index() ) + ".meshb" ) ;
+                GEO::mesh_save( model_.surface( cur_in_boun_gme.index() ).mesh(),
+                    "potential_side" + side_name + "_surf_internal_line_id_"
+                        + GEO::String::to_string( cur_in_boun_gme.index() )
+                        + ".meshb" ) ;
+                if( !is_surface_on_right_side_of_sided_interface(
+                    cur_in_boun_gme.index(), local_translation_normal,
+                    vertex_id_in_found_surface, vertex_pos ) ) {
+                    continue ;
+                }
+
+                add_element_boundary( new_surface_gme_t, cur_line.gme_id() ) ;
+                // Adds twice in boundary for internal border.
+                add_element_in_boundary( cur_line.gme_id(), new_surface_gme_t ) ;
+                add_element_in_boundary( cur_line.gme_id(), new_surface_gme_t ) ;
+
+                GEO::mesh_save( cur_line.mesh(),
+                    "side" + side_name + "_line_internal_line_id_"
+                        + GEO::String::to_string( cur_line.index() ) + ".meshb" ) ;
+
+                good_line = true ;
+                break ;
+            }
+            if( !good_line ) {
+                continue ;
+            }
         }
     }
 
@@ -671,41 +901,46 @@ namespace RINGMesh {
             ringmesh_assert( to_erase_by_type[GME::SURFACE][cur_child.index()] == 0 ) ;
             ringmesh_assert( to_erase_by_type[GME::SURFACE][cur_child.index()] != NO_ID ) ;
             const Surface& cur_surface = model_.surface( cur_child.index() ) ;
-            GEO::Mesh& cur_surf_mesh = cur_surface.mesh() ;
-            // GEO::compute_normals cannot be used because the dimension
-            // of the vertices from 3 to 6 and that provokes a problem
-            // of copying in GeoModelMeshVertices::initialize
-            // with GEO::Memory::copy( mesh_.vertices.point_ptr( count ),
-            // E.vertex( 0 ).data(), 3 * E.nb_vertices() * sizeof(double) ) ;
-            // 3 means vertices of dimension 3 and not another dimension.
-            GEO::AttributesManager& att_mgr = cur_surf_mesh.vertices.attributes() ;
-            GEO::Attribute< double > normal_att_x( att_mgr, "normal_attr_x" ) ;
-            GEO::Attribute< double > normal_att_y( att_mgr, "normal_attr_y" ) ;
-            GEO::Attribute< double > normal_att_z( att_mgr, "normal_attr_z" ) ;
-            normal_att_x.fill( 0. ) ;
-            normal_att_y.fill( 0. ) ;
-            normal_att_z.fill( 0. ) ;
-            // begin copy paste from GEO::compute_normals
-            for( index_t f = 0; f < cur_surf_mesh.facets.nb(); f++ ) {
-                vec3 N = GEO::Geom::mesh_facet_normal( cur_surf_mesh, f ) ;
-                for( index_t corner = cur_surf_mesh.facets.corners_begin( f );
-                    corner < cur_surf_mesh.facets.corners_end( f ); corner++ ) {
-                    index_t v = cur_surf_mesh.facet_corners.vertex( corner ) ;
-                    normal_att_x[v] += N.x ;
-                    normal_att_y[v] += N.y ;
-                    normal_att_z[v] += N.z ;
-                }
-            }
-            for( index_t i = 0; i < cur_surf_mesh.vertices.nb(); i++ ) {
-                vec3 cur_normal( normal_att_x[i], normal_att_y[i],
-                    normal_att_z[i] ) ;
-                cur_normal = normalize( cur_normal ) ;
-                normal_att_x[i] = cur_normal.x ;
-                normal_att_y[i] = cur_normal.y ;
-                normal_att_z[i] = cur_normal.z ;
-            }
-            // end copy paste from GEO::compute_normals
+            save_normal_on_one_surface( cur_surface ) ;
         }
+    }
+
+    void DuplicateInterfaceBuilder::save_normal_on_one_surface(
+        const Surface& surface ) const
+    {
+        GEO::Mesh& cur_surf_mesh = surface.mesh() ;
+        // GEO::compute_normals cannot be used because the dimension
+        // of the vertices from 3 to 6 and that provokes a problem
+        // of copying in GeoModelMeshVertices::initialize
+        // with GEO::Memory::copy( mesh_.vertices.point_ptr( count ),
+        // E.vertex( 0 ).data(), 3 * E.nb_vertices() * sizeof(double) ) ;
+        // 3 means vertices of dimension 3 and not another dimension.
+        GEO::AttributesManager& att_mgr = cur_surf_mesh.vertices.attributes() ;
+        GEO::Attribute< double > normal_att_x( att_mgr, "normal_attr_x" ) ;
+        GEO::Attribute< double > normal_att_y( att_mgr, "normal_attr_y" ) ;
+        GEO::Attribute< double > normal_att_z( att_mgr, "normal_attr_z" ) ;
+        normal_att_x.fill( 0. ) ;
+        normal_att_y.fill( 0. ) ;
+        normal_att_z.fill( 0. ) ;
+        // begin copy paste from GEO::compute_normals
+        for( index_t f = 0; f < cur_surf_mesh.facets.nb(); f++ ) {
+            vec3 N = GEO::Geom::mesh_facet_normal( cur_surf_mesh, f ) ;
+            for( index_t corner = cur_surf_mesh.facets.corners_begin( f );
+                corner < cur_surf_mesh.facets.corners_end( f ); corner++ ) {
+                index_t v = cur_surf_mesh.facet_corners.vertex( corner ) ;
+                normal_att_x[v] += N.x ;
+                normal_att_y[v] += N.y ;
+                normal_att_z[v] += N.z ;
+            }
+        }
+        for( index_t i = 0; i < cur_surf_mesh.vertices.nb(); i++ ) {
+            vec3 cur_normal( normal_att_x[i], normal_att_y[i], normal_att_z[i] ) ;
+            cur_normal = normalize( cur_normal ) ;
+            normal_att_x[i] = cur_normal.x ;
+            normal_att_y[i] = cur_normal.y ;
+            normal_att_z[i] = cur_normal.z ;
+        }
+        // end copy paste from GEO::compute_normals
     }
 
     vec3 DuplicateInterfaceBuilder::get_local_translation_normal(
@@ -950,11 +1185,14 @@ namespace RINGMesh {
             vec3 p = cur_facet_barycenter - vertex_pos ;
             surf_to_check_mean_normal_on_vertex += p ;
         }
+        DEBUG( vertex_pos + surf_to_check_mean_normal_on_vertex ) ;
         ringmesh_assert(
             std::abs(surf_to_check_mean_normal_on_vertex.x ) > epsilon ||
             std::abs(surf_to_check_mean_normal_on_vertex.y ) > epsilon ||
             std::abs(surf_to_check_mean_normal_on_vertex.z ) > epsilon ) ;
 
+        DEBUG(GEO::dot( 50 * normal_on_vertex_interface,
+                surf_to_check_mean_normal_on_vertex )) ;
         if( GEO::dot( 50 * normal_on_vertex_interface,
             surf_to_check_mean_normal_on_vertex ) > epsilon ) {
             return true ;
