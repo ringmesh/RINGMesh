@@ -278,10 +278,17 @@ namespace RINGMesh {
             const std::vector< index_t >& tet_vertices ) const ;
 
         void duplicate_surface_vertices_along_line( Surface& S, const Line& L ) ;
+    protected:
+        void duplicate_surface_vertices_along_line_benjamin(
+            Surface& S,
+            const Line& L ) ;
+    private :
         void duplicate_region_vertices_along_surface( Region& R, const Surface& S ) ;
+    protected:
         void disconnect_surface_facets_along_line_edges(
             Surface& S,
             const Line& L ) ;
+    private :
         void disconnect_region_cells_along_surface_facets(
             Region& R,
             const Surface& S ) ;

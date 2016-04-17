@@ -131,17 +131,22 @@ namespace RINGMesh {
         void update_region_polarity( const Surface& surface ) ;
         void mutual_cut_between_new_merged_surfaces(
             index_t first_new_interface_index,
-            const std::vector< std::vector< index_t > >& to_erase_by_type ) ;
-        void cut_surface_by_fault_network(
-            const Surface& surface_to_cut,
-            index_t first_new_interface_index ) ;
+            const std::vector< std::vector< index_t > >& to_erase_by_type ) ; /// @todo not a good name
         void add_fake_internal_boudnary_lines_to_merged_surface(
             const std::map< index_t, index_t >& all_surface_lines,
             const std::string& side_name,
             const GME::gme_t& sided_interface_gme_t,
             const GeoModelElement& interface_to_duplicate,
-            const GME::gme_t& new_surface_gme_t ) ;
+            const GME::gme_t& new_surface_gme_t,
+            std::vector< std::vector< index_t > >& to_erase_by_type,
+            index_t region_index ) ;
         void save_normal_on_one_surface( const Surface& surface ) const ;
+        void split_merged_surface(
+            const GME::gme_t& new_surface_gme_t,
+            const std::string& side_name,
+            const GME::gme_t& sided_interface_gme_t,
+            std::vector< std::vector< index_t > >& to_erase_by_type,
+            index_t region_index ) ;
     } ;
 }
 

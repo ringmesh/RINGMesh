@@ -323,8 +323,6 @@ namespace {
 
 namespace RINGMesh {
 
-    GEO::Mesh debug_mesh ;
-
     /*!
      * @brief Utility class to sort a set of oriented triangles around a common edge
      * Used in GeoModelBuilderSurface.
@@ -1836,6 +1834,67 @@ namespace RINGMesh {
         }
     }
 
+    /// @todo TO DELETE A PRIORI
+    void duplicate_vertex_on_surface(const vec3& coord, const Surface& S)
+    {
+        GEO::Mesh& surface_mesh = S.mesh() ;
+        ColocaterANN surface_ann( surface_mesh, ColocaterANN::VERTICES ) ;
+        std::vector< index_t > colocated_points ;
+        bool ok = surface_ann.get_colocated( coord, colocated_points ) ;
+        ringmesh_assert( ok ) ;
+        /// @todo even if the vertex is already duplicated, we duplicate it again.
+        /// isolated vertex are deleted later... dirty
+        ringmesh_assert( colocated_points.size() >= 1 ) ;
+        std::vector< index_t > around_facets ;
+        S.facets_around_vertex( colocated_points[0], around_facets, false ) ;
+        index_t new_vertex_id = surface_mesh.vertices.create_vertex( coord.data() ) ;
+        for( index_t around_facets_itr = 0;
+            around_facets_itr < around_facets[around_facets_itr];
+            ++around_facets_itr ) {
+            index_t cur_around_facet_id = around_facets[around_facets_itr] ;
+            for( index_t v_in_f_itr = 0;
+                v_in_f_itr < surface_mesh.facets.nb_vertices( cur_around_facet_id );
+                ++v_in_f_itr ) {
+                if( surface_mesh.facets.vertex( cur_around_facet_id, v_in_f_itr )
+                    == colocated_points[0] ) {
+                    surface_mesh.facets.set_vertex( cur_around_facet_id, v_in_f_itr,
+                        new_vertex_id ) ;
+                    break ;
+                }
+            }
+        }
+//        surface_mesh.vertices.remove_isolated() ;
+    }
+
+    /// @todo TO DELETE A PRIORI
+    void GeoModelBuilder::duplicate_surface_vertices_along_line_benjamin(
+        Surface& S,
+        const Line& L )
+    {
+        const Corner& line_first_corner = dynamic_cast< const Corner& >( L.boundary(
+            0 ) ) ;
+        if( is_corner_to_duplicate( S.model(), line_first_corner.index() ) ) {
+            DEBUG("first corner is duplicated") ;
+            const vec3& coord = line_first_corner.vertex( 0 ) ;
+            duplicate_vertex_on_surface( coord, S ) ;
+        }
+
+
+        for(index_t line_v_itr =1 ; line_v_itr < L.nb_vertices() -1; ++line_v_itr ) {
+            DEBUG(line_v_itr) ;
+            const vec3& coord = L.vertex( line_v_itr ) ;
+            duplicate_vertex_on_surface( coord, S ) ;
+        }
+
+        const Corner& line_second_corner = dynamic_cast< const Corner& >( L.boundary(
+            1 ) ) ;
+        if( is_corner_to_duplicate( S.model(), line_second_corner.index() ) ) {
+            DEBUG("second corner is duplicated") ;
+            const vec3& coord = line_second_corner.vertex( 0 ) ;
+            duplicate_vertex_on_surface( coord, S ) ;
+        }
+    }
+
     void GeoModelBuilder::duplicate_region_vertices_along_surface(
         Region& R,
         const Surface& S )
@@ -1892,7 +1951,6 @@ namespace RINGMesh {
         const index_t initial_nb_vertices = R.nb_vertices() ;
         duplicate_one_facet( R, S, c, f, initial_nb_vertices, flag_to_duplicate,
             visited_cells, side ) ;
-        GEO::mesh_save( debug_mesh, "debug_mesh.meshb" ) ;
     }
 
     void GeoModelBuilder::duplicate_one_facet(
@@ -1905,31 +1963,15 @@ namespace RINGMesh {
         std::vector< index_t >& visited_cells,
         int side )
     {
-        // debug
-        index_t p0 = debug_mesh.vertices.create_vertex(
-            R.mesh().vertices.point( R.mesh().cells.vertex( c, 0 ) ).data() ) ;
-        index_t p1 = debug_mesh.vertices.create_vertex(
-            R.mesh().vertices.point( R.mesh().cells.vertex( c, 1 ) ).data() ) ;
-        index_t p2 = debug_mesh.vertices.create_vertex(
-            R.mesh().vertices.point( R.mesh().cells.vertex( c, 2 ) ).data() ) ;
-        index_t p3 = debug_mesh.vertices.create_vertex(
-            R.mesh().vertices.point( R.mesh().cells.vertex( c, 3 ) ).data() ) ;
-        debug_mesh.cells.create_tet( p0, p1, p2, p3 ) ;
-        // debug
-
         GEO::Mesh& region_mesh = R.mesh() ;
         GEO::MeshVertices& mesh_v = region_mesh.vertices ;
-//        GEO::vector< index_t > v_id_new_facet ;
-//        v_id_new_facet.reserve( 4 ) ;
         for( index_t v = 0; v < R.facet_nb_vertices( c, f ); ++v ) {
             index_t v_id_in_reg = R.facet_vertex( c, f, v ) ;
             if( !flag_to_duplicate[v_id_in_reg] ) {
-//                v_id_new_facet.push_back( v_id_in_reg ) ;
                 continue ;
             }
 
             if( v_id_in_reg >= initial_nb_vertices ) { // already duplicated vertex
-//                v_id_new_facet.push_back( v_id_in_reg ) ;
                 continue ;
             } else {
                 // a copy of the coordinates is necessary, otherwise crash if use
@@ -1939,7 +1981,6 @@ namespace RINGMesh {
                 coords[1] = mesh_v.point( v_id_in_reg ).y ;
                 coords[2] = mesh_v.point( v_id_in_reg ).z ;
                 index_t new_v_id = mesh_v.create_vertex( coords ) ;
-//                v_id_new_facet.push_back( new_v_id ) ;
                 std::vector< index_t > surrounding_cells ;
                 // Not only cells in border have a vertex id to be modified
                 R.cells_around_vertex( v_id_in_reg, surrounding_cells, false, c ) ;
@@ -1974,7 +2015,6 @@ namespace RINGMesh {
                 flag_to_duplicate[v_id_in_reg] = false ; // to not duplicate it twice
             }
         }
-//        region_mesh.facets.create_polygon( v_id_new_facet ) ;
 
         for( index_t v = 0; v < R.facet_nb_vertices( c, f ); ++v ) {
             index_t v_id_in_reg = R.facet_vertex( c, f, v ) ;
@@ -2081,7 +2121,6 @@ namespace RINGMesh {
         duplicate_region_vertices_along_surface( R, S ) ;
         // Rebuild the mesh facets of the region
         R.mesh().cells.compute_borders() ;
-        GEO::mesh_save( R.mesh(), "new_r_mesh.meshb" ) ;
 
         if( !model_vertices_initialized ) {
             const_cast< GeoModel& >( model() ).mesh.vertices.clear() ;
