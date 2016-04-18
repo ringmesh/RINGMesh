@@ -54,13 +54,18 @@
 namespace RINGMesh {
 
     DuplicateInterfaceBuilder::DuplicateInterfaceBuilder( GeoModel& model )
-        : GeoModelBuilder( model )
+        : GeoModelBuilder( model ), all_meshed_( true ), gme_vertices_links_()
     {
     }
 
     DuplicateInterfaceBuilder::~DuplicateInterfaceBuilder()
     {
-
+        for( index_t gme_vertices_links_itr = 0;
+            gme_vertices_links_itr < gme_vertices_links_.size();
+            ++gme_vertices_links_itr ) {
+            ringmesh_assert( gme_vertices_links_[gme_vertices_links_itr] ) ;
+            delete gme_vertices_links_[gme_vertices_links_itr] ;
+        }
     }
 
     index_t find_local_boundary_id(
@@ -350,6 +355,18 @@ namespace RINGMesh {
 
     void DuplicateInterfaceBuilder::duplicate_fault_network()
     {
+        if( model_.nb_regions() == 0 ) {
+            throw RINGMeshException( "Duplication",
+                "The model must contain at least one region." ) ;
+        }
+        all_meshed_ = model_.region( 0 ).is_meshed() ;
+        for( index_t reg_itr = 1; reg_itr < model_.nb_regions(); ++reg_itr ) {
+            if( model_.region( reg_itr ).is_meshed() != all_meshed_ ) {
+                throw RINGMeshException( "Duplication",
+                    "The regions must be all meshed or all unmeshed." ) ;
+            }
+        }
+
         //////////////////////////////////////////
         // copy paste from void GeoModelEditor::remove_elements( const std::set< gme_t >& elements )
         std::vector< std::vector< index_t > > to_erase_by_type ;
@@ -398,9 +415,17 @@ namespace RINGMesh {
         /*mutual_cut_between_new_merged_surfaces( nb_initial_interfaces,
          to_erase_by_type ) */;
 
+        define_global_motion_relation( to_erase_by_type ) ;
+
         // compute translation vectors
-        compute_translation_vectors_duplicated_fault_network( nb_initial_interfaces,
-            to_erase_by_type ) ;
+        if( all_meshed_ ) {
+            compute_translation_vectors_duplicated_fault_network_surfaces_and_regions(
+                nb_initial_interfaces, to_erase_by_type ) ;
+        } else {
+            // Only for models with surfaces (region parts to remove?)
+            compute_translation_vectors_duplicated_fault_network(
+                nb_initial_interfaces, to_erase_by_type ) ;
+        }
         // set no translation on fault real extension (only on fault ending inside
         // the model).
         set_no_displacement_on_fault_real_extension( to_erase_by_type ) ;
@@ -421,6 +446,123 @@ namespace RINGMesh {
         build_lines_and_corners_from_surfaces() ;
         complete_element_connectivity() ;
         build_contacts() ;
+    }
+
+    void DuplicateInterfaceBuilder::define_global_motion_relation(
+        const std::vector< std::vector< index_t > >& to_erase_by_type )
+    {
+        initialize_gme_vertices_links( to_erase_by_type ) ;
+
+    }
+
+    void DuplicateInterfaceBuilder::initialize_gme_vertices_links(
+        const std::vector< std::vector< index_t > >& to_erase_by_type )
+    {
+        index_t count = 0 ;
+        for( index_t surf_itr = 0; surf_itr < model_.nb_surfaces(); ++surf_itr ) {
+            if( to_erase_by_type[GME::SURFACE][surf_itr] == NO_ID ) {
+                continue ;
+            }
+            ringmesh_assert( to_erase_by_type[GME::SURFACE][surf_itr] == 0 ) ;
+            count += model_.surface( surf_itr ).nb_vertices() ;
+        }
+
+        if( all_meshed_ ) {
+
+            for( index_t reg_itr = 0; reg_itr < model_.nb_regions(); ++reg_itr ) {
+                if( to_erase_by_type[GME::REGION][reg_itr] == NO_ID ) {
+                    continue ;
+                }
+                ringmesh_assert( to_erase_by_type[GME::REGION][reg_itr] == 0 ) ;
+                ringmesh_assert(model_.region( reg_itr ).is_meshed()) ;
+                count += model_.region( reg_itr ).nb_vertices() ;
+            }
+        }
+
+        gme_vertices_links_.reserve( count ) ;
+
+        for( index_t surf_itr = 0; surf_itr < model_.nb_surfaces(); ++surf_itr ) {
+            if( to_erase_by_type[GME::SURFACE][surf_itr] == NO_ID ) {
+                continue ;
+            }
+            ringmesh_assert( to_erase_by_type[GME::SURFACE][surf_itr] == 0 ) ;
+
+            GEO::Attribute< index_t > id_in_link_vector(
+                model_.surface( surf_itr ).mesh().vertices.attributes(),
+                "id_in_link_vector" ) ;
+
+            for( index_t v_itr = 0; v_itr < model_.surface( surf_itr ).nb_vertices();
+                ++v_itr ) {
+                id_in_link_vector[v_itr] = gme_vertices_links_.size() ;
+                gme_vertices_links_.push_back(
+                    new GMEVertexLink(
+                        GMEVertex( GME::gme_t( GME::SURFACE, surf_itr ), v_itr ),
+                        model_, gme_vertices_links_ ) ) ;
+            }
+        }
+
+        if( all_meshed_ ) {
+
+            for( index_t reg_itr = 0; reg_itr < model_.nb_regions(); ++reg_itr ) {
+                if( to_erase_by_type[GME::REGION][reg_itr] == NO_ID ) {
+                    continue ;
+                }
+                ringmesh_assert( to_erase_by_type[GME::REGION][reg_itr] == 0 ) ;
+                ringmesh_assert(model_.region( reg_itr ).is_meshed()) ;
+                GEO::Attribute< index_t > id_in_link_vector(
+                    model_.region( reg_itr ).mesh().vertices.attributes(),
+                    "id_in_link_vector" ) ;
+                for( index_t v_itr = 0;
+                    v_itr < model_.region( reg_itr ).nb_vertices(); ++v_itr ) {
+                    id_in_link_vector[v_itr] = gme_vertices_links_.size() ;
+                    gme_vertices_links_.push_back(
+                        new GMEVertexLink(
+                            GMEVertex( GME::gme_t( GME::REGION, reg_itr ), v_itr ),
+                            model_, gme_vertices_links_ ) ) ;
+                }
+            }
+        }
+
+        ringmesh_assert( gme_vertices_links_.size() == gme_vertices_links_.capacity() ) ;
+        ringmesh_assert( gme_vertices_links_.size() == count ) ;
+    }
+
+    DuplicateInterfaceBuilder::GMEVertexLink::GMEVertexLink(
+        const GMEVertex& gme_vertex,
+        const GeoModel& model,
+        const std::vector< GMEVertexLink* >& gme_vertices_links )
+        :
+            has_moved_( false ),
+            model_( model ),
+            gme_vertex_( gme_vertex ),
+            gme_vertices_links_( gme_vertices_links )
+    {
+
+    }
+
+    void DuplicateInterfaceBuilder::GMEVertexLink::displace(
+        const vec3& displacement_vector )
+    {
+        if( has_moved_ ) {
+            return ;
+        }
+        has_moved_ = true ;
+
+        GEO::AttributesManager& att_mgr =
+            model_.mesh_element( gme_vertex_.gme_id ).mesh().vertices.attributes() ;
+        GEO::Attribute< double > translation_att_x( att_mgr, "translation_attr_x" ) ;
+        translation_att_x[gme_vertex_.v_id] += displacement_vector.x ;
+        GEO::Attribute< double > translation_att_y( att_mgr, "translation_attr_y" ) ;
+        translation_att_y[gme_vertex_.v_id] += displacement_vector.y ;
+        GEO::Attribute< double > translation_att_z( att_mgr, "translation_attr_z" ) ;
+        translation_att_z[gme_vertex_.v_id] += displacement_vector.z ;
+
+        for( index_t link_itr = 0; link_itr < linked_gme_vertices_.size();
+            ++link_itr ) {
+            gme_vertices_links_[linked_gme_vertices_[link_itr]]->displace(
+                displacement_vector ) ;
+        }
+        has_moved_ = false ;
     }
 
     void DuplicateInterfaceBuilder::mutual_cut_between_new_merged_surfaces(
@@ -460,7 +602,6 @@ namespace RINGMesh {
                     disconnect_surface_facets_along_line_edges(
                         const_cast< Surface& >( cur_surface ), model_.line( *it ) ) ;
                 }
-
 
                 for( std::set< index_t >::iterator it = cutting_lines.begin();
                     it != cutting_lines.end(); ++it ) {
@@ -843,7 +984,6 @@ namespace RINGMesh {
                 add_element_in_boundary( cur_line.gme_id(), new_surface_gme_t ) ;
                 add_element_in_boundary( cur_line.gme_id(), new_surface_gme_t ) ;
 
-
                 good_line = true ;
                 break ;
             }
@@ -1120,6 +1260,55 @@ namespace RINGMesh {
         return displacement ;
     }
 
+    void DuplicateInterfaceBuilder::compute_translation_vectors_duplicated_fault_network_surfaces_and_regions(
+        index_t first_new_interface_index,
+        const std::vector< std::vector< index_t > >& to_erase_by_type )
+    {
+        initialize_translation_attributes( to_erase_by_type ) ;
+
+        ringmesh_assert( model_.nb_interfaces() - first_new_interface_index >= 2 ) ;
+        for( index_t new_interface_itr = first_new_interface_index;
+            new_interface_itr < model_.nb_interfaces(); ++new_interface_itr ) {
+            ringmesh_assert( to_erase_by_type[GME::INTERFACE][new_interface_itr] != NO_ID ) ;
+            ringmesh_assert( to_erase_by_type[GME::INTERFACE][new_interface_itr] == 0 ) ;
+
+            const GeoModelElement& interface_gme = model_.one_interface(
+                new_interface_itr ) ;
+            save_normals_on_one_new_interface( to_erase_by_type, interface_gme ) ;
+
+            for( index_t child_itr = 0; child_itr < interface_gme.nb_children();
+                ++child_itr ) {
+                const GeoModelElement& cur_child = interface_gme.child( child_itr ) ;
+                ringmesh_assert(cur_child.type() == GME::SURFACE) ;
+                ringmesh_assert(to_erase_by_type[GME::SURFACE][cur_child.index()] != NO_ID) ;
+                const Surface& cur_surface = model_.surface( cur_child.index() ) ; // avoid dynamic_cast of cur_child
+
+                ringmesh_assert(cur_surface.nb_in_boundary()==1) ;
+                ringmesh_assert(cur_surface.in_boundary(0).type()==GME::REGION) ;
+                GEO::Attribute< index_t > id_in_link_vector(
+                    model_.surface( cur_surface.index() ).mesh().vertices.attributes(),
+                    "id_in_link_vector" ) ;
+
+                for( index_t surf_vertex_itr = 0;
+                    surf_vertex_itr < cur_surface.nb_vertices();
+                    ++surf_vertex_itr ) {
+
+                    const vec3 local_translation_normal =
+                        get_local_translation_normal( cur_surface,
+                            surf_vertex_itr ) ;
+                    const vec3 local_translation_vector =
+                        get_local_translation_vector( local_translation_normal ) ;
+
+                    index_t id_in_link = id_in_link_vector[surf_vertex_itr] ;
+
+                    ringmesh_assert( gme_vertices_links_[id_in_link] != nil ) ;
+                    gme_vertices_links_[id_in_link]->displace(
+                        local_translation_vector ) ;
+                }
+            }
+        }
+    }
+
     void DuplicateInterfaceBuilder::compute_translation_vectors_duplicated_fault_network(
         index_t first_new_interface_index,
         const std::vector< std::vector< index_t > >& to_erase_by_type )
@@ -1333,8 +1522,8 @@ namespace RINGMesh {
             std::abs(surf_to_check_mean_normal_on_vertex.y ) > epsilon ||
             std::abs(surf_to_check_mean_normal_on_vertex.z ) > epsilon ) ;
 
-        if( GEO::dot( 50 * normal_on_vertex_interface,
-            surf_to_check_mean_normal_on_vertex ) > epsilon ) {
+        if( GEO::dot( 50 * normal_on_vertex_interface, /// @todo remove this 50
+        surf_to_check_mean_normal_on_vertex ) > epsilon ) {
             return true ;
         }
         return false ;

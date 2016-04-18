@@ -77,6 +77,9 @@ namespace RINGMesh {
             std::vector< std::vector< index_t > >& to_erase_by_type,
             const GME::gme_t& sided_interface_gme_t,
             const GeoModelElement& interface_to_duplicate ) ;
+        void compute_translation_vectors_duplicated_fault_network_surfaces_and_regions(
+            index_t first_new_interface_index,
+            const std::vector< std::vector< index_t > >& to_erase_by_type ) ;
         void compute_translation_vectors_duplicated_fault_network(
             index_t first_new_interface_index,
             const std::vector< std::vector< index_t > >& to_erase_by_type ) ;
@@ -147,6 +150,38 @@ namespace RINGMesh {
             const GME::gme_t& sided_interface_gme_t,
             std::vector< std::vector< index_t > >& to_erase_by_type,
             index_t region_index ) ;
+        void define_global_motion_relation(
+            const std::vector< std::vector< index_t > >& to_erase_by_type ) ;
+        void initialize_gme_vertices_links(
+            const std::vector< std::vector< index_t > >& to_erase_by_type ) ;
+
+    private:
+        class GMEVertexLink {
+        ringmesh_disable_copy(GMEVertexLink) ;
+        public:
+            GMEVertexLink(
+                const GMEVertex& gme_vertex,
+                const GeoModel& model,
+                const std::vector< GMEVertexLink* >& gme_vertices_links ) ;
+            ~GMEVertexLink()
+            {
+            }
+            void displace( const vec3& displacement_vector ) ;
+            void add_linked_gme_vertex( index_t new_linked_gme_vertex )
+            {
+                linked_gme_vertices_.push_back( new_linked_gme_vertex ) ;
+            }
+
+        private:
+            bool has_moved_ ;
+            const GeoModel& model_ ;
+            const GMEVertex gme_vertex_ ;
+            std::vector< index_t > linked_gme_vertices_ ;
+            const std::vector< GMEVertexLink* >& gme_vertices_links_ ;
+        } ;
+    private:
+        bool all_meshed_ ;
+        std::vector< GMEVertexLink* > gme_vertices_links_ ;
     } ;
 }
 
