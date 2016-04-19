@@ -152,8 +152,46 @@ namespace RINGMesh {
             index_t region_index ) ;
         void define_global_motion_relation(
             const std::vector< std::vector< index_t > >& to_erase_by_type ) ;
+        void do_define_motion_relation(
+            const std::vector< std::vector< index_t > >& to_erase_by_type ) ;
+        void do_define_motion_relation_on_not_voi_surface(
+            const Surface& cur_surface,
+            index_t surf_facet_itr,
+            const Region& reg1,
+            const std::vector< index_t >& colocated_facets_reg1,
+            const vec3& facet_bary,
+            GEO::Attribute< index_t >& id_in_link_vector_surf,
+            GEO::Attribute< index_t >& id_in_link_vector_reg1,
+            std::vector< bool >& surf_vertex_visited ) ;
+        void do_define_motion_relation_on_voi_surface(
+            const Surface& cur_surface,
+            index_t surf_facet_itr,
+            const Region& reg1,
+            const std::vector< index_t >& colocated_facets_reg1,
+            GEO::Attribute< index_t >& id_in_link_vector_surf,
+            GEO::Attribute< index_t >& id_in_link_vector_reg1,
+            std::vector< bool >& surf_vertex_visited ) ;
+        void do_define_motion_relation_on_voi_fault_crossing_or_model_boundary_or_voi_horizon(
+            const Surface& cur_surface,
+            index_t surf_facet_itr,
+            const Region& reg1,
+            const std::vector< index_t >& colocated_facets_reg1,
+            GEO::Attribute< index_t >& id_in_link_vector_surf,
+            GEO::Attribute< index_t >& id_in_link_vector_reg1,
+            std::vector< bool >& surf_vertex_visited ) ;
+        void do_define_motion_relation_on_voi_fault_not_crossing(
+            const Surface& cur_surface,
+            index_t surf_facet_itr,
+            const Region& reg1,
+            const std::vector< index_t >& colocated_facets_reg1,
+            GEO::Attribute< index_t >& id_in_link_vector_surf,
+            GEO::Attribute< index_t >& id_in_link_vector_reg1,
+            std::vector< bool >& surf_vertex_visited ) ;
         void initialize_gme_vertices_links(
             const std::vector< std::vector< index_t > >& to_erase_by_type ) ;
+        void link_surf_vertex_id_to_reg_vertex_id(
+            index_t link_id_surf,
+            index_t link_id_reg ) ;
 
     private:
         class GMEVertexLink {
