@@ -1874,14 +1874,12 @@ namespace RINGMesh {
         const Corner& line_first_corner = dynamic_cast< const Corner& >( L.boundary(
             0 ) ) ;
         if( is_corner_to_duplicate( S.model(), line_first_corner.index() ) ) {
-            DEBUG("first corner is duplicated") ;
             const vec3& coord = line_first_corner.vertex( 0 ) ;
             duplicate_vertex_on_surface( coord, S ) ;
         }
 
 
         for(index_t line_v_itr =1 ; line_v_itr < L.nb_vertices() -1; ++line_v_itr ) {
-            DEBUG(line_v_itr) ;
             const vec3& coord = L.vertex( line_v_itr ) ;
             duplicate_vertex_on_surface( coord, S ) ;
         }
@@ -1889,7 +1887,6 @@ namespace RINGMesh {
         const Corner& line_second_corner = dynamic_cast< const Corner& >( L.boundary(
             1 ) ) ;
         if( is_corner_to_duplicate( S.model(), line_second_corner.index() ) ) {
-            DEBUG("second corner is duplicated") ;
             const vec3& coord = line_second_corner.vertex( 0 ) ;
             duplicate_vertex_on_surface( coord, S ) ;
         }
@@ -2097,7 +2094,6 @@ namespace RINGMesh {
             model().mesh.vertices.test_and_initialize() ;
         }
 
-        DEBUG("cut_surface_by_line");
         disconnect_surface_facets_along_line_edges( S, L ) ;
         duplicate_surface_vertices_along_line( S, L ) ;
 
@@ -2116,7 +2112,6 @@ namespace RINGMesh {
             model().mesh.vertices.test_and_initialize() ;
         }
 
-        DEBUG("cut_region_by_surface") ;
         disconnect_region_cells_along_surface_facets( R, S ) ;
         duplicate_region_vertices_along_surface( R, S ) ;
         // Rebuild the mesh facets of the region
@@ -2212,9 +2207,7 @@ namespace RINGMesh {
 
 
         for( index_t reg_itr = 0; reg_itr < model_.nb_regions(); ++reg_itr ) {
-            DEBUG(model_.region( reg_itr ).nb_vertices()) ;
             model_.region( reg_itr ).mesh().vertices.remove_isolated() ;
-            DEBUG(model_.region( reg_itr ).nb_vertices()) ;
         }
 
         // Deliberate clear of the model vertices used for model building

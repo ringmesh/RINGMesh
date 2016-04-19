@@ -1232,28 +1232,6 @@ namespace RINGMesh {
                         continue ;
                     }
                 }
-                // Is is not necessary to check the minus side since plus is done
-                // before so no line attached to the minus side yet.
-                /*else {
-                 DEBUG( "do_minus_test" ) ;
-
-                 ringmesh_assert(sided_interface_gme_t.index - 1 >= 0) ;
-                 const GeoModelElement& plus_side_gme = model_.one_interface(
-                 sided_interface_gme_t.index - 1 ) ;
-                 GEO::mesh_save(
-                 model_.surface( plus_side_gme.child( 0 ).index() ).mesh(),
-                 "plus_child_"
-                 + GEO::String::to_string( plus_side_gme.index() )
-                 + "_cur_line_"
-                 + GEO::String::to_string( cur_line.index() )
-                 + ".meshb" ) ;
-
-                 if( does_surface_belong_to_interface(
-                 model_.surface( cur_in_boun_gme.index() ),
-                 plus_side_gme ) ) {
-                 continue ;
-                 }
-                 }*/
 
                 // Check if the surface is not from the old interface to
                 // duplicate.
