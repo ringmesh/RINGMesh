@@ -38,17 +38,19 @@
 
 #include <ringmesh/common.h>
 
+//#include <ringmesh/geo_model_element.h>
+//#include <ringmesh/geo_model.h>
+#include <ringmesh/geo_model_builder.h>
+
 /*!
-* @file ringmesh/geo_model_repair.h
-* @brief Functions to repair GeoModel. 
-* @author Jeanne Pellerin
-*/
+ * @file ringmesh/geo_model_repair.h
+ * @brief Functions to repair GeoModel.
+ * @author Jeanne Pellerin
+ */
+
 
 namespace RINGMesh {
-    class GeoModel ;
-}
-
-namespace RINGMesh { 
+    typedef GeoModelElement::gme_t gme_t ;
 
     /*!
      * @brief Try repairing an supposedly invalid GeoModel
@@ -57,9 +59,58 @@ namespace RINGMesh {
      * @warning The Mesh of the model is deleted.
      *          This function will by no mean fix all errors in a GeoModel
      *          It has been tested on a very small number of models.
-     */ 
-    void RINGMESH_API geo_model_mesh_repair( GeoModel& GM ) ;
-}
+     */
+    class RINGMESH_API GeoModelRepair: public GeoModelBuilder {
+    public:
+        GeoModelRepair( GeoModel& model )
+            : GeoModelBuilder( model )
+        {
+        }
+        virtual ~GeoModelRepair()
+        {
+        }
+        /*!
+         * @brief Detect and remove degenerated edges in a \param line.
+         * @return the number of degenerated edges that have been removed from the line.
+         */
 
+        void geo_model_mesh_repair() ;
+    private:
+        index_t repair_line_mesh( Line& line ) ;
+        void mesh_detect_degenerate_edges(
+            const Mesh& M,
+            GEO::vector< index_t >& e_is_degenerate,
+            GEO::vector< index_t >& colocated_vertices );
+        void mesh_detect_degenerate_facets(
+            const Mesh& M,
+            GEO::vector< index_t >& f_is_degenerate,
+            GEO::vector< index_t >& colocated_vertices );
+        bool facet_is_degenerate(
+            const Mesh& M,
+            index_t f,
+            GEO::vector< index_t >& colocated_vertices );
+
+        index_t detect_degenerate_facets( Mesh& M );
+
+        void remove_degenerate_facet_and_edges( std::set< gme_t >& to_remove );
+
+
+        void remove_colocated_element_vertices( std::set< gme_t >& to_remove ) ;
+        void vertices_on_inside_boundary(
+            const GeoModelMeshElement& E,
+            std::set< index_t >& vertices ) ;
+
+        bool edge_is_degenerate(
+            const Mesh& M,
+            index_t e,
+            GEO::vector< index_t >& colocated_vertices )
+        {
+            index_t v1 = colocated_vertices[M.edge_vertex( e, 0 )] ;
+            index_t v2 = colocated_vertices[M.edge_vertex( e, 1 )] ;
+            return v1 == v2 ;
+        }
+    } ;
+
+} //namespace RINGMesh
 
 #endif 

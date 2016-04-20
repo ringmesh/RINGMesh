@@ -110,7 +110,7 @@ namespace RINGMesh {
         attributes.resize( nb_elements ) ;
         for( index_t i = 0; i < nb_elements; ++i ) {
             const GeoModelMeshElement& E = geomodel.mesh_element( geomodel_element_type, i );
-            GEO::AttributesManager& manager = E.facet_attribute_manager() ; 
+            GEO::AttributesManager& manager = E.facet_attribute_manager() ;
             attributes.bind_one_attribute( i, manager, attribute_name ) ;
         }
     }

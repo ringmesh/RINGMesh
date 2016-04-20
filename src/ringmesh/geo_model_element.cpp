@@ -48,7 +48,6 @@
 #include <geogram/basic/logger.h>
 #include <geogram/basic/geometry_nd.h>
 
-#include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_AABB.h>
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/mesh/mesh_intersection.h>
@@ -90,21 +89,20 @@ namespace {
     /*!
      * @brief Count the number of times each vertex is in an edge or facet
      *
-     * @param[in] M The mesh
+     * @param[in] gmme The GeoModelMeshElement
      * @param[out] nb Resized to the number of vertices of the mesh.
-     *      Number of times one vertex appear in an edge or facet of the mesh.
+     *      Number of times one vertex appear in an polytope collection of the GeoModelMeshElement edge or facet of the mesh.
      */
-    void count_vertex_occurences( const GEO::Mesh& M, std::vector< index_t >& nb )
+    void count_vertex_occurences(
+        const GeoModelMeshElement& E,
+        std::vector< index_t >& nb )
     {
-        nb.resize( M.vertices.nb(), 0 ) ;
-        for( index_t e = 0; e < M.edges.nb(); ++e ) {
-            ++nb[M.edges.vertex( e, 0 )] ;
-            ++nb[M.edges.vertex( e, 1 )] ;
-        }
-        for( index_t f = 0; f < M.facets.nb(); ++f ) {
-            for( index_t co = M.facets.corners_begin( f );
-                co < M.facets.corners_end( f ); ++co ) {
-                ++nb[M.facet_corners.vertex( co )] ;
+        nb.resize( E.nb_vertices(), 0 ) ;
+        for( index_t polytope_index = 0; polytope_index < E.nb_polytope();
+            ++polytope_index ) {
+            for( index_t vertex = 0;
+                vertex < E.nb_polytope_vertices( polytope_index ); ++vertex ) {
+                ++nb[E.polytope_vertex_index( polytope_index, vertex )] ;
             }
         }
     }
@@ -114,10 +112,12 @@ namespace {
      */
     bool facet_is_degenerate( const Surface& S, index_t f )
     {
-        std::vector< index_t > corners( S.nb_vertices_in_facet( f ), NO_ID ) ;
-        std::vector< index_t > corners_global( S.nb_vertices_in_facet( f ), NO_ID ) ;
+        index_t nb_facet_vertices = S.nb_polytope_vertices( f ) ;
+        std::vector< index_t > corners( nb_facet_vertices, NO_ID ) ;
+        std::vector< index_t > corners_global( nb_facet_vertices, NO_ID ) ;
         index_t v = 0 ;
-        for( index_t c = S.facet_begin( f ); c < S.facet_end( f ); ++c ) {
+        for( index_t c = S.polytope_vertex_index( f, 0 );
+            c < S.polytope_vertex_index( f, nb_facet_vertices - 1 ); ++c ) {
             corners[v] = c ;
             corners_global[v] = S.model_vertex_id( f, v ) ;
             v++ ;
@@ -131,7 +131,7 @@ namespace {
         // model vertex ids are not good 
         ringmesh_assert(
             std::count( corners_global.begin(), corners_global.end(), 0 )
-                != corners_global.size() ) ;
+            != corners_global.size() ) ;
 
         std::sort( corners.begin(), corners.end() ) ;
         std::sort( corners_global.begin(), corners_global.end() ) ;
@@ -158,10 +158,10 @@ namespace {
             const vec3& V = S.vertex( p ) ;
             out << "v" << " " << V.x << " " << V.y << " " << V.z << std::endl ;
         }
-        for( index_t f = 0; f < S.nb_cells(); f++ ) {
+        for( index_t f = 0; f < S.nb_polytope(); f++ ) {
             out << "f" << " " ;
-            for( index_t v = 0; v < S.nb_vertices_in_facet( f ); v++ ) {
-                out << S.surf_vertex_id( f, v ) + 1 << " " ;
+            for( index_t v = 0; v < S.nb_polytope_vertices( f ); v++ ) {
+                out << S.polytope_vertex_index( f, v ) + 1 << " " ;
             }
             out << std::endl ;
         }
@@ -490,8 +490,9 @@ namespace RINGMesh {
 
         // Parent - High level elements are not mandatory
         // But if the model has elements of the parent type, the element must have a parent
-        if( parent_allowed( T ) ) {                   
-            bool model_has_parent_elements( model().nb_elements( parent_type( T ) ) > 0 ) ;
+        if( parent_allowed( T ) ) {
+            bool model_has_parent_elements(
+                model().nb_elements( parent_type( T ) ) > 0 ) ;
             if( model_has_parent_elements ) {
                 if( has_parent() ) {
                     const GME& E = parent() ;
@@ -660,7 +661,7 @@ namespace RINGMesh {
     {
         unbind_attributes() ;
 #ifdef RINGMESH_DEBUG
-        print_bounded_attributes( mesh_ ) ;
+        mesh_.print_mesh_bounded_attributes() ;
 #endif
     }
 
@@ -669,7 +670,7 @@ namespace RINGMesh {
      */
     void GeoModelMeshElement::bind_attributes()
     {
-        model_vertex_id_.bind( mesh_.vertices.attributes(),
+        model_vertex_id_.bind( mesh_.vertex_attribute_manager(),
             model_vertex_id_att_name() ) ;
     }
     /*!
@@ -746,24 +747,24 @@ namespace RINGMesh {
     bool Corner::is_mesh_valid() const
     {
         bool valid = true ;
-        if( mesh_.vertices.nb() != 1 ) {
+        if( nb_vertices() != 1 ) {
             GEO::Logger::err( "GeoModelElement" ) << "Corner " << index()
-                << " mesh has " << mesh_.vertices.nb() << " vertices " << std::endl ;
+                << " mesh has " << mesh_.nb_vertices() << " vertices " << std::endl ;
             valid = false ;
         }
-        if( mesh_.edges.nb() != 0 ) {
+        if( mesh_.nb_edges() != 0 ) {
             GEO::Logger::err( "GeoModelElement" ) << "Corner " << index()
-                << " mesh has " << mesh_.edges.nb() << " edges " << std::endl ;
+                << " mesh has " << mesh_.nb_edges() << " edges " << std::endl ;
             valid = false ;
         }
-        if( mesh_.facets.nb() != 0 ) {
+        if( mesh_.nb_facets() != 0 ) {
             GEO::Logger::err( "GeoModelElement" ) << "Corner " << index()
-                << " mesh has " << mesh_.facets.nb() << " facets " << std::endl ;
+                << " mesh has " << mesh_.nb_facets() << " facets " << std::endl ;
             valid = false ;
         }
-        if( mesh_.cells.nb() != 0 ) {
+        if( mesh_.nb_cells() != 0 ) {
             GEO::Logger::warn( "GeoModelElement" ) << "Corner " << index()
-                << " mesh has " << mesh_.cells.nb() << " cells " << std::endl ;
+                << " mesh has " << mesh_.nb_cells() << " cells " << std::endl ;
             valid = false ;
         }
         // The default point is (0., 0., 0.) and there might be a valid
@@ -807,34 +808,34 @@ namespace RINGMesh {
         bool valid = true ;
 
         // Check that the GEO::Mesh has the expected elements
-        if( mesh_.vertices.nb() < 2 ) {
+        if( nb_vertices() < 2 ) {
             GEO::Logger::err( "GeoModelElement" ) << "Line " << index() << " has "
-                << mesh_.vertices.nb() << " vertices " << std::endl ;
+                << mesh_.nb_vertices() << " vertices " << std::endl ;
             valid = false ;
         }
-        if( mesh_.edges.nb() == 0 ) {
+        if( mesh_.nb_edges() == 0 ) {
             GEO::Logger::err( "GeoModelElement" ) << "Line " << index()
-                << " mesh has " << mesh_.edges.nb() << " edges " << std::endl ;
+                << " mesh has " << mesh_.nb_edges() << " edges " << std::endl ;
             valid = false ;
         }
-        if( mesh_.facets.nb() != 0 ) {
+        if( mesh_.nb_facets() != 0 ) {
             GEO::Logger::err( "GeoModelElement" ) << "Line " << index()
-                << " mesh has " << mesh_.facets.nb() << " facets " << std::endl ;
+                << " mesh has " << mesh_.nb_facets() << " facets " << std::endl ;
             valid = false ;
         }
-        if( mesh_.cells.nb() != 0 ) {
+        if( mesh_.nb_cells() != 0 ) {
             GEO::Logger::err( "GeoModelElement" ) << "Line " << index()
-                << " mesh has " << mesh_.cells.nb() << " cells " << std::endl ;
+                << " mesh has " << mesh_.nb_cells() << " cells " << std::endl ;
             valid = false ;
         }
 
         // Model indices must be valid
         valid = check_range_model_vertex_ids( *this ) && valid ;
 
-        if( mesh_.vertices.nb() > 1 ) {
+        if( nb_vertices() > 1 ) {
             // Count the number of edges in which each vertex is
             std::vector< index_t > nb ;
-            count_vertex_occurences( mesh(), nb ) ;
+            count_vertex_occurences( *this, nb ) ;
             index_t nb0 = 0 ;
             index_t nb1 = 0 ;
             index_t nb2 = 0 ;
@@ -877,8 +878,8 @@ namespace RINGMesh {
 
         // No zero edge length
         index_t nb_degenerated = 0 ;
-        for( index_t e = 0; e < nb_cells(); ++e ) {
-            double l = length( vertex( e, 1 ) - vertex( e, 0 ) ) ;
+        for( index_t e = 0; e < nb_polytope(); ++e ) {
+            double l = length( polytope_vertex( e, 1 ) - polytope_vertex( e, 0 ) ) ;
             if( l < epsilon ) {
                 nb_degenerated++ ;
             }
@@ -919,27 +920,27 @@ namespace RINGMesh {
         bool valid = true ;
         // Check that the GEO::Mesh has the expected elements
         // at least 3 vertices and one facet.
-        if( mesh_.vertices.nb() < 3 ) {
+        if( nb_vertices() < 3 ) {
             GEO::Logger::warn( "GeoModelElement" ) << gme_id()
                 << " has less than 3 vertices " << std::endl ;
             valid = false ;
         }
         // Is it important to have edges or not ?
         // I would say we do not care (JP) - so no check on that 
-        if( mesh_.facets.nb() == 0 ) {
+        if( mesh_.nb_facets() == 0 ) {
             GEO::Logger::warn( "GeoModelElement" ) << gme_id() << " has no facets "
                 << std::endl ;
             valid = false ;
         }
-        if( mesh_.cells.nb() != 0 ) {
+        if( mesh_.nb_cells() != 0 ) {
             GEO::Logger::warn( "GeoModelElement" ) << gme_id() << " has "
-                << mesh_.cells.nb() << " cells " << std::endl ;
+                << mesh_.nb_cells() << " cells " << std::endl ;
             valid = false ;
         }
 
         // No isolated vertices
         std::vector< index_t > nb ;
-        count_vertex_occurences( mesh(), nb ) ;
+        count_vertex_occurences( *this, nb ) ;
         index_t nb0 = static_cast< index_t >( std::count( nb.begin(), nb.end(), 0 ) ) ;
         if( nb0 > 0 ) {
             GEO::Logger::warn( "GeoModelElement" ) << gme_id() << " mesh has " << nb0
@@ -950,7 +951,7 @@ namespace RINGMesh {
         // No zero area facet
         // No facet incident to the same vertex check local and global indices
         index_t nb_degenerate = 0 ;
-        for( index_t f = 0; f < mesh_.facets.nb(); f++ ) {
+        for( index_t f = 0; f < mesh_.nb_facets(); f++ ) {
             if( facet_is_degenerate( *this, f ) ) {
                 nb_degenerate++ ;
             }
@@ -977,7 +978,7 @@ namespace RINGMesh {
         }
 
         // One connected component  
-        index_t cc = GEO::mesh_nb_connected_components( mesh_ ) ;
+        index_t cc = mesh_.nb_connected_components() ;
         if( cc != 1 ) {
             GEO::Logger::warn( "GeoModelElement" ) << gme_id() << " mesh has " << cc
                 << " connected components " << std::endl ;
@@ -1014,10 +1015,10 @@ namespace RINGMesh {
         index_t& v_in_next,
         index_t& next_in_next ) const
     {
-        ringmesh_assert( v < nb_vertices_in_facet( f ) ) ;
+        ringmesh_assert( v < nb_polytope_vertices( f ) ) ;
         ringmesh_assert( is_on_border( f, v ) || is_on_border( f, from ) ) ;
 
-        index_t V = surf_vertex_id( f, v ) ;
+        index_t V = polytope_vertex_index( f, v ) ;
 
         // We want the next triangle that is on the boundary and share V
         // If there is no such triangle, the next vertex on the boundary
@@ -1038,12 +1039,12 @@ namespace RINGMesh {
             ringmesh_assert( next_f != NO_ID ) ;
 
             // Now get the other vertex that is on the boundary opposite to p1
-            v_in_next = facet_vertex_id( next_f, V ) ;
+            v_in_next = vertex_index_in_facet( next_f, V ) ;
             ringmesh_assert( v_in_next != NO_ID ) ;
 
             // The edges containing V in next_f are
             // the edge starting at v_in_next and the one ending there
-            index_t prev_v_in_next = prev_in_facet( next_f, v_in_next ) ;
+            index_t prev_v_in_next = prev_facet_vertex_index( next_f, v_in_next ) ;
 
             bool e0_on_boundary = is_on_border( next_f, v_in_next ) ;
 
@@ -1053,18 +1054,19 @@ namespace RINGMesh {
             // From the edge that is on boundary get the next vertex on this boundary
             // If the edge starting at p_in_next is on boundary, new_vertex is its next
             // If the edge ending at p_in_next is on boundary, new vertex is its prev
-            next_in_next = e0_on_boundary ?
-                    next_in_facet( next_f, v_in_next ) : prev_v_in_next ;
+            next_in_next =
+                e0_on_boundary ?
+                    next_facet_vertex_index( next_f, v_in_next ) : prev_v_in_next ;
         } else if( nb_around == 1 ) {
             // V must be in two border edges of facet f
             // Get the id in the facet of the vertex neighbor of v1 that is not v0
             v_in_next = v ;
-            if( prev_in_facet( f, v ) == from ) {
+            if( prev_facet_vertex_index( f, v ) == from ) {
                 ringmesh_assert( is_on_border( f, v ) ) ;
-                next_in_next = next_in_facet( f, v ) ;
+                next_in_next = next_facet_vertex_index( f, v ) ;
             } else {
-                ringmesh_assert( is_on_border( f, prev_in_facet( f, v ) ) ) ;
-                next_in_next = prev_in_facet( f, v ) ;
+                ringmesh_assert( is_on_border( f, prev_facet_vertex_index( f, v ) ) ) ;
+                next_in_next = prev_facet_vertex_index( f, v ) ;
             }
         }
     }
@@ -1082,7 +1084,7 @@ namespace RINGMesh {
         index_t& next_f,
         index_t& next_e ) const
     {
-        index_t v = next_in_facet( f, e ) ;
+        index_t v = next_facet_vertex_index( f, e ) ;
         index_t next_in_next( NO_ID ) ;
         return next_on_border( f, e, v, next_f, next_e, next_in_next ) ;
     }
@@ -1097,17 +1099,18 @@ namespace RINGMesh {
     index_t Surface::facet_from_surface_vertex_ids( index_t in0, index_t in1 ) const
     {
         ringmesh_assert(
-            in0 < mesh_.vertices.nb() && in1 < mesh_.vertices.nb() ) ;
+            in0 < nb_vertices() && in1 <nb_vertices() ) ;
 
         // Another possible, probably faster, algorithm is to check if the 2 indices
         // are neighbors in facets_ and check that they are in the same facet
 
         // Check if the edge is in one of the facet
-        for( index_t f = 0; f < nb_cells(); ++f ) {
+        for( index_t f = 0; f < nb_polytope(); ++f ) {
             bool found = false ;
-            index_t prev = surf_vertex_id( f, nb_vertices_in_facet( f ) - 1 ) ;
-            for( index_t v = 0; v < nb_vertices_in_facet( f ); ++v ) {
-                index_t p = surf_vertex_id( f, v ) ;
+            index_t prev = polytope_vertex_index( f,
+                nb_polytope_vertices( f ) - 1 ) ;
+            for( index_t v = 0; v < nb_polytope_vertices( f ); ++v ) {
+                index_t p = polytope_vertex_index( f, v ) ;
                 if( ( prev == in0 && p == in1 ) || ( prev == in1 && p == in0 ) ) {
                     found = true ;
                     break ;
@@ -1156,16 +1159,17 @@ namespace RINGMesh {
 
         // If a facet is given, look for the edge in this facet only
         if( facet != NO_ID ) {
-            for( index_t v = 0; v < nb_vertices_in_facet( facet ); ++v ) {
-                index_t prev = model_vertex_id( facet, prev_in_facet( facet, v ) ) ;
+            for( index_t v = 0; v < nb_polytope_vertices( facet ); ++v ) {
+                index_t prev = model_vertex_id( facet,
+                    prev_facet_vertex_index( facet, v ) ) ;
                 index_t p = model_vertex_id( facet, v ) ;
                 if( ( prev == i0 && p == i1 ) || ( prev == i1 && p == i0 ) ) {
-                    edge = prev_in_facet( facet, v ) ;
+                    edge = prev_facet_vertex_index( facet, v ) ;
                     return ;
                 }
             }
         } else {
-            for( index_t f = 0; f < nb_cells(); ++f ) {
+            for( index_t f = 0; f < nb_polytope(); ++f ) {
                 facet = f ;
                 edge_from_model_vertex_ids( i0, i1, facet, edge ) ;
                 if( edge != NO_ID ) {
@@ -1199,9 +1203,10 @@ namespace RINGMesh {
 
         // If a facet is given, look for the oriented edge in this facet only
         if( facet != NO_ID ) {
-            for( index_t v = 0; v < nb_vertices_in_facet( facet ); ++v ) {
+            for( index_t v = 0; v < nb_polytope_vertices( facet ); ++v ) {
                 index_t p = model_vertex_id( facet, v ) ;
-                index_t next = model_vertex_id( facet, next_in_facet( facet, v ) ) ;
+                index_t next = model_vertex_id( facet,
+                    next_facet_vertex_index( facet, v ) ) ;
 
                 if( p == i0 && next == i1 ) {
                     edge = v ;
@@ -1209,7 +1214,7 @@ namespace RINGMesh {
                 }
             }
         } else {
-            for( index_t f = 0; f < nb_cells(); ++f ) {
+            for( index_t f = 0; f < nb_polytope(); ++f ) {
                 facet = f ;
                 oriented_edge_from_model_vertex_ids( i0, i1, facet, edge ) ;
                 if( edge != NO_ID ) {
@@ -1218,38 +1223,6 @@ namespace RINGMesh {
             }
         }
         facet = NO_ID ;
-    }
-
-    /*!
-     * @brief Convert vertex surface index to an index in a facet
-     * @param[in] f Index of the facet
-     * @param[in] surf_vertex_id_in Index of the vertex in the surface
-     * @return NO_ID or index of the vertex in the facet
-     */
-    index_t Surface::facet_vertex_id( index_t f, index_t surf_vertex_id_in ) const
-    {
-        for( index_t v = 0; v < nb_vertices_in_facet( f ); v++ ) {
-            if( surf_vertex_id( f, v ) == surf_vertex_id_in ) {
-                return v ;
-            }
-        }
-        return NO_ID ;
-    }
-
-    /*!
-     * @brief Convert model vertex index to an index in a facet
-     * @param[in] f Index of the facet
-     * @param[in] model_v_id Index of the vertex in the GeoModel
-     * @return NO_ID or index of the vertex in the facet
-     */
-    index_t Surface::facet_id_from_model( index_t f, index_t model_v_id ) const
-    {
-        for( index_t v = 0; v < nb_vertices_in_facet( f ); v++ ) {
-            if( model_vertex_id( f, v ) == model_v_id ) {
-                return v ;
-            }
-        }
-        return NO_ID ;
     }
 
     /*!
@@ -1303,9 +1276,9 @@ namespace RINGMesh {
          }
          */
         // So, we are back to the brute force stupid approach             
-        for( index_t i = 0; i < nb_cells(); ++i ) {
-            for( index_t lv = 0; lv < nb_vertices_in_facet( i ); lv++ ) {
-                if( surf_vertex_id( i, lv ) == v ) {
+        for( index_t i = 0; i < nb_polytope(); ++i ) {
+            for( index_t lv = 0; lv < nb_polytope_vertices( i ); lv++ ) {
+                if( polytope_vertex_index( i, lv ) == v ) {
                     f = i ;
                     break ;
                 }
@@ -1350,11 +1323,11 @@ namespace RINGMesh {
             index_t f = S.top() ;
             S.pop() ;
 
-            for( index_t v = 0; v < nb_vertices_in_facet( f ); ++v ) {
-                if( surf_vertex_id( f, v ) == P ) {
-                    index_t adj_P = adjacent( f, v ) ;
-                    index_t prev = prev_in_facet( f, v ) ;
-                    index_t adj_prev = adjacent( f, prev ) ;
+            for( index_t v = 0; v < nb_polytope_vertices( f ); ++v ) {
+                if( polytope_vertex_index( f, v ) == P ) {
+                    index_t adj_P = facet_adjacent_index( f, v ) ;
+                    index_t prev = prev_facet_vertex_index( f, v ) ;
+                    index_t adj_prev = facet_adjacent_index( f, prev ) ;
 
                     if( adj_P != NO_ADJACENT ) {
                         // The edge starting at P is not on the boundary
@@ -1385,27 +1358,7 @@ namespace RINGMesh {
             }
         } while( !S.empty() ) ;
 
-        return static_cast<index_t> ( result.size() ) ;
-    }
-
-    /*!
-     * Get the facet normal
-     * @param[in] f Facet index
-     * @return Normal to the facet
-     */
-    vec3 Surface::facet_normal( index_t facet_index ) const
-    {
-        return normalize( GEO::Geom::mesh_facet_normal( mesh_, facet_index ) ) ;
-    }
-
-    vec3 Surface::facet_barycenter( index_t facet_index ) const
-    {
-        return GEO::Geom::mesh_facet_center( mesh_, facet_index ) ;
-    }
-
-    double Surface::facet_area( index_t facet_index ) const
-    {
-        return GEO::Geom::mesh_facet_area( mesh_, facet_index ) ;
+        return static_cast< index_t >( result.size() ) ;
     }
 
     /*!
@@ -1418,8 +1371,8 @@ namespace RINGMesh {
     {
         index_t result = 0 ;
         double dist = DBL_MAX ;
-        for( index_t p = 0; p < nb_vertices_in_facet( f ); p++ ) {
-            double distance = length2( v - vertex( f, p ) ) ;
+        for( index_t p = 0; p < nb_polytope_vertices( f ); p++ ) {
+            double distance = length2( v - polytope_vertex( f, p ) ) ;
             if( dist > distance ) {
                 dist = distance ;
                 result = p ;
@@ -1441,118 +1394,34 @@ namespace RINGMesh {
             return true ;
         }
     }
-
-    /********************************************************************/
-
-    SurfaceTools::SurfaceTools( const Surface& surface )
-        : surface_( surface ), aabb_( nil ), ann_( nil )
+    void Region::compute_region_volumes_per_cell_type(
+        double& tet_volume,
+        double& pyramid_volume,
+        double& prism_volume,
+        double& hex_volume,
+        double& poly_volume ) const
     {
-    }
-
-    SurfaceTools::~SurfaceTools()
-    {
-        if( aabb_ ) delete aabb_ ;
-        if( ann_ ) delete ann_ ;
-    }
-
-    /*! 
-     * @brief Create an AABB tree for a Surface
-     * @pre The Surface mesh must be simplicial
-     * @warning SIDE EFFECTS: The Surface mesh vertices are reordered.
-     * That is why the global Mesh vertices are deleted (This is BAD)
-     */
-    const GEO::MeshFacetsAABB& SurfaceTools::aabb() const
-    {
-        GeoModel& M = const_cast< GeoModel& >( surface_.model() ) ;
-        if( M.mesh.vertices.is_initialized() ) {
-            GEO::Logger::warn( "AABB" )
-                << "Creation of AABB results in deletion of the GeoModelMeshVertices"
-                << std::endl ;
-            M.mesh.vertices.clear() ;
+        for( index_t c = 0; c < nb_polytope(); c++ ) {
+            index_t nb_vertices = nb_polytope_vertices( c ) ;
+            double volume = mesh_.cell_volume( c ) ;
+            switch( nb_vertices ) {
+                case 4:
+                    tet_volume += volume ;
+                    break ;
+                case 5:
+                    pyramid_volume += volume ;
+                    break ;
+                case 6:
+                    prism_volume += volume ;
+                    break ;
+                case 8:
+                    hex_volume += volume ;
+                    break ;
+                default:
+                    poly_volume += volume ;
+                    break ;
+            }
         }
-        if( aabb_ == nil ) {
-            // Geogram triangulates the Mesh when creating the AABB tree
-            ringmesh_assert( surface_.mesh().facets.are_simplices() ) ;
-
-            // Very bad side effect
-            // The root cause of the problem is the duplication of many things 
-            // in our GeoModel structure [JP]
-            M.mesh.vertices.clear() ;
-
-            aabb_ = new GEO::MeshFacetsAABB( surface_.mesh() ) ;
-        }
-        return *aabb_ ;
-    }
-
-    const ColocaterANN& SurfaceTools::ann() const
-    {
-        if( ann_ == nil ) {
-            ann_ = new ColocaterANN( surface_.mesh(), ColocaterANN::VERTICES ) ;
-        }
-        return *ann_ ;
-    }
-
-    /********************************************************************/
-
-    RegionTools::RegionTools( const Region& region )
-        : region_( region ), aabb_( nil ), ann_( nil )
-    {
-    }
-
-    RegionTools::~RegionTools()
-    {
-        if( aabb_ ) delete aabb_ ;
-        if( ann_ ) delete ann_ ;
-    }
-
-    const GEO::MeshCellsAABB& RegionTools::aabb() const
-    {
-        GeoModel& M = const_cast< GeoModel& >( region_.model() ) ;
-        if( M.mesh.vertices.is_initialized() ) {
-            GEO::Logger::warn( "AABB" )
-                << "Creation of AABB results in deletion of the GeoModelMeshVertices"
-                << std::endl ;
-            M.mesh.vertices.clear() ;
-        }
-        if( aabb_ == nil ) {
-            aabb_ = new GEO::MeshCellsAABB( region_.mesh() ) ;
-            /// @todo Et pourquoi creer AABB me fait vider les sommets ?
-            /// @todo Il faut un mecanisme update de ces RegionTools correct.
-            // if( ann_ ) {
-            //     delete ann_ ;
-            //     this_not_const->ann_ = nil ;
-            // }
-
-            // Building an AABB reorders the mesh vertices and facets
-            // Very annoying if model_vertex_ids are set because we need
-            // to update the model vertices.
-            /* GeoModel& M = const_cast< GeoModel& >( region_.model() ) ;
-             if( M.mesh.vertices.is_initialized() ) {
-             for( index_t sv = 0; sv < region_.nb_vertices(); ++sv ) {
-             index_t v = region_.model_vertex_id( sv ) ;
-             const std::vector< GMEVertex >& to_update =
-             M.mesh.vertices.gme_vertices( v ) ;
-
-             index_t count_skipped = 0 ;
-             for( index_t i = 0; i < to_update.size(); ++i ) {
-             if( to_update[i].gme_id == region_.gme_id() ) {
-             M.mesh.vertices.set_gme( v, i,
-             GMEVertex( region_.gme_id(), sv ) ) ;
-             break ;
-             }
-             }
-             }
-             } */
-        }
-        return *aabb_ ;
-    }
-
-    const ColocaterANN& RegionTools::ann() const
-    {
-        if( ann_ == nil ) {
-            ann_ = new ColocaterANN( region_.mesh(), ColocaterANN::VERTICES ) ;
-        }
-        return *ann_ ;
     }
 
 }

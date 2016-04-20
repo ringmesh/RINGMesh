@@ -59,6 +59,7 @@
 
 #include <geogram/points/colocate.h>
 
+#include <ringmesh/mesh.h>
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_api.h>
 #include <ringmesh/geogram_extension.h>
@@ -74,7 +75,6 @@
 
 namespace {
 
-    using namespace GEO ;
     using namespace RINGMesh ;
     using GEO::index_t ;
     using GEO::vec3 ;
@@ -124,10 +124,10 @@ namespace {
      *  otherwise
      */
     bool triangles_intersect(
-        const Mesh& M,
+        const GEO::Mesh& M,
         index_t f1,
         index_t f2,
-        vector< TriangleIsect >& sym )
+        GEO::vector< GEO::TriangleIsect >& sym )
     {
         ringmesh_assert( M.facets.nb_vertices( f1 ) == 3 ) ;
         ringmesh_assert( M.facets.nb_vertices( f2 ) == 3 ) ;
@@ -241,7 +241,7 @@ namespace {
      *
      */
     bool facets_share_line_edge(
-        const Mesh& M,
+        const GEO::Mesh& M,
         const GeoModel& BM,
         index_t f1,
         index_t f2 )
@@ -297,7 +297,7 @@ namespace {
      * \return true if facets \p f1 and \p f2 share an edge, false
      *  otherwise
      */
-    bool facets_are_adjacent( const Mesh& M, index_t f1, index_t f2 )
+    bool facets_are_adjacent( const GEO::Mesh& M, index_t f1, index_t f2 )
     {
         if( f1 == f2 ) {
             return true ;
@@ -324,9 +324,9 @@ namespace {
          *  whether it has intersections
          */
         StoreIntersections(
-            const Mesh& M,
+            const GEO::Mesh& M,
             const GeoModel& BM,
-            vector< index_t >& has_isect )
+            GEO::vector< index_t >& has_isect )
             : M_( M ), BM_( BM ), has_intersection_( has_isect )
         {
             has_intersection_.assign( M.facets.nb(), 0 ) ;
@@ -349,10 +349,10 @@ namespace {
         }
 
     private:
-        const Mesh& M_ ;
+        const GEO::Mesh& M_ ;
         const GeoModel& BM_ ;
-        vector< index_t >& has_intersection_ ;
-        vector< TriangleIsect > sym_ ;
+        GEO::vector< index_t >& has_intersection_ ;
+        GEO::vector< GEO::TriangleIsect > sym_ ;
     } ;
 
     /** \note Copied from geogram
@@ -360,13 +360,13 @@ namespace {
      * \param[in] M the mesh
      * \return number of intersecting facets
      */
-    index_t detect_intersecting_facets( const GeoModel& model, Mesh& M )
+    index_t detect_intersecting_facets( const GeoModel& model, GEO::Mesh& M )
     {
         geo_assert( M.vertices.dimension() >= 3 ) ;
 
-        vector< index_t > has_intersection ;
+        GEO::vector< index_t > has_intersection ;
         StoreIntersections action( M, model, has_intersection ) ;
-        MeshFacetsAABB AABB( M ) ;
+        GEO::MeshFacetsAABB AABB( M ) ;
         AABB.compute_facet_bbox_intersections( action ) ;
 
         index_t nb_intersections = static_cast< index_t >( std::count(
@@ -449,7 +449,6 @@ namespace {
         return nb_new_vertices != M.vertices.nb() ;
     }
 
- 
     /*----------------------------------------------------------------------------*/
 
     /*!
@@ -527,7 +526,7 @@ namespace {
      * @details Inside borders are ignored. Adjacencies are not set.
      * Client should call mesh repair functions afterwards.
      */
-    void mesh_from_element_boundaries( const GME& E, Mesh& M )
+    void mesh_from_element_boundaries( const GME& E, GEO::Mesh& M )
     {
         M.clear() ;
 
@@ -540,13 +539,13 @@ namespace {
             if( borders.empty() ) {
                 return ;
             } else {
-                const index_t nb_borders = static_cast<index_t> ( borders.size() ) ;
+                const index_t nb_borders = static_cast< index_t >( borders.size() ) ;
                 if( T == GME::LINE || T == GME::CONTACT ) {
                     // There are only points to add
                     M.vertices.create_vertices( nb_borders ) ;
                     for( index_t i = 0; i < nb_borders; ++i ) {
                         M.vertices.point( i ) =
-                            E.model().mesh_element( borders[i] ).vertex() ;
+                            E.model().mesh_element( borders[i] ).vertex( 0 ) ;
                     }
                 } else {
                     // Put an attribute on the ModelVertices to know its index
@@ -574,15 +573,14 @@ namespace {
                         for( index_t i = 0; i < nb_borders; ++i ) {
                             ringmesh_assert( borders[i].type == GME::LINE ) ;
                             const Line& L = model.line( borders[i].index ) ;
-                            index_t off = M.edges.create_edges(
-                                L.mesh().edges.nb() ) ;
-                            for( index_t e = 0; e < L.mesh().edges.nb(); ++e ) {
+                            index_t off = M.edges.create_edges( L.nb_polytope() ) ;
+                            for( index_t e = 0; e < L.nb_polytope(); ++e ) {
                                 M.edges.set_vertex( off + e, 0,
                                     old2new[L.model_vertex_id(
-                                        L.mesh().edges.vertex( e, 0 ) )] ) ;
+                                        L.polytope_vertex_index( e, 0 ) )] ) ;
                                 M.edges.set_vertex( off + e, 1,
                                     old2new[L.model_vertex_id(
-                                        L.mesh().edges.vertex( e, 1 ) )] ) ;
+                                        L.polytope_vertex_index( e, 1 ) )] ) ;
                             }
                         }
 
@@ -591,8 +589,8 @@ namespace {
                         for( index_t i = 0; i < nb_borders; ++i ) {
                             ringmesh_assert( borders[i].type == GME::SURFACE ) ;
                             const Surface& S = model.surface( borders[i].index ) ;
-                            for( index_t f = 0; f < S.nb_cells(); ++f ) {
-                                index_t nbv = S.nb_vertices_in_facet( f ) ;
+                            for( index_t f = 0; f < S.nb_polytope(); ++f ) {
+                                index_t nbv = S.nb_polytope_vertices( f ) ;
                                 GEO::vector< index_t > ids( nbv ) ;
                                 for( index_t v = 0; v < nbv; ++v ) {
                                     ids[v] = old2new[S.model_vertex_id( f, v )] ;
@@ -626,7 +624,7 @@ namespace {
                 << " has no boundary Surface" << std::endl ;
             return false ;
         } else {
-            Mesh mesh ;
+            GEO::Mesh mesh ;
             GEO::Logger::instance()->set_quiet( true ) ;
             mesh_from_element_boundaries( region, mesh ) ;
             GEO::mesh_repair( mesh ) ;
@@ -929,8 +927,8 @@ namespace {
                 << std::endl ;
         } else {
             out.precision( 16 ) ;
-            GEO::Logger::out( "I/O" ) << "Saving " << file <<"...." << std::endl ;
-            
+            GEO::Logger::out( "I/O" ) << "Saving " << file << "...." << std::endl ;
+
             for( index_t i = 0; i < e.size(); ++i ) {
                 out << "v " << M.mesh.vertices.vertex( e[i] ) << std::endl ;
             }
@@ -952,14 +950,14 @@ namespace {
     bool surface_boundary_valid( const Surface& S )
     {
         std::vector< index_t > invalid_corners ;
-        for( index_t f = 0; f < S.nb_cells(); ++f ) {
-            for( index_t v = 0; v < S.nb_vertices_in_facet( f ); ++v ) {
-                if( S.adjacent( f, v ) == NO_ID
+        for( index_t f = 0; f < S.nb_polytope(); ++f ) {
+            for( index_t v = 0; v < S.nb_polytope_vertices( f ); ++v ) {
+                if( S.facet_adjacent_index( f, v ) == NO_ID
                     && !is_edge_on_line( S.model(), S.model_vertex_id( f, v ),
-                        S.model_vertex_id( f, S.next_in_facet( f, v ) ) ).is_defined() ) {
+                        S.model_vertex_id( f, S.next_facet_vertex_index( f, v ) ) ).is_defined() ) {
                     invalid_corners.push_back( S.model_vertex_id( f, v ) ) ;
                     invalid_corners.push_back(
-                        S.model_vertex_id( f, S.next_in_facet( f, v ) ) ) ;
+                        S.model_vertex_id( f, S.next_facet_vertex_index( f, v ) ) ) ;
                 }
             }
         }
@@ -982,14 +980,16 @@ namespace {
 
 namespace RINGMesh {
     /*!
-    * @brief Save in a .lin file the
-    */
-    void debug_save_non_manifold_edges( const GeoModel& geomodel,
-                                        const std::vector< index_t>& edge_vertices )
+     * @brief Save in a .lin file the
+     */
+    void debug_save_non_manifold_edges(
+        const GeoModel& geomodel,
+        const std::vector< index_t >& edge_vertices )
     {
         std::string extension( "lin" ) ;
         std::string what( "non_manifold_edges" ) ;
-        std::string file_name( validity_errors_directory +"/" + what + "." + extension ) ;
+        std::string file_name(
+            validity_errors_directory + "/" + what + "." + extension ) ;
 
         save_edges( file_name, geomodel, edge_vertices ) ;
     }
@@ -1016,20 +1016,20 @@ namespace RINGMesh {
                 GEO::Logger::err( "GeoModel" ) << "The model stored for "
                     << GME::type_name( E.type() ) << " " << E.index()
                     << " is not correct " << std::endl ;
-                valid[ e ] = false ;
+                valid[e] = false ;
                 // This is a major problem
                 ringmesh_assert( false ) ;
                 break ;
             }
-            valid[ e ] = E.is_valid() ;
+            valid[e] = E.is_valid() ;
 
-            if( valid[ e ] && E.type() == GME::REGION ) {
+            if( valid[e] && E.type() == GME::REGION ) {
                 // Check validity of region definition
-                valid[ e ] = is_region_valid( E ) ;
+                valid[e] = is_region_valid( E ) ;
             }
         }
-        index_t nb_invalid = static_cast< index_t >(std::count( valid.begin(),
-            valid.end(), false )) ;
+        index_t nb_invalid = static_cast< index_t >( std::count( valid.begin(),
+            valid.end(), false ) ) ;
         if( nb_invalid != 0 ) {
             GEO::Logger::warn( "GeoModel" ) << nb_invalid
                 << " individual elements of the model are invalid " << std::endl ;
@@ -1069,7 +1069,7 @@ namespace RINGMesh {
                     << GM.one_interface( i ).gme_id() << " is in the boundary of "
                     << layers.size() << " Layers: " ;
                 for( index_t j = 0; j < layers.size(); ++j ) {
-                    GEO::Logger::warn( "GeoModel" ) << layers[ j ] << " ; " ;
+                    GEO::Logger::warn( "GeoModel" ) << layers[j] << " ; " ;
                 }
                 GEO::Logger::warn( "GeoModel" ) << std::endl ;
                 valid = false ;
@@ -1078,16 +1078,18 @@ namespace RINGMesh {
         return valid ;
     }
 
-
     /*!
      * @brief Implementation class for validity checks on a GeoModel
      */
     class GeoModelValidityCheck {
     public:
-        GeoModelValidityCheck( const GeoModel& geomodel, bool check_surface_intersections ) :
-            geomodel_(geomodel),
-            valid_(true), 
-            check_surface_intersections_(check_surface_intersections )
+        GeoModelValidityCheck(
+            const GeoModel& geomodel,
+            bool check_surface_intersections )
+            :
+                geomodel_( geomodel ),
+                valid_( true ),
+                check_surface_intersections_( check_surface_intersections )
         {
             // Ensure that the model vertices are computed and up-to-date
             // Without that we cannot do anything        
@@ -1100,7 +1102,7 @@ namespace RINGMesh {
             return valid_ ;
         }
 
-    private:        
+    private:
         const GeoModel& geomodel() const
         {
             return geomodel_ ;
@@ -1109,8 +1111,8 @@ namespace RINGMesh {
         void test_global_element_access()
         {
             index_t nb_global = geomodel().nb_elements( GME::ALL_TYPES ) ;
-            index_t sum_all_types = geomodel().nb_corners() + geomodel().nb_lines() 
-                + geomodel().nb_surfaces() + geomodel().nb_regions() 
+            index_t sum_all_types = geomodel().nb_corners() + geomodel().nb_lines()
+                + geomodel().nb_surfaces() + geomodel().nb_regions()
                 + geomodel().nb_contacts() + geomodel().nb_interfaces()
                 + geomodel().nb_layers() ;
 
@@ -1118,7 +1120,7 @@ namespace RINGMesh {
                 set_invalid_model() ;
             }
         }
-        
+
         /*! 
          * @brief Verify the validity of all GeoModelElements
          */
@@ -1134,7 +1136,7 @@ namespace RINGMesh {
          */
         void test_geological_validity()
         {
-            if( geomodel().nb_interfaces() > 0 && geomodel().nb_layers() > 0 ) {                
+            if( geomodel().nb_interfaces() > 0 && geomodel().nb_layers() > 0 ) {
                 if( !is_geomodel_geology_valid( geomodel() ) ) {
                     set_invalid_model() ;
                 }
@@ -1148,7 +1150,7 @@ namespace RINGMesh {
         void test_finite_extension()
         {
             if( !is_region_valid( geomodel().universe() ) ) {
-                set_invalid_model() ;                
+                set_invalid_model() ;
             }
         }
         /*!
@@ -1173,18 +1175,18 @@ namespace RINGMesh {
         }
 
         void do_check_validity()
-        {           
-            test_global_element_access() ; 
-            test_model_elements_validity() ;            
+        {
+            test_global_element_access() ;
+            test_model_elements_validity() ;
             test_geological_validity() ;
             test_finite_extension() ;
-            test_geometry_connectivity_consistency() ;          
+            test_geometry_connectivity_consistency() ;
             test_non_manifold_edges() ;
             if( check_surface_intersections_ ) {
                 test_facet_intersections() ;
             }
         }
-    
+
         /*! 
          * @brief Creates a Mesh from the GeoModel and triangulates it
          */
@@ -1193,50 +1195,51 @@ namespace RINGMesh {
             GEO::Logger::instance()->set_quiet( true ) ;
 
             bool connect_facets = false ;
-            build_mesh_from_geomodel( geomodel(),
-                triangulated_global_model_mesh_, connect_facets ) ;
-            GEO::mesh_repair( triangulated_global_model_mesh_, MESH_REPAIR_TRIANGULATE ) ;
+            build_mesh_from_geomodel( geomodel(), triangulated_global_model_mesh_,
+                connect_facets ) ;
+            GEO::mesh_repair( triangulated_global_model_mesh_,
+                GEO::MESH_REPAIR_TRIANGULATE ) ;
 
             GEO::Logger::instance()->set_quiet( false ) ;
         }
 
         /*!
-        * @brief Returns true if there are non-manifold edges that are
-        *        not in any Line of the model
-        * @note Connect the facets of the global mesh
-        * @note This is a quite expensive test.
-        */
+         * @brief Returns true if there are non-manifold edges that are
+         *        not in any Line of the model
+         * @note Connect the facets of the global mesh
+         * @note This is a quite expensive test.
+         */
         void test_non_manifold_edges()
-        {   
+        {
             create_model_mesh() ;
             std::vector< index_t > non_manifold_edges ;
-            connect_mesh_facets_except_on_mesh_edges( 
+            connect_mesh_facets_except_on_mesh_edges(
                 triangulated_global_model_mesh_, non_manifold_edges ) ;
 
             if( !non_manifold_edges.empty() ) {
-                GEO::Logger::warn( "GeoModel" ) << non_manifold_edges.size()/2
+                GEO::Logger::warn( "GeoModel" ) << non_manifold_edges.size() / 2
                     << "non-manifold edges " << std::endl ;
-                debug_save_non_manifold_edges( geomodel(), non_manifold_edges ) ;                
-                
+                debug_save_non_manifold_edges( geomodel(), non_manifold_edges ) ;
+
                 set_invalid_model() ;
             }
         }
 
         /*!
-        * @brief Returns true if there are intersections between facets
-        * @details Operates on the global mesh
-        * @note This is a very expensive test.
-        */
+         * @brief Returns true if there are intersections between facets
+         * @details Operates on the global mesh
+         * @note This is a very expensive test.
+         */
         void test_facet_intersections()
         {
-            index_t nb_intersections = detect_intersecting_facets(
-                geomodel_, triangulated_global_model_mesh_ ) ;
-            
+            index_t nb_intersections = detect_intersecting_facets( geomodel_,
+                triangulated_global_model_mesh_ ) ;
+
             if( nb_intersections > 0 ) {
                 GEO::Logger::warn( "GeoModel" ) << nb_intersections
                     << " facet intersections " << std::endl ;
-                set_invalid_model();
-            } 
+                set_invalid_model() ;
+            }
         }
 
         void set_invalid_model()
@@ -1247,15 +1250,14 @@ namespace RINGMesh {
     private:
         const GeoModel& geomodel_ ;
         bool valid_ ;
-        bool check_surface_intersections_;
+        bool check_surface_intersections_ ;
 
         // Global mesh of the GeoModel used for some validity checks
         GEO::Mesh triangulated_global_model_mesh_ ;
-    };
+    } ;
 
- 
     bool is_geomodel_valid( const GeoModel& GM, bool check_surface_intersections )
-    {       
+    {
         GeoModelValidityCheck validity_checker( GM, check_surface_intersections ) ;
 
         bool valid = validity_checker.is_geomodel_valid() ;
@@ -1269,6 +1271,5 @@ namespace RINGMesh {
         }
         return valid ;
     }
-     
 
 } // namespace RINGMesh

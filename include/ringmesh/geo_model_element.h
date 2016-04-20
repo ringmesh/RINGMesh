@@ -33,7 +33,7 @@
  *     FRANCE
  */
 
- /*!
+/*!
  * @file Declaration of GeoModelElement and all its children classes
  * @author Jeanne Pellerin  and Arnaud Botella 
  */
@@ -42,20 +42,14 @@
 #define __RINGMESH_GEO_MODEL_ELEMENT__
 
 #include <ringmesh/common.h>
+#include <ringmesh/mesh.h>
+#include <geogram/mesh/mesh.h>
 
 #include <vector>
 #include <string>
 
-#include <geogram/mesh/mesh.h>
-
-namespace GEO {
-    class MeshFacetsAABB ;
-    class MeshCellsAABB ;
-}
-
 namespace RINGMesh {
     class GeoModel ;
-    class ColocaterANN ;
 }
 
 namespace RINGMesh {
@@ -444,20 +438,18 @@ namespace RINGMesh {
     } ;
 
     /*!
-     * @brief Abstract base class for GeoModelElement 
-     *        which have a geometrical representation
-     * @details This representation is stored as a GEO::Mesh
+     * @brief Abstract base class for GeoModelMeshElement.
+     * @details The GeoModelMeshElement geometrical representation
+     * is stored as a RINGMesh::Mesh. We defines generic access to
+     * the RINGMesh::Mesh geometry. We also provide functions to link
+     * the GeoModelMeshElement with GeoModelMesh.
      */
     class RINGMESH_API GeoModelMeshElement: public GeoModelElement {
     ringmesh_disable_copy( GeoModelMeshElement ) ;
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
+        friend class GeoModelRepair ;
     public:
-
-        /*!
-         * @brief Name of the attribute storing the index of a vertex in the model
-         */
-        static const std::string model_vertex_id_att_name() ;
 
         GeoModelMeshElement(
             const GeoModel& model,
@@ -465,13 +457,19 @@ namespace RINGMesh {
             index_t id,
             const std::string& name = "",
             GEOL_FEATURE geological_feature = NO_GEOL )
-            : GeoModelElement( model, element_type, id, name, geological_feature )
+            :
+                mesh_( model, 3, false ),
+                GeoModelElement( model, element_type, id, name, geological_feature )
         {
-            model_vertex_id_.bind( mesh_.vertices.attributes(),
+            model_vertex_id_.bind( mesh_.vertex_attribute_manager(),
                 model_vertex_id_att_name() ) ;
         }
 
         virtual ~GeoModelMeshElement() ;
+        const GEO::Mesh& gfx_mesh() const
+        {
+            return mesh_.gfx_mesh() ;
+        }
 
         /*!
          * @brief Global validity of the element
@@ -483,69 +481,133 @@ namespace RINGMesh {
             /// (no time right now JP)
             // are_model_vertex_indices_valid() ;
         }
+        void save(
+            const std::string filename,
+            const GEO::MeshIOFlags& ioflags ) const
+        {
+            mesh_.save_mesh( filename, ioflags ) ;
+        }
+        /*!
+         * brief  return the ColocaterANN at located at ColocaterANN::VERTICES of the current GeoModelMeshElement.
+         */
+        const ColocaterANN& vertex_colocater_ann() const
+        {
+            return mesh_.colotater_ann( ColocaterANN::VERTICES ) ;
+        }
 
         /*!
-         * @brief Number of mesh elements
-         * vertices for Corner, edges for Line,
-         * facets for Surface, cells for Region.
+         * \name Local access to the GeoModelMeshElement geometry
+         * @{
          */
-        virtual index_t nb_cells() const = 0 ;
-
-        /*! 
-         * @brief Correspondance of vertex index \param lv in a mesh element \param me
-         * and vertex index in the GMME
-         * @todo changer le nom
-         */
-        virtual index_t gmme_vertex_index( index_t me, index_t lv ) const = 0 ;
-
         /*!
-         * @brief Number of vertices of the mesh
+         * @brief return the number of vertices in the current GeoModelMeshElement
          */
         index_t nb_vertices() const
         {
-            return mesh_.vertices.nb() ;
+            return mesh_.nb_vertices() ;
         }
-
         /*!
-         * @brief Global index in GeoModelMesh from the
-         * the local one
-         * @param[in] v Vertex index in the GeoModelMeshElement
+         * @brief Get coordinates of a vertex indexed \param vertex_index in the current GeoModelMeshElement.
          */
-        index_t model_vertex_id( index_t v = 0 ) const
+        const vec3& vertex( index_t vertex_index ) const
         {
-            ringmesh_assert( v < nb_vertices() ) ;
-            return model_vertex_id_[v] ;
-        }
-
-        index_t model_vertex_id( index_t me, index_t lv ) const
-        {
-            return model_vertex_id( gmme_vertex_index( me, lv ) ) ;
+            return mesh_.vertex( vertex_index ) ;
         }
 
         /*!
-         * @brief Coordinates of a GeoModelMeshElement
-         * @param[in] v Index of the vertex in the GeoModelMeshElement
+         * @brief Get the number of n-polytope in the GeoModelMeshElement
+         * @details The generic function return the number of polytope that
+         * correspond to the dimension n of the GeoModelMeshElement.
+         * vertices for Corner (n=0), edges for Line (n=1),
+         * facets for Surface (n=2), cells for Region (n=3).
          */
-        const vec3& vertex( index_t v = 0 ) const
+        virtual index_t nb_polytope() const = 0 ;
+        /*!
+         * @brief get the number of vertices of the polytope \param polytope_index in the GeoModelMeshElement
+         */
+        virtual index_t nb_polytope_vertices( index_t polytope_index ) const = 0 ;
+        /*!
+         * @brief Get the index of a vertex in the current GeoModelMeshElement from the vertex index \param vertex_index
+         * in a given n-polytope \param polytope_index.
+         */
+        virtual index_t polytope_vertex_index(
+            index_t polytope_index,
+            index_t vertex_index ) const = 0 ;
+        /*!
+         * @brief Get coordinates of a vertex in the current GeoModelMeshElement from the vertex index \param vertex_index
+         * in a given n-polytope \param polytope_index.
+         */
+        const vec3& polytope_vertex(
+            index_t polytope_index,
+            index_t vertex_index ) const
         {
-            ringmesh_assert( v < nb_vertices() ) ;
-            return mesh_.vertices.point( v ) ;
+            return vertex( polytope_vertex_index( polytope_index, vertex_index ) ) ;
         }
 
-        const vec3& vertex( index_t me, index_t lv ) const
+        /*! @}
+         * \name Geometrical request on Element
+         * @{
+         */
+        virtual double polytope_size( index_t polytope_index ) const = 0 ;
+        virtual double size() const
         {
-            return vertex( gmme_vertex_index( me, lv ) ) ;
+            double size = 0.0 ;
+            for( index_t i = 0; i < nb_polytope(); ++i ) {
+                size += polytope_size( i ) ;
+            }
+            return size ;
         }
+        virtual vec3 polytope_center( index_t polytope_index ) const = 0 ;
+        virtual vec3 center() const
+        {
+            vec3 result( 0., 0., 0. ) ;
+            for( index_t v = 0; v < nb_vertices(); v++ ) {
+                result += vertex( v ) ;
+            }
+            return result / static_cast< double >( nb_vertices() ) ;
+        }
+
+        /*! @}
+         */
+        /*!
+         * \name Linking to GeoModelMesh indexing
+         * @{
+         */
 
         /*!
-         * @brief Index of the first vertex corresponding to the input model index
+         * @brief Name of the attribute storing the global index of a vertex in the GeoModel.
+         * @details it computes the global index value over all GeoModelMeshElement of a GeoModel.
+         */
+        static const std::string model_vertex_id_att_name() ;
+
+        /*!
+         * @brief Get the global GeoModelMesh index of the vertex indexed @param[in] gmme_vertex_index in the current GeoModelMeshElement.
+         */
+        index_t model_vertex_id( index_t gmme_vertex_index = 0 ) const
+        {
+            ringmesh_assert( gmme_vertex_index < nb_vertices() ) ;
+            return model_vertex_id_[gmme_vertex_index] ;
+        }
+        /*!
+         * @brief Get the index of a vertex in the GeoModelMesh from its vertex
+         * index \param vertex_index in the given n-polytope \param gmme_polytope_index
+         * of the current GeoModelMeshElement.
+         */
+        index_t model_vertex_id(
+            index_t gmme_polytope_index,
+            index_t vertex_index ) const
+        {
+            return model_vertex_id(
+                polytope_vertex_index( gmme_polytope_index, vertex_index ) ) ;
+        }
+        /*!
+         * @brief Get the first vertex index, in the current GeoModelMeshElement, that corresponds to the vertex \param model_vertex_id.
          * @details Returns NO_ID if no matching point is found.
          *
          * @param model_vertex_id Index of a vertex in GeoModelMeshVertices
          * @todo changer le nom
          */
         index_t gmme_vertex_index_from_model( index_t model_vertex_id ) const ;
-
         std::vector< index_t > gme_vertex_indices( index_t model_vertex_id ) const ;
 
         /*!
@@ -555,39 +617,25 @@ namespace RINGMesh {
          */
         GEO::AttributesManager& vertex_attribute_manager() const
         {
-            return mesh_.vertices.attributes() ;
+            return mesh_.vertex_attribute_manager() ;
         }
         GEO::AttributesManager& facet_attribute_manager() const
         {
-            return mesh_.facets.attributes() ;
+            return mesh_.facet_attribute_manager() ;
         }
         GEO::AttributesManager& cell_attribute_manager() const
         {
-            return mesh_.cells.attributes() ;
+            return mesh_.cell_attribute_manager() ;
         }
         void bind_attributes() ;
         void unbind_attributes() ;
-
         /*! @}
          */
-
-        /*!  
-         * @brief Open-bar access to the mesh of the element
-         * @details ONLY for internal use.
-         * @warning DO NOT directly call this function to modify the facets, edges,
-         * or vertices of the element.
-         */
-        GEO::Mesh& mesh() const
-        {
-            return const_cast< GEO::Mesh& >( mesh_ ) ;
-        }
-
     protected:
         /*!
          * @brief Check if the mesh stored is valid.
          */
         virtual bool is_mesh_valid() const = 0 ;
-
         /*!
          * @brief Check that model vertex ids are consistent 
          * with info stored by the model vertices
@@ -595,10 +643,10 @@ namespace RINGMesh {
         bool are_model_vertex_indices_valid() const ;
 
     protected:
-        /// Mesh of the element
-        GEO::Mesh mesh_ ;
+        /// Mesh of the GeoModelMeshElement
+        Mesh mesh_ ;
         /*! Attribute on the Mesh vertices storing the index of
-         *  the vertex in the the GeoModel owning this element 
+         *  the vertex in the GeoModel owning this element
          */
         GEO::Attribute< index_t > model_vertex_id_ ;
     } ;
@@ -617,23 +665,52 @@ namespace RINGMesh {
         Corner( const GeoModel& model, index_t id )
             : GeoModelMeshElement( model, CORNER, id )
         {
-            mesh_.vertices.create_vertex() ;
+            MeshBuilder builder( mesh_ ) ;
+            builder.create_vertex() ;
         }
 
         ~Corner()
         {
         }
 
-        virtual index_t nb_cells() const
-        {
-            // A Corner (dim 0) has points
-            return mesh_.vertices.nb() ;
-        }
-
-        // Only one possible local index 
-        virtual index_t gmme_vertex_index( index_t /*me*/, index_t /*lv*/) const
+        /*!
+         * @brief Get the index of the unique vertex constituting of the Corner.
+         * @return 0.
+         */
+        virtual index_t polytope_vertex_index( index_t, index_t ) const
         {
             return 0 ;
+        }
+        /*!
+         * @return 0, no polytope are defined for corners.
+         */
+        virtual index_t nb_polytope() const
+        {
+            return 0 ;
+        }
+        /*!
+         * @return 1 the number of vertices of the Corner
+         */
+        virtual index_t nb_polytope_vertices( index_t /*polytope_index*/) const
+        {
+            return 1 ;
+        }
+
+        /*! @}
+         * \name Geometrical request on Corner
+         * @{
+         */
+        virtual double polytope_size( index_t /*polytope_index*/) const
+        {
+            return 0.0 ;
+        }
+        virtual double size() const
+        {
+            return 0.0 ;
+        }
+        virtual vec3 polytope_center( index_t /*polytope_index*/) const
+        {
+            return vertex( 0 ) ;
         }
 
     protected:
@@ -658,26 +735,34 @@ namespace RINGMesh {
         }
 
         /*!
-         * @brief Number of edges
+         * Get the number of edges of the Line
          */
-        virtual index_t nb_cells() const
+        virtual index_t nb_polytope() const
         {
-            return mesh_.edges.nb() ;
+            return mesh_.nb_edges() ;
         }
-
         /*!
-         * @brief Correspondance of vertex index \param lv in a mesh element \param me
-         * and vertex index in the GMME
+         * Get the number of vertices per edge.
+         * @return 2;
          */
-        virtual index_t gmme_vertex_index( index_t me, index_t lv ) const
+        virtual index_t nb_polytope_vertices( index_t ) const
         {
-            ringmesh_assert( me < nb_cells() ) ;
-            ringmesh_assert( lv < 2 ) ;
-            return mesh_.edges.vertex( me, lv ) ;
+            return 2 ;
         }
-
         /*!
-         * @brief A Line is closed if its two extremities are identitical 
+         * @brief Get the index of a vertex in the Line from the vertex index \param vertex_index
+         * in a given edge \param edge_index.
+         */
+        virtual index_t polytope_vertex_index(
+            index_t edge_index,
+            index_t vertex_index ) const
+        {
+            ringmesh_assert( edge_index < nb_polytope() ) ;
+            ringmesh_assert( vertex_index < 2 ) ;
+            return mesh_.edge_vertex( edge_index, vertex_index ) ;
+        }
+        /*!
+         * @brief A Line is closed if its two extremities are identitical.
          */
         bool is_closed() const
         {
@@ -686,30 +771,31 @@ namespace RINGMesh {
                 && ( boundaries_[0] == boundaries_[1] ) ;
         }
 
+        /*! @}
+         * \name Geometrical request on Line
+         * @{
+         */
+        /*!
+         * @brief Gets the length of the edge \param edge_index
+         */
+        virtual double polytope_size( index_t edge_index ) const
+        {
+            ringmesh_assert( edge_index < nb_polytope() ) ;
+            return mesh_.edge_length( edge_index ) ;
+        }
+        /*!
+         * @brief Gets the center of the edge \param edge_index
+         */
+        virtual vec3 polytope_center( index_t edge_index ) const
+        {
+            ringmesh_assert( edge_index < nb_polytope() ) ;
+            return 0.5
+                * ( polytope_vertex( edge_index, 0 )
+                    + polytope_vertex( edge_index, 1 ) ) ;
+        }
     private:
         virtual bool is_mesh_valid() const ;
 
-    } ;
-
-    // Forward declaration
-    class Surface ;
-
-    /*
-     * @todo Comment
-     */
-    class RINGMESH_API SurfaceTools {
-    public:
-        SurfaceTools( const Surface& surface ) ;
-        ~SurfaceTools() ;
-
-        const GEO::MeshFacetsAABB& aabb() const ;
-        const ColocaterANN& ann() const ;
-
-    private:
-        const Surface& surface_ ;
-
-        mutable GEO::MeshFacetsAABB* aabb_ ;
-        mutable ColocaterANN* ann_ ;
     } ;
 
     /*!
@@ -724,7 +810,7 @@ namespace RINGMesh {
         static const index_t NO_ADJACENT = index_t( -1 ) ;
 
         Surface( const GeoModel& model, index_t id )
-            : GeoModelMeshElement( model, SURFACE, id ), tools( *this )
+            : GeoModelMeshElement( model, SURFACE, id )
         {
         }
 
@@ -732,179 +818,110 @@ namespace RINGMesh {
         {
         }
 
-        /*!
-         * @brief Number of facets
-         */
-        virtual index_t nb_cells() const
-        {
-            return mesh_.facets.nb() ;
-        }
-
-        /*!
-         * @brief Correspondance of vertex index \param lv in a mesh element \param me
-         * and vertex index in the GMME
-         */
-        virtual index_t gmme_vertex_index( index_t me, index_t lv ) const
-        {
-            ringmesh_assert( me < nb_cells() ) ;
-            ringmesh_assert( lv < mesh_.facets.nb_vertices( me ) ) ;
-            return mesh_.facets.vertex( me, lv ) ;
-        }
-
         bool is_simplicial() const
         {
-            return mesh_.facets.are_simplices() ;
+            return mesh_.facets_are_simplicies() ;
         }
-
+        const GEO::MeshFacetsAABB& facets_aabb() const
+        {
+            return mesh_.facets_aabb() ;
+        }
         /*!
-         * \name Accessors to facet and vertices
+         * brief  return the ColocaterANN at located at ColocaterANN::VERTICES of the current GeoModelMeshElement.
+         */
+        const ColocaterANN& facet_colocater_ann() const
+        {
+            return mesh_.colotater_ann( ColocaterANN::FACETS ) ;
+        }
+        /*!
+         * \name Accessors to Surface facets, edges and vertices
          * @{
          */
-        index_t facet_begin( index_t f ) const
-        {
-            return mesh_.facets.corners_begin( f ) ;
-        }
-        index_t facet_end( index_t f ) const
-        {
-            return mesh_.facets.corners_end( f ) ;
-        }
-        index_t nb_vertices_in_facet( index_t f ) const
-        {
-            return mesh_.facets.nb_vertices( f ) ;
-        }
-
-        bool is_triangle( index_t f ) const
-        {
-            return nb_vertices_in_facet( f ) == 3 ;
-        }
-
-        index_t next_in_facet( index_t f, index_t v ) const
-        {
-            ringmesh_assert( v < nb_vertices_in_facet( f ) ) ;
-            if( v != nb_vertices_in_facet( f ) - 1 ) {
-                return v + 1 ;
-            } else {
-                return 0 ;
-            }
-        }
-
-        index_t prev_in_facet( index_t f, index_t v ) const
-        {
-            ringmesh_assert( v < nb_vertices_in_facet( f ) ) ;
-            if( v > 0 ) {
-                return v - 1 ;
-            } else {
-                return nb_vertices_in_facet( f ) - 1 ;
-            }
-        }
-
-        index_t nb_facet_corners() const
-        {
-            return mesh_.facet_corners.nb() ;
-        }
-
-        index_t model_vertex_id_at_facet_corner( index_t corner ) const
-        {
-            return GeoModelMeshElement::model_vertex_id(
-                mesh_.facet_corners.vertex( corner ) ) ;
-        }
 
         /*!
-         * @brief Returns the surface index of vertex \param v in facet \param f
+         * Get the number of facets of the Surface.
          */
-        index_t surf_vertex_id( index_t f, index_t v ) const
+        virtual index_t nb_polytope() const
         {
-            return gmme_vertex_index( f, v ) ;
+            return mesh_.nb_facets() ;
         }
-
         /*!
-         * @brief Returns a vertex surface index from its model index \param model_vertex_id
-         * @details If there are two points, returns the first one.
-         *          Returns NO_ID if no point is found
+         * Get the number of vertex on the facet \param facet_index of the Surface.
+         *
          */
-        index_t surf_vertex_id( index_t model_vertex_id ) const
+        virtual index_t nb_polytope_vertices( index_t facet_index ) const
         {
-            return gmme_vertex_index_from_model( model_vertex_id ) ;
+            ringmesh_assert( facet_index < nb_polytope() ) ;
+            return mesh_.nb_facet_vertices( facet_index ) ;
         }
-
-        index_t facet_vertex_id( index_t t, index_t surf_vertex_id ) const ;
-
-        index_t facet_id_from_model( index_t f, index_t model_vertex_id ) const ;
-
-        index_t facet_from_surface_vertex_ids( index_t in0, index_t in1 ) const ;
-
-        index_t facet_from_model_vertex_ids( index_t i0, index_t i1 ) const ;
-
-        void edge_from_model_vertex_ids(
-            index_t i0,
-            index_t i1,
-            index_t& f,
-            index_t& e ) const ;
-
-        void oriented_edge_from_model_vertex_ids(
-            index_t i0,
-            index_t i1,
-            index_t& facet,
-            index_t& edge ) const ;
-
-        index_t facets_around_vertex(
-            index_t surf_vertex_id,
-            std::vector< index_t >& result,
-            bool border_only ) const ;
-
-        index_t facets_around_vertex(
-            index_t surf_vertex_id,
-            std::vector< index_t >& result,
-            bool border_only,
-            index_t first_facet ) const ;
-
-        /*! @}
-         * \name Geometrical request on facets
-         * @{
+        /*!
+         * @brief Get the index of a vertex in the Surface from the vertex index \param vertex_index
+         * in a given facet \param facet_index.
          */
-        vec3 facet_normal( index_t facet_index ) const ;
-        vec3 facet_barycenter( index_t facet_index ) const ;
-        double facet_area( index_t facet_index ) const ;
-        index_t closest_vertex_in_facet(
+        virtual index_t polytope_vertex_index(
             index_t facet_index,
-            const vec3& to_point ) const ;
+            index_t vertex_index ) const
+        {
+            ringmesh_assert( facet_index < nb_polytope() ) ;
+            ringmesh_assert( vertex_index < nb_polytope_vertices( facet_index ) ) ;
+            return mesh_.facet_vertex( facet_index, vertex_index ) ;
+        }
 
-        /*! @}
-         * \name Adjacencies request
-         * @{
+        /*!
+         * @brief Get the first vertex index of a facet in a Surface.
+         * @param[in] facet_id facet index
          */
-        /*! @brief Returns the index of the adjacent facet of \param f in this surface
-         *  along the edge starting at \param v */
-        index_t adjacent( index_t f, index_t v ) const
+        index_t facet_begin( index_t facet_id ) const
         {
-            ringmesh_assert( v < nb_vertices_in_facet( f ) ) ;
-            return mesh_.facets.adjacent( f, v ) ;
+            return mesh_.facet_begin( facet_id ) ;
         }
-
-        /*! @brief Returns the index of the adjacent facet at the given corner
+        /*!
+         * @brief Get the last vertex index of a facet in a surface.
+         * @param[in] facet_id facet index
          */
-        index_t adjacent( index_t c ) const
+        index_t facet_end( index_t facet_id ) const
         {
-            ringmesh_assert( c < mesh_.facet_corners.nb() ) ;
-            return mesh_.facet_corners.adjacent_facet( c ) ;
+            return mesh_.facet_end( facet_id ) ;
         }
-
-        bool is_on_border( index_t f, index_t v ) const
+        /*!
+         * @brief Gets the next vertex index in the facet \param facet_id.
+         * @param[in] facet_id facet index
+         * @param[in] vertex_id current index
+         */
+        index_t next_facet_vertex_index(
+            index_t facet_index,
+            index_t vertex_index ) const
         {
-            ringmesh_assert( v < nb_vertices_in_facet( f ) ) ;
-            return adjacent( f, v ) == GEO::NO_CELL ;
+            ringmesh_assert( facet_index < nb_polytope() ) ;
+            ringmesh_assert( vertex_index < nb_polytope_vertices( facet_index ) ) ;
+            return mesh_.next_facet_vertex( facet_index, vertex_index ) ;
         }
-
-        bool is_on_border( index_t f ) const
+        /*!
+         * @brief Gets the previous vertex index in the facet \param facet_id.
+         * @param[in] facet_id facet index
+         * @param[in] vertex_id current index
+         */
+        index_t prev_facet_vertex_index(
+            index_t facet_index,
+            index_t vertex_index ) const
         {
-            for( index_t adj = 0; adj < nb_vertices_in_facet( f ); adj++ ) {
-                if( is_on_border( f, adj ) ) {
-                    return true ;
-                }
-            }
-            return false ;
+            ringmesh_assert( facet_index < nb_polytope() ) ;
+            ringmesh_assert( vertex_index < nb_polytope_vertices( facet_index ) ) ;
+            return mesh_.prev_facet_vertex( facet_index, vertex_index ) ;
         }
-
+        /*!
+         * @brief Gets an adjacent facet index by facet index and local edge index.
+         * @param[in] facet_id the facet index.
+         * @param[in] edge_id the local edge index in \param facet_id.
+         * @return the global facet index adjacent to the \param edge_id of the facet \param facet_id.
+         * @precondition  \param edge_id < number of edge of the facet \param facet_id .
+         */
+        index_t facet_adjacent_index( index_t facet_index, index_t edge_index ) const
+        {
+            ringmesh_assert( facet_index < nb_polytope() ) ;
+            ringmesh_assert( edge_index < nb_polytope_vertices( facet_index ) ) ;
+            return mesh_.facet_adjacent( facet_index, edge_index ) ;
+        }
         void next_on_border(
             index_t f,
             index_t from,
@@ -912,39 +929,140 @@ namespace RINGMesh {
             index_t& next_f,
             index_t& v_in_next,
             index_t& to ) const ;
-
         void next_on_border(
             index_t f,
             index_t e,
             index_t& next_f,
             index_t& next_e ) const ;
 
-    public:
-        SurfaceTools tools ;
+        /*!
+         * @brief Get the local vertex index in the facet /param facet_index from its index in the Surface /param surface_vertex_index
+         * @param[in] facet_index Index of the facet
+         * @param[in] surface_vertex_index Index of the vertex in the surface
+         * @return NO_ID or index of the vertex in the facet
+         */
+        index_t vertex_index_in_facet(
+            index_t facet_index,
+            index_t surface_vertex_index ) const
+        {
+            for( index_t v = 0; v < nb_polytope_vertices( facet_index ); v++ ) {
+                if( polytope_vertex_index( facet_index, v )
+                    == surface_vertex_index ) {
+                    return v ;
+                }
+            }
+            return NO_ID ;
+        }
+        index_t facet_from_surface_vertex_ids( index_t in0, index_t in1 ) const ;
 
+        index_t facets_around_vertex(
+            index_t surf_vertex_id,
+            std::vector< index_t >& result,
+            bool border_only ) const ;
+        index_t facets_around_vertex(
+            index_t surf_vertex_id,
+            std::vector< index_t >& result,
+            bool border_only,
+            index_t first_facet ) const ;
+
+        /*! @}
+         * \name Linking to GeoModelMesh indexing
+         * @{
+         */
+        void edge_from_model_vertex_ids(
+            index_t i0,
+            index_t i1,
+            index_t& f,
+            index_t& e ) const ;
+        void oriented_edge_from_model_vertex_ids(
+            index_t i0,
+            index_t i1,
+            index_t& facet,
+            index_t& edge ) const ;
+        /*!
+         * @brief Convert model vertex index to an index in a facet
+         * @param[in] f Index of the facet
+         * @param[in] model_v_id Index of the vertex in the GeoModel
+         * @return NO_ID or index of the vertex in the facet
+         */
+        index_t facet_id_from_model( index_t f, index_t model_vertex_index ) const
+        {
+            for( index_t v = 0; v < nb_polytope_vertices( f ); v++ ) {
+                if( model_vertex_id( f, v ) == model_vertex_index ) {
+                    return v ;
+                }
+            }
+            return NO_ID ;
+        }
+        index_t facet_from_model_vertex_ids( index_t i0, index_t i1 ) const ;
+
+        /*! @}
+         * \name Geometrical request on facets
+         * @{
+         */
+        /*!
+         * Get the facet normal
+         * @param[in] f Facet index
+         * @return Normal to the facet
+         */
+        vec3 facet_normal( index_t facet_index ) const
+        {
+            ringmesh_assert( facet_index < nb_polytope() ) ;
+            return mesh_.facet_normal( facet_index ) ;
+        }
+        /*!
+         * Computes the Mesh facet barycenter
+         * @param[in] facet_id the facet index in the cell
+         * @return the facet center
+         */
+        virtual vec3 polytope_center( index_t facet_index ) const
+        {
+            ringmesh_assert( facet_index < nb_polytope() ) ;
+            return mesh_.facet_barycenter( facet_index ) ;
+        }
+        bool facet_is_triangle( index_t facet_index ) const
+        {
+            ringmesh_assert( facet_index < nb_polytope() ) ;
+            return mesh_.is_triangle( facet_index ) ;
+        }
+
+        /*!
+         * Computes the Mesh facet area
+         * @param[in] facet_id the facet index
+         * @return the facet area
+         */
+        virtual double polytope_size( index_t facet_index ) const
+        {
+            ringmesh_assert( facet_index < nb_polytope() ) ;
+            return mesh_.facet_area( facet_index ) ;
+        }
+        index_t closest_vertex_in_facet(
+            index_t facet_index,
+            const vec3& to_point ) const ;
+        /*!
+         * @return true if the edge starting at the vertex \param v of the facet \param f is on the Surface Border.
+         */
+        bool is_on_border( index_t f, index_t v ) const
+        {
+            return facet_adjacent_index( f, v ) == GEO::NO_CELL ;
+        }
+        /*!
+         * @return true if on edge of the facet \param f is on the Surface border.
+         */
+        bool is_on_border( index_t f ) const
+        {
+            for( index_t adj = 0; adj < mesh_.nb_facet_vertices( f ); adj++ ) {
+                if( is_on_border( f, adj ) ) {
+                    return true ;
+                }
+            }
+            return false ;
+        }
+        /*! @}
+         */
     private:
         virtual bool is_mesh_valid() const ;
 
-    } ;
-
-    // Defined just after this class
-    class Region ;
-    /*
-     * @todo Comment 
-     */
-    class RINGMESH_API RegionTools {
-    public:
-        RegionTools( const Region& region ) ;
-        ~RegionTools() ;
-
-        const GEO::MeshCellsAABB& aabb() const ;
-        const ColocaterANN& ann() const ;
-
-    private:
-        const Region& region_ ;
-
-        mutable GEO::MeshCellsAABB* aabb_ ;
-        mutable ColocaterANN* ann_ ;
     } ;
 
     /*!
@@ -958,7 +1076,7 @@ namespace RINGMesh {
         friend class GeoModelBuilder ;
     public:
         Region( const GeoModel& model, index_t id )
-            : GeoModelMeshElement( model, REGION, id ), tools( *this )
+            : GeoModelMeshElement( model, REGION, id )
         {
         }
 
@@ -967,9 +1085,7 @@ namespace RINGMesh {
             index_t id,
             const std::string& name,
             GEOL_FEATURE geological_feature )
-            :
-                GeoModelMeshElement( model, REGION, id, name, geological_feature ),
-                tools( *this )
+            : GeoModelMeshElement( model, REGION, id, name, geological_feature )
         {
         }
 
@@ -977,49 +1093,184 @@ namespace RINGMesh {
         {
         }
 
-        /*!
-         * Get the number of cells
-         */
-        virtual index_t nb_cells() const
-        {
-            return mesh_.cells.nb() ;
-        }
-
-        index_t nb_vertices_in_cell( index_t c ) const
-        {
-            return mesh_.cells.nb_vertices( c ) ;
-        }
-        virtual index_t gmme_vertex_index( index_t me, index_t lv ) const
-        {
-            ringmesh_assert( me < nb_cells() ) ;
-            ringmesh_assert( lv < mesh_.cells.nb() ) ;
-            return mesh_.cells.vertex( me, lv ) ;
-        }
-
-        bool is_on_border( index_t cell, index_t facet ) const
-        {
-            return adjacent_cell( cell, facet ) == GEO::NO_CELL ;
-        }
-
-        index_t adjacent_cell( index_t cell, index_t facet ) const
-        {
-            return mesh_.cells.adjacent( cell, facet ) ;
-        }
-
         bool is_meshed() const
         {
-            return mesh().cells.nb() > 0 ;
+            return mesh_.nb_cells() > 0 ;
         }
-
+        //void tetrahedralize()
+        bool is_simplicial() const
+        {
+            return mesh_.cells_are_simplicies() ;
+        }
+        const GEO::MeshCellsAABB& cells_aabb() const
+        {
+            return mesh_.cells_aabb() ;
+        }
+        GEO::AttributesManager& cell_attribute_manager() const
+        {
+            return mesh_.cell_attribute_manager() ;
+        }
         bool side( index_t i ) const
         {
             return sides_[i] ;
         }
 
-        bool is_simplicial() const
+        /*!
+         * \name Accessors to Region cells, facets, edges and vertices
+         * @{
+         */
+        /*!
+         * Get the number of cells of the Region.
+         */
+        virtual index_t nb_polytope() const
         {
-            return mesh().cells.are_simplices() ;
+            return mesh_.nb_cells() ;
         }
+        index_t nb_cell_edges( index_t cell_index ) const
+        {
+            ringmesh_assert( cell_index < nb_polytope() ) ;
+            return mesh_.nb_cell_edges( cell_index ) ;
+        }
+        index_t nb_cell_facets( index_t cell_index ) const
+        {
+            ringmesh_assert( cell_index < nb_polytope() ) ;
+            return mesh_.nb_cell_facets( cell_index ) ;
+        }
+        index_t nb_cell_facet_vertices(
+            index_t cell_index,
+            index_t facet_index ) const
+        {
+            ringmesh_assert( cell_index < nb_polytope() ) ;
+            ringmesh_assert( facet_index < nb_cell_facets(cell_index) ) ;
+            return mesh_.nb_cell_facet_vertices( cell_index, facet_index ) ;
+        }
+        /*!
+         * Get the number of vertex in the cell \param cell_index of the Region.
+         *
+         */
+        virtual index_t nb_polytope_vertices( index_t cell_index ) const
+        {
+            ringmesh_assert( cell_index < nb_polytope() ) ;
+            return mesh_.nb_cell_vertices( cell_index ) ;
+        }
+        /*!
+         * @brief Get the index of a vertex in the Region from the vertex index \param vertex_index
+         * in a given cell \param cell_index.
+         */
+
+        virtual index_t polytope_vertex_index(
+            index_t cell_index,
+            index_t vertex_index ) const
+        {
+            ringmesh_assert( cell_index < nb_polytope() ) ;
+            ringmesh_assert( vertex_index < nb_polytope_vertices( cell_index ) ) ;
+            return mesh_.cell_vertex( cell_index, vertex_index ) ;
+        }
+        index_t cell_edge_vertex_index(
+            index_t cell_index,
+            index_t edge_index,
+            index_t vertex_index ) const
+        {
+            ringmesh_assert( cell_index < nb_polytope() ) ;
+            ringmesh_assert( edge_index < nb_cell_edges( cell_index ) ) ;
+            ringmesh_assert( vertex_index < nb_polytope_vertices( cell_index ) ) ;
+            return mesh_.cell_edge_vertex( cell_index, edge_index, vertex_index ) ;
+        }
+        index_t cell_facet_vertex_index(
+            index_t cell_index,
+            index_t facet_index,
+            index_t vertex_index )
+        {
+            ringmesh_assert( cell_index < nb_polytope() ) ;
+            ringmesh_assert( facet_index < nb_cell_facets( cell_index ) ) ;
+            ringmesh_assert( vertex_index < nb_polytope_vertices( cell_index ) ) ;
+            return mesh_.cell_facet_vertex( cell_index, facet_index, vertex_index ) ;
+        }
+
+        index_t cell_adjacent_index( index_t cell_index, index_t facet_index ) const
+        {
+            ringmesh_assert( cell_index < nb_polytope() ) ;
+            ringmesh_assert( facet_index < nb_cell_facets( cell_index ) ) ;
+            return mesh_.cell_adjacent( cell_index, facet_index ) ;
+        }
+
+        /*! @}
+         * \name Geometrical request on Region Element
+         * @{
+         */
+        bool is_facet_on_border( index_t cell_index, index_t facet_index ) const
+        {
+            ringmesh_assert( cell_index < nb_polytope() ) ;
+            ringmesh_assert( facet_index < nb_cell_facets( cell_index ) ) ;
+            return mesh_.cell_adjacent( cell_index, facet_index ) == GEO::NO_CELL ;
+        }
+        GEO::MeshCellType cell_type( index_t cell_index ) const
+        {
+            ringmesh_assert( cell_index < nb_polytope() ) ;
+            return mesh_.cell_type( cell_index ) ;
+        }
+        vec3 cell_facet_barycenter( index_t cell_index, index_t facet_index ) const
+        {
+            ringmesh_assert( cell_index < nb_polytope() ) ;
+            ringmesh_assert( facet_index < nb_cell_facets( cell_index ) ) ;
+            return mesh_.cell_facet_barycenter( cell_index, facet_index ) ;
+        }
+        vec3 cell_facet_normal( index_t cell_index, index_t facet_index ) const
+        {
+            ringmesh_assert( cell_index < nb_polytope() ) ;
+            ringmesh_assert( facet_index < nb_cell_facets( cell_index ) ) ;
+            return mesh_.cell_facet_normal( cell_index, facet_index ) ;
+        }
+
+        /*!
+         * @brief Gets the volume of the cell \param cell_index.
+         */
+        virtual double polytope_size( index_t cell_index ) const
+        {
+            return mesh_.cell_volume( cell_index ) ;
+        }
+        /*!
+         * @brief Compute the volume of the Region
+         */
+        virtual double size() const
+        {
+            double result = 0. ;
+            // Compute the volume if this is a region
+            for( index_t i = 0; i < nb_boundaries(); i++ ) {
+                const Surface& surface = dynamic_cast< const Surface& >( boundary(
+                    i ) ) ;
+
+                for( index_t t = 0; t < surface.nb_polytope(); t++ ) {
+                    const vec3& p0 = surface.polytope_vertex( t, 0 ) ;
+                    for( index_t v = 1; v + 1 < surface.nb_polytope_vertices( t );
+                        ++v ) {
+                        double cur_volume = ( dot( p0,
+                            cross( surface.polytope_vertex( t, v ),
+                                surface.polytope_vertex( t, v + 1 ) ) ) )
+                            / static_cast< double >( 6 ) ;
+                        side( i ) ? result -= cur_volume : result += cur_volume ;
+                    }
+                }
+            }
+            return fabs( result ) ;
+        }
+        /*!
+         * @brief Get the center of the cell \param cell_index
+         */
+        virtual vec3 polytope_center( index_t cell_index ) const
+        {
+            ringmesh_assert( cell_index < nb_polytope() ) ;
+            return mesh_.cell_barycenter( cell_index ) ;
+        }
+        void compute_region_volumes_per_cell_type(
+            double& tet_volume,
+            double& pyramid_volume,
+            double& prism_volume,
+            double& hex_volume,
+            double& poly_volume ) const ;
+
+        /*! @}
+         */
 
         /*!
          * \todo Is connectivity valid should be virtual and we should 
@@ -1042,9 +1293,6 @@ namespace RINGMesh {
          * The size of this vector must be the same than boundary_
          */
         std::vector< bool > sides_ ;
-
-    public:
-        RegionTools tools ;
     } ;
 
 } // namespace

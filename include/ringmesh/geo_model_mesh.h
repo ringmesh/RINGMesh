@@ -38,10 +38,10 @@
 
 #include <ringmesh/common.h>
 
-#include <geogram/mesh/mesh.h>
+//#include <geogram/mesh/mesh.h>
 
 #include <ringmesh/geo_model_element.h>
-
+#include <ringmesh/mesh.h>
 /*!
  * @file ringmesh/geo_model_mesh.h
  * @brief Classes to manage globally the indexing of mesh elements of a GeoModel
@@ -72,7 +72,7 @@ namespace RINGMesh {
         friend class GeoModelMesh ;
 
     public:
-        GeoModelMeshVertices( GeoModelMesh& gmm, GeoModel& gm, GEO::Mesh& mesh ) ;
+        GeoModelMeshVertices( GeoModelMesh& gmm, GeoModel& gm, Mesh& mesh ) ;
         ~GeoModelMeshVertices() ;
 
         /*!
@@ -198,7 +198,7 @@ namespace RINGMesh {
         /// Attached GeoModel
         GeoModel& gm_ ;
         /// Attached Mesh
-        GEO::Mesh& mesh_ ;
+        Mesh& mesh_ ;
 
         /*!
          * Vertices in GeoModelElements corresponding to each vertex
@@ -206,7 +206,7 @@ namespace RINGMesh {
          */
         std::vector< std::vector< GMEVertex > > gme_vertices_ ;
         /// Kd-tree of the model vertices
-        ColocaterANN* kdtree_ ;
+        const ColocaterANN& kdtree_ ;
 
     } ;
 
@@ -219,7 +219,7 @@ namespace RINGMesh {
         } ;
 
     public:
-        GeoModelMeshFacets( GeoModelMesh& gmm, GEO::Mesh& mesh ) ;
+        GeoModelMeshFacets( GeoModelMesh& gmm, Mesh& mesh ) ;
         ~GeoModelMeshFacets() ;
 
         /*!
@@ -405,7 +405,7 @@ namespace RINGMesh {
         /// Attached GeoModel
         const GeoModel& gm_ ;
         /// Attached Mesh
-        GEO::Mesh& mesh_ ;
+        Mesh& mesh_ ;
 
         /// Attribute storing the surface index per facet
         GEO::Attribute< index_t > surface_id_ ;
@@ -429,7 +429,7 @@ namespace RINGMesh {
     class RINGMESH_API GeoModelMeshEdges {
     ringmesh_disable_copy( GeoModelMeshEdges ) ;
     public:
-        GeoModelMeshEdges( GeoModelMesh& gmm, GEO::Mesh& mesh ) ;
+        GeoModelMeshEdges( GeoModelMesh& gmm, Mesh& mesh ) ;
         ~GeoModelMeshEdges() ;
 
         /*!
@@ -482,7 +482,7 @@ namespace RINGMesh {
         /// Attached GeoModel
         const GeoModel& gm_ ;
         /// Attached Mesh
-        GEO::Mesh& mesh_ ;
+        Mesh& mesh_ ;
 
         /*!
          * Vector storing the index of the starting edge index
@@ -508,7 +508,7 @@ namespace RINGMesh {
         } ;
 
     public:
-        GeoModelMeshCells( GeoModelMesh& gmm, GEO::Mesh& mesh ) ;
+        GeoModelMeshCells( GeoModelMesh& gmm, Mesh& mesh ) ;
         /*!
          * Test if the mesh cells are initialized
          */
@@ -864,7 +864,7 @@ namespace RINGMesh {
         /// Attached GeoModel
         const GeoModel& gm_ ;
         /// Attached Mesh
-        GEO::Mesh& mesh_ ;
+        Mesh& mesh_ ;
 
         /// Attribute storing the region index per cell
         GEO::Attribute< index_t > region_id_ ;
@@ -915,7 +915,7 @@ namespace RINGMesh {
         friend class GeoModelMesh ;
 
     public:
-        GeoModelMeshOrder( GeoModelMesh& gmm, GEO::Mesh& mesh ) ;
+        GeoModelMeshOrder( GeoModelMesh& gmm, Mesh& mesh ) ;
 
         /*!
          * Test if the mesh high orders are initialized
@@ -997,7 +997,7 @@ namespace RINGMesh {
         /// Attached GeoModel
         const GeoModel& gm_ ;
         /// Attached Mesh
-        GEO::Mesh& mesh_ ;
+        Mesh& mesh_ ;
         /// Total number of vertices + new high order vertices on cell edges
         index_t nb_vertices_ ;
         /// New vertices
@@ -1027,22 +1027,26 @@ namespace RINGMesh {
          * Copy the current GeoModelMesh into a Mesh
          * @param[out] mesh The mesh to fill        
          */
-        void copy_mesh( GEO::Mesh& mesh ) const
+        void copy_mesh( Mesh& mesh ) const
         {
-            mesh.copy( *mesh_ ) ;
+            mesh.copy( *mesh_, false, GEO::MESH_ALL_ELEMENTS ) ;
+        }
+        void save_mesh( const std::string& filename ) const
+        {
+            mesh_->save_mesh( filename, GEO::MeshIOFlags() ) ;
         }
 
         GEO::AttributesManager& vertex_attribute_manager() const
         {
-            return mesh_->vertices.attributes() ;
+            return mesh_->vertex_attribute_manager() ;
         }
         GEO::AttributesManager& facet_attribute_manager() const
         {
-            return mesh_->facets.attributes() ;
+            return mesh_->facet_attribute_manager() ;
         }
         GEO::AttributesManager& cell_attribute_manager() const
         {
-            return mesh_->cells.attributes() ;
+            return mesh_->cell_attribute_manager() ;
         }
 
         /*!
@@ -1135,7 +1139,7 @@ namespace RINGMesh {
          * @details This means no colocated vertices, no duplicated edges, 
          * facets or cells.
          */
-        GEO::Mesh* mesh_ ;
+        Mesh* mesh_ ;
         /// Optional duplication mode to compute the duplication of cells on surfaces
         mutable GeoModelMeshCells::DuplicateMode mode_ ;
         /// Order of the GeoModelMesh

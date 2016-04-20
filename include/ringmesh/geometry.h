@@ -502,7 +502,7 @@ namespace RINGMesh {
         ringmesh_disable_copy( ColocaterANN ) ;
     public:
         enum MeshLocation {
-            VERTICES, EDGES, FACETS, CELLS
+            VERTICES, EDGES, FACETS, CELLS, NB_LOCATION
         } ;
         ColocaterANN() ;
         ColocaterANN(
@@ -517,7 +517,14 @@ namespace RINGMesh {
         }
 
         bool get_colocated( const vec3& v, std::vector< index_t >& result ) const ;
-
+        /*!
+         * @brief Gets the \p index_map that link all the points to a no duplicated list of index.
+         */
+        void get_colocated_index_mapping( GEO::vector< index_t >& index_map ) const ;
+        /*!
+         * @brief Gets the \p index_map that link all the points to a no duplicated list of index in the list of \p unique_points.
+         */
+        void get_colocated_index_mapping( GEO::vector< index_t >& index_map, GEO::vector< vec3 >& unique_points ) const ;
         /*!
         * Gets the closest neighbor point
         * @param[in] v the point to test
