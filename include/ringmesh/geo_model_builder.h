@@ -37,7 +37,7 @@
 #define __RINGMESH_GEO_MODEL_BUILDER__
 
 #include <ringmesh/common.h>
-#include <third_party/minizip/unzip.h>
+#include <third_party/zlib/unzip.h>
 
 #include <vector>
 #include <string>
