@@ -587,79 +587,25 @@ namespace RINGMesh {
                 result += model_element_size( E.child( i ) ) ;
             }
             return result ;
-        } else {
-            switch( E.type() ) {
-                case GeoModelElement::REGION: {
-                    const Region& R = dynamic_cast< const Region& >( E ) ;
-                    // Compute the volume if this is a region
-                    for( index_t i = 0; i < R.nb_boundaries(); i++ ) {
-                        const Surface& surface =
-                            dynamic_cast< const Surface& >( R.boundary( i ) ) ;
-
-                        for( index_t t = 0; t < surface.nb_polytope(); t++ ) {
-                            const vec3& p0 = surface.polytope_vertex( t, 0 ) ;
-                            for( index_t v = 1;
-                                v + 1 < surface.nb_polytope_vertices( t ); ++v ) {
-                                double cur_volume = ( dot( p0,
-                                    cross( surface.polytope_vertex( t, v ),
-                                        surface.polytope_vertex( t, v + 1 ) ) ) )
-                                    / static_cast< double >( 6 ) ;
-                                R.side( i ) ? result -= cur_volume : result +=
-                                                  cur_volume ;
-                            }
-                        }
-                    }
-                    return fabs( result ) ;
-                }
-
-                case GeoModelElement::SURFACE: {
-                    const Surface& S = dynamic_cast< const Surface& >( E ) ;
-                    for( index_t i = 0; i < S.nb_polytope(); i++ ) {
-                        result += S.facet_area( i ) ;
-                    }
-                    return result ;
-                }
-                case GeoModelElement::LINE: {
-                    const Line& L = dynamic_cast< const Line& >( E ) ;
-                    for( index_t i = 1; i < L.nb_vertices(); ++i ) {
-                        result += GEO::Geom::distance( L.vertex( i ),
-                            L.vertex( i - 1 ) ) ;
-                    }
-                    return result ;
-                }
-                case GeoModelElement::CORNER: {
-                    return 0 ;
-                }
-                default:
-                    ringmesh_assert_not_reached ;
-                    return result ;
-            }
-            ringmesh_assert_not_reached ;
-            return result ;
+        } else if( GeoModelElement::has_mesh( E.type() ) ) {
+            const GeoModelMeshElement& M =
+                dynamic_cast< const GeoModelMeshElement& >( E ) ;
+            result = M.size() ;
         }
+
+        ringmesh_assert_not_reached ;
+        return result ;
     }
 
     double model_element_cell_size( const GeoModelElement& E, index_t c )
     {
         double result = 0. ;
-
-        switch( E.type() ) {
-            case GeoModelElement::REGION: {
-                const Region& R = dynamic_cast< const Region& >( E ) ;
-                return R.region_cell_volume( c ) ;
-            }
-            case GeoModelElement::SURFACE: {
-                const Surface& S = dynamic_cast< const Surface& >( E ) ;
-                return S.facet_area( c ) ;
-            }
-            case GeoModelElement::LINE: {
-                const Line& L = dynamic_cast< const Line& >( E ) ;
-                return GEO::Geom::distance( L.polytope_vertex( c, 0 ),
-                    L.polytope_vertex( c, 1 ) ) ;
-            }
-            default:
-                ringmesh_assert_not_reached ;
-                return result ;
+        if( GeoModelElement::has_mesh( E.type() ) ) {
+            // @todo Improve efficiency, overload the functions to avoid
+            // casting each time
+            const GeoModelMeshElement& M =
+                dynamic_cast< const GeoModelMeshElement& >( E ) ;
+            result = M.polytope_size( c ) ;
         }
         ringmesh_assert_not_reached ;
         return result ;
@@ -675,16 +621,13 @@ namespace RINGMesh {
             // casting each time
             const GeoModelMeshElement& M =
                 dynamic_cast< const GeoModelMeshElement& >( E ) ;
-            for( index_t v = 0; v < M.nb_vertices(); v++ ) {
-                result += M.vertex( v ) ;
-            }
-            return result / static_cast< double >( M.nb_vertices() ) ;
+            result = M.center() ;
         } else if( E.nb_children() > 0 ) {
             for( index_t i = 0; i < E.nb_children(); ++i ) {
                 const GeoModelMeshElement& F =
                     dynamic_cast< const GeoModelMeshElement& >( E.child( i ) ) ;
                 nb_vertices += F.nb_vertices() ;
-                result += model_element_center( F ) * F.nb_vertices() ;
+                result += F.center() * F.nb_vertices() ;
             }
             return result / static_cast< double >( nb_vertices ) ;
         } else {
@@ -694,37 +637,17 @@ namespace RINGMesh {
 
     vec3 model_element_cell_center( const GeoModelMeshElement& E, index_t c )
     {
-        vec3 result( 0., 0., 0. ) ;
-        const GEO::Mesh& mesh = E.mesh() ;
-        switch( E.type() ) {
-            case GeoModelElement::REGION: {
-                return RINGMesh::mesh_cell_center( mesh, c ) ;
-            }
-            case GeoModelElement::SURFACE: {
-                return GEO::Geom::mesh_facet_center( mesh, c ) ;
-            }
-            case GeoModelElement::LINE: {
-                index_t v0 = mesh.edges.vertex( c, 0 ) ;
-                index_t v1 = mesh.edges.vertex( c, 1 ) ;
-                return 0.5
-                    * ( mesh.vertices.point( v0 ) + mesh.vertices.point( v1 ) ) ;
-            }
-            case GeoModelElement::CORNER: {
-                return mesh.vertices.point( 0 ) ;
-            }
-            default:
-                ringmesh_assert_not_reached ;
-                return result ;
-
+        if( GeoModelElement::has_mesh( E.type() ) ) {
+            return E.polytope_center( c ) ;
         }
         ringmesh_assert_not_reached ;
-        return result ;
+        return vec3( 0., 0., 0. ) ;
     }
 
     void translate( GeoModel& M, const vec3& translation_vector )
     {
         for( index_t v = 0; v < M.mesh.vertices.nb(); ++v ) {
-            // Coordinates are not directly modified to 
+            // Coordinates are not directly modified to
             // update the matching vertices in geomodel entities
             vec3 p = M.mesh.vertices.vertex( v ) ;
             for( index_t i = 0; i < 3; i++ ) {
@@ -765,7 +688,7 @@ namespace RINGMesh {
 
     /*!
      * @brief Generates a point that lies strictly a Region defined by its boundary Surfaces.
-     * @details Returns the midpoint of A: the barycenter of the 1st facet of the 1st Surface 
+     * @details Returns the midpoint of A: the barycenter of the 1st facet of the 1st Surface
      * and B: the closest point of a A in the other Surfaces defining the Region.
      * @warning Incomplete implementation.
      */
@@ -777,18 +700,17 @@ namespace RINGMesh {
         const GeoModel& geomodel = region.model() ;
         const Surface& first_boundary_surface = geomodel.surface(
             region.boundary_gme( 0 ).index ) ;
-        vec3 barycenter = first_boundary_surface.facet_barycenter( 0 ) ;
+        vec3 barycenter = first_boundary_surface.polytope_center( 0 ) ;
         /// @todo Check that this is the right condition to have a correct enough barycenter
-        ringmesh_assert( first_boundary_surface.facet_area( 0 ) > epsilon ) ;
+        ringmesh_assert( first_boundary_surface.polytope_size( 0 ) > epsilon ) ;
 
         double minimum_distance = DBL_MAX ;
         vec3 nearest_point ;
         for( index_t i = 1; i != region.nb_boundaries(); ++i ) {
             const Surface& S = geomodel.surface( region.boundary_gme( i ).index ) ;
-            SurfaceTools tool_on_surface( S ) ;
             double distance = DBL_MAX ;
             vec3 point ;
-            tool_on_surface.aabb().nearest_facet( barycenter, point, distance ) ;
+            S.facets_aabb().nearest_facet( barycenter, point, distance ) ;
 
             if( distance < minimum_distance ) {
                 minimum_distance = distance ;
@@ -800,7 +722,7 @@ namespace RINGMesh {
         return 0.5 * ( barycenter + nearest_point ) ;
     }
 
-    /*! 
+    /*!
      * @brief For each region of the geomodel computes a point inside that region
      */
     void get_one_point_per_geomodel_region(

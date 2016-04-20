@@ -39,7 +39,6 @@
 #include <ringmesh/geo_model_element.h>
 #include <ringmesh/geo_model.h>
 
-#include <geogram/mesh/mesh_AABB.h>
 
 namespace RINGMesh {
 

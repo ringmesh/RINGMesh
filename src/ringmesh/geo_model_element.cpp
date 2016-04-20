@@ -1160,7 +1160,8 @@ namespace RINGMesh {
         // If a facet is given, look for the edge in this facet only
         if( facet != NO_ID ) {
             for( index_t v = 0; v < nb_polytope_vertices( facet ); ++v ) {
-                index_t prev = model_vertex_id( facet, prev_facet_vertex_index( facet, v ) ) ;
+                index_t prev = model_vertex_id( facet,
+                    prev_facet_vertex_index( facet, v ) ) ;
                 index_t p = model_vertex_id( facet, v ) ;
                 if( ( prev == i0 && p == i1 ) || ( prev == i1 && p == i0 ) ) {
                     edge = prev_facet_vertex_index( facet, v ) ;
@@ -1204,7 +1205,8 @@ namespace RINGMesh {
         if( facet != NO_ID ) {
             for( index_t v = 0; v < nb_polytope_vertices( facet ); ++v ) {
                 index_t p = model_vertex_id( facet, v ) ;
-                index_t next = model_vertex_id( facet, next_facet_vertex_index( facet, v ) ) ;
+                index_t next = model_vertex_id( facet,
+                    next_facet_vertex_index( facet, v ) ) ;
 
                 if( p == i0 && next == i1 ) {
                     edge = v ;
@@ -1222,8 +1224,6 @@ namespace RINGMesh {
         }
         facet = NO_ID ;
     }
-
-
 
     /*!
      * @brief Comparator of two vec3

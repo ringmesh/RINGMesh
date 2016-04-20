@@ -1418,7 +1418,7 @@ namespace RINGMesh {
         ringmesh_assert( M.nb_vertices() > 0 ) ;
         MeshBuilder builder( M ) ;
         ringmesh_assert( facets_id.size() == edges_id.size() == adjacent_triangles.size() ) ;
-        for( int i = 0; i < facets_id.size(); ++i ) {
+        for( index_t i = 0; i < facets_id.size(); ++i ) {
             builder.set_facet_adjacent( facets_id[i], edges_id[i],
                 adjacent_triangles[i] ) ;
         }

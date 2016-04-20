@@ -455,7 +455,7 @@ namespace {
         const ColocaterANN& region_ann,
         std::vector< index_t >& colocated_cell_facet_centers )
     {
-        vec3 first_facet_center = surface.facet_barycenter( 0 ) ;
+        vec3 first_facet_center = surface.polytope_center( 0 ) ;
         region_ann.get_colocated( first_facet_center,
             colocated_cell_facet_centers ) ;
         return colocated_cell_facet_centers.size() ;
