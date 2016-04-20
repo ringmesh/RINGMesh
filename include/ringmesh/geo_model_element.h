@@ -43,6 +43,7 @@
 
 #include <ringmesh/common.h>
 #include <ringmesh/mesh.h>
+#include <geogram/mesh/mesh.h>
 
 #include <vector>
 #include <string>
@@ -465,6 +466,10 @@ namespace RINGMesh {
         }
 
         virtual ~GeoModelMeshElement() ;
+        const GEO::Mesh& gfx_mesh() const
+        {
+            return mesh_.gfx_mesh() ;
+        }
 
         /*!
          * @brief Global validity of the element
@@ -537,6 +542,29 @@ namespace RINGMesh {
             index_t vertex_index ) const
         {
             return vertex( polytope_vertex_index( polytope_index, vertex_index ) ) ;
+        }
+
+        /*! @}
+         * \name Geometrical request on Element
+         * @{
+         */
+        virtual double polytope_size( index_t polytope_index ) const = 0 ;
+        virtual double size() const
+        {
+            double size = 0.0 ;
+            for( index_t i = 0; i < nb_polytope(); ++i ) {
+                size += polytope_size( i ) ;
+            }
+            return size ;
+        }
+        virtual vec3 polytope_center( index_t polytope_index ) const = 0 ;
+        virtual vec3 center() const
+        {
+            vec3 result( 0., 0., 0. ) ;
+            for( index_t v = 0; v < nb_vertices(); v++ ) {
+                result += vertex( v ) ;
+            }
+            return result / static_cast< double >( nb_vertices() ) ;
         }
 
         /*! @}
@@ -663,9 +691,26 @@ namespace RINGMesh {
         /*!
          * @return 1 the number of vertices of the Corner
          */
-        virtual index_t nb_polytope_vertices( index_t polytope_index ) const
+        virtual index_t nb_polytope_vertices( index_t /*polytope_index*/) const
         {
             return 1 ;
+        }
+
+        /*! @}
+         * \name Geometrical request on Corner
+         * @{
+         */
+        virtual double polytope_size( index_t /*polytope_index*/) const
+        {
+            return 0.0 ;
+        }
+        virtual double size() const
+        {
+            return 0.0 ;
+        }
+        virtual vec3 polytope_center( index_t /*polytope_index*/) const
+        {
+            return vertex( 0 ) ;
         }
 
     protected:
@@ -726,6 +771,28 @@ namespace RINGMesh {
                 && ( boundaries_[0] == boundaries_[1] ) ;
         }
 
+        /*! @}
+         * \name Geometrical request on Line
+         * @{
+         */
+        /*!
+         * @brief Gets the length of the edge \param edge_index
+         */
+        virtual double polytope_size( index_t edge_index ) const
+        {
+            ringmesh_assert( edge_index < nb_polytope() ) ;
+            return mesh_.edge_length( edge_index ) ;
+        }
+        /*!
+         * @brief Gets the center of the edge \param edge_index
+         */
+        virtual vec3 polytope_center( index_t edge_index ) const
+        {
+            ringmesh_assert( edge_index < nb_polytope() ) ;
+            return 0.5
+                * ( polytope_vertex( edge_index, 0 )
+                    + polytope_vertex( edge_index, 1 ) ) ;
+        }
     private:
         virtual bool is_mesh_valid() const ;
 
@@ -948,7 +1015,7 @@ namespace RINGMesh {
          * @param[in] facet_id the facet index in the cell
          * @return the facet center
          */
-        vec3 facet_barycenter( index_t facet_index ) const
+        virtual vec3 polytope_center( index_t facet_index ) const
         {
             ringmesh_assert( facet_index < nb_polytope() ) ;
             return mesh_.facet_barycenter( facet_index ) ;
@@ -964,7 +1031,7 @@ namespace RINGMesh {
          * @param[in] facet_id the facet index
          * @return the facet area
          */
-        double facet_area( index_t facet_index ) const
+        virtual double polytope_size( index_t facet_index ) const
         {
             ringmesh_assert( facet_index < nb_polytope() ) ;
             return mesh_.facet_area( facet_index ) ;
@@ -1030,6 +1097,7 @@ namespace RINGMesh {
         {
             return mesh_.nb_cells() > 0 ;
         }
+        //void tetrahedralize()
         bool is_simplicial() const
         {
             return mesh_.cells_are_simplicies() ;
@@ -1153,11 +1221,47 @@ namespace RINGMesh {
             ringmesh_assert( facet_index < nb_cell_facets( cell_index ) ) ;
             return mesh_.cell_facet_normal( cell_index, facet_index ) ;
         }
-        double region_cell_volume( index_t cell_index ) const
+
+        /*!
+         * @brief Gets the volume of the cell \param cell_index.
+         */
+        virtual double polytope_size( index_t cell_index ) const
         {
             return mesh_.cell_volume( cell_index ) ;
         }
+        /*!
+         * @brief Compute the volume of the Region
+         */
+        virtual double size() const
+        {
+            double result = 0. ;
+            // Compute the volume if this is a region
+            for( index_t i = 0; i < nb_boundaries(); i++ ) {
+                const Surface& surface = dynamic_cast< const Surface& >( boundary(
+                    i ) ) ;
 
+                for( index_t t = 0; t < surface.nb_polytope(); t++ ) {
+                    const vec3& p0 = surface.polytope_vertex( t, 0 ) ;
+                    for( index_t v = 1; v + 1 < surface.nb_polytope_vertices( t );
+                        ++v ) {
+                        double cur_volume = ( dot( p0,
+                            cross( surface.polytope_vertex( t, v ),
+                                surface.polytope_vertex( t, v + 1 ) ) ) )
+                            / static_cast< double >( 6 ) ;
+                        side( i ) ? result -= cur_volume : result += cur_volume ;
+                    }
+                }
+            }
+            return fabs( result ) ;
+        }
+        /*!
+         * @brief Get the center of the cell \param cell_index
+         */
+        virtual vec3 polytope_center( index_t cell_index ) const
+        {
+            ringmesh_assert( cell_index < nb_polytope() ) ;
+            return mesh_.cell_barycenter( cell_index ) ;
+        }
         void compute_region_volumes_per_cell_type(
             double& tet_volume,
             double& pyramid_volume,

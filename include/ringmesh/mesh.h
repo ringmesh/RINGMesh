@@ -46,11 +46,7 @@
 #include <geogram/mesh/mesh_topology.h>
 #include <geogram/mesh/mesh_repair.h>
 #include <geogram/mesh/mesh_preprocessing.h>
-
-namespace GEO {
-    class MeshFacetsAABB ;
-    class MeshCellsAABB ;
-}
+#include <geogram/mesh/mesh_AABB.h>
 
 namespace RINGMesh {
     class GeoModel ;
@@ -125,6 +121,15 @@ namespace RINGMesh {
             return *ann_[location] ;
         }
 
+        /*!
+         * get access to GEO::MESH... only for GFX..
+         *TODO remove this function as soon as the GEO::MeshGFX is encapsulated
+         */
+        const GEO::Mesh& gfx_mesh() const
+        {
+            return *mesh_ ;
+        }
+
         index_t nb_connected_components() const
         {
             return GEO::mesh_nb_connected_components( *mesh_ ) ;
@@ -184,6 +189,14 @@ namespace RINGMesh {
         index_t nb_edges() const
         {
             return mesh_->edges.nb() ;
+        }
+        /*!
+         * @brief Gets the length of the edge \param edge_id
+         */
+        double edge_length( index_t edge_id ) const
+        {
+            return GEO::Geom::distance( vertex(edge_vertex( edge_id, 0 )),
+                vertex(edge_vertex( edge_id, 1 )) ) ;
         }
         GEO::AttributesManager& edge_attribute_manager() const
         {
@@ -482,6 +495,13 @@ namespace RINGMesh {
             ringmesh_assert( nb_vertices > 0 ) ;
 
             return result / nb_vertices ;
+        }
+        /*!
+         * Compute the non weighted barycenter of the \param cell_id
+         */
+        vec3 cell_barycenter( index_t cell_id ) const
+        {
+            return RINGMesh::mesh_cell_center( *mesh_, cell_id ) ;
         }
         /*!
          * Computes the Mesh cell facet normal
