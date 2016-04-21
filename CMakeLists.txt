@@ -319,7 +319,6 @@ add_library(RINGMesh SHARED
     ${ringmesh_src} 
     ${zlib_src}
     ${zlib_include})
-)
 
 # RINGMesh depends on Geogram
 add_dependencies(RINGMesh geogram_ext)
