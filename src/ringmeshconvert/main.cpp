@@ -54,6 +54,7 @@
 namespace {
     using namespace RINGMesh ;
 
+#endif
     /************************************************************************/
     /*!
      * Loads a GeoModel from a file
@@ -138,7 +139,9 @@ namespace RINGMesh {
             GEO::CmdLine::declare_arg( "in:old_geomodel", "",
                 "Saves the volumetric mesh of the structural model" ) ;
             ringmesh_register_IOHandler_creator( BMIOHandler, "bm" ) ;
+#ifdef MINIZIP_FIXED
             ringmesh_register_IOHandler_creator( MMIOHandler, "mm" );
+#endif
         }
     }
 }

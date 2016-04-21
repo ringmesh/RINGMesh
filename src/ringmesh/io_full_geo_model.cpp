@@ -349,7 +349,7 @@ namespace {
         }
 
     }
-
+#ifdef MINIZIP_FIXED
     /*!
      * @brief Save the attribute of all the GeomModelElement
      * @param[in] root_name it contains the GeoModelElement type and its id
@@ -470,6 +470,7 @@ namespace {
         }
 
     } ;
+#endif
 
     /************************************************************************/
 
@@ -1989,6 +1990,9 @@ namespace RINGMesh {
         ringmesh_register_IOHandler_creator( VTKIOHandler, "vtk" );
         ringmesh_register_IOHandler_creator( GPRSIOHandler, "gprs" );
         ringmesh_register_IOHandler_creator( MSHIOHandler, "msh" );
-        ringmesh_register_IOHandler_creator( GeoModelHandler, "gm" );}
+#ifdef MINIZIP_FIXED
+        ringmesh_register_IOHandler_creator( GeoModelHandler, "gm" );
+#endif
+    }
 
 }
