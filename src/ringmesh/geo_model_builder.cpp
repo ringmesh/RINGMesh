@@ -3816,14 +3816,10 @@ namespace RINGMesh {
                     return ; // a region is not necessary meshed.
                 } else {
                     std::string message =
-                        "You try to open a old .gm with meshb inside it.\n" ;
-                    message += "If you launch it form ringmeshconvert it's ok " ;
+                        "Warning! you are using an old file (*.gm). \n" ;
+                    message += "Please use ringmeshconvert to update this file. \n" ;
                     message +=
-                        "if not, be careful it will be not supported soon.\n" ;
-                    message +=
-                        "convert into the new gm gile using ringmeshconvert " ;
-                    message +=
-                        "in:geomodel=old_geomodel.gm out:geomodel=new_geomodel.gm." ;
+                        "ringmeshconvert in:geomodel=old_geomodel.gm out:geomodel=new_geomodel.gm" ;
                     GEO::Logger::warn( "I/O" ) << message << std::endl ;
                 }
             }
