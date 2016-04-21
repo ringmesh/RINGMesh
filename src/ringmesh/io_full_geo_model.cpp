@@ -420,6 +420,7 @@ namespace {
                 geo_model_element_mesh.index() ) ;
             if( !region.is_meshed() ) {
                 // a region is not necessary meshed.
+                logger->set_quiet( false ) ;
                 return ;
             }
         }
