@@ -54,7 +54,6 @@
 namespace {
     using namespace RINGMesh ;
 
-#endif
     /************************************************************************/
     /*!
      * Loads a GeoModel from a file
