@@ -935,32 +935,32 @@ namespace RINGMesh {
          * on the mesh plus the high order vertices on the elements edges
          * @return the const number of vertices
          */
-        index_t nb_total_vertices() const ;
+        index_t nb_total_vertices() const;
         /*!
          * Gets the number of high order mesh vertices.
          * @return the const number of high order vertices
          */
-        index_t nb_vertices() ;
+        index_t nb_vertices();
         /*!
          * Gets the point of a high order vertex
          * @param[in] id an index of the new created point for order > 2
          * @return the vec3 matching with the id
          */
-        const vec3& vertex( index_t id ) const ;
+        const vec3& vertex( index_t id ) const;
         /*!
          * Gets the index of a high order vertex on the cell edges
          * @param[in] c global index of the cell on the GeoModelMesh
          * @param[in] component local high order vertex index in the cell
-         * @return the const index of the point
+         * @return the index of the point
          */
-        index_t indice_on_cell( index_t c, index_t component ) const ;
+        index_t indice_on_cell( index_t c, index_t component ) const;
         /*!
          * Gets the index of a high order vertex on a facet
          * @param[in] f global index of the facet on the GeoModelMesh
          * @param[in] component local high order vertex index in the cell
          * @return the const index of the point
          */
-        index_t indice_on_facet( index_t f, index_t component ) const ;
+        index_t indice_on_facet( index_t f, index_t component ) const;
         /*!
          * Move an added point
          * @param[in] index the index of the high order vertex

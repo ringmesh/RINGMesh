@@ -1723,18 +1723,18 @@ namespace RINGMesh {
 
             if( gmm_.cells.nb_cells() == gmm_.cells.nb_tet() ) {
                 max_new_points_on_cell_ = 6 * ( order - 1 ) ;
-                max_new_points_on_facet_ = 3 * ( order - 1 ) ;
+                max_new_points_on_facet_ = 3 * ( order -1 ) ;
             } else {
                 max_new_points_on_cell_ = 12 * ( order - 1 ) ;
                 max_new_points_on_facet_ = 4 * ( order - 1 ) ;
             }
 
             GEO::Attribute< index_t > order_vertices_cell ;
-            ( gmm_.cell_attribute_manager(), order_att_name ) ;
             order_vertices_cell.create_vector_attribute(
                 gmm_.cell_attribute_manager(), order_att_name,
                 max_new_points_on_cell_ ) ;
-            GEO::Attribute< index_t > order_vertices_facet ;
+
+            GEO::Attribute< index_t > order_vertices_facet;
             order_vertices_facet.create_vector_attribute(
                 gmm_.facet_attribute_manager(), order_att_name,
                 max_new_points_on_facet_ ) ;
@@ -1742,9 +1742,7 @@ namespace RINGMesh {
             /// First loop to find a maximum number of new points
             for( index_t r = 0; r < gm_.nb_regions(); r++ ) {
                 for( index_t c = 0; c < gmm_.cells.nb(); c++ ) {
-                    for( index_t e = 0; e < gmm_.cells.nb_edges( c ); e++ ) {
-                        nb_total_edges++ ;
-                    }
+                    nb_total_edges+=gmm_.cells.nb_edges(c) ;
                 }
             }
 
@@ -1814,7 +1812,8 @@ namespace RINGMesh {
                     }
                     divide_edge_in_parts( node0, node1, order, new_points_in_edge ) ;
                     for( index_t v = 0; v < new_points_in_edge.size(); v++ ) {
-                        std::vector< index_t > colocated_vertices ;
+                        std::vector< index_t > colocated_vertices;
+                        ann.get_colocated(new_points_in_edge[v],colocated_vertices);
                         ringmesh_assert( colocated_vertices.size() == 1 ) ;
 
                         order_vertices_facet[f * max_new_points_on_facet_ + e + v] =
@@ -1859,25 +1858,30 @@ namespace RINGMesh {
 
     index_t GeoModelMeshOrder::indice_on_cell( index_t c, index_t component ) const
     {
+        std::cout << " coucou" << std::endl ;
         test_and_initialize() ;
         ringmesh_assert( c < gmm_.cells.nb() ) ;
         ringmesh_assert( component < max_new_points_on_cell_ ) ;
-        GEO::Attribute< index_t > order_vertices_cell ;
-        ( gmm_.cell_attribute_manager(), order_att_name ) ;
+        GEO::Attribute< index_t > order_vertices_cell( gmm_.cell_attribute_manager(), order_att_name ) ;
+        GEO::vector<std::string> toto ;
+        gmm_.cell_attribute_manager().list_attribute_names(toto) ;
+        DEBUG(toto.size()) ;
+        for(index_t i = 0 ; i < toto.size() ;i++) {
+            DEBUG(toto[i]) ;
+        }
         return order_vertices_cell[max_new_points_on_cell_ * c + component] ;
     }
 
-    index_t GeoModelMeshOrder::indice_on_facet( index_t f, index_t component ) const
+    index_t GeoModelMeshOrder::indice_on_facet( index_t f, index_t component ) const // f <=> index the index of the high order vertex // u <=> the displacement applied on this point
     {
         test_and_initialize() ;
         ringmesh_assert( f < gmm_.facets.nb_facets() ) ;
-        ringmesh_assert( component < max_new_points_on_cell_ ) ;
-        GEO::Attribute< index_t > order_vertices_facet ;
-        ( gmm_.facet_attribute_manager(), order_att_name ) ;
-        return order_vertices_facet[max_new_points_on_cell_ * f + component] ;
+        ringmesh_assert( component < max_new_points_on_facet_ ) ;
+        GEO::Attribute< index_t > order_vertices_facet( gmm_.facet_attribute_manager(), order_att_name ) ;
+        return order_vertices_facet[max_new_points_on_facet_ * f + component] ; // retourne un composant d'order_vertices_facet'
     }
 
-    void GeoModelMeshOrder::move_point( const index_t index, const vec3& u )
+    void GeoModelMeshOrder::move_point( const index_t index, const vec3& u)
     {
         test_point_list_initialized() ;
         for( index_t i = 0; i < 3; i++ ) {
@@ -1937,7 +1941,6 @@ namespace RINGMesh {
         ringmesh_assert( c < gmm_.cells.nb() ) ;
         return nb_high_order_points_per_cell_type_[gmm_.cells.type( c )] ;
     }
-
     /*******************************************************************************/
 
     GeoModelMesh::GeoModelMesh( GeoModel& gm )
