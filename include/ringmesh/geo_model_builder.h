@@ -207,6 +207,7 @@ namespace RINGMesh {
 
         void cut_surface_by_line( Surface& S, const Line& L ) ;
         void cut_region_by_surface( Region& R, const Surface& S ) ;
+//        void cut_region_by_line( Region& R, const Line& L ) ;
 
         void compute_surface_adjacencies( index_t surface_id ) ;
 

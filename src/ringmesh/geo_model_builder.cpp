@@ -2163,6 +2163,25 @@ namespace RINGMesh {
         }
     }
 
+    /*void GeoModelBuilder::cut_region_by_line( Region& R, const Line& L )
+    {
+        /// @todo Replace the use of the model vertices by only a colocater
+        /// of the surface vertices and the line vertices
+        bool model_vertices_initialized = model().mesh.vertices.is_initialized() ;
+        if( !model_vertices_initialized ) {
+            model().mesh.vertices.test_and_initialize() ;
+        }
+
+        disconnect_region_cells_along_surface_facets( R, S ) ;
+        duplicate_region_vertices_along_surface( R, S ) ;
+        // Rebuild the mesh facets of the region
+        R.mesh().cells.compute_borders() ;
+
+        if( !model_vertices_initialized ) {
+            const_cast< GeoModel& >( model() ).mesh.vertices.clear() ;
+        }
+    }*/
+
     void GeoModelBuilder::end_model()
     {
         if( model_.name() == "" ) {
@@ -2236,16 +2255,92 @@ namespace RINGMesh {
                 if( /*to_remove.count( L.gme_id() ) == 0 &&*/S.is_inside_border(
                     R ) ) {
                     cutting_surfaces.insert( S.index() ) ;
-                }
+                } /*else if( GME::is_fault( S.parent().geological_feature() ) ) {
+                    cutting_surfaces.insert( S.index() ) ;
+                }*/
             }
             for( std::set< index_t >::iterator it = cutting_surfaces.begin();
                 it != cutting_surfaces.end(); ++it ) {
                 // Force the recomputing of the model vertices
                 // before performing the cut.
+                DEBUG("cut region by surface") ;
+                DEBUG(model_.surface( *it ).index()) ;
                 model_.mesh.vertices.clear() ;
                 cut_region_by_surface( R, model_.surface( *it ) ) ;
             }
+
+#if 0
+            // If the region has only a line has internal border.
+            // This line is shared by two boundaries (surface) of
+            // the region and this line does not belong to a cutting surface.
+            std::set< index_t > cutting_lines ;
+            for( index_t surf_boun_itr = 0; surf_boun_itr < R.nb_boundaries();
+                ++surf_boun_itr ) {
+                const GME& cur_surf_boun = R.boundary( surf_boun_itr ) ;
+                ringmesh_assert( cur_surf_boun.type() == GME::SURFACE ) ;
+                if( !GME::is_fault( cur_surf_boun.parent().geological_feature() ) ) {
+                    continue ;
+                }
+                if( std::find( cutting_surfaces.begin(), cutting_surfaces.end(),
+                    cur_surf_boun.index() ) != cutting_surfaces.end() ) {
+                    continue ;
+                }
+                for( index_t line_boun_itr = 0;
+                    line_boun_itr < cur_surf_boun.nb_boundaries();
+                    ++line_boun_itr ) {
+                    const GME& cur_line_boun = cur_surf_boun.boundary(
+                        line_boun_itr ) ;
+                    ringmesh_assert( cur_line_boun.type() == GME::LINE ) ;
+                    for( index_t surf_boun_itr2 = 0;
+                        surf_boun_itr2 < R.nb_boundaries(); ++surf_boun_itr2 ) {
+                        const GME& cur_surf_boun2 = R.boundary( surf_boun_itr2 ) ;
+                        ringmesh_assert( cur_surf_boun2.type() == GME::SURFACE ) ;
+                        if( !GME::is_fault(
+                            cur_surf_boun2.parent().geological_feature() ) ) {
+                            continue ;
+                        }
+                        if( surf_boun_itr == surf_boun_itr2 ) {
+                            continue ;
+                        }
+                        if( std::find( cutting_surfaces.begin(),
+                            cutting_surfaces.end(), cur_surf_boun2.index() )
+                            != cutting_surfaces.end() ) {
+                            continue ;
+                        }
+                        bool found = false ;
+                        for( index_t line_boun_itr2 = 0;
+                            line_boun_itr2 < cur_surf_boun2.nb_boundaries();
+                            ++line_boun_itr2 ) {
+                            const GME& cur_line_boun2 = cur_surf_boun2.boundary(
+                                line_boun_itr2 ) ;
+                            ringmesh_assert( cur_line_boun2.type() == GME::LINE ) ;
+
+                            if( cur_line_boun.index() == cur_line_boun2.index() ) {
+                                DEBUG("cutting line") ;
+                                DEBUG( cur_line_boun.index() ) ;
+                                cutting_lines.insert( cur_line_boun.index() ) ;
+                                found = true ;
+                                break ;
+                            }
+                        }
+                        if( found ) {
+                            break ;
+                        }
+                    }
+                }
+            }
+
+            for( std::set< index_t >::iterator it = cutting_lines.begin();
+                it != cutting_lines.end(); ++it ) {
+                DEBUG("cut region by line") ;
+                DEBUG(model_.line( *it ).index()) ;
+                model_.mesh.vertices.clear() ;
+                cut_region_by_line( R, model_.line( *it ) ) ;
+            }
+            //=================== Cut the region by the lines
+#endif
         }
+
         //=================== Cut the region by the surfaces
 
 
