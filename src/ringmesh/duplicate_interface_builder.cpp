@@ -53,6 +53,8 @@
 
 namespace RINGMesh {
 
+    GEO::Mesh to_debug66 ;
+
     DuplicateInterfaceBuilder::DuplicateInterfaceBuilder( GeoModel& model )
         : GeoModelBuilder( model ), all_meshed_( true ), gme_vertices_links_()
     {
@@ -436,6 +438,7 @@ namespace RINGMesh {
             compute_translation_vectors_duplicated_fault_network(
                 nb_initial_interfaces, to_erase_by_type ) ;
         }
+        GEO::mesh_save( to_debug66, "to_debug66.mesh" ) ;
         // set no translation on fault real extension (only on fault ending inside
         // the model).
         set_no_displacement_on_fault_real_extension( to_erase_by_type ) ;
@@ -857,11 +860,21 @@ namespace RINGMesh {
     void DuplicateInterfaceBuilder::GMEVertexLink::displace(
         const vec3& displacement_vector )
     {
-#ifdef RINGMESH_DEBUG
+//#ifdef RINGMESH_DEBUG
         if( gme_vertex_.gme_id.type == GME::SURFACE ) {
+            if( linked_gme_vertices_.size() >= 3 ) {
+                DEBUG( "more than 2" ) ;
+            }
             ringmesh_assert( linked_gme_vertices_.size() <= 2 ) ;
         } else {
             ringmesh_assert(gme_vertex_.gme_id.type == GME::REGION) ;
+            if( linked_gme_vertices_.size() >= 4 ) {
+                DEBUG( "more than 3" ) ;
+                to_debug66.vertices.create_vertex(
+                    model_.region( gme_vertex_.gme_id.index ).vertex(
+                        gme_vertex_.v_id ).data() ) ;
+            }
+
             ringmesh_assert( linked_gme_vertices_.size() <= 3 ) ;
         }
 
@@ -872,10 +885,14 @@ namespace RINGMesh {
                 if( link_itr == link_itr2 ) {
                     continue ;
                 }
+                if( linked_gme_vertices_[link_itr]
+                    == linked_gme_vertices_[link_itr2] ) {
+                    DEBUG( "several time" ) ;
+                }
                 ringmesh_assert( linked_gme_vertices_[link_itr] != linked_gme_vertices_[link_itr2] ) ;
             }
         }
-#endif
+//#endif
 
         if( has_moved_ ) {
             return ;
@@ -1358,6 +1375,12 @@ namespace RINGMesh {
                 !side ) ;
 
             to_erase_by_type[GME::SURFACE][new_surface_gme_t.index] = 0 ;
+            for( std::set< index_t >::iterator it = cutting_lines.begin();
+                it != cutting_lines.end(); ++it ) {
+                cut_surface_by_line(
+                    const_cast< Surface& >( model_.surface( new_surface_gme_t.index ) ),
+                    model_.line( *it ) ) ;
+            }
             return ;
         }
         ringmesh_assert( nb_connected_components != 0 ) ;
@@ -1568,7 +1591,7 @@ namespace RINGMesh {
     vec3 DuplicateInterfaceBuilder::get_local_translation_vector(
         const vec3& normal ) const
     {
-        vec3 displacement = normal * 1.5 * epsilon ;
+        vec3 displacement = normal * 1.5 * 1 ;
         return displacement ;
     }
 
@@ -1875,6 +1898,7 @@ namespace RINGMesh {
                 "translation_attr_z" ) ;
             for( index_t vertex_itr = 0; vertex_itr < reg_mesh.vertices.nb();
                 ++vertex_itr ) {
+
                 reg_mesh.vertices.point( vertex_itr ).x +=
                     translation_att_x[vertex_itr] ;
                 reg_mesh.vertices.point( vertex_itr ).y +=
@@ -1901,6 +1925,7 @@ namespace RINGMesh {
                 "translation_attr_z" ) ;
             for( index_t vertex_itr = 0; vertex_itr < surf_mesh.vertices.nb();
                 ++vertex_itr ) {
+
                 surf_mesh.vertices.point( vertex_itr ).x +=
                     translation_att_x[vertex_itr] ;
                 surf_mesh.vertices.point( vertex_itr ).y +=
@@ -1924,6 +1949,7 @@ namespace RINGMesh {
             /// @todo put assert to check that it is indeed a fault
             for( index_t line_vertex_itr = 0;
                 line_vertex_itr < cur_line.nb_vertices(); ++line_vertex_itr ) {
+
                 index_t vertex_id_in_gmm = cur_line.model_vertex_id(
                     line_vertex_itr ) ;
                 const std::vector< GMEVertex >& gme_vertices =

@@ -2294,7 +2294,6 @@ namespace RINGMesh {
                 // Force the recomputing of the model vertices
                 // before performing the cut.
                 DEBUG("cut region by surface") ;
-                DEBUG(model_.surface( *it ).index()) ;
                 model_.mesh.vertices.clear() ;
                 cut_region_by_surface( R, model_.surface( *it ) ) ;
             }
@@ -2346,7 +2345,6 @@ namespace RINGMesh {
 
                             if( cur_line_boun.index() == cur_line_boun2.index() ) {
                                 DEBUG("cutting line") ;
-                                DEBUG( cur_line_boun.index() ) ;
                                 cutting_lines.insert( cur_line_boun.index() ) ;
                                 found = true ;
                                 break ;
@@ -2362,12 +2360,12 @@ namespace RINGMesh {
             for( std::set< index_t >::iterator it = cutting_lines.begin();
                 it != cutting_lines.end(); ++it ) {
                 DEBUG("cut region by line") ;
-                DEBUG(model_.line( *it ).index()) ;
                 model_.mesh.vertices.clear() ;
                 cut_region_by_line( R, model_.line( *it ) ) ;
             }
             //=================== Cut the region by the lines
         }
+
 
         //=================== Cut the region by the surfaces
 
