@@ -2163,8 +2163,9 @@ namespace RINGMesh {
         }
     }
 
-    /*void GeoModelBuilder::cut_region_by_line( Region& R, const Line& L )
+    void GeoModelBuilder::cut_region_by_line( Region& R, const Line& L )
     {
+        ringmesh_assert( R.is_meshed() ) ;
         /// @todo Replace the use of the model vertices by only a colocater
         /// of the surface vertices and the line vertices
         bool model_vertices_initialized = model().mesh.vertices.is_initialized() ;
@@ -2172,15 +2173,44 @@ namespace RINGMesh {
             model().mesh.vertices.test_and_initialize() ;
         }
 
-        disconnect_region_cells_along_surface_facets( R, S ) ;
-        duplicate_region_vertices_along_surface( R, S ) ;
+        for( index_t line_v_itr = 0; line_v_itr < L.nb_vertices(); ++line_v_itr ) {
+            ColocaterANN reg_ann( R.mesh(), ColocaterANN::VERTICES ) ;
+            std::vector< index_t > colocated ;
+            vec3 vertex_pos = L.vertex( line_v_itr ) ;
+            const index_t line_v_id_in_gmm = L.model_vertex_id( line_v_itr ) ;
+            bool ok = reg_ann.get_colocated( L.vertex( line_v_itr ), colocated ) ;
+            ringmesh_assert( ok ) ;
+            if( colocated.size() != 1 ) {
+                continue ;
+            }
+            std::vector< index_t > cells_around ;
+            R.cells_around_vertex( colocated[0], cells_around, false ) ;
+            ringmesh_assert( !cells_around.empty() ) ;
+            index_t new_vertex_id = R.mesh().vertices.create_vertex(
+                vertex_pos.data() ) ;
+            for( index_t cells_around_itr = 0;
+                cells_around_itr < cells_around.size(); ++cells_around_itr ) {
+                index_t cur_cell_id = cells_around[cells_around_itr] ;
+                for( index_t cell_v_itr = 0;
+                    cell_v_itr < R.nb_vertices_in_cell( cur_cell_id );
+                    ++cell_v_itr ) {
+                    if( R.model_vertex_id( cur_cell_id, cell_v_itr )
+                        == line_v_id_in_gmm ) {
+                        R.mesh().cells.set_vertex( cur_cell_id, cell_v_itr,
+                            new_vertex_id ) ;
+                        break ;
+                    }
+                }
+            }
+        }
+
         // Rebuild the mesh facets of the region
         R.mesh().cells.compute_borders() ;
 
         if( !model_vertices_initialized ) {
             const_cast< GeoModel& >( model() ).mesh.vertices.clear() ;
         }
-    }*/
+    }
 
     void GeoModelBuilder::end_model()
     {
@@ -2269,7 +2299,6 @@ namespace RINGMesh {
                 cut_region_by_surface( R, model_.surface( *it ) ) ;
             }
 
-#if 0
             // If the region has only a line has internal border.
             // This line is shared by two boundaries (surface) of
             // the region and this line does not belong to a cutting surface.
@@ -2338,7 +2367,6 @@ namespace RINGMesh {
                 cut_region_by_line( R, model_.line( *it ) ) ;
             }
             //=================== Cut the region by the lines
-#endif
         }
 
         //=================== Cut the region by the surfaces
