@@ -132,9 +132,6 @@ namespace RINGMesh {
             std::vector< index_t >& surfaces_to_inverse_normals ) ;
         void inverse_normal_attribute_one_surface( const Surface& surface ) const ;
         void update_region_polarity( const Surface& surface ) ;
-        void mutual_cut_between_new_merged_surfaces(
-            index_t first_new_interface_index,
-            const std::vector< std::vector< index_t > >& to_erase_by_type ) ; /// @todo not a good name
         void add_fake_internal_boudnary_lines_to_merged_surface(
             const std::map< index_t, index_t >& all_surface_lines,
             const std::string& side_name,
@@ -192,6 +189,7 @@ namespace RINGMesh {
         void link_surf_vertex_id_to_reg_vertex_id(
             index_t link_id_surf,
             index_t link_id_reg ) ;
+        void fill_reg_anns() ;
 
     private:
         class GMEVertexLink {
@@ -220,6 +218,7 @@ namespace RINGMesh {
     private:
         bool all_meshed_ ;
         std::vector< GMEVertexLink* > gme_vertices_links_ ;
+        std::vector< const ColocaterANN* > reg_anns_ ;
     } ;
 }
 

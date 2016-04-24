@@ -56,8 +56,13 @@ namespace RINGMesh {
     GEO::Mesh to_debug66 ;
 
     DuplicateInterfaceBuilder::DuplicateInterfaceBuilder( GeoModel& model )
-        : GeoModelBuilder( model ), all_meshed_( true ), gme_vertices_links_()
+        :
+            GeoModelBuilder( model ),
+            all_meshed_( true ),
+            gme_vertices_links_(),
+            reg_anns_()
     {
+        reg_anns_.reserve( model.nb_regions() ) ;
     }
 
     DuplicateInterfaceBuilder::~DuplicateInterfaceBuilder()
@@ -67,6 +72,10 @@ namespace RINGMesh {
             ++gme_vertices_links_itr ) {
             ringmesh_assert( gme_vertices_links_[gme_vertices_links_itr] ) ;
             delete gme_vertices_links_[gme_vertices_links_itr] ;
+        }
+        for( index_t reg_anns_itr = 0; reg_anns_itr < reg_anns_.size();
+            ++reg_anns_itr ) {
+            delete reg_anns_[reg_anns_itr] ;
         }
     }
 
@@ -387,6 +396,7 @@ namespace RINGMesh {
         // Loop to nb_initial_interfaces. model_.nb_interfaces() cannot be inside
         // the for statement since the number of interfaces will increase during
         // the duplication.
+        DEBUG( "Build new surfaces" ) ;
         for( index_t interface_itr = 0; interface_itr < nb_initial_interfaces;
             ++interface_itr ) {
             const GeoModelElement& cur_interface = model_.one_interface(
@@ -414,8 +424,6 @@ namespace RINGMesh {
         // with other new surfaces. Some of these may cut some of these
         // new surfaces by two (two connected components). In this last case,
         // two new surfaces are built to replace the new uncut surface.
-        /*mutual_cut_between_new_merged_surfaces( nb_initial_interfaces,
-         to_erase_by_type ) */;
 
         // compute translation vectors
         if( all_meshed_ ) {
@@ -430,7 +438,10 @@ namespace RINGMesh {
                 save_normals_on_one_new_interface( to_erase_by_type,
                     interface_gme ) ;
             }
+            DEBUG("define_global_motion_relation") ;
             define_global_motion_relation( to_erase_by_type ) ;
+            DEBUG(
+                "compute_translation_vectors_duplicated_fault_network_surfaces_and_regions" ) ;
             compute_translation_vectors_duplicated_fault_network_surfaces_and_regions(
                 nb_initial_interfaces, to_erase_by_type ) ;
         } else {
@@ -441,9 +452,13 @@ namespace RINGMesh {
         GEO::mesh_save( to_debug66, "to_debug66.mesh" ) ;
         // set no translation on fault real extension (only on fault ending inside
         // the model).
+        DEBUG("set_no_displacement_on_fault_real_extension") ;
         set_no_displacement_on_fault_real_extension( to_erase_by_type ) ;
         // apply translation
+        DEBUG("translate_duplicated_fault_network") ;
         translate_duplicated_fault_network( to_erase_by_type ) ;
+
+        DEBUG( "last part" ) ;
 
         // Put here for new.
         /// @todo if all the lines are removed, is it still necessary to fill the new
@@ -464,8 +479,21 @@ namespace RINGMesh {
     void DuplicateInterfaceBuilder::define_global_motion_relation(
         const std::vector< std::vector< index_t > >& to_erase_by_type )
     {
+        DEBUG("initialize_gme_vertices_links") ;
         initialize_gme_vertices_links( to_erase_by_type ) ;
+        fill_reg_anns() ;
+        DEBUG( "do_define_motion_relation" ) ;
         do_define_motion_relation( to_erase_by_type ) ;
+    }
+
+    void DuplicateInterfaceBuilder::fill_reg_anns()
+    {
+        for( index_t reg_itr = 0; reg_itr < model_.nb_regions(); ++reg_itr ) {
+            const Region& cur_region = model_.region( reg_itr ) ;
+            ringmesh_assert( cur_region.is_meshed() ) ;
+            reg_anns_.push_back(
+                new ColocaterANN( cur_region.mesh(), ColocaterANN::FACETS ) ) ;
+        }
     }
 
     void DuplicateInterfaceBuilder::do_define_motion_relation_on_not_voi_surface(
@@ -483,7 +511,6 @@ namespace RINGMesh {
         ringmesh_assert( reg2_gme_t.type == GME::REGION ) ;
         const Region& reg2 = model_.region( reg2_gme_t.index ) ;
         ringmesh_assert( reg2.is_meshed() ) ;
-        ColocaterANN reg2_ann( reg2.mesh(), ColocaterANN::FACETS ) ;
         GEO::Attribute< index_t > id_in_link_vector_reg2(
             reg2.mesh().vertices.attributes(), "id_in_link_vector" ) ;
 
@@ -492,7 +519,9 @@ namespace RINGMesh {
         ringmesh_assert( colocated_facets_reg1.size() == 1 ) ;
         std::vector< index_t > colocated_facets_reg2 ;
         colocated_facets_reg2.reserve( 1 ) ;
-        reg2_ann.get_colocated( facet_bary, colocated_facets_reg2 ) ;
+        const ColocaterANN* reg2_ann = reg_anns_[reg2.index()] ;
+        ringmesh_assert( reg2_ann != nil ) ;
+        reg2_ann->get_colocated( facet_bary, colocated_facets_reg2 ) ;
         ringmesh_assert( colocated_facets_reg2.size() == 1 ) ;
 
         for( index_t v_in_surf_facet = 0;
@@ -736,11 +765,12 @@ namespace RINGMesh {
             ringmesh_assert( reg1_gme_t.type == GME::REGION ) ;
             const Region& reg1 = model_.region( reg1_gme_t.index ) ;
             ringmesh_assert( reg1.is_meshed() ) ;
-            ColocaterANN reg1_ann( reg1.mesh(), ColocaterANN::FACETS ) ;
+            const ColocaterANN* reg1_ann = reg_anns_[reg1.index()] ;
+            ringmesh_assert( reg1_ann != nil ) ;
             GEO::Attribute< index_t > id_in_link_vector_reg1(
                 reg1.mesh().vertices.attributes(), "id_in_link_vector" ) ;
 
-            std::vector< bool > surf_vertex_visited( cur_surface.nb_cells(),
+            std::vector< bool > surf_vertex_visited( cur_surface.nb_vertices(),
                 false ) ;
 
             for( index_t surf_facet_itr = 0; surf_facet_itr < cur_surface.nb_cells();
@@ -750,7 +780,7 @@ namespace RINGMesh {
                     cur_surface.mesh(), surf_facet_itr ) ;
                 std::vector< index_t > colocated_facets_reg1 ;
                 colocated_facets_reg1.reserve( 2 ) ;
-                reg1_ann.get_colocated( facet_bary, colocated_facets_reg1 ) ;
+                reg1_ann->get_colocated( facet_bary, colocated_facets_reg1 ) ;
 
                 ringmesh_assert( colocated_facets_reg1.size() == 1 ||
                     colocated_facets_reg1.size() == 2 ) ;
@@ -860,7 +890,7 @@ namespace RINGMesh {
     void DuplicateInterfaceBuilder::GMEVertexLink::displace(
         const vec3& displacement_vector )
     {
-//#ifdef RINGMESH_DEBUG
+#ifdef RINGMESH_DEBUG
         if( gme_vertex_.gme_id.type == GME::SURFACE ) {
             if( linked_gme_vertices_.size() >= 3 ) {
                 DEBUG( "more than 2" ) ;
@@ -892,7 +922,7 @@ namespace RINGMesh {
                 ringmesh_assert( linked_gme_vertices_[link_itr] != linked_gme_vertices_[link_itr2] ) ;
             }
         }
-//#endif
+#endif
 
         if( has_moved_ ) {
             return ;
@@ -914,59 +944,6 @@ namespace RINGMesh {
                 displacement_vector ) ;
         }
         has_moved_ = false ;
-    }
-
-    void DuplicateInterfaceBuilder::mutual_cut_between_new_merged_surfaces(
-        index_t first_new_interface_index,
-        const std::vector< std::vector< index_t > >& to_erase_by_type )
-    {
-        ringmesh_assert( model_.nb_interfaces() - first_new_interface_index >= 2 ) ;
-        for( index_t new_interface_itr = first_new_interface_index;
-            new_interface_itr < model_.nb_interfaces(); ++new_interface_itr ) {
-            ringmesh_assert( to_erase_by_type[GME::INTERFACE][new_interface_itr] != NO_ID ) ;
-            ringmesh_assert( to_erase_by_type[GME::INTERFACE][new_interface_itr] == 0 ) ;
-
-            const GeoModelElement& interface_gme = model_.one_interface(
-                new_interface_itr ) ;
-            for( index_t child_itr = 0; child_itr < interface_gme.nb_children();
-                ++child_itr ) {
-                const GME::gme_t& cur_gme_t =
-                    interface_gme.child( child_itr ).gme_id() ;
-                ringmesh_assert( cur_gme_t.type == GME::SURFACE ) ;
-                const Surface& cur_surface = model_.surface( cur_gme_t.index ) ;
-                // ========= bad copy paste from geo model repair
-                std::set< index_t > cutting_lines ;
-                for( index_t l = 0; l < cur_surface.nb_boundaries(); ++l ) {
-                    const Line& L = model_.line(
-                        cur_surface.boundary_gme( l ).index ) ;
-                    if( /*to_remove.count( L.gme_id() ) == 0 &&*/L.is_inside_border(
-                        cur_surface ) ) {
-                        cutting_lines.insert( L.index() ) ;
-                    }
-                }
-
-                for( std::set< index_t >::iterator it = cutting_lines.begin();
-                    it != cutting_lines.end(); ++it ) {
-                    // Force the recomputing of the model vertices
-                    // before performing the cut.
-//                    model_.mesh.vertices.clear() ;
-                    disconnect_surface_facets_along_line_edges(
-                        const_cast< Surface& >( cur_surface ), model_.line( *it ) ) ;
-                }
-
-                for( std::set< index_t >::iterator it = cutting_lines.begin();
-                    it != cutting_lines.end(); ++it ) {
-                    exit( 0 ) ;
-                    // Force the recomputing of the model vertices
-                    // before performing the cut.
-//                    model_.mesh.vertices.clear() ;
-                    duplicate_surface_vertices_along_line_benjamin(
-                        const_cast< Surface& >( cur_surface ), model_.line( *it ) ) ;
-                    cur_surface.mesh().vertices.remove_isolated() ;
-                }
-                // ========= bad copy paste from geo model repair
-            }
-        }
     }
 
     void DuplicateInterfaceBuilder::get_new_surfaces(
@@ -1352,6 +1329,10 @@ namespace RINGMesh {
                 const_cast< Surface& >( cur_surface ), model_.line( *it ) ) ;
         }
 
+        // cutting_lines std::set contains only the lines to get the different
+        // connected components and not the other lines (such as borders of the entire
+        // surface).
+
         ringmesh_assert( new_surface_gme_t.type == GME::SURFACE ) ;
         const GEO::Mesh& surface_mesh =
             model_.surface( new_surface_gme_t.index ).mesh() ;
@@ -1359,7 +1340,7 @@ namespace RINGMesh {
         index_t nb_connected_components = GEO::get_connected_components(
             surface_mesh, components ) ;
         if( nb_connected_components == 1 ) {
-            /// @todo HANDLE THE INTERNAL BORDER
+            DEBUG( "ONE CONNECTED COMPONENT" ) ;
             set_element_parent( new_surface_gme_t, sided_interface_gme_t ) ;
             add_element_child( sided_interface_gme_t, new_surface_gme_t ) ;
             // boundary informations are defined in build_merged_surfaces
@@ -1375,14 +1356,20 @@ namespace RINGMesh {
                 !side ) ;
 
             to_erase_by_type[GME::SURFACE][new_surface_gme_t.index] = 0 ;
+
+            // Cut for internal border. Some of the cutting lines are on the
+            // surface border or outside the surface. THAT MAY PROVOKE SOME
+            // PROBLEMS? TO CHECK!
             for( std::set< index_t >::iterator it = cutting_lines.begin();
                 it != cutting_lines.end(); ++it ) {
+                DEBUG( "RECUT FOR INTERNAL BORDERS" ) ;
                 cut_surface_by_line(
                     const_cast< Surface& >( model_.surface( new_surface_gme_t.index ) ),
                     model_.line( *it ) ) ;
             }
             return ;
         }
+        DEBUG( "MORE THAN ONE CONNECTED COMPONENT" ) ;
         ringmesh_assert( nb_connected_components != 0 ) ;
 
         // We create a new surface for each connected component
@@ -1591,7 +1578,7 @@ namespace RINGMesh {
     vec3 DuplicateInterfaceBuilder::get_local_translation_vector(
         const vec3& normal ) const
     {
-        vec3 displacement = normal * 1.5 * 1 ;
+        vec3 displacement = normal * 1.5 * epsilon ;
         return displacement ;
     }
 
