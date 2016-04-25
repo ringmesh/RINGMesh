@@ -39,12 +39,15 @@ Compiling the documentation
 ---------------------------
 
 The documentation can be generated using [Doxygen](http://www.stack.nl/~dimitri/doxygen/):
-- cd doc
-- doxygen Doxyfile
 
-Then you can open the doc/html/index.html file in your web browser. If you have qhelpgenerator
-in your path, a .qch file is generated (ringmesh.qch). It can be imported in Qt Assisant: Edit>Preferences>
-Documentation>add and select the .qch file.
+- Check the BUILD_DOCUMENTATION option when using cmake
+- cd build/ringmesh/Release
+- make doc-devkit OR make doc-devkit-lite
+
+doc-devkit include full documentation of RINGMesh and Geogram
+doc-devkit-lite include only the RINGMesh documentation
+
+Then you can go in doc/html and open the index.html with your web browser
 
 Windows
 =======
@@ -68,5 +71,19 @@ Compiling RINGMesh
 You can either launch building in VisualStudio or calling cmake in command line
 in the build directory created at the configuration step.
   cmake --build . --config Release
+
+Compiling the documentation
+---------------------------
+
+The documentation can be generated using [Doxygen](http://www.stack.nl/~dimitri/doxygen/):
+
+- Check the BUILD_DOCUMENTATION option when using cmake
+- Open the solution which is in build/ringmesh/RINGmesh.sln in VisualStudio
+- Build the doc-devkit or the doc-devkit-lite project
+
+doc-devkit include full documentation of RINGMesh and Geogram
+doc-devkit-lite include only the RINGMesh documentation
+
+Then you can go in doc/html and open the index.html with your web browser
 
 

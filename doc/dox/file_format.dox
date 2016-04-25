@@ -33,21 +33,30 @@
  *     FRANCE
  */
 
+
 /*!
 
-\mainpage
+\page ringmesh_file_format RINGMesh File format
 
-RINGMesh is a programming library for geological model meshes. It includes one efficient data structure to represent
-geological meshes: the \link ringmesh_geo_model GeoModel\endlink.
+The .gm format
+============
 
-\image html ringmesh.svg
+RINGMesh comes with an homemade .gm format.
 
-- [Download](http://ring-team.org/index.php/software/downloads/ringmesh)
-- \link ringmesh_compiling How to compile RINGMesh \endlink
-- \link ringmesh_license License and bundled third-party software \endlink
-- \link ringmesh_features RINGMesh features \endlink
-- \link ringmesh_geo_model Description of the GeoModel \endlink
-- \link ringmesh_programming_guidelines RINGMesh Programming Guidelines \endlink
-- \link ringmesh_file_format RINGMesh File format \endlink
+This format mandatory contains :
+
+ - The boundary representation of the Geological model by meshed surfaces
+ - A text file with the connectivity
+ - A text file with the topology
+
+and optionnaly
+
+ - Attribute which can be computed on the cell, the facets and the vertices
+ - Volumetric meshes of the region
+
+Technically, the .gm format is an archive containing .geogram files.
+
+One .geogram files is a meshed GeoModelElement. The name of these file describes the GeoModelElement type (corner, line, surface, region) and their index.
 
 */
+
