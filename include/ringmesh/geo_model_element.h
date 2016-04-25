@@ -942,6 +942,7 @@ namespace RINGMesh {
         const GEO::MeshCellsAABB& aabb() const ;
         const ColocaterANN& ann() const ;
         const ColocaterANN& ann_cells() const ;
+        void delete_ann() ;
 
     private:
         const Region& region_ ;

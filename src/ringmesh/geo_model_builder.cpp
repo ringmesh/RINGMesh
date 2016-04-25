@@ -2174,6 +2174,10 @@ namespace RINGMesh {
         }
 
         for( index_t line_v_itr = 0; line_v_itr < L.nb_vertices(); ++line_v_itr ) {
+            /// @warning More and more vertices are created but the ColocaterAnn
+            /// is not currently updated. It should not be a problem here since
+            /// when a new vertex is created the algo go to the next one and do not
+            /// care about the previously built... but to check...
             const ColocaterANN& reg_ann = R.tools.ann() ;
             std::vector< index_t > colocated ;
             vec3 vertex_pos = L.vertex( line_v_itr ) ;

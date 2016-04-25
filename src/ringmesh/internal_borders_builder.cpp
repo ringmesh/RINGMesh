@@ -117,12 +117,16 @@ namespace RINGMesh {
             // If the region has only a line has internal border.
             // This line is shared by two boundaries (surface) of
             // the region and this line does not belong to a cutting surface.
+            // The two boundaries (surface) in question seem to be horizons
+            // of different interfaces. If it is really the case, the fact that
+            // there are not cutting surfaces should be in assert (an horizon
+            // does not cut).
             std::set< index_t > cutting_lines ;
             for( index_t surf_boun_itr = 0; surf_boun_itr < R.nb_boundaries();
                 ++surf_boun_itr ) {
                 const GME& cur_surf_boun = R.boundary( surf_boun_itr ) ;
                 ringmesh_assert( cur_surf_boun.type() == GME::SURFACE ) ;
-                if( !GME::is_fault( cur_surf_boun.parent().geological_feature() ) ) {
+                if( !GME::is_stratigraphic_limit( cur_surf_boun.parent().geological_feature() ) ) {
                     continue ;
                 }
                 if( std::find( cutting_surfaces.begin(), cutting_surfaces.end(),
@@ -139,7 +143,7 @@ namespace RINGMesh {
                         surf_boun_itr2 < R.nb_boundaries(); ++surf_boun_itr2 ) {
                         const GME& cur_surf_boun2 = R.boundary( surf_boun_itr2 ) ;
                         ringmesh_assert( cur_surf_boun2.type() == GME::SURFACE ) ;
-                        if( !GME::is_fault(
+                        if( !GME::is_stratigraphic_limit(
                             cur_surf_boun2.parent().geological_feature() ) ) {
                             continue ;
                         }
@@ -151,6 +155,13 @@ namespace RINGMesh {
                             != cutting_surfaces.end() ) {
                             continue ;
                         }
+
+                        // The 2 surfaces are not in the same interface? It seems... to check
+                        if( cur_surf_boun.parent().index()
+                            == cur_surf_boun2.parent().index() ) {
+                            continue ;
+                        }
+
                         bool found = false ;
                         for( index_t line_boun_itr2 = 0;
                             line_boun_itr2 < cur_surf_boun2.nb_boundaries();
@@ -179,6 +190,7 @@ namespace RINGMesh {
                 DEBUG("cut region by line") ;
                 model_.mesh.vertices.clear() ;
                 cut_region_by_line( R, model_.line( *it ) ) ;
+//                R.tools.delete_ann() ;
             }
             //=================== Cut the region by the lines
         }

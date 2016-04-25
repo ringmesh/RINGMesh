@@ -1843,4 +1843,9 @@ namespace RINGMesh {
         return *ann_cells_ ;
     }
 
+    void RegionTools::delete_ann() {
+        if( ann_ != nil ) {
+            delete ann_ ;
+        }
+    }
 }
