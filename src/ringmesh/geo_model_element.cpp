@@ -1549,6 +1549,37 @@ namespace RINGMesh {
         }
     }
 
+    index_t Region::find_first_cell_owing_vertex( index_t vertex_id_in_region ) const
+    {
+        ringmesh_assert( is_meshed() ) ;
+        const ColocaterANN& ann_cells = tools.ann_cells() ;
+        const vec3& vertex_pos = vertex( vertex_id_in_region ) ;
+
+        index_t nb_neighbors = std::min( index_t( 5 ), nb_cells() ) ;
+        std::vector< index_t > neighbors ;
+        index_t cur_neighbor = 0 ;
+        index_t prev_neighbor = 0 ;
+        do {
+            prev_neighbor = cur_neighbor ;
+            cur_neighbor += nb_neighbors ;
+            cur_neighbor = std::min( cur_neighbor, nb_cells() ) ;
+            neighbors.resize( cur_neighbor ) ;
+            double* dist = (double*) alloca( sizeof(double) * cur_neighbor ) ;
+            nb_neighbors = ann_cells.get_neighbors( vertex_pos, cur_neighbor,
+                neighbors, dist ) ;
+            for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
+                index_t c = neighbors[i] ;
+                for( index_t j = 0; j < nb_vertices_in_cell( c ); j++ ) {
+                    if( gmme_vertex_index( c, j ) == vertex_id_in_region ) {
+                        return c ;
+                    }
+                }
+            }
+        } while( nb_cells() != cur_neighbor ) ;
+
+        return NO_ID ;
+    }
+
     /*!
      * @brief Determines the cells around a vertex
      *
@@ -1563,7 +1594,9 @@ namespace RINGMesh {
         bool border_only ) const
     {
         ringmesh_assert( is_meshed() ) ;
-        index_t cell_id_in_region = NO_ID ;
+        index_t cell_id_in_region = find_first_cell_owing_vertex(
+            region_vertex_id ) ;
+        /*index_t cell_id_in_region = NO_ID ;
 
         // So, we are back to the brute force stupid approach
         for( index_t i = 0; i < nb_cells(); ++i ) {
@@ -1576,7 +1609,7 @@ namespace RINGMesh {
             if( cell_id_in_region != NO_ID ) {
                 break ;
             }
-        }
+        }*/
         ringmesh_assert( cell_id_in_region != NO_ID ) ;
         return cells_around_vertex( region_vertex_id, result, border_only,
             cell_id_in_region ) ;
@@ -1682,7 +1715,7 @@ namespace RINGMesh {
     /********************************************************************/
 
     SurfaceTools::SurfaceTools( const Surface& surface )
-        : surface_( surface ), aabb_( nil ), ann_( nil )
+        : surface_( surface ), aabb_( nil ), ann_( nil ), ann_facets_( nil )
     {
     }
 
@@ -1690,6 +1723,7 @@ namespace RINGMesh {
     {
         if( aabb_ ) delete aabb_ ;
         if( ann_ ) delete ann_ ;
+        if( ann_facets_ ) delete ann_facets_ ;
     }
 
     /*!
@@ -1729,10 +1763,18 @@ namespace RINGMesh {
         return *ann_ ;
     }
 
+    const ColocaterANN& SurfaceTools::ann_facets() const
+    {
+        if( ann_facets_ == nil ) {
+            ann_facets_ = new ColocaterANN( surface_.mesh(), ColocaterANN::FACETS ) ;
+        }
+        return *ann_facets_ ;
+    }
+
     /********************************************************************/
 
     RegionTools::RegionTools( const Region& region )
-        : region_( region ), aabb_( nil ), ann_( nil )
+        : region_( region ), aabb_( nil ), ann_( nil ), ann_cells_( nil )
     {
     }
 
@@ -1740,6 +1782,7 @@ namespace RINGMesh {
     {
         if( aabb_ ) delete aabb_ ;
         if( ann_ ) delete ann_ ;
+        if( ann_cells_ ) delete ann_cells_ ;
     }
 
     const GEO::MeshCellsAABB& RegionTools::aabb() const
@@ -1790,6 +1833,14 @@ namespace RINGMesh {
             ann_ = new ColocaterANN( region_.mesh(), ColocaterANN::VERTICES ) ;
         }
         return *ann_ ;
+    }
+
+    const ColocaterANN& RegionTools::ann_cells() const
+    {
+        if( ann_cells_ == nil ) {
+            ann_cells_ = new ColocaterANN( region_.mesh(), ColocaterANN::CELLS ) ;
+        }
+        return *ann_cells_ ;
     }
 
 }

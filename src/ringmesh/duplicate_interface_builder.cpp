@@ -492,21 +492,21 @@ namespace RINGMesh {
             const Region& cur_region = model_.region( reg_itr ) ;
             ringmesh_assert( cur_region.is_meshed() ) ;
             reg_anns_.push_back(
-                new ColocaterANN( cur_region.mesh(), ColocaterANN::FACETS ) ) ;
+                new ColocaterANN( cur_region.mesh(), ColocaterANN::FACETS ) ) ; /// @todo use CELL_FACETS instead ? in theory the region have facets...
         }
     }
 
+    /// @todo split this function into several smaller functions
     void DuplicateInterfaceBuilder::do_define_motion_relation_on_not_voi_surface(
         const Surface& cur_surface,
         index_t surf_facet_itr,
+        index_t v_id_in_surf,
         const Region& reg1,
-        const std::vector< index_t >& colocated_facets_reg1,
-        const vec3& facet_bary,
         GEO::Attribute< index_t >& id_in_link_vector_surf,
-        GEO::Attribute< index_t >& id_in_link_vector_reg1,
-        std::vector< bool >& surf_vertex_visited )
+        GEO::Attribute< index_t >& id_in_link_vector_reg1 )
     {
         ringmesh_assert( cur_surface.nb_in_boundary() == 2 ) ;
+        ringmesh_assert( reg1.index() == cur_surface.in_boundary_gme( 0 ).index ) ;
         const GME::gme_t& reg2_gme_t = cur_surface.in_boundary_gme( 1 ) ;
         ringmesh_assert( reg2_gme_t.type == GME::REGION ) ;
         const Region& reg2 = model_.region( reg2_gme_t.index ) ;
@@ -516,213 +516,170 @@ namespace RINGMesh {
 
         // Working on horizon not voi
         ringmesh_assert( reg1.index() != reg2.index() ) ;
-        ringmesh_assert( colocated_facets_reg1.size() == 1 ) ;
-        std::vector< index_t > colocated_facets_reg2 ;
-        colocated_facets_reg2.reserve( 1 ) ;
-        const ColocaterANN* reg2_ann = reg_anns_[reg2.index()] ;
-        ringmesh_assert( reg2_ann != nil ) ;
-        reg2_ann->get_colocated( facet_bary, colocated_facets_reg2 ) ;
-        ringmesh_assert( colocated_facets_reg2.size() == 1 ) ;
 
-        for( index_t v_in_surf_facet = 0;
-            v_in_surf_facet < cur_surface.nb_vertices_in_facet( surf_facet_itr );
-            ++v_in_surf_facet ) {
-            index_t v_id_in_surf = cur_surface.surf_vertex_id( surf_facet_itr,
-                v_in_surf_facet ) ;
-            if( surf_vertex_visited[v_id_in_surf] ) {
+        const index_t surf_v_id_in_gmm = cur_surface.model_vertex_id(
+            v_id_in_surf ) ;
+        const std::vector< GMEVertex >& gme_vertices =
+            model_.mesh.vertices.gme_vertices( surf_v_id_in_gmm ) ;
+        std::vector< index_t > found_gmev_reg1 ;
+        found_gmev_reg1.reserve( gme_vertices.size() ) ;
+        std::vector< index_t > found_gmev_reg2 ;
+        found_gmev_reg2.reserve( gme_vertices.size() ) ;
+        for( index_t gme_vertices_itr = 0; gme_vertices_itr < gme_vertices.size();
+            ++gme_vertices_itr ) {
+            if( gme_vertices[gme_vertices_itr].gme_id.type != GME::REGION ) {
                 continue ;
             }
-
-            const index_t surf_v_id_in_gmm = cur_surface.model_vertex_id(
-                v_id_in_surf ) ;
-
-            surf_vertex_visited[v_id_in_surf] = true ;
-            index_t v_id_in_reg1 = NO_ID ;
-            index_t v_id_in_reg2 = NO_ID ;
-
-            for( index_t v_in_reg1_itr = 0;
-                v_in_reg1_itr
-                    < reg1.mesh().facets.nb_vertices( colocated_facets_reg1[0] );
-                ++v_in_reg1_itr ) {
-                index_t reg1_v_id_in_gmme = reg1.mesh().facets.vertex(
-                    colocated_facets_reg1[0], v_in_reg1_itr ) ;
-                if( reg1.model_vertex_id( reg1_v_id_in_gmme ) == surf_v_id_in_gmm ) {
-                    v_id_in_reg1 = reg1_v_id_in_gmme ;
-                    break ;
-                }
+            if( gme_vertices[gme_vertices_itr].gme_id.index == reg1.index() ) {
+                found_gmev_reg1.push_back( gme_vertices_itr ) ;
+            } else if( gme_vertices[gme_vertices_itr].gme_id.index
+                == reg2.index() ) {
+                found_gmev_reg2.push_back( gme_vertices_itr ) ;
             }
-            ringmesh_assert( v_id_in_reg1 != NO_ID ) ;
+        }
+        ringmesh_assert( !found_gmev_reg1.empty() ) ;
+        ringmesh_assert( !found_gmev_reg2.empty() ) ;
+        index_t v_id_in_reg1 =
+            find_region_vertex_id_from_surface_facet_among_colocated_points_in_one_region(
+                gme_vertices, found_gmev_reg1, cur_surface, surf_facet_itr, reg1,
+                surf_v_id_in_gmm ) ;
+        index_t v_id_in_reg2 =
+            find_region_vertex_id_from_surface_facet_among_colocated_points_in_one_region(
+                gme_vertices, found_gmev_reg2, cur_surface, surf_facet_itr, reg2,
+                surf_v_id_in_gmm ) ;
+        ringmesh_assert( v_id_in_reg1 != NO_ID ) ;
+        ringmesh_assert( v_id_in_reg2 != NO_ID ) ;
 
-            for( index_t v_in_reg2_itr = 0;
-                v_in_reg2_itr
-                    < reg2.mesh().facets.nb_vertices( colocated_facets_reg2[0] );
-                ++v_in_reg2_itr ) {
-                index_t reg2_v_id_in_gmme = reg2.mesh().facets.vertex(
-                    colocated_facets_reg2[0], v_in_reg2_itr ) ;
-                if( reg2.model_vertex_id( reg2_v_id_in_gmme ) == surf_v_id_in_gmm ) {
-                    v_id_in_reg2 = reg2_v_id_in_gmme ;
-                    break ;
-                }
-            }
-            ringmesh_assert( v_id_in_reg2 != NO_ID ) ;
+        // LINKING
+        index_t link_id_surf = id_in_link_vector_surf[v_id_in_surf] ;
+        index_t link_id_reg1 = id_in_link_vector_reg1[v_id_in_reg1] ;
+        index_t link_id_reg2 = id_in_link_vector_reg2[v_id_in_reg2] ;
+        link_surf_vertex_id_to_reg_vertex_id( link_id_surf, link_id_reg1 ) ;
+        link_surf_vertex_id_to_reg_vertex_id( link_id_surf, link_id_reg2 ) ;
+    }
 
-            // LINKING
-            index_t link_id_surf = id_in_link_vector_surf[v_id_in_surf] ;
-            index_t link_id_reg1 = id_in_link_vector_reg1[v_id_in_reg1] ;
-            index_t link_id_reg2 = id_in_link_vector_reg2[v_id_in_reg2] ;
-            link_surf_vertex_id_to_reg_vertex_id( link_id_surf, link_id_reg1 ) ;
-            link_surf_vertex_id_to_reg_vertex_id( link_id_surf, link_id_reg2 ) ;
+    index_t DuplicateInterfaceBuilder::find_region_vertex_id_from_surface_facet_among_colocated_points_in_one_region(
+        const std::vector< GMEVertex >& gme_vertices,
+        std::vector< index_t > found_gmev_reg,
+        const Surface& cur_surface,
+        index_t surf_facet_itr,
+        const Region& reg,
+        index_t surf_v_id_in_gmm ) const
+    {
+        if( found_gmev_reg.size() == 1 ) {
+            // It is the most common case. ColocaterANN is not used here to reduce
+            // the computational time.
+            return gme_vertices[found_gmev_reg[0]].v_id ;
+        } else {
+            // No choice. Test of the facet colocated. More time consuming.
+            const vec3 facet_bary = GEO::Geom::mesh_facet_center( cur_surface.mesh(),
+                surf_facet_itr ) ;
+            std::vector< index_t > colocated_facets_reg ;
+            colocated_facets_reg.reserve( 1 ) ;
+            reg_anns_[reg.index()]->get_colocated( facet_bary,
+                colocated_facets_reg ) ;
+            ringmesh_assert( colocated_facets_reg.size() == 1 ) ;
+            return find_reg_vertex_id_in_facet_reg_matching_surf_vertex_id_in_gmm(
+                reg, colocated_facets_reg[0], surf_v_id_in_gmm ) ;
         }
     }
 
+    /// @todo split this function into several smaller functions
     void DuplicateInterfaceBuilder::do_define_motion_relation_on_voi_surface(
         const Surface& cur_surface,
         index_t surf_facet_itr,
+        index_t v_id_in_surf,
         const Region& reg1,
-        const std::vector< index_t >& colocated_facets_reg1,
         GEO::Attribute< index_t >& id_in_link_vector_surf,
-        GEO::Attribute< index_t >& id_in_link_vector_reg1,
-        std::vector< bool >& surf_vertex_visited )
+        GEO::Attribute< index_t >& id_in_link_vector_reg1 )
     {
-        if( colocated_facets_reg1.size() == 1 ) {
-            do_define_motion_relation_on_voi_fault_crossing_or_model_boundary_or_voi_horizon(
-                cur_surface, surf_facet_itr, reg1, colocated_facets_reg1,
-                id_in_link_vector_surf, id_in_link_vector_reg1,
-                surf_vertex_visited ) ;
+        ringmesh_assert( cur_surface.nb_in_boundary() == 1 ) ;
+        ringmesh_assert( cur_surface.in_boundary(0).index() == reg1.index() ) ;
+        const index_t surf_v_id_in_gmm = cur_surface.model_vertex_id(
+            v_id_in_surf ) ;
+        const std::vector< GMEVertex >& gme_vertices =
+            model_.mesh.vertices.gme_vertices( surf_v_id_in_gmm ) ;
+        std::vector< index_t > found_regions ;
+        found_regions.reserve( gme_vertices.size() ) ;
+        for( index_t gme_vertices_itr = 0; gme_vertices_itr < gme_vertices.size();
+            ++gme_vertices_itr ) {
+            if( gme_vertices[gme_vertices_itr].gme_id.type != GME::REGION ) {
+                continue ;
+            }
+            if( gme_vertices[gme_vertices_itr].gme_id.index != reg1.index() ) {
+                continue ;
+            }
+            found_regions.push_back( gme_vertices_itr ) ;
+        }
+        index_t v_id_in_reg1 = NO_ID ;
+        if( found_regions.size() == 1 ) {
+            v_id_in_reg1 = gme_vertices[found_regions[0]].v_id ;
         } else {
-            do_define_motion_relation_on_voi_fault_not_crossing( cur_surface,
-                surf_facet_itr, reg1, colocated_facets_reg1, id_in_link_vector_surf,
-                id_in_link_vector_reg1, surf_vertex_visited ) ;
-        }
-    }
+            // Configuration in which there is a fault which ends inside the model.
+            // The current surface may be a voi boundary, a voi horizon or a fault.
+            // No choice => use of ColocaterAnn on the current facet (more time
+            // consuming).
+            const vec3 facet_bary = GEO::Geom::mesh_facet_center( cur_surface.mesh(),
+                surf_facet_itr ) ;
+            std::vector< index_t > colocated_facets_reg1 ;
+            colocated_facets_reg1.reserve( 2 ) ;
+            reg_anns_[reg1.index()]->get_colocated( facet_bary,
+                colocated_facets_reg1 ) ;
+            if( colocated_facets_reg1.size() == 1 ) {
+                // Case of a voi horizon or voi boundary
+                v_id_in_reg1 =
+                    find_reg_vertex_id_in_facet_reg_matching_surf_vertex_id_in_gmm(
+                        reg1, colocated_facets_reg1[0], surf_v_id_in_gmm ) ;
+            } else {
+                // Case of a fault ending inside the model
+                ringmesh_assert( colocated_facets_reg1.size() == 2 ) ;
+                // It is a fault with the region on the other side.
+                ringmesh_assert( GME::is_fault(
+                        cur_surface.parent().geological_feature()) ) ;
 
-    void DuplicateInterfaceBuilder::do_define_motion_relation_on_voi_fault_crossing_or_model_boundary_or_voi_horizon(
-        const Surface& cur_surface,
-        index_t surf_facet_itr,
-        const Region& reg1,
-        const std::vector< index_t >& colocated_facets_reg1,
-        GEO::Attribute< index_t >& id_in_link_vector_surf,
-        GEO::Attribute< index_t >& id_in_link_vector_reg1,
-        std::vector< bool >& surf_vertex_visited )
-    {
-        ringmesh_assert( colocated_facets_reg1.size() == 1 ) ;
-        // It is not the same region on the other side of the fault.
-        // Or it is a model boundary so defining universe, no cell
-        // on the other side.
+                // Try to find which region facet is realy on the surface.
+                v_id_in_reg1 =
+                    find_reg_vertex_id_in_facet_reg_matching_surf_vertex_id_in_gmm(
+                        reg1, colocated_facets_reg1[0], surf_v_id_in_gmm ) ;
+                ringmesh_assert( v_id_in_reg1 != NO_ID ) ;
 
-        for( index_t v_in_surf_facet = 0;
-            v_in_surf_facet < cur_surface.nb_vertices_in_facet( surf_facet_itr );
-            ++v_in_surf_facet ) {
-            index_t v_id_in_surf = cur_surface.surf_vertex_id( surf_facet_itr,
-                v_in_surf_facet ) ;
-            if( surf_vertex_visited[v_id_in_surf] ) {
-                continue ;
-            }
+                const vec3 local_translation_normal = get_local_translation_normal(
+                    cur_surface, v_id_in_surf ) ;
+                bool is_first = is_region_on_right_side_of_sided_interface(
+                    reg1.index(), local_translation_normal, v_id_in_reg1,
+                    cur_surface.vertex( v_id_in_surf ) ) ;
 
-            const index_t surf_v_id_in_gmm = cur_surface.model_vertex_id(
-                v_id_in_surf ) ;
-
-            surf_vertex_visited[v_id_in_surf] = true ;
-            index_t v_id_in_reg1 = NO_ID ;
-
-            for( index_t v_in_reg1_itr = 0;
-                v_in_reg1_itr
-                    < reg1.mesh().facets.nb_vertices( colocated_facets_reg1[0] );
-                ++v_in_reg1_itr ) {
-                index_t reg1_v_id_in_gmme = reg1.mesh().facets.vertex(
-                    colocated_facets_reg1[0], v_in_reg1_itr ) ;
-                if( reg1.model_vertex_id( reg1_v_id_in_gmme ) == surf_v_id_in_gmm ) {
-                    v_id_in_reg1 = reg1_v_id_in_gmme ;
-                    break ;
+                if( !is_first ) {
+                    v_id_in_reg1 = NO_ID ;
+                    v_id_in_reg1 =
+                        find_reg_vertex_id_in_facet_reg_matching_surf_vertex_id_in_gmm(
+                            reg1, colocated_facets_reg1[1], surf_v_id_in_gmm ) ;
+                    ringmesh_assert( v_id_in_reg1 != NO_ID ) ;
                 }
             }
-
-            ringmesh_assert( v_id_in_reg1 != NO_ID ) ;
-
-            // LINKING
-            index_t link_id_surf = id_in_link_vector_surf[v_id_in_surf] ;
-            index_t link_id_reg1 = id_in_link_vector_reg1[v_id_in_reg1] ;
-            link_surf_vertex_id_to_reg_vertex_id( link_id_surf, link_id_reg1 ) ;
         }
+        ringmesh_assert( v_id_in_reg1 != NO_ID ) ;
+        // LINKING
+        index_t link_id_surf = id_in_link_vector_surf[v_id_in_surf] ;
+        index_t link_id_reg1 = id_in_link_vector_reg1[v_id_in_reg1] ;
+        link_surf_vertex_id_to_reg_vertex_id( link_id_surf, link_id_reg1 ) ;
     }
 
-    void DuplicateInterfaceBuilder::do_define_motion_relation_on_voi_fault_not_crossing(
-        const Surface& cur_surface,
-        index_t surf_facet_itr,
-        const Region& reg1,
-        const std::vector< index_t >& colocated_facets_reg1,
-        GEO::Attribute< index_t >& id_in_link_vector_surf,
-        GEO::Attribute< index_t >& id_in_link_vector_reg1,
-        std::vector< bool >& surf_vertex_visited )
+    index_t DuplicateInterfaceBuilder::find_reg_vertex_id_in_facet_reg_matching_surf_vertex_id_in_gmm(
+        const Region& reg,
+        index_t reg_facet_id,
+        index_t surf_v_id_in_gmm ) const
     {
-        // It is a fault with the region on the other side.
-        ringmesh_assert( GME::is_fault(
-                cur_surface.parent().geological_feature()) ) ;
-        ringmesh_assert( colocated_facets_reg1.size() == 2 ) ;
-
-        // Try to find which region facet is realy on the surface.
-        index_t v0_id_in_surf = cur_surface.surf_vertex_id( surf_facet_itr, 0 ) ;
-        const index_t surf_v0_id_in_gmm = cur_surface.model_vertex_id(
-            v0_id_in_surf ) ;
-
-        index_t v0_id_in_reg1 = NO_ID ;
-        for( index_t v_in_reg1_itr = 0;
-            v_in_reg1_itr
-                < reg1.mesh().facets.nb_vertices( colocated_facets_reg1[0] );
-            ++v_in_reg1_itr ) {
-
-            index_t reg1_v0_id_in_gmme = reg1.mesh().facets.vertex(
-                colocated_facets_reg1[0], v_in_reg1_itr ) ;
-            if( reg1.model_vertex_id( reg1_v0_id_in_gmme ) == surf_v0_id_in_gmm ) {
-                v0_id_in_reg1 = reg1_v0_id_in_gmme ;
-                break ;
+        for( index_t v_in_reg_itr = 0;
+            v_in_reg_itr < reg.mesh().facets.nb_vertices( reg_facet_id );
+            ++v_in_reg_itr ) {
+            index_t reg_v_id_in_gmme = reg.mesh().facets.vertex( reg_facet_id,
+                v_in_reg_itr ) ;
+            if( reg.model_vertex_id( reg_v_id_in_gmme ) == surf_v_id_in_gmm ) {
+                return reg_v_id_in_gmme ;
             }
         }
-        ringmesh_assert( v0_id_in_reg1 != NO_ID ) ;
-
-        const vec3 local_translation_normal = get_local_translation_normal(
-            cur_surface, v0_id_in_surf ) ;
-        bool is_first = is_region_on_right_side_of_sided_interface( reg1.index(),
-            local_translation_normal, v0_id_in_reg1,
-            cur_surface.vertex( v0_id_in_surf ) ) ;
-
-        index_t right_colocated_facet =
-            is_first ? colocated_facets_reg1[0] : colocated_facets_reg1[1] ;
-
-        for( index_t v_in_surf_facet = 0;
-            v_in_surf_facet < cur_surface.nb_vertices_in_facet( surf_facet_itr );
-            ++v_in_surf_facet ) {
-            index_t v_id_in_surf = cur_surface.surf_vertex_id( surf_facet_itr,
-                v_in_surf_facet ) ;
-            if( surf_vertex_visited[v_id_in_surf] ) {
-                continue ;
-            }
-
-            const index_t surf_v_id_in_gmm = cur_surface.model_vertex_id(
-                v_id_in_surf ) ;
-
-            surf_vertex_visited[v_id_in_surf] = true ;
-            index_t v_id_in_reg1 = NO_ID ;
-
-            for( index_t v_in_reg1_itr = 0;
-                v_in_reg1_itr
-                    < reg1.mesh().facets.nb_vertices( right_colocated_facet );
-                ++v_in_reg1_itr ) {
-                index_t reg1_v_id_in_gmme = reg1.mesh().facets.vertex(
-                    right_colocated_facet, v_in_reg1_itr ) ;
-                if( reg1.model_vertex_id( reg1_v_id_in_gmme ) == surf_v_id_in_gmm ) {
-                    v_id_in_reg1 = reg1_v_id_in_gmme ;
-                    break ;
-                }
-            }
-
-            ringmesh_assert( v_id_in_reg1 != NO_ID ) ;
-
-            // LINKING
-            index_t link_id_surf = id_in_link_vector_surf[v_id_in_surf] ;
-            index_t link_id_reg1 = id_in_link_vector_reg1[v_id_in_reg1] ;
-            link_surf_vertex_id_to_reg_vertex_id( link_id_surf, link_id_reg1 ) ;
-        }
+        return NO_ID ;
     }
 
     void DuplicateInterfaceBuilder::link_surf_vertex_id_to_reg_vertex_id(
@@ -765,8 +722,6 @@ namespace RINGMesh {
             ringmesh_assert( reg1_gme_t.type == GME::REGION ) ;
             const Region& reg1 = model_.region( reg1_gme_t.index ) ;
             ringmesh_assert( reg1.is_meshed() ) ;
-            const ColocaterANN* reg1_ann = reg_anns_[reg1.index()] ;
-            ringmesh_assert( reg1_ann != nil ) ;
             GEO::Attribute< index_t > id_in_link_vector_reg1(
                 reg1.mesh().vertices.attributes(), "id_in_link_vector" ) ;
 
@@ -776,27 +731,28 @@ namespace RINGMesh {
             for( index_t surf_facet_itr = 0; surf_facet_itr < cur_surface.nb_cells();
                 ++surf_facet_itr ) {
 
-                const vec3 facet_bary = GEO::Geom::mesh_facet_center(
-                    cur_surface.mesh(), surf_facet_itr ) ;
-                std::vector< index_t > colocated_facets_reg1 ;
-                colocated_facets_reg1.reserve( 2 ) ;
-                reg1_ann->get_colocated( facet_bary, colocated_facets_reg1 ) ;
+                for( index_t v_in_surf_facet = 0;
+                    v_in_surf_facet
+                        < cur_surface.nb_vertices_in_facet( surf_facet_itr );
+                    ++v_in_surf_facet ) {
+                    index_t v_id_in_surf = cur_surface.surf_vertex_id(
+                        surf_facet_itr, v_in_surf_facet ) ;
+                    if( surf_vertex_visited[v_id_in_surf] ) {
+                        continue ;
+                    }
+                    surf_vertex_visited[v_id_in_surf] = true ;
 
-                ringmesh_assert( colocated_facets_reg1.size() == 1 ||
-                    colocated_facets_reg1.size() == 2 ) ;
-                if( is_horizon_not_voi ) {
-                    ringmesh_assert( nb_in_boundaries == 2 ) ;
-                    ringmesh_assert( colocated_facets_reg1.size() == 1 ) ;
-                    do_define_motion_relation_on_not_voi_surface( cur_surface,
-                        surf_facet_itr, reg1, colocated_facets_reg1, facet_bary,
-                        id_in_link_vector_surf, id_in_link_vector_reg1,
-                        surf_vertex_visited ) ;
-                } else {
-                    ringmesh_assert( nb_in_boundaries == 1 ) ;
-                    do_define_motion_relation_on_voi_surface( cur_surface,
-                        surf_facet_itr, reg1, colocated_facets_reg1,
-                        id_in_link_vector_surf, id_in_link_vector_reg1,
-                        surf_vertex_visited ) ;
+                    if( is_horizon_not_voi ) {
+                        ringmesh_assert( nb_in_boundaries == 2 ) ;
+                        do_define_motion_relation_on_not_voi_surface( cur_surface,
+                            surf_facet_itr, v_id_in_surf, reg1,
+                            id_in_link_vector_surf, id_in_link_vector_reg1 ) ;
+                    } else {
+                        ringmesh_assert( nb_in_boundaries == 1 ) ;
+                        do_define_motion_relation_on_voi_surface( cur_surface,
+                            surf_facet_itr, v_id_in_surf, reg1,
+                            id_in_link_vector_surf, id_in_link_vector_reg1 ) ;
+                    }
                 }
             }
         }

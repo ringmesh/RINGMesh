@@ -704,12 +704,14 @@ namespace RINGMesh {
 
         const GEO::MeshFacetsAABB& aabb() const ;
         const ColocaterANN& ann() const ;
+        const ColocaterANN& ann_facets() const ;
 
     private:
         const Surface& surface_ ;
 
         mutable GEO::MeshFacetsAABB* aabb_ ;
         mutable ColocaterANN* ann_ ;
+        mutable ColocaterANN* ann_facets_ ;
     } ;
 
     /*!
@@ -939,12 +941,14 @@ namespace RINGMesh {
 
         const GEO::MeshCellsAABB& aabb() const ;
         const ColocaterANN& ann() const ;
+        const ColocaterANN& ann_cells() const ;
 
     private:
         const Region& region_ ;
 
         mutable GEO::MeshCellsAABB* aabb_ ;
         mutable ColocaterANN* ann_ ;
+        mutable ColocaterANN* ann_cells_ ;
     } ;
 
     /*!
@@ -1062,6 +1066,7 @@ namespace RINGMesh {
 
     private:
         virtual bool is_mesh_valid() const ;
+        index_t find_first_cell_owing_vertex( index_t vertex_id_in_region ) const ;
 
     private:
         /*! Additional information to store oriented boundary Surfaces

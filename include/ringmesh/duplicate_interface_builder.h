@@ -154,42 +154,34 @@ namespace RINGMesh {
         void do_define_motion_relation_on_not_voi_surface(
             const Surface& cur_surface,
             index_t surf_facet_itr,
+            index_t v_id_in_surf,
             const Region& reg1,
-            const std::vector< index_t >& colocated_facets_reg1,
-            const vec3& facet_bary,
             GEO::Attribute< index_t >& id_in_link_vector_surf,
-            GEO::Attribute< index_t >& id_in_link_vector_reg1,
-            std::vector< bool >& surf_vertex_visited ) ;
+            GEO::Attribute< index_t >& id_in_link_vector_reg1 ) ;
         void do_define_motion_relation_on_voi_surface(
             const Surface& cur_surface,
             index_t surf_facet_itr,
+            index_t v_id_in_surf,
             const Region& reg1,
-            const std::vector< index_t >& colocated_facets_reg1,
             GEO::Attribute< index_t >& id_in_link_vector_surf,
-            GEO::Attribute< index_t >& id_in_link_vector_reg1,
-            std::vector< bool >& surf_vertex_visited ) ;
-        void do_define_motion_relation_on_voi_fault_crossing_or_model_boundary_or_voi_horizon(
-            const Surface& cur_surface,
-            index_t surf_facet_itr,
-            const Region& reg1,
-            const std::vector< index_t >& colocated_facets_reg1,
-            GEO::Attribute< index_t >& id_in_link_vector_surf,
-            GEO::Attribute< index_t >& id_in_link_vector_reg1,
-            std::vector< bool >& surf_vertex_visited ) ;
-        void do_define_motion_relation_on_voi_fault_not_crossing(
-            const Surface& cur_surface,
-            index_t surf_facet_itr,
-            const Region& reg1,
-            const std::vector< index_t >& colocated_facets_reg1,
-            GEO::Attribute< index_t >& id_in_link_vector_surf,
-            GEO::Attribute< index_t >& id_in_link_vector_reg1,
-            std::vector< bool >& surf_vertex_visited ) ;
+            GEO::Attribute< index_t >& id_in_link_vector_reg1 ) ;
         void initialize_gme_vertices_links(
             const std::vector< std::vector< index_t > >& to_erase_by_type ) ;
         void link_surf_vertex_id_to_reg_vertex_id(
             index_t link_id_surf,
             index_t link_id_reg ) ;
         void fill_reg_anns() ;
+        index_t find_region_vertex_id_from_surface_facet_among_colocated_points_in_one_region(
+            const std::vector< GMEVertex >& gme_vertices,
+            std::vector< index_t > found_gmev_reg,
+            const Surface& cur_surface,
+            index_t surf_facet_itr,
+            const Region& reg,
+            index_t surf_v_id_in_gmm ) const ;
+        index_t find_reg_vertex_id_in_facet_reg_matching_surf_vertex_id_in_gmm(
+            const Region& reg,
+            index_t reg_facet_id,
+            index_t surf_v_id_in_gmm ) const ;
 
     private:
         class GMEVertexLink {

@@ -1577,14 +1577,14 @@ namespace RINGMesh {
         Surface& S,
         const Line& L )
     {
-        ColocaterANN ann( S.mesh(), ColocaterANN::FACETS ) ;
+        const ColocaterANN& ann_facets = S.tools.ann_facets() ;
         for( index_t i = 0; i + 1 < L.nb_vertices(); ++i ) {
             index_t p0 = L.model_vertex_id( i ) ;
             index_t p1 = L.model_vertex_id( i + 1 ) ;
 
             index_t f = NO_ID ;
             index_t v = NO_ID ;
-            bool found = find_facet_and_edge( ann, S, p0, p1, f, v ) ;
+            bool found = find_facet_and_edge( ann_facets, S, p0, p1, f, v ) ;
             ringmesh_unused( found ) ;
             ringmesh_assert( found && f != NO_ID && v != NO_ID ) ;
 
@@ -1669,11 +1669,11 @@ namespace RINGMesh {
         Region& R,
         const Surface& S )
     {
-        ColocaterANN ann( R.mesh(), ColocaterANN::CELLS ) ;
+        const ColocaterANN& ann_cells = R.tools.ann_cells() ;
         for( index_t f_itr = 0; f_itr < S.nb_cells(); ++f_itr ) {
             index_t c = NO_ID ;
             index_t f = NO_ID ;
-            bool found = find_cell_and_facet( ann, R, S, f_itr, c, f ) ;
+            bool found = find_cell_and_facet( ann_cells, R, S, f_itr, c, f ) ;
             ringmesh_unused( found ) ;
             ringmesh_assert( found && c != NO_ID && f != NO_ID ) ;
 
@@ -1728,12 +1728,12 @@ namespace RINGMesh {
         surface_vertex_0 = NO_ID ;
         surface_vertex_1 = NO_ID ;
 
-        ColocaterANN ann( S.mesh(), ColocaterANN::FACETS ) ;
+        const ColocaterANN& ann_facets = S.tools.ann_facets() ;
         index_t p0 = L.model_vertex_id( 0 ) ;
         index_t p1 = L.model_vertex_id( 1 ) ;
 
         index_t v( NO_ID ) ;
-        bool found = find_facet_and_edge( ann, S, p0, p1, facet_index, v ) ;
+        bool found = find_facet_and_edge( ann_facets, S, p0, p1, facet_index, v ) ;
         ringmesh_unused( found ) ;
         ringmesh_assert( found && facet_index != NO_ID && v != NO_ID ) ;
 
@@ -1756,12 +1756,12 @@ namespace RINGMesh {
         surface_vertex_0 = NO_ID ;
         surface_vertex_1 = NO_ID ;
 
-        ColocaterANN ann( S.mesh(), ColocaterANN::FACETS ) ;
+        const ColocaterANN& ann_facets = S.tools.ann_facets() ;
         index_t p0 = L.model_vertex_id( line_v1_id ) ;
         index_t p1 = L.model_vertex_id( line_v1_id + 1 ) ;
 
         index_t v( NO_ID ) ;
-        bool found = find_facet_and_edge( ann, S, p0, p1, facet_index, v ) ;
+        bool found = find_facet_and_edge( ann_facets, S, p0, p1, facet_index, v ) ;
         ringmesh_unused( found ) ;
         ringmesh_assert( found && facet_index != NO_ID && v != NO_ID ) ;
 
@@ -1961,10 +1961,10 @@ namespace RINGMesh {
             }
         }
 
-        ColocaterANN ann( R.mesh(), ColocaterANN::CELLS ) ;
+        const ColocaterANN& ann_cells = R.tools.ann_cells() ;
         index_t c = NO_ID ;
         index_t f = NO_ID ;
-        bool found = find_cell_and_facet( ann, R, S, 0, c, f ) ;
+        bool found = find_cell_and_facet( ann_cells, R, S, 0, c, f ) ;
         ringmesh_unused( found ) ;
         ringmesh_assert( found && c != NO_ID && f != NO_ID ) ;
 
@@ -2078,9 +2078,9 @@ namespace RINGMesh {
                     if( R.is_on_border( cur_sur_cell_id, cur_sur_cell_facet_itr ) ) {
                         vec3 facet_bary = mesh_cell_facet_center( R.mesh(),
                             cur_sur_cell_id, cur_sur_cell_facet_itr ) ;
-                        ColocaterANN ann( S.mesh(), ColocaterANN::FACETS ) ;
+                        const ColocaterANN& ann_facets = S.tools.ann_facets() ;
                         std::vector< index_t > colocated_result ;
-                        if( !ann.get_colocated( facet_bary, colocated_result ) ) {
+                        if( !ann_facets.get_colocated( facet_bary, colocated_result ) ) {
                             continue ;
                         }
                         ringmesh_assert( colocated_result.size() == 1 ) ;
@@ -2174,7 +2174,7 @@ namespace RINGMesh {
         }
 
         for( index_t line_v_itr = 0; line_v_itr < L.nb_vertices(); ++line_v_itr ) {
-            ColocaterANN reg_ann( R.mesh(), ColocaterANN::VERTICES ) ;
+            const ColocaterANN& reg_ann = R.tools.ann() ;
             std::vector< index_t > colocated ;
             vec3 vertex_pos = L.vertex( line_v_itr ) ;
             const index_t line_v_id_in_gmm = L.model_vertex_id( line_v_itr ) ;
