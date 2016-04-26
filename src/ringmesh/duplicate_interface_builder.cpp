@@ -51,6 +51,67 @@
  * @author Benjamin Chauvin
  */
 
+namespace {
+    using namespace RINGMesh ;
+
+    /// @todo VERY BAD COPY PASTER FROM THE FUNCTION IN GEO_MODEL_BUILDER.CPP
+    /*!
+     * Finds a facet and its edge index that are colocalised with an edge
+     * defined by its two model vertex indices
+     * @param[in] ann a ColocatorANN of the Surface \p surface using the keyword FACETS
+     * @param[in] surface the surface where to find the facet
+     * @param[in] model_v0 the first model vertex index of the edge
+     * @param[in] model_v1 the second model vertex index of the edge
+     * @param[out] f the found facet index
+     * @param[out] e the found edge index
+     * @return True if the facet and the edge indices are found
+     * @todo RENAME these parameters and split in smaller functions !! [JP]
+     */
+    bool find_facet_and_edge(
+        const ColocaterANN& ann,
+        const Surface& surface,
+        index_t model_v0,
+        index_t model_v1,
+        index_t& f,
+        index_t& e )
+    {
+        // This is bad ! One level of abstraction is far far away
+        const vec3& v0 = surface.model().mesh.vertices.vertex( model_v0 ) ;
+        const vec3& v1 = surface.model().mesh.vertices.vertex( model_v1 ) ;
+        vec3 v_bary = 0.5 * ( v0 + v1 ) ;
+
+        index_t nb_neighbors = std::min( index_t( 5 ), surface.nb_cells() ) ;
+        std::vector< index_t > neighbors ;
+        index_t cur_neighbor = 0 ;
+        index_t prev_neighbor = 0 ;
+        do {
+            prev_neighbor = cur_neighbor ;
+            cur_neighbor += nb_neighbors ;
+            cur_neighbor = std::min( cur_neighbor, surface.nb_cells() ) ;
+            neighbors.resize( cur_neighbor ) ;
+            double* dist = (double*) alloca( sizeof(double) * cur_neighbor ) ;
+            nb_neighbors = ann.get_neighbors( v_bary, cur_neighbor, neighbors,
+                dist ) ;
+            for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
+                f = neighbors[i] ;
+                for( index_t j = 0; j < surface.nb_vertices_in_facet( f ); j++ ) {
+                    if( surface.model_vertex_id( f, j ) == model_v0 ) {
+                        index_t j_next = surface.next_in_facet( f, j ) ;
+                        if( surface.model_vertex_id( f, j_next ) == model_v1 ) {
+                            e = j ;
+                            return true ;
+                        }
+                    }
+                }
+            }
+        } while( surface.nb_cells() != cur_neighbor ) ;
+
+        f = Surface::NO_ID ;
+        e = Surface::NO_ID ;
+        return false ;
+    }
+}
+
 namespace RINGMesh {
 
     DuplicateInterfaceBuilder::DuplicateInterfaceBuilder( GeoModel& model )
@@ -1388,8 +1449,32 @@ namespace RINGMesh {
             model_.surface( new_new_surface_gme_t.index ).mesh().vertices.remove_isolated() ;
             ringmesh_assert(previous==model_.surface(new_new_surface_gme_t.index).mesh().vertices.nb()) ;
 #endif
+            recompute_geomodel_mesh() ;
+            // HANDLE THE INTERNAL BORDER
+            Surface& new_new_surf = const_cast< Surface& >( model_.surface(
+                new_new_surface_gme_t.index ) ) ;
+            for( std::set< index_t >::iterator it = cutting_lines.begin();
+                it != cutting_lines.end(); ++it ) {
+                const Line& cur_cutting_line = model_.line( *it ) ;
+
+                index_t facet_index = NO_ID ;
+                index_t edge_index = NO_ID ;
+                if( !find_facet_and_edge( new_new_surf.tools.ann_facets(),
+                    new_new_surf, cur_cutting_line.model_vertex_id( 0 ),
+                    cur_cutting_line.model_vertex_id( 1 ), facet_index,
+                    edge_index ) ) {
+                    continue ;
+                }
+
+                if( new_new_surf.adjacent( facet_index, edge_index )
+                    == Surface::NO_ID ) {
+                    continue ;
+                }
+
+                DEBUG( "RECUT FOR INTERNAL BORDERS 2" ) ;
+                cut_surface_by_line( new_new_surf, cur_cutting_line ) ;
+            }
         }
-        /// @todo HANDLE THE INTERNAL BORDER
     }
 
     void DuplicateInterfaceBuilder::initialize_translation_attributes(
