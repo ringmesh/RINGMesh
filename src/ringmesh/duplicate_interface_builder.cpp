@@ -53,8 +53,6 @@
 
 namespace RINGMesh {
 
-    GEO::Mesh to_debug66 ;
-
     DuplicateInterfaceBuilder::DuplicateInterfaceBuilder( GeoModel& model )
         :
             GeoModelBuilder( model ),
@@ -449,7 +447,6 @@ namespace RINGMesh {
             compute_translation_vectors_duplicated_fault_network(
                 nb_initial_interfaces, to_erase_by_type ) ;
         }
-        GEO::mesh_save( to_debug66, "to_debug66.mesh" ) ;
         // set no translation on fault real extension (only on fault ending inside
         // the model).
         DEBUG("set_no_displacement_on_fault_real_extension") ;
@@ -848,20 +845,10 @@ namespace RINGMesh {
     {
 #ifdef RINGMESH_DEBUG
         if( gme_vertex_.gme_id.type == GME::SURFACE ) {
-            if( linked_gme_vertices_.size() >= 3 ) {
-                DEBUG( "more than 2" ) ;
-            }
             ringmesh_assert( linked_gme_vertices_.size() <= 2 ) ;
         } else {
             ringmesh_assert(gme_vertex_.gme_id.type == GME::REGION) ;
-            if( linked_gme_vertices_.size() >= 4 ) {
-                DEBUG( "more than 3" ) ;
-                to_debug66.vertices.create_vertex(
-                    model_.region( gme_vertex_.gme_id.index ).vertex(
-                        gme_vertex_.v_id ).data() ) ;
-            }
-
-            ringmesh_assert( linked_gme_vertices_.size() <= 3 ) ;
+            ringmesh_assert( linked_gme_vertices_.size() <= 5 ) ; // before it was 3 but 5 may exist, see internal_border_in_fault model
         }
 
         for( index_t link_itr = 0; link_itr < linked_gme_vertices_.size();
@@ -1889,42 +1876,106 @@ namespace RINGMesh {
                 continue ;
             }
             // cur_line.nb_in_boundary() == 1 means fault extension
-            /// @todo put assert to check that it is indeed a fault
-            for( index_t line_vertex_itr = 0;
-                line_vertex_itr < cur_line.nb_vertices(); ++line_vertex_itr ) {
+            ringmesh_assert( cur_line.in_boundary( 0 ).type() == GME::SURFACE ) ;
+            ringmesh_assert( GME::is_fault( cur_line.in_boundary( 0 ).parent().geological_feature() ) ) ;
+
+            ringmesh_assert( cur_line.nb_vertices() >= 2 ) ;
+            // Vertices not corner
+            for( index_t line_vertex_itr = 1;
+                line_vertex_itr < cur_line.nb_vertices() - 1; ++line_vertex_itr ) {
 
                 index_t vertex_id_in_gmm = cur_line.model_vertex_id(
                     line_vertex_itr ) ;
-                const std::vector< GMEVertex >& gme_vertices =
-                    model_.mesh.vertices.gme_vertices( vertex_id_in_gmm ) ;
-                for( index_t gme_vertex_itr = 0;
-                    gme_vertex_itr < gme_vertices.size(); ++gme_vertex_itr ) {
-
-                    const GMEVertex& cur_gme_vertex = gme_vertices[gme_vertex_itr] ;
-                    if( cur_gme_vertex.gme_id.type != GME::SURFACE
-                        && cur_gme_vertex.gme_id.type != GME::REGION ) {
-                        continue ;
-                    }
-                    if( to_erase_by_type[cur_gme_vertex.gme_id.type][cur_gme_vertex.gme_id.index]
-                        == NO_ID ) {
-                        continue ;
-                    }
-                    ringmesh_assert( to_erase_by_type[cur_gme_vertex.gme_id.type][cur_gme_vertex.gme_id.index] == 0 ) ;
-                    const GeoModelMeshElement& gmme = model_.mesh_element(
-                        cur_gme_vertex.gme_id ) ;
-                    GEO::AttributesManager& att_mgr =
-                        gmme.mesh().vertices.attributes() ;
-                    GEO::Attribute< double > translation_att_x( att_mgr,
-                        "translation_attr_x" ) ;
-                    translation_att_x[cur_gme_vertex.v_id] = 0 ;
-                    GEO::Attribute< double > translation_att_y( att_mgr,
-                        "translation_attr_y" ) ;
-                    translation_att_y[cur_gme_vertex.v_id] = 0 ;
-                    GEO::Attribute< double > translation_att_z( att_mgr,
-                        "translation_attr_z" ) ;
-                    translation_att_z[cur_gme_vertex.v_id] = 0 ;
-                }
+                set_no_displacement_on_gme_sharing_vertex( vertex_id_in_gmm,
+                    to_erase_by_type ) ;
             }
+            // Line corners
+            const Corner& first_corner = model_.corner(
+                cur_line.boundary_gme( 0 ).index ) ;
+            if( !displace_corner( first_corner, cur_line ) ) {
+                index_t vertex_id_in_gmm = first_corner.model_vertex_id( 0 ) ;
+                set_no_displacement_on_gme_sharing_vertex( vertex_id_in_gmm,
+                    to_erase_by_type ) ;
+            }
+            const Corner& second_corner = model_.corner(
+                cur_line.boundary_gme( 1 ).index ) ;
+            if( !displace_corner( second_corner, cur_line ) ) {
+                index_t vertex_id_in_gmm = second_corner.model_vertex_id( 0 ) ;
+                set_no_displacement_on_gme_sharing_vertex( vertex_id_in_gmm,
+                    to_erase_by_type ) ;
+            }
+        }
+    }
+
+    bool DuplicateInterfaceBuilder::displace_corner(
+        const Corner& corner,
+        const Line& line_one_in_boundary ) const
+    {
+        ringmesh_assert( line_one_in_boundary.nb_in_boundary() == 1 ) ;
+        ringmesh_assert( GME::is_fault(
+                line_one_in_boundary.in_boundary( 0 ).parent().geological_feature() ) ) ;
+        ringmesh_assert( line_one_in_boundary.boundary( 0 ).index() == corner.index() ||
+            line_one_in_boundary.boundary( 1 ).index() == corner.index() ) ;
+        for( index_t corner_in_boundaries_itr = 0;
+            corner_in_boundaries_itr < corner.nb_in_boundary();
+            ++corner_in_boundaries_itr ) {
+            const GME& cur_line_gme = corner.in_boundary(
+                corner_in_boundaries_itr ) ;
+            ringmesh_assert( cur_line_gme.type() == GME::LINE ) ;
+            if( cur_line_gme.index() == line_one_in_boundary.index() ) {
+                continue ;
+            }
+            for( index_t surface_in_boun_itr = 0;
+                surface_in_boun_itr < cur_line_gme.nb_in_boundary();
+                ++surface_in_boun_itr ) {
+
+                if( !GME::is_fault(
+                    cur_line_gme.in_boundary( surface_in_boun_itr ).parent().geological_feature() ) ) {
+                    continue ;
+                }
+
+                if( cur_line_gme.in_boundary( surface_in_boun_itr ).parent().index()
+                    == line_one_in_boundary.in_boundary( 0 ).parent().index() ) {
+                    continue ;
+                }
+                return true ;
+            }
+        }
+        return false ;
+    }
+
+    void DuplicateInterfaceBuilder::set_no_displacement_on_gme_sharing_vertex(
+        index_t vertex_id_in_gmm,
+        const std::vector< std::vector< index_t > >& to_erase_by_type )
+    {
+        const std::vector< GMEVertex >& gme_vertices =
+            model_.mesh.vertices.gme_vertices( vertex_id_in_gmm ) ;
+
+        for( index_t gme_vertex_itr = 0; gme_vertex_itr < gme_vertices.size();
+            ++gme_vertex_itr ) {
+
+            const GMEVertex& cur_gme_vertex = gme_vertices[gme_vertex_itr] ;
+            if( cur_gme_vertex.gme_id.type != GME::SURFACE
+                && cur_gme_vertex.gme_id.type != GME::REGION ) {
+                continue ;
+            }
+            if( to_erase_by_type[cur_gme_vertex.gme_id.type][cur_gme_vertex.gme_id.index]
+                == NO_ID ) {
+                continue ;
+            }
+            ringmesh_assert( to_erase_by_type[cur_gme_vertex.gme_id.type][cur_gme_vertex.gme_id.index] == 0 ) ;
+            const GeoModelMeshElement& gmme = model_.mesh_element(
+                cur_gme_vertex.gme_id ) ;
+            GEO::AttributesManager& att_mgr = gmme.mesh().vertices.attributes() ;
+            GEO::Attribute< double > translation_att_x( att_mgr,
+                "translation_attr_x" ) ;
+            translation_att_x[cur_gme_vertex.v_id] = 0 ;
+            GEO::Attribute< double > translation_att_y( att_mgr,
+                "translation_attr_y" ) ;
+            translation_att_y[cur_gme_vertex.v_id] = 0 ;
+            GEO::Attribute< double > translation_att_z( att_mgr,
+                "translation_attr_z" ) ;
+            translation_att_z[cur_gme_vertex.v_id] = 0 ;
         }
     }
 }

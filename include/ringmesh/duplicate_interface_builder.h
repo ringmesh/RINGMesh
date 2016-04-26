@@ -182,6 +182,12 @@ namespace RINGMesh {
             const Region& reg,
             index_t reg_facet_id,
             index_t surf_v_id_in_gmm ) const ;
+        void set_no_displacement_on_gme_sharing_vertex(
+            index_t vertex_id_in_gmm,
+            const std::vector< std::vector< index_t > >& to_erase_by_type ) ;
+        bool displace_corner(
+            const Corner& corner,
+            const Line& line_one_in_boundary ) const ;
 
     private:
         class GMEVertexLink {

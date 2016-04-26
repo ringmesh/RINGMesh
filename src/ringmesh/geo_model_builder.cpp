@@ -1953,7 +1953,6 @@ namespace RINGMesh {
                             cur_line.model_vertex_id( v ) ) ;
                     for( index_t gme_v = 0; gme_v < gme_vertices.size(); ++gme_v ) {
                         if( gme_vertices[gme_v].gme_id == R.gme_id() ) {
-
                             flag_to_duplicate[gme_vertices[gme_v].v_id] = false ;
                         }
                     }
