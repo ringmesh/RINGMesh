@@ -41,22 +41,93 @@
 The .gm format
 ============
 
-RINGMesh comes with an homemade .gm format.
+RINGMesh uses an homemade file format (file_name.gm).
 
-This format mandatory contains :
+This format mandatory is an archive that contain:
+ - a set of meshed_entity.geogram files.
+ - one file connectivity.txt.
+ - one file topology.txt
+ 
 
- - The boundary representation of the Geological model by meshed surfaces
- - A text file with the connectivity
- - A text file with the topology
+\section geogram Geometry and Attribute of GeoModel Entities.
+ The geometry and attributes of GeoModels are save using a set of files *.geogram. There is on file per CORNER, LINE, SURFACE and eventually REGION of the GeoModel (see \link ringmesh_geo_model the GeoModel description \endlink). 
+  - CORNER_XX.geogram: file holding information of CORNER XX of the GeoModel. (needed boundary representation)
+  - LINE_XX.geogram: file holding information of LINE XX of the GeoModel. (needed boundary representation)
+  - SURFACE_XX.geogram: file holding information of SURFACE XX of the GeoModel. (needed boundary representation)
+  - REGION_XX.geogram: file holding information of REGION XX of the GeoModel. (optional only if the REGION of the GeoModel is meshed)
+  
+ \setcion connectivity Connectivity of Meshed Entity.
+ The text file connectivity.txt describes the connectivity of CORNER, LINE, SURFACE and eventually REGION of the GeoModel.
+  - Each Corner is associated to its connected lines. 
+  \code
+ GME CORNER 10
+ 9 10 20 
+ \endcode
+ Means that the CORNER 10 is connected to the lines 9, 10 and 20.
+  - Each LINE is associated to its connected SURFACES. 
+ \code
+ GME LINE 22
+ 8 10 
+ \endcode
+ Means that the LINE 22 is connected to the lines 8 and 10.
+  - Each SURFACE is associated to its connected REGIONS. 
+ \code
+ GME SURFACE 1
+ 1 2 
+ \endcode
+  Means that the SURFACE 1 is connected to the REGION 1 and 2.
 
-and optionnaly
+\section topology Topology of the GeoModel.
 
- - Attribute which can be computed on the cell, the facets and the vertices
- - Volumetric meshes of the region
+The text file topology.txt describes the topology of the GeoModel.
+It is composed by a header that describes the number of entity of the GeoModel:
+\code
+RINGMESH BOUNDARY MODEL
+NAME model_default_name
+NB_CORNER 16
+NB_LINE 28
+NB_SURFACE 16
+NB_REGION 3
+NB_CONTACT 20
+NB_INTERFACE 8
+NB_LAYER 0
+\endcode 
+Then, it describes the geological features and topology of CONTACT, INTERFACE and REGION
+ - Each CONTACT is associated to its name, geological features and the index of LINES that is contained in the current CONTACT. 
+  \code
+ CONTACT 13 contact_west_north_ no_geological_feature
+ 13 14 16 
+ \endcode
+ Means that the CONTACT 13 
+  - is named "contact_west_north_";
+  - has no_geological_feature;
+  - is composed by the LINES 13,14 and 16.
+  
+ - Each INTERFACE is associated to its name, geological features and the index of SURFACES that is contained in the current INTERFACE. 
+\code
+INTERFACE 4 south boundary
+ 6 7 8
+\endcode
+ Means that the INTERFACE 4 
+  - is named "south";
+  - has boundary as geological feature;
+  - is composed by the SURFACE 6,7 and 8.
+  
+ - Each REGION is associated to its name and the index of SURFACES that bound the REGION.
+ \code
+ REGION 2 reg_bottom
+-1 +10 -9 +8 -5 -14 
+\endcode
+ Means that the REGION 2 
+  - is named "reg_bottom";
+  - is bounded by the SURFACES 1, 9, 5, 14. These SURFACES are noted - because 
+  - is bounded by the SURFACES 10, 8. These SURFACES are noted + because 
 
-Technically, the .gm format is an archive containing .geogram files.
-
-One .geogram files is a meshed GeoModelElement. The name of these file describes the GeoModelElement type (corner, line, surface, region) and their index.
-
+  
+ - There is alway the REGIION named UNIVERSE that represent the volume of interest
+\code
+UNIVERSE 
+-2 -7 -6 -8 +9 +14 +15 -10 +5 +3 -11 +4 +13 -12 
+\endcode
 */
 
