@@ -115,6 +115,7 @@ namespace {
     bool colored_cells = false ;
     bool show_voi = true ;
     bool show_colored_regions = false ;
+    bool show_colored_layers = false ;
     bool show_points = false ;
 
     double shrink = 0.0 ;
@@ -387,6 +388,7 @@ namespace {
     void toggle_colored_regions()
     {
         show_colored_regions = !show_colored_regions ;
+        show_colored_layers = false ;
 
         if( show_colored_regions && meshed_regions ) {
             for( GEO::index_t r = 0; r < GM.nb_regions(); r++ ) {
@@ -394,6 +396,26 @@ namespace {
                     std::fmod( GEO::Numeric::random_float32(), 1 ),
                     std::fmod( GEO::Numeric::random_float32(), 1 ),
                     std::fmod( GEO::Numeric::random_float32(), 1 ) ) ;
+            }
+        } else {
+            GM_gfx.set_cell_regions_color( 0.9f, 0.9f, 0.9f ) ;
+        }
+    }
+
+    void toggle_colored_layers()
+    {
+        show_colored_layers = !show_colored_layers ;
+        show_colored_regions = false ;
+
+        if( show_colored_layers && meshed_regions ) {
+            for( GEO::index_t l = 0; l < GM.nb_layers(); l++ ) {
+                float red = std::fmod( GEO::Numeric::random_float32(), 1 ) ;
+                float green = std::fmod( GEO::Numeric::random_float32(), 1 ) ;
+                float blue = std::fmod( GEO::Numeric::random_float32(), 1 ) ;
+                const GeoModelElement& cur_layer = GM.layer( l ) ;
+                for( index_t r = 0; r < cur_layer.nb_children(); ++r )
+                    GM_gfx.set_cell_region_color( cur_layer.child( r ).index(), red,
+                        green, blue ) ;
             }
         } else {
             GM_gfx.set_cell_regions_color( 0.9f, 0.9f, 0.9f ) ;
@@ -449,6 +471,8 @@ int main( int argc, char** argv )
         glut_viewer_add_toggle( 's', &show_surface, "surface" ) ;
         glut_viewer_add_key_func( 'r', &toggle_colored_regions,
             "toggle colored regions" ) ;
+        glut_viewer_add_key_func( 'R', &toggle_colored_layers,
+            "toggle colored layers" ) ;
         glut_viewer_add_key_func( 'p', &toggle_points, "toggle points" ) ;
         glut_viewer_add_key_func( 'v', &toggle_volume, "toggle volume" ) ;
         glut_viewer_add_key_func( 'w', &toggle_wells, "toggle wells" ) ;
