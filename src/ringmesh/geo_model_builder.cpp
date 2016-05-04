@@ -1935,18 +1935,34 @@ namespace RINGMesh {
         Region& R,
         const Surface& S )
     {
+        DEBUG( S.index() ) ;
         GEO::Mesh& region_mesh = R.mesh() ;
         // Flag to know if a line vertex must be duplicated or not
         GEO::Attribute< bool > flag_to_duplicate( region_mesh.vertices.attributes(),
             "flag_to_duplicate" ) ;
         flag_to_duplicate.fill( true ) ;
         recompute_geomodel_mesh() ;
+
+
+        index_t toto = model_.corner( 0 ).model_vertex_id( 0 ) ;
+        const std::vector< GMEVertex >& gme_vertices =
+            model_.mesh.vertices.gme_vertices( toto ) ;
+        index_t count = 0 ;
+        for( index_t i = 0; i < gme_vertices.size(); ++i ) {
+            if( gme_vertices[i].gme_id.type == GME::REGION ) {
+                ++count ;
+            }
+        }
+        DEBUG(count) ;
+
+
         for( index_t surf_boun_line_itr = 0; surf_boun_line_itr < S.nb_boundaries();
             ++surf_boun_line_itr ) {
             const GeoModelElement& cur_gme = S.boundary( surf_boun_line_itr ) ;
             ringmesh_assert( cur_gme.type() == GME::LINE ) ;
             const Line& cur_line = model_.line( cur_gme.index() ) ;
             if( !is_line_to_duplicate( model_, cur_line.index() ) ) {
+                DEBUG( cur_line.index() ) ;
                 for( index_t v = 0; v < cur_line.nb_vertices(); ++v ) {
                     const std::vector< GMEVertex >& gme_vertices =
                         model_.mesh.vertices.gme_vertices(
@@ -2019,12 +2035,36 @@ namespace RINGMesh {
                 std::vector< index_t > surrounding_cells ;
                 // Not only cells in border have a vertex id to be modified
                 R.cells_around_vertex( v_id_in_reg, surrounding_cells, false, c ) ;
+                GEO::Mesh to_deb ;
                 for( index_t cav_itr = 0; cav_itr < surrounding_cells.size();
                     ++cav_itr ) {
                     for( index_t v_in_cell_itr = 0;
                         v_in_cell_itr
                             < R.nb_vertices_in_cell( surrounding_cells[cav_itr] );
                         ++v_in_cell_itr ) {
+
+                        if( std::abs( coords[0] - 27525.323486328125 ) < epsilon
+                            && std::abs( coords[1] - 16665.168212890625 ) < epsilon
+                            && std::abs( coords[2] + 7451.77294921875 ) < epsilon ) {
+                            index_t one = to_deb.vertices.create_vertex(
+                                R.vertex(
+                                    R.gmme_vertex_index( surrounding_cells[cav_itr],
+                                        0 ) ).data() ) ;
+                            index_t two = to_deb.vertices.create_vertex(
+                                R.vertex(
+                                    R.gmme_vertex_index( surrounding_cells[cav_itr],
+                                        1 ) ).data() ) ;
+                            index_t three = to_deb.vertices.create_vertex(
+                                R.vertex(
+                                    R.gmme_vertex_index( surrounding_cells[cav_itr],
+                                        2 ) ).data() ) ;
+                            index_t four = to_deb.vertices.create_vertex(
+                                R.vertex(
+                                    R.gmme_vertex_index( surrounding_cells[cav_itr],
+                                        3 ) ).data() ) ;
+                            to_deb.cells.create_tet( one, two, three, four ) ;
+                        }
+
                         if( R.gmme_vertex_index( surrounding_cells[cav_itr],
                             v_in_cell_itr ) == v_id_in_reg ) {
                             index_t local_v_id_in_cell = NO_ID ;
@@ -2043,6 +2083,11 @@ namespace RINGMesh {
                             break ;
                         }
                     }
+                }
+                if( std::abs( coords[0] - 27525.323486328125 ) < epsilon
+                                            && std::abs( coords[1] - 16665.168212890625 ) < epsilon
+                                            && std::abs( coords[2] + 7451.77294921875 ) < epsilon ) {
+                    GEO::mesh_save( to_deb, "to_deb_surf_id_" + GEO::String::to_string(S.index())+".meshb" ) ;
                 }
 
                 /// @todo check if that is necessary. A priori no because
@@ -2154,6 +2199,7 @@ namespace RINGMesh {
 
         disconnect_region_cells_along_surface_facets( R, S ) ;
         duplicate_region_vertices_along_surface( R, S ) ;
+        R.mesh().vertices.remove_isolated() ;
         // Rebuild the mesh facets of the region
         R.mesh().cells.compute_borders() ;
 

@@ -195,6 +195,19 @@ namespace RINGMesh {
             //=================== Cut the region by the lines
         }
 
+        {
+            recompute_geomodel_mesh() ;
+            index_t toto = model_.corner( 0 ).model_vertex_id( 0 ) ;
+            const std::vector< GMEVertex >& gme_vertices =
+                model_.mesh.vertices.gme_vertices( toto ) ;
+            index_t count = 0 ;
+            for( index_t i = 0; i < gme_vertices.size(); ++i ) {
+                if( gme_vertices[i].gme_id.type == GME::REGION ) {
+                    ++count ;
+                }
+            }
+            DEBUG(count) ;
+        }
         //=================== Cut the region by the surfaces
 
         for( index_t reg_itr = 0; reg_itr < model_.nb_regions(); ++reg_itr ) {
@@ -202,5 +215,18 @@ namespace RINGMesh {
         }
         // Deliberate clear of the model vertices used for model building
         model_.mesh.vertices.clear() ;
+        {
+            recompute_geomodel_mesh() ;
+            index_t toto = model_.corner( 0 ).model_vertex_id( 0 ) ;
+            const std::vector< GMEVertex >& gme_vertices =
+                model_.mesh.vertices.gme_vertices( toto ) ;
+            index_t count = 0 ;
+            for( index_t i = 0; i < gme_vertices.size(); ++i ) {
+                if( gme_vertices[i].gme_id.type == GME::REGION ) {
+                    ++count ;
+                }
+            }
+            DEBUG(count) ;
+        }
     }
 }
