@@ -791,6 +791,7 @@ namespace {
                 }
             }
 
+#if 0
             out << "MODEL" << std::endl ;
             int tface_count = 1 ;
             for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
@@ -829,6 +830,7 @@ namespace {
                 region.side( 0 ) ? out << "+" : out << "-" ;
                 out << region.boundary_gme( 0 ).index + 1 << std::endl ;
             }
+#endif
 
             out << "END" << std::endl ;
         }

@@ -84,6 +84,19 @@ namespace RINGMesh {
                 "Print statistics on the number of elements" ) ;
         }
 
+        void import_arg_group_remove_gme()
+        {
+            GEO::CmdLine::declare_arg_group( "remove_gme",
+                "Options to remove a GeoModelElement and its dependencies" ) ;
+            GEO::CmdLine::declare_arg(
+                "remove_gme:type", "region",
+                "Type of the GeoModelElement to remove" ) ;
+            GEO::CmdLine::declare_arg(
+                "remove_gme:id", 0,
+                "Id of the element to remove (related to remove_gme:type)" ) ;
+        }
+
+
         bool import_arg_group( const std::string& name )
         {
             if( name == "in" ) {
@@ -94,6 +107,8 @@ namespace RINGMesh {
                 import_arg_group_stats() ;
             } else if( name == "attr" ) {
                 import_arg_group_attr() ;
+            } else if( name == "remove_gme" ) {
+                import_arg_group_remove_gme() ;
             } else {
                 return GEO::CmdLine::import_arg_group( name ) ;
             }

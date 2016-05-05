@@ -256,6 +256,11 @@ namespace RINGMesh {
             element( t ).children_[id] = child_index ;
         }
 
+        void set_region_side( Region& region, index_t surf_boundary, bool side )
+        {
+            region.sides_[surf_boundary] = side ;
+        }
+
         /*!
          * @brief Set an element of the model.
          * @details It is on purpose that element validity is not checked.
