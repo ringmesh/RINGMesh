@@ -533,8 +533,8 @@ namespace GEO {
                         if(p == nil) {
                             break;
                         } else {
-                            result = std::string(p) +
-                                path.substr(pos, path.length()-pos);
+                            result = std::string(p) + "/" + base_name(path, false) ;
+                            break ;
                         }
                         ++pos;
                         if(pos == path.length()) {
