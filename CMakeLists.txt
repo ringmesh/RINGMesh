@@ -353,6 +353,7 @@ if(RINGMESH_WITH_UTILITIES)
     add_subdirectory(src/ringmesh_duplicate_faults)
     add_subdirectory(src/ringmesh_build_internal_borders)
     add_subdirectory(src/ringmesh_remove_gme)
+    add_subdirectory(src/ringmesh_rotate_geomodel)
 endif(RINGMESH_WITH_UTILITIES)
 
 if(RINGMESH_WITH_TESTS)

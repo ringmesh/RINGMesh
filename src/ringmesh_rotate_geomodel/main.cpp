@@ -41,11 +41,33 @@
 #include <ringmesh/command_line.h>
 #include <ringmesh/geo_model.h>
 #include <ringmesh/io.h>
-#include <ringmesh/geo_model_editor.h>
+#include <ringmesh/geo_model_api.h>
 
 /*!
  * @author Benjamin Chauvin
  */
+
+namespace {
+    using namespace RINGMesh ;
+
+    vec3 extract_coords_from_string( const std::string& coords_in_string )
+    {
+        std::vector< std::string > split_coords ;
+        split_coords.reserve( 3 ) ;
+        GEO::String::split_string( coords_in_string, ' ', split_coords, true ) ;
+        if( split_coords.size() != 3 ) {
+            throw RINGMeshException( "I/O",
+                "Vector" + coords_in_string + "has not exactly 3 components" ) ;
+        }
+        vec3 coords_vec ;
+        for( index_t split_coords_itr = 0; split_coords_itr < 3;
+            ++split_coords_itr ) {
+            coords_vec[split_coords_itr] = GEO::String::to_double(
+                split_coords[split_coords_itr] ) ;
+        }
+        return coords_vec ;
+    }
+}
 
 int main( int argc, char** argv )
 {
@@ -57,8 +79,8 @@ int main( int argc, char** argv )
         configure_geogram() ;
         configure_ringmesh() ;
 
-        GEO::Logger::div( "RINGMeshRemoveGME" ) ;
-        GEO::Logger::out( "" ) << "Welcome to RINGMeshRemoveGME !"
+        GEO::Logger::div( "RINGMeshRotateGeoModel" ) ;
+        GEO::Logger::out( "" ) << "Welcome to RINGMeshRotateGeoModel !"
             << std::endl ;
         GEO::Logger::out( "" ) << "People working on the project in RING"
             << std::endl ;
@@ -66,7 +88,7 @@ int main( int argc, char** argv )
             << "Benjamin Chauvin <benjamin.chauvin@univ-lorraine.fr> " << std::endl ;
 
         CmdLine::import_arg_group( "in" ) ;
-        CmdLine::import_arg_group( "remove_gme" ) ;
+        CmdLine::import_arg_group( "rotation" ) ;
         CmdLine::import_arg_group( "out" ) ;
 
         if( argc == 1 ) {
@@ -89,32 +111,27 @@ int main( int argc, char** argv )
         GeoModel geomodel ;
         geomodel_load( geomodel, input_geomodel_name ) ;
 
-        std::string gme_type_name = GEO::CmdLine::get_arg( "remove_gme:type" ) ;
-        GME::TYPE gme_type = GME::NO_TYPE ;
-        for( index_t type_itr = 0; type_itr < GME::NO_TYPE; ++type_itr ) {
-            if( GME::type_name( static_cast< GME::TYPE >( type_itr ) )
-                == gme_type_name ) {
-                gme_type = static_cast< GME::TYPE >( type_itr ) ;
-                break ;
-            }
+        std::string rotation_origin_string = GEO::CmdLine::get_arg(
+            "rotation:origin" ) ;
+        vec3 rotation_origin_vec = extract_coords_from_string(
+            rotation_origin_string ) ;
+
+        std::string rotation_axis_string = GEO::CmdLine::get_arg( "rotation:axis" ) ;
+        vec3 rotation_axis_vec = extract_coords_from_string( rotation_axis_string ) ;
+
+        double rotation_angle = GEO::CmdLine::get_arg_double( "rotation:angle" ) ;
+        std::string rotation_unit = GEO::CmdLine::get_arg( "rotation:unit" ) ;
+        bool is_deg ;
+        if( rotation_unit == "deg" ) {
+            is_deg = true ;
+        } else if( rotation_unit == "rad" ) {
+            is_deg = false ;
+        } else {
+            throw RINGMeshException( "I/O", "Unknown angle unit " + rotation_unit ) ;
         }
 
-        if( gme_type >= GME::NO_TYPE ) {
-            throw RINGMeshException( "I/O",
-                "Unknown GeoModelElement type " + gme_type_name ) ;
-        }
-
-        index_t gme_id = GEO::CmdLine::get_arg_uint( "remove_gme:id" ) ;
-        if( gme_id >= geomodel.nb_elements( gme_type ) ) {
-            throw RINGMeshException( "I/O",
-                "Index superior to number of elements of type " + gme_type_name ) ;
-        }
-
-        std::set< GME::gme_t > to_delete ;
-        to_delete.insert( GME::gme_t( gme_type, gme_id ) ) ;
-
-        GeoModelEditor editor( geomodel ) ;
-        editor.remove_elements_and_dependencies( to_delete ) ;
+        rotate( geomodel, rotation_origin_vec, rotation_axis_vec, rotation_angle,
+            is_deg ) ;
 
         std::string output_geomodel_name = GEO::CmdLine::get_arg( "out:geomodel" ) ;
         if( output_geomodel_name.empty() ) {
