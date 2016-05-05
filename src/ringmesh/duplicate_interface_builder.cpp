@@ -489,8 +489,19 @@ namespace RINGMesh {
             ringmesh_assert( model_.nb_interfaces() - nb_initial_interfaces >= 2 ) ;
             for( index_t new_interface_itr = nb_initial_interfaces;
                 new_interface_itr < model_.nb_interfaces(); ++new_interface_itr ) {
-                ringmesh_assert( to_erase_by_type[GME::INTERFACE][new_interface_itr] != NO_ID ) ;
-                ringmesh_assert( to_erase_by_type[GME::INTERFACE][new_interface_itr] == 0 ) ;
+
+#ifdef RINGMESH_DEBUG
+                // Only the new interfaces with no child are removed.
+                // Such interfaces have no child because there are entirely in
+                // the boundary of the model (no surface not voi).
+                if( to_erase_by_type[GME::INTERFACE][new_interface_itr] == NO_ID ) {
+                    const GeoModelElement& interface_gme = model_.one_interface(
+                        new_interface_itr ) ;
+                    ringmesh_assert( interface_gme.nb_children() == 0 ) ;
+                } else {
+                    ringmesh_assert( to_erase_by_type[GME::INTERFACE][new_interface_itr] == 0 ) ;
+                }
+#endif
 
                 const GeoModelElement& interface_gme = model_.one_interface(
                     new_interface_itr ) ;
@@ -1064,6 +1075,11 @@ namespace RINGMesh {
         const GME::gme_t& sided_interface_gme_t,
         const GeoModelElement& interface_to_duplicate )
     {
+        if( surfaces_boundary_regions.empty() ) {
+            // May happen when a fault is entirely a model boundary
+            to_erase_by_type[GME::INTERFACE][sided_interface_gme_t.index] = NO_ID ;
+            return ;
+        }
         for( std::map< index_t, std::vector< index_t > >::const_iterator map_itr =
             surfaces_boundary_regions.begin();
             map_itr != surfaces_boundary_regions.end(); ++map_itr ) {
@@ -1619,8 +1635,18 @@ namespace RINGMesh {
         ringmesh_assert( model_.nb_interfaces() - first_new_interface_index >= 2 ) ;
         for( index_t new_interface_itr = first_new_interface_index;
             new_interface_itr < model_.nb_interfaces(); ++new_interface_itr ) {
-            ringmesh_assert( to_erase_by_type[GME::INTERFACE][new_interface_itr] != NO_ID ) ;
-            ringmesh_assert( to_erase_by_type[GME::INTERFACE][new_interface_itr] == 0 ) ;
+#ifdef RINGMESH_DEBUG
+            // Only the new interfaces with no child are removed.
+            // Such interfaces have no child because there are entirely in
+            // the boundary of the model (no surface not voi).
+            if( to_erase_by_type[GME::INTERFACE][new_interface_itr] == NO_ID ) {
+                const GeoModelElement& interface_gme = model_.one_interface(
+                    new_interface_itr ) ;
+                ringmesh_assert( interface_gme.nb_children() == 0 ) ;
+            } else {
+                ringmesh_assert( to_erase_by_type[GME::INTERFACE][new_interface_itr] == 0 ) ;
+            }
+#endif
 
             const GeoModelElement& interface_gme = model_.one_interface(
                 new_interface_itr ) ;
