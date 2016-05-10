@@ -533,6 +533,7 @@ namespace GEO {
                         if(p == nil) {
                             break;
                         } else {
+                            // [RINGMESH modif] While it is not fixed by Bruno, keep it [BC].
                             result = std::string(p) + "/" + base_name(path, false) ;
                             break ;
                         }
