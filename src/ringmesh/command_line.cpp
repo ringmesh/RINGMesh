@@ -84,6 +84,32 @@ namespace RINGMesh {
                 "Print statistics on the number of elements" ) ;
         }
 
+        void import_arg_group_remove_gme()
+        {
+            GEO::CmdLine::declare_arg_group( "remove_gme",
+                "Options to remove a GeoModelElement and its dependencies" ) ;
+            GEO::CmdLine::declare_arg(
+                "remove_gme:type", "REGION",
+                "Type of the GeoModelElement to remove" ) ;
+            GEO::CmdLine::declare_arg(
+                "remove_gme:id", 0,
+                "Id of the element to remove (related to remove_gme:type)" ) ;
+        }
+
+
+        void import_arg_group_rotation()
+        {
+            GEO::CmdLine::declare_arg_group( "rotation",
+                "Options to rotate a GeoModel" ) ;
+            GEO::CmdLine::declare_arg( "rotation:origin", "0 0 0",
+                "Origin of the rotation" ) ;
+            GEO::CmdLine::declare_arg( "rotation:axis", "0 0 1",
+                "Axis of rotation" ) ;
+            GEO::CmdLine::declare_arg( "rotation:angle", 90., "Angle of rotation" ) ;
+            GEO::CmdLine::declare_arg( "rotation:unit", "deg",
+                "Angle unit (deg for degrees or rad for radians" ) ;
+        }
+
         bool import_arg_group( const std::string& name )
         {
             if( name == "in" ) {
@@ -94,6 +120,10 @@ namespace RINGMesh {
                 import_arg_group_stats() ;
             } else if( name == "attr" ) {
                 import_arg_group_attr() ;
+            } else if( name == "remove_gme" ) {
+                import_arg_group_remove_gme() ;
+            } else if( name == "rotation" ) {
+                import_arg_group_rotation() ;
             } else {
                 return GEO::CmdLine::import_arg_group( name ) ;
             }

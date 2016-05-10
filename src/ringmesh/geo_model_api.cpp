@@ -760,8 +760,7 @@ namespace RINGMesh {
             double old[4] = { p[0], p[1], p[2], 1. } ;
             double new_p[4] = { 0, 0, 0, 1. } ;
             GEO::mult( rot_mat, old, new_p ) ;
-            /*! @todo You need an epsilon tolerance here [JP] */
-            ringmesh_assert( new_p[3] == 1. ) ;
+            ringmesh_assert( std::abs(new_p[3] - 1.) < epsilon ) ;
 
             M.mesh.vertices.update_point( v, vec3( new_p[0], new_p[1], new_p[2] ) ) ;
         }

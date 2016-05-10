@@ -704,12 +704,14 @@ namespace RINGMesh {
 
         const GEO::MeshFacetsAABB& aabb() const ;
         const ColocaterANN& ann() const ;
+        const ColocaterANN& ann_facets() const ;
 
     private:
         const Surface& surface_ ;
 
         mutable GEO::MeshFacetsAABB* aabb_ ;
         mutable ColocaterANN* ann_ ;
+        mutable ColocaterANN* ann_facets_ ;
     } ;
 
     /*!
@@ -939,12 +941,15 @@ namespace RINGMesh {
 
         const GEO::MeshCellsAABB& aabb() const ;
         const ColocaterANN& ann() const ;
+        const ColocaterANN& ann_cells() const ;
+        void delete_ann() ;
 
     private:
         const Region& region_ ;
 
         mutable GEO::MeshCellsAABB* aabb_ ;
         mutable ColocaterANN* ann_ ;
+        mutable ColocaterANN* ann_cells_ ;
     } ;
 
     /*!
@@ -957,6 +962,7 @@ namespace RINGMesh {
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
     public:
+        static const index_t NO_ADJACENT = index_t( -1 ) ;
         Region( const GeoModel& model, index_t id )
             : GeoModelMeshElement( model, REGION, id ), tools( *this )
         {
@@ -1033,8 +1039,35 @@ namespace RINGMesh {
 
          */
 
+        index_t nb_facets_in_cell( index_t c ) const {
+            return mesh_.cells.nb_facets( c ) ;
+        }
+
+        index_t facet_nb_vertices( index_t c, index_t f ) const
+        {
+            return mesh_.cells.facet_nb_vertices( c, f ) ;
+        }
+
+        index_t facet_vertex( index_t c, index_t lf, index_t lv ) const {
+            return mesh_.cells.facet_vertex( c, lf, lv ) ;
+        }
+
+        index_t cells_around_vertex(
+            index_t region_vertex_id,
+            std::vector< index_t >& result,
+            bool border_only ) const ;
+
+        index_t cells_around_vertex(
+            index_t region_vertex_id,
+            std::vector< index_t >& result,
+            bool border_only,
+            index_t first_cell ) const ;
+
+        vec3 cell_barycenter( index_t cell_index_in_region ) const ;
+
     private:
         virtual bool is_mesh_valid() const ;
+        index_t find_first_cell_owing_vertex( index_t vertex_id_in_region ) const ;
 
     private:
         /*! Additional information to store oriented boundary Surfaces
