@@ -402,6 +402,21 @@ namespace RINGMesh {
             return mesh_->cells.facet_vertex( cell_id, facet_id, vertex_id ) ;
         }
         /*!
+         * @brief Gets a facet index by cell and local facet index.
+         * @param[in] cell_id index of the cell
+         * @param[in] facet_id index of the facet in the cell \param cell_id
+         * @return the global facet index.
+         */
+        index_t cell_facet(index_t cell_id, index_t facet_id) const {
+            return mesh_->cells.facet(cell_id,facet_id);
+        }
+        /*!
+         * Get the number of corners of all cells
+         */
+        index_t cell_corner_vertex(index_t corner_id) const {
+            return mesh_->cell_corners.vertex(corner_id) ;
+        }
+        /*!
          * @brief Gets the number of facet in a cell
          * @param[in] cell_id index of the cell
          * @return the number of facet of the cell \param cell_id
@@ -444,6 +459,9 @@ namespace RINGMesh {
         index_t nb_cells() const
         {
             return mesh_->cells.nb() ;
+        }
+        index_t nb_cell_corners()const {
+            return mesh_->cell_corners.nb();
         }
         /*!
          * @return the index of the adjacent cell of \param cell_id along the facet \param facet_id
@@ -521,6 +539,20 @@ namespace RINGMesh {
             return RINGMesh::mesh_cell_volume( *mesh_, cell_id ) ;
         }
 
+        index_t cell_begin(index_t cell_id )const{
+            return mesh_->cells.corners_begin( cell_id );
+        }
+        index_t cell_end(index_t cell_id )const{
+            return mesh_->cells.corners_end( cell_id );
+        }
+        index_t find_cell_corner(index_t cell_id, index_t vertex_id) const {
+            for (index_t v=0 ; v <nb_cell_vertices(cell_id) ; ++v){
+                if(cell_vertex(cell_id, v) == vertex_id ){
+                    return cell_begin(cell_id)+v ;
+                }
+            }
+            return NO_ID;
+        }
         /*!
          * @}
          */
@@ -543,7 +575,7 @@ namespace RINGMesh {
             : mesh_( mesh )
         {
         }
-        ~MeshBuilder() ;
+        ~MeshBuilder() {};
 
         void load_mesh(
             const std::string& filename,
@@ -678,6 +710,15 @@ namespace RINGMesh {
             mesh_.mesh_->edges.create_edge( v1_id, v2_id ) ;
         }
         /*!
+         * \brief Creates a contiguous chunk of edges
+         * \param[in] nb_edges number of edges to create
+         * \return the index of the first edge
+         */
+        index_t create_edges( index_t nb_edges )
+        {
+           return mesh_.mesh_->edges.create_edges( nb_edges ) ;
+        }
+        /*!
          * @brief Sets a vertex of a facet by local vertex index.
          * @param[in] edge_id index of the edge, in 0..nb()-1.
          * @param[in] local_vertex_id index of the vertex in the facet. Local index between 0 and nb_vertices(cell_id)-1.
@@ -704,6 +745,16 @@ namespace RINGMesh {
             mesh_.mesh_->edges.delete_elements( to_delete,
                 remove_isolated_vertices ) ;
         }
+        /*!
+         * @brief Removes all the edges and attributes.
+         * @param[in] keep_attributes if true, then all the existing attribute
+         * names / bindings are kept (but they are cleared). If false, they are destroyed.
+         * @param[in] keep_memory if true, then memory is kept and can be reused
+         * by subsequent mesh element creations.
+         */
+        void clear_edges(bool keep_attributes/*=true*/, bool keep_memory/*=false*/){
+            mesh_.mesh_->edges.clear( keep_attributes, keep_memory);
+        }
 
         /*!@}
          * \section Facet methods
@@ -727,6 +778,35 @@ namespace RINGMesh {
                 mesh_.mesh_->facets.create_polygon( facet_vertices ) ;
             }
         }
+        /*!
+         * \brief Creates a polygonal facet
+         * \param[in] vertices a const reference to a vector that
+         *  contains the vertices
+         * \return the index of the created facet
+         */
+        index_t create_facet_polygon(const GEO::vector<index_t> & vertices){
+            return mesh_.mesh_->facets.create_polygon(vertices);
+        }
+
+        /*!
+         * \brief Creates a contiguous chunk of triangles
+         * \param[in] nb_triangles number of triangles to create
+         * \return the index of the first triangle
+         */
+       index_t create_facet_triangles(index_t nb_triangles)
+       {
+           return mesh_.mesh_->facets.create_triangles(nb_triangles);
+
+       }
+       /*!
+        * \brief Creates a contiguous chunk of quads
+        * \param[in] nb_quads number of quads to create
+        * \return the index of the first quad
+        */
+       index_t create_facet_quads(index_t nb_quads)
+       {
+           return mesh_.mesh_->facets.create_quads(nb_quads);
+       }
         /*!
          * @brief Sets a vertex of a facet by local vertex index.
          * @param[in] facet_id index of the facet, in 0..nb()-1.
@@ -788,6 +868,22 @@ namespace RINGMesh {
             copy_std_vector_to_geo_vector( triangles, copy ) ;
             mesh_.mesh_->facets.assign_triangle_mesh( copy, steal_args ) ;
         }
+        /*!
+         * @brief Removes all the facets and attributes.
+         * @param[in] keep_attributes if true, then all the existing attribute
+         * names / bindings are kept (but they are cleared). If false, they are destroyed.
+         * @param[in] keep_memory if true, then memory is kept and can be reused
+         * by subsequent mesh element creations.
+         */
+        void clear_facets(bool keep_attributes/*=true*/, bool keep_memory/*=false*/){
+            mesh_.mesh_->facets.clear( keep_attributes, keep_memory);
+        }
+        void connect_facets(){
+            mesh_.mesh_->facets.connect();
+        }
+        void permute_facets(GEO::vector<index_t>& permutation){
+            mesh_.mesh_->facets.permute_elements(permutation);
+        }
 
         /*!@}
          * \section Cells methods
@@ -836,6 +932,14 @@ namespace RINGMesh {
             mesh_.mesh_->cells.set_vertex( cell_id, local_vertex_id, vertex_id ) ;
         }
         /*!
+         * \brief Sets the vertex that a corner is incident to
+         * \param[in] corner_index the corner, in 0..nb()-1
+         * \param[in] vertex_index specifies the vertex that corner \p c is incident to
+         */
+        void set_cell_corner_vertex_index(index_t corner_index,index_t vertex_index){
+            mesh_.mesh_->cell_corners.set_vertex(corner_index,vertex_index);
+        }
+        /*!
          * @brief Retrieve the adjacencies
          */
         void cells_connect()
@@ -856,6 +960,19 @@ namespace RINGMesh {
         void cells_permute_elements( GEO::vector< index_t > & permutation )
         {
             mesh_.mesh_->cells.permute_elements( permutation ) ;
+        }
+        /*!
+         * @brief Removes all the cells and attributes.
+         * @param[in] keep_attributes if true, then all the existing attribute
+         * names / bindings are kept (but they are cleared). If false, they are destroyed.
+         * @param[in] keep_memory if true, then memory is kept and can be reused
+         * by subsequent mesh element creations.
+         */
+        void clear_cells(bool keep_attributes/*=true*/, bool keep_memory/*=false*/){
+            mesh_.mesh_->cells.clear( keep_attributes, keep_memory);
+        }
+        void permute_cells(GEO::vector<index_t>& permutation){
+            mesh_.mesh_->cells.permute_elements(permutation);
         }
         /*!
          * @}

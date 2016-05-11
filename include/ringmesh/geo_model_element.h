@@ -458,8 +458,8 @@ namespace RINGMesh {
             const std::string& name = "",
             GEOL_FEATURE geological_feature = NO_GEOL )
             :
-                mesh_( model, 3, false ),
-                GeoModelElement( model, element_type, id, name, geological_feature )
+                GeoModelElement( model, element_type, id, name, geological_feature ),
+                mesh_( model, 3, false )
         {
             model_vertex_id_.bind( mesh_.vertex_attribute_manager(),
                 model_vertex_id_att_name() ) ;
@@ -513,6 +513,11 @@ namespace RINGMesh {
         {
             return mesh_.vertex( vertex_index ) ;
         }
+
+        /*!
+         * get the vertex index from the corner index
+         */
+        virtual index_t vertex_index(index_t corner_index) const = 0 ;
 
         /*!
          * @brief Get the number of n-polytope in the GeoModelMeshElement
@@ -673,6 +678,9 @@ namespace RINGMesh {
         {
         }
 
+        virtual index_t vertex_index (index_t corner_index=0) const {
+            return 0 ;
+        }
         /*!
          * @brief Get the index of the unique vertex constituting of the Corner.
          * @return 0.
@@ -734,6 +742,9 @@ namespace RINGMesh {
         {
         }
 
+        virtual index_t vertex_index (index_t corner_index) const {
+            return mesh_.edge_vertex(corner_index/2, corner_index%2) ;
+        }
         /*!
          * Get the number of edges of the Line
          */
@@ -837,6 +848,10 @@ namespace RINGMesh {
          * \name Accessors to Surface facets, edges and vertices
          * @{
          */
+
+        virtual index_t vertex_index (index_t corner_index) const {
+            return mesh_.facet_corner_vertex(corner_index) ;
+        }
 
         /*!
          * Get the number of facets of the Surface.
@@ -1113,6 +1128,10 @@ namespace RINGMesh {
         bool side( index_t i ) const
         {
             return sides_[i] ;
+        }
+
+        virtual index_t vertex_index (index_t corner_index) const {
+            return mesh_.cell_corner_vertex(corner_index) ;
         }
 
         /*!

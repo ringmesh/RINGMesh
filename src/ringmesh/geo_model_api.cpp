@@ -757,7 +757,6 @@ namespace RINGMesh {
         geomodel.mesh.vertices.clear() ;
         geomodel.mesh.vertices.test_and_initialize() ;
     }
-#endif
 
     void tetrahedralize(
         GeoModel& M,
@@ -803,5 +802,7 @@ namespace RINGMesh {
         // and it will be re-computed during its next access.
         M.mesh.vertices.clear() ;
     }
+#endif
+
 
 }
