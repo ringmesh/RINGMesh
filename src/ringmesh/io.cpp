@@ -153,7 +153,7 @@ namespace {
 
         // Corners
         for( index_t i = 0; i < M.nb_corners(); ++i ) {
-            out << M.corner( i ).gme_id() << " " << M.corner( i ).vertex()
+            out << M.corner( i ).gme_id() << " " << M.corner( i ).vertex(0)
                 << std::endl ;
         }
         // Lines
@@ -180,15 +180,16 @@ namespace {
                 out << S.vertex( j ) << std::endl ;
             }
 
-            out << "SURFACE_CORNERS " << S.nb_facet_corners() << std::endl ;
-            out << "SURFACE_FACETS " << S.nb_cells() << std::endl ;
-            for( index_t j = 0; j < S.nb_cells(); ++j ) {
-                out << S.nb_vertices_in_facet( j ) << " " ;
-                for( index_t v = 0; v < S.nb_vertices_in_facet( j ); ++v ) {
-                    out << S.surf_vertex_id( j, v ) << " " ;
+            //to remove or porte
+        //    out << "SURFACE_CORNERS " << S.nb_facet_corners() << std::endl ;
+        /*    out << "SURFACE_FACETS " << S.nb_polytope() << std::endl ;
+            for( index_t j = 0; j < S.nb_polytope(); ++j ) {
+                out << S.nb_polytope_vertices( j ) << " " ;
+                for( index_t v = 0; v < S.nb_polytope_vertices( j ); ++v ) {
+                    out << S.vertex_indexsurf_vertex_id( j, v ) << " " ;
                 }
                 out << std::endl ;
-            }
+            }*/
         }
     }
 }
@@ -344,7 +345,7 @@ namespace RINGMesh {
 
 
     void MMIOHandler::load( const std::string& filename, GeoModel& gm )
-        {
+        {/*
             unzFile uz = unzOpen( filename.c_str() ) ;
             unz_global_info global_info ;
             if( unzGetGlobalInfo( uz, &global_info ) != UNZ_OK ) {
@@ -379,11 +380,11 @@ namespace RINGMesh {
                     }
                 }
             }
-            unzClose( uz ) ;
+            unzClose( uz ) ;*/
         }
 
     void MMIOHandler::save( const GeoModel& gm, const std::string& filename )
-        {
+        {/*
             std::string pwd = GEO::FileSystem::get_current_working_directory() ;
             GEO::FileSystem::set_current_working_directory(
                 GEO::FileSystem::dir_name( filename ) ) ;
@@ -409,6 +410,6 @@ namespace RINGMesh {
 
             }
             zipClose( zf, NULL ) ;
-            GEO::FileSystem::set_current_working_directory( pwd ) ;
+            GEO::FileSystem::set_current_working_directory( pwd ) ;*/
         }
 }

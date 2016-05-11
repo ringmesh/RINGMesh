@@ -72,7 +72,7 @@ namespace RINGMesh {
         friend class GeoModelMesh ;
 
     public:
-        GeoModelMeshVertices( GeoModelMesh& gmm, GeoModel& gm, Mesh& mesh ) ;
+        GeoModelMeshVertices( GeoModelMesh& gmm, GeoModel& gm, Mesh& mesh, MeshBuilder& mesh_builder ) ;
         ~GeoModelMeshVertices() ;
 
         /*!
@@ -155,20 +155,6 @@ namespace RINGMesh {
         void initialize() ;
 
         /*!
-         * @brief Delete the KdTree and set the pointer to nil.
-         */
-        void clear_kdtree() ;
-
-        /*!
-         * Test if the kdtree need to be initialized,
-         * if so initialize it.
-         */
-        void test_kdtree_and_initialize() const ;
-        /*!
-         * Initialize the kdtree with the mesh vertices
-         */
-        void initialize_kdtree() ;
-        /*!
          * @brief Remove colocated vertices
          */
         void remove_colocated() ;
@@ -199,14 +185,14 @@ namespace RINGMesh {
         GeoModel& gm_ ;
         /// Attached Mesh
         Mesh& mesh_ ;
+        MeshBuilder& mesh_builder_ ;
 
         /*!
          * Vertices in GeoModelElements corresponding to each vertex
          * @todo Change this extremely expensive storage !!!
          */
         std::vector< std::vector< GMEVertex > > gme_vertices_ ;
-        /// Kd-tree of the model vertices
-        const ColocaterANN& kdtree_ ;
+
 
     } ;
 
@@ -219,7 +205,7 @@ namespace RINGMesh {
         } ;
 
     public:
-        GeoModelMeshFacets( GeoModelMesh& gmm, Mesh& mesh ) ;
+        GeoModelMeshFacets( GeoModelMesh& gmm, Mesh& mesh, MeshBuilder& mesh_builder  ) ;
         ~GeoModelMeshFacets() ;
 
         /*!
@@ -406,6 +392,7 @@ namespace RINGMesh {
         const GeoModel& gm_ ;
         /// Attached Mesh
         Mesh& mesh_ ;
+        MeshBuilder& mesh_builder_ ;
 
         /// Attribute storing the surface index per facet
         GEO::Attribute< index_t > surface_id_ ;
@@ -429,7 +416,7 @@ namespace RINGMesh {
     class RINGMESH_API GeoModelMeshEdges {
     ringmesh_disable_copy( GeoModelMeshEdges ) ;
     public:
-        GeoModelMeshEdges( GeoModelMesh& gmm, Mesh& mesh ) ;
+        GeoModelMeshEdges( GeoModelMesh& gmm, Mesh& mesh, MeshBuilder& mesh_builder ) ;
         ~GeoModelMeshEdges() ;
 
         /*!
@@ -483,6 +470,7 @@ namespace RINGMesh {
         const GeoModel& gm_ ;
         /// Attached Mesh
         Mesh& mesh_ ;
+        MeshBuilder& mesh_builder_;
 
         /*!
          * Vector storing the index of the starting edge index
@@ -508,7 +496,7 @@ namespace RINGMesh {
         } ;
 
     public:
-        GeoModelMeshCells( GeoModelMesh& gmm, Mesh& mesh ) ;
+        GeoModelMeshCells( GeoModelMesh& gmm, Mesh& mesh, MeshBuilder& mesh_builder ) ;
         /*!
          * Test if the mesh cells are initialized
          */
@@ -865,6 +853,7 @@ namespace RINGMesh {
         const GeoModel& gm_ ;
         /// Attached Mesh
         Mesh& mesh_ ;
+        MeshBuilder& mesh_builder_ ;
 
         /// Attribute storing the region index per cell
         GEO::Attribute< index_t > region_id_ ;
@@ -1140,12 +1129,15 @@ namespace RINGMesh {
          * facets or cells.
          */
         Mesh* mesh_ ;
+        MeshBuilder* mesh_builder_ ;
+
         /// Optional duplication mode to compute the duplication of cells on surfaces
         mutable GeoModelMeshCells::DuplicateMode mode_ ;
         /// Order of the GeoModelMesh
         index_t order_value_ ;
 
     public:
+
         GeoModelMeshVertices vertices ;
         GeoModelMeshEdges edges ;
         GeoModelMeshFacets facets ;

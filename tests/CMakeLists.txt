@@ -52,7 +52,9 @@ set(test_config_file ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_tests_config.h)
 configure_file(${test_config_file_in} ${test_config_file})
 
 # Get the name of the test files 
-file(GLOB TESTS "${TEST_SOURCE_DIRECTORY}/*.cpp")
+#file(GLOB TESTS "${TEST_SOURCE_DIRECTORY}/*.cpp")
+set (TESTS "${TEST_SOURCE_DIRECTORY}/test_load_geomodel_ml_file.cpp"
+)
 
 # For all the test files found
 foreach(testsourcefile ${TESTS})
