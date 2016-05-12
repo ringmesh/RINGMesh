@@ -1781,10 +1781,9 @@ namespace RINGMesh {
 
             MakeUnique uniq( new_points ) ;
             uniq.unique() ;
-            std::vector< vec3 > uniq_points ;
-            uniq.unique_points( uniq_points ) ;
+            uniq.unique_points( high_order_vertices_ ) ;
             std::vector< index_t > map = uniq.indices() ;
-            ColocaterANN ann( uniq_points, false ) ;
+            ColocaterANN ann( high_order_vertices_, false ) ;
 
             /// Rewriting the right new indices on the cell attribute
             for( index_t c = 0; c < gmm_.cells.nb(); c++ ) {
@@ -1822,7 +1821,7 @@ namespace RINGMesh {
                     }
                 }
             }
-            nb_vertices_ += uniq_points.size() ;
+            nb_vertices_ += high_order_vertices_.size() ;
         }
 
     }
@@ -1858,17 +1857,11 @@ namespace RINGMesh {
 
     index_t GeoModelMeshOrder::indice_on_cell( index_t c, index_t component ) const
     {
-        std::cout << " coucou" << std::endl ;
         test_and_initialize() ;
         ringmesh_assert( c < gmm_.cells.nb() ) ;
         ringmesh_assert( component < max_new_points_on_cell_ ) ;
         GEO::Attribute< index_t > order_vertices_cell( gmm_.cell_attribute_manager(), order_att_name ) ;
-        GEO::vector<std::string> toto ;
-        gmm_.cell_attribute_manager().list_attribute_names(toto) ;
-        DEBUG(toto.size()) ;
-        for(index_t i = 0 ; i < toto.size() ;i++) {
-            DEBUG(toto[i]) ;
-        }
+
         return order_vertices_cell[max_new_points_on_cell_ * c + component] ;
     }
 

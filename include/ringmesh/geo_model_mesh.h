@@ -940,7 +940,9 @@ namespace RINGMesh {
          * Gets the number of high order mesh vertices.
          * @return the const number of high order vertices
          */
-        index_t nb_vertices();
+        index_t nb_vertices() const {
+            return high_order_vertices_.size() ;
+        }
         /*!
          * Gets the point of a high order vertex
          * @param[in] id an index of the new created point for order > 2
