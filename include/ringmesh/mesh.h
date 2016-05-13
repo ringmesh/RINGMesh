@@ -678,7 +678,7 @@ namespace RINGMesh {
          * @param[in] remove_isolated_vertices if true, then the vertices that are no longer incident to any element are deleted.
          */
         void delete_vertices(
-            GEO::vector< index_t > to_delete,
+            GEO::vector< index_t >& to_delete,
             bool remove_isolated_vertices )
         {
             mesh_.mesh_->vertices.delete_elements( to_delete,
