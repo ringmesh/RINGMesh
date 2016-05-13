@@ -303,7 +303,7 @@ namespace RINGMesh {
                 index_t nb_todelete = 0 ;
                 index_t cur = 0 ;
                 for( index_t v = 0; v < colocated.size(); ++v ) {
-                    if( colocated[v] == cur
+                    if( colocated[v] == v
                         || inside_border.find( v ) != inside_border.end() ) {
                         // This point is kept 
                         // No colocated or on an inside boundary
