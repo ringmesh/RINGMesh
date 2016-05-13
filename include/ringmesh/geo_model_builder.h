@@ -420,6 +420,7 @@ namespace RINGMesh {
         GeoModelBuilderGocad( GeoModel& model, const std::string& filename )
             : GeoModelBuilderFile( model, filename ), file_line_( filename )
         {
+            options_.compute_lines = true ;
             if( !file_line_.OK() ) {
                 throw RINGMeshException( "I/O", "Failed to open file " + filename ) ;
             }

@@ -60,7 +60,7 @@ namespace RINGMesh {
      * by its boundary surfaces and whose regions can be optionally meshed
      */
     class RINGMESH_API GeoModel {
-    ringmesh_disable_copy( GeoModel ) ;
+        ringmesh_disable_copy( GeoModel ) ;
         friend class GeoModelBuilder ;
         friend class GeoModelEditor ;
         friend class GeoModelRepair ;
@@ -103,9 +103,28 @@ namespace RINGMesh {
          */
         index_t nb_elements( GME::TYPE type ) const
         {
-            if( type < GME::NO_TYPE ) {
-                return static_cast< index_t >( elements( type ).size() ) ;
-            } else if( type == GME::ALL_TYPES ) {
+            switch( type ) {
+                case GME::CORNER:
+                    return nb_corners();
+                case GME::LINE:
+                    return nb_lines();
+                case GME::SURFACE:
+                    return nb_surfaces();
+                case GME::REGION:
+                    return nb_regions();
+                case GME::CONTACT:
+                    return nb_contacts(); 
+                case GME::INTERFACE:
+                    return nb_interfaces();
+                case GME::LAYER:
+                    return nb_layers();
+            }
+
+            //if( type < GME::NO_TYPE ) {
+            //    return ( elements( type ).size() ) ;
+            //} 
+            //else 
+            if( type == GME::ALL_TYPES ) {
                 ringmesh_assert( !nb_elements_per_type_.empty() ) ;
                 return nb_elements_per_type_.back() ;
             } else {
@@ -126,23 +145,23 @@ namespace RINGMesh {
         }
         const GeoModelElement& element( GME::gme_t id ) const
         {
-            return element( id ) ;
+            return *element_ptr( id ) ;
         }
 
         /*!
          * Convenient overload of element( GME::gme_t id )
          */
-        GeoModelElement& element( GME::TYPE element_type, index_t element_index )
-        {
-            return element( GME::gme_t( element_type, element_index ) ) ;
-        }
+        //GeoModelElement& element( GME::TYPE element_type, index_t element_index )
+        //{
+        //    return element( GME::gme_t( element_type, element_index ) ) ;
+        //}
         const GeoModelElement& element(
             GME::TYPE element_type,
             index_t element_index ) const
         {
-            return element( element_type, element_index ) ;
+            return element( GME::gme_t( element_type, element_index ) ) ;
         }
-
+   
         /*!
          * @brief Generic access to a meshed element
          * @pre Type of the element is CORNER, LINE, SURFACE, or REGION
@@ -169,69 +188,64 @@ namespace RINGMesh {
          */
         index_t nb_corners() const
         {
-            return nb_elements( GME::CORNER ) ;
+            return corners_.size() ;
         }
         index_t nb_lines() const
         {
-            return nb_elements( GME::LINE ) ;
+            return lines_.size() ;
         }
         index_t nb_surfaces() const
         {
-            return nb_elements( GME::SURFACE ) ;
+            return surfaces_.size() ;
         }
         index_t nb_regions() const
         {
-            return nb_elements( GME::REGION ) ;
+            return regions_.size() ;
         }
         index_t nb_contacts() const
         {
-            return nb_elements( GME::CONTACT ) ;
+            return contacts_.size() ;
         }
         index_t nb_interfaces() const
         {
-            return nb_elements( GME::INTERFACE ) ;
+            return interfaces_.size() ;
         }
         index_t nb_layers() const
         {
-            return nb_elements( GME::LAYER ) ;
+            return layers_.size() ;
         }
 
         const Corner& corner( index_t index ) const
         {
-            // Yes, we could use static_cast, but I trust nobody and check [JP]
-            return corner( index ) ;
+            return *corners_.at( index ) ;
         }
         const Line& line( index_t index ) const
         {
-            return line( index ) ;
+            return *lines_.at( index ) ;
         }
         const Surface& surface( index_t index ) const
-        {
-            return surface( index ) ;
+        {                                  
+            return *surfaces_.at( index ) ;
         }
         const Region& region( index_t index ) const
         {
-            return region( index ) ;
+            return *regions_.at( index ) ;
         }
-
         const GeoModelElement& contact( index_t index ) const
         {
             return element( GME::CONTACT, index ) ;
         }
-
         const GeoModelElement& one_interface( index_t index ) const
         {
             return element( GME::INTERFACE, index ) ;
         }
-
         const GeoModelElement& layer( index_t index ) const
         {
             return element( GME::LAYER, index ) ;
         }
-
         const Region& universe() const
         {
-            return dynamic_cast< const Region& >( element( GME::REGION, NO_ID ) ) ;
+            return universe_ ;
         }
 
         /*!
@@ -275,22 +289,22 @@ namespace RINGMesh {
             }
         }
 
-        Corner& corner( index_t index )
-        {
-            return dynamic_cast< Corner& >( *corners_.at( index ) ) ;
-        }
-        Line& line( index_t index )
-        {
-            return dynamic_cast< Line& >( element( GME::LINE, index ) ) ;
-        }
-        Surface& surface( index_t index )
-        {
-            return dynamic_cast< Surface& >( element( GME::SURFACE, index ) ) ;
-        }
-        Region& region( index_t index )
-        {
-            return dynamic_cast< Region& >( element( GME::REGION, index ) ) ;
-        }
+//        Corner& corner( index_t index )
+//        {
+//            return dynamic_cast< Corner& >( *corners_.at( index ) ) ;
+//        }
+//        Line& line( index_t index )
+//        {
+//            return dynamic_cast< Line& >( element( GME::LINE, index ) ) ;
+//        }
+//        Surface& surface( index_t index )
+//        {
+//            return dynamic_cast< Surface& >( element( GME::SURFACE, index ) ) ;
+//        }
+//        Region& region( index_t index )
+//        {
+//            return dynamic_cast< Region& >( element( GME::REGION, index ) ) ;
+//        }
         /*!
          * @brief Generic accessor to the storage of elements of the given type
          * @pre The type must be valid NO_TYPE or ALL_TYPES will throw an assertion
@@ -308,24 +322,56 @@ namespace RINGMesh {
         {
             switch( type ) {
                 case GME::CORNER:
-                    return corners_ ;
+                    return *(std::vector<GME*> *)&corners_ ;   // C'est dégueulasse je sais JP
                 case GME::LINE:
-                    return lines_ ;
+                    return *(std::vector<GME*> *)&lines_ ;
                 case GME::SURFACE:
-                    return surfaces_ ;
+                    return *(std::vector<GME*> *)&surfaces_ ;
                 case GME::REGION:
-                    return regions_ ;
+                    return *(std::vector<GME*> *)&regions_ ;
                 case GME::CONTACT:
-                    return contacts_ ;
+                    return *(std::vector<GME*> *)&contacts_ ;
                 case GME::INTERFACE:
-                    return interfaces_ ;
+                    return *(std::vector<GME*> *)&interfaces_ ;
                 case GME::LAYER:
-                    return layers_ ;
+                    return *(std::vector<GME*> *)&layers_ ;
                 default:
                     ringmesh_assert_not_reached ;
-                    return surfaces_ ;
+                    return *(std::vector<GME*> *)&surfaces_ ;
             }
         }
+
+         // GME** begin_elements( GME::TYPE type )
+         // {
+         //     GME* first_element = nil ;
+         //     switch( type ) {
+         //         case GME::CORNER:
+         //             first_element = corners_[0] ;
+         //             break ;
+         //         case GME::LINE:
+         //             first_element = lines_[0] ;
+         //             break ;
+         //         case GME::SURFACE:
+         //             first_element = surfaces_[0] ;
+         //             break ;
+         //         case GME::REGION:
+         //             first_element = regions_[0] ;
+         //             break ;
+         //         case GME::CONTACT:
+         //             first_element = contacts_[0] ;
+         //             break ;
+         //         case GME::INTERFACE:
+         //             first_element = interfaces_[0] ;
+         //             break ;
+         //         case GME::LAYER:
+         //             first_element = layers_[0] ;
+         //             break ;
+         //         default:
+         //             ringmesh_assert_not_reached ;
+         //             return nil ;
+         //     }
+         //     return &first_element ;
+         // }
 
         /*!
          * @brief Modifiable pointer to an element of the model
@@ -399,27 +445,15 @@ namespace RINGMesh {
          * \name Mandatory elements of the model
          * @{
          */
-
-        /*!
-         * @brief Elements that are Corner
-         */
-        std::vector< GeoModelElement* > corners_ ;
-        /*!
-         * @brief Elements that are Line
-         */
-        std::vector< GeoModelElement* > lines_ ;
-        /*!
-         * @brief Elements that are Surface
-         */
-        std::vector< GeoModelElement* > surfaces_ ;
-        /*!
-         * @brief Elements that are Region
-         */
-        std::vector< GeoModelElement* > regions_ ;
+        std::vector< Corner* > corners_ ;
+        std::vector< Line* > lines_ ;
+        std::vector< Surface* > surfaces_ ;   
+        std::vector< Region* > regions_ ;
 
         /*!
          * The Region defining the model extension
-         * @todo Put it as the last item in regions_ and do not forget to create it in the Builder
+         * @todo Put it as the last item in regions_ and do not
+         *       forget to create it in the Builder
          */
         Region universe_ ;
 
@@ -436,7 +470,6 @@ namespace RINGMesh {
          * @brief Elements of type INTERFACE
          */
         std::vector< GeoModelElement* > interfaces_ ;
-
         /*!
          * @brief Elements of type LAYER
          */
