@@ -161,7 +161,8 @@ namespace RINGMesh {
     {
         to_remove.clear() ;
         for( index_t i = 0; i < model_.nb_lines(); ++i ) {
-            index_t nb = repair_line_mesh( model_.line( i ) ) ;
+            Line& line = dynamic_cast<Line&>(element( gme_t( GME::LINE, i ) ));
+            index_t nb = repair_line_mesh( line ) ;
             if( nb > 0 ) {
                 GEO::Logger::out( "GeoModel" ) << nb
                     << " degenerated edges removed in LINE " << i << std::endl ;
@@ -174,7 +175,7 @@ namespace RINGMesh {
         // The builder might be needed
 
         for( index_t i = 0; i < model_.nb_surfaces(); ++i ) {
-            Surface& surface = model_.surface( i ) ;
+            Surface& surface = dynamic_cast<Surface&>(element( gme_t(GME::SURFACE, i) ) );
             index_t nb = detect_degenerate_facets( surface.mesh_ ) ;
             /// @todo Check if that cannot be simplified 
             if( nb > 0 ) {
@@ -203,7 +204,7 @@ namespace RINGMesh {
                 } else {
                     // If the Surface has internal boundaries, we need to 
                     // re-cut the Surface along these lines
-                    Surface& S = model_.surface( i ) ;
+                    Surface& S = dynamic_cast<Surface&>(element( gme_t(GME::SURFACE, i) ) );
                     std::set< index_t > cutting_lines ;
                     for( index_t l = 0; l < S.nb_boundaries(); ++l ) {
                         const Line& L = model_.line( S.boundary_gme( l ).index ) ;

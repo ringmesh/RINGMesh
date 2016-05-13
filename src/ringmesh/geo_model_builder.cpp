@@ -999,7 +999,7 @@ namespace RINGMesh {
 
     void GeoModelBuilder::copy_meshes( const GeoModel& from, GME::TYPE element_type )
     {
-        for( index_t i = 0; i < model_.elements( element_type ).size(); ++i ) {
+        for( index_t i = 0; i < model_.nb_elements( element_type ); ++i ) {
             const GeoModelMeshElement& from_E = from.mesh_element( element_type,
                 i ) ;
             assign_mesh_to_element( from_E.mesh_, gme_t( element_type, i ) ) ;
