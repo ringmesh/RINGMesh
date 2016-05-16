@@ -55,6 +55,7 @@
 #include <geogram/mesh/mesh_repair.h>
 #include <geogram/mesh/mesh_topology.h>
 #include <geogram/mesh/triangle_intersection.h>
+#include <geogram/mesh/mesh_io.h>
 
 #include <ringmesh/algorithm.h>
 #include <ringmesh/geo_model.h>
@@ -1499,6 +1500,7 @@ namespace RINGMesh {
 
     /********************************************************************/
 
+    GEO::Mesh degenerated_cells ;
     bool Region::is_mesh_valid() const
     {
         if( !is_meshed() ) {
@@ -1530,12 +1532,22 @@ namespace RINGMesh {
             for( index_t c = 0; c < mesh_.cells.nb(); c++ ) {
                 if( cell_is_degenerate( *this, c ) ) {
                     nb_degenerate++ ;
+                    index_t p0 = degenerated_cells.vertices.create_vertex(
+                        mesh_.vertices.point( mesh_.cells.vertex( c, 0 ) ).data() ) ;
+                    index_t p1 = degenerated_cells.vertices.create_vertex(
+                        mesh_.vertices.point( mesh_.cells.vertex( c, 1 ) ).data() ) ;
+                    index_t p2 = degenerated_cells.vertices.create_vertex(
+                        mesh_.vertices.point( mesh_.cells.vertex( c, 2 ) ).data() ) ;
+                    index_t p3 = degenerated_cells.vertices.create_vertex(
+                        mesh_.vertices.point( mesh_.cells.vertex( c, 3 ) ).data() ) ;
+                    degenerated_cells.cells.create_tet(p0,p1,p2,p3) ;
                 }
             }
             if( nb_degenerate != 0 ) {
                 GEO::Logger::warn( "GeoModelElement" ) << gme_id() << " mesh has "
                     << nb_degenerate << " degenerate cells " << std::endl ;
                 valid = false ;
+                GEO::mesh_save(degenerated_cells, "degenerated_cells.meshb");
             }
 
             // One connected component
