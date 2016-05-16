@@ -464,7 +464,7 @@ namespace {
         }
         virtual void save( const GeoModel& model, const std::string& filename )
         {
-            std::string pwd = GEO::FileSystem::get_current_working_directory() ;
+            const std::string pwd = GEO::FileSystem::get_current_working_directory() ;
             bool valid_new_working_directory =
                 GEO::FileSystem::set_current_working_directory(
                     GEO::FileSystem::dir_name( filename ) ) ;
@@ -472,7 +472,8 @@ namespace {
                 throw RINGMeshException( "I/O", "Output directory does not exist" ) ;
             }
 
-            zipFile zf = zipOpen( GEO::FileSystem::base_name(filename,false).c_str(),
+            zipFile zf = zipOpen(
+                GEO::FileSystem::base_name( filename, false ).c_str(),
                 APPEND_STATUS_CREATE ) ;
             ringmesh_assert( zf != nil ) ;
 
