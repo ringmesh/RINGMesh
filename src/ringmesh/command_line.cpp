@@ -110,6 +110,14 @@ namespace RINGMesh {
                 "Angle unit (deg for degrees or rad for radians" ) ;
         }
 
+        void import_arg_group_topology_info()
+        {
+            GEO::CmdLine::declare_arg_group( "topology_info",
+                "Options to get topology information a GeoModel" ) ;
+            GEO::CmdLine::declare_arg( "topology_info:interface_one_id", 0,
+                "TODO" ) ;
+        }
+
         bool import_arg_group( const std::string& name )
         {
             if( name == "in" ) {
@@ -124,6 +132,8 @@ namespace RINGMesh {
                 import_arg_group_remove_gme() ;
             } else if( name == "rotation" ) {
                 import_arg_group_rotation() ;
+            } else if( name == "topology_info" ) {
+                import_arg_group_topology_info() ;
             } else {
                 return GEO::CmdLine::import_arg_group( name ) ;
             }
