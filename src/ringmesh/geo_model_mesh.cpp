@@ -1716,9 +1716,12 @@ namespace RINGMesh {
         index_t offset = 0 ;
         nb_vertices_ = gmm_.vertices.nb() ;
         ;
-        index_t order = gmm_.get_order() ;
+        index_t order = 2;
+        DEBUG(" h") ;
+
         if( order != 1 ) {
 
+            DEBUG("init order 2") ;
             index_t nb_total_edges = 0 ;
 
             if( gmm_.cells.nb_cells() == gmm_.cells.nb_tet() ) {
@@ -1761,6 +1764,8 @@ namespace RINGMesh {
             std::vector< vec3 > new_points( nb_total_edges * ( order - 1 ) ) ;
 
             /// Adding new indices on cells edges
+            DEBUG("Add new vertices ") ;
+
             for( index_t c = 0; c < gmm_.cells.nb(); c++ ) {
                 for( index_t e = 0; e < gmm_.cells.nb_edges( c ); e++ ) {
                     std::vector< vec3 > new_points_in_edge ;
@@ -1778,7 +1783,7 @@ namespace RINGMesh {
                     }
                 }
             }
-
+            DEBUG(" Begin make unique") ;
             MakeUnique uniq( new_points ) ;
             uniq.unique() ;
             uniq.unique_points( high_order_vertices_ ) ;
@@ -1796,6 +1801,8 @@ namespace RINGMesh {
             }
 
             /// Writing new indices on an attribute for the facet
+            DEBUG("ANN ") ;
+
             for( index_t f = 0; f < gmm_.facets.nb(); f++ ) {
                 for( index_t e = 0; e < gmm_.facets.nb_vertices( f ); e++ ) {
                     vec3 node0 ;

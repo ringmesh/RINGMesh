@@ -249,17 +249,18 @@ public:
 		out << "TETRA4" << std::endl;
 		for (index_t r = 0; r < gm.nb_regions(); r++) {
 			for (index_t c = 0; c < mesh.cells.nb_tet(r); c++) {
-				out << "C" << cur_cell++ << " ";
+				out << "C" << cur_cell << " ";
 				for (index_t v = 0; v < mesh.cells.nb_vertices(c); v++) {
 					index_t atom_id;
 					if (mesh.cells.is_corner_duplicated(c, v, atom_id)) {
 						out << "V" << atom_exported_id[atom_id] << " ";
 					} else {
-						index_t vertex_id = mesh.cells.vertex(c, v);
+						index_t vertex_id = mesh.cells.vertex(cur_cell, v);
 						out << "V" << vertex_exported_id[vertex_id] << " ";
 					}
 				}
 				out << std::endl;
+				cur_cell++ ;
 			}
 		}
 		out << "FINSF" << std::endl;
@@ -272,8 +273,8 @@ public:
 			for (index_t c = 0; c < mesh.cells.nb_tet(r); c++) {
 				out << "C" << cur_cell++ << std::endl;
 			}
-		}
 		out << "FINSF" << std::endl;
+		}
 
 		/// 4. Write triangles
 		out << "TRIA3" << std::endl;
@@ -300,18 +301,19 @@ public:
 		/// 5. Associate triangles to each surface
 		for (index_t i = 0; i < gm.nb_interfaces(); i++) {
 			const RINGMesh::GeoModelElement& interf = gm.one_interface(i);
+            out << "GROUP_MA" << std::endl;
+            out << interf.name() << std::endl;
 			for (index_t s = 0; s < interf.nb_children(); s++) {
 				index_t surface_id = interf.child_id(s).index;
-				out << "GROUP_MA" << std::endl;
-				out << interf.name() << std::endl;
+
 				for (index_t f = 0; f < mesh.facets.nb_triangle(surface_id);
 						f++) {
 					index_t facet_id = mesh.facets.triangle(surface_id, f);
 					out << "F" << facet_id;
 					out << std::endl;
 				}
-				out << "FINSF" << std::endl;
 			}
+		out << "FINSF" << std::endl;
 		}
 
 		out << "FIN" << std::endl;
@@ -624,7 +626,7 @@ public:
 
 		const GeoModelMesh& mesh = gm.mesh;
 
-		if (mesh.get_order() == 1) {
+		if (mesh.get_order() == 2) {
 			out << "POINTS " << mesh.vertices.nb() << "double" << std::endl;
 			for (index_t v = 0; v < mesh.vertices.nb(); v++) {
 				out << mesh.vertices.vertex(v) << std::endl;
@@ -667,8 +669,8 @@ public:
 
 		}
 
-		if (mesh.get_order() == 2) {
-
+		if (mesh.get_order() == 1) {
+		    DEBUG(" export order 2") ;
 			out << "POINTS " << mesh.order.nb_total_vertices() << " double " << std::endl;
 			for (index_t v = 0; v < mesh.vertices.nb(); v++) {
 				out << mesh.vertices.vertex(v) << std::endl;
