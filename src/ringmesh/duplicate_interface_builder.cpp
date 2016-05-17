@@ -1702,6 +1702,8 @@ namespace RINGMesh {
                 new_interface_itr ) ;
             ringmesh_assert( new_interface_itr + step_to_other_side >=first_new_interface_index ) ;
             ringmesh_assert( new_interface_itr + step_to_other_side <model_.nb_interfaces()) ;
+            /// @bug in the case that there is no other side (fault = model boundary)
+            /// this method (trick) does not work.
             const GeoModelElement& other_side_interface_gme = model_.one_interface(
                 new_interface_itr + step_to_other_side ) ;
             step_to_other_side *= -1 ;

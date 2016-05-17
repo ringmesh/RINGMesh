@@ -118,6 +118,15 @@ namespace RINGMesh {
                 "TODO" ) ;
         }
 
+        void import_arg_group_fault_offset_info()
+        {
+            GEO::CmdLine::declare_arg_group( "fault_offset_info",
+                "Options to get fault offset informations (throw, heave and dip)" ) ;
+            GEO::CmdLine::declare_arg( "fault_offset_info:axis", "x", "TODO" ) ;
+            GEO::CmdLine::declare_arg( "fault_offset_info:value", 0., "TODO" ) ;
+            GEO::CmdLine::declare_arg( "fault_offset_info:tolerance", 1e-2, "TODO" ) ;
+        }
+
         bool import_arg_group( const std::string& name )
         {
             if( name == "in" ) {
@@ -134,6 +143,8 @@ namespace RINGMesh {
                 import_arg_group_rotation() ;
             } else if( name == "topology_info" ) {
                 import_arg_group_topology_info() ;
+            } else if( name == "fault_offset_info" ) {
+                import_arg_group_fault_offset_info() ;
             } else {
                 return GEO::CmdLine::import_arg_group( name ) ;
             }

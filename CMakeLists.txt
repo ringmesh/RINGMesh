@@ -356,6 +356,7 @@ if(RINGMESH_WITH_UTILITIES)
     add_subdirectory(src/ringmesh_rotate_geomodel)
     add_subdirectory(src/ringmesh_topology_info)
     add_subdirectory(src/ringmesh_horizon_area)
+    add_subdirectory(src/ringmesh_fault_offset_info)
 endif(RINGMESH_WITH_UTILITIES)
 
 if(RINGMESH_WITH_TESTS)
