@@ -941,6 +941,7 @@ namespace RINGMesh {
          * @return the const number of high order vertices
          */
         index_t nb_vertices() const {
+            test_and_initialize() ;
             return high_order_vertices_.size() ;
         }
         /*!
