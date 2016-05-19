@@ -52,12 +52,19 @@
 namespace {
     using namespace RINGMesh ;
 
-    index_t get_contact_id_from_two_interfaces(
+    // Same code than in the main of ringmesh_fault_offset_info
+    // It may happen that even in the case of duplicated fault model there are
+    // several contacts between a fault and a horizon (case where another fault
+    // has a line (and so a contact) in common with the 2 other interfaces).
+    // That should not happen too often.
+    // return copy of a very small vector...
+    std::vector< index_t > get_contact_id_from_two_interfaces(
         const GeoModel& geomodel,
         index_t interface_one_id,
         index_t interface_two_id )
     {
-        index_t contact_id = NO_ID ;
+        std::vector< index_t > contacts ;
+        contacts.reserve( 3 ) ; // In most cases it should be just 1
         for( index_t contact_itr = 0; contact_itr < geomodel.nb_contacts();
             ++contact_itr ) {
             const GME& cur_contact = geomodel.contact( contact_itr ) ;
@@ -75,15 +82,12 @@ namespace {
                 }
 
                 if( interface_one_found && interface_two_found ) {
-                    contact_id = contact_itr ;
+                    contacts.push_back( contact_itr ) ;
                     break ;
                 }
             }
-            if( contact_id != NO_ID ) {
-                break ;
-            }
         }
-        return contact_id ;
+        return contacts ;
     }
 }
 
@@ -148,24 +152,29 @@ int main( int argc, char** argv )
             if( interface_itr == interface_one_id ) {
                 continue ;
             }
-            index_t contact_id = get_contact_id_from_two_interfaces( geomodel,
-                interface_one_id, interface_itr ) ;
-            if( contact_id == NO_ID ) {
+            std::vector< index_t > contact_ids = get_contact_id_from_two_interfaces(
+                geomodel, interface_one_id, interface_itr ) ;
+            if( contact_ids.empty() ) {
                 continue ;
             }
             GEO::Logger::out( "Interface" ) << interface_itr << std::endl ;
             GEO::Logger::out( "Interface" )
                 << geomodel.one_interface( interface_itr ).name() << std::endl ;
-            GEO::Logger::out( "Contact" ) << contact_id << std::endl ;
 
-            const GME& cur_contact = geomodel.contact( contact_id ) ;
-            for( index_t line_itr = 0; line_itr < cur_contact.nb_children();
-                ++line_itr ) {
-                const GME& cur_line = cur_contact.child( line_itr ) ;
-                for( index_t corner_itr = 0; corner_itr < cur_line.nb_boundaries();
-                    ++corner_itr ) {
-                    GEO::Logger::out( "Corner" )
-                        << cur_line.boundary( corner_itr ).index() << std::endl ;
+            for( index_t contact_ids_itr = 0; contact_ids_itr < contact_ids.size();
+                ++contact_ids_itr ) {
+                GEO::Logger::out( "Contact" ) << contact_ids[contact_ids_itr]
+                    << std::endl ;
+                const GME& cur_contact = geomodel.contact(
+                    contact_ids[contact_ids_itr] ) ;
+                for( index_t line_itr = 0; line_itr < cur_contact.nb_children();
+                    ++line_itr ) {
+                    const GME& cur_line = cur_contact.child( line_itr ) ;
+                    for( index_t corner_itr = 0;
+                        corner_itr < cur_line.nb_boundaries(); ++corner_itr ) {
+                        GEO::Logger::out( "Corner" )
+                            << cur_line.boundary( corner_itr ).index() << std::endl ;
+                    }
                 }
             }
         }

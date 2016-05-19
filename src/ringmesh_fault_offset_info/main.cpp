@@ -52,12 +52,18 @@ namespace {
     using namespace RINGMesh ;
 
     // Same code than in the main of ringmesh_topology_info
-    index_t get_contact_id_from_two_interfaces(
+    // It may happen that even in the case of duplicated fault model there are
+    // several contacts between a fault and a horizon (case where another fault
+    // has a line (and so a contact) in common with the 2 other interfaces).
+    // That should not happen too often.
+    // return copy of a very small vector...
+    std::vector< index_t > get_contact_id_from_two_interfaces(
         const GeoModel& geomodel,
         index_t interface_one_id,
         index_t interface_two_id )
     {
-        index_t contact_id = NO_ID ;
+        std::vector< index_t > contacts ;
+        contacts.reserve( 3 ) ; // In most cases it should be just 1
         for( index_t contact_itr = 0; contact_itr < geomodel.nb_contacts();
             ++contact_itr ) {
             const GME& cur_contact = geomodel.contact( contact_itr ) ;
@@ -75,15 +81,12 @@ namespace {
                 }
 
                 if( interface_one_found && interface_two_found ) {
-                    contact_id = contact_itr ;
+                    contacts.push_back( contact_itr ) ;
                     break ;
                 }
             }
-            if( contact_id != NO_ID ) {
-                break ;
-            }
         }
-        return contact_id ;
+        return contacts ;
     }
 
     /// @todo that only works with models with duplicated fault network.
@@ -181,7 +184,11 @@ int main( int argc, char** argv )
                 "Error when opening the file: fault_offset_informations.csv" ) ;
         }
 
-        out << "Contact" ;
+        out << "Contact (interface names and indices)" ;
+        out << separator ;
+        out << "Upper corner (id)" ;
+        out << separator ;
+        out << "Lower corner (id)" ;
         out << separator ;
         out << "Throw" ;
         out << separator ;
@@ -220,38 +227,50 @@ int main( int argc, char** argv )
                     continue ;
                 }
 
-                index_t first_contact_id = get_contact_id_from_two_interfaces(
-                    geomodel, interface_itr2, interface_itr ) ;
-                if( first_contact_id == NO_ID ) {
+                std::vector< index_t > first_contact_ids =
+                    get_contact_id_from_two_interfaces( geomodel, interface_itr2,
+                        interface_itr ) ;
+                if( first_contact_ids.empty() ) {
                     continue ;
                 }
-                index_t second_contact_id = get_contact_id_from_two_interfaces(
-                    geomodel, interface_itr2, other_side_id ) ;
-                if( second_contact_id == NO_ID ) {
+                std::vector< index_t > second_contact_ids =
+                    get_contact_id_from_two_interfaces( geomodel, interface_itr2,
+                        other_side_id ) ;
+                if( second_contact_ids.empty() ) {
                     continue ;
                 }
 
-                const GME& first_contact = geomodel.contact( first_contact_id ) ;
                 bool found = false ;
                 vec3 first_wanted_corner_vec ;
-                for( index_t line_itr = 0; line_itr < first_contact.nb_children();
-                    ++line_itr ) {
-                    const GME& cur_line = first_contact.child( line_itr ) ;
-                    for( index_t corner_itr = 0;
-                        corner_itr < cur_line.nb_boundaries(); ++corner_itr ) {
-                        const Corner& cur_corner = geomodel.corner(
-                            cur_line.boundary( corner_itr ).index() ) ;
-                        double to_check ;
-                        if( axis == "x" ) {
-                            to_check = cur_corner.vertex( 0 ).x ;
-                        } else {
-                            ringmesh_assert( axis == "y" ) ;
-                            to_check = cur_corner.vertex( 0 ).y ;
-                        }
+                index_t first_wanted_corner_index = NO_ID ;
+                for( index_t first_contact_ids_itr = 0;
+                    first_contact_ids_itr < first_contact_ids.size();
+                    ++first_contact_ids_itr ) {
+                    const GME& cur_first_contact = geomodel.contact(
+                        first_contact_ids[first_contact_ids_itr] ) ;
+                    for( index_t line_itr = 0;
+                        line_itr < cur_first_contact.nb_children(); ++line_itr ) {
+                        const GME& cur_line = cur_first_contact.child( line_itr ) ;
+                        for( index_t corner_itr = 0;
+                            corner_itr < cur_line.nb_boundaries(); ++corner_itr ) {
+                            const Corner& cur_corner = geomodel.corner(
+                                cur_line.boundary( corner_itr ).index() ) ;
+                            double to_check ;
+                            if( axis == "x" ) {
+                                to_check = cur_corner.vertex( 0 ).x ;
+                            } else {
+                                ringmesh_assert( axis == "y" ) ;
+                                to_check = cur_corner.vertex( 0 ).y ;
+                            }
 
-                        if( std::abs( to_check - value ) < tolerance ) {
-                            first_wanted_corner_vec = cur_corner.vertex( 0 ) ;
-                            found = true ;
+                            if( std::abs( to_check - value ) < tolerance ) {
+                                first_wanted_corner_vec = cur_corner.vertex( 0 ) ;
+                                first_wanted_corner_index = cur_corner.index() ;
+                                found = true ;
+                                break ;
+                            }
+                        }
+                        if( found ) {
                             break ;
                         }
                     }
@@ -265,27 +284,37 @@ int main( int argc, char** argv )
                 }
 
                 /// @todo dirty copy paste: do a function
-                const GME& second_contact = geomodel.contact( second_contact_id ) ;
                 found = false ;
                 vec3 second_wanted_corner_vec ;
-                for( index_t line_itr = 0; line_itr < second_contact.nb_children();
-                    ++line_itr ) {
-                    const GME& cur_line = second_contact.child( line_itr ) ;
-                    for( index_t corner_itr = 0;
-                        corner_itr < cur_line.nb_boundaries(); ++corner_itr ) {
-                        const Corner& cur_corner = geomodel.corner(
-                            cur_line.boundary( corner_itr ).index() ) ;
-                        double to_check ;
-                        if( axis == "x" ) {
-                            to_check = cur_corner.vertex( 0 ).x ;
-                        } else {
-                            ringmesh_assert( axis == "y" ) ;
-                            to_check = cur_corner.vertex( 0 ).y ;
-                        }
+                index_t second_wanted_corner_index = NO_ID ;
+                for( index_t second_contact_ids_itr = 0;
+                    second_contact_ids_itr < second_contact_ids.size();
+                    ++second_contact_ids_itr ) {
+                    const GME& cur_second_contact = geomodel.contact(
+                        second_contact_ids[second_contact_ids_itr] ) ;
+                    for( index_t line_itr = 0;
+                        line_itr < cur_second_contact.nb_children(); ++line_itr ) {
+                        const GME& cur_line = cur_second_contact.child( line_itr ) ;
+                        for( index_t corner_itr = 0;
+                            corner_itr < cur_line.nb_boundaries(); ++corner_itr ) {
+                            const Corner& cur_corner = geomodel.corner(
+                                cur_line.boundary( corner_itr ).index() ) ;
+                            double to_check ;
+                            if( axis == "x" ) {
+                                to_check = cur_corner.vertex( 0 ).x ;
+                            } else {
+                                ringmesh_assert( axis == "y" ) ;
+                                to_check = cur_corner.vertex( 0 ).y ;
+                            }
 
-                        if( std::abs( to_check - value ) < tolerance ) {
-                            second_wanted_corner_vec = cur_corner.vertex( 0 ) ;
-                            found = true ;
+                            if( std::abs( to_check - value ) < tolerance ) {
+                                second_wanted_corner_vec = cur_corner.vertex( 0 ) ;
+                                second_wanted_corner_index = cur_corner.index() ;
+                                found = true ;
+                                break ;
+                            }
+                        }
+                        if( found ) {
                             break ;
                         }
                     }
@@ -297,15 +326,34 @@ int main( int argc, char** argv )
                 if( !found ) {
                     continue ;
                 }
+                ringmesh_assert( first_wanted_corner_index != NO_ID ) ;
+                ringmesh_assert( second_wanted_corner_index != NO_ID ) ;
+                ringmesh_assert( first_wanted_corner_index != second_wanted_corner_index ) ;
 
                 const vec3 dip_vec = first_wanted_corner_vec
                     - second_wanted_corner_vec ;
 
                 // Display the info
+                // Interfaces (with indices) responsible of the fault contact
                 out
-                    << "Between " + cur_interface.name() + "/"
-                        + geomodel.one_interface( other_side_id ).name() + " and "
-                        + cur_interface2.name() ;
+                    << "Between " + cur_interface.name() + " ("
+                        + GEO::String::to_string( cur_interface.index() ) + ")" + "/"
+                        + geomodel.one_interface( other_side_id ).name() + " ("
+                        + GEO::String::to_string( other_side_id ) + ")" + " and "
+                        + cur_interface2.name() + " ("
+                        + GEO::String::to_string( cur_interface2.index() ) + ")" ;
+                out << separator ;
+                // Upper corner (index)
+                out
+                    << (
+                        first_wanted_corner_vec.z > second_wanted_corner_vec.z ?
+                            first_wanted_corner_index : second_wanted_corner_index ) ;
+                out << separator ;
+                // Lower corner (index)
+                out
+                    << (
+                        first_wanted_corner_vec.z < second_wanted_corner_vec.z ?
+                            first_wanted_corner_index : second_wanted_corner_index ) ;
                 out << separator ;
                 // Throw
                 out << std::abs( dip_vec.z ) ;
