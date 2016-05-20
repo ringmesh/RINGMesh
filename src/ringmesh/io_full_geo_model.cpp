@@ -2008,6 +2008,7 @@ namespace RINGMesh {
         ringmesh_register_IOHandler_creator( VTKIOHandler, "vtk" );
         ringmesh_register_IOHandler_creator( GPRSIOHandler, "gprs" );
         ringmesh_register_IOHandler_creator( MSHIOHandler, "msh" );
-        ringmesh_register_IOHandler_creator( GeoModelHandler, "gm" );}
+        ringmesh_register_IOHandler_creator( GeoModelHandler, "gm" );
+    }
 
 }

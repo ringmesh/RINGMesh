@@ -3740,7 +3740,6 @@ namespace RINGMesh {
     }
     void GeoModelBuilderGM::load_file()
     {
-
         // ZLib fails to load a relative path (case of a directory
         // inside the geomodel relative path).
         std::string normalized_path = GEO::FileSystem::normalized_path(
@@ -3773,7 +3772,6 @@ namespace RINGMesh {
         GEO::FileSystem::delete_file( connectivity ) ;
 
         unzClose( uz ) ;
-
     }
 
     void GeoModelBuilderGM::load_connectivities( GEO::LineInput& file_line )
@@ -3880,5 +3878,4 @@ namespace RINGMesh {
         unzCloseCurrentFile( uz ) ;
 
     }
-
 } // namespace
