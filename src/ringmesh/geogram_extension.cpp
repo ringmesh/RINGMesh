@@ -169,16 +169,13 @@ namespace RINGMesh {
                     if( in.field_matches( 0, "VRTX" )
                         || in.field_matches( 0, "PVRTX" ) ) {
                         vertices_[mesh_dimension_ * v] = in.field_as_double( 2 ) ;
-                        vertices_[mesh_dimension_ * v + 1] = in.field_as_double(
-                            3 ) ;
-                        vertices_[mesh_dimension_ * v + 2] = in.field_as_double( 4 )
-                            * z_sign_ ;
+                        vertices_[mesh_dimension_ * v + 1] = in.field_as_double( 3 ) ;
+                        vertices_[mesh_dimension_ * v + 2] = in.field_as_double( 4 ) * z_sign_ ;
                         ++v ;
                     } else if( in.field_matches( 0, "PATOM" )
                         || in.field_matches( 0, "ATOM" ) ) {
                         index_t v0 = in.field_as_uint( 2 ) - 1 ;
-                        vertices_[mesh_dimension_ * v] = vertices_[mesh_dimension_
-                            * v0] ;
+                        vertices_[mesh_dimension_ * v] = vertices_[mesh_dimension_ * v0] ;
                         vertices_[mesh_dimension_ * v + 1] =
                             vertices_[mesh_dimension_ * v0 + 1] ;
                         vertices_[mesh_dimension_ * v + 2] =
@@ -287,7 +284,7 @@ namespace RINGMesh {
 
     void ringmesh_mesh_io_initialize()
     {
-        geo_register_MeshIOHandler_creator( TSurfMeshIOHandler, "ts" );
+        geo_register_MeshIOHandler_creator( TSurfMeshIOHandler, "ts" ) ;
         geo_register_MeshIOHandler_creator( LINMeshIOHandler, "lin" ) ;
     }
 
@@ -748,7 +745,9 @@ namespace RINGMesh {
                 for( index_t a = 0; a < names.size(); a++ ) {
                     is_bounded[a] = M.cells.attributes().find_attribute_store(
                         names[a] )->has_observers() ;
-                    if( is_bounded[a] ) failed = true ;
+                    if( is_bounded[a] ) {
+                        failed = true ;
+                    }
                 }
                 if( failed ) {
                     GEO::Logger::err( "Attributes" )
@@ -794,7 +793,9 @@ namespace RINGMesh {
                 for( index_t a = 0; a < names.size(); a++ ) {
                     is_bounded[a] = M.cell_facets.attributes().find_attribute_store(
                         names[a] )->has_observers() ;
-                    if( is_bounded[a] ) failed = true ;
+                    if( is_bounded[a] ) {
+                        failed = true ;
+                    }
                 }
                 if( failed ) {
                     GEO::Logger::err( "Attributes" )
