@@ -92,21 +92,21 @@ namespace {
         static const index_t NO_COMPONENT = index_t( -1 ) ;
         std::vector< index_t > component( M.cells.nb(), NO_COMPONENT ) ;
         index_t nb_components = 0 ;
-        for( index_t c = 0; c < M.cells.nb(); c++ ) {
-            if( component[c] == NO_COMPONENT ) {
+        for( index_t cell = 0; cell < M.cells.nb(); cell++ ) {
+            if( component[cell] == NO_COMPONENT ) {
                 std::stack< index_t > S ;
-                S.push( c ) ;
-                component[c] = nb_components ;
+                S.push( cell ) ;
+                component[cell] = nb_components ;
                 do {
-                    index_t cur_c = S.top() ;
+                    index_t cur_cell = S.top() ;
                     S.pop() ;
-                    for( index_t c = M.cells.corners_begin( cur_c );
-                        c != M.cells.corners_end( cur_c ); c++ ) {
-                        index_t adj_c = M.cell_facets.adjacent_cell( c ) ;
-                        if( adj_c != GEO::NO_CELL
-                            && component[adj_c] == NO_COMPONENT ) {
-                            S.push( index_t( adj_c ) ) ;
-                            component[adj_c] = nb_components ;
+                    for( index_t facet = 0; facet < M.cells.nb_facets( cur_cell );
+                        facet++ ) {
+                        index_t adj_cell = M.cells.adjacent( cur_cell, facet ) ;
+                        if( adj_cell != GEO::NO_CELL
+                            && component[adj_cell] == NO_COMPONENT ) {
+                            S.push( adj_cell ) ;
+                            component[adj_cell] = nb_components ;
                         }
                     }
                 } while( !S.empty() ) ;
@@ -142,6 +142,13 @@ namespace {
                 ++nb[M.cell_corners.vertex( co )] ;
             }
         }
+    }
+
+    index_t count_nb_isolated_vertices( const GEO::Mesh& mesh )
+    {
+        std::vector< index_t > nb ;
+        count_vertex_occurences( mesh, nb ) ;
+        return static_cast< index_t >( std::count( nb.begin(), nb.end(), 0 ) ) ;
     }
 
     bool check_mesh_element_vertices_are_different(
@@ -186,16 +193,16 @@ namespace {
      * @brief Returns true if the region cell is incident twice to the same vertex
      * or if the cell volume is negative or inferior to epsilon
      */
-    bool cell_is_degenerate( const Region& region, index_t c )
+    bool cell_is_degenerate( const Region& region, index_t cell_index )
     {
-        index_t nb_vertices_in_cell = region.nb_vertices_in_cell( c ) ;
+        index_t nb_vertices_in_cell = region.nb_vertices_in_cell( cell_index ) ;
         std::vector< index_t > vertices( nb_vertices_in_cell, NO_ID ) ;
         std::vector< index_t > vertices_global( nb_vertices_in_cell, NO_ID ) ;
         for( index_t v = 0; v < nb_vertices_in_cell; v++ ) {
-            vertices[v] = region.gmme_vertex_index( c, v ) ;
-            vertices_global[v] = region.model_vertex_id( c, v ) ;
+            vertices[v] = region.gmme_vertex_index( cell_index, v ) ;
+            vertices_global[v] = region.model_vertex_id( cell_index, v ) ;
         }
-        double volume = RINGMesh::mesh_cell_signed_volume( region.mesh(), c ) ;
+        double volume = RINGMesh::mesh_cell_signed_volume( region.mesh(), cell_index ) ;
         return check_mesh_element_vertices_are_different( vertices, vertices_global )
             || volume < epsilon ;
     }
@@ -999,17 +1006,15 @@ namespace RINGMesh {
         }
 
         // No isolated vertices
-        std::vector< index_t > nb ;
-        count_vertex_occurences( mesh(), nb ) ;
-        index_t nb0 = static_cast< index_t >( std::count( nb.begin(), nb.end(), 0 ) ) ;
-        if( nb0 > 0 ) {
-            GEO::Logger::warn( "GeoModelElement" ) << gme_id() << " mesh has " << nb0
-                << " isolated vertices " << std::endl ;
+        index_t nb_isolated_vertices = count_nb_isolated_vertices( mesh() ) ;
+        if( nb_isolated_vertices > 0 ) {
+            GEO::Logger::warn( "GeoModelElement" ) << gme_id() << " mesh has "
+                << nb_isolated_vertices << " isolated vertices " << std::endl ;
             valid = false ;
         }
+
         // No zero area facet
         // No facet incident to the same vertex check local and global indices
-
         index_t nb_degenerate = 0 ;
         for( index_t f = 0; f < mesh_.facets.nb(); f++ ) {
             if( facet_is_degenerate( *this, f ) ) {
@@ -1499,7 +1504,7 @@ namespace RINGMesh {
         } else {
             bool valid = true ;
             // Check that the GEO::Mesh has the expected elements
-            // at least 3 vertices and one cell.
+            // at least 4 vertices and one cell.
             if( mesh_.vertices.nb() < 4 ) {
                 GEO::Logger::warn( "GeoModelElement" ) << gme_id()
                     << " has less than 4 vertices " << std::endl ;
@@ -1507,13 +1512,10 @@ namespace RINGMesh {
             }
 
             // No isolated vertices
-            std::vector< index_t > nb ;
-            count_vertex_occurences( mesh(), nb ) ;
-            index_t nb0 = static_cast< index_t >( std::count( nb.begin(), nb.end(),
-                0 ) ) ;
-            if( nb0 > 0 ) {
+            index_t nb_isolated_vertices = count_nb_isolated_vertices( mesh() ) ;
+            if( nb_isolated_vertices > 0 ) {
                 GEO::Logger::warn( "GeoModelElement" ) << gme_id() << " mesh has "
-                    << nb0 << " isolated vertices " << std::endl ;
+                    << nb_isolated_vertices << " isolated vertices " << std::endl ;
                 valid = false ;
             }
 
