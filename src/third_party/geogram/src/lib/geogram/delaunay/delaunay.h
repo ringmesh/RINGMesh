@@ -288,6 +288,19 @@ namespace GEO {
         }
 
         /**
+         * \brief Gets the number of finite cells.
+         * \pre this function can only be called if
+         *   keep_finite is set
+         * \details Finite cells have indices 0..nb_finite_cells()-1
+         *  and infinite cells have indices nb_finite_cells()..nb_cells()-1
+         * \see set_keeps_infinite(), keeps_infinite()
+         */
+        index_t nb_finite_cells() const {
+            geo_debug_assert(keeps_infinite());
+            return nb_finite_cells_;
+        }
+
+        /**
          * \brief Gets a pointer to the cell-to-vertex incidence array.
          * \return a const pointer to the cell-to-vertex incidence array
          */
@@ -337,16 +350,23 @@ namespace GEO {
         }
 
         /**
-         * \brief Gets an incident cell index by a vertex index.
-         * \param[in] v a vertex index
-         * \return the index of a cell incident to vertex \p v
+         * \brief Tests whether a cell is infinite.
+         * \retval true if cell \p c is infinite
+         * \retval false otherwise
+         * \see keeps_infinite(), set_keeps_infinite()
          */
-        signed_index_t vertex_cell(index_t v) const {
-            geo_debug_assert(v < nb_vertices());
-            geo_debug_assert(v < v_to_cell_.size());
-            return v_to_cell_[v];
-        }
+        bool cell_is_infinite(index_t c) const;
 
+        /**
+         * \brief Tests whether a cell is finite.
+         * \retval true if cell \p c is finite
+         * \retval false otherwise
+         * \see keeps_infinite(), set_keeps_infinite()
+         */
+        bool cell_is_finite(index_t c) const {
+            return !cell_is_infinite(c);
+        }
+        
         /**
          * \brief Retreives a local vertex index from cell index
          *  and global vertex index.
@@ -389,11 +409,27 @@ namespace GEO {
         }
 
         /**
+         * \brief Gets an incident cell index by a vertex index.
+         * \details Can only be used if set_stores_cicl(true) was called.
+         * \param[in] v a vertex index
+         * \return the index of a cell incident to vertex \p v
+         * \see stores_cicl(), set_store_cicl()
+         */
+        signed_index_t vertex_cell(index_t v) const {
+            geo_debug_assert(v < nb_vertices());
+            geo_debug_assert(v < v_to_cell_.size());
+            return v_to_cell_[v];
+        }
+
+        
+        /**
          * \brief Traverses the list of cells incident to a vertex.
+         * \details Can only be used if set_stores_cicl(true) was called.
          * \param[in] c cell index
          * \param[in] lv local vertex index
          * \return the index of the next cell around vertex \p c or -1 if
          *  \p c was the last one in the list
+         * \see stores_cicl(), set_store_cicl()
          */
         signed_index_t next_around_vertex(index_t c, index_t lv) const {
             geo_debug_assert(c < nb_cells());
@@ -405,10 +441,11 @@ namespace GEO {
          * \brief Gets the one-ring neighbors of vertex v.
          * \details Depending on store_neighbors_ internal flag, the
          *  neighbors are computed or copied from the previously computed
-         *  list.
+         *  list. 
          * \param[in] v vertex index
          * \param[out] neighbors indices of the one-ring neighbors of
          *  vertex \p v
+         * \see stores_neighbors(), set_stores_neighbors()
          */
         void get_neighbors(
             index_t v, vector<index_t>& neighbors
@@ -472,6 +509,28 @@ namespace GEO {
          */
         void set_stores_cicl(bool x) {
             store_cicl_ = x;
+        }
+
+
+        /**
+         * \brief Tests whether infinite elements are kept.
+         * \retval true if infinite elements are kept
+         * \retval false otherwise
+         */
+        bool keeps_infinite() const {
+            return keep_infinite_;
+        }
+
+        /**
+         * \brief Sets whether infinite elements should be kept.
+         * \details Internally, Delaunay implementation uses an 
+         *  infinite vertex and infinite simplices indicent to it.
+         *  By default they are discarded at the end of set_vertices().
+         *  \param[in] x true if infinite elements should be kept, 
+         *   false otherwise
+         */
+        void set_keeps_infinite(bool x) {
+            keep_infinite_ = x;
         }
         
         /**
@@ -641,16 +700,36 @@ namespace GEO {
         bool store_neighbors_;
         index_t default_nb_neighbors_;
 
-        bool do_reorder_; // If true, uses BRIO reordering
-                          // (in some implementations)
+        /**
+         * \brief If true, uses BRIO reordering
+         * (in some implementations)        
+         */
+        bool do_reorder_; 
 
         const Mesh* constraints_;
 
         bool refine_;
         double quality_;
 
-        bool store_cicl_; // It true, circular incident tet
-                          // lists are stored.
+        /**
+         * \brief It true, circular incident tet
+         * lists are stored.
+         */
+        bool store_cicl_; 
+
+        /**
+         * \brief If true, infinite vertex and
+         * infinite simplices are kept.
+         */
+        bool keep_infinite_;
+
+        /**
+         * \brief If keep_infinite_ is true, then
+         *  finite cells are 0..nb_finite_cells_-1
+         *  and infinite cells are 
+         *  nb_finite_cells_ ... nb_cells_
+         */
+        index_t nb_finite_cells_;
     };
 
     /**

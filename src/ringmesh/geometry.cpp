@@ -749,7 +749,7 @@ namespace RINGMesh {
         const vec3& axis,
         double theta,
         bool degrees,
-        GEO::Matrix< float64, 4 >& rot_mat )
+        GEO::Matrix< double, 4 >& rot_mat )
     {
         // Note: Rotation is impossible about an axis with null length.
         ringmesh_assert( axis != vec3() ) ;
@@ -771,7 +771,7 @@ namespace RINGMesh {
         double cos_angle = std::cos( theta ) ;
         double sin_angle = std::sin( theta ) ;
 
-        GEO::Matrix< float64, 4 > T ;
+        GEO::Matrix< double, 4 > T ;
         T( 0, 0 ) = 1 ;
         T( 0, 1 ) = 0 ;
         T( 0, 2 ) = 0 ;
@@ -789,7 +789,7 @@ namespace RINGMesh {
         T( 3, 2 ) = 0 ;
         T( 3, 3 ) = 1 ;
 
-        GEO::Matrix< float64, 4 > inv_T ;
+        GEO::Matrix< double, 4 > inv_T ;
         inv_T( 0, 0 ) = 1. ;
         inv_T( 0, 1 ) = 0. ;
         inv_T( 0, 2 ) = 0. ;
@@ -808,7 +808,7 @@ namespace RINGMesh {
         inv_T( 3, 3 ) = 1. ;
 
 #ifdef RINGMESH_DEBUG
-        GEO::Matrix< float64, 4 > computed_inv_T = T.inverse() ;
+        GEO::Matrix< double, 4 > computed_inv_T = T.inverse() ;
 #endif
         ringmesh_assert( inv_T( 0, 0 ) == computed_inv_T( 0, 0 ) ) ;
         ringmesh_assert( inv_T( 0, 1 ) == computed_inv_T( 0, 1 ) ) ;
@@ -828,7 +828,7 @@ namespace RINGMesh {
         ringmesh_assert( inv_T( 3, 3 ) == computed_inv_T( 3, 3 ) ) ;
 
         // Note: If d = 0, so rotation is along x axis. So Rx = inv_Rx = Id
-        GEO::Matrix< float64, 4 > Rx ;
+        GEO::Matrix< double, 4 > Rx ;
         Rx( 0, 0 ) = 1. ;
         Rx( 0, 1 ) = 0. ;
         Rx( 0, 2 ) = 0. ;
@@ -853,7 +853,7 @@ namespace RINGMesh {
             Rx( 2, 2 ) = c / d ;
         }
 
-        GEO::Matrix< float64, 4 > inv_Rx ;
+        GEO::Matrix< double, 4 > inv_Rx ;
         inv_Rx( 0, 0 ) = 1. ;
         inv_Rx( 0, 1 ) = 0. ;
         inv_Rx( 0, 2 ) = 0. ;
@@ -879,7 +879,7 @@ namespace RINGMesh {
         }
 
 #ifdef RINGMESH_DEBUG
-        GEO::Matrix< float64, 4 > computed_inv_Rx = Rx.inverse() ;
+        GEO::Matrix< double, 4 > computed_inv_Rx = Rx.inverse() ;
 #endif
         ringmesh_assert( inv_Rx( 0, 0 ) == computed_inv_Rx( 0, 0 ) ) ;
         ringmesh_assert( inv_Rx( 0, 1 ) == computed_inv_Rx( 0, 1 ) ) ;
@@ -898,7 +898,7 @@ namespace RINGMesh {
         ringmesh_assert( inv_Rx( 3, 2 ) == computed_inv_Rx( 3, 2 ) ) ;
         ringmesh_assert( inv_Rx( 3, 3 ) == computed_inv_Rx( 3, 3 ) ) ;
 
-        GEO::Matrix< float64, 4 > Ry ;
+        GEO::Matrix< double, 4 > Ry ;
         Ry( 0, 0 ) = d ;
         Ry( 0, 1 ) = 0. ;
         Ry( 0, 2 ) = -a ;
@@ -916,7 +916,7 @@ namespace RINGMesh {
         Ry( 3, 2 ) = 0. ;
         Ry( 3, 3 ) = 1. ;
 
-        GEO::Matrix< float64, 4 > inv_Ry ;
+        GEO::Matrix< double, 4 > inv_Ry ;
         inv_Ry( 0, 0 ) = d ;
         inv_Ry( 0, 1 ) = 0. ;
         inv_Ry( 0, 2 ) = a ;
@@ -935,7 +935,7 @@ namespace RINGMesh {
         inv_Ry( 3, 3 ) = 1. ;
 
 #ifdef RINGMESH_DEBUG
-        GEO::Matrix< float64, 4 > computed_inv_Ry = Ry.inverse() ;
+        GEO::Matrix< double, 4 > computed_inv_Ry = Ry.inverse() ;
 #endif
         ringmesh_assert( inv_Ry( 0, 0 ) == computed_inv_Ry( 0, 0 ) ) ;
         ringmesh_assert( inv_Ry( 0, 1 ) == computed_inv_Ry( 0, 1 ) ) ;
@@ -954,7 +954,7 @@ namespace RINGMesh {
         ringmesh_assert( inv_Ry( 3, 2 ) == computed_inv_Ry( 3, 2 ) ) ;
         ringmesh_assert( inv_Ry( 3, 3 ) == computed_inv_Ry( 3, 3 ) ) ;
 
-        GEO::Matrix< float64, 4 > Rz ;
+        GEO::Matrix< double, 4 > Rz ;
         Rz( 0, 0 ) = cos_angle ;
         Rz( 0, 1 ) = -sin_angle ;
         Rz( 0, 2 ) = 0. ;
@@ -1145,6 +1145,7 @@ namespace RINGMesh {
         const GEO::Mesh& mesh,
         const MeshLocation& location,
         bool copy )
+        : ann_points_( nil )
     {
         ann_tree_ = GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
         switch( location ) {
@@ -1253,14 +1254,18 @@ namespace RINGMesh {
         const GEO::Mesh& mesh,
         bool copy )
     {
+        const GEO::MeshVertices& mesh_vertices = mesh.vertices ;
+        index_t nb_vertices = mesh_vertices.nb() ;
+        if( nb_vertices == 0 ) {
+            return ;
+        }
         if( !copy ) {
             ann_points_ = nil ;
-            ann_tree_->set_points( mesh.vertices.nb(),
-                mesh.vertices.point_ptr( 0 ) ) ;
+            ann_tree_->set_points( nb_vertices,
+                mesh_vertices.point_ptr( 0 ) ) ;
         } else {
-            index_t nb_vertices = mesh.vertices.nb() ;
             ann_points_ = new double[nb_vertices * 3] ;
-            GEO::Memory::copy( ann_points_, mesh.vertices.point_ptr( 0 ),
+            GEO::Memory::copy( ann_points_, mesh_vertices.point_ptr( 0 ),
                 nb_vertices * 3 * sizeof(double) ) ;
             ann_tree_->set_points( nb_vertices, ann_points_ ) ;
         }
@@ -1269,9 +1274,12 @@ namespace RINGMesh {
     void ColocaterANN::build_colocater_ann_edges( const GEO::Mesh& mesh )
     {
         const GEO::MeshEdges& mesh_edges = mesh.edges ;
-        index_t nb_vertices = mesh_edges.nb() ;
-        ann_points_ = new double[nb_vertices * 3] ;
-        for( index_t i = 0; i < mesh_edges.nb(); i++ ) {
+        index_t nb_edges = mesh_edges.nb() ;
+        if( nb_edges == 0 ) {
+            return ;
+        }
+        ann_points_ = new double[nb_edges * 3] ;
+        for( index_t i = 0; i < nb_edges; i++ ) {
             index_t first_vertex_id = mesh_edges.vertex( i, 0 ) ;
             const vec3& first_vertex_vec =
                 mesh.vertices.point( first_vertex_id ) ;
@@ -1283,19 +1291,22 @@ namespace RINGMesh {
             index_t index_in_ann = 3 * i ;
             fill_ann_points( index_in_ann, center ) ;
         }
-        ann_tree_->set_points( nb_vertices, ann_points_ ) ;
+        ann_tree_->set_points( nb_edges, ann_points_ ) ;
     }
 
     void ColocaterANN::build_colocater_ann_facets( const GEO::Mesh& mesh )
     {
-        index_t nb_vertices = mesh.facets.nb() ;
-        ann_points_ = new double[nb_vertices * 3] ;
-        for( index_t i = 0; i < mesh.facets.nb(); i++ ) {
+        index_t nb_facets = mesh.facets.nb() ;
+        if( nb_facets == 0 ) {
+            return ;
+        }
+        ann_points_ = new double[nb_facets * 3] ;
+        for( index_t i = 0; i < nb_facets; i++ ) {
             vec3 center = GEO::Geom::mesh_facet_center( mesh, i ) ;
             index_t index_in_ann = 3 * i ;
             fill_ann_points( index_in_ann, center ) ;
         }
-        ann_tree_->set_points( nb_vertices, ann_points_ ) ;
+        ann_tree_->set_points( nb_facets, ann_points_ ) ;
     }
 
     void ColocaterANN::build_colocater_ann_cell_facets( const GEO::Mesh& mesh )
@@ -1315,14 +1326,17 @@ namespace RINGMesh {
 
     void ColocaterANN::build_colocater_ann_cells( const GEO::Mesh& mesh )
     {
-        index_t nb_vertices = mesh.cells.nb() ;
-        ann_points_ = new double[nb_vertices * 3] ;
-        for( index_t i = 0; i < mesh.cells.nb(); i++ ) {
+        index_t nb_cells = mesh.cells.nb() ;
+        if( nb_cells == 0 ) {
+            return ;
+        }
+        ann_points_ = new double[nb_cells * 3] ;
+        for( index_t i = 0; i < nb_cells; i++ ) {
             vec3 center = mesh_cell_center( mesh, i ) ;
             index_t index_in_ann = 3 * i ;
             fill_ann_points( index_in_ann, center ) ;
         }
-        ann_tree_->set_points( nb_vertices, ann_points_ ) ;
+        ann_tree_->set_points( nb_cells, ann_points_ ) ;
     }
 
     void ColocaterANN::fill_ann_points(
