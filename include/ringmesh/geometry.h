@@ -72,29 +72,29 @@ namespace RINGMesh {
      * See http://www.geometrictools.com/LibMathematics/Distance/Distance.html
      */
     template< typename VEC >
-    float64 point_triangle_distance(
+    double point_triangle_distance(
         const VEC& point,
         const VEC& V0,
         const VEC& V1,
         const VEC& V2,
         VEC& closest_point,
-        float64& lambda0,
-        float64& lambda1,
-        float64& lambda2 )
+        double& lambda0,
+        double& lambda1,
+        double& lambda2 )
     {
         VEC diff = V0 - point ;
         VEC edge0 = V1 - V0 ;
         VEC edge1 = V2 - V0 ;
-        float64 a00 = length2( edge0 ) ;
-        float64 a01 = dot( edge0, edge1 ) ;
-        float64 a11 = length2( edge1 ) ;
-        float64 b0 = dot( diff, edge0 ) ;
-        float64 b1 = dot( diff, edge1 ) ;
-        float64 c = length2( diff ) ;
-        float64 det = ::fabs( a00 * a11 - a01 * a01 ) ;
-        float64 s = a01 * b1 - a11 * b0 ;
-        float64 t = a01 * b0 - a00 * b1 ;
-        float64 sqrDistance ;
+        double a00 = length2( edge0 ) ;
+        double a01 = dot( edge0, edge1 ) ;
+        double a11 = length2( edge1 ) ;
+        double b0 = dot( diff, edge0 ) ;
+        double b1 = dot( diff, edge1 ) ;
+        double c = length2( diff ) ;
+        double det = ::fabs( a00 * a11 - a01 * a01 ) ;
+        double s = a01 * b1 - a11 * b0 ;
+        double t = a01 * b0 - a00 * b1 ;
+        double sqrDistance ;
 
         if( s + t <= det ) {
             if( s < 0.0 ) {
@@ -148,14 +148,14 @@ namespace RINGMesh {
                 }
             } else { // region 0
                 // minimum at interior point
-                float64 invDet = float64( 1.0 ) / det ;
+                double invDet = double( 1.0 ) / det ;
                 s *= invDet ;
                 t *= invDet ;
                 sqrDistance = s * ( a00 * s + a01 * t + 2.0 * b0 )
                     + t * ( a01 * s + a11 * t + 2.0 * b1 ) + c ;
             }
         } else {
-            float64 tmp0, tmp1, numer, denom ;
+            double tmp0, tmp1, numer, denom ;
 
             if( s < 0.0 ) { // region 2
                 tmp0 = a01 + b0 ;
@@ -249,7 +249,7 @@ namespace RINGMesh {
         return sqrt( sqrDistance ) ;
     }
 
-    float64 RINGMESH_API point_quad_distance(
+    double RINGMESH_API point_quad_distance(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
@@ -257,7 +257,7 @@ namespace RINGMesh {
         const vec3& p3,
         vec3& nearest_p ) ;
 
-    float64 RINGMESH_API point_tetra_distance(
+    double RINGMESH_API point_tetra_distance(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
@@ -265,7 +265,7 @@ namespace RINGMesh {
         const vec3& p3,
         vec3& nearest_p ) ;
 
-    float64 RINGMESH_API point_pyramid_distance(
+    double RINGMESH_API point_pyramid_distance(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
@@ -274,7 +274,7 @@ namespace RINGMesh {
         const vec3& p4,
         vec3& nearest_p ) ;
 
-    float64 RINGMESH_API point_prism_distance(
+    double RINGMESH_API point_prism_distance(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
@@ -284,7 +284,7 @@ namespace RINGMesh {
         const vec3& p5,
         vec3& nearest_p ) ;
 
-    float64 RINGMESH_API point_hexa_distance(
+    double RINGMESH_API point_hexa_distance(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
@@ -301,7 +301,7 @@ namespace RINGMesh {
         const vec3& N_plane,
         const vec3& O_circle,
         const vec3& N_circle,
-        float64 r,
+        double r,
         std::vector< vec3 >& result ) ;
 
     bool RINGMESH_API circle_triangle_intersection(
@@ -310,7 +310,7 @@ namespace RINGMesh {
         const vec3& p2,
         const vec3& O_circle,
         const vec3& N_circle,
-        float64 r,
+        double r,
         std::vector< vec3 >& result ) ;
 
     bool RINGMESH_API plane_plane_intersection(
@@ -386,9 +386,9 @@ namespace RINGMesh {
     void RINGMESH_API rotation_matrix_about_arbitrary_axis(
         const vec3& origin,
         const vec3& axis,
-        float64 theta,
+        double theta,
         bool degrees,
-        GEO::Matrix< float64, 4 >& rot_mat ) ;
+        GEO::Matrix< double, 4 >& rot_mat ) ;
         
 
     template< typename VEC >
@@ -397,13 +397,13 @@ namespace RINGMesh {
         const VEC& p2,
         const VEC& p3 )
     {
-        float64 l1 = std::rand() ;
-        float64 l2 = std::rand() ;
+        double l1 = std::rand() ;
+        double l2 = std::rand() ;
         if( l1 + l2 > 1.0 ) {
             l1 = 1.0 - l1 ;
             l2 = 1.0 - l2 ;
         }
-        float64 l3 = 1.0 - l1 - l2 ;
+        double l3 = 1.0 - l1 - l2 ;
         return l1 * p1 + l2 * p2 + l3 * p3 ;
     }
 
@@ -513,7 +513,7 @@ namespace RINGMesh {
 
         ~ColocaterANN()
         {
-            if( ann_points_ ) delete[] ann_points_ ;
+            if( ann_points_ != nil ) delete[] ann_points_ ;
         }
 
         bool get_colocated( const vec3& v, std::vector< index_t >& result ) const ;

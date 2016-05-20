@@ -286,7 +286,9 @@ namespace GEO {
             // --> capa+1 to have an additional 'sentry' at the end
             // because fast_expansion_sum_zeroelim() may access
             // an entry past the end (without using it).
-            return sizeof(expansion) - 2 * sizeof(double) + (capa + 1) * sizeof(double);
+            return
+                sizeof(expansion) - 2 * sizeof(double) +
+                (capa + 1) * sizeof(double);
         }
 
         /**

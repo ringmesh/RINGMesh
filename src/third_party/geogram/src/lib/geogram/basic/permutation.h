@@ -176,8 +176,8 @@ namespace GEO {
                     continue;
                 }
                 index_t i = k;
-                Memory::copy(temp, pdata + i * elemsize, elemsize);
                 index_t j = permutation[k];
+                Memory::copy(temp, pdata + i * elemsize, elemsize);
                 mark(permutation, k);
                 while(j != k) {
                     Memory::copy(
@@ -253,7 +253,7 @@ namespace GEO {
          * The inversion is equivalent to:
          * \code
          * vector<index_t> inverse;
-         * compute_inverse(permutation, inverse);
+         * Permutation::invert(permutation, inverse);
          * permutation = inverse;
          * \endcode
          * \param[in,out] permutation to inverse.
@@ -282,12 +282,13 @@ namespace GEO {
         }
 
         /**
-         * \brief Inverts a permutation in-place.
-         * \details Inverses the given \p permutation in place, the
-         * result of the inversion is left in \p permutation.
-         *
+         * \brief Inverts a permutation.
+         * \details Computes the inverse of a given \p permutation and 
+         *  stores the result in another one.
          * \param[in] permutation the permutation to invert
          * \param[out] inverse the computed inverse of \p permutation
+         * \note there is also a variant of invert() that computes the
+         *  permutation in-place.
          */
         inline void invert(
             const vector<index_t>& permutation, vector<index_t>& invert

@@ -42,8 +42,8 @@
 #include <geogram/basic/string.h>
 
 
-#include <third_party/minizip/zip.h>
-#include <third_party/minizip/unzip.h>
+#include <third_party/zlib/zip.h>
+#include <third_party/zlib/unzip.h>
 
 #include <geogram/basic/factory.h>
 #define MAX_FILENAME 512
@@ -143,5 +143,21 @@ namespace RINGMesh {
 
     void RINGMESH_API unzip_file( unzFile uz, char filename[MAX_FILENAME] ) ;
 
+
+    class RINGMESH_API BMIOHandler: public GeoModelIOHandler {
+    public:
+        virtual void load( const std::string& filename, GeoModel& model ) ;
+        virtual void save( const GeoModel& model, const std::string& filename ) ;
+    } ;
+
+
+    class RINGMESH_API MMIOHandler: public GeoModelIOHandler {
+    public:
+        virtual void load( const std::string& filename, GeoModel& gm ) ;
+
+        /// Save a \param[in] gm macro mesh in a .zip file which contains all the mesh file. Type of the export is
+        /// determined by the extension given in \param[in] filename
+        virtual void save( const GeoModel& gm, const std::string& filename ) ;
+    } ;
 }
 #endif

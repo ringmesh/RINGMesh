@@ -408,8 +408,8 @@ namespace GEO {
          *  belongs to.
          * \details Tetrahedra can be linked, it is used to manage
          *  both the free list that recycles deleted tetrahedra and
-	 *  the list of tetrahedra in conflict with the inserted 
-	 *  point.
+         *  the list of tetrahedra in conflict with the inserted 
+         *  point.
          * \param[in] t the index of the tetrahedron
          */
         void remove_tet_from_list(index_t t) {
@@ -427,6 +427,24 @@ namespace GEO {
         static const signed_index_t VERTEX_AT_INFINITY = -1;
 
         /**
+         * \brief Tests whether a given tetrahedron
+         *   is a finite one.
+         * \details Infinite tetrahedra are the ones
+         *   that are incident to the infinite vertex
+         *   (index -1)
+         * \param[in] t the index of the tetrahedron
+         * \retval true if \p t is finite
+         * \retval false otherwise
+         */
+        bool tet_is_finite(index_t t) const {
+            return 
+                cell_to_v_store_[4 * t]     >= 0 &&
+                cell_to_v_store_[4 * t + 1] >= 0 &&
+                cell_to_v_store_[4 * t + 2] >= 0 &&
+                cell_to_v_store_[4 * t + 3] >= 0;
+        }
+        
+        /**
          * \brief Tests whether a tetrahedron is
          *  a real one.
          * \details Real tetrahedra are incident to
@@ -438,12 +456,7 @@ namespace GEO {
          * \retval false otherwise
          */
         bool tet_is_real(index_t t) const {
-            return
-                !tet_is_free(t) &&
-                cell_to_v_store_[4 * t] >= 0 &&
-                cell_to_v_store_[4 * t + 1] >= 0 &&
-                cell_to_v_store_[4 * t + 2] >= 0 &&
-                cell_to_v_store_[4 * t + 3] >= 0;
+            return !tet_is_free(t) && tet_is_finite(t);
         }
 
         /**
