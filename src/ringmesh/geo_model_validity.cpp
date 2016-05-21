@@ -360,7 +360,7 @@ namespace {
         const GEO::Mesh& mesh,
         const std::ostringstream& file )
     {
-        if( GEO::CmdLine::get_arg_bool( "out:validity" ) ) {
+        if( GEO::CmdLine::get_arg_bool( "in:validity_save" ) ) {
             GEO::mesh_save( mesh, file.str() ) ;
         }
     }
