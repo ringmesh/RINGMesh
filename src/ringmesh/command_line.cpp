@@ -71,6 +71,9 @@ namespace RINGMesh {
             GEO::CmdLine::declare_arg(
                 "out:geomodel", "",
                 "Saves the geological model" ) ;
+            GEO::CmdLine::declare_arg(
+                "out:validity", true,
+                "Saves meshes representing geomodel inconsistencies" ) ;
         }
 
         void import_arg_group_stats()
