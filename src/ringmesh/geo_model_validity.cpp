@@ -47,6 +47,7 @@
 #include <geogram/basic/geometry_nd.h>
 #include <geogram/basic/logger.h>
 #include <geogram/basic/string.h>
+#include <geogram/basic/command_line.h>
 
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_AABB.h>
@@ -355,6 +356,15 @@ namespace {
         vector< TriangleIsect > sym_ ;
     } ;
 
+    void save_mesh_locating_geomodel_inconsistencies(
+        const GEO::Mesh& mesh,
+        const std::ostringstream& file )
+    {
+        if( GEO::CmdLine::get_arg_bool( "out:validity" ) ) {
+            GEO::mesh_save( mesh, file.str() ) ;
+        }
+    }
+
     /** \note Copied from geogram
      * \brief Detect intersecting facets in a TRIANGULATED mesh
      * \param[in] M the mesh
@@ -387,7 +397,7 @@ namespace {
             }
             std::ostringstream file ;
             file << validity_errors_directory << "/intersected_facets.mesh" ;
-            GEO::mesh_save( mesh, file.str() ) ;
+            save_mesh_locating_geomodel_inconsistencies( mesh, file ) ;
             GEO::Logger::out( "I/O" ) << std::endl ;
         }
         return nb_intersections ;
@@ -651,7 +661,7 @@ namespace {
                 std::ostringstream file ;
                 file << validity_errors_directory << "/boundary_surface_region_"
                     << region.index() << ".mesh" ;
-                GEO::mesh_save( mesh, file.str() ) ;
+                save_mesh_locating_geomodel_inconsistencies( mesh, file ) ;
                 return false ;
             } else {
                 return true ;
