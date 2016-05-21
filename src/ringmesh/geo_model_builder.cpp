@@ -4270,10 +4270,10 @@ namespace RINGMesh {
     void GeoModelBuilderGM::load_file()
     {
         // ZLib fails to load a relative path (case of a directory
-        // inside the geomodel relative path).
-        std::string normalized_path = GEO::FileSystem::normalized_path(
-            filename_.c_str() ) ;
-        unzFile uz = unzOpen( normalized_path.c_str() ) ;
+        // inside the geomodel relative path). So it is important that the
+        // filename_ does not contain directory.
+        ringmesh_assert( GEO::FileSystem::base_name( filename_, false ) == filename_ ) ;
+        unzFile uz = unzOpen( filename_.c_str() ) ;
         unz_global_info global_info ;
         if( unzGetGlobalInfo( uz, &global_info ) != UNZ_OK ) {
             unzClose( uz ) ;
