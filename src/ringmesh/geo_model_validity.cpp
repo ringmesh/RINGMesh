@@ -685,26 +685,18 @@ namespace {
     }
 
     void save_invalid_points(
-        const std::string& file,
+        const std::ostringstream& file,
         const GeoModel& M,
         const std::vector< bool >& valid )
     {
-        std::ofstream out ;
-        out.open( file.c_str() ) ;
-        if( out.bad() ) {
-            GEO::Logger::err( "File" ) << "Failed to open file: " << file
-                << std::endl ;
-        } else {
-            out.precision( 16 ) ;
-            for( index_t i = 0; i < valid.size(); ++i ) {
-                if( !valid[i] ) {
-                    const vec3& V = M.mesh.vertices.vertex( i ) ;
-                    out << "v" << " " << V.x << " " << V.y << " " << V.z
-                    // Not in format file, but convenient
-                        << " model index " << i << std::endl ;
-                }
+        GEO::Mesh point_mesh ;
+        for( index_t i = 0; i < valid.size(); ++i ) {
+            if( !valid[i] ) {
+                const vec3& V = M.mesh.vertices.vertex( i ) ;
+                point_mesh.vertices.create_vertex( V.data() ) ;
             }
         }
+        save_mesh_locating_geomodel_inconsistencies( point_mesh, file ) ;
     }
 
     /*!
@@ -917,8 +909,8 @@ namespace {
 
         if( nb_invalid > 0 ) {
             std::ostringstream file ;
-            file << validity_errors_directory << "/invalid_global_vertices.pts" ;
-            save_invalid_points( file.str(), M, valid ) ;
+            file << validity_errors_directory << "/invalid_global_vertices.meshb" ;
+            save_invalid_points( file, M, valid ) ;
 
             GEO::Logger::warn( "GeoModel" ) << nb_invalid << " invalid vertices "
                 << std::endl << "Saved in file: " << file.str() << std::endl ;
@@ -929,28 +921,25 @@ namespace {
     }
 
     void save_edges(
-        const std::string& file,
+        const std::ostringstream& file,
         const GeoModel& M,
         const std::vector< index_t >& e )
     {
-        std::ofstream out( file.c_str() ) ;
-        if( out.bad() ) {
-            GEO::Logger::err( "File" ) << "Failed to open file: " << file
-                << std::endl ;
-        } else {
-            out.precision( 16 ) ;
-            GEO::Logger::out( "I/O" ) << "Saving " << file <<"...." << std::endl ;
-            
-            for( index_t i = 0; i < e.size(); ++i ) {
-                out << "v " << M.mesh.vertices.vertex( e[i] ) << std::endl ;
+        GEO::Mesh edge_mesh ;
+        index_t previous_vertex_id = NO_ID ;
+        for( index_t i = 0; i < e.size(); ++i ) {
+            index_t cur_vertex_id = edge_mesh.vertices.create_vertex(
+                M.mesh.vertices.vertex( e[i] ).data() ) ;
+            if( i % 2 == 0 ) {
+                ringmesh_assert( previous_vertex_id == NO_ID ) ;
+                previous_vertex_id = cur_vertex_id ;
+                continue ;
             }
-            for( index_t i = 0; i + 1 < e.size(); i += 2 ) {
-                out << "s " << i + 1 << " " << i + 2 << std::endl ;
-            }
-            out.close() ;
-
-            GEO::Logger::out( "I/O" ) << std::endl ;
+            ringmesh_assert( previous_vertex_id != NO_ID ) ;
+            edge_mesh.edges.create_edge( previous_vertex_id, cur_vertex_id ) ;
+            previous_vertex_id = NO_ID ;
         }
+        save_mesh_locating_geomodel_inconsistencies( edge_mesh, file ) ;
     }
 
     /*!
@@ -976,8 +965,8 @@ namespace {
         if( !invalid_corners.empty() ) {
             std::ostringstream file ;
             file << validity_errors_directory << "/invalid_boundary_surface_"
-                << S.index() << ".lin" ;
-            save_edges( file.str(), S.model(), invalid_corners ) ;
+                << S.index() << ".meshb" ;
+            save_edges( file, S.model(), invalid_corners ) ;
 
             GEO::Logger::warn( "GeoModel" ) << " Invalid surface boundary: "
                 << invalid_corners.size() / 2 << " boundary edges of " << S.gme_id()
@@ -997,9 +986,8 @@ namespace RINGMesh {
     void debug_save_non_manifold_edges( const GeoModel& geomodel,
                                         const std::vector< index_t>& edge_vertices )
     {
-        std::string extension( "lin" ) ;
-        std::string what( "non_manifold_edges" ) ;
-        std::string file_name( validity_errors_directory +"/" + what + "." + extension ) ;
+        std::ostringstream file_name(
+            validity_errors_directory + "/non_manifold_edges.meshb" ) ;
 
         save_edges( file_name, geomodel, edge_vertices ) ;
     }
