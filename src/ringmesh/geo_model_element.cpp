@@ -116,8 +116,7 @@ namespace {
         std::vector< index_t > corners( nb_facet_vertices, NO_ID ) ;
         std::vector< index_t > corners_global( nb_facet_vertices, NO_ID ) ;
         index_t v = 0 ;
-        for( index_t c = S.polytope_vertex_index( f, 0 );
-            c < S.polytope_vertex_index( f, nb_facet_vertices - 1 ); ++c ) {
+        for( index_t c = S.facet_begin( f ); c < S.facet_end( f ); ++c ) {
             corners[v] = c ;
             corners_global[v] = S.model_vertex_id( f, v ) ;
             v++ ;
