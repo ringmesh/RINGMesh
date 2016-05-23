@@ -805,7 +805,7 @@ namespace RINGMesh {
     {
         std::vector< index_t > corners( 4 ) ;
         for( index_t v = 0; v < 4; v++ ) {
-            index_t vertex_id = static_cast< index_t >( vertex_indices[v] - 1 ) ;
+            index_t vertex_id = static_cast< index_t >( vertex_indices[v] ) ;
             corners[v] = vertex_id ;
         }
         builder_->set_region_element_geometry( output_region_, tetra_index, corners ) ;
