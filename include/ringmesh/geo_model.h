@@ -118,20 +118,12 @@ namespace RINGMesh {
                     return nb_interfaces();
                 case GME::LAYER:
                     return nb_layers();
+                case GME::ALL_TYPES:
+                    ringmesh_assert( !nb_elements_per_type_.empty() ) ;
+                    return nb_elements_per_type_.back() ;
                 default:
+                    ringmesh_assert_not_reached ;
                     return 0 ;
-            }
-
-            //if( type < GME::NO_TYPE ) {
-            //    return ( elements( type ).size() ) ;
-            //} 
-            //else 
-            if( type == GME::ALL_TYPES ) {
-                ringmesh_assert( !nb_elements_per_type_.empty() ) ;
-                return nb_elements_per_type_.back() ;
-            } else {
-                ringmesh_assert_not_reached ;
-                return 0 ;
             }
         }
 

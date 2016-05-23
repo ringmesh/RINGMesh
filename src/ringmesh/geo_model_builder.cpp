@@ -1548,7 +1548,7 @@ namespace RINGMesh {
                 if( end == 2 ) {
                     // There is one neighbor
                     index_t f2 = inter[0] == f ? inter[1] : inter[0] ;
-                    adjacent[S.polytope_vertex_index( f, 0 )
+                    adjacent[S.facet_begin( f )
                         + S.prev_facet_vertex_index( f, v )] = f2 ;
                 } else {
                     ringmesh_assert( end == 1 ) ;
