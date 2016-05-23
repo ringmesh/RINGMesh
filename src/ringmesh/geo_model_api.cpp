@@ -629,10 +629,9 @@ namespace RINGMesh {
                 nb_vertices += F.nb_vertices() ;
                 result += F.center() * F.nb_vertices() ;
             }
-            return result / static_cast< double >( nb_vertices ) ;
-        } else {
-            return result ;
+            result /= static_cast< double >( nb_vertices ) ;
         }
+        return result ;
     }
 
     vec3 model_element_cell_center( const GeoModelMeshElement& E, index_t c )
@@ -789,8 +788,7 @@ namespace RINGMesh {
                 progress.next() ;
             }
         } else {
-            TetraGen_var tetragen = TetraGen::create( M.region( region_id ).mesh(),
-                method ) ;
+            TetraGen_var tetragen = TetraGen::create( M, region_id, method ) ;
             tetragen->set_boundaries( M.region( region_id ), M.wells() ) ;
             tetragen->set_internal_points( internal_vertices[region_id] ) ;
             GEO::Logger::instance()->set_quiet( true ) ;

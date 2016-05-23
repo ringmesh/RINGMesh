@@ -678,7 +678,8 @@ namespace RINGMesh {
         {
         }
 
-        virtual index_t vertex_index (index_t corner_index=0) const {
+        virtual index_t vertex_index( index_t corner_index = 0 ) const {
+            ringmesh_unused( corner_index ) ;
             return 0 ;
         }
         /*!
