@@ -289,39 +289,7 @@ endif(USE_OPENMP)
 
 #------------------------------------------------------------------------------------------------
 # Collect the library files
-#src
-#file(GLOB ringmesh_src "${PROJECT_SOURCE_DIR}/src/ringmesh/*.cpp")
-set (ringmesh_src "${PROJECT_SOURCE_DIR}/src/ringmesh/geo_model.cpp" 
-	"${PROJECT_SOURCE_DIR}/src/ringmesh/geo_model_element.cpp"
-	"${PROJECT_SOURCE_DIR}/src/ringmesh/geo_model_editor.cpp"
-	"${PROJECT_SOURCE_DIR}/src/ringmesh/geo_model_builder.cpp"
-	"${PROJECT_SOURCE_DIR}/src/ringmesh/common.cpp"
-	"${PROJECT_SOURCE_DIR}/src/ringmesh/io.cpp"
-	"${PROJECT_SOURCE_DIR}/src/ringmesh/io_full_geo_model.cpp"
-	"${PROJECT_SOURCE_DIR}/src/ringmesh/io_boundary_geo_model.cpp"
-	"${PROJECT_SOURCE_DIR}/src/ringmesh/geo_model_mesh.cpp"
-	"${PROJECT_SOURCE_DIR}/src/ringmesh/mesh.cpp"
-	"${PROJECT_SOURCE_DIR}/src/ringmesh/geo_model_builder_so.cpp"
-	"${PROJECT_SOURCE_DIR}/src/ringmesh/geometry.cpp"
-	"${PROJECT_SOURCE_DIR}/src/ringmesh/geogram_extension.cpp"
-	"${PROJECT_SOURCE_DIR}/src/ringmesh/io_well_group.cpp"
-	"${PROJECT_SOURCE_DIR}/src/ringmesh/tetra_gen.cpp"
-	"${PROJECT_SOURCE_DIR}/src/ringmesh/well.cpp"
-	"${PROJECT_SOURCE_DIR}/src/ringmesh/geo_model_validity.cpp"
-	"${PROJECT_SOURCE_DIR}/src/ringmesh/utils.cpp"
-	"${PROJECT_SOURCE_DIR}/src/ringmesh/geo_model_repair.cpp"
-	"${PROJECT_SOURCE_DIR}/src/ringmesh/geo_model_api.cpp"
-	"${PROJECT_SOURCE_DIR}/src/ringmesh/geogram_mesh_repair.cpp"
-	
-	
-	
-	
-	
-		
-	)
-	
-	
-
+file(GLOB ringmesh_src "${PROJECT_SOURCE_DIR}/src/ringmesh/*.cpp")
 file(GLOB ringmesh_include "${PROJECT_SOURCE_DIR}/include/ringmesh/*.h")
 file(GLOB zlib_src "${PROJECT_SOURCE_DIR}/src/third_party/zlib/*.c")
 file(GLOB zlib_include "${PROJECT_SOURCE_DIR}/include/third_party/zlib/*.h")

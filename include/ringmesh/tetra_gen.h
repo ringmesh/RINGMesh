@@ -43,6 +43,7 @@
 #include <geogram/basic/counted.h>
 #include <geogram/basic/smart_pointer.h>
 #include <geogram/basic/factory.h>
+#include <geogram/mesh/mesh.h>
 
 /*!
 * @file ringmesh/tetragen.h
@@ -52,16 +53,14 @@
 
 #ifdef USE_MG_TETRA
 extern "C" {
-#include <meshgems/meshgems.h>
-#include <meshgems/tetra.h>
+#   include <meshgems/meshgems.h>
+#   include <meshgems/tetra.h>
 }
 #endif
 
-namespace GEO {
-    class Mesh ;
-}
-
 namespace RINGMesh {
+    class GeoModel ;
+    class GeoModelBuilder ;
     class GeoModelElement ;
     class TetraGen ;
     class WellGroup ;
@@ -73,7 +72,10 @@ namespace RINGMesh {
         ringmesh_disable_copy( TetraGen ) ;
     public:
         virtual ~TetraGen() ;
-        static TetraGen* create( GEO::Mesh& tetmesh, const std::string& algo_name ) ;
+        static TetraGen* create(
+            GeoModel& M,
+            index_t region_id,
+            const std::string& algo_name ) ;
         static void initialize() ;
 
         void set_boundaries( const GeoModelElement& region, const WellGroup* wells = nil ) ;
@@ -91,15 +93,16 @@ namespace RINGMesh {
     protected:
         TetraGen() ;
 
+        virtual void write_vertices_in_ringmesh_data_structure() = 0 ;
+        virtual void write_tet_in_ringmesh_data_structure() = 0 ;
         void initialize_storage( index_t nb_points, index_t nb_tets ) ;
         void set_point( index_t index, const double* point ) ;
-        void set_tetra( index_t index, int* tet, index_t nb_lines, index_t nb_triangles ) ;
-
-    private:
-        void set_mesh( GEO::Mesh& tetmesh ) ;
+        void set_tetra( index_t index, int* tet ) ;
 
     protected:
-        GEO::Mesh* tetmesh_ ;
+        GeoModelBuilder* builder_ ;
+        index_t output_region_ ;
+        GEO::Mesh tetmesh_constrain ;
         const GeoModelElement* region_ ;
         const WellGroup* wells_ ;
     } ;

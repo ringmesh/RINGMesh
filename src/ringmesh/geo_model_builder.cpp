@@ -1170,6 +1170,21 @@ namespace RINGMesh {
     }
 
     /*!
+     * @brief Creates new vertices to the mesh
+     * @param[in] id Element index
+     * @param[in] nb_vertices Number of vertices to create
+     * @return the first vertex index created
+     */
+    index_t GeoModelBuilder::create_element_vertices(
+        const GME::gme_t& id,
+        index_t nb_vertices )
+    {
+        GeoModelMeshElement& E = mesh_element( id ) ;
+        MeshBuilder builder( E.mesh_ ) ;
+        return builder.create_vertices( nb_vertices ) ;
+    }
+
+    /*!
      * @brief Adds vertices to the mesh
      * @details No update of the model vertices is done
      *
@@ -1378,6 +1393,37 @@ namespace RINGMesh {
 
         set_element_vertices( gme_t( GME::REGION, region_id ), vertices, false ) ;
         assign_region_tet_mesh( region_id, new_tet_corners ) ;
+    }
+
+    void GeoModelBuilder::set_region_element_geometry(
+        index_t region_id,
+        index_t cell_id,
+        const std::vector< index_t >& corners )
+    {
+        GeoModelMeshElement& E = mesh_element( GME::REGION, region_id ) ;
+        MeshBuilder builder( E.mesh_ ) ;
+
+        for( index_t cell_vertex = 0; cell_vertex < corners.size(); cell_vertex++ ) {
+            builder.set_cell_vertex( cell_id, cell_vertex, corners[cell_vertex] ) ;
+        }
+    }
+
+    /*!
+     * @brief Creates new cells in the mesh
+     * @param[in] region_id Element index
+     * @param[in] type Type of cell
+     * @param[in] nb_cells Number of cells to creates
+     * @return the index of the first created cell
+     */
+    index_t GeoModelBuilder::create_region_element_cells(
+        index_t region_id,
+        GEO::MeshCellType type,
+        index_t nb_cells )
+    {
+        GeoModelMeshElement& E = mesh_element( GME::REGION, region_id ) ;
+        MeshBuilder builder( E.mesh_ ) ;
+
+        return builder.create_cells( nb_cells, type ) ;
     }
 
     void GeoModelBuilder::assign_surface_triangle_mesh(

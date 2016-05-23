@@ -118,6 +118,8 @@ namespace RINGMesh {
                     return nb_interfaces();
                 case GME::LAYER:
                     return nb_layers();
+                default:
+                    return 0 ;
             }
 
             //if( type < GME::NO_TYPE ) {
@@ -188,31 +190,31 @@ namespace RINGMesh {
          */
         index_t nb_corners() const
         {
-            return corners_.size() ;
+            return static_cast< index_t >( corners_.size() ) ;
         }
         index_t nb_lines() const
         {
-            return lines_.size() ;
+            return static_cast< index_t >( lines_.size() ) ;
         }
         index_t nb_surfaces() const
         {
-            return surfaces_.size() ;
+            return static_cast< index_t >( surfaces_.size() ) ;
         }
         index_t nb_regions() const
         {
-            return regions_.size() ;
+            return static_cast< index_t >( regions_.size() ) ;
         }
         index_t nb_contacts() const
         {
-            return contacts_.size() ;
+            return static_cast< index_t >( contacts_.size() ) ;
         }
         index_t nb_interfaces() const
         {
-            return interfaces_.size() ;
+            return static_cast< index_t >( interfaces_.size() ) ;
         }
         index_t nb_layers() const
         {
-            return layers_.size() ;
+            return static_cast< index_t >( layers_.size() ) ;
         }
 
         const Corner& corner( index_t index ) const
@@ -322,7 +324,7 @@ namespace RINGMesh {
         {
             switch( type ) {
                 case GME::CORNER:
-                    return *(std::vector<GME*> *)&corners_ ;   // C'est dégueulasse je sais JP
+                    return *(std::vector<GME*> *)&corners_ ;   // C'est dï¿½gueulasse je sais JP
                 case GME::LINE:
                     return *(std::vector<GME*> *)&lines_ ;
                 case GME::SURFACE:
@@ -330,48 +332,16 @@ namespace RINGMesh {
                 case GME::REGION:
                     return *(std::vector<GME*> *)&regions_ ;
                 case GME::CONTACT:
-                    return *(std::vector<GME*> *)&contacts_ ;
+                    return contacts_ ;
                 case GME::INTERFACE:
-                    return *(std::vector<GME*> *)&interfaces_ ;
+                    return interfaces_ ;
                 case GME::LAYER:
-                    return *(std::vector<GME*> *)&layers_ ;
+                    return layers_ ;
                 default:
                     ringmesh_assert_not_reached ;
                     return *(std::vector<GME*> *)&surfaces_ ;
             }
         }
-
-         // GME** begin_elements( GME::TYPE type )
-         // {
-         //     GME* first_element = nil ;
-         //     switch( type ) {
-         //         case GME::CORNER:
-         //             first_element = corners_[0] ;
-         //             break ;
-         //         case GME::LINE:
-         //             first_element = lines_[0] ;
-         //             break ;
-         //         case GME::SURFACE:
-         //             first_element = surfaces_[0] ;
-         //             break ;
-         //         case GME::REGION:
-         //             first_element = regions_[0] ;
-         //             break ;
-         //         case GME::CONTACT:
-         //             first_element = contacts_[0] ;
-         //             break ;
-         //         case GME::INTERFACE:
-         //             first_element = interfaces_[0] ;
-         //             break ;
-         //         case GME::LAYER:
-         //             first_element = layers_[0] ;
-         //             break ;
-         //         default:
-         //             ringmesh_assert_not_reached ;
-         //             return nil ;
-         //     }
-         //     return &first_element ;
-         // }
 
         /*!
          * @brief Modifiable pointer to an element of the model
