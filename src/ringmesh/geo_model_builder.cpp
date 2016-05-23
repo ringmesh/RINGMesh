@@ -1233,8 +1233,8 @@ namespace RINGMesh {
         set_element_vertices( gme_t( GME::LINE, line_id ), vertices, false ) ;
 
         GeoModelMeshElement& E = mesh_element( GME::LINE, line_id ) ;
+        MeshBuilder builder( E.mesh_ ) ;
         for( index_t e = 1; e < E.nb_vertices(); e++ ) {
-            MeshBuilder builder( E.mesh_ ) ;
             builder.create_edge( e - 1, e ) ;
         }
     }
@@ -1442,7 +1442,6 @@ namespace RINGMesh {
         const std::vector< index_t >& triangle_vertices,
         const std::vector< index_t >& adjacent_triangles )
     {
-        // COPY !! REMOVE !! // Access Mesh.... 
         Mesh& M = mesh_element( GME::SURFACE, surface_id ).mesh_ ;
         ringmesh_assert( M.nb_vertices() > 0 ) ;
         MeshBuilder builder( M ) ;
@@ -1610,6 +1609,7 @@ namespace RINGMesh {
         const Line& L )
     {
         const ColocaterANN& ann = S.facet_colocater_ann() ;
+        MeshBuilder builder( S.mesh_ ) ;
         for( index_t i = 0; i + 1 < L.nb_vertices(); ++i ) {
             index_t p0 = L.model_vertex_id( i ) ;
             index_t p1 = L.model_vertex_id( i + 1 ) ;
@@ -1629,7 +1629,6 @@ namespace RINGMesh {
                     S.oriented_edge_from_model_vertex_ids( p1, p0, f2, v2 ) ;
                     ringmesh_assert( v2 != NO_ID ) ;
                 }
-                MeshBuilder builder( S.mesh_ ) ;
                 builder.set_facet_adjacent( f, v, Surface::NO_ADJACENT ) ;
                 builder.set_facet_adjacent( f2, v2, Surface::NO_ADJACENT ) ;
             }
