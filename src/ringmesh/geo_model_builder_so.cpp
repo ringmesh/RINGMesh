@@ -784,7 +784,7 @@ namespace RINGMesh {
 
         // Compute internal borders (by removing adjacencies on
         // triangle edges common to at least two surfaces)
-        compute_surfaces_internal_borders( ) ;
+        compute_surfaces_internal_borders() ;
 
         // Build GeoModel Lines and Corners from the surfaces
         model_.mesh.vertices.test_and_initialize() ;
@@ -843,11 +843,12 @@ namespace RINGMesh {
                 }
             }
         }
-        std::vector< index_t > adjacent_triangles_id( GEO::NO_FACET,
-            facets_id.size() ) ;
-        set_surface_facet_adjacencies( surface_id, facets_id, edges_id,
-            adjacent_triangles_id ) ;
-
+        if( facets_id.size() > 0 ) {
+            std::vector< index_t > adjacent_triangles_id( facets_id.size(),
+                GEO::NO_FACET ) ;
+            set_surface_facet_adjacencies( surface_id, facets_id, edges_id,
+                adjacent_triangles_id ) ;
+        }
     }
 
     void GeoModelBuilderTSolid::compute_facet_edge_centers_anns_and_surface_boxes(
