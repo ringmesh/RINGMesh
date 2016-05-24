@@ -683,6 +683,7 @@ namespace RINGMesh {
         {
             mesh_.mesh_->vertices.delete_elements( to_delete,
                 remove_isolated_vertices ) ;
+            delete_vertex_colocater() ;
         }
         /*!
          * @brief Removes all the vertices and attributes.
@@ -694,6 +695,17 @@ namespace RINGMesh {
         void clear_vertices( bool keep_attributes, bool keep_memory )
         {
             mesh_.mesh_->vertices.clear( keep_attributes, keep_memory ) ;
+            delete_vertex_colocater() ;
+        }
+        /*!
+         * @brief Deletes the ColocaterANN on vertices
+         */
+        void delete_vertex_colocater()
+        {
+            if( mesh_.ann_[ColocaterANN::VERTICES] ) {
+                delete mesh_.ann_[ColocaterANN::VERTICES] ;
+                mesh_.ann_[ColocaterANN::VERTICES] = nil ;
+            }
         }
 
         /*!@}
@@ -744,6 +756,7 @@ namespace RINGMesh {
         {
             mesh_.mesh_->edges.delete_elements( to_delete,
                 remove_isolated_vertices ) ;
+            delete_edge_colocater() ;
         }
         /*!
          * @brief Removes all the edges and attributes.
@@ -754,6 +767,17 @@ namespace RINGMesh {
          */
         void clear_edges(bool keep_attributes/*=true*/, bool keep_memory/*=false*/){
             mesh_.mesh_->edges.clear( keep_attributes, keep_memory);
+            delete_edge_colocater() ;
+        }
+        /*!
+         * @brief Deletes the ColocaterANN on edges
+         */
+        void delete_edge_colocater()
+        {
+            if( mesh_.ann_[ColocaterANN::EDGES] ) {
+                delete mesh_.ann_[ColocaterANN::EDGES] ;
+                mesh_.ann_[ColocaterANN::EDGES] = nil ;
+            }
         }
 
         /*!@}

@@ -1139,16 +1139,11 @@ namespace RINGMesh {
         }
     }
 
-    ColocaterANN::ColocaterANN()
-        : ann_points_( nil )
-    {
-    }
-
     ColocaterANN::ColocaterANN(
         const GEO::Mesh& mesh,
         const MeshLocation& location,
         bool copy )
-        : ann_points_( nil )
+        : ann_points_( nil ), delete_points_( true )
     {
         ann_tree_ = GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
         switch( location ) {
@@ -1168,6 +1163,9 @@ namespace RINGMesh {
                 build_colocater_ann_cells( mesh ) ;
                 break ;
             }
+            default:
+                ringmesh_assert_not_reached ;
+                break ;
         }
     }
 
@@ -1177,13 +1175,14 @@ namespace RINGMesh {
         ann_tree_ = GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
         if( copy ) {
             ann_points_ = new double[nb_vertices * 3] ;
+            delete_points_ = true ;
             GEO::Memory::copy( ann_points_, vertices.data()->data(),
                 3 * nb_vertices * sizeof(double) ) ;
-            ann_tree_->set_points( nb_vertices, ann_points_ ) ;
         } else {
-            ann_points_ = nil ;
-            ann_tree_->set_points( nb_vertices, vertices.data()->data() ) ;
+            ann_points_ = const_cast< double* >( vertices.data()->data() ) ;
+            delete_points_ = false ;
         }
+        ann_tree_->set_points( nb_vertices, ann_points_ ) ;
     }
 
     /*!
@@ -1218,14 +1217,17 @@ namespace RINGMesh {
                 }
                 result.push_back( neighbors[i] ) ;
             }
-        } while( result.size() == cur_neighbor ) ;
+        } while( result.size() == cur_neighbor && result.size() < nb_points ) ;
 
         return !result.empty() ;
     }
 
-    void ColocaterANN::get_colocated_index_mapping( GEO::vector< index_t >& index_map ) const
+    index_t ColocaterANN::get_colocated_index_mapping( GEO::vector< index_t >& index_map ) const
     {
         index_map.resize( ann_tree_->nb_points() ) ;
+        for( index_t i = 0; i < index_map.size(); i++ ) {
+            index_map[i] = i ;
+        }
         for( index_t i = 0; i < index_map.size(); i++ ) {
             if( index_map[i] != i ) continue ;
             std::vector< index_t > results ;
@@ -1247,9 +1249,10 @@ namespace RINGMesh {
                 index_map[i] -= offset ;
             }
         }
+        return offset ;
     }
 
-    void ColocaterANN::get_colocated_index_mapping( GEO::vector< index_t >& index_map, GEO::vector< vec3 >& unique_points ) const
+    index_t ColocaterANN::get_colocated_index_mapping( GEO::vector< index_t >& index_map, GEO::vector< vec3 >& unique_points ) const
     {
         get_colocated_index_mapping( index_map ) ;
         unique_points.reserve( index_map.size() ) ;
@@ -1265,6 +1268,7 @@ namespace RINGMesh {
                 offset++ ;
             }
         }
+        return offset ;
     }
 
     /*!
@@ -1303,15 +1307,14 @@ namespace RINGMesh {
             return ;
         }
         if( !copy ) {
-            ann_points_ = nil ;
-            ann_tree_->set_points( nb_vertices,
-                mesh_vertices.point_ptr( 0 ) ) ;
+            ann_points_ = const_cast< double* >( mesh_vertices.point_ptr( 0 ) ) ; ;
+            delete_points_ = false ;
         } else {
             ann_points_ = new double[nb_vertices * 3] ;
             GEO::Memory::copy( ann_points_, mesh_vertices.point_ptr( 0 ),
                 nb_vertices * 3 * sizeof(double) ) ;
-            ann_tree_->set_points( nb_vertices, ann_points_ ) ;
         }
+        ann_tree_->set_points( nb_vertices, ann_points_ ) ;
     }
 
     void ColocaterANN::build_colocater_ann_edges( const GEO::Mesh& mesh )
