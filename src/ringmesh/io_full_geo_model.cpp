@@ -200,7 +200,7 @@ namespace {
                 return false ;
             }
         }
-        GEO::mesh_save( geo_model_element_mesh.mesh(), name, flags ) ;
+        geo_model_element_mesh.save( name, flags ) ;
         return true ;
     }
 
