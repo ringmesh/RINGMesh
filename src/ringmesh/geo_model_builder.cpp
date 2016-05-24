@@ -53,7 +53,6 @@
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_api.h>
 #include <ringmesh/geo_model_validity.h>
-//#include <ringmesh/geogram_extension.h>
 #include <ringmesh/geometry.h>
 #include <ringmesh/geogram_mesh_repair.h>
 #include <ringmesh/utils.h>
@@ -1312,8 +1311,8 @@ namespace RINGMesh {
         set_element_vertices( gme_t( GME::LINE, line_id ), unique_vertices,
             clear_vertices ) ;
 
+        MeshBuilder builder( E.mesh_ ) ;
         for( index_t e = 1; e < E.nb_vertices(); e++ ) {
-            MeshBuilder builder( E.mesh_ ) ;
             builder.create_edge( e - 1, e ) ;
         }
     }
@@ -3802,7 +3801,6 @@ namespace RINGMesh {
     }
     void GeoModelBuilderGM::load_file()
     {
-
         unzFile uz = unzOpen( filename_.c_str() ) ;
         unz_global_info global_info ;
         if( unzGetGlobalInfo( uz, &global_info ) != UNZ_OK ) {
@@ -3868,11 +3866,22 @@ namespace RINGMesh {
                 file_to_extract_and_load ) ;
             std::string str_try = file_to_extract_and_load + ".geogram" ;
             if( unzLocateFile( uz, str_try.c_str(), 0 ) != UNZ_OK ) {
-                GEO::Logger::warn( "I/O" )
-                    << "You try to open a old .gm with meshb inside it. If you launch it form ringmeshconvert it's ok, if not, be careful it will be not supported soon, convert in to the new gm gile using ringmeshconvert in:geomodel=old_geomodel.gm out:geomodel=new_geomodel.gm."
-                    << std::endl ;
                 str_try = file_to_extract_and_load + ".meshb" ;
-
+                if( unzLocateFile( uz, str_try.c_str(), 0 ) != UNZ_OK ) {
+                    if( gme_t != GME::REGION ) {
+                        std::string message = "Invalid format of .gm file" ;
+                        message += "\n.geogram file (defining mesh) is missing." ;
+                        throw RINGMeshException( "I/O", message ) ;
+                    }
+                    return ; // a region is not necessary meshed.
+                } else {
+                    std::string message =
+                        "Warning! you are using an old file (*.gm). \n" ;
+                    message += "Please use ringmeshconvert to update this file. \n" ;
+                    message +=
+                        "ringmeshconvert in:geomodel=old_geomodel.gm out:geomodel=new_geomodel.gm" ;
+                    GEO::Logger::warn( "I/O" ) << message << std::endl ;
+                }
             }
             unzip_one_file( uz, str_try.c_str() ) ;
             Mesh cur_mesh( model_, 3, false ) ;

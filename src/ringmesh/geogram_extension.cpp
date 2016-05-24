@@ -43,7 +43,6 @@
 #include <geogram/mesh/mesh_io.h>
 #include <geogram/mesh/mesh_repair.h>
 
-
 /*!
  * @todo Re-orgarnize this mess
  */
@@ -70,7 +69,6 @@ namespace RINGMesh {
 
     using GEO::vec3 ;
     using GEO::Mesh ;
-        
 
     /***********************************************************************/
     /* Loading and saving a GEO::Mesh                                      */
@@ -78,16 +76,17 @@ namespace RINGMesh {
     /*! 
      * @brief TSurfMeshIOHandler for importing .ts files into a mesh.
      */
-    class TSurfMeshIOHandler : public GEO::MeshIOHandler {
-    public:   
-        TSurfMeshIOHandler() :
-            mesh_dimension_(3),
-            nb_vertices_(0), 
-            nb_triangles_(0),
-            z_sign_(1)
+    class TSurfMeshIOHandler: public GEO::MeshIOHandler {
+    public:
+        TSurfMeshIOHandler()
+            :
+                mesh_dimension_( 3 ),
+                nb_vertices_( 0 ),
+                nb_triangles_( 0 ),
+                z_sign_( 1 )
         {
         }
-        
+
         /*!
          * @brief Load a TSurf saved in .ts format
          * @warning Assumes there is only one TSurf in the file.
@@ -101,12 +100,11 @@ namespace RINGMesh {
         virtual bool load(
             const std::string& filename,
             GEO::Mesh& mesh,
-            const GEO::MeshIOFlags& flag = GEO::MeshIOFlags()
-            )
+            const GEO::MeshIOFlags& flag = GEO::MeshIOFlags() )
         {
             ringmesh_unused( flag ) ;
             filename_ = filename ;
-            if( !is_file_valid()) {
+            if( !is_file_valid() ) {
                 return false ;
             } else {
                 read_number_of_vertices_and_triangles() ;
@@ -122,7 +120,10 @@ namespace RINGMesh {
          * @brief Save a Mesh in .ts format
          * @todo To be implemented.
          */
-        virtual bool save( const GEO::Mesh&, const std::string&, const GEO::MeshIOFlags& )
+        virtual bool save(
+            const GEO::Mesh&,
+            const std::string&,
+            const GEO::MeshIOFlags& )
         {
             GEO::Logger::err( "I/O" )
                 << "Saving a Mesh into TSurf format not implemented yet"
@@ -144,10 +145,11 @@ namespace RINGMesh {
                         } else if( in.field_matches( 1, "Depth" ) ) {
                             z_sign_ = -1 ;
                         }
-                    }
-                    else if( in.field_matches( 0, "VRTX" ) || in.field_matches( 0, "PVRTX" ) ) {
+                    } else if( in.field_matches( 0, "VRTX" )
+                        || in.field_matches( 0, "PVRTX" ) ) {
                         nb_vertices_++ ;
-                    } else if( in.field_matches( 0, "PATOM" ) || in.field_matches( 0, "ATOM" ) ) {
+                    } else if( in.field_matches( 0, "PATOM" )
+                        || in.field_matches( 0, "ATOM" ) ) {
                         nb_vertices_++ ;
                     } else if( in.field_matches( 0, "TRGL" ) ) {
                         nb_triangles_++ ;
@@ -155,7 +157,7 @@ namespace RINGMesh {
                 }
             }
         }
-        
+
         void read_vertices_and_triangles()
         {
             GEO::LineInput in( filename_ ) ;
@@ -164,21 +166,23 @@ namespace RINGMesh {
             while( !in.eof() && in.get_line() ) {
                 in.get_fields() ;
                 if( in.nb_fields() > 0 ) {
-                    if( in.field_matches( 0, "VRTX" ) || in.field_matches( 0, "PVRTX" ) ) {
-                        vertices_[ mesh_dimension_*v ]     =  in.field_as_double(2);
-                        vertices_[ mesh_dimension_*v + 1 ] = in.field_as_double(3);
-                        vertices_[ mesh_dimension_*v + 2 ] = in.field_as_double(4) * z_sign_ ;
+                    if( in.field_matches( 0, "VRTX" )
+                        || in.field_matches( 0, "PVRTX" ) ) {
+                        vertices_[mesh_dimension_ * v] = in.field_as_double( 2 ) ;
+                        vertices_[mesh_dimension_ * v + 1] = in.field_as_double( 3 ) ;
+                        vertices_[mesh_dimension_ * v + 2] = in.field_as_double( 4 ) * z_sign_ ;
                         ++v ;
-                    } else if( in.field_matches( 0, "PATOM" ) || in.field_matches( 0, "ATOM" ) ) {
+                    } else if( in.field_matches( 0, "PATOM" )
+                        || in.field_matches( 0, "ATOM" ) ) {
                         index_t v0 = in.field_as_uint( 2 ) - 1 ;
-                        vertices_[ mesh_dimension_*v ]     = vertices_[ mesh_dimension_*v0 ] ;
-                        vertices_[ mesh_dimension_*v + 1 ] = vertices_[ mesh_dimension_*v0 + 1 ] ;
-                        vertices_[ mesh_dimension_*v + 2 ] = vertices_[ mesh_dimension_*v0 + 2 ] ;
+                        vertices_[mesh_dimension_ * v] = vertices_[mesh_dimension_ * v0] ;
+                        vertices_[mesh_dimension_ * v + 1] = vertices_[mesh_dimension_ * v0 + 1] ;
+                        vertices_[mesh_dimension_ * v + 2] = vertices_[mesh_dimension_ * v0 + 2] ;
                         ++v ;
                     } else if( in.field_matches( 0, "TRGL" ) ) {
-                        triangles_[ 3*t ]     = index_t( in.field_as_uint(1)-1 ) ;
-                        triangles_[ 3*t + 1 ] = index_t( in.field_as_uint(2)-1 ) ;
-                        triangles_[ 3*t + 2 ] = index_t( in.field_as_uint(3)-1 ) ;
+                        triangles_[3 * t] = index_t( in.field_as_uint( 1 ) - 1 ) ;
+                        triangles_[3 * t + 1] = index_t( in.field_as_uint( 2 ) - 1 ) ;
+                        triangles_[3 * t + 2] = index_t( in.field_as_uint( 3 ) - 1 ) ;
                         t++ ;
                     }
                 }
@@ -187,13 +191,15 @@ namespace RINGMesh {
 
         void assign_and_repair_mesh( GEO::Mesh& mesh )
         {
-            GEO::coord_index_t dimension = static_cast< GEO::coord_index_t >( mesh_dimension_ ) ;
-            mesh.facets.assign_triangle_mesh( dimension, vertices_, triangles_, true ) ;
+            GEO::coord_index_t dimension =
+                static_cast< GEO::coord_index_t >( mesh_dimension_ ) ;
+            mesh.facets.assign_triangle_mesh( dimension, vertices_, triangles_,
+                true ) ;
             // Do not use GEO::MESH_REPAIR_DEFAULT because it glues the 
             // disconnected edges along internal boundaries
             GEO::mesh_repair( mesh, GEO::MESH_REPAIR_DUP_F ) ;
         }
-        
+
         bool is_file_valid()
         {
             GEO::LineInput in( filename_ ) ;
@@ -208,7 +214,7 @@ namespace RINGMesh {
         {
             vertices_.resize( mesh_dimension_ * nb_vertices_ ) ;
         }
-        
+
         void allocate_triangles()
         {
             triangles_.resize( 3 * nb_triangles_ ) ;
@@ -241,8 +247,7 @@ namespace RINGMesh {
                         vec3 vertex = load_vertex( file, 1 ) ;
                         mesh.vertices.create_vertex( vertex.data() ) ;
                     } else if( file.field_matches( 0, "s" ) ) {
-                        mesh.edges.create_edge(
-                            file.field_as_uint( 1 ) - 1,
+                        mesh.edges.create_edge( file.field_as_uint( 1 ) - 1,
                             file.field_as_uint( 2 ) - 1 ) ;
                     }
                 }
@@ -279,7 +284,6 @@ namespace RINGMesh {
         geo_register_MeshIOHandler_creator( LINMeshIOHandler, "lin" ) ;
     }
 
- 
     /***********************************************************************/
 #ifdef __GNUC__
 #   pragma GCC diagnostic ignored "-Wsign-conversion"
@@ -290,101 +294,108 @@ namespace RINGMesh {
 #endif
 
     /*!
-    * Computes the volume of a Mesh cell
-    * @param[in] M the mesh
-    * @param[in] c the cell index
-    * @return the volume of the cell
-    */
-    double mesh_cell_volume( const GEO::Mesh& M, index_t c )
+     * Computes the volume of a Mesh cell
+     * @param[in] M the mesh
+     * @param[in] c the cell index
+     * @return the volume of the cell
+     */
+    double mesh_cell_signed_volume( const GEO::Mesh& M, index_t c )
     {
+        double volume = 0 ;
         switch( M.cells.type( c ) ) {
             case GEO::MESH_TET:
-                return GEO::Geom::tetra_volume(
+                volume = GEO::Geom::tetra_signed_volume(
                     GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 0 ) ),
                     GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 1 ) ),
                     GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 2 ) ),
                     GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 3 ) ) ) ;
+                break ;
             case GEO::MESH_PYRAMID:
-                return GEO::Geom::tetra_volume(
+                volume = GEO::Geom::tetra_signed_volume(
                     GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 0 ) ),
                     GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 1 ) ),
                     GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 2 ) ),
-                    GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 4 ) ) )
-                    + GEO::Geom::tetra_volume(
+                    GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 4 ) ) ) ;
+                volume += GEO::Geom::tetra_signed_volume(
                     GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 0 ) ),
                     GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 2 ) ),
                     GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 3 ) ),
                     GEO::Geom::mesh_vertex( M, M.cells.vertex( c, 4 ) ) ) ;
+                break ;
             case GEO::MESH_PRISM:
             case GEO::MESH_HEX: {
                 vec3 ori( 0, 0, 0 ) ;
-                double volume = 0 ;
                 for( index_t f = 0; f < M.cells.nb_facets( c ); f++ ) {
                     switch( M.cells.facet_nb_vertices( c, f ) ) {
                         case 3:
                             volume += GEO::Geom::tetra_signed_volume(
                                 GEO::Geom::mesh_vertex( M,
-                                M.cells.facet_vertex( c, f, 0 ) ),
+                                    M.cells.facet_vertex( c, f, 0 ) ),
                                 GEO::Geom::mesh_vertex( M,
-                                M.cells.facet_vertex( c, f, 1 ) ),
+                                    M.cells.facet_vertex( c, f, 1 ) ),
                                 GEO::Geom::mesh_vertex( M,
-                                M.cells.facet_vertex( c, f, 2 ) ), ori ) ;
+                                    M.cells.facet_vertex( c, f, 2 ) ), ori ) ;
                             break ;
                         case 4:
                             volume += GEO::Geom::tetra_signed_volume(
                                 GEO::Geom::mesh_vertex( M,
-                                M.cells.facet_vertex( c, f, 0 ) ),
+                                    M.cells.facet_vertex( c, f, 0 ) ),
                                 GEO::Geom::mesh_vertex( M,
-                                M.cells.facet_vertex( c, f, 1 ) ),
+                                    M.cells.facet_vertex( c, f, 1 ) ),
                                 GEO::Geom::mesh_vertex( M,
-                                M.cells.facet_vertex( c, f, 2 ) ), ori ) ;
+                                    M.cells.facet_vertex( c, f, 2 ) ), ori ) ;
                             volume += GEO::Geom::tetra_signed_volume(
                                 GEO::Geom::mesh_vertex( M,
-                                M.cells.facet_vertex( c, f, 0 ) ),
+                                    M.cells.facet_vertex( c, f, 0 ) ),
                                 GEO::Geom::mesh_vertex( M,
-                                M.cells.facet_vertex( c, f, 2 ) ),
+                                    M.cells.facet_vertex( c, f, 2 ) ),
                                 GEO::Geom::mesh_vertex( M,
-                                M.cells.facet_vertex( c, f, 3 ) ), ori ) ;
+                                    M.cells.facet_vertex( c, f, 3 ) ), ori ) ;
                             break ;
                         default:
-                            ringmesh_assert_not_reached;
+                            ringmesh_assert_not_reached ;
                             return 0 ;
                     }
                 }
-                ringmesh_assert( volume > 0 ) ;
-                return volume ;
+                break ;
             }
             default:
                 return 0 ;
         }
+        return volume ;
     }
 
+    double mesh_cell_volume( const GEO::Mesh& M, index_t c )
+    {
+        return std::fabs( mesh_cell_signed_volume( M, c ) ) ;
+    }
     /*!
-    * Computes the Mesh cell facet barycenter
-    * @param[in] M the mesh
-    * @param[in] cell the cell index
-    * @param[in] f the facet index in the cell
-    * @return the cell facet center
-    */
+     * Computes the Mesh cell facet barycenter
+     * @param[in] M the mesh
+     * @param[in] cell the cell index
+     * @param[in] f the facet index in the cell
+     * @return the cell facet center
+     */
     vec3 mesh_cell_facet_center( const GEO::Mesh& M, index_t cell, index_t f )
     {
         vec3 result( 0., 0., 0. ) ;
         index_t nb_vertices = M.cells.facet_nb_vertices( cell, f ) ;
         for( index_t v = 0; v < nb_vertices; ++v ) {
-            result += GEO::Geom::mesh_vertex( M, M.cells.facet_vertex( cell, f, v ) ) ;
+            result += GEO::Geom::mesh_vertex( M,
+                M.cells.facet_vertex( cell, f, v ) ) ;
         }
-        ringmesh_assert( nb_vertices > 0 );
+        ringmesh_assert( nb_vertices > 0 ) ;
 
-        return result/ nb_vertices ;
+        return result / static_cast< double >( nb_vertices ) ;
     }
 
     /*!
-    * Computes the non weighted barycenter of a volumetric 
-    * cell of a Mesh
-    * @param[in] M the mesh
-    * @param[in] cell the cell index
-    * @return the cell center
-    */
+     * Computes the non weighted barycenter of a volumetric
+     * cell of a Mesh
+     * @param[in] M the mesh
+     * @param[in] cell the cell index
+     * @return the cell center
+     */
     vec3 mesh_cell_center( const GEO::Mesh& M, index_t cell )
     {
         vec3 result( 0.0, 0.0, 0.0 ) ;
@@ -396,16 +407,15 @@ namespace RINGMesh {
         return ( 1.0 / count ) * result ;
     }
 
-
     /*!
-    * Tests if a tetrahedron has an egde between two given points
-    * @param[in] mesh the mesh
-    * @param[in] t Tetrahedron index
-    * @param[in] p0 First vertex index
-    * @param[in] p1 Second vertex index
-    * @param[out] edge Output edge index
-    * @return The result of the test
-    */
+     * Tests if a tetrahedron has an egde between two given points
+     * @param[in] mesh the mesh
+     * @param[in] t Tetrahedron index
+     * @param[in] p0 First vertex index
+     * @param[in] p1 Second vertex index
+     * @param[out] edge Output edge index
+     * @return The result of the test
+     */
     bool has_edge(
         const GEO::Mesh& mesh,
         index_t t,
@@ -426,18 +436,18 @@ namespace RINGMesh {
     }
 
     /*!
-    * Gets all the next adjacent tetrahedra sharing an edge
-    * @param[in] mesh the mesh
-    * @param[in] t Starting tetrahedron index to test, should contain the edge
-    * @param[in] prev Previous tetrahedron index
-    * (if propagation around the edge, prevent to go back were we came from)
-    * @param[in] p0 First vertex index of the edge
-    * @param[in] p1 Second vertex index of the edge
-    * @return The edge index
-    * \pre the mesh needs to be tetrahedralized
-    *
-    * @todo Review: Are these functions really used ? They should be rewritten [JP]
-    */
+     * Gets all the next adjacent tetrahedra sharing an edge
+     * @param[in] mesh the mesh
+     * @param[in] t Starting tetrahedron index to test, should contain the edge
+     * @param[in] prev Previous tetrahedron index
+     * (if propagation around the edge, prevent to go back were we came from)
+     * @param[in] p0 First vertex index of the edge
+     * @param[in] p1 Second vertex index of the edge
+     * @return The edge index
+     * \pre the mesh needs to be tetrahedralized
+     *
+     * @todo Review: Are these functions really used ? They should be rewritten [JP]
+     */
     index_t next_around_edge(
         const GEO::Mesh& mesh,
         index_t tet,
@@ -445,19 +455,19 @@ namespace RINGMesh {
         index_t v0,
         index_t v1 )
     {
-        index_t nb_facets = mesh.cells.nb_facets( tet );
-        ringmesh_assert( nb_facets == 4 );
+        index_t nb_facets = mesh.cells.nb_facets( tet ) ;
+        ringmesh_assert( nb_facets == 4 ) ;
         /* @todo handles any cell type and change that algorithm to check adjacencies
          * only on the facets adjacent to the edge in the input tet 
          * [JP]
          */
-        for( index_t f = 0; f < nb_facets ; f++ ) {
+        for( index_t f = 0; f < nb_facets; f++ ) {
             index_t adjacent_tet = mesh.cells.adjacent( tet, f ) ;
             if( adjacent_tet == GEO::NO_CELL || adjacent_tet == prev_tet ) {
                 continue ;
             }
             index_t edge ;
-            if( has_edge( mesh, adjacent_tet, v0, v1, edge ) ) {                
+            if( has_edge( mesh, adjacent_tet, v0, v1, edge ) ) {
                 return 6 * adjacent_tet + edge ;
             }
         }
@@ -465,13 +475,13 @@ namespace RINGMesh {
     }
 
     /*!
-    * Gets all the edge indices around one edge
-    * @param[in] mesh the mesh
-    * @param[in] t First tetrahedron index to test, should include the edge
-    * @param[in] p0 First vertex index of the edge
-    * @param[in] p1 Second vertex index of the edge
-    * @param[out] result Output list of edge indices
-    */
+     * Gets all the edge indices around one edge
+     * @param[in] mesh the mesh
+     * @param[in] t First tetrahedron index to test, should include the edge
+     * @param[in] p0 First vertex index of the edge
+     * @param[in] p1 Second vertex index of the edge
+     * @param[out] result Output list of edge indices
+     */
     void edges_around_edge(
         const GEO::Mesh& mesh,
         index_t t,
@@ -491,12 +501,12 @@ namespace RINGMesh {
     }
 
     /*!
-    * Get vertices when an edge is divide into \p nb_parts parts
-    * @param[in] mesh the mesh
-    * @param[in] edge the edge id in \p mesh
-    * @param[in] nb_parts the number of edge division
-    * @param[out] points the points which divide the edge
-    */
+     * Get vertices when an edge is divide into \p nb_parts parts
+     * @param[in] mesh the mesh
+     * @param[in] edge the edge id in \p mesh
+     * @param[in] nb_parts the number of edge division
+     * @param[out] points the points which divide the edge
+     */
     void divide_edge_in_parts(
         const GEO::Mesh& mesh,
         index_t edge,
@@ -509,8 +519,8 @@ namespace RINGMesh {
         vec3 node1 = GEO::Geom::mesh_vertex( mesh, mesh.edges.vertex( edge, 1 ) ) ;
         for( index_t i = 0; i < nb_parts - 1; i++ ) {
             for( index_t j = 0; j < 3; j++ ) {
-                points[ i ][ j ] = ( i + 1 ) * pond * node1[ j ]
-                    + ( 1. - ( i + 1 ) * pond ) * node0[ j ] ;
+                points[i][j] = ( i + 1 ) * pond * node1[j]
+                    + ( 1. - ( i + 1 ) * pond ) * node0[j] ;
             }
         }
 
@@ -527,28 +537,28 @@ namespace RINGMesh {
             double pond = 1. / nb_parts ;
             for( index_t i = 0; i < nb_parts - 1; i++ ) {
                 for( index_t j = 0; j < 3; j++ ) {
-                    points[ i ][ j ] = ( i + 1 ) * pond * node1[ j ]
-                        + ( 1. - ( i + 1 ) * pond ) * node0[ j ] ;
+                    points[i][j] = ( i + 1 ) * pond * node1[j]
+                        + ( 1. - ( i + 1 ) * pond ) * node0[j] ;
                 }
             }
         }
     }
     /*!
-    * Gets the closest local vertex index in a mesh cell of a point
-    * @param[in] mesh the mesh
-    * @param[in] p the point to test
-    * @param[in] t the cell index
-    * @return the local vertex index
-    */
+     * Gets the closest local vertex index in a mesh cell of a point
+     * @param[in] mesh the mesh
+     * @param[in] p the point to test
+     * @param[in] t the cell index
+     * @return the local vertex index
+     */
     index_t get_nearest_vertex_index(
         const GEO::Mesh& mesh,
         const vec3& p,
         index_t t )
     {
-        float64 dist = GEO::Numeric::max_float64() ;
+        double dist = GEO::Numeric::max_float64() ;
         index_t result = NO_ID ;
         for( index_t v = 0; v < mesh.cells.nb_vertices( t ); v++ ) {
-            float64 distance = length2(
+            double distance = length2(
                 GEO::Geom::mesh_vertex( mesh, mesh.cells.vertex( t, v ) ) - p ) ;
             if( distance < dist ) {
                 result = v ;
@@ -576,12 +586,12 @@ namespace RINGMesh {
                 facet_vertex_itr ) ;
             const vec3& cur_vertex_vec = mesh_vertices.point( cur_vertex_id ) ;
 
-            const index_t prev_local_id = mesh_facets.prev_corner_around_facet( facet,
-                cur_vertex_id ) ;
+            const index_t prev_local_id = mesh_facets.prev_corner_around_facet(
+                facet, cur_vertex_id ) ;
             const index_t prev_id = mesh_facets.vertex( facet, prev_local_id ) ;
             const vec3& prev_vec = mesh_vertices.point( prev_id ) ;
-            const index_t next_local_id = mesh_facets.next_corner_around_facet( facet,
-                cur_vertex_id ) ;
+            const index_t next_local_id = mesh_facets.next_corner_around_facet(
+                facet, cur_vertex_id ) ;
             const index_t next_id = mesh_facets.vertex( facet, next_local_id ) ;
             const vec3& next_vec = mesh_vertices.point( next_id ) ;
 
@@ -601,36 +611,31 @@ namespace RINGMesh {
         }
     }
 
-
     /*!
-    * Rotation of all the vertices of a mesh following
-    * a defined rotational matrix.
-    *
-    * @param mesh[in,out] the mesh to rotate.
-    *
-    * @param[in] rot_mat matrix which defines the rotation.
-    */
-    void rotate_mesh(
-        GEO::Mesh& mesh,
-        const GEO::Matrix< float64, 4 >& rot_mat )
+     * Rotation of all the vertices of a mesh following
+     * a defined rotational matrix.
+     *
+     * @param mesh[in,out] the mesh to rotate.
+     *
+     * @param[in] rot_mat matrix which defines the rotation.
+     */
+    void rotate_mesh( GEO::Mesh& mesh, const GEO::Matrix< double, 4 >& rot_mat )
     {
         for( index_t v = 0; v < mesh.vertices.nb(); v++ ) {
-            float64 old_coords[ 4 ] ;
+            double old_coords[4] ;
             for( index_t i = 0; i < 3; i++ ) {
-                old_coords[ i ] = mesh.vertices.point_ptr( v )[ i ] ;
+                old_coords[i] = mesh.vertices.point_ptr( v )[i] ;
             }
-            old_coords[ 3 ] = 1. ;
-            float64 new_coords[ 4 ] ;
+            old_coords[3] = 1. ;
+            double new_coords[4] ;
             GEO::mult( rot_mat, old_coords, new_coords ) ;
 
             for( index_t i = 0; i < 3; i++ ) {
-                mesh.vertices.point_ptr( v )[ i ] = new_coords[ i ] ;
+                mesh.vertices.point_ptr( v )[i] = new_coords[i] ;
             }
             ringmesh_assert( new_coords[ 3 ] == 1. ) ;
         }
     }
-
-
 
     void print_bounded_attributes( const GEO::Mesh& M )
     {
@@ -641,17 +646,17 @@ namespace RINGMesh {
                 std::vector< bool > is_bounded( names.size(), false ) ;
                 bool failed = false ;
                 for( index_t a = 0; a < names.size(); a++ ) {
-                    if( names[ a ] == "point" ) continue ;
-                    is_bounded[ a ] = M.vertices.attributes().find_attribute_store(
-                        names[ a ] )->has_observers() ;
-                    if( is_bounded[ a ] ) failed = true ;
+                    if( names[a] == "point" ) continue ;
+                    is_bounded[a] = M.vertices.attributes().find_attribute_store(
+                        names[a] )->has_observers() ;
+                    if( is_bounded[a] ) failed = true ;
                 }
                 if( failed ) {
                     GEO::Logger::err( "Attributes" )
                         << "Attributes still bounded on vertices:" ;
                     for( index_t a = 0; a < names.size(); a++ ) {
-                        if( is_bounded[ a ] ) {
-                            GEO::Logger::err( "Attributes" ) << " " << names[ a ] ;
+                        if( is_bounded[a] ) {
+                            GEO::Logger::err( "Attributes" ) << " " << names[a] ;
                         }
                     }
                     GEO::Logger::err( "Attributes" ) << std::endl ;
@@ -665,16 +670,16 @@ namespace RINGMesh {
                 std::vector< bool > is_bounded( names.size() ) ;
                 bool failed = false ;
                 for( index_t a = 0; a < names.size(); a++ ) {
-                    is_bounded[ a ] = M.edges.attributes().find_attribute_store(
-                        names[ a ] )->has_observers() ;
-                    if( is_bounded[ a ] ) failed = true ;
+                    is_bounded[a] = M.edges.attributes().find_attribute_store(
+                        names[a] )->has_observers() ;
+                    if( is_bounded[a] ) failed = true ;
                 }
                 if( failed ) {
                     GEO::Logger::err( "Attributes" )
                         << "Attributes still bounded on edges:" ;
                     for( index_t a = 0; a < names.size(); a++ ) {
-                        if( is_bounded[ a ] ) {
-                            GEO::Logger::err( "Attributes" ) << " " << names[ a ] ;
+                        if( is_bounded[a] ) {
+                            GEO::Logger::err( "Attributes" ) << " " << names[a] ;
                         }
                     }
                     GEO::Logger::err( "Attributes" ) << std::endl ;
@@ -688,16 +693,16 @@ namespace RINGMesh {
                 std::vector< bool > is_bounded( names.size() ) ;
                 bool failed = false ;
                 for( index_t a = 0; a < names.size(); a++ ) {
-                    is_bounded[ a ] = M.facets.attributes().find_attribute_store(
-                        names[ a ] )->has_observers() ;
-                    if( is_bounded[ a ] ) failed = true ;
+                    is_bounded[a] = M.facets.attributes().find_attribute_store(
+                        names[a] )->has_observers() ;
+                    if( is_bounded[a] ) failed = true ;
                 }
                 if( failed ) {
                     GEO::Logger::err( "Attributes" )
                         << "Attributes still bounded on facets:" ;
                     for( index_t a = 0; a < names.size(); a++ ) {
-                        if( is_bounded[ a ] ) {
-                            GEO::Logger::err( "Attributes" ) << " " << names[ a ] ;
+                        if( is_bounded[a] ) {
+                            GEO::Logger::err( "Attributes" ) << " " << names[a] ;
                         }
                     }
                     GEO::Logger::err( "Attributes" ) << std::endl ;
@@ -711,16 +716,16 @@ namespace RINGMesh {
                 std::vector< bool > is_bounded( names.size() ) ;
                 bool failed = false ;
                 for( index_t a = 0; a < names.size(); a++ ) {
-                    is_bounded[ a ] =
-                        M.facet_corners.attributes().find_attribute_store( names[ a ] )->has_observers() ;
-                    if( is_bounded[ a ] ) failed = true ;
+                    is_bounded[a] =
+                        M.facet_corners.attributes().find_attribute_store( names[a] )->has_observers() ;
+                    if( is_bounded[a] ) failed = true ;
                 }
                 if( failed ) {
                     GEO::Logger::err( "Attributes" )
                         << "Attributes still bounded on facet_corners:" ;
                     for( index_t a = 0; a < names.size(); a++ ) {
-                        if( is_bounded[ a ] ) {
-                            GEO::Logger::err( "Attributes" ) << " " << names[ a ] ;
+                        if( is_bounded[a] ) {
+                            GEO::Logger::err( "Attributes" ) << " " << names[a] ;
                         }
                     }
                     GEO::Logger::err( "Attributes" ) << std::endl ;
@@ -734,16 +739,18 @@ namespace RINGMesh {
                 std::vector< bool > is_bounded( names.size() ) ;
                 bool failed = false ;
                 for( index_t a = 0; a < names.size(); a++ ) {
-                    is_bounded[ a ] = M.cells.attributes().find_attribute_store(
-                        names[ a ] )->has_observers() ;
-                    if( is_bounded[ a ] ) failed = true ;
+                    is_bounded[a] = M.cells.attributes().find_attribute_store(
+                        names[a] )->has_observers() ;
+                    if( is_bounded[a] ) {
+                        failed = true ;
+                    }
                 }
                 if( failed ) {
                     GEO::Logger::err( "Attributes" )
                         << "Attributes still bounded on cells:" ;
                     for( index_t a = 0; a < names.size(); a++ ) {
-                        if( is_bounded[ a ] ) {
-                            GEO::Logger::err( "Attributes" ) << " " << names[ a ] ;
+                        if( is_bounded[a] ) {
+                            GEO::Logger::err( "Attributes" ) << " " << names[a] ;
                         }
                     }
                     GEO::Logger::err( "Attributes" ) << std::endl ;
@@ -757,16 +764,16 @@ namespace RINGMesh {
                 std::vector< bool > is_bounded( names.size() ) ;
                 bool failed = false ;
                 for( index_t a = 0; a < names.size(); a++ ) {
-                    is_bounded[ a ] = M.cell_corners.attributes().find_attribute_store(
-                        names[ a ] )->has_observers() ;
-                    if( is_bounded[ a ] ) failed = true ;
+                    is_bounded[a] = M.cell_corners.attributes().find_attribute_store(
+                        names[a] )->has_observers() ;
+                    if( is_bounded[a] ) failed = true ;
                 }
                 if( failed ) {
                     GEO::Logger::err( "Attributes" )
                         << "Attributes still bounded on cell_corners:" ;
                     for( index_t a = 0; a < names.size(); a++ ) {
-                        if( is_bounded[ a ] ) {
-                            GEO::Logger::err( "Attributes" ) << " " << names[ a ] ;
+                        if( is_bounded[a] ) {
+                            GEO::Logger::err( "Attributes" ) << " " << names[a] ;
                         }
                     }
                     GEO::Logger::err( "Attributes" ) << std::endl ;
@@ -780,16 +787,18 @@ namespace RINGMesh {
                 std::vector< bool > is_bounded( names.size() ) ;
                 bool failed = false ;
                 for( index_t a = 0; a < names.size(); a++ ) {
-                    is_bounded[ a ] = M.cell_facets.attributes().find_attribute_store(
-                        names[ a ] )->has_observers() ;
-                    if( is_bounded[ a ] ) failed = true ;
+                    is_bounded[a] = M.cell_facets.attributes().find_attribute_store(
+                        names[a] )->has_observers() ;
+                    if( is_bounded[a] ) {
+                        failed = true ;
+                    }
                 }
                 if( failed ) {
                     GEO::Logger::err( "Attributes" )
                         << "Attributes still bounded on cell_facets:" ;
                     for( index_t a = 0; a < names.size(); a++ ) {
-                        if( is_bounded[ a ] ) {
-                            GEO::Logger::err( "Attributes" ) << " " << names[ a ] ;
+                        if( is_bounded[a] ) {
+                            GEO::Logger::err( "Attributes" ) << " " << names[a] ;
                         }
                     }
                     GEO::Logger::err( "Attributes" ) << std::endl ;
