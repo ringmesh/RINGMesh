@@ -1183,7 +1183,7 @@ namespace RINGMesh {
             test_geometry_connectivity_consistency() ;
             test_non_manifold_edges() ;
             if( check_surface_intersections_ ) {
-                test_facet_intersections() ;
+//                test_facet_intersections() ;
             }
         }
 

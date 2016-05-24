@@ -111,6 +111,15 @@ namespace RINGMesh {
         kdtree.get_colocated_index_mapping( colocated ) ;
 //        GEO::mesh_detect_colocated_vertices( M, colocated ) ;
 
+        index_t nb_todelete = 0 ;
+        for( index_t v = 0; v < colocated.size(); ++v ) {
+            if( colocated[v] == v - nb_todelete ) {
+                colocated[v] = v ;
+            } else {
+                nb_todelete++ ;
+            }
+        }
+
         GEO::vector< index_t > degenerate ;
         mesh_detect_degenerate_facets( M, degenerate, colocated ) ;
         return static_cast< index_t >( std::count( degenerate.begin(),
@@ -286,32 +295,28 @@ namespace RINGMesh {
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;
 
             for( index_t e = 0; e < model_.nb_elements( T ); ++e ) {
-                const GMME& E = dynamic_cast< const GMME& >( model_.element(
-                    gme_t( T, e ) ) ) ;
+                const GMME& E = model_.mesh_element( gme_t( T, e ) ) ;
 
                 const ColocaterANN& kdtree = E.vertex_colocater_ann() ;
                 GEO::vector< index_t > colocated ;
                 kdtree.get_colocated_index_mapping( colocated ) ;
-//                GEO::mesh_detect_colocated_vertices( M, colocated, epsilon ) ;
 
                 // Get the vertices to delete
                 std::set< index_t > inside_border ;
                 vertices_on_inside_boundary( E, inside_border ) ;
 
                 GEO::vector< index_t > to_delete( colocated.size(), 0 ) ;
-                GEO::vector< index_t > old2new( colocated.size() ) ;
                 index_t nb_todelete = 0 ;
                 index_t cur = 0 ;
                 for( index_t v = 0; v < colocated.size(); ++v ) {
-                    if( colocated[v] == v
+                    if( colocated[v] == v - nb_todelete
                         || inside_border.find( v ) != inside_border.end() ) {
                         // This point is kept 
                         // No colocated or on an inside boundary
-                        old2new[v] = cur ;
+                        colocated[v] = v ;
                         ++cur ;
                     } else {
                         // The point is to remove
-                        old2new[v] = old2new[colocated[v]] ;
                         to_delete[v] = 1 ;
                         nb_todelete++ ;
                     }
@@ -325,8 +330,7 @@ namespace RINGMesh {
                     to_remove.insert( E.gme_id() ) ;
                     continue ;
                 } else {
-                    GMME& ME = dynamic_cast< GMME& >( model_.modifiable_element(
-                        gme_t( T, e ) ) ) ;
+                    GMME& ME = model_.modifiable_mesh_element( gme_t( T, e ) ) ;
                     MeshBuilder builder( ME.mesh_ ) ;
                     for( index_t c = 0; c < E.mesh_.nb_facet_corners(); c++ ) {
                         builder.set_facet_corner( c,
@@ -349,7 +353,6 @@ namespace RINGMesh {
 
     void GeoModelRepair::geo_model_mesh_repair()
     {
-
         // Force removal of global vertices - Bugs ? I do not know where [JP]
         model_.mesh.vertices.clear() ;
 
