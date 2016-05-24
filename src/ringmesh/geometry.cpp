@@ -34,10 +34,8 @@
  */
 
 #include <ringmesh/geometry.h>
-//#include <ringmesh/mesh.h>
 
 #include <geogram/mesh/mesh.h>
-
 #include <geogram/mesh/mesh_AABB.h>
 #include <geogram/mesh/mesh_geometry.h>
 
@@ -1163,6 +1161,10 @@ namespace RINGMesh {
                 build_colocater_ann_cells( mesh ) ;
                 break ;
             }
+            case CELL_FACETS: {
+                build_colocater_ann_cell_facets( mesh ) ;
+                break ;
+            }
             default:
                 ringmesh_assert_not_reached ;
                 break ;
@@ -1307,7 +1309,7 @@ namespace RINGMesh {
             return ;
         }
         if( !copy ) {
-            ann_points_ = const_cast< double* >( mesh_vertices.point_ptr( 0 ) ) ; ;
+            ann_points_ = const_cast< double* >( mesh_vertices.point_ptr( 0 ) ) ;
             delete_points_ = false ;
         } else {
             ann_points_ = new double[nb_vertices * 3] ;
@@ -1353,6 +1355,21 @@ namespace RINGMesh {
             fill_ann_points( index_in_ann, center ) ;
         }
         ann_tree_->set_points( nb_facets, ann_points_ ) ;
+    }
+
+    void ColocaterANN::build_colocater_ann_cell_facets( const GEO::Mesh& mesh )
+    {
+        index_t nb_cell_facets = mesh.cell_facets.nb() ;
+        ann_points_ = new double[nb_cell_facets * 3] ;
+        index_t index_in_ann = 0 ;
+        for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
+            for( index_t f = 0; f < mesh.cells.nb_facets( c ); f++ ) {
+                vec3 center = mesh_cell_facet_center( mesh, c, f ) ;
+                fill_ann_points( index_in_ann, center ) ;
+                index_in_ann += 3 ;
+            }
+        }
+        ann_tree_->set_points( nb_cell_facets, ann_points_ ) ;
     }
 
     void ColocaterANN::build_colocater_ann_cells( const GEO::Mesh& mesh )
