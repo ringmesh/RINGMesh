@@ -949,13 +949,13 @@ namespace {
         GEO::Mesh mesh ;
         for( index_t f = 0; f < facets.size(); ++f ) {
             index_t cur_facet = facets[f] ;
-            index_t nb_vertices_in_facet = surface.nb_vertices_in_facet(
+            index_t nb_vertices_in_facet = surface.nb_polytope_vertices(
                 cur_facet ) ;
             GEO::vector< index_t > vertices ;
             vertices.reserve( nb_vertices_in_facet ) ;
             for( index_t v = 0; v < nb_vertices_in_facet; v++ ) {
                 index_t new_vertex = mesh.vertices.create_vertex(
-                    surface.vertex( cur_facet, v ).data() ) ;
+                    surface.polytope_vertex( cur_facet, v ).data() ) ;
                 vertices.push_back( new_vertex ) ;
             }
             mesh.facets.create_polygon( vertices ) ;
@@ -1019,8 +1019,8 @@ namespace {
         const ColocaterANN& cell_facet_barycenter_ann )
     {
         std::vector< index_t > unconformal_facets ;
-        for( index_t f = 0; f < surface.nb_cells(); f++ ) {
-            vec3 center = surface.facet_barycenter( f ) ;
+        for( index_t f = 0; f < surface.nb_polytope(); f++ ) {
+            vec3 center = surface.polytope_center( f ) ;
             std::vector< index_t > result ;
             if( !cell_facet_barycenter_ann.get_colocated( center, result ) ) {
                 unconformal_facets.push_back( f ) ;
@@ -1139,9 +1139,9 @@ namespace {
             }
             if( geomodel().mesh.cells.nb() > 0 ) {
                 // Check the consistency between Surface facets and Region cell facets
-                GEO::Mesh mesh ;
+                Mesh mesh( geomodel(), 3, true ) ;
                 geomodel().mesh.copy_mesh( mesh ) ;
-                ColocaterANN ann( mesh, ColocaterANN::CELL_FACETS ) ;
+                ColocaterANN ann( mesh.gfx_mesh(), ColocaterANN::CELL_FACETS ) ;
                 for( index_t i = 0; i < geomodel().nb_surfaces(); ++i ) {
                     if( !is_surface_conformal_to_volume( geomodel().surface( i ),
                         ann ) ) {
