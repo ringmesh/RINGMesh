@@ -160,24 +160,6 @@ namespace {
         }
     }
 
-//    /**
-//     * \brief Zooms in.
-//     * \details Zooming factor is 1.1x.
-//     */
-//    void zoom_in()
-//    {
-//        *glup_viewer_float_ptr( GLUT_VIEWER_ZOOM ) *= 1.1f ;
-//    }
-//
-//    /**
-//     * \brief Zooms out.
-//     * \details De-zooming factor is (1/1.1)x.
-//     */
-//    void zoom_out()
-//    {
-//        *glut_viewer_float_ptr( GLUT_VIEWER_ZOOM ) /= 1.1f ;
-//    }
-
     /**
      * \brief Toggles black or white background color.
      */
