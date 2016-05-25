@@ -40,11 +40,11 @@
 
 //#include <geogram/mesh/mesh.h>
 
-#include <ringmesh/geo_model_element.h>
+#include <ringmesh/geo_model_entity.h>
 #include <ringmesh/mesh.h>
 /*!
  * @file ringmesh/geo_model_mesh.h
- * @brief Classes to manage globally the indexing of mesh elements of a GeoModel
+ * @brief Classes to manage globally the indexing of mesh entitys of a GeoModel
  * @author Arnaud Botella and Jeanne Pellerin
  */
 
@@ -117,7 +117,7 @@ namespace RINGMesh {
         index_t add_vertex( const vec3& point ) ;
 
         /*!
-         * @brief Add a vertex in a GeoModelElement
+         * @brief Add a vertex in a GeoModelEntity
          *        corresponding to an existing vertex of the model
          */
         void add_to_bme( index_t v, const GMEVertex& v_gme ) ;
@@ -162,7 +162,7 @@ namespace RINGMesh {
         /*!
          * @brief Delete vertices for which to_delete[i] != i
          * @detail The global vertices are deleted, gme_vertices_
-         * is updated and the model_vertx_id in the GeoModelMeshElement
+         * is updated and the model_vertx_id in the GeoModelMeshEntity
          * of the BoudnaryModel are updated too.
          *
          * @param[in,out] to_delete can be NO_ID or give the index of a
@@ -174,7 +174,7 @@ namespace RINGMesh {
 
         /*!
          * @brief Remove all invalid GMEVertex and delete the vertices
-         * that are not anymore in any GeoModelElement
+         * that are not anymore in any GeoModelEntity
          */
         void erase_invalid_vertices() ;
 
@@ -188,7 +188,7 @@ namespace RINGMesh {
         MeshBuilder& mesh_builder_ ;
 
         /*!
-         * Vertices in GeoModelElements corresponding to each vertex
+         * Vertices in GeoModelEntitys corresponding to each vertex
          * @todo Change this extremely expensive storage !!!
          */
         std::vector< std::vector< GMEVertex > > gme_vertices_ ;
@@ -921,7 +921,7 @@ namespace RINGMesh {
         void clear() ;
         /*!
          * Gets the total number of mesh vertices. It is the number of unique nodes
-         * on the mesh plus the high order vertices on the elements edges
+         * on the mesh plus the high order vertices on the entitys edges
          * @return the const number of vertices
          */
         index_t nb_total_vertices() const ;
@@ -1083,7 +1083,7 @@ namespace RINGMesh {
         /*!
          * @brief Delete vertices for which to_delete[i] != i
          * @detail The global vertices are deleted, gme_vertices_
-         * is updated and the model_vertx_id in the GeoModelMeshElement
+         * is updated and the model_vertx_id in the GeoModelMeshEntity
          * of the BoudnaryModel are updated too.
          *
          * @param[in,out] to_delete can be NO_ID or give the index of a
@@ -1095,11 +1095,11 @@ namespace RINGMesh {
 
         /*!
          * @brief Remove all invalid GMEVertex and delete the vertices
-         * that are not anymore in any GeoModelElement
+         * that are not anymore in any GeoModelEntity
          */
         void erase_invalid_vertices() ;
         /*!
-         * Gets the mesh elements order
+         * Gets the mesh entitys order
          * @return the const order
          */
         index_t get_order() const

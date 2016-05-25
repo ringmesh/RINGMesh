@@ -251,7 +251,7 @@ namespace RINGMesh {
         for( index_t t = GME::CORNER; t < GME::NO_TYPE; ++t ) {
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;
             GEO::Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left
-                << geomodel.nb_elements( T ) << " " << GME::type_name( T )
+                << geomodel.nb_entitys( T ) << " " << GME::type_name( T )
                 << std::endl ;
         }
     }
@@ -577,19 +577,19 @@ namespace RINGMesh {
     /*******************************************************************************/
     /*******************************************************************************/
 
-    /* @todo Put in the GeoModelElementMesh Class...? [FB] */
-    double model_element_size( const GeoModelElement& E )
+    /* @todo Put in the GeoModelEntityMesh Class...? [FB] */
+    double model_entity_size( const GeoModelEntity& E )
     {        
         if( E.nb_children() ) {
-            // Sum up the size of children elements
+            // Sum up the size of children entitys
             double result = 0. ;
             for( index_t i = 0; i < E.nb_children(); ++i ) {
-                result += model_element_size( E.child( i ) ) ;
+                result += model_entity_size( E.child( i ) ) ;
             }
             return result ;
-        } else if( GeoModelElement::has_mesh( E.type() ) ) {
-            const GeoModelMeshElement& M =
-                dynamic_cast< const GeoModelMeshElement& >( E ) ;
+        } else if( GeoModelEntity::has_mesh( E.type() ) ) {
+            const GeoModelMeshEntity& M =
+                dynamic_cast< const GeoModelMeshEntity& >( E ) ;
             return M.size() ;
         } else {
             ringmesh_assert_not_reached ;
@@ -597,35 +597,35 @@ namespace RINGMesh {
         }
     }
 
-    double model_element_cell_size( const GeoModelElement& E, index_t c )
+    double model_entity_cell_size( const GeoModelEntity& E, index_t c )
     {
         double result = 0. ;
-        if( GeoModelElement::has_mesh( E.type() ) ) {
+        if( GeoModelEntity::has_mesh( E.type() ) ) {
             // @todo Improve efficiency, overload the functions to avoid
             // casting each time
-            const GeoModelMeshElement& M =
-                dynamic_cast< const GeoModelMeshElement& >( E ) ;
+            const GeoModelMeshEntity& M =
+                dynamic_cast< const GeoModelMeshEntity& >( E ) ;
             result = M.polytope_size( c ) ;
         }
         ringmesh_assert_not_reached ;
         return result ;
     }
 
-    vec3 model_element_center( const GeoModelElement& E )
+    vec3 model_entity_center( const GeoModelEntity& E )
     {
         vec3 result( 0., 0., 0. ) ;
         index_t nb_vertices = 0 ;
 
-        if( GeoModelElement::has_mesh( E.type() ) ) {
+        if( GeoModelEntity::has_mesh( E.type() ) ) {
             // @todo Improve efficiency, overload the functions to avoid
             // casting each time
-            const GeoModelMeshElement& M =
-                dynamic_cast< const GeoModelMeshElement& >( E ) ;
+            const GeoModelMeshEntity& M =
+                dynamic_cast< const GeoModelMeshEntity& >( E ) ;
             result = M.center() ;
         } else if( E.nb_children() > 0 ) {
             for( index_t i = 0; i < E.nb_children(); ++i ) {
-                const GeoModelMeshElement& F =
-                    dynamic_cast< const GeoModelMeshElement& >( E.child( i ) ) ;
+                const GeoModelMeshEntity& F =
+                    dynamic_cast< const GeoModelMeshEntity& >( E.child( i ) ) ;
                 nb_vertices += F.nb_vertices() ;
                 result += F.center() * F.nb_vertices() ;
             }
@@ -634,9 +634,9 @@ namespace RINGMesh {
         return result ;
     }
 
-    vec3 model_element_cell_center( const GeoModelMeshElement& E, index_t c )
+    vec3 model_entity_cell_center( const GeoModelMeshEntity& E, index_t c )
     {
-        if( GeoModelElement::has_mesh( E.type() ) ) {
+        if( GeoModelEntity::has_mesh( E.type() ) ) {
             return E.polytope_center( c ) ;
         }
         ringmesh_assert_not_reached ;

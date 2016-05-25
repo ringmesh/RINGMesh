@@ -56,8 +56,10 @@ namespace RINGMesh {
 namespace RINGMesh {
 
     /*!
-     * @brief class to encapsulate mesh structure in order to provide an API on which we base the RINGMesh algorithm 
-     * @note For now, we encapsulate the GEO::Mesh class. We can develop the concept using a factory to build several encapsulating classes. 
+     * @brief class to encapsulate mesh structure in order to provide an API
+     * on which we base the RINGMesh algorithm 
+     * @note For now, we encapsulate the GEO::Mesh class. We can develop the concept
+     * using a factory to build several encapsulating classes. 
      */
     class RINGMESH_API Mesh {
     ringmesh_disable_copy( Mesh ) ;
@@ -67,7 +69,8 @@ namespace RINGMesh {
         /*!
          * @brief Mesh constructor.
          * @param[in] dimension dimension of the vertices.
-         * @parm[in] single_precision if true, vertices are stored in single precision (float), else they are stored as double precision (double)..
+         * @parm[in] single_precision if true, vertices are stored in single precision (float),
+         * else they are stored as double precision (double)..
          */
         Mesh( const GeoModel& geo_model, index_t dimension, bool single_precision )
             : geo_model_( geo_model ), facets_aabb_( nil ), cells_aabb_( nil )
@@ -91,7 +94,9 @@ namespace RINGMesh {
          * @brief Copy a mesh into this one.
          * @param[in] rhs a const reference to the mesh to be copied.
          * @parm[in] copy_attributes if true, all attributes are copied.
-         * @param[in] what a combination of MESH_VERTICES, MESH_EDGES, MESH_FACETS, MESH_CELLS flags. Set to MESH_ALL_ELEMENTS to copy everything (default). If MESH_VERTICES is not set, then the mesh is cleared.
+         * @param[in] what a combination of MESH_VERTICES, MESH_EDGES, MESH_FACETS, MESH_CELLS flags. 
+         * Set to MESH_ALL_ELEMENTS to copy everything (default). 
+         * If MESH_VERTICES is not set, then the mesh is cleared.
          * @return a modifiable reference to the point that corresponds to the vertex.
          */
         void copy(
@@ -324,7 +329,7 @@ namespace RINGMesh {
         }
         /*!
          * @brief Create an AABB tree for a Mesh facets
-         * @pre The GeoModelElement must be simplicial
+         * @pre The GeoModelEntity must be simplicial
          * @warning SIDE EFFECTS: The mesh vertices are reordered.
          * @warning calling this function will destroy the ColocaterANN.
          */
@@ -393,7 +398,8 @@ namespace RINGMesh {
          * @param[in] facet_id index of the facet in the cell \param cell_id
          * @param[in] vertex_id index of the vertex in the facet \param facet_id
          * @return the global vertex index.
-         * @precondition vertex_id < number of vertices in the facet \param facet_id and facet_id number of facet in th cell \param cell_id
+         * @precondition vertex_id < number of vertices in the facet \param facet_id 
+         * and facet_id number of facet in th cell \param cell_id
          */
         index_t cell_facet_vertex(
             index_t cell_id,
@@ -493,7 +499,7 @@ namespace RINGMesh {
         }
         /*!
          * @brief Create an AABB tree for a Mesh cells
-         * @pre The GeoModelElement must be simplicial
+         * @pre The GeoModelEntity must be simplicial
          * @warning SIDE EFFECTS: The mesh vertices are reordered.
          * @warning calling this function will destroy the ColocaterANN.
          */
@@ -585,11 +591,11 @@ namespace RINGMesh {
             GEO::mesh_load( filename, *mesh_.mesh_, ioflags ) ;
         }
         /*!
-         * @brief Removes all the elements and attributes of this mesh.
+         * @brief Removes all the entitys and attributes of this mesh.
          * @param[in] keep_attributes if true, then all the existing attribute
          * names / bindings are kept (but they are cleared). If false, they are destroyed.
          * @param[in] keep_memory if true, then memory is kept and can be reused
-         * by subsequent mesh element creations.
+         * by subsequent mesh entity creations.
          */
         void clear( bool keep_attributes, bool keep_memory )
         {
@@ -664,7 +670,7 @@ namespace RINGMesh {
         }
         /*!
          * @brief Creates a contiguous chunk of vertices.
-         * @param[in] nb number of sub-elements to create.
+         * @param[in] nb number of sub-entitys to create.
          * @return the index of the first created vertex
          */
         index_t create_vertices( index_t nb )
@@ -674,9 +680,9 @@ namespace RINGMesh {
         /*!
          * @brief Deletes a set of vertices.
          * @param[in] to_delete     a vector of size nb(). If to_delete[e] is different from 0,
-         * then element e will be destroyed, else it will be kept. On exit, to_delete is modified
+         * then entity e will be destroyed, else it will be kept. On exit, to_delete is modified
          * (it is used for internal bookkeeping).
-         * @param[in] remove_isolated_vertices if true, then the vertices that are no longer incident to any element are deleted.
+         * @param[in] remove_isolated_vertices if true, then the vertices that are no longer incident to any entity are deleted.
          */
         void delete_vertices(
             GEO::vector< index_t >& to_delete,
@@ -691,7 +697,7 @@ namespace RINGMesh {
          * @param[in] keep_attributes if true, then all the existing attribute
          * names / bindings are kept (but they are cleared). If false, they are destroyed.
          * @param[in] keep_memory if true, then memory is kept and can be reused
-         * by subsequent mesh element creations.
+         * by subsequent mesh entity creations.
          */
         void clear_vertices( bool keep_attributes, bool keep_memory )
         {
@@ -747,9 +753,9 @@ namespace RINGMesh {
         /*!
          * @brief Deletes a set of edges.
          * @param[in] to_delete a vector of size nb(). If to_delete[e] is different from 0,
-         * then element e will be destroyed, else it will be kept. On exit, to_delete is modified
+         * then entity e will be destroyed, else it will be kept. On exit, to_delete is modified
          * (it is used for internal bookkeeping).
-         * @param[in] remove_isolated_vertices if true, then the vertices that are no longer incident to any element are deleted.
+         * @param[in] remove_isolated_vertices if true, then the vertices that are no longer incident to any entity are deleted.
          */
         void delete_edges(
             GEO::vector< index_t > to_delete,
@@ -764,7 +770,7 @@ namespace RINGMesh {
          * @param[in] keep_attributes if true, then all the existing attribute
          * names / bindings are kept (but they are cleared). If false, they are destroyed.
          * @param[in] keep_memory if true, then memory is kept and can be reused
-         * by subsequent mesh element creations.
+         * by subsequent mesh entity creations.
          */
         void clear_edges(bool keep_attributes/*=true*/, bool keep_memory/*=false*/){
             mesh_.mesh_->edges.clear( keep_attributes, keep_memory);
@@ -898,7 +904,7 @@ namespace RINGMesh {
          * @param[in] keep_attributes if true, then all the existing attribute
          * names / bindings are kept (but they are cleared). If false, they are destroyed.
          * @param[in] keep_memory if true, then memory is kept and can be reused
-         * by subsequent mesh element creations.
+         * by subsequent mesh entity creations.
          */
         void clear_facets(bool keep_attributes/*=true*/, bool keep_memory/*=false*/){
             mesh_.mesh_->facets.clear( keep_attributes, keep_memory);
@@ -972,7 +978,7 @@ namespace RINGMesh {
             mesh_.mesh_->cells.connect() ;
         }
         /*!
-         * @brief Applies a permutation to the elements and their attributes.
+         * @brief Applies a permutation to the entitys and their attributes.
          * On exit, permutation is modified (used for internal bookkeeping).
          * Applying a permutation permutation is equivalent to:
          * <code>
@@ -991,7 +997,7 @@ namespace RINGMesh {
          * @param[in] keep_attributes if true, then all the existing attribute
          * names / bindings are kept (but they are cleared). If false, they are destroyed.
          * @param[in] keep_memory if true, then memory is kept and can be reused
-         * by subsequent mesh element creations.
+         * by subsequent mesh entity creations.
          */
         void clear_cells(bool keep_attributes/*=true*/, bool keep_memory/*=false*/){
             mesh_.mesh_->cells.clear( keep_attributes, keep_memory);

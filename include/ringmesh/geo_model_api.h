@@ -42,7 +42,7 @@
 #include <geogram/mesh/mesh.h>
 
 #include <ringmesh/geo_model.h>
-#include <ringmesh/geo_model_element.h>
+#include <ringmesh/geo_model_entity.h>
 #include <ringmesh/geogram_extension.h>
 
 
@@ -60,7 +60,7 @@ namespace GEO {
 namespace RINGMesh {
     /*!
     * @brief Print in the console the model statistics
-    * @details Output number of facets, vertices, and of the different element types
+    * @details Output number of facets, vertices, and of the different entity types
     * @todo Implement a test are_geomodels_equals to be able to check that tests went well
     */
     void RINGMESH_API print_geomodel( const GeoModel& geomodel ) ;
@@ -95,42 +95,42 @@ namespace RINGMesh {
 
 
     /*! 
-     * @brief Bind named GEO::Attribute on the GeoModel element facets
+     * @brief Bind named GEO::Attribute on the GeoModel entity facets
      * @warning It is up to the client to unbind the attribute    
-     * @pre Elements of geomodel_element_type are GeoModelMeshElement
+     * @pre Entitys of geomodel_entity_type are GeoModelMeshEntity
      */
     template< typename T >
-    void create_attributes_on_geomodel_element_facets(
+    void create_attributes_on_geomodel_entity_facets(
         const GeoModel& geomodel,
-        GeoModelElement::TYPE geomodel_element_type,
+        GeoModelEntity::TYPE geomodel_entity_type,
         const std::string& attribute_name,
         AttributeVector<T>& attributes )
     {
-        index_t nb_elements = geomodel.nb_elements( geomodel_element_type ) ;
-        attributes.resize( nb_elements ) ;
-        for( index_t i = 0; i < nb_elements; ++i ) {
-            const GeoModelMeshElement& E = geomodel.mesh_element( geomodel_element_type, i );
+        index_t nb_entitys = geomodel.nb_entitys( geomodel_entity_type ) ;
+        attributes.resize( nb_entitys ) ;
+        for( index_t i = 0; i < nb_entitys; ++i ) {
+            const GeoModelMeshEntity& E = geomodel.mesh_entity( geomodel_entity_type, i );
             GEO::AttributesManager& manager = E.facet_attribute_manager() ;
             attributes.bind_one_attribute( i, manager, attribute_name ) ;
         }
     }
 
     /*!
-     * @brief Bind named GEO::Attribute on the GeoModel elements cells
+     * @brief Bind named GEO::Attribute on the GeoModel entitys cells
      * @warning It is up to the client to unbind the attribute
-     * @pre Elements of mesh_element_type are GeoModelMeshElement
+     * @pre Entitys of mesh_entity_type are GeoModelMeshEntity
      */
     template< typename T >
-    void create_attributes_on_geomodel_element_cells(
+    void create_attributes_on_geomodel_entity_cells(
         const GeoModel& geomodel,
-        GeoModelElement::TYPE geomodel_element_type,
+        GeoModelEntity::TYPE geomodel_entity_type,
         const std::string& attribute_name,
         AttributeVector<T>& attributes )
     {
-        index_t nb_elements = geomodel.nb_elements( geomodel_element_type ) ;
-        attributes.resize( nb_elements ) ;
-        for( index_t i = 0; i < nb_elements; ++i ) {
-            const GeoModelMeshElement& E = geomodel.mesh_element( geomodel_element_type, i ) ;
+        index_t nb_entitys = geomodel.nb_entitys( geomodel_entity_type ) ;
+        attributes.resize( nb_entitys ) ;
+        for( index_t i = 0; i < nb_entitys; ++i ) {
+            const GeoModelMeshEntity& E = geomodel.mesh_entity( geomodel_entity_type, i ) ;
             GEO::AttributesManager& manager = E.cell_attribute_manager() ;
             attributes.bind_one_attribute( i, manager, attribute_name ) ;
         }
@@ -212,33 +212,33 @@ namespace RINGMesh {
     /*-----------------------------------------------------------------------*/
 
     /*!
-     * @brief Compute the size (volume, area, length) of an Element
-     * @param[in] E Element to evaluate
+     * @brief Compute the size (volume, area, length) of an Entity
+     * @param[in] E Entity to evaluate
      */
-    double RINGMESH_API model_element_size( const GeoModelElement& E ) ;
+    double RINGMESH_API model_entity_size( const GeoModelEntity& E ) ;
 
     /*!
-     * Compute the size (volume, area, length) of an Element cell (cell, facet, edge)
-     * @param[in] E Element to evaluate
+     * Compute the size (volume, area, length) of an Entity cell (cell, facet, edge)
+     * @param[in] E Entity to evaluate
      * @param[in] c the cell index
      */
-    double RINGMESH_API model_element_cell_size( const GeoModelElement& E, index_t c ) ;
+    double RINGMESH_API model_entity_cell_size( const GeoModelEntity& E, index_t c ) ;
 
     /*!
-     * @brief Compute the center of a GeoModelElement
-     * @param[in] E Element to evaluate
+     * @brief Compute the center of a GeoModelEntity
+     * @param[in] E Entity to evaluate
      * @return The coordinates of the center
      */
-    vec3 RINGMESH_API model_element_center( const GeoModelElement& E ) ;
+    vec3 RINGMESH_API model_entity_center( const GeoModelEntity& E ) ;
 
     /*!
-     * @brief Compute the centroid of a GeoModelMeshElement cell (cell, facet, edge)
-     * @param[in] E Element to evaluate
+     * @brief Compute the centroid of a GeoModelMeshEntity cell (cell, facet, edge)
+     * @param[in] E Entity to evaluate
      * @param[in] c the cell index
      * @return The coordinates of the center
      * @pre E has a valid mesh.
      */
-    vec3 RINGMESH_API model_element_cell_center( const GeoModelMeshElement& E, index_t c ) ;
+    vec3 RINGMESH_API model_entity_cell_center( const GeoModelMeshEntity& E, index_t c ) ;
 
 }
 

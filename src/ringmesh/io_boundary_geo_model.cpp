@@ -48,7 +48,7 @@
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_api.h>
 #include <ringmesh/geo_model_builder.h>
-#include <ringmesh/geo_model_element.h>
+#include <ringmesh/geo_model_entity.h>
 #include <ringmesh/geo_model_validity.h>
 #include <ringmesh/ringmesh_config.h>
 #include <ringmesh/utils.h>
@@ -136,7 +136,7 @@ namespace {
     void save_layer(
         index_t count,
         index_t offset,
-        const GeoModelElement& layer,
+        const GeoModelEntity& layer,
         std::ostream& out )
     {
         out << "LAYER " << layer.name() << " " << std::endl ;

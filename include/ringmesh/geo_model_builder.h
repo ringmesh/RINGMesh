@@ -61,14 +61,14 @@ namespace GEO {
 
 namespace RINGMesh {
     class GeoModelRegionFromSurfaces ;
-    class GeoModelElementFromMesh ;
+    class GeoModelEntityFromMesh ;
 }
 
 namespace RINGMesh {
     /*!
      * @brief First draft of flags to build a GeoModel
      * @todo Implements functions to set, access the values, depending on what ?
-     * To check the consistency of the options. What do we do about the other elements ? [JP] 
+     * To check the consistency of the options. What do we do about the other entitys ? [JP] 
      * @todo We need to keep track of the status of the GeoModel when building it:
      * same flags or some others ?    
      */
@@ -113,33 +113,33 @@ namespace RINGMesh {
         }
 
         /*!
-         * @brief Copy all element meshes from the input geomodel
-         * @pre The model under construction has exaclty the same number of elements
+         * @brief Copy all entity meshes from the input geomodel
+         * @pre The model under construction has exaclty the same number of entitys
          * than the input geomodel.
          */
         void copy_meshes( const GeoModel& from ) ;
 
-        void copy_meshes( const GeoModel& from, GME::TYPE element_type ) ;
+        void copy_meshes( const GeoModel& from, GME::TYPE entity_type ) ;
 
-        void assign_mesh_to_element( const Mesh& mesh, GME::gme_t to ) ;
+        void assign_mesh_to_entity( const Mesh& mesh, GME::gme_t to ) ;
 
         /*!
-         * \name Set element geometry from geometrical positions
+         * \name Set entity geometry from geometrical positions
          * @{
          */
-        void set_element_vertex(
-            const GME::gme_t& element_id,
+        void set_entity_vertex(
+            const GME::gme_t& entity_id,
             index_t v,
             const vec3& point,
             bool update ) ;
 
-        void set_element_vertices(
-            const GME::gme_t& element_id,
+        void set_entity_vertices(
+            const GME::gme_t& entity_id,
             const std::vector< vec3 >& points,
             bool clear ) ;
 
-        index_t create_element_vertices(
-            const GME::gme_t& element_id,
+        index_t create_entity_vertices(
+            const GME::gme_t& entity_id,
             index_t nb_vertices ) ;
 
         void set_corner( index_t corner_id, const vec3& point ) ;
@@ -158,16 +158,16 @@ namespace RINGMesh {
             const std::vector< index_t >& tetras ) ;
 
         /*! @}
-         * \name Set element geometry using global GeoModel vertices
+         * \name Set entity geometry using global GeoModel vertices
          * @{
          */
-        void set_element_vertex(
+        void set_entity_vertex(
             const GME::gme_t& id,
             index_t v,
             index_t model_vertex ) ;
 
-        void set_element_vertices(
-            const GME::gme_t& element_id,
+        void set_entity_vertices(
+            const GME::gme_t& entity_id,
             const std::vector< index_t >& model_vertices,
             bool clear ) ;
 
@@ -201,12 +201,12 @@ namespace RINGMesh {
             index_t region_id,
             const std::vector< index_t >& tet_corners ) ;
 
-        void set_region_element_geometry(
+        void set_region_entity_geometry(
             index_t region_id,
             index_t cell_id,
             const std::vector< index_t >& corners ) ;
 
-        index_t create_region_element_cells(
+        index_t create_region_entity_cells(
             index_t region_id,
             GEO::MeshCellType type,
             index_t nb_cells ) ;
@@ -216,7 +216,7 @@ namespace RINGMesh {
          * @{
          */
         index_t find_or_create_duplicate_vertex(
-            GeoModelMeshElement& S,
+            GeoModelMeshEntity& S,
             index_t model_vertex_id,
             index_t surface_vertex_id ) ;
 
@@ -271,7 +271,7 @@ namespace RINGMesh {
                 const std::vector< index_t >& adjacent_triangles );
 
     protected:
-        /*! Elements to compute from the available elements */
+        /*! Entitys to compute from the available entitys */
         GeoModelBuildingFlags options_ ;
 
         /*! Internal information */
@@ -385,8 +385,8 @@ namespace RINGMesh {
 
     protected:
         const GEO::Mesh& mesh_ ;
-        GeoModelElementFromMesh* surface_builder_ ;
-        GeoModelElementFromMesh* region_builder_ ;
+        GeoModelEntityFromMesh* surface_builder_ ;
+        GeoModelEntityFromMesh* region_builder_ ;
         std::string surface_attribute_name_ ;
         std::string region_attribute_name_ ;
         index_t nb_surface_attribute_values_ ;
@@ -411,7 +411,7 @@ namespace RINGMesh {
 
         ///TODO these are temporary protected here. after they will be only in GeoModelBuilderGM
     protected:
-        static GME::TYPE match_nb_elements( const char* s ) ;
+        static GME::TYPE match_nb_entitys( const char* s ) ;
         static GME::TYPE match_type( const char* s ) ;
         static bool match_high_level_type( const char* s )
         {
@@ -541,11 +541,11 @@ namespace RINGMesh {
          */
         void load_connectivities( GEO::LineInput& file_line ) ;
         /*!
-         * @brief Load elements of one type from a zip file
-         * @param[in] gme_t the GeoModelElement type
+         * @brief Load entitys of one type from a zip file
+         * @param[in] gme_t the GeoModelEntity type
          * @param[in] uz the zip file
          */
-        void load_elements( GME::TYPE gme_t, unzFile& uz ) ;
+        void load_entitys( GME::TYPE gme_t, unzFile& uz ) ;
 
         void load_file() ;
         /*!

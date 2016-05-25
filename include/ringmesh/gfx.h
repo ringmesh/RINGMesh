@@ -56,7 +56,7 @@ namespace RINGMesh {
     class LineGfx ;
     class SurfaceGfx ;
     class RegionGfx ;
-    class MeshElementGfx ;
+    class MeshEntityGfx ;
 }
 
 namespace RINGMesh {

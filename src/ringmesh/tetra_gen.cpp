@@ -54,7 +54,7 @@
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_api.h>
 #include <ringmesh/geo_model_builder.h>
-#include <ringmesh/geo_model_element.h>
+#include <ringmesh/geo_model_entity.h>
 #include <ringmesh/geometry.h>
 #include <ringmesh/tetgen_mesher.h>
 #include <ringmesh/well.h>
@@ -156,7 +156,7 @@ namespace {
      *       Check that this code is not a duplicate of what is used to check validity [JP]
      */
     void check_and_repair_mesh_consistency(
-        const GeoModelElement& region,
+        const GeoModelEntity& region,
         GEO::Mesh& mesh,
         bool check_duplicated_facet = false )
     {
@@ -282,7 +282,7 @@ namespace {
         for( index_t s = 0; s < region.nb_boundaries(); s++ ) {
             const Surface& surface = dynamic_cast< const Surface& >( region.boundary(
                 s ) ) ;
-            vec3 barycenter = model_element_cell_center( surface, 0 ) ;
+            vec3 barycenter = model_entity_cell_center( surface, 0 ) ;
             vec3 nearest_point ;
             float64 distance ;
             index_t f = aabb.nearest_facet( barycenter, nearest_point, distance ) ;
@@ -679,12 +679,12 @@ namespace RINGMesh {
      * @param[in] wells the wells to be conformal to
      */
     void TetraGen::set_boundaries(
-        const GeoModelElement& region,
+        const GeoModelEntity& region,
         const WellGroup* wells )
     {
         region_ = &region ;
         index_t nb_surfaces = region_->nb_boundaries() ;
-        std::vector< const GeoModelMeshElement* > unique_surfaces ;
+        std::vector< const GeoModelMeshEntity* > unique_surfaces ;
         unique_surfaces.reserve( nb_surfaces ) ;
         std::vector< index_t > surface_id ;
         surface_id.reserve( nb_surfaces ) ;
@@ -795,7 +795,7 @@ namespace RINGMesh {
     {
         bool update = false ;
         vec3 vertex( point ) ;
-        builder_->set_element_vertex( GME::gme_t( GME::REGION, output_region_ ),
+        builder_->set_entity_vertex( GME::gme_t( GME::REGION, output_region_ ),
             index, vertex, update ) ;
     }
 
@@ -808,14 +808,14 @@ namespace RINGMesh {
             index_t vertex_id = static_cast< index_t >( vertex_indices[v] ) ;
             corners[v] = vertex_id ;
         }
-        builder_->set_region_element_geometry( output_region_, tetra_index, corners ) ;
+        builder_->set_region_entity_geometry( output_region_, tetra_index, corners ) ;
     }
 
     void TetraGen::initialize_storage( index_t nb_points, index_t nb_tets )
     {
         GME::gme_t region_id( GME::REGION, output_region_ ) ;
-        builder_->create_element_vertices( region_id, nb_points ) ;
-        builder_->create_region_element_cells( output_region_, GEO::MESH_TET,
+        builder_->create_entity_vertices( region_id, nb_points ) ;
+        builder_->create_region_entity_cells( output_region_, GEO::MESH_TET,
             nb_tets ) ;
     }
 
