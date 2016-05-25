@@ -59,7 +59,7 @@ namespace {
     /*!
      * @brief Write in the out stream things to save for CONTACT, INTERFACE and LAYERS
      */
-    void save_high_level_bme( std::ofstream& out, const GeoModelElement& E )
+    void save_high_level_bme( std::ofstream& out, const GeoModelEntity& E )
     {
         /// First line:  TYPE - ID - NAME - GEOL
         out << E.gme_id() << " " ;
@@ -68,7 +68,7 @@ namespace {
         } else {
             out << "no_name " ;
         }
-        out << GeoModelElement::geol_name( E.geological_feature() ) << std::endl ;
+        out << GeoModelEntity::geol_name( E.geological_feature() ) << std::endl ;
 
         /// Second line:  IDS of children
         for( index_t j = 0; j < E.nb_children(); ++j ) {
@@ -89,18 +89,18 @@ namespace {
         out << "RINGMESH BOUNDARY MODEL" << std::endl ;
         out << "NAME " << M.name() << std::endl ;
 
-        // Numbers of the different types of elements
+        // Numbers of the different types of entitys
         for( index_t i = GME::CORNER; i < GME::NO_TYPE; i++ ) {
             GME::TYPE type = static_cast< GME::TYPE >( i ) ;
-            out << "NB_" << GME::type_name( type ) << " " << M.nb_elements( type )
+            out << "NB_" << GME::type_name( type ) << " " << M.nb_entitys( type )
                 << std::endl ;
         }
-        // Write high-level elements
+        // Write high-level entitys
         for( index_t i = GME::CONTACT; i < GME::NO_TYPE; i++ ) {
             GME::TYPE type = static_cast< GME::TYPE >( i ) ;
-            index_t nb = M.nb_elements( type ) ;
+            index_t nb = M.nb_entitys( type ) ;
             for( index_t j = 0; j < nb; ++j ) {
-                save_high_level_bme( out, M.element( GME::gme_t( type, j ) ) ) ;
+                save_high_level_bme( out, M.entity( GME::gme_t( type, j ) ) ) ;
             }
         }
         // Regions
@@ -357,9 +357,9 @@ namespace RINGMesh {
                 char filename[MAX_FILENAME] ;
                 unzip_file( uz, filename ) ;
                 GEO::MeshIOFlags flags ;
-                flags.set_element( GEO::MESH_FACETS ) ;
-                flags.set_element( GEO::MESH_CELLS ) ;
-                flags.set_element( GEO::MESH_EDGES ) ;
+                flags.set_entity( GEO::MESH_FACETS ) ;
+                flags.set_entity( GEO::MESH_CELLS ) ;
+                flags.set_entity( GEO::MESH_EDGES ) ;
                 flags.set_attribute( GEO::MESH_FACET_REGION ) ;
                 GEO::Mesh& m = gm.region( r ).mesh() ;
                 std::string ext = GEO::FileSystem::extension( filename ) ;
@@ -391,9 +391,9 @@ namespace RINGMesh {
             zipFile zf = zipOpen( filename.c_str(), APPEND_STATUS_CREATE ) ;
             for( index_t m = 0; m < gm.nb_regions(); m++ ) {
                 GEO::MeshIOFlags flags ;
-                flags.set_element( GEO::MESH_FACETS ) ;
-                flags.set_element( GEO::MESH_CELLS ) ;
-                flags.set_element( GEO::MESH_EDGES ) ;
+                flags.set_entity( GEO::MESH_FACETS ) ;
+                flags.set_entity( GEO::MESH_CELLS ) ;
+                flags.set_entity( GEO::MESH_EDGES ) ;
                 flags.set_attribute( GEO::MESH_FACET_REGION ) ;
 
                 const GEO::Mesh& cur_mesh = gm.region( m ).mesh() ;

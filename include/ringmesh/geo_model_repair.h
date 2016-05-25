@@ -38,7 +38,7 @@
 
 #include <ringmesh/common.h>
 
-//#include <ringmesh/geo_model_element.h>
+//#include <ringmesh/geo_model_entity.h>
 //#include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_builder.h>
 
@@ -50,11 +50,11 @@
 
 
 namespace RINGMesh {
-    typedef GeoModelElement::gme_t gme_t ;
+    typedef GeoModelEntity::gme_t gme_t ;
 
     /*!
      * @brief Try repairing an supposedly invalid GeoModel
-     * @details Remove colocated vertices in all GeoModelMeshElement.
+     * @details Remove colocated vertices in all GeoModelMeshEntity.
      *          Remove degenerated edges and facets in Surfaces and Lines.
      * @warning The Mesh of the model is deleted.
      *          This function will by no mean fix all errors in a GeoModel
@@ -95,9 +95,9 @@ namespace RINGMesh {
         void remove_degenerate_facet_and_edges( std::set< gme_t >& to_remove );
 
 
-        void remove_colocated_element_vertices( std::set< gme_t >& to_remove ) ;
+        void remove_colocated_entity_vertices( std::set< gme_t >& to_remove ) ;
         void vertices_on_inside_boundary(
-            const GeoModelMeshElement& E,
+            const GeoModelMeshEntity& E,
             std::set< index_t >& vertices ) ;
 
         bool edge_is_degenerate(

@@ -37,7 +37,7 @@
 #define __RINGMESH_IO__
 
 #include <ringmesh/common.h>
-#include <ringmesh/geo_model_element.h>
+#include <ringmesh/geo_model_entity.h>
 
 #include <geogram/basic/string.h>
 

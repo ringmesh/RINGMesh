@@ -104,12 +104,12 @@ namespace {
         const GEO::Attribute< index_t >& region_id_ ;
     } ;
 
-    inline GeoModelMeshElement& cast_gmm_element(
+    inline GeoModelMeshEntity& cast_gmm_entity(
         const GeoModel& M,
         GME::TYPE T,
         index_t i )
     {
-        return dynamic_cast< GeoModelMeshElement& >( const_cast< GME& >( M.element(
+        return dynamic_cast< GeoModelMeshEntity& >( const_cast< GME& >( M.entity(
             GME::gme_t( T, i ) ) ) ) ;
     }
 
@@ -179,8 +179,8 @@ namespace RINGMesh {
         index_t nb = 0 ;
         for( index_t t = GME::CORNER; t <= GME::REGION; ++t ) {
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;
-            for( index_t e = 0; e < gm_.nb_elements( T ); ++e ) {
-                nb += gm_.mesh_element( T, e ).nb_vertices() ;
+            for( index_t e = 0; e < gm_.nb_entitys( T ); ++e ) {
+                nb += gm_.mesh_entity( T, e ).nb_vertices() ;
             }
         }
         // Get out if no vertices
@@ -195,15 +195,15 @@ namespace RINGMesh {
         index_t count = 0 ;
         for( index_t t = GME::CORNER; t <= GME::REGION; ++t ) {
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;
-            for( index_t e = 0; e < gm_.nb_elements( T ); ++e ) {
-                GeoModelMeshElement& E = cast_gmm_element( gm_, T, e ) ;
+            for( index_t e = 0; e < gm_.nb_entitys( T ); ++e ) {
+                GeoModelMeshEntity& E = cast_gmm_entity( gm_, T, e ) ;
                 if( E.nb_vertices() == 0 ) {
                     continue ;
                 }
                 GEO::Memory::copy( builder.vertex( count ).data(),
                     E.vertex( 0 ).data(), 3 * E.nb_vertices() * sizeof(double) ) ;
                 GEO::Attribute< index_t > att( E.vertex_attribute_manager(),
-                    GeoModelMeshElement::model_vertex_id_att_name() ) ;
+                    GeoModelMeshEntity::model_vertex_id_att_name() ) ;
                 for( index_t v = 0; v < E.nb_vertices(); v++ ) {
                     // Global index stored at BME level
                     att[v] = count ;
@@ -234,10 +234,10 @@ namespace RINGMesh {
         for( index_t t = GME::CORNER; t <= GME::REGION; ++t ) {
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;
             RINGMESH_PARALLEL_LOOP_DYNAMIC
-            for( index_t e = 0; e < gm_.nb_elements( T ); ++e ) {
-                GeoModelMeshElement& E = cast_gmm_element( gm_, T, e ) ;
+            for( index_t e = 0; e < gm_.nb_entitys( T ); ++e ) {
+                GeoModelMeshEntity& E = cast_gmm_entity( gm_, T, e ) ;
                 GEO::Attribute< index_t > att( E.vertex_attribute_manager(),
-                    GeoModelMeshElement::model_vertex_id_att_name() ) ;
+                    GeoModelMeshEntity::model_vertex_id_att_name() ) ;
                 att.fill( NO_ID ) ;
             }
         }
@@ -321,7 +321,7 @@ namespace RINGMesh {
         const std::vector< GMEVertex >& gme_v = gme_vertices( v ) ;
         for( index_t i = 0; i < gme_v.size(); i++ ) {
             const GMEVertex& info = gme_v[i] ;
-            builder.set_element_vertex( info.gme_id, info.v_id, point, false ) ;
+            builder.set_entity_vertex( info.gme_id, info.v_id, point, false ) ;
         }
     }
 
@@ -345,7 +345,7 @@ namespace RINGMesh {
     {
 
         index_t nb_todelete = 0 ;
-        std::vector< index_t > to_delete( nb() ) ; // Here nb() represents the number of vertices before removal of the elements
+        std::vector< index_t > to_delete( nb() ) ; // Here nb() represents the number of vertices before removal of the entitys
 
         for( index_t v = 0; v < nb(); ++v ) {
             std::vector< GMEVertex >& related = gme_vertices_[v] ;
@@ -370,7 +370,7 @@ namespace RINGMesh {
                 // This vertex must be deleted
                 to_delete[v] = NO_ID ;
                 nb_todelete++ ;
-                // std::erase of all elements has an undefined behavior
+                // std::erase of all entitys has an undefined behavior
                 related.clear() ;
             }
         }
@@ -444,10 +444,10 @@ namespace RINGMesh {
         for( index_t t = GME::CORNER; t <= GME::REGION; ++t ) {
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;
 
-            for( index_t e = 0; e < gm_.nb_elements( T ); ++e ) {
-                GeoModelMeshElement& E = cast_gmm_element( gm_, T, e ) ;
+            for( index_t e = 0; e < gm_.nb_entitys( T ); ++e ) {
+                GeoModelMeshEntity& E = cast_gmm_entity( gm_, T, e ) ;
                 GEO::Attribute< index_t > att( E.vertex_attribute_manager(),
-                    GeoModelMeshElement::model_vertex_id_att_name() ) ;
+                    GeoModelMeshEntity::model_vertex_id_att_name() ) ;
 
                 for( index_t v = 0; v < E.nb_vertices(); v++ ) {
                     index_t old_id = E.model_vertex_id( v ) ;
@@ -1098,7 +1098,7 @@ namespace RINGMesh {
             case ALL:
                 return true ;
             case FAULT: {
-                GeoModelElement::GEOL_FEATURE feature =
+                GeoModelEntity::GEOL_FEATURE feature =
                     gm_.surface( surface_id ).geological_feature() ;
                 return GME::is_fault( feature ) ;
             }
@@ -2030,8 +2030,8 @@ namespace RINGMesh {
                         << reg << std::endl ;
                     continue ;
                 }
-                GEO::Attribute< double > cur_att_on_geo_model_mesh_element ;
-                cur_att_on_geo_model_mesh_element.create_vector_attribute(
+                GEO::Attribute< double > cur_att_on_geo_model_mesh_entity ;
+                cur_att_on_geo_model_mesh_entity.create_vector_attribute(
                     geo_model_.region( reg ).cell_attribute_manager(),
                     att_c_names[att_c], att_dim ) ;
                 for( index_t c = 0; c < geo_model_.region( reg ).nb_polytopes(); c++ ) {
@@ -2040,7 +2040,7 @@ namespace RINGMesh {
                     ann.get_colocated( center, c_in_geom_model_mesh ) ;
                     ringmesh_assert( c_in_geom_model_mesh.size() == 1 ) ;
                     for( index_t att_e = 0; att_e < att_dim; att_e++ ) {
-                        cur_att_on_geo_model_mesh_element[c * att_dim + att_e] =
+                        cur_att_on_geo_model_mesh_entity[c * att_dim + att_e] =
                             cur_att_on_geo_model_mesh[c_in_geom_model_mesh[0] * att_dim
                                 + att_e] ;
                     }

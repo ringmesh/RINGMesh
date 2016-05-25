@@ -53,12 +53,12 @@ namespace RINGMesh {
     } ;
 
     /*!
-     * @brief Basic container for the sparse matrix, i.e. the "elements".
+     * @brief Basic container for the sparse matrix, i.e. the "entitys".
      * */
     template< typename T >
-    struct ElementImpl {
+    struct EntityImpl {
         const static index_t NOT_USED = index_t( -1 ) ;
-        ElementImpl()
+        EntityImpl()
             : index( NOT_USED )
         {
         }
@@ -68,48 +68,48 @@ namespace RINGMesh {
     } ;
 
     /*!
-     * @brief Basic "Row" of the matrix, this stores the elements of the matrix in a line-oriented way
+     * @brief Basic "Row" of the matrix, this stores the entitys of the matrix in a line-oriented way
      * */
     template< typename T >
     class RowImpl {
     public:
-        typedef ElementImpl< T > Element ;
+        typedef EntityImpl< T > Entity ;
 
         RowImpl()
-            : nb_elements_( 0 ), capacity_( 4 )
+            : nb_entitys_( 0 ), capacity_( 4 )
         {
-            elements_ = new Element[capacity_] ;
+            entitys_ = new Entity[capacity_] ;
         }
 
         ~RowImpl()
         {
-            delete[] elements_ ;
+            delete[] entitys_ ;
         }
 
-        void set_element( index_t j, const T& value )
+        void set_entity( index_t j, const T& value )
         {
             index_t index ;
             if( !find( j, index ) ) {
-                push_element( j, value ) ;
+                push_entity( j, value ) ;
             } else {
-                elements_[index].value = value ;
+                entitys_[index].value = value ;
             }
         }
 
-        void push_element( index_t j, const T& value )
+        void push_entity( index_t j, const T& value )
         {
-            if( nb_elements_ == capacity_ ) {
+            if( nb_entitys_ == capacity_ ) {
                 grow() ;
             }
-            Element& elt = elements_[nb_elements_++ ] ;
+            Entity& elt = entitys_[nb_entitys_++ ] ;
             elt.index = j ;
             elt.value = value ;
         }
 
         bool find( index_t j, index_t& index ) const
         {
-            for( index_t e = 0; e < nb_elements_; e++ ) {
-                if( elements_[e].index == j ) {
+            for( index_t e = 0; e < nb_entitys_; e++ ) {
+                if( entitys_[e].index == j ) {
                     index = e ;
                     return true ;
                 }
@@ -119,54 +119,54 @@ namespace RINGMesh {
 
         bool exist( index_t j )
         {
-            for( index_t e = 0; e < nb_elements_; e++ ) {
-                if( elements_[e].index == j ) {
+            for( index_t e = 0; e < nb_entitys_; e++ ) {
+                if( entitys_[e].index == j ) {
                     return true ;
                 }
             }
             return false ;
         }
 
-        bool get_element( index_t j, T& value ) const
+        bool get_entity( index_t j, T& value ) const
         {
             index_t index ;
             if( !find( j, index ) ) {
                 return false ;
             }
-            value = elements_[index].value ;
+            value = entitys_[index].value ;
             return true ;
         }
 
-        void element( index_t e, T& value ) const
+        void entity( index_t e, T& value ) const
         {
-            ringmesh_assert( e < nb_elements_ ) ;
-            value = elements_[e].value ;
+            ringmesh_assert( e < nb_entitys_ ) ;
+            value = entitys_[e].value ;
         }
 
         index_t index( index_t e ) const
         {
-            ringmesh_assert( e < nb_elements_ ) ;
-            return elements_[e].index ;
+            ringmesh_assert( e < nb_entitys_ ) ;
+            return entitys_[e].index ;
         }
 
         T& operator[]( index_t i ) const
         {
-            ringmesh_assert( i < nb_elements_ ) ;
-            return elements_[i].value ;
+            ringmesh_assert( i < nb_entitys_ ) ;
+            return entitys_[i].value ;
         }
 
-        index_t nb_elements() const
+        index_t nb_entitys() const
         {
-            return nb_elements_ ;
+            return nb_entitys_ ;
         }
 
     private:
         void reallocate( index_t new_capacity )
         {
-            Element* new_elements = new Element[new_capacity] ;
-            std::copy( elements_, elements_ + nb_elements_, new_elements ) ;
-            delete[] elements_ ;
-            elements_ = new_elements ;
+            Entity* new_entitys = new Entity[new_capacity] ;
+            std::copy( entitys_, entitys_ + nb_entitys_, new_entitys ) ;
+            delete[] entitys_ ;
+            entitys_ = new_entitys ;
         }
 
         void grow()
@@ -177,14 +177,14 @@ namespace RINGMesh {
         }
 
     private:
-        Element* elements_ ;
-        index_t nb_elements_ ;
+        Entity* entitys_ ;
+        index_t nb_entitys_ ;
         index_t capacity_ ;
     } ;
 
     /*!
      *  @brief This is the parent class for sparse matrices, the main difference between light and heavy type matrices
-     * depend on the contents of rows elements: Light will contain type T objects, while heavy an index to access a std::deque.
+     * depend on the contents of rows entitys: Light will contain type T objects, while heavy an index to access a std::deque.
      * */
     template< typename T, typename RowType >
     class SparseMatrixImpl {
@@ -203,26 +203,26 @@ namespace RINGMesh {
         }
 
         /*!
-         * Test the existence of a given i-j element
+         * Test the existence of a given i-j entity
          * @param[in] i the given row
          * @param[in] j the given column
          * @return bool true if it exists, false if it does not exist
          */
         bool exist( index_t i, index_t j ) const
-        { // test existence of the i-j element
+        { // test existence of the i-j entity
             ringmesh_assert( i < ni_ && j < nj_ && i >= 0 && j >= 0 ) ;
             return rows_[i].exist( j ) ;
         }
 
         /*!
-         * @brief gets number of elements within a row
+         * @brief gets number of entitys within a row
          * @param[in] i row index
-         * @return index_t number of elements
+         * @return index_t number of entitys
          */
-        index_t get_nb_elements_in_line( index_t i ) const
+        index_t get_nb_entitys_in_line( index_t i ) const
         {
             ringmesh_assert( i < ni_ ) ;
-            return rows_[i].nb_elements() ;
+            return rows_[i].nb_entitys() ;
         }
 
         /*!
@@ -289,13 +289,13 @@ namespace RINGMesh {
         }
 
         /*!
-         *  get the value of e-element (index within the row, not in the matrix) on line i.
+         *  get the value of e-entity (index within the row, not in the matrix) on line i.
          *  this code should never be reached.
          * @param[in] i row index
          * @param[in] e index within the row
          * @param[out] value to retrieve
          * */
-        void get_element_in_line( index_t i, index_t e, T& value ) const
+        void get_entity_in_line( index_t i, index_t e, T& value ) const
         {
             ringmesh_assert_not_reached;
         }
@@ -328,59 +328,59 @@ namespace RINGMesh {
         }
 
         /*!
-         * set the value of element i-j in the matrix
+         * set the value of entity i-j in the matrix
          * @param[in] i row index
          * @param[in] j column index
          * @param[in] value to store
          * @return bool true (for instance no checks for errors...)
          * */
-        bool set_element( index_t i, index_t j, const T& value )
+        bool set_entity( index_t i, index_t j, const T& value )
         {
-            this->rows_[i].set_element( j, value ) ;
+            this->rows_[i].set_entity( j, value ) ;
             if( this->is_symmetrical_ ) {
-                this->rows_[j].set_element( i, value ) ;
+                this->rows_[j].set_entity( i, value ) ;
             }
             return true ;
         }
 
 
         /*!
-         * set the value of element i-j in the matrix without verifying
-         * if the element i-j already exists !!! BE CAREFULL
+         * set the value of entity i-j in the matrix without verifying
+         * if the entity i-j already exists !!! BE CAREFULL
          * @param[in] i row index
          * @param[in] j column index
          * @param[in] value to store
          * @return bool true (for instance no checks for errors...)
          * */
-        bool push_element( index_t i, index_t j, const T& value )
+        bool push_entity( index_t i, index_t j, const T& value )
         {
-            this->rows_[i].push_element( j, value ) ;
+            this->rows_[i].push_entity( j, value ) ;
             if( this->is_symmetrical_ ) {
-                this->rows_[j].push_element( i, value ) ;
+                this->rows_[j].push_entity( i, value ) ;
             }
             return true ;
         }
 
         /*
-         * get the value of element i-j in the matrix, returns false if no element is found
+         * get the value of entity i-j in the matrix, returns false if no entity is found
          * @param[in] i row index
          * @param[in] j column index
          * @param[out] value to retrieve
-         * @return bool true if success and false if the element is inexistent
+         * @return bool true if success and false if the entity is inexistent
          * */
-        bool get_element( index_t i, index_t j, T& value ) const
-        { // valeur du i_j_ieme element stocke sur la ligne
-            return this->rows_[i].get_element( j, value ) ;
+        bool get_entity( index_t i, index_t j, T& value ) const
+        { // valeur du i_j_ieme entity stocke sur la ligne
+            return this->rows_[i].get_entity( j, value ) ;
         }
 
         /*!
-         *  get the value of e-element (index within the row, not in the matrix) on line i
+         *  get the value of e-entity (index within the row, not in the matrix) on line i
          * @param[in] i row index
          * @param[in] e index within the row
          * @param[out] value to retrieve
          * */
-        void get_element_in_line( index_t i, index_t e, T& value ) const
-        { // valeur du e_ieme element stocke sur la ligne
+        void get_entity_in_line( index_t i, index_t e, T& value ) const
+        { // valeur du e_ieme entity stocke sur la ligne
             value = this->rows_[i][e] ;
         }
 
@@ -406,13 +406,13 @@ namespace RINGMesh {
         }
 
         /*!
-         * set the value of element i-j in the matrix
+         * set the value of entity i-j in the matrix
          * @param[in] i row index
          * @param[in] j column index
          * @param[in] value to store
          * @return bool true (for instance no checks for errors...)
          * */
-        bool set_element( index_t i, index_t j, const T& value )
+        bool set_entity( index_t i, index_t j, const T& value )
         {
             // small difference with light type: we fill a deque
             index_t value_id ;
@@ -423,24 +423,24 @@ namespace RINGMesh {
                 values_.push_back( value ) ;
                 value_id = values_.size() - 1 ;
             }
-            this->rows_[i].set_element( j, value_id ) ;
+            this->rows_[i].set_entity( j, value_id ) ;
             if( this->is_symmetrical_ ) {
-                this->rows_[j].set_element( i, value_id ) ;
+                this->rows_[j].set_entity( i, value_id ) ;
             }
             return true ;
         }
 
         /*
-         * get the value of element i-j in the matrix, returns false if no element is found
+         * get the value of entity i-j in the matrix, returns false if no entity is found
          * @param[in] i row index
          * @param[in] j column index
          * @param[out] value to retrieve
-         * @return bool true if success and false if the element is inexistent
+         * @return bool true if success and false if the entity is inexistent
          * */
-        bool get_element( index_t i, index_t j, T& value ) const
+        bool get_entity( index_t i, index_t j, T& value ) const
         {
             index_t value_id ;
-            if( !this->rows_[i].get_element( j, value_id ) ) {
+            if( !this->rows_[i].get_entity( j, value_id ) ) {
                 return false ;
             }
             value = values_[value_id] ;
@@ -448,12 +448,12 @@ namespace RINGMesh {
         }
 
         /*!
-         *  get the value of e-element (index within the row, not in the matrix) on line i
+         *  get the value of e-entity (index within the row, not in the matrix) on line i
          * @param[in] i row index
          * @param[in] e index within the row
          * @param[out] value to retrieve
          * */
-        void get_element_in_line( index_t i, index_t e, T& value ) const
+        void get_entity_in_line( index_t i, index_t e, T& value ) const
         {
             index_t value_id = this->rows_[i][e] ;
             value = values_[value_id] ;
@@ -491,10 +491,10 @@ namespace RINGMesh {
         for( index_t i = 0; i < mat1.ni(); ++i ) {
             ringmesh_assert( i >= 0 && i < result.size() ) ;
             result[i] = 0. ;
-            for( index_t e = 0; e < mat1.get_nb_elements_in_line( i ); ++e ) {
+            for( index_t e = 0; e < mat1.get_nb_entitys_in_line( i ); ++e ) {
                 index_t j = mat1.get_column_in_line( i, e ) ;
                 T i_j_result ;
-                mat1.get_element_in_line( i, e, i_j_result ) ;
+                mat1.get_entity_in_line( i, e, i_j_result ) ;
                 i_j_result *= mat2[j] ;
                 result[i] += i_j_result ;
             }
