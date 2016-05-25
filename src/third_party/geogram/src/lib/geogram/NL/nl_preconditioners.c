@@ -147,7 +147,7 @@ void nlPreconditioner_Jacobi(const NLdouble* x, NLdouble* y) {
 static double* nlPreconditioner_SSOR_work = NULL;
 static NLuint nlPreconditioner_SSOR_work_size = 0;
 
-void nlPreconditioner_SSOR_terminate(void) {
+static void nlPreconditioner_SSOR_terminate(void) {
     NL_DELETE_ARRAY(nlPreconditioner_SSOR_work);
 }
 

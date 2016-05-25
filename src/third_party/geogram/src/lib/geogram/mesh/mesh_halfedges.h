@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_MESH_MESH_HALFEDGES__
-#define __GEOGRAM_MESH_MESH_HALFEDGES__
+#ifndef GEOGRAM_MESH_MESH_HALFEDGES
+#define GEOGRAM_MESH_MESH_HALFEDGES
 
 #include <geogram/basic/common.h>
 #include <geogram/mesh/mesh.h>

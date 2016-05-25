@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __nl_h__
-#define __nl_h__
+#ifndef OPENNL_H
+#define OPENNL_H
 
 #include "nl_linkage.h"
 
@@ -56,15 +56,29 @@ extern "C" {
 
 #define NLAPI
 
+/* 
+ * Deactivate warnings about documentation
+ * We do that, because CLANG's doxygen parser does not know
+ * some doxygen commands that we use (retval, copydoc) and
+ * generates many warnings for them...
+ */
+
+#if defined(__clang__)
+#pragma clang diagnostic ignored "-Wunknown-pragmas"
+#pragma clang diagnostic ignored "-Wdocumentation"        
+#pragma clang diagnostic ignored "-Wdocumentation-unknown-command"
+#endif
+    
 /**
  * \file geogram/NL/nl.h
  * \brief The public API of the OpenNL linear solver library. 
  * Click the "More..." link below for simple example programs.
  * \details
- * The purpose of the example programs shown below is to demonstrate OpenNL programs 
- * that are as simple as possible. 
- * Note that for such small linear systems, the sparse iterative solvers in OpenNL will work, 
- * but they are completely inappropriate, one would normally solve the system directly.
+ * The purpose of the example programs shown below is to demonstrate OpenNL 
+ * programs that are as simple as possible. 
+ * Note that for such small linear systems, the sparse iterative solvers in 
+ * OpenNL will work, but they are completely inappropriate, one would normally 
+ * solve the system directly.
  *
  * Example 1 (a simple linear system)
  * ==================================
@@ -708,7 +722,7 @@ typedef void* NLContext ;
  *  of the program using nlDeleteContext().
  * \return a handle to the newly created context.
  */
-    NLAPI NLContext NLAPIENTRY nlNewContext() ;
+    NLAPI NLContext NLAPIENTRY nlNewContext(void) ;
 
 /**
  * \brief Destroys an existing OpenNL context
@@ -729,7 +743,7 @@ typedef void* NLContext ;
  * \brief Gets the current context
  * \return a handle to the current OpenNL context
  */
-    NLAPI NLContext NLAPIENTRY nlGetCurrent() ;
+    NLAPI NLContext NLAPIENTRY nlGetCurrent(void) ;
 
 /**
  * \brief Initializes an OpenNL extension
@@ -805,7 +819,7 @@ typedef void* NLContext ;
  * \param[in] param the double-precision floating-point value of the parameter
  * \deprecated use nlRightHandSide() / nlRowScaling() instead.
  */
-    NLAPI void NLAPIENTRY nlRowParameterd(NLenum pname, NLdouble param) ;
+    NL_DEPRECATED(NLAPI void NLAPIENTRY nlRowParameterd(NLenum pname, NLdouble param)) ;
 
 /**
  * \brief Gets the value of a boolean parameter
@@ -923,7 +937,7 @@ typedef void* NLContext ;
 
 /**
  * \brief Sets a function pointer
- * \param[in] symbolic name of the function, one of (\ref NL_FUNC_MATRIX,
+ * \param[in] pname symbolic name of the function, one of (\ref NL_FUNC_MATRIX,
  *  \ref NL_FUNC_PRECONDITIONER, \ref NL_FUNC_PROGRESS)
  * \param[in] param the function pointer
  * \see nlGetFunction(), NL_FUNC_MATRIX, NL_FUNC_PRECONDITIONER, 
@@ -933,7 +947,7 @@ typedef void* NLContext ;
 
 /**
  * \brief Gets a function pointer
- * \param[in] symbolic name of the function 
+ * \param[in] pname symbolic name of the function 
  * \param[out] param the function pointer
  * \see nlSetFunction(), NL_FUNC_MATRIX, NL_FUNC_PRECONDITIONER, 
  *  NL_FUNC_PROGRESS
@@ -948,17 +962,21 @@ typedef void* NLContext ;
 
 /**
  * \brief Sets the value of a variable
- * \param[in] i index of the variable, between 0 and nlGetInteger(NL_NB_VARIABLES)-1
+ * \param[in] i index of the variable, between 0 and 
+ *  nlGetInteger(NL_NB_VARIABLES)-1
  * \param[in] value value of the variable
- * \see nlGetVariable(), nlLockVariable(), nlUnlockVariable(), nlVariableIsLocked()
+ * \see nlGetVariable(), nlLockVariable(), nlUnlockVariable(), 
+ *  nlVariableIsLocked()
  */
     NLAPI void NLAPIENTRY nlSetVariable(NLuint i, NLdouble value) ;
 
 /**
  * \brief Gets the value of a variable
- * \param[in] i index of the variable, between 0 and nlGetInteger(NL_NB_VARIABLES)-1
+ * \param[in] i index of the variable, between 0 and 
+ *  nlGetInteger(NL_NB_VARIABLES)-1
  * \return the value of the variable
- * \see nlSetVariable(), nlLockVariable(), nlUnlockVariable(), nlVariableIsLocked()
+ * \see nlSetVariable(), nlLockVariable(), nlUnlockVariable(), 
+ * nlVariableIsLocked()
  */
     NLAPI NLdouble NLAPIENTRY nlGetVariable(NLuint i) ;
 
@@ -967,10 +985,12 @@ typedef void* NLContext ;
  * \details Locked variables are no-longer computed by OpenNL, their initial
  *  value, specified by nlSetVariable(), is used as follows:
  *  - in standard mode, locked variables are moved to the right hand side
- *  - in least squares mode, locked variables are removed from the degrees of freedom
- *   and combined into the right hand side
- * \param[in] i index of the variable, between 0 and nlGetInteger(NL_NB_VARIABLES)-1
- * \see nlGetVariable(), nlSetVariable(), nlUnlockVariable(), nlVariableIsLocked()
+ *  - in least squares mode, locked variables are removed from the degrees
+ *   of freedom and combined into the right hand side
+ * \param[in] index index of the variable, between 0 and 
+ *  nlGetInteger(NL_NB_VARIABLES)-1
+ * \see nlGetVariable(), nlSetVariable(), nlUnlockVariable(), 
+ * nlVariableIsLocked()
  */
     NLAPI void NLAPIENTRY nlLockVariable(NLuint index) ;
 
@@ -979,9 +999,10 @@ typedef void* NLContext ;
  * \details Locked variables are no-longer computed by OpenNL, their initial
  *  value, specified by nlSetVariable(), is used as follows:
  *  - in standard mode, locked variables are moved to the right hand side
- *  - in least squares mode, locked variables are removed from the degrees of freedom
- *   and combined into the right hand side
- * \param[in] i index of the variable, between 0 and nlGetInteger(NL_NB_VARIABLES)-1
+ *  - in least squares mode, locked variables are removed from the degrees 
+ *   of freedom and combined into the right hand side
+ * \param[in] index index of the variable, between 0 and 
+ *  nlGetInteger(NL_NB_VARIABLES)-1
  * \see nlGetVariable(), nlSetVariable(), nlLockVariable(), nlVariableIsLocked()
  */
     NLAPI void NLAPIENTRY nlUnlockVariable(NLuint index) ;
@@ -991,9 +1012,10 @@ typedef void* NLContext ;
  * \details Locked variables are no-longer computed by OpenNL, their initial
  *  value, specified by nlSetVariable(), is used as follows:
  *  - in standard mode, locked variables are moved to the right hand side
- *  - in least squares mode, locked variables are removed from the degrees of freedom
- *   and combined into the right hand side
- * \param[in] i index of the variable, between 0 and nlGetInteger(NL_NB_VARIABLES)-1
+ *  - in least squares mode, locked variables are removed from the degrees 
+ *   of freedom and combined into the right hand side
+ * \param[in] index index of the variable, between 0 and 
+ *  nlGetInteger(NL_NB_VARIABLES)-1
  * \see nlGetVariable(), nlSetVariable(), nlLockVariable(), nlUnlockVariable()
  */
     NLAPI NLboolean NLAPIENTRY nlVariableIsLocked(NLuint index) ;
@@ -1088,14 +1110,17 @@ typedef void* NLContext ;
  *   nlBegin(NL_MATRIX) / nlEnd(NL_MATRIX) pair (else an assertion failure
  *   is triggered). This function should not be called in least squares mode.
  *   There should not be any locked variable when using this function.
- * \param[in] i,j indices
+ * \param[in] i , j indices
  * \param[in] value value of the coefficient
  */    
-    NLAPI void NLAPIENTRY nlAddIJCoefficient(NLuint i, NLuint j, NLdouble value) ;
+    NLAPI void NLAPIENTRY nlAddIJCoefficient(
+        NLuint i, NLuint j, NLdouble value
+    ) ;
 
 
 /**
- * \brief Adds a coefficient to a component of the right hand side of the equation.
+ * \brief Adds a coefficient to a component of the right hand side 
+ *  of the equation.
  * \details This function should be called between a
  *   nlBegin(NL_MATRIX) / nlEnd(NL_MATRIX) pair (else an assertion failure
  *   is triggered). This function should not be called in least squares mode.
@@ -1179,7 +1204,7 @@ typedef void* NLContext ;
  *  called, client code may get the value of the computed variables
  *  using nlGetVariable(). 
  */
-    NLAPI NLboolean NLAPIENTRY nlSolve() ;
+    NLAPI NLboolean NLAPIENTRY nlSolve(void) ;
 
 
 /**

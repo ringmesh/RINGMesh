@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_BASIC_MATRIX__
-#define __GEOGRAM_BASIC_MATRIX__
+#ifndef GEOGRAM_BASIC_MATRIX
+#define GEOGRAM_BASIC_MATRIX
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/assert.h>

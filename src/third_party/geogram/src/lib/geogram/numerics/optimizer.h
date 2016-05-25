@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_NUMERICS_OPTIMIZER__
-#define __GEOGRAM_NUMERICS_OPTIMIZER__
+#ifndef GEOGRAM_NUMERICS_OPTIMIZER
+#define GEOGRAM_NUMERICS_OPTIMIZER
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/numeric.h>

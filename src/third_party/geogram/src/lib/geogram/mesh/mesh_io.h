@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_MESH_NEW_MESH_IO__
-#define __GEOGRAM_MESH_NEW_MESH_IO__
+#ifndef GEOGRAM_MESH_NEW_MESH_IO
+#define GEOGRAM_MESH_NEW_MESH_IO
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/numeric.h>

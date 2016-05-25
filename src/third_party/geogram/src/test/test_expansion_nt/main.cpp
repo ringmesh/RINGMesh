@@ -51,7 +51,7 @@
  * \param out a reference to the output stream
  * \param x a const reference to the expansion_nt to be printed
  */
-void print(std::ostream& out, const GEO::expansion_nt& x) {
+static void print(std::ostream& out, const GEO::expansion_nt& x) {
     out << "expansion_nt(estimate="
         << x.estimate();
     out << ", components=[";
@@ -72,7 +72,7 @@ void print(std::ostream& out, const GEO::expansion_nt& x) {
  * \param out a reference to the output stream
  * \param x the double-precision number to be printed
  */
-void print(std::ostream& out, double x) {
+static void print(std::ostream& out, double x) {
     out << x;
 }
 

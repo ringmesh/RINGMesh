@@ -68,7 +68,6 @@ namespace {
          *  that are not implemented yet.
          */
         ~Stats() {
-            /* Comment this nosy output on every program ending [RINGMesh]
             if(nb_ET2 > 0) {
                 Logger::warn("Isect")
                     << nb_ET2 << " calls to ET2() (not implemented yet)"
@@ -79,7 +78,6 @@ namespace {
                     << nb_TT2 << " calls to TT2() (not implemented yet)"
                     << std::endl;
             }
-            */
         }
     } stats;
     
@@ -118,7 +116,7 @@ namespace {
      *  regions \p R1 and \p R2 (or \p R2 and \p R1 if parameter \p swapped is
      *  set to \c true).
      * \param[out] result a list of triangle intersection to extend
-     * \param[in] R1,R2 the two triangle regions
+     * \param[in] R1 , R2 the two triangle regions
      * \param[in] swapped reverses the order of the triangle regions if set to
      * \c true
      */
@@ -166,9 +164,9 @@ namespace {
      * \brief Edge-triangle intersection in 3D
      * \pre [p0,p1] straddles the supporting plane of
      *  [q1,q2,q3]
-     * \param[in] p0,p1 extremities of the segment
+     * \param[in] p0 , p1 extremities of the segment
      * \param[in] E the TriangleRegion encoding of the segment p0,p1
-     * \param[in] q0,q1,q2 vertices of the triangle
+     * \param[in] q0 , q1 , q2 vertices of the triangle
      * \param[out] out where to append the result (in symbolic form)
      * \param[in] swp if set, the TriangleRegion codes of the
      *  intersection are swapped in the result.
@@ -241,54 +239,40 @@ namespace {
                 // it occurs, we want to know why !)
 #ifdef GEO_DEBUG
             case 0x000:
-                geo_assert_not_reached;
-                return false; // zero-area T
+                geo_assert_not_reached; // zero-area T
 
             // 6 cases with (negative,zero,positive)
             // (cannot occur)
             case 0xa01:
                 geo_assert_not_reached;
-                return false;
             case 0xa10:
                 geo_assert_not_reached;
-                return false;
             case 0x0a1:
                 geo_assert_not_reached;
-                return false;
             case 0x01a:
                 geo_assert_not_reached;
-                return false;
             case 0x1a0:
                 geo_assert_not_reached;
-                return false;
             case 0x10a:
                 geo_assert_not_reached;
-                return false;
 
             // 6 cases with mixture of negative and positive
             // (already treated at the beginning of the function)
             case 0xaa1:
                 geo_assert_not_reached;
-                return false;
             case 0xa1a:
                 geo_assert_not_reached;
-                return false;
             case 0xa11:
                 geo_assert_not_reached;
-                return false;
             case 0x1aa:
                 geo_assert_not_reached;
-                return false;
             case 0x1a1:
                 geo_assert_not_reached;
-                return false;
             case 0x11a:
                 geo_assert_not_reached;
-                return false;
 #endif
         }
         geo_assert_not_reached;
-        return false;
     }
 
     /**
@@ -348,12 +332,12 @@ namespace {
      * \param[in] p0 the point
      * \param[in] P the TriangleRegion encoding of p0 within the
      *  triangle it comes from, should be one of (T_RGN_P0, T_RGN_P1, T_RGN_P2)
-     * \param[in] q0,q1,q2 the triangle
+     * \param[in] q0 , q1 , q2 the triangle
      * \param[out] out where to append the result (in symbolic form)
      * \param[in] swp if set, the TriangleRegion codes of the
      *  intersection are swapped in the result.
      * \return true if an intersection point was detected, false otherwise
-     * \pre p0,q0,q1,q2 are in the same 3d plane.
+     * \pre p0 , q0 , q1 , q2 are in the same 3d plane.
      */
     bool PT2(
         const vec3& p0, TriangleRegion P,
@@ -426,27 +410,25 @@ namespace {
 
             case 0x000:
                 geo_assert_not_reached;
-                return false;
         }
 
         geo_assert_not_reached;
-        return false;
     }
 
     /**
      * \brief Edge-triangle intersection in 2d
      * \details Input points are in 3d. The two most varying
      *  coordinates are used.
-     * \param[in] p0,p1 the edge
+     * \param[in] p0 , p1 the edge
      * \param[in] E the TriangleRegion encoding of (p0,p1) within the triangle
      *  it comes from, should be one of (T_RGN_E0, T_RGN_E1, T_RGN_E2)
-     * \param[in] q0,q1,q2 the triangle
+     * \param[in] q0 , q1 , q2 the triangle
      * \param[out] out where to append the result (in symbolic form)
      * \param[in] swp if set, the TriangleRegion codes of the
      *  intersection are swapped in the result.
      * \retval true if one or two intersection points were detected
      * \retval false otherwise
-     * \pre p0,p1,q0,q1,q2 are in the same 3d plane.
+     * \pre p0 , p1 , q0 , q1 , q2 are in the same 3d plane.
      */
     bool ET2(
         const vec3& p0, const vec3& p1, TriangleRegion E,
@@ -472,7 +454,10 @@ namespace {
                 P0_rgn = T_RGN_P0;
                 P1_rgn = T_RGN_P1;
                 break;
-            default:
+            case T_RGN_P0:
+            case T_RGN_P1:
+            case T_RGN_P2:
+            case T_RGN_T:
                 geo_assert_not_reached;
         }
 
@@ -501,8 +486,8 @@ namespace {
 
     /**
      * \brief Triangle-plane intersection in 3d
-     * \param[in] p0,p1,p2 the triangle
-     * \param[in] q0,q1,q2 the plane
+     * \param[in] p0 , p1 , p2 the triangle
+     * \param[in] q0 , q1 , q2 the plane
      * \param[out] out where to append the result (in symbolic form)
      * \param[in] swp if set, the TriangleRegion codes of the
      *  intersection are swapped in the result.
@@ -597,15 +582,14 @@ namespace {
                 return TANGENT;
         }
         geo_assert_not_reached;
-        return NO_ISECT;
     }
 
     /**
      * \brief Triangle-triangle intersection in 2d
      * \details Input points are in 3d. The two most varying
      *  coordinates are used.
-     * \param[in] p0,p1,p2 first triangle
-     * \param[in] q0,q1,q2 second triangle
+     * \param[in] p0 , p1 , p2 first triangle
+     * \param[in] q0 , q1 , q2 second triangle
      * \param[out] result where to append the result (in symbolic form)
      * \return true if an intersection point was detected, false otherwise
      * \pre p0,p1,p2,q0,q1,q2 are in the same 3d plane.

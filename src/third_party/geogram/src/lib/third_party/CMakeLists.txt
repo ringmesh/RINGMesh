@@ -9,7 +9,8 @@ else()
 endif()
 
 if(GEOGRAM_WITH_GRAPHICS)
-#  add_subdirectory(glfw)
-#  add_subdirectory(AntTweakBar)  
+   if(NOT GEOGRAM_WITH_EMSCRIPTEN)
+     add_subdirectory(glfw)
+   endif()  
 endif()
 
