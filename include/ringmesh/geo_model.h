@@ -98,7 +98,7 @@ namespace RINGMesh {
 
         /*!
          * @brief Returns the number of elements of the given type
-         * @details Default value is 0.
+         * @details Default value is 0
          * @param[in] type the element type
          */
         index_t nb_elements( GME::TYPE type ) const
@@ -137,7 +137,10 @@ namespace RINGMesh {
         {
             return *element_ptr( id ) ;
         }
-
+        
+        /*!
+         * Convenient overload of element( GME::gme_t id )
+         */
         const GeoModelElement& element(
             GME::TYPE element_type,
             index_t element_index ) const
@@ -156,7 +159,7 @@ namespace RINGMesh {
         }
 
         /*!
-         * Convenient overload of element( GME::gme_t id )
+         * Convenient overload of mesh_element( GME::gme_t id )
          */
         const GeoModelMeshElement& mesh_element(
             GME::TYPE element_type,
@@ -287,9 +290,11 @@ namespace RINGMesh {
          */
         const std::vector< GME* >& elements( GME::TYPE type ) const
         {
+            // The following casts are really nasty, I know.
+            // But we need this generic access to vectors of GME* [JP]
             switch( type ) {
                 case GME::CORNER:
-                    return *(std::vector<GME*> *)&corners_ ;   // C'est d�gueulasse je sais JP
+                    return *(std::vector<GME*> *)&corners_ ;
                 case GME::LINE:
                     return *(std::vector<GME*> *)&lines_ ;
                 case GME::SURFACE:

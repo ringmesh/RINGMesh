@@ -70,7 +70,7 @@ namespace RINGMesh {
      * @param[in] from GeoModel to copy
      * 
      * @todo This shouln't be a member function because it does not do nothing
-     * with what the class has.
+     *       with what the class has. To move to GeoModelBuilder.
      */
     void GeoModel::copy( const GeoModel& from )
     {
