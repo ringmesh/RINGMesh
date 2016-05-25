@@ -116,7 +116,7 @@ namespace {
     bool show_colored_layers = false ;
     bool show_points = false ;
 
-    double shrink = 0.0 ;
+    float shrink = 0.0 ;
     bool mesh_visible = true ;
     bool meshed_regions = false ;
 
@@ -197,7 +197,6 @@ namespace {
     void inc_shrink()
     {
         shrink = std::min( shrink + 0.1, 1. ) ;
-        GM_gfx.set_cell_regions_shrink( shrink ) ;
     }
 
     /**
@@ -206,7 +205,6 @@ namespace {
     void dec_shrink()
     {
         shrink = std::max( shrink - 0.1, 0. ) ;
-        GM_gfx.set_cell_regions_shrink( shrink ) ;
     }
 
     /**
@@ -232,7 +230,7 @@ namespace {
             "Toggle tweakbars" ) ;
         glup_viewer_add_key_func( 'b', toggle_background, "Toggle background" ) ;
         glup_viewer_add_toggle( 'B', &show_borders, "borders" ) ;
-        glup_viewer_disable( GLUP_VIEWER_TWEAKBARS ) ;
+        glup_viewer_enable( GLUP_VIEWER_TWEAKBARS ) ;
         glup_viewer_add_key_func( 'm', toggle_mesh, "mesh" ) ;
 
         GM_gfx.set_geo_model( GM ) ;
@@ -244,12 +242,6 @@ namespace {
      */
     void display()
     {
-
-        GLfloat shininess = 20.0f ;
-        glMaterialfv( GL_FRONT_AND_BACK, GL_SHININESS, &shininess ) ;
-        static float spec[4] = { 0.6f, 0.6f, 0.6f, 1.0f } ;
-        glMaterialfv( GL_FRONT_AND_BACK, GL_SPECULAR, spec ) ;
-
         if( white_bg ) {
             GM_gfx.set_surfaces_color( 0.9f, 0.9f, 0.9f ) ;
 
@@ -284,7 +276,9 @@ namespace {
 
         if( show_volume || show_wells ) {
             GM_gfx.draw_regions() ;
+            GM_gfx.set_cell_regions_shrink( shrink ) ;
         }
+
     }
 
     /**
@@ -399,6 +393,46 @@ namespace {
             GM_gfx.set_cell_regions_color( 0.9f, 0.9f, 0.9f ) ;
         }
     }
+    /**
+     * \brief Drawns and manages the graphic user interface.
+     */
+    static void overlay() {
+        ImGui::SetNextWindowPos(ImVec2(20, 20), ImGuiSetCond_Once);
+        ImGui::SetNextWindowSize(ImVec2(140, 400), ImGuiSetCond_Once);
+
+        ImGui::Begin("Tweaks [T]");
+
+        ImGui::Separator() ;
+        ImGui::Checkbox( "Vertices [p]", &show_points ) ;
+        ImGui::Checkbox( "Mesh [m]", &mesh_visible ) ;
+        ImGui::Checkbox( "VOI [V]", &show_voi ) ;
+
+        ImGui::Separator() ;
+        ImGui::Checkbox( "Corners [c]", &show_corners ) ;
+        ImGui::Checkbox( "Lines [e]", &show_lines ) ;
+        ImGui::Checkbox( "Surfaces [s]", &show_surface ) ;
+        ImGui::Checkbox( "Volumes [v]", &show_volume ) ;
+
+        ImGui::Separator();
+        ImGui::Checkbox(
+            "Clipping [F1]", (bool*)glup_viewer_is_enabled_ptr(GLUP_VIEWER_CLIP)
+        );
+        if(glup_viewer_is_enabled(GLUP_VIEWER_CLIP)) {
+            ImGui::Checkbox(
+                "edit [F2]",
+                (bool*)glup_viewer_is_enabled_ptr(GLUP_VIEWER_EDIT_CLIP)
+            );
+            ImGui::Checkbox(
+                "fixed [F3]",
+                (bool*)glup_viewer_is_enabled_ptr(GLUP_VIEWER_FIXED_CLIP)
+            );
+        }
+        if( show_volume ) {
+            ImGui::SliderFloat( "shrk.", &shrink, 0.0f, 1.0f, "%.2f" ) ;
+        }
+
+        ImGui::End();
+    }
 
 }
 
@@ -444,6 +478,7 @@ int main( int argc, char** argv )
         glup_viewer_set_window_title( (char*) "RINGMeshView" ) ;
         glup_viewer_set_init_func( init ) ;
         glup_viewer_set_display_func( display ) ;
+        glup_viewer_set_overlay_func( overlay ) ;
         glup_viewer_add_toggle( 'c', &show_corners, "corners" ) ;
         glup_viewer_add_toggle( 'e', &show_lines, "lines" ) ;
         glup_viewer_add_toggle( 's', &show_surface, "surface" ) ;
