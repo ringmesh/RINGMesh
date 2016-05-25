@@ -413,7 +413,7 @@ namespace {
         std::vector< vec3 >& cell_facet_centers )
     {
         const Region& region = geomodel.region( region_id ) ;
-        const index_t nb_cells = region.nb_polytope() ;
+        const index_t nb_cells = region.nb_polytopes() ;
         cell_facet_centers.reserve( 4 * nb_cells ) ;
         for( index_t c = 0; c < nb_cells; ++c ) {
             for( index_t f = 0; f <= 3; ++f ) {
@@ -762,7 +762,7 @@ namespace {
         std::vector< vec3 >& border_edge_barycenters )
     {
         const Surface& S = geomodel.surface( surface_id ) ;
-        for( index_t f = 0; f < S.nb_polytope(); ++f ) {
+        for( index_t f = 0; f < S.nb_polytopes(); ++f ) {
             for( index_t e = 0; e < 3; ++e ) {
                 if( S.is_on_border( f, e ) ) {
                     const vec3 barycenter = GEO::Geom::barycenter(
@@ -831,7 +831,7 @@ namespace RINGMesh {
         std::vector< index_t > facets_id ;
         std::vector< index_t > edges_id ;
 
-        for( index_t f = 0; f < S.nb_polytope(); ++f ) {
+        for( index_t f = 0; f < S.nb_polytopes(); ++f ) {
             for( index_t e = 0; e < 3; ++e ) {
                 if( !S.is_on_border( f, e ) ) {
                     bool internal_border = is_edge_in_several_surfaces( model(), surface_id,

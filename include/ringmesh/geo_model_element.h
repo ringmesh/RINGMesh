@@ -526,7 +526,7 @@ namespace RINGMesh {
          * vertices for Corner (n=0), edges for Line (n=1),
          * facets for Surface (n=2), cells for Region (n=3).
          */
-        virtual index_t nb_polytope() const = 0 ;
+        virtual index_t nb_polytopes() const = 0 ;
         /*!
          * @brief get the number of vertices of the polytope \param polytope_index in the GeoModelMeshElement
          */
@@ -557,7 +557,7 @@ namespace RINGMesh {
         virtual double size() const
         {
             double size = 0.0 ;
-            for( index_t i = 0; i < nb_polytope(); ++i ) {
+            for( index_t i = 0; i < nb_polytopes(); ++i ) {
                 size += polytope_size( i ) ;
             }
             return size ;
@@ -693,7 +693,7 @@ namespace RINGMesh {
         /*!
          * @return 0, no polytope are defined for corners.
          */
-        virtual index_t nb_polytope() const
+        virtual index_t nb_polytopes() const
         {
             return 0 ;
         }
@@ -749,7 +749,7 @@ namespace RINGMesh {
         /*!
          * Get the number of edges of the Line
          */
-        virtual index_t nb_polytope() const
+        virtual index_t nb_polytopes() const
         {
             return mesh_.nb_edges() ;
         }
@@ -769,7 +769,7 @@ namespace RINGMesh {
             index_t edge_index,
             index_t vertex_index ) const
         {
-            ringmesh_assert( edge_index < nb_polytope() ) ;
+            ringmesh_assert( edge_index < nb_polytopes() ) ;
             ringmesh_assert( vertex_index < 2 ) ;
             return mesh_.edge_vertex( edge_index, vertex_index ) ;
         }
@@ -792,7 +792,7 @@ namespace RINGMesh {
          */
         virtual double polytope_size( index_t edge_index ) const
         {
-            ringmesh_assert( edge_index < nb_polytope() ) ;
+            ringmesh_assert( edge_index < nb_polytopes() ) ;
             return mesh_.edge_length( edge_index ) ;
         }
         /*!
@@ -800,7 +800,7 @@ namespace RINGMesh {
          */
         virtual vec3 polytope_center( index_t edge_index ) const
         {
-            ringmesh_assert( edge_index < nb_polytope() ) ;
+            ringmesh_assert( edge_index < nb_polytopes() ) ;
             return 0.5
                 * ( polytope_vertex( edge_index, 0 )
                     + polytope_vertex( edge_index, 1 ) ) ;
@@ -857,7 +857,7 @@ namespace RINGMesh {
         /*!
          * Get the number of facets of the Surface.
          */
-        virtual index_t nb_polytope() const
+        virtual index_t nb_polytopes() const
         {
             return mesh_.nb_facets() ;
         }
@@ -867,7 +867,7 @@ namespace RINGMesh {
          */
         virtual index_t nb_polytope_vertices( index_t facet_index ) const
         {
-            ringmesh_assert( facet_index < nb_polytope() ) ;
+            ringmesh_assert( facet_index < nb_polytopes() ) ;
             return mesh_.nb_facet_vertices( facet_index ) ;
         }
         /*!
@@ -878,7 +878,7 @@ namespace RINGMesh {
             index_t facet_index,
             index_t vertex_index ) const
         {
-            ringmesh_assert( facet_index < nb_polytope() ) ;
+            ringmesh_assert( facet_index < nb_polytopes() ) ;
             ringmesh_assert( vertex_index < nb_polytope_vertices( facet_index ) ) ;
             return mesh_.facet_vertex( facet_index, vertex_index ) ;
         }
@@ -908,7 +908,7 @@ namespace RINGMesh {
             index_t facet_index,
             index_t vertex_index ) const
         {
-            ringmesh_assert( facet_index < nb_polytope() ) ;
+            ringmesh_assert( facet_index < nb_polytopes() ) ;
             ringmesh_assert( vertex_index < nb_polytope_vertices( facet_index ) ) ;
             return mesh_.next_facet_vertex( facet_index, vertex_index ) ;
         }
@@ -921,7 +921,7 @@ namespace RINGMesh {
             index_t facet_index,
             index_t vertex_index ) const
         {
-            ringmesh_assert( facet_index < nb_polytope() ) ;
+            ringmesh_assert( facet_index < nb_polytopes() ) ;
             ringmesh_assert( vertex_index < nb_polytope_vertices( facet_index ) ) ;
             return mesh_.prev_facet_vertex( facet_index, vertex_index ) ;
         }
@@ -934,7 +934,7 @@ namespace RINGMesh {
          */
         index_t facet_adjacent_index( index_t facet_index, index_t edge_index ) const
         {
-            ringmesh_assert( facet_index < nb_polytope() ) ;
+            ringmesh_assert( facet_index < nb_polytopes() ) ;
             ringmesh_assert( edge_index < nb_polytope_vertices( facet_index ) ) ;
             return mesh_.facet_adjacent( facet_index, edge_index ) ;
         }
@@ -1023,7 +1023,7 @@ namespace RINGMesh {
          */
         vec3 facet_normal( index_t facet_index ) const
         {
-            ringmesh_assert( facet_index < nb_polytope() ) ;
+            ringmesh_assert( facet_index < nb_polytopes() ) ;
             return mesh_.facet_normal( facet_index ) ;
         }
         /*!
@@ -1033,12 +1033,12 @@ namespace RINGMesh {
          */
         virtual vec3 polytope_center( index_t facet_index ) const
         {
-            ringmesh_assert( facet_index < nb_polytope() ) ;
+            ringmesh_assert( facet_index < nb_polytopes() ) ;
             return mesh_.facet_barycenter( facet_index ) ;
         }
         bool facet_is_triangle( index_t facet_index ) const
         {
-            ringmesh_assert( facet_index < nb_polytope() ) ;
+            ringmesh_assert( facet_index < nb_polytopes() ) ;
             return mesh_.is_triangle( facet_index ) ;
         }
 
@@ -1049,7 +1049,7 @@ namespace RINGMesh {
          */
         virtual double polytope_size( index_t facet_index ) const
         {
-            ringmesh_assert( facet_index < nb_polytope() ) ;
+            ringmesh_assert( facet_index < nb_polytopes() ) ;
             return mesh_.facet_area( facet_index ) ;
         }
         index_t closest_vertex_in_facet(
@@ -1142,25 +1142,25 @@ namespace RINGMesh {
         /*!
          * Get the number of cells of the Region.
          */
-        virtual index_t nb_polytope() const
+        virtual index_t nb_polytopes() const
         {
             return mesh_.nb_cells() ;
         }
         index_t nb_cell_edges( index_t cell_index ) const
         {
-            ringmesh_assert( cell_index < nb_polytope() ) ;
+            ringmesh_assert( cell_index < nb_polytopes() ) ;
             return mesh_.nb_cell_edges( cell_index ) ;
         }
         index_t nb_cell_facets( index_t cell_index ) const
         {
-            ringmesh_assert( cell_index < nb_polytope() ) ;
+            ringmesh_assert( cell_index < nb_polytopes() ) ;
             return mesh_.nb_cell_facets( cell_index ) ;
         }
         index_t nb_cell_facet_vertices(
             index_t cell_index,
             index_t facet_index ) const
         {
-            ringmesh_assert( cell_index < nb_polytope() ) ;
+            ringmesh_assert( cell_index < nb_polytopes() ) ;
             ringmesh_assert( facet_index < nb_cell_facets(cell_index) ) ;
             return mesh_.nb_cell_facet_vertices( cell_index, facet_index ) ;
         }
@@ -1170,7 +1170,7 @@ namespace RINGMesh {
          */
         virtual index_t nb_polytope_vertices( index_t cell_index ) const
         {
-            ringmesh_assert( cell_index < nb_polytope() ) ;
+            ringmesh_assert( cell_index < nb_polytopes() ) ;
             return mesh_.nb_cell_vertices( cell_index ) ;
         }
         /*!
@@ -1182,7 +1182,7 @@ namespace RINGMesh {
             index_t cell_index,
             index_t vertex_index ) const
         {
-            ringmesh_assert( cell_index < nb_polytope() ) ;
+            ringmesh_assert( cell_index < nb_polytopes() ) ;
             ringmesh_assert( vertex_index < nb_polytope_vertices( cell_index ) ) ;
             return mesh_.cell_vertex( cell_index, vertex_index ) ;
         }
@@ -1191,7 +1191,7 @@ namespace RINGMesh {
             index_t edge_index,
             index_t vertex_index ) const
         {
-            ringmesh_assert( cell_index < nb_polytope() ) ;
+            ringmesh_assert( cell_index < nb_polytopes() ) ;
             ringmesh_assert( edge_index < nb_cell_edges( cell_index ) ) ;
             ringmesh_assert( vertex_index < nb_polytope_vertices( cell_index ) ) ;
             return mesh_.cell_edge_vertex( cell_index, edge_index, vertex_index ) ;
@@ -1201,7 +1201,7 @@ namespace RINGMesh {
             index_t facet_index,
             index_t vertex_index )
         {
-            ringmesh_assert( cell_index < nb_polytope() ) ;
+            ringmesh_assert( cell_index < nb_polytopes() ) ;
             ringmesh_assert( facet_index < nb_cell_facets( cell_index ) ) ;
             ringmesh_assert( vertex_index < nb_polytope_vertices( cell_index ) ) ;
             return mesh_.cell_facet_vertex( cell_index, facet_index, vertex_index ) ;
@@ -1209,7 +1209,7 @@ namespace RINGMesh {
 
         index_t cell_adjacent_index( index_t cell_index, index_t facet_index ) const
         {
-            ringmesh_assert( cell_index < nb_polytope() ) ;
+            ringmesh_assert( cell_index < nb_polytopes() ) ;
             ringmesh_assert( facet_index < nb_cell_facets( cell_index ) ) ;
             return mesh_.cell_adjacent( cell_index, facet_index ) ;
         }
@@ -1220,24 +1220,24 @@ namespace RINGMesh {
          */
         bool is_facet_on_border( index_t cell_index, index_t facet_index ) const
         {
-            ringmesh_assert( cell_index < nb_polytope() ) ;
+            ringmesh_assert( cell_index < nb_polytopes() ) ;
             ringmesh_assert( facet_index < nb_cell_facets( cell_index ) ) ;
             return mesh_.cell_adjacent( cell_index, facet_index ) == GEO::NO_CELL ;
         }
         GEO::MeshCellType cell_type( index_t cell_index ) const
         {
-            ringmesh_assert( cell_index < nb_polytope() ) ;
+            ringmesh_assert( cell_index < nb_polytopes() ) ;
             return mesh_.cell_type( cell_index ) ;
         }
         vec3 cell_facet_barycenter( index_t cell_index, index_t facet_index ) const
         {
-            ringmesh_assert( cell_index < nb_polytope() ) ;
+            ringmesh_assert( cell_index < nb_polytopes() ) ;
             ringmesh_assert( facet_index < nb_cell_facets( cell_index ) ) ;
             return mesh_.cell_facet_barycenter( cell_index, facet_index ) ;
         }
         vec3 cell_facet_normal( index_t cell_index, index_t facet_index ) const
         {
-            ringmesh_assert( cell_index < nb_polytope() ) ;
+            ringmesh_assert( cell_index < nb_polytopes() ) ;
             ringmesh_assert( facet_index < nb_cell_facets( cell_index ) ) ;
             return mesh_.cell_facet_normal( cell_index, facet_index ) ;
         }
@@ -1260,7 +1260,7 @@ namespace RINGMesh {
                 const Surface& surface = dynamic_cast< const Surface& >( boundary(
                     i ) ) ;
 
-                for( index_t t = 0; t < surface.nb_polytope(); t++ ) {
+                for( index_t t = 0; t < surface.nb_polytopes(); t++ ) {
                     const vec3& p0 = surface.polytope_vertex( t, 0 ) ;
                     for( index_t v = 1; v + 1 < surface.nb_polytope_vertices( t );
                         ++v ) {
@@ -1279,7 +1279,7 @@ namespace RINGMesh {
          */
         virtual vec3 polytope_center( index_t cell_index ) const
         {
-            ringmesh_assert( cell_index < nb_polytope() ) ;
+            ringmesh_assert( cell_index < nb_polytopes() ) ;
             return mesh_.cell_barycenter( cell_index ) ;
         }
         void compute_region_volumes_per_cell_type(

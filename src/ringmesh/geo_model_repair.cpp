@@ -176,7 +176,7 @@ namespace RINGMesh {
                 GEO::Logger::out( "GeoModel" ) << nb
                     << " degenerated edges removed in LINE " << i << std::endl ;
                 // If the Line is set it to remove
-                if( model_.line( i ).nb_polytope() == 0 ) {
+                if( model_.line( i ).nb_polytopes() == 0 ) {
                     to_remove.insert( model_.line( i ).gme_id() ) ;
                 }
             }
@@ -208,7 +208,7 @@ namespace RINGMesh {
                         builder.mesh_repair( mode, 0.0 ) ;
                     }
                 }
-                if( surface.nb_vertices() == 0 || surface.nb_polytope() == 0 ) {
+                if( surface.nb_vertices() == 0 || surface.nb_polytopes() == 0 ) {
                     to_remove.insert( model_.surface( i ).gme_id() ) ;
                 } else {
                     // If the Surface has internal boundaries, we need to 

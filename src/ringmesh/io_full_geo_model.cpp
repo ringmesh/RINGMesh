@@ -1582,7 +1582,7 @@ namespace {
 
             index_t nb_edges = 0 ;
             for( index_t l = 0; l < gm.nb_lines(); l++ ) {
-                nb_edges += gm.line( l ).nb_polytope() ;
+                nb_edges += gm.line( l ).nb_polytopes() ;
             }
             std::vector< index_t > temp ;
             temp.reserve( 3 ) ;
@@ -1591,7 +1591,7 @@ namespace {
             index_t count_edge = 0 ;
             for( index_t l = 0; l < gm.nb_lines(); l++ ) {
                 const Line& line = gm.line( l ) ;
-                for( index_t e = 0; e < line.nb_polytope(); e++ ) {
+                for( index_t e = 0; e < line.nb_polytopes(); e++ ) {
                     edge_vertices[count_edge++ ] = 0.5
                         * ( line.vertex( e ) + line.vertex( e + 1 ) ) ;
                 }

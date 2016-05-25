@@ -514,7 +514,7 @@ namespace RINGMesh {
         index_t nb = 0 ;
 
         for( index_t r = 0; r < gm_.nb_regions(); ++r ) {
-            nb += gm_.region( r ).nb_polytope() ;
+            nb += gm_.region( r ).nb_polytopes() ;
         }
 
         // Get out if no cells
@@ -525,7 +525,7 @@ namespace RINGMesh {
         // Compute the number of cell per type and per region
         for( index_t r = 0; r < gm_.nb_regions(); ++r ) {
             const Region& cur_region = gm_.region( r ) ;
-            for( index_t c = 0; c < gm_.region( r ).nb_polytope(); ++c ) {
+            for( index_t c = 0; c < gm_.region( r ).nb_polytopes(); ++c ) {
                 GEO::MeshCellType cur_cell_type = cur_region.cell_type( c ) ;
                 switch( cur_cell_type ) {
                     case GEO::MESH_TET:
@@ -582,7 +582,7 @@ namespace RINGMesh {
         std::vector< index_t > cur_cell_per_type( GEO::MESH_NB_CELL_TYPES, 0 ) ;
         for( index_t r = 0; r < gm_.nb_regions(); ++r ) {
             const Region& cur_region = gm_.region( r ) ;
-            for( index_t c = 0; c < cur_region.nb_polytope(); ++c ) {
+            for( index_t c = 0; c < cur_region.nb_polytopes(); ++c ) {
                 GEO::MeshCellType cur_cell_type = cur_region.cell_type( c ) ;
                 index_t cur_cell = cells_offset_per_type[cur_cell_type]
                     + cur_cell_per_type[cur_cell_type]++ ;
@@ -742,7 +742,7 @@ namespace RINGMesh {
             case GEO::MESH_NB_CELL_TYPES:
                 ringmesh_assert( region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * ( r + 1 )]
                     - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r]
-                    == gm_.region( r ).nb_polytope() ) ;
+                    == gm_.region( r ).nb_polytopes() ) ;
                 return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * ( r + 1 )]
                     - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r] ;
             default:
@@ -1467,10 +1467,10 @@ namespace RINGMesh {
         for( index_t s = 0; s < gm_.nb_surfaces(); s++ ) {
             const Surface& surface = gm_.surface( s ) ;
             if( surface.is_simplicial() ) {
-                nb_facet_per_type[TRIANGLE] += surface.nb_polytope() ;
-                surface_facet_ptr_[ALL * s + TRIANGLE + 1] += surface.nb_polytope() ;
+                nb_facet_per_type[TRIANGLE] += surface.nb_polytopes() ;
+                surface_facet_ptr_[ALL * s + TRIANGLE + 1] += surface.nb_polytopes() ;
             } else {
-                for( index_t f = 0; f < surface.nb_polytope(); f++ ) {
+                for( index_t f = 0; f < surface.nb_polytopes(); f++ ) {
                     switch( surface.nb_polytope_vertices( f ) ) {
                         case 3:
                             nb_facet_per_type[TRIANGLE]++ ;
@@ -1513,7 +1513,7 @@ namespace RINGMesh {
         std::vector< index_t > cur_facet_per_type( ALL, 0 ) ;
         for( index_t s = 0; s < gm_.nb_surfaces(); s++ ) {
             const Surface& surface = gm_.surface( s ) ;
-            for( index_t f = 0; f < surface.nb_polytope(); f++ ) {
+            for( index_t f = 0; f < surface.nb_polytopes(); f++ ) {
                 index_t nb_vertices = surface.nb_polytope_vertices( f ) ;
                 index_t cur_facet = NO_ID ;
                 if( nb_vertices < 5 ) {
@@ -2034,7 +2034,7 @@ namespace RINGMesh {
                 cur_att_on_geo_model_mesh_element.create_vector_attribute(
                     geo_model_.region( reg ).cell_attribute_manager(),
                     att_c_names[att_c], att_dim ) ;
-                for( index_t c = 0; c < geo_model_.region( reg ).nb_polytope(); c++ ) {
+                for( index_t c = 0; c < geo_model_.region( reg ).nb_polytopes(); c++ ) {
                     vec3 center = geo_model_.region( reg ).polytope_center(c) ;
                     std::vector< index_t > c_in_geom_model_mesh ;
                     ann.get_colocated( center, c_in_geom_model_mesh ) ;

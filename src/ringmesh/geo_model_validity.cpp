@@ -573,8 +573,8 @@ namespace {
                         for( index_t i = 0; i < nb_borders; ++i ) {
                             ringmesh_assert( borders[i].type == GME::LINE ) ;
                             const Line& L = model.line( borders[i].index ) ;
-                            index_t off = M.edges.create_edges( L.nb_polytope() ) ;
-                            for( index_t e = 0; e < L.nb_polytope(); ++e ) {
+                            index_t off = M.edges.create_edges( L.nb_polytopes() ) ;
+                            for( index_t e = 0; e < L.nb_polytopes(); ++e ) {
                                 M.edges.set_vertex( off + e, 0,
                                     old2new[L.model_vertex_id(
                                         L.polytope_vertex_index( e, 0 ) )] ) ;
@@ -589,7 +589,7 @@ namespace {
                         for( index_t i = 0; i < nb_borders; ++i ) {
                             ringmesh_assert( borders[i].type == GME::SURFACE ) ;
                             const Surface& S = model.surface( borders[i].index ) ;
-                            for( index_t f = 0; f < S.nb_polytope(); ++f ) {
+                            for( index_t f = 0; f < S.nb_polytopes(); ++f ) {
                                 index_t nbv = S.nb_polytope_vertices( f ) ;
                                 GEO::vector< index_t > ids( nbv ) ;
                                 for( index_t v = 0; v < nbv; ++v ) {
@@ -972,7 +972,7 @@ namespace {
     bool surface_boundary_valid( const Surface& S )
     {
         std::vector< index_t > invalid_corners ;
-        for( index_t f = 0; f < S.nb_polytope(); ++f ) {
+        for( index_t f = 0; f < S.nb_polytopes(); ++f ) {
             for( index_t v = 0; v < S.nb_polytope_vertices( f ); ++v ) {
                 if( S.facet_adjacent_index( f, v ) == NO_ID
                     && !is_edge_on_line( S.model(), S.model_vertex_id( f, v ),
@@ -1019,7 +1019,7 @@ namespace {
         const ColocaterANN& cell_facet_barycenter_ann )
     {
         std::vector< index_t > unconformal_facets ;
-        for( index_t f = 0; f < surface.nb_polytope(); f++ ) {
+        for( index_t f = 0; f < surface.nb_polytopes(); f++ ) {
             vec3 center = surface.polytope_center( f ) ;
             std::vector< index_t > result ;
             if( !cell_facet_barycenter_ann.get_colocated( center, result ) ) {
