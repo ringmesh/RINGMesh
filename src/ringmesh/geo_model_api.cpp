@@ -577,12 +577,12 @@ namespace RINGMesh {
     /*******************************************************************************/
     /*******************************************************************************/
 
-    //TODO put in the GeoModelElementMesh Class...?
+    /* @todo Put in the GeoModelElementMesh Class...? [FB] */
     double model_element_size( const GeoModelElement& E )
-    {
-        double result = 0. ;
+    {        
         if( E.nb_children() ) {
             // Sum up the size of children elements
+            double result = 0. ;
             for( index_t i = 0; i < E.nb_children(); ++i ) {
                 result += model_element_size( E.child( i ) ) ;
             }
@@ -590,11 +590,11 @@ namespace RINGMesh {
         } else if( GeoModelElement::has_mesh( E.type() ) ) {
             const GeoModelMeshElement& M =
                 dynamic_cast< const GeoModelMeshElement& >( E ) ;
-            result = M.size() ;
+            return M.size() ;
+        } else {
+            ringmesh_assert_not_reached ;
+            return 0.0 ;
         }
-
-        ringmesh_assert_not_reached ;
-        return result ;
     }
 
     double model_element_cell_size( const GeoModelElement& E, index_t c )
