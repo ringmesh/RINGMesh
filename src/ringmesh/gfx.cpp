@@ -34,7 +34,7 @@
  */
 
 /*! 
- * @file Implementation of visualization of GeoModelEntitys
+ * @file Implementation of visualization of GeoModelEntities
  * @author Benjamin Chaunvin and Arnaud Botella
  */
 

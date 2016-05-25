@@ -694,7 +694,7 @@ namespace RINGMesh {
                 dynamic_cast< const Surface& >( region_->boundary( s ) ) ;
             if( contains( surface_id, surface.index() ) ) continue ;
             nb_surface_points += surface.nb_vertices() ;
-            nb_facets += surface.nb_polytopes() ;
+            nb_facets += surface.nb_mesh_elements() ;
 
             surface_id.push_back( surface.index() ) ;
             unique_surfaces.push_back( &surface ) ;
@@ -757,19 +757,19 @@ namespace RINGMesh {
             const Surface& surface =
                 dynamic_cast< const Surface& >( *unique_surfaces[s] ) ;
             RINGMESH_PARALLEL_LOOP
-            for( index_t t = 0; t < surface.nb_polytopes(); t++ ) {
+            for( index_t t = 0; t < surface.nb_mesh_elements(); t++ ) {
                 ringmesh_assert( surface.facet_is_triangle( t ) ) ;
                 for( index_t v = 0; v < 3; v++ ) {
                     tetmesh_constrain.facets.set_vertex( offset_facets + t, v,
                         starting_index
                             + unique_indices[offset_vertices
-                                + surface.polytope_vertex_index( t, v )] ) ;
+                                + surface.mesh_element_vertex_index( t, v )] ) ;
                 }
                 surface_region[offset_facets + t] = surface.index() ;
 
             }
             offset_vertices += surface.nb_vertices() ;
-            offset_facets += surface.nb_polytopes() ;
+            offset_facets += surface.nb_mesh_elements() ;
         }
         tetmesh_constrain.facets.connect() ;
     }

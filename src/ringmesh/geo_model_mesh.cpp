@@ -179,7 +179,7 @@ namespace RINGMesh {
         index_t nb = 0 ;
         for( index_t t = GME::CORNER; t <= GME::REGION; ++t ) {
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;
-            for( index_t e = 0; e < gm_.nb_entitys( T ); ++e ) {
+            for( index_t e = 0; e < gm_.nb_entities( T ); ++e ) {
                 nb += gm_.mesh_entity( T, e ).nb_vertices() ;
             }
         }
@@ -195,7 +195,7 @@ namespace RINGMesh {
         index_t count = 0 ;
         for( index_t t = GME::CORNER; t <= GME::REGION; ++t ) {
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;
-            for( index_t e = 0; e < gm_.nb_entitys( T ); ++e ) {
+            for( index_t e = 0; e < gm_.nb_entities( T ); ++e ) {
                 GeoModelMeshEntity& E = cast_gmm_entity( gm_, T, e ) ;
                 if( E.nb_vertices() == 0 ) {
                     continue ;
@@ -234,7 +234,7 @@ namespace RINGMesh {
         for( index_t t = GME::CORNER; t <= GME::REGION; ++t ) {
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;
             RINGMESH_PARALLEL_LOOP_DYNAMIC
-            for( index_t e = 0; e < gm_.nb_entitys( T ); ++e ) {
+            for( index_t e = 0; e < gm_.nb_entities( T ); ++e ) {
                 GeoModelMeshEntity& E = cast_gmm_entity( gm_, T, e ) ;
                 GEO::Attribute< index_t > att( E.vertex_attribute_manager(),
                     GeoModelMeshEntity::model_vertex_id_att_name() ) ;
@@ -345,7 +345,7 @@ namespace RINGMesh {
     {
 
         index_t nb_todelete = 0 ;
-        std::vector< index_t > to_delete( nb() ) ; // Here nb() represents the number of vertices before removal of the entitys
+        std::vector< index_t > to_delete( nb() ) ; // Here nb() represents the number of vertices before removal of the entities
 
         for( index_t v = 0; v < nb(); ++v ) {
             std::vector< GMEVertex >& related = gme_vertices_[v] ;
@@ -370,7 +370,7 @@ namespace RINGMesh {
                 // This vertex must be deleted
                 to_delete[v] = NO_ID ;
                 nb_todelete++ ;
-                // std::erase of all entitys has an undefined behavior
+                // std::erase of all entities has an undefined behavior
                 related.clear() ;
             }
         }
@@ -444,7 +444,7 @@ namespace RINGMesh {
         for( index_t t = GME::CORNER; t <= GME::REGION; ++t ) {
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;
 
-            for( index_t e = 0; e < gm_.nb_entitys( T ); ++e ) {
+            for( index_t e = 0; e < gm_.nb_entities( T ); ++e ) {
                 GeoModelMeshEntity& E = cast_gmm_entity( gm_, T, e ) ;
                 GEO::Attribute< index_t > att( E.vertex_attribute_manager(),
                     GeoModelMeshEntity::model_vertex_id_att_name() ) ;
@@ -514,7 +514,7 @@ namespace RINGMesh {
         index_t nb = 0 ;
 
         for( index_t r = 0; r < gm_.nb_regions(); ++r ) {
-            nb += gm_.region( r ).nb_polytopes() ;
+            nb += gm_.region( r ).nb_mesh_elements() ;
         }
 
         // Get out if no cells
@@ -525,7 +525,7 @@ namespace RINGMesh {
         // Compute the number of cell per type and per region
         for( index_t r = 0; r < gm_.nb_regions(); ++r ) {
             const Region& cur_region = gm_.region( r ) ;
-            for( index_t c = 0; c < gm_.region( r ).nb_polytopes(); ++c ) {
+            for( index_t c = 0; c < gm_.region( r ).nb_mesh_elements(); ++c ) {
                 GEO::MeshCellType cur_cell_type = cur_region.cell_type( c ) ;
                 switch( cur_cell_type ) {
                     case GEO::MESH_TET:
@@ -582,12 +582,12 @@ namespace RINGMesh {
         std::vector< index_t > cur_cell_per_type( GEO::MESH_NB_CELL_TYPES, 0 ) ;
         for( index_t r = 0; r < gm_.nb_regions(); ++r ) {
             const Region& cur_region = gm_.region( r ) ;
-            for( index_t c = 0; c < cur_region.nb_polytopes(); ++c ) {
+            for( index_t c = 0; c < cur_region.nb_mesh_elements(); ++c ) {
                 GEO::MeshCellType cur_cell_type = cur_region.cell_type( c ) ;
                 index_t cur_cell = cells_offset_per_type[cur_cell_type]
                     + cur_cell_per_type[cur_cell_type]++ ;
                 for( index_t v = 0; v < mesh_.nb_cell_vertices( c ); v++ ) {
-                    index_t region_vertex_index = cur_region.polytope_vertex_index( c, v );
+                    index_t region_vertex_index = cur_region.mesh_element_vertex_index( c, v );
                     index_t global_vertex_id = cur_region.model_vertex_id(  region_vertex_index ) ;
                     mesh_builder_.set_cell_vertex( cur_cell, v,global_vertex_id);
                 }
@@ -742,7 +742,7 @@ namespace RINGMesh {
             case GEO::MESH_NB_CELL_TYPES:
                 ringmesh_assert( region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * ( r + 1 )]
                     - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r]
-                    == gm_.region( r ).nb_polytopes() ) ;
+                    == gm_.region( r ).nb_mesh_elements() ) ;
                 return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * ( r + 1 )]
                     - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r] ;
             default:
@@ -1467,11 +1467,11 @@ namespace RINGMesh {
         for( index_t s = 0; s < gm_.nb_surfaces(); s++ ) {
             const Surface& surface = gm_.surface( s ) ;
             if( surface.is_simplicial() ) {
-                nb_facet_per_type[TRIANGLE] += surface.nb_polytopes() ;
-                surface_facet_ptr_[ALL * s + TRIANGLE + 1] += surface.nb_polytopes() ;
+                nb_facet_per_type[TRIANGLE] += surface.nb_mesh_elements() ;
+                surface_facet_ptr_[ALL * s + TRIANGLE + 1] += surface.nb_mesh_elements() ;
             } else {
-                for( index_t f = 0; f < surface.nb_polytopes(); f++ ) {
-                    switch( surface.nb_polytope_vertices( f ) ) {
+                for( index_t f = 0; f < surface.nb_mesh_elements(); f++ ) {
+                    switch( surface.nb_mesh_element_vertices( f ) ) {
                         case 3:
                             nb_facet_per_type[TRIANGLE]++ ;
                             surface_facet_ptr_[ALL * s + TRIANGLE + 1]++ ;
@@ -1513,8 +1513,8 @@ namespace RINGMesh {
         std::vector< index_t > cur_facet_per_type( ALL, 0 ) ;
         for( index_t s = 0; s < gm_.nb_surfaces(); s++ ) {
             const Surface& surface = gm_.surface( s ) ;
-            for( index_t f = 0; f < surface.nb_polytopes(); f++ ) {
-                index_t nb_vertices = surface.nb_polytope_vertices( f ) ;
+            for( index_t f = 0; f < surface.nb_mesh_elements(); f++ ) {
+                index_t nb_vertices = surface.nb_mesh_element_vertices( f ) ;
                 index_t cur_facet = NO_ID ;
                 if( nb_vertices < 5 ) {
                     FacetType T = static_cast< FacetType >( nb_vertices - 3 ) ;
@@ -2034,8 +2034,8 @@ namespace RINGMesh {
                 cur_att_on_geo_model_mesh_entity.create_vector_attribute(
                     geo_model_.region( reg ).cell_attribute_manager(),
                     att_c_names[att_c], att_dim ) ;
-                for( index_t c = 0; c < geo_model_.region( reg ).nb_polytopes(); c++ ) {
-                    vec3 center = geo_model_.region( reg ).polytope_center(c) ;
+                for( index_t c = 0; c < geo_model_.region( reg ).nb_mesh_elements(); c++ ) {
+                    vec3 center = geo_model_.region( reg ).mesh_element_center(c) ;
                     std::vector< index_t > c_in_geom_model_mesh ;
                     ann.get_colocated( center, c_in_geom_model_mesh ) ;
                     ringmesh_assert( c_in_geom_model_mesh.size() == 1 ) ;

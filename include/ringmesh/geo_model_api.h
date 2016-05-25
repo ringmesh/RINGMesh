@@ -97,7 +97,7 @@ namespace RINGMesh {
     /*! 
      * @brief Bind named GEO::Attribute on the GeoModel entity facets
      * @warning It is up to the client to unbind the attribute    
-     * @pre Entitys of geomodel_entity_type are GeoModelMeshEntity
+     * @pre Entities of geomodel_entity_type are GeoModelMeshEntity
      */
     template< typename T >
     void create_attributes_on_geomodel_entity_facets(
@@ -106,9 +106,9 @@ namespace RINGMesh {
         const std::string& attribute_name,
         AttributeVector<T>& attributes )
     {
-        index_t nb_entitys = geomodel.nb_entitys( geomodel_entity_type ) ;
-        attributes.resize( nb_entitys ) ;
-        for( index_t i = 0; i < nb_entitys; ++i ) {
+        index_t nb_entities = geomodel.nb_entities( geomodel_entity_type ) ;
+        attributes.resize( nb_entities ) ;
+        for( index_t i = 0; i < nb_entities; ++i ) {
             const GeoModelMeshEntity& E = geomodel.mesh_entity( geomodel_entity_type, i );
             GEO::AttributesManager& manager = E.facet_attribute_manager() ;
             attributes.bind_one_attribute( i, manager, attribute_name ) ;
@@ -116,9 +116,9 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Bind named GEO::Attribute on the GeoModel entitys cells
+     * @brief Bind named GEO::Attribute on the GeoModel entities cells
      * @warning It is up to the client to unbind the attribute
-     * @pre Entitys of mesh_entity_type are GeoModelMeshEntity
+     * @pre Entities of mesh_entity_type are GeoModelMeshEntity
      */
     template< typename T >
     void create_attributes_on_geomodel_entity_cells(
@@ -127,9 +127,9 @@ namespace RINGMesh {
         const std::string& attribute_name,
         AttributeVector<T>& attributes )
     {
-        index_t nb_entitys = geomodel.nb_entitys( geomodel_entity_type ) ;
-        attributes.resize( nb_entitys ) ;
-        for( index_t i = 0; i < nb_entitys; ++i ) {
+        index_t nb_entities = geomodel.nb_entities( geomodel_entity_type ) ;
+        attributes.resize( nb_entities ) ;
+        for( index_t i = 0; i < nb_entities; ++i ) {
             const GeoModelMeshEntity& E = geomodel.mesh_entity( geomodel_entity_type, i ) ;
             GEO::AttributesManager& manager = E.cell_attribute_manager() ;
             attributes.bind_one_attribute( i, manager, attribute_name ) ;

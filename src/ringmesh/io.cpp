@@ -89,16 +89,16 @@ namespace {
         out << "RINGMESH BOUNDARY MODEL" << std::endl ;
         out << "NAME " << M.name() << std::endl ;
 
-        // Numbers of the different types of entitys
+        // Numbers of the different types of entities
         for( index_t i = GME::CORNER; i < GME::NO_TYPE; i++ ) {
             GME::TYPE type = static_cast< GME::TYPE >( i ) ;
-            out << "NB_" << GME::type_name( type ) << " " << M.nb_entitys( type )
+            out << "NB_" << GME::type_name( type ) << " " << M.nb_entities( type )
                 << std::endl ;
         }
-        // Write high-level entitys
+        // Write high-level entities
         for( index_t i = GME::CONTACT; i < GME::NO_TYPE; i++ ) {
             GME::TYPE type = static_cast< GME::TYPE >( i ) ;
-            index_t nb = M.nb_entitys( type ) ;
+            index_t nb = M.nb_entities( type ) ;
             for( index_t j = 0; j < nb; ++j ) {
                 save_high_level_bme( out, M.entity( GME::gme_t( type, j ) ) ) ;
             }
@@ -182,10 +182,10 @@ namespace {
 
             //to remove or porte
         //    out << "SURFACE_CORNERS " << S.nb_facet_corners() << std::endl ;
-        /*    out << "SURFACE_FACETS " << S.nb_polytope() << std::endl ;
-            for( index_t j = 0; j < S.nb_polytope(); ++j ) {
-                out << S.nb_polytope_vertices( j ) << " " ;
-                for( index_t v = 0; v < S.nb_polytope_vertices( j ); ++v ) {
+        /*    out << "SURFACE_FACETS " << S.nb_mesh_element() << std::endl ;
+            for( index_t j = 0; j < S.nb_mesh_element(); ++j ) {
+                out << S.nb_mesh_element_vertices( j ) << " " ;
+                for( index_t v = 0; v < S.nb_mesh_element_vertices( j ); ++v ) {
                     out << S.vertex_indexsurf_vertex_id( j, v ) << " " ;
                 }
                 out << std::endl ;

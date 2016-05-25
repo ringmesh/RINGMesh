@@ -382,8 +382,8 @@ namespace RINGMesh {
             vec3 result ;
             if( segment_triangle_intersection(
                 v_from_, v_to_,
-                surface_.polytope_vertex( trgl, 0 ), surface_.polytope_vertex( trgl, 1 ),
-                surface_.polytope_vertex( trgl, 2 ), result ) ) {
+                surface_.mesh_element_vertex( trgl, 0 ), surface_.mesh_element_vertex( trgl, 1 ),
+                surface_.mesh_element_vertex( trgl, 2 ), result ) ) {
                 intersections_.push_back(
                     LineInstersection( result, surface_.index(), trgl ) ) ;
             }

@@ -68,7 +68,7 @@ namespace RINGMesh {
     /*!
      * @brief First draft of flags to build a GeoModel
      * @todo Implements functions to set, access the values, depending on what ?
-     * To check the consistency of the options. What do we do about the other entitys ? [JP] 
+     * To check the consistency of the options. What do we do about the other entities ? [JP] 
      * @todo We need to keep track of the status of the GeoModel when building it:
      * same flags or some others ?    
      */
@@ -114,7 +114,7 @@ namespace RINGMesh {
 
         /*!
          * @brief Copy all entity meshes from the input geomodel
-         * @pre The model under construction has exaclty the same number of entitys
+         * @pre The model under construction has exaclty the same number of entities
          * than the input geomodel.
          */
         void copy_meshes( const GeoModel& from ) ;
@@ -271,7 +271,7 @@ namespace RINGMesh {
                 const std::vector< index_t >& adjacent_triangles );
 
     protected:
-        /*! Entitys to compute from the available entitys */
+        /*! Entities to compute from the available entities */
         GeoModelBuildingFlags options_ ;
 
         /*! Internal information */
@@ -411,7 +411,7 @@ namespace RINGMesh {
 
         ///TODO these are temporary protected here. after they will be only in GeoModelBuilderGM
     protected:
-        static GME::TYPE match_nb_entitys( const char* s ) ;
+        static GME::TYPE match_nb_entities( const char* s ) ;
         static GME::TYPE match_type( const char* s ) ;
         static bool match_high_level_type( const char* s )
         {
@@ -541,11 +541,11 @@ namespace RINGMesh {
          */
         void load_connectivities( GEO::LineInput& file_line ) ;
         /*!
-         * @brief Load entitys of one type from a zip file
+         * @brief Load entities of one type from a zip file
          * @param[in] gme_t the GeoModelEntity type
          * @param[in] uz the zip file
          */
-        void load_entitys( GME::TYPE gme_t, unzFile& uz ) ;
+        void load_entities( GME::TYPE gme_t, unzFile& uz ) ;
 
         void load_file() ;
         /*!

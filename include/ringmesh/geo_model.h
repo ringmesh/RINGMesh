@@ -74,7 +74,7 @@ namespace RINGMesh {
         GeoModel() ;
 
         /*!
-         * @brief Deletes all the GeoModelEntitys of the GeoModel
+         * @brief Deletes all the GeoModelEntities of the GeoModel
          */
         virtual ~GeoModel() ;
 
@@ -97,11 +97,11 @@ namespace RINGMesh {
          */
 
         /*!
-         * @brief Returns the number of entitys of the given type
+         * @brief Returns the number of entities of the given type
          * @details Default value is 0
          * @param[in] type the entity type
          */
-        index_t nb_entitys( GME::TYPE type ) const
+        index_t nb_entities( GME::TYPE type ) const
         {
             switch( type ) {
                 case GME::CORNER:
@@ -119,8 +119,8 @@ namespace RINGMesh {
                 case GME::LAYER:
                     return nb_layers();
                 case GME::ALL_TYPES:
-                    ringmesh_assert( !nb_entitys_per_type_.empty() ) ;
-                    return nb_entitys_per_type_.back() ;
+                    ringmesh_assert( !nb_entities_per_type_.empty() ) ;
+                    return nb_entities_per_type_.back() ;
                 default:
                     ringmesh_assert_not_reached ;
                     return 0 ;
@@ -247,7 +247,7 @@ namespace RINGMesh {
     private:
         /*!
          * @brief Convert a global BME index into a typed index
-         * @details Relies on the nb_entitys_per_type_ vector that
+         * @details Relies on the nb_entities_per_type_ vector that
          *          must be up to date at all times
          *          See the GeoModelBuilder::end_model() function
          * @param[in] global A BME id of TYPE - ALL_TYPES
@@ -258,16 +258,16 @@ namespace RINGMesh {
             ringmesh_assert( global.type == GME::ALL_TYPES ) ;
 
             index_t t = NO_ID ;
-            for( index_t i = 1; i < nb_entitys_per_type_.size(); i++ ) {
-                if( global.index >= nb_entitys_per_type_[i - 1]
-                    && global.index < nb_entitys_per_type_[i] ) {
+            for( index_t i = 1; i < nb_entities_per_type_.size(); i++ ) {
+                if( global.index >= nb_entities_per_type_[i - 1]
+                    && global.index < nb_entities_per_type_[i] ) {
                     t = i - 1 ;
                     break ;
                 }
             }
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;
             if( T < GME::NO_TYPE ) {
-                index_t i = global.index - nb_entitys_per_type_[t] ;
+                index_t i = global.index - nb_entities_per_type_[t] ;
                 return GME::gme_t( T, i ) ;
             } else {
                 ringmesh_assert_not_reached ;
@@ -276,19 +276,19 @@ namespace RINGMesh {
         }
 
         /*!
-         * @brief Generic accessor to the storage of entitys of the given type
+         * @brief Generic accessor to the storage of entities of the given type
          * @pre The type must be valid NO_TYPE or ALL_TYPES will throw an assertion
          */
-        inline std::vector< GME* >& modifiable_entitys( GME::TYPE type )
+        inline std::vector< GME* >& modifiable_entities( GME::TYPE type )
         {
-            return const_cast< std::vector< GME* >& >( entitys( type ) ) ;
+            return const_cast< std::vector< GME* >& >( entities( type ) ) ;
         }
 
         /*!
-         * @brief Generic accessor to the storage of entitys of the given type
+         * @brief Generic accessor to the storage of entities of the given type
          * @pre The type must be valid. NO_TYPE or ALL_TYPES will throw an assertion
          */
-        const std::vector< GME* >& entitys( GME::TYPE type ) const
+        const std::vector< GME* >& entities( GME::TYPE type ) const
         {
             // The following casts are really nasty, I know.
             // But we need this generic access to vectors of GME* [JP]
@@ -326,8 +326,8 @@ namespace RINGMesh {
                 return const_cast< Region* >( &universe_ ) ;
             } else {
                 if( id.type < GME::NO_TYPE ) {
-                    ringmesh_assert( id.index < nb_entitys( id.type ) ) ;
-                    return entitys( id.type )[id.index] ;
+                    ringmesh_assert( id.index < nb_entities( id.type ) ) ;
+                    return entities( id.type )[id.index] ;
                 } else if( id.type == GME::ALL_TYPES ) {
                     return entity_ptr( global_to_typed_id( id ) ) ;
                 } else {
@@ -359,18 +359,18 @@ namespace RINGMesh {
         }
 
         /*!
-         * @brief Clears and fills the model nb_entitys_per_type_ vector
+         * @brief Clears and fills the model nb_entities_per_type_ vector
          * @details See global entity access with GeoModel::entity( BME::TYPE, index_t )
          */
         void init_global_model_entity_access()
         {
-            nb_entitys_per_type_.clear() ;
+            nb_entities_per_type_.clear() ;
 
             index_t count = 0 ;
-            nb_entitys_per_type_.push_back( count ) ;
+            nb_entities_per_type_.push_back( count ) ;
             for( index_t type = GME::CORNER; type < GME::NO_TYPE; type++ ) {
-                count += nb_entitys( (GME::TYPE) type ) ;
-                nb_entitys_per_type_.push_back( count ) ;
+                count += nb_entities( (GME::TYPE) type ) ;
+                nb_entities_per_type_.push_back( count ) ;
             }
         }
 
@@ -382,7 +382,7 @@ namespace RINGMesh {
         std::string name_ ;
 
         /*!
-         * \name Mandatory entitys of the model
+         * \name Mandatory entities of the model
          * @{
          */
         std::vector< Corner* > corners_ ;
@@ -398,20 +398,20 @@ namespace RINGMesh {
         Region universe_ ;
 
         /*! @}
-         * \name Optional geological entitys
+         * \name Optional geological entities
          * @{
          */
 
         /*!
-         * @brief Entitys of type CONTACT
+         * @brief Entities of type CONTACT
          */
         std::vector< GeoModelEntity* > contacts_ ;
         /*!
-         * @brief Entitys of type INTERFACE
+         * @brief Entities of type INTERFACE
          */
         std::vector< GeoModelEntity* > interfaces_ ;
         /*!
-         * @brief Entitys of type LAYER
+         * @brief Entities of type LAYER
          */
         std::vector< GeoModelEntity* > layers_ ;
 
@@ -420,11 +420,11 @@ namespace RINGMesh {
          */
 
         /*
-         * @brief Global access to GeoModelEntitys.
+         * @brief Global access to GeoModelEntities.
          * It MUST be updated if one entity is added.
          * @warning It must be up to date at all times
          */
-        std::vector< index_t > nb_entitys_per_type_ ;
+        std::vector< index_t > nb_entities_per_type_ ;
 
         /*! Optional WellGroup associated with the model
          * @todo Give a more general name - this could be anything [JP]
