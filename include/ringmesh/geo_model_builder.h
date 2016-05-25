@@ -37,17 +37,18 @@
 #define __RINGMESH_GEO_MODEL_BUILDER__
 
 #include <ringmesh/common.h>
-#include <third_party/zlib/unzip.h>
 
 #include <vector>
 #include <string>
 #include <stack>
 
 #include <geogram/basic/line_stream.h>
-
 #include <ringmesh/geo_model_editor.h>
+#include <third_party/zlib/unzip.h>
+
 #define MAX_FILENAME 512
 #define READ_SIZE 8192
+
 /*!
  * @file ringmesh/geo_model_builder.h
  * @brief Classes to build GeoModel from various inputs
@@ -520,7 +521,6 @@ namespace RINGMesh {
 
     private:
         GEO::LineInput file_line_ ;
-
     } ;
 
     class RINGMESH_API GeoModelBuilderGM: public GeoModelBuilderFile {

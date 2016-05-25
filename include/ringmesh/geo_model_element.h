@@ -74,7 +74,7 @@ namespace RINGMesh {
             STRATI,
             /*!
              * Unconformity
-             * \todo: distinguish between as erosive, baselap or intrusive
+             * @todo: Distinguish between as erosive, baselap or intrusive
              * unconformities --GC
              */
             UNCONFORMITY,
@@ -98,12 +98,9 @@ namespace RINGMesh {
          *     that are constituted of low-level elements
          * TYPE is used extensively to manage elements, iterate on them, etc.
          *  
-         * @warning DO NOT MODIFY THIS ENUM.
-         * OK but why ? --GC
+         * @warning DO NOT MODIFY THIS ENUM SINCE ALL THE CODE RELIES ON IT.
          * 
          * @todo Add fault blocks.
-         * @todo Encapsulate in functions for testing groups or range of
-         * features (See previous comment)--GC
          */
         enum TYPE {
             /// Points at LINE extremities
@@ -131,6 +128,8 @@ namespace RINGMesh {
          * @brief Unique identification of a GeoModelElement in a GeoModel
          * @details Stores the TYPE of the element and its index in the GeoModel.
          *          Default values are NO_TYPE and NO_ID
+         * @todo Should we change this name? it looks like index_t but does not enforce
+         *       the programming guidelines [JP]
          */
         struct gme_t {
             gme_t()
@@ -178,12 +177,10 @@ namespace RINGMesh {
             }
             /*!
              * TYPE of the GeoModelElement
-             * \todo Should be type_ to be consistent with style guidelines --GC
              */
             TYPE type ;
             /*!
              * Index of the element in the GeoModel
-             * \todo Should be index_ to be consistent with style guidelines --GC
              */
             index_t index ;
         } ;
@@ -204,7 +201,7 @@ namespace RINGMesh {
         }
 
         /*!
-         * \name Key functions to access relationships between TYPE s 
+         * \name Key functions to access relationships between TYPEs 
          * @{
          */
         static std::string type_name( TYPE t ) ;
@@ -246,7 +243,7 @@ namespace RINGMesh {
          */
 
         /*!
-         * @brief Global validity check of the BME
+         * @brief Global validity check of the GME
          */
         virtual bool is_valid() const
         {
@@ -300,6 +297,7 @@ namespace RINGMesh {
 
         /*!@}
          * \name Connectivity - boundary and in_boundary
+         * @todo Change in_boundary to incident_elements? in_boundary is obscure? [JP]
          * @{
          */
         index_t nb_boundaries() const
@@ -431,7 +429,7 @@ namespace RINGMesh {
         {
             return gme_id.is_defined() && v_id != NO_ID ;
         }
-        /// GeoModelElement id in its GeoModel
+        /// GeoModelElement index in the GeoModel that owns it
         GME::gme_t gme_id ;
         /// Index of the vertex in the GeoModelElement
         index_t v_id ;
@@ -477,9 +475,10 @@ namespace RINGMesh {
         virtual bool is_valid() const
         {
             return is_connectivity_valid() && is_mesh_valid() ;
-            /// \todo Test and add the model vertex validity test            
-            /// (no time right now JP)
-            // are_model_vertex_indices_valid() ;
+            /* @todo Test and add the model vertex validity test            
+             * (no time right now JP)
+             * are_model_vertex_indices_valid() ;
+             */
         }
         void save(
             const std::string filename,
@@ -488,7 +487,8 @@ namespace RINGMesh {
             mesh_.save_mesh( filename, ioflags ) ;
         }
         /*!
-         * brief  return the ColocaterANN at located at ColocaterANN::VERTICES of the current GeoModelMeshElement.
+         * @brief Return the ColocaterANN at located at ColocaterANN::VERTICES 
+         * of the current GeoModelMeshElement.
          */
         const ColocaterANN& vertex_colocater_ann() const
         {
@@ -586,7 +586,8 @@ namespace RINGMesh {
         static const std::string model_vertex_id_att_name() ;
 
         /*!
-         * @brief Get the global GeoModelMesh index of the vertex indexed @param[in] gmme_vertex_index in the current GeoModelMeshElement.
+         * @brief Get the global GeoModelMesh index of the vertex indexed 
+         * @param[in] gmme_vertex_index in the current GeoModelMeshElement.
          */
         index_t model_vertex_id( index_t gmme_vertex_index = 0 ) const
         {
@@ -606,7 +607,8 @@ namespace RINGMesh {
                 polytope_vertex_index( gmme_polytope_index, vertex_index ) ) ;
         }
         /*!
-         * @brief Get the first vertex index, in the current GeoModelMeshElement, that corresponds to the vertex \param model_vertex_id.
+         * @brief Get the first vertex index, in the current GeoModelMeshElement, 
+         *  that corresponds to the vertex \param model_vertex_id.
          * @details Returns NO_ID if no matching point is found.
          *
          * @param model_vertex_id Index of a vertex in GeoModelMeshVertices
