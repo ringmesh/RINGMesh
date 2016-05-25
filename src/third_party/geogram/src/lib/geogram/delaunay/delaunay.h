@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_DELAUNAY_DELAUNAY__
-#define __GEOGRAM_DELAUNAY_DELAUNAY__
+#ifndef GEOGRAM_DELAUNAY_DELAUNAY
+#define GEOGRAM_DELAUNAY_DELAUNAY
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/counted.h>
@@ -262,12 +262,12 @@ namespace GEO {
          *  Only taken into account after set_refine(true) is called.
          *  It is not taken into account by all implementations.
          *  This function should be called before set_vertices().
-         * \param[in] quality, typically in [1.0, 2.0], specifies
+         * \param[in] qual typically in [1.0, 2.0], specifies
          *  the desired quality of mesh elements (1.0 means maximum
          *  quality, and generates a higher number of elements).
          */
-        void set_quality(double x) {
-            quality_ = x;
+        void set_quality(double qual) {
+            quality_ = qual;
         }
         
         /**
@@ -384,7 +384,6 @@ namespace GEO {
                 }
             }
             geo_assert_not_reached;
-            return cell_size();
         }
 
         /**
@@ -405,7 +404,6 @@ namespace GEO {
                 }
             }
             geo_assert_not_reached;
-            return cell_size();
         }
 
         /**
@@ -586,7 +584,7 @@ namespace GEO {
          * specified \p dimension. Specific implementations of the Delaunay
          * triangulation may not support the specified \p dimension and will
          * throw a InvalidDimension exception.
-         * \param[in] dim dimension of the triangulation
+         * \param[in] dimension dimension of the triangulation
          * \throw InvalidDimension This exception is thrown if the specified
          * \p dimension is not supported by the Delaunay implementation.
          * \note This function is never called directly, use create()

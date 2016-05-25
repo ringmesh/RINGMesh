@@ -131,10 +131,10 @@ namespace {
                 S.push(f);
             }
             while(!S.empty()) {
-                index_t f = S.top();
+                index_t ftop = S.top();
                 S.pop();
-                for(index_t c = M.facets.corners_begin(f);
-                    c < M.facets.corners_end(f); ++c) {
+                for(index_t c = M.facets.corners_begin(ftop);
+                    c < M.facets.corners_end(ftop); ++c) {
                     index_t g = M.facet_corners.adjacent_facet(c);
                     if(g != NO_FACET && new_index[g] == UNVISITED) {
                         new_index[g] = new_cur_index;
@@ -211,8 +211,6 @@ namespace GEO {
             case MESH_PARTITION_CONNECTED_COMPONENTS:
                 partition_surface_connected_components(M, facet_ptr);
                 break;
-            default:
-                geo_assert_not_reached;
         }
     }
 
@@ -235,8 +233,6 @@ namespace GEO {
                     partition_volume_connected_components(M, tet_ptr);
                 }
                 break;
-            default:
-                geo_assert_not_reached;
         }
     }
 }

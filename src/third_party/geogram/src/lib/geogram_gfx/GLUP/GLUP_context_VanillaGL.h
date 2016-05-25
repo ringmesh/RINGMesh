@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_GFX_GLUP_GLUP_CONTEXT_VANILLAGL___
-#define __GEOGRAM_GFX_GLUP_GLUP_CONTEXT_VANILLAGL___
+#ifndef GEOGRAM_GFX_GLUP_GLUP_CONTEXT_VANILLAGL
+#define GEOGRAM_GFX_GLUP_GLUP_CONTEXT_VANILLAGL
 
 #include <geogram_gfx/basic/common.h>
 #include <geogram_gfx/GLUP/GLUP.h>
@@ -54,6 +54,8 @@
  * \file geogram_gfx/GLUP/GLUP_context_VanillaGL.h
  * \brief Internal implementation of GLUP using plain old OpenGL.
  */
+
+#ifdef GEO_GL_LEGACY
 
 namespace GLUP {
     using namespace GEO;
@@ -74,6 +76,11 @@ namespace GLUP {
          */
         Context_VanillaGL();
 
+        /**
+         * \brief Context_VanillaGL destructor.
+         */
+        virtual ~Context_VanillaGL();
+        
         /**
          * \copydoc Context::profile_name()
          */
@@ -96,6 +103,26 @@ namespace GLUP {
         
     protected:
 
+        /**
+         * \copydoc Context::prepare_to_draw()
+         */
+        virtual void prepare_to_draw(GLUPprimitive primitive);
+        
+        /**
+         * \copydoc Context::do_update_uniform_buffer()
+         */
+        virtual void do_update_uniform_buffer();
+        
+        /**
+         * \copydoc Context::update_matrices()
+         */
+        virtual void update_matrices();
+
+        /**
+         * \copydoc Context::update_lighting()
+         */
+        virtual void update_lighting();
+        
         /**
          * \brief Configures texturing-related OpenGL state
          *  variables according to the GLUP state variables.
@@ -165,35 +192,6 @@ namespace GLUP {
          */
         Memory::pointer get_state_variable_address(const char* name);
 
-
-        /**
-         * \brief Shrinks the cells in the immediate buffer.
-         * \details Applies the shrinking factor (state variable
-         *   "cells_shrink") to all the cells stored in the current
-         *   immediate buffer. Since there is no function to query
-         *   the content of the current buffer, modidying it is 
-         *   acceptable.
-         */
-        void shrink_cells_in_immediate_buffers();
-
-        /**
-         * \brief Updates v_is_visible_[] according to
-         *  current clipping plane.
-         */
-        void classify_vertices_in_immediate_buffers();
-
-        /**
-         * \brief Tests whether the cell starting at a given vertex
-         *  in the immediate buffer is clipped, according to current
-         *  clipping mode and current primitive type.
-         * \param[in] first_v index of the first vertex of the cell in
-         *  the immediate buffer
-         * \retval true if the cell starting at \p first_v in the 
-         *  immediate buffer is clipped-out
-         * \retval false otherwise
-         */
-        bool cell_is_clipped(index_t first_v);
-
         /**
          * \brief Tests whether cells should be sliced.
          * \retval true if cells should be sliced
@@ -230,14 +228,14 @@ namespace GLUP {
 
         /**
          * \brief Sends a triangle normal to OpenGL
-         * \param[in] v1,v2,v3 the indices of the three vertices from
+         * \param[in] v1 , v2 , v3 the indices of the three vertices from
          *  the immediate buffer.
          */
         void output_normal(index_t v1, index_t v2, index_t v3);
 
         /**
          * \brief Sends a quad normal to OpenGL
-         * \param[in] v1,v2,v3,v4 the indices of the four vertices from
+         * \param[in] v1 , v2 , v3 , v4 the indices of the four vertices from
          *  the immediate buffer.
          */
         void output_normal(index_t v1, index_t v2, index_t v3, index_t v4);
@@ -256,10 +254,26 @@ namespace GLUP {
                 );
             }
         }
+
+        /**
+         * \brief Encodes a 32 bits integer into the 
+         *  current OpenGL color.
+         * \details This function is used by the 
+         *  picking mechanism.
+         * \param[in] id the picking id to be encoded as 
+         *  the current OpenGL color
+         */
+        static void glPickingIdAsColor(index_t id) {
+            GLubyte r = GLubyte( id        & 255);
+            GLubyte g = GLubyte((id >> 8)  & 255);
+            GLubyte b = GLubyte((id >> 16) & 255);
+            GLubyte a = GLubyte((id >> 24) & 255);
+            glColor4ub(r,g,b,a);
+        }
         
         /**
          * \brief Sends a flat-shaded triangle to OpenGL
-         * \param[in] v1,v2,v3 the indices of the three vertices from the
+         * \param[in] v1 , v2 , v3 the indices of the three vertices from the
          *  immediate buffer.
          */
         void flat_shaded_triangle(index_t v1, index_t v2, index_t v3) {
@@ -273,8 +287,8 @@ namespace GLUP {
 
         /**
          * \brief Sends a flat-shaded quad to OpenGL
-         * \param[in] v1,v2,v3,v4 the indices of the three vertices from the
-         *  immediate buffer.
+         * \param[in] v1 , v2 , v3 , v4 the indices of the three 
+         *  vertices from the immediate buffer.
          */
         void flat_shaded_quad(index_t v1, index_t v2, index_t v3, index_t v4) {
             if(uniform_state_.toggle[GLUP_LIGHTING].get()) {
@@ -347,7 +361,7 @@ namespace GLUP {
          *  immediate buffer
          * \param[in] v2 index of the second extremity of the segment in the
          *  immediate buffer
-         * \param[in] v1 index of where to wrote the intersection in the 
+         * \param[in] vi index of where to wrote the intersection in the 
          *  isect_xxx arrays
          */
         void compute_intersection(index_t v1, index_t v2, index_t vi) {
@@ -366,7 +380,7 @@ namespace GLUP {
                 eqn[1]*(p2[1]-p1[1]) +
                 eqn[2]*(p2[2]-p1[2]) ;
             
-            if(fabs(d) < 1e-6) {
+            if(fabs(double(d)) < 1e-6) {
                 t = 0.5f;
             } else {
                 t /= d;
@@ -431,15 +445,13 @@ namespace GLUP {
         void draw_immediate_buffer_with_marching_cells(
             const MarchingCell& cell
         );
+
+        void begin_indirect_texturing();
+
+        void end_indirect_texturing();
         
     private:
-        std::map<std::string, GLsizei> variable_to_offset_;
 
-        /**
-         * \brief Indicates for a given vertex whether it is clipped or
-         *  is visible, according to the current clipping plane.
-         */
-        bool v_is_visible_[IMMEDIATE_BUFFER_SIZE];
 
         /**
          * \brief Indicates whether a picking id should be send to 
@@ -465,16 +477,18 @@ namespace GLUP {
          */
         GLUPfloat isect_tex_coord_[12*4];
 
-
         /**
-         * \brief Cached pointer to uniform state variable.
+         * \brief The program to be used for indirect
+         *  texturing.
          */
-        GLUPfloat* world_clip_plane_;
+        GLuint indirect_texturing_program_;
     };
 
     /*********************************************************************/
 
     
 }
+
+#endif
 
 #endif

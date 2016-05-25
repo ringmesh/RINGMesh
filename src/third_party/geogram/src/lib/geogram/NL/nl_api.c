@@ -86,7 +86,7 @@ void nlSolverParameterd(NLenum pname, NLdouble param) {
     default: {
         nlError("nlSolverParameterd","Invalid parameter");
         nl_assert_not_reached ;
-    } break ;
+    }
     }
 }
 
@@ -122,7 +122,7 @@ void nlSolverParameteri(NLenum pname, NLint param) {
     default: {
         nlError("nlSolverParameteri","Invalid parameter");
         nl_assert_not_reached ;
-    } break ;
+    }
     }
 }
 
@@ -177,7 +177,7 @@ void nlGetBooleanv(NLenum pname, NLboolean* params) {
     default: {
         nlError("nlGetBooleanv","Invalid parameter");
         nl_assert_not_reached ;
-    } break ;
+    } 
     }
 }
 
@@ -206,7 +206,7 @@ void nlGetDoublev(NLenum pname, NLdouble* params) {
     default: {
         nlError("nlGetDoublev","Invalid parameter");
         nl_assert_not_reached ;
-    } break ;
+    } 
     }
 }
 
@@ -239,7 +239,7 @@ void nlGetIntegerv(NLenum pname, NLint* params) {
     default: {
         nlError("nlGetIntegerv","Invalid parameter");
         nl_assert_not_reached ;
-    } break ;
+    } 
     }
 }
 
@@ -279,19 +279,20 @@ void nlDisable(NLenum pname) {
 }
 
 NLboolean nlIsEnabled(NLenum pname) {
+    NLboolean result = NL_FALSE;
     switch(pname) {
     case NL_NORMALIZE_ROWS: {
-        return nlCurrentContext->normalize_rows ;
-    } break ;
+        result = nlCurrentContext->normalize_rows ;
+    } break;
     case NL_VERBOSE: {
-        return nlCurrentContext->verbose ;
-    } break ;
+        result = nlCurrentContext->verbose ;
+    } break;
     default: {
         nlError("nlIsEnables","Invalid parameter");
         nl_assert_not_reached ;
     }
     }
-    return NL_FALSE ;
+    return result;
 }
 
 /************************************************************************************/
@@ -372,7 +373,7 @@ NLboolean nlVariableIsLocked(NLuint index) {
 /************************************************************************************/
 /* System construction */
 
-void nlVariablesToVector() {
+static void nlVariablesToVector() {
     NLuint i ;
     nl_assert(nlCurrentContext->alloc_x) ;
     nl_assert(nlCurrentContext->alloc_variable) ;
@@ -385,7 +386,7 @@ void nlVariablesToVector() {
     }
 }
 
-void nlVectorToVariables() {
+static void nlVectorToVariables() {
     NLuint i ;
     nl_assert(nlCurrentContext->alloc_x) ;
     nl_assert(nlCurrentContext->alloc_variable) ;
@@ -399,7 +400,7 @@ void nlVectorToVariables() {
 }
 
 
-void nlBeginSystem() {
+static void nlBeginSystem() {
     nlTransition(NL_STATE_INITIAL, NL_STATE_SYSTEM) ;
     nl_assert(nlCurrentContext->nb_variables > 0) ;
     nlCurrentContext->variable = NL_NEW_ARRAY(
@@ -408,11 +409,11 @@ void nlBeginSystem() {
     nlCurrentContext->alloc_variable = NL_TRUE ;
 }
 
-void nlEndSystem() {
+static void nlEndSystem() {
     nlTransition(NL_STATE_MATRIX_CONSTRUCTED, NL_STATE_SYSTEM_CONSTRUCTED) ;    
 }
 
-void nlBeginMatrix() {
+static void nlBeginMatrix() {
     NLuint i ;
     NLuint n = 0 ;
     NLenum storage = NL_MATRIX_STORE_ROWS ;
@@ -508,7 +509,7 @@ void nlBeginMatrix() {
     nlCurrentContext->current_row = 0 ;
 }
 
-void nlEndMatrix() {
+static void nlEndMatrix() {
     nlTransition(NL_STATE_MATRIX, NL_STATE_MATRIX_CONSTRUCTED) ;    
     
     nlRowColumnDestroy(&nlCurrentContext->af) ;
@@ -541,14 +542,14 @@ void nlEndMatrix() {
     }
 }
 
-void nlBeginRow() {
+static void nlBeginRow() {
     nlTransition(NL_STATE_MATRIX, NL_STATE_ROW) ;
     nlRowColumnZero(&nlCurrentContext->af) ;
     nlRowColumnZero(&nlCurrentContext->al) ;
     nlRowColumnZero(&nlCurrentContext->xl) ;
 }
 
-void nlScaleRow(NLdouble s) {
+static void nlScaleRow(NLdouble s) {
     NLRowColumn*    af = &nlCurrentContext->af ;
     NLRowColumn*    al = &nlCurrentContext->al ;
     NLuint nf            = af->size ;
@@ -563,7 +564,7 @@ void nlScaleRow(NLdouble s) {
     nlCurrentContext->right_hand_side *= s ;
 }
 
-void nlNormalizeRow(NLdouble weight) {
+static void nlNormalizeRow(NLdouble weight) {
     NLRowColumn*    af = &nlCurrentContext->af ;
     NLRowColumn*    al = &nlCurrentContext->al ;
     NLuint nf            = af->size ;
@@ -580,7 +581,7 @@ void nlNormalizeRow(NLdouble weight) {
     nlScaleRow(weight / norm) ;
 }
 
-void nlEndRow() {
+static void nlEndRow() {
     NLRowColumn*    af = &nlCurrentContext->af ;
     NLRowColumn*    al = &nlCurrentContext->al ;
     NLRowColumn*    xl = &nlCurrentContext->xl ;

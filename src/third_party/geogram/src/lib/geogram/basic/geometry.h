@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_BASIC_GEOMETRY__
-#define __GEOGRAM_BASIC_GEOMETRY__
+#ifndef GEOGRAM_BASIC_GEOMETRY
+#define GEOGRAM_BASIC_GEOMETRY
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/vecg.h>

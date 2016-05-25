@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_BASIC_FACTORY__
-#define __GEOGRAM_BASIC_FACTORY__
+#ifndef GEOGRAM_BASIC_FACTORY
+#define GEOGRAM_BASIC_FACTORY
 
 #include <geogram/basic/memory.h>
 #include <geogram/basic/counted.h>

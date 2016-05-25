@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_NUMERICS_EXPANSION_NT__
-#define __GEOGRAM_NUMERICS_EXPANSION_NT__
+#ifndef GEOGRAM_NUMERICS_EXPANSION_NT
+#define GEOGRAM_NUMERICS_EXPANSION_NT
 
 #include <geogram/basic/common.h>
 #include <geogram/numerics/multi_precision.h>
@@ -374,7 +374,7 @@ namespace GEO {
          * \brief Copies an expansion into this one.
          * \details current rep_ pointer is supposed to be
          *   uninitialized or freed before calling this function.
-         * \param[rhs] a const reference to the expansion to be copied
+         * \param[in] rhs a const reference to the expansion to be copied
          */
         void copy(const expansion_nt& rhs) {
             rep_ = expansion::new_expansion_on_heap(rhs.rep().capacity());
@@ -594,7 +594,7 @@ namespace GEO {
     /**
      * \brief Compares two expansion_nt
      * \details Optimized using the low-level API
-     * \param [in] x,y the two expansion_nt to compare
+     * \param [in] x , y the two expansion_nt to compare
      * \retval POSITIVE if \p x is greater than \p y
      * \retval ZERO if \p x equals \p y
      * \retval NEGATIVE if \p x is smaller than \p y
@@ -681,7 +681,7 @@ inline std::ostream& operator<< (
 /**
  * \brief Reads a double precision number from a stream and converts it to
  *  an approximation.
- * \param[in] os the stream 
+ * \param[in] is the stream 
  * \param[out] a the read expantion_nt
  * \return a reference to the stream
  */

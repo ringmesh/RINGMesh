@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_BASIC_ASSERT__
-#define __GEOGRAM_BASIC_ASSERT__
+#ifndef GEOGRAM_BASIC_ASSERT
+#define GEOGRAM_BASIC_ASSERT
 
 #include <geogram/basic/common.h>
 #include <string>
@@ -86,7 +86,7 @@ namespace GEO {
      * abort() is more difficult to see under debugger, so this creates a
      * segmentation fault by deferencing a null pointer.
      */
-    void GEOGRAM_API geo_abort();
+    GEO_NORETURN_DECL void GEOGRAM_API geo_abort() GEO_NORETURN;
 
     /**
      * \brief Prints an assertion failure
@@ -97,10 +97,10 @@ namespace GEO {
      * \param[in] file file where the assertion failed
      * \param[in] line line where the assertion failed
      */
-    void GEOGRAM_API geo_assertion_failed(
+    GEO_NORETURN_DECL void GEOGRAM_API geo_assertion_failed(
         const std::string& condition_string,
         const std::string& file, int line
-    );
+    ) GEO_NORETURN;
 
     /**
      * \brief Prints a range assertion failure
@@ -113,10 +113,10 @@ namespace GEO {
      * \param[in] file file where the assertion failed
      * \param[in] line line where the assertion failed
      */
-    void GEOGRAM_API geo_range_assertion_failed(
+    GEO_NORETURN_DECL void GEOGRAM_API geo_range_assertion_failed(
         double value, double min_value, double max_value,
         const std::string& file, int line
-    );
+    ) GEO_NORETURN;
 
     /**
      * \brief Prints an unreachable location failure
@@ -126,9 +126,9 @@ namespace GEO {
      * \param[in] file file containing the unreachable location
      * \param[in] line line of the unreachable location
      */
-    void GEOGRAM_API geo_should_not_have_reached(
+    GEO_NORETURN_DECL void GEOGRAM_API geo_should_not_have_reached(
         const std::string& file, int line
-    );
+    ) GEO_NORETURN;
 }
 
 // Three levels of assert:

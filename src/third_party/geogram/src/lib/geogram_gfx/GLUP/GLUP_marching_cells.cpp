@@ -54,6 +54,7 @@ namespace GLUP {
     
     MarchingCell::MarchingCell(GLUPprimitive prim) {
         UBO_ = 0;
+        elements_VBO_ = 0;
         desc_ = nil;
         switch(prim) {
         case GLUP_TETRAHEDRA:
@@ -81,9 +82,12 @@ namespace GLUP {
                 &MeshCellsStore::cell_type_to_cell_descriptor(MESH_CONNECTOR);
             uniform_binding_point_ = 6;                        
             break;
-        default:
+        case GLUP_POINTS:
+        case GLUP_LINES:
+        case GLUP_TRIANGLES:
+        case GLUP_QUADS:
+        case GLUP_NB_PRIMITIVES:
             geo_assert_not_reached;
-            break;
         }
             
         index_t nb_v = desc_->nb_vertices;
@@ -182,11 +186,18 @@ namespace GLUP {
         ;
     }
 
-    
     MarchingCell::~MarchingCell() {
         delete[] edge_;
         delete[] config_;
         delete[] config_size_;
+        if(UBO_ != 0) {
+            glDeleteBuffers(1, &UBO_);
+            UBO_ = 0;
+        }
+        if(elements_VBO_ != 0) {
+            glDeleteBuffers(1, &elements_VBO_);
+            elements_VBO_ = 0;
+        }
     }
 
     void MarchingCell::compute_config(index_t config) {
@@ -260,6 +271,8 @@ namespace GLUP {
     }
 
     GLuint MarchingCell::create_UBO() {
+
+#ifdef GEO_GL_150
         
         // Create a program that uses the UBO
 
@@ -324,7 +337,6 @@ namespace GLUP {
             &uniform_buffer_size
         );
 
-
         GLint config_size_offset = GLSL::get_uniform_variable_offset(
             program, "MarchingCellStateBlock.config_size"
         );
@@ -338,8 +350,8 @@ namespace GLUP {
         Memory::byte* UBO_data = new Memory::byte[uniform_buffer_size];
         Memory::clear(UBO_data, size_t(uniform_buffer_size));
 
-        index_t* config_size_ptr = (index_t*)(UBO_data + config_size_offset);
-        index_t* config_ptr = (index_t*)(UBO_data + config_offset);
+        index_t* config_size_ptr = (index_t*)(void*)(UBO_data + config_size_offset);
+        index_t* config_ptr = (index_t*)(void*)(UBO_data + config_offset);
 
         for(index_t i=0; i<nb_configs(); ++i) {
             config_size_ptr[i] = config_size(i);
@@ -371,11 +383,35 @@ namespace GLUP {
         glDeleteShader(vertex_shader);
         glDeleteShader(fragment_shader);
         glDeleteProgram(program);
-
+#endif                
         return UBO_;
     }
 
+    GLuint MarchingCell::create_elements_VBO() {
+        glGenBuffers(1, &elements_VBO_);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elements_VBO_);
+        index_t nb_elements = nb_configs() * max_config_size();
+        Numeric::uint8* indices = new Numeric::uint8[nb_elements];
+        for(index_t i=0; i<nb_configs(); ++i) {
+            for(index_t j=0; j<config_size(i); ++j) {
+                indices[i*max_config_size()+j] =
+                    Numeric::uint8(config_edges(i)[j]);
+            }
+        }
+        glBufferData(
+            GL_ELEMENT_ARRAY_BUFFER,
+            GLsizeiptr(sizeof(Numeric::uint8) * nb_elements),
+            indices, GL_STATIC_DRAW
+        );
+        delete[] indices;
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);        
+        return elements_VBO_;
+    }
+    
     void MarchingCell::bind_uniform_state(GLuint program) {
+#ifndef GEO_GL_150
+        geo_argused(program);
+#else
         GLuint UBO_index = glGetUniformBlockIndex(
             program, "MarchingCellStateBlock"
         );
@@ -387,5 +423,7 @@ namespace GLUP {
             Logger::warn("GLUP")
                 << "MarchingCellStateBlock not found" << std::endl;
         }
+#endif    
     }
+    
 }

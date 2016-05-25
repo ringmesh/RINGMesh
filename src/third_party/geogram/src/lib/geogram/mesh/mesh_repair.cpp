@@ -721,15 +721,14 @@ namespace {
                 signed_index_t ori = 
                     repair_relative_orientation(M, f, c, f2);
                 switch(ori) {
-                    case 0:
-                        geo_assert_not_reached;
-                        break;
                     case 1:
                         nb_plus++;
                         break;
                     case -1:
                         nb_minus++;
                         break;
+                    case 0:
+                        geo_assert_not_reached;
                 }
             }
         }
@@ -890,7 +889,6 @@ namespace {
                 }
             }
             geo_assert_not_reached;
-            return 0;
         }
 
         /**
@@ -992,7 +990,6 @@ namespace {
             }
         }
         geo_assert_not_reached;
-        return ~0u;
     }
 
     /**

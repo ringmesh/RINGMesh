@@ -148,8 +148,9 @@ namespace {
                 }
             }
             if(nb_facet_kill != 0) {
-                Logger::out("Pre") << "Killed " << nb_facet_kill << " facet(s) on border"
-                                   << std::endl;
+                Logger::out("Pre")
+                    << "Killed " << nb_facet_kill << " facet(s) on border"
+                    << std::endl;
                 M_in.facets.delete_elements(to_kill);
                 mesh_repair(M_in);
             } else {
@@ -280,6 +281,30 @@ namespace {
                 }
             }
             orient_normals(M_out);
+            if(CmdLine::get_arg_bool("post:compute_normals")) {
+                Attribute<double> normal;
+                normal.bind_if_is_defined(
+                    M_out.vertices.attributes(),
+                    "normal"
+                );
+                if(!normal.is_bound()) {
+                    normal.create_vector_attribute(
+                        M_out.vertices.attributes(),
+                        "normal",
+                        3
+                    );
+                }
+                for(index_t f=0; f<M_out.facets.nb(); ++f) {
+                    vec3 N = Geom::mesh_facet_normal(M_out,f);
+                    N = normalize(N);
+                    for(index_t lv=0; lv<M_out.facets.nb_vertices(f); ++lv) {
+                        index_t v = M_out.facets.vertex(f,lv);
+                        normal[3*v  ] = N.x;
+                        normal[3*v+1] = N.y;
+                        normal[3*v+2] = N.z;                        
+                    }
+                }
+            }
         }
 
         Logger::div("result");

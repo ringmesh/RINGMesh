@@ -1,0 +1,921 @@
+/*
+ *  Copyright (c) 2012-2016, Bruno Levy
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions are met:
+ *
+ *  * Redistributions of source code must retain the above copyright notice,
+ *  this list of conditions and the following disclaimer.
+ *  * Redistributions in binary form must reproduce the above copyright notice,
+ *  this list of conditions and the following disclaimer in the documentation
+ *  and/or other materials provided with the distribution.
+ *  * Neither the name of the ALICE Project-Team nor the names of its
+ *  contributors may be used to endorse or promote products derived from this
+ *  software without specific prior written permission.
+ * 
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *  POSSIBILITY OF SUCH DAMAGE.
+ *
+ *  If you modify this software, you should include a notice giving the
+ *  name of the person performing the modification, the date of modification,
+ *  and the reason for such modification.
+ *
+ *  Contact: Bruno Levy
+ *
+ *     Bruno.Levy@inria.fr
+ *     http://www.loria.fr/~levy
+ *
+ *     ALICE Project
+ *     LORIA, INRIA Lorraine, 
+ *     Campus Scientifique, BP 239
+ *     54506 VANDOEUVRE LES NANCY CEDEX 
+ *     FRANCE
+ *
+ */
+
+#include <geogram_gfx/GLUP/GLUP_context_ES.h>
+#include <geogram_gfx/basic/GLSL.h>
+#include <geogram/basic/string.h>
+
+#ifdef GEO_GL_ES2
+
+namespace GLUP {
+
+    const char* Context_ES2::profile_name() const {
+        return "GLUPES2";
+    }
+
+    void Context_ES2::prepare_to_draw(GLUPprimitive primitive) {
+        Context::prepare_to_draw(primitive);
+        GLSL::set_program_uniform_by_name(
+            all_purpose_program_,
+            "GLUP.points",
+            (primitive == GLUP_POINTS)
+        );
+#ifdef GEO_GL_150        
+        glEnable(GL_POINT_SPRITE);
+#endif
+    }
+
+    void Context_ES2::done_draw(GLUPprimitive primitive) {
+        Context::done_draw(primitive);
+    }
+    
+    void Context_ES2::begin(GLUPprimitive primitive) {
+        if(primitive == GLUP_POINTS || primitive == GLUP_LINES) {
+            lighting_enabled_save_ =
+                (uniform_state_.toggle[GLUP_LIGHTING].get() != GL_FALSE);
+            uniform_state().toggle[GLUP_LIGHTING].set(GL_FALSE);            
+        }
+        Context::begin(primitive);
+    }
+
+    void Context_ES2::end() {
+        Context::end();        
+        if(
+            (immediate_state_.primitive() == GLUP_POINTS ||
+             immediate_state_.primitive() == GLUP_LINES) &&
+            lighting_enabled_save_
+        ) {
+            uniform_state().toggle[GLUP_LIGHTING].set(GL_TRUE);        
+        }
+    }
+
+    bool Context_ES2::primitive_supports_array_mode(GLUPprimitive prim) const {
+        /*
+          // Crashes if first frame is drawn like that, it
+          // seems that it makes it skip an initialization, to
+          // be checked... Or it is probably connected with this
+          // mesh enabled / mesh disabled thingy...
+          if(prim == GLUP_TRIANGLES) {
+             return true;
+          }
+        */
+        return Context::primitive_supports_array_mode(prim);
+    }
+    
+    static const char* GLUP_constants =
+        
+        "  const int GLUP_CLIP_STANDARD         = 1;   \n"
+        "  const int GLUP_CLIP_WHOLE_CELLS      = 2;   \n"
+        "  const int GLUP_CLIP_STRADDLING_CELLS = 3;   \n"
+        "  const int GLUP_CLIP_SLICE_CELLS      = 4;   \n"
+
+        "  const int GLUP_TEXTURE_1D = 1;              \n"
+        "  const int GLUP_TEXTURE_2D = 2;              \n"
+        "  const int GLUP_TEXTURE_3D = 3;              \n"
+
+        "  const int GLUP_TEXTURE_REPLACE  = 0;        \n"
+        "  const int GLUP_TEXTURE_MODULATE = 1;        \n"
+        "  const int GLUP_TEXTURE_ADD      = 2;        \n"
+
+        "  const int GLUP_PICK_PRIMITIVE   = 1;        \n"
+        "  const int GLUP_PICK_CONSTANT    = 2;        \n"
+        ;
+
+    static const char* uniform_state_ES2 =
+        " struct UniformState {                \n"        
+        "     bool vertex_colors_enabled;      \n"        
+        "                                      \n"        
+        "     vec4  front_color;               \n"
+        "     vec4  back_color;                \n"
+        "                                      \n"        
+        "     bool  draw_mesh_enabled;         \n"
+        "     vec4  mesh_color;                \n"
+        "     float mesh_width;                \n"
+
+        "     bool  lighting_enabled;          \n"
+        "     vec3  light_vector;              \n"
+        "     vec3  light_half_vector;         \n"
+
+        "     bool texturing_enabled;          \n"
+        "     bool indirect_texturing_enabled; \n"             
+        "     int  texture_mode;               \n"
+        "     int  texture_type;               \n"        
+        "                                      \n"        
+        "     float cells_shrink;              \n"
+
+        "     bool  picking_enabled;           \n"         
+        "     int   picking_mode;              \n"
+        "     int   picking_id;                \n" 
+        "     int   base_picking_id;           \n" 
+
+        "     bool  clipping_enabled;          \n"
+        "     int   clipping_mode;             \n"
+        "     vec4  clip_plane;                \n"
+        "     vec4  world_clip_plane;          \n"
+
+        "     mat3  normal_matrix;             \n"
+
+        "     bool  points;                    \n"
+
+        "     mat4 modelviewprojection_matrix; \n"
+        "     mat4 modelview_matrix;           \n"
+        "     mat4 texture_matrix;             \n"
+        "     float point_size;                \n"
+        
+        "  };                                  \n"
+        "  uniform UniformState GLUP;          \n"
+        "  uniform sampler2D texture2Dsampler; \n"
+        ;
+
+    static const char* vshader_source =
+        "attribute vec4 vertex_in;                             \n"
+        "attribute vec4 color_in;                              \n"
+        "attribute vec4 tex_coord_in;                          \n"
+        "attribute vec4 mesh_tex_coord_in;                     \n"
+        "varying vec3 vertex_clip_space;                       \n"        
+        "varying vec4 color;                                   \n"
+        "varying vec4 tex_coord;                               \n"
+        "varying vec4 mesh_tex_coord;                          \n"
+        "void main() {                                         \n"
+        "   vertex_clip_space =                                \n"
+        "          (GLUP.modelview_matrix * vertex_in).xyz;    \n"
+        "   color = color_in;                                  \n"
+        "   tex_coord = GLUP.texture_matrix * tex_coord_in;    \n"
+        "   mesh_tex_coord = mesh_tex_coord_in;                \n"
+        "   gl_PointSize = GLUP.point_size;                    \n"
+        "   gl_Position =                                      \n"
+        "     GLUP.modelviewprojection_matrix * vertex_in;     \n"
+        "}                                                     \n"
+        ;
+
+
+    static const char* fshader_utils = 
+        "void output_lighting(                                              \n"
+        "   in float sdiffuse, in float spec                                \n"
+        ") {                                                                \n"
+        "   if(sdiffuse > 0.0) {                                            \n"
+        "       vec3 vspec = spec*vec3(1.0,1.0,1.0);                        \n"
+        "       gl_FragColor = (sdiffuse*gl_FragColor) + vec4(vspec,1.0);   \n"
+        "       gl_FragColor.rgb += vec3(0.2, 0.2, 0.2);                    \n"
+        "   } else {                                                        \n"
+        "       gl_FragColor = vec4(0.2, 0.2, 0.2, 1.0);                    \n"
+        "   }                                                               \n"
+        "}                                                                  \n"
+
+        "float min3(float x, float y, float z) {                            \n"
+        "   return min(min(x,y),z);                                         \n"
+        "}                                                                  \n"
+
+        "float min4(float x, float y, float z, float w) {                   \n"
+        "   return min(min(x,y),min(z,w));                                  \n"
+        "}                                                                  \n"
+        
+        "float edge_factor1(float bary) {                                   \n"
+        "   float d = fwidth(bary);                                         \n"
+        "   float a = smoothstep(0.0, d*GLUP.mesh_width, bary);             \n"
+        "   return a;                                                       \n"
+        "}                                                                  \n"
+
+        "float edge_factor3(vec3 bary) {                                    \n"
+        "   vec3 d = fwidth(bary);                                          \n"
+        "   vec3 a = smoothstep(                                            \n"
+        "      vec3(0.0, 0.0, 0.0), d*GLUP.mesh_width, bary                 \n"
+        "   );                                                              \n"
+        "   return min3(a.x, a.y ,a.z);                                     \n"
+        "}                                                                  \n"
+
+        "float edge_factor4(vec4 bary) {                                    \n"
+        "   vec4 d = fwidth(bary);                                          \n"
+        "   vec4 a = smoothstep(                                            \n"
+        "      vec4(0.0, 0.0, 0.0, 0.0), d*GLUP.mesh_width, bary            \n"
+        "   );                                                              \n"
+        "   return min4(a.x, a.y, a.z, a.w);                                \n"
+        "}                                                                  \n"
+
+        "float cell_edge_factor(vec2 bary) {                                \n"
+        "   return edge_factor1(1.0-(1.0 - bary.x)*(1.0 - bary.y));         \n"
+        "}                                                                  \n"
+
+        
+        "float edge_factor(vec4 bary) {                   \n"
+        "   if(bary.w > 4.0) { // hex mode                \n"
+        "     vec3 u = bary.xyz;                          \n"
+        "     vec3 U = vec3(1.0, 1.0, 1.0) - u;           \n"
+        "     float e1 = cell_edge_factor(vec2(u.x,u.y)); \n"
+        "     float e2 = cell_edge_factor(vec2(u.x,u.z)); \n"
+        "     float e3 = cell_edge_factor(vec2(u.x,U.y)); \n"
+        "     float e4 = cell_edge_factor(vec2(u.x,U.z)); \n"
+
+        "     float e5 = cell_edge_factor(vec2(U.x,u.y)); \n"
+        "     float e6 = cell_edge_factor(vec2(U.x,u.z)); \n"
+        "     float e7 = cell_edge_factor(vec2(U.x,U.y)); \n"
+        "     float e8 = cell_edge_factor(vec2(U.x,U.z)); \n"
+
+        "     float e9  = cell_edge_factor(vec2(u.y,u.z)); \n"
+        "     float e10 = cell_edge_factor(vec2(u.y,U.z)); \n"
+        "     float e11 = cell_edge_factor(vec2(U.y,u.z)); \n"
+        "     float e12 = cell_edge_factor(vec2(U.y,U.z)); \n"
+        
+        "     float r1 = min4(e1,e2,e3,e4);                \n"
+        "     float r2 = min4(e5,e6,e7,e8);                \n"
+        "     float r3 = min4(e9,e10,e11,e12);             \n"
+        
+        "     return min3(r1,r2,r3);                       \n"
+        
+        "   } else if(bary.w > 3.9) { // tet mode                           \n"
+        "       vec4 bary4 =                                                \n"
+        "         vec4(bary.x, bary.y, bary.z, 1.0-bary.x-bary.y-bary.z);   \n"
+        "       float e1 = cell_edge_factor(bary4.xy);                      \n"
+        "       float e2 = cell_edge_factor(bary4.xz);                      \n"
+        "       float e3 = cell_edge_factor(bary4.xw);                      \n"
+        "       float e4 = cell_edge_factor(bary4.yz);                      \n"
+        "       float e5 = cell_edge_factor(bary4.yw);                      \n"
+        "       float e6 = cell_edge_factor(bary4.zw);                      \n"
+        "       return min3(min(e1,e2),min(e3,e4),min(e5,e6));              \n"
+        "   } else if(bary.w > 2.9) { // quad mode                          \n"
+        "        vec4 bary4 = vec4(bary.x, bary.y, 1.0-bary.x, 1.0-bary.y); \n"
+        "        return edge_factor4(bary4);                                \n"
+        "   } else if(bary.w > 1.9) { // triangle mode                      \n"
+        "        return edge_factor3(bary.xyz);                             \n"
+        "   } else {                                                        \n"
+        "        return 1.0;                                                \n"
+        "   }                                                               \n"
+        "}                                                                  \n"
+        ;
+
+    // Clipping and lighting are done in the fragment shader
+    // it is not classical, but:
+    //  - I do not want to compute normals on the CPU side.
+    //  - OpenGLES2 does not have geometry shaders.
+    // It is probably not optimum, but it works reasonably
+    // well, and satisfies my goal of directly playing back
+    // a vertex buffer object.
+    
+    static const char* fshader_source =
+        "varying vec3 vertex_clip_space;              \n"
+        "varying vec4 color;                          \n"
+        "varying vec4 tex_coord;                      \n"
+        "varying vec4 mesh_tex_coord;                 \n"
+        "void main() {                                \n"
+        "   if(                                       \n"
+        "     GLUP.clipping_enabled &&                \n"
+        "     dot(                                    \n"
+        "       vec4(vertex_clip_space,1.0),          \n"
+        "       GLUP.clip_plane                       \n"
+        "     ) < 0.0                                 \n"
+        "   ) {                                       \n"
+        "      discard;                               \n"
+        "   }                                         \n"
+        "   if(GLUP.vertex_colors_enabled) {          \n"
+        "      gl_FragColor = color;                  \n"
+        "   } else {                                  \n"
+        "      gl_FragColor = gl_FrontFacing ?        \n"
+        "         GLUP.front_color : GLUP.back_color; \n"
+        "   }                                         \n"
+        "   if(GLUP.texturing_enabled) {              \n"
+        "      vec4 tex_color = texture2D(            \n"
+        "          texture2Dsampler, tex_coord.xy     \n"
+        "      );                                     \n"
+        "      if(GLUP.texture_mode == GLUP_TEXTURE_REPLACE) {         \n"
+        "             gl_FragColor = tex_color;                        \n"
+        "      } else if(GLUP.texture_mode == GLUP_TEXTURE_MODULATE) { \n"
+        "             gl_FragColor *= tex_color;                       \n"
+        "      } else {                                                \n"
+        "             gl_FragColor += tex_color;                       \n"
+        "      }                                                       \n"
+        "   }                                                          \n"
+        "   if(GLUP.points) {                                          \n"
+        "      vec2 V = 2.0*(gl_PointCoord - vec2(0.5, 0.5));          \n"
+        "      float one_minus_r2 = 1.0 - dot(V,V);                    \n"
+        "      if(one_minus_r2 < 0.0) {                                \n"
+        "         discard;                                             \n"
+        "      }                                                       \n"
+        "      vec3 N = vec3(V.x, -V.y, sqrt(one_minus_r2));           \n"
+//      "      gl_FragDepth = gl_FragCoord.z - 0.001 * N.z;            \n"
+        "      float diff = dot(N,GLUP.light_vector);                  \n"
+        "      float spec = dot(N,GLUP.light_half_vector);             \n"
+        "      spec = pow(spec,30.0);                                  \n"
+        "      output_lighting(diff,spec);                             \n"
+        "   } else if(GLUP.lighting_enabled) {                         \n"
+        "      vec3 U = dFdx(vertex_clip_space);                       \n"
+        "      vec3 V = dFdy(vertex_clip_space);                       \n"
+        "      vec3 N = normalize(cross(U,V));                         \n"
+        "      float diff = dot(N,GLUP.light_vector);                  \n"
+        "      float spec = dot(N,GLUP.light_half_vector);             \n"
+        "      spec = pow(spec,30.0);                                  \n"
+        "      output_lighting(diff,spec);                             \n"
+        "   }                                                          \n"
+        "   if(GLUP.draw_mesh_enabled) {                               \n"
+        "       gl_FragColor = mix(                                    \n"
+        "            GLUP.mesh_color,                                  \n"
+        "            gl_FragColor,                                     \n"
+        "            edge_factor(mesh_tex_coord)                       \n"
+        "       );                                                     \n"
+        "   }                                                          \n"
+        "}                                                             \n"
+        ;
+    
+    void Context_ES2::setup() {
+        Logger::out("GLUP") << "Context_ES2::setup()" << std::endl;
+        
+        create_CPU_side_uniform_buffer();
+        
+        GLuint vshader = GLSL::compile_shader(
+            GL_VERTEX_SHADER,
+            uniform_state_ES2,            
+            GLUP_constants,
+            toggles_declaration(),            
+            vshader_source,
+            0
+        );
+
+        GLuint fshader = GLSL::compile_shader(
+            GL_FRAGMENT_SHADER,
+            "precision highp float;\n",
+            "precision highp int;\n",
+            "#extension GL_OES_standard_derivatives : enable\n",
+            uniform_state_ES2,
+            GLUP_constants,
+            toggles_declaration(),
+            fshader_utils,
+            fshader_source,
+            0
+        );
+
+        all_purpose_program_ = GLSL::create_program_from_shaders(
+            vshader, fshader, 0 
+        );
+
+        glBindAttribLocation(all_purpose_program_, 0, "vertex_in");
+        glBindAttribLocation(all_purpose_program_, 1, "color_in");
+        glBindAttribLocation(all_purpose_program_, 2, "tex_coord_in");
+        glBindAttribLocation(all_purpose_program_, 3, "mesh_tex_coord_in");
+        
+        GLSL::set_program_uniform_by_name(
+            all_purpose_program_, "texture2Dsampler",
+            GLint(GLUP_TEXTURE_2D_UNIT)
+        );        
+        
+        glDeleteShader(vshader);
+        glDeleteShader(fshader);
+
+        // Setup all volumetric primitives in advance, because
+        // we need to access some information in there to setup
+        // VAO/VBO used by clipping.
+        
+        setup_GLUP_TETRAHEDRA();
+        setup_GLUP_HEXAHEDRA();
+        setup_GLUP_PRISMS();
+        setup_GLUP_PYRAMIDS();
+        setup_GLUP_CONNECTORS();
+
+        
+        index_t max_nb_elements = 0;
+        for(index_t prim=GLUP_TETRAHEDRA; prim <= GLUP_CONNECTORS; ++prim) {
+            index_t nb_primitives =
+                IMMEDIATE_BUFFER_SIZE / nb_vertices_per_primitive[prim];
+            index_t nb_elements =
+                nb_primitives * primitive_info_[prim].nb_elements_per_primitive;
+            max_nb_elements = geo_max(max_nb_elements, nb_elements);
+        }
+
+        nb_clip_cells_elements_ = max_nb_elements;        
+        clip_cells_elements_ = new Numeric::uint16[nb_clip_cells_elements_];
+
+        glGenVertexArrays(1,&clip_cells_VAO_);
+        glBindVertexArray(clip_cells_VAO_);
+        
+        bind_immediate_state_buffers_to_VAO();
+
+        glGenBuffers(1, &clip_cells_elements_VBO_);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, clip_cells_elements_VBO_);
+        update_buffer_object(
+            clip_cells_elements_VBO_,
+            GL_ELEMENT_ARRAY_BUFFER,
+            max_nb_elements * sizeof(Numeric::uint16),
+            nil // no need to copy the buffer, it will be overwritten after.
+        );
+        
+        glBindVertexArray(0);
+        
+        Logger::out("GLUP") << "Context_ES2::setup() / ready" << std::endl;
+    }
+
+    Context_ES2::Context_ES2() :
+        all_purpose_program_(0),
+        lighting_enabled_save_(false),
+        nb_clip_cells_elements_(0),
+        clip_cells_elements_(nil),        
+        clip_cells_elements_VBO_(0),
+        clip_cells_VAO_(0) {
+        Logger::out("GLUP") << "Context_ES2::Context_ES2()" << std::endl;
+    }
+    
+    Context_ES2::~Context_ES2() {
+        // Reset programs so that they are not deleted by
+        // PrimitiveInfo destructor (they all point to
+        // all_purpose_program_)
+        for(index_t i=0; i<primitive_info_.size(); ++i) {
+            for(index_t j=0; j<PrimitiveInfo::nb_toggles_configs; ++j) {
+                primitive_info_[i].program[j] = 0;
+            }
+        }
+        glDeleteProgram(all_purpose_program_);
+
+        glDeleteBuffers(1,&clip_cells_elements_VBO_);
+        glDeleteVertexArrays(1, &clip_cells_VAO_);
+
+        delete[] clip_cells_elements_;
+    }
+    
+    Memory::pointer Context_ES2::get_state_variable_address(
+        const char* name
+    ) {
+        geo_assert(variable_to_offset_.find(name) != variable_to_offset_.end());
+        return uniform_buffer_data_ + variable_to_offset_[name];
+    }
+
+    void Context_ES2::do_update_uniform_buffer() {
+        if(!uniform_buffer_dirty_) {
+            return;
+        }
+
+        if(matrices_dirty_) {
+            update_matrices();
+        }
+
+        if(lighting_dirty_) {
+            update_lighting();
+        }
+        
+        glUseProgram(latest_program_);
+        copy_uniform_state_to_current_program();
+        uniform_buffer_dirty_ = false;
+    }
+
+    void Context_ES2::copy_uniform_state_to_current_program() {
+        GLint loc;
+
+        // Matrices.
+        {
+            loc = glGetUniformLocation(
+                all_purpose_program_, "GLUP.modelviewprojection_matrix"
+            );
+            glUniformMatrix4fv(
+                loc, 1, GL_FALSE,
+                uniform_state_.modelviewprojection_matrix.get_pointer()
+            );
+            loc = glGetUniformLocation(
+                all_purpose_program_, "GLUP.modelview_matrix"
+            );
+            glUniformMatrix4fv(
+                loc, 1, GL_FALSE,
+                uniform_state_.modelview_matrix.get_pointer()
+            );
+            loc = glGetUniformLocation(
+                all_purpose_program_, "GLUP.texture_matrix"
+            );
+            glUniformMatrix4fv(
+                loc, 1, GL_FALSE,
+                uniform_state_.texture_matrix.get_pointer()
+            );
+
+            // Normal matrix is in fragment shader state (because
+            // we do per-fragment lighting)
+            
+            loc = glGetUniformLocation(
+                all_purpose_program_, "GLUP.normal_matrix"
+            );
+
+            // Normal matrix is stored in state buffer with padding.
+            float normal_matrix[9];
+            for(index_t i=0; i<3; ++i) {
+                for(index_t j=0; j<3; ++j) {
+                    normal_matrix[i*3+j] =
+                        uniform_state_.normal_matrix.get_pointer()[i*4+j];
+                }
+            }
+            
+            glUniformMatrix3fv(loc, 1, GL_FALSE, normal_matrix);
+        }
+
+        // Lighting.
+        {
+            loc = glGetUniformLocation(
+                all_purpose_program_, "GLUP.light_vector"
+            );
+            glUniform3fv(
+                loc, 1, uniform_state_.light_vector.get_pointer()
+            );
+            loc = glGetUniformLocation(
+                all_purpose_program_, "GLUP.light_half_vector"
+            );
+            glUniform3fv(
+                loc, 1, uniform_state_.light_half_vector.get_pointer()
+            );
+        }
+
+        // All the toggles.
+        for(index_t i=0; i<uniform_state_.toggle.size(); ++i) {
+            loc = glGetUniformLocation(
+                all_purpose_program_,
+                ("GLUP." + uniform_state_.toggle[i].name()).c_str()
+            );
+            glUniform1i(
+                loc, GLint(uniform_state_.toggle[i].get())
+            );
+        }
+
+        // Colors.
+        if(!uniform_state_.toggle[GLUP_VERTEX_COLORS].get()) {
+            for(index_t i=0; i<uniform_state_.color.size(); ++i) {
+                loc = glGetUniformLocation(
+                    all_purpose_program_,
+                    ("GLUP." + uniform_state_.color[i].name()).c_str()
+                    );
+                glUniform4fv(
+                    loc, 1, uniform_state_.color[i].get_pointer()
+                );
+            }
+        }
+
+        // Mesh.
+        if(uniform_state_.toggle[GLUP_DRAW_MESH].get()) {
+            loc = glGetUniformLocation(all_purpose_program_, "GLUP.mesh_width");
+            glUniform1f(loc, uniform_state_.mesh_width.get());
+        }
+
+        // Points.
+        {
+            loc = glGetUniformLocation(
+                all_purpose_program_, "GLUP.point_size"
+            );
+            glUniform1f(loc, uniform_state_.point_size.get());
+        }
+        
+        // Texturing.
+        if(uniform_state_.toggle[GLUP_TEXTURING].get()) {
+            loc = glGetUniformLocation(
+                all_purpose_program_, "GLUP.texture_mode"
+            );
+            glUniform1i(loc, uniform_state_.texture_mode.get());
+            loc = glGetUniformLocation(
+                all_purpose_program_, "GLUP.texture_type"
+            );
+            glUniform1i(loc, uniform_state_.texture_type.get());
+        }
+
+        // Cell shrink
+        loc = glGetUniformLocation(all_purpose_program_, "GLUP.cells_shrink");
+        glUniform1f(loc, uniform_state_.cells_shrink.get());
+
+        // Picking
+        if(uniform_state_.toggle[GLUP_PICKING].get()) {
+            loc = glGetUniformLocation(
+                all_purpose_program_, "GLUP.picking_mode"
+            );
+            glUniform1i(loc, uniform_state_.picking_mode.get());
+            loc = glGetUniformLocation(
+                all_purpose_program_, "GLUP.picking_id"
+            );
+            glUniform1i(loc, uniform_state_.picking_id.get());
+            loc = glGetUniformLocation(
+                all_purpose_program_, "GLUP.base_picking_id"
+            );
+            glUniform1i(loc, uniform_state_.base_picking_id.get());
+        }
+
+        // Clipping.
+        if(uniform_state_.toggle[GLUP_CLIPPING].get()) {
+            loc = glGetUniformLocation(
+                all_purpose_program_, "GLUP.clipping_mode"
+            );
+            glUniform1i(loc, uniform_state_.clipping_mode.get());
+            loc = glGetUniformLocation(
+                all_purpose_program_, "GLUP.clip_plane"
+            );
+            glUniform4fv(loc, 1, uniform_state_.clip_plane.get_pointer());
+            loc = glGetUniformLocation(
+                all_purpose_program_, "GLUP.world_clip_plane"
+            );
+            glUniform4fv(loc, 1, uniform_state_.world_clip_plane.get_pointer());
+        }
+    }
+
+    
+    void Context_ES2::setup_GLUP_POINTS() {
+        set_primitive_info(GLUP_POINTS, GL_POINTS, all_purpose_program_);
+    }
+
+    void Context_ES2::setup_GLUP_LINES() {
+        set_primitive_info(GLUP_LINES, GL_LINES, all_purpose_program_);
+    }
+
+    void Context_ES2::setup_GLUP_TRIANGLES() {
+        static index_t element_indices[3]  = {
+            0, 1, 2
+        };
+
+        // Last coordinates set to 2.0 means use triangles
+        // mode for mesh shader.
+        static GLUPfloat tex_coords[12] = {
+            1.0f, 0.0f, 0.0f, 2.0f,
+            0.0f, 1.0f, 0.0f, 2.0f,
+            0.0f, 0.0f, 1.0f, 2.0f            
+        };
+        
+        set_primitive_info_immediate_index_mode(
+            GLUP_TRIANGLES, GL_TRIANGLES, all_purpose_program_,
+            3, element_indices, tex_coords
+        );
+    }
+
+    void Context_ES2::setup_GLUP_QUADS() {
+        static index_t element_indices[6]  = {
+            0, 1, 2,
+            0, 2, 3
+        };
+
+        // Last coordinates set to 3.0 means use quads
+        // mode for mesh shader.
+        static GLUPfloat tex_coords[16] = {
+            0.0f, 0.0f, 0.0f, 3.0f,
+            1.0f, 0.0f, 0.0f, 3.0f,
+            1.0f, 1.0f, 0.0f, 3.0f,
+            0.0f, 1.0f, 0.0f, 3.0f,            
+        };
+        
+        set_primitive_info_immediate_index_mode(
+            GLUP_QUADS, GL_TRIANGLES, all_purpose_program_,
+            6, element_indices, tex_coords
+        );        
+    }
+
+    void Context_ES2::setup_GLUP_TETRAHEDRA() {
+        static index_t element_indices[12] = {
+            1,3,2,
+            0,2,3,
+            3,1,0,
+            0,1,2
+        };
+        
+        // Last coordinates set to 4.0 means use tet mode for mesh shader.
+        static GLUPfloat tex_coords[16] = {
+            1.0f, 0.0f, 0.0f, 4.0f,
+            0.0f, 1.0f, 0.0f, 4.0f,
+            0.0f, 0.0f, 1.0f, 4.0f,
+            0.0f, 0.0f, 0.0f, 4.0f            
+        };
+
+        
+        set_primitive_info_immediate_index_mode(
+            GLUP_TETRAHEDRA, GL_TRIANGLES, all_purpose_program_,
+            12, element_indices, tex_coords
+        );        
+    }
+
+    void Context_ES2::setup_GLUP_PRISMS() {
+        static index_t element_indices[24] = {
+            0,1,2,
+            3,5,4,
+            0,3,4, 0,4,1,
+            0,2,5, 0,5,3,
+            1,4,5, 1,5,2
+        };
+        set_primitive_info_immediate_index_mode(
+            GLUP_PRISMS, GL_TRIANGLES, all_purpose_program_,
+            24, element_indices
+        );        
+    }
+
+    void Context_ES2::setup_GLUP_HEXAHEDRA() {
+
+        static index_t element_indices[36] = {
+            0,2,6, 0,6,4,
+            3,1,5, 3,5,7,
+            1,0,4, 1,4,5,
+            2,3,7, 2,7,6,
+            1,3,2, 1,2,0,
+            4,6,7, 4,7,5
+        };
+
+        // Last coordinates set to 5.0 means use tet mode for mesh shader.
+        static GLUPfloat tex_coords[32] = {
+            0.0f, 0.0f, 0.0f, 5.0f,            
+            0.0f, 0.0f, 1.0f, 5.0f,
+            0.0f, 1.0f, 0.0f, 5.0f,
+            0.0f, 1.0f, 1.0f, 5.0f,
+            1.0f, 0.0f, 0.0f, 5.0f,            
+            1.0f, 0.0f, 1.0f, 5.0f,
+            1.0f, 1.0f, 0.0f, 5.0f,
+            1.0f, 1.0f, 1.0f, 5.0f,
+        };
+        
+        set_primitive_info_immediate_index_mode(
+            GLUP_HEXAHEDRA, GL_TRIANGLES, all_purpose_program_,
+            36, element_indices, tex_coords
+        );        
+    }
+
+    void Context_ES2::setup_GLUP_PYRAMIDS() {
+        static index_t element_indices[18] = {
+            0,1,2, 0,2,3,
+            0,4,1,
+            0,3,4,
+            2,4,3,
+            2,1,4
+        };
+
+        set_primitive_info_immediate_index_mode(
+            GLUP_PYRAMIDS, GL_TRIANGLES, all_purpose_program_,
+            18, element_indices
+        );        
+    }
+
+    void Context_ES2::setup_GLUP_CONNECTORS() {
+        static index_t element_indices[12] = {
+            0,1,2, 0,2,3,
+            2,1,0,
+            3,2,0
+        };
+        
+        set_primitive_info_immediate_index_mode(
+            GLUP_CONNECTORS, GL_TRIANGLES, all_purpose_program_,
+            12, element_indices
+        );        
+    }
+
+    void Context_ES2::flush_immediate_buffers() {
+        classify_vertices_in_immediate_buffers();        
+        shrink_cells_in_immediate_buffers();
+
+        // Special code for flush with per-cell clipping modes:
+        // uses a separate element array to indicate which cells
+        // are visible.
+        
+        if(
+            uniform_state_.toggle[GLUP_CLIPPING].get() && (
+                uniform_state_.clipping_mode.get() == GLUP_CLIP_WHOLE_CELLS ||
+                uniform_state_.clipping_mode.get() == GLUP_CLIP_STRADDLING_CELLS
+            ) && (
+                immediate_state_.primitive() == GLUP_TETRAHEDRA ||
+                immediate_state_.primitive() == GLUP_HEXAHEDRA ||
+                immediate_state_.primitive() == GLUP_PRISMS ||
+                immediate_state_.primitive() == GLUP_PYRAMIDS ||
+                immediate_state_.primitive() == GLUP_CONNECTORS 
+            )
+        ) {
+
+
+            glUseProgram(0);
+            
+            GLSL::set_program_uniform_by_name(
+                all_purpose_program_,
+                "GLUP.clipping_enabled", GL_FALSE
+            );
+
+            glUseProgram(all_purpose_program_);            
+            
+            index_t cur_vertex = 0;
+            index_t cur_element_out = 0;
+            index_t nb_vertices_per_cell =
+                nb_vertices_per_primitive[immediate_state_.primitive()];
+            index_t nb_elements_per_cell =
+                primitive_info_[
+                    immediate_state_.primitive()
+                ].nb_elements_per_primitive;
+
+            while(cur_vertex < immediate_state_.nb_vertices()) {
+                if(!cell_is_clipped(cur_vertex)) {
+                    for(index_t lei=0; lei < nb_elements_per_cell; ++lei) {
+                        geo_debug_assert(
+                            cur_element_out < nb_clip_cells_elements_
+                        );
+                        clip_cells_elements_[cur_element_out] =
+                            Numeric::uint16(
+                                cur_vertex + primitive_info_[
+                                    immediate_state_.primitive()
+                                ].primitive_elements[lei]
+                            );
+                        ++cur_element_out;
+                    }
+                }
+                cur_vertex += nb_vertices_per_cell;
+            }
+
+            glBindVertexArray(clip_cells_VAO_);
+            
+            for(index_t i=0; i<immediate_state_.buffer.size(); ++i) {
+                if(immediate_state_.buffer[i].is_enabled()) {
+                    glEnableVertexAttribArray(i);
+                    if(immediate_state_.buffer[i].VBO() != 0) {
+                        stream_buffer_object(
+                            immediate_state_.buffer[i].VBO(),
+                            GL_ARRAY_BUFFER,
+                            immediate_state_.buffer[i].size_in_bytes(),
+                            immediate_state_.buffer[i].data()
+                        );
+                    }
+                }
+            }
+
+            if(
+                uniform_state_.toggle[GLUP_DRAW_MESH].get() &&
+                primitive_info_[immediate_state_.primitive()].tex_coords_VBO
+                != 0
+            ) {
+                glEnableVertexAttribArray(3);
+                glBindBuffer(
+                    GL_ARRAY_BUFFER,
+                    primitive_info_[immediate_state_.primitive()].tex_coords_VBO
+                );
+                glVertexAttribPointer(
+                    immediate_state_.buffer.size(), 
+                    4,
+                    GL_UNSIGNED_BYTE,
+                    GL_FALSE,
+                    0,  // stride
+                    0   // pointer (relative to bound VBO beginning)
+                );
+            } else {
+                glDisableVertexAttribArray(3);                
+            }
+            
+            stream_buffer_object(
+                clip_cells_elements_VBO_,
+                GL_ELEMENT_ARRAY_BUFFER,
+                cur_element_out * sizeof(Numeric::uint16),
+                clip_cells_elements_
+            );
+
+
+            
+            glDrawElements(
+                primitive_info_[immediate_state_.primitive()].GL_primitive,
+                GLsizei(cur_element_out),
+                GL_UNSIGNED_SHORT,
+                0
+            );
+            
+            glBindVertexArray(0);
+
+            glDisableVertexAttribArray(3);
+            
+            immediate_state_.reset();
+
+            GLSL::set_program_uniform_by_name(
+                all_purpose_program_, "GLUP.clipping_enabled", GL_TRUE
+            );        
+            
+        } else {
+            Context::flush_immediate_buffers();            
+        }
+    }
+
+    
+}
+
+#endif
+

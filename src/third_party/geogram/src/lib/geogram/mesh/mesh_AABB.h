@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_MESH_MESH_AABB__
-#define __GEOGRAM_MESH_MESH_AABB__
+#ifndef GEOGRAM_MESH_MESH_AABB
+#define GEOGRAM_MESH_MESH_AABB
 
 /**
  * \file mesh_AABB.h

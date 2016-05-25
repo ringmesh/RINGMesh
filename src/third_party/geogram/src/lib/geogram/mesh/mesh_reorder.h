@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_MESH_MESH_REORDER__
-#define __GEOGRAM_MESH_MESH_REORDER__
+#ifndef GEOGRAM_MESH_MESH_REORDER
+#define GEOGRAM_MESH_MESH_REORDER
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/numeric.h>
@@ -120,9 +120,9 @@ namespace GEO {
      * \param[in] vertices pointer to the coordinates of the vertices
      * \param[in,out] sorted_indices a vector of vertex indices, sorted
      *  spatially on exit
-     * \param[in] i_begin index of the first element in \p sorted_indices
+     * \param[in] first index of the first element in \p sorted_indices
      *  to be sorted
-     * \param[in] i_out one position past the index of the last element 
+     * \param[in] last one position past the index of the last element 
      *  in \p sorted_indices to be sorted
      * \param[in] stride number of doubles between two consecutive vertices
      */

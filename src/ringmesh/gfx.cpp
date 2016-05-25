@@ -43,8 +43,8 @@
 #ifdef RINGMESH_WITH_GRAPHICS
 
 #include <geogram/mesh/mesh_geometry.h>
-#include <geogram_gfx/third_party/freeglut/glut.h>
-#include <geogram_gfx/third_party/freeglut/freeglut_ext.h>
+//#include <geogram_gfx/third_party/freeglut/glut.h>
+//#include <geogram_gfx/third_party/freeglut/freeglut_ext.h>
 
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_element.h>
@@ -331,38 +331,6 @@ namespace RINGMesh {
         for( index_t r = 0; r < model_->nb_regions(); r++ ) {
             regions_[r]->need_to_update() ;
         }
-    }
-
-    void GeoModelGfx::compute_colormap()
-    {
-        std::string command = GEO::CmdLine::get_arg( "attr:colormap" ) ;
-        std::vector< std::string > colors ;
-        GEO::String::split_string( command, '/', colors ) ;
-
-        std::vector< Color > colormap ;
-        colormap.reserve( colors.size() ) ;
-        for( index_t c = 0; c < colors.size(); c++ ) {
-            GetColor* color_handler = ColorFactory::create_object( colors[c] ) ;
-            if( color_handler ) {
-                colormap.push_back( color_handler->get_color() ) ;
-                delete color_handler ;
-            } else {
-                std::vector< std::string > names ;
-                ColorFactory::list_creators( names ) ;
-                GEO::Logger::err( "GetColor" )
-                    << "Currently supported colors are: " ;
-                for( index_t i = 0; i < names.size(); i++ ) {
-                    GEO::Logger::err( "GetColor" ) << " " << names[i] ;
-                }
-                GEO::Logger::err( "GetColor" ) << std::endl ;
-
-                throw RINGMeshException( "GetColor",
-                    "Cannot find color " + colors[c] ) ;
-            }
-        }
-        GLsizei nb_colors = static_cast< GLsizei >( colormap.size() ) ;
-        gluBuild1DMipmaps( GL_TEXTURE_1D, GL_RGB, nb_colors, GL_RGB,
-        GL_UNSIGNED_BYTE, colormap.data() ) ;
     }
 
     void GeoModelGfx::compute_cell_vertex_attribute_range(

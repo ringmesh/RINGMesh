@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_DELAUNAY_DELAUNAY_3D__
-#define __GEOGRAM_DELAUNAY_DELAUNAY_3D__
+#ifndef GEOGRAM_DELAUNAY_DELAUNAY_3D
+#define GEOGRAM_DELAUNAY_DELAUNAY_3D
 
 #include <geogram/basic/common.h>
 #include <geogram/delaunay/delaunay.h>
@@ -110,7 +110,7 @@ namespace GEO {
     public:
         /**
          * \brief Constructs a new Delaunay3d.
-         * \param[in] dim dimension of the triangulation (3 or 4).
+         * \param[in] dimension dimension of the triangulation (3 or 4).
          * If dimension = 4, this creates a regular triangulation
          *  (dual of a power diagram). In this case:
          *  - the input points are 4d points, were the fourth coordinate
@@ -223,7 +223,7 @@ namespace GEO {
          *  faces of \p t, as returned by locate()
          * \param[out] t_bndry a tetrahedron adjacent to the
          *  boundary of the conflict zone
-         * \param[out] f_boundary the facet along which t_bndry is
+         * \param[out] f_bndry the facet along which t_bndry is
          *  adjacent to the boundary of the conflict zone
          * \param[out] first the index of the first tetrahedron in conflict
          * \param[out] last the index of the last tetrahedron in conflict
@@ -251,7 +251,7 @@ namespace GEO {
           * \param[in] t index of a tetrahedron in the fonflict zone
           * \param[out] t_bndry a tetrahedron adjacent to the
           *  boundary of the conflict zone
-          * \param[out] f_boundary the facet along which t_bndry is
+          * \param[out] f_bndry the facet along which t_bndry is
           *  adjacent to the boundary of the conflict zone
           * \param[out] first the index of the first tetrahedron in conflict
           * \param[out] last the index of the last tetrahedron in conflict
@@ -332,7 +332,7 @@ namespace GEO {
          *  - not in a list and marked
          *    (cell_next_[t] == cur_stamp_)
          */
-        static const index_t NOT_IN_LIST_BIT = index_t(1 << 31);
+        static const index_t NOT_IN_LIST_BIT = index_t(1u << 31);
 
         /**
          * \brief Symbolic value of the cell_next_ field
@@ -701,11 +701,11 @@ namespace GEO {
         
         /**
          * \brief Finds the index of the facet accross which t1 is 
-         *  adjacent to t2.
+         *  adjacent to t2_in.
          * \param[in] t1 first tetrahedron
-         * \param[in] t2 second tetrahedron
-         * \return f such that tet_adjacent(t1,f)==t2
-         * \pre \p t1 and \p t2 are adjacent
+         * \param[in] t2_in second tetrahedron
+         * \return f such that tet_adjacent(t1,f)==t2_in
+         * \pre \p t1 and \p t2_in are adjacent
          */
         index_t find_tet_adjacent(
             index_t t1, index_t t2_in
@@ -1061,7 +1061,7 @@ namespace GEO {
          * \details RegularWeightedDelaunay3d triangulations are only
          * supported for dimension 3. If a different dimension is specified in
          * the constructor, a InvalidDimension exception is thrown.
-         * \param[in] dim dimension of the triangulation
+         * \param[in] dimension dimension of the triangulation
          * \throw InvalidDimension This exception is thrown if dimension is
          * different than 3.
          */
