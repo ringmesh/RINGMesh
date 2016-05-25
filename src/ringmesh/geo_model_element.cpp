@@ -89,9 +89,9 @@ namespace {
     index_t compute_nb_volume_connected_components( const Region& M )
     {
         static const index_t NO_COMPONENT = index_t( -1 ) ;
-        std::vector< index_t > component( M.nb_polytope(), NO_COMPONENT ) ;
+        std::vector< index_t > component( M.nb_polytopes(), NO_COMPONENT ) ;
         index_t nb_components = 0 ;
-        for( index_t cell = 0; cell < M.nb_polytope(); cell++ ) {
+        for( index_t cell = 0; cell < M.nb_polytopes(); cell++ ) {
             if( component[cell] == NO_COMPONENT ) {
                 std::stack< index_t > S ;
                 S.push( cell ) ;
@@ -127,7 +127,7 @@ namespace {
         std::vector< index_t >& nb )
     {
         nb.resize( E.nb_vertices(), 0 ) ;
-        for( index_t polytope_index = 0; polytope_index < E.nb_polytope();
+        for( index_t polytope_index = 0; polytope_index < E.nb_polytopes();
             ++polytope_index ) {
             for( index_t vertex = 0;
                 vertex < E.nb_polytope_vertices( polytope_index ); ++vertex ) {
@@ -218,7 +218,7 @@ namespace {
             const vec3& V = S.vertex( p ) ;
             out << "v" << " " << V.x << " " << V.y << " " << V.z << std::endl ;
         }
-        for( index_t f = 0; f < S.nb_polytope(); f++ ) {
+        for( index_t f = 0; f < S.nb_polytopes(); f++ ) {
             out << "f" << " " ;
             for( index_t v = 0; v < S.nb_polytope_vertices( f ); v++ ) {
                 out << S.polytope_vertex_index( f, v ) + 1 << " " ;
@@ -938,7 +938,7 @@ namespace RINGMesh {
 
         // No zero edge length
         index_t nb_degenerated = 0 ;
-        for( index_t e = 0; e < nb_polytope(); ++e ) {
+        for( index_t e = 0; e < nb_polytopes(); ++e ) {
             double l = length( polytope_vertex( e, 1 ) - polytope_vertex( e, 0 ) ) ;
             if( l < epsilon ) {
                 nb_degenerated++ ;
@@ -1163,7 +1163,7 @@ namespace RINGMesh {
         // are neighbors in facets_ and check that they are in the same facet
 
         // Check if the edge is in one of the facet
-        for( index_t f = 0; f < nb_polytope(); ++f ) {
+        for( index_t f = 0; f < nb_polytopes(); ++f ) {
             bool found = false ;
             index_t prev = polytope_vertex_index( f,
                 nb_polytope_vertices( f ) - 1 ) ;
@@ -1227,7 +1227,7 @@ namespace RINGMesh {
                 }
             }
         } else {
-            for( index_t f = 0; f < nb_polytope(); ++f ) {
+            for( index_t f = 0; f < nb_polytopes(); ++f ) {
                 facet = f ;
                 edge_from_model_vertex_ids( i0, i1, facet, edge ) ;
                 if( edge != NO_ID ) {
@@ -1272,7 +1272,7 @@ namespace RINGMesh {
                 }
             }
         } else {
-            for( index_t f = 0; f < nb_polytope(); ++f ) {
+            for( index_t f = 0; f < nb_polytopes(); ++f ) {
                 facet = f ;
                 oriented_edge_from_model_vertex_ids( i0, i1, facet, edge ) ;
                 if( edge != NO_ID ) {
@@ -1334,7 +1334,7 @@ namespace RINGMesh {
          }
          */
         // So, we are back to the brute force stupid approach             
-        for( index_t i = 0; i < nb_polytope(); ++i ) {
+        for( index_t i = 0; i < nb_polytopes(); ++i ) {
             for( index_t lv = 0; lv < nb_polytope_vertices( i ); lv++ ) {
                 if( polytope_vertex_index( i, lv ) == v ) {
                     f = i ;
@@ -1494,7 +1494,7 @@ namespace RINGMesh {
         double& hex_volume,
         double& poly_volume ) const
     {
-        for( index_t c = 0; c < nb_polytope(); c++ ) {
+        for( index_t c = 0; c < nb_polytopes(); c++ ) {
             index_t nb_vertices = nb_polytope_vertices( c ) ;
             double volume = mesh_.cell_volume( c ) ;
             switch( nb_vertices ) {

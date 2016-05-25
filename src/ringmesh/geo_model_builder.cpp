@@ -240,14 +240,14 @@ namespace {
         const vec3& v1 = surface.model().mesh.vertices.vertex( model_v1 ) ;
         vec3 v_bary = 0.5 * ( v0 + v1 ) ;
 
-        index_t nb_neighbors = std::min( index_t( 5 ), surface.nb_polytope() ) ;
+        index_t nb_neighbors = std::min( index_t( 5 ), surface.nb_polytopes() ) ;
         std::vector< index_t > neighbors ;
         index_t cur_neighbor = 0 ;
         index_t prev_neighbor = 0 ;
         do {
             prev_neighbor = cur_neighbor ;
             cur_neighbor += nb_neighbors ;
-            cur_neighbor = std::min( cur_neighbor, surface.nb_polytope() ) ;
+            cur_neighbor = std::min( cur_neighbor, surface.nb_polytopes() ) ;
             neighbors.resize( cur_neighbor ) ;
             double* dist = (double*) alloca( sizeof(double) * cur_neighbor ) ;
             nb_neighbors = ann.get_neighbors( v_bary, cur_neighbor, neighbors,
@@ -264,7 +264,7 @@ namespace {
                     }
                 }
             }
-        } while( surface.nb_polytope() != cur_neighbor ) ;
+        } while( surface.nb_polytopes() != cur_neighbor ) ;
 
         f = Surface::NO_ID ;
         e = Surface::NO_ID ;
@@ -831,7 +831,7 @@ namespace RINGMesh {
         {
             for( index_t i = 0; i < geomodel_.nb_surfaces(); ++i ) {
                 const Surface& S = geomodel_.surface( i ) ;
-                for( index_t j = 0; j < S.nb_polytope(); ++j ) {
+                for( index_t j = 0; j < S.nb_polytopes(); ++j ) {
                     for( index_t v = 0; v < S.nb_polytope_vertices( j ); ++v ) {
                         if( S.is_on_border( j, v ) ) {
                             index_t vertex = S.model_vertex_id( j, v ) ;
@@ -1504,7 +1504,7 @@ namespace RINGMesh {
     {
         Surface& S = dynamic_cast< Surface& >( *model_.surfaces_[surface_id] ) ;
 
-        index_t nb_facets = S.nb_polytope() ;
+        index_t nb_facets = S.nb_polytopes() ;
         ringmesh_assert( nb_facets > 0 ) ;
 
         std::vector< index_t > adjacent ;
@@ -3217,7 +3217,7 @@ namespace RINGMesh {
         const Surface& surface = model().surface( surface_id ) ;
         same_sign = false ;
 
-        for( index_t t = 0; t < surface.nb_polytope(); ++t ) {
+        for( index_t t = 0; t < surface.nb_polytopes(); ++t ) {
             const vec3& pp0 = surface.polytope_vertex( t, 0 ) ;
             const vec3& pp1 = surface.polytope_vertex( t, 1 ) ;
             const vec3& pp2 = surface.polytope_vertex( t, 2 ) ;

@@ -89,7 +89,7 @@ namespace {
     {
         index_t result = 0 ;
         for( index_t i = 0; i < BM.nb_surfaces(); ++i ) {
-            result += BM.surface( i ).nb_polytope() ;
+            result += BM.surface( i ).nb_polytopes() ;
         }
         return result ;
     }
@@ -219,7 +219,7 @@ namespace {
     /*! Brute force inefficient but I am debugging !!!! */
     bool has_surface_edge( const Surface& S, index_t v0_in, index_t v1_in )
     {
-        for( index_t i = 0; i < S.nb_polytope(); ++i ) {
+        for( index_t i = 0; i < S.nb_polytopes(); ++i ) {
             for( index_t j = 0; j < S.nb_polytope_vertices( i ); ++j ) {
                 index_t v0 = S.polytope_vertex_index( i, j ) ;
                 index_t v1 = S.polytope_vertex_index( i, S.next_facet_vertex_index( i, j ) ) ;
@@ -322,7 +322,7 @@ namespace {
                         << std::endl ;
                     vertex_count++ ;
                 }
-                for( index_t k = 0; k < S.nb_polytope(); ++k ) {
+                for( index_t k = 0; k < S.nb_polytopes(); ++k ) {
                     out << "TRGL " << S.polytope_vertex_index( k, 0 ) + offset << " "
                         << S.polytope_vertex_index( k, 1 ) + offset << " "
                         << S.polytope_vertex_index( k, 2 ) + offset << std::endl ;
@@ -457,7 +457,7 @@ namespace {
 
         for( index_t i = 0; i < M.nb_surfaces(); ++i ) {
             const Surface& S = M.surface( i ) ;
-            for( index_t f = 0; f < S.nb_polytope(); f++ ) {
+            for( index_t f = 0; f < S.nb_polytopes(); f++ ) {
                 out << S.nb_polytope_vertices( f ) << " " ;
                 for( index_t v = 0; v < S.nb_polytope_vertices( f ); v++ ) {
                     out << S.model_vertex_id( f, v ) << " " ;
@@ -532,13 +532,13 @@ namespace {
                 out.precision( 16 ) ;
 
                 const Surface& surface = model.surface( s ) ;
-                out << surface.nb_vertices() << " " << surface.nb_polytope() << " 0 0 0"
+                out << surface.nb_vertices() << " " << surface.nb_polytopes() << " 0 0 0"
                     << std::endl ;
                 for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
                     out << v << " " << surface.vertex( v ) << std::endl ;
                 }
 
-                for( index_t f = 0; f < surface.nb_polytope(); f++ ) {
+                for( index_t f = 0; f < surface.nb_polytopes(); f++ ) {
                     out << f << " 0 tri" ;
                     for( index_t v = 0; v < surface.nb_polytope_vertices( f );
                         v++ ) {

@@ -133,22 +133,11 @@ namespace RINGMesh {
          * pair (Region, NO_ID) universe region is returned.
          * @pre Element identification is valid.
          */
-        GeoModelElement& element( GME::gme_t id )
-        {
-            return *element_ptr( id ) ;
-        }
         const GeoModelElement& element( GME::gme_t id ) const
         {
             return *element_ptr( id ) ;
         }
 
-        /*!
-         * Convenient overload of element( GME::gme_t id )
-         */
-        //GeoModelElement& element( GME::TYPE element_type, index_t element_index )
-        //{
-        //    return element( GME::gme_t( element_type, element_index ) ) ;
-        //}
         const GeoModelElement& element(
             GME::TYPE element_type,
             index_t element_index ) const
@@ -283,22 +272,6 @@ namespace RINGMesh {
             }
         }
 
-//        Corner& corner( index_t index )
-//        {
-//            return dynamic_cast< Corner& >( *corners_.at( index ) ) ;
-//        }
-//        Line& line( index_t index )
-//        {
-//            return dynamic_cast< Line& >( element( GME::LINE, index ) ) ;
-//        }
-//        Surface& surface( index_t index )
-//        {
-//            return dynamic_cast< Surface& >( element( GME::SURFACE, index ) ) ;
-//        }
-//        Region& region( index_t index )
-//        {
-//            return dynamic_cast< Region& >( element( GME::REGION, index ) ) ;
-//        }
         /*!
          * @brief Generic accessor to the storage of elements of the given type
          * @pre The type must be valid NO_TYPE or ALL_TYPES will throw an assertion

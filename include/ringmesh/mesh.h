@@ -195,8 +195,9 @@ namespace RINGMesh {
          */
         double edge_length( index_t edge_id ) const
         {
-            return GEO::Geom::distance( vertex(edge_vertex( edge_id, 0 )),
-                vertex(edge_vertex( edge_id, 1 )) ) ;
+            const vec3& e0 = vertex( edge_vertex( edge_id, 0 ) ) ;
+            const vec3& e1 = vertex( edge_vertex( edge_id, 1 ) ) ;
+            return GEO::Geom::distance( e0, e1 ) ;
         }
         GEO::AttributesManager& edge_attribute_manager() const
         {
