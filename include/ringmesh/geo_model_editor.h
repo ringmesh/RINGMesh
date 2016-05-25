@@ -84,15 +84,15 @@ namespace RINGMesh {
 
         GME::gme_t create_entity( GME::TYPE e_type ) ;
 
-        void create_geomodel_entitys( GME::TYPE entity_type, index_t nb_entitys )
+        void create_geomodel_entities( GME::TYPE entity_type, index_t nb_entities )
         {
-            for( index_t i = 0; i < nb_entitys; ++i ) {
+            for( index_t i = 0; i < nb_entities; ++i ) {
                 create_entity( entity_type ) ;
             }
         }
 
         /*! @}
-         * \name Creation - Deletion - Access to GeoModelEntitys.
+         * \name Creation - Deletion - Access to GeoModelEntities.
          * @{
          */
 
@@ -130,37 +130,37 @@ namespace RINGMesh {
          */
 
         /*!
-         * @brief Complete missing information in GeoModelEntitys
+         * @brief Complete missing information in GeoModelEntities
          * boundaries - in_boundary - parent - children
          */
         void complete_entity_connectivity() ;
 
         /*!
-         * @brief Fill the boundaries of all entitys of the given type
-         * @details If the boundary entitys do not have any in_boundary
+         * @brief Fill the boundaries of all entities of the given type
+         * @details If the boundary entities do not have any in_boundary
          * information, nothing is done.
          */
-        void fill_entitys_boundaries( GME::TYPE type ) const ;
+        void fill_entities_boundaries( GME::TYPE type ) const ;
 
         /*!
-         * @brief Fill the in_boundary vector of all entitys of the given type
-         * @details If the in_boundary entitys do not have any boundary
+         * @brief Fill the in_boundary vector of all entities of the given type
+         * @details If the in_boundary entities do not have any boundary
          * information, nothing is done, and model construction will eventually fail.
          */
-        void fill_entitys_in_boundaries( GME::TYPE type ) const ;
+        void fill_entities_in_boundaries( GME::TYPE type ) const ;
 
         /*!
-         * @brief Fill the parent of all entitys of the given type
+         * @brief Fill the parent of all entities of the given type
          * @details If the parents do not have any child nothing is done.
          */
-        void fill_entitys_parent( GME::TYPE type ) const ;
+        void fill_entities_parent( GME::TYPE type ) const ;
 
         /*!
-         * @brief Fill the children of all entitys of the given type
-         * @details If the children entitys do not have any parent information
+         * @brief Fill the children of all entities of the given type
+         * @details If the children entities do not have any parent information
          * nothing is done.
          */
-        void fill_entitys_children( GME::TYPE type ) const ;
+        void fill_entities_children( GME::TYPE type ) const ;
 
         void set_entity_name( const GME::gme_t& t, const std::string& name ) const
         {
@@ -195,7 +195,7 @@ namespace RINGMesh {
             bool side = false ) const
         {
             /// No check on the validity of the index of the entity boundary
-            /// NO_ID is used to flag entitys to delete
+            /// NO_ID is used to flag entities to delete
             ringmesh_assert( GME::boundary_type( t.type ) == boundary.type ) ;
             ringmesh_assert( id < entity( t ).nb_boundaries() ) ;
             entity( t ).boundaries_[id] = boundary ;
@@ -221,7 +221,7 @@ namespace RINGMesh {
             const GME::gme_t& in_boundary ) const
         {
             /// No check on the validity of the index of the entity in_boundary
-            /// NO_ID is used to flag entitys to delete
+            /// NO_ID is used to flag entities to delete
             ringmesh_assert(
                 GME::in_boundary_type( t.type ) == in_boundary.type ) ;
             ringmesh_assert( id < entity( t ).nb_in_boundary() ) ;
@@ -251,7 +251,7 @@ namespace RINGMesh {
             const GME::gme_t& child_index ) const
         {
             /// No check on the validity of the index of the entity child_index
-            /// NO_ID is used to flag entitys to delete
+            /// NO_ID is used to flag entities to delete
             ringmesh_assert( GME::child_type( t.type ) == child_index.type ) ;
             entity( t ).children_[id] = child_index ;
         }
@@ -266,15 +266,15 @@ namespace RINGMesh {
          */
         void set_entity( const GME::gme_t& id, GeoModelEntity* E ) const ;
 
-        void remove_entitys( const std::set< GME::gme_t >& entitys ) ;
+        void remove_entities( const std::set< GME::gme_t >& entities ) ;
 
         /*!
          * @todo Could be moved in the API [JP]
          */
-        bool get_dependent_entitys( std::set< GME::gme_t >& entitys ) const ;
+        bool get_dependent_entities( std::set< GME::gme_t >& entities ) const ;
 
-        void remove_entitys_and_dependencies(
-            const std::set< GME::gme_t >& entitys_to_remove ) ;
+        void remove_entities_and_dependencies(
+            const std::set< GME::gme_t >& entities_to_remove ) ;
 
     protected:
         /*!
@@ -288,15 +288,15 @@ namespace RINGMesh {
         void delete_elements( std::vector< std::vector< index_t > >& to_erase ) ;
 
         /*!
-         * @brief Adds \p nb new entitys of type \p type
-         * @details Adds \p nb new entitys at the end of the
-         * vector of entitys of type \p type.
+         * @brief Adds \p nb new entities of type \p type
+         * @details Adds \p nb new entities at the end of the
+         * vector of entities of type \p type.
          * @param[in] type the type of entity to add.
-         * @param[in] nb the number of new entitys.
-         * @return the old number of entitys of the type \p type.
+         * @param[in] nb the number of new entities.
+         * @return the old number of entities of the type \p type.
          * It corresponds to the index of the first new entity.
          */
-        index_t create_entitys( GME::TYPE type, index_t nb ) ;
+        index_t create_entities( GME::TYPE type, index_t nb ) ;
 
         void erase_invalid_entity_references( GeoModelEntity& E ) ;
 

@@ -591,7 +591,7 @@ namespace RINGMesh {
             GEO::mesh_load( filename, *mesh_.mesh_, ioflags ) ;
         }
         /*!
-         * @brief Removes all the entitys and attributes of this mesh.
+         * @brief Removes all the entities and attributes of this mesh.
          * @param[in] keep_attributes if true, then all the existing attribute
          * names / bindings are kept (but they are cleared). If false, they are destroyed.
          * @param[in] keep_memory if true, then memory is kept and can be reused
@@ -670,7 +670,7 @@ namespace RINGMesh {
         }
         /*!
          * @brief Creates a contiguous chunk of vertices.
-         * @param[in] nb number of sub-entitys to create.
+         * @param[in] nb number of sub-entities to create.
          * @return the index of the first created vertex
          */
         index_t create_vertices( index_t nb )
@@ -978,7 +978,7 @@ namespace RINGMesh {
             mesh_.mesh_->cells.connect() ;
         }
         /*!
-         * @brief Applies a permutation to the entitys and their attributes.
+         * @brief Applies a permutation to the entities and their attributes.
          * On exit, permutation is modified (used for internal bookkeeping).
          * Applying a permutation permutation is equivalent to:
          * <code>

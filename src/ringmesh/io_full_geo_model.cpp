@@ -103,7 +103,7 @@ namespace {
 
         for( index_t t = GME::CORNER; t < GME::REGION; t++ ) {
             GME::TYPE type = static_cast< GME::TYPE >( t ) ;
-            for( index_t e = 0; e < M.nb_entitys( type ); e++ ) {
+            for( index_t e = 0; e < M.nb_entities( type ); e++ ) {
                 const GeoModelMeshEntity& cur_geo_model_entity = M.mesh_entity(
                     type, e ) ;
                 out << "GME" << " " << cur_geo_model_entity.type_name( type ) << " "
@@ -136,16 +136,16 @@ namespace {
         out << "RINGMESH BOUNDARY MODEL" << std::endl ;
         out << "NAME " << M.name() << std::endl ;
 
-        // Numbers of the different types of entitys
+        // Numbers of the different types of entities
         for( index_t i = GME::CORNER; i < GME::NO_TYPE; i++ ) {
             GME::TYPE type = static_cast< GME::TYPE >( i ) ;
-            out << "NB_" << GME::type_name( type ) << " " << M.nb_entitys( type )
+            out << "NB_" << GME::type_name( type ) << " " << M.nb_entities( type )
                 << std::endl ;
         }
-        // Write high-level entitys
+        // Write high-level entities
         for( index_t i = GME::CONTACT; i < GME::NO_TYPE; i++ ) {
             GME::TYPE type = static_cast< GME::TYPE >( i ) ;
-            index_t nb = M.nb_entitys( type ) ;
+            index_t nb = M.nb_entities( type ) ;
             for( index_t j = 0; j < nb; ++j ) {
                 save_high_level_bme( out, M.entity( GME::gme_t( type, j ) ) ) ;
             }
@@ -251,7 +251,7 @@ namespace {
             out << "FINSF" << std::endl ;
 
             /// 2. Write tetrahedra
-            /// @todo Review: what about other entitys ? [AB]
+            /// @todo Review: what about other entities ? [AB]
             out << "TETRA4" << std::endl ;
             for( index_t r = 0; r < gm.nb_regions(); r++ ) {
                 for( index_t c = 0; c < mesh.cells.nb_tet( r ); c++ ) {
@@ -487,7 +487,7 @@ namespace {
 
             for( index_t t = GME::CORNER; t <= GME::REGION; t++ ) {
                 GME::TYPE type = static_cast< GME::TYPE >( t ) ;
-                for( index_t e = 0; e < model.nb_entitys( type ); e++ ) {
+                for( index_t e = 0; e < model.nb_entities( type ); e++ ) {
                     save_geo_model_mesh_entity( model.mesh_entity( type, e ),
                         zf ) ;
                 }
@@ -961,7 +961,7 @@ namespace {
 
             ascii << nb_families << " # Number of families" << std::endl ;
             ascii << "# Object name" << TAB << "Entity type" << TAB << "Material-ID"
-                << TAB << "Number of entitys" << std::endl ;
+                << TAB << "Number of entities" << std::endl ;
             for( index_t r = 0; r < gm.nb_regions(); r++ ) {
                 const RINGMesh::GeoModelEntity& region = gm.region( r ) ;
                 regions << region.name() << std::endl ;
@@ -1010,9 +1010,9 @@ namespace {
             }
             reset_line( count, data ) ;
 
-            index_t nb_total_entitys = mesh.cells.nb_cells()
+            index_t nb_total_entities = mesh.cells.nb_cells()
                 + mesh.facets.nb_facets() + mesh.edges.nb_edges() ;
-            data << nb_total_entitys << " # PELEMENT" << std::endl ;
+            data << nb_total_entities << " # PELEMENT" << std::endl ;
             for( index_t r = 0; r < gm.nb_regions(); r++ ) {
                 index_t entity_type[4] = { 4, 6, 12, 18 } ;
                 for( index_t type = GEO::MESH_TET; type < GEO::MESH_CONNECTOR;
@@ -1046,7 +1046,7 @@ namespace {
             reset_line( count, data ) ;
 
             ascii
-                << "# now the entitys which make up each object are listed in sequence"
+                << "# now the entities which make up each object are listed in sequence"
                 << std::endl ;
             index_t cur_cell = 0 ;
             for( index_t r = 0; r < gm.nb_regions(); r++ ) {
@@ -1241,8 +1241,8 @@ namespace {
             }
             reset_line( count, data ) ;
 
-            data << nb_total_entitys << " # PMATERIAL" << std::endl ;
-            for( index_t i = 0; i < nb_total_entitys; i++ ) {
+            data << nb_total_entities << " # PMATERIAL" << std::endl ;
+            for( index_t i = 0; i < nb_total_entities; i++ ) {
                 data << " " << std::setw( 3 ) << 0 ;
                 new_line( count, 20, data ) ;
             }
@@ -1582,7 +1582,7 @@ namespace {
 
             index_t nb_edges = 0 ;
             for( index_t l = 0; l < gm.nb_lines(); l++ ) {
-                nb_edges += gm.line( l ).nb_polytopes() ;
+                nb_edges += gm.line( l ).nb_mesh_elements() ;
             }
             std::vector< index_t > temp ;
             temp.reserve( 3 ) ;
@@ -1591,7 +1591,7 @@ namespace {
             index_t count_edge = 0 ;
             for( index_t l = 0; l < gm.nb_lines(); l++ ) {
                 const Line& line = gm.line( l ) ;
-                for( index_t e = 0; e < line.nb_polytopes(); e++ ) {
+                for( index_t e = 0; e < line.nb_mesh_elements(); e++ ) {
                     edge_vertices[count_edge++ ] = 0.5
                         * ( line.vertex( e ) + line.vertex( e + 1 ) ) ;
                 }
@@ -1792,7 +1792,7 @@ namespace {
 //            } else if( gm.get_order() > 2 ) {
 //                GEO::Logger::err( "" ) << "The order " << gm.get_order() << " "
 //                    << "is not supported"
-//                    << " for the gmsh export. The export will take order 1 entitys"
+//                    << " for the gmsh export. The export will take order 1 entities"
 //                    << std::endl ;
 //            }
 //            const GeoModel& model = gm ;
@@ -1808,7 +1808,7 @@ namespace {
 //                anns[s] = new ColocaterANN( model.surface( s ).mesh(),
 //                    ColocaterANN::FACETS ) ;
 //            }
-//            out << "$Entitys" << std::endl ;
+//            out << "$Entities" << std::endl ;
 //            out << gm.cells.nb_cells() + nb_facets << std::endl ;
 //            index_t cur_cell = 1 ;
 //            for( index_t m = 0; m < gm.nb_regions(); m++ ) {
@@ -1933,7 +1933,7 @@ namespace {
 //                    }
 //                }
 //            }
-//            out << "$EndEntitys" << std::endl ;
+//            out << "$EndEntities" << std::endl ;
 //
 //            if( GEO::CmdLine::get_arg_bool( "out:kine3d" ) ) {
 //                std::string directory = GEO::FileSystem::dir_name( filename ) ;

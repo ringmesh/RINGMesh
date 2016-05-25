@@ -73,7 +73,7 @@ namespace RINGMesh {
             GME* E = new_entity( type ) ;
             ringmesh_assert( E != nil ) ;
 
-            model_.modifiable_entitys( type ).push_back( E ) ;                
+            model_.modifiable_entities( type ).push_back( E ) ;                
             return E->gme_id();
         } else {
             ringmesh_assert_not_reached;
@@ -81,13 +81,13 @@ namespace RINGMesh {
         }
     }
 
-    index_t GeoModelEditor::create_entitys( GME::TYPE type, index_t nb )
+    index_t GeoModelEditor::create_entities( GME::TYPE type, index_t nb )
     {
         assert_entity_creation_allowed() ;
         if( type >= GME::NO_TYPE ) {
             return NO_ID ;
         }
-        std::vector< GME* >& store = model_.modifiable_entitys( type ) ;
+        std::vector< GME* >& store = model_.modifiable_entities( type ) ;
         index_t old_size = static_cast<index_t> ( store.size() ) ;
         index_t new_size = old_size + nb ;
         store.resize( new_size, nil ) ;
@@ -98,9 +98,9 @@ namespace RINGMesh {
         return old_size ;
     }
 
-    /*! @details For all 7 types of entitys, check what information is available
-     * for the first one and fill the entitys of the same type accordingly
-     * THIS MEANS that the all the entitys of the same type have been initialized with
+    /*! @details For all 7 types of entities, check what information is available
+     * for the first one and fill the entities of the same type accordingly
+     * THIS MEANS that the all the entities of the same type have been initialized with
      * the same information.
      */
     void GeoModelEditor::complete_entity_connectivity()
@@ -108,57 +108,57 @@ namespace RINGMesh {
         // Lines
         if( model_.nb_lines() > 0 ) {
             if( model_.line( 0 ).nb_boundaries() == 0 ) {
-                fill_entitys_boundaries( GME::LINE ) ;
+                fill_entities_boundaries( GME::LINE ) ;
             }
             if( model_.line( 0 ).nb_in_boundary() == 0 ) {
-                fill_entitys_in_boundaries( GME::LINE ) ;
+                fill_entities_in_boundaries( GME::LINE ) ;
             }
             if( !model_.line( 0 ).parent_id().is_defined()
                 && model_.nb_contacts() > 0 ) {
-                fill_entitys_parent( GME::LINE ) ;
+                fill_entities_parent( GME::LINE ) ;
             }
         }
         // Corners
         if( model_.nb_corners() > 0 && model_.corner( 0 ).nb_in_boundary() == 0 ) {
             // Info from line boundaries is used here and should be available
-            fill_entitys_in_boundaries( GME::CORNER ) ;
+            fill_entities_in_boundaries( GME::CORNER ) ;
         }
         // Surfaces - There MUST be at least one
         if( model_.surface( 0 ).nb_boundaries() == 0 ) {
-            fill_entitys_boundaries( GME::SURFACE ) ;
+            fill_entities_boundaries( GME::SURFACE ) ;
         }
         if( model_.surface( 0 ).nb_in_boundary() == 0 ) {
-            fill_entitys_in_boundaries( GME::SURFACE ) ;
+            fill_entities_in_boundaries( GME::SURFACE ) ;
         }
         if( !model_.surface( 0 ).parent_id().is_defined() ) {
-            fill_entitys_parent( GME::SURFACE ) ;
+            fill_entities_parent( GME::SURFACE ) ;
         }
         // Regions
         if( model_.nb_regions() > 0 ) {
             if( model_.region( 0 ).nb_boundaries() == 0 ) {
-                fill_entitys_boundaries( GME::REGION ) ;
+                fill_entities_boundaries( GME::REGION ) ;
             }
             if( !model_.region( 0 ).parent_id().is_defined()
                 && model_.nb_layers() > 0 ) {
-                fill_entitys_parent( GME::REGION ) ;
+                fill_entities_parent( GME::REGION ) ;
             }
         }
         // Contacts
         if( model_.nb_contacts() > 0 && model_.contact( 0 ).nb_children() == 0 ) {
-            fill_entitys_children( GME::CONTACT ) ;
+            fill_entities_children( GME::CONTACT ) ;
         }
         // Interfaces
         if( model_.nb_interfaces() > 0
             && model_.one_interface( 0 ).nb_children() == 0 ) {
-            fill_entitys_children( GME::INTERFACE ) ;
+            fill_entities_children( GME::INTERFACE ) ;
         }
         // Layers
         if( model_.nb_layers() > 0 && model_.layer( 0 ).nb_children() == 0 ) {
-            fill_entitys_children( GME::LAYER ) ;
+            fill_entities_children( GME::LAYER ) ;
         }
     }
 
-    void GeoModelEditor::fill_entitys_boundaries( GME::TYPE type ) const
+    void GeoModelEditor::fill_entities_boundaries( GME::TYPE type ) const
     {
         // We have a problem if this is called for regions
         // No way yet to know the surface orientation
@@ -166,7 +166,7 @@ namespace RINGMesh {
 
         GME::TYPE b_type = GME::boundary_type( type ) ;
         if( b_type != GME::NO_TYPE ) {
-            for( index_t i = 0; i < model().nb_entitys( b_type ); ++i ) {
+            for( index_t i = 0; i < model().nb_entities( b_type ); ++i ) {
                 const GME& b = model().entity( gme_t( b_type, i ) ) ;
                 for( index_t j = 0; j < b.nb_in_boundary(); ++j ) {
                     add_entity_boundary( b.in_boundary_gme( j ),
@@ -176,11 +176,11 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelEditor::fill_entitys_in_boundaries( GME::TYPE type ) const
+    void GeoModelEditor::fill_entities_in_boundaries( GME::TYPE type ) const
     {
         GME::TYPE in_b_type = GME::in_boundary_type( type ) ;
         if( in_b_type != GME::NO_TYPE ) {
-            for( index_t i = 0; i < model().nb_entitys( in_b_type ); ++i ) {
+            for( index_t i = 0; i < model().nb_entities( in_b_type ); ++i ) {
                 const GME& in_b = entity( gme_t( in_b_type, i ) ) ;
                 for( index_t j = 0; j < in_b.nb_boundaries(); ++j ) {
                     add_entity_in_boundary( in_b.boundary_gme( j ),
@@ -190,11 +190,11 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelEditor::fill_entitys_parent( GME::TYPE type ) const
+    void GeoModelEditor::fill_entities_parent( GME::TYPE type ) const
     {
         GME::TYPE p_type = GME::parent_type( type ) ;
         if( p_type != GME::NO_TYPE ) {
-            for( index_t i = 0; i < model().nb_entitys( p_type ); ++i ) {
+            for( index_t i = 0; i < model().nb_entities( p_type ); ++i ) {
                 const GME& p = model().entity( gme_t( p_type, i ) ) ;
                 for( index_t j = 0; j < p.nb_children(); ++j ) {
                     set_entity_parent( p.child_id( j ), gme_t( p_type, i ) ) ;
@@ -203,11 +203,11 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelEditor::fill_entitys_children( GME::TYPE type ) const
+    void GeoModelEditor::fill_entities_children( GME::TYPE type ) const
     {
         GME::TYPE c_type = GME::child_type( type ) ;
         if( c_type != GME::NO_TYPE ) {
-            for( index_t i = 0; i < model().nb_entitys( c_type ); ++i ) {
+            for( index_t i = 0; i < model().nb_entities( c_type ); ++i ) {
                 gme_t cur_child = gme_t( c_type, i ) ;
                 const gme_t& parent = model().entity( cur_child ).parent_id() ;
                 if( parent.is_defined() ) {
@@ -222,27 +222,27 @@ namespace RINGMesh {
         GeoModelEntity* E ) const
     {
         if( id.type < GME::NO_TYPE ) {
-            model_.modifiable_entitys( id.type )[id.index] = E ;
+            model_.modifiable_entities( id.type )[id.index] = E ;
         } else {
             throw RINGMeshException( "GeoModelEditor", "GME type is not valid" ) ;
         }
     }
 
     /*!
-     * @brief Add to the vector the entitys which cannot exist if
+     * @brief Add to the vector the entities which cannot exist if
      *        an entity in the set does not exist.
-     * @details These entitys are added to the set.
+     * @details These entities are added to the set.
      *          Recursive call till nothing is added.
      *
      * @return True if at least one entity was added, otherwise false.
      */
-    bool GeoModelEditor::get_dependent_entitys( std::set< gme_t >& in ) const
+    bool GeoModelEditor::get_dependent_entities( std::set< gme_t >& in ) const
     {
         index_t input_size = static_cast< index_t >( in.size() ) ;
 
         for( std::set< gme_t >::iterator it( in.begin() ); it != in.end(); ++it ) {
             gme_t cur = *it ;
-            /// If an entity has children entitys - add them 
+            /// If an entity has children entities - add them 
             if( GME::child_allowed( cur.type ) ) {
                 const GME& E = model_.entity( cur ) ;
                 for( index_t j = 0; j < E.nb_children(); ++j ) {
@@ -254,7 +254,7 @@ namespace RINGMesh {
         /// If a parent has no children anymore - add it 
         for( index_t p = GME::CONTACT; p < GME::NO_TYPE; ++p ) {
             GME::TYPE P = (GME::TYPE) p ;
-            for( index_t j = 0; j < model_.nb_entitys( P ); ++j ) {
+            for( index_t j = 0; j < model_.nb_entities( P ); ++j ) {
                 bool no_child = true ;
                 const GME& E = model_.entity( GME::gme_t( P, j ) ) ;
                 for( index_t k = 0; k < E.nb_children(); ++k ) {
@@ -272,7 +272,7 @@ namespace RINGMesh {
         /// If an entity is in the boundary of nothing - add it
         for( index_t t = GME::CORNER; t < GME::REGION; ++t ) {
             GME::TYPE T = (GME::TYPE) t ;
-            for( index_t j = 0; j < model_.nb_entitys( T ); ++j ) {
+            for( index_t j = 0; j < model_.nb_entities( T ); ++j ) {
                 bool no_incident = true ;
                 const GME& E = model_.entity( GME::gme_t( T, j ) ) ;
                 for( index_t k = 0; k < E.nb_in_boundary(); ++k ) {
@@ -288,32 +288,32 @@ namespace RINGMesh {
         }
 
         if( in.size() != input_size ) {
-            return get_dependent_entitys( in ) ;
+            return get_dependent_entities( in ) ;
         } else {
             return false ;
         }
     }
 
     /*!
-     * @brief Remove a list of entitys of the model
+     * @brief Remove a list of entities of the model
      * @details No check is done on the consistency of this removal
-     *          The entitys and all references to them are removed.
-     *          All dependent entitys should be in the set of entitys to remove,
-     *          with a prior call to get_dependent_entitys function.
+     *          The entities and all references to them are removed.
+     *          All dependent entities should be in the set of entities to remove,
+     *          with a prior call to get_dependent_entities function.
      *
      * @warning NOT TESTED.
      *          The client is responsible to set the proper connectivity
-     *          information between the remaining model entitys.
+     *          information between the remaining model entities.
      *
      * @todo TEST IT
      */
-    void GeoModelEditor::remove_entitys( const std::set< gme_t >& entitys )
+    void GeoModelEditor::remove_entities( const std::set< gme_t >& entities )
     {
-        if( entitys.empty() ) {
+        if( entities.empty() ) {
             return ;
         }
 
-        // We need to remove entitys type by type since they are 
+        // We need to remove entities type by type since they are 
         // stored in different vectors and since we use indices in these 
         // vectors to identify them.
         // Initialize the vector
@@ -322,11 +322,11 @@ namespace RINGMesh {
         for( index_t i = GME::CORNER; i < GME::NO_TYPE; ++i ) {
             to_erase_by_type.push_back(
                 std::vector< index_t >(
-                    model_.nb_entitys( static_cast< GME::TYPE >( i ) ), 0 ) ) ;
+                    model_.nb_entities( static_cast< GME::TYPE >( i ) ), 0 ) ) ;
         }
-        // Flag the entitys to erase
-        for( std::set< gme_t >::const_iterator it = entitys.begin();
-            it != entitys.end(); ++it ) {
+        // Flag the entities to erase
+        for( std::set< gme_t >::const_iterator it = entities.begin();
+            it != entities.end(); ++it ) {
             gme_t cur = *it ;
             if( cur.type < GME::NO_TYPE ) {
                 ringmesh_assert( NO_ID != 0 ) ; // If one day NO_ID changes of value.
@@ -336,18 +336,18 @@ namespace RINGMesh {
 
         delete_elements( to_erase_by_type ) ;
 
-        // Re-initialize global access to entitys
+        // Re-initialize global access to entities
         model_.init_global_model_entity_access() ;
     }
 
     /*!
-     * @brief ONGOING WORK. Removes properly some entitys of the Boundary Model.
+     * @brief ONGOING WORK. Removes properly some entities of the Boundary Model.
      *
-     * @param[in] entitys_to_remove: in input the entitys the client wants to
-     * remove, in output all the removed entitys (dependencies of ).
+     * @param[in] entities_to_remove: in input the entities the client wants to
+     * remove, in output all the removed entities (dependencies of ).
      *
-     * Calls get_dependent_entitys on each entitys of \p entitys_to_remove.
-     * Then do remove these entitys and updates the universe.
+     * Calls get_dependent_entities on each entities of \p entities_to_remove.
+     * Then do remove these entities and updates the universe.
      *
      * @pre Assert that the entity to remove is one region that has only one neighbor
      *
@@ -355,24 +355,24 @@ namespace RINGMesh {
      *
      * @todo Review : Error in the comments [JP]
      */
-    void GeoModelEditor::remove_entitys_and_dependencies(
-        const std::set< GME::gme_t >& entitys_to_remove )
+    void GeoModelEditor::remove_entities_and_dependencies(
+        const std::set< GME::gme_t >& entities_to_remove )
     {
         // Asserts to remove when implementation is completed
         ringmesh_assert(
-            entitys_to_remove.size() == 1
-                && entitys_to_remove.begin()->type == GME::REGION ) ;
+            entities_to_remove.size() == 1
+                && entities_to_remove.begin()->type == GME::REGION ) ;
 
-        // Copy because it is not logical to have in output the removed entitys. BC
+        // Copy because it is not logical to have in output the removed entities. BC
         /// @todo Review : youpiii what did the comment on the function just said ? [JP]
-        std::set< GME::gme_t > entitys = entitys_to_remove ;
-        // TODO Handle the case of several objects in entitys
+        std::set< GME::gme_t > entities = entities_to_remove ;
+        // TODO Handle the case of several objects in entities
 
-        const GeoModelEntity& reg = model_.entity( *( entitys.begin() ) ) ;
-        get_dependent_entitys( entitys ) ;
+        const GeoModelEntity& reg = model_.entity( *( entities.begin() ) ) ;
+        get_dependent_entities( entities ) ;
 
         // TODO Dirty duplication of code------------------------
-        // We need to remove entitys type by type since they are
+        // We need to remove entities type by type since they are
         // stored in different vectors and since we use indices in these
         // vectors to identify them.
         // Initialize the vector
@@ -381,11 +381,11 @@ namespace RINGMesh {
         for( index_t i = GME::CORNER; i < GME::NO_TYPE; ++i ) {
             to_erase_by_type.push_back(
                 std::vector< index_t >(
-                    model_.nb_entitys( static_cast< GME::TYPE >( i ) ), 0 ) ) ;
+                    model_.nb_entities( static_cast< GME::TYPE >( i ) ), 0 ) ) ;
         }
-        // Flag the entitys to erase
-        for( std::set< gme_t >::const_iterator it = entitys.begin();
-            it != entitys.end(); ++it ) {
+        // Flag the entities to erase
+        for( std::set< gme_t >::const_iterator it = entities.begin();
+            it != entities.end(); ++it ) {
             gme_t cur = *it ;
             if( cur.type < GME::NO_TYPE ) {
                 ringmesh_assert( NO_ID != 0 ) ; // If one day NO_ID changes of value.
@@ -393,11 +393,11 @@ namespace RINGMesh {
             }
         }
 
-        // Number of entitys deleted for each TYPE
+        // Number of entities deleted for each TYPE
         std::vector< index_t > nb_removed( to_erase_by_type.size(), 0 ) ;
 
-        /// 1. Get the mapping between old indices of the entitys
-        ///    and new ones (when entitys to remove will actually be removed)
+        /// 1. Get the mapping between old indices of the entities
+        ///    and new ones (when entities to remove will actually be removed)
         for( index_t i = 0; i < to_erase_by_type.size(); ++i ) {
             for( index_t j = 0; j < to_erase_by_type[i].size(); ++j ) {
                 if( to_erase_by_type[i][j] == NO_ID ) {
@@ -427,7 +427,7 @@ namespace RINGMesh {
             }
         }
 
-        remove_entitys( entitys ) ;
+        remove_entities( entities ) ;
 
         // Update Universe
         /// @todo You first need to clean the existing universe [JP]
@@ -441,23 +441,23 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Delete entitys and remove all references to them in the model
+     * @brief Delete entities and remove all references to them in the model
      *
      * @param[in,out] to_erase For each type of entity T,
-     *        store a vector of the size of model_.nb_entitys(T) in which
-     *        entitys are flagged with NO_ID.
+     *        store a vector of the size of model_.nb_entities(T) in which
+     *        entities are flagged with NO_ID.
      *        In output it stores the mapping table between old and new indices
-     *        for the entitys.
+     *        for the entities.
      * @todo TEST IT
      */
     void GeoModelEditor::delete_elements(
         std::vector< std::vector< index_t > >& to_erase )
     {
-        // Number of entitys deleted for each TYPE
+        // Number of entities deleted for each TYPE
         std::vector< index_t > nb_removed( to_erase.size(), 0 ) ;
 
-        /// 1. Get the mapping between old indices of the entitys
-        ///    and new ones (when entitys to remove will actually be removed)
+        /// 1. Get the mapping between old indices of the entities
+        ///    and new ones (when entities to remove will actually be removed)
         for( index_t i = 0; i < to_erase.size(); ++i ) {
             for( index_t j = 0; j < to_erase[i].size(); ++j ) {
                 if( to_erase[i][j] == NO_ID ) {
@@ -468,17 +468,17 @@ namespace RINGMesh {
             }
         }
 
-        /// 2. Effectively delete the entitys 
+        /// 2. Effectively delete the entities 
         for( index_t i = 0; i < to_erase.size(); ++i ) {
             for( index_t j = 0; j < to_erase[i].size(); ++j ) {
                 if( to_erase[i][j] == NO_ID ) {
                     GME::gme_t cur( static_cast< GME::TYPE >( i ), j ) ;
                     delete model_.entity_ptr( cur ) ;
                     // Set the current entity to nil
-                    model_.modifiable_entitys( cur.type )[cur.index] = nil ;
+                    model_.modifiable_entities( cur.type )[cur.index] = nil ;
                 }
             }
-            std::vector< GME* >& store = model_.modifiable_entitys(
+            std::vector< GME* >& store = model_.modifiable_entities(
                 static_cast< GME::TYPE >( i ) ) ;
             store.erase(
                 std::remove( store.begin(), store.end(),
@@ -488,17 +488,17 @@ namespace RINGMesh {
         /// 3. Deal with the model vertices
         model_.mesh.vertices.clear() ;
 
-        /// 4. Update all possible indices in remaining entitys
+        /// 4. Update all possible indices in remaining entities
         for( index_t i = 0; i < to_erase.size(); ++i ) {
             GME::TYPE T = static_cast< GME::TYPE >( i ) ;
 
             // Update all indices stored by the BME of that type 
             ringmesh_assert(
-                model_.nb_entitys( T ) == to_erase[i].size() - nb_removed[i] ) ;
-            for( index_t j = 0; j < model_.nb_entitys( T ); ++j ) {
+                model_.nb_entities( T ) == to_erase[i].size() - nb_removed[i] ) ;
+            for( index_t j = 0; j < model_.nb_entities( T ); ++j ) {
                 GeoModelEntity& E = model_.modifiable_entity( gme_t( T, j ) ) ;
 
-                // Not the same than j - since we have erased some entitys
+                // Not the same than j - since we have erased some entities
                 index_t old_id = E.index() ;
                 ringmesh_assert( to_erase[i][old_id] != NO_ID ) ;
 
@@ -561,7 +561,7 @@ namespace RINGMesh {
 
     /*!
      * @brief Copy macro information from a model
-     * @details Copy the all the model entitys and their relationship ignoring their geometry
+     * @details Copy the all the model entities and their relationship ignoring their geometry
      *
      * @param[in] from Model to copy the information from
      */
@@ -570,21 +570,21 @@ namespace RINGMesh {
         assert_entity_creation_allowed() ;
         for( index_t t = GME::CORNER; t < GME::NO_TYPE; ++t ) {
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;
-            std::vector< GME* >& store = model_.modifiable_entitys( T ) ;
-            store.resize( from.nb_entitys( T ), nil ) ;
+            std::vector< GME* >& store = model_.modifiable_entities( T ) ;
+            store.resize( from.nb_entities( T ), nil ) ;
 
-            for( index_t e = 0; e < model_.nb_entitys( T ); ++e ) {
+            for( index_t e = 0; e < model_.nb_entities( T ); ++e ) {
                 store[e] = new_entity( T, e ) ;
                 ringmesh_assert( store[ e ] != nil ) ;
             }
             RINGMESH_PARALLEL_LOOP
-            for( index_t e = 0; e < model_.nb_entitys( T ); ++e ) {
+            for( index_t e = 0; e < model_.nb_entities( T ); ++e ) {
                 copy_entity_topology( *store[e], from.entity( gme_t( T, e ) ) ) ;
             }
         }
         copy_entity_topology( model_.universe_, from.universe_ ) ;
 
-        model_.nb_entitys_per_type_ = from.nb_entitys_per_type_ ;
+        model_.nb_entities_per_type_ = from.nb_entities_per_type_ ;
     }
 
     void GeoModelEditor::copy_entity_topology(
@@ -606,9 +606,9 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Remove invalid reference to entitys
+     * @brief Remove invalid reference to entities
      *       boundary, in_boundary and children vectors
-     *       Invalid entitys have a NO_ID index
+     *       Invalid entities have a NO_ID index
      *
      * @param[in] E the entity to process
      */
@@ -620,7 +620,7 @@ namespace RINGMesh {
             index_t nb_found = static_cast< index_t >( std::count(
                 E.children_.begin(), E.children_.end(), invalid_child ) ) ;
             if( nb_found == E.children_.size() ) {
-                // Calling erase on all entitys -> undefined behavior
+                // Calling erase on all entities -> undefined behavior
                 E.children_.clear() ;
             } else {
                 E.children_.erase(
@@ -694,7 +694,7 @@ namespace RINGMesh {
     
     GME* GeoModelEditor::new_entity( GME::TYPE T )
     {
-        index_t id = model_.nb_entitys( T ) ;
+        index_t id = model_.nb_entities( T ) ;
         return new_entity( T, id ) ;
     }
 

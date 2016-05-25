@@ -36,7 +36,7 @@
 /*! \author Francois Bonneau */
 
 #include <ringmesh/mesh.h>
-#include <ringmesh/geo_model_element.h>
+#include <ringmesh/geo_model_entity.h>
 #include <ringmesh/geo_model.h>
 
 

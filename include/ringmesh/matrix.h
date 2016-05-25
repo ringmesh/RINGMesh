@@ -53,7 +53,7 @@ namespace RINGMesh {
     } ;
 
     /*!
-     * @brief Basic container for the sparse matrix, i.e. the "entitys".
+     * @brief Basic container for the sparse matrix, i.e. the "entities".
      * */
     template< typename T >
     struct EntityImpl {
@@ -68,7 +68,7 @@ namespace RINGMesh {
     } ;
 
     /*!
-     * @brief Basic "Row" of the matrix, this stores the entitys of the matrix in a line-oriented way
+     * @brief Basic "Row" of the matrix, this stores the entities of the matrix in a line-oriented way
      * */
     template< typename T >
     class RowImpl {
@@ -76,14 +76,14 @@ namespace RINGMesh {
         typedef EntityImpl< T > Entity ;
 
         RowImpl()
-            : nb_entitys_( 0 ), capacity_( 4 )
+            : nb_entities_( 0 ), capacity_( 4 )
         {
-            entitys_ = new Entity[capacity_] ;
+            entities_ = new Entity[capacity_] ;
         }
 
         ~RowImpl()
         {
-            delete[] entitys_ ;
+            delete[] entities_ ;
         }
 
         void set_entity( index_t j, const T& value )
@@ -92,24 +92,24 @@ namespace RINGMesh {
             if( !find( j, index ) ) {
                 push_entity( j, value ) ;
             } else {
-                entitys_[index].value = value ;
+                entities_[index].value = value ;
             }
         }
 
         void push_entity( index_t j, const T& value )
         {
-            if( nb_entitys_ == capacity_ ) {
+            if( nb_entities_ == capacity_ ) {
                 grow() ;
             }
-            Entity& elt = entitys_[nb_entitys_++ ] ;
+            Entity& elt = entities_[nb_entities_++ ] ;
             elt.index = j ;
             elt.value = value ;
         }
 
         bool find( index_t j, index_t& index ) const
         {
-            for( index_t e = 0; e < nb_entitys_; e++ ) {
-                if( entitys_[e].index == j ) {
+            for( index_t e = 0; e < nb_entities_; e++ ) {
+                if( entities_[e].index == j ) {
                     index = e ;
                     return true ;
                 }
@@ -119,8 +119,8 @@ namespace RINGMesh {
 
         bool exist( index_t j )
         {
-            for( index_t e = 0; e < nb_entitys_; e++ ) {
-                if( entitys_[e].index == j ) {
+            for( index_t e = 0; e < nb_entities_; e++ ) {
+                if( entities_[e].index == j ) {
                     return true ;
                 }
             }
@@ -133,40 +133,40 @@ namespace RINGMesh {
             if( !find( j, index ) ) {
                 return false ;
             }
-            value = entitys_[index].value ;
+            value = entities_[index].value ;
             return true ;
         }
 
         void entity( index_t e, T& value ) const
         {
-            ringmesh_assert( e < nb_entitys_ ) ;
-            value = entitys_[e].value ;
+            ringmesh_assert( e < nb_entities_ ) ;
+            value = entities_[e].value ;
         }
 
         index_t index( index_t e ) const
         {
-            ringmesh_assert( e < nb_entitys_ ) ;
-            return entitys_[e].index ;
+            ringmesh_assert( e < nb_entities_ ) ;
+            return entities_[e].index ;
         }
 
         T& operator[]( index_t i ) const
         {
-            ringmesh_assert( i < nb_entitys_ ) ;
-            return entitys_[i].value ;
+            ringmesh_assert( i < nb_entities_ ) ;
+            return entities_[i].value ;
         }
 
-        index_t nb_entitys() const
+        index_t nb_entities() const
         {
-            return nb_entitys_ ;
+            return nb_entities_ ;
         }
 
     private:
         void reallocate( index_t new_capacity )
         {
-            Entity* new_entitys = new Entity[new_capacity] ;
-            std::copy( entitys_, entitys_ + nb_entitys_, new_entitys ) ;
-            delete[] entitys_ ;
-            entitys_ = new_entitys ;
+            Entity* new_entities = new Entity[new_capacity] ;
+            std::copy( entities_, entities_ + nb_entities_, new_entities ) ;
+            delete[] entities_ ;
+            entities_ = new_entities ;
         }
 
         void grow()
@@ -177,14 +177,14 @@ namespace RINGMesh {
         }
 
     private:
-        Entity* entitys_ ;
-        index_t nb_entitys_ ;
+        Entity* entities_ ;
+        index_t nb_entities_ ;
         index_t capacity_ ;
     } ;
 
     /*!
      *  @brief This is the parent class for sparse matrices, the main difference between light and heavy type matrices
-     * depend on the contents of rows entitys: Light will contain type T objects, while heavy an index to access a std::deque.
+     * depend on the contents of rows entities: Light will contain type T objects, while heavy an index to access a std::deque.
      * */
     template< typename T, typename RowType >
     class SparseMatrixImpl {
@@ -215,14 +215,14 @@ namespace RINGMesh {
         }
 
         /*!
-         * @brief gets number of entitys within a row
+         * @brief gets number of entities within a row
          * @param[in] i row index
-         * @return index_t number of entitys
+         * @return index_t number of entities
          */
-        index_t get_nb_entitys_in_line( index_t i ) const
+        index_t get_nb_entities_in_line( index_t i ) const
         {
             ringmesh_assert( i < ni_ ) ;
-            return rows_[i].nb_entitys() ;
+            return rows_[i].nb_entities() ;
         }
 
         /*!
@@ -491,7 +491,7 @@ namespace RINGMesh {
         for( index_t i = 0; i < mat1.ni(); ++i ) {
             ringmesh_assert( i >= 0 && i < result.size() ) ;
             result[i] = 0. ;
-            for( index_t e = 0; e < mat1.get_nb_entitys_in_line( i ); ++e ) {
+            for( index_t e = 0; e < mat1.get_nb_entities_in_line( i ); ++e ) {
                 index_t j = mat1.get_column_in_line( i, e ) ;
                 T i_j_result ;
                 mat1.get_entity_in_line( i, e, i_j_result ) ;

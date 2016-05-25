@@ -44,7 +44,7 @@
 #include <ringmesh/mesh.h>
 /*!
  * @file ringmesh/geo_model_mesh.h
- * @brief Classes to manage globally the indexing of mesh entitys of a GeoModel
+ * @brief Classes to manage globally the indexing of mesh entities of a GeoModel
  * @author Arnaud Botella and Jeanne Pellerin
  */
 
@@ -188,7 +188,7 @@ namespace RINGMesh {
         MeshBuilder& mesh_builder_ ;
 
         /*!
-         * Vertices in GeoModelEntitys corresponding to each vertex
+         * Vertices in GeoModelEntities corresponding to each vertex
          * @todo Change this extremely expensive storage !!!
          */
         std::vector< std::vector< GMEVertex > > gme_vertices_ ;
@@ -921,7 +921,7 @@ namespace RINGMesh {
         void clear() ;
         /*!
          * Gets the total number of mesh vertices. It is the number of unique nodes
-         * on the mesh plus the high order vertices on the entitys edges
+         * on the mesh plus the high order vertices on the entities edges
          * @return the const number of vertices
          */
         index_t nb_total_vertices() const ;
@@ -1099,7 +1099,7 @@ namespace RINGMesh {
          */
         void erase_invalid_vertices() ;
         /*!
-         * Gets the mesh entitys order
+         * Gets the mesh entities order
          * @return the const order
          */
         index_t get_order() const

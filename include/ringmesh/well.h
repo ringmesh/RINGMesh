@@ -68,9 +68,9 @@ namespace RINGMesh {
         index_t nb_points() const ;
 
     protected:
-        /// Pointer to the Well owning this element
+        /// Pointer to the Well owning this entity
         const Well* well_ ;
-        /// Mesh of the element
+        /// Mesh of the entity
         GEO::Mesh mesh_ ;
     } ;
 

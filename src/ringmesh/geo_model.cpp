@@ -59,8 +59,8 @@ namespace RINGMesh {
     {
         for( index_t t = GME::CORNER; t < GME::NO_TYPE; ++t ) {
             GME::TYPE T = (GME::TYPE) t ;
-            for( index_t i = 0; i < nb_elements( T ); ++i ) {
-                delete elements(T)[i] ;
+            for( index_t i = 0; i < nb_entities( T ); ++i ) {
+                delete entities(T)[i] ;
             }
         }
     }
