@@ -586,14 +586,14 @@ namespace RINGMesh {
             for( index_t i = 0; i < E.nb_children(); ++i ) {
                 result += model_element_size( E.child( i ) ) ;
             }
-            return result ;
         } else if( GeoModelElement::has_mesh( E.type() ) ) {
             const GeoModelMeshElement& M =
                 dynamic_cast< const GeoModelMeshElement& >( E ) ;
             result = M.size() ;
+        } else {
+            ringmesh_assert_not_reached ;
         }
 
-        ringmesh_assert_not_reached ;
         return result ;
     }
 
