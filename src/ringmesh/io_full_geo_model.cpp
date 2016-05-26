@@ -453,7 +453,7 @@ namespace {
             std::string pwd = GEO::FileSystem::get_current_working_directory() ;
             GEO::FileSystem::set_current_working_directory(
                 GEO::FileSystem::dir_name( filename ) ) ;
-            GeoModelBuilderGM builder( model, filename ) ;
+            GeoModelBuilderGM builder( model, GEO::FileSystem::base_name( filename, false ) ) ;
             builder.build_model() ;
             GEO::Logger::out( "I/O" ) << " Loaded model " << model.name() << " from "
                 << filename << std::endl ;
@@ -464,11 +464,18 @@ namespace {
         }
         virtual void save( const GeoModel& model, const std::string& filename )
         {
-            std::string pwd = GEO::FileSystem::get_current_working_directory() ;
-            GEO::FileSystem::set_current_working_directory(
-                GEO::FileSystem::dir_name( filename ) ) ;
+            const std::string pwd = GEO::FileSystem::get_current_working_directory() ;
+            bool valid_new_working_directory =
+                GEO::FileSystem::set_current_working_directory(
+                    GEO::FileSystem::dir_name( filename ) ) ;
+            if( !valid_new_working_directory ) {
+                throw RINGMeshException( "I/O", "Output directory does not exist" ) ;
+            }
 
-            zipFile zf = zipOpen( filename.c_str(), APPEND_STATUS_CREATE ) ;
+            zipFile zf = zipOpen(
+                GEO::FileSystem::base_name( filename, false ).c_str(),
+                APPEND_STATUS_CREATE ) ;
+            ringmesh_assert( zf != nil ) ;
 
             save_topology( model, "topology.txt" ) ;
             zip_file( zf, "topology.txt" ) ;
@@ -486,6 +493,7 @@ namespace {
                 }
             }
             zipClose( zf, NULL ) ;
+            GEO::FileSystem::set_current_working_directory( pwd ) ;
         }
 
     } ;

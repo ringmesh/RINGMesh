@@ -502,7 +502,7 @@ namespace RINGMesh {
         ringmesh_disable_copy( ColocaterANN ) ;
     public:
         enum MeshLocation {
-            VERTICES, EDGES, FACETS, CELLS
+            VERTICES, EDGES, FACETS, CELLS, CELL_FACETS
         } ;
         ColocaterANN() ;
         ColocaterANN(
@@ -544,6 +544,7 @@ namespace RINGMesh {
         void build_colocater_ann_edges( const GEO::Mesh& mesh ) ;
         void build_colocater_ann_facets( const GEO::Mesh& mesh ) ;
         void build_colocater_ann_cells( const GEO::Mesh& mesh ) ;
+        void build_colocater_ann_cell_facets( const GEO::Mesh& mesh ) ;
         void fill_ann_points(
             index_t index_in_ann,
             const vec3& center ) ;
