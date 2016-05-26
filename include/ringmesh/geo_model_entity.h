@@ -35,7 +35,7 @@
 
 /*!
  * @file Declaration of GeoModelEntity and all its children classes
- * @author Jeanne Pellerin  and Arnaud Botella 
+ * @author Jeanne Pellerin and Arnaud Botella 
  */
 
 #ifndef __RINGMESH_GEO_MODEL_ELEMENT__
@@ -56,6 +56,9 @@ namespace RINGMesh {
 
     /*!
      * @brief Generic class describing one entity of a GeoModel
+     * 
+     * @todo We need to think once again about this design
+     * to be able to ease the addition of optional elements to the GeoModel [JP]
      */
     class RINGMESH_API GeoModelEntity {
     ringmesh_disable_copy( GeoModelEntity ) ;
@@ -98,7 +101,7 @@ namespace RINGMesh {
          *     that are constituted of low-level entities
          * TYPE is used extensively to manage entities, iterate on them, etc.
          *  
-         * @warning DO NOT MODIFY THIS ENUM SINCE ALL THE CODE RELIES ON IT.
+         * @warning DO NOT MODIFY THIS ENUM SINCE ALL THE CODE RELIES ON IT. 
          * 
          * @todo Add fault blocks.
          */
@@ -447,8 +450,8 @@ namespace RINGMesh {
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
         friend class GeoModelRepair ;
-    public:
 
+    public:
         GeoModelMeshEntity(
             const GeoModel& model,
             TYPE entity_type,
@@ -464,6 +467,8 @@ namespace RINGMesh {
         }
 
         virtual ~GeoModelMeshEntity() ;
+
+        /*! @todo To remove when GFX Mesh is encapsulated */
         const GEO::Mesh& gfx_mesh() const
         {
             return mesh_.gfx_mesh() ;
@@ -487,8 +492,7 @@ namespace RINGMesh {
             mesh_.save_mesh( filename, ioflags ) ;
         }
         /*!
-         * @brief Return the ColocaterANN at located at ColocaterANN::VERTICES 
-         * of the current GeoModelMeshEntity.
+         * @brief Return the colocater for the Entity vertices.
          */
         const ColocaterANN& vertex_colocater_ann() const
         {
@@ -500,14 +504,14 @@ namespace RINGMesh {
          * @{
          */
         /*!
-         * @brief return the number of vertices in the current GeoModelMeshEntity
+         * @brief Number of vertices 
          */
         index_t nb_vertices() const
         {
             return mesh_.nb_vertices() ;
         }
         /*!
-         * @brief Get coordinates of a vertex indexed \param vertex_index in the current GeoModelMeshEntity.
+         * @brief Coordinates of the @param vertex_index.
          */
         const vec3& vertex( index_t vertex_index ) const
         {
@@ -515,32 +519,30 @@ namespace RINGMesh {
         }
 
         /*!
-         * get the vertex index from the corner index
+         * @brief Access to the vertex from the corner index.
+         * @todo Review: this depends on the mesh implementation. To remove [JP].
          */
-        virtual index_t vertex_index(index_t corner_index) const = 0 ;
+        virtual index_t vertex_index( index_t corner_index ) const = 0 ;
 
         /*!
-         * @brief Get the number of n-mesh_element in the GeoModelMeshEntity
-         * @details The generic function return the number of mesh_element that
-         * correspond to the dimension n of the GeoModelMeshEntity.
-         * vertices for Corner (n=0), edges for Line (n=1),
-         * facets for Surface (n=2), cells for Region (n=3).
+         * @brief Get the number constitutive elements of the mesh 
+         * @details Constitutive elements are those of the dimension of the object.
+         * segments for lines, facets for surfaces and cells for volumetric meshes.
          */
         virtual index_t nb_mesh_elements() const = 0 ;
         /*!
-         * @brief get the number of vertices of the mesh_element \param mesh_element_index in the GeoModelMeshEntity
+         * @brief Number of vertices of a consitutive element of the mesh
          */
         virtual index_t nb_mesh_element_vertices( index_t mesh_element_index ) const = 0 ;
         /*!
-         * @brief Get the index of a vertex in the current GeoModelMeshEntity from the vertex index \param vertex_index
-         * in a given n-mesh_element \param mesh_element_index.
+         * @brief Convert the index in a mesh element to an index in the Entity.
+         * @todo Review: I find this name confusing, maybe we should change it [JP]
          */
         virtual index_t mesh_element_vertex_index(
             index_t mesh_element_index,
             index_t vertex_index ) const = 0 ;
         /*!
-         * @brief Get coordinates of a vertex in the current GeoModelMeshEntity from the vertex index \param vertex_index
-         * in a given n-mesh_element \param mesh_element_index.
+         * @brief Coordinates of a vertex of a mesh element.
          */
         const vec3& mesh_element_vertex(
             index_t mesh_element_index,
@@ -548,7 +550,7 @@ namespace RINGMesh {
         {
             return vertex( mesh_element_vertex_index( mesh_element_index, vertex_index ) ) ;
         }
-
+        
         /*! @}
          * \name Geometrical request on Entity
          * @{
@@ -580,14 +582,12 @@ namespace RINGMesh {
          */
 
         /*!
-         * @brief Name of the attribute storing the global index of a vertex in the GeoModel.
-         * @details it computes the global index value over all GeoModelMeshEntity of a GeoModel.
+         * @brief Name of the attribute storing the global index at the GeoModel level.
          */
         static const std::string model_vertex_id_att_name() ;
 
         /*!
-         * @brief Get the global GeoModelMesh index of the vertex indexed 
-         * @param[in] gmme_vertex_index in the current GeoModelMeshEntity.
+         * @brief Get the global index at the GeoModel from the index in the entity.
          */
         index_t model_vertex_id( index_t gmme_vertex_index = 0 ) const
         {
@@ -595,26 +595,29 @@ namespace RINGMesh {
             return model_vertex_id_[gmme_vertex_index] ;
         }
         /*!
-         * @brief Get the index of a vertex in the GeoModelMesh from its vertex
-         * index \param vertex_index in the given n-mesh_element \param gmme_mesh_element_index
-         * of the current GeoModelMeshEntity.
+         * @brief Get the global index at the GeoModel from a 
+         * index in a mesh element.
          */
         index_t model_vertex_id(
-            index_t gmme_mesh_element_index,
+            index_t mesh_element_index,
             index_t vertex_index ) const
         {
             return model_vertex_id(
-                mesh_element_vertex_index( gmme_mesh_element_index, vertex_index ) ) ;
+                mesh_element_vertex_index( mesh_element_index, vertex_index ) ) ;
         }
         /*!
-         * @brief Get the first vertex index, in the current GeoModelMeshEntity, 
-         *  that corresponds to the vertex \param model_vertex_id.
+         * @brief Get the first vertex index of the Entity 
+         *  that corresponds to the vertex @param model_vertex_id.
          * @details Returns NO_ID if no matching point is found.
          *
-         * @param model_vertex_id Index of a vertex in GeoModelMeshVertices
-         * @todo changer le nom
+         * @param model_vertex_id Index of the vertex in the GeoModel
+         * @todo Change that name.
          */
         index_t gmme_vertex_index_from_model( index_t model_vertex_id ) const ;
+        /*!
+         * @ Get all the vertices of the Entity which corresponds
+         * to the same point in the GeoModel.
+         */
         std::vector< index_t > gme_vertex_indices( index_t model_vertex_id ) const ;
 
         /*!
@@ -644,13 +647,14 @@ namespace RINGMesh {
          */
         virtual bool is_mesh_valid() const = 0 ;
         /*!
-         * @brief Check that model vertex ids are consistent 
-         * with info stored by the model vertices
+         * @brief Check that model vertex indinces are consistent 
+         * with what is stored at the GeoModel level.
+         * @todo Review: this dependancy is bad, and puts us in a lot of trouble [JP]
          */
         bool are_model_vertex_indices_valid() const ;
 
     protected:
-        /// Mesh of the GeoModelMeshEntity
+        /// RINGMesh::Mesh implementing the geometry of this entity 
         Mesh mesh_ ;
         /*! Attribute on the Mesh vertices storing the index of
          *  the vertex in the GeoModel owning this entity
@@ -660,14 +664,14 @@ namespace RINGMesh {
 
     /*!
      * @brief A GeoModelEntity of type CORNER
-     *
      * @details It is a unique point.
      */
     class RINGMESH_API Corner: public GeoModelMeshEntity {
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
     public:
-        /*! \brief Creates a Corner. A point is added to its Mesh.
+        /*! @brief Creates a Corner. 
+         *  A point is added to its Mesh.
          */
         Corner( const GeoModel& model, index_t id )
             : GeoModelMeshEntity( model, CORNER, id )
@@ -688,7 +692,8 @@ namespace RINGMesh {
          * @brief Get the index of the unique vertex constituting of the Corner.
          * @return 0.
          */
-        virtual index_t mesh_element_vertex_index( index_t, index_t ) const
+        virtual index_t mesh_element_vertex_index(
+            index_t /*mesh_element*/, index_t /*vertex_index*/ ) const 
         {
             return 0 ;
         }
@@ -702,7 +707,7 @@ namespace RINGMesh {
         /*!
          * @return 1 the number of vertices of the Corner
          */
-        virtual index_t nb_mesh_element_vertices( index_t ) const
+        virtual index_t nb_mesh_element_vertices( index_t /*mesh_element*/ ) const
         {
             return 1 ;
         }
@@ -711,7 +716,7 @@ namespace RINGMesh {
          * \name Geometrical request on Corner
          * @{
          */
-        virtual double mesh_element_size( index_t ) const
+        virtual double mesh_element_size( index_t /*mesh_element*/ ) const
         {
             return 0.0 ;
         }
@@ -719,21 +724,20 @@ namespace RINGMesh {
         {
             return 0.0 ;
         }
-        virtual vec3 mesh_element_center( index_t ) const
+        virtual vec3 mesh_element_center( index_t /*mesh_element*/ ) const
         {
             return vertex( 0 ) ;
         }
 
     protected:
         virtual bool is_mesh_valid() const ;
-
     } ;
 
     /*!
      * @brief A GeoModelEntity of type LINE
      *
-     * @details One connected component of a 1-manifold.
-     *         
+     * @details This must be one connected component (one part) of 
+     * a 1-manifold (Line with no T intersections).
      */
     class RINGMESH_API Line: public GeoModelMeshEntity {
         friend class GeoModelEditor ;
@@ -756,16 +760,15 @@ namespace RINGMesh {
             return mesh_.nb_edges() ;
         }
         /*!
-         * Get the number of vertices per edge.
-         * @return 2;
+         * @Return The number of vertices per edge: 2.
          */
-        virtual index_t nb_mesh_element_vertices( index_t ) const
+        virtual index_t nb_mesh_element_vertices( index_t /*mesh_element*/ ) const
         {
             return 2 ;
         }
         /*!
-         * @brief Get the index of a vertex in the Line from the vertex index \param vertex_index
-         * in a given edge \param edge_index.
+         * @brief Get the index of a vertex in the Line from the 
+         * @param vertex_index in a given edge @param edge_index.
          */
         virtual index_t mesh_element_vertex_index(
             index_t edge_index,
@@ -790,7 +793,7 @@ namespace RINGMesh {
          * @{
          */
         /*!
-         * @brief Gets the length of the edge \param edge_index
+         * @brief Gets the length of an edge
          */
         virtual double mesh_element_size( index_t edge_index ) const
         {
@@ -798,7 +801,7 @@ namespace RINGMesh {
             return mesh_.edge_length( edge_index ) ;
         }
         /*!
-         * @brief Gets the center of the edge \param edge_index
+         * @brief Gets the barycenter of an edge
          */
         virtual vec3 mesh_element_center( index_t edge_index ) const
         {
@@ -807,19 +810,21 @@ namespace RINGMesh {
                 * ( mesh_element_vertex( edge_index, 0 )
                     + mesh_element_vertex( edge_index, 1 ) ) ;
         }
+
     private:
         virtual bool is_mesh_valid() const ;
-
     } ;
 
     /*!
      * @brief A GeoModelEntity of type SURFACE
      *
-     * @details One 2-manifold connected component.
+     * @details One connected component (part) of a 2-manifold surface 
+     * (all edges of the facets are in at most 2 facets)
      */
     class RINGMESH_API Surface: public GeoModelMeshEntity {
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
+    
     public:
         static const index_t NO_ADJACENT = index_t( -1 ) ;
 
@@ -841,31 +846,30 @@ namespace RINGMesh {
             return mesh_.facets_aabb() ;
         }
         /*!
-         * brief  return the ColocaterANN at located at ColocaterANN::VERTICES of the current GeoModelMeshEntity.
+         * @brief Return the a colocater for the facets of the surface
+         * @details The barycenter of the facets is used.
          */
         const ColocaterANN& facet_colocater_ann() const
         {
             return mesh_.colotater_ann( ColocaterANN::FACETS ) ;
         }
+
         /*!
          * \name Accessors to Surface facets, edges and vertices
          * @{
          */
-
-        virtual index_t vertex_index (index_t corner_index) const {
-            return mesh_.facet_corner_vertex(corner_index) ;
+        virtual index_t vertex_index( index_t corner_index ) const {
+            return mesh_.facet_corner_vertex( corner_index ) ;
         }
-
         /*!
-         * Get the number of facets of the Surface.
+         * Number of facets of the Surface.
          */
         virtual index_t nb_mesh_elements() const
         {
             return mesh_.nb_facets() ;
         }
         /*!
-         * Get the number of vertex on the facet \param facet_index of the Surface.
-         *
+         * Number of vertices of a facet 
          */
         virtual index_t nb_mesh_element_vertices( index_t facet_index ) const
         {
@@ -873,8 +877,11 @@ namespace RINGMesh {
             return mesh_.nb_facet_vertices( facet_index ) ;
         }
         /*!
-         * @brief Get the index of a vertex in the Surface from the vertex index \param vertex_index
-         * in a given facet \param facet_index.
+         * @brief Index of the vertex in the Surface 
+         * from its index in a facet of the mesh.
+         * 
+         * @todo Review Shouldn't we remove the virtual - These different functions are
+         * not meant to be overriden. [JP]
          */
         virtual index_t mesh_element_vertex_index(
             index_t facet_index,
@@ -886,25 +893,23 @@ namespace RINGMesh {
         }
 
         /*!
-         * @brief Get the first vertex index of a facet in a Surface.
-         * @param[in] facet_id facet index
+         * @brief Index of the first corner of a facet.
+         * @todo Review: To remove? this intrinsically linked to the GEO::Mesh implementation [JP]       
          */
-        index_t facet_begin( index_t facet_id ) const
+        index_t facet_begin( index_t facet_index ) const
         {
-            return mesh_.facet_begin( facet_id ) ;
+            return mesh_.facet_begin( facet_index ) ;
         }
         /*!
-         * @brief Get the last vertex index of a facet in a surface.
-         * @param[in] facet_id facet index
+         * @brief Index of the last corner of a facet.
+         * @todo Review: To remove? this intrinsically linked to the GEO::Mesh implementation [JP]
          */
         index_t facet_end( index_t facet_id ) const
         {
             return mesh_.facet_end( facet_id ) ;
         }
         /*!
-         * @brief Gets the next vertex index in the facet \param facet_id.
-         * @param[in] facet_id facet index
-         * @param[in] vertex_id current index
+         * @brief Gets the next vertex index in a facet.
          */
         index_t next_facet_vertex_index(
             index_t facet_index,
@@ -915,9 +920,7 @@ namespace RINGMesh {
             return mesh_.next_facet_vertex( facet_index, vertex_index ) ;
         }
         /*!
-         * @brief Gets the previous vertex index in the facet \param facet_id.
-         * @param[in] facet_id facet index
-         * @param[in] vertex_id current index
+         * @brief Gets the previous vertex index in a facet.
          */
         index_t prev_facet_vertex_index(
             index_t facet_index,
@@ -928,11 +931,8 @@ namespace RINGMesh {
             return mesh_.prev_facet_vertex( facet_index, vertex_index ) ;
         }
         /*!
-         * @brief Gets an adjacent facet index by facet index and local edge index.
-         * @param[in] facet_id the facet index.
-         * @param[in] edge_id the local edge index in \param facet_id.
-         * @return the global facet index adjacent to the \param edge_id of the facet \param facet_id.
-         * @precondition  \param edge_id < number of edge of the facet \param facet_id.
+         * @brief Gets the facet adjacent along an edge of a facet.
+         * @param edge_index in the facet
          */
         index_t facet_adjacent_index( index_t facet_index, index_t edge_index ) const
         {
@@ -954,9 +954,8 @@ namespace RINGMesh {
             index_t& next_e ) const ;
 
         /*!
-         * @brief Get the local vertex index in the facet /param facet_index from its index in the Surface /param surface_vertex_index
-         * @param[in] facet_index Index of the facet
-         * @param[in] surface_vertex_index Index of the vertex in the surface
+         * @brief Get the vertex index in a facet @param facet_index from its 
+         * index in the Surface @param surface_vertex_index
          * @return NO_ID or index of the vertex in the facet
          */
         index_t vertex_index_in_facet(
@@ -1019,8 +1018,6 @@ namespace RINGMesh {
          * @{
          */
         /*!
-         * Get the facet normal
-         * @param[in] f Facet index
          * @return Normal to the facet
          */
         vec3 facet_normal( index_t facet_index ) const
@@ -1029,13 +1026,10 @@ namespace RINGMesh {
             return mesh_.facet_normal( facet_index ) ;
         }
         /*!
-         * Computes the Mesh facet barycenter
-         * @param[in] facet_id the facet index in the cell
-         * @return the facet center
+         * @return Facet barycenter.
          */
         virtual vec3 mesh_element_center( index_t facet_index ) const
-        {
-            ringmesh_assert( facet_index < nb_mesh_elements() ) ;
+        {            ringmesh_assert( facet_index < nb_mesh_elements() ) ;
             return mesh_.facet_barycenter( facet_index ) ;
         }
         bool facet_is_triangle( index_t facet_index ) const
@@ -1045,9 +1039,7 @@ namespace RINGMesh {
         }
 
         /*!
-         * Computes the Mesh facet area
-         * @param[in] facet_id the facet index
-         * @return the facet area
+         * @return Area of a facet.
          */
         virtual double mesh_element_size( index_t facet_index ) const
         {
@@ -1057,20 +1049,20 @@ namespace RINGMesh {
         index_t closest_vertex_in_facet(
             index_t facet_index,
             const vec3& to_point ) const ;
-        /*!
-         * @return true if the edge starting at the vertex \param v of the facet \param f is on the Surface Border.
+        /*! 
+         * Is the edge starting the given vertex of the facet on a border of the Surface?
          */
-        bool is_on_border( index_t f, index_t v ) const
+        bool is_on_border( index_t facet_index, index_t vertex_index ) const
         {
-            return facet_adjacent_index( f, v ) == GEO::NO_CELL ;
+            return facet_adjacent_index( facet_index, vertex_index ) == NO_ID ;
         }
         /*!
-         * @return true if on edge of the facet \param f is on the Surface border.
+         * Is one of the edges of the facet on the border of the surface?
          */
-        bool is_on_border( index_t f ) const
+        bool is_on_border( index_t facet_index ) const
         {
-            for( index_t adj = 0; adj < mesh_.nb_facet_vertices( f ); adj++ ) {
-                if( is_on_border( f, adj ) ) {
+            for( index_t v = 0; v < mesh_.nb_facet_vertices( facet_index ); v++ ) {
+                if( is_on_border( facet_index, v ) ) {
                     return true ;
                 }
             }
@@ -1080,24 +1072,25 @@ namespace RINGMesh {
          */
     private:
         virtual bool is_mesh_valid() const ;
-
     } ;
 
     /*!
      * @brief A GeoModelEntity of type REGION
      *
-     * @details The Region can be defined only defined by its boundary
-     * Surfaces. Its volumetric mesh is optional.
+     * @details A Region a volumetric connected component of the model defined
+     * by a set of surfaces.
+     * The Region can be only defined by its boundary Surfaces. 
+     * Its volumetric mesh is optional.
      */
     class RINGMESH_API Region: public GeoModelMeshEntity {
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
+    
     public:
         Region( const GeoModel& model, index_t id )
             : GeoModelMeshEntity( model, REGION, id )
         {
         }
-
         Region(
             const GeoModel& model,
             index_t id,
@@ -1106,7 +1099,6 @@ namespace RINGMesh {
             : GeoModelMeshEntity( model, REGION, id, name, geological_feature )
         {
         }
-
         ~Region()
         {
         }
@@ -1167,7 +1159,6 @@ namespace RINGMesh {
         }
         /*!
          * Get the number of vertex in the cell \param cell_index of the Region.
-         *
          */
         virtual index_t nb_mesh_element_vertices( index_t cell_index ) const
         {
@@ -1175,10 +1166,8 @@ namespace RINGMesh {
             return mesh_.nb_cell_vertices( cell_index ) ;
         }
         /*!
-         * @brief Get the index of a vertex in the Region from the vertex index \param vertex_index
-         * in a given cell \param cell_index.
+         * @brief Index of a vertex in the Region from its index in a cell
          */
-
         virtual index_t mesh_element_vertex_index(
             index_t cell_index,
             index_t vertex_index ) const
@@ -1207,7 +1196,6 @@ namespace RINGMesh {
             ringmesh_assert( vertex_index < nb_mesh_element_vertices( cell_index ) ) ;
             return mesh_.cell_facet_vertex( cell_index, facet_index, vertex_index ) ;
         }
-
         index_t cell_adjacent_index( index_t cell_index, index_t facet_index ) const
         {
             ringmesh_assert( cell_index < nb_mesh_elements() ) ;
@@ -1244,7 +1232,7 @@ namespace RINGMesh {
         }
 
         /*!
-         * @brief Gets the volume of the cell \param cell_index.
+         * @brief Volume of a cell
          */
         virtual double mesh_element_size( index_t cell_index ) const
         {
@@ -1256,7 +1244,6 @@ namespace RINGMesh {
         virtual double size() const
         {
             double result = 0. ;
-            // Compute the volume if this is a region
             for( index_t i = 0; i < nb_boundaries(); i++ ) {
                 const Surface& surface = dynamic_cast< const Surface& >( boundary(
                     i ) ) ;

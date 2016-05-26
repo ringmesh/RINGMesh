@@ -63,8 +63,8 @@ namespace RINGMesh {
     class RINGMESH_API Mesh {
     ringmesh_disable_copy( Mesh ) ;
         friend class MeshBuilder ;
+    
     public:
-
         /*!
          * @brief Mesh constructor.
          * @param[in] dimension dimension of the vertices.
@@ -127,7 +127,7 @@ namespace RINGMesh {
 
         /*!
          * get access to GEO::MESH... only for GFX..
-         *TODO remove this function as soon as the GEO::MeshGFX is encapsulated
+         * @todo Remove this function as soon as the GEO::MeshGFX is encapsulated
          */
         const GEO::Mesh& gfx_mesh() const
         {
@@ -1010,7 +1010,6 @@ namespace RINGMesh {
 
     private:
         Mesh& mesh_ ;
-
     } ;
 }
 
