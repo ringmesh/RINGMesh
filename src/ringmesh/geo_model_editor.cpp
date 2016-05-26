@@ -351,7 +351,7 @@ namespace RINGMesh {
      *
      * @pre Assert that the entity to remove is one region that has only one neighbor
      *
-     * @todo Finish to implement it for any kind of BME. BC must continue this work.
+     * @todo Finish to implement it for any kind of GME. BC must continue this work.
      *
      * @todo Review : Error in the comments [JP]
      */
@@ -492,7 +492,7 @@ namespace RINGMesh {
         for( index_t i = 0; i < to_erase.size(); ++i ) {
             GME::TYPE T = static_cast< GME::TYPE >( i ) ;
 
-            // Update all indices stored by the BME of that type 
+            // Update all indices stored by the GME of that type 
             ringmesh_assert(
                 model_.nb_entities( T ) == to_erase[i].size() - nb_removed[i] ) ;
             for( index_t j = 0; j < model_.nb_entities( T ); ++j ) {

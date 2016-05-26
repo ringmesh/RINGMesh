@@ -112,7 +112,7 @@ namespace RINGMesh {
         /*!
          * @brief To use when building the model by first adding its vertices
          * @warning The client is responsible for setting the mapping between the points
-         * of the BME and the unique vertex
+         * of the GME and the unique vertex
          */
         index_t add_vertex( const vec3& point ) ;
 

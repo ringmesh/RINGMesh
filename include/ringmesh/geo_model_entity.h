@@ -149,7 +149,7 @@ namespace RINGMesh {
                 return type == rhs.type && index == rhs.index ;
             }
             /*!
-             * @brief Sort BME identifiers
+             * @brief Sort GME identifiers
              * @details Compare first types, then compare indices, 
              *          beginning with NO_ID indices. 
              * @note In a sorted vector v of gme_t one can find the first surface with

@@ -246,12 +246,12 @@ namespace RINGMesh {
 
     private:
         /*!
-         * @brief Convert a global BME index into a typed index
+         * @brief Convert a global GME index into a typed index
          * @details Relies on the nb_entities_per_type_ vector that
          *          must be up to date at all times
          *          See the GeoModelBuilder::end_model() function
-         * @param[in] global A BME id of TYPE - ALL_TYPES
-         * @return A BME id of an entity of the model, or a invalid one if nothing found
+         * @param[in] global A GME id of TYPE - ALL_TYPES
+         * @return A GME id of an entity of the model, or a invalid one if nothing found
          */
         inline GME::gme_t global_to_typed_id( const GME::gme_t& global ) const
         {
@@ -360,7 +360,7 @@ namespace RINGMesh {
 
         /*!
          * @brief Clears and fills the model nb_entities_per_type_ vector
-         * @details See global entity access with GeoModel::entity( BME::TYPE, index_t )
+         * @details See global entity access with GeoModel::entity( GME::TYPE, index_t )
          */
         void init_global_model_entity_access()
         {
