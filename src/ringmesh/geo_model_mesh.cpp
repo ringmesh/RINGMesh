@@ -205,9 +205,9 @@ namespace RINGMesh {
                 GEO::Attribute< index_t > att( E.vertex_attribute_manager(),
                     GeoModelMeshEntity::model_vertex_id_att_name() ) ;
                 for( index_t v = 0; v < E.nb_vertices(); v++ ) {
-                    // Global index stored at BME level
+                    // Global index stored at GME level
                     att[v] = count ;
-                    // Index in the BME stored at global level
+                    // Index in the GME stored at global level
                     gme_vertices_[count].push_back( GMEVertex( E.gme_id(), v ) ) ;
                     // Global vertex index increment
                     count++ ;
@@ -351,11 +351,11 @@ namespace RINGMesh {
             std::vector< GMEVertex >& related = gme_vertices_[v] ;
             index_t nb_invalid = 0 ;
 
-            // Get the invalid BMEVertices for the current global vertex
+            // Get the invalid GMEVertices for the current global vertex
             for( index_t i = 0; i < related.size(); ++i ) {
 
                 if( !related[i].is_defined() ) {
-                    // To ease removal of invalid BMEVertices
+                    // To ease removal of invalid GMEVertices
                     related[i] = GMEVertex() ;
                     nb_invalid++ ;
                 }
