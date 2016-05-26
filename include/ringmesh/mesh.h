@@ -50,7 +50,6 @@
 
 namespace RINGMesh {
     class GeoModel ;
-//    class ColocaterANN ;
 }
 
 namespace RINGMesh {
@@ -414,14 +413,14 @@ namespace RINGMesh {
          * @param[in] facet_id index of the facet in the cell \param cell_id
          * @return the global facet index.
          */
-        index_t cell_facet(index_t cell_id, index_t facet_id) const {
-            return mesh_->cells.facet(cell_id,facet_id);
+        index_t cell_facet( index_t cell_id, index_t facet_id ) const {
+            return mesh_->cells.facet( cell_id,facet_id ) ;
         }
         /*!
          * Get the number of corners of all cells
          */
-        index_t cell_corner_vertex(index_t corner_id) const {
-            return mesh_->cell_corners.vertex(corner_id) ;
+        index_t cell_corner_vertex( index_t corner_id ) const {
+            return mesh_->cell_corners.vertex( corner_id ) ;
         }
         /*!
          * @brief Gets the number of facet in a cell
@@ -468,7 +467,7 @@ namespace RINGMesh {
             return mesh_->cells.nb() ;
         }
         index_t nb_cell_corners()const {
-            return mesh_->cell_corners.nb();
+            return mesh_->cell_corners.nb() ;
         }
         /*!
          * @return the index of the adjacent cell of \param cell_id along the facet \param facet_id
@@ -547,18 +546,18 @@ namespace RINGMesh {
         }
 
         index_t cell_begin(index_t cell_id )const{
-            return mesh_->cells.corners_begin( cell_id );
+            return mesh_->cells.corners_begin( cell_id ) ;
         }
-        index_t cell_end(index_t cell_id )const{
-            return mesh_->cells.corners_end( cell_id );
+        index_t cell_end( index_t cell_id )const{
+            return mesh_->cells.corners_end( cell_id ) ;
         }
-        index_t find_cell_corner(index_t cell_id, index_t vertex_id) const {
-            for (index_t v=0 ; v <nb_cell_vertices(cell_id) ; ++v){
-                if(cell_vertex(cell_id, v) == vertex_id ){
-                    return cell_begin(cell_id)+v ;
+        index_t find_cell_corner( index_t cell_id, index_t vertex_id ) const {
+            for( index_t v=0 ; v < nb_cell_vertices( cell_id ) ; ++v ){
+                if( cell_vertex( cell_id, v ) == vertex_id ){
+                    return cell_begin( cell_id ) + v ;
                 }
             }
-            return NO_ID;
+            return NO_ID ;
         }
         /*!
          * @}
@@ -582,7 +581,7 @@ namespace RINGMesh {
             : mesh_( mesh )
         {
         }
-        ~MeshBuilder() {};
+        ~MeshBuilder() {} ;
 
         void load_mesh(
             const std::string& filename,
@@ -772,8 +771,8 @@ namespace RINGMesh {
          * @param[in] keep_memory if true, then memory is kept and can be reused
          * by subsequent mesh entity creations.
          */
-        void clear_edges(bool keep_attributes/*=true*/, bool keep_memory/*=false*/){
-            mesh_.mesh_->edges.clear( keep_attributes, keep_memory);
+        void clear_edges( bool keep_attributes, bool keep_memory ) {
+            mesh_.mesh_->edges.clear( keep_attributes, keep_memory ) ;
             delete_edge_colocater() ;
         }
         /*!
@@ -815,8 +814,8 @@ namespace RINGMesh {
          *  contains the vertices
          * \return the index of the created facet
          */
-        index_t create_facet_polygon(const GEO::vector<index_t> & vertices){
-            return mesh_.mesh_->facets.create_polygon(vertices);
+        index_t create_facet_polygon( const GEO::vector< index_t >& vertices ) {
+            return mesh_.mesh_->facets.create_polygon( vertices ) ;
         }
 
         /*!
@@ -824,9 +823,9 @@ namespace RINGMesh {
          * \param[in] nb_triangles number of triangles to create
          * \return the index of the first triangle
          */
-       index_t create_facet_triangles(index_t nb_triangles)
+       index_t create_facet_triangles( index_t nb_triangles )
        {
-           return mesh_.mesh_->facets.create_triangles(nb_triangles);
+           return mesh_.mesh_->facets.create_triangles( nb_triangles ) ;
 
        }
        /*!
@@ -834,9 +833,9 @@ namespace RINGMesh {
         * \param[in] nb_quads number of quads to create
         * \return the index of the first quad
         */
-       index_t create_facet_quads(index_t nb_quads)
+       index_t create_facet_quads( index_t nb_quads )
        {
-           return mesh_.mesh_->facets.create_quads(nb_quads);
+           return mesh_.mesh_->facets.create_quads( nb_quads ) ;
        }
         /*!
          * @brief Sets a vertex of a facet by local vertex index.
@@ -906,14 +905,14 @@ namespace RINGMesh {
          * @param[in] keep_memory if true, then memory is kept and can be reused
          * by subsequent mesh entity creations.
          */
-        void clear_facets(bool keep_attributes/*=true*/, bool keep_memory/*=false*/){
-            mesh_.mesh_->facets.clear( keep_attributes, keep_memory);
+        void clear_facets( bool keep_attributes, bool keep_memory ) {
+            mesh_.mesh_->facets.clear( keep_attributes, keep_memory ) ;
         }
-        void connect_facets(){
-            mesh_.mesh_->facets.connect();
+        void connect_facets() {
+            mesh_.mesh_->facets.connect() ;
         }
-        void permute_facets(GEO::vector<index_t>& permutation){
-            mesh_.mesh_->facets.permute_elements(permutation);
+        void permute_facets( GEO::vector<index_t>& permutation ) {
+            mesh_.mesh_->facets.permute_elements( permutation ) ;
         }
 
         /*!@}
@@ -967,8 +966,8 @@ namespace RINGMesh {
          * \param[in] corner_index the corner, in 0..nb()-1
          * \param[in] vertex_index specifies the vertex that corner \p c is incident to
          */
-        void set_cell_corner_vertex_index(index_t corner_index,index_t vertex_index){
-            mesh_.mesh_->cell_corners.set_vertex(corner_index,vertex_index);
+        void set_cell_corner_vertex_index( index_t corner_index, index_t vertex_index ) {
+            mesh_.mesh_->cell_corners.set_vertex( corner_index, vertex_index ) ;
         }
         /*!
          * @brief Retrieve the adjacencies
@@ -988,7 +987,7 @@ namespace RINGMesh {
          *  data = data2 ;
          *  </code>
          */
-        void cells_permute_elements( GEO::vector< index_t > & permutation )
+        void cells_permute_elements( GEO::vector< index_t >& permutation )
         {
             mesh_.mesh_->cells.permute_elements( permutation ) ;
         }
@@ -999,11 +998,11 @@ namespace RINGMesh {
          * @param[in] keep_memory if true, then memory is kept and can be reused
          * by subsequent mesh entity creations.
          */
-        void clear_cells(bool keep_attributes/*=true*/, bool keep_memory/*=false*/){
-            mesh_.mesh_->cells.clear( keep_attributes, keep_memory);
+        void clear_cells( bool keep_attributes, bool keep_memory ) {
+            mesh_.mesh_->cells.clear( keep_attributes, keep_memory ) ;
         }
-        void permute_cells(GEO::vector<index_t>& permutation){
-            mesh_.mesh_->cells.permute_elements(permutation);
+        void permute_cells( GEO::vector<index_t>& permutation ) {
+            mesh_.mesh_->cells.permute_elements( permutation ) ;
         }
         /*!
          * @}

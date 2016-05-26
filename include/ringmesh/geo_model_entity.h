@@ -702,7 +702,7 @@ namespace RINGMesh {
         /*!
          * @return 1 the number of vertices of the Corner
          */
-        virtual index_t nb_mesh_element_vertices( index_t /*mesh_element_index*/) const
+        virtual index_t nb_mesh_element_vertices( index_t ) const
         {
             return 1 ;
         }
@@ -711,7 +711,7 @@ namespace RINGMesh {
          * \name Geometrical request on Corner
          * @{
          */
-        virtual double mesh_element_size( index_t /*mesh_element_index*/) const
+        virtual double mesh_element_size( index_t ) const
         {
             return 0.0 ;
         }
@@ -719,7 +719,7 @@ namespace RINGMesh {
         {
             return 0.0 ;
         }
-        virtual vec3 mesh_element_center( index_t /*mesh_element_index*/) const
+        virtual vec3 mesh_element_center( index_t ) const
         {
             return vertex( 0 ) ;
         }
@@ -815,7 +815,7 @@ namespace RINGMesh {
     /*!
      * @brief A GeoModelEntity of type SURFACE
      *
-     * @details One 2-manifold connected component .
+     * @details One 2-manifold connected component.
      */
     class RINGMESH_API Surface: public GeoModelMeshEntity {
         friend class GeoModelEditor ;
@@ -932,7 +932,7 @@ namespace RINGMesh {
          * @param[in] facet_id the facet index.
          * @param[in] edge_id the local edge index in \param facet_id.
          * @return the global facet index adjacent to the \param edge_id of the facet \param facet_id.
-         * @precondition  \param edge_id < number of edge of the facet \param facet_id .
+         * @precondition  \param edge_id < number of edge of the facet \param facet_id.
          */
         index_t facet_adjacent_index( index_t facet_index, index_t edge_index ) const
         {
@@ -1115,7 +1115,6 @@ namespace RINGMesh {
         {
             return mesh_.nb_cells() > 0 ;
         }
-        //void tetrahedralize()
         bool is_simplicial() const
         {
             return mesh_.cells_are_simplicies() ;

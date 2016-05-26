@@ -268,7 +268,7 @@ namespace RINGMesh {
                 index_t surface_id,
                 const std::vector< index_t >& facets_id,
                 const std::vector< index_t >& edges_id,
-                const std::vector< index_t >& adjacent_triangles );
+                const std::vector< index_t >& adjacent_triangles ) ;
 
     protected:
         /*! Entities to compute from the available entities */
