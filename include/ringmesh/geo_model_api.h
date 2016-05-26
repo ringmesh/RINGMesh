@@ -109,7 +109,7 @@ namespace RINGMesh {
         index_t nb_entities = geomodel.nb_entities( geomodel_entity_type ) ;
         attributes.resize( nb_entities ) ;
         for( index_t i = 0; i < nb_entities; ++i ) {
-            const GeoModelMeshEntity& E = geomodel.mesh_entity( geomodel_entity_type, i );
+            const GeoModelMeshEntity& E = geomodel.mesh_entity( geomodel_entity_type, i ) ;
             GEO::AttributesManager& manager = E.facet_attribute_manager() ;
             attributes.bind_one_attribute( i, manager, attribute_name ) ;
         }

@@ -38,8 +38,6 @@
 
 #include <ringmesh/common.h>
 
-//#include <ringmesh/geo_model_entity.h>
-//#include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_builder.h>
 
 /*!
@@ -80,19 +78,19 @@ namespace RINGMesh {
         void mesh_detect_degenerate_edges(
             const Mesh& M,
             GEO::vector< index_t >& e_is_degenerate,
-            GEO::vector< index_t >& colocated_vertices );
+            GEO::vector< index_t >& colocated_vertices ) ;
         void mesh_detect_degenerate_facets(
             const Mesh& M,
             GEO::vector< index_t >& f_is_degenerate,
-            GEO::vector< index_t >& colocated_vertices );
+            GEO::vector< index_t >& colocated_vertices ) ;
         bool facet_is_degenerate(
             const Mesh& M,
             index_t f,
-            GEO::vector< index_t >& colocated_vertices );
+            GEO::vector< index_t >& colocated_vertices ) ;
 
-        index_t detect_degenerate_facets( Mesh& M );
+        index_t detect_degenerate_facets( Mesh& M ) ;
 
-        void remove_degenerate_facet_and_edges( std::set< gme_t >& to_remove );
+        void remove_degenerate_facet_and_edges( std::set< gme_t >& to_remove ) ;
 
 
         void remove_colocated_entity_vertices( std::set< gme_t >& to_remove ) ;

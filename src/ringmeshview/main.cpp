@@ -398,7 +398,7 @@ namespace {
                 float red = std::fmod( GEO::Numeric::random_float32(), 1 ) ;
                 float green = std::fmod( GEO::Numeric::random_float32(), 1 ) ;
                 float blue = std::fmod( GEO::Numeric::random_float32(), 1 ) ;
-                const GeoModelElement& cur_layer = GM.layer( l ) ;
+                const GeoModelEntity& cur_layer = GM.layer( l ) ;
                 for( index_t r = 0; r < cur_layer.nb_children(); ++r )
                     GM_gfx.set_cell_region_color( cur_layer.child( r ).index(), red,
                         green, blue ) ;

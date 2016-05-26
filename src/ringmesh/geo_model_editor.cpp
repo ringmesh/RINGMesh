@@ -76,7 +76,7 @@ namespace RINGMesh {
             model_.modifiable_entities( type ).push_back( E ) ;                
             return E->gme_id();
         } else {
-            ringmesh_assert_not_reached;
+            ringmesh_assert_not_reached ;
             return gme_t() ;
         }
     }

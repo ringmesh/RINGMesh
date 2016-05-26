@@ -59,8 +59,8 @@ namespace RINGMesh {
             // The root cause of the problem is the duplication of many things
             // in our GeoModel structure [JP]
             M.mesh.vertices.clear() ;
-            for(index_t i =0; i <= ColocaterANN::FACETS ;i++){
-                if (ann_[i]) {
+            for( index_t i = 0; i <= ColocaterANN::FACETS; i++ ) {
+                if( ann_[i] ) {
                     delete ann_[i] ;
                     ann_[i] = nil ;
                 }
@@ -88,8 +88,8 @@ namespace RINGMesh {
             // The root cause of the problem is the duplication of many things
             // in our GeoModel structure [JP]
             M.mesh.vertices.clear() ;
-            for(index_t i =0; i <= ColocaterANN::CELLS ;i++){
-                if (ann_[i]) {
+            for( index_t i = 0; i <= ColocaterANN::CELLS; i++ ) {
+                if( ann_[i] ) {
                     delete ann_[i] ;
                     ann_[i] = nil ;
                 }
