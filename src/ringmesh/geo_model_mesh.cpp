@@ -1243,7 +1243,7 @@ namespace RINGMesh {
     double GeoModelMeshCells::volume( index_t c ) const
     {
         test_and_initialize() ;
-        return RINGMesh::mesh_cell_volume( mesh_, c ) ;
+        return RINGMesh::mesh_cell_signed_volume( mesh_, c ) ;
     }
 
     /*******************************************************************************/
