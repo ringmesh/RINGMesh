@@ -144,6 +144,13 @@ namespace {
         }
     }
 
+    index_t count_nb_isolated_vertices( const GEO::Mesh& mesh )
+    {
+        std::vector< index_t > nb ;
+        count_vertex_occurences( mesh, nb ) ;
+        return static_cast< index_t >( std::count( nb.begin(), nb.end(), 0 ) ) ;
+    }
+
     bool check_mesh_element_vertices_are_different(
         std::vector< index_t >& vertices,
         std::vector< index_t >& vertices_global )
