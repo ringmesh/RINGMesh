@@ -141,6 +141,54 @@ int main( int argc, char** argv )
             out << new_line ;
         }
 
+        // The same but for volume
+
+        std::ofstream out2( "layer_volumes.csv" ) ;
+        out2.precision( 16 ) ;
+        if( out2.bad() ) {
+            throw RINGMeshException( "I/O",
+                "Error when opening the file: layer_volumes.csv" ) ;
+        }
+
+        out2 << "Layer name" ;
+        out2 << separator ;
+        out2 << "Layer id or region id" ;
+        out2 << separator ;
+        out2 << "volume (m3)" ;
+        out2 << new_line ;
+        out2 << new_line ;
+
+        for( index_t layer_itr = 0; layer_itr < geomodel.nb_layers();
+            ++layer_itr ) {
+
+            const GME& cur_layer = geomodel.layer( layer_itr ) ;
+            out2 << cur_layer.name() ;
+            out2 << separator ;
+            out2 << cur_layer.index() ;
+            out2 << new_line ;
+
+            double total_layer_volume = 0. ;
+            for( index_t child_itr = 0; child_itr < cur_layer.nb_children();
+                ++child_itr ) {
+                const Region& cur_region = geomodel.region(
+                    cur_layer.child( child_itr ).index() ) ;
+                double cur_volume = GEO::mesh_cells_volume( cur_region.mesh() ) ;
+                total_layer_volume += cur_volume ;
+
+                out2 << separator ; // first column is left empty
+                out2 << cur_region.index() ;
+                out2 << separator ;
+                out2 << cur_volume ;
+                out2 << new_line ;
+            }
+            out2 << separator ;
+            out2 << "all" ;
+            out2 << separator ;
+            out2 << total_layer_volume ;
+            out2 << new_line ;
+            out2 << new_line ;
+        }
+
     } catch( const RINGMeshException& e ) {
         GEO::Logger::err( e.category() ) << e.what() << std::endl ;
         return 1 ;
