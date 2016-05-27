@@ -43,24 +43,43 @@
  *
  */
 
-#ifndef __GEOGRAM_API_DEFS__
-#define __GEOGRAM_API_DEFS__
+#ifndef GEOGRAM_API_DEFS
+#define GEOGRAM_API_DEFS
 
 /**
  * \file geogram/api/defs.h
  * \brief Basic definitions for the Geogram C API
  */
 
+/*
+ * Deactivate warnings about documentation
+ * We do that, because CLANG's doxygen parser does not know
+ * some doxygen commands that we use (retval, copydoc) and
+ * generates many warnings for them...
+ */
+#if defined(__clang__)
+#pragma clang diagnostic ignored "-Wunknown-pragmas"
+#pragma clang diagnostic ignored "-Wdocumentation-unknown-command" 
+#endif
+
 /**
  * \brief Linkage declaration for geogram symbols.
  */
 
-#if defined(_MSC_VER) && defined(GEO_DYNAMIC_LIBS)
-#define GEO_IMPORT __declspec(dllimport) 
-#define GEO_EXPORT __declspec(dllexport) 
+#if defined(GEO_DYNAMIC_LIBS)
+   #if defined(_MSC_VER)
+      #define GEO_IMPORT __declspec(dllimport) 
+      #define GEO_EXPORT __declspec(dllexport) 
+   #elif defined(__GNUC__)
+      #define GEO_IMPORT  
+      #define GEO_EXPORT __attribute__ ((visibility("default")))
+   #else
+      #define GEO_IMPORT
+      #define GEO_EXPORT
+   #endif
 #else
-#define GEO_IMPORT
-#define GEO_EXPORT
+   #define GEO_IMPORT
+   #define GEO_EXPORT
 #endif
 
 /*

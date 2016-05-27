@@ -243,6 +243,9 @@ namespace {
         declare_arg(
             "post:isect", false, "Tentatively remove self-intersections"
         );
+        declare_arg(
+            "post:compute_normals", false, "Compute normals"
+        );
     }
 
     /**

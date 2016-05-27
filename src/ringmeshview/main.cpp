@@ -84,9 +84,7 @@
 #include <algorithm>
 
 #include <geogram_gfx/basic/GLSL.h>
-#include <geogram_gfx/glut_viewer/glut_viewer.h>
-#include <geogram_gfx/third_party/freeglut/glut.h>
-#include <geogram_gfx/third_party/freeglut/freeglut_ext.h>
+#include <geogram_gfx/glup_viewer/glup_viewer.h>
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/command_line_args.h>
 #include <geogram/basic/file_system.h>
@@ -118,7 +116,7 @@ namespace {
     bool show_colored_layers = false ;
     bool show_points = false ;
 
-    double shrink = 0.0 ;
+    float shrink = 0.0 ;
     bool mesh_visible = true ;
     bool meshed_regions = false ;
 
@@ -163,37 +161,19 @@ namespace {
     }
 
     /**
-     * \brief Zooms in.
-     * \details Zooming factor is 1.1x.
-     */
-    void zoom_in()
-    {
-        *glut_viewer_float_ptr( GLUT_VIEWER_ZOOM ) *= 1.1f ;
-    }
-
-    /**
-     * \brief Zooms out.
-     * \details De-zooming factor is (1/1.1)x.
-     */
-    void zoom_out()
-    {
-        *glut_viewer_float_ptr( GLUT_VIEWER_ZOOM ) /= 1.1f ;
-    }
-
-    /**
      * \brief Toggles black or white background color.
      */
     void toggle_background()
     {
         white_bg = !white_bg ;
         if( white_bg ) {
-            glut_viewer_set_background_color( 1.0, 1.0, 1.0 ) ;
+            glup_viewer_set_background_color( 1.0, 1.0, 1.0 ) ;
             GM_gfx.set_edge_lines_color( 0.0, 0.0, 0.0 ) ;
             GM_gfx.set_mesh_surfaces_color( 0.0, 0.0, 0.0 ) ;
             GM_gfx.set_cell_mesh_regions_color( 0.0, 0.0, 0.0 ) ;
             GM_gfx.set_edge_regions_color( 0.0, 0.0, 0.0 ) ;
         } else {
-            glut_viewer_set_background_color( 0.0, 0.0, 0.0 ) ;
+            glup_viewer_set_background_color( 0.0, 0.0, 0.0 ) ;
             GM_gfx.set_edge_lines_color( 1.0, 1.0, 1.0 ) ;
             GM_gfx.set_mesh_surfaces_color( 1.0, 1.0, 1.0 ) ;
             GM_gfx.set_cell_mesh_regions_color( 1.0, 1.0, 1.0 ) ;
@@ -217,7 +197,6 @@ namespace {
     void inc_shrink()
     {
         shrink = std::min( shrink + 0.1, 1. ) ;
-        GM_gfx.set_cell_regions_shrink( shrink ) ;
     }
 
     /**
@@ -226,7 +205,6 @@ namespace {
     void dec_shrink()
     {
         shrink = std::max( shrink - 0.1, 0. ) ;
-        GM_gfx.set_cell_regions_shrink( shrink ) ;
     }
 
     /**
@@ -245,17 +223,15 @@ namespace {
     {
         GEO::Graphics::initialize() ;
 
-        glut_viewer_set_background_color( 1.0, 1.0, 1.0 ) ;
-        glut_viewer_add_toggle( 'T',
-            glut_viewer_is_enabled_ptr( GLUT_VIEWER_TWEAKBARS ),
+        glup_viewer_disable( GLUP_VIEWER_BACKGROUND ) ;
+        glup_viewer_set_background_color( 1.0, 1.0, 1.0 ) ;
+        glup_viewer_add_toggle( 'T',
+            glup_viewer_is_enabled_ptr( GLUP_VIEWER_TWEAKBARS ),
             "Toggle tweakbars" ) ;
-        glut_viewer_add_key_func( 'b', toggle_background, "Toggle background" ) ;
-        glut_viewer_add_toggle( 'B', &show_borders, "borders" ) ;
-        glut_viewer_add_key_func( 'z', zoom_in, "Zoom in" ) ;
-        glut_viewer_add_key_func( 'Z', zoom_out, "Zoom out" ) ;
-        glut_viewer_disable( GLUT_VIEWER_TWEAKBARS ) ;
-        glut_viewer_disable( GLUT_VIEWER_BACKGROUND ) ;
-        glut_viewer_add_key_func( 'm', toggle_mesh, "mesh" ) ;
+        glup_viewer_add_key_func( 'b', toggle_background, "Toggle background" ) ;
+        glup_viewer_add_toggle( 'B', &show_borders, "borders" ) ;
+        glup_viewer_enable( GLUP_VIEWER_TWEAKBARS ) ;
+        glup_viewer_add_key_func( 'm', toggle_mesh, "mesh" ) ;
 
         GM_gfx.set_geo_model( GM ) ;
     }
@@ -266,12 +242,6 @@ namespace {
      */
     void display()
     {
-
-        GLfloat shininess = 20.0f ;
-        glMaterialfv( GL_FRONT_AND_BACK, GL_SHININESS, &shininess ) ;
-        static float spec[4] = { 0.6f, 0.6f, 0.6f, 1.0f } ;
-        glMaterialfv( GL_FRONT_AND_BACK, GL_SPECULAR, spec ) ;
-
         if( white_bg ) {
             GM_gfx.set_surfaces_color( 0.9f, 0.9f, 0.9f ) ;
 
@@ -306,7 +276,9 @@ namespace {
 
         if( show_volume || show_wells ) {
             GM_gfx.draw_regions() ;
+            GM_gfx.set_cell_regions_shrink( shrink ) ;
         }
+
     }
 
     /**
@@ -356,7 +328,7 @@ namespace {
         }
         get_bbox( GM, xyzmin, xyzmax ) ;
 
-        glut_viewer_set_region_of_interest( float( xyzmin[0] ), float( xyzmin[1] ),
+        glup_viewer_set_region_of_interest( float( xyzmin[0] ), float( xyzmin[1] ),
             float( xyzmin[2] ), float( xyzmax[0] ), float( xyzmax[1] ),
             float( xyzmax[2] ) ) ;
     }
@@ -407,6 +379,46 @@ namespace {
             GM_gfx.set_cell_regions_color( 0.9f, 0.9f, 0.9f ) ;
         }
     }
+    /**
+     * \brief Drawns and manages the graphic user interface.
+     */
+    static void overlay() {
+        ImGui::SetNextWindowPos(ImVec2(20, 20), ImGuiSetCond_Once);
+        ImGui::SetNextWindowSize(ImVec2(140, 400), ImGuiSetCond_Once);
+
+        ImGui::Begin("Tweaks [T]");
+
+        ImGui::Separator() ;
+        ImGui::Checkbox( "Vertices [p]", &show_points ) ;
+        ImGui::Checkbox( "Mesh [m]", &mesh_visible ) ;
+        ImGui::Checkbox( "VOI [V]", &show_voi ) ;
+
+        ImGui::Separator() ;
+        ImGui::Checkbox( "Corners [c]", &show_corners ) ;
+        ImGui::Checkbox( "Lines [e]", &show_lines ) ;
+        ImGui::Checkbox( "Surfaces [s]", &show_surface ) ;
+        ImGui::Checkbox( "Volumes [v]", &show_volume ) ;
+
+        ImGui::Separator();
+        ImGui::Checkbox(
+            "Clipping [F1]", (bool*)glup_viewer_is_enabled_ptr(GLUP_VIEWER_CLIP)
+        );
+        if(glup_viewer_is_enabled(GLUP_VIEWER_CLIP)) {
+            ImGui::Checkbox(
+                "edit [F2]",
+                (bool*)glup_viewer_is_enabled_ptr(GLUP_VIEWER_EDIT_CLIP)
+            );
+            ImGui::Checkbox(
+                "fixed [F3]",
+                (bool*)glup_viewer_is_enabled_ptr(GLUP_VIEWER_FIXED_CLIP)
+            );
+        }
+        if( show_volume ) {
+            ImGui::SliderFloat( "shrk.", &shrink, 0.0f, 1.0f, "%.2f" ) ;
+        }
+
+        ImGui::End();
+    }
 
 }
 
@@ -449,39 +461,32 @@ int main( int argc, char** argv )
             toggle_volume() ;
         }
 
-        glut_viewer_set_window_title( (char*) "RINGMeshView" ) ;
-        glut_viewer_set_init_func( init ) ;
-        glut_viewer_set_display_func( display ) ;
-        glut_viewer_add_toggle( 'c', &show_corners, "corners" ) ;
-        glut_viewer_add_toggle( 'e', &show_lines, "lines" ) ;
-        glut_viewer_add_toggle( 's', &show_surface, "surface" ) ;
-        glut_viewer_add_key_func( 'r', &toggle_colored_regions,
+        glup_viewer_set_window_title( (char*) "RINGMeshView" ) ;
+        glup_viewer_set_init_func( init ) ;
+        glup_viewer_set_display_func( display ) ;
+        glup_viewer_set_overlay_func( overlay ) ;
+        glup_viewer_add_toggle( 'c', &show_corners, "corners" ) ;
+        glup_viewer_add_toggle( 'e', &show_lines, "lines" ) ;
+        glup_viewer_add_toggle( 's', &show_surface, "surface" ) ;
+        glup_viewer_add_key_func( 'r', &toggle_colored_regions,
             "toggle colored regions" ) ;
-        glut_viewer_add_key_func( 'R', &toggle_colored_layers,
+        glup_viewer_add_key_func( 'R', &toggle_colored_layers,
             "toggle colored layers" ) ;
-        glut_viewer_add_key_func( 'p', &toggle_points, "toggle points" ) ;
-        glut_viewer_add_key_func( 'v', &toggle_volume, "toggle volume" ) ;
-        glut_viewer_add_key_func( 'w', &toggle_wells, "toggle wells" ) ;
-        glut_viewer_add_key_func( 'V', toggle_voi, "toggle VOI" ) ;
-        glut_viewer_add_key_func( 'L', toggle_lighting, "toggle lighting" ) ;
-        glut_viewer_add_key_func( 'X', dec_shrink, "unshrink cells" ) ;
-        glut_viewer_add_key_func( 'x', inc_shrink, "shrink cells" ) ;
-        glut_viewer_add_key_func( 'C', toggle_colored_cells,
+        glup_viewer_add_key_func( 'p', &toggle_points, "toggle points" ) ;
+        glup_viewer_add_key_func( 'v', &toggle_volume, "toggle volume" ) ;
+        glup_viewer_add_key_func( 'w', &toggle_wells, "toggle wells" ) ;
+        glup_viewer_add_key_func( 'V', toggle_voi, "toggle VOI" ) ;
+        glup_viewer_add_key_func( 'L', toggle_lighting, "toggle lighting" ) ;
+        glup_viewer_add_key_func( 'X', dec_shrink, "unshrink cells" ) ;
+        glup_viewer_add_key_func( 'x', inc_shrink, "shrink cells" ) ;
+        glup_viewer_add_key_func( 'C', toggle_colored_cells,
             "toggle colored cells" ) ;
 
         if( GEO::CmdLine::get_arg_bool( "gfx:full_screen" ) ) {
-            glut_viewer_enable( GLUT_VIEWER_FULL_SCREEN ) ;
+            glup_viewer_enable( GLUP_VIEWER_FULL_SCREEN ) ;
         }
 
-//    GM_gfx.set_points_color( 0.0, 1.0, 0.0 ) ;
-
-        glut_viewer_main_loop( argc, argv ) ;
-
-        // Note: when 'q' is pressed, exit() is called
-        // because there is no simple way of exiting from
-        // glut's event loop, therefore this line is not
-        // reached and memory is not properly freed on exit.
-        // TODO: add a function in freeglut to exit event loop.
+        glup_viewer_main_loop( argc, argv ) ;
 
     } catch( const RINGMeshException& e ) {
         GEO::Logger::err( e.category() ) << e.what() << std::endl ;

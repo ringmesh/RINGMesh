@@ -46,6 +46,10 @@
 #include <geogram/basic/numeric.h>
 #include <stdlib.h>
 
+#ifdef GEO_COMPILER_EMSCRIPTEN
+#pragma GCC diagnostic ignored "-Wc++11-long-long"
+#endif
+
 namespace GEO {
 
     namespace Numeric {

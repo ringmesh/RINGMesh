@@ -70,7 +70,7 @@ namespace GEO {
                     ppp_to_id_[K] = result;
                     return result;
                 }
-            } break;
+            } 
             case 2:
             {
                 index_t f = sym.boundary_facet(0);
@@ -91,7 +91,7 @@ namespace GEO {
                     ppm_to_id_[K] = result;
                     return result;
                 }
-            } break;
+            } 
             case 1:
             {
                 index_t bv1, bv2;
@@ -112,7 +112,7 @@ namespace GEO {
                     pmm_to_id_[K] = result;
                     return result;
                 }
-            } break;
+            } 
             case 0:
             {
                 index_t bv = sym.get_boundary_vertex();
@@ -123,11 +123,10 @@ namespace GEO {
                     bv_to_id_[bv] = signed_index_t(new_vertex());
                 }
                 return index_t(bv_to_id_[bv]);
-            } break;
+            } 
             default:
                 geo_assert_not_reached;
         }
-        return 0;
     }
 }
 

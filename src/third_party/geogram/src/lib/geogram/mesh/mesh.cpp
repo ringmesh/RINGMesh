@@ -1909,7 +1909,6 @@ namespace GEO {
         default:
             geo_assert_not_reached;
         }
-        return *(MeshSubElementsStore*)nil;
     }
 
     const MeshSubElementsStore& Mesh::get_subelements_by_index(
@@ -1933,7 +1932,6 @@ namespace GEO {
         default:
             geo_assert_not_reached;
         }
-        return *(MeshSubElementsStore*)nil;
     }
     
     MeshSubElementsStore& Mesh::get_subelements_by_type(
@@ -1954,7 +1952,9 @@ namespace GEO {
             return cell_corners;
         case MESH_CELL_FACETS:
             return cell_facets;
-        default:
+        case MESH_NONE:
+        case MESH_ALL_ELEMENTS:
+        case MESH_ALL_SUBELEMENTS:
             geo_assert_not_reached;
         }
         return *(MeshSubElementsStore*)nil;
@@ -1978,32 +1978,44 @@ namespace GEO {
             return cell_corners;
         case MESH_CELL_FACETS:
             return cell_facets;
-        default:
+        case MESH_NONE:
+        case MESH_ALL_ELEMENTS:
+        case MESH_ALL_SUBELEMENTS:
             geo_assert_not_reached;
         }
         return *(MeshSubElementsStore*)nil;
     }
     
     std::string Mesh::subelements_type_to_name(MeshElementsFlags what) {
+        std::string result;
         switch(what) {
         case MESH_VERTICES:
-            return "vertices";
+            result =  "vertices";
+            break;
         case MESH_EDGES:
-            return "edges";
+            result = "edges";
+            break;            
         case MESH_FACETS:
-            return "facets";
+            result = "facets";
+            break;            
         case MESH_FACET_CORNERS:
-            return "facet_corners";
+            result = "facet_corners";
+            break;            
         case MESH_CELLS:
-            return "cells";
+            result = "cells";
+            break;            
         case MESH_CELL_CORNERS:
-            return "cell_corners";
+            result = "cell_corners";
+            break;            
         case MESH_CELL_FACETS:
-            return "cell_facets";
-        default:
+            result = "cell_facets";
+            break;            
+        case MESH_NONE:
+        case MESH_ALL_ELEMENTS:
+        case MESH_ALL_SUBELEMENTS:
             geo_assert_not_reached;
         }
-        return "";
+        return result;
     }
     
     MeshElementsFlags Mesh::name_to_subelements_type(const std::string& name) {

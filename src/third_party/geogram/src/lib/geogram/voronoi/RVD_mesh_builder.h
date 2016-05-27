@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_VORONOI_RVD_MESH_BUILDER__
-#define __GEOGRAM_VORONOI_RVD_MESH_BUILDER__
+#ifndef GEOGRAM_VORONOI_RVD_MESH_BUILDER
+#define GEOGRAM_VORONOI_RVD_MESH_BUILDER
 
 #include <geogram/basic/common.h>
 #include <geogram/voronoi/generic_RVD.h>

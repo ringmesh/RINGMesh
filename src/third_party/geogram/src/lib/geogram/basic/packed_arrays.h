@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_BASIC_PACKED_ARRAYS__
-#define __GEOGRAM_BASIC_PACKED_ARRAYS__
+#ifndef GEOGRAM_BASIC_PACKED_ARRAYS
+#define GEOGRAM_BASIC_PACKED_ARRAYS
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/numeric.h>

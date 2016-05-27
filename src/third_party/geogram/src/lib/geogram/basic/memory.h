@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_BASIC_MEMORY__
-#define __GEOGRAM_BASIC_MEMORY__
+#ifndef GEOGRAM_BASIC_MEMORY
+#define GEOGRAM_BASIC_MEMORY
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/assert.h>
@@ -235,6 +235,9 @@ namespace GEO {
                    ? result : 0;
 #elif defined(GEO_COMPILER_MSVC)
             return _aligned_malloc(size, alignment);
+#else
+            geo_argused(alignment);
+            return malloc(size);
 #endif
         }
 
@@ -255,6 +258,8 @@ namespace GEO {
             free(p);
 #elif defined(GEO_COMPILER_MSVC)
             _aligned_free(p);
+#else
+            free(p);
 #endif
         }
 
@@ -279,6 +284,8 @@ namespace GEO {
 #define geo_decl_aligned(var) var __attribute__((aligned(GEO_MEMORY_ALIGNMENT)))
 #elif defined(GEO_COMPILER_MSVC)
 #define geo_decl_aligned(var) __declspec(align(GEO_MEMORY_ALIGNMENT)) var
+#elif defined(GEO_COMPILER_EMSCRIPTEN)
+#define geo_decl_aligned(var) var        
 #endif
 
         /**
@@ -318,6 +325,8 @@ namespace GEO {
 #elif defined(GEO_COMPILER_MSVC)
 #define geo_assume_aligned(var, alignment)
         // TODO: I do not know how to do that with MSVC
+#elif defined(GEO_COMPILER_EMSCRIPTEN)        
+#define geo_assume_aligned(var, alignment)
 #endif
 
         /**
@@ -336,6 +345,8 @@ namespace GEO {
 #define geo_restrict __restrict__
 #elif defined(GEO_COMPILER_MSVC)
 #define geo_restrict __restrict
+#elif defined(GEO_COMPILER_EMSCRIPTEN)
+#define geo_restrict 
 #endif
 
         /**

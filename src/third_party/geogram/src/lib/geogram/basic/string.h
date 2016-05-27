@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_BASIC_STRING__
-#define __GEOGRAM_BASIC_STRING__
+#ifndef GEOGRAM_BASIC_STRING
+#define GEOGRAM_BASIC_STRING
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/numeric.h>

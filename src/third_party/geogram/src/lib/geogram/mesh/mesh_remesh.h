@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_MESH_MESH_REMESH__
-#define __GEOGRAM_MESH_MESH_REMESH__
+#ifndef GEOGRAM_MESH_MESH_REMESH
+#define GEOGRAM_MESH_MESH_REMESH
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/numeric.h>

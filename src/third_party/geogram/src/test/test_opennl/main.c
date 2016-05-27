@@ -54,7 +54,7 @@
  *    \left[ \begin{array}{l} x \\ y \end{array} \right]
  *  = \left[ \begin{array}{l} 5 \\ 6 \end{array} \right] \f$
  */
-void test_simple_linear_solve(NLint solver) {
+static void test_simple_linear_solve(NLint solver) {
 
     printf("\n");    
     printf("Testing linear solve\n");
@@ -129,7 +129,7 @@ void test_simple_linear_solve(NLint solver) {
     nlDeleteContext(nlGetCurrent());
 }
 
-void test_least_squares_regression(
+static void test_least_squares_regression(
     NLboolean origin, NLboolean use_SSOR_precond
 ) {
     NLint nb_pts = 7, k;

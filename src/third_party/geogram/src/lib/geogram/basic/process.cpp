@@ -46,7 +46,6 @@
 #include <geogram/basic/process.h>
 #include <geogram/basic/logger.h>
 #include <geogram/basic/environment.h>
-#include <geogram/basic/stacktrace.h>
 #include <geogram/basic/string.h>
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/stopwatch.h>
@@ -348,7 +347,6 @@ namespace GEO {
 #endif
             }
 
-            StackTrace::initialize();
             os_install_signal_handlers();
 
             // Initialize Process default values
@@ -573,17 +571,6 @@ namespace GEO {
                 Logger::warn("Process")
                     << "Cancel mode not implemented" << std::endl;
             }
-        }
-
-        void show_stack_trace() {
-            // Do not use Logger here!
-            std::cout
-                << "==================== Stack trace ========================"
-                << std::endl;
-            StackTrace::print_stack_trace(std::cout, 0);
-            std::cout
-                << "========================================================="
-                << std::endl;
         }
     }
 }

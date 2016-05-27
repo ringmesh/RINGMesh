@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_MESH_MESH_COMPARE__
-#define __GEOGRAM_MESH_MESH_COMPARE__
+#ifndef GEOGRAM_MESH_MESH_COMPARE
+#define GEOGRAM_MESH_MESH_COMPARE
 
 #include <geogram/basic/common.h>
 

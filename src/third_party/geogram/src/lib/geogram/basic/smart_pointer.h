@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_BASIC_SMART_POINTER__
-#define __GEOGRAM_BASIC_SMART_POINTER__
+#ifndef GEOGRAM_BASIC_SMART_POINTER
+#define GEOGRAM_BASIC_SMART_POINTER
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/assert.h>

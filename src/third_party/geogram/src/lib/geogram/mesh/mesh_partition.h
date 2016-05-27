@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_MESH_MESH_PARTITION__
-#define __GEOGRAM_MESH_MESH_PARTITION__
+#ifndef GEOGRAM_MESH_MESH_PARTITION
+#define GEOGRAM_MESH_MESH_PARTITION
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/numeric.h>

@@ -48,7 +48,12 @@
 #include <geogram/basic/logger.h>
 
 namespace GEO {
+    
+    /**************************************************************/
 
+    GeoFileException::~GeoFileException() throw() {
+    }
+    
     /**************************************************************/
 
     GeoFile::GeoFile(const std::string& filename) :

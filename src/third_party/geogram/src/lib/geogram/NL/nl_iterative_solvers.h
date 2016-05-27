@@ -42,8 +42,8 @@
  */
 
 
-#ifndef __NL_ITERATIVE_SOLVERS__
-#define __NL_ITERATIVE_SOLVERS__
+#ifndef OPENNL_ITERATIVE_SOLVERS_H
+#define OPENNL_ITERATIVE_SOLVERS_H
 
 #include "nl_private.h"
 
@@ -61,7 +61,7 @@
  * /IAM/Research/projectskr/lin_solver/
  * \return the used number of iterations
  */
-NLuint nlSolve_CG() ;
+NLuint nlSolve_CG(void);
 
 /**
  * \brief Solves the system in nlCurrentContext 
@@ -72,7 +72,7 @@ NLuint nlSolve_CG() ;
  * /IAM/Research/projectskr/lin_solver/
  * \return the used number of iterations
  */
-NLuint nlSolve_CG_precond() ;
+NLuint nlSolve_CG_precond(void);
 
 /**
  * \brief Solves the system in nlCurrentContext 
@@ -83,7 +83,7 @@ NLuint nlSolve_CG_precond() ;
  * /IAM/Research/projectskr/lin_solver/
  * \return the used number of iterations
  */
-NLuint nlSolve_BICGSTAB() ;
+NLuint nlSolve_BICGSTAB(void);
 
 /**
  * \brief Solves the system in nlCurrentContext 
@@ -95,7 +95,7 @@ NLuint nlSolve_BICGSTAB() ;
  * /IAM/Research/projectskr/lin_solver/
  * \return the used number of iterations
  */
-NLuint nlSolve_BICGSTAB_precond() ;
+NLuint nlSolve_BICGSTAB_precond(void);
 
 /**
  * \brief Solves the system in nlCurrentContext 
@@ -106,7 +106,7 @@ NLuint nlSolve_BICGSTAB_precond() ;
  * /IAM/Research/projectskr/lin_solver/
  * \return the used number of iterations
  */
-NLuint nlSolve_GMRES() ;
+NLuint nlSolve_GMRES(void);
 
 #endif
 

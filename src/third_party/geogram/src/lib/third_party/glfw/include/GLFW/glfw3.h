@@ -29,6 +29,20 @@
 #ifndef _glfw3_h_
 #define _glfw3_h_
 
+/*
+ * [Bruno Levy] 05/24/2016
+ * Deactivate warnings about documentation
+ * We do that, because CLANG's doxygen parser does not know
+ * some doxygen commands that we use (retval, copydoc) and
+ * generates many warnings for them...
+ */
+#if defined(__clang__)
+#pragma clang diagnostic ignored "-Wunknown-pragmas"
+#pragma clang diagnostic ignored "-Wdocumentation" 
+#pragma clang diagnostic ignored "-Wdocumentation-unknown-command" 
+#endif
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif

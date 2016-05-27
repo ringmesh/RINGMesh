@@ -26,7 +26,6 @@ while [ -n "$1" ]; do
             cmake_options="$cmake_options --trace"
             shift
             ;;
-
         --with-*=*)
             cmake_option=`echo "$1" | sed 's/--with-\([^=]*\)=\(.*\)$/-DVORPALINE_WITH_\U\1\E:STRING="\2"/'`
             cmake_options="$cmake_options $cmake_option"
@@ -122,6 +121,9 @@ if [ -z "$os" ]; then
             ;;
         Linux*i586*|Linux*i686*)
             os=Linux32-gcc-dynamic
+            ;;
+        Darwin*)
+            os=Darwin-clang-dynamic
             ;;
         *)
             echo "Error: OS not supported: $os"

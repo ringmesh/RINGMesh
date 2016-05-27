@@ -261,9 +261,9 @@ namespace {
                 double rij = dxij / dsij;
 
                 if(use_normals) {
-                    const vec3& pi = halfedge_vertex(MH, hole[i]);
-                    const vec3& pj = halfedge_vertex(MH, hole[j]);
-                    vec3 Dij = normalize(pj - pi);
+                    const vec3& Pi = halfedge_vertex(MH, hole[i]);
+                    const vec3& Pj = halfedge_vertex(MH, hole[j]);
+                    vec3 Dij = normalize(Pj - Pi);
 
                     // between -1 (worse) and 1 (best)
                     double angle_factor =

@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_GFX_BASIC_COMMON__
-#define __GEOGRAM_GFX_BASIC_COMMON__
+#ifndef GEOGRAM_GFX_BASIC_COMMON
+#define GEOGRAM_GFX_BASIC_COMMON
 
 #include <geogram/basic/common.h>
 #include <geogram_gfx/api/defs.h>

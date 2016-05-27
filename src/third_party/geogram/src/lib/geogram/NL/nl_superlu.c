@@ -45,6 +45,10 @@
 #include "nl_superlu.h"
 #include "nl_context.h"
 
+#ifdef __EMSCRIPTEN__
+#pragma GCC diagnostic ignored "-Wunused-macros"
+#endif
+
 /**
  * \file Weak-coupling adapter to call SuperLU from OpenNL, 
  *  works with both SuperLU 3.x and SuperLU 4.x.
@@ -78,7 +82,7 @@ typedef void (*FUNPTR)();
  *  pointer into a function pointer, thus requiring this
  *  (quite dirty) function that uses a union.
  */
-FUNPTR fun_dlsym(void* handle, const char* name) {
+static FUNPTR fun_dlsym(void* handle, const char* name) {
     union {
         void* ptr;
         FUNPTR fptr;
@@ -316,7 +320,7 @@ typedef struct {
  * \brief Gets the SuperLU context.
  * \return a pointer to the SuperLU context
  */
-SuperLUContext* SuperLU() {
+static SuperLUContext* SuperLU() {
     static SuperLUContext context;
     static NLboolean init = NL_FALSE;
     if(!init) {
@@ -340,7 +344,7 @@ SuperLUContext* SuperLU() {
  * - struct superlu_options_t (use instead superlu3_options_t 
  *  or superlu4_options_t according to version)
  */
-double SuperLU_version() {
+static double SuperLU_version() {
     return SuperLU()->version;
 }
 
@@ -354,7 +358,7 @@ double SuperLU_version() {
  *  loaded and initialized
  * \retval NL_FALSE otherwise
  */
-NLboolean SuperLU_is_initialized() {
+static NLboolean SuperLU_is_initialized() {
     return
         SuperLU()->DLL_handle != NULL &&
         SuperLU()->set_default_options != NULL &&
@@ -515,9 +519,8 @@ NLboolean nlSolve_SUPERLU() {
             options4.ColPerm = SLU4_MMD_AT_PLUS_A ;
             options4.SymmetricMode = YES ;
         } break ;
-        default: {
+        default: 
             nl_assert_not_reached ;
-        } break ;
         }
     } else {
         SuperLU()->set_default_options(&options3) ;
@@ -532,9 +535,8 @@ NLboolean nlSolve_SUPERLU() {
             options3.ColPerm = SLU3_MMD_AT_PLUS_A ;
             options3.SymmetricMode = YES ;
         } break ;
-        default: {
+        default: 
             nl_assert_not_reached ;
-        } break ;
         }
     }
     
@@ -603,7 +605,7 @@ NLboolean nlSolve_SUPERLU() {
 
 #if defined(GEO_DYNAMIC_LIBS) && defined(unix)
 
-void nlTerminateExtension_SUPERLU() {
+static void nlTerminateExtension_SUPERLU() {
     if(SuperLU()->DLL_handle != NULL) {
         dlclose(SuperLU()->DLL_handle);
         SuperLU()->DLL_handle = NULL;
