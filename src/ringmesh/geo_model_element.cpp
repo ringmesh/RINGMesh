@@ -999,12 +999,10 @@ namespace RINGMesh {
         }
 
         // No isolated vertices
-        std::vector< index_t > nb ;
-        count_vertex_occurences( mesh(), nb ) ;
-        index_t nb0 = static_cast< index_t >( std::count( nb.begin(), nb.end(), 0 ) ) ;
-        if( nb0 > 0 ) {
-            GEO::Logger::warn( "GeoModelElement" ) << gme_id() << " mesh has " << nb0
-                << " isolated vertices " << std::endl ;
+        index_t nb_isolated_vertices = count_nb_isolated_vertices( mesh() ) ;
+        if( nb_isolated_vertices > 0 ) {
+            GEO::Logger::warn( "GeoModelElement" ) << gme_id() << " mesh has "
+                << nb_isolated_vertices << " isolated vertices " << std::endl ;
             valid = false ;
         }
 

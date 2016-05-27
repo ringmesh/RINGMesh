@@ -74,6 +74,10 @@ endif()
 add_flags(CMAKE_CXX_FLAGS -fPIC)
 add_flags(CMAKE_C_FLAGS -fPIC)
 
+# Hide symbols that are not explicitly exported
+add_flags(CMAKE_CXX_FLAGS -fvisibility=hidden)
+add_flags(CMAKE_C_FLAGS -fvisibility=hidden)
+
 
 # Profiler compilation flags
 if(VORPALINE_WITH_GPROF)

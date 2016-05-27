@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_BASIC_GEOMETRY_ND__
-#define __GEOGRAM_BASIC_GEOMETRY_ND__
+#ifndef GEOGRAM_BASIC_GEOMETRY_ND
+#define GEOGRAM_BASIC_GEOMETRY_ND
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/geometry.h>
@@ -439,8 +439,6 @@ namespace GEO {
          * \param[in] point the query point
          * \param[in] V0 first extremity of the segment
          * \param[in] V1 second extremity of the segment
-         * \param[out] closest_point the point closest to \p point in the
-         *  segment [\p V0, \p V1]
          * \tparam VEC the class that represents the points.
          * \return the squared distance between the point and
          *  the segment [\p V0, \p V1]

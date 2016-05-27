@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_MESH_TRIANGLE_INTERSECTION__
-#define __GEOGRAM_MESH_TRIANGLE_INTERSECTION__
+#ifndef GEOGRAM_MESH_TRIANGLE_INTERSECTION
+#define GEOGRAM_MESH_TRIANGLE_INTERSECTION
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/geometry.h>
@@ -82,8 +82,8 @@ namespace GEO {
 
     /**
      * \brief Triangle-triangle intersection
-     * \param[in] p0,p1,p2 first triangle
-     * \param[in] q0,q1,q2 second triangle
+     * \param[in] p0 , p1 , p2 first triangle
+     * \param[in] q0 , q1 , q2 second triangle
      * \param[out] result the intersection in symbolic
      *  form, as TriangleRegion pairs. There can be
      *  between 0 and 6 intersection pairs in the result.

@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_BASIC_ALGORITHM__
-#define __GEOGRAM_BASIC_ALGORITHM__
+#ifndef GEOGRAM_BASIC_ALGORITHM
+#define GEOGRAM_BASIC_ALGORITHM
 
 #include <geogram/basic/common.h>
 

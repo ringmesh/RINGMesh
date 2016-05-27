@@ -43,15 +43,16 @@
  *
  */
 
-#ifndef __GEOGRAM_POINTS_CO3NE__
-#define __GEOGRAM_POINTS_CO3NE__
+#ifndef GEOGRAM_POINTS_CO3NE
+#define GEOGRAM_POINTS_CO3NE
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/numeric.h>
 
 /**
  * \file geogram/points/co3ne.h
- * \brief Implementation of a reconstruction algorithm (Concurrent Co-Cones).
+ * \brief Implementation of the Simple and Scalable Surface 
+ *    Reconstruction algorithm (Concurrent Co-Cones).
  */
 
 namespace GEO {

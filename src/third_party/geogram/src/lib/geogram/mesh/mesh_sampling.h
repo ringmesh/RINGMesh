@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_MESH_MESH_SAMPLING__
-#define __GEOGRAM_MESH_MESH_SAMPLING__
+#ifndef GEOGRAM_MESH_MESH_SAMPLING
+#define GEOGRAM_MESH_MESH_SAMPLING
 
 #include <geogram/basic/common.h>
 #include <geogram/mesh/mesh.h>
@@ -243,7 +243,7 @@ namespace GEO {
      *  weights.
      * \param[in] mesh the surface mesh
      * \param[in] t a tetrahedron index in \p mesh
-     * \param[in] weights a reference to a vertex weight attribute. If it
+     * \param[in] weight a reference to a vertex weight attribute. If it
      *  is bound, it is taken into account in mass computation
      * \return the mass of tetrahedron \p t in \p mesh
      */
@@ -276,7 +276,7 @@ namespace GEO {
      * \param[out] p pointer to an array of generated samples, of size
      *   \p nb_points times DIM. To be allocated by the caller.
      * \param[in] nb_points number of points to generate
-     * \param[in] use_weights if true, vertex weights are taken into account
+     * \param[in] vertex_weight if bound, vertex weights are taken into account
      * \param[in] tets_begin_in if specified, first index of the tetrahedron
      *  sequence in which points should be generated. If left unspecified (-1),
      *  points are generated over all the tetrahedra of the mesh.

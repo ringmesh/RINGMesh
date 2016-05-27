@@ -44,6 +44,7 @@
  */
 
 #include <geogram_gfx/basic/GL.h>
+#include <geogram_gfx/basic/GLSL.h>
 #include <geogram_gfx/GLUP/GLUP.h>
 #include <geogram/basic/logger.h>
 #include <geogram/basic/command_line.h>
@@ -74,9 +75,156 @@ namespace {
         }
         return result ;
     }
+
+    GLuint quad_VAO = 0;
+    GLuint quad_vertices_VBO = 0;
+    GLuint quad_tex_coords_VBO = 0;
+    GLuint quad_program = 0;
+
+    /**
+     * \brief Creates the VAO, VBOs and program used to draw
+     *  a single textured quad.
+     * \details We often have to do that, for instance for blitting
+     *  a FrameBufferObject onto the screen (or onto another FrameBufferObject)
+     */
+    void create_quad_VAO_and_program() {
+        //   All that stuff just to draw a single textured square,
+        // the new OpenGL is really painful !!! 
+        // (one could use glBegin()/glVertex()/glEnd() instead, but
+        // this would not work with pure Core OpenGL profile and
+        // neither with OpenGL ES !!
+
+       
+        // Will be drawn with a triangle strip (supported in both
+        // OpenGL and OpenGL ES)
+
+        static GLfloat coords[4][2] = {
+            {-1.0f, -1.0f},
+            { 1.0f, -1.0f},
+            {-1.0f,  1.0f},        
+            { 1.0f,  1.0f}
+        };
+
+        static GLfloat tex_coords[4][2] = {
+            { 0.0f,  0.0f},
+            { 1.0f,  0.0f},
+            { 0.0f,  1.0f},        
+            { 1.0f,  1.0f}
+        };
+
+        update_buffer_object(
+            quad_vertices_VBO, GL_ARRAY_BUFFER,
+            sizeof(GL_FLOAT)*2*4, coords
+        );
+        update_buffer_object(
+            quad_tex_coords_VBO, GL_ARRAY_BUFFER,
+            sizeof(GL_FLOAT)*2*4, tex_coords
+        );
+        glupGenVertexArrays(1, &quad_VAO);
+        glupBindVertexArray(quad_VAO);
+
+        glBindBuffer(GL_ARRAY_BUFFER, quad_vertices_VBO); 
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(
+            0,        // Attribute 0
+            2,        // nb coordinates per vertex
+            GL_FLOAT, // input coordinates representation
+            GL_FALSE, // do not normalize
+            0,        // offset between two consecutive vertices (0 = packed)
+            0         // addr. relative to bound VBO 
+        );
+
+        glBindBuffer(GL_ARRAY_BUFFER, quad_tex_coords_VBO);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(
+            1,        // Attribute 1
+            2,        // nb coordinates per vertex
+            GL_FLOAT, // input coordinates representation
+            GL_FALSE, // do not normalize
+            0,        // offset between two consecutive vertices (0 = packed)
+            0         // addr. relative to bound VBO 
+        );
+        
+        glupBindVertexArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        static const char* vshader_source =
+            "#version 150 core                          \n"            
+            "in vec2 vertex_in;                         \n"
+            "in vec2 tex_coord_in;                      \n"
+            "out VertexData {                           \n"
+            "   vec2 tex_coord;                         \n"
+            "} VertexOut;                               \n"
+            "void main() {                              \n"
+            "  VertexOut.tex_coord = tex_coord_in;      \n"
+            "  gl_Position = vec4(vertex_in, 0.0, 1.0); \n"
+            "}                                          \n"
+            ;
+
+        static const char* fshader_source =
+            "#version 150 core                          \n"
+            "out vec4 frag_color ;                      \n"
+            "in VertexData {                            \n"
+            "   vec2 tex_coord;                         \n"
+            "} FragmentIn;                              \n"
+            "uniform sampler2D texture2D;               \n"
+            "void main() {                              \n"
+            "   frag_color = texture(                   \n"
+            "       texture2D, FragmentIn.tex_coord     \n"
+            "   );                                      \n"
+            "}                                          \n"
+            ;
+
+        GLuint vshader = GLSL::compile_shader(
+            GL_VERTEX_SHADER, vshader_source, 0
+        );
+        
+        GLuint fshader = GLSL::compile_shader(
+            GL_FRAGMENT_SHADER, fshader_source, 0
+        );
+        
+        quad_program = GLSL::create_program_from_shaders_no_link(
+            vshader, fshader, 0
+        );
+        glBindAttribLocation(quad_program, 0, "vertex_in");
+        glBindAttribLocation(quad_program, 1, "tex_coord_in");
+        GLSL::link_program(quad_program);
+        
+        GLSL::set_program_uniform_by_name(quad_program, "texture2D", 0);
+        
+        glDeleteShader(vshader);
+        glDeleteShader(fshader);
+    }
 }
 
 namespace GEO {
+
+    namespace GL {
+        
+        void initialize() {
+        }
+
+        void terminate() {
+            if(quad_program != 0) {
+                glDeleteProgram(quad_program);
+                quad_program = 0;
+            }
+            if(quad_VAO != 0) {
+                glupDeleteVertexArrays(1, &quad_VAO);
+                quad_VAO = 0;
+            }
+            if(quad_vertices_VBO != 0) {
+                glDeleteBuffers(1, &quad_vertices_VBO);
+                quad_vertices_VBO = 0;
+            }
+            if(quad_tex_coords_VBO != 0) {
+                glDeleteBuffers(1, &quad_tex_coords_VBO);
+                quad_tex_coords_VBO = 0;
+            }
+        }
+    }
+
+#ifdef GEO_USE_DEPRECATED_GL
     
     void glLoadMatrix(const mat4& m) {
         glLoadMatrixd(convert_matrix(m));
@@ -86,6 +234,26 @@ namespace GEO {
         glMultMatrixd(convert_matrix(m));
     }
 
+#endif
+    
+    void glupMapTexCoords1d(double minval, double maxval, index_t mult) {
+        glupMatrixMode(GLUP_TEXTURE_MATRIX);
+        GLUPdouble M[16];
+        Memory::clear(M, sizeof(GLUPdouble)*16);
+        double d = maxval - minval;
+        if(::fabs(d) < 1e-10) {
+            d = 0.0;
+        } else {
+            d = 1.0 / d;
+        }
+        d *= double(geo_max(mult, 1u));
+        M[0] =  d;
+        M[12] = -d*minval;
+        M[15] = 1.0;
+        glupLoadMatrixd(M);
+        glupMatrixMode(GLUP_MODELVIEW_MATRIX);
+    }
+    
     void glupLoadMatrix(const mat4& m) {
         glupLoadMatrixd(convert_matrix(m));
     }
@@ -96,6 +264,11 @@ namespace GEO {
     
 
     GLint64 get_size_of_bound_buffer_object(GLenum target) {
+
+        GLint64 result=0;
+        
+#ifdef GEO_GL_440
+        
         static bool init = false;
         static bool use_glGetBufferParameteri64v = true;
 
@@ -104,6 +277,7 @@ namespace GEO {
         // common place, it is this version that should be used. However,
         // it is not supported by the Intel driver (therefore we fallback
         // to the standard 32 bits version if such a driver is detected).
+
         if(!init) {
             init = true;
             const char* vendor = (const char*)glGetString(
@@ -122,10 +296,11 @@ namespace GEO {
                 use_glGetBufferParameteri64v = false;
             }
         }
-        GLint64 result=0;
         if(use_glGetBufferParameteri64v) {
             glGetBufferParameteri64v(target,GL_BUFFER_SIZE,&result);
-        } else {
+        } else
+#endif
+        {
             GLint result32=0;
             glGetBufferParameteriv(target,GL_BUFFER_SIZE,&result32);
             result = GLint64(result32);
@@ -135,8 +310,7 @@ namespace GEO {
 
 
     void update_buffer_object(
-        GLuint& buffer_id, GLenum target, size_t new_size, const void* data,
-        bool streaming
+        GLuint& buffer_id, GLenum target, size_t new_size, const void* data
     ) {
         if(new_size == 0) {
             if(buffer_id != 0) {
@@ -156,17 +330,7 @@ namespace GEO {
         }
         
         if(new_size == size_t(size)) {
-            if(streaming) {
-                //   Binding nil makes the GPU-side allocated buffer "orphan",
-                // if there was a rendering operation currently using it, then
-                // it can safely continue.
-                glBufferData(target, GLsizeiptr(size), nil, GL_STREAM_DRAW);
-                //   And here we bind a fresh new block of GPU-side memory.
-                // See https://www.opengl.org/wiki/Buffer_Object_Streaming
-                glBufferData(target, GLsizeiptr(size), data, GL_STREAM_DRAW);
-            } else {
-                glBufferSubData(target, 0, GLsizeiptr(size), data);
-            }
+            glBufferSubData(target, 0, GLsizeiptr(size), data);
         } else {
             glBufferData(
                 target, GLsizeiptr(new_size), data, GL_STATIC_DRAW
@@ -174,6 +338,42 @@ namespace GEO {
         }
     }
 
+    void stream_buffer_object(
+        GLuint& buffer_id, GLenum target, size_t new_size, const void* data
+    ) {
+        if(new_size == 0) {
+            if(buffer_id != 0) {
+                glDeleteBuffers(1, &buffer_id);
+                buffer_id = 0;
+            }
+            return;
+        }
+
+        GLint64 size = 0;        
+        if(buffer_id == 0) {
+            glGenBuffers(1, &buffer_id);
+            glBindBuffer(target, buffer_id);            
+        } else {
+            glBindBuffer(target, buffer_id);
+            size = get_size_of_bound_buffer_object(target);
+        }
+        
+        if(new_size == size_t(size)) {
+            //   Binding nil makes the GPU-side allocated buffer "orphan",
+            // if there was a rendering operation currently using it, then
+            // it can safely continue.
+            glBufferData(target, GLsizeiptr(size), nil, GL_STREAM_DRAW);
+            //   And here we bind a fresh new block of GPU-side memory.
+            // See https://www.opengl.org/wiki/Buffer_Object_Streaming
+            glBufferData(target, GLsizeiptr(size), data, GL_STREAM_DRAW);
+        } else {
+            glBufferData(
+                target, GLsizeiptr(new_size), data, GL_STATIC_DRAW
+            );
+        }
+    }
+
+    
     void update_or_check_buffer_object(
         GLuint& buffer_id, GLenum target, size_t new_size, const void* data,
         bool update
@@ -212,4 +412,23 @@ namespace GEO {
         geo_argused(has_opengl_errors);
         // geo_debug_assert(!has_opengl_errors);
     }
+
+    void draw_unit_textured_quad() {
+        if(quad_VAO == 0) {
+            create_quad_VAO_and_program();
+        }
+        GLint current_program = 0;
+        glGetIntegerv(GL_CURRENT_PROGRAM, &current_program);
+        if(current_program == 0) {
+            glUseProgram(quad_program);
+        }
+        glupBindVertexArray(quad_VAO);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);        
+        glupBindVertexArray(0);
+        if(current_program == 0) {
+            glUseProgram(0);
+        }
+    }
+
+    
 }

@@ -45,6 +45,16 @@
 #include "nl_blas.h"
 #include "nl_context.h"
 
+/*
+ Many warnings about const double* converted to
+ double* when calling BLAS functions that do not
+ have the const qualifier in their prototypes.
+*/
+#ifdef __clang__
+#pragma GCC diagnostic ignored "-Wcast-qual"
+#endif
+
+
 #ifdef NL_USE_ATLAS
 int NL_FORTRAN_WRAP(xerbla)(char *srname, int *info) {
     printf("** On entry to %6s, parameter number %2d had an illegal value\n",
@@ -103,7 +113,7 @@ typedef NLint     ftnlen ;
 
 #ifndef NL_USE_BLAS
 
-int NL_FORTRAN_WRAP(lsame)(char *ca, char *cb)
+static int NL_FORTRAN_WRAP(lsame)(char *ca, char *cb)
 {
 /*  -- LAPACK auxiliary routine (version 2.0) --   
        Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,   
@@ -179,7 +189,7 @@ int NL_FORTRAN_WRAP(lsame)(char *ca, char *cb)
     
 } /* lsame_ */
 
-/* Subroutine */ int NL_FORTRAN_WRAP(xerbla)(char *srname, int *info)
+/* Subroutine */ static int NL_FORTRAN_WRAP(xerbla)(char *srname, int *info)
 {
 /*  -- LAPACK auxiliary routine (version 2.0) --   
        Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,   
@@ -220,7 +230,7 @@ int NL_FORTRAN_WRAP(lsame)(char *ca, char *cb)
 } /* xerbla_ */
 
 
-/* Subroutine */ int NL_FORTRAN_WRAP(daxpy)(integer *n, doublereal *da, doublereal *dx, 
+/* Subroutine */ static int NL_FORTRAN_WRAP(daxpy)(integer *n, doublereal *da, doublereal *dx, 
         integer *incx, doublereal *dy, integer *incy)
 {
 
@@ -310,7 +320,7 @@ L40:
 #undef DX
 
 
-doublereal NL_FORTRAN_WRAP(ddot)(integer *n, doublereal *dx, integer *incx, doublereal *dy, 
+static doublereal NL_FORTRAN_WRAP(ddot)(integer *n, doublereal *dx, integer *incx, doublereal *dy, 
         integer *incy)
 {
 
@@ -400,7 +410,7 @@ L60:
 #undef DY
 #undef DX
 
-/* Subroutine */ int NL_FORTRAN_WRAP(dscal)(integer *n, doublereal *da, doublereal *dx, 
+/* Subroutine */ static int NL_FORTRAN_WRAP(dscal)(integer *n, doublereal *da, doublereal *dx, 
     integer *incx)
 {
 
@@ -481,7 +491,7 @@ L40:
 } /* dscal_ */
 #undef DX
 
-doublereal NL_FORTRAN_WRAP(dnrm2)(integer *n, doublereal *x, integer *incx)
+static doublereal NL_FORTRAN_WRAP(dnrm2)(integer *n, doublereal *x, integer *incx)
 {
 
 
@@ -566,7 +576,7 @@ doublereal NL_FORTRAN_WRAP(dnrm2)(integer *n, doublereal *x, integer *incx)
 } /* dnrm2_ */
 #undef X
 
-/* Subroutine */ int NL_FORTRAN_WRAP(dcopy)(integer *n, doublereal *dx, integer *incx, 
+/* Subroutine */ static int NL_FORTRAN_WRAP(dcopy)(integer *n, doublereal *dx, integer *incx, 
         doublereal *dy, integer *incy)
 {
 
@@ -655,7 +665,7 @@ L40:
 #undef DX
 #undef DY
 
-/* Subroutine */ int NL_FORTRAN_WRAP(dgemv)(char *trans, integer *m, integer *n, doublereal *
+/* Subroutine */ static int NL_FORTRAN_WRAP(dgemv)(char *trans, integer *m, integer *n, doublereal *
         alpha, doublereal *a, integer *lda, doublereal *x, integer *incx, 
         doublereal *beta, doublereal *y, integer *incy)
 {
@@ -994,7 +1004,7 @@ extern void NL_FORTRAN_WRAP(dgemv)(
 
 /* DECK DTPSV */
 /* Subroutine */ 
-int NL_FORTRAN_WRAP(dtpsv)(
+static int NL_FORTRAN_WRAP(dtpsv)(
    char* uplo, 
    char* trans, 
    char* diag, 

@@ -52,6 +52,14 @@
 #include <geogram/basic/line_stream.h>
 #include <geogram/basic/progress.h>
 
+// Some member functions of NormalCycle are not used here.
+// note: NormalCycle will be exported sometime, so for now
+// we deactivate the warning.
+#ifdef __clang__
+#pragma GCC diagnostic ignored "-Wunused-member-function"
+#endif
+
+
 namespace {
     using namespace GEO;
 
@@ -376,7 +384,7 @@ namespace {
          *  a begin() \ end() pair. If a geometric clipping 
          *  neighborhood is used, the specified edge vector 
          *  needs to be clipped by it.
-         * \param[in] vec3 the supporting edge of the dihedron
+         * \param[in] edge the supporting edge of the dihedron
          * \param[in] angle the angle of the dihedron
          * \param[in] neigh_area the area of the clipped
          *   neighborhood
@@ -482,7 +490,6 @@ namespace {
         }
 
     private:
-        double center_[3] ;
         vec3 axis_[3] ;
         double eigen_value_[3] ;
         double M_[6] ;

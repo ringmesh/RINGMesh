@@ -103,10 +103,10 @@ namespace {
     }
 
     /**
-     * \brief Computes the axis-aligned bounding box of a mesh tetrahedron.
+     * \brief Computes the axis-aligned bounding box of a mesh cell
      * \param[in] M the mesh
      * \param[out] B the bounding box of the facet
-     * \param[in] t the index of the tetrahedron in mesh \p M
+     * \param[in] c the index of the cell in mesh \p M
      */
     void get_cell_bbox(
         const Mesh& M, Box& B, index_t c

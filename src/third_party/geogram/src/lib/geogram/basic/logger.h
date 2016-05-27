@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_BASIC_LOGGER__
-#define __GEOGRAM_BASIC_LOGGER__
+#ifndef GEOGRAM_BASIC_LOGGER
+#define GEOGRAM_BASIC_LOGGER
 
 #ifdef __cplusplus
 

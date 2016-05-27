@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_VORONOI_GENERIC_RVD__
-#define __GEOGRAM_VORONOI_GENERIC_RVD__
+#ifndef GEOGRAM_VORONOI_GENERIC_RVD
+#define GEOGRAM_VORONOI_GENERIC_RVD
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/numeric.h>

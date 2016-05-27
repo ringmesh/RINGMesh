@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_NUMERICS_MATRIX_UTIL__
-#define __GEOGRAM_NUMERICS_MATRIX_UTIL__
+#ifndef GEOGRAM_NUMERICS_MATRIX_UTIL
+#define GEOGRAM_NUMERICS_MATRIX_UTIL
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/numeric.h>

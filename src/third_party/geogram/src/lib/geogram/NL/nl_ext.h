@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __nl_ext_h__
-#define __nl_ext_h__
+#ifndef OPENNL_EXT_H
+#define OPENNL_EXT_H
 
 #ifdef __cplusplus
 extern "C" {

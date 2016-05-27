@@ -60,6 +60,11 @@ namespace GEO {
 
     /******************************************************************/
 
+    AttributeStoreCreator::~AttributeStoreCreator() {
+    }
+    
+    /******************************************************************/    
+    
     std::map<std::string, AttributeStoreCreator_var>
          AttributeStore::type_name_to_creator_;
 
