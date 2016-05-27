@@ -102,6 +102,7 @@ namespace {
         return p1 + t1 * v1;
     }
 
+#ifdef REMOVE_ME    
     /**
      * \brief Computes the intersection between the supporting lines
      *  of 2d segments specified by their extremities.
@@ -136,6 +137,8 @@ namespace {
         double m12 = a10 * a21 - a20 * a11;
         return m01 * a22 - m02 * a12 + m12 * a02;
     }
+#endif
+    
 }
 
 /****************************************************************************/

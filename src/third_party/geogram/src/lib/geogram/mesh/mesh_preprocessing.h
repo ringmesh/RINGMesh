@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_MESH_MESH_PREPROCESSING__
-#define __GEOGRAM_MESH_MESH_PREPROCESSING__
+#ifndef GEOGRAM_MESH_MESH_PREPROCESSING
+#define GEOGRAM_MESH_MESH_PREPROCESSING
 
 #include <geogram/basic/common.h>
 #include <geogram/mesh/mesh_repair.h>

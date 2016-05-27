@@ -138,7 +138,6 @@ namespace {
             }
         }
         geo_assert_not_reached;
-        return 3;
     }
 
     /**
@@ -188,23 +187,6 @@ namespace {
      *  different from standard triangle numerotation used here.
      */
     struct Degree3Vertex {
-
-        /**
-         * \brief Default constructor.
-         */
-        Degree3Vertex() {
-            dist = 0.0;
-            v[0] = index_t(-1);
-            v[1] = index_t(-1);
-            v[2] = index_t(-1);
-            v[3] = index_t(-1);
-            t[0] = index_t(-1);
-            t[1] = index_t(-1);
-            t[2] = index_t(-1);
-            adj[0] = index_t(-1);
-            adj[1] = index_t(-1);
-            adj[2] = index_t(-1);
-        }
         
         /**
          * \brief Constructs a new Degree3Vertex

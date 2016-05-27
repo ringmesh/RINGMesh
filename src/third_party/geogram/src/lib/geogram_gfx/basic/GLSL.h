@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_GFX_BASIC_GLSL__
-#define __GEOGRAM_GFX_BASIC_GLSL__
+#ifndef GEOGRAM_GFX_BASIC_GLSL
+#define GEOGRAM_GFX_BASIC_GLSL
 
 #include <geogram_gfx/basic/common.h>
 #include <geogram/basic/numeric.h>
@@ -59,14 +59,14 @@ namespace GEO {
     namespace GLSL {
 
         /**
-         * \brief Initializes geogram_gfx functions and objects
-         * \details This function needs to be created once an 
-         *  OpenGL context is available.
+         * \brief Initializes some GLSL functions and objects.
+         * \details Called by GEO::Graphics::initialize()
          */  
         void GEOGRAM_GFX_API initialize();
 
         /**
-         * \brief Terminates geogram_gfx functions and objects
+         * \brief Terminates GLSL functions and objects.
+         * \details Called by GEO::Graphics::terminate()
          */  
         void GEOGRAM_GFX_API terminate();
         
@@ -126,7 +126,7 @@ namespace GEO {
          * \param[in] target the OpenGL shader target (one of GL_COMPUTE_SHADER,
          *   GL_VERTEX_SHADER, GL_TESS_CONTROL_SHADER, 
          *   GL_TESS_EVALUATION_SHADER, GL_GEOMETRY_SHADER, GL_FRAGMENT_SHADER)
-         * \param[in] source1, source2, ... ASCII strings that will be 
+         * \param[in] source1 , source2 , ... ASCII strings that will be 
          *  concatened to form the source of the shader. It needs to be
          *  terminated by 0.
          * \return the OpenGL opaque Id of the created shader object
@@ -159,16 +159,42 @@ namespace GEO {
             const char* source20 = nil            
         );
 
+
+        /**
+         * \brief Links a program.
+         * \details Errors are detexted and displayed to the Logger.
+         * \param[in] program the program to be linked
+         */
+        void GEOGRAM_GFX_API link_program(GLuint program);
         
         /**
-         * \brief Creates a GLSL program from a zero-terminated list of shaders
+         * \brief Creates a GLSL program from a zero-terminated 
+         *  list of shaders
          * \details Errors are detected and displayed to the Logger.
+         * \note link_program() needs to be called after.
+         *   If the program has vertex attributes, then 
+         *   glBindAttribLocation() needs to be called after
+         *   create_program_from_shaders_no_link() and before
+         *   link_program().
+         * \param[in] shader the first shader of the list
+         * \return the OpenGL opaque Id of the created program
+         */
+        GLuint GEOGRAM_GFX_API create_program_from_shaders_no_link(
+            GLuint shader, ...
+        );
+
+        /**
+         * \brief Creates a GLSL program from a zero-terminated 
+         *  list of shaders
+         * \details Errors are detected and displayed to the Logger.
+         * \note If the program has vertex attributes and needs 
+         *  glBindAttribLocation(), then use 
+         *  create_program_from_shaders_no_link() instead.
          * \param[in] shader the first shader of the list
          * \return the OpenGL opaque Id of the created program
          */
         GLuint GEOGRAM_GFX_API create_program_from_shaders(GLuint shader, ...);
-
-
+        
         /**
          * \brief Creates a GLSL program from a string.
          * \details The string may contain several shaders. Each shader
@@ -177,6 +203,7 @@ namespace GEO {
          *   where SHADER_TYPE is one of GL_VERTEX_SHADER, GL_FRAGMENT_SHADER, 
          *   GL_GEOMETRY_SHADER, GL_TESS_CONTROL_SHADER, 
          *   GL_TESS_EVALUATION_SHADER.
+         * \note link_program() needs to be called after.
          * \param[in,out] string the combined shaders that constitute the 
          *  program. 
          * \param[in] copy_string if true, the input string is copied 
@@ -188,7 +215,7 @@ namespace GEO {
          * \return the OpenGL opaque Id of the created shader object
          * \throw GLSLCompileError
          */
-        GLuint GEOGRAM_GFX_API create_program_from_string(
+        GLuint GEOGRAM_GFX_API create_program_from_string_no_link(
             const char* string, bool copy_string = true
         );
 
@@ -196,13 +223,13 @@ namespace GEO {
          * \brief Creates a GLSL program from a file.
          * \details The file contains a list of shaders, delimited by
          *   begin-end statements (see setup_program_from_string()).
+         * \note link_program() needs to be called after.
          * \param[in] filename the name of the file
          * \throw GLSLCompileError
          */
-        GLuint GEOGRAM_GFX_API create_program_from_file(
+        GLuint GEOGRAM_GFX_API create_program_from_file_no_link(
             const std::string& filename
         );
-
 
         /**
          * \brief Sets a uniform variable in a shader by name.
@@ -275,12 +302,30 @@ namespace GEO {
             return true;
         }
 
+
+        template<> inline bool set_program_uniform_by_name(
+            GLuint shader_id, const char* name, unsigned int val
+        ) {
+            GLint location = glGetUniformLocation(shader_id, name) ;
+            if(location < 0) {
+                return false ;
+            }
+            glUseProgram(shader_id);
+#ifdef GEO_GL_150
+            glUniform1ui(location, val) ;            
+#else            
+            glUniform1i(location, GLint(val)) ;            
+#endif            
+            glUseProgram(0);
+            return true;
+        }
+        
         /**
          * \brief Sets an array of uniform variables in a shader by name.
          * \param[in] shader_id the handle to the GLSL shader
          * \param[in] name the name of the uniform variable,
          *   as specified in the GLSL source of the shader.
-         * \param(in] count number of values
+         * \param[in] count number of values
          * \param[in] values a pointer to an array of values of size count
          */
         inline bool set_program_uniform_by_name(
@@ -307,6 +352,33 @@ namespace GEO {
         GLint GEOGRAM_GFX_API get_uniform_variable_offset(
             GLuint program, const char* varname
         );
+        
+    }
+}
+
+#else
+
+namespace GEO {
+
+    namespace GLSL {
+
+        template <class T> inline bool set_program_uniform_by_name(
+            GLuint, const char*, T 
+        ) {
+            geo_assert_not_reached;
+            return false;
+        }
+
+        inline GLint get_uniform_variable_offset(
+            GLuint, const char* 
+        ) {
+            return 0;
+        }
+
+
+        inline double supported_language_version() {
+            return 0.0;
+        }
         
     }
 }

@@ -1083,8 +1083,6 @@ namespace GEO {
                 case MESH_ORDER_MORTON:
                     morton_vsort(M, sorted_indices);
                     break;
-                default:
-                    geo_assert_not_reached;
             }
             M.vertices.permute_elements(sorted_indices);
         }
@@ -1099,8 +1097,6 @@ namespace GEO {
                 case MESH_ORDER_MORTON:
                     morton_fsort(M, sorted_indices);
                     break;
-                default:
-                    geo_assert_not_reached;
             }
             M.facets.permute_elements(sorted_indices);
         }
@@ -1115,8 +1111,6 @@ namespace GEO {
                 case MESH_ORDER_MORTON:
                     morton_csort(M, sorted_indices);
                     break;
-                default:
-                    geo_assert_not_reached;
             }
             M.cells.permute_elements(sorted_indices);
         }

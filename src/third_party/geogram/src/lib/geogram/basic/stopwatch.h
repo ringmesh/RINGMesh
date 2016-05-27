@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_BASIC_STOPWATCH__
-#define __GEOGRAM_BASIC_STOPWATCH__
+#ifndef GEOGRAM_BASIC_STOPWATCH
+#define GEOGRAM_BASIC_STOPWATCH
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/numeric.h>
@@ -121,9 +121,11 @@ namespace GEO {
         static double now();
 
     private:
-#ifdef GEO_OS_WINDOWS
+#if defined(GEO_OS_WINDOWS)
         long start_;
-#else
+#elif defined(GEO_OS_EMSCRIPTEN)
+        double startf_;
+#else        
         tms start_;
         clock_t start_user_;
 #endif

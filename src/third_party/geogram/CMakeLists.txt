@@ -22,10 +22,6 @@ endif()
 # Optional modules
 # (can be overriden in CMakeOptions.txt)
 
-if(NOT DEFINED GEOGRAM_WITH_MEDIT)
-    set(GEOGRAM_WITH_MEDIT TRUE)
-endif()
-
 if(NOT DEFINED GEOGRAM_WITH_GRAPHICS) 
     set(GEOGRAM_WITH_GRAPHICS TRUE)
 endif()    
@@ -86,15 +82,18 @@ endif()
 if(GEOGRAM_WITH_GRAPHICS)
    add_subdirectory(src/lib/geogram_gfx)
    add_subdirectory(src/bin/vorpaview)
-   if(GEOGRAM_WITH_MEDIT)
-       add_subdirectory(src/bin/medit)
-   endif()
 endif()
 
 add_subdirectory(src/lib/third_party)
 add_subdirectory(src/test)
+
+if(GEOGRAM_WITH_GRAPHICS)
+   add_subdirectory(src/demos)
+endif()
+
 add_subdirectory(doc)
 add_subdirectory(tests)
+
 
 ##############################################################################
 # Cleanup from previous builds

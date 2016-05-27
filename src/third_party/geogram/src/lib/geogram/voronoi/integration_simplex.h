@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_VORONOI_INTEGRATION_SIMPLEX__
-#define __GEOGRAM_VORONOI_INTEGRATION_SIMPLEX__
+#ifndef GEOGRAM_VORONOI_INTEGRATION_SIMPLEX
+#define GEOGRAM_VORONOI_INTEGRATION_SIMPLEX
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/numeric.h>
@@ -122,13 +122,11 @@ namespace GEO {
          * \param[in] nb_points number of points
          * \param[in] points a const pointer to the 
          *   contiguous array of coordinates of the points
-         * \param[out] g_in a pointer to the components 
+         * \param[out] g a pointer to the components 
          *   of the gradient of the objective function
          * \param[in] spinlocks a pointer to the spinlocks array to
          *  be used in multithreading mode, or nil in single-threaded
          *  mode
-         * \param[in] points_stride number of doubles between two consecutive
-         *  points
          */
          void set_points_and_gradient(
              coord_index_t dimension,
@@ -197,8 +195,6 @@ namespace GEO {
          *   3 for 3-axis anisotropy, 1 for vector anisotropy.
          * \param[in] frames a const pointer to the array of 
          *   3*nb_frames*nb_comp_per_frame of frame coordinates.
-         * \param[in] spinlocks a pointer to the spinlocks array
-         *  used in multithreading mode or nil in singlethreading mode.
          */
          IntegrationSimplex(
              const Mesh& mesh, 

@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_MESH_MESH_REPAIR__
-#define __GEOGRAM_MESH_MESH_REPAIR__
+#ifndef GEOGRAM_MESH_MESH_REPAIR
+#define GEOGRAM_MESH_MESH_REPAIR
 
 /**
  * \file mesh_repair.h

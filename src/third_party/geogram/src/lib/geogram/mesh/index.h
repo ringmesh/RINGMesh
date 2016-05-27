@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_MESH_INDEX__
-#define __GEOGRAM_MESH_INDEX__
+#ifndef GEOGRAM_MESH_INDEX
+#define GEOGRAM_MESH_INDEX
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/numeric.h>

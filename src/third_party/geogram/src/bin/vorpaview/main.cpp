@@ -44,7 +44,7 @@
  */
 
 #include <geogram_gfx/basic/GLSL.h>
-#include <geogram_gfx/glut_viewer/glut_viewer.h>
+#include <geogram_gfx/glup_viewer/glup_viewer.h>
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_io.h>
 #include <geogram_gfx/mesh/mesh_gfx.h>
@@ -52,158 +52,144 @@
 #include <geogram/basic/command_line_args.h>
 #include <geogram/basic/file_system.h>
 #include <geogram/basic/logger.h>
+#include <geogram/basic/stopwatch.h>
 
 namespace {
 
     GEO::Mesh M(3);
     GEO::MeshGfx M_gfx;
 
-    bool hexes = true;
     bool show_colors   = true;
-    bool show_borders  = false;
     bool white_bg      = true;
-    bool show_surface  = true;
-    bool show_volume   = false;
+    bool lighting      = true;
+    
     bool show_vertices = false;
-    bool colored_cells = false;
+    GLfloat vertices_size = 1.0f;
 
-    /**
-     * \brief Zooms in.
-     * \details Zooming factor is 1.1x.
-     */
-    void zoom_in() {
-        *glut_viewer_float_ptr(GLUT_VIEWER_ZOOM) *= 1.1f;
-    }
-
-    /**
-     * \brief Zooms out.
-     * \details De-zooming factor is (1/1.1)x.
-     */
-    void zoom_out() {
-        *glut_viewer_float_ptr(GLUT_VIEWER_ZOOM) /= 1.1f;
-    }
-
-    /**
-     * \brief Toggles black or white background color.
-     */
-    void toggle_background() {
-        white_bg = !white_bg;
-        if(white_bg) {
-            glut_viewer_set_background_color(1.0, 1.0, 1.0);
-            M_gfx.set_mesh_color(0.0, 0.0, 0.0);
-        } else {
-            glut_viewer_set_background_color(0.0, 0.0, 0.0);
-            M_gfx.set_mesh_color(1.0, 1.0, 1.0);
-        }
-    }
-
-    /**
-     * \brief Toggles mesh display.
-     */
-    void toggle_mesh() {
-        M_gfx.set_show_mesh(!M_gfx.get_show_mesh());
-    }
-
-    /**
-     * \brief Increases cell shrinking factor.
-     */
-    void inc_shrink() {
-        M_gfx.set_shrink(M_gfx.get_shrink() + 0.1);
-    }
-
-    /**
-     * \brief Decreases cell shrinking factor.
-     */
-    void dec_shrink() {
-        M_gfx.set_shrink(M_gfx.get_shrink() - 0.1);
-    }
+    bool show_surface  = true;
+    bool show_mesh = true;
+    bool show_surface_borders = false;
     
-    /**
-     * \brief Toggles color / BW display.
-     */
-    void toggle_colors() {
-        show_colors = !show_colors;
-    }
+    bool show_volume   = false;
+    GLfloat cells_shrink = 0.0f;    
+    bool show_hexes = true;    
+    bool show_colored_cells = false;
 
-    /**
-     * \brief Toggles lighting / constant color mode.
-     */
-    void toggle_lighting() {
-        M_gfx.set_lighting(!M_gfx.get_lighting());
-    }
+    GLfloat OTM_time = 0.0f;
+    GLfloat OTM_speed = 1.0f;
 
-    /**
-     * \brief Cycles between three possible points size.
-     */
-    void cycle_points_size() {
-        if(M_gfx.get_points_size() == 2.0f) {
-            M_gfx.set_points_size(0.1f);
-        } else if(M_gfx.get_points_size() == 0.1f) {
-            M_gfx.set_points_size(1.0f);            
-        } else {
-            M_gfx.set_points_size(2.0f);            
-        }
-    }
-    
     /**
      * \brief Increments the time of the Optimal Transport animation.
      */
     void increment_time() {
-        M_gfx.set_time(M_gfx.get_time() + 0.05);
+        OTM_time += 0.05f;
+        if(OTM_time > 1.0f) {
+            OTM_time = 1.0f;
+        }
     }
 
     /**
      * \brief Decrements the time of the Optimal Transport animation.
      */
     void decrement_time() {
-        M_gfx.set_time(M_gfx.get_time() - 0.05);        
+        OTM_time -= 0.05f;
+        if(OTM_time < 0.0f) {
+            OTM_time = 0.0f;
+        }
     }
+
+
+    /**
+     * \brief Increments cells shrinkage (shrinks more).
+     */
+    void increment_shrink() {
+        cells_shrink += 0.05f;
+        if(cells_shrink > 1.0f) {
+            cells_shrink = 1.0f;
+        }
+    }
+
+    /**
+     * \brief Decrements cells shrinkage (shrinks less).
+     */
+    void decrement_shrink() {
+        cells_shrink -= 0.05f;
+        if(cells_shrink < 0.0f) {
+            cells_shrink = 0.0f;
+        }
+    }
+
+    void load_mesh(const std::string& filename);
     
     /**
      * \brief Initializes OpenGL objects.
-     * \details Specifed as glut_viewer_set_init_func() callback.
+     * \details Specifed as glup_viewer_set_init_func() callback.
      */
     void init() {
         GEO::Graphics::initialize();
+
+        glup_viewer_disable(GLUP_VIEWER_BACKGROUND);        
+        glup_viewer_set_background_color(1.0, 1.0, 1.0);
+        glup_viewer_add_toggle('b', &white_bg, "white background");
+        glup_viewer_add_toggle('c', &show_colors, "colors");
+
+        glup_viewer_add_key_func('r', decrement_time, "Decrement time");
+        glup_viewer_add_key_func('t', increment_time, "Increment time");
+
+        glup_viewer_add_key_func('x', decrement_shrink, "Decrement shrink");
+        glup_viewer_add_key_func('w', increment_shrink, "Increment shrink");
         
-        glut_viewer_set_background_color(1.0, 1.0, 1.0);
-        glut_viewer_add_toggle(
-            'T', glut_viewer_is_enabled_ptr(GLUT_VIEWER_TWEAKBARS),
-            "Toggle tweakbars"
-        );
-        glut_viewer_add_key_func('b', toggle_background, "Toggle background");
-        glut_viewer_add_key_func('c', toggle_colors, "colors");
-        glut_viewer_add_toggle('B', &show_borders, "borders");
-        glut_viewer_add_key_func('z', zoom_in, "Zoom in");
-        glut_viewer_add_key_func('Z', zoom_out, "Zoom out");
-        glut_viewer_add_key_func('r', decrement_time, "Decrement time");
-        glut_viewer_add_key_func('t', increment_time, "Increment time");
-        glut_viewer_disable(GLUT_VIEWER_TWEAKBARS);
-        glut_viewer_disable(GLUT_VIEWER_BACKGROUND);
-        glut_viewer_add_key_func('m', toggle_mesh, "mesh");
-        glut_viewer_add_toggle('j',  &hexes, "hexes");
+        glup_viewer_add_toggle('p', &show_vertices, "vertices");
+        
+        glup_viewer_add_toggle('S', &show_surface, "surface");
+        glup_viewer_add_toggle('B', &show_surface_borders, "borders");
+        glup_viewer_add_toggle('m', &show_mesh, "mesh");
+
+        glup_viewer_add_toggle('V', &show_volume, "volume");
+        glup_viewer_add_toggle('j',  &show_hexes, "hexes");
+        glup_viewer_add_toggle('C', &show_colored_cells, "colored cells");
+
+#ifdef GEO_OS_EMSCRIPTEN        
+        if(GEO::FileSystem::is_file("morph.tet6")) {
+            load_mesh("morph.tet6");
+            show_vertices = false;
+            glup_viewer_enable(GLUP_VIEWER_IDLE_REDRAW);
+        }
+#endif        
     }
 
     /**
      * \brief Draws the current mesh according to current rendering mode.
-     * \details Specifed as glut_viewer_set_display_func() callback.
+     * \details Specifed as glup_viewer_set_display_func() callback.
      */
     void display() {
+
+        if(glup_viewer_is_enabled(GLUP_VIEWER_IDLE_REDRAW)) {
+            OTM_time = float(
+                         sin(double(OTM_speed) * GEO::SystemStopwatch::now())
+                       );
+            OTM_time = 0.5f * (OTM_time + 1.0f);
+        }
+        
+        M_gfx.set_lighting(lighting);
+        M_gfx.set_time(double(OTM_time));
+        
         if(M_gfx.mesh() != &M) {
             M_gfx.set_mesh(&M);
         }
         
-        if(show_borders) {
-            M_gfx.draw_surface_borders();
+        if(show_vertices) {
+            M_gfx.set_points_size(vertices_size);
+            M_gfx.draw_vertices();
         }
 
-
-        M_gfx.set_draw_cells(GEO::MESH_HEX, hexes);
-        
-        GLfloat shininess = 20.0f;
-        glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, &shininess);
-        static float spec[4] = {0.6f, 0.6f, 0.6f, 1.0f};
-        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spec);
+        if(white_bg) {
+            glup_viewer_set_background_color(1.0, 1.0, 1.0);
+            M_gfx.set_mesh_color(0.0, 0.0, 0.0);
+        } else {
+            glup_viewer_set_background_color(0.0, 0.0, 0.0);
+            M_gfx.set_mesh_color(1.0, 1.0, 1.0);
+        }
         
         if(show_colors) {
             if(M.cells.nb() == 0) {
@@ -221,18 +207,30 @@ namespace {
             }
         }
 
-        if(show_vertices) {
-            M_gfx.draw_vertices();
-        }
-        
+        M_gfx.set_show_mesh(show_mesh);
+
         if(show_surface) {
             M_gfx.draw_surface();
         }
-
-        if(show_volume) {
-            M_gfx.draw_volume();
+        
+        if(show_surface_borders) {
+            M_gfx.draw_surface_borders();
         }
 
+        if(show_mesh) {
+            M_gfx.draw_edges();
+        }
+
+        if(show_volume) {
+            M_gfx.set_shrink(double(cells_shrink));
+            M_gfx.set_draw_cells(GEO::MESH_HEX, show_hexes);
+            if(show_colored_cells) {
+                M_gfx.set_cells_colors_by_type();
+            } else {
+                M_gfx.set_cells_color(0.9f, 0.9f, 0.9f);
+            }
+            M_gfx.draw_volume();
+        }
     }
 
     /**
@@ -240,24 +238,24 @@ namespace {
      * \details In animated mode, the mesh animation is stored as a mesh with
      *  6d coordinates, that correspond to the geometric location
      *  at the vertices at time 0 and at time 1.
-     * \param[in] M the mesh
+     * \param[in] M_in the mesh
      * \param[out] xyzmin a pointer to the three minimum coordinates
      * \param[out] xyzmax a pointer to the three maximum coordinates
      * \param[in] animate true if displaying a mesh animation
      */
     void get_bbox(
-        const GEO::Mesh& M, double* xyzmin, double* xyzmax,
+        const GEO::Mesh& M_in, double* xyzmin, double* xyzmax,
         bool animate
     ) {
-        geo_assert(M.vertices.dimension() >= GEO::index_t(animate ? 6 : 3));
+        geo_assert(M_in.vertices.dimension() >= GEO::index_t(animate ? 6 : 3));
         for(GEO::index_t c = 0; c < 3; c++) {
             xyzmin[c] = GEO::Numeric::max_float64();
             xyzmax[c] = GEO::Numeric::min_float64();
         }
 
-        for(GEO::index_t v = 0; v < M.vertices.nb(); ++v) {
-            if(M.vertices.single_precision()) {
-                const float* p = M.vertices.single_precision_point_ptr(v);
+        for(GEO::index_t v = 0; v < M_in.vertices.nb(); ++v) {
+            if(M_in.vertices.single_precision()) {
+                const float* p = M_in.vertices.single_precision_point_ptr(v);
                 for(GEO::coord_index_t c = 0; c < 3; ++c) {
                     xyzmin[c] = GEO::geo_min(xyzmin[c], double(p[c]));
                     xyzmax[c] = GEO::geo_max(xyzmax[c], double(p[c]));
@@ -267,7 +265,7 @@ namespace {
                     }
                 }
             } else {
-                const double* p = M.vertices.point_ptr(v);
+                const double* p = M_in.vertices.point_ptr(v);
                 for(GEO::coord_index_t c = 0; c < 3; ++c) {
                     xyzmin[c] = GEO::geo_min(xyzmin[c], p[c]);
                     xyzmax[c] = GEO::geo_max(xyzmax[c], p[c]);
@@ -295,7 +293,6 @@ namespace {
      * \brief Loads a mesh from a file.
      */
     void load_mesh(const std::string& filename) {
-
         M_gfx.set_mesh(nil);
         
         GEO::MeshIOFlags flags;
@@ -318,16 +315,17 @@ namespace {
             double xyzmin[3];
             double xyzmax[3];
             get_bbox(M, xyzmin, xyzmax, true);
-            glut_viewer_set_region_of_interest(
+            glup_viewer_set_region_of_interest(
                 float(xyzmin[0]), float(xyzmin[1]), float(xyzmin[2]),
                 float(xyzmax[0]), float(xyzmax[1]), float(xyzmax[2])
             );
         } else {
+            M_gfx.set_animate(false);            
             M.vertices.set_dimension(3);
             double xyzmin[3];
             double xyzmax[3];
             get_bbox(M, xyzmin, xyzmax, false);
-            glut_viewer_set_region_of_interest(
+            glup_viewer_set_region_of_interest(
                 float(xyzmin[0]), float(xyzmin[1]), float(xyzmin[2]),
                 float(xyzmax[0]), float(xyzmax[1]), float(xyzmax[2])
             );
@@ -336,42 +334,94 @@ namespace {
 
     /**
      * \brief Loads a mesh from a file icon dropped into the window.
-     * \details Specifed as glut_viewer_set_drag_drop_func() callback.
+     * \details Specifed as glup_viewer_set_drag_drop_func() callback.
      */
     void dropped_file_cb(char* filename) {
         load_mesh(std::string(filename));
     }
+}
 
+/**
+ * \brief Drawns and manages the graphic user interface.
+ */
+static void overlay() {
+    ImGui::SetNextWindowPos(ImVec2(20, 20), ImGuiSetCond_Once);
+    ImGui::SetNextWindowSize(ImVec2(140, 400), ImGuiSetCond_Once);
+    
+    ImGui::Begin("Tweaks [T]");
 
-    void toggle_colored_cells() {
-        colored_cells = !colored_cells;
-        if(colored_cells) {
-            M_gfx.set_cells_colors_by_type();
-        } else {
-            M_gfx.set_cells_color(0.9f, 0.9f, 0.9f);
+    if(M.vertices.dimension() >= 6) {
+        ImGui::Separator();
+        ImGui::Checkbox(
+            "Animate [a]",
+            (bool*)glup_viewer_is_enabled_ptr(GLUP_VIEWER_IDLE_REDRAW)
+        );
+        ImGui::SliderFloat("spd.", &OTM_speed, 1.0f, 10.0f, "%.1f");
+        ImGui::SliderFloat("t.", &OTM_time, 0.0f, 1.0f, "%.2f");
+    }
+    
+    ImGui::Separator();    
+    ImGui::Checkbox("Vertices [p]", &show_vertices);
+    ImGui::SliderFloat("sz.", &vertices_size, 0.1f, 5.0f, "%.1f");
+
+    if(M.facets.nb() != 0) {
+        ImGui::Separator();
+        ImGui::Checkbox("Surface [S]", &show_surface);
+        if(show_surface) {
+            ImGui::Checkbox("mesh [m]", &show_mesh);
+            ImGui::Checkbox("borders [B]", &show_surface_borders);
         }
     }
 
-    void toggle_regions() {
-//       M_gfx.set_show_regions(!M_gfx.get_show_regions());
+    if(M.cells.nb() != 0) {
+        ImGui::Separator();
+        ImGui::Checkbox("Volume [V]", &show_volume);
+        if(show_volume) {
+            ImGui::Checkbox("mesh [m]", &show_mesh);            
+            ImGui::SliderFloat(
+                "shrk.", &cells_shrink, 0.0f, 1.0f, "%.2f"
+            );        
+            if(!M.cells.are_simplices()) {
+                ImGui::Checkbox("colored cells [C]", &show_colored_cells);  
+                ImGui::Checkbox("hexes [j]", &show_hexes);
+            }
+        }
     }
 
-    GEO::index_t cur_RVD=0;
-    void load_RVD() {
-        load_mesh("RVD_" + GEO::String::to_string(cur_RVD) + ".meshb");
-        M_gfx.set_mesh(&M);
+    ImGui::Separator();
+    ImGui::Checkbox(
+        "Lighting [L]", &lighting
+    );
+    if(lighting) {
+        ImGui::Checkbox(
+            "edit [l]",
+            (bool*)glup_viewer_is_enabled_ptr(GLUP_VIEWER_ROTATE_LIGHT)
+        );
     }
     
-    void load_RVD_inc() {
-        ++cur_RVD;
-        load_RVD();
+    ImGui::Separator();
+    ImGui::Checkbox(
+        "Clipping [F1]", (bool*)glup_viewer_is_enabled_ptr(GLUP_VIEWER_CLIP)
+    );
+    if(glup_viewer_is_enabled(GLUP_VIEWER_CLIP)) {
+        ImGui::Checkbox(
+            "edit [F2]",
+            (bool*)glup_viewer_is_enabled_ptr(GLUP_VIEWER_EDIT_CLIP)
+        );
+        ImGui::Checkbox(
+            "fixed [F3]",
+            (bool*)glup_viewer_is_enabled_ptr(GLUP_VIEWER_FIXED_CLIP)
+        );
     }
 
-    void load_RVD_dec() {
-        --cur_RVD;
-        load_RVD();
-    }
+    /*
+    ImGui::Separator();
+    ImGui::Text("Colors");
+    ImGui::Checkbox("colors [c]", &show_colors);
+    ImGui::Checkbox("white bkgnd [b]", &white_bg);
+    */
     
+    ImGui::End();
 }
 
 int main(int argc, char** argv) {
@@ -389,7 +439,7 @@ int main(int argc, char** argv) {
     // of the executable.
     const std::string& program_name = GEO::FileSystem::base_name(argv[0]);
     if(program_name == "vorpaview0") {
-        GEO::CmdLine::set_arg("gfx:GLSL",false);
+        GEO::CmdLine::set_arg("gfx:GLUP_profile","VanillaGL");
     }
     
     GEO::CmdLine::declare_arg(
@@ -419,39 +469,31 @@ int main(int argc, char** argv) {
         show_vertices = true;
     }
 
-    glut_viewer_set_window_title(
+    glup_viewer_set_window_title(
         (char*) "||||||(G)||E||(O)|(G)||R||/A\\|M|||||||"
     );
-    glut_viewer_set_init_func(init);
-    glut_viewer_set_display_func(display);
-    glut_viewer_set_drag_drop_func(dropped_file_cb);
-    glut_viewer_add_toggle('V', &show_volume, "volume");
-    glut_viewer_add_toggle('p', &show_vertices, "vertices");
-    glut_viewer_add_key_func('P', &cycle_points_size, "change points size");    
-    glut_viewer_add_toggle('S', &show_surface, "surface");
-    glut_viewer_add_key_func('L', toggle_lighting, "toggle lighting");
-    glut_viewer_add_key_func('n', invert_normals, "invert normals");
-    glut_viewer_add_key_func('x', dec_shrink, "unshrink cells");
-    glut_viewer_add_key_func('w', inc_shrink, "shrink cells");
-    glut_viewer_add_key_func('C', toggle_colored_cells, "toggle colored cells");
-    glut_viewer_add_key_func('R', toggle_regions, "toggle regions");    
-
-    glut_viewer_add_key_func('D', load_RVD_inc, "load next RVD");
-    glut_viewer_add_key_func('F', load_RVD_dec, "load prev RVD");    
+    glup_viewer_set_init_func(init);
+    glup_viewer_set_display_func(display);
+    glup_viewer_set_overlay_func(overlay);
+    glup_viewer_set_drag_drop_func(dropped_file_cb);
     
+    glup_viewer_add_toggle('L', &lighting, "toggle lighting");
+    glup_viewer_add_toggle(
+        'a', glup_viewer_is_enabled_ptr(GLUP_VIEWER_IDLE_REDRAW), "animate"
+    );
+    glup_viewer_add_key_func('n', invert_normals, "invert normals");
+
+    glup_viewer_add_toggle(
+        'T', glup_viewer_is_enabled_ptr(GLUP_VIEWER_TWEAKBARS), "tweakbars"
+    );
+
     if(GEO::CmdLine::get_arg_bool("gfx:full_screen")) {
-       glut_viewer_enable(GLUT_VIEWER_FULL_SCREEN);
+       glup_viewer_enable(GLUP_VIEWER_FULL_SCREEN);
     }
 
     M_gfx.set_points_color(0.0, 1.0, 0.0);
     
-    glut_viewer_main_loop(argc, argv);
-
-    // Note: when 'q' is pressed, exit() is called
-    // because there is no simple way of exiting from
-    // glut's event loop, therefore this line is not
-    // reached and memory is not properly freed on exit.
-    // TODO: add a function in freeglut to exit event loop.
+    glup_viewer_main_loop(argc, argv);
 
     return 0;
 }

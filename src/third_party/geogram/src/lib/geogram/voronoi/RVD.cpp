@@ -939,7 +939,7 @@ namespace {
             /**
              * \brief Constructs a ComputeCVTFuncGradIntegrationSimplex.
              * \param[in] RVD the Restricted Voronoi Diagram
-             * \param[i] F the IntegrationSimplex
+             * \param[in] F the IntegrationSimplex
              */
             ComputeCVTFuncGradIntegrationSimplex(
                 const GenRestrictedVoronoiDiagram& RVD,
@@ -1510,10 +1510,8 @@ namespace {
                         T.funcval_, arg_vectors_, simplex_func_
                     );
                 } break;
-                default:
-                {
+                case MT_NONE:
                     geo_assert_not_reached;
-                } break;
             }
         }
 
@@ -2405,8 +2403,6 @@ namespace GEO {
                 break;
             default:
                 geo_assert_not_reached;
-                return nil;
-                break;
         }
         if(CmdLine::get_arg("algo:predicates") == "exact") {
             result->set_exact_predicates(true);

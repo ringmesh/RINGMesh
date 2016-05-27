@@ -49,6 +49,8 @@
 #include <geogram/basic/progress.h>
 #include <geogram/basic/logger.h>
 
+#ifdef GEO_GL_150
+
 namespace GLUP {
     using namespace GEO;
     
@@ -71,11 +73,11 @@ namespace GLUP {
         return "GLUP150";
     }
 
-    const char* GLUP150_shader_source_header =
+    static const char* GLUP150_shader_source_header =
         "#version 150 core                          \n"
         ;
 
-    const char* GLUP150_vshader_in_out_declaration =
+    static const char* GLUP150_vshader_in_out_declaration =
         "in vec4 vertex_in;                         \n"
         "in vec4 color_in;                          \n"
         "in vec4 tex_coord_in;                      \n"
@@ -98,7 +100,7 @@ namespace GLUP {
     // shader (this happens with the gather tesselation
     // evaluation shader).
     
-    const char* GLUP150_gshader_in_out_declaration =
+    static const char* GLUP150_gshader_in_out_declaration =
         "in VertexData {                            \n"
         "    vec4 transformed;                      \n"
         "    vec4 color;                            \n"
@@ -135,7 +137,7 @@ namespace GLUP {
         "}                                          \n";
 
    
-    const char* GLUP150_fshader_in_out_declaration =
+    static const char* GLUP150_fshader_in_out_declaration =
         "out vec4 frag_color ;                      \n"
         "in float gl_ClipDistance[];                \n"        
         "                                           \n"
@@ -148,9 +150,7 @@ namespace GLUP {
         "   flat vec3 edge_mask;                    \n"
         "} FragmentIn;                              \n"
         "                                           \n"
-        "uniform sampler1D texture1D;               \n"
-        "uniform sampler2D texture2D;               \n"
-        "uniform sampler3D texture3D;               \n";
+        ;
 
     /**
      * \brief Declaration of input/output for simple fragment shaders
@@ -158,7 +158,7 @@ namespace GLUP {
      * \details This one is used when the fragment shader is directly
      *  plugged to the vertex shader (i.e. without geometry shader).
      */
-    const char* GLUP150_simple_fshader_in_out_declaration =
+    static const char* GLUP150_simple_fshader_in_out_declaration =
         "out vec4 frag_color ;                      \n"
         "in float gl_ClipDistance[];                \n"                
         "                                           \n"
@@ -168,13 +168,11 @@ namespace GLUP {
         "   vec4 tex_coord;                         \n"
         "} FragmentIn;                              \n"
         "                                           \n"
-        "uniform sampler1D texture1D;               \n"
-        "uniform sampler2D texture2D;               \n"
-        "uniform sampler3D texture3D;               \n";
+        ;
 
     // Note There is packUnorm4x8() and unpackUnorm4x8() that does what
     // we want, but it is only supported in GLSL 4.1...
-    const char* GLUP150_fshader_utils =
+    static const char* GLUP150_fshader_utils =
         "vec4 int_to_vec4(in int x) {                                        \n"
         "  return vec4(                                                      \n"
         "     float(x         & 255)/255.0,                                  \n"
@@ -203,14 +201,24 @@ namespace GLUP {
         "       vec4 tex_color;                                              \n"
         "       switch(GLUP.texture_type) {                                  \n"
         "          case GLUP_TEXTURE_1D:                                     \n"
-        "            tex_color = texture(texture1D, FragmentIn.tex_coord.x); \n"
-        "            break;                                                  \n"
+        "           tex_color = texture(                                     \n"
+        "               texture1Dsampler, FragmentIn.tex_coord.xy            \n"
+        "           );                                                       \n"
+        "           break;                                                   \n"
         "          case GLUP_TEXTURE_2D:                                     \n"
-        "           tex_color = texture(texture2D, FragmentIn.tex_coord.xy); \n"
+        "           tex_color = texture(                                     \n"
+        "                texture2Dsampler, FragmentIn.tex_coord.xy           \n"
+        "           );                                                       \n"
         "           break;                                                   \n"
         "          case GLUP_TEXTURE_3D:                                     \n"
-        "           tex_color = texture(texture3D, FragmentIn.tex_coord.xyz);\n"
+        "           tex_color = texture(                                     \n"
+        "               texture3Dsampler, FragmentIn.tex_coord.xyz           \n"
+        "           );                                                       \n"
         "           break;                                                   \n"
+        "       }                                                            \n"
+        "       if(indirect_texturing_enabled()) {                           \n"
+        "           tex_color = GLUP.texture_matrix * tex_color;             \n"
+        "           tex_color = texture(texture1Dsampler, tex_color.xy);     \n"
         "       }                                                            \n"
         "       switch(GLUP.texture_mode) {                                  \n"
         "          case GLUP_TEXTURE_REPLACE:                                \n"
@@ -262,7 +270,7 @@ namespace GLUP {
 
     // GLUP_POINTS ********************************************************
 
-    const char* GLUP150_points_and_lines_vshader_source =
+    static const char* GLUP150_points_and_lines_vshader_source =
         "void main() {                                              \n"
         "    if(clipping_enabled()) {                               \n"
         "       gl_ClipDistance[0] = dot(                           \n"
@@ -275,9 +283,14 @@ namespace GLUP {
         "      VertexOut.color = color_in;                          \n"
         "   }                                                       \n"
         "   if(texturing_enabled()) {                               \n"
-        "      VertexOut.tex_coord =                                \n"
+        "      if(indirect_texturing_enabled()) {                   \n"
+        "          VertexOut.tex_coord = tex_coord_in;              \n"
+        "      } else {                                             \n"
+        "          VertexOut.tex_coord =                            \n"
         "                       GLUP.texture_matrix * tex_coord_in; \n"
+        "      }                                                    \n"
         "   }                                                       \n"
+        "   gl_PointSize = GLUP.point_size;                         \n"
         "   gl_Position =                                           \n"
         "                GLUP.modelviewprojection_matrix*vertex_in; \n"
         "}                                                          \n";
@@ -287,7 +300,7 @@ namespace GLUP {
     // gl_FragDepth = gl_FragCoord.z +
     //   (pt_size*0.0001)/3.0 * gl_ProjectionMatrix[2].z * sqrt(1.0 - r2);
 
-    const char* GLUP150_points_fshader_source =
+    static const char* GLUP150_points_fshader_source =
         "#extension GL_ARB_conservative_depth : enable                      \n"
         "layout (depth_less) out float gl_FragDepth;                        \n"
         "                                                                   \n"
@@ -341,7 +354,7 @@ namespace GLUP {
             0
         );
 
-        GLuint program = GLSL::create_program_from_shaders(
+        GLuint program = GLSL::create_program_from_shaders_no_link(
             vshader, fshader, 0 
         );
         
@@ -353,7 +366,7 @@ namespace GLUP {
 
     // GLUP_LINES *******************************************************
 
-    const char* GLUP150_lines_fshader_source =
+    static const char* GLUP150_lines_fshader_source =
         "void main() {                                              \n"
         "   clip_fragment();                                        \n"
         "   if(picking_enabled()) {                                 \n"
@@ -382,7 +395,7 @@ namespace GLUP {
             0
         );
 
-        GLuint program = GLSL::create_program_from_shaders(
+        GLuint program = GLSL::create_program_from_shaders_no_link(
             vshader, fshader, 0 
         );
         
@@ -397,7 +410,7 @@ namespace GLUP {
     /**
      * \brief The fragment shader for polygons if GLSL version is 1.50.
      */
-    const char* GLUP150_triangle_fshader_source = 
+    static const char* GLUP150_triangle_fshader_source = 
         "float edge_factor() {                                              \n"
         "    vec3 bary3 = vec3(                                             \n"
         "       FragmentIn.bary.x,                                          \n"
@@ -440,7 +453,7 @@ namespace GLUP {
      *   the triangle should be clipped.
      *  - flat_shaded_quad(p1,p2,p3,p4,pp1,pp2,pp3,pp4,do_clip,edges)
      */
-    const char* GLUP150_gshader_utils_source =
+    static const char* GLUP150_gshader_utils_source =
         "out float gl_ClipDistance[];                                       \n"
         "vec4 projected[nb_vertices];                                       \n"
         "                                                                   \n"
@@ -577,13 +590,18 @@ namespace GLUP {
      * \brief The vertex shader.
      * \details Used by points, quads, tets, prisms
      */
-    const char* GLUP150_vshader_transform_source =
+    static const char* GLUP150_vshader_transform_source =
         " void main(void) {                                                 \n"
         "     if(vertex_colors_enabled()) {                                 \n"
         "        VertexOut.color = color_in;                                \n"
         "     }                                                             \n"
         "     if(texturing_enabled()) {                                     \n"
-        "        VertexOut.tex_coord = GLUP.texture_matrix * tex_coord_in;  \n"
+        "         if(indirect_texturing_enabled()) {                        \n"
+        "             VertexOut.tex_coord = tex_coord_in;                   \n"
+        "         } else {                                                  \n"
+        "             VertexOut.tex_coord =                                 \n"
+        "                          GLUP.texture_matrix * tex_coord_in;      \n"
+        "         }                                                         \n"
         "     }                                                             \n"
         "     if(                                                           \n"
         "         glup_primitive_dimension != 3 ||                          \n"
@@ -599,7 +617,7 @@ namespace GLUP {
      * \brief The geometry shader for triangles.
      * \details Uses vshader_transform and gshader_utils.
      */
-    const char* GLUP150_gshader_tri_source =
+    static const char* GLUP150_gshader_tri_source =
         "void main() {                                                      \n"
         "    gl_PrimitiveID = gl_PrimitiveIDIn;                             \n"
         "    project_vertices();                                            \n"
@@ -638,7 +656,7 @@ namespace GLUP {
         );
                 
         GLuint program = 
-            GLSL::create_program_from_shaders(
+            GLSL::create_program_from_shaders_no_link(
                 vshader, gshader, fshader, 0 
             );
 
@@ -655,7 +673,7 @@ namespace GLUP {
      * \brief The geometry shader for quads.
      * \details Uses vshader_transform and gshader_utils.
      */
-    const char* GLUP150_gshader_quad_source =
+    static const char* GLUP150_gshader_quad_source =
         "void main() {                                                      \n"
         "    gl_PrimitiveID = gl_PrimitiveIDIn;                             \n"
         "    project_vertices();                                            \n"
@@ -695,7 +713,7 @@ namespace GLUP {
         );
 
         GLuint program = 
-            GLSL::create_program_from_shaders(
+            GLSL::create_program_from_shaders_no_link(
                 vshader, gshader, fshader, 0
             );
         
@@ -708,7 +726,7 @@ namespace GLUP {
 
     // GLUP_TETRAHEDRA ******************************************************
 
-    const char* GLUP150_marching_cells_utils =
+    static const char* GLUP150_marching_cells_utils =
        "int compute_config() {                               \n"
        "  int result = 0;                                    \n"
        "  for(int v=0; v<cell_nb_vertices; ++v) {            \n"
@@ -795,7 +813,7 @@ namespace GLUP {
      * \brief The geometry shader for tetrahedra.
      * \details Uses v_shader_transform and gshader_utils.
      */
-    const char* GLUP150_gshader_tet_source =
+    static const char* GLUP150_gshader_tet_source =
         "void main() {                                                      \n"
         "    if(cell_is_clipped()) {                                        \n"
         "        return;                                                    \n"
@@ -851,13 +869,12 @@ namespace GLUP {
         );
 
         GLuint program = 
-            GLSL::create_program_from_shaders(
+            GLSL::create_program_from_shaders_no_link(
                 vshader, gshader, fshader, 0 
             );
 
-        marching_tet_.bind_uniform_state(program);
-        
         set_primitive_info(GLUP_TETRAHEDRA, GL_LINES_ADJACENCY, program);
+        marching_tet_.bind_uniform_state(program);
         
         glDeleteShader(vshader);
         glDeleteShader(gshader);
@@ -868,7 +885,7 @@ namespace GLUP {
     /**
      * \brief The geometry shader for connectors.
      */
-    const char* GLUP150_gshader_connector_source =
+    static const char* GLUP150_gshader_connector_source =
         "void main() {                                                      \n"
         "    if(cell_is_clipped()) {                                        \n"
         "        return;                                                    \n"
@@ -922,13 +939,12 @@ namespace GLUP {
         );
 
         GLuint program = 
-            GLSL::create_program_from_shaders(
+            GLSL::create_program_from_shaders_no_link(
                 vshader, gshader, fshader, 0 
             );
-
-        marching_connector_.bind_uniform_state(program);
         
         set_primitive_info(GLUP_CONNECTORS, GL_LINES_ADJACENCY, program);
+        marching_connector_.bind_uniform_state(program);
         
         glDeleteShader(vshader);
         glDeleteShader(gshader);
@@ -941,7 +957,7 @@ namespace GLUP {
      * \brief The geometry shader for prisms
      * \details Uses v_shader_transform and gshader_utils.
      */
-    const char* GLUP150_gshader_prism_source =
+    static const char* GLUP150_gshader_prism_source =
         "void main() {                                                      \n"
         "    if(cell_is_clipped()) {                                        \n"
         "        return;                                                    \n"
@@ -998,13 +1014,12 @@ namespace GLUP {
         );
 
         GLuint program = 
-            GLSL::create_program_from_shaders(
+            GLSL::create_program_from_shaders_no_link(
                 vshader, gshader, fshader, 0 
             );
-
-        marching_prism_.bind_uniform_state(program);
         
         set_primitive_info(GLUP_PRISMS, GL_TRIANGLES_ADJACENCY, program);
+        marching_prism_.bind_uniform_state(program);
         
         glDeleteShader(vshader);
         glDeleteShader(gshader);
@@ -1013,7 +1028,7 @@ namespace GLUP {
 
     // GLUP_HEXAHEDRA *******************************************************
 
-    const char* GLUP150_vshader_gather_source =
+    static const char* GLUP150_vshader_gather_source =
         " const int nb_vertices_per_GL =                      \n"
         "                      nb_vertices / nb_vertices_GL;  \n"
         " in vec4 vertex_in[nb_vertices_per_GL];              \n"
@@ -1037,8 +1052,13 @@ namespace GLUP {
         "   }                                                 \n"
         "   if(texturing_enabled()) {                         \n"
         "       for(int i=0; i<nb_vertices_per_GL; ++i) {     \n"
-        "           VertexOut.tex_coord[i] =                  \n"
+        "           if(indirect_texturing_enabled()) {        \n"
+        "              VertexOut.tex_coord[i] =               \n" 
+        "                                    tex_coord_in[i]; \n"
+        "           } else {                                  \n"
+        "              VertexOut.tex_coord[i] =               \n"
         "              GLUP.texture_matrix * tex_coord_in[i]; \n"
+        "           }                                         \n"
         "       }                                             \n"
         "   }                                                 \n"
         "   if(vertex_colors_enabled()) {                     \n"
@@ -1056,7 +1076,7 @@ namespace GLUP {
     // and all vertices are merged into the attributes of a single
     // vertex. The geometry shader then expands this single vertex
     // into the primitive.
-    const char* GLUP150_gshader_gather_in_out_declaration =
+    static const char* GLUP150_gshader_gather_in_out_declaration =
         " const int nb_vertices_per_GL =            \n"
         "            nb_vertices / nb_vertices_GL;  \n"
         "in GVertexData {                           \n"
@@ -1108,7 +1128,7 @@ namespace GLUP {
      * \brief The geometry shader for hexahedra
      * \details Uses v_shader_gather and gshader_utils.
      */
-    const char* GLUP150_gshader_hex_source =
+    static const char* GLUP150_gshader_hex_source =
         "void main() {                                                      \n"
         "    if(cell_is_clipped()) {                                        \n"
         "        return;                                                    \n"
@@ -1167,16 +1187,14 @@ namespace GLUP {
         );
 
         GLuint program = 
-            GLSL::create_program_from_shaders(
+            GLSL::create_program_from_shaders_no_link(
                 vshader, gshader, fshader, 0 
             );
 
-        marching_hex_.bind_uniform_state(program);
-        
         set_primitive_info_vertex_gather_mode(
             GLUP_HEXAHEDRA, GL_LINES_ADJACENCY, program
         );
-
+        marching_hex_.bind_uniform_state(program);
         
         glDeleteShader(vshader);
         glDeleteShader(gshader);
@@ -1189,7 +1207,7 @@ namespace GLUP {
      * \brief The geometry shader for pyramids
      * \details Uses v_shader_gather and gshader_utils.
      */
-    const char* GLUP150_gshader_pyramid_source =
+    static const char* GLUP150_gshader_pyramid_source =
         "void main() {                                                      \n"
         "    if(cell_is_clipped()) {                                        \n"
         "        return;                                                    \n"
@@ -1247,15 +1265,14 @@ namespace GLUP {
         );
 
         GLuint program = 
-            GLSL::create_program_from_shaders(
+            GLSL::create_program_from_shaders_no_link(
                 vshader, gshader, fshader, 0 
             );
-
-        marching_pyramid_.bind_uniform_state(program);
         
         set_primitive_info_vertex_gather_mode(
             GLUP_PYRAMIDS, GL_POINTS, program
         );
+        marching_pyramid_.bind_uniform_state(program);
         
         glDeleteShader(vshader);
         glDeleteShader(gshader);
@@ -1272,7 +1289,7 @@ namespace GLUP {
         return "GLUP440";
     }
     
-    const char* GLUP440_shader_source_header =
+    static const char* GLUP440_shader_source_header =
         "#version 440 core \n"
         ;
 
@@ -1285,7 +1302,7 @@ namespace GLUP {
 
      // This version of the tesselation shader gathers all input vertices into
      // a single vertex. It is used for pyramids.
-     const char* GLUP440_teshader_gather_single_vertex_source =
+     static const char* GLUP440_teshader_gather_single_vertex_source =
         "layout(isolines, point_mode) in;                                   \n"
         "                                                                   \n"
         "in VertexData {                                                    \n"
@@ -1326,7 +1343,7 @@ namespace GLUP {
 
      // This version of the tesselation shader gathers the input vertices into
      // several vertices. It is used for hexahedra.
-     const char* GLUP440_teshader_gather_multi_vertices_source =
+     static const char* GLUP440_teshader_gather_multi_vertices_source =
         "layout(isolines) in;                                               \n"
         "                                                                   \n"
         " const int nb_vertices_per_GL = nb_vertices / nb_vertices_GL;      \n"
@@ -1376,7 +1393,7 @@ namespace GLUP {
     // lot of attributes). The second one needs to be discarded
     // (discard_me = true).
     
-    const char* GLUP440_gshader_tegather_in_out_declaration =
+    static const char* GLUP440_gshader_tegather_in_out_declaration =
         " const int nb_vertices_per_GL =            \n"
         "       nb_vertices / nb_vertices_GL;       \n"
         "                                           \n"
@@ -1479,15 +1496,14 @@ namespace GLUP {
         );
 
         GLuint program = 
-            GLSL::create_program_from_shaders(
+            GLSL::create_program_from_shaders_no_link(
                 vshader, teshader, gshader, fshader, 0 
             );
 
-        marching_hex_.bind_uniform_state(program);
-        
         set_primitive_info(
             GLUP_HEXAHEDRA, GL_PATCHES, program
         );
+        marching_hex_.bind_uniform_state(program);
         
         glDeleteShader(teshader);
         glDeleteShader(vshader);        
@@ -1545,15 +1561,14 @@ namespace GLUP {
         );
 
         GLuint program = 
-            GLSL::create_program_from_shaders(
+            GLSL::create_program_from_shaders_no_link(
                 vshader, teshader, gshader, fshader, 0 
             );
 
-        marching_pyramid_.bind_uniform_state(program);
-        
         set_primitive_info(
             GLUP_PYRAMIDS, GL_PATCHES, program
         );
+        marching_pyramid_.bind_uniform_state(program);
         
         glDeleteShader(teshader);
         glDeleteShader(vshader);        
@@ -1564,3 +1579,4 @@ namespace GLUP {
     /***********************************************************************/
 }
 
+#endif

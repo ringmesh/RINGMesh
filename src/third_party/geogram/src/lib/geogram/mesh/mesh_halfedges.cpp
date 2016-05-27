@@ -75,7 +75,6 @@ namespace GEO {
             }
         }
         geo_assert_not_reached;
-        return false;
     }
 
     bool MeshHalfedges::move_to_prev_around_vertex(Halfedge& H) const {
@@ -106,7 +105,6 @@ namespace GEO {
             }
         }
         geo_assert_not_reached;
-        return false;
     }
 
     void MeshHalfedges::move_to_next_around_border(Halfedge& H) const {
