@@ -42,6 +42,7 @@
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_api.h>
 #include <ringmesh/io.h>
+#include <ringmesh/mesh_quality.h>
 
 /*!
  * @author Arnaud Botella
@@ -93,6 +94,11 @@ int main( int argc, char** argv )
 
         if( GEO::CmdLine::get_arg_bool( "stats:volume" ) ) {
             print_geomodel_mesh_cell_volumes( geomodel ) ;
+        }
+
+        // For now I avoid to apply it everytime (stats:volume is false by default.... dirty)
+        if( GEO::CmdLine::get_arg_bool( "stats:volume" ) ) {
+            save_mesh_quality_criterions( geomodel ) ;
         }
 
     } catch( const RINGMeshException& e ) {
