@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_BASIC_B_STREAM__
-#define __GEOGRAM_BASIC_B_STREAM__
+#ifndef GEOGRAM_BASIC_B_STREAM
+#define GEOGRAM_BASIC_B_STREAM
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/numeric.h>

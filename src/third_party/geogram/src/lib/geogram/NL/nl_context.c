@@ -146,7 +146,6 @@ static void nlSetupPreconditioner() {
         break ;
     default:
         nl_assert_not_reached ;
-        break ;
     }
     /* Check compatibility between solver and preconditioner */
     if(

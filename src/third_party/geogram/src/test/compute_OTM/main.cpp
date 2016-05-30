@@ -75,6 +75,13 @@
 #define CentroidalVoronoiTesselation LpCentroidalVoronoiTesselation
 #endif
 
+/*
+ * CLANG complains about some functions that are unused.
+ */
+#ifdef __clang__
+#pragma GCC diagnostic ignored "-Wunused-member-function"
+#endif
+
 namespace {
     using namespace GEO;
 
@@ -151,9 +158,7 @@ namespace {
                     mult(M, Atb_, eqn_);
                 } break;
                 default:
-                {
                     geo_assert_not_reached;
-                } break;
             }
         }
 
@@ -171,15 +176,14 @@ namespace {
             for(index_t i = 0; i < dim(); ++i) {
                 for(index_t j = 0; j < dim(); ++j) {
                     switch(degree_) {
-                        case 1:
-                            AtA_4_(i, j) += b[i] * b[j];
-                            break;
-                        case 2:
-                            AtA_10_(i, j) += b[i] * b[j];
-                            break;
-                        default:
-                            geo_assert_not_reached;
-                            break;
+                    case 1: {
+                        AtA_4_(i, j) += b[i] * b[j];
+                    } break;
+                    case 2: {
+                        AtA_10_(i, j) += b[i] * b[j];
+                    } break;
+                    default: 
+                        geo_assert_not_reached;
                     }
                 }
                 Atb_[i] += b[i] * v;
@@ -366,9 +370,9 @@ namespace {
          * \param[in] p2 const pointer to the three coordinates of
          *   the third vertex
          * \param[in] p2_mass the mass of the third vertex
-         * \param[in] p2 const pointer to the three coordinates of
+         * \param[in] p3 const pointer to the three coordinates of
          *   the fourth vertex
-         * \param[in] p2_mass the mass of the fourth vertex
+         * \param[in] p3_mass the mass of the fourth vertex
          */
         double eval_with_density(
             index_t center_vertex_index,
@@ -1196,7 +1200,6 @@ namespace {
         Logger::out("OTM")
             << "Computing coherent tet mesh and saving result to:"
             << filename << std::endl;
-        std::ofstream out(filename.c_str());
 
         // Step 1: Compute the candidate tets from the Delaunay triangulation
         // of the samples restricted to M2.
@@ -1879,9 +1882,6 @@ namespace {
                     mass[v] = ::sqrt(AABB.squared_distance(vec3(M.vertices.point_ptr(v))));
                 }
             }
-        } break;
-        default: {
-            geo_assert_not_reached;
         } break;
         }
 

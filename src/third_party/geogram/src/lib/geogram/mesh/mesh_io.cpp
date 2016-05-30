@@ -65,6 +65,14 @@ extern "C" {
 // TODO: take into account selected mesh elements
 // in loaders and exporters.
 
+// We got some IOHandler classes declared locally that
+// have no out-of-line virtual functions. It is not a
+// problem since they are only visible from this translation
+// unit, but clang will complain.
+#ifdef __clang__
+#pragma GCC diagnostic ignored "-Wweak-vtables"
+#endif
+
 namespace GEO {
 
     inline void set_mesh_point(
@@ -129,7 +137,8 @@ namespace GEO {
     public:
         /**
          * \brief Creates a OBJ IO handler.
-         * \param[in] dim dimension of the vertices (3 for regular 3d mesh)
+         * \param[in] dimension dimension of the vertices 
+         *  (3 for regular 3d mesh)
          */
         OBJIOHandler(coord_index_t dimension = 3) :
             dimension_(dimension) {
@@ -795,7 +804,8 @@ namespace GEO {
                     case MESH_PYRAMID:
                         ++nb_pyramids;
                         break;
-                    default:
+                    case MESH_CONNECTOR:
+                    case MESH_NB_CELL_TYPES:
                         break;
                     }
                 }
@@ -1690,13 +1700,16 @@ namespace GEO {
             // TODO: reserve facets
             
             for(index_t i = 0; i < nb_vertices; i++) {
-                if(!in.get_line()) {
-                    Logger::err("I/O")
-                        << "Line " << in.line_number()
-                        << ": unexpected end of file"
-                        << std::endl;
-                    return false;
+                do {
+                    if(!in.get_line()) {
+                        Logger::err("I/O")
+                            << "Line " << in.line_number()
+                            << ": unexpected end of file"
+                            << std::endl;
+                        return false;
+                    }
                 }
+                while(in.current_line()[0] == '#');
                 in.get_fields();
                 if(in.nb_fields() != 3) {
                     Logger::err("I/O")
@@ -1727,7 +1740,13 @@ namespace GEO {
                         return false;
                     }
                     index_t nb_facet_vertices = in.field_as_uint(0);
-                    if(in.nb_fields() != nb_facet_vertices + 1) {
+                    
+                    // Note: there can be more fields than the number
+                    // of vertices, for instance some OFF files have
+                    // a RGB color for each facet stored right after
+                    // the vertices indices (we ignore it, thus the
+                    // test here is '<' instead of '!=').
+                    if(in.nb_fields() < nb_facet_vertices + 1) {
                         Logger::err("I/O")
                             << "Line " << in.line_number()
                             << ": facet has " << in.nb_fields() - 1
@@ -2116,6 +2135,7 @@ namespace GEO {
                     case 1:
                         M.vertices.create_vertices(in.field_as_uint(0));
                         break;
+                    case 2:
                     case 3:
                     case 4:
                     case 6:
@@ -2123,7 +2143,8 @@ namespace GEO {
                         double xyz[3];
                         xyz[0] = in.field_as_double(0);
                         xyz[1] = in.field_as_double(1);
-                        xyz[2] = in.field_as_double(2);
+                        xyz[2] =
+                            (in.nb_fields() >= 3) ? in.field_as_double(2) : 0.0;
                         //   Not all xyz files have the number of vertices
                         // specified on the first line. If it is unknown,
                         // then vertices are created dynamically.
@@ -2152,7 +2173,6 @@ namespace GEO {
                             << ": wrong number of fields"
                             << std::endl;
                         return false;
-                        break;
                 }
             }
             return true;
@@ -2180,14 +2200,31 @@ namespace GEO {
                 return false;
             }
 
+            Attribute<double> normal;
+            normal.bind_if_is_defined(M.vertices.attributes(), "normal");
+            if(normal.is_bound() && normal.dimension() != 3) {
+                normal.unbind();
+            }
+            
             out << M.vertices.nb() << std::endl;
             
             for(index_t v=0; v<M.vertices.nb(); ++v) {
                 double point[3];
                 get_mesh_point(M,v,point,3);
-                out << point[0] << ' '
-                    << point[1] << ' '
-                    << point[2] << std::endl;
+                if(normal.is_bound()) {
+                    out << point[0] << ' '
+                        << point[1] << ' '
+                        << point[2] << ' '
+                        << normal[3*v]   << ' ' 
+                        << normal[3*v+1] << ' '
+                        << normal[3*v+2] << ' '
+                        << std::endl;
+                    
+                } else {
+                    out << point[0] << ' '
+                        << point[1] << ' '
+                        << point[2] << std::endl;
+                }
             }
             
             return true;
@@ -2209,7 +2246,6 @@ namespace GEO {
          * \param[out] M the mesh where to store the points
          * \param[in] ioflags specifies which attributes and 
          *   elements should be read
-         * \tparam MESH the mesh class
          * \return true on success, false otherwise
          */
         virtual bool load(
@@ -2285,7 +2321,8 @@ namespace GEO {
     public:
         /**
          * \brief Creates a TET IO handler.
-         * \param[in] dim dimension of the vertices (3 for regular 3d mesh)
+         * \param[in] dimension dimension of the vertices 
+         *  (3 for regular 3d mesh)
          */
         TETIOHandler(coord_index_t dimension = 3) :
             dimension_(dimension) {
@@ -2569,9 +2606,8 @@ namespace GEO {
                     case MESH_CONNECTOR: {
                         has_connectors=true;
                     } break;
-                    default: {
+                    case MESH_NB_CELL_TYPES:
                         geo_assert_not_reached;
-                    } break;
                     }
                 }
                 if(has_connectors) {
@@ -3111,7 +3147,7 @@ namespace GEO {
         /**
          * \brief Reads a user attribute from a geogram file and 
          *  stores it in an AttributesManager
-         * \param[in] a reference to the InputGeoFile
+         * \param[in] in a reference to the InputGeoFile
          * \param[in] attributes a reference to the AttributesManager
          *  where the read attribute should be stored
          */

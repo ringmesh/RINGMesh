@@ -25,6 +25,10 @@ icosa.obj.ply
 icosa.obj.off
     Run Test
 
+icosa.obj.geogram
+    Run Test
+
+
 # Note:
 # STL format does not save the connections between facets
 # It cannot work here

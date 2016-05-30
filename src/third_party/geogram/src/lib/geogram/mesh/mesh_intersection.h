@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_MESH_MESH_INTERSECTION__
-#define __GEOGRAM_MESH_MESH_INTERSECTION__
+#ifndef GEOGRAM_MESH_MESH_INTERSECTION
+#define GEOGRAM_MESH_MESH_INTERSECTION
 
 /**
  * \file mesh_intersection.h

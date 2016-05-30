@@ -46,6 +46,7 @@
 #include <geogram/points/co3ne.h>
 #include <geogram/points/nn_search.h>
 #include <geogram/mesh/mesh.h>
+#include <geogram/mesh/mesh_io.h>
 #include <geogram/mesh/index.h>
 #include <geogram/mesh/mesh_repair.h>
 #include <geogram/mesh/mesh_topology.h>
@@ -57,6 +58,7 @@
 #include <geogram/basic/progress.h>
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/algorithm.h>
+#include <geogram/basic/stopwatch.h>
 #include <stack>
 
 namespace {
@@ -320,7 +322,7 @@ namespace {
                 // triangle, reject it
                case 0: {
                   return false ;
-               } break;
+               } 
                // If the candidate triangle is adjacent to a single
                // triangle, reject it if the vertex opposite to 
                // the common edge is not isolated.
@@ -700,7 +702,7 @@ namespace {
          *   - v1=w2 and v2=w1 (as usual) or:
          *   - v1=v2 and w1=w2 ('inverted' configuration)
          * \param[in] v the vertex
-         * \param[in] c a corner incident to \p v or pointing to \p v
+         * \param[in] c1 a corner incident to \p v or pointing to \p v
          * \return another corner incident to the \p v
          */
         index_t next_around_vertex_unoriented(
@@ -869,8 +871,8 @@ namespace {
         /**
          * \brief Tests whether two triangles have the 
          *  same orientation.
-         * \param[in] t1
-         * \param[in] t2
+         * \param[in] t1 first triangle
+         * \param[in] t2 second triangle
          * \retval true if \p t1 and \p t2 have the same
          *  orientation
          * \retval false otherwise
@@ -1121,7 +1123,7 @@ namespace {
     public:
         /**
          * \brief Constructs a new CompareFacets.
-         * \param[in] M the mesh
+         * \param[in] triangles a const reference to a vector of indices triplets
          */
         explicit CompareTriangles(const vector<index_t>& triangles) :
             triangles_(triangles) {
@@ -1419,17 +1421,6 @@ namespace {
         }
 
         /**
-         * \brief Constructs a new Co3NeRestrictedVoronoiDiagram from
-         *  a pointset.
-         * \param[in] M the pointset
-         */
-        Co3NeRestrictedVoronoiDiagram(Mesh& M) :
-            nb_neighbors_(0)
-        {
-            init(M);
-        }
-
-        /**
          * \brief Co3NeRestrictedVoronoiDiagram destructor.
          */
         ~Co3NeRestrictedVoronoiDiagram() {
@@ -1470,6 +1461,16 @@ namespace {
          * \param[in] M the pointset
          */
         void init(Mesh& M) {
+            // Note/TODO: this version stores the vertices and normals in a
+            // single "vertices" array (and stores nx, ny, nz in coords
+            // 3,4,5 of the vertices). New GEOGRAM has dynamic vertex
+            // attributes (and if the file had normals, they are read
+            // in a vertex attribute). This code will be updated to
+            // use the vertex attribute instead of artificial 6d points,
+            // will be cleaner (note that with the n_ pointer and n_stride_
+            // parameter, this can be done without changing the code too
+            // much).
+            
             geo_assert(M.vertices.dimension() == 3 || NN_->stride_supported());
             switch(M.vertices.dimension()) {
                 case 3:
@@ -1485,9 +1486,7 @@ namespace {
                     );
                 } break;
                 default:
-                {
                     geo_assert_not_reached;
-                } break;
             }
         }
 
@@ -1510,7 +1509,7 @@ namespace {
             p_stride_ = p_stride;
             n_ = n;
             n_stride_ = n_stride;
-            NN_->set_points(nb_points(), p_);
+            NN_->set_points(nb_points(), p_, p_stride_);
         }
 
         /**
@@ -1720,7 +1719,8 @@ namespace {
             vec3 V = cross(N, U);
             V = normalize(V);
             // We use a table for sine and cosine for speeding up things
-            // a little bit.
+            // a little bit (especially on some cell phones / handheld devices
+            // that do not have a FPU).
 /*
             const index_t nb = 10;
             for(index_t k=0; k<nb; ++k) {
@@ -1990,15 +1990,6 @@ namespace {
         }
 
         /**
-         * \brief Gets a point by its index.
-         * \param[in] i index of the point
-         * \return a const reference to the point
-         */
-        const vec3& point(index_t i) const {
-            return points_[i];
-        }
-
-        /**
          * \brief Gets the center of the points.
          * \return the center of the points
          */
@@ -2247,6 +2238,7 @@ namespace {
          */
         void reconstruct(double r) {
             if(mesh_.vertices.dimension() == 6) {
+                Stopwatch W("Co3Ne recons");
                 RVD_.set_circles_radius(r);
                 for(index_t t = 0; t < thread_.size(); t++) {
                     thread_[t]->set_mode(CO3NE_RECONSTRUCT);
@@ -2254,6 +2246,7 @@ namespace {
                 }
                 Process::run_threads(thread_);
             } else {
+                Stopwatch W("Co3Ne recons");                
                 Logger::out("Co3Ne")
                     << "using combined \'normals and reconstruct\'"
                     << std::endl;
@@ -2268,50 +2261,109 @@ namespace {
                 Process::run_threads(thread_);
             }
 
-            RVD_.clear();  // reclaim memory used by ANN
+            {
+                Stopwatch W("Co3Ne manif.");
+                RVD_.clear();  // reclaim memory used by ANN
 
-            index_t nb_triangles = 0;
-            for(index_t t = 0; t < thread_.size(); t++) {
-                nb_triangles += thread_[t]->nb_triangles();
-            }
+                index_t nb_triangles = 0;
+                for(index_t t = 0; t < thread_.size(); t++) {
+                    nb_triangles += thread_[t]->nb_triangles();
+                }
 
-            Logger::out("Co3Ne") << "Raw triangles: "
-                << nb_triangles
-                << std::endl;
+                Logger::out("Co3Ne") << "Raw triangles: "
+                                     << nb_triangles
+                                     << std::endl;
 
-            vector<index_t> raw_triangles; 
-            raw_triangles.reserve(nb_triangles * 3);
-            for(index_t th = 0; th < thread_.size(); th++) {
-                vector<index_t>& triangles = thread_[th]->triangles();
-                raw_triangles.insert(
-                    raw_triangles.end(), 
-                    triangles.begin(), triangles.end()
+                vector<index_t> raw_triangles; 
+                raw_triangles.reserve(nb_triangles * 3);
+                for(index_t th = 0; th < thread_.size(); th++) {
+                    vector<index_t>& triangles = thread_[th]->triangles();
+                    raw_triangles.insert(
+                        raw_triangles.end(), 
+                        triangles.begin(), triangles.end()
+                        );
+                    thread_[th]->triangles().clear();
+                }
+
+                if(CmdLine::get_arg_bool("dbg:co3ne")) {
+                    Logger::out("Co3Ne") << ">> co3ne_raw.geogram"
+                                         << std::endl;
+                    Mesh M;
+                    M.vertices.assign_points(
+                        mesh_.vertices.point_ptr(0),
+                        mesh_.vertices.dimension(),
+                        mesh_.vertices.nb()
+                    );
+                    M.facets.assign_triangle_mesh(raw_triangles, false);
+                    M.vertices.set_dimension(3);
+                    mesh_save(M, "co3ne_raw.geogram");
+                }
+                
+                vector<index_t> good_triangles;
+                vector<index_t> not_so_good_triangles;
+                co3ne_split_triangles_list(
+                    raw_triangles, good_triangles, not_so_good_triangles
+                ); 
+
+
+                if(CmdLine::get_arg_bool("dbg:co3ne")) {
+                    Logger::out("Co3Ne") << ">> co3ne_T3.geogram"
+                                         << std::endl;
+                    Mesh M;
+                    M.vertices.assign_points(
+                        mesh_.vertices.point_ptr(0),
+                        mesh_.vertices.dimension(),
+                        mesh_.vertices.nb()
+                    );
+                    M.facets.assign_triangle_mesh(good_triangles, false);
+                    M.vertices.set_dimension(3);
+                    mesh_save(M, "co3ne_T3.geogram");
+                }
+
+                if(CmdLine::get_arg_bool("dbg:co3ne")) {
+                    Logger::out("Co3Ne") << ">> co3ne_T12.geogram"
+                                         << std::endl;
+                    Mesh M;
+                    M.vertices.assign_points(
+                        mesh_.vertices.point_ptr(0),
+                        mesh_.vertices.dimension(),
+                        mesh_.vertices.nb()
+                    );
+                    M.facets.assign_triangle_mesh(not_so_good_triangles, false);
+                    M.vertices.set_dimension(3);
+                    mesh_save(M, "co3ne_T12.geogram");
+                }
+
+                
+                Co3NeManifoldExtraction manifold_extraction(
+                    mesh_, good_triangles
                 );
-                thread_[th]->triangles().clear();
+
+                if(CmdLine::get_arg_bool("co3ne:T12")) {
+                    manifold_extraction.add_triangles(not_so_good_triangles);
+                }
+
+                mesh_reorient(mesh_);
+
+                if(CmdLine::get_arg_bool("dbg:co3ne")) {
+                    Logger::out("Co3Ne") << ">> co3ne_manif.geogram"
+                                         << std::endl;
+                    mesh_save(mesh_, "co3ne_manif.geogram");
+                }                
             }
-
-            vector<index_t> good_triangles;
-            vector<index_t> not_so_good_triangles;
-            co3ne_split_triangles_list(
-                raw_triangles, good_triangles, not_so_good_triangles
-            ); 
-
-            Co3NeManifoldExtraction manifold_extraction(
-                mesh_, good_triangles
-            );
-
-            if(CmdLine::get_arg_bool("co3ne:T12")) {
-                manifold_extraction.add_triangles(not_so_good_triangles);
-            }
-
-            mesh_reorient(mesh_);
 
             if(CmdLine::get_arg_bool("co3ne:repair")) {
+                Stopwatch W("Co3Ne post.");
                 mesh_repair(mesh_,
                     MeshRepairMode(
                         MESH_REPAIR_DEFAULT | MESH_REPAIR_RECONSTRUCT
                     )
                 );
+                if(CmdLine::get_arg_bool("dbg:co3ne")) {
+                    Logger::out("Co3Ne") << ">> co3ne_post.geogram"
+                                         << std::endl;
+                    mesh_save(mesh_, "co3ne_post.geogram");
+                }                
             }
 
             Logger::out("Topology") 
@@ -2349,18 +2401,6 @@ namespace {
          */
         void set_normal(index_t i, const vec3& N) {
             RVD_.set_normal(i, N);
-        }
-
-        /**
-         * \brief Gets the minimum angle cosine for determining admissible
-         *  triangles.
-         * \details Admissible triangles have a deviation between their normals
-         *  and the normals estimated in the pointset smaller than a given
-         *  threshold defined by set_max_angle().
-         * \return the minimum cosine angle
-         */
-        double min_cos_angle() const {
-            return min_cos_angle_;
         }
 
         /**
@@ -2429,6 +2469,7 @@ namespace {
     }
 
     void Co3NeThread::run_reconstruct() {
+        std::cerr << "R" << std::endl;
         Co3NeRestrictedVoronoiDiagram& RVD = master_->RVD();
         vector<index_t> neigh(100);
         vector<double> sq_dist(100);
@@ -2456,7 +2497,9 @@ namespace {
         Attribute<double> normal;
         if(CmdLine::get_arg_bool("co3ne:use_normals")) {
             Process::enter_critical_section();
-            normal.bind_if_is_defined(master_->mesh().vertices.attributes(), "normal");
+            normal.bind_if_is_defined(
+                master_->mesh().vertices.attributes(), "normal"
+            );
             Process::leave_critical_section();
         }
         
@@ -2561,7 +2604,7 @@ namespace GEO {
     void Co3Ne_smooth(Mesh& M, index_t nb_neighbors, index_t nb_iterations) {
         Co3Ne co3ne(M);
         try {
-            ProgressTask progress("smoothing", nb_iterations);
+            ProgressTask progress("Smoothing", nb_iterations);
             for(index_t i = 0; i < nb_iterations; i++) {
                 co3ne.smooth(nb_neighbors);
                 if(i != nb_iterations - 1) {
@@ -2590,22 +2633,14 @@ namespace GEO {
     void Co3Ne_smooth_and_reconstruct(
         Mesh& M, index_t nb_neighbors, index_t nb_iterations, double radius
     ) {
+        Stopwatch W("Co3Ne total");
+        
         if(CmdLine::get_arg_bool("co3ne:use_normals")) {
             Attribute<double> normal;
             normal.bind_if_is_defined(M.vertices.attributes(), "normal");
             if(normal.is_bound() && normal.dimension() == 3) {
                 Logger::out("Co3Ne") << "Using existing normal attribute"
                                      << std::endl;
-
-                /*
-                M.vertices.set_dimension(6);
-                for(index_t v=0; v<M.vertices.nb(); ++v) {
-                    M.vertices.point_ptr(v)[3] = normal[3*v];
-                    M.vertices.point_ptr(v)[4] = normal[3*v+1];
-                    M.vertices.point_ptr(v)[5] = normal[3*v+2];
-                }
-                mesh_save(M,"debug.geogram");
-                */
             } else {
                 Logger::out("Co3Ne") << "No \'normal\' vertex attribute found"
                                       << std::endl;
@@ -2619,7 +2654,7 @@ namespace GEO {
         if(nb_iterations != 0) {
             try {
                 co3ne.RVD().set_exact(false);
-                ProgressTask progress("smoothing", nb_iterations);
+                ProgressTask progress("Co3Ne smooth", nb_iterations);
                 for(index_t i = 0; i < nb_iterations; i++) {
                     co3ne.smooth(nb_neighbors);
                     co3ne.RVD().update();

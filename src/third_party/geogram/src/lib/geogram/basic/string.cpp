@@ -54,7 +54,7 @@ namespace GEO {
      * \param[in] type the expected destination type
      * \return a string that contains the error message
      */
-    std::string conversion_error(
+    static std::string conversion_error(
         const std::string& s, const std::string& type
     ) {
         std::ostringstream out;

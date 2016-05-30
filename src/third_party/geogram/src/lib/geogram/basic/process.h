@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_BASIC_PROCESS__
-#define __GEOGRAM_BASIC_PROCESS__
+#ifndef GEOGRAM_BASIC_PROCESS
+#define GEOGRAM_BASIC_PROCESS
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/thread_sync.h>
@@ -74,6 +74,8 @@ namespace GEO {
 #define GEO_THREAD_LOCAL __thread
 #elif defined(GEO_COMPILER_MSVC) || defined(GEO_COMPILER_INTEL)
 #define GEO_THREAD_LOCAL __declspec(thread)
+#elif defined(GEO_COMPILER_EMSCRIPTEN)
+#define GEO_THREAD_LOCAL __thread    
 #else
 #error "Unknown compiler"
 #endif
@@ -522,12 +524,6 @@ namespace GEO {
          * \see enable_cancel()
          */
         bool GEOGRAM_API cancel_enabled();
-
-        /**
-         * \brief Outputs the stack trace to the terminal.
-         */
-        void GEOGRAM_API show_stack_trace();
-
 
         /**
          * \brief Gets the currently used memory.
