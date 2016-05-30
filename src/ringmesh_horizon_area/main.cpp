@@ -98,9 +98,7 @@ int main( int argc, char** argv )
                 "Error when opening the file: horizon_areas.csv" ) ;
         }
 
-        out << "Horizon name" ;
-        out << separator ;
-        out << "Horizon id or surface id" ;
+        out << "Horizon name/id or surface id (belonging to the horizon)" ;
         out << separator ;
         out << "area (m2)" ;
         out << new_line ;
@@ -115,8 +113,9 @@ int main( int argc, char** argv )
 
             const GME& cur_horizon = geomodel.one_interface( interface_itr ) ;
             out << cur_horizon.name() ;
-            out << separator ;
+            out << " (" ;
             out << cur_horizon.index() ;
+            out << ")" ;
             out << new_line ;
 
             double total_interface_area = 0. ;
@@ -127,13 +126,11 @@ int main( int argc, char** argv )
                 double cur_area = GEO::Geom::mesh_area( cur_surface.mesh() ) ;
                 total_interface_area += cur_area ;
 
-                out << separator ; // first column is left empty
                 out << cur_surface.index() ;
                 out << separator ;
                 out << cur_area ;
                 out << new_line ;
             }
-            out << separator ;
             out << "all" ;
             out << separator ;
             out << total_interface_area ;
@@ -150,9 +147,7 @@ int main( int argc, char** argv )
                 "Error when opening the file: layer_volumes.csv" ) ;
         }
 
-        out2 << "Layer name" ;
-        out2 << separator ;
-        out2 << "Layer id or region id" ;
+        out2 << "Layer name/id or region id (belonging to the layer)" ;
         out2 << separator ;
         out2 << "volume (m3)" ;
         out2 << new_line ;
@@ -163,8 +158,9 @@ int main( int argc, char** argv )
 
             const GME& cur_layer = geomodel.layer( layer_itr ) ;
             out2 << cur_layer.name() ;
-            out2 << separator ;
+            out2 << " (" ;
             out2 << cur_layer.index() ;
+            out2 << ")" ;
             out2 << new_line ;
 
             double total_layer_volume = 0. ;
@@ -175,13 +171,11 @@ int main( int argc, char** argv )
                 double cur_volume = GEO::mesh_cells_volume( cur_region.mesh() ) ;
                 total_layer_volume += cur_volume ;
 
-                out2 << separator ; // first column is left empty
                 out2 << cur_region.index() ;
                 out2 << separator ;
                 out2 << cur_volume ;
                 out2 << new_line ;
             }
-            out2 << separator ;
             out2 << "all" ;
             out2 << separator ;
             out2 << total_layer_volume ;
