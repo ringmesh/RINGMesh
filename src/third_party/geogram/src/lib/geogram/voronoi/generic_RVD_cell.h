@@ -44,8 +44,8 @@
  *
  */
 
-#ifndef __GEOGRAM_VORONOI_GENERIC_RVD_CELL__
-#define __GEOGRAM_VORONOI_GENERIC_RVD_CELL__
+#ifndef GEOGRAM_VORONOI_GENERIC_RVD_CELL
+#define GEOGRAM_VORONOI_GENERIC_RVD_CELL
 
 #include <geogram/basic/common.h>
 #include <geogram/voronoi/generic_RVD_vertex.h>

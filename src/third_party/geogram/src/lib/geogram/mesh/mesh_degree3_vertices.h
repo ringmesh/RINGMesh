@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_MESH_MESH_DEGREE3_VERTICES__
-#define __GEOGRAM_MESH_MESH_DEGREE3_VERTICES__
+#ifndef GEOGRAM_MESH_MESH_DEGREE3_VERTICES
+#define GEOGRAM_MESH_MESH_DEGREE3_VERTICES
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/numeric.h>

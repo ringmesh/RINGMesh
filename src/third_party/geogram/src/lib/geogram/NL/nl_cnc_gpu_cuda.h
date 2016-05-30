@@ -42,8 +42,8 @@
  *
  */
 
-#ifndef __NL_CNC_GPU_CUDA__
-#define __NL_CNC_GPU_CUDA__
+#ifndef OPENNL_CNC_GPU_CUDA_H
+#define OPENNL_CNC_GPU_CUDA_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -76,7 +76,7 @@ NLboolean nlSolverIsCNC(NLint solver) ;
  *   (see nl.h). Works only if OpenNL was compiled with CNC support.
  * \return the used number of iterations
  */
-NLuint nlSolve_CNC() ;
+NLuint nlSolve_CNC(void) ;
 
 #ifdef __cplusplus
 }

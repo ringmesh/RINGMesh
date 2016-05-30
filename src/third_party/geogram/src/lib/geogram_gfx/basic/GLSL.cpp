@@ -49,7 +49,6 @@
 #include <cstdarg>
 #include <cstdio>
 
-
 namespace {
 
     using namespace GEO;
@@ -188,7 +187,7 @@ namespace GEO {
         //4.40              4.4
         //4.50              4.5
         
-        double GLSL_version_from_OpenGL_version() {
+        static double GLSL_version_from_OpenGL_version() {
             const char* opengl_ver_str = (const char*)glGetString(GL_VERSION);
             if(opengl_ver_str == NULL) {
                 Logger::warn("GLSL")
@@ -246,9 +245,16 @@ namespace GEO {
             }
 
             // New OpenGL API: one should use glGetStringi()
-            const char* shading_language_ver_str = (const char*)glGetStringi(
-                GL_SHADING_LANGUAGE_VERSION, 0
-            );
+
+            const char* shading_language_ver_str = nil;
+
+#ifdef GEO_GL_150
+            if(glGetStringi != nil) {
+                shading_language_ver_str = (const char*)glGetStringi(
+                    GL_SHADING_LANGUAGE_VERSION, 0
+                );
+            }
+#endif            
             if(shading_language_ver_str == nil) {
                 // Some buggy drivers do not implement glGetStringi(),
                 // so I try also glGetString() (without the "i")
@@ -294,12 +300,18 @@ namespace GEO {
                 Logger::err("GLSL") << "Could not create shader for target"
                                     << std::endl;
                 switch(target) {
-                case GL_COMPUTE_SHADER:
-                    Logger::err("GLSL") << " (target = GL_COMPUTE_SHADER)"
-                                        << std::endl;
-                    break;
                 case GL_VERTEX_SHADER:
                     Logger::err("GLSL") << " (target = GL_VERTEX_SHADER)"
+                                        << std::endl;
+                    break;
+                case GL_FRAGMENT_SHADER:
+                    Logger::err("GLSL")
+                        << " (target = GL_FRAGMENT_SHADER)"
+                        << std::endl;
+                    break;
+#ifdef GEO_GL_150
+                case GL_COMPUTE_SHADER:
+                    Logger::err("GLSL") << " (target = GL_COMPUTE_SHADER)"
                                         << std::endl;
                     break;
                 case GL_TESS_CONTROL_SHADER:
@@ -316,11 +328,7 @@ namespace GEO {
                         << " (target = GL_GEOMETRY_SHADER)"
                         << std::endl;
                     break;
-                case GL_FRAGMENT_SHADER:
-                    Logger::err("GLSL")
-                        << " (target = GL_FRAGMENT_SHADER)"
-                        << std::endl;
-                    break;
+#endif                    
                 default:
                     Logger::err("GLSL")
                         << " (unknown target)"
@@ -446,7 +454,28 @@ namespace GEO {
             }
             return compile_shader(target, &sources[0], sources.size());
         }
-                              
+
+
+        void link_program(GLuint program) {
+            link_program_and_check_status(program);
+            if(program == 0) {
+                throw GLSL::GLSLCompileError();                
+            }
+        }
+
+        GLuint create_program_from_shaders_no_link(GLuint shader1, ...) {
+            va_list args;            
+            GLuint program = glCreateProgram();
+            va_start(args,shader1);
+            GLuint shader = shader1;
+            while(shader != 0) {
+                glAttachShader(program, shader);
+                shader = va_arg(args, GLuint);
+            }
+            va_end(args);
+            return program;
+        }
+        
         GLuint create_program_from_shaders(GLuint shader1, ...) {
             va_list args;            
             GLuint program = glCreateProgram();
@@ -463,7 +492,7 @@ namespace GEO {
 
         /*****************************************************************/
 
-        GLuint create_program_from_string(
+        GLuint create_program_from_string_no_link(
             const char* string_in, bool copy_string
         ) {
             GLuint program = glCreateProgram();
@@ -554,13 +583,17 @@ namespace GEO {
                     shader_type = GL_VERTEX_SHADER;
                 } else if(begin_kw == "GL_FRAGMENT_SHADER") {
                     shader_type = GL_FRAGMENT_SHADER;
-                } else if(begin_kw == "GL_GEOMETRY_SHADER") {
+                }
+#ifdef GEO_GL_150
+                  else if(begin_kw == "GL_GEOMETRY_SHADER") {
                     shader_type = GL_GEOMETRY_SHADER;
                 } else if(begin_kw == "GL_TESS_CONTROL_SHADER") {
                     shader_type = GL_TESS_CONTROL_SHADER;
                 } else if(begin_kw == "GL_TESS_EVALUATION_SHADER") {
                     shader_type = GL_TESS_EVALUATION_SHADER;
-                } else {
+                }
+#endif
+                  else {
                     Logger::err("GLSL") << begin_kw
                                         << ": No such shader type"
                                         << std::endl;
@@ -593,14 +626,12 @@ namespace GEO {
                 glDeleteProgram(program);
                 return 0;
             }
-            
-            link_program_and_check_status(program);
             return program;
         }
 
         /*****************************************************************/
 
-        GLuint create_program_from_file(const std::string& filename) {
+        GLuint create_program_from_file_no_link(const std::string& filename) {
             char* buffer = load_ASCII_file(filename.c_str());
             if(buffer == nil) {
                 return 0;
@@ -610,7 +641,7 @@ namespace GEO {
                 // last argument to false:
                 //  no need to copy the buffer, we know it
                 // is not a string litteral.
-                result = create_program_from_string(buffer,false);
+                result = create_program_from_string_no_link(buffer,false);
             } catch(...) {
                 delete[] buffer;
                 throw;
@@ -623,6 +654,11 @@ namespace GEO {
         GLint GEOGRAM_GFX_API get_uniform_variable_offset(
             GLuint program, const char* varname
         ) {
+#ifndef GEO_GL_150
+            geo_argused(program);
+            geo_argused(varname);
+            return -1;
+#else
             GLuint index = GL_INVALID_INDEX;
             glGetUniformIndices(program, 1, &varname, &index);
             if(index == GL_INVALID_INDEX) {
@@ -639,10 +675,10 @@ namespace GEO {
             );
             geo_assert(offset != -1);
             return offset;
+#endif            
         }
         
     }
 
 }
-
 

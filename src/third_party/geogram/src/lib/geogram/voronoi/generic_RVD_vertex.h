@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_VORONOI_GENERIC_RVD_VERTEX__
-#define __GEOGRAM_VORONOI_GENERIC_RVD_VERTEX__
+#ifndef GEOGRAM_VORONOI_GENERIC_RVD_VERTEX
+#define GEOGRAM_VORONOI_GENERIC_RVD_VERTEX
 
 #include <geogram/basic/common.h>
 #include <geogram/mesh/mesh.h>

@@ -45,7 +45,7 @@
 
 #include <geogram_gfx/basic/GLSL.h>
 #include <geogram_gfx/GLUP/GLUP.h>
-#include <geogram_gfx/glut_viewer/glut_viewer.h>
+#include <geogram_gfx/glup_viewer/glup_viewer.h>
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/command_line_args.h>
 #include <geogram/basic/logger.h>
@@ -62,7 +62,7 @@ namespace {
      * \details Zooming factor is 1.1x.
      */
     void zoom_in() {
-        *glut_viewer_float_ptr(GLUT_VIEWER_ZOOM) *= 1.1f;
+        *glup_viewer_float_ptr(GLUP_VIEWER_ZOOM) *= 1.1f;
     }
 
     /**
@@ -70,7 +70,7 @@ namespace {
      * \details De-zooming factor is (1/1.1)x.
      */
     void zoom_out() {
-        *glut_viewer_float_ptr(GLUT_VIEWER_ZOOM) /= 1.1f;
+        *glup_viewer_float_ptr(GLUP_VIEWER_ZOOM) /= 1.1f;
     }
 
     GEO::index_t n = 30;
@@ -84,6 +84,7 @@ namespace {
     GLuint tex_coord_VBO = 0;
 //  GLuint VAO = 0; // TODO...
     GLsizei VBO_nb_vertices = 0;
+    GLuint texture;
 
     void reset_VBOs() {
         if(!VBO_mode) {
@@ -486,32 +487,30 @@ namespace {
     
     /**
      * \brief Initializes OpenGL objects.
-     * \details Specifed as glut_viewer_set_init_func() callback.
+     * \details Specifed as glup_viewer_set_init_func() callback.
      */
     void init() {
         GEO::Graphics::initialize();
         
-        glut_viewer_set_background_color(1.0, 1.0, 1.0);
-        glut_viewer_add_toggle(
-            'T', glut_viewer_is_enabled_ptr(GLUT_VIEWER_TWEAKBARS),
+        glup_viewer_set_background_color(1.0, 1.0, 1.0);
+        glup_viewer_add_toggle(
+            'T', glup_viewer_is_enabled_ptr(GLUP_VIEWER_TWEAKBARS),
             "Toggle tweakbars"
         );
-        glut_viewer_add_key_func('z', zoom_in, "Zoom in");
-        glut_viewer_add_key_func('Z', zoom_out, "Zoom out");
-        glut_viewer_disable(GLUT_VIEWER_TWEAKBARS);
-        glut_viewer_disable(GLUT_VIEWER_BACKGROUND);
-        glut_viewer_add_key_func('m', toggle_mesh, "mesh");
+        glup_viewer_add_key_func('z', zoom_in, "Zoom in");
+        glup_viewer_add_key_func('Z', zoom_out, "Zoom out");
+        glup_viewer_disable(GLUP_VIEWER_TWEAKBARS);
+        glup_viewer_disable(GLUP_VIEWER_BACKGROUND);
+        glup_viewer_add_key_func('m', toggle_mesh, "mesh");
 
-        glupMakeCurrent(glupCreateContext());
         glupEnable(GLUP_VERTEX_COLORS);
         glupEnable(GLUP_DRAW_MESH);
 
-        glMatrixMode(GL_TEXTURE);
-        glLoadIdentity();
+        glupMatrixMode(GLUP_TEXTURE_MATRIX);
+        glupLoadIdentity();
 
-        GLuint texture;
         glGenTextures(1, &texture);
-        glActiveTexture(GL_TEXTURE0);
+        glActiveTexture(GL_TEXTURE0 + GLUP_TEXTURE_2D_UNIT);
         glBindTexture(GL_TEXTURE_2D, texture);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -523,7 +522,7 @@ namespace {
     }
 
     void display_points() {
-        glPointSize(GLfloat(point_size));
+        glupSetPointSize(GLfloat(point_size));
 
         if(VBO_mode) {
             glBindBuffer(GL_ARRAY_BUFFER, vertex_VBO);
@@ -583,7 +582,7 @@ namespace {
     }
 
 
-    void display_VBO_with_index(GLUPprimitive prim) {
+    void display_VBO_with_index(GLUPprimitive prim_in) {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_VBO);            
         glBindBuffer(GL_ARRAY_BUFFER, vertex_VBO);
         
@@ -603,7 +602,7 @@ namespace {
         }
         
         glupDrawElements(
-            prim, VBO_nb_vertices, GL_UNSIGNED_INT, 0
+            prim_in, VBO_nb_vertices, GL_UNSIGNED_INT, 0
         );
             
         glDisableVertexAttribArray(0);
@@ -742,22 +741,33 @@ namespace {
     
     /**
      * \brief Draws a test scene.
-     * \details Specified as glut_viewer_set_display_func() callback.
+     * \details Specified as glup_viewer_set_display_func() callback.
      */
     void display() {
+        static bool recurse = false;
+        
         if(lighting) {
-            glEnable(GL_LIGHTING);
+            glupEnable(GLUP_LIGHTING);
         } else {
-            glDisable(GL_LIGHTING);            
+            glupDisable(GLUP_LIGHTING);            
         }
 
-        glupCopyFromGLState(GLUP_ALL_ATTRIBUTES);
+        if(glupIsEnabled(GLUP_TEXTURING)) {
+            glActiveTexture(GL_TEXTURE0 + GLUP_TEXTURE_2D_UNIT);
+            glBindTexture(GL_TEXTURE_2D, texture);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glupTextureType(GLUP_TEXTURE_2D);
+            glupTextureMode(GLUP_TEXTURE_REPLACE);
+        }
+        
         glupMatrixMode(GLUP_TEXTURE_MATRIX);
-        glupLoadMatrixf(glut_viewer_get_light_matrix());
+        glupLoadMatrixf(glup_viewer_get_light_matrix());
         
         glupSetColor4f(GLUP_FRONT_COLOR, 1.0f, 1.0f, 0.0f, 1.0f);
         glupSetColor4f(GLUP_BACK_COLOR,  1.0f, 0.0f, 1.0f, 1.0f);        
 
+        if(!recurse)
         switch(prim) {
         case GLUP_POINTS:
             display_points();
@@ -789,6 +799,13 @@ namespace {
     }
 }
 
+static void overlay() {
+    // Displays ImGui demo window.
+    static bool dummy = true;
+    ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiSetCond_FirstUseEver);
+    ImGui::ShowTestWindow(&dummy);
+}
+
 int main(int argc, char** argv) {
 
     GEO::initialize();
@@ -805,42 +822,37 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    glut_viewer_set_region_of_interest(
+    glup_viewer_set_region_of_interest(
         0.0f, 0.0f, 0.0f,
         1.0f, 1.0f, 1.0f
     );
 
-    glut_viewer_set_window_title(
+    glup_viewer_set_window_title(
         (char*) "GLUP eyecandy test"
     );
-    glut_viewer_set_init_func(init);
-    glut_viewer_set_display_func(display);
-    glut_viewer_add_key_func('L', toggle_lighting, "toggle lighting");
-    glut_viewer_add_key_func('c', toggle_vertex_colors, "toggle vrtx colors");
-    glut_viewer_add_key_func('x', dec_shrink, "unshrink cells");
-    glut_viewer_add_key_func('w', inc_shrink, "shrink cells");
-    glut_viewer_add_key_func('n', inc_n, "increment n");
-    glut_viewer_add_key_func('N', dec_n, "decrement n");
-    glut_viewer_add_key_func('p', inc_point_size, "increment point size");
-    glut_viewer_add_key_func('P', dec_point_size, "decrement point size");
-    glut_viewer_add_key_func(' ', next_primitive, "cycle GLUP primitives");
-    glut_viewer_add_key_func('o', toggle_picking, "toggle picking");
-    glut_viewer_add_key_func('v', toggle_VBOs, "create VBO");
-    glut_viewer_add_key_func('t', toggle_texturing, "toggle texturing");
-    glut_viewer_add_key_func('y', cycle_texturing_mode, "texturing mode");
-    glut_viewer_add_key_func('C', cycle_clipping_mode, "clipping mode");    
+    glup_viewer_set_init_func(init);
+    glup_viewer_set_display_func(display);
+    glup_viewer_set_overlay_func(overlay);
+    glup_viewer_add_key_func('L', toggle_lighting, "toggle lighting");
+    glup_viewer_add_key_func('c', toggle_vertex_colors, "toggle vrtx colors");
+    glup_viewer_add_key_func('x', dec_shrink, "unshrink cells");
+    glup_viewer_add_key_func('w', inc_shrink, "shrink cells");
+    glup_viewer_add_key_func('n', inc_n, "increment n");
+    glup_viewer_add_key_func('N', dec_n, "decrement n");
+    glup_viewer_add_key_func('p', inc_point_size, "increment point size");
+    glup_viewer_add_key_func('P', dec_point_size, "decrement point size");
+    glup_viewer_add_key_func(' ', next_primitive, "cycle GLUP primitives");
+    glup_viewer_add_key_func('o', toggle_picking, "toggle picking");
+    glup_viewer_add_key_func('v', toggle_VBOs, "create VBO");
+    glup_viewer_add_key_func('t', toggle_texturing, "toggle texturing");
+    glup_viewer_add_key_func('y', cycle_texturing_mode, "texturing mode");
+    glup_viewer_add_key_func('C', cycle_clipping_mode, "clipping mode");    
     
     if(GEO::CmdLine::get_arg_bool("gfx:full_screen")) {
-       glut_viewer_enable(GLUT_VIEWER_FULL_SCREEN);
+       glup_viewer_enable(GLUP_VIEWER_FULL_SCREEN);
     }
 
-    glut_viewer_main_loop(argc, argv);
-
-    // Note: when 'q' is pressed, exit() is called
-    // because there is no simple way of exiting from
-    // glut's event loop, therefore this line is not
-    // reached and memory is not properly freed on exit.
-    // TODO: add a function in freeglut to exit event loop.
+    glup_viewer_main_loop(argc, argv);
 
     return 0;
 }

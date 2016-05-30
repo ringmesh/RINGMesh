@@ -212,6 +212,7 @@ namespace {
         y = b - bvirt;
     }
 
+#ifdef REMOVE_ME        
     /**
      * \brief Computes the difference of two doubles into a length 2 expansion.
      * \details By Jonathan Shewchuk.
@@ -226,7 +227,8 @@ namespace {
         double bvirt = a - x;
         y = bvirt - b;
     }
-
+#endif
+    
     /**
      * \brief Computes the sum of a length 2 expansion and a double
      *  into a length 3 expansion.

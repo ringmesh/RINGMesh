@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_MESH_MESH_FRAME_FIELD__
-#define __GEOGRAM_MESH_MESH_FRAME_FIELD__
+#ifndef GEOGRAM_MESH_MESH_FRAME_FIELD
+#define GEOGRAM_MESH_MESH_FRAME_FIELD
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/geometry.h>

@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_MESH_MESH_TOPOLOGY__
-#define __GEOGRAM_MESH_MESH_TOPOLOGY__
+#ifndef GEOGRAM_MESH_MESH_TOPOLOGY
+#define GEOGRAM_MESH_MESH_TOPOLOGY
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/numeric.h>
