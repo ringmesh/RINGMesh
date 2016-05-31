@@ -38,8 +38,6 @@
 
 #include <ringmesh/common.h>
 
-//#include <geogram/mesh/mesh.h>
-
 #include <ringmesh/geo_model_entity.h>
 #include <ringmesh/mesh.h>
 /*!
@@ -144,6 +142,11 @@ namespace RINGMesh {
          * @warning Not stable - crashes if attributes are still bound
          */
         void clear() ;
+
+        const ColocaterANN& colocater() const {
+            test_and_initialize() ;
+            return mesh_.colotater_ann( ColocaterANN::VERTICES ) ;
+        }
 
     private:
         /*!
@@ -366,6 +369,10 @@ namespace RINGMesh {
          */
         double area( index_t f ) const ;
 
+        const ColocaterANN& colocater() const {
+            test_and_initialize() ;
+            return mesh_.colotater_ann( ColocaterANN::FACETS ) ;
+        }
     private:
         /*!
          * Initialize the facets of the GeoModelMesh
@@ -775,6 +782,14 @@ namespace RINGMesh {
          */
         double volume( index_t c ) const ;
 
+        const ColocaterANN& cell_colocater() const {
+            test_and_initialize() ;
+            return mesh_.colotater_ann( ColocaterANN::CELLS ) ;
+        }
+        const ColocaterANN& cell_facet_colocater() const {
+            test_and_initialize() ;
+            return mesh_.colotater_ann( ColocaterANN::CELL_FACETS ) ;
+        }
     private:
         /*!
          * @brief Initialize the  cells from the cells

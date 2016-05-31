@@ -266,8 +266,8 @@ namespace {
             }
         } while( surface.nb_mesh_elements() != cur_neighbor ) ;
 
-        f = Surface::NO_ID ;
-        e = Surface::NO_ID ;
+        f = NO_ID ;
+        e = NO_ID ;
         return false ;
     }
 

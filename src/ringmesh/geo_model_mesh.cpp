@@ -261,7 +261,7 @@ namespace RINGMesh {
     index_t GeoModelMeshVertices::index( const vec3& p ) const
     {
         std::vector< index_t > vertices ;
-        const ColocaterANN& colocator = mesh_.colotater_ann(ColocaterANN::VERTICES);
+        const ColocaterANN& colocator = mesh_.colotater_ann( ColocaterANN::VERTICES ) ;
         colocator.get_colocated( p, vertices ) ;
         if( vertices.empty() ) {
             return NO_ID ;
@@ -1146,7 +1146,7 @@ namespace RINGMesh {
 
     void GeoModelMeshCells::clear()
     {
-        mesh_builder_.clear_cells(true,false) ;
+        mesh_builder_.clear_cells( true, false ) ;
         region_cell_ptr_.clear() ;
         nb_tet_ = 0 ;
         nb_hex_ = 0 ;
@@ -1222,7 +1222,7 @@ namespace RINGMesh {
             gmm_( gmm ),
             gm_( gmm.model() ),
             mesh_( mesh ),
-            mesh_builder_(mesh_builder),
+            mesh_builder_( mesh_builder ),
             nb_triangle_( 0 ),
             nb_quad_( 0 ),
             nb_polygon_( 0 )
@@ -1313,8 +1313,7 @@ namespace RINGMesh {
             facet -= nb_facets( s, T ) ;
         }
         index = NO_ID ;
-        ringmesh_assert_not_reached
-        ;
+        ringmesh_assert_not_reached ;
         return NO_FACET ;
     }
 
@@ -1331,8 +1330,7 @@ namespace RINGMesh {
             case ALL:
                 return nb() ;
             default:
-                ringmesh_assert_not_reached
-                ;
+                ringmesh_assert_not_reached ;
                 return 0 ;
         }
     }
@@ -1352,8 +1350,7 @@ namespace RINGMesh {
                 return surface_facet_ptr_[ALL * ( s + 1 )]
                     - surface_facet_ptr_[ALL * s] ;
             default:
-                ringmesh_assert_not_reached
-                ;
+                ringmesh_assert_not_reached ;
                 return 0 ;
         }
     }
@@ -1372,8 +1369,7 @@ namespace RINGMesh {
             case ALL:
                 return surface_facet_ptr_[ALL * s] + f ;
             default:
-                ringmesh_assert_not_reached
-                ;
+                ringmesh_assert_not_reached ;
                 return 0 ;
         }
     }
@@ -1446,7 +1442,7 @@ namespace RINGMesh {
         surface_facet_ptr_.clear() ;
         nb_triangle_ = 0 ;
         nb_quad_ = 0 ;
-        mesh_builder_.clear_facets(true, false) ;
+        mesh_builder_.clear_facets( true, false ) ;
     }
 
     void GeoModelMeshFacets::test_and_initialize() const
@@ -1603,8 +1599,7 @@ namespace RINGMesh {
 
     void GeoModelMeshEdges::clear()
     {
-
-        mesh_builder_.clear_edges(true, false) ;
+        mesh_builder_.clear_edges( true, false ) ;
         well_ptr_.clear() ;
     }
 
@@ -1666,7 +1661,7 @@ namespace RINGMesh {
 
     /*******************************************************************************/
 
-    GeoModelMeshOrder::GeoModelMeshOrder( GeoModelMesh& gmm, Mesh& mesh)
+    GeoModelMeshOrder::GeoModelMeshOrder( GeoModelMesh& gmm, Mesh& mesh )
         :
             gmm_( gmm ),
             gm_( gmm.model() ),
@@ -1918,14 +1913,14 @@ namespace RINGMesh {
     GeoModelMesh::GeoModelMesh( GeoModel& gm )
         :
             geo_model_( gm ),
-            mesh_( new Mesh(gm, 3, false) ),
-            mesh_builder_( new MeshBuilder(*mesh_) ),
+            mesh_( new Mesh( gm, 3, false ) ),
+            mesh_builder_( new MeshBuilder( *mesh_ ) ),
             mode_( GeoModelMeshCells::NONE ),
             order_value_( 1 ),
-            vertices( *this, gm, *mesh_, *mesh_builder_),
+            vertices( *this, gm, *mesh_, *mesh_builder_ ),
             edges( *this, *mesh_, *mesh_builder_ ),
-            facets( *this, *mesh_, *mesh_builder_),
-            cells( *this, *mesh_, *mesh_builder_),
+            facets( *this, *mesh_, *mesh_builder_ ),
+            cells( *this, *mesh_, *mesh_builder_ ),
             order( *this, *mesh_ )
     /*! @todo I am no expert but this initialization list looks like
      * a ticking bomb (like those in Mesh, btw I don not understand how these can work)
