@@ -127,6 +127,16 @@ namespace RINGMesh {
             GEO::CmdLine::declare_arg( "fault_offset_info:tolerance", 1e-2, "TODO" ) ;
         }
 
+        void import_arg_group_distance()
+        {
+            GEO::CmdLine::declare_arg_group( "distance",
+                "Distance between 2 geomodels" ) ;
+            GEO::CmdLine::declare_arg( "distance:geomodel", "",
+                "Geomodel to compare to" ) ;
+            GEO::CmdLine::declare_arg( "distance:sampling_distance", 10.,
+                "Sampling distance (Hausdorff)" ) ;
+        }
+
         bool import_arg_group( const std::string& name )
         {
             if( name == "in" ) {
@@ -145,6 +155,8 @@ namespace RINGMesh {
                 import_arg_group_topology_info() ;
             } else if( name == "fault_offset_info" ) {
                 import_arg_group_fault_offset_info() ;
+            } else if( name == "distance" ) {
+                import_arg_group_distance() ;
             } else {
                 return GEO::CmdLine::import_arg_group( name ) ;
             }
