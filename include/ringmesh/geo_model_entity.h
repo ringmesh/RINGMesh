@@ -38,15 +38,15 @@
  * @author Jeanne Pellerin and Arnaud Botella 
  */
 
-#ifndef __RINGMESH_GEO_MODEL_ELEMENT__
-#define __RINGMESH_GEO_MODEL_ELEMENT__
+#ifndef __RINGMESH_GEO_MODEL_ENTITY__
+#define __RINGMESH_GEO_MODEL_ENTITY__
 
 #include <ringmesh/common.h>
-#include <ringmesh/mesh.h>
-#include <geogram/mesh/mesh.h>
 
-#include <vector>
 #include <string>
+#include <vector>
+
+#include <ringmesh/mesh.h>
 
 namespace RINGMesh {
     class GeoModel ;
@@ -188,8 +188,6 @@ namespace RINGMesh {
             index_t index ;
         } ;
 
-        static const index_t NO_ID = index_t( -1 ) ;
-
         static GEOL_FEATURE determine_geological_type( const std::string& in ) ;
         static GEOL_FEATURE determine_type(
             const std::vector< GEOL_FEATURE >& types ) ;
@@ -270,7 +268,7 @@ namespace RINGMesh {
         }
         bool has_name() const
         {
-            return name() != "" ;
+            return !name().empty() ;
         }
         const std::string& name() const
         {
@@ -1141,29 +1139,45 @@ namespace RINGMesh {
         }
         index_t nb_cell_edges( index_t cell_index ) const
         {
-            ringmesh_assert( cell_index < nb_mesh_elements() ) ;
-            return mesh_.nb_cell_edges( cell_index ) ;
+            if( is_meshed() ) {
+                ringmesh_assert( cell_index < nb_mesh_elements() ) ;
+                return mesh_.nb_cell_edges( cell_index ) ;
+            }
+            ringmesh_assert_not_reached ;
+            return NO_ID ;
         }
         index_t nb_cell_facets( index_t cell_index ) const
         {
-            ringmesh_assert( cell_index < nb_mesh_elements() ) ;
-            return mesh_.nb_cell_facets( cell_index ) ;
+            if( is_meshed() ) {
+                ringmesh_assert( cell_index < nb_mesh_elements() ) ;
+                return mesh_.nb_cell_facets( cell_index ) ;
+            }
+            ringmesh_assert_not_reached ;
+            return NO_ID ;
         }
         index_t nb_cell_facet_vertices(
             index_t cell_index,
             index_t facet_index ) const
         {
-            ringmesh_assert( cell_index < nb_mesh_elements() ) ;
-            ringmesh_assert( facet_index < nb_cell_facets(cell_index) ) ;
-            return mesh_.nb_cell_facet_vertices( cell_index, facet_index ) ;
+            if( is_meshed() ) {
+                ringmesh_assert( cell_index < nb_mesh_elements() ) ;
+                ringmesh_assert( facet_index < nb_cell_facets(cell_index) ) ;
+                return mesh_.nb_cell_facet_vertices( cell_index, facet_index ) ;
+            }
+            ringmesh_assert_not_reached ;
+            return NO_ID ;
         }
         /*!
          * Get the number of vertex in the cell \param cell_index of the Region.
          */
         virtual index_t nb_mesh_element_vertices( index_t cell_index ) const
         {
-            ringmesh_assert( cell_index < nb_mesh_elements() ) ;
-            return mesh_.nb_cell_vertices( cell_index ) ;
+            if( is_meshed() ) {
+                ringmesh_assert( cell_index < nb_mesh_elements() ) ;
+                return mesh_.nb_cell_vertices( cell_index ) ;
+            }
+            ringmesh_assert_not_reached ;
+            return NO_ID ;
         }
         /*!
          * @brief Index of a vertex in the Region from its index in a cell
@@ -1172,63 +1186,95 @@ namespace RINGMesh {
             index_t cell_index,
             index_t vertex_index ) const
         {
-            ringmesh_assert( cell_index < nb_mesh_elements() ) ;
-            ringmesh_assert( vertex_index < nb_mesh_element_vertices( cell_index ) ) ;
-            return mesh_.cell_vertex( cell_index, vertex_index ) ;
+            if( is_meshed() ) {
+                ringmesh_assert( cell_index < nb_mesh_elements() ) ;
+                ringmesh_assert( vertex_index < nb_mesh_element_vertices( cell_index ) ) ;
+                return mesh_.cell_vertex( cell_index, vertex_index ) ;
+            }
+            ringmesh_assert_not_reached ;
+            return NO_ID ;
         }
         index_t cell_edge_vertex_index(
             index_t cell_index,
             index_t edge_index,
             index_t vertex_index ) const
         {
-            ringmesh_assert( cell_index < nb_mesh_elements() ) ;
-            ringmesh_assert( edge_index < nb_cell_edges( cell_index ) ) ;
-            ringmesh_assert( vertex_index < nb_mesh_element_vertices( cell_index ) ) ;
-            return mesh_.cell_edge_vertex( cell_index, edge_index, vertex_index ) ;
+            if( is_meshed() ) {
+                ringmesh_assert( cell_index < nb_mesh_elements() ) ;
+                ringmesh_assert( edge_index < nb_cell_edges( cell_index ) ) ;
+                ringmesh_assert( vertex_index < nb_mesh_element_vertices( cell_index ) ) ;
+                return mesh_.cell_edge_vertex( cell_index, edge_index, vertex_index ) ;
+            }
+            ringmesh_assert_not_reached ;
+            return NO_ID ;
         }
         index_t cell_facet_vertex_index(
             index_t cell_index,
             index_t facet_index,
             index_t vertex_index )
         {
-            ringmesh_assert( cell_index < nb_mesh_elements() ) ;
-            ringmesh_assert( facet_index < nb_cell_facets( cell_index ) ) ;
-            ringmesh_assert( vertex_index < nb_mesh_element_vertices( cell_index ) ) ;
-            return mesh_.cell_facet_vertex( cell_index, facet_index, vertex_index ) ;
+            if( is_meshed() ) {
+                ringmesh_assert( cell_index < nb_mesh_elements() ) ;
+                ringmesh_assert( facet_index < nb_cell_facets( cell_index ) ) ;
+                ringmesh_assert( vertex_index < nb_mesh_element_vertices( cell_index ) ) ;
+                return mesh_.cell_facet_vertex( cell_index, facet_index, vertex_index ) ;
+            }
+            ringmesh_assert_not_reached ;
+            return NO_ID ;
         }
         index_t cell_adjacent_index( index_t cell_index, index_t facet_index ) const
         {
-            ringmesh_assert( cell_index < nb_mesh_elements() ) ;
-            ringmesh_assert( facet_index < nb_cell_facets( cell_index ) ) ;
-            return mesh_.cell_adjacent( cell_index, facet_index ) ;
+            if( is_meshed() ) {
+                ringmesh_assert( cell_index < nb_mesh_elements() ) ;
+                ringmesh_assert( facet_index < nb_cell_facets( cell_index ) ) ;
+                return mesh_.cell_adjacent( cell_index, facet_index ) ;
+            }
+            ringmesh_assert_not_reached ;
+            return NO_ID ;
         }
 
         /*! @}
          * \name Geometrical request on Region Entity
          * @{
          */
-        bool is_facet_on_border( index_t cell_index, index_t facet_index ) const
+        bool is_cell_facet_on_border( index_t cell_index, index_t facet_index ) const
         {
-            ringmesh_assert( cell_index < nb_mesh_elements() ) ;
-            ringmesh_assert( facet_index < nb_cell_facets( cell_index ) ) ;
-            return mesh_.cell_adjacent( cell_index, facet_index ) == GEO::NO_CELL ;
+            if( is_meshed() ) {
+                ringmesh_assert( cell_index < nb_mesh_elements() ) ;
+                ringmesh_assert( facet_index < nb_cell_facets( cell_index ) ) ;
+                return mesh_.cell_adjacent( cell_index, facet_index ) == GEO::NO_CELL ;
+            }
+            ringmesh_assert_not_reached ;
+            return false ;
         }
         GEO::MeshCellType cell_type( index_t cell_index ) const
         {
-            ringmesh_assert( cell_index < nb_mesh_elements() ) ;
-            return mesh_.cell_type( cell_index ) ;
+            if( is_meshed() ) {
+                ringmesh_assert( cell_index < nb_mesh_elements() ) ;
+                return mesh_.cell_type( cell_index ) ;
+            }
+            ringmesh_assert_not_reached ;
+            return GEO::MESH_NB_CELL_TYPES ;
         }
         vec3 cell_facet_barycenter( index_t cell_index, index_t facet_index ) const
         {
-            ringmesh_assert( cell_index < nb_mesh_elements() ) ;
-            ringmesh_assert( facet_index < nb_cell_facets( cell_index ) ) ;
-            return mesh_.cell_facet_barycenter( cell_index, facet_index ) ;
+            if( is_meshed() ) {
+                ringmesh_assert( cell_index < nb_mesh_elements() ) ;
+                ringmesh_assert( facet_index < nb_cell_facets( cell_index ) ) ;
+                return mesh_.cell_facet_barycenter( cell_index, facet_index ) ;
+            }
+            ringmesh_assert_not_reached ;
+            return vec3() ;
         }
         vec3 cell_facet_normal( index_t cell_index, index_t facet_index ) const
         {
-            ringmesh_assert( cell_index < nb_mesh_elements() ) ;
-            ringmesh_assert( facet_index < nb_cell_facets( cell_index ) ) ;
-            return mesh_.cell_facet_normal( cell_index, facet_index ) ;
+            if( is_meshed() ) {
+                ringmesh_assert( cell_index < nb_mesh_elements() ) ;
+                ringmesh_assert( facet_index < nb_cell_facets( cell_index ) ) ;
+                return mesh_.cell_facet_normal( cell_index, facet_index ) ;
+            }
+            ringmesh_assert_not_reached ;
+            return vec3() ;
         }
 
         /*!
@@ -1236,7 +1282,12 @@ namespace RINGMesh {
          */
         virtual double mesh_element_size( index_t cell_index ) const
         {
-            return mesh_.cell_volume( cell_index ) ;
+            if( is_meshed() ) {
+                ringmesh_assert( cell_index < nb_mesh_elements() ) ;
+                return mesh_.cell_volume( cell_index ) ;
+            }
+            ringmesh_assert_not_reached ;
+            return 0 ;
         }
         /*!
          * @brief Compute the volume of the Region
@@ -1267,8 +1318,12 @@ namespace RINGMesh {
          */
         virtual vec3 mesh_element_center( index_t cell_index ) const
         {
-            ringmesh_assert( cell_index < nb_mesh_elements() ) ;
-            return mesh_.cell_barycenter( cell_index ) ;
+            if( is_meshed() ) {
+                ringmesh_assert( cell_index < nb_mesh_elements() ) ;
+                return mesh_.cell_barycenter( cell_index ) ;
+            }
+            ringmesh_assert_not_reached ;
+            return vec3() ;
         }
         void compute_region_volumes_per_cell_type(
             double& tet_volume,

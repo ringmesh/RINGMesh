@@ -1139,9 +1139,7 @@ namespace {
             }
             if( geomodel().mesh.cells.nb() > 0 ) {
                 // Check the consistency between Surface facets and Region cell facets
-                Mesh mesh( geomodel(), 3, true ) ;
-                geomodel().mesh.copy_mesh( mesh ) ;
-                ColocaterANN ann( mesh.gfx_mesh(), ColocaterANN::CELL_FACETS ) ;
+                const ColocaterANN& ann = geomodel().mesh.cells.cell_facet_colocater() ;
                 for( index_t i = 0; i < geomodel().nb_surfaces(); ++i ) {
                     if( !is_surface_conformal_to_volume( geomodel().surface( i ),
                         ann ) ) {
