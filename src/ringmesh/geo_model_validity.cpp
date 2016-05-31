@@ -909,7 +909,7 @@ namespace {
 
         if( nb_invalid > 0 ) {
             std::ostringstream file ;
-            file << validity_errors_directory << "/invalid_global_vertices.meshb" ;
+            file << validity_errors_directory << "/invalid_global_vertices.mesh" ;
             save_invalid_points( file, M, valid ) ;
 
             GEO::Logger::warn( "GeoModel" ) << nb_invalid << " invalid vertices "
@@ -965,7 +965,7 @@ namespace {
         if( !invalid_corners.empty() ) {
             std::ostringstream file ;
             file << validity_errors_directory << "/invalid_boundary_surface_"
-                << S.index() << ".meshb" ;
+                << S.index() << ".mesh" ;
             save_edges( file, S.model(), invalid_corners ) ;
 
             GEO::Logger::warn( "GeoModel" ) << " Invalid surface boundary: "
@@ -987,7 +987,7 @@ namespace RINGMesh {
                                         const std::vector< index_t>& edge_vertices )
     {
         std::ostringstream file_name(
-            validity_errors_directory + "/non_manifold_edges.meshb" ) ;
+            validity_errors_directory + "/non_manifold_edges.mesh" ) ;
 
         save_edges( file_name, geomodel, edge_vertices ) ;
     }
