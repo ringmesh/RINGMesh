@@ -68,7 +68,7 @@ namespace RINGMesh {
         /*!
          * @brief Mesh constructor.
          * @param[in] dimension dimension of the vertices.
-         * @parm[in] single_precision if true, vertices are stored in single precision (float),
+         * @param[in] single_precision if true, vertices are stored in single precision (float),
          * else they are stored as double precision (double)..
          */
         Mesh( const GeoModel& geo_model, index_t dimension, bool single_precision )
@@ -92,7 +92,7 @@ namespace RINGMesh {
         /*!
          * @brief Copy a mesh into this one.
          * @param[in] rhs a const reference to the mesh to be copied.
-         * @parm[in] copy_attributes if true, all attributes are copied.
+         * @param[in] copy_attributes if true, all attributes are copied.
          * @param[in] what a combination of MESH_VERTICES, MESH_EDGES, MESH_FACETS, MESH_CELLS flags. 
          * Set to MESH_ALL_ELEMENTS to copy everything (default). 
          * If MESH_VERTICES is not set, then the mesh is cleared.
