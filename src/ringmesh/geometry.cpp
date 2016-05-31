@@ -296,11 +296,8 @@ namespace RINGMesh {
                     vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][1]].data(),
                     vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][2]].data() ) ;
         }
-        if( ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0 && signs[3] >= 0 )
-            || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0 ) ) {
-            return true ;
-        }
-        return false ;
+        return ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0 && signs[3] >= 0 )
+            || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0 ) ;
     }
 
     /*!
@@ -331,11 +328,8 @@ namespace RINGMesh {
                     vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][1]].data(),
                     vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][2]].data() ) ;
         }
-        if( ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0 && signs[3] >= 0 && signs[4] >= 0 )
-            || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0 && signs[4] <= 0 ) ) {
-            return true ;
-        }
-        return false ;
+        return ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0 && signs[3] >= 0 && signs[4] >= 0 )
+            || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0 && signs[4] <= 0 ) ;
     }
 
     /*!
@@ -368,13 +362,10 @@ namespace RINGMesh {
                     vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][1]].data(),
                     vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][2]].data() ) ;
         }
-        if( ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0 && signs[3] >= 0
+        return ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0 && signs[3] >= 0
             && signs[4] >= 0 && signs[5] >= 0 )
             || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0
-                && signs[4] <= 0 && signs[5] <= 0 ) ) {
-            return true ;
-        }
-        return false ;
+                && signs[4] <= 0 && signs[5] <= 0 ) ;
     }
     /*!
      * Tests if a point is inside a hexahedron
@@ -410,13 +401,10 @@ namespace RINGMesh {
                     vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][1]].data(),
                     vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][2]].data() ) ;
         }
-        if( ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0 && signs[3] >= 0
+        return ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0 && signs[3] >= 0
             && signs[4] >= 0 && signs[5] >= 0 && signs[6] >= 0 && signs[7] >= 0 )
             || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0
-                && signs[4] <= 0 && signs[5] <= 0 && signs[6] <= 0 && signs[7] <= 0 ) ) {
-            return true ;
-        }
-        return false ;
+                && signs[4] <= 0 && signs[5] <= 0 && signs[6] <= 0 && signs[7] <= 0 ) ;
     }
 
     /*!
