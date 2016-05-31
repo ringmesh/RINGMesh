@@ -287,20 +287,20 @@ namespace RINGMesh {
         const vec3& p3 )
     {
         vec3 vertices[4] = { p0, p1, p2, p3 } ;
-        for( GEO::Numeric::uint8 f = 0;
-            f < GEO::MeshCellDescriptors::tet_descriptor.nb_facets; f++ ) {
-            vec3 N = cross(
-                vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][1]]
-                    - vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][0]],
-                vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][2]]
-                    - vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][0]] ) ;
-            vec3 n = p
-                - ( ( vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][0]]
-                    + vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][1]]
-                    + vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][2]] ) / 3. ) ;
-            if( dot( N, n ) > 0 ) return false ;
+        GEO::Sign signs[4] ;
+        for( index_t f = 0; f < GEO::MeshCellDescriptors::tet_descriptor.nb_facets;
+            f++ ) {
+            signs[f] =
+                GEO::PCK::orient_3d( p.data(),
+                    vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][0]].data(),
+                    vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][1]].data(),
+                    vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][2]].data() ) ;
         }
-        return true ;
+        if( ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0 && signs[3] >= 0 )
+            || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0 ) ) {
+            return true ;
+        }
+        return false ;
     }
 
     /*!
@@ -322,31 +322,20 @@ namespace RINGMesh {
         const vec3& p4 )
     {
         vec3 vertices[5] = { p0, p1, p2, p3, p4 } ;
-        for( index_t f = 0; f < GEO::MeshCellDescriptors::pyramid_descriptor.nb_facets; f++ ) {
-            vec3 N = cross(
-                vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][1]]
-                    - vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][0]],
-                vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][2]]
-                    - vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][0]] ) ;
-            index_t nb_vertices =
-                GEO::MeshCellDescriptors::pyramid_descriptor.nb_vertices_in_facet[f] ;
-            vec3 barycenter( 0., 0., 0. ) ;
-            if( nb_vertices == 3 )
-                barycenter = ( ( vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][0]]
-                    + vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][1]]
-                    + vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][2]] ) / 3. ) ;
-            else if( nb_vertices == 4 )
-                barycenter = ( ( vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][0]]
-                    + vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][1]]
-                    + vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][2]]
-                    + vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][3]] ) / 4. ) ;
-            else {
-                ringmesh_assert_not_reached;
-            }
-            vec3 n = p - barycenter ;
-            if( dot( N, n ) > 0 ) return false ;
+        GEO::Sign signs[5] ;
+        for( index_t f = 0; f < GEO::MeshCellDescriptors::pyramid_descriptor.nb_facets;
+            f++ ) {
+            signs[f] =
+                GEO::PCK::orient_3d( p.data(),
+                    vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][0]].data(),
+                    vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][1]].data(),
+                    vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][2]].data() ) ;
         }
-        return true ;
+        if( ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0 && signs[3] >= 0 && signs[4] >= 0 )
+            || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0 && signs[4] <= 0 ) ) {
+            return true ;
+        }
+        return false ;
     }
 
     /*!
@@ -370,31 +359,22 @@ namespace RINGMesh {
         const vec3& p5 )
     {
         vec3 vertices[6] = { p0, p1, p2, p3, p4, p5 } ;
-        for( index_t f = 0; f < GEO::MeshCellDescriptors::prism_descriptor.nb_facets; f++ ) {
-            vec3 N = cross(
-                vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][1]]
-                    - vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][0]],
-                vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][2]]
-                    - vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][0]] ) ;
-            index_t nb_vertices =
-                GEO::MeshCellDescriptors::prism_descriptor.nb_vertices_in_facet[f] ;
-            vec3 barycenter( 0., 0., 0. ) ;
-            if( nb_vertices == 3 )
-                barycenter = ( ( vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][0]]
-                    + vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][1]]
-                    + vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][2]] ) / 3. ) ;
-            else if( nb_vertices == 4 )
-                barycenter = ( ( vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][0]]
-                    + vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][1]]
-                    + vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][2]]
-                    + vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][3]] ) / 4. ) ;
-            else {
-                ringmesh_assert_not_reached;
-            }
-            vec3 n = p - barycenter ;
-            if( dot( N, n ) > 0 ) return false ;
+        GEO::Sign signs[6] ;
+        for( index_t f = 0; f < GEO::MeshCellDescriptors::prism_descriptor.nb_facets;
+            f++ ) {
+            signs[f] =
+                GEO::PCK::orient_3d( p.data(),
+                    vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][0]].data(),
+                    vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][1]].data(),
+                    vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][2]].data() ) ;
         }
-        return true ;
+        if( ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0 && signs[3] >= 0
+            && signs[4] >= 0 && signs[5] >= 0 )
+            || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0
+                && signs[4] <= 0 && signs[5] <= 0 ) ) {
+            return true ;
+        }
+        return false ;
     }
     /*!
      * Tests if a point is inside a hexahedron
@@ -421,20 +401,22 @@ namespace RINGMesh {
         const vec3& p7 )
     {
         vec3 vertices[8] = { p0, p1, p2, p3, p4, p5, p6, p7 } ;
-        for( index_t f = 0; f < GEO::MeshCellDescriptors::hex_descriptor.nb_facets; f++ ) {
-            vec3 N = cross(
-                vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][1]]
-                    - vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][0]],
-                vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][2]]
-                    - vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][0]] ) ;
-            vec3 barycenter = ( ( vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][0]]
-                + vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][1]]
-                + vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][2]]
-                + vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][3]] ) / 4. ) ;
-            vec3 n = p - barycenter ;
-            if( dot( N, n ) > 0 ) return false ;
+        GEO::Sign signs[8] ;
+        for( index_t f = 0; f < GEO::MeshCellDescriptors::hex_descriptor.nb_facets;
+            f++ ) {
+            signs[f] =
+                GEO::PCK::orient_3d( p.data(),
+                    vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][0]].data(),
+                    vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][1]].data(),
+                    vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][2]].data() ) ;
         }
-        return true ;
+        if( ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0 && signs[3] >= 0
+            && signs[4] >= 0 && signs[5] >= 0 && signs[6] >= 0 && signs[7] >= 0 )
+            || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0
+                && signs[4] <= 0 && signs[5] <= 0 && signs[6] <= 0 && signs[7] <= 0 ) ) {
+            return true ;
+        }
+        return false ;
     }
 
     /*!
