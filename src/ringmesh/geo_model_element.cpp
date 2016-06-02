@@ -202,9 +202,27 @@ namespace {
             vertices[v] = region.gmme_vertex_index( cell_index, v ) ;
             vertices_global[v] = region.model_vertex_id( cell_index, v ) ;
         }
-        double volume = RINGMesh::mesh_cell_signed_volume( region.mesh(), cell_index ) ;
-        return check_mesh_element_vertices_are_different( vertices, vertices_global )
-            || volume < epsilon ;
+        return check_mesh_element_vertices_are_different( vertices, vertices_global );
+    }
+
+    /*!
+     * @brief Returns true if the region cell volume is negative (inferior to epsilon^3)
+     * @todo Epsilon management is to improve, bad to have one value [JP]
+     */
+    bool cell_volume_negative( const Region& region, index_t cell )
+    {
+        double volume = RINGMesh::mesh_cell_signed_volume( region.mesh(), cell ) ;
+        return volume < -epsilon_3 ;
+    }
+
+    /*!
+     * @brief Returns true if the absolute value of the region cell volume 
+     * is inferiror to epsilon^3 
+     */
+    bool cell_volume_null( const Region& region, index_t cell )
+    {
+        double volume = RINGMesh::mesh_cell_signed_volume( region.mesh(), cell ) ;
+        return abs(volume) < epsilon_3 ;
     }
 
     /*!
@@ -1522,14 +1540,32 @@ namespace RINGMesh {
             // No cell with negative volume
             // No cell incident to the same vertex check local and global indices
             index_t nb_degenerate = 0 ;
+            index_t nb_null_volume = 0 ;
+            index_t nb_inverted_cells = 0 ;
             for( index_t c = 0; c < mesh_.cells.nb(); c++ ) {
                 if( cell_is_degenerate( *this, c ) ) {
                     nb_degenerate++ ;
+                }
+                if( cell_volume_null( *this, c ) ) {
+                    nb_null_volume++ ;
+                }
+                if( cell_volume_negative( *this, c ) ) {
+                    nb_inverted_cells++;
                 }
             }
             if( nb_degenerate != 0 ) {
                 GEO::Logger::warn( "GeoModelElement" ) << gme_id() << " mesh has "
                     << nb_degenerate << " degenerate cells " << std::endl ;
+                valid = false ;
+            }
+            if( nb_null_volume != 0 ) {
+                GEO::Logger::warn( "GeoModelElement" ) << gme_id() << " mesh has "
+                    << nb_null_volume << " cells with a null volume " << std::endl ;
+                valid = false ;
+            }
+            if( nb_degenerate != 0 ) {
+                GEO::Logger::warn( "GeoModelElement" ) << gme_id() << " mesh has "
+                    << nb_inverted_cells << " inverted cells " << std::endl ;
                 valid = false ;
             }
 
