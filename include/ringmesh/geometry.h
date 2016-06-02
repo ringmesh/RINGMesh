@@ -383,7 +383,7 @@ namespace RINGMesh {
         const vec3& trgl2,
         vec3& result ) ;
 
-    void RINGMESH_API tetra_barycentric_coordinates(
+    bool RINGMESH_API tetra_barycentric_coordinates(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
