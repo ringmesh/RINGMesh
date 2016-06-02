@@ -520,6 +520,7 @@ namespace RINGMesh {
          * connected to regions
          */
         void load_connectivities( GEO::LineInput& file_line ) ;
+
         /*!
          * @brief Load elements of one type from a zip file
          * @param[in] gme_t the GeoModelElement type
@@ -528,10 +529,13 @@ namespace RINGMesh {
         void load_elements( GME::TYPE gme_t, unzFile& uz ) ;
 
         void load_file() ;
+
+
         /*!
          * @brief Unzip a file in a zip file and set it to the current unZIP file
          */
         void unzip_one_file( unzFile& uz, const char filename[MAX_FILENAME] ) ;
+
 
         /*!
          * @brief Load the topology. Topology is how corners, lines, surfaces and

@@ -146,7 +146,7 @@ namespace {
     index_t repair_line_mesh( GEO::Mesh& M )
     {
         GEO::vector< index_t > colocated ;
-        GEO::mesh_detect_colocated_vertices( M, colocated ) ;
+        mesh_detect_colocated_vertices( M, colocated ) ;
 
         GEO::vector< index_t > degenerate ;
         mesh_detect_degenerate_edges( M, degenerate, colocated ) ;
