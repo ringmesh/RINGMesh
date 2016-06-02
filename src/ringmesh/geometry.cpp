@@ -510,8 +510,9 @@ namespace RINGMesh {
      * @param[in] p2 the third tetra vertex
      * @param[in] p3 the fourth tetra vertex
      * @param[out] lambda the parametric coordinate corresponding to points
+     * @return false if the computation failed
      */
-    void tetra_barycentric_coordinates(
+    bool tetra_barycentric_coordinates(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
@@ -524,7 +525,7 @@ namespace RINGMesh {
             for( index_t i =0; i < 4; i++ ) {
                 lambda[i] = 0 ;
             }
-            return ;
+            return false ;
         }
         double volume0 = GEO::Geom::tetra_signed_volume( p1, p3, p2, p ) ;
         double volume1 = GEO::Geom::tetra_signed_volume( p0, p2, p3, p ) ;
@@ -535,6 +536,7 @@ namespace RINGMesh {
         lambda[1] = volume1 / total_volume ;
         lambda[2] = volume2 / total_volume ;
         lambda[3] = volume3 / total_volume ;
+        return true ;
     }
 
     /*!
