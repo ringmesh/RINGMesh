@@ -389,10 +389,7 @@ namespace RINGMesh {
         const vec3& p1,
         const vec3& p2,
         const vec3& p3,
-        double& lambda0,
-        double& lambda1,
-        double& lambda2,
-        double& lambda3 ) ;
+        double lambda[4] ) ;
 
 
     void RINGMESH_API rotation_matrix_about_arbitrary_axis(

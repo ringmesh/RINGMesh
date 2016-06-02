@@ -509,10 +509,7 @@ namespace RINGMesh {
      * @param[in] p1 the second tetra vertex
      * @param[in] p2 the third tetra vertex
      * @param[in] p3 the fourth tetra vertex
-     * @param[out] lambda0 the parametric coordinate corresponding to \p p0
-     * @param[out] lambda1 the parametric coordinate corresponding to \p p1
-     * @param[out] lambda2 the parametric coordinate corresponding to \p p2
-     * @param[out] lambda3 the parametric coordinate corresponding to \p p3
+     * @param[out] lambda the parametric coordinate corresponding to points
      */
     void tetra_barycentric_coordinates(
         const vec3& p,
@@ -520,21 +517,24 @@ namespace RINGMesh {
         const vec3& p1,
         const vec3& p2,
         const vec3& p3,
-        double& lambda0,
-        double& lambda1,
-        double& lambda2,
-        double& lambda3 )
+        double lambda[4] )
     {
         double total_volume = GEO::Geom::tetra_signed_volume( p0, p1, p2, p3 ) ;
+        if( total_volume < epsilon ) {
+            for( index_t i =0; i < 4; i++ ) {
+                lambda[i] = 0 ;
+            }
+            return ;
+        }
         double volume0 = GEO::Geom::tetra_signed_volume( p1, p3, p2, p ) ;
         double volume1 = GEO::Geom::tetra_signed_volume( p0, p2, p3, p ) ;
         double volume2 = GEO::Geom::tetra_signed_volume( p0, p3, p1, p ) ;
         double volume3 = GEO::Geom::tetra_signed_volume( p0, p1, p2, p ) ;
 
-        lambda0 = volume0 / total_volume ;
-        lambda1 = volume1 / total_volume ;
-        lambda2 = volume2 / total_volume ;
-        lambda3 = volume3 / total_volume ;
+        lambda[0] = volume0 / total_volume ;
+        lambda[1] = volume1 / total_volume ;
+        lambda[2] = volume2 / total_volume ;
+        lambda[3] = volume3 / total_volume ;
     }
 
     /*!
