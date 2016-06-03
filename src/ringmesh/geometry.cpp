@@ -521,7 +521,8 @@ namespace RINGMesh {
         double lambda[4] )
     {
         double total_volume = GEO::Geom::tetra_signed_volume( p0, p1, p2, p3 ) ;
-        if( total_volume < epsilon_3 ) {
+        if( total_volume < epsilon_sq ) { 
+            /// @todo Need to have a better handling of epsilon
             for( index_t i = 0; i < 4; i++ ) {
                 lambda[i] = 0 ;
             }
