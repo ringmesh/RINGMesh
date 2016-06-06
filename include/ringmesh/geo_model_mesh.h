@@ -1050,17 +1050,20 @@ namespace RINGMesh {
          * GeoModel
          */
         void transfert_attributes() const ;
+        void transfert_attributes_from_gmm_to_gm() const ;
 
         /*!
          * @brief Transfer attributes from the GeoModelMeshCell to the
          * GeoModel
          */
         void transfert_cell_attributes() const ;
+        void transfert_cell_attributes_from_gmm_to_gm() const ;
         /*!
          * @brief Transfer attributes from the GeoModelMeshVertices to the
          * GeoModel
          */
         void transfert_vertex_attributes() const ;
+        void transfert_vertex_attributes_from_gmm_to_gm() const ;
 
 
         /*!
@@ -1078,6 +1081,7 @@ namespace RINGMesh {
         void set_duplicate_mode( const GeoModelMeshCells::DuplicateMode& mode ) const
         {
             if( mode_ == mode ) return ;
+            DEBUG( "duplication mode has changed" ) ;
             mode_ = mode ;
             const_cast< GeoModelMesh* >( this )->cells.clear_duplication() ;
         }

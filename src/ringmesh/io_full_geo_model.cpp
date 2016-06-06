@@ -711,8 +711,187 @@ namespace {
                 << "ZPOSITIVE Elevation" << std::endl
                 << "END_ORIGINAL_COORDINATE_SYSTEM" << std::endl ;
 
+
             const GeoModelMesh& mesh = gm.mesh ;
-            mesh.set_duplicate_mode( GeoModelMeshCells::ALL ) ;
+            mesh.transfert_attributes_from_gmm_to_gm() ;
+
+            // =======================================================
+            // =========== Filling of vertex property header =========
+            // =======================================================
+            GEO::vector< std::string > att_v_names ;
+            std::vector< std::string > att_v_double_names ;
+            std::vector<index_t> vertex_attr_dims ;
+            mesh.vertex_attribute_manager().list_attribute_names( att_v_names ) ;
+            for( index_t att_v = 0; att_v < mesh.vertex_attribute_manager().nb();
+                att_v++ ) {
+
+                if( att_v_names[att_v] == "point" ) {
+                    continue ;
+                }
+
+                if( !is_attribute_a_double( mesh.vertex_attribute_manager(),
+                    att_v_names[att_v] ) ) {
+                    continue ;
+                }
+                att_v_double_names.push_back( att_v_names[att_v] ) ;
+                index_t cur_dim =
+                    mesh.vertex_attribute_manager().find_attribute_store(
+                        att_v_names[att_v] )->dimension() ;
+                vertex_attr_dims.push_back( cur_dim ) ;
+            }
+
+            if( !att_v_double_names.empty() ) {
+                out << "PROPERTIES" ;
+                for( index_t attr_dbl_itr = 0;
+                    attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
+                    out << " " << att_v_double_names[attr_dbl_itr] ;
+                }
+                /// @todo PROP_LEGAL_RANGES not done
+                out << std::endl ;
+                out << "NO_DATA_VALUES" ;
+                for( index_t attr_dbl_itr = 0;
+                    attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
+                    out << " -99999" ;
+                }
+                out << std::endl ;
+                out << "READ_ONLY" ;
+                for( index_t attr_dbl_itr = 0;
+                    attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
+                    out << " 1" ;
+                }
+                out << std::endl ;
+                out << "PROPERTY_CLASSES" ;
+                                for( index_t attr_dbl_itr = 0;
+                    attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
+                    out << " " << att_v_double_names[attr_dbl_itr] ;
+                }
+                out << std::endl ;
+                out << "PROPERTY_KINDS" ;
+                for( index_t attr_dbl_itr = 0;
+                    attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
+                    out << " \"Real Number\"" ;
+                }
+                out << std::endl ;
+                out << "PROPERTY_SUBCLASSES" ;
+                for( index_t attr_dbl_itr = 0;
+                    attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
+                    out << " QUANTITY Float" ;
+                }
+                out << std::endl ;
+                out << "ESIZES" ;
+                for( index_t attr_dbl_itr = 0;
+                    attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
+                    out << " "
+                        << GEO::String::to_string( vertex_attr_dims[attr_dbl_itr] ) ;
+                }
+                out << std::endl ;
+                out << "UNITS" ;
+                for( index_t attr_dbl_itr = 0;
+                    attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
+                    out << " unitless" ;
+                }
+                out << std::endl ;
+                for( index_t attr_dbl_itr = 0;
+                    attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
+                    out << "PROPERTY_CLASS_HEADER "
+                        << att_v_double_names[attr_dbl_itr] << " {" << std::endl ;
+                    out << "kind: Real Number" << std::endl ;
+                    out << "unit: unitless" << std::endl ;
+                    out << "}" << std::endl ;
+                }
+            }
+            // ========================================================
+            // =========== Filling of vertex property headers =========
+            // ========================================================
+
+
+            // =======================================================
+            // ============ Filling of cell property header ==========
+            // =======================================================
+            GEO::vector< std::string > att_c_names ;
+            std::vector< std::string > att_c_double_names ;
+            std::vector< index_t > cell_attr_dims ;
+            mesh.cell_attribute_manager().list_attribute_names( att_c_names ) ;
+            for( index_t att_c = 0; att_c < mesh.cell_attribute_manager().nb();
+                att_c++ ) {
+
+                if( !is_attribute_a_double( mesh.cell_attribute_manager(),
+                    att_c_names[att_c] ) ) {
+                    continue ;
+                }
+                att_c_double_names.push_back( att_c_names[att_c] ) ;
+                index_t cur_dim =
+                    mesh.cell_attribute_manager().find_attribute_store(
+                        att_c_names[att_c] )->dimension() ;
+                cell_attr_dims.push_back( cur_dim ) ;
+            }
+
+            if( !att_c_double_names.empty() ) {
+                out << "TETRA_PROPERTIES" ;
+                for( index_t attr_dbl_itr = 0;
+                    attr_dbl_itr < att_c_double_names.size(); ++attr_dbl_itr ) {
+                    out << " " << att_c_double_names[attr_dbl_itr] ;
+                }
+                /// @todo TETRA_PROP_LEGAL_RANGES not done
+                out << std::endl ;
+                out << "TETRA_NO_DATA_VALUES" ;
+                for( index_t attr_dbl_itr = 0;
+                    attr_dbl_itr < att_c_double_names.size(); ++attr_dbl_itr ) {
+                    out << " -99999" ;
+                }
+                out << std::endl ;
+                /// @todo is READ_ONLY defined for cell properties?
+                /*out << "READ_ONLY" ;
+                for( index_t attr_dbl_itr = 0;
+                    attr_dbl_itr < att_c_double_names.size(); ++attr_dbl_itr ) {
+                    out << " 1" ;
+                }
+                out << std::endl ;*/
+                out << "TETRA_PROPERTY_CLASSES" ;
+                for( index_t attr_dbl_itr = 0;
+                    attr_dbl_itr < att_c_double_names.size(); ++attr_dbl_itr ) {
+                    out << " " << att_c_double_names[attr_dbl_itr] ;
+                }
+                out << std::endl ;
+                out << "TETRA_PROPERTY_KINDS" ;
+                for( index_t attr_dbl_itr = 0;
+                    attr_dbl_itr < att_c_double_names.size(); ++attr_dbl_itr ) {
+                    out << " \"Real Number\"" ;
+                }
+                out << std::endl ;
+                out << "TETRA_PROPERTY_SUBCLASSES" ;
+                for( index_t attr_dbl_itr = 0;
+                    attr_dbl_itr < att_c_double_names.size(); ++attr_dbl_itr ) {
+                    out << " QUANTITY Float" ;
+                }
+                out << std::endl ;
+                out << "TETRA_ESIZES" ;
+                for( index_t attr_dbl_itr = 0;
+                    attr_dbl_itr < att_c_double_names.size(); ++attr_dbl_itr ) {
+                    out << " " << GEO::String::to_string( cell_attr_dims[attr_dbl_itr] ) ;
+                }
+                out << std::endl ;
+                out << "TETRA_UNITS" ;
+                for( index_t attr_dbl_itr = 0;
+                    attr_dbl_itr < att_c_double_names.size(); ++attr_dbl_itr ) {
+                    out << " unitless" ;
+                }
+                out << std::endl ;
+                for( index_t attr_dbl_itr = 0;
+                    attr_dbl_itr < att_c_double_names.size(); ++attr_dbl_itr ) {
+                    out << "TETRA_PROPERTY_CLASS_HEADER "
+                        << att_c_double_names[attr_dbl_itr] << " {" << std::endl ;
+                    out << "kind: Real Number" << std::endl ;
+                    out << "unit: unitless" << std::endl ;
+                    out << "}" << std::endl ;
+                }
+            }
+            // ========================================================
+            // ============ Filling of cell property headers ==========
+            // ========================================================
+
+//            mesh.set_duplicate_mode( GeoModelMeshCells::ALL ) ;
+//            mesh.set_duplicate_mode( GeoModelMeshCells::NONE ) ;
 
             std::vector< bool > vertex_exported( mesh.vertices.nb(), false ) ;
             std::vector< bool > atom_exported( mesh.cells.nb_duplicated_vertices(),
@@ -725,26 +904,45 @@ namespace {
                 const RINGMesh::Region& region = model.region( r ) ;
                 out << "TVOLUME " << region.name() << std::endl ;
 
+                /*GEO::Attribute< index_t > attribute( mesh.vertex_attribute_manager(),
+                    "model_vertex_id" ) ;*/
+
                 // Export not duplicated vertices
-                for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
+                for( index_t c = 0; c < region.mesh().cells.nb(); c++ ) {
                     index_t cell = mesh.cells.cell( r, c ) ;
-                    for( index_t v = 0; v < mesh.cells.nb_vertices( c ); v++ ) {
+                    for( index_t v = 0; v < mesh.cells.nb_vertices( cell ); v++ ) {
                         index_t atom_id ;
                         if( !mesh.cells.is_corner_duplicated( cell, v, atom_id ) ) {
                             index_t vertex_id = mesh.cells.vertex( cell, v ) ;
                             if( vertex_exported[vertex_id] ) continue ;
                             vertex_exported[vertex_id] = true ;
                             vertex_exported_id[vertex_id] = nb_vertices_exported ;
-                            out << "VRTX " << nb_vertices_exported++ << " "
-                                << mesh.vertices.vertex( vertex_id ) << std::endl ;
+                            // PVRTX must be used instead of VRTX because
+                            // properties are not read by Gocad if it is VRTX.
+                            out << "PVRTX " << nb_vertices_exported++ << " "
+                                << mesh.vertices.vertex( vertex_id ) ;// << " " << cell << std::endl ;
+                            for( index_t attr_dbl_itr = 0;
+                                attr_dbl_itr < att_v_double_names.size();
+                                ++attr_dbl_itr ) {
+                                GEO::Attribute< double > cur_attr(
+                                    mesh.vertex_attribute_manager(),
+                                    att_v_double_names[attr_dbl_itr] ) ;
+                                for( index_t dim_itr = 0;
+                                    dim_itr < vertex_attr_dims[attr_dbl_itr]; ++dim_itr ) {
+                                    out << " "
+                                        << cur_attr[vertex_id
+                                            * vertex_attr_dims[attr_dbl_itr] + dim_itr] ;
+                                }
+                            }
+                            out << std::endl ;
                         }
                     }
                 }
 
                 // Export duplicated vertices
-                for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
+                /*for( index_t c = 0; c < region.mesh().cells.nb(); c++ ) {
                     index_t cell = mesh.cells.cell( r, c ) ;
-                    for( index_t v = 0; v < mesh.cells.nb_vertices( c ); v++ ) {
+                    for( index_t v = 0; v < mesh.cells.nb_vertices( cell ); v++ ) {
                         index_t atom_id ;
                         if( mesh.cells.is_corner_duplicated( cell, v, atom_id ) ) {
                             if( atom_exported[atom_id] ) continue ;
@@ -755,7 +953,7 @@ namespace {
                                 << vertex_exported_id[vertex_id] << std::endl ;
                         }
                     }
-                }
+                }*/
 
                 // Mark if a boundary is ending in the region
                 std::map< index_t, index_t > sides ;
@@ -767,17 +965,31 @@ namespace {
                         sides[region.boundary_gme( s ).index] = region.side( s ) ;
                 }
 
-                GEO::Attribute< index_t > attribute( mesh.facet_attribute_manager(),
-                    surface_att_name ) ;
-                for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
+                /*GEO::Attribute< index_t > attribute( mesh.facet_attribute_manager(),
+                    surface_att_name ) ;*/
+                for( index_t c = 0; c < region.mesh().cells.nb(); c++ ) {
                     out << "TETRA" ;
-                    for( index_t v = 0; v < mesh.cells.nb_vertices( c ); v++ ) {
+                    index_t cell = mesh.cells.cell( r, c ) ;
+                    for( index_t v = 0; v < mesh.cells.nb_vertices( cell ); v++ ) {
                         index_t atom_id ;
-                        if( !mesh.cells.is_corner_duplicated( c, v, atom_id ) ) {
-                            index_t vertex_id = mesh.cells.vertex( c, v ) ;
+                        if( !mesh.cells.is_corner_duplicated( cell, v, atom_id ) ) {
+                            index_t vertex_id = mesh.cells.vertex( cell, v ) ;
                             out << " " << vertex_exported_id[vertex_id] ;
                         } else {
+                            DEBUG("pass") ;
                             out << " " << atom_exported_id[atom_id] ;
+                        }
+                    }
+                    for( index_t attr_dbl_itr = 0;
+                        attr_dbl_itr < att_c_double_names.size(); ++attr_dbl_itr ) {
+                        GEO::Attribute< double > cur_attr(
+                            mesh.cell_attribute_manager(),
+                            att_c_double_names[attr_dbl_itr] ) ;
+                        for( index_t dim_itr = 0;
+                            dim_itr < cell_attr_dims[attr_dbl_itr]; ++dim_itr ) {
+                            out << " "
+                                << cur_attr[cell * cell_attr_dims[attr_dbl_itr]
+                                    + dim_itr] ;
                         }
                     }
                     out << std::endl ;
