@@ -679,6 +679,12 @@ namespace {
     /// NO_ID for polygons there are not supported by MFEM
     static index_t facet_type_mfem[3] = { 2, 3, NO_ID } ;
 
+    /*!
+     * Export for the MFEM format http://mfem.org/
+     * Mesh file description : http://mfem.org/mesh-formats/#mfem-mesh-v10
+     * "MFEM is a free, lightweight, scalable C++ library for finite element
+     * methods"
+     */
     class MFEMIOHandler: public GeoModelIOHandler {
     public:
         virtual void load( const std::string& filename, GeoModel& geomodel )
@@ -2137,16 +2143,16 @@ namespace RINGMesh {
      */
     void GeoModelIOHandler::initialize_full_geomodel_output()
     {
-        ringmesh_register_IOHandler_creator( LMIOHandler, "meshb" );
-    ringmesh_register_IOHandler_creator( LMIOHandler, "mesh" ) ;
-    ringmesh_register_IOHandler_creator( TetGenIOHandler, "tetgen" ) ;
-    ringmesh_register_IOHandler_creator( TSolidIOHandler, "so" ) ;
-    ringmesh_register_IOHandler_creator( CSMPIOHandler, "csmp" ) ;
-    ringmesh_register_IOHandler_creator( AsterIOHandler, "mail" ) ;
-    ringmesh_register_IOHandler_creator( VTKIOHandler, "vtk" ) ;
-    ringmesh_register_IOHandler_creator( GPRSIOHandler, "gprs" ) ;
-    ringmesh_register_IOHandler_creator( MSHIOHandler, "msh" ) ;
-    ringmesh_register_IOHandler_creator( MFEMIOHandler, "mfem" ) ;
-    ringmesh_register_IOHandler_creator( GeoModelHandler, "gm" ) ;}
+        ringmesh_register_IOHandler_creator( LMIOHandler, "meshb" ) ;
+        ringmesh_register_IOHandler_creator( LMIOHandler, "mesh" );
+        ringmesh_register_IOHandler_creator( TetGenIOHandler, "tetgen" );
+        ringmesh_register_IOHandler_creator( TSolidIOHandler, "so" );
+        ringmesh_register_IOHandler_creator( CSMPIOHandler, "csmp" );
+        ringmesh_register_IOHandler_creator( AsterIOHandler, "mail" );
+        ringmesh_register_IOHandler_creator( VTKIOHandler, "vtk" );
+        ringmesh_register_IOHandler_creator( GPRSIOHandler, "gprs" );
+        ringmesh_register_IOHandler_creator( MSHIOHandler, "msh" );
+        ringmesh_register_IOHandler_creator( MFEMIOHandler, "mfem" );
+        ringmesh_register_IOHandler_creator( GeoModelHandler, "gm" );}
 
 }
