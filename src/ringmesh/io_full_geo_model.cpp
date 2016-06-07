@@ -721,7 +721,7 @@ namespace {
          * @brief Write the cells for the MFEM mesh file (work only with
          * tetrahedra and hexaedra)
          * @details The structure of the MFEM file for cells is
-         * [group_id] [cell_type] [id_vertex_0] [id_vertex_1} .....
+         * [group_id] [cell_type] [id_vertex_0] [id_vertex_1] .....
          * cell_type is 4 for  tetrahedra and 5 for hexahedra.
          * group_id begin with 1
          * @param[in] geomodel_mesh the GeoModelMesh to be saved
@@ -747,7 +747,7 @@ namespace {
          * @brief Write the facets for the MFEM mesh file (work only with
          * triangles and quads)
          * @details The structure of the MFEM file for facets is
-         * [group_id] [facet_type] [id_vertex_0] [id_vertex_1} .....
+         * [group_id] [facet_type] [id_vertex_0] [id_vertex_1] .....
          * facet_type is 2 for triangles and 3 for the quads
          * group_id is continuous with the groupd indexes of the cells
          * @param[in] geomodel_mesh the GeoModelMesh to be saved
