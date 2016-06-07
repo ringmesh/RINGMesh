@@ -718,7 +718,6 @@ namespace {
             index_t offset = gm.nb_regions() ;
             out << "boundary" << std::endl ;
             out << gm.mesh.facets.nb() << std::endl ;
-            ;
             for( index_t f = 0; f < gm.mesh.facets.nb(); f++ ) {
                 out << gm.mesh.facets.surface( f ) + offset + 1 << " " ;
                 out << gm.mesh.facets.nb_vertices( f ) - 1 << " " ; // -1 is a trick
