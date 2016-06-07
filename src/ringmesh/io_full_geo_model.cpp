@@ -698,7 +698,6 @@ namespace {
             write_cells( geomodel_mesh, out ) ;
             write_facets( geomodel_mesh, out ) ;
             write_vertices( geomodel_mesh, out ) ;
-
         }
 
         /*!
@@ -789,7 +788,6 @@ namespace {
                 out << geomodel_mesh.vertices.vertex( v ) << std::endl ;
             }
         }
-
     } ;
     /************************************************************************/
 
