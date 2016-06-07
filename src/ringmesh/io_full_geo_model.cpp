@@ -671,11 +671,9 @@ namespace {
 
     /************************************************************************/
 
+    static index_t cell_type_mfem[4] = { 4, 5, NO_ID, NO_ID } ;
 
-
-    static index_t* cell_type_mfem[4] = {3,4,NO_ID,NO_ID } ;
-
-    static index_t* facet_type_mfem[3] = {2,3,NO_ID } ;
+    static index_t facet_type_mfem[3] = { 2, 3, NO_ID } ;
 
     class MFEMIOHandler: public GeoModelIOHandler {
     public:
@@ -686,7 +684,7 @@ namespace {
         }
         virtual void save( const GeoModel& gm, const std::string& filename )
         {
-            const GeoModelMesh geomodel_mesh = gm.mesh ;
+            const GeoModelMesh& geomodel_mesh = gm.mesh ;
             index_t nb_cells = geomodel_mesh.cells.nb() ;
             if( geomodel_mesh.cells.nb_tet() != nb_cells
                 && geomodel_mesh.cells.nb_hex() != nb_cells ) {
@@ -696,11 +694,10 @@ namespace {
             std::ofstream out( filename.c_str() ) ;
             out.precision( 16 ) ;
 
-            write_header(geomodel_mesh, out) ;
-            write_cells(geomodel_mesh, out) ;
-            write_facets(geomodel_mesh, out) ;
-            write_vertices(geomodel_mesh, out) ;
-
+            write_header( geomodel_mesh, out ) ;
+            write_cells( geomodel_mesh, out ) ;
+            write_facets( geomodel_mesh, out ) ;
+            write_vertices( geomodel_mesh, out ) ;
 
         }
 
@@ -709,7 +706,8 @@ namespace {
          * @param[in] geomodel_mesh the GeoModelMesh to be saved
          * @param[in] out the ofstream that wrote the MFEM mesh file
          */
-        void write_header(const GeoModelMesh& geomodel_mesh, std::ofstream& out ) {
+        void write_header( const GeoModelMesh& geomodel_mesh, std::ofstream& out )
+        {
             // MFEM mesh version
             out << "MFEM mesh v1.0" << std::endl ;
             out << std::endl ;
@@ -730,13 +728,14 @@ namespace {
          * @param[in] geomodel_mesh the GeoModelMesh to be saved
          * @param[in] out the ofstream that wrote the MFEM mesh file
          */
-        void write_cells(const GeoModelMesh& geomodel_mesh, std::ofstream& out ) {
+        void write_cells( const GeoModelMesh& geomodel_mesh, std::ofstream& out )
+        {
             index_t nb_cells = geomodel_mesh.cells.nb() ;
             out << "elements" << std::endl ;
             out << nb_cells << std::endl ;
             for( index_t c = 0; c < nb_cells; c++ ) {
-                out << geomodel_mesh.cells.region( c ) + 1 << " " ;
-                out << cell_type_mfem[geomodel_mesh.cells.type( c )] << " " ; // +4 is a trick for tet/hex unique inddex
+                out << geomodel_mesh.cells.region( c ) << " " ;
+                out << cell_type_mfem[geomodel_mesh.cells.type( c )] << " " ;
                 for( index_t v = 0; v < geomodel_mesh.cells.nb_vertices( c ); v++ ) {
                     out << geomodel_mesh.cells.vertex( c, v ) << " " ;
                 }
@@ -755,15 +754,18 @@ namespace {
          * @param[in] geomodel_mesh the GeoModelMesh to be saved
          * @param[in] out the ofstream that wrote the MFEM mesh file
          */
-        void write_facets(const GeoModelMesh& geomodel_mesh, std::ofstream& out ) {
+        void write_facets( const GeoModelMesh& geomodel_mesh, std::ofstream& out )
+        {
             index_t offset = geomodel_mesh.model().nb_regions() ;
             out << "boundary" << std::endl ;
             out << geomodel_mesh.facets.nb() << std::endl ;
             for( index_t f = 0; f < geomodel_mesh.facets.nb(); f++ ) {
                 index_t not_used = 0 ;
                 out << geomodel_mesh.facets.surface( f ) + offset + 1 << " " ;
-                out << facet_type_mfem[geomodel_mesh.facets.type(f,not_used)] << " " ; // -1 is a trick
-                for( index_t v = 0; v < geomodel_mesh.facets.nb_vertices( f ); v++ ) {
+                out << facet_type_mfem[geomodel_mesh.facets.type( f, not_used )]
+                    << " " ;
+                for( index_t v = 0; v < geomodel_mesh.facets.nb_vertices( f );
+                    v++ ) {
                     out << geomodel_mesh.facets.vertex( f, v ) << " " ;
                 }
                 out << std::endl ;
@@ -778,7 +780,8 @@ namespace {
          * @param[in] geomodel_mesh the GeoModelMesh to be saved
          * @param[in] out the ofstream that wrote the MFEM mesh file
          */
-        void write_vertices(const GeoModelMesh& geomodel_mesh, std::ofstream& out ) {
+        void write_vertices( const GeoModelMesh& geomodel_mesh, std::ofstream& out )
+        {
             // Writing the vertices
             out << "vertices" << std::endl ;
             out << geomodel_mesh.vertices.nb() << std::endl ;
