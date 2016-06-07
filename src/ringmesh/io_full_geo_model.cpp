@@ -782,7 +782,6 @@ namespace {
          */
         void write_vertices( const GeoModelMesh& geomodel_mesh, std::ofstream& out )
         {
-            // Writing the vertices
             out << "vertices" << std::endl ;
             out << geomodel_mesh.vertices.nb() << std::endl ;
             out << "3" << std::endl ;
