@@ -670,76 +670,76 @@ namespace {
     } ;
 
     class MFEMIOHandler: public GeoModelIOHandler {
-          public:
-              virtual void load( const std::string& filename, GeoModel& mesh )
-              {
-                  throw RINGMeshException( "I/O",
-                      "Loading of a GeoModel from VTK not implemented yet" ) ;
-              }
-              virtual void save( const GeoModel& gm, const std::string& filename )
-              {
-                  index_t nb_cells = gm.mesh.cells.nb() ;
+    public:
+        virtual void load( const std::string& filename, GeoModel& mesh )
+        {
+            throw RINGMeshException( "I/O",
+                "Loading of a GeoModel from VTK not implemented yet" ) ;
+        }
+        virtual void save( const GeoModel& gm, const std::string& filename )
+        {
+            index_t nb_cells = gm.mesh.cells.nb() ;
 
-                  if( gm.mesh.cells.nb_tet() != nb_cells
-                      && gm.mesh.cells.nb_hex() != nb_cells ) {
-                      throw RINGMeshException( "I/O",
-                          "Export to MFEM format works only with full tet or full hex format" ) ;
-                  }
-                  std::ofstream out( filename.c_str() ) ;
-                  out.precision( 16 ) ;
+            if( gm.mesh.cells.nb_tet() != nb_cells
+                && gm.mesh.cells.nb_hex() != nb_cells ) {
+                throw RINGMeshException( "I/O",
+                    "Export to MFEM format works only with full tet or full hex format" ) ;
+            }
+            std::ofstream out( filename.c_str() ) ;
+            out.precision( 16 ) ;
 
-                  // MFEM mesh version
-                  out << "MFEM mesh v1.0" << std::endl ;
-                  out << std::endl ;
+            // MFEM mesh version
+            out << "MFEM mesh v1.0" << std::endl ;
+            out << std::endl ;
 
-                  // Dimension is always 3 in our case
-                  out << "dimension" << std::endl ;
-                  out << "3" << std::endl ;
-                  out << std::endl ;
+            // Dimension is always 3 in our case
+            out << "dimension" << std::endl ;
+            out << "3" << std::endl ;
+            out << std::endl ;
 
-                  // Writing elements (aka 3d cells)
-                  out << "elements" << std::endl ;
-                  out << nb_cells  << std::endl ;
-                  for( index_t c = 0; c < nb_cells; c++ ) {
-                      out << gm.mesh.cells.region(c)+1 << " " ;
-                      out << gm.mesh.cells.type(c) +4 << " " ; // +4 is a trick for tet/hex unique inddex
-                      for(index_t v = 0 ; v < gm.mesh.cells.nb_vertices(c) ; v++) {
-                          out << gm.mesh.cells.vertex(c,v) << " " ;
-                      }
-                      out << std::endl ;
-                  }
-                  out << std::endl ;
+            // Writing elements (aka 3d cells)
+            out << "elements" << std::endl ;
+            out << nb_cells << std::endl ;
+            for( index_t c = 0; c < nb_cells; c++ ) {
+                out << gm.mesh.cells.region( c ) + 1 << " " ;
+                out << gm.mesh.cells.type( c ) + 4 << " " ; // +4 is a trick for tet/hex unique inddex
+                for( index_t v = 0; v < gm.mesh.cells.nb_vertices( c ); v++ ) {
+                    out << gm.mesh.cells.vertex( c, v ) << " " ;
+                }
+                out << std::endl ;
+            }
+            out << std::endl ;
 
-                  // Writing the boundary (aka the facets)
-                  // Group of cells are global (3D, 2D, 1D)... so we have an offset for defining
-                  // the group of facets, corresponding to the number of region
-                  // ex : if we  have 3 regions, the group of the first surface will be 4, the second 5
-                  //  etc...
-                  index_t offset = gm.nb_regions() ;
-                  out << "boundary" << std::endl ;
-                  out << gm.mesh.facets.nb() << std::endl ;;
-                  for(index_t f = 0 ; f < gm.mesh.facets.nb() ; f++) {
-                      out << gm.mesh.facets.surface(f) + offset +1 << " " ;
-                      out << gm.mesh.facets.nb_vertices(f) -1 << " " ; // -1 is a trick
-                      for(index_t v = 0 ; v < gm.mesh.facets.nb_vertices(f) ; v++) {
-                          out << gm.mesh.facets.vertex(f,v) << " " ;
-                      }
-                      out << std::endl ;
-                  }
-                  out << std::endl ;
+            // Writing the boundary (aka the facets)
+            // Group of cells are global (3D, 2D, 1D)... so we have an offset for defining
+            // the group of facets, corresponding to the number of region
+            // ex : if we  have 3 regions, the group of the first surface will be 4, the second 5
+            //  etc...
+            index_t offset = gm.nb_regions() ;
+            out << "boundary" << std::endl ;
+            out << gm.mesh.facets.nb() << std::endl ;
+            ;
+            for( index_t f = 0; f < gm.mesh.facets.nb(); f++ ) {
+                out << gm.mesh.facets.surface( f ) + offset + 1 << " " ;
+                out << gm.mesh.facets.nb_vertices( f ) - 1 << " " ; // -1 is a trick
+                for( index_t v = 0; v < gm.mesh.facets.nb_vertices( f ); v++ ) {
+                    out << gm.mesh.facets.vertex( f, v ) << " " ;
+                }
+                out << std::endl ;
+            }
+            out << std::endl ;
 
-                  // Writing the vertices
-                  out << "vertices" << std::endl ;
-                  out << gm.mesh.vertices.nb() << std::endl ;
-                  out << "3" << std::endl ;
-                  for(index_t v = 0 ; v < gm.mesh.vertices.nb() ; v++) {
-                      out << gm.mesh.vertices.vertex(v) << std::endl ;
-                  }
+            // Writing the vertices
+            out << "vertices" << std::endl ;
+            out << gm.mesh.vertices.nb() << std::endl ;
+            out << "3" << std::endl ;
+            for( index_t v = 0; v < gm.mesh.vertices.nb(); v++ ) {
+                out << gm.mesh.vertices.vertex( v ) << std::endl ;
+            }
 
-              }
+        }
 
-
-          } ;
+    } ;
     /************************************************************************/
 
     class TSolidIOHandler: public GeoModelIOHandler {
@@ -2080,16 +2080,16 @@ namespace RINGMesh {
      */
     void GeoModelIOHandler::initialize_full_geomodel_output()
     {
-        ringmesh_register_IOHandler_creator( LMIOHandler, "meshb" );
-    ringmesh_register_IOHandler_creator( LMIOHandler, "mesh" ) ;
-    ringmesh_register_IOHandler_creator( TetGenIOHandler, "tetgen" ) ;
-    ringmesh_register_IOHandler_creator( TSolidIOHandler, "so" ) ;
-    ringmesh_register_IOHandler_creator( CSMPIOHandler, "csmp" ) ;
-    ringmesh_register_IOHandler_creator( AsterIOHandler, "mail" ) ;
-    ringmesh_register_IOHandler_creator( VTKIOHandler, "vtk" ) ;
-    ringmesh_register_IOHandler_creator( GPRSIOHandler, "gprs" ) ;
-    ringmesh_register_IOHandler_creator( MSHIOHandler, "msh" ) ;
-    ringmesh_register_IOHandler_creator( MFEMIOHandler, "mfem" ) ;
-    ringmesh_register_IOHandler_creator( GeoModelHandler, "gm" ) ;}
+        ringmesh_register_IOHandler_creator( LMIOHandler, "meshb" ) ;
+        ringmesh_register_IOHandler_creator( LMIOHandler, "mesh" );
+        ringmesh_register_IOHandler_creator( TetGenIOHandler, "tetgen" );
+        ringmesh_register_IOHandler_creator( TSolidIOHandler, "so" );
+        ringmesh_register_IOHandler_creator( CSMPIOHandler, "csmp" );
+        ringmesh_register_IOHandler_creator( AsterIOHandler, "mail" );
+        ringmesh_register_IOHandler_creator( VTKIOHandler, "vtk" );
+        ringmesh_register_IOHandler_creator( GPRSIOHandler, "gprs" );
+        ringmesh_register_IOHandler_creator( MSHIOHandler, "msh" );
+        ringmesh_register_IOHandler_creator( MFEMIOHandler, "mfem" );
+        ringmesh_register_IOHandler_creator( GeoModelHandler, "gm" );}
 
 }
