@@ -675,7 +675,7 @@ namespace {
     /// NO_ID for pyramids and prims because there are not supported by MFEM
     static index_t cell_type_mfem[4] = { 4, 5, NO_ID, NO_ID } ;
 
-    /// Convert the xfacet type of RINGMesh to the MFEM one
+    /// Convert the facet type of RINGMesh to the MFEM one
     /// NO_ID for polygons there are not supported by MFEM
     static index_t facet_type_mfem[3] = { 2, 3, NO_ID } ;
 
