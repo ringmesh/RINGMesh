@@ -207,7 +207,7 @@ namespace {
     /************************************************************************/
     class AsterIOHandler: public GeoModelIOHandler {
     public:
-        virtual void load( const std::string& filename, GeoModel& mesh )
+        virtual void load( const std::string& filename, GeoModel& geomodel )
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from Code_Aster mesh not implemented yet" ) ;
@@ -427,7 +427,7 @@ namespace {
         build_string_for_geo_model_element_export( type,
             geo_model_element_mesh.index(), name ) ;
         //@TODO this will be removed and integrated in the build_string....
-        name +=".geogram" ;
+        name += ".geogram" ;
         GEO::Logger* logger = GEO::Logger::instance() ;
         logger->set_quiet( true ) ;
         GEO::MeshIOFlags flags ;
@@ -453,7 +453,8 @@ namespace {
             std::string pwd = GEO::FileSystem::get_current_working_directory() ;
             GEO::FileSystem::set_current_working_directory(
                 GEO::FileSystem::dir_name( filename ) ) ;
-            GeoModelBuilderGM builder( model, GEO::FileSystem::base_name( filename, false ) ) ;
+            GeoModelBuilderGM builder( model,
+                GEO::FileSystem::base_name( filename, false ) ) ;
             builder.build_model() ;
             GEO::Logger::out( "I/O" ) << " Loaded model " << model.name() << " from "
                 << filename << std::endl ;
@@ -464,7 +465,8 @@ namespace {
         }
         virtual void save( const GeoModel& model, const std::string& filename )
         {
-            const std::string pwd = GEO::FileSystem::get_current_working_directory() ;
+            const std::string pwd =
+                GEO::FileSystem::get_current_working_directory() ;
             bool valid_new_working_directory =
                 GEO::FileSystem::set_current_working_directory(
                     GEO::FileSystem::dir_name( filename ) ) ;
@@ -502,7 +504,7 @@ namespace {
 
     class LMIOHandler: public GeoModelIOHandler {
     public:
-        virtual void load( const std::string& filename, GeoModel& mesh )
+        virtual void load( const std::string& filename, GeoModel& geomodel )
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from a mesh not implemented yet" ) ;
@@ -525,7 +527,7 @@ namespace {
     /************************************************************************/
     class TetGenIOHandler: public GeoModelIOHandler {
     public:
-        virtual void load( const std::string& filename, GeoModel& mesh )
+        virtual void load( const std::string& filename, GeoModel& geomodel )
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from TetGen not implemented yet" ) ;
@@ -610,7 +612,7 @@ namespace {
 
     class VTKIOHandler: public GeoModelIOHandler {
     public:
-        virtual void load( const std::string& filename, GeoModel& mesh )
+        virtual void load( const std::string& filename, GeoModel& geomodel )
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from VTK not implemented yet" ) ;
@@ -667,6 +669,140 @@ namespace {
         }
     } ;
 
+    /************************************************************************/
+
+    /// Convert the cell type of RINGMesh to the MFEM one
+    /// NO_ID for pyramids and prims because there are not supported by MFEM
+    static index_t cell_type_mfem[4] = { 4, 5, NO_ID, NO_ID } ;
+
+    /// Convert the facet type of RINGMesh to the MFEM one
+    /// NO_ID for polygons there are not supported by MFEM
+    static index_t facet_type_mfem[3] = { 2, 3, NO_ID } ;
+
+    /*!
+     * Export for the MFEM format http://mfem.org/
+     * Mesh file description : http://mfem.org/mesh-formats/#mfem-mesh-v10
+     * "MFEM is a free, lightweight, scalable C++ library for finite element
+     * methods"
+     */
+    class MFEMIOHandler: public GeoModelIOHandler {
+    public:
+        virtual void load( const std::string& filename, GeoModel& geomodel )
+        {
+            throw RINGMeshException( "I/O",
+                "Loading of a GeoModel from VTK not implemented yet" ) ;
+        }
+        virtual void save( const GeoModel& gm, const std::string& filename )
+        {
+            const GeoModelMesh& geomodel_mesh = gm.mesh ;
+            index_t nb_cells = geomodel_mesh.cells.nb() ;
+            if( geomodel_mesh.cells.nb_tet() != nb_cells
+                && geomodel_mesh.cells.nb_hex() != nb_cells ) {
+                throw RINGMeshException( "I/O",
+                    "Export to MFEM format works only with full tet or full hex format" ) ;
+            }
+            std::ofstream out( filename.c_str() ) ;
+            out.precision( 16 ) ;
+
+            write_header( geomodel_mesh, out ) ;
+            write_cells( geomodel_mesh, out ) ;
+            write_facets( geomodel_mesh, out ) ;
+            write_vertices( geomodel_mesh, out ) ;
+        }
+
+    private:
+        /*!
+         * @brief Write the header for the MFEM mesh file
+         * @param[in] geomodel_mesh the GeoModelMesh to be saved
+         * @param[in] out the ofstream that wrote the MFEM mesh file
+         */
+        void write_header( const GeoModelMesh& geomodel_mesh, std::ofstream& out )
+        {
+            // MFEM mesh version
+            out << "MFEM mesh v1.0" << std::endl ;
+            out << std::endl ;
+
+            // Dimension is always 3 in our case
+            out << "dimension" << std::endl ;
+            out << dimension << std::endl ;
+            out << std::endl ;
+        }
+
+        /*!
+         * @brief Write the cells for the MFEM mesh file (work only with
+         * tetrahedra and hexaedra)
+         * @details The structure of the MFEM file for cells is
+         * [group_id] [cell_type] [id_vertex_0] [id_vertex_1] .....
+         * cell_type is 4 for  tetrahedra and 5 for hexahedra.
+         * group_id begin with 1
+         * @param[in] geomodel_mesh the GeoModelMesh to be saved
+         * @param[in] out the ofstream that wrote the MFEM mesh file
+         */
+        void write_cells( const GeoModelMesh& geomodel_mesh, std::ofstream& out )
+        {
+            index_t nb_cells = geomodel_mesh.cells.nb() ;
+            out << "elements" << std::endl ;
+            out << nb_cells << std::endl ;
+            for( index_t c = 0; c < nb_cells; c++ ) {
+                out << geomodel_mesh.cells.region( c ) << " " ;
+                out << cell_type_mfem[geomodel_mesh.cells.type( c )] << " " ;
+                for( index_t v = 0; v < geomodel_mesh.cells.nb_vertices( c ); v++ ) {
+                    out << geomodel_mesh.cells.vertex( c, v ) << " " ;
+                }
+                out << std::endl ;
+            }
+            out << std::endl ;
+        }
+
+        /*!
+         * @brief Write the facets for the MFEM mesh file (work only with
+         * triangles and quads)
+         * @details The structure of the MFEM file for facets is
+         * [group_id] [facet_type] [id_vertex_0] [id_vertex_1] .....
+         * facet_type is 2 for triangles and 3 for the quads
+         * group_id is continuous with the groupd indexes of the cells
+         * @param[in] geomodel_mesh the GeoModelMesh to be saved
+         * @param[in] out the ofstream that wrote the MFEM mesh file
+         */
+        void write_facets( const GeoModelMesh& geomodel_mesh, std::ofstream& out )
+        {
+            index_t offset = geomodel_mesh.model().nb_regions() ;
+            out << "boundary" << std::endl ;
+            out << geomodel_mesh.facets.nb() << std::endl ;
+            for( index_t f = 0; f < geomodel_mesh.facets.nb(); f++ ) {
+                index_t not_used = 0 ;
+                out << geomodel_mesh.facets.surface( f ) + offset + 1 << " " ;
+                out << facet_type_mfem[geomodel_mesh.facets.type( f, not_used )]
+                    << " " ;
+                for( index_t v = 0; v < geomodel_mesh.facets.nb_vertices( f );
+                    v++ ) {
+                    out << geomodel_mesh.facets.vertex( f, v ) << " " ;
+                }
+                out << std::endl ;
+            }
+            out << std::endl ;
+        }
+
+        /*!
+         * @brief Write the vertices for the MFEM mesh file
+         * @details The structure of the MFEM file for vertices is
+         * [x] [y] [z]
+         * @param[in] geomodel_mesh the GeoModelMesh to be saved
+         * @param[in] out the ofstream that wrote the MFEM mesh file
+         */
+        void write_vertices( const GeoModelMesh& geomodel_mesh, std::ofstream& out )
+        {
+            out << "vertices" << std::endl ;
+            out << geomodel_mesh.vertices.nb() << std::endl ;
+            out << dimension << std::endl ;
+            for( index_t v = 0; v < geomodel_mesh.vertices.nb(); v++ ) {
+                out << geomodel_mesh.vertices.vertex( v ) << std::endl ;
+            }
+        }
+
+    private:
+        static const index_t dimension = 3 ;
+    } ;
     /************************************************************************/
 
     class TSolidIOHandler: public GeoModelIOHandler {
@@ -890,7 +1026,7 @@ namespace {
             clear() ;
         }
 
-        virtual void load( const std::string& filename, GeoModel& mesh )
+        virtual void load( const std::string& filename, GeoModel& geomodel )
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from CSMP not implemented yet" ) ;
@@ -1530,7 +1666,7 @@ namespace {
             index_t v0 ;
             index_t v1 ;
         } ;
-        virtual void load( const std::string& filename, GeoModel& mesh )
+        virtual void load( const std::string& filename, GeoModel& geomodel )
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from GPRS not implemented yet" ) ;
@@ -1731,7 +1867,7 @@ namespace {
 //                   { { 0, 1, 2, 3 }, { 0, 4, 1 }, { 0, 3, 4 }, { 2, 4, 3 }, { 2, 1, 4 } } } ;
     class MSHIOHandler: public GeoModelIOHandler {
     public:
-        virtual void load( const std::string& filename, GeoModel& mesh )
+        virtual void load( const std::string& filename, GeoModel& geomodel )
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from GMSH not implemented yet" ) ;
@@ -2016,7 +2152,7 @@ namespace RINGMesh {
         ringmesh_register_IOHandler_creator( VTKIOHandler, "vtk" );
         ringmesh_register_IOHandler_creator( GPRSIOHandler, "gprs" );
         ringmesh_register_IOHandler_creator( MSHIOHandler, "msh" );
-        ringmesh_register_IOHandler_creator( GeoModelHandler, "gm" );
-    }
+        ringmesh_register_IOHandler_creator( MFEMIOHandler, "mfem" );
+        ringmesh_register_IOHandler_creator( GeoModelHandler, "gm" );}
 
 }
