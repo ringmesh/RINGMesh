@@ -45,6 +45,8 @@
 
 #include <geogram/delaunay/LFS.h>
 #include <geogram/basic/geometry.h>
+#include <geogram/basic/logger.h>
+#include <geogram/basic/command_line.h>
 
 namespace {
 
@@ -186,12 +188,15 @@ namespace {
 namespace GEO {
 
     void LocalFeatureSize::init(index_t nb_pts, const double* pts) {
-        // Note: I need BDEL here instead of ANN/BNN since I need
+        // Note: I need PDEL here instead of ANN/BNN since I need
         //  to access the cells (and ANN/BNN only give me the
         //  neighbors)
-        Delaunay_var delaunay = Delaunay::create(3, "BDEL");
-        delaunay->set_vertices(nb_pts, pts);
 
+        Logger::out("LFS") << "Delaunay" << std::endl;
+        Delaunay_var delaunay = Delaunay::create(3, "PDEL");
+        delaunay->set_vertices(nb_pts, pts);
+        Logger::out("LFS") << "Done Delaunay" << std::endl;
+        
         vector<vec3> circumcenter(delaunay->nb_cells());
         vector<bool> voronoi_cell_is_infinite(
             delaunay->nb_vertices(), false
@@ -208,6 +213,7 @@ namespace GEO {
         );
         vector<double> dist(delaunay->nb_vertices(), 0.0);
 
+        Logger::out("LFS") << "(1) Circumcenters and slivers" << std::endl; 
         // Step 1: compute circumcenters and check for slivers
         const double sliver_quality = sliver_angle_threshold_ / 180.0 * M_PI;
         for(index_t t = 0; t < delaunay->nb_cells(); t++) {
@@ -234,6 +240,7 @@ namespace GEO {
             is_sliver[t] = !ok;
         }
 
+        Logger::out("LFS") << "(2) Positive poles" << std::endl;
         // Step 2: compute positive poles
         for(index_t t = 0; t < delaunay->nb_cells(); t++) {
             if(is_sliver[t]) {
@@ -268,6 +275,7 @@ namespace GEO {
             }
         }
 
+        Logger::out("LFS") << "(3) Negative poles" << std::endl;        
         // Step 3: compute negative poles
         std::fill(dist.begin(), dist.end(), 0.0);
         for(index_t t = 0; t < delaunay->nb_cells(); t++) {
@@ -302,6 +310,7 @@ namespace GEO {
             }
         }
 
+        Logger::out("LFS") << "(4) Kd-tree" << std::endl;
         // Step 4: create search structure
         vector<bool> is_pole(delaunay->nb_cells(), false);
         for(index_t iv = 0; iv < delaunay->nb_vertices(); iv++) {
@@ -333,6 +342,8 @@ namespace GEO {
 
         spatial_search_ = Delaunay::create(3, "NN");
         spatial_search_->set_vertices(poles_.size() / 3, poles_.data());
+
+        Logger::out("LFS") << "Done init." << std::endl;        
     }
 }
 

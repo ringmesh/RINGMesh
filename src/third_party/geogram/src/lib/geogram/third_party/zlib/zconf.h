@@ -203,6 +203,7 @@
  *  under Windows that seems to have another
  *  version of zlib installed somewhere...)
  */
+
 /*
 #define ZLIB_DLL
 #ifdef geogram_EXPORTS

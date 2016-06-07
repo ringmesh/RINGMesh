@@ -287,20 +287,17 @@ namespace RINGMesh {
         const vec3& p3 )
     {
         vec3 vertices[4] = { p0, p1, p2, p3 } ;
-        for( GEO::Numeric::uint8 f = 0;
-            f < GEO::MeshCellDescriptors::tet_descriptor.nb_facets; f++ ) {
-            vec3 N = cross(
-                vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][1]]
-                    - vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][0]],
-                vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][2]]
-                    - vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][0]] ) ;
-            vec3 n = p
-                - ( ( vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][0]]
-                    + vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][1]]
-                    + vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][2]] ) / 3. ) ;
-            if( dot( N, n ) > 0 ) return false ;
+        GEO::Sign signs[4] ;
+        for( index_t f = 0; f < GEO::MeshCellDescriptors::tet_descriptor.nb_facets;
+            f++ ) {
+            signs[f] =
+                GEO::PCK::orient_3d( p.data(),
+                    vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][0]].data(),
+                    vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][1]].data(),
+                    vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][2]].data() ) ;
         }
-        return true ;
+        return ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0 && signs[3] >= 0 )
+            || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0 ) ;
     }
 
     /*!
@@ -322,31 +319,17 @@ namespace RINGMesh {
         const vec3& p4 )
     {
         vec3 vertices[5] = { p0, p1, p2, p3, p4 } ;
-        for( index_t f = 0; f < GEO::MeshCellDescriptors::pyramid_descriptor.nb_facets; f++ ) {
-            vec3 N = cross(
-                vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][1]]
-                    - vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][0]],
-                vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][2]]
-                    - vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][0]] ) ;
-            index_t nb_vertices =
-                GEO::MeshCellDescriptors::pyramid_descriptor.nb_vertices_in_facet[f] ;
-            vec3 barycenter( 0., 0., 0. ) ;
-            if( nb_vertices == 3 )
-                barycenter = ( ( vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][0]]
-                    + vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][1]]
-                    + vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][2]] ) / 3. ) ;
-            else if( nb_vertices == 4 )
-                barycenter = ( ( vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][0]]
-                    + vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][1]]
-                    + vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][2]]
-                    + vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][3]] ) / 4. ) ;
-            else {
-                ringmesh_assert_not_reached;
-            }
-            vec3 n = p - barycenter ;
-            if( dot( N, n ) > 0 ) return false ;
+        GEO::Sign signs[5] ;
+        for( index_t f = 0; f < GEO::MeshCellDescriptors::pyramid_descriptor.nb_facets;
+            f++ ) {
+            signs[f] =
+                GEO::PCK::orient_3d( p.data(),
+                    vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][0]].data(),
+                    vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][1]].data(),
+                    vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][2]].data() ) ;
         }
-        return true ;
+        return ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0 && signs[3] >= 0 && signs[4] >= 0 )
+            || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0 && signs[4] <= 0 ) ;
     }
 
     /*!
@@ -370,31 +353,19 @@ namespace RINGMesh {
         const vec3& p5 )
     {
         vec3 vertices[6] = { p0, p1, p2, p3, p4, p5 } ;
-        for( index_t f = 0; f < GEO::MeshCellDescriptors::prism_descriptor.nb_facets; f++ ) {
-            vec3 N = cross(
-                vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][1]]
-                    - vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][0]],
-                vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][2]]
-                    - vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][0]] ) ;
-            index_t nb_vertices =
-                GEO::MeshCellDescriptors::prism_descriptor.nb_vertices_in_facet[f] ;
-            vec3 barycenter( 0., 0., 0. ) ;
-            if( nb_vertices == 3 )
-                barycenter = ( ( vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][0]]
-                    + vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][1]]
-                    + vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][2]] ) / 3. ) ;
-            else if( nb_vertices == 4 )
-                barycenter = ( ( vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][0]]
-                    + vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][1]]
-                    + vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][2]]
-                    + vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][3]] ) / 4. ) ;
-            else {
-                ringmesh_assert_not_reached;
-            }
-            vec3 n = p - barycenter ;
-            if( dot( N, n ) > 0 ) return false ;
+        GEO::Sign signs[6] ;
+        for( index_t f = 0; f < GEO::MeshCellDescriptors::prism_descriptor.nb_facets;
+            f++ ) {
+            signs[f] =
+                GEO::PCK::orient_3d( p.data(),
+                    vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][0]].data(),
+                    vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][1]].data(),
+                    vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][2]].data() ) ;
         }
-        return true ;
+        return ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0 && signs[3] >= 0
+            && signs[4] >= 0 && signs[5] >= 0 )
+            || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0
+                && signs[4] <= 0 && signs[5] <= 0 ) ;
     }
     /*!
      * Tests if a point is inside a hexahedron
@@ -421,20 +392,19 @@ namespace RINGMesh {
         const vec3& p7 )
     {
         vec3 vertices[8] = { p0, p1, p2, p3, p4, p5, p6, p7 } ;
-        for( index_t f = 0; f < GEO::MeshCellDescriptors::hex_descriptor.nb_facets; f++ ) {
-            vec3 N = cross(
-                vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][1]]
-                    - vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][0]],
-                vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][2]]
-                    - vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][0]] ) ;
-            vec3 barycenter = ( ( vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][0]]
-                + vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][1]]
-                + vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][2]]
-                + vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][3]] ) / 4. ) ;
-            vec3 n = p - barycenter ;
-            if( dot( N, n ) > 0 ) return false ;
+        GEO::Sign signs[8] ;
+        for( index_t f = 0; f < GEO::MeshCellDescriptors::hex_descriptor.nb_facets;
+            f++ ) {
+            signs[f] =
+                GEO::PCK::orient_3d( p.data(),
+                    vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][0]].data(),
+                    vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][1]].data(),
+                    vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][2]].data() ) ;
         }
-        return true ;
+        return ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0 && signs[3] >= 0
+            && signs[4] >= 0 && signs[5] >= 0 && signs[6] >= 0 && signs[7] >= 0 )
+            || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0
+                && signs[4] <= 0 && signs[5] <= 0 && signs[6] <= 0 && signs[7] <= 0 ) ;
     }
 
     /*!
@@ -529,6 +499,44 @@ namespace RINGMesh {
         double c1 = ( const_P1 - d * const_P0 ) * invDet ;
         O_inter = c0 * N_P0 + c1 * N_P1 ;
         D_inter = cross( N_P0, N_P1 ) ;
+        return true ;
+    }
+
+    /*!
+     * Computes barycentric coordinates of \p p
+     * @param[in] p the query point
+     * @param[in] p0 the first tetra vertex
+     * @param[in] p1 the second tetra vertex
+     * @param[in] p2 the third tetra vertex
+     * @param[in] p3 the fourth tetra vertex
+     * @param[out] lambda the parametric coordinate corresponding to points
+     * @return false if the computation failed because of too small tetrahedron volume
+     */
+    bool tetra_barycentric_coordinates(
+        const vec3& p,
+        const vec3& p0,
+        const vec3& p1,
+        const vec3& p2,
+        const vec3& p3,
+        double lambda[4] )
+    {
+        double total_volume = GEO::Geom::tetra_signed_volume( p0, p1, p2, p3 ) ;
+        if( total_volume < epsilon_sq ) { 
+            /// @todo Need to have a better handling of epsilon
+            for( index_t i = 0; i < 4; i++ ) {
+                lambda[i] = 0 ;
+            }
+            return false ;
+        }
+        double volume0 = GEO::Geom::tetra_signed_volume( p1, p3, p2, p ) ;
+        double volume1 = GEO::Geom::tetra_signed_volume( p0, p2, p3, p ) ;
+        double volume2 = GEO::Geom::tetra_signed_volume( p0, p3, p1, p ) ;
+        double volume3 = GEO::Geom::tetra_signed_volume( p0, p1, p2, p ) ;
+
+        lambda[0] = volume0 / total_volume ;
+        lambda[1] = volume1 / total_volume ;
+        lambda[2] = volume2 / total_volume ;
+        lambda[3] = volume3 / total_volume ;
         return true ;
     }
 

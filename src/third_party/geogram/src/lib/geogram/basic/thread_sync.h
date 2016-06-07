@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_BASIC_THREAD_SYNC__
-#define __GEOGRAM_BASIC_THREAD_SYNC__
+#ifndef GEOGRAM_BASIC_THREAD_SYNC
+#define GEOGRAM_BASIC_THREAD_SYNC
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/atomics.h>

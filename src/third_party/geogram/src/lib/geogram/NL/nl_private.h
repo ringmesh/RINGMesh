@@ -42,8 +42,8 @@
  *
  */
 
-#ifndef __NL_PRIVATE__
-#define __NL_PRIVATE__
+#ifndef OPENNL_PRIVATE_H
+#define OPENNL_PRIVATE_H
 
 #include "nl.h"
 #include <stdlib.h>
@@ -74,10 +74,23 @@
 #define nl_cast(T,x)   (*(T*)&(x))
 
 
+
 /**
  * \name Assertion checks
  * @{ 
  */
+
+#if defined(__clang__) || defined(__GNUC__)
+#define NL_NORETURN __attribute__((noreturn))
+#else
+#define NL_NORETURN 
+#endif
+
+#if defined(_MSC_VER)
+#define NL_NORETURN_DECL __declspec(noreturn) 
+#else
+#define NL_NORETURN_DECL 
+#endif
 
 /**
  * \brief Displays an error message and aborts the program when
@@ -87,21 +100,23 @@
  * \param[in] file the source filename
  * \param[in] line the line number
  */
-void nl_assertion_failed(const char* cond, const char* file, int line) ;
+NL_NORETURN_DECL void nl_assertion_failed(
+    const char* cond, const char* file, int line
+) NL_NORETURN;
 
 /**
  * \brief Displays an error message and aborts the program
  *  when a range assertion failed.
  * \details Called by nl_range_assert() whenever the assertion failed
- * \param[in] double the variable
- * \param[in] double min_val the minimum value
- * \param[in] double max_val the maximum value
+ * \param[in] x the variable
+ * \param[in] min_val the minimum value
+ * \param[in] max_val the maximum value
  * \param[in] file the source filename
  * \param[in] line the line number
  */
-void nl_range_assertion_failed(
+NL_NORETURN_DECL void nl_range_assertion_failed(
     double x, double min_val, double max_val, const char* file, int line
-) ;
+) NL_NORETURN;
 
 /**
  * \brief Displays an error message and aborts the program
@@ -111,7 +126,9 @@ void nl_range_assertion_failed(
  * \param[in] file the source filename
  * \param[in] line the line number
  */
-void nl_should_not_have_reached(const char* file, int line) ;
+NL_NORETURN_DECL void nl_should_not_have_reached(
+    const char* file, int line
+) NL_NORETURN;
 
 /**
  * \brief Tests an assertion and aborts the program if the test fails
@@ -193,7 +210,7 @@ void nlWarning(const char* function, const char* message) ;
  * \brief Gets the current time in seconds
  * \return the current time in seconds (starting from a given reference time)
  */
-NLdouble nlCurrentTime()  ;
+NLdouble nlCurrentTime(void);
 
 /******************************************************************************/
 /* classic macros */

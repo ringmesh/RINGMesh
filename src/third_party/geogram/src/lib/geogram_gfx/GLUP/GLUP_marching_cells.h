@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_GFX_GLUP_GLUP_MARCHING_CELLS__
-#define __GEOGRAM_GFX_GLUP_GLUP_MARCHING_CELLS__
+#ifndef GEOGRAM_GFX_GLUP_GLUP_MARCHING_CELLS
+#define GEOGRAM_GFX_GLUP_GLUP_MARCHING_CELLS
 
 #include <geogram_gfx/GLUP/GLUP.h>
 #include <geogram_gfx/basic/common.h>
@@ -185,9 +185,22 @@ namespace GLUP {
         /**
          * \brief Creates a Uniform Buffer Object that contains
          *  the tables for the marching cell.
+         * \details Used by GLUP150 and GLUP440 profiles that support
+         *  UBOs. This MarchingCells keeps ownership of the created
+         *  UBO (it is destroyed by the destructor of this MarchingCells).
          */
         GLuint create_UBO();
 
+        /**
+         * \brief Creates a Vertex Buffer Object with the indices
+         *  for all configurations.
+         * \details Used by GLUPES2 that does not support UBOs.
+         *  This MarchingCells keeps ownership of the created
+         *  VBO (it is destroyed by the destructor of this MarchingCells).
+         * \note NOT USED YET.
+         */
+        GLuint create_elements_VBO();
+        
         /**
          * \brief Binds the uniform state marching cell variables
          *  to a given program.
@@ -337,6 +350,7 @@ namespace GLUP {
         std::string GLSL_compute_intersections_;
         GLuint uniform_binding_point_;
         GLuint UBO_;
+        GLuint elements_VBO_;
     };
 
     /**********************************************************************/

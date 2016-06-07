@@ -44,8 +44,8 @@
 
 #include "nl_private.h"
 
-#ifndef __NL_MATRIX__
-#define __NL_MATRIX__
+#ifndef OPENNL_MATRIX_H
+#define OPENNL_MATRIX_H
 
 /**
  * \file geogram/NL/nl_matrix.h

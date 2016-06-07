@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_BASIC_PERMUTATION__
-#define __GEOGRAM_BASIC_PERMUTATION__
+#ifndef GEOGRAM_BASIC_PERMUTATION
+#define GEOGRAM_BASIC_PERMUTATION
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/numeric.h>
@@ -286,7 +286,7 @@ namespace GEO {
          * \details Computes the inverse of a given \p permutation and 
          *  stores the result in another one.
          * \param[in] permutation the permutation to invert
-         * \param[out] inverse the computed inverse of \p permutation
+         * \param[out] invert the computed inverse of \p permutation
          * \note there is also a variant of invert() that computes the
          *  permutation in-place.
          */

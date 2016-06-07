@@ -44,6 +44,15 @@
 
 #include "nl_matrix.h"
 
+/*
+ Some warnings about const cast in callback for
+ qsort() function.
+ */
+
+#ifdef __clang__
+#pragma GCC diagnostic ignored "-Wcast-qual"
+#endif
+
 void nlRowColumnConstruct(NLRowColumn* c) {
     c->size     = 0 ;
     c->capacity = 0 ;
@@ -204,11 +213,11 @@ NLboolean nlCRSMatrixLoad(NLCRSMatrix* M, const char* filename) {
     return NL_TRUE;
 }
 
-NLuint nlCRSMatrixNNZ(NLCRSMatrix* M) {
+static NLuint nlCRSMatrixNNZ(NLCRSMatrix* M) {
     return M->rowptr[M->m];
 }
 
-void nlCRSMatrixMultSlice(
+static void nlCRSMatrixMultSlice(
     NLCRSMatrix* M, const double* x, double* y, NLuint Ibegin, NLuint Iend
 ) {
     NLuint i,j;
@@ -222,13 +231,17 @@ void nlCRSMatrixMultSlice(
 }
 
 
-void nlCRSMatrixMult(
+static void nlCRSMatrixMult(
     NLCRSMatrix* M, const double* x, double* y
 ) {
     
     int slice;
     int nslices = (int)(M->nslices);
-#pragma omp parallel for private(slice) 
+    
+#if defined(_OPENMP)
+#pragma omp parallel for private(slice)
+#endif
+    
     for(slice=0; slice<nslices; ++slice) {
         nlCRSMatrixMultSlice(
             M,x,y,M->sliceptr[slice],M->sliceptr[slice+1]
@@ -268,7 +281,7 @@ void nlSparseMatrixConstruct(
     M->diag = NL_NEW_ARRAY(NLdouble, M->diag_size) ;
 }
 
-void nlSparseMatrixDestroyRowColumns(NLSparseMatrix* M) {
+static void nlSparseMatrixDestroyRowColumns(NLSparseMatrix* M) {
     NLuint i ;
     if(M->storage & NL_MATRIX_STORE_ROWS) {
         for(i=0; i<M->m; i++) {
@@ -500,7 +513,11 @@ static void nlSparseMatrix_mult_rows(
     int i,ij ;
     NLCoeff* c = NULL ;
     NLRowColumn* Ri = NULL;
-#pragma omp parallel for private(i,ij,c,Ri) 
+
+#if defined(_OPENMP)    
+#pragma omp parallel for private(i,ij,c,Ri)
+#endif
+    
     for(i=0; i<m; i++) {
         Ri = &(A->row[i]) ;       
         y[i] = 0 ;
@@ -550,7 +567,7 @@ static void nlSparseMatrix_mult_cols(
     }
 }
 
-/************************************************************************************/
+/*****************************************************************************/
 /* SparseMatrix x Vector routines, main driver routine */
 
 void nlSparseMatrixMult(NLSparseMatrix* A, const NLdouble* x, NLdouble* y) {

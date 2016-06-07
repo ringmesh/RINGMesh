@@ -2,21 +2,23 @@
  *   Written 2004 by <mgix@mgix.com>
  *   This code is in the public domain
  *   See http://www.mgix.com/snippets/?GLQuickText for details
+ *   [Bruno Levy]: replaced fixed-functionality pipeline functions
+ *     with their GLUP counterparts.
  */
 
-#if defined(__MACOS__) || (defined(__MACH__) && defined(__APPLE__))
-    #include <OpenGL/gl.h>
-#else
-    #if defined(WIN32)
-        #include <windows.h>
-    #endif
-    #include <GL/gl.h>
-#endif
+#include <geogram_gfx/basic/GL.h>
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include "glQuickText.h"
+
+void glQuickTextPrintString(
+    double xpos, double ypos, double zpos,
+    double scale, const char* string
+) {
+    glQuickText::printfAt(xpos, ypos, zpos, scale, string);
+}
 
 class Char
 {
@@ -41,16 +43,15 @@ extern unsigned char glQuickTextFontData[];
 static inline void init()
 {
     static bool initDone = false;
-    if(initDone==false)
-    {
+    if(!initDone) {
         initDone = true;
 
         unsigned char *src = glQuickTextFontData;
         unsigned char buffer[2*256*256];
         unsigned char *dst = buffer;
         int nbPixels = 256*256;
-        while(nbPixels--)
-        {
+
+        while(nbPixels--) {
             dst[0]= src[0];
             dst[1]= src[0];
             dst += 2;
@@ -58,15 +59,18 @@ static inline void init()
         }
 
         glGenTextures(1, &texId);
-        glBindTexture(GL_TEXTURE_2D, texId);
-        glPixelStorei(GL_PACK_ALIGNMENT, 1);
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-        glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
-        glPixelStorei(GL_UNPACK_ROW_LENGTH, 256);
+        glActiveTexture(GLenum(GL_TEXTURE0 + GLUP_TEXTURE_2D_UNIT));
+
+        glBindTexture(GLUP_TEXTURE_1D_TARGET, 0);
+        glBindTexture(GLUP_TEXTURE_3D_TARGET, 0);
+        //   Comes last, since 1D and 2D targets can
+        // be the same.
+        glBindTexture(GLUP_TEXTURE_2D_TARGET, texId);
+        
         glTexImage2D(
-            GL_TEXTURE_2D,
+            GLUP_TEXTURE_2D_TARGET,
             0,
-            GL_LUMINANCE8_ALPHA8,
+            GL_LUMINANCE_ALPHA, 
             256,
             256,
             0,
@@ -74,7 +78,8 @@ static inline void init()
             GL_UNSIGNED_BYTE,
             buffer
         );
-        glPixelStorei(GL_UNPACK_ROW_LENGTH, 0); //[Bruno]: reset to default
+        
+        glGenerateMipmap(GLUP_TEXTURE_2D_TARGET);        
     }
 }
 
@@ -86,104 +91,120 @@ double glQuickText::getFontHeight(
     return scale*fontHeight;
 }
 
-static int myvasprintf(
-    char        **buf,
-    const char  *format,
-    va_list     arg
-)
-{
-    #ifndef WIN32
-	return vasprintf(buf, format, arg);
-    #else
-        buf[0] = (char*)malloc(65536);
-        return vsprintf(buf[0], format, arg);
-    #endif
-}
+static char buf[65536];
 
 void glQuickText::printfAt(
-    double	x0,
-    double	y0,
-    double	z0,
-    double	scale,
+    double      x0,
+    double      y0,
+    double      z0,
+    double      scale,
     const char  *format,
     ...
-)
-{
+) {
     init();
     scale *= fixedScale;
 
-    char *buf=0;
     va_list arg;
     va_start(arg, format);
-	myvasprintf(&buf, format, arg);
+    vsprintf(buf, format, arg);
     va_end(arg);
 
     glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+    glupEnable(GLUP_TEXTURING);
+    glupTextureType(GLUP_TEXTURE_2D);
+    glupTextureMode(GLUP_TEXTURE_MODULATE);
+    glupDisable(GLUP_DRAW_MESH);
+    glupDisable(GLUP_VERTEX_COLORS);
+    glupSetCellsShrink(0.0f);
+    glupMatrixMode(GLUP_TEXTURE_MATRIX);
+    glupPushMatrix();
+    glupLoadIdentity();
+    
+    glActiveTexture(GLenum(GL_TEXTURE0 + GLUP_TEXTURE_2D_UNIT));
+    glBindTexture(GLUP_TEXTURE_1D_TARGET, 0);
+#ifdef GEO_GL_TEXTURE_3D    
+    glBindTexture(GLUP_TEXTURE_3D_TARGET, 0);
+#endif    
+    glBindTexture(GLUP_TEXTURE_2D_TARGET, texId);
 
-        glEnable(GL_TEXTURE_2D);
-            glBindTexture(GL_TEXTURE_2D, texId);
-            glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-            double x= x0;
-            double y= y0;
-            unsigned char *p= (unsigned char*)buf;
-            while(1)
-            {
-                int c= *(p++);
-                if(c==0) break;
-                else if(c=='\n')
-                {
-                    x= x0;
-                    y= y-fontHeight*scale;
-                }
-                else if(c==' ')
-                {
-                    x+= spaceWidth*scale;
-                }
-                else
-                {
-                    Char *fontChar= glQuickTextFontChars[c];
-                    if(fontChar)
-                    {
-                        double pad= 0.375f;
-                        int w= fontChar->w;
-                        int h= fontChar->h;
-                        double f= (double)fontChar->s;
-                        double l= -fontChar->l/10000.0f;
-                        double b= -fontChar->b/10000.0f;
-                        double tx0= (fontChar->x+pad)/f;
-                        double ty0= (fontChar->y+pad)/f;
-                        double tx1= tx0+(w-2*pad)/f;
-                        double ty1= ty0+(h-2*pad)/f;
-                        glPushMatrix();
-                            glTranslated(x,y,z0);
-                            glScaled(scale,scale,1.0f);
-                            glBegin(GL_QUADS);
-                                glTexCoord2d(tx0,ty0);
-                                glVertex2d(l,b);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(
+        GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR
+    );
+    
+    double x= x0;
+    double y= y0;
+    unsigned char *p= (unsigned char*)buf;
+   
+    // For now with triangles, will
+    // be quads as soon as they work
+    // under GLUPES.
+                
+    glupBegin(GLUP_TRIANGLES);
+   
+    while(1) {
+        int c= *(p++);
+        if(c==0) {
+            break;
+        } else if(c=='\n') {
+            x= x0;
+            y= y-fontHeight*scale;
+        } else if(c==' ') {
+            x+= spaceWidth*scale;
+        } else {
+            Char *fontChar= glQuickTextFontChars[c];
+            if(fontChar) {
+                double pad= 0.375f;
+                int w= fontChar->w;
+                int h= fontChar->h;
+                double f= (double)fontChar->s;
+                double l= -fontChar->l/10000.0f;
+                double b= -fontChar->b/10000.0f;
+                double tx0= (fontChar->x+pad)/f;
+                double ty0= (fontChar->y+pad)/f;
+                double tx1= tx0+(w-2*pad)/f;
+                double ty1= ty0+(h-2*pad)/f;
 
-                                glTexCoord2d(tx1,ty0);
-                                glVertex2d(l+w,b);
+                double nx0 = l * scale + x;
+                double ny0 = b * scale + y;
+                double nx1 = (l+w) * scale + x;
+                double ny1 = (b+h) * scale + y;
 
-                                glTexCoord2d(tx1,ty1);
-                                glVertex2d(l+w,b+h);
-
-                                glTexCoord2d(tx0,ty1);
-                                glVertex2d(l,b+h);
-                            glEnd();
-                        glPopMatrix();
-                        x+= fontChar->o*scale;
-                    }
-                }
+                            
+                glupTexCoord2d(tx0,ty0);
+                glupVertex3d(nx0, ny0, z0);
+                
+                glupTexCoord2d(tx1,ty0);
+                glupVertex3d(nx1, ny0, z0);
+                
+                glupTexCoord2d(tx1,ty1);
+                glupVertex3d(nx1, ny1, z0);
+                
+                glupTexCoord2d(tx0,ty0);
+                glupVertex3d(nx0, ny0, z0);
+                
+                glupTexCoord2d(tx1,ty1);
+                glupVertex3d(nx1, ny1, z0);
+                
+                glupTexCoord2d(tx0,ty1);
+                glupVertex3d(nx0, ny1, z0);
+                
+                x+= fontChar->o*scale;
             }
-        glDisable(GL_TEXTURE_2D);
+        }
+    }
+
+    glupEnd();   
+   
+    glupDisable(GLUP_TEXTURING);
     glDisable(GL_BLEND);
-    free(buf);
+    glBindTexture(GL_TEXTURE_2D,0);
+    glupPopMatrix();
+    glupMatrixMode(GLUP_MODELVIEW_MATRIX);
 }
 
 void glQuickText::stringBox(
@@ -191,17 +212,14 @@ void glQuickText::stringBox(
     double      scale,
     const char  *format,
     ...
-)
-{
+) {
     init();
     scale *= fixedScale;
 
-    char *buf;
     va_list arg;
     va_start(arg, format);
-	myvasprintf(&buf, format, arg);
+    vsprintf(buf, format, arg);
     va_end(arg);
-
 
     box[0] =  1e29f;
     box[1] =  1e29f;
@@ -211,40 +229,33 @@ void glQuickText::stringBox(
     double x = 0.0f;
     double y = 0.0f;
     unsigned char *p= (unsigned char*)buf;
-    while(1)
-    {
-	int c= *(p++);
-	if(c==0) break;
-	else if(c=='\n')
-	{
-	    x= 0.0f;
-	    y= y-fontHeight*scale;
-	}
-	else if(c==' ')
-	{
-	    x+= spaceWidth*scale;
-	}
-	else
-	{
-	    Char *fontChar= glQuickTextFontChars[c];
-	    if(fontChar)
-	    {
-		int w= fontChar->w;
-		int h= fontChar->h;
-		double l= -fontChar->l/10000.0f;
-		double b= -fontChar->b/10000.0f;
-
-		double x0= x+l*scale;
-		double y0= y+b*scale;
-		double x1= x0+w*scale;
-		double y1= y0+h*scale;
-		if(x0<box[0]) box[0]= x0;
-		if(y0<box[1]) box[1]= y0;
-		if(x1>box[2]) box[2]= x1;
-		if(y1>box[3]) box[3]= y1;
-		x+= fontChar->o*scale;
-	    }
-	}
+    while(1) {
+        int c= *(p++);
+        if(c==0) {
+            break;
+        } else if(c=='\n') {
+            x= 0.0f;
+            y= y-fontHeight*scale;
+        } else if(c==' ') {
+            x+= spaceWidth*scale;
+        } else {
+            Char *fontChar= glQuickTextFontChars[c];
+            if(fontChar) {
+                int w= fontChar->w;
+                int h= fontChar->h;
+                double l= -fontChar->l/10000.0f;
+                double b= -fontChar->b/10000.0f;
+                double x0= x+l*scale;
+                double y0= y+b*scale;
+                double x1= x0+w*scale;
+                double y1= y0+h*scale;
+                if(x0<box[0]) box[0]= x0;
+                if(y0<box[1]) box[1]= y0;
+                if(x1>box[2]) box[2]= x1;
+                if(y1>box[3]) box[3]= y1;
+                x+= fontChar->o*scale;
+            }
+        }
     }
 }
 

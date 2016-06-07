@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_BASIC_COMMAND_LINE__
-#define __GEOGRAM_BASIC_COMMAND_LINE__
+#ifndef GEOGRAM_BASIC_COMMAND_LINE
+#define GEOGRAM_BASIC_COMMAND_LINE
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/numeric.h>

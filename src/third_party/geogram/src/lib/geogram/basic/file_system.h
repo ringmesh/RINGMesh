@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_BASIC_FILE_SYSTEM__
-#define __GEOGRAM_BASIC_FILE_SYSTEM__
+#ifndef GEOGRAM_BASIC_FILE_SYSTEM
+#define GEOGRAM_BASIC_FILE_SYSTEM
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/numeric.h>

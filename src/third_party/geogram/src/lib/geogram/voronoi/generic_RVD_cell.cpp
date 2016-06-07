@@ -122,7 +122,7 @@ namespace GEOGen {
                         dim
                     );
                 }
-            } break;
+            } 
 
             case 1:
             {
@@ -178,7 +178,7 @@ namespace GEOGen {
                         dim
                     );
                 }
-            } break;
+            } 
 
             case 2:
             {
@@ -195,7 +195,7 @@ namespace GEOGen {
                     mesh->vertices.point_ptr(e1),
                     dim
                 );
-            } break;
+            } 
 
             case 3:
             {
@@ -206,10 +206,9 @@ namespace GEOGen {
                 return GEO::PCK::side1_SOS(
                     pi, pj, mesh->vertices.point_ptr(v0), dim
                 );
-            } break;
+            } 
         }
         geo_assert_not_reached;
-        return Sign(0);
     }
 
     void ConvexCell::initialize_from_mesh_tetrahedron(

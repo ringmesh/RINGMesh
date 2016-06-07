@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_DELAUNAY_DELAUNAY_NN__
-#define __GEOGRAM_DELAUNAY_DELAUNAY_NN__
+#ifndef GEOGRAM_DELAUNAY_DELAUNAY_NN
+#define GEOGRAM_DELAUNAY_DELAUNAY_NN
 
 #include <geogram/basic/common.h>
 #include <geogram/delaunay/delaunay.h>

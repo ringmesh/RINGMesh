@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_BASIC_ENVIRONMENT__
-#define __GEOGRAM_BASIC_ENVIRONMENT__
+#ifndef GEOGRAM_BASIC_ENVIRONMENT
+#define GEOGRAM_BASIC_ENVIRONMENT
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/smart_pointer.h>
