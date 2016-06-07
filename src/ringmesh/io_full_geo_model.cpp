@@ -676,7 +676,7 @@ namespace {
     static index_t cell_type_mfem[4] = { 4, 5, NO_ID, NO_ID } ;
 
     /// Convert the xfacet type of RINGMesh to the MFEM one
-    /// NO_ID for poolygons there are not supported by MFEM
+    /// NO_ID for polygons there are not supported by MFEM
     static index_t facet_type_mfem[3] = { 2, 3, NO_ID } ;
 
     class MFEMIOHandler: public GeoModelIOHandler {
@@ -704,6 +704,7 @@ namespace {
             write_vertices( geomodel_mesh, out ) ;
         }
 
+    private:
         /*!
          * @brief Write the header for the MFEM mesh file
          * @param[in] geomodel_mesh the GeoModelMesh to be saved
@@ -717,7 +718,7 @@ namespace {
 
             // Dimension is always 3 in our case
             out << "dimension" << std::endl ;
-            out << "3" << std::endl ;
+            out << dimension << std::endl ;
             out << std::endl ;
         }
 
@@ -787,11 +788,14 @@ namespace {
         {
             out << "vertices" << std::endl ;
             out << geomodel_mesh.vertices.nb() << std::endl ;
-            out << "3" << std::endl ;
+            out << dimension << std::endl ;
             for( index_t v = 0; v < geomodel_mesh.vertices.nb(); v++ ) {
                 out << geomodel_mesh.vertices.vertex( v ) << std::endl ;
             }
         }
+
+    private:
+        static const index_t dimension = 3 ;
     } ;
     /************************************************************************/
 
@@ -2133,16 +2137,16 @@ namespace RINGMesh {
      */
     void GeoModelIOHandler::initialize_full_geomodel_output()
     {
-        ringmesh_register_IOHandler_creator( LMIOHandler, "meshb" ) ;
-        ringmesh_register_IOHandler_creator( LMIOHandler, "mesh" );
-        ringmesh_register_IOHandler_creator( TetGenIOHandler, "tetgen" );
-        ringmesh_register_IOHandler_creator( TSolidIOHandler, "so" );
-        ringmesh_register_IOHandler_creator( CSMPIOHandler, "csmp" );
-        ringmesh_register_IOHandler_creator( AsterIOHandler, "mail" );
-        ringmesh_register_IOHandler_creator( VTKIOHandler, "vtk" );
-        ringmesh_register_IOHandler_creator( GPRSIOHandler, "gprs" );
-        ringmesh_register_IOHandler_creator( MSHIOHandler, "msh" );
-        ringmesh_register_IOHandler_creator( MFEMIOHandler, "mfem" );
-        ringmesh_register_IOHandler_creator( GeoModelHandler, "gm" );}
+        ringmesh_register_IOHandler_creator( LMIOHandler, "meshb" );
+    ringmesh_register_IOHandler_creator( LMIOHandler, "mesh" ) ;
+    ringmesh_register_IOHandler_creator( TetGenIOHandler, "tetgen" ) ;
+    ringmesh_register_IOHandler_creator( TSolidIOHandler, "so" ) ;
+    ringmesh_register_IOHandler_creator( CSMPIOHandler, "csmp" ) ;
+    ringmesh_register_IOHandler_creator( AsterIOHandler, "mail" ) ;
+    ringmesh_register_IOHandler_creator( VTKIOHandler, "vtk" ) ;
+    ringmesh_register_IOHandler_creator( GPRSIOHandler, "gprs" ) ;
+    ringmesh_register_IOHandler_creator( MSHIOHandler, "msh" ) ;
+    ringmesh_register_IOHandler_creator( MFEMIOHandler, "mfem" ) ;
+    ringmesh_register_IOHandler_creator( GeoModelHandler, "gm" ) ;}
 
 }
