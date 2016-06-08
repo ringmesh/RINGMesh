@@ -49,21 +49,23 @@
 namespace RINGMesh {
 
     using GEO::Mesh ;
+    using GEO::Logger ;
+    using namespace GEO::Memory ;
 
     bool is_mesh_tetrahedralizable( const Mesh& M )
     {
         if( M.facets.nb() == 0 ) {
-            GEO::Logger::err( "RING" ) << "Mesh to tetrahedralize has no facets "
+            Logger::err( "RING" ) << "Mesh to tetrahedralize has no facets "
                 << std::endl ;
             return false ;
         }
         if( !M.facets.are_simplices() ) {
-            GEO::Logger::err( "RING" ) << "Mesh to tetrahedralize is not triangulated"
+            Logger::err( "RING" ) << "Mesh to tetrahedralize is not triangulated"
                 << std::endl ;
             return false ;
         }
         if( M.cells.nb() != 0 ) {
-            GEO::Logger::warn( "RING" ) << "Mesh to tetrahedralize already have cells"
+            Logger::warn( "RING" ) << "Mesh to tetrahedralize already have cells"
                 << std::endl ;
         }
         return true ;
@@ -84,7 +86,8 @@ namespace RINGMesh {
         polygons_ = nil ;
     }
 
-    void TetgenMesher::tetrahedralize( const Mesh& input_mesh,
+    void TetgenMesher::tetrahedralize( 
+        const Mesh& input_mesh,
         const std::string& command_line,
         Mesh& output_mesh )
     {
@@ -95,7 +98,8 @@ namespace RINGMesh {
         assign_result_tetmesh_to_mesh( output_mesh ) ;
     }
 
-    void  TetgenMesher::tetrahedralize( const Mesh& input_mesh,
+    void TetgenMesher::tetrahedralize( 
+        const Mesh& input_mesh,
         const std::vector< vec3 >& one_point_per_region,
         const std::string& command_line,
         Mesh& output_mesh )
@@ -124,46 +128,48 @@ namespace RINGMesh {
     void TetgenMesher::tetrahedralize()
     {
         try {
-            GEO_3rdParty::tetrahedralize( &tetgen_args_, &tetgen_in_,
-                &tetgen_out_ ) ;
-        } catch( int code ) {
-            GEO::Logger::err( "Tetgen" ) << "Encountered a problem: " ;
-            switch( code ) {
+            // Call to Tetgen main tetrahedralization function
+            GEO_3rdParty::tetrahedralize( 
+                &tetgen_args_, &tetgen_in_, &tetgen_out_ 
+            ) ;
+        } catch( int tetgen_error_code ) {
+            Logger::err( "Tetgen" ) << "Encountered a problem: " ;
+            switch( tetgen_error_code ) {
                 case 1:
-                    GEO::Logger::err( "Tetgen" ) << "Out of memory" ;
+                    Logger::err( "Tetgen" ) << "Out of memory" ;
                     break ;
                 case 2:
-                    GEO::Logger::err( "Tetgen" )
+                    Logger::err( "Tetgen" )
                         << "Please report this bug to Hang.Si@wias-berlin.de. Include\n" ;
-                    GEO::Logger::err( "Tetgen" )
+                    Logger::err( "Tetgen" )
                         << "  the message above, your input data set, and the exact\n" ;
-                    GEO::Logger::err( "Tetgen" )
+                    Logger::err( "Tetgen" )
                         << "  command line you used to run this program, thank you" ;
                     break ;
                 case 3:
-                    GEO::Logger::err( "Tetgen" )
+                    Logger::err( "Tetgen" )
                         << "A self-intersection was detected. Program stopped\n" ;
-                    GEO::Logger::err( "Tetgen" )
+                    Logger::err( "Tetgen" )
                         << "Hint: use -d option to detect all self-intersections" ;
                     break ;
                 case 4:
-                    GEO::Logger::err( "Tetgen" )
+                    Logger::err( "Tetgen" )
                         << "A very small input feature size was detected. Program stopped.\n" ;
-                    GEO::Logger::err( "Tetgen" )
+                    Logger::err( "Tetgen" )
                         << "Hint: use -T option to set a smaller tolerance." ;
                     break ;
                 case 5:
-                    GEO::Logger::err( "Tetgen" )
+                    Logger::err( "Tetgen" )
                         << "Two very close input facets were detected. Program stopped.\n" ;
-                    GEO::Logger::err( "Tetgen" )
+                    Logger::err( "Tetgen" )
                         << "Hint: use -Y option to avoid adding Steiner points in boundary." ;
                     break ;
                 case 10:
-                    GEO::Logger::err( "Tetgen" )
+                    Logger::err( "Tetgen" )
                         << "An input error was detected. Program stopped." ;
                     break ;
             }
-            GEO::Logger::err( "Tetgen" ) << std::endl ;
+            Logger::err( "Tetgen" ) << std::endl ;
         }
     }
 
@@ -184,9 +190,8 @@ namespace RINGMesh {
     {
         tetgen_in_.numberofpoints = static_cast<int>(M.vertices.nb()) ;
         tetgen_in_.pointlist = new double[3 * tetgen_in_.numberofpoints] ;
-        GEO::Memory::copy(
-            tetgen_in_.pointlist, M.vertices.point_ptr( 0 ),
-            M.vertices.nb() * 3 * sizeof( double )
+        copy( tetgen_in_.pointlist, M.vertices.point_ptr( 0 ),
+              M.vertices.nb() * 3 * sizeof( double )
             ) ;
     }
 
@@ -194,33 +199,29 @@ namespace RINGMesh {
     {
         tetgen_in_.numberofedges = static_cast<int>(M.edges.nb()) ;
         tetgen_in_.edgelist = new int[2 * tetgen_in_.numberofedges] ;
-        GEO::Memory::copy(
-            tetgen_in_.edgelist, M.edges.vertex_index_ptr( 0 ),
-            M.edges.nb() * 2 * sizeof( int )
-            ) ;
+        copy( tetgen_in_.edgelist, M.edges.vertex_index_ptr( 0 ),
+              M.edges.nb() * 2 * sizeof(int) ) ;
     }
 
     void TetgenMesher::copy_facets_to_tetgen_input( const Mesh& M )
     {
-        polygons_ = new GEO_3rdParty::tetgenio::polygon[M.facets.nb()] ;
+        polygons_ = new tetgenio::polygon[M.facets.nb()] ;
 
         tetgen_in_.numberoffacets = static_cast<int>(M.facets.nb()) ;
-        tetgen_in_.facetlist = new GEO_3rdParty::tetgenio::facet[tetgen_in_.numberoffacets] ;
+        tetgen_in_.facetlist = new tetgenio::facet[tetgen_in_.numberoffacets] ;
 
         polygon_corners_ = new int[M.facet_corners.nb()] ;
-        GEO::Memory::copy(
-            polygon_corners_, M.facet_corners.vertex_index_ptr( 0 ),
-            M.facet_corners.nb()*sizeof( int )
-            ) ;
+        copy( polygon_corners_, M.facet_corners.vertex_index_ptr( 0 ),
+              M.facet_corners.nb()*sizeof(int) ) ;
 
         for( index_t f = 0; f < M.facets.nb(); ++f ) {
-            GEO_3rdParty::tetgenio::facet& F = tetgen_in_.facetlist[f] ;
-            GEO_3rdParty::tetgenio::init( &F ) ;
+            tetgenio::facet& F = tetgen_in_.facetlist[f] ;
+            tetgenio::init( &F ) ;
             F.numberofpolygons = 1 ;
             F.polygonlist = &polygons_[f] ;
 
-            GEO_3rdParty::tetgenio::polygon& P = F.polygonlist[0] ;
-            GEO_3rdParty::tetgenio::init( &P ) ;
+            tetgenio::polygon& P = F.polygonlist[0] ;
+            tetgenio::init( &P ) ;
             P.numberofvertices = static_cast<int> (M.facets.nb_corners( f ) ) ;
             P.vertexlist = &polygon_corners_[M.facets.corners_begin( f )] ;
         }
@@ -237,7 +238,7 @@ namespace RINGMesh {
             tetgen_in_.regionlist[5*i+1] = one_point_in_each_region[i].y ;
             tetgen_in_.regionlist[5*i+2] = one_point_in_each_region[i].z ;
             tetgen_in_.regionlist[5*i+3] = i ;
-            tetgen_in_.regionlist[5*i+4] = DBL_MAX ; // Used only with the a switch
+            tetgen_in_.regionlist[5*i+4] = DBL_MAX ; // Used only with the 'a' switch of tetgen
         }
     }
 
@@ -248,13 +249,9 @@ namespace RINGMesh {
             ( tetgen_out_.numberoftetrahedronattributes ) ;
         GEO::Attribute< index_t > region_id( M.cells.attributes(), attribute_name ) ;
         for( index_t i = 0; i < M.cells.nb(); ++i ) {
-            // Nothing says where it is, so we hope that the shell id is the first 
-            // attribute stored in tetgen [JP]
-            // Assert to detect if the double is not an index_t [BC]
-            ringmesh_assert( std::abs( static_cast<index_t> (
-                tet_attributes[one_tet_attribute_size*i] )
-                - tet_attributes[one_tet_attribute_size*i] ) < epsilon ) ;
-            region_id[i] = static_cast<index_t> ( tet_attributes[one_tet_attribute_size*i] ) ;
+            // Nothing says where it is, so we hope that the region id (called shell id in tetgen)
+            // is the first attribute stored in tetgen [JP] - All tetgen business is quite risky but works.
+            region_id[i] = static_cast<index_t>( tet_attributes[one_tet_attribute_size*i] ) ;
         }
         region_id.unbind() ;
     }
@@ -280,7 +277,7 @@ namespace RINGMesh {
 
     void TetgenMesher::get_result_tetmesh_points( GEO::vector< double >& points ) const
     {
-        index_t nb_points = static_cast<index_t> ( tetgen_out_.numberofpoints ) ;
+        index_t nb_points = static_cast<index_t>( tetgen_out_.numberofpoints ) ;
         points.resize( 3 * nb_points ) ;
         double* points_ptr = tetgen_out_.pointlist ;
         RINGMESH_PARALLEL_LOOP
@@ -291,17 +288,17 @@ namespace RINGMesh {
 
     void TetgenMesher::get_result_tetmesh_tets( GEO::vector< index_t>& tets ) const
     {
-        index_t nb_tets = static_cast<index_t> ( tetgen_out_.numberoftetrahedra );
+        index_t nb_tets = static_cast<index_t>( tetgen_out_.numberoftetrahedra );
         tets.resize( 4 * nb_tets );
 
         int* tets_ptr = tetgen_out_.tetrahedronlist ;
-        index_t one_tet_size = static_cast<index_t> ( tetgen_out_.numberofcorners ) ;
+        index_t one_tet_size = static_cast<index_t>( tetgen_out_.numberofcorners ) ;
         RINGMESH_PARALLEL_LOOP
             for( index_t i = 0; i < nb_tets; ++i ) {
-                tets[4 * i + 0] = static_cast<index_t> ( tets_ptr[one_tet_size*i + 0] ) ;
-                tets[4 * i + 1] = static_cast<index_t> ( tets_ptr[one_tet_size*i + 1] ) ;
-                tets[4 * i + 2] = static_cast<index_t> ( tets_ptr[one_tet_size*i + 2] ) ;
-                tets[4 * i + 3] = static_cast<index_t> ( tets_ptr[one_tet_size*i + 3] ) ;
+                tets[4 * i + 0] = static_cast<index_t>( tets_ptr[one_tet_size*i + 0] ) ;
+                tets[4 * i + 1] = static_cast<index_t>( tets_ptr[one_tet_size*i + 1] ) ;
+                tets[4 * i + 2] = static_cast<index_t>( tets_ptr[one_tet_size*i + 2] ) ;
+                tets[4 * i + 3] = static_cast<index_t>( tets_ptr[one_tet_size*i + 3] ) ;
             }
     }
 
@@ -320,4 +317,3 @@ namespace RINGMesh {
 }
 
 #endif
-

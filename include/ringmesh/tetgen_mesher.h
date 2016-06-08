@@ -73,7 +73,7 @@ namespace RINGMesh {
     * Meshing with incomplete quality value "Qpq%fYA"
     */
     class TetgenCommandLine {
-    public:
+    public:        
         const std::string command_line() const
         {
             return command_line_ ;
@@ -91,6 +91,8 @@ namespace RINGMesh {
         ringmesh_disable_copy( TetgenMesher ) ;
     public:
         typedef GEO::Mesh Mesh ;
+        typedef GEO_3rdParty::tetgenio tetgenio ;
+        typedef GEO_3rdParty::tetgenbehavior tetgenbehavior ;
 
         TetgenMesher()
             : polygons_( nil ), polygon_corners_( nil )
@@ -128,12 +130,13 @@ namespace RINGMesh {
         void get_result_tetmesh_tets( GEO::vector< index_t >& tets ) const ;
 
     private:
-        GEO_3rdParty::tetgenio tetgen_in_ ;
-        GEO_3rdParty::tetgenio tetgen_out_ ;
+        tetgenio tetgen_in_ ;
+        tetgenio tetgen_out_ ;
+        
         std::string tetgen_command_line_ ;
-        GEO_3rdParty::tetgenbehavior tetgen_args_ ;
+        tetgenbehavior tetgen_args_ ;
 
-        GEO_3rdParty::tetgenio::polygon* polygons_ ;
+        tetgenio::polygon* polygons_ ;
         int* polygon_corners_ ;
     } ;
 
