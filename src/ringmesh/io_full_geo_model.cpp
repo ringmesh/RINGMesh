@@ -671,11 +671,156 @@ namespace {
 
     /************************************************************************/
 
+    /// Convert the cell type of RINGMesh to the GMSH one
+    static index_t cell_type_gmsh[4] = { 4, 5, 6, 7 } ;
+
+    /// Convert the facet type of RINGMesh to the GMSH one
+    /// NO_ID for polygons there are not supported by GMSH
+    static index_t facet_type_gmsh[3] = { 2, 3, NO_ID } ;
+
+    /*!
+     * Export for the GMSH format http://gmsh.info/
+     * Mesh file description : http://gmsh.info/doc/texinfo/gmsh.html#MSH-ASCII-file-format
+     * " Gmsh is a free 3D finite element grid generator with a build-in CAD engine and
+     * post-processor. Its design goal is to provide a fast, light and user-friendly meshing
+     * tool with parametric input and advanced visualization capabilities. Gmsh is built around
+     * four modules: geometry, mesh, solver and post-processing. The specification of any input
+     *  to these modules is done either interactively using the graphical user interface or in
+     *  ASCII text files using Gmsh's own scripting language. "
+     */
+    class GMSHIOHandler: public GeoModelIOHandler {
+    public:
+        virtual void load( const std::string& filename, GeoModel& geomodel )
+        {
+            throw RINGMeshException( "I/O",
+                "Loading of a GeoModel from VTK not implemented yet" ) ;
+        }
+        virtual void save( const GeoModel& gm, const std::string& filename )
+        {
+            const GeoModelMesh& geomodel_mesh = gm.mesh ;
+            std::ofstream out( filename.c_str() ) ;
+            out.precision( 16 ) ;
+            write_header( geomodel_mesh, out ) ;
+            write_vertices( geomodel_mesh, out ) ;
+            write_elements( geomodel_mesh, out ) ;
+        }
+
+    private:
+        /*!
+         * @brief Write the header for the GMSH mesh file
+         * @param[in] geomodel_mesh the GeoModelMesh to be saved
+         * @param[in] out the ofstream that wrote the GMSH mesh file
+         */
+        void write_header( const GeoModelMesh& geomodel_mesh, std::ofstream& out )
+        {
+            out << "$MeshFormat" << std::endl ;
+            out << "2.2 0 " << sizeof(double) << std::endl ;
+            out << "$EndMeshFormat" << std::endl ;
+        }
+
+        /*!
+         * @brief Write the vertices for the GMSH mesh file
+         * @details The structure of the GMSH file for vertices is
+         * [id] [x] [y] [z] (careful, id begin with 1...)
+         * @param[in] geomodel_mesh the GeoModelMesh to be saved
+         * @param[in] out the ofstream that wrote the GMSH mesh file
+         */
+        void write_vertices( const GeoModelMesh& geomodel_mesh, std::ofstream& out )
+        {
+            out << "$Nodes" << std::endl ;
+            out << geomodel_mesh.vertices.nb() << std::endl ;
+            for( index_t v = 0; v < geomodel_mesh.vertices.nb(); v++ ) {
+                out << v + 1 << " " << geomodel_mesh.vertices.vertex( v )
+                    << std::endl ;
+            }
+            out << "$EndNodes" << std::endl ;
+        }
+
+        /*!
+         * @brief Write the cells and facets for the GMSH mesh file
+         * @details More details for the format are available in the
+         * write_cells and write_facets functions. The numerotation
+         * of the cells and the facets is continuous
+         * @param[in] geomodel_mesh the GeoModelMesh to be saved
+         * @param[in] out the ofstream that wrote the GMSH mesh file
+         */
+        void write_elements( const GeoModelMesh& geomodel_mesh, std::ofstream& out )
+        {
+            out << "$Elements" << std::endl ;
+            index_t nb_elements = geomodel_mesh.cells.nb()
+                + geomodel_mesh.facets.nb() ;
+            out << nb_elements << std::endl ;
+            write_cells( geomodel_mesh, out ) ;
+            write_facets( geomodel_mesh, out ) ;
+            out << "$EndElements" << std::endl ;
+        }
+
+        /*!
+         * @brief Write the cells for the GMSH mesh file
+         * @details The structure of the GMSH file for cells is
+         * [id] [type] [number of tags] [tag_1] [tag_2] ... [id_vertex_1] [id_vertex_2] .....
+         * (careful, id begin with 1...)
+         * type is
+         * 4 - tetraheddra
+         * 5 - hexahedra
+         * 6 - prisms
+         * 7 - pyramids
+         * There are also other types for higher orders (not handle here sorry)
+         * In this export, we will have only one tag for the region number
+         * @param[in] geomodel_mesh the GeoModelMesh to be saved
+         * @param[in] out the ofstream that wrote the GMSH mesh file
+         */
+        void write_cells( const GeoModelMesh& geomodel_mesh, std::ofstream& out )
+        {
+            for( index_t c = 0; c < geomodel_mesh.cells.nb(); c++ ) {
+                out << c + 1 << " " ;
+                out << cell_type_gmsh[geomodel_mesh.cells.type( c )] << " 1 " ;
+                out << geomodel_mesh.cells.region( c ) << " " ;
+                for( index_t v = 0; v < geomodel_mesh.cells.nb_vertices( c ); v++ ) {
+                    out << geomodel_mesh.cells.vertex( c, v ) + 1 << " " ;
+                }
+                out << std::endl ;
+            }
+        }
+
+        /*!
+         * @brief Write the facets for the GMSH mesh file
+         * @details The structure of the GMSH file for facets is
+         * [id] [type] [number of tags] [tag_1] [tag_2] ... [id_vertex_1] [id_vertex_2] .....
+         * (careful, id begin with 1...)
+         * type is
+         * 2 - triangles
+         * 3 - quads
+         * There are also other types for higher orders (not handle here sorry)
+         * In this export, we will have only one tag for the surface number
+         * @param[in] geomodel_mesh the GeoModelMesh to be saved
+         * @param[in] out the ofstream that wrote the GMSH mesh file
+         */
+        void write_facets( const GeoModelMesh& geomodel_mesh, std::ofstream& out )
+        {
+            index_t nb_cells = geomodel_mesh.cells.nb() ;
+            for( index_t f = 0; f < geomodel_mesh.facets.nb(); f++ ) {
+                index_t not_used = 0 ;
+                out << f + nb_cells + 1 << " " ;
+                out << facet_type_gmsh[geomodel_mesh.facets.type( f, not_used )]
+                    << " 1 " ;
+                out << geomodel_mesh.facets.surface( f ) << " " ;
+                for( index_t v = 0; v < geomodel_mesh.facets.nb_vertices( f );
+                    v++ ) {
+                    out << geomodel_mesh.facets.vertex( f, v ) + 1 << " " ;
+                }
+                out << std::endl ;
+            }
+        }
+    } ;
+
+    /************************************************************************/
+
     /// Convert the cell type of RINGMesh to the MFEM one
     /// NO_ID for pyramids and prims because there are not supported by MFEM
     static index_t cell_type_mfem[4] = { 4, 5, NO_ID, NO_ID } ;
 
-    /// Convert the xfacet type of RINGMesh to the MFEM one
+    /// Convert the facet type of RINGMesh to the MFEM one
     /// NO_ID for polygons there are not supported by MFEM
     static index_t facet_type_mfem[3] = { 2, 3, NO_ID } ;
 
@@ -744,7 +889,7 @@ namespace {
             out << "elements" << std::endl ;
             out << nb_cells << std::endl ;
             for( index_t c = 0; c < nb_cells; c++ ) {
-                out << geomodel_mesh.cells.region( c ) << " " ;
+                out << geomodel_mesh.cells.region( c ) + 1 << " " ;
                 out << cell_type_mfem[geomodel_mesh.cells.type( c )] << " " ;
                 for( index_t v = 0; v < geomodel_mesh.cells.nb_vertices( c ); v++ ) {
                     out << geomodel_mesh.cells.vertex( c, v ) << " " ;
@@ -760,18 +905,16 @@ namespace {
          * @details The structure of the MFEM file for facets is
          * [group_id] [facet_type] [id_vertex_0] [id_vertex_1] .....
          * facet_type is 2 for triangles and 3 for the quads
-         * group_id is continuous with the groupd indexes of the cells
          * @param[in] geomodel_mesh the GeoModelMesh to be saved
          * @param[in] out the ofstream that wrote the MFEM mesh file
          */
         void write_facets( const GeoModelMesh& geomodel_mesh, std::ofstream& out )
         {
-            index_t offset = geomodel_mesh.model().nb_regions() ;
             out << "boundary" << std::endl ;
             out << geomodel_mesh.facets.nb() << std::endl ;
             for( index_t f = 0; f < geomodel_mesh.facets.nb(); f++ ) {
                 index_t not_used = 0 ;
-                out << geomodel_mesh.facets.surface( f ) + offset + 1 << " " ;
+                out << geomodel_mesh.facets.surface( f ) + 1 << " " ;
                 out << facet_type_mfem[geomodel_mesh.facets.type( f, not_used )]
                     << " " ;
                 for( index_t v = 0; v < geomodel_mesh.facets.nb_vertices( f );
@@ -1819,7 +1962,7 @@ namespace {
         }
     } ;
 
-    /************************************************************************/
+/************************************************************************/
 
 //        struct RINGMesh2GMSH {
 //                   index_t element_type ;
@@ -1865,28 +2008,28 @@ namespace {
 //                   { 3, 3, 3, 3, 4 },  // nb vertices in facet
 //                   { 1, 3, 4, 2, 0 },  // facets
 //                   { { 0, 1, 2, 3 }, { 0, 4, 1 }, { 0, 3, 4 }, { 2, 4, 3 }, { 2, 1, 4 } } } ;
-    class MSHIOHandler: public GeoModelIOHandler {
-    public:
-        virtual void load( const std::string& filename, GeoModel& geomodel )
-        {
-            throw RINGMeshException( "I/O",
-                "Loading of a GeoModel from GMSH not implemented yet" ) ;
-        }
-        virtual void save( const GeoModel& gm, const std::string& filename )
-        {
-            /// @todo after implementing GMMOrder
-            throw RINGMeshException( "I/O",
-                "Saving of a GeoModel from GMSH not implemented yet" ) ;
-//                gm.set_duplicate_mode( FAULT ) ;
-
-            std::ofstream out( filename.c_str() ) ;
-            out.precision( 16 ) ;
-
-            out << "$MeshFormat" << std::endl ;
-            out << "2.2 0 8" << std::endl ;
-            out << "$EndMeshFormat" << std::endl ;
-
-            out << "$Nodes" << std::endl ;
+//    class MSHIOHandler: public GeoModelIOHandler {
+//    public:
+//        virtual void load( const std::string& filename, GeoModel& geomodel )
+//        {
+//            throw RINGMeshException( "I/O",
+//                "Loading of a GeoModel from GMSH not implemented yet" ) ;
+//        }
+//        virtual void save( const GeoModel& gm, const std::string& filename )
+//        {
+//            /// @todo after implementing GMMOrder
+//            throw RINGMeshException( "I/O",
+//                "Saving of a GeoModel from GMSH not implemented yet" ) ;
+////                gm.set_duplicate_mode( FAULT ) ;
+//
+//            std::ofstream out( filename.c_str() ) ;
+//            out.precision( 16 ) ;
+//
+//            out << "$MeshFormat" << std::endl ;
+//            out << "2.2 0 8" << std::endl ;
+//            out << "$EndMeshFormat" << std::endl ;
+//
+//            out << "$Nodes" << std::endl ;
 //            out << gm.order.nb_total_vertices() << std::endl ;
 //            for( index_t p = 0; p < gm.vertices.nb(); p++ ) {
 //
@@ -2111,8 +2254,8 @@ namespace {
 //                    }
 //                }
 //            }
-        }
-    } ;
+//        }
+//    } ;
 }
 
 namespace RINGMesh {
@@ -2143,16 +2286,17 @@ namespace RINGMesh {
      */
     void GeoModelIOHandler::initialize_full_geomodel_output()
     {
-        ringmesh_register_IOHandler_creator( LMIOHandler, "meshb" ) ;
-        ringmesh_register_IOHandler_creator( LMIOHandler, "mesh" );
-        ringmesh_register_IOHandler_creator( TetGenIOHandler, "tetgen" );
-        ringmesh_register_IOHandler_creator( TSolidIOHandler, "so" );
-        ringmesh_register_IOHandler_creator( CSMPIOHandler, "csmp" );
-        ringmesh_register_IOHandler_creator( AsterIOHandler, "mail" );
-        ringmesh_register_IOHandler_creator( VTKIOHandler, "vtk" );
-        ringmesh_register_IOHandler_creator( GPRSIOHandler, "gprs" );
-        ringmesh_register_IOHandler_creator( MSHIOHandler, "msh" );
-        ringmesh_register_IOHandler_creator( MFEMIOHandler, "mfem" );
-        ringmesh_register_IOHandler_creator( GeoModelHandler, "gm" );}
+        ringmesh_register_IOHandler_creator( LMIOHandler, "meshb" );
+    ringmesh_register_IOHandler_creator( LMIOHandler, "mesh" ) ;
+    ringmesh_register_IOHandler_creator( TetGenIOHandler, "tetgen" ) ;
+    ringmesh_register_IOHandler_creator( TSolidIOHandler, "so" ) ;
+    ringmesh_register_IOHandler_creator( CSMPIOHandler, "csmp" ) ;
+    ringmesh_register_IOHandler_creator( AsterIOHandler, "mail" ) ;
+    ringmesh_register_IOHandler_creator( VTKIOHandler, "vtk" ) ;
+    ringmesh_register_IOHandler_creator( GPRSIOHandler, "gprs" ) ;
+    ringmesh_register_IOHandler_creator( GMSHIOHandler, "msh" ) ;
+    ringmesh_register_IOHandler_creator( MFEMIOHandler, "mfem" ) ;
+    ringmesh_register_IOHandler_creator( MFEMIOHandler, "mfem" ) ;
+    ringmesh_register_IOHandler_creator( GeoModelHandler, "gm" ) ;}
 
 }
