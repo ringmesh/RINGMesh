@@ -294,27 +294,13 @@ namespace {
     void get_bbox( const RINGMesh::GeoModel& GM, double* xyzmin, double* xyzmax )
     {
         for( GEO::index_t s = 0; s < GM.nb_surfaces(); s++ ) {
-            GEO::Mesh& M = GM.surface( s ).mesh() ;
-            for( GEO::index_t v = 0; v < M.vertices.nb(); ++v ) {
-                const double* p = M.vertices.point_ptr( v ) ;
+            const RINGMesh::Surface& S = GM.surface( s ) ;
+            for( GEO::index_t v = 0; v < S.nb_vertices(); ++v ) {
+                const vec3& p = S.vertex( v ) ;
                 for( GEO::coord_index_t c = 0; c < 3; ++c ) {
                     xyzmin[c] = GEO::geo_min( xyzmin[c], p[c] ) ;
                     xyzmax[c] = GEO::geo_max( xyzmax[c], p[c] ) ;
                 }
-            }
-        }
-    }
-
-    /**
-     * \brief Inverts the normals of a mesh.
-     * \details In color mode, this swaps the red and the blue sides.
-     */
-    void invert_normals()
-    {
-        for( GEO::index_t s = 0; s < GM.nb_surfaces(); s++ ) {
-            GEO::Mesh& M = GM.surface( s ).mesh() ;
-            for( GEO::index_t f = 0; f < M.facets.nb(); ++f ) {
-                M.facets.flip( f ) ;
             }
         }
     }
@@ -384,7 +370,7 @@ namespace {
                 float red = std::fmod( GEO::Numeric::random_float32(), 1 ) ;
                 float green = std::fmod( GEO::Numeric::random_float32(), 1 ) ;
                 float blue = std::fmod( GEO::Numeric::random_float32(), 1 ) ;
-                const GeoModelElement& cur_layer = GM.layer( l ) ;
+                const GeoModelEntity& cur_layer = GM.layer( l ) ;
                 for( index_t r = 0; r < cur_layer.nb_children(); ++r )
                     GM_gfx.set_cell_region_color( cur_layer.child( r ).index(), red,
                         green, blue ) ;
@@ -491,7 +477,6 @@ int main( int argc, char** argv )
         glup_viewer_add_key_func( 'w', &toggle_wells, "toggle wells" ) ;
         glup_viewer_add_key_func( 'V', toggle_voi, "toggle VOI" ) ;
         glup_viewer_add_key_func( 'L', toggle_lighting, "toggle lighting" ) ;
-        glup_viewer_add_key_func( 'n', invert_normals, "invert normals" ) ;
         glup_viewer_add_key_func( 'X', dec_shrink, "unshrink cells" ) ;
         glup_viewer_add_key_func( 'x', inc_shrink, "shrink cells" ) ;
         glup_viewer_add_key_func( 'C', toggle_colored_cells,

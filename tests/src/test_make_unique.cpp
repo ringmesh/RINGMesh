@@ -74,7 +74,7 @@ int main()
         std::vector< vec3 > all_vertices( nb_non_unique_vertices ) ;
         index_t index = 0 ;
         for( index_t c = 0; c < in.nb_corners(); c++ ) {
-            all_vertices[index++ ] = in.corner( c ).vertex() ;
+            all_vertices[index++ ] = in.corner( c ).vertex( 0 ) ;
         }
         for( index_t l = 0; l < in.nb_lines(); l++ ) {
             const Line& line = in.line( l ) ;
