@@ -1587,6 +1587,12 @@ namespace RINGMesh {
         return GEO::Geom::mesh_facet_center( mesh_, f ) ;
     }
 
+    vec3 GeoModelMeshFacets::normal( index_t f ) const
+    {
+        test_and_initialize() ;
+        return GEO::Geom::mesh_facet_normal( mesh_, f ) ;
+    }
+
     double GeoModelMeshFacets::area( index_t f ) const
     {
         test_and_initialize() ;
