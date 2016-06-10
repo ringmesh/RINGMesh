@@ -41,9 +41,9 @@
 
 #include <geogram/basic/string.h>
 
-
 #include <third_party/zlib/zip.h>
 #include <third_party/zlib/unzip.h>
+
 
 #include <geogram/basic/factory.h>
 #define MAX_FILENAME 512
@@ -142,7 +142,6 @@ namespace RINGMesh {
     void RINGMESH_API zip_file( zipFile zf, const std::string& name ) ;
 
     void RINGMESH_API unzip_file( unzFile uz, char filename[MAX_FILENAME] ) ;
-
 
     class RINGMESH_API BMIOHandler: public GeoModelIOHandler {
     public:

@@ -693,8 +693,12 @@ namespace RINGMesh {
      */
     vec3 generate_point_in_region( const Region& region )
     {
-        /// @todo To implement for bubbles
-        ringmesh_assert( region.nb_boundaries() > 1 ) ;
+        if( region.nb_boundaries() == 1 ) {                    
+            /// @todo This might fail if the Region is non-convex
+            return model_entity_center( region.boundary(0) );
+        }
+
+        ringmesh_assert( region.nb_boundaries() > 0 ) ;
 
         const GeoModel& geomodel = region.model() ;
         const Surface& first_boundary_surface = geomodel.surface(

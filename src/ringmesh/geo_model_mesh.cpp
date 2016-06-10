@@ -1557,6 +1557,12 @@ namespace RINGMesh {
         return mesh_.facet_barycenter( f ) ;
     }
 
+    vec3 GeoModelMeshFacets::normal( index_t f ) const
+    {
+        test_and_initialize() ;
+        return mesh_.facet_normal( f ) ;
+    }
+
     double GeoModelMeshFacets::area( index_t f ) const
     {
         test_and_initialize() ;

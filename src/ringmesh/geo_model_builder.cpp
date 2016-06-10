@@ -3829,7 +3829,6 @@ namespace RINGMesh {
         GEO::FileSystem::delete_file( connectivity ) ;
 
         unzClose( uz ) ;
-
     }
 
     void GeoModelBuilderGM::load_connectivities( GEO::LineInput& file_line )
