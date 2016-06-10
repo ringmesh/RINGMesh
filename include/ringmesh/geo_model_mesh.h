@@ -379,6 +379,10 @@ namespace RINGMesh {
          * @param[in] f the facet index
          */
         double area( index_t f ) const ;
+         /*!
+          * Get the normql of the facet
+          * @param[in] f the facet index
+          */
         vec3 normal( index_t f ) const ;
     private:
         /*!
