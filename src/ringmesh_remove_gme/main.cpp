@@ -42,10 +42,16 @@
 #include <ringmesh/geo_model.h>
 #include <ringmesh/io.h>
 #include <ringmesh/geo_model_editor.h>
+#include <algorithm>
 
 /*!
  * @author Benjamin Chauvin
  */
+
+bool sup( RINGMesh::index_t i, RINGMesh::index_t j )
+{
+    return i > j ;
+}
 
 int main( int argc, char** argv )
 {
@@ -58,8 +64,7 @@ int main( int argc, char** argv )
         configure_ringmesh() ;
 
         GEO::Logger::div( "RINGMeshRemoveGME" ) ;
-        GEO::Logger::out( "" ) << "Welcome to RINGMeshRemoveGME !"
-            << std::endl ;
+        GEO::Logger::out( "" ) << "Welcome to RINGMeshRemoveGME !" << std::endl ;
         GEO::Logger::out( "" ) << "People working on the project in RING"
             << std::endl ;
         GEO::Logger::out( "" )
@@ -110,11 +115,37 @@ int main( int argc, char** argv )
                 "Index superior to number of elements of type " + gme_type_name ) ;
         }
 
-        std::set< GME::gme_t > to_delete ;
-        to_delete.insert( GME::gme_t( gme_type, gme_id ) ) ;
+        if( gme_type == GME::REGION ) {
+            std::set< GME::gme_t > to_delete ;
+            to_delete.insert( GME::gme_t( gme_type, gme_id ) ) ;
 
-        GeoModelEditor editor( geomodel ) ;
-        editor.remove_elements_and_dependencies( to_delete ) ;
+            GeoModelEditor editor( geomodel ) ;
+            editor.remove_elements_and_dependencies( to_delete ) ;
+        } else if( gme_type == GME::LAYER ) {
+            // The trick for the layer is that the region indices does not change
+            // after the removal of a region if the indices are inferior to the
+            // index to the removed region. So the way to remove a layer is to
+            // remove each region (layer children) one by one from the one with
+            // the higher index to the one with the lowest index.
+            const GME& layer = geomodel.layer( gme_id ) ;
+            const index_t nb_regions = layer.nb_children() ;
+            std::vector< index_t > region_ids ;
+            region_ids.reserve( nb_regions ) ;
+            for( index_t child_itr = 0; child_itr < nb_regions; ++child_itr ) {
+                region_ids.push_back( layer.child_id( child_itr ).index ) ;
+            }
+            std::sort( region_ids.begin(), region_ids.end(), sup ) ;
+            for( index_t reg_id_itr = 0; reg_id_itr < nb_regions; ++reg_id_itr ) {
+                std::set< GME::gme_t > to_delete ;
+                to_delete.insert(
+                    GME::gme_t( GME::REGION, region_ids[reg_id_itr] ) ) ;
+                GeoModelEditor editor( geomodel ) ;
+                editor.remove_elements_and_dependencies( to_delete ) ;
+            }
+        } else {
+            throw RINGMeshException( "Remove GME",
+                "Only tested on region and layer." ) ;
+        }
 
         std::string output_geomodel_name = GEO::CmdLine::get_arg( "out:geomodel" ) ;
         if( output_geomodel_name.empty() ) {

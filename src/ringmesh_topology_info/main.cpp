@@ -148,7 +148,7 @@ int main( int argc, char** argv )
                 geomodel.one_interface( interface_itr ).geological_feature() ) ) {
                 continue ;
             }
-            // In my case it should not happen since I just want contact between a faut and the horizons
+            // In my case it should not happen since I just want contact between a fault and the horizons
             if( interface_itr == interface_one_id ) {
                 continue ;
             }
