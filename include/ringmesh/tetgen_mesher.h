@@ -84,7 +84,7 @@ namespace RINGMesh {
     } ;
 
     /*!
-    * @brief Tetgen wrapper
+    * @brief Tetgen adapter
     * @author Jeanne Pellerin
     */
     class TetgenMesher {
@@ -99,11 +99,21 @@ namespace RINGMesh {
         {}
         ~TetgenMesher() ;
 
+        /*!
+         * @brief Constrained tetrahedralization of a surface mesh 
+         */
         void tetrahedralize(
             const Mesh& input_mesh,
             const std::string& command_line,
             Mesh& output_mesh ) ;
-
+        
+        /*!
+         * @brief Constrained tetrahedralization of a surface mesh.
+         * @details In the output mesh, an attribute on the tets named "region" 
+         * identify in which region of the surface model is each tet.
+         * @param[in] one_point_per_region Identify volumetric regions of the 
+         * the input surface mesh.
+         */
         void tetrahedralize(
             const Mesh& input_mesh,
             const std::vector< vec3 >& one_point_per_region,
