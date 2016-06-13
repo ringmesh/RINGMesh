@@ -63,6 +63,9 @@ namespace RINGMesh {
             GEO::CmdLine::declare_arg(
                 "in:wells", "",
                 "Filename of the input wells" ) ;
+            GEO::CmdLine::declare_arg(
+                "in:validity_save", true,
+                "Saves meshes representing geomodel inconsistencies" ) ;
         }
 
         void import_arg_group_out()
