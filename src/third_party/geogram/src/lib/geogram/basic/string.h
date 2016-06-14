@@ -241,7 +241,7 @@ namespace GEO {
             /**
              * \brief Gets the string identifying the exception
              */
-            virtual const char* what() const throw ();
+            virtual const char* what() const GEO_NOEXCEPT;
         };
 
         /**
@@ -257,7 +257,7 @@ namespace GEO {
         template <class T>
         inline bool from_string(const char* s, T& value) {
             std::istringstream in(s);
-            return (in >> value >> std::ws) && in.eof();
+            return (in >> value) && (in.eof() || ((in >> std::ws) && in.eof()));
         }
 
         /**

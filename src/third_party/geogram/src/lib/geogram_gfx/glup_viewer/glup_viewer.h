@@ -37,7 +37,7 @@ typedef double GLdouble;
 #include <geogram_gfx/GLUP/GLUP.h>
 
 #ifdef __cplusplus
-#include <geogram_gfx/third_party/ImGui/imgui.h>
+#include <geogram_gfx/glup_viewer/glup_viewer_gui.h>
 #endif
 
 #if defined(_MSC_VER) && defined(GEO_DYNAMIC_LIBS)
@@ -189,6 +189,14 @@ extern GLUP_VIEWER_API void glup_viewer_randomize_colors(int);
 extern GLUP_VIEWER_API void glup_viewer_random_color_from_index(int index);    
 
 extern GLUP_VIEWER_API void glup_viewer_post_redisplay(void);
+
+extern GLUP_VIEWER_API void glup_viewer_home(void);
+
+    /* TODO REMOVE */
+extern GLUP_VIEWER_API void glup_viewer_draw_console(void);
+
+    /* TODO REMOVE */    
+extern GLUP_VIEWER_API void glup_viewer_draw_status_bar(void);
     
 #ifdef __cplusplus
 }

@@ -189,13 +189,21 @@ GLUPcontext glupCreateContext() {
 #else
             GLUP_profile = "GLUPES2";
 #endif            
-        } else if(GLSL_version < 4.4) {
+        }
+#ifdef GEO_OS_APPLE
+        else {
+            GLUP_profile = "GLUPES2";
+        }
+#else        
+        else if(GLSL_version < 4.4) {
             GLUP_profile = "GLUP150";
         } else {
             GLUP_profile = "GLUP440";
         }
+#endif        
     }
 
+    
     GEO::Logger::out("GLUP") << "Using " << GLUP_profile << " profile"
                         << std::endl;
 
@@ -256,12 +264,21 @@ GLUPcontext glupCreateContext() {
             << "Could not create a context"
             << std::endl;
 #else        
+#if defined(GEO_OS_APPLE)
+        GEO::Logger::warn("GLUP")
+            << "Caught an exception, downgrading to GLUPES2"
+            << std::endl;
+        delete result;
+        result = new GLUP::Context_ES2;
+        result->setup();
+#else        
         GEO::Logger::warn("GLUP")
             << "Caught an exception, downgrading to VanillaGL"
             << std::endl;
         delete result;
         result = new GLUP::Context_VanillaGL;
         result->setup();
+#endif
 #endif        
     }
 
@@ -747,13 +764,13 @@ void glupRotatef(
 ) {
     GEO_CHECK_GLUP();
     
-    GLfloat l = 1.0f / ::sqrtf(x*x+y*y+z*z);
+    GLUPfloat l = 1.0f / ::sqrtf(x*x+y*y+z*z);
     x *= l;
     y *= l;
     z *= l;
-    GLfloat s = ::sinf(angle);
-    GLfloat c = ::cosf(angle);
-    GLfloat M[16];
+    GLUPfloat s = ::sinf(angle * GLUPfloat(M_PI) / 180.0f);
+    GLUPfloat c = ::cosf(angle * GLUPfloat(M_PI) / 180.0f);
+    GLUPfloat M[16];
 
     M[4*0+0] = x*x*(1.0f-c)+c;
     M[4*0+1] = x*y*(1.0f-c)-z*s;

@@ -325,6 +325,14 @@ namespace GLUP {
         GLuint UBO_index =
             glGetUniformBlockIndex(program, "MarchingCellStateBlock");
         
+        if(UBO_index == GL_INVALID_INDEX) {
+            Logger::err("GLUP")
+                << "MarchingCellsStateBlock"
+                << ":did not find uniform state variable"
+                << std::endl;
+            throw GLSL::GLSLCompileError();
+        }
+        
         glUniformBlockBinding(
             program, UBO_index, uniform_binding_point_
         );
@@ -337,21 +345,35 @@ namespace GLUP {
             &uniform_buffer_size
         );
 
-        GLint config_size_offset = GLSL::get_uniform_variable_offset(
-            program, "MarchingCellStateBlock.config_size"
-        );
-
-        GLint config_offset = GLSL::get_uniform_variable_offset(
-            program, "MarchingCellStateBlock.config"
-        );
-
         // Create UBO
         
         Memory::byte* UBO_data = new Memory::byte[uniform_buffer_size];
         Memory::clear(UBO_data, size_t(uniform_buffer_size));
 
-        index_t* config_size_ptr = (index_t*)(void*)(UBO_data + config_size_offset);
-        index_t* config_ptr = (index_t*)(void*)(UBO_data + config_offset);
+        glGenBuffers(1, &UBO_);
+        glBindBuffer(GL_UNIFORM_BUFFER, UBO_);
+
+        glBindBufferBase(
+            GL_UNIFORM_BUFFER,
+            uniform_binding_point_,
+            UBO_
+        );
+        
+        
+        // Get variable offsets
+        
+        GLint config_size_offset = GLSL::get_uniform_variable_offset(
+            program, "MarchingCellStateBlock.config_size[0]"
+        );
+
+        GLint config_offset = GLSL::get_uniform_variable_offset(
+            program, "MarchingCellStateBlock.config[0]"
+        );
+        
+        index_t*
+            config_size_ptr = (index_t*)(void*)(UBO_data + config_size_offset);
+        index_t*
+            config_ptr = (index_t*)(void*)(UBO_data + config_offset);
 
         for(index_t i=0; i<nb_configs(); ++i) {
             config_size_ptr[i] = config_size(i);
@@ -360,8 +382,6 @@ namespace GLUP {
             }
         }
 
-        glGenBuffers(1, &UBO_);
-        glBindBuffer(GL_UNIFORM_BUFFER, UBO_);
         glBufferData(
             GL_UNIFORM_BUFFER,
             uniform_buffer_size,
@@ -369,11 +389,6 @@ namespace GLUP {
             GL_STATIC_DRAW
         );
 
-        glBindBufferBase(
-            GL_UNIFORM_BUFFER,
-            uniform_binding_point_,
-            UBO_
-        );
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
         // Delete temporary UBO data
@@ -383,6 +398,8 @@ namespace GLUP {
         glDeleteShader(vertex_shader);
         glDeleteShader(fragment_shader);
         glDeleteProgram(program);
+
+
 #endif                
         return UBO_;
     }

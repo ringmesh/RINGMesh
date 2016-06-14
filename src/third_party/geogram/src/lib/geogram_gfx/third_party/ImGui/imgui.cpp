@@ -1502,10 +1502,10 @@ bool ImGuiTextFilter::PassFilter(const char* text, const char* text_end) const
 // On some platform vsnprintf() takes va_list by reference and modifies it.
 // va_copy is the 'correct' way to copy a va_list but Visual Studio prior to 2013 doesn't have it.
 
+#ifndef va_copy
 #ifdef __APPLE__
 #define va_copy(dest, src) __builtin_va_copy(dest, src)
 #else
-#ifndef va_copy
 #define va_copy(dest, src) (dest = src)
 #endif
 #endif

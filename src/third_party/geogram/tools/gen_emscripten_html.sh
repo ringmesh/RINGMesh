@@ -33,3 +33,6 @@ else
        -e 's|<!-- DATAFILE -->|<script async type="text/javascript" src="vorpaview_data.js"></script>|g' \
        > $EXENAME.html
 fi
+
+echo "copying FileSaver.js (required)"
+cp $SCRIPTDIR/FileSaver.js .

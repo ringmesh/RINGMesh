@@ -39,6 +39,7 @@ static int fontHeight = 46;
 static float fixedScale = 0.5;
 extern Char *glQuickTextFontChars[];
 extern unsigned char glQuickTextFontData[];
+static bool use_vanilla_GL = true;
 
 static inline void init()
 {
@@ -46,6 +47,15 @@ static inline void init()
     if(!initDone) {
         initDone = true;
 
+// Note: emscripten's GL does not have texture swizzle, so we always use
+// GL_LUMINANCE_ALPHA texture format when under emscripten. This may fail
+// with a browser on a mac, to be tested...
+// If this fails, then there will be in the default texturing shader a
+// uniform to toggle the behavior (emulate texture swizzle).
+#ifndef GEO_OS_EMSCRIPTEN
+        use_vanilla_GL = (strcmp(glupCurrentProfileName(), "VanillaGL") == 0);
+#endif
+        
         unsigned char *src = glQuickTextFontData;
         unsigned char buffer[2*256*256];
         unsigned char *dst = buffer;
@@ -66,19 +76,38 @@ static inline void init()
         //   Comes last, since 1D and 2D targets can
         // be the same.
         glBindTexture(GLUP_TEXTURE_2D_TARGET, texId);
-        
-        glTexImage2D(
-            GLUP_TEXTURE_2D_TARGET,
-            0,
-            GL_LUMINANCE_ALPHA, 
-            256,
-            256,
-            0,
-            GL_LUMINANCE_ALPHA,
-            GL_UNSIGNED_BYTE,
-            buffer
-        );
-        
+
+        //   LUMINANCE_ALPHA is deprecated in core profile,
+        // so if not using VanillaGL, we use RG instead,
+        // and remap components using texture swizzle.
+        if(use_vanilla_GL) {
+            glTexImage2D(
+                GLUP_TEXTURE_2D_TARGET,
+                0,
+                GL_LUMINANCE_ALPHA, 
+                256,
+                256,
+                0,
+                GL_LUMINANCE_ALPHA,
+                GL_UNSIGNED_BYTE,
+                buffer
+            );
+        }
+#ifndef GEO_OS_EMSCRIPTEN
+        else {
+            glTexImage2D(
+                GLUP_TEXTURE_2D_TARGET,
+                0,
+                GL_RG, 
+                256,
+                256,
+                0,
+                GL_RG, 
+                GL_UNSIGNED_BYTE,
+                buffer
+            );
+        }
+#endif        
         glGenerateMipmap(GLUP_TEXTURE_2D_TARGET);        
     }
 }
@@ -116,6 +145,7 @@ void glQuickText::printfAt(
     glupTextureMode(GLUP_TEXTURE_MODULATE);
     glupDisable(GLUP_DRAW_MESH);
     glupDisable(GLUP_VERTEX_COLORS);
+    glupDisable(GLUP_LIGHTING);
     glupSetCellsShrink(0.0f);
     glupMatrixMode(GLUP_TEXTURE_MATRIX);
     glupPushMatrix();
@@ -128,23 +158,35 @@ void glQuickText::printfAt(
 #endif    
     glBindTexture(GLUP_TEXTURE_2D_TARGET, texId);
 
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameterf(
-        GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR
+        GLUP_TEXTURE_2D_TARGET, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE
     );
+    glTexParameterf(
+        GLUP_TEXTURE_2D_TARGET, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE
+    );
+    glTexParameterf(
+        GLUP_TEXTURE_2D_TARGET, GL_TEXTURE_MAG_FILTER, GL_LINEAR
+    );
+    glTexParameterf(
+        GLUP_TEXTURE_2D_TARGET, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR
+    );
+
+#ifndef GEO_OS_EMSCRIPTEN    
+    // Map RG components to emulate "luminance alpha" texture format (deprecated
+    // in core profile).
+    if(!use_vanilla_GL) {
+        glTexParameteri(GLUP_TEXTURE_2D_TARGET, GL_TEXTURE_SWIZZLE_R, GL_RED);
+        glTexParameteri(GLUP_TEXTURE_2D_TARGET, GL_TEXTURE_SWIZZLE_G, GL_RED);
+        glTexParameteri(GLUP_TEXTURE_2D_TARGET, GL_TEXTURE_SWIZZLE_B, GL_RED);
+        glTexParameteri(GLUP_TEXTURE_2D_TARGET, GL_TEXTURE_SWIZZLE_A, GL_GREEN);
+    }
+#endif
     
     double x= x0;
     double y= y0;
     unsigned char *p= (unsigned char*)buf;
    
-    // For now with triangles, will
-    // be quads as soon as they work
-    // under GLUPES.
-                
-    glupBegin(GLUP_TRIANGLES);
+    glupBegin(GLUP_QUADS);
    
     while(1) {
         int c= *(p++);
@@ -174,7 +216,6 @@ void glQuickText::printfAt(
                 double nx1 = (l+w) * scale + x;
                 double ny1 = (b+h) * scale + y;
 
-                            
                 glupTexCoord2d(tx0,ty0);
                 glupVertex3d(nx0, ny0, z0);
                 
@@ -183,13 +224,7 @@ void glQuickText::printfAt(
                 
                 glupTexCoord2d(tx1,ty1);
                 glupVertex3d(nx1, ny1, z0);
-                
-                glupTexCoord2d(tx0,ty0);
-                glupVertex3d(nx0, ny0, z0);
-                
-                glupTexCoord2d(tx1,ty1);
-                glupVertex3d(nx1, ny1, z0);
-                
+
                 glupTexCoord2d(tx0,ty1);
                 glupVertex3d(nx0, ny1, z0);
                 
@@ -205,6 +240,17 @@ void glQuickText::printfAt(
     glBindTexture(GL_TEXTURE_2D,0);
     glupPopMatrix();
     glupMatrixMode(GLUP_MODELVIEW_MATRIX);
+
+#ifndef GEO_OS_EMSCRIPTEN    
+    // Remove texture swizzling.
+    if(!use_vanilla_GL) {
+        glTexParameteri(GLUP_TEXTURE_2D_TARGET, GL_TEXTURE_SWIZZLE_R, GL_RED);
+        glTexParameteri(GLUP_TEXTURE_2D_TARGET, GL_TEXTURE_SWIZZLE_G, GL_GREEN);
+        glTexParameteri(GLUP_TEXTURE_2D_TARGET, GL_TEXTURE_SWIZZLE_B, GL_BLUE);
+        glTexParameteri(GLUP_TEXTURE_2D_TARGET, GL_TEXTURE_SWIZZLE_A, GL_ALPHA);
+    }
+#endif
+    
 }
 
 void glQuickText::stringBox(

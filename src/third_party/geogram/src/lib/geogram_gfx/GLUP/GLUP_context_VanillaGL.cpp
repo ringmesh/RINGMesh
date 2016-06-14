@@ -300,7 +300,7 @@ namespace GLUP {
                 4,
                 GL_FLOAT,
                 0,  // stride
-                isect_point_ 
+                &(isect_vertex_attribute_[0][0])
             );
         
             if(immediate_state_.buffer[1].is_enabled()) {
@@ -309,7 +309,7 @@ namespace GLUP {
                     4,
                     GL_FLOAT,
                     0,  // stride
-                    isect_color_ 
+                    &(isect_vertex_attribute_[1][0])                    
                 );
             }
         
@@ -319,7 +319,7 @@ namespace GLUP {
                     4,
                     GL_FLOAT,
                     0,  // stride
-                    isect_tex_coord_ 
+                    &(isect_vertex_attribute_[2][0])                    
                 );
             }
         }

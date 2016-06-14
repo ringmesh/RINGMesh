@@ -494,7 +494,6 @@ namespace GEO {
                 output << sep << m(i, j);
                 sep = " ";
             }
-            output << std::endl ; // [RINGMesh] Easier to read the matrix values
         }
         return output;
     }

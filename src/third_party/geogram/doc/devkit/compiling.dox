@@ -55,15 +55,25 @@ that you need is shipped with Geogram). It also works with Android (ARMv7 proces
 Follow the Linux, MacOS/X, Windows or Android instructions below. In addition, Emscripten (C++ to
 Javascript transpiler) is also supported. Specific instructions for each platform are detailed below.
 
+Contributors / Maintainers
+--------------------------
+
+- Linux platform: Bruno Levy
+- Windows platform: Nicolas Ray
+- MacOS/X platform: Samuel Hornus, Laurent Alonso, Fabien Bosquet
+- Emcripten platform: Bruno Levy
+
 Linux and MacOS/X
 =================
 
 Default options
 ---------------
 
-- sh -f configure.sh
-- cd build/Linux64-gcc-dynamic-Release (Linux) or build/Darwin-clang-dynamic-Release (MacOS/X)
-- make
+\code
+sh -f configure.sh
+cd build/Linux64-gcc-dynamic-Release (Linux) or build/Darwin-clang-dynamic-Release (MacOS/X)
+make
+\endcode
 
 This will generate dynamic libraries and dynamically linked executables. If you want
 statically linked executables, see below.
@@ -72,13 +82,19 @@ Fine tuning
 -----------
 
 Alternatively, you can use:
-- sh -f configure.sh <platform_name>
+\code
+sh -f configure.sh <platform_name>
+\endcode
 
 For instance, for generating statically linked executable, use:
-- sh -f configure.sh Linux64-gcc
+\code
+sh -f configure.sh Linux64-gcc
+\endcode
 
 To obtain the list of supported platforms, use:
-- sh -f configure.sh --help-platforms
+\code
+sh -f configure.sh --help-platforms
+\endcode
 
 Windows
 =======
@@ -96,6 +112,11 @@ Default options
 - Open <geogram_path>/build/windows/Geogram.sln in Visual studio
 - Select the 'Release' or 'Debug' (default) configuration (pulldown menu)
 - Build the solution (F7)
+
+Visual Studio 2015 notes: when you install Visual Studio 2015, it does
+not automatically install the C++ compiler. To install it, manually
+create a C++ project in Visual C++, this will download the compiler and
+Windows Desktop development tools (3Gb !!).
 
 Fine tuning
 -----------
@@ -218,18 +239,24 @@ environment variable should point to the installation.
 Compiling geogram for Emscripten
 --------------------------------
 
-- sh -f configure.sh Emscripten-clang
-- cd build/Emscripten-clang-Release
-- make
+\code
+sh -f configure.sh Emscripten-clang
+cd build/Emscripten-clang-Release
+make
+\endcode
 
 Creating a webpage around a program
 -----------------------------------
 
-- cd build/Emscripten-clang-Release/bin
-- <geogram_root>/tools/gen_emscripten_html.sh test_glup.js
+\code
+cd build/Emscripten-clang-Release/bin
+<geogram_root>/tools/gen_emscripten_html.sh test_glup.js
+\endcode
 
 If you need to embed datafiles:
-- <geogram_root>/tools/gen_emscripten_html.sh vorpaview.js morph.tet6
+\code
+<geogram_root>/tools/gen_emscripten_html.sh vorpaview.js morph.tet6
+\endcode
 
 All the datafiles specified on the command line after the js executable will be aggregated
 in an archive that is preloaded by the webpage (they are then accessible through a "pseudo

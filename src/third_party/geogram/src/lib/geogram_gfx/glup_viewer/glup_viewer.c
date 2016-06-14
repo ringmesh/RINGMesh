@@ -32,7 +32,7 @@
 #include <third_party/glfw/include/GLFW/glfw3.h>
 #endif
 
-#include "glup_viewer_gui.h"
+#include <geogram_gfx/glup_viewer/glup_viewer_gui_private.h>
 #include <geogram_gfx/third_party/quicktext/glQuickText.h>
 
 #include <stdio.h>
@@ -56,6 +56,11 @@
 #ifndef __APPLE__
 #include <malloc.h>
 #endif
+
+#if defined(__APPLE__) || defined(__linux__)
+#include <unistd.h>
+#endif
+
 
 /*
  * CLANG complains with a const -> non-const cast
@@ -438,15 +443,20 @@ static GLboolean call_mouse_func(
     return result;
 }
 
+/**
+ * Used to systematically redirect events to glup_viewer
+ * instead of ImGUI when the viewer wakes up after user input
+ * that comes right after a period of inactivity.
+ */
+static GLboolean glup_viewer_is_sleeping = GL_FALSE;
+
 static int mouse_x = 0;
 static int mouse_y = 0;
 static int mouse_pressed = 0;
 
 static void mouse(GLFWwindow* w, int button, int action, int mods) {
-    glup_viewer_argused(w);
-    glup_viewer_argused(mods);
-
-    if(glup_viewer_gui_takes_input()) {
+    glup_viewer_post_redisplay();
+    if(!glup_viewer_is_sleeping && glup_viewer_gui_takes_input()) {
         glup_viewer_gui_mouse_button_callback(w, button, action, mods);
         return;
     }
@@ -478,15 +488,16 @@ static void mouse(GLFWwindow* w, int button, int action, int mods) {
 }
 
 static void scroll(GLFWwindow* w, double xoffset, double yoffset) {
-    glup_viewer_argused(w);
-    glup_viewer_argused(xoffset);
-
-    if(glup_viewer_gui_takes_input()) {
+    glup_viewer_post_redisplay();
+    if(!glup_viewer_is_sleeping && glup_viewer_gui_takes_input()) {
         glup_viewer_gui_scroll_callback(w, xoffset, yoffset);
         return;
     }
     
-/* Under emscripten and apple, mouse wheel is inversed as compared to desktop. */
+/* 
+ * Under emscripten and apple, mouse wheel is inversed 
+ * as compared to the other platforms. 
+ */
 #if defined(__EMSCRIPTEN__) || defined(__APPLE__)
     yoffset *= -1.0;
 #endif    
@@ -503,10 +514,9 @@ static void scroll(GLFWwindow* w, double xoffset, double yoffset) {
 static void motion(int x, int y);
 
 static void passive_mouse(GLFWwindow* w, double xf, double yf) {
-
-    glup_viewer_argused(w);
-
-    if(glup_viewer_gui_takes_input()) {
+    glup_viewer_argused(w);    
+    glup_viewer_post_redisplay();
+    if(!glup_viewer_is_sleeping && glup_viewer_gui_takes_input()) {
         return;
     }
     
@@ -523,7 +533,7 @@ static void motion(int x, int y) {
     int W = window_w;
     int H = window_h;
     
-    if(glup_viewer_gui_takes_input()) {
+    if(!glup_viewer_is_sleeping && glup_viewer_gui_takes_input()) {
         return;
     }
 
@@ -549,7 +559,10 @@ static void motion(int x, int y) {
                 ) {
                     add_quats(delta_rot, cur_rot_clip, cur_rot_clip);
                 }
-                if(!glup_viewer_is_enabled(GLUP_VIEWER_EDIT_CLIP)) {
+                if(
+                    !glup_viewer_is_enabled(GLUP_VIEWER_CLIP) ||
+                    !glup_viewer_is_enabled(GLUP_VIEWER_EDIT_CLIP)
+                ) {
                     add_quats(delta_rot, cur_rot, cur_rot);
                 }
             }
@@ -588,9 +601,11 @@ static void motion(int x, int y) {
     glup_viewer_post_redisplay();
 }
 
-#ifndef __EMSCRIPTEN__
-static void drag_drop(GLFWwindow* w, int nb, const char** p) {
+void drag_drop(GLFWwindow* w, int nb, const char** p);
+
+void drag_drop(GLFWwindow* w, int nb, const char** p) {
     int i;
+    glup_viewer_post_redisplay();
     glup_viewer_argused(w);    
     if(drag_drop_func != NULL) {
         for(i=0; i<nb; ++i) {
@@ -599,17 +614,11 @@ static void drag_drop(GLFWwindow* w, int nb, const char** p) {
         glup_viewer_post_redisplay();
     }
 }
-#endif
 
 static float cur_text_x = 0;
 static float cur_text_y = 0;
 
 void glup_viewer_clear_text() {
-    if(glup_viewer_H < 600 || glup_viewer_W < 600) {
-        glLineWidth(1);
-    } else {
-        glLineWidth(2);
-    }
     cur_text_x = -2800;
     cur_text_y = 2800;
     if(glup_viewer_W > glup_viewer_H) {
@@ -627,7 +636,9 @@ void glup_viewer_printf(char* format, ...) {
     va_end(args);
 
     glupSetColor3f(GLUP_FRONT_AND_BACK_COLOR, 1.0, 1.0, 1.0);
-    glQuickTextPrintString((double)(cur_text_x), (double)(cur_text_y), 0.0, 10.0, buffer);
+    glQuickTextPrintString(
+        (double)(cur_text_x), (double)(cur_text_y), 0.0, 10.0, buffer
+    );
     cur_text_y -= 200;
 }
  
@@ -639,11 +650,6 @@ static void draw_foreground() {
     GLboolean mesh_save;
     GLUPfloat shrink_save;
     GLUPfloat side;
-    
-#ifndef __EMSCRIPTEN__    
-    glPointSize(1.0);
-    glDisable(GL_POINT_SMOOTH);
-#endif
     
     glup_viewer_clear_text();
     glupMatrixMode(GLUP_PROJECTION_MATRIX);
@@ -664,7 +670,10 @@ static void draw_foreground() {
     glDisable(GL_DEPTH_TEST);
     glupDisable(GLUP_LIGHTING);
 
-    if(glup_viewer_is_enabled(GLUP_VIEWER_SHOW_HELP)) {
+    if(
+        glup_viewer_is_enabled(GLUP_VIEWER_SHOW_HELP) &&
+        !glup_viewer_is_enabled(GLUP_VIEWER_TWEAKBARS)         
+    ) {
         int i;
         
         glupDisable(GLUP_CLIPPING);
@@ -796,10 +805,17 @@ static void draw_background() {
     glupLoadIdentity();
     glupMatrixMode(GLUP_MODELVIEW_MATRIX);
     glupLoadIdentity();
-    glupDisable(GLUP_LIGHTING);
     
+    glupDisable(GLUP_LIGHTING);
+    glupDisable(GLUP_TEXTURING);
+    glupDisable(GLUP_CLIPPING);
+    glupDisable(GLUP_DRAW_MESH);
+    glupDisable(GLUP_PICKING);
+    glupSetCellsShrink(0.0f);
+
     if(background_tex == 0) {
-        
+
+        glupEnable(GLUP_VERTEX_COLORS);        
         glupBegin(GLUP_QUADS);
         glupColor3fv(bkg1);
         glupVertex3f(-1, -1, z);
@@ -833,7 +849,8 @@ static void draw_background() {
     }
     glEnable(GL_DEPTH_TEST);
     glupEnable(GLUP_LIGHTING);
-    glEnable(GL_POLYGON_OFFSET_FILL);        
+    glEnable(GL_POLYGON_OFFSET_FILL);
+    glupDisable(GLUP_VERTEX_COLORS);
 }
 
 static void transform_vector(
@@ -880,6 +897,8 @@ static void actually_render_display(double offset) {
        shift of the vue from the current point of view */
     float vue_shift = eye_offset * zNear / zScreen;
 
+    int i;
+    
     double clip_eqn[4];
 
     if(glup_viewer_is_enabled(GLUP_VIEWER_BACKGROUND)) {
@@ -967,25 +986,28 @@ static void actually_render_display(double offset) {
             glupDisable(GLUP_VERTEX_COLORS);
             glupDisable(GLUP_TEXTURING);
 
-            glLineWidth(4);
-            glupBegin(GLUP_LINES);
-            glupVertex3f(sq_w, -sq_w, 0.0f);
-            glupVertex3f(sq_w, sq_w, 0.0f);
-            glupVertex3f(sq_w, sq_w, 0.0f);            
-            glupVertex3f(-sq_w, sq_w, 0.0f);
-            glupVertex3f(-sq_w, sq_w, 0.0f);            
-            glupVertex3f(-sq_w, -sq_w, 0.0f);
-            glupVertex3f(-sq_w, -sq_w, 0.0f);
-            glupVertex3f(sq_w, -sq_w, 0.0f);            
-            glupEnd();
-            
-            glLineWidth(1);
+            /* Draw the cross */
             glupBegin(GLUP_LINES);
             glupVertex3f(-sq_w, 0.0f, 0.0f);
             glupVertex3f(sq_w, 0.0f, 0.0f);
             glupVertex3f(0.0f, -sq_w, 0.0f);
             glupVertex3f(0.0f, sq_w, 0.0f);
+
+            /* Draw the square around the cross */
+            for(i=0; i<3; ++i) {
+                glupVertex3f(sq_w, -sq_w, 0.0f);
+                glupVertex3f(sq_w, sq_w, 0.0f);
+                glupVertex3f(sq_w, sq_w, 0.0f);            
+                glupVertex3f(-sq_w, sq_w, 0.0f);
+                glupVertex3f(-sq_w, sq_w, 0.0f);            
+                glupVertex3f(-sq_w, -sq_w, 0.0f);
+                glupVertex3f(-sq_w, -sq_w, 0.0f);
+                glupVertex3f(sq_w, -sq_w, 0.0f);
+                sq_w = sq_w * 1.01f;
+            }
+            
             glupEnd();
+            
 
             if(vertex_colors_save) {
                 glupEnable(GLUP_VERTEX_COLORS);
@@ -1033,6 +1055,7 @@ static void actually_render_display(double offset) {
         -0.5f * (ymin + ymax),
         -0.5f * (zmin + zmax)
     );
+
     if(display_func != NULL) {
         glup_viewer_save_transform_for_picking();
         display_func();
@@ -1047,10 +1070,6 @@ static void display() {
         (double)(glup_viewer_get_float(GLUP_VIEWER_STEREOSCOPIC_EYE_DISTANCE));
 #endif
     
-    if(init_func != NULL) {
-        init_func();
-        init_func = NULL;
-    }
 
 #ifndef __EMSCRIPTEN__    
     if(glup_viewer_is_enabled(GLUP_VIEWER_STEREOSCOPIC_DISPLAY)) {
@@ -1078,15 +1097,12 @@ static void display() {
 static void copy_image_to_clipboard();
 
 static void glup_viewer_char_callback(GLFWwindow* w, unsigned int c) {
-    glup_viewer_argused(w);        
-
-    if(glup_viewer_gui_takes_input()) {
+    if(!glup_viewer_is_sleeping && glup_viewer_gui_takes_input()) {
         glup_viewer_gui_char_callback(w,c);
         return;
     }
     
     if(c == 3) {   /* 3 = <Ctrl> C */
-        printf("copying image to clipboard\n");
         copy_image_to_clipboard();
         return;
     }
@@ -1129,11 +1145,8 @@ static void toggle_fixed_clip() {
 static void glup_viewer_key_callback(
     GLFWwindow* w, int key, int scancode, int action, int mods
 ) {
-    glup_viewer_argused(w);
-    glup_viewer_argused(scancode);
-    glup_viewer_argused(mods);
-
-    if(glup_viewer_gui_takes_input()) {
+    
+    if(!glup_viewer_is_sleeping && glup_viewer_gui_takes_input()) {
         glup_viewer_gui_key_callback(w, key, scancode, action, mods);
         return;
     }
@@ -1160,7 +1173,7 @@ static void glup_viewer_key_callback(
     glup_viewer_post_redisplay();
 }
 
-static void home() {
+void glup_viewer_home() {
     cur_xlat[0] = cur_xlat[1] = cur_xlat[2] = 0.0;
     params[GLUP_VIEWER_ZOOM] = 1.0;
     trackball(cur_rot, 0.0, 0.0, 0.0, 0.0);
@@ -1192,7 +1205,7 @@ static void init() {
     glup_viewer_add_key_func(27, glup_viewer_exit_main_loop, "quit");
 #endif
     
-    glup_viewer_add_key_func('H', home, "home");
+    glup_viewer_add_key_func('H', glup_viewer_home, "home");
 
     glup_viewer_add_toggle('h', &caps[GLUP_VIEWER_SHOW_HELP], "help");
     glup_viewer_add_toggle(
@@ -1201,14 +1214,11 @@ static void init() {
 
     glupEnable(GLUP_LIGHTING);
     glEnable(GL_DEPTH_TEST);
-#ifndef __EMSCRIPTEN__    
-    glEnable(GL_NORMALIZE);
-#endif
     
     glPolygonOffset(1.0, 2.0);
     glEnable(GL_POLYGON_OFFSET_FILL);
     
-    home();
+    glup_viewer_home();
 }
 
 void glup_viewer_set_window_title(char* s) {
@@ -1335,22 +1345,40 @@ void glup_viewer_exit_main_loop() {
 }
 
 
-static void glup_viewer_one_frame() {
+/* exported, used in glup_viewer_gui.cpp */
+void glup_viewer_one_frame(void);
+
+void glup_viewer_one_frame() {
     int cur_width;
     int cur_height;
+
+    if(init_func != NULL) {
+        init_func();
+        init_func = NULL;
+    }
+    
     if(!glfwWindowShouldClose(glup_viewer_window) && in_main_loop_) {
         glfwGetFramebufferSize(glup_viewer_window, &cur_width, &cur_height);
         if(glup_viewer_W != cur_width || glup_viewer_H != cur_height) {
             reshape(cur_width, cur_height);
         }
 
+        glfwPollEvents();
+        
         if(glup_viewer_is_enabled(GLUP_VIEWER_TWEAKBARS)) {
             glup_viewer_gui_begin_frame();
         } 
-        
+
+
+        /*
+         * Note: for now, the sleeping mechanism is deactivated, does
+         * not work well yet. To activate it, remove 
+         * glup_viewer_is_enabled(GLUP_VIEWER_TWEAKBARS) from the 
+         * condition below.
+         */
         if(
             glup_viewer_is_enabled(GLUP_VIEWER_IDLE_REDRAW) ||
-            glup_viewer_is_enabled(GLUP_VIEWER_TWEAKBARS) ||            
+            glup_viewer_is_enabled(GLUP_VIEWER_TWEAKBARS) ||              
             glup_viewer_needs_redraw
         ) {
             display();
@@ -1358,16 +1386,25 @@ static void glup_viewer_one_frame() {
             if(glup_viewer_is_enabled(GLUP_VIEWER_TWEAKBARS)) {        
                 glup_viewer_gui_end_frame();
             }
-            glfwSwapBuffers(glup_viewer_window);            
+            glfwSwapBuffers(glup_viewer_window);
+            glup_viewer_is_sleeping = GL_FALSE;
+        } else {
+#ifndef GEO_OS_EMSCRIPTEN            
+            glup_viewer_is_sleeping = GL_TRUE;
+#endif            
+#if defined(__APPLE__) || defined(__linux__)            
+            usleep(100);
+#endif            
         }
 
-        glfwPollEvents();
+
     }
 }
 
 void glup_viewer_main_loop(int argc, char** argv) {
-    int i;
-
+    (void)argc; /* suppresses a warning */
+    (void)argv; /* suppresses a warning */
+    
     if(!glfwInit()) {
         fprintf(stderr, "Could not initialize GLFW\n");
         exit(-1);
@@ -1375,18 +1412,30 @@ void glup_viewer_main_loop(int argc, char** argv) {
     
     in_main_loop_ = GL_TRUE;
 
-    for(i=1; i<argc; ++i) {
-        if(!strcmp(argv[i],"gfx:GL_profile=core")) {
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-            glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        }
+    if(glup_viewer_test_arg_string("gfx:GL_profile", "core")) {
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     }
-    
-    glup_viewer_window = glfwCreateWindow(
-        glup_viewer_W, glup_viewer_H, title, NULL, NULL
-    );
+
+    if(glup_viewer_get_arg_bool("gfx:GL_debug")) {
+        glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);            
+    }
+
+    if(
+        glup_viewer_get_arg_bool("gfx:fullscreen") ||
+        glup_viewer_is_enabled(GLUP_VIEWER_FULL_SCREEN)
+    ) {
+        glup_viewer_window = glfwCreateWindow(
+            glup_viewer_W, glup_viewer_H, title, glfwGetPrimaryMonitor(), NULL
+        );
+    } else {
+        glup_viewer_window = glfwCreateWindow(
+            glup_viewer_W, glup_viewer_H, title, NULL, NULL
+        );
+    }
+   
 
     if(glup_viewer_window == NULL) {
         fprintf(stderr, "Could not create GLFW window\n");
@@ -1396,14 +1445,6 @@ void glup_viewer_main_loop(int argc, char** argv) {
     glfwMakeContextCurrent(glup_viewer_window);
     glfwSwapInterval(1);
     
-    for(i = 1; i < argc; i++) {
-        if(!strcmp(argv[i], "-fs")) {
-            /* glupFullScreen(); TODO */
-        }
-    } 
-    if(glup_viewer_is_enabled(GLUP_VIEWER_FULL_SCREEN)) {
-        /*  glutFullScreen(); TODO */
-    } 
 
     glfwSetMouseButtonCallback(glup_viewer_window,mouse);
     glfwSetCursorPosCallback(glup_viewer_window,passive_mouse);
@@ -1548,7 +1589,7 @@ static void vsub(const float* src1, const float* src2, float* dst) {
 }
 
 static void vcopy(const float* v1, float* v2) {
-    register int i;
+    int i;
     for(i = 0; i < 3; i++) {
         v2[i] = v1[i];
     }

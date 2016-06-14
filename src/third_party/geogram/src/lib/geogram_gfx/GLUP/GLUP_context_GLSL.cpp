@@ -61,6 +61,12 @@ namespace GLUP {
     /***********************************************************************/
 
     void Context_GLSL150::setup() {
+        GL_ARB_conservative_depth_ = extension_is_supported(
+            "GL_ARB_conservative_depth"
+        );
+        Logger::out("GLUP") << "GL_ARB_conservative_depth = "
+                            << GL_ARB_conservative_depth_
+                            << std::endl;
         Context::setup();
         marching_tet_.create_UBO();        
         marching_hex_.create_UBO();        
@@ -73,10 +79,16 @@ namespace GLUP {
         return "GLUP150";
     }
 
+#ifdef GEO_OS_APPLE
+    static const char* GLUP150_shader_source_header =
+        "#version 150                               \n"
+        ;
+#else
     static const char* GLUP150_shader_source_header =
         "#version 150 core                          \n"
         ;
-
+#endif
+    
     static const char* GLUP150_vshader_in_out_declaration =
         "in vec4 vertex_in;                         \n"
         "in vec4 color_in;                          \n"
@@ -199,37 +211,29 @@ namespace GLUP {
         "   }                                                                \n"
         "   if(texturing_enabled()) {                                        \n"
         "       vec4 tex_color;                                              \n"
-        "       switch(GLUP.texture_type) {                                  \n"
-        "          case GLUP_TEXTURE_1D:                                     \n"
+        "       if(GLUP.texture_type == GLUP_TEXTURE_1D) {                   \n"
         "           tex_color = texture(                                     \n"
         "               texture1Dsampler, FragmentIn.tex_coord.xy            \n"
         "           );                                                       \n"
-        "           break;                                                   \n"
-        "          case GLUP_TEXTURE_2D:                                     \n"
+        "       } else if(GLUP.texture_type == GLUP_TEXTURE_2D) {            \n"
         "           tex_color = texture(                                     \n"
         "                texture2Dsampler, FragmentIn.tex_coord.xy           \n"
         "           );                                                       \n"
-        "           break;                                                   \n"
-        "          case GLUP_TEXTURE_3D:                                     \n"
+        "       } else if(GLUP.texture_type == GLUP_TEXTURE_3D) {            \n"
         "           tex_color = texture(                                     \n"
         "               texture3Dsampler, FragmentIn.tex_coord.xyz           \n"
         "           );                                                       \n"
-        "           break;                                                   \n"
         "       }                                                            \n"
         "       if(indirect_texturing_enabled()) {                           \n"
         "           tex_color = GLUP.texture_matrix * tex_color;             \n"
         "           tex_color = texture(texture1Dsampler, tex_color.xy);     \n"
         "       }                                                            \n"
-        "       switch(GLUP.texture_mode) {                                  \n"
-        "          case GLUP_TEXTURE_REPLACE:                                \n"
+        "       if(GLUP.texture_mode == GLUP_TEXTURE_REPLACE) {              \n"
         "             frag_color = tex_color;                                \n"
-        "             break;                                                 \n"
-        "          case GLUP_TEXTURE_MODULATE:                               \n"
+        "       } else if(GLUP.texture_mode == GLUP_TEXTURE_MODULATE) {      \n"
         "             frag_color *= tex_color;                               \n"
-        "             break;                                                 \n"
-        "          case GLUP_TEXTURE_ADD:                                    \n"
+        "       } else if(GLUP.texture_mode == GLUP_TEXTURE_ADD) {           \n"
         "             frag_color += tex_color;                               \n"
-        "             break;                                                 \n"
         "       }                                                            \n"
         "   }                                                                \n"
         "}                                                                   \n"
@@ -301,9 +305,6 @@ namespace GLUP {
     //   (pt_size*0.0001)/3.0 * gl_ProjectionMatrix[2].z * sqrt(1.0 - r2);
 
     static const char* GLUP150_points_fshader_source =
-        "#extension GL_ARB_conservative_depth : enable                      \n"
-        "layout (depth_less) out float gl_FragDepth;                        \n"
-        "                                                                   \n"
         "void main() {                                                      \n"
         "   clip_fragment();                                                \n"
         "   vec2 V = 2.0*(gl_PointCoord - vec2(0.5, 0.5));                  \n"
@@ -312,7 +313,7 @@ namespace GLUP {
         "      discard;                                                     \n"
         "   }                                                               \n"
         "   vec3 W = vec3(V.x, -V.y, sqrt(one_minus_r2));                   \n"
-        "   gl_FragDepth = gl_FragCoord.z - 0.001 * W.z;                    \n"
+        "   update_depth(gl_FragCoord.z - 0.001 * W.z);                     \n"
         "   if(picking_enabled()) {                                         \n"
         "        output_picking_id();                                       \n"
         "   } else {                                                        \n"
@@ -328,13 +329,10 @@ namespace GLUP {
 
     void Context_GLSL150::setup_GLUP_POINTS() {
 
-        // TODO: check whether texture coordinates are always
-        // generated in points with OpenGL ES profile (it seems
-        // to be OK, at least on NVidia), because GL_POINT_SPRITE
-        // does not seem to exist under OpenGL ES...
-        if(!use_ES_profile_) {
+        if(!use_core_profile_) {
             glEnable(GL_POINT_SPRITE);
-            glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
+            // Not needed anymore it seems.
+            // glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
         }
         
         GLuint vshader = GLSL::compile_shader(
@@ -345,14 +343,31 @@ namespace GLUP {
             0
         );
 
-        GLuint fshader = GLSL::compile_shader(
-            GL_FRAGMENT_SHADER,
-            GLUP150_std(GLUP_POINTS),
-            GLUP150_simple_fshader_in_out_declaration,
-            GLUP150_fshader_utils,
-            GLUP150_points_fshader_source,
-            0
-        );
+        GLuint fshader = 0;
+
+        if(GL_ARB_conservative_depth_) {
+            fshader = GLSL::compile_shader(
+                GL_FRAGMENT_SHADER,
+                GLUP150_std(GLUP_POINTS),
+                GLUP150_simple_fshader_in_out_declaration,
+                GLUP150_fshader_utils,
+                "#extension GL_ARB_conservative_depth : enable \n",
+                "layout (depth_less) out float gl_FragDepth;   \n",
+                "void update_depth(in float f) { gl_FragDepth = f; } \n",
+                GLUP150_points_fshader_source,
+                0
+             );
+        } else {
+            fshader = GLSL::compile_shader(
+                GL_FRAGMENT_SHADER,
+                GLUP150_std(GLUP_POINTS),
+                GLUP150_simple_fshader_in_out_declaration,
+                GLUP150_fshader_utils,
+                "void update_depth(in float f) { } \n",
+                GLUP150_points_fshader_source,
+                0
+             );
+        }
 
         GLuint program = GLSL::create_program_from_shaders_no_link(
             vshader, fshader, 0 
@@ -1194,6 +1209,7 @@ namespace GLUP {
         set_primitive_info_vertex_gather_mode(
             GLUP_HEXAHEDRA, GL_LINES_ADJACENCY, program
         );
+        
         marching_hex_.bind_uniform_state(program);
         
         glDeleteShader(vshader);
@@ -1272,6 +1288,7 @@ namespace GLUP {
         set_primitive_info_vertex_gather_mode(
             GLUP_PYRAMIDS, GL_POINTS, program
         );
+        
         marching_pyramid_.bind_uniform_state(program);
         
         glDeleteShader(vshader);
@@ -1288,11 +1305,17 @@ namespace GLUP {
     const char* Context_GLSL440::profile_name() const {
         return "GLUP440";
     }
-    
+
+#ifdef GEO_OS_APPLE
+    static const char* GLUP440_shader_source_header =
+        "#version 440 \n"
+        ;
+#else    
     static const char* GLUP440_shader_source_header =
         "#version 440 core \n"
         ;
-
+#endif
+    
 #define GLUP440_std(prim)                    \
         GLUP440_shader_source_header,        \
         profile_dependent_declarations(),    \
@@ -1447,7 +1470,7 @@ namespace GLUP {
         "}                                          \n";
     
     void Context_GLSL440::setup_GLUP_HEXAHEDRA() {
-
+        
         if(!GEO::CmdLine::get_arg_bool("gfx:GLSL_tesselation")) {
             Context_GLSL150::setup_GLUP_HEXAHEDRA();
             return;

@@ -51,7 +51,8 @@
 
 /**
  * \file geogram_gfx/GLUP/GLUP_context_ES.h
- * \brief Internal implementation of GLUP using OpenGL ES 
+ * \brief Internal implementation of GLUP using OpenGL ES or
+ *  GLSL 1.5 with no geometry shader and no uniform buffer.
  */
 
 #ifdef GEO_GL_ES2
@@ -63,6 +64,12 @@ namespace GLUP {
 
     /**
      * \brief Implementation of GLUP using OpenGL ES 2.0.
+     * \details Can be also used with OpenGL 3.30 
+     * \note the following functionalities are not implemented (yet) in
+     *   this profile:
+     *  - picking is not implemented
+     *  - indirect texture mode is not implemented (but anyway, there is
+     *    no texture3D in ES)
      */
     class Context_ES2 : public Context {
     public:
@@ -181,19 +188,42 @@ namespace GLUP {
         bool cell_by_cell_clipping() const;
 
         /**
+         * \brief Tests whether sliced-cells clipping is used.
+         * \details By-cell clipping is used if a volumetric primitive
+         *  is being drawn, if clipping is enabled and if current clipping
+         *  mode is GLUP_CLIP_SLICED_CELLS. In
+         *  this case, software-assisted clipping is used to generate an
+         *  element buffer with the computed intersections.
+         */
+        bool sliced_cells_clipping() const;
+        
+        /**
          * \brief Special implementation of flush_immediate_buffers()
          *  that performs cell-by-cell clipping on the CPU side, and
          *  that generates an element buffer for drawing the selected
          *  cells.
          */
         void flush_immediate_buffers_with_cell_by_cell_clipping();
+
+        /**
+         * \brief Special implementation of flush_immediate_buffers()
+         *  that performes cell slicing on the GPU side and that
+         *  uses an element buffer for drawing the selected cells.
+         */
+        void flush_immediate_buffers_with_sliced_cells_clipping();
+
         
     private:
         index_t nb_clip_cells_elements_;        
         Numeric::uint16* clip_cells_elements_;
+        
         GLuint clip_cells_elements_VBO_;
         GLuint clip_cells_VAO_;
 
+        GLuint sliced_cells_elements_VBO_;
+        GLuint sliced_cells_vertex_attrib_VBO_[3];
+        GLuint sliced_cells_VAO_;
+        
         bool GL_OES_standard_derivatives_;        
         bool GL_OES_vertex_array_object_;
         bool GL_EXT_frag_depth_;

@@ -70,6 +70,11 @@
 #include <stdio.h>
 #include <new>
 
+#ifdef GEO_OS_APPLE
+#include <mach-o/dyld.h>
+#include <xmmintrin.h>
+#endif
+
 #define GEO_USE_PTHREAD_MANAGER
 
 // Suppresses a warning with CLANG when sigaction is used.
@@ -392,6 +397,14 @@ namespace GEO {
         }
 
         size_t os_used_memory() {
+#ifdef GEO_OS_APPLE
+            size_t result = 0;
+            struct rusage usage;
+            if(0 == getrusage(RUSAGE_SELF, &usage)) {
+                result = (size_t) usage.ru_maxrss;
+            }
+            return result;
+#else
             // The following method seems to be more 
             // reliable than  getrusage() under Linux.
             // It works for both Linux and Android.
@@ -405,6 +418,7 @@ namespace GEO {
                 }
             }
             return result;
+#endif
         }
 
         size_t os_max_used_memory() {
@@ -432,10 +446,17 @@ namespace GEO {
 
         bool os_enable_FPE(bool flag) {
 #ifdef GEO_OS_APPLE
-// #include <xmmintrin.h>
-// _MM_SET_EXCEPTION_MASK(_MM_GET_EXCEPTION_MASK() & ~_MM_MASK_INVALID);
+           unsigned int excepts = 0
+                // | _MM_MASK_INEXACT   // inexact result
+                   | _MM_MASK_DIV_ZERO  // division by zero
+                   | _MM_MASK_UNDERFLOW // result not representable due to underflow
+                   | _MM_MASK_OVERFLOW  // result not representable due to overflow
+                   | _MM_MASK_INVALID   // invalid operation
+                   ;
+            // _MM_SET_EXCEPTION_MASK(_MM_GET_EXCEPTION_MASK() & ~excepts);
             geo_argused(flag);
-            return false;
+            geo_argused(excepts);
+            return true;
 #else
             int excepts = 0
                 // | FE_INEXACT   // inexact result
@@ -504,12 +525,25 @@ namespace GEO {
          */
         std::string os_executable_filename() {
             char buff[PATH_MAX];
+#ifdef GEO_OS_APPLE
+            uint32_t len=PATH_MAX;
+            if (_NSGetExecutablePath(buff, &len) == 0) {
+                std::string filename(buff);
+                size_t pos = std::string::npos;
+                while( (pos=filename.find("/./")) != std::string::npos ) {
+                    filename.replace(pos, 3, "/");
+                }
+                return filename;
+            }
+            return std::string("");
+#else
             ssize_t len = ::readlink("/proc/self/exe", buff, sizeof(buff)-1);
             if (len != -1) {
                 buff[len] = '\0';
                 return std::string(buff);
             }
             return std::string("");
+#endif
         }        
         
     }

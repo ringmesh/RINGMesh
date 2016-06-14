@@ -131,7 +131,7 @@ namespace GEO {
         /**
          * \brief Gets the string identifying the exception
          */
-        virtual const char* what() const throw ();
+        virtual const char* what() const GEO_NOEXCEPT;
     };
 
     /************************************************************************/
