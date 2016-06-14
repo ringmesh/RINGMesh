@@ -494,6 +494,7 @@ namespace GEO {
                 output << sep << m(i, j);
                 sep = " ";
             }
+            output << std::endl ;
         }
         return output;
     }
