@@ -34,7 +34,7 @@
  */
 
 /*! 
- * @file Implementation of visualization of GeoModelElements
+ * @file Implementation of visualization of GeoModelEntities
  * @author Benjamin Chaunvin and Arnaud Botella
  */
 
@@ -47,7 +47,7 @@
 //#include <geogram_gfx/third_party/freeglut/freeglut_ext.h>
 
 #include <ringmesh/geo_model.h>
-#include <ringmesh/geo_model_element.h>
+#include <ringmesh/geo_model_entity.h>
 
 #include <geogram/basic/logger.h>
 
@@ -99,10 +99,10 @@ namespace RINGMesh {
     define_color( purple, 0xa0, 0x20, 0xf0 );
     define_color( pink, 0xff, 0x69, 0xb4 );
 
-    class MeshElementGfx: public GEO::MeshGfx {
-    ringmesh_disable_copy( MeshElementGfx ) ;
+    class MeshEntityGfx: public GEO::MeshGfx {
+    ringmesh_disable_copy( MeshEntityGfx ) ;
     public:
-        MeshElementGfx(
+        MeshEntityGfx(
             const GeoModelGfx& gfx,
             const GEO::Mesh& mesh,
             bool vertice_visible )
@@ -112,7 +112,7 @@ namespace RINGMesh {
         {
             set_mesh( &mesh ) ;
         }
-        virtual ~MeshElementGfx()
+        virtual ~MeshEntityGfx()
         {
         }
         void need_to_update()
@@ -149,19 +149,19 @@ namespace RINGMesh {
 
     } ;
 
-    class CornerGfx: public MeshElementGfx {
+    class CornerGfx: public MeshEntityGfx {
     public:
         CornerGfx( const GeoModelGfx& gfx, const Corner& corner )
-            : MeshElementGfx( gfx, corner.mesh(), true )
+            : MeshEntityGfx( gfx, corner.gfx_mesh(), true )
         {
             set_points_color( 1, 0, 0 ) ;
         }
     } ;
 
-    class LineGfx: public MeshElementGfx {
+    class LineGfx: public MeshEntityGfx {
     public:
         LineGfx( const GeoModelGfx& gfx, const Line& line )
-            : MeshElementGfx( gfx, line.mesh(), false ), edges_visible_( true )
+            : MeshEntityGfx( gfx, line.gfx_mesh(), false ), edges_visible_( true )
         {
             set_points_color( 1, 1, 1 ) ;
             set_mesh_color( 1, 1, 1 ) ;
@@ -180,10 +180,10 @@ namespace RINGMesh {
 
     } ;
 
-    class SurfaceGfx: public MeshElementGfx {
+    class SurfaceGfx: public MeshEntityGfx {
     public:
         SurfaceGfx( const GeoModelGfx& gfx, const Surface& surface )
-            : MeshElementGfx( gfx, surface.mesh(), false ), surface_visible_( true )
+            : MeshEntityGfx( gfx, surface.gfx_mesh(), false ), surface_visible_( true )
         {
         }
 
@@ -205,11 +205,11 @@ namespace RINGMesh {
 
     } ;
 
-    class RegionGfx: public MeshElementGfx {
+    class RegionGfx: public MeshEntityGfx {
     public:
         RegionGfx( const GeoModelGfx& gfx, const Region& region )
             :
-                MeshElementGfx( gfx, region.mesh(), false ),
+                MeshEntityGfx( gfx, region.gfx_mesh(), false ),
                 region_visible_( true ),
                 surface_visible_( false ),
                 edges_visible_( false )

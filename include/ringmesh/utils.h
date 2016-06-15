@@ -37,7 +37,7 @@
 #define __RINGMESH_UTILS__
 
 #include <ringmesh/common.h>
-#include <ringmesh/geo_model_element.h>
+#include <ringmesh/geo_model_entity.h>
 
 #include <geogram/basic/geometry.h>
 #include <geogram/basic/attributes.h>
@@ -185,7 +185,7 @@ namespace RINGMesh {
         const std::string& att_name ) ;
 
     //TODO i dont know where to put it :(
-    void build_string_for_geo_model_element_export(
+    void build_string_for_geo_model_entity_export(
         GME::TYPE gme_t,
         index_t gme_id,
         std::string& name ) ;

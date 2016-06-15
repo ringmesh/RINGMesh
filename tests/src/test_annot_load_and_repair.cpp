@@ -78,7 +78,8 @@ int main( int argc, char** argv )
         geomodel_load( M, file_name ) ;
         if( !is_geomodel_valid( M ) ) {
             // Try to repair the model if it is not valid
-            geo_model_mesh_repair( M ) ;
+            GeoModelRepair model_repair( M ) ;
+            model_repair.geo_model_mesh_repair() ;
 
             // Test the validity again
             if( is_geomodel_valid( M ) ) {
