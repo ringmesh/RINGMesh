@@ -667,6 +667,22 @@ namespace RINGMesh {
         return mesh_.nb_cell_facets( c ) ;
     }
 
+    index_t GeoModelMeshCells::nb_facet_vertices( index_t c, index_t lf ) const
+    {
+        test_and_initialize() ;
+        ringmesh_assert( c < mesh_.nb_cells() ) ;
+        ringmesh_assert( lf < mesh_.nb_cell_facets( c ) ) ;
+        return mesh_.nb_cell_facet_vertices( c, lf ) ;
+    }
+
+    index_t GeoModelMeshCells::facet_vertex( index_t c, index_t lf, index_t lv ) const
+    {
+        test_and_initialize() ;
+        ringmesh_assert( c < mesh_.nb_cells() ) ;
+        ringmesh_assert( lf < mesh_.nb_cell_facets( c ) ) ;
+        return mesh_.cell_facet_vertex( c, lf, lv ) ;
+    }
+
     index_t GeoModelMeshCells::edge_vertex( index_t c, index_t le, index_t lv ) const
     {
         geo_debug_assert( le < nb_edges( c ) ) ;
