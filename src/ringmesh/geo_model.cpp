@@ -59,8 +59,8 @@ namespace RINGMesh {
     {
         for( index_t t = GME::CORNER; t < GME::NO_TYPE; ++t ) {
             GME::TYPE T = (GME::TYPE) t ;
-            for( index_t i = 0; i < nb_elements( T ); ++i ) {
-                delete elements( T )[i] ;
+            for( index_t i = 0; i < nb_entities( T ); ++i ) {
+                delete entities(T)[i] ;
             }
         }
     }
@@ -70,7 +70,7 @@ namespace RINGMesh {
      * @param[in] from GeoModel to copy
      * 
      * @todo This shouln't be a member function because it does not do nothing
-     * with what the class has.
+     *       with what the class has. To move to GeoModelBuilder.
      */
     void GeoModel::copy( const GeoModel& from )
     {
