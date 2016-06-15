@@ -84,7 +84,7 @@ namespace RINGMesh {
                 "Print statistics on the volume" ) ;
             GEO::CmdLine::declare_arg(
                 "stats:nb", true,
-                "Print statistics on the number of elements" ) ;
+                "Print statistics on the number of entities" ) ;
         }
 
         bool import_arg_group( const std::string& name )

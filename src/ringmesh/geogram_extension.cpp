@@ -176,17 +176,13 @@ namespace RINGMesh {
                         || in.field_matches( 0, "ATOM" ) ) {
                         index_t v0 = in.field_as_uint( 2 ) - 1 ;
                         vertices_[mesh_dimension_ * v] = vertices_[mesh_dimension_ * v0] ;
-                        vertices_[mesh_dimension_ * v + 1] =
-                            vertices_[mesh_dimension_ * v0 + 1] ;
-                        vertices_[mesh_dimension_ * v + 2] =
-                            vertices_[mesh_dimension_ * v0 + 2] ;
+                        vertices_[mesh_dimension_ * v + 1] = vertices_[mesh_dimension_ * v0 + 1] ;
+                        vertices_[mesh_dimension_ * v + 2] = vertices_[mesh_dimension_ * v0 + 2] ;
                         ++v ;
                     } else if( in.field_matches( 0, "TRGL" ) ) {
                         triangles_[3 * t] = index_t( in.field_as_uint( 1 ) - 1 ) ;
-                        triangles_[3 * t + 1] = index_t(
-                            in.field_as_uint( 2 ) - 1 ) ;
-                        triangles_[3 * t + 2] = index_t(
-                            in.field_as_uint( 3 ) - 1 ) ;
+                        triangles_[3 * t + 1] = index_t( in.field_as_uint( 2 ) - 1 ) ;
+                        triangles_[3 * t + 2] = index_t( in.field_as_uint( 3 ) - 1 ) ;
                         t++ ;
                     }
                 }

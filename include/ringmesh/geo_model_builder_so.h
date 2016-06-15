@@ -43,6 +43,7 @@
 
 namespace RINGMesh {
     class GeoModelBuilderTSolid ;
+    class Box3d ;
     struct VertexMap ;
     struct TSolidLoadingStorage ;
 }
@@ -114,8 +115,7 @@ namespace RINGMesh {
     class RINGMESH_API GeoModelBuilderTSolid: public GeoModelBuilderFile {
     public:
         GeoModelBuilderTSolid( GeoModel& model, const std::string& filename )
-            :
-                GeoModelBuilderFile( model, filename ), file_line_( filename )
+            : GeoModelBuilderFile( model, filename ), file_line_( filename )
         {
             if( !file_line_.OK() ) {
                 throw RINGMeshException( "I/O", "Failed to open file " + filename ) ;
@@ -143,6 +143,40 @@ namespace RINGMesh {
          * @details Uses the TsolidLineParser factory
          */
         void read_line( TSolidLoadingStorage& load_utils ) ;
+
+        /*!
+         * @brief Computes internal borders of a given surface
+         * @details A surface facet edge is an internal border if it is shared
+         * by at least two surfaces. Adjacency of such a facet edge is set to
+         * GEO::NO_FACET.
+         * @param[in] geomodel GeoModel to consider
+         * @param[in] surface_id Index of the surface
+         * @param[in] surface_anns Pointers to the ColocaterANNs of surfaces
+         */
+        void compute_surface_internal_borders(
+            index_t surface_id,
+            const std::vector< ColocaterANN* >& surface_anns,
+            const std::vector< Box3d >& surface_boxes ) ;
+
+        /*!
+         * @brief Computes the colocaters of the centers of facet edges for
+         * each surface and their Box3d
+         * @param[in] geomodel GeoModel to consider
+         * @param[out] surface_anns Pointers to the ColocaterANNs of surfaces
+         * @param[out] surface_boxes Bounding Box of surfaces
+         */
+        void compute_facet_edge_centers_anns_and_surface_boxes(
+            std::vector< ColocaterANN* >& surface_anns,
+            std::vector< Box3d >& surface_boxes ) ;
+
+        /*!
+         * @brief Computes internal borders of the model surfaces
+         * @details An surface facet edge is an internal border if it is shared
+         * by at least two surfaces. Adjacency of such a facet edge is set to
+         * GEO::NO_FACET.
+         * @param[in] geomodel GeoModel to consider
+         */
+        void compute_surfaces_internal_borders( ) ;
 
     private:
         GEO::LineInput file_line_ ;

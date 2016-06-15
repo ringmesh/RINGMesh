@@ -48,7 +48,7 @@
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_api.h>
 #include <ringmesh/geo_model_builder.h>
-#include <ringmesh/geo_model_element.h>
+#include <ringmesh/geo_model_entity.h>
 #include <ringmesh/geo_model_validity.h>
 #include <ringmesh/ringmesh_config.h>
 #include <ringmesh/utils.h>
@@ -89,7 +89,7 @@ namespace {
     {
         index_t result = 0 ;
         for( index_t i = 0; i < BM.nb_surfaces(); ++i ) {
-            result += BM.surface( i ).nb_cells() ;
+            result += BM.surface( i ).nb_mesh_elements() ;
         }
         return result ;
     }
@@ -136,7 +136,7 @@ namespace {
     void save_layer(
         index_t count,
         index_t offset,
-        const GeoModelElement& layer,
+        const GeoModelEntity& layer,
         std::ostream& out )
     {
         out << "LAYER " << layer.name() << " " << std::endl ;
@@ -219,10 +219,10 @@ namespace {
     /*! Brute force inefficient but I am debugging !!!! */
     bool has_surface_edge( const Surface& S, index_t v0_in, index_t v1_in )
     {
-        for( index_t i = 0; i < S.nb_cells(); ++i ) {
-            for( index_t j = 0; j < S.nb_vertices_in_facet( i ); ++j ) {
-                index_t v0 = S.surf_vertex_id( i, j ) ;
-                index_t v1 = S.surf_vertex_id( i, S.next_in_facet( i, j ) ) ;
+        for( index_t i = 0; i < S.nb_mesh_elements(); ++i ) {
+            for( index_t j = 0; j < S.nb_mesh_element_vertices( i ); ++j ) {
+                index_t v0 = S.mesh_element_vertex_index( i, j ) ;
+                index_t v1 = S.mesh_element_vertex_index( i, S.next_facet_vertex_index( i, j ) ) ;
                 if( ( v0 == v0_in && v1 == v1_in ) || ( v0 == v1_in && v1 == v0_in ) ) {
                     return true ;
                 }
@@ -266,9 +266,9 @@ namespace {
 
             // Print the key facet which is the first three
             // vertices of the first facet
-            out << "  " << s.vertex( 0, 0 ) << std::endl ;
-            out << "  " << s.vertex( 0, 1 ) << std::endl ;
-            out << "  " << s.vertex( 0, 2 ) << std::endl ;
+            out << "  " << s.mesh_element_vertex( 0, 0 ) << std::endl ;
+            out << "  " << s.mesh_element_vertex( 0, 1 ) << std::endl ;
+            out << "  " << s.mesh_element_vertex( 0, 2 ) << std::endl ;
 
             ++count ;
         }
@@ -322,10 +322,10 @@ namespace {
                         << std::endl ;
                     vertex_count++ ;
                 }
-                for( index_t k = 0; k < S.nb_cells(); ++k ) {
-                    out << "TRGL " << S.surf_vertex_id( k, 0 ) + offset << " "
-                        << S.surf_vertex_id( k, 1 ) + offset << " "
-                        << S.surf_vertex_id( k, 2 ) + offset << std::endl ;
+                for( index_t k = 0; k < S.nb_mesh_elements(); ++k ) {
+                    out << "TRGL " << S.mesh_element_vertex_index( k, 0 ) + offset << " "
+                        << S.mesh_element_vertex_index( k, 1 ) + offset << " "
+                        << S.mesh_element_vertex_index( k, 2 ) + offset << std::endl ;
                 }
                 for( index_t k = 0; k < S.nb_boundaries(); ++k ) {
                     const Line& L = dynamic_cast< const Line& >( S.boundary( k ) ) ;
@@ -383,7 +383,7 @@ namespace {
                     const Corner& c1 =
                         dynamic_cast< const Corner& >( L.boundary( 1 ) ) ;
                     corners.insert(
-                        S.surf_vertex_id( c1.model_vertex_id() ) + offset ) ;
+                        S.gmme_vertex_index_from_model( c1.model_vertex_id() ) + offset ) ;
                 }
             }
             // Add the remaining bstones that are not already in bstones
@@ -457,9 +457,9 @@ namespace {
 
         for( index_t i = 0; i < M.nb_surfaces(); ++i ) {
             const Surface& S = M.surface( i ) ;
-            for( index_t f = 0; f < S.nb_cells(); f++ ) {
-                out << S.nb_vertices_in_facet( f ) << " " ;
-                for( index_t v = 0; v < S.nb_vertices_in_facet( f ); v++ ) {
+            for( index_t f = 0; f < S.nb_mesh_elements(); f++ ) {
+                out << S.nb_mesh_element_vertices( f ) << " " ;
+                for( index_t v = 0; v < S.nb_mesh_element_vertices( f ); v++ ) {
                     out << S.model_vertex_id( f, v ) << " " ;
                 }
                 out << std::endl ;
@@ -532,17 +532,17 @@ namespace {
                 out.precision( 16 ) ;
 
                 const Surface& surface = model.surface( s ) ;
-                out << surface.nb_vertices() << " " << surface.nb_cells() << " 0 0 0"
+                out << surface.nb_vertices() << " " << surface.nb_mesh_elements() << " 0 0 0"
                     << std::endl ;
                 for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
                     out << v << " " << surface.vertex( v ) << std::endl ;
                 }
 
-                for( index_t f = 0; f < surface.nb_cells(); f++ ) {
+                for( index_t f = 0; f < surface.nb_mesh_elements(); f++ ) {
                     out << f << " 0 tri" ;
-                    for( index_t v = 0; v < surface.nb_vertices_in_facet( f );
+                    for( index_t v = 0; v < surface.nb_mesh_element_vertices( f );
                         v++ ) {
-                        out << " " << surface.surf_vertex_id( f, v ) ;
+                        out << " " << surface.mesh_element_vertex_index( f, v ) ;
                     }
                     out << std::endl ;
                 }
