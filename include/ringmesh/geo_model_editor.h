@@ -284,6 +284,10 @@ namespace RINGMesh {
         {
             return model_ ;
         }
+        GeoModel& model()
+        {
+            return model_ ;
+        }
 
         void delete_elements( std::vector< std::vector< index_t > >& to_erase ) ;
 
@@ -316,7 +320,7 @@ namespace RINGMesh {
         GME* new_entity( GME::TYPE type, index_t id ) ;
         GME* new_entity( GME::TYPE type ) ;
 
-    protected:
+    private:
         GeoModel& model_ ;
         bool create_entity_allowed_ ;
     } ;

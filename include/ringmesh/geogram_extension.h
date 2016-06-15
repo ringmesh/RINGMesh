@@ -111,27 +111,6 @@ namespace RINGMesh {
 
     vec3 RINGMESH_API mesh_cell_center( const GEO::Mesh& M, index_t cell ) ;
 
-    bool RINGMESH_API has_edge(
-        const GEO::Mesh& mesh,
-        index_t t,
-        index_t p0,
-        index_t p1,
-        index_t& edge ) ;
-
-    index_t RINGMESH_API next_around_edge(
-        const GEO::Mesh& mesh,
-        index_t t,
-        index_t prev,
-        index_t p0,
-        index_t p1 ) ;
-
-    void RINGMESH_API edges_around_edge(
-        const GEO::Mesh& mesh,
-        index_t t,
-        index_t p0,
-        index_t p1,
-        std::vector< index_t >& result ) ;
-
     void RINGMESH_API divide_edge_in_parts(
         const GEO::Mesh& mesh,
         index_t edge,

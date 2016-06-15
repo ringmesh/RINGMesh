@@ -1211,7 +1211,7 @@ namespace RINGMesh {
         index_t cell_facet_vertex_index(
             index_t cell_index,
             index_t facet_index,
-            index_t vertex_index )
+            index_t vertex_index ) const
         {
             if( is_meshed() ) {
                 ringmesh_assert( cell_index < nb_mesh_elements() ) ;
