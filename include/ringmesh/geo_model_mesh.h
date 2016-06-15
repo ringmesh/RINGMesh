@@ -583,6 +583,21 @@ namespace RINGMesh {
          */
         index_t nb_facets( index_t c ) const ;
         /*!
+         * Get the number of facets in the cell
+         * @param[in] c the cell index
+         * @param[in] lf the cell facet index
+         */
+        index_t nb_facet_vertices( index_t c, index_t lf ) const ;
+        /*!
+         * \brief Gets a cell vertex by local facet index and local
+         *  vertex index in the edge
+         * \param[in] c the cell, in 0..nb()-1
+         * \param[in] lf the local facet index, in 0..nb_facets(c)-1
+         * \param[in] lv the local index in the cell facet
+         * \return vertex \p lv of facet \p lf in cell \p c
+         */
+        index_t facet_vertex( index_t c, index_t lf, index_t lv ) const ;
+        /*!
          * \brief Gets a cell vertex by local edge index and local
          *  vertex index in the edge
          * \param[in] c the cell, in 0..nb()-1
