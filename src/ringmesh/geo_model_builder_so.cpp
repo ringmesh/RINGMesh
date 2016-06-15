@@ -787,7 +787,7 @@ namespace RINGMesh {
         compute_surfaces_internal_borders() ;
 
         // Build GeoModel Lines and Corners from the surfaces
-        model_.mesh.vertices.test_and_initialize() ;
+        model().mesh.vertices.test_and_initialize() ;
         build_lines_and_corners_from_surfaces() ;
 
         // Regions boundaries
@@ -816,7 +816,7 @@ namespace RINGMesh {
     {
         std::string keyword = file_line_.field( 0 ) ;
         TSolidLineParser_var parser = TSolidLineParser::create( keyword, *this,
-            model_ ) ;
+            model() ) ;
         if( parser ) {
             parser->execute( file_line_, load_storage ) ;
         }
@@ -855,7 +855,7 @@ namespace RINGMesh {
         std::vector< ColocaterANN* >& surface_anns,
         std::vector< Box3d >& surface_boxes )
     {
-        for( index_t s = 0; s < model_.nb_surfaces(); ++s ) {
+        for( index_t s = 0; s < model().nb_surfaces(); ++s ) {
             const Surface& S = model().surface( s ) ;
             for( index_t p = 0; p < S.nb_vertices(); p++ ) {
                 surface_boxes[s].add_point( S.vertex( p ) ) ;
@@ -868,13 +868,13 @@ namespace RINGMesh {
 
     void GeoModelBuilderTSolid::compute_surfaces_internal_borders()
     {
-        std::vector< ColocaterANN* > anns( model_.nb_surfaces(), nil ) ;
-        std::vector< Box3d > boxes( model_.nb_surfaces() ) ;
+        std::vector< ColocaterANN* > anns( model().nb_surfaces(), nil ) ;
+        std::vector< Box3d > boxes( model().nb_surfaces() ) ;
         compute_facet_edge_centers_anns_and_surface_boxes( anns, boxes ) ;
-        for( index_t s = 0; s < model_.nb_surfaces(); ++s ) {
+        for( index_t s = 0; s < model().nb_surfaces(); ++s ) {
             compute_surface_internal_borders( s, anns, boxes ) ;
         }
-        for( index_t s = 0; s < model_.nb_surfaces(); ++s ) {
+        for( index_t s = 0; s < model().nb_surfaces(); ++s ) {
             delete anns[s] ;
         }
     }
