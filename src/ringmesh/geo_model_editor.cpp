@@ -496,7 +496,8 @@ namespace RINGMesh {
             ringmesh_assert(
                 model_.nb_entities( T ) == to_erase[i].size() - nb_removed[i] ) ;
             for( index_t j = 0; j < model_.nb_entities( T ); ++j ) {
-                GeoModelEntity& E = model_.modifiable_entity( gme_t( T, j ) ) ;
+                gme_t entity_id( T, j ) ;
+                GeoModelEntity& E = model_.modifiable_entity( entity_id ) ;
 
                 // Not the same than j - since we have erased some entities
                 index_t old_id = E.index() ;
@@ -540,7 +541,7 @@ namespace RINGMesh {
                     }
                 }
                 // Clean the vectors in the entity
-                erase_invalid_entity_references( E ) ;
+                erase_invalid_entity_references( entity_id ) ;
             }
         }
 
@@ -548,14 +549,15 @@ namespace RINGMesh {
         /// @todo Put the universe in the list of regions - so annoying to think of it each time
         /// @todo BUG ? sides are lost for the universe ? not sure ... [JP]
         {
+            GME::gme_t univers_id( GME::REGION, NO_ID ) ;
             Region& U = dynamic_cast< Region& >( model_.modifiable_entity(
-                GME::gme_t( GME::REGION, NO_ID ) ) ) ;
+                univers_id ) ) ;
             for( index_t i = 0; i < U.nb_boundaries(); ++i ) {
                 set_entity_boundary( U.gme_id(), i,
                     gme_t( GME::SURFACE,
                         to_erase[GME::SURFACE][U.boundary_gme( i ).index] ) ) ;
             }
-            erase_invalid_entity_references( U ) ;
+            erase_invalid_entity_references( univers_id ) ;
         }
     }
 
@@ -579,18 +581,21 @@ namespace RINGMesh {
             }
             RINGMESH_PARALLEL_LOOP
             for( index_t e = 0; e < model_.nb_entities( T ); ++e ) {
-                copy_entity_topology( *store[e], from.entity( gme_t( T, e ) ) ) ;
+                copy_entity_topology( GME::gme_t( T, e ), from, GME::gme_t( T, e ) ) ;
             }
         }
-        copy_entity_topology( model_.universe_, from.universe_ ) ;
+        copy_entity_topology(  GME::gme_t( GME::REGION, NO_ID ), from, GME::gme_t( GME::REGION, NO_ID ) ) ;
 
         model_.nb_entities_per_type_ = from.nb_entities_per_type_ ;
     }
 
     void GeoModelEditor::copy_entity_topology(
-        GeoModelEntity& lhs,
-        const GeoModelEntity& rhs )
+        const GME::gme_t& lhs_id,
+        const GeoModel& from,
+        const GME::gme_t& rhs_id )
     {
+        GeoModelEntity& lhs = entity( lhs_id ) ;
+        const GeoModelEntity& rhs = from.entity( rhs_id ) ;
         lhs.name_ = rhs.name_ ;
         lhs.geol_feature_ = rhs.geol_feature_ ;
         lhs.boundaries_ = rhs.boundaries_ ;
@@ -610,10 +615,11 @@ namespace RINGMesh {
      *       boundary, in_boundary and children vectors
      *       Invalid entities have a NO_ID index
      *
-     * @param[in] E the entity to process
+     * @param[in] E the entity gme_t to process
      */
-    void GeoModelEditor::erase_invalid_entity_references( GeoModelEntity& E )
+    void GeoModelEditor::erase_invalid_entity_references( const GME::gme_t& E_id )
     {
+        GME& E = entity( E_id ) ;
         GME::TYPE T = E.type() ;
         if( E.nb_children() > 0 ) {
             gme_t invalid_child( E.child_type( T ), NO_ID ) ;

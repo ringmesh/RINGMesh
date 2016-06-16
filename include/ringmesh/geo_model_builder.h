@@ -216,11 +216,11 @@ namespace RINGMesh {
          * @{
          */
         index_t find_or_create_duplicate_vertex(
-            GeoModelMeshEntity& S,
+            const GME::gme_t& E_id,
             index_t model_vertex_id,
             index_t surface_vertex_id ) ;
 
-        void cut_surface_by_line( Surface& S, const Line& L ) ;
+        void cut_surface_by_line( index_t surface_id, index_t line_id ) ;
 
         void compute_surface_adjacencies( index_t surface_id ) ;
 
@@ -300,10 +300,9 @@ namespace RINGMesh {
             index_t region_id,
             const std::vector< index_t >& tet_vertices ) ;
 
-        void duplicate_surface_vertices_along_line( Surface& S, const Line& L ) ;
+        void duplicate_surface_vertices_along_line( index_t surface_id, index_t line_id ) ;
         void disconnect_surface_facets_along_line_edges(
-            Surface& S,
-            const Line& L ) ;
+            index_t surface_id, index_t line_id ) ;
     } ;
 
     /*!
@@ -471,14 +470,6 @@ namespace RINGMesh {
             const vec3& p1,
             const vec3& p2,
             bool& same_orientation ) const ;
-
-        /*!
-         * Read the coordinates system information of files exported from Gocad.
-         * @param[in] in The orientation of z-axis in Gocad. "Elevation" for
-         * increasing z toward top and "Depth" for increasing z toward bottom.
-         * @return Return 1 if Elevation direction, -1 if Depth direction.
-         */
-        int read_gocad_coordinates_system( const std::string& in ) ;
 
     private:
         GEO::LineInput file_line_ ;

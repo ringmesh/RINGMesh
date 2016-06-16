@@ -1059,7 +1059,7 @@ namespace {
             do_check_validity() ;
         }
 
-        bool is_geomodel_valid()
+        bool is_geomodel_valid() const
         {
             return valid_ ;
         }
