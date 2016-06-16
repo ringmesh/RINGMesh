@@ -596,7 +596,7 @@ namespace RINGMesh {
         }
 
         // Retrieve the adjacencies
-        mesh_builder_.cells_connect() ;
+        mesh_builder_.connect_cells() ;
 
         // Permute cells to sort them per region and per type
         GEO::vector< index_t > sorted_indices( mesh_.nb_cells() ) ;

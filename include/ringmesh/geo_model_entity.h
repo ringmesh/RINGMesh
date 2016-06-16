@@ -1130,8 +1130,8 @@ namespace RINGMesh {
             return sides_[i] ;
         }
 
-        virtual index_t vertex_index (index_t corner_index) const {
-            return mesh_.cell_corner_vertex(corner_index) ;
+        virtual index_t vertex_index( index_t corner_index ) const {
+            return mesh_.cell_corner_vertex( corner_index ) ;
         }
 
         /*!

@@ -1394,7 +1394,7 @@ namespace RINGMesh {
         assign_region_tet_mesh( region_id, new_tet_corners ) ;
     }
 
-    void GeoModelBuilder::set_region_entity_geometry(
+    void GeoModelBuilder::set_region_element_geometry(
         index_t region_id,
         index_t cell_id,
         const std::vector< index_t >& corners )
@@ -1414,7 +1414,7 @@ namespace RINGMesh {
      * @param[in] nb_cells Number of cells to creates
      * @return the index of the first created cell
      */
-    index_t GeoModelBuilder::create_region_entity_cells(
+    index_t GeoModelBuilder::create_region_cells(
         index_t region_id,
         GEO::MeshCellType type,
         index_t nb_cells )
@@ -1423,6 +1423,26 @@ namespace RINGMesh {
         MeshBuilder builder( E.mesh_ ) ;
 
         return builder.create_cells( nb_cells, type ) ;
+    }
+
+    index_t GeoModelBuilder::create_region_cell(
+        index_t region_id,
+        GEO::MeshCellType type,
+        const std::vector< index_t >& vertex_indices )
+    {
+        index_t cell_id = create_region_cells( region_id, type, 1 ) ;
+        set_region_element_geometry( region_id, cell_id, vertex_indices ) ;
+        return cell_id ;
+    }
+
+    index_t GeoModelBuilder::create_surface_facet(
+        index_t surface_id,
+        const GEO::vector< index_t >& vertex_indices )
+    {
+        GeoModelMeshEntity& E = mesh_entity( GME::SURFACE, surface_id ) ;
+        MeshBuilder builder( E.mesh_ ) ;
+
+        return builder.create_facet_polygon( vertex_indices ) ;
     }
 
     void GeoModelBuilder::assign_surface_triangle_mesh(
@@ -1489,7 +1509,7 @@ namespace RINGMesh {
         ringmesh_assert( M.nb_vertices() > 0 ) ;
         MeshBuilder builder( M ) ;
         builder.assign_cell_tet_mesh( tet_vertices, true ) ;
-        builder.cells_connect() ;
+        builder.connect_cells() ;
     }
 
     /*!
@@ -2074,6 +2094,43 @@ namespace RINGMesh {
             }
         }
     }
+
+    void GeoModelBuilder::delete_corner_vertex( index_t corner_id )
+    {
+        Mesh& M = mesh_entity( GME::CORNER, corner_id ).mesh_ ;
+        MeshBuilder builder( M ) ;
+        GEO::vector< index_t > to_delete ;
+        to_delete.push_back( 1 ) ;
+        builder.delete_vertices( to_delete, false ) ;
+    }
+    void GeoModelBuilder::delete_line_edges(
+        index_t line_id,
+        GEO::vector< index_t >& to_delete )
+    {
+        Mesh& M = mesh_entity( GME::CORNER, line_id ).mesh_ ;
+        MeshBuilder builder( M ) ;
+        builder.delete_edges( to_delete, false ) ;
+    }
+    void GeoModelBuilder::delete_surface_facets(
+        index_t surface_id,
+        GEO::vector< index_t >& to_delete )
+    {
+        Mesh& M = mesh_entity( GME::CORNER, surface_id ).mesh_ ;
+        MeshBuilder builder( M ) ;
+        builder.delete_facets( to_delete, false ) ;
+        builder.connect_facets() ;
+    }
+    void GeoModelBuilder::delete_region_cells(
+        index_t region_id,
+        GEO::vector< index_t >& to_delete )
+    {
+        Mesh& M = mesh_entity( GME::CORNER, region_id ).mesh_ ;
+        MeshBuilder builder( M ) ;
+        builder.delete_cells( to_delete, false ) ;
+        builder.connect_cells() ;
+    }
+
+
     /*************************************************************************/
 
     /*!

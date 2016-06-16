@@ -138,10 +138,6 @@ namespace RINGMesh {
             const std::vector< vec3 >& points,
             bool clear ) ;
 
-        index_t create_entity_vertices(
-            const GME::gme_t& entity_id,
-            index_t nb_vertices ) ;
-
         void set_corner( index_t corner_id, const vec3& point ) ;
 
         void set_line( index_t id, const std::vector< vec3 >& vertices ) ;
@@ -201,15 +197,43 @@ namespace RINGMesh {
             index_t region_id,
             const std::vector< index_t >& tet_corners ) ;
 
-        void set_region_entity_geometry(
+        void set_region_element_geometry(
             index_t region_id,
             index_t cell_id,
             const std::vector< index_t >& corners ) ;
 
-        index_t create_region_entity_cells(
+        /*! @}
+         * \name Create entity element
+         * @{
+         */
+
+        index_t create_entity_vertices(
+            const GME::gme_t& entity_id,
+            index_t nb_vertices ) ;
+
+        index_t create_surface_facet(
+            index_t surface_id,
+            const GEO::vector< index_t >& vertex_indices ) ;
+
+        index_t create_region_cell(
+            index_t region_id,
+            GEO::MeshCellType type,
+            const std::vector< index_t >& vertex_indices ) ;
+
+        index_t create_region_cells(
             index_t region_id,
             GEO::MeshCellType type,
             index_t nb_cells ) ;
+
+        /*! @}
+         * \name Delete mesh element entities
+         * @{
+         */
+
+        void delete_corner_vertex( index_t corner_id ) ;
+        void delete_line_edges( index_t line_id, GEO::vector< index_t >& to_delete ) ;
+        void delete_surface_facets( index_t surface_id, GEO::vector< index_t >& to_delete ) ;
+        void delete_region_cells( index_t region_id, GEO::vector< index_t >& to_delete ) ;
 
         /*! @}
          * \name Misc
