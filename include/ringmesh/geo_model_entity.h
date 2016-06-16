@@ -1113,6 +1113,14 @@ namespace RINGMesh {
         {
             return mesh_.cells_aabb() ;
         }
+        /*!
+         * @brief Return the a colocater for the cells of the region
+         * @details The barycenter of the cells is used.
+         */
+        const ColocaterANN& cell_colocater_ann() const
+        {
+            return mesh_.colotater_ann( ColocaterANN::CELLS ) ;
+        }
         GEO::AttributesManager& cell_attribute_manager() const
         {
             return mesh_.cell_attribute_manager() ;
