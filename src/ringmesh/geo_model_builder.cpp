@@ -1567,13 +1567,13 @@ namespace RINGMesh {
      * Finds duplicate vertex or creates it
      */
     index_t GeoModelBuilder::find_or_create_duplicate_vertex(
-        GeoModelMeshEntity& E,
+        const GME::gme_t& E_id,
         index_t model_vertex_id,
         index_t surface_vertex_id )
     {
-        GeoModel& M = const_cast< GeoModel& >( E.model() ) ;
+        GeoModelMeshEntity& E = mesh_entity( E_id ) ;
 
-        const std::vector< GMEVertex >& vbme = M.mesh.vertices.gme_vertices(
+        const std::vector< GMEVertex >& vbme = model().mesh.vertices.gme_vertices(
             model_vertex_id ) ;
         index_t duplicate = NO_ID ;
         for( index_t i = 0; i < vbme.size(); ++i ) {
@@ -1587,14 +1587,14 @@ namespace RINGMesh {
             // Duplicate the vertex in the surface
             MeshBuilder builder( E.mesh_ ) ;
             duplicate = builder.create_vertex(
-                M.mesh.vertices.vertex( model_vertex_id ).data() ) ;
+                model().mesh.vertices.vertex( model_vertex_id ).data() ) ;
 
             // Set its model vertex index
             ringmesh_assert( duplicate < E.nb_vertices() ) ;
             E.model_vertex_id_[duplicate] = model_vertex_id ;
 
             // Add the mapping from in the model vertices. Should we do this one ?
-            M.mesh.vertices.add_to_bme( model_vertex_id,
+            model().mesh.vertices.add_to_bme( model_vertex_id,
                 GMEVertex( E.gme_id(), duplicate ) ) ;
         }
         return duplicate ;
@@ -1605,9 +1605,11 @@ namespace RINGMesh {
      * @pre All the edges of the Line are edges of at least one facet of the Surface
      */
     void GeoModelBuilder::disconnect_surface_facets_along_line_edges(
-        Surface& S,
-        const Line& L )
+        index_t surface_id,
+        index_t line_id )
     {
+        Surface& S = dynamic_cast< Surface& >( entity( gme_t( GME::SURFACE, surface_id ) ) ) ;
+        const GMME& L = mesh_entity( gme_t( GME::LINE, line_id ) ) ;
         const ColocaterANN& ann = S.facet_colocater_ann() ;
         MeshBuilder builder( S.mesh_ ) ;
         for( index_t i = 0; i + 1 < L.nb_vertices(); ++i ) {
@@ -1669,9 +1671,11 @@ namespace RINGMesh {
      * @todo Rewrite 
      */
     void GeoModelBuilder::duplicate_surface_vertices_along_line(
-        Surface& S,
-        const Line& L )
+        index_t surface_id, index_t line_id )
     {
+        gme_t S_id( GME::SURFACE, surface_id ) ;
+        Surface& S = dynamic_cast< Surface& >( entity( S_id ) ) ;
+        const Line& L = dynamic_cast< Line& >( mesh_entity( gme_t( GME::LINE, line_id ) ) ) ;
         const Corner& line_first_corner = dynamic_cast< const Corner& >( L.boundary(
             0 ) ) ;
         const Corner& line_second_corner = dynamic_cast< const Corner& >( L.boundary(
@@ -1708,7 +1712,7 @@ namespace RINGMesh {
             std::vector< index_t > facets_around_id1 ;
             S.facets_around_vertex( id1, facets_around_id1, false, f ) ;
 
-            index_t new_id1 = find_or_create_duplicate_vertex( S,
+            index_t new_id1 = find_or_create_duplicate_vertex( S_id,
                 S.model_vertex_id( id1 ), id1 ) ;
 
             // Update vertex index in facets
@@ -1740,7 +1744,7 @@ namespace RINGMesh {
                 to_duplicate_surface_index = second_corner_surf_id ;
             }
 
-            index_t duplicated_surface_vertex = find_or_create_duplicate_vertex( S,
+            index_t duplicated_surface_vertex = find_or_create_duplicate_vertex( S_id,
                 to_duplicate_model_index, to_duplicate_surface_index ) ;
 
             std::vector< index_t > facets_around_to_duplicate ;
@@ -1759,7 +1763,7 @@ namespace RINGMesh {
      * @pre Surface is not already cut. Line L does not cut the Surface S into 2 connected components.
      * @todo Add a test for this function.
      */
-    void GeoModelBuilder::cut_surface_by_line( Surface& S, const Line& L )
+    void GeoModelBuilder::cut_surface_by_line( index_t surface_id, index_t line_id )
     {
         /// @todo Replace the use of the model vertices by only a colocater
         /// of the surface vertices and the line vertices
@@ -1768,11 +1772,11 @@ namespace RINGMesh {
             model().mesh.vertices.test_and_initialize() ;
         }
 
-        disconnect_surface_facets_along_line_edges( S, L ) ;
-        duplicate_surface_vertices_along_line( S, L ) ;
+        disconnect_surface_facets_along_line_edges( surface_id, line_id ) ;
+        duplicate_surface_vertices_along_line( surface_id, line_id ) ;
 
         if( !model_vertices_initialized ) {
-            const_cast< GeoModel& >( model() ).mesh.vertices.clear() ;
+             model().mesh.vertices.clear() ;
         }
     }
 
@@ -3376,18 +3380,6 @@ namespace RINGMesh {
         set_entity_parent( id, parent ) ;
         set_entity_geol_feature( parent, GME::determine_geological_type( type ) ) ;
         key_facets_.push_back( KeyFacet( p0, p1, p2 ) ) ;
-    }
-
-    int GeoModelBuilderGocad::read_gocad_coordinates_system( const std::string& in )
-    {
-        if( in == "Elevation" ) {
-            return 1 ;
-        } else if( in == "Depth" ) {
-            return -1 ;
-        } else {
-            ringmesh_assert_not_reached ;
-            return 0 ;
-        }
     }
 
     /*************************************************************************/

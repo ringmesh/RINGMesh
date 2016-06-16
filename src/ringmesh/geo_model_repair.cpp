@@ -227,7 +227,7 @@ namespace RINGMesh {
                         // Force the recomputing of the model vertices
                         // before performing the cut. 
                         model().mesh.vertices.clear() ;
-                        cut_surface_by_line( S, model().line( *it ) ) ;
+                        cut_surface_by_line( i, *it ) ;
                     }
                 }
             }
@@ -240,14 +240,15 @@ namespace RINGMesh {
      * If there are more than 2 colocated vertices throws an assertion in debug mode
      */
     void GeoModelRepair::vertices_on_inside_boundary(
-        const GeoModelMeshEntity& E,
+        const GME::gme_t& E_id,
         std::set< index_t >& vertices )
     {
         vertices.clear() ;
-        if( E.type() == GME::CORNER ) {
+        if( E_id.type == GME::CORNER ) {
             return ;
         }
-        if( E.type() == GME::LINE ) {
+        const GMME& E = mesh_entity( E_id ) ;
+        if( E_id.type == GME::LINE ) {
             if( E.boundary( 0 ).is_inside_border( E ) ) {
                 vertices.insert( E.nb_vertices() - 1 ) ;
             }
@@ -295,7 +296,8 @@ namespace RINGMesh {
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;
 
             for( index_t e = 0; e < model().nb_entities( T ); ++e ) {
-                const GMME& E = model().mesh_entity( gme_t( T, e ) ) ;
+                gme_t entity_id( T, e ) ;
+                const GMME& E = model().mesh_entity( entity_id ) ;
 
                 const ColocaterANN& kdtree = E.vertex_colocater_ann() ;
                 GEO::vector< index_t > colocated ;
@@ -303,7 +305,7 @@ namespace RINGMesh {
 
                 // Get the vertices to delete
                 std::set< index_t > inside_border ;
-                vertices_on_inside_boundary( E, inside_border ) ;
+                vertices_on_inside_boundary( entity_id, inside_border ) ;
 
                 GEO::vector< index_t > to_delete( colocated.size(), 0 ) ;
                 index_t nb_todelete = 0 ;
@@ -330,7 +332,7 @@ namespace RINGMesh {
                     to_remove.insert( E.gme_id() ) ;
                     continue ;
                 } else {
-                    GMME& ME = model().modifiable_mesh_entity( gme_t( T, e ) ) ;
+                    GMME& ME = model().modifiable_mesh_entity( entity_id ) ;
                     MeshBuilder builder( ME.mesh_ ) ;
                     for( index_t c = 0; c < E.mesh_.nb_facet_corners(); c++ ) {
                         builder.set_facet_corner( c,
@@ -344,7 +346,7 @@ namespace RINGMesh {
                     }
                     builder.delete_vertices( to_delete, false ) ;
                     GEO::Logger::out( "Repair" ) << nb_todelete
-                        << " colocated vertices deleted in " << E.gme_id()
+                        << " colocated vertices deleted in " << entity_id
                         << std::endl ;
                 }
             }

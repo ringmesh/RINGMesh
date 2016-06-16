@@ -302,7 +302,7 @@ namespace RINGMesh {
          */
         index_t create_entities( GME::TYPE type, index_t nb ) ;
 
-        void erase_invalid_entity_references( GeoModelEntity& E ) ;
+        void erase_invalid_entity_references( const GME::gme_t& E_id ) ;
 
         void assert_entity_creation_allowed()
         {
@@ -311,8 +311,9 @@ namespace RINGMesh {
 
     private:
         void copy_entity_topology(
-            GeoModelEntity& lhs,
-            const GeoModelEntity& rhs ) ;
+            const GME::gme_t& lhs_id,
+            const GeoModel& from,
+            const GME::gme_t& rhs_id ) ;
 
         /*!
          * @brief Creates an empty entity of the right type in the GeoModel

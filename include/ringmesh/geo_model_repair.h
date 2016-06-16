@@ -95,7 +95,7 @@ namespace RINGMesh {
 
         void remove_colocated_entity_vertices( std::set< gme_t >& to_remove ) ;
         void vertices_on_inside_boundary(
-            const GeoModelMeshEntity& E,
+            const GME::gme_t& E_id,
             std::set< index_t >& vertices ) ;
 
         bool edge_is_degenerate(

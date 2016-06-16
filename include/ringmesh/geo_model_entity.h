@@ -484,7 +484,7 @@ namespace RINGMesh {
              */
         }
         void save(
-            const std::string filename,
+            const std::string& filename,
             const GEO::MeshIOFlags& ioflags ) const
         {
             mesh_.save_mesh( filename, ioflags ) ;
