@@ -49,9 +49,9 @@ namespace RINGMesh {
     typedef GeoModelEntity::gme_t gme_t ;
 
 
-    GeoModelEntity& GeoModelEditor::entity( const GME::gme_t& id ) const
+    GeoModelEntity& GeoModelEditor::entity( const GME::gme_t& id )
     {
-        return *model_.entity_ptr( id ) ;
+        return model_.modifiable_entity( id ) ;
     }
 
     void GeoModelEditor::set_model_name( const std::string& name )
@@ -158,7 +158,7 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelEditor::fill_entities_boundaries( GME::TYPE type ) const
+    void GeoModelEditor::fill_entities_boundaries( GME::TYPE type )
     {
         // We have a problem if this is called for regions
         // No way yet to know the surface orientation
@@ -176,7 +176,7 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelEditor::fill_entities_in_boundaries( GME::TYPE type ) const
+    void GeoModelEditor::fill_entities_in_boundaries( GME::TYPE type )
     {
         GME::TYPE in_b_type = GME::in_boundary_type( type ) ;
         if( in_b_type != GME::NO_TYPE ) {
@@ -190,7 +190,7 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelEditor::fill_entities_parent( GME::TYPE type ) const
+    void GeoModelEditor::fill_entities_parent( GME::TYPE type )
     {
         GME::TYPE p_type = GME::parent_type( type ) ;
         if( p_type != GME::NO_TYPE ) {
@@ -203,7 +203,7 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelEditor::fill_entities_children( GME::TYPE type ) const
+    void GeoModelEditor::fill_entities_children( GME::TYPE type )
     {
         GME::TYPE c_type = GME::child_type( type ) ;
         if( c_type != GME::NO_TYPE ) {

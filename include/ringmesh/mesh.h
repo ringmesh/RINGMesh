@@ -140,7 +140,7 @@ namespace RINGMesh {
         }
 
         //TODO maybe reimplement the function with a RINGMesh::Mesh??
-        void print_mesh_bounded_attributes()
+        void print_mesh_bounded_attributes() const
         {
             print_bounded_attributes( *mesh_ ) ;
         }

@@ -320,10 +320,10 @@ namespace RINGMesh {
          *
          * @pre Entity identification is valid.
          */
-        GeoModelEntity* entity_ptr( const GME::gme_t& id ) const
+        const GeoModelEntity* entity_ptr( const GME::gme_t& id ) const
         {
             if( id.type == GME::REGION && id.index == NO_ID ) {
-                return const_cast< Region* >( &universe_ ) ;
+                return &universe_ ;
             } else {
                 if( id.type < GME::NO_TYPE ) {
                     ringmesh_assert( id.index < nb_entities( id.type ) ) ;
@@ -332,7 +332,7 @@ namespace RINGMesh {
                     return entity_ptr( global_to_typed_id( id ) ) ;
                 } else {
                     ringmesh_assert_not_reached ;
-                    return const_cast< Region* >( &universe_ ) ;
+                    return &universe_ ;
                 }
             }
         }
@@ -341,9 +341,9 @@ namespace RINGMesh {
          * @brief Reference to a modifiable entity of the model
          * @pre The id must refer to a valid entity of the model
          */
-        GeoModelEntity& modifiable_entity( const GME::gme_t& id ) const
+        GeoModelEntity& modifiable_entity( const GME::gme_t& id )
         {
-            return *entity_ptr( id ) ;
+            return const_cast< GeoModelEntity& >( *entity_ptr( id ) ) ;
         }
 
         /*!
@@ -352,7 +352,7 @@ namespace RINGMesh {
          *      The id must refer to a valid entity.
          */
         inline GeoModelMeshEntity& modifiable_mesh_entity(
-            const GME::gme_t& id ) const
+            const GME::gme_t& id ) //const
         {
             ringmesh_assert( GME::has_mesh( id.type ) ) ;
             return dynamic_cast< GeoModelMeshEntity& >( modifiable_entity( id ) ) ;

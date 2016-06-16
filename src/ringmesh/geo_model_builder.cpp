@@ -1483,7 +1483,7 @@ namespace RINGMesh {
 
     void GeoModelBuilder::assign_region_tet_mesh(
         index_t region_id,
-        const std::vector< index_t >& tet_vertices ) const
+        const std::vector< index_t >& tet_vertices )
     {
         Mesh& M = mesh_entity( GME::REGION, region_id ).mesh_ ;
         ringmesh_assert( M.nb_vertices() > 0 ) ;
