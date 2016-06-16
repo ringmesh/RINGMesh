@@ -352,7 +352,7 @@ namespace RINGMesh {
          *      The id must refer to a valid entity.
          */
         inline GeoModelMeshEntity& modifiable_mesh_entity(
-            const GME::gme_t& id ) //const
+            const GME::gme_t& id )
         {
             ringmesh_assert( GME::has_mesh( id.type ) ) ;
             return dynamic_cast< GeoModelMeshEntity& >( modifiable_entity( id ) ) ;
