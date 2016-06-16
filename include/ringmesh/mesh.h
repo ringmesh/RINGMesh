@@ -914,6 +914,42 @@ namespace RINGMesh {
         void permute_facets( GEO::vector<index_t>& permutation ) {
             mesh_.mesh_->facets.permute_elements( permutation ) ;
         }
+        /*!
+         * @brief Deletes a set of facets.
+         * @param[in] to_delete     a vector of size nb(). If to_delete[f] is different from 0,
+         * then facet f will be destroyed, else it will be kept. On exit, to_delete is modified
+         * (it is used for internal bookkeeping).
+         * @param[in] remove_isolated_vertices if true, then the vertices that are no longer incident to any entity are deleted.
+         */
+        void delete_facets(
+            GEO::vector< index_t >& to_delete,
+            bool remove_isolated_vertices )
+        {
+            mesh_.mesh_->facets.delete_elements( to_delete,
+                remove_isolated_vertices ) ;
+            delete_facet_aabb() ;
+            delete_facet_colocater() ;
+        }
+        /*!
+         * @brief Deletes the ColocaterANN on facets
+         */
+        void delete_facet_colocater()
+        {
+            if( mesh_.ann_[ColocaterANN::FACETS] ) {
+                delete mesh_.ann_[ColocaterANN::FACETS] ;
+                mesh_.ann_[ColocaterANN::FACETS] = nil ;
+            }
+        }
+        /*!
+         * @brief Deletes the AABB on facets
+         */
+        void delete_facet_aabb()
+        {
+            if( mesh_.facets_aabb_ ) {
+                delete mesh_.facets_aabb_;
+                mesh_.facets_aabb_ = nil ;
+            }
+        }
 
         /*!@}
          * \section Cells methods
@@ -972,7 +1008,7 @@ namespace RINGMesh {
         /*!
          * @brief Retrieve the adjacencies
          */
-        void cells_connect()
+        void connect_cells()
         {
             mesh_.mesh_->cells.connect() ;
         }
@@ -1004,6 +1040,47 @@ namespace RINGMesh {
         void permute_cells( GEO::vector<index_t>& permutation ) {
             mesh_.mesh_->cells.permute_elements( permutation ) ;
         }
+        /*!
+         * @brief Deletes a set of cells.
+         * @param[in] to_delete     a vector of size nb(). If to_delete[c] is different from 0,
+         * then cell c will be destroyed, else it will be kept. On exit, to_delete is modified
+         * (it is used for internal bookkeeping).
+         * @param[in] remove_isolated_vertices if true, then the vertices that are no longer incident to any entity are deleted.
+         */
+        void delete_cells(
+            GEO::vector< index_t >& to_delete,
+            bool remove_isolated_vertices )
+        {
+            mesh_.mesh_->cells.delete_elements( to_delete,
+                remove_isolated_vertices ) ;
+            delete_cell_aabb() ;
+            delete_cell_colocater() ;
+        }
+        /*!
+         * @brief Deletes the ColocaterANN on cells
+         */
+        void delete_cell_colocater()
+        {
+            if( mesh_.ann_[ColocaterANN::CELLS] ) {
+                delete mesh_.ann_[ColocaterANN::CELLS] ;
+                mesh_.ann_[ColocaterANN::CELLS] = nil ;
+            }
+            if( mesh_.ann_[ColocaterANN::CELL_FACETS] ) {
+                delete mesh_.ann_[ColocaterANN::CELL_FACETS] ;
+                mesh_.ann_[ColocaterANN::CELL_FACETS] = nil ;
+            }
+        }
+        /*!
+         * @brief Deletes the AABB on cells
+         */
+        void delete_cell_aabb()
+        {
+            if( mesh_.cells_aabb_ ) {
+                delete mesh_.cells_aabb_;
+                mesh_.cells_aabb_ = nil ;
+            }
+        }
+
         /*!
          * @}
          */

@@ -808,14 +808,14 @@ namespace RINGMesh {
             index_t vertex_id = static_cast< index_t >( vertex_indices[v] ) ;
             corners[v] = vertex_id ;
         }
-        builder_->set_region_entity_geometry( output_region_, tetra_index, corners ) ;
+        builder_->set_region_element_geometry( output_region_, tetra_index, corners ) ;
     }
 
     void TetraGen::initialize_storage( index_t nb_points, index_t nb_tets )
     {
         GME::gme_t region_id( GME::REGION, output_region_ ) ;
         builder_->create_entity_vertices( region_id, nb_points ) ;
-        builder_->create_region_entity_cells( output_region_, GEO::MESH_TET,
+        builder_->create_region_cells( output_region_, GEO::MESH_TET,
             nb_tets ) ;
     }
 
