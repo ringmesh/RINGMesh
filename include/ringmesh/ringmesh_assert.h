@@ -64,7 +64,7 @@ namespace {
         int line )
     {
 #ifdef WIN32
-        DebugBreak();
+        DebugBreak() ;
 #endif
         GEO::geo_should_not_have_reached( file, line ) ;
     }
