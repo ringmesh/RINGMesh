@@ -44,9 +44,9 @@
 
 #include <geogram/basic/line_stream.h>
 #include <geogram/basic/logger.h>
+#include <geogram/mesh/mesh_io.h>
 #include <geogram/mesh/mesh_repair.h>
 #include <geogram/points/colocate.h>
-#include <geogram/mesh/mesh_io.h>
 
 #include <ringmesh/io.h>
 #include <ringmesh/algorithm.h>
@@ -1581,6 +1581,22 @@ namespace RINGMesh {
             MeshBuilder builder( S.mesh_ ) ;
             builder.set_facet_corners_adjacent( i, adjacent[i] ) ;
         }
+    }
+
+    /*!
+     * @brief Triangulate a surface
+     * @details Compute the triangulation of a set of vertices using
+     * a Restricted Voronoi Diagram of the vertices of the surface \p surface_in
+     * @param[in] surface_in the surface used to compte the RVD
+     * @param[in] surface_out the index of the triangulated surface
+     */
+    void GeoModelBuilder::triangulate_surface(
+        const RINGMesh::Surface& surface_in,
+        index_t surface_out )
+    {
+        Mesh& mesh = mesh_entity( GME::gme_t( GME::SURFACE, surface_out ) ).mesh_ ;
+        MeshBuilder builder( mesh ) ;
+        builder.triangulate( surface_in.mesh_ ) ;
     }
 
     /*!

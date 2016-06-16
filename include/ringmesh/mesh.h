@@ -37,9 +37,8 @@
 #define __RINGMESH_MESH__
 
 #include <ringmesh/common.h>
-#include <ringmesh/geometry.h>
-#include <ringmesh/geogram_extension.h>
 
+#include <geogram/basic/command_line.h>
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_io.h>
 #include <geogram/mesh/mesh_geometry.h>
@@ -47,6 +46,10 @@
 #include <geogram/mesh/mesh_repair.h>
 #include <geogram/mesh/mesh_preprocessing.h>
 #include <geogram/mesh/mesh_AABB.h>
+#include <geogram/voronoi/CVT.h>
+
+#include <ringmesh/geometry.h>
+#include <ringmesh/geogram_extension.h>
 
 namespace RINGMesh {
     class GeoModel ;
@@ -625,6 +628,18 @@ namespace RINGMesh {
             GEO::remove_small_connected_components( *mesh_.mesh_, min_area,
                 min_facets ) ;
         }
+
+        void triangulate(
+            const Mesh& surface_in )
+        {
+            GEO::Logger::instance()->set_minimal( true ) ;
+            GEO::CentroidalVoronoiTesselation CVT( surface_in.mesh_, 3,
+                GEO::CmdLine::get_arg( "algo:delaunay" ) ) ;
+            CVT.set_points( mesh_.nb_vertices(), mesh_.mesh_->vertices.point_ptr( 0 ) ) ;
+            CVT.compute_surface( mesh_.mesh_, false ) ;
+            GEO::Logger::instance()->set_minimal( false ) ;
+        }
+
 
         /*!
          * \name Vertex methods

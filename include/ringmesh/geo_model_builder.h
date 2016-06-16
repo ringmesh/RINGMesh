@@ -55,10 +55,6 @@
  * @author Jeanne Pellerin
  */
 
-namespace GEO {
-    class Mesh ;
-}
-
 namespace RINGMesh {
     class GeoModelRegionFromSurfaces ;
     class GeoModelEntityFromMesh ;
@@ -247,6 +243,9 @@ namespace RINGMesh {
         void cut_surface_by_line( index_t surface_id, index_t line_id ) ;
 
         void compute_surface_adjacencies( index_t surface_id ) ;
+        void triangulate_surface(
+            const RINGMesh::Surface& surface_in,
+            index_t surface_out ) ;
 
         GME::gme_t find_or_create_corner( const vec3& point ) ;
         GME::gme_t find_or_create_corner( index_t model_point_id ) ;
