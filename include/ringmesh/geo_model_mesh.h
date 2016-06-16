@@ -145,7 +145,7 @@ namespace RINGMesh {
 
         const ColocaterANN& colocater() const {
             test_and_initialize() ;
-            return mesh_.colotater_ann( ColocaterANN::VERTICES ) ;
+            return mesh_.colocater_ann( ColocaterANN::VERTICES ) ;
         }
 
     private:
@@ -376,7 +376,7 @@ namespace RINGMesh {
         
         const ColocaterANN& colocater() const {
             test_and_initialize() ;
-            return mesh_.colotater_ann( ColocaterANN::FACETS ) ;
+            return mesh_.colocater_ann( ColocaterANN::FACETS ) ;
         }
     private:
         /*!
@@ -804,11 +804,11 @@ namespace RINGMesh {
 
         const ColocaterANN& cell_colocater() const {
             test_and_initialize() ;
-            return mesh_.colotater_ann( ColocaterANN::CELLS ) ;
+            return mesh_.colocater_ann( ColocaterANN::CELLS ) ;
         }
         const ColocaterANN& cell_facet_colocater() const {
             test_and_initialize() ;
-            return mesh_.colotater_ann( ColocaterANN::CELL_FACETS ) ;
+            return mesh_.colocater_ann( ColocaterANN::CELL_FACETS ) ;
         }
     private:
         /*!

@@ -119,7 +119,7 @@ namespace RINGMesh {
          * @brief return the ColocaterANN at the given ColocaterANN::MeshLocation
          * @warning the ColocaterANN is destroy when calling the Mesh::facets_aabb() and Mesh::cells_aabb()
          */
-        const ColocaterANN& colotater_ann(
+        const ColocaterANN& colocater_ann(
             ColocaterANN::MeshLocation location ) const
         {
             if( ann_[location] == nil ) {

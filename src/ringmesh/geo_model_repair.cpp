@@ -107,7 +107,7 @@ namespace RINGMesh {
     index_t GeoModelRepair::detect_degenerate_facets( Mesh& M )
     {
         GEO::vector< index_t > colocated ;
-        const ColocaterANN& kdtree = M.colotater_ann( ColocaterANN::VERTICES ) ;
+        const ColocaterANN& kdtree = M.colocater_ann( ColocaterANN::VERTICES ) ;
         kdtree.get_colocated_index_mapping( colocated ) ;
 //        GEO::mesh_detect_colocated_vertices( M, colocated ) ;
 

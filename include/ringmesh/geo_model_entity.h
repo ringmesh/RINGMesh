@@ -494,7 +494,7 @@ namespace RINGMesh {
          */
         const ColocaterANN& vertex_colocater_ann() const
         {
-            return mesh_.colotater_ann( ColocaterANN::VERTICES ) ;
+            return mesh_.colocater_ann( ColocaterANN::VERTICES ) ;
         }
 
         /*!
@@ -849,7 +849,7 @@ namespace RINGMesh {
          */
         const ColocaterANN& facet_colocater_ann() const
         {
-            return mesh_.colotater_ann( ColocaterANN::FACETS ) ;
+            return mesh_.colocater_ann( ColocaterANN::FACETS ) ;
         }
 
         /*!
@@ -1119,7 +1119,7 @@ namespace RINGMesh {
          */
         const ColocaterANN& cell_colocater_ann() const
         {
-            return mesh_.colotater_ann( ColocaterANN::CELLS ) ;
+            return mesh_.colocater_ann( ColocaterANN::CELLS ) ;
         }
         GEO::AttributesManager& cell_attribute_manager() const
         {
