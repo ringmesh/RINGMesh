@@ -145,7 +145,7 @@ namespace RINGMesh {
 
         const ColocaterANN& colocater() const {
             test_and_initialize() ;
-            return mesh_.colotater_ann( ColocaterANN::VERTICES ) ;
+            return mesh_.colocater_ann( ColocaterANN::VERTICES ) ;
         }
 
     private:
@@ -376,7 +376,7 @@ namespace RINGMesh {
         
         const ColocaterANN& colocater() const {
             test_and_initialize() ;
-            return mesh_.colotater_ann( ColocaterANN::FACETS ) ;
+            return mesh_.colocater_ann( ColocaterANN::FACETS ) ;
         }
     private:
         /*!
@@ -582,6 +582,21 @@ namespace RINGMesh {
          * @param[in] c the cell index
          */
         index_t nb_facets( index_t c ) const ;
+        /*!
+         * Get the number of facets in the cell
+         * @param[in] c the cell index
+         * @param[in] lf the cell facet index
+         */
+        index_t nb_facet_vertices( index_t c, index_t lf ) const ;
+        /*!
+         * \brief Gets a cell vertex by local facet index and local
+         *  vertex index in the edge
+         * \param[in] c the cell, in 0..nb()-1
+         * \param[in] lf the local facet index, in 0..nb_facets(c)-1
+         * \param[in] lv the local index in the cell facet
+         * \return vertex \p lv of facet \p lf in cell \p c
+         */
+        index_t facet_vertex( index_t c, index_t lf, index_t lv ) const ;
         /*!
          * \brief Gets a cell vertex by local edge index and local
          *  vertex index in the edge
@@ -789,11 +804,11 @@ namespace RINGMesh {
 
         const ColocaterANN& cell_colocater() const {
             test_and_initialize() ;
-            return mesh_.colotater_ann( ColocaterANN::CELLS ) ;
+            return mesh_.colocater_ann( ColocaterANN::CELLS ) ;
         }
         const ColocaterANN& cell_facet_colocater() const {
             test_and_initialize() ;
-            return mesh_.colotater_ann( ColocaterANN::CELL_FACETS ) ;
+            return mesh_.colocater_ann( ColocaterANN::CELL_FACETS ) ;
         }
     private:
         /*!

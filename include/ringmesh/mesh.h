@@ -37,9 +37,8 @@
 #define __RINGMESH_MESH__
 
 #include <ringmesh/common.h>
-#include <ringmesh/geometry.h>
-#include <ringmesh/geogram_extension.h>
 
+#include <geogram/basic/command_line.h>
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_io.h>
 #include <geogram/mesh/mesh_geometry.h>
@@ -47,6 +46,10 @@
 #include <geogram/mesh/mesh_repair.h>
 #include <geogram/mesh/mesh_preprocessing.h>
 #include <geogram/mesh/mesh_AABB.h>
+#include <geogram/voronoi/CVT.h>
+
+#include <ringmesh/geometry.h>
+#include <ringmesh/geogram_extension.h>
 
 namespace RINGMesh {
     class GeoModel ;
@@ -107,7 +110,7 @@ namespace RINGMesh {
         }
 
         void save_mesh(
-            const std::string filename,
+            const std::string& filename,
             const GEO::MeshIOFlags& ioflags ) const
         {
             GEO::mesh_save( *mesh_, filename, ioflags ) ;
@@ -116,7 +119,7 @@ namespace RINGMesh {
          * @brief return the ColocaterANN at the given ColocaterANN::MeshLocation
          * @warning the ColocaterANN is destroy when calling the Mesh::facets_aabb() and Mesh::cells_aabb()
          */
-        const ColocaterANN& colotater_ann(
+        const ColocaterANN& colocater_ann(
             ColocaterANN::MeshLocation location ) const
         {
             if( ann_[location] == nil ) {
@@ -140,7 +143,7 @@ namespace RINGMesh {
         }
 
         //TODO maybe reimplement the function with a RINGMesh::Mesh??
-        void print_mesh_bounded_attributes()
+        void print_mesh_bounded_attributes() const
         {
             print_bounded_attributes( *mesh_ ) ;
         }
@@ -626,6 +629,18 @@ namespace RINGMesh {
                 min_facets ) ;
         }
 
+        void triangulate(
+            const Mesh& surface_in )
+        {
+            GEO::Logger::instance()->set_minimal( true ) ;
+            GEO::CentroidalVoronoiTesselation CVT( surface_in.mesh_, 3,
+                GEO::CmdLine::get_arg( "algo:delaunay" ) ) ;
+            CVT.set_points( mesh_.nb_vertices(), mesh_.mesh_->vertices.point_ptr( 0 ) ) ;
+            CVT.compute_surface( mesh_.mesh_, false ) ;
+            GEO::Logger::instance()->set_minimal( false ) ;
+        }
+
+
         /*!
          * \name Vertex methods
          * @{
@@ -914,6 +929,42 @@ namespace RINGMesh {
         void permute_facets( GEO::vector<index_t>& permutation ) {
             mesh_.mesh_->facets.permute_elements( permutation ) ;
         }
+        /*!
+         * @brief Deletes a set of facets.
+         * @param[in] to_delete     a vector of size nb(). If to_delete[f] is different from 0,
+         * then facet f will be destroyed, else it will be kept. On exit, to_delete is modified
+         * (it is used for internal bookkeeping).
+         * @param[in] remove_isolated_vertices if true, then the vertices that are no longer incident to any entity are deleted.
+         */
+        void delete_facets(
+            GEO::vector< index_t >& to_delete,
+            bool remove_isolated_vertices )
+        {
+            mesh_.mesh_->facets.delete_elements( to_delete,
+                remove_isolated_vertices ) ;
+            delete_facet_aabb() ;
+            delete_facet_colocater() ;
+        }
+        /*!
+         * @brief Deletes the ColocaterANN on facets
+         */
+        void delete_facet_colocater()
+        {
+            if( mesh_.ann_[ColocaterANN::FACETS] ) {
+                delete mesh_.ann_[ColocaterANN::FACETS] ;
+                mesh_.ann_[ColocaterANN::FACETS] = nil ;
+            }
+        }
+        /*!
+         * @brief Deletes the AABB on facets
+         */
+        void delete_facet_aabb()
+        {
+            if( mesh_.facets_aabb_ ) {
+                delete mesh_.facets_aabb_;
+                mesh_.facets_aabb_ = nil ;
+            }
+        }
 
         /*!@}
          * \section Cells methods
@@ -972,7 +1023,7 @@ namespace RINGMesh {
         /*!
          * @brief Retrieve the adjacencies
          */
-        void cells_connect()
+        void connect_cells()
         {
             mesh_.mesh_->cells.connect() ;
         }
@@ -1004,6 +1055,47 @@ namespace RINGMesh {
         void permute_cells( GEO::vector<index_t>& permutation ) {
             mesh_.mesh_->cells.permute_elements( permutation ) ;
         }
+        /*!
+         * @brief Deletes a set of cells.
+         * @param[in] to_delete     a vector of size nb(). If to_delete[c] is different from 0,
+         * then cell c will be destroyed, else it will be kept. On exit, to_delete is modified
+         * (it is used for internal bookkeeping).
+         * @param[in] remove_isolated_vertices if true, then the vertices that are no longer incident to any entity are deleted.
+         */
+        void delete_cells(
+            GEO::vector< index_t >& to_delete,
+            bool remove_isolated_vertices )
+        {
+            mesh_.mesh_->cells.delete_elements( to_delete,
+                remove_isolated_vertices ) ;
+            delete_cell_aabb() ;
+            delete_cell_colocater() ;
+        }
+        /*!
+         * @brief Deletes the ColocaterANN on cells
+         */
+        void delete_cell_colocater()
+        {
+            if( mesh_.ann_[ColocaterANN::CELLS] ) {
+                delete mesh_.ann_[ColocaterANN::CELLS] ;
+                mesh_.ann_[ColocaterANN::CELLS] = nil ;
+            }
+            if( mesh_.ann_[ColocaterANN::CELL_FACETS] ) {
+                delete mesh_.ann_[ColocaterANN::CELL_FACETS] ;
+                mesh_.ann_[ColocaterANN::CELL_FACETS] = nil ;
+            }
+        }
+        /*!
+         * @brief Deletes the AABB on cells
+         */
+        void delete_cell_aabb()
+        {
+            if( mesh_.cells_aabb_ ) {
+                delete mesh_.cells_aabb_;
+                mesh_.cells_aabb_ = nil ;
+            }
+        }
+
         /*!
          * @}
          */

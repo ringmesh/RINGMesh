@@ -484,7 +484,7 @@ namespace RINGMesh {
              */
         }
         void save(
-            const std::string filename,
+            const std::string& filename,
             const GEO::MeshIOFlags& ioflags ) const
         {
             mesh_.save_mesh( filename, ioflags ) ;
@@ -494,7 +494,7 @@ namespace RINGMesh {
          */
         const ColocaterANN& vertex_colocater_ann() const
         {
-            return mesh_.colotater_ann( ColocaterANN::VERTICES ) ;
+            return mesh_.colocater_ann( ColocaterANN::VERTICES ) ;
         }
 
         /*!
@@ -849,7 +849,7 @@ namespace RINGMesh {
          */
         const ColocaterANN& facet_colocater_ann() const
         {
-            return mesh_.colotater_ann( ColocaterANN::FACETS ) ;
+            return mesh_.colocater_ann( ColocaterANN::FACETS ) ;
         }
 
         /*!
@@ -1113,6 +1113,14 @@ namespace RINGMesh {
         {
             return mesh_.cells_aabb() ;
         }
+        /*!
+         * @brief Return the a colocater for the cells of the region
+         * @details The barycenter of the cells is used.
+         */
+        const ColocaterANN& cell_colocater_ann() const
+        {
+            return mesh_.colocater_ann( ColocaterANN::CELLS ) ;
+        }
         GEO::AttributesManager& cell_attribute_manager() const
         {
             return mesh_.cell_attribute_manager() ;
@@ -1122,8 +1130,8 @@ namespace RINGMesh {
             return sides_[i] ;
         }
 
-        virtual index_t vertex_index (index_t corner_index) const {
-            return mesh_.cell_corner_vertex(corner_index) ;
+        virtual index_t vertex_index( index_t corner_index ) const {
+            return mesh_.cell_corner_vertex( corner_index ) ;
         }
 
         /*!
@@ -1211,7 +1219,7 @@ namespace RINGMesh {
         index_t cell_facet_vertex_index(
             index_t cell_index,
             index_t facet_index,
-            index_t vertex_index )
+            index_t vertex_index ) const
         {
             if( is_meshed() ) {
                 ringmesh_assert( cell_index < nb_mesh_elements() ) ;
