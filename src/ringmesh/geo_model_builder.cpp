@@ -1382,6 +1382,32 @@ namespace RINGMesh {
             adjacent_triangles ) ;
     }
 
+    void GeoModelBuilder::set_surface_element_geometry(
+        index_t surface_id,
+        index_t facet_id,
+        const std::vector< index_t >& corners )
+    {
+        GeoModelMeshEntity& E = mesh_entity( GME::SURFACE, surface_id ) ;
+        MeshBuilder builder( E.mesh_ ) ;
+
+        for( index_t facet_vertex = 0; facet_vertex < corners.size(); facet_vertex++ ) {
+            builder.set_facet_vertex( facet_id, facet_vertex, corners[facet_vertex] ) ;
+        }
+    }
+
+    void GeoModelBuilder::set_surface_element_adjacency(
+        index_t surface_id,
+        index_t facet_id,
+        const std::vector< index_t >& adjacents )
+    {
+        GeoModelMeshEntity& E = mesh_entity( GME::SURFACE, surface_id ) ;
+        MeshBuilder builder( E.mesh_ ) ;
+
+        for( index_t facet_edge = 0; facet_edge < adjacents.size(); facet_edge++ ) {
+            builder.set_facet_adjacent( facet_id, facet_edge, adjacents[facet_edge] ) ;
+        }
+    }
+
     void GeoModelBuilder::set_region_geometry(
         index_t region_id,
         const std::vector< index_t >& tet_corners )
