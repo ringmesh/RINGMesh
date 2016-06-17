@@ -56,9 +56,9 @@ namespace RINGMesh {
      * @brief Basic container for the sparse matrix, i.e. the "elements".
      * */
     template< typename T >
-    struct EntityImpl {
+    struct ElementImpl {
         const static index_t NOT_USED = index_t( -1 ) ;
-        EntityImpl()
+        ElementImpl()
             : index( NOT_USED )
         {
         }
@@ -73,12 +73,12 @@ namespace RINGMesh {
     template< typename T >
     class RowImpl {
     public:
-        typedef EntityImpl< T > Entity ;
+        typedef ElementImpl< T > Element ;
 
         RowImpl()
             : nb_elements_( 0 ), capacity_( 4 )
         {
-            elements_ = new Entity[capacity_] ;
+            elements_ = new Element[capacity_] ;
         }
 
         ~RowImpl()
@@ -101,7 +101,7 @@ namespace RINGMesh {
             if( nb_elements_ == capacity_ ) {
                 grow() ;
             }
-            Entity& elt = elements_[nb_elements_++ ] ;
+            Element& elt = elements_[nb_elements_++ ] ;
             elt.index = j ;
             elt.value = value ;
         }
@@ -163,7 +163,7 @@ namespace RINGMesh {
     private:
         void reallocate( index_t new_capacity )
         {
-            Entity* new_elements = new Entity[new_capacity] ;
+            Element* new_elements = new Element[new_capacity] ;
             std::copy( elements_, elements_ + nb_elements_, new_elements ) ;
             delete[] elements_ ;
             elements_ = new_elements ;
@@ -177,7 +177,7 @@ namespace RINGMesh {
         }
 
     private:
-        Entity* elements_ ;
+        Element* elements_ ;
         index_t nb_elements_ ;
         index_t capacity_ ;
     } ;
