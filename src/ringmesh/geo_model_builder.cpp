@@ -2137,13 +2137,21 @@ namespace RINGMesh {
         }
     }
 
+    void GeoModelBuilder::delete_entity_vertices(
+        GME::gme_t E_id,
+        GEO::vector< index_t >& to_delete )
+    {
+        Mesh& M = mesh_entity( E_id ).mesh_ ;
+        MeshBuilder builder( M ) ;
+        builder.delete_vertices( to_delete, false ) ;
+    }
+
     void GeoModelBuilder::delete_corner_vertex( index_t corner_id )
     {
-        Mesh& M = mesh_entity( GME::CORNER, corner_id ).mesh_ ;
-        MeshBuilder builder( M ) ;
+        GME::gme_t corner( GME::CORNER, corner_id ) ;
         GEO::vector< index_t > to_delete ;
         to_delete.push_back( 1 ) ;
-        builder.delete_vertices( to_delete, false ) ;
+        delete_entity_vertices( corner, to_delete ) ;
     }
     void GeoModelBuilder::delete_line_edges(
         index_t line_id,

@@ -236,6 +236,7 @@ namespace RINGMesh {
          * @{
          */
 
+        void delete_entity_vertices( GME::gme_t E_id, GEO::vector< index_t >& to_delete ) ;
         void delete_corner_vertex( index_t corner_id ) ;
         void delete_line_edges( index_t line_id, GEO::vector< index_t >& to_delete ) ;
         void delete_surface_facets( index_t surface_id, GEO::vector< index_t >& to_delete ) ;
