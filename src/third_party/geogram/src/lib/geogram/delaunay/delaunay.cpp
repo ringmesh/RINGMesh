@@ -102,7 +102,7 @@ namespace GEO {
         std::logic_error(invalid_dimension_error(dimension, name, expected)) {
     }
 
-    const char* Delaunay::InvalidDimension::what() const throw () {
+    const char* Delaunay::InvalidDimension::what() const GEO_NOEXCEPT {
         return std::logic_error::what();
     }
 

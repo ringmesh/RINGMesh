@@ -114,6 +114,9 @@ namespace {
             glDeleteProgram(program);
             program = 0;
         }
+        if(CmdLine::get_arg_bool("dbg:gfx")) {
+            GLSL::introspect_program(program);
+        }
     }
 }
 
@@ -131,7 +134,7 @@ namespace GEO {
             
         /*************************************************************/
 
-        const char* GLSLCompileError::what() const throw() {
+        const char* GLSLCompileError::what() const GEO_NOEXCEPT {
             return "GLSL Compile Error";
         }
             
@@ -249,11 +252,13 @@ namespace GEO {
             const char* shading_language_ver_str = nil;
 
 #ifdef GEO_GL_150
+#ifndef GEO_OS_APPLE            
             if(glGetStringi != nil) {
                 shading_language_ver_str = (const char*)glGetStringi(
                     GL_SHADING_LANGUAGE_VERSION, 0
                 );
             }
+#endif            
 #endif            
             if(shading_language_ver_str == nil) {
                 // Some buggy drivers do not implement glGetStringi(),
@@ -452,6 +457,22 @@ namespace GEO {
             if(source20 != nil) {
                 sources.push_back(source20);
             }
+
+            if(CmdLine::get_arg_bool("dbg:gfx")) {
+                std::ofstream out("last_shader.glsl");
+                
+                for(index_t i=0; i<sources.size(); ++i) {
+                    out << sources[i];
+                }
+                
+                Logger::out("GLSL") << "===== Shader source ===="
+                                    << std::endl;
+                
+                for(index_t i=0; i<sources.size(); ++i) {
+                    Logger::out("GLSL") << sources[i];
+                }
+            }
+            
             return compile_shader(target, &sources[0], sources.size());
         }
 
@@ -676,6 +697,78 @@ namespace GEO {
             geo_assert(offset != -1);
             return offset;
 #endif            
+        }
+
+
+        void introspect_program(GLuint program) {
+            Logger::out("GLSL") << "Program " << program << " introspection:"
+                                << std::endl;
+            if(!glIsProgram(program)) {
+                Logger::out("GLSL") << "  not a program !"
+                                    << std::endl;
+                return;
+            }
+
+            {
+                GLint link_status;
+                glGetProgramiv(program, GL_LINK_STATUS, &link_status);
+                Logger::out("GLSL") << "  link status=" << link_status
+                                    << std::endl;
+            }
+
+            {
+                GLint active_attributes;
+                glGetProgramiv(
+                    program, GL_ACTIVE_ATTRIBUTES, &active_attributes
+                );
+                Logger::out("GLSL")
+                    << "  active attributes=" << active_attributes
+                    << std::endl;
+                for(GLuint i=0; i<GLuint(active_attributes); ++i) {
+                    GLsizei length;
+                    GLint size;
+                    GLenum type;
+                    GLchar name[1024];
+                    glGetActiveAttrib(
+                        program, i, GLsizei(1024), &length, &size, &type, name
+                    );
+                    Logger::out("GLSL") << "    Attribute " << i << " : "
+                                        << name
+                                        << std::endl;
+                }
+            }
+
+            {
+                GLint active_uniforms;
+                glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &active_uniforms);
+                Logger::out("GLSL") << "  active uniforms=" << active_uniforms
+                                    << std::endl;
+                for(GLuint i=0; i<GLuint(active_uniforms); ++i) {
+                    GLsizei length;
+                    GLint size;
+                    GLenum type;
+                    GLchar name[1024];
+                    glGetActiveUniform(
+                        program, i, GLsizei(1024), &length, &size, &type, name
+                    );
+                    Logger::out("GLSL") << "    Uniform " << i << " : "
+                                        << name
+                                        << std::endl;
+                }
+            }
+
+#ifdef GEO_GL_150            
+            {
+                GLint active_uniform_blocks;
+                glGetProgramiv(
+                    program, GL_ACTIVE_UNIFORM_BLOCKS, &active_uniform_blocks
+                );
+                Logger::out("GLSL") << "  active uniform blocks="
+                                    << active_uniform_blocks
+                                    << std::endl;
+            }
+#endif
+            
         }
         
     }

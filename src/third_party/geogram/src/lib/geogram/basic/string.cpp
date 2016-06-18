@@ -175,7 +175,7 @@ namespace GEO {
             std::logic_error(conversion_error(s, type)) {
         }
 
-        const char* ConversionError::what() const throw () {
+        const char* ConversionError::what() const GEO_NOEXCEPT {
             return std::logic_error::what();
         }
     }

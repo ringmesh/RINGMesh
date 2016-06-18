@@ -176,17 +176,13 @@ namespace RINGMesh {
                         || in.field_matches( 0, "ATOM" ) ) {
                         index_t v0 = in.field_as_uint( 2 ) - 1 ;
                         vertices_[mesh_dimension_ * v] = vertices_[mesh_dimension_ * v0] ;
-                        vertices_[mesh_dimension_ * v + 1] =
-                            vertices_[mesh_dimension_ * v0 + 1] ;
-                        vertices_[mesh_dimension_ * v + 2] =
-                            vertices_[mesh_dimension_ * v0 + 2] ;
+                        vertices_[mesh_dimension_ * v + 1] = vertices_[mesh_dimension_ * v0 + 1] ;
+                        vertices_[mesh_dimension_ * v + 2] = vertices_[mesh_dimension_ * v0 + 2] ;
                         ++v ;
                     } else if( in.field_matches( 0, "TRGL" ) ) {
                         triangles_[3 * t] = index_t( in.field_as_uint( 1 ) - 1 ) ;
-                        triangles_[3 * t + 1] = index_t(
-                            in.field_as_uint( 2 ) - 1 ) ;
-                        triangles_[3 * t + 2] = index_t(
-                            in.field_as_uint( 3 ) - 1 ) ;
+                        triangles_[3 * t + 1] = index_t( in.field_as_uint( 2 ) - 1 ) ;
+                        triangles_[3 * t + 2] = index_t( in.field_as_uint( 3 ) - 1 ) ;
                         t++ ;
                     }
                 }
@@ -409,99 +405,6 @@ namespace RINGMesh {
             count += 1.0 ;
         }
         return ( 1.0 / count ) * result ;
-    }
-
-    /*!
-     * Tests if a tetrahedron has an egde between two given points
-     * @param[in] mesh the mesh
-     * @param[in] t Tetrahedron index
-     * @param[in] p0 First vertex index
-     * @param[in] p1 Second vertex index
-     * @param[out] edge Output edge index
-     * @return The result of the test
-     */
-    bool has_edge(
-        const GEO::Mesh& mesh,
-        index_t t,
-        index_t p0,
-        index_t p1,
-        index_t& edge )
-    {
-        using GEO::Numeric::uint8 ;
-        for( uint8 e = 0; e < 6; e++ ) {
-            index_t v0 = mesh.cells.edge_vertex( t, e, 0 ) ;
-            index_t v1 = mesh.cells.edge_vertex( t, e, 1 ) ;
-            if( ( p0 == v0 && p1 == v1 ) || ( p0 == v1 && p1 == v0 ) ) {
-                edge = e ;
-                return true ;
-            }
-        }
-        return false ;
-    }
-
-    /*!
-     * Gets all the next adjacent tetrahedra sharing an edge
-     * @param[in] mesh the mesh
-     * @param[in] t Starting tetrahedron index to test, should contain the edge
-     * @param[in] prev Previous tetrahedron index
-     * (if propagation around the edge, prevent to go back were we came from)
-     * @param[in] p0 First vertex index of the edge
-     * @param[in] p1 Second vertex index of the edge
-     * @return The edge index
-     * \pre the mesh needs to be tetrahedralized
-     *
-     * @todo Review: Are these functions really used ? They should be rewritten [JP]
-     */
-    index_t next_around_edge(
-        const GEO::Mesh& mesh,
-        index_t tet,
-        index_t prev_tet,
-        index_t v0,
-        index_t v1 )
-    {
-        index_t nb_facets = mesh.cells.nb_facets( tet ) ;
-        ringmesh_assert( nb_facets == 4 ) ;
-        /* @todo handles any cell type and change that algorithm to check adjacencies
-         * only on the facets adjacent to the edge in the input tet 
-         * [JP]
-         */
-        for( index_t f = 0; f < nb_facets; f++ ) {
-            index_t adjacent_tet = mesh.cells.adjacent( tet, f ) ;
-            if( adjacent_tet == GEO::NO_CELL || adjacent_tet == prev_tet ) {
-                continue ;
-            }
-            index_t edge ;
-            if( has_edge( mesh, adjacent_tet, v0, v1, edge ) ) {
-                return 6 * adjacent_tet + edge ;
-            }
-        }
-        return GEO::NO_CELL ;
-    }
-
-    /*!
-     * Gets all the edge indices around one edge
-     * @param[in] mesh the mesh
-     * @param[in] t First tetrahedron index to test, should include the edge
-     * @param[in] p0 First vertex index of the edge
-     * @param[in] p1 Second vertex index of the edge
-     * @param[out] result Output list of edge indices
-     */
-    void edges_around_edge(
-        const GEO::Mesh& mesh,
-        index_t t,
-        index_t p0,
-        index_t p1,
-        std::vector< index_t >& result )
-    {
-        index_t prev = t ;
-        index_t cur = t ;
-        do {
-            index_t info = next_around_edge( mesh, cur, prev, p0, p1 ) ;
-            if( info == GEO::NO_CELL ) return ;
-            result.push_back( info ) ;
-            prev = cur ;
-            cur = info / 6 ;
-        } while( cur != t ) ;
     }
 
     /*!

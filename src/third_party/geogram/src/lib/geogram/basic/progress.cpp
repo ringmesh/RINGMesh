@@ -183,7 +183,7 @@ namespace {
 
 namespace GEO {
 
-    const char* TaskCanceled::what() const throw () {
+    const char* TaskCanceled::what() const GEO_NOEXCEPT {
         return "Task canceled";
     }
 

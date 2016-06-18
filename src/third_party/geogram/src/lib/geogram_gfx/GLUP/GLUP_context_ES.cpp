@@ -53,6 +53,36 @@
 
 #ifdef GEO_GL_ES2
 
+/*
+ * Notes:
+ *
+ * Tex coords pour le mesh, et picking:
+ * ====================================
+ * On pourrait passer de maniere optionelle un attribut de sommets
+ * supplementaire, avec le numero du sommet (ou utiliser gl_VertexID
+ * si OpenGL ES 3), ceci permettrait les choses suivantes:
+ * 1) tex coords implicites (avec un petit tableau constant, et en
+ *  utilisant gl_VertexID % nb_vertices_per_glup_primitive comme indice.
+ * 2) picking, en utilisant 
+ *  glup_primitiveID = gl_VertexID / nb_vertices_per_glup_primitive.
+ * Si on fait \c{c}a, attention au code d'emulation de VAO, la fonction
+ *  qui recuperer l'etat d'un attribut sous WebGL est en general buggee,
+ *  il faudra memoriser l'etat soi-meme...
+ *
+ * Slice cells:
+ * ============
+ * Pour implanter le mode "slice cells", je me demande s'il vaut mieux
+ *  - avoir un tout petit buffer, et faire un flush par cellule ?
+ *  - tout assembler dans des gros buffers, et faire un flush tous les
+ *    65K sommets ?
+ *  -> essayer le premier (plus simple a programmer), et si \c{c}a rame
+ *    faire le deuxi\`eme:
+ *       Ca a l'air de marcher pas trop mal.
+ *       Rem: le ELEMENT_ARRAY_BUFFER est en entiers 32 bits, certains archis
+ *    (telephones etc...) peuvent avoir besoin d'un ELEMENT_ARRAY_BUFFER 16 bits
+ *    (ce qu'on pourrait assez facilement avoir...)
+ */
+
 namespace GLUP {
 
     extern bool vertex_array_emulate;
@@ -63,8 +93,12 @@ namespace GLUP {
 
     void Context_ES2::prepare_to_draw(GLUPprimitive primitive) {
         Context::prepare_to_draw(primitive);
-#ifdef GEO_GL_150        
-        glEnable(GL_POINT_SPRITE);
+#ifdef GEO_GL_150
+        if((!use_core_profile_) && primitive == GLUP_POINTS) {
+            glEnable(GL_POINT_SPRITE);
+            // Not needed anymore it seems
+            // glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
+        }
 #endif
     }
 
@@ -73,12 +107,13 @@ namespace GLUP {
     }
     
     bool Context_ES2::primitive_supports_array_mode(GLUPprimitive prim) const {
-        // Crashes if first frame is drawn like that, it
-        // seems that it makes it skip an initialization, to
-        // be checked... Or it is probably connected with this
-        // mesh enabled / mesh disabled thingy...
+        // Commented-out for now, does not work on Mac/OSX (to be investigated)
         /*
-        if(prim == GLUP_TRIANGLES) {
+        // Special case for triangles: we can draw them in array mode (without
+        // the mesh). Note: we need to make sure that a previous call
+        // initialized the shader before (therefore we test the 'implemented'
+        // flag of the primitive info).
+        if(prim == GLUP_TRIANGLES && primitive_info_[prim].implemented) {
             return true;
         }
         */
@@ -92,6 +127,7 @@ namespace GLUP {
         "     mat4 modelviewprojection_matrix; \n"
         "     mat4 modelview_matrix;           \n"
         "     mat4 texture_matrix;             \n"
+        "     vec4  world_clip_plane;          \n"
         "     float point_size;                \n"
         " };                                   \n"
         "  uniform VSUniformState GLUP_VS;     \n"        
@@ -127,7 +163,6 @@ namespace GLUP {
         "     bool  clipping_enabled;          \n"
         "     int   clipping_mode;             \n"
         "     vec4  clip_plane;                \n"
-        "     vec4  world_clip_plane;          \n"
 
         "  };                                  \n"
         
@@ -137,10 +172,10 @@ namespace GLUP {
         ;
 
     static const char* glup_constants = 
-        "  const int GLUP_CLIP_STANDARD         = 1;   \n"
-        "  const int GLUP_CLIP_WHOLE_CELLS      = 2;   \n"
-        "  const int GLUP_CLIP_STRADDLING_CELLS = 3;   \n"
-        "  const int GLUP_CLIP_SLICE_CELLS      = 4;   \n"
+        "  const int GLUP_CLIP_STANDARD         = 0;   \n"
+        "  const int GLUP_CLIP_WHOLE_CELLS      = 1;   \n"
+        "  const int GLUP_CLIP_STRADDLING_CELLS = 2;   \n"
+        "  const int GLUP_CLIP_SLICE_CELLS      = 3;   \n"
 
         "  const int GLUP_TEXTURE_1D = 1;              \n"
         "  const int GLUP_TEXTURE_2D = 2;              \n"
@@ -229,7 +264,7 @@ namespace GLUP {
     "    return texture2D(samp, uv);                 \n"
     "}                                               \n"
 #else
-    "#version 330                                    \n"
+    "#version 150 core                               \n"
     "out vec4 glup_FragColor;                        \n"
     "vec4 glup_texture(                              \n"
     "    in sampler2D samp, in vec2 uv               \n"
@@ -242,7 +277,7 @@ namespace GLUP {
 
     static const char* vshader_header =
 #ifndef GEO_OS_EMSCRIPTEN
-    "#version 330 \n"    
+    "#version 150 core \n"    
 #endif        
     "  "
     ;
@@ -322,10 +357,6 @@ namespace GLUP {
             GLUP::vertex_array_emulate = true;
         }
 
-#ifdef GLUP_DEBUG        
-        GLUP::vertex_array_emulate = true;
-#endif
-
         Logger::out("GLUP") 
             << "GL_OES_standard_derivatives: "
             << GL_OES_standard_derivatives_
@@ -343,6 +374,9 @@ namespace GLUP {
             
         create_CPU_side_uniform_buffer();
 
+
+        /************** VAOs and VBOs for whole cells clipping ******/
+        
         //   Compute the maximum number of elements required to draw
         // the vertices in a buffer, for all types of volumetric
         // primitives.
@@ -363,13 +397,54 @@ namespace GLUP {
 
         glGenBuffers(1, &clip_cells_elements_VBO_);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, clip_cells_elements_VBO_);
+
         update_buffer_object(
             clip_cells_elements_VBO_,
+            GL_ELEMENT_ARRAY_BUFFER,
+            max_nb_elements * sizeof(Numeric::uint32),
+            nil // no need to copy the buffer, it will be overwritten after.
+        );
+        
+        glupBindVertexArray(0);
+        
+        /************** VAOs and VBOs for sliced cells clipping ******/
+
+        max_nb_elements = 6;
+        index_t max_nb_vertices = 12;
+        
+        glupGenVertexArrays(1,&sliced_cells_VAO_);
+        glupBindVertexArray(sliced_cells_VAO_);
+
+        glGenBuffers(1, &sliced_cells_elements_VBO_);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sliced_cells_elements_VBO_);
+
+        update_buffer_object(
+            sliced_cells_elements_VBO_,
             GL_ELEMENT_ARRAY_BUFFER,
             max_nb_elements * sizeof(Numeric::uint16),
             nil // no need to copy the buffer, it will be overwritten after.
         );
         
+        for(index_t i=0; i<3; ++i) {
+            glGenBuffers(1, &sliced_cells_vertex_attrib_VBO_[i]);
+            glBindBuffer(GL_ARRAY_BUFFER, sliced_cells_vertex_attrib_VBO_[i]);
+
+            update_buffer_object(
+                sliced_cells_vertex_attrib_VBO_[i],
+                GL_ARRAY_BUFFER,
+                max_nb_vertices * sizeof(Numeric::float32) * 4,
+                nil // no need to copy the buffer, it will be overwritten after.
+            );
+            
+            glVertexAttribPointer(
+                i,
+                4,
+                GL_FLOAT, GL_FALSE,
+                0,
+                0
+            );
+        }
+        glEnableVertexAttribArray(0);
         glupBindVertexArray(0);
     }
 
@@ -377,15 +452,25 @@ namespace GLUP {
         nb_clip_cells_elements_(0),
         clip_cells_elements_(nil),        
         clip_cells_elements_VBO_(0),
-        clip_cells_VAO_(0) {
+        clip_cells_VAO_(0),
+        sliced_cells_elements_VBO_(0),
+        sliced_cells_VAO_(0) {
         GL_OES_standard_derivatives_ = false;        
         GL_OES_vertex_array_object_ = false;
         GL_EXT_frag_depth_ = false;
+        for(index_t i=0; i<3; ++i) {
+            sliced_cells_vertex_attrib_VBO_[i] = 0;
+        }
+        uses_mesh_tex_coord_ = true;        
     }
     
     Context_ES2::~Context_ES2() {
         glDeleteBuffers(1,&clip_cells_elements_VBO_);
         glupDeleteVertexArrays(1, &clip_cells_VAO_);
+        for(index_t i=0; i<3; ++i) {
+            glDeleteBuffers(1, &sliced_cells_vertex_attrib_VBO_[i]);
+        }
+        glupDeleteVertexArrays(1, &sliced_cells_VAO_);
         delete[] clip_cells_elements_;
     }
     
@@ -397,20 +482,36 @@ namespace GLUP {
     }
 
     void Context_ES2::do_update_uniform_buffer() {
+        GEO_CHECK_GLUP();
+        
         if(!uniform_buffer_dirty_) {
             return;
         }
 
+        GEO_CHECK_GLUP();
+        
         if(matrices_dirty_) {
             update_matrices();
         }
 
+        GEO_CHECK_GLUP();
+        
         if(lighting_dirty_) {
             update_lighting();
         }
+
+        GEO_CHECK_GLUP();
         
         glUseProgram(latest_program_);
-        copy_uniform_state_to_current_program();
+
+        GEO_CHECK_GLUP();
+
+        if(latest_program_ != 0) {
+            copy_uniform_state_to_current_program();
+        }
+        
+        GEO_CHECK_GLUP();
+        
         uniform_buffer_dirty_ = false;
     }
 
@@ -554,7 +655,7 @@ namespace GLUP {
             );
             glUniform4fv(loc, 1, uniform_state_.clip_plane.get_pointer());
             loc = glGetUniformLocation(
-                latest_program_, "GLUP.world_clip_plane"
+                latest_program_, "GLUP_VS.world_clip_plane"
             );
             glUniform4fv(loc, 1, uniform_state_.world_clip_plane.get_pointer());
         }
@@ -570,20 +671,21 @@ namespace GLUP {
         "attribute vec4 tex_coord_in;                          \n"
         "varying vec4 color;                                   \n"
         "varying vec4 tex_coord;                               \n"
-        "varying vec3 vertex_clip_space;                       \n"
+        "varying float clip_dist;                              \n"
 #else
-        "in vec4 vertex_in;                                \n"
-        "in vec4 color_in;                                 \n"
-        "in vec4 tex_coord_in;                             \n"
-        "out vec4 color;                                   \n"
-        "out vec4 tex_coord;                               \n"
-        "out vec3 vertex_clip_space;                       \n"
+        "in vec4 vertex_in;                                    \n"
+        "in vec4 color_in;                                     \n"
+        "in vec4 tex_coord_in;                                 \n"
+        "out vec4 color;                                       \n"
+        "out vec4 tex_coord;                                   \n"
+        "out float clip_dist;                                  \n"
 #endif
         
         "void main() {                                         \n"
-        "   if(maybe_clipping_enabled()) {                     \n"        
-        "      vertex_clip_space =                             \n"
-        "          (GLUP_VS.modelview_matrix * vertex_in).xyz; \n"
+        "   if(maybe_clipping_enabled()) {                     \n"
+        "      clip_dist = dot(                                \n"
+        "          vertex_in, GLUP_VS.world_clip_plane         \n"
+        "      );                                              \n"
         "   }                                                  \n"
         "   if(maybe_vertex_colors_enabled()) {                \n"
         "       color = color_in;                              \n"
@@ -613,27 +715,20 @@ namespace GLUP {
 #ifdef GEO_OS_EMSCRIPTEN        
         "varying vec4 color;                                           \n"
         "varying vec4 tex_coord;                                       \n"
-        "varying vec3 vertex_clip_space;                               \n"
+        "varying float clip_dist;                                      \n"
 #else
         "in vec4 color;                                                \n"
         "in vec4 tex_coord;                                            \n"
-        "in vec3 vertex_clip_space;                                    \n"
+        "in float clip_dist;                                           \n"
 #endif        
         "void main() {                                                 \n"
-        "   if(                                                        \n"
-        "     clipping_enabled() &&                                    \n"
-        "     dot(                                                     \n"
-        "       vec4(vertex_clip_space,1.0),                           \n"
-        "       GLUP.clip_plane                                        \n"
-        "     ) < 0.0                                                  \n"
-        "   ) {                                                        \n"
+        "   if(clipping_enabled() && (clip_dist < 0.0)) {              \n"
         "      discard;                                                \n"
         "   }                                                          \n"
         "   if(vertex_colors_enabled()) {                              \n"
         "      glup_FragColor = color;                                 \n"
         "   } else {                                                   \n"
-        "      glup_FragColor = gl_FrontFacing ?                       \n"
-        "         GLUP.front_color : GLUP.back_color;                  \n"
+        "      glup_FragColor = GLUP.front_color;                      \n"
         "   }                                                          \n"
         "   if(texturing_enabled()) {                                  \n"
         "      vec4 tex_color;                                         \n"
@@ -722,24 +817,25 @@ namespace GLUP {
 
     static const char* lines_vshader_source =
 #ifdef GEO_OS_EMSCRIPTEN        
-        "attribute vec4 vertex_in;                             \n"
-        "attribute vec4 color_in;                              \n"
-        "attribute vec4 tex_coord_in;                          \n"
-        "varying vec4 color;                                   \n"
-        "varying vec4 tex_coord;                               \n"
-        "varying vec3 vertex_clip_space;                       \n"
+        "attribute vec4 vertex_in;                         \n"
+        "attribute vec4 color_in;                          \n"
+        "attribute vec4 tex_coord_in;                      \n"
+        "varying vec4 color;                               \n"
+        "varying vec4 tex_coord;                           \n"
+        "varying float clip_dist;                          \n"
 #else
         "in vec4 vertex_in;                                \n"
         "in vec4 color_in;                                 \n"
         "in vec4 tex_coord_in;                             \n"
         "out vec4 color;                                   \n"
         "out vec4 tex_coord;                               \n"
-        "out vec3 vertex_clip_space;                       \n"
+        "out float clip_dist;                              \n"
 #endif        
         "void main() {                                           \n"
         "   if(maybe_clipping_enabled()) {                       \n"
-        "      vertex_clip_space =                               \n"
-        "          (GLUP_VS.modelview_matrix * vertex_in).xyz;   \n"
+        "      clip_dist = dot(                                  \n"
+        "          vertex_in, GLUP_VS.world_clip_plane           \n"
+        "      );                                                \n"
         "   }                                                    \n"
         "   if(maybe_vertex_colors_enabled()) {                  \n"
         "       color = color_in;                                \n"
@@ -756,27 +852,20 @@ namespace GLUP {
 #ifdef GEO_OS_EMSCRIPTEN        
         "varying vec4 color;                                           \n"
         "varying vec4 tex_coord;                                       \n"
-        "varying vec3 vertex_clip_space;                               \n"
+        "varying float clip_dist;                                      \n"
 #else
         "in vec4 color;                                                \n"
         "in vec4 tex_coord;                                            \n"
-        "in vec3 vertex_clip_space;                                    \n"
+        "in float clip_dist;                                           \n"
 #endif        
         "void main() {                                                 \n"
-        "   if(                                                        \n"
-        "     clipping_enabled() &&                                    \n"
-        "     dot(                                                     \n"
-        "       vec4(vertex_clip_space,1.0),                           \n"
-        "       GLUP.clip_plane                                        \n"
-        "     ) < 0.0                                                  \n"
-        "   ) {                                                        \n"
+        "   if(clipping_enabled() && (clip_dist < 0.0)) {              \n"
         "      discard;                                                \n"
         "   }                                                          \n"
         "   if(vertex_colors_enabled()) {                              \n"
         "      glup_FragColor = color;                                 \n"
         "   } else {                                                   \n"
-        "      glup_FragColor = gl_FrontFacing ?                       \n"
-        "         GLUP.front_color : GLUP.back_color;                  \n"
+        "      glup_FragColor = GLUP.front_color;                      \n"
         "   }                                                          \n"
         "   if(texturing_enabled()) {                                  \n"
         "      vec4 tex_color;                                         \n"
@@ -841,7 +930,8 @@ namespace GLUP {
         "attribute vec4 color_in;                              \n"
         "attribute vec4 tex_coord_in;                          \n"
         "attribute vec4 mesh_tex_coord_in;                     \n"
-        "varying vec3 vertex_clip_space;                       \n"        
+        "varying vec3 vertex_clip_space;                       \n"
+        "varying float clip_dist;                              \n"        
         "varying vec4 color;                                   \n"
         "varying vec4 tex_coord;                               \n"
         "varying vec4 mesh_tex_coord;                          \n"
@@ -850,15 +940,20 @@ namespace GLUP {
         "in vec4 color_in;                                     \n"
         "in vec4 tex_coord_in;                                 \n"
         "in vec4 mesh_tex_coord_in;                            \n"
-        "out vec3 vertex_clip_space;                           \n"        
+        "out vec3 vertex_clip_space;                           \n"
+        "out float clip_dist;                                  \n"
         "out vec4 color;                                       \n"
         "out vec4 tex_coord;                                   \n"
         "out vec4 mesh_tex_coord;                              \n"
 #endif        
 
         "void main() {                                         \n"
-        "   if(maybe_clipping_enabled() ||                     \n"
-        "      maybe_lighting_enabled()) {                     \n"        
+        "   if(maybe_clipping_enabled()) {                     \n"
+        "      clip_dist = dot(                                \n"
+        "          vertex_in, GLUP_VS.world_clip_plane         \n"
+        "      );                                              \n"
+        "   }                                                  \n"
+        "   if(maybe_lighting_enabled()) {                     \n"        
         "      vertex_clip_space =                             \n"
         "         (GLUP_VS.modelview_matrix * vertex_in).xyz;  \n"
         "   }                                                  \n"
@@ -877,13 +972,10 @@ namespace GLUP {
         ;
 
     static const char* polygons_fragment_clipping =
-        "void clip_fragment(in vec3 clip_space) {     \n"
+        "void clip_fragment(in float dist) {          \n"
         "   if(                                       \n"
         "     clipping_enabled() &&                   \n"
-        "     dot(                                    \n"
-        "       vec4(clip_space,1.0),                 \n"
-        "       GLUP.clip_plane                       \n"
-        "     ) < 0.0                                 \n"
+        "       dist < 0.0                            \n"
         "   ) {                                       \n"
         "      discard;                               \n"
         "   }                                         \n"
@@ -891,15 +983,12 @@ namespace GLUP {
         ;
 
     static const char* polyhedra_fragment_clipping =
-        "void clip_fragment(in vec3 clip_space) {     \n"
+        "void clip_fragment(in float dist) {          \n"
         "   if(                                       \n"
         "     clipping_enabled() &&                   \n"
         "     GLUP.clipping_mode ==                   \n"
         "                       GLUP_CLIP_STANDARD && \n"
-        "     dot(                                    \n"
-        "       vec4(clip_space,1.0),                 \n"
-        "       GLUP.clip_plane                       \n"
-        "     ) < 0.0                                 \n"
+        "          dist < 0.0                         \n"
         "   ) {                                       \n"
         "      discard;                               \n"
         "   }                                         \n"
@@ -920,17 +1009,19 @@ namespace GLUP {
     static const char* polygons_fshader_source =
 #ifdef GEO_OS_EMSCRIPTEN        
         "varying vec3 vertex_clip_space;              \n"
+        "varying float clip_dist;                     \n"
         "varying vec4 color;                          \n"
         "varying vec4 tex_coord;                      \n"
         "varying vec4 mesh_tex_coord;                 \n"
 #else
         "in vec3 vertex_clip_space;                   \n"
+        "in float clip_dist;                          \n"
         "in vec4 color;                               \n"
         "in vec4 tex_coord;                           \n"
         "in vec4 mesh_tex_coord;                      \n"
 #endif        
         "void main() {                                \n"
-        "   clip_fragment(vertex_clip_space);         \n"
+        "   clip_fragment(clip_dist);                 \n"
         "   if(vertex_colors_enabled()) {             \n"
         "      glup_FragColor = color;                \n"
         "   } else {                                  \n"
@@ -965,7 +1056,11 @@ namespace GLUP {
         "      spec = pow(spec,30.0);                                  \n"
         "      output_lighting(diff,spec);                             \n"
         "   }                                                          \n"
-        "   if(draw_mesh_enabled()) {                                  \n"
+        "   if(                                                        \n"
+        "      draw_mesh_enabled() &&                                  \n"
+        "        (!clipping_enabled() ||                               \n"
+        "         GLUP.clipping_mode != GLUP_CLIP_SLICE_CELLS)         \n"
+        "    ) {                                                       \n"
         "       glup_FragColor = mix(                                  \n"
         "            GLUP.mesh_color,                                  \n"
         "            glup_FragColor,                                   \n"
@@ -1243,14 +1338,22 @@ namespace GLUP {
 
 /*****************************************************************************/
 
-    // Draw mesh not implemented for prisms and pyramids because
-    // I did not find yet a nice way of defining barycentric
-    // coordinates that I could interpret in the shader.
-    
-    static const char* no_edge_factor_source =
-        " float edge_factor(in vec4 bary) {    \n"
-        "    return 1.0;                       \n"
-        " }                                    \n"
+    static const char* prism_edge_factor_source =
+        " float edge_factor(in vec4 bary) {                             \n"
+        "   vec4 bary2 = vec4(bary.x, bary.y, bary.z, 1.0 - bary.w);    \n"
+        "   float e1 = cell_edge_factor(bary.xw);                       \n"
+        "   float e2 = cell_edge_factor(bary.yw);                       \n"
+        "   float e3 = cell_edge_factor(bary.zw);                       \n"
+        "   float e4 = cell_edge_factor(bary2.xw);                      \n"
+        "   float e5 = cell_edge_factor(bary2.yw);                      \n"
+        "   float e6 = cell_edge_factor(bary2.zw);                      \n"
+        "   float e7 = cell_edge_factor(bary.xy);                       \n"
+        "   float e8 = cell_edge_factor(bary.yz);                       \n"
+        "   float e9 = cell_edge_factor(bary.zx);                       \n"
+        "   return min(min3(e7,e8,e9),                                  \n"
+        "              min3(min(e1,e2),min(e3,e4),min(e5,e6))           \n"
+        "          );                                                   \n"
+        " }                                                             \n"
         ;
     
     void Context_ES2::setup_GLUP_PRISMS() {
@@ -1262,6 +1365,15 @@ namespace GLUP {
             1,4,5, 1,5,2
         };
 
+        static GLUPfloat tex_coords[32] = {
+            1.0f, 0.0f, 0.0f, 0.0f,            
+            0.0f, 1.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 1.0f, 0.0f,
+            1.0f, 0.0f, 0.0f, 1.0f,            
+            0.0f, 1.0f, 0.0f, 1.0f,
+            0.0f, 0.0f, 1.0f, 1.0f
+        };
+        
         GLuint vshader = GLSL::compile_shader(
             GL_VERTEX_SHADER,
             vshader_header,            
@@ -1279,7 +1391,7 @@ namespace GLUP {
             glup_constants,
             toggles_declaration(),
             fshader_utils,
-            no_edge_factor_source,
+            prism_edge_factor_source,
             polyhedra_fragment_clipping,                                    
             polygons_fshader_source,
             0
@@ -1294,10 +1406,21 @@ namespace GLUP {
         
         set_primitive_info_immediate_index_mode(
             GLUP_PRISMS, GL_TRIANGLES, program,
-            24, element_indices
+            24, element_indices, tex_coords
         );        
     }
 
+    /************************************************************************/
+
+    // Draw mesh not implemented for pyramids because
+    // I did not find yet a nice way of defining barycentric
+    // coordinates that I could interpret in the shader.
+    
+    static const char* no_edge_factor_source =
+        " float edge_factor(in vec4 bary) {    \n"
+        "    return 1.0;                       \n"
+        " }                                    \n"
+        ;
 
     void Context_ES2::setup_GLUP_PYRAMIDS() {
         static index_t element_indices[18] = {
@@ -1408,6 +1531,26 @@ namespace GLUP {
         );
     }
 
+    bool Context_ES2::sliced_cells_clipping() const {
+        if(!uniform_state_.toggle[GLUP_CLIPPING].get()) {
+            return false;
+        }
+
+        if(
+            immediate_state_.primitive() != GLUP_TETRAHEDRA &&
+            immediate_state_.primitive() != GLUP_HEXAHEDRA &&
+            immediate_state_.primitive() != GLUP_PRISMS &&
+            immediate_state_.primitive() != GLUP_PYRAMIDS &&
+            immediate_state_.primitive() != GLUP_CONNECTORS 
+        ) {
+            return false;
+        }
+        
+        return (
+            uniform_state_.clipping_mode.get() == GLUP_CLIP_SLICE_CELLS 
+        );
+    }
+    
     void Context_ES2::flush_immediate_buffers_with_cell_by_cell_clipping() {
         index_t cur_vertex = 0;
         index_t cur_element_out = 0;
@@ -1497,12 +1640,103 @@ namespace GLUP {
         glDisableVertexAttribArray(3);
         immediate_state_.reset();
     }
+
+    void Context_ES2::flush_immediate_buffers_with_sliced_cells_clipping() {
+        
+        MarchingCell* marching_cell = nil;
+        switch(immediate_state_.primitive()) {
+        case GLUP_TETRAHEDRA:
+            marching_cell = &marching_tet_;
+            break;
+        case GLUP_HEXAHEDRA:
+            marching_cell = &marching_hex_;
+            break;
+        case GLUP_PRISMS:
+            marching_cell = &marching_prism_;
+            break;
+        case GLUP_PYRAMIDS:
+            marching_cell = &marching_pyramid_;
+            break;
+        case GLUP_CONNECTORS:
+            marching_cell = &marching_connector_;
+            break;
+        case GLUP_POINTS:
+        case GLUP_LINES:
+        case GLUP_TRIANGLES:
+        case GLUP_QUADS:
+        case GLUP_NB_PRIMITIVES:
+            geo_assert_not_reached;
+        }
+
+        glupBindVertexArray(sliced_cells_VAO_);
+
+        index_t v0=0;
+        while(v0 < immediate_state_.nb_vertices()) {
+            index_t config = get_config(v0, marching_cell->nb_vertices());
+
+            //   Compute all the intersection vertices (plus their
+            // attributes if enabled).
+            for(index_t i=0; i<marching_cell->config_size(config); ++i) {
+                index_t e = marching_cell->config_edges(config)[i];
+                compute_intersection(
+                    v0+marching_cell->edge_vertex(e,0),
+                    v0+marching_cell->edge_vertex(e,1),
+                    e
+                );
+            }
+
+            if(marching_cell->config_size(config) != 0) {
+                
+                stream_buffer_object(
+                    sliced_cells_elements_VBO_,
+                    GL_ELEMENT_ARRAY_BUFFER,
+                    marching_cell->max_config_size() * sizeof(Numeric::uint32),
+                    marching_cell->config_edges(config)
+                );
+
+                stream_buffer_object(
+                    sliced_cells_vertex_attrib_VBO_[0],
+                    GL_ARRAY_BUFFER,
+                    12 * sizeof(Numeric::float32) * 4,
+                    &isect_vertex_attribute_[0][0]
+                );
+
+                for(index_t i=1; i<3; ++i) {
+                    if(immediate_state_.buffer[i].is_enabled()) {
+                        glEnableVertexAttribArray(i);
+                        stream_buffer_object(
+                            sliced_cells_vertex_attrib_VBO_[i],
+                            GL_ARRAY_BUFFER,
+                            12 * sizeof(Numeric::float32) * 4,
+                            &isect_vertex_attribute_[i][0]
+                        );
+                    } else {
+                        glDisableVertexAttribArray(i);
+                    }
+                }
+
+                glDrawElements(
+                    GL_TRIANGLE_FAN,
+                    GLsizei(marching_cell->config_size(config)), 
+                    GL_UNSIGNED_INT,
+                    0
+                );
+            }
+            
+            v0 += marching_cell->nb_vertices();
+        }
+        
+        glupBindVertexArray(0);        
+        immediate_state_.reset();
+    }
     
     void Context_ES2::flush_immediate_buffers() {
         classify_vertices_in_immediate_buffers();        
         shrink_cells_in_immediate_buffers();
         if(cell_by_cell_clipping()) {
             flush_immediate_buffers_with_cell_by_cell_clipping();            
+        } else if(sliced_cells_clipping()) {
+            flush_immediate_buffers_with_sliced_cells_clipping();
         } else {
             Context::flush_immediate_buffers();            
         }

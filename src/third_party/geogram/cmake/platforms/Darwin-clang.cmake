@@ -33,8 +33,8 @@ add_flags(CMAKE_C_FLAGS_RELEASE -D_FORTIFY_SOURCE=2)
 add_flags(CMAKE_CXX_FLAGS -msse3)
 add_flags(CMAKE_C_FLAGS -msse3)
 
-# C++98 standard
-add_flags(CMAKE_CXX_FLAGS -Qunused-arguments -std=c++98)
+# C++11 standard
+add_flags(CMAKE_CXX_FLAGS -Qunused-arguments -std=c++11 -Wno-c++98-compat)
 
 # Enable glibc parallel mode
 #add_flags(CMAKE_CXX_FLAGS -D_GLIBCXX_PARALLEL)

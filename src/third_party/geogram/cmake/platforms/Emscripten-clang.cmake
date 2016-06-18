@@ -45,8 +45,10 @@ if(VORPALINE_WITH_CLANGSA)
 endif()
 
 #opengl flags
-# -s FULL_ES2=1 -s LEGACY_GL_EMULATION=1 -s FORCE_ALIGNED_MEMORY=1 
+#-s FORCE_ALIGNED_MEMORY=1 
 #https://kripken.github.io/emscripten-site/docs/optimizing/Optimizing-Code.html
+#-s ALLOW_MEMORY_GROWTH=1
+#-s TOTAL_MEMORY=256000000
 set(EM_FLAGS -O2 -s USE_GLFW=3 -s TOTAL_MEMORY=256000000 )
 
 # Add static and dynamic bounds checks (optimization required)

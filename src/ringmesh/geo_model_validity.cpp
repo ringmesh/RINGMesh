@@ -47,6 +47,7 @@
 #include <geogram/basic/geometry_nd.h>
 #include <geogram/basic/logger.h>
 #include <geogram/basic/string.h>
+#include <geogram/basic/command_line.h>
 
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_AABB.h>
@@ -59,6 +60,7 @@
 
 #include <geogram/points/colocate.h>
 
+#include <ringmesh/mesh.h>
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_api.h>
 #include <ringmesh/geogram_extension.h>
@@ -74,12 +76,11 @@
 
 namespace {
 
-    using namespace GEO ;
     using namespace RINGMesh ;
     using GEO::index_t ;
     using GEO::vec3 ;
 
-    typedef GeoModelMeshElement GMME ;
+    typedef GeoModelMeshEntity GMME ;
 
     /*---------------------------------------------------------------------------*/
     /*----- Some pieces of the code below are copied or modified from -----------*/
@@ -124,10 +125,10 @@ namespace {
      *  otherwise
      */
     bool triangles_intersect(
-        const Mesh& M,
+        const GEO::Mesh& M,
         index_t f1,
         index_t f2,
-        vector< TriangleIsect >& sym )
+        GEO::vector< GEO::TriangleIsect >& sym )
     {
         ringmesh_assert( M.facets.nb_vertices( f1 ) == 3 ) ;
         ringmesh_assert( M.facets.nb_vertices( f2 ) == 3 ) ;
@@ -168,7 +169,7 @@ namespace {
         index_t lv1 = NO_ID ;
 
         // No sorting to optimize since 
-        // v0_bme and v1_bme are very small sets ( < 10 elements ) [JP]
+        // v0_bme and v1_bme are very small sets ( < 10 entities ) [JP]
         for( index_t i = 0; i < v0_bme.size(); ++i ) {
             if( v0_bme[i].gme_id.type == GME::LINE ) {
                 for( index_t j = 0; j < v1_bme.size(); ++j ) {
@@ -241,7 +242,7 @@ namespace {
      *
      */
     bool facets_share_line_edge(
-        const Mesh& M,
+        const GEO::Mesh& M,
         const GeoModel& BM,
         index_t f1,
         index_t f2 )
@@ -297,7 +298,7 @@ namespace {
      * \return true if facets \p f1 and \p f2 share an edge, false
      *  otherwise
      */
-    bool facets_are_adjacent( const Mesh& M, index_t f1, index_t f2 )
+    bool facets_are_adjacent( const GEO::Mesh& M, index_t f1, index_t f2 )
     {
         if( f1 == f2 ) {
             return true ;
@@ -324,9 +325,9 @@ namespace {
          *  whether it has intersections
          */
         StoreIntersections(
-            const Mesh& M,
+            const GEO::Mesh& M,
             const GeoModel& BM,
-            vector< index_t >& has_isect )
+            GEO::vector< index_t >& has_isect )
             : M_( M ), BM_( BM ), has_intersection_( has_isect )
         {
             has_intersection_.assign( M.facets.nb(), 0 ) ;
@@ -349,24 +350,33 @@ namespace {
         }
 
     private:
-        const Mesh& M_ ;
+        const GEO::Mesh& M_ ;
         const GeoModel& BM_ ;
-        vector< index_t >& has_intersection_ ;
-        vector< TriangleIsect > sym_ ;
+        GEO::vector< index_t >& has_intersection_ ;
+        GEO::vector< GEO::TriangleIsect > sym_ ;
     } ;
+
+    void save_mesh_locating_geomodel_inconsistencies(
+        const GEO::Mesh& mesh,
+        const std::ostringstream& file )
+    {
+        if( GEO::CmdLine::get_arg_bool( "in:validity_save" ) ) {
+            GEO::mesh_save( mesh, file.str() ) ;
+        }
+    }
 
     /** \note Copied from geogram
      * \brief Detect intersecting facets in a TRIANGULATED mesh
      * \param[in] M the mesh
      * \return number of intersecting facets
      */
-    index_t detect_intersecting_facets( const GeoModel& model, Mesh& M )
+    index_t detect_intersecting_facets( const GeoModel& model, GEO::Mesh& M )
     {
         geo_assert( M.vertices.dimension() >= 3 ) ;
 
-        vector< index_t > has_intersection ;
+        GEO::vector< index_t > has_intersection ;
         StoreIntersections action( M, model, has_intersection ) ;
-        MeshFacetsAABB AABB( M ) ;
+        GEO::MeshFacetsAABB AABB( M ) ;
         AABB.compute_facet_bbox_intersections( action ) ;
 
         index_t nb_intersections = static_cast< index_t >( std::count(
@@ -387,7 +397,7 @@ namespace {
             }
             std::ostringstream file ;
             file << validity_errors_directory << "/intersected_facets.mesh" ;
-            GEO::mesh_save( mesh, file.str() ) ;
+            save_mesh_locating_geomodel_inconsistencies( mesh, file ) ;
             GEO::Logger::out( "I/O" ) << std::endl ;
         }
         return nb_intersections ;
@@ -449,11 +459,10 @@ namespace {
         return nb_new_vertices != M.vertices.nb() ;
     }
 
- 
     /*----------------------------------------------------------------------------*/
 
     /*!
-     * @brief Get the GMME defining the boundaries of an element
+     * @brief Get the GMME defining the boundaries of an entity
      */
     void boundary_gmme(
         const GME& E,
@@ -467,7 +476,7 @@ namespace {
             return ;
         }
         if( GME::parent_allowed( T ) ) {
-            // We are dealing with basic elements 
+            // We are dealing with basic entities 
             for( index_t i = 0; i < E.nb_boundaries(); ++i ) {
                 if( with_inside_borders
                     || ( !with_inside_borders
@@ -491,9 +500,9 @@ namespace {
     }
 
     /*!
-     * @brief Get the elements in the boundary of which @param E is
+     * @brief Get the entities in the boundary of which @param E is
      * @details For GMME, get the contents of the in_boundary vector
-     *          For high level elements, determine in_boundary high level elements
+     *          For high level entities, determine in_boundary high level entities
      */
     void in_boundary_gme( const GME& E, std::vector< GME::gme_t >& in_boundary )
     {
@@ -504,12 +513,12 @@ namespace {
             return ;
         }
         if( GME::parent_allowed( T ) ) {
-            // We are dealing with basic elements 
+            // We are dealing with basic entities 
             for( index_t i = 0; i < E.nb_in_boundary(); ++i ) {
                 in_boundary.push_back( E.in_boundary_gme( i ) ) ;
             }
         } else {
-            // We are dealing with high level elements
+            // We are dealing with high level entities
             // Need to go through the children to get information
             for( index_t i = 0; i < E.nb_children(); ++i ) {
                 for( index_t j = 0; j < E.child( i ).nb_in_boundary(); ++j ) {
@@ -523,11 +532,11 @@ namespace {
     }
 
     /*!
-     * @brief Build a Mesh from the boundaries of the given element
+     * @brief Build a Mesh from the boundaries of the given entity
      * @details Inside borders are ignored. Adjacencies are not set.
      * Client should call mesh repair functions afterwards.
      */
-    void mesh_from_element_boundaries( const GME& E, Mesh& M )
+    void mesh_from_entity_boundaries( const GME& E, GEO::Mesh& M )
     {
         M.clear() ;
 
@@ -540,13 +549,13 @@ namespace {
             if( borders.empty() ) {
                 return ;
             } else {
-                const index_t nb_borders = static_cast<index_t> ( borders.size() ) ;
+                const index_t nb_borders = static_cast< index_t >( borders.size() ) ;
                 if( T == GME::LINE || T == GME::CONTACT ) {
                     // There are only points to add
                     M.vertices.create_vertices( nb_borders ) ;
                     for( index_t i = 0; i < nb_borders; ++i ) {
                         M.vertices.point( i ) =
-                            E.model().mesh_element( borders[i] ).vertex() ;
+                            E.model().mesh_entity( borders[i] ).vertex( 0 ) ;
                     }
                 } else {
                     // Put an attribute on the ModelVertices to know its index
@@ -559,7 +568,7 @@ namespace {
 
                     // Add the vertices 
                     for( index_t i = 0; i < nb_borders; ++i ) {
-                        const GMME& b = model.mesh_element( borders[i] ) ;
+                        const GMME& b = model.mesh_entity( borders[i] ) ;
                         for( index_t v = 0; v < b.nb_vertices(); ++v ) {
                             index_t global_v = b.model_vertex_id( v ) ;
                             if( old2new[global_v] == NO_ID ) {
@@ -574,15 +583,14 @@ namespace {
                         for( index_t i = 0; i < nb_borders; ++i ) {
                             ringmesh_assert( borders[i].type == GME::LINE ) ;
                             const Line& L = model.line( borders[i].index ) ;
-                            index_t off = M.edges.create_edges(
-                                L.mesh().edges.nb() ) ;
-                            for( index_t e = 0; e < L.mesh().edges.nb(); ++e ) {
+                            index_t off = M.edges.create_edges( L.nb_mesh_elements() ) ;
+                            for( index_t e = 0; e < L.nb_mesh_elements(); ++e ) {
                                 M.edges.set_vertex( off + e, 0,
                                     old2new[L.model_vertex_id(
-                                        L.mesh().edges.vertex( e, 0 ) )] ) ;
+                                        L.mesh_element_vertex_index( e, 0 ) )] ) ;
                                 M.edges.set_vertex( off + e, 1,
                                     old2new[L.model_vertex_id(
-                                        L.mesh().edges.vertex( e, 1 ) )] ) ;
+                                        L.mesh_element_vertex_index( e, 1 ) )] ) ;
                             }
                         }
 
@@ -591,8 +599,8 @@ namespace {
                         for( index_t i = 0; i < nb_borders; ++i ) {
                             ringmesh_assert( borders[i].type == GME::SURFACE ) ;
                             const Surface& S = model.surface( borders[i].index ) ;
-                            for( index_t f = 0; f < S.nb_cells(); ++f ) {
-                                index_t nbv = S.nb_vertices_in_facet( f ) ;
+                            for( index_t f = 0; f < S.nb_mesh_elements(); ++f ) {
+                                index_t nbv = S.nb_mesh_element_vertices( f ) ;
                                 GEO::vector< index_t > ids( nbv ) ;
                                 for( index_t v = 0; v < nbv; ++v ) {
                                     ids[v] = old2new[S.model_vertex_id( f, v )] ;
@@ -613,10 +621,10 @@ namespace {
      * @details Builds a GEO::Mesh from the surface meshes, repairs it and analyses it.
      * @todo Put this function in Region class
      */
-    bool is_region_valid( const GeoModelElement& region )
+    bool is_region_valid( const GeoModelEntity& region )
     {
         if( region.type() != GME::REGION ) {
-            GEO::Logger::err( "GeoModel" ) << " Incorrect element type "
+            GEO::Logger::err( "GeoModel" ) << " Incorrect entity type "
                 << GME::type_name( region.type() ) << " for " << region.gme_id()
                 << std::endl ;
             return false ;
@@ -626,9 +634,9 @@ namespace {
                 << " has no boundary Surface" << std::endl ;
             return false ;
         } else {
-            Mesh mesh ;
+            GEO::Mesh mesh ;
             GEO::Logger::instance()->set_quiet( true ) ;
-            mesh_from_element_boundaries( region, mesh ) ;
+            mesh_from_entity_boundaries( region, mesh ) ;
             GEO::mesh_repair( mesh ) ;
             GEO::Logger::instance()->set_quiet( false ) ;
 
@@ -651,7 +659,7 @@ namespace {
                 std::ostringstream file ;
                 file << validity_errors_directory << "/boundary_surface_region_"
                     << region.index() << ".mesh" ;
-                GEO::mesh_save( mesh, file.str() ) ;
+                save_mesh_locating_geomodel_inconsistencies( mesh, file ) ;
                 return false ;
             } else {
                 return true ;
@@ -660,12 +668,12 @@ namespace {
     }
 
     /*!
-     * @brief Check if element @param is of the @param model is in the
-     *        in_boundary vector of element @param in.
+     * @brief Check if entity @param is of the @param model is in the
+     *        in_boundary vector of entity @param in.
      */
     bool is_in_in_boundary( const GeoModel& model, GME::gme_t is, GME::gme_t in )
     {
-        const GME& E = model.element( in ) ;
+        const GME& E = model.entity( in ) ;
         for( index_t i = 0; i < E.nb_in_boundary(); ++i ) {
             if( E.in_boundary_gme( i ) == is ) {
                 return true ;
@@ -675,26 +683,18 @@ namespace {
     }
 
     void save_invalid_points(
-        const std::string& file,
+        const std::ostringstream& file,
         const GeoModel& M,
         const std::vector< bool >& valid )
     {
-        std::ofstream out ;
-        out.open( file.c_str() ) ;
-        if( out.bad() ) {
-            GEO::Logger::err( "File" ) << "Failed to open file: " << file
-                << std::endl ;
-        } else {
-            out.precision( 16 ) ;
-            for( index_t i = 0; i < valid.size(); ++i ) {
-                if( !valid[i] ) {
-                    const vec3& V = M.mesh.vertices.vertex( i ) ;
-                    out << "v" << " " << V.x << " " << V.y << " " << V.z
-                    // Not in format file, but convenient
-                        << " model index " << i << std::endl ;
-                }
+        GEO::Mesh point_mesh ;
+        for( index_t i = 0; i < valid.size(); ++i ) {
+            if( !valid[i] ) {
+                const vec3& V = M.mesh.vertices.vertex( i ) ;
+                point_mesh.vertices.create_vertex( V.data() ) ;
             }
         }
+        save_mesh_locating_geomodel_inconsistencies( point_mesh, file ) ;
     }
 
     /*!
@@ -709,13 +709,13 @@ namespace {
     bool check_model_points_validity( const GeoModel& M )
     {
         // For all the vertices of the model 
-        // We check that the elements in which they are are consistent 
+        // We check that the entities in which they are are consistent 
         // to have a valid B-Rep model
         std::vector< bool > valid( M.mesh.vertices.nb(), true ) ;
         for( index_t i = 0; i < M.mesh.vertices.nb(); ++i ) {
             bool valid_vertex = true ;
 
-            // Get the mesh elements in which this vertex is            
+            // Get the mesh entities in which this vertex is            
             index_t corner = NO_ID ;
             std::vector< index_t > lines ;
             std::vector< index_t > surfaces ;
@@ -748,7 +748,7 @@ namespace {
                         break ;
                     default:
                         GEO::Logger::warn( "GeoModel" ) << " Vertex " << i
-                            << " is in no Element of the Model" << std::endl ;
+                            << " is in no Entity of the Model" << std::endl ;
                         valid_vertex = false ;
                         break ;
                 }
@@ -834,9 +834,9 @@ namespace {
                                     GEO::Logger::warn( "GeoModel" )
                                         << " Inconsistent Line-Surface connectivity "
                                         << " Vertex " << i << " shows that "
-                                        << M.element( s_id ).gme_id()
+                                        << M.entity( s_id ).gme_id()
                                         << " must be in the boundary of "
-                                        << M.element( l_id ).gme_id() << std::endl ;
+                                        << M.entity( l_id ).gme_id() << std::endl ;
                                     valid_vertex = false ;
                                 }
                             }
@@ -885,9 +885,9 @@ namespace {
                                 GEO::Logger::warn( "GeoModel" )
                                     << " Inconsistent Line-Corner connectivity "
                                     << " vertex " << i << " shows that "
-                                    << M.element( l_id ).gme_id()
+                                    << M.entity( l_id ).gme_id()
                                     << " must be in the boundary of "
-                                    << M.element( c_id ).gme_id() << std::endl ;
+                                    << M.entity( c_id ).gme_id() << std::endl ;
                                 valid_vertex = false ;
                             }
                         }
@@ -907,8 +907,8 @@ namespace {
 
         if( nb_invalid > 0 ) {
             std::ostringstream file ;
-            file << validity_errors_directory << "/invalid_global_vertices.pts" ;
-            save_invalid_points( file.str(), M, valid ) ;
+            file << validity_errors_directory << "/invalid_global_vertices.mesh" ;
+            save_invalid_points( file, M, valid ) ;
 
             GEO::Logger::warn( "GeoModel" ) << nb_invalid << " invalid vertices "
                 << std::endl << "Saved in file: " << file.str() << std::endl ;
@@ -919,28 +919,25 @@ namespace {
     }
 
     void save_edges(
-        const std::string& file,
+        const std::ostringstream& file,
         const GeoModel& M,
         const std::vector< index_t >& e )
     {
-        std::ofstream out( file.c_str() ) ;
-        if( out.bad() ) {
-            GEO::Logger::err( "File" ) << "Failed to open file: " << file
-                << std::endl ;
-        } else {
-            out.precision( 16 ) ;
-            GEO::Logger::out( "I/O" ) << "Saving " << file <<"...." << std::endl ;
-            
-            for( index_t i = 0; i < e.size(); ++i ) {
-                out << "v " << M.mesh.vertices.vertex( e[i] ) << std::endl ;
+        GEO::Mesh edge_mesh ;
+        index_t previous_vertex_id = NO_ID ;
+        for( index_t i = 0; i < e.size(); ++i ) {
+            index_t cur_vertex_id = edge_mesh.vertices.create_vertex(
+                M.mesh.vertices.vertex( e[i] ).data() ) ;
+            if( i % 2 == 0 ) {
+                ringmesh_assert( previous_vertex_id == NO_ID ) ;
+                previous_vertex_id = cur_vertex_id ;
+                continue ;
             }
-            for( index_t i = 0; i + 1 < e.size(); i += 2 ) {
-                out << "s " << i + 1 << " " << i + 2 << std::endl ;
-            }
-            out.close() ;
-
-            GEO::Logger::out( "I/O" ) << std::endl ;
+            ringmesh_assert( previous_vertex_id != NO_ID ) ;
+            edge_mesh.edges.create_edge( previous_vertex_id, cur_vertex_id ) ;
+            previous_vertex_id = NO_ID ;
         }
+        save_mesh_locating_geomodel_inconsistencies( edge_mesh, file ) ;
     }
 
     void save_facets(
@@ -951,13 +948,13 @@ namespace {
         GEO::Mesh mesh ;
         for( index_t f = 0; f < facets.size(); ++f ) {
             index_t cur_facet = facets[f] ;
-            index_t nb_vertices_in_facet = surface.nb_vertices_in_facet(
+            index_t nb_vertices_in_facet = surface.nb_mesh_element_vertices(
                 cur_facet ) ;
             GEO::vector< index_t > vertices ;
             vertices.reserve( nb_vertices_in_facet ) ;
             for( index_t v = 0; v < nb_vertices_in_facet; v++ ) {
                 index_t new_vertex = mesh.vertices.create_vertex(
-                    surface.vertex( cur_facet, v ).data() ) ;
+                    surface.mesh_element_vertex( cur_facet, v ).data() ) ;
                 vertices.push_back( new_vertex ) ;
             }
             mesh.facets.create_polygon( vertices ) ;
@@ -974,22 +971,22 @@ namespace {
     bool surface_boundary_valid( const Surface& S )
     {
         std::vector< index_t > invalid_corners ;
-        for( index_t f = 0; f < S.nb_cells(); ++f ) {
-            for( index_t v = 0; v < S.nb_vertices_in_facet( f ); ++v ) {
-                if( S.adjacent( f, v ) == NO_ID
+        for( index_t f = 0; f < S.nb_mesh_elements(); ++f ) {
+            for( index_t v = 0; v < S.nb_mesh_element_vertices( f ); ++v ) {
+                if( S.facet_adjacent_index( f, v ) == NO_ID
                     && !is_edge_on_line( S.model(), S.model_vertex_id( f, v ),
-                        S.model_vertex_id( f, S.next_in_facet( f, v ) ) ).is_defined() ) {
+                        S.model_vertex_id( f, S.next_facet_vertex_index( f, v ) ) ).is_defined() ) {
                     invalid_corners.push_back( S.model_vertex_id( f, v ) ) ;
                     invalid_corners.push_back(
-                        S.model_vertex_id( f, S.next_in_facet( f, v ) ) ) ;
+                        S.model_vertex_id( f, S.next_facet_vertex_index( f, v ) ) ) ;
                 }
             }
         }
         if( !invalid_corners.empty() ) {
             std::ostringstream file ;
             file << validity_errors_directory << "/invalid_boundary_surface_"
-                << S.index() << ".lin" ;
-            save_edges( file.str(), S.model(), invalid_corners ) ;
+                << S.index() << ".mesh" ;
+            save_edges( file, S.model(), invalid_corners ) ;
 
             GEO::Logger::warn( "GeoModel" ) << " Invalid surface boundary: "
                 << invalid_corners.size() / 2 << " boundary edges of " << S.gme_id()
@@ -1002,14 +999,14 @@ namespace {
     }
 
     /*!
-    * @brief Save in a .lin file the
-    */
-    void debug_save_non_manifold_edges( const GeoModel& geomodel,
-                                        const std::vector< index_t>& edge_vertices )
+     * @brief Save in a .lin file the
+     */
+    void debug_save_non_manifold_edges(
+        const GeoModel& geomodel,
+        const std::vector< index_t >& edge_vertices )
     {
-        std::string extension( "lin" ) ;
-        std::string what( "non_manifold_edges" ) ;
-        std::string file_name( validity_errors_directory +"/" + what + "." + extension ) ;
+        std::ostringstream file_name(
+            validity_errors_directory + "/non_manifold_edges.mesh" ) ;
 
         save_edges( file_name, geomodel, edge_vertices ) ;
     }
@@ -1017,8 +1014,8 @@ namespace {
     bool is_surface_conformal_to_volume( const Surface& surface, const ColocaterANN& ann )
     {
         std::vector< index_t > unconformal_facets ;
-        for( index_t f = 0; f < surface.nb_cells(); f++ ) {
-            vec3 center = surface.facet_barycenter( f ) ;
+        for( index_t f = 0; f < surface.nb_mesh_elements(); f++ ) {
+            vec3 center = surface.mesh_element_center( f ) ;
             std::vector< index_t > result ;
             if( !ann.get_colocated( center, result ) ) {
                 unconformal_facets.push_back( f ) ;
@@ -1045,10 +1042,13 @@ namespace {
      */
     class GeoModelValidityCheck {
     public:
-        GeoModelValidityCheck( const GeoModel& geomodel, bool check_surface_intersections ) :
-            geomodel_(geomodel),
-            valid_(true), 
-            check_surface_intersections_(check_surface_intersections )
+        GeoModelValidityCheck(
+            const GeoModel& geomodel,
+            bool check_surface_intersections )
+            :
+                geomodel_( geomodel ),
+                valid_( true ),
+                check_surface_intersections_( check_surface_intersections )
         {
             // Ensure that the model vertices are computed and up-to-date
             // Without that we cannot do anything        
@@ -1057,22 +1057,22 @@ namespace {
             do_check_validity() ;
         }
 
-        bool is_geomodel_valid()
+        bool is_geomodel_valid() const
         {
             return valid_ ;
         }
 
-    private:        
+    private:
         const GeoModel& geomodel() const
         {
             return geomodel_ ;
         }
 
-        void test_global_element_access()
+        void test_global_entity_access()
         {
-            index_t nb_global = geomodel().nb_elements( GME::ALL_TYPES ) ;
-            index_t sum_all_types = geomodel().nb_corners() + geomodel().nb_lines() 
-                + geomodel().nb_surfaces() + geomodel().nb_regions() 
+            index_t nb_global = geomodel().nb_entities( GME::ALL_TYPES ) ;
+            index_t sum_all_types = geomodel().nb_corners() + geomodel().nb_lines()
+                + geomodel().nb_surfaces() + geomodel().nb_regions()
                 + geomodel().nb_contacts() + geomodel().nb_interfaces()
                 + geomodel().nb_layers() ;
 
@@ -1080,13 +1080,13 @@ namespace {
                 set_invalid_model() ;
             }
         }
-        
+
         /*! 
-         * @brief Verify the validity of all GeoModelElements
+         * @brief Verify the validity of all GeoModelEntities
          */
-        void test_model_elements_validity()
+        void test_model_entities_validity()
         {
-            if( !are_geomodel_elements_valid( geomodel_ ) ) {
+            if( !are_geomodel_entities_valid( geomodel_ ) ) {
                 set_invalid_model() ;
             }
         }
@@ -1096,7 +1096,7 @@ namespace {
          */
         void test_geological_validity()
         {
-            if( geomodel().nb_interfaces() > 0 && geomodel().nb_layers() > 0 ) {                
+            if( geomodel().nb_interfaces() > 0 && geomodel().nb_layers() > 0 ) {
                 if( !is_geomodel_geology_valid( geomodel() ) ) {
                     set_invalid_model() ;
                 }
@@ -1110,7 +1110,7 @@ namespace {
         void test_finite_extension()
         {
             if( !is_region_valid( geomodel().universe() ) ) {
-                set_invalid_model() ;                
+                set_invalid_model() ;
             }
         }
         /*!
@@ -1121,7 +1121,7 @@ namespace {
          */
         void test_geometry_connectivity_consistency()
         {
-            // Check relationships between GeoModelElements
+            // Check relationships between GeoModelEntities
             // sharing the same point of the model
             if( !check_model_points_validity( geomodel() ) ) {
                 set_invalid_model() ;
@@ -1134,9 +1134,7 @@ namespace {
             }
             if( geomodel().mesh.cells.nb() > 0 ) {
                 // Check the consistency between Surface facets and Region cell facets
-                GEO::Mesh mesh ;
-                geomodel().mesh.copy_mesh( mesh ) ;
-                ColocaterANN ann( mesh, ColocaterANN::CELL_FACETS ) ;
+                const ColocaterANN& ann = geomodel().mesh.cells.cell_facet_colocater() ;
                 for( index_t i = 0; i < geomodel().nb_surfaces(); ++i ) {
                     if( !is_surface_conformal_to_volume( geomodel().surface( i ),
                         ann ) ) {
@@ -1147,18 +1145,18 @@ namespace {
         }
 
         void do_check_validity()
-        {           
-            test_global_element_access() ; 
-            test_model_elements_validity() ;            
+        {
+            test_global_entity_access() ;
+            test_model_entities_validity() ;
             test_geological_validity() ;
             test_finite_extension() ;
-            test_geometry_connectivity_consistency() ;          
+            test_geometry_connectivity_consistency() ;
             test_non_manifold_edges() ;
             if( check_surface_intersections_ ) {
                 test_facet_intersections() ;
             }
         }
-    
+
         /*! 
          * @brief Creates a Mesh from the GeoModel and triangulates it
          */
@@ -1167,50 +1165,51 @@ namespace {
             GEO::Logger::instance()->set_quiet( true ) ;
 
             bool connect_facets = false ;
-            build_mesh_from_geomodel( geomodel(),
-                triangulated_global_model_mesh_, connect_facets ) ;
-            GEO::mesh_repair( triangulated_global_model_mesh_, MESH_REPAIR_TRIANGULATE ) ;
+            build_mesh_from_geomodel( geomodel(), triangulated_global_model_mesh_,
+                connect_facets ) ;
+            GEO::mesh_repair( triangulated_global_model_mesh_,
+                GEO::MESH_REPAIR_TRIANGULATE ) ;
 
             GEO::Logger::instance()->set_quiet( false ) ;
         }
 
         /*!
-        * @brief Returns true if there are non-manifold edges that are
-        *        not in any Line of the model
-        * @note Connect the facets of the global mesh
-        * @note This is a quite expensive test.
-        */
+         * @brief Returns true if there are non-manifold edges that are
+         *        not in any Line of the model
+         * @note Connect the facets of the global mesh
+         * @note This is a quite expensive test.
+         */
         void test_non_manifold_edges()
-        {   
+        {
             create_model_mesh() ;
             std::vector< index_t > non_manifold_edges ;
-            connect_mesh_facets_except_on_mesh_edges( 
+            connect_mesh_facets_except_on_mesh_edges(
                 triangulated_global_model_mesh_, non_manifold_edges ) ;
 
             if( !non_manifold_edges.empty() ) {
-                GEO::Logger::warn( "GeoModel" ) << non_manifold_edges.size()/2
+                GEO::Logger::warn( "GeoModel" ) << non_manifold_edges.size() / 2
                     << "non-manifold edges " << std::endl ;
-                debug_save_non_manifold_edges( geomodel(), non_manifold_edges ) ;                
-                
+                debug_save_non_manifold_edges( geomodel(), non_manifold_edges ) ;
+
                 set_invalid_model() ;
             }
         }
 
         /*!
-        * @brief Returns true if there are intersections between facets
-        * @details Operates on the global mesh
-        * @note This is a very expensive test.
-        */
+         * @brief Returns true if there are intersections between facets
+         * @details Operates on the global mesh
+         * @note This is a very expensive test.
+         */
         void test_facet_intersections()
         {
-            index_t nb_intersections = detect_intersecting_facets(
-                geomodel_, triangulated_global_model_mesh_ ) ;
-            
+            index_t nb_intersections = detect_intersecting_facets( geomodel_,
+                triangulated_global_model_mesh_ ) ;
+
             if( nb_intersections > 0 ) {
                 GEO::Logger::warn( "GeoModel" ) << nb_intersections
                     << " facet intersections " << std::endl ;
-                set_invalid_model();
-            } 
+                set_invalid_model() ;
+            }
         }
 
         void set_invalid_model()
@@ -1221,11 +1220,11 @@ namespace {
     private:
         const GeoModel& geomodel_ ;
         bool valid_ ;
-        bool check_surface_intersections_;
+        bool check_surface_intersections_ ;
 
         // Global mesh of the GeoModel used for some validity checks
         GEO::Mesh triangulated_global_model_mesh_ ;
-    };
+    } ;
 
 } // anonymous namespace
 
@@ -1243,11 +1242,11 @@ namespace RINGMesh {
         }
     }
 
-    bool are_geomodel_elements_valid( const GeoModel& GM )
+    bool are_geomodel_entities_valid( const GeoModel& GM )
     {
-        std::vector< bool > valid( GM.nb_elements( GME::ALL_TYPES ), true ) ;
-        for( index_t e = 0; e < GM.nb_elements( GME::ALL_TYPES ); ++e ) {
-            const GME& E = GM.element( GME::gme_t( GME::ALL_TYPES, e ) ) ;
+        std::vector< bool > valid( GM.nb_entities( GME::ALL_TYPES ), true ) ;
+        for( index_t e = 0; e < GM.nb_entities( GME::ALL_TYPES ); ++e ) {
+            const GME& E = GM.entity( GME::gme_t( GME::ALL_TYPES, e ) ) ;
             // Verify that E points actually to this GeoModel
             if( &E.model() != &GM ) {
                 GEO::Logger::err( "GeoModel" ) << "The model stored for "
@@ -1269,7 +1268,7 @@ namespace RINGMesh {
             valid.end(), false )) ;
         if( nb_invalid != 0 ) {
             GEO::Logger::warn( "GeoModel" ) << nb_invalid
-                << " individual elements of the model are invalid " << std::endl ;
+                << " individual entities of the model are invalid " << std::endl ;
         }
         return nb_invalid == 0 ;
     }
@@ -1330,6 +1329,6 @@ namespace RINGMesh {
         }
         return valid ;
     }
-     
+ 
 
 } // namespace RINGMesh

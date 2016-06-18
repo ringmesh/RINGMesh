@@ -78,8 +78,6 @@
 
       #controls {
         display: inline-block;
-        float: right;
-        vertical-align: top;
         margin-top: 30px;
         margin-right: 20px;
       }
@@ -112,7 +110,8 @@
 <span id='controls'>
   <span>
       <input type="button" value="Fullscreen" onclick="Module.requestFullScreen(false, true)"/>
-      <input type="button" value="Show console" onclick="document.getElementById('output').style.display='block'">    
+      <input type="button" value="Show console" onclick="document.getElementById('output').style.display='block'">
+      <span>add file: <input type="file" id="wps_id" onchange="fileSelectionCallback();"/></span>       
   </span>
 </span>
 
@@ -222,6 +221,43 @@
 
 </script>
 
+<script>
+      function saveFileToMemoryFS(e) {
+          var data=e.target.result;
+          FS.createDataFile(
+             '/', e.target.current_file_name, data, true, true, true
+          );
+          Module.ccall('file_system_changed_callback');
+      }
+
+      function fileSelectionCallback() {
+          var files = document.getElementById("wps_id").files,
+          nFiles = files.length;
+          for (var nFileId = 0; nFileId < nFiles; nFileId++) {
+              var file=files[nFileId];
+              var reader = new FileReader();
+              reader.current_file_name = file.name;                            
+              reader.onload = saveFileToMemoryFS;
+              reader.readAsBinaryString(file);
+          }
+       }
+</script>
+
+<script src="FileSaver.js"> </script>
+
+<script>
+  function saveFileFromMemoryFSToDisk(name) {
+     var data=FS.readFile(name);
+     var blob;
+     var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+     if(isSafari) {
+        blob = new Blob([data.buffer], {type: "application/octet-stream"});
+     } else {
+        blob = new Blob([data.buffer], {type: "application/octet-binary"});
+     }
+     saveAs(blob, name);
+  }
+</script>
 
 <!-- DATAFILE -->
 

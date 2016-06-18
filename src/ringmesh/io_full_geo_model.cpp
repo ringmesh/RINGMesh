@@ -69,7 +69,7 @@ namespace {
     /*!
      * @brief Write in the out stream things to save for CONTACT, INTERFACE and LAYERS
      */
-    void save_high_level_bme( std::ofstream& out, const GeoModelElement& E )
+    void save_high_level_bme( std::ofstream& out, const GeoModelEntity& E )
     {
         /// First line:  TYPE - ID - NAME - GEOL
         out << E.gme_id() << " " ;
@@ -78,7 +78,7 @@ namespace {
         } else {
             out << "no_name " ;
         }
-        out << GeoModelElement::geol_name( E.geological_feature() ) << std::endl ;
+        out << GeoModelEntity::geol_name( E.geological_feature() ) << std::endl ;
 
         /// Second line:  IDS of children
         for( index_t j = 0; j < E.nb_children(); ++j ) {
@@ -103,14 +103,14 @@ namespace {
 
         for( index_t t = GME::CORNER; t < GME::REGION; t++ ) {
             GME::TYPE type = static_cast< GME::TYPE >( t ) ;
-            for( index_t e = 0; e < M.nb_elements( type ); e++ ) {
-                const GeoModelMeshElement& cur_geo_model_element = M.mesh_element(
+            for( index_t e = 0; e < M.nb_entities( type ); e++ ) {
+                const GeoModelMeshEntity& cur_geo_model_entity = M.mesh_entity(
                     type, e ) ;
-                out << "GME" << " " << cur_geo_model_element.type_name( type ) << " "
+                out << "GME" << " " << cur_geo_model_entity.type_name( type ) << " "
                     << e << std::endl ;
-                for( index_t in_b = 0; in_b < cur_geo_model_element.nb_in_boundary();
+                for( index_t in_b = 0; in_b < cur_geo_model_entity.nb_in_boundary();
                     in_b++ ) {
-                    out << cur_geo_model_element.in_boundary_gme( in_b ).index
+                    out << cur_geo_model_entity.in_boundary_gme( in_b ).index
                         << " " ;
                 }
                 out << std::endl ;
@@ -136,18 +136,18 @@ namespace {
         out << "RINGMESH BOUNDARY MODEL" << std::endl ;
         out << "NAME " << M.name() << std::endl ;
 
-        // Numbers of the different types of elements
+        // Numbers of the different types of entities
         for( index_t i = GME::CORNER; i < GME::NO_TYPE; i++ ) {
             GME::TYPE type = static_cast< GME::TYPE >( i ) ;
-            out << "NB_" << GME::type_name( type ) << " " << M.nb_elements( type )
+            out << "NB_" << GME::type_name( type ) << " " << M.nb_entities( type )
                 << std::endl ;
         }
-        // Write high-level elements
+        // Write high-level entities
         for( index_t i = GME::CONTACT; i < GME::NO_TYPE; i++ ) {
             GME::TYPE type = static_cast< GME::TYPE >( i ) ;
-            index_t nb = M.nb_elements( type ) ;
+            index_t nb = M.nb_entities( type ) ;
             for( index_t j = 0; j < nb; ++j ) {
-                save_high_level_bme( out, M.element( GME::gme_t( type, j ) ) ) ;
+                save_high_level_bme( out, M.entity( GME::gme_t( type, j ) ) ) ;
             }
         }
         // Regions
@@ -188,26 +188,26 @@ namespace {
     }
 
     bool save_mesh(
-        const GeoModelMeshElement& geo_model_element_mesh,
+        const GeoModelMeshEntity& geo_model_entity_mesh,
         const std::string& name,
         const GEO::MeshIOFlags& flags )
     {
-        if( geo_model_element_mesh.type() == GME::REGION ) {
-            const Region& region = geo_model_element_mesh.model().region(
-                geo_model_element_mesh.index() ) ;
+        if( geo_model_entity_mesh.type() == GME::REGION ) {
+            const Region& region = geo_model_entity_mesh.model().region(
+                geo_model_entity_mesh.index() ) ;
             if( !region.is_meshed() ) {
                 // a region is not necessary meshed.
                 return false ;
             }
         }
-        GEO::mesh_save( geo_model_element_mesh.mesh(), name, flags ) ;
+        geo_model_entity_mesh.save( name, flags ) ;
         return true ;
     }
 
     /************************************************************************/
     class AsterIOHandler: public GeoModelIOHandler {
     public:
-        virtual void load( const std::string& filename, GeoModel& mesh )
+        virtual void load( const std::string& filename, GeoModel& geomodel )
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from Code_Aster mesh not implemented yet" ) ;
@@ -251,7 +251,7 @@ namespace {
             out << "FINSF" << std::endl ;
 
             /// 2. Write tetrahedra
-            /// @todo Review: what about other elements ? [AB]
+            /// @todo Review: what about other entities ? [AB]
             out << "TETRA4" << std::endl ;
             for( index_t r = 0; r < gm.nb_regions(); r++ ) {
                 for( index_t c = 0; c < mesh.cells.nb_tet( r ); c++ ) {
@@ -284,7 +284,7 @@ namespace {
             /// 4. Write triangles
             out << "TRIA3" << std::endl ;
             for( index_t i = 0; i < gm.nb_interfaces(); i++ ) {
-                const RINGMesh::GeoModelElement& interf = gm.one_interface( i ) ;
+                const RINGMesh::GeoModelEntity& interf = gm.one_interface( i ) ;
                 for( index_t s = 0; s < interf.nb_children(); s++ ) {
                     index_t surface_id = interf.child_id( s ).index ;
                     for( index_t f = 0; f < mesh.facets.nb_triangle( surface_id );
@@ -305,7 +305,7 @@ namespace {
 
             /// 5. Associate triangles to each surface
             for( index_t i = 0; i < gm.nb_interfaces(); i++ ) {
-                const RINGMesh::GeoModelElement& interf = gm.one_interface( i ) ;
+                const RINGMesh::GeoModelEntity& interf = gm.one_interface( i ) ;
                 for( index_t s = 0; s < interf.nb_children(); s++ ) {
                     index_t surface_id = interf.child_id( s ).index ;
                     out << "GROUP_MA" << std::endl ;
@@ -329,34 +329,34 @@ namespace {
     /************************************************************************/
 
     /*!
-     * @brief Save the attribute of one GeomModelElement
+     * @brief Save the attribute of one GeomModelEntity
      * @param[in] filename path to the text file
-     * @param[in] mesh_element the MeshElement of the original GEO::Mesh
+     * @param[in] mesh_entity the MeshEntity of the original GEO::Mesh
      */
-    void save_mesh_element_attributes(
+    void save_mesh_entity_attributes(
         const std::string& filename,
-        const GEO::MeshSubElementsStore& mesh_element )
+        const GEO::MeshSubElementsStore& mesh_entity )
     {
 
         GEO::vector< std::string > attribute_names ;
-        mesh_element.attributes().list_attribute_names( attribute_names ) ;
-        for( index_t att = 0; att < mesh_element.attributes().nb(); att++ ) {
+        mesh_entity.attributes().list_attribute_names( attribute_names ) ;
+        for( index_t att = 0; att < mesh_entity.attributes().nb(); att++ ) {
 
             //TODO: this is temps ! Waiting for clean attribute type manager
             //by Bruno, for the moment we only deal with double
-            if( !is_attribute_a_double( mesh_element.attributes(),
+            if( !is_attribute_a_double( mesh_entity.attributes(),
                 attribute_names[att] ) || attribute_names[att] == "point" ) {
                 continue ;
             }
             std::ofstream out( filename.c_str(), std::ios::out | std::ios::app ) ;
             out.precision( 16 ) ;
-            GEO::Attribute< double > cur_att( mesh_element.attributes(),
+            GEO::Attribute< double > cur_att( mesh_entity.attributes(),
                 attribute_names[att] ) ;
             index_t attribute_dim = cur_att.dimension() ;
             out << "# " << attribute_names[att] << " double " << attribute_dim
                 << std::endl ;
 
-            for( index_t el = 0; el < mesh_element.nb(); el++ ) {
+            for( index_t el = 0; el < mesh_entity.nb(); el++ ) {
                 for( index_t dim = 0; dim < attribute_dim; dim++ ) {
                     out << cur_att[el * attribute_dim + dim] << " " ;
                 }
@@ -368,8 +368,8 @@ namespace {
     }
 
     /*!
-     * @brief Save the attribute of all the GeomModelElement
-     * @param[in] root_name it contains the GeoModelElement type and its id
+     * @brief Save the attribute of all the GeomModelEntity
+     * @param[in] root_name it contains the GeoModelEntity type and its id
      * @param[in] mesh the mesh on which the attribute are stored
      * @param[in] zf the zip file
      */
@@ -387,25 +387,25 @@ namespace {
         std::string cells_attributes_file_name = root_name
             + "_cells_attributes.txt" ;
 
-        save_mesh_element_attributes( vertices_attributes_file_name,
+        save_mesh_entity_attributes( vertices_attributes_file_name,
             mesh.vertices ) ;
         if( GEO::FileSystem::is_file( vertices_attributes_file_name ) ) {
             zip_file( zf, vertices_attributes_file_name ) ;
             GEO::FileSystem::delete_file( vertices_attributes_file_name ) ;
         }
 
-        save_mesh_element_attributes( edges_attributes_file_name, mesh.edges ) ;
+        save_mesh_entity_attributes( edges_attributes_file_name, mesh.edges ) ;
         if( GEO::FileSystem::is_file( edges_attributes_file_name ) ) {
             zip_file( zf, edges_attributes_file_name ) ;
             GEO::FileSystem::delete_file( edges_attributes_file_name ) ;
         }
 
-        save_mesh_element_attributes( facets_attributes_file_name, mesh.facets ) ;
+        save_mesh_entity_attributes( facets_attributes_file_name, mesh.facets ) ;
         if( GEO::FileSystem::is_file( facets_attributes_file_name ) ) {
             zip_file( zf, facets_attributes_file_name ) ;
             GEO::FileSystem::delete_file( facets_attributes_file_name ) ;
         }
-        save_mesh_element_attributes( cells_attributes_file_name, mesh.cells ) ;
+        save_mesh_entity_attributes( cells_attributes_file_name, mesh.cells ) ;
         if( GEO::FileSystem::is_file( cells_attributes_file_name ) ) {
             zip_file( zf, cells_attributes_file_name ) ;
             GEO::FileSystem::delete_file( cells_attributes_file_name ) ;
@@ -413,26 +413,26 @@ namespace {
     }
 
     /*!
-     * @brief Save the GeoModelMeshElement in a meshb file
-     * @param[in] geo_model_element_mesh the GeoModelMeshElement you want to save
+     * @brief Save the GeoModelMeshEntity in a meshb file
+     * @param[in] geo_model_entity_mesh the GeoModelMeshEntity you want to save
      * @param[in] zf the zip file
      */
-    void save_geo_model_mesh_element(
-        const GeoModelMeshElement& geo_model_element_mesh,
+    void save_geo_model_mesh_entity(
+        const GeoModelMeshEntity& geo_model_entity_mesh,
         zipFile& zf )
     {
-        GME::TYPE type = geo_model_element_mesh.type() ;
+        GME::TYPE type = geo_model_entity_mesh.type() ;
 
         std::string name ;
-        build_string_for_geo_model_element_export( type,
-            geo_model_element_mesh.index(), name ) ;
+        build_string_for_geo_model_entity_export( type,
+            geo_model_entity_mesh.index(), name ) ;
         //@TODO this will be removed and integrated in the build_string....
-        name +=".geogram" ;
+        name += ".geogram" ;
         GEO::Logger* logger = GEO::Logger::instance() ;
         logger->set_quiet( true ) ;
         GEO::MeshIOFlags flags ;
 //        flags.set_attribute( GEO::MESH_ALL_ATTRIBUTES ) ;
-        bool is_saved = save_mesh( geo_model_element_mesh, name, flags ) ;
+        bool is_saved = save_mesh( geo_model_entity_mesh, name, flags ) ;
         logger->set_quiet( false ) ;
 
         if( is_saved ) {
@@ -444,7 +444,7 @@ namespace {
 //        std::string handler ;
 //        char separator = '.' ;
 //        GEO::String::split_string( name, separator, root_name, handler ) ;
-//        save_geo_mesh_attributes( root_name, geo_model_element_mesh.mesh(), zf ) ;
+//        save_geo_mesh_attributes( root_name, geo_model_entity_mesh.mesh(), zf ) ;
     }
 
     class GeoModelHandler: public GeoModelIOHandler {
@@ -453,7 +453,8 @@ namespace {
             std::string pwd = GEO::FileSystem::get_current_working_directory() ;
             GEO::FileSystem::set_current_working_directory(
                 GEO::FileSystem::dir_name( filename ) ) ;
-            GeoModelBuilderGM builder( model, GEO::FileSystem::base_name( filename, false ) ) ;
+            GeoModelBuilderGM builder( model,
+                GEO::FileSystem::base_name( filename, false ) ) ;
             builder.build_model() ;
             GEO::Logger::out( "I/O" ) << " Loaded model " << model.name() << " from "
                 << filename << std::endl ;
@@ -464,7 +465,8 @@ namespace {
         }
         virtual void save( const GeoModel& model, const std::string& filename )
         {
-            const std::string pwd = GEO::FileSystem::get_current_working_directory() ;
+            const std::string pwd =
+                GEO::FileSystem::get_current_working_directory() ;
             bool valid_new_working_directory =
                 GEO::FileSystem::set_current_working_directory(
                     GEO::FileSystem::dir_name( filename ) ) ;
@@ -487,8 +489,8 @@ namespace {
 
             for( index_t t = GME::CORNER; t <= GME::REGION; t++ ) {
                 GME::TYPE type = static_cast< GME::TYPE >( t ) ;
-                for( index_t e = 0; e < model.nb_elements( type ); e++ ) {
-                    save_geo_model_mesh_element( model.mesh_element( type, e ),
+                for( index_t e = 0; e < model.nb_entities( type ); e++ ) {
+                    save_geo_model_mesh_entity( model.mesh_entity( type, e ),
                         zf ) ;
                 }
             }
@@ -502,7 +504,7 @@ namespace {
 
     class LMIOHandler: public GeoModelIOHandler {
     public:
-        virtual void load( const std::string& filename, GeoModel& mesh )
+        virtual void load( const std::string& filename, GeoModel& geomodel )
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from a mesh not implemented yet" ) ;
@@ -513,11 +515,11 @@ namespace {
             gm.mesh.facets.test_and_initialize() ;
             gm.mesh.cells.test_and_initialize() ;
 
-            GEO::Mesh mesh( 3 ) ;
+            Mesh mesh(gm, 3, false ) ;
             gm.mesh.copy_mesh( mesh ) ;
 
             GEO::Logger::instance()->set_minimal( true ) ;
-            GEO::mesh_save( mesh, filename ) ;
+            mesh.save_mesh( filename, GEO::MeshIOFlags()) ;
             GEO::Logger::instance()->set_minimal( false ) ;
         }
     } ;
@@ -525,7 +527,7 @@ namespace {
     /************************************************************************/
     class TetGenIOHandler: public GeoModelIOHandler {
     public:
-        virtual void load( const std::string& filename, GeoModel& mesh )
+        virtual void load( const std::string& filename, GeoModel& geomodel )
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from TetGen not implemented yet" ) ;
@@ -584,7 +586,7 @@ namespace {
     /************************************************************************/
 
     struct RINGMesh2VTK {
-        index_t element_type ;
+        index_t entity_type ;
         index_t vertices[8] ;
     } ;
 
@@ -610,7 +612,7 @@ namespace {
 
     class VTKIOHandler: public GeoModelIOHandler {
     public:
-        virtual void load( const std::string& filename, GeoModel& mesh )
+        virtual void load( const std::string& filename, GeoModel& geomodel )
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from VTK not implemented yet" ) ;
@@ -653,7 +655,7 @@ namespace {
             for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
                 const RINGMesh2VTK& descriptor =
                     *cell_type_to_cell_descriptor_vtk[mesh.cells.type( c )] ;
-                out << descriptor.element_type << std::endl ;
+                out << descriptor.entity_type << std::endl ;
             }
             out << std::endl ;
 
@@ -667,6 +669,140 @@ namespace {
         }
     } ;
 
+    /************************************************************************/
+
+    /// Convert the cell type of RINGMesh to the MFEM one
+    /// NO_ID for pyramids and prims because there are not supported by MFEM
+    static index_t cell_type_mfem[4] = { 4, 5, NO_ID, NO_ID } ;
+
+    /// Convert the facet type of RINGMesh to the MFEM one
+    /// NO_ID for polygons there are not supported by MFEM
+    static index_t facet_type_mfem[3] = { 2, 3, NO_ID } ;
+
+    /*!
+     * Export for the MFEM format http://mfem.org/
+     * Mesh file description : http://mfem.org/mesh-formats/#mfem-mesh-v10
+     * "MFEM is a free, lightweight, scalable C++ library for finite element
+     * methods"
+     */
+    class MFEMIOHandler: public GeoModelIOHandler {
+    public:
+        virtual void load( const std::string& filename, GeoModel& geomodel )
+        {
+            throw RINGMeshException( "I/O",
+                "Loading of a GeoModel from VTK not implemented yet" ) ;
+        }
+        virtual void save( const GeoModel& gm, const std::string& filename )
+        {
+            const GeoModelMesh& geomodel_mesh = gm.mesh ;
+            index_t nb_cells = geomodel_mesh.cells.nb() ;
+            if( geomodel_mesh.cells.nb_tet() != nb_cells
+                && geomodel_mesh.cells.nb_hex() != nb_cells ) {
+                throw RINGMeshException( "I/O",
+                    "Export to MFEM format works only with full tet or full hex format" ) ;
+            }
+            std::ofstream out( filename.c_str() ) ;
+            out.precision( 16 ) ;
+
+            write_header( geomodel_mesh, out ) ;
+            write_cells( geomodel_mesh, out ) ;
+            write_facets( geomodel_mesh, out ) ;
+            write_vertices( geomodel_mesh, out ) ;
+        }
+
+    private:
+        /*!
+         * @brief Write the header for the MFEM mesh file
+         * @param[in] geomodel_mesh the GeoModelMesh to be saved
+         * @param[in] out the ofstream that wrote the MFEM mesh file
+         */
+        void write_header( const GeoModelMesh& geomodel_mesh, std::ofstream& out )
+        {
+            // MFEM mesh version
+            out << "MFEM mesh v1.0" << std::endl ;
+            out << std::endl ;
+
+            // Dimension is always 3 in our case
+            out << "dimension" << std::endl ;
+            out << dimension << std::endl ;
+            out << std::endl ;
+        }
+
+        /*!
+         * @brief Write the cells for the MFEM mesh file (work only with
+         * tetrahedra and hexaedra)
+         * @details The structure of the MFEM file for cells is
+         * [group_id] [cell_type] [id_vertex_0] [id_vertex_1] .....
+         * cell_type is 4 for  tetrahedra and 5 for hexahedra.
+         * group_id begin with 1
+         * @param[in] geomodel_mesh the GeoModelMesh to be saved
+         * @param[in] out the ofstream that wrote the MFEM mesh file
+         */
+        void write_cells( const GeoModelMesh& geomodel_mesh, std::ofstream& out )
+        {
+            index_t nb_cells = geomodel_mesh.cells.nb() ;
+            out << "elements" << std::endl ;
+            out << nb_cells << std::endl ;
+            for( index_t c = 0; c < nb_cells; c++ ) {
+                out << geomodel_mesh.cells.region( c ) << " " ;
+                out << cell_type_mfem[geomodel_mesh.cells.type( c )] << " " ;
+                for( index_t v = 0; v < geomodel_mesh.cells.nb_vertices( c ); v++ ) {
+                    out << geomodel_mesh.cells.vertex( c, v ) << " " ;
+                }
+                out << std::endl ;
+            }
+            out << std::endl ;
+        }
+
+        /*!
+         * @brief Write the facets for the MFEM mesh file (work only with
+         * triangles and quads)
+         * @details The structure of the MFEM file for facets is
+         * [group_id] [facet_type] [id_vertex_0] [id_vertex_1] .....
+         * facet_type is 2 for triangles and 3 for the quads
+         * group_id is continuous with the groupd indexes of the cells
+         * @param[in] geomodel_mesh the GeoModelMesh to be saved
+         * @param[in] out the ofstream that wrote the MFEM mesh file
+         */
+        void write_facets( const GeoModelMesh& geomodel_mesh, std::ofstream& out )
+        {
+            index_t offset = geomodel_mesh.model().nb_regions() ;
+            out << "boundary" << std::endl ;
+            out << geomodel_mesh.facets.nb() << std::endl ;
+            for( index_t f = 0; f < geomodel_mesh.facets.nb(); f++ ) {
+                index_t not_used = 0 ;
+                out << geomodel_mesh.facets.surface( f ) + offset + 1 << " " ;
+                out << facet_type_mfem[geomodel_mesh.facets.type( f, not_used )]
+                    << " " ;
+                for( index_t v = 0; v < geomodel_mesh.facets.nb_vertices( f );
+                    v++ ) {
+                    out << geomodel_mesh.facets.vertex( f, v ) << " " ;
+                }
+                out << std::endl ;
+            }
+            out << std::endl ;
+        }
+
+        /*!
+         * @brief Write the vertices for the MFEM mesh file
+         * @details The structure of the MFEM file for vertices is
+         * [x] [y] [z]
+         * @param[in] geomodel_mesh the GeoModelMesh to be saved
+         * @param[in] out the ofstream that wrote the MFEM mesh file
+         */
+        void write_vertices( const GeoModelMesh& geomodel_mesh, std::ofstream& out )
+        {
+            out << "vertices" << std::endl ;
+            out << geomodel_mesh.vertices.nb() << std::endl ;
+            out << dimension << std::endl ;
+            for( index_t v = 0; v < geomodel_mesh.vertices.nb(); v++ ) {
+                out << geomodel_mesh.vertices.vertex( v ) << std::endl ;
+            }
+        }
+
+    private:
+        static const index_t dimension = 3 ;
+    } ;
     /************************************************************************/
 
     class TSolidIOHandler: public GeoModelIOHandler {
@@ -1014,7 +1150,7 @@ namespace {
             out << "MODEL" << std::endl ;
             int tface_count = 1 ;
             for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
-                const RINGMesh::GeoModelElement& interf = model.one_interface( i ) ;
+                const RINGMesh::GeoModelEntity& interf = model.one_interface( i ) ;
                 out << "SURFACE " << interf.name() << std::endl ;
                 for( index_t s = 0; s < interf.nb_children(); s++ ) {
                     out << "TFACE " << tface_count++ << std::endl ;
@@ -1057,7 +1193,7 @@ namespace {
     /************************************************************************/
 
     struct RINGMesh2CSMP {
-        index_t element_type ;
+        index_t entity_type ;
         index_t nb_vertices ;
         index_t vertices[8] ;
         index_t nb_facets ;
@@ -1102,7 +1238,7 @@ namespace {
             clear() ;
         }
 
-        virtual void load( const std::string& filename, GeoModel& mesh )
+        virtual void load( const std::string& filename, GeoModel& geomodel )
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from CSMP not implemented yet" ) ;
@@ -1154,7 +1290,7 @@ namespace {
             std::vector< index_t > nb_triangle_interface( gm.nb_interfaces(), 0 ) ;
             std::vector< index_t > nb_quad_interface( gm.nb_interfaces(), 0 ) ;
             for( index_t i = 0; i < gm.nb_interfaces(); i++ ) {
-                const GeoModelElement& interf = gm.one_interface( i ) ;
+                const GeoModelEntity& interf = gm.one_interface( i ) ;
                 for( index_t s = 0; s < interf.nb_children(); s++ ) {
                     index_t s_id = interf.child_id( s ).index ;
                     nb_triangle_interface[i] += mesh.facets.nb_triangle( s_id ) ;
@@ -1172,18 +1308,18 @@ namespace {
             if( gm.wells() ) nb_families += gm.wells()->nb_wells() ;
 
             ascii << nb_families << " # Number of families" << std::endl ;
-            ascii << "# Object name" << TAB << "Element type" << TAB << "Material-ID"
-                << TAB << "Number of elements" << std::endl ;
+            ascii << "# Object name" << TAB << "Entity type" << TAB << "Material-ID"
+                << TAB << "Number of entities" << std::endl ;
             for( index_t r = 0; r < gm.nb_regions(); r++ ) {
-                const RINGMesh::GeoModelElement& region = gm.region( r ) ;
+                const RINGMesh::GeoModelEntity& region = gm.region( r ) ;
                 regions << region.name() << std::endl ;
-                std::string element_type[4] = {
+                std::string entity_type[4] = {
                     "TETRA_4", "HEXA_8", "PENTA_6", "PYRA_5" } ;
                 for( index_t type = GEO::MESH_TET; type < GEO::MESH_CONNECTOR;
                     type++ ) {
                     GEO::MeshCellType T = static_cast< GEO::MeshCellType >( type ) ;
                     if( mesh.cells.nb_cells( r, T ) > 0 ) {
-                        ascii << region.name() << TAB << element_type[type] << TAB
+                        ascii << region.name() << TAB << entity_type[type] << TAB
                             << 0 << TAB << mesh.cells.nb_cells( r, T ) << std::endl ;
                     }
                 }
@@ -1222,16 +1358,16 @@ namespace {
             }
             reset_line( count, data ) ;
 
-            index_t nb_total_elements = mesh.cells.nb_cells()
+            index_t nb_total_entities = mesh.cells.nb_cells()
                 + mesh.facets.nb_facets() + mesh.edges.nb_edges() ;
-            data << nb_total_elements << " # PELEMENT" << std::endl ;
+            data << nb_total_entities << " # PELEMENT" << std::endl ;
             for( index_t r = 0; r < gm.nb_regions(); r++ ) {
-                index_t element_type[4] = { 4, 6, 12, 18 } ;
+                index_t entity_type[4] = { 4, 6, 12, 18 } ;
                 for( index_t type = GEO::MESH_TET; type < GEO::MESH_CONNECTOR;
                     type++ ) {
                     GEO::MeshCellType T = static_cast< GEO::MeshCellType >( type ) ;
                     for( index_t el = 0; el < mesh.cells.nb_cells( r, T ); el++ ) {
-                        data << " " << std::setw( 3 ) << element_type[type] ;
+                        data << " " << std::setw( 3 ) << entity_type[type] ;
                         new_line( count, 20, data ) ;
                     }
                 }
@@ -1258,18 +1394,18 @@ namespace {
             reset_line( count, data ) ;
 
             ascii
-                << "# now the elements which make up each object are listed in sequence"
+                << "# now the entities which make up each object are listed in sequence"
                 << std::endl ;
             index_t cur_cell = 0 ;
             for( index_t r = 0; r < gm.nb_regions(); r++ ) {
-                const RINGMesh::GeoModelElement& region = gm.region( r ) ;
-                std::string element_type[4] = {
+                const RINGMesh::GeoModelEntity& region = gm.region( r ) ;
+                std::string entity_type[4] = {
                     "TETRA_4", "HEXA_8", "PENTA_6", "PYRA_5" } ;
                 for( index_t type = GEO::MESH_TET; type < GEO::MESH_CONNECTOR;
                     type++ ) {
                     GEO::MeshCellType T = static_cast< GEO::MeshCellType >( type ) ;
                     if( mesh.cells.nb_cells( r, T ) > 0 ) {
-                        ascii << region.name() << " " << element_type[type] << " "
+                        ascii << region.name() << " " << entity_type[type] << " "
                             << mesh.cells.nb_cells( r, T ) << std::endl ;
                         for( index_t el = 0; el < mesh.cells.nb_cells( r, T );
                             el++ ) {
@@ -1335,7 +1471,7 @@ namespace {
                 }
             }
             for( index_t i = 0; i < gm.nb_interfaces(); i++ ) {
-                const GeoModelElement& interf = gm.one_interface( i ) ;
+                const GeoModelEntity& interf = gm.one_interface( i ) ;
                 for( index_t s = 0; s < interf.nb_children(); s++ ) {
                     index_t s_id = interf.child_id( s ).index ;
                     for( index_t el = 0; el < mesh.facets.nb_triangle( s_id );
@@ -1396,7 +1532,7 @@ namespace {
                 }
             }
             for( index_t i = 0; i < gm.nb_interfaces(); i++ ) {
-                const GeoModelElement& interf = gm.one_interface( i ) ;
+                const GeoModelEntity& interf = gm.one_interface( i ) ;
                 for( index_t s = 0; s < interf.nb_children(); s++ ) {
                     index_t s_id = interf.child_id( s ).index ;
                     for( index_t el = 0; el < mesh.facets.nb_triangle( s_id );
@@ -1453,8 +1589,8 @@ namespace {
             }
             reset_line( count, data ) ;
 
-            data << nb_total_elements << " # PMATERIAL" << std::endl ;
-            for( index_t i = 0; i < nb_total_elements; i++ ) {
+            data << nb_total_entities << " # PMATERIAL" << std::endl ;
+            for( index_t i = 0; i < nb_total_entities; i++ ) {
                 data << " " << std::setw( 3 ) << 0 ;
                 new_line( count, 20, data ) ;
             }
@@ -1742,7 +1878,7 @@ namespace {
             index_t v0 ;
             index_t v1 ;
         } ;
-        virtual void load( const std::string& filename, GeoModel& mesh )
+        virtual void load( const std::string& filename, GeoModel& geomodel )
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from GPRS not implemented yet" ) ;
@@ -1794,7 +1930,7 @@ namespace {
 
             index_t nb_edges = 0 ;
             for( index_t l = 0; l < gm.nb_lines(); l++ ) {
-                nb_edges += gm.line( l ).nb_cells() ;
+                nb_edges += gm.line( l ).nb_mesh_elements() ;
             }
             std::vector< index_t > temp ;
             temp.reserve( 3 ) ;
@@ -1803,7 +1939,7 @@ namespace {
             index_t count_edge = 0 ;
             for( index_t l = 0; l < gm.nb_lines(); l++ ) {
                 const Line& line = gm.line( l ) ;
-                for( index_t e = 0; e < line.nb_cells(); e++ ) {
+                for( index_t e = 0; e < line.nb_mesh_elements(); e++ ) {
                     edge_vertices[count_edge++ ] = 0.5
                         * ( line.vertex( e ) + line.vertex( e + 1 ) ) ;
                 }
@@ -1898,7 +2034,7 @@ namespace {
     /************************************************************************/
 
 //        struct RINGMesh2GMSH {
-//                   index_t element_type ;
+//                   index_t entity_type ;
 //                   index_t nb_vertices ;
 //                   index_t vertices[8] ;
 //                   index_t nb_facets ;
@@ -1943,7 +2079,7 @@ namespace {
 //                   { { 0, 1, 2, 3 }, { 0, 4, 1 }, { 0, 3, 4 }, { 2, 4, 3 }, { 2, 1, 4 } } } ;
     class MSHIOHandler: public GeoModelIOHandler {
     public:
-        virtual void load( const std::string& filename, GeoModel& mesh )
+        virtual void load( const std::string& filename, GeoModel& geomodel )
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from GMSH not implemented yet" ) ;
@@ -2004,7 +2140,7 @@ namespace {
 //            } else if( gm.get_order() > 2 ) {
 //                GEO::Logger::err( "" ) << "The order " << gm.get_order() << " "
 //                    << "is not supported"
-//                    << " for the gmsh export. The export will take order 1 elements"
+//                    << " for the gmsh export. The export will take order 1 entities"
 //                    << std::endl ;
 //            }
 //            const GeoModel& model = gm ;
@@ -2020,14 +2156,14 @@ namespace {
 //                anns[s] = new ColocaterANN( model.surface( s ).mesh(),
 //                    ColocaterANN::FACETS ) ;
 //            }
-//            out << "$Elements" << std::endl ;
+//            out << "$Entities" << std::endl ;
 //            out << gm.cells.nb_cells() + nb_facets << std::endl ;
 //            index_t cur_cell = 1 ;
 //            for( index_t m = 0; m < gm.nb_regions(); m++ ) {
 //                const GEO::Mesh& mesh = gm.mesh( m ) ;
 //                GEO::Attribute< index_t > attribute( mesh.facets.attributes(),
 //                    surface_att_name ) ;
-//                const GeoModelElement& region = model.region( m ) ;
+//                const GeoModelEntity& region = model.region( m ) ;
 //                std::vector< index_t > surfaces ;
 //                surfaces.reserve( region.nb_boundaries() ) ;
 //                for( index_t b = 0; b < region.nb_boundaries(); b++ ) {
@@ -2116,7 +2252,7 @@ namespace {
 //            }
 //
 //            for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
-//                const GeoModelElement& interf = model.one_interface( i ) ;
+//                const GeoModelEntity& interf = model.one_interface( i ) ;
 //                for( index_t s = 0; s < interf.nb_children(); s++ ) {
 //                    index_t s_id = interf.child_id( s ).index ;
 //                    if( gm.vertices.is_surface_to_duplicate( s_id ) ) continue ;
@@ -2145,7 +2281,7 @@ namespace {
 //                    }
 //                }
 //            }
-//            out << "$EndElements" << std::endl ;
+//            out << "$EndEntities" << std::endl ;
 //
 //            if( GEO::CmdLine::get_arg_bool( "out:kine3d" ) ) {
 //                std::string directory = GEO::FileSystem::dir_name( filename ) ;
@@ -2154,15 +2290,15 @@ namespace {
 //                oss_kine << directory << "/" << file << ".gmsh_info" ;
 //                std::ofstream kine3d( oss_kine.str().c_str() ) ;
 //                for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
-//                    const GeoModelElement& interf = model.one_interface( i ) ;
+//                    const GeoModelEntity& interf = model.one_interface( i ) ;
 //                    index_t s_id = interf.child_id( 0 ).index ;
 //                    kine3d << offset_region + 2 * i + 1 << ":" << interf.name()
 //                        << ",1," ;
-//                    const RINGMesh::GeoModelElement& E = model.one_interface( i ) ;
-//                    if( RINGMesh::GeoModelElement::is_fault(
+//                    const RINGMesh::GeoModelEntity& E = model.one_interface( i ) ;
+//                    if( RINGMesh::GeoModelEntity::is_fault(
 //                        E.geological_feature() ) ) {
 //                        kine3d << "FaultFeatureClass" ;
-//                    } else if( RINGMesh::GeoModelElement::is_stratigraphic_limit(
+//                    } else if( RINGMesh::GeoModelEntity::is_stratigraphic_limit(
 //                        E.geological_feature() ) ) {
 //                        kine3d << "HorizonFeatureClass" ;
 //                    } else if( E.is_on_voi() ) {
@@ -2172,12 +2308,12 @@ namespace {
 //                    if( gm.vertices.is_surface_to_duplicate( s_id ) ) {
 //                        kine3d << offset_region + 2 * i + 1 << ":" << interf.name()
 //                            << ",0," ;
-//                        const RINGMesh::GeoModelElement& E = model.one_interface(
+//                        const RINGMesh::GeoModelEntity& E = model.one_interface(
 //                            i ) ;
-//                        if( RINGMesh::GeoModelElement::is_fault(
+//                        if( RINGMesh::GeoModelEntity::is_fault(
 //                            E.geological_feature() ) ) {
 //                            kine3d << "FaultFeatureClass" ;
-//                        } else if( RINGMesh::GeoModelElement::is_stratigraphic_limit(
+//                        } else if( RINGMesh::GeoModelEntity::is_stratigraphic_limit(
 //                            E.geological_feature() ) ) {
 //                            kine3d << "HorizonFeatureClass" ;
 //                        } else if( E.is_on_voi() ) {
@@ -2228,6 +2364,7 @@ namespace RINGMesh {
         ringmesh_register_IOHandler_creator( VTKIOHandler, "vtk" );
         ringmesh_register_IOHandler_creator( GPRSIOHandler, "gprs" );
         ringmesh_register_IOHandler_creator( MSHIOHandler, "msh" );
+        ringmesh_register_IOHandler_creator( MFEMIOHandler, "mfem" );
         ringmesh_register_IOHandler_creator( GeoModelHandler, "gm" );}
 
 }

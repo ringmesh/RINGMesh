@@ -138,6 +138,33 @@ namespace GLUP {
     }
 
     bool Context::extension_is_supported(const std::string& extension) {
+#ifndef GEO_OS_EMSCRIPTEN
+        // This is the new way of testing for an extension: first get
+        // the number of extensions, then extension names one extension
+        // at a time using glGetStringi
+        if(use_core_profile_) {
+            if(glGetStringi != 0) {
+                GLuint num_ext;
+                glGetIntegerv(GL_NUM_EXTENSIONS, (GLint*)&num_ext);
+                if(num_ext != 0) {
+                    for(GLuint i=0; i<num_ext; ++i) {
+                        const GLubyte* cur_extension =
+                            glGetStringi(GL_EXTENSIONS, i);
+                        if(!strcmp(
+                               extension.c_str(),
+                               (const char*)cur_extension)
+                        ) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            }
+        }
+#endif
+
+        // If new way is unsupported or if using an old-style OpenGL
+        // context, then we do it the old way.
         const char* extensions = (const char*)(glGetString(GL_EXTENSIONS));
         if(extensions == nil) {
             return false;
@@ -217,10 +244,10 @@ namespace GLUP {
                      
         "  } GLUP;                                     \n"
         "                                              \n"
-        "  const int GLUP_CLIP_STANDARD         = 1;   \n"
-        "  const int GLUP_CLIP_WHOLE_CELLS      = 2;   \n"
-        "  const int GLUP_CLIP_STRADDLING_CELLS = 3;   \n"
-        "  const int GLUP_CLIP_SLICE_CELLS      = 4;   \n"
+        "  const int GLUP_CLIP_STANDARD         = 0;   \n"
+        "  const int GLUP_CLIP_WHOLE_CELLS      = 1;   \n"
+        "  const int GLUP_CLIP_STRADDLING_CELLS = 2;   \n"
+        "  const int GLUP_CLIP_SLICE_CELLS      = 3;   \n"
         "                                              \n"
         "  const int GLUP_TEXTURE_1D = 1;              \n"
         "  const int GLUP_TEXTURE_2D = 2;              \n"
@@ -511,6 +538,8 @@ namespace GLUP {
         world_clip_plane_ = nil;
         latest_program_ = 0;
         toggles_config_ = 0;
+
+        uses_mesh_tex_coord_ = false;
     }
     
     Context::~Context() {
@@ -775,7 +804,7 @@ namespace GLUP {
 
         glupGenVertexArrays(1,&immediate_state_.VAO());
         glupBindVertexArray(immediate_state_.VAO());
-
+        
         for(index_t i=0; i<immediate_state_.buffer.size(); ++i) {
             update_buffer_object(
                 immediate_state_.buffer[i].VBO(),
@@ -784,7 +813,7 @@ namespace GLUP {
                 nil // no need to copy the buffer, it will be overwritten after.
             );
         }
-
+        
         bind_immediate_state_buffers_to_VAO();
         glupBindVertexArray(0);
     }
@@ -983,16 +1012,20 @@ namespace GLUP {
                 << primitive_name[primitive]
                 << " not implemented in this profile" << std::endl;
         }
-        
-        update_uniform_buffer();
 
+        GEO_CHECK_GLUP();    
+        update_uniform_buffer();
+        GEO_CHECK_GLUP();
+        
         //   If the primitive has a special VAO to be used for immediate
         // mode, then bind it.
         if(primitive_info_[primitive].VAO != 0) {
+            GEO_CHECK_GLUP();            
             glupBindVertexArray(
                 primitive_info_[primitive].VAO
             );            
         } else {
+            GEO_CHECK_GLUP();                        
             // Else use the regular VAO used by all immediate-mode primitives
             // (if there is one).
             if(immediate_state_.VAO() != 0) {
@@ -1000,19 +1033,27 @@ namespace GLUP {
             }
         }
 
+        GEO_CHECK_GLUP();                    
+
         if(uniform_state_.toggle[GLUP_VERTEX_COLORS].get()) {
             immediate_state_.buffer[GLUP_COLOR_ATTRIBUTE].enable();
         } else {
             immediate_state_.buffer[GLUP_COLOR_ATTRIBUTE].disable();
         }
+
+        GEO_CHECK_GLUP();
         
         if(uniform_state_.toggle[GLUP_TEXTURING].get()) {
             immediate_state_.buffer[GLUP_TEX_COORD_ATTRIBUTE].enable();
         } else {
             immediate_state_.buffer[GLUP_TEX_COORD_ATTRIBUTE].disable();
         }
+
+        GEO_CHECK_GLUP();        
         
         immediate_state_.begin(primitive);
+
+        GEO_CHECK_GLUP();        
         
         if(primitive_info_[primitive].vertex_gather_mode) {
             index_t n = nb_vertices_per_primitive[primitive];
@@ -1044,13 +1085,19 @@ namespace GLUP {
             }
         }
 
+        GEO_CHECK_GLUP();
+        
         prepare_to_draw(primitive);
 
+        GEO_CHECK_GLUP();
+        
         if(user_program_ != 0) {
             use_program(user_program_);
         } else {
             use_program(primitive_info_[primitive].program[toggles_config_]);
         }
+
+        GEO_CHECK_GLUP();        
     }
 
     void Context::end() {
@@ -1334,11 +1381,6 @@ namespace GLUP {
             uniform_state_.toggle[GLUP_DRAW_MESH].get() &&
             primitive_info_[immediate_state_.primitive()].tex_coords_VBO != 0
         ) {
-#ifdef GLUP_DEBUG            
-            Logger::out("dbg") << "Cur VAO = " << glupGetVertexArrayBinding()
-                               << std::endl;
-            Logger::out("dbg") << "Enable vertex attrib array 3" << std::endl;
-#endif            
             glEnableVertexAttribArray(3);
         }
         
@@ -1396,12 +1438,6 @@ namespace GLUP {
             uniform_state_.toggle[GLUP_DRAW_MESH].get() &&
             primitive_info_[immediate_state_.primitive()].tex_coords_VBO != 0
         ) {
-#ifdef GLUP_DEBUG            
-            Logger::out("dbg") << "Cur VAO = " << glupGetVertexArrayBinding()
-                               << std::endl;
-            Logger::out("dbg") << "Disable vertex attrib array 3"
-                               << std::endl;
-#endif            
             glDisableVertexAttribArray(3);
         }
     }
@@ -1409,7 +1445,8 @@ namespace GLUP {
     /***********************************************************************/
 
     void Context::set_primitive_info(
-        GLUPprimitive glup_primitive, GLenum gl_primitive, GLuint program
+        GLUPprimitive glup_primitive, GLenum gl_primitive, GLuint program,
+        bool bind_attrib_loc
     ) {
         primitive_info_[glup_primitive].implemented = true;
         primitive_info_[glup_primitive].GL_primitive = gl_primitive;
@@ -1417,14 +1454,18 @@ namespace GLUP {
         primitive_info_[glup_primitive].program_initialized[toggles_config_] =
             true;
 
+        if(!bind_attrib_loc) {
+            return;
+        }
+
         glBindAttribLocation(program, 0, "vertex_in");
         glBindAttribLocation(program, 1, "color_in");
         glBindAttribLocation(program, 2, "tex_coord_in");
-        glBindAttribLocation(program, 3, "mesh_tex_coord_in");
-        
+        if(uses_mesh_tex_coord_) {
+            glBindAttribLocation(program, 3, "mesh_tex_coord_in");
+        }
         GLSL::link_program(program);
-        
-        bind_uniform_state(program);
+        bind_uniform_state(program);            
 
         //  Bind default texture units. We use different texture
         // units because there is a mode where both a 1D and another
@@ -1444,7 +1485,7 @@ namespace GLUP {
     void Context::set_primitive_info_vertex_gather_mode(
         GLUPprimitive glup_primitive, GLenum GL_primitive, GLuint program
     ) {
-        set_primitive_info(glup_primitive, GL_primitive, program);
+        set_primitive_info(glup_primitive, GL_primitive, program, false);
         index_t n = nb_vertices_per_primitive[glup_primitive];
         n /= nb_vertices_per_GL_primitive(GL_primitive);
         
@@ -1457,6 +1498,24 @@ namespace GLUP {
         glBindAttribLocation(program, n, "color_in");
         glBindAttribLocation(program, 2*n, "tex_coord_in");
 
+        GLSL::link_program(program);
+
+        bind_uniform_state(program);            
+
+        //  Bind default texture units. We use different texture
+        // units because there is a mode where both a 1D and another
+        // texture is bound ("indirect texturing").
+
+        GLSL::set_program_uniform_by_name(
+            program, "texture2Dsampler", GLint(GLUP_TEXTURE_2D_UNIT)
+        );        
+        GLSL::set_program_uniform_by_name(
+            program, "texture1Dsampler", GLint(GLUP_TEXTURE_1D_UNIT)
+        );
+        GLSL::set_program_uniform_by_name(
+            program, "texture3Dsampler", GLint(GLUP_TEXTURE_3D_UNIT)
+        );
+        
         primitive_info_[glup_primitive].vertex_gather_mode = true;
     
         //   We need a special VAO: memory layout is different since

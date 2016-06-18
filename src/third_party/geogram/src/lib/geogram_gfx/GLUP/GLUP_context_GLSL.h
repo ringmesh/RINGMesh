@@ -127,6 +127,12 @@ namespace GLUP {
          * \copydoc Context::setup_GLUP_CONNECTORS()
          */
         virtual void setup_GLUP_CONNECTORS();
+
+        /**
+         * \brief Indicates whether the so-named extension is
+         *  supported.
+         */
+        bool GL_ARB_conservative_depth_;
     };
 
     /*********************************************************************/

@@ -51,7 +51,7 @@ namespace GEO {
     
     /**************************************************************/
 
-    GeoFileException::~GeoFileException() throw() {
+    GeoFileException::~GeoFileException() GEO_NOEXCEPT {
     }
     
     /**************************************************************/

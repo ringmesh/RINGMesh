@@ -38,13 +38,11 @@
 
 #include <ringmesh/common.h>
 
-#include <geogram/mesh/mesh.h>
-
-#include <ringmesh/geo_model_element.h>
-
+#include <ringmesh/geo_model_entity.h>
+#include <ringmesh/mesh.h>
 /*!
  * @file ringmesh/geo_model_mesh.h
- * @brief Classes to manage globally the indexing of mesh elements of a GeoModel
+ * @brief Classes to manage globally the indexing of mesh entities of a GeoModel
  * @author Arnaud Botella and Jeanne Pellerin
  */
 
@@ -72,7 +70,7 @@ namespace RINGMesh {
         friend class GeoModelMesh ;
 
     public:
-        GeoModelMeshVertices( GeoModelMesh& gmm, GeoModel& gm, GEO::Mesh& mesh ) ;
+        GeoModelMeshVertices( GeoModelMesh& gmm, GeoModel& gm, Mesh& mesh, MeshBuilder& mesh_builder ) ;
         ~GeoModelMeshVertices() ;
 
         /*!
@@ -112,12 +110,12 @@ namespace RINGMesh {
         /*!
          * @brief To use when building the model by first adding its vertices
          * @warning The client is responsible for setting the mapping between the points
-         * of the BME and the unique vertex
+         * of the GME and the unique vertex
          */
         index_t add_vertex( const vec3& point ) ;
 
         /*!
-         * @brief Add a vertex in a GeoModelElement
+         * @brief Add a vertex in a GeoModelEntity
          *        corresponding to an existing vertex of the model
          */
         void add_to_bme( index_t v, const GMEVertex& v_gme ) ;
@@ -145,6 +143,11 @@ namespace RINGMesh {
          */
         void clear() ;
 
+        const ColocaterANN& colocater() const {
+            test_and_initialize() ;
+            return mesh_.colocater_ann( ColocaterANN::VERTICES ) ;
+        }
+
     private:
         /*!
          * @brief Initialize the vertices from the vertices
@@ -155,20 +158,6 @@ namespace RINGMesh {
         void initialize() ;
 
         /*!
-         * @brief Delete the KdTree and set the pointer to nil.
-         */
-        void clear_kdtree() ;
-
-        /*!
-         * Test if the kdtree need to be initialized,
-         * if so initialize it.
-         */
-        void test_kdtree_and_initialize() const ;
-        /*!
-         * Initialize the kdtree with the mesh vertices
-         */
-        void initialize_kdtree() ;
-        /*!
          * @brief Remove colocated vertices
          */
         void remove_colocated() ;
@@ -176,7 +165,7 @@ namespace RINGMesh {
         /*!
          * @brief Delete vertices for which to_delete[i] != i
          * @detail The global vertices are deleted, gme_vertices_
-         * is updated and the model_vertx_id in the GeoModelMeshElement
+         * is updated and the model_vertx_id in the GeoModelMeshEntity
          * of the BoudnaryModel are updated too.
          *
          * @param[in,out] to_delete can be NO_ID or give the index of a
@@ -188,7 +177,7 @@ namespace RINGMesh {
 
         /*!
          * @brief Remove all invalid GMEVertex and delete the vertices
-         * that are not anymore in any GeoModelElement
+         * that are not anymore in any GeoModelEntity
          */
         void erase_invalid_vertices() ;
 
@@ -198,15 +187,15 @@ namespace RINGMesh {
         /// Attached GeoModel
         GeoModel& gm_ ;
         /// Attached Mesh
-        GEO::Mesh& mesh_ ;
+        Mesh& mesh_ ;
+        MeshBuilder& mesh_builder_ ;
 
         /*!
-         * Vertices in GeoModelElements corresponding to each vertex
+         * Vertices in GeoModelEntities corresponding to each vertex
          * @todo Change this extremely expensive storage !!!
          */
         std::vector< std::vector< GMEVertex > > gme_vertices_ ;
-        /// Kd-tree of the model vertices
-        ColocaterANN* kdtree_ ;
+
 
     } ;
 
@@ -219,7 +208,7 @@ namespace RINGMesh {
         } ;
 
     public:
-        GeoModelMeshFacets( GeoModelMesh& gmm, GEO::Mesh& mesh ) ;
+        GeoModelMeshFacets( GeoModelMesh& gmm, Mesh& mesh, MeshBuilder& mesh_builder  ) ;
         ~GeoModelMeshFacets() ;
 
         /*!
@@ -379,7 +368,16 @@ namespace RINGMesh {
          * @param[in] f the facet index
          */
         double area( index_t f ) const ;
-
+         /*!
+          * Get the normal of the facet
+          * @param[in] f the facet index
+          */
+        vec3 normal( index_t f ) const ;
+        
+        const ColocaterANN& colocater() const {
+            test_and_initialize() ;
+            return mesh_.colocater_ann( ColocaterANN::FACETS ) ;
+        }
     private:
         /*!
          * Initialize the facets of the GeoModelMesh
@@ -405,7 +403,8 @@ namespace RINGMesh {
         /// Attached GeoModel
         const GeoModel& gm_ ;
         /// Attached Mesh
-        GEO::Mesh& mesh_ ;
+        Mesh& mesh_ ;
+        MeshBuilder& mesh_builder_ ;
 
         /// Attribute storing the surface index per facet
         GEO::Attribute< index_t > surface_id_ ;
@@ -429,7 +428,7 @@ namespace RINGMesh {
     class RINGMESH_API GeoModelMeshEdges {
     ringmesh_disable_copy( GeoModelMeshEdges ) ;
     public:
-        GeoModelMeshEdges( GeoModelMesh& gmm, GEO::Mesh& mesh ) ;
+        GeoModelMeshEdges( GeoModelMesh& gmm, Mesh& mesh, MeshBuilder& mesh_builder ) ;
         ~GeoModelMeshEdges() ;
 
         /*!
@@ -482,7 +481,8 @@ namespace RINGMesh {
         /// Attached GeoModel
         const GeoModel& gm_ ;
         /// Attached Mesh
-        GEO::Mesh& mesh_ ;
+        Mesh& mesh_ ;
+        MeshBuilder& mesh_builder_;
 
         /*!
          * Vector storing the index of the starting edge index
@@ -508,7 +508,7 @@ namespace RINGMesh {
         } ;
 
     public:
-        GeoModelMeshCells( GeoModelMesh& gmm, GEO::Mesh& mesh ) ;
+        GeoModelMeshCells( GeoModelMesh& gmm, Mesh& mesh, MeshBuilder& mesh_builder ) ;
         /*!
          * Test if the mesh cells are initialized
          */
@@ -582,6 +582,21 @@ namespace RINGMesh {
          * @param[in] c the cell index
          */
         index_t nb_facets( index_t c ) const ;
+        /*!
+         * Get the number of facets in the cell
+         * @param[in] c the cell index
+         * @param[in] lf the cell facet index
+         */
+        index_t nb_facet_vertices( index_t c, index_t lf ) const ;
+        /*!
+         * \brief Gets a cell vertex by local facet index and local
+         *  vertex index in the edge
+         * \param[in] c the cell, in 0..nb()-1
+         * \param[in] lf the local facet index, in 0..nb_facets(c)-1
+         * \param[in] lv the local index in the cell facet
+         * \return vertex \p lv of facet \p lf in cell \p c
+         */
+        index_t facet_vertex( index_t c, index_t lf, index_t lv ) const ;
         /*!
          * \brief Gets a cell vertex by local edge index and local
          *  vertex index in the edge
@@ -787,6 +802,14 @@ namespace RINGMesh {
          */
         double volume( index_t c ) const ;
 
+        const ColocaterANN& cell_colocater() const {
+            test_and_initialize() ;
+            return mesh_.colocater_ann( ColocaterANN::CELLS ) ;
+        }
+        const ColocaterANN& cell_facet_colocater() const {
+            test_and_initialize() ;
+            return mesh_.colocater_ann( ColocaterANN::CELL_FACETS ) ;
+        }
     private:
         /*!
          * @brief Initialize the  cells from the cells
@@ -864,7 +887,8 @@ namespace RINGMesh {
         /// Attached GeoModel
         const GeoModel& gm_ ;
         /// Attached Mesh
-        GEO::Mesh& mesh_ ;
+        Mesh& mesh_ ;
+        MeshBuilder& mesh_builder_ ;
 
         /// Attribute storing the region index per cell
         GEO::Attribute< index_t > region_id_ ;
@@ -915,7 +939,7 @@ namespace RINGMesh {
         friend class GeoModelMesh ;
 
     public:
-        GeoModelMeshOrder( GeoModelMesh& gmm, GEO::Mesh& mesh ) ;
+        GeoModelMeshOrder( GeoModelMesh& gmm, Mesh& mesh ) ;
 
         /*!
          * Test if the mesh high orders are initialized
@@ -932,7 +956,7 @@ namespace RINGMesh {
         void clear() ;
         /*!
          * Gets the total number of mesh vertices. It is the number of unique nodes
-         * on the mesh plus the high order vertices on the elements edges
+         * on the mesh plus the high order vertices on the entities edges
          * @return the const number of vertices
          */
         index_t nb_total_vertices() const ;
@@ -997,7 +1021,7 @@ namespace RINGMesh {
         /// Attached GeoModel
         const GeoModel& gm_ ;
         /// Attached Mesh
-        GEO::Mesh& mesh_ ;
+        Mesh& mesh_ ;
         /// Total number of vertices + new high order vertices on cell edges
         index_t nb_vertices_ ;
         /// New vertices
@@ -1027,22 +1051,26 @@ namespace RINGMesh {
          * Copy the current GeoModelMesh into a Mesh
          * @param[out] mesh The mesh to fill        
          */
-        void copy_mesh( GEO::Mesh& mesh ) const
+        void copy_mesh( Mesh& mesh ) const
         {
-            mesh.copy( *mesh_ ) ;
+            mesh.copy( *mesh_, false, GEO::MESH_ALL_ELEMENTS ) ;
+        }
+        void save_mesh( const std::string& filename ) const
+        {
+            mesh_->save_mesh( filename, GEO::MeshIOFlags() ) ;
         }
 
         GEO::AttributesManager& vertex_attribute_manager() const
         {
-            return mesh_->vertices.attributes() ;
+            return mesh_->vertex_attribute_manager() ;
         }
         GEO::AttributesManager& facet_attribute_manager() const
         {
-            return mesh_->facets.attributes() ;
+            return mesh_->facet_attribute_manager() ;
         }
         GEO::AttributesManager& cell_attribute_manager() const
         {
-            return mesh_->cells.attributes() ;
+            return mesh_->cell_attribute_manager() ;
         }
 
         /*!
@@ -1094,7 +1122,7 @@ namespace RINGMesh {
         /*!
          * @brief Delete vertices for which to_delete[i] != i
          * @detail The global vertices are deleted, gme_vertices_
-         * is updated and the model_vertx_id in the GeoModelMeshElement
+         * is updated and the model_vertx_id in the GeoModelMeshEntity
          * of the BoudnaryModel are updated too.
          *
          * @param[in,out] to_delete can be NO_ID or give the index of a
@@ -1106,11 +1134,11 @@ namespace RINGMesh {
 
         /*!
          * @brief Remove all invalid GMEVertex and delete the vertices
-         * that are not anymore in any GeoModelElement
+         * that are not anymore in any GeoModelEntity
          */
         void erase_invalid_vertices() ;
         /*!
-         * Gets the mesh elements order
+         * Gets the mesh entities order
          * @return the const order
          */
         index_t get_order() const
@@ -1139,13 +1167,16 @@ namespace RINGMesh {
          * @details This means no colocated vertices, no duplicated edges, 
          * facets or cells.
          */
-        GEO::Mesh* mesh_ ;
+        Mesh* mesh_ ;
+        MeshBuilder* mesh_builder_ ;
+
         /// Optional duplication mode to compute the duplication of cells on surfaces
         mutable GeoModelMeshCells::DuplicateMode mode_ ;
         /// Order of the GeoModelMesh
         index_t order_value_ ;
 
     public:
+
         GeoModelMeshVertices vertices ;
         GeoModelMeshEdges edges ;
         GeoModelMeshFacets facets ;

@@ -63,6 +63,9 @@ namespace RINGMesh {
             GEO::CmdLine::declare_arg(
                 "in:wells", "",
                 "Filename of the input wells" ) ;
+            GEO::CmdLine::declare_arg(
+                "in:validity_save", true,
+                "Saves meshes representing geomodel inconsistencies" ) ;
         }
 
         void import_arg_group_out()
@@ -81,7 +84,7 @@ namespace RINGMesh {
                 "Print statistics on the volume" ) ;
             GEO::CmdLine::declare_arg(
                 "stats:nb", true,
-                "Print statistics on the number of elements" ) ;
+                "Print statistics on the number of entities" ) ;
         }
 
         void import_arg_group_remove_gme()

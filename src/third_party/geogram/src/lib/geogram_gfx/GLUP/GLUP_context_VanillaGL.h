@@ -355,88 +355,6 @@ namespace GLUP {
         void draw_immediate_buffer_GLUP_CONNECTORS();
         
         /**
-         * \brief Computes the intersection between the clipping plane and
-         *  a segment.
-         * \param[in] v1 index of the first extremity of the segment in the
-         *  immediate buffer
-         * \param[in] v2 index of the second extremity of the segment in the
-         *  immediate buffer
-         * \param[in] vi index of where to wrote the intersection in the 
-         *  isect_xxx arrays
-         */
-        void compute_intersection(index_t v1, index_t v2, index_t vi) {
-            const GLUPfloat* eqn = world_clip_plane_;
-            const GLUPfloat* p1 = immediate_state_.buffer[0].element_ptr(v1);
-            const GLUPfloat* p2 = immediate_state_.buffer[0].element_ptr(v2);
-            
-            GLUPfloat t = -eqn[3] -(
-                eqn[0]*p1[0] +
-                eqn[1]*p1[1] +
-                eqn[2]*p1[2]
-            );
-
-            GLUPfloat d =
-                eqn[0]*(p2[0]-p1[0]) +
-                eqn[1]*(p2[1]-p1[1]) +
-                eqn[2]*(p2[2]-p1[2]) ;
-            
-            if(fabs(double(d)) < 1e-6) {
-                t = 0.5f;
-            } else {
-                t /= d;
-            }
-
-            GLUPfloat s = 1.0f - t;
-            
-            isect_point_[4*vi+0] = s*p1[0] + t*p2[0];
-            isect_point_[4*vi+1] = s*p1[1] + t*p2[1];
-            isect_point_[4*vi+2] = s*p1[2] + t*p2[2];
-            isect_point_[4*vi+3] = 1.0f;
-            
-            if(immediate_state_.buffer[1].is_enabled()) {
-                const GLUPfloat* c1 =
-                    immediate_state_.buffer[1].element_ptr(v1);
-                const GLUPfloat* c2 =
-                    immediate_state_.buffer[1].element_ptr(v2);
-                isect_color_[4*vi+0] = s*c1[0] + t*c2[0];
-                isect_color_[4*vi+1] = s*c1[1] + t*c2[1];
-                isect_color_[4*vi+2] = s*c1[2] + t*c2[2];
-                isect_color_[4*vi+3] = s*c1[3] + t*c2[3];                
-            }
-            
-            if(immediate_state_.buffer[2].is_enabled()) {
-                const GLUPfloat* tex1 =
-                    immediate_state_.buffer[2].element_ptr(v1);
-                const GLUPfloat* tex2 =
-                    immediate_state_.buffer[2].element_ptr(v2);
-                
-                isect_tex_coord_[4*vi+0] = s*tex1[0] + t*tex2[0];
-                isect_tex_coord_[4*vi+1] = s*tex1[1] + t*tex2[1];
-                isect_tex_coord_[4*vi+2] = s*tex1[2] + t*tex2[2];
-                isect_tex_coord_[4*vi+3] = s*tex1[3] + t*tex2[3];
-            }
-        }
-
-        /**
-         * \brief Assemble the configuration code of a primitive
-         *  relative to the clipping plane.
-         * \param[in] first_v index of the first vertex of the 
-         *  primitive in the immediate buffer
-         * \param[in] nb_v number of vertices of the primitive
-         * \return an integer with the i-th bit set if vertex i
-         *  is visible, and unset if it is clipped.
-         */
-        index_t get_config(index_t first_v, index_t nb_v) {
-            index_t result = 0;
-            for(index_t lv=0; lv<nb_v; ++lv) {
-                if(v_is_visible_[first_v+lv]) {
-                    result = result | (1u << lv);
-                }
-            }
-            return result;
-        }
-
-        /**
          * \brief Draws all the primitives from the immediate buffer using
          *  the marching cells algorithm.
          * \details This function is used when clipping is enabled and when
@@ -451,31 +369,11 @@ namespace GLUP {
         void end_indirect_texturing();
         
     private:
-
-
         /**
          * \brief Indicates whether a picking id should be send to 
          *  OpenGL for each primitive.
          */
         bool pick_primitives_;
-
-        /**
-         * \brief computed intersections.
-         * \details Used when clipping mode is GLUP_CLIP_SLICE_CELLS.
-         */
-        GLUPfloat isect_point_[12*4];
-
-        /**
-         * \brief computed colors of intersections.
-         * \details Used when clipping mode is GLUP_CLIP_SLICE_CELLS.
-         */
-        GLUPfloat isect_color_[12*4];
-
-        /**
-         * \brief computed texture coordinates of intersections.
-         * \details Used when clipping mode is GLUP_CLIP_SLICE_CELLS.
-         */
-        GLUPfloat isect_tex_coord_[12*4];
 
         /**
          * \brief The program to be used for indirect

@@ -1309,33 +1309,32 @@ namespace GEO {
             int add_vertex_data(p_ply_argument argument) {
                 long coord;
                 ply_get_argument_user_data(argument, nil, &coord);
-                switch(coord) {
-                    case 0:
-                        geo_debug_assert(mesh_.vertices.dimension() >= 3);
-                        if(
-                            current_vertex_ >= mesh_.vertices.nb()
-                        ) {
-                            Logger::err("I/O")
-                                << "File contains extraneous vertex data"
-                                << std::endl;
-                            return 0;
-                        }
-                        current_vertex_++;
-                    // PASS THROUGH
-                    case 1:
-                    case 2:
-                        // Note: current_vertex_ was incremented before,
-                        // so we need to index by current_vertex_ - 1
-                        if(mesh_.vertices.single_precision()) {
-                            mesh_.vertices.single_precision_point_ptr(
-                                current_vertex_-1
-                            )[coord] = float(ply_get_argument_value(argument));
-                        } else {
-                            mesh_.vertices.point_ptr(
-                                current_vertex_-1
-                            )[coord] = ply_get_argument_value(argument);
-                        }
-                        return 1;
+                if(coord == 0) {
+                    geo_debug_assert(mesh_.vertices.dimension() >= 3);
+                    if(
+                        current_vertex_ >= mesh_.vertices.nb()
+                    ) {
+                        Logger::err("I/O")
+                            << "File contains extraneous vertex data"
+                            << std::endl;
+                        return 0;
+                    }
+                    current_vertex_++;
+                }
+
+                if(coord == 0 || coord == 1 || coord == 2) {
+                    // Note: current_vertex_ was incremented before,
+                    // so we need to index by current_vertex_ - 1
+                    if(mesh_.vertices.single_precision()) {
+                        mesh_.vertices.single_precision_point_ptr(
+                            current_vertex_-1
+                        )[coord] = float(ply_get_argument_value(argument));
+                    } else {
+                        mesh_.vertices.point_ptr(
+                            current_vertex_-1
+                        )[coord] = ply_get_argument_value(argument);
+                    }
+                    return 1;
                 }
 
                 Logger::err("I/O")
@@ -1494,27 +1493,26 @@ namespace GEO {
             int add_color_data(p_ply_argument argument) {
                 long coord;
                 ply_get_argument_user_data(argument, nil, &coord);
-                switch(coord) {
-                    case 0:
-                        geo_debug_assert(mesh_.vertices.dimension() >= 9);
-                        if(current_color_ >= mesh_.vertices.nb()) {
-                            Logger::err("I/O")
-                                << "File contains extraneous color data"
-                                << std::endl;
-                            return 0;
-                        }
-                        current_color_++;
-                    // PASS THROUGH
-                    case 1:
-                    case 2:
-                        double value =
-                            double(ply_get_argument_value(argument)) *
-                            color_mult_;
-                        geo_argused(value);
-                        // TODO: copy color into mesh
-                        // (note: use current_color_ - 1 since
-                        //  it was incremented before)
-                        return 1;
+                if(coord == 0) {
+                    geo_debug_assert(mesh_.vertices.dimension() >= 9);
+                    if(current_color_ >= mesh_.vertices.nb()) {
+                        Logger::err("I/O")
+                            << "File contains extraneous color data"
+                            << std::endl;
+                        return 0;
+                    }
+                    current_color_++;
+                }
+
+                if(coord == 0 || coord == 1 || coord == 2) {
+                    double value =
+                        double(ply_get_argument_value(argument)) *
+                        color_mult_;
+                    geo_argused(value);
+                    // TODO: copy color into mesh
+                    // (note: use current_color_ - 1 since
+                    //  it was incremented before)
+                    return 1;
                 }
 
                 Logger::err("I/O")

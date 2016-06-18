@@ -77,10 +77,11 @@ namespace GEO {
          *  does not support some features.
          */
         struct GEOGRAM_GFX_API GLSLCompileError : std::exception {
+
             /**
              * \brief Gets the string identifying the exception
              */
-            virtual const char* what() const throw();
+            virtual const char* what() const GEO_NOEXCEPT;
         };
 
 
@@ -352,6 +353,14 @@ namespace GEO {
         GLint GEOGRAM_GFX_API get_uniform_variable_offset(
             GLuint program, const char* varname
         );
+
+
+        /**
+         * \brief Outputs to the logger everything that can 
+         *  be queried about a program using OpenGL 
+         *  introspection APIs.
+         */
+        void GEOGRAM_GFX_API introspect_program(GLuint program);
         
     }
 }

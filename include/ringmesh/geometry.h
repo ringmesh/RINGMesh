@@ -383,6 +383,15 @@ namespace RINGMesh {
         const vec3& trgl2,
         vec3& result ) ;
 
+    bool RINGMESH_API tetra_barycentric_coordinates(
+        const vec3& p,
+        const vec3& p0,
+        const vec3& p1,
+        const vec3& p2,
+        const vec3& p3,
+        double lambda[4] ) ;
+
+
     void RINGMESH_API rotation_matrix_about_arbitrary_axis(
         const vec3& origin,
         const vec3& axis,
@@ -502,9 +511,8 @@ namespace RINGMesh {
         ringmesh_disable_copy( ColocaterANN ) ;
     public:
         enum MeshLocation {
-            VERTICES, EDGES, FACETS, CELLS, CELL_FACETS
+            VERTICES, EDGES, FACETS, CELLS, CELL_FACETS, NB_LOCATION
         } ;
-        ColocaterANN() ;
         ColocaterANN(
             const GEO::Mesh& mesh,
             const MeshLocation& location,
@@ -513,11 +521,20 @@ namespace RINGMesh {
 
         ~ColocaterANN()
         {
-            if( ann_points_ != nil ) delete[] ann_points_ ;
+            if( delete_points_ ) delete[] ann_points_ ;
         }
 
         bool get_colocated( const vec3& v, std::vector< index_t >& result ) const ;
-
+        /*!
+         * @brief Gets the \p index_map that link all the points to a no duplicated list of index.
+         * @return the number of colocated vertices
+         */
+        index_t get_colocated_index_mapping( GEO::vector< index_t >& index_map ) const ;
+        /*!
+         * @brief Gets the \p index_map that link all the points to a no duplicated list of index in the list of \p unique_points.
+         * @return the number of colocated vertices
+         */
+        index_t get_colocated_index_mapping( GEO::vector< index_t >& index_map, GEO::vector< vec3 >& unique_points ) const ;
         /*!
         * Gets the closest neighbor point
         * @param[in] v the point to test
@@ -539,6 +556,10 @@ namespace RINGMesh {
             std::vector< index_t >& result,
             double* dist = nil ) const ;
 
+        index_t nb_points() const {
+            return ann_tree_->nb_points() ;
+        }
+
     private:
         void build_colocater_ann_vertices( const GEO::Mesh& mesh, bool copy ) ;
         void build_colocater_ann_edges( const GEO::Mesh& mesh ) ;
@@ -552,8 +573,14 @@ namespace RINGMesh {
     private:
         /// KdTree to compute the nearest neighbor search
         GEO::NearestNeighborSearch_var ann_tree_ ;
-        /// Array of the points (size of 3xnumber of points), possibly nil
+        /// Array of the points (size of 3xnumber of points)
         double* ann_points_ ;
+        /*!
+         * @brief Indicates if ann_points_ should ne deleted.
+         * @details No need to delete ann_points_ if it is a simple pointer
+         * to the mesh vertex array.
+         */
+        bool delete_points_ ;
     } ;
 
 }

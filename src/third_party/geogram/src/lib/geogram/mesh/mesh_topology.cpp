@@ -148,7 +148,6 @@ namespace GEO {
 
     GEO::Mesh non_variety_borders ;
     signed_index_t mesh_nb_borders(const Mesh& M) {
-        static const index_t NO_VERTEX = index_t(-1);
         // Step 1: chain vertices around borders
         std::vector<index_t> next_around_border(M.vertices.nb(),NO_VERTEX);
         for(index_t f = 0; f < M.facets.nb(); ++f) {

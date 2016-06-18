@@ -79,9 +79,17 @@ namespace GEO {
         }
 
         /**
+         * \brief GeoFileException copy constructor.
+         * \param[in] rhs a const reference to the GeoFileException to be
+         *  copied.
+         */
+        GeoFileException(const GeoFileException& rhs) : logic_error(rhs) {
+        }
+        
+        /**
          * \brief GeoFileException destructor.
          */
-        virtual ~GeoFileException() throw();
+        virtual ~GeoFileException() GEO_NOEXCEPT;
     };
 
     /**************************************************************/
