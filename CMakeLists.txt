@@ -358,6 +358,7 @@ if(RINGMESH_WITH_UTILITIES)
     add_subdirectory(src/ringmesh_horizon_area)
     add_subdirectory(src/ringmesh_fault_offset_info)
     add_subdirectory(src/ringmesh_distance)
+    add_subdirectory(src/geogram_hausdorff)
 endif(RINGMESH_WITH_UTILITIES)
 
 if(RINGMESH_WITH_TESTS)
