@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_BASIC_COUNTED__
-#define __GEOGRAM_BASIC_COUNTED__
+#ifndef GEOGRAM_BASIC_COUNTED
+#define GEOGRAM_BASIC_COUNTED
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/smart_pointer.h>

@@ -53,6 +53,15 @@
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/permutation.h>
 
+// ParallelDelaunayThread class, declared locally, has
+// no out-of-line virtual functions. It is not a
+// problem since they are only visible from this translation
+// unit, but clang will complain.
+#ifdef __clang__
+#pragma GCC diagnostic ignored "-Wweak-vtables"
+#endif
+
+
 #ifdef GEO_OS_WINDOWS
 
 namespace {
@@ -124,7 +133,7 @@ namespace {
     /**
      * \brief Generates a random integer.
      * \return a random integer between 0 and \p choices - 1
-     * \param [in] choices number of possible choices for the
+     * \param [in] choices_in number of possible choices for the
      *   random variable (maximum value + 1)
      * \details The function is thread-safe, and uses one seed
      *  per thread.
@@ -150,8 +159,6 @@ namespace {
     /**
      * \brief Generates a random integer between 0 and 3.
      * \return a random integer between 0 and 3
-     * \param [in] choices number of possible choices for the
-     *   random variable (maximum value + 1)
      * \details The function is thread-safe, and uses one seed
      *  per thread.
      */
@@ -811,11 +818,11 @@ namespace GEO {
             // Sanity check: make sure this threads owns all the tets 
             // in conflict and their neighbors.
             for(index_t i=0; i<tets_to_delete_.size(); ++i) {
-                index_t t = tets_to_delete_[i];
-                geo_debug_assert(owns_tet(t));
+                index_t tdel = tets_to_delete_[i];
+                geo_debug_assert(owns_tet(tdel));
                 for(index_t lf=0; lf<4; ++lf) {
-                    geo_debug_assert(tet_adjacent(t,lf) >= 0);
-                    geo_debug_assert(owns_tet(index_t(tet_adjacent(t,lf))));
+                    geo_debug_assert(tet_adjacent(tdel,lf) >= 0);
+                    geo_debug_assert(owns_tet(index_t(tet_adjacent(tdel,lf))));
                 }
             }
 #endif
@@ -846,11 +853,11 @@ namespace GEO {
             // For debugging purposes.
 #ifdef GEO_DEBUG
             for(index_t i=0; i<tets_to_delete_.size(); ++i) {
-                index_t t = tets_to_delete_[i];
-                set_tet_vertex(t,0,-2);
-                set_tet_vertex(t,1,-2);
-                set_tet_vertex(t,2,-2);
-                set_tet_vertex(t,3,-2);
+                index_t tdel = tets_to_delete_[i];
+                set_tet_vertex(tdel,0,-2);
+                set_tet_vertex(tdel,1,-2);
+                set_tet_vertex(tdel,2,-2);
+                set_tet_vertex(tdel,3,-2);
             }
 #endif
        
@@ -979,10 +986,8 @@ namespace GEO {
          *  \p p, as returned by locate()
          * \param[out] t_bndry a tetrahedron adjacent to the
          *  boundary of the conflict zone
-         * \param[out] f_boundary the facet along which t_bndry is
+         * \param[out] f_bndry the facet along which t_bndry is
          *  adjacent to the boundary of the conflict zone
-         * \param[out] first the index of the first tetrahedron in conflict
-         * \param[out] last the index of the last tetrahedron in conflict
          *  The other tetrahedra are linked, and can be traversed 
          *  from \p first by using tet_next() until \p last or END_OF_LIST 
          *  is reached.
@@ -1043,8 +1048,6 @@ namespace GEO {
           *  in the conflict zone and calls itself recursively on them.
           * \param[in] p the point to be inserted
           * \param[in] t_in index of a tetrahedron in the conflict zone
-          * \param[out] first the index of the first tetrahedron in conflict
-          * \param[out] last the index of the last tetrahedron in conflict
           * \pre The tetrahedron \p t was alredy marked as 
           *  conflict (tet_is_in_list(t))
           */
@@ -1121,8 +1124,6 @@ namespace GEO {
           *  in the conflict zone and calls itself recursively on them.
           * \param[in] p the point to be inserted
           * \param[in] t index of a tetrahedron in the conflict zone
-          * \param[out] first the index of the first tetrahedron in conflict
-          * \param[out] last the index of the last tetrahedron in conflict
           * \pre The tetrahedron \p t was alredy marked as 
           *  conflict (tet_is_in_list(t))
           */
@@ -1334,13 +1335,15 @@ namespace GEO {
              // since there exists configurations in which
              // locate_inexact() loops forever !
 
-             index_t new_hint = locate_inexact(p, hint, 2500);
+             {
+                 index_t new_hint = locate_inexact(p, hint, 2500);
 
-             if(new_hint == NO_TETRAHEDRON) {
-                 return NO_TETRAHEDRON;
+                 if(new_hint == NO_TETRAHEDRON) {
+                     return NO_TETRAHEDRON;
+                 }
+
+                 hint = new_hint;
              }
-
-             hint = new_hint;
 
              // If no hint specified, find a tetrahedron randomly
 
@@ -1620,7 +1623,7 @@ namespace GEO {
 #else            
             interfering_thread_ = 
                 __sync_val_compare_and_swap(
-                    &cell_thread_[t], NO_THREAD, id() << 1
+                    &cell_thread_[t], NO_THREAD, thread_index_t(id() << 1)
                 );
 #endif
             
@@ -1915,11 +1918,11 @@ namespace GEO {
         
         /**
          * \brief Finds the index of the facet accross which t1 is 
-         *  adjacent to t2.
+         *  adjacent to t2_in.
          * \param[in] t1 first tetrahedron
-         * \param[in] t2 second tetrahedron
-         * \return f such that tet_adjacent(t1,f)==t2
-         * \pre \p t1 and \p t2 are adjacent
+         * \param[in] t2_in second tetrahedron
+         * \return f such that tet_adjacent(t1,f)==t2_in
+         * \pre \p t1 and \p t2_in are adjacent
          */
         index_t find_tet_adjacent(
             index_t t1, index_t t2_in
@@ -2733,8 +2736,8 @@ namespace GEO {
         delete W;
 
         if(debug_mode_) {
-            Delaunay3dThread* thread0 = 
-                static_cast<Delaunay3dThread*>(threads_[0].get());
+//            Delaunay3dThread* thread0 = 
+//                static_cast<Delaunay3dThread*>(threads_[0].get());
             
             for(index_t i=0; i<threads_.size(); ++i) {
                 std::cerr << i << " : " <<

@@ -61,17 +61,25 @@
 #include <set> // [Bruno]
 #include <geogram/basic/common.h>
 
-// [Bruno] I got too many complaints in tetgen so I "close my eyes" and pray !!
+// [Bruno] I got too many complaints in tetgen so I "close my eyes" :-)
 #ifdef __GNUC__
 #ifndef __ICC
 #pragma GCC diagnostic ignored "-Wuninitialized"
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #pragma GCC diagnostic ignored "-Wint-to-pointer-cast"
-#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
-//#pragma GCC diagnostic ignored "-Wmaybe-uninitialized" // Do not work for gcc <= 4.6 [RINGMesh]
+
 #pragma GCC diagnostic ignored "-Warray-bounds"
 #pragma GCC diagnostic ignored "-Wconversion"
 #pragma GCC diagnostic ignored "-Wunused-result"
+
+#ifdef __clang__
+#pragma GCC diagnostic ignored "-Wmissing-noreturn"
+#pragma GCC diagnostic ignored "-Wcast-align"
+#else
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
+
 #endif
 #endif
 

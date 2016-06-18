@@ -3,6 +3,8 @@
 
 if(WIN32)
    set(VORPALINE_PLATFORM Win-vs-dynamic-generic)
+elseif(APPLE)
+   set(VORPALINE_PLATFORM Darwin-clang-dynamic)
 elseif(UNIX)
    set(VORPALINE_PLATFORM Linux64-gcc-dynamic)
 endif()

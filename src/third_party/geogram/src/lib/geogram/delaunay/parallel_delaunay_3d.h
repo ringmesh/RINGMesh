@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_PARALLEL_DELAUNAY_DELAUNAY_3D__
-#define __GEOGRAM_PARALLEL_DELAUNAY_DELAUNAY_3D__
+#ifndef GEOGRAM_PARALLEL_DELAUNAY_DELAUNAY_3D
+#define GEOGRAM_PARALLEL_DELAUNAY_DELAUNAY_3D
 
 #ifdef GEOGRAM_WITH_PDEL
 
@@ -114,7 +114,7 @@ namespace GEO {
     public:
         /**
          * \brief Constructs a new ParallelDelaunay3d.
-         * \param[in] dim dimension of the triangulation (3 or 4).
+         * \param[in] dimension dimension of the triangulation (3 or 4).
          * If dimension = 4, this creates a regular triangulation
          *  (dual of a power diagram). In this case:
          *  - the input points are 4d points, were the fourth coordinate

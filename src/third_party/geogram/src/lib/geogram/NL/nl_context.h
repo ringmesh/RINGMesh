@@ -42,8 +42,8 @@
  *
  */
 
-#ifndef __NL_CONTEXT__
-#define __NL_CONTEXT__
+#ifndef OPENNL_CONTEXT_H
+#define OPENNL_CONTEXT_H
 
 #include "nl_private.h"
 #include "nl_matrix.h"
@@ -363,7 +363,7 @@ void nlCheckState(NLenum state) ;
  * \details If the current state does not match \p state, then
  *  the program is aborted with an error message. The current 
  *  state is replaced by \p to_state. 
- * \param[in] state the expected current state
+ * \param[in] from_state the expected current state
  * \param[in] to_state the new state
  */
 void nlTransition(NLenum from_state, NLenum to_state) ;
@@ -384,6 +384,6 @@ void nlMatrixVectorProd_default(const NLdouble* x, NLdouble* y) ;
  * \retval NL_TRUE if solve was successful
  * \retval NL_FALSE otherwise
  */
-NLboolean nlDefaultSolver() ;
+NLboolean nlDefaultSolver(void) ;
 
 #endif

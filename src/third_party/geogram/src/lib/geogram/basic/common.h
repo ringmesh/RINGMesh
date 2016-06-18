@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_BASIC_COMMON__
-#define __GEOGRAM_BASIC_COMMON__
+#ifndef GEOGRAM_BASIC_COMMON
+#define GEOGRAM_BASIC_COMMON
 
 #include <geogram/api/defs.h>
 
@@ -57,6 +57,7 @@
  * \brief Common include file, providing basic definitions. Should be
  *  included before anything else by all header files in Vorpaline.
  */
+
 
 /**
  * \brief Global Vorpaline namespace
@@ -207,11 +208,27 @@ namespace GEO {
 #  define GEO_OPENMP
 #endif
 
+#if defined(__clang__)
+#  define GEO_COMPILER_CLANG
+#else
+#  error "Unsupported compiler"
+#endif
+
 #if defined(__x86_64) || defined(__ppc64__)
 #  define GEO_ARCH_64
 #else
 #  define GEO_ARCH_32
 #endif
+
+// =============================== Emscripten defines  ======================
+
+#elif defined(__EMSCRIPTEN__)
+
+#define GEO_OS_UNIX
+#define GEO_OS_LINUX
+#define GEO_OS_EMSCRIPTEN
+#define GEO_ARCH_64
+#define GEO_COMPILER_EMSCRIPTEN
 
 // =============================== Unsupported =============================
 #else
@@ -241,6 +258,24 @@ namespace GEO {
  * \brief Creates a new symbol by concatenating its arguments
  */
 #define CPP_CONCAT(A, B) CPP_CONCAT_(A, B)
+
+#if defined(GOMGEN)
+#define GEO_NORETURN
+#elif defined(GEO_COMPILER_CLANG) || \
+    defined(GEO_COMPILER_GCC)   || \
+    defined(GEO_COMPILER_EMSCRIPTEN)
+#define GEO_NORETURN __attribute__((noreturn))
+#else
+#define GEO_NORETURN
+#endif
+
+#if defined(GOMGEN)
+#define GEO_NORETURN_DECL 
+#elif defined(GEO_COMPILER_MSVC)
+#define GEO_NORETURN_DECL __declspec(noreturn)
+#else
+#define GEO_NORETURN_DECL 
+#endif
 
 #endif
 

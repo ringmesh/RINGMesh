@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_NUMERICS_MULTI_PRECISION__
-#define __GEOGRAM_NUMERICS_MULTI_PRECISION__
+#ifndef GEOGRAM_NUMERICS_MULTI_PRECISION
+#define GEOGRAM_NUMERICS_MULTI_PRECISION
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/numeric.h>
@@ -750,7 +750,7 @@ namespace GEO {
         /**
          * \brief Computes the required capacity of an expansion
          *  to store an exact 2x2 determinant.
-         * \param[in] a11,a12,a21,a22 coefficients of the determinant
+         * \param[in] a11 , a12 , a21 , a22 coefficients of the determinant
          * \return the required capacity of an expansion to store
          *  the exact determinant \p a11 * \p a22 - \p a21 * \p a12
          */
@@ -768,7 +768,7 @@ namespace GEO {
          *  (should not be used by client code).
          * \details Do not use directly, use expansion_det2x2()
          * macro instead.
-         * \param[in] a11,a12,a21,a22 coefficients of the determinant
+         * \param[in] a11 , a12 , a21 , a22 coefficients of the determinant
          * \return the new value of this expansion, with
          *  the exact determinant \p a11 * \p a22 - \p a21 * \p a12
          * \pre capacity() >= det_2x2_capacity(a11,a12,,a21,a22)
@@ -781,7 +781,7 @@ namespace GEO {
         /**
          * \brief Computes the required capacity of an expansion
          *  to store an exact 3x3 determinant.
-         * \param[in] a11,a12,a13,a21,a22,a23,a31,a32,a33
+         * \param[in] a11 , a12 , a13 , a21 , a22 , a23 , a31 , a32 , a33
          *   coefficients of the determinant
          * \return the required capacity of an expansion to store
          *  the exact value of the determinant
@@ -807,7 +807,7 @@ namespace GEO {
          *  (should not be used by client code).
          * \details Do not use directly, use expansion_det3x3()
          * macro instead.
-         * \param[in] a11,a12,a13,a21,a22,a23,a31,a32,a33
+         * \param[in] a11 , a12 , a13 , a21 , a22 , a23 , a31 , a32 , a33
          *   coefficients of the determinant
          * \return the new value of this expansion, with
          *  the exact 3x3 determinant
@@ -824,7 +824,7 @@ namespace GEO {
          * \brief Computes the required capacity of an expansion
          *  to store an exact 3x3 determinant where the
          *  first row is 1 1 1.
-         * \param[in] a21,a22,a23,a31,a32,a33 coefficients 
+         * \param[in] a21 , a22 , a23 , a31 , a32 , a33 coefficients 
          *  of the determinant
          * \return the required capacity of an expansion to store
          *  the exact value of the determinant
@@ -844,7 +844,7 @@ namespace GEO {
          *  where the first row is 1 1 1(should not be used by client code).
          * \details Do not use directly, use expansion_det_111_3x3()
          * macro instead.
-         * \param[in] a21,a22,a23,a31,a32,a33 coefficients 
+         * \param[in] a21 , a22 , a23 , a31 , a32 , a33 coefficients 
          *  of the determinant
          * \return the new value of this expansion, with
          *  the exact 3x3 determinant
@@ -918,7 +918,7 @@ namespace GEO {
         /**
          * \brief Computes the required capacity to store the 
          *  length of a 3d vector.
-         * \param[in] x,y,z coordinates of the vector
+         * \param[in] x , y , z coordinates of the vector
          * \return the capacity required to store the squared norm
          *   of [x,y,z]
          */
@@ -932,7 +932,7 @@ namespace GEO {
          * \brief Assigns the lenght of a vector to this expansion 
          *  (should not be used by client code). Do not call this
          *  function directy, use expansion_length2() macro instead.
-         * \param[in] x,y,z coordinates of the vector
+         * \param[in] x , y , z coordinates of the vector
          * \return the new value of this expansion, with the squared
          *  length of [x,y,z]
          */

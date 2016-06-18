@@ -49,36 +49,36 @@ namespace GEO {
 
 \page geogram_compiling Instructions for compiling Geogram
 
-Geogram is tested under Linux (32 and 64 bits) and Windows (32 and 64 bits).
+Geogram is tested under Linux (32 and 64 bits), Windows (32 and 64 bits) and MacOS/X.
 You will need CMake (version >= 2.8.11). There is no other dependancy (everything
 that you need is shipped with Geogram). It also works with Android (ARMv7 processors).
-Follow the Linux, Windows or Android instructions below.
-This will generate example files in the bin/ directory. 
+Follow the Linux, MacOS/X, Windows or Android instructions below. In addition, Emscripten (C++ to
+Javascript transpiler) is also supported. Specific instructions for each platform are detailed below.
 
-Linux
-=====
+Linux and MacOS/X
+=================
 
 Default options
 ---------------
 
 - sh -f configure.sh
-- cd build/Linux64-gcc-Release
+- cd build/Linux64-gcc-dynamic-Release (Linux) or build/Darwin-clang-dynamic-Release (MacOS/X)
 - make
 
-This will generate static libraries and statically linked executable. If you want
-shared objects and dynamically linked executables, see below.
+This will generate dynamic libraries and dynamically linked executables. If you want
+statically linked executables, see below.
 
 Fine tuning
 -----------
 
 Alternatively, you can use:
 - sh -f configure.sh <platform_name>
-where <platform_name> is the name of one of the subdirectories in
-<geogram_path>/cmake/platforms
 
-For instance, for generating shared objects and dynamically linked executables, use:
-- sh -f configure.sh Linux64-gcc-dynamic
+For instance, for generating statically linked executable, use:
+- sh -f configure.sh Linux64-gcc
 
+To obtain the list of supported platforms, use:
+- sh -f configure.sh --help-platforms
 
 Windows
 =======
@@ -124,7 +124,6 @@ CMakeOptions.txt, modifying it and re-running CMake:
    from the [three-clauses BSD license](http://en.wikipedia.org/wiki/BSD_licenses) used by GEOGRAM
 - GEOGRAM_WITH_GRAPHICS: set to FALSE to deactivate compilation of all graphics-related libs and programs
  (geogram_gfx, vorpaview, medit)
-- GEOGRAM_WITH_MEDIT: set to FALSE to deactivate compilation of Pascal Frey's medit viewer
 - GEOGRAM_WITH_FPG: set to TRUE to activate compilation of Meyer and Pion's predicate filter generator (required
  if you plan to write new PCK predicates).
 
@@ -200,8 +199,45 @@ What is the point ?
 -------------------
 
 A portable, small, easy to compile and efficient geometry processing library can be useful
-for many projects, including 3D reconstruction with a mobile phone [@ETH Zurich](http://cvg.ethz.ch/mobile/),
+for many projects, including 3D reconstruction with a mobile phone [here](http://cvg.ethz.ch/mobile/),
 reconstructions of buildings using drones, ...
+
+Emscripten
+==========
+
+[Emscripten](http://kripken.github.io/emscripten-site/) is a C++ to Javascript "transpiler".
+It can create webpages with embedded OpenGL-enabled programs that can be executed in any
+modern webbrower, without needing any plugin. Some examples of web-compiled geogram
+programs are available [here](http://alice.loria.fr/~levy/GLUP). 
+
+To transform a geogram C++ program into a web appliction,
+you first need to install a version of Emscripten for your system, follow instructions
+on [Emscripten website](http://kripken.github.io/emscripten-site/). The EMSCRIPTEN
+environment variable should point to the installation.
+
+Compiling geogram for Emscripten
+--------------------------------
+
+- sh -f configure.sh Emscripten-clang
+- cd build/Emscripten-clang-Release
+- make
+
+Creating a webpage around a program
+-----------------------------------
+
+- cd build/Emscripten-clang-Release/bin
+- <geogram_root>/tools/gen_emscripten_html.sh test_glup.js
+
+If you need to embed datafiles:
+- <geogram_root>/tools/gen_emscripten_html.sh vorpaview.js morph.tet6
+
+All the datafiles specified on the command line after the js executable will be aggregated
+in an archive that is preloaded by the webpage (they are then accessible through a "pseudo
+file system" that interprets file system calls like open(), read(), close()...).
+
+The so-generated programs are executable by any modern webbrowser (it uses HTML5/Javascript/WebGL).
+Performance is approximatively half the speed of a native single-threaded application, which is
+reasonable for doing small demos / teaching / educational programs...
 
 Generating the documentation
 ============================
@@ -211,13 +247,13 @@ is available [here](http://alice.loria.fr/software/geogram/doc/html/).
 You may want to generate the documentation from your own version, or
 change some options of documentation generation.
 
-Linux 
------
+Linux and MacOS/X
+-----------------
 
 You will need "doxygen" to generate the documentation.
 
 - sh -f configure.sh
-- cd build/Linux64-gcc-Release
+- cd build/Linux64-gcc-dynamic-Release (or build/Darwin-clang-dynamic-Release on MacOS/X)
 - make doc-devkit-full
 
 This generates the documentation in doc/devkit-full/html

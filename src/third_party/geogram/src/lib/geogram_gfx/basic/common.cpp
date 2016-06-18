@@ -54,16 +54,20 @@ namespace GEO {
     namespace Graphics {
 
         void initialize() {
+#ifndef GEO_OS_EMSCRIPTEN
             if(!gladLoadGL()) {
                 Logger::err("GLAD") << "Could not load OpenGL"
                                    << std::endl;
             }
+#endif            
+            GL::initialize();
             GLSL::initialize();
             atexit(GEO::Graphics::terminate);            
         }
 
         void terminate() {
-            GLSL::terminate();            
+            GLSL::terminate();
+            GL::terminate();
         }
         
     }

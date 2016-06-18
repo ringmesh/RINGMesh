@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_BASIC_PROGRESS__
-#define __GEOGRAM_BASIC_PROGRESS__
+#ifndef GEOGRAM_BASIC_PROGRESS
+#define GEOGRAM_BASIC_PROGRESS
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/logger.h>

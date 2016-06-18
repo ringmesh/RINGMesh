@@ -49,8 +49,8 @@
  * \brief Some basic linear algebra routines used by OpenNL internally.
  */
 
-#ifndef __NL_BLAS__
-#define __NL_BLAS__
+#ifndef OPENNL_BLAS_H
+#define OPENNL_BLAS_H
 
 #ifndef NL_FORTRAN_WRAP
 #define NL_FORTRAN_WRAP(x) x##_
@@ -62,7 +62,7 @@
 
 /**
  * \brief Scales a vector.
- * \details \f$ x \leftarrow a x \f$
+ * \details In formula: \f$ x \leftarrow a x \f$
  * \param[in] n dimension of the vector
  * \param[in] a scaling coefficient
  * \param[in,out] x vector to be scaled
@@ -72,7 +72,7 @@ void dscal( int n, double a, double *x, int incx ) ;
 
 /**
  * \brief Copies a vector.
- * \details \f$ y \leftarrow x \f$
+ * \details In formula: \f$ y \leftarrow x \f$
  * \param[in] n dimension of the vector
  * \param[in] x source vector
  * \param[in] incx straddle between two consecutive coefficients
@@ -87,7 +87,7 @@ void dcopy(
 
 /**
  * \brief Computes a linear combination of two vectors
- * \details \f$ y \leftarrow a x + y \f$
+ * \details In formula: \f$ y \leftarrow a x + y \f$
  * \param[in] n dimension of the vectors
  * \param[in] a scaling coefficient
  * \param[in] x source vector to be scaled and added

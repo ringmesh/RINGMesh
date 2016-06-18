@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_POINTS_KD_TREE__
-#define __GEOGRAM_POINTS_KD_TREE__
+#ifndef GEOGRAM_POINTS_KD_TREE
+#define GEOGRAM_POINTS_KD_TREE
 
 #include <geogram/basic/common.h>
 #include <geogram/points/nn_search.h>

@@ -48,9 +48,9 @@
 #ifdef GEO_OS_UNIX
 
 #include <geogram/basic/process.h>
+#include <geogram/basic/process_private.h>
 #include <geogram/basic/atomics.h>
 #include <geogram/basic/logger.h>
-#include <geogram/basic/stacktrace.h>
 #include <geogram/basic/progress.h>
 #include <geogram/basic/line_stream.h>
 
@@ -71,6 +71,12 @@
 #include <new>
 
 #define GEO_USE_PTHREAD_MANAGER
+
+// Suppresses a warning with CLANG when sigaction is used.
+#if defined(__clang__)
+#pragma clang diagnostic ignored "-Wunknown-pragmas"
+#pragma clang diagnostic ignored "-Wdisabled-macro-expansion"
+#endif
 
 namespace {
 
@@ -229,28 +235,32 @@ namespace {
 
     /**
      * \brief Abnormal termination handler
-     * \details Prints a stacktrace and exits the program. If \p message is
-     * non null, the following message is printed before the stacktrace:
+     * \details If \p message is
+     * non null, the following message is printed before exiting.
      * <em>Abnormal program termination: message</em>
      * \param[in] message optional message to print
      */
-    void abnormal_program_termination(const char* message = nil) {
+    GEO_NORETURN_DECL void abnormal_program_termination(
+        const char* message = nil
+    ) GEO_NORETURN;
+    
+    void abnormal_program_termination(const char* message) {
         if(message != nil) {
             // Do not use Logger here!
             std::cout
                 << "Abnormal program termination: "
                 << message << std::endl;
         }
-
-        Process::show_stack_trace();
         exit(1);
     }
 
     /**
      * \brief Signal handler
-     * \details The handler prints a stack trace and exits the application
+     * \details The handler exits the application
      * \param[in] signal signal number
      */
+    GEO_NORETURN_DECL void signal_handler(int signal) GEO_NORETURN;
+    
     void signal_handler(int signal) {
         const char* sigstr = strsignal(signal);
         std::ostringstream os;
@@ -260,11 +270,15 @@ namespace {
 
     /**
      * \brief Floating point error handler
-     * \details The handler prints a stack trace and exits the application
+     * \details The handler exits the application
      * \param[in] signal signal number
      * \param[in] si signal information structure
      * \param[in] data additional data (unused)
      */
+    GEO_NORETURN_DECL void fpe_signal_handler(
+        int signal, siginfo_t* si, void* data
+    ) GEO_NORETURN;
+    
     void fpe_signal_handler(int signal, siginfo_t* si, void* data) {
         geo_argused(signal);
         geo_argused(data);
@@ -320,6 +334,8 @@ namespace {
     /**
      * Catches unexpected C++ exceptions
      */
+    GEO_NORETURN_DECL void unexpected_handler() GEO_NORETURN;
+    
     void unexpected_handler() {
         abnormal_program_termination("function unexpected() was called");
     }
@@ -327,6 +343,8 @@ namespace {
     /**
      * Catches uncaught C++ exceptions
      */
+    GEO_NORETURN_DECL void terminate_handler() GEO_NORETURN;
+    
     void terminate_handler() {
         abnormal_program_termination("function terminate() was called");
     }
@@ -334,6 +352,8 @@ namespace {
     /**
      * Catches allocation errors
      */
+    GEO_NORETURN_DECL void memory_exhausted_handler() GEO_NORETURN;
+    
     void memory_exhausted_handler() {
         abnormal_program_termination("memory exhausted");
     }
@@ -393,6 +413,13 @@ namespace GEO {
             // It works for both Linux and Android.
             size_t result = 0;
             LineInput in("/proc/self/status");
+            
+            // Some versions of Unix may not have the proc
+            // filesystem (or a different organization)
+            if(!in.OK()) {
+                return result;
+            }
+            
             while(!in.eof() && in.get_line()) {
                 in.get_fields();
                 if(in.field_matches(0,"VmPeak:")) {
@@ -404,6 +431,12 @@ namespace GEO {
         }
 
         bool os_enable_FPE(bool flag) {
+#ifdef GEO_OS_APPLE
+// #include <xmmintrin.h>
+// _MM_SET_EXCEPTION_MASK(_MM_GET_EXCEPTION_MASK() & ~_MM_MASK_INVALID);
+            geo_argused(flag);
+            return false;
+#else
             int excepts = 0
                 // | FE_INEXACT   // inexact result
                    | FE_DIVBYZERO   // division by zero
@@ -411,12 +444,18 @@ namespace GEO {
                    | FE_OVERFLOW    // result not representable due to overflow
                    | FE_INVALID     // invalid operation
                    ;
+#ifdef GEO_OS_EMSCRIPTEN
+            geo_argused(flag);
+            geo_argused(excepts);
+#else            
             if(flag) {
                 feenableexcept(excepts);
             } else {
                 fedisableexcept(excepts);
             }
+#endif            
             return true;
+#endif
         }
 
         bool os_enable_cancel(bool flag) {

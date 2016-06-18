@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_BASIC_ARGUSED__
-#define __GEOGRAM_BASIC_ARGUSED__
+#ifndef GEOGRAM_BASIC_ARGUSED
+#define GEOGRAM_BASIC_ARGUSED
 
 #include <geogram/basic/common.h>
 

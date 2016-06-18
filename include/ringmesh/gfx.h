@@ -93,8 +93,6 @@ namespace RINGMesh {
         void initialize() ;
         void need_to_update() ;
 
-        void compute_colormap() ;
-
 //        void set_scalar_attribute()
         void set_cell_vertex_attribute(
             const std::string& name,

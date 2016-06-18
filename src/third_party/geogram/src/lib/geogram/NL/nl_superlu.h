@@ -42,8 +42,8 @@
  *
  */
 
-#ifndef __NL_SUPERLU__
-#define __NL_SUPERLU__
+#ifndef OPENNL_SUPERLU_H
+#define OPENNL_SUPERLU_H
 
 #include "nl_private.h"
 
@@ -67,7 +67,7 @@
  * \retval NL_TRUE if solve was successful
  * \retval NL_FALSE otherwise
  */
-NLboolean nlSolve_SUPERLU();
+NLboolean nlSolve_SUPERLU(void);
 
 /**
  * \brief Initializes the SUPERLU extension
@@ -82,7 +82,7 @@ NLboolean nlSolve_SUPERLU();
  * \note For now, only implemented under Linux in 
  *  dynamic libraries mode
  */
-NLboolean nlInitExtension_SUPERLU();
+NLboolean nlInitExtension_SUPERLU(void);
 
 
 #endif

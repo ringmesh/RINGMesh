@@ -210,7 +210,7 @@ namespace {
      * \details Generates \p nb_vertices vertices randomly distributed on the
      * surface of a cone. The generated vertices are stored to output vector
      * \p vertices.
-     * \param[out] points output vector of vertices coordinates
+     * \param[out] vertices output vector of vertices coordinates
      * \param[in] nb_vertices number of vertices to generate
      * \param[in] use_random_vertices if true, random angular sampling is used
      */

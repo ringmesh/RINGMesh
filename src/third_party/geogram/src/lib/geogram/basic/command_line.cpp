@@ -52,7 +52,7 @@
 #include <iostream>
 #include <iomanip>
 
-#ifdef GEO_OS_LINUX
+#if defined(GEO_OS_LINUX) || defined(GEO_OS_APPLE)
 #include <sys/ioctl.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -784,6 +784,9 @@ namespace {
      * \brief Recomputes the width of the terminal
      */
     void update_ui_term_width() {
+#ifdef GEO_OS_EMSCRIPTEN
+        return; // ioctl not implemented under emscripten
+#else
 #ifndef GEO_OS_WINDOWS
         if(is_redirected()) {
             return;
@@ -805,6 +808,7 @@ namespace {
             ui_right_margin = 4;
         }
 #endif
+#endif        
     }
 
     /**
