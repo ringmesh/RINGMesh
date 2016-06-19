@@ -51,10 +51,6 @@ namespace RINGMesh {
     class GeoModel ;
 }
 
-namespace GEO {
-    class Mesh ;
-}
-
 namespace RINGMesh {
 
     class RINGMESH_API DuplicateInterfaceBuilder: public GeoModelBuilder {
@@ -66,17 +62,17 @@ namespace RINGMesh {
     private:
         void homogenize_normal_orientation_surface_all_interfaces() ;
         void homogenize_normal_orientation_surface_one_interface(
-            const GeoModelElement& fault_interface,
+            const GeoModelEntity& fault_interface,
             std::vector< index_t >& surfaces_to_inverse_normals ) ;
         void get_new_surfaces(
-            const GeoModelElement& interface_to_duplicate,
+            const GeoModelEntity& interface_to_duplicate,
             std::vector< std::vector< index_t > >& to_erase_by_type ) ;
         void build_merged_surfaces(
             const std::map< index_t, std::vector< index_t > >& surfaces_boundary_regions,
             const std::string& side_name,
             std::vector< std::vector< index_t > >& to_erase_by_type,
             const GME::gme_t& sided_interface_gme_t,
-            const GeoModelElement& interface_to_duplicate ) ;
+            const GeoModelEntity& interface_to_duplicate ) ;
         void compute_translation_vectors_duplicated_fault_network_surfaces_and_regions(
             index_t first_new_interface_index,
             const std::vector< std::vector< index_t > >& to_erase_by_type ) ;
@@ -87,13 +83,13 @@ namespace RINGMesh {
             const std::vector< std::vector< index_t > >& to_erase_by_type ) ;
         void save_normals_on_one_new_interface(
             const std::vector< std::vector< index_t > >& to_erase_by_type,
-            const GeoModelElement& interface_gme ) const ;
+            const GeoModelEntity& interface_gme ) const ;
         vec3 get_local_translation_normal(
             const Surface& surface,
             index_t vertex_id_in_surface ) const ;
         vec3 get_local_translation_vector( const vec3& normal ) const ;
         void store_displacement_in_gme(
-            const GeoModelMeshElement& gmme,
+            const GeoModelMeshEntity& gmme,
             index_t vertex_id_in_gmme,
             const vec3& translation ) const ;
         void initialize_translation_attributes(
@@ -113,20 +109,20 @@ namespace RINGMesh {
             const vec3& normal_on_vertex_interface,
             index_t vertex_id_in_gmme,
             const vec3& vertex_pos,
-            const GeoModelElement& interface_gme,
-            const GeoModelElement& other_side_interface_gme ) const ;
+            const GeoModelEntity& interface_gme,
+            const GeoModelEntity& other_side_interface_gme ) const ;
         void set_no_displacement_on_fault_real_extension(
             const std::vector< std::vector< index_t > >& to_erase_by_type ) ;
         bool does_surface_belong_to_interface(
             const Surface& surface,
-            const GeoModelElement& interface ) const ;
+            const GeoModelEntity& interface ) const ;
         void save_normals_on_one_old_interface(
-            const GeoModelElement& interface_gme ) const ;
+            const GeoModelEntity& interface_gme ) const ;
         vec3 get_normal_on_surface_vertex(
             const Surface& surface,
             index_t vertex_id_on_surface ) const ;
         void homogenize_surfaces_around_surface(
-            const GeoModelElement& fault_interface,
+            const GeoModelEntity& fault_interface,
             const Surface& first_child,
             std::vector< bool >& already_seen,
             std::vector< index_t >& surfaces_to_inverse_normals ) ;
@@ -136,7 +132,7 @@ namespace RINGMesh {
             const std::map< index_t, index_t >& all_surface_lines,
             const std::string& side_name,
             const GME::gme_t& sided_interface_gme_t,
-            const GeoModelElement& interface_to_duplicate,
+            const GeoModelEntity& interface_to_duplicate,
             const GME::gme_t& new_surface_gme_t,
             std::vector< std::vector< index_t > >& to_erase_by_type,
             index_t region_index ) ;

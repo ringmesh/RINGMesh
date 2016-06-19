@@ -1044,7 +1044,9 @@ namespace {
                     "model_vertex_id" ) ;*/
 
                 // Export not duplicated vertices
-                for( index_t c = 0; c < region.mesh().cells.nb(); c++ ) {
+                for( index_t c = 0;
+                    c < const_cast< GEO::Mesh& >( region.gfx_mesh() ).cells.nb();
+                    c++ ) {
                     index_t cell = mesh.cells.cell( r, c ) ;
                     for( index_t v = 0; v < mesh.cells.nb_vertices( cell ); v++ ) {
                         index_t atom_id ;
@@ -1103,7 +1105,9 @@ namespace {
 
                 /*GEO::Attribute< index_t > attribute( mesh.facet_attribute_manager(),
                     surface_att_name ) ;*/
-                for( index_t c = 0; c < region.mesh().cells.nb(); c++ ) {
+                for( index_t c = 0;
+                    c < const_cast< GEO::Mesh& >( region.gfx_mesh() ).cells.nb();
+                    c++ ) {
                     out << "TETRA" ;
                     index_t cell = mesh.cells.cell( r, c ) ;
                     for( index_t v = 0; v < mesh.cells.nb_vertices( cell ); v++ ) {
