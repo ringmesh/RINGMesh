@@ -184,10 +184,10 @@ namespace RINGMesh {
     void DuplicateInterfaceBuilder::homogenize_normal_orientation_surface_all_interfaces()
     {
         std::vector< index_t > surfaces_to_inverse_normals ;
-        surfaces_to_inverse_normals.reserve( model_.nb_surfaces() ) ;
-        for( index_t interface_itr = 0; interface_itr < model_.nb_interfaces();
+        surfaces_to_inverse_normals.reserve( model().nb_surfaces() ) ;
+        for( index_t interface_itr = 0; interface_itr < model().nb_interfaces();
             ++interface_itr ) {
-            const GeoModelEntity& cur_interface = model_.one_interface(
+            const GeoModelEntity& cur_interface = model().one_interface(
                 interface_itr ) ;
             if( !GeoModelEntity::is_fault( cur_interface.geological_feature() ) ) {
                 continue ;
@@ -199,7 +199,7 @@ namespace RINGMesh {
 
         for( index_t to_inverse_itr = 0;
             to_inverse_itr < surfaces_to_inverse_normals.size(); ++to_inverse_itr ) {
-            const Surface& surface = model_.surface(
+            const Surface& surface = model().surface(
                 surfaces_to_inverse_normals[to_inverse_itr] ) ;
             GEO::invert_normals( const_cast< GEO::Mesh& >( surface.gfx_mesh() ) ) ; /// @todo to handle
         }
@@ -217,9 +217,9 @@ namespace RINGMesh {
             return ;
         }
 
-        std::vector< bool > already_seen( model_.nb_surfaces(), false ) ;
+        std::vector< bool > already_seen( model().nb_surfaces(), false ) ;
 
-        const Surface& first_child = model_.surface(
+        const Surface& first_child = model().surface(
             fault_interface.child( 0 ).index() ) ;
         already_seen[first_child.index()] = true ;
         /// @todo for now I assume that all the surfaces of the fault interface
@@ -247,7 +247,7 @@ namespace RINGMesh {
                 const GeoModelEntity& cur_in_boun = cur_line_boun.in_boundary(
                     surf_in_boun_itr ) ;
                 ringmesh_assert( cur_in_boun.type() == GME::SURFACE ) ;
-                const Surface& cur_surf_in_boun = model_.surface(
+                const Surface& cur_surf_in_boun = model().surface(
                     cur_in_boun.index() ) ;
                 if( cur_surf_in_boun.index() == first_child.index() ) {
                     continue ;
@@ -261,11 +261,11 @@ namespace RINGMesh {
                     continue ;
                 }
 
-                const Line& cur_line = model_.line( cur_line_boun.index() ) ;
+                const Line& cur_line = model().line( cur_line_boun.index() ) ;
                 ringmesh_assert(cur_line.nb_vertices()>0) ;
                 index_t first_line_vertex_id_in_gmm = cur_line.model_vertex_id( 0 ) ;
                 const std::vector< GMEVertex >& gme_vertices =
-                    model_.mesh.vertices.gme_vertices(
+                    model().mesh.vertices.gme_vertices(
                         first_line_vertex_id_in_gmm ) ;
                 index_t v_id_in_first_surf = NO_ID ;
                 bool v_id_in_second_surf = NO_ID ;
@@ -324,24 +324,24 @@ namespace RINGMesh {
         if( nb_in_boundaries == 1 ) {
             const GeoModelEntity& reg_gme = surface.in_boundary( 0 ) ;
             index_t boundary_id = find_local_boundary_id( reg_gme, surface ) ;
-            Region& reg = const_cast< Region& >( model_.region( reg_gme.index() ) ) ;
+            Region& reg = const_cast< Region& >( model().region( reg_gme.index() ) ) ;
             bool cur_side = reg.side( boundary_id ) ;
             set_region_side( reg, boundary_id, !cur_side ) ;
 
             // Add to universe (other side of the surface)
-            boundary_id = find_local_boundary_id( model_.universe(), surface ) ;
-            ringmesh_assert(model_.universe().side(boundary_id) != cur_side) ;
-            set_region_side( const_cast< Region& >( model_.universe() ), boundary_id,
+            boundary_id = find_local_boundary_id( model().universe(), surface ) ;
+            ringmesh_assert(model().universe().side(boundary_id) != cur_side) ;
+            set_region_side( const_cast< Region& >( model().universe() ), boundary_id,
                 cur_side ) ;
         } else {
             const GeoModelEntity& reg_gme1 = surface.in_boundary( 0 ) ;
             index_t boundary_id1 = find_local_boundary_id( reg_gme1, surface ) ;
-            Region& reg1 = const_cast< Region& >( model_.region( reg_gme1.index() ) ) ;
+            Region& reg1 = const_cast< Region& >( model().region( reg_gme1.index() ) ) ;
             bool cur_side1 = reg1.side( boundary_id1 ) ;
 
             const GeoModelEntity& reg_gme2 = surface.in_boundary( 1 ) ;
             index_t boundary_id2 = find_local_boundary_id( reg_gme2, surface ) ;
-            Region& reg2 = const_cast< Region& >( model_.region( reg_gme2.index() ) ) ;
+            Region& reg2 = const_cast< Region& >( model().region( reg_gme2.index() ) ) ;
             bool cur_side2 = reg2.side( boundary_id2 ) ;
             // to check. if reg1 == reg2 no side in particular.
 
@@ -402,7 +402,7 @@ namespace RINGMesh {
             ringmesh_assert(cur_child.type() == GME::SURFACE) ;
             // As the loop begins at the first new interface, no surface
             // met in this loop should be to delete.
-            const Surface& cur_surface = model_.surface( cur_child.index() ) ;
+            const Surface& cur_surface = model().surface( cur_child.index() ) ;
             save_normal_on_one_surface( cur_surface ) ;
         }
     }
@@ -428,13 +428,13 @@ namespace RINGMesh {
 
     void DuplicateInterfaceBuilder::duplicate_fault_network()
     {
-        if( model_.nb_regions() == 0 ) {
+        if( model().nb_regions() == 0 ) {
             throw RINGMeshException( "Duplication",
                 "The model must contain at least one region." ) ;
         }
-        all_meshed_ = model_.region( 0 ).is_meshed() ;
-        for( index_t reg_itr = 1; reg_itr < model_.nb_regions(); ++reg_itr ) {
-            if( model_.region( reg_itr ).is_meshed() != all_meshed_ ) {
+        all_meshed_ = model().region( 0 ).is_meshed() ;
+        for( index_t reg_itr = 1; reg_itr < model().nb_regions(); ++reg_itr ) {
+            if( model().region( reg_itr ).is_meshed() != all_meshed_ ) {
                 throw RINGMeshException( "Duplication",
                     "The regions must be all meshed or all unmeshed." ) ;
             }
@@ -447,21 +447,21 @@ namespace RINGMesh {
         for( index_t i = GME::CORNER; i < GME::NO_TYPE; ++i ) {
             to_erase_by_type.push_back(
                 std::vector< index_t >(
-                    model_.nb_entities( static_cast< GME::TYPE >( i ) ), 0 ) ) ;
+                    model().nb_entities( static_cast< GME::TYPE >( i ) ), 0 ) ) ;
         }
         //////////////////////////////////////////
 
         homogenize_normal_orientation_surface_all_interfaces() ;
 
         index_t nb_faults = 0 ;
-        const index_t nb_initial_interfaces = model_.nb_interfaces() ;
-        // Loop to nb_initial_interfaces. model_.nb_interfaces() cannot be inside
+        const index_t nb_initial_interfaces = model().nb_interfaces() ;
+        // Loop to nb_initial_interfaces. model().nb_interfaces() cannot be inside
         // the for statement since the number of interfaces will increase during
         // the duplication.
         DEBUG( "Build new surfaces" ) ;
         for( index_t interface_itr = 0; interface_itr < nb_initial_interfaces;
             ++interface_itr ) {
-            const GeoModelEntity& cur_interface = model_.one_interface(
+            const GeoModelEntity& cur_interface = model().one_interface(
                 interface_itr ) ;
             if( !GeoModelEntity::is_fault( cur_interface.geological_feature() ) ) {
                 continue ;
@@ -489,16 +489,16 @@ namespace RINGMesh {
 
         // compute translation vectors
         if( all_meshed_ ) {
-            ringmesh_assert( model_.nb_interfaces() - nb_initial_interfaces >= 2 ) ;
+            ringmesh_assert( model().nb_interfaces() - nb_initial_interfaces >= 2 ) ;
             for( index_t new_interface_itr = nb_initial_interfaces;
-                new_interface_itr < model_.nb_interfaces(); ++new_interface_itr ) {
+                new_interface_itr < model().nb_interfaces(); ++new_interface_itr ) {
 
 #ifdef RINGMESH_DEBUG
                 // Only the new interfaces with no child are removed.
                 // Such interfaces have no child because there are entirely in
                 // the boundary of the model (no surface not voi).
                 if( to_erase_by_type[GME::INTERFACE][new_interface_itr] == NO_ID ) {
-                    const GeoModelEntity& interface_gme = model_.one_interface(
+                    const GeoModelEntity& interface_gme = model().one_interface(
                         new_interface_itr ) ;
                     ringmesh_assert( interface_gme.nb_children() == 0 ) ;
                 } else {
@@ -506,7 +506,7 @@ namespace RINGMesh {
                 }
 #endif
 
-                const GeoModelEntity& interface_gme = model_.one_interface(
+                const GeoModelEntity& interface_gme = model().one_interface(
                     new_interface_itr ) ;
                 save_normals_on_one_new_interface( to_erase_by_type,
                     interface_gme ) ;
@@ -560,8 +560,8 @@ namespace RINGMesh {
 
     void DuplicateInterfaceBuilder::fill_reg_anns()
     {
-        for( index_t reg_itr = 0; reg_itr < model_.nb_regions(); ++reg_itr ) {
-            const Region& cur_region = model_.region( reg_itr ) ;
+        for( index_t reg_itr = 0; reg_itr < model().nb_regions(); ++reg_itr ) {
+            const Region& cur_region = model().region( reg_itr ) ;
             ringmesh_assert( cur_region.is_meshed() ) ;
             reg_anns_.push_back(
                 new ColocaterANN( const_cast< GEO::Mesh& >( cur_region.gfx_mesh() ),
@@ -582,7 +582,7 @@ namespace RINGMesh {
         ringmesh_assert( reg1.index() == cur_surface.in_boundary_gme( 0 ).index ) ;
         const GME::gme_t& reg2_gme_t = cur_surface.in_boundary_gme( 1 ) ;
         ringmesh_assert( reg2_gme_t.type == GME::REGION ) ;
-        const Region& reg2 = model_.region( reg2_gme_t.index ) ;
+        const Region& reg2 = model().region( reg2_gme_t.index ) ;
         ringmesh_assert( reg2.is_meshed() ) ;
         GEO::Attribute< index_t > id_in_link_vector_reg2(
             const_cast< GEO::Mesh& >( reg2.gfx_mesh() ).vertices.attributes(),
@@ -594,7 +594,7 @@ namespace RINGMesh {
         const index_t surf_v_id_in_gmm = cur_surface.model_vertex_id(
             v_id_in_surf ) ;
         const std::vector< GMEVertex >& gme_vertices =
-            model_.mesh.vertices.gme_vertices( surf_v_id_in_gmm ) ;
+            model().mesh.vertices.gme_vertices( surf_v_id_in_gmm ) ;
         std::vector< index_t > found_gmev_reg1 ;
         found_gmev_reg1.reserve( gme_vertices.size() ) ;
         std::vector< index_t > found_gmev_reg2 ;
@@ -673,7 +673,7 @@ namespace RINGMesh {
         const index_t surf_v_id_in_gmm = cur_surface.model_vertex_id(
             v_id_in_surf ) ;
         const std::vector< GMEVertex >& gme_vertices =
-            model_.mesh.vertices.gme_vertices( surf_v_id_in_gmm ) ;
+            model().mesh.vertices.gme_vertices( surf_v_id_in_gmm ) ;
         std::vector< index_t > found_regions ;
         found_regions.reserve( gme_vertices.size() ) ;
         for( index_t gme_vertices_itr = 0; gme_vertices_itr < gme_vertices.size();
@@ -775,7 +775,7 @@ namespace RINGMesh {
     {
         recompute_geomodel_mesh() ; /// @todo check if it is really necessary
 
-        for( index_t surf_itr = 0; surf_itr < model_.nb_surfaces(); ++surf_itr ) {
+        for( index_t surf_itr = 0; surf_itr < model().nb_surfaces(); ++surf_itr ) {
             if( to_erase_by_type[GME::SURFACE][surf_itr] == NO_ID ) {
                 continue ;
             }
@@ -786,7 +786,7 @@ namespace RINGMesh {
             // (and model boundary) and on the both sides for horizons.
             // In theory, on the both sides of a horizon there are two different
             // regions, else it is not a horizon.
-            const Surface& cur_surface = model_.surface( surf_itr ) ;
+            const Surface& cur_surface = model().surface( surf_itr ) ;
             GEO::Attribute< index_t > id_in_link_vector_surf(
                 const_cast< GEO::Mesh& >( cur_surface.gfx_mesh() ).vertices.attributes(),
                 "id_in_link_vector" ) ;
@@ -801,7 +801,7 @@ namespace RINGMesh {
 
             const GME::gme_t& reg1_gme_t = cur_surface.in_boundary_gme( 0 ) ;
             ringmesh_assert( reg1_gme_t.type == GME::REGION ) ;
-            const Region& reg1 = model_.region( reg1_gme_t.index ) ;
+            const Region& reg1 = model().region( reg1_gme_t.index ) ;
             ringmesh_assert( reg1.is_meshed() ) ;
             GEO::Attribute< index_t > id_in_link_vector_reg1(
                 const_cast< GEO::Mesh& >( reg1.gfx_mesh() ).vertices.attributes(),
@@ -844,66 +844,66 @@ namespace RINGMesh {
         const std::vector< std::vector< index_t > >& to_erase_by_type )
     {
         index_t count = 0 ;
-        for( index_t surf_itr = 0; surf_itr < model_.nb_surfaces(); ++surf_itr ) {
+        for( index_t surf_itr = 0; surf_itr < model().nb_surfaces(); ++surf_itr ) {
             if( to_erase_by_type[GME::SURFACE][surf_itr] == NO_ID ) {
                 continue ;
             }
             ringmesh_assert( to_erase_by_type[GME::SURFACE][surf_itr] == 0 ) ;
-            count += model_.surface( surf_itr ).nb_vertices() ;
+            count += model().surface( surf_itr ).nb_vertices() ;
         }
 
         if( all_meshed_ ) {
 
-            for( index_t reg_itr = 0; reg_itr < model_.nb_regions(); ++reg_itr ) {
+            for( index_t reg_itr = 0; reg_itr < model().nb_regions(); ++reg_itr ) {
                 if( to_erase_by_type[GME::REGION][reg_itr] == NO_ID ) {
                     continue ;
                 }
                 ringmesh_assert( to_erase_by_type[GME::REGION][reg_itr] == 0 ) ;
-                ringmesh_assert(model_.region( reg_itr ).is_meshed()) ;
-                count += model_.region( reg_itr ).nb_vertices() ;
+                ringmesh_assert(model().region( reg_itr ).is_meshed()) ;
+                count += model().region( reg_itr ).nb_vertices() ;
             }
         }
 
         gme_vertices_links_.reserve( count ) ;
 
-        for( index_t surf_itr = 0; surf_itr < model_.nb_surfaces(); ++surf_itr ) {
+        for( index_t surf_itr = 0; surf_itr < model().nb_surfaces(); ++surf_itr ) {
             if( to_erase_by_type[GME::SURFACE][surf_itr] == NO_ID ) {
                 continue ;
             }
             ringmesh_assert( to_erase_by_type[GME::SURFACE][surf_itr] == 0 ) ;
 
             GEO::Attribute< index_t > id_in_link_vector(
-                const_cast< GEO::Mesh& >( model_.surface( surf_itr ).gfx_mesh() ).vertices.attributes(), /// @todo to handle
+                const_cast< GEO::Mesh& >( model().surface( surf_itr ).gfx_mesh() ).vertices.attributes(), /// @todo to handle
                 "id_in_link_vector" ) ;
 
-            for( index_t v_itr = 0; v_itr < model_.surface( surf_itr ).nb_vertices();
+            for( index_t v_itr = 0; v_itr < model().surface( surf_itr ).nb_vertices();
                 ++v_itr ) {
                 id_in_link_vector[v_itr] = gme_vertices_links_.size() ;
                 gme_vertices_links_.push_back(
                     new GMEVertexLink(
                         GMEVertex( GME::gme_t( GME::SURFACE, surf_itr ), v_itr ),
-                        model_, gme_vertices_links_ ) ) ;
+                        model(), gme_vertices_links_ ) ) ;
             }
         }
 
         if( all_meshed_ ) {
 
-            for( index_t reg_itr = 0; reg_itr < model_.nb_regions(); ++reg_itr ) {
+            for( index_t reg_itr = 0; reg_itr < model().nb_regions(); ++reg_itr ) {
                 if( to_erase_by_type[GME::REGION][reg_itr] == NO_ID ) {
                     continue ;
                 }
                 ringmesh_assert( to_erase_by_type[GME::REGION][reg_itr] == 0 ) ;
-                ringmesh_assert(model_.region( reg_itr ).is_meshed()) ;
+                ringmesh_assert(model().region( reg_itr ).is_meshed()) ;
                 GEO::Attribute< index_t > id_in_link_vector(
-                    const_cast< GEO::Mesh& >( model_.region( reg_itr ).gfx_mesh() ).vertices.attributes(),
+                    const_cast< GEO::Mesh& >( model().region( reg_itr ).gfx_mesh() ).vertices.attributes(),
                     "id_in_link_vector" ) ;
                 for( index_t v_itr = 0;
-                    v_itr < model_.region( reg_itr ).nb_vertices(); ++v_itr ) {
+                    v_itr < model().region( reg_itr ).nb_vertices(); ++v_itr ) {
                     id_in_link_vector[v_itr] = gme_vertices_links_.size() ;
                     gme_vertices_links_.push_back(
                         new GMEVertexLink(
                             GMEVertex( GME::gme_t( GME::REGION, reg_itr ), v_itr ),
-                            model_, gme_vertices_links_ ) ) ;
+                            model(), gme_vertices_links_ ) ) ;
                 }
             }
         }
@@ -1106,7 +1106,7 @@ namespace RINGMesh {
                 ++surf_itr ) {
                 index_t surf_id = *surf_itr ;
 
-                const Surface& cur_surf = model_.surface( surf_id ) ;
+                const Surface& cur_surf = model().surface( surf_id ) ;
 
                 for( index_t vertex_surf_i = 0;
                     vertex_surf_i < cur_surf.nb_vertices(); ++vertex_surf_i ) {
@@ -1129,7 +1129,7 @@ namespace RINGMesh {
                 ++surf_itr ) {
                 index_t surf_id = *surf_itr ;
 
-                const Surface& cur_surf = model_.surface( surf_id ) ;
+                const Surface& cur_surf = model().surface( surf_id ) ;
                 const GEO::Mesh& cur_surf_mesh =
                     const_cast< GEO::Mesh& >( cur_surf.gfx_mesh() ) ;
 
@@ -1185,7 +1185,7 @@ namespace RINGMesh {
                 new_surface_gme_t, side ) ;
             /*
              // Add to universe (other side of the surface)
-             add_element_boundary( model_.universe().gme_id(), new_surface_gme_t,
+             add_element_boundary( model().universe().gme_id(), new_surface_gme_t,
              !side ) ;*/
 
 //            to_erase_by_type[GME::SURFACE].push_back( 0 ) ;
@@ -1207,7 +1207,7 @@ namespace RINGMesh {
         index_t region_index )
     {
         recompute_geomodel_mesh() ; // to take into account the new surface in gme_vertices.
-        save_normal_on_one_surface( model_.surface( new_surface_gme_t.index ) ) ;
+        save_normal_on_one_surface( model().surface( new_surface_gme_t.index ) ) ;
         // I DO THAT HERE BUT MAYBE IT IS SIMPLIER TO DO THAT AFTER HAVING
         // CREATED ALL THE NEW INTERFACES.
         // Add all the lines of the old surfaces, which served to build the
@@ -1225,7 +1225,7 @@ namespace RINGMesh {
                 continue ;
             }
             ringmesh_assert( all_surface_lines_itr->second != 0 ) ;
-            const Line& cur_line = model_.line( all_surface_lines_itr->first ) ;
+            const Line& cur_line = model().line( all_surface_lines_itr->first ) ;
             // As the line is not on the border, its number of in boundaries
             // superior to 1 strictly.
             ringmesh_assert( cur_line.nb_in_boundary() > 1 ) ;
@@ -1241,20 +1241,20 @@ namespace RINGMesh {
                 }
 
                 if( does_surface_belong_to_interface(
-                    model_.surface( cur_in_boun_gme.index() ),
-                    model_.one_interface( sided_interface_gme_t.index ) ) ) {
+                    model().surface( cur_in_boun_gme.index() ),
+                    model().one_interface( sided_interface_gme_t.index ) ) ) {
                     continue ;
                 }
 
                 // minus side is done before the plus side
                 if( side_name == "_minus" ) {
 
-                    ringmesh_assert(sided_interface_gme_t.index + 1 < model_.nb_interfaces()) ;
-                    const GeoModelEntity& plus_side_gme = model_.one_interface(
+                    ringmesh_assert(sided_interface_gme_t.index + 1 < model().nb_interfaces()) ;
+                    const GeoModelEntity& plus_side_gme = model().one_interface(
                         sided_interface_gme_t.index + 1 ) ;
 
                     if( does_surface_belong_to_interface(
-                        model_.surface( cur_in_boun_gme.index() ),
+                        model().surface( cur_in_boun_gme.index() ),
                         plus_side_gme ) ) {
                         continue ;
                     }
@@ -1263,7 +1263,7 @@ namespace RINGMesh {
                 // Check if the surface is not from the old interface to
                 // duplicate.
                 if( does_surface_belong_to_interface(
-                    model_.surface( cur_in_boun_gme.index() ),
+                    model().surface( cur_in_boun_gme.index() ),
                     interface_to_duplicate ) ) {
                     continue ;
                 }
@@ -1278,7 +1278,7 @@ namespace RINGMesh {
                 ringmesh_assert( cur_line.nb_vertices() > 0 ) ;
                 index_t first_vertex_id_in_gmm = cur_line.model_vertex_id( 0 ) ;
                 const std::vector< GMEVertex >& gme_vertices =
-                    model_.mesh.vertices.gme_vertices( first_vertex_id_in_gmm ) ;
+                    model().mesh.vertices.gme_vertices( first_vertex_id_in_gmm ) ;
                 ringmesh_assert( !gme_vertices.empty() ) ; /// @todo I think that this assert may be more restrictive
                 index_t vertex_id_in_new_surface = NO_ID ;
                 index_t vertex_id_in_found_surface = NO_ID ;
@@ -1307,10 +1307,10 @@ namespace RINGMesh {
                 // for the homogenization of normals.
 
                 const vec3 local_translation_normal = get_local_translation_normal(
-                    model_.surface( new_surface_gme_t.index ),
+                    model().surface( new_surface_gme_t.index ),
                     vertex_id_in_new_surface ) ;
 
-                vec3 vertex_pos = model_.surface( new_surface_gme_t.index ).vertex(
+                vec3 vertex_pos = model().surface( new_surface_gme_t.index ).vertex(
                     vertex_id_in_new_surface ) ;
                 if( !is_surface_on_right_side_of_sided_interface(
                     cur_in_boun_gme.index(), local_translation_normal,
@@ -1342,11 +1342,11 @@ namespace RINGMesh {
         std::vector< std::vector< index_t > >& to_erase_by_type,
         index_t region_index )
     {
-        const Surface& cur_surface = model_.surface( new_surface_gme_t.index ) ;
+        const Surface& cur_surface = model().surface( new_surface_gme_t.index ) ;
         // ========= bad copy paste from geo model repair
         std::set< index_t > cutting_lines ;
         for( index_t l = 0; l < cur_surface.nb_boundaries(); ++l ) {
-            const Line& L = model_.line( cur_surface.boundary_gme( l ).index ) ;
+            const Line& L = model().line( cur_surface.boundary_gme( l ).index ) ;
             if( /*to_remove.count( L.gme_id() ) == 0 &&*/L.is_inside_border(
                 cur_surface ) ) {
                 cutting_lines.insert( L.index() ) ;
@@ -1357,7 +1357,7 @@ namespace RINGMesh {
             it != cutting_lines.end(); ++it ) {
             // Force the recomputing of the model vertices
             // before performing the cut.
-            //                    model_.mesh.vertices.clear() ;
+            //                    model().mesh.vertices.clear() ;
             disconnect_surface_facets_along_line_edges( cur_surface.index(), *it ) ;
         }
 
@@ -1366,7 +1366,7 @@ namespace RINGMesh {
         // surface).
 
         ringmesh_assert( new_surface_gme_t.type == GME::SURFACE ) ;
-        const GEO::Mesh& surface_mesh = const_cast< GEO::Mesh& >( model_.surface(
+        const GEO::Mesh& surface_mesh = const_cast< GEO::Mesh& >( model().surface(
             new_surface_gme_t.index ).gfx_mesh() ) ;
         GEO::vector< index_t > components ;
         index_t nb_connected_components = GEO::get_connected_components(
@@ -1384,7 +1384,7 @@ namespace RINGMesh {
              new_surface_gme_t, side ) ;*/
 
             // Add to universe (other side of the surface)
-            add_entity_boundary( model_.universe().gme_id(), new_surface_gme_t,
+            add_entity_boundary( model().universe().gme_id(), new_surface_gme_t,
                 !side ) ;
 
             to_erase_by_type[GME::SURFACE][new_surface_gme_t.index] = 0 ;
@@ -1464,24 +1464,24 @@ namespace RINGMesh {
                 new_new_surface_gme_t, side ) ;
 
             // Add to universe (other side of the surface)
-            add_entity_boundary( model_.universe().gme_id(), new_new_surface_gme_t,
+            add_entity_boundary( model().universe().gme_id(), new_new_surface_gme_t,
                 !side ) ;
             to_erase_by_type[GME::SURFACE].push_back( 0 ) ;
 
 #ifdef RINGMESH_DEBUG
             // In theory there is no isolated vertex
-            index_t previous = const_cast< GEO::Mesh& >( model_.surface(
+            index_t previous = const_cast< GEO::Mesh& >( model().surface(
                 new_new_surface_gme_t.index ).gfx_mesh() ).vertices.nb() ;
-            const_cast< GEO::Mesh& >( model_.surface( new_new_surface_gme_t.index ).gfx_mesh() ).vertices.remove_isolated() ;
-            ringmesh_assert(previous==const_cast< GEO::Mesh& >( model_.surface(new_new_surface_gme_t.index).gfx_mesh()).vertices.nb()) ;
+            const_cast< GEO::Mesh& >( model().surface( new_new_surface_gme_t.index ).gfx_mesh() ).vertices.remove_isolated() ;
+            ringmesh_assert(previous==const_cast< GEO::Mesh& >( model().surface(new_new_surface_gme_t.index).gfx_mesh()).vertices.nb()) ;
 #endif
             recompute_geomodel_mesh() ;
             // HANDLE THE INTERNAL BORDER
-            Surface& new_new_surf = const_cast< Surface& >( model_.surface(
+            Surface& new_new_surf = const_cast< Surface& >( model().surface(
                 new_new_surface_gme_t.index ) ) ;
             for( std::set< index_t >::iterator it = cutting_lines.begin();
                 it != cutting_lines.end(); ++it ) {
-                const Line& cur_cutting_line = model_.line( *it ) ;
+                const Line& cur_cutting_line = model().line( *it ) ;
 
                 index_t facet_index = NO_ID ;
                 index_t edge_index = NO_ID ;
@@ -1506,8 +1506,8 @@ namespace RINGMesh {
     void DuplicateInterfaceBuilder::initialize_translation_attributes(
         const std::vector< std::vector< index_t > >& to_erase_by_type )
     {
-        for( index_t reg_itr = 0; reg_itr < model_.nb_regions(); ++reg_itr ) {
-            const Region& reg = model_.region( reg_itr ) ;
+        for( index_t reg_itr = 0; reg_itr < model().nb_regions(); ++reg_itr ) {
+            const Region& reg = model().region( reg_itr ) ;
             if( !reg.is_meshed() ) {
                 continue ;
             }
@@ -1526,8 +1526,8 @@ namespace RINGMesh {
             translation_att_z.fill( 0. ) ;
         }
 
-        for( index_t surf_itr = 0; surf_itr < model_.nb_surfaces(); ++surf_itr ) {
-            const Surface& surf = model_.surface( surf_itr ) ;
+        for( index_t surf_itr = 0; surf_itr < model().nb_surfaces(); ++surf_itr ) {
+            const Surface& surf = model().surface( surf_itr ) ;
 
             if( to_erase_by_type[GME::SURFACE][surf_itr] == NO_ID ) {
                 continue ;
@@ -1559,7 +1559,7 @@ namespace RINGMesh {
             // met in this loop should be to delete.
             ringmesh_assert( to_erase_by_type[GME::SURFACE][cur_child.index()] == 0 ) ;
             ringmesh_assert( to_erase_by_type[GME::SURFACE][cur_child.index()] != NO_ID ) ;
-            const Surface& cur_surface = model_.surface( cur_child.index() ) ;
+            const Surface& cur_surface = model().surface( cur_child.index() ) ;
             save_normal_on_one_surface( cur_surface ) ;
         }
     }
@@ -1610,7 +1610,7 @@ namespace RINGMesh {
         ringmesh_assert( surface.nb_in_boundary() == 1 ) ;
         const GeoModelEntity& in_boun = surface.in_boundary( 0 ) ;
         ringmesh_assert( in_boun.type() == GME::REGION ) ;
-        const Region& cur_reg = model_.region( in_boun.index() ) ;
+        const Region& cur_reg = model().region( in_boun.index() ) ;
         index_t local_surf_id = find_local_boundary_id( cur_reg, surface ) ;
         bool side = cur_reg.side( local_surf_id ) ;
 
@@ -1643,15 +1643,15 @@ namespace RINGMesh {
     {
         initialize_translation_attributes( to_erase_by_type ) ;
 
-        ringmesh_assert( model_.nb_interfaces() - first_new_interface_index >= 2 ) ;
+        ringmesh_assert( model().nb_interfaces() - first_new_interface_index >= 2 ) ;
         for( index_t new_interface_itr = first_new_interface_index;
-            new_interface_itr < model_.nb_interfaces(); ++new_interface_itr ) {
+            new_interface_itr < model().nb_interfaces(); ++new_interface_itr ) {
 #ifdef RINGMESH_DEBUG
             // Only the new interfaces with no child are removed.
             // Such interfaces have no child because there are entirely in
             // the boundary of the model (no surface not voi).
             if( to_erase_by_type[GME::INTERFACE][new_interface_itr] == NO_ID ) {
-                const GeoModelEntity& interface_gme = model_.one_interface(
+                const GeoModelEntity& interface_gme = model().one_interface(
                     new_interface_itr ) ;
                 ringmesh_assert( interface_gme.nb_children() == 0 ) ;
             } else {
@@ -1659,7 +1659,7 @@ namespace RINGMesh {
             }
 #endif
 
-            const GeoModelEntity& interface_gme = model_.one_interface(
+            const GeoModelEntity& interface_gme = model().one_interface(
                 new_interface_itr ) ;
 //            save_normals_on_one_new_interface( to_erase_by_type, interface_gme ) ;
 
@@ -1668,12 +1668,12 @@ namespace RINGMesh {
                 const GeoModelEntity& cur_child = interface_gme.child( child_itr ) ;
                 ringmesh_assert(cur_child.type() == GME::SURFACE) ;
                 ringmesh_assert(to_erase_by_type[GME::SURFACE][cur_child.index()] != NO_ID) ;
-                const Surface& cur_surface = model_.surface( cur_child.index() ) ; // avoid dynamic_cast of cur_child
+                const Surface& cur_surface = model().surface( cur_child.index() ) ; // avoid dynamic_cast of cur_child
 
                 ringmesh_assert(cur_surface.nb_in_boundary()==1) ;
                 ringmesh_assert(cur_surface.in_boundary(0).type()==GME::REGION) ;
                 GEO::Attribute< index_t > id_in_link_vector(
-                    const_cast< GEO::Mesh& >( model_.surface( cur_surface.index() ).gfx_mesh() ).vertices.attributes(),
+                    const_cast< GEO::Mesh& >( model().surface( cur_surface.index() ).gfx_mesh() ).vertices.attributes(),
                     "id_in_link_vector" ) ;
 
                 for( index_t surf_vertex_itr = 0;
@@ -1703,19 +1703,19 @@ namespace RINGMesh {
         initialize_translation_attributes( to_erase_by_type ) ;
 
         int step_to_other_side = 1 ;
-        ringmesh_assert( model_.nb_interfaces() - first_new_interface_index >= 2 ) ;
+        ringmesh_assert( model().nb_interfaces() - first_new_interface_index >= 2 ) ;
         for( index_t new_interface_itr = first_new_interface_index;
-            new_interface_itr < model_.nb_interfaces(); ++new_interface_itr ) {
+            new_interface_itr < model().nb_interfaces(); ++new_interface_itr ) {
             ringmesh_assert( to_erase_by_type[GME::INTERFACE][new_interface_itr] != NO_ID ) ;
             ringmesh_assert( to_erase_by_type[GME::INTERFACE][new_interface_itr] == 0 ) ;
 
-            const GeoModelEntity& interface_gme = model_.one_interface(
+            const GeoModelEntity& interface_gme = model().one_interface(
                 new_interface_itr ) ;
             ringmesh_assert( new_interface_itr + step_to_other_side >=first_new_interface_index ) ;
-            ringmesh_assert( new_interface_itr + step_to_other_side <model_.nb_interfaces()) ;
+            ringmesh_assert( new_interface_itr + step_to_other_side <model().nb_interfaces()) ;
             /// @bug in the case that there is no other side (fault = model boundary)
             /// this method (trick) does not work.
-            const GeoModelEntity& other_side_interface_gme = model_.one_interface(
+            const GeoModelEntity& other_side_interface_gme = model().one_interface(
                 new_interface_itr + step_to_other_side ) ;
             step_to_other_side *= -1 ;
 
@@ -1724,14 +1724,14 @@ namespace RINGMesh {
             // Clear to take into account the new gme in the geomodel.
             recompute_geomodel_mesh() ; // not done in model_vertex_id
 
-            const GeoModelMeshVertices& gmmv = model_.mesh.vertices ;
+            const GeoModelMeshVertices& gmmv = model().mesh.vertices ;
 
             for( index_t child_itr = 0; child_itr < interface_gme.nb_children();
                 ++child_itr ) {
                 const GeoModelEntity& cur_child = interface_gme.child( child_itr ) ;
                 ringmesh_assert(cur_child.type() == GME::SURFACE) ;
                 ringmesh_assert(to_erase_by_type[GME::SURFACE][cur_child.index()] != NO_ID) ;
-                const Surface& cur_surface = model_.surface( cur_child.index() ) ; // avoid dynamic_cast of cur_child
+                const Surface& cur_surface = model().surface( cur_child.index() ) ; // avoid dynamic_cast of cur_child
 
                 ringmesh_assert(cur_surface.nb_in_boundary()==1) ;
                 ringmesh_assert(cur_surface.in_boundary(0).type()==GME::REGION) ;
@@ -1777,10 +1777,10 @@ namespace RINGMesh {
                         if( is_surface_or_region_on_the_right_side_of_the_fault(
                             cur_gme_t, local_translation_normal,
                             gme_vertices[gme_vertex_itr].v_id,
-                            model_.mesh.vertices.vertex( vertex_id_in_gmm ),
+                            model().mesh.vertices.vertex( vertex_id_in_gmm ),
                             interface_gme, other_side_interface_gme ) ) {
                             store_displacement_in_gme(
-                                model_.mesh_entity( cur_gme_t ),
+                                model().mesh_entity( cur_gme_t ),
                                 gme_vertices[gme_vertex_itr].v_id,
                                 local_translation_vector ) ;
                         }
@@ -1799,7 +1799,7 @@ namespace RINGMesh {
         const GeoModelEntity& other_side_interface_gme ) const
     {
         if( cur_gme_t.type == GME::REGION ) {
-            if( !model_.region( cur_gme_t.index ).is_meshed() ) {
+            if( !model().region( cur_gme_t.index ).is_meshed() ) {
                 return false ;
             }
             if( !is_region_on_right_side_of_sided_interface( cur_gme_t.index,
@@ -1849,9 +1849,9 @@ namespace RINGMesh {
         index_t vertex_id_in_region,
         const vec3& vertex_pos ) const
     {
-        ringmesh_assert(region_to_check_id<model_.nb_regions()) ;
+        ringmesh_assert(region_to_check_id<model().nb_regions()) ;
 
-        const Region& region_to_check = model_.region( region_to_check_id ) ;
+        const Region& region_to_check = model().region( region_to_check_id ) ;
         std::vector< index_t > cells_around ;
         cells_around.reserve( 10 ) ;
         region_to_check.cells_around_vertex( vertex_id_in_region, cells_around,
@@ -1863,7 +1863,7 @@ namespace RINGMesh {
             ++cells_around_itr ) {
 
             index_t cur_cell_id_in_region = cells_around[cells_around_itr] ;
-            vec3 cur_cell_barycenter = region_to_check.cell_barycenter(
+            vec3 cur_cell_barycenter = region_to_check.mesh_element_center(
                 cur_cell_id_in_region ) ;
             vec3 p = cur_cell_barycenter - vertex_pos ;
             region_to_check_mean_normal_on_vertex += p ;
@@ -1886,9 +1886,9 @@ namespace RINGMesh {
         index_t vertex_id_in_surface,
         const vec3& vertex_pos ) const
     {
-        ringmesh_assert(surface_to_check_id<model_.nb_surfaces()) ;
+        ringmesh_assert(surface_to_check_id<model().nb_surfaces()) ;
 
-        const Surface& surface_to_check = model_.surface( surface_to_check_id ) ;
+        const Surface& surface_to_check = model().surface( surface_to_check_id ) ;
         ringmesh_assert(surface_to_check.nb_in_boundary()==1 || surface_to_check.nb_in_boundary()==2) ;
 
         std::vector< index_t > facets_around ;
@@ -1936,8 +1936,8 @@ namespace RINGMesh {
     void DuplicateInterfaceBuilder::translate_duplicated_fault_network(
         const std::vector< std::vector< index_t > >& to_erase_by_type )
     {
-        for( index_t reg_itr = 0; reg_itr < model_.nb_regions(); ++reg_itr ) {
-            const Region& reg = model_.region( reg_itr ) ;
+        for( index_t reg_itr = 0; reg_itr < model().nb_regions(); ++reg_itr ) {
+            const Region& reg = model().region( reg_itr ) ;
             if( !reg.is_meshed() ) {
                 continue ;
             }
@@ -1963,8 +1963,8 @@ namespace RINGMesh {
             }
         }
 
-        for( index_t surf_itr = 0; surf_itr < model_.nb_surfaces(); ++surf_itr ) {
-            const Surface& surf = model_.surface( surf_itr ) ;
+        for( index_t surf_itr = 0; surf_itr < model().nb_surfaces(); ++surf_itr ) {
+            const Surface& surf = model().surface( surf_itr ) ;
 
             if( to_erase_by_type[GME::SURFACE][surf_itr] == NO_ID ) {
                 continue ;
@@ -1995,8 +1995,8 @@ namespace RINGMesh {
         const std::vector< std::vector< index_t > >& to_erase_by_type )
     {
 
-        for( index_t line_itr = 0; line_itr < model_.nb_lines(); ++line_itr ) {
-            const Line& cur_line = model_.line( line_itr ) ;
+        for( index_t line_itr = 0; line_itr < model().nb_lines(); ++line_itr ) {
+            const Line& cur_line = model().line( line_itr ) ;
             if( cur_line.nb_in_boundary() != 1 ) {
                 continue ;
             }
@@ -2015,14 +2015,14 @@ namespace RINGMesh {
                     to_erase_by_type ) ;
             }
             // Line corners
-            const Corner& first_corner = model_.corner(
+            const Corner& first_corner = model().corner(
                 cur_line.boundary_gme( 0 ).index ) ;
             if( !displace_corner( first_corner, cur_line ) ) {
                 index_t vertex_id_in_gmm = first_corner.model_vertex_id( 0 ) ;
                 set_no_displacement_on_gme_sharing_vertex( vertex_id_in_gmm,
                     to_erase_by_type ) ;
             }
-            const Corner& second_corner = model_.corner(
+            const Corner& second_corner = model().corner(
                 cur_line.boundary_gme( 1 ).index ) ;
             if( !displace_corner( second_corner, cur_line ) ) {
                 index_t vertex_id_in_gmm = second_corner.model_vertex_id( 0 ) ;
@@ -2074,7 +2074,7 @@ namespace RINGMesh {
         const std::vector< std::vector< index_t > >& to_erase_by_type )
     {
         const std::vector< GMEVertex >& gme_vertices =
-            model_.mesh.vertices.gme_vertices( vertex_id_in_gmm ) ;
+            model().mesh.vertices.gme_vertices( vertex_id_in_gmm ) ;
 
         for( index_t gme_vertex_itr = 0; gme_vertex_itr < gme_vertices.size();
             ++gme_vertex_itr ) {
@@ -2089,7 +2089,7 @@ namespace RINGMesh {
                 continue ;
             }
             ringmesh_assert( to_erase_by_type[cur_gme_vertex.gme_id.type][cur_gme_vertex.gme_id.index] == 0 ) ;
-            const GeoModelMeshEntity& gmme = model_.mesh_entity(
+            const GeoModelMeshEntity& gmme = model().mesh_entity(
                 cur_gme_vertex.gme_id ) ;
             GEO::AttributesManager& att_mgr =
                 const_cast< GEO::Mesh& >( gmme.gfx_mesh() ).vertices.attributes() ;

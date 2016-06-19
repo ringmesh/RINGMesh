@@ -2032,7 +2032,8 @@ namespace RINGMesh {
         {
         for( index_t reg_itr = 0; reg_itr < model().nb_regions(); ++reg_itr ) {
             GEO::vector< std::string > att_v_names ;
-            GEO::Mesh& reg_mesh = model().region( reg_itr ).mesh() ;
+            GEO::Mesh& reg_mesh =
+                const_cast< GEO::Mesh& >( model().region( reg_itr ).gfx_mesh() ) ;
             reg_mesh.vertices.attributes().list_attribute_names( att_v_names ) ;
             for( index_t att_v = 0; att_v < reg_mesh.vertices.attributes().nb();
                 att_v++ ) {
@@ -2117,10 +2118,10 @@ namespace RINGMesh {
 
     void GeoModelMesh::transfert_cell_attributes_from_gmm_to_gm() const
     {
-        ColocaterANN ann( *mesh_, ColocaterANN::CELLS ) ;
+        ColocaterANN ann( mesh_->gfx_mesh(), ColocaterANN::CELLS ) ;
         for( index_t reg_itr = 0; reg_itr < model().nb_regions(); ++reg_itr ) {
             GEO::vector< std::string > att_c_names ;
-            GEO::Mesh& reg_mesh = model().region( reg_itr ).mesh() ;
+            GEO::Mesh& reg_mesh = const_cast<GEO::Mesh&> ( model().region( reg_itr ).gfx_mesh() ) ;
             reg_mesh.cells.attributes().list_attribute_names( att_c_names ) ;
             for( index_t att_c = 0; att_c < reg_mesh.cells.attributes().nb();
                 att_c++ ) {

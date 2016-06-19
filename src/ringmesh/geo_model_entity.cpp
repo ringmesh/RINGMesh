@@ -1520,30 +1520,30 @@ namespace RINGMesh {
     index_t Region::find_first_cell_owing_vertex( index_t vertex_id_in_region ) const
     {
         ringmesh_assert( is_meshed() ) ;
-        const ColocaterANN& ann_cells = tools.ann_cells() ;
+        const ColocaterANN& ann_cells = cell_colocater_ann() ;
         const vec3& vertex_pos = vertex( vertex_id_in_region ) ;
 
-        index_t nb_neighbors = std::min( index_t( 5 ), nb_cells() ) ;
+        index_t nb_neighbors = std::min( index_t( 5 ), nb_mesh_elements() ) ;
         std::vector< index_t > neighbors ;
         index_t cur_neighbor = 0 ;
         index_t prev_neighbor = 0 ;
         do {
             prev_neighbor = cur_neighbor ;
             cur_neighbor += nb_neighbors ;
-            cur_neighbor = std::min( cur_neighbor, nb_cells() ) ;
+            cur_neighbor = std::min( cur_neighbor, nb_mesh_elements() ) ;
             neighbors.resize( cur_neighbor ) ;
             double* dist = (double*) alloca( sizeof(double) * cur_neighbor ) ;
             nb_neighbors = ann_cells.get_neighbors( vertex_pos, cur_neighbor,
                 neighbors, dist ) ;
             for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
                 index_t c = neighbors[i] ;
-                for( index_t j = 0; j < nb_vertices_in_cell( c ); j++ ) {
-                    if( gmme_vertex_index( c, j ) == vertex_id_in_region ) {
+                for( index_t j = 0; j < nb_mesh_element_vertices( c ); j++ ) {
+                    if( mesh_element_vertex_index( c, j ) == vertex_id_in_region ) {
                         return c ;
                     }
                 }
             }
-        } while( nb_cells() != cur_neighbor ) ;
+        } while( nb_mesh_elements() != cur_neighbor ) ;
 
         return NO_ID ;
     }
@@ -1617,17 +1617,17 @@ namespace RINGMesh {
             index_t c = S.top() ;
             S.pop() ;
 
-            for( index_t v = 0; v < nb_vertices_in_cell( c ); ++v ) {
-                if( gmme_vertex_index( c, v ) == region_vertex_id ) {
+            for( index_t v = 0; v < nb_mesh_element_vertices( c ); ++v ) {
+                if( mesh_element_vertex_index( c, v ) == region_vertex_id ) {
 
                     std::vector< index_t > adjacent_cells ;
                     adjacent_cells.reserve( 3 ) ; // for tet and quad max 3 adjacent cells
-                    for( index_t f = 0; f < nb_facets_in_cell( c ); ++f ) {
+                    for( index_t f = 0; f < nb_cell_facets( c ); ++f ) {
                         for( index_t v_in_f_itr = 0;
-                            v_in_f_itr < facet_nb_vertices( c, f ); ++v_in_f_itr ) {
-                            if( facet_vertex( c, f, v_in_f_itr )
+                            v_in_f_itr < nb_cell_facet_vertices( c, f ); ++v_in_f_itr ) {
+                            if( cell_facet_vertex_index( c, f, v_in_f_itr )
                                 == region_vertex_id ) {
-                                adjacent_cells.push_back( adjacent_cell( c, f ) ) ;
+                                adjacent_cells.push_back( cell_adjacent_index( c, f ) ) ;
                                 break ;
                             }
                         }
@@ -1640,7 +1640,7 @@ namespace RINGMesh {
                         ++adjacent_cells_itr ) {
                         index_t cur_adjacent_cell_id =
                             adjacent_cells[adjacent_cells_itr] ;
-                        if( cur_adjacent_cell_id != NO_ADJACENT ) {
+                        if( cur_adjacent_cell_id != NO_ID ) { /// @todo check that NO_ID means no adjacency. Perhaps a better design may be found.
                             if( !contains( visited, cur_adjacent_cell_id ) ) {
                                 S.push( cur_adjacent_cell_id ) ;
                                 visited.push_back( cur_adjacent_cell_id ) ;

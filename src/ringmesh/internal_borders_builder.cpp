@@ -58,15 +58,15 @@ namespace RINGMesh {
 
     void InternalBordersBuilder::compute_internal_borders()
     {
-        //        geo_model_mesh_repair( model_ ) ;
+        //        geo_model_mesh_repair( model() ) ;
         // ========= bad copy paste from geo model repair
-        for( index_t i = 0; i < model_.nb_surfaces(); ++i ) {
+        for( index_t i = 0; i < model().nb_surfaces(); ++i ) {
             // If the Surface has internal boundaries, we need to
             // re-cut the Surface along these lines
-            Surface& S = const_cast< Surface& >( model_.surface( i ) ) ;
+            Surface& S = const_cast< Surface& >( model().surface( i ) ) ;
             std::set< index_t > cutting_lines ;
             for( index_t l = 0; l < S.nb_boundaries(); ++l ) {
-                const Line& L = model_.line( S.boundary_gme( l ).index ) ;
+                const Line& L = model().line( S.boundary_gme( l ).index ) ;
                 if( /*to_remove.count( L.gme_id() ) == 0 &&*/L.is_inside_border(
                     S ) ) {
                     cutting_lines.insert( L.index() ) ;
@@ -76,19 +76,19 @@ namespace RINGMesh {
                 it != cutting_lines.end(); ++it ) {
                 // Force the recomputing of the model vertices
                 // before performing the cut.
-                model_.mesh.vertices.clear() ;
+                model().mesh.vertices.clear() ;
                 DEBUG( "cut surface by line" ) ;
-                cut_surface_by_line( S, model_.line( *it ) ) ;
+                cut_surface_by_line( S.index(), *it ) ;
             }
         }
         // ========= bad copy paste from geo model repair
 
         //=================== Cut the region by the surfaces
         // THAT MAY NOT WORK IF THE REGION IS ALREADY CUT. TO CHECK!!!
-        for( index_t i = 0; i < model_.nb_regions(); ++i ) {
+        for( index_t i = 0; i < model().nb_regions(); ++i ) {
             // If the Region has internal boundaries, we need to
             // re-cut the Region along these surfaces
-            Region& R = const_cast< Region& >( model_.region( i ) ) ;
+            Region& R = const_cast< Region& >( model().region( i ) ) ;
             if( !R.is_meshed() ) {
                 continue ;
             }
@@ -97,7 +97,7 @@ namespace RINGMesh {
             // in boundaries of the surface.
             std::set< index_t > cutting_surfaces ;
             for( index_t s = 0; s < R.nb_boundaries(); ++s ) {
-                const Surface& S = model_.surface( R.boundary_gme( s ).index ) ;
+                const Surface& S = model().surface( R.boundary_gme( s ).index ) ;
                 if( /*to_remove.count( L.gme_id() ) == 0 &&*/S.is_inside_border(
                     R ) ) {
                     cutting_surfaces.insert( S.index() ) ;
@@ -110,8 +110,8 @@ namespace RINGMesh {
                 // Force the recomputing of the model vertices
                 // before performing the cut.
                 DEBUG("cut region by surface") ;
-                model_.mesh.vertices.clear() ;
-                cut_region_by_surface( R, model_.surface( *it ) ) ;
+                model().mesh.vertices.clear() ;
+                cut_region_by_surface( R, model().surface( *it ) ) ;
             }
 
             // If the region has only a line has internal border.
@@ -126,7 +126,8 @@ namespace RINGMesh {
                 ++surf_boun_itr ) {
                 const GME& cur_surf_boun = R.boundary( surf_boun_itr ) ;
                 ringmesh_assert( cur_surf_boun.type() == GME::SURFACE ) ;
-                if( !GME::is_stratigraphic_limit( cur_surf_boun.parent().geological_feature() ) ) {
+                if( !GME::is_stratigraphic_limit(
+                    cur_surf_boun.parent().geological_feature() ) ) {
                     continue ;
                 }
                 if( std::find( cutting_surfaces.begin(), cutting_surfaces.end(),
@@ -188,8 +189,8 @@ namespace RINGMesh {
             for( std::set< index_t >::iterator it = cutting_lines.begin();
                 it != cutting_lines.end(); ++it ) {
                 DEBUG("cut region by line") ;
-                model_.mesh.vertices.clear() ;
-                cut_region_by_line( R, model_.line( *it ) ) ;
+                model().mesh.vertices.clear() ;
+                cut_region_by_line( R, model().line( *it ) ) ;
 //                R.tools.delete_ann() ;
             }
             //=================== Cut the region by the lines
@@ -197,9 +198,9 @@ namespace RINGMesh {
 
         {
             recompute_geomodel_mesh() ;
-            index_t toto = model_.corner( 0 ).model_vertex_id( 0 ) ;
+            index_t toto = model().corner( 0 ).model_vertex_id( 0 ) ;
             const std::vector< GMEVertex >& gme_vertices =
-                model_.mesh.vertices.gme_vertices( toto ) ;
+                model().mesh.vertices.gme_vertices( toto ) ;
             index_t count = 0 ;
             for( index_t i = 0; i < gme_vertices.size(); ++i ) {
                 if( gme_vertices[i].gme_id.type == GME::REGION ) {
@@ -210,16 +211,16 @@ namespace RINGMesh {
         }
         //=================== Cut the region by the surfaces
 
-        for( index_t reg_itr = 0; reg_itr < model_.nb_regions(); ++reg_itr ) {
-            model_.region( reg_itr ).mesh().vertices.remove_isolated() ;
+        for( index_t reg_itr = 0; reg_itr < model().nb_regions(); ++reg_itr ) {
+            const_cast< GEO::Mesh& >( model().region( reg_itr ).gfx_mesh() ).vertices.remove_isolated() ;
         }
         // Deliberate clear of the model vertices used for model building
-        model_.mesh.vertices.clear() ;
+        model().mesh.vertices.clear() ;
         {
             recompute_geomodel_mesh() ;
-            index_t toto = model_.corner( 0 ).model_vertex_id( 0 ) ;
+            index_t toto = model().corner( 0 ).model_vertex_id( 0 ) ;
             const std::vector< GMEVertex >& gme_vertices =
-                model_.mesh.vertices.gme_vertices( toto ) ;
+                model().mesh.vertices.gme_vertices( toto ) ;
             index_t count = 0 ;
             for( index_t i = 0; i < gme_vertices.size(); ++i ) {
                 if( gme_vertices[i].gme_id.type == GME::REGION ) {
