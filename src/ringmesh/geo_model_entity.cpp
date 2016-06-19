@@ -1517,4 +1517,161 @@ namespace RINGMesh {
         }
     }
 
+    index_t Region::find_first_cell_owing_vertex( index_t vertex_id_in_region ) const
+    {
+        ringmesh_assert( is_meshed() ) ;
+        const ColocaterANN& ann_cells = tools.ann_cells() ;
+        const vec3& vertex_pos = vertex( vertex_id_in_region ) ;
+
+        index_t nb_neighbors = std::min( index_t( 5 ), nb_cells() ) ;
+        std::vector< index_t > neighbors ;
+        index_t cur_neighbor = 0 ;
+        index_t prev_neighbor = 0 ;
+        do {
+            prev_neighbor = cur_neighbor ;
+            cur_neighbor += nb_neighbors ;
+            cur_neighbor = std::min( cur_neighbor, nb_cells() ) ;
+            neighbors.resize( cur_neighbor ) ;
+            double* dist = (double*) alloca( sizeof(double) * cur_neighbor ) ;
+            nb_neighbors = ann_cells.get_neighbors( vertex_pos, cur_neighbor,
+                neighbors, dist ) ;
+            for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
+                index_t c = neighbors[i] ;
+                for( index_t j = 0; j < nb_vertices_in_cell( c ); j++ ) {
+                    if( gmme_vertex_index( c, j ) == vertex_id_in_region ) {
+                        return c ;
+                    }
+                }
+            }
+        } while( nb_cells() != cur_neighbor ) ;
+
+        return NO_ID ;
+    }
+
+    /*!
+     * @brief Determines the cells around a vertex
+     *
+     * @param[in] region_vertex_id Index ot the vertex in the region
+     * @param[in] result Indices of the cells containing @param region_vertex_id
+     * @param[in] border_only If true only cells on the border are considered
+     * @return The number of cells found
+     */
+    index_t Region::cells_around_vertex(
+        index_t region_vertex_id,
+        std::vector< index_t >& result,
+        bool border_only ) const
+    {
+        ringmesh_assert( is_meshed() ) ;
+        index_t cell_id_in_region = find_first_cell_owing_vertex(
+            region_vertex_id ) ;
+        /*index_t cell_id_in_region = NO_ID ;
+
+        // So, we are back to the brute force stupid approach
+        for( index_t i = 0; i < nb_cells(); ++i ) {
+            for( index_t lv = 0; lv < nb_vertices_in_cell( i ); lv++ ) {
+                if( gmme_vertex_index( i, lv ) == region_vertex_id ) {
+                    cell_id_in_region = i ;
+                    break ;
+                }
+            }
+            if( cell_id_in_region != NO_ID ) {
+                break ;
+            }
+        }*/
+        ringmesh_assert( cell_id_in_region != NO_ID ) ;
+        return cells_around_vertex( region_vertex_id, result, border_only,
+            cell_id_in_region ) ;
+    }
+
+    /*!
+     * @brief Determines the cells around a vertex
+     *
+     * @param[in] region_vertex_id Index of the vertex in the region
+     * @param[in] result Indices of the cells containing @param region_vertex_id
+     * @param[in] border_only If true only cells on the border are considered
+     * @param[in] first_cell Index of one cell containing the vertex @param region_vertex_id
+     * @return The number of cells found
+     *
+     * @todo Evaluate if this is fast enough !!
+     */
+    index_t Region::cells_around_vertex(
+        index_t region_vertex_id,
+        std::vector< index_t >& result,
+        bool border_only,
+        index_t first_cell ) const
+    {
+        result.resize( 0 ) ;
+
+        ringmesh_assert( first_cell != NO_ID ) ;
+
+        // Flag the visited cells
+        std::vector< index_t > visited ;
+        visited.reserve( 10 ) ;
+
+        // Stack of the adjacent cells
+        std::stack< index_t > S ;
+        S.push( first_cell ) ;
+        visited.push_back( first_cell ) ;
+
+        do {
+            index_t c = S.top() ;
+            S.pop() ;
+
+            for( index_t v = 0; v < nb_vertices_in_cell( c ); ++v ) {
+                if( gmme_vertex_index( c, v ) == region_vertex_id ) {
+
+                    std::vector< index_t > adjacent_cells ;
+                    adjacent_cells.reserve( 3 ) ; // for tet and quad max 3 adjacent cells
+                    for( index_t f = 0; f < nb_facets_in_cell( c ); ++f ) {
+                        for( index_t v_in_f_itr = 0;
+                            v_in_f_itr < facet_nb_vertices( c, f ); ++v_in_f_itr ) {
+                            if( facet_vertex( c, f, v_in_f_itr )
+                                == region_vertex_id ) {
+                                adjacent_cells.push_back( adjacent_cell( c, f ) ) ;
+                                break ;
+                            }
+                        }
+                    }
+                    ringmesh_assert( adjacent_cells.size() <= 3 ) ;
+
+                    bool on_border = false ;
+                    for( index_t adjacent_cells_itr = 0;
+                        adjacent_cells_itr < adjacent_cells.size();
+                        ++adjacent_cells_itr ) {
+                        index_t cur_adjacent_cell_id =
+                            adjacent_cells[adjacent_cells_itr] ;
+                        if( cur_adjacent_cell_id != NO_ADJACENT ) {
+                            if( !contains( visited, cur_adjacent_cell_id ) ) {
+                                S.push( cur_adjacent_cell_id ) ;
+                                visited.push_back( cur_adjacent_cell_id ) ;
+                            }
+                        } else {
+                            on_border = true ;
+                        }
+                    }
+
+                    if( border_only ) {
+                        if( on_border ) {
+                            result.push_back( c ) ;
+                        }
+                    } else {
+                        result.push_back( c ) ;
+                    }
+
+                    // We are done with this cell
+                    break ;
+                }
+            }
+        } while( !S.empty() ) ;
+
+        ringmesh_assert( !result.empty() ) ;
+#ifdef RINGMESH_DEBUG
+        for( index_t result_itr = 0; result_itr < result.size(); ++result_itr ) {
+            int nb = static_cast< index_t >( std::count( result.begin(),
+                result.end(), result[result_itr] ) ) ;
+            ringmesh_assert( nb == 1 ) ;
+        }
+#endif
+        return static_cast< index_t >( result.size() ) ;
+    }
 }
