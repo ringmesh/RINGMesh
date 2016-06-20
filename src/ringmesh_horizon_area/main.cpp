@@ -123,7 +123,7 @@ int main( int argc, char** argv )
                 ++child_itr ) {
                 const Surface& cur_surface = geomodel.surface(
                     cur_horizon.child( child_itr ).index() ) ;
-                double cur_area = GEO::Geom::mesh_area( cur_surface.mesh() ) ;
+                const double cur_area = GEO::Geom::mesh_area( cur_surface.gfx_mesh() ) ;
                 total_interface_area += cur_area ;
 
                 out << cur_surface.index() ;
@@ -168,7 +168,7 @@ int main( int argc, char** argv )
                 ++child_itr ) {
                 const Region& cur_region = geomodel.region(
                     cur_layer.child( child_itr ).index() ) ;
-                double cur_volume = GEO::mesh_cells_volume( cur_region.mesh() ) ;
+                const double cur_volume = GEO::mesh_cells_volume( cur_region.gfx_mesh() ) ;
                 total_layer_volume += cur_volume ;
 
                 out2 << cur_region.index() ;

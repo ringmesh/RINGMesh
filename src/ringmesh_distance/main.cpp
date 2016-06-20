@@ -92,8 +92,10 @@ int main( int argc, char** argv )
         GeoModel geomodel ;
         geomodel_load( geomodel, input_geomodel_name ) ;
         geomodel.mesh.facets.test_and_initialize() ;
+        Mesh copy_mesh(geomodel,3,false) ;
+        geomodel.mesh.copy_mesh( copy_mesh ) ;
         GEO::Mesh copy_geomodel ;
-        geomodel.mesh.copy_mesh( copy_geomodel ) ;
+        copy_geomodel.copy(copy_mesh.gfx_mesh()); /// @todo names are not teally good.
 
         std::string geomodel_to_compare_name = GEO::CmdLine::get_arg(
             "distance:geomodel" ) ;
@@ -104,8 +106,11 @@ int main( int argc, char** argv )
         GeoModel geomodel_to_compare ;
         geomodel_load( geomodel_to_compare, geomodel_to_compare_name ) ;
         geomodel_to_compare.mesh.facets.test_and_initialize() ;
+
+        Mesh copy_mesh_to_compare(geomodel_to_compare,3,false) ;
+        geomodel_to_compare.mesh.copy_mesh( copy_mesh_to_compare ) ;
         GEO::Mesh copy_geomodel_to_compare ;
-        geomodel_to_compare.mesh.copy_mesh( copy_geomodel_to_compare ) ;
+        copy_geomodel_to_compare.copy(copy_mesh_to_compare.gfx_mesh());
 
         double sampling_distance = GEO::CmdLine::get_arg_double(
             "distance:sampling_distance" ) ;

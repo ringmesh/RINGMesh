@@ -1970,9 +1970,13 @@ namespace RINGMesh {
     }
 
     void GeoModelBuilder::duplicate_surface_vertices_along_line_benjamin(
-        Surface& S,
-        const Line& L )
+        index_t surface_id,
+        index_t line_id )
     {
+        ringmesh_assert( surface_id < model().nb_surfaces() ) ;
+        ringmesh_assert( line_id < model().nb_lines() ) ;
+        const Surface& S = model().surface( surface_id ) ;
+        const Line& L = model().line( line_id ) ;
         for( index_t line_v_itr = 0; line_v_itr + 1 < L.nb_vertices();
             ++line_v_itr ) {
             index_t first_facet = NO_ID ;
@@ -1987,7 +1991,7 @@ namespace RINGMesh {
             S.facets_around_vertex( first_facet_first_vertex, result, false,
                 first_facet ) ;
             vec3 pos = S.vertex( first_facet_first_vertex ) ;
-            index_t new_v_id = S.mesh().vertices.create_vertex( pos.data() ) ;
+            index_t new_v_id = const_cast<GEO::Mesh&>(S.gfx_mesh()).vertices.create_vertex( pos.data() ) ;
             for( index_t result_itr = 0; result_itr < result.size(); ++result_itr ) {
                 index_t cur_facet = result[result_itr] ;
                 bool found = false ;
@@ -1998,7 +2002,7 @@ namespace RINGMesh {
                     index_t cur_v_id_in_surf = S.mesh_element_vertex_index( cur_facet,
                         cur_facet_vertex_itr ) ;
                     if( cur_v_id_in_surf == first_facet_first_vertex ) {
-                        S.mesh().facets.set_vertex( cur_facet, cur_facet_vertex_itr,
+                        const_cast<GEO::Mesh&>(S.gfx_mesh()).facets.set_vertex( cur_facet, cur_facet_vertex_itr,
                             new_v_id ) ;
                         found = true ;
                         break ;
@@ -2011,7 +2015,7 @@ namespace RINGMesh {
                 S.facets_around_vertex( first_facet_second_vertex, result_last,
                     false, first_facet ) ;
                 vec3 pos2 = S.vertex( first_facet_second_vertex ) ;
-                index_t new_v_id2 = S.mesh().vertices.create_vertex(
+                index_t new_v_id2 = const_cast<GEO::Mesh&>(S.gfx_mesh()).vertices.create_vertex(
                     pos2.data() ) ;
                 for( index_t result_last_itr = 0;
                     result_last_itr < result_last.size(); ++result_last_itr ) {
@@ -2025,7 +2029,7 @@ namespace RINGMesh {
                         index_t cur_v_id_in_surf = S.mesh_element_vertex_index( cur_facet,
                             cur_facet_vertex_itr ) ;
                         if( cur_v_id_in_surf == first_facet_second_vertex ) {
-                            S.mesh().facets.set_vertex( cur_facet,
+                            const_cast<GEO::Mesh&>(S.gfx_mesh()).facets.set_vertex( cur_facet,
                                 cur_facet_vertex_itr, new_v_id2 ) ;
                             found = true ;
                             break ;
@@ -2042,7 +2046,7 @@ namespace RINGMesh {
         const Surface& S )
     {
         DEBUG( S.index() ) ;
-        GEO::Mesh& region_mesh = R.mesh() ;
+        GEO::Mesh& region_mesh = const_cast<GEO::Mesh&> ( R.gfx_mesh() ) ;
         // Flag to know if a line vertex must be duplicated or not
         GEO::Attribute< bool > flag_to_duplicate( region_mesh.vertices.attributes(),
             "flag_to_duplicate" ) ;
@@ -2050,9 +2054,9 @@ namespace RINGMesh {
         recompute_geomodel_mesh() ;
 
 
-        index_t toto = model_.corner( 0 ).model_vertex_id( 0 ) ;
+        index_t toto = model().corner( 0 ).model_vertex_id( 0 ) ;
         const std::vector< GMEVertex >& gme_vertices =
-            model_.mesh.vertices.gme_vertices( toto ) ;
+            model().mesh.vertices.gme_vertices( toto ) ;
         index_t count = 0 ;
         for( index_t i = 0; i < gme_vertices.size(); ++i ) {
             if( gme_vertices[i].gme_id.type == GME::REGION ) {
@@ -2064,14 +2068,14 @@ namespace RINGMesh {
 
         for( index_t surf_boun_line_itr = 0; surf_boun_line_itr < S.nb_boundaries();
             ++surf_boun_line_itr ) {
-            const GeoModelElement& cur_gme = S.boundary( surf_boun_line_itr ) ;
+            const GeoModelEntity& cur_gme = S.boundary( surf_boun_line_itr ) ;
             ringmesh_assert( cur_gme.type() == GME::LINE ) ;
-            const Line& cur_line = model_.line( cur_gme.index() ) ;
-            if( !is_line_to_duplicate( model_, cur_line.index() ) ) {
+            const Line& cur_line = model().line( cur_gme.index() ) ;
+            if( !is_line_to_duplicate( model(), cur_line.index() ) ) {
                 DEBUG( cur_line.index() ) ;
                 for( index_t v = 0; v < cur_line.nb_vertices(); ++v ) {
                     const std::vector< GMEVertex >& gme_vertices =
-                        model_.mesh.vertices.gme_vertices(
+                        model().mesh.vertices.gme_vertices(
                             cur_line.model_vertex_id( v ) ) ;
                     for( index_t gme_v = 0; gme_v < gme_vertices.size(); ++gme_v ) {
                         if( gme_vertices[gme_v].gme_id == R.gme_id() ) {
@@ -2082,15 +2086,15 @@ namespace RINGMesh {
             }
         }
 
-        const ColocaterANN& ann_cells = R.tools.ann_cells() ;
+        const ColocaterANN& ann_cells = R.cell_colocater_ann() ;
         index_t c = NO_ID ;
         index_t f = NO_ID ;
         bool found = find_cell_and_facet( ann_cells, R, S, 0, c, f ) ;
         ringmesh_unused( found ) ;
         ringmesh_assert( found && c != NO_ID && f != NO_ID ) ;
 
-        vec3 first_facet_normal = GEO::Geom::mesh_facet_normal( S.mesh(), 0 ) ;
-        vec3 first_cell_facet_normal = GEO::mesh_cell_facet_normal( R.mesh(), c,
+        vec3 first_facet_normal = GEO::Geom::mesh_facet_normal( const_cast<GEO::Mesh&>(S.gfx_mesh()), 0 ) ;
+        vec3 first_cell_facet_normal = GEO::mesh_cell_facet_normal( const_cast<GEO::Mesh&>(R.gfx_mesh()), c,
             f ) ;
         double dot_product = GEO::dot( first_cell_facet_normal,
             first_facet_normal ) ;
@@ -2102,7 +2106,7 @@ namespace RINGMesh {
         int side = dot_product >= 0 ? 1 : -1 ;
 
         std::vector< index_t > visited_cells ;
-        visited_cells.reserve( R.nb_cells() ) ;
+        visited_cells.reserve( R.nb_mesh_elements() ) ;
         visited_cells.push_back( c ) ;
 
         const index_t initial_nb_vertices = R.nb_vertices() ;
@@ -2120,10 +2124,10 @@ namespace RINGMesh {
         std::vector< index_t >& visited_cells,
         int side )
     {
-        GEO::Mesh& region_mesh = R.mesh() ;
+        GEO::Mesh& region_mesh = const_cast<GEO::Mesh&> ( R.gfx_mesh() ) ;
         GEO::MeshVertices& mesh_v = region_mesh.vertices ;
-        for( index_t v = 0; v < R.facet_nb_vertices( c, f ); ++v ) {
-            index_t v_id_in_reg = R.facet_vertex( c, f, v ) ;
+        for( index_t v = 0; v < R.nb_cell_facet_vertices( c, f ); ++v ) {
+            index_t v_id_in_reg = R.cell_facet_vertex_index( c, f, v ) ;
             if( !flag_to_duplicate[v_id_in_reg] ) {
                 continue ;
             }
@@ -2146,39 +2150,17 @@ namespace RINGMesh {
                     ++cav_itr ) {
                     for( index_t v_in_cell_itr = 0;
                         v_in_cell_itr
-                            < R.nb_vertices_in_cell( surrounding_cells[cav_itr] );
+                            < R.nb_mesh_element_vertices( surrounding_cells[cav_itr] );
                         ++v_in_cell_itr ) {
 
-                        if( std::abs( coords[0] - 27525.323486328125 ) < epsilon
-                            && std::abs( coords[1] - 16665.168212890625 ) < epsilon
-                            && std::abs( coords[2] + 7451.77294921875 ) < epsilon ) {
-                            index_t one = to_deb.vertices.create_vertex(
-                                R.vertex(
-                                    R.gmme_vertex_index( surrounding_cells[cav_itr],
-                                        0 ) ).data() ) ;
-                            index_t two = to_deb.vertices.create_vertex(
-                                R.vertex(
-                                    R.gmme_vertex_index( surrounding_cells[cav_itr],
-                                        1 ) ).data() ) ;
-                            index_t three = to_deb.vertices.create_vertex(
-                                R.vertex(
-                                    R.gmme_vertex_index( surrounding_cells[cav_itr],
-                                        2 ) ).data() ) ;
-                            index_t four = to_deb.vertices.create_vertex(
-                                R.vertex(
-                                    R.gmme_vertex_index( surrounding_cells[cav_itr],
-                                        3 ) ).data() ) ;
-                            to_deb.cells.create_tet( one, two, three, four ) ;
-                        }
-
-                        if( R.gmme_vertex_index( surrounding_cells[cav_itr],
+                        if( R.mesh_element_vertex_index( surrounding_cells[cav_itr],
                             v_in_cell_itr ) == v_id_in_reg ) {
                             index_t local_v_id_in_cell = NO_ID ;
                             for( index_t lv = 0;
                                 lv
-                                    < R.nb_vertices_in_cell(
+                                    < R.nb_mesh_element_vertices(
                                         surrounding_cells[cav_itr] ); ++lv ) {
-                                if( R.gmme_vertex_index( surrounding_cells[cav_itr],
+                                if( R.mesh_element_vertex_index( surrounding_cells[cav_itr],
                                     lv ) == v_id_in_reg ) {
                                     local_v_id_in_cell = lv ;
                                 }
@@ -2202,8 +2184,8 @@ namespace RINGMesh {
             }
         }
 
-        for( index_t v = 0; v < R.facet_nb_vertices( c, f ); ++v ) {
-            index_t v_id_in_reg = R.facet_vertex( c, f, v ) ;
+        for( index_t v = 0; v < R.nb_cell_facet_vertices( c, f ); ++v ) {
+            index_t v_id_in_reg = R.cell_facet_vertex_index( c, f, v ) ;
 
             std::vector< index_t > surrounding_cells ;
             // Only the cells on the border have facets on common with the
@@ -2223,12 +2205,12 @@ namespace RINGMesh {
                 bool ok = false ;
                 index_t facet_in_border = NO_ID ;
                 for( index_t cur_sur_cell_facet_itr = 0;
-                    cur_sur_cell_facet_itr < R.nb_facets_in_cell( cur_sur_cell_id );
+                    cur_sur_cell_facet_itr < R.nb_cell_facets( cur_sur_cell_id );
                     ++cur_sur_cell_facet_itr ) {
-                    if( R.is_on_border( cur_sur_cell_id, cur_sur_cell_facet_itr ) ) {
-                        vec3 facet_bary = mesh_cell_facet_center( R.mesh(),
+                    if( R.is_cell_facet_on_border( cur_sur_cell_id, cur_sur_cell_facet_itr ) ) {
+                        vec3 facet_bary = mesh_cell_facet_center( R.gfx_mesh(),
                             cur_sur_cell_id, cur_sur_cell_facet_itr ) ;
-                        const ColocaterANN& ann_facets = S.tools.ann_facets() ;
+                        const ColocaterANN& ann_facets = S.facet_colocater_ann() ;
                         std::vector< index_t > colocated_result ;
                         if( !ann_facets.get_colocated( facet_bary, colocated_result ) ) {
                             continue ;
@@ -2236,9 +2218,9 @@ namespace RINGMesh {
                         ringmesh_assert( colocated_result.size() == 1 ) ;
 
                         vec3 surf_facet_normal = GEO::Geom::mesh_facet_normal(
-                            S.mesh(), colocated_result[0] ) ;
+                            S.gfx_mesh(), colocated_result[0] ) ;
                         vec3 cell_facet_normal = GEO::mesh_cell_facet_normal(
-                            R.mesh(), cur_sur_cell_id, cur_sur_cell_facet_itr ) ;
+                            R.gfx_mesh(), cur_sur_cell_id, cur_sur_cell_facet_itr ) ;
 
                         double dot_product = GEO::dot( cell_facet_normal,
                             surf_facet_normal ) ;
@@ -2283,8 +2265,8 @@ namespace RINGMesh {
         }
 
         disconnect_surface_facets_along_line_edges( surface_id, line_id ) ;
-        duplicate_surface_vertices_along_line_benjamin( S, L ) ;
-        S.mesh().vertices.remove_isolated() ;
+        duplicate_surface_vertices_along_line_benjamin( surface_id, line_id ) ;
+        const_cast<GEO::Mesh&> ( model().surface(surface_id).gfx_mesh() ).vertices.remove_isolated() ;
         recompute_geomodel_mesh() ;
 
         if( !model_vertices_initialized ) {
@@ -2327,7 +2309,7 @@ namespace RINGMesh {
             /// is not currently updated. It should not be a problem here since
             /// when a new vertex is created the algo go to the next one and do not
             /// care about the previously built... but to check...
-            const ColocaterANN& reg_ann = R.tools.ann() ;
+            const ColocaterANN& reg_ann = R.vertex_colocater_ann() ;
             std::vector< index_t > colocated ;
             vec3 vertex_pos = L.vertex( line_v_itr ) ;
             const index_t line_v_id_in_gmm = L.model_vertex_id( line_v_itr ) ;
@@ -2339,17 +2321,17 @@ namespace RINGMesh {
             std::vector< index_t > cells_around ;
             R.cells_around_vertex( colocated[0], cells_around, false ) ;
             ringmesh_assert( !cells_around.empty() ) ;
-            index_t new_vertex_id = R.mesh().vertices.create_vertex(
+            index_t new_vertex_id = const_cast<GEO::Mesh&> ( R.gfx_mesh() ).vertices.create_vertex(
                 vertex_pos.data() ) ;
             for( index_t cells_around_itr = 0;
                 cells_around_itr < cells_around.size(); ++cells_around_itr ) {
                 index_t cur_cell_id = cells_around[cells_around_itr] ;
                 for( index_t cell_v_itr = 0;
-                    cell_v_itr < R.nb_vertices_in_cell( cur_cell_id );
+                    cell_v_itr < R.nb_mesh_element_vertices( cur_cell_id );
                     ++cell_v_itr ) {
                     if( R.model_vertex_id( cur_cell_id, cell_v_itr )
                         == line_v_id_in_gmm ) {
-                        R.mesh().cells.set_vertex( cur_cell_id, cell_v_itr,
+                        const_cast<GEO::Mesh&> ( R.gfx_mesh() ).cells.set_vertex( cur_cell_id, cell_v_itr,
                             new_vertex_id ) ;
                         break ;
                     }
@@ -2358,7 +2340,7 @@ namespace RINGMesh {
         }
 
         // Rebuild the mesh facets of the region
-        R.mesh().cells.compute_borders() ;
+        const_cast<GEO::Mesh&> ( R.gfx_mesh() ).cells.compute_borders() ;
 
         if( !model_vertices_initialized ) {
             const_cast< GeoModel& >( model() ).mesh.vertices.clear() ;

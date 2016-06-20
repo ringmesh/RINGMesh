@@ -110,7 +110,7 @@ int main( int argc, char** argv )
         }
 
         index_t gme_id = GEO::CmdLine::get_arg_uint( "remove_gme:id" ) ;
-        if( gme_id >= geomodel.nb_elements( gme_type ) ) {
+        if( gme_id >= geomodel.nb_entities( gme_type ) ) {
             throw RINGMeshException( "I/O",
                 "Index superior to number of elements of type " + gme_type_name ) ;
         }
@@ -120,7 +120,7 @@ int main( int argc, char** argv )
             to_delete.insert( GME::gme_t( gme_type, gme_id ) ) ;
 
             GeoModelEditor editor( geomodel ) ;
-            editor.remove_elements_and_dependencies( to_delete ) ;
+            editor.remove_entities_and_dependencies( to_delete ) ;
         } else if( gme_type == GME::LAYER ) {
             // The trick for the layer is that the region indices does not change
             // after the removal of a region if the indices are inferior to the
@@ -140,7 +140,7 @@ int main( int argc, char** argv )
                 to_delete.insert(
                     GME::gme_t( GME::REGION, region_ids[reg_id_itr] ) ) ;
                 GeoModelEditor editor( geomodel ) ;
-                editor.remove_elements_and_dependencies( to_delete ) ;
+                editor.remove_entities_and_dependencies( to_delete ) ;
             }
         } else {
             throw RINGMeshException( "Remove GME",

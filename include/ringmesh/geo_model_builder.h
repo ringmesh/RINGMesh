@@ -339,8 +339,8 @@ namespace RINGMesh {
         void duplicate_surface_vertices_along_line( index_t surface_id, index_t line_id ) ;
     protected:
         void duplicate_surface_vertices_along_line_benjamin(
-            Surface& S,
-            const Line& L ) ;
+            index_t surface_id,
+            index_t line_id ) ;
     private :
         void duplicate_region_vertices_along_surface( Region& R, const Surface& S ) ;
     protected:
