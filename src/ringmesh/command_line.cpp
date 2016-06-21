@@ -61,6 +61,9 @@ namespace RINGMesh {
                 "in:geomodel", "",
                 "Filename of the input geological model" ) ;
             GEO::CmdLine::declare_arg(
+                "in:intersection_check", true,
+                "Toggle the surface intersection check at loading" ) ;
+            GEO::CmdLine::declare_arg(
                 "in:wells", "",
                 "Filename of the input wells" ) ;
             GEO::CmdLine::declare_arg(
