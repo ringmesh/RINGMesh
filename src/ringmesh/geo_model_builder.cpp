@@ -1616,6 +1616,13 @@ namespace RINGMesh {
         }
     }
 
+    void GeoModelBuilder::compute_region_adjacencies( index_t region_id )
+    {
+        Mesh& mesh = mesh_entity( GME::gme_t( GME::REGION, region_id ) ).mesh_ ;
+        MeshBuilder builder( mesh ) ;
+        builder.connect_cells() ;
+    }
+
     /*!
      * @brief Triangulate a surface
      * @details Compute the triangulation of a set of vertices using
