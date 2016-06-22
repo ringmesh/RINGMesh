@@ -542,6 +542,7 @@ namespace GEO {
                         std::string path_part = path.substr(0,pos);
                         p = realpath(path_part.c_str(), buffer);
                         if(p == nil) {
+
                             break;
                         } else {
                             result = std::string(p) +

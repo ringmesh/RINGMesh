@@ -1355,8 +1355,20 @@ namespace RINGMesh {
 
          */
 
+        index_t cells_around_vertex(
+            index_t region_vertex_id,
+            std::vector< index_t >& result,
+            bool border_only ) const ;
+
+        index_t cells_around_vertex(
+            index_t region_vertex_id,
+            std::vector< index_t >& result,
+            bool border_only,
+            index_t first_cell ) const ;
+
     private:
         virtual bool is_mesh_valid() const ;
+        index_t find_first_cell_owing_vertex( index_t vertex_id_in_region ) const ;
 
     private:
         /*! Additional information to store oriented boundary Surfaces

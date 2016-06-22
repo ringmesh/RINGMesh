@@ -37,73 +37,57 @@
 
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/stopwatch.h>
-
-#include <ringmesh/command_line.h>
-#include <ringmesh/geo_model.h>
-#include <ringmesh/geo_model_api.h>
-#include <ringmesh/io.h>
-#include <ringmesh/mesh_quality.h>
+#include <geogram/mesh/mesh_distance.h>
+#include <geogram/mesh/mesh_distance.h>
+#include <geogram/mesh/mesh.h>
+#include <geogram/mesh/mesh_io.h>
+#include <geogram/basic/command_line_args.h>
 
 /*!
- * @author Arnaud Botella
+ * @author Benjamin Chauvin
  */
 
 int main( int argc, char** argv )
 {
-    using namespace RINGMesh ;
-
     try {
 
         GEO::initialize() ;
-        configure_geogram() ;
-        configure_ringmesh() ;
+        // From RINGMesh::configure_geogram
+        GEO::CmdLine::import_arg_group( "sys" ) ;
+        GEO::CmdLine::set_arg( "sys:assert", "abort" ) ;
+        GEO::CmdLine::set_arg( "sys:FPE", true ) ;
+        GEO::CmdLine::import_arg_group( "algo" ) ;
+        GEO::CmdLine::set_arg( "algo:predicates", "exact" ) ;
+        GEO::CmdLine::import_arg_group( "log" ) ;
+        GEO::CmdLine::set_arg( "sys:use_doubles", true ) ;
 
-        GEO::Logger::div( "RINGMeshStats" ) ;
-        GEO::Logger::out( "" ) << "Welcome to RINGMeshStats !" << std::endl ;
-        GEO::Logger::out( "" ) << "People working on the project in RING"
-            << std::endl ;
-        GEO::Logger::out( "" ) << "Arnaud Botella <arnaud.botella@univ-lorraine.fr> "
-            << std::endl ;
-
-        CmdLine::import_arg_group( "in" ) ;
-        CmdLine::import_arg_group( "stats" ) ;
-
-        if( argc == 1 ) {
+        if( argc != 4 ) {
             GEO::CmdLine::show_usage() ;
             return 0 ;
         }
 
-        std::vector< std::string > filenames ;
-        if( !GEO::CmdLine::parse( argc, argv, filenames ) ) {
-            return 1 ;
-        }
-
         GEO::Stopwatch total( "Total time" ) ;
 
-        std::string model_name = GEO::CmdLine::get_arg( "in:geomodel" ) ;
-        if( model_name.empty() ) {
-            throw RINGMeshException( "I/O",
-                "Give at least a filename in in:geomodel" ) ;
-        }
-        GeoModel geomodel ;
-        geomodel_load( geomodel, model_name ) ;
+        std::string first_mesh_path = argv[1] ;
+        GEO::Mesh first_mesh ;
+        GEO::mesh_load( first_mesh_path, first_mesh ) ;
 
-        if( GEO::CmdLine::get_arg_bool( "stats:nb" ) ) {
-            print_geomodel_mesh_stats( geomodel ) ;
-        }
+        std::string second_mesh_path = argv[2] ;
+        GEO::Mesh second_mesh ;
+        GEO::mesh_load( second_mesh_path, second_mesh ) ;
 
-        if( GEO::CmdLine::get_arg_bool( "stats:volume" ) ) {
-            print_geomodel_mesh_cell_volumes( geomodel ) ;
-        }
+        double sampling_distance = GEO::String::to_double( argv[3] ) ;
 
-        // For now I avoid to apply it everytime (stats:volume is false by default.... dirty)
-        if( GEO::CmdLine::get_arg_bool( "stats:volume" ) ) {
-            save_mesh_quality_criterions( geomodel ) ;
-        }
+        GEO::Logger::div( "Distance between 2 meshes" ) ;
+        double one_way = GEO::mesh_one_sided_Hausdorff_distance( first_mesh,
+            second_mesh, sampling_distance ) ;
+        GEO::Logger::out( "Hausdorff one way" ) << one_way << std::endl ;
+        double other_way = GEO::mesh_one_sided_Hausdorff_distance( second_mesh,
+            first_mesh, sampling_distance ) ;
+        GEO::Logger::out( "Hausdorff other way" ) << other_way << std::endl ;
+        GEO::Logger::out( "Hausdorff sym = max" )
+            << GEO::geo_max( one_way, other_way ) << std::endl ;
 
-    } catch( const RINGMeshException& e ) {
-        GEO::Logger::err( e.category() ) << e.what() << std::endl ;
-        return 1 ;
     } catch( const std::exception& e ) {
         GEO::Logger::err( "Exception" ) << e.what() << std::endl ;
         return 1 ;

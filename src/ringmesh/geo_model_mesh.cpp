@@ -334,7 +334,7 @@ namespace RINGMesh {
         }
         // Identify and invalidate colocated vertices
         GEO::vector< index_t > old2new ;
-        if( GEO::Geom::colocate(  mesh_.vertex( 0 ).data(), 3,
+        if( GEO::Geom::colocate( mesh_.vertex( 0 ).data(), 3,
             mesh_.nb_vertices(), old2new, epsilon ) != mesh_.nb_vertices() ) {
             std::vector< index_t > stupid_copy( old2new.begin(), old2new.end() ) ;
             erase_vertices( stupid_copy ) ;
@@ -1956,6 +1956,13 @@ namespace RINGMesh {
         transfert_vertex_attributes() ;
         transfert_cell_attributes() ;
     }
+
+    void GeoModelMesh::transfert_attributes_from_gmm_to_gm() const
+    {
+        transfert_vertex_attributes_from_gmm_to_gm() ;
+        transfert_cell_attributes_from_gmm_to_gm() ;
+    }
+
     void GeoModelMesh::transfert_vertex_attributes() const
     {
 
@@ -2021,6 +2028,50 @@ namespace RINGMesh {
 
     }
 
+    void GeoModelMesh::transfert_vertex_attributes_from_gmm_to_gm() const
+        {
+        for( index_t reg_itr = 0; reg_itr < model().nb_regions(); ++reg_itr ) {
+            GEO::vector< std::string > att_v_names ;
+            GEO::Mesh& reg_mesh =
+                const_cast< GEO::Mesh& >( model().region( reg_itr ).gfx_mesh() ) ;
+            reg_mesh.vertices.attributes().list_attribute_names( att_v_names ) ;
+            for( index_t att_v = 0; att_v < reg_mesh.vertices.attributes().nb();
+                att_v++ ) {
+
+                // It is not necessary to copy the coordinates. There are already there.
+                if( att_v_names[att_v] == "point" ) {
+                    continue ;
+                }
+
+                if( !is_attribute_a_double( reg_mesh.vertices.attributes(),
+                    att_v_names[att_v] ) ) {
+                    continue ;
+                }
+                index_t dim = reg_mesh.vertices.attributes().find_attribute_store(
+                    att_v_names[att_v] )->dimension() ;
+                GEO::Attribute< double > cur_v_att ;
+                if( !vertex_attribute_manager().is_defined( att_v_names[att_v] ) ) {
+                    cur_v_att.create_vector_attribute( vertex_attribute_manager(),
+                        att_v_names[att_v], dim ) ;
+                } else {
+                    cur_v_att.bind( vertex_attribute_manager(),
+                        att_v_names[att_v] ) ;
+                }
+                GEO::Attribute< double > cur_v_att_in_reg(
+                    reg_mesh.vertices.attributes(), att_v_names[att_v] ) ;
+                for( index_t v_in_reg_itr = 0; v_in_reg_itr < reg_mesh.vertices.nb();
+                    ++v_in_reg_itr ) {
+                    index_t v_id_in_gmm = model().region( reg_itr ).model_vertex_id(
+                        v_in_reg_itr ) ;
+                    for( index_t dim_itr = 0; dim_itr < dim; ++dim_itr ) {
+                        cur_v_att[v_id_in_gmm * dim + dim_itr] =
+                            cur_v_att_in_reg[v_in_reg_itr * dim + dim_itr] ;
+                    }
+                }
+            }
+        }
+    }
+
     void GeoModelMesh::transfert_cell_attributes() const
     {
 
@@ -2030,7 +2081,6 @@ namespace RINGMesh {
         const ColocaterANN& ann = mesh_->colocater_ann(ColocaterANN::CELLS ) ;
 
         for( index_t att_c = 0; att_c < att_c_names.size(); att_c++ ) {
-            DEBUG(att_c_names[att_c]) ;
             if( !is_attribute_a_double( cell_attribute_manager(),
                 att_c_names[att_c] ) ) {
                 continue ;
@@ -2065,6 +2115,48 @@ namespace RINGMesh {
             }
         }
     }
+
+    void GeoModelMesh::transfert_cell_attributes_from_gmm_to_gm() const
+    {
+        ColocaterANN ann( mesh_->gfx_mesh(), ColocaterANN::CELLS ) ;
+        for( index_t reg_itr = 0; reg_itr < model().nb_regions(); ++reg_itr ) {
+            GEO::vector< std::string > att_c_names ;
+            GEO::Mesh& reg_mesh = const_cast<GEO::Mesh&> ( model().region( reg_itr ).gfx_mesh() ) ;
+            reg_mesh.cells.attributes().list_attribute_names( att_c_names ) ;
+            for( index_t att_c = 0; att_c < reg_mesh.cells.attributes().nb();
+                att_c++ ) {
+
+                if( !is_attribute_a_double( reg_mesh.cells.attributes(),
+                    att_c_names[att_c] ) ) {
+                    continue ;
+                }
+                index_t dim = reg_mesh.cells.attributes().find_attribute_store(
+                    att_c_names[att_c] )->dimension() ;
+                GEO::Attribute< double > cur_c_att ;
+                if( !cell_attribute_manager().is_defined( att_c_names[att_c] ) ) {
+                    cur_c_att.create_vector_attribute( cell_attribute_manager(),
+                        att_c_names[att_c], dim ) ;
+                } else {
+                    cur_c_att.bind( cell_attribute_manager(), att_c_names[att_c] ) ;
+                }
+                GEO::Attribute< double > cur_c_att_in_reg(
+                    reg_mesh.cells.attributes(), att_c_names[att_c] ) ;
+                for( index_t c_in_reg_itr = 0; c_in_reg_itr < reg_mesh.cells.nb();
+                    ++c_in_reg_itr ) {
+                    vec3 center = mesh_cell_center( reg_mesh, c_in_reg_itr ) ;
+                    std::vector< index_t > c_in_geom_model_mesh ;
+                    ann.get_colocated( center, c_in_geom_model_mesh ) ;
+                    ringmesh_assert( c_in_geom_model_mesh.size() == 1 ) ;
+                    for( index_t dim_itr = 0; dim_itr < dim; ++dim_itr ) {
+                        cur_c_att[c_in_geom_model_mesh[0] * dim + dim_itr] =
+                            cur_c_att_in_reg[c_in_reg_itr * dim + dim_itr] ;
+                    }
+                }
+            }
+        }
+    }
+
+
     GeoModelMesh::~GeoModelMesh()
     {
         facets.unbind_attribute() ;

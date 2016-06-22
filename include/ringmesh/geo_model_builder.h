@@ -48,7 +48,6 @@
 
 #define MAX_FILENAME 512
 #define READ_SIZE 8192
-
 /*!
  * @file ringmesh/geo_model_builder.h
  * @brief Classes to build GeoModel from various inputs
@@ -189,21 +188,21 @@ namespace RINGMesh {
             const std::vector< index_t >& triangle_corners,
             const std::vector< index_t >& adjacent_triangles ) ;
 
-        void set_surface_element_geometry(
-            index_t surface_id,
-            index_t facet_id,
-            const std::vector< index_t >& corners ) ;
+    void set_surface_element_geometry(
+        index_t surface_id,
+        index_t facet_id,
+        const std::vector< index_t >& corners ) ;
 
-        void set_surface_element_adjacency(
-            index_t surface_id,
-            index_t facet_id,
-            const std::vector< index_t >& adjacents ) ;
+    void set_surface_element_adjacency(
+        index_t surface_id,
+        index_t facet_id,
+        const std::vector< index_t >& adjacents ) ;
 
         void set_region_geometry(
             index_t region_id,
             const std::vector< index_t >& tet_corners ) ;
 
-        void set_region_element_geometry(
+    void set_region_element_geometry(
             index_t region_id,
             index_t cell_id,
             const std::vector< index_t >& corners ) ;
@@ -252,6 +251,8 @@ namespace RINGMesh {
             index_t surface_vertex_id ) ;
 
         void cut_surface_by_line( index_t surface_id, index_t line_id ) ;
+        void cut_region_by_surface( Region& R, const Surface& S ) ;
+        void cut_region_by_line( Region& R, const Line& L ) ;
 
         void compute_surface_adjacencies( index_t surface_id ) ;
         void compute_region_adjacencies( index_t region_id ) ;
@@ -321,6 +322,7 @@ namespace RINGMesh {
         void assign_surface_triangle_mesh(
             index_t surface_id,
             const std::vector< index_t >& triangle_vertices ) ;
+
         void update_facet_corner(
             Surface& S,
             const std::vector< index_t >& facets,
@@ -336,8 +338,28 @@ namespace RINGMesh {
             const std::vector< index_t >& tet_vertices ) ;
 
         void duplicate_surface_vertices_along_line( index_t surface_id, index_t line_id ) ;
+    protected:
+        void duplicate_surface_vertices_along_line_benjamin(
+            index_t surface_id,
+            index_t line_id ) ;
+    private :
+        void duplicate_region_vertices_along_surface( Region& R, const Surface& S ) ;
+    protected:
         void disconnect_surface_facets_along_line_edges(
             index_t surface_id, index_t line_id ) ;
+    private :
+        void disconnect_region_cells_along_surface_facets(
+            Region& R,
+            const Surface& S ) ;
+        void duplicate_one_facet(
+            Region& R,
+            const Surface& S,
+            index_t c,
+            index_t f,
+            index_t initial_nb_vertices,
+            GEO::Attribute< bool >& flag_to_duplicate,
+            std::vector< index_t >& visited_cells,
+            int side ) ;
     } ;
 
     /*!
@@ -533,6 +555,7 @@ namespace RINGMesh {
     public:
         GeoModelBuilderBM( GeoModel& model, const std::string& filename )
             : GeoModelBuilderFile( model, filename ), file_line_( filename )
+
         {
             if( !file_line_.OK() ) {
                 throw RINGMeshException( "I/O", "Failed to open file " + filename ) ;
@@ -547,6 +570,7 @@ namespace RINGMesh {
 
     private:
         GEO::LineInput file_line_ ;
+
     } ;
 
     class RINGMESH_API GeoModelBuilderGM: public GeoModelBuilderFile {
@@ -566,7 +590,6 @@ namespace RINGMesh {
          * connected to regions
          */
         void load_connectivities( GEO::LineInput& file_line ) ;
-
         /*!
          * @brief Load entities of one type from a zip file
          * @param[in] gme_t the GeoModelEntity type
@@ -575,13 +598,10 @@ namespace RINGMesh {
         void load_entities( GME::TYPE gme_t, unzFile& uz ) ;
 
         void load_file() ;
-
-
         /*!
          * @brief Unzip a file in a zip file and set it to the current unZIP file
          */
         void unzip_one_file( unzFile& uz, const char filename[MAX_FILENAME] ) ;
-
 
         /*!
          * @brief Load the topology. Topology is how corners, lines, surfaces and

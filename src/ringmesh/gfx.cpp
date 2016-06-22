@@ -185,11 +185,13 @@ namespace RINGMesh {
         SurfaceGfx( const GeoModelGfx& gfx, const Surface& surface )
             : MeshEntityGfx( gfx, surface.gfx_mesh(), false ), surface_visible_( true )
         {
+//            set_mesh_border_width(50) ;
         }
 
         virtual void draw_surface()
         {
             GEO::MeshGfx::draw_surface() ;
+//            GEO::MeshGfx::draw_surface_borders() ;
         }
 
         void set_surface_visible( bool b )

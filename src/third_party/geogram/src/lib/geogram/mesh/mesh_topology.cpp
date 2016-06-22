@@ -45,6 +45,7 @@
 
 #include <geogram/mesh/mesh_topology.h>
 #include <geogram/mesh/mesh.h>
+#include <geogram/mesh/mesh_io.h> /// @todo to delete BC
 #include <geogram/basic/memory.h>
 #include <geogram/basic/logger.h>
 #include <stack>
@@ -145,6 +146,7 @@ namespace GEO {
         return result;
     }
 
+    GEO::Mesh non_variety_borders ;
     signed_index_t mesh_nb_borders(const Mesh& M) {
         // Step 1: chain vertices around borders
         std::vector<index_t> next_around_border(M.vertices.nb(),NO_VERTEX);
@@ -176,6 +178,7 @@ namespace GEO {
         index_t result = 0;
         for(index_t v = 0; v < M.vertices.nb(); ++v) {
             if(next_around_border[v] != NO_VERTEX) {
+                non_variety_borders.vertices.create_vertex(M.vertices.point(v).data());
                 result++;
                 index_t cur = v;
                 while(next_around_border[cur] != NO_VERTEX) {
@@ -184,6 +187,9 @@ namespace GEO {
                     cur = next;
                 }
             }
+        }
+        if( non_variety_borders.vertices.nb() != 0 ) {
+            GEO::mesh_save(non_variety_borders, "non_variety_borders.meshb") ;
         }
         return signed_index_t(result);
     }

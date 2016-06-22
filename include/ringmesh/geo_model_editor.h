@@ -256,6 +256,11 @@ namespace RINGMesh {
             entity( t ).children_[id] = child_index ;
         }
 
+        void set_region_side( Region& region, index_t surf_boundary, bool side )
+        {
+            region.sides_[surf_boundary] = side ;
+        }
+
         /*!
          * @brief Set an entity of the model.
          * @details It is on purpose that entity validity is not checked.

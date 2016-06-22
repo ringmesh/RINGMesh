@@ -40,12 +40,11 @@
 
 #include <ringmesh/command_line.h>
 #include <ringmesh/geo_model.h>
-#include <ringmesh/geo_model_api.h>
 #include <ringmesh/io.h>
-#include <ringmesh/mesh_quality.h>
+#include <ringmesh/internal_borders_builder.h>
 
 /*!
- * @author Arnaud Botella
+ * @author Benjamin Chauvin
  */
 
 int main( int argc, char** argv )
@@ -58,15 +57,16 @@ int main( int argc, char** argv )
         configure_geogram() ;
         configure_ringmesh() ;
 
-        GEO::Logger::div( "RINGMeshStats" ) ;
-        GEO::Logger::out( "" ) << "Welcome to RINGMeshStats !" << std::endl ;
+        GEO::Logger::div( "RINGMeshBuildInternalBorders" ) ;
+        GEO::Logger::out( "" ) << "Welcome to RINGMeshDuplicateFaults !"
+            << std::endl ;
         GEO::Logger::out( "" ) << "People working on the project in RING"
             << std::endl ;
-        GEO::Logger::out( "" ) << "Arnaud Botella <arnaud.botella@univ-lorraine.fr> "
-            << std::endl ;
+        GEO::Logger::out( "" )
+            << "Benjamin Chauvin <benjamin.chauvin@univ-lorraine.fr> " << std::endl ;
 
         CmdLine::import_arg_group( "in" ) ;
-        CmdLine::import_arg_group( "stats" ) ;
+        CmdLine::import_arg_group( "out" ) ;
 
         if( argc == 1 ) {
             GEO::CmdLine::show_usage() ;
@@ -80,26 +80,23 @@ int main( int argc, char** argv )
 
         GEO::Stopwatch total( "Total time" ) ;
 
-        std::string model_name = GEO::CmdLine::get_arg( "in:geomodel" ) ;
-        if( model_name.empty() ) {
+        std::string input_geomodel_name = GEO::CmdLine::get_arg( "in:geomodel" ) ;
+        if( input_geomodel_name.empty() ) {
             throw RINGMeshException( "I/O",
                 "Give at least a filename in in:geomodel" ) ;
         }
         GeoModel geomodel ;
-        geomodel_load( geomodel, model_name ) ;
+        geomodel_load( geomodel, input_geomodel_name ) ;
 
-        if( GEO::CmdLine::get_arg_bool( "stats:nb" ) ) {
-            print_geomodel_mesh_stats( geomodel ) ;
-        }
+        InternalBordersBuilder ibb( geomodel ) ;
+        ibb.compute_internal_borders() ;
 
-        if( GEO::CmdLine::get_arg_bool( "stats:volume" ) ) {
-            print_geomodel_mesh_cell_volumes( geomodel ) ;
+        std::string output_geomodel_name = GEO::CmdLine::get_arg( "out:geomodel" ) ;
+        if( output_geomodel_name.empty() ) {
+            throw RINGMeshException( "I/O",
+                "Give at least a filename in out:geomodel" ) ;
         }
-
-        // For now I avoid to apply it everytime (stats:volume is false by default.... dirty)
-        if( GEO::CmdLine::get_arg_bool( "stats:volume" ) ) {
-            save_mesh_quality_criterions( geomodel ) ;
-        }
+        geomodel_save( geomodel, output_geomodel_name ) ;
 
     } catch( const RINGMeshException& e ) {
         GEO::Logger::err( e.category() ) << e.what() << std::endl ;

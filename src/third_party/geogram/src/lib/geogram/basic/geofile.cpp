@@ -82,6 +82,8 @@ namespace GEO {
     }
 
     void GeoFile::check_zlib_version() {
+        /// @todo TO HANDLE BC
+        /*
         if(strcmp(ZLIB_VERSION, zlibVersion())) {
             Logger::warn("GeoFile") << "ZLib version mismatch !" << std::endl;
             Logger::warn("GeoFile") << "  from  header: " << ZLIB_VERSION
@@ -89,6 +91,7 @@ namespace GEO {
             Logger::warn("GeoFile") << "  from runtime: " << zlibVersion()
                                     << std::endl;
         }
+        */
     }
     
     void GeoFile::read_chunk_header() {

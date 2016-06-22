@@ -37,16 +37,20 @@
 
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/stopwatch.h>
+#include <geogram/mesh/mesh_distance.h>
 
 #include <ringmesh/command_line.h>
 #include <ringmesh/geo_model.h>
-#include <ringmesh/geo_model_api.h>
 #include <ringmesh/io.h>
-#include <ringmesh/mesh_quality.h>
 
 /*!
- * @author Arnaud Botella
+ * @author Benjamin Chauvin
  */
+
+namespace {
+    using namespace RINGMesh ;
+
+}
 
 int main( int argc, char** argv )
 {
@@ -58,15 +62,15 @@ int main( int argc, char** argv )
         configure_geogram() ;
         configure_ringmesh() ;
 
-        GEO::Logger::div( "RINGMeshStats" ) ;
-        GEO::Logger::out( "" ) << "Welcome to RINGMeshStats !" << std::endl ;
+        GEO::Logger::div( "RINGMeshDistance" ) ;
+        GEO::Logger::out( "" ) << "Welcome to RINGMeshDistance !" << std::endl ;
         GEO::Logger::out( "" ) << "People working on the project in RING"
             << std::endl ;
-        GEO::Logger::out( "" ) << "Arnaud Botella <arnaud.botella@univ-lorraine.fr> "
-            << std::endl ;
+        GEO::Logger::out( "" )
+            << "Benjamin Chauvin <benjamin.chauvin@univ-lorraine.fr> " << std::endl ;
 
         CmdLine::import_arg_group( "in" ) ;
-        CmdLine::import_arg_group( "stats" ) ;
+        CmdLine::import_arg_group( "distance" ) ;
 
         if( argc == 1 ) {
             GEO::CmdLine::show_usage() ;
@@ -80,26 +84,56 @@ int main( int argc, char** argv )
 
         GEO::Stopwatch total( "Total time" ) ;
 
-        std::string model_name = GEO::CmdLine::get_arg( "in:geomodel" ) ;
-        if( model_name.empty() ) {
+        std::string input_geomodel_name = GEO::CmdLine::get_arg( "in:geomodel" ) ;
+        if( input_geomodel_name.empty() ) {
             throw RINGMeshException( "I/O",
                 "Give at least a filename in in:geomodel" ) ;
         }
         GeoModel geomodel ;
-        geomodel_load( geomodel, model_name ) ;
+        geomodel_load( geomodel, input_geomodel_name ) ;
+        geomodel.mesh.facets.test_and_initialize() ;
+        Mesh copy_mesh(geomodel,3,false) ;
+        geomodel.mesh.copy_mesh( copy_mesh ) ;
+        GEO::Mesh copy_geomodel ;
+        copy_geomodel.copy(copy_mesh.gfx_mesh()); /// @todo names are not teally good.
 
-        if( GEO::CmdLine::get_arg_bool( "stats:nb" ) ) {
-            print_geomodel_mesh_stats( geomodel ) ;
+        std::string geomodel_to_compare_name = GEO::CmdLine::get_arg(
+            "distance:geomodel" ) ;
+        if( geomodel_to_compare_name.empty() ) {
+            throw RINGMeshException( "I/O",
+                "Give at least a filename in distance:geomodel" ) ;
+        }
+        GeoModel geomodel_to_compare ;
+        geomodel_load( geomodel_to_compare, geomodel_to_compare_name ) ;
+        geomodel_to_compare.mesh.facets.test_and_initialize() ;
+
+        Mesh copy_mesh_to_compare(geomodel_to_compare,3,false) ;
+        geomodel_to_compare.mesh.copy_mesh( copy_mesh_to_compare ) ;
+        GEO::Mesh copy_geomodel_to_compare ;
+        copy_geomodel_to_compare.copy(copy_mesh_to_compare.gfx_mesh());
+
+        double sampling_distance = GEO::CmdLine::get_arg_double(
+            "distance:sampling_distance" ) ;
+        if( sampling_distance <= epsilon ) {
+            throw RINGMeshException( "I/O",
+                "Sampling distance cannot be negative." ) ;
         }
 
-        if( GEO::CmdLine::get_arg_bool( "stats:volume" ) ) {
-            print_geomodel_mesh_cell_volumes( geomodel ) ;
-        }
-
-        // For now I avoid to apply it everytime (stats:volume is false by default.... dirty)
-        if( GEO::CmdLine::get_arg_bool( "stats:volume" ) ) {
-            save_mesh_quality_criterions( geomodel ) ;
-        }
+        /// @todo for now it is just the Hausdorff distance but we can imagine
+        /// that several algo of distances may be used to compute the distance
+        /// between 2 geomodels.
+        GEO::Logger::div( "Distance between 2 geomodels" ) ;
+        double one_way = GEO::mesh_one_sided_Hausdorff_distance( copy_geomodel,
+            copy_geomodel_to_compare, sampling_distance ) ;
+        GEO::Logger::out( "Hausdorff one way" ) << one_way << std::endl ;
+        double other_way = GEO::mesh_one_sided_Hausdorff_distance(
+            copy_geomodel_to_compare, copy_geomodel, sampling_distance ) ;
+        GEO::Logger::out( "Hausdorff other way" ) << other_way << std::endl ;
+        GEO::Logger::out( "Hausdorff sym = max" )
+            << GEO::geo_max( one_way, other_way ) << std::endl ;
+        ringmesh_assert( std::abs(GEO::geo_max( one_way, other_way ) -
+                GEO::mesh_symmetric_Hausdorff_distance( copy_geomodel,
+                    copy_geomodel_to_compare, sampling_distance ) ) < epsilon ) ;
 
     } catch( const RINGMeshException& e ) {
         GEO::Logger::err( e.category() ) << e.what() << std::endl ;
