@@ -334,8 +334,9 @@ namespace RINGMesh {
         }
         // Identify and invalidate colocated vertices
         GEO::vector< index_t > old2new ;
-        if( GEO::Geom::colocate(  mesh_.vertex( 0 ).data(), 3,
-            mesh_.nb_vertices(), old2new, epsilon ) != mesh_.nb_vertices() ) {
+        index_t nb_colocalised_vertices = mesh_.colocater_ann(
+            ColocaterANN::VERTICES ).get_colocated_index_mapping( old2new ) ;
+        if( nb_colocalised_vertices > 0 ) {
             std::vector< index_t > stupid_copy( old2new.begin(), old2new.end() ) ;
             erase_vertices( stupid_copy ) ;
         }
