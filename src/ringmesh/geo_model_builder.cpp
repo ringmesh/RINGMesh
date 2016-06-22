@@ -1230,7 +1230,7 @@ namespace RINGMesh {
         index_t line_id,
         const std::vector< vec3 >& vertices )
     {
-        set_entity_vertices( gme_t( GME::LINE, line_id ), vertices, false ) ;
+        set_entity_vertices( gme_t( GME::LINE, line_id ), vertices, true ) ;
 
         GeoModelMeshEntity& E = mesh_entity( GME::LINE, line_id ) ;
         MeshBuilder builder( E.mesh_ ) ;
@@ -1254,7 +1254,7 @@ namespace RINGMesh {
         const std::vector< index_t >& facets,
         const std::vector< index_t >& facet_ptr )
     {
-        set_entity_vertices( gme_t( GME::SURFACE, surface_id ), points, false ) ;
+        set_entity_vertices( gme_t( GME::SURFACE, surface_id ), points, true ) ;
         assign_surface_mesh_facets( surface_id, facets, facet_ptr ) ;
     }
 
@@ -1270,7 +1270,7 @@ namespace RINGMesh {
         const std::vector< vec3 >& points,
         const std::vector< index_t >& tetras )
     {
-        set_entity_vertices( gme_t( GME::REGION, region_id ), points, false ) ;
+        set_entity_vertices( gme_t( GME::REGION, region_id ), points, true ) ;
         assign_region_tet_mesh( region_id, tetras ) ;
     }
 
