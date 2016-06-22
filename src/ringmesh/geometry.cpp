@@ -1240,7 +1240,7 @@ namespace RINGMesh {
             index_map[i] = i ;
         }
         std::vector< index_t > nb_colocalised_per_thread( omp_get_max_threads(), 0 ) ;
-        RINGMESH_PARALLEL_LOOP
+//        RINGMESH_PARALLEL_LOOP
         for( index_t i = 0; i < index_map.size(); i++ ) {
             std::vector< index_t > results ;
             vec3 query( ann_points_[3 * i], ann_points_[3 * i + 1],
