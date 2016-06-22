@@ -214,6 +214,7 @@ namespace RINGMesh {
                 }
             }
         }
+
         // Remove colocated vertices
         remove_colocated() ;
     }

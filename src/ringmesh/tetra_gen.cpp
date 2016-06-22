@@ -680,7 +680,7 @@ namespace RINGMesh {
      * @param[in] wells the wells to be conformal to
      */
     void TetraGen::set_boundaries(
-        const GeoModelEntity& region,
+        const Region& region,
         const WellGroup* wells )
     {
         region_ = &region ;
@@ -717,6 +717,13 @@ namespace RINGMesh {
                 uniqueID.add_edges( wells_copy ) ;
             }
         }
+
+        std::vector< vec3 > region_vertices( region.nb_vertices() ) ;
+        for( index_t v = 0; v < region.nb_vertices(); v++ ) {
+            region_vertices[v] = region.vertex( v ) ;
+        }
+        uniqueID.add_points( region_vertices ) ;
+
         uniqueID.unique() ;
         const std::vector< index_t >& unique_indices = uniqueID.indices() ;
         std::vector< vec3 > unique_points ;
@@ -815,6 +822,7 @@ namespace RINGMesh {
     void TetraGen::initialize_storage( index_t nb_points, index_t nb_tets )
     {
         GME::gme_t region_id( GME::REGION, output_region_ ) ;
+        builder_->delete_entity_mesh( region_id ) ;
         builder_->create_entity_vertices( region_id, nb_points ) ;
         builder_->create_region_cells( output_region_, GEO::MESH_TET,
             nb_tets ) ;
