@@ -109,16 +109,6 @@ namespace RINGMesh {
         GEO::vector< index_t > colocated ;
         const ColocaterANN& kdtree = M.colocater_ann( ColocaterANN::VERTICES ) ;
         kdtree.get_colocated_index_mapping( colocated ) ;
-//        GEO::mesh_detect_colocated_vertices( M, colocated ) ;
-
-        index_t nb_todelete = 0 ;
-        for( index_t v = 0; v < colocated.size(); ++v ) {
-            if( colocated[v] == v - nb_todelete ) {
-                colocated[v] = v ;
-            } else {
-                nb_todelete++ ;
-            }
-        }
 
         GEO::vector< index_t > degenerate ;
         mesh_detect_degenerate_facets( M, degenerate, colocated ) ;
@@ -309,14 +299,12 @@ namespace RINGMesh {
 
                 GEO::vector< index_t > to_delete( colocated.size(), 0 ) ;
                 index_t nb_todelete = 0 ;
-                index_t cur = 0 ;
                 for( index_t v = 0; v < colocated.size(); ++v ) {
-                    if( colocated[v] == v - nb_todelete
+                    if( colocated[v] == v
                         || inside_border.find( v ) != inside_border.end() ) {
                         // This point is kept 
                         // No colocated or on an inside boundary
-                        colocated[v] = v ;
-                        ++cur ;
+                        colocated[v] = v - nb_todelete ;
                     } else {
                         // The point is to remove
                         to_delete[v] = 1 ;

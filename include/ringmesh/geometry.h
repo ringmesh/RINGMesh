@@ -526,17 +526,30 @@ namespace RINGMesh {
 
         bool get_colocated( const vec3& v, std::vector< index_t >& result ) const ;
         /*!
-         * @brief Gets the \p index_map that link all the points to a no duplicated list of index.
+         * @brief Gets the \p index_map that link all the duplicated points
+         * to their first occurancy
          * @return the number of colocated vertices
+         * Example:
+         *     vertices = [P1, P2, P1, P3, P2, P4]
+         *     index_map = [0, 1, 0, 3, 1, 5]
+         *     return 2
          */
         index_t get_colocated_index_mapping( GEO::vector< index_t >& index_map ) const ;
         /*!
-         * @brief Gets the \p index_map that link all the points to a no duplicated list of index in the list of \p unique_points.
+         * @brief Gets the \p index_map that link all the points
+         * to a no duplicated list of index in the list of \p unique_points.
          * @return the number of colocated vertices
+         * Example:
+         *     vertices = [P1, P2, P1, P3, P2, P4]
+         *     unique_points = [P1, P2, P3, P4]
+         *     index_map = [0, 1, 0, 2, 1, 3]
+         *     return 2
          */
-        index_t get_colocated_index_mapping( GEO::vector< index_t >& index_map, GEO::vector< vec3 >& unique_points ) const ;
+        index_t get_colocated_index_mapping(
+            GEO::vector< index_t >& index_map,
+            GEO::vector< vec3 >& unique_points ) const ;
         /*!
-        * Gets the closest neighbor point
+         * Gets the closest neighbor point
         * @param[in] v the point to test
         * @param[out] dist the square distance to the closest point
         * return returns the index of the closest point
