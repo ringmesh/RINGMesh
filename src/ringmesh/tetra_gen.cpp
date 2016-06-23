@@ -345,6 +345,7 @@ namespace RINGMesh {
                 }
                 set_tetra( tet, vertex_indices ) ;
             }
+            builder_->compute_region_adjacencies( output_region_ ) ;
         }
     } ;
 #endif
