@@ -43,6 +43,7 @@
 #include <geogram/basic/factory.h>
 #include <geogram/basic/command_line.h>
 
+#include <geogram_gfx/glup_viewer/glup_viewer_gui.h>
 #include <geogram_gfx/mesh/mesh_gfx.h>
 
 /*!
@@ -61,27 +62,6 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
-    struct Color {
-        Color( unsigned char r_, unsigned char g_, unsigned char b_ )
-            : r( r_ ), g( g_ ), b( b_ )
-        {
-        }
-        unsigned char r ;
-        unsigned char g ;
-        unsigned char b ;
-    } ;
-
-    class GetColor {
-    public:
-        virtual ~GetColor()
-        {
-        }
-        virtual Color get_color() = 0 ;
-    } ;
-    typedef GEO::Factory0< GetColor > ColorFactory ;
-#define ringmesh_register_color_creator( type, name ) \
-    geo_register_creator( ColorFactory, type, name )
-
     class RINGMESH_API GeoModelGfx {
     ringmesh_disable_copy( GeoModelGfx ) ;
     public:
@@ -93,7 +73,6 @@ namespace RINGMesh {
         void initialize() ;
         void need_to_update() ;
 
-//        void set_scalar_attribute()
         void set_cell_vertex_attribute(
             const std::string& name,
             index_t coordinate,
@@ -228,6 +207,10 @@ namespace RINGMesh {
         double attribute_min_ ;
     } ;
 
+    class RINGMESH_API RINGMeshApplication: public GEO::Application {
+    public:
+        RINGMeshApplication( int argc, char** argv ) ;
+    } ;
 }
 
 #endif

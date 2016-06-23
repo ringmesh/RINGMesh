@@ -428,6 +428,11 @@ int main( int argc, char** argv )
 
     try {
 
+        RINGMeshApplication app( argc, argv ) ;
+        app.start() ;
+        return 0 ;
+
+
         GEO::initialize() ;
         configure_geogram() ;
         configure_ringmesh() ;
