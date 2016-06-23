@@ -43,13 +43,11 @@
 #ifdef RINGMESH_WITH_GRAPHICS
 
 #include <geogram/mesh/mesh_geometry.h>
-//#include <geogram_gfx/third_party/freeglut/glut.h>
-//#include <geogram_gfx/third_party/freeglut/freeglut_ext.h>
+#include <geogram/basic/logger.h>
 
+#include <ringmesh/command_line.h>
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_entity.h>
-
-#include <geogram/basic/logger.h>
 
 #define define_color( name, r, g, b )\
     class name: public GetColor {\
@@ -85,19 +83,6 @@ namespace {
     }
 }
 namespace RINGMesh {
-
-    define_color( yellow, 0xff, 0xff, 0x00 );
-    define_color( violet, 0x7f, 0x00, 0x7f );
-    define_color( indigo, 0xbf, 0x00, 0xbf );
-    define_color( blue, 0x00, 0x00, 0xff );
-    define_color( black, 0x00, 0x00, 0x00 );
-    define_color( orange, 0xff, 0x7f, 0x00 );
-    define_color( white, 0xff, 0xff, 0xff );
-    define_color( red, 0xff, 0x00, 0x00 );
-    define_color( green, 0x00, 0xff, 0x00 );
-    define_color( brown, 0x66, 0x33, 0x00 );
-    define_color( purple, 0xa0, 0x20, 0xf0 );
-    define_color( pink, 0xff, 0x69, 0xb4 );
 
     class MeshEntityGfx: public GEO::MeshGfx {
     ringmesh_disable_copy( MeshEntityGfx ) ;
@@ -1142,6 +1127,30 @@ namespace RINGMesh {
     {
         ringmesh_assert( m < regions_.size() ) ;
         regions_[m]->set_shrink( s ) ;
+    }
+
+
+
+
+
+
+    RINGMeshApplication::RINGMeshApplication( int argc, char** argv )
+        : GEO::Application( argc, argv, "" )
+    {
+        configure_ringmesh() ;
+        GEO::Logger::div( "RINGMeshView" ) ;
+        GEO::Logger::out( "" ) << "Welcome to RINGMeshView !" << std::endl ;
+        GEO::Logger::out( "" ) << "People working on the project in RING"
+            << std::endl ;
+        GEO::Logger::out( "" ) << "Arnaud Botella <arnaud.botella@univ-lorraine.fr> "
+            << std::endl ;
+        GEO::Logger::out( "" )
+            << "Benjamin Chauvin <benjamin.chauvin@univ-lorraine.fr> " << std::endl ;
+        GEO::Logger::out( "" )
+            << "Antoine Mazuyer <antoine.mazuyer@univ-lorraine.fr> " << std::endl ;
+
+        CmdLine::import_arg_group( "attr" ) ;
+        CmdLine::import_arg_group( "in" ) ;
     }
 
 }
