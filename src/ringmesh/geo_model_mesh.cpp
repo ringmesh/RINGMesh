@@ -334,7 +334,7 @@ namespace RINGMesh {
         }
         // Identify and invalidate colocated vertices
         GEO::vector< index_t > old2new ;
-        if( GEO::Geom::colocate( mesh_.vertex( 0 ).data(), 3,
+        if( GEO::Geom::colocate(  mesh_.vertex( 0 ).data(), 3,
             mesh_.nb_vertices(), old2new, epsilon ) != mesh_.nb_vertices() ) {
             std::vector< index_t > stupid_copy( old2new.begin(), old2new.end() ) ;
             erase_vertices( stupid_copy ) ;
@@ -586,9 +586,9 @@ namespace RINGMesh {
                 GEO::MeshCellType cur_cell_type = cur_region.cell_type( c ) ;
                 index_t cur_cell = cells_offset_per_type[cur_cell_type]
                     + cur_cell_per_type[cur_cell_type]++ ;
-                for( index_t v = 0; v < mesh_.nb_cell_vertices( c ); v++ ) {
+                for( index_t v = 0; v < mesh_.nb_cell_vertices( cur_cell ); v++ ) {
                     index_t region_vertex_index = cur_region.mesh_element_vertex_index( c, v );
-                    index_t global_vertex_id = cur_region.model_vertex_id(  region_vertex_index ) ;
+                    index_t global_vertex_id = cur_region.model_vertex_id( region_vertex_index ) ;
                     mesh_builder_.set_cell_vertex( cur_cell, v,global_vertex_id);
                 }
                 region_id_[cur_cell] = r ;

@@ -254,6 +254,7 @@ namespace RINGMesh {
         void cut_surface_by_line( index_t surface_id, index_t line_id ) ;
 
         void compute_surface_adjacencies( index_t surface_id ) ;
+        void compute_region_adjacencies( index_t region_id ) ;
         void triangulate_surface(
             const RINGMesh::Surface& surface_in,
             index_t surface_out ) ;
