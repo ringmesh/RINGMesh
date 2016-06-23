@@ -69,16 +69,14 @@ namespace RINGMesh {
     * @brief Check global model validity
     * @details In debug mode problematic vertices, edges, entities are
     *          saved in the validity_errors_directory
+    *          An optional expensive check of the intersections between
+    *          the model surfaces can be disabled using command line
+    *          argument "in:intersection_check"
     * @param GM GeoModel to check
-    * @param check_surface_intersections Optional expensive check of the
-    *        intersections between the model surfaces
     * @todo Check the consistency of gme_vertices vs. model_vertex_id
     * @todo Add options to expensive tests
     */
-    bool RINGMESH_API is_geomodel_valid(
-        const GeoModel& GM, 
-        bool check_surface_intersections = true 
-    ) ;
+    bool RINGMESH_API is_geomodel_valid( const GeoModel& GM ) ;
     
     /*!
     * @brief Check the validity of all individual entities

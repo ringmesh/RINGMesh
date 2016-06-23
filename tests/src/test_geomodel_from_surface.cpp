@@ -80,7 +80,8 @@ int main( int argc, char** argv )
         BB.build_polygonal_surfaces_from_connected_components() ;
         BB.build_model_from_surfaces() ;
         print_geomodel( model ) ;
-        is_geomodel_valid( model, false ) ;
+        GEO::CmdLine::set_arg( "in:intersection_check", false ) ;
+        is_geomodel_valid( model ) ;
 
     } catch( const RINGMeshException& e ) {
         GEO::Logger::err( e.category() ) << e.what() << std::endl ;
