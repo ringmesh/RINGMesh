@@ -194,6 +194,7 @@ namespace RINGMesh {
         void set_cell_region_shrink( index_t m, double s ) ;
 
     private:
+        void clear_storage() ;
 
     private:
         /// The GeoModel associated to the graphics
@@ -211,6 +212,8 @@ namespace RINGMesh {
         double attribute_min_ ;
     } ;
 
+    /*****************************************************************/
+
     class RINGMESH_API RINGMeshApplication: public GEO::Application {
     public:
         RINGMeshApplication( int argc, char** argv ) ;
@@ -222,23 +225,21 @@ namespace RINGMesh {
         virtual void init_graphics() ;
         virtual bool load( const std::string& filename ) ;
         virtual void draw_scene() ;
+        virtual void draw_object_properties() ;
 
-        static void toggle_points() ;
-        static void toggle_volume() ;
-        static void toggle_voi() ;
-        static void toggle_mesh() ;
         static void increment_shrink() ;
         static void decrement_shrink() ;
         static void toggle_colored_cells() ;
         static void toggle_colored_regions() ;
         static void toggle_colored_layers() ;
 
+        void autorange();
+
     private:
         GeoModel* GM_ ;
         GeoModelGfx GM_gfx_ ;
         std::string file_extensions_;
 
-        bool show_borders_ ;
         bool show_corners_ ;
         bool show_lines_ ;
         bool show_surface_ ;
@@ -247,11 +248,17 @@ namespace RINGMesh {
         bool show_voi_ ;
         bool show_colored_regions_ ;
         bool show_colored_layers_ ;
-        bool show_points_ ;
 
         float shrink_ ;
         bool mesh_visible_ ;
         bool meshed_regions_ ;
+
+        bool show_attributes_;
+//        GLuint current_colormap_texture_;
+//        std::string       attribute_;
+//        std::string       attribute_name_;
+//        float             attribute_min_;
+//        float             attribute_max_;
 
     } ;
 }
