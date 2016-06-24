@@ -1232,52 +1232,53 @@ namespace RINGMesh {
         return !result.empty() ;
     }
 
-    index_t ColocaterANN::get_colocated_index_mapping( GEO::vector< index_t >& index_map ) const
+    index_t ColocaterANN::get_colocated_index_mapping(
+        GEO::vector< index_t >& index_map ) const
     {
         index_map.resize( ann_tree_->nb_points() ) ;
         for( index_t i = 0; i < index_map.size(); i++ ) {
             index_map[i] = i ;
         }
+        std::vector< index_t > nb_colocalised_per_thread( omp_get_max_threads(), 0 ) ;
+        RINGMESH_PARALLEL_LOOP
         for( index_t i = 0; i < index_map.size(); i++ ) {
-            if( index_map[i] != i ) continue ;
             std::vector< index_t > results ;
             vec3 query( ann_points_[3 * i], ann_points_[3 * i + 1],
                 ann_points_[3 * i + 2] ) ;
             get_colocated( query, results ) ;
             index_t id = *std::min_element( results.begin(), results.end() ) ;
-            for( index_t j = 0; j < results.size(); j++ ) {
-                if( id == results[j] ) continue ;
-                index_map[results[j]] = id ;
+            if( id < i ) {
+                index_map[i] = id ;
+                nb_colocalised_per_thread[omp_get_thread_num()]++ ;
             }
         }
-        index_t offset = 0 ;
-        for( index_t i = 0; i < index_map.size(); i++ ) {
-            if( index_map[i] != i ) {
-                index_map[i] = index_map[index_map[i]] ;
-                offset++ ;
-            } else {
-                index_map[i] -= offset ;
-            }
+
+        index_t nb_colocalised_vertices = 0 ;
+        for( index_t i = 0; i < nb_colocalised_per_thread.size(); i++ ) {
+            nb_colocalised_vertices += nb_colocalised_per_thread[i] ;
         }
-        return offset ;
+        return nb_colocalised_vertices ;
     }
 
-    index_t ColocaterANN::get_colocated_index_mapping( GEO::vector< index_t >& index_map, GEO::vector< vec3 >& unique_points ) const
+    index_t ColocaterANN::get_colocated_index_mapping(
+        GEO::vector< index_t >& index_map,
+        GEO::vector< vec3 >& unique_points ) const
     {
-        get_colocated_index_mapping( index_map ) ;
-        unique_points.reserve( index_map.size() ) ;
-        index_t offset = 0, cur_id = 0 ;
+        index_t nb_colocalised_vertices = get_colocated_index_mapping( index_map ) ;
+        unique_points.reserve( nb_points() - nb_colocalised_vertices ) ;
+        index_t offset = 0 ;
         for( index_t p = 0; p < index_map.size(); p++ ) {
-            if( cur_id == index_map[p] ) {
-                cur_id++ ;
-                vec3 new_point( ann_points_[3 * index_map[p] + offset],
-                    ann_points_[3 * index_map[p] + offset + 1],
-                    ann_points_[3 * index_map[p] + offset + 2] ) ;
+            if( index_map[p] == p ) {
+                vec3 new_point( ann_points_[3 * p],
+                    ann_points_[3 * p + 1],
+                    ann_points_[3 * p + 2] ) ;
                 unique_points.push_back( new_point ) ;
+                index_map[p] = p - offset ;
             } else {
                 offset++ ;
             }
         }
+        ringmesh_assert( offset == nb_colocalised_vertices ) ;
         return offset ;
     }
 
