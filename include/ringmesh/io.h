@@ -101,11 +101,11 @@ namespace RINGMesh {
         }
     } ;
 
-    typedef GEO::SmartPointer< GeoModelIOHandler > IOHandler_var ;
-    typedef GEO::Factory0< GeoModelIOHandler > IOHandlerFactory ;
+    typedef GEO::SmartPointer< GeoModelIOHandler > GeoModelIOHandler_var ;
+    typedef GEO::Factory0< GeoModelIOHandler > GeoModelIOHandlerFactory ;
 
-#define ringmesh_register_IOHandler_creator( type, name ) \
-    geo_register_creator( IOHandlerFactory, type, name )
+#define ringmesh_register_GeoModelIOHandler_creator( type, name ) \
+    geo_register_creator( GeoModelIOHandlerFactory, type, name )
 
     /***************************************************************************/
     class RINGMESH_API WellGroupIOHandler: public GEO::Counted {

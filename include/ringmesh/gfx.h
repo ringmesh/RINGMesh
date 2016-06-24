@@ -46,6 +46,10 @@
 #include <geogram_gfx/glup_viewer/glup_viewer_gui.h>
 #include <geogram_gfx/mesh/mesh_gfx.h>
 
+#include <ringmesh/geo_model.h>
+
+#include <ringmesh/geo_model.h>
+#include <ringmesh/geo_model.h>
 /*!
  * @file Classes for GeoModel visualization
  * @author Benjamin Chauvin and Arnaud Botella
@@ -210,6 +214,45 @@ namespace RINGMesh {
     class RINGMESH_API RINGMeshApplication: public GEO::Application {
     public:
         RINGMeshApplication( int argc, char** argv ) ;
+        ~RINGMeshApplication() ;
+    private:
+        static RINGMeshApplication* instance() ;
+
+        virtual std::string supported_read_file_extensions();
+        virtual void init_graphics() ;
+        virtual bool load( const std::string& filename ) ;
+        virtual void draw_scene() ;
+
+        static void toggle_points() ;
+        static void toggle_volume() ;
+        static void toggle_voi() ;
+        static void toggle_mesh() ;
+        static void increment_shrink() ;
+        static void decrement_shrink() ;
+        static void toggle_colored_cells() ;
+        static void toggle_colored_regions() ;
+        static void toggle_colored_layers() ;
+
+    private:
+        GeoModel* GM_ ;
+        GeoModelGfx GM_gfx_ ;
+        std::string file_extensions_;
+
+        bool show_borders_ ;
+        bool show_corners_ ;
+        bool show_lines_ ;
+        bool show_surface_ ;
+        bool show_volume_ ;
+        bool colored_cells_ ;
+        bool show_voi_ ;
+        bool show_colored_regions_ ;
+        bool show_colored_layers_ ;
+        bool show_points_ ;
+
+        float shrink_ ;
+        bool mesh_visible_ ;
+        bool meshed_regions_ ;
+
     } ;
 }
 
