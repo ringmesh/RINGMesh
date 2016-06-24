@@ -587,7 +587,7 @@ namespace RINGMesh {
      */
     void GeoModelIOHandler::initialize_boundary_geomodel_output()
     {
-        ringmesh_register_IOHandler_creator( MLIOHandler, "ml" ) ;
-        ringmesh_register_IOHandler_creator( UCDIOHandler, "inp" );
+        ringmesh_register_GeoModelIOHandler_creator( MLIOHandler, "ml" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( UCDIOHandler, "inp" );
     }
 }

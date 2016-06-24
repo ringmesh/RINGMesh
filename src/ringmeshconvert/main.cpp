@@ -73,7 +73,7 @@ namespace {
 
         GEO::Logger::out( "I/O" ) << "Loading file: " << filename << std::endl ;
 
-        IOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
+        GeoModelIOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
         handler->load( filename, model ) ;
     }
 
@@ -86,7 +86,7 @@ namespace {
     {
         GEO::Logger::out( "I/O" ) << "Saving file " << filename << std::endl ;
 
-        IOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
+        GeoModelIOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
         handler->save( model, filename ) ;
     }
 
@@ -101,7 +101,7 @@ namespace {
         GEO::Logger::out( "I/O" ) << "Loading file " << filename << "..."
             << std::endl ;
 
-        IOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
+        GeoModelIOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
         handler->load( filename, model ) ;
     }
 
@@ -115,7 +115,7 @@ namespace {
         GEO::Logger::out( "I/O" ) << "Saving file " << filename << "..."
             << std::endl ;
 
-        IOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
+        GeoModelIOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
         handler->save( model, filename ) ;
     }
 
@@ -137,8 +137,8 @@ namespace RINGMesh {
                 "Saves the volumetric mesh of the structural model" ) ;
             GEO::CmdLine::declare_arg( "in:old_geomodel", "",
                 "Saves the volumetric mesh of the structural model" ) ;
-            ringmesh_register_IOHandler_creator( BMIOHandler, "bm" ) ;
-            ringmesh_register_IOHandler_creator( MMIOHandler, "mm" );
+            ringmesh_register_GeoModelIOHandler_creator( BMIOHandler, "bm" ) ;
+            ringmesh_register_GeoModelIOHandler_creator( MMIOHandler, "mm" );
         }
     }
 }

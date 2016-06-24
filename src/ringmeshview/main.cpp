@@ -326,7 +326,17 @@ namespace {
             throw RINGMeshException( "I/O",
                 "Give at least a filename in geomodel" ) ;
         }
-        get_bbox( GM, xyzmin, xyzmax ) ;
+
+        for( GEO::index_t s = 0; s < GM.nb_surfaces(); s++ ) {
+            const RINGMesh::Surface& S = GM.surface( s ) ;
+            for( GEO::index_t v = 0; v < S.nb_vertices(); ++v ) {
+                const vec3& p = S.vertex( v ) ;
+                for( GEO::coord_index_t c = 0; c < 3; ++c ) {
+                    xyzmin[c] = GEO::geo_min( xyzmin[c], p[c] ) ;
+                    xyzmax[c] = GEO::geo_max( xyzmax[c], p[c] ) ;
+                }
+            }
+        }
 
         glup_viewer_set_region_of_interest( float( xyzmin[0] ), float( xyzmin[1] ),
             float( xyzmin[2] ), float( xyzmax[0] ), float( xyzmax[1] ),
@@ -431,67 +441,6 @@ int main( int argc, char** argv )
         RINGMeshApplication app( argc, argv ) ;
         app.start() ;
         return 0 ;
-
-
-        GEO::initialize() ;
-        configure_geogram() ;
-        configure_ringmesh() ;
-        GEO::Logger::div( "RINGMeshView" ) ;
-        GEO::Logger::out( "" ) << "Welcome to RINGMeshView !" << std::endl ;
-        GEO::Logger::out( "" ) << "People working on the project in RING"
-            << std::endl ;
-        GEO::Logger::out( "" ) << "Arnaud Botella <arnaud.botella@univ-lorraine.fr> "
-            << std::endl ;
-        GEO::Logger::out( "" )
-            << "Benjamin Chauvin <benjamin.chauvin@univ-lorraine.fr> " << std::endl ;
-        GEO::Logger::out( "" )
-            << "Antoine Mazuyer <antoine.mazuyer@univ-lorraine.fr> " << std::endl ;
-
-        CmdLine::import_arg_group( "attr" ) ;
-        CmdLine::import_arg_group( "in" ) ;
-
-        if( argc == 1 ) {
-            GEO::CmdLine::show_usage() ;
-            return 0 ;
-        }
-
-        std::vector< std::string > filenames ;
-        if( !GEO::CmdLine::parse( argc, argv, filenames ) ) {
-            return 1 ;
-        }
-
-        load_mesh() ;
-
-        if( meshed_regions ) {
-            toggle_volume() ;
-        }
-
-        glup_viewer_set_window_title( (char*) "RINGMeshView" ) ;
-        glup_viewer_set_init_func( init ) ;
-        glup_viewer_set_display_func( display ) ;
-        glup_viewer_set_overlay_func( overlay ) ;
-        glup_viewer_add_toggle( 'c', &show_corners, "corners" ) ;
-        glup_viewer_add_toggle( 'e', &show_lines, "lines" ) ;
-        glup_viewer_add_toggle( 's', &show_surface, "surface" ) ;
-        glup_viewer_add_key_func( 'r', &toggle_colored_regions,
-            "toggle colored regions" ) ;
-        glup_viewer_add_key_func( 'R', &toggle_colored_layers,
-            "toggle colored layers" ) ;
-        glup_viewer_add_key_func( 'p', &toggle_points, "toggle points" ) ;
-        glup_viewer_add_key_func( 'v', &toggle_volume, "toggle volume" ) ;
-        glup_viewer_add_key_func( 'w', &toggle_wells, "toggle wells" ) ;
-        glup_viewer_add_key_func( 'V', toggle_voi, "toggle VOI" ) ;
-        glup_viewer_add_key_func( 'L', toggle_lighting, "toggle lighting" ) ;
-        glup_viewer_add_key_func( 'X', dec_shrink, "unshrink cells" ) ;
-        glup_viewer_add_key_func( 'x', inc_shrink, "shrink cells" ) ;
-        glup_viewer_add_key_func( 'C', toggle_colored_cells,
-            "toggle colored cells" ) ;
-
-        if( GEO::CmdLine::get_arg_bool( "gfx:full_screen" ) ) {
-            glup_viewer_enable( GLUP_VIEWER_FULL_SCREEN ) ;
-        }
-
-        glup_viewer_main_loop( argc, argv ) ;
 
     } catch( const RINGMeshException& e ) {
         GEO::Logger::err( e.category() ) << e.what() << std::endl ;

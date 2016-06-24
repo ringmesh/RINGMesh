@@ -2122,7 +2122,7 @@ namespace RINGMesh {
         GEO::Logger::out( "I/O" ) << "Loading file " << filename << "..."
             << std::endl ;
 
-        IOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
+        GeoModelIOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
         handler->load( filename, model ) ;
     }
 
@@ -2131,7 +2131,7 @@ namespace RINGMesh {
         GEO::Logger::out( "I/O" ) << "Saving file " << filename << "..."
             << std::endl ;
 
-        IOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
+        GeoModelIOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
         handler->save( model, filename ) ;
 
     }
@@ -2143,16 +2143,16 @@ namespace RINGMesh {
      */
     void GeoModelIOHandler::initialize_full_geomodel_output()
     {
-        ringmesh_register_IOHandler_creator( LMIOHandler, "meshb" ) ;
-        ringmesh_register_IOHandler_creator( LMIOHandler, "mesh" );
-        ringmesh_register_IOHandler_creator( TetGenIOHandler, "tetgen" );
-        ringmesh_register_IOHandler_creator( TSolidIOHandler, "so" );
-        ringmesh_register_IOHandler_creator( CSMPIOHandler, "csmp" );
-        ringmesh_register_IOHandler_creator( AsterIOHandler, "mail" );
-        ringmesh_register_IOHandler_creator( VTKIOHandler, "vtk" );
-        ringmesh_register_IOHandler_creator( GPRSIOHandler, "gprs" );
-        ringmesh_register_IOHandler_creator( MSHIOHandler, "msh" );
-        ringmesh_register_IOHandler_creator( MFEMIOHandler, "mfem" );
-        ringmesh_register_IOHandler_creator( GeoModelHandler, "gm" );}
+        ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "meshb" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "mesh" );
+        ringmesh_register_GeoModelIOHandler_creator( TetGenIOHandler, "tetgen" );
+        ringmesh_register_GeoModelIOHandler_creator( TSolidIOHandler, "so" );
+        ringmesh_register_GeoModelIOHandler_creator( CSMPIOHandler, "csmp" );
+        ringmesh_register_GeoModelIOHandler_creator( AsterIOHandler, "mail" );
+        ringmesh_register_GeoModelIOHandler_creator( VTKIOHandler, "vtk" );
+        ringmesh_register_GeoModelIOHandler_creator( GPRSIOHandler, "gprs" );
+        ringmesh_register_GeoModelIOHandler_creator( MSHIOHandler, "msh" );
+        ringmesh_register_GeoModelIOHandler_creator( MFEMIOHandler, "mfem" );
+        ringmesh_register_GeoModelIOHandler_creator( GeoModelHandler, "gm" );}
 
 }
