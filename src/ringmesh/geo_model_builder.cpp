@@ -1731,7 +1731,7 @@ namespace RINGMesh {
         index_t& f )
     {
         ringmesh_assert( region.is_meshed() ) ;
-        vec3 v_bary = GEO::Geom::mesh_facet_center( surf.gfx_mesh(), f_id_in_surface ) ;
+        vec3 v_bary = surf.mesh_element_center( f_id_in_surface ) ;
 
         index_t nb_neighbors = std::min( index_t( 5 ), region.nb_mesh_elements() ) ;
         std::vector< index_t > neighbors ;
@@ -2107,7 +2107,7 @@ namespace RINGMesh {
         ringmesh_unused( found ) ;
         ringmesh_assert( found && c != NO_ID && f != NO_ID ) ;
 
-        vec3 first_facet_normal = GEO::Geom::mesh_facet_normal( const_cast<GEO::Mesh&>(S.gfx_mesh()), 0 ) ;
+        vec3 first_facet_normal = S.mesh_element_center(0) ;
         vec3 first_cell_facet_normal = GEO::mesh_cell_facet_normal( const_cast<GEO::Mesh&>(R.gfx_mesh()), c,
             f ) ;
         double dot_product = GEO::dot( first_cell_facet_normal,

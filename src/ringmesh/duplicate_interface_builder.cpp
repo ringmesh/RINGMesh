@@ -331,17 +331,19 @@ namespace RINGMesh {
             // Add to universe (other side of the surface)
             boundary_id = find_local_boundary_id( model().universe(), surface ) ;
             ringmesh_assert(model().universe().side(boundary_id) != cur_side) ;
-            set_region_side( const_cast< Region& >( model().universe() ), boundary_id,
-                cur_side ) ;
+            set_region_side( const_cast< Region& >( model().universe() ),
+                boundary_id, cur_side ) ;
         } else {
             const GeoModelEntity& reg_gme1 = surface.in_boundary( 0 ) ;
             index_t boundary_id1 = find_local_boundary_id( reg_gme1, surface ) ;
-            Region& reg1 = const_cast< Region& >( model().region( reg_gme1.index() ) ) ;
+            Region& reg1 =
+                const_cast< Region& >( model().region( reg_gme1.index() ) ) ;
             bool cur_side1 = reg1.side( boundary_id1 ) ;
 
             const GeoModelEntity& reg_gme2 = surface.in_boundary( 1 ) ;
             index_t boundary_id2 = find_local_boundary_id( reg_gme2, surface ) ;
-            Region& reg2 = const_cast< Region& >( model().region( reg_gme2.index() ) ) ;
+            Region& reg2 =
+                const_cast< Region& >( model().region( reg_gme2.index() ) ) ;
             bool cur_side2 = reg2.side( boundary_id2 ) ;
             // to check. if reg1 == reg2 no side in particular.
 
@@ -366,8 +368,7 @@ namespace RINGMesh {
         index_t vertex_id_on_surface ) const
     {
         ringmesh_assert( vertex_id_on_surface < surface.nb_vertices() ) ;
-        GEO::AttributesManager& att_mgr =
-            const_cast< GEO::Mesh& >( surface.gfx_mesh() ).vertices.attributes() ; /// @todo to handle
+        GEO::AttributesManager& att_mgr = surface.vertex_attribute_manager() ;
         GEO::Attribute< double > normal_att_x( att_mgr, "normal_attr_x" ) ;
         GEO::Attribute< double > normal_att_y( att_mgr, "normal_attr_y" ) ;
         GEO::Attribute< double > normal_att_z( att_mgr, "normal_attr_z" ) ;
@@ -378,8 +379,7 @@ namespace RINGMesh {
     void DuplicateInterfaceBuilder::inverse_normal_attribute_one_surface(
         const Surface& surface ) const
     {
-        GEO::AttributesManager& att_mgr =
-            const_cast< GEO::Mesh& >( surface.gfx_mesh() ).vertices.attributes() ; /// @todo to handle
+        GEO::AttributesManager& att_mgr = surface.vertex_attribute_manager() ;
         GEO::Attribute< double > normal_att_x( att_mgr, "normal_attr_x" ) ;
         GEO::Attribute< double > normal_att_y( att_mgr, "normal_attr_y" ) ;
         GEO::Attribute< double > normal_att_z( att_mgr, "normal_attr_z" ) ;
@@ -585,8 +585,7 @@ namespace RINGMesh {
         const Region& reg2 = model().region( reg2_gme_t.index ) ;
         ringmesh_assert( reg2.is_meshed() ) ;
         GEO::Attribute< index_t > id_in_link_vector_reg2(
-            const_cast< GEO::Mesh& >( reg2.gfx_mesh() ).vertices.attributes(),
-            "id_in_link_vector" ) ;
+            reg2.vertex_attribute_manager(), "id_in_link_vector" ) ;
 
         // Working on horizon not voi
         ringmesh_assert( reg1.index() != reg2.index() ) ;
@@ -646,8 +645,7 @@ namespace RINGMesh {
             return gme_vertices[found_gmev_reg[0]].v_id ;
         } else {
             // No choice. Test of the facet colocated. More time consuming.
-            const vec3 facet_bary = GEO::Geom::mesh_facet_center(
-                const_cast< GEO::Mesh& >( cur_surface.gfx_mesh() ), /// @todo to handle
+            const vec3 facet_bary = cur_surface.mesh_element_center(
                 surf_facet_itr ) ;
             std::vector< index_t > colocated_facets_reg ;
             colocated_facets_reg.reserve( 1 ) ;
@@ -694,8 +692,7 @@ namespace RINGMesh {
             // The current surface may be a voi boundary, a voi horizon or a fault.
             // No choice => use of ColocaterAnn on the current facet (more time
             // consuming).
-            const vec3 facet_bary = GEO::Geom::mesh_facet_center(
-                const_cast< GEO::Mesh& >( cur_surface.gfx_mesh() ),
+            const vec3 facet_bary = cur_surface.mesh_element_center(
                 surf_facet_itr ) ;
             std::vector< index_t > colocated_facets_reg1 ;
             colocated_facets_reg1.reserve( 2 ) ;
@@ -788,8 +785,7 @@ namespace RINGMesh {
             // regions, else it is not a horizon.
             const Surface& cur_surface = model().surface( surf_itr ) ;
             GEO::Attribute< index_t > id_in_link_vector_surf(
-                const_cast< GEO::Mesh& >( cur_surface.gfx_mesh() ).vertices.attributes(),
-                "id_in_link_vector" ) ;
+                cur_surface.vertex_attribute_manager(), "id_in_link_vector" ) ;
 
             const index_t nb_in_boundaries = cur_surface.nb_in_boundary() ;
 
@@ -804,8 +800,7 @@ namespace RINGMesh {
             const Region& reg1 = model().region( reg1_gme_t.index ) ;
             ringmesh_assert( reg1.is_meshed() ) ;
             GEO::Attribute< index_t > id_in_link_vector_reg1(
-                const_cast< GEO::Mesh& >( reg1.gfx_mesh() ).vertices.attributes(),
-                "id_in_link_vector" ) ; /// @todo to handle
+                reg1.vertex_attribute_manager(), "id_in_link_vector" ) ; /// @todo to handle
 
             std::vector< bool > surf_vertex_visited( cur_surface.nb_vertices(),
                 false ) ;
@@ -873,11 +868,11 @@ namespace RINGMesh {
             ringmesh_assert( to_erase_by_type[GME::SURFACE][surf_itr] == 0 ) ;
 
             GEO::Attribute< index_t > id_in_link_vector(
-                const_cast< GEO::Mesh& >( model().surface( surf_itr ).gfx_mesh() ).vertices.attributes(), /// @todo to handle
+                model().surface( surf_itr ).vertex_attribute_manager(),
                 "id_in_link_vector" ) ;
 
-            for( index_t v_itr = 0; v_itr < model().surface( surf_itr ).nb_vertices();
-                ++v_itr ) {
+            for( index_t v_itr = 0;
+                v_itr < model().surface( surf_itr ).nb_vertices(); ++v_itr ) {
                 id_in_link_vector[v_itr] = gme_vertices_links_.size() ;
                 gme_vertices_links_.push_back(
                     new GMEVertexLink(
@@ -895,7 +890,7 @@ namespace RINGMesh {
                 ringmesh_assert( to_erase_by_type[GME::REGION][reg_itr] == 0 ) ;
                 ringmesh_assert(model().region( reg_itr ).is_meshed()) ;
                 GEO::Attribute< index_t > id_in_link_vector(
-                    const_cast< GEO::Mesh& >( model().region( reg_itr ).gfx_mesh() ).vertices.attributes(),
+                    model().region( reg_itr ).vertex_attribute_manager(),
                     "id_in_link_vector" ) ;
                 for( index_t v_itr = 0;
                     v_itr < model().region( reg_itr ).nb_vertices(); ++v_itr ) {
@@ -958,7 +953,7 @@ namespace RINGMesh {
         has_moved_ = true ;
 
         GEO::AttributesManager& att_mgr =
-            const_cast< GEO::Mesh& >( model_.mesh_entity( gme_vertex_.gme_id ).gfx_mesh() ).vertices.attributes() ; /// @todo to handle
+            model_.mesh_entity( gme_vertex_.gme_id ).vertex_attribute_manager() ;
         GEO::Attribute< double > translation_att_x( att_mgr, "translation_attr_x" ) ;
         translation_att_x[gme_vertex_.v_id] += displacement_vector.x ;
         GEO::Attribute< double > translation_att_y( att_mgr, "translation_attr_y" ) ;
@@ -1130,11 +1125,9 @@ namespace RINGMesh {
                 index_t surf_id = *surf_itr ;
 
                 const Surface& cur_surf = model().surface( surf_id ) ;
-                const GEO::Mesh& cur_surf_mesh =
-                    const_cast< GEO::Mesh& >( cur_surf.gfx_mesh() ) ;
 
                 // Add current surface to merged surface
-                for( index_t facet_itr = 0; facet_itr < cur_surf_mesh.facets.nb();
+                for( index_t facet_itr = 0; facet_itr < cur_surf.nb_mesh_elements();
                     ++facet_itr ) {
                     for( index_t point_i = 0;
                         point_i < cur_surf.nb_mesh_element_vertices( facet_itr );
@@ -1470,10 +1463,10 @@ namespace RINGMesh {
 
 #ifdef RINGMESH_DEBUG
             // In theory there is no isolated vertex
-            index_t previous = const_cast< GEO::Mesh& >( model().surface(
-                new_new_surface_gme_t.index ).gfx_mesh() ).vertices.nb() ;
+            index_t previous =
+                model().surface( new_new_surface_gme_t.index ).nb_vertices() ;
             const_cast< GEO::Mesh& >( model().surface( new_new_surface_gme_t.index ).gfx_mesh() ).vertices.remove_isolated() ;
-            ringmesh_assert(previous==const_cast< GEO::Mesh& >( model().surface(new_new_surface_gme_t.index).gfx_mesh()).vertices.nb()) ;
+            ringmesh_assert(previous==model().surface(new_new_surface_gme_t.index).nb_vertices()) ;
 #endif
             recompute_geomodel_mesh() ;
             // HANDLE THE INTERNAL BORDER
@@ -1513,8 +1506,7 @@ namespace RINGMesh {
             }
             ringmesh_assert(to_erase_by_type[GME::REGION][reg_itr]!=NO_ID) ;
             ringmesh_assert(to_erase_by_type[GME::REGION][reg_itr]==0) ;
-            GEO::Mesh& reg_mesh = const_cast< GEO::Mesh& >( reg.gfx_mesh() ) ;
-            GEO::AttributesManager& att_mgr = reg_mesh.vertices.attributes() ;
+            GEO::AttributesManager& att_mgr = reg.vertex_attribute_manager() ;
             GEO::Attribute< double > translation_att_x( att_mgr,
                 "translation_attr_x" ) ;
             translation_att_x.fill( 0. ) ;
@@ -1533,8 +1525,7 @@ namespace RINGMesh {
                 continue ;
             }
 
-            GEO::Mesh& surf_mesh = const_cast< GEO::Mesh& >( surf.gfx_mesh() ) ;
-            GEO::AttributesManager& att_mgr = surf_mesh.vertices.attributes() ;
+            GEO::AttributesManager& att_mgr = surf.vertex_attribute_manager() ;
             GEO::Attribute< double > translation_att_x( att_mgr,
                 "translation_attr_x" ) ;
             translation_att_x.fill( 0. ) ;
@@ -1567,14 +1558,13 @@ namespace RINGMesh {
     void DuplicateInterfaceBuilder::save_normal_on_one_surface(
         const Surface& surface ) const
     {
-        GEO::Mesh& cur_surf_mesh = const_cast< GEO::Mesh& >( surface.gfx_mesh() ) ;
         // GEO::compute_normals cannot be used because the dimension
         // of the vertices from 3 to 6 and that provokes a problem
         // of copying in GeoModelMeshVertices::initialize
         // with GEO::Memory::copy( mesh_.vertices.point_ptr( count ),
         // E.vertex( 0 ).data(), 3 * E.nb_vertices() * sizeof(double) ) ;
         // 3 means vertices of dimension 3 and not another dimension.
-        GEO::AttributesManager& att_mgr = cur_surf_mesh.vertices.attributes() ;
+        GEO::AttributesManager& att_mgr = surface.vertex_attribute_manager() ;
         GEO::Attribute< double > normal_att_x( att_mgr, "normal_attr_x" ) ;
         GEO::Attribute< double > normal_att_y( att_mgr, "normal_attr_y" ) ;
         GEO::Attribute< double > normal_att_z( att_mgr, "normal_attr_z" ) ;
@@ -1582,7 +1572,7 @@ namespace RINGMesh {
         normal_att_y.fill( 0. ) ;
         normal_att_z.fill( 0. ) ;
         // begin copy paste from GEO::compute_normals
-        for( index_t f = 0; f < cur_surf_mesh.facets.nb(); f++ ) {
+        for( index_t f = 0; f < surface.nb_mesh_elements(); f++ ) {
             vec3 N = GEO::Geom::mesh_facet_normal( cur_surf_mesh, f ) ;
             for( index_t corner = cur_surf_mesh.facets.corners_begin( f );
                 corner < cur_surf_mesh.facets.corners_end( f ); corner++ ) {
@@ -1592,7 +1582,7 @@ namespace RINGMesh {
                 normal_att_z[v] += N.z ;
             }
         }
-        for( index_t i = 0; i < cur_surf_mesh.vertices.nb(); i++ ) {
+        for( index_t i = 0; i < surface.nb_vertices(); i++ ) {
             vec3 cur_normal( normal_att_x[i], normal_att_y[i], normal_att_z[i] ) ;
             cur_normal = normalize( cur_normal ) ;
             normal_att_x[i] = cur_normal.x ;
@@ -1615,7 +1605,7 @@ namespace RINGMesh {
         bool side = cur_reg.side( local_surf_id ) ;
 
         GEO::AttributesManager& att_mgr =
-            const_cast< GEO::Mesh& >( surface.gfx_mesh() ).vertices.attributes() ;
+            surface.vertex_attribute_manager() ;
         GEO::Attribute< double > normal_att_x( att_mgr, "normal_attr_x" ) ;
         GEO::Attribute< double > normal_att_y( att_mgr, "normal_attr_y" ) ;
         GEO::Attribute< double > normal_att_z( att_mgr, "normal_attr_z" ) ;
@@ -1673,7 +1663,7 @@ namespace RINGMesh {
                 ringmesh_assert(cur_surface.nb_in_boundary()==1) ;
                 ringmesh_assert(cur_surface.in_boundary(0).type()==GME::REGION) ;
                 GEO::Attribute< index_t > id_in_link_vector(
-                    const_cast< GEO::Mesh& >( model().surface( cur_surface.index() ).gfx_mesh() ).vertices.attributes(),
+                    model().surface( cur_surface.index()).vertex_attribute_manager(),
                     "id_in_link_vector" ) ;
 
                 for( index_t surf_vertex_itr = 0;
@@ -1923,8 +1913,7 @@ namespace RINGMesh {
         index_t vertex_id_in_gmme,
         const vec3& translation ) const
     {
-        GEO::AttributesManager& att_mgr =
-            const_cast< GEO::Mesh& >( gmme.gfx_mesh() ).vertices.attributes() ;
+        GEO::AttributesManager& att_mgr = gmme.vertex_attribute_manager() ;
         GEO::Attribute< double > translation_att_x( att_mgr, "translation_attr_x" ) ;
         translation_att_x[vertex_id_in_gmme] += translation.x ;
         GEO::Attribute< double > translation_att_y( att_mgr, "translation_attr_y" ) ;
@@ -1943,23 +1932,21 @@ namespace RINGMesh {
             }
             ringmesh_assert(to_erase_by_type[GME::REGION][reg_itr]!=NO_ID) ;
             ringmesh_assert(to_erase_by_type[GME::REGION][reg_itr]==0) ;
-            GEO::Mesh& reg_mesh = const_cast< GEO::Mesh& >( reg.gfx_mesh() ) ;
-            GEO::AttributesManager& att_mgr = reg_mesh.vertices.attributes() ;
+            GEO::AttributesManager& att_mgr = reg.vertex_attribute_manager() ;
             GEO::Attribute< double > translation_att_x( att_mgr,
                 "translation_attr_x" ) ;
             GEO::Attribute< double > translation_att_y( att_mgr,
                 "translation_attr_y" ) ;
             GEO::Attribute< double > translation_att_z( att_mgr,
                 "translation_attr_z" ) ;
-            for( index_t vertex_itr = 0; vertex_itr < reg_mesh.vertices.nb();
+            for( index_t vertex_itr = 0; vertex_itr < reg.nb_vertices();
                 ++vertex_itr ) {
 
-                reg_mesh.vertices.point( vertex_itr ).x +=
-                    translation_att_x[vertex_itr] ;
-                reg_mesh.vertices.point( vertex_itr ).y +=
-                    translation_att_y[vertex_itr] ;
-                reg_mesh.vertices.point( vertex_itr ).z +=
-                    translation_att_z[vertex_itr] ;
+                vec3 new_coord = reg.vertex( vertex_itr ) ;
+                new_coord.x += translation_att_x[vertex_itr] ;
+                new_coord.y += translation_att_y[vertex_itr] ;
+                new_coord.z += translation_att_z[vertex_itr] ;
+                set_entity_vertex( reg.gme_id(), vertex_itr, new_coord, false ) ;
             }
         }
 
@@ -1970,23 +1957,21 @@ namespace RINGMesh {
                 continue ;
             }
 
-            GEO::Mesh& surf_mesh = const_cast< GEO::Mesh& >( surf.gfx_mesh() ) ;
-            GEO::AttributesManager& att_mgr = surf_mesh.vertices.attributes() ;
+            GEO::AttributesManager& att_mgr = surf.vertex_attribute_manager() ;
             GEO::Attribute< double > translation_att_x( att_mgr,
                 "translation_attr_x" ) ;
             GEO::Attribute< double > translation_att_y( att_mgr,
                 "translation_attr_y" ) ;
             GEO::Attribute< double > translation_att_z( att_mgr,
                 "translation_attr_z" ) ;
-            for( index_t vertex_itr = 0; vertex_itr < surf_mesh.vertices.nb();
+            for( index_t vertex_itr = 0; vertex_itr < surf.nb_vertices();
                 ++vertex_itr ) {
 
-                surf_mesh.vertices.point( vertex_itr ).x +=
-                    translation_att_x[vertex_itr] ;
-                surf_mesh.vertices.point( vertex_itr ).y +=
-                    translation_att_y[vertex_itr] ;
-                surf_mesh.vertices.point( vertex_itr ).z +=
-                    translation_att_z[vertex_itr] ;
+                vec3 new_coord = surf.vertex( vertex_itr ) ;
+                new_coord.x += translation_att_x[vertex_itr] ;
+                new_coord.y += translation_att_y[vertex_itr] ;
+                new_coord.z += translation_att_z[vertex_itr] ;
+                set_entity_vertex( surf.gme_id(), vertex_itr, new_coord, false ) ;
             }
         }
     }
@@ -2091,8 +2076,7 @@ namespace RINGMesh {
             ringmesh_assert( to_erase_by_type[cur_gme_vertex.gme_id.type][cur_gme_vertex.gme_id.index] == 0 ) ;
             const GeoModelMeshEntity& gmme = model().mesh_entity(
                 cur_gme_vertex.gme_id ) ;
-            GEO::AttributesManager& att_mgr =
-                const_cast< GEO::Mesh& >( gmme.gfx_mesh() ).vertices.attributes() ;
+            GEO::AttributesManager& att_mgr = gmme.vertex_attribute_manager() ;
             GEO::Attribute< double > translation_att_x( att_mgr,
                 "translation_attr_x" ) ;
             translation_att_x[cur_gme_vertex.v_id] = 0 ;
