@@ -46,6 +46,8 @@
 #include <geogram/basic/logger.h>
 
 #include <geogram_gfx/glup_viewer/glup_viewer.h>
+#include <geogram_gfx/basic/GL.h>
+#include <geogram_gfx/third_party/quicktext/glQuickText.h>
 
 #include <ringmesh/command_line.h>
 #include <ringmesh/geo_model_entity.h>
@@ -1089,6 +1091,8 @@ namespace RINGMesh {
         return 0 ;
     }
 
+
+
     /*****************************************************************/
 
     GeoModelGfx::GeoModelGfx()
@@ -1357,6 +1361,7 @@ namespace RINGMesh {
 
         if( show_attributes_ ) {
             GM_gfx_.attribute.bind_attribute() ;
+            draw_colormap() ;
         } else {
             GM_gfx_.attribute.unbind_attribute() ;
         }
@@ -1519,6 +1524,87 @@ namespace RINGMesh {
                 ImGui::Checkbox( "Col. layers [R]", &show_colored_layers_ ) ;
                 ImGui::SliderFloat( "Shrk.", &shrink_, 0.0f, 1.0f, "%.1f" ) ;
             }
+        }
+    }
+
+    void RINGMeshApplication::draw_colormap()
+    {
+        GLUPboolean clipping_save = glupIsEnabled(GLUP_CLIPPING);
+        glupDisable(GLUP_CLIPPING);
+
+        glupMatrixMode(GLUP_TEXTURE_MATRIX);
+        glupLoadIdentity();
+
+        glupMatrixMode(GLUP_PROJECTION_MATRIX);
+        glupPushMatrix();
+        glupLoadIdentity();
+
+        glupMatrixMode(GLUP_MODELVIEW_MATRIX);
+        glupPushMatrix();
+        glupLoadIdentity();
+
+        const float z = -1.0f;
+        const float w = 0.3;
+        const float h = 0.1;
+        const float x1 = 0. ;
+        const float y1 = -0.9;
+        const float tmin = float(GM_gfx_.attribute.minimum());
+        const float tmax = float(GM_gfx_.attribute.maximum());
+        GEO::glupMapTexCoords1d(tmin, tmax, 1.);
+
+        glupColor3f(1.0f, 1.0f, 1.0f);
+        glupDisable(GLUP_LIGHTING);
+        glupEnable(GLUP_TEXTURING);
+        glupTextureMode(GLUP_TEXTURE_REPLACE);
+        glupTextureType(GLUP_TEXTURE_1D);
+        glupEnable(GLUP_DRAW_MESH);
+        glupSetColor3f(GLUP_MESH_COLOR, 0.0f, 0.0f, 0.0f);
+        glupSetMeshWidth(2);
+        glupSetCellsShrink(0.0f);
+
+        glupBegin(GLUP_QUADS);
+        glupTexCoord1f(tmin);
+        glupVertex3f(x1-w,   y1,   z);
+        glupTexCoord1f(tmax);
+        glupVertex3f(x1+w, y1,   z);
+        glupTexCoord1f(tmax);
+        glupVertex3f(x1+w, y1+h, z);
+        glupTexCoord1f(tmin);
+        glupVertex3f(x1-w,   y1+h, z);
+        glupEnd();
+
+        glupTextureType(GLUP_TEXTURE_2D);
+        glupMatrixMode(GLUP_TEXTURE_MATRIX);
+        glupLoadIdentity();
+        glupMatrixMode(GLUP_MODELVIEW_MATRIX);
+
+        glupSetColor4f(GLUP_FRONT_AND_BACK_COLOR, 0.0f, 0.0f, 0.0f, 1.0f);
+
+        const float font_sz = 0.003f ;
+        const float font_height = 0.4f*
+            float(glQuickText::getFontHeight(font_sz));
+
+        glQuickText::printfAt(
+            x1-w, y1-font_height,
+            z, font_sz,
+            GEO::String::to_string(GM_gfx_.attribute.minimum()).c_str()
+        );
+
+        glQuickText::printfAt(
+            x1+w, y1-font_height,
+            z, font_sz,
+            GEO::String::to_string(GM_gfx_.attribute.maximum()).c_str()
+        );
+
+
+        glupMatrixMode(GLUP_PROJECTION_MATRIX);
+        glupPopMatrix();
+
+        glupMatrixMode(GLUP_MODELVIEW_MATRIX);
+        glupPopMatrix();
+
+        if(clipping_save) {
+            glupEnable(GLUP_CLIPPING);
         }
     }
 
