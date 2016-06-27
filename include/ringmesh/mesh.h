@@ -142,6 +142,11 @@ namespace RINGMesh {
             return GEO::mesh_nb_connected_components( *mesh_ ) ;
         }
 
+        index_t get_connected_components( GEO::vector< index_t >& components ) const
+        {
+            return GEO::get_connected_components( *mesh_, components ) ;
+        }
+
         //TODO maybe reimplement the function with a RINGMesh::Mesh??
         void print_mesh_bounded_attributes() const
         {
@@ -640,6 +645,14 @@ namespace RINGMesh {
             GEO::Logger::instance()->set_minimal( false ) ;
         }
 
+        void compute_borders() {
+            ringmesh_assert( mesh_.mesh_->cells.nb() > 0 ) ;
+            mesh_.mesh_->cells.compute_borders() ;
+        }
+
+        void invert_normals() {
+            GEO::invert_normals( *mesh_.mesh_ ) ;
+        }
 
         /*!
          * \name Vertex methods
@@ -727,6 +740,10 @@ namespace RINGMesh {
                 delete mesh_.ann_[ColocaterANN::VERTICES] ;
                 mesh_.ann_[ColocaterANN::VERTICES] = nil ;
             }
+        }
+
+        void remove_isolated_vertices() {
+            mesh_.mesh_->vertices.remove_isolated() ;
         }
 
         /*!@}
@@ -895,6 +912,13 @@ namespace RINGMesh {
             index_t specifies )
         {
             mesh_.mesh_->facets.set_adjacent( facet_id, edge_id, specifies ) ;
+        }
+        void set_cell_facet_adjacent(
+            index_t cell_id,
+            index_t facet_id,
+            index_t specifies )
+        {
+            mesh_.mesh_->cells.set_adjacent( cell_id, facet_id, specifies ) ;
         }
         /*
          * \brief Copies a triangle mesh into this Mesh.

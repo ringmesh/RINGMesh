@@ -314,6 +314,15 @@ namespace RINGMesh {
             ringmesh_assert( create_entity_allowed_ ) ;
         }
 
+        Mesh& mesh( const GME::gme_t& id ) {
+            return mesh_entity( id ).mesh_ ;
+        }
+
+        const Mesh& mesh( const GME::gme_t& id ) const
+        {
+            return model_.mesh_entity( id ).mesh_ ;
+        }
+
     private:
         void copy_entity_topology(
             const GME::gme_t& lhs_id,

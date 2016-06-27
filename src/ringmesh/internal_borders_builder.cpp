@@ -212,7 +212,8 @@ namespace RINGMesh {
         //=================== Cut the region by the surfaces
 
         for( index_t reg_itr = 0; reg_itr < model().nb_regions(); ++reg_itr ) {
-            const_cast< GEO::Mesh& >( model().region( reg_itr ).gfx_mesh() ).vertices.remove_isolated() ;
+            MeshBuilder region_mesh_builder( mesh( GME::gme_t( GME::REGION, reg_itr ) ) ) ;
+            region_mesh_builder.remove_isolated_vertices() ;
         }
         // Deliberate clear of the model vertices used for model building
         model().mesh.vertices.clear() ;

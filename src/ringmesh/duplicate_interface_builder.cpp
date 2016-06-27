@@ -199,9 +199,13 @@ namespace RINGMesh {
 
         for( index_t to_inverse_itr = 0;
             to_inverse_itr < surfaces_to_inverse_normals.size(); ++to_inverse_itr ) {
-            const Surface& surface = model().surface(
-                surfaces_to_inverse_normals[to_inverse_itr] ) ;
-            GEO::invert_normals( const_cast< GEO::Mesh& >( surface.gfx_mesh() ) ) ; /// @todo to handle
+            GeoModelMeshEntity& surface = mesh_entity(
+                GME::gme_t( GME::SURFACE,
+                    surfaces_to_inverse_normals[to_inverse_itr] ) ) ; //const_cast< Surface& > ( model().surface(
+            //surfaces_to_inverse_normals[to_inverse_itr] ) ) ;
+//            MeshBuilder surface_mesh_builder( surface.mesh_ ) ;
+            MeshBuilder surface_mesh_builder( mesh( surface.gme_id() ) ) ;
+            surface_mesh_builder.invert_normals() ;
         }
         recompute_geomodel_mesh() ;
     }
@@ -743,15 +747,12 @@ namespace RINGMesh {
         index_t reg_facet_id,
         index_t surf_v_id_in_gmm ) const
     {
+        /// @todo use cell facets instead of facets?
         for( index_t v_in_reg_itr = 0;
-            v_in_reg_itr
-                < const_cast< GEO::Mesh& >( reg.gfx_mesh() ).facets.nb_vertices(
-                    reg_facet_id ); /// @todo to handle
+            v_in_reg_itr < mesh( reg.gme_id() ).nb_facet_vertices( reg_facet_id );
             ++v_in_reg_itr ) {
-            index_t reg_v_id_in_gmme =
-                const_cast< GEO::Mesh& >( reg.gfx_mesh() ).facets.vertex(
-                    reg_facet_id, /// @todo to handle
-                    v_in_reg_itr ) ;
+            index_t reg_v_id_in_gmme = mesh( reg.gme_id() ).facet_vertex(
+                reg_facet_id, v_in_reg_itr ) ;
             if( reg.model_vertex_id( reg_v_id_in_gmme ) == surf_v_id_in_gmm ) {
                 return reg_v_id_in_gmme ;
             }
@@ -1359,11 +1360,9 @@ namespace RINGMesh {
         // surface).
 
         ringmesh_assert( new_surface_gme_t.type == GME::SURFACE ) ;
-        const GEO::Mesh& surface_mesh = const_cast< GEO::Mesh& >( model().surface(
-            new_surface_gme_t.index ).gfx_mesh() ) ;
         GEO::vector< index_t > components ;
-        index_t nb_connected_components = GEO::get_connected_components(
-            surface_mesh, components ) ;
+        index_t nb_connected_components =
+            mesh( new_surface_gme_t ).get_connected_components( components ) ;
         if( nb_connected_components == 1 ) {
             DEBUG( "ONE CONNECTED COMPONENT" ) ;
             set_entity_parent( new_surface_gme_t, sided_interface_gme_t ) ;
@@ -1401,18 +1400,21 @@ namespace RINGMesh {
             std::vector< vec3 >() ) ;
         for( index_t all_points_itr = 0; all_points_itr < all_points.size();
             ++all_points_itr ) {
-            all_points[all_points_itr].reserve( surface_mesh.vertices.nb() ) ; // a little big but to avoid copy
+            all_points[all_points_itr].reserve(
+                model().surface( new_surface_gme_t.index ).nb_vertices() ) ; // a little big but to avoid copy
         }
         for( index_t components_itr = 0; components_itr < components.size();
             ++components_itr ) {
             ringmesh_assert( components[components_itr] < all_points.size() ) ;
             for( index_t v_in_f_itr = 0;
-                v_in_f_itr < surface_mesh.facets.nb_vertices( components_itr );
-                ++v_in_f_itr ) {
-                index_t v_id = surface_mesh.facets.vertex( components_itr,
-                    v_in_f_itr ) ;
+                v_in_f_itr
+                    < model().surface( new_surface_gme_t.index ).nb_mesh_element_vertices(
+                        components_itr ); ++v_in_f_itr ) {
+                index_t v_id =
+                    model().surface( new_surface_gme_t.index ).mesh_element_vertex_index(
+                        components_itr, v_in_f_itr ) ;
                 all_points[components[components_itr]].push_back(
-                    surface_mesh.vertices.point( v_id ) ) ;
+                    model().surface( new_surface_gme_t.index ).vertex( v_id ) ) ;
             }
         }
 
@@ -1435,12 +1437,13 @@ namespace RINGMesh {
                 if( components[components_itr] == all_points_itr ) {
                     for( index_t v_in_f_itr = 0;
                         v_in_f_itr
-                            < surface_mesh.facets.nb_vertices( components_itr );
-                        ++v_in_f_itr ) {
+                            < model().surface( new_surface_gme_t.index ).nb_mesh_element_vertices(
+                                components_itr ); ++v_in_f_itr ) {
                         facet_indices.push_back( unique_id[offset] ) ;
                         ++offset ;
                     }
-                    count_facet_vertices += surface_mesh.facets.nb_vertices(
+                    count_facet_vertices += model().surface(
+                        new_surface_gme_t.index ).nb_mesh_element_vertices(
                         components_itr ) ;
                     facet_ptr.push_back( count_facet_vertices ) ;
                 }
@@ -1465,7 +1468,8 @@ namespace RINGMesh {
             // In theory there is no isolated vertex
             index_t previous =
                 model().surface( new_new_surface_gme_t.index ).nb_vertices() ;
-            const_cast< GEO::Mesh& >( model().surface( new_new_surface_gme_t.index ).gfx_mesh() ).vertices.remove_isolated() ;
+            MeshBuilder surface_mesh_builder( mesh( new_new_surface_gme_t ) ) ;
+            surface_mesh_builder.remove_isolated_vertices() ;
             ringmesh_assert(previous==model().surface(new_new_surface_gme_t.index).nb_vertices()) ;
 #endif
             recompute_geomodel_mesh() ;
@@ -1573,10 +1577,10 @@ namespace RINGMesh {
         normal_att_z.fill( 0. ) ;
         // begin copy paste from GEO::compute_normals
         for( index_t f = 0; f < surface.nb_mesh_elements(); f++ ) {
-            vec3 N = GEO::Geom::mesh_facet_normal( cur_surf_mesh, f ) ;
-            for( index_t corner = cur_surf_mesh.facets.corners_begin( f );
-                corner < cur_surf_mesh.facets.corners_end( f ); corner++ ) {
-                index_t v = cur_surf_mesh.facet_corners.vertex( corner ) ;
+            vec3 N = surface.facet_normal( f ) ;
+            for( index_t corner = surface.facet_begin( f );
+                corner < surface.facet_end( f ); corner++ ) {
+                index_t v = surface.vertex_index( corner ) ;
                 normal_att_x[v] += N.x ;
                 normal_att_y[v] += N.y ;
                 normal_att_z[v] += N.z ;
@@ -1604,8 +1608,7 @@ namespace RINGMesh {
         index_t local_surf_id = find_local_boundary_id( cur_reg, surface ) ;
         bool side = cur_reg.side( local_surf_id ) ;
 
-        GEO::AttributesManager& att_mgr =
-            surface.vertex_attribute_manager() ;
+        GEO::AttributesManager& att_mgr = surface.vertex_attribute_manager() ;
         GEO::Attribute< double > normal_att_x( att_mgr, "normal_attr_x" ) ;
         GEO::Attribute< double > normal_att_y( att_mgr, "normal_attr_y" ) ;
         GEO::Attribute< double > normal_att_z( att_mgr, "normal_attr_z" ) ;
@@ -1663,7 +1666,7 @@ namespace RINGMesh {
                 ringmesh_assert(cur_surface.nb_in_boundary()==1) ;
                 ringmesh_assert(cur_surface.in_boundary(0).type()==GME::REGION) ;
                 GEO::Attribute< index_t > id_in_link_vector(
-                    model().surface( cur_surface.index()).vertex_attribute_manager(),
+                    model().surface( cur_surface.index() ).vertex_attribute_manager(),
                     "id_in_link_vector" ) ;
 
                 for( index_t surf_vertex_itr = 0;
