@@ -236,10 +236,17 @@ namespace RINGMesh {
     } ;
 
     GeoModelGfx::GeoModelGfx()
-        : model_( nil ), corners_(), lines_(), surfaces_(), regions_()
+        :
+            model_( nil ),
+            corners_(),
+            lines_(),
+            surfaces_(),
+            regions_(),
+            attribute_location_( nb_locations ),
+            attribute_coordinate_( 0 ),
+            attribute_min_( 0.0 ),
+            attribute_max_( 0.0 )
     {
-        attribute_min_ = 0. ;
-        attribute_max_ = 0. ;
     }
 
     GeoModelGfx::~GeoModelGfx()
@@ -1157,6 +1164,9 @@ namespace RINGMesh {
         meshed_regions_ = false ;
 
         show_attributes_ = false ;
+        attribute_min_ = 0.0f ;
+        attribute_max_ = 0.0f ;
+        reset_attribute_name() ;
 
         std::vector< std::string > extensions ;
         GeoModelIOHandlerFactory::list_creators( extensions ) ;
@@ -1179,6 +1189,11 @@ namespace RINGMesh {
         if( GM_ ) {
             delete GM_ ;
         }
+    }
+
+    void RINGMeshApplication::reset_attribute_name()
+    {
+        GM_gfx_.set_attribute_name( "name" ) ;
     }
 
     RINGMeshApplication* RINGMeshApplication::instance()
@@ -1206,6 +1221,9 @@ namespace RINGMesh {
             "toggle colored regions" ) ;
         glup_viewer_add_key_func( 'R', &toggle_colored_layers,
             "toggle colored layers" ) ;
+
+        init_colormaps();
+        GM_gfx_.set_colormap( colormaps_[0].texture ) ;
     }
 
     void RINGMeshApplication::increment_shrink()
@@ -1222,6 +1240,7 @@ namespace RINGMesh {
         if( instance()->colored_cells_ ) {
             instance()->show_colored_regions_ = false ;
             instance()->show_colored_layers_ = false ;
+            instance()->GM_gfx_.set_cell_regions_color_type() ;
         }
     }
     void RINGMeshApplication::toggle_colored_regions()
@@ -1230,6 +1249,12 @@ namespace RINGMesh {
         if( instance()->show_colored_regions_ ) {
             instance()->colored_cells_ = false ;
             instance()->show_colored_layers_ = false ;
+            for( GEO::index_t r = 0; r < instance()->GM_->nb_regions(); r++ ) {
+                instance()->GM_gfx_.set_cell_region_color( r,
+                    std::fmod( GEO::Numeric::random_float32(), 1 ),
+                    std::fmod( GEO::Numeric::random_float32(), 1 ),
+                    std::fmod( GEO::Numeric::random_float32(), 1 ) ) ;
+            }
         }
     }
 
@@ -1239,6 +1264,15 @@ namespace RINGMesh {
         if( instance()->show_colored_layers_ ) {
             instance()->colored_cells_ = false ;
             instance()->show_colored_regions_ = false ;
+            for( GEO::index_t l = 0; l < instance()->GM_->nb_layers(); l++ ) {
+                float red = std::fmod( GEO::Numeric::random_float32(), 1 ) ;
+                float green = std::fmod( GEO::Numeric::random_float32(), 1 ) ;
+                float blue = std::fmod( GEO::Numeric::random_float32(), 1 ) ;
+                const GeoModelEntity& cur_layer = instance()->GM_->layer( l ) ;
+                for( index_t r = 0; r < cur_layer.nb_children(); ++r )
+                    instance()->GM_gfx_.set_cell_region_color( cur_layer.child( r ).index(),
+                        red, green, blue ) ;
+            }
         }
     }
 
@@ -1317,6 +1351,28 @@ namespace RINGMesh {
         GM_gfx_.set_mesh_surfaces_visibility( mesh_visible_ ) ;
         GM_gfx_.set_cell_mesh_regions_visibility( mesh_visible_ ) ;
 
+        if( show_attributes_ ) {
+            switch( GM_gfx_.attribute_location() ) {
+                case GeoModelGfx::cells:
+                    GM_gfx_.set_cell_attribute( GM_gfx_.attribute_name(),
+                        GM_gfx_.attribute_coordinate(), GM_gfx_.colormap() ) ;
+                    break ;
+                case GeoModelGfx::cell_vertices:
+                    GM_gfx_.set_cell_vertex_attribute( GM_gfx_.attribute_name(),
+                        GM_gfx_.attribute_coordinate(), GM_gfx_.colormap() ) ;
+                    break ;
+            }
+        } else {
+            switch( GM_gfx_.attribute_location() ) {
+                case GeoModelGfx::cells:
+                    GM_gfx_.set_cell_attribute( "", 0, GM_gfx_.colormap() ) ;
+                    break ;
+                case GeoModelGfx::cell_vertices:
+                    GM_gfx_.set_cell_vertex_attribute( "", 0, GM_gfx_.colormap() ) ;
+                    break ;
+            }
+        }
+
         if( show_corners_ ) {
             GM_gfx_.draw_corners() ;
         }
@@ -1335,26 +1391,7 @@ namespace RINGMesh {
         }
 
         if( show_volume_ && meshed_regions_ ) {
-            if( colored_cells_ ) {
-                GM_gfx_.set_cell_regions_color_type() ;
-            } else if( show_colored_regions_ ) {
-                for( GEO::index_t r = 0; r < instance()->GM_->nb_regions(); r++ ) {
-                    GM_gfx_.set_cell_region_color( r,
-                        std::fmod( GEO::Numeric::random_float32(), 1 ),
-                        std::fmod( GEO::Numeric::random_float32(), 1 ),
-                        std::fmod( GEO::Numeric::random_float32(), 1 ) ) ;
-                }
-            } else if( show_colored_layers_ ) {
-                for( GEO::index_t l = 0; l < GM_->nb_layers(); l++ ) {
-                    float red = std::fmod( GEO::Numeric::random_float32(), 1 ) ;
-                    float green = std::fmod( GEO::Numeric::random_float32(), 1 ) ;
-                    float blue = std::fmod( GEO::Numeric::random_float32(), 1 ) ;
-                    const GeoModelEntity& cur_layer = GM_->layer( l ) ;
-                    for( index_t r = 0; r < cur_layer.nb_children(); ++r )
-                        GM_gfx_.set_cell_region_color( cur_layer.child( r ).index(),
-                            red, green, blue ) ;
-                }
-            } else {
+            if( !colored_cells_ && !show_colored_regions_ && !show_colored_layers_ ) {
                 GM_gfx_.set_cell_regions_color( 0.9f, 0.9f, 0.9f ) ;
             }
             GM_gfx_.set_cell_regions_shrink( shrink_ ) ;
@@ -1367,50 +1404,141 @@ namespace RINGMesh {
         return file_extensions_ ;
     }
 
+    void RINGMeshApplication::set_attribute_names(
+        const GEO::AttributesManager& attributes )
+    {
+        GEO::vector< std::string > attribute_names ;
+        attributes.list_attribute_names( attribute_names ) ;
+        for( index_t i = 0; i < attribute_names.size(); ++i ) {
+            const GEO::AttributeStore* store = attributes.find_attribute_store(
+                attribute_names[i] ) ;
+            if( GEO::ReadOnlyScalarAttributeAdapter::can_be_bound_to( store ) ) {
+                if( ImGui::Button( attribute_names[i].c_str() ) ) {
+                    GM_gfx_.set_attribute_name( attribute_names[i] ) ;
+                    GM_gfx_.set_attribute_coordinate( 0 ) ;
+                    autorange() ;
+                    ImGui::CloseCurrentPopup() ;
+                }
+            }
+        }
+    }
+    void RINGMeshApplication::autorange()
+    {
+        switch( GM_gfx_.attribute_location() ) {
+            case GeoModelGfx::cells:
+                GM_gfx_.compute_cell_attribute_range( GM_gfx_.attribute_coordinate(),
+                    GM_gfx_.attribute_name() ) ;
+                break ;
+            case GeoModelGfx::cell_vertices:
+                GM_gfx_.compute_cell_vertex_attribute_range(
+                    GM_gfx_.attribute_coordinate(), GM_gfx_.attribute_name() ) ;
+                break ;
+        }
+        attribute_max_ = GM_gfx_.attribute_max() ;
+        attribute_min_ = GM_gfx_.attribute_min() ;
+    }
+
+    index_t RINGMeshApplication::nb_coordinates() const
+    {
+        GEO::AttributeStore* store = nil ;
+        switch( GM_gfx_.attribute_location() ) {
+            case GeoModelGfx::cells:
+                store =
+                    GM_->region( 0 ).cell_attribute_manager().find_attribute_store(
+                        GM_gfx_.attribute_name() ) ;
+                break ;
+            case GeoModelGfx::cell_vertices:
+                store =
+                    GM_->region( 0 ).vertex_attribute_manager().find_attribute_store(
+                        GM_gfx_.attribute_name() ) ;
+                break ;
+            default:
+                return false ;
+        }
+        if( store == nil ) return 0 ;
+        return store->dimension() ;
+    }
+
     void RINGMeshApplication::draw_object_properties()
     {
         ImGui::Checkbox( "Attributes", &show_attributes_ ) ;
-//        if( show_attributes_ ) {
-//            if( attribute_min_ == 0.0f && attribute_max_ == 0.0f ) {
-////                autorange() ;
-//            }
-//            if( ImGui::Button( ( attribute_ + "##Attribute" ).c_str(),
-//                ImVec2( -1, 0 ) ) ) {
-//                ImGui::OpenPopup( "##Attributes" ) ;
-//            }
-//            if( ImGui::BeginPopup( "##Attributes" ) ) {
-//                std::vector< std::string > attributes ;
-//                String::split_string( attribute_names(), ';', attributes ) ;
-//                for( index_t i = 0; i < attributes.size(); ++i ) {
-//                    if( ImGui::Button( attributes[i].c_str() ) ) {
-//                        set_attribute( attributes[i] ) ;
-//                        ImGui::CloseCurrentPopup() ;
-//                    }
-//                }
-//                ImGui::EndPopup() ;
-//            }
-//            ImGui::InputFloat( "min", &attribute_min_ ) ;
-//            ImGui::InputFloat( "max", &attribute_max_ ) ;
-//            if( ImGui::Button( "autorange", ImVec2( -1, 0 ) ) ) {
-//                autorange() ;
-//            }
-//            if( ImGui::ImageButton(
-//                convert_to_ImTextureID( current_colormap_texture_ ),
-//                ImVec2( 115, 8 ) ) ) {
-//                ImGui::OpenPopup( "##Colormap" ) ;
-//            }
-//            if( ImGui::BeginPopup( "##Colormap" ) ) {
-//                for( index_t i = 0; i < colormaps_.size(); ++i ) {
-//                    if( ImGui::ImageButton(
-//                        convert_to_ImTextureID( colormaps_[i].texture ),
-//                        ImVec2( 100, 8 ) ) ) {
-//                        current_colormap_texture_ = colormaps_[i].texture ;
-//                        ImGui::CloseCurrentPopup() ;
-//                    }
-//                }
-//                ImGui::EndPopup() ;
-//            }
-//        }
+        if( show_attributes_ ) {
+            if( ImGui::Button(
+                GM_gfx_.attribute_location_name( GM_gfx_.attribute_location() ).c_str(),
+                ImVec2( -1, 0 ) ) ) {
+                ImGui::OpenPopup( "##Locations" ) ;
+            }
+            if( ImGui::BeginPopup( "##Locations" ) ) {
+                for( index_t i = 0; i < GeoModelGfx::nb_locations; i++ ) {
+                    GeoModelGfx::GeoModelAttribute_location l =
+                        static_cast< GeoModelGfx::GeoModelAttribute_location >( i ) ;
+                    if( ImGui::Button(
+                        GeoModelGfx::attribute_location_name( l ).c_str() ) ) {
+                        GM_gfx_.set_attribute_location( l ) ;
+                        reset_attribute_name() ;
+                        ImGui::CloseCurrentPopup() ;
+                    }
+                }
+                ImGui::EndPopup() ;
+            }
+
+            if( ImGui::Button( GM_gfx_.attribute_name().c_str(), ImVec2( -1, 0 ) ) ) {
+                ImGui::OpenPopup( "##Attributes" ) ;
+            }
+            if( ImGui::BeginPopup( "##Attributes" ) ) {
+                switch( GM_gfx_.attribute_location() ) {
+                    case GeoModelGfx::cells:
+                        set_attribute_names( GM_->region( 0 ).cell_attribute_manager() ) ;
+                        break ;
+                    case GeoModelGfx::cell_vertices :
+                        set_attribute_names( GM_->region( 0 ).vertex_attribute_manager() ) ;
+                        break ;
+                }
+                ImGui::EndPopup() ;
+            }
+            if( nb_coordinates() > 1 ) {
+                if( ImGui::Button(
+                    GEO::String::to_string( GM_gfx_.attribute_coordinate() ).c_str(),
+                    ImVec2( -1, 0 ) ) ) {
+                    ImGui::OpenPopup( "##Coordinates" ) ;
+                }
+                if( ImGui::BeginPopup( "##Coordinates" ) ) {
+                    for( index_t i = 0; i < nb_coordinates(); i++ ) {
+                        if( ImGui::Button( GEO::String::to_string( i ).c_str() ) ) {
+                            GM_gfx_.set_attribute_coordinate( i ) ;
+                            autorange() ;
+                            ImGui::CloseCurrentPopup() ;
+                        }
+                    }
+                    ImGui::EndPopup() ;
+                }
+            }
+            if( ImGui::InputFloat( "min", &attribute_min_ ) ) {
+                GM_gfx_.set_attribute_min( attribute_min_ ) ;
+            }
+            if( ImGui::InputFloat( "max", &attribute_max_ ) ) {
+                GM_gfx_.set_attribute_max( attribute_max_ ) ;
+            }
+            if( ImGui::Button( "autorange", ImVec2( -1, 0 ) ) ) {
+                autorange() ;
+            }
+            if( ImGui::ImageButton(
+                convert_to_ImTextureID( GM_gfx_.colormap() ),
+                ImVec2( 115, 8 ) ) ) {
+                ImGui::OpenPopup( "##Colormap" ) ;
+            }
+            if( ImGui::BeginPopup( "##Colormap" ) ) {
+                for( index_t i = 0; i < colormaps_.size(); ++i ) {
+                    if( ImGui::ImageButton(
+                        convert_to_ImTextureID( colormaps_[i].texture ),
+                        ImVec2( 100, 8 ) ) ) {
+                        GM_gfx_.set_colormap( colormaps_[i].texture ) ;
+                        ImGui::CloseCurrentPopup() ;
+                    }
+                }
+                ImGui::EndPopup() ;
+            }
+        }
 
         ImGui::Separator() ;
         ImGui::Checkbox( "VOI [V]", &show_voi_ ) ;
@@ -1425,10 +1553,10 @@ namespace RINGMesh {
             ImGui::Separator() ;
             ImGui::Checkbox( "Region [v]", &show_volume_ ) ;
             if( show_volume_ ) {
-                ImGui::Checkbox( "Colored cells [C]", &colored_cells_ ) ;
-                ImGui::Checkbox( "Colored regions [r]", &show_colored_regions_ ) ;
-                ImGui::Checkbox( "Colored layers [R]", &show_colored_layers_ ) ;
-                ImGui::SliderFloat( "Shrink", &shrink_, 0.0f, 1.0f, "%.1f" ) ;
+                ImGui::Checkbox( "Col. cells [C]", &colored_cells_ ) ;
+                ImGui::Checkbox( "Col. regions [r]", &show_colored_regions_ ) ;
+                ImGui::Checkbox( "Col. layers [R]", &show_colored_layers_ ) ;
+                ImGui::SliderFloat( "Shrk.", &shrink_, 0.0f, 1.0f, "%.1f" ) ;
             }
         }
     }

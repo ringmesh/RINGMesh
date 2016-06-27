@@ -69,6 +69,22 @@ namespace RINGMesh {
     class RINGMESH_API GeoModelGfx {
     ringmesh_disable_copy( GeoModelGfx ) ;
     public:
+        enum GeoModelAttribute_location {
+            cells, cell_vertices, nb_locations
+        } ;
+        static std::string attribute_location_name( GeoModelAttribute_location location )
+        {
+            switch( location ) {
+                case cells:
+                    return "cells" ;
+                case cell_vertices:
+                    return "cells_vertices" ;
+                case nb_locations:
+                    return "location" ;
+            }
+            return "" ;
+        }
+
         GeoModelGfx() ;
         ~GeoModelGfx() ;
 
@@ -95,14 +111,38 @@ namespace RINGMesh {
         void set_attribute_max( double max ) {
             attribute_max_ = max ;
         }
-        double get_attribute_max() const {
+        double attribute_max() const {
             return attribute_max_ ;
         }
         void set_attribute_min( double min ) {
             attribute_min_ = min ;
         }
-        double get_attribute_min() const {
+        double attribute_min() const {
             return attribute_min_ ;
+        }
+        void set_attribute_location( GeoModelAttribute_location location ) {
+            attribute_location_ = location ;
+        }
+        GeoModelAttribute_location attribute_location() const {
+            return attribute_location_ ;
+        }
+        void set_attribute_coordinate( const index_t& coordinate ) {
+            attribute_coordinate_ = coordinate ;
+        }
+        const index_t& attribute_coordinate() const {
+            return attribute_coordinate_ ;
+        }
+        void set_attribute_name( const std::string& name ) {
+            attribute_name_ = name ;
+        }
+        const std::string& attribute_name() const {
+            return attribute_name_ ;
+        }
+        void set_colormap( GLuint colormap ) {
+            colormap_texture_ = colormap ;
+        }
+        GLuint colormap() const {
+            return colormap_texture_ ;
         }
 
         void draw_corners() ;
@@ -208,8 +248,13 @@ namespace RINGMesh {
         std::vector< SurfaceGfx* > surfaces_ ;
         /// The graphics associated to each Region
         std::vector< RegionGfx* > regions_ ;
-        double attribute_max_ ;
+
+        std::string attribute_name_ ;
+        GeoModelAttribute_location attribute_location_ ;
+        index_t attribute_coordinate_ ;
+        GLuint colormap_texture_;
         double attribute_min_ ;
+        double attribute_max_ ;
     } ;
 
     /*****************************************************************/
@@ -233,7 +278,10 @@ namespace RINGMesh {
         static void toggle_colored_regions() ;
         static void toggle_colored_layers() ;
 
-        void autorange();
+        void reset_attribute_name() ;
+        void set_attribute_names( const GEO::AttributesManager& attributes ) ;
+        index_t nb_coordinates() const ;
+        void autorange() ;
 
     private:
         GeoModel* GM_ ;
@@ -254,11 +302,8 @@ namespace RINGMesh {
         bool meshed_regions_ ;
 
         bool show_attributes_;
-//        GLuint current_colormap_texture_;
-//        std::string       attribute_;
-//        std::string       attribute_name_;
-//        float             attribute_min_;
-//        float             attribute_max_;
+        float attribute_min_ ;
+        float attribute_max_ ;
 
     } ;
 }
