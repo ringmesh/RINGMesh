@@ -298,6 +298,7 @@ namespace RINGMesh {
         virtual bool load( const std::string& filename ) ;
         virtual void draw_scene() ;
         virtual void draw_object_properties() ;
+        void draw_colormap() ;
 
         static void increment_shrink() ;
         static void decrement_shrink() ;
