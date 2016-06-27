@@ -61,7 +61,7 @@ extern "C" {
 namespace RINGMesh {
     class GeoModel ;
     class GeoModelBuilder ;
-    class GeoModelEntity ;
+    class Region ;
     class TetraGen ;
     class WellGroup ;
 }
@@ -78,7 +78,7 @@ namespace RINGMesh {
             const std::string& algo_name ) ;
         static void initialize() ;
 
-        void set_boundaries( const GeoModelEntity& region, const WellGroup* wells = nil ) ;
+        void set_boundaries( const Region& region, const WellGroup* wells = nil ) ;
         void set_internal_points( const std::vector< vec3 >& points ) ;
 
         /*!
@@ -103,7 +103,7 @@ namespace RINGMesh {
         GeoModelBuilder* builder_ ;
         index_t output_region_ ;
         GEO::Mesh tetmesh_constrain ;
-        const GeoModelEntity* region_ ;
+        const Region* region_ ;
         const WellGroup* wells_ ;
     } ;
 

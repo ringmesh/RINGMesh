@@ -2661,6 +2661,14 @@ namespace RINGMesh {
         }
     }
 
+
+    void GeoModelBuilder::delete_entity_mesh( GME::gme_t E_id )
+    {
+        Mesh& M = mesh_entity( E_id ).mesh_ ;
+        MeshBuilder builder( M ) ;
+        builder.clear( true, false ) ;
+    }
+
     void GeoModelBuilder::delete_entity_vertices(
         GME::gme_t E_id,
         GEO::vector< index_t >& to_delete )

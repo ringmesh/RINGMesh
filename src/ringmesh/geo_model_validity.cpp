@@ -1011,13 +1011,15 @@ namespace {
         save_edges( file_name, geomodel, edge_vertices ) ;
     }
 
-    bool is_surface_conformal_to_volume( const Surface& surface, const ColocaterANN& ann )
+    bool is_surface_conformal_to_volume(
+        const Surface& surface,
+        const ColocaterANN& cell_facet_barycenter_ann )
     {
         std::vector< index_t > unconformal_facets ;
         for( index_t f = 0; f < surface.nb_mesh_elements(); f++ ) {
             vec3 center = surface.mesh_element_center( f ) ;
             std::vector< index_t > result ;
-            if( !ann.get_colocated( center, result ) ) {
+            if( !cell_facet_barycenter_ann.get_colocated( center, result ) ) {
                 unconformal_facets.push_back( f ) ;
             }
         }
@@ -1314,9 +1316,10 @@ namespace RINGMesh {
         return valid ;
     }
  
-    bool is_geomodel_valid( const GeoModel& GM, bool check_surface_intersections )
-    {       
-        GeoModelValidityCheck validity_checker( GM, check_surface_intersections ) ;
+    bool is_geomodel_valid( const GeoModel& GM )
+    {
+        GeoModelValidityCheck validity_checker( GM,
+            GEO::CmdLine::get_arg_bool( "in:intersection_check" ) ) ;
 
         bool valid = validity_checker.is_geomodel_valid() ;
 

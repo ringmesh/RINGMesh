@@ -188,21 +188,21 @@ namespace RINGMesh {
             const std::vector< index_t >& triangle_corners,
             const std::vector< index_t >& adjacent_triangles ) ;
 
-    void set_surface_element_geometry(
-        index_t surface_id,
-        index_t facet_id,
-        const std::vector< index_t >& corners ) ;
+        void set_surface_element_geometry(
+            index_t surface_id,
+            index_t facet_id,
+            const std::vector< index_t >& corners ) ;
 
-    void set_surface_element_adjacency(
-        index_t surface_id,
-        index_t facet_id,
-        const std::vector< index_t >& adjacents ) ;
+        void set_surface_element_adjacency(
+            index_t surface_id,
+            index_t facet_id,
+            const std::vector< index_t >& adjacents ) ;
 
         void set_region_geometry(
             index_t region_id,
             const std::vector< index_t >& tet_corners ) ;
 
-    void set_region_element_geometry(
+        void set_region_element_geometry(
             index_t region_id,
             index_t cell_id,
             const std::vector< index_t >& corners ) ;
@@ -235,6 +235,7 @@ namespace RINGMesh {
          * @{
          */
 
+        void delete_entity_mesh( GME::gme_t E_id ) ;
         void delete_entity_vertices( GME::gme_t E_id, GEO::vector< index_t >& to_delete ) ;
         void delete_corner_vertex( index_t corner_id ) ;
         void delete_line_edges( index_t line_id, GEO::vector< index_t >& to_delete ) ;
