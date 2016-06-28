@@ -1339,6 +1339,7 @@ namespace RINGMesh {
 
     void RINGMeshApplication::draw_scene()
     {
+        if( !GM_ ) return ;
         if( white_bg_ ) {
             GM_gfx_.surfaces.GeoModelGfxManager::set_mesh_element_color( 0.9f, 0.9f, 0.9f ) ;
 
