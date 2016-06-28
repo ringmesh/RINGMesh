@@ -40,16 +40,8 @@
 
 #ifdef RINGMESH_WITH_GRAPHICS
 
-#include <geogram/basic/factory.h>
-#include <geogram/basic/command_line.h>
-
 #include <geogram_gfx/glup_viewer/glup_viewer_gui.h>
-#include <geogram_gfx/mesh/mesh_gfx.h>
 
-#include <ringmesh/geo_model.h>
-
-#include <ringmesh/geo_model.h>
-#include <ringmesh/geo_model.h>
 /*!
  * @file Classes for GeoModel visualization
  * @author Benjamin Chauvin and Arnaud Botella
