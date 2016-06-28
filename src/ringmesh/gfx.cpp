@@ -1166,6 +1166,7 @@ namespace RINGMesh {
         show_voi_ = true ;
         show_colored_regions_ = false ;
         show_colored_layers_ = false ;
+        show_colormap_ = false ;
 
         shrink_ = 0.0 ;
         mesh_visible_ = true ;
@@ -1221,6 +1222,7 @@ namespace RINGMesh {
         glup_viewer_add_toggle( 'v', &show_volume_, "toggle volume" ) ;
         glup_viewer_add_toggle( 'V', &show_voi_, "toggle VOI" ) ;
         glup_viewer_add_toggle( 'm', &mesh_visible_, "mesh" ) ;
+        glup_viewer_add_toggle( 'M', &show_colormap_, "colormap" ) ;
         glup_viewer_add_key_func( 'x', increment_shrink, "shrink cells" ) ;
         glup_viewer_add_key_func( 'X', decrement_shrink, "unshrink cells" ) ;
         glup_viewer_add_key_func( 'C', toggle_colored_cells,
@@ -1361,7 +1363,9 @@ namespace RINGMesh {
 
         if( show_attributes_ ) {
             GM_gfx_.attribute.bind_attribute() ;
-            draw_colormap() ;
+            if( show_colormap_ ) {
+                draw_colormap() ;
+            }
         } else {
             GM_gfx_.attribute.unbind_attribute() ;
         }
@@ -1504,6 +1508,7 @@ namespace RINGMesh {
                 }
                 ImGui::EndPopup() ;
             }
+            ImGui::Checkbox( "Colormap [M]", &show_colormap_ ) ;
         }
 
         ImGui::Separator() ;

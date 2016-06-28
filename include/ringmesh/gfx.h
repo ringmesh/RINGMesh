@@ -323,6 +323,7 @@ namespace RINGMesh {
         bool show_voi_ ;
         bool show_colored_regions_ ;
         bool show_colored_layers_ ;
+        bool show_colormap_ ;
 
         float shrink_ ;
         bool mesh_visible_ ;
