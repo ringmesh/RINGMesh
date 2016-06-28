@@ -602,6 +602,12 @@ namespace RINGMesh {
         void clear( bool keep_attributes, bool keep_memory )
         {
             mesh_.mesh_->clear( keep_attributes, keep_memory ) ;
+            delete_vertex_colocater() ;
+            delete_edge_colocater() ;
+            delete_facet_aabb() ;
+            delete_facet_colocater() ;
+            delete_cell_aabb() ;
+            delete_cell_colocater() ;
         }
         /**
          * \brief Fixes some defaults in a mesh.
