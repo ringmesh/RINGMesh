@@ -50,6 +50,7 @@
 #include <geogram_gfx/third_party/quicktext/glQuickText.h>
 
 #include <ringmesh/command_line.h>
+#include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_entity.h>
 #include <ringmesh/io.h>
 
