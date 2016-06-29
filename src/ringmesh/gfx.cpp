@@ -1235,6 +1235,7 @@ namespace RINGMesh {
 
         init_colormaps() ;
         GM_gfx_.attribute.set_colormap( colormaps_[0].texture ) ;
+        glup_viewer_disable( GLUP_VIEWER_BACKGROUND ) ;
     }
 
     void RINGMeshApplication::increment_shrink()
