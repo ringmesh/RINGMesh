@@ -43,12 +43,22 @@
  *
  */
 
-#ifndef __GEOGRAM_GFX_GLUP_GLUP_CONTEXT__
-#define __GEOGRAM_GFX_GLUP_GLUP_CONTEXT__
+#ifndef GEOGRAM_GFX_GLUP_GLUP_CONTEXT
+#define GEOGRAM_GFX_GLUP_GLUP_CONTEXT
 
 #include <geogram_gfx/basic/common.h>
 #include <geogram_gfx/GLUP/GLUP.h>
 #include <geogram_gfx/GLUP/GLUP_marching_cells.h>
+
+// Uncomment to activate OpenGL error reporting for
+// each call to GLUP functions.
+// #define GLUP_DEBUG
+
+#ifdef GLUP_DEBUG
+#define GEO_CHECK_GLUP() ::GEO::check_gl(__FILE__,__LINE__)
+#else
+#define GEO_CHECK_GLUP() 
+#endif
 
 /**
  * \file geogram_gfx/GLUP/GLUP_context.h
@@ -81,7 +91,7 @@ namespace GLUP {
     /**
      * \brief Computes the product of two 4x4 matrices
      * \param[out] out the computed product \p m1 * \p m2
-     * \param[in] m1,m2 pointers to the input matrices
+     * \param[in] m1 , m2 pointers to the input matrices
      */
     void mult_matrices(
         GLfloat out[16], const GLfloat m1[16], const GLfloat m2[16]
@@ -90,7 +100,7 @@ namespace GLUP {
     /**
      * \brief Computes the product of two 4x4 matrices
      * \param[out] out the computed product \p m1 * \p m2
-     * \param[in] m1,m2 pointers to the input matrices
+     * \param[in] m1 , m2 pointers to the input matrices
      */
     void mult_matrices(
         GLdouble out[16], const GLdouble m1[16], const GLdouble m2[16]
@@ -101,6 +111,8 @@ namespace GLUP {
      * \param[out] out the computed product \p m * \p v
      * \param[in] m pointer to the input matrix
      * \param[in] v pointer to the input vector
+     * \TODO: it seems that in GLSL, w = M*v uses the transpose form,
+     *   maybe I should change the names !!
      */
     void mult_matrix_vector(
         GLfloat out[4], const GLfloat m[16], const GLfloat v[4]
@@ -113,10 +125,25 @@ namespace GLUP {
      * \param[out] out the computed product \p m * \p v
      * \param[in] m pointer to the input matrix
      * \param[in] v pointer to the input vector
-     * \TODO: it seems that in GLSL, w = M*v uses this one !!
+     * \TODO: it seems that in GLSL, w = M*v uses this one, maybe
+     *  I should change the names !!
      */
     void mult_transpose_matrix_vector(
         GLfloat out[4], const GLfloat m[16], const GLfloat v[4]
+    );
+
+
+    /**
+     * \brief Computes the product of the transpose of a 
+     *   4x4 matrix and a vector.
+     * \param[out] out the computed product \p m * \p v
+     * \param[in] m pointer to the input matrix
+     * \param[in] v pointer to the input vector
+     * \TODO: it seems that in GLSL, w = M*v uses this one, maybe
+     *  I should change the names !!
+     */
+    void mult_transpose_matrix_vector(
+        GLdouble out[4], const GLdouble m[16], const GLdouble v[4]
     );
     
     /**
@@ -287,8 +314,10 @@ namespace GLUP {
     /**
      * \brief Number of vertices/colors/tex_coords in a GLUP buffer used
      *  by immediate mode.
+     * \details Chosen in such a way that indices in there can be stored
+     *  in two bytes.
      */
-    static const index_t IMMEDIATE_BUFFER_SIZE = 1024*1024/16;
+    static const index_t IMMEDIATE_BUFFER_SIZE = 65536;
 
     /**
      * \brief Index of an ImmediateBuffer in the ImmediateState.
@@ -314,7 +343,6 @@ namespace GLUP {
             dimension_(0),
             is_enabled_(false),
             VBO_(0) {
-            initialize(4); // TODO
         }
 
         /**
@@ -359,7 +387,7 @@ namespace GLUP {
         
         /**
          * \brief Sets the current attribute value.
-         * \param[in] x,y,z,w the component of the current attribute
+         * \param[in] x , y , z , w the component of the current attribute
          * \details Components past the dimension of the attribute
          *   are ignored (e.g., if dimension is 2, z and w are ignored).
          */
@@ -441,6 +469,26 @@ namespace GLUP {
         GLuint& VBO() {
             return VBO_;
         }
+
+        /**
+         * \brief ImmediateBuffer copy constructor.
+         * \param[in] rhs the ImmediateBuffer to be copied
+         * \details Should be only called with uninitialized ImmediateBuffer
+         *  (else triggers an assertion failure).
+         */
+        ImmediateBuffer(
+            const ImmediateBuffer& rhs
+        ) {
+            data_ = rhs.data_;
+            dimension_ = rhs.dimension_;
+            is_enabled_ = rhs.is_enabled_;
+            VBO_ = rhs.VBO_;
+            current_[0] = rhs.current_[0];
+            current_[1] = rhs.current_[1];
+            current_[2] = rhs.current_[2];
+            current_[3] = rhs.current_[3];
+            geo_assert(data_ == nil);
+        }
         
     private:
         GLfloat* data_;
@@ -460,12 +508,12 @@ namespace GLUP {
          * \brief ImmediateState constructor.
          */
         ImmediateState() :
+            buffer(3),
             current_vertex_(0),
             max_current_vertex_(0),
             primitive_(GLUP_POINTS),
             VAO_(0) {
             
-            buffer.resize(3);
             buffer[GLUP_VERTEX_ATTRIBUTE].initialize(4);
             buffer[GLUP_COLOR_ATTRIBUTE].initialize(4);
             buffer[GLUP_TEX_COORD_ATTRIBUTE].initialize(4);
@@ -479,7 +527,7 @@ namespace GLUP {
          */
         ~ImmediateState() {
             if(VAO_ != 0) {
-                glDeleteVertexArrays(1, &VAO_);
+                glupDeleteVertexArrays(1, &VAO_);
                 VAO_ = 0;
             }
         }
@@ -854,6 +902,7 @@ namespace GLUP {
         vector< VectorStateVariable>       color;
         VectorStateVariable                light_vector;
         VectorStateVariable                light_half_vector;
+        StateVariable<GLfloat>             point_size;
         StateVariable<GLfloat>             mesh_width;
         StateVariable<GLfloat>             cells_shrink;
         StateVariable<GLint>               picking_mode;
@@ -878,14 +927,18 @@ namespace GLUP {
      */
     struct PrimitiveInfo {
 
-        static const index_t nb_toggles_configs = 33;
+        static const index_t nb_toggles_configs = 65;
         
         /**
          * \brief PrimitiveInfo constructor.
          */
         PrimitiveInfo():
             GL_primitive(0),
-            vertex_gather_mode_VAO(0),
+            VAO(0),
+            elements_VBO(0),
+            tex_coords_VBO(0),
+            nb_elements_per_primitive(0),
+            primitive_elements(nil),
             vertex_gather_mode(false),
             implemented(false) {
             for(index_t i=0; i<nb_toggles_configs; ++i) {
@@ -894,6 +947,29 @@ namespace GLUP {
             }
         }
 
+        /**
+         * \brief PrimitiveInfo copy constructor.
+         * \param[in] rhs the PrimitiveInfo to be copied.
+         * \details Should be only called with uninitialized PrimitiveInfo
+         *  (else triggers an assertion failure).
+         */
+        PrimitiveInfo(const PrimitiveInfo& rhs) {
+            GL_primitive = rhs.GL_primitive;
+            VAO = rhs.VAO;
+            elements_VBO = rhs.elements_VBO;
+            tex_coords_VBO = rhs.tex_coords_VBO;
+            nb_elements_per_primitive = rhs.nb_elements_per_primitive;
+            primitive_elements = rhs.primitive_elements;
+            vertex_gather_mode = rhs.vertex_gather_mode;
+            implemented = rhs.implemented;
+            for(index_t i=0; i<nb_toggles_configs; ++i) {
+                program[i] = rhs.program[i];
+                program_initialized[i] = rhs.program_initialized[i];
+            }
+            geo_assert(GL_primitive == 0);
+            geo_assert(nb_elements_per_primitive == 0);
+        }
+        
         /**
          * \brief PrimitiveInfo destructor.
          * \details Deletes the programs and vertex array object if need be.
@@ -905,16 +981,26 @@ namespace GLUP {
                     program[i] = 0;
                 }
             }
-            if(vertex_gather_mode_VAO != 0) {
-                glDeleteVertexArrays(1,&vertex_gather_mode_VAO);
-                vertex_gather_mode_VAO = 0;
+            if(elements_VBO != 0) {
+                glDeleteBuffers(1, &elements_VBO);
+            }
+            if(tex_coords_VBO != 0) {
+                glDeleteBuffers(1, &tex_coords_VBO);
+            }
+            if(VAO != 0) {
+                glupDeleteVertexArrays(1,&VAO);
+                VAO = 0;
             }
         }
         
         GLenum GL_primitive;
         GLuint program[nb_toggles_configs];
         bool program_initialized[nb_toggles_configs];
-        GLuint vertex_gather_mode_VAO;
+        GLuint VAO;
+        GLuint elements_VBO;
+        GLuint tex_coords_VBO; // Used to draw mesh
+        index_t nb_elements_per_primitive;
+        index_t* primitive_elements;
         bool vertex_gather_mode;
         bool implemented;
     };
@@ -974,7 +1060,7 @@ namespace GLUP {
         /**
          * \brief Copies the relevant variables from OpenGL 
          *  fixed functionality pipeline to this GLUP context.
-         * \param[in] which_attribute an '|'-combination of 
+         * \param[in] which_attributes an '|'-combination of 
          *  GLUP_MATRICES_ATTRIBUTES_BIT, GLUP_COLORS_ATTRIBUTES_BIT,
          *  GLUP_LIGHTING_ATTRIBUTES_BIT, GLUP_CLIPPING_ATTRIBUTES_BIT or
          *  GLUP_ALL_ATTRIBUTES.
@@ -985,7 +1071,7 @@ namespace GLUP {
         /**
          * \brief Copies the relevant variables from this GLUP
          *  context to OpenGL fixed functionality pipeline.
-         * \param[in] which_attribute an '|'-combination of 
+         * \param[in] which_attributes an '|'-combination of 
          *  GLUP_MATRICES_ATTRIBUTES_BIT, GLUP_COLORS_ATTRIBUTES_BIT,
          *  GLUP_LIGHTING_ATTRIBUTES_BIT, GLUP_CLIPPING_ATTRIBUTES_BIT or
          *  GLUP_ALL_ATTRIBUTES.
@@ -1009,7 +1095,7 @@ namespace GLUP {
          */
         void load_matrix(const GLfloat m[16]) {
             copy_vector(matrix_stack_[matrix_mode_].top(), m, 16);
-            matrices_dirty_ = true;
+            flag_matrices_as_dirty();
         }
 
         /**
@@ -1018,7 +1104,7 @@ namespace GLUP {
          */
         void load_identity() {
             load_identity_matrix(matrix_stack_[matrix_mode_].top());
-            matrices_dirty_ = true;
+            flag_matrices_as_dirty();            
         }
 
         /**
@@ -1048,7 +1134,7 @@ namespace GLUP {
          */
         void pop_matrix() {
             matrix_stack_[matrix_mode_].pop();
-            matrices_dirty_ = true;
+            flag_matrices_as_dirty();
         }
         
         /**
@@ -1073,7 +1159,7 @@ namespace GLUP {
         /**
          * \brief Creates a new vertex in the immediate mode
          *  buffers.
-         * \param[in] x,y,z,w the coordinates of the vertex
+         * \param[in] x , y , z , w the coordinates of the vertex
          * \details The color and texture coordinates of the new
          *  vertex are initialized from the current color and 
          *  current texture coordinates.
@@ -1091,7 +1177,7 @@ namespace GLUP {
         /**
          * \brief Specifies the current color for the immediate
          *  mode buffers.
-         * \param[in] r,g,b,a the components of the current color.
+         * \param[in] r , g , b , a the components of the current color.
          */
         void immediate_color(
             GLfloat r, GLfloat g, GLfloat b, GLfloat a = 1.0f
@@ -1102,7 +1188,7 @@ namespace GLUP {
         /**
          * \brief Specifies the current texture coordinates for the
          *  immediate mode buffers.
-         * \param[in] s,t,u,v the current texture coordinates.
+         * \param[in] s , t , u , v the current texture coordinates.
          */
         void immediate_tex_coord(
             GLfloat s, GLfloat t=0.0f, GLfloat u=0.0f, GLfloat v=1.0f
@@ -1170,7 +1256,7 @@ namespace GLUP {
          * \brief Gets a pointer to the representation of a uniform
          *  state variable in host memory from its (unqualified) name.
          * \param[in] name the name of the variable, without the suffix
-         *   "GLUPStateBlock." (it is added internally by the function)
+         *   "GLUPStateBlock." 
          * \return a pointer to where the variable is represented in
          *  client side.
          */
@@ -1207,9 +1293,18 @@ namespace GLUP {
          *  needs to be recomputed.
          */
         void flag_lighting_as_dirty() {
+            uniform_buffer_dirty_ = true;            
             lighting_dirty_ = true;
         }
 
+        /**
+         * \brief Indicates that cached matrix information 
+         *  needs to be recomputed.
+         */
+        void flag_matrices_as_dirty() {
+            uniform_buffer_dirty_ = true;            
+            matrices_dirty_ = true;
+        }
 
         /**
          * \brief Gets a pointer to the values of the matrix at the
@@ -1224,6 +1319,17 @@ namespace GLUP {
 
     protected:
 
+        /**
+         * \brief Tests whether an OpenGL extension is supported.
+         * \param[in] extension the name fo the extension to be tested.
+         * \details This function needs to be called before starting using
+         *   the extension, even if you are sure that it is supported. In
+         *   particular, WebGL specification requires that.
+         * \return true if the extension is supported.
+         * \return false otherwise.
+         */
+        bool extension_is_supported(const std::string& extension);
+        
         /**
          * \brief Gets the name of a primitive by GLUPprimitive.
          * \param[in] prim a GLUPprimitive
@@ -1250,6 +1356,16 @@ namespace GLUP {
          *  to be specified to OpenGL.
          */
         virtual void prepare_to_draw(GLUPprimitive primitive);
+
+
+        /**
+         * \brief This function is called right after 
+         *  rendering primitives. It is called by end(), draw_arrays()
+         *  and draw_elements().
+         * \details Default implementation does nothing. This function
+         *  is meant to be overloaded by derived Context classes.
+         */
+        virtual void done_draw(GLUPprimitive primitive);
         
         /**
          * \brief Initializes the representation of the uniform state.
@@ -1325,9 +1441,12 @@ namespace GLUP {
          * \param[in] glup_primitive the GLUP primitive.
          * \param[in] gl_primitive the GL primitive used by the implementation
          * \param[in] program the GLSL program used by the implementation
+         * \param[in] bind_attrib_loc_and_link if true, binds attribute location
+         *  and links the shader
          */
-        void set_primitive_info(
-            GLUPprimitive glup_primitive, GLenum gl_primitive, GLuint program
+        virtual void set_primitive_info(
+            GLUPprimitive glup_primitive, GLenum gl_primitive, GLuint program,
+            bool bind_attrib_loc_and_link = true
         );
 
         /**
@@ -1344,8 +1463,39 @@ namespace GLUP {
          *   be a divisor of the number of vertices of the GLUP primitive.
          * \param[in] program the GLSL program used by the implementation
          */
-        void set_primitive_info_vertex_gather_mode(
+        virtual void set_primitive_info_vertex_gather_mode(
             GLUPprimitive glup_primitive, GLenum gl_primitive, GLuint program
+        );
+
+        /**
+         * \brief Initializes the PrimitiveInfo associated with a 
+         *  given GLUP primitive in immediate mode when an element index
+         *  buffer is required.
+         * \details An element index buffer is required when geometry
+         *  shaders are not supported, for instance when using OpenGL ES in
+         *  webGL.
+         * \param[in] glup_primitive the GLUP primitive.
+         * \param[in] gl_primitive the GL primitive used to display the GLUP
+         *   primitive. 
+         * \param[in] program the GLSL program used by the implementation.
+         * \param[in] nb_elements_per_glup_primitive the number of element
+         *  indices for each glup primitive. For instance, when drawing
+         *  GLUP tetrahedra using OpenGL triangles, there are 4*3 = 12
+         *  elements per primitive.
+         * \param[in] element_indices a pointer to an array of 
+         *  nb_elements_per_glup_primitive integers that encode the
+         *  indexing of one element. This array is replicated and shifted
+         *  to generate the element index buffer.
+         * \param[in] tex_coords an optional array of 
+         *   4*nb_vertices_per_primitive(glup_primitive) floats. This array
+         *   will be replicated to specify the texture coordinates used to
+         *   display the mesh superimposed when mesh is active.
+         */
+        virtual void set_primitive_info_immediate_index_mode(
+            GLUPprimitive glup_primitive, GLenum gl_primitive, GLuint program,
+            index_t nb_elements_per_glup_primitive,
+            index_t* element_indices,
+            GLUPfloat* tex_coords=0
         );
         
         /**
@@ -1354,22 +1504,34 @@ namespace GLUP {
         virtual void flush_immediate_buffers();
             
         /**
-         * \brief Copies GLUP uniform state to OpenGL.
+         * \brief Copies GLUP uniform state to OpenGL
+         *  if required.
          */
-        void update_uniform_buffer();
+        void update_uniform_buffer() {
+            if(uniform_buffer_dirty_) {
+                do_update_uniform_buffer();
+            }
+        }
 
+        /**
+         * \brief Copies GLUP uniform state to OpenGL.
+         * \details This is the implementation of 
+         *  update_uniform_buffer().
+         */
+        virtual void do_update_uniform_buffer();
+        
         /**
          * \brief Updates the matrices in the uniform state
          *  from the matrices in the stacks.
          */
-        void update_matrices();
+        virtual void update_matrices();
 
         /**
          * \brief Updates the lighting in the uniform state.
          * \details Computes the half vector from the lighting
          *  vector.
          */
-        void update_lighting();
+        virtual void update_lighting();
 
         /**
          * \brief Updates the base picking id and sends it to
@@ -1391,6 +1553,20 @@ namespace GLUP {
             return toggles_shader_source_.c_str();
         }
 
+        /**
+         * \brief Gets the GLSL declaration of the functions that
+         *   query the known state of the toggles.
+         * \details The generated functions do not query the state,
+         *   and return true if the corresponding toggle is maybe
+         *   enabled (i.e., not known to be disabled).
+         * \see setup_shaders_source_for_toggles()
+         * \return a const char pointer to the GLSL declaration.
+         */
+        const char* potential_toggles_declaration() const {
+            return potential_toggles_shader_source_.c_str();
+        }
+
+        
         /**
          * \brief Gets the GLSL declaration  of the constant that
          *  indicates the current primitive.
@@ -1424,7 +1600,7 @@ namespace GLUP {
             index_t toggles_config
         ) {
             if(toggles_config == (1 << GLUP_PICKING)) {
-                geo_debug_assert(toggles_config == 32);
+                geo_debug_assert(toggles_config == 64);
                 setup_shaders_source_for_toggles(
                     (1 << GLUP_PICKING),  // picking=true
                     (1 << GLUP_CLIPPING)  // clipping=undecided (use state)
@@ -1447,6 +1623,152 @@ namespace GLUP {
          * \param[in] primitive the primitive to be displayed
          */
         void create_program_if_needed(GLUPprimitive primitive);
+
+        /**
+         * \brief Shrinks the cells in the immediate buffer.
+         * \details Applies the shrinking factor (state variable
+         *   "cells_shrink") to all the cells stored in the current
+         *   immediate buffer. Since there is no function to query
+         *   the content of the current buffer, modidying it is 
+         *   acceptable. This function is used by derived classes
+         *   (VanillaGL and ES2) that cannot shrink the cells 
+         *   with a shader.
+         */
+        void shrink_cells_in_immediate_buffers();
+
+        /**
+         * \brief Creates a buffer for uniform variables for
+         *  implementations that do not support uniform buffer
+         *  objects.
+         * \details This function is uses by VanillaGL and ES2.
+         */
+        void create_CPU_side_uniform_buffer();
+
+
+        /**
+         * \brief Binds the VBOs associated with the immediate
+         *  state buffers to the currently bound VAO.
+         */
+        void bind_immediate_state_buffers_to_VAO();
+
+        /**
+         * \brief Updates v_is_visible_[] according to
+         *  current clipping plane.
+         * \details Used by implementations of Context that
+         *  do not support clipping by shaders (VanillaGL and
+         *  ES2).
+         */
+        void classify_vertices_in_immediate_buffers();
+
+        /**
+         * \brief Tests whether the cell starting at a given vertex
+         *  in the immediate buffer is clipped, according to current
+         *  clipping mode and current primitive type.
+         * \param[in] first_v index of the first vertex of the cell in
+         *  the immediate buffer
+         * \retval true if the cell starting at \p first_v in the 
+         *  immediate buffer is clipped-out
+         * \retval false otherwise
+         */
+        bool cell_is_clipped(index_t first_v);
+
+
+        /**
+         * \brief Assemble the configuration code of a primitive
+         *  relative to the clipping plane.
+         * \param[in] first_v index of the first vertex of the 
+         *  primitive in the immediate buffer
+         * \param[in] nb_v number of vertices of the primitive
+         * \return an integer with the i-th bit set if vertex i
+         *  is visible, and unset if it is clipped.
+         */
+        index_t get_config(index_t first_v, index_t nb_v) {
+            index_t result = 0;
+            for(index_t lv=0; lv<nb_v; ++lv) {
+                if(v_is_visible_[first_v+lv]) {
+                    result = result | (1u << lv);
+                }
+            }
+            return result;
+        }
+
+        /**
+         * \brief Computes the intersection between the clipping plane and
+         *  a segment.
+         * \param[in] v1 index of the first extremity of the segment in the
+         *  immediate buffer
+         * \param[in] v2 index of the second extremity of the segment in the
+         *  immediate buffer
+         * \param[in] vi index of where to wrote the intersection in the 
+         *  isect_xxx arrays
+         */
+        void compute_intersection(index_t v1, index_t v2, index_t vi) {
+            const GLUPfloat* eqn = world_clip_plane_;
+            const GLUPfloat* p1 = immediate_state_.buffer[0].element_ptr(v1);
+            const GLUPfloat* p2 = immediate_state_.buffer[0].element_ptr(v2);
+            
+            GLUPfloat t = -eqn[3] -(
+                eqn[0]*p1[0] +
+                eqn[1]*p1[1] +
+                eqn[2]*p1[2]
+            );
+
+            GLUPfloat d =
+                eqn[0]*(p2[0]-p1[0]) +
+                eqn[1]*(p2[1]-p1[1]) +
+                eqn[2]*(p2[2]-p1[2]) ;
+            
+            if(fabs(double(d)) < 1e-6) {
+                t = 0.5f;
+            } else {
+                t /= d;
+            }
+
+            GLUPfloat s = 1.0f - t;
+            
+            isect_vertex_attribute_[0][4*vi+0] = s*p1[0] + t*p2[0];
+            isect_vertex_attribute_[0][4*vi+1] = s*p1[1] + t*p2[1];
+            isect_vertex_attribute_[0][4*vi+2] = s*p1[2] + t*p2[2];
+            isect_vertex_attribute_[0][4*vi+3] = 1.0f;
+
+            for(index_t i=1; i<3; ++i) {
+                if(immediate_state_.buffer[i].is_enabled()) {
+                    const GLUPfloat* a1 =
+                        immediate_state_.buffer[i].element_ptr(v1);
+                    const GLUPfloat* a2 =
+                        immediate_state_.buffer[i].element_ptr(v2);
+                    isect_vertex_attribute_[i][4*vi+0] = s*a1[0] + t*a2[0];
+                    isect_vertex_attribute_[i][4*vi+1] = s*a1[1] + t*a2[1];
+                    isect_vertex_attribute_[i][4*vi+2] = s*a1[2] + t*a2[2];
+                    isect_vertex_attribute_[i][4*vi+3] = s*a1[3] + t*a2[3]; 
+                }
+            }
+        }
+        
+        /**
+         * \brief Copies the uniform state from client-side 
+         *  memory into the currently bound program, or does
+         *  nothing if uniform buffer objects are supported.
+         */
+        virtual void copy_uniform_state_to_current_program();
+        
+        /**
+         * \brief A wrapper around glUseProgram that tests whether
+         *  uniform state needs to be sent to the program.
+         * \details Each time a different program is used, the
+         *  uniform state can be sent to it through the virtual
+         *  function update_program_state(). If UBOs are supported,
+         *  update_program_state() does nothing.
+         */
+        void use_program(GLuint program) {
+            if(program != 0 && program != latest_program_) {
+                glUseProgram(program);
+                latest_program_ = program;                
+                copy_uniform_state_to_current_program();
+            } else {
+                glUseProgram(program);
+            }
+        }
         
     protected:
         
@@ -1488,11 +1810,54 @@ namespace GLUP {
         
         index_t toggles_config_;
         std::string toggles_shader_source_;
-
+        std::string potential_toggles_shader_source_;
+        
         bool precompile_shaders_;
 
         bool use_core_profile_;
         bool use_ES_profile_;
+
+        /**
+         * \brief Cached pointer to uniform state variable.
+         * \details It is initialized by create_GPU_side_uniform_buffer(),
+         *  used only by VanillaGL and ES2 implementations.
+         */
+        GLUPfloat* world_clip_plane_;
+
+        /**
+         * \brief Used by GPU-side uniform buffer.
+         * \details It is initialized by create_GPU_side_uniform_buffer(),
+         *  used only by VanillaGL and ES2 implementations.
+         */
+        std::map<std::string, GLsizei> variable_to_offset_;
+
+        /**
+         * \brief Indicates for a given vertex whether it is clipped or
+         *  is visible, according to the current clipping plane.
+         * \details Used when clipping is done by software.
+         */
+        bool v_is_visible_[IMMEDIATE_BUFFER_SIZE];
+
+        /**
+         * \brief computed intersections.
+         * \details Used when clipping mode is GLUP_CLIP_SLICE_CELLS and
+         *  clipping is done by software.
+         */
+        GLUPfloat isect_vertex_attribute_[3][12*4];
+        
+        /**
+         * \brief Latest used GLSL program.
+         * \details Used to check whether it changed and whether some
+         *  uniform variables need to be sent to it.
+         */
+        GLuint latest_program_;
+
+        /**
+         * \brief Indicates whether this context uses a buffer
+         *  to store texture coordinates for drawing the mesh.
+         * \details It is used by GLUP_context_ES2
+         */
+        bool uses_mesh_tex_coord_;
     };
 
     /*********************************************************************/

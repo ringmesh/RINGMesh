@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_BASIC_ATTRIBUTES__
-#define __GEOGRAM_BASIC_ATTRIBUTES__
+#ifndef GEOGRAM_BASIC_ATTRIBUTES
+#define GEOGRAM_BASIC_ATTRIBUTES
 
 
 #include <geogram/basic/common.h>
@@ -141,6 +141,11 @@ namespace GEO {
     class GEOGRAM_API AttributeStoreCreator : public Counted {
     public:
 
+        /**
+         * \brief AttributeStoreCreator destructor.
+         */
+        virtual ~AttributeStoreCreator();
+        
         /**
          * \brief Creates a new attribute store.
          * \param[in] dimension number of elements in each item
@@ -265,7 +270,7 @@ namespace GEO {
          * data = data2 ;
          * \endcode
          * But it is done in-place.
-         * \param[in] permutation_in the permutation.
+         * \param[in] permutation the permutation.
          *  It is temporarily changed during execution of the
          *  function, but identical to the input on exit.
          * \note This function uses memcpy(). If required, it
@@ -628,7 +633,7 @@ namespace GEO {
             AttributeStore::register_attribute_creator(
                 new TypedAttributeStoreCreator<T>, type_name, typeid(T).name()
             );
-        };
+        }
     };
     
     /*********************************************************************/    
@@ -679,7 +684,7 @@ namespace GEO {
         /**
          * \brief Resizes all the attributes managed by this
          *  AttributesManager.
-         * \param(in] new_size the new number of items for
+         * \param[in] new_size the new number of items for
          *  all attributes.
          */
         void resize(index_t new_size);
@@ -704,7 +709,7 @@ namespace GEO {
          * \brief Binds an AttributeStore with the specified name.
          *  Ownership of this AttributeStore is transfered to
          *  the AttributesManager.
-         * \param[in] the name 
+         * \param[in] name the name 
          * \param[in] as a pointer to the AttributeStore to be bound
          * \pre No AttributeStore is already bound to the same name
          */
@@ -763,7 +768,7 @@ namespace GEO {
          * data = data2 ;
          * \endcode
          * But it is done in-place.
-         * \param[in] permutation_in the permutation.
+         * \param[in] permutation the permutation.
          *  It is temporarily changed during execution of the
          *  function, but identical to the input on exit.
          */
@@ -963,7 +968,7 @@ namespace GEO {
          *  fields are kept. If the new dimension is greater than 
          *  the old one, then new fields are initialized to the default
          *  value for the attribute type.
-         * \param[in] dim the new dimension
+         * \param[in] new_dim the new dimension
          */
         void redim(index_t new_dim) {
             geo_assert(is_bound());
@@ -1108,7 +1113,7 @@ namespace GEO {
          */
         T& operator[](unsigned int i) {
             geo_debug_assert(i < superclass::nb_elements());
-            return ((T*)superclass::base_addr_)[i];
+            return ((T*)(void*)superclass::base_addr_)[i];
         }
 
         /**
@@ -1118,7 +1123,7 @@ namespace GEO {
          */
         const T& operator[](unsigned int i) const {
             geo_debug_assert(i < superclass::nb_elements());
-            return ((const T*)superclass::base_addr_)[i];
+            return ((const T*)(void*)superclass::base_addr_)[i];
         }
 
         /**
@@ -1302,7 +1307,7 @@ namespace GEO {
          * \brief NotImplementedAttribute constructor
          * \details Throws an assertion failure
          */
-        NotImplementedAttribute() {
+        GEO_NORETURN_DECL NotImplementedAttribute() GEO_NORETURN {
             geo_assert_not_reached;
         }
 
@@ -1312,9 +1317,9 @@ namespace GEO {
          * \param[in] name the name of the attribute
          * \details Throws an assertion failure
          */
-        NotImplementedAttribute(
+        GEO_NORETURN_DECL NotImplementedAttribute(
             AttributesManager& manager, const std::string& name
-        ) {
+        ) GEO_NORETURN {
             geo_argused(manager);
             geo_argused(name);
             geo_assert_not_reached;
@@ -1425,7 +1430,9 @@ namespace GEO {
             ET_UINT32=3,
             ET_INT32=4,
             ET_FLOAT32=5,
-            ET_FLOAT64=6
+            ET_FLOAT64=6,
+            ET_VEC2=7,
+            ET_VEC3=8
         };
 
         /**
@@ -1529,7 +1536,7 @@ namespace GEO {
          *  elements.
          * \return one of ET_NONE (if unbound), ET_UINT8,
          *  ET_INT8, ET_UINT32, ET_INT32, ET_FLOAT32, 
-         *  ET_FLOAT64.
+         *  ET_FLOAT64, ET_VEC2, ET_VEC3
          */
         ElementType element_type() const {
             return element_type_;
@@ -1561,34 +1568,57 @@ namespace GEO {
          * \pre is_bound() && i < size()
          */
         double operator[](index_t i) {
+            double result = 0.0;
             switch(element_type_) {
             case ET_UINT8:
-                return get_element<Numeric::uint8>(i);
+                result = get_element<Numeric::uint8>(i);
+                break;
             case ET_INT8:
-                return get_element<Numeric::int8>(i);                
+                result = get_element<Numeric::int8>(i);
+                break;                
             case ET_UINT32:
-                return get_element<Numeric::uint32>(i);
+                result = get_element<Numeric::uint32>(i);
+                break;                
             case ET_INT32:
-                return get_element<Numeric::int32>(i);                
+                result = get_element<Numeric::int32>(i);
+                break;                
             case ET_FLOAT32:
-                return get_element<Numeric::float32>(i);                
+                result = get_element<Numeric::float32>(i);
+                break;                
             case ET_FLOAT64:
-                return get_element<Numeric::float64>(i);
-            default:
+                result = get_element<Numeric::float64>(i);
+                break;
+            case ET_VEC2:
+                result = get_element<Numeric::float64>(i,2);
+                break;
+            case ET_VEC3:
+                result = get_element<Numeric::float64>(i,3);
+                break;
+            case ET_NONE:
                 geo_assert_not_reached;
             }
-            return 0.0;
+            return result;
         }
 
         /**
          * \brief Tests whether a ReadOnlyScalarAttributeAdapter can
          *  be bound to a given attribute store.
+         * \param[in] store a pointer to the attribute store.
          * \retval true if it can be bound
          * \retval false otherwise
          */
         static bool can_be_bound_to(const AttributeStore* store) {
             return element_type(store) != ET_NONE;
         }
+
+        /**
+         * \brief Gets the number of scalar components per item in an
+         *  AttributeStore.
+         * \param[in] store a pointer to the attribute store.
+         * \return the number of scalar components per item in an
+         *  AttributeStore.
+         */
+        static index_t nb_scalar_elements_per_item(const AttributeStore* store);
         
     protected:
         /**
@@ -1620,12 +1650,21 @@ namespace GEO {
          */
         static ElementType element_type(const AttributeStore* store);
 
-        template <class T> double get_element(index_t i) {
+        /**
+         * \brief Gets an element.
+         * \param[in] i index of the element
+         * \param[in] multiplier multiplier applied to the index before fetching
+         *  the raw pointer.
+         */
+        template <class T> double get_element(index_t i, index_t multiplier=1) {
             geo_debug_assert(is_bound());
             geo_debug_assert(i < size());
-            return static_cast<const T*>(store_->data())[
-                i * store_->dimension() + element_index_
-            ];
+            return double(
+                static_cast<const T*>(store_->data())[
+                    (i * store_->dimension() * multiplier) +
+                    element_index_
+                    ]
+                );
         }
         
     private:

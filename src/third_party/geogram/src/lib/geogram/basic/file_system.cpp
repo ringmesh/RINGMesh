@@ -459,7 +459,18 @@ namespace GEO {
         }
 
         void GEOGRAM_API touch(const std::string& filename) {
-#ifdef GEO_OS_UNIX
+#ifdef GEO_OS_APPLE
+           {
+                struct stat buff;
+                int rc = stat(filename.c_str(), &buff); 
+                if(rc != 0) {  // FABIEN NOT SURE WE GET THE TOUCH
+                    Logger::err("FileSystem")
+                        << "Could not touch file:"
+                        << filename
+                        << std::endl;
+                }
+            }
+#elif defined(GEO_OS_UNIX)
             {
                 int rc = utimensat(
                     AT_FDCWD,

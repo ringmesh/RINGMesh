@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_MESH_MESH_DISTANCE__
-#define __GEOGRAM_MESH_MESH_DISTANCE__
+#ifndef GEOGRAM_MESH_MESH_DISTANCE
+#define GEOGRAM_MESH_MESH_DISTANCE
 
 #include <geogram/basic/common.h>
 
@@ -74,7 +74,7 @@ namespace GEO {
      *  \p m2 are used (line segments and volumetric cells are ignored).
      *  Note that the order of the mesh facets are changed.
      *
-     * \param[in] m1,m2 two surfacic meshes whose distance is computed
+     * \param[in] m1 , m2 two surfacic meshes whose distance is computed
      * \param[in] sampling_dist average distance between
      *  two samples (the smaller, the more accurate).
      *  At least all the vertices of m1 are sampled,
@@ -99,7 +99,7 @@ namespace GEO {
      *  \p m2 are used (line segments and volumetric cells are ignored).
      *  Note that the order of the mesh facets are changed.
      *
-     * \param[in] m1,m2 two surfacic meshes whose distance is computed
+     * \param[in] m1 , m2 two surfacic meshes whose distance is computed
      * \param[in] sampling_dist average distance between
      *  two samples (the smaller, the more accurate).
      *  At least all the vertices of m1 (resp. m2)

@@ -54,7 +54,7 @@ namespace GEO {
      * \param[in] type the expected destination type
      * \return a string that contains the error message
      */
-    std::string conversion_error(
+    static std::string conversion_error(
         const std::string& s, const std::string& type
     ) {
         std::ostringstream out;
@@ -175,7 +175,7 @@ namespace GEO {
             std::logic_error(conversion_error(s, type)) {
         }
 
-        const char* ConversionError::what() const throw () {
+        const char* ConversionError::what() const GEO_NOEXCEPT {
             return std::logic_error::what();
         }
     }

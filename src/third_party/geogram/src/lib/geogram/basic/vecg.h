@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_BASIC_VECG__
-#define __GEOGRAM_BASIC_VECG__
+#ifndef GEOGRAM_BASIC_VECG
+#define GEOGRAM_BASIC_VECG
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/numeric.h>
@@ -92,6 +92,16 @@ namespace GEO {
             }
         }
 
+        /**
+         * \brief vecng default copy constructor.
+         * \param[in] rhs a const reference to the vecng to be copied
+         */
+        vecng(const vecng<DIM,T>& rhs) {
+            for(index_t i = 0; i < DIM; i++) {
+                data_[i] = rhs.data_[i];
+            }
+        }
+        
         // This one should never be called :
         // a template constructor cannot be a copy constructor
 
@@ -538,7 +548,7 @@ namespace GEO {
 
         /**
          * \brief Constructs a vector from coordinates
-         * \param[in] x_in,y_in vector coordinates
+         * \param[in] x_in , y_in vector coordinates
          */
         vecng(T x_in, T y_in) :
             x(x_in),
@@ -734,7 +744,7 @@ namespace GEO {
 
         /**
          * \brief Constructs a vector from coordinates
-         * \param[in] x_in,y_in,z_in vector coordinates
+         * \param[in] x_in , y_in , z_in vector coordinates
          */
         vecng(T x_in, T y_in, T z_in) :
             x(x_in),
@@ -945,7 +955,7 @@ namespace GEO {
 
         /**
          * \brief Constructs a vector from coordinates
-         * \param[in] x_in,y_in,z_in,w_in vector coordinates
+         * \param[in] x_in , y_in , z_in , w_in vector coordinates
          */
         vecng(T x_in, T y_in, T z_in, T w_in) :
             x(x_in),

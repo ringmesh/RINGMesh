@@ -42,8 +42,8 @@
  *
  */
 
-#ifndef __NL_PRECONDITIONERS__
-#define __NL_PRECONDITIONERS__
+#ifndef OPENNL_PRECONDITIONERS_H
+#define OPENNL_PRECONDITIONERS_H
 
 #include "nl_private.h"
 

@@ -22,5 +22,9 @@ if(GEOGRAM_WITH_TETGEN)
     aux_source_directories(SOURCES "Source Files\\tetgen" tetgen)
 endif()
 
+if(GEOGRAM_WITH_TRIANGLE)
+    aux_source_directories(SOURCES "Source Files\\triangle" triangle)
+endif()
+
 add_library(geogram_third_party OBJECT ${SOURCES})
 

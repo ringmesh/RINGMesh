@@ -99,8 +99,9 @@ namespace RINGMesh {
 
     void RINGMESH_API rotate_mesh(
         GEO::Mesh& mesh,
-        const GEO::Matrix< float64, 4 >& rot_mat ) ;
+        const GEO::Matrix< double, 4 >& rot_mat ) ;
 
+    double RINGMESH_API mesh_cell_signed_volume( const GEO::Mesh& M, index_t c ) ;
     double RINGMESH_API mesh_cell_volume( const GEO::Mesh& M, index_t c ) ;
 
     vec3 RINGMESH_API mesh_cell_facet_center(
@@ -109,27 +110,6 @@ namespace RINGMesh {
         index_t f ) ;
 
     vec3 RINGMESH_API mesh_cell_center( const GEO::Mesh& M, index_t cell ) ;
-
-    bool RINGMESH_API has_edge(
-        const GEO::Mesh& mesh,
-        index_t t,
-        index_t p0,
-        index_t p1,
-        index_t& edge ) ;
-
-    index_t RINGMESH_API next_around_edge(
-        const GEO::Mesh& mesh,
-        index_t t,
-        index_t prev,
-        index_t p0,
-        index_t p1 ) ;
-
-    void RINGMESH_API edges_around_edge(
-        const GEO::Mesh& mesh,
-        index_t t,
-        index_t p0,
-        index_t p1,
-        std::vector< index_t >& result ) ;
 
     void RINGMESH_API divide_edge_in_parts(
         const GEO::Mesh& mesh,
@@ -214,7 +194,7 @@ namespace RINGMesh {
         }
     } ;
 
-    /*! 
+    /*!
      * @brief Typed attribute existence check
      */
     template< typename T >

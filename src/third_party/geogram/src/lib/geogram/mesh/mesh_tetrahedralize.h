@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_MESH_MESH_TETRAHEDRALIZE__
-#define __GEOGRAM_MESH_MESH_TETRAHEDRALIZE__
+#ifndef GEOGRAM_MESH_MESH_TETRAHEDRALIZE
+#define GEOGRAM_MESH_MESH_TETRAHEDRALIZE
 
 #include <geogram/basic/common.h>
 
@@ -70,7 +70,7 @@ namespace GEO {
      *  dangling borders / internal constraints).
      * \param [in] refine if true, inserts additional vertices to improve
      *  the quality of the mesh elements
-     * \param[in] quality, typically in [1.0, 2.0], specifies
+     * \param[in] quality typically in [1.0, 2.0], specifies
      *  the desired quality of mesh elements (1.0 means maximum
      *  quality, and generates a higher number of elements).
      * \retval true if the mesh was sucessfuly tetrahedralized

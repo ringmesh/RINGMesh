@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_VORONOI_GENERIC_RVD_VERTEX__
-#define __GEOGRAM_VORONOI_GENERIC_RVD_VERTEX__
+#ifndef GEOGRAM_VORONOI_GENERIC_RVD_VERTEX
+#define GEOGRAM_VORONOI_GENERIC_RVD_VERTEX
 
 #include <geogram/basic/common.h>
 #include <geogram/mesh/mesh.h>
@@ -428,7 +428,7 @@ namespace GEOGen {
         }
 
         /**
-         * \brief Creates a SymbolicVertex from another one.
+         * \brief SymbolicVertex copy constructor.
          * \param[in] rhs the SymbolicVertex used to initialize this one
          */
         SymbolicVertex(const SymbolicVertex& rhs) :
@@ -437,6 +437,18 @@ namespace GEOGen {
             v2_(rhs.v2_) {
         }
 
+        /**
+         * \brief Assignment operator.
+         * \param[in] rhs a const reference to the SymbolicVertex to be copied.
+         * \return a reference to this SymbolicVertex after assignment.
+         */
+        SymbolicVertex& operator=(const SymbolicVertex& rhs) {
+            baseclass::operator=(rhs);
+            v1_ = rhs.v1_;
+            v2_ = rhs.v2_;
+            return *this;
+        }
+        
         /**
          * \brief Adds a bisector to the symbolic representation.
          */

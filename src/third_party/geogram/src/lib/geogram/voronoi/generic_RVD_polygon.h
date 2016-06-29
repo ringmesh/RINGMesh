@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_VORONOI_GENERIC_RVD_POLYGON__
-#define __GEOGRAM_VORONOI_GENERIC_RVD_POLYGON__
+#ifndef GEOGRAM_VORONOI_GENERIC_RVD_POLYGON
+#define GEOGRAM_VORONOI_GENERIC_RVD_POLYGON
 
 #include <geogram/basic/common.h>
 #include <geogram/voronoi/generic_RVD_vertex.h>

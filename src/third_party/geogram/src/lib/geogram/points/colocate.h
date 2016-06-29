@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_POINTS_COLOCATE__
-#define __GEOGRAM_POINTS_COLOCATE__
+#ifndef GEOGRAM_POINTS_COLOCATE
+#define GEOGRAM_POINTS_COLOCATE
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/geometry.h>

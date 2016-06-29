@@ -1435,7 +1435,6 @@ namespace GEO {
                 return side1_7d_SOS(p0, p1, q0);
             }
             geo_assert_not_reached;
-            return ZERO;
         }
 
         Sign side2_SOS(
@@ -1455,7 +1454,6 @@ namespace GEO {
                 return side2_7d_SOS(p0, p1, p2, q0, q1);
             }
             geo_assert_not_reached;
-            return ZERO;
         }
 
         Sign side3_SOS(
@@ -1475,7 +1473,6 @@ namespace GEO {
                 return side3_7d_SOS(p0, p1, p2, p3, q0, q1, q2);
             }
             geo_assert_not_reached;
-            return ZERO;
         }
 
 
@@ -1518,7 +1515,6 @@ namespace GEO {
                 return side4_7d_SOS(p0, p1, p2, p3, p4, q0, q1, q2, q3);
             }
             geo_assert_not_reached;
-            return ZERO;
         }
 
 

@@ -65,7 +65,6 @@ namespace {
     void compute_sizing_field_lfs(
         Mesh& M, const LocalFeatureSize& LFS, double gradation
     ) {
-        Logger::out("LFS") << "Computing sizing field" << std::endl;
         Attribute<double> weight(M.vertices.attributes(),"weight");
         for(index_t v = 0; v < M.vertices.nb(); v++) {
             double lfs2 = LFS.squared_lfs(M.vertices.point_ptr(v));
@@ -243,6 +242,7 @@ namespace GEO {
             CVT.Newton_iterations(10);
             Logger::out("LFS") << "Computing medial axis" << std::endl;
             LocalFeatureSize LFS(CVT.nb_points(), CVT.embedding(0));
+            Logger::out("LFS") << "Computing sizing field" << std::endl;
             compute_sizing_field_lfs(M, LFS, gradation);
         } else {
             if(M.vertices.dimension() == 3) {

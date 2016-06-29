@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_MESH_MESH__
-#define __GEOGRAM_MESH_MESH__
+#ifndef GEOGRAM_MESH_MESH
+#define GEOGRAM_MESH_MESH
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/attributes.h>
@@ -110,7 +110,7 @@ namespace GEO {
         
         /**
          * \brief Removes all the elements and attributes.
-         * \param[in] keep_atributes if true, then all the
+         * \param[in] keep_attributes if true, then all the
          *  existing attribute names / bindings are kept (but 
          *  they are cleared). If false, they are destroyed.
          * \param[in] keep_memory if true, then memory is
@@ -250,7 +250,7 @@ namespace GEO {
 
         /**
          * \brief Removes all the elements and attributes.
-         * \param[in] keep_atributes if true, then all the
+         * \param[in] keep_attributes if true, then all the
          *  existing attribute names / bindings are kept (but 
          *  they are cleared). If false, they are destroyed.
          * \param[in] keep_memory if true, then memory is
@@ -668,7 +668,7 @@ namespace GEO {
         
         /**
          * \brief Creates a new edge
-         * \param[in] v1,v2 global index of the vertices of the edge
+         * \param[in] v1 , v2 global indices of the vertices of the edge
          * \return the index of the created edge
          */
         index_t create_edge(index_t v1, index_t v2) {
@@ -1018,8 +1018,8 @@ namespace GEO {
          * \brief Sets an adjacent facet by facet and local edge index
          * \param[in] f the facet
          * \param[in] le the local index of an edge in facet \p f
-         * \param[in] specifies the facet incident to \p f along edge \p le or 
-         *  NO_FACET if \p le is on the border
+         * \param[in] f2 specifies the facet incident to \p f along edge 
+         *  \p le or NO_FACET if \p le is on the border
          */
         void set_adjacent(index_t f, index_t le, index_t f2) {
             facet_corners_.set_adjacent_facet(corner(f,le),f2);
@@ -1114,7 +1114,7 @@ namespace GEO {
 
         /**
          * \brief Creates a triangle
-         * \param[in] v1,v2,v3 the vertices of the triangle
+         * \param[in] v1 , v2 , v3 the vertices of the triangle
          * \return the index of the created triangle
          */
         index_t create_triangle(index_t v1, index_t v2, index_t v3) {
@@ -1132,7 +1132,7 @@ namespace GEO {
 
         /**
          * \brief Creates a quad
-         * \param[in] v1,v2,v3,v4 the vertices of the quad
+         * \param[in] v1 , v2 , v3 , v4 the vertices of the quad
          * \return the index of the created quad
          */
         index_t create_quad(index_t v1, index_t v2, index_t v3, index_t v4) {
@@ -1438,9 +1438,9 @@ namespace GEO {
 
         /**
          * \brief Gets the upper limit for iterating over the
-         *  corners of a facet
-         * \param[in] f the facet
-         * \return one position past the last corner of the facet
+         *  corners of a cell
+         * \param[in] c the cell, in 0..nb()-1
+         * \return one position past the last corner of the cell
          */
         index_t corners_end(index_t c) const {
             geo_debug_assert(c < nb());            
@@ -1942,7 +1942,7 @@ namespace GEO {
 
         /**
          * \brief Creates a contiguous chunk of pyramids
-         * \param[in] nb_prisms number of pyramids to create
+         * \param[in] nb_pyramids number of pyramids to create
          * \return the first created pyramid
          */
         index_t create_pyramids(index_t nb_pyramids) {
@@ -1951,9 +1951,9 @@ namespace GEO {
 
         /**
          * \brief Creates a tetrahedron
-         * \param[in] v1,v2,v3,v4 the vertices of the tetrahedron,
+         * \param[in] v1 , v2 , v3 , v4 the vertices of the tetrahedron,
          *  all in 0 .. mesh.vertices.nb()-1
-         * \param[in] adj1, adj2, adj3, adj4 
+         * \param[in] adj1 , adj2 , adj3 , adj4 
          *  adjacent cells, or NO_CELL if unspecified / on border
          * \return the created tetrahedron
          */
@@ -1982,10 +1982,10 @@ namespace GEO {
 
         /**
          * \brief Creates an hexahedron
-         * \param[in] v1,v2,v3,v4,v5,v6,v7,v8 
+         * \param[in] v1 , v2 , v3 , v4 , v5 , v6 , v7 , v8 
          *  the vertices of the hexahedron,
          *  all in 0 .. mesh.vertices.nb()-1
-         * \param[in] adj1, adj2, adj3, adj4, adj5, adj6 
+         * \param[in] adj1 , adj2 , adj3 , adj4 , adj5 , adj6 
          *  adjacent cells, or NO_CELL if unspecified / on border
          * \return the created hexahedron
          */
@@ -2024,10 +2024,10 @@ namespace GEO {
 
         /**
          * \brief Creates a prism
-         * \param[in] v1,v2,v3,v4,v5,v6
+         * \param[in] v1 , v2 , v3 , v4 , v5 , v6
          *  the vertices of the prism
          *  all in 0 .. mesh.vertices.nb()-1
-         * \param[in] adj1, adj2, adj3, adj4, adj5
+         * \param[in] adj1 , adj2 , adj3 , adj4 , adj5
          *  adjacent cells, or NO_CELL if unspecified / on border
          * \return the created prism
          */
@@ -2062,10 +2062,10 @@ namespace GEO {
 
         /**
          * \brief Creates a pyramid
-         * \param[in] v1,v2,v3,v4,v5
+         * \param[in] v1 , v2 , v3 , v4 , v5
          *  the vertices of the pyramid
          *  all in 0 .. mesh.vertices.nb()-1
-         * \param[in] adj1, adj2, adj3, adj4, adj5
+         * \param[in] adj1 , adj2 , adj3 , adj4 , adj5
          *  adjacent cells, or NO_CELL if unspecified / on border
          * \return the created pyramid
          */
@@ -2099,10 +2099,10 @@ namespace GEO {
          * \details Connector are automatically
          *  created by connect() (most client codes
          *  do not use this function)
-         * \param[in] v1,v2,v3,v4
+         * \param[in] v1 , v2 , v3 , v4
          *  the vertices of the connector
          *  all in 0 .. mesh.vertices.nb()-1
-         * \param[in] adj1, adj2, adj3
+         * \param[in] adj1 , adj2 , adj3
          *  adjacent cells, or NO_CELL if unspecified / on border
          * \return the created connector
          */
@@ -2353,9 +2353,9 @@ namespace GEO {
          * \details Used to detect non-conformal configurations that should
          *  be resolved by a connector.
          * \param[in] c1 index of the first cell
-         * \param[in] f1 index of a triangular facet in \p c1
+         * \param[in] lf1 index of a triangular facet in \p c1
          * \param[in] c2 index of the second cell
-         * \param[in] f2 index of a quadrangular facet in \p c2
+         * \param[in] lf2 index of a quadrangular facet in \p c2
          * \retval true if the three vertices of \p f1 appear in \p f2
          *   in reverse order
          * \retval false otherwise
@@ -2474,7 +2474,7 @@ namespace GEO {
         /**
          * \brief Removes all the elements and attributes of
          *  this mesh.
-         * \param[in] keep_atributes if true, then all the
+         * \param[in] keep_attributes if true, then all the
          *  existing attribute names / bindings are kept (but 
          *  they are cleared). If false, they are destroyed.
          * \param[in] keep_memory if true, then memory is
@@ -2515,6 +2515,11 @@ namespace GEO {
             MeshElementsFlags what=MESH_ALL_ELEMENTS
         );
 
+        /**
+         * \brief Gets the list of all scalar attributes.
+         * \return a ';'-separated list of all scalar attributes.
+         */
+        std::string get_scalar_attributes() const;
 
         /**
          * \brief Gets the number of subelements types.
@@ -2570,10 +2575,12 @@ namespace GEO {
          * \param[in] name the name of the subelement as a string
          * \return one of MESH_VERTICES, MESH_EDGES, MESH_FACETS,
          *  MESH_FACET_CORNERS, MESH_CELLS, MESH_CELL_CORNERS, MESH_CELL_FACETS
+         *  or MESH_NONE if the name is invalid
          */
         static MeshElementsFlags name_to_subelements_type(
             const std::string& name
         );
+
         
     protected:
         /**

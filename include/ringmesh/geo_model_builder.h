@@ -37,37 +37,34 @@
 #define __RINGMESH_GEO_MODEL_BUILDER__
 
 #include <ringmesh/common.h>
-#include <third_party/zlib/unzip.h>
 
 #include <vector>
 #include <string>
 #include <stack>
 
 #include <geogram/basic/line_stream.h>
-
 #include <ringmesh/geo_model_editor.h>
+#include <third_party/zlib/unzip.h>
+
 #define MAX_FILENAME 512
 #define READ_SIZE 8192
+
 /*!
  * @file ringmesh/geo_model_builder.h
  * @brief Classes to build GeoModel from various inputs
  * @author Jeanne Pellerin
  */
 
-namespace GEO {
-    class Mesh ;
-}
-
 namespace RINGMesh {
     class GeoModelRegionFromSurfaces ;
-    class GeoModelElementFromMesh ;
+    class GeoModelEntityFromMesh ;
 }
 
 namespace RINGMesh {
     /*!
      * @brief First draft of flags to build a GeoModel
      * @todo Implements functions to set, access the values, depending on what ?
-     * To check the consistency of the options. What do we do about the other elements ? [JP] 
+     * To check the consistency of the options. What do we do about the other entities ? [JP] 
      * @todo We need to keep track of the status of the GeoModel when building it:
      * same flags or some others ?    
      */
@@ -112,28 +109,28 @@ namespace RINGMesh {
         }
 
         /*!
-         * @brief Copy all element meshes from the input geomodel
-         * @pre The model under construction has exaclty the same number of elements
+         * @brief Copy all entity meshes from the input geomodel
+         * @pre The model under construction has exaclty the same number of entities
          * than the input geomodel.
          */
         void copy_meshes( const GeoModel& from ) ;
 
-        void copy_meshes( const GeoModel& from, GME::TYPE element_type ) ;
+        void copy_meshes( const GeoModel& from, GME::TYPE entity_type ) ;
 
-        void assign_mesh_to_element( const GEO::Mesh& mesh, GME::gme_t to ) ;
+        void assign_mesh_to_entity( const Mesh& mesh, GME::gme_t to ) ;
 
         /*!
-         * \name Set element geometry from geometrical positions
+         * \name Set entity geometry from geometrical positions
          * @{
          */
-        void set_element_vertex(
-            const GME::gme_t& t,
+        void set_entity_vertex(
+            const GME::gme_t& entity_id,
             index_t v,
             const vec3& point,
             bool update ) ;
 
-        void set_element_vertices(
-            const GME::gme_t& element_id,
+        void set_entity_vertices(
+            const GME::gme_t& entity_id,
             const std::vector< vec3 >& points,
             bool clear ) ;
 
@@ -153,16 +150,16 @@ namespace RINGMesh {
             const std::vector< index_t >& tetras ) ;
 
         /*! @}
-         * \name Set element geometry using global GeoModel vertices
+         * \name Set entity geometry using global GeoModel vertices
          * @{
          */
-        void set_element_vertex(
+        void set_entity_vertex(
             const GME::gme_t& id,
             index_t v,
             index_t model_vertex ) ;
 
-        void set_element_vertices(
-            const GME::gme_t& element_id,
+        void set_entity_vertices(
+            const GME::gme_t& entity_id,
             const std::vector< index_t >& model_vertices,
             bool clear ) ;
 
@@ -192,22 +189,76 @@ namespace RINGMesh {
             const std::vector< index_t >& triangle_corners,
             const std::vector< index_t >& adjacent_triangles ) ;
 
+        void set_surface_element_geometry(
+            index_t surface_id,
+            index_t facet_id,
+            const std::vector< index_t >& corners ) ;
+
+        void set_surface_element_adjacency(
+            index_t surface_id,
+            index_t facet_id,
+            const std::vector< index_t >& adjacents ) ;
+
         void set_region_geometry(
             index_t region_id,
             const std::vector< index_t >& tet_corners ) ;
+
+        void set_region_element_geometry(
+            index_t region_id,
+            index_t cell_id,
+            const std::vector< index_t >& corners ) ;
+
+        /*! @}
+         * \name Create entity element
+         * @{
+         */
+
+        index_t create_entity_vertices(
+            const GME::gme_t& entity_id,
+            index_t nb_vertices ) ;
+
+        index_t create_surface_facet(
+            index_t surface_id,
+            const GEO::vector< index_t >& vertex_indices ) ;
+
+        index_t create_region_cell(
+            index_t region_id,
+            GEO::MeshCellType type,
+            const std::vector< index_t >& vertex_indices ) ;
+
+        index_t create_region_cells(
+            index_t region_id,
+            GEO::MeshCellType type,
+            index_t nb_cells ) ;
+
+        /*! @}
+         * \name Delete mesh element entities
+         * @{
+         */
+
+        void delete_entity_mesh( GME::gme_t E_id ) ;
+        void delete_entity_vertices( GME::gme_t E_id, GEO::vector< index_t >& to_delete ) ;
+        void delete_corner_vertex( index_t corner_id ) ;
+        void delete_line_edges( index_t line_id, GEO::vector< index_t >& to_delete ) ;
+        void delete_surface_facets( index_t surface_id, GEO::vector< index_t >& to_delete ) ;
+        void delete_region_cells( index_t region_id, GEO::vector< index_t >& to_delete ) ;
 
         /*! @}
          * \name Misc
          * @{
          */
         index_t find_or_create_duplicate_vertex(
-            GeoModelMeshElement& S,
+            const GME::gme_t& E_id,
             index_t model_vertex_id,
             index_t surface_vertex_id ) ;
 
-        void cut_surface_by_line( Surface& S, const Line& L ) ;
+        void cut_surface_by_line( index_t surface_id, index_t line_id ) ;
 
         void compute_surface_adjacencies( index_t surface_id ) ;
+        void compute_region_adjacencies( index_t region_id ) ;
+        void triangulate_surface(
+            const RINGMesh::Surface& surface_in,
+            index_t surface_out ) ;
 
         GME::gme_t find_or_create_corner( const vec3& point ) ;
         GME::gme_t find_or_create_corner( index_t model_point_id ) ;
@@ -249,9 +300,14 @@ namespace RINGMesh {
 
     protected:
         void build_contacts() ;
+        void set_surface_facet_adjacencies(
+                index_t surface_id,
+                const std::vector< index_t >& facets_id,
+                const std::vector< index_t >& edges_id,
+                const std::vector< index_t >& adjacent_triangles ) ;
 
     protected:
-        /*! Elements to compute from the available elements */
+        /*! Entities to compute from the available entities */
         GeoModelBuildingFlags options_ ;
 
         /*! Internal information */
@@ -266,7 +322,11 @@ namespace RINGMesh {
         void assign_surface_triangle_mesh(
             index_t surface_id,
             const std::vector< index_t >& triangle_vertices ) ;
-
+        void update_facet_corner(
+            Surface& S,
+            const std::vector< index_t >& facets,
+            index_t old,
+            index_t neu ) ;
         void assign_surface_triangle_mesh(
             index_t surface_id,
             const std::vector< index_t >& triangle_vertices,
@@ -274,12 +334,11 @@ namespace RINGMesh {
 
         void assign_region_tet_mesh(
             index_t region_id,
-            const std::vector< index_t >& tet_vertices ) const ;
+            const std::vector< index_t >& tet_vertices ) ;
 
-        void duplicate_surface_vertices_along_line( Surface& S, const Line& L ) ;
+        void duplicate_surface_vertices_along_line( index_t surface_id, index_t line_id ) ;
         void disconnect_surface_facets_along_line_edges(
-            Surface& S,
-            const Line& L ) ;
+            index_t surface_id, index_t line_id ) ;
     } ;
 
     /*!
@@ -361,8 +420,8 @@ namespace RINGMesh {
 
     protected:
         const GEO::Mesh& mesh_ ;
-        GeoModelElementFromMesh* surface_builder_ ;
-        GeoModelElementFromMesh* region_builder_ ;
+        GeoModelEntityFromMesh* surface_builder_ ;
+        GeoModelEntityFromMesh* region_builder_ ;
         std::string surface_attribute_name_ ;
         std::string region_attribute_name_ ;
         index_t nb_surface_attribute_values_ ;
@@ -387,7 +446,7 @@ namespace RINGMesh {
 
         ///TODO these are temporary protected here. after they will be only in GeoModelBuilderGM
     protected:
-        static GME::TYPE match_nb_elements( const char* s ) ;
+        static GME::TYPE match_nb_entities( const char* s ) ;
         static GME::TYPE match_type( const char* s ) ;
         static bool match_high_level_type( const char* s )
         {
@@ -411,6 +470,7 @@ namespace RINGMesh {
         GeoModelBuilderGocad( GeoModel& model, const std::string& filename )
             : GeoModelBuilderFile( model, filename ), file_line_( filename )
         {
+            options_.compute_lines = true ;
             if( !file_line_.OK() ) {
                 throw RINGMeshException( "I/O", "Failed to open file " + filename ) ;
             }
@@ -447,14 +507,6 @@ namespace RINGMesh {
             const vec3& p2,
             bool& same_orientation ) const ;
 
-        /*!
-         * Read the coordinates system information of files exported from Gocad.
-         * @param[in] in The orientation of z-axis in Gocad. "Elevation" for
-         * increasing z toward top and "Depth" for increasing z toward bottom.
-         * @return Return 1 if Elevation direction, -1 if Depth direction.
-         */
-        int read_gocad_coordinates_system( const std::string& in ) ;
-
     private:
         GEO::LineInput file_line_ ;
 
@@ -480,12 +532,8 @@ namespace RINGMesh {
      */
     class RINGMESH_API GeoModelBuilderBM: public GeoModelBuilderFile {
     public:
-        GeoModelBuilderBM(
-            GeoModel& model,
-            const std::string& filename )
-            :
-                GeoModelBuilderFile( model, filename ),
-                file_line_( filename )
+        GeoModelBuilderBM( GeoModel& model, const std::string& filename )
+            : GeoModelBuilderFile( model, filename ), file_line_( filename )
         {
             if( !file_line_.OK() ) {
                 throw RINGMeshException( "I/O", "Failed to open file " + filename ) ;
@@ -500,12 +548,11 @@ namespace RINGMesh {
 
     private:
         GEO::LineInput file_line_ ;
-
     } ;
 
     class RINGMESH_API GeoModelBuilderGM: public GeoModelBuilderFile {
     public:
-        GeoModelBuilderGM( GeoModel& model, const std::string& filename)
+        GeoModelBuilderGM( GeoModel& model, const std::string& filename )
             : GeoModelBuilderFile( model, filename )
         {
         }
@@ -520,18 +567,22 @@ namespace RINGMesh {
          * connected to regions
          */
         void load_connectivities( GEO::LineInput& file_line ) ;
+
         /*!
-         * @brief Load elements of one type from a zip file
-         * @param[in] gme_t the GeoModelElement type
+         * @brief Load entities of one type from a zip file
+         * @param[in] gme_t the GeoModelEntity type
          * @param[in] uz the zip file
          */
-        void load_elements( GME::TYPE gme_t, unzFile& uz ) ;
+        void load_entities( GME::TYPE gme_t, unzFile& uz ) ;
 
         void load_file() ;
+
+
         /*!
          * @brief Unzip a file in a zip file and set it to the current unZIP file
          */
         void unzip_one_file( unzFile& uz, const char filename[MAX_FILENAME] ) ;
+
 
         /*!
          * @brief Load the topology. Topology is how corners, lines, surfaces and

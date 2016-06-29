@@ -67,7 +67,7 @@ int main()
         output_file_name += "modelA4.gm" ;
         geomodel_save( model, output_file_name ) ;
 
-        // Check number of elements in the imported GeoModel (from TSolid file)
+        // Check number of entities in the imported GeoModel (from TSolid file)
         if( model.nb_corners() != 52 || model.nb_lines() != 98
             || model.nb_surfaces() != 55 || model.nb_regions() != 8
             || model.nb_interfaces() != 11 || model.nb_contacts() != 38

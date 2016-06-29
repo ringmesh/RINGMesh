@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_BASIC_ATOMICS__
-#define __GEOGRAM_BASIC_ATOMICS__
+#ifndef GEOGRAM_BASIC_ATOMICS
+#define GEOGRAM_BASIC_ATOMICS
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/numeric.h>
@@ -55,14 +55,29 @@
  */
 
 #ifdef GEO_OS_LINUX
-#  if defined(GEO_OS_ANDROID)
+#  if defined(GEO_OS_EMSCRIPTEN)
+#    define GEO_USE_DUMMY_ATOMICS
+#  elif defined(GEO_OS_ANDROID)
 #    define GEO_USE_ARM_ATOMICS
 #  else
 #    define GEO_USE_X86_ATOMICS
 #  endif
 #endif
 
-#if defined(GEO_USE_ARM_ATOMICS)
+#if defined(GEO_USE_DUMMY_ATOMICS)
+
+inline void geo_pause() {
+}
+
+inline char atomic_bittestandset_x86(volatile unsigned int*, unsigned int) {
+    return 0;
+}
+
+inline char atomic_bittestandreset_x86(volatile unsigned int*, unsigned int) {
+    return 0;
+}
+
+#elif defined(GEO_USE_ARM_ATOMICS)
 
 /** A mutex for ARM processors */
 typedef GEO::Numeric::uint32 arm_mutex_t;

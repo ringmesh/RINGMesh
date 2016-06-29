@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_GFX_MESH_GFX__
-#define __GEOGRAM_GFX_MESH_GFX__
+#ifndef GEOGRAM_GFX_MESH_GFX
+#define GEOGRAM_GFX_MESH_GFX
 
 #include <geogram_gfx/basic/common.h>
 #include <geogram_gfx/GLUP/GLUP.h>
@@ -289,7 +289,7 @@ namespace GEO {
         /**
          * \brief Sets the points color
          * \details Specifies the color used to display points
-         * \param[in] r,g,b the components of the points color,
+         * \param[in] r , g , b the components of the points color,
          *  in (0.0 .. 1.0)
          * \see draw_points()
          */
@@ -301,7 +301,7 @@ namespace GEO {
 
         /**
          * \brief Gets the points color
-         * \param[out] r,g,b the components of the points color,
+         * \param[out] r , g , b the components of the points color,
          *  in (0.0 .. 1.0)
          * \see draw_points()
          */
@@ -333,7 +333,7 @@ namespace GEO {
          * \brief Sets the mesh color
          * \details Specifies the mesh color to be used if 
          *  mesh edges should be displayed.
-         * \param[in] r,g,b the components of the mesh color,
+         * \param[in] r , g , b the components of the mesh color,
          *  in (0.0 .. 1.0)
          * \see set_show_mesh(), draw_surface(), draw_volume()
          */
@@ -345,7 +345,7 @@ namespace GEO {
 
         /**
          * \brief Gets the mesh color
-         * \param[out] r,g,b the components of the mesh color,
+         * \param[out] r , g , b the components of the mesh color,
          *  in (0.0 .. 1.0)
          * \see set_show_mesh(), draw_surface(), draw_volume()
          */
@@ -360,7 +360,7 @@ namespace GEO {
          * \details Specifies the color used to display the
          *  surfacic part of the mesh. It specifies the color 
          *  of both frontfacing and backfacing faces.
-         * \param[in] r,g,b the components of the surface color,
+         * \param[in] r , g , b the components of the surface color,
          *  in (0.0 .. 1.0)
          * \see draw_surface(), set_backface_surface_color()
          */
@@ -375,7 +375,7 @@ namespace GEO {
 
         /**
          * \brief Gets the surface color
-         * \param[out] r,g,b the components of the surface color,
+         * \param[out] r , g , b the components of the surface color,
          *  in (0.0 .. 1.0)
          * \see draw_surface()
          */
@@ -389,7 +389,7 @@ namespace GEO {
          * \brief Sets the surface color for backfacing faces.
          * \details Specifies the color used to display the
          *  backfaces of the surfacic part of the mesh. 
-         * \param[in] r,g,b the components of the surface color,
+         * \param[in] r , g , b the components of the surface color,
          *  in (0.0 .. 1.0)
          * \see set_show_mesh(), draw_surface(), draw_volume()
          */
@@ -401,7 +401,7 @@ namespace GEO {
 
         /**
          * \brief Sets the color used to display mesh cells.
-         * \param[in] r,g,b the components of the cells color,
+         * \param[in] r , g , b the components of the cells color,
          *  in (0.0 .. 1.0)
          * \see set_cells_colors_by_type(), draw_volume()
          */
@@ -415,7 +415,7 @@ namespace GEO {
 
         /**
          * \brief Gets the cells color
-         * \param[out] r,g,b the components of the cells color,
+         * \param[out] r , g , b the components of the cells color,
          *  in (0.0 .. 1.0)
          * \see set_cells_colors_by_type(), draw_volume()
          */
@@ -549,7 +549,7 @@ namespace GEO {
         /**
          * \brief Sets the parameters for displaying a
          *  scalar attribute using texture mapping.
-         * \param[in] subelement one of MESH_VERTICES, MESH_FACETS,
+         * \param[in] subelements one of MESH_VERTICES, MESH_FACETS,
          *  MESH_FACET_CORNERS, MESH_CELLS, MESH_CELL_CORNERS,
          *  MESH_CELL_FACETS
          * \param[in] name name of the attribute with an optional index,
@@ -597,6 +597,11 @@ namespace GEO {
         void draw_triangles_immediate_plain();
         void draw_triangles_immediate_attrib();
 
+        void draw_quads();
+        void draw_quads_array();
+        void draw_quads_immediate_plain();
+        void draw_quads_immediate_attrib();
+        
         void draw_triangles_and_quads();
         void draw_triangles_and_quads_array();
         void draw_triangles_and_quads_immediate_plain();
@@ -636,18 +641,12 @@ namespace GEO {
             index_t vertex, index_t facet, index_t corner
         ) {
             if(picking_mode_ == MESH_NONE) {
-                switch(attribute_subelements_) {
-                case MESH_VERTICES:
+                if(attribute_subelements_ == MESH_VERTICES) {
                     glupTexCoord1d(attribute_[vertex]);
-                    break;
-                case MESH_FACETS:
+                } else if(attribute_subelements_ == MESH_FACETS) {
                     glupTexCoord1d(attribute_[facet]);
-                    break;
-                case MESH_FACET_CORNERS:
+                } else if(attribute_subelements_ == MESH_FACET_CORNERS) {
                     glupTexCoord1d(attribute_[corner]);                
-                    break;
-                default:
-                    break;
                 }
             }
             draw_vertex(vertex);
@@ -657,18 +656,12 @@ namespace GEO {
             index_t vertex, index_t cell, index_t cell_corner
         ) {
             if(picking_mode_ == MESH_NONE) {
-                switch(attribute_subelements_) {
-                case MESH_VERTICES:
+                if(attribute_subelements_ == MESH_VERTICES) {                
                     glupTexCoord1d(attribute_[vertex]);
-                    break;
-                case MESH_CELLS:
+                } else if(attribute_subelements_ == MESH_CELLS) {
                     glupTexCoord1d(attribute_[cell]);
-                    break;
-                case MESH_CELL_CORNERS:
+                } else if(attribute_subelements_ == MESH_CELL_CORNERS) {
                     glupTexCoord1d(attribute_[cell_corner]);
-                    break;
-                default:
-                    break;
                 }
             }
             draw_vertex(vertex);
@@ -719,7 +712,7 @@ namespace GEO {
          * \brief Sets GLUP picking mode for drawing primitives
          *  of a given type, or deactivates GLUP picking if MeshGfx picking mode
          *  is deactivated.
-         * \param[in] one of MESH_VERTICES, MESH_EDGES, MESH_FACETS, MESH_CELLS.
+         * \param[in] what one of MESH_VERTICES, MESH_EDGES, MESH_FACETS, MESH_CELLS.
          */
         void set_GLUP_picking(MeshElementsFlags what);
 
@@ -839,6 +832,7 @@ namespace GEO {
         
         const Mesh* mesh_;
         bool triangles_and_quads_;
+        bool quads_;
 
         bool buffer_objects_dirty_;
         bool attributes_buffer_objects_dirty_;
@@ -861,6 +855,11 @@ namespace GEO {
         GLuint attribute_colormap_texture_;
         index_t attribute_repeat_;
         ReadOnlyScalarAttributeAdapter attribute_;
+
+        //   If true, copies OpenGL state automatically
+        // at each rendering operation.
+        bool auto_GL_interop_;
+        bool ES_profile_;
     };
 
 }

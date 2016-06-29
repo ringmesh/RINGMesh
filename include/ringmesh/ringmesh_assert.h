@@ -53,7 +53,7 @@ namespace {
         const std::string& file,
         int line )
     {
-#if WIN32
+#ifdef WIN32
         DebugBreak() ;
 #endif
         GEO::geo_assertion_failed( condition_string, file, line ) ;
@@ -63,7 +63,7 @@ namespace {
         const std::string& file,
         int line )
     {
-#if WIN32
+#ifdef WIN32
         DebugBreak() ;
 #endif
         GEO::geo_should_not_have_reached( file, line ) ;

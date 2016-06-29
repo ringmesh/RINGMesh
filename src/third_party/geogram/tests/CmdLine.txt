@@ -2,7 +2,7 @@
 Test Setup        Prepare Test
 Test Teardown     Cleanup Test
 Force Tags        Small    smoke    daily    daily_valgrind
-Test Timeout      2 seconds
+Test Timeout      10 seconds
 Library           OperatingSystem
 Library           lib/VorpatestLibrary.py
 

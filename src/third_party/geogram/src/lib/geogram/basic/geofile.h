@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_BASIC_GEOFILE__
-#define __GEOGRAM_BASIC_GEOFILE__
+#ifndef GEOGRAM_BASIC_GEOFILE
+#define GEOGRAM_BASIC_GEOFILE
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/numeric.h>
@@ -77,6 +77,19 @@ namespace GEO {
          */
         GeoFileException(const std::string& s) : logic_error(s) {
         }
+
+        /**
+         * \brief GeoFileException copy constructor.
+         * \param[in] rhs a const reference to the GeoFileException to be
+         *  copied.
+         */
+        GeoFileException(const GeoFileException& rhs) : logic_error(rhs) {
+        }
+        
+        /**
+         * \brief GeoFileException destructor.
+         */
+        virtual ~GeoFileException() GEO_NOEXCEPT;
     };
 
     /**************************************************************/
@@ -218,13 +231,16 @@ namespace GEO {
 
             /**
              * \brief Finds an AttributeInfo by name.
-             * \param[in] name a const reference to the name of the attribute
+             * \param[in] name_in a const reference to the name of the 
+             *  attribute
              * \return a const pointer to the AttributeInfo or nil if there 
              *  is no such attribute.
              */
-            const AttributeInfo* find_attribute(const std::string& name) const {
+            const AttributeInfo* find_attribute(
+                const std::string& name_in
+            ) const {
                 for(index_t i=0; i<attributes.size(); ++i) {
-                    if(attributes[i].name == name) {
+                    if(attributes[i].name == name_in) {
                         return &(attributes[i]);
                     }
                 }
@@ -233,13 +249,14 @@ namespace GEO {
 
             /**
              * \brief Finds an AttributeInfo by name.
-             * \param[in] name a const reference to the name of the attribute
+             * \param[in] name_in a const reference to the name of the 
+             *  attribute
              * \return a pointer to the AttributeInfo or nil if there 
              *  is no such attribute.
              */
-             AttributeInfo* find_attribute(const std::string& name) {
+             AttributeInfo* find_attribute(const std::string& name_in) {
                 for(index_t i=0; i<attributes.size(); ++i) {
-                    if(attributes[i].name == name) {
+                    if(attributes[i].name == name_in) {
                         return &(attributes[i]);
                     }
                 }
@@ -270,7 +287,7 @@ namespace GEO {
 
         /**
          * \brief Finds an attribute set by name.
-         * \param[in] a const reference to the name of the attribute set
+         * \param[in] name a const reference to the name of the attribute set
          * \return a pointer to the AttributeSetInfo or nil if there is
          *  no such attribute set.
          */
@@ -285,7 +302,7 @@ namespace GEO {
 
         /**
          * \brief Finds an attribute set by name.
-         * \param[in] a const reference to the name of the attribute set
+         * \param[in] name a const reference to the name of the attribute set
          * \return a const pointer to the AttributeSetInfo or nil if there is
          *  no such attribute set.
          */
@@ -571,11 +588,12 @@ namespace GEO {
 
         /**
          * \brief Writes a new attribute set to the file.
-         * \param[in] name a const reference to the name of the attribute set
+         * \param[in] name a const reference to the name of 
+         *  the attribute set
          * \param[in] nb_items number of items in the attribute set
          */
         void write_attribute_set(
-            const std::string& element_name, index_t nb_items
+            const std::string& name, index_t nb_items
         );
         
         /**

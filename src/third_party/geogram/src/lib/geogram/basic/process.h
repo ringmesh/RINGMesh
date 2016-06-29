@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_BASIC_PROCESS__
-#define __GEOGRAM_BASIC_PROCESS__
+#ifndef GEOGRAM_BASIC_PROCESS
+#define GEOGRAM_BASIC_PROCESS
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/thread_sync.h>
@@ -74,6 +74,8 @@ namespace GEO {
 #define GEO_THREAD_LOCAL __thread
 #elif defined(GEO_COMPILER_MSVC) || defined(GEO_COMPILER_INTEL)
 #define GEO_THREAD_LOCAL __declspec(thread)
+#elif defined(GEO_COMPILER_EMSCRIPTEN)
+#define GEO_THREAD_LOCAL __thread    
 #else
 #error "Unknown compiler"
 #endif
@@ -524,12 +526,6 @@ namespace GEO {
         bool GEOGRAM_API cancel_enabled();
 
         /**
-         * \brief Outputs the stack trace to the terminal.
-         */
-        void GEOGRAM_API show_stack_trace();
-
-
-        /**
          * \brief Gets the currently used memory.
          * \return the used memory in bytes
          */
@@ -692,6 +688,42 @@ namespace GEO {
     }
 
     /**
+     * \brief Used to implement parallel_for_member_callback()
+     * \details Stores a pointer to an object and to a pointer
+     *  function for invoking it later.
+     * \tparam T object class
+     */
+    template <class T> class ParallelForMemberCallback {
+    public:
+        /**
+         * \brief Function pointer type.
+         */
+        typedef void (T::*fptr)(index_t);
+
+        /**
+         * \brief ParallelForMemberCallback constructor.
+         * \param[in] object a pointer to an object
+         * \param[in] f a pointer to a member function of the object,
+         *  that takes an index_t as an argument
+         */
+        ParallelForMemberCallback(T* object, fptr f) :
+            object_(object), f_(f) {
+        }
+
+        /**
+         * \brief Invokes the memorized function on the memorized object
+         *  with the argument \p i
+         * \param[in] i the argument to be passed to the function.
+         */
+        void operator()(index_t i) {
+            (*object_.*f_)(i);
+        }
+    private:
+        T* object_;
+        fptr f_;
+    };
+    
+    /**
      * \brief Creates a member callback for parallel_for()
      * \details This allows to run parallel_for() with a functional object
      * that calls the member function \p fun on object \p obj.
@@ -711,11 +743,12 @@ namespace GEO {
      * accepts a single argument of type index_t.
      * \tparam T type of the target object
      */
-    template <class T>
-    std::binder1st<std::mem_fun1_t<void, T, index_t> >
+
+    template <class T> ParallelForMemberCallback<T>
     parallel_for_member_callback(T* obj, void (T::* fun)(index_t)) {
-        return std::bind1st(std::mem_fun(fun), obj);
+        return ParallelForMemberCallback<T>(obj, fun);
     }
+    
 }
 
 #endif
