@@ -65,6 +65,7 @@ namespace RINGMesh {
     /// @todo This epsilon definition is ... not great. What should be done ?[JP]
     static const float64 epsilon = 1E-8 ;
     static const float64 epsilon_sq = epsilon*epsilon ;
+    static const float64 epsilon_3 = epsilon*epsilon*epsilon ;
 
     // This is an array of 3 doubles
     using GEO::vec3 ;

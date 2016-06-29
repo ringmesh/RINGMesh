@@ -95,7 +95,6 @@ NLuint nlSolve_CNC() {
 
 NLuint nlSolve_CNC() {
     nl_assert_not_reached ;
-    return 0;
 }
 
 #endif

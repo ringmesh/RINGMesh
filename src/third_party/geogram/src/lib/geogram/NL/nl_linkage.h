@@ -42,8 +42,8 @@
  *
  */
 
-#ifndef __LIBNL_LINKAGE__
-#define __LIBNL_LINKAGE__
+#ifndef OPENL_LINKAGE_H
+#define OPENL_LINKAGE_H
 
 /**
  * \file geogram/NL/nl_linkage.h
@@ -70,7 +70,19 @@
         #define NLAPIENTRY
     #endif
 #else
-    #define NLAPIENTRY
+    #ifdef NL_SHARED_LIBS
+        #define NLAPIENTRY __attribute__ ((visibility("default")))
+    #else
+        #define NLAPIENTRY
+    #endif
+#endif
+
+#ifdef __GNUC__
+#define NL_DEPRECATED(func) func __attribute__ ((deprecated))
+#elif defined(_MSC_VER)
+#define NL_DEPRECATED(func) __declspec(deprecated) func
+#else
+#define NL_DEPRECATED(func) func
 #endif
 
 #endif

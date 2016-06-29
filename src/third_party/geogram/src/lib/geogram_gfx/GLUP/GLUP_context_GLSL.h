@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_GFX_GLUP_GLUP_CONTEXT_GLSL__
-#define __GEOGRAM_GFX_GLUP_GLUP_CONTEXT_GLSL__
+#ifndef GEOGRAM_GFX_GLUP_GLUP_CONTEXT_GLSL
+#define GEOGRAM_GFX_GLUP_GLUP_CONTEXT_GLSL
 
 #include <geogram_gfx/basic/common.h>
 #include <geogram_gfx/GLUP/GLUP_context.h>
@@ -53,6 +53,8 @@
  * \file geogram_gfx/GLUP/GLUP_context_GLSL.h
  * \brief Internal implementation of GLUP using modern OpenGL and GLSL shaders.
  */
+
+#ifdef GEO_GL_150
 
 namespace GLUP {
     using namespace GEO;
@@ -125,6 +127,12 @@ namespace GLUP {
          * \copydoc Context::setup_GLUP_CONNECTORS()
          */
         virtual void setup_GLUP_CONNECTORS();
+
+        /**
+         * \brief Indicates whether the so-named extension is
+         *  supported.
+         */
+        bool GL_ARB_conservative_depth_;
     };
 
     /*********************************************************************/
@@ -160,3 +168,6 @@ namespace GLUP {
 }
 
 #endif
+
+#endif
+

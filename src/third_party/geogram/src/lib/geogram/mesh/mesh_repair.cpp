@@ -522,8 +522,6 @@ namespace {
     void repair_connect_facets(
         Mesh& M
     ) {
-        const index_t NO_FACET=index_t(-1);
-        const index_t NO_CORNER=index_t(-1);
         const index_t NON_MANIFOLD=index_t(-2);
 
         // Reset all facet-facet adjacencies.
@@ -721,15 +719,14 @@ namespace {
                 signed_index_t ori = 
                     repair_relative_orientation(M, f, c, f2);
                 switch(ori) {
-                    case 0:
-                        geo_assert_not_reached;
-                        break;
                     case 1:
                         nb_plus++;
                         break;
                     case -1:
                         nb_minus++;
                         break;
+                    case 0:
+                        geo_assert_not_reached;
                 }
             }
         }
@@ -890,7 +887,6 @@ namespace {
                 }
             }
             geo_assert_not_reached;
-            return 0;
         }
 
         /**
@@ -992,7 +988,6 @@ namespace {
             }
         }
         geo_assert_not_reached;
-        return ~0u;
     }
 
     /**

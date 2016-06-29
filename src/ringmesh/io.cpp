@@ -59,7 +59,7 @@ namespace {
     /*!
      * @brief Write in the out stream things to save for CONTACT, INTERFACE and LAYERS
      */
-    void save_high_level_bme( std::ofstream& out, const GeoModelElement& E )
+    void save_high_level_bme( std::ofstream& out, const GeoModelEntity& E )
     {
         /// First line:  TYPE - ID - NAME - GEOL
         out << E.gme_id() << " " ;
@@ -68,7 +68,7 @@ namespace {
         } else {
             out << "no_name " ;
         }
-        out << GeoModelElement::geol_name( E.geological_feature() ) << std::endl ;
+        out << GeoModelEntity::geol_name( E.geological_feature() ) << std::endl ;
 
         /// Second line:  IDS of children
         for( index_t j = 0; j < E.nb_children(); ++j ) {
@@ -89,18 +89,18 @@ namespace {
         out << "RINGMESH BOUNDARY MODEL" << std::endl ;
         out << "NAME " << M.name() << std::endl ;
 
-        // Numbers of the different types of elements
+        // Numbers of the different types of entities
         for( index_t i = GME::CORNER; i < GME::NO_TYPE; i++ ) {
             GME::TYPE type = static_cast< GME::TYPE >( i ) ;
-            out << "NB_" << GME::type_name( type ) << " " << M.nb_elements( type )
+            out << "NB_" << GME::type_name( type ) << " " << M.nb_entities( type )
                 << std::endl ;
         }
-        // Write high-level elements
+        // Write high-level entities
         for( index_t i = GME::CONTACT; i < GME::NO_TYPE; i++ ) {
             GME::TYPE type = static_cast< GME::TYPE >( i ) ;
-            index_t nb = M.nb_elements( type ) ;
+            index_t nb = M.nb_entities( type ) ;
             for( index_t j = 0; j < nb; ++j ) {
-                save_high_level_bme( out, M.element( GME::gme_t( type, j ) ) ) ;
+                save_high_level_bme( out, M.entity( GME::gme_t( type, j ) ) ) ;
             }
         }
         // Regions
@@ -153,7 +153,7 @@ namespace {
 
         // Corners
         for( index_t i = 0; i < M.nb_corners(); ++i ) {
-            out << M.corner( i ).gme_id() << " " << M.corner( i ).vertex()
+            out << M.corner( i ).gme_id() << " " << M.corner( i ).vertex(0)
                 << std::endl ;
         }
         // Lines
@@ -180,15 +180,16 @@ namespace {
                 out << S.vertex( j ) << std::endl ;
             }
 
-            out << "SURFACE_CORNERS " << S.nb_facet_corners() << std::endl ;
-            out << "SURFACE_FACETS " << S.nb_cells() << std::endl ;
-            for( index_t j = 0; j < S.nb_cells(); ++j ) {
-                out << S.nb_vertices_in_facet( j ) << " " ;
-                for( index_t v = 0; v < S.nb_vertices_in_facet( j ); ++v ) {
-                    out << S.surf_vertex_id( j, v ) << " " ;
+            //to remove or porte
+        //    out << "SURFACE_CORNERS " << S.nb_facet_corners() << std::endl ;
+        /*    out << "SURFACE_FACETS " << S.nb_mesh_element() << std::endl ;
+            for( index_t j = 0; j < S.nb_mesh_element(); ++j ) {
+                out << S.nb_mesh_element_vertices( j ) << " " ;
+                for( index_t v = 0; v < S.nb_mesh_element_vertices( j ); ++v ) {
+                    out << S.vertex_indexsurf_vertex_id( j, v ) << " " ;
                 }
                 out << std::endl ;
-            }
+            }*/
         }
     }
 }
@@ -236,7 +237,6 @@ namespace RINGMesh {
 
 
     /***************************************************************************/
-
 
 
     void zip_file( zipFile zf, const std::string& name )
@@ -292,18 +292,17 @@ namespace RINGMesh {
         fclose( out ) ;
         unzCloseCurrentFile( uz ) ;
     }
-
     /***************************************************************************/
 
 
 
     GeoModelIOHandler* GeoModelIOHandler::create( const std::string& format )
     {
-        GeoModelIOHandler* handler = IOHandlerFactory::create_object(
+        GeoModelIOHandler* handler = GeoModelIOHandlerFactory::create_object(
             format ) ;
         if( !handler ) {
             std::vector< std::string > names ;
-            IOHandlerFactory::list_creators( names ) ;
+            GeoModelIOHandlerFactory::list_creators( names ) ;
             GEO::Logger::err( "I/O" ) << "Currently supported file formats are: " ;
             for( index_t i = 0; i < names.size(); i++ ) {
                 GEO::Logger::err( "I/O" ) << " " << names[i] ;
@@ -344,7 +343,7 @@ namespace RINGMesh {
 
 
     void MMIOHandler::load( const std::string& filename, GeoModel& gm )
-        {
+        {/*
             unzFile uz = unzOpen( filename.c_str() ) ;
             unz_global_info global_info ;
             if( unzGetGlobalInfo( uz, &global_info ) != UNZ_OK ) {
@@ -356,9 +355,9 @@ namespace RINGMesh {
                 char filename[MAX_FILENAME] ;
                 unzip_file( uz, filename ) ;
                 GEO::MeshIOFlags flags ;
-                flags.set_element( GEO::MESH_FACETS ) ;
-                flags.set_element( GEO::MESH_CELLS ) ;
-                flags.set_element( GEO::MESH_EDGES ) ;
+                flags.set_entity( GEO::MESH_FACETS ) ;
+                flags.set_entity( GEO::MESH_CELLS ) ;
+                flags.set_entity( GEO::MESH_EDGES ) ;
                 flags.set_attribute( GEO::MESH_FACET_REGION ) ;
                 GEO::Mesh& m = gm.region( r ).mesh() ;
                 std::string ext = GEO::FileSystem::extension( filename ) ;
@@ -379,20 +378,20 @@ namespace RINGMesh {
                     }
                 }
             }
-            unzClose( uz ) ;
+            unzClose( uz ) ;*/
         }
 
     void MMIOHandler::save( const GeoModel& gm, const std::string& filename )
-        {
+        {/*
             std::string pwd = GEO::FileSystem::get_current_working_directory() ;
             GEO::FileSystem::set_current_working_directory(
                 GEO::FileSystem::dir_name( filename ) ) ;
             zipFile zf = zipOpen( filename.c_str(), APPEND_STATUS_CREATE ) ;
             for( index_t m = 0; m < gm.nb_regions(); m++ ) {
                 GEO::MeshIOFlags flags ;
-                flags.set_element( GEO::MESH_FACETS ) ;
-                flags.set_element( GEO::MESH_CELLS ) ;
-                flags.set_element( GEO::MESH_EDGES ) ;
+                flags.set_entity( GEO::MESH_FACETS ) ;
+                flags.set_entity( GEO::MESH_CELLS ) ;
+                flags.set_entity( GEO::MESH_EDGES ) ;
                 flags.set_attribute( GEO::MESH_FACET_REGION ) ;
 
                 const GEO::Mesh& cur_mesh = gm.region( m ).mesh() ;
@@ -409,6 +408,6 @@ namespace RINGMesh {
 
             }
             zipClose( zf, NULL ) ;
-            GEO::FileSystem::set_current_working_directory( pwd ) ;
+            GEO::FileSystem::set_current_working_directory( pwd ) ;*/
         }
 }

@@ -163,13 +163,11 @@ namespace GEOGen {
 
         switch(q.sym().nb_boundary_facets()) {
             case 0:
-            {
                 // All the points that we manipulate are supposed to
                 // belong to the restricted Voronoi diagram, therefore
                 // they belong to the surface, and are at least on one
                 // facet of the surface.
                 geo_assert_not_reached;
-            } break;
 
             case 1:
             {
@@ -190,7 +188,7 @@ namespace GEOGen {
                     pi, delaunay->vertex_ptr(b0), delaunay->vertex_ptr(b1), pj,
                     f0, f1, f2, dim
                 );
-            } break;
+            } 
 
             case 2:
             {
@@ -207,7 +205,7 @@ namespace GEOGen {
                     mesh->vertices.point_ptr(e0),
                     mesh->vertices.point_ptr(e1), dim
                 );
-            } break;
+            } 
 
             case 3:
             {
@@ -218,10 +216,9 @@ namespace GEOGen {
                 return GEO::PCK::side1_SOS(
                     pi, pj, mesh->vertices.point_ptr(v0), dim
                 );
-            } break;
+            } 
         }
         geo_assert_not_reached;
-        return Sign(0);
     }
 }
 

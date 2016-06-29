@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_GFX_GLUP_GLUP__
-#define __GEOGRAM_GFX_GLUP_GLUP__
+#ifndef GEOGRAM_GFX_GLUP_GLUP
+#define GEOGRAM_GFX_GLUP_GLUP
 
 #include <geogram_gfx/api/defs.h>
 #define GLUP_API GEOGRAM_GFX_API
@@ -151,7 +151,7 @@ extern "C" {
      * \brief Copies some variable from the current fixed 
      *  functionality pipeline of OpenGL to the current
      *  GLUP context.
-     * \param[in] which_attribute an '|'-combination of 
+     * \param[in] which_attributes an '|'-combination of 
      *  GLUP_MATRICES_ATTRIBUTES_BIT, GLUP_COLORS_ATTRIBUTES_BIT,
      *  GLUP_LIGHTING_ATTRIBUTES_BIT, GLUP_CLIPPING_ATTRIBUTES_BIT or
      *  GLUP_ALL_ATTRIBUTES.
@@ -161,7 +161,7 @@ extern "C" {
     /**
      * \brief Copies some variables from the current GLUP context
      *  to the fixed functionality pipeline of OpenGL.
-     * \param[in] which_attribute an '|'-combination of 
+     * \param[in] which_attributes an '|'-combination of 
      *  GLUP_MATRICES_ATTRIBUTES_BIT, GLUP_COLORS_ATTRIBUTES_BIT,
      *  GLUP_LIGHTING_ATTRIBUTES_BIT, GLUP_CLIPPING_ATTRIBUTES_BIT or
      *  GLUP_ALL_ATTRIBUTES.
@@ -193,7 +193,8 @@ extern "C" {
         GLUP_TEXTURING    =2,
         GLUP_DRAW_MESH    =3,
         GLUP_CLIPPING     =4,
-        GLUP_PICKING      =5
+        GLUP_INDIRECT_TEXTURING = 5,
+        GLUP_PICKING      =6
     } GLUPtoggle;
 
     void GLUP_API glupEnable(GLUPtoggle toggle);
@@ -210,6 +211,36 @@ extern "C" {
      * \name GLUP texturing
      * @{ 
      */
+
+
+    /**
+     * \brief The texture units used by GLUP for 1D,2D and 3D
+     *  texturing.
+     * \details Before binding the texture, call 
+     *   glActiveTexture(GL_TEXTURE0 + unit) before binding the texture.
+     *   For instance, for 2D texturing, call 
+     *   glActiveTexture(GL_TEXTURE0 + GLUP_TEXTURE_2D_UNIT).
+     */
+    enum {
+        GLUP_TEXTURE_1D_UNIT=0,
+        GLUP_TEXTURE_2D_UNIT=1,
+        GLUP_TEXTURE_3D_UNIT=2
+    };
+
+
+    /**
+     * \brief The targets to be used as the first 
+     *  argument of glBindTexture() for GLUP 1D, 2D
+     *  and 3D textures.
+     * \details we do not use 1D textures, because
+     *  they are not supported by all OpenGL versions.
+     *  Both targets for 1D and 2D textures are GL_TEXTURE_2D.
+     */
+    enum {
+        GLUP_TEXTURE_1D_TARGET=0x0DE1,
+        GLUP_TEXTURE_2D_TARGET=0x0DE1,
+        GLUP_TEXTURE_3D_TARGET=0x806F
+    };
 
     typedef enum {
         GLUP_TEXTURE_1D=1,
@@ -270,6 +301,9 @@ extern "C" {
 
     void GLUP_API glupLightVector3f(GLUPfloat x, GLUPfloat y, GLUPfloat z);
     void GLUP_API glupLightVector3fv(GLUPfloat* xyz);
+
+    void GLUP_API glupSetPointSize(GLUPfloat size);
+    GLUPfloat GLUP_API glupGetPointSize();
     
     void GLUP_API glupSetMeshWidth(GLUPint width);
     GLUPint GLUP_API glupGetMeshWidth();
@@ -314,10 +348,10 @@ extern "C" {
      */
     
     typedef enum {
-        GLUP_CLIP_STANDARD=1,
-        GLUP_CLIP_WHOLE_CELLS=2,
-        GLUP_CLIP_STRADDLING_CELLS=3,
-        GLUP_CLIP_SLICE_CELLS=4
+        GLUP_CLIP_STANDARD=0,
+        GLUP_CLIP_WHOLE_CELLS=1,
+        GLUP_CLIP_STRADDLING_CELLS=2,
+        GLUP_CLIP_SLICE_CELLS=3
     } GLUPclipMode;
 
     /**
@@ -425,6 +459,14 @@ extern "C" {
         GLUPdouble zNear, GLUPdouble zFar
     );
 
+    GLUPint GLUP_API glupProject(
+        GLUPdouble objx, GLUPdouble objy, GLUPdouble objz,
+        const GLUPdouble modelMatrix[16],
+        const GLUPdouble projMatrix[16],
+        const GLUPint viewport[4],
+        GLUPdouble* winx,  GLUPdouble* winy,  GLUPdouble* winz
+    );
+    
     GLUPboolean GLUP_API glupUnProject(
         GLUPdouble winx, GLUPdouble winy, GLUPdouble winz,
         const GLUPdouble modelMatrix[16],
@@ -567,7 +609,55 @@ extern "C" {
     /**
      * @}
      */
+
+    /************************************************/    
     
+    /**
+     * \name GLUP Vertex Array Object wrapper or emulation.
+     * @{ 
+     */
+
+    /**
+     * \brief Generate vertex array object names.
+     * \details This function is a wrapper around glGenVertexArrays() 
+     *  if it is supported, else it emulates it.
+     * \param[in] n the number of vertex array object names to generate. 
+     * \param[in] arrays an array in which the generated vertex array 
+     *   object names are stored. 
+     */
+    void GLUP_API glupGenVertexArrays(GLUPsizei n, GLUPuint* arrays);
+
+    /**
+     * \brief Deletes vertex array objects.
+     * \details This function is a wrapper around glDeleteVertexArrays() 
+     *  if it is supported, else it emulates it.
+     * \param[in] n the number of vertex array objects to be deleted. 
+     * \param[in] arrays the address of an array containing the \p n 
+     *   names of the objects to be deleted. 
+     */
+    void GLUP_API glupDeleteVertexArrays(GLUPsizei n, const GLUPuint *arrays);
+
+
+    /**
+     * \brief Binds a vertex array object.
+     * \details This function is a wrapper around glBindVertexArray() 
+     *  if it is supported, else it emulates it.
+     * \param[in] array the name of the vertex array to bind. 
+     */
+    void GLUP_API glupBindVertexArray(GLUPuint array);
+
+    /**
+     * \brief Gets the name of the bound vertex array object.
+     * \details This function uses glGet(GL_VERTEX_ARRAY_BINDING) if
+     *  vertex array objects are supported, else it emulates them.
+     * \return the name of the bound vertex array object or 0
+     *  if no vertex array object is bound.
+     */
+    GLUPuint GLUP_API glupGetVertexArrayBinding();
+
+    /**
+     * @}
+     */
 
 #ifdef __cplusplus
 }

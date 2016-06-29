@@ -48,7 +48,7 @@
 namespace RINGMesh {
 
     /*!
-     * @brief Returns the position of the first element matching @param value
+     * @brief Returns the position of the first entity matching @param value
      * in the container, NO_ID if not found. 
      */
     template< typename T, typename container >
@@ -63,7 +63,7 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Returns the position of the first element matching @param value 
+     * @brief Returns the position of the first entity matching @param value 
      * in a sorted container, NO_ID if not found. 
      */
     template< typename T, typename container >
@@ -218,7 +218,7 @@ namespace RINGMesh {
      }
 
     /**
-     * @brief Sorts a container and suppresses all duplicated elements.
+     * @brief Sorts a container and suppresses all duplicated entities.
      * @param[in,out] container the container to sort
      * @param[in] cmp a comparator function
      */

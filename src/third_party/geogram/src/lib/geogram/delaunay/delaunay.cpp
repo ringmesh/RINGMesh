@@ -55,6 +55,10 @@
 #include <geogram/delaunay/delaunay_tetgen.h>
 #endif
 
+#ifdef GEOGRAM_WITH_TRIANGLE
+#include <geogram/delaunay/delaunay_triangle.h>
+#endif
+
 #include <geogram/basic/logger.h>
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/process.h>
@@ -98,16 +102,22 @@ namespace GEO {
         std::logic_error(invalid_dimension_error(dimension, name, expected)) {
     }
 
-    const char* Delaunay::InvalidDimension::what() const throw () {
+    const char* Delaunay::InvalidDimension::what() const GEO_NOEXCEPT {
         return std::logic_error::what();
     }
 
     /************************************************************************/
 
     void Delaunay::initialize() {
+
 #ifdef GEOGRAM_WITH_TETGEN
         geo_register_Delaunay_creator(DelaunayTetgen, "tetgen");
 #endif
+
+#ifdef GEOGRAM_WITH_TRIANGLE
+        geo_register_Delaunay_creator(DelaunayTriangle, "triangle");
+#endif
+        
         geo_register_Delaunay_creator(Delaunay3d, "BDEL");
 
 #ifdef GEOGRAM_WITH_PDEL

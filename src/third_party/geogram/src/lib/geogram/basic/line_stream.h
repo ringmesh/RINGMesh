@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_BASIC_LINE_STREAM__
-#define __GEOGRAM_BASIC_LINE_STREAM__
+#ifndef GEOGRAM_BASIC_LINE_STREAM
+#define GEOGRAM_BASIC_LINE_STREAM
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/assert.h>
@@ -275,7 +275,9 @@ namespace GEO {
          * \param[in] index index of the erroneous field.
          * \param[in] type the expected type.
          */
-        void conversion_error(index_t index, const char* type) const;
+        GEO_NORETURN_DECL void conversion_error(
+            index_t index, const char* type
+        ) const GEO_NORETURN ;
 
         /**
          * \brief Defines the maximum size of a line

@@ -16,6 +16,15 @@
         Too many extensions
 */
 
+/*
+ * [BL] clang does not like macros that
+ * start with two underscores.
+ */
+#if defined(__clang__)
+#pragma clang diagnostic ignored "-Wunknown-pragmas"
+#pragma clang diagnostic ignored "-Wreserved-id-macro"        
+#endif
+
 
 #ifndef __glad_h_
 #define __glad_h_
@@ -44,6 +53,8 @@
 #ifdef GOMGEN
 #define APIENTRYP APIENTRY
 #endif
+
+
 
 #ifndef APIENTRYP
 #define APIENTRYP APIENTRY *

@@ -1,5 +1,10 @@
-# Tetgen is currently included by default.
+# Tetgen (by Hang Si) is currently included by default.
+# Triangle (by Jonathan Shewchuk) is currently included by default.
+
 set(GEOGRAM_WITH_TETGEN TRUE)
+set(GEOGRAM_WITH_TRIANGLE TRUE)
+
+configure_file(geogram.pc.in ${PROJECT_BINARY_DIR}/geogram.pc @ONLY)
 
 add_subdirectory(third_party)
 
@@ -17,18 +22,25 @@ if(GEOGRAM_WITH_TETGEN)
    add_definitions(-DGEOGRAM_WITH_TETGEN)
 endif()
 
+if(GEOGRAM_WITH_TRIANGLE)
+   add_definitions(-DGEOGRAM_WITH_TRIANGLE)
+endif()
+
 # Parallel Delaunay now works on both Windows and Unix !
 add_definitions(-DGEOGRAM_WITH_PDEL)
-
 
 # Copy the default version info to the build directory
 configure_file(basic/version.h.in version.h @ONLY)
 list(APPEND SOURCES version.h)
 set_source_files_properties(version.h PROPERTIES GENERATED true)
 
-include_directories(${CMAKE_BINARY_DIR}/src/lib)
+include_directories(${PROJECT_BINARY_DIR}/src/lib)
 
 add_library(geogram ${SOURCES} $<TARGET_OBJECTS:geogram_third_party>)
+
+set_target_properties(geogram PROPERTIES
+                      VERSION ${VORPALINE_VERSION}
+                      SOVERSION ${VORPALINE_VERSION_MAJOR})
 
 if(UNIX AND VORPALINE_BUILD_DYNAMIC)
     target_link_libraries(geogram pthread dl)
@@ -59,3 +71,8 @@ install(
     REGEX /license/ EXCLUDE
 )
 
+install(
+        FILES "${PROJECT_BINARY_DIR}/geogram.pc"
+        DESTINATION lib${LIB_SUFFIX}/pkgconfig
+)
+      

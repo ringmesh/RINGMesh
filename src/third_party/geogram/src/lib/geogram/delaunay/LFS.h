@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_DELAUNAY_LFS__
-#define __GEOGRAM_DELAUNAY_LFS__
+#ifndef GEOGRAM_DELAUNAY_LFS
+#define GEOGRAM_DELAUNAY_LFS
 
 #include <geogram/basic/common.h>
 #include <geogram/delaunay/delaunay.h>
@@ -91,6 +91,26 @@ namespace GEO {
                 geo_sqr(p[2] - q[2]);
         }
 
+        /**
+         * \brief Gets the number of poles.
+         * \return the number of poles.
+         */
+        index_t nb_poles() const {
+            return poles_.size()/3;
+        }
+
+        /**
+         * \brief Gets a reference to a pole.
+         * \param[in] i the index of the pole
+         * \return a const pointer to the three coordinates of the
+         *  \p i th pole
+         * \pre i < nb_poles()
+         */
+        const double* pole(index_t i) const {
+            geo_debug_assert(i < nb_poles());
+            return &poles_[3*i];
+        }
+        
     protected:
         /**
          * \brief Constructs the internal representation used to compute

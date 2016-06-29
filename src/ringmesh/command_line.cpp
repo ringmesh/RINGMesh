@@ -47,13 +47,6 @@ namespace RINGMesh {
 
     namespace CmdLine {
 
-        void import_arg_group_attr()
-        {
-            GEO::CmdLine::declare_arg_group( "attr", "Attribute handler" ) ;
-            GEO::CmdLine::declare_arg( "attr:colormap", "blue/white/red",
-                "Colormap with colors separeted with /" ) ;
-        }
-
         void import_arg_group_in()
         {
             GEO::CmdLine::declare_arg_group( "in", "Input data" ) ;
@@ -61,8 +54,14 @@ namespace RINGMesh {
                 "in:geomodel", "",
                 "Filename of the input geological model" ) ;
             GEO::CmdLine::declare_arg(
+                "in:intersection_check", true,
+                "Toggle the surface intersection check at loading" ) ;
+            GEO::CmdLine::declare_arg(
                 "in:wells", "",
                 "Filename of the input wells" ) ;
+            GEO::CmdLine::declare_arg(
+                "in:validity_save", true,
+                "Saves meshes representing geomodel inconsistencies" ) ;
         }
 
         void import_arg_group_out()
@@ -81,7 +80,7 @@ namespace RINGMesh {
                 "Print statistics on the volume" ) ;
             GEO::CmdLine::declare_arg(
                 "stats:nb", true,
-                "Print statistics on the number of elements" ) ;
+                "Print statistics on the number of entities" ) ;
         }
 
         bool import_arg_group( const std::string& name )
@@ -92,8 +91,6 @@ namespace RINGMesh {
                 import_arg_group_out() ;
             } else if( name == "stats" ) {
                 import_arg_group_stats() ;
-            } else if( name == "attr" ) {
-                import_arg_group_attr() ;
             } else {
                 return GEO::CmdLine::import_arg_group( name ) ;
             }

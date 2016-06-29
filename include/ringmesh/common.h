@@ -92,6 +92,8 @@ template< typename T > inline void ringmesh_unused( T const& )
 {
 }
 
+#include <omp.h>
+
 #include <ringmesh/types.h>
 #include <ringmesh/ringmesh_assert.h>
 

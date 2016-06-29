@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_BASIC_PSM__
-#define __GEOGRAM_BASIC_PSM__
+#ifndef GEOGRAM_BASIC_PSM
+#define GEOGRAM_BASIC_PSM
 
 /**
  * \file geogram/basic/psm.h

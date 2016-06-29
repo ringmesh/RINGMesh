@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_BASIC_COMMON__
-#define __GEOGRAM_BASIC_COMMON__
+#ifndef GEOGRAM_BASIC_COMMON
+#define GEOGRAM_BASIC_COMMON
 
 #include <geogram/api/defs.h>
 
@@ -57,6 +57,7 @@
  * \brief Common include file, providing basic definitions. Should be
  *  included before anything else by all header files in Vorpaline.
  */
+
 
 /**
  * \brief Global Vorpaline namespace
@@ -128,6 +129,37 @@ namespace GEO {
  * \def GEO_COMPILER_MSVC
  * \brief This macro is set if the source code is compiled with Microsoft's
  * Visual C++.
+ *
+ * \def GEO_NORETURN_DECL
+ * \brief Should be inserted before the prototype of a function that does
+ *  not return.
+ * \details This helps the compiler determining where the execution flow
+ *  goes. This is useful for helping the compiler generate some warnings.
+ *   Example of a function prototype for a function that does not return
+ *   (note the GEO_NORETURN_DECL keyword before and the GEO_NORETURN
+ *    keyword after).
+ *   \code
+ *      GEO_NORETURN_DECL void GEOGRAM_API geo_abort() GEO_NORETURN;
+ *   \endcode
+ *
+ * \def GEO_NORETURN
+ * \brief Should be inserted after the prototype of a function that does
+ *  not return.
+ * \details This helps the compiler determining where the execution flow
+ *  goes. This is useful for helping the compiler generate some warnings.
+ *   Example of a function prototype for a function that does not return 
+ *   (note the GEO_NORETURN_DECL keyword before and the GEO_NORETURN
+ *    keyword after).
+ *   \code
+ *      GEO_NORETURN_DECL void GEOGRAM_API geo_abort() GEO_NORETURN;
+ *   \endcode
+ *
+ * \def GEO_NOEXCEPT
+ * \brief Indicates that a function does not throw any exception.
+ * \details Should be specified at the end of the function prototype.
+ * \code
+ *    void GEOGRAM_API foobar() GEO_NOEXCEPT;
+ * \encode
  */
 
 #ifdef NDEBUG
@@ -207,11 +239,27 @@ namespace GEO {
 #  define GEO_OPENMP
 #endif
 
+#if defined(__clang__)
+#  define GEO_COMPILER_CLANG
+#else
+#  error "Unsupported compiler"
+#endif
+
 #if defined(__x86_64) || defined(__ppc64__)
 #  define GEO_ARCH_64
 #else
 #  define GEO_ARCH_32
 #endif
+
+// =============================== Emscripten defines  ======================
+
+#elif defined(__EMSCRIPTEN__)
+
+#define GEO_OS_UNIX
+#define GEO_OS_LINUX
+#define GEO_OS_EMSCRIPTEN
+#define GEO_ARCH_64
+#define GEO_COMPILER_EMSCRIPTEN
 
 // =============================== Unsupported =============================
 #else
@@ -241,6 +289,34 @@ namespace GEO {
  * \brief Creates a new symbol by concatenating its arguments
  */
 #define CPP_CONCAT(A, B) CPP_CONCAT_(A, B)
+
+#if defined(GOMGEN)
+#define GEO_NORETURN
+#elif defined(GEO_COMPILER_CLANG) || \
+    defined(GEO_COMPILER_GCC)   || \
+    defined(GEO_COMPILER_EMSCRIPTEN)
+#define GEO_NORETURN __attribute__((noreturn))
+#else
+#define GEO_NORETURN
+#endif
+
+#if defined(GOMGEN)
+#define GEO_NORETURN_DECL 
+#elif defined(GEO_COMPILER_MSVC)
+#define GEO_NORETURN_DECL __declspec(noreturn)
+#else
+#define GEO_NORETURN_DECL 
+#endif
+
+#if defined(GEO_COMPILER_CLANG)
+#if __has_feature(cxx_noexcept)
+#define GEO_NOEXCEPT noexcept
+#endif
+#endif
+
+#ifndef GEO_NOEXCEPT
+#define GEO_NOEXCEPT throw()
+#endif
 
 #endif
 

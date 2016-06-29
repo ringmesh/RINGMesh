@@ -37,13 +37,13 @@
 #define __RINGMESH_IO__
 
 #include <ringmesh/common.h>
-#include <ringmesh/geo_model_element.h>
+#include <ringmesh/geo_model_entity.h>
 
 #include <geogram/basic/string.h>
 
-
 #include <third_party/zlib/zip.h>
 #include <third_party/zlib/unzip.h>
+
 
 #include <geogram/basic/factory.h>
 #define MAX_FILENAME 512
@@ -101,11 +101,11 @@ namespace RINGMesh {
         }
     } ;
 
-    typedef GEO::SmartPointer< GeoModelIOHandler > IOHandler_var ;
-    typedef GEO::Factory0< GeoModelIOHandler > IOHandlerFactory ;
+    typedef GEO::SmartPointer< GeoModelIOHandler > GeoModelIOHandler_var ;
+    typedef GEO::Factory0< GeoModelIOHandler > GeoModelIOHandlerFactory ;
 
-#define ringmesh_register_IOHandler_creator( type, name ) \
-    geo_register_creator( IOHandlerFactory, type, name )
+#define ringmesh_register_GeoModelIOHandler_creator( type, name ) \
+    geo_register_creator( GeoModelIOHandlerFactory, type, name )
 
     /***************************************************************************/
     class RINGMESH_API WellGroupIOHandler: public GEO::Counted {
@@ -142,7 +142,6 @@ namespace RINGMesh {
     void RINGMESH_API zip_file( zipFile zf, const std::string& name ) ;
 
     void RINGMESH_API unzip_file( unzFile uz, char filename[MAX_FILENAME] ) ;
-
 
     class RINGMESH_API BMIOHandler: public GeoModelIOHandler {
     public:

@@ -46,23 +46,32 @@
 #include <geogram/basic/stopwatch.h>
 #include <iostream>
 
+#ifdef GEO_OS_EMPSCRITEN
+#include <empscripten.h>
+#endif
+
 namespace GEO {
 
     /************************************************************************/
 
     SystemStopwatch::SystemStopwatch() {
-#ifdef GEO_OS_WINDOWS
+#if defined(GEO_OS_WINDOWS)
         start_ = GetTickCount();
+#elif defined(GEO_OS_EMSCRIPTEN)
+        startf_ = now();
 #else
         clock_t init_user = times(&start_);
-        while((start_user_ = times(&start_)) == init_user) {}
+        while((start_user_ = times(&start_)) == init_user) {
+        }
 #endif
     }
 
     double SystemStopwatch::elapsed_user_time() const {
-#ifdef GEO_OS_WINDOWS
+#if defined(GEO_OS_WINDOWS)
         return double(GetTickCount() - start_) / 1000.0;
-#else
+#elif defined(GEO_OS_EMSCRIPTEN)
+        return now() - startf_;
+#else        
         clock_t end_user;
         tms end;
         end_user = times(&end);
@@ -71,8 +80,12 @@ namespace GEO {
     }
 
     double SystemStopwatch::now() {
-#ifdef GEO_OS_WINDOWS
+#if defined(GEO_OS_WINDOWS)
         return double(GetTickCount()) / 1000.0;
+#elif defined(GEO_OS_EMSCRIPTEN)
+        // times() hangs on Emscripten but
+        // clock() works. TODO: check with emscripten_get_now();        
+        return double(clock()) / double(CLOCKS_PER_SEC);
 #else
         tms now_tms;
         return double(times(&now_tms)) / 100.0;
@@ -80,7 +93,11 @@ namespace GEO {
     }
 
     void SystemStopwatch::print_elapsed_time(std::ostream& os) const {
-#ifdef GEO_OS_WINDOWS
+#if defined(GEO_OS_WINDOWS)
+        os << "---- Times (seconds) ----"
+            << "\n  Elapsed time: " << elapsed_user_time()
+            << std::endl;
+#elif defined(GEO_OS_EMSCRIPTEN)
         os << "---- Times (seconds) ----"
             << "\n  Elapsed time: " << elapsed_user_time()
             << std::endl;

@@ -43,26 +43,22 @@
  *
  */
 
-#ifndef __GEOGRAM_GFX_API_DEFS__
-#define __GEOGRAM_GFX_API_DEFS__
+#ifndef GEOGRAM_GFX_API_DEFS
+#define GEOGRAM_GFX_API_DEFS
 
 /**
  * \file geogram_gfx/api/defs.h
  * \brief Basic definitions for the Geogram C API
  */
+#include <geogram/api/defs.h>
 
 /**
  * \brief Linkage declaration for geogram symbols.
  */
-
-#if defined(_MSC_VER) && defined(GEO_DYNAMIC_LIBS)
 #ifdef geogram_gfx_EXPORTS
-#define GEOGRAM_GFX_API __declspec(dllexport) 
+#define GEOGRAM_GFX_API GEO_EXPORT
 #else
-#define GEOGRAM_GFX_API __declspec(dllimport) 
-#endif
-#else
-#define GEOGRAM_GFX_API
+#define GEOGRAM_GFX_API GEO_IMPORT
 #endif
 
 
@@ -74,6 +70,8 @@
  *  defined symbols.
  */
 #define NO_GEOGRAM_GFX_API
+
+
 
 #endif
 

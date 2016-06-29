@@ -43,8 +43,8 @@
  *
  */
 
-#ifndef __GEOGRAM_POINTS_NN_SEARCH__
-#define __GEOGRAM_POINTS_NN_SEARCH__
+#ifndef GEOGRAM_POINTS_NN_SEARCH
+#define GEOGRAM_POINTS_NN_SEARCH
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/numeric.h>

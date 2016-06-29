@@ -45,9 +45,12 @@
 
 #include <geogram_gfx/GLUP/GLUP_context_VanillaGL.h>
 #include <geogram_gfx/basic/GLSL.h>
+#include <geogram_gfx/basic/GL.h>
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/progress.h>
 #include <geogram/basic/logger.h>
+
+#ifdef GEO_GL_LEGACY
 
 namespace GLUP {
     using namespace GEO;
@@ -55,6 +58,16 @@ namespace GLUP {
     /***********************************************************************/
 
     Context_VanillaGL::Context_VanillaGL() {
+        use_core_profile_ = false;
+        use_ES_profile_ = false;
+        indirect_texturing_program_ = 0;
+    }
+
+    Context_VanillaGL::~Context_VanillaGL() {
+        if(indirect_texturing_program_ != 0) {
+            glDeleteProgramsARB(1, &indirect_texturing_program_);
+            indirect_texturing_program_ = 0;
+        }
     }
 
     const char* Context_VanillaGL::profile_name() const {
@@ -92,28 +105,77 @@ namespace GLUP {
         configure_OpenGL_picking();
     }
 
+    void Context_VanillaGL::prepare_to_draw(GLUPprimitive primitive) {
+        if(primitive == GLUP_POINTS) {
+            glPointSize(uniform_state_.point_size.get());
+        }
+    }
+    
+    void Context_VanillaGL::do_update_uniform_buffer() {
+        copy_to_GL_state(GLUP_CLIPPING_ATTRIBUTES_BIT);
+        copy_to_GL_state(GLUP_COLORS_ATTRIBUTES_BIT);
+        Context::do_update_uniform_buffer();
+    }
+    
+    void Context_VanillaGL::update_matrices() {
+        if(matrices_dirty_) {
+            Context::update_matrices();
+            copy_to_GL_state(GLUP_MATRICES_ATTRIBUTES_BIT);
+        }
+    }
+
+    void Context_VanillaGL::update_lighting() {
+        if(lighting_dirty_) {
+            Context::update_matrices();
+            copy_to_GL_state(GLUP_LIGHTING_ATTRIBUTES_BIT);
+        }
+    }
+    
     void Context_VanillaGL::configure_OpenGL_texturing() {
-        glDisable(GL_TEXTURE_1D);
-        glDisable(GL_TEXTURE_2D);
-        glDisable(GL_TEXTURE_3D);            
+        glDisable(GLUP_TEXTURE_1D_TARGET);
+        glDisable(GLUP_TEXTURE_2D_TARGET);
+        glDisable(GLUP_TEXTURE_3D_TARGET);            
         if( !uniform_state_.toggle[GLUP_PICKING].get() &&
             uniform_state_.toggle[GLUP_TEXTURING].get()
         ) {
-            switch(uniform_state_.texture_type.get()) {
-            case GLUP_TEXTURE_1D:
-                glEnable(GL_TEXTURE_1D);
-                break;
-            case GLUP_TEXTURE_2D:
-                glEnable(GL_TEXTURE_2D);
-                break;
-            case GLUP_TEXTURE_3D:
-                glEnable(GL_TEXTURE_3D);
-                break;
+            if(uniform_state_.toggle[GLUP_INDIRECT_TEXTURING].get()) {
+                begin_indirect_texturing();
+            } else {
+                switch(uniform_state_.texture_type.get()) {
+                case GLUP_TEXTURE_1D:
+                    glEnable(GLUP_TEXTURE_1D_TARGET);
+                    break;
+                case GLUP_TEXTURE_2D: {
+                    //  Copy the 2D texture bound to unit 1 to unit 0
+                    // else the fixed functionality pipeline cannot
+                    // see it.
+                    glActiveTexture(GL_TEXTURE0 + GLUP_TEXTURE_2D_UNIT);
+                    GLint tex;
+                    glGetIntegerv(GL_TEXTURE_BINDING_2D, &tex);
+                    glActiveTexture(GL_TEXTURE0);
+                    glBindTexture(GLUP_TEXTURE_2D_TARGET, GLuint(tex));
+                    glEnable(GLUP_TEXTURE_2D_TARGET);
+                } break;
+                case GLUP_TEXTURE_3D: {
+#ifdef GEO_GL_TEXTURE_3D                    
+                    //  Copy the 3D texture bound to unit 2 to unit 0
+                    // else the fixed functionality pipeline cannot
+                    // see it.
+                    glActiveTexture(GL_TEXTURE0 + GLUP_TEXTURE_3D_UNIT);
+                    GLint tex;
+                    glGetIntegerv(GL_TEXTURE_BINDING_3D, &tex);
+                    glActiveTexture(GL_TEXTURE0);
+                    glBindTexture(GLUP_TEXTURE_3D_TARGET, GLuint(tex));
+                    glEnable(GLUP_TEXTURE_3D_TARGET);
+#endif                                    
+                } break;
+                }
             }
+
             glMatrixMode(GL_TEXTURE);
             glLoadMatrixf(get_matrix(GLUP_TEXTURE_MATRIX));
             glMatrixMode(GL_MODELVIEW);
-
+            
             switch(uniform_state_.texture_mode.get()) {
             case GLUP_TEXTURE_REPLACE:
                 // Yes, it's GL_MODULATE also for texture replace,
@@ -144,20 +206,18 @@ namespace GLUP {
    
     void Context_VanillaGL::configure_OpenGL_lighting() {
         GLUPprimitive primitive = immediate_state_.primitive();
-        switch(primitive) {
-        case GLUP_POINTS:
-        case GLUP_LINES:
+
+        if(primitive == GLUP_POINTS || primitive == GLUP_LINES) {
             glDisable(GL_LIGHTING);
-            break;
-        default:
+        } else {
             if(uniform_state_.toggle[GLUP_LIGHTING].get()) {
                 glEnable(GL_LIGHTING);
                 glEnable(GL_NORMALIZE);
             } else {
                 glDisable(GL_LIGHTING);                
             }
-            break;
         }
+        
         if(
             uniform_state_.toggle[GLUP_VERTEX_COLORS].get() ||
             primitive == GLUP_POINTS ||
@@ -240,7 +300,7 @@ namespace GLUP {
                 4,
                 GL_FLOAT,
                 0,  // stride
-                isect_point_ 
+                &(isect_vertex_attribute_[0][0])
             );
         
             if(immediate_state_.buffer[1].is_enabled()) {
@@ -249,7 +309,7 @@ namespace GLUP {
                     4,
                     GL_FLOAT,
                     0,  // stride
-                    isect_color_ 
+                    &(isect_vertex_attribute_[1][0])                    
                 );
             }
         
@@ -259,7 +319,7 @@ namespace GLUP {
                     4,
                     GL_FLOAT,
                     0,  // stride
-                    isect_tex_coord_ 
+                    &(isect_vertex_attribute_[2][0])                    
                 );
             }
         }
@@ -272,145 +332,77 @@ namespace GLUP {
             glDisableClientState(GL_COLOR_ARRAY);
             glDisableClientState(GL_TEXTURE_COORD_ARRAY);
         }
+        if(uniform_state_.toggle[GLUP_INDIRECT_TEXTURING].get()) {
+            end_indirect_texturing();
+        }
+    }
+
+    void Context_VanillaGL::begin_indirect_texturing() {
+
+        // TODO: there is one texture matrix per texture unit,
+        // make sure that we do what we meant to do (associate
+        // the correct matrix with the correct unit)
+        // Here, texture matrix is associated with unit 2, whereas
+        // it acts on the colormap (needs to be fixed...)
+
+        // TODO: indirect texturing is only implemented for 3D textures
+        // for now. Implement it for 2D textures also if needed.
+
+        // Note: indirect texturing uses a fragment shader, not very
+        // "Vanilla", but not very "spicy" either (just an ARBfp1.0
+        // shader, that most graphic boards should support without
+        // any problem, it has been there since OpenGL 2.0).
+
+        //   This program reads the 3D texture (bound to unit 2),
+        // transforms the read value with the texture matrix,
+        // and then reads the colormap (bound to unit 0) using
+        // the transformed value.
+        
+        static const char* fshader_source =
+            "!!ARBfp1.0                                    "
+            "TEMP R0;                                      "
+            "TEX R0, fragment.texcoord[0], texture[2], 3D; "
+            "DP4 R0.x, state.matrix.texture[2].row[0], R0; "
+            "TEX result.color, R0, texture[0], 2D;         "
+            "END                                           "
+            ;
+        
+        if(indirect_texturing_program_ == 0) {
+            glGenProgramsARB(1, &indirect_texturing_program_) ;
+            glEnable(GL_FRAGMENT_PROGRAM_ARB);
+            glBindProgramARB(
+                GL_FRAGMENT_PROGRAM_ARB, indirect_texturing_program_
+            );
+            glProgramStringARB(
+                GL_FRAGMENT_PROGRAM_ARB, GL_PROGRAM_FORMAT_ASCII_ARB,
+                GLsizei(strlen(fshader_source)), fshader_source
+            );
+            GLint errpos ;
+            glGetIntegerv(GL_PROGRAM_ERROR_POSITION_ARB, &errpos) ;
+            bool ok = ( errpos == -1) ;
+            if(!ok) {
+                const char* s = (const char*)(
+                    glGetString(GL_PROGRAM_ERROR_STRING_ARB)
+                );
+                Logger::err("ARBfp")
+                    << ":" << errpos << ": " << s << std::endl ;
+            } 
+        }
+        glBindProgramARB(
+            GL_FRAGMENT_PROGRAM_ARB, indirect_texturing_program_
+        );
+        glEnable(GL_FRAGMENT_PROGRAM_ARB);
+    }
+
+    void Context_VanillaGL::end_indirect_texturing() {
+        glDisable(GL_FRAGMENT_PROGRAM_ARB);
     }
     
     void Context_VanillaGL::setup() {
-        uniform_buffer_dirty_=true;
-        matrices_dirty_=true;        
-        uniform_binding_point_=1;
-
-        std::map<std::string, GLsizei> type_to_size;
-        type_to_size["bool"] = sizeof(int);
-        type_to_size["vec4"] = 4*sizeof(GLfloat);
-        type_to_size["vec3"] = 3*sizeof(GLfloat);
-        type_to_size["mat4"] = 4*4*sizeof(GLfloat);
-        type_to_size["mat3"] = 4*3*sizeof(GLfloat); // yes, 4, there is padding
-        type_to_size["float"] = sizeof(GLfloat);
-        type_to_size["int"] = sizeof(GLint);
-
-        // Parse uniform state declaration in order to "emulate" it...
-        uniform_buffer_size_ = 0;
-        std::istringstream input(uniform_state_declaration());
-        std::string line;
-        while(std::getline(input,line)) {
-            std::vector<std::string> words;
-            GEO::String::split_string(line, ' ', words);
-            if(
-                (words.size() == 2 && words[1][words[1].length()-1] == ';') ||
-                (words.size() == 3 && words[2] == ";")
-            ) {
-                std::string vartype = words[0];
-                std::string varname = words[1];
-                if(varname[varname.length()-1] == ';') {
-                    varname = varname.substr(0, varname.length()-1);
-                }
-                if(type_to_size.find(vartype) != type_to_size.end()) {
-                    variable_to_offset_[varname] = uniform_buffer_size_;
-                    uniform_buffer_size_ += type_to_size[vartype];
-                }
-            }
-        }
-        
-        uniform_buffer_data_ = new Memory::byte[uniform_buffer_size_];
-        Memory::clear(uniform_buffer_data_, size_t(uniform_buffer_size_));
-
-        setup_state_variables();
-        setup_immediate_buffers();
-        setup_primitives();
-
-        world_clip_plane_ = uniform_state_.world_clip_plane.get_pointer();
+        create_CPU_side_uniform_buffer();
     }
 
-    void Context_VanillaGL::shrink_cells_in_immediate_buffers() {
-        if(
-            uniform_state_.cells_shrink.get() == 0.0f   ||
-            immediate_state_.primitive() == GLUP_POINTS ||
-            immediate_state_.primitive() == GLUP_LINES  ||
-            (uniform_state_.clipping_mode.get() == GLUP_CLIP_SLICE_CELLS &&
-             uniform_state_.toggle[GLUP_CLIPPING].get())
-        ) {
-            return;
-        }
-        
-        GLfloat s = uniform_state_.cells_shrink.get();
-        GLfloat g[3];
-        index_t nb_v = nb_vertices_per_primitive[immediate_state_.primitive()];
-        index_t v=0;
-        while(v < immediate_state_.nb_vertices()) {
-            g[0] = 0.0f;
-            g[1] = 0.0f;
-            g[2] = 0.0f;
-            for(index_t lv=0; lv<nb_v; ++lv) {
-                GLfloat* p = immediate_state_.buffer[0].element_ptr(v+lv);
-                g[0] += p[0];
-                g[1] += p[1];
-                g[2] += p[2];
-            }
-            g[0] /= GLfloat(nb_v);
-            g[1] /= GLfloat(nb_v);
-            g[2] /= GLfloat(nb_v);
-            for(index_t lv=0; lv<nb_v; ++lv) {
-                GLfloat* p = immediate_state_.buffer[0].element_ptr(v+lv);
-                p[0] = s*g[0] + (1.0f - s)*p[0];
-                p[1] = s*g[1] + (1.0f - s)*p[1];
-                p[2] = s*g[2] + (1.0f - s)*p[2];                    
-            }
-            v += nb_v;
-        }
-    }
 
-    void Context_VanillaGL::classify_vertices_in_immediate_buffers() {
-        if(!uniform_state_.toggle[GLUP_CLIPPING].get()) {
-            return;
-        }
-        if(uniform_state_.clipping_mode.get() == GLUP_CLIP_STANDARD) {
-            return;
-        }
-        if(
-            immediate_state_.primitive() == GLUP_POINTS ||
-            immediate_state_.primitive() == GLUP_LINES  ||
-            immediate_state_.primitive() == GLUP_TRIANGLES ||
-            immediate_state_.primitive() == GLUP_QUADS
-        ) {
-            return;
-        }
-
-        for(index_t v=0; v<immediate_state_.nb_vertices(); ++v) {
-            float* p = immediate_state_.buffer[0].element_ptr(v);
-            float s = 0.0;
-            for(index_t i=0; i<4; ++i) {
-                s += world_clip_plane_[i]*p[i];
-            }
-            v_is_visible_[v] = (s >= 0);
-        }
-    }
-
-    bool Context_VanillaGL::cell_is_clipped(index_t first_v) {
-        if(!uniform_state_.toggle[GLUP_CLIPPING].get()) {
-            return false;
-        }
-        if(uniform_state_.clipping_mode.get() == GLUP_CLIP_STANDARD) {
-            return false;
-        }
-        index_t nb_visible=0;
-        index_t nb_in_cell =
-            nb_vertices_per_primitive[immediate_state_.primitive()];
-        for(index_t lv=0; lv<nb_in_cell; ++lv) {
-            nb_visible += (v_is_visible_[first_v + lv]);
-        }
-        switch(uniform_state_.clipping_mode.get()) {
-        case GLUP_CLIP_STRADDLING_CELLS:
-            return (nb_visible == 0 || nb_visible == nb_in_cell);
-            break;
-        case GLUP_CLIP_WHOLE_CELLS:
-            return (nb_visible == 0);
-            break;
-        case GLUP_CLIP_SLICE_CELLS:
-            return false;
-            break;
-        }
-        return false;
-    }
 
     void Context_VanillaGL::flush_immediate_buffers() {
         shrink_cells_in_immediate_buffers();
@@ -420,7 +412,8 @@ namespace GLUP {
             GL_ENABLE_BIT | GL_LIGHTING_BIT |
             GL_POLYGON_BIT | GL_TEXTURE_BIT |
             GL_CURRENT_BIT
-        );        
+        );
+        
         if(
             uniform_state_.clipping_mode.get() != GLUP_CLIP_STANDARD &&
             immediate_state_.primitive() != GLUP_POINTS &&
@@ -448,9 +441,9 @@ namespace GLUP {
             // Do it one more time for the mesh
             
             glDisable(GL_LIGHTING);
-            glDisable(GL_TEXTURE_1D);
-            glDisable(GL_TEXTURE_2D);
-            glDisable(GL_TEXTURE_3D);
+            glDisable(GLUP_TEXTURE_1D_TARGET);
+            glDisable(GLUP_TEXTURE_2D_TARGET);
+            glDisable(GLUP_TEXTURE_3D_TARGET);
             glDisable(GL_COLOR_MATERIAL);
             
             // Disable vertex attributes.
@@ -484,7 +477,10 @@ namespace GLUP {
                 }
             }
         }
+
+        glColor3f(1.0f, 1.0f, 1.0f);
         glPopAttrib();        
+
         immediate_state_.reset();        
     }
     
@@ -517,12 +513,8 @@ namespace GLUP {
         case GLUP_CONNECTORS:
             draw_immediate_buffer_GLUP_CONNECTORS();
             break;
-        default:
-            Logger::warn("GLUP VanillaGL")
-                << glup_primitive_name(immediate_state_.primitive())
-                << ":not implemented yet"
-                << std::endl;
-            break;
+        case GLUP_NB_PRIMITIVES:
+            geo_assert_not_reached;
         }
     }
 
@@ -872,3 +864,4 @@ namespace GLUP {
     }
 }
 
+#endif
