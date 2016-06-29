@@ -56,7 +56,7 @@ This format mandatory is an archive that contain:
   - SURFACE_XX.geogram: file holding information of SURFACE XX of the GeoModel. (needed boundary representation)
   - REGION_XX.geogram: file holding information of REGION XX of the GeoModel. (optional only if the REGION of the GeoModel is meshed)
   
- \setcion connectivity Connectivity of Meshed Entity.
+ \section connectivity Connectivity of Meshed Entity.
  The text file connectivity.txt describes the connectivity of CORNER, LINE, SURFACE and eventually REGION of the GeoModel.
   - Each Corner is associated to its connected lines. 
   \code
