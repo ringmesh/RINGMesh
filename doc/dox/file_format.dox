@@ -38,7 +38,33 @@
 
 \page ringmesh_file_format RINGMesh File format
 
-The .gm format
+Available Input/Output file format
+============
+
+RINGMesh is able to import and export \link ringmesh_geo_model GeoModel \endlink from file format listed below.
+
+ Supported Import Format
+ -----------------------
+ - .ml: Model3D format from Gocad/Skua
+ - .so: TSolid volumetric mesh (tetrahedra) format from Gocad/Skua
+
+ Supported Export Format
+ -----------------------
+ - .obj: surface mesh format
+ - .csmp: CSMP++ format (export 3 files: .asc, .dat, -regions.txt)
+ - .gmsh: Gmsh format (can also export additional information for Kine3D)
+ - .gprs: GPRS format
+ - .mail: ASTER format 
+ - .meshb: LibMesh format
+ - .gm: homemade format
+ - .so: Tsolid format for Gocad/Skua
+ - .tetgen: TetGen format (export 3 files: .node, .ele, .neigh)
+ - .vtk: VTK format for ParaView
+ 
+ RINGMesh can then be used as a file converter to ease connection with different softwares see RINGMesh \link ringmesh_features Functionalities \endlink
+
+
+The ringmesh file format: file.gm 
 ============
 
 RINGMesh uses an homemade file format (file_name.gm).
