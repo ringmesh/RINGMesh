@@ -48,8 +48,15 @@ set(CMAKE_CONFIGURATION_TYPES
 set(MG_TETRA "" CACHE PATH "Path to MG-Tetra")
 if(MG_TETRA)
     set(USE_MG_TETRA ON)
-    message(STATUS "Using MG-Tetra directory =  ${MG_TETRA}")
+    message(STATUS "Using MG-Tetra directory = ${MG_TETRA}")
 endif(MG_TETRA)
+
+set(EMSCRIPTEN "" CACHE PATH "Path to Emscripten")
+if(EMSCRIPTEN)
+    set(USE_EMSCRIPTEN ON)
+    message(STATUS "Using Emscripten directory = ${EMSCRIPTEN}")
+    list(APPEND CMAKE_CONFIGURATION_TYPES Emscripten)
+endif(EMSCRIPTEN)
   
 
 # By default RINGMesh will be compiled with OpenMP flags
@@ -125,6 +132,7 @@ if(UNIX)
                 -DPROJECT_BINARY_DIR:STRING=${project_binary_dir_config}
                 -DGLOBAL_BINARY_DIR:STRING=${PROJECT_BINARY_DIR}
                 -DMG_TETRA:STRING=${MG_TETRA}
+                -DEMSCRIPTEN:STRING=${EMSCRIPTEN}
                 -DUSE_OPENMP:BOOL=${USE_OPENMP}
                 -DRINGMESH_WITH_TETGEN:BOOL=${RINGMESH_WITH_TETGEN} 
                 -DRINGMESH_WITH_GRAPHICS:BOOL=${RINGMESH_WITH_GRAPHICS}
@@ -158,25 +166,35 @@ elseif(UNIX)
     set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
     add_compile_options(-Wall -Wextra -Wno-long-long -Wconversion)
     
-    # Determine gcc version and activate additional warnings available in latest versions
-    execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
+    if(CMAKE_BUILD_TYPE STREQUAL "Emscripten")
+        set(CMAKE_C_COMPILER "emcc")
+        set(CMAKE_CXX_COMPILER "em++")
+        set(CMAKE_LINKER "emld")
 
-    if (GCC_VERSION VERSION_GREATER 4.3 OR GCC_VERSION VERSION_EQUAL 4.3)
-        message(STATUS "GCC version >= 4.3, activating sign conversion warnings")
-        add_compile_options(-Wsign-conversion)
-    endif()
+        include(${EMSCRIPTEN}/cmake/Modules/Platform/Emscripten.cmake)
+                
+    else()    
+        # Determine gcc version and activate additional warnings available in latest versions
+        execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
 
-    if (GCC_VERSION VERSION_GREATER 4.6 OR GCC_VERSION VERSION_EQUAL 4.6)
-        message(STATUS "GCC version >= 4.6, activating double promotion warnings")
-        add_compile_options(-Wdouble-promotion)
+        if (GCC_VERSION VERSION_GREATER 4.3 OR GCC_VERSION VERSION_EQUAL 4.3)
+            message(STATUS "GCC version >= 4.3, activating sign conversion warnings")
+            add_compile_options(-Wsign-conversion)
+        endif()
+
+        if (GCC_VERSION VERSION_GREATER 4.6 OR GCC_VERSION VERSION_EQUAL 4.6)
+            message(STATUS "GCC version >= 4.6, activating double promotion warnings")
+            add_compile_options(-Wdouble-promotion)
+        endif()
+        
+        # Enable parallel computation
+        set(COMPILATION_OPTION -- -j4)    
     endif()
-    
-    # Enable parallel computation
-    set(COMPILATION_OPTION -- -j4)    
 else(WIN32)
     # Nothing else really supported
     message(FATAL_ERROR "Your platform is not supported. Please modify the cmakelist file.")    
 endif(WIN32)
+
 
 #------------------------------------------------------------------------------------------------
 # Configure a header file to pass on some of the CMake settings
@@ -203,7 +221,11 @@ if(WIN32)
     add_compile_options(-DGEO_DYNAMIC_LIBS) 
 else(WIN32)
     set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/geogram/${CMAKE_BUILD_TYPE})
-    set(geoplatform Linux64-gcc-dynamic)
+    if(CMAKE_BUILD_TYPE STREQUAL "Emscripten")
+        set(geoplatform Emscripten-clang)
+    else()
+        set(geoplatform Linux64-gcc-dynamic)
+    endif()
 endif(WIN32)
 
 # Define Geogram as an external project that we know how to
