@@ -594,6 +594,7 @@ namespace RINGMesh {
                     mesh_builder_.set_cell_vertex( cur_cell, v,global_vertex_id);
                 }
                 region_id_[cur_cell] = r ;
+                cell_id_[cur_cell] = c ;
             }
         }
 
@@ -622,12 +623,18 @@ namespace RINGMesh {
         if( !region_id_.is_bound() ) {
             region_id_.bind( gmm_.cell_attribute_manager(), region_att_name ) ;
         }
+        if( !cell_id_.is_bound() ) {
+            cell_id_.bind( gmm_.cell_attribute_manager(), cell_region_att_name ) ;
+        }
     }
 
     void GeoModelMeshCells::unbind_attribute()
     {
         if( region_id_.is_bound() ) {
             region_id_.unbind() ;
+        }
+        if( cell_id_.is_bound() ) {
+            cell_id_.unbind() ;
         }
         if( facet_id_.is_bound() ) {
             facet_id_.unbind() ;
@@ -711,7 +718,7 @@ namespace RINGMesh {
     {
         test_and_initialize() ;
         ringmesh_assert( c < mesh_.nb_cells() ) ;
-        return c - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * region( c )] ;
+        return cell_id_[c] ;
     }
 
     GEO::MeshCellType GeoModelMeshCells::type( index_t c ) const

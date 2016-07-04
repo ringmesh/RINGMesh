@@ -5,6 +5,7 @@
 # Shell script extension
 set(SHELL_SUFFIX "sh")
 
+message(STATUS EMSCRIPTEN_DIR = ${EMSCRIPTEN_DIR})
 find_path(EMSCRIPTEN_DIR
       emcc
       HINTS
@@ -13,6 +14,8 @@ find_path(EMSCRIPTEN_DIR
         "C:/Program Files/emscripten"
          /usr/lib/emscripten
 )
+
+message(STATUS EMSCRIPTEN_DIR = ${EMSCRIPTEN_DIR})
 
 set(CMAKE_C_COMPILER "emcc")
 set(CMAKE_CXX_COMPILER "em++")
