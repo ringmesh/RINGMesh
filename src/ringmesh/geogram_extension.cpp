@@ -169,20 +169,27 @@ namespace RINGMesh {
                     if( in.field_matches( 0, "VRTX" )
                         || in.field_matches( 0, "PVRTX" ) ) {
                         vertices_[mesh_dimension_ * v] = in.field_as_double( 2 ) ;
-                        vertices_[mesh_dimension_ * v + 1] = in.field_as_double( 3 ) ;
-                        vertices_[mesh_dimension_ * v + 2] = in.field_as_double( 4 ) * z_sign_ ;
+                        vertices_[mesh_dimension_ * v + 1] = in.field_as_double(
+                            3 ) ;
+                        vertices_[mesh_dimension_ * v + 2] = in.field_as_double( 4 )
+                            * z_sign_ ;
                         ++v ;
                     } else if( in.field_matches( 0, "PATOM" )
                         || in.field_matches( 0, "ATOM" ) ) {
                         index_t v0 = in.field_as_uint( 2 ) - 1 ;
-                        vertices_[mesh_dimension_ * v] = vertices_[mesh_dimension_ * v0] ;
-                        vertices_[mesh_dimension_ * v + 1] = vertices_[mesh_dimension_ * v0 + 1] ;
-                        vertices_[mesh_dimension_ * v + 2] = vertices_[mesh_dimension_ * v0 + 2] ;
+                        vertices_[mesh_dimension_ * v] = vertices_[mesh_dimension_
+                            * v0] ;
+                        vertices_[mesh_dimension_ * v + 1] =
+                            vertices_[mesh_dimension_ * v0 + 1] ;
+                        vertices_[mesh_dimension_ * v + 2] =
+                            vertices_[mesh_dimension_ * v0 + 2] ;
                         ++v ;
                     } else if( in.field_matches( 0, "TRGL" ) ) {
                         triangles_[3 * t] = index_t( in.field_as_uint( 1 ) - 1 ) ;
-                        triangles_[3 * t + 1] = index_t( in.field_as_uint( 2 ) - 1 ) ;
-                        triangles_[3 * t + 2] = index_t( in.field_as_uint( 3 ) - 1 ) ;
+                        triangles_[3 * t + 1] = index_t(
+                            in.field_as_uint( 2 ) - 1 ) ;
+                        triangles_[3 * t + 2] = index_t(
+                            in.field_as_uint( 3 ) - 1 ) ;
                         t++ ;
                     }
                 }
@@ -281,7 +288,7 @@ namespace RINGMesh {
     void ringmesh_mesh_io_initialize()
     {
         geo_register_MeshIOHandler_creator( TSurfMeshIOHandler, "ts" ) ;
-        geo_register_MeshIOHandler_creator( LINMeshIOHandler, "lin" ) ;
+        geo_register_MeshIOHandler_creator( LINMeshIOHandler, "lin" );
     }
 
     /***********************************************************************/
@@ -492,13 +499,16 @@ namespace RINGMesh {
             const index_t cur_vertex_id = mesh_facets.vertex( facet,
                 facet_vertex_itr ) ;
             const vec3& cur_vertex_vec = mesh_vertices.point( cur_vertex_id ) ;
-
-            const index_t prev_local_id = mesh_facets.prev_corner_around_facet(
-                facet, cur_vertex_id ) ;
+            const index_t prev_local_id = ( mesh.facets.nb_vertices( facet )
+                + facet_vertex_itr - 1 ) % mesh.facets.nb_vertices( facet ) ;
+//            const index_t prev_local_id = mesh_facets.prev_corner_around_facet(
+//                facet, facet_vertex_itr ) ;
             const index_t prev_id = mesh_facets.vertex( facet, prev_local_id ) ;
             const vec3& prev_vec = mesh_vertices.point( prev_id ) ;
-            const index_t next_local_id = mesh_facets.next_corner_around_facet(
-                facet, cur_vertex_id ) ;
+            const index_t next_local_id = ( mesh.facets.nb_vertices( facet )
+                + facet_vertex_itr + 1 ) % mesh.facets.nb_vertices( facet ) ;
+//            const index_t next_local_id = mesh_facets.next_corner_around_facet(
+//                facet, facet_vertex_itr ) ;
             const index_t next_id = mesh_facets.vertex( facet, next_local_id ) ;
             const vec3& next_vec = mesh_vertices.point( next_id ) ;
 
