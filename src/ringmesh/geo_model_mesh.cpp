@@ -2053,7 +2053,6 @@ namespace RINGMesh {
             }
             GEO::Attribute< double > cur_att_on_geo_model_mesh(
                 cell_attribute_manager(), att_c_names[att_c] ) ;
-            DEBUG(cur_att_on_geo_model_mesh.dimension()) ;
             index_t att_dim = cur_att_on_geo_model_mesh.dimension() ;
 
             for( index_t reg = 0; reg < geo_model_.nb_regions(); reg++ ) {
@@ -2068,8 +2067,6 @@ namespace RINGMesh {
                 cur_att_on_geo_model_mesh_entity.create_vector_attribute(
                     geo_model_.region( reg ).cell_attribute_manager(),
                     att_c_names[att_c], att_dim ) ;
-                DEBUG(att_c_names[att_c]) ;
-                DEBUG(cur_att_on_geo_model_mesh_entity.dimension()) ;
                 for( index_t c = 0; c < geo_model_.region( reg ).nb_mesh_elements(); c++ ) {
                     vec3 center = geo_model_.region( reg ).mesh_element_center(c) ;
                     std::vector< index_t > c_in_geom_model_mesh ;
