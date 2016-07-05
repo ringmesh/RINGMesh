@@ -56,6 +56,7 @@ namespace RINGMesh {
     /*! @todo Move this global variables in a function */
     const std::string surface_att_name = "region" ;
     const std::string region_att_name = "region" ;
+    const std::string cell_region_att_name = "cell_region" ;
     const std::string order_att_name = "order" ;
 
     /*! 
@@ -892,6 +893,8 @@ namespace RINGMesh {
 
         /// Attribute storing the region index per cell
         GEO::Attribute< index_t > region_id_ ;
+        /// Attribute storing the cell index in region per cell
+        GEO::Attribute< index_t > cell_id_ ;
         /*!
          * Vector storing the index of the starting cell index
          * for a given region and a given cell type.
