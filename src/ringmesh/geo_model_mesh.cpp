@@ -1264,12 +1264,18 @@ namespace RINGMesh {
         if( !surface_id_.is_bound() ) {
             surface_id_.bind( gmm_.facet_attribute_manager(), surface_att_name ) ;
         }
+        if( !facet_id_.is_bound() ) {
+            facet_id_.bind( gmm_.facet_attribute_manager(), facet_surface_att_name ) ;
+        }
     }
 
     void GeoModelMeshFacets::unbind_attribute()
     {
         if( surface_id_.is_bound() ) {
             surface_id_.unbind() ;
+        }
+        if( facet_id_.is_bound() ) {
+            facet_id_.unbind() ;
         }
     }
 
@@ -1318,7 +1324,7 @@ namespace RINGMesh {
     {
         test_and_initialize() ;
         ringmesh_assert( f < mesh_.nb_facets() ) ;
-        return f - surface_facet_ptr_[ALL * surface( f )] ;
+        return facet_id_[f] ;
     }
 
     GeoModelMeshFacets::FacetType GeoModelMeshFacets::type(
@@ -1552,6 +1558,7 @@ namespace RINGMesh {
                     cur_facet = mesh_builder_.create_facet_polygon( vertices ) ;
                 }
                 surface_id_[cur_facet] = s ;
+                facet_id_[cur_facet] = f ;
             }
         }
 

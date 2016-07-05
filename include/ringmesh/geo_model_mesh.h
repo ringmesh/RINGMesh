@@ -57,6 +57,8 @@ namespace RINGMesh {
     const std::string surface_att_name = "region" ;
     const std::string region_att_name = "region" ;
     const std::string cell_region_att_name = "cell_region" ;
+    const std::string facet_surface_att_name = "facet_surface" ;
+
     const std::string order_att_name = "order" ;
 
     /*! 
@@ -409,6 +411,8 @@ namespace RINGMesh {
 
         /// Attribute storing the surface index per facet
         GEO::Attribute< index_t > surface_id_ ;
+        /// Attribute storing the facet index in surface per cell
+        GEO::Attribute< index_t > facet_id_ ;
         /*!
          * Vector storing the index of the starting facet index
          * for a given surface and a given facet type.
@@ -484,7 +488,6 @@ namespace RINGMesh {
         /// Attached Mesh
         Mesh& mesh_ ;
         MeshBuilder& mesh_builder_;
-
         /*!
          * Vector storing the index of the starting edge index
          * for a given well
