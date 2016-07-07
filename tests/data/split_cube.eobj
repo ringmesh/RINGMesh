@@ -1,0 +1,57 @@
+v 0.0 0.0 0.0 
+v 1.0 0.0 0.0 
+v 1.0 1.0 0.0 
+v 0.0 1.0 0.0
+v 0.0 0.0 0.3 
+v 1.0 0.0 0.3 
+v 1.0 1.0 0.3 
+v 0.0 1.0 0.3
+v 0.0 0.0 1.0
+v 1.0 0.0 1.0 
+v 1.0 1.0 1.0 
+v 0.0 1.0 1.0
+f 1 2 3 
+f 1 3 4 
+f 1 6 2
+f 1 5 6
+f 2 7 3 
+f 2 6 7
+f 3 8 4 
+f 3 7 8 
+f 4 5 1
+f 4 8 5   
+f  5 6 10 
+f  5 10 9
+f 6 7 11 
+f 6 11 10
+f 7 8 12 
+f 7 12 11
+f 8 5 9 
+f 8 9 12 
+f 9 10 11
+f 9 11 12  
+f 5 6 7
+f 5 7 8  
+# attribute chart facet integer
+# attrs f 1 1
+# attrs f 2 1
+# attrs f 3 1
+# attrs f 4 1
+# attrs f 5 1
+# attrs f 6 1
+# attrs f 7 1
+# attrs f 8 1
+# attrs f 9 1
+# attrs f 10 1
+# attrs f 11 2
+# attrs f 12 2
+# attrs f 13 2
+# attrs f 14 2
+# attrs f 15 2
+# attrs f 16 2
+# attrs f 17 2
+# attrs f 18 2
+# attrs f 19 2
+# attrs f 20 2
+# attrs f 21 3
+# attrs f 22 3
