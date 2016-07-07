@@ -2179,7 +2179,7 @@ namespace RINGMesh {
         index_t line_id,
         GEO::vector< index_t >& to_delete )
     {
-        Mesh& M = mesh_entity( GME::CORNER, line_id ).mesh_ ;
+        Mesh& M = mesh_entity( GME::LINE, line_id ).mesh_ ;
         MeshBuilder builder( M ) ;
         builder.delete_edges( to_delete, false ) ;
     }
@@ -2196,7 +2196,7 @@ namespace RINGMesh {
         index_t region_id,
         GEO::vector< index_t >& to_delete )
     {
-        Mesh& M = mesh_entity( GME::CORNER, region_id ).mesh_ ;
+        Mesh& M = mesh_entity( GME::REGION, region_id ).mesh_ ;
         MeshBuilder builder( M ) ;
         builder.delete_cells( to_delete, false ) ;
         builder.connect_cells() ;
