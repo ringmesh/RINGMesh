@@ -553,7 +553,7 @@ namespace RINGMesh {
 
     TetraGen::~TetraGen()
     {
-        if( !builder_ ) delete builder_ ;
+        if( builder_ ) delete builder_ ;
     }
 
     void TetraGen::set_point( index_t index, const double* point )

@@ -264,6 +264,7 @@ namespace RINGMesh {
         char* copy = new char[tetgen_command_line_.length() + 1] ;
         std::strcpy( copy, tetgen_command_line_.c_str() ) ;
         tetgen_args_.parse_commandline( copy ) ;
+        delete[] copy ;
     }
 
     void TetgenMesher::assign_result_tetmesh_to_mesh( Mesh& M ) const
