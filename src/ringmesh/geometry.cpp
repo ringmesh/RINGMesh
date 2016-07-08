@@ -1013,7 +1013,7 @@ namespace RINGMesh {
         } else if( s2 == ZERO ) {
             return s1 == s3 ;
         } else if( s3 == ZERO ) {
-            return s1 == s1 ;
+            return s1 == s2 ;
         }
 
         return s1 == s2 && s2 == s3 ;
