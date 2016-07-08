@@ -1555,9 +1555,11 @@ namespace RINGMesh {
      */
     void GeoModelBuilder::compute_surface_adjacencies( index_t surface_id )
     {
-
         Mesh& mesh = mesh_entity( GME::gme_t( GME::SURFACE, surface_id ) ).mesh_ ;
         MeshBuilder builder( mesh ) ;
+        for( index_t i = 0; i < mesh.nb_facet_corners(); i++ ) {
+            builder.set_facet_corners_adjacent( i, Surface::NO_ADJACENT ) ;
+        }
         builder.connect_facets() ;
     }
 
