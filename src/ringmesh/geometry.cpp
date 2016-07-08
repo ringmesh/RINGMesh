@@ -1008,8 +1008,12 @@ namespace RINGMesh {
             GEO::PCK::orient_3d( p.data(), q.data(), p1.data(), p2.data() ) ) ;
         Sign s3 = sign(
             GEO::PCK::orient_3d( p.data(), q.data(), p2.data(), p0.data() ) ) ;
-        if( s1 == ZERO || s2 == ZERO || s3 == ZERO ) {
-            return true ; // Arbitrary choice !!!!
+        if( s1 == ZERO ) {
+            return s2 == s3 ;
+        } else if( s2 == ZERO ) {
+            return s1 == s3 ;
+        } else if( s3 == ZERO ) {
+            return s1 == s1 ;
         }
 
         return s1 == s2 && s2 == s3 ;
