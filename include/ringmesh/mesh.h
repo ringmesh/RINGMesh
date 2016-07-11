@@ -227,13 +227,6 @@ namespace RINGMesh {
             return mesh_->facets.vertex( facet_id, vertex_id ) ;
         }
         /*!
-         * @brief return the vertex index of the corner \param corner_id
-         */
-        index_t facet_corner_vertex( index_t corner_id ) const
-        {
-            return mesh_->facet_corners.vertex( corner_id ) ;
-        }
-        /*!
          * @brief Gets the number of all facets in the whole Mesh.
          */
         index_t nb_facets() const
@@ -247,13 +240,6 @@ namespace RINGMesh {
         index_t nb_facet_vertices( index_t facet_id ) const
         {
             return mesh_->facets.nb_vertices( facet_id ) ;
-        }
-        /*!
-         * Get the number of corners of all facets
-         */
-        index_t nb_facet_corners() const
-        {
-            return mesh_->facet_corners.nb() ;
         }
         /*!
          * @brief Get the first vertex index of a facet.
@@ -420,12 +406,6 @@ namespace RINGMesh {
             return mesh_->cells.facet( cell_id,facet_id ) ;
         }
         /*!
-         * Get the number of corners of all cells
-         */
-        index_t cell_corner_vertex( index_t corner_id ) const {
-            return mesh_->cell_corners.vertex( corner_id ) ;
-        }
-        /*!
          * @brief Gets the number of facet in a cell
          * @param[in] cell_id index of the cell
          * @return the number of facet of the cell \param cell_id
@@ -468,9 +448,6 @@ namespace RINGMesh {
         index_t nb_cells() const
         {
             return mesh_->cells.nb() ;
-        }
-        index_t nb_cell_corners()const {
-            return mesh_->cell_corners.nb() ;
         }
         /*!
          * @return the index of the adjacent cell of \param cell_id along the facet \param facet_id
@@ -872,24 +849,6 @@ namespace RINGMesh {
             mesh_.mesh_->facets.set_vertex( facet_id, local_vertex_id, vertex_id ) ;
         }
         /*!
-         * @brief Sets a vertex of a facet by local vertex index.
-         * @param[in] corner_id index of the corner.
-         * @param[in] global_vertex_id.
-         */
-        void set_facet_corner( index_t corner_id, index_t vertex_id )
-        {
-            mesh_.mesh_->facet_corners.set_vertex( corner_id, vertex_id ) ;
-        }
-        /*!
-         * @brief Sets an adjacent facet by corner index.
-         * @param[in] corner_id the corner index starting edge.
-         * @param[in] specifies the facet incident to f along edge le or GEO::NO_FACET if \p edge_id is on the border.
-         */
-        void set_facet_corners_adjacent( index_t corner_id, index_t specifies )
-        {
-            mesh_.mesh_->facet_corners.set_adjacent_facet( corner_id, specifies ) ;
-        }
-        /*!
          * @brief Sets an adjacent facet by facet and local edge index.
          * @param[in] facet_id the facet index
          * @param[in] edge_id the local index of an edge in facet \p facet_id
@@ -1025,6 +984,19 @@ namespace RINGMesh {
          */
         void set_cell_corner_vertex_index( index_t corner_index, index_t vertex_index ) {
             mesh_.mesh_->cell_corners.set_vertex( corner_index, vertex_index ) ;
+        }
+        /*!
+         * \brief Sets the cell adjacent
+         * \param[in] cell_index index of the cell
+         * \param[in] facet_index local index of the cell facet
+         * \param[in] cell_adjacent adjacent value to set
+         */
+        void set_cell_adjacent(
+            index_t cell_index,
+            index_t facet_index,
+            index_t cell_adjacent )
+        {
+            mesh_.mesh_->cells.set_adjacent( cell_index, facet_index, cell_adjacent ) ;
         }
         /*!
          * @brief Retrieve the adjacencies
