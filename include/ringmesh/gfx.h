@@ -291,16 +291,33 @@ namespace RINGMesh {
         virtual void draw_scene() ;
         virtual void draw_object_properties() ;
         void draw_colormap() ;
+        void toggle_colored_cells() ;
+        void toggle_colored_regions() ;
+        void toggle_colored_layers() ;
 
         static void increment_shrink() ;
         static void decrement_shrink() ;
-        static void toggle_colored_cells() ;
-        static void toggle_colored_regions() ;
-        static void toggle_colored_layers() ;
 
         void reset_attribute_name() ;
         void set_attribute_names( const GEO::AttributesManager& attributes ) ;
         void autorange() ;
+
+        struct OldNewStatus {
+            void operator=( bool value )
+            {
+                old_status = value ;
+                new_status = value ;
+            }
+            bool need_to_update() const
+            {
+                return old_status != new_status ;
+            }
+            void update() {
+                old_status = new_status ;
+            }
+            bool old_status ;
+            bool new_status ;
+        };
 
     private:
         GeoModel* GM_ ;
@@ -311,10 +328,10 @@ namespace RINGMesh {
         bool show_lines_ ;
         bool show_surface_ ;
         bool show_volume_ ;
-        bool colored_cells_ ;
         bool show_voi_ ;
-        bool show_colored_regions_ ;
-        bool show_colored_layers_ ;
+        OldNewStatus colored_cells_ ;
+        OldNewStatus show_colored_regions_ ;
+        OldNewStatus show_colored_layers_ ;
         bool show_colormap_ ;
 
         float shrink_ ;
