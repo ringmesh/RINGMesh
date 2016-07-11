@@ -1560,7 +1560,7 @@ namespace RINGMesh {
         Mesh& mesh = mesh_entity( GME::gme_t( GME::SURFACE, surface_id ) ).mesh_ ;
         MeshBuilder builder( mesh ) ;
         for( index_t f = 0; f < mesh.nb_facets(); f++ ) {
-            for( index_t v = 0; v < 3; v++ ) {
+            for( index_t v = 0; v < mesh.nb_facet_vertices( f ); v++ ) {
                 builder.set_facet_adjacent( f, v, Surface::NO_ADJACENT ) ;
             }
         }
@@ -1572,8 +1572,8 @@ namespace RINGMesh {
         Mesh& mesh = mesh_entity( GME::gme_t( GME::REGION, region_id ) ).mesh_ ;
         MeshBuilder builder( mesh ) ;
         for( index_t c = 0; c < mesh.nb_cells(); c++ ) {
-            for( index_t v = 0; v < mesh.nb_cell_vertices( c ); v++ ) {
-                builder.set_cell_adjacent( c, v, GEO::NO_CELL ) ;
+            for( index_t f = 0; f < mesh.nb_cell_facets( c ); f++ ) {
+                builder.set_cell_adjacent( c, f, GEO::NO_CELL ) ;
             }
         }
         builder.connect_cells() ;
