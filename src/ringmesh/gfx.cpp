@@ -779,6 +779,26 @@ namespace RINGMesh {
         }
     }
 
+
+    /*!
+     * Toggles the cell type to all the regions
+     */
+    void RegionGfxManager::set_draw_cells( GEO::MeshCellType type, bool x )
+    {
+        for( index_t m = 0; m < entities_.size(); m++ ) {
+            set_draw_cells( m, type, x ) ;
+        }
+    }
+
+    /*!
+     * Toggles the cell type display
+     */
+    void RegionGfxManager::set_draw_cells( index_t m, GEO::MeshCellType type, bool x )
+    {
+        ringmesh_assert( m < entities_.size() ) ;
+        entities_[m]->set_draw_cells( type, x ) ;
+    }
+
     /*!
      * Toggles the cell region color per cell type
      * @param[in] m the region index
@@ -1169,6 +1189,11 @@ namespace RINGMesh {
         show_colored_layers_ = false ;
         show_colormap_ = false ;
 
+        show_hex_ = true ;
+        show_prism_ = true ;
+        show_pyramid_ = true ;
+        show_tetra_ = true ;
+
         shrink_ = 0.0 ;
         mesh_visible_ = true ;
         meshed_regions_ = false ;
@@ -1410,6 +1435,10 @@ namespace RINGMesh {
                     GM_gfx_.regions.set_mesh_color( 1.0f, 1.0f, 1.0f ) ;
                 }
             }
+            GM_gfx_.regions.set_draw_cells( GEO::MESH_HEX, show_hex_ ) ;
+            GM_gfx_.regions.set_draw_cells( GEO::MESH_PRISM, show_prism_ ) ;
+            GM_gfx_.regions.set_draw_cells( GEO::MESH_PYRAMID, show_pyramid_ ) ;
+            GM_gfx_.regions.set_draw_cells( GEO::MESH_TET, show_tetra_ ) ;
             GM_gfx_.regions.set_shrink( shrink_ ) ;
             GM_gfx_.regions.draw() ;
         }
@@ -1546,6 +1575,10 @@ namespace RINGMesh {
                 ImGui::Checkbox( "Col. regions [r]", &show_colored_regions_.new_status ) ;
                 ImGui::Checkbox( "Col. layers [R]", &show_colored_layers_.new_status ) ;
                 ImGui::SliderFloat( "Shrk.", &shrink_, 0.0f, 1.0f, "%.1f" ) ;
+                ImGui::Checkbox( "Hex", &show_hex_ ) ;
+                ImGui::Checkbox( "Prism", &show_prism_ ) ;
+                ImGui::Checkbox( "Pyramid", &show_pyramid_ ) ;
+                ImGui::Checkbox( "Tetra", &show_tetra_ ) ;
             }
         }
     }
