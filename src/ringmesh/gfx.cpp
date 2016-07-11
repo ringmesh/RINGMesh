@@ -1164,7 +1164,7 @@ namespace RINGMesh {
         show_surface_ = true ;
         show_volume_ = false ;
         colored_cells_ = false ;
-        show_voi_ = true ;
+        show_voi_ = false ;
         show_colored_regions_ = false ;
         show_colored_layers_ = false ;
         show_colormap_ = false ;
@@ -1226,11 +1226,11 @@ namespace RINGMesh {
         glup_viewer_add_toggle( 'M', &show_colormap_, "colormap" ) ;
         glup_viewer_add_key_func( 'x', increment_shrink, "shrink cells" ) ;
         glup_viewer_add_key_func( 'X', decrement_shrink, "unshrink cells" ) ;
-        glup_viewer_add_key_func( 'C', toggle_colored_cells,
+        glup_viewer_add_toggle( 'C', &colored_cells_.new_status,
             "toggle colored cells" ) ;
-        glup_viewer_add_key_func( 'r', toggle_colored_regions,
+        glup_viewer_add_toggle( 'r', &show_colored_regions_.new_status,
             "toggle colored regions" ) ;
-        glup_viewer_add_key_func( 'R', &toggle_colored_layers,
+        glup_viewer_add_toggle( 'R', &show_colored_layers_.new_status,
             "toggle colored layers" ) ;
 
         init_colormaps() ;
@@ -1248,43 +1248,34 @@ namespace RINGMesh {
     }
     void RINGMeshApplication::toggle_colored_cells()
     {
-        instance()->colored_cells_ = !instance()->colored_cells_ ;
-        if( instance()->colored_cells_ ) {
-            instance()->show_colored_regions_ = false ;
-            instance()->show_colored_layers_ = false ;
-            instance()->GM_gfx_.regions.set_color_cell_type() ;
-        }
+        show_colored_regions_.new_status = false ;
+        show_colored_layers_.new_status = false ;
+        GM_gfx_.regions.set_color_cell_type() ;
     }
     void RINGMeshApplication::toggle_colored_regions()
     {
-        instance()->show_colored_regions_ = !instance()->show_colored_regions_ ;
-        if( instance()->show_colored_regions_ ) {
-            instance()->colored_cells_ = false ;
-            instance()->show_colored_layers_ = false ;
-            for( GEO::index_t r = 0; r < instance()->GM_->nb_regions(); r++ ) {
-                instance()->GM_gfx_.regions.set_mesh_element_color( r,
-                    std::fmod( GEO::Numeric::random_float32(), 1 ),
-                    std::fmod( GEO::Numeric::random_float32(), 1 ),
-                    std::fmod( GEO::Numeric::random_float32(), 1 ) ) ;
-            }
+        colored_cells_.new_status = false ;
+        show_colored_layers_.new_status = false ;
+        for( GEO::index_t r = 0; r < GM_->nb_regions(); r++ ) {
+            GM_gfx_.regions.set_mesh_element_color( r,
+                std::fmod( GEO::Numeric::random_float32(), 1 ),
+                std::fmod( GEO::Numeric::random_float32(), 1 ),
+                std::fmod( GEO::Numeric::random_float32(), 1 ) ) ;
         }
     }
 
     void RINGMeshApplication::toggle_colored_layers()
     {
-        instance()->show_colored_layers_ = !instance()->show_colored_layers_ ;
-        if( instance()->show_colored_layers_ ) {
-            instance()->colored_cells_ = false ;
-            instance()->show_colored_regions_ = false ;
-            for( GEO::index_t l = 0; l < instance()->GM_->nb_layers(); l++ ) {
-                float red = std::fmod( GEO::Numeric::random_float32(), 1 ) ;
-                float green = std::fmod( GEO::Numeric::random_float32(), 1 ) ;
-                float blue = std::fmod( GEO::Numeric::random_float32(), 1 ) ;
-                const GeoModelEntity& cur_layer = instance()->GM_->layer( l ) ;
-                for( index_t r = 0; r < cur_layer.nb_children(); ++r )
-                    instance()->GM_gfx_.regions.set_mesh_element_color(
-                        cur_layer.child( r ).index(), red, green, blue ) ;
-            }
+        colored_cells_.new_status = false ;
+        show_colored_regions_.new_status = false ;
+        for( GEO::index_t l = 0; l < GM_->nb_layers(); l++ ) {
+            float red = std::fmod( GEO::Numeric::random_float32(), 1 ) ;
+            float green = std::fmod( GEO::Numeric::random_float32(), 1 ) ;
+            float blue = std::fmod( GEO::Numeric::random_float32(), 1 ) ;
+            const GeoModelEntity& cur_layer = GM_->layer( l ) ;
+            for( index_t r = 0; r < cur_layer.nb_children(); ++r )
+                GM_gfx_.regions.set_mesh_element_color(
+                    cur_layer.child( r ).index(), red, green, blue ) ;
         }
     }
 
@@ -1341,25 +1332,6 @@ namespace RINGMesh {
     void RINGMeshApplication::draw_scene()
     {
         if( !GM_ ) return ;
-        if( white_bg_ ) {
-            GM_gfx_.surfaces.GeoModelGfxManager::set_mesh_element_color( 0.9f, 0.9f, 0.9f ) ;
-
-            GM_gfx_.lines.GeoModelGfxManager::set_mesh_element_color( 0.0f, 0.0f, 0.0f ) ;
-            GM_gfx_.surfaces.set_mesh_color( 0.0f, 0.0f, 0.0f ) ;
-            GM_gfx_.regions.GeoModelGfxManager::set_mesh_element_color( 0.0f, 0.0f, 0.0f ) ;
-            GM_gfx_.regions.set_edge_color( 0.0f, 0.0f, 0.0f ) ;
-
-            GM_gfx_.regions.set_vertex_color( 0.0f, 0.0f, 0.0f ) ;
-        } else {
-            GM_gfx_.surfaces.GeoModelGfxManager::set_mesh_element_color( 0.1f, 0.1f, 0.1f ) ;
-
-            GM_gfx_.lines.GeoModelGfxManager::set_mesh_element_color( 1.0f, 1.0f, 1.0f ) ;
-            GM_gfx_.surfaces.set_mesh_color( 1.0f, 1.0f, 1.0f ) ;
-            GM_gfx_.regions.GeoModelGfxManager::set_mesh_element_color( 1.0f, 1.0f, 1.0f ) ;
-            GM_gfx_.regions.set_edge_color( 1.0f, 1.0f, 1.0f ) ;
-
-            GM_gfx_.regions.set_vertex_color( 1.0f, 1.0f, 1.0f ) ;
-        }
 
         GM_gfx_.surfaces.set_mesh_visibility( mesh_visible_ ) ;
         GM_gfx_.regions.set_mesh_visibility( mesh_visible_ ) ;
@@ -1378,10 +1350,26 @@ namespace RINGMesh {
         }
 
         if( show_lines_ ) {
+            if( white_bg_ ) {
+                GM_gfx_.lines.GeoModelGfxManager::set_mesh_element_color( 0.0f, 0.0f,
+                    0.0f ) ;
+            } else {
+                GM_gfx_.lines.GeoModelGfxManager::set_mesh_element_color( 1.0f, 1.0f,
+                    1.0f ) ;
+            }
             GM_gfx_.lines.draw() ;
         }
 
         if( show_surface_ ) {
+            if( white_bg_ ) {
+                GM_gfx_.surfaces.GeoModelGfxManager::set_mesh_element_color( 0.9f,
+                    0.9f, 0.9f ) ;
+                GM_gfx_.surfaces.set_mesh_color( 0.0f, 0.0f, 0.0f ) ;
+            } else {
+                GM_gfx_.surfaces.GeoModelGfxManager::set_mesh_element_color( 0.1f,
+                    0.1f, 0.1f ) ;
+                GM_gfx_.surfaces.set_mesh_color( 1.0f, 1.0f, 1.0f ) ;
+            }
             for( GEO::index_t s = 0; s < GM_->nb_surfaces(); s++ ) {
                 if( GM_->surface( s ).is_on_voi() ) {
                     GM_gfx_.surfaces.set_mesh_element_visibility( s, show_voi_ ) ;
@@ -1391,9 +1379,36 @@ namespace RINGMesh {
         }
 
         if( show_volume_ && meshed_regions_ ) {
-            if( !colored_cells_ && !show_colored_regions_
-                && !show_colored_layers_ ) {
-                GM_gfx_.regions.GeoModelGfxManager::set_mesh_element_color( 0.9f, 0.9f, 0.9f ) ;
+            if( colored_cells_.need_to_update() ) {
+                colored_cells_.update() ;
+                if( colored_cells_.new_status ) {
+                    toggle_colored_cells() ;
+                }
+            } else if( show_colored_regions_.need_to_update() ) {
+                show_colored_regions_.update() ;
+                if( show_colored_regions_.new_status ) {
+                    toggle_colored_regions() ;
+                }
+            } else if( show_colored_layers_.need_to_update() ) {
+                show_colored_layers_.update() ;
+                if( show_colored_layers_.new_status ) {
+                    toggle_colored_layers() ;
+                }
+            }
+            if( !colored_cells_.new_status && !show_colored_regions_.new_status
+                && !show_colored_layers_.new_status ) {
+                colored_cells_.update() ;
+                show_colored_regions_.update() ;
+                show_colored_layers_.update() ;
+                if( white_bg_ ) {
+                    GM_gfx_.regions.GeoModelGfxManager::set_mesh_element_color( 0.9f,
+                        0.9f, 0.9f ) ;
+                    GM_gfx_.regions.set_mesh_color( 0.0f, 0.0f, 0.0f ) ;
+                } else {
+                    GM_gfx_.regions.GeoModelGfxManager::set_mesh_element_color( 0.1f,
+                        0.1f, 0.1f ) ;
+                    GM_gfx_.regions.set_mesh_color( 1.0f, 1.0f, 1.0f ) ;
+                }
             }
             GM_gfx_.regions.set_shrink( shrink_ ) ;
             GM_gfx_.regions.draw() ;
@@ -1527,9 +1542,9 @@ namespace RINGMesh {
             ImGui::Separator() ;
             ImGui::Checkbox( "Region [v]", &show_volume_ ) ;
             if( show_volume_ ) {
-                ImGui::Checkbox( "Col. cells [C]", &colored_cells_ ) ;
-                ImGui::Checkbox( "Col. regions [r]", &show_colored_regions_ ) ;
-                ImGui::Checkbox( "Col. layers [R]", &show_colored_layers_ ) ;
+                ImGui::Checkbox( "Col. cells [C]", &colored_cells_.new_status ) ;
+                ImGui::Checkbox( "Col. regions [r]", &show_colored_regions_.new_status ) ;
+                ImGui::Checkbox( "Col. layers [R]", &show_colored_layers_.new_status ) ;
                 ImGui::SliderFloat( "Shrk.", &shrink_, 0.0f, 1.0f, "%.1f" ) ;
             }
         }
