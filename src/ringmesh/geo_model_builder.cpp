@@ -1499,9 +1499,11 @@ namespace RINGMesh {
         MeshBuilder builder( M ) ;
         builder.assign_facet_triangle_mesh( triangle_vertices, true ) ;
 
-        ringmesh_assert( adjacent_triangles.size() == M.nb_facet_corners() ) ;
-        for( index_t i = 0; i < adjacent_triangles.size(); i++ ) {
-            builder.set_facet_corners_adjacent( i, adjacent_triangles[i] ) ;
+        ringmesh_assert( adjacent_triangles.size() == M.nb_facets() * 3 ) ;
+        for( index_t f = 0; f < M.nb_facets(); f++ ) {
+            for( index_t v = 0; v < 3; v++ ) {
+                builder.set_facet_adjacent( f, v, adjacent_triangles[f] ) ;
+            }
         }
     }
 
@@ -1557,8 +1559,10 @@ namespace RINGMesh {
     {
         Mesh& mesh = mesh_entity( GME::gme_t( GME::SURFACE, surface_id ) ).mesh_ ;
         MeshBuilder builder( mesh ) ;
-        for( index_t i = 0; i < mesh.nb_facet_corners(); i++ ) {
-            builder.set_facet_corners_adjacent( i, Surface::NO_ADJACENT ) ;
+        for( index_t f = 0; f < mesh.nb_facets(); f++ ) {
+            for( index_t v = 0; v < 3; v++ ) {
+                builder.set_facet_adjacent( f, v, Surface::NO_ADJACENT ) ;
+            }
         }
         builder.connect_facets() ;
     }
@@ -1567,6 +1571,11 @@ namespace RINGMesh {
     {
         Mesh& mesh = mesh_entity( GME::gme_t( GME::REGION, region_id ) ).mesh_ ;
         MeshBuilder builder( mesh ) ;
+        for( index_t c = 0; c < mesh.nb_cells(); c++ ) {
+            for( index_t v = 0; v < mesh.nb_cell_vertices( c ); v++ ) {
+                builder.set_cell_adjacent( c, v, GEO::NO_CELL ) ;
+            }
+        }
         builder.connect_cells() ;
     }
 

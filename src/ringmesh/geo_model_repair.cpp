@@ -321,15 +321,18 @@ namespace RINGMesh {
                 } else {
                     GMME& ME = model().modifiable_mesh_entity( entity_id ) ;
                     MeshBuilder builder( ME.mesh_ ) ;
-                    for( index_t c = 0; c < E.mesh_.nb_facet_corners(); c++ ) {
-                        builder.set_facet_corner( c,
-                            colocated[E.mesh_.facet_corner_vertex( c )] ) ;
+                    for( index_t f_itr = 0; f_itr < E.mesh_.nb_facets(); f_itr++ ) {
+                        for( index_t fv_itr = 0;
+                            fv_itr < E.mesh_.nb_facet_vertices( f_itr ); fv_itr++ ) {
+                            builder.set_facet_vertex( f_itr, fv_itr,
+                                colocated[E.mesh_.facet_vertex( f_itr, fv_itr )] ) ;
+                        }
                     }
-                    for( index_t e = 0; e < E.mesh_.nb_edges(); e++ ) {
-                        builder.set_edge_vertex( e, 0,
-                            colocated[E.mesh_.edge_vertex( e, 0 )] ) ;
-                        builder.set_edge_vertex( e, 1,
-                            colocated[E.mesh_.edge_vertex( e, 1 )] ) ;
+                    for( index_t e_itr = 0; e_itr < E.mesh_.nb_edges(); e_itr++ ) {
+                        builder.set_edge_vertex( e_itr, 0,
+                            colocated[E.mesh_.edge_vertex( e_itr, 0 )] ) ;
+                        builder.set_edge_vertex( e_itr, 1,
+                            colocated[E.mesh_.edge_vertex( e_itr, 1 )] ) ;
                     }
                     builder.delete_vertices( to_delete, false ) ;
                     GEO::Logger::out( "Repair" ) << nb_todelete
