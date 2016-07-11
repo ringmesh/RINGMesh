@@ -2137,7 +2137,6 @@ namespace RINGMesh {
         Mesh& M = mesh_entity( GME::SURFACE, surface_id ).mesh_ ;
         MeshBuilder builder( M ) ;
         builder.delete_facets( to_delete, false ) ;
-        builder.connect_facets() ;
     }
     void GeoModelBuilder::delete_region_cells(
         index_t region_id,
@@ -2146,7 +2145,6 @@ namespace RINGMesh {
         Mesh& M = mesh_entity( GME::REGION, region_id ).mesh_ ;
         MeshBuilder builder( M ) ;
         builder.delete_cells( to_delete, false ) ;
-        builder.connect_cells() ;
     }
 
 
