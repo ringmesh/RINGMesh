@@ -170,6 +170,8 @@ namespace RINGMesh {
         void set_mesh_size( index_t s ) ;
         void set_mesh_size( index_t m, index_t s ) ;
 
+        void set_draw_cells( GEO::MeshCellType type, bool x ) ;
+        void set_draw_cells( index_t m, GEO::MeshCellType type, bool x ) ;
         void set_color_cell_type() ;
         void set_color_cell_type( index_t m ) ;
         void set_cell_type_visibility( GEO::MeshCellType t, bool b ) ;
@@ -333,6 +335,11 @@ namespace RINGMesh {
         OldNewStatus show_colored_regions_ ;
         OldNewStatus show_colored_layers_ ;
         bool show_colormap_ ;
+
+        bool show_hex_ ;
+        bool show_prism_ ;
+        bool show_pyramid_ ;
+        bool show_tetra_ ;
 
         float shrink_ ;
         bool mesh_visible_ ;
