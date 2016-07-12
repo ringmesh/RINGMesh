@@ -9,14 +9,14 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the <organization> nor the
+ *     * Neither the name of the ASGA nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
  * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
@@ -36,19 +36,19 @@
 
 /*!
 
-\page ringmesh_file_format RINGMesh File format
+\page ringmesh_file_format RINGMesh File Formats
 
-Available Input/Output file format
+Available Input/Output file formats
 ============
 
-RINGMesh is able to import and export \link ringmesh_geo_model GeoModel \endlink from file format listed below.
+In RINGMesh you can import and export \link ringmesh_geo_model GeoModel \endlink from files in the following formats:
 
- Supported Import Format
+ Import File Formats
  -----------------------
  - .ml: Model3D format from Gocad/Skua
  - .so: TSolid volumetric mesh (tetrahedra) format from Gocad/Skua
 
- Supported Export Format
+ Export File Formats
  -----------------------
  - .obj: surface mesh format
  - .csmp: CSMP++ format (export 3 files: .asc, .dat, -regions.txt)
@@ -60,29 +60,28 @@ RINGMesh is able to import and export \link ringmesh_geo_model GeoModel \endlink
  - .so: Tsolid format for Gocad/Skua
  - .tetgen: TetGen format (export 3 files: .node, .ele, .neigh)
  - .vtk: VTK format for ParaView
+
+ @todo Add references to the software, web page, whatever [JP]
  
  RINGMesh can then be used as a file converter to ease connection with different softwares see RINGMesh \link ringmesh_features Functionalities \endlink
 
 
-The ringmesh file format: file.gm 
+RINGMesh file format .gm 
 ============
 
-RINGMesh uses an homemade file format (file_name.gm).
+RINGMesh uses a homemade file format associated to the .gm extension.
 
-This format mandatory is an archive that contain:
- - a set of meshed_entity.geogram files.
- - one file connectivity.txt.
- - one file topology.txt
+A .gm file is an archive that contains:
+ - .geogram files that contain the meshed entities of the GeoModel
+ - two files: connectivity.txt and topology.txt
  
 
 \section geogram Geometry and Attribute of GeoModel Entities.
- The geometry and attributes of GeoModels are save using a set of files *.geogram. There is on file per CORNER, LINE, SURFACE and eventually REGION of the GeoModel (see \link ringmesh_geo_model the GeoModel description \endlink). 
-  - CORNER_XX.geogram: file holding information of CORNER XX of the GeoModel. (needed boundary representation)
-  - LINE_XX.geogram: file holding information of LINE XX of the GeoModel. (needed boundary representation)
-  - SURFACE_XX.geogram: file holding information of SURFACE XX of the GeoModel. (needed boundary representation)
-  - REGION_XX.geogram: file holding information of REGION XX of the GeoModel. (optional only if the REGION of the GeoModel is meshed)
+ The GeoModel CORNERS, LINES, SURFACES, and meshed REGIONS are each save in one .geogram file.
+ Non-meshed REGIONS are saved in the topology.txt file.
+ There is one file for each of the saved entities. The name of the file being ENTITY-TYPE_ENTITY-ID.geogram
   
- \section connectivity Connectivity of Meshed Entity.
+ \section connectivity Connectivity of Meshed Entities.
  The text file connectivity.txt describes the connectivity of CORNER, LINE, SURFACE and eventually REGION of the GeoModel.
   - Each Corner is associated to its connected lines. 
   \code
@@ -105,11 +104,11 @@ This format mandatory is an archive that contain:
 
 \section topology Topology of the GeoModel.
 
-The text file topology.txt describes the topology of the GeoModel.
-It is composed by a header that describes the number of entity of the GeoModel:
+The file topology.txt describes the topology of the GeoModel.
+The header gives the numbers of each type of entities constituting the GeoModel:
 \code
 RINGMESH BOUNDARY MODEL
-NAME model_default_name
+NAME the_name_of_the_model
 NB_CORNER 16
 NB_LINE 28
 NB_SURFACE 16
@@ -118,39 +117,30 @@ NB_CONTACT 20
 NB_INTERFACE 8
 NB_LAYER 0
 \endcode 
-Then, it describes the geological features and topology of CONTACT, INTERFACE and REGION
- - Each CONTACT is associated to its name, geological features and the index of LINES that is contained in the current CONTACT. 
+Then information identifying the CONTACTS, INTERFACES and REGIONS is entered:
+ - Each CONTACT is identified by its name, its geological feature, and the indexes of the LINES that constitute this CONTACT. 
   \code
- CONTACT 13 contact_west_north_ no_geological_feature
+ CONTACT 13 the_name_of_the_contact geological_feature
  13 14 16 
  \endcode
- Means that the CONTACT 13 
-  - is named "contact_west_north_";
-  - has no_geological_feature;
-  - is composed by the LINES 13,14 and 16.
   
- - Each INTERFACE is associated to its name, geological features and the index of SURFACES that is contained in the current INTERFACE. 
+ - Each INTERFACE is identified by its name, its geological feature, and the indexes of the SURFACES that constitute this INTERFACE. 
+ The geological feature gives information on the interface type from a geological point of view. Possible values for interfaces are:
+ no_geological_feature, boundary, fault, FILL THE REST 
+ 
 \code
-INTERFACE 4 south boundary
+INTERFACE 4 the_name_of_the_interface geological_feature
  6 7 8
 \endcode
- Means that the INTERFACE 4 
-  - is named "south";
-  - has boundary as geological feature;
-  - is composed by the SURFACE 6,7 and 8.
   
- - Each REGION is associated to its name and the index of SURFACES that bound the REGION.
+ - Each REGION is identified by its name and the signed indexes of the SURFACES bounding it. 
+ The sign gives the side of the SURFACE on which is the REGION.
  \code
- REGION 2 reg_bottom
--1 +10 -9 +8 -5 -14 
+ REGION 2 the_name_of_this_region
+ -1 +10 -9 +8 -5 -14 
 \endcode
- Means that the REGION 2 
-  - is named "reg_bottom";
-  - is bounded by the SURFACES 1, 9, 5, 14. These SURFACES are noted - because 
-  - is bounded by the SURFACES 10, 8. These SURFACES are noted + because 
-
   
- - There is alway the REGIION named UNIVERSE that represent the volume of interest
+ - The REGION named UNIVERSE is mandatory. It defines the extension of the GeoModel, also called volume of interest.
 \code
 UNIVERSE 
 -2 -7 -6 -8 +9 +14 +15 -10 +5 +3 -11 +4 +13 -12 
