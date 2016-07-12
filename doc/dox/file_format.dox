@@ -61,9 +61,9 @@ In RINGMesh you can import and export \link ringmesh_geo_model GeoModel \endlink
  - .tetgen: TetGen format (export 3 files: .node, .ele, .neigh)
  - .vtk: VTK format for ParaView
 
- @todo Add references to the software, web page, whatever [JP]
+ @todo Add references to software, web pages, whatever [JP]
  
- RINGMesh can then be used as a file converter to ease connection with different softwares see RINGMesh \link ringmesh_features Functionalities \endlink
+ RINGMesh can then be used as a file converter to ease connection with different software see RINGMesh \link ringmesh_features Functionalities \endlink
 
 
 RINGMesh file format .gm 
@@ -72,36 +72,36 @@ RINGMesh file format .gm
 RINGMesh uses a homemade file format associated to the .gm extension.
 
 A .gm file is an archive that contains:
- - .geogram files that contain the meshed entities of the GeoModel
+ - .geogram files storing the meshed entities of the GeoModel
  - two files: connectivity.txt and topology.txt
- 
+  @todo Merge these two files, topology <=> connectivity [JP]
 
 \section geogram Geometry and Attribute of GeoModel Entities.
- The GeoModel CORNERS, LINES, SURFACES, and meshed REGIONS are each save in one .geogram file.
+ The GeoModel CORNERS, LINES, SURFACES, and meshed REGIONS are saved in .geogram files.
  Non-meshed REGIONS are saved in the topology.txt file.
- There is one file for each of the saved entities. The name of the file being ENTITY-TYPE_ENTITY-ID.geogram
+ There is one file for each of the entities. The name of the file is ENTITY-TYPE_ENTITY-ID.geogram
   
  \section connectivity Connectivity of Meshed Entities.
- The text file connectivity.txt describes the connectivity of CORNER, LINE, SURFACE and eventually REGION of the GeoModel.
-  - Each Corner is associated to its connected lines. 
+ The text file connectivity.txt stores for each entity saved in a .geogram file the incident entities.
+ An incident entity B to the entity A, is such that A is in the boundary of B.
+ 
+  - For each Corner are stored the incident LINE indexes, i.e. the LINES which have
+  this CORNER as an extremity.
   \code
  GME CORNER 10
  9 10 20 
  \endcode
- Means that the CORNER 10 is connected to the lines 9, 10 and 20.
-  - Each LINE is associated to its connected SURFACES. 
+  - For each LINE are stored the indexes of the incident SURFACES. 
  \code
  GME LINE 22
  8 10 
  \endcode
- Means that the LINE 22 is connected to the lines 8 and 10.
-  - Each SURFACE is associated to its connected REGIONS. 
+  - For each SURFACE are stored the indexes of the incident REGIONS. 
  \code
  GME SURFACE 1
  1 2 
  \endcode
-  Means that the SURFACE 1 is connected to the REGION 1 and 2.
-
+  
 \section topology Topology of the GeoModel.
 
 The file topology.txt describes the topology of the GeoModel.
@@ -125,8 +125,8 @@ Then information identifying the CONTACTS, INTERFACES and REGIONS is entered:
  \endcode
   
  - Each INTERFACE is identified by its name, its geological feature, and the indexes of the SURFACES that constitute this INTERFACE. 
- The geological feature gives information on the interface type from a geological point of view. Possible values for interfaces are:
- no_geological_feature, boundary, fault, FILL THE REST 
+ The geological feature gives information on the interface type from a geological point of view. 
+ @todo Give the possible for geological features: no_geological_feature, boundary, fault, ......
  
 \code
 INTERFACE 4 the_name_of_the_interface geological_feature
