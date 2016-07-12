@@ -1,0 +1,159 @@
+/*
+ * Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the <organization> nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ *     http://www.ring-team.org
+ *
+ *     RING Project
+ *     Ecole Nationale Superieure de Geologie - GeoRessources
+ *     2 Rue du Doyen Marcel Roubault - TSA 70605
+ *     54518 VANDOEUVRE-LES-NANCY
+ *     FRANCE
+ */
+
+
+/*!
+
+\page ringmesh_file_format RINGMesh File format
+
+Available Input/Output file format
+============
+
+RINGMesh is able to import and export \link ringmesh_geo_model GeoModel \endlink from file format listed below.
+
+ Supported Import Format
+ -----------------------
+ - .ml: Model3D format from Gocad/Skua
+ - .so: TSolid volumetric mesh (tetrahedra) format from Gocad/Skua
+
+ Supported Export Format
+ -----------------------
+ - .obj: surface mesh format
+ - .csmp: CSMP++ format (export 3 files: .asc, .dat, -regions.txt)
+ - .gmsh: Gmsh format (can also export additional information for Kine3D)
+ - .gprs: GPRS format
+ - .mail: ASTER format 
+ - .meshb: LibMesh format
+ - .gm: homemade format
+ - .so: Tsolid format for Gocad/Skua
+ - .tetgen: TetGen format (export 3 files: .node, .ele, .neigh)
+ - .vtk: VTK format for ParaView
+ 
+ RINGMesh can then be used as a file converter to ease connection with different softwares see RINGMesh \link ringmesh_features Functionalities \endlink
+
+
+The ringmesh file format: file.gm 
+============
+
+RINGMesh uses an homemade file format (file_name.gm).
+
+This format mandatory is an archive that contain:
+ - a set of meshed_entity.geogram files.
+ - one file connectivity.txt.
+ - one file topology.txt
+ 
+
+\section geogram Geometry and Attribute of GeoModel Entities.
+ The geometry and attributes of GeoModels are save using a set of files *.geogram. There is on file per CORNER, LINE, SURFACE and eventually REGION of the GeoModel (see \link ringmesh_geo_model the GeoModel description \endlink). 
+  - CORNER_XX.geogram: file holding information of CORNER XX of the GeoModel. (needed boundary representation)
+  - LINE_XX.geogram: file holding information of LINE XX of the GeoModel. (needed boundary representation)
+  - SURFACE_XX.geogram: file holding information of SURFACE XX of the GeoModel. (needed boundary representation)
+  - REGION_XX.geogram: file holding information of REGION XX of the GeoModel. (optional only if the REGION of the GeoModel is meshed)
+  
+ \section connectivity Connectivity of Meshed Entity.
+ The text file connectivity.txt describes the connectivity of CORNER, LINE, SURFACE and eventually REGION of the GeoModel.
+  - Each Corner is associated to its connected lines. 
+  \code
+ GME CORNER 10
+ 9 10 20 
+ \endcode
+ Means that the CORNER 10 is connected to the lines 9, 10 and 20.
+  - Each LINE is associated to its connected SURFACES. 
+ \code
+ GME LINE 22
+ 8 10 
+ \endcode
+ Means that the LINE 22 is connected to the lines 8 and 10.
+  - Each SURFACE is associated to its connected REGIONS. 
+ \code
+ GME SURFACE 1
+ 1 2 
+ \endcode
+  Means that the SURFACE 1 is connected to the REGION 1 and 2.
+
+\section topology Topology of the GeoModel.
+
+The text file topology.txt describes the topology of the GeoModel.
+It is composed by a header that describes the number of entity of the GeoModel:
+\code
+RINGMESH BOUNDARY MODEL
+NAME model_default_name
+NB_CORNER 16
+NB_LINE 28
+NB_SURFACE 16
+NB_REGION 3
+NB_CONTACT 20
+NB_INTERFACE 8
+NB_LAYER 0
+\endcode 
+Then, it describes the geological features and topology of CONTACT, INTERFACE and REGION
+ - Each CONTACT is associated to its name, geological features and the index of LINES that is contained in the current CONTACT. 
+  \code
+ CONTACT 13 contact_west_north_ no_geological_feature
+ 13 14 16 
+ \endcode
+ Means that the CONTACT 13 
+  - is named "contact_west_north_";
+  - has no_geological_feature;
+  - is composed by the LINES 13,14 and 16.
+  
+ - Each INTERFACE is associated to its name, geological features and the index of SURFACES that is contained in the current INTERFACE. 
+\code
+INTERFACE 4 south boundary
+ 6 7 8
+\endcode
+ Means that the INTERFACE 4 
+  - is named "south";
+  - has boundary as geological feature;
+  - is composed by the SURFACE 6,7 and 8.
+  
+ - Each REGION is associated to its name and the index of SURFACES that bound the REGION.
+ \code
+ REGION 2 reg_bottom
+-1 +10 -9 +8 -5 -14 
+\endcode
+ Means that the REGION 2 
+  - is named "reg_bottom";
+  - is bounded by the SURFACES 1, 9, 5, 14. These SURFACES are noted - because 
+  - is bounded by the SURFACES 10, 8. These SURFACES are noted + because 
+
+  
+ - There is alway the REGIION named UNIVERSE that represent the volume of interest
+\code
+UNIVERSE 
+-2 -7 -6 -8 +9 +14 +15 -10 +5 +3 -11 +4 +13 -12 
+\endcode
+*/
+
