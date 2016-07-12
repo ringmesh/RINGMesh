@@ -9,14 +9,14 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the <organization> nor the
+ *     * Neither the name of the ASGA nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
  * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
@@ -78,7 +78,7 @@ A RINGMesh::GeoModelMeshElement is an abstract class
 for the RINGMesh::GeoModelElement storing a GEO::Mesh.
 From it derive RINGMesh::Surface, RINGMesh::Line, and RINGMesh::Corner
 that implement methods to operate on meshes of different dimensions.
-Meshes of the different element are independent one from another so
+Meshes of the different element are independent one from another and
 shared vertices and edges are duplicated.
 At the model level RINGMesh::GeoModelMeshVertices manages a 
 global indexing of the vertices of the different meshes.
@@ -86,15 +86,18 @@ global indexing of the vertices of the different meshes.
  
  RINGMesh::GeoModelMesh : a global mesh representation of the GeoModel
  ---------------------------------------------------------------------
+ @todo I am not convinced that this information is so important for the basic user [JP]
+ 
  The GeoModelMesh is one mesh built from copying and merging the RINGMesh::GeoModelMeshElement.
  \link ringmesh_geo_model_mesh Description of the GeoModelMesh \endlink
  
  
  Building a GeoModel
 -------------------------------
+@todo Update this section. Do we really need it? What is implemented is not relevant to the client [JP]
  
- The class RINGMesh::GeoModelBuilder implements the functions to 
- build and set the elements of a RINGMesh::GeoModel.
+ The class RINGMesh::GeoModelBuilder implements functions to 
+ build and modify the elements of a RINGMesh::GeoModel.
  Any new builder should derive from this class.
  Three builders are implemented:
 - RINGMesh::GeoModelBuilderGocad to load a SKUA-GOCAD structural model saved in a .ml file.
