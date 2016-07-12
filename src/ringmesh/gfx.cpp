@@ -1696,8 +1696,8 @@ namespace RINGMesh {
     bool RINGMeshApplication::load( const std::string& filename )
     {
         if( !filename.empty() ) {
-            current_viewer_ = models_.size() ;
             models_.push_back( new GeoModelViewer( *this, filename ) ) ;
+            current_viewer_ = models_.size() - 1 ;
         }
 
         update_region_of_interest() ;
