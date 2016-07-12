@@ -292,6 +292,7 @@ namespace RINGMesh {
         virtual bool load( const std::string& filename ) ;
         virtual void draw_scene() ;
         virtual void draw_object_properties() ;
+        virtual void draw_viewer_properties() ;
         void draw_colormap() ;
         void toggle_colored_cells() ;
         void toggle_colored_regions() ;

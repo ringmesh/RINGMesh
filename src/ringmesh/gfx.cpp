@@ -1474,6 +1474,20 @@ namespace RINGMesh {
         attribute_min_ = GM_gfx_.attribute.minimum() ;
     }
 
+    void RINGMeshApplication::draw_viewer_properties()
+    {
+        GEO::Application::draw_viewer_properties() ;
+
+        ImGui::Separator() ;
+        if( ImGui::TreeNode( "GeoModel" ) ) {
+            if( GM_ ) {
+                bool toto ;
+                ImGui::Checkbox( GM_->name().c_str(), &toto ) ;
+                ImGui::Checkbox( GM_->name().c_str(), &toto ) ;
+            }
+        }
+    }
+
     void RINGMeshApplication::draw_object_properties()
     {
         ImGui::Checkbox( "Attributes", &show_attributes_ ) ;
