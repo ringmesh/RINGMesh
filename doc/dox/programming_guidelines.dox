@@ -42,14 +42,14 @@
 
 \subsection stylec Style conventions
 
-\li Identations are 4 space characters (avoid tabulation)
+\li Indentations are 4 space characters (avoid tabulation)
 \li Opening brackets are at the end of the opening block (for, while if...) with a blank space before
 \li Closing brackets are at the same level as opening block instruction. Then, go to line for beginning a new block. Exception for the closing bracket of "else" 
-\li It is forbidden to write an instruction juste after an if, for... without '{ }'
+\li Always open a new block after if, for... 
 \li Space after '(' and before ')'
 \li No space after '[' and before ']'
 \li Space after '<' and before '>' for templates
-\li Space afer ',' and ';' 
+\li Space after ',' and ';' 
 \li Space before ';' at the end of an instruction
 \li Space after and before mathematic operators and comparators (<, >, =, <=, ==, !=, * , +, -, /, ...)
 \li No particular rules for blank lines. Please make your code readable.
@@ -67,14 +67,14 @@ for( index_t i = 0; i < N; i++ ) {
         std::vector< double > c( 6 ) ;
         double& d = c[2] ; 
     } else {
-        // other intruction
+        // other instructions
     }
 }
 \endcode
 
 \subsection Naming Conventions
 
-\li Use english names 
+\li Use English words to name classes, functions, variables etc.
 \li Abbreviations and acronyms are minimized
 \li Each word of Class and NameSpace names is capitalized 
 \li Function and local variables names are lowercase
@@ -171,29 +171,28 @@ void RINGMESH_API compute_next_border_on_surface(
 
 \li You have to follow the order: public: protected: private: for methods and then again public: protected: private: data members
 \li Always put a "_" at the end of the data member names
-\li There are no particular rules for blank lines, it is the developper responsability to make its code clear and well readable
+\li There are no particular rules for blank lines, it is the developer responsibility to make its code clear and well readable
 
 Sample code:
 
 \code
 
 class RINGMesh_API MyClass {
-
 public:
     MyClass() ;
     void compute_a_thing() ;
+   
+public:
+    int attribute_a_ ;
 
 protected:
     double compute_another_thing() ;
 
-private:
-    void compute_another_thing_just_for_me() const ;
-
-public:
-    int attribute_a_
-
 protected:
     double attribute_b_ ;
+   
+private:
+    void compute_another_thing_just_for_me() const ;
 
 private:
     std::vector< double > vector_of_things_ ;
@@ -209,7 +208,7 @@ private:
 \li Include first third party headers , then RINGMesh Headers
 \li Configure CMake in order to use < > instead of " "
 \li Avoid cyclic dependencies among source files
-\li Corrolary: minimize number of #include in .h files (use forward declarations instead)
+\li Corollary: minimize number of #include in .h files (use forward declarations instead)
 
 Sample code:
 
@@ -220,12 +219,6 @@ Sample code:
 // DO NOT use this
 #include <../../include/ringmesh/geo_model_mesh.h>
 \endcode
-
-
-
-
-
-
 
 
 */
