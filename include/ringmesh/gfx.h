@@ -312,7 +312,9 @@ namespace RINGMesh {
         virtual void draw_object_properties() ;
         virtual void draw_viewer_properties() ;
         virtual void draw_application_menus() ;
+        virtual void draw_load_menu() ;
 
+        bool load_geogram( const std::string& filename ) ;
         bool can_load_geogram( const std::string& filename ) ;
         void browse_geogram( const std::string& path ) ;
         void update_region_of_interest() ;
