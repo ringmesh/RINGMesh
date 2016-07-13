@@ -36,97 +36,90 @@
 
 /**
 
-\page ringmesh_compiling Instructions for compiling RINGMesh
+\page ringmesh_compiling How to compile RINGMesh
 
-Instructions for compiling RINGMesh
+All dependencies are shipped with RINGMesh. 
+Please check license restrictions for each of them and ensure that you are allowed to use the components.
+Configuring options allow you to deactivate some of them.
 
-RINGMesh is tested under Linux (64 bits) and Windows (64 bits).
-You will need CMake (version >= 2.8.11). There is no other dependency (everything
- you need is shipped with RINGMesh). Follow the Linux or Windows instructions below.
+You need CMake (version >= 2.8.11) to configure RINGMesh.
 
-Linux
-=====
+Linux 64 bits
+------------
 
-Configuring RINGMesh
-------------------
+### Configuring ###
 
-Execute cmake command in a RINGMesh/build directory.
+Create a new RINGMesh/build directory and run cmake command from there.
 
-- mkdir build
-- cd build
+    mkdir build
+    cd build
 
-To configure using default options:
-- cmake ..
-To define the options, use the cmake interface:
-- cmake-gui .. or ccmake ..
+Several options are available to configure RINGMesh. To set them, use the cmake interface:
 
-Compiling RINGMesh
-------------------
+    cmake-gui .. 
 
-- cd build/ringmesh/Release
-- make [-j4]
+or 
 
-To build in debug, go to build/ringmesh/Debug instead.
+    ccmake ..
 
-Eclipse-cdt project is provided (.project and .cproject). You can import RINGMesh into
-Eclipse: File>Import...>General>Existing Projects into Workspace. Click on next, then
-select the root directory (RINGMesh directory) then click on Finish. There are two
-build configurations: release and debug. There is a target to clean and compile. There are
-also targets to build/rebuild geogram.
+To configure #RINGMesh with default option values:
 
-Compiling the documentation
----------------------------
+    cmake ..
 
-The documentation can be generated using [Doxygen](http://www.stack.nl/~dimitri/doxygen/):
 
-- Check the BUILD_DOCUMENTATION option when using cmake
-- cd build/ringmesh/Release
-- make doc-devkit OR make doc-devkit-lite
+### Compiling ###
 
-doc-devkit include full documentation of RINGMesh and Geogram
-doc-devkit-lite include only the RINGMesh documentation
+    cd build/ringmesh/Release
+    make [-j4]
 
-Then you can open the doc/html/index.html file in your web browser. If you have qhelpgenerator
-in your path, a .qch file is generated (ringmesh.qch). It can be imported in Qt Assisant: Edit>Preferences>
-Documentation>add and select the .qch file.
+To build in debug mode, go to build/ringmesh/Debug instead.
 
-Windows
-=======
+### Eclipse ### 
 
-Configuring RINGMesh
-------------------
+An Eclipse-cdt project is provided (.project and .cproject). 
+You can import RINGMesh into Eclipse: File>Import...>General>Existing Projects into Workspace. 
+Click on next, then select the root directory (RINGMesh directory) then click on Finish. 
+There are two build configurations: release and debug. There is a target to clean and compile. 
+There are also targets to build/rebuild geogram.
+
+
+Windows 64 bits
+----------------
+
+### Configuring ###
 
 Launch CMake GUI, indicate where is the source code as the path to RINGMesh root and 
 where to put the binaries as this_root/build/ringmesh.
 Configuration options can be set in using the interface.
 
-RINGMesh has previously been compiled with:
+RINGMesh has already been compiled with:
 - Visual Studio 10 2010 Win64
 - Visual Studio 11 2012 Win64
 - Visual Studio 12 2013 Win64
 
 
-Compiling RINGMesh
-------------------
+### Compiling ###
 
 You can either launch building in VisualStudio or calling cmake in command line
 in the build directory created at the configuration step.
 - cmake \--build . \--config Release
 
-Compiling the documentation
+
+Documentation
 ---------------------------
 
-The documentation can be generated using [Doxygen](http://www.stack.nl/~dimitri/doxygen/):
+The documentation can be generated using [Doxygen](http://www.stack.nl/~dimitri/doxygen/).
+The configuration BUILD_DOCUMENTATION option must be TRUE. \n
 
-- Check the BUILD_DOCUMENTATION option when using cmake
-- Build the documentation in VisualStudio by generating either doc-devkit OR doc-devkit-lite project.
+There are two options to generate the documentation:
+- doc-devkit  for a full documentation of RINGMesh that includes dependencies such as Geogram
+- doc-devkit-lite for the RINGMesh only documentation
 
-doc-devkit include full documentation of RINGMesh and Geogram
-doc-devkit-lite include only the RINGMesh documentation
+CMake generate two projects that can be built by launching the compilation 
+of doc-devkit  and/or doc-devkit-lite project using you favorite command line or IDE button.
 
-Then you can open the doc/html/index.html file in your web browser. If you have qhelpgenerator
-in your path, a .qch file is generated (ringmesh.qch). It can be imported in Qt Assisant: Edit>Preferences>
-Documentation>add and select the .qch file.
+The generated documentation is placed in the build/doc/doc-devkit or build/doc/doc-devkit-lite directory.
+The main page html/index.html can be then opened in your favorite web browser. 
 
 */
 
