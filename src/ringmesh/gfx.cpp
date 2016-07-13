@@ -1577,7 +1577,7 @@ namespace RINGMesh {
         const std::string& filename )
         : app_( app )
     {
-        is_visible_ = false ;
+        is_visible_ = true ;
 
         show_vertices_ = false ;
         vertices_size_ = 1.0f ;
@@ -1861,7 +1861,7 @@ namespace RINGMesh {
                 if( can_load_geogram( files[i] ) ) {
                     if( ImGui::MenuItem(
                         path_to_label( path_, files[i] ).c_str() ) ) {
-                        meshes_.push_back( new MeshViewer( *this, files[i] ) ) ;
+                        load_geogram( files[i] ) ;
                     }
                 }
             }
@@ -1887,10 +1887,36 @@ namespace RINGMesh {
         return false ;
     }
 
+    bool RINGMeshApplication::load_geogram( const std::string& filename )
+    {
+        if( !filename.empty() ) {
+            meshes_.push_back( new MeshViewer( *this, filename ) ) ;
+            current_viewer_ = meshes_.size() - 1 ;
+            current_viewer_type_ = MESH ;
+        }
+
+        update_region_of_interest() ;
+        return true ;
+    }
+
+    void RINGMeshApplication::draw_load_menu()
+    {
+        if( ImGui::BeginMenu( "Load..." ) ) {
+            if( ImGui::MenuItem( ".." ) ) {
+                path_ += "/.." ;
+            }
+            browse( path_ ) ;
+            ImGui::EndMenu() ;
+        }
+    }
+
     void RINGMeshApplication::draw_application_menus()
     {
         if( ImGui::BeginMenu( "Debug" ) ) {
-            if(ImGui::BeginMenu("Load...")) {
+            if( ImGui::BeginMenu( "Load..." ) ) {
+                if( ImGui::MenuItem( ".." ) ) {
+                    path_ += "/.." ;
+                }
                 browse_geogram(path_);
                 ImGui::EndMenu();
             }
@@ -2003,6 +2029,7 @@ namespace RINGMesh {
         if( !filename.empty() ) {
             models_.push_back( new GeoModelViewer( *this, filename ) ) ;
             current_viewer_ = models_.size() - 1 ;
+            current_viewer_type_ = GEOMODEL ;
         }
 
         update_region_of_interest() ;
