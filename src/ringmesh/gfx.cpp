@@ -1902,7 +1902,8 @@ namespace RINGMesh {
     void RINGMeshApplication::draw_load_menu()
     {
         if( ImGui::BeginMenu( "Load..." ) ) {
-            if( ImGui::MenuItem( ".." ) ) {
+            ImGui::Selectable( ".." ) ;
+            if( ImGui::IsItemClicked() ){
                 path_ += "/.." ;
             }
             browse( path_ ) ;
@@ -1914,7 +1915,8 @@ namespace RINGMesh {
     {
         if( ImGui::BeginMenu( "Debug" ) ) {
             if( ImGui::BeginMenu( "Load..." ) ) {
-                if( ImGui::MenuItem( ".." ) ) {
+                ImGui::Selectable( ".." ) ;
+                if( ImGui::IsItemClicked() ){
                     path_ += "/.." ;
                 }
                 browse_geogram(path_);
@@ -2097,6 +2099,7 @@ namespace RINGMesh {
                     &viewer.is_visible_ ) ) {
                     current_viewer_ = i ;
                     current_viewer_type_ = GEOMODEL ;
+                    update_region_of_interest() ;
                 }
             }
         }
@@ -2110,6 +2113,7 @@ namespace RINGMesh {
                     &viewer.is_visible_ ) ) {
                     current_viewer_ = i ;
                     current_viewer_type_ = MESH ;
+                    update_region_of_interest() ;
                 }
             }
         }
