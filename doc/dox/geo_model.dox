@@ -38,26 +38,24 @@
 
 \page ringmesh_geo_model Description of the GeoModel
 
+@todo Update this page.
+
+The key object of RingMesh is the GeoModel that represents a geological model.
+
 Constitutive elements
 ------------------------
 
-The class RINGMesh::GeoModel represents a surface structural model, 
-it owns and manages 7 vector storing pointers to its constitutive RINGMesh::GeoModelElement.
+A model is defined by its constitutive elements:
+- The base entities. They define the geometry of the model
+    - Regions 3D  
+    - Surfaces 2D
+    - Lines 1D
+    - Corners 0D 
 
-A model is defined by:
-- A set of RINGMesh::Surface, simply connected manifold surfaces with or without boundaries. 
-- Groupings of surfaces into geological interfaces representing the domain boundaries
-	(volume of interest VOI), stratigraphic interfaces (horizons), and faults.
-	Implemented by RINGMesh::GeoModelElement.
--  A set of RINGMesh::Line, simply connected manifold piecewise lines with boundaries.
-	Each line is constituted of edges shared by the same set of surfaces.
--  Groupings of lines common to a set of interfaces into Contacts. 
-   Implemented by RINGMesh::GeoModelElement.
--  A set of volumetric regions defined by their bounding surfaces. 
-   Implemented by RINGMesh::GeoModelElement.
--  Grouping of regions into layers.
-   Implemented by RINGMesh::GeoModelElement.
--  A set of RINGMesh::Corner, the points at the extremities of the lines.
+- The geological entities. They are groups of base entities.
+    - Layers 
+    - Interfaces
+    - Contacts
 
 \image html geomodel_elements.svg 
 

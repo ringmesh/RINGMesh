@@ -39,7 +39,7 @@
 \page ringmesh_features RINGMesh Functionalities
 
 Executables
-============
+-------------
 Several small apps are provided with RINGMesh
 
  - ringmesh_surface_convert.exe
@@ -59,7 +59,7 @@ Several small apps are provided with RINGMesh
 The visualization tool is built only if the compilation flag RINGMESH_WITH_GRAPHICS is TRUE.
  
 What the API can do
-====================
+----------------------
 You can use RINGMesh as a library and access all functionalities on geological models in your code.
 
 @todo This is quite incomplete. We need sample code there and a more exhaustive list of the main functionalities [JP]
