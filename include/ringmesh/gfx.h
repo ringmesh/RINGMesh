@@ -42,13 +42,15 @@
 
 #include <geogram_gfx/glup_viewer/glup_viewer_gui.h>
 
+#include <ringmesh/geo_model.h>
+#include <ringmesh/utils.h>
+
 /*!
  * @file Classes for GeoModel visualization
  * @author Benjamin Chauvin and Arnaud Botella
  */
 
 namespace RINGMesh {
-    class GeoModel ;
     class GeoModelGfx ;
     class AttributeGfx ;
     class CornerGfx ;
@@ -123,8 +125,6 @@ namespace RINGMesh {
 
     } ;
 
-
-
     class RINGMESH_API SurfaceGfxManager: public GeoModelGfxManager {
     public:
         SurfaceGfxManager( GeoModelGfx& gfx ) ;
@@ -181,7 +181,6 @@ namespace RINGMesh {
 
     } ;
 
-
     class RINGMESH_API AttributeGfxManager {
     ringmesh_disable_copy( AttributeGfxManager ) ;
     public:
@@ -191,7 +190,8 @@ namespace RINGMesh {
         AttributeGfxManager( GeoModelGfx& gfx ) ;
         ~AttributeGfxManager() ;
 
-        GeoModelGfx& gfx() {
+        GeoModelGfx& gfx()
+        {
             return gfx_ ;
         }
 
@@ -202,41 +202,53 @@ namespace RINGMesh {
 
         std::string location_name( Attribute_location location ) ;
 
-        void set_maximum( double max ) {
+        void set_maximum( double max )
+        {
             maximum_ = max ;
         }
-        double maximum() const {
+        double maximum() const
+        {
             return maximum_ ;
         }
-        void set_minimum( double min ) {
+        void set_minimum( double min )
+        {
             minimum_ = min ;
         }
-        double minimum() const {
+        double minimum() const
+        {
             return minimum_ ;
         }
-        void set_location( Attribute_location location ) {
+        void set_location( Attribute_location location )
+        {
             location_ = location ;
         }
-        Attribute_location location() const {
+        Attribute_location location() const
+        {
             return location_ ;
         }
         index_t nb_coordinates() const ;
-        void set_coordinate( const index_t& coordinate ) {
+        void set_coordinate( const index_t& coordinate )
+        {
             coordinate_ = coordinate ;
         }
-        const index_t& coordinate() const {
+        const index_t& coordinate() const
+        {
             return coordinate_ ;
         }
-        void set_name( const std::string& name ) {
+        void set_name( const std::string& name )
+        {
             name_ = name ;
         }
-        const std::string& name() const {
+        const std::string& name() const
+        {
             return name_ ;
         }
-        void set_colormap( GLuint colormap ) {
+        void set_colormap( GLuint colormap )
+        {
             colormap_texture_ = colormap ;
         }
-        GLuint colormap() const {
+        GLuint colormap() const
+        {
             return colormap_texture_ ;
         }
 
@@ -246,13 +258,13 @@ namespace RINGMesh {
         std::string name_ ;
         Attribute_location location_ ;
         index_t coordinate_ ;
-        GLuint colormap_texture_;
+        GLuint colormap_texture_ ;
         double minimum_ ;
         double maximum_ ;
 
         AttributeGfx* attributes_[nb_locations] ;
 
-    };
+    } ;
 
     class RINGMESH_API GeoModelGfx {
     ringmesh_disable_copy( GeoModelGfx ) ;
@@ -282,72 +294,159 @@ namespace RINGMesh {
 
     class RINGMESH_API RINGMeshApplication: public GEO::Application {
     public:
+        enum ViewerType {
+            GEOMODEL, MESH, NONE
+        } ;
+
         RINGMeshApplication( int argc, char** argv ) ;
         ~RINGMeshApplication() ;
+
     private:
         static RINGMeshApplication* instance() ;
 
-        virtual std::string supported_read_file_extensions();
+        virtual std::string supported_read_file_extensions() ;
+        std::string supported_geogram_read_file_extensions() ;
         virtual void init_graphics() ;
         virtual bool load( const std::string& filename ) ;
         virtual void draw_scene() ;
         virtual void draw_object_properties() ;
-        void draw_colormap() ;
-        void toggle_colored_cells() ;
-        void toggle_colored_regions() ;
-        void toggle_colored_layers() ;
+        virtual void draw_viewer_properties() ;
+        virtual void draw_application_menus() ;
+        virtual void draw_load_menu() ;
+
+        bool load_geogram( const std::string& filename ) ;
+        bool can_load_geogram( const std::string& filename ) ;
+        void browse_geogram( const std::string& path ) ;
+        void update_region_of_interest() ;
 
         static void increment_shrink() ;
         static void decrement_shrink() ;
-
-        void reset_attribute_name() ;
-        void set_attribute_names( const GEO::AttributesManager& attributes ) ;
-        void autorange() ;
-
-        struct OldNewStatus {
-            void operator=( bool value )
-            {
-                old_status = value ;
-                new_status = value ;
-            }
-            bool need_to_update() const
-            {
-                return old_status != new_status ;
-            }
-            void update() {
-                old_status = new_status ;
-            }
-            bool old_status ;
-            bool new_status ;
-        };
+        static void show_corners() ;
+        static void show_lines() ;
+        static void show_surface() ;
+        static void show_volume() ;
+        static void show_voi() ;
+        static void mesh_visible() ;
+        static void show_colormap() ;
+        static void colored_cells() ;
+        static void show_colored_regions() ;
+        static void show_colored_layers() ;
 
     private:
-        GeoModel* GM_ ;
-        GeoModelGfx GM_gfx_ ;
-        std::string file_extensions_;
+        class GeoModelViewer {
+        public:
+            GeoModelViewer( RINGMeshApplication& app, const std::string& filename ) ;
 
-        bool show_corners_ ;
-        bool show_lines_ ;
-        bool show_surface_ ;
-        bool show_volume_ ;
-        bool show_voi_ ;
-        OldNewStatus colored_cells_ ;
-        OldNewStatus show_colored_regions_ ;
-        OldNewStatus show_colored_layers_ ;
-        bool show_colormap_ ;
+            void draw_scene() ;
+            void draw_object_properties() ;
+            void draw_viewer_properties() ;
 
-        bool show_hex_ ;
-        bool show_prism_ ;
-        bool show_pyramid_ ;
-        bool show_tetra_ ;
+            void draw_colormap() ;
+            void toggle_colored_cells() ;
+            void toggle_colored_regions() ;
+            void toggle_colored_layers() ;
 
-        float shrink_ ;
-        bool mesh_visible_ ;
-        bool meshed_regions_ ;
+            void reset_attribute_name() ;
+            void set_attribute_names( const GEO::AttributesManager& attributes ) ;
+            void autorange() ;
+        public:
+            struct OldNewStatus {
+                void operator=( bool value )
+                {
+                    old_status = value ;
+                    new_status = value ;
+                }
+                bool need_to_update() const
+                {
+                    return old_status != new_status ;
+                }
+                void update()
+                {
+                    old_status = new_status ;
+                }
+                bool old_status ;
+                bool new_status ;
+            } ;
 
-        bool show_attributes_;
-        float attribute_min_ ;
-        float attribute_max_ ;
+        public:
+            RINGMeshApplication& app_ ;
+            bool is_visible_ ;
+            GeoModel GM_ ;
+            GeoModelGfx GM_gfx_ ;
+            Box3d bbox_ ;
+
+            bool show_corners_ ;
+            bool show_lines_ ;
+            bool show_surface_ ;
+            bool show_volume_ ;
+            bool show_voi_ ;
+            OldNewStatus colored_cells_ ;
+            OldNewStatus show_colored_regions_ ;
+            OldNewStatus show_colored_layers_ ;
+            bool show_colormap_ ;
+
+            bool show_hex_ ;
+            bool show_prism_ ;
+            bool show_pyramid_ ;
+            bool show_tetra_ ;
+
+            float shrink_ ;
+            bool mesh_visible_ ;
+            bool meshed_regions_ ;
+
+            bool show_attributes_ ;
+            float attribute_min_ ;
+            float attribute_max_ ;
+        } ;
+
+        class MeshViewer {
+        public:
+            MeshViewer( RINGMeshApplication& app, const std::string& filename ) ;
+
+            void draw_object_properties() ;
+            void draw_scene() ;
+
+            void autorange() ;
+            std::string attribute_names() ;
+            void set_attribute( const std::string& attribute ) ;
+
+        public:
+            RINGMeshApplication& app_ ;
+            bool is_visible_ ;
+            GEO::Mesh mesh_ ;
+            GEO::MeshGfx mesh_gfx_ ;
+            Box3d bbox_ ;
+            std::string name_ ;
+
+            bool show_vertices_ ;
+            float vertices_size_ ;
+
+            bool show_surface_ ;
+            bool show_surface_colors_ ;
+            bool show_mesh_ ;
+            bool show_surface_borders_ ;
+
+            bool show_volume_ ;
+            float cells_shrink_ ;
+            bool show_colored_cells_ ;
+            bool show_hexes_ ;
+
+            bool show_attributes_ ;
+            GLuint current_colormap_texture_ ;
+            std::string attribute_ ;
+            GEO::MeshElementsFlags attribute_subelements_ ;
+            std::string attribute_name_ ;
+            float attribute_min_ ;
+            float attribute_max_ ;
+        } ;
+
+    private:
+        std::vector< GeoModelViewer* > models_ ;
+        std::vector< MeshViewer* > meshes_ ;
+        std::string ringmesh_file_extensions_ ;
+        std::string geogram_file_extensions_ ;
+        index_t current_viewer_ ;
+        ViewerType current_viewer_type_ ;
 
     } ;
 }
