@@ -54,15 +54,6 @@
 #include <ringmesh/geo_model_entity.h>
 #include <ringmesh/io.h>
 
-#define define_color( name, r, g, b )\
-    class name: public GetColor {\
-    public:\
-        virtual Color get_color() {\
-            return Color( r, g, b ) ;\
-        }\
-    }; \
-    ringmesh_register_color_creator( name, #name ) \
-
 namespace {
     using namespace RINGMesh ;
 
