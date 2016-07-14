@@ -40,14 +40,17 @@
 #include <ringmesh/common.h>
 
 /*!
- * @todo Is this file really necessary ? [JP]
+ * @todo Is this file really necessary>
+ * It is only used when applications are generated. 
+ * Replace it by a ringmesh_application_utils.h and cpp that gather 
+ * all we nee to run apps and that are not included if option unchecked [JP]
  */
 
 namespace RINGMesh {
 
     namespace CmdLine {
 
-        bool RINGMESH_API import_arg_group( const std::string& name ) ;
+       bool RINGMESH_API import_arg_group( const std::string& name ) ;
 
     }
 }

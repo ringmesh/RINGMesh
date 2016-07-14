@@ -78,9 +78,6 @@ namespace RINGMesh {
          */
         virtual ~GeoModel() ;
 
-        /*
-         * @todo Implement a real copy_constructor and operator= [JP]
-         */
         void copy( const GeoModel& from ) ;
 
         /*!

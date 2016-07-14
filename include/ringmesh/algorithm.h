@@ -90,12 +90,14 @@ namespace RINGMesh {
 
 
     /*!
-     * \brief Indirect sorting of two vectors.
-     * @todo Comment what is indirect sorting.
+     * @brief Bubble sorting of input and output vectors according to values of input.
+     * @note Not efficient.
      */
     template< typename T1, typename T2 >
     inline void indirect_sort( std::vector< T1 >& input, std::vector< T2 >& output )
     {
+        ringmesh_assert( input.size() == output.size() ) ;
+
         if( input.size() < 2 ) {
             return ;
         }

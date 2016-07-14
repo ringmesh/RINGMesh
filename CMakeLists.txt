@@ -198,7 +198,7 @@ if(WIN32)
     set(geoplatform Win-vs-dynamic-generic)  
 	# Extra lib 
     set (EXTRA_LIBS ${EXTRA_LIBS} psapi)
-	# TODO check that it is really necessary [JP]
+    # Necessary, not sure exactly why [JP]
     add_compile_options(-DGEO_DYNAMIC_LIBS) 
 else(WIN32)
     set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/geogram/${CMAKE_BUILD_TYPE})

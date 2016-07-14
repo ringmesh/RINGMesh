@@ -444,7 +444,7 @@ namespace RINGMesh {
             end_model() ;
         }
 
-        ///TODO these are temporary protected here. after they will be only in GeoModelBuilderGM
+        ///@todo these are temporary protected here. after they will be only in GeoModelBuilderGM
     protected:
         static GME::TYPE match_nb_entities( const char* s ) ;
         static GME::TYPE match_type( const char* s ) ;
