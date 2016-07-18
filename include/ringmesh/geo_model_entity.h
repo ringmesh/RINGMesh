@@ -824,8 +824,6 @@ namespace RINGMesh {
         friend class GeoModelBuilder ;
     
     public:
-        static const index_t NO_ADJACENT = index_t( -1 ) ;
-
         Surface( const GeoModel& model, index_t id )
             : GeoModelMeshEntity( model, SURFACE, id )
         {
