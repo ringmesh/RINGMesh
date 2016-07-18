@@ -517,12 +517,6 @@ namespace RINGMesh {
         }
 
         /*!
-         * @brief Access to the vertex from the corner index.
-         * @todo Review: this depends on the mesh implementation. To remove [JP].
-         */
-        virtual index_t vertex_index( index_t corner_index ) const = 0 ;
-
-        /*!
          * @brief Get the number constitutive elements of the mesh 
          * @details Constitutive elements are those of the dimension of the object.
          * segments for lines, facets for surfaces and cells for volumetric meshes.
@@ -682,10 +676,6 @@ namespace RINGMesh {
         {
         }
 
-        virtual index_t vertex_index( index_t corner_index = 0 ) const {
-            ringmesh_unused( corner_index ) ;
-            return 0 ;
-        }
         /*!
          * @brief Get the index of the unique vertex constituting of the Corner.
          * @return 0.
@@ -856,9 +846,6 @@ namespace RINGMesh {
          * \name Accessors to Surface facets, edges and vertices
          * @{
          */
-        virtual index_t vertex_index( index_t corner_index ) const {
-            return mesh_.facet_corner_vertex( corner_index ) ;
-        }
         /*!
          * Number of facets of the Surface.
          */
@@ -1128,10 +1115,6 @@ namespace RINGMesh {
         bool side( index_t i ) const
         {
             return sides_[i] ;
-        }
-
-        virtual index_t vertex_index( index_t corner_index ) const {
-            return mesh_.cell_corner_vertex( corner_index ) ;
         }
 
         /*!

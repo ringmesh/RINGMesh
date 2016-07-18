@@ -1499,9 +1499,11 @@ namespace RINGMesh {
         MeshBuilder builder( M ) ;
         builder.assign_facet_triangle_mesh( triangle_vertices, true ) ;
 
-        ringmesh_assert( adjacent_triangles.size() == M.nb_facet_corners() ) ;
-        for( index_t i = 0; i < adjacent_triangles.size(); i++ ) {
-            builder.set_facet_corners_adjacent( i, adjacent_triangles[i] ) ;
+        ringmesh_assert( adjacent_triangles.size() == M.nb_facets() * 3 ) ;
+        for( index_t f = 0; f < M.nb_facets(); f++ ) {
+            for( index_t v = 0; v < 3; v++ ) {
+                builder.set_facet_adjacent( f, v, adjacent_triangles[f] ) ;
+            }
         }
     }
 
@@ -1555,71 +1557,25 @@ namespace RINGMesh {
      */
     void GeoModelBuilder::compute_surface_adjacencies( index_t surface_id )
     {
-        Surface& S = dynamic_cast< Surface& >( *model().surfaces_[surface_id] ) ;
-
-        index_t nb_facets = S.nb_mesh_elements() ;
-        ringmesh_assert( nb_facets > 0 ) ;
-
-        std::vector< index_t > adjacent ;
-        adjacent.resize( S.facet_end( nb_facets - 1 ), Surface::NO_ADJACENT ) ;
-
-        index_t nb_vertices = S.nb_vertices() ;
-
-        ///@todo Change representation of vertex_to_facets (without vector of vectors)
-
-        // Allocate some space to store the ids of facets around each vertex
-        std::vector< index_t > empty_vector ;
-        empty_vector.reserve( 10 ) ;
-        std::vector< std::vector< index_t > > vertex_to_facets( nb_vertices,
-            empty_vector ) ;
-
-        for( index_t f = 0; f < nb_facets; ++f ) {
-            for( index_t v = 0; v < S.nb_mesh_element_vertices( f ); v++ ) {
-                vertex_to_facets[S.mesh_element_vertex_index( f, v )].push_back( f ) ;
+        Mesh& mesh = mesh_entity( GME::gme_t( GME::SURFACE, surface_id ) ).mesh_ ;
+        MeshBuilder builder( mesh ) ;
+        for( index_t f = 0; f < mesh.nb_facets(); f++ ) {
+            for( index_t v = 0; v < mesh.nb_facet_vertices( f ); v++ ) {
+                builder.set_facet_adjacent( f, v, Surface::NO_ADJACENT ) ;
             }
         }
-        for( index_t p = 0; p < nb_vertices; ++p ) {
-            std::sort( vertex_to_facets[p].begin(), vertex_to_facets[p].end() ) ;
-        }
-
-        for( index_t f = 0; f < nb_facets; ++f ) {
-            for( index_t v = 0; v < S.nb_mesh_element_vertices( f ); v++ ) {
-                index_t cur = S.mesh_element_vertex_index( f, v ) ;
-                index_t prev = S.mesh_element_vertex_index( f,
-                    S.prev_facet_vertex_index( f, v ) ) ;
-
-                const std::vector< index_t >& f_prev = vertex_to_facets[prev] ;
-                const std::vector< index_t >& f_cur = vertex_to_facets[cur] ;
-
-                std::vector< index_t > inter(
-                    std::min( f_prev.size(), f_cur.size() ) ) ;
-                index_t end = narrow_cast< index_t >(
-                    std::set_intersection( f_prev.begin(), f_prev.end(),
-                        f_cur.begin(), f_cur.end(), inter.begin() )
-                        - inter.begin() ) ;
-
-                if( end == 2 ) {
-                    // There is one neighbor
-                    index_t f2 = inter[0] == f ? inter[1] : inter[0] ;
-                    adjacent[S.facet_begin( f )
-                        + S.prev_facet_vertex_index( f, v )] = f2 ;
-                } else {
-                    ringmesh_assert( end == 1 ) ;
-                }
-            }
-        }
-
-        ringmesh_assert( adjacent.size() == S.mesh_.nb_facet_corners() ) ;
-        for( index_t i = 0; i < adjacent.size(); i++ ) {
-            MeshBuilder builder( S.mesh_ ) ;
-            builder.set_facet_corners_adjacent( i, adjacent[i] ) ;
-        }
+        builder.connect_facets() ;
     }
 
     void GeoModelBuilder::compute_region_adjacencies( index_t region_id )
     {
         Mesh& mesh = mesh_entity( GME::gme_t( GME::REGION, region_id ) ).mesh_ ;
         MeshBuilder builder( mesh ) ;
+        for( index_t c = 0; c < mesh.nb_cells(); c++ ) {
+            for( index_t f = 0; f < mesh.nb_cell_facets( c ); f++ ) {
+                builder.set_cell_adjacent( c, f, GEO::NO_CELL ) ;
+            }
+        }
         builder.connect_cells() ;
     }
 
@@ -2179,7 +2135,7 @@ namespace RINGMesh {
         index_t line_id,
         GEO::vector< index_t >& to_delete )
     {
-        Mesh& M = mesh_entity( GME::CORNER, line_id ).mesh_ ;
+        Mesh& M = mesh_entity( GME::LINE, line_id ).mesh_ ;
         MeshBuilder builder( M ) ;
         builder.delete_edges( to_delete, false ) ;
     }
@@ -2190,16 +2146,14 @@ namespace RINGMesh {
         Mesh& M = mesh_entity( GME::SURFACE, surface_id ).mesh_ ;
         MeshBuilder builder( M ) ;
         builder.delete_facets( to_delete, false ) ;
-        builder.connect_facets() ;
     }
     void GeoModelBuilder::delete_region_cells(
         index_t region_id,
         GEO::vector< index_t >& to_delete )
     {
-        Mesh& M = mesh_entity( GME::CORNER, region_id ).mesh_ ;
+        Mesh& M = mesh_entity( GME::REGION, region_id ).mesh_ ;
         MeshBuilder builder( M ) ;
         builder.delete_cells( to_delete, false ) ;
-        builder.connect_cells() ;
     }
 
 
