@@ -66,8 +66,6 @@ namespace RINGMesh {
         friend class GeoModelRepair ;
 
     public:
-        static const index_t NO_ID = index_t( -1 ) ;
-
         /*!
          * @brief Constructs an empty GeoModel
          */

@@ -1561,7 +1561,7 @@ namespace RINGMesh {
         ringmesh_assert( nb_facets > 0 ) ;
 
         std::vector< index_t > adjacent ;
-        adjacent.resize( S.facet_end( nb_facets - 1 ), Surface::NO_ADJACENT ) ;
+        adjacent.resize( S.facet_end( nb_facets - 1 ), NO_ID ) ;
 
         index_t nb_vertices = S.nb_vertices() ;
 
@@ -1707,8 +1707,8 @@ namespace RINGMesh {
                     S.oriented_edge_from_model_vertex_ids( p1, p0, f2, v2 ) ;
                     ringmesh_assert( v2 != NO_ID ) ;
                 }
-                builder.set_facet_adjacent( f, v, Surface::NO_ADJACENT ) ;
-                builder.set_facet_adjacent( f2, v2, Surface::NO_ADJACENT ) ;
+                builder.set_facet_adjacent( f, v, NO_ID ) ;
+                builder.set_facet_adjacent( f2, v2, NO_ID ) ;
             }
         }
     }

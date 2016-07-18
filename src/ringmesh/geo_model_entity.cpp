@@ -1387,14 +1387,14 @@ namespace RINGMesh {
                     index_t prev = prev_facet_vertex_index( f, v ) ;
                     index_t adj_prev = facet_adjacent_index( f, prev ) ;
 
-                    if( adj_P != NO_ADJACENT ) {
+                    if( adj_P != NO_ID ) {
                         // The edge starting at P is not on the boundary
                         if( !contains( visited, adj_P ) ) {
                             S.push( adj_P ) ;
                             visited.push_back( adj_P ) ;
                         }
                     }
-                    if( adj_prev != NO_ADJACENT ) {
+                    if( adj_prev != NO_ID ) {
                         // The edge ending at P is not on the boundary
                         if( !contains( visited, adj_prev ) ) {
                             S.push( adj_prev ) ;
@@ -1403,7 +1403,7 @@ namespace RINGMesh {
                     }
 
                     if( border_only ) {
-                        if( adj_P == NO_ADJACENT || adj_prev == NO_ADJACENT ) {
+                        if( adj_P == NO_ID || adj_prev == NO_ID ) {
                             result.push_back( f ) ;
                         }
                     } else {
