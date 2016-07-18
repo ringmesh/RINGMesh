@@ -919,7 +919,7 @@ namespace RINGMesh {
         test_and_initialize() ;
 
         /// 1. Get all the corner vertices (a lot of duplicated vertices)
-        std::vector< vec3 > corner_vertices( mesh_.nb_cell_corners() ) ;
+        std::vector< vec3 > corner_vertices( mesh_.cell_end( mesh_.nb_cells()-1 ) ) ;
         for( index_t c = 0; c < mesh_.nb_cells(); c++ ) {
             index_t begin = mesh_.cell_begin( c );
             for( index_t v = 0; v < mesh_.nb_cell_vertices( c ); v++ ) {
