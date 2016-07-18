@@ -9,14 +9,14 @@
  *     * Redistributions in binary form must reproduce the above copyright
  *       notice, this list of conditions and the following disclaimer in the
  *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the <organization> nor the
+ *     * Neither the name of the ASGA nor the
  *       names of its contributors may be used to endorse or promote products
  *       derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
  * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
@@ -38,30 +38,34 @@
 
 \page ringmesh_features RINGMesh Functionalities
 
-RINGMesh exe 
-============
-RINGMesh comes with several applications.
+Executables
+-------------
+Several small apps are provided with RINGMesh
 
  - ringmesh_surface_convert.exe
- This application builds a Geo::Mesh from a Gocad triangulated surface (.ts file).
- Then the Geo::Mesh can be exported in classical CAD format( i.e. .obj .mesh .meshb .ply .off .stl;
- \link class_g_e_o_1_1_mesh_i_o_handler Geogram in/out handler \endlink).  
+ File fomat converter for surface objects.  
+ Supported input format: Gocad triangulated surface (.ts file). 
+ Supported output format: .obj, .mesh, .meshb, .ply, .off, .stl, \link class_g_e_o_1_1_mesh_i_o_handler Geogram in/out handler \endlink).  
  
  - ringmeshconvert.exe
- This application allows to build the \link ringmesh_geo_model GeoModel\endlink from \link ringmesh_file_format "possible import format" \endlink 
- before generating one of the \link ringmesh_file_format "possible export format" \endlink.
+ File format converter for geological models.
+ Supported \link ringmesh_file_format "input formats" \endlink.
+ Supported \link ringmesh_file_format "output formats" \endlink.
  
  - ringmeshview.exe
- This application allows to visualize a RINGMesh::GeoModel. 
- It is built only if you set the compilation flag RINGMESH_WITH_GRAPHICS to TRUE.
+ Visualization of geological models.
  
-What the API can do! 
-====================
-Using the API allows to integrate the RINGMesh::GeoModel data stucture in your own applications.
-By using this data structure you can:
+ Warning: The apps are built only if the compilation flag RINGMESH_WITH_UTILITIES is TRUE.
+The visualization tool is built only if the compilation flag RINGMESH_WITH_GRAPHICS is TRUE.
+ 
+What the API can do
+----------------------
+You can use RINGMesh as a library and access all functionalities on geological models in your code.
 
+@todo This is quite incomplete. We need sample code there and a more exhaustive list of the main functionalities [JP]
+By using this data structure you can:
  - Test the validity of your model: (i.e. RINGMesh::is_geomodel_valid()).
- - Ease the communication between software through various possible in/out format.
+ - Ease the communication between software through various possible in/out formats.
  
 */
 
