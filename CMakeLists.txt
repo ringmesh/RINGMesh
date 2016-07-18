@@ -41,8 +41,7 @@ cmake_minimum_required(VERSION 2.8)
 # They can be set using CMake GUI, or in command line: cmake -D<var>:<type>=<value> MyProjectFolder
 
 # Configuration modes - Debug and Release by default 
-set(CMAKE_CONFIGURATION_TYPES 
-      Debug Release CACHE CMAKE_CONFIGURATION_TYPES "Configuration types")
+set(CMAKE_CONFIGURATION_TYPES Debug Release CACHE CMAKE_CONFIGURATION_TYPES "Configuration types")
 
 # If a path is specified RINGMesh will be compiled to work with - empty by default
 set(MG_TETRA "" CACHE PATH "Path to MG-Tetra")

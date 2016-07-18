@@ -9,11 +9,9 @@ FILE_PATTERNS          = *.cpp *.h *.hpp *.dox
 RECURSIVE              = YES
 TAB_SIZE               = 8
 
-EXCLUDE_PATTERNS       =  */CMake/* */build/* */.hg/*
+EXCLUDE_PATTERNS       =  */CMake/* */build/* */.hg/* */glfw/*
 
 FULL_PATH_NAMES        = YES
-
-
 
 
 # Symbols to extract

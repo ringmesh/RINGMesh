@@ -1,11 +1,7 @@
-#
-# Build rules for the documentation
-#
-#
-# Macros for generating the documentation
-#
+# CMakeList for the documentation generation of the RINGMesh project
+# Author 
 
-#! The minimum doxygen version number allowed here
+# Requested minimal doxygen version 
 set(DOXYGEN_MINIMUM_VERSION 1.7.0)
 
 # Check for doxygen and dot
@@ -15,16 +11,12 @@ if(NOT DOXYGEN_FOUND)
     message(WARNING "Doxygen >= ${DOXYGEN_MINIMUM_VERSION} not found, cannot generate documentation")
     unset(DOXYGEN_EXECUTABLE CACHE)
     return()
-
 else()
-
-# Generate a target for generating a specific documentation type
-
+  # Generate a target for generating a specific documentation type
   function(add_doc_target doc_type)
-
     set(doc_output_dir ${CMAKE_CURRENT_BINARY_DIR})
 
-    configure_file(${doc_type}.dox.in ${doc_type}.dox @ONLY)
+    configure_file(${doc_type}.dox.in ${doc_type}.dox)
     
     set(doc_target doc-${doc_type})
     
@@ -40,12 +32,9 @@ else()
         DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES ${doc_output_dir}/${doc_type}
     )
-
-  endfunction()
+   endfunction()
 
   # Add a custom documentation targets
   add_doc_target(devkit)
   add_doc_target(devkit-lite)
-
-
 endif()
