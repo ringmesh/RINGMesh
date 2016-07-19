@@ -276,14 +276,15 @@ namespace RINGMesh {
         void remove_entities_and_dependencies(
             const std::set< GME::gme_t >& entities_to_remove ) ;
 
-    protected:
-        /*!
-        * @ brief The model under construction
-        */
         const GeoModel& model() const
         {
             return model_ ;
         }
+
+    protected:
+        /*!
+        * @ brief The model under construction
+        */
         GeoModel& model()
         {
             return model_ ;
