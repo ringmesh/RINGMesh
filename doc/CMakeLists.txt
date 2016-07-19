@@ -2,7 +2,7 @@
 # Author 
 
 # Requested minimal doxygen version 
-set(DOXYGEN_MINIMUM_VERSION 1.7.0)
+set(DOXYGEN_MINIMUM_VERSION 1.6.0)
 
 # Check for doxygen and dot
 
