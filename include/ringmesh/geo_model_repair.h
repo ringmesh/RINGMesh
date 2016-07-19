@@ -71,8 +71,8 @@ namespace RINGMesh {
          * @brief Detect and remove degenerated edges in a \param line.
          * @return the number of degenerated edges that have been removed from the line.
          */
-
         void geo_model_mesh_repair() ;
+
     private:
         index_t repair_line_mesh( Line& line ) ;
         void mesh_detect_degenerate_edges(
@@ -92,6 +92,7 @@ namespace RINGMesh {
 
         void remove_degenerate_facet_and_edges( std::set< gme_t >& to_remove ) ;
 
+        void remove_colocated_element_vertices( std::set< gme_t >& to_remove ) ;
 
         void remove_colocated_entity_vertices( std::set< gme_t >& to_remove ) ;
         void vertices_on_inside_boundary(

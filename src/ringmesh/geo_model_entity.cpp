@@ -232,7 +232,16 @@ namespace {
 
 namespace RINGMesh {
 
-    static const std::string GeoModelEntity::type_name_ = "No_entity_type" ;
+
+    
+            bool gme_t::is_defined() const ;
+            {
+                return type != GME::type_name_ && index != NO_ID ;
+            }
+
+
+
+    const std::string GeoModelEntity::type_name_ = "No_entity_type" ;
     /*!
      * @brief Map the name of a geological type with a value of GEOL_FEATURE
      *
@@ -678,6 +687,18 @@ namespace RINGMesh {
     /**************************************************************/
 
     static const std::string Corner::type_name_ = "Corner" ;
+
+
+    const std::string& Corner::in_boundary_type() ;
+    {
+        return Line::type_name_ ;
+    }
+    const std::string& Corner::boundary_type()
+    {
+        return GME::type_name_ ;
+    }
+
+
 
     /*!
      * @brief Check that the Corner mesh is a unique point
