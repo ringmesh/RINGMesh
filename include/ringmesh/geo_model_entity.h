@@ -157,14 +157,11 @@ namespace RINGMesh {
             friend std::ostream& operator<<( std::ostream& os, const gme_t& in )
             {
                 os << in.type << " " << in.index ;
-                return os ;
+                return os ;    
             }
 
-            bool is_defined() const
-            {
-                return type != GME::type_name_ && type != ALL_TYPES && index != NO_ID ;
-            }
-
+            bool is_defined() const ;
+                
             /*!
              * TYPE of the GeoModelEntity
              */
@@ -329,6 +326,16 @@ namespace RINGMesh {
         std::vector< gme_t > children_ ;
 
     } ;
+
+    class RINGMESH_API Universe : public GeoModelEntity {
+    public:
+        const std::string& type_name_ ;
+        Universe( const GeoModel& model ) ;
+
+    private:
+        std::vector< gme_t > boundary_surfaces_ ;
+        std::vector< bool > boundary_surface_sides_ ;
+    };
 
     /*!
      * @brief Vertex in a GeoModelEntity
@@ -667,11 +674,8 @@ namespace RINGMesh {
         {
         }
 
-        virtual const std::string& in_boundary_type()
-        {
-            return Line::type_name_ ;
-        }
-
+        virtual const std::string& in_boundary_type() ;
+        
         /*!
          * @brief Get the index of the unique vertex constituting of the Corner.
          * @return 0.
@@ -735,14 +739,8 @@ namespace RINGMesh {
         {
         }
 
-        virtual const std::string& boundary_type()
-        {
-            return Corner::type_name_ ;
-        }
-        virtual const std::string& in_boundary_type()
-        {
-            return Surface::type_name_ ;
-        }
+        virtual const std::string& boundary_type() ;
+        virtual const std::string& in_boundary_type() ;
 
         virtual index_t vertex_index (index_t corner_index) const {
             return mesh_.edge_vertex(corner_index/2, corner_index%2) ;
@@ -822,7 +820,7 @@ namespace RINGMesh {
     
     public:
         Surface( const GeoModel& model, index_t id )
-            : GeoModelMeshEntity( model, SURFACE, id )
+            : GeoModelMeshEntity( model, id )
         {
         }
 
@@ -1078,7 +1076,7 @@ namespace RINGMesh {
     
     public:
         Region( const GeoModel& model, index_t id )
-            : GeoModelMeshEntity( model, REGION, id )
+            : GeoModelMeshEntity( model, id )
         {
         }
         Region(
