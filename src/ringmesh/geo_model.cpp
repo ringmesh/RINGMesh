@@ -49,18 +49,30 @@ namespace RINGMesh {
     GeoModel::GeoModel()
         :
             mesh( *this ),
-            universe_( *this, NO_ID, "Universe", GME::NO_GEOL ),
+            universe_( *this ),
             wells_( nil )
     {
         /// @todo Review: This usage of this pointer in initialization list is a time bomb [JP]
     }
 
     GeoModel::~GeoModel()
-    {
-        for( index_t t = GME::CORNER; t < GME::NO_TYPE; ++t ) {
-            GME::TYPE T = (GME::TYPE) t ;
-            for( index_t i = 0; i < nb_entities( T ); ++i ) {
-                delete entities(T)[i] ;
+    {        
+        for( index_t i = 0; i < corners_.size(); ++i ) {
+            delete corners_[i] ;
+        }
+        for( index_t i = 0; i < lines_.size(); ++i ) {
+            delete lines_[i] ;
+        }
+        for( index_t i = 0; i < surfaces_.size(); ++i ) {
+            delete surfaces_[i] ;
+        }
+        for( index_t i = 0; i < regions_.size(); ++i ) {
+            delete regions_[i] ;
+        }
+
+        for( index_t i = 0 ; i < geological_entities_.size(); ++i ){
+            for( index_t j = 0 ; j < geological_entities_[i].size(); ++j ) {
+                delete geological_entities_[i][j] ;
             }
         }
     }

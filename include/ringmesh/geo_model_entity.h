@@ -299,6 +299,11 @@ namespace RINGMesh {
     class RINGMESH_API GeoModelGeologicalEntity: public GeoModelEntity {
     public:
         friend class GeoModelEditor ;
+
+        virtual ~GeoModelGeologicalEntity()
+        {
+        }
+
     protected:
         GeoModelGeologicalEntity(
             const GeoModel& model,
@@ -308,9 +313,7 @@ namespace RINGMesh {
             : GeoModelEntity( model, id, name, geological_feature )
         {
         }
-        virtual ~GeoModelGeologicalEntity()
-        {
-        }
+        
 
     public:
         index_t nb_children() const
@@ -334,7 +337,8 @@ namespace RINGMesh {
     public:
         const std::string& type_name_ ;
         Universe( const GeoModel& model ) ;
-
+        virtual ~Universe()
+        {};
         bool is_valid() const
         {
             return false ;
@@ -410,6 +414,8 @@ namespace RINGMesh {
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
         friend class GeoModelRepair ;
+    public:
+        virtual ~GeoModelMeshEntity() ;
 
     protected:
         GeoModelMeshEntity(
@@ -425,11 +431,10 @@ namespace RINGMesh {
                 model_vertex_id_att_name() ) ;
         }
 
-        virtual ~GeoModelMeshEntity() ;
-
+        
     public:        
-        virtual const std::string& boundary_type() = 0 ;
-        virtual const std::string& in_boundary_type() = 0 ;
+        virtual const std::string& boundary_type() const = 0 ;
+        virtual const std::string& in_boundary_type() const = 0 ;
 
 
         /*!@}
