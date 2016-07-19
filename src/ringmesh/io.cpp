@@ -50,7 +50,7 @@
 /*!
  * @file Please add a file description
  * @author Arnaud Botella
- * @todo Rename the file. Could'nt the 2 functions be moved somewhere else ? 
+ * @todo Rename the file. Couldn't the 2 functions be moved somewhere else ? 
  */
 
 namespace {

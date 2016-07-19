@@ -577,12 +577,10 @@ namespace RINGMesh {
 
         void load_file() ;
 
-
         /*!
          * @brief Unzip a file in a zip file and set it to the current unZIP file
          */
         void unzip_one_file( unzFile& uz, const char filename[MAX_FILENAME] ) ;
-
 
         /*!
          * @brief Load the topology. Topology is how corners, lines, surfaces and
