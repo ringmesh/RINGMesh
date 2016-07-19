@@ -33,7 +33,7 @@
  *     FRANCE
  */
 
-#include <ringmesh/geo_model_builder_so.h>
+#include <ringmesh/geo_model_builder_gocad.h>
 
 #include <iostream>
 #include <iomanip>
@@ -1237,4 +1237,570 @@ namespace RINGMesh {
         }
         return parser ;
     }
+    /*************************************************************************/
+
+    /*!
+     * @brief Loads and builds a GeoModel from a Gocad .ml file
+     * @warning Pretty unstable. Crashes if the file is not exactly what is expected.
+     * @details Correspondance between Gocad::Model3D entities
+     * and GeoModel entities is :
+     *  - Gocad TSurf  <-> GeoModel Interface
+     *  - Gocad TFace  <-> GeoModel Surface
+     *  - Gocad Region <-> GeoModel Region
+     *  - Gocad Layer  <-> GeoModel Layer
+     * @param[in] ml_file_name Input .ml file stream
+     * @param[in] ignore_file_borders If true, BORDER and BSTONE entries in the files
+     * are ignored and the Lines and Corners of the GeoModel are deduced from the
+     * connectivity of its Surfaces. By default set to false.
+     */
+    void GeoModelBuilderGocad::load_file()
+    {
+        // Count the number of TSurf - Interface
+        index_t nb_tsurf = 0 ;
+
+        // Count the number of TFace - Surface
+        index_t nb_tface = 0 ;
+
+        // Counters identifying the currently read TSurf or TFace
+        index_t tsurf_count = 0 ;
+        index_t tface_count = 0 ;
+
+        index_t nb_tface_in_prev_tsurf = 0 ;
+
+        /// The file contains 2 parts and is read in 2 steps
+        /// 1. Read global information on model entities
+        /// 2. Read surface geometries and info to build corners and contacts
+        bool read_model = true ;
+
+        // The orientation of positive Z
+        // can change for each TSurf and need to be read
+        int z_sign = 1 ;
+
+        // In the .ml file - vertices are indexed TSurf by Tsurf
+        // They can be duplicated inside one TSurf and between TSurfs
+
+        // Coordinates of the vertices of the currently built TSurf in the model
+        std::vector< vec3 > tsurf_vertices ;
+
+        // Where the vertices of a TFace start in the vertices of the TSurf (offset)
+        std::vector< index_t > tface_vertex_start ;
+
+        // Triangles of the currently built TFace
+        std::vector< index_t > tface_facets ;
+
+        // Starting and ending indices of each facet triangle in the tface_facets vector
+        /// @todo This is useless. Facets are all triangles.
+        /// Write functions to be able to use the Mesh.facets.assign_triangle_mesh function [JP]
+        std::vector< index_t > tface_facets_ptr ;
+        tface_facets_ptr.push_back( 0 ) ;
+
+        // Intermediate information for contact parts building
+        std::vector< Border > borders_to_build ;
+
+        // Surfaces for which the KeyFacet orientation should be changed
+        // because it does not match triangle orientations.
+        std::vector< index_t > change_key_facet ;
+
+        ///@todo Add assert everywhere when doing substraction operations on unsigned int [JP]
+
+        while( !file_line_.eof() && file_line_.get_line() ) {
+            file_line_.get_fields() ;
+            if( file_line_.nb_fields() > 0 ) {
+                if( read_model ) {
+                    if( strncmp( file_line_.field( 0 ), "name:", 5 ) == 0 ) {
+                        // Sometimes there is a space after name:
+                        // Sometimes not
+                        if( file_line_.nb_fields() > 1 ) {
+                            set_model_name( file_line_.field( 1 ) ) ;
+                        } else {
+                            set_model_name( &file_line_.field( 0 )[5] ) ;
+                        }
+                    } else if( file_line_.field_matches( 0, "TSURF" ) ) {
+                        /// 1.1 Create Interface from its name
+                        index_t f = 1 ;
+                        std::ostringstream oss ;
+                        do {
+                            oss << file_line_.field( f++ ) ;
+                        } while( f < file_line_.nb_fields() ) ;
+                        // Create an interface and set its name
+                        set_entity_name( create_entity( GME::INTERFACE ),
+                            oss.str() ) ;
+
+                        nb_tsurf++ ;
+                    } else if( file_line_.field_matches( 0, "TFACE" ) ) {
+                        /// 1.2 Create Surface from the name of its parent Interface
+                        /// and its geological feature
+                        std::string geol = file_line_.field( 2 ) ;
+                        index_t f = 3 ;
+                        std::ostringstream oss ;
+                        do {
+                            oss << file_line_.field( f++ ) ;
+                        } while( f < file_line_.nb_fields() ) ;
+                        std::string interface_name = oss.str() ;
+
+                        // And its key facet that give the orientation of the surface part
+                        file_line_.get_line() ;
+                        file_line_.get_fields() ;
+                        vec3 p0( file_line_.field_as_double( 0 ),
+                            file_line_.field_as_double( 1 ),
+                            file_line_.field_as_double( 2 ) ) ;
+                        file_line_.get_line() ;
+                        file_line_.get_fields() ;
+                        vec3 p1( file_line_.field_as_double( 0 ),
+                            file_line_.field_as_double( 1 ),
+                            file_line_.field_as_double( 2 ) ) ;
+                        file_line_.get_line() ;
+                        file_line_.get_fields() ;
+                        vec3 p2( file_line_.field_as_double( 0 ),
+                            file_line_.field_as_double( 1 ),
+                            file_line_.field_as_double( 2 ) ) ;
+
+                        create_surface( interface_name, geol, p0, p1, p2 ) ;
+                        nb_tface++ ;
+                    } else if( file_line_.field_matches( 0, "REGION" ) ) {
+                        /// 1.3 Read Region information and create them from their name,
+                        /// and the surfaces on their boundary
+                        std::string name = file_line_.field( 2 ) ;
+
+                        std::vector< std::pair< index_t, bool > > region_boundaries ;
+                        bool end_region = false ;
+                        while( !end_region ) {
+                            file_line_.get_line() ;
+                            file_line_.get_fields() ;
+                            for( index_t i = 0; i < 5; ++i ) {
+                                signed_index_t signed_id = file_line_.field_as_int(
+                                    i ) ;
+                                if( signed_id == 0 ) {
+                                    end_region = true ;
+                                    break ;
+                                }
+                                bool side = signed_id > 0 ;
+                                index_t id = static_cast< index_t >( std::abs(
+                                    signed_id ) - 1 ) ;
+                                region_boundaries.push_back(
+                                    std::pair< index_t, bool >( id, side ) ) ;
+                            }
+                        }
+
+                        // By default the region id is the universe id
+                        gme_t region_id( GME::REGION, NO_ID ) ;
+                        // Create the entity if it is not the universe
+                        if( name != "Universe" ) {
+                            region_id = create_entity( GME::REGION ) ;
+                        }
+                        // Set the region name and boundaries
+                        set_entity_name( region_id, name ) ;
+                        for( index_t i = 0; i < region_boundaries.size(); ++i ) {
+                            add_entity_boundary( region_id,
+                                gme_t( GME::SURFACE, region_boundaries[i].first ),
+                                region_boundaries[i].second ) ;
+                        }
+                    } else if( file_line_.field_matches( 0, "LAYER" ) ) {
+                        /// 1.4 Build the volumetric layers from their name and
+                        /// the ids of the regions they contain
+                        gme_t layer_id = create_entity( GME::LAYER ) ;
+                        set_entity_name( layer_id, file_line_.field( 1 ) ) ;
+                        bool end_layer = false ;
+                        while( !end_layer ) {
+                            file_line_.get_line() ;
+                            file_line_.get_fields() ;
+                            for( index_t i = 0; i < 5; ++i ) {
+                                index_t region_id = file_line_.field_as_uint( i ) ;
+                                if( region_id == 0 ) {
+                                    end_layer = true ;
+                                    break ;
+                                } else {
+                                    region_id -= nb_tface + 1 ; // Remove Universe region
+                                    // Correction because ids begin at 1 in the file
+                                    add_entity_child( layer_id,
+                                        gme_t( GME::REGION, region_id - 1 ) ) ;
+                                }
+                            }
+                        }
+                    } else if( file_line_.field_matches( 0, "END" ) ) {
+                        // End of the high level information on the model
+                        // Switch to reading the geometry of the model surfaces
+                        read_model = false ;
+                        continue ;
+                    }
+                } else {
+                    if( file_line_.field_matches( 0, "GOCAD" ) ) {
+                        // This is the beginning of a new TSurf = Interface
+                        tsurf_count++ ;
+                    }
+                    if( file_line_.field_matches( 0, "ZPOSITIVE" ) ) {
+                        if( file_line_.field_matches( 1, "Elevation" ) ) {
+                            z_sign = 1 ;
+                        } else if( file_line_.field_matches( 1, "Depth" ) ) {
+                            z_sign = -1 ;
+                        } else {
+                            ringmesh_assert_not_reached ;
+                        }
+                    } else if( file_line_.field_matches( 0, "END" ) ) {
+                        // This the END of a TSurf
+                        if( tsurf_count > 0 ) {
+                            // End the last TFace - Surface of this TSurf
+                            set_surface_geometry( tface_count - 1,
+                                std::vector< vec3 >(
+                                    tsurf_vertices.begin()
+                                        + tface_vertex_start.back(),
+                                    tsurf_vertices.end() ), tface_facets,
+                                tface_facets_ptr ) ;
+
+                            if( !check_key_facet_orientation( tface_count - 1 ) ) {
+                                change_key_facet.push_back( tface_count - 1 ) ;
+                            }
+
+                            tface_facets.clear() ;
+                            tface_facets_ptr.clear() ;
+                            tface_facets_ptr.push_back( 0 ) ;
+
+                            // End this TSurf - Interface
+                            nb_tface_in_prev_tsurf += tface_vertex_start.size() ;
+                            tsurf_vertices.clear() ;
+                            tface_vertex_start.clear() ;
+                        }
+                    } else if( file_line_.field_matches( 0, "TFACE" ) ) {
+                        // Beginning of a new TFace - Surface
+                        if( tface_vertex_start.size() > 0 ) {
+                            // End the previous TFace - Surface  (copy from line 1180)
+                            set_surface_geometry( tface_count - 1,
+                                std::vector< vec3 >(
+                                    tsurf_vertices.begin()
+                                        + tface_vertex_start.back(),
+                                    tsurf_vertices.end() ), tface_facets,
+                                tface_facets_ptr ) ;
+
+                            if( !check_key_facet_orientation( tface_count - 1 ) ) {
+                                change_key_facet.push_back( tface_count - 1 ) ;
+                            }
+
+                            tface_facets.clear() ;
+                            tface_facets_ptr.clear() ;
+                            tface_facets_ptr.push_back( 0 ) ;
+                        }
+
+                        // Register where begin the new TFace vertices
+                        tface_vertex_start.push_back( tsurf_vertices.size() ) ;
+
+                        tface_count++ ;
+                    }
+
+                    /// 2.1 Read the surface vertices and facets (only triangles in Gocad Model3d files)
+                    else if( file_line_.field_matches( 0, "VRTX" )
+                        || file_line_.field_matches( 0, "PVRTX" ) ) {
+                        vec3 p( file_line_.field_as_double( 2 ),
+                            file_line_.field_as_double( 3 ),
+                            z_sign * file_line_.field_as_double( 4 ) ) ;
+                        tsurf_vertices.push_back( p ) ;
+                    } else if( file_line_.field_matches( 0, "PATOM" )
+                        || file_line_.field_matches( 0, "ATOM" ) ) {
+                        tsurf_vertices.push_back(
+                            tsurf_vertices[file_line_.field_as_uint( 2 ) - 1] ) ;
+                    } else if( file_line_.field_matches( 0, "TRGL" ) ) {
+                        // Read ids of the vertices of each triangle in the TSurf
+                        // and switch to ids in the TFace
+                        tface_facets.push_back(
+                            (index_t) file_line_.field_as_uint( 1 )
+                                - tface_vertex_start.back() - 1 ) ;
+                        tface_facets.push_back(
+                            (index_t) file_line_.field_as_uint( 2 )
+                                - tface_vertex_start.back() - 1 ) ;
+                        tface_facets.push_back(
+                            (index_t) file_line_.field_as_uint( 3 )
+                                - tface_vertex_start.back() - 1 ) ;
+                        tface_facets_ptr.push_back( tface_facets.size() ) ;
+                    }
+
+                    // 2.2 Build the corners from their position and the surface parts
+                    //    containing them
+                    else if( file_line_.field_matches( 0, "BSTONE" )
+                        && !options_.compute_corners ) {
+                        index_t v_id = file_line_.field_as_uint( 1 ) - 1 ;
+                        if( !find_corner( model(), tsurf_vertices[v_id] ).is_defined() ) {
+                            // Create the corner
+                            gme_t corner_gme = create_entity( GME::CORNER ) ;
+                            set_corner( corner_gme.index, tsurf_vertices[v_id] ) ;
+                        }
+                    }
+
+                    /// 2.3 Read the Border information and store it
+                    else if( file_line_.field_matches( 0, "BORDER" )
+                        && !options_.compute_lines ) {
+                        index_t p1 = file_line_.field_as_uint( 2 ) - 1 ;
+                        index_t p2 = file_line_.field_as_uint( 3 ) - 1 ;
+
+                        // Get the global corner id
+                        gme_t corner_id = find_corner( model(), tsurf_vertices[p1] ) ;
+                        ringmesh_assert( corner_id.is_defined() ) ;
+
+                        // Get the surface
+                        index_t part_id = NO_ID ;
+                        for( index_t i = 0; i < tface_vertex_start.size(); ++i ) {
+                            if( p1 < tface_vertex_start[i] ) {
+                                ringmesh_assert( p2 < tface_vertex_start[i] ) ;
+
+                                // Get vertices ids in the surface
+                                p1 = p1 - tface_vertex_start[i - 1] ;
+                                p2 = p2 - tface_vertex_start[i - 1] ;
+
+                                // i-1 is the id of the TFace in this TSurf
+                                part_id = i - 1 ;
+                                break ;
+                            }
+                        }
+                        if( part_id == NO_ID ) {
+                            // It is in the last built Tface
+                            p1 = p1
+                                - tface_vertex_start[tface_vertex_start.size() - 1] ;
+                            p2 = p2
+                                - tface_vertex_start[tface_vertex_start.size() - 1] ;
+
+                            part_id = tface_vertex_start.size() - 1 ;
+                        }
+
+                        // The number of tfaces in previous tsurf is also to add
+                        part_id += nb_tface_in_prev_tsurf ;
+
+                        borders_to_build.push_back(
+                            Border( part_id, corner_id.index, p1, p2 ) ) ;
+                    }
+                }
+            }
+        }
+
+        // I agree that we do not need to compute the GeoModelMeshVertices here
+        // But perhaps the computation of Lines would be faster and safer [JP]
+
+        /// 3. Build the Lines
+        if( !options_.compute_lines ) {
+            // Use info of the .ml file to fill the Lines
+            std::vector< vec3 > line_vertices ;
+            for( index_t i = 0; i < borders_to_build.size(); ++i ) {
+                const Border& b = borders_to_build[i] ;
+                // 1- Build the boundary : construct the vector
+                // of vertices on the border
+                const Surface& S = model().surface( b.part_id_ ) ;
+                determine_line_vertices( S, b.p0_, b.p1_, line_vertices ) ;
+                if( line_vertices.empty() ) {
+                    GEO::Logger::out( "I/O" )
+                        << "One Line vertices determination failed in SURFACE "
+                        << S.index() << std::endl ;
+                } else {
+                    // 2 - Check if this border already exists
+                    gme_t line_id = find_or_create_line( line_vertices ) ;
+                    // Add the surface in which this line is
+                    add_entity_in_boundary( line_id, S.gme_id() ) ;
+                }
+            }
+        } else {
+            // Ignore BORDER and CORNER information of the file
+            // Create them now from the topology of the Surfaces
+            model().mesh.vertices.test_and_initialize() ;
+            build_lines_and_corners_from_surfaces() ;
+        }
+
+        /// 4. Build the Contacts
+        build_contacts() ;
+
+        // Modify in the Region the side of the Surface for which the key facet
+        // orientation was not the same than their facet orientations
+        for( index_t i = 0; i < change_key_facet.size(); i++ ) {
+            const Surface& S = model().surface( change_key_facet[i] ) ;
+            for( index_t j = 0; j < S.nb_in_boundary(); ++j ) {
+                Region& R = dynamic_cast< Region& >( entity(
+                    S.in_boundary_gme( j ) ) ) ;
+                for( index_t b = 0; b < R.nb_boundaries(); ++b ) {
+                    if( R.boundary_gme( b ).index == change_key_facet[i] ) {
+                        bool old_side = R.side( b ) ;
+                        set_entity_boundary( R.gme_id(), b, R.boundary_gme( b ),
+                            !old_side ) ;
+                    }
+                }
+            }
+        }
+    }
+
+    /*!
+     * @brief Find the facet which first 3 vertices are given
+     *
+     * @param[in] surface_id Index of the surface
+     * @param[in] p0 First point coordinates
+     * @param[in] p1 Second point coordinates
+     * @param[in] p2 Third point coordinates
+     * @param[out] same_sign Is true if the found facet has the same orientation than triangle p0p1p2
+     * @return Index of the found facet, NO_ID if none found
+     */
+    index_t GeoModelBuilderGocad::find_key_facet(
+        index_t surface_id,
+        const vec3& p0,
+        const vec3& p1,
+        const vec3& p2,
+        bool& same_sign ) const
+    {
+        const Surface& surface = model().surface( surface_id ) ;
+        same_sign = false ;
+
+        for( index_t t = 0; t < surface.nb_mesh_elements(); ++t ) {
+            const vec3& pp0 = surface.mesh_element_vertex( t, 0 ) ;
+            const vec3& pp1 = surface.mesh_element_vertex( t, 1 ) ;
+            const vec3& pp2 = surface.mesh_element_vertex( t, 2 ) ;
+
+            if( p0 == pp0 ) {
+                if( p1 == pp1 && p2 == pp2 ) {
+                    same_sign = true ;
+                    return t ;
+                }
+                if( p1 == pp2 && p2 == pp1 ) {
+                    same_sign = false ;
+                    return t ;
+                }
+            }
+            if( p0 == pp1 ) {
+                if( p1 == pp0 && p2 == pp2 ) {
+                    same_sign = false ;
+                    return t ;
+                }
+                if( p1 == pp2 && p2 == pp0 ) {
+                    same_sign = true ;
+                    return t ;
+                }
+            }
+            if( p0 == pp2 ) {
+                if( p1 == pp0 && p2 == pp1 ) {
+                    same_sign = true ;
+                    return t ;
+                }
+                if( p1 == pp1 && p2 == pp0 ) {
+                    same_sign = false ;
+                    return t ;
+                }
+            }
+        }
+        return NO_ID ;
+    }
+
+    /*!
+     * @brief Verify that a surface key facet has an orientation consistent with the surface facets.
+     *
+     * @param[in] surface_id Index of the surface
+     * @return False if the key_facet orientation is not the same than the surface facets, else true.
+     */
+    bool GeoModelBuilderGocad::check_key_facet_orientation(
+        index_t surface_id ) const
+    {
+        const KeyFacet& key_facet = key_facets_[surface_id] ;
+
+        const vec3& p0 = key_facet.p0_ ;
+        const vec3& p1 = key_facet.p1_ ;
+        const vec3& p2 = key_facet.p2_ ;
+        bool same_sign = false ;
+
+        index_t t = find_key_facet( surface_id, p0, p1, p2, same_sign ) ;
+        if( t == NO_ID ) {
+            vec3 p00( p0 ) ;
+            p00.z *= -1 ;
+            vec3 p10( p1 ) ;
+            p10.z *= -1 ;
+            vec3 p20( p2 ) ;
+            p20.z *= -1 ;
+
+            // It is because of the sign of Z that is not the same
+            t = find_key_facet( surface_id, p00, p10, p20, same_sign ) ;
+        }
+        ringmesh_assert( t != NO_ID ) ;
+        return same_sign ;
+    }
+
+    /*!
+     * @brief Get the points of a Line between two corners on a Surface
+     *
+     * @param[in] S Index of the surface
+     * @param[in] id0 Index of the starting point( a corner ) in S
+     * @param[in] id1 Index of the second point on the Line in S
+     * @param[out] border_vertex_model_vertices Coordinates of the vertices on the Line (emptied and filled again)
+     * @return Index of the Corner at which the Line ends
+     */
+    gme_t GeoModelBuilderGocad::determine_line_vertices(
+        const Surface& S,
+        index_t id0,
+        index_t id1,
+        std::vector< vec3 >& border_vertex_model_vertices ) const
+    {
+        ringmesh_assert( id0 < S.nb_vertices() && id1 < S.nb_vertices() ) ;
+
+        border_vertex_model_vertices.resize( 0 ) ;
+
+        // Starting facet that contains the two given vertices
+        index_t f = S.facet_from_surface_vertex_ids( id0, id1 ) ;
+//        ringmesh_assert( f != Surface::NO_ID ) ;
+        if( f == NO_ID ) {
+            border_vertex_model_vertices.resize( 0 ) ;
+            return gme_t() ;
+        }
+
+        vec3 p0 = S.vertex( id0 ) ;
+        vec3 p1 = S.vertex( id1 ) ;
+
+        border_vertex_model_vertices.push_back( p0 ) ;
+        border_vertex_model_vertices.push_back( p1 ) ;
+
+        gme_t p1_corner = find_corner( model(), p1 ) ;
+        while( !p1_corner.is_defined() ) {
+            index_t next_f = NO_ID ;
+            index_t id1_in_next = NO_ID ;
+            index_t next_id1_in_next = NO_ID ;
+
+            // We want the next triangle that is on the boundary and share p1
+            // If there is no such triangle, the third vertex of the current triangle is to add
+            S.next_on_border( f, S.vertex_index_in_facet( f, id0 ),
+                S.vertex_index_in_facet( f, id1 ), next_f, id1_in_next,
+                next_id1_in_next ) ;
+
+            ringmesh_assert(
+                next_f != NO_ID && id1_in_next != NO_ID
+                && next_id1_in_next != NO_ID ) ;
+
+            index_t next_id1 = S.mesh_element_vertex_index( next_f, next_id1_in_next ) ;
+
+            // Update
+            f = next_f ;
+            id0 = id1 ;
+            id1 = next_id1 ;
+
+            p1 = S.vertex( next_id1 ) ;
+            border_vertex_model_vertices.push_back( p1 ) ;
+            p1_corner = find_corner( model(), p1 ) ;
+        }
+        return p1_corner ;
+    }
+
+    /*!
+     * @brief Add a Surface to the model
+     *
+     * @param[in] interface_name Name of the parent. The parent MUST exist.
+     * @param[in] type Type of the Surface
+     * @param[in] p0 Coordinates of the 1 point of the TFace key facet
+     * @param[in] p1 Coordinates of the 2 point of the TFace key facet
+     * @param[in] p2 Coordinates of the 3 point of the TFace key facet
+     */
+    void GeoModelBuilderGocad::create_surface(
+        const std::string& interface_name,
+        const std::string& type,
+        const vec3& p0,
+        const vec3& p1,
+        const vec3& p2 )
+    {
+        gme_t parent = find_interface( model(), interface_name ) ;
+        if( interface_name != "" ) {
+            ringmesh_assert( parent.is_defined() ) ;
+        }
+
+        gme_t id = create_entity( GME::SURFACE ) ;
+        set_entity_parent( id, parent ) ;
+        set_entity_geol_feature( parent, GME::determine_geological_type( type ) ) ;
+        key_facets_.push_back( KeyFacet( p0, p1, p2 ) ) ;
+    }
+
+
 } // RINGMesh namespace
