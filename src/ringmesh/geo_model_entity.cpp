@@ -233,11 +233,11 @@ namespace {
 namespace RINGMesh {
 
 
-    
-            bool gme_t::is_defined() const ;
-            {
-                return type != GME::type_name_ && index != NO_ID ;
-            }
+
+    bool GME::gme_t::is_defined() const
+    {
+        return type != GME::type_name_ && index != NO_ID ;
+    }
 
 
 
@@ -324,7 +324,7 @@ namespace RINGMesh {
     {
         bool valid = true ;
 
-        /// 1. Check the validity of identification information
+/*        /// 1. Check the validity of identification information
         ///    in the model - Universe has no index, but a TYPE
         if( gme_id() == gme_t() ) {
             GEO::Logger::err( "GeoModelEntity" ) << " Entity associated to model "
@@ -484,15 +484,19 @@ namespace RINGMesh {
             }
         }
         return valid ;
+   */
+
+        return false ; // TO SPLIT between classes
     }
 
     /*!
      * @return Assert that the parent exists and returns it.
      */
-    const GeoModelEntity& GeoModelEntity::parent() const
+    const GeoModelEntity& GeoModelEntity::parent( index_t parent_index ) const
     {
-        ringmesh_assert( parent_id().is_defined() ) ;
-        return model().entity( parent_id() ) ;
+        gme_t parent_id = parent_id( parent_index ) ;
+        ringmesh_assert( parent_id.is_defined() ) ;
+        return model().entity( parent_id(parent_index) ) ;
     }
 
     /*!
@@ -738,6 +742,8 @@ namespace RINGMesh {
     }
 
     /***************************************************************/
+
+    const std::string Line::type_name_ = "Line";
 
     /*!
      * @brief Construct a Line
