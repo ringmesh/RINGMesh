@@ -33,8 +33,8 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_GEO_MODEL_BUILDER_SO__
-#define __RINGMESH_GEO_MODEL_BUILDER_SO__
+#ifndef __RINGMESH_GEO_MODEL_BUILDER_GOCAD__
+#define __RINGMESH_GEO_MODEL_BUILDER_GOCAD__
 
 #include <ringmesh/common.h>
 #include <ringmesh/geo_model_builder.h>
@@ -182,6 +182,72 @@ namespace RINGMesh {
         GEO::LineInput file_line_ ;
         friend class RINGMesh::TSolidLineParser ;
     } ;
+
+
+    /*!
+     * @brief Build a GeoModel from a Gocad Model3D (file_model.ml)
+     */
+    class RINGMESH_API GeoModelBuilderGocad: public GeoModelBuilderFile {
+    public:
+        GeoModelBuilderGocad( GeoModel& model, const std::string& filename )
+            : GeoModelBuilderFile( model, filename ), file_line_( filename )
+        {
+            options_.compute_lines = true ;
+            if( !file_line_.OK() ) {
+                throw RINGMeshException( "I/O", "Failed to open file " + filename ) ;
+            }
+        }
+        virtual ~GeoModelBuilderGocad()
+        {
+        }
+
+    private:
+        void load_file() ;
+
+        GME::gme_t determine_line_vertices(
+            const Surface& S,
+            index_t id0,
+            index_t id1,
+            std::vector< vec3 >& border_vertex_model_ids ) const ;
+
+        void create_surface(
+            const std::string& interface_name,
+            const std::string& type,
+            const vec3& p0,
+            const vec3& p1,
+            const vec3& p2 ) ;
+
+        /*!
+         * @brief Check if the surface triangle orientations match the one of the key facet
+         */
+        bool check_key_facet_orientation( index_t surface ) const ;
+
+        index_t find_key_facet(
+            index_t surface_id,
+            const vec3& p0,
+            const vec3& p1,
+            const vec3& p2,
+            bool& same_orientation ) const ;
+
+    private:
+        GEO::LineInput file_line_ ;
+
+        /*!
+         * @brief Triangle that set the orientation of a TFACE
+         *        in a .ml file
+         */
+        struct KeyFacet {
+            KeyFacet( const vec3& p0, const vec3& p1, const vec3& p2 )
+                : p0_( p0 ), p1_( p1 ), p2_( p2 )
+            {
+            }
+            vec3 p0_ ;
+            vec3 p1_ ;
+            vec3 p2_ ;
+        } ;
+        std::vector< KeyFacet > key_facets_ ;
+    } ;
+
 }
 
 #endif
