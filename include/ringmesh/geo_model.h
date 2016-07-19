@@ -127,7 +127,7 @@ namespace RINGMesh {
         {
             index_t index = geological_entity_type( type ) ;
             if( index == NO_ID ) return 0 ;
-            return geological_entities_[index].size() ;
+            return static_cast< index_t >( geological_entities_[index].size() ) ;
         }
 
         /*!
@@ -138,6 +138,11 @@ namespace RINGMesh {
         index_t geological_entity_type( const std::string& type ) const
         {
             return find( geological_entity_types_, type ) ;
+        }
+        index_t nb_geological_entity_type() const
+        {
+            return static_cast< index_t >( geological_entity_types_.size() ) ;
+
         }
 
         /*!
@@ -377,7 +382,7 @@ namespace RINGMesh {
         const WellGroup* wells_ ;
     } ;
 
-    GEO::Factory0< GeoModelGeologicalEntity > GeoModelGeologicalEntityFactory ;
+    typedef GEO::Factory1< GeoModelGeologicalEntity, GeoModel > GeoModelGeologicalEntityFactory ;
 #define ringmesh_register_GeoModelGeologicalEntity_creator( type, name ) \
     geo_register_creator( GeoModelGeologicalEntityFactory, type, name )
 
