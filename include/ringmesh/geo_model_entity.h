@@ -170,7 +170,7 @@ namespace RINGMesh {
             }
             friend std::ostream& operator<<( std::ostream& os, const gme_t& in )
             {
-                os << GeoModelEntity::type_name( in.type ) << " " << in.index ;
+                os << in.type << " " << in.index ;
                 return os ;
             }
 
@@ -181,7 +181,7 @@ namespace RINGMesh {
             /*!
              * TYPE of the GeoModelEntity
              */
-            TYPE type ;
+            std::string type ;
             /*!
              * Index of the entity in the GeoModel
              */
@@ -205,31 +205,7 @@ namespace RINGMesh {
          * \name Key functions to access relationships between TYPEs 
          * @{
          */
-        static std::string type_name( TYPE t ) ;
-
-        static TYPE parent_type( TYPE t ) ;
-        static TYPE child_type( TYPE t ) ;
-        static TYPE boundary_type( TYPE t ) ;
-        static TYPE in_boundary_type( TYPE t ) ;
-        static index_t dimension( TYPE t ) ;
-        static bool has_mesh( TYPE t ) ;
-
-        static bool parent_allowed( TYPE t )
-        {
-            return parent_type( t ) != NO_TYPE ;
-        }
-        static bool child_allowed( TYPE t )
-        {
-            return child_type( t ) != NO_TYPE ;
-        }
-        static bool boundary_allowed( TYPE t )
-        {
-            return boundary_type( t ) != NO_TYPE ;
-        }
-        static bool in_boundary_allowed( TYPE t )
-        {
-            return in_boundary_type( t ) != NO_TYPE ;
-        }
+        virtual std::string type_name() = 0 ;
 
         /*!@}
          */
@@ -246,10 +222,7 @@ namespace RINGMesh {
         /*!
          * @brief Global validity check of the GME
          */
-        virtual bool is_valid() const
-        {
-            return is_connectivity_valid() ;
-        }
+        virtual bool is_valid() const = 0 ;
 
         /*!
          * @brief Basic checks on the minimum required information 
@@ -294,59 +267,8 @@ namespace RINGMesh {
         {
             return geol_feature_ ;
         }
-        bool is_on_voi() const ;
+        virtual bool is_on_voi() const = 0 ;
 
-        /*!@}
-         * \name Connectivity - boundary and in_boundary
-         * @todo Change in_boundary to incident_entities? in_boundary is obscure? [JP]
-         * @{
-         */
-        index_t nb_boundaries() const
-        {
-            return static_cast< index_t >( boundaries_.size() ) ;
-        }
-        const gme_t& boundary_gme( index_t x ) const
-        {
-            return boundaries_[x] ;
-        }
-        const GeoModelEntity& boundary( index_t x ) const ;
-
-        index_t nb_in_boundary() const
-        {
-            return static_cast< index_t >( in_boundary_.size() ) ;
-        }
-        const gme_t& in_boundary_gme( index_t x ) const
-        {
-            return in_boundary_[x] ;
-        }
-        const GeoModelEntity& in_boundary( index_t x ) const ;
-
-        bool is_inside_border( const GeoModelEntity& e ) const ;
-        bool has_inside_border() const ;
-
-        /*!@}
-         * \name Parent - children relationships
-         * @{
-         */
-        bool has_parent() const
-        {
-            return parent_id().is_defined() ;
-        }
-        const gme_t& parent_id() const
-        {
-            return parent_ ;
-        }
-        const GeoModelEntity& parent() const ;
-
-        index_t nb_children() const
-        {
-            return static_cast< index_t >( children_.size() ) ;
-        }
-        const gme_t& child_id( index_t x ) const
-        {
-            return children_[x] ;
-        }
-        const GeoModelEntity& child( index_t x ) const ;
 
     protected:
         /*!
@@ -387,20 +309,48 @@ namespace RINGMesh {
         /// Geological feature of this object - default is NO_GEOL
         GEOL_FEATURE geol_feature_ ;
 
-        /// Entities on the boundary of this entity - see boundary_type( TYPE )
-        std::vector< gme_t > boundaries_ ;
-
-        /// Entities in which boundary this entity is - see in_boundary_type( TYPE )
-        std::vector< gme_t > in_boundary_ ;
-
-        /// Parent identification - see parent_type( TYPE )
-        gme_t parent_ ;
-
-        /// Entities constituting this one - see child_type( TYPE )
-        std::vector< gme_t > children_ ;
     } ;
 
     typedef GeoModelEntity GME ;
+
+    class RINGMESH_API GeoModelGeologicalEntity: public GeoModelEntity {
+    protected:
+        GeoModelGeologicalEntity(
+            const GeoModel& model,
+            TYPE entity_type,
+            index_t id,
+            const std::string& name = "",
+            GEOL_FEATURE geological_feature = NO_GEOL )
+            : GeoModelEntity( model, entity_type, id, name, geological_feature )
+        {
+        }
+        virtual ~GeoModelGeologicalEntity()
+        {
+        }
+
+    public:
+
+        /*!@}
+         * \name Children relationships
+         * @{
+         */
+
+        index_t nb_children() const
+        {
+            return static_cast< index_t >( children_.size() ) ;
+        }
+        const gme_t& child_id( index_t x ) const
+        {
+            return children_[x] ;
+        }
+        const GeoModelMeshEntity& child( index_t x ) const ;
+
+    protected:
+
+        /// Entities constituting this one - see child_type( TYPE )
+        std::vector< gme_t > children_ ;
+
+    } ;
 
     /*!
      * @brief Vertex in a GeoModelEntity
@@ -449,7 +399,7 @@ namespace RINGMesh {
         friend class GeoModelBuilder ;
         friend class GeoModelRepair ;
 
-    public:
+    protected:
         GeoModelMeshEntity(
             const GeoModel& model,
             TYPE entity_type,
@@ -466,6 +416,59 @@ namespace RINGMesh {
 
         virtual ~GeoModelMeshEntity() ;
 
+    public:
+        virtual TYPE boundary_type() = 0 ;
+        virtual TYPE in_boundary_type() = 0 ;
+
+
+        /*!@}
+         * \name Connectivity - boundary and in_boundary
+         * @todo Change in_boundary to incident_entities? in_boundary is obscure? [JP]
+         * @{
+         */
+        index_t nb_boundaries() const
+        {
+            return static_cast< index_t >( boundaries_.size() ) ;
+        }
+        const gme_t& boundary_gme( index_t x ) const
+        {
+            return boundaries_[x] ;
+        }
+        const GeoModelEntity& boundary( index_t x ) const ;
+
+        index_t nb_in_boundary() const
+        {
+            return static_cast< index_t >( in_boundary_.size() ) ;
+        }
+        const gme_t& in_boundary_gme( index_t x ) const
+        {
+            return in_boundary_[x] ;
+        }
+        const GeoModelEntity& in_boundary( index_t x ) const ;
+
+        bool is_inside_border( const GeoModelEntity& e ) const ;
+        bool has_inside_border() const ;
+
+        /*!@}
+         * \name Parent relationships
+         * @{
+         */
+
+        index_t nb_parents() const
+        {
+            return parents_.size() ;
+        }
+        bool has_parent() const
+        {
+            return nb_parents() != 0 ;
+        }
+        const gme_t& parent_id( index_t id ) const
+        {
+            ringmesh_assert( id < nb_parents() ) ;
+            return parents_[id] ;
+        }
+        const GeoModelGeologicalEntity& parent( index_t id ) const ;
+
         /*! @todo To remove when GFX Mesh is encapsulated */
         const GEO::Mesh& gfx_mesh() const
         {
@@ -478,7 +481,7 @@ namespace RINGMesh {
         virtual bool is_valid() const
         {
             return is_connectivity_valid() && is_mesh_valid() ;
-            /* @todo Test and add the model vertex validity test            
+            /* @todo Test and add the model vertex validity test
              * (no time right now JP)
              * are_model_vertex_indices_valid() ;
              */
@@ -658,6 +661,15 @@ namespace RINGMesh {
          *  the vertex in the GeoModel owning this entity
          */
         GEO::Attribute< index_t > model_vertex_id_ ;
+
+        /// Entities on the boundary of this entity - see boundary_type( TYPE )
+        std::vector< gme_t > boundaries_ ;
+
+        /// Entities in which boundary this entity is - see in_boundary_type( TYPE )
+        std::vector< gme_t > in_boundary_ ;
+
+        /// Parent identification - see parent_type( TYPE )
+        std::vector< gme_t > parents_ ;
     } ;
 
     /*!
