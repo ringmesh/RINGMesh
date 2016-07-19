@@ -49,14 +49,61 @@ namespace RINGMesh {
     typedef GeoModelEntity::gme_t gme_t ;
 
 
-    GeoModelEntity& GeoModelEditor::entity( const GME::gme_t& id )
+    GeoModelGeologicalEntity& GeoModelEditor::geological_entity( const GME::gme_t& id )
     {
-        return model_.modifiable_entity( id ) ;
+        return model_.modifiable_geological_entity( id ) ;
     }
 
     void GeoModelEditor::set_model_name( const std::string& name )
     {
         model_.name_ = name ;
+    }
+
+    /*!
+     * @brief Creates a mesh entity of the given type and add it to the correct vector
+     * The GeoModelMeshEntity is created from its type and its index
+     *
+     * @param[in] type Type of the mesh entity to create
+     * @return The index of the created mesh entity
+     */
+    gme_t GeoModelEditor::create_mesh_entity( const std::string& type )
+    {
+        assert_entity_creation_allowed() ;
+        GME* E = nil ;
+        if( type == Corner::type_name_ ) {
+            E = new Corner( model(), model_.corners_.size() ) ;
+            model_.corners_.push_back( E ) ;
+        } else if( type == Line::type_name_ ) {
+            E = new Line( model(), model_.lines_.size() ) ;
+            model_.lines_.push_back( E ) ;
+        } else if( type == Surface::type_name_ ) {
+            E = new Surface( model(), model_.surfaces_.size() ) ;
+            model_.surfaces_.push_back( E ) ;
+        } else if( type == Region::type_name_ ) {
+            E = new Region( model(), model_.regions_.size() ) ;
+            model_.regions_.push_back( E ) ;
+        } else {
+            ringmesh_assert_not_reached ;
+            return gme_t() ;
+        }
+        return E->gme_id();
+    }
+
+    index_t GeoModelEditor::create_entities( GME::TYPE type, index_t nb )
+    {
+        assert_entity_creation_allowed() ;
+        if( type >= GME::NO_TYPE ) {
+            return NO_ID ;
+        }
+        std::vector< GME* >& store = model_.modifiable_entities( type ) ;
+        index_t old_size = static_cast<index_t> ( store.size() ) ;
+        index_t new_size = old_size + nb ;
+        store.resize( new_size, nil ) ;
+        for( index_t i = old_size; i < new_size; i++ ) {
+            ringmesh_assert( store[i] == nil ) ;
+            store[i] = new_entity( type, i ) ;
+        }
+        return old_size ;
     }
 
     /*!

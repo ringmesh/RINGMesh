@@ -82,14 +82,7 @@ namespace RINGMesh {
             create_entity_allowed_ = false ;
         }
 
-        GME::gme_t create_entity( GME::TYPE e_type ) ;
-
-        void create_geomodel_entities( GME::TYPE entity_type, index_t nb_entities )
-        {
-            for( index_t i = 0; i < nb_entities; ++i ) {
-                create_entity( entity_type ) ;
-            }
-        }
+        GME::gme_t create_mesh_entity( const std::string& type ) ;
 
         /*! @}
          * \name Creation - Deletion - Access to GeoModelEntities.
@@ -101,7 +94,7 @@ namespace RINGMesh {
          * @pre The id must refer to a valid entity of the model
          * @note Stupid override of a function of GeoModel
          */
-        GeoModelEntity& entity( const GME::gme_t& id ) ;
+        GeoModelGeologicalEntity& geological_entity( const GME::gme_t& id ) ;
 
         /*!
          * @brief Reference to a modifiable meshed entity of the model
@@ -276,14 +269,15 @@ namespace RINGMesh {
         void remove_entities_and_dependencies(
             const std::set< GME::gme_t >& entities_to_remove ) ;
 
-    protected:
-        /*!
-        * @ brief The model under construction
-        */
         const GeoModel& model() const
         {
             return model_ ;
         }
+
+    protected:
+        /*!
+        * @ brief The model under construction
+        */
         GeoModel& model()
         {
             return model_ ;
