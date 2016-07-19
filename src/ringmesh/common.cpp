@@ -50,7 +50,7 @@
 
 #include <ringmesh/io.h>
 #include <ringmesh/geogram_extension.h>
-#include <ringmesh/geo_model_builder_so.h>
+#include <ringmesh/geo_model_builder_gocad.h>
 #include <ringmesh/tetra_gen.h>
 
 namespace RINGMesh {
