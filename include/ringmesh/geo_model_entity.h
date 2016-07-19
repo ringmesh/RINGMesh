@@ -327,11 +327,26 @@ namespace RINGMesh {
 
     } ;
 
-    class RINGMESH_API Universe : public GeoModelEntity {
+    class RINGMESH_API Universe : public GeoModelEntity
+    {
     public:
         const std::string& type_name_ ;
         Universe( const GeoModel& model ) ;
 
+        bool is_valid() const
+        {
+            return false ;
+        }
+
+        bool is_on_voi() const
+        {
+            return true ;
+        }
+
+        std::string type_name() const
+        {
+            return "Universe" ;
+        }
     private:
         std::vector< gme_t > boundary_surfaces_ ;
         std::vector< bool > boundary_surface_sides_ ;
@@ -731,7 +746,7 @@ namespace RINGMesh {
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
     public:
-        const static std::string type_name_ = "Line";
+        static const std::string type_name_ ; 
 
         Line( const GeoModel& model, index_t id ) ;
 
@@ -1084,7 +1099,7 @@ namespace RINGMesh {
             index_t id,
             const std::string& name,
             GEOL_FEATURE geological_feature )
-            : GeoModelMeshEntity( model, REGION, id, name, geological_feature )
+            : GeoModelMeshEntity( model, id, name, geological_feature )
         {
         }
         ~Region()

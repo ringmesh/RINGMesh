@@ -250,7 +250,7 @@ namespace RINGMesh {
         inline std::vector< GeoModelGeologicalEntity* >& modifiable_geological_entities(
             const std::string& type )
         {
-            return const_cast< std::vector< GeoModelGeologicalEntity* >& >( mesh_entities(
+            return const_cast< std::vector< GeoModelGeologicalEntity* >& >( geological_entities(
                 type ) ) ;
         }
 
@@ -261,16 +261,16 @@ namespace RINGMesh {
             const std::string& type ) const
         {
             if( type == Corner::type_name_ ) {
-                return *(std::vector< GME* > *) &corners_ ;
+                return *(std::vector< GeoModelMeshEntity* > *) &corners_ ;
             } else if( type == Line::type_name_ ) {
-                return *(std::vector< GME* > *) &lines_ ;
+                return *(std::vector< GeoModelMeshEntity* > *) &lines_ ;
             } else if( type == Surface::type_name_ ) {
-                return *(std::vector< GME* > *) &surfaces_ ;
+                return *(std::vector< GeoModelMeshEntity* > *) &surfaces_ ;
             } else if( type == Region::type_name_ ) {
-                return *(std::vector< GME* > *) &regions_ ;
+                return *(std::vector< GeoModelMeshEntity* > *) &regions_ ;
             } else {
                 ringmesh_assert_not_reached ;
-                return *(std::vector< GME* > *) &surfaces_ ;
+                return *(std::vector< GeoModelMeshEntity* > *) &surfaces_ ;
             }
         }
 
@@ -320,7 +320,7 @@ namespace RINGMesh {
         inline GeoModelMeshEntity& modifiable_mesh_entity(
             const GME::gme_t& id )
         {
-            return dynamic_cast< GeoModelMeshEntity& >( mesh_entity_ptr( id ) ) ;
+            return const_cast<GeoModelMeshEntity&> ( *mesh_entity_ptr( id ) ) ;
         }
 
         /*!
