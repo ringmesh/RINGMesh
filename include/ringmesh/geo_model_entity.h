@@ -50,6 +50,7 @@
 
 namespace RINGMesh {
     class GeoModel ;
+    class GeoModelMeshEntity ;
 }
 
 namespace RINGMesh {
@@ -57,8 +58,6 @@ namespace RINGMesh {
     /*!
      * @brief Generic class describing one entity of a GeoModel
      * 
-     * @todo We need to think once again about this design
-     * to be able to ease the addition of optional elements to the GeoModel [JP]
      */
     class RINGMESH_API GeoModelEntity {
     ringmesh_disable_copy( GeoModelEntity ) ;
@@ -90,22 +89,7 @@ namespace RINGMesh {
             /// Volume Of Interest
             VOI
         } ;
-
-        /*!
-         * @brief Type of the GeoModelEntity
-         * @details When no type is defined NO_TYPE should be used
-         * There are two categories of entities
-         *   - low-level entities (CORNER, LINE, SURFACE, REGION) which have a 
-         *     geometry and connectivity relationships
-         *   - high-level entities (CONTACT, INTERFACE, LAYER) 
-         *     that are constituted of low-level entities
-         * TYPE is used extensively to manage entities, iterate on them, etc.
-         *  
-         * @warning DO NOT MODIFY THIS ENUM SINCE ALL THE CODE RELIES ON IT. 
-         * 
-         * @todo Add fault blocks.
-         */
-        enum TYPE {
+   /*     enum TYPE {
             /// Points at LINE extremities
             CORNER = 0,
             /// One connected component of the intersection of at least 2 SURFACE 
@@ -126,7 +110,7 @@ namespace RINGMesh {
             /// Any type - to access generically entities
             ALL_TYPES
         } ;
-
+   */
         /*! 
          * @brief Unique identification of a GeoModelEntity in a GeoModel
          * @details Stores the TYPE of the entity and its index in the GeoModel.
@@ -136,11 +120,11 @@ namespace RINGMesh {
          */
         struct gme_t {
             gme_t()
-                : type( NO_TYPE ), index( NO_ID )
+                : type(), index( NO_ID )
             {
             }
-            gme_t( TYPE t, index_t id )
-                : type( t ), index( id )
+            gme_t( const std::string& entity_type, index_t id )
+                : type( entity_type ), index( id )
             {
             }
             bool operator!=( const gme_t& rhs ) const
@@ -161,6 +145,8 @@ namespace RINGMesh {
             bool operator<( const gme_t& rhs ) const
             {
                 if( type != rhs.type ) {
+                    // Probleme ? est ce que la comparaison des strings suffit ?
+                    // Ordre important pour qui ? Attention
                     return type < rhs.type ;
                 } else {
                     if( index == NO_ID ) return true ;
@@ -176,8 +162,9 @@ namespace RINGMesh {
 
             bool is_defined() const
             {
-                return type != NO_TYPE && type != ALL_TYPES && index != NO_ID ;
+                return type != GME::type_name_ && type != ALL_TYPES && index != NO_ID ;
             }
+
             /*!
              * TYPE of the GeoModelEntity
              */
@@ -201,11 +188,12 @@ namespace RINGMesh {
             return T == STRATI || T == UNCONFORMITY ;
         }
 
+        static const std::string type_name_ ;
         /*!
          * \name Key functions to access relationships between TYPEs 
          * @{
          */
-        virtual std::string type_name() = 0 ;
+        virtual std::string type_name() const = 0 ;
 
         /*!@}
          */
@@ -255,10 +243,10 @@ namespace RINGMesh {
         {
             return gme_id().index ;
         }
-        TYPE type() const
+        /*TYPE type() const
         {
             return gme_id().type ;
-        }
+        }*/
         bool has_geological_feature() const
         {
             return geol_feature_ != NO_GEOL ;
@@ -277,20 +265,18 @@ namespace RINGMesh {
          * GeoModelEditor derived classes.
          *
          * @param[in] model Constant reference to the parent model of this entity.
-         * @param[in] entity_type Type of the entity to create
          * @param[in] id Index of the entity in the corresponding vector in the model
          * @param[in] name Name of the entity, empty by default.
          * @param[in] geological_feature Feature of the entity, none by default.
          */
         GeoModelEntity(
             const GeoModel& model,
-            TYPE entity_type,
             index_t id,
             const std::string& name = "",
             GEOL_FEATURE geological_feature = NO_GEOL )
             :
                 model_( model ),
-                id_( entity_type, id ),
+                id_( type_name_, id ),
                 name_( name ),
                 geol_feature_( geological_feature )
         {
@@ -317,11 +303,10 @@ namespace RINGMesh {
     protected:
         GeoModelGeologicalEntity(
             const GeoModel& model,
-            TYPE entity_type,
             index_t id,
             const std::string& name = "",
             GEOL_FEATURE geological_feature = NO_GEOL )
-            : GeoModelEntity( model, entity_type, id, name, geological_feature )
+            : GeoModelEntity( model, id, name, geological_feature )
         {
         }
         virtual ~GeoModelGeologicalEntity()
@@ -329,12 +314,6 @@ namespace RINGMesh {
         }
 
     public:
-
-        /*!@}
-         * \name Children relationships
-         * @{
-         */
-
         index_t nb_children() const
         {
             return static_cast< index_t >( children_.size() ) ;
@@ -346,7 +325,6 @@ namespace RINGMesh {
         const GeoModelMeshEntity& child( index_t x ) const ;
 
     protected:
-
         /// Entities constituting this one - see child_type( TYPE )
         std::vector< gme_t > children_ ;
 
@@ -402,12 +380,11 @@ namespace RINGMesh {
     protected:
         GeoModelMeshEntity(
             const GeoModel& model,
-            TYPE entity_type,
             index_t id,
             const std::string& name = "",
             GEOL_FEATURE geological_feature = NO_GEOL )
             :
-                GeoModelEntity( model, entity_type, id, name, geological_feature ),
+                GeoModelEntity( model, id, name, geological_feature ),
                 mesh_( model, 3, false )
         {
             model_vertex_id_.bind( mesh_.vertex_attribute_manager(),
@@ -416,9 +393,9 @@ namespace RINGMesh {
 
         virtual ~GeoModelMeshEntity() ;
 
-    public:
-        virtual TYPE boundary_type() = 0 ;
-        virtual TYPE in_boundary_type() = 0 ;
+    public:        
+        virtual const std::string& boundary_type() = 0 ;
+        virtual const std::string& in_boundary_type() = 0 ;
 
 
         /*!@}
@@ -680,11 +657,13 @@ namespace RINGMesh {
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
     public:
+        static const std::string type_name_ ;
+
         /*! @brief Creates a Corner. 
          *  A point is added to its Mesh.
          */
         Corner( const GeoModel& model, index_t id )
-            : GeoModelMeshEntity( model, CORNER, id )
+            : GeoModelMeshEntity( model, id )
         {
             MeshBuilder builder( mesh_ ) ;
             builder.create_vertex() ;
@@ -694,8 +673,12 @@ namespace RINGMesh {
         {
         }
 
+        virtual const std::string& in_boundary_type()
+        {
+            return Line::type_name_ ;
+        }
+
         virtual index_t vertex_index( index_t corner_index = 0 ) const {
-            ringmesh_unused( corner_index ) ;
             return 0 ;
         }
         /*!
@@ -703,7 +686,7 @@ namespace RINGMesh {
          * @return 0.
          */
         virtual index_t mesh_element_vertex_index(
-            index_t /*mesh_element*/, index_t /*vertex_index*/ ) const 
+            index_t mesh_element = 0, index_t vertex_index = 0 ) const 
         {
             return 0 ;
         }
@@ -717,7 +700,7 @@ namespace RINGMesh {
         /*!
          * @return 1 the number of vertices of the Corner
          */
-        virtual index_t nb_mesh_element_vertices( index_t /*mesh_element*/ ) const
+        virtual index_t nb_mesh_element_vertices( index_t mesh_element = 0 ) const
         {
             return 1 ;
         }
@@ -726,7 +709,7 @@ namespace RINGMesh {
          * \name Geometrical request on Corner
          * @{
          */
-        virtual double mesh_element_size( index_t /*mesh_element*/ ) const
+        virtual double mesh_element_size( index_t mesh_element = 0 ) const
         {
             return 0.0 ;
         }
@@ -734,7 +717,7 @@ namespace RINGMesh {
         {
             return 0.0 ;
         }
-        virtual vec3 mesh_element_center( index_t /*mesh_element*/ ) const
+        virtual vec3 mesh_element_center( index_t mesh_element = 0 ) const
         {
             return vertex( 0 ) ;
         }
@@ -753,10 +736,21 @@ namespace RINGMesh {
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
     public:
+        const static std::string type_name_ = "Line";
+
         Line( const GeoModel& model, index_t id ) ;
 
         ~Line()
         {
+        }
+
+        virtual const std::string& boundary_type()
+        {
+            return Corner::type_name_ ;
+        }
+        virtual const std::string& in_boundary_type()
+        {
+            return Surface::type_name_ ;
         }
 
         virtual index_t vertex_index (index_t corner_index) const {

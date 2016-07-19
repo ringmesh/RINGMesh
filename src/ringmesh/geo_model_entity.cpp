@@ -67,6 +67,7 @@ namespace {
 
     typedef GeoModelEntity::gme_t gme_t ;
     typedef GeoModelMeshEntity GMME ;
+    typedef GeoModelGeologicalEntity GMGE ;
 
     /*!
      * @brief Checks that the model vertex indices of @param E
@@ -120,7 +121,8 @@ namespace {
      *
      * @param[in] gmme The GeoModelMeshEntity
      * @param[out] nb Resized to the number of vertices of the mesh.
-     *      Number of times one vertex appear in an mesh_element collection of the GeoModelMeshEntity edge or facet of the mesh.
+     *      Number of times one vertex appear in an mesh_element collection of 
+     *      the GeoModelMeshEntity edge or facet of the mesh.
      */
     void count_vertex_occurences(
         const GeoModelMeshEntity& E,
@@ -229,6 +231,8 @@ namespace {
 }
 
 namespace RINGMesh {
+
+    static const std::string GeoModelEntity::type_name_ = "No_entity_type" ;
     /*!
      * @brief Map the name of a geological type with a value of GEOL_FEATURE
      *
@@ -271,32 +275,7 @@ namespace RINGMesh {
             return NO_GEOL ;
         }
     }
-
-    /*!
-     * \return the (uppercase) string associated to a GeoModelELement::TYPE
-     */
-    std::string GeoModelEntity::type_name( GME::TYPE t )
-    {
-        switch( t ) {
-            case CORNER:
-                return "CORNER" ;
-            case LINE:
-                return "LINE" ;
-            case SURFACE:
-                return "SURFACE" ;
-            case REGION:
-                return "REGION" ;
-            case CONTACT:
-                return "CONTACT" ;
-            case INTERFACE:
-                return "INTERFACE" ;
-            case LAYER:
-                return "LAYER" ;
-            default:
-                return "NO_TYPE_NAME" ;
-        }
-    }
-
+    
     /*!
      * \return the (lowercase) string associated to a
      * GeoModelELement::GEOL_FEATURE
@@ -323,117 +302,14 @@ namespace RINGMesh {
                 break ;
         }
     }
-
-    /*!
-     * @brief Defines the type of the parent of an entity of type @param t
-     *        If no parent is allowed returns NO_TYPE
-     * @details The entities that can have a parent are LINE, SURFACE, and REGION
-     */
-    GeoModelEntity::TYPE GeoModelEntity::parent_type( GME::TYPE t )
-    {
-        switch( t ) {
-            case LINE:
-                return CONTACT ;
-            case SURFACE:
-                return INTERFACE ;
-            case REGION:
-                return LAYER ;
-            default:
-                // The others have no parent
-                return NO_TYPE ;
-        }
-    }
-
-    /*!
-     * @brief Defines the type of a child of an entity of type @param t
-     *        If no child is allowed returns NO_TYPE
-     * @details The entities that can have a parent are CONTACT, INTERFACE, and LAYER
-     */
-    GeoModelEntity::TYPE GeoModelEntity::child_type( GME::TYPE t )
-    {
-        switch( t ) {
-            case CONTACT:
-                return LINE ;
-            case INTERFACE:
-                return SURFACE ;
-            case LAYER:
-                return REGION ;
-            default:
-                return NO_TYPE ;
-        }
-    }
-
-    /*!
-     * @brief Defines the type of an entity on the boundary of an entity of type @param t
-     *        If no boundary is allowed returns NO_TYPE
-     * @details The entities that can have a boundary are LINE, SURFACE, and REGION
-     */
-    GeoModelEntity::TYPE GeoModelEntity::boundary_type( GeoModelEntity::TYPE t )
-    {
-        switch( t ) {
-            case LINE:
-                return CORNER ;
-            case SURFACE:
-                return LINE ;
-            case REGION:
-                return SURFACE ;
-            default:
-                return NO_TYPE ;
-        }
-    }
-
-    /*!
-     * @brief Defines the type of an entity into which boundary an entity of type @param t can be
-     *        If no in_boundary is allowed returns NO_TYPE
-     * @details The entities that can be in the boundary of another are CORNER, LINE, and SURFACE
-     */
-    GeoModelEntity::TYPE GeoModelEntity::in_boundary_type(
-        GeoModelEntity::TYPE t )
-    {
-        switch( t ) {
-            case CORNER:
-                return LINE ;
-            case LINE:
-                return SURFACE ;
-            case SURFACE:
-                return REGION ;
-            default:
-                return NO_TYPE ;
-        }
-    }
-
-    /*!
-     * @brief Dimension 0, 1, 2, or 3 of an entity of type @param t
-     */
-    index_t GeoModelEntity::dimension( GME::TYPE t )
-    {
-        switch( t ) {
-            case CORNER:
-                return 0 ;
-            case LINE:
-                return 1 ;
-            case SURFACE:
-                return 2 ;
-            case REGION:
-                return 3 ;
-            case CONTACT:
-                return 1 ;
-            case INTERFACE:
-                return 2 ;
-            case LAYER:
-                return 3 ;
-            default:
-                return NO_ID ;
-        }
-    }
-
+    
     /*!
      * @brief Return true if \param type is a CORNER, LINE or SURFACE
-     */
+     *
     bool GeoModelEntity::has_mesh( GME::TYPE type )
     {
         return type <= REGION ;
-    }
+    } */
 
     bool GeoModelEntity::is_connectivity_valid() const
     {
@@ -800,6 +676,8 @@ namespace RINGMesh {
     }
 
     /**************************************************************/
+
+    static const std::string Corner::type_name_ = "Corner" ;
 
     /*!
      * @brief Check that the Corner mesh is a unique point
