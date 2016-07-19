@@ -138,7 +138,6 @@ namespace RINGMesh {
         index_t geological_entity_type( const std::string& type ) const
         {
             return find( geological_entity_types_, type ) ;
-
         }
 
         /*!
@@ -147,7 +146,7 @@ namespace RINGMesh {
          * pair (Region, NO_ID) universe region is returned.
          * @pre Entity identification is valid.
          */
-        const GeoModelEntity& geological_entity( GME::gme_t id ) const
+        const GeoModelGeologicalEntity& geological_entity( GME::gme_t id ) const
         {
             return *geological_entity_ptr( id ) ;
         }
@@ -155,7 +154,7 @@ namespace RINGMesh {
         /*!
          * Convenient overload of entity( GME::gme_t id )
          */
-        const GeoModelEntity& geological_entity(
+        const GeoModelGeologicalEntity& geological_entity(
             const std::string& entity_type,
             index_t entity_index ) const
         {

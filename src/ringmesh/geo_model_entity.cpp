@@ -492,11 +492,11 @@ namespace RINGMesh {
     /*!
      * @return Assert that the parent exists and returns it.
      */
-    const GeoModelEntity& GeoModelEntity::parent( index_t parent_index ) const
+    const GeoModelGeologicalEntity& GeoModelMeshEntity::parent( index_t parent_index ) const
     {
-        gme_t parent_id = parent_id( parent_index ) ;
-        ringmesh_assert( parent_id.is_defined() ) ;
-        return model().entity( parent_id(parent_index) ) ;
+        gme_t parent = parent_id( parent_index ) ;
+        ringmesh_assert( parent.is_defined() ) ;
+        return model().geological_entity( parent ) ;
     }
 
     /*!
@@ -504,10 +504,10 @@ namespace RINGMesh {
      * @param[in] x Index of the boundary entity
      * @return Asserts that is exists and returns the entity on the boundary
      */
-    const GeoModelEntity& GeoModelEntity::boundary( index_t x ) const
+    const GeoModelMeshEntity& GeoModelMeshEntity::boundary( index_t x ) const
     {
         ringmesh_assert( x < nb_boundaries() ) ;
-        return model().entity( boundary_gme( x ) ) ;
+        return model().mesh_entity( boundary_gme( x ) ) ;
     }
 
     /*!
@@ -515,10 +515,10 @@ namespace RINGMesh {
      * @param[in] x Index of the in_boundary entity
      * @return Asserts that it exists and returns the entity in in_boundary.
      */
-    const GeoModelEntity& GeoModelEntity::in_boundary( index_t x ) const
+    const GeoModelMeshEntity& GeoModelMeshEntity::in_boundary( index_t x ) const
     {
         ringmesh_assert( x < nb_in_boundary() ) ;
-        return model().entity( in_boundary_gme( x ) ) ;
+        return model().mesh_entity( in_boundary_gme( x ) ) ;
     }
 
     /*!
@@ -526,52 +526,51 @@ namespace RINGMesh {
      * @param[in] x Index of the child
      * @return Asserts that the child exists and returns it.
      */
-    const GeoModelEntity& GeoModelEntity::child( index_t x ) const
+    const GeoModelMeshEntity& GeoModelGeologicalEntity::child( index_t x ) const
     {
         ringmesh_assert( x < nb_children() ) ;
-        return model().entity( child_id( x ) ) ;
+        return model().mesh_entity( child_id( x ) ) ;
     }
 
     /*!
      * @brief Checks if this entity define the model external boundary
      * @details Test if the entity is in the Surfaces defining the universe 
      */
-    bool GeoModelEntity::is_on_voi() const
+    bool Corner::is_on_voi() const
     {
-        TYPE T = type() ;
-        if( T == SURFACE ) {
-            for( index_t i = 0; i < model().universe().nb_boundaries(); ++i ) {
-                if( model().universe().boundary_gme( i ) == gme_id() ) {
-                    return true ;
-                }
-            }
-            return false ;
-        } else if( T == LINE || T == CORNER ) {
-            // True if one of the incident surface define the universe
-            for( index_t i = 0; i < nb_in_boundary(); ++i ) {
-                if( in_boundary( i ).is_on_voi() ) {
-                    return true ;
-                }
-            }
-            return false ;
-        } else if( T == REGION || T == LAYER ) {
-            return false ;
-        } else if( T == INTERFACE || T == CONTACT ) {
-            // Check that all children are on the voi
-            if( nb_children() > 0 ) {
-                for( index_t i = 0; i < nb_children(); ++i ) {
-                    if( !child( i ).is_on_voi() ) {
-                        return false ;
-                    }
-                }
+        // True if one of the incident surface define the universe
+        for( index_t i = 0; i < nb_in_boundary(); ++i ) {
+            if( in_boundary( i ).is_on_voi() ) {
                 return true ;
-            } else {
-                return false ;
             }
-        } else {
-            ringmesh_assert( false ) ;
-            return false ;
         }
+        return false ;
+
+    }
+    bool Line::is_on_voi() const
+    {
+        // True if one of the incident surface define the universe
+        for( index_t i = 0; i < nb_in_boundary(); ++i ) {
+            if( in_boundary( i ).is_on_voi() ) {
+                return true ;
+            }
+        }
+        return false ;        
+    }
+
+    bool Surface::is_on_voi() const
+    {
+        for( index_t i = 0; i < model().universe().nb_boundaries(); ++i ) {
+            if( model().universe().boundary_gme( i ) == gme_id() ) {
+                return true ;
+            }
+        }
+        return false ;
+    }
+
+    bool Region::is_on_voi() const
+    {
+        return false ;
     }
 
     /*!
@@ -579,7 +578,7 @@ namespace RINGMesh {
      * @details That can be Surface stopping in a Region, or Line stopping in a Surface.
      * @param[in] rhs The entity to test
      */
-    bool GeoModelEntity::is_inside_border( const GeoModelEntity& rhs ) const
+    bool GeoModelMeshEntity::is_inside_border( const GeoModelMeshEntity& rhs ) const
     {
         // Find out if this surface is twice in the in_boundary vector
         return std::count( in_boundary_.begin(), in_boundary_.end(), rhs.gme_id() )
@@ -589,7 +588,7 @@ namespace RINGMesh {
     /*!
      * @brief Check if one entity is twice in the boundary
      */
-    bool GeoModelEntity::has_inside_border() const
+    bool GeoModelMeshEntity::has_inside_border() const
     {
         for( index_t i = 0; i < nb_boundaries(); ++i ) {
             if( boundary( i ).is_inside_border( *this ) ) {
@@ -690,14 +689,14 @@ namespace RINGMesh {
 
     /**************************************************************/
 
-    static const std::string Corner::type_name_ = "Corner" ;
+    const std::string Corner::type_name_ = "Corner" ;
 
 
-    const std::string& Corner::in_boundary_type() ;
+    const std::string& Corner::in_boundary_type() const
     {
         return Line::type_name_ ;
     }
-    const std::string& Corner::boundary_type()
+    const std::string& Corner::boundary_type() const
     {
         return GME::type_name_ ;
     }
@@ -752,7 +751,7 @@ namespace RINGMesh {
      * @param[in] id The index of the line in the lines_ vector of the parent model
      */
     Line::Line( const GeoModel& model, index_t id )
-        : GeoModelMeshEntity( model, LINE, id )
+        : GeoModelMeshEntity( model, id )
     {
     }
 

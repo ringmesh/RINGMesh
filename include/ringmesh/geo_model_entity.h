@@ -297,6 +297,8 @@ namespace RINGMesh {
     typedef GeoModelEntity GME ;
 
     class RINGMESH_API GeoModelGeologicalEntity: public GeoModelEntity {
+    public:
+        friend class GeoModelEditor ;
     protected:
         GeoModelGeologicalEntity(
             const GeoModel& model,
@@ -320,7 +322,7 @@ namespace RINGMesh {
             return children_[x] ;
         }
         const GeoModelMeshEntity& child( index_t x ) const ;
-
+        virtual const std::string& child_type() const = 0;
     protected:
         /// Entities constituting this one - see child_type( TYPE )
         std::vector< gme_t > children_ ;
@@ -347,6 +349,16 @@ namespace RINGMesh {
         {
             return "Universe" ;
         }
+        index_t nb_boundaries() const
+        {
+            return boundary_surfaces_.size() ;
+        }
+        gme_t boundary_gme( index_t i ) const
+        {
+            ringmesh_assert( i < nb_boundaries ) ;
+            return boundary_surfaces_[i] ;
+        }
+
     private:
         std::vector< gme_t > boundary_surfaces_ ;
         std::vector< bool > boundary_surface_sides_ ;
@@ -433,7 +445,7 @@ namespace RINGMesh {
         {
             return boundaries_[x] ;
         }
-        const GeoModelEntity& boundary( index_t x ) const ;
+        const GeoModelMeshEntity& boundary( index_t x ) const ;
 
         index_t nb_in_boundary() const
         {
@@ -443,9 +455,9 @@ namespace RINGMesh {
         {
             return in_boundary_[x] ;
         }
-        const GeoModelEntity& in_boundary( index_t x ) const ;
+        const GeoModelMeshEntity& in_boundary( index_t x ) const ;
 
-        bool is_inside_border( const GeoModelEntity& e ) const ;
+        bool is_inside_border( const GeoModelMeshEntity& e ) const ;
         bool has_inside_border() const ;
 
         /*!@}
@@ -689,7 +701,9 @@ namespace RINGMesh {
         {
         }
 
-        virtual const std::string& in_boundary_type() ;
+        virtual const std::string& in_boundary_type() const ;
+        virtual const std::string& boundary_type() const ;
+        virtual bool is_on_voi() const ;
         
         /*!
          * @brief Get the index of the unique vertex constituting of the Corner.
@@ -754,9 +768,10 @@ namespace RINGMesh {
         {
         }
 
-        virtual const std::string& boundary_type() ;
-        virtual const std::string& in_boundary_type() ;
-
+        virtual const std::string& in_boundary_type() const ;
+        virtual const std::string& boundary_type() const ;
+        virtual bool is_on_voi() const ;
+        
         virtual index_t vertex_index (index_t corner_index) const {
             return mesh_.edge_vertex(corner_index/2, corner_index%2) ;
         }
@@ -843,6 +858,10 @@ namespace RINGMesh {
         {
         }
 
+        virtual const std::string& in_boundary_type() const ;
+        virtual const std::string& boundary_type() const ;
+        virtual bool is_on_voi() const ;
+        
         bool is_simplicial() const
         {
             return mesh_.facets_are_simplicies() ;
@@ -1105,6 +1124,11 @@ namespace RINGMesh {
         ~Region()
         {
         }
+
+        virtual const std::string& in_boundary_type() const ;
+        virtual const std::string& boundary_type() const ;
+        virtual bool is_on_voi() const ;
+        
 
         bool is_meshed() const
         {
