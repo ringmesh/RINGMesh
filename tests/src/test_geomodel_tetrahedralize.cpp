@@ -49,12 +49,6 @@
  * @author Jeanne Pellerin
  */
 
-using Logger ;
-;
-using RINGMesh::index_t ;
-using RINGMesh::GeoModel ;
-using RINGMesh::Surface ;
-
 int main( int argc, char** argv )
 {
     using namespace RINGMesh ;

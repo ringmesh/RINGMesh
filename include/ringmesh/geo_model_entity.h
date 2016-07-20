@@ -223,6 +223,7 @@ namespace RINGMesh {
          * @{
          */
         virtual const std::string& type_name() const = 0 ;
+        virtual bool is_on_voi() const = 0 ;
 
         /*!@}
          */
@@ -293,7 +294,6 @@ namespace RINGMesh {
         {
             return geol_feature_ ;
         }
-        virtual bool is_on_voi() const = 0 ;
 
     protected:
         /*!

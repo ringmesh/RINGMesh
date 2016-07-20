@@ -148,7 +148,7 @@ namespace RINGMesh {
                         if( strncmp( file_line.field( c ), "+", 1 ) == 0 ) {
                             side = true ;
                         }
-                        index_t s ;
+                        index_t s = NO_ID ;
                         GEO::String::from_string( &file_line.field( c )[1], s ) ;
 
                         add_universe_boundary( GME::gme_t( Surface::type_name_, s ),
