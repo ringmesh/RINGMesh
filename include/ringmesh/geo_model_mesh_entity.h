@@ -1084,7 +1084,7 @@ namespace RINGMesh {
          * \todo Is connectivity valid should be virtual and we should
          * reimplement here to check
          *     if( nb_boundaries() != sides_.size() ) {
-         *       GEO::Logger::err( "GeoModelEntity" )
+         *       Logger::err( "GeoModelEntity" )
          *       << gme_id() << " boundary sides are invalid "
          *       << std::endl ;
          *       return false ;

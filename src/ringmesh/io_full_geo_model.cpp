@@ -428,7 +428,7 @@ namespace {
             geo_model_entity_mesh.index(), name ) ;
         //@TODO this will be removed and integrated in the build_string....
         name += ".geogram" ;
-        GEO::Logger* logger = GEO::Logger::instance() ;
+        Logger* logger = Logger::instance() ;
         logger->set_quiet( true ) ;
         GEO::MeshIOFlags flags ;
 //        flags.set_attribute( GEO::MESH_ALL_ATTRIBUTES ) ;
@@ -456,7 +456,7 @@ namespace {
             GeoModelBuilderGM builder( model,
                 GEO::FileSystem::base_name( filename, false ) ) ;
             builder.build_model() ;
-            GEO::Logger::out( "I/O" ) << " Loaded model " << model.name() << " from "
+            Logger::out( "I/O" ) << " Loaded model " << model.name() << " from "
                 << filename << std::endl ;
             print_geomodel( model ) ;
             is_geomodel_valid( model ) ;
@@ -518,9 +518,9 @@ namespace {
             Mesh mesh(gm, 3, false ) ;
             gm.mesh.copy_mesh( mesh ) ;
 
-            GEO::Logger::instance()->set_minimal( true ) ;
+            Logger::instance()->set_minimal( true ) ;
             mesh.save_mesh( filename, GEO::MeshIOFlags()) ;
-            GEO::Logger::instance()->set_minimal( false ) ;
+            Logger::instance()->set_minimal( false ) ;
         }
     } ;
 
@@ -823,7 +823,7 @@ namespace {
 
                 time( &end_load ) ;
 
-                GEO::Logger::out( "I/O" ) << " Loaded model " << model.name()
+                Logger::out( "I/O" ) << " Loaded model " << model.name()
                     << " from " << std::endl << filename << " timing: "
                     << difftime( end_load, start_load ) << "sec" << std::endl ;
             } else {
@@ -1926,7 +1926,7 @@ namespace {
 //                facet_type[3] = 9 ;
 //                facet_type[4] = 16 ;
 //            } else if( gm.get_order() > 2 ) {
-//                GEO::Logger::err( "" ) << "The order " << gm.get_order() << " "
+//                Logger::err( "" ) << "The order " << gm.get_order() << " "
 //                    << "is not supported"
 //                    << " for the gmsh export. The export will take order 1 entities"
 //                    << std::endl ;
@@ -2119,7 +2119,7 @@ namespace RINGMesh {
 
     void geomodel_load( GeoModel& model, const std::string& filename )
     {
-        GEO::Logger::out( "I/O" ) << "Loading file " << filename << "..."
+        Logger::out( "I/O" ) << "Loading file " << filename << "..."
             << std::endl ;
 
         GeoModelIOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
@@ -2128,7 +2128,7 @@ namespace RINGMesh {
 
     void geomodel_save( const GeoModel& model, const std::string& filename )
     {
-        GEO::Logger::out( "I/O" ) << "Saving file " << filename << "..."
+        Logger::out( "I/O" ) << "Saving file " << filename << "..."
             << std::endl ;
 
         GeoModelIOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;

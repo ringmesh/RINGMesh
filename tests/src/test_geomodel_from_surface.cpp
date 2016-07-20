@@ -67,9 +67,9 @@ int main( int argc, char** argv )
         std::string log_file( ringmesh_test_output_path ) ;
         log_file += "log.txt" ;
         GEO::FileLogger* file_logger = new GEO::FileLogger( log_file ) ;
-        GEO::Logger::instance()->register_client( file_logger ) ;
+        Logger::instance()->register_client( file_logger ) ;
 
-        GEO::Logger::out( "TEST" ) << "Test GeoModel building from Surface"
+        Logger::out( "TEST" ) << "Test GeoModel building from Surface"
             << std::endl ;
 
         GEO::Mesh in ;
@@ -84,13 +84,13 @@ int main( int argc, char** argv )
         is_geomodel_valid( model ) ;
 
     } catch( const RINGMeshException& e ) {
-        GEO::Logger::err( e.category() ) << e.what() << std::endl ;
+        Logger::err( e.category() ) << e.what() << std::endl ;
         return 1 ;
     } catch( const std::exception& e ) {
-        GEO::Logger::err( "Exception" ) << e.what() << std::endl ;
+        Logger::err( "Exception" ) << e.what() << std::endl ;
         return 1 ;
     }
-    GEO::Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
+    Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
     return 0 ;
 
 }

@@ -221,7 +221,7 @@ namespace {
         const index_t& nb_cell_total,
         const std::string& cell_type )
     {
-        GEO::Logger::out( "GeoModel" ) << "* " << nb_cell << " " << cell_type << " ("
+        Logger::out( "GeoModel" ) << "* " << nb_cell << " " << cell_type << " ("
             << nb_cell * 100 / nb_cell_total << "%)\n" ;
     }
 
@@ -230,7 +230,7 @@ namespace {
         const double& cell_volume_total,
         const std::string& cell_type )
     {
-        GEO::Logger::out( "GeoModel" ) << "* " << cell_type << " volume "
+        Logger::out( "GeoModel" ) << "* " << cell_type << " volume "
             << cell_volume << " ("
             << static_cast< index_t >( cell_volume * 100 / cell_volume_total + 0.5 )
             << "%)\n" ;
@@ -241,7 +241,7 @@ namespace {
 namespace RINGMesh {
     void print_geomodel( const GeoModel& geomodel )
     {
-        GEO::Logger::out( "GeoModel" ) << "Model " << geomodel.name() << " has\n"
+        Logger::out( "GeoModel" ) << "Model " << geomodel.name() << " has\n"
             << std::setw( 10 ) << std::left << geomodel.mesh.vertices.nb()
             << " vertices\n" << std::setw( 10 ) << std::left
             << count_geomodel_facets( geomodel ) << " facets\n" << std::setw( 10 )
@@ -250,7 +250,7 @@ namespace RINGMesh {
 
         for( index_t t = GME::CORNER; t < GME::NO_TYPE; ++t ) {
             GME::TYPE T = static_cast< GME::TYPE >( t ) ;
-            GEO::Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left
+            Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left
                 << geomodel.nb_entities( T ) << " " << GME::type_name( T )
                 << std::endl ;
         }
@@ -258,7 +258,7 @@ namespace RINGMesh {
 
     void print_geomodel_mesh_stats( const GeoModel& geomodel )
     {
-        GEO::Logger::out( "GeoModel" ) << "Model " << geomodel.name()
+        Logger::out( "GeoModel" ) << "Model " << geomodel.name()
             << " is made of\n" << std::setw( 10 ) << std::left
             << geomodel.mesh.vertices.nb() << " vertices\n" << std::setw( 10 )
             << std::left << count_geomodel_edges( geomodel ) << " edges\n" ;
@@ -268,7 +268,7 @@ namespace RINGMesh {
         index_t nb_polygons = 0 ;
         index_t nb_facets = count_geomodel_facet_per_type( geomodel, nb_triangles,
             nb_quads, nb_polygons ) ;
-        GEO::Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left << nb_facets
+        Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left << nb_facets
             << " facets\n" ;
         if( nb_triangles > 0 ) {
             print_one_cell_stat( nb_triangles, nb_facets, "triangles" ) ;
@@ -287,7 +287,7 @@ namespace RINGMesh {
         index_t nb_poly = 0 ;
         index_t nb_cells = count_geomodel_cell_per_type( geomodel, nb_tet,
             nb_pyramids, nb_prisms, nb_hex, nb_poly ) ;
-        GEO::Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left << nb_cells
+        Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left << nb_cells
             << " cells\n" ;
         if( nb_tet > 0 ) {
             print_one_cell_stat( nb_tet, nb_cells, "tet" ) ;
@@ -304,7 +304,7 @@ namespace RINGMesh {
         if( nb_poly > 0 ) {
             print_one_cell_stat( nb_poly, nb_cells, "polyhedra" ) ;
         }
-        GEO::Logger::out( "GeoModel" ) << std::endl ;
+        Logger::out( "GeoModel" ) << std::endl ;
     }
 
     void print_geomodel_mesh_cell_volumes( const GeoModel& geomodel )
@@ -316,7 +316,7 @@ namespace RINGMesh {
         double poly_volume = 0 ;
         double volume = compute_geomodel_volumes_per_cell_type( geomodel, tet_volume,
             pyramid_volume, prism_volume, hex_volume, poly_volume ) ;
-        GEO::Logger::out( "GeoModel" ) << "Model " << geomodel.name()
+        Logger::out( "GeoModel" ) << "Model " << geomodel.name()
             << " has a volume of " << volume << "\n" ;
         if( tet_volume > 0 ) {
             print_one_cell_volume_stat( tet_volume, volume, "tet" ) ;
@@ -333,7 +333,7 @@ namespace RINGMesh {
         if( poly_volume > 0 ) {
             print_one_cell_volume_stat( poly_volume, volume, "polyhedron" ) ;
         }
-        GEO::Logger::out( "GeoModel" ) << std::endl ;
+        Logger::out( "GeoModel" ) << std::endl ;
     }
 
     bool are_geomodel_surface_meshes_simplicial( const GeoModel& geomodel )
@@ -546,7 +546,7 @@ namespace RINGMesh {
             add_regions_tets_to_mesh( geomodel, M ) ;
             create_and_fill_region_index_attribute( geomodel, "region", M ) ;
         } else {
-            GEO::Logger::warn( "GeoModel" )
+            Logger::warn( "GeoModel" )
                 << "The conversion of non-simplicial Region meshes into a Mesh is not implemented"
                 << std::endl ;
         }
@@ -664,7 +664,7 @@ namespace RINGMesh {
         bool degrees )
     {
         if( length( axis ) < epsilon ) {
-            GEO::Logger::err( "GeoModel" )
+            Logger::err( "GeoModel" )
                 << "Rotation around an epsilon length axis is impossible"
                 << std::endl ;
             return ;
@@ -784,7 +784,7 @@ namespace RINGMesh {
         const std::vector< std::vector< vec3 > >& internal_vertices )
     {
         if( region_id == NO_ID ) {
-            GEO::Logger::out( "Info" ) << "Using " << method << std::endl ;
+            Logger::out( "Info" ) << "Using " << method << std::endl ;
             GEO::ProgressTask progress( "Compute", M.nb_regions() ) ;
             for( index_t i = 0; i < M.nb_regions(); i++ ) {
                 tetrahedralize( M, method, i, add_steiner_points,
@@ -795,9 +795,9 @@ namespace RINGMesh {
             TetraGen_var tetragen = TetraGen::create( M, region_id, method ) ;
             tetragen->set_boundaries( M.region( region_id ), M.wells() ) ;
             tetragen->set_internal_points( internal_vertices[region_id] ) ;
-            GEO::Logger::instance()->set_quiet( true ) ;
+            Logger::instance()->set_quiet( true ) ;
             tetragen->tetrahedralize( add_steiner_points ) ;
-            GEO::Logger::instance()->set_quiet( false ) ;
+            Logger::instance()->set_quiet( false ) ;
         }
 
         // The GeoModelMesh should be updated, just erase everything

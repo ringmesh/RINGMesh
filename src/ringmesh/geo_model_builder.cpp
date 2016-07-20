@@ -69,7 +69,7 @@
 
 namespace {
     using namespace RINGMesh ;
-    using GEO::Logger ;
+    using Logger ;
 
     typedef GeoModelEntity::gme_t gme_t ;
     typedef GeoModelMeshEntity GMME ;
@@ -1837,7 +1837,7 @@ namespace RINGMesh {
 
         if( model().nb_surfaces() == 1 ) {
             if( model().nb_lines() != 0 ) {
-                GEO::Logger::err( "GeoModel" )
+                Logger::err( "GeoModel" )
                     << "The unique surface provided to build the model has boundaries "
                     << std::endl ;
                 return false ;
@@ -1914,7 +1914,7 @@ namespace RINGMesh {
             // If not, this means that there are additionnal regions included in those built
             if( std::count( surf_2_region.begin(), surf_2_region.end(), NO_ID )
                 != 0 ) {
-                GEO::Logger::err( "GeoModel" )
+                Logger::err( "GeoModel" )
                     << "Small bubble regions were skipped at model building "
                     << std::endl ;
                 // Or, most probably, we have a problem before

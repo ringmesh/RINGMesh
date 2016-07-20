@@ -127,10 +127,10 @@ namespace {
         const std::vector< index_t >& nb_entities_per_region )
     {
         const index_t nb_regions = 0.5 * nb_entities_per_region.size() ;
-        GEO::Logger::out( "Mesh" ) << "Mesh has " << nb_regions << " regions "
+        Logger::out( "Mesh" ) << "Mesh has " << nb_regions << " regions "
             << std::endl ;
         for( index_t i = 0; i < nb_regions; ++i ) {
-            GEO::Logger::out( "Mesh" ) << "Region " << i << " has" << std::endl
+            Logger::out( "Mesh" ) << "Region " << i << " has" << std::endl
                 << std::setw( 10 ) << std::left << nb_entities_per_region.at( 2 * i )
                 << " vertices " << std::endl << std::setw( 10 ) << std::left
                 << nb_entities_per_region.at( 2 * i + 1 ) << " tetras "
@@ -1577,7 +1577,7 @@ namespace RINGMesh {
                 const Surface& S = model().surface( b.part_id_ ) ;
                 determine_line_vertices( S, b.p0_, b.p1_, line_vertices ) ;
                 if( line_vertices.empty() ) {
-                    GEO::Logger::out( "I/O" )
+                    Logger::out( "I/O" )
                         << "One Line vertices determination failed in SURFACE "
                         << S.index() << std::endl ;
                 } else {

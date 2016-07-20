@@ -46,7 +46,7 @@ namespace RINGMesh {
     {
         GeoModel& M = const_cast< GeoModel& >( geo_model_ ) ;
         if( M.mesh.vertices.is_initialized() ) {
-            GEO::Logger::warn( "AABB" )
+            Logger::warn( "AABB" )
                 << "Creation of AABB results in deletion of the GeoModelMeshVertices"
                 << std::endl ;
             M.mesh.vertices.clear() ;
@@ -75,7 +75,7 @@ namespace RINGMesh {
     {
         GeoModel& M = const_cast< GeoModel& >( geo_model_ ) ;
         if( M.mesh.vertices.is_initialized() ) {
-            GEO::Logger::warn( "AABB" )
+            Logger::warn( "AABB" )
                 << "Creation of AABB results in deletion of the GeoModelMeshVertices"
                 << std::endl ;
             M.mesh.vertices.clear() ;

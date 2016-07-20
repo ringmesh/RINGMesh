@@ -71,7 +71,7 @@ namespace {
             throw RINGMeshException( "I/O", "Cannot open file: " + filename ) ;
         }
 
-        GEO::Logger::out( "I/O" ) << "Loading file: " << filename << std::endl ;
+        Logger::out( "I/O" ) << "Loading file: " << filename << std::endl ;
 
         GeoModelIOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
         handler->load( filename, model ) ;
@@ -84,7 +84,7 @@ namespace {
      */
     void geomodel_surface_save( const GeoModel& model, const std::string& filename )
     {
-        GEO::Logger::out( "I/O" ) << "Saving file " << filename << std::endl ;
+        Logger::out( "I/O" ) << "Saving file " << filename << std::endl ;
 
         GeoModelIOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
         handler->save( model, filename ) ;
@@ -98,7 +98,7 @@ namespace {
      */
     void geomodel_volume_load( const std::string& filename, GeoModel& model )
     {
-        GEO::Logger::out( "I/O" ) << "Loading file " << filename << "..."
+        Logger::out( "I/O" ) << "Loading file " << filename << "..."
             << std::endl ;
 
         GeoModelIOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
@@ -112,7 +112,7 @@ namespace {
      */
     void geomodel_volume_save( const GeoModel& model, const std::string& filename )
     {
-        GEO::Logger::out( "I/O" ) << "Saving file " << filename << "..."
+        Logger::out( "I/O" ) << "Saving file " << filename << "..."
             << std::endl ;
 
         GeoModelIOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
@@ -152,11 +152,11 @@ int main( int argc, char** argv )
         configure_geogram() ;
         configure_ringmesh() ;
 
-        GEO::Logger::div( "RINGMeshConvert" ) ;
-        GEO::Logger::out( "" ) << "Welcome to RINGMeshConvert !" << std::endl ;
-        GEO::Logger::out( "" ) << "People working on the project in RING"
+        Logger::div( "RINGMeshConvert" ) ;
+        Logger::out( "" ) << "Welcome to RINGMeshConvert !" << std::endl ;
+        Logger::out( "" ) << "People working on the project in RING"
             << std::endl ;
-        GEO::Logger::out( "" ) << "Arnaud Botella <arnaud.botella@univ-lorraine.fr> "
+        Logger::out( "" ) << "Arnaud Botella <arnaud.botella@univ-lorraine.fr> "
             << std::endl ;
 
         CmdLine::import_arg_group( "in" ) ;
@@ -212,10 +212,10 @@ int main( int argc, char** argv )
         }
 
     } catch( const RINGMeshException& e ) {
-        GEO::Logger::err( e.category() ) << e.what() << std::endl ;
+        Logger::err( e.category() ) << e.what() << std::endl ;
         return 1 ;
     } catch( const std::exception& e ) {
-        GEO::Logger::err( "Exception" ) << e.what() << std::endl ;
+        Logger::err( "Exception" ) << e.what() << std::endl ;
         return 1 ;
     }
     return 0 ;

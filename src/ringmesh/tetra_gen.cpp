@@ -345,7 +345,7 @@ namespace RINGMesh {
         {
             status_t ret = tetra_mesh_boundary( tms_ ) ;
             if( ret != STATUS_OK ) {
-                GEO::Logger::err( "TetraGen" )
+                Logger::err( "TetraGen" )
                     << "Encountered a problem while meshing boundary..."
                     << std::endl ;
                 return false ;
@@ -357,13 +357,13 @@ namespace RINGMesh {
         {
             status_t ret = tetra_insert_volume_vertices( tms_ ) ;
             if( ret != STATUS_OK ) {
-                GEO::Logger::err( "TetraGen" )
+                Logger::err( "TetraGen" )
                     << "Encountered a problem while meshing inside..." << std::endl ;
                 return false ;
             }
             ret = tetra_optimise_volume_regular( tms_ ) ;
             if( ret != STATUS_OK ) {
-                GEO::Logger::err( "TetraGen" )
+                Logger::err( "TetraGen" )
                     << "Encountered a problem while meshing inside..." << std::endl ;
                 return false ;
             }
@@ -403,19 +403,19 @@ namespace RINGMesh {
         TetraGen* mesher = TetraGenFactory::create_object( algo_name ) ;
         if( !mesher ) {
 #ifdef RINGMESH_WITH_TETGEN
-            GEO::Logger::warn( "TetraGen" ) << "Could not create TetraGen mesher: "
+            Logger::warn( "TetraGen" ) << "Could not create TetraGen mesher: "
                 << algo_name << std::endl ;
-            GEO::Logger::warn( "TetraGen" ) << "Falling back to TetGen mode"
+            Logger::warn( "TetraGen" ) << "Falling back to TetGen mode"
                 << std::endl ;
             mesher = new TetraGen_TetGen() ;
 #else
             std::vector< std::string > names ;
             TetraGenFactory::list_creators( names ) ;
-            GEO::Logger::err( "I/O" ) << "Currently supported mesher are: " ;
+            Logger::err( "I/O" ) << "Currently supported mesher are: " ;
             for( index_t i = 0; i < names.size(); i++ ) {
-                GEO::Logger::out( "I/O" ) << " " << names[ i ] ;
+                Logger::out( "I/O" ) << " " << names[ i ] ;
             }
-            GEO::Logger::out( "I/O" ) << std::endl ;
+            Logger::out( "I/O" ) << std::endl ;
             throw RINGMeshException( "TetraGen", "Could not create TetraGen mesher: "
                 + algo_name ) ;
 #endif

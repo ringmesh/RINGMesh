@@ -1975,7 +1975,7 @@ namespace RINGMesh {
 
                 if( geo_model_.region( reg ).vertex_attribute_manager().is_defined(
                     att_v_names[att_v] ) ) {
-                    GEO::Logger::warn( "Transfer attribute" ) << "The attribute "
+                    Logger::warn( "Transfer attribute" ) << "The attribute "
                         << att_v_names[att_v] << " already exist on the region "
                         << reg << std::endl ;
                     continue ;
@@ -2044,7 +2044,7 @@ namespace RINGMesh {
             for( index_t reg = 0; reg < geo_model_.nb_regions(); reg++ ) {
                 if( geo_model_.region( reg ).cell_attribute_manager().is_defined(
                     att_c_names[att_c] ) ) {
-                    GEO::Logger::warn( "Transfer attribute" ) << "The attribute "
+                    Logger::warn( "Transfer attribute" ) << "The attribute "
                         << att_c_names[att_c] << " already exist on the region "
                         << reg << std::endl ;
                     continue ;

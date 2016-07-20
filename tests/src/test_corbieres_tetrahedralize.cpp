@@ -61,9 +61,9 @@ int main( int argc, char** argv )
         // Set an output log file
         std::string log_file( ringmesh_test_output_path + "log.txt" ) ;
         GEO::FileLogger* file_logger = new GEO::FileLogger( log_file ) ;
-        GEO::Logger::instance()->register_client( file_logger ) ;
+        Logger::instance()->register_client( file_logger ) ;
 
-        GEO::Logger::out( "RINGMesh Test" )
+        Logger::out( "RINGMesh Test" )
             << "Tetrahedralization of the Corbieres model" << std::endl ;
 
         GeoModel M ;
@@ -93,10 +93,10 @@ int main( int argc, char** argv )
         }
 
     } catch( const RINGMeshException& e ) {
-        GEO::Logger::err( e.category() ) << e.what() << std::endl ;
+        Logger::err( e.category() ) << e.what() << std::endl ;
         return 1 ;
     } catch( const std::exception& e ) {
-        GEO::Logger::err( "Exception" ) << e.what() << std::endl ;
+        Logger::err( "Exception" ) << e.what() << std::endl ;
         return 1 ;
     }
     return 0 ;

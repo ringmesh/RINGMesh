@@ -54,7 +54,7 @@ int main()
         GEO::initialize() ;
         configure_geogram() ;
         configure_ringmesh() ;
-        GEO::Logger::out( "TEST" ) << "Import a meshed GeoModel from .so"
+        Logger::out( "TEST" ) << "Import a meshed GeoModel from .so"
             << std::endl ;
 
         std::string file_name( ringmesh_test_data_path ) ;
@@ -77,13 +77,13 @@ int main()
         }
 
     } catch( const RINGMeshException& e ) {
-        GEO::Logger::err( e.category() ) << e.what() << std::endl ;
+        Logger::err( e.category() ) << e.what() << std::endl ;
         return 1 ;
     } catch( const std::exception& e ) {
-        GEO::Logger::err( "Exception" ) << e.what() << std::endl ;
+        Logger::err( "Exception" ) << e.what() << std::endl ;
         return 1 ;
     }
-    GEO::Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
+    Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
     return 0 ;
 
 }

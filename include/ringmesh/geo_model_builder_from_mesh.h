@@ -43,11 +43,7 @@
 #include <stack>
 
 #include <geogram/basic/line_stream.h>
-#include <ringmesh/geo_model_editor.h>
-#include <third_party/zlib/unzip.h>
-
-#define MAX_FILENAME 512
-#define READ_SIZE 8192
+#include <ringmesh/geo_model_builder.h>
 
 /*!
  * @file ringmesh/geo_model_builder.h

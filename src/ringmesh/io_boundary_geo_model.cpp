@@ -176,18 +176,18 @@ namespace {
     bool check_gocad_validity( const GeoModel& M )
     {
         if( M.nb_interfaces() == 0 ) {
-            GEO::Logger::err( "" ) << " The GeoModel " << M.name()
+            Logger::err( "" ) << " The GeoModel " << M.name()
                 << " has no Interface" << std::endl ;
             return false ;
         }
         for( index_t i = 0; i < M.nb_interfaces(); ++i ) {
             const GME& E = M.one_interface( i ) ;
             if( !E.has_name() ) {
-                GEO::Logger::err( "" ) << E.gme_id() << " has no name" << std::endl ;
+                Logger::err( "" ) << E.gme_id() << " has no name" << std::endl ;
                 return false ;
             }
             if( !E.has_geological_feature() ) {
-                GEO::Logger::err( "" ) << E.gme_id() << " has no geological feature"
+                Logger::err( "" ) << E.gme_id() << " has no geological feature"
                     << std::endl ;
                 return false ;
             }
@@ -195,13 +195,13 @@ namespace {
         for( index_t s = 0; s < M.nb_surfaces(); ++s ) {
             const Surface& S = M.surface( s ) ;
             if( !S.has_parent() ) {
-                GEO::Logger::err( "" ) << S.gme_id()
+                Logger::err( "" ) << S.gme_id()
                     << " does not belong to any Interface of the model"
                     << std::endl ;
                 return false ;
             }
             if( !S.is_simplicial() ) {
-                GEO::Logger::err( "" ) << S.gme_id() << " is not triangulated "
+                Logger::err( "" ) << S.gme_id() << " is not triangulated "
                     << std::endl ;
                 return false ;
             }
@@ -209,7 +209,7 @@ namespace {
         for( index_t r = 0; r < M.nb_regions(); ++r ) {
             const Region& R = M.region( r ) ;
             if( !R.has_name() ) {
-                GEO::Logger::err( "" ) << R.gme_id() << " has no name" << std::endl ;
+                Logger::err( "" ) << R.gme_id() << " has no name" << std::endl ;
                 return false ;
             }
         }
@@ -434,7 +434,7 @@ namespace {
     {
         std::ofstream out( file_name.c_str() ) ;
         if( out.bad() ) {
-            GEO::Logger::err( "I/O" ) << "Error when opening the file: "
+            Logger::err( "I/O" ) << "Error when opening the file: "
                 << file_name.c_str() << std::endl ;
             return ;
         }
@@ -494,7 +494,7 @@ namespace {
             is_geomodel_valid( model ) ;
 
             time( &end_load ) ;
-            GEO::Logger::out( "I/O" ) << " Loaded model " << model.name() << " from "
+            Logger::out( "I/O" ) << " Loaded model " << model.name() << " from "
                 << std::endl << filename << " timing: "
                 << difftime( end_load, start_load ) << "sec" << std::endl ;
         }
