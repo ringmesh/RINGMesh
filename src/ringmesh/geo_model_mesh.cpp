@@ -104,14 +104,14 @@ namespace {
         const GEO::Attribute< index_t >& region_id_ ;
     } ;
 
-    inline GeoModelMeshEntity& cast_gmm_entity(
+/*    inline GeoModelMeshEntity& cast_gmm_entity(
         const GeoModel& M,
         GME::TYPE T,
         index_t i )
     {
         return dynamic_cast< GeoModelMeshEntity& >( const_cast< GME& >( M.entity(
             GME::gme_t( T, i ) ) ) ) ;
-    }
+    } */
 
     index_t find_local_vertex_id( const Mesh& mesh, index_t cell, index_t vertex_id )
     {
@@ -169,6 +169,43 @@ namespace RINGMesh {
         }
     }
 
+    
+    index_t nb_entity_vertices( const GeoModel& M, const std::string& entity_type )
+    {
+        index_t count = 0 ;
+        for( index_t i = 0; i < M.nb_mesh_entities( entity_type ); ++i ) {
+            count += M.mesh_entity( entity_type, i ).nb_vertices() ;
+        }
+        return count ;
+    }
+
+    void fill_vertices( const GeoModel& M, const std::string& entity_type, 
+        MeshBuilder& builder, std::vector< std::vector< GMEVertex > >& gme_vertices )
+    {
+        index_t count = 0 ;
+        for( index_t i = 0; i < M.nb_mesh_entities( entity_type ); ++i ) {
+            GeoModelMeshEntity& E = const_cast< GeoModelMeshEntity& >(M.mesh_entity( entity_type, i ) );
+            if( E.nb_vertices() == 0 ) {
+                continue ;
+            }
+            // Dangerous low-level memory copy
+            GEO::Memory::copy( builder.vertex( count ).data(),
+                E.vertex( 0 ).data(), 3 * E.nb_vertices() * sizeof(double) ) ;
+            
+            GEO::Attribute< index_t > att( E.vertex_attribute_manager(),
+                GeoModelMeshEntity::model_vertex_id_att_name() ) ;
+            
+            for( index_t v = 0; v < E.nb_vertices(); v++ ) {
+                // Global index stored at GME level
+                att[v] = count ;
+                // Index in the GME stored at global level
+                gme_vertices[count].push_back( GMEVertex( E.gme_id(), v ) ) ;
+                // Global vertex index increment
+                count++ ;
+            }
+        }
+    }
+
     void GeoModelMeshVertices::initialize()
     {
         MeshBuilder builder( mesh_ ) ;
@@ -177,12 +214,11 @@ namespace RINGMesh {
         // Total number of vertices in the
         // Corners, Lines, Surfaces and Regions of the GeoModel
         index_t nb = 0 ;
-        for( index_t t = GME::CORNER; t <= GME::REGION; ++t ) {
-            GME::TYPE T = static_cast< GME::TYPE >( t ) ;
-            for( index_t e = 0; e < gm_.nb_entities( T ); ++e ) {
-                nb += gm_.mesh_entity( T, e ).nb_vertices() ;
-            }
-        }
+        nb += nb_entity_vertices( gm_, Corner::type_name_ );
+        nb += nb_entity_vertices( gm_, Line::type_name_ );
+        nb += nb_entity_vertices( gm_, Surface::type_name_ );
+        nb += nb_entity_vertices( gm_, Region::type_name_ );
+        
         // Get out if no vertices
         if( nb == 0 ) {
             return ;
@@ -192,36 +228,28 @@ namespace RINGMesh {
         builder.create_vertices( nb ) ;
         gme_vertices_.resize( nb ) ;
 
-        index_t count = 0 ;
-        for( index_t t = GME::CORNER; t <= GME::REGION; ++t ) {
-            GME::TYPE T = static_cast< GME::TYPE >( t ) ;
-            for( index_t e = 0; e < gm_.nb_entities( T ); ++e ) {
-                GeoModelMeshEntity& E = cast_gmm_entity( gm_, T, e ) ;
-                if( E.nb_vertices() == 0 ) {
-                    continue ;
-                }
-                GEO::Memory::copy( builder.vertex( count ).data(),
-                    E.vertex( 0 ).data(), 3 * E.nb_vertices() * sizeof(double) ) ;
-                GEO::Attribute< index_t > att( E.vertex_attribute_manager(),
-                    GeoModelMeshEntity::model_vertex_id_att_name() ) ;
-                for( index_t v = 0; v < E.nb_vertices(); v++ ) {
-                    // Global index stored at GME level
-                    att[v] = count ;
-                    // Index in the GME stored at global level
-                    gme_vertices_[count].push_back( GMEVertex( E.gme_id(), v ) ) ;
-                    // Global vertex index increment
-                    count++ ;
-                }
-            }
-        }
+        fill_vertices( gm_, Corner::type_name_ , builder, gme_vertices_);
+        fill_vertices( gm_, Line::type_name_   , builder, gme_vertices_);
+        fill_vertices( gm_, Surface::type_name_, builder, gme_vertices_);
+        fill_vertices( gm_, Region::type_name_ , builder, gme_vertices_);
 
         // Remove colocated vertices
         remove_colocated() ;
     }
 
+    void clear_mesh_entity_model_vertex_id( const GeoModel& M, const std::string& entity_type )
+    {
+        RINGMESH_PARALLEL_LOOP_DYNAMIC        
+        for( index_t i = 0; i < M.nb_mesh_entities( entity_type ); ++i ) {
+            GeoModelMeshEntity& E = const_cast < GeoModelMeshEntity& >( M.mesh_entity( entity_type, e ) );
+            GEO::Attribute< index_t > att( E.vertex_attribute_manager(),
+                GeoModelMeshEntity::model_vertex_id_att_name() ) ;
+            att.fill( NO_ID ) ;
+        }
+    }
+
     void GeoModelMeshVertices::clear()
     {
-//        GEO::Process::acquire_spinlock( lock_ ) ;
         gmm_.cells.clear() ;
         gmm_.facets.clear() ;
         gmm_.edges.clear() ;
@@ -230,19 +258,11 @@ namespace RINGMesh {
         builder.clear_vertices( true, false ) ;
         gme_vertices_.clear() ;
 
-        // Clear the model vertex index information
-        // for the Corner - Line - Surface - REGION
-        for( index_t t = GME::CORNER; t <= GME::REGION; ++t ) {
-            GME::TYPE T = static_cast< GME::TYPE >( t ) ;
-            RINGMESH_PARALLEL_LOOP_DYNAMIC
-            for( index_t e = 0; e < gm_.nb_entities( T ); ++e ) {
-                GeoModelMeshEntity& E = cast_gmm_entity( gm_, T, e ) ;
-                GEO::Attribute< index_t > att( E.vertex_attribute_manager(),
-                    GeoModelMeshEntity::model_vertex_id_att_name() ) ;
-                att.fill( NO_ID ) ;
-            }
-        }
-//        GEO::Process::release_spinlock( lock_ ) ;
+        // Clear the model vertex index information        
+        clear_mesh_entity_model_vertex_id( gm_, Corner::type_name_ );
+        clear_mesh_entity_model_vertex_id( gm_, Line::type_name_ );
+        clear_mesh_entity_model_vertex_id( gm_, Surface::type_name_ );
+        clear_mesh_entity_model_vertex_id( gm_, Region::type_name_ );
     }
 
     index_t GeoModelMeshVertices::nb() const
@@ -382,6 +402,38 @@ namespace RINGMesh {
         }
     }
 
+
+    void update_entity_model_vertex_id( const GeoModel& M, const std::string& entity_type
+        )
+    {
+            for( index_t i = 0; i < gm_.nb_mesh_entities( entity_type ); ++i ) {
+                GeoModelMeshEntity& E = const_cast< GeoModelMeshEntity& >( M.mesh_entity( entity_type, i ) ) ;
+                GEO::Attribute< index_t > att( E.vertex_attribute_manager(),
+                    GeoModelMeshEntity::model_vertex_id_att_name() ) ;
+
+                for( index_t v = 0; v < E.nb_vertices(); v++ ) {
+                    index_t old_id = E.model_vertex_id( v ) ;
+                    index_t new_id = to_delete[old_id] ;
+                    // If new_id is NO_ID the vertex should be removed afterwards
+                    // from the GMME
+                    ringmesh_assert( new_id != NO_ID ) ;
+                    att[v] = new_id ;
+
+                    /*!
+                     * @todo Review: I don't understand this for and what it does...
+                     * When we remove a region, this for add stupid vertices inside the
+                     * vector... [AB]
+                     */
+                    // Merge gme_vertices_ information
+                    if( std::find( gme_vertices_[new_id].begin(),
+                        gme_vertices_[new_id].end(), GMEVertex( E.gme_id(), v ) )
+                        == gme_vertices_[new_id].end() ) {
+                        gme_vertices_[new_id].push_back(
+                            GMEVertex( E.gme_id(), v ) ) ;
+                    }
+                }
+            }
+
     void GeoModelMeshVertices::erase_vertices( std::vector< index_t >& to_delete )
     {
         ringmesh_assert( to_delete.size() == nb() ) ;
@@ -442,37 +494,9 @@ namespace RINGMesh {
         }
 #endif
 
-        // Update model_vertex_ids in GMME
-        for( index_t t = GME::CORNER; t <= GME::REGION; ++t ) {
-            GME::TYPE T = static_cast< GME::TYPE >( t ) ;
 
-            for( index_t e = 0; e < gm_.nb_entities( T ); ++e ) {
-                GeoModelMeshEntity& E = cast_gmm_entity( gm_, T, e ) ;
-                GEO::Attribute< index_t > att( E.vertex_attribute_manager(),
-                    GeoModelMeshEntity::model_vertex_id_att_name() ) ;
-
-                for( index_t v = 0; v < E.nb_vertices(); v++ ) {
-                    index_t old_id = E.model_vertex_id( v ) ;
-                    index_t new_id = to_delete[old_id] ;
-                    // If new_id is NO_ID the vertex should be removed afterwards
-                    // from the GMME
-                    ringmesh_assert( new_id != NO_ID ) ;
-                    att[v] = new_id ;
-
-                    /*!
-                     * @todo Review: I don't understand this for and what it does...
-                     * When we remove a region, this for add stupid vertices inside the
-                     * vector... [AB]
-                     */
-                    // Merge gme_vertices_ information
-                    if( std::find( gme_vertices_[new_id].begin(),
-                        gme_vertices_[new_id].end(), GMEVertex( E.gme_id(), v ) )
-                        == gme_vertices_[new_id].end() ) {
-                        gme_vertices_[new_id].push_back(
-                            GMEVertex( E.gme_id(), v ) ) ;
-                    }
-                }
-            }
+        update_entity_model_vertex_id() ;
+        
         }
     }
 

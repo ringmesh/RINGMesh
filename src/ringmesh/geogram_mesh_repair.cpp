@@ -66,6 +66,8 @@
 #include <geogram/mesh/mesh.h>
 #include <geogram/points/colocate.h>
 
+#include <ringmesh/types.h>
+
 /*!
 * @file Implementation of high level repairing functions on GEO::Mesh 
 * @note Most of the code comes from geogram/mesh/mesh_repair.cpp 
