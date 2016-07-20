@@ -560,7 +560,7 @@ namespace RINGMesh {
     {
         bool update = false ;
         vec3 vertex( point ) ;
-        builder_->set_mesh_entity_vertex( GME::gme_t( GME::REGION, output_region_ ),
+        builder_->set_mesh_entity_vertex( GME::gme_t( Region::type_name_, output_region_ ),
             index, vertex, update ) ;
     }
 
@@ -578,7 +578,7 @@ namespace RINGMesh {
 
     void TetraGen::initialize_storage( index_t nb_points, index_t nb_tets )
     {
-        GME::gme_t region_id( GME::REGION, output_region_ ) ;
+        GME::gme_t region_id( Region::type_name_, output_region_ ) ;
         builder_->delete_mesh_entity_mesh( region_id ) ;
         builder_->create_mesh_entity_vertices( region_id, nb_points ) ;
         builder_->create_region_cells( output_region_, GEO::MESH_TET,
