@@ -401,6 +401,7 @@ namespace RINGMesh {
 //        } else {
 //            return false ;
 //        }
+        return false ;
     }
 
     /*!
@@ -684,15 +685,15 @@ namespace RINGMesh {
         model().universe_ = from.universe_ ;
     }
 
-    template< typename E >
+    template< typename ENTITY >
     void GeoModelEditor::copy_mesh_entity_topology( const GeoModel& from )
     {
-        const std::string& type = E::type_name_ ;
+        const std::string& type = ENTITY::type_name_ ;
         std::vector< GeoModelMeshEntity* >& store = model_.modifiable_mesh_entities( type ) ;
         store.resize( from.nb_mesh_entities( type ), nil ) ;
 
         for( index_t e = 0; e < model_.nb_mesh_entities( type ); ++e ) {
-            store[e] = new E( type, e ) ;
+            store[e] = new ENTITY( model(), e ) ;
             ringmesh_assert( store[ e ] != nil ) ;
         }
         RINGMESH_PARALLEL_LOOP
@@ -700,7 +701,7 @@ namespace RINGMesh {
             GME::gme_t id( type, e ) ;
             GeoModelEntity& lhs = mesh_entity( id ) ;
             const GeoModelEntity& rhs = from.mesh_entity( id ) ;
-            lhs.copy( rhs ) ;
+            lhs = rhs ;
         }
     }
 

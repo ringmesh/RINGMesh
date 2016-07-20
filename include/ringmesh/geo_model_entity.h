@@ -237,6 +237,7 @@ namespace RINGMesh {
             id_ = rhs.id_;
             name_ = rhs.name_;
             geol_feature_ = rhs.geol_feature_ ;
+            return *this ;
         }
 
         /*!@}
@@ -350,6 +351,7 @@ namespace RINGMesh {
             GME::operator=(rhs);
             boundary_surfaces_ = rhs.boundary_surfaces_ ;
             boundary_surface_sides_ = rhs.boundary_surface_sides_ ;
+            return *this ;
         }
 
         bool is_valid() const
