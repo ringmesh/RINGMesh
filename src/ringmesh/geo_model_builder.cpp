@@ -69,7 +69,6 @@
 
 namespace {
     using namespace RINGMesh ;
-    using Logger ;
 
     typedef GeoModelEntity::gme_t gme_t ;
     typedef GeoModelMeshEntity GMME ;

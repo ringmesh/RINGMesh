@@ -117,6 +117,11 @@ namespace RINGMesh {
             }
         }
 
+        const EntityRelationships& entity_relationships() const
+        {
+            return entity_relationships_ ;
+        }
+
 
         /*!
          * @brief Returns the number of geological entities of the given type

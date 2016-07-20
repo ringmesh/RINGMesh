@@ -365,6 +365,23 @@ namespace RINGMesh {
         ringmesh_assert( parent.is_defined() ) ;
         return model().geological_entity( parent ) ;
     }
+    const gme_t& GeoModelMeshEntity::parent_id( const std::string& parent_type_name ) const
+    {
+        const EntityRelationships& parentage = model().entity_relationships() ;
+        bool valid_parent_type = parentage.parent_types( type_name_ ).count( parent_type_name ) > 0;
+
+        if( valid_parent_type ) {
+            for( index_t i = 0; i < nb_parents(); ++i ) {
+                const gme_t& parent = parent_id( i ) ;
+                if( parent.type() == parent_type_name ) {
+                    return parent ;
+                }
+            }
+            ringmesh_assert_not_reached ;
+        } else {
+            return gme_t() ;
+        }
+    }
 
     index_t GeoModelMeshEntity::gmme_vertex_index_from_model(
         index_t model_vertex_id ) const
