@@ -384,9 +384,18 @@ namespace RINGMesh {
                 }
             }
             ringmesh_assert_not_reached ;
-        } else {
-            return gme_t() ;
         }
+        return gme_t() ;
+    }
+
+    const GeoModelMeshEntity& GeoModelMeshEntity::boundary( index_t x ) const
+    {
+        return model().mesh_entity( boundary_gme( x ) ) ;
+    }
+
+    const GeoModelMeshEntity& GeoModelMeshEntity::in_boundary( index_t x ) const
+    {
+        return model().mesh_entity( in_boundary_gme( x ) ) ;
     }
 
     index_t GeoModelMeshEntity::gmme_vertex_index_from_model(
@@ -589,6 +598,15 @@ namespace RINGMesh {
         return valid ;
     }
 
+
+    const std::string& Line::in_boundary_type() const
+    {
+        return Surface::type_name_ ;
+    }
+    const std::string& Line::boundary_type() const
+    {
+        return Corner::type_name_ ;
+    }
     /********************************************************************/
 
     /*!
@@ -1077,6 +1095,16 @@ namespace RINGMesh {
     }
 
     /********************************************************************/
+
+
+    const std::string& Region::in_boundary_type() const
+    {
+        return GME::type_name_ ;
+    }
+    const std::string& Region::boundary_type() const
+    {
+        return Surface::type_name_ ;
+    }
 
     bool Region::is_mesh_valid() const
     {

@@ -40,7 +40,13 @@
 
 #include <ringmesh/geo_model_geological_entity.h>
 
+#include <ringmesh/geo_model.h>
+
 namespace RINGMesh {
 
+    const GeoModelMeshEntity& GeoModelGeologicalEntity::child( index_t x ) const
+    {
+        return model().mesh_entity( child_id( x ) ) ;
+    }
 
 }
