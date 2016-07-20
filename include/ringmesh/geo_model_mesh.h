@@ -39,6 +39,7 @@
 #include <ringmesh/common.h>
 
 #include <ringmesh/geo_model_entity.h>
+#include <ringmesh/geo_model_mesh_entity.h>
 #include <ringmesh/mesh.h>
 /*!
  * @file ringmesh/geo_model_mesh.h
