@@ -137,8 +137,6 @@ namespace RINGMesh {
                 "Saves the volumetric mesh of the structural model" ) ;
             GEO::CmdLine::declare_arg( "in:old_geomodel", "",
                 "Saves the volumetric mesh of the structural model" ) ;
-            ringmesh_register_GeoModelIOHandler_creator( BMIOHandler, "bm" ) ;
-            ringmesh_register_GeoModelIOHandler_creator( MMIOHandler, "mm" );
         }
     }
 }

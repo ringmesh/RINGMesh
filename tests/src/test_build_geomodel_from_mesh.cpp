@@ -49,7 +49,7 @@
  * @author Jeanne Pellerin
  */
 
-using Logger ;
+using RINGMesh::Logger ;
 using RINGMesh::index_t ;
 using RINGMesh::GeoModel ;
 using RINGMesh::Surface ;
