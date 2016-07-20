@@ -71,19 +71,14 @@ namespace RINGMesh {
         }
 
     private:
-        /*!
-         * @brief Load the connectivities. These are how corners are
-         * connected to lines, lines connected to surfaces and surfaces
-         * connected to regions
-         */
-        void load_connectivities( GEO::LineInput& file_line ) ;
+        void load_geological_entities( GEO::LineInput& file_line ) ;
 
         /*!
-         * @brief Load entities of one type from a zip file
-         * @param[in] gme_t the GeoModelEntity type
+         * @brief Load meshes of mesh entities of one type from a zip file
+         * @param[in] gme_t the GeoModelMeshEntity type
          * @param[in] uz the zip file
          */
-        void load_entities( GME::TYPE gme_t, unzFile& uz ) ;
+        void load_meshes( const std::string& type, unzFile& uz ) ;
 
         void load_file() ;
 
@@ -94,12 +89,7 @@ namespace RINGMesh {
         void unzip_one_file( unzFile& uz, const char filename[MAX_FILENAME] ) ;
 
 
-        /*!
-         * @brief Load the topology. Topology is how corners, lines, surfaces and
-         * regions are organized into contacts, interfaces and layers. It also contains
-         * basics information on the GeoModel.
-         */
-        void load_topology( GEO::LineInput& file_line ) ;
+        void load_mesh_entities( GEO::LineInput& file_line ) ;
     } ;
 }
 
