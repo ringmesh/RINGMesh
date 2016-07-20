@@ -42,7 +42,7 @@
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_api.h>
 #include <ringmesh/geo_model_validity.h>
-#include <ringmesh/geo_model_builder.h>
+#include <ringmesh/geo_model_builder_from_mesh.h>
 
 /*! 
  * Test the creation of a GeoModel from a conformal surface mesh 
