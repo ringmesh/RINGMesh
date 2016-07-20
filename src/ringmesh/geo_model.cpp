@@ -40,6 +40,7 @@
 
 #include <ringmesh/geo_model.h>
 
+#include <ringmesh/algorithm.h>
 #include <ringmesh/geo_model_builder.h>
 
 namespace RINGMesh {
@@ -100,6 +101,11 @@ namespace RINGMesh {
     void GeoModel::set_wells( const WellGroup* wells )
     {
         wells_ = wells ;
+    }
+
+    index_t GeoModel::geological_entity_type( const std::string& type ) const
+    {
+        return find( geological_entity_types_, type ) ;
     }
 
 } // namespace
