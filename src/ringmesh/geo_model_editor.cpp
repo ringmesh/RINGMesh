@@ -107,8 +107,8 @@ namespace RINGMesh {
         if( index == NO_ID ) {
             index = create_geological_entity_type( type ) ;
         }
-        GeoModelGeologicalEntity* E = new_geological_entity( type,
-            model_.geological_entities_[index].size() ) ;
+        index_t id = static_cast< index_t >( model_.geological_entities_[index].size() ) ;
+        GeoModelGeologicalEntity* E = new_geological_entity( type, id ) ;
         model_.geological_entities_[index].push_back( E ) ;
         return E->gme_id() ;
     }
@@ -118,7 +118,11 @@ namespace RINGMesh {
     {
         ringmesh_assert( GeoModelGeologicalEntityFactory::has_creator( type ) ) ;
         model_.geological_entity_types_.push_back( type ) ;
-        return model_.geological_entity_types_.size() - 1 ;
+        GeoModelGeologicalEntity* E = GeoModelGeologicalEntityFactory::create_object(
+                type, model() ) ;
+        const std::string& c_type = E->child_type() ;
+        model().mesh_entity( c_type, 0 ).parent_types_.push_back( type ) ;
+        return static_cast< index_t >( model_.geological_entity_types_.size() - 1 ) ;
     }
 
     index_t GeoModelEditor::create_mesh_entities( const std::string& type, index_t nb )
@@ -184,53 +188,53 @@ namespace RINGMesh {
         // Lines
         if( model_.nb_lines() > 0 ) {
             if( model_.line( 0 ).nb_boundaries() == 0 ) {
-                fill_entities_boundaries( GME::LINE ) ;
+                fill_mesh_entities_boundaries( Line::type_name_ ) ;
             }
             if( model_.line( 0 ).nb_in_boundary() == 0 ) {
-                fill_entities_in_boundaries( GME::LINE ) ;
+                fill_mesh_entities_in_boundaries( Line::type_name_ ) ;
             }
-            if( !model_.line( 0 ).parent_id().is_defined()
-                && model_.nb_contacts() > 0 ) {
-                fill_entities_parent( GME::LINE ) ;
+            if( model_.line( 0 ).nb_parents() == 0 ) {
+                fill_mesh_entities_parent( Line::type_name_ ) ;
             }
         }
         // Corners
-        if( model_.nb_corners() > 0 && model_.corner( 0 ).nb_in_boundary() == 0 ) {
-            // Info from line boundaries is used here and should be available
-            fill_entities_in_boundaries( GME::CORNER ) ;
+        if( model_.nb_corners() > 0 ) {
+            if( model_.corner( 0 ).nb_in_boundary() == 0 ) {
+                fill_mesh_entities_in_boundaries( Corner::type_name_ ) ;
+            }
+            if( model_.corner( 0 ).nb_parents() == 0 ) {
+                fill_mesh_entities_parent( Corner::type_name_ ) ;
+            }
         }
-        // Surfaces - There MUST be at least one
-        if( model_.surface( 0 ).nb_boundaries() == 0 ) {
-            fill_entities_boundaries( GME::SURFACE ) ;
-        }
-        if( model_.surface( 0 ).nb_in_boundary() == 0 ) {
-            fill_entities_in_boundaries( GME::SURFACE ) ;
-        }
-        if( !model_.surface( 0 ).parent_id().is_defined() ) {
-            fill_entities_parent( GME::SURFACE ) ;
+        // Surfaces
+        if( model_.nb_surfaces() > 0 ) {
+            if( model_.surface( 0 ).nb_boundaries() == 0 ) {
+                fill_mesh_entities_boundaries( Surface::type_name_ ) ;
+            }
+            if( model_.surface( 0 ).nb_in_boundary() == 0 ) {
+                fill_mesh_entities_in_boundaries( Surface::type_name_ ) ;
+            }
+            if( model_.surface( 0 ).nb_parents() == 0 ) {
+                fill_mesh_entities_parent( Surface::type_name_ ) ;
+            }
         }
         // Regions
         if( model_.nb_regions() > 0 ) {
             if( model_.region( 0 ).nb_boundaries() == 0 ) {
-                fill_entities_boundaries( GME::REGION ) ;
+                fill_mesh_entities_boundaries( Region::type_name_ ) ;
             }
-            if( !model_.region( 0 ).parent_id().is_defined()
-                && model_.nb_layers() > 0 ) {
-                fill_entities_parent( GME::REGION ) ;
+            if( !model_.region( 0 ).nb_parents() == 0 ) {
+                fill_mesh_entities_parent( Region::type_name_ ) ;
             }
         }
-        // Contacts
-        if( model_.nb_contacts() > 0 && model_.contact( 0 ).nb_children() == 0 ) {
-            fill_entities_children( GME::CONTACT ) ;
-        }
-        // Interfaces
-        if( model_.nb_interfaces() > 0
-            && model_.one_interface( 0 ).nb_children() == 0 ) {
-            fill_entities_children( GME::INTERFACE ) ;
-        }
-        // Layers
-        if( model_.nb_layers() > 0 && model_.layer( 0 ).nb_children() == 0 ) {
-            fill_entities_children( GME::LAYER ) ;
+        // Geological entities
+        for( index_t i = 0; i < model_.nb_geological_entity_type(); i++ ) {
+            const std::string& type = model().geological_entity_type( i ) ;
+            if( model_.nb_geological_entities( type ) > 0 ) {
+                if( model_.geological_entity( type, 0 ).nb_children() == 0 ) {
+                    fill_geological_entities_children( type ) ;
+                }
+            }
         }
     }
 
@@ -274,13 +278,16 @@ namespace RINGMesh {
     {
         if( model().nb_mesh_entities( type ) == 0 ) return ;
 
-        const std::string& p_type = mesh_entity( type, 0 ).parent_type() ;
-        if( p_type != GME::type_name_ ) {
-            for( index_t i = 0; i < model().nb_mesh_entities( p_type ); ++i ) {
-                gme_t cur_gme( p_type, i ) ;
-                const GeoModelGeologicalEntity& p = geological_entity( cur_gme ) ;
-                for( index_t j = 0; j < p.nb_children(); ++j ) {
-                    add_mesh_entity_parent( p.child_id( j ), cur_gme ) ;
+        for( index_t p = 0; p < mesh_entity( type, 0 ).nb_parent_types(); p++ ) {
+            const std::string& p_type = mesh_entity( type, 0 ).parent_type( p ) ;
+            if( p_type != GME::type_name_ ) {
+                for( index_t i = 0; i < model().nb_mesh_entities( p_type ); ++i ) {
+                    gme_t cur_gme( p_type, i ) ;
+                    const GeoModelGeologicalEntity& p = geological_entity(
+                        cur_gme ) ;
+                    for( index_t j = 0; j < p.nb_children(); ++j ) {
+                        add_mesh_entity_parent( p.child_id( j ), cur_gme ) ;
+                    }
                 }
             }
         }
@@ -409,9 +416,6 @@ namespace RINGMesh {
         }
 
         delete_elements( to_erase_by_type ) ;
-
-        // Re-initialize global access to entities
-        model_.init_global_model_entity_access() ;
     }
 
     /*!
@@ -751,30 +755,4 @@ namespace RINGMesh {
             }
         }
     }
-
-    GME* GeoModelEditor::new_entity( const std::string& T, index_t id )
-    {
-        assert_entity_creation_allowed() ;
-        if( T == GME::CORNER ) {
-            return new Corner( model(), id ) ;
-        } else if( T == GME::LINE ) {
-            return new Line( model(), id ) ;
-        } else if( T == GME::SURFACE ) {
-            return new Surface( model(), id ) ;
-        } else if( T == GME::REGION ) {
-            return new Region( model(), id ) ;
-        } else if( T > GME::REGION && T < GME::NO_TYPE ) {
-            return new GeoModelEntity( model(), T, id ) ;
-        } else {
-            return nil ;
-        }
-    }
-    
-    GME* GeoModelEditor::new_entity( const std::string& T )
-    {
-        index_t id = model_.nb_entities( T ) ;
-        return new_entity( T, id ) ;
-    }
-
-
 }

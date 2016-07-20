@@ -135,14 +135,15 @@ namespace RINGMesh {
          * @details Default value is NO_ID
          * @param[in] type the geological entity type
          */
-        index_t geological_entity_type( const std::string& type ) const
-        {
-            return find( geological_entity_types_, type ) ;
-        }
+        index_t geological_entity_type( const std::string& type ) const ;
         index_t nb_geological_entity_type() const
         {
             return static_cast< index_t >( geological_entity_types_.size() ) ;
-
+        }
+        const std::string& geological_entity_type( index_t id ) const
+        {
+            ringmesh_assert( id < nb_geological_entity_type() ) ;
+            return geological_entity_types_[id] ;
         }
 
         /*!
