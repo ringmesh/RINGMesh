@@ -145,7 +145,6 @@ namespace {
         return static_cast< index_t >( std::count( nb.begin(), nb.end(), 0 ) ) ;
     }
 
-
     bool check_mesh_entity_vertices_are_different(
         std::vector< index_t >& vertices,
         std::vector< index_t >& vertices_global )
@@ -232,16 +231,13 @@ namespace {
 
 namespace RINGMesh {
 
-
-
     bool GME::gme_t::is_defined() const
     {
         return type != GME::type_name_ && index != NO_ID ;
     }
 
     const std::string GeoModelEntity::type_name_ = "No_entity_type" ;
-    //const std::string Universe::type_name_ = "Universe" ;
-    
+    const std::string Universe::type_name_ = "Universe" ;
     
     /*!
      * @brief Map the name of a geological type with a value of GEOL_FEATURE
@@ -489,8 +485,5 @@ namespace RINGMesh {
 
         return false ; // TO SPLIT between classes
     }
-
-
-   
 
 }
