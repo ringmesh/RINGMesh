@@ -58,7 +58,7 @@
 #include <ringmesh/utils.h>
 
 /*!
- * @file ringmesh/geo_model_builder.cpp
+ * @file ringmesh/geo_model_builder_ringmesh.cpp
  * @brief Implementation of the classes to build GeoModel from various inputs
  * @author Jeanne Pellerin
  */
