@@ -241,7 +241,7 @@ namespace RINGMesh {
     {
         RINGMESH_PARALLEL_LOOP_DYNAMIC        
         for( index_t i = 0; i < M.nb_mesh_entities( entity_type ); ++i ) {
-            GeoModelMeshEntity& E = const_cast < GeoModelMeshEntity& >( M.mesh_entity( entity_type, e ) );
+            GeoModelMeshEntity& E = const_cast < GeoModelMeshEntity& >( M.mesh_entity( entity_type, i ) );
             GEO::Attribute< index_t > att( E.vertex_attribute_manager(),
                 GeoModelMeshEntity::model_vertex_id_att_name() ) ;
             att.fill( NO_ID ) ;
@@ -403,36 +403,39 @@ namespace RINGMesh {
     }
 
 
-    void update_entity_model_vertex_id( const GeoModel& M, const std::string& entity_type
-        )
+    void update_entity_model_vertex_id( const GeoModel& M, const std::string& entity_type,
+        std::vector<index_t>& to_delete, std::vector< std::vector< GMEVertex > >& gme_vertices )
     {
-            for( index_t i = 0; i < gm_.nb_mesh_entities( entity_type ); ++i ) {
-                GeoModelMeshEntity& E = const_cast< GeoModelMeshEntity& >( M.mesh_entity( entity_type, i ) ) ;
-                GEO::Attribute< index_t > att( E.vertex_attribute_manager(),
-                    GeoModelMeshEntity::model_vertex_id_att_name() ) ;
+        for( index_t i = 0; i < M.nb_mesh_entities( entity_type ); ++i ) {
+            GeoModelMeshEntity& E = const_cast<GeoModelMeshEntity&>(M.mesh_entity( entity_type, i )) ;
 
-                for( index_t v = 0; v < E.nb_vertices(); v++ ) {
-                    index_t old_id = E.model_vertex_id( v ) ;
-                    index_t new_id = to_delete[old_id] ;
-                    // If new_id is NO_ID the vertex should be removed afterwards
-                    // from the GMME
-                    ringmesh_assert( new_id != NO_ID ) ;
-                    att[v] = new_id ;
+            GEO::Attribute< index_t > att( E.vertex_attribute_manager(),
+                GeoModelMeshEntity::model_vertex_id_att_name() ) ;
 
-                    /*!
-                     * @todo Review: I don't understand this for and what it does...
-                     * When we remove a region, this for add stupid vertices inside the
-                     * vector... [AB]
-                     */
-                    // Merge gme_vertices_ information
-                    if( std::find( gme_vertices_[new_id].begin(),
-                        gme_vertices_[new_id].end(), GMEVertex( E.gme_id(), v ) )
-                        == gme_vertices_[new_id].end() ) {
-                        gme_vertices_[new_id].push_back(
-                            GMEVertex( E.gme_id(), v ) ) ;
-                    }
+            for( index_t v = 0; v < E.nb_vertices(); v++ ) {
+                index_t old_id = E.model_vertex_id( v ) ;
+                index_t new_id = to_delete[old_id] ;
+
+                // If new_id is NO_ID the vertex should be removed afterwards
+                // from the GMME
+                ringmesh_assert( new_id != NO_ID ) ;
+                att[v] = new_id ;
+
+                /*!
+                * @todo Review: I don't understand this for and what it does...
+                * When we remove a region, this for add stupid vertices inside the
+                * vector... [AB]
+                */
+                // Merge gme_vertices_ information
+                if( std::find( gme_vertices[new_id].begin(),
+                    gme_vertices[new_id].end(), GMEVertex( E.gme_id(), v ) )
+                    == gme_vertices[new_id].end() ) {
+                    gme_vertices[new_id].push_back(
+                        GMEVertex( E.gme_id(), v ) ) ;
                 }
             }
+        }
+    }
 
     void GeoModelMeshVertices::erase_vertices( std::vector< index_t >& to_delete )
     {
@@ -494,10 +497,10 @@ namespace RINGMesh {
         }
 #endif
 
-
-        update_entity_model_vertex_id() ;
-        
-        }
+        update_entity_model_vertex_id( gm_, Corner::type_name_, to_delete, gme_vertices_ ) ;
+        update_entity_model_vertex_id( gm_, Line::type_name_, to_delete, gme_vertices_ ) ;
+        update_entity_model_vertex_id( gm_, Surface::type_name_, to_delete, gme_vertices_ ) ;
+        update_entity_model_vertex_id( gm_, Region::type_name_, to_delete, gme_vertices_ ) ;           
     }
 
     /*******************************************************************************/
@@ -2033,7 +2036,7 @@ namespace RINGMesh {
                     gme_v++ ) {
                     const GMEVertex& cur_vertex_on_geo_model =
                         vertices_on_geomodel[gme_v] ;
-                    if( vertices_on_geomodel[gme_v].gme_id.type == GME::REGION ) {
+                    if( vertices_on_geomodel[gme_v].gme_id.type == Region::type_name_ ) {
                         for( index_t att_e = 0; att_e < att_dim; att_e++ ) {
                             att_on_regions[cur_vertex_on_geo_model.gme_id.index][cur_vertex_on_geo_model.v_id
                                 * att_dim + att_e] = cur_att_on_geomodelmesh[v
