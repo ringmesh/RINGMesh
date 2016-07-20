@@ -609,6 +609,16 @@ namespace RINGMesh {
     }
     /********************************************************************/
 
+
+    const std::string& Surface::in_boundary_type() const
+    {
+        return Region::type_name_ ;
+    }
+    const std::string& Surface::boundary_type() const
+    {
+        return Line::type_name_ ;
+    }
+
     /*!
      * @brief Check that the mesh of the Surface is valid
      * @details Check that
