@@ -120,7 +120,9 @@ namespace RINGMesh {
         model_.geological_entity_types_.push_back( type ) ;
         GeoModelGeologicalEntity* E = GeoModelGeologicalEntityFactory::create_object(
                 type, model() ) ;
+
         const std::string& c_type = E->child_type() ;
+
         model().mesh_entity( c_type, 0 ).parent_types_.push_back( type ) ;
         return static_cast< index_t >( model_.geological_entity_types_.size() - 1 ) ;
     }
