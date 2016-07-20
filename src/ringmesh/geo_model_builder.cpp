@@ -990,15 +990,15 @@ namespace RINGMesh {
 
     void GeoModelBuilder::copy_meshes( const GeoModel& geomodel )
     {
-        for( index_t t = GME::CORNER; t <= GME::REGION; ++t ) {
-            GME::TYPE T = static_cast< GME::TYPE >( t ) ;
-            copy_meshes( geomodel, T ) ;
-        }
+        copy_meshes( geomodel, Corner::type_name_ ) ;
+        copy_meshes( geomodel, Line::type_name_ ) ;
+        copy_meshes( geomodel, Surface::type_name_ ) ;
+        copy_meshes( geomodel, Region::type_name_ ) ;
     }
 
-    void GeoModelBuilder::copy_meshes( const GeoModel& from, GME::TYPE entity_type )
+    void GeoModelBuilder::copy_meshes( const GeoModel& from, const std::string& entity_type )
     {
-        for( index_t i = 0; i < model().nb_entities( entity_type ); ++i ) {
+        for( index_t i = 0; i < model().nb_mesh_entities( entity_type ); ++i ) {
             const GeoModelMeshEntity& from_E = from.mesh_entity( entity_type,
                 i ) ;
             assign_mesh_to_entity( from_E.mesh_, gme_t( entity_type, i ) ) ;

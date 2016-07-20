@@ -329,10 +329,11 @@ namespace RINGMesh {
         }
 
     private:
-        void copy_entity_topology(
-            const GME::gme_t& lhs_id,
-            const GeoModel& from,
-            const GME::gme_t& rhs_id ) ;
+        template< typename E >
+        void complete_mesh_entity_connectivity() ;
+
+        template< typename E >
+        void copy_mesh_entity_topology( const GeoModel& from ) ;
 
         GeoModelGeologicalEntity* new_geological_entity(
             const std::string& type,

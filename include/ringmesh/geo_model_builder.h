@@ -110,7 +110,7 @@ namespace RINGMesh {
          */
         void copy_meshes( const GeoModel& from ) ;
 
-        void copy_meshes( const GeoModel& from, GME::TYPE entity_type ) ;
+        void copy_meshes( const GeoModel& from, const std::string& entity_type ) ;
 
         void assign_mesh_to_entity( const Mesh& mesh, GME::gme_t to ) ;
 
