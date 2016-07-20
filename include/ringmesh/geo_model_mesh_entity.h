@@ -98,6 +98,7 @@ namespace RINGMesh {
         }
         const gme_t& boundary_gme( index_t x ) const
         {
+            ringmesh_assert( x < nb_boundaries() ) ;
             return boundaries_[x] ;
         }
         const GeoModelMeshEntity& boundary( index_t x ) const ;
@@ -108,6 +109,7 @@ namespace RINGMesh {
         }
         const gme_t& in_boundary_gme( index_t x ) const
         {
+            ringmesh_assert( x < nb_in_boundary() ) ;
             return in_boundary_[x] ;
         }
         const GeoModelMeshEntity& in_boundary( index_t x ) const ;
@@ -122,7 +124,7 @@ namespace RINGMesh {
 
         index_t nb_parents() const
         {
-            return parents_.size() ;
+            return static_cast< index_t >( parents_.size() ) ;
         }
         bool has_parent() const
         {
@@ -413,6 +415,8 @@ namespace RINGMesh {
         virtual index_t mesh_element_vertex_index(
             index_t mesh_element = 0, index_t vertex_index = 0 ) const
         {
+            ringmesh_unused( mesh_element ) ;
+            ringmesh_unused( vertex_index ) ;
             return 0 ;
         }
         /*!
@@ -427,6 +431,7 @@ namespace RINGMesh {
          */
         virtual index_t nb_mesh_element_vertices( index_t mesh_element = 0 ) const
         {
+            ringmesh_unused( mesh_element ) ;
             return 1 ;
         }
 
@@ -436,6 +441,7 @@ namespace RINGMesh {
          */
         virtual double mesh_element_size( index_t mesh_element = 0 ) const
         {
+            ringmesh_unused( mesh_element ) ;
             return 0.0 ;
         }
         virtual double size() const
@@ -444,6 +450,7 @@ namespace RINGMesh {
         }
         virtual vec3 mesh_element_center( index_t mesh_element = 0 ) const
         {
+            ringmesh_unused( mesh_element ) ;
             return vertex( 0 ) ;
         }
 
@@ -467,7 +474,8 @@ namespace RINGMesh {
         Line( const GeoModel& model, index_t id ) ;
 
         ~Line()
-        {}
+        {
+        }
 
         virtual const std::string& in_boundary_type() const ;
         virtual const std::string& boundary_type() const ;
@@ -559,10 +567,12 @@ namespace RINGMesh {
     public:
         Surface( const GeoModel& model, index_t id )
             : GeoModelMeshEntity( model, id )
-        {}
+        {
+        }
 
         ~Surface()
-        {}
+        {
+        }
 
         virtual const std::string& in_boundary_type() const ;
         virtual const std::string& boundary_type() const ;

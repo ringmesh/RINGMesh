@@ -80,6 +80,7 @@ namespace RINGMesh {
         }
         const gme_t& child_id( index_t x ) const
         {
+            ringmesh_assert( x < nb_children() ) ;
             return children_[x] ;
         }
         const GeoModelMeshEntity& child( index_t x ) const ;

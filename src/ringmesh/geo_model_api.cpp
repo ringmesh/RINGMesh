@@ -600,7 +600,7 @@ namespace RINGMesh {
     /*******************************************************************************/
     /*******************************************************************************/
 
-    double geomodel_entity_size( const GeoModelGeologicalEntity& E )
+    double model_entity_size( const GeoModelGeologicalEntity& E )
     {
         double result = 0. ;
         for( index_t i = 0; i < E.nb_children(); ++i ) {
@@ -609,7 +609,7 @@ namespace RINGMesh {
         return result ;
     }
 
-    double geomodel_entity_size( const GeoModelMeshEntity& E ){
+    double model_entity_size( const GeoModelMeshEntity& E ){
         return E.size() ;
     }
 
