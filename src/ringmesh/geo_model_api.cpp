@@ -46,7 +46,11 @@
 #include <geogram/mesh/mesh_geometry.h>
 
 #include <ringmesh/geo_model.h>
+#include <ringmesh/geo_model_entity.h>
+#include <ringmesh/geo_model_mesh_entity.h>
+#include <ringmesh/geo_model_geological_entity.h>
 #include <ringmesh/geo_model_builder.h>
+#include <ringmesh/geo_model_builder_from_mesh.h>
 #include <ringmesh/geogram_extension.h>
 #include <ringmesh/geogram_mesh_repair.h>
 #include <ringmesh/geometry.h>
@@ -61,6 +65,8 @@
 
 namespace {
     using namespace RINGMesh ;
+
+    typedef GeoModelEntity::gme_t gme_t ;
 
     /*!
      * @brief Total number of facets in the geomodel Surfaces
@@ -239,6 +245,21 @@ namespace {
 }
 
 namespace RINGMesh {
+
+    void print_nb_mesh_entities( const GeoModel& geomodel, const std::string& entity_type_name )
+    {
+        Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left
+            << geomodel.nb_mesh_entities( entity_type_name ) << " " << entity_type_name
+            << std::endl ;
+    }
+    
+    void print_nb_geological_entities( const GeoModel& geomodel, const std::string& entity_type_name )
+    {
+        Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left
+            << geomodel.nb_geological_entities( entity_type_name ) << " " << entity_type_name
+            << std::endl ;
+    }
+
     void print_geomodel( const GeoModel& geomodel )
     {
         Logger::out( "GeoModel" ) << "Model " << geomodel.name() << " has\n"
@@ -248,12 +269,14 @@ namespace RINGMesh {
             << std::left << count_geomodel_cells( geomodel ) << " cells\n"
             << std::endl ;
 
-        for( index_t t = GME::CORNER; t < GME::NO_TYPE; ++t ) {
-            GME::TYPE T = static_cast< GME::TYPE >( t ) ;
-            Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left
-                << geomodel.nb_entities( T ) << " " << GME::type_name( T )
-                << std::endl ;
-        }
+        print_nb_mesh_entities( geomodel, Corner::type_name_ ) ; 
+        print_nb_mesh_entities( geomodel, Line::type_name_ ) ; 
+        print_nb_mesh_entities( geomodel, Surface::type_name_ ) ; 
+        print_nb_mesh_entities( geomodel, Region::type_name_ ) ; 
+
+        for( index_t i = 0; i < geomodel.nb_geological_entity_type(); ++i ) {
+            print_nb_geological_entities( geomodel, geomodel.geological_entity_type( i ) ) ;
+        }        
     }
 
     void print_geomodel_mesh_stats( const GeoModel& geomodel )
@@ -577,70 +600,47 @@ namespace RINGMesh {
     /*******************************************************************************/
     /*******************************************************************************/
 
-    /* @todo Put in the GeoModelEntityMesh Class...? [FB] */
-    double model_entity_size( const GeoModelEntity& E )
-    {        
-        if( E.nb_children() ) {
-            // Sum up the size of children entities
-            double result = 0. ;
-            for( index_t i = 0; i < E.nb_children(); ++i ) {
-                result += model_entity_size( E.child( i ) ) ;
-            }
-            return result ;
-        } else if( GeoModelEntity::has_mesh( E.type() ) ) {
-            const GeoModelMeshEntity& M =
-                dynamic_cast< const GeoModelMeshEntity& >( E ) ;
-            return M.size() ;
-        } else {
-            ringmesh_assert_not_reached ;
-            return 0.0 ;
-        }
-    }
-
-    double model_entity_cell_size( const GeoModelEntity& E, index_t c )
+    double geomodel_entity_size( const GeoModelGeologicalEntity& E )
     {
         double result = 0. ;
-        if( GeoModelEntity::has_mesh( E.type() ) ) {
-            // @todo Improve efficiency, overload the functions to avoid
-            // casting each time
-            const GeoModelMeshEntity& M =
-                dynamic_cast< const GeoModelMeshEntity& >( E ) ;
-            result = M.mesh_element_size( c ) ;
+        for( index_t i = 0; i < E.nb_children(); ++i ) {
+            result += model_entity_size( E.child( i ) ) ;
         }
-        ringmesh_assert_not_reached ;
         return result ;
     }
 
-    vec3 model_entity_center( const GeoModelEntity& E )
+    double geomodel_entity_size( const GeoModelMeshEntity& E ){
+        return E.size() ;
+    }
+
+    double model_entity_cell_size( const Region& R, index_t cell )
     {
+        return R.mesh_element_size( cell ) ;       
+    }
+
+    vec3 model_entity_center( const GeoModelMeshEntity& E )
+    {
+        return E.center() ;
+    }
+
+    vec3 model_entity_center( const GeoModelGeologicalEntity& E ) {
+    
         vec3 result( 0., 0., 0. ) ;
         index_t nb_vertices = 0 ;
 
-        if( GeoModelEntity::has_mesh( E.type() ) ) {
-            // @todo Improve efficiency, overload the functions to avoid
-            // casting each time
-            const GeoModelMeshEntity& M =
-                dynamic_cast< const GeoModelMeshEntity& >( E ) ;
-            result = M.center() ;
-        } else if( E.nb_children() > 0 ) {
-            for( index_t i = 0; i < E.nb_children(); ++i ) {
-                const GeoModelMeshEntity& F =
-                    dynamic_cast< const GeoModelMeshEntity& >( E.child( i ) ) ;
-                nb_vertices += F.nb_vertices() ;
-                result += F.center() * F.nb_vertices() ;
-            }
-            result /= static_cast< double >( nb_vertices ) ;
+        for( index_t i = 0; i < E.nb_children(); ++i ) {
+            const GeoModelMeshEntity& child = E.child( i ) ;
+            nb_vertices += child.nb_vertices() ;
+            result += child.center() *child.nb_vertices() ;
         }
+        result /= static_cast< double >( nb_vertices ) ;
+        
         return result ;
     }
 
-    vec3 model_entity_cell_center( const GeoModelMeshEntity& E, index_t c )
+    vec3 model_entity_cell_center( const Region& R, index_t cell )
     {
-        if( GeoModelEntity::has_mesh( E.type() ) ) {
-            return E.mesh_element_center( c ) ;
-        }
-        ringmesh_assert_not_reached ;
-        return vec3( 0., 0., 0. ) ;
+        return R.mesh_element_center( cell ) ;
     }
 
     void translate( GeoModel& M, const vec3& translation_vector )
