@@ -358,19 +358,17 @@ namespace RINGMesh {
          */
         Universe universe_ ;
 
-        /*! @}
-         * \name Optional geological entities
-         * @{
-         */
-
         /*!
-         * @brief Geological entities
+         * @brief Geological entities. They are optional.
          */
         std::vector< std::vector< GeoModelGeologicalEntity* > > geological_entities_ ;
         /*!
          * @brief Geological entity types
          */
         std::vector< std::string > geological_entity_types_ ;
+
+        EntityRelationships entity_relationships_ ;
+
 
         /*!
          * @}
