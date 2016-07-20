@@ -368,7 +368,7 @@ namespace RINGMesh {
         }
         index_t nb_boundaries() const
         {
-            return boundary_surfaces_.size() ;
+            return static_cast< index_t >( boundary_surfaces_.size() ) ;
         }
         gme_t boundary_gme( index_t i ) const
         {
