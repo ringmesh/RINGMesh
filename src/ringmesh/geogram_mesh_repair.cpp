@@ -79,7 +79,7 @@ namespace {
     using GEO::Mesh ;
     using GEO::vector ;
     using GEO::signed_index_t ;
-    using Logger ;
+    using RINGMesh::Logger ;
 
     index_t NO_FACET( NO_ID ) ;
 
