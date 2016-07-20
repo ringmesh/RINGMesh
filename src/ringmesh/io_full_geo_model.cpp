@@ -146,14 +146,14 @@ namespace {
                 "Error when opening the file: " + file_name ) ;
         }
 
-        out << "RINGMESH GEOMODEL" << std::endl ;
-        out << "NAME " << M.name() << std::endl ;
+        out << "RINGMesh GeoModel" << std::endl ;
+        out << "Name " << M.name() << std::endl ;
 
         // Numbers of the different types of mesh entities
-        out << "NB " << Corner::type_name_ << " " << M.nb_corners() << std::endl ;
-        out << "NB " << Line::type_name_ << " " << M.nb_lines() << std::endl ;
-        out << "NB " << Surface::type_name_ << " " << M.nb_surfaces() << std::endl ;
-        out << "NB " << Region::type_name_ << " " << M.nb_regions() << std::endl ;
+        out << "Nb " << Corner::type_name_ << " " << M.nb_corners() << std::endl ;
+        out << "Nb " << Line::type_name_ << " " << M.nb_lines() << std::endl ;
+        out << "Nb " << Surface::type_name_ << " " << M.nb_surfaces() << std::endl ;
+        out << "Nb " << Region::type_name_ << " " << M.nb_regions() << std::endl ;
 
         save_mesh_entities_of_type< Corner >( M, out ) ;
         save_mesh_entities_of_type< Line >( M, out ) ;
