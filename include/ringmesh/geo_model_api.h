@@ -101,11 +101,11 @@ namespace RINGMesh {
     template< typename T >
     void create_attributes_on_geomodel_entity_facets(
         const GeoModel& geomodel,
-        GeoModelEntity::TYPE geomodel_entity_type,
+        const std::string& geomodel_entity_type,
         const std::string& attribute_name,
         AttributeVector<T>& attributes )
     {
-        index_t nb_entities = geomodel.nb_entities( geomodel_entity_type ) ;
+        index_t nb_entities = geomodel.nb_mesh_entities( geomodel_entity_type ) ;
         attributes.resize( nb_entities ) ;
         for( index_t i = 0; i < nb_entities; ++i ) {
             const GeoModelMeshEntity& E = geomodel.mesh_entity( geomodel_entity_type, i ) ;
@@ -121,11 +121,11 @@ namespace RINGMesh {
     template< typename T >
     void create_attributes_on_geomodel_entity_cells(
         const GeoModel& geomodel,
-        GeoModelEntity::TYPE geomodel_entity_type,
+        const std::string& geomodel_entity_type,
         const std::string& attribute_name,
         AttributeVector<T>& attributes )
     {
-        index_t nb_entities = geomodel.nb_entities( geomodel_entity_type ) ;
+        index_t nb_entities = geomodel.nb_mesh_entities( geomodel_entity_type ) ;
         attributes.resize( nb_entities ) ;
         for( index_t i = 0; i < nb_entities; ++i ) {
             const GeoModelMeshEntity& E = geomodel.mesh_entity( geomodel_entity_type, i ) ;
