@@ -62,6 +62,12 @@ namespace RINGMesh {
      */
     class RINGMESH_API EntityRelationships {
     public:
+        void register_relationship( const std::string& parent_type_name,
+            const std::string& child_type_name )
+        {
+            register_child_type( parent_type_name, child_type_name ) ;
+            register_parent_type( parent_type_name, child_type_name ) ;
+        }
         void register_child_type( const std::string& parent_type_name, 
             const std::string& child_type_name )
         {
@@ -71,23 +77,24 @@ namespace RINGMesh {
         void register_parent_type( const std::string& parent_type_name,
             const std::string& child_type_name )
         {
-            child_to_parents_[child_type_name].push_back( parent_type_name ) ;
+            child_to_parents_[child_type_name].insert( parent_type_name ) ;
         }
 
-        const std::vector< std::string >& parent_types( const std::string& child_type ) const 
+        const std::set< std::string >& parent_types( const std::string& child_type ) const 
         {
-            std::map< std::string, std::vector< std::string > >::const_iterator
+            std::map< std::string, std::set< std::string > >::const_iterator
                 itr = child_to_parents_.find( child_type );
             return itr->second ;
         }
-        index_t nb_parent_types( const std::string& child_type ) const
+       /* index_t nb_parent_types( const std::string& child_type ) const
         {
             return parent_types( child_type ).size() ;
         }
         const std::string parent_type( const std::string child_type, index_t i ) const
         {
-            return  parent_types( child_type )[i] ;
-        } 
+            const std::set< std::string >& parent_types
+            return *parent_types( child_type ).begin()[i] ;
+        } */ 
 
         const std::string& child_type( const std::string& parent_type ) const
         {
@@ -98,7 +105,7 @@ namespace RINGMesh {
 
     private:
         std::map< std::string, std::string > parent_to_child_ ;
-        std::map< std::string, std::vector< std::string > > child_to_parents_ ;
+        std::map< std::string, std::set< std::string > > child_to_parents_ ;
     };
 
     /*!
@@ -224,6 +231,14 @@ namespace RINGMesh {
         {
         }
 
+        GeoModelEntity& operator=( const GeoModelEntity& rhs )
+        {
+            ringmesh_assert( model() == rhs.model() ) ;
+            id_ = rhs.id_;
+            name_ = rhs.name_;
+            geol_feature_ = rhs.geol_feature_ ;
+        }
+
         /*!@}
          * \name Validity checks
          * @{
@@ -329,6 +344,14 @@ namespace RINGMesh {
         const std::string type_name_ = "Universe" ;
         Universe( const GeoModel& model ) ;
         virtual ~Universe() {};
+        
+        Universe& operator=(const Universe& rhs)
+        {
+            GME::operator=(rhs);
+            boundary_surfaces_ = rhs.boundary_surfaces_ ;
+            boundary_surface_sides_ = rhs.boundary_surface_sides_ ;
+        }
+
         bool is_valid() const
         {
             return false ;

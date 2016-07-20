@@ -343,6 +343,11 @@ namespace RINGMesh {
             return model_ ;
         }
 
+        EntityRelationships& entity_relationships()
+        {
+            return model().entity_relationships_ ;
+        }
+
         void delete_elements( std::vector< std::vector< index_t > >& to_erase ) ;
 
         index_t create_mesh_entities( const std::string& type, index_t nb ) ;
@@ -372,5 +377,6 @@ namespace RINGMesh {
         bool create_entity_allowed_ ;
     } ;
 }
+
 
 #endif
