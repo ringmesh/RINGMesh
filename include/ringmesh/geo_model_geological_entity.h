@@ -61,6 +61,8 @@ namespace RINGMesh {
         {
         }
 
+        virtual const std::string child_type_name() const = 0 ;
+
     protected:
         GeoModelGeologicalEntity(
             const GeoModel& model,
