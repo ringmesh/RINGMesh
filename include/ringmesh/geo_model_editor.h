@@ -55,6 +55,7 @@ namespace RINGMesh {
      * @brief Basic edition of a GeoModel
      *        Topological level. NO GEOMETRY HERE.
      *        GeoModelBuilder deals with the dirty geometry
+     * @todo Force editor to use EntityRelationships
      */
     class RINGMESH_API GeoModelEditor {
     public:

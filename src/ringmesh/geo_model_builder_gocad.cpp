@@ -42,6 +42,7 @@
 #include <geogram/mesh/mesh_geometry.h>
 
 #include <ringmesh/geometry.h>
+#include <ringmesh/geo_model_api.h>
 #include <ringmesh/geogram_extension.h>
 #include <ringmesh/utils.h>
 
@@ -286,6 +287,10 @@ namespace RINGMesh {
 
 namespace {
     using namespace RINGMesh ;
+
+    const std::string interface_name = "Interface" ;
+    const std::string layer_name = "Layer" ;
+
     /*! @}
      * \name Building surface
      * @{
@@ -297,16 +302,16 @@ namespace {
      * @param[in] interface_name Name of the interface to find
      * @return Index of the interface in the model, NO_ID if not found.
      */
-    gme_t find_interface(
+    GME::gme_t find_interface(
         const GeoModel& geomodel,
         const std::string& interface_name )
     {
-        for( index_t i = 0; i < geomodel.nb_interfaces(); ++i ) {
-            if( geomodel.one_interface( i ).name() == interface_name ) {
-                return geomodel.one_interface( i ).gme_id() ;
+        for( index_t i = 0; i < geomodel.nb_geological_entities( interface_name ); ++i ) {
+            if( geomodel.geological_entity( interface_name, i ).name() == interface_name ) {
+                return geomodel.geological_entity( interface_name, i ).gme_id() ;
             }
         }
-        return gme_t() ;
+        return GME::gme_t() ;
     }
 
     /*!
@@ -540,11 +545,12 @@ namespace {
         bool surf_side,
         GeoModelBuilderTSolid& geomodel_builder )
     {
-        geomodel_builder.add_entity_boundary( GME::gme_t( GME::REGION, region_id ),
-            GME::gme_t( GME::SURFACE, surface_id ), surf_side ) ;
-        geomodel_builder.add_entity_in_boundary(
-            GME::gme_t( GME::SURFACE, surface_id ),
-            GME::gme_t( GME::REGION, region_id ) ) ;
+        geomodel_builder.add_mesh_entity_boundary(
+            GME::gme_t( Region::type_name_, region_id ),
+            GME::gme_t( Surface::type_name_, surface_id ), surf_side ) ;
+        geomodel_builder.add_mesh_entity_in_boundary(
+            GME::gme_t( Surface::type_name_, surface_id ),
+            GME::gme_t( Region::type_name_, region_id ) ) ;
     }
 
     /*!
@@ -691,13 +697,11 @@ namespace {
     {
         for( index_t s = 0; s < nb_surfaces; ++s ) {
             if( surface_sides[2 * s] && !surface_sides[2 * s + 1] ) {
-                geomodel_builder.add_entity_boundary(
-                    GME::gme_t( GME::REGION, NO_ID ), GME::gme_t( GME::SURFACE, s ),
-                    false ) ;
+                geomodel_builder.add_universe_boundary(
+                    GME::gme_t( Surface::type_name_, s ), false ) ;
             } else if( !surface_sides[2 * s] && surface_sides[2 * s + 1] ) {
-                geomodel_builder.add_entity_boundary(
-                    GME::gme_t( GME::REGION, NO_ID ), GME::gme_t( GME::SURFACE, s ),
-                    true ) ;
+                geomodel_builder.add_universe_boundary(
+                    GME::gme_t( Surface::type_name_, s ), true ) ;
             }
         }
     }
@@ -919,11 +923,6 @@ namespace RINGMesh {
     }
 
     class LoadZSign: public TSolidLineParser {
-    public:
-        LoadZSign()
-            : TSolidLineParser()
-        {
-        }
     private:
         virtual void execute(
             const GEO::LineInput& line,
@@ -940,11 +939,6 @@ namespace RINGMesh {
     } ;
 
     class LoadRegion: public TSolidLineParser {
-    public:
-        LoadRegion()
-            : TSolidLineParser()
-        {
-        }
     private:
         virtual void execute(
             const GEO::LineInput& line,
@@ -970,18 +964,13 @@ namespace RINGMesh {
             const std::string& region_name,
             GeoModelBuilderTSolid& geomodel_builder )
         {
-            GME::gme_t cur_region = geomodel_builder.create_entity( GME::REGION ) ;
-            geomodel_builder.set_entity_name( cur_region, region_name ) ;
+            GME::gme_t cur_region = geomodel_builder.create_mesh_entity( Region::type_name_ ) ;
+            geomodel_builder.set_mesh_entity_name( cur_region, region_name ) ;
             return cur_region.index ;
         }
     } ;
 
     class LoadVertex: public TSolidLineParser {
-    public:
-        LoadVertex()
-            : TSolidLineParser()
-        {
-        }
     private:
         virtual void execute(
             const GEO::LineInput& line,
@@ -1024,11 +1013,6 @@ namespace RINGMesh {
     } ;
 
     class LoadAtomic: public TSolidLineParser {
-    public:
-        LoadAtomic()
-            : TSolidLineParser()
-        {
-        }
     private:
         virtual void execute(
             const GEO::LineInput& line,
@@ -1076,11 +1060,6 @@ namespace RINGMesh {
     } ;
 
     class LoadTetra: public TSolidLineParser {
-    public:
-        LoadTetra()
-            : TSolidLineParser()
-        {
-        }
     private:
         virtual void execute(
             const GEO::LineInput& line,
@@ -1115,11 +1094,6 @@ namespace RINGMesh {
     } ;
 
     class LoadName: public TSolidLineParser {
-    public:
-        LoadName()
-            : TSolidLineParser()
-        {
-        }
     private:
         virtual void execute(
             const GEO::LineInput& line,
@@ -1131,11 +1105,6 @@ namespace RINGMesh {
     } ;
 
     class LoadLastRegion: public TSolidLineParser {
-    public:
-        LoadLastRegion()
-            : TSolidLineParser()
-        {
-        }
     private:
         virtual void execute(
             const GEO::LineInput& line,
@@ -1150,29 +1119,19 @@ namespace RINGMesh {
     } ;
 
     class LoadInterface: public TSolidLineParser {
-    public:
-        LoadInterface()
-            : TSolidLineParser()
-        {
-        }
     private:
         virtual void execute(
             const GEO::LineInput& line,
             TSolidLoadingStorage& load_storage )
         {
-            GME::gme_t created_interface = builder().create_entity(
-                GME::INTERFACE ) ;
+            GME::gme_t created_interface = builder().create_geological_entity(
+                interface_name ) ;
             load_storage.cur_interface_ = created_interface.index ;
-            builder().set_entity_name( created_interface, line.field( 1 ) ) ;
+            builder().set_geological_entity_name( created_interface, line.field( 1 ) ) ;
         }
     } ;
 
     class LoadSurface: public TSolidLineParser {
-    public:
-        LoadSurface()
-            : TSolidLineParser()
-        {
-        }
     private:
         virtual void execute(
             const GEO::LineInput& line,
@@ -1183,22 +1142,17 @@ namespace RINGMesh {
                 build_surface( builder(), geomodel(), load_storage ) ;
             }
             // Create a new surface
-            GME::gme_t new_surface = builder().create_entity( GME::SURFACE ) ;
+            GME::gme_t new_surface = builder().create_mesh_entity( Surface::type_name_ ) ;
             load_storage.cur_surface_ = new_surface.index ;
-            builder().set_entity_parent( new_surface,
-                GME::gme_t( GME::INTERFACE, load_storage.cur_interface_ ) ) ;
-            builder().add_entity_child(
-                GME::gme_t( GME::INTERFACE, load_storage.cur_interface_ ),
+            builder().add_mesh_entity_parent( new_surface,
+                GME::gme_t( interface_name, load_storage.cur_interface_ ) ) ;
+            builder().add_geological_entity_child(
+                GME::gme_t( interface_name, load_storage.cur_interface_ ),
                 new_surface ) ;
         }
     } ;
 
     class LoadLastSurface: public TSolidLineParser {
-    public:
-        LoadLastSurface()
-            : TSolidLineParser()
-        {
-        }
     private:
         virtual void execute(
             const GEO::LineInput& line,
@@ -1212,11 +1166,6 @@ namespace RINGMesh {
     } ;
 
     class LoadTriangle: public TSolidLineParser {
-    public:
-        LoadTriangle()
-            : TSolidLineParser()
-        {
-        }
     private:
         virtual void execute(
             const GEO::LineInput& line,
@@ -1362,8 +1311,8 @@ namespace RINGMesh {
                             oss << file_line_.field( f++ ) ;
                         } while( f < file_line_.nb_fields() ) ;
                         // Create an interface and set its name
-                        set_entity_name( create_entity( GME::INTERFACE ),
-                            oss.str() ) ;
+                        set_geological_entity_name(
+                            create_geological_entity( interface_name ), oss.str() ) ;
 
                         nb_tsurf++ ;
                     } else if( file_line_.field_matches( 0, "TFACE" ) ) {
@@ -1421,24 +1370,30 @@ namespace RINGMesh {
                             }
                         }
 
-                        // By default the region id is the universe id
-                        gme_t region_id( GME::REGION, NO_ID ) ;
                         // Create the entity if it is not the universe
-                        if( name != "Universe" ) {
-                            region_id = create_entity( GME::REGION ) ;
-                        }
                         // Set the region name and boundaries
-                        set_entity_name( region_id, name ) ;
-                        for( index_t i = 0; i < region_boundaries.size(); ++i ) {
-                            add_entity_boundary( region_id,
-                                gme_t( GME::SURFACE, region_boundaries[i].first ),
-                                region_boundaries[i].second ) ;
+                        if( name != "Universe" ) {
+                            GME::gme_t region_id = create_mesh_entity( Region::type_name_ ) ;
+                            set_mesh_entity_name( region_id, name ) ;
+                            for( index_t i = 0; i < region_boundaries.size(); ++i ) {
+                                add_mesh_entity_boundary( region_id,
+                                    GME::gme_t( Surface::type_name_,
+                                        region_boundaries[i].first ),
+                                    region_boundaries[i].second ) ;
+                            }
+                        } else {
+                            for( index_t i = 0; i < region_boundaries.size(); ++i ) {
+                                add_universe_boundary(
+                                    GME::gme_t( Surface::type_name_,
+                                        region_boundaries[i].first ),
+                                    region_boundaries[i].second ) ;
+                            }
                         }
                     } else if( file_line_.field_matches( 0, "LAYER" ) ) {
                         /// 1.4 Build the volumetric layers from their name and
                         /// the ids of the regions they contain
-                        gme_t layer_id = create_entity( GME::LAYER ) ;
-                        set_entity_name( layer_id, file_line_.field( 1 ) ) ;
+                        GME::gme_t layer_id = create_geological_entity( layer_name ) ;
+                        set_geological_entity_name( layer_id, file_line_.field( 1 ) ) ;
                         bool end_layer = false ;
                         while( !end_layer ) {
                             file_line_.get_line() ;
@@ -1451,8 +1406,8 @@ namespace RINGMesh {
                                 } else {
                                     region_id -= nb_tface + 1 ; // Remove Universe region
                                     // Correction because ids begin at 1 in the file
-                                    add_entity_child( layer_id,
-                                        gme_t( GME::REGION, region_id - 1 ) ) ;
+                                    add_geological_entity_child( layer_id,
+                                        GME::gme_t( Region::type_name_, region_id - 1 ) ) ;
                                 }
                             }
                         }
@@ -1558,7 +1513,7 @@ namespace RINGMesh {
                         index_t v_id = file_line_.field_as_uint( 1 ) - 1 ;
                         if( !find_corner( model(), tsurf_vertices[v_id] ).is_defined() ) {
                             // Create the corner
-                            gme_t corner_gme = create_entity( GME::CORNER ) ;
+                            GME::gme_t corner_gme = create_mesh_entity( Corner::type_name_ ) ;
                             set_corner( corner_gme.index, tsurf_vertices[v_id] ) ;
                         }
                     }
@@ -1570,7 +1525,7 @@ namespace RINGMesh {
                         index_t p2 = file_line_.field_as_uint( 3 ) - 1 ;
 
                         // Get the global corner id
-                        gme_t corner_id = find_corner( model(), tsurf_vertices[p1] ) ;
+                        GME::gme_t corner_id = find_corner( model(), tsurf_vertices[p1] ) ;
                         ringmesh_assert( corner_id.is_defined() ) ;
 
                         // Get the surface
@@ -1627,9 +1582,9 @@ namespace RINGMesh {
                         << S.index() << std::endl ;
                 } else {
                     // 2 - Check if this border already exists
-                    gme_t line_id = find_or_create_line( line_vertices ) ;
+                    GME::gme_t line_id = find_or_create_line( line_vertices ) ;
                     // Add the surface in which this line is
-                    add_entity_in_boundary( line_id, S.gme_id() ) ;
+                    add_mesh_entity_in_boundary( line_id, S.gme_id() ) ;
                 }
             }
         } else {
@@ -1647,12 +1602,12 @@ namespace RINGMesh {
         for( index_t i = 0; i < change_key_facet.size(); i++ ) {
             const Surface& S = model().surface( change_key_facet[i] ) ;
             for( index_t j = 0; j < S.nb_in_boundary(); ++j ) {
-                Region& R = dynamic_cast< Region& >( entity(
+                Region& R = dynamic_cast< Region& >( mesh_entity(
                     S.in_boundary_gme( j ) ) ) ;
                 for( index_t b = 0; b < R.nb_boundaries(); ++b ) {
                     if( R.boundary_gme( b ).index == change_key_facet[i] ) {
                         bool old_side = R.side( b ) ;
-                        set_entity_boundary( R.gme_id(), b, R.boundary_gme( b ),
+                        set_mesh_entity_boundary( R.gme_id(), b, R.boundary_gme( b ),
                             !old_side ) ;
                     }
                 }
@@ -1760,7 +1715,7 @@ namespace RINGMesh {
      * @param[out] border_vertex_model_vertices Coordinates of the vertices on the Line (emptied and filled again)
      * @return Index of the Corner at which the Line ends
      */
-    gme_t GeoModelBuilderGocad::determine_line_vertices(
+    GME::gme_t GeoModelBuilderGocad::determine_line_vertices(
         const Surface& S,
         index_t id0,
         index_t id1,
@@ -1775,7 +1730,7 @@ namespace RINGMesh {
 //        ringmesh_assert( f != Surface::NO_ID ) ;
         if( f == NO_ID ) {
             border_vertex_model_vertices.resize( 0 ) ;
-            return gme_t() ;
+            return GME::gme_t() ;
         }
 
         vec3 p0 = S.vertex( id0 ) ;
@@ -1784,7 +1739,7 @@ namespace RINGMesh {
         border_vertex_model_vertices.push_back( p0 ) ;
         border_vertex_model_vertices.push_back( p1 ) ;
 
-        gme_t p1_corner = find_corner( model(), p1 ) ;
+        GME::gme_t p1_corner = find_corner( model(), p1 ) ;
         while( !p1_corner.is_defined() ) {
             index_t next_f = NO_ID ;
             index_t id1_in_next = NO_ID ;
@@ -1830,14 +1785,14 @@ namespace RINGMesh {
         const vec3& p1,
         const vec3& p2 )
     {
-        gme_t parent = find_interface( model(), interface_name ) ;
+        GME::gme_t parent = find_interface( model(), interface_name ) ;
         if( interface_name != "" ) {
             ringmesh_assert( parent.is_defined() ) ;
         }
 
-        gme_t id = create_entity( GME::SURFACE ) ;
-        set_entity_parent( id, parent ) ;
-        set_entity_geol_feature( parent, GME::determine_geological_type( type ) ) ;
+        GME::gme_t id = create_mesh_entity( Surface::type_name_ ) ;
+        add_mesh_entity_parent( id, parent ) ;
+        set_mesh_entity_geol_feature( parent, GME::determine_geological_type( type ) ) ;
         key_facets_.push_back( KeyFacet( p0, p1, p2 ) ) ;
     }
 

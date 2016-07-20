@@ -1871,7 +1871,7 @@ namespace RINGMesh {
                     continue ;
                 }
                 // Create a new region
-                gme_t cur_region_id = create_entity( GME::REGION ) ;
+                gme_t cur_region_id = create_mesh_entity( Region::type_name_ ) ;
                 // Get all oriented surfaces defining this region
                 std::stack< std::pair< index_t, bool > > SR ;
                 SR.push( cur ) ;
@@ -1884,8 +1884,8 @@ namespace RINGMesh {
                         continue ;
                     }
                     // Add the surface to the current region
-                    add_entity_boundary( cur_region_id,
-                        gme_t( GME::SURFACE, s.first ), s.second ) ;
+                    add_mesh_entity_boundary( cur_region_id,
+                        gme_t( Surface::type_name_, s.first ), s.second ) ;
                     surf_2_region[s_id] = cur_region_id.index ;
 
                     // Check the other side of the surface and push it in S
@@ -1895,7 +1895,7 @@ namespace RINGMesh {
                         S.push( std::pair< index_t, bool >( s.first, !s.second ) ) ;
                     }
                     // For each contact, push the next oriented surface that is in the same region
-                    const GeoModelEntity& surface = model().surface( s.first ) ;
+                    const Surface& surface = model().surface( s.first ) ;
                     for( index_t i = 0; i < surface.nb_boundaries(); ++i ) {
                         const std::pair< index_t, bool >& n =
                             regions_info_[surface.boundary_gme( i ).index]->next(
@@ -1936,8 +1936,8 @@ namespace RINGMesh {
             for( index_t i = 0; i < cur_region.nb_boundaries(); ++i ) {
                 // Fill the Universe region boundaries
                 // They are supposed to be empty
-                add_entity_boundary( gme_t( GME::REGION, NO_ID ),
-                    cur_region.boundary( i ).gme_id(), cur_region.side( i ) ) ;
+                add_universe_boundary( cur_region.boundary( i ).gme_id(),
+                    cur_region.side( i ) ) ;
             }
             std::set< gme_t > to_erase ;
             to_erase.insert( cur_region.gme_id() ) ;
@@ -1968,6 +1968,7 @@ namespace RINGMesh {
     /*!
      * @brief Build the Contacts
      * @details One contact is a group of lines shared by the same Interfaces
+     * @todo move to another Builder class (above gocad stuff)
      */
     void GeoModelBuilder::build_contacts()
     {
@@ -1977,31 +1978,31 @@ namespace RINGMesh {
             std::set< gme_t > cur_interfaces ;
             for( index_t j = 0; j < L.nb_in_boundary(); ++j ) {
                 cur_interfaces.insert(
-                    model().entity( L.in_boundary_gme( j ) ).parent().gme_id() ) ;
+                    model().mesh_entity( L.in_boundary_gme( j ) ).parent_id( "Interface" ) ) ;
             }
             gme_t contact_id ;
             for( index_t j = 0; j < interfaces.size(); ++j ) {
                 if( cur_interfaces.size() == interfaces[j].size()
                     && std::equal( cur_interfaces.begin(), cur_interfaces.end(),
                         interfaces[j].begin() ) ) {
-                    contact_id = gme_t( GME::CONTACT, j ) ;
+                    contact_id = gme_t( "Contact", j ) ;
                     break ;
                 }
             }
             if( !contact_id.is_defined() ) {
-                contact_id = create_entity( GME::CONTACT ) ;
+                contact_id = create_geological_entity( "Contact" ) ;
                 ringmesh_assert( contact_id.index == interfaces.size() ) ;
                 interfaces.push_back( cur_interfaces ) ;
                 // Create a name for this contact
                 std::string name = "contact_" ;
                 for( std::set< gme_t >::const_iterator it( cur_interfaces.begin() );
                     it != cur_interfaces.end(); ++it ) {
-                    name += model().entity( *it ).name() ;
+                    name += model().geological_entity( *it ).name() ;
                     name += "_" ;
                 }
-                set_entity_name( contact_id, name ) ;
+                set_geological_entity_name( contact_id, name ) ;
             }
-            add_entity_child( contact_id, gme_t( GME::LINE, i ) ) ;
+            add_geological_entity_child( contact_id, gme_t( Line::type_name_, i ) ) ;
         }
     }
 
@@ -2042,7 +2043,7 @@ namespace RINGMesh {
 
     void GeoModelBuilder::delete_corner_vertex( index_t corner_id )
     {
-        GME::gme_t corner( GME::CORNER, corner_id ) ;
+        GME::gme_t corner( Corner::type_name_, corner_id ) ;
         GEO::vector< index_t > to_delete ;
         to_delete.push_back( 1 ) ;
         delete_mesh_entity_vertices( corner, to_delete ) ;
@@ -2051,7 +2052,7 @@ namespace RINGMesh {
         index_t line_id,
         GEO::vector< index_t >& to_delete )
     {
-        Mesh& M = mesh_entity( GME::LINE, line_id ).mesh_ ;
+        Mesh& M = mesh_entity( Line::type_name_, line_id ).mesh_ ;
         MeshBuilder builder( M ) ;
         builder.delete_edges( to_delete, false ) ;
     }
@@ -2059,7 +2060,7 @@ namespace RINGMesh {
         index_t surface_id,
         GEO::vector< index_t >& to_delete )
     {
-        Mesh& M = mesh_entity( GME::SURFACE, surface_id ).mesh_ ;
+        Mesh& M = mesh_entity( Surface::type_name_, surface_id ).mesh_ ;
         MeshBuilder builder( M ) ;
         builder.delete_facets( to_delete, false ) ;
     }
@@ -2067,7 +2068,7 @@ namespace RINGMesh {
         index_t region_id,
         GEO::vector< index_t >& to_delete )
     {
-        Mesh& M = mesh_entity( GME::REGION, region_id ).mesh_ ;
+        Mesh& M = mesh_entity( Region::type_name_, region_id ).mesh_ ;
         MeshBuilder builder( M ) ;
         builder.delete_cells( to_delete, false ) ;
     }
@@ -2080,33 +2081,6 @@ namespace RINGMesh {
         : GeoModelBuilder( model ), filename_( filename )
     {
 
-    }
-
-    GME::TYPE GeoModelBuilderFile::match_nb_entities( const char* s )
-    {
-        // Check that the first 3 characters are NB_
-        if( strncmp( s, "NB_", 3 ) != 0 ) {
-            return GME::NO_TYPE ;
-        } else {
-            for( index_t i = GME::CORNER; i < GME::NO_TYPE; i++ ) {
-                GME::TYPE type = (GME::TYPE) i ;
-                if( strstr( s, GME::type_name( type ).data() ) != NULL ) {
-                    return type ;
-                }
-            }
-            return GME::NO_TYPE ;
-        }
-    }
-
-    GME::TYPE GeoModelBuilderFile::match_type( const char* s )
-    {
-        for( index_t i = GME::CORNER; i < GME::NO_TYPE; i++ ) {
-            GME::TYPE type = (GME::TYPE) i ;
-            if( strcmp( s, GME::type_name( type ).data() ) == 0 ) {
-                return type ;
-            }
-        }
-        return GME::NO_TYPE ;
     }
 
 } // namespace
