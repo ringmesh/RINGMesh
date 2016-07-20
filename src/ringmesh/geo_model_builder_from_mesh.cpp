@@ -147,7 +147,7 @@ namespace RINGMesh {
                 if( is_attribute_value( value ) ) {
                     attribute_value_to_gme_id_[value] = i ;
                 } else {
-                    GEO::Logger::err( "Debug" )
+                    Logger::err( "Debug" )
                         << "Invalid mapping between Mesh attribute and GeoModelEntity"
                         << std::endl ;
                     gme_id_to_attribute_value_[i] = NO_ID ;
@@ -753,7 +753,7 @@ namespace RINGMesh {
         const std::string& attribute_name )
     {
         if( !is_facet_attribute_defined< index_t >( mesh_, attribute_name ) ) {
-            GEO::Logger::warn( "GMBuilder" ) << "No INDEX_T attribute named "
+            Logger::warn( "GMBuilder" ) << "No INDEX_T attribute named "
                 << attribute_name << " on mesh facets to copy " << std::endl ;
             return ;
         }
@@ -770,7 +770,7 @@ namespace RINGMesh {
         const std::string& attribute_name )
     {
         if( !is_cell_attribute_defined< index_t >( mesh_, attribute_name ) ) {
-            GEO::Logger::warn( "GMBuilder" ) << "No INDEX_T attribute named "
+            Logger::warn( "GMBuilder" ) << "No INDEX_T attribute named "
                 << attribute_name << " on mesh cells to copy " << std::endl ;
             return ;
         }

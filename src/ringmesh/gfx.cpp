@@ -1808,15 +1808,15 @@ namespace RINGMesh {
         geogram_file_extensions_ = GEO::String::join_strings( geogram_extensions,
             ';' ) ;
 
-        GEO::Logger::div( "RINGMeshView" ) ;
-        GEO::Logger::out( "" ) << "Welcome to RINGMeshView !" << std::endl ;
-        GEO::Logger::out( "" ) << "People working on the project in RING"
+        Logger::div( "RINGMeshView" ) ;
+        Logger::out( "" ) << "Welcome to RINGMeshView !" << std::endl ;
+        Logger::out( "" ) << "People working on the project in RING"
             << std::endl ;
-        GEO::Logger::out( "" ) << "Arnaud Botella <arnaud.botella@univ-lorraine.fr> "
+        Logger::out( "" ) << "Arnaud Botella <arnaud.botella@univ-lorraine.fr> "
             << std::endl ;
-        GEO::Logger::out( "" )
+        Logger::out( "" )
             << "Benjamin Chauvin <benjamin.chauvin@univ-lorraine.fr> " << std::endl ;
-        GEO::Logger::out( "" )
+        Logger::out( "" )
             << "Antoine Mazuyer <antoine.mazuyer@univ-lorraine.fr> " << std::endl ;
     }
 

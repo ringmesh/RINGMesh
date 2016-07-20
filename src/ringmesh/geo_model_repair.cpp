@@ -163,7 +163,7 @@ namespace RINGMesh {
             Line& line = dynamic_cast<Line&>(entity( gme_t( GME::LINE, i ) ));
             index_t nb = repair_line_mesh( line ) ;
             if( nb > 0 ) {
-                GEO::Logger::out( "GeoModel" ) << nb
+                Logger::out( "GeoModel" ) << nb
                     << " degenerated edges removed in LINE " << i << std::endl ;
                 // If the Line is set it to remove
                 if( model().line( i ).nb_mesh_elements() == 0 ) {
@@ -335,7 +335,7 @@ namespace RINGMesh {
                             colocated[E.mesh_.edge_vertex( e_itr, 1 )] ) ;
                     }
                     builder.delete_vertices( to_delete, false ) ;
-                    GEO::Logger::out( "Repair" ) << nb_todelete
+                    Logger::out( "Repair" ) << nb_todelete
                         << " colocated vertices deleted in " << entity_id
                         << std::endl ;
                 }

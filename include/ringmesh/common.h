@@ -100,7 +100,7 @@ template< typename T > inline void ringmesh_unused( T const& )
 #include <geogram/basic/logger.h>
 
 #define DEBUG( a ) \
-    GEO::Logger::out( "Debug" ) << #a << " = " << a << std::endl
+    Logger::out( "Debug" ) << #a << " = " << a << std::endl
 
 #include <stdexcept>
 
@@ -117,10 +117,10 @@ namespace RINGMesh {
      *       try {
      *          ...
      *       } catch( const RINGMeshException& e ) {
-     *          GEO::Logger::err( e.category() ) << e.what() << std::endl ;
+     *          Logger::err( e.category() ) << e.what() << std::endl ;
      *       } catch( const std::exception& e ) {
      *          // Catch all others STL exceptions
-     *          GEO::Logger::err( "Exception" ) << e.what() << std::endl;
+     *          Logger::err( "Exception" ) << e.what() << std::endl;
      *       }
      */
     class RINGMESH_API RINGMeshException: public std::runtime_error {

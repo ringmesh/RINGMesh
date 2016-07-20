@@ -66,9 +66,9 @@ int main( int argc, char** argv )
         std::string log_file( ringmesh_test_output_path ) ;
         log_file += "log.txt" ;
         GEO::FileLogger* file_logger = new GEO::FileLogger( log_file ) ;
-        GEO::Logger::instance()->register_client( file_logger ) ;
+        Logger::instance()->register_client( file_logger ) ;
 
-        GEO::Logger::out( "RINGMesh Test" ) << "Loading and fixing structural model:"
+        Logger::out( "RINGMesh Test" ) << "Loading and fixing structural model:"
             << file_name << std::endl ;
 
         // Set the debug directory for the validity checks
@@ -86,7 +86,7 @@ int main( int argc, char** argv )
                 std::string fixed_file_name( ringmesh_test_output_path ) ;
                 fixed_file_name += M.name() + "_repaired.ml" ;
                 geomodel_save( M, fixed_file_name ) ;
-                GEO::Logger::out( "RINGMesh Test" ) << "Invalid geological model "
+                Logger::out( "RINGMesh Test" ) << "Invalid geological model "
                     << M.name()
                     << " has been successfully fixed and is saved under: "
                     << fixed_file_name << std::endl ;
@@ -97,16 +97,16 @@ int main( int argc, char** argv )
                         + " failed." ) ;
             }
         } else {
-            GEO::Logger::out( "RINGMesh Test" ) << "The geological model "
+            Logger::out( "RINGMesh Test" ) << "The geological model "
                 << M.name() << " is valid " << std::endl ;
             return 0 ;
         }
 
     } catch( const RINGMeshException& e ) {
-        GEO::Logger::err( e.category() ) << e.what() << std::endl ;
+        Logger::err( e.category() ) << e.what() << std::endl ;
         return 1 ;
     } catch( const std::exception& e ) {
-        GEO::Logger::err( "Exception" ) << e.what() << std::endl ;
+        Logger::err( "Exception" ) << e.what() << std::endl ;
         return 1 ;
     }
 }

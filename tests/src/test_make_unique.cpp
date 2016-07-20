@@ -55,7 +55,7 @@ int main()
         configure_geogram() ;
         configure_ringmesh() ;
 
-        GEO::Logger::out( "TEST" ) << "Test MakeUnique" << std::endl ;
+        Logger::out( "TEST" ) << "Test MakeUnique" << std::endl ;
 
         GeoModel in ;
         std::string input_model_file_name( ringmesh_test_data_path ) ;
@@ -96,20 +96,20 @@ int main()
         index_t ringmesh_nb = in.mesh.vertices.nb() ;
 
         if( ringmesh_nb != geo_nb ) {
-            GEO::Logger::out( "TEST" ) << "initial_nb=" << nb_non_unique_vertices
+            Logger::out( "TEST" ) << "initial_nb=" << nb_non_unique_vertices
                 << std::endl ;
-            GEO::Logger::out( "TEST" ) << "geo_nb=" << geo_nb << std::endl ;
-            GEO::Logger::out( "TEST" ) << "ringmesh_nb=" << ringmesh_nb
+            Logger::out( "TEST" ) << "geo_nb=" << geo_nb << std::endl ;
+            Logger::out( "TEST" ) << "ringmesh_nb=" << ringmesh_nb
                 << std::endl ;
             throw RINGMeshException( "TEST", "FAILED" ) ;
         }
     } catch( const RINGMeshException& e ) {
-        GEO::Logger::err( e.category() ) << e.what() << std::endl ;
+        Logger::err( e.category() ) << e.what() << std::endl ;
         return 1 ;
     } catch( const std::exception& e ) {
-        GEO::Logger::err( "Exception" ) << e.what() << std::endl ;
+        Logger::err( "Exception" ) << e.what() << std::endl ;
         return 1 ;
     }
-    GEO::Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
+    Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
     return 0 ;
 }

@@ -241,19 +241,19 @@ namespace RINGMesh {
                     message += "Please use ringmeshconvert to update this file. \n" ;
                     message +=
                         "ringmeshconvert in:geomodel=old_geomodel.gm out:geomodel=new_geomodel.gm" ;
-                    GEO::Logger::warn( "I/O" ) << message << std::endl ;
+                    Logger::warn( "I/O" ) << message << std::endl ;
                 }
             }
             unzip_one_file( uz, str_try.c_str() ) ;
             Mesh cur_mesh( model(), 3, false ) ;
             GEO::MeshIOFlags flags ;
             flags.set_attribute( GEO::MESH_ALL_ATTRIBUTES ) ;
-            GEO::Logger::instance()->set_minimal( true ) ;
+            Logger::instance()->set_minimal( true ) ;
             MeshBuilder builder(cur_mesh);
             builder.load_mesh( str_try, flags ) ;
             assign_mesh_to_entity( cur_mesh,
                 model().entity( gme_t, el ).gme_id() ) ;
-            GEO::Logger::instance()->set_minimal( false ) ;
+            Logger::instance()->set_minimal( false ) ;
 
             unzip_one_file( uz, str_try.c_str() ) ;
 

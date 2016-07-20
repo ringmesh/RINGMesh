@@ -61,12 +61,12 @@ int main()
         std::string log_file( ringmesh_test_output_path ) ;
         log_file += "log.txt" ;
         GEO::FileLogger* file_logger = new GEO::FileLogger( log_file ) ;
-        GEO::Logger::instance()->register_client( file_logger ) ;
+        Logger::instance()->register_client( file_logger ) ;
 
         std::string input_model_file_name( ringmesh_test_data_path ) ;
         input_model_file_name += "modelA6.ml" ;
 
-        GEO::Logger::out( "TEST" ) << "Geomodel input test. Loading file "
+        Logger::out( "TEST" ) << "Geomodel input test. Loading file "
             << input_model_file_name << std::endl ;
 
         GeoModel in ;
@@ -86,13 +86,13 @@ int main()
             throw RINGMeshException( "TEST", "FAILED" ) ;
         }
     } catch( const RINGMeshException& e ) {
-        GEO::Logger::err( e.category() ) << e.what() << std::endl ;
+        Logger::err( e.category() ) << e.what() << std::endl ;
         return 1 ;
     } catch( const std::exception& e ) {
-        GEO::Logger::err( "Exception" ) << e.what() << std::endl ;
+        Logger::err( "Exception" ) << e.what() << std::endl ;
         return 1 ;
     }
-    GEO::Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
+    Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
     return 0 ;
 
 }

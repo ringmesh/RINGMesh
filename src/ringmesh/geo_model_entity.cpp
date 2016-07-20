@@ -79,7 +79,7 @@ namespace {
         for( index_t i = 0; i < E.nb_vertices(); ++i ) {
             if( E.model_vertex_id( i ) == NO_ID
                 && E.model_vertex_id( i ) >= E.model().mesh.vertices.nb() ) {
-                GEO::Logger::warn( "GeoModelEntity" )
+                Logger::warn( "GeoModelEntity" )
                     << "Invalid model vertex index in " << E.gme_id() << std::endl ;
                 return false ;
             }
@@ -211,7 +211,7 @@ namespace {
     {
         std::ofstream out( file_name.c_str() ) ;
         if( out.bad() ) {
-            GEO::Logger::err( "I/O" ) << "Error when opening the file: "
+            Logger::err( "I/O" ) << "Error when opening the file: "
                 << file_name.c_str() << std::endl ;
             return ;
         }
@@ -328,7 +328,7 @@ namespace RINGMesh {
 /*        /// 1. Check the validity of identification information
         ///    in the model - Universe has no index, but a TYPE
         if( gme_id() == gme_t() ) {
-            GEO::Logger::err( "GeoModelEntity" ) << " Entity associated to model "
+            Logger::err( "GeoModelEntity" ) << " Entity associated to model "
                 << model().name() << "has no type and no index " << std::endl ;
             valid = false ;
         }
@@ -342,7 +342,7 @@ namespace RINGMesh {
         }
 
         if( index() >= model().nb_entities( type() ) ) {
-            GEO::Logger::warn( "GeoModelEntity" ) << " Entity index " << gme_id()
+            Logger::warn( "GeoModelEntity" ) << " Entity index " << gme_id()
                 << " is not valid " << " There are " << model().nb_entities( type() )
                 << " entity of that type in model " << model().name() << std::endl ;
             // This really should not happen
@@ -351,7 +351,7 @@ namespace RINGMesh {
             return valid ;
         }
         if( &( model().entity( gme_id() ) ) != this ) {
-            GEO::Logger::err( "GeoModelEntity" ) << " Entity " << gme_id()
+            Logger::err( "GeoModelEntity" ) << " Entity " << gme_id()
                 << " in model " << model().name() << " does not match this entity"
                 << std::endl ;
             // This really should not happen
@@ -369,14 +369,14 @@ namespace RINGMesh {
         if( boundary_allowed( T ) ) {
             if( T == REGION ) {
                 if( nb_boundaries() == 0 ) {
-                    GEO::Logger::warn( "GeoModelEntity" ) << gme_id()
+                    Logger::warn( "GeoModelEntity" ) << gme_id()
                         << " has no boundaries " << std::endl ;
                     valid = false ;
                 }
             }
             // A Line must have 2 corners - they are identical if the Line is closed
             if( T == LINE && nb_boundaries() != 2 ) {
-                GEO::Logger::warn( "GeoModelEntity" ) << gme_id()
+                Logger::warn( "GeoModelEntity" ) << gme_id()
                     << " does not have 2 corners" << std::endl ;
                 valid = false ;
             }
@@ -395,7 +395,7 @@ namespace RINGMesh {
                     j++ ;
                 }
                 if( !found ) {
-                    GEO::Logger::warn( "GeoModelEntity" )
+                    Logger::warn( "GeoModelEntity" )
                         << "Inconsistency boundary-in_boundary between " << gme_id()
                         << " and " << E.gme_id() << std::endl ;
                     valid = false ;
@@ -408,7 +408,7 @@ namespace RINGMesh {
             // Fix for a .ml for which VOI Surface are only on the boundary of Universe
             // Can we keep this ? Or should we compute the Region
             if( nb_in_boundary() == 0 ) {
-                GEO::Logger::warn( "GeoModelEntity" ) << gme_id()
+                Logger::warn( "GeoModelEntity" ) << gme_id()
                     << " is in the boundary of no entity " << std::endl ;
                 valid = false ;
             }
@@ -426,7 +426,7 @@ namespace RINGMesh {
                     j++ ;
                 }
                 if( !found ) {
-                    GEO::Logger::warn( "GeoModelEntity" )
+                    Logger::warn( "GeoModelEntity" )
                         << "Inconsistency in_boundary-boundary between " << gme_id()
                         << " and " << E.gme_id() << std::endl ;
                     valid = false ;
@@ -452,13 +452,13 @@ namespace RINGMesh {
                         j++ ;
                     }
                     if( !found ) {
-                        GEO::Logger::warn( "GeoModelEntity" )
+                        Logger::warn( "GeoModelEntity" )
                             << "Inconsistency parent-child between " << gme_id()
                             << " and " << E.gme_id() << std::endl ;
                         valid = false ;
                     }
                 } else {
-                    GEO::Logger::warn( "GeoModelEntity" ) << gme_id()
+                    Logger::warn( "GeoModelEntity" ) << gme_id()
                         << " has no geological parent entity " << std::endl ;
                     valid = false ;
                 }
@@ -468,7 +468,7 @@ namespace RINGMesh {
         // Children
         if( child_allowed( T ) ) {
             if( nb_children() == 0 ) {
-                GEO::Logger::warn( "GeoModelEntity" ) << gme_id()
+                Logger::warn( "GeoModelEntity" ) << gme_id()
                     << " has no children mesh entity, so no geometry "
                     << std::endl ;
                 valid = false ;
@@ -477,7 +477,7 @@ namespace RINGMesh {
             // All children must have this entity as a parent
             for( index_t i = 0; i < nb_children(); ++i ) {
                 if( child( i ).parent_id() != gme_id() ) {
-                    GEO::Logger::warn( "GeoModelEntity" )
+                    Logger::warn( "GeoModelEntity" )
                         << "Inconsistency child-parent between " << gme_id()
                         << " and " << child( i ).gme_id() << std::endl ;
                     valid = false ;

@@ -79,7 +79,7 @@ namespace {
         for( index_t i = 0; i < E.nb_vertices(); ++i ) {
             if( E.model_vertex_id( i ) == NO_ID
                 && E.model_vertex_id( i ) >= E.model().mesh.vertices.nb() ) {
-                GEO::Logger::warn( "GeoModelEntity" )
+                Logger::warn( "GeoModelEntity" )
                     << "Invalid model vertex index in " << E.gme_id() << std::endl ;
                 return false ;
             }
@@ -211,7 +211,7 @@ namespace {
     {
         std::ofstream out( file_name.c_str() ) ;
         if( out.bad() ) {
-            GEO::Logger::err( "I/O" ) << "Error when opening the file: "
+            Logger::err( "I/O" ) << "Error when opening the file: "
                 << file_name.c_str() << std::endl ;
             return ;
         }
@@ -346,7 +346,7 @@ namespace RINGMesh {
                 backward.end(), cur_v ) ) ;
 
             if( count_v != 1 ) {
-                GEO::Logger::warn( "GeoModelEntity" ) << gme_id() << " vertex " << v
+                Logger::warn( "GeoModelEntity" ) << gme_id() << " vertex " << v
                     << " appears " << count_v
                     << " in the related global model vertex " << model_v
                     << std::endl ;
@@ -420,29 +420,29 @@ namespace RINGMesh {
     {
         bool valid = true ;
         if( nb_vertices() != 1 ) {
-            GEO::Logger::err( "GeoModelEntity" ) << "Corner " << index()
+            Logger::err( "GeoModelEntity" ) << "Corner " << index()
                 << " mesh has " << mesh_.nb_vertices() << " vertices " << std::endl ;
             valid = false ;
         }
         if( mesh_.nb_edges() != 0 ) {
-            GEO::Logger::err( "GeoModelEntity" ) << "Corner " << index()
+            Logger::err( "GeoModelEntity" ) << "Corner " << index()
                 << " mesh has " << mesh_.nb_edges() << " edges " << std::endl ;
             valid = false ;
         }
         if( mesh_.nb_facets() != 0 ) {
-            GEO::Logger::err( "GeoModelEntity" ) << "Corner " << index()
+            Logger::err( "GeoModelEntity" ) << "Corner " << index()
                 << " mesh has " << mesh_.nb_facets() << " facets " << std::endl ;
             valid = false ;
         }
         if( mesh_.nb_cells() != 0 ) {
-            GEO::Logger::warn( "GeoModelEntity" ) << "Corner " << index()
+            Logger::warn( "GeoModelEntity" ) << "Corner " << index()
                 << " mesh has " << mesh_.nb_cells() << " cells " << std::endl ;
             valid = false ;
         }
         // The default point is (0., 0., 0.) and there might be a valid
         // Corner at this position.
         /*if( mesh_.vertices.point( 0 ) == vec3() ) {
-         GEO::Logger::warn( "GeoModelEntity" )
+         Logger::warn( "GeoModelEntity" )
          << "Corner " << index()
          << " point is default " << std::endl ;
          valid = false ;
@@ -483,22 +483,22 @@ namespace RINGMesh {
 
         // Check that the GEO::Mesh has the expected entities
         if( nb_vertices() < 2 ) {
-            GEO::Logger::err( "GeoModelEntity" ) << "Line " << index() << " has "
+            Logger::err( "GeoModelEntity" ) << "Line " << index() << " has "
                 << mesh_.nb_vertices() << " vertices " << std::endl ;
             valid = false ;
         }
         if( mesh_.nb_edges() == 0 ) {
-            GEO::Logger::err( "GeoModelEntity" ) << "Line " << index()
+            Logger::err( "GeoModelEntity" ) << "Line " << index()
                 << " mesh has " << mesh_.nb_edges() << " edges " << std::endl ;
             valid = false ;
         }
         if( mesh_.nb_facets() != 0 ) {
-            GEO::Logger::err( "GeoModelEntity" ) << "Line " << index()
+            Logger::err( "GeoModelEntity" ) << "Line " << index()
                 << " mesh has " << mesh_.nb_facets() << " facets " << std::endl ;
             valid = false ;
         }
         if( mesh_.nb_cells() != 0 ) {
-            GEO::Logger::err( "GeoModelEntity" ) << "Line " << index()
+            Logger::err( "GeoModelEntity" ) << "Line " << index()
                 << " mesh has " << mesh_.nb_cells() << " cells " << std::endl ;
             valid = false ;
         }
@@ -523,20 +523,20 @@ namespace RINGMesh {
 
             // Vertices at extremitites must be in only one edge
             if( nb.front() != 1 || nb.back() != 1 ) {
-                GEO::Logger::err( "GeoModelEntity" )
+                Logger::err( "GeoModelEntity" )
                     << "Invalid extremity points in " << gme_id() << std::endl ;
                 valid = false ;
             }
             // No isolated vertices are allowed
             if( nb0 > 0 ) {
-                GEO::Logger::warn( "GeoModelEntity" ) << nb0
+                Logger::warn( "GeoModelEntity" ) << nb0
                     << " isolated vertices in " << gme_id() << std::endl ;
                 valid = false ;
             }
             // Only the two extremities are in only 1 edge 
             // One connected component condition
             if( nb1 != 2 ) {
-                GEO::Logger::warn( "GeoModelEntity" )
+                Logger::warn( "GeoModelEntity" )
                     << "More than one connected component for " << gme_id()
                     << std::endl ;
                 valid = false ;
@@ -544,7 +544,7 @@ namespace RINGMesh {
             // All the others must be in 2 edges and 2 edges only
             // Manifold condition
             if( nb2 != nb.size() - 2 ) {
-                GEO::Logger::warn( "GeoModelEntity" ) << "Non-manifold entity"
+                Logger::warn( "GeoModelEntity" ) << "Non-manifold entity"
                     << gme_id() << std::endl ;
                 valid = false ;
             }
@@ -559,7 +559,7 @@ namespace RINGMesh {
             }
         }
         if( nb_degenerated > 0 ) {
-            GEO::Logger::warn( "GeoModelEntity" ) << nb_degenerated
+            Logger::warn( "GeoModelEntity" ) << nb_degenerated
                 << " degenerated edges in " << gme_id() << std::endl ;
             valid = false ;
         }
@@ -595,19 +595,19 @@ namespace RINGMesh {
         // Check that the GEO::Mesh has the expected entities
         // at least 3 vertices and one facet.
         if( nb_vertices() < 3 ) {
-            GEO::Logger::warn( "GeoModelEntity" ) << gme_id()
+            Logger::warn( "GeoModelEntity" ) << gme_id()
                 << " has less than 3 vertices " << std::endl ;
             valid = false ;
         }
         // Is it important to have edges or not ?
         // I would say we do not care (JP) - so no check on that 
         if( mesh_.nb_facets() == 0 ) {
-            GEO::Logger::warn( "GeoModelEntity" ) << gme_id() << " has no facets "
+            Logger::warn( "GeoModelEntity" ) << gme_id() << " has no facets "
                 << std::endl ;
             valid = false ;
         }
         if( mesh_.nb_cells() != 0 ) {
-            GEO::Logger::warn( "GeoModelEntity" ) << gme_id() << " has "
+            Logger::warn( "GeoModelEntity" ) << gme_id() << " has "
                 << mesh_.nb_cells() << " cells " << std::endl ;
             valid = false ;
         }
@@ -615,7 +615,7 @@ namespace RINGMesh {
         // No isolated vertices
         index_t nb_isolated_vertices = count_nb_isolated_vertices( *this ) ;
         if( nb_isolated_vertices > 0 ) {
-            GEO::Logger::warn( "GeoModelEntity" ) << gme_id() << " mesh has "
+            Logger::warn( "GeoModelEntity" ) << gme_id() << " mesh has "
                 << nb_isolated_vertices << " isolated vertices " << std::endl ;
             valid = false ;
         }
@@ -629,7 +629,7 @@ namespace RINGMesh {
             }
         }
         if( nb_degenerate != 0 ) {
-            GEO::Logger::warn( "GeoModelEntity" ) << gme_id() << " mesh has "
+            Logger::warn( "GeoModelEntity" ) << gme_id() << " mesh has "
                 << nb_degenerate << " degenerate facets " << std::endl ;
             valid = false ;
         }
@@ -644,7 +644,7 @@ namespace RINGMesh {
             }
         }
         if( nb_duplicated_f > 0 ) {
-            GEO::Logger::warn( "GeoModelEntity" ) << gme_id() << " mesh has "
+            Logger::warn( "GeoModelEntity" ) << gme_id() << " mesh has "
                 << nb_duplicated_f << " duplicated facets " << std::endl ;
             valid = false ;
         }
@@ -652,7 +652,7 @@ namespace RINGMesh {
         // One connected component  
         index_t cc = mesh_.nb_connected_components() ;
         if( cc != 1 ) {
-            GEO::Logger::warn( "GeoModelEntity" ) << gme_id() << " mesh has " << cc
+            Logger::warn( "GeoModelEntity" ) << gme_id() << " mesh has " << cc
                 << " connected components " << std::endl ;
             valid = false ;
 #ifdef RINGMESH_DEBUG
@@ -1064,7 +1064,7 @@ namespace RINGMesh {
             // Check that the GEO::Mesh has the expected entities
             // at least 4 vertices and one cell.
             if( mesh_.nb_vertices() < 4 ) {
-                GEO::Logger::warn( "GeoModelEntity" ) << gme_id()
+                Logger::warn( "GeoModelEntity" ) << gme_id()
                     << " has less than 4 vertices " << std::endl ;
                 valid = false ;
             }
@@ -1072,7 +1072,7 @@ namespace RINGMesh {
             // No isolated vertices
             index_t nb_isolated_vertices = count_nb_isolated_vertices( *this ) ;
             if( nb_isolated_vertices > 0 ) {
-                GEO::Logger::warn( "GeoModelEntity" ) << gme_id() << " mesh has "
+                Logger::warn( "GeoModelEntity" ) << gme_id() << " mesh has "
                     << nb_isolated_vertices << " isolated vertices " << std::endl ;
                 valid = false ;
             }
@@ -1086,7 +1086,7 @@ namespace RINGMesh {
                 }
             }
             if( nb_degenerate != 0 ) {
-                GEO::Logger::warn( "GeoModelEntity" ) << gme_id() << " mesh has "
+                Logger::warn( "GeoModelEntity" ) << gme_id() << " mesh has "
                     << nb_degenerate << " degenerate cells " << std::endl ;
                 valid = false ;
             }
@@ -1094,7 +1094,7 @@ namespace RINGMesh {
             // One connected component
             index_t cc = compute_nb_volume_connected_components( *this ) ;
             if( cc != 1 ) {
-                GEO::Logger::warn( "GeoModelEntity" ) << gme_id() << " mesh has "
+                Logger::warn( "GeoModelEntity" ) << gme_id() << " mesh has "
                     << cc << " connected components " << std::endl ;
                 valid = false ;
             }

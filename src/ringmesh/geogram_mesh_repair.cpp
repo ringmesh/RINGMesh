@@ -79,7 +79,7 @@ namespace {
     using GEO::Mesh ;
     using GEO::vector ;
     using GEO::signed_index_t ;
-    using GEO::Logger ;
+    using Logger ;
 
     index_t NO_FACET( NO_ID ) ;
 
@@ -1191,7 +1191,7 @@ namespace RINGMesh {
             return ;
         }
 
-        GEO::Logger::out( "GeoModel" ) << "Removing "
+        Logger::out( "GeoModel" ) << "Removing "
             << nb_colocated_vertices
             << " duplicated vertices" << std::endl;
 

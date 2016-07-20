@@ -303,11 +303,11 @@ namespace RINGMesh {
         if( !handler ) {
             std::vector< std::string > names ;
             GeoModelIOHandlerFactory::list_creators( names ) ;
-            GEO::Logger::err( "I/O" ) << "Currently supported file formats are: " ;
+            Logger::err( "I/O" ) << "Currently supported file formats are: " ;
             for( index_t i = 0; i < names.size(); i++ ) {
-                GEO::Logger::err( "I/O" ) << " " << names[i] ;
+                Logger::err( "I/O" ) << " " << names[i] ;
             }
-            GEO::Logger::err( "I/O" ) << std::endl ;
+            Logger::err( "I/O" ) << std::endl ;
 
             throw RINGMeshException( "I/O", "Unsupported file format: " + format ) ;
         }
@@ -330,7 +330,7 @@ namespace RINGMesh {
             }
             GeoModelBuilderBM builder( model, filename ) ;
             builder.build_model() ;
-            GEO::Logger::out( "I/O" ) << " Loaded model " << model.name() << " from "
+            Logger::out( "I/O" ) << " Loaded model " << model.name() << " from "
                 << filename << std::endl ;
             print_geomodel( model ) ;
             is_geomodel_valid( model ) ;
@@ -362,9 +362,9 @@ namespace RINGMesh {
                 GEO::Mesh& m = gm.region( r ).mesh() ;
                 std::string ext = GEO::FileSystem::extension( filename ) ;
                 if( ext == "meshb" ) {
-                    GEO::Logger::instance()->set_minimal( true ) ;
+                    Logger::instance()->set_minimal( true ) ;
                     GEO::mesh_load( GEO::String::to_string( filename ), m, flags ) ;
-                    GEO::Logger::instance()->set_minimal( false ) ;
+                    Logger::instance()->set_minimal( false ) ;
                 } else {
                     ringmesh_assert_not_reached;
                 }
@@ -398,9 +398,9 @@ namespace RINGMesh {
                 std::string name_mesh_file = "region_" + GEO::String::to_string( m )
                     + ".meshb" ;
 
-                GEO::Logger::instance()->set_quiet( true ) ;
+                Logger::instance()->set_quiet( true ) ;
                 GEO::mesh_save( cur_mesh, name_mesh_file, flags ) ;
-                GEO::Logger::instance()->set_quiet( false ) ;
+                Logger::instance()->set_quiet( false ) ;
 
                 zip_file( zf, name_mesh_file ) ;
 

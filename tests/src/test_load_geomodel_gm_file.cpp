@@ -56,7 +56,7 @@ int main()
         configure_geogram() ;
         configure_ringmesh() ;
 
-        GEO::Logger::out( "TEST" ) << "Test IO for a GeoModel in .bm" << std::endl ;
+        Logger::out( "TEST" ) << "Test IO for a GeoModel in .bm" << std::endl ;
 
         GeoModel in ;
         std::string input_model_file_name( ringmesh_test_data_path ) ;
@@ -77,12 +77,12 @@ int main()
             throw RINGMeshException( "TEST", "FAILED" ) ;
         }
     } catch( const RINGMeshException& e ) {
-        GEO::Logger::err( e.category() ) << e.what() << std::endl ;
+        Logger::err( e.category() ) << e.what() << std::endl ;
         return 1 ;
     } catch( const std::exception& e ) {
-        GEO::Logger::err( "Exception" ) << e.what() << std::endl ;
+        Logger::err( "Exception" ) << e.what() << std::endl ;
         return 1 ;
     }
-    GEO::Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
+    Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
     return 0 ;
 }
