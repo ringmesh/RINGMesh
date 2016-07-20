@@ -375,6 +375,11 @@ namespace RINGMesh {
             ringmesh_assert( i < nb_boundaries ) ;
             return boundary_surfaces_[i] ;
         }        
+        bool side( index_t i ) const
+        {
+            ringmesh_assert( i < nb_boundaries ) ;
+            return boundary_surface_sides_[i] ;
+        }
 
     private:
         std::vector< gme_t > boundary_surfaces_ ;
