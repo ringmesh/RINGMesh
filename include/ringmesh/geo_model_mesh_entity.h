@@ -133,6 +133,8 @@ namespace RINGMesh {
             ringmesh_assert( id < nb_parents() ) ;
             return parents_[id] ;
         }
+        const GeoModelGeologicalEntity& parent(
+            const std::string& parent_type_name ) const ;
         const gme_t& parent_id( const std::string& parent_type_name ) const ;
         const GeoModelGeologicalEntity& parent( index_t id ) const ;
 

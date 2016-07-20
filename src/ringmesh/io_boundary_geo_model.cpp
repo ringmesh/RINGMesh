@@ -48,6 +48,7 @@
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_api.h>
 #include <ringmesh/geo_model_builder.h>
+#include <ringmesh/geo_model_builder_gocad.h>
 #include <ringmesh/geo_model_entity.h>
 #include <ringmesh/geo_model_validity.h>
 #include <ringmesh/ringmesh_config.h>
@@ -60,6 +61,9 @@
 
 namespace {
     using namespace RINGMesh ;
+
+    const std::string interface_name = "Interface" ;
+    const std::string layer_name = "Layer" ;
 
     /*!
      * From a given file name (MyFile.ext), create a MyFile directory
@@ -124,6 +128,28 @@ namespace {
         out << "  0" << std::endl ;
     }
 
+    void save_universe( index_t count, const Universe& universe, std::ostream& out )
+    {
+        out << "REGION " << count << "  " << universe.name() << " " << std::endl ;
+        index_t it = 0 ;
+
+        for( index_t i = 0; i < universe.nb_boundaries(); ++i ) {
+            out << "  " ;
+            if( universe.side( i ) ) {
+                out << "+" ;
+            } else {
+                out << "-" ;
+            }
+            out << universe.boundary_gme( i ).index + 1 ;
+            it++ ;
+            if( it == 5 ) {
+                out << std::endl ;
+                it = 0 ;
+            }
+        }
+        out << "  0" << std::endl ;
+    }
+
     /*!
      * @brief Write information for on layer in a stream
      * @details Used by function to save the Model in a .ml file
@@ -136,7 +162,7 @@ namespace {
     void save_layer(
         index_t count,
         index_t offset,
-        const GeoModelEntity& layer,
+        const GeoModelGeologicalEntity& layer,
         std::ostream& out )
     {
         out << "LAYER " << layer.name() << " " << std::endl ;
@@ -175,13 +201,14 @@ namespace {
      */
     bool check_gocad_validity( const GeoModel& M )
     {
-        if( M.nb_interfaces() == 0 ) {
+        index_t nb_interfaces = M.nb_geological_entities( interface_name ) ;
+        if( nb_interfaces == 0 ) {
             Logger::err( "" ) << " The GeoModel " << M.name()
                 << " has no Interface" << std::endl ;
             return false ;
         }
-        for( index_t i = 0; i < M.nb_interfaces(); ++i ) {
-            const GME& E = M.one_interface( i ) ;
+        for( index_t i = 0; i < nb_interfaces; ++i ) {
+            const GME& E = M.geological_entity( interface_name, i ) ;
             if( !E.has_name() ) {
                 Logger::err( "" ) << E.gme_id() << " has no name" << std::endl ;
                 return false ;
@@ -251,8 +278,9 @@ namespace {
         save_coordinate_system( out ) ;
 
         // Gocad::TSurf = RINGMesh::Interface
-        for( index_t i = 0; i < M.nb_interfaces(); ++i ) {
-            out << "TSURF " << M.one_interface( i ).name() << std::endl ;
+        index_t nb_interfaces = M.nb_geological_entities( interface_name ) ;
+        for( index_t i = 0; i < nb_interfaces; ++i ) {
+            out << "TSURF " << M.geological_entity( interface_name, i ).name() << std::endl ;
         }
 
         index_t count = 1 ;
@@ -262,7 +290,7 @@ namespace {
             const Surface& s = M.surface( i ) ;
             out << "TFACE " << count << "  " ;
             out << GME::geol_name( s.geological_feature() ) ;
-            out << " " << s.parent().name() << std::endl ;
+            out << " " << s.parent( interface_name ).name() << std::endl ;
 
             // Print the key facet which is the first three
             // vertices of the first facet
@@ -274,7 +302,7 @@ namespace {
         }
         // Universe
         index_t offset_layer = count ;
-        save_region( count, M.universe(), out ) ;
+        save_universe( count, M.universe(), out ) ;
         ++count ;
         // Regions
         for( index_t i = 0; i < M.nb_regions(); ++i ) {
@@ -282,15 +310,16 @@ namespace {
             ++count ;
         }
         // Layers
-        for( index_t i = 0; i < M.nb_layers(); ++i ) {
-            save_layer( count, offset_layer, M.layer( i ), out ) ;
+        index_t nb_layers =  M.nb_geological_entities( layer_name ) ;
+        for( index_t i = 0; i < nb_layers; ++i ) {
+            save_layer( count, offset_layer, M.geological_entity( layer_name, i ), out ) ;
             ++count ;
         }
         out << "END" << std::endl ;
 
         // Save the geometry of the Surfaces, Interface per Interface
-        for( index_t i = 0; i < M.nb_interfaces(); ++i ) {
-            const GME& tsurf = M.one_interface( i ) ;
+        for( index_t i = 0; i < nb_interfaces; ++i ) {
+            const GeoModelGeologicalEntity& tsurf = M.geological_entity( interface_name, i ) ;
             // TSurf beginning header
             out << "GOCAD TSurf 1" << std::endl << "HEADER {" << std::endl << "name:"
                 << tsurf.name() << std::endl << "name_in_model_list:" << tsurf.name()
