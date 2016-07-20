@@ -242,6 +242,7 @@ namespace RINGMesh {
 
 
     const std::string GeoModelEntity::type_name_ = "No_entity_type" ;
+    const std::string Universe::type_name_ = "Universe" ;
     /*!
      * @brief Map the name of a geological type with a value of GEOL_FEATURE
      *
