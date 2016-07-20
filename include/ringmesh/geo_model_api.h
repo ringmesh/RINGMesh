@@ -213,7 +213,8 @@ namespace RINGMesh {
      * @brief Compute the size (volume, area, length) of an Entity
      * @param[in] E Entity to evaluate
      */
-    double RINGMESH_API model_entity_size( const GeoModelEntity& E ) ;
+    double RINGMESH_API model_entity_size( const GeoModelMeshEntity& E ) ;
+    double RINGMESH_API model_entity_size( const GeoModelGeologicalEntity& E ) ;
 
     /*!
      * Compute the size (volume, area, length) of an Entity cell (cell, facet, edge)
