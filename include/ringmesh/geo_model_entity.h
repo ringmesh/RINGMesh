@@ -335,14 +335,10 @@ namespace RINGMesh {
 
     typedef GeoModelEntity GME ;
 
-  
-
-    class RINGMESH_API Universe : public GeoModelEntity
-    {
+    class RINGMESH_API Universe: public GeoModelEntity {
+        friend class GeoModelEditor ;
     public:
-        friend GeoModelEditor ;
-
-        const std::string type_name_ = "Universe" ;
+        static const std::string type_name_ ;
         Universe( const GeoModel& model ) ;
         virtual ~Universe() {};
         
