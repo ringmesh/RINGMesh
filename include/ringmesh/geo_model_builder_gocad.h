@@ -40,6 +40,7 @@
 #include <ringmesh/geo_model_builder.h>
 
 #include <geogram/basic/factory.h>
+#include <geogram/basic/line_stream.h> 
 
 namespace RINGMesh {
     class GeoModelBuilderTSolid ;
