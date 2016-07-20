@@ -56,7 +56,6 @@
  */
 
 namespace RINGMesh {
-    class GeoModelRegionFromSurfaces ;
     class GeoModelEntityFromMesh ;
 }
 

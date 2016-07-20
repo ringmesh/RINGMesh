@@ -56,6 +56,10 @@
  */
 
 namespace RINGMesh {
+    class GeoModelRegionFromSurfaces ;
+}
+
+namespace RINGMesh {
     /*!
      * @brief First draft of flags to build a GeoModel
      * @todo Implements functions to set, access the values, depending on what ?
@@ -118,13 +122,13 @@ namespace RINGMesh {
          * \name Set entity geometry from geometrical positions
          * @{
          */
-        void set_entity_vertex(
+        void set_mesh_entity_vertex(
             const GME::gme_t& entity_id,
             index_t v,
             const vec3& point,
             bool update ) ;
 
-        void set_entity_vertices(
+        void set_mesh_entity_vertices(
             const GME::gme_t& entity_id,
             const std::vector< vec3 >& points,
             bool clear ) ;
@@ -148,12 +152,12 @@ namespace RINGMesh {
          * \name Set entity geometry using global GeoModel vertices
          * @{
          */
-        void set_entity_vertex(
+        void set_mesh_entity_vertex(
             const GME::gme_t& id,
             index_t v,
             index_t model_vertex ) ;
 
-        void set_entity_vertices(
+        void set_mesh_entity_vertices(
             const GME::gme_t& entity_id,
             const std::vector< index_t >& model_vertices,
             bool clear ) ;
@@ -208,7 +212,7 @@ namespace RINGMesh {
          * @{
          */
 
-        index_t create_entity_vertices(
+        index_t create_mesh_entity_vertices(
             const GME::gme_t& entity_id,
             index_t nb_vertices ) ;
 
@@ -231,8 +235,8 @@ namespace RINGMesh {
          * @{
          */
 
-        void delete_entity_mesh( GME::gme_t E_id ) ;
-        void delete_entity_vertices( GME::gme_t E_id, GEO::vector< index_t >& to_delete ) ;
+        void delete_mesh_entity_mesh( GME::gme_t E_id ) ;
+        void delete_mesh_entity_vertices( GME::gme_t E_id, GEO::vector< index_t >& to_delete ) ;
         void delete_corner_vertex( index_t corner_id ) ;
         void delete_line_edges( index_t line_id, GEO::vector< index_t >& to_delete ) ;
         void delete_surface_facets( index_t surface_id, GEO::vector< index_t >& to_delete ) ;
@@ -350,15 +354,6 @@ namespace RINGMesh {
         {
             load_file() ;
             end_model() ;
-        }
-
-        ///TODO these are temporary protected here. after they will be only in GeoModelBuilderGM
-    protected:
-        static GME::TYPE match_nb_entities( const char* s ) ;
-        static GME::TYPE match_type( const char* s ) ;
-        static bool match_high_level_type( const char* s )
-        {
-            return GME::child_allowed( match_type( s ) ) ;
         }
 
     private:

@@ -240,6 +240,24 @@ namespace RINGMesh {
      */
     vec3 RINGMESH_API model_entity_cell_center( const GeoModelMeshEntity& E, index_t c ) ;
 
+    /*-----------------------------------------------------------------------*/
+
+    /*!
+     * @brief Gets the index of the Corner for a given point
+     * @param[in] geomodel GeoModel to consider
+     * @param[in] point Geometric location to look for
+     * @return NO_ID or the index of the Corner
+     */
+    GME::gme_t RINGMESH_API find_corner( const GeoModel& geomodel, const vec3& point ) ;
+
+    /*!
+     * @brief Gets the index of the Corner at a given model point
+     * @param[in] geomodel GeoModel to consider
+     * @param[in] model_point_id Index of the point in the GeoModel
+     * @return NO_ID or the index of the Corner
+     */
+    GME::gme_t RINGMESH_API find_corner( const GeoModel& geomodel, index_t model_point_id ) ;
+
 }
 
 

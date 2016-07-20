@@ -290,6 +290,45 @@ namespace RINGMesh {
         }
     }
 
+    void GeoModelEditor::complete_mesh_entities_geol_feature_from_first_parent(
+        const std::string& type )
+    {
+        if( model().nb_mesh_entities( type ) == 0 ) return ;
+
+        const std::string& p_type = geological_entity( type, 0 ).parent_type( 0 ) ;
+        if( p_type != GME::type_name_ ) {
+            for( index_t i = 0; i < model().nb_mesh_entities( type ); ++i ) {
+                gme_t cur_gme = gme_t( p_type, i ) ;
+                const GeoModelMeshEntity& c = mesh_entity( cur_gme ) ;
+                if( !c.has_geological_feature() ) {
+                    if( c.nb_parents() > 0 && c.parent( 0 ).has_geological_feature() ) {
+                        c.geol_feature_ = c.parent( 0 ).geological_feature() ;
+                    }
+                }
+            }
+        }
+    }
+
+    void GeoModelEditor::complete_geological_entities_geol_feature_from_first_child(
+        const std::string& type )
+    {
+        if( model().nb_geological_entities( type ) == 0 ) return ;
+
+        const std::string& c_type = geological_entity( type, 0 ).child_type() ;
+        if( c_type != GME::type_name_ ) {
+            for( index_t i = 0; i < model().nb_geological_entities( type ); ++i ) {
+                gme_t cur_gme = gme_t( c_type, i ) ;
+                const GeoModelGeologicalEntity& p = geological_entity( cur_gme ) ;
+                if( !p.has_geological_feature() ) {
+                    if( p.nb_children() > 0 && p.child( 0 ).has_geological_feature() ) {
+                        p.geol_feature_ = p.child( 0 ).geological_feature() ;
+                    }
+                }
+            }
+        }
+    }
+
+
     /*!
      * @brief Add to the vector the entities which cannot exist if
      *        an entity in the set does not exist.

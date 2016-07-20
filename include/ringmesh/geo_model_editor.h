@@ -167,6 +167,12 @@ namespace RINGMesh {
          */
         void fill_geological_entities_children( const std::string& type ) ;
 
+
+        void complete_mesh_entities_geol_feature_from_first_parent(
+            const std::string& type ) ;
+        void complete_geological_entities_geol_feature_from_first_child(
+            const std::string& type ) ;
+
         void set_mesh_entity_name( const GME::gme_t& t, const std::string& name )
         {
             mesh_entity( t ).name_ = name ;
@@ -222,6 +228,27 @@ namespace RINGMesh {
             if( t.type == Region::type_name_ ) {
                 dynamic_cast< Region& >( mesh ).sides_[id] = side ;
             }
+        }
+
+        void add_universe_boundary(
+            const GME::gme_t& boundary,
+            bool side )
+        {
+            ringmesh_assert( boundary.is_defined() ) ;
+            model().universe_.boundary_surfaces_.push_back( boundary ) ;
+            model().universe_.boundary_surface_sides_.push_back( side ) ;
+        }
+
+        void set_universe_boundary(
+            index_t id,
+            const GME::gme_t& boundary,
+            bool side )
+        {
+            /// No check on the validity of the index of the entity boundary
+            /// NO_ID is used to flag entities to delete
+            ringmesh_assert( id < model().universe_.nb_boundaries() ) ;
+            model().universe_.boundary_surfaces_[id] = boundary ;
+            model().universe_.boundary_surface_sides_[id] = side ;
         }
 
         void add_mesh_entity_in_boundary(

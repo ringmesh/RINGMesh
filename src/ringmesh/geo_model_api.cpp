@@ -806,5 +806,23 @@ namespace RINGMesh {
     }
 #endif
 
+    gme_t find_corner( const GeoModel& geomodel, const vec3& point )
+    {
+        for( index_t i = 0; i < geomodel.nb_corners(); ++i ) {
+            if( geomodel.corner( i ).vertex( 0 ) == point ) {
+                return gme_t( Corner::type_name_, i ) ;
+            }
+        }
+        return gme_t() ;
+    }
 
+    gme_t find_corner( const GeoModel& geomodel, index_t model_point_id )
+    {
+        for( index_t i = 0; i < geomodel.nb_corners(); ++i ) {
+            if( geomodel.corner( i ).model_vertex_id() == model_point_id ) {
+                return gme_t( Corner::type_name_, i ) ;
+            }
+        }
+        return gme_t() ;
+    }
 }

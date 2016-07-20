@@ -292,6 +292,45 @@ namespace {
      */
 
     /*!
+     * @brief Gets the index of an Interface from its name
+     * @param[in] geomodel GeoModel to consider
+     * @param[in] interface_name Name of the interface to find
+     * @return Index of the interface in the model, NO_ID if not found.
+     */
+    gme_t find_interface(
+        const GeoModel& geomodel,
+        const std::string& interface_name )
+    {
+        for( index_t i = 0; i < geomodel.nb_interfaces(); ++i ) {
+            if( geomodel.one_interface( i ).name() == interface_name ) {
+                return geomodel.one_interface( i ).gme_id() ;
+            }
+        }
+        return gme_t() ;
+    }
+
+    /*!
+     * @brief Structure used to build Line by GeoModelBuilderGocad
+     */
+    struct Border {
+        Border( index_t part, index_t corner, index_t p0, index_t p1 )
+            : part_id_( part ), corner_id_( corner ), p0_( p0 ), p1_( p1 )
+        {
+        }
+
+        // Id of the Surface owning this Border
+        index_t part_id_ ;
+
+        // Id of p0 in the GeoModel corner vector
+        index_t corner_id_ ;
+
+        // Ids of the starting corner and second vertex on the border in the Surface
+        // to which this Border belong
+        index_t p0_ ;
+        index_t p1_ ;
+    } ;
+
+    /*!
      * @brief Gets the coordinates of the point from gocad index
      * @param[in] geomodel GeoModel to consider
      * @param[in] vertex_map Map between Gocad and GeoModel vertex indices
