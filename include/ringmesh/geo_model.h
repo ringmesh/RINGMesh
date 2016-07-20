@@ -178,7 +178,19 @@ namespace RINGMesh {
          */
         const GeoModelMeshEntity& mesh_entity( GME::gme_t id ) const
         {
-            return dynamic_cast< const GeoModelMeshEntity& >( mesh_entity( id ) ) ;
+            const std::string& type = id.type ;
+            index_t index = id.index ;
+            if( type == Corner::type_name_ ) {
+                return corner( index ) ;
+            } else if( type == Line::type_name_ ) {
+                return line( index ) ;
+            } else if( type == Surface::type_name_ ) {
+                return surface( index ) ;
+            } else if( type == Region::type_name_ ) {
+                return region( index ) ;
+            }
+            ringmesh_assert_not_reached ;
+            return surface( 0 );
         }
 
         /*!
