@@ -45,6 +45,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 
 #include <ringmesh/mesh.h>
 
@@ -55,12 +56,58 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
+
+    /*!  
+     * @brief Manages the type relationship between GeoModelEntities
+     * One instance owned by the GeoModel.
+     */
+    class RINGMESH_API EntityRelationships {
+    public:
+        void register_child_type( const std::string& parent_type_name, 
+            const std::string& child_type_name )
+        {
+            parent_to_child_[parent_type_name] = child_type_name ;
+        }
+
+        void register_parent_type( const std::string& parent_type_name,
+            const std::string& child_type_name )
+        {
+            child_to_parents_[child_type_name].push_back( parent_type_name ) ;
+        }
+
+        const std::vector< std::string >& parent_types( const std::string& child_type ) const 
+        {
+            std::map< std::string, std::vector< std::string > >::const_iterator
+                itr = child_to_parents_.find( child_type );
+            return itr->second ;
+        }
+        index_t nb_parent_types( const std::string& child_type ) const
+        {
+            return parent_types( child_type ).size() ;
+        }
+        const std::string parent_type( const std::string child_type, index_t i ) const
+        {
+            return  parent_types( child_type )[i] ;
+        } 
+
+        const std::string& child_type( const std::string& parent_type ) const
+        {
+           std::map< std::string, std::string >::const_iterator
+                itr = parent_to_child_.find( parent_type );
+           return itr->second ;
+        }
+
+    private:
+        std::map< std::string, std::string > parent_to_child_ ;
+        std::map< std::string, std::vector< std::string > > child_to_parents_ ;
+    };
+
     /*!
      * @brief Generic class describing one entity of a GeoModel
      * 
      */
     class RINGMESH_API GeoModelEntity {
-    ringmesh_disable_copy( GeoModelEntity ) ;
+   // ringmesh_disable_copy( GeoModelEntity ) ;
         friend class GeoModelEditor ;
     public:
         /*!
@@ -190,7 +237,7 @@ namespace RINGMesh {
          * \name Key functions to access relationships between TYPEs 
          * @{
          */
-        virtual std::string type_name() const = 0 ;
+        virtual const std::string& type_name() const = 0 ;
 
         /*!@}
          */
@@ -254,7 +301,6 @@ namespace RINGMesh {
         }
         virtual bool is_on_voi() const = 0 ;
 
-
     protected:
         /*!
          * @brief Constructs a GeoModelEntity
@@ -291,7 +337,6 @@ namespace RINGMesh {
 
         /// Geological feature of this object - default is NO_GEOL
         GEOL_FEATURE geol_feature_ ;
-
     } ;
 
     typedef GeoModelEntity GME ;
@@ -314,7 +359,6 @@ namespace RINGMesh {
         {
         }
         
-
     public:
         index_t nb_children() const
         {
@@ -325,11 +369,10 @@ namespace RINGMesh {
             return children_[x] ;
         }
         const GeoModelMeshEntity& child( index_t x ) const ;
-        virtual const std::string& child_type() const = 0;
+     
     protected:
         /// Entities constituting this one - see child_type( TYPE )
         std::vector< gme_t > children_ ;
-
     } ;
 
     class RINGMESH_API Universe : public GeoModelEntity
@@ -337,21 +380,18 @@ namespace RINGMesh {
     public:
         const std::string& type_name_ ;
         Universe( const GeoModel& model ) ;
-        virtual ~Universe()
-        {};
+        virtual ~Universe() {};
         bool is_valid() const
         {
             return false ;
         }
-
         bool is_on_voi() const
         {
             return true ;
         }
-
-        std::string type_name() const
+        const std::string& type_name() const
         {
-            return "Universe" ;
+            return type_name_ ;
         }
         index_t nb_boundaries() const
         {
@@ -361,7 +401,7 @@ namespace RINGMesh {
         {
             ringmesh_assert( i < nb_boundaries ) ;
             return boundary_surfaces_[i] ;
-        }
+        }        
 
     private:
         std::vector< gme_t > boundary_surfaces_ ;
@@ -430,7 +470,6 @@ namespace RINGMesh {
             model_vertex_id_.bind( mesh_.vertex_attribute_manager(),
                 model_vertex_id_att_name() ) ;
         }
-
         
     public:        
         virtual const std::string& boundary_type() const = 0 ;
@@ -709,6 +748,12 @@ namespace RINGMesh {
         virtual const std::string& in_boundary_type() const ;
         virtual const std::string& boundary_type() const ;
         virtual bool is_on_voi() const ;
+
+        virtual const std::string& type_name() const
+        {
+            return type_name_ ;
+        }
+
         
         /*!
          * @brief Get the index of the unique vertex constituting of the Corner.
@@ -776,6 +821,11 @@ namespace RINGMesh {
         virtual const std::string& in_boundary_type() const ;
         virtual const std::string& boundary_type() const ;
         virtual bool is_on_voi() const ;
+          virtual const std::string& type_name() const
+        {
+            return type_name_ ;
+        }
+
         
         virtual index_t vertex_index (index_t corner_index) const {
             return mesh_.edge_vertex(corner_index/2, corner_index%2) ;
@@ -866,6 +916,11 @@ namespace RINGMesh {
         virtual const std::string& in_boundary_type() const ;
         virtual const std::string& boundary_type() const ;
         virtual bool is_on_voi() const ;
+          virtual const std::string& type_name() const
+        {
+            return type_name_ ;
+        }
+
         
         bool is_simplicial() const
         {
@@ -1133,6 +1188,11 @@ namespace RINGMesh {
         virtual const std::string& in_boundary_type() const ;
         virtual const std::string& boundary_type() const ;
         virtual bool is_on_voi() const ;
+        virtual const std::string& type_name() const
+        {
+            return type_name_ ;
+        }
+
         
 
         bool is_meshed() const

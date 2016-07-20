@@ -96,7 +96,6 @@ namespace RINGMesh {
 
     /*! 
      * @brief Bind named GEO::Attribute on the GeoModel entity facets
-     * @warning It is up to the client to unbind the attribute    
      * @pre Entities of geomodel_entity_type are GeoModelMeshEntity
      */
     template< typename T >
@@ -117,7 +116,6 @@ namespace RINGMesh {
 
     /*!
      * @brief Bind named GEO::Attribute on the GeoModel entities cells
-     * @warning It is up to the client to unbind the attribute
      * @pre Entities of mesh_entity_type are GeoModelMeshEntity
      */
     template< typename T >
