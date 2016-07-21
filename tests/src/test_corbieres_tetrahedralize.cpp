@@ -71,7 +71,7 @@ int main( int argc, char** argv )
 
         /*! @todo Make this executable generic by setting
          *   the file name as an argument of the command */
-        file_name += "modelA1.ml" ;
+        file_name += "modelA5.ml" ;
 
         // Set the debug directory for the validity checks
         set_validity_errors_directory( ringmesh_test_output_path ) ;
