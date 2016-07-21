@@ -84,6 +84,7 @@ namespace RINGMesh {
         {
             std::map< std::string, std::set< std::string > >::const_iterator
                 itr = child_to_parents_.find( child_type );
+            ringmesh_assert( itr != child_to_parents_.end() ) ;
             return itr->second ;
         }
         index_t nb_parent_types( const std::string& child_type ) const
@@ -104,12 +105,32 @@ namespace RINGMesh {
         {
            std::map< std::string, std::string >::const_iterator
                 itr = parent_to_child_.find( parent_type );
+           ringmesh_assert( itr != parent_to_child_.end() ) ;
            return itr->second ;
         }
+        const std::string& boundary_type( const std::string& mesh_type ) const
+        {
+           std::map< std::string, std::string >::const_iterator
+                itr = mesh_entity_to_boundary_.find( mesh_type );
+           ringmesh_assert( itr != mesh_entity_to_boundary_.end() ) ;
+           return itr->second ;
+        }
+        const std::string& in_boundary_type( const std::string& mesh_type ) const
+        {
+           std::map< std::string, std::string >::const_iterator
+                itr = mesh_entity_to_in_boundary_.find( mesh_type );
+           ringmesh_assert( itr != mesh_entity_to_in_boundary_.end() ) ;
+           return itr->second ;
+        }
+        static std::map< std::string, std::string > create_boundary_map() ;
+        static std::map< std::string, std::string > create_in_boundary_map() ;
 
     private:
         std::map< std::string, std::string > parent_to_child_ ;
         std::map< std::string, std::set< std::string > > child_to_parents_ ;
+
+        static std::map< std::string, std::string > mesh_entity_to_boundary_ ;
+        static std::map< std::string, std::string > mesh_entity_to_in_boundary_ ;
     };
 
     /*!
