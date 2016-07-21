@@ -498,7 +498,8 @@ namespace {
         for( index_t i = 0; i < E.nb_children(); ++i ) {
             for( index_t j = 0; j < E.child( i ).nb_in_boundary(); ++j ) {
                 in_boundary.push_back(
-                    E.child( i ).in_boundary( j ).parent_id( Layer::type_name_static() ) ) ;
+                    E.child( i ).in_boundary( j ).parent_id(
+                        Layer::type_name_static() ) ) ;
             }
         }
         // Remove duplicates
