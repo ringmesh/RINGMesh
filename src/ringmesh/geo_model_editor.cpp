@@ -73,19 +73,23 @@ namespace RINGMesh {
     {
         assert_entity_creation_allowed() ;
         if( type == Corner::type_name_static() ) {
-            Corner* corner = new Corner( model(), model_.corners_.size() ) ;
+            index_t id = static_cast< index_t >( model_.corners_.size() ) ;
+            Corner* corner = new Corner( model(), id ) ;
             model_.corners_.push_back( corner ) ;
             return corner->gme_id() ;
         } else if( type == Line::type_name_static() ) {
-            Line* line = new Line( model(), model_.lines_.size() ) ;
+            index_t id = static_cast< index_t >( model_.lines_.size() ) ;
+            Line* line = new Line( model(), id ) ;
             model_.lines_.push_back( line ) ;
             return line->gme_id() ;
         } else if( type == Surface::type_name_static() ) {
-            Surface* surface = new Surface( model(), model_.surfaces_.size() ) ;
+            index_t id = static_cast< index_t >( model_.surfaces_.size() ) ;
+            Surface* surface = new Surface( model(), id ) ;
             model_.surfaces_.push_back( surface ) ;
             return surface->gme_id() ;
         } else if( type == Region::type_name_static() ) {
-            Region* region = new Region( model(), model_.regions_.size() ) ;
+            index_t id = static_cast< index_t >( model_.regions_.size() ) ;
+            Region* region = new Region( model(), id ) ;
             model_.regions_.push_back( region ) ;
             return region->gme_id() ;
         } else {
