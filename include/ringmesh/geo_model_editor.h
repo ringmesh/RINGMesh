@@ -304,7 +304,7 @@ namespace RINGMesh {
         {
             ringmesh_assert( child_index.is_defined() ) ;
             GeoModelGeologicalEntity& entity = geological_entity( t ) ;
-            ringmesh_assert( entity.child_type() == child_index.type ) ;
+            ringmesh_assert( entity.child_type_name() == child_index.type ) ;
             entity.children_.push_back( child_index ) ;
         }
 
@@ -316,7 +316,7 @@ namespace RINGMesh {
             /// No check on the validity of the index of the entity child_index
             /// NO_ID is used to flag entities to delete
             GeoModelGeologicalEntity& entity = geological_entity( t ) ;
-            ringmesh_assert( entity.child_type() == child_index.type ) ;
+            ringmesh_assert( entity.child_type_name() == child_index.type ) ;
             entity.children_[id] = child_index ;
         }
 

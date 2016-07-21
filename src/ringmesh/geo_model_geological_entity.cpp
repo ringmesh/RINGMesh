@@ -41,6 +41,7 @@
 #include <ringmesh/geo_model_geological_entity.h>
 
 #include <ringmesh/geo_model.h>
+#include <ringmesh/io.h>
 
 namespace RINGMesh {
 
@@ -49,4 +50,42 @@ namespace RINGMesh {
         return model().mesh_entity( child_id( x ) ) ;
     }
 
+    bool GeoModelGeologicalEntity::is_on_voi() const
+    {
+        for( index_t i = 0; i < nb_children(); i++ ) {
+            if( !child( i ).is_on_voi() ) return false ;
+        }
+        return true ;
+    }
+    class MSHIOHandler2: public GeoModelIOHandler {
+    public:
+        virtual void load( const std::string& filename, GeoModel& geomodel )
+        {
+            throw RINGMeshException( "I/O",
+                "Loading of a GeoModel from GMSH not implemented yet" ) ;
+        }
+        virtual void save( const GeoModel& gm, const std::string& filename )
+        {
+            /// @todo after implementing GMMOrder
+            throw RINGMeshException( "I/O",
+                "Saving of a GeoModel from GMSH not implemented yet" ) ;
+//                gm.set_duplicate_mode( FAULT ) ;
+
+            std::ofstream out( filename.c_str() ) ;
+            out.precision( 16 ) ;
+
+            out << "$MeshFormat" << std::endl ;
+            out << "2.2 0 8" << std::endl ;
+            out << "$EndMeshFormat" << std::endl ;
+
+            out << "$Nodes" << std::endl ;
+        }
+    } ;
+
+    void GeoModelGeologicalEntity::initialize()
+    {
+        ringmesh_register_GeoModelGeologicalEntity_creator( Contact ) ;
+        ringmesh_register_GeoModelGeologicalEntity_creator( Interface ) ;
+        ringmesh_register_GeoModelGeologicalEntity_creator( Layer ) ;
+    }
 }
