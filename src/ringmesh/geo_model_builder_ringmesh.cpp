@@ -68,10 +68,10 @@ namespace {
 
     bool match_mesh_entity_type( const std::string& type )
     {
-        if( type == Corner::type_name_ ) return true ;
-        if( type == Line::type_name_ ) return true ;
-        if( type == Surface::type_name_ ) return true ;
-        if( type == Region::type_name_ ) return true ;
+        if( type == Corner::type_name_static() ) return true ;
+        if( type == Line::type_name_static() ) return true ;
+        if( type == Surface::type_name_static() ) return true ;
+        if( type == Region::type_name_static() ) return true ;
         return false ;
     }
 }
@@ -116,7 +116,7 @@ namespace RINGMesh {
                     // Read second line
                     file_line.get_line() ;
                     file_line.get_fields() ;
-                    if( type == Region::type_name_ ) {
+                    if( type == Region::type_name_static() ) {
                         // Second line : signed indices of boundaries
                         for( index_t c = 0; c < file_line.nb_fields(); c++ ) {
                             bool side = false ;
@@ -127,7 +127,7 @@ namespace RINGMesh {
                             GEO::String::from_string( &file_line.field( c )[1], s ) ;
 
                             add_mesh_entity_boundary( entity,
-                                GME::gme_t( Surface::type_name_, s ), side ) ;
+                                GME::gme_t( Surface::type_name_static(), s ), side ) ;
                         }
                     } else {
                         // Second line : indices of its in boundaries
@@ -151,7 +151,7 @@ namespace RINGMesh {
                         index_t s = NO_ID ;
                         GEO::String::from_string( &file_line.field( c )[1], s ) ;
 
-                        add_universe_boundary( GME::gme_t( Surface::type_name_, s ),
+                        add_universe_boundary( GME::gme_t( Surface::type_name_static(), s ),
                             side ) ;
                     }
                 }
@@ -173,10 +173,10 @@ namespace RINGMesh {
         load_mesh_entities( line_mesh_entity ) ;
         GEO::FileSystem::delete_file( mesh_entity_file ) ;
 
-        load_meshes( Corner::type_name_, uz ) ;
-        load_meshes( Line::type_name_, uz ) ;
-        load_meshes( Surface::type_name_, uz ) ;
-        load_meshes( Region::type_name_, uz ) ;
+        load_meshes( Corner::type_name_static(), uz ) ;
+        load_meshes( Line::type_name_static(), uz ) ;
+        load_meshes( Surface::type_name_static(), uz ) ;
+        load_meshes( Region::type_name_static(), uz ) ;
 
         const std::string geological_entity_file( "geological_entities.txt" ) ;
         unzip_one_file( uz, geological_entity_file.c_str() ) ;
@@ -220,7 +220,7 @@ namespace RINGMesh {
                 file_to_extract_and_load ) ;
             std::string filename = file_to_extract_and_load + ".geogram" ;
             if( unzLocateFile( uz, filename.c_str(), 0 ) != UNZ_OK ) {
-                if( type != Region::type_name_ ) {
+                if( type != Region::type_name_static() ) {
                     std::string message = "Invalid format of .gm file" ;
                     message += "\n.geogram file (defining mesh) is missing." ;
                     throw RINGMeshException( "I/O", message ) ;

@@ -174,9 +174,9 @@ namespace {
         // No sorting to optimize since 
         // v0_bme and v1_bme are very small sets ( < 10 entities ) [JP]
         for( index_t i = 0; i < v0_bme.size(); ++i ) {
-            if( v0_bme[i].gme_id.type == Line::type_name_ ) {
+            if( v0_bme[i].gme_id.type == Line::type_name_static() ) {
                 for( index_t j = 0; j < v1_bme.size(); ++j ) {
-                    if( v1_bme[j].gme_id.type == Line::type_name_
+                    if( v1_bme[j].gme_id.type == Line::type_name_static()
                         && v0_bme[i].gme_id.index == v1_bme[j].gme_id.index ) {
                         if( lv0 == NO_ID ) {
                             lv0 = v0_bme[i].v_id ;
@@ -531,7 +531,7 @@ namespace {
 
         // Build facets
         for( index_t i = 0; i < nb_borders; ++i ) {
-            ringmesh_assert( borders[i].type == Surface::type_name_ ) ;
+            ringmesh_assert( borders[i].type == Surface::type_name_static() ) ;
             const Surface& S = model.surface( borders[i].index ) ;
             for( index_t f = 0; f < S.nb_mesh_elements(); ++f ) {
                 index_t nbv = S.nb_mesh_element_vertices( f ) ;
@@ -724,13 +724,13 @@ namespace {
             for( index_t j = 0; j < bmes.size(); ++j ) {
                 const std::string& T = bmes[j].gme_id.type ;
                 index_t id = bmes[j].gme_id.index ;
-                if( T == Region::type_name_ ) {
+                if( T == Region::type_name_static() ) {
                     regions.push_back( id ) ;
-                } else if( T == Surface::type_name_ ) {
+                } else if( T == Surface::type_name_static() ) {
                     surfaces.push_back( id ) ;
-                } else if( T == Line::type_name_ ) {
+                } else if( T == Line::type_name_static() ) {
                     lines.push_back( id ) ;
-                } else if( T == Corner::type_name_ ) {
+                } else if( T == Corner::type_name_static() ) {
                     if( corner != NO_ID ) {
                         Logger::warn( "GeoModel" ) << " Vertex " << i
                             << " is in at least 2 Corners" << std::endl ;
@@ -820,8 +820,8 @@ namespace {
                         // the lines 
                         for( index_t k = 0; k < surfaces.size(); ++k ) {
                             for( index_t l = 0; l < lines.size(); ++l ) {
-                                GME::gme_t s_id( Surface::type_name_, surfaces[k] ) ;
-                                GME::gme_t l_id( Line::type_name_, lines[l] ) ;
+                                GME::gme_t s_id( Surface::type_name_static(), surfaces[k] ) ;
+                                GME::gme_t l_id( Line::type_name_static(), lines[l] ) ;
                                 if( !is_in_in_boundary( M, s_id, l_id ) ) {
                                     Logger::warn( "GeoModel" )
                                         << " Inconsistent Line-Surface connectivity "
@@ -870,8 +870,8 @@ namespace {
                         }
                         // Check that all the lines are in in_boundary of this corner
                         for( index_t k = 0; k < lines.size(); ++k ) {
-                            GME::gme_t l_id( Line::type_name_, lines[k] ) ;
-                            GME::gme_t c_id( Corner::type_name_, corner ) ;
+                            GME::gme_t l_id( Line::type_name_static(), lines[k] ) ;
+                            GME::gme_t c_id( Corner::type_name_static(), corner ) ;
                             if( !is_in_in_boundary( M, l_id, c_id ) ) {
                                 Logger::warn( "GeoModel" )
                                     << " Inconsistent Line-Corner connectivity "
@@ -1215,7 +1215,7 @@ namespace {
                 continue ;
             }
 
-            if( type == Region::type_name_ ) {
+            if( type == Region::type_name_static() ) {
                 // Check validity of region definition
                 // @todo Remove this ugly code
                 if( !is_region_valid( E ) ) {
@@ -1243,10 +1243,10 @@ namespace {
     bool are_geomodel_mesh_entities_valid( const GeoModel& GM )
     {
         index_t nb_invalid = 0 ;
-        nb_invalid += nb_invalid_mesh_entities( GM, Corner::type_name_ ) ;
-        nb_invalid += nb_invalid_mesh_entities( GM, Line::type_name_ ) ;
-        nb_invalid += nb_invalid_mesh_entities( GM, Surface::type_name_ ) ;
-        nb_invalid += nb_invalid_mesh_entities( GM, Region::type_name_ ) ;
+        nb_invalid += nb_invalid_mesh_entities( GM, Corner::type_name_static() ) ;
+        nb_invalid += nb_invalid_mesh_entities( GM, Line::type_name_static() ) ;
+        nb_invalid += nb_invalid_mesh_entities( GM, Surface::type_name_static() ) ;
+        nb_invalid += nb_invalid_mesh_entities( GM, Region::type_name_static() ) ;
         if( nb_invalid != 0 ) {
             Logger::warn( "GeoModel" ) << nb_invalid
                 << " individual mesh entities of the model are invalid " << std::endl ;

@@ -47,6 +47,7 @@
 #include <vector>
 
 #include <ringmesh/geo_model_entity.h>
+#include <ringmesh/geo_model_mesh_entity.h>
 
 namespace RINGMesh {
     class GeoModel ;
@@ -97,7 +98,7 @@ namespace RINGMesh {
             index_t id,
             const std::string& name = "unnamed",
             GEOL_FEATURE geological_feature = NO_GEOL )
-            : GeoModelEntity( model, id, name, geological_feature )
+            : GeoModelGeologicalEntity( model, id, name, geological_feature )
         {
         }
         ~Contact()
@@ -131,7 +132,7 @@ namespace RINGMesh {
             index_t id,
             const std::string& name = "unnamed",
             GEOL_FEATURE geological_feature = NO_GEOL )
-            : GeoModelEntity( model, id, name, geological_feature )
+            : GeoModelGeologicalEntity( model, id, name, geological_feature )
         {
         }
         ~Interface()
@@ -165,7 +166,7 @@ namespace RINGMesh {
             index_t id,
             const std::string& name = "unnamed",
             GEOL_FEATURE geological_feature = NO_GEOL )
-            : GeoModelEntity( model, id, name, geological_feature )
+            : GeoModelGeologicalEntity( model, id, name, geological_feature )
         {
         }
         ~Layer()

@@ -379,7 +379,7 @@ namespace RINGMesh {
     const gme_t& GeoModelMeshEntity::parent_id( const std::string& parent_type_name ) const
     {
         const EntityRelationships& parentage = model().entity_relationships() ;
-        bool valid_parent_type = parentage.parent_types( type_name_ ).count( parent_type_name ) > 0;
+        bool valid_parent_type = parentage.parent_types( type_name_static() ).count( parent_type_name ) > 0;
 
         if( valid_parent_type ) {
             for( index_t i = 0; i < nb_parents(); ++i ) {
@@ -441,11 +441,11 @@ namespace RINGMesh {
 
     const std::string& Corner::in_boundary_type() const
     {
-        return Line::type_name_ ;
+        return Line::type_name_static() ;
     }
     const std::string& Corner::boundary_type() const
     {
-        return GME::type_name_ ;
+        return GME::type_name_static() ;
     }
 
 
@@ -488,8 +488,6 @@ namespace RINGMesh {
     }
 
     /***************************************************************/
-
-    const std::string Line::type_name_ = "Line";
 
     /*!
      * @brief Construct a Line
@@ -606,22 +604,22 @@ namespace RINGMesh {
 
     const std::string& Line::in_boundary_type() const
     {
-        return Surface::type_name_ ;
+        return Surface::type_name_static() ;
     }
     const std::string& Line::boundary_type() const
     {
-        return Corner::type_name_ ;
+        return Corner::type_name_static() ;
     }
     /********************************************************************/
 
 
     const std::string& Surface::in_boundary_type() const
     {
-        return Region::type_name_ ;
+        return Region::type_name_static() ;
     }
     const std::string& Surface::boundary_type() const
     {
-        return Line::type_name_ ;
+        return Line::type_name_static() ;
     }
 
     /*!
@@ -1114,11 +1112,11 @@ namespace RINGMesh {
 
     const std::string& Region::in_boundary_type() const
     {
-        return GME::type_name_ ;
+        return GME::type_name_static() ;
     }
     const std::string& Region::boundary_type() const
     {
-        return Surface::type_name_ ;
+        return Surface::type_name_static() ;
     }
 
     bool Region::is_mesh_valid() const

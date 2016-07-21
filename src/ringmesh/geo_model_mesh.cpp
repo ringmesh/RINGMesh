@@ -214,10 +214,10 @@ namespace RINGMesh {
         // Total number of vertices in the
         // Corners, Lines, Surfaces and Regions of the GeoModel
         index_t nb = 0 ;
-        nb += nb_entity_vertices( gm_, Corner::type_name_ );
-        nb += nb_entity_vertices( gm_, Line::type_name_ );
-        nb += nb_entity_vertices( gm_, Surface::type_name_ );
-        nb += nb_entity_vertices( gm_, Region::type_name_ );
+        nb += nb_entity_vertices( gm_, Corner::type_name_static() );
+        nb += nb_entity_vertices( gm_, Line::type_name_static() );
+        nb += nb_entity_vertices( gm_, Surface::type_name_static() );
+        nb += nb_entity_vertices( gm_, Region::type_name_static() );
         
         // Get out if no vertices
         if( nb == 0 ) {
@@ -228,10 +228,10 @@ namespace RINGMesh {
         builder.create_vertices( nb ) ;
         gme_vertices_.resize( nb ) ;
 
-        fill_vertices( gm_, Corner::type_name_ , builder, gme_vertices_);
-        fill_vertices( gm_, Line::type_name_   , builder, gme_vertices_);
-        fill_vertices( gm_, Surface::type_name_, builder, gme_vertices_);
-        fill_vertices( gm_, Region::type_name_ , builder, gme_vertices_);
+        fill_vertices( gm_, Corner::type_name_static() , builder, gme_vertices_);
+        fill_vertices( gm_, Line::type_name_static()   , builder, gme_vertices_);
+        fill_vertices( gm_, Surface::type_name_static(), builder, gme_vertices_);
+        fill_vertices( gm_, Region::type_name_static() , builder, gme_vertices_);
 
         // Remove colocated vertices
         remove_colocated() ;
@@ -259,10 +259,10 @@ namespace RINGMesh {
         gme_vertices_.clear() ;
 
         // Clear the model vertex index information        
-        clear_mesh_entity_model_vertex_id( gm_, Corner::type_name_ );
-        clear_mesh_entity_model_vertex_id( gm_, Line::type_name_ );
-        clear_mesh_entity_model_vertex_id( gm_, Surface::type_name_ );
-        clear_mesh_entity_model_vertex_id( gm_, Region::type_name_ );
+        clear_mesh_entity_model_vertex_id( gm_, Corner::type_name_static() );
+        clear_mesh_entity_model_vertex_id( gm_, Line::type_name_static() );
+        clear_mesh_entity_model_vertex_id( gm_, Surface::type_name_static() );
+        clear_mesh_entity_model_vertex_id( gm_, Region::type_name_static() );
     }
 
     index_t GeoModelMeshVertices::nb() const
@@ -497,10 +497,10 @@ namespace RINGMesh {
         }
 #endif
 
-        update_entity_model_vertex_id( gm_, Corner::type_name_, to_delete, gme_vertices_ ) ;
-        update_entity_model_vertex_id( gm_, Line::type_name_, to_delete, gme_vertices_ ) ;
-        update_entity_model_vertex_id( gm_, Surface::type_name_, to_delete, gme_vertices_ ) ;
-        update_entity_model_vertex_id( gm_, Region::type_name_, to_delete, gme_vertices_ ) ;           
+        update_entity_model_vertex_id( gm_, Corner::type_name_static(), to_delete, gme_vertices_ ) ;
+        update_entity_model_vertex_id( gm_, Line::type_name_static(), to_delete, gme_vertices_ ) ;
+        update_entity_model_vertex_id( gm_, Surface::type_name_static(), to_delete, gme_vertices_ ) ;
+        update_entity_model_vertex_id( gm_, Region::type_name_static(), to_delete, gme_vertices_ ) ;           
     }
 
     /*******************************************************************************/
@@ -2036,7 +2036,7 @@ namespace RINGMesh {
                     gme_v++ ) {
                     const GMEVertex& cur_vertex_on_geo_model =
                         vertices_on_geomodel[gme_v] ;
-                    if( vertices_on_geomodel[gme_v].gme_id.type == Region::type_name_ ) {
+                    if( vertices_on_geomodel[gme_v].gme_id.type == Region::type_name_static() ) {
                         for( index_t att_e = 0; att_e < att_dim; att_e++ ) {
                             att_on_regions[cur_vertex_on_geo_model.gme_id.index][cur_vertex_on_geo_model.v_id
                                 * att_dim + att_e] = cur_att_on_geomodelmesh[v

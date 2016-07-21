@@ -269,10 +269,10 @@ namespace RINGMesh {
             << std::left << count_geomodel_cells( geomodel ) << " cells\n"
             << std::endl ;
 
-        print_nb_mesh_entities( geomodel, Corner::type_name_ ) ; 
-        print_nb_mesh_entities( geomodel, Line::type_name_ ) ; 
-        print_nb_mesh_entities( geomodel, Surface::type_name_ ) ; 
-        print_nb_mesh_entities( geomodel, Region::type_name_ ) ; 
+        print_nb_mesh_entities( geomodel, Corner::type_name_static() ) ; 
+        print_nb_mesh_entities( geomodel, Line::type_name_static() ) ; 
+        print_nb_mesh_entities( geomodel, Surface::type_name_static() ) ; 
+        print_nb_mesh_entities( geomodel, Region::type_name_static() ) ; 
 
         for( index_t i = 0; i < geomodel.nb_geological_entity_type(); ++i ) {
             print_nb_geological_entities( geomodel, geomodel.geological_entity_type( i ) ) ;
@@ -810,7 +810,7 @@ namespace RINGMesh {
     {
         for( index_t i = 0; i < geomodel.nb_corners(); ++i ) {
             if( geomodel.corner( i ).vertex( 0 ) == point ) {
-                return gme_t( Corner::type_name_, i ) ;
+                return gme_t( Corner::type_name_static(), i ) ;
             }
         }
         return gme_t() ;
@@ -820,7 +820,7 @@ namespace RINGMesh {
     {
         for( index_t i = 0; i < geomodel.nb_corners(); ++i ) {
             if( geomodel.corner( i ).model_vertex_id() == model_point_id ) {
-                return gme_t( Corner::type_name_, i ) ;
+                return gme_t( Corner::type_name_static(), i ) ;
             }
         }
         return gme_t() ;

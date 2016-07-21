@@ -209,7 +209,7 @@ namespace RINGMesh {
             ringmesh_assert( mesh.boundary_type() == boundary.type ) ;
             mesh.boundaries_.push_back( boundary ) ;
 
-            if( t.type == Region::type_name_ ) {
+            if( t.type == Region::type_name_static() ) {
                 dynamic_cast< Region& >( mesh ).sides_.push_back( side ) ;
             }
         }
@@ -227,7 +227,7 @@ namespace RINGMesh {
             ringmesh_assert( id < mesh.nb_boundaries() ) ;
             mesh.boundaries_[id] = boundary ;
 
-            if( t.type == Region::type_name_ ) {
+            if( t.type == Region::type_name_static() ) {
                 dynamic_cast< Region& >( mesh ).sides_[id] = side ;
             }
         }

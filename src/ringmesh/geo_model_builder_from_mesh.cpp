@@ -664,7 +664,7 @@ namespace RINGMesh {
                     cc_facets_ptr.push_back( cc_corners.size() ) ;
                 }
 
-                GME::gme_t surface_gme = create_mesh_entity( Surface::type_name_ ) ;
+                GME::gme_t surface_gme = create_mesh_entity( Surface::type_name_static() ) ;
                 set_surface_geometry( surface_gme.index, cc_vertices, cc_corners,
                     cc_facets_ptr ) ;
             }
@@ -673,7 +673,7 @@ namespace RINGMesh {
 
     void GeoModelBuilderMesh::create_and_build_surfaces()
     {
-        create_mesh_entities( Surface::type_name_, nb_surface_attribute_values_ ) ;
+        create_mesh_entities( Surface::type_name_static(), nb_surface_attribute_values_ ) ;
         build_surfaces() ;
     }
 
@@ -702,7 +702,7 @@ namespace RINGMesh {
 
     void GeoModelBuilderMesh::create_and_build_regions()
     {
-        create_mesh_entities( Region::type_name_, nb_region_attribute_values_ ) ;
+        create_mesh_entities( Region::type_name_static(), nb_region_attribute_values_ ) ;
         build_regions() ;
     }
 
@@ -761,7 +761,7 @@ namespace RINGMesh {
             attribute_name ) ;
         AttributeVector< index_t > attributes ;
         create_attributes_on_geomodel_entity_facets< index_t >( model(),
-            Surface::type_name_, attribute_name, attributes ) ;
+            Surface::type_name_static(), attribute_name, attributes ) ;
         surface_builder_->copy_simplex_attribute_from_mesh_to_geomodel< index_t >(
             attribute, attributes ) ;
     }
@@ -778,7 +778,7 @@ namespace RINGMesh {
             attribute_name ) ;
         AttributeVector< index_t > attributes ;
         create_attributes_on_geomodel_entity_cells< index_t >( model(),
-            Region::type_name_, attribute_name, attributes ) ;
+            Region::type_name_static(), attribute_name, attributes ) ;
         region_builder_->copy_simplex_attribute_from_mesh_to_geomodel< index_t >(
             attribute, attributes ) ;
     }

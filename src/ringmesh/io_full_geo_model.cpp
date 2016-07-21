@@ -115,7 +115,7 @@ namespace {
     template< typename ENTITY >
     void save_mesh_entities_of_type( const GeoModel& M, std::ofstream& out )
     {
-        const std::string& type = ENTITY::type_name_ ;
+        const std::string& type = ENTITY::type_name_static() ;
         for( index_t e = 0; e < M.nb_mesh_entities( type ); e++ ) {
             const GeoModelMeshEntity& cur_mesh_entity = M.mesh_entity( type,
                 e ) ;
@@ -149,10 +149,10 @@ namespace {
         out << "Name " << M.name() << std::endl ;
 
         // Numbers of the different types of mesh entities
-        out << "Nb " << Corner::type_name_ << " " << M.nb_corners() << std::endl ;
-        out << "Nb " << Line::type_name_ << " " << M.nb_lines() << std::endl ;
-        out << "Nb " << Surface::type_name_ << " " << M.nb_surfaces() << std::endl ;
-        out << "Nb " << Region::type_name_ << " " << M.nb_regions() << std::endl ;
+        out << "Nb " << Corner::type_name_static() << " " << M.nb_corners() << std::endl ;
+        out << "Nb " << Line::type_name_static() << " " << M.nb_lines() << std::endl ;
+        out << "Nb " << Surface::type_name_static() << " " << M.nb_surfaces() << std::endl ;
+        out << "Nb " << Region::type_name_static() << " " << M.nb_regions() << std::endl ;
 
         save_mesh_entities_of_type< Corner >( M, out ) ;
         save_mesh_entities_of_type< Line >( M, out ) ;
@@ -162,7 +162,7 @@ namespace {
         for( index_t i = 0; i < M.nb_regions(); ++i ) {
             const Region& E = M.region( i ) ;
             // Save ID - NAME
-            out << Region::type_name_ << " " << i << " " << E.name() << " "
+            out << Region::type_name_static() << " " << i << " " << E.name() << " "
                 << GeoModelEntity::geol_name( E.geological_feature() ) << std::endl ;
             out << std::endl ;
             // Second line Signed ids of boundary surfaces
@@ -196,7 +196,7 @@ namespace {
         const std::string& name,
         const GEO::MeshIOFlags& flags )
     {
-        if( geo_model_entity_mesh.type_name() == Region::type_name_ ) {
+        if( geo_model_entity_mesh.type_name() == Region::type_name_static() ) {
             const Region& region = geo_model_entity_mesh.model().region(
                 geo_model_entity_mesh.index() ) ;
             if( !region.is_meshed() ) {
@@ -455,7 +455,7 @@ namespace {
     template< typename ENTITY >
     void save_geo_model_mesh_entities( const GeoModel& model, zipFile& zf )
     {
-        const std::string& type = ENTITY::type_name_ ;
+        const std::string& type = ENTITY::type_name_static() ;
         for( index_t e = 0; e < model.nb_mesh_entities( type ); e++ ) {
             save_geo_model_mesh_entity( model.mesh_entity( type, e ), zf ) ;
         }
