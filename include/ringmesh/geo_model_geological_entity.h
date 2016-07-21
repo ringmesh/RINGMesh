@@ -108,7 +108,7 @@ namespace RINGMesh {
 
         static const std::string type_name_static()
         {
-            return "Contact2" ;
+            return "Contact" ;
         }
         virtual const std::string type_name() const
         {

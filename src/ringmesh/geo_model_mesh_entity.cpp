@@ -379,7 +379,7 @@ namespace RINGMesh {
     const gme_t& GeoModelMeshEntity::parent_id( const std::string& parent_type_name ) const
     {
         const EntityRelationships& parentage = model().entity_relationships() ;
-        bool valid_parent_type = parentage.parent_types( type_name_static() ).count( parent_type_name ) > 0;
+        bool valid_parent_type = parentage.parent_types( type_name() ).count( parent_type_name ) > 0;
 
         if( valid_parent_type ) {
             for( index_t i = 0; i < nb_parents(); ++i ) {

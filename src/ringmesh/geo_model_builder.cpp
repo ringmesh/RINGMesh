@@ -1010,7 +1010,7 @@ namespace RINGMesh {
                 }
             }
         }
-        return create_mesh_entity( Corner::type_name_static()) ;
+        return create_mesh_entity( Line::type_name_static()) ;
     }
 
     /*!
@@ -1985,12 +1985,12 @@ namespace RINGMesh {
                 if( cur_interfaces.size() == interfaces[j].size()
                     && std::equal( cur_interfaces.begin(), cur_interfaces.end(),
                         interfaces[j].begin() ) ) {
-                    contact_id = gme_t( "Contact", j ) ;
+                    contact_id = gme_t( Contact::type_name_static(), j ) ;
                     break ;
                 }
             }
             if( !contact_id.is_defined() ) {
-                contact_id = create_geological_entity( "Contact" ) ;
+                contact_id = create_geological_entity( Contact::type_name_static() ) ;
                 ringmesh_assert( contact_id.index == interfaces.size() ) ;
                 interfaces.push_back( cur_interfaces ) ;
                 // Create a name for this contact
