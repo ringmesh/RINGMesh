@@ -1075,8 +1075,8 @@ namespace {
          */
         void test_geological_validity()
         {
-            if( geomodel().nb_geological_entities( "Interface" ) > 0
-                && geomodel().nb_geological_entities( "Layer" ) > 0 ) {
+            if( geomodel().nb_geological_entities( Interface::type_name_static() ) > 0
+                && geomodel().nb_geological_entities( Layer::type_name_static() ) > 0 ) {
                 if( !is_geomodel_geology_valid( geomodel() ) ) {
                     set_invalid_model() ;
                 }
@@ -1307,11 +1307,10 @@ namespace RINGMesh {
             }
         }
 
-        const std::string interface_name = "Interface" ;
-        for( index_t i = 0; i < GM.nb_geological_entities( interface_name ); ++i ) {
+        for( index_t i = 0; i < GM.nb_geological_entities( Interface::type_name_static() ); ++i ) {
             std::vector< GME::gme_t > layers ;
             const GeoModelGeologicalEntity& entity = GM.geological_entity(
-                interface_name, i ) ;
+                Interface::type_name_static(), i ) ;
             in_boundary_gme( entity, layers ) ;
             if( layers.empty() ) {
                 Logger::warn( "GeoModel" ) << " Invalid interface: "
