@@ -196,7 +196,7 @@ namespace RINGMesh {
         complete_mesh_entity_connectivity< Region >() ;
 
         // Geological entities
-        for( index_t i = 0; i < model_.nb_geological_entity_type(); i++ ) {
+        for( index_t i = 0; i < model_.nb_geological_entity_types(); i++ ) {
             const std::string& type = model().geological_entity_type( i ) ;
             if( model_.nb_geological_entities( type ) > 0 ) {
                 if( model_.geological_entity( type, 0 ).nb_children() == 0 ) {

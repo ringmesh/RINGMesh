@@ -58,6 +58,12 @@ namespace GEO {
 }
 
 namespace RINGMesh {
+
+    /*!
+     * Copy a Geomodel
+     */
+    void copy( const GeoModel& from, GeoModel& to ) ;
+
     /*!
     * @brief Print in the console the model statistics
     * @details Output number of facets, vertices, and of the different entity types

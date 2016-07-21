@@ -245,6 +245,16 @@ namespace {
 }
 
 namespace RINGMesh {
+    /*!
+     * Copies a GeoModel in another one
+     */
+    void copy( const GeoModel& from, GeoModel& to ) ;
+    {
+        GeoModelBuilder builder( to ) ;
+        builder.copy_macro_topology( from ) ;
+        builder.copy_meshes( from ) ;
+    } 
+
 
     void print_nb_mesh_entities( const GeoModel& geomodel, const std::string& entity_type_name )
     {
@@ -274,7 +284,7 @@ namespace RINGMesh {
         print_nb_mesh_entities( geomodel, Surface::type_name_static() ) ; 
         print_nb_mesh_entities( geomodel, Region::type_name_static() ) ; 
 
-        for( index_t i = 0; i < geomodel.nb_geological_entity_type(); ++i ) {
+        for( index_t i = 0; i < geomodel.nb_geological_entity_types(); ++i ) {
             print_nb_geological_entities( geomodel, geomodel.geological_entity_type( i ) ) ;
         }        
     }

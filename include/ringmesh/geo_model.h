@@ -58,8 +58,11 @@ namespace RINGMesh {
 namespace RINGMesh {
 
     /*!
-     * @brief The class to describe a geological model represented 
-     * by its boundary surfaces and whose regions can be optionally meshed
+     * @brief A geological model, GeoModel, is a B-Rep model.
+     * @details Its geometry is defined by meshed entities: Corner, Line, Surface, and Regions.
+     * Volumetric meshes of 3D regions are optional.
+     * High level groupings of meshed entities constitute geological entities can be customized.
+     * Three are implemented by deafult: Contact, Interface and Layer.
      */
     class RINGMESH_API GeoModel {
         ringmesh_disable_copy( GeoModel ) ;
@@ -78,11 +81,6 @@ namespace RINGMesh {
          */
         virtual ~GeoModel() ;
 
-        /*
-         * @todo Implement a real copy_constructor and operator= [JP]
-         */
-        void copy( const GeoModel& from ) ;
-
         /*!
          * @brief Name of the model
          */
@@ -92,14 +90,7 @@ namespace RINGMesh {
         }
 
         /*!
-         * \name Generic GeoModelEntity accessors
-         * @{
-         */
-
-        /*!
          * @brief Returns the number of mesh entities of the given type
-         * @details Default value is 0
-         * @param[in] type the mesh entity type
          */
         index_t nb_mesh_entities( const std::string& type ) const
         {
@@ -117,16 +108,16 @@ namespace RINGMesh {
             }
         }
 
+        /*! @brief Access to the object storing high level relationship
+         * between the types of entities in this model
+         */
         const EntityRelationships& entity_relationships() const
         {
             return entity_relationships_ ;
         }
 
-
         /*!
          * @brief Returns the number of geological entities of the given type
-         * @details Default value is 0
-         * @param[in] type the geological entity type
          */
         index_t nb_geological_entities( const std::string& type ) const
         {
@@ -134,20 +125,13 @@ namespace RINGMesh {
             if( index == NO_ID ) return 0 ;
             return static_cast< index_t >( geological_entities_[index].size() ) ;
         }
-
-        /*!
-         * @brief Returns the index of the geological entity type storage
-         * @details Default value is NO_ID
-         * @param[in] type the geological entity type
-         */
-        index_t geological_entity_type( const std::string& type ) const ;
-        index_t nb_geological_entity_type() const
+        index_t nb_geological_entity_types() const
         {
             return static_cast< index_t >( geological_entity_types_.size() ) ;
         }
         const std::string& geological_entity_type( index_t id ) const
         {
-            ringmesh_assert( id < nb_geological_entity_type() ) ;
+            ringmesh_assert( id < nb_geological_entity_types() ) ;
             return geological_entity_types_[id] ;
         }
 
@@ -204,7 +188,7 @@ namespace RINGMesh {
         }
 
         /*! @}
-         * \name Specialized accessors.
+         * \name Accessors.
          * @{
          */
         index_t nb_corners() const
@@ -223,7 +207,6 @@ namespace RINGMesh {
         {
             return static_cast< index_t >( regions_.size() ) ;
         }
-
         const Corner& corner( index_t index ) const
         {
             return *corners_.at( index ) ;
@@ -256,7 +239,6 @@ namespace RINGMesh {
         }
 
     private:
-
         /*!
          * @brief Generic accessor to the storage of mesh entities of the given type
          */
@@ -296,6 +278,7 @@ namespace RINGMesh {
             }
         }
 
+        index_t geological_entity_type( const std::string& type ) const ;
 
         /*!
          * @brief Generic accessor to the storage of geologcial entities of the given type
@@ -362,7 +345,7 @@ namespace RINGMesh {
         std::string name_ ;
 
         /*!
-         * \name Mandatory entities of the model
+         * \name Mesh entities defining the model geometry
          * @{
          */
         std::vector< Corner* > corners_ ;
@@ -371,7 +354,7 @@ namespace RINGMesh {
         std::vector< Region* > regions_ ;
 
         /*!
-         * The Region defining the model extension
+         * Definition of the model extension
          */
         Universe universe_ ;
 

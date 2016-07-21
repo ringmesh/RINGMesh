@@ -53,7 +53,6 @@ namespace RINGMesh {
             universe_( *this ),
             wells_( nil )
     {
-        /// @todo Review: This usage of this pointer in initialization list is a time bomb [JP]
     }
 
     GeoModel::~GeoModel()
@@ -70,7 +69,6 @@ namespace RINGMesh {
         for( index_t i = 0; i < regions_.size(); ++i ) {
             delete regions_[i] ;
         }
-
         for( index_t i = 0 ; i < geological_entities_.size(); ++i ){
             for( index_t j = 0 ; j < geological_entities_[i].size(); ++j ) {
                 delete geological_entities_[i][j] ;
@@ -78,19 +76,6 @@ namespace RINGMesh {
         }
     }
 
-    /*!
-     * Copies a GeoModel in another one
-     * @param[in] from GeoModel to copy
-     * 
-     * @todo This shouln't be a member function because it does not do nothing
-     *       with what the class has. To move to GeoModelBuilder.
-     */
-    void GeoModel::copy( const GeoModel& from )
-    {
-        GeoModelBuilder builder( *this ) ;
-        builder.copy_macro_topology( from ) ;
-        builder.copy_meshes( from ) ;
-    }
 
     /*!
      * Associates a WellGroup to the GeoModel
