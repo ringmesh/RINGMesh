@@ -61,6 +61,10 @@
 #include <ringmesh/geogram_extension.h>
 #include <ringmesh/geometry.h>
 
+namespace RINGMesh {
+    
+}
+
 namespace {
     /* Definition of functions that we do not want exported in the interface */
     using namespace RINGMesh ;
@@ -231,6 +235,7 @@ namespace {
 }
 
 namespace RINGMesh {
+
 
     /*!
      * @brief Checks if this entity define the model external boundary
@@ -431,7 +436,7 @@ namespace RINGMesh {
 
     /**************************************************************/
 
-    const std::string Corner::type_name_ = "Corner" ;
+
 
 
     const std::string& Corner::in_boundary_type() const
