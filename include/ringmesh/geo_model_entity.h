@@ -195,7 +195,7 @@ namespace RINGMesh {
 
             bool is_defined() const
             {
-                return type != type_name_ && index != NO_ID ;
+                return type != default_entity_type_name() && index != NO_ID ;
             }
                 
             /*!
@@ -224,6 +224,10 @@ namespace RINGMesh {
         static const std::string default_entity_type_name()
         {
             return "No_entity_type" ;
+        }
+        static const std::string type_name_static()
+        {
+            return  default_entity_type_name() ;
         }
         virtual const std::string type_name() const = 0
         {
@@ -319,7 +323,7 @@ namespace RINGMesh {
             GEOL_FEATURE geological_feature = NO_GEOL )
             :
                 model_( model ),
-                id_( type_name_, id ),
+                id_( type_name_static(), id ),
                 name_( name ),
                 geol_feature_( geological_feature )
         {

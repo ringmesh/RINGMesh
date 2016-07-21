@@ -543,11 +543,11 @@ namespace {
         GeoModelBuilderTSolid& geomodel_builder )
     {
         geomodel_builder.add_mesh_entity_boundary(
-            GME::gme_t( Region::type_name_, region_id ),
-            GME::gme_t( Surface::type_name_, surface_id ), surf_side ) ;
+            GME::gme_t( Region::type_name_static(), region_id ),
+            GME::gme_t( Surface::type_name_static(), surface_id ), surf_side ) ;
         geomodel_builder.add_mesh_entity_in_boundary(
-            GME::gme_t( Surface::type_name_, surface_id ),
-            GME::gme_t( Region::type_name_, region_id ) ) ;
+            GME::gme_t( Surface::type_name_static(), surface_id ),
+            GME::gme_t( Region::type_name_static(), region_id ) ) ;
     }
 
     /*!
@@ -695,10 +695,10 @@ namespace {
         for( index_t s = 0; s < nb_surfaces; ++s ) {
             if( surface_sides[2 * s] && !surface_sides[2 * s + 1] ) {
                 geomodel_builder.add_universe_boundary(
-                    GME::gme_t( Surface::type_name_, s ), false ) ;
+                    GME::gme_t( Surface::type_name_static(), s ), false ) ;
             } else if( !surface_sides[2 * s] && surface_sides[2 * s + 1] ) {
                 geomodel_builder.add_universe_boundary(
-                    GME::gme_t( Surface::type_name_, s ), true ) ;
+                    GME::gme_t( Surface::type_name_static(), s ), true ) ;
             }
         }
     }
@@ -961,7 +961,7 @@ namespace RINGMesh {
             const std::string& region_name,
             GeoModelBuilderTSolid& geomodel_builder )
         {
-            GME::gme_t cur_region = geomodel_builder.create_mesh_entity( Region::type_name_ ) ;
+            GME::gme_t cur_region = geomodel_builder.create_mesh_entity( Region::type_name_static() ) ;
             geomodel_builder.set_mesh_entity_name( cur_region, region_name ) ;
             return cur_region.index ;
         }
@@ -1122,7 +1122,7 @@ namespace RINGMesh {
             TSolidLoadingStorage& load_storage )
         {
             GME::gme_t created_interface = builder().create_geological_entity(
-                interface_name ) ;
+                Interface::type_name_static() ) ;
             load_storage.cur_interface_ = created_interface.index ;
             builder().set_geological_entity_name( created_interface, line.field( 1 ) ) ;
         }
@@ -1139,12 +1139,12 @@ namespace RINGMesh {
                 build_surface( builder(), geomodel(), load_storage ) ;
             }
             // Create a new surface
-            GME::gme_t new_surface = builder().create_mesh_entity( Surface::type_name_ ) ;
+            GME::gme_t new_surface = builder().create_mesh_entity( Surface::type_name_static() ) ;
             load_storage.cur_surface_ = new_surface.index ;
             builder().add_mesh_entity_parent( new_surface,
-                GME::gme_t( interface_name, load_storage.cur_interface_ ) ) ;
+                GME::gme_t( Interface::type_name_static(), load_storage.cur_interface_ ) ) ;
             builder().add_geological_entity_child(
-                GME::gme_t( interface_name, load_storage.cur_interface_ ),
+                GME::gme_t( Interface::type_name_static(), load_storage.cur_interface_ ),
                 new_surface ) ;
         }
     } ;
@@ -1309,7 +1309,7 @@ namespace RINGMesh {
                         } while( f < file_line_.nb_fields() ) ;
                         // Create an interface and set its name
                         set_geological_entity_name(
-                            create_geological_entity( interface_name ), oss.str() ) ;
+                            create_geological_entity( Interface::type_name_static() ), oss.str() ) ;
 
                         nb_tsurf++ ;
                     } else if( file_line_.field_matches( 0, "TFACE" ) ) {
@@ -1340,7 +1340,7 @@ namespace RINGMesh {
                             file_line_.field_as_double( 1 ),
                             file_line_.field_as_double( 2 ) ) ;
 
-                        create_surface( interface_name, geol, p0, p1, p2 ) ;
+                        create_surface( Interface::type_name_static(), geol, p0, p1, p2 ) ;
                         nb_tface++ ;
                     } else if( file_line_.field_matches( 0, "REGION" ) ) {
                         /// 1.3 Read Region information and create them from their name,
@@ -1370,18 +1370,18 @@ namespace RINGMesh {
                         // Create the entity if it is not the universe
                         // Set the region name and boundaries
                         if( name != "Universe" ) {
-                            GME::gme_t region_id = create_mesh_entity( Region::type_name_ ) ;
+                            GME::gme_t region_id = create_mesh_entity( Region::type_name_static() ) ;
                             set_mesh_entity_name( region_id, name ) ;
                             for( index_t i = 0; i < region_boundaries.size(); ++i ) {
                                 add_mesh_entity_boundary( region_id,
-                                    GME::gme_t( Surface::type_name_,
+                                    GME::gme_t( Surface::type_name_static(),
                                         region_boundaries[i].first ),
                                     region_boundaries[i].second ) ;
                             }
                         } else {
                             for( index_t i = 0; i < region_boundaries.size(); ++i ) {
                                 add_universe_boundary(
-                                    GME::gme_t( Surface::type_name_,
+                                    GME::gme_t( Surface::type_name_static(),
                                         region_boundaries[i].first ),
                                     region_boundaries[i].second ) ;
                             }
@@ -1389,7 +1389,7 @@ namespace RINGMesh {
                     } else if( file_line_.field_matches( 0, "LAYER" ) ) {
                         /// 1.4 Build the volumetric layers from their name and
                         /// the ids of the regions they contain
-                        GME::gme_t layer_id = create_geological_entity( layer_name ) ;
+                        GME::gme_t layer_id = create_geological_entity( Layer::type_name_static() ) ;
                         set_geological_entity_name( layer_id, file_line_.field( 1 ) ) ;
                         bool end_layer = false ;
                         while( !end_layer ) {
@@ -1404,7 +1404,7 @@ namespace RINGMesh {
                                     region_id -= nb_tface + 1 ; // Remove Universe region
                                     // Correction because ids begin at 1 in the file
                                     add_geological_entity_child( layer_id,
-                                        GME::gme_t( Region::type_name_, region_id - 1 ) ) ;
+                                        GME::gme_t( Region::type_name_static(), region_id - 1 ) ) ;
                                 }
                             }
                         }
@@ -1510,7 +1510,7 @@ namespace RINGMesh {
                         index_t v_id = file_line_.field_as_uint( 1 ) - 1 ;
                         if( !find_corner( model(), tsurf_vertices[v_id] ).is_defined() ) {
                             // Create the corner
-                            GME::gme_t corner_gme = create_mesh_entity( Corner::type_name_ ) ;
+                            GME::gme_t corner_gme = create_mesh_entity( Corner::type_name_static() ) ;
                             set_corner( corner_gme.index, tsurf_vertices[v_id] ) ;
                         }
                     }
@@ -1769,7 +1769,7 @@ namespace RINGMesh {
     /*!
      * @brief Add a Surface to the model
      *
-     * @param[in] interface_name Name of the parent. The parent MUST exist.
+     * @param[in] Name of the parent. The parent MUST exist.
      * @param[in] type Type of the Surface
      * @param[in] p0 Coordinates of the 1 point of the TFace key facet
      * @param[in] p1 Coordinates of the 2 point of the TFace key facet
@@ -1787,7 +1787,7 @@ namespace RINGMesh {
             ringmesh_assert( parent.is_defined() ) ;
         }
 
-        GME::gme_t id = create_mesh_entity( Surface::type_name_ ) ;
+        GME::gme_t id = create_mesh_entity( Surface::type_name_static() ) ;
         add_mesh_entity_parent( id, parent ) ;
         set_mesh_entity_geol_feature( parent, GME::determine_geological_type( type ) ) ;
         key_facets_.push_back( KeyFacet( p0, p1, p2 ) ) ;

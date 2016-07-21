@@ -103,13 +103,13 @@ namespace RINGMesh {
          */
         index_t nb_mesh_entities( const std::string& type ) const
         {
-            if( type == Corner::type_name_ ) {
+            if( type == Corner::type_name_static() ) {
                 return nb_corners();
-            } else if( type == Line::type_name_ ) {
+            } else if( type == Line::type_name_static() ) {
                 return nb_lines();
-            } else if( type == Surface::type_name_ ) {
+            } else if( type == Surface::type_name_static() ) {
                 return nb_surfaces();
-            } else if( type == Region::type_name_ ) {
+            } else if( type == Region::type_name_static() ) {
                 return nb_regions();
             } else {
                 ringmesh_assert_not_reached ;
@@ -180,13 +180,13 @@ namespace RINGMesh {
         {
             const std::string& type = id.type ;
             index_t index = id.index ;
-            if( type == Corner::type_name_ ) {
+            if( type == Corner::type_name_static() ) {
                 return corner( index ) ;
-            } else if( type == Line::type_name_ ) {
+            } else if( type == Line::type_name_static() ) {
                 return line( index ) ;
-            } else if( type == Surface::type_name_ ) {
+            } else if( type == Surface::type_name_static() ) {
                 return surface( index ) ;
-            } else if( type == Region::type_name_ ) {
+            } else if( type == Region::type_name_static() ) {
                 return region( index ) ;
             }
             ringmesh_assert_not_reached ;
@@ -282,13 +282,13 @@ namespace RINGMesh {
         const std::vector< GeoModelMeshEntity* >& mesh_entities(
             const std::string& type ) const
         {
-            if( type == Corner::type_name_ ) {
+            if( type == Corner::type_name_static() ) {
                 return *(std::vector< GeoModelMeshEntity* > *) &corners_ ;
-            } else if( type == Line::type_name_ ) {
+            } else if( type == Line::type_name_static() ) {
                 return *(std::vector< GeoModelMeshEntity* > *) &lines_ ;
-            } else if( type == Surface::type_name_ ) {
+            } else if( type == Surface::type_name_static() ) {
                 return *(std::vector< GeoModelMeshEntity* > *) &surfaces_ ;
-            } else if( type == Region::type_name_ ) {
+            } else if( type == Region::type_name_static() ) {
                 return *(std::vector< GeoModelMeshEntity* > *) &regions_ ;
             } else {
                 ringmesh_assert_not_reached ;

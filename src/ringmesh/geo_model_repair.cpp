@@ -160,7 +160,7 @@ namespace RINGMesh {
     {
         to_remove.clear() ;
         for( index_t i = 0; i < model().nb_lines(); ++i ) {
-            Line& line = dynamic_cast<Line&>(mesh_entity( gme_t( Line::type_name_, i ) ));
+            Line& line = dynamic_cast<Line&>(mesh_entity( gme_t( Line::type_name_static(), i ) ));
             index_t nb = repair_line_mesh( line ) ;
             if( nb > 0 ) {
                 Logger::out( "GeoModel" ) << nb
@@ -174,7 +174,7 @@ namespace RINGMesh {
         // The builder might be needed
 
         for( index_t i = 0; i < model().nb_surfaces(); ++i ) {
-            Surface& surface = dynamic_cast<Surface&>(mesh_entity( gme_t(Surface::type_name_, i) ) );
+            Surface& surface = dynamic_cast<Surface&>(mesh_entity( gme_t(Surface::type_name_static(), i) ) );
             index_t nb = detect_degenerate_facets( surface.mesh_ ) ;
             /// @todo Check if that cannot be simplified 
             if( nb > 0 ) {
@@ -203,7 +203,7 @@ namespace RINGMesh {
                 } else {
                     // If the Surface has internal boundaries, we need to 
                     // re-cut the Surface along these lines
-                    Surface& S = dynamic_cast<Surface&>(mesh_entity( gme_t(Surface::type_name_, i) ) );
+                    Surface& S = dynamic_cast<Surface&>(mesh_entity( gme_t(Surface::type_name_static(), i) ) );
                     std::set< index_t > cutting_lines ;
                     for( index_t l = 0; l < S.nb_boundaries(); ++l ) {
                         const Line& L = model().line( S.boundary_gme( l ).index ) ;
@@ -234,11 +234,11 @@ namespace RINGMesh {
         std::set< index_t >& vertices )
     {
         vertices.clear() ;
-        if( E_id.type == Corner::type_name_ ) {
+        if( E_id.type == Corner::type_name_static() ) {
             return ;
         }
         const GMME& E = mesh_entity( E_id ) ;
-        if( E_id.type == Line::type_name_ ) {
+        if( E_id.type == Line::type_name_static() ) {
             if( E.boundary( 0 ).is_inside_border( E ) ) {
                 vertices.insert( E.nb_vertices() - 1 ) ;
             }
@@ -282,7 +282,7 @@ namespace RINGMesh {
     {
         to_remove.clear() ;
         // For all Lines and Surfaces
-        const std::string types[2] = { Line::type_name_, Surface::type_name_ } ;
+        const std::string types[2] = { Line::type_name_static(), Surface::type_name_static() } ;
         for( index_t t = 0; t < 2; ++t ) {
             const std::string& T = types[t] ;
 
