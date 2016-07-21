@@ -62,9 +62,6 @@
 namespace {
     using namespace RINGMesh ;
 
-    const std::string interface_name = "Interface" ;
-    const std::string layer_name = "Layer" ;
-
     /*!
      * From a given file name (MyFile.ext), create a MyFile directory
      * in the directory containing that file, or the current working directory.
@@ -201,14 +198,14 @@ namespace {
      */
     bool check_gocad_validity( const GeoModel& M )
     {
-        index_t nb_interfaces = M.nb_geological_entities( interface_name ) ;
+        index_t nb_interfaces = M.nb_geological_entities( Interface::type_name_static() ) ;
         if( nb_interfaces == 0 ) {
             Logger::err( "" ) << " The GeoModel " << M.name()
                 << " has no Interface" << std::endl ;
             return false ;
         }
         for( index_t i = 0; i < nb_interfaces; ++i ) {
-            const GME& E = M.geological_entity( interface_name, i ) ;
+            const GME& E = M.geological_entity( Interface::type_name_static(), i ) ;
             if( !E.has_name() ) {
                 Logger::err( "" ) << E.gme_id() << " has no name" << std::endl ;
                 return false ;
@@ -278,9 +275,9 @@ namespace {
         save_coordinate_system( out ) ;
 
         // Gocad::TSurf = RINGMesh::Interface
-        index_t nb_interfaces = M.nb_geological_entities( interface_name ) ;
+        index_t nb_interfaces = M.nb_geological_entities( Interface::type_name_static() ) ;
         for( index_t i = 0; i < nb_interfaces; ++i ) {
-            out << "TSURF " << M.geological_entity( interface_name, i ).name() << std::endl ;
+            out << "TSURF " << M.geological_entity( Interface::type_name_static(), i ).name() << std::endl ;
         }
 
         index_t count = 1 ;
@@ -290,7 +287,7 @@ namespace {
             const Surface& s = M.surface( i ) ;
             out << "TFACE " << count << "  " ;
             out << GME::geol_name( s.geological_feature() ) ;
-            out << " " << s.parent( interface_name ).name() << std::endl ;
+            out << " " << s.parent( Interface::type_name_static() ).name() << std::endl ;
 
             // Print the key facet which is the first three
             // vertices of the first facet
@@ -310,16 +307,16 @@ namespace {
             ++count ;
         }
         // Layers
-        index_t nb_layers =  M.nb_geological_entities( layer_name ) ;
+        index_t nb_layers =  M.nb_geological_entities( Layer::type_name_static() ) ;
         for( index_t i = 0; i < nb_layers; ++i ) {
-            save_layer( count, offset_layer, M.geological_entity( layer_name, i ), out ) ;
+            save_layer( count, offset_layer, M.geological_entity( Layer::type_name_static(), i ), out ) ;
             ++count ;
         }
         out << "END" << std::endl ;
 
         // Save the geometry of the Surfaces, Interface per Interface
         for( index_t i = 0; i < nb_interfaces; ++i ) {
-            const GeoModelGeologicalEntity& tsurf = M.geological_entity( interface_name, i ) ;
+            const GeoModelGeologicalEntity& tsurf = M.geological_entity( Interface::type_name_static(), i ) ;
             // TSurf beginning header
             out << "GOCAD TSurf 1" << std::endl << "HEADER {" << std::endl << "name:"
                 << tsurf.name() << std::endl << "name_in_model_list:" << tsurf.name()
