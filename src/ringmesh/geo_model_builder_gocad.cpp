@@ -1486,13 +1486,13 @@ namespace RINGMesh {
                         // Read ids of the vertices of each triangle in the TSurf
                         // and switch to ids in the TFace
                         tface_facets.push_back(
-                            (index_t) file_line_.field_as_uint( 1 )
+                            file_line_.field_as_uint( 1 )
                                 - tface_vertex_start.back() - 1 ) ;
                         tface_facets.push_back(
-                            (index_t) file_line_.field_as_uint( 2 )
+                             file_line_.field_as_uint( 2 )
                                 - tface_vertex_start.back() - 1 ) ;
                         tface_facets.push_back(
-                            (index_t) file_line_.field_as_uint( 3 )
+                            file_line_.field_as_uint( 3 )
                                 - tface_vertex_start.back() - 1 ) ;
                         tface_facets_ptr.push_back( tface_facets.size() ) ;
                     }
