@@ -62,6 +62,7 @@ namespace RINGMesh {
         GeoModelEditor( GeoModel& M )
             : model_(M), create_entity_allowed_(true)
         {
+            fill_entity_type_to_index_map() ;
         }
 
         ~GeoModelEditor()
@@ -360,6 +361,37 @@ namespace RINGMesh {
         void assert_entity_creation_allowed()
         {
             ringmesh_assert( create_entity_allowed_ ) ;
+        }
+
+        /// Internal -- to ease porting of element deletion code -- to rewrite anyway
+        std::map< std::string, index_t > entity_type_to_index_ ;
+        std::map< index_t, std::string > index_to_entity_type_ ;
+        
+        void fill_entity_type_to_index_map()
+        {            
+            entity_type_to_index_[Corner::type_name_static()] = 0 ;
+            entity_type_to_index_[Line::type_name_static()] = 1 ;
+            entity_type_to_index_[Surface::type_name_static()] = 2 ;
+            entity_type_to_index_[Region::type_name_static()] = 3 ;
+
+            index_t counter = 4 ;
+            for( index_t i = 0 ; i < model().nb_geological_entity_type(); ++i ) {
+                entity_type_to_index_[ model().geological_entity_type( i ) ] = counter ;
+                counter++ ;
+            }
+
+
+            index_to_entity_type_[0] = Corner::type_name_static() ;
+            index_to_entity_type_[1] = Line::type_name_static() ;
+            index_to_entity_type_[2] = Surface::type_name_static() ;
+            index_to_entity_type_[3] = Region::type_name_static() ;
+
+            counter = 4 ;
+            for( index_t i = 0 ; i < model().nb_geological_entity_type(); ++i ) {
+                index_to_entity_type_[counter] = model().geological_entity_type( i ) ; ;
+                counter++ ;
+            }
+
         }
 
     private:

@@ -96,6 +96,32 @@ namespace RINGMesh {
          * @{
          */
 
+        // nothing to do with the model, put it out
+        bool is_mesh_entity_type( const std::string& entity_type_name ) const
+        {
+            return entity_type_name == Corner::type_name_static()
+                || entity_type_name == Line::type_name_static()
+                || entity_type_name == Surface::type_name_static()
+                || entity_type_name == Region::type_name_static() ;
+        }
+
+        bool is_geological_entity_type( const std::string& entity_type_name ) const
+        {
+            return geological_entity_type( entity_type_name ) != NO_ID ;
+        }
+
+        index_t nb_entities( const std::string& type ) const
+        {
+            if( is_mesh_entity_type( type ) ) {
+                return nb_mesh_entities( type );
+            }
+            else if( is_geological_entity_type( type ) ) {
+                return nb_geological_entities( type ) ;
+            } else {
+                return 0 ;
+            }
+        }
+
         /*!
          * @brief Returns the number of mesh entities of the given type
          * @details Default value is 0
@@ -121,7 +147,6 @@ namespace RINGMesh {
         {
             return entity_relationships_ ;
         }
-
 
         /*!
          * @brief Returns the number of geological entities of the given type
@@ -332,6 +357,17 @@ namespace RINGMesh {
             const GME::gme_t& id ) const
         {
             return geological_entities( id.type )[id.index] ;
+        }
+
+        const GeoModelEntity* entity_ptr( const GME::gme_t& id ) const
+        {
+            if( is_mesh_entity_type( id.type ) ) {
+                return mesh_entity_ptr( id ) ;
+            } else if( is_geological_entity_type( id.type ) ) {
+                return geological_entity_ptr ;
+            } else {
+                return nil
+            }
         }
 
         /*!
