@@ -238,13 +238,12 @@ namespace RINGMesh {
             return ;
         }
 
-        const std::string& b_type = mesh_entity( type, 0 ).boundary_type() ;
+        const std::string& b_type = model().entity_relationships().boundary_type( type ) ;
         if( b_type != GME::type_name_static() ) {
             for( index_t i = 0; i < model().nb_mesh_entities( b_type ); ++i ) {
-                gme_t cur_gme( b_type, i ) ;
-                const GeoModelMeshEntity& b = mesh_entity( cur_gme ) ;
+                const GeoModelMeshEntity& b = mesh_entity( b_type, i ) ;
                 for( index_t j = 0; j < b.nb_in_boundary(); ++j ) {
-                    add_mesh_entity_boundary( b.in_boundary_gme( j ), cur_gme ) ;
+                    add_mesh_entity_boundary( b.in_boundary_gme( j ), i ) ;
                 }
             }
         }
@@ -256,13 +255,12 @@ namespace RINGMesh {
             return ;
         }
 
-        const std::string& in_b_type = mesh_entity( type, 0 ).in_boundary_type() ;
+        const std::string& in_b_type = model().entity_relationships().in_boundary_type( type ) ;
         if( in_b_type != GME::type_name_static() ) {
             for( index_t i = 0; i < model().nb_mesh_entities( in_b_type ); ++i ) {
-                gme_t cur_gme( in_b_type, i ) ;
-                const GeoModelMeshEntity& in_b = mesh_entity( cur_gme ) ;
+                const GeoModelMeshEntity& in_b = mesh_entity( in_b_type, i ) ;
                 for( index_t j = 0; j < in_b.nb_boundaries(); ++j ) {
-                    add_mesh_entity_in_boundary( in_b.boundary_gme( j ), cur_gme ) ;
+                    add_mesh_entity_in_boundary( in_b.boundary_gme( j ), i ) ;
                 }
             }
         }
@@ -301,10 +299,9 @@ namespace RINGMesh {
         const std::string& c_type = geological_entity( type, 0 ).child_type_name() ;
         if( c_type != GME::type_name_static() ) {
             for( index_t i = 0; i < model().nb_mesh_entities( c_type ); ++i ) {
-                gme_t cur_gme = gme_t( c_type, i ) ;
-                const GeoModelMeshEntity& p = mesh_entity( cur_gme ) ;
+                const GeoModelMeshEntity& p = mesh_entity( c_type, i ) ;
                 for( index_t j = 0; j < p.nb_parents(); j++ ) {
-                    add_geological_entity_child( p.parent_id( j ), cur_gme ) ;
+                    add_geological_entity_child( p.parent_id( j ), i ) ;
                 }
             }
         }

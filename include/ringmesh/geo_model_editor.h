@@ -201,12 +201,13 @@ namespace RINGMesh {
 
         void add_mesh_entity_boundary(
             const GME::gme_t& t,
-            const GME::gme_t& boundary,
+            index_t boundary_id,
             bool side = false )
         {
-            ringmesh_assert( boundary.is_defined() ) ;
             GeoModelMeshEntity& mesh = mesh_entity( t ) ;
-            ringmesh_assert( mesh.boundary_type() == boundary.type ) ;
+            const std::string& b_type = model().entity_relationships().boundary_type(
+                t.type ) ;
+            GME::gme_t boundary( b_type, boundary_id ) ;
             mesh.boundaries_.push_back( boundary ) ;
 
             if( t.type == Region::type_name_static() ) {
@@ -217,14 +218,16 @@ namespace RINGMesh {
         void set_mesh_entity_boundary(
             const GME::gme_t& t,
             index_t id,
-            const GME::gme_t& boundary,
+            index_t boundary_id,
             bool side = false )
         {
             /// No check on the validity of the index of the entity boundary
             /// NO_ID is used to flag entities to delete
             GeoModelMeshEntity& mesh = mesh_entity( t ) ;
-            ringmesh_assert( mesh.boundary_type() == boundary.type ) ;
             ringmesh_assert( id < mesh.nb_boundaries() ) ;
+            const std::string& b_type = model().entity_relationships().boundary_type(
+                t.type ) ;
+            GME::gme_t boundary( b_type, boundary_id ) ;
             mesh.boundaries_[id] = boundary ;
 
             if( t.type == Region::type_name_static() ) {
@@ -233,48 +236,50 @@ namespace RINGMesh {
         }
 
         void add_universe_boundary(
-            const GME::gme_t& boundary,
+            index_t boundary_id,
             bool side )
         {
-            ringmesh_assert( boundary.is_defined() ) ;
+            GME::gme_t boundary( Surface::type_name_static(), boundary_id ) ;
             model().universe_.boundary_surfaces_.push_back( boundary ) ;
             model().universe_.boundary_surface_sides_.push_back( side ) ;
         }
 
         void set_universe_boundary(
             index_t id,
-            const GME::gme_t& boundary,
+            index_t boundary_id,
             bool side )
         {
             /// No check on the validity of the index of the entity boundary
             /// NO_ID is used to flag entities to delete
             ringmesh_assert( id < model().universe_.nb_boundaries() ) ;
+            GME::gme_t boundary( Surface::type_name_static(), boundary_id ) ;
             model().universe_.boundary_surfaces_[id] = boundary ;
             model().universe_.boundary_surface_sides_[id] = side ;
         }
 
         void add_mesh_entity_in_boundary(
             const GME::gme_t& t,
-            const GME::gme_t& in_boundary )
+            index_t in_boundary_id )
         {
-            ringmesh_assert( in_boundary.is_defined() ) ;
             GeoModelMeshEntity& mesh = mesh_entity( t ) ;
-            ringmesh_assert(
-                mesh.in_boundary_type() == in_boundary.type ) ;
+            const std::string& in_b_type =
+                model().entity_relationships().in_boundary_type( t.type ) ;
+            GME::gme_t in_boundary( in_b_type, in_boundary_id ) ;
             mesh.in_boundary_.push_back( in_boundary ) ;
         }
 
         void set_mesh_entity_in_boundary(
             const GME::gme_t& t,
             index_t id,
-            const GME::gme_t& in_boundary )
+            index_t in_boundary_id )
         {
             /// No check on the validity of the index of the entity in_boundary
             /// NO_ID is used to flag entities to delete
             GeoModelMeshEntity& mesh = mesh_entity( t ) ;
-            ringmesh_assert(
-                mesh.in_boundary_type() == in_boundary.type ) ;
             ringmesh_assert( id < mesh.nb_in_boundary() ) ;
+            const std::string& in_b_type =
+                model().entity_relationships().in_boundary_type( t.type ) ;
+            GME::gme_t in_boundary( in_b_type, in_boundary_id ) ;
             mesh.in_boundary_[id] = in_boundary ;
         }
 
@@ -300,24 +305,27 @@ namespace RINGMesh {
 
         void add_geological_entity_child(
             const GME::gme_t& t,
-            const GME::gme_t& child_index )
+            index_t child_id )
         {
-            ringmesh_assert( child_index.is_defined() ) ;
             GeoModelGeologicalEntity& entity = geological_entity( t ) ;
-            ringmesh_assert( entity.child_type_name() == child_index.type ) ;
-            entity.children_.push_back( child_index ) ;
+            const std::string& child_type =
+                model().entity_relationships().child_type( t.type ) ;
+            GME::gme_t child( child_type, child_id ) ;
+            entity.children_.push_back( child ) ;
         }
 
         void set_geological_entity_child(
             const GME::gme_t& t,
             index_t id,
-            const GME::gme_t& child_index )
+            index_t child_id )
         {
             /// No check on the validity of the index of the entity child_index
             /// NO_ID is used to flag entities to delete
             GeoModelGeologicalEntity& entity = geological_entity( t ) ;
-            ringmesh_assert( entity.child_type_name() == child_index.type ) ;
-            entity.children_[id] = child_index ;
+            const std::string& child_type =
+                model().entity_relationships().child_type( t.type ) ;
+            GME::gme_t child( child_type, child_id ) ;
+            entity.children_[id] = child ;
         }
 
         void remove_entities( const std::set< GME::gme_t >& entities ) ;
