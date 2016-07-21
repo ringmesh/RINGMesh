@@ -53,7 +53,7 @@ namespace RINGMesh {
     class GeoModelMeshEntity ;
 
 
-   class RINGMESH_API GeoModelGeologicalEntity: public GeoModelEntity {
+    class RINGMESH_API GeoModelGeologicalEntity: public GeoModelEntity {
     public:
         friend class GeoModelEditor ;
 
@@ -90,6 +90,107 @@ namespace RINGMesh {
         std::vector< gme_t > children_ ;
     } ;
 
+    class RINGMESH_API Contact: public GeoModelGeologicalEntity {
+    public:
+        Contact(
+            const GeoModel& model,
+            index_t id,
+            const std::string& name = "unnamed",
+            GEOL_FEATURE geological_feature = NO_GEOL )
+            : GeoModelEntity( model, id, name, geological_feature )
+        {
+        }
+        ~Contact()
+        {
+        }
+
+        static const std::string type_name_static()
+        {
+            return "Contact" ;
+        }
+        virtual const std::string type_name() const
+        {
+            return type_name_static() ;
+        }
+        virtual const std::string child_type_name() const
+        {
+            return Line::type_name_static() ;
+        }
+
+        virtual bool is_valid() const
+        {
+            /// @todo to implement
+            return true ;
+        }
+    } ;
+
+    class RINGMESH_API Interface: public GeoModelGeologicalEntity {
+    public:
+       Interface(
+            const GeoModel& model,
+            index_t id,
+            const std::string& name = "unnamed",
+            GEOL_FEATURE geological_feature = NO_GEOL )
+            : GeoModelEntity( model, id, name, geological_feature )
+        {
+        }
+        ~Interface()
+        {
+        }
+
+        static const std::string type_name_static()
+        {
+            return "Interface" ;
+        }
+        virtual const std::string type_name() const
+        {
+            return type_name_static() ;
+        }
+        virtual const std::string child_type_name() const
+        {
+            return Surface::type_name_static() ;
+        }
+
+        virtual bool is_valid() const
+        {
+            /// @todo to implement
+            return true ;
+        }
+    } ;
+
+    class RINGMESH_API Layer: public GeoModelGeologicalEntity {
+    public:
+       Layer(
+            const GeoModel& model,
+            index_t id,
+            const std::string& name = "unnamed",
+            GEOL_FEATURE geological_feature = NO_GEOL )
+            : GeoModelEntity( model, id, name, geological_feature )
+        {
+        }
+        ~Layer()
+        {
+        }
+
+        static const std::string type_name_static()
+        {
+            return "Layer" ;
+        }
+        virtual const std::string type_name() const
+        {
+            return type_name_static() ;
+        }
+        virtual const std::string child_type_name() const
+        {
+            return Region::type_name_static() ;
+        }
+
+        virtual bool is_valid() const
+        {
+            /// @todo to implement
+            return true ;
+        }
+    } ;
 }
 
 #endif

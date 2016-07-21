@@ -288,9 +288,6 @@ namespace RINGMesh {
 namespace {
     using namespace RINGMesh ;
 
-    const std::string interface_name = "Interface" ;
-    const std::string layer_name = "Layer" ;
-
     /*! @}
      * \name Building surface
      * @{

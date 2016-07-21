@@ -1977,7 +1977,8 @@ namespace RINGMesh {
             std::set< gme_t > cur_interfaces ;
             for( index_t j = 0; j < L.nb_in_boundary(); ++j ) {
                 cur_interfaces.insert(
-                    model().mesh_entity( L.in_boundary_gme( j ) ).parent_id( "Interface" ) ) ;
+                    model().mesh_entity( L.in_boundary_gme( j ) ).parent_id(
+                        Interface::type_name_static() ) ) ;
             }
             gme_t contact_id ;
             for( index_t j = 0; j < interfaces.size(); ++j ) {
