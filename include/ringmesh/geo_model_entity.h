@@ -113,8 +113,9 @@ namespace RINGMesh {
      * 
      */
     class RINGMESH_API GeoModelEntity {
-   // ringmesh_disable_copy( GeoModelEntity ) ;
+    public:
         friend class GeoModelEditor ;
+
     public:
         /*!
          * @brief Geological feature types for GeoModelEntity
@@ -192,7 +193,10 @@ namespace RINGMesh {
                 return os ;    
             }
 
-            bool is_defined() const ;
+            bool is_defined() const
+            {
+                return type != type_name_ && index != NO_ID ;
+            }
                 
             /*!
              * TYPE of the GeoModelEntity
@@ -217,12 +221,14 @@ namespace RINGMesh {
             return T == STRATI || T == UNCONFORMITY ;
         }
 
-        static const std::string type_name_ ;
-        /*!
-         * \name Key functions to access relationships between TYPEs 
-         * @{
-         */
-        virtual const std::string& type_name() const = 0 ;
+        static const std::string default_entity_type_name()
+        {
+            return "No_entity_type" ;
+        }
+        virtual const std::string type_name() const = 0
+        {
+            return default_entity_type_name() ;
+        }
         virtual bool is_on_voi() const = 0 ;
 
         /*!@}
@@ -338,7 +344,6 @@ namespace RINGMesh {
     class RINGMESH_API Universe: public GeoModelEntity {
         friend class GeoModelEditor ;
     public:
-        static const std::string type_name_ ;
         Universe( const GeoModel& model ) ;
         virtual ~Universe() {};
         
@@ -358,9 +363,13 @@ namespace RINGMesh {
         {
             return true ;
         }
-        const std::string& type_name() const
+        static const std::string universe_type_name()
         {
-            return type_name_ ;
+            return "Universe" ;
+        }
+        virtual const std::string type_name() const
+        {
+            return universe_type_name() ;
         }
         index_t nb_boundaries() const
         {

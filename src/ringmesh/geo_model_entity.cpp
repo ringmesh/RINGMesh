@@ -230,16 +230,6 @@ namespace {
 }
 
 namespace RINGMesh {
-
-    bool GME::gme_t::is_defined() const
-    {
-        return type != GME::type_name_ && index != NO_ID ;
-    }
-
-    const std::string GeoModelEntity::type_name_ = "No_entity_type" ;
-    const std::string Universe::type_name_ = "Universe" ;
-    
-
     Universe::Universe( const GeoModel& model )
         : GeoModelEntity( model, NO_ID, type_name_ )
     {

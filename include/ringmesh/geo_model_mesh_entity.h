@@ -60,8 +60,7 @@ namespace RINGMesh {
       * the RINGMesh::Mesh geometry. We also provide functions to link
       * the GeoModelMeshEntity with GeoModelMesh.
       */
-    class RINGMESH_API GeoModelMeshEntity : public GeoModelEntity
-    {
+    class RINGMESH_API GeoModelMeshEntity : public GeoModelEntity {
         ringmesh_disable_copy( GeoModelMeshEntity ) ;
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
@@ -86,6 +85,15 @@ namespace RINGMesh {
     public:
         virtual const std::string& boundary_type() const = 0 ;
         virtual const std::string& in_boundary_type() const = 0 ;
+
+        static const std::string default_entity_type_name()
+        {
+            return "No_entity_type" ;
+        }
+        virtual const std::string type_name() const = 0
+        {
+            return default_entity_type_name() ;
+        }
 
         /*!@}
          * \name Connectivity - boundary and in_boundary
@@ -383,9 +391,7 @@ namespace RINGMesh {
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
     public:
-        static const std::string type_name_ ;
-
-        /*! @brief Creates a Corner.
+       /*! @brief Creates a Corner.
          *  A point is added to its Mesh.
          */
         Corner( const GeoModel& model, index_t id )
@@ -402,9 +408,13 @@ namespace RINGMesh {
         virtual const std::string& boundary_type() const ;
         virtual bool is_on_voi() const ;
 
-        virtual const std::string& type_name() const
+        static const std::string type_name_static()
         {
-            return type_name_ ;
+            return "Corner" ;
+        }        
+        virtual const std::string type_name() const
+        {
+            return type_name_static() ;
         }
 
 
@@ -469,10 +479,7 @@ namespace RINGMesh {
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
     public:
-        static const std::string type_name_ ;
-
         Line( const GeoModel& model, index_t id ) ;
-
         ~Line()
         {
         }
@@ -480,11 +487,14 @@ namespace RINGMesh {
         virtual const std::string& in_boundary_type() const ;
         virtual const std::string& boundary_type() const ;
         virtual bool is_on_voi() const ;
-        virtual const std::string& type_name() const
+        static const std::string type_name_static()
         {
-            return type_name_ ;
+            return "Line" ;
+        }        
+        virtual const std::string type_name() const
+        {
+            return type_name_static() ;
         }
-
 
         virtual index_t vertex_index( index_t corner_index ) const
         {
@@ -551,7 +561,8 @@ namespace RINGMesh {
 
     private:
         virtual bool is_mesh_valid() const ;
-    } ;
+    } ;                     
+
 
     /*!
      * @brief A GeoModelEntity of type SURFACE
@@ -577,9 +588,13 @@ namespace RINGMesh {
         virtual const std::string& in_boundary_type() const ;
         virtual const std::string& boundary_type() const ;
         virtual bool is_on_voi() const ;
-        virtual const std::string& type_name() const
+        static const std::string type_name_static()
         {
-            return type_name_ ;
+            return "Surface" ;
+        }        
+        virtual const std::string type_name() const
+        {
+            return type_name_static() ;
         }
 
 
@@ -848,12 +863,14 @@ namespace RINGMesh {
         virtual const std::string& in_boundary_type() const ;
         virtual const std::string& boundary_type() const ;
         virtual bool is_on_voi() const ;
-        virtual const std::string& type_name() const
+        static const std::string type_name_static()
         {
-            return type_name_ ;
+            return "Region" ;
+        }        
+        virtual const std::string type_name() const
+        {
+            return type_name_static() ;
         }
-
-
 
         bool is_meshed() const
         {
