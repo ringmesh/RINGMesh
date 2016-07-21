@@ -303,9 +303,9 @@ namespace {
         const GeoModel& geomodel,
         const std::string& interface_name )
     {
-        for( index_t i = 0; i < geomodel.nb_geological_entities( interface_name ); ++i ) {
-            if( geomodel.geological_entity( interface_name, i ).name() == interface_name ) {
-                return geomodel.geological_entity( interface_name, i ).gme_id() ;
+        for( index_t i = 0; i < geomodel.nb_geological_entities( Interface::type_name_static() ); ++i ) {
+            if( geomodel.geological_entity( Interface::type_name_static(), i ).name() == interface_name ) {
+                return geomodel.geological_entity( Interface::type_name_static(), i ).gme_id() ;
             }
         }
         return GME::gme_t() ;
@@ -1308,8 +1308,9 @@ namespace RINGMesh {
                             oss << file_line_.field( f++ ) ;
                         } while( f < file_line_.nb_fields() ) ;
                         // Create an interface and set its name
-                        set_geological_entity_name(
-                            create_geological_entity( Interface::type_name_static() ), oss.str() ) ;
+                        GME::gme_t interface_id = create_geological_entity(
+                            Interface::type_name_static() ) ;
+                        set_geological_entity_name( interface_id, oss.str() ) ;
 
                         nb_tsurf++ ;
                     } else if( file_line_.field_matches( 0, "TFACE" ) ) {
@@ -1340,7 +1341,7 @@ namespace RINGMesh {
                             file_line_.field_as_double( 1 ),
                             file_line_.field_as_double( 2 ) ) ;
 
-                        create_surface( Interface::type_name_static(), geol, p0, p1, p2 ) ;
+                        create_surface( interface_name, geol, p0, p1, p2 ) ;
                         nb_tface++ ;
                     } else if( file_line_.field_matches( 0, "REGION" ) ) {
                         /// 1.3 Read Region information and create them from their name,
@@ -1789,7 +1790,7 @@ namespace RINGMesh {
 
         GME::gme_t id = create_mesh_entity( Surface::type_name_static() ) ;
         add_mesh_entity_parent( id, parent ) ;
-        set_mesh_entity_geol_feature( parent, GME::determine_geological_type( type ) ) ;
+        set_geological_entity_geol_feature( parent, GME::determine_geological_type( type ) ) ;
         key_facets_.push_back( KeyFacet( p0, p1, p2 ) ) ;
     }
 

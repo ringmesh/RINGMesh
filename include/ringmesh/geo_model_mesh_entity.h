@@ -83,8 +83,8 @@ namespace RINGMesh {
         }
 
     public:
-        virtual const std::string& boundary_type() const = 0 ;
-        virtual const std::string& in_boundary_type() const = 0 ;
+        virtual const std::string boundary_type() const = 0 ;
+        virtual const std::string in_boundary_type() const = 0 ;
 
         static const std::string default_entity_type_name()
         {
@@ -399,13 +399,14 @@ namespace RINGMesh {
         {
             MeshBuilder builder( mesh_ ) ;
             builder.create_vertex() ;
+            id_.type = type_name_static() ;
         }
 
         ~Corner()
         {}
 
-        virtual const std::string& in_boundary_type() const ;
-        virtual const std::string& boundary_type() const ;
+        virtual const std::string in_boundary_type() const ;
+        virtual const std::string boundary_type() const ;
         virtual bool is_on_voi() const ;
 
         static const std::string type_name_static()
@@ -484,8 +485,8 @@ namespace RINGMesh {
         {
         }
 
-        virtual const std::string& in_boundary_type() const ;
-        virtual const std::string& boundary_type() const ;
+        virtual const std::string in_boundary_type() const ;
+        virtual const std::string boundary_type() const ;
         virtual bool is_on_voi() const ;
         static const std::string type_name_static()
         {
@@ -579,14 +580,15 @@ namespace RINGMesh {
         Surface( const GeoModel& model, index_t id )
             : GeoModelMeshEntity( model, id )
         {
+            id_.type = type_name_static() ;
         }
 
         ~Surface()
         {
         }
 
-        virtual const std::string& in_boundary_type() const ;
-        virtual const std::string& boundary_type() const ;
+        virtual const std::string in_boundary_type() const ;
+        virtual const std::string boundary_type() const ;
         virtual bool is_on_voi() const ;
         static const std::string type_name_static()
         {
@@ -849,19 +851,24 @@ namespace RINGMesh {
     public:
         Region( const GeoModel& model, index_t id )
             : GeoModelMeshEntity( model, id )
-        {}
+        {
+            id_.type = type_name_static() ;
+        }
         Region(
             const GeoModel& model,
             index_t id,
             const std::string& name,
             GEOL_FEATURE geological_feature )
             : GeoModelMeshEntity( model, id, name, geological_feature )
-        {}
+        {
+            id_.type = type_name_static() ;
+        }
         ~Region()
-        {}
+        {
+        }
 
-        virtual const std::string& in_boundary_type() const ;
-        virtual const std::string& boundary_type() const ;
+        virtual const std::string in_boundary_type() const ;
+        virtual const std::string boundary_type() const ;
         virtual bool is_on_voi() const ;
         static const std::string type_name_static()
         {

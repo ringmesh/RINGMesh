@@ -100,6 +100,7 @@ namespace RINGMesh {
         Contact( const GeoModel& model )
             : GeoModelGeologicalEntity( model )
         {
+            id_.type = type_name_static() ;
         }
         ~Contact()
         {
@@ -130,6 +131,7 @@ namespace RINGMesh {
         Interface( const GeoModel& model )
             : GeoModelGeologicalEntity( model )
         {
+            id_.type = type_name_static() ;
         }
         ~Interface()
         {
@@ -160,6 +162,7 @@ namespace RINGMesh {
         Layer( const GeoModel& model )
             : GeoModelGeologicalEntity( model )
         {
+            id_.type = type_name_static() ;
         }
         ~Layer()
         {

@@ -439,11 +439,11 @@ namespace RINGMesh {
 
 
 
-    const std::string& Corner::in_boundary_type() const
+    const std::string Corner::in_boundary_type() const
     {
         return Line::type_name_static() ;
     }
-    const std::string& Corner::boundary_type() const
+    const std::string Corner::boundary_type() const
     {
         return GME::type_name_static() ;
     }
@@ -498,6 +498,7 @@ namespace RINGMesh {
     Line::Line( const GeoModel& model, index_t id )
         : GeoModelMeshEntity( model, id )
     {
+        id_.type = type_name_static() ;
     }
 
     /*!
@@ -602,22 +603,22 @@ namespace RINGMesh {
     }
 
 
-    const std::string& Line::in_boundary_type() const
+    const std::string Line::in_boundary_type() const
     {
         return Surface::type_name_static() ;
     }
-    const std::string& Line::boundary_type() const
+    const std::string Line::boundary_type() const
     {
         return Corner::type_name_static() ;
     }
     /********************************************************************/
 
 
-    const std::string& Surface::in_boundary_type() const
+    const std::string Surface::in_boundary_type() const
     {
         return Region::type_name_static() ;
     }
-    const std::string& Surface::boundary_type() const
+    const std::string Surface::boundary_type() const
     {
         return Line::type_name_static() ;
     }
@@ -1110,11 +1111,11 @@ namespace RINGMesh {
     /********************************************************************/
 
 
-    const std::string& Region::in_boundary_type() const
+    const std::string Region::in_boundary_type() const
     {
         return GME::type_name_static() ;
     }
-    const std::string& Region::boundary_type() const
+    const std::string Region::boundary_type() const
     {
         return Surface::type_name_static() ;
     }
