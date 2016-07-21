@@ -179,10 +179,13 @@ namespace RINGMesh {
         return count ;
     }
 
-    void fill_vertices( const GeoModel& M, const std::string& entity_type, 
-        MeshBuilder& builder, std::vector< std::vector< GMEVertex > >& gme_vertices )
+    void fill_vertices(
+        const GeoModel& M,
+        const std::string& entity_type,
+        MeshBuilder& builder,
+        std::vector< std::vector< GMEVertex > >& gme_vertices,
+        index_t& count )
     {
-        index_t count = 0 ;
         for( index_t i = 0; i < M.nb_mesh_entities( entity_type ); ++i ) {
             GeoModelMeshEntity& E = const_cast< GeoModelMeshEntity& >(M.mesh_entity( entity_type, i ) );
             if( E.nb_vertices() == 0 ) {
@@ -228,10 +231,11 @@ namespace RINGMesh {
         builder.create_vertices( nb ) ;
         gme_vertices_.resize( nb ) ;
 
-        fill_vertices( gm_, Corner::type_name_static() , builder, gme_vertices_);
-        fill_vertices( gm_, Line::type_name_static()   , builder, gme_vertices_);
-        fill_vertices( gm_, Surface::type_name_static(), builder, gme_vertices_);
-        fill_vertices( gm_, Region::type_name_static() , builder, gme_vertices_);
+        index_t count = 0 ;
+        fill_vertices( gm_, Corner::type_name_static() , builder, gme_vertices_, count );
+        fill_vertices( gm_, Line::type_name_static()   , builder, gme_vertices_, count );
+        fill_vertices( gm_, Surface::type_name_static(), builder, gme_vertices_, count );
+        fill_vertices( gm_, Region::type_name_static() , builder, gme_vertices_, count );
 
         // Remove colocated vertices
         remove_colocated() ;

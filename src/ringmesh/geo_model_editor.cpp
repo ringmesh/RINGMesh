@@ -263,7 +263,8 @@ namespace RINGMesh {
     void GeoModelEditor::fill_mesh_entities_parent( const std::string& type )
     {
         const GeoModel& M = model() ;
-        if( M.nb_mesh_entities( type ) == 0 ) return ;
+        if( M.nb_mesh_entities( type ) == 0
+            || entity_relationships().nb_parent_types( type ) == 0 ) return ;
 
         const GeoModelMeshEntity& first_mesh_entity = mesh_entity( type, 0 ) ;
 
@@ -302,7 +303,8 @@ namespace RINGMesh {
     void GeoModelEditor::complete_mesh_entities_geol_feature_from_first_parent(
         const std::string& type )
     {
-        if( model().nb_mesh_entities( type ) == 0 ) return ;
+        if( model().nb_mesh_entities( type ) == 0
+            || entity_relationships().nb_parent_types( type ) == 0 ) return ;
 
         const std::string& parent_type = *entity_relationships().parent_types( type ).begin() ;   // beurk
         if( parent_type != GME::type_name_static() ) {
@@ -327,7 +329,7 @@ namespace RINGMesh {
         // @todo change failuer return value for entity relationship requests
         if( child_type != GME::type_name_static() ) {
             for( index_t i = 0; i < model().nb_geological_entities( type ); ++i ) {
-                GeoModelGeologicalEntity& p = geological_entity( child_type, i ) ;
+                GeoModelGeologicalEntity& p = geological_entity( type, i ) ;
                 if( !p.has_geological_feature() ) {
                     if( p.nb_children() > 0 && p.child( 0 ).has_geological_feature() ) {
                         p.geol_feature_ = p.child( 0 ).geological_feature() ;

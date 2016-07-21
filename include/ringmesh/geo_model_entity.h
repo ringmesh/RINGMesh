@@ -65,6 +65,8 @@ namespace RINGMesh {
         void register_relationship( const std::string& parent_type_name,
             const std::string& child_type_name )
         {
+            DEBUG( parent_type_name ) ;
+            DEBUG( child_type_name ) ;
             register_child_type( parent_type_name, child_type_name ) ;
             register_parent_type( parent_type_name, child_type_name ) ;
         }
@@ -86,10 +88,14 @@ namespace RINGMesh {
                 itr = child_to_parents_.find( child_type );
             return itr->second ;
         }
-       /* index_t nb_parent_types( const std::string& child_type ) const
+        index_t nb_parent_types( const std::string& child_type ) const
         {
-            return parent_types( child_type ).size() ;
+            std::map< std::string, std::set< std::string > >::const_iterator itr =
+                child_to_parents_.find( child_type ) ;
+            if( itr == child_to_parents_.end() ) return 0 ;
+            return itr->second.size() ;
         }
+        /*
         const std::string parent_type( const std::string child_type, index_t i ) const
         {
             const std::set< std::string >& parent_types
