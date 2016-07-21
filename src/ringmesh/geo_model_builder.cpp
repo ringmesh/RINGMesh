@@ -1994,11 +1994,11 @@ namespace RINGMesh {
                 ringmesh_assert( contact_id.index == interfaces.size() ) ;
                 interfaces.push_back( cur_interfaces ) ;
                 // Create a name for this contact
-                std::string name = "contact_" ;
+                std::string name = "contact" ;
                 for( std::set< gme_t >::const_iterator it( cur_interfaces.begin() );
                     it != cur_interfaces.end(); ++it ) {
-                    name += model().geological_entity( *it ).name() ;
                     name += "_" ;
+                    name += model().geological_entity( *it ).name() ;
                 }
                 set_geological_entity_name( contact_id, name ) ;
             }

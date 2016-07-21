@@ -231,7 +231,7 @@ namespace {
 
 namespace RINGMesh {
     Universe::Universe( const GeoModel& model )
-        : GeoModelEntity( model, NO_ID, type_name_static() )
+        : GeoModelEntity( model, NO_ID, universe_type_name() )
     {
     }
 

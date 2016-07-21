@@ -382,13 +382,8 @@ namespace RINGMesh {
         bool valid_parent_type = parentage.parent_types( type_name() ).count( parent_type_name ) > 0;
 
         if( valid_parent_type ) {
-            DEBUG( "========" ) ;
-            DEBUG( parent_type_name ) ;
-            DEBUG( id_ ) ;
-            DEBUG( nb_parents() ) ;
             for( index_t i = 0; i < nb_parents(); ++i ) {
                 const gme_t& parent = parent_id( i ) ;
-                DEBUG( parent.type ) ;
                 if( parent.type == parent_type_name ) {
                     return parent ;
                 }
