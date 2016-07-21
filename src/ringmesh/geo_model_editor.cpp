@@ -118,6 +118,7 @@ namespace RINGMesh {
     {
         ringmesh_assert( GeoModelGeologicalEntityFactory::has_creator( type ) ) ;
         model_.geological_entity_types_.push_back( type ) ;
+        model_.geological_entities_.push_back( std::vector< GeoModelGeologicalEntity* >() ) ;
         GeoModelGeologicalEntity* E = GeoModelGeologicalEntityFactory::create_object(
                 type, model() ) ;
 
