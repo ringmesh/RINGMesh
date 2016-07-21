@@ -1422,7 +1422,7 @@ namespace RINGMesh {
         ringmesh_assert( adjacent_triangles.size() == M.nb_facets() * 3 ) ;
         for( index_t f = 0; f < M.nb_facets(); f++ ) {
             for( index_t v = 0; v < 3; v++ ) {
-                builder.set_facet_adjacent( f, v, adjacent_triangles[f] ) ;
+                builder.set_facet_adjacent( f, v, adjacent_triangles[3*f+v] ) ;
             }
         }
     }
@@ -1786,11 +1786,7 @@ namespace RINGMesh {
             }
 
             GME::gme_t first_corner = find_or_create_corner( vertices.front() ) ;
-            DEBUG( model().mesh.vertices.vertex( vertices.front() ) ) ;
-            DEBUG( first_corner ) ;
             GME::gme_t second_corner = find_or_create_corner( vertices.back() ) ;
-            DEBUG( model().mesh.vertices.vertex( vertices.back() ) ) ;
-            DEBUG( second_corner ) ;
             const std::vector< index_t >& adjacent_surfaces =
                 line_computer.adjacent_surfaces() ;
 
