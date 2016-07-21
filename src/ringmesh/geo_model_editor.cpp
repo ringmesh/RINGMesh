@@ -230,7 +230,9 @@ namespace RINGMesh {
         // No way yet to know the surface orientation
         ringmesh_assert( type != Region::type_name_static() ) ;
 
-        if( model().nb_mesh_entities( type ) == 0 ) return ;
+        if( model().nb_mesh_entities( type ) == 0 ) {
+            return ;
+        }
 
         const std::string& b_type = mesh_entity( type, 0 ).boundary_type() ;
         if( b_type != GME::type_name_static() ) {
@@ -246,9 +248,11 @@ namespace RINGMesh {
 
     void GeoModelEditor::fill_mesh_entities_in_boundaries( const std::string& type )
     {
-        if( model().nb_mesh_entities( type ) == 0 ) return ;
+        if( model().nb_mesh_entities( type ) == 0 ) {
+            return ;
+        }
 
-        const std::string& in_b_type = mesh_entity( type, 0 ).boundary_type() ;
+        const std::string& in_b_type = mesh_entity( type, 0 ).in_boundary_type() ;
         if( in_b_type != GME::type_name_static() ) {
             for( index_t i = 0; i < model().nb_mesh_entities( in_b_type ); ++i ) {
                 gme_t cur_gme( in_b_type, i ) ;
@@ -264,9 +268,9 @@ namespace RINGMesh {
     {
         const GeoModel& M = model() ;
         if( M.nb_mesh_entities( type ) == 0
-            || entity_relationships().nb_parent_types( type ) == 0 ) return ;
-
-        const GeoModelMeshEntity& first_mesh_entity = mesh_entity( type, 0 ) ;
+            || entity_relationships().nb_parent_types( type ) == 0 ) {
+            return ;
+        }
 
         const std::set< std::string >& parent_types( entity_relationships().parent_types( type ) ) ;
 
@@ -286,7 +290,9 @@ namespace RINGMesh {
 
     void GeoModelEditor::fill_geological_entities_children( const std::string& type )
     {
-        if( model().nb_geological_entities( type ) == 0 ) return ;        
+        if( model().nb_geological_entities( type ) == 0 ) {
+            return ;
+        }
 
         const std::string& c_type = geological_entity( type, 0 ).child_type_name() ;
         if( c_type != GME::type_name_static() ) {
@@ -304,7 +310,9 @@ namespace RINGMesh {
         const std::string& type )
     {
         if( model().nb_mesh_entities( type ) == 0
-            || entity_relationships().nb_parent_types( type ) == 0 ) return ;
+            || entity_relationships().nb_parent_types( type ) == 0 ) {
+            return ;
+        }
 
         const std::string& parent_type = *entity_relationships().parent_types( type ).begin() ;   // beurk
         if( parent_type != GME::type_name_static() ) {
