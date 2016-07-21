@@ -126,15 +126,13 @@ namespace RINGMesh {
                             index_t s ;
                             GEO::String::from_string( &file_line.field( c )[1], s ) ;
 
-                            add_mesh_entity_boundary( entity,
-                                GME::gme_t( Surface::type_name_static(), s ), side ) ;
+                            add_mesh_entity_boundary( entity, s, side ) ;
                         }
                     } else {
                         // Second line : indices of its in boundaries
                         for( index_t c = 0; c < file_line.nb_fields(); c++ ) {
                             add_mesh_entity_in_boundary( entity,
-                                GME::gme_t( model().mesh_entity( entity ).in_boundary_type(),
-                                    file_line.field_as_uint( c ) ) ) ;
+                                file_line.field_as_uint( c ) ) ;
                         }
                     }
                 }
@@ -151,8 +149,7 @@ namespace RINGMesh {
                         index_t s = NO_ID ;
                         GEO::String::from_string( &file_line.field( c )[1], s ) ;
 
-                        add_universe_boundary( GME::gme_t( Surface::type_name_static(), s ),
-                            side ) ;
+                        add_universe_boundary( s, side ) ;
                     }
                 }
             }
@@ -206,13 +203,9 @@ namespace RINGMesh {
                         GME::determine_geological_type( file_line.field( 3 ) ) ) ;
                     file_line.get_line() ;
                     file_line.get_fields() ;
-                    const GeoModelGeologicalEntity& cur_gme =
-                        model().geological_entity( type, id ) ;
-                    const std::string& child_type = cur_gme.child_type_name() ;
                     for( index_t in_b = 0; in_b < file_line.nb_fields(); in_b++ ) {
                         add_geological_entity_child( entity,
-                            GME::gme_t( child_type,
-                                file_line.field_as_uint( in_b ) ) ) ;
+                            file_line.field_as_uint( in_b ) ) ;
                     }
                 }
             }

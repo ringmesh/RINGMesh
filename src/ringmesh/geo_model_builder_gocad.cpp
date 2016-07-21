@@ -170,7 +170,7 @@ namespace RINGMesh {
             ringmesh_assert(
                 gocad_vertices2region_vertices_.size()
                 == gocad_vertices2region_id_.size() ) ;
-            return gocad_vertices2region_vertices_.size() ;
+            return static_cast< index_t >( gocad_vertices2region_vertices_.size() ) ;
         }
 
         void reserve( index_t capacity )
@@ -543,11 +543,10 @@ namespace {
         GeoModelBuilderTSolid& geomodel_builder )
     {
         geomodel_builder.add_mesh_entity_boundary(
-            GME::gme_t( Region::type_name_static(), region_id ),
-            GME::gme_t( Surface::type_name_static(), surface_id ), surf_side ) ;
+            GME::gme_t( Region::type_name_static(), region_id ), surface_id,
+            surf_side ) ;
         geomodel_builder.add_mesh_entity_in_boundary(
-            GME::gme_t( Surface::type_name_static(), surface_id ),
-            GME::gme_t( Region::type_name_static(), region_id ) ) ;
+            GME::gme_t( Surface::type_name_static(), surface_id ), region_id ) ;
     }
 
     /*!
@@ -694,11 +693,9 @@ namespace {
     {
         for( index_t s = 0; s < nb_surfaces; ++s ) {
             if( surface_sides[2 * s] && !surface_sides[2 * s + 1] ) {
-                geomodel_builder.add_universe_boundary(
-                    GME::gme_t( Surface::type_name_static(), s ), false ) ;
+                geomodel_builder.add_universe_boundary( s, false ) ;
             } else if( !surface_sides[2 * s] && surface_sides[2 * s + 1] ) {
-                geomodel_builder.add_universe_boundary(
-                    GME::gme_t( Surface::type_name_static(), s ), true ) ;
+                geomodel_builder.add_universe_boundary( s, true ) ;
             }
         }
     }
@@ -1145,7 +1142,7 @@ namespace RINGMesh {
                 GME::gme_t( Interface::type_name_static(), load_storage.cur_interface_ ) ) ;
             builder().add_geological_entity_child(
                 GME::gme_t( Interface::type_name_static(), load_storage.cur_interface_ ),
-                new_surface ) ;
+                new_surface.index ) ;
         }
     } ;
 
@@ -1375,15 +1372,12 @@ namespace RINGMesh {
                             set_mesh_entity_name( region_id, name ) ;
                             for( index_t i = 0; i < region_boundaries.size(); ++i ) {
                                 add_mesh_entity_boundary( region_id,
-                                    GME::gme_t( Surface::type_name_static(),
-                                        region_boundaries[i].first ),
+                                    region_boundaries[i].first,
                                     region_boundaries[i].second ) ;
                             }
                         } else {
                             for( index_t i = 0; i < region_boundaries.size(); ++i ) {
-                                add_universe_boundary(
-                                    GME::gme_t( Surface::type_name_static(),
-                                        region_boundaries[i].first ),
+                                add_universe_boundary( region_boundaries[i].first,
                                     region_boundaries[i].second ) ;
                             }
                         }
@@ -1404,8 +1398,7 @@ namespace RINGMesh {
                                 } else {
                                     region_id -= nb_tface + 1 ; // Remove Universe region
                                     // Correction because ids begin at 1 in the file
-                                    add_geological_entity_child( layer_id,
-                                        GME::gme_t( Region::type_name_static(), region_id - 1 ) ) ;
+                                    add_geological_entity_child( layer_id, region_id - 1 ) ;
                                 }
                             }
                         }
@@ -1582,7 +1575,7 @@ namespace RINGMesh {
                     // 2 - Check if this border already exists
                     GME::gme_t line_id = find_or_create_line( line_vertices ) ;
                     // Add the surface in which this line is
-                    add_mesh_entity_in_boundary( line_id, S.gme_id() ) ;
+                    add_mesh_entity_in_boundary( line_id, S.index() ) ;
                 }
             }
         } else {
@@ -1605,7 +1598,7 @@ namespace RINGMesh {
                 for( index_t b = 0; b < R.nb_boundaries(); ++b ) {
                     if( R.boundary_gme( b ).index == change_key_facet[i] ) {
                         bool old_side = R.side( b ) ;
-                        set_mesh_entity_boundary( R.gme_id(), b, R.boundary_gme( b ),
+                        set_mesh_entity_boundary( R.gme_id(), b, R.boundary_gme( b ).index,
                             !old_side ) ;
                     }
                 }

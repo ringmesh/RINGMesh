@@ -436,20 +436,6 @@ namespace RINGMesh {
 
     /**************************************************************/
 
-
-
-
-    const std::string Corner::in_boundary_type() const
-    {
-        return Line::type_name_static() ;
-    }
-    const std::string Corner::boundary_type() const
-    {
-        return GME::type_name_static() ;
-    }
-
-
-
     /*!
      * @brief Check that the Corner mesh is a unique point
      */
@@ -602,26 +588,7 @@ namespace RINGMesh {
         return valid ;
     }
 
-
-    const std::string Line::in_boundary_type() const
-    {
-        return Surface::type_name_static() ;
-    }
-    const std::string Line::boundary_type() const
-    {
-        return Corner::type_name_static() ;
-    }
     /********************************************************************/
-
-
-    const std::string Surface::in_boundary_type() const
-    {
-        return Region::type_name_static() ;
-    }
-    const std::string Surface::boundary_type() const
-    {
-        return Line::type_name_static() ;
-    }
 
     /*!
      * @brief Check that the mesh of the Surface is valid
@@ -1109,16 +1076,6 @@ namespace RINGMesh {
     }
 
     /********************************************************************/
-
-
-    const std::string Region::in_boundary_type() const
-    {
-        return GME::type_name_static() ;
-    }
-    const std::string Region::boundary_type() const
-    {
-        return Surface::type_name_static() ;
-    }
 
     bool Region::is_mesh_valid() const
     {
