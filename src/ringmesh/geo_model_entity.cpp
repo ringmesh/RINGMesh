@@ -230,6 +230,31 @@ namespace {
 }
 
 namespace RINGMesh {
+
+    typedef std::map< std::string, std::string > map_string_string ;
+
+    map_string_string EntityRelationships::create_boundary_map()
+    {
+        map_string_string map ;
+        map[Corner::type_name_static()] = GME::default_entity_type_name() ;
+        map[Line::type_name_static()] = Corner::type_name_static() ;
+        map[Surface::type_name_static()] = Line::type_name_static() ;
+        map[Region::type_name_static()] = Surface::type_name_static() ;
+        return map ;
+    }    map_string_string EntityRelationships::create_in_boundary_map()
+    {
+        map_string_string map ;
+        map[Corner::type_name_static()] = Line::type_name_static() ;
+        map[Line::type_name_static()] = Surface::type_name_static() ;
+        map[Surface::type_name_static()] = Region::type_name_static() ;
+        map[Region::type_name_static()] = GME::default_entity_type_name() ;
+        return map ;
+    }
+    map_string_string EntityRelationships::mesh_entity_to_boundary_ =
+        EntityRelationships::create_boundary_map() ;
+    map_string_string EntityRelationships::mesh_entity_to_in_boundary_ =
+        EntityRelationships::create_in_boundary_map() ;
+
     Universe::Universe( const GeoModel& model )
         : GeoModelEntity( model, NO_ID, universe_type_name() )
     {
@@ -327,8 +352,8 @@ namespace RINGMesh {
 
         if( !valid ) {
             // If previous information are not valid
-            // No further checks are possible 
-            // This really should not happen 
+            // No further checks are possible
+            // This really should not happen
             ringmesh_assert( valid ) ;
             return valid ;
         }

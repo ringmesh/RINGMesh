@@ -978,9 +978,9 @@ namespace RINGMesh {
             // Finds the indices of the corner at both extremities
             // Both must be defined to have a valid LINE
             add_mesh_entity_boundary( result,
-                find_or_create_corner( vertices.front() ) ) ;
+                find_or_create_corner( vertices.front() ).index ) ;
             add_mesh_entity_boundary( result,
-                find_or_create_corner( vertices.back() ) ) ;
+                find_or_create_corner( vertices.back() ).index ) ;
         }
         return result ;
     }
@@ -1798,11 +1798,10 @@ namespace RINGMesh {
                 set_line( line_index.index, vertices ) ;
 
                 for( index_t j = 0; j < adjacent_surfaces.size(); ++j ) {
-                    GME::gme_t surface_id( Surface::type_name_static(), adjacent_surfaces[j] ) ;
-                    add_mesh_entity_in_boundary( line_index, surface_id ) ;
+                    add_mesh_entity_in_boundary( line_index, adjacent_surfaces[j] ) ;
                 }
-                add_mesh_entity_boundary( line_index, first_corner ) ;
-                add_mesh_entity_boundary( line_index, second_corner ) ;
+                add_mesh_entity_boundary( line_index, first_corner.index ) ;
+                add_mesh_entity_boundary( line_index, second_corner.index ) ;
 
                 // If the plan is to then build_regions, get the information
                 if( options_.compute_regions_brep ) {
@@ -1844,13 +1843,12 @@ namespace RINGMesh {
                 /// If there is only one surface, its inside is set to be 
                 /// the + side. No further check.
                 bool inside = true ;
-                gme_t surface_id( Surface::type_name_static(), 0 ) ;
                 // Create the region - set the surface on its boundaries
                 gme_t region_id = create_mesh_entity( Region::type_name_static() ) ;
-                add_mesh_entity_boundary( region_id, surface_id, inside ) ;
+                add_mesh_entity_boundary( region_id, 0, inside ) ;
 
                 // Set universe boundary
-                add_universe_boundary( surface_id, !inside ) ;
+                add_universe_boundary( 0, !inside ) ;
             }
         } else {
             // Each side of each Surface is in one Region( +side is first )
@@ -1883,8 +1881,7 @@ namespace RINGMesh {
                         continue ;
                     }
                     // Add the surface to the current region
-                    add_mesh_entity_boundary( cur_region_id,
-                        gme_t( Surface::type_name_static(), s.first ), s.second ) ;
+                    add_mesh_entity_boundary( cur_region_id, s.first, s.second ) ;
                     surf_2_region[s_id] = cur_region_id.index ;
 
                     // Check the other side of the surface and push it in S
@@ -1935,7 +1932,7 @@ namespace RINGMesh {
             for( index_t i = 0; i < cur_region.nb_boundaries(); ++i ) {
                 // Fill the Universe region boundaries
                 // They are supposed to be empty
-                add_universe_boundary( cur_region.boundary( i ).gme_id(),
+                add_universe_boundary( cur_region.boundary( i ).index(),
                     cur_region.side( i ) ) ;
             }
             std::set< gme_t > to_erase ;
@@ -2002,7 +1999,7 @@ namespace RINGMesh {
                 }
                 set_geological_entity_name( contact_id, name ) ;
             }
-            add_geological_entity_child( contact_id, gme_t( Line::type_name_static(), i ) ) ;
+            add_geological_entity_child( contact_id, i ) ;
         }
     }
 

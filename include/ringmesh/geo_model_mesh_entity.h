@@ -83,9 +83,6 @@ namespace RINGMesh {
         }
 
     public:
-        virtual const std::string boundary_type() const = 0 ;
-        virtual const std::string in_boundary_type() const = 0 ;
-
         static const std::string default_entity_type_name()
         {
             return "No_entity_type" ;
@@ -405,8 +402,6 @@ namespace RINGMesh {
         ~Corner()
         {}
 
-        virtual const std::string in_boundary_type() const ;
-        virtual const std::string boundary_type() const ;
         virtual bool is_on_voi() const ;
 
         static const std::string type_name_static()
@@ -485,8 +480,6 @@ namespace RINGMesh {
         {
         }
 
-        virtual const std::string in_boundary_type() const ;
-        virtual const std::string boundary_type() const ;
         virtual bool is_on_voi() const ;
         static const std::string type_name_static()
         {
@@ -587,8 +580,6 @@ namespace RINGMesh {
         {
         }
 
-        virtual const std::string in_boundary_type() const ;
-        virtual const std::string boundary_type() const ;
         virtual bool is_on_voi() const ;
         static const std::string type_name_static()
         {
@@ -867,8 +858,6 @@ namespace RINGMesh {
         {
         }
 
-        virtual const std::string in_boundary_type() const ;
-        virtual const std::string boundary_type() const ;
         virtual bool is_on_voi() const ;
         static const std::string type_name_static()
         {
