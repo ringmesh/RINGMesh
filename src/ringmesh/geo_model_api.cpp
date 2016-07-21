@@ -248,7 +248,7 @@ namespace RINGMesh {
     /*!
      * Copies a GeoModel in another one
      */
-    void copy( const GeoModel& from, GeoModel& to ) ;
+    void copy( const GeoModel& from, GeoModel& to )
     {
         GeoModelBuilder builder( to ) ;
         builder.copy_macro_topology( from ) ;
