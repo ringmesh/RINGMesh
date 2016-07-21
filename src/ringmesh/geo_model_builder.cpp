@@ -644,8 +644,7 @@ namespace RINGMesh {
             index_t t = get_next_border_triangle( start, backward ) ;
             ringmesh_assert( t != start ) ;
 
-            bool same_surfaces = true ;
-            while( same_surfaces && t != start ) {
+            while( t != start ) {
                 ringmesh_assert( t != NO_ID ) ;
                 if( !is_visited( t ) ) {
                     std::vector< index_t > cur_adjacent_surfaces ;
@@ -655,10 +654,12 @@ namespace RINGMesh {
                         visit_border_triangles_on_same_edge( t ) ;
                         add_border_triangle_vertices_to_line( t, backward ) ;
                     } else {
-                        same_surfaces = false ;
+                        // Adjacent surface changed
+                        break ;
                     }
                 } else {
-                    same_surfaces = false ;
+                    // Adjacent surface changed
+                    break ;
                 }
                 t = get_next_border_triangle( t, backward ) ;
             }
@@ -1785,7 +1786,11 @@ namespace RINGMesh {
             }
 
             GME::gme_t first_corner = find_or_create_corner( vertices.front() ) ;
+            DEBUG( model().mesh.vertices.vertex( vertices.front() ) ) ;
+            DEBUG( first_corner ) ;
             GME::gme_t second_corner = find_or_create_corner( vertices.back() ) ;
+            DEBUG( model().mesh.vertices.vertex( vertices.back() ) ) ;
+            DEBUG( second_corner ) ;
             const std::vector< index_t >& adjacent_surfaces =
                 line_computer.adjacent_surfaces() ;
 
