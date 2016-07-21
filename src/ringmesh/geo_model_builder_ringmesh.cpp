@@ -85,9 +85,9 @@ namespace RINGMesh {
             file_line.get_fields() ;
             if( file_line.nb_fields() > 0 ) {
                 // Name of the model
-                if( file_line.field_matches( 0, "Name" ) ) {
-                    if( file_line.nb_fields() > 1 ) {
-                        set_model_name( file_line.field( 1 ) ) ;
+                if( file_line.field_matches( 0, "GeoModel" ) ) {
+                    if( file_line.nb_fields() > 2 ) {
+                        set_model_name( file_line.field( 2 ) ) ;
                     }
                 }
                 // Number of entities of a given type
@@ -133,7 +133,7 @@ namespace RINGMesh {
                         // Second line : indices of its in boundaries
                         for( index_t c = 0; c < file_line.nb_fields(); c++ ) {
                             add_mesh_entity_in_boundary( entity,
-                                GME::gme_t( model().mesh_entity( entity ).boundary_type(),
+                                GME::gme_t( model().mesh_entity( entity ).in_boundary_type(),
                                     file_line.field_as_uint( c ) ) ) ;
                         }
                     }
@@ -192,20 +192,28 @@ namespace RINGMesh {
         while( !file_line.eof() && file_line.get_line() ) {
             file_line.get_fields() ;
             if( file_line.nb_fields() > 0 ) {
-                const std::string type = file_line.field( 0 ) ;
-                index_t id = file_line.field_as_uint( 1 ) ;
-                GME::gme_t entity( type, id ) ;
-                set_geological_entity_name( entity, file_line.field( 2 ) ) ;
-                set_geological_entity_geol_feature( entity,
-                    GME::determine_geological_type( file_line.field( 3 ) ) ) ;
-                file_line.get_line() ;
-                file_line.get_fields() ;
-                const GeoModelGeologicalEntity& cur_gme = model().geological_entity(
-                    type, id ) ;
-                const std::string& child_type = cur_gme.child_type_name() ;
-                for( index_t in_b = 0; in_b < file_line.nb_fields(); in_b++ ) {
-                    add_geological_entity_child( entity,
-                        GME::gme_t( child_type, file_line.field_as_uint( in_b ) ) ) ;
+                // Number of entities of a given type
+                if( file_line.field_matches( 0, "Nb" ) ) {
+                    // Allocate the space
+                    create_geological_entities( file_line.field( 1 ),
+                        file_line.field_as_uint( 2 ) ) ;
+                } else {
+                    const std::string type = file_line.field( 0 ) ;
+                    index_t id = file_line.field_as_uint( 1 ) ;
+                    GME::gme_t entity( type, id ) ;
+                    set_geological_entity_name( entity, file_line.field( 2 ) ) ;
+                    set_geological_entity_geol_feature( entity,
+                        GME::determine_geological_type( file_line.field( 3 ) ) ) ;
+                    file_line.get_line() ;
+                    file_line.get_fields() ;
+                    const GeoModelGeologicalEntity& cur_gme =
+                        model().geological_entity( type, id ) ;
+                    const std::string& child_type = cur_gme.child_type_name() ;
+                    for( index_t in_b = 0; in_b < file_line.nb_fields(); in_b++ ) {
+                        add_geological_entity_child( entity,
+                            GME::gme_t( child_type,
+                                file_line.field_as_uint( in_b ) ) ) ;
+                    }
                 }
             }
         }

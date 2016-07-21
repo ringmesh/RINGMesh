@@ -170,6 +170,10 @@ namespace RINGMesh {
     index_t GeoModelEditor::create_geological_entities( const std::string& type, index_t nb )
     {
         assert_entity_creation_allowed() ;
+        index_t index = model_.geological_entity_type( type ) ;
+        if( index == NO_ID ) {
+            index = create_geological_entity_type( type ) ;
+        }
         std::vector< GeoModelGeologicalEntity* >& store =
             model_.modifiable_geological_entities( type ) ;
         index_t old_size = static_cast< index_t >( store.size() ) ;

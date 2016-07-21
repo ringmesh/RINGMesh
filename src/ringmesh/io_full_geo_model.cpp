@@ -74,17 +74,12 @@ namespace {
     void save_geological_entity( std::ofstream& out, const GeoModelGeologicalEntity& E )
     {
         /// First line:  TYPE - ID - NAME - GEOL
-        out << E.gme_id() << " " ;
-        if( E.has_name() ) {
-            out << E.name() << " " ;
-        } else {
-            out << "no_name " ;
-        }
+        out << E.gme_id() << " " << E.name() << " " ;
         out << GeoModelEntity::geol_name( E.geological_feature() ) << std::endl ;
 
         /// Second line:  IDS of children
         for( index_t j = 0; j < E.nb_children(); ++j ) {
-            out << " " << E.child_id( j ).index ;
+            out  << E.child_id( j ).index << " " ;
         }
         out << std::endl ;
     }
@@ -101,6 +96,12 @@ namespace {
         if( out.bad() ) {
             throw RINGMeshException( "I/O",
                 "Error when opening the file: " + file_name ) ;
+        }
+
+        for( index_t i = 0; i < M.nb_geological_entity_type(); i++ ) {
+            const std::string& type = M.geological_entity_type( i ) ;
+            index_t nb = M.nb_geological_entities( type ) ;
+            out << "Nb " << type << " " << nb << std::endl ;
         }
 
         for( index_t i = 0; i < M.nb_geological_entity_type(); i++ ) {
@@ -145,8 +146,7 @@ namespace {
                 "Error when opening the file: " + file_name ) ;
         }
 
-        out << "RINGMesh GeoModel" << std::endl ;
-        out << "Name " << M.name() << std::endl ;
+        out << "GeoModel name " << M.name() << std::endl ;
 
         // Numbers of the different types of mesh entities
         out << "Nb " << Corner::type_name_static() << " " << M.nb_corners() << std::endl ;
@@ -164,7 +164,6 @@ namespace {
             // Save ID - NAME
             out << Region::type_name_static() << " " << i << " " << E.name() << " "
                 << GeoModelEntity::geol_name( E.geological_feature() ) << std::endl ;
-            out << std::endl ;
             // Second line Signed ids of boundary surfaces
             for( index_t j = 0; j < E.nb_boundaries(); ++j ) {
                 if( E.side( j ) ) {
