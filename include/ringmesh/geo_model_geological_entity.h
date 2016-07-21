@@ -63,11 +63,15 @@ namespace RINGMesh {
         }
 
         virtual const std::string child_type_name() const = 0 ;
+        virtual const std::string type_name() const = 0 ;
+        virtual bool is_on_voi() const ;
+
+        static void initialize() ;
 
     protected:
         GeoModelGeologicalEntity(
             const GeoModel& model,
-            index_t id,
+            index_t id = NO_ID,
             const std::string& name = "unnamed",
             GEOL_FEATURE geological_feature = NO_GEOL )
             : GeoModelEntity( model, id, name, geological_feature )
@@ -93,12 +97,8 @@ namespace RINGMesh {
 
     class RINGMESH_API Contact: public GeoModelGeologicalEntity {
     public:
-        Contact(
-            const GeoModel& model,
-            index_t id,
-            const std::string& name = "unnamed",
-            GEOL_FEATURE geological_feature = NO_GEOL )
-            : GeoModelGeologicalEntity( model, id, name, geological_feature )
+        Contact( const GeoModel& model )
+            : GeoModelGeologicalEntity( model )
         {
         }
         ~Contact()
@@ -107,7 +107,7 @@ namespace RINGMesh {
 
         static const std::string type_name_static()
         {
-            return "Contact" ;
+            return "Contact2" ;
         }
         virtual const std::string type_name() const
         {
@@ -127,12 +127,8 @@ namespace RINGMesh {
 
     class RINGMESH_API Interface: public GeoModelGeologicalEntity {
     public:
-       Interface(
-            const GeoModel& model,
-            index_t id,
-            const std::string& name = "unnamed",
-            GEOL_FEATURE geological_feature = NO_GEOL )
-            : GeoModelGeologicalEntity( model, id, name, geological_feature )
+        Interface( const GeoModel& model )
+            : GeoModelGeologicalEntity( model )
         {
         }
         ~Interface()
@@ -161,12 +157,8 @@ namespace RINGMesh {
 
     class RINGMESH_API Layer: public GeoModelGeologicalEntity {
     public:
-       Layer(
-            const GeoModel& model,
-            index_t id,
-            const std::string& name = "unnamed",
-            GEOL_FEATURE geological_feature = NO_GEOL )
-            : GeoModelGeologicalEntity( model, id, name, geological_feature )
+        Layer( const GeoModel& model )
+            : GeoModelGeologicalEntity( model )
         {
         }
         ~Layer()

@@ -229,7 +229,7 @@ namespace RINGMesh {
         {
             return  default_entity_type_name() ;
         }
-        virtual const std::string type_name() const = 0
+        virtual const std::string type_name() const
         {
             return default_entity_type_name() ;
         }
@@ -244,7 +244,7 @@ namespace RINGMesh {
 
         GeoModelEntity& operator=( const GeoModelEntity& rhs )
         {
-            ringmesh_assert( model() == rhs.model() ) ;
+            ringmesh_assert( &model() == &rhs.model() ) ;
             id_ = rhs.id_;
             name_ = rhs.name_;
             geol_feature_ = rhs.geol_feature_ ;
@@ -381,12 +381,12 @@ namespace RINGMesh {
         }
         gme_t boundary_gme( index_t i ) const
         {
-            ringmesh_assert( i < nb_boundaries ) ;
+            ringmesh_assert( i < nb_boundaries() ) ;
             return boundary_surfaces_[i] ;
         }        
         bool side( index_t i ) const
         {
-            ringmesh_assert( i < nb_boundaries ) ;
+            ringmesh_assert( i < nb_boundaries() ) ;
             return boundary_surface_sides_[i] ;
         }
 
