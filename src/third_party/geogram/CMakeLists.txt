@@ -38,8 +38,8 @@ set(VORPALINE_VERSION ${VORPALINE_VERSION_MAJOR}.${VORPALINE_VERSION_MINOR}.${VO
 string(REGEX REPLACE "-[^-]+$" "" VORPALINE_OS ${VORPALINE_PLATFORM})
 
 # Determine the current build date
-string(TIMESTAMP VORPALINE_BUILD_DATE "%Y-%m-%d %H:%M:%S")
-string(TIMESTAMP YEAR "%Y")
+# string(TIMESTAMP VORPALINE_BUILD_DATE "%Y-%m-%d %H:%M:%S")
+# string(TIMESTAMP YEAR "%Y")
 
 # Determine the current build number
 # This is set by Jenkins in environment variable BUILD_NUMBER
