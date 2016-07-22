@@ -50,8 +50,191 @@ namespace RINGMesh {
 }
 
 namespace RINGMesh {
-    void tsolid_import_factory_initialize() ;
 
+    void RINGMESH_API initialize_gocad_import_factories() ;
+
+    class RINGMESH_API GeoModelBuilderGocad: public GeoModelBuilderFile {
+    public:
+        GeoModelBuilderGocad( GeoModel& model, const std::string& filename )
+            : GeoModelBuilderFile( model, filename ), file_line_( filename )
+        {
+            if( !file_line_.OK() ) {
+                throw RINGMeshException( "I/O", "Failed to open file " + filename ) ;
+            }
+        }
+
+        void build_contacts() ;
+
+        /*!
+         * @brief Parses the file and loads the GeoModel
+         * @details The GeoModel loaded by this function is not valid because
+         * some computation are still not done (i.e., surface internal borders,
+         * lines and corners computation, boundary links between region and
+         * surface, contacts)
+         */
+        void read_file() ;
+
+    protected:
+        virtual void read_line() = 0 ;
+
+    protected:
+        GEO::LineInput file_line_ ;
+    } ;
+
+    struct GocadLoadingStorage {
+        GocadLoadingStorage() ;
+
+        /*!
+         * @brief Ends a facet (by adding the size of list of facet corners at the
+         * end of the vector)
+         */
+        void end_facet()
+        {
+            cur_surf_facet_ptr_.push_back(
+                cur_surf_facet_corners_gocad_id_.size() ) ;
+        }
+
+        // The orientation of positive Z
+        int z_sign_ ;
+
+        std::vector< vec3 > vertices_ ;
+
+        // Current interface index
+        index_t cur_interface_ ;
+
+        // Current surface index
+        index_t cur_surface_ ;
+
+        // List of facet corners for the current surface (gocad indices)
+        std::vector< index_t > cur_surf_facet_corners_gocad_id_ ;
+
+        // Starting indices (in cur_surf_facets_corner_gocad_id_) of each
+        // facet of the current surface
+        std::vector< index_t > cur_surf_facet_ptr_ ;
+    } ;
+
+    class GocadLineParser: public GEO::Counted {
+    ringmesh_disable_copy(GocadLineParser) ;
+    public:
+        static GocadLineParser* create(
+            const std::string& keyword,
+            GeoModelBuilderGocad& gm_builder,
+            GeoModel& geomodel ) ;
+        virtual void execute(
+            GEO::LineInput& line,
+            GocadLoadingStorage& load_storage ) = 0 ;
+
+    protected:
+        GocadLineParser()
+            : Counted(), builder_( nil ), geomodel_( nil )
+        {
+        }
+        virtual ~GocadLineParser()
+        {
+        }
+
+        GeoModelBuilderGocad& builder()
+        {
+            ringmesh_assert( builder_ != nil ) ;
+            return *builder_ ;
+        }
+
+        GeoModel& geomodel()
+        {
+            ringmesh_assert( geomodel_ != nil ) ;
+            return *geomodel_ ;
+        }
+
+        virtual void set_builder( GeoModelBuilderGocad& builder )
+        {
+            builder_ = &builder ;
+        }
+
+        virtual void set_geomodel( GeoModel& geomodel )
+        {
+            geomodel_ = &geomodel ;
+        }
+
+    private:
+        GeoModelBuilderGocad* builder_ ;
+        GeoModel* geomodel_ ;
+    } ;
+
+    typedef GEO::SmartPointer< GocadLineParser > GocadLineParser_var ;
+    typedef GEO::Factory0< GocadLineParser > GocadLineParserFactory ;
+#define ringmesh_register_GocadLineParser_creator(type, name) \
+     geo_register_creator(GocadLineParserFactory, type, name)
+
+
+    /*!
+     * @brief Structure which maps the vertex indices in Gocad::TSolid to the
+     * pair (region, index in region) in the RINGMesh::GeoModel
+     */
+    struct VertexMap {
+        VertexMap()
+        {
+        }
+
+        index_t local_id( index_t gocad_vertex_id ) const
+        {
+            return gocad_vertices2region_vertices_[gocad_vertex_id] ;
+        }
+
+        index_t region( index_t gocad_vertex_id ) const
+        {
+            return gocad_vertices2region_id_[gocad_vertex_id] ;
+        }
+
+        void add_vertex( index_t local_vertex_id, index_t region_id )
+        {
+            gocad_vertices2region_vertices_.push_back( local_vertex_id ) ;
+            gocad_vertices2region_id_.push_back( region_id ) ;
+        }
+
+        index_t nb_vertex() const
+        {
+            ringmesh_assert(
+                gocad_vertices2region_vertices_.size()
+                == gocad_vertices2region_id_.size() ) ;
+            return static_cast< index_t >( gocad_vertices2region_vertices_.size() ) ;
+        }
+
+        void reserve( index_t capacity )
+        {
+            gocad_vertices2region_vertices_.reserve( capacity ) ;
+            gocad_vertices2region_id_.reserve( capacity ) ;
+        }
+
+    private:
+        /*!
+         * Mapping the indices of vertices from Gocad .so file
+         * to the local (in region) indices of vertices
+         */
+        std::vector< index_t > gocad_vertices2region_vertices_ ;
+        /*!
+         * Mapping the indices of vertices from Gocad .so file
+         * to the region containing them
+         */
+        std::vector< index_t > gocad_vertices2region_id_ ;
+    } ;
+
+    /*!
+     * @brief Structure used to load a GeoModel by GeoModelBuilderTSolid
+     */
+    struct TSolidLoadingStorage: public GocadLoadingStorage {
+        TSolidLoadingStorage() ;
+
+
+        // Current region index
+        index_t cur_region_ ;
+
+        // Map between gocad and GeoModel vertex indices
+        VertexMap vertex_map_ ;
+
+        // Region tetrahedron corners
+        std::vector< index_t > tetra_corners_ ;
+
+    } ;
     /*!
      * @brief Build a GeoModel (with meshed regions) from a Gocad TSolid (file.so)
      */
@@ -63,7 +246,7 @@ namespace RINGMesh {
             GeoModelBuilderTSolid& gm_builder,
             GeoModel& geomodel ) ;
         virtual void execute(
-            const GEO::LineInput& line,
+            GEO::LineInput& line,
             TSolidLoadingStorage& load_storage ) = 0 ;
 
     protected:
@@ -105,22 +288,16 @@ namespace RINGMesh {
     typedef GEO::SmartPointer< TSolidLineParser > TSolidLineParser_var ;
     typedef GEO::Factory0< TSolidLineParser > TSolidLineParserFactory ;
 #define ringmesh_register_TSolidLineParser_creator(type, name) \
-                        geo_register_creator(TSolidLineParserFactory, type, name)
+     geo_register_creator(TSolidLineParserFactory, type, name)
 
-}
-
-namespace RINGMesh {
     /*!
      * @brief Builds a meshed GeoModel from a Gocad TSolid (file.so)
      */
-    class RINGMESH_API GeoModelBuilderTSolid: public GeoModelBuilderFile {
+    class RINGMESH_API GeoModelBuilderTSolid: public GeoModelBuilderGocad {
     public:
         GeoModelBuilderTSolid( GeoModel& model, const std::string& filename )
-            : GeoModelBuilderFile( model, filename ), file_line_( filename )
+            : GeoModelBuilderGocad( model, filename )
         {
-            if( !file_line_.OK() ) {
-                throw RINGMeshException( "I/O", "Failed to open file " + filename ) ;
-            }
         }
         virtual ~GeoModelBuilderTSolid()
         {
@@ -130,20 +307,11 @@ namespace RINGMesh {
         virtual void load_file() ;
 
         /*!
-         * @brief Parses the file and loads the GeoModel
-         * @details The GeoModel loaded by this function is not valid because
-         * some computation are still not done (i.e., surface internal borders,
-         * lines and corners computation, boundary links between region and
-         * surface, contacts)
-         */
-        void read_file() ;
-
-        /*!
          * @brief Reads the first word of the current line (keyword)
          * and executes the good action with the information of the line
          * @details Uses the TsolidLineParser factory
          */
-        void read_line( TSolidLoadingStorage& load_utils ) ;
+        virtual void read_line() ;
 
         /*!
          * @brief Computes internal borders of a given surface
@@ -180,25 +348,82 @@ namespace RINGMesh {
         void compute_surfaces_internal_borders( ) ;
 
     private:
-        GEO::LineInput file_line_ ;
-        friend class RINGMesh::TSolidLineParser ;
+        TSolidLoadingStorage tsolid_load_storage_ ;
+        friend class RINGMesh::GocadLineParser ;
     } ;
+
+    struct MLLoadingStorage: public GocadLoadingStorage {
+        MLLoadingStorage() ;
+
+        bool is_header_read_ ;
+    } ;
+    /*!
+     * @brief Build a GeoModel (with meshed regions) from a Gocad TSolid (file.so)
+     */
+    class MLLineParser: public GEO::Counted {
+    ringmesh_disable_copy(MLLineParser) ;
+    public:
+        static MLLineParser* create(
+            const std::string& keyword,
+            GeoModelBuilderML& gm_builder,
+            GeoModel& geomodel ) ;
+        virtual void execute(
+            GEO::LineInput& line,
+            MLLoadingStorage& load_storage ) = 0 ;
+
+    protected:
+        MLLineParser()
+            : Counted(), builder_( nil ), geomodel_( nil )
+        {
+        }
+        virtual ~MLLineParser()
+        {
+        }
+
+        GeoModelBuilderML& builder()
+        {
+            ringmesh_assert( builder_ != nil ) ;
+            return *builder_ ;
+        }
+
+        GeoModel& geomodel()
+        {
+            ringmesh_assert( geomodel_ != nil ) ;
+            return *geomodel_ ;
+        }
+
+        virtual void set_builder( GeoModelBuilderML& builder )
+        {
+            builder_ = &builder ;
+        }
+
+        virtual void set_geomodel( GeoModel& geomodel )
+        {
+            geomodel_ = &geomodel ;
+        }
+
+    private:
+        GeoModelBuilderML* builder_ ;
+        GeoModel* geomodel_ ;
+    } ;
+
+    typedef GEO::SmartPointer< MLLineParser > MLLineParser_var ;
+    typedef GEO::Factory0< MLLineParser > MLLineParserFactory ;
+#define ringmesh_register_MLLineParser_creator(type, name) \
+     geo_register_creator(MLLineParserFactory, type, name)
 
 
     /*!
      * @brief Build a GeoModel from a Gocad Model3D (file_model.ml)
      */
-    class RINGMESH_API GeoModelBuilderGocad: public GeoModelBuilderFile {
+    class RINGMESH_API GeoModelBuilderML: public GeoModelBuilderGocad {
     public:
-        GeoModelBuilderGocad( GeoModel& model, const std::string& filename )
-            : GeoModelBuilderFile( model, filename ), file_line_( filename )
+        GeoModelBuilderML( GeoModel& model, const std::string& filename )
+            : GeoModelBuilderGocad( model, filename )
         {
             options_.compute_lines = true ;
-            if( !file_line_.OK() ) {
-                throw RINGMeshException( "I/O", "Failed to open file " + filename ) ;
-            }
         }
-        virtual ~GeoModelBuilderGocad()
+        virtual ~GeoModelBuilderML()
         {
         }
 
@@ -231,7 +456,6 @@ namespace RINGMesh {
             bool& same_orientation ) const ;
 
     private:
-        GEO::LineInput file_line_ ;
 
         /*!
          * @brief Triangle that set the orientation of a TFACE
