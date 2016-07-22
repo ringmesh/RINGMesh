@@ -234,10 +234,6 @@ namespace RINGMesh {
 
     void GeoModelEditor::fill_mesh_entities_boundaries( const std::string& type )
     {
-        // We have a problem if this is called for regions
-        // No way yet to know the surface orientation
-        ringmesh_assert( type != Region::type_name_static() ) ;
-
         if( model().nb_mesh_entities( type ) == 0 ) {
             return ;
         }
