@@ -1962,48 +1962,6 @@ namespace RINGMesh {
         end_model() ;
     }
 
-    /*!
-     * @brief Build the Contacts
-     * @details One contact is a group of lines shared by the same Interfaces
-     * @todo move to another Builder class (above gocad stuff)
-     */
-    void GeoModelBuilder::build_contacts()
-    {
-        std::vector< std::set< gme_t > > interfaces ;
-        for( index_t i = 0; i < model().nb_lines(); ++i ) {
-            const Line& L = model().line( i ) ;
-            std::set< gme_t > cur_interfaces ;
-            for( index_t j = 0; j < L.nb_in_boundary(); ++j ) {
-                cur_interfaces.insert(
-                    model().mesh_entity( L.in_boundary_gme( j ) ).parent_id(
-                        Interface::type_name_static() ) ) ;
-            }
-            gme_t contact_id ;
-            for( index_t j = 0; j < interfaces.size(); ++j ) {
-                if( cur_interfaces.size() == interfaces[j].size()
-                    && std::equal( cur_interfaces.begin(), cur_interfaces.end(),
-                        interfaces[j].begin() ) ) {
-                    contact_id = gme_t( Contact::type_name_static(), j ) ;
-                    break ;
-                }
-            }
-            if( !contact_id.is_defined() ) {
-                contact_id = create_geological_entity( Contact::type_name_static() ) ;
-                ringmesh_assert( contact_id.index == interfaces.size() ) ;
-                interfaces.push_back( cur_interfaces ) ;
-                // Create a name for this contact
-                std::string name = "contact" ;
-                for( std::set< gme_t >::const_iterator it( cur_interfaces.begin() );
-                    it != cur_interfaces.end(); ++it ) {
-                    name += "_" ;
-                    name += model().geological_entity( *it ).name() ;
-                }
-                set_geological_entity_name( contact_id, name ) ;
-            }
-            add_geological_entity_child( contact_id, i ) ;
-        }
-    }
-
     void GeoModelBuilder::update_facet_corner(
         Surface& S,
         const std::vector< index_t >& facets,
@@ -2021,7 +1979,6 @@ namespace RINGMesh {
             }
         }
     }
-
 
     void GeoModelBuilder::delete_mesh_entity_mesh( GME::gme_t E_id )
     {
