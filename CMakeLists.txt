@@ -149,25 +149,25 @@ message(STATUS "RINGMesh source directory is: ${PROJECT_SOURCE_DIR}")
 #------------------------------------------------------------------------------------------------
 # Platform dependent settings
 if(WIN32)
-    add_compile_options(-DRINGMESH_EXPORTS) 
+    add_definitions(-DRINGMESH_EXPORTS) 
 	
 	# Select the CMAKE_CONFIGURATION_TYPES from Visual Studio
     set(COMPILATION_OPTION --config ${CMAKE_CFG_INTDIR})
 elseif(UNIX)
     set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
-    add_compile_options(-Wall -Wextra -Wno-long-long -Wconversion)
+    add_definitions(-Wall -Wextra -Wno-long-long -Wconversion)
     
     # Determine gcc version and activate additional warnings available in latest versions
     execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
 
     if (GCC_VERSION VERSION_GREATER 4.3 OR GCC_VERSION VERSION_EQUAL 4.3)
         message(STATUS "GCC version >= 4.3, activating sign conversion warnings")
-        add_compile_options(-Wsign-conversion)
+        add_definitions(-Wsign-conversion)
     endif()
 
     if (GCC_VERSION VERSION_GREATER 4.6 OR GCC_VERSION VERSION_EQUAL 4.6)
         message(STATUS "GCC version >= 4.6, activating double promotion warnings")
-        add_compile_options(-Wdouble-promotion)
+        add_definitions(-Wdouble-promotion)
     endif()
     
     # Enable parallel computation
@@ -199,7 +199,7 @@ if(WIN32)
 	# Extra lib 
     set (EXTRA_LIBS ${EXTRA_LIBS} psapi)
 	# TODO check that it is really necessary [JP]
-    add_compile_options(-DGEO_DYNAMIC_LIBS) 
+    add_definitions(-DGEO_DYNAMIC_LIBS) 
 else(WIN32)
     set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/geogram/${CMAKE_BUILD_TYPE})
     set(geoplatform Linux64-gcc-dynamic)
