@@ -509,7 +509,7 @@ namespace {
             if( !input ) {
                 throw RINGMeshException( "I/O", "Failed to open file " + filename ) ;
             }
-            GeoModelBuilderGocad builder( model, filename ) ;
+            GeoModelBuilderML builder( model, filename ) ;
 
             time_t start_load, end_load ;
             time( &start_load ) ;
