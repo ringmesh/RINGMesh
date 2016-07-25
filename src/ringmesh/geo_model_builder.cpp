@@ -1753,7 +1753,7 @@ namespace RINGMesh {
         complete_mesh_entities_geol_feature_from_first_parent( Surface::type_name_static() ) ;
         complete_mesh_entities_geol_feature_from_first_parent( Region::type_name_static() ) ;
 
-        for( index_t i = 0; i < model().nb_geological_entity_type(); i++ ) {
+        for( index_t i = 0; i < model().nb_geological_entity_types(); i++ ) {
             const std::string& type = model().geological_entity_type( i ) ;
             complete_geological_entities_geol_feature_from_first_child( type ) ;
         }

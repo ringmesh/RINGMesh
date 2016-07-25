@@ -73,13 +73,11 @@ namespace RINGMesh {
         {
             parent_to_child_[parent_type_name] = child_type_name ;
         }
-
         void register_parent_type( const std::string& parent_type_name,
             const std::string& child_type_name )
         {
             child_to_parents_[child_type_name].insert( parent_type_name ) ;
         }
-
         const std::set< std::string >& parent_types( const std::string& child_type ) const 
         {
             std::map< std::string, std::set< std::string > >::const_iterator
@@ -94,13 +92,6 @@ namespace RINGMesh {
             if( itr == child_to_parents_.end() ) return 0 ;
             return static_cast< index_t >( itr->second.size() ) ;
         }
-        /*
-        const std::string parent_type( const std::string child_type, index_t i ) const
-        {
-            const std::set< std::string >& parent_types
-            return *parent_types( child_type ).begin()[i] ;
-        } */ 
-
         const std::string& child_type( const std::string& parent_type ) const
         {
            std::map< std::string, std::string >::const_iterator
@@ -108,17 +99,17 @@ namespace RINGMesh {
            ringmesh_assert( itr != parent_to_child_.end() ) ;
            return itr->second ;
         }
-        const std::string& boundary_type( const std::string& mesh_type ) const
+        const std::string& boundary_type( const std::string& mesh_entity_type ) const
         {
            std::map< std::string, std::string >::const_iterator
-                itr = mesh_entity_to_boundary_.find( mesh_type );
+                itr = mesh_entity_to_boundary_.find( mesh_entity_type );
            ringmesh_assert( itr != mesh_entity_to_boundary_.end() ) ;
            return itr->second ;
         }
-        const std::string& in_boundary_type( const std::string& mesh_type ) const
+        const std::string& in_boundary_type( const std::string& mesh_entity_type ) const
         {
            std::map< std::string, std::string >::const_iterator
-                itr = mesh_entity_to_in_boundary_.find( mesh_type );
+                itr = mesh_entity_to_in_boundary_.find( mesh_entity_type );
            ringmesh_assert( itr != mesh_entity_to_in_boundary_.end() ) ;
            return itr->second ;
         }
@@ -254,6 +245,9 @@ namespace RINGMesh {
         {
             return  default_entity_type_name() ;
         }
+        // I am not sure that this one is really useful.
+        // In almost all cases we call the static function.
+        // Which is nothing more than the RTTI CLASS::typename() information
         virtual const std::string type_name() const
         {
             return default_entity_type_name() ;
@@ -317,10 +311,10 @@ namespace RINGMesh {
         {
             return gme_id().index ;
         }
-        /*TYPE type() const
+        const std::string& entity_type() const
         {
             return gme_id().type ;
-        }*/
+        }
         bool has_geological_feature() const
         {
             return geol_feature_ != NO_GEOL ;
@@ -358,7 +352,7 @@ namespace RINGMesh {
         /// Reference to the GeoModel owning this entity
         const GeoModel& model_ ;
 
-        /// Unique identifier of the GeoModelEntity in the model
+        /// Unique identifier of this GeoModelEntity in the model
         gme_t id_ ;
 
         /// Name of the entity - default is an empty string

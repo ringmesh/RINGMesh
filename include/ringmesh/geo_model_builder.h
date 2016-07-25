@@ -102,6 +102,12 @@ namespace RINGMesh {
             options_ = options ;
         }
 
+
+        void copy( const GeoModel& from )
+        {
+            copy_macro_topology( from ) ;
+            copy_meshes( from ) ;
+        }
         /*!
          * @brief Copy all entity meshes from the input geomodel
          * @pre The model under construction has exaclty the same number of entities

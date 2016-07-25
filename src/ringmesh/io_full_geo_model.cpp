@@ -98,13 +98,13 @@ namespace {
                 "Error when opening the file: " + file_name ) ;
         }
 
-        for( index_t i = 0; i < M.nb_geological_entity_type(); i++ ) {
+        for( index_t i = 0; i < M.nb_geological_entity_types(); i++ ) {
             const std::string& type = M.geological_entity_type( i ) ;
             index_t nb = M.nb_geological_entities( type ) ;
             out << "Nb " << type << " " << nb << std::endl ;
         }
 
-        for( index_t i = 0; i < M.nb_geological_entity_type(); i++ ) {
+        for( index_t i = 0; i < M.nb_geological_entity_types(); i++ ) {
             const std::string& type = M.geological_entity_type( i ) ;
             index_t nb = M.nb_geological_entities( type ) ;
             for( index_t j = 0; j < nb; ++j ) {
