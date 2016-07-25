@@ -259,6 +259,4 @@ namespace RINGMesh {
 
 }
 
-
-
 #endif 

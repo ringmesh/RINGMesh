@@ -50,6 +50,8 @@
  */
 
 namespace RINGMesh {
+    // Implementation details 
+    class GeoModelEditorImplementation ; // do I need it or not ?? 
 
     /*!
      * @brief Basic edition of a GeoModel
@@ -59,15 +61,8 @@ namespace RINGMesh {
      */
     class RINGMESH_API GeoModelEditor {
     public:
-        GeoModelEditor( GeoModel& M )
-            : model_(M), create_entity_allowed_(true)
-        {
-            fill_entity_type_to_index_map() ;
-        }
-
-        ~GeoModelEditor()
-        {
-        }
+        GeoModelEditor( GeoModel& M ) ;
+        virtual ~GeoModelEditor() ;
 
         void copy_macro_topology( const GeoModel& from ) ;    
 
@@ -85,46 +80,51 @@ namespace RINGMesh {
             create_entity_allowed_ = false ;
         }
 
-
         /*! @}
          * \name Creation - Deletion - Access to GeoModelEntities.
          * @{
          */
+        GME::gme_t create_entity( const std::string& type ) ;
 
-        GME::gme_t create_mesh_entity( const std::string& type ) ;
+        template < typename T >
+        add_entity_to_model( T* entity )
+        {
+            model().modifiable_mesh_entities( entity->type_name_static() ).push_back( entity ) ;
+        }
+
+        template < typename T >
+        GME::gme_t create_mesh_entity()
+        {
+            const std::string entity_type = T::type_name_static() ;
+            index_t nb_entities( model().nb_entities( entity_type ) ) ;
+            index_t new_id( nb_entities ) ;
+            T* new_entity = new T( model(), new_id ) ;            
+            add_entity_to_model( new_entity ) ;
+            return new_entity->gme_id() ;
+        }
+
         GME::gme_t create_geological_entity( const std::string& type ) ;
 
-        /*!
-         * @brief Reference to a modifiable meshed entity of the model
-         * @pre The id must refer to a valid entity.
-         * @note Stupid override of a function of GeoModel
+        /*! @}
+         * @brief Access to modifiable entities of the edited GeoModel
+         * @{
          */
+        GeoModelEntity& entity( const GME::gme_t id ) ;
+        GeoModelEntity& entity( const std::string& entity_type, index_t entity_index ) ;
         GeoModelMeshEntity& mesh_entity( const GME::gme_t& id )
         {
             return model_.modifiable_mesh_entity( id ) ;
         }
-
-        /*!
-         * @brief Reference to a modifiable meshed entity of the model
-         */
         GeoModelMeshEntity& mesh_entity(
             const std::string& entity_type,
             index_t entity_index )
         {
             return mesh_entity( GME::gme_t( entity_type, entity_index ) ) ;
         }
-        /*!
-         * @brief Reference to a modifiable entity of the model
-         * @pre The id must refer to a valid entity of the model
-         * @note Stupid override of a function of GeoModel
-         */
         GeoModelGeologicalEntity& geological_entity( const GME::gme_t& id )
         {
             return model_.modifiable_geological_entity( id ) ;
         }
-        /*!
-         * @brief Reference to a modifiable meshed entity of the model
-         */
         GeoModelGeologicalEntity& geological_entity(
             const std::string& entity_type,
             index_t entity_index )
@@ -176,30 +176,17 @@ namespace RINGMesh {
         void complete_geological_entities_geol_feature_from_first_child(
             const std::string& type ) ;
 
-        void set_mesh_entity_name( const GME::gme_t& t, const std::string& name )
+        void set_entity_name( const GME::gme_t& t, const std::string& name )
         {
-            mesh_entity( t ).name_ = name ;
+            entity( t ).name_ = name ;
         }
-        void set_geological_entity_name(
-            const GME::gme_t& t,
-            const std::string& name )
-        {
-            geological_entity( t ).name_ = name ;
-        }
-
-        void set_mesh_entity_geol_feature(
+        void set_entity_geol_feature(
             const GME::gme_t& t,
             GME::GEOL_FEATURE geol )
         {
-            mesh_entity( t ).geol_feature_ = geol ;
+            entity( t ).geol_feature_ = geol ;
         }
-        void set_geological_entity_geol_feature(
-            const GME::gme_t& t,
-            GME::GEOL_FEATURE geol )
-        {
-            geological_entity( t ).geol_feature_ = geol ;
-        }
-
+        
         void add_mesh_entity_boundary(
             const GME::gme_t& t,
             index_t boundary_id,
@@ -364,6 +351,7 @@ namespace RINGMesh {
         index_t create_geological_entities( const std::string& type, index_t nb ) ;
 
         index_t create_geological_entity_type( const std::string& type ) ;
+        index_t delete_geological_entity_type( const std::string& type ) ;
         void erase_invalid_entity_references( const GME::gme_t& E_id ) ;
 
         void assert_entity_creation_allowed()
@@ -399,7 +387,6 @@ namespace RINGMesh {
                 index_to_entity_type_[counter] = model().geological_entity_type( i ) ; ;
                 counter++ ;
             }
-
         }
 
     private:
@@ -414,8 +401,15 @@ namespace RINGMesh {
             index_t id ) ;
 
     private:
+        /*! The model edited 
+         */
         GeoModel& model_ ;
+        /*! Parameter to forbid element creation. Crucial to control
+         *  building of the model and detect errors in find_or_create functions
+         */
         bool create_entity_allowed_ ;
+
+        GeoModelEditorImplementation* impl_ ;
     } ;
 }
 
