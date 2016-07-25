@@ -156,6 +156,9 @@ namespace RINGMesh {
             return geological_entity_types_[id] ;
         }
 
+        static index_t nb_mesh_entity_types() {
+            return 4 ;
+        }
         // Hard encoded mapping between for meshed entities. Always the same.
         index_t mesh_entity_type( const std::string& type ) const
         {
@@ -173,9 +176,20 @@ namespace RINGMesh {
         }
         const std::string mesh_entity_type( index_t id )
         {
-            ringmesh_assert( id < 4 ) ;            
+            ringmesh_assert( id < nb_mesh_entity_types() ) ;            
             return mesh_entity_types_[id] ;
-        }                           
+        }  
+
+        
+        void assert_gme_id_validity( GME::gme_t id )
+        {
+            bool is_valid_type = is_mesh_entity_type( id.type )
+                || is_geological_entity_type( id.type ) ;            
+            ringmesh_assert( is_valid_type ) ;
+
+            bool is_valid_index = id.index < nb_entities( id.type ) ;
+            ringmesh_assert( is_valid_index ) ;
+        }
 
         /*!
          * @brief Returns a const reference the identified GeoModelEntity
@@ -281,6 +295,19 @@ namespace RINGMesh {
         }
 
     private:
+        // I do know that this casts are really ugly. But we still have a big big design issue [JP]
+        const std::vector< GeoModelEntity* >& entities( const std::string& type )
+        {
+            if( is_mesh_entity_type( type ) ) {
+                return *(std::vector< GeoModelEntity* > *) (&mesh_entities( type )) ;
+            } else if( is_geological_entity_type( type ) ) {
+                return *(std::vector< GeoModelEntity* > *) (&geological_entities( type )) ;
+            } else {
+                ringmesh_assert_not_reached ;
+                return *(std::vector< GeoModelEntity* > *) &surfaces_ ;
+            }
+        }
+        
         /*!
          * @brief Generic accessor to the storage of mesh entities of the given type
          */
@@ -308,9 +335,15 @@ namespace RINGMesh {
             const std::string& type ) const
         {
             index_t entity_index = geological_entity_type( type ) ;
-            ringmesh_assert( entity_index != NO_ID ) ;
-            return geological_entities_[entity_index] ;
-        }      
+            return geological_entities( entity_index ) ;
+        }  
+
+        const std::vector< GeoModelGeologicalEntity* >& geological_entities(
+            index_t geological_entity_type_index ) const
+        {
+            ringmesh_assert( geological_entity_type_index != NO_ID ) ;
+            return geological_entities_[geological_entity_type_index] ;
+        }
 
     public:
         GeoModelMesh mesh ;

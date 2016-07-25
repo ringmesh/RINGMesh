@@ -72,7 +72,7 @@ namespace RINGMesh {
         GeoModelMeshEntity(
             const GeoModel& model,
             index_t id,
-            const std::string& name = "unnamed",
+            const std::string& name = "No_name",
             GEOL_FEATURE geological_feature = NO_GEOL )
             :
             GeoModelEntity( model, id, name, geological_feature ),
@@ -142,7 +142,8 @@ namespace RINGMesh {
         }
         const GeoModelGeologicalEntity& parent(
             const std::string& parent_type_name ) const ;
-        const gme_t& parent_id( const std::string& parent_type_name ) const ;
+        const gme_t& parent_gme( const std::string& parent_type_name ) const ;
+        index_t parent_id( const std::string& parent_type_name ) const ;
         const GeoModelGeologicalEntity& parent( index_t id ) const ;
 
         /*! @todo To remove when GFX Mesh is encapsulated */

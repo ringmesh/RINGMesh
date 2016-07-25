@@ -61,67 +61,76 @@ namespace RINGMesh {
      * One instance owned by the GeoModel.
      */
     class RINGMESH_API EntityRelationships {
+        typedef std::string EntityType ;
     public:
-        void register_relationship( const std::string& parent_type_name,
-            const std::string& child_type_name )
+        void register_relationship( const EntityType& parent_type_name,
+            const EntityType& child_type_name )
         {
             register_child_type( parent_type_name, child_type_name ) ;
             register_parent_type( parent_type_name, child_type_name ) ;
         }
-        void register_child_type( const std::string& parent_type_name, 
-            const std::string& child_type_name )
+        void register_child_type( const EntityType& parent_type_name, 
+            const EntityType& child_type_name )
         {
             parent_to_child_[parent_type_name] = child_type_name ;
         }
-        void register_parent_type( const std::string& parent_type_name,
-            const std::string& child_type_name )
+        void register_parent_type( const EntityType& parent_type_name,
+            const EntityType& child_type_name )
         {
             child_to_parents_[child_type_name].insert( parent_type_name ) ;
         }
-        const std::set< std::string >& parent_types( const std::string& child_type ) const 
+        
+        const std::set< EntityType >& parent_types( const EntityType& child_type ) const 
         {
-            std::map< std::string, std::set< std::string > >::const_iterator
+            std::map< EntityType, std::set< EntityType > >::const_iterator
                 itr = child_to_parents_.find( child_type );
             ringmesh_assert( itr != child_to_parents_.end() ) ;
             return itr->second ;
         }
-        index_t nb_parent_types( const std::string& child_type ) const
+        index_t nb_parent_types( const EntityType& child_type ) const
         {
-            std::map< std::string, std::set< std::string > >::const_iterator itr =
+            std::map< EntityType, std::set< EntityType > >::const_iterator itr =
                 child_to_parents_.find( child_type ) ;
             if( itr == child_to_parents_.end() ) return 0 ;
             return static_cast< index_t >( itr->second.size() ) ;
         }
-        const std::string& child_type( const std::string& parent_type ) const
+        const EntityType& child_type( const EntityType& parent_type ) const
         {
-           std::map< std::string, std::string >::const_iterator
+           std::map< EntityType, EntityType >::const_iterator
                 itr = parent_to_child_.find( parent_type );
            ringmesh_assert( itr != parent_to_child_.end() ) ;
            return itr->second ;
         }
-        const std::string& boundary_type( const std::string& mesh_entity_type ) const
+        
+        static bool is_valid_type( const EntityType& type )
         {
-           std::map< std::string, std::string >::const_iterator
+            return type != "No_entity_type" ;  // Defined twice baaad
+        }
+                
+        static const EntityType& boundary_type( const EntityType& mesh_entity_type ) 
+        {
+           std::map< EntityType, EntityType >::const_iterator
                 itr = mesh_entity_to_boundary_.find( mesh_entity_type );
            ringmesh_assert( itr != mesh_entity_to_boundary_.end() ) ;
            return itr->second ;
         }
-        const std::string& in_boundary_type( const std::string& mesh_entity_type ) const
+        static const EntityType& in_boundary_type( const EntityType& mesh_entity_type )
         {
-           std::map< std::string, std::string >::const_iterator
+           std::map< EntityType, EntityType >::const_iterator
                 itr = mesh_entity_to_in_boundary_.find( mesh_entity_type );
            ringmesh_assert( itr != mesh_entity_to_in_boundary_.end() ) ;
            return itr->second ;
         }
-        static std::map< std::string, std::string > create_boundary_map() ;
-        static std::map< std::string, std::string > create_in_boundary_map() ;
+        
+        static std::map< EntityType, EntityType > create_boundary_map() ;
+        static std::map< EntityType, EntityType > create_in_boundary_map() ;
 
     private:
-        std::map< std::string, std::string > parent_to_child_ ;
-        std::map< std::string, std::set< std::string > > child_to_parents_ ;
+        std::map< EntityType, EntityType > parent_to_child_ ;
+        std::map< EntityType, std::set< EntityType > > child_to_parents_ ;
 
-        static std::map< std::string, std::string > mesh_entity_to_boundary_ ;
-        static std::map< std::string, std::string > mesh_entity_to_in_boundary_ ;
+        static std::map< EntityType, EntityType > mesh_entity_to_boundary_ ;
+        static std::map< EntityType, EntityType > mesh_entity_to_in_boundary_ ;
     };
 
     /*!
@@ -311,6 +320,7 @@ namespace RINGMesh {
         {
             return gme_id().index ;
         }
+        // This information is stored twice.... Convenient but design is not flawless
         const std::string& entity_type() const
         {
             return gme_id().type ;
