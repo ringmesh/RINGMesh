@@ -85,6 +85,6 @@ namespace RINGMesh {
         RINGMesh::TetraGen::initialize() ;
         RINGMesh::GeoModelGeologicalEntity::initialize() ;
         RINGMesh::ringmesh_mesh_io_initialize() ;
-        RINGMesh::tsolid_import_factory_initialize() ;
+        RINGMesh::initialize_gocad_import_factories() ;
     }
 }

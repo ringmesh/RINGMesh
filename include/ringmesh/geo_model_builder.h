@@ -293,7 +293,6 @@ namespace RINGMesh {
         void end_model() ;
 
     protected:
-        void build_contacts() ;
         void set_surface_facet_adjacencies(
                 index_t surface_id,
                 const std::vector< index_t >& facets_id,
