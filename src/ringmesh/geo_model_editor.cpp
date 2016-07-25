@@ -48,6 +48,27 @@ namespace RINGMesh {
 
     typedef GeoModelEntity::gme_t gme_t ;
 
+    /*! Internal implementation details */
+    class GeoModelEditorImplementation : public GeoModelEditor
+    {
+    public:
+        GeoModelEditorImplementation( GeModel& model ) :
+            GeoModelEditor( model )
+        {} ;
+        virtual ~GeoModelEditorImplementation()
+        {} ;
+    };
+
+    GeoModelEditor::GeoModelEditor( GeoModel& model )
+        : model_( M ), create_entity_allowed_( true ), impl_( model )
+    {
+        fill_entity_type_to_index_map() ;
+    }
+    GeoModelEditor::~GeoModelEditor()
+    {
+        delete impl_ ;
+    }
+
     GeoModelGeologicalEntity* GeoModelEditor::new_geological_entity(
         const std::string& type, index_t id )
     {
@@ -395,8 +416,7 @@ namespace RINGMesh {
             }
         }
         
-        std::string mesh_entity_types[4] =
-        {Corner::type_name_static(), Line::type_name_static(),
+        std::string mesh_entity_types[4] = { Corner::type_name_static(), Line::type_name_static(),
         Surface::type_name_static(), Region::type_name_static()} ;
 
         for( index_t i = 0; i < 4 ; ++ i ) {
