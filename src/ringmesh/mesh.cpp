@@ -55,7 +55,7 @@ namespace RINGMesh {
             if( M.mesh.vertices.is_initialized() ) {
                 M.mesh.vertices.clear() ;
             }
-            MeshBuilder builder( *this ) ;
+            MeshBuilder builder( const_cast< Mesh& >( *this ) ) ;
             builder.delete_vertex_colocater() ;
             builder.delete_facet_colocater() ;
 
@@ -74,7 +74,7 @@ namespace RINGMesh {
             if( M.mesh.vertices.is_initialized() ) {
                 M.mesh.vertices.clear() ;
             }
-            MeshBuilder builder( *this ) ;
+            MeshBuilder builder( const_cast< Mesh& >( *this ) ) ;
             builder.delete_vertex_colocater() ;
             builder.delete_facet_colocater() ;
             builder.delete_cell_colocater() ;
