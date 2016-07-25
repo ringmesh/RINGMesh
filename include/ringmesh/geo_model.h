@@ -76,35 +76,22 @@ namespace RINGMesh {
         /*!
          * @brief Deletes all the GeoModelEntities of the GeoModel
          */
-        virtual ~GeoModel() ;
+        virtual ~GeoModel() ;   
 
-        /*
-         * @todo Implement a real copy_constructor and operator= [JP]
-         */
-        void copy( const GeoModel& from ) ;
-
-        /*!
-         * @brief Name of the model
-         */
         const std::string& name() const
         {
             return name_ ;
         }
 
-        /*!
-         * \name Generic GeoModelEntity accessors
-         * @{
-         */
-
-        // nothing to do with the model, put it out
-        bool is_mesh_entity_type( const std::string& entity_type_name ) const
+        const EntityRelationships& entity_relationships() const
         {
-            return entity_type_name == Corner::type_name_static()
-                || entity_type_name == Line::type_name_static()
-                || entity_type_name == Surface::type_name_static()
-                || entity_type_name == Region::type_name_static() ;
+            return entity_relationships_ ;
         }
 
+        bool is_mesh_entity_type( const std::string& entity_type_name ) const
+        {
+            return mesh_entity_type( entity_type_name ) != NO_ID ;
+        }
         bool is_geological_entity_type( const std::string& entity_type_name ) const
         {
             return geological_entity_type( entity_type_name ) != NO_ID ;
@@ -121,7 +108,6 @@ namespace RINGMesh {
                 return 0 ;
             }
         }
-
         /*!
          * @brief Returns the number of mesh entities of the given type
          * @details Default value is 0
@@ -142,12 +128,6 @@ namespace RINGMesh {
                 return 0 ;
             }
         }
-
-        const EntityRelationships& entity_relationships() const
-        {
-            return entity_relationships_ ;
-        }
-
         /*!
          * @brief Returns the number of geological entities of the given type
          * @details Default value is 0
@@ -166,15 +146,36 @@ namespace RINGMesh {
          * @param[in] type the geological entity type
          */
         index_t geological_entity_type( const std::string& type ) const ;
-        index_t nb_geological_entity_type() const
+        index_t nb_geological_entity_types() const
         {
             return static_cast< index_t >( geological_entity_types_.size() ) ;
         }
         const std::string& geological_entity_type( index_t id ) const
         {
-            ringmesh_assert( id < nb_geological_entity_type() ) ;
+            ringmesh_assert( id < nb_geological_entity_types() ) ;
             return geological_entity_types_[id] ;
         }
+
+        // Hard encoded mapping between for meshed entities. Always the same.
+        index_t mesh_entity_type( const std::string& type ) const
+        {
+            if( type == Corner::type_name_static() ) {
+                return 0 ;
+            } else if( type == Line::type_name_static() ) {
+                return 1 ;
+            } else if( type == Surface::type_name_static() ) {
+                return 2 ; 
+            } else if( type == Region::type_name_static() ) {
+                return 3 ;
+            } else {
+                return NO_ID ;
+            }
+        }
+        const std::string mesh_entity_type( index_t id )
+        {
+            ringmesh_assert( id < 4 ) ;            
+            return mesh_entity_types_[id] ;
+        }                           
 
         /*!
          * @brief Returns a const reference the identified GeoModelEntity
@@ -184,9 +185,9 @@ namespace RINGMesh {
          */
         const GeoModelGeologicalEntity& geological_entity( GME::gme_t id ) const
         {
-            return *geological_entity_ptr( id ) ;
+            ringmesh_assert( id.index < nb_geological_entities( id.type ) ) ;
+            return *geological_entities( id.type )[id.index] ;
         }
-        
         /*!
          * Convenient overload of entity( GME::gme_t id )
          */
@@ -217,7 +218,6 @@ namespace RINGMesh {
             ringmesh_assert_not_reached ;
             return surface( 0 );
         }
-
         /*!
          * Convenient overload of mesh_entity( GME::gme_t id )
          */
@@ -281,26 +281,6 @@ namespace RINGMesh {
         }
 
     private:
-
-        /*!
-         * @brief Generic accessor to the storage of mesh entities of the given type
-         */
-        inline std::vector< GeoModelMeshEntity* >& modifiable_mesh_entities(
-            const std::string& type )
-        {
-            return const_cast< std::vector< GeoModelMeshEntity* >& >( mesh_entities(
-                type ) ) ;
-        }
-        /*!
-         * @brief Generic accessor to the storage of geological entities of the given type
-         */
-        inline std::vector< GeoModelGeologicalEntity* >& modifiable_geological_entities(
-            const std::string& type )
-        {
-            return const_cast< std::vector< GeoModelGeologicalEntity* >& >( geological_entities(
-                type ) ) ;
-        }
-
         /*!
          * @brief Generic accessor to the storage of mesh entities of the given type
          */
@@ -321,74 +301,16 @@ namespace RINGMesh {
             }
         }
 
-
         /*!
          * @brief Generic accessor to the storage of geologcial entities of the given type
          */
         const std::vector< GeoModelGeologicalEntity* >& geological_entities(
             const std::string& type ) const
         {
-            index_t index = geological_entity_type( type ) ;
-            ringmesh_assert( index != NO_ID ) ;
-            return geological_entities_[index] ;
-        }
-
-        /*!
-         * @brief Modifiable pointer to a mesh entity of the model
-         * @param[in] id Type and index of the entity. For the
-         * pair (Region, NO_ID) universe region is returned.
-         *
-         * @pre Entity identification is valid.
-         */
-        const GeoModelMeshEntity* mesh_entity_ptr(
-            const GME::gme_t& id ) const
-        {
-            return mesh_entities( id.type )[id.index] ;
-        }
-
-        /*!
-         * @brief Modifiable pointer to an entity of the model
-         * @param[in] id Type and index of the entity. For the
-         * pair (Region, NO_ID) universe region is returned.
-         *
-         * @pre Entity identification is valid.
-         */
-        const GeoModelGeologicalEntity* geological_entity_ptr(
-            const GME::gme_t& id ) const
-        {
-            return geological_entities( id.type )[id.index] ;
-        }
-
-        const GeoModelEntity* entity_ptr( const GME::gme_t& id ) const
-        {
-            if( is_mesh_entity_type( id.type ) ) {
-                return mesh_entity_ptr( id ) ;
-            } else if( is_geological_entity_type( id.type ) ) {
-                return geological_entity_ptr ;
-            } else {
-                return nil
-            }
-        }
-
-        /*!
-         * @brief Reference to a modifiable meshed entity of the model
-         * @pre Assert in debug model that the given id refers to a meshed entity.
-         *      The id must refer to a valid entity.
-         */
-        inline GeoModelMeshEntity& modifiable_mesh_entity(
-            const GME::gme_t& id )
-        {
-            return const_cast<GeoModelMeshEntity&> ( *mesh_entity_ptr( id ) ) ;
-        }
-
-        /*!
-         * @brief Reference to a modifiable entity of the model
-         * @pre The id must refer to a valid entity of the model
-         */
-        GeoModelGeologicalEntity& modifiable_geological_entity( const GME::gme_t& id )
-        {
-            return const_cast< GeoModelGeologicalEntity& >( *geological_entity_ptr( id ) ) ;
-        }
+            index_t entity_index = geological_entity_type( type ) ;
+            ringmesh_assert( entity_index != NO_ID ) ;
+            return geological_entities_[entity_index] ;
+        }      
 
     public:
         GeoModelMesh mesh ;
@@ -396,6 +318,8 @@ namespace RINGMesh {
     private:
         // Name of the model
         std::string name_ ;
+
+        EntityRelationships entity_relationships_ ;
 
         /*!
          * \name Mandatory entities of the model
@@ -405,6 +329,8 @@ namespace RINGMesh {
         std::vector< Line* > lines_ ;
         std::vector< Surface* > surfaces_ ;   
         std::vector< Region* > regions_ ;
+
+        const std::vector< std::string > mesh_entity_types_ ;
 
         /*!
          * The Region defining the model extension
@@ -419,9 +345,6 @@ namespace RINGMesh {
          * @brief Geological entity types
          */
         std::vector< std::string > geological_entity_types_ ;
-
-        EntityRelationships entity_relationships_ ;
-
 
         /*!
          * @}

@@ -39,21 +39,30 @@
  */
 
 #include <ringmesh/geo_model.h>
+#include <ringmesh/geo_model_mesh_entity.h>
+#include <ringmesh/geo_model_entity.h>
+#include <ringmesh/geo_model_geological_entity.h>
 
 #include <ringmesh/algorithm.h>
-#include <ringmesh/geo_model_builder.h>
 
 namespace RINGMesh {
 
     typedef GME::gme_t gme_t ;
 
+    // Not the smartest but hopefully compiles in C++98
+    const std::vector< std::string > mesh_entity_types = {
+        Corner::type_name_static(),
+        Line::type_name_static(),
+        Surface::type_name_static(),
+        Region::type_name_static()} ;
+
     GeoModel::GeoModel()
         :
             mesh( *this ),
             universe_( *this ),
-            wells_( nil )
+            wells_( nil ),
+            mesh_entity_types_( mesh_entity_types )             
     {
-        /// @todo Review: This usage of this pointer in initialization list is a time bomb [JP]
     }
 
     GeoModel::~GeoModel()
@@ -76,20 +85,6 @@ namespace RINGMesh {
                 delete geological_entities_[i][j] ;
             }
         }
-    }
-
-    /*!
-     * Copies a GeoModel in another one
-     * @param[in] from GeoModel to copy
-     * 
-     * @todo This shouln't be a member function because it does not do nothing
-     *       with what the class has. To move to GeoModelBuilder.
-     */
-    void GeoModel::copy( const GeoModel& from )
-    {
-        GeoModelBuilder builder( *this ) ;
-        builder.copy_macro_topology( from ) ;
-        builder.copy_meshes( from ) ;
     }
 
     /*!

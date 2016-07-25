@@ -1258,7 +1258,7 @@ namespace {
     bool are_geomodel_geological_entities_valid( const GeoModel& GM )
     {
         index_t nb_invalid = 0 ;
-        for( index_t i = 0; i < GM.nb_geological_entity_type(); i++ ) {
+        for( index_t i = 0; i < GM.nb_geological_entity_types(); i++ ) {
             nb_invalid += nb_invalid_geological_entities( GM,
                 GM.geological_entity_type( i ) ) ;
         }
