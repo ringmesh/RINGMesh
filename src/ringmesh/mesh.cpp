@@ -45,12 +45,6 @@ namespace RINGMesh {
     const GEO::MeshFacetsAABB& Mesh::facets_aabb() const
     {
         GeoModel& M = const_cast< GeoModel& >( geo_model_ ) ;
-        if( M.mesh.vertices.is_initialized() ) {
-            Logger::warn( "AABB" )
-                << "Creation of AABB results in deletion of the GeoModelMeshVertices"
-                << std::endl ;
-            M.mesh.vertices.clear() ;
-        }
         if( facets_aabb_ == nil ) {
             // Geogram triangulates the Mesh when creating the AABB tree
             ringmesh_assert( mesh_->facets.are_simplices() ) ;
@@ -58,13 +52,12 @@ namespace RINGMesh {
             // Very bad side effect
             // The root cause of the problem is the duplication of many things
             // in our GeoModel structure [JP]
-            M.mesh.vertices.clear() ;
-            for( index_t i = 0; i <= ColocaterANN::FACETS; i++ ) {
-                if( ann_[i] ) {
-                    delete ann_[i] ;
-                    ann_[i] = nil ;
-                }
+            if( M.mesh.vertices.is_initialized() ) {
+                M.mesh.vertices.clear() ;
             }
+            MeshBuilder builder( *this ) ;
+            builder.delete_vertex_colocater() ;
+            builder.delete_facet_colocater() ;
 
             facets_aabb_ = new GEO::MeshFacetsAABB( *mesh_ ) ;
         }
@@ -74,26 +67,17 @@ namespace RINGMesh {
     const GEO::MeshCellsAABB& Mesh::cells_aabb() const
     {
         GeoModel& M = const_cast< GeoModel& >( geo_model_ ) ;
-        if( M.mesh.vertices.is_initialized() ) {
-            Logger::warn( "AABB" )
-                << "Creation of AABB results in deletion of the GeoModelMeshVertices"
-                << std::endl ;
-            M.mesh.vertices.clear() ;
-        }
         if( cells_aabb_ == nil ) {
-            // Geogram triangulates the Mesh when creating the AABB tree
-            ringmesh_assert( mesh_->facets.are_simplices() ) ;
-
             // Very bad side effect
             // The root cause of the problem is the duplication of many things
             // in our GeoModel structure [JP]
-            M.mesh.vertices.clear() ;
-            for( index_t i = 0; i <= ColocaterANN::CELLS; i++ ) {
-                if( ann_[i] ) {
-                    delete ann_[i] ;
-                    ann_[i] = nil ;
-                }
+            if( M.mesh.vertices.is_initialized() ) {
+                M.mesh.vertices.clear() ;
             }
+            MeshBuilder builder( *this ) ;
+            builder.delete_vertex_colocater() ;
+            builder.delete_facet_colocater() ;
+            builder.delete_cell_colocater() ;
 
             cells_aabb_ = new GEO::MeshCellsAABB( *mesh_ ) ;
         }
