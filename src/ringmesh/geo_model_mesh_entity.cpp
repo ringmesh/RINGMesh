@@ -376,22 +376,33 @@ namespace RINGMesh {
         ringmesh_assert( parent.is_defined() ) ;
         return model().geological_entity( parent ) ;
     }
-    const gme_t& GeoModelMeshEntity::parent_id( const std::string& parent_type_name ) const
+    const gme_t& GeoModelMeshEntity::parent_gme( const std::string& parent_type_name ) const
     {
-        const EntityRelationships& parentage = model().entity_relationships() ;
-        bool valid_parent_type = parentage.parent_types( type_name() ).count( parent_type_name ) > 0;
-
-        if( valid_parent_type ) {
+        index_t id = parent_id( parent_type_name ) ;
+        if( id != NO_ID ) {
+            return parent( id ) ;
+        }
+        else {
+            return gme_t() ;
+        }        
+    }
+    index_t GeoModelMeshEntity::parent_id( const std::string& parent_type_name ) const
+    {
+        const EntityRelationships& family = model().entity_relationships() ;
+        bool valid_parent_type = family.parent_types( type_name() ).count( parent_type_name ) > 0;
+        if( valid_parent_type ) {        
             for( index_t i = 0; i < nb_parents(); ++i ) {
-                const gme_t& parent = parent_id( i ) ;
-                if( parent.type == parent_type_name ) {
-                    return parent ;
+                if( parents_[i].type == parent_type_name ) {
+                    return i ;
                 }
             }
+            return NO_ID ;
+        } else {
             ringmesh_assert_not_reached ;
+            return NO_ID ;
         }
-        return gme_t() ;
     }
+
 
     const GeoModelMeshEntity& GeoModelMeshEntity::boundary( index_t x ) const
     {

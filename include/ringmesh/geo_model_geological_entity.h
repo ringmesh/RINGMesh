@@ -83,7 +83,7 @@ namespace RINGMesh {
         {
             return static_cast< index_t >( children_.size() ) ;
         }
-        const gme_t& child_id( index_t x ) const
+        const gme_t& child_gme( index_t x ) const
         {
             ringmesh_assert( x < nb_children() ) ;
             return children_[x] ;
