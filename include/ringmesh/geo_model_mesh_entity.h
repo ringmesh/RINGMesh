@@ -72,7 +72,7 @@ namespace RINGMesh {
         GeoModelMeshEntity(
             const GeoModel& model,
             index_t id,
-            const std::string& name = "unnamed",
+            const std::string& name = "No_name",
             GEOL_FEATURE geological_feature = NO_GEOL )
             :
             GeoModelEntity( model, id, name, geological_feature ),
@@ -83,9 +83,6 @@ namespace RINGMesh {
         }
 
     public:
-        virtual const std::string& boundary_type() const = 0 ;
-        virtual const std::string& in_boundary_type() const = 0 ;
-
         static const std::string default_entity_type_name()
         {
             return "No_entity_type" ;
@@ -145,7 +142,8 @@ namespace RINGMesh {
         }
         const GeoModelGeologicalEntity& parent(
             const std::string& parent_type_name ) const ;
-        const gme_t& parent_id( const std::string& parent_type_name ) const ;
+        const gme_t& parent_gme( const std::string& parent_type_name ) const ;
+        index_t parent_id( const std::string& parent_type_name ) const ;
         const GeoModelGeologicalEntity& parent( index_t id ) const ;
 
         /*! @todo To remove when GFX Mesh is encapsulated */
@@ -399,13 +397,12 @@ namespace RINGMesh {
         {
             MeshBuilder builder( mesh_ ) ;
             builder.create_vertex() ;
+            id_.type = type_name_static() ;
         }
 
         ~Corner()
         {}
 
-        virtual const std::string& in_boundary_type() const ;
-        virtual const std::string& boundary_type() const ;
         virtual bool is_on_voi() const ;
 
         static const std::string type_name_static()
@@ -484,8 +481,6 @@ namespace RINGMesh {
         {
         }
 
-        virtual const std::string& in_boundary_type() const ;
-        virtual const std::string& boundary_type() const ;
         virtual bool is_on_voi() const ;
         static const std::string type_name_static()
         {
@@ -579,14 +574,13 @@ namespace RINGMesh {
         Surface( const GeoModel& model, index_t id )
             : GeoModelMeshEntity( model, id )
         {
+            id_.type = type_name_static() ;
         }
 
         ~Surface()
         {
         }
 
-        virtual const std::string& in_boundary_type() const ;
-        virtual const std::string& boundary_type() const ;
         virtual bool is_on_voi() const ;
         static const std::string type_name_static()
         {
@@ -849,19 +843,22 @@ namespace RINGMesh {
     public:
         Region( const GeoModel& model, index_t id )
             : GeoModelMeshEntity( model, id )
-        {}
+        {
+            id_.type = type_name_static() ;
+        }
         Region(
             const GeoModel& model,
             index_t id,
             const std::string& name,
             GEOL_FEATURE geological_feature )
             : GeoModelMeshEntity( model, id, name, geological_feature )
-        {}
+        {
+            id_.type = type_name_static() ;
+        }
         ~Region()
-        {}
+        {
+        }
 
-        virtual const std::string& in_boundary_type() const ;
-        virtual const std::string& boundary_type() const ;
         virtual bool is_on_voi() const ;
         static const std::string type_name_static()
         {

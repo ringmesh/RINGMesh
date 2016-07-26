@@ -61,51 +61,58 @@ namespace RINGMesh {
      * One instance owned by the GeoModel.
      */
     class RINGMESH_API EntityRelationships {
+        typedef std::string EntityType ;
     public:
-        void register_relationship( const std::string& parent_type_name,
-            const std::string& child_type_name )
+        void register_relationship( const EntityType& parent_type_name,
+            const EntityType& child_type_name )
         {
             register_child_type( parent_type_name, child_type_name ) ;
             register_parent_type( parent_type_name, child_type_name ) ;
         }
-        void register_child_type( const std::string& parent_type_name, 
-            const std::string& child_type_name )
+        void register_child_type( const EntityType& parent_type_name, 
+            const EntityType& child_type_name )
         {
             parent_to_child_[parent_type_name] = child_type_name ;
         }
-
-        void register_parent_type( const std::string& parent_type_name,
-            const std::string& child_type_name )
+        void register_parent_type( const EntityType& parent_type_name,
+            const EntityType& child_type_name )
         {
             child_to_parents_[child_type_name].insert( parent_type_name ) ;
         }
-
-        const std::set< std::string >& parent_types( const std::string& child_type ) const 
+        
+        const std::set< EntityType >& parent_types( const EntityType& child_type ) const 
         {
-            std::map< std::string, std::set< std::string > >::const_iterator
+            std::map< EntityType, std::set< EntityType > >::const_iterator
                 itr = child_to_parents_.find( child_type );
+            ringmesh_assert( itr != child_to_parents_.end() ) ;
             return itr->second ;
         }
-       /* index_t nb_parent_types( const std::string& child_type ) const
+        index_t nb_parent_types( const EntityType& child_type ) const
         {
-            return parent_types( child_type ).size() ;
+            std::map< EntityType, std::set< EntityType > >::const_iterator itr =
+                child_to_parents_.find( child_type ) ;
+            if( itr == child_to_parents_.end() ) return 0 ;
+            return static_cast< index_t >( itr->second.size() ) ;
         }
-        const std::string parent_type( const std::string child_type, index_t i ) const
+        const EntityType& child_type( const EntityType& parent_type ) const
         {
-            const std::set< std::string >& parent_types
-            return *parent_types( child_type ).begin()[i] ;
-        } */ 
-
-        const std::string& child_type( const std::string& parent_type ) const
-        {
-           std::map< std::string, std::string >::const_iterator
+           std::map< EntityType, EntityType >::const_iterator
                 itr = parent_to_child_.find( parent_type );
+           ringmesh_assert( itr != parent_to_child_.end() ) ;
            return itr->second ;
         }
-
+        
+        static bool is_valid_type( const EntityType& type )
+        {
+            return type != "No_entity_type" ;  // Defined twice baaad
+        }
+                
+        static const EntityType& boundary_type( const EntityType& mesh_entity_type ) ;
+        static const EntityType& in_boundary_type( const EntityType& mesh_entity_type ) ;
+        
     private:
-        std::map< std::string, std::string > parent_to_child_ ;
-        std::map< std::string, std::set< std::string > > child_to_parents_ ;
+        std::map< EntityType, EntityType > parent_to_child_ ;
+        std::map< EntityType, std::set< EntityType > > child_to_parents_ ;
     };
 
     /*!
@@ -229,6 +236,9 @@ namespace RINGMesh {
         {
             return  default_entity_type_name() ;
         }
+        // I am not sure that this one is really useful.
+        // In almost all cases we call the static function.
+        // Which is nothing more than the RTTI CLASS::typename() information
         virtual const std::string type_name() const
         {
             return default_entity_type_name() ;
@@ -292,10 +302,11 @@ namespace RINGMesh {
         {
             return gme_id().index ;
         }
-        /*TYPE type() const
+        // This information is stored twice.... Convenient but design is not flawless
+        const std::string& entity_type() const
         {
             return gme_id().type ;
-        }*/
+        }
         bool has_geological_feature() const
         {
             return geol_feature_ != NO_GEOL ;
@@ -333,7 +344,7 @@ namespace RINGMesh {
         /// Reference to the GeoModel owning this entity
         const GeoModel& model_ ;
 
-        /// Unique identifier of the GeoModelEntity in the model
+        /// Unique identifier of this GeoModelEntity in the model
         gme_t id_ ;
 
         /// Name of the entity - default is an empty string

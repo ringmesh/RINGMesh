@@ -36,6 +36,7 @@
 #include <ringmesh/ringmesh_tests_config.h>
 
 #include <ringmesh/geo_model.h>
+#include <ringmesh/geo_model_geological_entity.h>
 #include <ringmesh/io.h>
 
 #include <geogram/basic/logger.h>
@@ -70,8 +71,8 @@ int main()
         // Check number of entities in the imported GeoModel (from TSolid file)
         if( model.nb_corners() != 52 || model.nb_lines() != 98
             || model.nb_surfaces() != 55 || model.nb_regions() != 8
-            || model.nb_geological_entities( "Interface" ) != 11
-            || model.nb_geological_entities( "Layer" ) != 38
+            || model.nb_geological_entities( Interface::type_name_static() ) != 11
+            || model.nb_geological_entities( Contact::type_name_static() ) != 38
             || model.mesh.vertices.nb() != 6691 || model.mesh.facets.nb() != 10049
             || model.mesh.cells.nb() != 34540 ) {
             throw RINGMeshException( "TEST", "FAILED" ) ;

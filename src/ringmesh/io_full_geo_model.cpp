@@ -74,17 +74,12 @@ namespace {
     void save_geological_entity( std::ofstream& out, const GeoModelGeologicalEntity& E )
     {
         /// First line:  TYPE - ID - NAME - GEOL
-        out << E.gme_id() << " " ;
-        if( E.has_name() ) {
-            out << E.name() << " " ;
-        } else {
-            out << "no_name " ;
-        }
+        out << E.gme_id() << " " << E.name() << " " ;
         out << GeoModelEntity::geol_name( E.geological_feature() ) << std::endl ;
 
         /// Second line:  IDS of children
         for( index_t j = 0; j < E.nb_children(); ++j ) {
-            out << " " << E.child_id( j ).index ;
+            out  << E.child_gme( j ).index << " " ;
         }
         out << std::endl ;
     }
@@ -101,6 +96,12 @@ namespace {
         if( out.bad() ) {
             throw RINGMeshException( "I/O",
                 "Error when opening the file: " + file_name ) ;
+        }
+
+        for( index_t i = 0; i < M.nb_geological_entity_types(); i++ ) {
+            const std::string& type = M.geological_entity_type( i ) ;
+            index_t nb = M.nb_geological_entities( type ) ;
+            out << "Nb " << type << " " << nb << std::endl ;
         }
 
         for( index_t i = 0; i < M.nb_geological_entity_types(); i++ ) {
@@ -145,8 +146,7 @@ namespace {
                 "Error when opening the file: " + file_name ) ;
         }
 
-        out << "RINGMesh GeoModel" << std::endl ;
-        out << "Name " << M.name() << std::endl ;
+        out << "GeoModel name " << M.name() << std::endl ;
 
         // Numbers of the different types of mesh entities
         out << "Nb " << Corner::type_name_static() << " " << M.nb_corners() << std::endl ;
@@ -164,7 +164,6 @@ namespace {
             // Save ID - NAME
             out << Region::type_name_static() << " " << i << " " << E.name() << " "
                 << GeoModelEntity::geol_name( E.geological_feature() ) << std::endl ;
-            out << std::endl ;
             // Second line Signed ids of boundary surfaces
             for( index_t j = 0; j < E.nb_boundaries(); ++j ) {
                 if( E.side( j ) ) {
@@ -292,7 +291,7 @@ namespace {
                 const RINGMesh::GeoModelGeologicalEntity& interf =
                     gm.geological_entity( Interface::type_name_static(), i ) ;
                 for( index_t s = 0; s < interf.nb_children(); s++ ) {
-                    index_t surface_id = interf.child_id( s ).index ;
+                    index_t surface_id = interf.child_gme( s ).index ;
                     for( index_t f = 0; f < mesh.facets.nb_triangle( surface_id );
                         f++ ) {
                         index_t facet_id = mesh.facets.triangle( surface_id, f ) ;
@@ -315,7 +314,7 @@ namespace {
                 const RINGMesh::GeoModelGeologicalEntity& interf =
                     gm.geological_entity( Interface::type_name_static(), i ) ;
                 for( index_t s = 0; s < interf.nb_children(); s++ ) {
-                    index_t surface_id = interf.child_id( s ).index ;
+                    index_t surface_id = interf.child_gme( s ).index ;
                     out << "GROUP_MA" << std::endl ;
                     out << interf.name() << std::endl ;
                     for( index_t f = 0; f < mesh.facets.nb_triangle( surface_id );
@@ -958,7 +957,7 @@ namespace {
                 out << "SURFACE " << interf.name() << std::endl ;
                 for( index_t s = 0; s < interf.nb_children(); s++ ) {
                     out << "TFACE " << tface_count++ << std::endl ;
-                    index_t surface_id = interf.child_id( s ).index ;
+                    index_t surface_id = interf.child_gme( s ).index ;
                     out << "KEYVERTICES" ;
                     index_t key_facet_id = mesh.facets.facet( surface_id, 0 ) ;
                     for( index_t v = 0; v < mesh.facets.nb_vertices( key_facet_id );
@@ -1098,7 +1097,7 @@ namespace {
                 const GeoModelGeologicalEntity& interf = gm.geological_entity(
                     Interface::type_name_static(), i ) ;
                 for( index_t s = 0; s < interf.nb_children(); s++ ) {
-                    index_t s_id = interf.child_id( s ).index ;
+                    index_t s_id = interf.child_gme( s ).index ;
                     nb_triangle_interface[i] += mesh.facets.nb_triangle( s_id ) ;
                     nb_quad_interface[i] += mesh.facets.nb_quad( s_id ) ;
                 }
@@ -1280,7 +1279,7 @@ namespace {
                 const GeoModelGeologicalEntity& interf = gm.geological_entity(
                     Interface::type_name_static(), i ) ;
                 for( index_t s = 0; s < interf.nb_children(); s++ ) {
-                    index_t s_id = interf.child_id( s ).index ;
+                    index_t s_id = interf.child_gme( s ).index ;
                     for( index_t el = 0; el < mesh.facets.nb_triangle( s_id );
                         el++ ) {
                         index_t tri = mesh.facets.triangle( s_id, el ) ;
@@ -1342,7 +1341,7 @@ namespace {
                 const GeoModelGeologicalEntity& interf = gm.geological_entity(
                     Interface::type_name_static(), i ) ;
                 for( index_t s = 0; s < interf.nb_children(); s++ ) {
-                    index_t s_id = interf.child_id( s ).index ;
+                    index_t s_id = interf.child_gme( s ).index ;
                     for( index_t el = 0; el < mesh.facets.nb_triangle( s_id );
                         el++ ) {
                         index_t tri = mesh.facets.triangle( s_id, el ) ;

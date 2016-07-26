@@ -83,7 +83,7 @@ namespace RINGMesh {
         {
             return static_cast< index_t >( children_.size() ) ;
         }
-        const gme_t& child_id( index_t x ) const
+        const gme_t& child_gme( index_t x ) const
         {
             ringmesh_assert( x < nb_children() ) ;
             return children_[x] ;
@@ -100,6 +100,7 @@ namespace RINGMesh {
         Contact( const GeoModel& model )
             : GeoModelGeologicalEntity( model )
         {
+            id_.type = type_name_static() ;
         }
         ~Contact()
         {
@@ -107,7 +108,7 @@ namespace RINGMesh {
 
         static const std::string type_name_static()
         {
-            return "Contact2" ;
+            return "Contact" ;
         }
         virtual const std::string type_name() const
         {
@@ -130,6 +131,7 @@ namespace RINGMesh {
         Interface( const GeoModel& model )
             : GeoModelGeologicalEntity( model )
         {
+            id_.type = type_name_static() ;
         }
         ~Interface()
         {
@@ -160,6 +162,7 @@ namespace RINGMesh {
         Layer( const GeoModel& model )
             : GeoModelGeologicalEntity( model )
         {
+            id_.type = type_name_static() ;
         }
         ~Layer()
         {

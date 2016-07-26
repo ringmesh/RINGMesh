@@ -47,7 +47,7 @@ namespace RINGMesh {
 
     const GeoModelMeshEntity& GeoModelGeologicalEntity::child( index_t x ) const
     {
-        return model().mesh_entity( child_id( x ) ) ;
+        return model().mesh_entity( child_gme( x ) ) ;
     }
 
     bool GeoModelGeologicalEntity::is_on_voi() const

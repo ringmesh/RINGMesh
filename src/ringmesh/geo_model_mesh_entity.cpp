@@ -370,28 +370,40 @@ namespace RINGMesh {
         ringmesh_assert( parent.is_defined() ) ;
         return model().geological_entity( parent ) ;
     }
-    const GeoModelGeologicalEntity& GeoModelMeshEntity::parent( const std::string& parent_type_name ) const
+    const GeoModelGeologicalEntity& GeoModelMeshEntity::parent( 
+        const std::string& parent_type_name ) const
     {
-        gme_t parent = parent_id( parent_type_name ) ;
-        ringmesh_assert( parent.is_defined() ) ;
-        return model().geological_entity( parent ) ;
+        gme_t id = parent_gme( parent_type_name ) ;
+        ringmesh_assert( id.is_defined() ) ;
+        return model().geological_entity( id ) ;
     }
-    const gme_t& GeoModelMeshEntity::parent_id( const std::string& parent_type_name ) const
+    const gme_t& GeoModelMeshEntity::parent_gme( const std::string& parent_type_name ) const
     {
-        const EntityRelationships& parentage = model().entity_relationships() ;
-        bool valid_parent_type = parentage.parent_types( type_name_static() ).count( parent_type_name ) > 0;
-
-        if( valid_parent_type ) {
+        index_t id = parent_id( parent_type_name ) ;
+        if( id != NO_ID ) {
+            return gme_t( parent_type_name, id ) ;
+        }
+        else {
+            return gme_t() ;
+        }        
+    }
+    index_t GeoModelMeshEntity::parent_id( const std::string& parent_type_name ) const
+    {
+        const EntityRelationships& family = model().entity_relationships() ;
+        bool valid_parent_type = family.parent_types( type_name() ).count( parent_type_name ) > 0;
+        if( valid_parent_type ) {        
             for( index_t i = 0; i < nb_parents(); ++i ) {
-                const gme_t& parent = parent_id( i ) ;
-                if( parent.type == parent_type_name ) {
-                    return parent ;
+                if( parents_[i].type == parent_type_name ) {
+                    return i ;
                 }
             }
+            return NO_ID ;
+        } else {
             ringmesh_assert_not_reached ;
+            return NO_ID ;
         }
-        return gme_t() ;
     }
+
 
     const GeoModelMeshEntity& GeoModelMeshEntity::boundary( index_t x ) const
     {
@@ -435,20 +447,6 @@ namespace RINGMesh {
     }
 
     /**************************************************************/
-
-
-
-
-    const std::string& Corner::in_boundary_type() const
-    {
-        return Line::type_name_static() ;
-    }
-    const std::string& Corner::boundary_type() const
-    {
-        return GME::type_name_static() ;
-    }
-
-
 
     /*!
      * @brief Check that the Corner mesh is a unique point
@@ -498,6 +496,7 @@ namespace RINGMesh {
     Line::Line( const GeoModel& model, index_t id )
         : GeoModelMeshEntity( model, id )
     {
+        id_.type = type_name_static() ;
     }
 
     /*!
@@ -601,26 +600,7 @@ namespace RINGMesh {
         return valid ;
     }
 
-
-    const std::string& Line::in_boundary_type() const
-    {
-        return Surface::type_name_static() ;
-    }
-    const std::string& Line::boundary_type() const
-    {
-        return Corner::type_name_static() ;
-    }
     /********************************************************************/
-
-
-    const std::string& Surface::in_boundary_type() const
-    {
-        return Region::type_name_static() ;
-    }
-    const std::string& Surface::boundary_type() const
-    {
-        return Line::type_name_static() ;
-    }
 
     /*!
      * @brief Check that the mesh of the Surface is valid
@@ -1108,16 +1088,6 @@ namespace RINGMesh {
     }
 
     /********************************************************************/
-
-
-    const std::string& Region::in_boundary_type() const
-    {
-        return GME::type_name_static() ;
-    }
-    const std::string& Region::boundary_type() const
-    {
-        return Surface::type_name_static() ;
-    }
 
     bool Region::is_mesh_valid() const
     {
