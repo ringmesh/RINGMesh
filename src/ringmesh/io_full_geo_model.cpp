@@ -98,12 +98,16 @@ namespace {
                 "Error when opening the file: " + file_name ) ;
         }
 
+        if( M.nb_geological_entity_types() == 0 ) {
+            // Compression of an empty files crashes ? (in debug on windows at least)
+            out << "No geological entity in the model" << std::endl ;
+            return ;
+        }        
         for( index_t i = 0; i < M.nb_geological_entity_types(); i++ ) {
             const std::string& type = M.geological_entity_type( i ) ;
             index_t nb = M.nb_geological_entities( type ) ;
             out << "Nb " << type << " " << nb << std::endl ;
         }
-
         for( index_t i = 0; i < M.nb_geological_entity_types(); i++ ) {
             const std::string& type = M.geological_entity_type( i ) ;
             index_t nb = M.nb_geological_entities( type ) ;
@@ -2156,7 +2160,6 @@ namespace RINGMesh {
 
         GeoModelIOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
         handler->save( model, filename ) ;
-
     }
 
     /************************************************************************/

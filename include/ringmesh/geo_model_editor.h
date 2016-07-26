@@ -50,9 +50,6 @@
  */
 
 namespace RINGMesh {
-    // Implementation details 
-    class GeoModelEditorImplementation ; // do I need it or not ?? 
-
     /*!
      * @brief Basic edition of a GeoModel
      *        Topological level. NO GEOMETRY HERE.
@@ -177,7 +174,6 @@ namespace RINGMesh {
          * nothing is done.
          */
         void fill_geological_entities_children( const std::string& type ) ;
-
 
         void complete_mesh_entities_geol_feature_from_first_parent(
             const std::string& type ) ;
@@ -351,35 +347,7 @@ namespace RINGMesh {
         {
             return model_ ;
         }
-
-        EntityRelationships& entity_relationships()
-        {
-            return model().entity_relationships_ ;
-        }
         
-      
-        std::vector< GeoModelEntity* >& modifiable_entities(
-            const std::string& type )
-        {
-            return const_cast< std::vector< GeoModelEntity* >& >
-                ( model().entities( type ) ) ;
-        }
-
-        std::vector< GeoModelMeshEntity* >& modifiable_mesh_entities(
-            const std::string& type )
-        {
-            // Beurk again
-            return const_cast< std::vector< GeoModelMeshEntity* >& >
-                ( model().mesh_entities( type ) ) ;
-        }
-      
-        std::vector< GeoModelGeologicalEntity* >& modifiable_geological_entities(
-            const std::string& type )
-        {
-            return const_cast< std::vector< GeoModelGeologicalEntity* >& >(
-                model().geological_entities( type ) ) ;
-        }
-                            
         /*!  
          * @brief Throws an assertion if the input GeoModelEntity id is invalid
          *        in the model under construction
@@ -389,32 +357,30 @@ namespace RINGMesh {
             return model().assert_gme_id_validity( id ) ;
         }
 
-          /*!
-         * @brief Modifiable pointer to a mesh entity of the model
-         * @param[in] id Type and index of the entity. For the
-         * pair (Region, NO_ID) universe region is returned.
-         *
-         * @pre Entity identification is valid.
-         *
-        const GeoModelMeshEntity* mesh_entity_ptr(
-            const GME::gme_t& id ) const
+        EntityRelationships& entity_relationships()
         {
-            return mesh_entities( id.type )[id.index] ;
-        }*/
-
-        /*!
-         * @brief Modifiable pointer to an entity of the model
-         * @param[in] id Type and index of the entity. For the
-         * pair (Region, NO_ID) universe region is returned.
-         *
-         * @pre Entity identification is valid.
-         *
-        const GeoModelGeologicalEntity* geological_entity_ptr(
-            const GME::gme_t& id ) const
+            return model().entity_relationships_ ;
+        }
+              
+        std::vector< GeoModelEntity* >& modifiable_entities(
+            const std::string& type )
         {
-            return geological_entities( id.type )[id.index] ;
-        }*/
-
+            return const_cast< std::vector< GeoModelEntity* >& >
+                ( model().entities( type ) ) ;
+        }
+        std::vector< GeoModelMeshEntity* >& modifiable_mesh_entities(
+            const std::string& type )
+        {
+            // Beurk again 
+            return const_cast< std::vector< GeoModelMeshEntity* >& >
+                ( model().mesh_entities( type ) ) ;
+        }      
+        std::vector< GeoModelGeologicalEntity* >& modifiable_geological_entities(
+            const std::string& type )
+        {
+            return const_cast< std::vector< GeoModelGeologicalEntity* >& >(
+                model().geological_entities( type ) ) ;
+        }                           
         GeoModelEntity& modifiable_entity( const GME::gme_t& id )
         {
             if( model().is_mesh_entity_type( id.type ) ) {
@@ -427,30 +393,21 @@ namespace RINGMesh {
                 return modifiable_mesh_entity( first_surface ) ;
             }
         }
-
-        /*!
-         * @brief Reference to a modifiable meshed entity of the model
-         * @pre Assert in debug model that the given id refers to a meshed entity.
-         *      The id must refer to a valid entity.
-         */
         GeoModelMeshEntity& modifiable_mesh_entity(
             const GME::gme_t& id )
         {
-            const GeoModelMeshEntity* ptr = model().mesh_entities( id.type )[id.index] ;
-            return const_cast< GeoModelMeshEntity& > ( *ptr ) ;
+            model_.assert_gme_id_validity( id ) ;
+            return *modifiable_mesh_entities( id.type )[id.index] ;            
         }
-
-        /*!
-         * @brief Reference to a modifiable entity of the model
-         * @pre The id must refer to a valid entity of the model
-         */
         GeoModelGeologicalEntity& modifiable_geological_entity( const GME::gme_t& id )
         {
-            const GeoModelGeologicalEntity* ptr = model().geological_entities( id.type )[id.index] ;
-            return const_cast< GeoModelGeologicalEntity& >( *ptr ) ;
+            model_.assert_gme_id_validity( id ) ;
+            return *modifiable_geological_entities( id.type )[id.index] ;            
         }
-
-    //    void delete_elements( std::vector< std::vector< index_t > >& to_erase ) ;
+        Universe& universe()
+        {
+            return model_.universe_ ;
+        }
 
         index_t create_mesh_entities( const std::string& type, index_t nb ) ;
         index_t create_geological_entities( const std::string& type, index_t nb ) ;
@@ -485,6 +442,10 @@ namespace RINGMesh {
         {
             return E.boundaries_ ;
         }
+        std::vector< GME::gme_t >& modifiable_boundaries( Universe& U )
+        {
+            return U.boundary_surfaces_ ;
+        }
         std::vector< GME::gme_t >& modifiable_in_boundaries( GeoModelMeshEntity& E )
         {
             return E.in_boundary_ ;
@@ -497,14 +458,16 @@ namespace RINGMesh {
         {
             return R.sides_ ;
         }
-
+        std::vector< bool >& modifiable_sides( Universe& U )
+        {
+            return U.boundary_surface_sides_ ;
+        }
         void delete_entity( const std::string& type, index_t index )
         {
             std::vector< GeoModelEntity* >& store = modifiable_entities( type ) ;
             delete store[index] ;
             store[index] = nil ;
         }
-
 
     private:
         template< typename E >
