@@ -370,17 +370,18 @@ namespace RINGMesh {
         ringmesh_assert( parent.is_defined() ) ;
         return model().geological_entity( parent ) ;
     }
-    const GeoModelGeologicalEntity& GeoModelMeshEntity::parent( const std::string& parent_type_name ) const
+    const GeoModelGeologicalEntity& GeoModelMeshEntity::parent( 
+        const std::string& parent_type_name ) const
     {
-        gme_t parent = parent_id( parent_type_name ) ;
-        ringmesh_assert( parent.is_defined() ) ;
-        return model().geological_entity( parent ) ;
+        gme_t id = parent_gme( parent_type_name ) ;
+        ringmesh_assert( id.is_defined() ) ;
+        return model().geological_entity( id ) ;
     }
     const gme_t& GeoModelMeshEntity::parent_gme( const std::string& parent_type_name ) const
     {
         index_t id = parent_id( parent_type_name ) ;
         if( id != NO_ID ) {
-            return parent( id ) ;
+            return gme_t( parent_type_name, id ) ;
         }
         else {
             return gme_t() ;

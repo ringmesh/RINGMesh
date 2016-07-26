@@ -109,8 +109,8 @@ namespace RINGMesh {
                     const std::string type = file_line.field( 0 ) ;
                     index_t id = file_line.field_as_uint( 1 ) ;
                     GME::gme_t entity( type, id ) ;
-                    set_mesh_entity_name( entity, file_line.field( 2 ) ) ;
-                    set_mesh_entity_geol_feature( entity,
+                    set_entity_name( entity, file_line.field( 2 ) ) ;
+                    set_entity_geol_feature( entity,
                         GME::determine_geological_type( file_line.field( 3 ) ) ) ;
 
                     // Read second line
@@ -198,8 +198,8 @@ namespace RINGMesh {
                     const std::string type = file_line.field( 0 ) ;
                     index_t id = file_line.field_as_uint( 1 ) ;
                     GME::gme_t entity( type, id ) ;
-                    set_geological_entity_name( entity, file_line.field( 2 ) ) ;
-                    set_geological_entity_geol_feature( entity,
+                    set_entity_name( entity, file_line.field( 2 ) ) ;
+                    set_entity_geol_feature( entity,
                         GME::determine_geological_type( file_line.field( 3 ) ) ) ;
                     file_line.get_line() ;
                     file_line.get_fields() ;

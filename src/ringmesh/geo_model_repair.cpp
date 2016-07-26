@@ -320,7 +320,7 @@ namespace RINGMesh {
                     to_remove.insert( E.gme_id() ) ;
                     continue ;
                 } else {
-                    GMME& ME = model().modifiable_mesh_entity( entity_id ) ;
+                    GMME& ME = modifiable_mesh_entity( entity_id ) ;
                     MeshBuilder builder( ME.mesh_ ) ;
                     for( index_t f_itr = 0; f_itr < E.mesh_.nb_facets(); f_itr++ ) {
                         for( index_t fv_itr = 0;

@@ -107,30 +107,12 @@ namespace RINGMesh {
             return type != "No_entity_type" ;  // Defined twice baaad
         }
                 
-        static const EntityType& boundary_type( const EntityType& mesh_entity_type ) 
-        {
-           std::map< EntityType, EntityType >::const_iterator
-                itr = mesh_entity_to_boundary_.find( mesh_entity_type );
-           ringmesh_assert( itr != mesh_entity_to_boundary_.end() ) ;
-           return itr->second ;
-        }
-        static const EntityType& in_boundary_type( const EntityType& mesh_entity_type )
-        {
-           std::map< EntityType, EntityType >::const_iterator
-                itr = mesh_entity_to_in_boundary_.find( mesh_entity_type );
-           ringmesh_assert( itr != mesh_entity_to_in_boundary_.end() ) ;
-           return itr->second ;
-        }
+        static const EntityType& boundary_type( const EntityType& mesh_entity_type ) ;
+        static const EntityType& in_boundary_type( const EntityType& mesh_entity_type ) ;
         
-        static std::map< EntityType, EntityType > create_boundary_map() ;
-        static std::map< EntityType, EntityType > create_in_boundary_map() ;
-
     private:
         std::map< EntityType, EntityType > parent_to_child_ ;
         std::map< EntityType, std::set< EntityType > > child_to_parents_ ;
-
-        static std::map< EntityType, EntityType > mesh_entity_to_boundary_ ;
-        static std::map< EntityType, EntityType > mesh_entity_to_in_boundary_ ;
     };
 
     /*!
