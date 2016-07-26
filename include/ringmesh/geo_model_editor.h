@@ -456,6 +456,42 @@ namespace RINGMesh {
             ringmesh_assert( create_entity_allowed_ ) ;
         }
 
+        // The more I think about it the more this design 
+        // for editing the GeoModel and its Entities appears bad.
+        void set_entity_index( const GME::gme_t& id_entity, index_t new_index_in_geomodel )
+        {
+            GeoModelEntity& E = modifiable_entity( id_entity ) ;
+            E.id_.index = new_index_in_geomodel ;
+        }
+
+        void set_boundary_sign( Region& R, index_t boundary_index, bool new_side )
+        {
+            ringmesh_assert( boundary_index < R.nb_boundaries() ) ;
+            R.sides_[boundary_index] = new_side ;
+        }
+
+        std::vector< GME::gme_t >& modifiable_children( GeoModelGeologicalEntity& E )
+        {
+            return E.children_ ;
+        }
+        std::vector< GME::gme_t >& modifiable_boundaries( GeoModelMeshEntity& E )
+        {
+            return E.boundaries_ ;
+        }
+        std::vector< GME::gme_t >& modifiable_in_boundaries( GeoModelMeshEntity& E )
+        {
+            return E.in_boundary_ ;
+        }
+        std::vector< GME::gme_t >& modifiable_parents( GeoModelMeshEntity& E )
+        {
+            return E.parents_;
+        }
+        std::vector< bool >& modifiable_sides( Region& R )
+        {
+            return R.sides_ ;
+        }
+
+
     private:
         template< typename E >
         void complete_mesh_entity_connectivity() ;
@@ -475,8 +511,6 @@ namespace RINGMesh {
          *  building of the model and detect errors in find_or_create functions
          */
         bool create_entity_allowed_ ;
-
-    //    GeoModelEditorImplementation* impl_ ;
     } ;
 
 }
