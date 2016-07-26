@@ -89,14 +89,14 @@ namespace RINGMesh {
         template < typename T >
         void add_entity_to_model( T* entity )
         {
-            const std::string entity_type = T::type_name() ;
+            const std::string entity_type = T::type_name_static() ;
             modifiable_mesh_entities( entity_type ).push_back( entity ) ;
         }
 
         template < typename T >
         GME::gme_t create_mesh_entity()
         {
-            const std::string entity_type = T::type_name() ;
+            const std::string entity_type = T::type_name_static() ;
             index_t nb_entities( model().nb_entities( entity_type ) ) ;
             index_t new_id( nb_entities ) ;
             T* new_entity = new T( model(), new_id ) ;            
