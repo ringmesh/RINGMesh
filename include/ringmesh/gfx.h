@@ -317,6 +317,7 @@ namespace RINGMesh {
         bool load_geogram( const std::string& filename ) ;
         bool can_load_geogram( const std::string& filename ) ;
         void browse_geogram( const std::string& path ) ;
+        void browse_ringmesh( const std::string& path ) ;
         void update_region_of_interest() ;
 
         static void increment_shrink() ;
