@@ -255,6 +255,9 @@ namespace RINGMesh {
     
     void print_nb_geological_entities( const GeoModel& geomodel, const std::string& entity_type_name )
     {
+        if( geomodel.nb_geological_entities( entity_type_name ) == 0 ) {
+            return ;
+        }
         Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left
             << geomodel.nb_geological_entities( entity_type_name ) << " " << entity_type_name
             << std::endl ;
@@ -265,9 +268,13 @@ namespace RINGMesh {
         Logger::out( "GeoModel" ) << "Model " << geomodel.name() << " has\n"
             << std::setw( 10 ) << std::left << geomodel.mesh.vertices.nb()
             << " vertices\n" << std::setw( 10 ) << std::left
-            << count_geomodel_facets( geomodel ) << " facets\n" << std::setw( 10 )
-            << std::left << count_geomodel_cells( geomodel ) << " cells\n"
-            << std::endl ;
+            << count_geomodel_facets( geomodel ) << " facets\n" ;
+        index_t nb_cells = count_geomodel_cells( geomodel ) ;
+        if( nb_cells != 0 ) {
+            Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left << nb_cells
+                << " cells\n" ;
+        }
+        Logger::out( "GeoModel" ) << std::endl ;
 
         print_nb_mesh_entities( geomodel, Corner::type_name_static() ) ; 
         print_nb_mesh_entities( geomodel, Line::type_name_static() ) ; 
