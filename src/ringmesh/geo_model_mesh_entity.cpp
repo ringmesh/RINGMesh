@@ -57,6 +57,7 @@
 
 #include <ringmesh/algorithm.h>
 #include <ringmesh/geo_model.h>
+#include <ringmesh/geo_model_geological_entity.h>
 #include <ringmesh/geo_model_validity.h>
 #include <ringmesh/geogram_extension.h>
 #include <ringmesh/geometry.h>
@@ -381,7 +382,7 @@ namespace RINGMesh {
     {
         index_t id = parent_id( parent_type_name ) ;
         if( id != NO_ID ) {
-            return gme_t( parent_type_name, id ) ;
+            return parent(id).gme_id() ;
         }
         else {
             return gme_t() ;
