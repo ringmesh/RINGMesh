@@ -102,7 +102,7 @@ namespace RINGMesh {
     protected:
         GeoModelBuilder* builder_ ;
         index_t output_region_ ;
-        GEO::Mesh tetmesh_constrain ;
+        GEO::Mesh tetmesh_constraint_ ;
         const Region* region_ ;
         const WellGroup* wells_ ;
     } ;

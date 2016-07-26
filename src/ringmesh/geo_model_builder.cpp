@@ -644,8 +644,7 @@ namespace RINGMesh {
             index_t t = get_next_border_triangle( start, backward ) ;
             ringmesh_assert( t != start ) ;
 
-            bool same_surfaces = true ;
-            while( same_surfaces && t != start ) {
+            while( t != start ) {
                 ringmesh_assert( t != NO_ID ) ;
                 if( !is_visited( t ) ) {
                     std::vector< index_t > cur_adjacent_surfaces ;
@@ -655,10 +654,12 @@ namespace RINGMesh {
                         visit_border_triangles_on_same_edge( t ) ;
                         add_border_triangle_vertices_to_line( t, backward ) ;
                     } else {
-                        same_surfaces = false ;
+                        // Adjacent surface changed
+                        break ;
                     }
                 } else {
-                    same_surfaces = false ;
+                    // Adjacent surface changed
+                    break ;
                 }
                 t = get_next_border_triangle( t, backward ) ;
             }
@@ -942,7 +943,7 @@ namespace RINGMesh {
     {
         gme_t result = find_corner( model(), point ) ;
         if( !result.is_defined() ) {
-            result = create_mesh_entity( Corner::type_name_static()) ;
+            result = create_mesh_entity<Corner>() ;
             set_corner( result.index, point ) ;
         }
         return result ;
@@ -952,7 +953,7 @@ namespace RINGMesh {
     {
         gme_t result = find_corner( model(), model_point_id ) ;
         if( !result.is_defined() ) {
-            result = create_mesh_entity( Corner::type_name_static()) ;
+            result = create_mesh_entity<Corner>() ;
             set_corner( result.index, model_point_id ) ;
         }
         return result ;
@@ -972,15 +973,15 @@ namespace RINGMesh {
             }
         }
         if( !result.is_defined() ) {
-            result = create_mesh_entity( Line::type_name_static()) ;
+            result = create_mesh_entity<Line>() ;
             set_line( result.index, vertices ) ;
 
             // Finds the indices of the corner at both extremities
             // Both must be defined to have a valid LINE
             add_mesh_entity_boundary( result,
-                find_or_create_corner( vertices.front() ) ) ;
+                find_or_create_corner( vertices.front() ).index ) ;
             add_mesh_entity_boundary( result,
-                find_or_create_corner( vertices.back() ) ) ;
+                find_or_create_corner( vertices.back() ).index ) ;
         }
         return result ;
     }
@@ -1010,7 +1011,7 @@ namespace RINGMesh {
                 }
             }
         }
-        return create_mesh_entity( Corner::type_name_static()) ;
+        return create_mesh_entity<Line>() ;
     }
 
     /*!
@@ -1421,7 +1422,7 @@ namespace RINGMesh {
         ringmesh_assert( adjacent_triangles.size() == M.nb_facets() * 3 ) ;
         for( index_t f = 0; f < M.nb_facets(); f++ ) {
             for( index_t v = 0; v < 3; v++ ) {
-                builder.set_facet_adjacent( f, v, adjacent_triangles[f] ) ;
+                builder.set_facet_adjacent( f, v, adjacent_triangles[3*f+v] ) ;
             }
         }
     }
@@ -1798,11 +1799,10 @@ namespace RINGMesh {
                 set_line( line_index.index, vertices ) ;
 
                 for( index_t j = 0; j < adjacent_surfaces.size(); ++j ) {
-                    GME::gme_t surface_id( Surface::type_name_static(), adjacent_surfaces[j] ) ;
-                    add_mesh_entity_in_boundary( line_index, surface_id ) ;
+                    add_mesh_entity_in_boundary( line_index, adjacent_surfaces[j] ) ;
                 }
-                add_mesh_entity_boundary( line_index, first_corner ) ;
-                add_mesh_entity_boundary( line_index, second_corner ) ;
+                add_mesh_entity_boundary( line_index, first_corner.index ) ;
+                add_mesh_entity_boundary( line_index, second_corner.index ) ;
 
                 // If the plan is to then build_regions, get the information
                 if( options_.compute_regions_brep ) {
@@ -1844,13 +1844,12 @@ namespace RINGMesh {
                 /// If there is only one surface, its inside is set to be 
                 /// the + side. No further check.
                 bool inside = true ;
-                gme_t surface_id( Surface::type_name_static(), 0 ) ;
                 // Create the region - set the surface on its boundaries
-                gme_t region_id = create_mesh_entity( Region::type_name_static() ) ;
-                add_mesh_entity_boundary( region_id, surface_id, inside ) ;
+                gme_t region_id = create_mesh_entity<Region>() ;
+                add_mesh_entity_boundary( region_id, 0, inside ) ;
 
                 // Set universe boundary
-                add_universe_boundary( surface_id, !inside ) ;
+                add_universe_boundary( 0, !inside ) ;
             }
         } else {
             // Each side of each Surface is in one Region( +side is first )
@@ -1870,7 +1869,7 @@ namespace RINGMesh {
                     continue ;
                 }
                 // Create a new region
-                gme_t cur_region_id = create_mesh_entity( Region::type_name_static() ) ;
+                gme_t cur_region_id = create_mesh_entity<Region>() ;
                 // Get all oriented surfaces defining this region
                 std::stack< std::pair< index_t, bool > > SR ;
                 SR.push( cur ) ;
@@ -1883,8 +1882,7 @@ namespace RINGMesh {
                         continue ;
                     }
                     // Add the surface to the current region
-                    add_mesh_entity_boundary( cur_region_id,
-                        gme_t( Surface::type_name_static(), s.first ), s.second ) ;
+                    add_mesh_entity_boundary( cur_region_id, s.first, s.second ) ;
                     surf_2_region[s_id] = cur_region_id.index ;
 
                     // Check the other side of the surface and push it in S
@@ -1935,7 +1933,7 @@ namespace RINGMesh {
             for( index_t i = 0; i < cur_region.nb_boundaries(); ++i ) {
                 // Fill the Universe region boundaries
                 // They are supposed to be empty
-                add_universe_boundary( cur_region.boundary( i ).gme_id(),
+                add_universe_boundary( cur_region.boundary( i ).index(),
                     cur_region.side( i ) ) ;
             }
             std::set< gme_t > to_erase ;
@@ -1964,48 +1962,6 @@ namespace RINGMesh {
         end_model() ;
     }
 
-    /*!
-     * @brief Build the Contacts
-     * @details One contact is a group of lines shared by the same Interfaces
-     * @todo move to another Builder class (above gocad stuff)
-     */
-    void GeoModelBuilder::build_contacts()
-    {
-        std::vector< std::set< gme_t > > interfaces ;
-        for( index_t i = 0; i < model().nb_lines(); ++i ) {
-            const Line& L = model().line( i ) ;
-            std::set< gme_t > cur_interfaces ;
-            for( index_t j = 0; j < L.nb_in_boundary(); ++j ) {
-                cur_interfaces.insert(
-                    model().mesh_entity( L.in_boundary_gme( j ) ).parent_id(
-                        Interface::type_name_static() ) ) ;
-            }
-            gme_t contact_id ;
-            for( index_t j = 0; j < interfaces.size(); ++j ) {
-                if( cur_interfaces.size() == interfaces[j].size()
-                    && std::equal( cur_interfaces.begin(), cur_interfaces.end(),
-                        interfaces[j].begin() ) ) {
-                    contact_id = gme_t( "Contact", j ) ;
-                    break ;
-                }
-            }
-            if( !contact_id.is_defined() ) {
-                contact_id = create_geological_entity( "Contact" ) ;
-                ringmesh_assert( contact_id.index == interfaces.size() ) ;
-                interfaces.push_back( cur_interfaces ) ;
-                // Create a name for this contact
-                std::string name = "contact_" ;
-                for( std::set< gme_t >::const_iterator it( cur_interfaces.begin() );
-                    it != cur_interfaces.end(); ++it ) {
-                    name += model().geological_entity( *it ).name() ;
-                    name += "_" ;
-                }
-                set_geological_entity_name( contact_id, name ) ;
-            }
-            add_geological_entity_child( contact_id, gme_t( Line::type_name_static(), i ) ) ;
-        }
-    }
-
     void GeoModelBuilder::update_facet_corner(
         Surface& S,
         const std::vector< index_t >& facets,
@@ -2023,7 +1979,6 @@ namespace RINGMesh {
             }
         }
     }
-
 
     void GeoModelBuilder::delete_mesh_entity_mesh( GME::gme_t E_id )
     {

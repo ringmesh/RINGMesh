@@ -58,12 +58,6 @@ namespace GEO {
 }
 
 namespace RINGMesh {
-
-    /*!
-     * Copy a Geomodel
-     */
-    void copy( const GeoModel& from, GeoModel& to ) ;
-
     /*!
     * @brief Print in the console the model statistics
     * @details Output number of facets, vertices, and of the different entity types
@@ -264,7 +258,5 @@ namespace RINGMesh {
     GME::gme_t RINGMESH_API find_corner( const GeoModel& geomodel, index_t model_point_id ) ;
 
 }
-
-
 
 #endif 

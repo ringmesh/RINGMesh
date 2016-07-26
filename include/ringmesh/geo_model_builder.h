@@ -102,6 +102,12 @@ namespace RINGMesh {
             options_ = options ;
         }
 
+
+        void copy( const GeoModel& from )
+        {
+            copy_macro_topology( from ) ;
+            copy_meshes( from ) ;
+        }
         /*!
          * @brief Copy all entity meshes from the input geomodel
          * @pre The model under construction has exaclty the same number of entities
@@ -293,7 +299,6 @@ namespace RINGMesh {
         void end_model() ;
 
     protected:
-        void build_contacts() ;
         void set_surface_facet_adjacencies(
                 index_t surface_id,
                 const std::vector< index_t >& facets_id,
