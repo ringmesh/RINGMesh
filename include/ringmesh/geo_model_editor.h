@@ -358,7 +358,7 @@ namespace RINGMesh {
         }
         
       
-        std::vector< GeoModelEntity* > modifiable_entities(
+        std::vector< GeoModelEntity* >& modifiable_entities(
             const std::string& type )
         {
             return const_cast< std::vector< GeoModelEntity* >& >
@@ -496,6 +496,13 @@ namespace RINGMesh {
         std::vector< bool >& modifiable_sides( Region& R )
         {
             return R.sides_ ;
+        }
+
+        void delete_entity( const std::string& type, index_t index )
+        {
+            std::vector< GeoModelEntity* >& store = modifiable_entities( type ) ;
+            delete store[index] ;
+            store[index] = nil ;
         }
 
 
