@@ -1911,7 +1911,7 @@ namespace RINGMesh {
         for( GEO::index_t i = 0; i < files.size(); ++i ) {
             if( GEO::FileSystem::is_directory( files[i] ) ) {
                 if( ImGui::BeginMenu( path_to_label( path_, files[i] ).c_str() ) ) {
-                    browse( files[i] ) ;
+                    browse_ringmesh( files[i] ) ;
                     ImGui::EndMenu() ;
                 }
             } else {
