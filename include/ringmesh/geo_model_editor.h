@@ -216,7 +216,6 @@ namespace RINGMesh {
             /// No check on the validity of the index of the entity boundary
             /// NO_ID is used to flag entities to delete
             GeoModelMeshEntity& mesh = mesh_entity( t ) ;
-            ringmesh_assert( id < mesh.nb_boundaries() ) ;
             const std::string& b_type = model().entity_relationships().boundary_type(
                 t.type ) ;
             GME::gme_t boundary( b_type, boundary_id ) ;
@@ -422,9 +421,8 @@ namespace RINGMesh {
 
         // The more I think about it the more this design 
         // for editing the GeoModel and its Entities appears bad.
-        void set_entity_index( const GME::gme_t& id_entity, index_t new_index_in_geomodel )
-        {
-            GeoModelEntity& E = modifiable_entity( id_entity ) ;
+        void set_entity_index( GeoModelEntity& E, index_t new_index_in_geomodel )
+        {        
             E.id_.index = new_index_in_geomodel ;
         }
 
