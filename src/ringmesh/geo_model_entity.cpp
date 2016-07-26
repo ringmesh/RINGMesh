@@ -275,7 +275,7 @@ namespace RINGMesh {
     };
    
     const EntityTypeBoundaryMap boundary_relationships ;
-    const EntityTypeBoundaryMap in_boundary_relationships ;
+    const EntityTypeInBoundaryMap in_boundary_relationships ;
     
     /*! @todo What is the cost of using such maps ?
      */
@@ -293,8 +293,6 @@ namespace RINGMesh {
         ringmesh_assert( itr != in_boundary_relationships.map.end() ) ;
         return itr->second ;
     }
-
-
 
     Universe::Universe( const GeoModel& model )
         : GeoModelEntity( model, NO_ID, universe_type_name() )
