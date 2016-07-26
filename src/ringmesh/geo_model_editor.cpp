@@ -518,6 +518,7 @@ namespace RINGMesh {
                     gme_t new_id( entity_type, j ) ;
                     GeoModelEntity& E = modifiable_entity( new_id ) ;
                     update_entity_index( E ) ;
+                    ringmesh_assert( new_id == E.gme_id() ) ;
 
                     if( is_mesh_entity(i) ){
                         GeoModelMeshEntity& ME = dynamic_cast<GeoModelMeshEntity&>(E);
@@ -667,9 +668,9 @@ namespace RINGMesh {
         {
             index_t old_id = E.index() ;
             index_t type = entity_type_index( E ) ;
-
             index_t new_id = old_2_new_entity_[type][old_id] ;
-            set_entity_index( E.gme_id(), new_id ) ;
+            ringmesh_assert( new_id != NO_ID ) ;
+            set_entity_index( E, new_id ) ;
         }
         void update_entity_boundaries( GeoModelMeshEntity& E )
         {
