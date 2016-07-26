@@ -166,7 +166,7 @@ namespace {
         index_t it = 0 ;
 
         for( index_t i = 0; i < layer.nb_children(); ++i ) {
-            out << "  " << layer.child_id( i ).index + offset + 1 ;
+            out << "  " << layer.child_gme( i ).index + offset + 1 ;
             it++ ;
             if( it == 5 ) {
                 out << std::endl ;

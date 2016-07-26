@@ -110,8 +110,15 @@ namespace RINGMesh {
          * @brief Access to modifiable entities of the edited GeoModel
          * @{
          */
-        GeoModelEntity& entity( const GME::gme_t id ) ;
-        GeoModelEntity& entity( const std::string& entity_type, index_t entity_index ) ;
+        GeoModelEntity& entity( const GME::gme_t id )
+        {
+            if( model().is_mesh_entity_type( id.type ) ) {
+                return mesh_entity( id ) ;
+            } else {
+                return geological_entity( id );
+            }
+        }
+        //GeoModelEntity& entity( const std::string& entity_type, index_t entity_index ) ;
         GeoModelMeshEntity& mesh_entity( const GME::gme_t& id )
         {
             return modifiable_mesh_entity( id ) ;
