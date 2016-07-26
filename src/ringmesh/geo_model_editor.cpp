@@ -429,30 +429,29 @@ namespace RINGMesh {
         }
     }
 
-
-
     /*!
      * @brief Class in charge of removing entities from a GeoModel
      */
-    class GeoModelEntityRemoval : public GeoModelEditor
-    {
+    class GeoModelEntityRemoval : public GeoModelEditor {        
+    public:
         typedef std::map< std::string, index_t > TypeToIndex ;
         typedef std::map< index_t, std::string > IndexToType ;
         typedef std::string EntityType ;
-    public:
+
         GeoModelEntityRemoval( GeoModel& model ) :
             GeoModelEditor( model )
         { 
-            nb_geological_entity_types_ = GeoModel::nb_mesh_entity_types() ;
-            nb_mesh_entity_types_ = GeoModelEditor::model().nb_geological_entity_types() ;
+            nb_geological_entity_types_ = GeoModelEditor::model().nb_geological_entity_types() ;
+            nb_mesh_entity_types_ = GeoModel::nb_mesh_entity_types() ;
             nb_entity_types_ = nb_geological_entity_types_ + nb_mesh_entity_types_ ;
 
             // Allocate storage 
             nb_removed_entities_.resize( nb_entity_types_, 0 ) ;
+            
+            fill_entity_type_to_index_map() ;           
 
             fill_nb_initial_entities() ;
             initialize_costly_storage() ;
-            fill_entity_type_to_index_map() ;           
         }
 
         void remove_entities( const std::set< gme_t >& entities )
@@ -499,9 +498,7 @@ namespace RINGMesh {
         {
             const EntityType& type_name = index_to_entity_type_[type] ;
             gme_t id( type_name, index ) ;
-            GeoModelEntity* entity = &modifiable_entity( id ) ;
-            delete entity ;
-            entity = nil ;
+            GeoModelEditor::delete_entity( type_name, index ) ;
         }
         void clear_null_entities( index_t type )
         {
@@ -527,6 +524,7 @@ namespace RINGMesh {
                 for( index_t j = 0; j < nb_initial_entities_[i]; ++j ) {
                     if( to_erase_[i][j] == NO_ID ) {
                         nb_removed_entities_[i]++ ;
+                        old_2_new_entity_[i][j] = NO_ID ;
                     } else {
                         old_2_new_entity_[i][j] = j - nb_removed_entities_[i] ;
                     }
@@ -547,7 +545,7 @@ namespace RINGMesh {
 
         void fill_nb_initial_entities()
         {
-            nb_initial_entities_.resize( nb_entity_types_, NO_ID ) ;
+            nb_initial_entities_.resize( nb_entity_types_, 0 ) ;
             for( index_t i = 0; i < nb_entity_types_; ++i ) {
                 const EntityType& type = index_to_entity_type_[i] ;
                 nb_initial_entities_[i] = model().nb_entities( type )  ;
@@ -649,16 +647,21 @@ namespace RINGMesh {
         void update_entity_parents( GeoModelMeshEntity& E )
         {
             const EntityRelationships& family_tree = model().entity_relationships() ;
-            const std::set< EntityType >& parents = family_tree.parent_types( E.entity_type() ) ;
 
-            for( std::set< EntityType >::const_iterator it( parents.begin() ); it != parents.end(); ++it ) {
-                const EntityType& parent_type = *it ;
-                index_t parent_type_index = entity_type_to_index_.find( parent_type )->second ;
+            if( family_tree.nb_parent_types( E.type_name() ) == 0 ) {
+                return ;
+            } else {
+                const std::set< EntityType >& parents = family_tree.parent_types( E.entity_type() ) ;
 
-                index_t p_id = E.parent_id( parent_type ) ;
-                index_t old_id = E.parent( p_id ).index() ;
-                index_t new_id = old_2_new_entity_[parent_type_index][old_id] ;
-                set_mesh_entity_parent( E.gme_id(), p_id, gme_t( parent_type, new_id ) ) ;
+                for( std::set< EntityType >::const_iterator it( parents.begin() ); it != parents.end(); ++it ) {
+                    const EntityType& parent_type = *it ;
+                    index_t parent_type_index = entity_type_to_index_.find( parent_type )->second ;
+
+                    index_t p_id = E.parent_id( parent_type ) ;
+                    index_t old_id = E.parent( p_id ).index() ;
+                    index_t new_id = old_2_new_entity_[parent_type_index][old_id] ;
+                    set_mesh_entity_parent( E.gme_id(), p_id, gme_t( parent_type, new_id ) ) ;
+                }
             }
         }
 
