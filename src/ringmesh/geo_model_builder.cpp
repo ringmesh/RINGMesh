@@ -943,7 +943,7 @@ namespace RINGMesh {
     {
         gme_t result = find_corner( model(), point ) ;
         if( !result.is_defined() ) {
-            result = create_mesh_entity( Corner::type_name_static()) ;
+            result = create_mesh_entity<Corner>() ;
             set_corner( result.index, point ) ;
         }
         return result ;
@@ -953,7 +953,7 @@ namespace RINGMesh {
     {
         gme_t result = find_corner( model(), model_point_id ) ;
         if( !result.is_defined() ) {
-            result = create_mesh_entity( Corner::type_name_static()) ;
+            result = create_mesh_entity<Corner>() ;
             set_corner( result.index, model_point_id ) ;
         }
         return result ;
@@ -973,7 +973,7 @@ namespace RINGMesh {
             }
         }
         if( !result.is_defined() ) {
-            result = create_mesh_entity( Line::type_name_static()) ;
+            result = create_mesh_entity<Line>() ;
             set_line( result.index, vertices ) ;
 
             // Finds the indices of the corner at both extremities
@@ -1011,7 +1011,7 @@ namespace RINGMesh {
                 }
             }
         }
-        return create_mesh_entity( Line::type_name_static()) ;
+        return create_mesh_entity<Line>() ;
     }
 
     /*!
@@ -1845,7 +1845,7 @@ namespace RINGMesh {
                 /// the + side. No further check.
                 bool inside = true ;
                 // Create the region - set the surface on its boundaries
-                gme_t region_id = create_mesh_entity( Region::type_name_static() ) ;
+                gme_t region_id = create_mesh_entity<Region>() ;
                 add_mesh_entity_boundary( region_id, 0, inside ) ;
 
                 // Set universe boundary
@@ -1869,7 +1869,7 @@ namespace RINGMesh {
                     continue ;
                 }
                 // Create a new region
-                gme_t cur_region_id = create_mesh_entity( Region::type_name_static() ) ;
+                gme_t cur_region_id = create_mesh_entity<Region>() ;
                 // Get all oriented surfaces defining this region
                 std::stack< std::pair< index_t, bool > > SR ;
                 SR.push( cur ) ;
