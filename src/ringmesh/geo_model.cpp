@@ -90,13 +90,19 @@ namespace RINGMesh {
    
     const EntityTypeBoundaryMap boundary_relationships ;
     const EntityTypeInBoundaryMap in_boundary_relationships ; 
-                                            
-    // Not the smartest but hopefully compiles in C++98
-    const std::vector< std::string > hard_encoded_mesh_entity_types = {
+   
+     // Not the smartest but hopefully compiles in C++98   
+    static const EntityType hard_encoded_mesh_entity_types_array[4] = {
         Corner::type_name_static(),
         Line::type_name_static(),
         Surface::type_name_static(),
         Region::type_name_static()} ;
+    
+    static const std::vector< EntityType > hard_encoded_mesh_entity_types(
+        &hard_encoded_mesh_entity_types_array[0], &hard_encoded_mesh_entity_types_array[4] ) ;
+
+
+    static const EntityType hard_encodeded_default_entity_type( "No_entity_type") ;
 
     index_t EntityRelationships::nb_mesh_entity_types()
     {
@@ -110,8 +116,13 @@ namespace RINGMesh {
 
     const EntityType EntityRelationships::default_entity_type()
     {
-        return "No_entity_type" ;
+        return hard_encodeded_default_entity_type ;
     }
+    const std::vector< EntityType >& EntityRelationships::mesh_entity_types()
+    {
+        return hard_encoded_mesh_entity_types ;
+    }
+
     
     /*! @todo What is the cost of using such maps ?
      */
@@ -129,7 +140,6 @@ namespace RINGMesh {
         ringmesh_assert( itr != in_boundary_relationships.map.end() ) ;
         return itr->second ;
     }
-
     
     bool EntityRelationships::is_geological_entity_type( const EntityType& type ) const
     {

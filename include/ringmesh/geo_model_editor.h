@@ -54,7 +54,10 @@ namespace RINGMesh {
      * @brief Basic edition of a GeoModel
      *        Topological level. NO GEOMETRY HERE.
      *        GeoModelBuilder deals with the dirty geometry
-     * @todo Force editor to use EntityRelationships
+     *
+     * @todo Separate the high level functions from the low-level ones 
+     * that typically provides access to attributes of the GeoModel or Entities.
+     * This class is a monster.
      */
     class RINGMESH_API GeoModelEditor {
     public:
@@ -396,6 +399,10 @@ namespace RINGMesh {
         }
        
         EntityRelationships& entity_relationships()
+        {
+            return model().entity_relationships_ ;
+        }
+        const EntityRelationships& entity_relationships() const 
         {
             return model().entity_relationships_ ;
         }
