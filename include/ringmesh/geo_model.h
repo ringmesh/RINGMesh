@@ -68,6 +68,8 @@ namespace RINGMesh {
         friend class GeoModelRepair ;
 
     public:
+        static const index_t NB_MESH_ENTITY_TYPES = 4 ;
+
         /*!
          * @brief Constructs an empty GeoModel
          */
@@ -363,7 +365,7 @@ namespace RINGMesh {
         std::vector< Surface* > surfaces_ ;   
         std::vector< Region* > regions_ ;
 
-        const std::vector< std::string > mesh_entity_types_ ;
+        static std::string mesh_entity_types_[NB_MESH_ENTITY_TYPES] ;
 
         /*!
          * The Region defining the model extension

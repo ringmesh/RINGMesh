@@ -49,19 +49,17 @@ namespace RINGMesh {
 
     typedef GME::gme_t gme_t ;
 
-    // Not the smartest but hopefully compiles in C++98
-    const std::vector< std::string > mesh_entity_types = {
+    std::string GeoModel::mesh_entity_types_[GeoModel::NB_MESH_ENTITY_TYPES] = {
         Corner::type_name_static(),
         Line::type_name_static(),
         Surface::type_name_static(),
-        Region::type_name_static()} ;
+        Region::type_name_static() } ;
 
     GeoModel::GeoModel()
         :
             mesh( *this ),
             universe_( *this ),
-            wells_( nil ),
-            mesh_entity_types_( mesh_entity_types )             
+            wells_( nil )
     {
     }
 
