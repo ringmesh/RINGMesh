@@ -438,7 +438,7 @@ namespace RINGMesh {
         const EntityRelationships& family = model().entity_relationships() ;
         const EntityType entity_type = type_name() ;
        
-        if( family.nb_parent_types( entity_type ) ) {
+        if( family.nb_parent_types( entity_type ) == 0 ) {
             return valid ;
         }
         const std::set< EntityType >& parent_types = family.parent_types( entity_type ) ;
