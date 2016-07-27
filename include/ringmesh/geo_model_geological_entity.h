@@ -58,16 +58,27 @@ namespace RINGMesh {
     public:
         friend class GeoModelEditor ;
 
+        static void initialize() ;
+
         virtual ~GeoModelGeologicalEntity()
         {
         }
-
         virtual const std::string child_type_name() const = 0 ;
         virtual const std::string type_name() const = 0 ;
         virtual bool is_on_voi() const ;
+        virtual bool is_connectivity_valid() const ;
 
-        static void initialize() ;
-
+        index_t nb_children() const
+        {
+            return static_cast< index_t >( children_.size() ) ;
+        }
+        const gme_t& child_gme( index_t x ) const
+        {
+            ringmesh_assert( x < nb_children() ) ;
+            return children_[x] ;
+        }
+        const GeoModelMeshEntity& child( index_t x ) const ;
+                                                    
     protected:
         GeoModelGeologicalEntity(
             const GeoModel& model,
@@ -79,17 +90,6 @@ namespace RINGMesh {
         }
         
     public:
-        index_t nb_children() const
-        {
-            return static_cast< index_t >( children_.size() ) ;
-        }
-        const gme_t& child_gme( index_t x ) const
-        {
-            ringmesh_assert( x < nb_children() ) ;
-            return children_[x] ;
-        }
-        const GeoModelMeshEntity& child( index_t x ) const ;
-     
     protected:
         /// Entities constituting this one - see child_type( TYPE )
         std::vector< gme_t > children_ ;

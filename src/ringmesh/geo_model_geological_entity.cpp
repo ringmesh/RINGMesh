@@ -44,6 +44,8 @@
 #include <ringmesh/io.h>
 
 namespace RINGMesh {
+    
+    typedef std::string EntityType ;
 
     const GeoModelMeshEntity& GeoModelGeologicalEntity::child( index_t x ) const
     {
@@ -57,7 +59,32 @@ namespace RINGMesh {
         }
         return true ;
     }
-    class MSHIOHandler2: public GeoModelIOHandler {
+
+    bool GeoModelGeologicalEntity::is_connectivity_valid() const
+    {
+        bool valid = true ;
+        if( nb_children() == 0 ) {
+            Logger::warn( "GeologicalEntity" ) << gme_id()
+                << " is undefined. No child. "
+                << std::endl ;
+            valid = false ;
+        } else {
+            // All children must have this entity as a parent
+            const EntityType entity_type = type_name() ;
+            for( index_t i = 0; i < nb_children(); ++i ) {
+                const GeoModelMeshEntity& one_child = child( i ) ;
+                if( one_child.parent_gme( entity_type ) != gme_id() ) {
+                    Logger::warn( "GeoModelEntity" )
+                        << "Inconsistency child-parent between " << gme_id()
+                        << " and " << one_child.gme_id() << std::endl ;
+                    valid = false ;
+                }
+            }
+        }
+        return valid ;
+    }
+
+    /*class MSHIOHandler2: public GeoModelIOHandler {
     public:
         virtual void load( const std::string& filename, GeoModel& geomodel )
         {
@@ -80,7 +107,7 @@ namespace RINGMesh {
 
             out << "$Nodes" << std::endl ;
         }
-    } ;
+    } ; */
 
     void GeoModelGeologicalEntity::initialize()
     {

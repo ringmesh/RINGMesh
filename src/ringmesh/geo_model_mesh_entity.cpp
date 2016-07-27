@@ -57,14 +57,11 @@
 
 #include <ringmesh/algorithm.h>
 #include <ringmesh/geo_model.h>
+#include <ringmesh/geo_model_api.h>
 #include <ringmesh/geo_model_geological_entity.h>
 #include <ringmesh/geo_model_validity.h>
 #include <ringmesh/geogram_extension.h>
 #include <ringmesh/geometry.h>
-
-namespace RINGMesh {
-    
-}
 
 namespace {
     /* Definition of functions that we do not want exported in the interface */
@@ -236,8 +233,6 @@ namespace {
 }
 
 namespace RINGMesh {
-
-
     /*!
      * @brief Checks if this entity define the model external boundary
      * @details Test if the entity is in the Surfaces defining the universe 
@@ -363,6 +358,144 @@ namespace RINGMesh {
     }
     
     /*!
+     * All entities in the boundary must have this in their
+     *  in_boundary vector
+     */
+    bool GeoModelMeshEntity::is_boundary_connectivity_valid() const
+    {
+        const EntityRelationships& family = model().entity_relationships() ;
+        const EntityType entity_type = type_name() ;
+        const EntityType& boundary_type = family.boundary_type( entity_type ) ;
+        
+        bool valid = true ;
+        if( family.is_valid_type( boundary_type )  ) {
+            for( index_t i = 0; i < nb_boundaries(); ++i ) {
+                const GeoModelMeshEntity& E = boundary( i ) ;
+                bool found = false ;
+                index_t j = 0 ;
+                while( !found && j < E.nb_in_boundary() ) {
+                    if( E.in_boundary_gme( j ) == gme_id() ) {
+                        found = true ;
+                    }
+                    j++ ;
+                }
+                if( !found ) {
+                    Logger::warn( "GeoModelEntity" )
+                        << "Inconsistency boundary-in_boundary between " << gme_id()
+                        << " and " << E.gme_id() << std::endl ;
+                    valid = false ;
+                }
+            }
+        }
+        return valid ;
+    }    
+    /*! All entities must be at leat in the boundary of another entity
+     * and all entities in the in_boundary must have this entity in their
+     * boundary vector
+     */
+    bool GeoModelMeshEntity::is_in_boundary_connectivity_valid() const
+    {
+        const EntityRelationships& family = model().entity_relationships() ;
+        const EntityType entity_type = type_name() ;
+        const EntityType& in_boundary_type = family.in_boundary_type( entity_type ) ;
+
+        bool valid = true ;
+        if( family.is_valid_type( in_boundary_type ) ) {
+            if( nb_in_boundary() == 0 ) {
+                Logger::warn( "GeoModelEntity" ) << gme_id()
+                    << " is in the boundary of no entity " << std::endl ;
+                valid = false ;
+            }
+            for( index_t i = 0; i < nb_in_boundary(); ++i ) {
+                const GeoModelMeshEntity& E = in_boundary( i ) ;
+                bool found = false ;
+                index_t j = 0 ;
+                while( !found && j < E.nb_boundaries() ) {
+                    if( E.boundary_gme( j ) == gme_id() ) {
+                        found = true ;
+                    }
+                    j++ ;
+                }
+                if( !found ) {
+                    Logger::warn( "GeoModelEntity" )
+                        << "Inconsistency in_boundary-boundary between " << gme_id()
+                        << " and " << E.gme_id() << std::endl ;
+                    valid = false ;
+                }
+            }
+        }
+        return valid ;
+    }
+    /*!
+     *  If the parent type is defined for this EntityType, 
+     *  and if the model has entities of that type, the entity must have a parent.
+     * @todo Remove the second if condition ?
+     */    
+    bool GeoModelMeshEntity::is_parent_connectivity_valid() const
+    {
+        bool valid = true ;
+
+        const EntityRelationships& family = model().entity_relationships() ;
+        const EntityType entity_type = type_name() ;
+       
+        if( family.nb_parent_types( entity_type ) ) {
+            return valid ;
+        }
+        const std::set< EntityType >& parent_types = family.parent_types( entity_type ) ;
+        for( std::set<EntityType>::const_iterator parent_type( parent_types.begin() );
+            parent_type != parent_types.end(); ++parent_type ) {
+            
+            index_t nb_parent_entities_in_geomodel = model_.nb_geological_entities( *parent_type ) ;
+            if( nb_parent_entities_in_geomodel == 0 ) {
+                continue ;
+            } else {
+                // There must be one and only one parent of that type in this entity
+                // And this parent msut have this entity in its children
+                index_t nb_found_parents = 0 ;
+                for( index_t i = 0 ; i < nb_parents(); ++i ) {
+                    const GeoModelGeologicalEntity& E = parent(i) ;
+                    if( E.type_name() == *parent_type ) {
+                        nb_found_parents++ ;
+
+                        // The parent must have this entity in its children
+                        bool found = false ;
+                        index_t j = 0 ;
+                        while( !found && j < E.nb_children() ) {
+                            if( E.child_gme( j ) == gme_id() ) {
+                                found = true ;
+                            }
+                            j++ ;
+                        }
+                        if( !found ) {
+                            Logger::warn( "GeoModelEntity" )
+                                << "Inconsistency parent-child between " << gme_id()
+                                << " and " << E.gme_id() << std::endl ;
+                            valid = false ;
+                        }
+                    }
+                }
+                if( nb_found_parents != 1 ) {                    
+                    Logger::warn( "GeoModelEntity" ) << gme_id()
+                        << " has "<< nb_found_parents 
+                        <<" geological parent entity of type "
+                        << *parent_type << std::endl ;
+                    valid = false ;
+                } 
+            }
+        }
+        return valid ;
+    }
+    /*!  Check that required information for the TYPE is defined
+     *    and that reverse information is stored by the corresponding
+     *    entities
+     */
+    bool GeoModelMeshEntity::is_connectivity_valid() const {
+        return is_boundary_connectivity_valid()
+            && is_in_boundary_connectivity_valid()
+            && is_parent_connectivity_valid() ;
+    }
+    
+    /*!
      * @return Assert that the parent exists and returns it.
      */
     const GeoModelGeologicalEntity& GeoModelMeshEntity::parent( index_t parent_index ) const
@@ -446,6 +579,7 @@ namespace RINGMesh {
         }
         return this_gme_vertices ;
     }
+
 
     /**************************************************************/
 
@@ -600,6 +734,21 @@ namespace RINGMesh {
         }
         return valid ;
     }
+
+    bool Line::is_connectivity_valid() const
+    {
+        bool line_valid = GeoModelMeshEntity::is_connectivity_valid() ;
+
+        // A Line must have 2 corners - they are identical if the Line is closed
+        if( nb_boundaries() != 2 ) {
+            Logger::warn( "GeoModelEntity" ) << gme_id()
+                << " does not have 2 corners" << std::endl ;
+            line_valid = false ;
+        }
+        return line_valid ;
+
+    }
+
 
     /********************************************************************/
 
@@ -1090,6 +1239,17 @@ namespace RINGMesh {
 
     /********************************************************************/
 
+    bool Region::is_connectivity_valid() const
+    {
+        bool region_valid = GeoModelMeshEntity::is_connectivity_valid() ;
+        if( nb_boundaries() == 0 ) {
+            Logger::warn( "GeoModelEntity" ) << gme_id()
+                << " has no boundaries " << std::endl ;
+            region_valid = false ;
+        }
+        return region_valid ;
+    }
+
     bool Region::is_mesh_valid() const
     {
         if( !is_meshed() ) {
@@ -1136,6 +1296,56 @@ namespace RINGMesh {
             return valid ;
         }
     }
+
+    /*
+     * @brief Checks that boundary surfaces of @param region define
+     *        a one connected component closed manifold surface
+     * @details Builds a GEO::Mesh from the surface meshes, repairs it and analyses it.
+     * @todo Put this function in Region class
+     */
+    bool Region::is_brep_region_valid() const 
+    {
+        if( nb_boundaries() == 0 ) {
+            Logger::warn( "GeoModel" ) << gme_id()
+                << " has no boundary Surface" << std::endl ;
+            return false ;
+        } else {
+            GEO::Mesh mesh ;
+            Logger::instance()->set_quiet( true ) ;
+            build_mesh_from_model_mesh_entities( model(), boundaries_, mesh ) ;
+            GEO::mesh_repair( mesh ) ;
+            Logger::instance()->set_quiet( false ) ;
+
+            bool valid = true ;
+            index_t nb_cc = GEO::mesh_nb_connected_components( mesh ) ;
+            signed_index_t nb_b = GEO::mesh_nb_borders( mesh ) ;
+            if( nb_cc != 1 ) {
+                Logger::warn( "GeoModel" ) << " Surface boundary of "
+                    << gme_id() << " has " << nb_cc
+                    << " connected components " << std::endl ;
+                valid = false ;
+            }
+            if( nb_b != 0 ) {
+                Logger::warn( "GeoModel" ) << " Surface boundary of "
+                    << gme_id() << " has " << nb_b
+                    << " border connected components " << std::endl ;
+                valid = false ;
+            }
+            if( !valid ) {
+                std::ostringstream file ;
+                file << validity_errors_directory << "/boundary_surface_region_"
+                    << index() << ".mesh" ;
+                if( GEO::CmdLine::get_arg_bool( "in:validity_save" ) ) {
+                    GEO::mesh_save( mesh, file.str() ) ;
+                }
+                return false ;
+            } else {
+                return true ;
+            }
+        }
+    }
+
+
     void Region::compute_region_volumes_per_cell_type(
         double& tet_volume,
         double& pyramid_volume,

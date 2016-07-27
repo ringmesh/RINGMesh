@@ -61,33 +61,20 @@ namespace RINGMesh {
       * the GeoModelMeshEntity with GeoModelMesh.
       */
     class RINGMESH_API GeoModelMeshEntity : public GeoModelEntity {
-        ringmesh_disable_copy( GeoModelMeshEntity ) ;
+    public:
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
         friend class GeoModelRepair ;
-    public:
+
+        typedef std::string EntityType ;
+
         virtual ~GeoModelMeshEntity() ;
 
-    protected:
-        GeoModelMeshEntity(
-            const GeoModel& model,
-            index_t id,
-            const std::string& name = "No_name",
-            GEOL_FEATURE geological_feature = NO_GEOL )
-            :
-            GeoModelEntity( model, id, name, geological_feature ),
-            mesh_( model, 3, false )
-        {
-            model_vertex_id_.bind( mesh_.vertex_attribute_manager(),
-                model_vertex_id_att_name() ) ;
-        }
-
-    public:
-        static const std::string default_entity_type_name()
+        static const EntityType default_entity_type_name()
         {
             return "No_entity_type" ;
         }
-        virtual const std::string type_name() const
+        virtual const EntityType type_name() const
         {
             return default_entity_type_name() ;
         }
@@ -140,10 +127,9 @@ namespace RINGMesh {
             ringmesh_assert( id < nb_parents() ) ;
             return parents_[id] ;
         }
-        const GeoModelGeologicalEntity& parent(
-            const std::string& parent_type_name ) const ;
-        const gme_t& parent_gme( const std::string& parent_type_name ) const ;
-        index_t parent_id( const std::string& parent_type_name ) const ;
+        const GeoModelGeologicalEntity& parent( const EntityType& parent_type_name ) const ;
+        const gme_t& parent_gme( const EntityType& parent_type_name ) const ;
+        index_t parent_id( const EntityType& parent_type_name ) const ;
         const GeoModelGeologicalEntity& parent( index_t id ) const ;
 
         /*! @todo To remove when GFX Mesh is encapsulated */
@@ -163,6 +149,7 @@ namespace RINGMesh {
              * are_model_vertex_indices_valid() ;
              */
         }
+        virtual bool is_connectivity_valid() const ;
         void save(
             const std::string& filename,
             const GEO::MeshIOFlags& ioflags ) const
@@ -314,10 +301,27 @@ namespace RINGMesh {
         /*! @}
          */
     protected:
+        GeoModelMeshEntity(
+            const GeoModel& model,
+            index_t id,
+            const std::string& name = "No_name",
+            GEOL_FEATURE geological_feature = NO_GEOL )
+            :
+            GeoModelEntity( model, id, name, geological_feature ),
+            mesh_( model, 3, false )
+        {
+            model_vertex_id_.bind( mesh_.vertex_attribute_manager(),
+                model_vertex_id_att_name() ) ;
+        }
+
         /*!
          * @brief Check if the mesh stored is valid.
          */
         virtual bool is_mesh_valid() const = 0 ;
+        bool is_boundary_connectivity_valid() const ;
+        bool is_in_boundary_connectivity_valid() const ;
+        bool is_parent_connectivity_valid() const ;
+    
         /*!
          * @brief Check that model vertex indinces are consistent
          * with what is stored at the GeoModel level.
@@ -341,6 +345,9 @@ namespace RINGMesh {
 
         /// Parent identification - see parent_type( TYPE )
         std::vector< gme_t > parents_ ;
+
+    private:
+        ringmesh_disable_copy( GeoModelMeshEntity ) ;
     } ;
 
 
@@ -405,11 +412,11 @@ namespace RINGMesh {
 
         virtual bool is_on_voi() const ;
 
-        static const std::string type_name_static()
+        static const EntityType type_name_static()
         {
             return "Corner" ;
         }        
-        virtual const std::string type_name() const
+        virtual const EntityType type_name() const
         {
             return type_name_static() ;
         }
@@ -481,12 +488,14 @@ namespace RINGMesh {
         {
         }
 
-        virtual bool is_on_voi() const ;
-        static const std::string type_name_static()
+        static const EntityType type_name_static()
         {
             return "Line" ;
         }        
-        virtual const std::string type_name() const
+
+        virtual bool is_on_voi() const ;
+        virtual bool is_connectivity_valid() const ;
+        virtual const EntityType type_name() const
         {
             return type_name_static() ;
         }
@@ -582,15 +591,14 @@ namespace RINGMesh {
         }
 
         virtual bool is_on_voi() const ;
-        static const std::string type_name_static()
+        static const EntityType type_name_static()
         {
             return "Surface" ;
         }        
-        virtual const std::string type_name() const
+        virtual const EntityType type_name() const
         {
             return type_name_static() ;
         }
-
 
         bool is_simplicial() const
         {
@@ -835,12 +843,11 @@ namespace RINGMesh {
      * The Region can be only defined by its boundary Surfaces.
      * Its volumetric mesh is optional.
      */
-    class RINGMESH_API Region : public GeoModelMeshEntity
-    {
+    class RINGMESH_API Region : public GeoModelMeshEntity {        
+    public:
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
 
-    public:
         Region( const GeoModel& model, index_t id )
             : GeoModelMeshEntity( model, id )
         {
@@ -859,12 +866,14 @@ namespace RINGMesh {
         {
         }
 
-        virtual bool is_on_voi() const ;
-        static const std::string type_name_static()
+        static const EntityType type_name_static()
         {
             return "Region" ;
         }        
-        virtual const std::string type_name() const
+        
+        virtual bool is_on_voi() const ;
+        virtual bool is_connectivity_valid() const ;
+        virtual const EntityType type_name() const
         {
             return type_name_static() ;
         }
@@ -1121,6 +1130,8 @@ namespace RINGMesh {
 
     private:
         virtual bool is_mesh_valid() const ;
+        
+        bool is_brep_region_valid() const ;
 
     private:
         /*! Additional information to store oriented boundary Surfaces
