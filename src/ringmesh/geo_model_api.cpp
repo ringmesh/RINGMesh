@@ -604,6 +604,46 @@ namespace RINGMesh {
         }
     }
 
+    void build_mesh_from_model_mesh_entities(
+        const GeoModel& model,
+        const std::vector< GME::gme_t >& surface_entities,
+        GEO::Mesh& M )
+    {
+        std::size_t nb_entities = surface_entities.size() ;
+        // Put an attribute on the ModelVertices to know its index
+        // in this Mesh
+        GEO::Attribute< index_t > old2new ;
+        old2new.bind( model.mesh.vertex_attribute_manager(), "old2new" ) ;
+        old2new.fill( NO_ID ) ;
+
+        // Add the vertices
+        for( index_t i = 0; i < nb_entities; ++i ) {
+            const GeoModelMeshEntity& b = model.mesh_entity( surface_entities[i] ) ;
+            for( index_t v = 0; v < b.nb_vertices(); ++v ) {
+                index_t global_v = b.model_vertex_id( v ) ;
+                if( old2new[global_v] == NO_ID ) {
+                    old2new[global_v] = M.vertices.create_vertex(
+                        model.mesh.vertices.vertex( global_v ).data() ) ;
+                }
+            }
+        }
+
+        // Build facets
+        for( index_t i = 0; i < nb_entities; ++i ) {
+            ringmesh_assert( surface_entities[i].type == Surface::type_name_static() ) ;
+            const Surface& S = model.surface( surface_entities[i].index ) ;
+            for( index_t f = 0; f < S.nb_mesh_elements(); ++f ) {
+                index_t nbv = S.nb_mesh_element_vertices( f ) ;
+                GEO::vector< index_t > ids( nbv ) ;
+                for( index_t v = 0; v < nbv; ++v ) {
+                    ids[v] = old2new[S.model_vertex_id( f, v )] ;
+                }
+                M.facets.create_polygon( ids ) ;
+            }
+        }
+        old2new.unbind() ;
+    }
+
     /*******************************************************************************/
     /*******************************************************************************/
 
