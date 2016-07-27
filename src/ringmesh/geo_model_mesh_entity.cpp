@@ -385,7 +385,7 @@ namespace RINGMesh {
             return parent(id).gme_id() ;
         }
         else {
-            return gme_t() ;
+            return gme_t() ; // We will probably crash because it returns the address of a local variable
         }        
     }
     index_t GeoModelMeshEntity::parent_id( const std::string& parent_type_name ) const
