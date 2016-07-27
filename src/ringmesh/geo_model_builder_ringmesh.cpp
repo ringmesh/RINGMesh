@@ -93,7 +93,7 @@ namespace RINGMesh {
                 // Number of entities of a given type
                 else if( file_line.field_matches( 0, "Nb" ) ) {
                     // Allocate the space
-                    create_mesh_entities( file_line.field( 1 ),
+                    create_entities( file_line.field( 1 ),
                         file_line.field_as_uint( 2 ) ) ;
                 }
                 // Mesh entities

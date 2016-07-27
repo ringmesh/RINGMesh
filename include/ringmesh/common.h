@@ -67,7 +67,8 @@
 
 #ifdef WIN32
 #   pragma warning( disable: 4267 )
-#   pragma warning( disable: 4251 )
+#   pragma warning( disable: 4251 ) // dll interface, let's pray we have no issues
+#   pragma warning( disable: 4275 ) // dll interface, let's pray we have no issues
 #endif
 
 #ifdef USE_OPENMP

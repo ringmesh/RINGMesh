@@ -673,7 +673,7 @@ namespace RINGMesh {
 
     void GeoModelBuilderMesh::create_and_build_surfaces()
     {
-        create_mesh_entities( Surface::type_name_static(), nb_surface_attribute_values_ ) ;
+        create_mesh_entities< Surface >( nb_surface_attribute_values_ ) ;
         build_surfaces() ;
     }
 
@@ -702,7 +702,7 @@ namespace RINGMesh {
 
     void GeoModelBuilderMesh::create_and_build_regions()
     {
-        create_mesh_entities( Region::type_name_static(), nb_region_attribute_values_ ) ;
+        create_mesh_entities< Region >( nb_region_attribute_values_ ) ;
         build_regions() ;
     }
 
