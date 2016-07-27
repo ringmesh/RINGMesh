@@ -180,10 +180,10 @@ namespace RINGMesh {
         }
     }
 
-    template< typename E >
+    template< typename ENTITY >
     void GeoModelEditor::complete_mesh_entity_connectivity()
     {
-        const EntityType& type = E::type_name_static() ;
+        const EntityType& type = ENTITY::type_name_static() ;
         if( model_.nb_mesh_entities( type ) > 0 ) {
             const GeoModelMeshEntity& E = model_.mesh_entity( type, 0 ) ;
             if( E.nb_boundaries() == 0 ) {

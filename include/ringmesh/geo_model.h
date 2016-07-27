@@ -62,8 +62,8 @@ namespace RINGMesh {
      * One instance owned by each GeoModel.
      */
     class RINGMESH_API EntityRelationships {        
+        friend class GeoModelEditor ;
     public:
-        friend GeoModelEditor ;
 
         typedef std::string EntityType ;
         typedef std::string MeshEntityType ;
