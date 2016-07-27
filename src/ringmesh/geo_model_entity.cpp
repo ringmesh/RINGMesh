@@ -232,67 +232,7 @@ namespace {
 }
 
 
-namespace RINGMesh {
-           
-    typedef std::string EntityType ;
-    typedef std::map< EntityType, EntityType > EntityTypeMap;
-
-
-    struct EntityTypeBoundaryMap
-    {
-        EntityTypeBoundaryMap()
-        {
-            register_boundary< Corner, GeoModelEntity >();
-            register_boundary< Line, Corner >();
-            register_boundary< Surface, Line >();
-            register_boundary< Region, Surface >();
-        }
-        template< typename TYPE, typename BOUNDARY >
-        void register_boundary()
-        {
-            map.insert( std::pair<EntityType, EntityType>( 
-                TYPE::type_name_static(), BOUNDARY::type_name_static() ) ) ;
-        }
-        EntityTypeMap map ;
-    };
-
-    struct EntityTypeInBoundaryMap
-    {
-        EntityTypeInBoundaryMap()
-        {
-            register_in_boundary< Corner, Line >();
-            register_in_boundary< Line, Surface >();
-            register_in_boundary< Surface, Region >();
-            register_in_boundary< Region, GeoModelEntity >();
-        }
-        template< typename TYPE, typename IN_BOUNDARY >
-        void register_in_boundary()
-        {
-            map.insert( std::pair<EntityType, EntityType>(
-                TYPE::type_name_static(), IN_BOUNDARY::type_name_static() ) ) ;
-        }
-        EntityTypeMap map ;
-    };
-   
-    const EntityTypeBoundaryMap boundary_relationships ;
-    const EntityTypeInBoundaryMap in_boundary_relationships ;
-    
-    /*! @todo What is the cost of using such maps ?
-     */
-    const EntityType& EntityRelationships::boundary_type( const EntityType& mesh_entity_type ) 
-    {
-        EntityTypeMap::const_iterator
-            itr = boundary_relationships.map.find( mesh_entity_type );
-        ringmesh_assert( itr != boundary_relationships.map.end() ) ;
-        return itr->second ;
-    }
-    const EntityType& EntityRelationships::in_boundary_type( const EntityType& mesh_entity_type )
-    {
-       EntityTypeMap::const_iterator
-            itr = in_boundary_relationships.map.find( mesh_entity_type );
-        ringmesh_assert( itr != in_boundary_relationships.map.end() ) ;
-        return itr->second ;
-    }
+namespace RINGMesh {           
 
     Universe::Universe( const GeoModel& model )
         : GeoModelEntity( model, NO_ID, universe_type_name() )

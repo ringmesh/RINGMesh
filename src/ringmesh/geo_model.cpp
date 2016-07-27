@@ -48,20 +48,102 @@
 namespace RINGMesh {
 
     typedef GME::gme_t gme_t ;
+    
+    typedef std::string EntityType ;
+    typedef std::map< EntityType, EntityType > EntityTypeMap;
 
+    struct EntityTypeBoundaryMap
+    {
+        EntityTypeBoundaryMap()
+        {
+            register_boundary< Corner, GeoModelEntity >();
+            register_boundary< Line, Corner >();
+            register_boundary< Surface, Line >();
+            register_boundary< Region, Surface >();
+        }
+        template< typename TYPE, typename BOUNDARY >
+        void register_boundary()
+        {
+            map.insert( std::pair<EntityType, EntityType>( 
+                TYPE::type_name_static(), BOUNDARY::type_name_static() ) ) ;
+        }
+        EntityTypeMap map ;
+    };
+
+    struct EntityTypeInBoundaryMap
+    {
+        EntityTypeInBoundaryMap()
+        {
+            register_in_boundary< Corner, Line >();
+            register_in_boundary< Line, Surface >();
+            register_in_boundary< Surface, Region >();
+            register_in_boundary< Region, GeoModelEntity >();
+        }
+        template< typename TYPE, typename IN_BOUNDARY >
+        void register_in_boundary()
+        {
+            map.insert( std::pair<EntityType, EntityType>(
+                TYPE::type_name_static(), IN_BOUNDARY::type_name_static() ) ) ;
+        }
+        EntityTypeMap map ;
+    };
+   
+    const EntityTypeBoundaryMap boundary_relationships ;
+    const EntityTypeInBoundaryMap in_boundary_relationships ; 
+                                            
     // Not the smartest but hopefully compiles in C++98
-    const std::vector< std::string > mesh_entity_types = {
+    const std::vector< std::string > hard_encoded_mesh_entity_types = {
         Corner::type_name_static(),
         Line::type_name_static(),
         Surface::type_name_static(),
         Region::type_name_static()} ;
 
+    index_t EntityRelationships::nb_mesh_entity_types()
+    {
+        return hard_encoded_mesh_entity_types.size() ;
+    }
+    
+    bool EntityRelationships::is_mesh_entity_type( const EntityType& type )
+    {
+        return find( hard_encoded_mesh_entity_types, type ) != NO_ID ;
+    }
+
+    const EntityType EntityRelationships::default_entity_type()
+    {
+        return "No_entity_type" ;
+    }
+    
+    /*! @todo What is the cost of using such maps ?
+     */
+    const EntityType& EntityRelationships::boundary_type( const EntityType& mesh_entity_type ) 
+    {
+        EntityTypeMap::const_iterator
+            itr = boundary_relationships.map.find( mesh_entity_type );
+        ringmesh_assert( itr != boundary_relationships.map.end() ) ;
+        return itr->second ;
+    }
+    const EntityType& EntityRelationships::in_boundary_type( const EntityType& mesh_entity_type )
+    {
+       EntityTypeMap::const_iterator
+            itr = in_boundary_relationships.map.find( mesh_entity_type );
+        ringmesh_assert( itr != in_boundary_relationships.map.end() ) ;
+        return itr->second ;
+    }
+
+    
+    bool EntityRelationships::is_geological_entity_type( const EntityType& type ) const
+    {
+        return find( geological_entity_types_, type ) != NO_ID ;
+    }
+
+
+
+
     GeoModel::GeoModel()
         :
             mesh( *this ),
             universe_( *this ),
-            wells_( nil ),
-            mesh_entity_types_( mesh_entity_types )             
+            wells_( nil )
     {
     }
 
@@ -85,7 +167,7 @@ namespace RINGMesh {
                 delete geological_entities_[i][j] ;
             }
         }
-    }
+    }   
 
     /*!
      * Associates a WellGroup to the GeoModel
@@ -98,9 +180,5 @@ namespace RINGMesh {
         wells_ = wells ;
     }
 
-    index_t GeoModel::geological_entity_type( const std::string& type ) const
-    {
-        return find( geological_entity_types_, type ) ;
-    }
 
 } // namespace
