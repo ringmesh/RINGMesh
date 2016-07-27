@@ -56,65 +56,6 @@ namespace RINGMesh {
 namespace RINGMesh {
 
 
-    /*!  
-     * @brief Manages the type relationship between GeoModelEntities
-     * One instance owned by the GeoModel.
-     */
-    class RINGMESH_API EntityRelationships {
-        typedef std::string EntityType ;
-    public:
-        void register_relationship( const EntityType& parent_type_name,
-            const EntityType& child_type_name )
-        {
-            register_child_type( parent_type_name, child_type_name ) ;
-            register_parent_type( parent_type_name, child_type_name ) ;
-        }
-        void register_child_type( const EntityType& parent_type_name, 
-            const EntityType& child_type_name )
-        {
-            parent_to_child_[parent_type_name] = child_type_name ;
-        }
-        void register_parent_type( const EntityType& parent_type_name,
-            const EntityType& child_type_name )
-        {
-            child_to_parents_[child_type_name].insert( parent_type_name ) ;
-        }
-        
-        const std::set< EntityType >& parent_types( const EntityType& child_type ) const 
-        {
-            std::map< EntityType, std::set< EntityType > >::const_iterator
-                itr = child_to_parents_.find( child_type );
-            ringmesh_assert( itr != child_to_parents_.end() ) ;
-            return itr->second ;
-        }
-        index_t nb_parent_types( const EntityType& child_type ) const
-        {
-            std::map< EntityType, std::set< EntityType > >::const_iterator itr =
-                child_to_parents_.find( child_type ) ;
-            if( itr == child_to_parents_.end() ) return 0 ;
-            return static_cast< index_t >( itr->second.size() ) ;
-        }
-        const EntityType& child_type( const EntityType& parent_type ) const
-        {
-           std::map< EntityType, EntityType >::const_iterator
-                itr = parent_to_child_.find( parent_type );
-           ringmesh_assert( itr != parent_to_child_.end() ) ;
-           return itr->second ;
-        }
-        
-        static bool is_valid_type( const EntityType& type )
-        {
-            return type != "No_entity_type" ;  // Defined twice baaad
-        }
-                
-        static const EntityType& boundary_type( const EntityType& mesh_entity_type ) ;
-        static const EntityType& in_boundary_type( const EntityType& mesh_entity_type ) ;
-        
-    private:
-        std::map< EntityType, EntityType > parent_to_child_ ;
-        std::map< EntityType, std::set< EntityType > > child_to_parents_ ;
-    };
-
     /*!
      * @brief Generic class describing one entity of a GeoModel
      * 
