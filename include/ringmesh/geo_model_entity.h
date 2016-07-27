@@ -211,18 +211,16 @@ namespace RINGMesh {
          * @brief Global validity check of the GME
          */
         virtual bool is_valid() const = 0 ;
-
         /*!
          * @brief Basic checks on the minimum required information 
-         * @details Required connectivity information depends on the TYPE.   
          */
-        bool is_connectivity_valid() const ;
+        bool is_identification_valid() const ;
+
 
         /*!
          * \name Accessors to basic information
          * @{
          */
-
         const GeoModel& model() const
         {
             return model_ ;
@@ -311,10 +309,7 @@ namespace RINGMesh {
             return *this ;
         }
 
-        bool is_valid() const
-        {
-            return false ;
-        }
+        bool is_valid() const ;
         bool is_on_voi() const
         {
             return true ;

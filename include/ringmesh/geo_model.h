@@ -169,7 +169,6 @@ namespace RINGMesh {
          * @brief Constructs an empty GeoModel
          */
         GeoModel() ;
-
         /*!
          * @brief Deletes all the GeoModelEntities of the GeoModel
          */
@@ -179,7 +178,7 @@ namespace RINGMesh {
         {
             return name_ ;
         }
-
+        
         const EntityRelationships& entity_relationships() const
         {
             return entity_relationships_ ;
@@ -192,7 +191,6 @@ namespace RINGMesh {
         {
             return entity_relationships_.is_geological_entity_type( type ) ;
         }
-
         index_t nb_entities( const EntityType& type ) const
         {
             if( is_mesh_entity_type( type ) ) {
@@ -235,7 +233,6 @@ namespace RINGMesh {
             if( index == NO_ID ) return 0 ;
             return static_cast< index_t >( geological_entities_[index].size() ) ;
         }
-
         /*!
          * @brief Returns the index of the geological entity type storage
          * @details Default value is NO_ID
@@ -249,32 +246,7 @@ namespace RINGMesh {
         {
             return entity_relationships_.geological_entity_type( index ) ;
         }
-
-/*        static index_t nb_mesh_entity_types() {
-            return 4 ;
-        }
-        // Hard encoded mapping between for meshed entities. Always the same.
-/*        index_t mesh_entity_type( const EntityType& type ) const
-        {
-            if( type == Corner::type_name_static() ) {
-                return 0 ;
-            } else if( type == Line::type_name_static() ) {
-                return 1 ;
-            } else if( type == Surface::type_name_static() ) {
-                return 2 ; 
-            } else if( type == Region::type_name_static() ) {
-                return 3 ;
-            } else {
-                return NO_ID ;
-            }
-        }
-/*        const EntityType mesh_entity_type( index_t id )
-        {
-            ringmesh_assert( id < nb_mesh_entity_types() ) ;            
-            return mesh_entity_types_[id] ;
-        }  
- */
-        
+       
         void assert_gme_id_validity( GME::gme_t id )
         {
             bool is_valid_type = is_mesh_entity_type( id.type )
@@ -304,8 +276,7 @@ namespace RINGMesh {
             index_t entity_index ) const
         {
             return geological_entity( GME::gme_t( entity_type, entity_index ) ) ;
-        }
-   
+        }   
         /*!
          * @brief Generic access to a meshed entity
          * @pre Type of the entity is CORNER, LINE, SURFACE, or REGION

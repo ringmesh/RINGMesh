@@ -57,6 +57,9 @@
 
 #include <ringmesh/algorithm.h>
 #include <ringmesh/geo_model.h>
+#include <ringmesh/geo_model_api.h>
+#include <ringmesh/geo_model_geological_entity.h>
+#include <ringmesh/geo_model_mesh_entity.h>
 #include <ringmesh/geo_model_validity.h>
 #include <ringmesh/geogram_extension.h>
 #include <ringmesh/geometry.h>
@@ -66,6 +69,7 @@ namespace {
     using namespace RINGMesh ;
 
     typedef GeoModelEntity::gme_t gme_t ;
+    typedef GeoModelEntity GME ;
     typedef GeoModelMeshEntity GMME ;
     typedef GeoModelGeologicalEntity GMGE ;
 
@@ -309,181 +313,89 @@ namespace RINGMesh {
         }
     }
     
-    /*!
-     * @brief Return true if \param type is a CORNER, LINE or SURFACE
-     *
-    bool GeoModelEntity::has_mesh( GME::TYPE type )
+    /*! 
+     * Check the validity of identification information
+     * in the model    
+     */
+    bool GeoModelEntity::is_identification_valid() const
     {
-        return type <= REGION ;
-    } */
-
-    bool GeoModelEntity::is_connectivity_valid() const
-    {
-        bool valid = true ;
-
-/*        /// 1. Check the validity of identification information
-        ///    in the model - Universe has no index, but a TYPE
-        if( gme_id() == gme_t() ) {
+        bool defined_id = true ;
+        if( !gme_id().is_defined() ) {
             Logger::err( "GeoModelEntity" ) << " Entity associated to model "
                 << model().name() << "has no type and no index " << std::endl ;
-            valid = false ;
+            defined_id = false ;
+            // No further checks are possible - This really should not happen
+            ringmesh_assert_not_reached ;
         }
-
-        if( !valid ) {
-            // If previous information are not valid
-            // No further checks are possible
-            // This really should not happen
-            ringmesh_assert( valid ) ;
-            return valid ;
-        }
-
-        if( index() >= model().nb_entities( type() ) ) {
+        bool valid_index = true ;
+        if( index() >= model().nb_entities( type_name() ) ) {
             Logger::warn( "GeoModelEntity" ) << " Entity index " << gme_id()
-                << " is not valid " << " There are " << model().nb_entities( type() )
+                << " is not valid " << " There are " << model().nb_entities( type_name() )
                 << " entity of that type in model " << model().name() << std::endl ;
             // This really should not happen
-            valid = false ;
-            ringmesh_assert( valid ) ;
-            return valid ;
+            valid_index = false ;
+            ringmesh_assert_not_reached ;
         }
-        if( &( model().entity( gme_id() ) ) != this ) {
+        // If somebody - an Editor messed up with the Memory
+        bool valid_adress = true ;
+        if( model().is_mesh_entity_type( type_name() ) ) {
+            const GME* stored = static_cast<const GME*>( &model().mesh_entity( gme_id() ) );
+            valid_adress = stored == this ;
+        } else {
+            ringmesh_assert( model().is_geological_entity_type( type_name() ) ) ;
+            const GME* stored = static_cast<const GME*>( &model().geological_entity( gme_id() ) ) ;
+            valid_adress = stored == this ;
+        }
+        if( valid_adress = false ) {
             Logger::err( "GeoModelEntity" ) << " Entity " << gme_id()
                 << " in model " << model().name() << " does not match this entity"
                 << std::endl ;
-            // This really should not happen
-            ringmesh_assert( valid ) ;
-            valid = false ;
-            return valid ;
+            ringmesh_assert_not_reached ;
         }
+        return defined_id && valid_index && valid_adress ;
+    }
 
-        /// 2. Check that required information for the TYPE is defined
-        ///    and that reverse information is stored by the corresponding
-        ///    entities
-        TYPE T = type() ;
+    
+    bool Universe::is_valid() const
+    {
+        if( nb_boundaries() == 0 ) {
+            Logger::warn( "GeoModel" )
+                << " The Universe has no boundary Surface" << std::endl ;
+            return false ;
+        } else {
+            GEO::Mesh mesh ;
+            Logger::instance()->set_quiet( true ) ;
+            build_mesh_from_model_mesh_entities( model_, boundary_surfaces_, mesh ) ;
+            GEO::mesh_repair( mesh ) ;
+            Logger::instance()->set_quiet( false ) ;
 
-        // Boundaries
-        if( boundary_allowed( T ) ) {
-            if( T == REGION ) {
-                if( nb_boundaries() == 0 ) {
-                    Logger::warn( "GeoModelEntity" ) << gme_id()
-                        << " has no boundaries " << std::endl ;
-                    valid = false ;
-                }
-            }
-            // A Line must have 2 corners - they are identical if the Line is closed
-            if( T == LINE && nb_boundaries() != 2 ) {
-                Logger::warn( "GeoModelEntity" ) << gme_id()
-                    << " does not have 2 corners" << std::endl ;
+            bool valid = true ;
+            index_t nb_cc = GEO::mesh_nb_connected_components( mesh ) ;
+            signed_index_t nb_b = GEO::mesh_nb_borders( mesh ) ;
+            if( nb_cc != 1 ) {
+                Logger::warn( "GeoModel" ) << " Surface boundary of "
+                    << gme_id() << " has " << nb_cc
+                    << " connected components " << std::endl ;
                 valid = false ;
             }
-            // No requirement on Surface - it may have no boundary - bubble
-
-            // All entities in the boundary must have this in their
-            // in_boundary vector
-            for( index_t i = 0; i < nb_boundaries(); ++i ) {
-                const GME& E = boundary( i ) ;
-                bool found = false ;
-                index_t j = 0 ;
-                while( !found && j < E.nb_in_boundary() ) {
-                    if( E.in_boundary_gme( j ) == gme_id() ) {
-                        found = true ;
-                    }
-                    j++ ;
-                }
-                if( !found ) {
-                    Logger::warn( "GeoModelEntity" )
-                        << "Inconsistency boundary-in_boundary between " << gme_id()
-                        << " and " << E.gme_id() << std::endl ;
-                    valid = false ;
-                }
-            }
-        }
-
-        // In_boundary
-        if( in_boundary_allowed( T ) ) {
-            // Fix for a .ml for which VOI Surface are only on the boundary of Universe
-            // Can we keep this ? Or should we compute the Region
-            if( nb_in_boundary() == 0 ) {
-                Logger::warn( "GeoModelEntity" ) << gme_id()
-                    << " is in the boundary of no entity " << std::endl ;
+            if( nb_b != 0 ) {
+                Logger::warn( "GeoModel" ) << " Surface boundary of "
+                    << gme_id() << " has " << nb_b
+                    << " border connected components " << std::endl ;
                 valid = false ;
             }
-
-            // All entities in the in_boundary must have this in their
-            // boundary vector
-            for( index_t i = 0; i < nb_in_boundary(); ++i ) {
-                const GME& E = in_boundary( i ) ;
-                bool found = false ;
-                index_t j = 0 ;
-                while( !found && j < E.nb_boundaries() ) {
-                    if( E.boundary_gme( j ) == gme_id() ) {
-                        found = true ;
-                    }
-                    j++ ;
+            if( !valid ) {
+                std::ostringstream file ;
+                file << validity_errors_directory << "/boundary_surface_region_"
+                    << index() << ".mesh" ;
+                if( GEO::CmdLine::get_arg_bool( "in:validity_save" ) ) {
+                    GEO::mesh_save( mesh, file.str() ) ;
                 }
-                if( !found ) {
-                    Logger::warn( "GeoModelEntity" )
-                        << "Inconsistency in_boundary-boundary between " << gme_id()
-                        << " and " << E.gme_id() << std::endl ;
-                    valid = false ;
-                }
+                return false ;
+            } else {
+                return true ;
             }
         }
-
-        // Parent - High level entities are not mandatory
-        // But if the model has entities of the parent type, the entity must have a parent
-        if( parent_allowed( T ) ) {
-            bool model_has_parent_entities(
-                model().nb_entities( parent_type( T ) ) > 0 ) ;
-            if( model_has_parent_entities ) {
-                if( has_parent() ) {
-                    const GME& E = parent() ;
-                    // The parent must have this entity in its children
-                    bool found = false ;
-                    index_t j = 0 ;
-                    while( !found && j < E.nb_children() ) {
-                        if( E.child_id( j ) == gme_id() ) {
-                            found = true ;
-                        }
-                        j++ ;
-                    }
-                    if( !found ) {
-                        Logger::warn( "GeoModelEntity" )
-                            << "Inconsistency parent-child between " << gme_id()
-                            << " and " << E.gme_id() << std::endl ;
-                        valid = false ;
-                    }
-                } else {
-                    Logger::warn( "GeoModelEntity" ) << gme_id()
-                        << " has no geological parent entity " << std::endl ;
-                    valid = false ;
-                }
-            }
-        }
-
-        // Children
-        if( child_allowed( T ) ) {
-            if( nb_children() == 0 ) {
-                Logger::warn( "GeoModelEntity" ) << gme_id()
-                    << " has no children mesh entity, so no geometry "
-                    << std::endl ;
-                valid = false ;
-            }
-
-            // All children must have this entity as a parent
-            for( index_t i = 0; i < nb_children(); ++i ) {
-                if( child( i ).parent_id() != gme_id() ) {
-                    Logger::warn( "GeoModelEntity" )
-                        << "Inconsistency child-parent between " << gme_id()
-                        << " and " << child( i ).gme_id() << std::endl ;
-                    valid = false ;
-                }
-            }
-        }
-        return valid ;
-   */
-
-        return false ; // TO SPLIT between classes
     }
 
 }

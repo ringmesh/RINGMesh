@@ -88,6 +88,8 @@ namespace RINGMesh {
         EntityTypeMap map ;
     };
    
+    // Maybe these should be declared as static in the functions 
+    // that use them.
     const EntityTypeBoundaryMap boundary_relationships ;
     const EntityTypeInBoundaryMap in_boundary_relationships ; 
    
@@ -100,7 +102,6 @@ namespace RINGMesh {
     
     static const std::vector< EntityType > hard_encoded_mesh_entity_types(
         &hard_encoded_mesh_entity_types_array[0], &hard_encoded_mesh_entity_types_array[4] ) ;
-
 
     static const EntityType hard_encodeded_default_entity_type( "No_entity_type") ;
 
