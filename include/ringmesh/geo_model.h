@@ -75,7 +75,7 @@ namespace RINGMesh {
         {
             return type != default_entity_type() ;
         }               
-        static const EntityType default_entity_type() ;
+        static const EntityType& default_entity_type() ;
         bool is_valid_type( const EntityType& type ) const
         {
             return is_defined_type( type )
@@ -249,8 +249,7 @@ namespace RINGMesh {
         }
         
         /*!
-         * Access to the position of the entity of that type
-         * in the private storage.
+         * Access to the position of the entity of that type in storage.
          * @note I don't like it to be public [JP]
          */
         index_t geological_entity_type_index( const EntityType& type ) const
@@ -269,7 +268,7 @@ namespace RINGMesh {
          */
         const GeoModelGeologicalEntity& geological_entity( GME::gme_t id ) const
         {
-            ringmesh_assert( id.index < nb_geological_entities( id.type ) ) ;
+            assert_gme_valid( id ) ;
             return *geological_entities( id.type )[id.index] ;
         }
         /*!
@@ -289,13 +288,13 @@ namespace RINGMesh {
         {
             const EntityType& type = id.type ;
             index_t index = id.index ;
-            if( type == Corner::type_name_static() ) {
+            if( EntityTypeManager::is_corner( type) ) {
                 return corner( index ) ;
-            } else if( type == Line::type_name_static() ) {
+            } else if( EntityTypeManager::is_line( type) ) {
                 return line( index ) ;
-            } else if( type == Surface::type_name_static() ) {
+            } else if( EntityTypeManager::is_surface( type) ) {
                 return surface( index ) ;
-            } else if( type == Region::type_name_static() ) {
+            } else if( EntityTypeManager::is_region( type) ) {
                 return region( index ) ;
             }
             ringmesh_assert_not_reached ;
@@ -362,6 +361,9 @@ namespace RINGMesh {
         {
             return wells_ ;
         }
+    
+    public:
+        GeoModelMesh mesh ;
 
     private:
         // Maybe implement them properly one day [JP]
@@ -407,13 +409,13 @@ namespace RINGMesh {
         const std::vector< GeoModelMeshEntity* >& mesh_entities(
             const EntityType& type ) const
         {
-            if( type == Corner::type_name_static() ) {
+            if( EntityTypeManager::is_corner( type ) ) {
                 return *(std::vector< GeoModelMeshEntity* > *) &corners_ ;
-            } else if( type == Line::type_name_static() ) {
+            } else if( EntityTypeManager::is_line( type ) ) {
                 return *(std::vector< GeoModelMeshEntity* > *) &lines_ ;
-            } else if( type == Surface::type_name_static() ) {
+            } else if( EntityTypeManager::is_surface( type ) ) {
                 return *(std::vector< GeoModelMeshEntity* > *) &surfaces_ ;
-            } else if( type == Region::type_name_static() ) {
+            } else if( EntityTypeManager::is_region( type ) ) {
                 return *(std::vector< GeoModelMeshEntity* > *) &regions_ ;
             } else {
                 ringmesh_assert_not_reached ;
@@ -422,7 +424,7 @@ namespace RINGMesh {
         }
 
         /*!
-         * @brief Generic accessor to the storage of geologcial entities of the given type
+         * @brief Generic accessor to the storage of geological entities of the given type
          */
         const std::vector< GeoModelGeologicalEntity* >& geological_entities(
             const EntityType& type ) const
@@ -437,9 +439,6 @@ namespace RINGMesh {
             ringmesh_assert( geological_entity_type_index != NO_ID ) ;
             return geological_entities_[geological_entity_type_index] ;
         }
-
-    public:
-        GeoModelMesh mesh ;
 
     private:
         std::string geomodel_name_ ;
@@ -456,7 +455,7 @@ namespace RINGMesh {
         std::vector< Region* > regions_ ;
 
         /*!
-         * The Region defining the model extension
+         * The Universe defines the extension of the GeoModel
          */
         Universe universe_ ;
 
@@ -471,7 +470,7 @@ namespace RINGMesh {
          */
 
         /*! Optional WellGroup associated with the model
-         * @todo Move it out. It has nothing to do here [JP]
+         * @todo Move it out. It has nothing to do here. [JP]
          */
         const WellGroup* wells_ ;
     } ;

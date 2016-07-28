@@ -47,27 +47,23 @@
 #include <vector>
 #include <map>
 
-#include <ringmesh/mesh.h>
-
 namespace RINGMesh {
     class GeoModel ;
 }
 
 namespace RINGMesh {
-
-
     /*!
-     * @brief Generic class describing one entity of a GeoModel
-     * 
+     * @brief Abstract base class describing one entity of a GeoModel
      */
     class RINGMESH_API GeoModelEntity {
     public:
         friend class GeoModelEditor ;
 
-    public:
+        typedef std::string EntityType ;
+        
         /*!
          * @brief Geological feature types for GeoModelEntity
-         * @todo Read all possible geological features used in RESQML.
+         * @todo Remove this enum and find a nice way to add new types at runtime [JP]
          */
         enum GEOL_FEATURE {
             /// All geological features 
@@ -76,11 +72,7 @@ namespace RINGMesh {
             NO_GEOL,
             /// Stratigraphic surface - an horizon
             STRATI,
-            /*!
-             * Unconformity
-             * @todo: Distinguish between as erosive, baselap or intrusive
-             * unconformities --GC
-             */
+            /// Unconformity
             UNCONFORMITY,
             /// A normal fault
             NORMAL_FAULT,
@@ -94,17 +86,15 @@ namespace RINGMesh {
   
         /*! 
          * @brief Unique identification of a GeoModelEntity in a GeoModel
-         * @details Stores the TYPE of the entity and its index in the GeoModel.
-         *          Default values are NO_TYPE and NO_ID
-         * @todo Should we change this name? it looks like index_t but does not enforce
+         * @todo Should we change this name? Looks like index_t but does not enforce
          *       the programming guidelines [JP]
          */
         struct gme_t {
             gme_t()
-                : type(), index( NO_ID )
+                : type( type_name_static() ), index( NO_ID )
             {
             }
-            gme_t( const std::string& entity_type, index_t id )
+            gme_t( const EntityType& entity_type, index_t id )
                 : type( entity_type ), index( id )
             {
             }
@@ -126,8 +116,8 @@ namespace RINGMesh {
             bool operator<( const gme_t& rhs ) const
             {
                 if( type != rhs.type ) {
-                    // Probleme ? est ce que la comparaison des strings suffit ?
-                    // Ordre important pour qui ? Attention
+                    /// @warning Is this now enough for EntityType = std::string?  
+                    /// Did any code relied on that sorting? Maybe mine ... [JP]
                     return type < rhs.type ;
                 } else {
                     if( index == NO_ID ) return true ;
@@ -140,16 +130,12 @@ namespace RINGMesh {
                 os << in.type << " " << in.index ;
                 return os ;    
             }
-
             bool is_defined() const
             {
-                return type != default_entity_type_name() && index != NO_ID ;
+                return type != type_name_static() && index != NO_ID ;
             }
                 
-            /*!
-             * TYPE of the GeoModelEntity
-             */
-            std::string type ;
+            EntityType type ;
             /*!
              * Index of the entity in the GeoModel
              */
@@ -169,65 +155,23 @@ namespace RINGMesh {
             return T == STRATI || T == UNCONFORMITY ;
         }
 
-        static const std::string default_entity_type_name()
+        static const EntityType type_name_static() ;
+        
+        virtual ~GeoModelEntity() {};
+        virtual const EntityType type_name() const
         {
-            return "No_entity_type" ;
-        }
-        static const std::string type_name_static()
-        {
-            return  default_entity_type_name() ;
-        }
-        // I am not sure that this one is really useful.
-        // In almost all cases we call the static function.
-        // Which is nothing more than the RTTI CLASS::typename() information
-        virtual const std::string type_name() const
-        {
-            return default_entity_type_name() ;
+            return type_name_static() ;
         }
         virtual bool is_on_voi() const = 0 ;
-
-        /*!@}
-         */
-
-        virtual ~GeoModelEntity()
+        virtual bool is_valid() const = 0
         {
+            return is_identification_valid() ;
         }
-
-        GeoModelEntity& operator=( const GeoModelEntity& rhs )
-        {
-            ringmesh_assert( &model() == &rhs.model() ) ;
-            id_ = rhs.id_;
-            name_ = rhs.name_;
-            geol_feature_ = rhs.geol_feature_ ;
-            return *this ;
-        }
-
-        /*!@}
-         * \name Validity checks
-         * @{
-         */
-
-        /*!
-         * @brief Global validity check of the GME
-         */
-        virtual bool is_valid() const = 0 ;
-        /*!
-         * @brief Basic checks on the minimum required information 
-         */
-        bool is_identification_valid() const ;
-
-
-        /*!
-         * \name Accessors to basic information
-         * @{
-         */
+    
+        
         const GeoModel& model() const
         {
             return model_ ;
-        }
-        bool has_name() const
-        {
-            return !name().empty() ;
         }
         const std::string& name() const
         {
@@ -241,8 +185,7 @@ namespace RINGMesh {
         {
             return gme_id().index ;
         }
-        // This information is stored twice.... Convenient but design is not flawless
-        const std::string& entity_type() const
+        const EntityType& entity_type() const
         {
             return gme_id().type ;
         }
@@ -254,41 +197,55 @@ namespace RINGMesh {
         {
             return geol_feature_ ;
         }
+        /*!
+         * @brief Basic checks on the minimum required information 
+         */
+        bool is_identification_valid() const ;
 
     protected:
         /*!
-         * @brief Constructs a GeoModelEntity
-         * Client code should only create GeoModelEntities through
+         * @details Client code should only create GeoModelEntities through
          * GeoModelEditor derived classes.
          *
-         * @param[in] model Constant reference to the parent model of this entity.
+         * @param[in] model Geomodel owning the Entity to create
          * @param[in] id Index of the entity in the corresponding vector in the model
-         * @param[in] name Name of the entity, empty by default.
-         * @param[in] geological_feature Feature of the entity, none by default.
+         * @param[in] name Name of the entity
+         * @param[in] geological_feature Geological feature of the entity, none by default.
          */
         GeoModelEntity(
             const GeoModel& model,
             index_t id,
-            const std::string& name = "unnamed",
+            const std::string& name = "Unnamed",
             GEOL_FEATURE geological_feature = NO_GEOL )
             :
                 model_( model ),
                 id_( type_name_static(), id ),
                 name_( name ),
                 geol_feature_( geological_feature )
+        {}
+        GeoModelEntity& operator=( const GeoModelEntity& rhs )
         {
+            ringmesh_assert( &model() == &rhs.model() ) ;
+            id_ = rhs.id_;
+            name_ = rhs.name_;
+            geol_feature_ = rhs.geol_feature_ ;
+            return *this ;
         }
+        GeoModelEntity( const GeoModelEntity& in )
+            :
+            model_( in.model_ ),
+            id_( in.id_ ),
+            name_( in.name_ ),
+            geol_feature_( in.geol_feature_ )
+        {}
 
     protected:
         /// Reference to the GeoModel owning this entity
         const GeoModel& model_ ;
-
         /// Unique identifier of this GeoModelEntity in the model
         gme_t id_ ;
-
-        /// Name of the entity - default is an empty string
+        /// Name of the entity - default is "Unnamed"
         std::string name_ ;
-
         /// Geological feature of this object - default is NO_GEOL
         GEOL_FEATURE geol_feature_ ;
     } ;
@@ -296,32 +253,27 @@ namespace RINGMesh {
     typedef GeoModelEntity GME ;
 
     class RINGMESH_API Universe: public GeoModelEntity {
+    public:       
         friend class GeoModelEditor ;
-    public:
-        Universe( const GeoModel& model ) ;
-        virtual ~Universe() {};
-        
-        Universe& operator=(const Universe& rhs)
-        {
-            GME::operator=(rhs);
-            boundary_surfaces_ = rhs.boundary_surfaces_ ;
-            boundary_surface_sides_ = rhs.boundary_surface_sides_ ;
-            return *this ;
-        }
 
-        bool is_valid() const ;
-        bool is_on_voi() const
-        {
-            return true ;
-        }
-        static const std::string universe_type_name()
+        Universe( const GeoModel& model ) ;        
+        
+        static const EntityType universe_type_name()
         {
             return "Universe" ;
         }
-        virtual const std::string type_name() const
+        
+        virtual ~Universe() {};        
+        virtual bool is_valid() const ;
+        virtual bool is_on_voi() const
+        {
+            return true ;
+        }
+        virtual const EntityType type_name() const
         {
             return universe_type_name() ;
         }
+        
         index_t nb_boundaries() const
         {
             return static_cast< index_t >( boundary_surfaces_.size() ) ;
@@ -335,6 +287,21 @@ namespace RINGMesh {
         {
             ringmesh_assert( i < nb_boundaries() ) ;
             return boundary_surface_sides_[i] ;
+        }
+
+    protected:
+        Universe( const Universe& in )
+            :
+            GeoModelEntity( in ),
+            boundary_surfaces_( in.boundary_surfaces_ ),
+            boundary_surface_sides_( in.boundary_surface_sides_ )
+        {}
+        Universe& operator=( const Universe& rhs )
+        {
+            GME::operator=(rhs);
+            boundary_surfaces_ = rhs.boundary_surfaces_ ;
+            boundary_surface_sides_ = rhs.boundary_surface_sides_ ;
+            return *this ;
         }
 
     private:

@@ -129,7 +129,7 @@ namespace RINGMesh {
     {
         return find( hard_encoded_mesh_entity_types, type ) != NO_ID ;
     }
-    const EntityType EntityTypeManager::default_entity_type()
+    const EntityType& EntityTypeManager::default_entity_type()
     {
         return hard_encodeded_default_entity_type ;
     }

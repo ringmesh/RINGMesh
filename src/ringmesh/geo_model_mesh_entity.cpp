@@ -438,14 +438,10 @@ namespace RINGMesh {
         const EntityTypeManager& family = model().entity_type_manager() ;
         const EntityType entity_type = type_name() ;
        
-        if( family.nb_parent_types( entity_type ) == 0 ) {
-            return valid ;
-        }
-        const std::set< EntityType >& parent_types = family.parent_types( entity_type ) ;
-        for( std::set<EntityType>::const_iterator parent_type( parent_types.begin() );
-            parent_type != parent_types.end(); ++parent_type ) {
-            
-            index_t nb_parent_entities_in_geomodel = model_.nb_geological_entities( *parent_type ) ;
+        const std::vector< EntityType > parent_types = family.parent_types( entity_type ) ;
+        for( index_t p_itr = 0 ; p_itr < parent_types.size(); ++p_itr ) {
+            const EntityType& parent_type = parent_types[p_itr] ;
+            index_t nb_parent_entities_in_geomodel = model_.nb_geological_entities( parent_type ) ;
             if( nb_parent_entities_in_geomodel == 0 ) {
                 continue ;
             } else {
@@ -454,7 +450,7 @@ namespace RINGMesh {
                 index_t nb_found_parents = 0 ;
                 for( index_t i = 0 ; i < nb_parents(); ++i ) {
                     const GeoModelGeologicalEntity& E = parent(i) ;
-                    if( E.type_name() == *parent_type ) {
+                    if( E.type_name() == parent_type ) {
                         nb_found_parents++ ;
 
                         // The parent must have this entity in its children
@@ -478,7 +474,7 @@ namespace RINGMesh {
                     Logger::warn( "GeoModelEntity" ) << gme_id()
                         << " has "<< nb_found_parents 
                         <<" geological parent entity of type "
-                        << *parent_type << std::endl ;
+                        << parent_type << std::endl ;
                     valid = false ;
                 } 
             }
@@ -523,19 +519,12 @@ namespace RINGMesh {
     }
     index_t GeoModelMeshEntity::parent_id( const std::string& parent_type_name ) const
     {
-        const EntityTypeManager& family = model().entity_type_manager() ;
-        bool valid_parent_type = family.parent_types( type_name() ).count( parent_type_name ) > 0;
-        if( valid_parent_type ) {        
-            for( index_t i = 0; i < nb_parents(); ++i ) {
-                if( parents_[i].type == parent_type_name ) {
-                    return i ;
-                }
+        for( index_t i = 0; i < nb_parents(); ++i ) {
+            if( parents_[i].type == parent_type_name ) {
+                return i ;
             }
-            return NO_ID ;
-        } else {
-            ringmesh_assert_not_reached ;
-            return NO_ID ;
         }
+        return NO_ID ;
     }
 
 
