@@ -89,7 +89,6 @@ namespace RINGMesh {
         {
         }
         
-    public:
     protected:
         /// Entities constituting this one - see child_type( TYPE )
         std::vector< gme_t > children_ ;

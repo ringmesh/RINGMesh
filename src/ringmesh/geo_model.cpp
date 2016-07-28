@@ -103,8 +103,6 @@ namespace RINGMesh {
     static const std::vector< EntityType > hard_encoded_mesh_entity_types(
         &hard_encoded_mesh_entity_types_array[0], &hard_encoded_mesh_entity_types_array[4] ) ;
 
-    static const EntityType hard_encodeded_default_entity_type( "No_entity_type") ;
-
     index_t EntityTypeManager::nb_mesh_entity_types()
     {
         return hard_encoded_mesh_entity_types.size() ;
@@ -129,9 +127,9 @@ namespace RINGMesh {
     {
         return find( hard_encoded_mesh_entity_types, type ) != NO_ID ;
     }
-    const EntityType& EntityTypeManager::default_entity_type()
+    const EntityType EntityTypeManager::default_entity_type()
     {
-        return hard_encodeded_default_entity_type ;
+        return "No_entity_type" ;
     }
     const std::vector< EntityType >& EntityTypeManager::mesh_entity_types()
     {

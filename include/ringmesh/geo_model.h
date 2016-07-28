@@ -75,7 +75,7 @@ namespace RINGMesh {
         {
             return type != default_entity_type() ;
         }               
-        static const EntityType& default_entity_type() ;
+        static const EntityType default_entity_type() ;
         bool is_valid_type( const EntityType& type ) const
         {
             return is_defined_type( type )
@@ -110,7 +110,7 @@ namespace RINGMesh {
         {
             return parent_types( child_type ).size() ;
         }
-        const MeshEntityType& child_type(
+        const MeshEntityType child_type(
             const GeologicalEntityType& parent_type ) const
         {
             GeologicalEntityToChild::const_iterator
