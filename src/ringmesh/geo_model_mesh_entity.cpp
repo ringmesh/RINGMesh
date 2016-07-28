@@ -363,7 +363,7 @@ namespace RINGMesh {
      */
     bool GeoModelMeshEntity::is_boundary_connectivity_valid() const
     {
-        const EntityTypeManager& family = model().entity_relationships() ;
+        const EntityTypeManager& family = model().entity_type_manager() ;
         const EntityType entity_type = type_name() ;
         const EntityType& boundary_type = family.boundary_type( entity_type ) ;
         
@@ -395,7 +395,7 @@ namespace RINGMesh {
      */
     bool GeoModelMeshEntity::is_in_boundary_connectivity_valid() const
     {
-        const EntityTypeManager& family = model().entity_relationships() ;
+        const EntityTypeManager& family = model().entity_type_manager() ;
         const EntityType entity_type = type_name() ;
         const EntityType& in_boundary_type = family.in_boundary_type( entity_type ) ;
 
@@ -435,7 +435,7 @@ namespace RINGMesh {
     {
         bool valid = true ;
 
-        const EntityTypeManager& family = model().entity_relationships() ;
+        const EntityTypeManager& family = model().entity_type_manager() ;
         const EntityType entity_type = type_name() ;
        
         if( family.nb_parent_types( entity_type ) == 0 ) {
@@ -523,7 +523,7 @@ namespace RINGMesh {
     }
     index_t GeoModelMeshEntity::parent_id( const std::string& parent_type_name ) const
     {
-        const EntityTypeManager& family = model().entity_relationships() ;
+        const EntityTypeManager& family = model().entity_type_manager() ;
         bool valid_parent_type = family.parent_types( type_name() ).count( parent_type_name ) > 0;
         if( valid_parent_type ) {        
             for( index_t i = 0; i < nb_parents(); ++i ) {

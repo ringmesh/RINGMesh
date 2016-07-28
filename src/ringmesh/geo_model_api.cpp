@@ -245,6 +245,7 @@ namespace {
 }
 
 namespace RINGMesh {
+    typedef std::string EntityType ;
 
     void print_nb_mesh_entities( const GeoModel& geomodel, const std::string& entity_type_name )
     {
@@ -276,13 +277,22 @@ namespace RINGMesh {
         }
         Logger::out( "GeoModel" ) << std::endl ;
 
-        print_nb_mesh_entities( geomodel, Corner::type_name_static() ) ; 
-        print_nb_mesh_entities( geomodel, Line::type_name_static() ) ; 
-        print_nb_mesh_entities( geomodel, Surface::type_name_static() ) ; 
-        print_nb_mesh_entities( geomodel, Region::type_name_static() ) ; 
-
-        for( index_t i = 0; i < geomodel.nb_geological_entity_types(); ++i ) {
-            print_nb_geological_entities( geomodel, geomodel.geological_entity_type( i ) ) ;
+        const EntityTypeManager& manager = geomodel.entity_type_manager() ;
+        const std::vector< EntityType >& mesh_entity_types =
+            manager.mesh_entity_types() ;
+        for( index_t i = 0; i < mesh_entity_types.size(); ++i ) {
+            print_nb_mesh_entities( geomodel, mesh_entity_types[i] ) ; 
+        }
+        const std::vector< EntityType>& geolgoical_entity_types = 
+            manager.geological_entity_types() ;
+        
+        for( index_t i = 0; i < mesh_entity_types.size(); ++i ) {
+            print_nb_mesh_entities( geomodel, mesh_entity_types[i] ) ; 
+        }
+        const std::vector< EntityType>& geological_entity_types =
+            manager.geological_entity_types() ;
+        for( index_t i = 0; i < geological_entity_types.size(); ++i ) {
+            print_nb_geological_entities( geomodel, geological_entity_types[i] ) ;
         }        
     }
 
