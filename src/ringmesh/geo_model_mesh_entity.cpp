@@ -64,7 +64,6 @@
 #include <ringmesh/geometry.h>
 
 namespace {
-    /* Definition of functions that we do not want exported in the interface */
     using namespace RINGMesh ;
 
     typedef GeoModelEntity::gme_t gme_t ;
@@ -146,8 +145,7 @@ namespace {
         count_vertex_occurences( mesh, nb ) ;
         return static_cast< index_t >( std::count( nb.begin(), nb.end(), 0 ) ) ;
     }
-
-
+    
     bool check_mesh_entity_vertices_are_different(
         std::vector< index_t >& vertices,
         std::vector< index_t >& vertices_global )
@@ -186,6 +184,7 @@ namespace {
         }
         return check_mesh_entity_vertices_are_different( corners, corners_global ) ;
     }    
+    
     /*!
      * @brief Returns true if the region cell is incident twice to the same vertex
      * or if the cell volume is negative or inferior to epsilon
@@ -231,49 +230,8 @@ namespace {
         }
     }
 }
-
+/******************************************************************************/
 namespace RINGMesh {
-    /*!
-     * @brief Checks if this entity define the model external boundary
-     * @details Test if the entity is in the Surfaces defining the universe 
-     */
-    bool Corner::is_on_voi() const
-    {
-        // True if one of the incident surface define the universe
-        for( index_t i = 0; i < nb_in_boundary(); ++i ) {
-            if( in_boundary( i ).is_on_voi() ) {
-                return true ;
-            }
-        }
-        return false ;
-
-    }
-    bool Line::is_on_voi() const
-    {
-        // True if one of the incident surface define the universe
-        for( index_t i = 0; i < nb_in_boundary(); ++i ) {
-            if( in_boundary( i ).is_on_voi() ) {
-                return true ;
-            }
-        }
-        return false ;        
-    }
-
-    bool Surface::is_on_voi() const
-    {
-        for( index_t i = 0; i < model().universe().nb_boundaries(); ++i ) {
-            if( model().universe().boundary_gme( i ) == gme_id() ) {
-                return true ;
-            }
-        }
-        return false ;
-    }
-
-    bool Region::is_on_voi() const
-    {
-        return false ;
-    }
-
     /*!
      * @brief Check if this entity an inside border of rhs
      * @details That can be Surface stopping in a Region, or Line stopping in a Surface.
@@ -298,8 +256,6 @@ namespace RINGMesh {
         }
         return false ;
     }
-
-    /*********************************************************************/
 
     const std::string GeoModelMeshEntity::model_vertex_id_att_name()
     {
@@ -527,7 +483,6 @@ namespace RINGMesh {
         return NO_ID ;
     }
 
-
     const GeoModelMeshEntity& GeoModelMeshEntity::boundary( index_t x ) const
     {
         return model().mesh_entity( boundary_gme( x ) ) ;
@@ -571,7 +526,21 @@ namespace RINGMesh {
 
 
     /**************************************************************/
+    /*!
+    * @brief Checks if this entity define the model external boundary
+    * @details Test if the entity is in the Surfaces defining the universe 
+    */
+    bool Corner::is_on_voi() const
+    {
+        // True if one of the incident surface define the universe
+        for( index_t i = 0; i < nb_in_boundary(); ++i ) {
+            if( in_boundary( i ).is_on_voi() ) {
+                return true ;
+            }
+        }
+        return false ;
 
+    }
     /*!
      * @brief Check that the Corner mesh is a unique point
      */
@@ -738,6 +707,16 @@ namespace RINGMesh {
 
     }
 
+    bool Line::is_on_voi() const
+    {
+        // True if one of the incident surface define the universe
+        for( index_t i = 0; i < nb_in_boundary(); ++i ) {
+            if( in_boundary( i ).is_on_voi() ) {
+                return true ;
+            }
+        }
+        return false ;        
+    }
 
     /********************************************************************/
 
@@ -837,6 +816,16 @@ namespace RINGMesh {
 #endif  
         }
         return valid ;
+    }
+
+    bool Surface::is_on_voi() const
+    {
+        for( index_t i = 0; i < model().universe().nb_boundaries(); ++i ) {
+            if( model().universe().boundary_gme( i ) == gme_id() ) {
+                return true ;
+            }
+        }
+        return false ;
     }
 
     /*!
@@ -1228,6 +1217,11 @@ namespace RINGMesh {
 
     /********************************************************************/
 
+    bool Region::is_on_voi() const
+    {
+        return false ;
+    }
+
     bool Region::is_connectivity_valid() const
     {
         if( nb_boundaries() != sides_.size() ) {
@@ -1340,7 +1334,6 @@ namespace RINGMesh {
             }
         }
     }
-
 
     void Region::compute_region_volumes_per_cell_type(
         double& tet_volume,
