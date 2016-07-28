@@ -244,7 +244,7 @@ namespace RINGMesh {
             for( index_t i = 0; i < model().nb_mesh_entities( c_type ); ++i ) {
                 const GeoModelMeshEntity& p = mesh_entity( c_type, i ) ;
                 for( index_t j = 0; j < p.nb_parents(); j++ ) {
-                    add_geological_entity_child( p.parent_id( j ), i ) ;
+                    add_geological_entity_child( p.parent_gme( j ), i ) ;
                 }
             }
         }

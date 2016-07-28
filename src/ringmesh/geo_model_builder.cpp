@@ -928,9 +928,9 @@ namespace RINGMesh {
     void GeoModelBuilder::assign_mesh_to_entity( const Mesh& mesh, GME::gme_t to )
     {
         GeoModelMeshEntity& E = mesh_entity( to ) ;
-        E.unbind_attributes() ;
+        E.unbind_model_vertex_id_attribute() ;
         E.mesh_.copy( mesh, true, GEO::MESH_ALL_ELEMENTS ) ;
-        E.bind_attributes() ;
+        E.bind_model_vertex_id_attribute() ;
         // Nothing else to do ? To test [JP]
     }
 

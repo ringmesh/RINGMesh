@@ -760,8 +760,8 @@ namespace RINGMesh {
         GEO::Attribute< index_t > attribute( mesh_.facets.attributes(),
             attribute_name ) ;
         AttributeVector< index_t > attributes ;
-        create_attributes_on_geomodel_entity_facets< index_t >( model(),
-            Surface::type_name_static(), attribute_name, attributes ) ;
+        create_attributes_on_geomodel_surfaces_facets< index_t >( model(),
+          attribute_name, attributes ) ;
         surface_builder_->copy_simplex_attribute_from_mesh_to_geomodel< index_t >(
             attribute, attributes ) ;
     }
@@ -777,8 +777,8 @@ namespace RINGMesh {
         GEO::Attribute< index_t > attribute( mesh_.cells.attributes(),
             attribute_name ) ;
         AttributeVector< index_t > attributes ;
-        create_attributes_on_geomodel_entity_cells< index_t >( model(),
-            Region::type_name_static(), attribute_name, attributes ) ;
+        create_attributes_on_geomodel_regions_cells< index_t >( model(),
+            attribute_name, attributes ) ;
         region_builder_->copy_simplex_attribute_from_mesh_to_geomodel< index_t >(
             attribute, attributes ) ;
     }

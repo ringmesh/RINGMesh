@@ -68,22 +68,32 @@ namespace RINGMesh {
 
         typedef std::string EntityType ;
 
-        virtual ~GeoModelMeshEntity() ;
-
         static const EntityType default_entity_type_name()
         {
             return "No_entity_type" ;
         }
+        /*!
+         * @brief Name of the attribute storing the global index at the GeoModel level.
+         */
+        static const std::string model_vertex_id_att_name() ;
+
+        virtual ~GeoModelMeshEntity() ;
         virtual const EntityType type_name() const
         {
             return default_entity_type_name() ;
         }
-
-        /*!@}
-         * \name Connectivity - boundary and in_boundary
-         * @todo Change in_boundary to incident_entities? in_boundary is obscure? [JP]
-         * @{
+        /*!
+         * @brief Global validity of the entity
          */
+        virtual bool is_valid() const
+        {
+            return GeoModelEntity::is_valid()
+                && is_connectivity_valid()
+                && is_mesh_valid()
+                && are_model_vertex_indices_valid() ;            
+        }
+        virtual bool is_connectivity_valid() const ;      
+
         index_t nb_boundaries() const
         {
             return static_cast<index_t>(boundaries_.size()) ;
@@ -94,6 +104,7 @@ namespace RINGMesh {
             return boundaries_[x] ;
         }
         const GeoModelMeshEntity& boundary( index_t x ) const ;
+        bool has_inside_border() const ;
 
         index_t nb_in_boundary() const
         {
@@ -105,32 +116,25 @@ namespace RINGMesh {
             return in_boundary_[x] ;
         }
         const GeoModelMeshEntity& in_boundary( index_t x ) const ;
-
         bool is_inside_border( const GeoModelMeshEntity& e ) const ;
-        bool has_inside_border() const ;
 
-        /*!@}
-         * \name Parent relationships
-         * @{
-         */
-
-        index_t nb_parents() const
-        {
-            return static_cast< index_t >( parents_.size() ) ;
-        }
         bool has_parent() const
         {
             return nb_parents() != 0 ;
         }
-        const gme_t& parent_id( index_t id ) const
+        index_t nb_parents() const
+        {
+            return static_cast< index_t >( parents_.size() ) ;
+        }
+        index_t parent_id( const EntityType& parent_type_name ) const ;
+        const gme_t& parent_gme( index_t id ) const
         {
             ringmesh_assert( id < nb_parents() ) ;
             return parents_[id] ;
         }
-        const GeoModelGeologicalEntity& parent( const EntityType& parent_type_name ) const ;
         const gme_t& parent_gme( const EntityType& parent_type_name ) const ;
-        index_t parent_id( const EntityType& parent_type_name ) const ;
         const GeoModelGeologicalEntity& parent( index_t id ) const ;
+        const GeoModelGeologicalEntity& parent( const EntityType& parent_type_name ) const ;
 
         /*! @todo To remove when GFX Mesh is encapsulated */
         const GEO::Mesh& gfx_mesh() const
@@ -138,18 +142,6 @@ namespace RINGMesh {
             return mesh_.gfx_mesh() ;
         }
 
-        /*!
-         * @brief Global validity of the entity
-         */
-        virtual bool is_valid() const
-        {
-            return is_connectivity_valid() && is_mesh_valid() ;
-            /* @todo Test and add the model vertex validity test
-             * (no time right now JP)
-             * are_model_vertex_indices_valid() ;
-             */
-        }
-        virtual bool is_connectivity_valid() const ;
         void save(
             const std::string& filename,
             const GEO::MeshIOFlags& ioflags ) const
@@ -159,6 +151,7 @@ namespace RINGMesh {
         /*!
          * @brief Return the colocater for the Entity vertices.
          */
+        
         const ColocaterANN& vertex_colocater_ann() const
         {
             return mesh_.colocater_ann( ColocaterANN::VERTICES ) ;
@@ -167,9 +160,6 @@ namespace RINGMesh {
         /*!
          * \name Local access to the GeoModelMeshEntity geometry
          * @{
-         */
-        /*!
-         * @brief Number of vertices
          */
         index_t nb_vertices() const
         {
@@ -215,14 +205,6 @@ namespace RINGMesh {
          * @{
          */
         virtual double mesh_element_size( index_t mesh_element_index ) const = 0 ;
-        virtual double size() const
-        {
-            double size = 0.0 ;
-            for( index_t i = 0; i < nb_mesh_elements(); ++i ) {
-                size += mesh_element_size( i ) ;
-            }
-            return size ;
-        }
         virtual vec3 mesh_element_center( index_t mesh_element_index ) const = 0 ;
         virtual vec3 center() const
         {
@@ -232,19 +214,19 @@ namespace RINGMesh {
             }
             return result / static_cast<double>(nb_vertices()) ;
         }
+        virtual double size() const
+        {
+            double size = 0.0 ;
+            for( index_t i = 0; i < nb_mesh_elements(); ++i ) {
+                size += mesh_element_size( i ) ;
+            }
+            return size ;
+        }
 
         /*! @}
-         */
-        /*!
          * \name Linking to GeoModelMesh indexing
          * @{
-         */
-
-        /*!
-         * @brief Name of the attribute storing the global index at the GeoModel level.
-         */
-        static const std::string model_vertex_id_att_name() ;
-
+         */        
         /*!
          * @brief Get the global index at the GeoModel from the index in the entity.
          */
@@ -278,28 +260,14 @@ namespace RINGMesh {
          * to the same point in the GeoModel.
          */
         std::vector< index_t > gme_vertex_indices( index_t model_vertex_id ) const ;
-
-        /*!
-         * @}
-         * \name Attribute management
-         * @{
+        
+        /*! @}
          */
         GEO::AttributesManager& vertex_attribute_manager() const
         {
             return mesh_.vertex_attribute_manager() ;
         }
-        GEO::AttributesManager& facet_attribute_manager() const
-        {
-            return mesh_.facet_attribute_manager() ;
-        }
-        GEO::AttributesManager& cell_attribute_manager() const
-        {
-            return mesh_.cell_attribute_manager() ;
-        }
-        void bind_attributes() ;
-        void unbind_attributes() ;
-        /*! @}
-         */
+        
     protected:
         GeoModelMeshEntity(
             const GeoModel& model,
@@ -314,14 +282,11 @@ namespace RINGMesh {
                 model_vertex_id_att_name() ) ;
         }
 
-        /*!
-         * @brief Check if the mesh stored is valid.
-         */
         virtual bool is_mesh_valid() const = 0 ;
+
         bool is_boundary_connectivity_valid() const ;
         bool is_in_boundary_connectivity_valid() const ;
-        bool is_parent_connectivity_valid() const ;
-    
+        bool is_parent_connectivity_valid() const ;    
         /*!
          * @brief Check that model vertex indinces are consistent
          * with what is stored at the GeoModel level.
@@ -329,21 +294,25 @@ namespace RINGMesh {
          */
         bool are_model_vertex_indices_valid() const ;
 
+        void bind_model_vertex_id_attribute() ;
+        void unbind_model_vertex_id_attribute() ;
+
     protected:
-        /// RINGMesh::Mesh implementing the geometry of this entity 
+        /// The RINGMesh::Mesh giving the geometry of this entity 
         Mesh mesh_ ;
         /*! Attribute on the Mesh vertices storing the index of
          *  the vertex in the GeoModel owning this entity
          */
         GEO::Attribute< index_t > model_vertex_id_ ;
 
-        /// Entities on the boundary of this entity - see boundary_type( TYPE )
+        /// Entities on the boundary of this entity
         std::vector< gme_t > boundaries_ ;
 
-        /// Entities in which boundary this entity is - see in_boundary_type( TYPE )
+        /// Entities in which boundary this entity is
         std::vector< gme_t > in_boundary_ ;
 
-        /// Parent identification - see parent_type( TYPE )
+        /// The optional GeoModelGeologicalEntities 
+        /// (groups of GeoModelMeshEntity this entity belongs to)
         std::vector< gme_t > parents_ ;
 
     private:
@@ -351,8 +320,7 @@ namespace RINGMesh {
     } ;
 
 
-
-      /*!
+    /*!
      * @brief Vertex in a GeoModelEntity
      */
     struct GMEVertex {
@@ -391,36 +359,22 @@ namespace RINGMesh {
      * @brief A GeoModelEntity of type CORNER
      * @details It is a unique point.
      */
-    class RINGMESH_API Corner : public GeoModelMeshEntity
-    {
+    class RINGMESH_API Corner : public GeoModelMeshEntity {        
+    public:
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
-    public:
-       /*! @brief Creates a Corner.
-         *  A point is added to its Mesh.
-         */
-        Corner( const GeoModel& model, index_t id )
-            : GeoModelMeshEntity( model, id )
-        {
-            MeshBuilder builder( mesh_ ) ;
-            builder.create_vertex() ;
-            id_.type = type_name_static() ;
-        }
-
-        ~Corner()
-        {}
-
-        virtual bool is_on_voi() const ;
 
         static const EntityType type_name_static()
         {
             return "Corner" ;
         }        
+
+        virtual ~Corner() {}
+        virtual bool is_on_voi() const ;
         virtual const EntityType type_name() const
         {
             return type_name_static() ;
         }
-
 
         /*!
          * @brief Get the index of the unique vertex constituting of the Corner.
@@ -469,6 +423,17 @@ namespace RINGMesh {
         }
 
     protected:
+        /*! @brief Creates a Corner.
+         *  A point is added to its Mesh.
+         */
+        Corner( const GeoModel& model, index_t id )
+            : GeoModelMeshEntity( model, id )
+        {
+            MeshBuilder builder( mesh_ ) ;
+            builder.create_vertex() ;
+            id_.type = type_name_static() ;
+        }
+        
         virtual bool is_mesh_valid() const ;
     } ;
 
@@ -478,20 +443,19 @@ namespace RINGMesh {
      * @details This must be one connected component (one part) of
      * a 1-manifold (Line with no T intersections).
      */
-    class RINGMESH_API Line : public GeoModelMeshEntity
-    {
+    class RINGMESH_API Line : public GeoModelMeshEntity {      
+    public:
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
-    public:
-        Line( const GeoModel& model, index_t id ) ;
-        ~Line()
-        {
-        }
 
         static const EntityType type_name_static()
         {
             return "Line" ;
         }        
+        
+        virtual ~Line()
+        {
+        }
 
         virtual bool is_on_voi() const ;
         virtual bool is_connectivity_valid() const ;
@@ -514,7 +478,7 @@ namespace RINGMesh {
         /*!
          * @Return The number of vertices per edge: 2.
          */
-        virtual index_t nb_mesh_element_vertices( index_t /*mesh_element*/ ) const
+        virtual index_t nb_mesh_element_vertices( index_t mesh_element = 0 ) const
         {
             return 2 ;
         }
@@ -540,10 +504,6 @@ namespace RINGMesh {
                 && (boundaries_[0] == boundaries_[1]) ;
         }
 
-        /*! @}
-         * \name Geometrical request on Line
-         * @{
-         */
         /*!
          * @brief Gets the length of an edge
          */
@@ -563,7 +523,9 @@ namespace RINGMesh {
                 + mesh_element_vertex( edge_index, 1 )) ;
         }
 
-    private:
+    protected:
+        Line( const GeoModel& model, index_t id ) ;
+
         virtual bool is_mesh_valid() const ;
     } ;                     
 
@@ -574,27 +536,20 @@ namespace RINGMesh {
      * @details One connected component (part) of a 2-manifold surface
      * (all edges of the facets are in at most 2 facets)
      */
-    class RINGMESH_API Surface : public GeoModelMeshEntity
-    {
+    class RINGMESH_API Surface : public GeoModelMeshEntity {       
+    public:
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
 
-    public:
-        Surface( const GeoModel& model, index_t id )
-            : GeoModelMeshEntity( model, id )
-        {
-            id_.type = type_name_static() ;
-        }
-
-        ~Surface()
-        {
-        }
-
-        virtual bool is_on_voi() const ;
         static const EntityType type_name_static()
         {
             return "Surface" ;
         }        
+
+        virtual ~Surface()
+        {
+        }
+        virtual bool is_on_voi() const ;
         virtual const EntityType type_name() const
         {
             return type_name_static() ;
@@ -615,6 +570,11 @@ namespace RINGMesh {
         const ColocaterANN& facet_colocater_ann() const
         {
             return mesh_.colocater_ann( ColocaterANN::FACETS ) ;
+        }
+
+        GEO::AttributesManager& facet_attribute_manager() const
+        {
+            return mesh_.facet_attribute_manager() ;
         }
 
         /*!
@@ -831,7 +791,14 @@ namespace RINGMesh {
         }
         /*! @}
          */
-    private:
+
+    protected:
+        Surface( const GeoModel& model, index_t id )
+            : GeoModelMeshEntity( model, id )
+        {
+            id_.type = type_name_static() ;
+        }
+        
         virtual bool is_mesh_valid() const ;
     } ;
 
@@ -848,21 +815,7 @@ namespace RINGMesh {
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
 
-        Region( const GeoModel& model, index_t id )
-            : GeoModelMeshEntity( model, id )
-        {
-            id_.type = type_name_static() ;
-        }
-        Region(
-            const GeoModel& model,
-            index_t id,
-            const std::string& name,
-            GEOL_FEATURE geological_feature )
-            : GeoModelMeshEntity( model, id, name, geological_feature )
-        {
-            id_.type = type_name_static() ;
-        }
-        ~Region()
+        virtual ~Region()
         {
         }
 
@@ -902,11 +855,7 @@ namespace RINGMesh {
         {
             return mesh_.cell_attribute_manager() ;
         }
-        bool side( index_t i ) const
-        {
-            return sides_[i] ;
-        }
-
+        
         /*!
          * \name Accessors to Region cells, facets, edges and vertices
          * @{
@@ -917,36 +866,6 @@ namespace RINGMesh {
         virtual index_t nb_mesh_elements() const
         {
             return mesh_.nb_cells() ;
-        }
-        index_t nb_cell_edges( index_t cell_index ) const
-        {
-            if( is_meshed() ) {
-                ringmesh_assert( cell_index < nb_mesh_elements() ) ;
-                return mesh_.nb_cell_edges( cell_index ) ;
-            }
-            ringmesh_assert_not_reached ;
-            return NO_ID ;
-        }
-        index_t nb_cell_facets( index_t cell_index ) const
-        {
-            if( is_meshed() ) {
-                ringmesh_assert( cell_index < nb_mesh_elements() ) ;
-                return mesh_.nb_cell_facets( cell_index ) ;
-            }
-            ringmesh_assert_not_reached ;
-            return NO_ID ;
-        }
-        index_t nb_cell_facet_vertices(
-            index_t cell_index,
-            index_t facet_index ) const
-        {
-            if( is_meshed() ) {
-                ringmesh_assert( cell_index < nb_mesh_elements() ) ;
-                ringmesh_assert( facet_index < nb_cell_facets( cell_index ) ) ;
-                return mesh_.nb_cell_facet_vertices( cell_index, facet_index ) ;
-            }
-            ringmesh_assert_not_reached ;
-            return NO_ID ;
         }
         /*!
          * Get the number of vertex in the cell \param cell_index of the Region.
@@ -971,6 +890,47 @@ namespace RINGMesh {
                 ringmesh_assert( cell_index < nb_mesh_elements() ) ;
                 ringmesh_assert( vertex_index < nb_mesh_element_vertices( cell_index ) ) ;
                 return mesh_.cell_vertex( cell_index, vertex_index ) ;
+            }
+            ringmesh_assert_not_reached ;
+            return NO_ID ;
+        }
+            
+        GEO::MeshCellType cell_type( index_t cell_index ) const
+        {
+            if( is_meshed() ) {
+                ringmesh_assert( cell_index < nb_mesh_elements() ) ;
+                return mesh_.cell_type( cell_index ) ;
+            }
+            ringmesh_assert_not_reached ;
+            return GEO::MESH_NB_CELL_TYPES ;
+        }
+
+        index_t nb_cell_edges( index_t cell_index ) const
+        {
+            if( is_meshed() ) {
+                ringmesh_assert( cell_index < nb_mesh_elements() ) ;
+                return mesh_.nb_cell_edges( cell_index ) ;
+            }
+            ringmesh_assert_not_reached ;
+            return NO_ID ;
+        }
+        index_t nb_cell_facets( index_t cell_index ) const
+        {
+            if( is_meshed() ) {
+                ringmesh_assert( cell_index < nb_mesh_elements() ) ;
+                return mesh_.nb_cell_facets( cell_index ) ;
+            }
+            ringmesh_assert_not_reached ;
+            return NO_ID ;
+        }
+        index_t nb_cell_facet_vertices( 
+            index_t cell_index,
+            index_t facet_index ) const
+        {
+            if( is_meshed() ) {
+                ringmesh_assert( cell_index < nb_mesh_elements() ) ;
+                ringmesh_assert( facet_index < nb_cell_facets( cell_index ) ) ;
+                return mesh_.nb_cell_facet_vertices( cell_index, facet_index ) ;
             }
             ringmesh_assert_not_reached ;
             return NO_ID ;
@@ -1013,7 +973,7 @@ namespace RINGMesh {
             ringmesh_assert_not_reached ;
             return NO_ID ;
         }
-
+        
         /*! @}
          * \name Geometrical request on Region Entity
          * @{
@@ -1027,15 +987,6 @@ namespace RINGMesh {
             }
             ringmesh_assert_not_reached ;
             return false ;
-        }
-        GEO::MeshCellType cell_type( index_t cell_index ) const
-        {
-            if( is_meshed() ) {
-                ringmesh_assert( cell_index < nb_mesh_elements() ) ;
-                return mesh_.cell_type( cell_index ) ;
-            }
-            ringmesh_assert_not_reached ;
-            return GEO::MESH_NB_CELL_TYPES ;
         }
         vec3 cell_facet_barycenter( index_t cell_index, index_t facet_index ) const
         {
@@ -1106,6 +1057,7 @@ namespace RINGMesh {
             ringmesh_assert_not_reached ;
             return vec3() ;
         }
+        
         void compute_region_volumes_per_cell_type(
             double& tet_volume,
             double& pyramid_volume,
@@ -1113,27 +1065,32 @@ namespace RINGMesh {
             double& hex_volume,
             double& poly_volume ) const ;
 
+        bool side( index_t i ) const
+        {
+            return sides_[i] ;
+        }
         /*! @}
          */
 
-        /*!
-         * \todo Is connectivity valid should be virtual and we should
-         * reimplement here to check
-         *     if( nb_boundaries() != sides_.size() ) {
-         *       Logger::err( "GeoModelEntity" )
-         *       << gme_id() << " boundary sides are invalid "
-         *       << std::endl ;
-         *       return false ;
-         *     }
+    protected:
+        Region( const GeoModel& model, index_t id )
+            : GeoModelMeshEntity( model, id )
+        {
+            id_.type = type_name_static() ;
+        }
+        Region( const GeoModel& model,
+            index_t id,
+            const std::string& name,
+            GEOL_FEATURE geological_feature )
+            : GeoModelMeshEntity( model, id, name, geological_feature )
+        {
+            id_.type = type_name_static() ;
+        }
 
-         */
-
-    private:
-        virtual bool is_mesh_valid() const ;
-        
+        virtual bool is_mesh_valid() const ;        
         bool is_brep_region_valid() const ;
 
-    private:
+    protected:
         /*! Additional information to store oriented boundary Surfaces
          * Side: + (true) or - (false)
          * The size of this vector must be the same than boundary_
