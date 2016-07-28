@@ -1605,7 +1605,7 @@ namespace {
 
             point_boundaries_.resize( gm.mesh.vertices.nb() ) ;
             for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
-                index_t interface_id = model.surface( s ).parent_id( 0 ).index ;
+                index_t interface_id = model.surface( s ).parent_gme( 0 ).index ;
                 for( index_t f = 0; f < gm.mesh.facets.nb_facets( s ); f++ ) {
                     index_t f_id = gm.mesh.facets.facet( s, f ) ;
                     for( index_t v = 0; v < gm.mesh.facets.nb_vertices( f_id );

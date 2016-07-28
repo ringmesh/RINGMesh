@@ -308,7 +308,7 @@ namespace RINGMesh {
 
     GeoModelMeshEntity::~GeoModelMeshEntity()
     {
-        unbind_attributes() ;
+        unbind_model_vertex_id_attribute() ;
 #ifdef RINGMESH_DEBUG
         mesh_.print_mesh_bounded_attributes() ;
 #endif
@@ -317,7 +317,7 @@ namespace RINGMesh {
     /*!
      * @brief Binds attributes stored by the GME on the Mesh
      */
-    void GeoModelMeshEntity::bind_attributes()
+    void GeoModelMeshEntity::bind_model_vertex_id_attribute()
     {
         model_vertex_id_.bind( mesh_.vertex_attribute_manager(),
             model_vertex_id_att_name() ) ;
@@ -325,7 +325,7 @@ namespace RINGMesh {
     /*!
      * @brief Unbinds attributes stored by the GME on the Mesh
      */
-    void GeoModelMeshEntity::unbind_attributes()
+    void GeoModelMeshEntity::unbind_model_vertex_id_attribute()
     {
         model_vertex_id_.unbind() ;
     }
@@ -496,7 +496,7 @@ namespace RINGMesh {
      */
     const GeoModelGeologicalEntity& GeoModelMeshEntity::parent( index_t parent_index ) const
     {
-        gme_t parent = parent_id( parent_index ) ;
+        gme_t parent = parent_gme( parent_index ) ;
         ringmesh_assert( parent.is_defined() ) ;
         return model().geological_entity( parent ) ;
     }
@@ -1230,6 +1230,13 @@ namespace RINGMesh {
 
     bool Region::is_connectivity_valid() const
     {
+        if( nb_boundaries() != sides_.size() ) {
+            Logger::err( "GeoModelEntity" )
+                << gme_id() << " boundary sides are invalid "
+                << std::endl ;
+            ringmesh_assert_not_reached ;
+            return false ;
+        }
         bool region_valid = GeoModelMeshEntity::is_connectivity_valid() ;
         if( nb_boundaries() == 0 ) {
             Logger::warn( "GeoModelEntity" ) << gme_id()
