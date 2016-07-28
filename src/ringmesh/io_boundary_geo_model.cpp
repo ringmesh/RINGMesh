@@ -206,10 +206,6 @@ namespace {
         }
         for( index_t i = 0; i < nb_interfaces; ++i ) {
             const GME& E = M.geological_entity( Interface::type_name_static(), i ) ;
-            if( !E.has_name() ) {
-                Logger::err( "" ) << E.gme_id() << " has no name" << std::endl ;
-                return false ;
-            }
             if( !E.has_geological_feature() ) {
                 Logger::err( "" ) << E.gme_id() << " has no geological feature"
                     << std::endl ;
@@ -227,13 +223,6 @@ namespace {
             if( !S.is_simplicial() ) {
                 Logger::err( "" ) << S.gme_id() << " is not triangulated "
                     << std::endl ;
-                return false ;
-            }
-        }
-        for( index_t r = 0; r < M.nb_regions(); ++r ) {
-            const Region& R = M.region( r ) ;
-            if( !R.has_name() ) {
-                Logger::err( "" ) << R.gme_id() << " has no name" << std::endl ;
                 return false ;
             }
         }

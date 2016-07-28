@@ -216,19 +216,18 @@ namespace RINGMesh {
     void GeoModelEditor::fill_mesh_entities_parent( const EntityType& type )
     {
         const GeoModel& M = model() ;
-        if( M.nb_mesh_entities( type ) == 0
-            || entity_type_manager().nb_parent_types( type ) == 0 ) {
+        if( M.nb_mesh_entities( type ) == 0 ) {
             return ;
         }
-        const std::set< EntityType >& parent_types( entity_type_manager().parent_types( type ) ) ;
-        for( std::set< EntityType >::const_iterator it = parent_types.begin(); it != parent_types.end(); ++it ) {
-            const EntityType& parent_type = *it ;
+        const std::vector< EntityType > parent_types( entity_type_manager().parent_types( type ) ) ;
+        for( index_t i = 0; i < parent_types.size(); ++i ) {
+            const EntityType& parent_type = parent_types[i] ;
             if( EntityTypeManager::is_defined_type( parent_type ) ) {
-                for( index_t i = 0; i < M.nb_geological_entities( parent_type ); ++i ) {
+                for( index_t j = 0; j < M.nb_geological_entities( parent_type ); ++j ) {
                     const GeoModelGeologicalEntity& parent = geological_entity(
-                        parent_type, i ) ;
-                    for( index_t j = 0; j < parent.nb_children(); ++j ) {
-                        add_mesh_entity_parent( parent.child_gme( j ), parent.gme_id() ) ;
+                        parent_type, j ) ;
+                    for( index_t k = 0; k < parent.nb_children(); ++k ) {
+                        add_mesh_entity_parent( parent.child_gme( k ), parent.gme_id() ) ;
                     }
                 }
             }
@@ -636,20 +635,16 @@ namespace RINGMesh {
         void update_entity_parents( GeoModelMeshEntity& E )
         {
             const EntityTypeManager& family_tree = model().entity_type_manager() ;
-            if( family_tree.nb_parent_types( E.type_name() ) == 0 ) {
-                return ;
-            } else {
-                const std::set< EntityType >& parents = family_tree.parent_types( E.entity_type() ) ;
+            
+            const std::vector< EntityType > parents = family_tree.parent_types( E.entity_type() ) ;
+            for( index_t i = 0; i < parents.size(); ++i ) {
+                const EntityType& parent_type = parents[i] ;
+                index_t parent_type_index = entity_type_to_index( parent_type ) ;
 
-                for( std::set< EntityType >::const_iterator it( parents.begin() ); it != parents.end(); ++it ) {
-                    const EntityType& parent_type = *it ;
-                    index_t parent_type_index = entity_type_to_index( parent_type ) ;
-
-                    index_t p_id = E.parent_id( parent_type ) ;
-                    index_t old_id = E.parent( p_id ).index() ;
-                    index_t new_id = old_2_new_entity_[parent_type_index][old_id] ;
-                    set_mesh_entity_parent( E.gme_id(), p_id, gme_t( parent_type, new_id ) ) ;
-                }
+                index_t p_id = E.parent_id( parent_type ) ;
+                index_t old_id = E.parent( p_id ).index() ;
+                index_t new_id = old_2_new_entity_[parent_type_index][old_id] ;
+                set_mesh_entity_parent( E.gme_id(), p_id, gme_t( parent_type, new_id ) ) ;
             }
         }
         void update_entity_children( GeoModelGeologicalEntity& E )

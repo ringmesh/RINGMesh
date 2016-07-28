@@ -355,7 +355,11 @@ namespace RINGMesh {
         return defined_id && valid_index && valid_adress ;
     }
 
-    
+    const GeoModelEntity::EntityType GeoModelEntity::type_name_static()
+    {
+        return EntityTypeManager::default_entity_type() ;
+    }
+
     bool Universe::is_valid() const
     {
         if( nb_boundaries() == 0 ) {
