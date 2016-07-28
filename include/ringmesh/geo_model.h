@@ -73,8 +73,6 @@ namespace RINGMesh {
 
         static bool is_defined_type( const EntityType& type )
         {
-            // Change the name of the function 
-            // True does not mean that this type is valid for this model
             return type != default_entity_type() ;
         }               
         static const EntityType default_entity_type() ;
@@ -97,30 +95,31 @@ namespace RINGMesh {
         static index_t nb_mesh_entity_types() ;
         
         // --- GeologicalEntity and MeshEntity relationships
-        const std::set< GeologicalEntityType >& parent_types( 
+        std::vector< GeologicalEntityType > parent_types( 
             const MeshEntityType& child_type ) const 
         {
             MeshEntityToParents::const_iterator
                 itr = child_to_parents_.find( child_type );
-            ringmesh_assert( itr != child_to_parents_.end() ) ;
-            return itr->second ;
+            std::vector< GeologicalEntityType > result ;
+            if( itr != child_to_parents_.end() ) {
+                result.insert( result.begin(), itr->second.begin(), itr->second.end() );
+            }
+            return result ;
         }
         index_t nb_parent_types( const MeshEntityType& child_type ) const
         {
-            MeshEntityToParents::const_iterator itr =
-                child_to_parents_.find( child_type ) ;
-            if( itr == child_to_parents_.end() ) {
-                return 0 ;
-            }
-            return itr->second.size() ;
+            return parent_types( child_type ).size() ;
         }
-        const MeshEntityType& child_type( 
+        const MeshEntityType& child_type(
             const GeologicalEntityType& parent_type ) const
         {
-           GeologicalEntityToChild::const_iterator
+            GeologicalEntityToChild::const_iterator
                 itr = parent_to_child_.find( parent_type );
-           ringmesh_assert( itr != parent_to_child_.end() ) ;
-           return itr->second ;
+            if( itr == parent_to_child_.end() ) {
+                return default_entity_type() ;
+            } else {
+                return itr->second ;
+            }
         }
         
         // --- Geological entity types 
@@ -135,8 +134,7 @@ namespace RINGMesh {
         }        
         const EntityType& geological_entity_type( index_t index ) const
         {
-            ringmesh_assert( index < nb_geological_entity_types() ) ;
-            return geological_entity_types_[index] ;
+            return geological_entity_types_.at( index ) ;
         }
         index_t geological_entity_type_index( const EntityType& type ) const
         {
@@ -152,10 +150,9 @@ namespace RINGMesh {
         }
 
     private:
+        std::vector< GeologicalEntityType > geological_entity_types_ ;
         GeologicalEntityToChild parent_to_child_ ;
         MeshEntityToParents child_to_parents_ ; 
-
-        std::vector< GeologicalEntityType > geological_entity_types_ ;
     };
 
 
