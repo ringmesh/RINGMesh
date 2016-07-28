@@ -105,36 +105,49 @@ namespace RINGMesh {
 
     static const EntityType hard_encodeded_default_entity_type( "No_entity_type") ;
 
-    index_t EntityRelationships::nb_mesh_entity_types()
+    index_t EntityTypeManager::nb_mesh_entity_types()
     {
         return hard_encoded_mesh_entity_types.size() ;
     }
-    
-    bool EntityRelationships::is_mesh_entity_type( const EntityType& type )
+    bool EntityTypeManager::is_corner( const EntityType& type )
+    {
+        return type == hard_encoded_mesh_entity_types[0] ;
+    }
+    bool EntityTypeManager::is_line( const EntityType& type )
+    {
+        return type == hard_encoded_mesh_entity_types[1] ;
+    }
+    bool EntityTypeManager::is_surface( const EntityType& type )
+    {
+        return type == hard_encoded_mesh_entity_types[2] ;
+    }
+    bool EntityTypeManager::is_region( const EntityType& type )
+    {
+        return type == hard_encoded_mesh_entity_types[3] ;
+    }    
+    bool EntityTypeManager::is_mesh_entity_type( const EntityType& type )
     {
         return find( hard_encoded_mesh_entity_types, type ) != NO_ID ;
     }
-
-    const EntityType EntityRelationships::default_entity_type()
+    const EntityType EntityTypeManager::default_entity_type()
     {
         return hard_encodeded_default_entity_type ;
     }
-    const std::vector< EntityType >& EntityRelationships::mesh_entity_types()
+    const std::vector< EntityType >& EntityTypeManager::mesh_entity_types()
     {
         return hard_encoded_mesh_entity_types ;
     }
-
     
     /*! @todo What is the cost of using such maps ?
      */
-    const EntityType& EntityRelationships::boundary_type( const EntityType& mesh_entity_type ) 
+    const EntityType& EntityTypeManager::boundary_type( const EntityType& mesh_entity_type ) 
     {
         EntityTypeMap::const_iterator
             itr = boundary_relationships.map.find( mesh_entity_type );
         ringmesh_assert( itr != boundary_relationships.map.end() ) ;
         return itr->second ;
     }
-    const EntityType& EntityRelationships::in_boundary_type( const EntityType& mesh_entity_type )
+    const EntityType& EntityTypeManager::in_boundary_type( const EntityType& mesh_entity_type )
     {
        EntityTypeMap::const_iterator
             itr = in_boundary_relationships.map.find( mesh_entity_type );
@@ -142,12 +155,12 @@ namespace RINGMesh {
         return itr->second ;
     }
     
-    bool EntityRelationships::is_geological_entity_type( const EntityType& type ) const
+    bool EntityTypeManager::is_geological_entity_type( const EntityType& type ) const
     {
         return find( geological_entity_types_, type ) != NO_ID ;
     }
 
-
+    // ------------------------------------------------------------------------//
 
 
     GeoModel::GeoModel()

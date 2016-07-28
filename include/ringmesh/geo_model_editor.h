@@ -398,13 +398,13 @@ namespace RINGMesh {
             store[index] = nil ;
         }
        
-        EntityRelationships& entity_relationships()
+        EntityTypeManager& entity_relationships()
         {
-            return model().entity_relationships_ ;
+            return model().entity_type_manager_ ;
         }
-        const EntityRelationships& entity_relationships() const 
+        const EntityTypeManager& entity_relationships() const 
         {
-            return model().entity_relationships_ ;
+            return model().entity_type_manager_ ;
         }
               
         std::vector< GeoModelEntity* >& modifiable_entities(

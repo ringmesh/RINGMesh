@@ -51,24 +51,7 @@ namespace RINGMesh {
 
     typedef GeoModelEntity::gme_t gme_t ;
     typedef std::string EntityType ;
-
-    bool is_corner( const EntityType& type )
-    {
-        return type == Corner::type_name_static() ;
-    }    
-    bool is_line( const EntityType& type )
-    {
-        return type == Line::type_name_static() ;
-    }    
-    bool is_surface( const EntityType& type )
-    {
-        return type == Surface::type_name_static() ;
-    }    
-    bool is_region( const EntityType& type )
-    {
-        return type == Region::type_name_static() ;
-    }
-
+  
     GeoModelEditor::GeoModelEditor( GeoModel& model )
         : model_( model ), create_entity_allowed_( true )
     {}
@@ -85,7 +68,7 @@ namespace RINGMesh {
 
     void GeoModelEditor::set_model_name( const std::string& name )
     {
-        model_.name_ = name ;
+        model_.geomodel_name_ = name ;
     }
 
     /*!
@@ -111,7 +94,7 @@ namespace RINGMesh {
 
         const EntityType child_type = E->child_type_name() ;
 
-        EntityRelationships& parentage = entity_relationships() ;
+        EntityTypeManager& parentage = entity_relationships() ;
         parentage.register_relationship( type, child_type ) ;
 
         return entity_relationships().nb_geological_entity_types() - 1 ;
@@ -138,12 +121,12 @@ namespace RINGMesh {
         index_t nb_additional_entities )
     {
         assert_entity_creation_allowed() ;        
-        if( EntityRelationships::is_mesh_entity_type( type ) ) {
-            if( is_corner( type ) ) {
+        if( EntityTypeManager::is_mesh_entity_type( type ) ) {
+            if( EntityTypeManager::is_corner( type ) ) {
                 return create_mesh_entities< Corner >( nb_additional_entities ) ;
-            } else if( is_line( type ) ) {
+            } else if( EntityTypeManager::is_line( type ) ) {
                 return create_mesh_entities< Line >( nb_additional_entities ) ;
-            } else if( is_surface( type) ) {
+            } else if( EntityTypeManager::is_surface( type) ) {
                 return create_mesh_entities< Surface >( nb_additional_entities ) ;
             } else {
                 // Must be regions.
@@ -204,7 +187,7 @@ namespace RINGMesh {
             return ;
         }
         const EntityType& b_type = entity_relationships().boundary_type( type ) ;
-        if( EntityRelationships::is_valid_type( b_type ) ) {
+        if( EntityTypeManager::is_valid_type( b_type ) ) {
             for( index_t i = 0; i < model().nb_mesh_entities( b_type ); ++i ) {
                 const GeoModelMeshEntity& b = mesh_entity( b_type, i ) ;
                 for( index_t j = 0; j < b.nb_in_boundary(); ++j ) {
@@ -220,7 +203,7 @@ namespace RINGMesh {
             return ;
         }
         const EntityType& in_b_type = entity_relationships().in_boundary_type( type ) ;
-        if( EntityRelationships::is_valid_type( in_b_type ) ) {
+        if( EntityTypeManager::is_valid_type( in_b_type ) ) {
             for( index_t i = 0; i < model().nb_mesh_entities( in_b_type ); ++i ) {
                 const GeoModelMeshEntity& in_b = mesh_entity( in_b_type, i ) ;
                 for( index_t j = 0; j < in_b.nb_boundaries(); ++j ) {
@@ -240,7 +223,7 @@ namespace RINGMesh {
         const std::set< EntityType >& parent_types( entity_relationships().parent_types( type ) ) ;
         for( std::set< EntityType >::const_iterator it = parent_types.begin(); it != parent_types.end(); ++it ) {
             const EntityType& parent_type = *it ;
-            if( EntityRelationships::is_valid_type( parent_type ) ) {
+            if( EntityTypeManager::is_valid_type( parent_type ) ) {
                 for( index_t i = 0; i < M.nb_geological_entities( parent_type ); ++i ) {
                     const GeoModelGeologicalEntity& parent = geological_entity(
                         parent_type, i ) ;
@@ -258,7 +241,7 @@ namespace RINGMesh {
             return ;
         }
         const EntityType& c_type = geological_entity( type, 0 ).child_type_name() ;
-        if( EntityRelationships::is_valid_type(c_type) ) {
+        if( EntityTypeManager::is_valid_type(c_type) ) {
             for( index_t i = 0; i < model().nb_mesh_entities( c_type ); ++i ) {
                 const GeoModelMeshEntity& p = mesh_entity( c_type, i ) ;
                 for( index_t j = 0; j < p.nb_parents(); j++ ) {
@@ -276,7 +259,7 @@ namespace RINGMesh {
             return ;
         }
         const EntityType& parent_type = *entity_relationships().parent_types( type ).begin() ;   // beurk
-        if( EntityRelationships::is_valid_type( parent_type ) ) {
+        if( EntityTypeManager::is_valid_type( parent_type ) ) {
             for( index_t i = 0; i < model().nb_mesh_entities( type ); ++i ) {
                 GeoModelMeshEntity& E = mesh_entity( type, i ) ;
                 if( !E.has_geological_feature() ) {
@@ -295,7 +278,7 @@ namespace RINGMesh {
             return ;
         }
         const EntityType& child_type = entity_relationships().child_type( type ) ;
-        if( EntityRelationships::is_valid_type( child_type ) ) {
+        if( EntityTypeManager::is_valid_type( child_type ) ) {
             for( index_t i = 0; i < model().nb_geological_entities( type ); ++i ) {
                 GeoModelGeologicalEntity& p = geological_entity( type, i ) ;
                 if( !p.has_geological_feature() ) {
@@ -346,8 +329,8 @@ namespace RINGMesh {
             }
         }
         // Add mesh entities that are in the boundary of no mesh entity 
-        for( index_t i = 0; i < EntityRelationships::nb_mesh_entity_types() ; ++i ) {
-            const EntityType& type = EntityRelationships::mesh_entity_types()[i] ;
+        for( index_t i = 0; i < EntityTypeManager::nb_mesh_entity_types() ; ++i ) {
+            const EntityType& type = EntityTypeManager::mesh_entity_types()[i] ;
             for( index_t j = 0; j < model_.nb_mesh_entities( type ); ++j ) {
                 bool no_incident = true ;
                 const GeoModelMeshEntity& E = model_.mesh_entity( type, j ) ;
@@ -382,7 +365,7 @@ namespace RINGMesh {
         GeoModelEntityRemoval( GeoModel& model ) :
             GeoModelEditor( model )
         { 
-            nb_mesh_entity_types_ = EntityRelationships::nb_mesh_entity_types() ;
+            nb_mesh_entity_types_ = EntityTypeManager::nb_mesh_entity_types() ;
             nb_geological_entity_types_ = GeoModelEditor::model().nb_geological_entity_types() ;
             nb_entity_types_ = nb_geological_entity_types_ + nb_mesh_entity_types_ ;
             nb_removed_entities_.resize( nb_entity_types_, 0 ) ;
@@ -533,7 +516,7 @@ namespace RINGMesh {
         }
         void fill_entity_type_to_index_map()
         {
-            /// @todo Rewrite this function with wha tis in EntityRelationships
+            /// @todo Rewrite this function with wha tis in EntityTypeManager
             entity_type_to_index_[Corner::type_name_static()] = 0 ;
             entity_type_to_index_[Line::type_name_static()] = 1 ;
             entity_type_to_index_[Surface::type_name_static()] = 2 ;
@@ -570,13 +553,13 @@ namespace RINGMesh {
         }
         const EntityType& children_type( const EntityType& type ) const
         {
-            const EntityRelationships& family = model().entity_relationships() ;
+            const EntityTypeManager& family = model().entity_relationships() ;
             return family.child_type( type ) ;
         }
         index_t boundary_type_index( const EntityType& type ) const
         {           
             const EntityType& b_type = boundary_type( type ) ;
-            if( !EntityRelationships::is_valid_type( b_type ) ) {
+            if( !EntityTypeManager::is_valid_type( b_type ) ) {
                 return NO_ID ;
             } else {
                 return entity_type_to_index_.find(b_type)->second ;
@@ -584,13 +567,13 @@ namespace RINGMesh {
         }
         const EntityType& boundary_type( const EntityType& type ) const
         {
-            const EntityRelationships& family = model().entity_relationships() ;
+            const EntityTypeManager& family = model().entity_relationships() ;
             return family.boundary_type( type ) ;
         }
         index_t in_boundary_type_index( const EntityType& type ) const
         {           
             const EntityType& in_b_type = in_boundary_type( type ) ;
-            if( !EntityRelationships::is_valid_type( in_b_type ) ) {
+            if( !EntityTypeManager::is_valid_type( in_b_type ) ) {
                 return NO_ID ;
             } else {
                 return entity_type_to_index_.find(in_b_type)->second ;
@@ -598,7 +581,7 @@ namespace RINGMesh {
         }
         const EntityType& in_boundary_type( const EntityType& type ) const
         {
-            const EntityRelationships& family = model().entity_relationships() ;
+            const EntityTypeManager& family = model().entity_relationships() ;
             return family.in_boundary_type( type ) ;
         }
         bool is_mesh_entity( index_t i ) const
@@ -652,8 +635,8 @@ namespace RINGMesh {
         }
         void update_entity_in_boundary( GeoModelMeshEntity& E )
         {
-            const EntityType& in_boundary_type = EntityRelationships::in_boundary_type( E.entity_type() ) ;
-            bool valid_type = EntityRelationships::is_valid_type( in_boundary_type ) ;
+            const EntityType& in_boundary_type = EntityTypeManager::in_boundary_type( E.entity_type() ) ;
+            bool valid_type = EntityTypeManager::is_valid_type( in_boundary_type ) ;
             if( !valid_type ) {
                 return ;
             }
@@ -666,7 +649,7 @@ namespace RINGMesh {
         }
         void update_entity_parents( GeoModelMeshEntity& E )
         {
-            const EntityRelationships& family_tree = model().entity_relationships() ;
+            const EntityTypeManager& family_tree = model().entity_relationships() ;
             if( family_tree.nb_parent_types( E.type_name() ) == 0 ) {
                 return ;
             } else {
@@ -741,7 +724,7 @@ namespace RINGMesh {
         {
             const EntityType& b_type = boundary_type( E.entity_type() ) ;
             gme_t invalid( b_type, NO_ID ) ;
-            if( !EntityRelationships::is_valid_type( b_type ) ) {
+            if( !EntityTypeManager::is_valid_type( b_type ) ) {
                 return ;
             } else {
                 remove_invalid_values( modifiable_boundaries(E), invalid ) ;
@@ -751,7 +734,7 @@ namespace RINGMesh {
         {
             const EntityType& in_b_type = in_boundary_type( E.entity_type() ) ;
             gme_t invalid( in_b_type, NO_ID ) ;
-            if( !EntityRelationships::is_valid_type( in_b_type ) ) {
+            if( !EntityTypeManager::is_valid_type( in_b_type ) ) {
                 return ;
             } else {
                 remove_invalid_values( modifiable_in_boundaries(E), invalid ) ;
