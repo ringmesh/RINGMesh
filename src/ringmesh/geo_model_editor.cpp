@@ -253,12 +253,14 @@ namespace RINGMesh {
     void GeoModelEditor::complete_mesh_entities_geol_feature_from_first_parent(
         const EntityType& type )
     {
-        if( model().nb_mesh_entities( type ) == 0
-            || entity_type_manager().nb_parent_types( type ) == 0 ) {
+        if( model().nb_mesh_entities( type ) == 0 ) {
             return ;
         }
-        const EntityType& parent_type = *entity_type_manager().parent_types( type ).begin() ;   // beurk
-        if( EntityTypeManager::is_defined_type( parent_type ) ) {
+        const std::vector< EntityType> parents = entity_type_manager().parent_types( type ) ;
+        if( parents.size() == 0 ) {
+            return ;
+        } else {
+            const EntityType& first_parent = parents[0] ;
             for( index_t i = 0; i < model().nb_mesh_entities( type ); ++i ) {
                 GeoModelMeshEntity& E = mesh_entity( type, i ) ;
                 if( !E.has_geological_feature() ) {
@@ -266,7 +268,7 @@ namespace RINGMesh {
                         E.geol_feature_ = E.parent( 0 ).geological_feature() ;
                     }
                 }
-            }
+            }        
         }
     }
 

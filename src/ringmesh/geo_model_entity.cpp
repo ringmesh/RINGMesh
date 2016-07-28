@@ -346,7 +346,7 @@ namespace RINGMesh {
             const GME* stored = static_cast<const GME*>( &model().geological_entity( gme_id() ) ) ;
             valid_adress = stored == this ;
         }
-        if( valid_adress = false ) {
+        if( !valid_adress ) {
             Logger::err( "GeoModelEntity" ) << " Entity " << gme_id()
                 << " in model " << model().name() << " does not match this entity"
                 << std::endl ;
