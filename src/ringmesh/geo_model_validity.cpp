@@ -912,8 +912,10 @@ namespace {
         bool are_geomodel_geological_entities_valid() const
         {
             index_t nb_invalid = 0 ;
-            for( index_t i = 0; i < geomodel_.nb_geological_entity_types(); i++ ) {
-                nb_invalid += nb_invalid_geological_entities( geomodel_.geological_entity_type( i ) ) ;
+            const std::vector< std::string >& types =
+                geomodel_.entity_type_manager().geological_entity_types() ;
+            for( index_t i = 0; i < types.size() ; i++ ) {
+                nb_invalid += nb_invalid_geological_entities( types[i] ) ;
             }
             if( nb_invalid != 0 ) {
                 Logger::warn( "GeoModel" ) << nb_invalid

@@ -71,13 +71,18 @@ namespace RINGMesh {
         typedef std::map< MeshEntityType, std::set< GeologicalEntityType > > MeshEntityToParents ;
         typedef std::map< GeologicalEntityType, MeshEntityType > GeologicalEntityToChild ;
 
-        static bool is_valid_type( const EntityType& type )
+        static bool is_defined_type( const EntityType& type )
         {
             // Change the name of the function 
             // True does not mean that this type is valid for this model
             return type != default_entity_type() ;
         }               
         static const EntityType default_entity_type() ;
+        bool is_valid_type( const EntityType& type ) const
+        {
+            return is_defined_type( type )
+                && (is_mesh_entity_type( type ) || is_geological_entity_type( type )) ;
+        }
 
         // ---- Static members : access to relationships between MeshEntities
         // ---- Maybe they could be outside the class.
@@ -124,6 +129,10 @@ namespace RINGMesh {
         {
             return geological_entity_types_.size() ;
         }
+        const std::vector< GeologicalEntityType >& geological_entity_types() const
+        {
+            return geological_entity_types_ ;
+        }        
         const EntityType& geological_entity_type( index_t index ) const
         {
             ringmesh_assert( index < nb_geological_entity_types() ) ;
@@ -154,7 +163,8 @@ namespace RINGMesh {
      * @brief The class to describe a geological model represented 
      * by its boundary surfaces and whose regions can be optionally meshed
      */
-    class RINGMESH_API GeoModel {    
+    class RINGMESH_API GeoModel
+    {
     public:
         friend class GeoModelBuilder ;
         friend class GeoModelEditor ;
@@ -169,20 +179,20 @@ namespace RINGMesh {
         /*!
          * @brief Deletes all the GeoModelEntities of the GeoModel
          */
-        virtual ~GeoModel() ;   
+        virtual ~GeoModel() ;
 
         const std::string& name() const
         {
             return geomodel_name_ ;
         }
-        
-        const EntityTypeManager& entity_relationships() const
+
+        const EntityTypeManager& entity_type_manager() const
         {
             return entity_type_manager_ ;
         }
         bool is_mesh_entity_type( const EntityType& type ) const
         {
-            return entity_type_manager_.is_mesh_entity_type( type ) ;
+            return EntityTypeManager::is_mesh_entity_type( type ) ;
         }
         bool is_geological_entity_type( const EntityType& type ) const
         {
@@ -205,13 +215,13 @@ namespace RINGMesh {
          */
         index_t nb_mesh_entities( const EntityType& type ) const
         {
-            if( type == Corner::type_name_static() ) {
+            if( EntityTypeManager::is_corner( type) ) {
                 return nb_corners();
-            } else if( type == Line::type_name_static() ) {
+            } else if( EntityTypeManager::is_line( type ) ) {
                 return nb_lines();
-            } else if( type == Surface::type_name_static() ) {
+            } else if( EntityTypeManager::is_surface( type ) ) {
                 return nb_surfaces();
-            } else if( type == Region::type_name_static() ) {
+            } else if( EntityTypeManager::is_region( type ) ) {
                 return nb_regions();
             } else {
                 ringmesh_assert_not_reached ;
@@ -225,9 +235,11 @@ namespace RINGMesh {
          */
         index_t nb_geological_entities( const EntityType& type ) const
         {
-            index_t index = geological_entity_type_index( type ) ;
-            if( index == NO_ID ) return 0 ;
-            return static_cast< index_t >( geological_entities_[index].size() ) ;
+            if( !is_geological_entity_type( type ) ) {
+                return 0 ;
+            } else {
+                return geological_entities( type ).size() ;                
+            }
         }
         /*!
          * @brief Returns the index of the geological entity type storage
@@ -238,21 +250,20 @@ namespace RINGMesh {
         {
             return entity_type_manager_.nb_geological_entity_types() ;
         }
+        
+        /*!
+         * Access to the position of the entity of that type
+         * in the private storage.
+         * @note I don't like it to be public [JP]
+         */
+        index_t geological_entity_type_index( const EntityType& type ) const
+        {
+            return entity_type_manager_.geological_entity_type_index( type ) ;
+        }        
         const EntityType& geological_entity_type( index_t index ) const
         {
             return entity_type_manager_.geological_entity_type( index ) ;
         }
-       
-        void assert_gme_id_validity( GME::gme_t id )
-        {
-            bool is_valid_type = is_mesh_entity_type( id.type )
-                || is_geological_entity_type( id.type ) ;            
-            ringmesh_assert( is_valid_type ) ;
-
-            bool is_valid_index = id.index < nb_entities( id.type ) ;
-            ringmesh_assert( is_valid_index ) ;
-        }
-
         /*!
          * @brief Returns a const reference the identified GeoModelEntity
          * @param[in] id Type and index of the entity. For the
@@ -272,7 +283,7 @@ namespace RINGMesh {
             index_t entity_index ) const
         {
             return geological_entity( GME::gme_t( entity_type, entity_index ) ) ;
-        }   
+        }
         /*!
          * @brief Generic access to a meshed entity
          * @pre Type of the entity is CORNER, LINE, SURFACE, or REGION
@@ -309,19 +320,19 @@ namespace RINGMesh {
          */
         index_t nb_corners() const
         {
-            return static_cast< index_t >( corners_.size() ) ;
+            return static_cast<index_t>(corners_.size()) ;
         }
         index_t nb_lines() const
         {
-            return static_cast< index_t >( lines_.size() ) ;
+            return static_cast<index_t>(lines_.size()) ;
         }
         index_t nb_surfaces() const
         {
-            return static_cast< index_t >( surfaces_.size() ) ;
+            return static_cast<index_t>(surfaces_.size()) ;
         }
         index_t nb_regions() const
         {
-            return static_cast< index_t >( regions_.size() ) ;
+            return static_cast<index_t>(regions_.size()) ;
         }
 
         const Corner& corner( index_t index ) const
@@ -333,7 +344,7 @@ namespace RINGMesh {
             return *lines_.at( index ) ;
         }
         const Surface& surface( index_t index ) const
-        {                                  
+        {
             return *surfaces_.at( index ) ;
         }
         const Region& region( index_t index ) const
@@ -360,13 +371,24 @@ namespace RINGMesh {
         // For now, prevent any copy as a GeoModel manages a lot of memory
         ringmesh_disable_copy( GeoModel ) ;
 
-        /*!
-         * Access to the position of the entity of that type
-         * in the private storage
+        /*! @brief Throws an assertion if the given GeoModelEntity id
+         *  is not valid for this model
          */
-        index_t geological_entity_type_index( const EntityType& type ) const
+        void assert_gme_valid( GME::gme_t id ) const
         {
-            return entity_type_manager_.geological_entity_type_index( type ) ;
+            ringmesh_assert( is_valid_gme( id ) ) ;
+        }
+        bool is_valid_gme( GME::gme_t id ) const {
+            return is_valid_type( id.type ) 
+                && is_valid_index( id.type, id.index ) ;
+        }
+        bool is_valid_type( const EntityType& type ) const
+        {
+            return entity_type_manager_.is_valid_type( type ) ;
+        }
+        bool is_valid_index( const EntityType& type, index_t index ) const
+        {
+            return index < nb_entities( type ) ;
         }
 
         // I do know that this casts are really ugly. But we still have a big big design issue [JP]
