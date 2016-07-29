@@ -186,6 +186,19 @@ namespace RINGMesh {
             return true ;
         }
     } ;
+
+    
+    /*!
+    * @brief Check that  
+    *   1. Only faults have free borders
+    *   2. One stratigraphical interface can be on the boundary of maximum two layers
+    * See Building and Editing a Sealed Geological Model, Caumon et al. 2004
+    */
+    
+    /*! @todo I do not know what to do with this code.... 
+     *  because it depends on a given group of geological entities
+     */
+    bool RINGMESH_API is_geomodel_geology_valid( const GeoModel& geomodel ) ;
 }
 
 #endif

@@ -309,7 +309,8 @@ namespace RINGMesh {
         {
             return mesh_entity( GME::gme_t( entity_type, entity_index ) ) ;
         }
-
+        const GeoModelEntity& entity( const EntityType& entity_type,
+            index_t entity_index ) const ;
         /*! @}
          * \name Specialized accessors.
          * @{

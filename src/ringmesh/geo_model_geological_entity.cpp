@@ -43,6 +43,8 @@
 #include <ringmesh/geo_model.h>
 #include <ringmesh/io.h>
 
+#include <geogram/basic/algorithm.h> // for validity - that may be moved 
+
 namespace RINGMesh {
     
     typedef std::string EntityType ;
@@ -84,35 +86,77 @@ namespace RINGMesh {
         return valid ;
     }
 
-    /*class MSHIOHandler2: public GeoModelIOHandler {
-    public:
-        virtual void load( const std::string& filename, GeoModel& geomodel )
-        {
-            throw RINGMeshException( "I/O",
-                "Loading of a GeoModel from GMSH not implemented yet" ) ;
-        }
-        virtual void save( const GeoModel& gm, const std::string& filename )
-        {
-            /// @todo after implementing GMMOrder
-            throw RINGMeshException( "I/O",
-                "Saving of a GeoModel from GMSH not implemented yet" ) ;
-//                gm.set_duplicate_mode( FAULT ) ;
-
-            std::ofstream out( filename.c_str() ) ;
-            out.precision( 16 ) ;
-
-            out << "$MeshFormat" << std::endl ;
-            out << "2.2 0 8" << std::endl ;
-            out << "$EndMeshFormat" << std::endl ;
-
-            out << "$Nodes" << std::endl ;
-        }
-    } ; */
-
     void GeoModelGeologicalEntity::initialize()
     {
         ringmesh_register_GeoModelGeologicalEntity_creator( Contact ) ;
         ringmesh_register_GeoModelGeologicalEntity_creator( Interface ) ;
         ringmesh_register_GeoModelGeologicalEntity_creator( Layer ) ;
     }
+
+      
+    /*!
+     * @brief Get the entities in the boundary of which @param E is
+     * @details For GMME, get the contents of the in_boundary vector
+     *          For high level entities, determine in_boundary high level entities
+     */
+    void in_boundary_gme(
+        const GeoModelGeologicalEntity& E,
+        std::vector< GME::gme_t >& in_boundary )
+    {
+        in_boundary.clear() ;
+
+        // We are dealing with high level entities
+        // Need to go through the children to get information
+        for( index_t i = 0; i < E.nb_children(); ++i ) {
+            for( index_t j = 0; j < E.child( i ).nb_in_boundary(); ++j ) {
+                in_boundary.push_back(
+                    E.child( i ).in_boundary( j ).parent_gme(
+                        Layer::type_name_static() ) ) ;
+            }
+        }
+        // Remove duplicates
+        GEO::sort_unique( in_boundary ) ;
+    }
+    bool is_geomodel_geology_valid( const GeoModel& GM )
+    {
+        bool valid = true ;
+        for( index_t l = 0; l < GM.nb_lines(); ++l ) {
+            if( GM.line( l ).nb_in_boundary() == 1 ) {
+                const GME& S = GM.line( l ).in_boundary( 0 ) ;
+                if( !GME::is_fault( S.geological_feature() ) ) {
+                    Logger::warn( "GeoModel" ) << " Invalid free border: "
+                        << GM.line( l ).gme_id() << " is in the boundary of Surface "
+                        << S.gme_id() << " that is not a FAULT " << std::endl
+                        << std::endl ;
+                    valid = false ;
+                }
+            }
+        }
+
+        for( index_t i = 0; i < GM.nb_geological_entities( Interface::type_name_static() ); ++i ) {
+            std::vector< GME::gme_t > layers ;
+            const GeoModelGeologicalEntity& entity = GM.geological_entity(
+                Interface::type_name_static(), i ) ;
+            in_boundary_gme( entity, layers ) ;
+            if( layers.empty() ) {
+                Logger::warn( "GeoModel" ) << " Invalid interface: "
+                    << entity.gme_id()
+                    << " is in the boundary of no Layer " << std::endl ;
+                valid = false ;
+            }
+            if( entity.geological_feature() == GME::STRATI
+                && layers.size() > 2 ) {
+                Logger::warn( "GeoModel" ) << " Invalid horizon: "
+                    << entity.gme_id() << " is in the boundary of "
+                    << layers.size() << " Layers: " ;
+                for( index_t j = 0; j < layers.size(); ++j ) {
+                    Logger::warn( "GeoModel" ) << layers[ j ] << " ; " ;
+                }
+                Logger::warn( "GeoModel" ) << std::endl ;
+                valid = false ;
+            }
+        }
+        return valid ;
+    }
+
 }
