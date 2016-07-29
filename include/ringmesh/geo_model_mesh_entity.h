@@ -488,6 +488,7 @@ namespace RINGMesh {
          */
         virtual index_t nb_mesh_element_vertices( index_t mesh_element = 0 ) const
         {
+            ringmesh_unused( mesh_element ) ;
             return 2 ;
         }
         /*!
