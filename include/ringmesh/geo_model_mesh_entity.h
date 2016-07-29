@@ -527,6 +527,7 @@ namespace RINGMesh {
         Line( const GeoModel& model, index_t id ) ;
 
         virtual bool is_mesh_valid() const ;
+        bool is_first_corner_first_vertex() const ;
     } ;                     
 
 
