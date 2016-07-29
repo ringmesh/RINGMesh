@@ -59,7 +59,7 @@
 
 /*!
  * @file ringmesh/geo_model_builder.cpp
- * @brief Implementation of the classes to build GeoModel from various inputs
+ * @brief Implementation of the classes to build GeoModel from various meshes
  * @author Jeanne Pellerin
  */
 
@@ -75,15 +75,9 @@ namespace RINGMesh {
         return mesh.cells.nb() != 0 ;
     }
 
-
-    /*************************************************************************/
-
     /*!
      * @brief Implementation detail: abstract base class to create a GeoModelEntities 
      *        from SIMPLICIAL meshes
-     * @details Manages the correspondence between a Mesh entities and
-     *          GeoModelEntities only known by indices.
-     *
      * @warning Implemented only for TRIANGULATED Surface and TETRAHEDRALIZED Region.
      * @note Used by GeoModelBuilderMesh.
      */
@@ -422,22 +416,18 @@ namespace RINGMesh {
             : GeoModelEntityFromMesh( M, attribute_name )
         {
         }
-
         GEO::AttributesManager& mesh_simplex_attribute_manager()
         {
             return mesh_.facets.attributes() ;
         }
-
         index_t nb_mesh_simplexes() const
         {
             return mesh_.facets.nb() ;
         }
-
         index_t nb_vertices_per_simplex() const
         {
             return 3 ;
         }
-
         index_t mesh_vertex_index( index_t simplex_id, index_t vertex ) const
         {
             return mesh_.facets.vertex( simplex_id, vertex ) ;
@@ -456,27 +446,22 @@ namespace RINGMesh {
             : GeoModelEntityFromMesh( M, attribute_name )
         {
         }
-
         GEO::AttributesManager& mesh_simplex_attribute_manager()
         {
             return mesh_.cells.attributes() ;
         }
-
         index_t nb_mesh_simplexes() const
         {
             return mesh_.cells.nb() ;
         }
-
         virtual index_t nb_vertices_per_simplex() const
         {
             return 4 ;
         }
-
         index_t mesh_vertex_index( index_t simplex_id, index_t vertex ) const
         {
             return mesh_.cells.vertex( simplex_id, vertex ) ;
         }
-
         index_t adjacent_simplex_index( index_t facet_id ) const
         {
             return mesh_.cell_facets.adjacent_cell( facet_id ) ;
@@ -484,6 +469,24 @@ namespace RINGMesh {
     } ;
 
     /*************************************************************************/
+    GeoModelBuilderMesh::GeoModelBuilderMesh(
+        GeoModel& model,
+        const GEO::Mesh& mesh,
+        const std::string& surface_attribute_name,
+        const std::string& region_attribute_name )
+        :
+        GeoModelBuilder( model ),
+        mesh_( mesh ),
+        surface_builder_( nil ),
+        region_builder_( nil ),
+        surface_attribute_name_( surface_attribute_name ),
+        region_attribute_name_( region_attribute_name )
+    {
+        initialize_surface_builder() ;
+        initialize_region_builder() ;
+        add_mesh_vertices_to_model() ;
+    }
+
 
     GeoModelBuilderMesh::~GeoModelBuilderMesh()
     {
