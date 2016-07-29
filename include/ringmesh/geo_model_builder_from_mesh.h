@@ -42,7 +42,6 @@
 #include <string>
 #include <stack>
 
-//#include <geogram/basic/line_stream.h>
 #include <ringmesh/geo_model_builder.h>
 
 /*!
