@@ -35,27 +35,12 @@
 
 #include <ringmesh/geo_model_builder_from_mesh.h>
 
-#include <iostream>
-#include <iomanip>
-#include <fstream>
-#include <cmath>
-#include <set>
-#include <stack>
+#include <map>
 
-#include <geogram/basic/line_stream.h>
 #include <geogram/basic/logger.h>
-#include <geogram/mesh/mesh_io.h>
-#include <geogram/mesh/mesh_repair.h>
-#include <geogram/points/colocate.h>
 
-#include <ringmesh/io.h>
-#include <ringmesh/algorithm.h>
-#include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_api.h>
-#include <ringmesh/geo_model_validity.h>
-#include <ringmesh/geometry.h>
 #include <ringmesh/geogram_mesh_repair.h>
-#include <ringmesh/utils.h>
 
 /*!
  * @file ringmesh/geo_model_builder.cpp
