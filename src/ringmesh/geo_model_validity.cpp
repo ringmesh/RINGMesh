@@ -84,6 +84,7 @@ namespace {
     using GEO::vec3 ;
 
     typedef GeoModelMeshEntity GMME ;
+    typedef std::string EntityType ;
 
     /*---------------------------------------------------------------------------*/
     /*----- Some pieces of the code below are copied or modified from -----------*/
@@ -482,29 +483,7 @@ namespace {
         }
     }
 
-    /*!
-     * @brief Get the entities in the boundary of which @param E is
-     * @details For GMME, get the contents of the in_boundary vector
-     *          For high level entities, determine in_boundary high level entities
-     */
-    void in_boundary_gme(
-        const GeoModelGeologicalEntity& E,
-        std::vector< GME::gme_t >& in_boundary )
-    {
-        in_boundary.clear() ;
 
-        // We are dealing with high level entities
-        // Need to go through the children to get information
-        for( index_t i = 0; i < E.nb_children(); ++i ) {
-            for( index_t j = 0; j < E.child( i ).nb_in_boundary(); ++j ) {
-                in_boundary.push_back(
-                    E.child( i ).in_boundary( j ).parent_gme(
-                        Layer::type_name_static() ) ) ;
-            }
-        }
-        // Remove duplicates
-        GEO::sort_unique( in_boundary ) ;
-    }
 
     /*!
      * @brief Check if entity @param is of the @param model is in the
@@ -870,64 +849,7 @@ namespace {
             return true ;
         }
     }
-
-    // This cannot be general and is to move where
-    // the geological types are defined....
-    // To check that their contract is indeed true
-    class GeoModelGeologicalValidityChecker {
-    public:
-        GeoModelGeologicalValidityChecker( const GeoModel& geomodel ) :
-            geomodel_(geomodel), valid_(true)
-        {}
-
-    private:
-        void set_invalid_model()
-        {
-            valid_ = false ;
-        }
-        /*!
-         * Verify the geological validity if the model has interfaces and layers
-         */
-        void test_geological_validity()
-        {
-            if( geomodel_.nb_geological_entities( Interface::type_name_static() ) > 0
-                && geomodel_.nb_geological_entities( Layer::type_name_static() ) > 0 ) {
-                if( !is_geomodel_geology_valid( geomodel_ ) ) {
-                    set_invalid_model() ;
-                }
-            }
-        }
-        index_t nb_invalid_geological_entities( const std::string& type ) const 
-        {
-            index_t nb_invalid = 0 ;
-            for( index_t e = 0; e < geomodel_.nb_geological_entities( type ); ++e ) {
-                const GeoModelGeologicalEntity& E = geomodel_.geological_entity( type, e ) ;
-                if( !E.is_valid() ) {
-                    nb_invalid++ ;
-                    continue ;
-                }
-            }
-            return nb_invalid ;
-        }
-        bool are_geomodel_geological_entities_valid() const
-        {
-            index_t nb_invalid = 0 ;
-            const std::vector< std::string >& types =
-                geomodel_.entity_type_manager().geological_entity_types() ;
-            for( index_t i = 0; i < types.size() ; i++ ) {
-                nb_invalid += nb_invalid_geological_entities( types[i] ) ;
-            }
-            if( nb_invalid != 0 ) {
-                Logger::warn( "GeoModel" ) << nb_invalid
-                    << " individual geological entities of the model are invalid " << std::endl ;
-            }
-            return nb_invalid == 0 ;
-        }
-
-    private: 
-        const GeoModel& geomodel_ ;
-        bool valid_ ;
-    };
+   
 
     /*!
      * @brief Implementation class for validity checks on a GeoModel
@@ -964,18 +886,19 @@ namespace {
             if( check_surface_intersections_ ) {
                 test_facet_intersections() ;
             }
-        }
-   
+        }   
         /*! 
          * @brief Verify the validity of all GeoModelEntities
          */
         void test_model_entities_validity()
         {
-            if( !are_geomodel_mesh_entities_valid() ) {
+            if( !are_geomodel_meshed_entities_valid( geomodel_ ) ) {
                 set_invalid_model() ;
             }
-        }
-        
+            if( !are_geomodel_geological_entities_valid( geomodel_ ) ) {
+                set_invalid_model() ;
+            }
+        }        
         /*!
          * @brief Check that the model has a finite extension 
          * @details The boundary of the universe region is a one connected component 
@@ -1032,7 +955,6 @@ namespace {
 
             Logger::instance()->set_quiet( false ) ;
         }
-
         /*!
          * @brief Returns true if there are non-manifold edges that are
          *        not in any Line of the model
@@ -1054,7 +976,6 @@ namespace {
                 set_invalid_model() ;
             }
         }
-
         /*!
          * @brief Returns true if there are intersections between facets
          * @details Operates on the global mesh
@@ -1071,43 +992,15 @@ namespace {
                 set_invalid_model() ;
             }
         }
-
         void set_invalid_model()
         {
             valid_ = false ;
-        }
-        
-        index_t nb_invalid_mesh_entities( const std::string& type ) const
-        {
-            index_t nb_invalid = 0 ;
-            for( index_t e = 0; e < geomodel_.nb_mesh_entities( type ); ++e ) {
-                const GeoModelMeshEntity& E = geomodel_.mesh_entity( type, e ) ;
-                if( !E.is_valid() ) {
-                    nb_invalid++ ;
-                    continue ;
-                }
-            }
-            return nb_invalid ;
-        }
-        bool are_geomodel_mesh_entities_valid() const
-        {
-            index_t nb_invalid = 0 ;
-            nb_invalid += nb_invalid_mesh_entities( Corner::type_name_static() ) ;
-            nb_invalid += nb_invalid_mesh_entities( Line::type_name_static() ) ;
-            nb_invalid += nb_invalid_mesh_entities( Surface::type_name_static() ) ;
-            nb_invalid += nb_invalid_mesh_entities( Region::type_name_static() ) ;
-            if( nb_invalid != 0 ) {
-                Logger::warn( "GeoModel" ) << nb_invalid
-                    << " individual mesh entities of the model are invalid " << std::endl ;
-            }
-            return nb_invalid == 0 ;
-        }
-        
+        }        
+     
     private:
         const GeoModel& geomodel_ ;
         bool valid_ ;
         bool check_surface_intersections_ ;
-
         // Global mesh of the GeoModel used for some validity checks
         GEO::Mesh triangulated_global_model_mesh_ ;
     } ;
@@ -1128,49 +1021,49 @@ namespace RINGMesh {
         if( GEO::FileSystem::is_directory( copy ) ) {
             validity_errors_directory = copy + '/' ;
         }
+    }  
+
+    index_t check_validity_entities( const GeoModel& geomodel, const EntityType& type )
+    {
+        index_t count_invalid_entities = 0 ;
+        std::size_t nb_entities = geomodel.nb_entities( type ) ;
+        for( index_t i = 0; i < nb_entities; ++i ) {
+            const GeoModelEntity& E = geomodel.entity( type, i ) ;
+            bool valid_entity = E.is_valid() ;
+            if( !valid_entity ) {
+                count_invalid_entities++ ;
+            }
+        }
+        return count_invalid_entities ;
     }
 
-    
-    bool is_geomodel_geology_valid( const GeoModel& GM )
+    bool are_geomodel_meshed_entities_valid( const GeoModel& geomodel ) 
     {
-        bool valid = true ;
-        for( index_t l = 0; l < GM.nb_lines(); ++l ) {
-            if( GM.line( l ).nb_in_boundary() == 1 ) {
-                const GME& S = GM.line( l ).in_boundary( 0 ) ;
-                if( !GME::is_fault( S.geological_feature() ) ) {
-                    Logger::warn( "GeoModel" ) << " Invalid free border: "
-                        << GM.line( l ).gme_id() << " is in the boundary of Surface "
-                        << S.gme_id() << " that is not a FAULT " << std::endl
-                        << std::endl ;
-                    valid = false ;
-                }
-            }
+        const std::vector< EntityType >& meshed_types = EntityTypeManager::mesh_entity_types() ;
+        index_t count_invalid = 0 ;
+        for( index_t i = 0; i < meshed_types.size(); ++i ) {
+            count_invalid += check_validity_entities( geomodel, meshed_types[i] ) ;
         }
-
-        for( index_t i = 0; i < GM.nb_geological_entities( Interface::type_name_static() ); ++i ) {
-            std::vector< GME::gme_t > layers ;
-            const GeoModelGeologicalEntity& entity = GM.geological_entity(
-                Interface::type_name_static(), i ) ;
-            in_boundary_gme( entity, layers ) ;
-            if( layers.empty() ) {
-                Logger::warn( "GeoModel" ) << " Invalid interface: "
-                    << entity.gme_id()
-                    << " is in the boundary of no Layer " << std::endl ;
-                valid = false ;
-            }
-            if( entity.geological_feature() == GME::STRATI
-                && layers.size() > 2 ) {
-                Logger::warn( "GeoModel" ) << " Invalid horizon: "
-                    << entity.gme_id() << " is in the boundary of "
-                    << layers.size() << " Layers: " ;
-                for( index_t j = 0; j < layers.size(); ++j ) {
-                    Logger::warn( "GeoModel" ) << layers[ j ] << " ; " ;
-                }
-                Logger::warn( "GeoModel" ) << std::endl ;
-                valid = false ;
-            }
+        if( count_invalid != 0 ) {
+            Logger::warn( "GeoModel" ) << count_invalid
+                << " mesh entities of the model are invalid " << std::endl ;
         }
-        return valid ;
+        return count_invalid == 0 ;
+    }
+        
+    bool are_geomodel_geological_entities_valid( const GeoModel& geomodel )
+    {
+        const std::vector< EntityType >& geological_types =
+            geomodel.entity_type_manager().geological_entity_types() ;
+        index_t count_invalid = 0 ;
+        for( index_t i = 0; i < geological_types.size(); ++i ) {
+            count_invalid += check_validity_entities( geomodel, geological_types[i] ) ;
+        }
+        if( count_invalid != 0 ) {
+            Logger::warn( "GeoModel" ) << count_invalid
+                << " geological entities of the model are invalid " << std::endl ;
+        }
+        return count_invalid == 0 ;
     }
  
     bool is_geomodel_valid( const GeoModel& GM )
