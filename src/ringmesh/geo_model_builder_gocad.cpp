@@ -877,20 +877,19 @@ namespace {
             GEO::LineInput& line,
             GocadLoadingStorage& load_storage )
         {
-            read_and_add_vertex_to_region_vertices( line, load_storage ) ;
-        }
-
-        /*!
-         * @brief Reads vertex coordinates and adds it in the list
-         * of region vertices
-         * @param[in] line ACSII file reader
-         * @param[in,out] load_storage Set of tools useful for loading a GeoModel
-         */
-        void read_and_add_vertex_to_region_vertices(
-            GEO::LineInput& line,
-            GocadLoadingStorage& load_storage )
-        {
             vec3 vertex = read_vertex_coordinates( line, 2, load_storage.z_sign_ ) ;
+            load_storage.vertices_.push_back( vertex ) ;
+        }
+    } ;
+
+    class LoadAtom: public MLLineParser {
+    private:
+        virtual void execute(
+            GEO::LineInput& line,
+            MLLoadingStorage& load_storage )
+        {
+            index_t vertex_id = line.field_as_uint( 2 ) - 1 ;
+            const vec3& vertex = load_storage.vertices_[vertex_id] ;
             load_storage.vertices_.push_back( vertex ) ;
         }
     } ;
@@ -1117,6 +1116,8 @@ namespace {
         ringmesh_register_MLLineParser_creator( LoadMLRegion, "REGION" ) ;
         ringmesh_register_MLLineParser_creator( LoadLayer, "LAYER" ) ;
         ringmesh_register_MLLineParser_creator( MLEndSection, "END" ) ;
+        ringmesh_register_MLLineParser_creator( LoadAtom, "ATOM" ) ;
+        ringmesh_register_MLLineParser_creator( LoadAtom, "PATOM" ) ;
     }
 
 } // anonymous namespace
