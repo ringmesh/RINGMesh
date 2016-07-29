@@ -163,10 +163,7 @@ namespace RINGMesh {
             return type_name_static() ;
         }
         virtual bool is_on_voi() const = 0 ;
-        virtual bool is_valid() const = 0
-        {
-            return is_identification_valid() ;
-        }
+        virtual bool is_valid() const = 0 ;
     
         
         const GeoModel& model() const

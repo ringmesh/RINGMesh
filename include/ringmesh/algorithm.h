@@ -130,6 +130,8 @@ namespace RINGMesh {
          */
         inline bool operator()( index_t i, index_t j ) const
         {
+            ringmesh_assert( i < values_.size() ) ;
+            ringmesh_assert( j < values_.size() ) ;
             if( equal_values( i, j ) ) {
                 return i < j ;
             } else {
