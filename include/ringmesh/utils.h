@@ -184,8 +184,6 @@ namespace RINGMesh {
         GEO::AttributesManager& att_manager,
         const std::string& att_name ) ;
 
-    //TODO i dont know where to put it :(
-    void build_string_for_geo_model_entity_export( GME::gme_t id, std::string& name ) ;
 }
 
 #endif

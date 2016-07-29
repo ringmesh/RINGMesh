@@ -60,6 +60,8 @@ namespace RINGMesh {
         GeoModelBuilderGocad( GeoModel& model, const std::string& filename )
             : GeoModelBuilderFile( model, filename ), file_line_( filename )
         {
+            /*! @todo Review: A constructor is not supposed to throw, the object is left in an
+             * undefined state [JP] */
             if( !file_line_.OK() ) {
                 throw RINGMeshException( "I/O", "Failed to open file " + filename ) ;
             }
