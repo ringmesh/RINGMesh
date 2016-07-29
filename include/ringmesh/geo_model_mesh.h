@@ -39,6 +39,7 @@
 #include <ringmesh/common.h>
 
 #include <ringmesh/geo_model_entity.h>
+#include <ringmesh/geo_model_mesh_entity.h>
 #include <ringmesh/mesh.h>
 /*!
  * @file ringmesh/geo_model_mesh.h
@@ -195,8 +196,6 @@ namespace RINGMesh {
          * @todo Change this extremely expensive storage !!!
          */
         std::vector< std::vector< GMEVertex > > gme_vertices_ ;
-
-
     } ;
 
     class RINGMESH_API GeoModelMeshFacets {

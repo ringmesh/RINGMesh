@@ -61,9 +61,9 @@ int main( int argc, char** argv )
         // Set an output log file
         std::string log_file( ringmesh_test_output_path + "log.txt" ) ;
         GEO::FileLogger* file_logger = new GEO::FileLogger( log_file ) ;
-        GEO::Logger::instance()->register_client( file_logger ) ;
+        Logger::instance()->register_client( file_logger ) ;
 
-        GEO::Logger::out( "RINGMesh Test" )
+        Logger::out( "RINGMesh Test" )
             << "Tetrahedralization of the Corbieres model" << std::endl ;
 
         GeoModel M ;
@@ -71,32 +71,32 @@ int main( int argc, char** argv )
 
         /*! @todo Make this executable generic by setting
          *   the file name as an argument of the command */
-        file_name += "corbieres.gm" ;
+        file_name += "modelA5.ml" ;
 
         // Set the debug directory for the validity checks
         set_validity_errors_directory( ringmesh_test_output_path ) ;
 
         /* Load and check the validity of the model */
         geomodel_load( M, file_name ) ;
-        if( is_geomodel_valid( M ) ) {
+//        if( is_geomodel_valid( M ) ) {
             // Mesh the model with Tetgen
             tetrahedralize( M, "TetGen" ) ;
 
             // Output the mesh
             std::string output_file_name( ringmesh_test_output_path ) ;
-            output_file_name += "corbieres.meshb" ;
+            output_file_name += "corbieres.gm" ;
             geomodel_save( M, output_file_name ) ;
-        } else {
-            print_geomodel( M ) ;
-            throw RINGMeshException( "RINGMesh Test",
-                "The geological model " + M.name() + " is invalid " ) ;
-        }
+//        } else {
+//            print_geomodel( M ) ;
+//            throw RINGMeshException( "RINGMesh Test",
+//                "The geological model " + M.name() + " is invalid " ) ;
+//        }
 
     } catch( const RINGMeshException& e ) {
-        GEO::Logger::err( e.category() ) << e.what() << std::endl ;
+        Logger::err( e.category() ) << e.what() << std::endl ;
         return 1 ;
     } catch( const std::exception& e ) {
-        GEO::Logger::err( "Exception" ) << e.what() << std::endl ;
+        Logger::err( "Exception" ) << e.what() << std::endl ;
         return 1 ;
     }
     return 0 ;

@@ -46,7 +46,11 @@
 #include <geogram/mesh/mesh_geometry.h>
 
 #include <ringmesh/geo_model.h>
+#include <ringmesh/geo_model_entity.h>
+#include <ringmesh/geo_model_mesh_entity.h>
+#include <ringmesh/geo_model_geological_entity.h>
 #include <ringmesh/geo_model_builder.h>
+#include <ringmesh/geo_model_builder_from_mesh.h>
 #include <ringmesh/geogram_extension.h>
 #include <ringmesh/geogram_mesh_repair.h>
 #include <ringmesh/geometry.h>
@@ -61,6 +65,8 @@
 
 namespace {
     using namespace RINGMesh ;
+
+    typedef GeoModelEntity::gme_t gme_t ;
 
     /*!
      * @brief Total number of facets in the geomodel Surfaces
@@ -221,7 +227,7 @@ namespace {
         const index_t& nb_cell_total,
         const std::string& cell_type )
     {
-        GEO::Logger::out( "GeoModel" ) << "* " << nb_cell << " " << cell_type << " ("
+        Logger::out( "GeoModel" ) << "* " << nb_cell << " " << cell_type << " ("
             << nb_cell * 100 / nb_cell_total << "%)\n" ;
     }
 
@@ -230,7 +236,7 @@ namespace {
         const double& cell_volume_total,
         const std::string& cell_type )
     {
-        GEO::Logger::out( "GeoModel" ) << "* " << cell_type << " volume "
+        Logger::out( "GeoModel" ) << "* " << cell_type << " volume "
             << cell_volume << " ("
             << static_cast< index_t >( cell_volume * 100 / cell_volume_total + 0.5 )
             << "%)\n" ;
@@ -239,26 +245,54 @@ namespace {
 }
 
 namespace RINGMesh {
+    typedef std::string EntityType ;
+
+    void print_nb_mesh_entities( const GeoModel& geomodel, const std::string& entity_type_name )
+    {
+        Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left
+            << geomodel.nb_mesh_entities( entity_type_name ) << " " << entity_type_name
+            << std::endl ;
+    }
+    
+    void print_nb_geological_entities( const GeoModel& geomodel, const std::string& entity_type_name )
+    {
+        if( geomodel.nb_geological_entities( entity_type_name ) == 0 ) {
+            return ;
+        }
+        Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left
+            << geomodel.nb_geological_entities( entity_type_name ) << " " << entity_type_name
+            << std::endl ;
+    }
+
     void print_geomodel( const GeoModel& geomodel )
     {
-        GEO::Logger::out( "GeoModel" ) << "Model " << geomodel.name() << " has\n"
+        Logger::out( "GeoModel" ) << "Model " << geomodel.name() << " has\n"
             << std::setw( 10 ) << std::left << geomodel.mesh.vertices.nb()
             << " vertices\n" << std::setw( 10 ) << std::left
-            << count_geomodel_facets( geomodel ) << " facets\n" << std::setw( 10 )
-            << std::left << count_geomodel_cells( geomodel ) << " cells\n"
-            << std::endl ;
-
-        for( index_t t = GME::CORNER; t < GME::NO_TYPE; ++t ) {
-            GME::TYPE T = static_cast< GME::TYPE >( t ) ;
-            GEO::Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left
-                << geomodel.nb_entities( T ) << " " << GME::type_name( T )
-                << std::endl ;
+            << count_geomodel_facets( geomodel ) << " facets\n" ;
+        index_t nb_cells = count_geomodel_cells( geomodel ) ;
+        if( nb_cells != 0 ) {
+            Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left << nb_cells
+                << " cells\n" ;
         }
+        Logger::out( "GeoModel" ) << std::endl ;
+
+        const EntityTypeManager& manager = geomodel.entity_type_manager() ;
+        const std::vector< EntityType >& mesh_entity_types =
+            manager.mesh_entity_types() ;
+        for( index_t i = 0; i < mesh_entity_types.size(); ++i ) {
+            print_nb_mesh_entities( geomodel, mesh_entity_types[i] ) ; 
+        }
+        const std::vector< EntityType>& geological_entity_types =
+            manager.geological_entity_types() ;
+        for( index_t i = 0; i < geological_entity_types.size(); ++i ) {
+            print_nb_geological_entities( geomodel, geological_entity_types[i] ) ;
+        }        
     }
 
     void print_geomodel_mesh_stats( const GeoModel& geomodel )
     {
-        GEO::Logger::out( "GeoModel" ) << "Model " << geomodel.name()
+        Logger::out( "GeoModel" ) << "Model " << geomodel.name()
             << " is made of\n" << std::setw( 10 ) << std::left
             << geomodel.mesh.vertices.nb() << " vertices\n" << std::setw( 10 )
             << std::left << count_geomodel_edges( geomodel ) << " edges\n" ;
@@ -268,7 +302,7 @@ namespace RINGMesh {
         index_t nb_polygons = 0 ;
         index_t nb_facets = count_geomodel_facet_per_type( geomodel, nb_triangles,
             nb_quads, nb_polygons ) ;
-        GEO::Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left << nb_facets
+        Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left << nb_facets
             << " facets\n" ;
         if( nb_triangles > 0 ) {
             print_one_cell_stat( nb_triangles, nb_facets, "triangles" ) ;
@@ -287,7 +321,7 @@ namespace RINGMesh {
         index_t nb_poly = 0 ;
         index_t nb_cells = count_geomodel_cell_per_type( geomodel, nb_tet,
             nb_pyramids, nb_prisms, nb_hex, nb_poly ) ;
-        GEO::Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left << nb_cells
+        Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left << nb_cells
             << " cells\n" ;
         if( nb_tet > 0 ) {
             print_one_cell_stat( nb_tet, nb_cells, "tet" ) ;
@@ -304,7 +338,7 @@ namespace RINGMesh {
         if( nb_poly > 0 ) {
             print_one_cell_stat( nb_poly, nb_cells, "polyhedra" ) ;
         }
-        GEO::Logger::out( "GeoModel" ) << std::endl ;
+        Logger::out( "GeoModel" ) << std::endl ;
     }
 
     void print_geomodel_mesh_cell_volumes( const GeoModel& geomodel )
@@ -316,7 +350,7 @@ namespace RINGMesh {
         double poly_volume = 0 ;
         double volume = compute_geomodel_volumes_per_cell_type( geomodel, tet_volume,
             pyramid_volume, prism_volume, hex_volume, poly_volume ) ;
-        GEO::Logger::out( "GeoModel" ) << "Model " << geomodel.name()
+        Logger::out( "GeoModel" ) << "Model " << geomodel.name()
             << " has a volume of " << volume << "\n" ;
         if( tet_volume > 0 ) {
             print_one_cell_volume_stat( tet_volume, volume, "tet" ) ;
@@ -333,7 +367,7 @@ namespace RINGMesh {
         if( poly_volume > 0 ) {
             print_one_cell_volume_stat( poly_volume, volume, "polyhedron" ) ;
         }
-        GEO::Logger::out( "GeoModel" ) << std::endl ;
+        Logger::out( "GeoModel" ) << std::endl ;
     }
 
     bool are_geomodel_surface_meshes_simplicial( const GeoModel& geomodel )
@@ -546,7 +580,7 @@ namespace RINGMesh {
             add_regions_tets_to_mesh( geomodel, M ) ;
             create_and_fill_region_index_attribute( geomodel, "region", M ) ;
         } else {
-            GEO::Logger::warn( "GeoModel" )
+            Logger::warn( "GeoModel" )
                 << "The conversion of non-simplicial Region meshes into a Mesh is not implemented"
                 << std::endl ;
         }
@@ -574,73 +608,90 @@ namespace RINGMesh {
         }
     }
 
-    /*******************************************************************************/
-    /*******************************************************************************/
+    void build_mesh_from_model_mesh_entities(
+        const GeoModel& model,
+        const std::vector< GME::gme_t >& surface_entities,
+        GEO::Mesh& M )
+    {
+        std::size_t nb_entities = surface_entities.size() ;
+        // Put an attribute on the ModelVertices to know its index
+        // in this Mesh
+        GEO::Attribute< index_t > old2new ;
+        old2new.bind( model.mesh.vertex_attribute_manager(), "old2new" ) ;
+        old2new.fill( NO_ID ) ;
 
-    /* @todo Put in the GeoModelEntityMesh Class...? [FB] */
-    double model_entity_size( const GeoModelEntity& E )
-    {        
-        if( E.nb_children() ) {
-            // Sum up the size of children entities
-            double result = 0. ;
-            for( index_t i = 0; i < E.nb_children(); ++i ) {
-                result += model_entity_size( E.child( i ) ) ;
+        // Add the vertices
+        for( index_t i = 0; i < nb_entities; ++i ) {
+            const GeoModelMeshEntity& b = model.mesh_entity( surface_entities[i] ) ;
+            for( index_t v = 0; v < b.nb_vertices(); ++v ) {
+                index_t global_v = b.model_vertex_id( v ) ;
+                if( old2new[global_v] == NO_ID ) {
+                    old2new[global_v] = M.vertices.create_vertex(
+                        model.mesh.vertices.vertex( global_v ).data() ) ;
+                }
             }
-            return result ;
-        } else if( GeoModelEntity::has_mesh( E.type() ) ) {
-            const GeoModelMeshEntity& M =
-                dynamic_cast< const GeoModelMeshEntity& >( E ) ;
-            return M.size() ;
-        } else {
-            ringmesh_assert_not_reached ;
-            return 0.0 ;
         }
+
+        // Build facets
+        for( index_t i = 0; i < nb_entities; ++i ) {
+            ringmesh_assert( surface_entities[i].type == Surface::type_name_static() ) ;
+            const Surface& S = model.surface( surface_entities[i].index ) ;
+            for( index_t f = 0; f < S.nb_mesh_elements(); ++f ) {
+                index_t nbv = S.nb_mesh_element_vertices( f ) ;
+                GEO::vector< index_t > ids( nbv ) ;
+                for( index_t v = 0; v < nbv; ++v ) {
+                    ids[v] = old2new[S.model_vertex_id( f, v )] ;
+                }
+                M.facets.create_polygon( ids ) ;
+            }
+        }
+        old2new.unbind() ;
     }
 
-    double model_entity_cell_size( const GeoModelEntity& E, index_t c )
+    /*******************************************************************************/
+    /*******************************************************************************/
+
+    double model_entity_size( const GeoModelGeologicalEntity& E )
     {
         double result = 0. ;
-        if( GeoModelEntity::has_mesh( E.type() ) ) {
-            // @todo Improve efficiency, overload the functions to avoid
-            // casting each time
-            const GeoModelMeshEntity& M =
-                dynamic_cast< const GeoModelMeshEntity& >( E ) ;
-            result = M.mesh_element_size( c ) ;
+        for( index_t i = 0; i < E.nb_children(); ++i ) {
+            result += model_entity_size( E.child( i ) ) ;
         }
-        ringmesh_assert_not_reached ;
         return result ;
     }
 
-    vec3 model_entity_center( const GeoModelEntity& E )
+    double model_entity_size( const GeoModelMeshEntity& E ){
+        return E.size() ;
+    }
+
+    double model_entity_cell_size( const Region& R, index_t cell )
     {
+        return R.mesh_element_size( cell ) ;       
+    }
+
+    vec3 model_entity_center( const GeoModelMeshEntity& E )
+    {
+        return E.center() ;
+    }
+
+    vec3 model_entity_center( const GeoModelGeologicalEntity& E ) {
+    
         vec3 result( 0., 0., 0. ) ;
         index_t nb_vertices = 0 ;
 
-        if( GeoModelEntity::has_mesh( E.type() ) ) {
-            // @todo Improve efficiency, overload the functions to avoid
-            // casting each time
-            const GeoModelMeshEntity& M =
-                dynamic_cast< const GeoModelMeshEntity& >( E ) ;
-            result = M.center() ;
-        } else if( E.nb_children() > 0 ) {
-            for( index_t i = 0; i < E.nb_children(); ++i ) {
-                const GeoModelMeshEntity& F =
-                    dynamic_cast< const GeoModelMeshEntity& >( E.child( i ) ) ;
-                nb_vertices += F.nb_vertices() ;
-                result += F.center() * F.nb_vertices() ;
-            }
-            result /= static_cast< double >( nb_vertices ) ;
+        for( index_t i = 0; i < E.nb_children(); ++i ) {
+            const GeoModelMeshEntity& child = E.child( i ) ;
+            nb_vertices += child.nb_vertices() ;
+            result += child.center() *child.nb_vertices() ;
         }
+        result /= static_cast< double >( nb_vertices ) ;
+        
         return result ;
     }
 
-    vec3 model_entity_cell_center( const GeoModelMeshEntity& E, index_t c )
+    vec3 model_entity_cell_center( const Region& R, index_t cell )
     {
-        if( GeoModelEntity::has_mesh( E.type() ) ) {
-            return E.mesh_element_center( c ) ;
-        }
-        ringmesh_assert_not_reached ;
-        return vec3( 0., 0., 0. ) ;
+        return R.mesh_element_center( cell ) ;
     }
 
     void translate( GeoModel& M, const vec3& translation_vector )
@@ -664,7 +715,7 @@ namespace RINGMesh {
         bool degrees )
     {
         if( length( axis ) < epsilon ) {
-            GEO::Logger::err( "GeoModel" )
+            Logger::err( "GeoModel" )
                 << "Rotation around an epsilon length axis is impossible"
                 << std::endl ;
             return ;
@@ -784,7 +835,7 @@ namespace RINGMesh {
         const std::vector< std::vector< vec3 > >& internal_vertices )
     {
         if( region_id == NO_ID ) {
-            GEO::Logger::out( "Info" ) << "Using " << method << std::endl ;
+            Logger::out( "Info" ) << "Using " << method << std::endl ;
             GEO::ProgressTask progress( "Compute", M.nb_regions() ) ;
             for( index_t i = 0; i < M.nb_regions(); i++ ) {
                 tetrahedralize( M, method, i, add_steiner_points,
@@ -795,9 +846,9 @@ namespace RINGMesh {
             TetraGen_var tetragen = TetraGen::create( M, region_id, method ) ;
             tetragen->set_boundaries( M.region( region_id ), M.wells() ) ;
             tetragen->set_internal_points( internal_vertices[region_id] ) ;
-            GEO::Logger::instance()->set_quiet( true ) ;
+            Logger::instance()->set_quiet( true ) ;
             tetragen->tetrahedralize( add_steiner_points ) ;
-            GEO::Logger::instance()->set_quiet( false ) ;
+            Logger::instance()->set_quiet( false ) ;
         }
 
         // The GeoModelMesh should be updated, just erase everything
@@ -806,5 +857,23 @@ namespace RINGMesh {
     }
 #endif
 
+    gme_t find_corner( const GeoModel& geomodel, const vec3& point )
+    {
+        for( index_t i = 0; i < geomodel.nb_corners(); ++i ) {
+            if( geomodel.corner( i ).vertex( 0 ) == point ) {
+                return gme_t( Corner::type_name_static(), i ) ;
+            }
+        }
+        return gme_t() ;
+    }
 
+    gme_t find_corner( const GeoModel& geomodel, index_t model_point_id )
+    {
+        for( index_t i = 0; i < geomodel.nb_corners(); ++i ) {
+            if( geomodel.corner( i ).model_vertex_id() == model_point_id ) {
+                return gme_t( Corner::type_name_static(), i ) ;
+            }
+        }
+        return gme_t() ;
+    }
 }

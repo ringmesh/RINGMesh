@@ -32,59 +32,65 @@
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
  */
- 
- /*!
- * @file Initialization of the RINGMesh and geogram library on loading
- * @author Arnaud Botella
- */
+
+#ifndef __RINGMESH_GEO_MODEL_BUILDER_RINGMESH__
+#define __RINGMESH_GEO_MODEL_BUILDER_RINGMESH__
 
 #include <ringmesh/common.h>
 
-#include <geogram/basic/common.h>
-#include <geogram/basic/command_line.h>
-#include <geogram/basic/command_line_args.h>
+#include <vector>
+#include <string>
+#include <stack>
 
-#ifdef RINGMESH_WITH_GRAPHICS
-#   include <geogram_gfx/basic/common.h>
-#endif
+#include <geogram/basic/line_stream.h>
 
-#include <ringmesh/io.h>
-#include <ringmesh/geogram_extension.h>
-#include <ringmesh/geo_model_builder_gocad.h>
-#include <ringmesh/geo_model_geological_entity.h>
-#include <ringmesh/tetra_gen.h>
+#include <third_party/zlib/unzip.h>
+
+#include <ringmesh/geo_model_builder.h>
+
+#define MAX_FILENAME 512
+#define READ_SIZE 8192
+
+/*!
+ * @file ringmesh/geo_model_builder_ringmesh.h
+ * @brief Classes to build GeoModel from various inputs
+ * @author Jeanne Pellerin
+ */
+
 
 namespace RINGMesh {
 
-    /*!
-     * This function configures geogram by setting some geogram options.
-     * \pre This function should be call after GEO::initialize().
-     */
-    void configure_geogram()
-    {
-        GEO::CmdLine::import_arg_group( "sys" ) ;
-#ifdef RINGMESH_DEBUG
-        GEO::CmdLine::set_arg( "sys:assert", "abort" ) ;
-#endif
-        GEO::CmdLine::set_arg( "sys:FPE", true ) ;
-        GEO::CmdLine::import_arg_group( "algo" ) ;
-        GEO::CmdLine::set_arg( "algo:predicates", "exact" ) ;
-        GEO::CmdLine::import_arg_group( "log" ) ;
-        GEO::CmdLine::set_arg( "sys:use_doubles", true ) ;
-#ifdef RINGMESH_WITH_GRAPHICS
-        GEO::CmdLine::import_arg_group( "gfx" ) ;
-#endif
-    }
+    class RINGMESH_API GeoModelBuilderGM: public GeoModelBuilderFile {
+    public:
+        GeoModelBuilderGM( GeoModel& model, const std::string& filename )
+            : GeoModelBuilderFile( model, filename )
+        {
+        }
+        virtual ~GeoModelBuilderGM()
+        {
+        }
 
-    /*!
-     * This function configures RINGMesh by initializing its factories.
-     */
-    void configure_ringmesh()
-    {
-        RINGMesh::mesh_initialize() ;
-        RINGMesh::TetraGen::initialize() ;
-        RINGMesh::GeoModelGeologicalEntity::initialize() ;
-        RINGMesh::ringmesh_mesh_io_initialize() ;
-        RINGMesh::initialize_gocad_import_factories() ;
-    }
+    private:
+        void load_geological_entities( GEO::LineInput& file_line ) ;
+
+        /*!
+         * @brief Load meshes of mesh entities of one type from a zip file
+         * @param[in] gme_t the GeoModelMeshEntity type
+         * @param[in] uz the zip file
+         */
+        void load_meshes( const std::string& type, unzFile& uz ) ;
+
+        void load_file() ;
+
+
+        /*!
+         * @brief Unzip a file in a zip file and set it to the current unZIP file
+         */
+        void unzip_one_file( unzFile& uz, const char filename[MAX_FILENAME] ) ;
+
+
+        void load_mesh_entities( GEO::LineInput& file_line ) ;
+    } ;
 }
+
+#endif

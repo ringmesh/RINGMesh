@@ -62,18 +62,18 @@ int main( int argc, char** argv )
         configure_ringmesh() ;
 
         // welcome
-        GEO::Logger::div( "RINGMeshConvert" ) ;
-        GEO::Logger::out( "" ) << "Welcome to RINGMeshSurfaceConvert !"
+        Logger::div( "RINGMeshConvert" ) ;
+        Logger::out( "" ) << "Welcome to RINGMeshSurfaceConvert !"
             << std::endl ;
-        GEO::Logger::out( "" ) << "People working on this project in RING"
+        Logger::out( "" ) << "People working on this project in RING"
             << std::endl ;
-        GEO::Logger::out( "" ) << "Gautier Laurent<g.laurent.research@gmail.com> "
+        Logger::out( "" ) << "Gautier Laurent<g.laurent.research@gmail.com> "
             << std::endl ;
 
         // help
         if( argc == 1 ) {
-            GEO::Logger::div( "Help" ) ;
-            GEO::Logger::out( "" ) << "usage: "
+            Logger::div( "Help" ) ;
+            Logger::out( "" ) << "usage: "
                 << GEO::FileSystem::base_name( argv[0] ) << " [out_format]"
                 << std::endl
                 << "out_format: a non empty list of output format amongst:"
@@ -134,7 +134,7 @@ int main( int argc, char** argv )
 
         // for each .ts file save it in each appropriate format
         for( index_t ts_itr = 0; ts_itr < input_ts_names.size(); ++ts_itr ) {
-            GEO::Logger::out( "" ) << "Processing: " << input_ts_names[ts_itr]
+            Logger::out( "" ) << "Processing: " << input_ts_names[ts_itr]
                 << std::endl ;
             GEO::FileSystem::set_current_working_directory( starting_directory ) ;
 
@@ -165,10 +165,10 @@ int main( int argc, char** argv )
 
         }
     } catch( const RINGMeshException& e ) {
-        GEO::Logger::err( e.category() ) << e.what() << std::endl ;
+        Logger::err( e.category() ) << e.what() << std::endl ;
         return 1 ;
     } catch( const std::exception& e ) {
-        GEO::Logger::err( "Exception" ) << e.what() << std::endl ;
+        Logger::err( "Exception" ) << e.what() << std::endl ;
         return 1 ;
     }
     return 0 ;

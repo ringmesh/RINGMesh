@@ -114,7 +114,7 @@ namespace RINGMesh {
      */
     void well_load( const std::string& filename, WellGroup& wells )
     {
-        GEO::Logger::out( "I/O" ) << "Loading file " << filename << "..."
+        Logger::out( "I/O" ) << "Loading file " << filename << "..."
             << std::endl ;
 
         WellGroupIOHandler_var handler = WellGroupIOHandler::get_handler(
@@ -129,11 +129,11 @@ namespace RINGMesh {
         if( !handler ) {
             std::vector< std::string > names ;
             WellGroupIOHandlerFactory::list_creators( names ) ;
-            GEO::Logger::err( "I/O" ) << "Currently supported file formats are: " ;
+            Logger::err( "I/O" ) << "Currently supported file formats are: " ;
             for( index_t i = 0; i < names.size(); i++ ) {
-                GEO::Logger::err( "I/O" ) << " " << names[i] ;
+                Logger::err( "I/O" ) << " " << names[i] ;
             }
-            GEO::Logger::err( "I/O" ) << std::endl ;
+            Logger::err( "I/O" ) << std::endl ;
 
             throw RINGMeshException( "I/O", "Unsupported file format: " + format ) ;
         }

@@ -125,7 +125,7 @@ namespace RINGMesh {
             const std::string&,
             const GEO::MeshIOFlags& )
         {
-            GEO::Logger::err( "I/O" )
+            Logger::err( "I/O" )
                 << "Saving a Mesh into TSurf format not implemented yet"
                 << std::endl ;
             return false ;
@@ -559,14 +559,14 @@ namespace RINGMesh {
                     if( is_bounded[a] ) failed = true ;
                 }
                 if( failed ) {
-                    GEO::Logger::err( "Attributes" )
+                    Logger::err( "Attributes" )
                         << "Attributes still bounded on vertices:" ;
                     for( index_t a = 0; a < names.size(); a++ ) {
                         if( is_bounded[a] ) {
-                            GEO::Logger::err( "Attributes" ) << " " << names[a] ;
+                            Logger::err( "Attributes" ) << " " << names[a] ;
                         }
                     }
-                    GEO::Logger::err( "Attributes" ) << std::endl ;
+                    Logger::err( "Attributes" ) << std::endl ;
                 }
             }
         }
@@ -582,14 +582,14 @@ namespace RINGMesh {
                     if( is_bounded[a] ) failed = true ;
                 }
                 if( failed ) {
-                    GEO::Logger::err( "Attributes" )
+                    Logger::err( "Attributes" )
                         << "Attributes still bounded on edges:" ;
                     for( index_t a = 0; a < names.size(); a++ ) {
                         if( is_bounded[a] ) {
-                            GEO::Logger::err( "Attributes" ) << " " << names[a] ;
+                            Logger::err( "Attributes" ) << " " << names[a] ;
                         }
                     }
-                    GEO::Logger::err( "Attributes" ) << std::endl ;
+                    Logger::err( "Attributes" ) << std::endl ;
                 }
             }
         }
@@ -605,14 +605,14 @@ namespace RINGMesh {
                     if( is_bounded[a] ) failed = true ;
                 }
                 if( failed ) {
-                    GEO::Logger::err( "Attributes" )
+                    Logger::err( "Attributes" )
                         << "Attributes still bounded on facets:" ;
                     for( index_t a = 0; a < names.size(); a++ ) {
                         if( is_bounded[a] ) {
-                            GEO::Logger::err( "Attributes" ) << " " << names[a] ;
+                            Logger::err( "Attributes" ) << " " << names[a] ;
                         }
                     }
-                    GEO::Logger::err( "Attributes" ) << std::endl ;
+                    Logger::err( "Attributes" ) << std::endl ;
                 }
             }
         }
@@ -628,14 +628,14 @@ namespace RINGMesh {
                     if( is_bounded[a] ) failed = true ;
                 }
                 if( failed ) {
-                    GEO::Logger::err( "Attributes" )
+                    Logger::err( "Attributes" )
                         << "Attributes still bounded on facet_corners:" ;
                     for( index_t a = 0; a < names.size(); a++ ) {
                         if( is_bounded[a] ) {
-                            GEO::Logger::err( "Attributes" ) << " " << names[a] ;
+                            Logger::err( "Attributes" ) << " " << names[a] ;
                         }
                     }
-                    GEO::Logger::err( "Attributes" ) << std::endl ;
+                    Logger::err( "Attributes" ) << std::endl ;
                 }
             }
         }
@@ -653,14 +653,14 @@ namespace RINGMesh {
                     }
                 }
                 if( failed ) {
-                    GEO::Logger::err( "Attributes" )
+                    Logger::err( "Attributes" )
                         << "Attributes still bounded on cells:" ;
                     for( index_t a = 0; a < names.size(); a++ ) {
                         if( is_bounded[a] ) {
-                            GEO::Logger::err( "Attributes" ) << " " << names[a] ;
+                            Logger::err( "Attributes" ) << " " << names[a] ;
                         }
                     }
-                    GEO::Logger::err( "Attributes" ) << std::endl ;
+                    Logger::err( "Attributes" ) << std::endl ;
                 }
             }
         }
@@ -676,14 +676,14 @@ namespace RINGMesh {
                     if( is_bounded[a] ) failed = true ;
                 }
                 if( failed ) {
-                    GEO::Logger::err( "Attributes" )
+                    Logger::err( "Attributes" )
                         << "Attributes still bounded on cell_corners:" ;
                     for( index_t a = 0; a < names.size(); a++ ) {
                         if( is_bounded[a] ) {
-                            GEO::Logger::err( "Attributes" ) << " " << names[a] ;
+                            Logger::err( "Attributes" ) << " " << names[a] ;
                         }
                     }
-                    GEO::Logger::err( "Attributes" ) << std::endl ;
+                    Logger::err( "Attributes" ) << std::endl ;
                 }
             }
         }
@@ -701,14 +701,14 @@ namespace RINGMesh {
                     }
                 }
                 if( failed ) {
-                    GEO::Logger::err( "Attributes" )
+                    Logger::err( "Attributes" )
                         << "Attributes still bounded on cell_facets:" ;
                     for( index_t a = 0; a < names.size(); a++ ) {
                         if( is_bounded[a] ) {
-                            GEO::Logger::err( "Attributes" ) << " " << names[a] ;
+                            Logger::err( "Attributes" ) << " " << names[a] ;
                         }
                     }
-                    GEO::Logger::err( "Attributes" ) << std::endl ;
+                    Logger::err( "Attributes" ) << std::endl ;
                 }
             }
         }

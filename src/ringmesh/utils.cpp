@@ -114,13 +114,9 @@ namespace RINGMesh {
         return GEO::Attribute< double >::is_defined( att_manager, att_name ) ;
     }
 
-    void build_string_for_geo_model_entity_export(
-        GME::TYPE gme_t,
-        index_t gme_id,
-        std::string& name )
+    void build_string_for_geo_model_entity_export( GME::gme_t id, std::string& name )
     {
-        name += GeoModelMeshEntity::type_name( gme_t ) + "_"
-            + GEO::String::to_string( gme_id ) ;
+        name += id.type + "_" + GEO::String::to_string( id.index ) ;
     }
 }
 

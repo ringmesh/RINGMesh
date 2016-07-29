@@ -160,10 +160,10 @@ namespace RINGMesh {
     {
         to_remove.clear() ;
         for( index_t i = 0; i < model().nb_lines(); ++i ) {
-            Line& line = dynamic_cast<Line&>(entity( gme_t( GME::LINE, i ) ));
+            Line& line = dynamic_cast<Line&>(mesh_entity( gme_t( Line::type_name_static(), i ) ));
             index_t nb = repair_line_mesh( line ) ;
             if( nb > 0 ) {
-                GEO::Logger::out( "GeoModel" ) << nb
+                Logger::out( "GeoModel" ) << nb
                     << " degenerated edges removed in LINE " << i << std::endl ;
                 // If the Line is set it to remove
                 if( model().line( i ).nb_mesh_elements() == 0 ) {
@@ -174,7 +174,7 @@ namespace RINGMesh {
         // The builder might be needed
 
         for( index_t i = 0; i < model().nb_surfaces(); ++i ) {
-            Surface& surface = dynamic_cast<Surface&>(entity( gme_t(GME::SURFACE, i) ) );
+            Surface& surface = dynamic_cast<Surface&>(mesh_entity( gme_t(Surface::type_name_static(), i) ) );
             index_t nb = detect_degenerate_facets( surface.mesh_ ) ;
             /// @todo Check if that cannot be simplified 
             if( nb > 0 ) {
@@ -203,7 +203,7 @@ namespace RINGMesh {
                 } else {
                     // If the Surface has internal boundaries, we need to 
                     // re-cut the Surface along these lines
-                    Surface& S = dynamic_cast<Surface&>(entity( gme_t(GME::SURFACE, i) ) );
+                    Surface& S = dynamic_cast<Surface&>(mesh_entity( gme_t(Surface::type_name_static(), i) ) );
                     std::set< index_t > cutting_lines ;
                     for( index_t l = 0; l < S.nb_boundaries(); ++l ) {
                         const Line& L = model().line( S.boundary_gme( l ).index ) ;
@@ -234,11 +234,11 @@ namespace RINGMesh {
         std::set< index_t >& vertices )
     {
         vertices.clear() ;
-        if( E_id.type == GME::CORNER ) {
+        if( E_id.type == Corner::type_name_static() ) {
             return ;
         }
         const GMME& E = mesh_entity( E_id ) ;
-        if( E_id.type == GME::LINE ) {
+        if( E_id.type == Line::type_name_static() ) {
             if( E.boundary( 0 ).is_inside_border( E ) ) {
                 vertices.insert( E.nb_vertices() - 1 ) ;
             }
@@ -282,10 +282,11 @@ namespace RINGMesh {
     {
         to_remove.clear() ;
         // For all Lines and Surfaces
-        for( index_t t = GME::LINE; t < GME::REGION; ++t ) {
-            GME::TYPE T = static_cast< GME::TYPE >( t ) ;
+        const std::string types[2] = { Line::type_name_static(), Surface::type_name_static() } ;
+        for( index_t t = 0; t < 2; ++t ) {
+            const std::string& T = types[t] ;
 
-            for( index_t e = 0; e < model().nb_entities( T ); ++e ) {
+            for( index_t e = 0; e < model().nb_mesh_entities( T ); ++e ) {
                 gme_t entity_id( T, e ) ;
                 const GMME& E = model().mesh_entity( entity_id ) ;
 
@@ -319,7 +320,7 @@ namespace RINGMesh {
                     to_remove.insert( E.gme_id() ) ;
                     continue ;
                 } else {
-                    GMME& ME = model().modifiable_mesh_entity( entity_id ) ;
+                    GMME& ME = modifiable_mesh_entity( entity_id ) ;
                     MeshBuilder builder( ME.mesh_ ) ;
                     for( index_t f_itr = 0; f_itr < E.mesh_.nb_facets(); f_itr++ ) {
                         for( index_t fv_itr = 0;
@@ -335,7 +336,7 @@ namespace RINGMesh {
                             colocated[E.mesh_.edge_vertex( e_itr, 1 )] ) ;
                     }
                     builder.delete_vertices( to_delete, false ) ;
-                    GEO::Logger::out( "Repair" ) << nb_todelete
+                    Logger::out( "Repair" ) << nb_todelete
                         << " colocated vertices deleted in " << entity_id
                         << std::endl ;
                 }

@@ -105,7 +105,7 @@ set (RINGMesh_VERSION ${RINGMesh_VERSION_MAJOR}.${RINGMesh_VERSION_MINOR}.${RING
 if(UNIX)    
     # If the CMAKE_BUILD_TYPE is no defined
     # i.e. at first run of that file
-    if(CMAKE_BUILD_TYPE STREQUAL "")   
+    if(CMAKE_BUILD_TYPE STREQUAL "")
     
       # For all configuration types  
       foreach(config IN LISTS CMAKE_CONFIGURATION_TYPES)

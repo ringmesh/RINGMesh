@@ -615,12 +615,12 @@ namespace RINGMesh {
         void triangulate(
             const Mesh& surface_in )
         {
-            GEO::Logger::instance()->set_minimal( true ) ;
+            Logger::instance()->set_minimal( true ) ;
             GEO::CentroidalVoronoiTesselation CVT( surface_in.mesh_, 3,
                 GEO::CmdLine::get_arg( "algo:delaunay" ) ) ;
             CVT.set_points( mesh_.nb_vertices(), mesh_.mesh_->vertices.point_ptr( 0 ) ) ;
             CVT.compute_surface( mesh_.mesh_, false ) ;
-            GEO::Logger::instance()->set_minimal( false ) ;
+            Logger::instance()->set_minimal( false ) ;
         }
 
 

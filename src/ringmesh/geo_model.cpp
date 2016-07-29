@@ -39,45 +39,157 @@
  */
 
 #include <ringmesh/geo_model.h>
+#include <ringmesh/geo_model_mesh_entity.h>
+#include <ringmesh/geo_model_entity.h>
+#include <ringmesh/geo_model_geological_entity.h>
 
-#include <ringmesh/geo_model_builder.h>
+#include <ringmesh/algorithm.h>
 
 namespace RINGMesh {
 
     typedef GME::gme_t gme_t ;
+    
+    typedef std::string EntityType ;
+    typedef std::map< EntityType, EntityType > EntityTypeMap;
+
+    struct EntityTypeBoundaryMap
+    {
+        EntityTypeBoundaryMap()
+        {
+            register_boundary< Corner, GeoModelEntity >();
+            register_boundary< Line, Corner >();
+            register_boundary< Surface, Line >();
+            register_boundary< Region, Surface >();
+        }
+        template< typename TYPE, typename BOUNDARY >
+        void register_boundary()
+        {
+            map.insert( std::pair<EntityType, EntityType>( 
+                TYPE::type_name_static(), BOUNDARY::type_name_static() ) ) ;
+        }
+        EntityTypeMap map ;
+    };
+
+    struct EntityTypeInBoundaryMap
+    {
+        EntityTypeInBoundaryMap()
+        {
+            register_in_boundary< Corner, Line >();
+            register_in_boundary< Line, Surface >();
+            register_in_boundary< Surface, Region >();
+            register_in_boundary< Region, GeoModelEntity >();
+        }
+        template< typename TYPE, typename IN_BOUNDARY >
+        void register_in_boundary()
+        {
+            map.insert( std::pair<EntityType, EntityType>(
+                TYPE::type_name_static(), IN_BOUNDARY::type_name_static() ) ) ;
+        }
+        EntityTypeMap map ;
+    };
+   
+    // Maybe these should be declared as static in the functions 
+    // that use them.
+    const EntityTypeBoundaryMap boundary_relationships ;
+    const EntityTypeInBoundaryMap in_boundary_relationships ; 
+   
+     // Not the smartest but hopefully compiles in C++98   
+    static const EntityType hard_encoded_mesh_entity_types_array[4] = {
+        Corner::type_name_static(),
+        Line::type_name_static(),
+        Surface::type_name_static(),
+        Region::type_name_static()} ;
+    
+    static const std::vector< EntityType > hard_encoded_mesh_entity_types(
+        &hard_encoded_mesh_entity_types_array[0], &hard_encoded_mesh_entity_types_array[4] ) ;
+
+    index_t EntityTypeManager::nb_mesh_entity_types()
+    {
+        return hard_encoded_mesh_entity_types.size() ;
+    }
+    bool EntityTypeManager::is_corner( const EntityType& type )
+    {
+        return type == hard_encoded_mesh_entity_types[0] ;
+    }
+    bool EntityTypeManager::is_line( const EntityType& type )
+    {
+        return type == hard_encoded_mesh_entity_types[1] ;
+    }
+    bool EntityTypeManager::is_surface( const EntityType& type )
+    {
+        return type == hard_encoded_mesh_entity_types[2] ;
+    }
+    bool EntityTypeManager::is_region( const EntityType& type )
+    {
+        return type == hard_encoded_mesh_entity_types[3] ;
+    }    
+    bool EntityTypeManager::is_mesh_entity_type( const EntityType& type )
+    {
+        return find( hard_encoded_mesh_entity_types, type ) != NO_ID ;
+    }
+    const EntityType EntityTypeManager::default_entity_type()
+    {
+        return "No_entity_type" ;
+    }
+    const std::vector< EntityType >& EntityTypeManager::mesh_entity_types()
+    {
+        return hard_encoded_mesh_entity_types ;
+    }
+    
+    /*! @todo What is the cost of using such maps ?
+     */
+    const EntityType& EntityTypeManager::boundary_type( const EntityType& mesh_entity_type ) 
+    {
+        EntityTypeMap::const_iterator
+            itr = boundary_relationships.map.find( mesh_entity_type );
+        ringmesh_assert( itr != boundary_relationships.map.end() ) ;
+        return itr->second ;
+    }
+    const EntityType& EntityTypeManager::in_boundary_type( const EntityType& mesh_entity_type )
+    {
+       EntityTypeMap::const_iterator
+            itr = in_boundary_relationships.map.find( mesh_entity_type );
+        ringmesh_assert( itr != in_boundary_relationships.map.end() ) ;
+        return itr->second ;
+    }
+    
+    bool EntityTypeManager::is_geological_entity_type( const EntityType& type ) const
+    {
+        return find( geological_entity_types_, type ) != NO_ID ;
+    }
+
+    // ------------------------------------------------------------------------//
+
 
     GeoModel::GeoModel()
         :
             mesh( *this ),
-            universe_( *this, NO_ID, "Universe", GME::NO_GEOL ),
+            universe_( *this ),
             wells_( nil )
     {
-        /// @todo Review: This usage of this pointer in initialization list is a time bomb [JP]
     }
 
     GeoModel::~GeoModel()
-    {
-        for( index_t t = GME::CORNER; t < GME::NO_TYPE; ++t ) {
-            GME::TYPE T = (GME::TYPE) t ;
-            for( index_t i = 0; i < nb_entities( T ); ++i ) {
-                delete entities(T)[i] ;
+    {        
+        for( index_t i = 0; i < corners_.size(); ++i ) {
+            delete corners_[i] ;
+        }
+        for( index_t i = 0; i < lines_.size(); ++i ) {
+            delete lines_[i] ;
+        }
+        for( index_t i = 0; i < surfaces_.size(); ++i ) {
+            delete surfaces_[i] ;
+        }
+        for( index_t i = 0; i < regions_.size(); ++i ) {
+            delete regions_[i] ;
+        }
+
+        for( index_t i = 0 ; i < geological_entities_.size(); ++i ){
+            for( index_t j = 0 ; j < geological_entities_[i].size(); ++j ) {
+                delete geological_entities_[i][j] ;
             }
         }
-    }
-
-    /*!
-     * Copies a GeoModel in another one
-     * @param[in] from GeoModel to copy
-     * 
-     * @todo This shouln't be a member function because it does not do nothing
-     *       with what the class has. To move to GeoModelBuilder.
-     */
-    void GeoModel::copy( const GeoModel& from )
-    {
-        GeoModelBuilder builder( *this ) ;
-        builder.copy_macro_topology( from ) ;
-        builder.copy_meshes( from ) ;
-    }
+    }   
 
     /*!
      * Associates a WellGroup to the GeoModel
@@ -89,5 +201,6 @@ namespace RINGMesh {
     {
         wells_ = wells ;
     }
+
 
 } // namespace

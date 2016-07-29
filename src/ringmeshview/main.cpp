@@ -96,10 +96,10 @@ int main( int argc, char** argv )
         return 0 ;
 
     } catch( const RINGMeshException& e ) {
-        GEO::Logger::err( e.category() ) << e.what() << std::endl ;
+        Logger::err( e.category() ) << e.what() << std::endl ;
         return 1 ;
     } catch( const std::exception& e ) {
-        GEO::Logger::err( "Exception" ) << e.what() << std::endl ;
+        Logger::err( "Exception" ) << e.what() << std::endl ;
         return 1 ;
     }
     return 0 ;
@@ -111,7 +111,7 @@ int main() {
 
     configure_geogram() ;
     configure_ringmesh() ;
-    GEO::Logger::out("RINGMeshView")
+    Logger::out("RINGMeshView")
     << "To compile RINGMesh viewer you need to configure "
     << "the project with the RINGMESH_WITH_GRAPHICS option ON"
     << std::endl ;

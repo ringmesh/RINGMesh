@@ -93,45 +93,45 @@ namespace RINGMesh {
 
     void RINGMESH_API build_mesh_from_geomodel( const GeoModel& model, GEO::Mesh& M, bool connect_facets ) ;
 
+    void RINGMESH_API build_mesh_from_model_mesh_entities(
+        const GeoModel& model,
+        const std::vector< GME::gme_t >& surface_entities,
+        GEO::Mesh& M ) ;
 
     /*! 
      * @brief Bind named GEO::Attribute on the GeoModel entity facets
-     * @warning It is up to the client to unbind the attribute    
      * @pre Entities of geomodel_entity_type are GeoModelMeshEntity
      */
     template< typename T >
-    void create_attributes_on_geomodel_entity_facets(
+    void create_attributes_on_geomodel_surfaces_facets(
         const GeoModel& geomodel,
-        GeoModelEntity::TYPE geomodel_entity_type,
         const std::string& attribute_name,
         AttributeVector<T>& attributes )
     {
-        index_t nb_entities = geomodel.nb_entities( geomodel_entity_type ) ;
+        index_t nb_entities = geomodel.nb_surfaces(); 
         attributes.resize( nb_entities ) ;
         for( index_t i = 0; i < nb_entities; ++i ) {
-            const GeoModelMeshEntity& E = geomodel.mesh_entity( geomodel_entity_type, i ) ;
-            GEO::AttributesManager& manager = E.facet_attribute_manager() ;
+            const Surface& S = geomodel.surface(i) ;
+            GEO::AttributesManager& manager = S.facet_attribute_manager() ;
             attributes.bind_one_attribute( i, manager, attribute_name ) ;
         }
     }
 
     /*!
      * @brief Bind named GEO::Attribute on the GeoModel entities cells
-     * @warning It is up to the client to unbind the attribute
      * @pre Entities of mesh_entity_type are GeoModelMeshEntity
      */
     template< typename T >
-    void create_attributes_on_geomodel_entity_cells(
+    void create_attributes_on_geomodel_regions_cells(
         const GeoModel& geomodel,
-        GeoModelEntity::TYPE geomodel_entity_type,
         const std::string& attribute_name,
         AttributeVector<T>& attributes )
     {
-        index_t nb_entities = geomodel.nb_entities( geomodel_entity_type ) ;
+        index_t nb_entities = geomodel.nb_regions() ;
         attributes.resize( nb_entities ) ;
         for( index_t i = 0; i < nb_entities; ++i ) {
-            const GeoModelMeshEntity& E = geomodel.mesh_entity( geomodel_entity_type, i ) ;
-            GEO::AttributesManager& manager = E.cell_attribute_manager() ;
+            const Region& R = geomodel.region( i ) ;
+            GEO::AttributesManager& manager = R.cell_attribute_manager() ;
             attributes.bind_one_attribute( i, manager, attribute_name ) ;
         }
     }
@@ -215,7 +215,8 @@ namespace RINGMesh {
      * @brief Compute the size (volume, area, length) of an Entity
      * @param[in] E Entity to evaluate
      */
-    double RINGMESH_API model_entity_size( const GeoModelEntity& E ) ;
+    double RINGMESH_API model_entity_size( const GeoModelMeshEntity& E ) ;
+    double RINGMESH_API model_entity_size( const GeoModelGeologicalEntity& E ) ;
 
     /*!
      * Compute the size (volume, area, length) of an Entity cell (cell, facet, edge)
@@ -240,8 +241,24 @@ namespace RINGMesh {
      */
     vec3 RINGMESH_API model_entity_cell_center( const GeoModelMeshEntity& E, index_t c ) ;
 
+    /*-----------------------------------------------------------------------*/
+
+    /*!
+     * @brief Gets the index of the Corner for a given point
+     * @param[in] geomodel GeoModel to consider
+     * @param[in] point Geometric location to look for
+     * @return NO_ID or the index of the Corner
+     */
+    GME::gme_t RINGMESH_API find_corner( const GeoModel& geomodel, const vec3& point ) ;
+
+    /*!
+     * @brief Gets the index of the Corner at a given model point
+     * @param[in] geomodel GeoModel to consider
+     * @param[in] model_point_id Index of the point in the GeoModel
+     * @return NO_ID or the index of the Corner
+     */
+    GME::gme_t RINGMESH_API find_corner( const GeoModel& geomodel, index_t model_point_id ) ;
+
 }
-
-
 
 #endif 

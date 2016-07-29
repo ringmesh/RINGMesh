@@ -42,12 +42,7 @@
 #include <string>
 #include <stack>
 
-#include <geogram/basic/line_stream.h>
 #include <ringmesh/geo_model_editor.h>
-#include <third_party/zlib/unzip.h>
-
-#define MAX_FILENAME 512
-#define READ_SIZE 8192
 
 /*!
  * @file ringmesh/geo_model_builder.h
@@ -57,7 +52,6 @@
 
 namespace RINGMesh {
     class GeoModelRegionFromSurfaces ;
-    class GeoModelEntityFromMesh ;
 }
 
 namespace RINGMesh {
@@ -108,6 +102,12 @@ namespace RINGMesh {
             options_ = options ;
         }
 
+
+        void copy( const GeoModel& from )
+        {
+            copy_macro_topology( from ) ;
+            copy_meshes( from ) ;
+        }
         /*!
          * @brief Copy all entity meshes from the input geomodel
          * @pre The model under construction has exaclty the same number of entities
@@ -115,7 +115,7 @@ namespace RINGMesh {
          */
         void copy_meshes( const GeoModel& from ) ;
 
-        void copy_meshes( const GeoModel& from, GME::TYPE entity_type ) ;
+        void copy_meshes( const GeoModel& from, const std::string& entity_type ) ;
 
         void assign_mesh_to_entity( const Mesh& mesh, GME::gme_t to ) ;
 
@@ -123,13 +123,13 @@ namespace RINGMesh {
          * \name Set entity geometry from geometrical positions
          * @{
          */
-        void set_entity_vertex(
+        void set_mesh_entity_vertex(
             const GME::gme_t& entity_id,
             index_t v,
             const vec3& point,
             bool update ) ;
 
-        void set_entity_vertices(
+        void set_mesh_entity_vertices(
             const GME::gme_t& entity_id,
             const std::vector< vec3 >& points,
             bool clear ) ;
@@ -153,12 +153,12 @@ namespace RINGMesh {
          * \name Set entity geometry using global GeoModel vertices
          * @{
          */
-        void set_entity_vertex(
+        void set_mesh_entity_vertex(
             const GME::gme_t& id,
             index_t v,
             index_t model_vertex ) ;
 
-        void set_entity_vertices(
+        void set_mesh_entity_vertices(
             const GME::gme_t& entity_id,
             const std::vector< index_t >& model_vertices,
             bool clear ) ;
@@ -213,7 +213,7 @@ namespace RINGMesh {
          * @{
          */
 
-        index_t create_entity_vertices(
+        index_t create_mesh_entity_vertices(
             const GME::gme_t& entity_id,
             index_t nb_vertices ) ;
 
@@ -236,8 +236,8 @@ namespace RINGMesh {
          * @{
          */
 
-        void delete_entity_mesh( GME::gme_t E_id ) ;
-        void delete_entity_vertices( GME::gme_t E_id, GEO::vector< index_t >& to_delete ) ;
+        void delete_mesh_entity_mesh( GME::gme_t E_id ) ;
+        void delete_mesh_entity_vertices( GME::gme_t E_id, GEO::vector< index_t >& to_delete ) ;
         void delete_corner_vertex( index_t corner_id ) ;
         void delete_line_edges( index_t line_id, GEO::vector< index_t >& to_delete ) ;
         void delete_surface_facets( index_t surface_id, GEO::vector< index_t >& to_delete ) ;
@@ -299,7 +299,6 @@ namespace RINGMesh {
         void end_model() ;
 
     protected:
-        void build_contacts() ;
         void set_surface_facet_adjacencies(
                 index_t surface_id,
                 const std::vector< index_t >& facets_id,
@@ -342,93 +341,6 @@ namespace RINGMesh {
     } ;
 
     /*!
-     * @brief To build a GeoModel from a set of disconnected polygonal surfaces
-     */
-    class RINGMESH_API GeoModelBuilderSurfaceMesh: public GeoModelBuilder {
-    public:
-        GeoModelBuilderSurfaceMesh( GeoModel& model, const GEO::Mesh& mesh )
-            : GeoModelBuilder( model ), mesh_( mesh )
-        {
-            options_.compute_lines = true ;
-            options_.compute_corners = true ;
-            options_.compute_regions_brep = true ;
-        }
-        void build_polygonal_surfaces_from_connected_components() ;
-
-    private:
-        const GEO::Mesh& mesh_ ;
-    } ;
-
-    /*!
-     * @brief Builder of a GeoModel from a simplicial surface or volumetric Mesh 
-     * @details Regions and Surfaces are identified with an attribute of type index_t
-     * on the mesh cells or facet 
-     */
-    class RINGMESH_API GeoModelBuilderMesh: public GeoModelBuilder {
-    public:
-        GeoModelBuilderMesh(
-            GeoModel& model,
-            const GEO::Mesh& mesh,
-            const std::string& surface_attribute_name,
-            const std::string& region_attribute_name )
-            :
-                GeoModelBuilder( model ),
-                mesh_( mesh ),
-                surface_builder_( nil ),
-                region_builder_( nil ),
-                surface_attribute_name_( surface_attribute_name ),
-                region_attribute_name_( region_attribute_name )
-        {
-            initialize_surface_builder() ;
-            initialize_region_builder() ;
-            add_mesh_vertices_to_model() ;
-        }
-
-        virtual ~GeoModelBuilderMesh() ;
-
-        /*!
-         * @brief Prepare a Mesh so that it can be used to build one GeoModel Surfaces
-         * @details Repairs the mesh, triangulates it, computes a connected component 
-         * attribute of type index_t on the mesh facets and removes colocated vertices. 
-         */
-        static void prepare_surface_mesh_from_connected_components(
-            GEO::Mesh& mesh,
-            const std::string& created_surface_attribute ) ;
-
-        void create_and_build_surfaces() ;
-        void build_surfaces() ;
-
-        void create_and_build_regions() ;
-        void build_regions() ;
-
-        void copy_facet_attribute_from_mesh( const std::string& attribute_name ) ;
-        void copy_cell_attribute_from_mesh( const std::string& attribute_name ) ;
-
-    protected:
-        /*!
-         * @brief Set the unique vertices used to build the GeoModel
-         * @details They are cleared when end_model() is called
-         */
-        void add_mesh_vertices_to_model() ;
-
-        void initialize_surface_builder() ;
-        void initialize_region_builder() ;
-
-    private:
-        bool is_mesh_valid_for_surface_building() const ;
-        bool is_mesh_valid_for_region_building() const ;
-
-    protected:
-        const GEO::Mesh& mesh_ ;
-        GeoModelEntityFromMesh* surface_builder_ ;
-        GeoModelEntityFromMesh* region_builder_ ;
-        std::string surface_attribute_name_ ;
-        std::string region_attribute_name_ ;
-        index_t nb_surface_attribute_values_ ;
-        index_t nb_region_attribute_values_ ;
-    } ;
-
-    /*!
      * @brief Abstract class to load and build GeoModels from files 
      */
     class RINGMESH_API GeoModelBuilderFile: public GeoModelBuilder {
@@ -444,15 +356,6 @@ namespace RINGMesh {
             end_model() ;
         }
 
-        ///TODO these are temporary protected here. after they will be only in GeoModelBuilderGM
-    protected:
-        static GME::TYPE match_nb_entities( const char* s ) ;
-        static GME::TYPE match_type( const char* s ) ;
-        static bool match_high_level_type( const char* s )
-        {
-            return GME::child_allowed( match_type( s ) ) ;
-        }
-
     private:
         virtual void load_file() = 0 ;
         /*! @todo Implement function to read the lines of the 
@@ -460,136 +363,6 @@ namespace RINGMesh {
          */
     protected:
         std::string filename_ ;
-    } ;
-
-    /*!
-     * @brief Build a GeoModel from a Gocad Model3D (file_model.ml)
-     */
-    class RINGMESH_API GeoModelBuilderGocad: public GeoModelBuilderFile {
-    public:
-        GeoModelBuilderGocad( GeoModel& model, const std::string& filename )
-            : GeoModelBuilderFile( model, filename ), file_line_( filename )
-        {
-            options_.compute_lines = true ;
-            if( !file_line_.OK() ) {
-                throw RINGMeshException( "I/O", "Failed to open file " + filename ) ;
-            }
-        }
-        virtual ~GeoModelBuilderGocad()
-        {
-        }
-
-    private:
-        void load_file() ;
-
-        GME::gme_t determine_line_vertices(
-            const Surface& S,
-            index_t id0,
-            index_t id1,
-            std::vector< vec3 >& border_vertex_model_ids ) const ;
-
-        void create_surface(
-            const std::string& interface_name,
-            const std::string& type,
-            const vec3& p0,
-            const vec3& p1,
-            const vec3& p2 ) ;
-
-        /*!
-         * @brief Check if the surface triangle orientations match the one of the key facet
-         */
-        bool check_key_facet_orientation( index_t surface ) const ;
-
-        index_t find_key_facet(
-            index_t surface_id,
-            const vec3& p0,
-            const vec3& p1,
-            const vec3& p2,
-            bool& same_orientation ) const ;
-
-    private:
-        GEO::LineInput file_line_ ;
-
-        /*!
-         * @brief Triangle that set the orientation of a TFACE
-         *        in a .ml file
-         */
-        struct KeyFacet {
-            KeyFacet( const vec3& p0, const vec3& p1, const vec3& p2 )
-                : p0_( p0 ), p1_( p1 ), p2_( p2 )
-            {
-            }
-            vec3 p0_ ;
-            vec3 p1_ ;
-            vec3 p2_ ;
-        } ;
-        std::vector< KeyFacet > key_facets_ ;
-    } ;
-
-    /*!
-     * @brief Build a GeoModel from a file_model.bm
-     * @TODO this class gonna disapear soon
-     */
-    class RINGMESH_API GeoModelBuilderBM: public GeoModelBuilderFile {
-    public:
-        GeoModelBuilderBM( GeoModel& model, const std::string& filename )
-            : GeoModelBuilderFile( model, filename ), file_line_( filename )
-        {
-            if( !file_line_.OK() ) {
-                throw RINGMeshException( "I/O", "Failed to open file " + filename ) ;
-            }
-        }
-        virtual ~GeoModelBuilderBM()
-        {
-        }
-
-    private:
-        void load_file() ;
-
-    private:
-        GEO::LineInput file_line_ ;
-    } ;
-
-    class RINGMESH_API GeoModelBuilderGM: public GeoModelBuilderFile {
-    public:
-        GeoModelBuilderGM( GeoModel& model, const std::string& filename )
-            : GeoModelBuilderFile( model, filename )
-        {
-        }
-        virtual ~GeoModelBuilderGM()
-        {
-        }
-
-    private:
-        /*!
-         * @brief Load the connectivities. These are how corners are
-         * connected to lines, lines connected to surfaces and surfaces
-         * connected to regions
-         */
-        void load_connectivities( GEO::LineInput& file_line ) ;
-
-        /*!
-         * @brief Load entities of one type from a zip file
-         * @param[in] gme_t the GeoModelEntity type
-         * @param[in] uz the zip file
-         */
-        void load_entities( GME::TYPE gme_t, unzFile& uz ) ;
-
-        void load_file() ;
-
-
-        /*!
-         * @brief Unzip a file in a zip file and set it to the current unZIP file
-         */
-        void unzip_one_file( unzFile& uz, const char filename[MAX_FILENAME] ) ;
-
-
-        /*!
-         * @brief Load the topology. Topology is how corners, lines, surfaces and
-         * regions are organized into contacts, interfaces and layers. It also contains
-         * basics information on the GeoModel.
-         */
-        void load_topology( GEO::LineInput& file_line ) ;
     } ;
 }
 

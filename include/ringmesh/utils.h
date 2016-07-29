@@ -185,10 +185,7 @@ namespace RINGMesh {
         const std::string& att_name ) ;
 
     //TODO i dont know where to put it :(
-    void build_string_for_geo_model_entity_export(
-        GME::TYPE gme_t,
-        index_t gme_id,
-        std::string& name ) ;
+    void build_string_for_geo_model_entity_export( GME::gme_t id, std::string& name ) ;
 }
 
 #endif

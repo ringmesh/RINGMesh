@@ -66,6 +66,8 @@
 #include <geogram/mesh/mesh.h>
 #include <geogram/points/colocate.h>
 
+#include <ringmesh/types.h>
+
 /*!
 * @file Implementation of high level repairing functions on GEO::Mesh 
 * @note Most of the code comes from geogram/mesh/mesh_repair.cpp 
@@ -79,7 +81,7 @@ namespace {
     using GEO::Mesh ;
     using GEO::vector ;
     using GEO::signed_index_t ;
-    using GEO::Logger ;
+    using RINGMesh::Logger ;
 
     index_t NO_FACET( NO_ID ) ;
 
@@ -1191,7 +1193,7 @@ namespace RINGMesh {
             return ;
         }
 
-        GEO::Logger::out( "GeoModel" ) << "Removing "
+        Logger::out( "GeoModel" ) << "Removing "
             << nb_colocated_vertices
             << " duplicated vertices" << std::endl;
 

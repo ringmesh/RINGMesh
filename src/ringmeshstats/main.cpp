@@ -57,11 +57,11 @@ int main( int argc, char** argv )
         configure_geogram() ;
         configure_ringmesh() ;
 
-        GEO::Logger::div( "RINGMeshStats" ) ;
-        GEO::Logger::out( "" ) << "Welcome to RINGMeshStats !" << std::endl ;
-        GEO::Logger::out( "" ) << "People working on the project in RING"
+        Logger::div( "RINGMeshStats" ) ;
+        Logger::out( "" ) << "Welcome to RINGMeshStats !" << std::endl ;
+        Logger::out( "" ) << "People working on the project in RING"
             << std::endl ;
-        GEO::Logger::out( "" ) << "Arnaud Botella <arnaud.botella@univ-lorraine.fr> "
+        Logger::out( "" ) << "Arnaud Botella <arnaud.botella@univ-lorraine.fr> "
             << std::endl ;
 
         CmdLine::import_arg_group( "in" ) ;
@@ -96,10 +96,10 @@ int main( int argc, char** argv )
         }
 
     } catch( const RINGMeshException& e ) {
-        GEO::Logger::err( e.category() ) << e.what() << std::endl ;
+        Logger::err( e.category() ) << e.what() << std::endl ;
         return 1 ;
     } catch( const std::exception& e ) {
-        GEO::Logger::err( "Exception" ) << e.what() << std::endl ;
+        Logger::err( "Exception" ) << e.what() << std::endl ;
         return 1 ;
     }
     return 0 ;

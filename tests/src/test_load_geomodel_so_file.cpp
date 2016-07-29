@@ -36,6 +36,7 @@
 #include <ringmesh/ringmesh_tests_config.h>
 
 #include <ringmesh/geo_model.h>
+#include <ringmesh/geo_model_geological_entity.h>
 #include <ringmesh/io.h>
 
 #include <geogram/basic/logger.h>
@@ -45,16 +46,20 @@
  * @author Pierre Anquez
  */
 
-int main()
-{
+int main() {
     using namespace RINGMesh ;
 
     try {
-
         GEO::initialize() ;
         configure_geogram() ;
         configure_ringmesh() ;
-        GEO::Logger::out( "TEST" ) << "Import a meshed GeoModel from .so"
+        
+        // Set an output log file
+        std::string log_file( ringmesh_test_output_path + "log.txt" ) ;
+        GEO::FileLogger* file_logger = new GEO::FileLogger( log_file ) ;
+        Logger::instance()->register_client( file_logger ) ;
+
+        Logger::out( "TEST" ) << "Import a meshed GeoModel from .so"
             << std::endl ;
 
         std::string file_name( ringmesh_test_data_path ) ;
@@ -70,20 +75,20 @@ int main()
         // Check number of entities in the imported GeoModel (from TSolid file)
         if( model.nb_corners() != 52 || model.nb_lines() != 98
             || model.nb_surfaces() != 55 || model.nb_regions() != 8
-            || model.nb_interfaces() != 11 || model.nb_contacts() != 38
+            || model.nb_geological_entities( Interface::type_name_static() ) != 11
+            || model.nb_geological_entities( Contact::type_name_static() ) != 38
             || model.mesh.vertices.nb() != 6691 || model.mesh.facets.nb() != 10049
             || model.mesh.cells.nb() != 34540 ) {
             throw RINGMeshException( "TEST", "FAILED" ) ;
         }
 
     } catch( const RINGMeshException& e ) {
-        GEO::Logger::err( e.category() ) << e.what() << std::endl ;
+        Logger::err( e.category() ) << e.what() << std::endl ;
         return 1 ;
     } catch( const std::exception& e ) {
-        GEO::Logger::err( "Exception" ) << e.what() << std::endl ;
+        Logger::err( "Exception" ) << e.what() << std::endl ;
         return 1 ;
     }
-    GEO::Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
+    Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
     return 0 ;
-
 }
