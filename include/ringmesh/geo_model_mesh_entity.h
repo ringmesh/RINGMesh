@@ -87,7 +87,7 @@ namespace RINGMesh {
          */
         virtual bool is_valid() const
         {
-            return GeoModelEntity::is_valid()
+            return is_identification_valid()
                 && is_connectivity_valid()
                 && is_mesh_valid()
                 && are_model_vertex_indices_valid() ;            
