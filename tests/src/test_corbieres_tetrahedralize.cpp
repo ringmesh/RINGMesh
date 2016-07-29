@@ -78,7 +78,7 @@ int main( int argc, char** argv )
 
         /* Load and check the validity of the model */
         geomodel_load( M, file_name ) ;
-//        if( is_geomodel_valid( M ) ) {
+        if( is_geomodel_valid( M ) ) {
             // Mesh the model with Tetgen
             tetrahedralize( M, "TetGen" ) ;
 
@@ -86,11 +86,11 @@ int main( int argc, char** argv )
             std::string output_file_name( ringmesh_test_output_path ) ;
             output_file_name += "corbieres.gm" ;
             geomodel_save( M, output_file_name ) ;
-//        } else {
-//            print_geomodel( M ) ;
-//            throw RINGMeshException( "RINGMesh Test",
-//                "The geological model " + M.name() + " is invalid " ) ;
-//        }
+        } else {
+            print_geomodel( M ) ;
+            throw RINGMeshException( "RINGMesh Test",
+                "The geological model " + M.name() + " is invalid " ) ;
+        }
 
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category() ) << e.what() << std::endl ;
