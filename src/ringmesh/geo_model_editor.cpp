@@ -544,7 +544,7 @@ namespace RINGMesh {
             const EntityType& child_type = children_type( type ) ;
             return entity_type_to_index( child_type );
         }
-        const EntityType& children_type( const EntityType& type ) const
+        const EntityType children_type( const EntityType& type ) const
         {
             const EntityTypeManager& family = model().entity_type_manager() ;
             return family.child_type( type ) ;
@@ -738,7 +738,7 @@ namespace RINGMesh {
                 if( E.parent( i ).index() == NO_ID ) {
                     offset++ ;
                 } else {
-                    gme_t new_id = E.parent( i + offset ).gme_id() ;
+                    gme_t new_id = E.parent_gme( i + offset ) ;
                     set_mesh_entity_parent( E.gme_id(), i, new_id ) ;
                 }
                 new_size = i +1 ; /// @todo Check that this is the correct size
