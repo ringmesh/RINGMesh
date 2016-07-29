@@ -332,17 +332,22 @@ namespace RINGMesh {
         // Add mesh entities that are in the boundary of no mesh entity 
         for( index_t i = 0; i < EntityTypeManager::nb_mesh_entity_types() ; ++i ) {
             const EntityType& type = EntityTypeManager::mesh_entity_types()[i] ;
-            for( index_t j = 0; j < model_.nb_mesh_entities( type ); ++j ) {
-                bool no_incident = true ;
-                const GeoModelMeshEntity& E = model_.mesh_entity( type, j ) ;
-                for( index_t k = 0; k < E.nb_in_boundary(); ++k ) {
-                    if( in.count( E.in_boundary_gme( k ) ) == 0 ) {
-                        no_incident = false ;
-                        break ;
+            const EntityType& in_boundary_type = EntityTypeManager::in_boundary_type( type ) ;
+            if( !EntityTypeManager::is_mesh_entity_type( in_boundary_type ) ) {
+                continue ;
+            } else {
+                for( index_t j = 0; j < model_.nb_mesh_entities( type ); ++j ) {
+                    bool no_incident = true ;
+                    const GeoModelMeshEntity& E = model_.mesh_entity( type, j ) ;
+                    for( index_t k = 0; k < E.nb_in_boundary(); ++k ) {
+                        if( in.count( E.in_boundary_gme( k ) ) == 0 ) {
+                            no_incident = false ;
+                            break ;
+                        }
                     }
-                }
-                if( no_incident ) {
-                    in.insert( E.gme_id() ) ;
+                    if( no_incident ) {
+                        in.insert( E.gme_id() ) ;
+                    }
                 }
             }
         }
@@ -482,6 +487,7 @@ namespace RINGMesh {
             update_universe_sided_boundaries( U ) ;
             delete_invalid_universe_sided_boundaries( U ) ;            
         }
+
 
         //------  Initialization ------- 
         void fill_removed_entities_and_mapping()
@@ -644,7 +650,7 @@ namespace RINGMesh {
                 index_t parent_type_index = entity_type_to_index( parent_type ) ;
 
                 index_t p_id = E.parent_id( parent_type ) ;
-                index_t old_id = E.parent( p_id ).index() ;
+                index_t old_id = E.parent_gme( p_id ).index ;
                 index_t new_id = old_2_new_entity_[parent_type_index][old_id] ;
                 set_mesh_entity_parent( E.gme_id(), p_id, gme_t( parent_type, new_id ) ) ;
             }
