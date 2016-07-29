@@ -189,7 +189,20 @@ namespace RINGMesh {
                 delete geological_entities_[i][j] ;
             }
         }
-    }   
+    } 
+
+   const GeoModelEntity& GeoModel::entity( const EntityType& entity_type,
+            index_t entity_index ) const
+   {
+       if( is_mesh_entity_type( entity_type ) ) {
+           return static_cast<const GeoModelEntity&>(
+               mesh_entity( entity_type, entity_index )) ;
+       } else {
+           return static_cast<const GeoModelEntity&>(
+               geological_entity( entity_type, entity_index ));
+       }
+   }
+
 
     /*!
      * Associates a WellGroup to the GeoModel

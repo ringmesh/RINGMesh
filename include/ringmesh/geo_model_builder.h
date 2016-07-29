@@ -95,13 +95,12 @@ namespace RINGMesh {
         virtual ~GeoModelBuilder() ;
 
         /*!
-         * @todo Implements sot that it returns true if the input options are consistent
+         * @todo Implement it so that it returns true if the input options are consistent
          */
         void set_options( const GeoModelBuildingFlags& options )
         {
             options_ = options ;
         }
-
 
         void copy( const GeoModel& from )
         {
@@ -341,7 +340,7 @@ namespace RINGMesh {
     } ;
 
     /*!
-     * @brief Abstract class to load and build GeoModels from files 
+     * @brief Abstract interface class to load and build GeoModels from files 
      */
     class RINGMESH_API GeoModelBuilderFile: public GeoModelBuilder {
     public:
@@ -358,9 +357,7 @@ namespace RINGMesh {
 
     private:
         virtual void load_file() = 0 ;
-        /*! @todo Implement function to read the lines of the 
-         *        file and wrap the GEO::LineInput which is not that easy to use 
-         */
+
     protected:
         std::string filename_ ;
     } ;

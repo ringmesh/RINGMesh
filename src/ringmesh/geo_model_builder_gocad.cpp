@@ -47,7 +47,6 @@
 #include <ringmesh/utils.h>
 
 /*!
- * @file ringmesh/geo_model_builder_so.cpp
  * @brief Implementation of the class to build GeoModel from input
  * Gocad TSolid .so file
  * @author Pierre Anquez

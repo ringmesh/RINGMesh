@@ -423,6 +423,11 @@ namespace {
         }
     }
 
+    void build_string_for_geo_model_entity_export( GME::gme_t id, std::string& name )
+    {
+        name += id.type + "_" + GEO::String::to_string( id.index ) ;
+    }
+
     /*!
      * @brief Save the GeoModelMeshEntity in a meshb file
      * @param[in] geo_model_entity_mesh the GeoModelMeshEntity you want to save

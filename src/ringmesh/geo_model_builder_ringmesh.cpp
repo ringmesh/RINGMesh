@@ -35,32 +35,11 @@
 
 #include <ringmesh/geo_model_builder_ringmesh.h>
 
-#include <iostream>
-#include <iomanip>
-#include <fstream>
-#include <cmath>
-#include <set>
-#include <stack>
+#include <geogram/basic/file_system.h>
 
-#include <geogram/basic/line_stream.h>
-#include <geogram/basic/logger.h>
-#include <geogram/mesh/mesh_io.h>
-#include <geogram/mesh/mesh_repair.h>
-#include <geogram/points/colocate.h>
-
-#include <ringmesh/io.h>
-#include <ringmesh/algorithm.h>
-#include <ringmesh/geo_model.h>
-#include <ringmesh/geo_model_api.h>
-#include <ringmesh/geo_model_validity.h>
-#include <ringmesh/geometry.h>
-#include <ringmesh/geogram_mesh_repair.h>
-#include <ringmesh/utils.h>
 
 /*!
  * @file ringmesh/geo_model_builder_ringmesh.cpp
- * @brief Implementation of the classes to build GeoModel from various inputs
- * @author Jeanne Pellerin
  */
 
 namespace {
@@ -73,6 +52,10 @@ namespace {
         if( type == Surface::type_name_static() ) return true ;
         if( type == Region::type_name_static() ) return true ;
         return false ;
+    }
+    void build_string_for_geo_model_entity_export( GME::gme_t id, std::string& name )
+    {
+        name += id.type + "_" + GEO::String::to_string( id.index ) ;
     }
 }
 

@@ -690,6 +690,11 @@ namespace RINGMesh {
                 << " degenerated edges in " << gme_id() << std::endl ;
             valid = false ;
         }
+        if( !is_first_corner_first_vertex() ) {
+            Logger::warn("GeoModelEntity") << "First and last vertex of Line"
+                << index() << " do not match first and second Corner respectively" << std::endl ;
+            valid = false ;
+        }
         return valid ;
     }
 
@@ -706,6 +711,18 @@ namespace RINGMesh {
         return line_valid ;
 
     }
+
+    bool Line::is_first_corner_first_vertex() const
+    {
+        if( nb_boundaries()!= 2 || nb_vertices() <  2 ) {
+            return false ;
+        } else {
+            // Geometric comparison - not great at all
+            return boundary( 0 ).vertex(0) == vertex( 0 ) 
+                && boundary(1).vertex(0) == vertex( nb_vertices()-1 ) ; 
+        }
+    }
+
 
     bool Line::is_on_voi() const
     {

@@ -42,20 +42,17 @@
 #include <string>
 #include <stack>
 
-#include <geogram/basic/line_stream.h>
 #include <ringmesh/geo_model_builder.h>
 
 /*!
  * @file ringmesh/geo_model_builder_from_mesh.h
- * @brief Classes to build GeoModel from various inputs
+ * @brief Classes to build GeoModel from meshes
  * @author Jeanne Pellerin
  */
 
 namespace RINGMesh {
-    class GeoModelEntityFromMesh ;
-}
-
-namespace RINGMesh {
+    // Implementation class
+     class GeoModelEntityFromMesh ;
 
     /*!
      * @brief To build a GeoModel from a set of disconnected polygonal surfaces
@@ -76,7 +73,7 @@ namespace RINGMesh {
     } ;
 
     /*!
-     * @brief Builder of a GeoModel from a simplicial surface or volumetric Mesh 
+     * @brief Builder of a GeoModel from a simplicial surface/volumetric mesh 
      * @details Regions and Surfaces are identified with an attribute of type index_t
      * on the mesh cells or facet 
      */
@@ -86,20 +83,7 @@ namespace RINGMesh {
             GeoModel& model,
             const GEO::Mesh& mesh,
             const std::string& surface_attribute_name,
-            const std::string& region_attribute_name )
-            :
-                GeoModelBuilder( model ),
-                mesh_( mesh ),
-                surface_builder_( nil ),
-                region_builder_( nil ),
-                surface_attribute_name_( surface_attribute_name ),
-                region_attribute_name_( region_attribute_name )
-        {
-            initialize_surface_builder() ;
-            initialize_region_builder() ;
-            add_mesh_vertices_to_model() ;
-        }
-
+            const std::string& region_attribute_name ) ;
         virtual ~GeoModelBuilderMesh() ;
 
         /*!
@@ -130,7 +114,6 @@ namespace RINGMesh {
         void initialize_surface_builder() ;
         void initialize_region_builder() ;
 
-    private:
         bool is_mesh_valid_for_surface_building() const ;
         bool is_mesh_valid_for_region_building() const ;
 
