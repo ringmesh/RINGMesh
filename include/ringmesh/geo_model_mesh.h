@@ -1161,17 +1161,10 @@ namespace RINGMesh {
             }
             order_value_ = new_order ;
         }
-        
-    public:
-        GeoModelMeshVertices vertices ;
-        GeoModelMeshEdges edges ;
-        GeoModelMeshFacets facets ;
-        GeoModelMeshCells cells ;
-        GeoModelMeshOrder order ;
 
-  //  private:
-  //      ringmesh_disable_copy( GeoModelMesh ) ;
-
+    private:
+        ringmesh_disable_copy( GeoModelMesh ) ;
+  
     private:
         /*! Attached GeoModel */
         const GeoModel& geo_model_ ;
@@ -1188,6 +1181,16 @@ namespace RINGMesh {
         mutable GeoModelMeshCells::DuplicateMode mode_ ;
         /// Order of the GeoModelMesh
         index_t order_value_ ;
+                
+    public:
+        // This is not compliant with the guidelines 
+        // BUT THEY HAVE to be after the above private attributes 
+        // because of the dangerous constructor [JP]
+        GeoModelMeshVertices vertices ;
+        GeoModelMeshEdges edges ;
+        GeoModelMeshFacets facets ;
+        GeoModelMeshCells cells ;
+        GeoModelMeshOrder order ;
     } ;
 
 }
