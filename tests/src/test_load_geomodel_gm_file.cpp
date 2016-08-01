@@ -37,7 +37,6 @@
 
 #include <ringmesh/geo_model.h>
 #include <ringmesh/io.h>
-#include <ringmesh/box3d.h>
 
 #include <geogram/basic/logger.h>
 

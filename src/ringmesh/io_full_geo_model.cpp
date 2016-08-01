@@ -54,7 +54,6 @@
 #include <ringmesh/geogram_extension.h>
 #include <ringmesh/geometry.h>
 #include <ringmesh/well.h>
-#include <ringmesh/box3d.h>
 #include <ringmesh/io.h>
 
 /*!

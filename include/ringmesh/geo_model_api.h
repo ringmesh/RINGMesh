@@ -38,8 +38,10 @@
 
 #include <ringmesh/common.h>
 
+#include <vector>
+#include <ringmesh/geomodel_indexing_types.h>
+
 #include <geogram/basic/attributes.h>
-#include <geogram/mesh/mesh.h>
 
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_entity.h>
@@ -58,6 +60,7 @@ namespace GEO {
 }
 
 namespace RINGMesh {
+
     /*!
     * @brief Print in the console the model statistics
     * @details Output number of facets, vertices, and of the different entity types

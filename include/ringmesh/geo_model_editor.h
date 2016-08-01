@@ -40,10 +40,10 @@
 
 #include <set>
 
+#include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_entity.h> 
 #include <ringmesh/geo_model_mesh_entity.h> 
 #include <ringmesh/geo_model_geological_entity.h> 
-#include <ringmesh/geo_model.h>
 
 /*!
  * @file Declaration of GeoModelEditor class.

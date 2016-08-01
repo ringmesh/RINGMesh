@@ -109,7 +109,6 @@ namespace RINGMesh {
     {
         return Region::type_name_static() ;
     }
-
       
     /*!
      * @brief Get the entities in the boundary of which @param E is

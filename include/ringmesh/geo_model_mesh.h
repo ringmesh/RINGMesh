@@ -38,8 +38,6 @@
 
 #include <ringmesh/common.h>
 
-//#include <ringme/sh/geo_model.h>
-//#include <ringmesh/geo_model_entity.h>
 #include <ringmesh/geomodel_indexing_types.h>
 #include <ringmesh/mesh.h>
 
