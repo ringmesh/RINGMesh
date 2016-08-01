@@ -54,7 +54,7 @@
 /*!
  * @file ringmesh/geo_model_builder_ringmesh.h
  * @brief Classes to build GeoModel from various inputs
- * @author Jeanne Pellerin
+ * @author 
  */
 
 

@@ -41,15 +41,16 @@
 
 /*!
  * @file ringmesh/algorithm.h
- * @brief Template function for basic operations on vectors
+ * @brief Template function for basic operations on std container
  * @author Jeanne Pellerin and Arnaud Botella
+ * @todo Rename these functions
  */
 
 namespace RINGMesh {
 
     /*!
      * @brief Returns the position of the first entity matching @param value
-     * in the container, NO_ID if not found. 
+     * in the container, NO_ID if not found.
      */
     template< typename T, typename container >
     inline index_t find( const container& in, const T& value )
@@ -63,8 +64,8 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Returns the position of the first entity matching @param value 
-     * in a sorted container, NO_ID if not found. 
+     * @brief Returns the position of the first entity matching @param value
+     * in a sorted container, NO_ID if not found.
      */
     template< typename T, typename container >
     inline index_t find_sorted( const container& in, const T& value )
@@ -90,8 +91,8 @@ namespace RINGMesh {
 
 
     /*!
-     * \brief Indirect sorting of two vectors.
-     * @todo Comment what is indirect sorting.
+     * @brief Bubble sorting of input and output vectors according to values of input.
+     * @note Not efficient.
      */
     template< typename T1, typename T2 >
     inline void indirect_sort( std::vector< T1 >& input, std::vector< T2 >& output )
@@ -101,10 +102,10 @@ namespace RINGMesh {
         }
         for( index_t it1 = 0; it1+1 < input.size(); it1++ ) {
             index_t ref_index = it1 ;
-            T1 ref_value = input[ it1 ] ;
+            T1 ref_value = input[it1] ;
             for( index_t it2 = it1 + 1; it2 < input.size(); it2++ ) {
                 index_t new_index = it2 ;
-                T1 new_value = input[ it2 ] ;
+                T1 new_value = input[it2] ;
                 if( ref_value > new_value ) {
                     ref_value = new_value ;
                     ref_index = new_index ;
@@ -115,7 +116,7 @@ namespace RINGMesh {
         }
     }
 
-    /*! 
+    /*!
      * @brief Comparator of indices relying on values token in a vector
      * @note To be used in unique_values function
      */
@@ -135,12 +136,12 @@ namespace RINGMesh {
             if( equal_values( i, j ) ) {
                 return i < j ;
             } else {
-                return values_[ i ] < values_[ j ] ;
+                return values_[i] < values_[j] ;
             }
         }
         inline bool equal_values( index_t i, index_t j ) const
         {
-            return values_[ i ] == values_[ j ] ;
+            return values_[i] == values_[j] ;
         }
     private:
         const std::vector<T>& values_ ;
@@ -151,7 +152,7 @@ namespace RINGMesh {
      * and fill a mapping to the first occurence of each unique value
      * @param[in] input values  example: 1 4 6 0 4 1 5 6
      * @param[out] unique_value_indices example: 0 1 2 3 1 0 6 2
-     * Maps each index to the index of the first occurence of the value in the vector. 
+     * Maps each index to the index of the first occurence of the value in the vector.
      * @return Number of unique values in input
      * @note Tricky algorithm, used over and over in Geogram
      */
@@ -160,10 +161,10 @@ namespace RINGMesh {
         const std::vector< T >& input_values,
         std::vector< index_t >& unique_value_indices )
     {
-        index_t nb_values = static_cast< index_t >( input_values.size() ) ;
+        index_t nb_values = static_cast<index_t>(input_values.size()) ;
         std::vector< index_t > sorted_indices( nb_values ) ;
         for( index_t i = 0; i < nb_values; ++i ) {
-            sorted_indices[ i ] = i ;
+            sorted_indices[i] = i ;
         }
         CompareIndexFromValue<T> comparator( input_values ) ;
         // Sort the indices according to the values token in the input vector
@@ -174,12 +175,12 @@ namespace RINGMesh {
         index_t i = 0 ;
         while( i != nb_values ) {
             nb_unique_values++ ;
-            unique_value_indices[ sorted_indices[ i ] ] = sorted_indices[ i ] ;
+            unique_value_indices[sorted_indices[i]] = sorted_indices[i] ;
             index_t j = i + 1 ;
             while( j < nb_values &&
-                   comparator.equal_values( sorted_indices[ i ], sorted_indices[ j ] )
-            ) {
-                unique_value_indices[ sorted_indices[ j ] ] = sorted_indices[ i ] ;
+                comparator.equal_values( sorted_indices[i], sorted_indices[j] )
+                ) {
+                unique_value_indices[sorted_indices[j]] = sorted_indices[i] ;
                 j++ ;
             }
             i = j ;
@@ -192,32 +193,32 @@ namespace RINGMesh {
      * Example:
      * Input  : input = 1 3 25 8 3 8
      * Output : unique_values = 1 3 25 8
-     *          input2unique_values = 0 1 2 3 1 3  
+     *          input2unique_values = 0 1 2 3 1 3
      */
-     template< typename T >
+    template< typename T >
     inline void get_unique_input_values_and_mapping(
         const std::vector< T >& input_values,
         std::vector< T >& unique_values,
         std::vector< index_t >& input2unique_values )
     {
         unique_values.resize( 0 ) ;
-         index_t nb_values = static_cast< index_t >( input_values.size() ) ;
-         input2unique_values.resize( nb_values, NO_ID ) ;
+        index_t nb_values = static_cast<index_t>(input_values.size()) ;
+        input2unique_values.resize( nb_values, NO_ID ) ;
 
-         std::vector< index_t > unique_value_indices ;
-         index_t nb_unique_values = determine_unique_values_indices( input_values, unique_value_indices ) ;
-         unique_values.reserve( nb_unique_values ) ;
+        std::vector< index_t > unique_value_indices ;
+        index_t nb_unique_values = determine_unique_values_indices( input_values, unique_value_indices ) ;
+        unique_values.reserve( nb_unique_values ) ;
 
-         for( index_t i = 0; i < nb_values; ++i ) {
+        for( index_t i = 0; i < nb_values; ++i ) {
             if( unique_value_indices[i] == i ) {
                 input2unique_values[i] =
-                    static_cast< index_t >( unique_values.size() ) ;
+                    static_cast<index_t>(unique_values.size()) ;
                 unique_values.push_back( input_values[i] ) ;
-             } else {
-                 input2unique_values[ i ] = input2unique_values[ unique_value_indices[ i ] ] ;
-             }
-         }
-     }
+            } else {
+                input2unique_values[i] = input2unique_values[unique_value_indices[i]] ;
+            }
+        }
+    }
 
     /**
      * @brief Sorts a container and suppresses all duplicated entities.

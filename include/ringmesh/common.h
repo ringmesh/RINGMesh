@@ -67,8 +67,8 @@
 
 #ifdef WIN32
 #   pragma warning( disable: 4267 )
-#   pragma warning( disable: 4251 ) // dll interface, let's pray we have no issues
-#   pragma warning( disable: 4275 ) // dll interface, let's pray we have no issues
+#   pragma warning( disable: 4251 ) // dll interface warnings
+#   pragma warning( disable: 4275 ) // let's pray we have no issues
 #endif
 
 #ifdef USE_OPENMP
@@ -89,6 +89,7 @@
     Class( const Class & ) ; \
     Class& operator=( const Class& )
 
+// To avoid unused argument warning in function definition
 template< typename T > inline void ringmesh_unused( T const& )
 {
 }

@@ -38,9 +38,11 @@
 
 #include <ringmesh/common.h>
 
+#include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_entity.h>
 #include <ringmesh/geo_model_mesh_entity.h>
 #include <ringmesh/mesh.h>
+
 /*!
  * @file ringmesh/geo_model_mesh.h
  * @brief Classes to manage globally the indexing of mesh entities of a GeoModel
@@ -48,7 +50,6 @@
  */
 
 namespace RINGMesh {
-    class GeoModel ;
     class GeoModelMesh ;
 }
 
@@ -67,10 +68,9 @@ namespace RINGMesh {
      */
 
     class RINGMESH_API GeoModelMeshVertices {
-    ringmesh_disable_copy( GeoModelMeshVertices ) ;
-        friend class GeoModelMesh ;
-
     public:
+        friend class GeoModelMesh ;
+        
         GeoModelMeshVertices( GeoModelMesh& gmm, GeoModel& gm, Mesh& mesh, MeshBuilder& mesh_builder ) ;
         ~GeoModelMeshVertices() ;
 
@@ -150,6 +150,8 @@ namespace RINGMesh {
         }
 
     private:
+        ringmesh_disable_copy( GeoModelMeshVertices ) ;
+
         /*!
          * @brief Initialize the vertices from the vertices
          *        of the GeoModel Corners, Lines, and Surfaces
@@ -199,14 +201,13 @@ namespace RINGMesh {
     } ;
 
     class RINGMESH_API GeoModelMeshFacets {
-    ringmesh_disable_copy( GeoModelMeshFacets ) ;
-        friend class GeoModelMesh ;
     public:
+        friend class GeoModelMesh ;
+        
         enum FacetType {
             TRIANGLE, QUAD, POLYGON, ALL, NO_FACET
         } ;
 
-    public:
         GeoModelMeshFacets( GeoModelMesh& gmm, Mesh& mesh, MeshBuilder& mesh_builder  ) ;
         ~GeoModelMeshFacets() ;
 
@@ -377,7 +378,10 @@ namespace RINGMesh {
             test_and_initialize() ;
             return mesh_.colocater_ann( ColocaterANN::FACETS ) ;
         }
+    
     private:
+        ringmesh_disable_copy( GeoModelMeshFacets ) ;
+
         /*!
          * Initialize the facets of the GeoModelMesh
          * and sort them per surface and facet type
@@ -425,7 +429,6 @@ namespace RINGMesh {
     } ;
 
     class RINGMESH_API GeoModelMeshEdges {
-    ringmesh_disable_copy( GeoModelMeshEdges ) ;
     public:
         GeoModelMeshEdges( GeoModelMesh& gmm, Mesh& mesh, MeshBuilder& mesh_builder ) ;
         ~GeoModelMeshEdges() ;
@@ -469,6 +472,8 @@ namespace RINGMesh {
         void clear() ;
 
     private:
+        ringmesh_disable_copy( GeoModelMeshEdges ) ;
+
         /*!
          * Initialize the mesh edges
          */
@@ -488,13 +493,12 @@ namespace RINGMesh {
          * for a given well
          */
         std::vector< index_t > well_ptr_ ;
-
     } ;
 
     class RINGMESH_API GeoModelMeshCells {
-    ringmesh_disable_copy( GeoModelMeshCells ) ;
-        friend class GeoModelMesh ;
     public:
+        friend class GeoModelMesh ;
+        
         /*!
          * Several modes for vertex duplication algorithm:
          *  - NONE = no duplication
@@ -506,7 +510,6 @@ namespace RINGMesh {
             NONE, FAULT, HORIZON, ALL
         } ;
 
-    public:
         GeoModelMeshCells( GeoModelMesh& gmm, Mesh& mesh, MeshBuilder& mesh_builder ) ;
         /*!
          * Test if the mesh cells are initialized
@@ -809,7 +812,25 @@ namespace RINGMesh {
             test_and_initialize() ;
             return mesh_.colocater_ann( ColocaterANN::CELL_FACETS ) ;
         }
+    
     private:
+        /// enum to characterize the action to do concerning a surface
+        /// Action concerns the vertices of a Surface and not the Surface
+        enum ActionOnSurface {
+            /// do nothing
+            SKIP = -2,
+            /// need to be duplicated (don't know which side yet)
+            TO_PROCESS = -1,
+            /// need to duplicate the side opposite to the facet normal
+            NEG_SIDE = 0,
+            /// need to duplicate the side following the facet normal
+            POS_SIDE = 1
+        } ;
+        /// Action to do according a surface index
+        typedef std::pair< index_t, ActionOnSurface > action_on_surface ;
+    
+        ringmesh_disable_copy( GeoModelMeshCells ) ;
+
         /*!
          * @brief Initialize the  cells from the cells
          *        of the GeoModel Region cells
@@ -825,23 +846,7 @@ namespace RINGMesh {
          * Unbind attribute to the cells attribute manager
          */
         void unbind_attribute() ;
-
-        /// enum to characterize the action to do concerning a surface
-        /// Action concerns the vertices of a Surface and not the Surface
-        enum ActionOnSurface {
-            /// do nothing
-            SKIP = -2,
-            /// need to be duplicated (don't know which side yet)
-            TO_PROCESS = -1,
-            /// need to duplicate the side opposite to the facet normal
-            NEG_SIDE = 0,
-            /// need to duplicate the side following the facet normal
-            POS_SIDE = 1
-        } ;
-
-        /// Action to do according a surface index
-        typedef std::pair< index_t, ActionOnSurface > action_on_surface ;
-
+    
         /*!
          * Test if the mesh cell are duplicated according
          * the duplication mode, if not duplicate them.
@@ -933,11 +938,10 @@ namespace RINGMesh {
      * This is especially useful for simulations based on the MacroMesh (e.g. FEM)
      * It is possible to introduce new points on the cell edges.
      */
-    class RINGMESH_API GeoModelMeshOrder {
-    ringmesh_disable_copy( GeoModelMeshOrder ) ;
-        friend class GeoModelMesh ;
-
+    class RINGMESH_API GeoModelMeshOrder {       
     public:
+        friend class GeoModelMesh ;
+        
         GeoModelMeshOrder( GeoModelMesh& gmm, Mesh& mesh ) ;
 
         /*!
@@ -1004,6 +1008,8 @@ namespace RINGMesh {
         index_t nb_high_order_vertices_per_cell( index_t c ) const ;
 
     private:
+        ringmesh_disable_copy( GeoModelMeshOrder ) ;
+
         /*!
          * Initialize the database by computing the new vertices of the mesh.
          */
@@ -1089,7 +1095,6 @@ namespace RINGMesh {
          */
         void transfert_vertex_attributes() const ;
 
-
         /*!
          * Access the DuplicateMode
          * @return the current DuplicateMode
@@ -1152,6 +1157,13 @@ namespace RINGMesh {
             }
             order_value_ = new_order ;
         }
+        
+    public:
+        GeoModelMeshVertices vertices ;
+        GeoModelMeshEdges edges ;
+        GeoModelMeshFacets facets ;
+        GeoModelMeshCells cells ;
+        GeoModelMeshOrder order ;
 
     private:
         /*! Attached GeoModel */
@@ -1169,14 +1181,6 @@ namespace RINGMesh {
         mutable GeoModelMeshCells::DuplicateMode mode_ ;
         /// Order of the GeoModelMesh
         index_t order_value_ ;
-
-    public:
-
-        GeoModelMeshVertices vertices ;
-        GeoModelMeshEdges edges ;
-        GeoModelMeshFacets facets ;
-        GeoModelMeshCells cells ;
-        GeoModelMeshOrder order ;
     } ;
 
 }

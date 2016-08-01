@@ -59,8 +59,12 @@ namespace RINGMesh {
      * @brief First draft of flags to build a GeoModel
      * @todo Implements functions to set, access the values, depending on what ?
      * To check the consistency of the options. What do we do about the other entities ? [JP] 
+     * 
      * @todo We need to keep track of the status of the GeoModel when building it:
      * same flags or some others ?    
+     *
+     * @todo To separate in two classes ? One providing the low level functions set, assign etc,
+     * and the other one some high level functions. [JP]
      */
     class GeoModelBuildingFlags {
     public:
