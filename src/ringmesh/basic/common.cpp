@@ -32,65 +32,59 @@
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
  */
-
-#include <ringmesh/ringmesh_tests_config.h>
-
-#include <geogram/mesh/mesh_io.h>
-#include <geogram/basic/logger.h>
-
-#include <ringmesh/geomodel/geo_model.h>
-#include <ringmesh/geomodel/geo_model_api.h>
-#include <ringmesh/geomodel/geo_model_validity.h>
-#include <ringmesh/geomodel/geo_model_builder_from_mesh.h>
-#include <ringmesh/io/io.h>
-
-/*! 
- * Test the creation of a GeoModel from a conformal surface mesh 
- * @todo Test on other datasets: nested spheres.
- * @author Jeanne Pellerin
+ 
+ /*!
+ * @file Initialization of the RINGMesh and geogram library on loading
+ * @author Arnaud Botella
  */
 
-int main( int argc, char** argv )
-{
-    using namespace RINGMesh ;
+#include <ringmesh/basic/common.h>
 
-    try {
+#include <geogram/basic/common.h>
+#include <geogram/basic/command_line.h>
+#include <geogram/basic/command_line_args.h>
 
-        GEO::initialize() ;
-        configure_geogram() ;
-        configure_ringmesh() ;
+#ifdef RINGMESH_WITH_GRAPHICS
+#   include <geogram_gfx/basic/common.h>
+#endif
 
-        std::string file_name = ringmesh_test_data_path ;
-        file_name += "modelA6.mesh" ;
+#include <ringmesh/io/io.h>
+#include <ringmesh/geogram_extension/geogram_extension.h>
+#include <ringmesh/geomodel/geo_model_builder_gocad.h>
+#include <ringmesh/geomodel/geo_model_geological_entity.h>
+#include <ringmesh/tetrahedralize/tetra_gen.h>
 
-        // Set an output log file
-        std::string log_file( ringmesh_test_output_path ) ;
-        log_file += "log.txt" ;
-        GEO::FileLogger* file_logger = new GEO::FileLogger( log_file ) ;
-        Logger::instance()->register_client( file_logger ) ;
+namespace RINGMesh {
 
-        Logger::out( "TEST" ) << "Test GeoModel building from Surface"
-            << std::endl ;
-
-        GEO::Mesh in ;
-        GEO::mesh_load( file_name, in ) ;
-        GeoModel model ;
-
-        GeoModelBuilderSurfaceMesh BB( model, in ) ;
-        BB.build_polygonal_surfaces_from_connected_components() ;
-        BB.build_model_from_surfaces() ;
-        print_geomodel( model ) ;
-        GEO::CmdLine::set_arg( "in:intersection_check", false ) ;
-        is_geomodel_valid( model ) ;
-
-    } catch( const RINGMeshException& e ) {
-        Logger::err( e.category() ) << e.what() << std::endl ;
-        return 1 ;
-    } catch( const std::exception& e ) {
-        Logger::err( "Exception" ) << e.what() << std::endl ;
-        return 1 ;
+    /*!
+     * This function configures geogram by setting some geogram options.
+     * \pre This function should be call after GEO::initialize().
+     */
+    void configure_geogram()
+    {
+        GEO::CmdLine::import_arg_group( "sys" ) ;
+#ifdef RINGMESH_DEBUG
+        GEO::CmdLine::set_arg( "sys:assert", "abort" ) ;
+#endif
+        GEO::CmdLine::set_arg( "sys:FPE", true ) ;
+        GEO::CmdLine::import_arg_group( "algo" ) ;
+        GEO::CmdLine::set_arg( "algo:predicates", "exact" ) ;
+        GEO::CmdLine::import_arg_group( "log" ) ;
+        GEO::CmdLine::set_arg( "sys:use_doubles", true ) ;
+#ifdef RINGMESH_WITH_GRAPHICS
+        GEO::CmdLine::import_arg_group( "gfx" ) ;
+#endif
     }
-    Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
-    return 0 ;
 
+    /*!
+     * This function configures RINGMesh by initializing its factories.
+     */
+    void configure_ringmesh()
+    {
+        RINGMesh::mesh_initialize() ;
+        RINGMesh::TetraGen::initialize() ;
+        RINGMesh::GeoModelGeologicalEntity::initialize() ;
+        RINGMesh::ringmesh_mesh_io_initialize() ;
+        RINGMesh::initialize_gocad_import_factories() ;
+    }
 }

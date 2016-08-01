@@ -35,10 +35,10 @@
 
 #include <ringmesh/ringmesh_tests_config.h>
 
-#include <ringmesh/geo_model.h>
-#include <ringmesh/io.h>
-#include <ringmesh/geo_model_validity.h>
-#include <ringmesh/geo_model_api.h>
+#include <ringmesh/geomodel/geo_model.h>
+#include <ringmesh/geomodel/geo_model_api.h>
+#include <ringmesh/geomodel/geo_model_validity.h>
+#include <ringmesh/io/io.h>
 
 #include <geogram/basic/logger.h>
 

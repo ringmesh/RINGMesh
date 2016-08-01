@@ -37,12 +37,12 @@
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_io.h>
 
-#include <ringmesh/geo_model.h>
-#include <ringmesh/geo_model_api.h>
-#include <ringmesh/geo_model_builder_from_mesh.h>
-#include <ringmesh/geo_model_validity.h>
+#include <ringmesh/geomodel/geo_model.h>
+#include <ringmesh/geomodel/geo_model_api.h>
+#include <ringmesh/geomodel/geo_model_builder_from_mesh.h>
+#include <ringmesh/geomodel/geo_model_validity.h>
 #include <ringmesh/ringmesh_tests_config.h>
-#include <ringmesh/io.h>
+#include <ringmesh/io/io.h>
 
 /*!
  * @file Test GeoModel building from a Mesh

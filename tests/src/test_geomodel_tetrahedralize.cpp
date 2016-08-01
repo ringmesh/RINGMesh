@@ -38,10 +38,10 @@
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_io.h>
 
-#include <ringmesh/geo_model.h>
-#include <ringmesh/geo_model_api.h>
-#include <ringmesh/geogram_extension.h>
-#include <ringmesh/io.h>
+#include <ringmesh/geomodel/geo_model.h>
+#include <ringmesh/geomodel/geo_model_api.h>
+#include <ringmesh/geogram_extension/geogram_extension.h>
+#include <ringmesh/io/io.h>
 #include <ringmesh/ringmesh_tests_config.h>
 
 /*!
