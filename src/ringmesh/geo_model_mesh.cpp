@@ -367,7 +367,6 @@ namespace RINGMesh {
 
     void GeoModelMeshVertices::erase_invalid_vertices()
     {
-
         index_t nb_todelete = 0 ;
         std::vector< index_t > to_delete( nb() ) ; // Here nb() represents the number of vertices before removal of the entities
 
@@ -1987,9 +1986,9 @@ namespace RINGMesh {
         transfert_vertex_attributes() ;
         transfert_cell_attributes() ;
     }
+
     void GeoModelMesh::transfert_vertex_attributes() const
     {
-
         GEO::vector< std::string > att_v_names ;
         std::vector< std::string > att_v_double_names ;
         vertex_attribute_manager().list_attribute_names( att_v_names ) ;
@@ -2049,7 +2048,6 @@ namespace RINGMesh {
 
             }
         }
-
     }
 
     void GeoModelMesh::transfert_cell_attributes() const
