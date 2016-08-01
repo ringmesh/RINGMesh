@@ -33,14 +33,12 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_UTILS__
-#define __RINGMESH_UTILS__
+#ifndef __RINGMESH_BOX3D__
+#define __RINGMESH_BOX3D__
 
 #include <ringmesh/common.h>
-#include <ringmesh/geo_model_entity.h>
 
 #include <geogram/basic/geometry.h>
-#include <geogram/basic/attributes.h>
 
 /*!
  * @file Box3D class declaration
