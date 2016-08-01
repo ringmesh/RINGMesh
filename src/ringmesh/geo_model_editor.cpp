@@ -49,7 +49,6 @@
 
 namespace RINGMesh {
 
-    typedef GeoModelEntity::gme_t gme_t ;
     typedef std::string EntityType ;
   
     GeoModelEditor::GeoModelEditor( GeoModel& model )
@@ -837,7 +836,7 @@ namespace RINGMesh {
         }
         RINGMESH_PARALLEL_LOOP
         for( index_t e = 0; e < model_.nb_mesh_entities( type ); ++e ) {
-            GME::gme_t id( type, e ) ;
+            gme_t id( type, e ) ;
             GeoModelEntity& lhs = mesh_entity( id ) ;
             const GeoModelEntity& rhs = from.mesh_entity( id ) ;
             lhs = rhs ;

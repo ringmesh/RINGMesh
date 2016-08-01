@@ -66,7 +66,6 @@
 namespace {
     using namespace RINGMesh ;
 
-    typedef GeoModelEntity::gme_t gme_t ;
     typedef GeoModelMeshEntity GMME ;
     typedef GeoModelGeologicalEntity GMGE ;
 

@@ -66,8 +66,6 @@
 namespace {
     using namespace RINGMesh ;
 
-    typedef GeoModelEntity::gme_t gme_t ;
-
     /*!
      * @brief Total number of facets in the geomodel Surfaces
      */
@@ -610,7 +608,7 @@ namespace RINGMesh {
 
     void build_mesh_from_model_mesh_entities(
         const GeoModel& model,
-        const std::vector< GME::gme_t >& surface_entities,
+        const std::vector< gme_t >& surface_entities,
         GEO::Mesh& M )
     {
         std::size_t nb_entities = surface_entities.size() ;

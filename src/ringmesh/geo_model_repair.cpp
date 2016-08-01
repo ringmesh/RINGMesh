@@ -230,7 +230,7 @@ namespace RINGMesh {
      * If there are more than 2 colocated vertices throws an assertion in debug mode
      */
     void GeoModelRepair::vertices_on_inside_boundary(
-        const GME::gme_t& E_id,
+        const gme_t& E_id,
         std::set< index_t >& vertices )
     {
         vertices.clear() ;

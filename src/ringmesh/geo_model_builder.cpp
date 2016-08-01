@@ -70,7 +70,6 @@
 namespace {
     using namespace RINGMesh ;
 
-    typedef GeoModelEntity::gme_t gme_t ;
     typedef GeoModelMeshEntity GMME ;
 
     void get_entity_vertices_and_update_corners(
@@ -925,7 +924,7 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelBuilder::assign_mesh_to_entity( const Mesh& mesh, GME::gme_t to )
+    void GeoModelBuilder::assign_mesh_to_entity( const Mesh& mesh, gme_t to )
     {
         GeoModelMeshEntity& E = mesh_entity( to ) ;
         E.unbind_model_vertex_id_attribute() ;
@@ -1025,7 +1024,7 @@ namespace RINGMesh {
      * @warning Be careful with this update parameter, it is a very nice source of nasty bugs
      */
     void GeoModelBuilder::set_mesh_entity_vertex(
-        const GME::gme_t& t,
+        const gme_t& t,
         index_t v,
         const vec3& point,
         bool update )
@@ -1095,7 +1094,7 @@ namespace RINGMesh {
      * @return the first vertex index created
      */
     index_t GeoModelBuilder::create_mesh_entity_vertices(
-        const GME::gme_t& id,
+        const gme_t& id,
         index_t nb_vertices )
     {
         GeoModelMeshEntity& E = mesh_entity( id ) ;
@@ -1477,7 +1476,7 @@ namespace RINGMesh {
      */
     void GeoModelBuilder::compute_surface_adjacencies( index_t surface_id )
     {
-        Mesh& mesh = mesh_entity( GME::gme_t( Surface::type_name_static(), surface_id ) ).mesh_ ;
+        Mesh& mesh = mesh_entity( gme_t( Surface::type_name_static(), surface_id ) ).mesh_ ;
         MeshBuilder builder( mesh ) ;
         for( index_t f = 0; f < mesh.nb_facets(); f++ ) {
             for( index_t v = 0; v < mesh.nb_facet_vertices( f ); v++ ) {
@@ -1489,7 +1488,7 @@ namespace RINGMesh {
 
     void GeoModelBuilder::compute_region_adjacencies( index_t region_id )
     {
-        Mesh& mesh = mesh_entity( GME::gme_t( Region::type_name_static(), region_id ) ).mesh_ ;
+        Mesh& mesh = mesh_entity( gme_t( Region::type_name_static(), region_id ) ).mesh_ ;
         MeshBuilder builder( mesh ) ;
         for( index_t c = 0; c < mesh.nb_cells(); c++ ) {
             for( index_t f = 0; f < mesh.nb_cell_facets( c ); f++ ) {
@@ -1510,7 +1509,7 @@ namespace RINGMesh {
         const RINGMesh::Surface& surface_in,
         index_t surface_out )
     {
-        Mesh& mesh = mesh_entity( GME::gme_t( Surface::type_name_static(), surface_out ) ).mesh_ ;
+        Mesh& mesh = mesh_entity( gme_t( Surface::type_name_static(), surface_out ) ).mesh_ ;
         MeshBuilder builder( mesh ) ;
         builder.triangulate( surface_in.mesh_ ) ;
     }
@@ -1519,7 +1518,7 @@ namespace RINGMesh {
      * Finds duplicate vertex or creates it
      */
     index_t GeoModelBuilder::find_or_create_duplicate_vertex(
-        const GME::gme_t& E_id,
+        const gme_t& E_id,
         index_t model_vertex_id,
         index_t surface_vertex_id )
     {
@@ -1785,8 +1784,8 @@ namespace RINGMesh {
                 reorder_line_vertices_to_start_at_corner( model(), vertices ) ;
             }
 
-            GME::gme_t first_corner = find_or_create_corner( vertices.front() ) ;
-            GME::gme_t second_corner = find_or_create_corner( vertices.back() ) ;
+            gme_t first_corner = find_or_create_corner( vertices.front() ) ;
+            gme_t second_corner = find_or_create_corner( vertices.back() ) ;
             const std::vector< index_t >& adjacent_surfaces =
                 line_computer.adjacent_surfaces() ;
 
@@ -1980,7 +1979,7 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelBuilder::delete_mesh_entity_mesh( GME::gme_t E_id )
+    void GeoModelBuilder::delete_mesh_entity_mesh( gme_t E_id )
     {
         Mesh& M = mesh_entity( E_id ).mesh_ ;
         MeshBuilder builder( M ) ;
@@ -1988,7 +1987,7 @@ namespace RINGMesh {
     }
 
     void GeoModelBuilder::delete_mesh_entity_vertices(
-        GME::gme_t E_id,
+        gme_t E_id,
         GEO::vector< index_t >& to_delete )
     {
         Mesh& M = mesh_entity( E_id ).mesh_ ;
@@ -1998,7 +1997,7 @@ namespace RINGMesh {
 
     void GeoModelBuilder::delete_corner_vertex( index_t corner_id )
     {
-        GME::gme_t corner( Corner::type_name_static(), corner_id ) ;
+        gme_t corner( Corner::type_name_static(), corner_id ) ;
         GEO::vector< index_t > to_delete ;
         to_delete.push_back( 1 ) ;
         delete_mesh_entity_vertices( corner, to_delete ) ;

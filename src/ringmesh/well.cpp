@@ -35,6 +35,7 @@
 
 #include <ringmesh/well.h>
 #include <ringmesh/geo_model.h>
+#include <ringmesh/geo_model_mesh_entity.h>
 #include <ringmesh/geometry.h>
 #include <ringmesh/algorithm.h>
 #include <ringmesh/box3d.h>
@@ -64,7 +65,7 @@ namespace {
     index_t find_region( const GeoModel& BM, index_t surface_part_id, bool side )
     {
         ringmesh_assert( surface_part_id < BM.nb_surfaces() ) ;
-        GME::gme_t cur_surface( Surface::type_name_static(), surface_part_id ) ;
+        gme_t cur_surface( Surface::type_name_static(), surface_part_id ) ;
         /// @todo It would be better to directly check the region
         /// adjacent to the Surface.
         for( index_t r = 0; r < BM.nb_regions(); r++ ) {

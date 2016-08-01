@@ -53,7 +53,7 @@ namespace {
         if( type == Region::type_name_static() ) return true ;
         return false ;
     }
-    void build_string_for_geo_model_entity_export( GME::gme_t id, std::string& name )
+    void build_string_for_geo_model_entity_export( gme_t id, std::string& name )
     {
         name += id.type + "_" + GEO::String::to_string( id.index ) ;
     }
@@ -91,7 +91,7 @@ namespace RINGMesh {
                     }
                     const std::string type = file_line.field( 0 ) ;
                     index_t id = file_line.field_as_uint( 1 ) ;
-                    GME::gme_t entity( type, id ) ;
+                    gme_t entity( type, id ) ;
                     set_entity_name( entity, file_line.field( 2 ) ) ;
                     set_entity_geol_feature( entity,
                         GME::determine_geological_type( file_line.field( 3 ) ) ) ;
@@ -180,7 +180,7 @@ namespace RINGMesh {
                 } else {
                     const std::string type = file_line.field( 0 ) ;
                     index_t id = file_line.field_as_uint( 1 ) ;
-                    GME::gme_t entity( type, id ) ;
+                    gme_t entity( type, id ) ;
                     set_entity_name( entity, file_line.field( 2 ) ) ;
                     set_entity_geol_feature( entity,
                         GME::determine_geological_type( file_line.field( 3 ) ) ) ;
@@ -198,7 +198,7 @@ namespace RINGMesh {
     void GeoModelBuilderGM::load_meshes( const std::string& type, unzFile& uz )
     {
         for( index_t el = 0; el < model().nb_mesh_entities( type ); el++ ) {
-            GME::gme_t cur_gme( type, el ) ;
+            gme_t cur_gme( type, el ) ;
             std::string file_to_extract_and_load ;
             build_string_for_geo_model_entity_export( cur_gme,
                 file_to_extract_and_load ) ;

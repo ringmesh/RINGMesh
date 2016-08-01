@@ -159,7 +159,7 @@ namespace {
      * @param v0 Index of the first point in the model
      * @param v1 Index of the second point in the model
      */
-    GME::gme_t is_edge_on_line( const GeoModel& model, index_t v0, index_t v1 )
+    gme_t is_edge_on_line( const GeoModel& model, index_t v0, index_t v1 )
     {
         const std::vector< GMEVertex >& v0_bme = model.mesh.vertices.gme_vertices(
             v0 ) ;
@@ -168,7 +168,7 @@ namespace {
 
         // Get the local indices of the vertices in 
         // a common Line if any 
-        GME::gme_t result ;
+        gme_t result ;
         index_t lv0 = NO_ID ;
         index_t lv1 = NO_ID ;
 
@@ -186,7 +186,7 @@ namespace {
                         } else {
                             if( !model.line( result.index ).is_closed() ) {
                                 // Most certainly there is a problem (JP)
-                                return GME::gme_t() ;
+                                return gme_t() ;
                             }
 
                         }
@@ -196,7 +196,7 @@ namespace {
         }
         if( !result.is_defined() ) {
             // The two points are not on the same Line
-            return GME::gme_t() ;
+            return gme_t() ;
         } else {
             // Determine if the points define an edge
             if( lv0 > lv1 ) {
@@ -216,7 +216,7 @@ namespace {
             } else {
                 // The two points are on the same line but
                 // do not define an edge
-                return GME::gme_t() ;
+                return gme_t() ;
             }
         }
     }
@@ -225,7 +225,7 @@ namespace {
      * @brief Returns the Line identification if the given points define
      *       an edge of one of the Line of the model
      */
-    GME::gme_t is_edge_on_line(
+    gme_t is_edge_on_line(
         const GeoModel& model,
         const vec3& p0,
         const vec3& p1 )
@@ -470,7 +470,7 @@ namespace {
      */
     void boundary_gmme(
         const GeoModelMeshEntity& E,
-        std::vector< GME::gme_t >& borders,
+        std::vector< gme_t >& borders,
         bool with_inside_borders )
     {
         borders.clear() ;
@@ -489,7 +489,7 @@ namespace {
      * @brief Check if entity @param is of the @param model is in the
      *        in_boundary vector of entity @param in.
      */
-    bool is_in_in_boundary( const GeoModel& model, GME::gme_t is, GME::gme_t in )
+    bool is_in_in_boundary( const GeoModel& model, gme_t is, gme_t in )
     {
         const GeoModelMeshEntity& E = model.mesh_entity( in ) ;
         for( index_t i = 0; i < E.nb_in_boundary(); ++i ) {
@@ -641,8 +641,8 @@ namespace {
                         // the lines 
                         for( index_t k = 0; k < surfaces.size(); ++k ) {
                             for( index_t l = 0; l < lines.size(); ++l ) {
-                                GME::gme_t s_id( Surface::type_name_static(), surfaces[k] ) ;
-                                GME::gme_t l_id( Line::type_name_static(), lines[l] ) ;
+                                gme_t s_id( Surface::type_name_static(), surfaces[k] ) ;
+                                gme_t l_id( Line::type_name_static(), lines[l] ) ;
                                 if( !is_in_in_boundary( M, s_id, l_id ) ) {
                                     Logger::warn( "GeoModel" )
                                         << " Inconsistent Line-Surface connectivity "
@@ -691,8 +691,8 @@ namespace {
                         }
                         // Check that all the lines are in in_boundary of this corner
                         for( index_t k = 0; k < lines.size(); ++k ) {
-                            GME::gme_t l_id( Line::type_name_static(), lines[k] ) ;
-                            GME::gme_t c_id( Corner::type_name_static(), corner ) ;
+                            gme_t l_id( Line::type_name_static(), lines[k] ) ;
+                            gme_t c_id( Corner::type_name_static(), corner ) ;
                             if( !is_in_in_boundary( M, l_id, c_id ) ) {
                                 Logger::warn( "GeoModel" )
                                     << " Inconsistent Line-Corner connectivity "

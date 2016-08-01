@@ -40,9 +40,10 @@
 
 #include <geogram/basic/factory.h>
 
+#include <ringmesh/algorithm.h>
+#include <ringmesh/geomodel_indexing_types.h>
 #include <ringmesh/geo_model_entity.h>
 #include <ringmesh/geo_model_mesh.h>
-#include <ringmesh/algorithm.h>
 
 #include <vector>
 
@@ -54,6 +55,12 @@
 
 namespace RINGMesh {
     class WellGroup ;
+    class GeoModelGeologicalEntity ;
+    class GeoModelMeshEntity ;
+    class Corner ;
+    class Surface ;
+    class Line ;
+    class Region ;
 }
 
 namespace RINGMesh {    
@@ -160,8 +167,7 @@ namespace RINGMesh {
      * @brief The class to describe a geological model represented 
      * by its boundary surfaces and whose regions can be optionally meshed
      */
-    class RINGMESH_API GeoModel
-    {
+    class RINGMESH_API GeoModel {
     public:
         friend class GeoModelBuilder ;
         friend class GeoModelEditor ;
@@ -210,21 +216,8 @@ namespace RINGMesh {
          * @details Default value is 0
          * @param[in] type the mesh entity type
          */
-        index_t nb_mesh_entities( const EntityType& type ) const
-        {
-            if( EntityTypeManager::is_corner( type) ) {
-                return nb_corners();
-            } else if( EntityTypeManager::is_line( type ) ) {
-                return nb_lines();
-            } else if( EntityTypeManager::is_surface( type ) ) {
-                return nb_surfaces();
-            } else if( EntityTypeManager::is_region( type ) ) {
-                return nb_regions();
-            } else {
-                ringmesh_assert_not_reached ;
-                return 0 ;
-            }
-        }
+        index_t nb_mesh_entities( const EntityType& type ) const ; 
+
         /*!
          * @brief Returns the number of geological entities of the given type
          * @details Default value is 0
@@ -266,48 +259,33 @@ namespace RINGMesh {
          * pair (Region, NO_ID) universe region is returned.
          * @pre Entity identification is valid.
          */
-        const GeoModelGeologicalEntity& geological_entity( GME::gme_t id ) const
+        const GeoModelGeologicalEntity& geological_entity( gme_t id ) const
         {
             assert_gme_valid( id ) ;
             return *geological_entities( id.type )[id.index] ;
         }
         /*!
-         * Convenient overload of entity( GME::gme_t id )
+         * Convenient overload of entity( gme_t id )
          */
         const GeoModelGeologicalEntity& geological_entity(
             const EntityType& entity_type,
             index_t entity_index ) const
         {
-            return geological_entity( GME::gme_t( entity_type, entity_index ) ) ;
+            return geological_entity( gme_t( entity_type, entity_index ) ) ;
         }
         /*!
          * @brief Generic access to a meshed entity
          * @pre Type of the entity is CORNER, LINE, SURFACE, or REGION
          */
-        const GeoModelMeshEntity& mesh_entity( GME::gme_t id ) const
-        {
-            const EntityType& type = id.type ;
-            index_t index = id.index ;
-            if( EntityTypeManager::is_corner( type) ) {
-                return corner( index ) ;
-            } else if( EntityTypeManager::is_line( type) ) {
-                return line( index ) ;
-            } else if( EntityTypeManager::is_surface( type) ) {
-                return surface( index ) ;
-            } else if( EntityTypeManager::is_region( type) ) {
-                return region( index ) ;
-            }
-            ringmesh_assert_not_reached ;
-            return surface( 0 );
-        }
+        const GeoModelMeshEntity& mesh_entity( gme_t id ) const ;
         /*!
-         * Convenient overload of mesh_entity( GME::gme_t id )
+         * Convenient overload of mesh_entity( gme_t id )
          */
         const GeoModelMeshEntity& mesh_entity(
             const EntityType& entity_type,
             index_t entity_index ) const
         {
-            return mesh_entity( GME::gme_t( entity_type, entity_index ) ) ;
+            return mesh_entity( gme_t( entity_type, entity_index ) ) ;
         }
         const GeoModelEntity& entity( const EntityType& entity_type,
             index_t entity_index ) const ;
@@ -366,19 +344,20 @@ namespace RINGMesh {
     public:
         GeoModelMesh mesh ;
 
-    private:
+    //private:
         // Maybe implement them properly one day [JP]
         // For now, prevent any copy as a GeoModel manages a lot of memory
         ringmesh_disable_copy( GeoModel ) ;
+     private:
 
         /*! @brief Throws an assertion if the given GeoModelEntity id
          *  is not valid for this model
          */
-        void assert_gme_valid( GME::gme_t id ) const
+        void assert_gme_valid( gme_t id ) const
         {
             ringmesh_assert( is_valid_gme( id ) ) ;
         }
-        bool is_valid_gme( GME::gme_t id ) const {
+        bool is_valid_gme( gme_t id ) const {
             return is_valid_type( id.type ) 
                 && is_valid_index( id.type, id.index ) ;
         }
@@ -391,38 +370,12 @@ namespace RINGMesh {
             return index < nb_entities( type ) ;
         }
 
-        // I do know that this casts are really ugly. But we still have a big big design issue [JP]
-        const std::vector< GeoModelEntity* >& entities( const EntityType& type )
-        {
-            if( is_mesh_entity_type( type ) ) {
-                return *(std::vector< GeoModelEntity* > *) (&mesh_entities( type )) ;
-            } else if( is_geological_entity_type( type ) ) {
-                return *(std::vector< GeoModelEntity* > *) (&geological_entities( type )) ;
-            } else {
-                ringmesh_assert_not_reached ;
-                return *(std::vector< GeoModelEntity* > *) &surfaces_ ;
-            }
-        }
-        
+        const std::vector< GeoModelEntity* >& entities( const EntityType& type ) ;
         /*!
          * @brief Generic accessor to the storage of mesh entities of the given type
          */
         const std::vector< GeoModelMeshEntity* >& mesh_entities(
-            const EntityType& type ) const
-        {
-            if( EntityTypeManager::is_corner( type ) ) {
-                return *(std::vector< GeoModelMeshEntity* > *) &corners_ ;
-            } else if( EntityTypeManager::is_line( type ) ) {
-                return *(std::vector< GeoModelMeshEntity* > *) &lines_ ;
-            } else if( EntityTypeManager::is_surface( type ) ) {
-                return *(std::vector< GeoModelMeshEntity* > *) &surfaces_ ;
-            } else if( EntityTypeManager::is_region( type ) ) {
-                return *(std::vector< GeoModelMeshEntity* > *) &regions_ ;
-            } else {
-                ringmesh_assert_not_reached ;
-                return *(std::vector< GeoModelMeshEntity* > *) &surfaces_ ;
-            }
-        }
+            const EntityType& type ) const ;
 
         /*!
          * @brief Generic accessor to the storage of geological entities of the given type

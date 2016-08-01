@@ -120,20 +120,20 @@ namespace RINGMesh {
 
         void copy_meshes( const GeoModel& from, const std::string& entity_type ) ;
 
-        void assign_mesh_to_entity( const Mesh& mesh, GME::gme_t to ) ;
+        void assign_mesh_to_entity( const Mesh& mesh, gme_t to ) ;
 
         /*!
          * \name Set entity geometry from geometrical positions
          * @{
          */
         void set_mesh_entity_vertex(
-            const GME::gme_t& entity_id,
+            const gme_t& entity_id,
             index_t v,
             const vec3& point,
             bool update ) ;
 
         void set_mesh_entity_vertices(
-            const GME::gme_t& entity_id,
+            const gme_t& entity_id,
             const std::vector< vec3 >& points,
             bool clear ) ;
 
@@ -157,12 +157,12 @@ namespace RINGMesh {
          * @{
          */
         void set_mesh_entity_vertex(
-            const GME::gme_t& id,
+            const gme_t& id,
             index_t v,
             index_t model_vertex ) ;
 
         void set_mesh_entity_vertices(
-            const GME::gme_t& entity_id,
+            const gme_t& entity_id,
             const std::vector< index_t >& model_vertices,
             bool clear ) ;
 
@@ -217,7 +217,7 @@ namespace RINGMesh {
          */
 
         index_t create_mesh_entity_vertices(
-            const GME::gme_t& entity_id,
+            const gme_t& entity_id,
             index_t nb_vertices ) ;
 
         index_t create_surface_facet(
@@ -239,8 +239,8 @@ namespace RINGMesh {
          * @{
          */
 
-        void delete_mesh_entity_mesh( GME::gme_t E_id ) ;
-        void delete_mesh_entity_vertices( GME::gme_t E_id, GEO::vector< index_t >& to_delete ) ;
+        void delete_mesh_entity_mesh( gme_t E_id ) ;
+        void delete_mesh_entity_vertices( gme_t E_id, GEO::vector< index_t >& to_delete ) ;
         void delete_corner_vertex( index_t corner_id ) ;
         void delete_line_edges( index_t line_id, GEO::vector< index_t >& to_delete ) ;
         void delete_surface_facets( index_t surface_id, GEO::vector< index_t >& to_delete ) ;
@@ -251,7 +251,7 @@ namespace RINGMesh {
          * @{
          */
         index_t find_or_create_duplicate_vertex(
-            const GME::gme_t& E_id,
+            const gme_t& E_id,
             index_t model_vertex_id,
             index_t surface_vertex_id ) ;
 
@@ -263,13 +263,13 @@ namespace RINGMesh {
             const RINGMesh::Surface& surface_in,
             index_t surface_out ) ;
 
-        GME::gme_t find_or_create_corner( const vec3& point ) ;
-        GME::gme_t find_or_create_corner( index_t model_point_id ) ;
-        GME::gme_t find_or_create_line( const std::vector< vec3 >& vertices ) ;
-        GME::gme_t find_or_create_line(
+        gme_t find_or_create_corner( const vec3& point ) ;
+        gme_t find_or_create_corner( index_t model_point_id ) ;
+        gme_t find_or_create_line( const std::vector< vec3 >& vertices ) ;
+        gme_t find_or_create_line(
             const std::vector< index_t >& incident_surfaces,
-            GME::gme_t first_corner,
-            GME::gme_t second_corner ) ;
+            gme_t first_corner,
+            gme_t second_corner ) ;
 
         void recompute_geomodel_mesh() ;
 
