@@ -95,7 +95,7 @@ namespace RINGMesh {
 
     void RINGMESH_API build_mesh_from_model_mesh_entities(
         const GeoModel& model,
-        const std::vector< GME::gme_t >& surface_entities,
+        const std::vector< gme_t >& surface_entities,
         GEO::Mesh& M ) ;
 
     /*! 
@@ -249,7 +249,7 @@ namespace RINGMesh {
      * @param[in] point Geometric location to look for
      * @return NO_ID or the index of the Corner
      */
-    GME::gme_t RINGMESH_API find_corner( const GeoModel& geomodel, const vec3& point ) ;
+    gme_t RINGMESH_API find_corner( const GeoModel& geomodel, const vec3& point ) ;
 
     /*!
      * @brief Gets the index of the Corner at a given model point
@@ -257,7 +257,7 @@ namespace RINGMesh {
      * @param[in] model_point_id Index of the point in the GeoModel
      * @return NO_ID or the index of the Corner
      */
-    GME::gme_t RINGMESH_API find_corner( const GeoModel& geomodel, index_t model_point_id ) ;
+    gme_t RINGMESH_API find_corner( const GeoModel& geomodel, index_t model_point_id ) ;
 
 }
 

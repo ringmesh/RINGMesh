@@ -46,8 +46,9 @@
 #include <string>
 #include <vector>
 
+#include <ringmesh/geomodel_indexing_types.h>
 #include <ringmesh/geo_model_entity.h>
-#include <ringmesh/geo_model_mesh_entity.h>
+//#include <ringmesh/geo_model_mesh_entity.h>
 
 namespace RINGMesh {
     class GeoModel ;
@@ -94,6 +95,9 @@ namespace RINGMesh {
         std::vector< gme_t > children_ ;
     } ;
 
+
+    /// @todo Review: I am still not convinced that we always have to 
+    /// derive the base class to define new entities. [JP]
     class RINGMESH_API Contact: public GeoModelGeologicalEntity {
     public:
         Contact( const GeoModel& model )
@@ -101,7 +105,7 @@ namespace RINGMesh {
         {
             id_.type = type_name_static() ;
         }
-        ~Contact()
+        virtual ~Contact()
         {
         }
 
@@ -113,10 +117,7 @@ namespace RINGMesh {
         {
             return type_name_static() ;
         }
-        virtual const std::string child_type_name() const
-        {
-            return Line::type_name_static() ;
-        }
+        virtual const std::string child_type_name() const ;
 
         virtual bool is_valid() const
         {
@@ -132,7 +133,7 @@ namespace RINGMesh {
         {
             id_.type = type_name_static() ;
         }
-        ~Interface()
+        virtual ~Interface()
         {
         }
 
@@ -144,10 +145,7 @@ namespace RINGMesh {
         {
             return type_name_static() ;
         }
-        virtual const std::string child_type_name() const
-        {
-            return Surface::type_name_static() ;
-        }
+        virtual const std::string child_type_name() const ;
 
         virtual bool is_valid() const
         {
@@ -163,7 +161,7 @@ namespace RINGMesh {
         {
             id_.type = type_name_static() ;
         }
-        ~Layer()
+        virtual ~Layer()
         {
         }
 
@@ -175,10 +173,7 @@ namespace RINGMesh {
         {
             return type_name_static() ;
         }
-        virtual const std::string child_type_name() const
-        {
-            return Region::type_name_static() ;
-        }
+        virtual const std::string child_type_name() const ;
 
         virtual bool is_valid() const
         {

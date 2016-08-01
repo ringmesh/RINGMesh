@@ -430,7 +430,7 @@ namespace {
         }
     }
 
-    void build_string_for_geo_model_entity_export( GME::gme_t id, std::string& name )
+    void build_string_for_geo_model_entity_export( gme_t id, std::string& name )
     {
         name += id.type + "_" + GEO::String::to_string( id.index ) ;
     }

@@ -48,6 +48,8 @@
 
 #include <ringmesh/mesh.h>
 #include <ringmesh/geo_model_entity.h>
+#include <ringmesh/geomodel_indexing_types.h>
+
 
 namespace RINGMesh {
     class GeoModel ;
@@ -320,39 +322,6 @@ namespace RINGMesh {
     } ;
 
 
-    /*!
-     * @brief Vertex in a GeoModelEntity
-     */
-    struct GMEVertex {
-        GMEVertex( GME::gme_t t, index_t vertex_id_in )
-            : gme_id( t ), v_id( vertex_id_in )
-        {
-        }
-        GMEVertex()
-            : gme_id(), v_id( NO_ID )
-        {
-        }
-        bool operator<( const GMEVertex& rhs ) const
-        {
-            if( gme_id != rhs.gme_id ) {
-                return gme_id < rhs.gme_id ;
-            } else {
-                return v_id < rhs.v_id ;
-            }
-        }
-        bool operator==( const GMEVertex& rhs ) const
-        {
-            return gme_id == rhs.gme_id && v_id == rhs.v_id ;
-        }
-        bool is_defined() const
-        {
-            return gme_id.is_defined() && v_id != NO_ID ;
-        }
-        /// GeoModelEntity index in the GeoModel that owns it
-        GME::gme_t gme_id ;
-        /// Index of the vertex in the GeoModelEntity
-        index_t v_id ;
-    } ;
 
 
     /*!

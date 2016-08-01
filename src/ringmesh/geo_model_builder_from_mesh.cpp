@@ -652,7 +652,7 @@ namespace RINGMesh {
                     cc_facets_ptr.push_back( cc_corners.size() ) ;
                 }
 
-                GME::gme_t surface_gme = create_mesh_entity<Surface>() ;
+                gme_t surface_gme = create_mesh_entity<Surface>() ;
                 set_surface_geometry( surface_gme.index, cc_vertices, cc_corners,
                     cc_facets_ptr ) ;
             }

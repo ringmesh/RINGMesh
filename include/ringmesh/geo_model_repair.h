@@ -48,8 +48,6 @@
 
 
 namespace RINGMesh {
-    typedef GeoModelEntity::gme_t gme_t ;
-
     /*!
      * @brief Try repairing an supposedly invalid GeoModel
      * @details Remove colocated vertices in all GeoModelMeshEntity.
@@ -99,7 +97,7 @@ namespace RINGMesh {
 
         void remove_colocated_entity_vertices( std::set< gme_t >& to_remove ) ;
         void vertices_on_inside_boundary(
-            const GME::gme_t& E_id,
+            const gme_t& E_id,
             std::set< index_t >& vertices ) ;
 
         bool edge_is_degenerate(

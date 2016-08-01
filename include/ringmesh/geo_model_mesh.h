@@ -38,9 +38,9 @@
 
 #include <ringmesh/common.h>
 
-#include <ringmesh/geo_model.h>
-#include <ringmesh/geo_model_entity.h>
-#include <ringmesh/geo_model_mesh_entity.h>
+//#include <ringme/sh/geo_model.h>
+//#include <ringmesh/geo_model_entity.h>
+#include <ringmesh/geomodel_indexing_types.h>
 #include <ringmesh/mesh.h>
 
 /*!
@@ -49,8 +49,15 @@
  * @author Arnaud Botella and Jeanne Pellerin
  */
 
+/*! @todo URGENT : Rename all parameters of all the function in this file. 
+ *                 A lot of comments could then be removed.  
+ */
+
 namespace RINGMesh {
     class GeoModelMesh ;
+    class GeoModel ;
+    class GeoModelEntity ;
+    class MeshBuilder ;
 }
 
 namespace RINGMesh {
@@ -75,11 +82,11 @@ namespace RINGMesh {
         ~GeoModelMeshVertices() ;
 
         /*!
-         * Test if the mesh vertices are initialized
+         * Tests if the mesh vertices are initialized
          */
         bool is_initialized() const ;
         /*!
-         * Test if the mesh vertices need to be initialized,
+         * Tests if the mesh vertices need to be initialized,
          * if so initialize them.
          */
         void test_and_initialize() const ;
@@ -380,8 +387,6 @@ namespace RINGMesh {
         }
     
     private:
-        ringmesh_disable_copy( GeoModelMeshFacets ) ;
-
         /*!
          * Initialize the facets of the GeoModelMesh
          * and sort them per surface and facet type
@@ -399,6 +404,8 @@ namespace RINGMesh {
          * Unbind attribute to the facets attribute manager
          */
         void unbind_attribute() ;
+        
+        ringmesh_disable_copy( GeoModelMeshFacets ) ;
 
     private:
         /// Attached GeoModelMesh owning the vertices
@@ -1042,7 +1049,6 @@ namespace RINGMesh {
     } ;
 
     class RINGMESH_API GeoModelMesh {
-    ringmesh_disable_copy( GeoModelMesh ) ;
     public:
         GeoModelMesh( GeoModel& gm ) ;
         ~GeoModelMesh() ;
@@ -1164,6 +1170,9 @@ namespace RINGMesh {
         GeoModelMeshFacets facets ;
         GeoModelMeshCells cells ;
         GeoModelMeshOrder order ;
+
+  //  private:
+  //      ringmesh_disable_copy( GeoModelMesh ) ;
 
     private:
         /*! Attached GeoModel */

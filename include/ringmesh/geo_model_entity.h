@@ -47,6 +47,9 @@
 #include <vector>
 #include <map>
 
+#include <ringmesh/geomodel_indexing_types.h>
+
+
 namespace RINGMesh {
     class GeoModel ;
 }
@@ -82,65 +85,7 @@ namespace RINGMesh {
             FAULT,
             /// Volume Of Interest
             VOI
-        } ;
-  
-        /*! 
-         * @brief Unique identification of a GeoModelEntity in a GeoModel
-         * @todo Should we change this name? Looks like index_t but does not enforce
-         *       the programming guidelines [JP]
-         */
-        struct gme_t {
-            gme_t()
-                : type( type_name_static() ), index( NO_ID )
-            {
-            }
-            gme_t( const EntityType& entity_type, index_t id )
-                : type( entity_type ), index( id )
-            {
-            }
-            bool operator!=( const gme_t& rhs ) const
-            {
-                return type != rhs.type || index != rhs.index ;
-            }
-            bool operator==( const gme_t& rhs ) const
-            {
-                return type == rhs.type && index == rhs.index ;
-            }
-            /*!
-             * @brief Sort GME identifiers
-             * @details Compare first types, then compare indices, 
-             *          beginning with NO_ID indices. 
-             * @note In a sorted vector v of gme_t one can find the first surface with
-             *       std::lower_bound( v.begin(), v.end(), gme_t( SURFACE, NO_ID ) ) ;
-             */
-            bool operator<( const gme_t& rhs ) const
-            {
-                if( type != rhs.type ) {
-                    /// @warning Is this now enough for EntityType = std::string?  
-                    /// Did any code relied on that sorting? Maybe mine ... [JP]
-                    return type < rhs.type ;
-                } else {
-                    if( index == NO_ID ) return true ;
-                    if( rhs.index == NO_ID ) return false ;
-                    return index < rhs.index ;
-                }
-            }
-            friend std::ostream& operator<<( std::ostream& os, const gme_t& in )
-            {
-                os << in.type << " " << in.index ;
-                return os ;    
-            }
-            bool is_defined() const
-            {
-                return type != type_name_static() && index != NO_ID ;
-            }
-                
-            EntityType type ;
-            /*!
-             * Index of the entity in the GeoModel
-             */
-            index_t index ;
-        } ;
+        } ;       
 
         static GEOL_FEATURE determine_geological_type( const std::string& in ) ;
         static GEOL_FEATURE determine_type(

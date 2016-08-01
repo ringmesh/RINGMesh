@@ -35,8 +35,11 @@
 
 #include <ringmesh/ringmesh_tests_config.h>
 
-#include <ringmesh/geo_model.h>
+#include <vector>
+
 #include <ringmesh/io.h>
+#include <ringmesh/geo_model.h>
+#include <ringmesh/geo_model_mesh_entity.h>
 
 #include <geogram/points/colocate.h>
 #include <geogram/basic/logger.h>

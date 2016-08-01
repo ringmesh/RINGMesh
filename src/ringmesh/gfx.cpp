@@ -52,6 +52,8 @@
 
 #include <ringmesh/command_line.h>
 #include <ringmesh/geo_model_entity.h>
+#include <ringmesh/geo_model_mesh_entity.h>
+#include <ringmesh/geo_model_geological_entity.h>
 #include <ringmesh/io.h>
 
 namespace {

@@ -40,10 +40,12 @@
 
 #include <ringmesh/geo_model_geological_entity.h>
 
-#include <ringmesh/geo_model.h>
-#include <ringmesh/io.h>
-
 #include <geogram/basic/algorithm.h> // for validity - that may be moved 
+
+#include <ringmesh/io.h>
+#include <ringmesh/geo_model.h>
+#include <ringmesh/geo_model_mesh_entity.h>
+
 
 namespace RINGMesh {
     
@@ -93,6 +95,21 @@ namespace RINGMesh {
         ringmesh_register_GeoModelGeologicalEntity_creator( Layer ) ;
     }
 
+    const std::string Contact::child_type_name() const
+    {
+        return Line::type_name_static() ;
+    }
+
+    const std::string Interface::child_type_name() const
+    {
+        return Surface::type_name_static() ;
+    }
+
+    const std::string Layer::child_type_name() const
+    {
+        return Region::type_name_static() ;
+    }
+
       
     /*!
      * @brief Get the entities in the boundary of which @param E is
@@ -101,7 +118,7 @@ namespace RINGMesh {
      */
     void in_boundary_gme(
         const GeoModelGeologicalEntity& E,
-        std::vector< GME::gme_t >& in_boundary )
+        std::vector< gme_t >& in_boundary )
     {
         in_boundary.clear() ;
 
@@ -134,7 +151,7 @@ namespace RINGMesh {
         }
 
         for( index_t i = 0; i < GM.nb_geological_entities( Interface::type_name_static() ); ++i ) {
-            std::vector< GME::gme_t > layers ;
+            std::vector< gme_t > layers ;
             const GeoModelGeologicalEntity& entity = GM.geological_entity(
                 Interface::type_name_static(), i ) ;
             in_boundary_gme( entity, layers ) ;

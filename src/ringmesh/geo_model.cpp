@@ -39,15 +39,14 @@
  */
 
 #include <ringmesh/geo_model.h>
+
 #include <ringmesh/geo_model_mesh_entity.h>
-#include <ringmesh/geo_model_entity.h>
 #include <ringmesh/geo_model_geological_entity.h>
 
-#include <ringmesh/algorithm.h>
 
 namespace RINGMesh {
 
-    typedef GME::gme_t gme_t ;
+    typedef gme_t gme_t ;
     
     typedef std::string EntityType ;
     typedef std::map< EntityType, EntityType > EntityTypeMap;
@@ -200,6 +199,69 @@ namespace RINGMesh {
        } else {
            return static_cast<const GeoModelEntity&>(
                geological_entity( entity_type, entity_index ));
+       }
+   }
+
+   index_t GeoModel::nb_mesh_entities( const EntityType& type ) const
+   {
+       if( EntityTypeManager::is_corner( type ) ) {
+           return nb_corners();
+       } else if( EntityTypeManager::is_line( type ) ) {
+           return nb_lines();
+       } else if( EntityTypeManager::is_surface( type ) ) {
+           return nb_surfaces();
+       } else if( EntityTypeManager::is_region( type ) ) {
+           return nb_regions();
+       } else {
+           ringmesh_assert_not_reached ;
+           return 0 ;
+       }
+   }
+
+   const GeoModelMeshEntity& GeoModel::mesh_entity( gme_t id ) const
+   {
+       const EntityType& type = id.type ;
+       index_t index = id.index ;
+       if( EntityTypeManager::is_corner( type ) ) {
+           return corner( index ) ;
+       } else if( EntityTypeManager::is_line( type ) ) {
+           return line( index ) ;
+       } else if( EntityTypeManager::is_surface( type ) ) {
+           return surface( index ) ;
+       } else if( EntityTypeManager::is_region( type ) ) {
+           return region( index ) ;
+       }
+       ringmesh_assert_not_reached ;
+       return surface( 0 );
+   }
+
+   // I do know that this casts are really ugly. But we still have a big big design issue [JP]
+   const std::vector< GeoModelEntity* >& GeoModel::entities( const EntityType& type )
+   {
+       if( is_mesh_entity_type( type ) ) {
+           return *(std::vector< GeoModelEntity* > *) (&mesh_entities( type )) ;
+       } else if( is_geological_entity_type( type ) ) {
+           return *(std::vector< GeoModelEntity* > *) (&geological_entities( type )) ;
+       } else {
+           ringmesh_assert_not_reached ;
+           return *(std::vector< GeoModelEntity* > *) &surfaces_ ;
+       }
+   }
+
+   const std::vector< GeoModelMeshEntity* >& GeoModel::mesh_entities(
+       const EntityType& type ) const
+   {
+       if( EntityTypeManager::is_corner( type ) ) {
+           return *(std::vector< GeoModelMeshEntity* > *) &corners_ ;
+       } else if( EntityTypeManager::is_line( type ) ) {
+           return *(std::vector< GeoModelMeshEntity* > *) &lines_ ;
+       } else if( EntityTypeManager::is_surface( type ) ) {
+           return *(std::vector< GeoModelMeshEntity* > *) &surfaces_ ;
+       } else if( EntityTypeManager::is_region( type ) ) {
+           return *(std::vector< GeoModelMeshEntity* > *) &regions_ ;
+       } else {
+           ringmesh_assert_not_reached ;
+           return *(std::vector< GeoModelMeshEntity* > *) &surfaces_ ;
        }
    }
 
