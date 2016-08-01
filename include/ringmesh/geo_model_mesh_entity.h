@@ -663,6 +663,8 @@ namespace RINGMesh {
         /*!
          * @brief Gets the facet adjacent along an edge of a facet.
          * @param edge_index in the facet
+         * @note The edge index is assumed to be the index of the vertex at which it is starting.
+         * If this convention is changed, trouble is to expect [JP] 
          */
         index_t facet_adjacent_index( index_t facet_index, index_t edge_index ) const
         {

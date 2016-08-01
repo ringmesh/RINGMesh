@@ -55,7 +55,10 @@ Several small apps are provided with RINGMesh
  - ringmeshview.exe
  Visualization of geological models.
  
- Warning: The apps are built only if the compilation flag RINGMESH_WITH_UTILITIES is TRUE.
+To use the full possibilities of ringmeshview and override an old graphic card driver,
+use the options gfx:GLUP_profile=GLUP150 gfx:GLSL_version=4.3 to specify the version supported by your graphic card.
+ 
+Warning: The apps are built only if the compilation flag RINGMESH_WITH_UTILITIES is TRUE.
 The visualization tool is built only if the compilation flag RINGMESH_WITH_GRAPHICS is TRUE.
  
 What the API can do
