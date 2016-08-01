@@ -57,6 +57,9 @@ namespace RINGMesh {
      * @warning The Mesh of the model is deleted.
      *          This function will by no mean fix all errors in a GeoModel
      *          It has been tested on a very small number of models.
+     *
+     * @todo Convenience design to change. This allows an easy access for repair
+     * to the internal meshes of the GeoModel. This class is otherwise artificial.
      */
     class RINGMESH_API GeoModelRepair: public GeoModelBuilder {
     public:

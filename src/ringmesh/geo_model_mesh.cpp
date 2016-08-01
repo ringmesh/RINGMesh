@@ -42,7 +42,6 @@
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/mesh/mesh_repair.h>
-
 #include <geogram/points/colocate.h>
 
 #include <ringmesh/algorithm.h>
@@ -103,15 +102,6 @@ namespace {
         const Mesh& mesh_ ;
         const GEO::Attribute< index_t >& region_id_ ;
     } ;
-
-/*    inline GeoModelMeshEntity& cast_gmm_entity(
-        const GeoModel& M,
-        GME::TYPE T,
-        index_t i )
-    {
-        return dynamic_cast< GeoModelMeshEntity& >( const_cast< GME& >( M.entity(
-            GME::gme_t( T, i ) ) ) ) ;
-    } */
 
     index_t find_local_vertex_id( const Mesh& mesh, index_t cell, index_t vertex_id )
     {
