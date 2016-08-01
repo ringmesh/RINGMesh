@@ -46,9 +46,6 @@
 
 namespace RINGMesh {
 
-    typedef gme_t gme_t ;
-    
-    typedef std::string EntityType ;
     typedef std::map< EntityType, EntityType > EntityTypeMap;
 
     struct EntityTypeBoundaryMap

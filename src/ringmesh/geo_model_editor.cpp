@@ -807,11 +807,11 @@ namespace RINGMesh {
     }
 
     /*!
-        * @brief Copy macro information from a model
-        * @details Copy the all the model entities and their relationship ignoring their geometry
-        *
-        * @param[in] from Model to copy the information from
-        */
+    * @brief Copy macro information from a model
+    * @details Copy the all the model entities and their relationship ignoring their geometry
+    *
+    * @param[in] from Model to copy the information from
+    */
     void GeoModelEditor::copy_macro_topology( const GeoModel& from )
     {
         assert_entity_creation_allowed() ;

@@ -51,10 +51,6 @@
  */
 
 namespace RINGMesh {
-    class GeoModelRegionFromSurfaces ;
-}
-
-namespace RINGMesh {
     /*!
      * @brief First draft of flags to build a GeoModel
      * @todo Implements functions to set, access the values, depending on what ?
@@ -82,6 +78,10 @@ namespace RINGMesh {
         bool compute_regions_brep ;
         bool compute_regions_mesh ;
     } ;
+
+    // Implementation details
+    class GeoModelRegionFromSurfaces ;
+
 
     /*!
      * @brief Base class for all classes building a GeoModel.

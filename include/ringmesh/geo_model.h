@@ -344,11 +344,10 @@ namespace RINGMesh {
     public:
         GeoModelMesh mesh ;
 
-    //private:
+    private:
         // Maybe implement them properly one day [JP]
         // For now, prevent any copy as a GeoModel manages a lot of memory
         ringmesh_disable_copy( GeoModel ) ;
-     private:
 
         /*! @brief Throws an assertion if the given GeoModelEntity id
          *  is not valid for this model
