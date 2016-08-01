@@ -49,6 +49,7 @@
 #include <ringmesh/geomodel/geo_model_entity.h>
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
 #include <ringmesh/mesh/mesh.h>
+#include <ringmesh/mesh/mesh_builder.h>
 
 namespace RINGMesh {
     class GeoModel ;
