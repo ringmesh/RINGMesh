@@ -33,17 +33,16 @@
  *     FRANCE
  */
 
-#include <ringmesh/common.h>
-
-#include <ringmesh/command_line.h>
-#include <ringmesh/geo_model.h>
-#include <ringmesh/geogram_extension.h>
-#include <ringmesh/io.h>
-
+#include <ringmesh/basic/common.h>
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/file_system.h>
 #include <geogram/basic/stopwatch.h>
 #include <geogram/mesh/mesh_io.h>
+
+#include <ringmesh/basic/command_line.h>
+#include <ringmesh/geomodel/geo_model.h>
+#include <ringmesh/geogram_extension/geogram_extension.h>
+#include <ringmesh/io/io.h>
 
 /*!
  * @file ringmesh_surface_convert/main.cpp

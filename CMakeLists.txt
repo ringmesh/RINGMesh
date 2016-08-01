@@ -181,7 +181,7 @@ endif(WIN32)
 # Configure a header file to pass on some of the CMake settings
 # to the source code
 set(generated_configure_file ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_config.h)
-set(input_configure_file ${PROJECT_SOURCE_DIR}/include/ringmesh/ringmesh_config.h.in)
+set(input_configure_file ${PROJECT_SOURCE_DIR}/include/ringmesh/basic/ringmesh_config.h.in)
 configure_file(${input_configure_file} ${generated_configure_file})
 
 # We want to be able to include this file
@@ -288,8 +288,33 @@ endif(USE_OPENMP)
 
 #------------------------------------------------------------------------------------------------
 # Collect the library files
-file(GLOB ringmesh_src "${PROJECT_SOURCE_DIR}/src/ringmesh/*.cpp")
-file(GLOB ringmesh_include "${PROJECT_SOURCE_DIR}/include/ringmesh/*.h")
+function(source_file_directory var directory)
+    file(GLOB sources "${PROJECT_SOURCE_DIR}/src/ringmesh/${directory}/*.cpp")
+    source_group("Source Files\\${folder}" FILES ${sources})
+    set(${var} ${${var}} ${sources} PARENT_SCOPE)
+endfunction()
+function(include_file_directory var directory)
+    file(GLOB sources "${PROJECT_SOURCE_DIR}/ludec/ringmesh/${directory}/*.h")
+    source_group("Header Files\\${directory}" FILES ${sources})
+    set(${var} ${${var}} ${sources} PARENT_SCOPE)
+endfunction()
+
+source_file_directory(ringmesh_src basic)
+source_file_directory(ringmesh_src geogram_extension)
+source_file_directory(ringmesh_src geomodel)
+source_file_directory(ringmesh_src io)
+source_file_directory(ringmesh_src mesh)
+source_file_directory(ringmesh_src tetrahedralize)
+source_file_directory(ringmesh_src visualization)
+
+include_file_directory(ringmesh_include basic)
+include_file_directory(ringmesh_include geogram_extension)
+include_file_directory(ringmesh_include geomodel)
+include_file_directory(ringmesh_include io)
+include_file_directory(ringmesh_include mesh)
+include_file_directory(ringmesh_include tetrahedralize)
+include_file_directory(ringmesh_include visualization)
+
 file(GLOB zlib_src "${PROJECT_SOURCE_DIR}/src/third_party/zlib/*.c")
 file(GLOB zlib_include "${PROJECT_SOURCE_DIR}/include/third_party/zlib/*.h")
 # Add configure file to ringmesh includes
@@ -298,8 +323,6 @@ set(ringmesh_include ${ringmesh_include} ${generated_configure_file})
 # Group files of a project in directories
 # For this to work, all the files should be added to the sources of the project
 # and the global property USE_FOLDERS must be ON
-source_group("Source Files" FILES ${ringmesh_src})
-source_group("Header Files" FILES ${ringmesh_include})
 source_group("Zlib" FILES ${zlib_src} ${zlib_include})
 
 #------------------------------------------------------------------------------------------------

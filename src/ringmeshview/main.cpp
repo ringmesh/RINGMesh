@@ -77,13 +77,13 @@
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
  */
-#include <ringmesh/common.h>
+#include <ringmesh/basic/common.h>
 
 #ifdef RINGMESH_WITH_GRAPHICS
 
 #include <geogram/basic/logger.h>
 
-#include <ringmesh/gfx.h>
+#include <ringmesh/visualization/gfx.h>
 
 int main( int argc, char** argv )
 {

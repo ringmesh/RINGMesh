@@ -35,8 +35,8 @@
 
 #include <ringmesh/ringmesh_tests_config.h>
 
-#include <ringmesh/geo_model.h>
-#include <ringmesh/io.h>
+#include <ringmesh/geomodel/geo_model.h>
+#include <ringmesh/io/io.h>
 
 #include <geogram/basic/logger.h>
 

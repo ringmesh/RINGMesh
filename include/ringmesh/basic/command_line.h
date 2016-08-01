@@ -32,65 +32,28 @@
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
  */
+ 
 
-#include <ringmesh/ringmesh_tests_config.h>
+#ifndef __RINGMESH_COMMAND_LINE_
+#define __RINGMESH_COMMAND_LINE_
 
-#include <geogram/mesh/mesh_io.h>
-#include <geogram/basic/logger.h>
+#include <ringmesh/basic/common.h>
 
-#include <ringmesh/geomodel/geo_model.h>
-#include <ringmesh/geomodel/geo_model_api.h>
-#include <ringmesh/geomodel/geo_model_validity.h>
-#include <ringmesh/geomodel/geo_model_builder_from_mesh.h>
-#include <ringmesh/io/io.h>
-
-/*! 
- * Test the creation of a GeoModel from a conformal surface mesh 
- * @todo Test on other datasets: nested spheres.
- * @author Jeanne Pellerin
+/*!
+ * @todo Is this file really necessary>
+ * It is only used when applications are generated. 
+ * Replace it by a ringmesh_application_utils.h and cpp that gather 
+ * all we nee to run apps and that are not included if option unchecked [JP]
  */
 
-int main( int argc, char** argv )
-{
-    using namespace RINGMesh ;
+namespace RINGMesh {
 
-    try {
+    namespace CmdLine {
 
-        GEO::initialize() ;
-        configure_geogram() ;
-        configure_ringmesh() ;
+        bool RINGMESH_API import_arg_group( const std::string& name ) ;
 
-        std::string file_name = ringmesh_test_data_path ;
-        file_name += "modelA6.mesh" ;
-
-        // Set an output log file
-        std::string log_file( ringmesh_test_output_path ) ;
-        log_file += "log.txt" ;
-        GEO::FileLogger* file_logger = new GEO::FileLogger( log_file ) ;
-        Logger::instance()->register_client( file_logger ) ;
-
-        Logger::out( "TEST" ) << "Test GeoModel building from Surface"
-            << std::endl ;
-
-        GEO::Mesh in ;
-        GEO::mesh_load( file_name, in ) ;
-        GeoModel model ;
-
-        GeoModelBuilderSurfaceMesh BB( model, in ) ;
-        BB.build_polygonal_surfaces_from_connected_components() ;
-        BB.build_model_from_surfaces() ;
-        print_geomodel( model ) ;
-        GEO::CmdLine::set_arg( "in:intersection_check", false ) ;
-        is_geomodel_valid( model ) ;
-
-    } catch( const RINGMeshException& e ) {
-        Logger::err( e.category() ) << e.what() << std::endl ;
-        return 1 ;
-    } catch( const std::exception& e ) {
-        Logger::err( "Exception" ) << e.what() << std::endl ;
-        return 1 ;
     }
-    Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
-    return 0 ;
-
 }
+
+#endif
+
