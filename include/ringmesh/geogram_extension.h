@@ -50,7 +50,7 @@
 namespace RINGMesh {
 
     /*!
-     * Copy the content of a standrad library vector to the memory aligned GEO::Vector. 
+     * Copy the content of a standard library vector to the memory aligned GEO::Vector. 
      * A lot of copies, when we need to call Geogram functions. 
      * @todo Could we set Geogram vector to be a std::vector ?? 
      */
