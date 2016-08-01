@@ -45,6 +45,7 @@
 
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_entity.h>
+#include <ringmesh/geo_model_mesh_entity.h>
 #include <ringmesh/geogram_extension.h>
 
 
