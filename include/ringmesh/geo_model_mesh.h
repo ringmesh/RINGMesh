@@ -38,7 +38,7 @@
 
 #include <ringmesh/common.h>
 
-#include <ringmesh/geo_model.h>
+//#include <ringmesh/geo_model.h>
 #include <ringmesh/geo_model_entity.h>
 #include <ringmesh/geo_model_mesh_entity.h>
 #include <ringmesh/mesh.h>
@@ -51,6 +51,7 @@
 
 namespace RINGMesh {
     class GeoModelMesh ;
+    class GeoModel ;
 }
 
 namespace RINGMesh {
@@ -1157,13 +1158,6 @@ namespace RINGMesh {
             }
             order_value_ = new_order ;
         }
-        
-    public:
-        GeoModelMeshVertices vertices ;
-        GeoModelMeshEdges edges ;
-        GeoModelMeshFacets facets ;
-        GeoModelMeshCells cells ;
-        GeoModelMeshOrder order ;
 
     private:
         /*! Attached GeoModel */
@@ -1181,6 +1175,16 @@ namespace RINGMesh {
         mutable GeoModelMeshCells::DuplicateMode mode_ ;
         /// Order of the GeoModelMesh
         index_t order_value_ ;
+                
+    public:
+        // This is not compliant with the guidelines 
+        // BUT THEY HAVE to be after the above private attributes 
+        // because of the dangerous constructor [JP]
+        GeoModelMeshVertices vertices ;
+        GeoModelMeshEdges edges ;
+        GeoModelMeshFacets facets ;
+        GeoModelMeshCells cells ;
+        GeoModelMeshOrder order ;
     } ;
 
 }
