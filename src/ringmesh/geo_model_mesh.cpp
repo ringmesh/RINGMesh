@@ -51,7 +51,7 @@
 #include <ringmesh/geogram_extension.h>
 #include <ringmesh/geometry.h>
 #include <ringmesh/well.h>
-#include <ringmesh/utils.h>
+#include <ringmesh/box3d.h>
 
 /*!
  * @author Arnaud Botella - Jeanne Pellerin - Antoine Mazuyer
@@ -138,6 +138,13 @@ namespace {
                 }
             }
         }
+    }
+
+    bool is_attribute_a_double(
+        GEO::AttributesManager& att_manager,
+        const std::string& att_name )
+    {
+        return GEO::Attribute< double >::is_defined( att_manager, att_name ) ;
     }
 
 }

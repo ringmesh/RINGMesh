@@ -43,7 +43,7 @@
 #include <geogram_gfx/glup_viewer/glup_viewer_gui.h>
 
 #include <ringmesh/geo_model.h>
-#include <ringmesh/utils.h>
+#include <ringmesh/box3d.h>
 
 /*!
  * @file Classes for GeoModel visualization

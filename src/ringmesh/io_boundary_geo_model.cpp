@@ -52,7 +52,7 @@
 #include <ringmesh/geo_model_entity.h>
 #include <ringmesh/geo_model_validity.h>
 #include <ringmesh/ringmesh_config.h>
-#include <ringmesh/utils.h>
+#include <ringmesh/box3d.h>
 
 /*!
  * @file Implementation of classes to load and save surface GeoModels meshes

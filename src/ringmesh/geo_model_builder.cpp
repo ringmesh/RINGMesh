@@ -55,7 +55,7 @@
 #include <ringmesh/geo_model_validity.h>
 #include <ringmesh/geometry.h>
 #include <ringmesh/geogram_mesh_repair.h>
-#include <ringmesh/utils.h>
+#include <ringmesh/box3d.h>
 
 /*!
  * @file ringmesh/geo_model_builder.cpp

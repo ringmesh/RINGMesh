@@ -54,7 +54,7 @@
 #include <ringmesh/geogram_extension.h>
 #include <ringmesh/geometry.h>
 #include <ringmesh/well.h>
-#include <ringmesh/utils.h>
+#include <ringmesh/box3d.h>
 #include <ringmesh/io.h>
 
 /*!
@@ -336,6 +336,15 @@ namespace {
             out.close() ;
         }
     } ;
+    
+    /// @todo Temporary fix! Waiting for clean attribute type manager
+    /// by Bruno, for the moment we only deal with double
+    bool is_attribute_a_double(
+        GEO::AttributesManager& att_manager,
+        const std::string& att_name )
+    {
+        return GEO::Attribute< double >::is_defined( att_manager, att_name ) ;
+    }
 
     /************************************************************************/
 
@@ -352,9 +361,7 @@ namespace {
         GEO::vector< std::string > attribute_names ;
         mesh_entity.attributes().list_attribute_names( attribute_names ) ;
         for( index_t att = 0; att < mesh_entity.attributes().nb(); att++ ) {
-
-            //TODO: this is temps ! Waiting for clean attribute type manager
-            //by Bruno, for the moment we only deal with double
+           
             if( !is_attribute_a_double( mesh_entity.attributes(),
                 attribute_names[att] ) || attribute_names[att] == "point" ) {
                 continue ;

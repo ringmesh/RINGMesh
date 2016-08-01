@@ -37,7 +37,7 @@
 #include <ringmesh/geo_model.h>
 #include <ringmesh/geometry.h>
 #include <ringmesh/algorithm.h>
-#include <ringmesh/utils.h>
+#include <ringmesh/box3d.h>
 
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_geometry.h>

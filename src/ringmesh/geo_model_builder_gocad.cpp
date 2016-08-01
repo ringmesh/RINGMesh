@@ -44,7 +44,7 @@
 #include <ringmesh/geometry.h>
 #include <ringmesh/geo_model_api.h>
 #include <ringmesh/geogram_extension.h>
-#include <ringmesh/utils.h>
+#include <ringmesh/box3d.h>
 
 /*!
  * @brief Implementation of the class to build GeoModel from input
