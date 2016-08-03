@@ -1060,7 +1060,7 @@ namespace RINGMesh {
                      * Please help the reader !! same thing 2 lines below [JP]
                      */
                     index_t duplicated_vertex_id = gmm_.vertices.nb()
-                        + duplicated_vertex_indices_.size() ;
+                        + static_cast< index_t >( duplicated_vertex_indices_.size() ) ;
                     duplicated_vertex_indices_.push_back( vertex_id ) ;
 
                     // Update all the cell corners on this side of the surface
@@ -1157,7 +1157,7 @@ namespace RINGMesh {
     index_t GeoModelMeshCells::nb_duplicated_vertices() const
     {
         test_and_initialize_duplication() ;
-        return duplicated_vertex_indices_.size() ;
+        return static_cast< index_t >( duplicated_vertex_indices_.size() ) ;
     }
 
     index_t GeoModelMeshCells::nb_total_vertices() const
@@ -1845,7 +1845,7 @@ namespace RINGMesh {
                     }
                 }
             }
-            nb_vertices_ += uniq_points.size() ;
+            nb_vertices_ += static_cast< index_t >( uniq_points.size() ) ;
         }
 
     }

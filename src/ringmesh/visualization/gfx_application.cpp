@@ -331,6 +331,8 @@ namespace RINGMesh {
                         set_attribute_names(
                             GM_.region( 0 ).vertex_attribute_manager() ) ;
                         break ;
+                    default:
+                        break ;
                 }
                 ImGui::EndPopup() ;
             }
@@ -1066,6 +1068,8 @@ namespace RINGMesh {
             case MESH:
                 ringmesh_assert( current_viewer_ < meshes_.size() ) ;
                 meshes_[current_viewer_]->draw_object_properties() ;
+                return ;
+            default:
                 return ;
         }
     }

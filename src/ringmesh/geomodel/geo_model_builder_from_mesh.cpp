@@ -279,7 +279,7 @@ namespace RINGMesh {
         /*! Number of GeoModelEntities of the considered type */
         index_t nb_gme() const
         {
-            return gme_id_to_attribute_value_.size() ;
+            return static_cast< index_t >( gme_id_to_attribute_value_.size() ) ;
         }
 
         /*! Is the value indeed taken by the attribute on the mesh */
@@ -638,7 +638,8 @@ namespace RINGMesh {
                         c < mesh_.facets.corners_end( f ); ++c ) {
                         index_t v = mesh_.facet_corners.vertex( c ) ;
                         if( global_vertex_id_to_id_in_cc[v] == NO_ID ) {
-                            global_vertex_id_to_id_in_cc[v] = cc_vertices.size() ;
+                            index_t index = static_cast< index_t >( cc_vertices.size() ) ;
+                            global_vertex_id_to_id_in_cc[v] = index ;
                             cc_vertices.push_back( mesh_.vertices.point( v ) ) ;
                         }
                         cc_corners.push_back( global_vertex_id_to_id_in_cc[v] ) ;
@@ -649,7 +650,8 @@ namespace RINGMesh {
                             S.push( n ) ;
                         }
                     }
-                    cc_facets_ptr.push_back( cc_corners.size() ) ;
+                    index_t nb_cc_corners = static_cast< index_t >( cc_corners.size() ) ;
+                    cc_facets_ptr.push_back( nb_cc_corners ) ;
                 }
 
                 gme_t surface_gme = create_mesh_entity<Surface>() ;

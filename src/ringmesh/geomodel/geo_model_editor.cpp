@@ -103,11 +103,11 @@ namespace RINGMesh {
         index_t nb_additional_entities )
     {
         assert_entity_creation_allowed() ;
-        index_t index = find_or_create_geological_entity_type( type ) ;
+        find_or_create_geological_entity_type( type ) ;
         std::vector< GeoModelGeologicalEntity* >& store =
             modifiable_geological_entities( type ) ;
-        std::size_t old_size = store.size() ;
-        std::size_t new_size = old_size + nb_additional_entities ;
+        index_t old_size = static_cast< index_t >( store.size() ) ;
+        index_t new_size = old_size + nb_additional_entities ;
         store.resize( new_size, nil ) ;
         for( index_t i = old_size; i < new_size; i++ ) {
             ringmesh_assert( store[i] == nil ) ;
@@ -259,7 +259,6 @@ namespace RINGMesh {
         if( parents.size() == 0 ) {
             return ;
         } else {
-            const EntityType& first_parent = parents[0] ;
             for( index_t i = 0; i < model().nb_mesh_entities( type ); ++i ) {
                 GeoModelMeshEntity& E = mesh_entity( type, i ) ;
                 if( !E.has_geological_feature() ) {
@@ -361,7 +360,7 @@ namespace RINGMesh {
     /*!
      * @brief Class in charge of removing entities from a GeoModel     
      */
-    class GeoModelEntityRemoval : public GeoModelEditor {        
+    class GeoModelEntityRemoval: public GeoModelEditor {
     public:
         typedef std::string EntityType ;   
         typedef std::map< EntityType, index_t > TypeToIndex ;
@@ -407,7 +406,6 @@ namespace RINGMesh {
         void do_delete_flagged_entities()
         {
             for( index_t i = 0; i < nb_entity_types_; ++i ) {
-                const EntityType& type = index_to_entity_type( i ) ;
                 for( index_t j = 0; j < nb_initial_entities_[i]; ++j ) {
                     if( to_erase_[i][j] == NO_ID ) {
                         delete_entity( i, j ) ;
