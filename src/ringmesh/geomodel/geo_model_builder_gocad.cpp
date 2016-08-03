@@ -91,7 +91,8 @@ namespace {
     void print_nb_vertices_and_tetras_per_region(
         const std::vector< index_t >& nb_entities_per_region )
     {
-        const index_t nb_regions = 0.5 * nb_entities_per_region.size() ;
+        const index_t nb_regions =
+            static_cast< index_t >( nb_entities_per_region.size() / 2 ) ;
         Logger::out( "Mesh" ) << "Mesh has " << nb_regions << " regions "
             << std::endl ;
         for( index_t i = 0; i < nb_regions; ++i ) {
@@ -195,9 +196,9 @@ namespace {
             // First time this facet corner is met in facet_corners
             vec3 point = get_point_from_gocad_id( geomodel, load_storage.vertex_map_,
                 vertex_gocad_id ) ;
-            cur_surf_facets.push_back( cur_surf_points.size() ) ;
-            gocad_vertices2cur_surf_points[vertex_gocad_id] =
-                cur_surf_points.size() ;
+            index_t index = static_cast< index_t >( cur_surf_points.size() ) ;
+            cur_surf_facets.push_back( index ) ;
+            gocad_vertices2cur_surf_points[vertex_gocad_id] = index ;
             cur_surf_points.push_back( point ) ;
         } else {
             // If this facet corner has already been met in facet_corners
@@ -317,7 +318,7 @@ namespace {
         vec3 first_facet_center = surface.mesh_element_center( 0 ) ;
         region_ann.get_colocated( first_facet_center,
             colocated_cell_facet_centers ) ;
-        return colocated_cell_facet_centers.size() ;
+        return static_cast< index_t >( colocated_cell_facet_centers.size() ) ;
     }
 
     /*!
@@ -697,7 +698,9 @@ namespace {
             } else {
                 if( !load_storage.vertices_.empty() ) {
                     assign_mesh_surface( builder(), load_storage ) ;
-                    load_storage.tface_vertex_ptr_ = load_storage.vertices_.size() ;
+                    index_t nb_vertices =
+                        static_cast< index_t >( load_storage.vertices_.size() ) ;
+                    load_storage.tface_vertex_ptr_ = nb_vertices ;
                 }
             }
         }
@@ -717,7 +720,6 @@ namespace {
                 GME::determine_geological_type( type ) ) ;
         }
     } ;
-
 
     class LoadLayer: public MLLineParser {
     private:
@@ -901,9 +903,11 @@ namespace {
             GEO::LineInput& line,
             TSolidLoadingStorage& load_storage )
         {
-            load_storage.vertex_map_.add_vertex(
-                load_storage.vertices_.size(), load_storage.cur_region_ ) ;
-            GocadLineParser::create( "VRTX", builder(), geomodel() )->execute( line, load_storage ) ;
+            index_t vertex_id = static_cast< index_t >( load_storage.vertices_.size() ) ;
+            load_storage.vertex_map_.add_vertex( vertex_id,
+                load_storage.cur_region_ ) ;
+            GocadLineParser::create( "VRTX", builder(), geomodel() )->execute( line,
+                load_storage ) ;
         }
     } ;
 
@@ -934,7 +938,7 @@ namespace {
             std::vector< vec3 >& region_vertices,
             VertexMap& vertex_map )
         {
-            const index_t referring_vertex = line.field_as_double( 2 ) - 1 ;
+            const index_t referring_vertex = line.field_as_uint( 2 ) - 1 ;
             const index_t referred_vertex_local_id = vertex_map.local_id(
                 referring_vertex ) ;
             const index_t referred_vertex_region_id = vertex_map.region(
@@ -942,7 +946,8 @@ namespace {
             if( referred_vertex_region_id < region_id ) {
                 // If the atom referred to a vertex of another region,
                 // acting like for a vertex
-                vertex_map.add_vertex( region_vertices.size(), region_id ) ;
+                index_t index = static_cast< index_t >( region_vertices.size() ) ;
+                vertex_map.add_vertex( index, region_id ) ;
                 region_vertices.push_back(
                     geomodel.region( referred_vertex_region_id ).vertex(
                         referred_vertex_local_id ) ) ;

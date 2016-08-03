@@ -101,7 +101,7 @@ namespace RINGMesh {
 
     index_t EntityTypeManager::nb_mesh_entity_types()
     {
-        return hard_encoded_mesh_entity_types.size() ;
+        return static_cast< index_t >( hard_encoded_mesh_entity_types.size() ) ;
     }
     bool EntityTypeManager::is_corner( const EntityType& type )
     {

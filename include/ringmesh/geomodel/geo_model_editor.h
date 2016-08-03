@@ -369,7 +369,7 @@ namespace RINGMesh {
             const EntityType entity_type = T::type_name_static() ;                      
             std::vector< GeoModelMeshEntity* >& store = modifiable_mesh_entities(
                 entity_type ) ;
-            index_t old_size = store.size() ;
+            index_t old_size = static_cast< index_t >( store.size() ) ;
             index_t new_size = old_size + nb_additionnal_entities ;
             store.resize( new_size, nil ) ;
             for( index_t i = old_size; i < new_size; i++ ) {                    

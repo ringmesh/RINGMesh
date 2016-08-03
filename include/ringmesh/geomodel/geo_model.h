@@ -68,7 +68,7 @@ namespace RINGMesh {
      * @brief Manages the type relationship between GeoModelEntities
      * Each GeoModel owns one instance of it.
      */
-    class RINGMESH_API EntityTypeManager {        
+    class RINGMESH_API EntityTypeManager {
     public:
         friend class GeoModelEditor ;
 
@@ -115,7 +115,7 @@ namespace RINGMesh {
         }
         index_t nb_parent_types( const MeshEntityType& child_type ) const
         {
-            return parent_types( child_type ).size() ;
+            return static_cast< index_t >( parent_types( child_type ).size() ) ;
         }
         const MeshEntityType child_type(
             const GeologicalEntityType& parent_type ) const
@@ -133,7 +133,7 @@ namespace RINGMesh {
         bool is_geological_entity_type( const EntityType& type ) const ;
         index_t nb_geological_entity_types() const
         {
-            return geological_entity_types_.size() ;
+            return static_cast< index_t >( geological_entity_types_.size() ) ;
         }
         const std::vector< GeologicalEntityType >& geological_entity_types() const
         {
@@ -228,7 +228,7 @@ namespace RINGMesh {
             if( !is_geological_entity_type( type ) ) {
                 return 0 ;
             } else {
-                return geological_entities( type ).size() ;                
+                return static_cast< index_t >( geological_entities( type ).size() ) ;
             }
         }
         /*!
@@ -354,6 +354,7 @@ namespace RINGMesh {
          */
         void assert_gme_valid( gme_t id ) const
         {
+            ringmesh_unused( id ) ;
             ringmesh_assert( is_valid_gme( id ) ) ;
         }
         bool is_valid_gme( gme_t id ) const {
