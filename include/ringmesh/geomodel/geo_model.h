@@ -69,8 +69,12 @@ namespace RINGMesh {
      * Each GeoModel owns one instance of it.
      */
     class RINGMESH_API EntityTypeManager {
+        ringmesh_disable_copy( EntityTypeManager ) ;
     public:
         friend class GeoModelEditor ;
+        EntityTypeManager()
+        {
+        }
 
         typedef std::string EntityType ;
         typedef std::string MeshEntityType ;
@@ -160,7 +164,7 @@ namespace RINGMesh {
         std::vector< GeologicalEntityType > geological_entity_types_ ;
         GeologicalEntityToChild parent_to_child_ ;
         MeshEntityToParents child_to_parents_ ; 
-    };
+    } ;
 
 
     /*!
