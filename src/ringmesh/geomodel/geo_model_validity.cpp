@@ -152,80 +152,65 @@ namespace {
         return triangles_intersections( p1, p2, p3, q1, q2, q3, sym ) ;
     }
 
-    /*!
-     * @brief Returns the Line identification if the given points define
-     *       an edge of one of the Line of the model
-     * @param model The GeoModel to consider
-     * @param v0 Index of the first point in the model
-     * @param v1 Index of the second point in the model
-     */
-    gme_t is_edge_on_line( const GeoModel& model, index_t v0, index_t v1 )
+    bool is_edge_on_line( const Line& line, index_t v0, index_t v1 )
     {
-        const std::vector< GMEVertex >& v0_bme = model.mesh.vertices.gme_vertices(
-            v0 ) ;
-        const std::vector< GMEVertex >& v1_bme = model.mesh.vertices.gme_vertices(
-            v1 ) ;
-
-        // Get the local indices of the vertices in 
-        // a common Line if any 
-        gme_t result ;
-        index_t lv0 = NO_ID ;
-        index_t lv1 = NO_ID ;
-
-        // No sorting to optimize since 
-        // v0_bme and v1_bme are very small sets ( < 10 entities ) [JP]
-        for( index_t i = 0; i < v0_bme.size(); ++i ) {
-            if( v0_bme[i].gme_id.type == Line::type_name_static() ) {
-                for( index_t j = 0; j < v1_bme.size(); ++j ) {
-                    if( v1_bme[j].gme_id.type == Line::type_name_static()
-                        && v0_bme[i].gme_id.index == v1_bme[j].gme_id.index ) {
-                        if( lv0 == NO_ID ) {
-                            lv0 = v0_bme[i].v_id ;
-                            lv1 = v1_bme[j].v_id ;
-                            result = v0_bme[i].gme_id ;
-                        } else {
-                            if( !model.line( result.index ).is_closed() ) {
-                                // Most certainly there is a problem (JP)
-                                return gme_t() ;
-                            }
-
-                        }
-                    }
-                }
-            }
+        if( v0 > v1 ) {
+            std::swap( v0, v1 ) ;
         }
-        if( !result.is_defined() ) {
-            // The two points are not on the same Line
-            return gme_t() ;
-        } else {
-            // Determine if the points define an edge
-            if( lv0 > lv1 ) {
-                std::swap( lv0, lv1 ) ;
-            }
-            // Casts are here to avoid a compiler warning [JP]
-//            index_t delta_i = static_cast< int >( lv1 ) - static_cast< int >( lv0 ) ;
-            index_t delta_i = lv1 - lv0 ;
+        index_t delta_i = v1 - v0 ;
 
-            if( delta_i == 1 ) {
-                // There is an edge if their indices in the Line are i and i+1
-                return result ;
-            } else if( model.line( result.index ).is_closed()
-                && delta_i == model.line( result.index ).nb_vertices() - 2 ) {
-                // If the Line is closed we can also have 0; n-2 or n-1; 1
-                return result ;
-            } else {
-                // The two points are on the same line but
-                // do not define an edge
-                return gme_t() ;
-            }
+        if( delta_i == 1 ) {
+            // There is an edge if their indices in the Line are i and i+1
+            return true ;
+        } else if( line.is_closed() && delta_i == line.nb_vertices() - 2 ) {
+            // If the Line is closed we can also have 0; n-2 or n-1; 1
+            return true ;
+        } else {
+            // The two points are on the same line but
+            // do not define an edge
+            return false ;
         }
     }
 
     /*!
      * @brief Returns the Line identification if the given points define
      *       an edge of one of the Line of the model
+     * @param[in] model The GeoModel to consider
+     * @param[in] v0 Index of the first point in the model
+     * @param[in] v1 Index of the second point in the model
      */
-    gme_t is_edge_on_line(
+    bool is_edge_on_line( const GeoModel& model, index_t v0, index_t v1 )
+    {
+        const std::vector< GMEVertex >& v0_bme = model.mesh.vertices.gme_vertices(
+            v0 ) ;
+        const std::vector< GMEVertex >& v1_bme = model.mesh.vertices.gme_vertices(
+            v1 ) ;
+
+        bool found_line = false ;
+        for( index_t i = 0; i < v0_bme.size(); ++i ) {
+            if( EntityTypeManager::is_line( v0_bme[i].gme_id.type ) ) {
+                index_t line0_id = v0_bme[i].gme_id.index ;
+                for( index_t j = 0; j < v1_bme.size(); ++j ) {
+                    if( EntityTypeManager::is_line( v1_bme[j].gme_id.type )
+                        && line0_id == v1_bme[j].gme_id.index ) {
+                        if( !is_edge_on_line( model.line( line0_id ), v0_bme[i].v_id,
+                            v1_bme[j].v_id ) ) {
+                            return false ;
+                        }
+                        found_line = true ;
+                        break ;
+                    }
+                }
+            }
+        }
+        return found_line ;
+    }
+
+    /*!
+     * @brief Returns the Line identification if the given points define
+     *       an edge of one of the Line of the model
+     */
+    bool is_edge_on_line(
         const GeoModel& model,
         const vec3& p0,
         const vec3& p1 )
@@ -277,11 +262,11 @@ namespace {
                         index_t v21 = BM.mesh.vertices.index( p21 ) ;
 
                         if( v10 == v20 && v11 == v21
-                            && is_edge_on_line( BM, p20, p21 ).is_defined() ) {
+                            && is_edge_on_line( BM, p20, p21 ) ) {
                             return true ;
                         }
                         if( v10 == v21 && v11 == v20
-                            && is_edge_on_line( BM, p20, p21 ).is_defined() ) {
+                            && is_edge_on_line( BM, p20, p21 ) ) {
                             return true ;
                         }
                     }
@@ -786,7 +771,7 @@ namespace {
             for( index_t v = 0; v < S.nb_mesh_element_vertices( f ); ++v ) {
                 if( S.facet_adjacent_index( f, v ) == NO_ID
                     && !is_edge_on_line( S.model(), S.model_vertex_id( f, v ),
-                        S.model_vertex_id( f, S.next_facet_vertex_index( f, v ) ) ).is_defined() ) {
+                        S.model_vertex_id( f, S.next_facet_vertex_index( f, v ) ) ) ) {
                     invalid_corners.push_back( S.model_vertex_id( f, v ) ) ;
                     invalid_corners.push_back(
                         S.model_vertex_id( f, S.next_facet_vertex_index( f, v ) ) ) ;
