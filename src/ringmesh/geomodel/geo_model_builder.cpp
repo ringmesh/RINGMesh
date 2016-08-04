@@ -1035,7 +1035,7 @@ namespace RINGMesh {
             model().mesh.vertices.update_point( E.model_vertex_id( v ), point ) ;
         } else {
             MeshBuilder builder( E.mesh_ ) ;
-            builder.vertex( v ) = point ;
+            builder.set_vertex( v, point ) ;
         }
     }
 
@@ -1082,8 +1082,9 @@ namespace RINGMesh {
         }
         if( !points.empty() ) {
             index_t start = builder.create_vertices( points.size() ) ;
-            GEO::Memory::copy( builder.point_ptr( start ), points.data()->data(),
-                3 * sizeof(double) * points.size() ) ;
+            for( index_t v = 0; v < points.size(); v++ ) {
+                builder.set_vertex( start + v, points[v] ) ;
+            }
         }
     }
 
@@ -1538,7 +1539,7 @@ namespace RINGMesh {
             // Duplicate the vertex in the surface
             MeshBuilder builder( E.mesh_ ) ;
             duplicate = builder.create_vertex(
-                model().mesh.vertices.vertex( model_vertex_id ).data() ) ;
+                model().mesh.vertices.vertex( model_vertex_id ) ) ;
 
             // Set its model vertex index
             ringmesh_assert( duplicate < E.nb_vertices() ) ;

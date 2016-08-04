@@ -189,14 +189,13 @@ namespace RINGMesh {
             if( E.nb_vertices() == 0 ) {
                 continue ;
             }
-            // Dangerous low-level memory copy
-            GEO::Memory::copy( builder.vertex( count ).data(),
-                E.vertex( 0 ).data(), 3 * E.nb_vertices() * sizeof(double) ) ;
             
+            builder.create_vertices( E.nb_vertices() ) ;
             GEO::Attribute< index_t > att( E.vertex_attribute_manager(),
                 GeoModelMeshEntity::model_vertex_id_att_name() ) ;
             
             for( index_t v = 0; v < E.nb_vertices(); v++ ) {
+                builder.set_vertex( v, E.vertex( v ) ) ;
                 // Global index stored at GME level
                 att[v] = count ;
                 // Index in the GME stored at global level
@@ -305,7 +304,7 @@ namespace RINGMesh {
     {
         gme_vertices_.push_back( std::vector< GMEVertex >() ) ;
         MeshBuilder builder( mesh_ ) ;
-        return builder.create_vertex( point.data() ) ;
+        return builder.create_vertex( point ) ;
     }
 
     void GeoModelMeshVertices::add_to_bme( index_t v, const GMEVertex& v_gme )
@@ -337,7 +336,7 @@ namespace RINGMesh {
         test_and_initialize() ;
         ringmesh_assert( v < nb() ) ;
         // Change the position of the unique_vertex
-        mesh_builder_.vertex( v ) = point ;
+        mesh_builder_.set_vertex( v, point ) ;
 
         GeoModelBuilder builder( gm_ ) ;
 

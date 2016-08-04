@@ -687,9 +687,9 @@ namespace RINGMesh {
         return result ;
     }
 
-    vec3 model_entity_cell_center( const Region& R, index_t cell )
+    vec3 model_entity_cell_center( const GeoModelMeshEntity& E, index_t cell )
     {
-        return R.mesh_element_center( cell ) ;
+        return E.mesh_element_center( cell ) ;
     }
 
     void translate( GeoModel& M, const vec3& translation_vector )
