@@ -227,8 +227,7 @@ namespace RINGMesh {
      */
     template< typename CONTAINER, typename CMP >
     inline void sort_unique(
-        CONTAINER& container,
-        const CMP& cmp )
+        CONTAINER& container, const CMP& cmp )
     {
         std::sort( container.begin(), container.end(), cmp ) ;
         container.erase( std::unique( container.begin(), container.end(), cmp ),
