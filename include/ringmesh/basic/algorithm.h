@@ -161,7 +161,7 @@ namespace RINGMesh {
         const std::vector< T >& input_values,
         std::vector< index_t >& unique_value_indices )
     {
-        index_t nb_values = static_cast<index_t>(input_values.size()) ;
+        index_t nb_values = static_cast< index_t >( input_values.size() ) ;
         std::vector< index_t > sorted_indices( nb_values ) ;
         for( index_t i = 0; i < nb_values; ++i ) {
             sorted_indices[i] = i ;
