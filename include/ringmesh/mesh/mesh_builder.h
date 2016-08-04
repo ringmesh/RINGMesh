@@ -131,24 +131,15 @@ namespace RINGMesh {
          * @{
          */
         /*!
-         * @brief Gets a point.
+         * @brief Sets a point.
          * @param[in] v_id the vertex, in 0.. @function nb_vetices()-1.
+         * @param[in] vertex the vertex coordinates
          * @return reference to the point that corresponds to the vertex.
          */
-        vec3& vertex( index_t v_id )
+        void set_vertex( index_t v_id, const vec3& vertex )
         {
-            return mesh_.mesh_->vertices.point( v_id ) ;
-        }
-        /*!
-         * \brief Gets a point
-         * \param[in] v_id the vertex, in 0..nb()-1
-         * \return a pointer to the coordinates of the point
-         *  that correspond to the vertex
-         * \pre !single_precision()
-         */
-        double* point_ptr( index_t v_id )
-        {
-            return mesh_.mesh_->vertices.point_ptr( v_id ) ;
+            mesh_.mesh_->vertices.point( v_id ) = vertex ;
+            clear_vertex_linked_objects() ;
         }
         /*!
          * @brief Creates a new vertex.
@@ -163,9 +154,11 @@ namespace RINGMesh {
          * @param[in] coords a pointer to dimension() coordinate.
          * @return the index of the created vertex
          */
-        index_t create_vertex( const double* coords )
+        index_t create_vertex( const vec3& vertex )
         {
-            return mesh_.mesh_->vertices.create_vertex( coords ) ;
+            index_t index = create_vertex() ;
+            set_vertex( index, vertex ) ;
+            return index ;
         }
         /*!
          * @brief Creates a contiguous chunk of vertices.
@@ -189,7 +182,7 @@ namespace RINGMesh {
         {
             mesh_.mesh_->vertices.delete_elements( to_delete,
                 remove_isolated_vertices ) ;
-            delete_vertex_colocater() ;
+            clear_vertex_linked_objects() ;
         }
         /*!
          * @brief Removes all the vertices and attributes.
@@ -201,7 +194,7 @@ namespace RINGMesh {
         void clear_vertices( bool keep_attributes, bool keep_memory )
         {
             mesh_.mesh_->vertices.clear( keep_attributes, keep_memory ) ;
-            delete_vertex_colocater() ;
+            clear_vertex_linked_objects() ;
         }
         /*!
          * @brief Deletes the ColocaterANN on vertices
@@ -226,6 +219,7 @@ namespace RINGMesh {
         void create_edge( index_t v1_id, index_t v2_id )
         {
             mesh_.mesh_->edges.create_edge( v1_id, v2_id ) ;
+            clear_edge_linked_objects() ;
         }
         /*!
          * \brief Creates a contiguous chunk of edges
@@ -248,6 +242,7 @@ namespace RINGMesh {
             index_t vertex_id )
         {
             mesh_.mesh_->edges.set_vertex( edge_id, local_vertex_id, vertex_id ) ;
+            clear_edge_linked_objects() ;
         }
         /*!
          * @brief Deletes a set of edges.
@@ -307,6 +302,7 @@ namespace RINGMesh {
 
                 mesh_.mesh_->facets.create_polygon( facet_vertices ) ;
             }
+            clear_facet_linked_objects() ;
         }
         /*!
          * \brief Creates a polygonal facet
@@ -315,7 +311,9 @@ namespace RINGMesh {
          * \return the index of the created facet
          */
         index_t create_facet_polygon( const GEO::vector< index_t >& vertices ) {
-            return mesh_.mesh_->facets.create_polygon( vertices ) ;
+            index_t index = mesh_.mesh_->facets.create_polygon( vertices ) ;
+            clear_facet_linked_objects() ;
+            return index ;
         }
 
         /*!
@@ -349,6 +347,7 @@ namespace RINGMesh {
             index_t vertex_id )
         {
             mesh_.mesh_->facets.set_vertex( facet_id, local_vertex_id, vertex_id ) ;
+            clear_facet_linked_objects() ;
         }
         /*!
          * @brief Sets an adjacent facet by facet and local edge index.
@@ -379,6 +378,7 @@ namespace RINGMesh {
             GEO::vector< index_t > copy ;
             copy_std_vector_to_geo_vector( triangles, copy ) ;
             mesh_.mesh_->facets.assign_triangle_mesh( copy, steal_args ) ;
+            clear_facet_linked_objects() ;
         }
         /*!
          * @brief Removes all the facets and attributes.
@@ -409,8 +409,7 @@ namespace RINGMesh {
         {
             mesh_.mesh_->facets.delete_elements( to_delete,
                 remove_isolated_vertices ) ;
-            delete_facet_aabb() ;
-            delete_facet_colocater() ;
+            clear_facet_linked_objects() ;
         }
         /*!
          * @brief Deletes the ColocaterANN on facets
@@ -464,6 +463,7 @@ namespace RINGMesh {
             GEO::vector< index_t > copy ;
             copy_std_vector_to_geo_vector( tets, copy ) ;
             mesh_.mesh_->cells.assign_tet_mesh( copy, steal_args ) ;
+            clear_cell_linked_objects() ;
         }
 
         /*!
@@ -478,6 +478,7 @@ namespace RINGMesh {
             index_t vertex_id )
         {
             mesh_.mesh_->cells.set_vertex( cell_id, local_vertex_id, vertex_id ) ;
+            clear_cell_linked_objects() ;
         }
         /*!
          * \brief Sets the vertex that a corner is incident to
@@ -486,6 +487,7 @@ namespace RINGMesh {
          */
         void set_cell_corner_vertex_index( index_t corner_index, index_t vertex_index ) {
             mesh_.mesh_->cell_corners.set_vertex( corner_index, vertex_index ) ;
+            clear_cell_linked_objects() ;
         }
         /*!
          * \brief Sets the cell adjacent
@@ -579,6 +581,29 @@ namespace RINGMesh {
         /*!
          * @}
          */
+
+    private:
+        void clear_vertex_linked_objects()
+        {
+            delete_vertex_colocater() ;
+            clear_edge_linked_objects() ;
+            clear_facet_linked_objects() ;
+            clear_cell_linked_objects() ;
+        }
+        void clear_edge_linked_objects()
+        {
+            delete_edge_colocater() ;
+        }
+        void clear_facet_linked_objects()
+        {
+            delete_facet_aabb() ;
+            delete_facet_colocater() ;
+        }
+        void clear_cell_linked_objects()
+        {
+            delete_cell_aabb() ;
+            delete_cell_colocater() ;
+        }
 
     private:
         Mesh& mesh_ ;
