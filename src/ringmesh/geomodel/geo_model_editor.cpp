@@ -818,26 +818,36 @@ namespace RINGMesh {
         copy_mesh_entity_topology< Surface >( from ) ;
         copy_mesh_entity_topology< Region >( from ) ;
 
-        model().universe_ = from.universe_ ;
+        for( index_t t = 0; t < from.nb_geological_entity_types(); t++ ) {
+
+        }
+
+        model().universe_.copy( from.universe_ ) ;
     }
 
     template< typename ENTITY >
     void GeoModelEditor::copy_mesh_entity_topology( const GeoModel& from )
     {
         const EntityType& type = ENTITY::type_name_static() ;
-        std::vector< GeoModelMeshEntity* >& store = modifiable_mesh_entities( type ) ;
-        store.resize( from.nb_mesh_entities( type ), nil ) ;
+        create_mesh_entities< ENTITY >( from.nb_mesh_entities( type ) ) ;
 
-        for( index_t e = 0; e < model_.nb_mesh_entities( type ); ++e ) {
-            store[e] = new ENTITY( model(), e ) ;
-            ringmesh_assert( store[e] != nil ) ;
-        }
         RINGMESH_PARALLEL_LOOP
         for( index_t e = 0; e < model_.nb_mesh_entities( type ); ++e ) {
             gme_t id( type, e ) ;
-            GeoModelEntity& lhs = mesh_entity( id ) ;
-            const GeoModelEntity& rhs = from.mesh_entity( id ) ;
-            lhs = rhs ;
+            mesh_entity( id ).copy( from.mesh_entity( id ) ) ;
+        }
+    }
+
+    void GeoModelEditor::copy_geological_entity_topology(
+        const GeoModel& from,
+        const EntityType& type )
+    {
+        create_geological_entities( type, from.nb_geological_entities( type ) ) ;
+
+        RINGMESH_PARALLEL_LOOP
+        for( index_t e = 0; e < model_.nb_mesh_entities( type ); ++e ) {
+            gme_t id( type, e ) ;
+            mesh_entity( id ).copy( from.mesh_entity( id ) ) ;
         }
     }
 }

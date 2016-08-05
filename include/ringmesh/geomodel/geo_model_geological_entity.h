@@ -56,6 +56,7 @@ namespace RINGMesh {
 
 namespace RINGMesh {
     class RINGMESH_API GeoModelGeologicalEntity: public GeoModelEntity {
+    ringmesh_disable_copy( GeoModelGeologicalEntity ) ;
     public:
         friend class GeoModelEditor ;
 
@@ -88,6 +89,11 @@ namespace RINGMesh {
             GEOL_FEATURE geological_feature = NO_GEOL )
             : GeoModelEntity( model, id, name, geological_feature )
         {
+        }
+        virtual void copy( const GeoModelGeologicalEntity& from )
+        {
+            GME::copy( from ) ;
+            children_ = from.children_ ;
         }
         
     protected:
