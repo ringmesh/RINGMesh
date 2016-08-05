@@ -819,7 +819,8 @@ namespace RINGMesh {
         copy_mesh_entity_topology< Region >( from ) ;
 
         for( index_t t = 0; t < from.nb_geological_entity_types(); t++ ) {
-
+            copy_geological_entity_topology( from,
+                from.geological_entity_type( t ) ) ;
         }
 
         model().universe_.copy( from.universe_ ) ;
@@ -845,9 +846,9 @@ namespace RINGMesh {
         create_geological_entities( type, from.nb_geological_entities( type ) ) ;
 
         RINGMESH_PARALLEL_LOOP
-        for( index_t e = 0; e < model_.nb_mesh_entities( type ); ++e ) {
+        for( index_t e = 0; e < model_.nb_geological_entities( type ); ++e ) {
             gme_t id( type, e ) ;
-            mesh_entity( id ).copy( from.mesh_entity( id ) ) ;
+            geological_entity( id ).copy( from.geological_entity( id ) ) ;
         }
     }
 }
