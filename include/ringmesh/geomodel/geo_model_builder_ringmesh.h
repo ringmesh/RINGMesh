@@ -88,6 +88,12 @@ namespace RINGMesh {
         void unzip_one_file( unzFile& uz, const char filename[MAX_FILENAME] ) ;
 
         void load_mesh_entities( GEO::LineInput& file_line ) ;
+
+        /*!
+         * Make sure that the first boundary corner of each Line
+         * is equivalen to the first vertex of eacj Line
+         */
+        void match_line_corners_to_first_and_last_vertex() ;
     } ;
 }
 

@@ -113,8 +113,8 @@ namespace RINGMesh {
                         }
                     } else {
                         // Second line : indices of its in boundaries
-                        for( index_t c = 0; c < file_line.nb_fields(); c++ ) {
-                            add_mesh_entity_in_boundary( entity,
+                        for( index_t c = 1; c < file_line.nb_fields(); c++ ) {
+                            add_mesh_entity_boundary( entity,
                                 file_line.field_as_uint( c ) ) ;
                         }
                     }
