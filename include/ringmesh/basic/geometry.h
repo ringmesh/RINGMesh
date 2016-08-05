@@ -425,7 +425,7 @@ namespace RINGMesh {
     *
     */
     class RINGMESH_API MakeUnique {
-        ringmesh_disable_copy( MakeUnique ) ;
+    ringmesh_disable_copy( MakeUnique ) ;
     public:
         MakeUnique( const std::vector< vec3 >& data ) ;
         template< typename T > MakeUnique( const std::vector< T >& data )

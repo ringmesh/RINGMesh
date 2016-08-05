@@ -89,7 +89,7 @@ namespace RINGMesh {
     * @author Jeanne Pellerin
     */
     class TetgenMesher {
-        ringmesh_disable_copy( TetgenMesher ) ;
+    ringmesh_disable_copy( TetgenMesher ) ;
     public:
         typedef GEO::Mesh Mesh ;
 
