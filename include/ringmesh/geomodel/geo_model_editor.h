@@ -67,7 +67,7 @@ namespace RINGMesh {
         GeoModelEditor( GeoModel& M ) ;
         virtual ~GeoModelEditor() ;
 
-        void copy_macro_topology( const GeoModel& from ) ;    
+        void copy_macro_topology( const GeoModel& from ) ;
 
         /*!
          *@brief Set the name of the model
@@ -362,18 +362,18 @@ namespace RINGMesh {
             ringmesh_assert( create_entity_allowed_ ) ;
         }      
 
-        template< typename T >
+        template< typename ENTITY >
         bool create_mesh_entities( index_t nb_additionnal_entities )
         {
             assert_entity_creation_allowed() ;           
-            const EntityType entity_type = T::type_name_static() ;                      
+            const EntityType entity_type = ENTITY::type_name_static() ;
             std::vector< GeoModelMeshEntity* >& store = modifiable_mesh_entities(
                 entity_type ) ;
             index_t old_size = static_cast< index_t >( store.size() ) ;
             index_t new_size = old_size + nb_additionnal_entities ;
             store.resize( new_size, nil ) ;
             for( index_t i = old_size; i < new_size; i++ ) {                    
-                store[i] = new T( model(), i ) ;
+                store[i] = new ENTITY( model(), i ) ;
             }
             return true ;
         }
@@ -502,6 +502,9 @@ namespace RINGMesh {
 
         template< typename T >
         void copy_mesh_entity_topology( const GeoModel& from ) ;
+        void copy_geological_entity_topology(
+            const GeoModel& from,
+            const EntityType& type ) ;
 
     private:
         /*! The model edited 

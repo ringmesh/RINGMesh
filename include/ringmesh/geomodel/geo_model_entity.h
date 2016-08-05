@@ -59,6 +59,7 @@ namespace RINGMesh {
      * @brief Abstract base class describing one entity of a GeoModel
      */
     class RINGMESH_API GeoModelEntity {
+    ringmesh_disable_copy( GeoModelEntity ) ;
     public:
         friend class GeoModelEditor ;
 
@@ -165,20 +166,12 @@ namespace RINGMesh {
                 name_( name ),
                 geol_feature_( geological_feature )
         {}
-        GeoModelEntity& operator=( const GeoModelEntity& rhs )
+        virtual void copy( const GeoModelEntity& from )
         {
-            id_ = rhs.id_;
-            name_ = rhs.name_;
-            geol_feature_ = rhs.geol_feature_ ;
-            return *this ;
+            id_ = from.id_;
+            name_ = from.name_;
+            geol_feature_ = from.geol_feature_ ;
         }
-        GeoModelEntity( const GeoModelEntity& in )
-            :
-            model_( in.model_ ),
-            id_( in.id_ ),
-            name_( in.name_ ),
-            geol_feature_( in.geol_feature_ )
-        {}
 
     protected:
         /// Reference to the GeoModel owning this entity
@@ -194,6 +187,7 @@ namespace RINGMesh {
     typedef GeoModelEntity GME ;
 
     class RINGMESH_API Universe: public GeoModelEntity {
+    ringmesh_disable_copy( Universe ) ;
     public:       
         friend class GeoModelEditor ;
 
@@ -231,18 +225,12 @@ namespace RINGMesh {
         }
 
     protected:
-        Universe( const Universe& in )
-            :
-            GeoModelEntity( in ),
-            boundary_surfaces_( in.boundary_surfaces_ ),
-            boundary_surface_sides_( in.boundary_surface_sides_ )
-        {}
-        Universe& operator=( const Universe& rhs )
+        void copy( const GeoModelEntity& from )
         {
-            GME::operator=(rhs);
-            boundary_surfaces_ = rhs.boundary_surfaces_ ;
-            boundary_surface_sides_ = rhs.boundary_surface_sides_ ;
-            return *this ;
+            GME::copy( from ) ;
+            const Universe& universe_from = dynamic_cast< const Universe& >( from ) ;
+            boundary_surfaces_ = universe_from.boundary_surfaces_ ;
+            boundary_surface_sides_ = universe_from.boundary_surface_sides_ ;
         }
 
     private:

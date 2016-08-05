@@ -284,7 +284,14 @@ namespace RINGMesh {
             model_vertex_id_.bind( mesh_.vertex_attribute_manager(),
                 model_vertex_id_att_name() ) ;
         }
-
+        virtual void copy( const GeoModelEntity& from )
+        {
+            GME::copy( from ) ;
+            const GeoModelMeshEntity& mesh_entity_from = dynamic_cast< const GeoModelMeshEntity& >( from ) ;
+            boundaries_ = mesh_entity_from.boundaries_ ;
+            in_boundary_ = mesh_entity_from.in_boundary_ ;
+            parents_ = mesh_entity_from.parents_ ;
+        }
         virtual bool is_mesh_valid() const = 0 ;
 
         bool is_boundary_connectivity_valid() const ;
@@ -323,7 +330,7 @@ namespace RINGMesh {
      * @brief A GeoModelEntity of type CORNER
      * @details It is a unique point.
      */
-    class RINGMESH_API Corner : public GeoModelMeshEntity {        
+    class RINGMESH_API Corner : public GeoModelMeshEntity {
     public:
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
@@ -407,7 +414,7 @@ namespace RINGMesh {
      * @details This must be one connected component (one part) of
      * a 1-manifold (Line with no T intersections).
      */
-    class RINGMESH_API Line : public GeoModelMeshEntity {      
+    class RINGMESH_API Line : public GeoModelMeshEntity {
     public:
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
@@ -510,7 +517,7 @@ namespace RINGMesh {
      * @details One connected component (part) of a 2-manifold surface
      * (all edges of the facets are in at most 2 facets)
      */
-    class RINGMESH_API Surface : public GeoModelMeshEntity {       
+    class RINGMESH_API Surface : public GeoModelMeshEntity {
     public:
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
@@ -786,7 +793,7 @@ namespace RINGMesh {
      * The Region can be only defined by its boundary Surfaces.
      * Its volumetric mesh is optional.
      */
-    class RINGMESH_API Region : public GeoModelMeshEntity {        
+    class RINGMESH_API Region : public GeoModelMeshEntity {
     public:
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
@@ -1061,6 +1068,13 @@ namespace RINGMesh {
             : GeoModelMeshEntity( model, id, name, geological_feature )
         {
             id_.type = type_name_static() ;
+        }
+
+        void copy( const GeoModelEntity& from )
+        {
+            const Region& region_from = dynamic_cast< const Region& >( from ) ;
+            GeoModelMeshEntity::copy( from ) ;
+            sides_ = region_from.sides_ ;
         }
 
         virtual bool is_mesh_valid() const ;        
