@@ -167,7 +167,6 @@ namespace RINGMesh {
         {}
         GeoModelEntity& operator=( const GeoModelEntity& rhs )
         {
-            ringmesh_assert( &model() == &rhs.model() ) ;
             id_ = rhs.id_;
             name_ = rhs.name_;
             geol_feature_ = rhs.geol_feature_ ;
