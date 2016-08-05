@@ -190,12 +190,11 @@ namespace RINGMesh {
                 continue ;
             }
             
-            builder.create_vertices( E.nb_vertices() ) ;
             GEO::Attribute< index_t > att( E.vertex_attribute_manager(),
                 GeoModelMeshEntity::model_vertex_id_att_name() ) ;
             
             for( index_t v = 0; v < E.nb_vertices(); v++ ) {
-                builder.set_vertex( v, E.vertex( v ) ) ;
+                builder.set_vertex( count, E.vertex( v ) ) ;
                 // Global index stored at GME level
                 att[v] = count ;
                 // Index in the GME stored at global level
