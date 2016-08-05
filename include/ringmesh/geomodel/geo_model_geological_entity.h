@@ -34,7 +34,7 @@
  */
 
 /*!
- * @file Declaration of GeoModelGEologicalEntity and all its children classes
+ * @file Declaration of GeoModelGeologicalEntity and all its children classes
  * @author Jeanne Pellerin and Arnaud Botella 
  */
 
@@ -52,8 +52,9 @@
 namespace RINGMesh {
     class GeoModel ;
     class GeoModelMeshEntity ;
+}
 
-
+namespace RINGMesh {
     class RINGMESH_API GeoModelGeologicalEntity: public GeoModelEntity {
     public:
         friend class GeoModelEditor ;

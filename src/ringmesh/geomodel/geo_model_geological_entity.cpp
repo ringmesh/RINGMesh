@@ -34,7 +34,7 @@
  */
 
 /*!
- * @file Implementation of all GeoModelEntities classes
+ * @file Implementation of all GeoModelGeologicalEntities classes
  * @author Jeanne Pellerin and Arnaud Botella 
  */
 
