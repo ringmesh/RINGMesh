@@ -125,10 +125,9 @@ namespace {
             out << type << " " << e << " " << cur_mesh_entity.name() << " "
                 << GeoModelEntity::geol_name(
                     cur_mesh_entity.geological_feature() ) << std::endl ;
-            for( index_t in_b = 0; in_b < cur_mesh_entity.nb_in_boundary();
-                in_b++ ) {
-                out << cur_mesh_entity.in_boundary_gme( in_b ).index
-                    << " " ;
+            out << "boundary " ;
+            for( index_t b = 0; b < cur_mesh_entity.nb_boundaries(); b++ ) {
+                out << cur_mesh_entity.boundary_gme( b ).index << " " ;
             }
             out << std::endl ;
         }
