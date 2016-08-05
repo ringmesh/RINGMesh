@@ -73,6 +73,7 @@ namespace RINGMesh {
      */
 
     class RINGMESH_API GeoModelMeshVertices {
+    ringmesh_disable_copy( GeoModelMeshVertices ) ;
     public:
         friend class GeoModelMesh ;
         
@@ -154,9 +155,6 @@ namespace RINGMesh {
             return mesh_.colocater_ann( ColocaterANN::VERTICES ) ;
         }
 
-    private:
-        ringmesh_disable_copy( GeoModelMeshVertices ) ;
-
         /*!
          * @brief Initialize the vertices from the vertices
          *        of the GeoModel Corners, Lines, and Surfaces
@@ -206,6 +204,7 @@ namespace RINGMesh {
     } ;
 
     class RINGMESH_API GeoModelMeshFacets {
+    ringmesh_disable_copy( GeoModelMeshFacets ) ;
     public:
         friend class GeoModelMesh ;
         
@@ -402,8 +401,6 @@ namespace RINGMesh {
          * Unbind attribute to the facets attribute manager
          */
         void unbind_attribute() ;
-        
-        ringmesh_disable_copy( GeoModelMeshFacets ) ;
 
     private:
         /// Attached GeoModelMesh owning the vertices
@@ -434,6 +431,7 @@ namespace RINGMesh {
     } ;
 
     class RINGMESH_API GeoModelMeshEdges {
+    ringmesh_disable_copy( GeoModelMeshEdges ) ;
     public:
         GeoModelMeshEdges( GeoModelMesh& gmm, Mesh& mesh, MeshBuilder& mesh_builder ) ;
         ~GeoModelMeshEdges() ;
@@ -476,9 +474,6 @@ namespace RINGMesh {
          */
         void clear() ;
 
-    private:
-        ringmesh_disable_copy( GeoModelMeshEdges ) ;
-
         /*!
          * Initialize the mesh edges
          */
@@ -501,6 +496,7 @@ namespace RINGMesh {
     } ;
 
     class RINGMESH_API GeoModelMeshCells {
+    ringmesh_disable_copy( GeoModelMeshCells ) ;
     public:
         friend class GeoModelMesh ;
         
@@ -833,8 +829,6 @@ namespace RINGMesh {
         } ;
         /// Action to do according a surface index
         typedef std::pair< index_t, ActionOnSurface > action_on_surface ;
-    
-        ringmesh_disable_copy( GeoModelMeshCells ) ;
 
         /*!
          * @brief Initialize the  cells from the cells
@@ -943,7 +937,8 @@ namespace RINGMesh {
      * This is especially useful for simulations based on the MacroMesh (e.g. FEM)
      * It is possible to introduce new points on the cell edges.
      */
-    class RINGMESH_API GeoModelMeshOrder {       
+    class RINGMESH_API GeoModelMeshOrder {
+    ringmesh_disable_copy( GeoModelMeshOrder ) ;
     public:
         friend class GeoModelMesh ;
         
@@ -1013,8 +1008,6 @@ namespace RINGMesh {
         index_t nb_high_order_vertices_per_cell( index_t c ) const ;
 
     private:
-        ringmesh_disable_copy( GeoModelMeshOrder ) ;
-
         /*!
          * Initialize the database by computing the new vertices of the mesh.
          */
@@ -1047,6 +1040,7 @@ namespace RINGMesh {
     } ;
 
     class RINGMESH_API GeoModelMesh {
+    ringmesh_disable_copy( GeoModelMesh ) ;
     public:
         GeoModelMesh( GeoModel& gm ) ;
         ~GeoModelMesh() ;
@@ -1162,9 +1156,6 @@ namespace RINGMesh {
             order_value_ = new_order ;
         }
 
-    private:
-        ringmesh_disable_copy( GeoModelMesh ) ;
-  
     private:
         /*! Attached GeoModel */
         const GeoModel& geo_model_ ;

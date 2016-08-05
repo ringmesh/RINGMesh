@@ -62,7 +62,8 @@ namespace RINGMesh {
       * the RINGMesh::Mesh geometry. We also provide functions to link
       * the GeoModelMeshEntity with GeoModelMesh.
       */
-    class RINGMESH_API GeoModelMeshEntity : public GeoModelEntity {
+    class RINGMESH_API GeoModelMeshEntity: public GeoModelEntity {
+    ringmesh_disable_copy( GeoModelMeshEntity ) ;
     public:
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
@@ -316,9 +317,6 @@ namespace RINGMesh {
         /// The optional GeoModelGeologicalEntities 
         /// (groups of GeoModelMeshEntity this entity belongs to)
         std::vector< gme_t > parents_ ;
-
-    private:
-        ringmesh_disable_copy( GeoModelMeshEntity ) ;
     } ;
 
     /*!

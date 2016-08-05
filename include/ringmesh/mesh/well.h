@@ -53,7 +53,7 @@ namespace RINGMesh {
 namespace RINGMesh {
 
     class RINGMESH_API WellMesh {
-        ringmesh_disable_copy( WellMesh ) ;
+    ringmesh_disable_copy( WellMesh ) ;
     protected:
         WellMesh( const Well* well ) ;
         virtual ~WellMesh() {}
@@ -180,7 +180,7 @@ namespace RINGMesh {
 // --------------------------------------------------------------------------
 
     class RINGMESH_API Well {
-        ringmesh_disable_copy( Well ) ;
+    ringmesh_disable_copy( Well ) ;
     public:
         Well() ;
         ~Well() ;
@@ -307,7 +307,7 @@ namespace RINGMesh {
      * @todo Comment
      */
     class RINGMESH_API WellGroup {
-        ringmesh_disable_copy( WellGroup ) ;
+    ringmesh_disable_copy( WellGroup ) ;
     public:
         WellGroup() ;
         virtual ~WellGroup() ;

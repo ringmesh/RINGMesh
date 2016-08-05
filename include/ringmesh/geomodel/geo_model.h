@@ -69,7 +69,7 @@ namespace RINGMesh {
      * Each GeoModel owns one instance of it.
      */
     class RINGMESH_API EntityTypeManager {
-        ringmesh_disable_copy( EntityTypeManager ) ;
+    ringmesh_disable_copy( EntityTypeManager ) ;
     public:
         friend class GeoModelEditor ;
         EntityTypeManager()
@@ -172,6 +172,7 @@ namespace RINGMesh {
      * by its boundary surfaces and whose regions can be optionally meshed
      */
     class RINGMESH_API GeoModel {
+    ringmesh_disable_copy( GeoModel ) ;
     public:
         friend class GeoModelBuilder ;
         friend class GeoModelEditor ;
@@ -349,10 +350,6 @@ namespace RINGMesh {
         GeoModelMesh mesh ;
 
     private:
-        // Maybe implement them properly one day [JP]
-        // For now, prevent any copy as a GeoModel manages a lot of memory
-        ringmesh_disable_copy( GeoModel ) ;
-
         /*! @brief Throws an assertion if the given GeoModelEntity id
          *  is not valid for this model
          */
