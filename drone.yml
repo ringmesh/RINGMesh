@@ -1,4 +1,4 @@
-image: bradrydzewski/gcc:4.6
+image: bradrydzew
 
 script:
   - .drone/build.sh
