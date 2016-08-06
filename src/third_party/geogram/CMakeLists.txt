@@ -6,7 +6,7 @@
 # - it is the first version that fully supports the specification of Visual
 # Studio toolsets (v110_xp).
 # - it is the version that supports the command string(TIMESTAMP ...)
-cmake_minimum_required(VERSION 2.8.7)
+cmake_minimum_required(VERSION 2.8.11)
 
 # Note: geogram.cmake defines GEOGRAM_WITH_VORPALINE
 # that we could have used instead,
@@ -38,8 +38,8 @@ set(VORPALINE_VERSION ${VORPALINE_VERSION_MAJOR}.${VORPALINE_VERSION_MINOR}.${VO
 string(REGEX REPLACE "-[^-]+$" "" VORPALINE_OS ${VORPALINE_PLATFORM})
 
 # Determine the current build date
-# string(TIMESTAMP VORPALINE_BUILD_DATE "%Y-%m-%d %H:%M:%S")
-# string(TIMESTAMP YEAR "%Y")
+string(TIMESTAMP VORPALINE_BUILD_DATE "%Y-%m-%d %H:%M:%S")
+string(TIMESTAMP YEAR "%Y")
 
 # Determine the current build number
 # This is set by Jenkins in environment variable BUILD_NUMBER
