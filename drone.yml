@@ -1,0 +1,12 @@
+image: bradrydzewski/gcc:4.6
+
+script:
+  - .drone/build.sh
+notify:
+  email:    
+    when:
+      success: true
+      failure: true
+      change: true
+    recipients:
+      - botella.arnaud@gmail.com
