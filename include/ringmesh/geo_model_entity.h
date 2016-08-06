@@ -736,7 +736,14 @@ namespace RINGMesh {
         ~Line()
         {
         }
-
+        /*!
+         * @brief Return the a colocater for the edges of the line
+         * @details The barycenter of the edges is used.
+         */
+        const ColocaterANN& edge_colocater_ann() const
+        {
+            return mesh_.colocater_ann( ColocaterANN::EDGES ) ;
+        }
         virtual index_t vertex_index (index_t corner_index) const {
             return mesh_.edge_vertex(corner_index/2, corner_index%2) ;
         }
