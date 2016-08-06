@@ -1,3 +1,5 @@
+Compilation status using Drone.io [![Build Status](https://drone.io/bitbucket.org/ring_team/ringmesh/status.png)](https://drone.io/bitbucket.org/ring_team/ringmesh/latest)
+
 Instructions for compiling RINGMesh
 
 RINGMesh is tested under Linux (64 bits) and Windows (64 bits).
