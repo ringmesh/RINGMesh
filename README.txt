@@ -1,4 +1,7 @@
-Compilation status using Drone.io [![Build Status](https://drone.io/bitbucket.org/ring_team/ringmesh/status.png)](https://drone.io/bitbucket.org/ring_team/ringmesh/latest)
+Compilation status
+==================
+Drone.io [![Build Status](https://drone.io/bitbucket.org/ring_team/ringmesh/status.png)](https://drone.io/bitbucket.org/ring_team/ringmesh/latest)
+AppVeyor [![Build status](https://ci.appveyor.com/api/projects/status/d2hkhxnlb4ke6gy0?svg=true)](https://ci.appveyor.com/project/ArnaudBotella/ringmesh)
 
 Instructions for compiling RINGMesh
 
