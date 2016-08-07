@@ -99,8 +99,9 @@ namespace RINGMesh {
 
     void RINGMESH_API rotate_mesh(
         GEO::Mesh& mesh,
-        const GEO::Matrix< float64, 4 >& rot_mat ) ;
+        const GEO::Matrix< double, 4 >& rot_mat ) ;
 
+    double RINGMESH_API mesh_cell_signed_volume( const GEO::Mesh& M, index_t c ) ;
     double RINGMESH_API mesh_cell_volume( const GEO::Mesh& M, index_t c ) ;
 
     vec3 RINGMESH_API mesh_cell_facet_center(
@@ -214,7 +215,7 @@ namespace RINGMesh {
         }
     } ;
 
-    /*! 
+    /*!
      * @brief Typed attribute existence check
      */
     template< typename T >
