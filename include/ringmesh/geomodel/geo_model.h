@@ -189,23 +189,44 @@ namespace RINGMesh {
          */
         virtual ~GeoModel() ;
 
+        /*!
+         * @brief Gets the name of the GeoModel
+         */
         const std::string& name() const
         {
             return geomodel_name_ ;
         }
 
+        /*!
+         * @brief Gets the EntityTypeManager associated to the GeoModel
+         */
         const EntityTypeManager& entity_type_manager() const
         {
             return entity_type_manager_ ;
         }
+        /*!
+         * @brief Tests if the EntityType corresponds to a GeoModelMeshEntity
+         * @param[in] type the EntityType to test
+         * @return true is it is a GeoModelMeshEntity type
+         */
         bool is_mesh_entity_type( const EntityType& type ) const
         {
             return EntityTypeManager::is_mesh_entity_type( type ) ;
         }
+        /*!
+         * @brief Tests if the EntityType corresponds to a GeoModelGeologicalEntity
+         * @param[in] type the EntityType to test
+         * @return true is it is a GeoModelGeologicalEntity type
+         */
         bool is_geological_entity_type( const EntityType& type ) const
         {
             return entity_type_manager_.is_geological_entity_type( type ) ;
         }
+        /*!
+         * @brief Gets the number of entities of the given type
+         * @param[in] type the requested EntityType
+         * @return the number of entities, 0 if the type is not known
+         */
         index_t nb_entities( const EntityType& type ) const
         {
             if( is_mesh_entity_type( type ) ) {
@@ -259,7 +280,7 @@ namespace RINGMesh {
             return entity_type_manager_.geological_entity_type( index ) ;
         }
         /*!
-         * @brief Returns a const reference the identified GeoModelEntity
+         * @brief Returns a const reference the identified GeoModelGeologicalEntity
          * @param[in] id Type and index of the entity. For the
          * pair (Region, NO_ID) universe region is returned.
          * @pre Entity identification is valid.
