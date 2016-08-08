@@ -209,8 +209,8 @@ namespace RINGMesh {
          * @{
          */
         virtual double mesh_element_size( index_t mesh_element_index ) const = 0 ;
-        virtual vec3 mesh_element_center( index_t mesh_element_index ) const = 0 ;
-        virtual vec3 center() const
+        virtual vec3 mesh_element_barycenter( index_t mesh_element_index ) const = 0 ;
+        virtual vec3 entity_barycenter() const
         {
             vec3 result( 0., 0., 0. ) ;
             for( index_t v = 0; v < nb_vertices(); v++ ) {
@@ -392,7 +392,7 @@ namespace RINGMesh {
         {
             return 0.0 ;
         }
-        virtual vec3 mesh_element_center( index_t mesh_element = 0 ) const
+        virtual vec3 mesh_element_barycenter( index_t mesh_element = 0 ) const
         {
             ringmesh_unused( mesh_element ) ;
             return vertex( 0 ) ;
@@ -500,7 +500,7 @@ namespace RINGMesh {
         /*!
          * @brief Gets the barycenter of an edge
          */
-        virtual vec3 mesh_element_center( index_t edge_index ) const
+        virtual vec3 mesh_element_barycenter( index_t edge_index ) const
         {
             ringmesh_assert( edge_index < nb_mesh_elements() ) ;
             return 0.5
@@ -735,7 +735,7 @@ namespace RINGMesh {
         /*!
          * @return Facet barycenter.
          */
-        virtual vec3 mesh_element_center( index_t facet_index ) const
+        virtual vec3 mesh_element_barycenter( index_t facet_index ) const
         {
             ringmesh_assert( facet_index < nb_mesh_elements() ) ;
             return mesh_.facet_barycenter( facet_index ) ;
@@ -1036,7 +1036,7 @@ namespace RINGMesh {
         /*!
          * @brief Get the center of the cell \param cell_index
          */
-        virtual vec3 mesh_element_center( index_t cell_index ) const
+        virtual vec3 mesh_element_barycenter( index_t cell_index ) const
         {
             if( is_meshed() ) {
                 ringmesh_assert( cell_index < nb_mesh_elements() ) ;

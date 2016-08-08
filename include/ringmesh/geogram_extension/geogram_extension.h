@@ -104,12 +104,12 @@ namespace RINGMesh {
     double RINGMESH_API mesh_cell_signed_volume( const GEO::Mesh& M, index_t c ) ;
     double RINGMESH_API mesh_cell_volume( const GEO::Mesh& M, index_t c ) ;
 
-    vec3 RINGMESH_API mesh_cell_facet_center(
+    vec3 RINGMESH_API mesh_cell_facet_barycenter(
         const GEO::Mesh& M,
         index_t cell,
         index_t f ) ;
 
-    vec3 RINGMESH_API mesh_cell_center( const GEO::Mesh& M, index_t cell ) ;
+    vec3 RINGMESH_API mesh_cell_barycenter( const GEO::Mesh& M, index_t cell ) ;
 
     void RINGMESH_API divide_edge_in_parts(
         const GEO::Mesh& mesh,

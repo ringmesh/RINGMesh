@@ -1246,7 +1246,7 @@ namespace RINGMesh {
         }
     }
 
-    vec3 GeoModelMeshCells::center( index_t c ) const
+    vec3 GeoModelMeshCells::barycenter( index_t c ) const
     {
         test_and_initialize() ;
         return mesh_.cell_barycenter( c ) ;
@@ -2078,7 +2078,7 @@ namespace RINGMesh {
                     geo_model_.region( reg ).cell_attribute_manager(),
                     att_c_names[att_c], att_dim ) ;
                 for( index_t c = 0; c < geo_model_.region( reg ).nb_mesh_elements(); c++ ) {
-                    vec3 center = geo_model_.region( reg ).mesh_element_center(c) ;
+                    vec3 center = geo_model_.region( reg ).mesh_element_barycenter(c) ;
                     std::vector< index_t > c_in_geom_model_mesh ;
                     ann.get_colocated( center, c_in_geom_model_mesh ) ;
                     ringmesh_assert( c_in_geom_model_mesh.size() == 1 ) ;

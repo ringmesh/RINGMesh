@@ -1816,7 +1816,7 @@ namespace {
                 << "Node geometry, not used by GPRS but useful to reconstruct a pipe-network"
                 << std::endl ;
             for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
-                out_xyz << mesh.cells.center( c ) << std::endl ;
+                out_xyz << mesh.cells.barycenter( c ) << std::endl ;
                 out_vol << mesh.cells.volume( c ) << std::endl ;
             }
             for( index_t f = 0; f < mesh.facets.nb(); f++ ) {

@@ -1377,7 +1377,7 @@ namespace RINGMesh {
         index_t index_in_ann = 0 ;
         for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
             for( index_t f = 0; f < mesh.cells.nb_facets( c ); f++ ) {
-                vec3 center = mesh_cell_facet_center( mesh, c, f ) ;
+                vec3 center = mesh_cell_facet_barycenter( mesh, c, f ) ;
                 fill_ann_points( index_in_ann, center ) ;
                 index_in_ann += 3 ;
             }
@@ -1393,7 +1393,7 @@ namespace RINGMesh {
         }
         ann_points_ = new double[nb_cells * 3] ;
         for( index_t i = 0; i < nb_cells; i++ ) {
-            vec3 center = mesh_cell_center( mesh, i ) ;
+            vec3 center = mesh_cell_barycenter( mesh, i ) ;
             index_t index_in_ann = 3 * i ;
             fill_ann_points( index_in_ann, center ) ;
         }

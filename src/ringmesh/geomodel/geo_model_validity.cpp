@@ -813,7 +813,7 @@ namespace {
     {
         std::vector< index_t > unconformal_facets ;
         for( index_t f = 0; f < surface.nb_mesh_elements(); f++ ) {
-            vec3 center = surface.mesh_element_center( f ) ;
+            vec3 center = surface.mesh_element_barycenter( f ) ;
             std::vector< index_t > result ;
             if( !cell_facet_barycenter_ann.get_colocated( center, result ) ) {
                 unconformal_facets.push_back( f ) ;

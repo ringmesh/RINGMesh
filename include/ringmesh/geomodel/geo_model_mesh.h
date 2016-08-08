@@ -813,7 +813,7 @@ namespace RINGMesh {
          * Get the center of the given cell
          * @param[in] c the cell index
          */
-        vec3 center( index_t c ) const ;
+        vec3 barycenter( index_t c ) const ;
         /*!
          * Get the volume of the cell
          * @param[in] c the cell index

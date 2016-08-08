@@ -232,11 +232,11 @@ namespace RINGMesh {
         index_t c ) ;
 
     /*!
-     * @brief Compute the center of a GeoModelEntity
+     * @brief Compute the barycenter of a GeoModelEntity
      * @param[in] E Entity to evaluate
-     * @return The coordinates of the center
+     * @return The coordinates of the barycenter
      */
-    vec3 RINGMESH_API model_entity_center( const GeoModelEntity& E ) ;
+    vec3 RINGMESH_API model_entity_barycenter( const GeoModelEntity& E ) ;
 
     /*!
      * @brief Compute the centroid of a GeoModelMeshEntity cell (cell, facet, edge)
@@ -245,7 +245,7 @@ namespace RINGMesh {
      * @return The coordinates of the center
      * @pre E has a valid mesh.
      */
-    vec3 RINGMESH_API model_entity_cell_center(
+    vec3 RINGMESH_API model_entity_cell_barycenter(
         const GeoModelMeshEntity& E,
         index_t c ) ;
 
