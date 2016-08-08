@@ -103,10 +103,10 @@ namespace RINGMesh {
         /**
          * \brief Removes the connected components that have an area
          *  smaller than a given threshold.
-         * \param[in] min_component_area the connected components with an
+         * \param[in] min_area the connected components with an
          *  area smaller than this threshold are removed
-         * \param[in] min_component_facets the connected components with
-         *  less than min_component_facets facets are removed
+         * \param[in] min_facets the connected components with
+         *  less than \param min_facets facets are removed
          */
         void remove_small_connected_components( double min_area, index_t min_facets )
         {
@@ -151,7 +151,7 @@ namespace RINGMesh {
         }
         /*!
          * @brief Creates a new vertex.
-         * @param[in] coords a pointer to dimension() coordinate.
+         * @param[in] coords a pointer to @function dimension() coordinate.
          * @return the index of the created vertex
          */
         index_t create_vertex( const vec3& vertex )
@@ -171,7 +171,7 @@ namespace RINGMesh {
         }
         /*!
          * @brief Deletes a set of vertices.
-         * @param[in] to_delete     a vector of size nb(). If to_delete[e] is different from 0,
+         * @param[in] to_delete     a vector of size @function nb(). If to_delete[e] is different from 0,
          * then entity e will be destroyed, else it will be kept. On exit, to_delete is modified
          * (it is used for internal bookkeeping).
          * @param[in] remove_isolated_vertices if true, then the vertices that are no longer incident to any entity are deleted.
@@ -233,8 +233,8 @@ namespace RINGMesh {
         /*!
          * @brief Sets a vertex of a facet by local vertex index.
          * @param[in] edge_id index of the edge, in 0..nb()-1.
-         * @param[in] local_vertex_id index of the vertex in the facet. Local index between 0 and nb_vertices(cell_id)-1.
-         * @param[in] vertex_id specifies the vertex \param local_vertex_id of facet \param of the facet facet_id. Index between 0 and nb()-1.
+         * @param[in] local_vertex_id index of the vertex in the facet. Local index between 0 and @function nb_vertices(cell_id) - 1.
+         * @param[in] vertex_id specifies the vertex \param local_vertex_id of facet \param of the facet facet_id. Index between 0 and @function nb() - 1.
          */
         void set_edge_vertex(
             index_t edge_id,
@@ -246,7 +246,7 @@ namespace RINGMesh {
         }
         /*!
          * @brief Deletes a set of edges.
-         * @param[in] to_delete a vector of size nb(). If to_delete[e] is different from 0,
+         * @param[in] to_delete a vector of size @function nb(). If to_delete[e] is different from 0,
          * then entity e will be destroyed, else it will be kept. On exit, to_delete is modified
          * (it is used for internal bookkeeping).
          * @param[in] remove_isolated_vertices if true, then the vertices that are no longer incident to any entity are deleted.
@@ -337,9 +337,9 @@ namespace RINGMesh {
        }
         /*!
          * @brief Sets a vertex of a facet by local vertex index.
-         * @param[in] facet_id index of the facet, in 0..nb()-1.
-         * @param[in] local_vertex_id index of the vertex in the facet. Local index between 0 and nb_vertices(cell_id)-1.
-         * @param[in] vertex_id specifies the vertex \param local_vertex_id of facet \param of the facet facet_id. Index between 0 and nb()-1.
+         * @param[in] facet_id index of the facet, in 0.. @function nb() - 1.
+         * @param[in] local_vertex_id index of the vertex in the facet. Local index between 0 and @function nb_vertices(cell_id) - 1.
+         * @param[in] vertex_id specifies the vertex \param local_vertex_id of the facet \param facet_id. Index between 0 and @function nb() - 1.
          */
         void set_facet_vertex(
             index_t facet_id,
@@ -350,10 +350,10 @@ namespace RINGMesh {
             clear_facet_linked_objects() ;
         }
         /*!
-         * @brief Sets an adjacent facet by facet and local edge index.
+         * @brief Sets an adjacent facet by both its facet \param facet_id and its local edge index \param edge_id.
          * @param[in] facet_id the facet index
          * @param[in] edge_id the local index of an edge in facet \p facet_id
-         * @param[in] specifies the facet incident to f along edge le or GEO::NO_FACET if \p edge_id is on the border.
+         * @param[in] specifies the facet adjacent to \param facet_id along edge \param edge_id or GEO::NO_FACET if the parameter \param edge_id is on the border.
          */
         void set_facet_adjacent(
             index_t facet_id,
@@ -390,6 +390,9 @@ namespace RINGMesh {
         void clear_facets( bool keep_attributes, bool keep_memory ) {
             mesh_.mesh_->facets.clear( keep_attributes, keep_memory ) ;
         }
+        /*!
+         * @brief Retrieve the adjacencies of facets
+         */
         void connect_facets() {
             mesh_.mesh_->facets.connect() ;
         }
@@ -398,7 +401,7 @@ namespace RINGMesh {
         }
         /*!
          * @brief Deletes a set of facets.
-         * @param[in] to_delete     a vector of size nb(). If to_delete[f] is different from 0,
+         * @param[in] to_delete     a vector of size @function nb(). If to_delete[f] is different from 0,
          * then facet f will be destroyed, else it will be kept. On exit, to_delete is modified
          * (it is used for internal bookkeeping).
          * @param[in] remove_isolated_vertices if true, then the vertices that are no longer incident to any entity are deleted.
@@ -468,9 +471,9 @@ namespace RINGMesh {
 
         /*!
          * @brief Sets a vertex of a cell by local vertex index.
-         * @param[in] cell_id index of the cell, in 0..nb()-1.
-         * @param[in] local_vertex_id index of the vertex in the cell. Local index between 0 and nb_vertices(cell_id)-1.
-         * @param[in] vertex_id specifies the vertex \param local_vertex_id of cell \param of the cell cell_id. Index between 0 and nb()-1.
+         * @param[in] cell_id index of the cell, in 0.. @function nb() - 1.
+         * @param[in] local_vertex_id index of the vertex in the cell. Local index between 0 and @function nb_vertices(cell_id) - 1.
+         * @param[in] vertex_id specifies the global index of the vertex \param local_vertex_id in the cell \param cell_id. Index between 0 and @function nb() - 1.
          */
         void set_cell_vertex(
             index_t cell_id,
@@ -482,8 +485,8 @@ namespace RINGMesh {
         }
         /*!
          * \brief Sets the vertex that a corner is incident to
-         * \param[in] corner_index the corner, in 0..nb()-1
-         * \param[in] vertex_index specifies the vertex that corner \p c is incident to
+         * \param[in] corner_index the corner, in 0.. @function nb() - 1
+         * \param[in] vertex_index specifies the vertex that corner \param corner_index is incident to
          */
         void set_cell_corner_vertex_index( index_t corner_index, index_t vertex_index ) {
             mesh_.mesh_->cell_corners.set_vertex( corner_index, vertex_index ) ;
@@ -539,7 +542,7 @@ namespace RINGMesh {
         }
         /*!
          * @brief Deletes a set of cells.
-         * @param[in] to_delete     a vector of size nb(). If to_delete[c] is different from 0,
+         * @param[in] to_delete     a vector of size @function nb(). If to_delete[c] is different from 0,
          * then cell c will be destroyed, else it will be kept. On exit, to_delete is modified
          * (it is used for internal bookkeeping).
          * @param[in] remove_isolated_vertices if true, then the vertices that are no longer incident to any entity are deleted.
