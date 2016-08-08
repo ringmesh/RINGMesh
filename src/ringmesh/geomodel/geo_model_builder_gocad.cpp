@@ -885,7 +885,7 @@ namespace {
         }
     } ;
 
-    class LoadAtom: public MLLineParser {
+    class LoadMLAtom: public MLLineParser {
     private:
         virtual void execute(
             GEO::LineInput& line,
@@ -911,7 +911,7 @@ namespace {
         }
     } ;
 
-    class LoadAtomic: public TSolidLineParser {
+    class LoadTSAtomic: public TSolidLineParser {
     private:
         virtual void execute(
             GEO::LineInput& line,
@@ -1105,8 +1105,8 @@ namespace {
         ringmesh_register_TSolidLineParser_creator( LoadRegion, "TVOLUME" ) ;
         ringmesh_register_TSolidLineParser_creator( LoadTSolidVertex, "VRTX" ) ;
         ringmesh_register_TSolidLineParser_creator( LoadTSolidVertex, "PVRTX" ) ;
-        ringmesh_register_TSolidLineParser_creator( LoadAtomic, "ATOM" ) ;
-        ringmesh_register_TSolidLineParser_creator( LoadAtomic, "PATOM" ) ;
+        ringmesh_register_TSolidLineParser_creator( LoadTSAtomic, "ATOM" ) ;
+        ringmesh_register_TSolidLineParser_creator( LoadTSAtomic, "PATOM" ) ;
         ringmesh_register_TSolidLineParser_creator( LoadTetra, "TETRA" ) ;
         ringmesh_register_TSolidLineParser_creator( LoadLastRegion, "MODEL" ) ;
         ringmesh_register_TSolidLineParser_creator( LoadInterface, "SURFACE" ) ;
@@ -1122,8 +1122,8 @@ namespace {
         ringmesh_register_MLLineParser_creator( LoadMLRegion, "REGION" ) ;
         ringmesh_register_MLLineParser_creator( LoadLayer, "LAYER" ) ;
         ringmesh_register_MLLineParser_creator( MLEndSection, "END" ) ;
-        ringmesh_register_MLLineParser_creator( LoadAtom, "ATOM" ) ;
-        ringmesh_register_MLLineParser_creator( LoadAtom, "PATOM" ) ;
+        ringmesh_register_MLLineParser_creator( LoadMLAtom, "ATOM" ) ;
+        ringmesh_register_MLLineParser_creator( LoadMLAtom, "PATOM" ) ;
     }
 
 } // anonymous namespace
