@@ -57,7 +57,6 @@
  * @author 
  */
 
-
 namespace RINGMesh {
 
     class RINGMESH_API GeoModelBuilderGM: public GeoModelBuilderFile {

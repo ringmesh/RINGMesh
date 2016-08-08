@@ -80,7 +80,7 @@ namespace RINGMesh {
             return children_[x] ;
         }
         const GeoModelMeshEntity& child( index_t x ) const ;
-                                                    
+
     protected:
         GeoModelGeologicalEntity(
             const GeoModel& model,
@@ -95,12 +95,11 @@ namespace RINGMesh {
             GME::copy( from ) ;
             children_ = from.children_ ;
         }
-        
+
     protected:
         /// Entities constituting this one - see child_type( TYPE )
         std::vector< gme_t > children_ ;
     } ;
-
 
     /// @todo Review: I am still not convinced that we always have to 
     /// derive the base class to define new entities. [JP]

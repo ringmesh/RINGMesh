@@ -31,8 +31,7 @@
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY 
  *     FRANCE
-*/
-
+ */
 
 #ifndef __RINGMESH_GEOMODEL_INDEXING_TYPES__
 #define __RINGMESH_GEOMODEL_INDEXING_TYPES__
@@ -58,16 +57,18 @@ namespace RINGMesh {
     struct gme_t {
         gme_t()
             : type( "No_entity_type" ), index( NO_ID )
-            // Still not perfect  "No_entity_type" is also typed in in geo_model_entity.cpp
-        {}
+        // Still not perfect  "No_entity_type" is also typed in in geo_model_entity.cpp
+        {
+        }
         gme_t( const EntityType& entity_type, index_t id )
             : type( entity_type ), index( id )
-        {}
-        bool operator!=(const gme_t& rhs) const
+        {
+        }
+        bool operator!=( const gme_t& rhs ) const
         {
             return type != rhs.type || index != rhs.index ;
         }
-        bool operator==(const gme_t& rhs) const
+        bool operator==( const gme_t& rhs ) const
         {
             return type == rhs.type && index == rhs.index ;
         }
@@ -77,7 +78,7 @@ namespace RINGMesh {
          * @note In a sorted vector v of gme_t one can find the first surface with
          *       std::lower_bound( v.begin(), v.end(), gme_t( SURFACE, NO_ID ) ) ;
          */
-        bool operator<(const gme_t& rhs) const
+        bool operator<( const gme_t& rhs ) const
         {
             if( type != rhs.type ) {
                 /// @warning Is this now enough for EntityType = std::string?  
@@ -89,7 +90,7 @@ namespace RINGMesh {
                 return index < rhs.index ;
             }
         }
-        friend std::ostream& operator<<(std::ostream& os, const gme_t& in)
+        friend std::ostream& operator<<( std::ostream& os, const gme_t& in )
         {
             os << in.type << " " << in.index ;
             return os ;
@@ -113,11 +114,13 @@ namespace RINGMesh {
     struct GMEVertex {
         GMEVertex( gme_t t, index_t vertex_id_in )
             : gme_id( t ), v_id( vertex_id_in )
-        {}
+        {
+        }
         GMEVertex()
             : gme_id(), v_id( NO_ID )
-        {}
-        bool operator<(const GMEVertex& rhs) const
+        {
+        }
+        bool operator<( const GMEVertex& rhs ) const
         {
             if( gme_id != rhs.gme_id ) {
                 return gme_id < rhs.gme_id ;
@@ -125,7 +128,7 @@ namespace RINGMesh {
                 return v_id < rhs.v_id ;
             }
         }
-        bool operator==(const GMEVertex& rhs) const
+        bool operator==( const GMEVertex& rhs ) const
         {
             return gme_id == rhs.gme_id && v_id == rhs.v_id ;
         }

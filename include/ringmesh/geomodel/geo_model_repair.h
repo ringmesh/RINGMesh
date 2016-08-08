@@ -46,7 +46,6 @@
  * @author Jeanne Pellerin
  */
 
-
 namespace RINGMesh {
     /*!
      * @brief Try repairing an supposedly invalid GeoModel

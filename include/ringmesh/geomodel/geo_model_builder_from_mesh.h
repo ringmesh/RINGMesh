@@ -52,7 +52,7 @@
 
 namespace RINGMesh {
     // Implementation class
-     class GeoModelEntityFromMesh ;
+    class GeoModelEntityFromMesh ;
 
     /*!
      * @brief To build a GeoModel from a set of disconnected polygonal surfaces

@@ -55,7 +55,6 @@ namespace RINGMesh {
 
     void RINGMESH_API initialize_gocad_import_factories() ;
 
-
     class RINGMESH_API GeoModelBuilderGocad: public GeoModelBuilderFile {
     public:
         GeoModelBuilderGocad( GeoModel& model, const std::string& filename )
@@ -177,7 +176,6 @@ namespace RINGMesh {
 #define ringmesh_register_GocadLineParser_creator(type, name) \
      geo_register_creator(GocadLineParserFactory, type, name)
 
-
     /*!
      * @brief Structure which maps the vertex indices in Gocad::TSolid to the
      * pair (region, index in region) in the RINGMesh::GeoModel
@@ -235,7 +233,6 @@ namespace RINGMesh {
      */
     struct TSolidLoadingStorage: public GocadLoadingStorage {
         TSolidLoadingStorage() ;
-
 
         // Current region index
         index_t cur_region_ ;
@@ -325,7 +322,7 @@ namespace RINGMesh {
          * GEO::NO_FACET.
          * @param[in] geomodel GeoModel to consider
          */
-        void compute_surfaces_internal_borders( ) ;
+        void compute_surfaces_internal_borders() ;
 
     private:
         TSolidLoadingStorage tsolid_load_storage_ ;
@@ -362,7 +359,6 @@ namespace RINGMesh {
     typedef GEO::Factory0< MLLineParser > MLLineParserFactory ;
 #define ringmesh_register_MLLineParser_creator(type, name) \
      geo_register_creator(MLLineParserFactory, type, name)
-
 
     /*!
      * @brief Build a GeoModel from a Gocad Model3D (file_model.ml)
