@@ -138,11 +138,6 @@ namespace RINGMesh {
         }
     }
 
-    /*! @details For all 7 types of entities, check what information is available
-     * for the first one and fill the entities of the same type accordingly
-     * THIS MEANS that the all the entities of the same type have been initialized with
-     * the same information.
-     */
     void GeoModelEditor::complete_entity_connectivity()
     {
         // Order is important

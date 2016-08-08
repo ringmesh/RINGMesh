@@ -126,6 +126,15 @@ namespace RINGMesh {
          * \name Set entity geometry from geometrical positions
          * @{
          */
+        /*!
+         * @brief Sets a vertex coordinates of a GeoModelMeshEntity
+         * @param[in] entity_id the entity to edit
+         * @param[in] v the index of the vertex in the entity
+         * @param[in] point the coordinates to set
+         * @param[in] update if true, updates all the colocated vertices
+         * to the new coordinates (ie if edit a Corner coordinates, it will updates
+         * its Lines, Surfaces...)
+         */
         void set_mesh_entity_vertex(
             const gme_t& entity_id,
             index_t v,
@@ -137,16 +146,40 @@ namespace RINGMesh {
             const std::vector< vec3 >& points,
             bool clear ) ;
 
+        /*!
+         * @brief Sets the coordinates of a given existing Corner
+         * @param[in] corner_id the index of the corner in the GeoModel
+         * @param[in] point the coordinates to set
+         */
         void set_corner( index_t corner_id, const vec3& point ) ;
-
-        void set_line( index_t id, const std::vector< vec3 >& vertices ) ;
-
+        /*!
+         * @brief Sets the mesh of a given existing Line
+         * @param[in] line_id the index of the line in the GeoModel
+         * @param[in] vertices the coordinates to set
+         * @warning the vertices should be ordered from the first boundary
+         * corner to the second one
+         */
+        void set_line( index_t line_id, const std::vector< vec3 >& vertices ) ;
+        /*!
+         * @brief Sets the mesh of a given existing Surface
+         * @param[in] surface_id the index of the surface in the GeoModel
+         * @param[in] surface_vertices the coordinates to set
+         * @param[in] surface_facets the vertex indices of the facets
+         * corresponding to \p surface_vertices
+         * @param[in] surface_facet_ptr the index of each new facet start in \p surface_facets
+         */
         void set_surface_geometry(
             index_t surface_id,
             const std::vector< vec3 >& surface_vertices,
             const std::vector< index_t >& surface_facets,
             const std::vector< index_t >& surface_facet_ptr ) ;
-
+        /*!
+         * @brief Sets the tetrahedral mesh of a given existing Region
+         * @param[in] region_id the index of the region in the GeoModel
+         * @param[in] points the coordinates to set
+         * @param[in] tetras the vertex indices of the cells (to read 4 by 4)
+         * corresponding to \p points
+         */
         void set_region_geometry(
             index_t region_id,
             const std::vector< vec3 >& points,
@@ -309,7 +342,7 @@ namespace RINGMesh {
                 const std::vector< index_t >& adjacent_triangles ) ;
 
     protected:
-        /*! Entities to compute from the available entities */
+        /*! Options to toggle the building of entities from the available entities */
         GeoModelBuildingFlags options_ ;
 
         /*! Internal information */
