@@ -669,7 +669,7 @@ namespace RINGMesh {
 
     vec3 model_entity_center( const GeoModelMeshEntity& E )
     {
-        return E.center() ;
+        return E.entity_barycenter() ;
     }
 
     vec3 model_entity_center( const GeoModelGeologicalEntity& E ) {
@@ -680,16 +680,16 @@ namespace RINGMesh {
         for( index_t i = 0; i < E.nb_children(); ++i ) {
             const GeoModelMeshEntity& child = E.child( i ) ;
             nb_vertices += child.nb_vertices() ;
-            result += child.center() *child.nb_vertices() ;
+            result += child.entity_barycenter() *child.nb_vertices() ;
         }
         result /= static_cast< double >( nb_vertices ) ;
         
         return result ;
     }
 
-    vec3 model_entity_cell_center( const GeoModelMeshEntity& E, index_t cell )
+    vec3 model_entity_cell_barycenter( const GeoModelMeshEntity& E, index_t cell )
     {
-        return E.mesh_element_center( cell ) ;
+        return E.mesh_element_barycenter( cell ) ;
     }
 
     void translate( GeoModel& M, const vec3& translation_vector )
@@ -752,7 +752,7 @@ namespace RINGMesh {
         const GeoModel& geomodel = region.model() ;
         const Surface& first_boundary_surface = geomodel.surface(
             region.boundary_gme( 0 ).index ) ;
-        vec3 barycenter = first_boundary_surface.mesh_element_center( 0 ) ;
+        vec3 barycenter = first_boundary_surface.mesh_element_barycenter( 0 ) ;
         /// @todo Check that this is the right condition to have a correct enough barycenter
         ringmesh_assert( first_boundary_surface.mesh_element_size( 0 ) > epsilon ) ;
 

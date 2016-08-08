@@ -502,7 +502,7 @@ namespace RINGMesh {
          */
         vec3 cell_barycenter( index_t cell_id ) const
         {
-            return RINGMesh::mesh_cell_center( *mesh_, cell_id ) ;
+            return RINGMesh::mesh_cell_barycenter( *mesh_, cell_id ) ;
         }
         /*!
          * Computes the Mesh cell facet normal

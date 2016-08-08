@@ -376,7 +376,7 @@ namespace RINGMesh {
      * @param[in] f the facet index in the cell
      * @return the cell facet center
      */
-    vec3 mesh_cell_facet_center( const GEO::Mesh& M, index_t cell, index_t f )
+    vec3 mesh_cell_facet_barycenter( const GEO::Mesh& M, index_t cell, index_t f )
     {
         vec3 result( 0., 0., 0. ) ;
         index_t nb_vertices = M.cells.facet_nb_vertices( cell, f ) ;
@@ -396,7 +396,7 @@ namespace RINGMesh {
      * @param[in] cell the cell index
      * @return the cell center
      */
-    vec3 mesh_cell_center( const GEO::Mesh& M, index_t cell )
+    vec3 mesh_cell_barycenter( const GEO::Mesh& M, index_t cell )
     {
         vec3 result( 0.0, 0.0, 0.0 ) ;
         double count = 0.0 ;
