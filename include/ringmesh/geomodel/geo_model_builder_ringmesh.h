@@ -91,7 +91,7 @@ namespace RINGMesh {
 
         /*!
          * Make sure that the first boundary corner of each Line
-         * is equivalen to the first vertex of eacj Line
+         * is equivalent to the first vertex of each Line
          */
         void match_line_corners_to_first_and_last_vertex() ;
     } ;
