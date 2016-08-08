@@ -63,7 +63,7 @@ namespace RINGMesh {
     class Region ;
 }
 
-namespace RINGMesh {    
+namespace RINGMesh {
     /*!  
      * @brief Manages the type relationship between GeoModelEntities
      * Each GeoModel owns one instance of it.
@@ -85,12 +85,12 @@ namespace RINGMesh {
         static bool is_defined_type( const EntityType& type )
         {
             return type != default_entity_type() ;
-        }               
+        }
         static const EntityType default_entity_type() ;
         bool is_valid_type( const EntityType& type ) const
         {
             return is_defined_type( type )
-                && (is_mesh_entity_type( type ) || is_geological_entity_type( type )) ;
+                && ( is_mesh_entity_type( type ) || is_geological_entity_type( type ) ) ;
         }
 
         // ---- Static members : access to relationships between MeshEntities
@@ -104,16 +104,17 @@ namespace RINGMesh {
         static const MeshEntityType& in_boundary_type( const MeshEntityType& type ) ;
         static const std::vector< MeshEntityType >& mesh_entity_types() ;
         static index_t nb_mesh_entity_types() ;
-        
+
         // --- GeologicalEntity and MeshEntity relationships
-        std::vector< GeologicalEntityType > parent_types( 
-            const MeshEntityType& child_type ) const 
+        std::vector< GeologicalEntityType > parent_types(
+            const MeshEntityType& child_type ) const
         {
-            MeshEntityToParents::const_iterator
-                itr = child_to_parents_.find( child_type );
+            MeshEntityToParents::const_iterator itr = child_to_parents_.find(
+                child_type ) ;
             std::vector< GeologicalEntityType > result ;
             if( itr != child_to_parents_.end() ) {
-                result.insert( result.begin(), itr->second.begin(), itr->second.end() );
+                result.insert( result.begin(), itr->second.begin(),
+                    itr->second.end() ) ;
             }
             return result ;
         }
@@ -124,15 +125,15 @@ namespace RINGMesh {
         const MeshEntityType child_type(
             const GeologicalEntityType& parent_type ) const
         {
-            GeologicalEntityToChild::const_iterator
-                itr = parent_to_child_.find( parent_type );
+            GeologicalEntityToChild::const_iterator itr = parent_to_child_.find(
+                parent_type ) ;
             if( itr == parent_to_child_.end() ) {
                 return default_entity_type() ;
             } else {
                 return itr->second ;
             }
         }
-        
+
         // --- Geological entity types 
         bool is_geological_entity_type( const EntityType& type ) const ;
         index_t nb_geological_entity_types() const
@@ -142,7 +143,7 @@ namespace RINGMesh {
         const std::vector< GeologicalEntityType >& geological_entity_types() const
         {
             return geological_entity_types_ ;
-        }        
+        }
         const EntityType& geological_entity_type( index_t index ) const
         {
             return geological_entity_types_.at( index ) ;
@@ -153,19 +154,19 @@ namespace RINGMesh {
         }
 
     private:
-        void register_relationship( const EntityType& parent_type_name,
+        void register_relationship(
+            const EntityType& parent_type_name,
             const EntityType& child_type_name )
         {
             parent_to_child_[parent_type_name] = child_type_name ;
-            child_to_parents_[child_type_name].insert( parent_type_name ) ;            
+            child_to_parents_[child_type_name].insert( parent_type_name ) ;
         }
 
     private:
         std::vector< GeologicalEntityType > geological_entity_types_ ;
         GeologicalEntityToChild parent_to_child_ ;
-        MeshEntityToParents child_to_parents_ ; 
+        MeshEntityToParents child_to_parents_ ;
     } ;
-
 
     /*!
      * @brief The class to describe a geological model represented 
@@ -230,7 +231,7 @@ namespace RINGMesh {
         index_t nb_entities( const EntityType& type ) const
         {
             if( is_mesh_entity_type( type ) ) {
-                return nb_mesh_entities( type );
+                return nb_mesh_entities( type ) ;
             } else if( is_geological_entity_type( type ) ) {
                 return nb_geological_entities( type ) ;
             } else {
@@ -242,7 +243,7 @@ namespace RINGMesh {
          * @details Default value is 0
          * @param[in] type the mesh entity type
          */
-        index_t nb_mesh_entities( const EntityType& type ) const ; 
+        index_t nb_mesh_entities( const EntityType& type ) const ;
 
         /*!
          * @brief Returns the number of geological entities of the given type
@@ -266,7 +267,7 @@ namespace RINGMesh {
         {
             return entity_type_manager_.nb_geological_entity_types() ;
         }
-        
+
         /*!
          * Access to the position of the entity of that type in storage.
          * @note I don't like it to be public [JP]
@@ -274,7 +275,7 @@ namespace RINGMesh {
         index_t geological_entity_type_index( const EntityType& type ) const
         {
             return entity_type_manager_.geological_entity_type_index( type ) ;
-        }        
+        }
         const EntityType& geological_entity_type( index_t index ) const
         {
             return entity_type_manager_.geological_entity_type( index ) ;
@@ -313,7 +314,8 @@ namespace RINGMesh {
         {
             return mesh_entity( gme_t( entity_type, entity_index ) ) ;
         }
-        const GeoModelEntity& entity( const EntityType& entity_type,
+        const GeoModelEntity& entity(
+            const EntityType& entity_type,
             index_t entity_index ) const ;
         /*! @}
          * \name Specialized accessors.
@@ -321,19 +323,19 @@ namespace RINGMesh {
          */
         index_t nb_corners() const
         {
-            return static_cast<index_t>(corners_.size()) ;
+            return static_cast< index_t >( corners_.size() ) ;
         }
         index_t nb_lines() const
         {
-            return static_cast<index_t>(lines_.size()) ;
+            return static_cast< index_t >( lines_.size() ) ;
         }
         index_t nb_surfaces() const
         {
-            return static_cast<index_t>(surfaces_.size()) ;
+            return static_cast< index_t >( surfaces_.size() ) ;
         }
         index_t nb_regions() const
         {
-            return static_cast<index_t>(regions_.size()) ;
+            return static_cast< index_t >( regions_.size() ) ;
         }
 
         const Corner& corner( index_t index ) const
@@ -366,7 +368,7 @@ namespace RINGMesh {
         {
             return wells_ ;
         }
-    
+
     public:
         GeoModelMesh mesh ;
 
@@ -379,9 +381,9 @@ namespace RINGMesh {
             ringmesh_unused( id ) ;
             ringmesh_assert( is_valid_gme( id ) ) ;
         }
-        bool is_valid_gme( gme_t id ) const {
-            return is_valid_type( id.type ) 
-                && is_valid_index( id.type, id.index ) ;
+        bool is_valid_gme( gme_t id ) const
+        {
+            return is_valid_type( id.type ) && is_valid_index( id.type, id.index ) ;
         }
         bool is_valid_type( const EntityType& type ) const
         {
@@ -407,7 +409,7 @@ namespace RINGMesh {
         {
             index_t entity_index = geological_entity_type_index( type ) ;
             return geological_entities( entity_index ) ;
-        }  
+        }
 
         const std::vector< GeoModelGeologicalEntity* >& geological_entities(
             index_t geological_entity_type_index ) const
@@ -427,7 +429,7 @@ namespace RINGMesh {
          */
         std::vector< Corner* > corners_ ;
         std::vector< Line* > lines_ ;
-        std::vector< Surface* > surfaces_ ;   
+        std::vector< Surface* > surfaces_ ;
         std::vector< Region* > regions_ ;
 
         /*!
@@ -440,7 +442,7 @@ namespace RINGMesh {
          * The EntityTypes are managed by the EntityTypeManager of the class.
          */
         std::vector< std::vector< GeoModelGeologicalEntity* > > geological_entities_ ;
-        
+
         /*!
          * @}
          */
