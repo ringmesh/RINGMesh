@@ -145,10 +145,9 @@ namespace RINGMesh {
         GeoModelMesh& gmm,
         GeoModel& gm,
         Mesh& mesh,
-        MeshBuilder& mesh_builder)
-        : gmm_( gmm ), gm_( gm ), mesh_( mesh ), mesh_builder_(mesh_builder)
+        MeshBuilder& mesh_builder )
+        : gmm_( gmm ), gm_( gm ), mesh_( mesh ), mesh_builder_( mesh_builder )
     {
-        Logger::out( "RingMesh" ) << "Building the bloody GeoModelVertices" << std::endl ;
     }
 
     GeoModelMeshVertices::~GeoModelMeshVertices()
