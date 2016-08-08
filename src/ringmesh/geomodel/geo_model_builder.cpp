@@ -1965,16 +1965,16 @@ namespace RINGMesh {
     void GeoModelBuilder::update_facet_corner(
         Surface& S,
         const std::vector< index_t >& facets,
-        index_t old,
-        index_t neu )
+        index_t old_corner,
+        index_t new_corner )
     {
         for( index_t i = 0; i < facets.size(); ++i ) {
             index_t cur_f = facets[i] ;
             for( index_t cur_v = 0; cur_v < S.nb_mesh_element_vertices( cur_f );
                 cur_v++ ) {
-                if( S.mesh_element_vertex_index( cur_f, cur_v ) == old ) {
+                if( S.mesh_element_vertex_index( cur_f, cur_v ) == old_corner ) {
                     MeshBuilder builder( S.mesh_ ) ;
-                    builder.set_facet_vertex( cur_f, cur_v, neu ) ;
+                    builder.set_facet_vertex( cur_f, cur_v, new_corner ) ;
                 }
             }
         }

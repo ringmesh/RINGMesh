@@ -82,6 +82,7 @@ namespace RINGMesh {
     // Implementation details
     class GeoModelRegionFromSurfaces ;
 
+
     /*!
      * @brief Base class for all classes building a GeoModel.
      * @details Derive from this class to build or modify a GeoModel. 
@@ -272,19 +273,11 @@ namespace RINGMesh {
          */
 
         void delete_mesh_entity_mesh( gme_t E_id ) ;
-        void delete_mesh_entity_vertices(
-            gme_t E_id,
-            GEO::vector< index_t >& to_delete ) ;
+        void delete_mesh_entity_vertices( gme_t E_id, GEO::vector< index_t >& to_delete ) ;
         void delete_corner_vertex( index_t corner_id ) ;
-        void delete_line_edges(
-            index_t line_id,
-            GEO::vector< index_t >& to_delete ) ;
-        void delete_surface_facets(
-            index_t surface_id,
-            GEO::vector< index_t >& to_delete ) ;
-        void delete_region_cells(
-            index_t region_id,
-            GEO::vector< index_t >& to_delete ) ;
+        void delete_line_edges( index_t line_id, GEO::vector< index_t >& to_delete ) ;
+        void delete_surface_facets( index_t surface_id, GEO::vector< index_t >& to_delete ) ;
+        void delete_region_cells( index_t region_id, GEO::vector< index_t >& to_delete ) ;
 
         /*! @}
          * \name Misc
@@ -343,10 +336,10 @@ namespace RINGMesh {
 
     protected:
         void set_surface_facet_adjacencies(
-            index_t surface_id,
-            const std::vector< index_t >& facets_id,
-            const std::vector< index_t >& edges_id,
-            const std::vector< index_t >& adjacent_triangles ) ;
+                index_t surface_id,
+                const std::vector< index_t >& facets_id,
+                const std::vector< index_t >& edges_id,
+                const std::vector< index_t >& adjacent_triangles ) ;
 
     protected:
         /*! Options to toggle the building of entities from the available entities */
@@ -367,8 +360,8 @@ namespace RINGMesh {
         void update_facet_corner(
             Surface& S,
             const std::vector< index_t >& facets,
-            index_t old,
-            index_t neu ) ;
+            index_t old_corner,
+            index_t new_corner ) ;
         void assign_surface_triangle_mesh(
             index_t surface_id,
             const std::vector< index_t >& triangle_vertices,
@@ -378,12 +371,9 @@ namespace RINGMesh {
             index_t region_id,
             const std::vector< index_t >& tet_vertices ) ;
 
-        void duplicate_surface_vertices_along_line(
-            index_t surface_id,
-            index_t line_id ) ;
+        void duplicate_surface_vertices_along_line( index_t surface_id, index_t line_id ) ;
         void disconnect_surface_facets_along_line_edges(
-            index_t surface_id,
-            index_t line_id ) ;
+            index_t surface_id, index_t line_id ) ;
     } ;
 
     /*!

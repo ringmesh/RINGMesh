@@ -244,9 +244,6 @@ namespace RINGMesh {
         std::vector< index_t > tetra_corners_ ;
 
     } ;
-    /*!
-     * @brief Build a GeoModel (with meshed regions) from a Gocad TSolid (file.so)
-     */
     class TSolidLineParser: public GocadBaseParser {
     ringmesh_disable_copy(TSolidLineParser) ;
     public:
@@ -337,9 +334,6 @@ namespace RINGMesh {
         /// Offset to read in the tface vertices in the tsurf vertices
         index_t tface_vertex_ptr_ ;
     } ;
-    /*!
-     * @brief Build a GeoModel (with meshed regions) from a Gocad TSolid (file.so)
-     */
     class MLLineParser: public GocadBaseParser {
     ringmesh_disable_copy(MLLineParser) ;
     public:
