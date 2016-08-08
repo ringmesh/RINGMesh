@@ -300,7 +300,7 @@ namespace RINGMesh {
         bool is_in_boundary_connectivity_valid() const ;
         bool is_parent_connectivity_valid() const ;
         /*!
-         * @brief Check that model vertex indinces are consistent
+         * @brief Check that model vertex indices are consistent
          * with what is stored at the GeoModel level.
          * @todo Review: this dependancy is bad, and puts us in a lot of trouble [JP]
          */
