@@ -76,8 +76,12 @@ namespace RINGMesh {
     ringmesh_disable_copy( GeoModelMeshVertices ) ;
     public:
         friend class GeoModelMesh ;
-        
-        GeoModelMeshVertices( GeoModelMesh& gmm, GeoModel& gm, Mesh& mesh, MeshBuilder& mesh_builder ) ;
+
+        GeoModelMeshVertices(
+            GeoModelMesh& gmm,
+            GeoModel& gm,
+            Mesh& mesh,
+            MeshBuilder& mesh_builder ) ;
         ~GeoModelMeshVertices() ;
 
         /*!
@@ -150,7 +154,8 @@ namespace RINGMesh {
          */
         void clear() ;
 
-        const ColocaterANN& colocater() const {
+        const ColocaterANN& colocater() const
+        {
             test_and_initialize() ;
             return mesh_.colocater_ann( ColocaterANN::VERTICES ) ;
         }
@@ -207,12 +212,15 @@ namespace RINGMesh {
     ringmesh_disable_copy( GeoModelMeshFacets ) ;
     public:
         friend class GeoModelMesh ;
-        
+
         enum FacetType {
             TRIANGLE, QUAD, POLYGON, ALL, NO_FACET
         } ;
 
-        GeoModelMeshFacets( GeoModelMesh& gmm, Mesh& mesh, MeshBuilder& mesh_builder  ) ;
+        GeoModelMeshFacets(
+            GeoModelMesh& gmm,
+            Mesh& mesh,
+            MeshBuilder& mesh_builder ) ;
         ~GeoModelMeshFacets() ;
 
         /*!
@@ -372,17 +380,18 @@ namespace RINGMesh {
          * @param[in] f the facet index
          */
         double area( index_t f ) const ;
-         /*!
-          * Get the normal of the facet
-          * @param[in] f the facet index
-          */
+        /*!
+         * Get the normal of the facet
+         * @param[in] f the facet index
+         */
         vec3 normal( index_t f ) const ;
-        
-        const ColocaterANN& colocater() const {
+
+        const ColocaterANN& colocater() const
+        {
             test_and_initialize() ;
             return mesh_.colocater_ann( ColocaterANN::FACETS ) ;
         }
-    
+
     private:
         /*!
          * Initialize the facets of the GeoModelMesh
@@ -433,7 +442,10 @@ namespace RINGMesh {
     class RINGMESH_API GeoModelMeshEdges {
     ringmesh_disable_copy( GeoModelMeshEdges ) ;
     public:
-        GeoModelMeshEdges( GeoModelMesh& gmm, Mesh& mesh, MeshBuilder& mesh_builder ) ;
+        GeoModelMeshEdges(
+            GeoModelMesh& gmm,
+            Mesh& mesh,
+            MeshBuilder& mesh_builder ) ;
         ~GeoModelMeshEdges() ;
 
         /*!
@@ -486,7 +498,7 @@ namespace RINGMesh {
         const GeoModel& gm_ ;
         /// Attached Mesh
         Mesh& mesh_ ;
-        MeshBuilder& mesh_builder_;
+        MeshBuilder& mesh_builder_ ;
 
         /*!
          * Vector storing the index of the starting edge index
@@ -499,7 +511,7 @@ namespace RINGMesh {
     ringmesh_disable_copy( GeoModelMeshCells ) ;
     public:
         friend class GeoModelMesh ;
-        
+
         /*!
          * Several modes for vertex duplication algorithm:
          *  - NONE = no duplication
@@ -511,7 +523,10 @@ namespace RINGMesh {
             NONE, FAULT, HORIZON, ALL
         } ;
 
-        GeoModelMeshCells( GeoModelMesh& gmm, Mesh& mesh, MeshBuilder& mesh_builder ) ;
+        GeoModelMeshCells(
+            GeoModelMesh& gmm,
+            Mesh& mesh,
+            MeshBuilder& mesh_builder ) ;
         /*!
          * Test if the mesh cells are initialized
          */
@@ -805,15 +820,17 @@ namespace RINGMesh {
          */
         double volume( index_t c ) const ;
 
-        const ColocaterANN& cell_colocater() const {
+        const ColocaterANN& cell_colocater() const
+        {
             test_and_initialize() ;
             return mesh_.colocater_ann( ColocaterANN::CELLS ) ;
         }
-        const ColocaterANN& cell_facet_colocater() const {
+        const ColocaterANN& cell_facet_colocater() const
+        {
             test_and_initialize() ;
             return mesh_.colocater_ann( ColocaterANN::CELL_FACETS ) ;
         }
-    
+
     private:
         /// enum to characterize the action to do concerning a surface
         /// Action concerns the vertices of a Surface and not the Surface
@@ -845,7 +862,7 @@ namespace RINGMesh {
          * Unbind attribute to the cells attribute manager
          */
         void unbind_attribute() ;
-    
+
         /*!
          * Test if the mesh cell are duplicated according
          * the duplication mode, if not duplicate them.
@@ -941,7 +958,7 @@ namespace RINGMesh {
     ringmesh_disable_copy( GeoModelMeshOrder ) ;
     public:
         friend class GeoModelMesh ;
-        
+
         GeoModelMeshOrder( GeoModelMesh& gmm, Mesh& mesh ) ;
 
         /*!
@@ -1172,7 +1189,7 @@ namespace RINGMesh {
         mutable GeoModelMeshCells::DuplicateMode mode_ ;
         /// Order of the GeoModelMesh
         index_t order_value_ ;
-                
+
     public:
         // This is not compliant with the guidelines 
         // BUT THEY HAVE to be after the above private attributes 

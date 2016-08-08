@@ -49,7 +49,6 @@
 
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
 
-
 namespace RINGMesh {
     class GeoModel ;
 }
@@ -64,7 +63,7 @@ namespace RINGMesh {
         friend class GeoModelEditor ;
 
         typedef std::string EntityType ;
-        
+
         /*!
          * @brief Geological feature types for GeoModelEntity
          * @todo Remove this enum and find a nice way to add new types at runtime [JP]
@@ -86,7 +85,7 @@ namespace RINGMesh {
             FAULT,
             /// Volume Of Interest
             VOI
-        } ;       
+        } ;
 
         static GEOL_FEATURE determine_geological_type( const std::string& in ) ;
         static GEOL_FEATURE determine_type(
@@ -102,16 +101,18 @@ namespace RINGMesh {
         }
 
         static const EntityType type_name_static() ;
-        
-        virtual ~GeoModelEntity() {};
+
+        virtual ~GeoModelEntity()
+        {
+        }
+        ;
         virtual const EntityType type_name() const
         {
             return type_name_static() ;
         }
         virtual bool is_on_voi() const = 0 ;
         virtual bool is_valid() const = 0 ;
-    
-        
+
         const GeoModel& model() const
         {
             return model_ ;
@@ -155,21 +156,19 @@ namespace RINGMesh {
          * @param[in] name Name of the entity
          * @param[in] geological_feature Geological feature of the entity, none by default.
          */
-        GeoModelEntity(
-            const GeoModel& model,
-            index_t id,
-            const std::string& name = "Unnamed",
-            GEOL_FEATURE geological_feature = NO_GEOL )
+        GeoModelEntity( const GeoModel& model, index_t id, const std::string& name =
+            "Unnamed", GEOL_FEATURE geological_feature = NO_GEOL )
             :
                 model_( model ),
                 id_( type_name_static(), id ),
                 name_( name ),
                 geol_feature_( geological_feature )
-        {}
+        {
+        }
         virtual void copy( const GeoModelEntity& from )
         {
-            id_ = from.id_;
-            name_ = from.name_;
+            id_ = from.id_ ;
+            name_ = from.name_ ;
             geol_feature_ = from.geol_feature_ ;
         }
 
@@ -188,17 +187,19 @@ namespace RINGMesh {
 
     class RINGMESH_API Universe: public GeoModelEntity {
     ringmesh_disable_copy( Universe ) ;
-    public:       
+    public:
         friend class GeoModelEditor ;
 
-        Universe( const GeoModel& model ) ;        
-        
+        Universe( const GeoModel& model ) ;
+
         static const EntityType universe_type_name()
         {
             return "Universe" ;
         }
-        
-        virtual ~Universe() {};        
+
+        virtual ~Universe()
+        {
+        }
         virtual bool is_valid() const ;
         virtual bool is_on_voi() const
         {
@@ -208,7 +209,7 @@ namespace RINGMesh {
         {
             return universe_type_name() ;
         }
-        
+
         index_t nb_boundaries() const
         {
             return static_cast< index_t >( boundary_surfaces_.size() ) ;
@@ -217,7 +218,7 @@ namespace RINGMesh {
         {
             ringmesh_assert( i < nb_boundaries() ) ;
             return boundary_surfaces_[i] ;
-        }        
+        }
         bool side( index_t i ) const
         {
             ringmesh_assert( i < nb_boundaries() ) ;
@@ -236,8 +237,7 @@ namespace RINGMesh {
     private:
         std::vector< gme_t > boundary_surfaces_ ;
         std::vector< bool > boundary_surface_sides_ ;
-    };
- 
+    } ;
 
 } // namespace
 

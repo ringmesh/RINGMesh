@@ -41,17 +41,17 @@
 #include <geogram/basic/file_system.h>
 
 /*!
-* @file ringmesh/geo_model_validity.h
-* @brief Functions to check the validity of GeoModels
-* @author Jeanne Pellerin
-*/
+ * @file ringmesh/geo_model_validity.h
+ * @brief Functions to check the validity of GeoModels
+ * @author Jeanne Pellerin
+ */
 
 namespace RINGMesh {
     class GeoModel ;
     class GeoModelEntity ;
 }
 
-namespace RINGMesh {       
+namespace RINGMesh {
     /*! 
      * @brief Set the global default directory to store invalid entities of 
      *  models to be the current working directory
@@ -67,29 +67,28 @@ namespace RINGMesh {
     void RINGMESH_API set_validity_errors_directory( const std::string& directory ) ;
 
     /*!
-    * @brief Check global model validity
-    * @details In debug mode problematic vertices, edges, entities are
-    *          saved in the validity_errors_directory
-    *          An optional expensive check of the intersections between
-    *          the model surfaces can be disabled using command line
-    *          argument "in:intersection_check"
-    * @todo Check the consistency of gme_vertices vs. model_vertex_id
-    * @todo Add options to expensive tests
-    */
+     * @brief Check global model validity
+     * @details In debug mode problematic vertices, edges, entities are
+     *          saved in the validity_errors_directory
+     *          An optional expensive check of the intersections between
+     *          the model surfaces can be disabled using command line
+     *          argument "in:intersection_check"
+     * @todo Check the consistency of gme_vertices vs. model_vertex_id
+     * @todo Add options to expensive tests
+     */
     bool RINGMESH_API is_geomodel_valid( const GeoModel& geomodel ) ;
-    
+
     /*!
-    * @brief Check the validity of all individual entities
-    * @details Check that the entities belong to this model,
-    *          call the check validity for each entity
-    */
-    bool RINGMESH_API are_geomodel_meshed_entities_valid( const GeoModel& geomodel ) ;
+     * @brief Check the validity of all individual entities
+     * @details Check that the entities belong to this model,
+     *          call the check validity for each entity
+     */
+    bool RINGMESH_API are_geomodel_meshed_entities_valid(
+        const GeoModel& geomodel ) ;
 
-    bool RINGMESH_API are_geomodel_geological_entities_valid( const GeoModel& geomodel ) ;
-  
+    bool RINGMESH_API are_geomodel_geological_entities_valid(
+        const GeoModel& geomodel ) ;
+
 }
-
-
-
 
 #endif
