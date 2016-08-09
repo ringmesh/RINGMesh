@@ -58,8 +58,7 @@ namespace RINGMesh {
                 M.mesh.vertices.clear() ;
             }
             MeshBuilder builder( const_cast< Mesh& >( *this ) ) ;
-            builder.delete_vertex_colocater() ;
-            builder.delete_facet_colocater() ;
+            builder.clear_vertex_linked_objects() ;
 
             facets_aabb_ = new GEO::MeshFacetsAABB( *mesh_ ) ;
         }
@@ -77,9 +76,7 @@ namespace RINGMesh {
                 M.mesh.vertices.clear() ;
             }
             MeshBuilder builder( const_cast< Mesh& >( *this ) ) ;
-            builder.delete_vertex_colocater() ;
-            builder.delete_facet_colocater() ;
-            builder.delete_cell_colocater() ;
+            builder.clear_vertex_linked_objects() ;
 
             cells_aabb_ = new GEO::MeshCellsAABB( *mesh_ ) ;
         }
