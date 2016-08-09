@@ -81,12 +81,7 @@ namespace RINGMesh {
         void clear( bool keep_attributes, bool keep_memory )
         {
             mesh_.mesh_->clear( keep_attributes, keep_memory ) ;
-            delete_vertex_colocater() ;
-            delete_edge_colocater() ;
-            delete_facet_aabb() ;
-            delete_facet_colocater() ;
-            delete_cell_aabb() ;
-            delete_cell_colocater() ;
+            clear_vertex_linked_objects() ;
         }
         /**
          * \brief Fixes some defaults in a mesh.
@@ -196,16 +191,6 @@ namespace RINGMesh {
             mesh_.mesh_->vertices.clear( keep_attributes, keep_memory ) ;
             clear_vertex_linked_objects() ;
         }
-        /*!
-         * @brief Deletes the ColocaterANN on vertices
-         */
-        void delete_vertex_colocater()
-        {
-            if( mesh_.ann_[ColocaterANN::VERTICES] ) {
-                delete mesh_.ann_[ColocaterANN::VERTICES] ;
-                mesh_.ann_[ColocaterANN::VERTICES] = nil ;
-            }
-        }
 
         /*!@}
          * \section Edge methods
@@ -257,7 +242,7 @@ namespace RINGMesh {
         {
             mesh_.mesh_->edges.delete_elements( to_delete,
                 remove_isolated_vertices ) ;
-            delete_edge_colocater() ;
+            clear_edge_linked_objects() ;
         }
         /*!
          * @brief Removes all the edges and attributes.
@@ -268,17 +253,7 @@ namespace RINGMesh {
          */
         void clear_edges( bool keep_attributes, bool keep_memory ) {
             mesh_.mesh_->edges.clear( keep_attributes, keep_memory ) ;
-            delete_edge_colocater() ;
-        }
-        /*!
-         * @brief Deletes the ColocaterANN on edges
-         */
-        void delete_edge_colocater()
-        {
-            if( mesh_.ann_[ColocaterANN::EDGES] ) {
-                delete mesh_.ann_[ColocaterANN::EDGES] ;
-                mesh_.ann_[ColocaterANN::EDGES] = nil ;
-            }
+            clear_edge_linked_objects() ;
         }
 
         /*!@}
@@ -411,26 +386,6 @@ namespace RINGMesh {
                 remove_isolated_vertices ) ;
             clear_facet_linked_objects() ;
         }
-        /*!
-         * @brief Deletes the ColocaterANN on facets
-         */
-        void delete_facet_colocater()
-        {
-            if( mesh_.ann_[ColocaterANN::FACETS] ) {
-                delete mesh_.ann_[ColocaterANN::FACETS] ;
-                mesh_.ann_[ColocaterANN::FACETS] = nil ;
-            }
-        }
-        /*!
-         * @brief Deletes the AABB on facets
-         */
-        void delete_facet_aabb()
-        {
-            if( mesh_.facets_aabb_ ) {
-                delete mesh_.facets_aabb_;
-                mesh_.facets_aabb_ = nil ;
-            }
-        }
 
         /*!@}
          * \section Cells methods
@@ -550,8 +505,75 @@ namespace RINGMesh {
         {
             mesh_.mesh_->cells.delete_elements( to_delete,
                 remove_isolated_vertices ) ;
+            clear_cell_linked_objects() ;
+        }
+
+
+        /*!
+         * @}
+         */
+
+        void clear_vertex_linked_objects()
+        {
+            delete_vertex_colocater() ;
+            clear_edge_linked_objects() ;
+            clear_facet_linked_objects() ;
+            clear_cell_linked_objects() ;
+        }
+        void clear_edge_linked_objects()
+        {
+            delete_edge_colocater() ;
+        }
+        void clear_facet_linked_objects()
+        {
+            delete_facet_aabb() ;
+            delete_facet_colocater() ;
+        }
+        void clear_cell_linked_objects()
+        {
             delete_cell_aabb() ;
             delete_cell_colocater() ;
+        }
+    private:
+        /*!
+         * @brief Deletes the ColocaterANN on vertices
+         */
+        void delete_vertex_colocater()
+        {
+            if( mesh_.ann_[ColocaterANN::VERTICES] ) {
+                delete mesh_.ann_[ColocaterANN::VERTICES] ;
+                mesh_.ann_[ColocaterANN::VERTICES] = nil ;
+            }
+        }
+        /*!
+         * @brief Deletes the ColocaterANN on edges
+         */
+        void delete_edge_colocater()
+        {
+            if( mesh_.ann_[ColocaterANN::EDGES] ) {
+                delete mesh_.ann_[ColocaterANN::EDGES] ;
+                mesh_.ann_[ColocaterANN::EDGES] = nil ;
+            }
+        }
+        /*!
+         * @brief Deletes the ColocaterANN on facets
+         */
+        void delete_facet_colocater()
+        {
+            if( mesh_.ann_[ColocaterANN::FACETS] ) {
+                delete mesh_.ann_[ColocaterANN::FACETS] ;
+                mesh_.ann_[ColocaterANN::FACETS] = nil ;
+            }
+        }
+        /*!
+         * @brief Deletes the AABB on facets
+         */
+        void delete_facet_aabb()
+        {
+            if( mesh_.facets_aabb_ ) {
+                delete mesh_.facets_aabb_ ;
+                mesh_.facets_aabb_ = nil ;
+            }
         }
         /*!
          * @brief Deletes the ColocaterANN on cells
@@ -573,36 +595,9 @@ namespace RINGMesh {
         void delete_cell_aabb()
         {
             if( mesh_.cells_aabb_ ) {
-                delete mesh_.cells_aabb_;
+                delete mesh_.cells_aabb_ ;
                 mesh_.cells_aabb_ = nil ;
             }
-        }
-
-        /*!
-         * @}
-         */
-
-    private:
-        void clear_vertex_linked_objects()
-        {
-            delete_vertex_colocater() ;
-            clear_edge_linked_objects() ;
-            clear_facet_linked_objects() ;
-            clear_cell_linked_objects() ;
-        }
-        void clear_edge_linked_objects()
-        {
-            delete_edge_colocater() ;
-        }
-        void clear_facet_linked_objects()
-        {
-            delete_facet_aabb() ;
-            delete_facet_colocater() ;
-        }
-        void clear_cell_linked_objects()
-        {
-            delete_cell_aabb() ;
-            delete_cell_colocater() ;
         }
 
     private:
