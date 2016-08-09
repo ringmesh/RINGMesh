@@ -21,6 +21,7 @@ Execute cmake command in a RINGMesh/build directory.
 To configure using default options:
 
 * cmake ..
+
 To define the options, use the cmake interface:
 
 * cmake-gui .. or ccmake ..
