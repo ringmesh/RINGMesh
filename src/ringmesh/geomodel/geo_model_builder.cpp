@@ -1100,7 +1100,6 @@ namespace RINGMesh {
     {
         GeoModelMeshEntity& E = mesh_entity( id ) ;
         MeshBuilder builder( E.mesh_ ) ;
-        builder.delete_vertex_colocater() ;
         return builder.create_vertices( nb_vertices ) ;
     }
 
@@ -1368,10 +1367,6 @@ namespace RINGMesh {
     {
         GeoModelMeshEntity& E = mesh_entity( Region::type_name_static(), region_id ) ;
         MeshBuilder builder( E.mesh_ ) ;
-        builder.delete_vertex_colocater() ;
-        builder.delete_cell_colocater() ;
-        builder.delete_cell_aabb() ;
-
         return builder.create_cells( nb_cells, type ) ;
     }
 
@@ -1391,10 +1386,6 @@ namespace RINGMesh {
     {
         GeoModelMeshEntity& E = mesh_entity( Surface::type_name_static(), surface_id ) ;
         MeshBuilder builder( E.mesh_ ) ;
-        builder.delete_vertex_colocater() ;
-        builder.delete_facet_colocater() ;
-        builder.delete_facet_aabb() ;
-
         return builder.create_facet_polygon( vertex_indices ) ;
     }
 
