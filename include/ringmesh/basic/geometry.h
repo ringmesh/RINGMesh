@@ -524,6 +524,7 @@ namespace RINGMesh {
             if( delete_points_ ) delete[] ann_points_ ;
         }
 
+        bool get_neighbors( const vec3& v, std::vector< index_t >& result, double threshold_distance ) const ;
         bool get_colocated( const vec3& v, std::vector< index_t >& result ) const ;
         /*!
          * @brief Gets the \p index_map that link all the duplicated points
