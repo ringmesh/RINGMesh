@@ -19,8 +19,10 @@ Execute cmake command in a RINGMesh/build directory.
 * cd build
 
 To configure using default options:
+
 * cmake ..
 To define the options, use the cmake interface:
+
 * cmake-gui .. or ccmake ..
 
 
@@ -63,6 +65,7 @@ where to put the binaries as this_root/build/ringmesh.
 Configuration options can be set in using the interface.
 
 RINGMesh has previously been compiled with:
+
 * Visual Studio 10 2010 Win64
 * Visual Studio 11 2012 Win64
 * Visual Studio 12 2013 Win64
@@ -88,5 +91,3 @@ doc-devkit include full documentation of RINGMesh and Geogram
 doc-devkit-lite include only the RINGMesh documentation
 
 Then you can go in doc/html and open the index.html with your web browser
-
-
