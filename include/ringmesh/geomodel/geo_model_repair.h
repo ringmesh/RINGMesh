@@ -48,7 +48,7 @@
 
 namespace RINGMesh {
     /*!
-     * @brief Try repairing an supposedly invalid GeoModel
+     * @brief Try repairing a supposedly invalid GeoModel
      * @details Remove colocated vertices in all GeoModelMeshEntity.
      *          Remove degenerated edges and facets in Surfaces and Lines.
      * @warning The Mesh of the model is deleted.
