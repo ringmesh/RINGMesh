@@ -1,6 +1,7 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/d2hkhxnlb4ke6gy0/branch/default?svg=true)](https://ci.appveyor.com/project/ArnaudBotella/ringmesh/branch/default)
 
 Instructions for compiling RINGMesh
+===================================
 
 RINGMesh is tested under Linux (64 bits) and Windows (64 bits).
 You will need CMake (version >= 2.8.11). There is no other dependency (everything
@@ -14,20 +15,20 @@ Configuring RINGMesh
 
 Execute cmake command in a RINGMesh/build directory.
 
-- mkdir build
-- cd build
+* mkdir build
+* cd build
 
 To configure using default options:
-- cmake ..
+* cmake ..
 To define the options, use the cmake interface:
-- cmake-gui .. or ccmake ..
+* cmake-gui .. or ccmake ..
 
 
 Compiling RINGMesh
 ------------------
 
-- cd build/ringmesh/Release
-- make [-j4]
+* cd build/ringmesh/Release
+* make [-j4]
 
 To build in debug, go to build/ringmesh/Debug instead.
 
@@ -42,9 +43,9 @@ Compiling the documentation
 
 The documentation can be generated using [Doxygen](http://www.stack.nl/~dimitri/doxygen/):
 
-- Check the BUILD_DOCUMENTATION option when using cmake
-- cd build/ringmesh/Release
-- make doc-devkit OR make doc-devkit-lite
+* Check the BUILD_DOCUMENTATION option when using cmake
+* cd build/ringmesh/Release
+* make doc-devkit OR make doc-devkit-lite
 
 doc-devkit include full documentation of RINGMesh and Geogram
 doc-devkit-lite include only the RINGMesh documentation
@@ -62,9 +63,9 @@ where to put the binaries as this_root/build/ringmesh.
 Configuration options can be set in using the interface.
 
 RINGMesh has previously been compiled with:
-- Visual Studio 10 2010 Win64
-- Visual Studio 11 2012 Win64
-- Visual Studio 12 2013 Win64
+* Visual Studio 10 2010 Win64
+* Visual Studio 11 2012 Win64
+* Visual Studio 12 2013 Win64
 
 
 Compiling RINGMesh
@@ -79,9 +80,9 @@ Compiling the documentation
 
 The documentation can be generated using [Doxygen](http://www.stack.nl/~dimitri/doxygen/):
 
-- Check the BUILD_DOCUMENTATION option when using cmake
-- Open the solution which is in build/ringmesh/RINGmesh.sln in VisualStudio
-- Build the doc-devkit or the doc-devkit-lite project
+* Check the BUILD_DOCUMENTATION option when using cmake
+* Open the solution which is in build/ringmesh/RINGmesh.sln in VisualStudio
+* Build the doc-devkit or the doc-devkit-lite project
 
 doc-devkit include full documentation of RINGMesh and Geogram
 doc-devkit-lite include only the RINGMesh documentation
