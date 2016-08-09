@@ -63,7 +63,10 @@ namespace RINGMesh {
             : mesh_( mesh )
         {
         }
-        ~MeshBuilder() {} ;
+        ~MeshBuilder()
+        {
+        }
+        ;
 
         void load_mesh(
             const std::string& filename,
@@ -109,17 +112,16 @@ namespace RINGMesh {
                 min_facets ) ;
         }
 
-        void triangulate(
-            const Mesh& surface_in )
+        void triangulate( const Mesh& surface_in )
         {
             Logger::instance()->set_minimal( true ) ;
             GEO::CentroidalVoronoiTesselation CVT( surface_in.mesh_, 3,
                 GEO::CmdLine::get_arg( "algo:delaunay" ) ) ;
-            CVT.set_points( mesh_.nb_vertices(), mesh_.mesh_->vertices.point_ptr( 0 ) ) ;
+            CVT.set_points( mesh_.nb_vertices(),
+                mesh_.mesh_->vertices.point_ptr( 0 ) ) ;
             CVT.compute_surface( mesh_.mesh_, false ) ;
             Logger::instance()->set_minimal( false ) ;
         }
-
 
         /*!
          * \name Vertex methods
@@ -213,7 +215,7 @@ namespace RINGMesh {
          */
         index_t create_edges( index_t nb_edges )
         {
-           return mesh_.mesh_->edges.create_edges( nb_edges ) ;
+            return mesh_.mesh_->edges.create_edges( nb_edges ) ;
         }
         /*!
          * @brief Sets a vertex of a facet by local vertex index.
@@ -251,7 +253,8 @@ namespace RINGMesh {
          * @param[in] keep_memory if true, then memory is kept and can be reused
          * by subsequent mesh entity creations.
          */
-        void clear_edges( bool keep_attributes, bool keep_memory ) {
+        void clear_edges( bool keep_attributes, bool keep_memory )
+        {
             mesh_.mesh_->edges.clear( keep_attributes, keep_memory ) ;
             clear_edge_linked_objects() ;
         }
@@ -285,7 +288,8 @@ namespace RINGMesh {
          *  contains the vertices
          * \return the index of the created facet
          */
-        index_t create_facet_polygon( const GEO::vector< index_t >& vertices ) {
+        index_t create_facet_polygon( const GEO::vector< index_t >& vertices )
+        {
             index_t index = mesh_.mesh_->facets.create_polygon( vertices ) ;
             clear_facet_linked_objects() ;
             return index ;
@@ -296,20 +300,20 @@ namespace RINGMesh {
          * \param[in] nb_triangles number of triangles to create
          * \return the index of the first triangle
          */
-       index_t create_facet_triangles( index_t nb_triangles )
-       {
-           return mesh_.mesh_->facets.create_triangles( nb_triangles ) ;
+        index_t create_facet_triangles( index_t nb_triangles )
+        {
+            return mesh_.mesh_->facets.create_triangles( nb_triangles ) ;
 
-       }
-       /*!
-        * \brief Creates a contiguous chunk of quads
-        * \param[in] nb_quads number of quads to create
-        * \return the index of the first quad
-        */
-       index_t create_facet_quads( index_t nb_quads )
-       {
-           return mesh_.mesh_->facets.create_quads( nb_quads ) ;
-       }
+        }
+        /*!
+         * \brief Creates a contiguous chunk of quads
+         * \param[in] nb_quads number of quads to create
+         * \return the index of the first quad
+         */
+        index_t create_facet_quads( index_t nb_quads )
+        {
+            return mesh_.mesh_->facets.create_quads( nb_quads ) ;
+        }
         /*!
          * @brief Sets a vertex of a facet by local vertex index.
          * @param[in] facet_id index of the facet, in 0.. @function nb() - 1.
@@ -362,16 +366,19 @@ namespace RINGMesh {
          * @param[in] keep_memory if true, then memory is kept and can be reused
          * by subsequent mesh entity creations.
          */
-        void clear_facets( bool keep_attributes, bool keep_memory ) {
+        void clear_facets( bool keep_attributes, bool keep_memory )
+        {
             mesh_.mesh_->facets.clear( keep_attributes, keep_memory ) ;
         }
         /*!
          * @brief Retrieve the adjacencies of facets
          */
-        void connect_facets() {
+        void connect_facets()
+        {
             mesh_.mesh_->facets.connect() ;
         }
-        void permute_facets( GEO::vector<index_t>& permutation ) {
+        void permute_facets( GEO::vector< index_t >& permutation )
+        {
             mesh_.mesh_->facets.permute_elements( permutation ) ;
         }
         /*!
@@ -443,7 +450,10 @@ namespace RINGMesh {
          * \param[in] corner_index the corner, in 0.. @function nb() - 1
          * \param[in] vertex_index specifies the vertex that corner \param corner_index is incident to
          */
-        void set_cell_corner_vertex_index( index_t corner_index, index_t vertex_index ) {
+        void set_cell_corner_vertex_index(
+            index_t corner_index,
+            index_t vertex_index )
+        {
             mesh_.mesh_->cell_corners.set_vertex( corner_index, vertex_index ) ;
             clear_cell_linked_objects() ;
         }
@@ -458,7 +468,8 @@ namespace RINGMesh {
             index_t facet_index,
             index_t cell_adjacent )
         {
-            mesh_.mesh_->cells.set_adjacent( cell_index, facet_index, cell_adjacent ) ;
+            mesh_.mesh_->cells.set_adjacent( cell_index, facet_index,
+                cell_adjacent ) ;
         }
         /*!
          * @brief Retrieve the adjacencies
@@ -489,10 +500,12 @@ namespace RINGMesh {
          * @param[in] keep_memory if true, then memory is kept and can be reused
          * by subsequent mesh entity creations.
          */
-        void clear_cells( bool keep_attributes, bool keep_memory ) {
+        void clear_cells( bool keep_attributes, bool keep_memory )
+        {
             mesh_.mesh_->cells.clear( keep_attributes, keep_memory ) ;
         }
-        void permute_cells( GEO::vector<index_t>& permutation ) {
+        void permute_cells( GEO::vector< index_t >& permutation )
+        {
             mesh_.mesh_->cells.permute_elements( permutation ) ;
         }
         /*!
@@ -510,7 +523,6 @@ namespace RINGMesh {
                 remove_isolated_vertices ) ;
             clear_cell_linked_objects() ;
         }
-
 
         /*!
          * @}
