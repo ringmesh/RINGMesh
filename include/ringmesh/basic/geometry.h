@@ -69,183 +69,15 @@ namespace RINGMesh {
     /*!
      * See http://www.geometrictools.com/LibMathematics/Distance/Distance.html
      */
-    template< typename VEC >
     double point_triangle_distance(
-        const VEC& point,
-        const VEC& V0,
-        const VEC& V1,
-        const VEC& V2,
-        VEC& closest_point,
+        const vec3& point,
+        const vec3& V0,
+        const vec3& V1,
+        const vec3& V2,
+        vec3& closest_point,
         double& lambda0,
         double& lambda1,
-        double& lambda2 )
-    {
-        VEC diff = V0 - point ;
-        VEC edge0 = V1 - V0 ;
-        VEC edge1 = V2 - V0 ;
-        double a00 = length2( edge0 ) ;
-        double a01 = dot( edge0, edge1 ) ;
-        double a11 = length2( edge1 ) ;
-        double b0 = dot( diff, edge0 ) ;
-        double b1 = dot( diff, edge1 ) ;
-        double c = length2( diff ) ;
-        double det = ::fabs( a00 * a11 - a01 * a01 ) ;
-        double s = a01 * b1 - a11 * b0 ;
-        double t = a01 * b0 - a00 * b1 ;
-        double sqrDistance ;
-
-        if( s + t <= det ) {
-            if( s < 0.0 ) {
-                if( t < 0.0 ) { // region 4
-                    if( b0 < 0.0 ) {
-                        t = 0.0 ;
-                        if( -b0 >= a00 ) {
-                            s = 1.0 ;
-                            sqrDistance = a00 + 2.0 * b0 + c ;
-                        } else {
-                            s = -b0 / a00 ;
-                            sqrDistance = b0 * s + c ;
-                        }
-                    } else {
-                        s = 0.0 ;
-                        if( b1 >= 0.0 ) {
-                            t = 0.0 ;
-                            sqrDistance = c ;
-                        } else if( -b1 >= a11 ) {
-                            t = 1.0 ;
-                            sqrDistance = a11 + 2.0 * b1 + c ;
-                        } else {
-                            t = -b1 / a11 ;
-                            sqrDistance = b1 * t + c ;
-                        }
-                    }
-                } else { // region 3
-                    s = 0.0 ;
-                    if( b1 >= 0.0 ) {
-                        t = 0.0 ;
-                        sqrDistance = c ;
-                    } else if( -b1 >= a11 ) {
-                        t = 1.0 ;
-                        sqrDistance = a11 + 2.0 * b1 + c ;
-                    } else {
-                        t = -b1 / a11 ;
-                        sqrDistance = b1 * t + c ;
-                    }
-                }
-            } else if( t < 0.0 ) { // region 5
-                t = 0.0 ;
-                if( b0 >= 0.0 ) {
-                    s = 0.0 ;
-                    sqrDistance = c ;
-                } else if( -b0 >= a00 ) {
-                    s = 1.0 ;
-                    sqrDistance = a00 + 2.0 * b0 + c ;
-                } else {
-                    s = -b0 / a00 ;
-                    sqrDistance = b0 * s + c ;
-                }
-            } else { // region 0
-                // minimum at interior point
-                double invDet = double( 1.0 ) / det ;
-                s *= invDet ;
-                t *= invDet ;
-                sqrDistance = s * ( a00 * s + a01 * t + 2.0 * b0 )
-                    + t * ( a01 * s + a11 * t + 2.0 * b1 ) + c ;
-            }
-        } else {
-            double tmp0, tmp1, numer, denom ;
-
-            if( s < 0.0 ) { // region 2
-                tmp0 = a01 + b0 ;
-                tmp1 = a11 + b1 ;
-                if( tmp1 > tmp0 ) {
-                    numer = tmp1 - tmp0 ;
-                    denom = a00 - 2.0 * a01 + a11 ;
-                    if( numer >= denom ) {
-                        s = 1.0 ;
-                        t = 0.0 ;
-                        sqrDistance = a00 + 2.0 * b0 + c ;
-                    } else {
-                        s = numer / denom ;
-                        t = 1.0 - s ;
-                        sqrDistance = s * ( a00 * s + a01 * t + 2.0 * b0 )
-                            + t * ( a01 * s + a11 * t + 2.0 * b1 ) + c ;
-                    }
-                } else {
-                    s = 0.0 ;
-                    if( tmp1 <= 0.0 ) {
-                        t = 1.0 ;
-                        sqrDistance = a11 + 2.0 * b1 + c ;
-                    } else if( b1 >= 0.0 ) {
-                        t = 0.0 ;
-                        sqrDistance = c ;
-                    } else {
-                        t = -b1 / a11 ;
-                        sqrDistance = b1 * t + c ;
-                    }
-                }
-            } else if( t < 0.0 ) { // region 6
-                tmp0 = a01 + b1 ;
-                tmp1 = a00 + b0 ;
-                if( tmp1 > tmp0 ) {
-                    numer = tmp1 - tmp0 ;
-                    denom = a00 - 2.0 * a01 + a11 ;
-                    if( numer >= denom ) {
-                        t = 1.0 ;
-                        s = 0.0 ;
-                        sqrDistance = a11 + 2.0 * b1 + c ;
-                    } else {
-                        t = numer / denom ;
-                        s = 1.0 - t ;
-                        sqrDistance = s * ( a00 * s + a01 * t + 2.0 * b0 )
-                            + t * ( a01 * s + a11 * t + 2.0 * b1 ) + c ;
-                    }
-                } else {
-                    t = 0.0 ;
-                    if( tmp1 <= 0.0 ) {
-                        s = 1.0 ;
-                        sqrDistance = a00 + 2.0 * b0 + c ;
-                    } else if( b0 >= 0.0 ) {
-                        s = 0.0 ;
-                        sqrDistance = c ;
-                    } else {
-                        s = -b0 / a00 ;
-                        sqrDistance = b0 * s + c ;
-                    }
-                }
-            } else { // region 1
-                numer = a11 + b1 - a01 - b0 ;
-                if( numer <= 0.0 ) {
-                    s = 0.0 ;
-                    t = 1.0 ;
-                    sqrDistance = a11 + 2.0 * b1 + c ;
-                } else {
-                    denom = a00 - 2.0 * a01 + a11 ;
-                    if( numer >= denom ) {
-                        s = 1.0 ;
-                        t = 0.0 ;
-                        sqrDistance = a00 + 2.0 * b0 + c ;
-                    } else {
-                        s = numer / denom ;
-                        t = 1.0 - s ;
-                        sqrDistance = s * ( a00 * s + a01 * t + 2.0 * b0 )
-                            + t * ( a01 * s + a11 * t + 2.0 * b1 ) + c ;
-                    }
-                }
-            }
-        }
-
-        // Account for numerical round-off error.
-        if( sqrDistance < 0.0 ) {
-            sqrDistance = 0.0 ;
-        }
-
-        closest_point = V0 + s * edge0 + t * edge1 ;
-        lambda0 = 1.0 - s - t ;
-        lambda1 = s ;
-        lambda2 = t ;
-        return sqrt( sqrDistance ) ;
-    }
+        double& lambda2 ) ;
 
     double RINGMESH_API point_quad_distance(
         const vec3& p,
@@ -395,19 +227,6 @@ namespace RINGMesh {
         double theta,
         bool degrees,
         GEO::Matrix< double, 4 >& rot_mat ) ;
-
-    template< typename VEC >
-    VEC random_point_in_triangle( const VEC& p1, const VEC& p2, const VEC& p3 )
-    {
-        double l1 = std::rand() ;
-        double l2 = std::rand() ;
-        if( l1 + l2 > 1.0 ) {
-            l1 = 1.0 - l1 ;
-            l2 = 1.0 - l2 ;
-        }
-        double l3 = 1.0 - l1 - l2 ;
-        return l1 * p1 + l2 * p2 + l3 * p3 ;
-    }
 
     /*!
      * Given an array of vec3, this class computes the colocated points
