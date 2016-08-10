@@ -1229,9 +1229,9 @@ namespace RINGMesh {
     {
         gmm_.facets.test_and_initialize() ;
 
-        facet_id_.bind( mesh_.cell_attribute_manager(), "facet_id" ) ;
+        facet_id_.bind( mesh_.cell_facet_attribute_manager(), "facet_id" ) ;
         facet_id_.fill( NO_ID ) ;
-        const ColocaterANN& ann = mesh_.colocater_ann(ColocaterANN::FACETS ) ;
+        const ColocaterANN& ann = mesh_.colocater_ann( ColocaterANN::FACETS ) ;
         for( index_t c = 0; c < mesh_.nb_cells(); c++ ) {
             for( index_t f = 0; f < mesh_.nb_cell_facets( c ); f++ ) {
                 std::vector< index_t > result ;
