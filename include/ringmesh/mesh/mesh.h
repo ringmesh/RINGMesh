@@ -457,6 +457,10 @@ namespace RINGMesh {
         {
             return mesh_->cells.attributes() ;
         }
+        GEO::AttributesManager& cell_facet_attribute_manager() const
+        {
+            return mesh_->cell_facets.attributes() ;
+        }
         /*!
          * @brief Gets the type of a cell.
          * @param[in] cell_id the cell index, in 0..nb()-1
