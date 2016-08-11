@@ -373,8 +373,9 @@ namespace RINGMesh {
                         if( strncmp( file_line.field( c ), "+", 1 ) == 0 ) {
                             side = true ;
                         }
-                        index_t s ;
+                        index_t s = NO_ID ;
                         GEO::String::from_string( &file_line.field( c )[1], s ) ;
+                        ringmesh_assert( s != NO_ID ) ;
 
                         add_mesh_entity_boundary( entity, s, side ) ;
                     }
@@ -389,8 +390,9 @@ namespace RINGMesh {
                         if( strncmp( file_line.field( c ), "+", 1 ) == 0 ) {
                             side = true ;
                         }
-                        index_t s ;
+                        index_t s = NO_ID ;
                         GEO::String::from_string( &file_line.field( c )[1], s ) ;
+                        ringmesh_assert( s != NO_ID ) ;
 
                         add_universe_boundary( s, side ) ;
                     }
