@@ -116,9 +116,9 @@ namespace RINGMesh {
          * basics information on the GeoModel.
          */
         void load_topology( GEO::LineInput& file_line ) ;
-        std::string match_nb_entities( const char* s ) ;
-        EntityType old2new( const std::string& old_type_name ) ;
-        bool child_allowed( const char* s ) ;
+        std::string match_nb_entities( const char* s ) const ;
+        EntityType type_name_old_to_new( const std::string& old_type_name ) const ;
+        bool child_allowed( const char* s ) const ;
         /*!
          * @brief Load the connectivities. These are how corners are
          * connected to lines, lines connected to surfaces and surfaces
