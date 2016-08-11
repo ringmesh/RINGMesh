@@ -54,9 +54,10 @@
 namespace {
 
     using namespace RINGMesh ;
-
-// Compare the coordinates one by one, returns true
-// if they are all epsilon close.
+    /*!
+     * Compare the coordinates of \param v1 and \param v2 one by one,
+     * @return return true if coordinates are all epsilon close.
+     */
     bool inexact_equal( const vec3& v1, const vec3& v2 )
     {
         for( index_t i = 0; i < 3; i++ ) {
