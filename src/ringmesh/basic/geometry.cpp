@@ -50,13 +50,14 @@
  *
  * @todo Comment on the robustness of the tests
  */
- 
+
 namespace {
 
     using namespace RINGMesh ;
-
-    // Compare the coordinates one by one, returns true
-    // if they are all epsilon close.
+    /*!
+     * Compare the coordinates of \param v1 and \param v2 one by one,
+     * @return return true if coordinates are all epsilon close.
+     */
     bool inexact_equal( const vec3& v1, const vec3& v2 )
     {
         for( index_t i = 0; i < 3; i++ ) {
@@ -86,6 +87,183 @@ namespace RINGMesh {
         return u.x != v.x || u.y != v.y || u.z != v.z ;
     }
 
+    double point_triangle_distance(
+        const vec3& point,
+        const vec3& V0,
+        const vec3& V1,
+        const vec3& V2,
+        vec3& closest_point,
+        double& lambda0,
+        double& lambda1,
+        double& lambda2 )
+    {
+        vec3 diff = V0 - point ;
+        vec3 edge0 = V1 - V0 ;
+        vec3 edge1 = V2 - V0 ;
+        double a00 = length2( edge0 ) ;
+        double a01 = dot( edge0, edge1 ) ;
+        double a11 = length2( edge1 ) ;
+        double b0 = dot( diff, edge0 ) ;
+        double b1 = dot( diff, edge1 ) ;
+        double c = length2( diff ) ;
+        double det = ::fabs( a00 * a11 - a01 * a01 ) ;
+        double s = a01 * b1 - a11 * b0 ;
+        double t = a01 * b0 - a00 * b1 ;
+        double sqrDistance ;
+
+        if( s + t <= det ) {
+            if( s < 0.0 ) {
+                if( t < 0.0 ) { // region 4
+                    if( b0 < 0.0 ) {
+                        t = 0.0 ;
+                        if( -b0 >= a00 ) {
+                            s = 1.0 ;
+                            sqrDistance = a00 + 2.0 * b0 + c ;
+                        } else {
+                            s = -b0 / a00 ;
+                            sqrDistance = b0 * s + c ;
+                        }
+                    } else {
+                        s = 0.0 ;
+                        if( b1 >= 0.0 ) {
+                            t = 0.0 ;
+                            sqrDistance = c ;
+                        } else if( -b1 >= a11 ) {
+                            t = 1.0 ;
+                            sqrDistance = a11 + 2.0 * b1 + c ;
+                        } else {
+                            t = -b1 / a11 ;
+                            sqrDistance = b1 * t + c ;
+                        }
+                    }
+                } else { // region 3
+                    s = 0.0 ;
+                    if( b1 >= 0.0 ) {
+                        t = 0.0 ;
+                        sqrDistance = c ;
+                    } else if( -b1 >= a11 ) {
+                        t = 1.0 ;
+                        sqrDistance = a11 + 2.0 * b1 + c ;
+                    } else {
+                        t = -b1 / a11 ;
+                        sqrDistance = b1 * t + c ;
+                    }
+                }
+            } else if( t < 0.0 ) { // region 5
+                t = 0.0 ;
+                if( b0 >= 0.0 ) {
+                    s = 0.0 ;
+                    sqrDistance = c ;
+                } else if( -b0 >= a00 ) {
+                    s = 1.0 ;
+                    sqrDistance = a00 + 2.0 * b0 + c ;
+                } else {
+                    s = -b0 / a00 ;
+                    sqrDistance = b0 * s + c ;
+                }
+            } else { // region 0
+                // minimum at interior point
+                double invDet = double( 1.0 ) / det ;
+                s *= invDet ;
+                t *= invDet ;
+                sqrDistance = s * ( a00 * s + a01 * t + 2.0 * b0 )
+                    + t * ( a01 * s + a11 * t + 2.0 * b1 ) + c ;
+            }
+        } else {
+            double tmp0, tmp1, numer, denom ;
+
+            if( s < 0.0 ) { // region 2
+                tmp0 = a01 + b0 ;
+                tmp1 = a11 + b1 ;
+                if( tmp1 > tmp0 ) {
+                    numer = tmp1 - tmp0 ;
+                    denom = a00 - 2.0 * a01 + a11 ;
+                    if( numer >= denom ) {
+                        s = 1.0 ;
+                        t = 0.0 ;
+                        sqrDistance = a00 + 2.0 * b0 + c ;
+                    } else {
+                        s = numer / denom ;
+                        t = 1.0 - s ;
+                        sqrDistance = s * ( a00 * s + a01 * t + 2.0 * b0 )
+                            + t * ( a01 * s + a11 * t + 2.0 * b1 ) + c ;
+                    }
+                } else {
+                    s = 0.0 ;
+                    if( tmp1 <= 0.0 ) {
+                        t = 1.0 ;
+                        sqrDistance = a11 + 2.0 * b1 + c ;
+                    } else if( b1 >= 0.0 ) {
+                        t = 0.0 ;
+                        sqrDistance = c ;
+                    } else {
+                        t = -b1 / a11 ;
+                        sqrDistance = b1 * t + c ;
+                    }
+                }
+            } else if( t < 0.0 ) { // region 6
+                tmp0 = a01 + b1 ;
+                tmp1 = a00 + b0 ;
+                if( tmp1 > tmp0 ) {
+                    numer = tmp1 - tmp0 ;
+                    denom = a00 - 2.0 * a01 + a11 ;
+                    if( numer >= denom ) {
+                        t = 1.0 ;
+                        s = 0.0 ;
+                        sqrDistance = a11 + 2.0 * b1 + c ;
+                    } else {
+                        t = numer / denom ;
+                        s = 1.0 - t ;
+                        sqrDistance = s * ( a00 * s + a01 * t + 2.0 * b0 )
+                            + t * ( a01 * s + a11 * t + 2.0 * b1 ) + c ;
+                    }
+                } else {
+                    t = 0.0 ;
+                    if( tmp1 <= 0.0 ) {
+                        s = 1.0 ;
+                        sqrDistance = a00 + 2.0 * b0 + c ;
+                    } else if( b0 >= 0.0 ) {
+                        s = 0.0 ;
+                        sqrDistance = c ;
+                    } else {
+                        s = -b0 / a00 ;
+                        sqrDistance = b0 * s + c ;
+                    }
+                }
+            } else { // region 1
+                numer = a11 + b1 - a01 - b0 ;
+                if( numer <= 0.0 ) {
+                    s = 0.0 ;
+                    t = 1.0 ;
+                    sqrDistance = a11 + 2.0 * b1 + c ;
+                } else {
+                    denom = a00 - 2.0 * a01 + a11 ;
+                    if( numer >= denom ) {
+                        s = 1.0 ;
+                        t = 0.0 ;
+                        sqrDistance = a00 + 2.0 * b0 + c ;
+                    } else {
+                        s = numer / denom ;
+                        t = 1.0 - s ;
+                        sqrDistance = s * ( a00 * s + a01 * t + 2.0 * b0 )
+                            + t * ( a01 * s + a11 * t + 2.0 * b1 ) + c ;
+                    }
+                }
+            }
+        }
+
+        // Account for numerical round-off error.
+        if( sqrDistance < 0.0 ) {
+            sqrDistance = 0.0 ;
+        }
+
+        closest_point = V0 + s * edge0 + t * edge1 ;
+        lambda0 = 1.0 - s - t ;
+        lambda1 = s ;
+        lambda2 = t ;
+        return sqrt( sqrDistance ) ;
+    }
+
     /*!
      * Computes the distance between a point and a tetrahedron
      * @param[in] p the point
@@ -110,11 +288,12 @@ namespace RINGMesh {
         for( index_t f = 0; f < GEO::MeshCellDescriptors::tet_descriptor.nb_facets;
             f++ ) {
             vec3 cur_p ;
-            double distance = point_triangle_distance( p,
-                vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][0]],
-                vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][1]],
-                vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][2]], cur_p, not_used0,
-                not_used1, not_used2 ) ;
+            double distance =
+                point_triangle_distance( p,
+                    vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][0]],
+                    vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][1]],
+                    vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][2]],
+                    cur_p, not_used0, not_used1, not_used2 ) ;
             if( distance < dist ) {
                 dist = distance ;
                 nearest_p = cur_p ;
@@ -146,25 +325,29 @@ namespace RINGMesh {
         vec3 vertices[5] = { p0, p1, p2, p3, p4 } ;
         double not_used0, not_used1, not_used2 ;
         double dist = max_float64() ;
-        for( index_t f = 0; f < GEO::MeshCellDescriptors::pyramid_descriptor.nb_facets; f++ ) {
+        for( index_t f = 0;
+            f < GEO::MeshCellDescriptors::pyramid_descriptor.nb_facets; f++ ) {
             vec3 cur_p ;
             double distance = max_float64() ;
             index_t nb_vertices =
                 GEO::MeshCellDescriptors::pyramid_descriptor.nb_vertices_in_facet[f] ;
             if( nb_vertices == 3 ) {
-                distance = point_triangle_distance( p,
-                    vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][0]],
-                    vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][1]],
-                    vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][2]], cur_p,
-                    not_used0, not_used1, not_used2 ) ;
+                distance =
+                    point_triangle_distance( p,
+                        vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][0]],
+                        vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][1]],
+                        vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][2]],
+                        cur_p, not_used0, not_used1, not_used2 ) ;
             } else if( nb_vertices == 4 ) {
-                distance = point_quad_distance( p,
-                    vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][0]],
-                    vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][1]],
-                    vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][2]],
-                    vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][3]], cur_p ) ;
+                distance =
+                    point_quad_distance( p,
+                        vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][0]],
+                        vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][1]],
+                        vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][2]],
+                        vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][3]],
+                        cur_p ) ;
             } else {
-                ringmesh_assert_not_reached;
+                ringmesh_assert_not_reached ;
             }
             if( distance < dist ) {
                 dist = distance ;
@@ -200,25 +383,29 @@ namespace RINGMesh {
         double not_used0, not_used1, not_used2 ;
 
         double dist = max_float64() ;
-        for( index_t f = 0; f < GEO::MeshCellDescriptors::prism_descriptor.nb_facets; f++ ) {
+        for( index_t f = 0; f < GEO::MeshCellDescriptors::prism_descriptor.nb_facets;
+            f++ ) {
             vec3 cur_p ;
             double distance = max_float64() ;
             index_t nb_vertices =
                 GEO::MeshCellDescriptors::prism_descriptor.nb_vertices_in_facet[f] ;
             if( nb_vertices == 3 ) {
-                distance = point_triangle_distance( p,
-                    vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][0]],
-                    vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][1]],
-                    vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][2]], cur_p, not_used0,
-                    not_used1, not_used2 ) ;
+                distance =
+                    point_triangle_distance( p,
+                        vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][0]],
+                        vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][1]],
+                        vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][2]],
+                        cur_p, not_used0, not_used1, not_used2 ) ;
             } else if( nb_vertices == 4 ) {
-                distance = point_quad_distance( p,
-                    vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][0]],
-                    vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][1]],
-                    vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][2]],
-                    vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][3]], cur_p ) ;
+                distance =
+                    point_quad_distance( p,
+                        vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][0]],
+                        vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][1]],
+                        vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][2]],
+                        vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][3]],
+                        cur_p ) ;
             } else {
-                ringmesh_assert_not_reached;
+                ringmesh_assert_not_reached ;
             }
             if( distance < dist ) {
                 dist = distance ;
@@ -256,13 +443,16 @@ namespace RINGMesh {
         /// Review: Why not input an array ?
         vec3 vertices[8] = { p0, p1, p2, p3, p4, p5, p6, p7 } ;
         double dist = max_float64() ;
-        for( index_t f = 0; f < GEO::MeshCellDescriptors::hex_descriptor.nb_facets; f++ ) {
+        for( index_t f = 0; f < GEO::MeshCellDescriptors::hex_descriptor.nb_facets;
+            f++ ) {
             vec3 cur_p ;
-            double distance = point_quad_distance( p,
-                vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][0]],
-                vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][1]],
-                vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][2]],
-                vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][3]], cur_p ) ;
+            double distance =
+                point_quad_distance( p,
+                    vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][0]],
+                    vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][1]],
+                    vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][2]],
+                    vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][3]],
+                    cur_p ) ;
             if( distance < dist ) {
                 dist = distance ;
                 nearest_p = cur_p ;
@@ -321,16 +511,18 @@ namespace RINGMesh {
     {
         vec3 vertices[5] = { p0, p1, p2, p3, p4 } ;
         GEO::Sign signs[5] ;
-        for( index_t f = 0; f < GEO::MeshCellDescriptors::pyramid_descriptor.nb_facets;
-            f++ ) {
+        for( index_t f = 0;
+            f < GEO::MeshCellDescriptors::pyramid_descriptor.nb_facets; f++ ) {
             signs[f] =
                 GEO::PCK::orient_3d( p.data(),
                     vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][0]].data(),
                     vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][1]].data(),
                     vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][2]].data() ) ;
         }
-        return ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0 && signs[3] >= 0 && signs[4] >= 0 )
-            || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0 && signs[4] <= 0 ) ;
+        return ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0 && signs[3] >= 0
+            && signs[4] >= 0 )
+            || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0
+                && signs[4] <= 0 ) ;
     }
 
     /*!
@@ -522,7 +714,7 @@ namespace RINGMesh {
         double lambda[4] )
     {
         double total_volume = GEO::Geom::tetra_signed_volume( p0, p1, p2, p3 ) ;
-        if( total_volume < epsilon_sq ) { 
+        if( total_volume < epsilon_sq ) {
             /// @todo Need to have a better handling of epsilon
             for( index_t i = 0; i < 4; i++ ) {
                 lambda[i] = 0 ;
@@ -1062,7 +1254,7 @@ namespace RINGMesh {
     MakeUnique::MakeUnique( const std::vector< vec3 >& points )
         : points_( points )
     {
-        index_t nb_points = static_cast<index_t> ( points_.size() ) ;
+        index_t nb_points = static_cast< index_t >( points_.size() ) ;
         indices_.resize( nb_points ) ;
         for( index_t i = 0; i < nb_points; i++ ) {
             indices_[i] = i ;
@@ -1185,7 +1377,7 @@ namespace RINGMesh {
 
     ColocaterANN::ColocaterANN( const std::vector< vec3 >& vertices, bool copy )
     {
-        index_t nb_vertices = static_cast<index_t> ( vertices.size() ) ;
+        index_t nb_vertices = static_cast< index_t >( vertices.size() ) ;
         ann_tree_ = GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
         if( copy ) {
             ann_points_ = new double[nb_vertices * 3] ;
@@ -1209,31 +1401,7 @@ namespace RINGMesh {
         const vec3& v,
         std::vector< index_t >& result ) const
     {
-        index_t nb_points = ann_tree_->nb_points() ;
-        result.clear() ;
-        if( nb_points == 0 )
-        {
-            return false ;
-        }
-        index_t nb_neighbors = std::min( index_t( 5 ), nb_points ) ;
-        std::vector< index_t > neighbors ;
-        index_t cur_neighbor = 0 ;
-        index_t prev_neighbor = 0 ;
-        do {
-            prev_neighbor = cur_neighbor ;
-            cur_neighbor += nb_neighbors ;
-            neighbors.resize( cur_neighbor ) ;
-            double* dist = (double*) alloca( sizeof(double) * cur_neighbor ) ;
-            nb_neighbors = get_neighbors( v, cur_neighbor, neighbors, dist ) ;
-            for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
-                if( dist[i] > epsilon_sq ) {
-                    break ;
-                }
-                result.push_back( neighbors[i] ) ;
-            }
-        } while( result.size() == cur_neighbor && result.size() < nb_points ) ;
-
-        return !result.empty() ;
+        return get_neighbors( v, result, epsilon_sq ) ;
     }
 
     index_t ColocaterANN::get_colocated_index_mapping(
@@ -1243,7 +1411,8 @@ namespace RINGMesh {
         for( index_t i = 0; i < index_map.size(); i++ ) {
             index_map[i] = i ;
         }
-        std::vector< index_t > nb_colocalised_per_thread( omp_get_max_threads(), 0 ) ;
+        std::vector< index_t > nb_colocalised_per_thread( omp_get_max_threads(),
+            0 ) ;
         RINGMESH_PARALLEL_LOOP
         for( index_t i = 0; i < index_map.size(); i++ ) {
             std::vector< index_t > results ;
@@ -1273,8 +1442,7 @@ namespace RINGMesh {
         index_t offset = 0 ;
         for( index_t p = 0; p < index_map.size(); p++ ) {
             if( index_map[p] == p ) {
-                vec3 new_point( ann_points_[3 * p],
-                    ann_points_[3 * p + 1],
+                vec3 new_point( ann_points_[3 * p], ann_points_[3 * p + 1],
                     ann_points_[3 * p + 2] ) ;
                 unique_points.push_back( new_point ) ;
                 index_map[p] = p - offset ;
@@ -1284,6 +1452,46 @@ namespace RINGMesh {
         }
         ringmesh_assert( offset == nb_colocalised_vertices ) ;
         return offset ;
+    }
+
+    /*!
+     * Compute the neighbors of a given point, point closer than \param threshold_distance
+     * @param[in] v the point to test
+     * @param[out] result the neighbor point indices.
+     * @param[in] threshold_distance distance defining the neighborhood
+     * @return return true if there is at least one neighbor
+     */
+    bool ColocaterANN::get_neighbors(
+        const vec3& v,
+        std::vector< index_t >& result,
+        double threshold_distance ) const
+    {
+
+        index_t nb_points = ann_tree_->nb_points() ;
+        result.clear() ;
+        if( nb_points == 0 ) {
+            return false ;
+        }
+        index_t nb_neighbors = std::min( index_t( 5 ), nb_points ) ;
+        std::vector< index_t > neighbors ;
+        index_t cur_neighbor = 0 ;
+        index_t prev_neighbor = 0 ;
+        do {
+            prev_neighbor = cur_neighbor ;
+            cur_neighbor += nb_neighbors ;
+            neighbors.resize( cur_neighbor ) ;
+            double* dist = (double*) alloca( sizeof(double) * cur_neighbor ) ;
+            nb_neighbors = get_neighbors( v, cur_neighbor, neighbors, dist ) ;
+            for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
+                if( dist[i] > threshold_distance ) {
+                    break ;
+                }
+                result.push_back( neighbors[i] ) ;
+            }
+        } while( result.size() == cur_neighbor && result.size() < nb_points ) ;
+
+        return !result.empty() ;
+
     }
 
     /*!
@@ -1342,11 +1550,9 @@ namespace RINGMesh {
         ann_points_ = new double[nb_edges * 3] ;
         for( index_t i = 0; i < nb_edges; i++ ) {
             index_t first_vertex_id = mesh_edges.vertex( i, 0 ) ;
-            const vec3& first_vertex_vec =
-                mesh.vertices.point( first_vertex_id ) ;
+            const vec3& first_vertex_vec = mesh.vertices.point( first_vertex_id ) ;
             index_t second_vertex_id = mesh.edges.vertex( i, 1 ) ;
-            const vec3& second_vertex_vec =
-                mesh.vertices.point( second_vertex_id ) ;
+            const vec3& second_vertex_vec = mesh.vertices.point( second_vertex_id ) ;
 
             vec3 center = ( first_vertex_vec + second_vertex_vec ) / 2. ;
             index_t index_in_ann = 3 * i ;
@@ -1400,9 +1606,7 @@ namespace RINGMesh {
         ann_tree_->set_points( nb_cells, ann_points_ ) ;
     }
 
-    void ColocaterANN::fill_ann_points(
-        index_t index_in_ann,
-        const vec3& center )
+    void ColocaterANN::fill_ann_points( index_t index_in_ann, const vec3& center )
     {
         ann_points_[index_in_ann] = center.x ;
         ann_points_[index_in_ann + 1] = center.y ;
