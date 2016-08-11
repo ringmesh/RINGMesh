@@ -117,6 +117,9 @@ namespace RINGMesh {
          */
         void load_topology( GEO::LineInput& file_line ) ;
         std::string match_nb_entities( const char* s ) const ;
+        /*!
+         * @brief Convert an old entity name to its new name.
+         */
         EntityType type_name_old_to_new( const std::string& old_type_name ) const ;
         bool child_allowed( const char* s ) const ;
         /*!
@@ -125,6 +128,10 @@ namespace RINGMesh {
          * connected to regions
          */
         void load_connectivities( GEO::LineInput& file_line ) ;
+        /*!
+         * @brief For all the lines in the geomodel, switch line boundaries
+         * if the way of their indices do not follow the way of the vertex indices.
+         */
         void repair_line_boundary_vertex_order() ;
     } ;
 }
