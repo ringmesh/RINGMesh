@@ -544,37 +544,9 @@ namespace {
         }
         virtual void save( const GeoModel& model, const std::string& filename )
         {
-            /*const std::string pwd =
-                GEO::FileSystem::get_current_working_directory() ;
-            bool valid_new_working_directory =
-                GEO::FileSystem::set_current_working_directory(
-                    GEO::FileSystem::dir_name( filename ) ) ;
-            if( !valid_new_working_directory ) {
-                throw RINGMeshException( "I/O", "Output directory does not exist" ) ;
-            }
-
-            zipFile zf = zipOpen(
-                GEO::FileSystem::base_name( filename, false ).c_str(),
-                APPEND_STATUS_CREATE ) ;
-            ringmesh_assert( zf != nil ) ;
-
-            save_topology( model, "topology.txt" ) ;
-            zip_file( zf, "topology.txt" ) ;
-            GEO::FileSystem::delete_file( "topology.txt" ) ;
-
-            save_connectivity( model, "connectivity.txt" ) ;
-            zip_file( zf, "connectivity.txt" ) ;
-            GEO::FileSystem::delete_file( "connectivity.txt" ) ;
-
-            for( index_t t = GME::CORNER; t <= GME::REGION; t++ ) {
-                GME::TYPE type = static_cast< GME::TYPE >( t ) ;
-                for( index_t e = 0; e < model.nb_elements( type ); e++ ) {
-                    save_geo_model_mesh_element( model.mesh_element( type, e ),
-                        zf ) ;
-                }
-            }
-            zipClose( zf, NULL ) ;
-            GEO::FileSystem::set_current_working_directory( pwd ) ;*/
+            std::string message = "Convertion from the new GeoModel format " ;
+            message += "to the old GeoModel format will never be implemented." ;
+            throw RINGMeshException( "I/O", message ) ;
         }
 
     } ;
