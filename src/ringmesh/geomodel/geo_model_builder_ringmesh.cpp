@@ -296,12 +296,9 @@ namespace RINGMesh {
         return GeoModelEntity::type_name_static() ;
     }
 
-    bool OldGeoModelBuilderGM::match_high_level_type( const char* s )
+    bool OldGeoModelBuilderGM::child_allowed( const char* s )
     {
-        if( std::string(s) == "CONTACT" || std::string(s) == "INTERFACE" || std::string(s) == "LAYER" ) {
-            return true ;
-        }
-        return false ;
+        return entity_type_manager().is_geological_entity_type( old2new(s) );
     }
 
     void OldGeoModelBuilderGM::load_topology( GEO::LineInput& file_line )
@@ -330,7 +327,7 @@ namespace RINGMesh {
                     }
                 }
                 // High-level entities
-                else if( match_high_level_type( file_line.field( 0 ) ) ) {
+                else if( child_allowed( file_line.field( 0 ) ) ) {
                     // Read this entity
                     // First line : type - id - name - geol_feature
                     if( file_line.nb_fields() < 4 ) {
