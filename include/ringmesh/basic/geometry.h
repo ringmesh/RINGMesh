@@ -33,7 +33,6 @@
  *     FRANCE
  */
 
-
 #ifndef __RINGMESH_GEOMETRY__
 #define __RINGMESH_GEOMETRY__
 
@@ -67,187 +66,18 @@ namespace RINGMesh {
         return ( x > 0 ) ? POSITIVE : ( ( x < 0 ) ? NEGATIVE : ZERO ) ;
     }
 
-
     /*!
      * See http://www.geometrictools.com/LibMathematics/Distance/Distance.html
      */
-    template< typename VEC >
     double point_triangle_distance(
-        const VEC& point,
-        const VEC& V0,
-        const VEC& V1,
-        const VEC& V2,
-        VEC& closest_point,
+        const vec3& point,
+        const vec3& V0,
+        const vec3& V1,
+        const vec3& V2,
+        vec3& closest_point,
         double& lambda0,
         double& lambda1,
-        double& lambda2 )
-    {
-        VEC diff = V0 - point ;
-        VEC edge0 = V1 - V0 ;
-        VEC edge1 = V2 - V0 ;
-        double a00 = length2( edge0 ) ;
-        double a01 = dot( edge0, edge1 ) ;
-        double a11 = length2( edge1 ) ;
-        double b0 = dot( diff, edge0 ) ;
-        double b1 = dot( diff, edge1 ) ;
-        double c = length2( diff ) ;
-        double det = ::fabs( a00 * a11 - a01 * a01 ) ;
-        double s = a01 * b1 - a11 * b0 ;
-        double t = a01 * b0 - a00 * b1 ;
-        double sqrDistance ;
-
-        if( s + t <= det ) {
-            if( s < 0.0 ) {
-                if( t < 0.0 ) { // region 4
-                    if( b0 < 0.0 ) {
-                        t = 0.0 ;
-                        if( -b0 >= a00 ) {
-                            s = 1.0 ;
-                            sqrDistance = a00 + 2.0 * b0 + c ;
-                        } else {
-                            s = -b0 / a00 ;
-                            sqrDistance = b0 * s + c ;
-                        }
-                    } else {
-                        s = 0.0 ;
-                        if( b1 >= 0.0 ) {
-                            t = 0.0 ;
-                            sqrDistance = c ;
-                        } else if( -b1 >= a11 ) {
-                            t = 1.0 ;
-                            sqrDistance = a11 + 2.0 * b1 + c ;
-                        } else {
-                            t = -b1 / a11 ;
-                            sqrDistance = b1 * t + c ;
-                        }
-                    }
-                } else { // region 3
-                    s = 0.0 ;
-                    if( b1 >= 0.0 ) {
-                        t = 0.0 ;
-                        sqrDistance = c ;
-                    } else if( -b1 >= a11 ) {
-                        t = 1.0 ;
-                        sqrDistance = a11 + 2.0 * b1 + c ;
-                    } else {
-                        t = -b1 / a11 ;
-                        sqrDistance = b1 * t + c ;
-                    }
-                }
-            } else if( t < 0.0 ) { // region 5
-                t = 0.0 ;
-                if( b0 >= 0.0 ) {
-                    s = 0.0 ;
-                    sqrDistance = c ;
-                } else if( -b0 >= a00 ) {
-                    s = 1.0 ;
-                    sqrDistance = a00 + 2.0 * b0 + c ;
-                } else {
-                    s = -b0 / a00 ;
-                    sqrDistance = b0 * s + c ;
-                }
-            } else { // region 0
-                // minimum at interior point
-                double invDet = double( 1.0 ) / det ;
-                s *= invDet ;
-                t *= invDet ;
-                sqrDistance = s * ( a00 * s + a01 * t + 2.0 * b0 )
-                    + t * ( a01 * s + a11 * t + 2.0 * b1 ) + c ;
-            }
-        } else {
-            double tmp0, tmp1, numer, denom ;
-
-            if( s < 0.0 ) { // region 2
-                tmp0 = a01 + b0 ;
-                tmp1 = a11 + b1 ;
-                if( tmp1 > tmp0 ) {
-                    numer = tmp1 - tmp0 ;
-                    denom = a00 - 2.0 * a01 + a11 ;
-                    if( numer >= denom ) {
-                        s = 1.0 ;
-                        t = 0.0 ;
-                        sqrDistance = a00 + 2.0 * b0 + c ;
-                    } else {
-                        s = numer / denom ;
-                        t = 1.0 - s ;
-                        sqrDistance = s * ( a00 * s + a01 * t + 2.0 * b0 )
-                            + t * ( a01 * s + a11 * t + 2.0 * b1 ) + c ;
-                    }
-                } else {
-                    s = 0.0 ;
-                    if( tmp1 <= 0.0 ) {
-                        t = 1.0 ;
-                        sqrDistance = a11 + 2.0 * b1 + c ;
-                    } else if( b1 >= 0.0 ) {
-                        t = 0.0 ;
-                        sqrDistance = c ;
-                    } else {
-                        t = -b1 / a11 ;
-                        sqrDistance = b1 * t + c ;
-                    }
-                }
-            } else if( t < 0.0 ) { // region 6
-                tmp0 = a01 + b1 ;
-                tmp1 = a00 + b0 ;
-                if( tmp1 > tmp0 ) {
-                    numer = tmp1 - tmp0 ;
-                    denom = a00 - 2.0 * a01 + a11 ;
-                    if( numer >= denom ) {
-                        t = 1.0 ;
-                        s = 0.0 ;
-                        sqrDistance = a11 + 2.0 * b1 + c ;
-                    } else {
-                        t = numer / denom ;
-                        s = 1.0 - t ;
-                        sqrDistance = s * ( a00 * s + a01 * t + 2.0 * b0 )
-                            + t * ( a01 * s + a11 * t + 2.0 * b1 ) + c ;
-                    }
-                } else {
-                    t = 0.0 ;
-                    if( tmp1 <= 0.0 ) {
-                        s = 1.0 ;
-                        sqrDistance = a00 + 2.0 * b0 + c ;
-                    } else if( b0 >= 0.0 ) {
-                        s = 0.0 ;
-                        sqrDistance = c ;
-                    } else {
-                        s = -b0 / a00 ;
-                        sqrDistance = b0 * s + c ;
-                    }
-                }
-            } else { // region 1
-                numer = a11 + b1 - a01 - b0 ;
-                if( numer <= 0.0 ) {
-                    s = 0.0 ;
-                    t = 1.0 ;
-                    sqrDistance = a11 + 2.0 * b1 + c ;
-                } else {
-                    denom = a00 - 2.0 * a01 + a11 ;
-                    if( numer >= denom ) {
-                        s = 1.0 ;
-                        t = 0.0 ;
-                        sqrDistance = a00 + 2.0 * b0 + c ;
-                    } else {
-                        s = numer / denom ;
-                        t = 1.0 - s ;
-                        sqrDistance = s * ( a00 * s + a01 * t + 2.0 * b0 )
-                            + t * ( a01 * s + a11 * t + 2.0 * b1 ) + c ;
-                    }
-                }
-            }
-        }
-
-        // Account for numerical round-off error.
-        if( sqrDistance < 0.0 ) {
-            sqrDistance = 0.0 ;
-        }
-
-        closest_point = V0 + s * edge0 + t * edge1 ;
-        lambda0 = 1.0 - s - t ;
-        lambda1 = s ;
-        lambda2 = t ;
-        return sqrt( sqrDistance ) ;
-    }
+        double& lambda2 ) ;
 
     double RINGMESH_API point_quad_distance(
         const vec3& p,
@@ -391,39 +221,21 @@ namespace RINGMesh {
         const vec3& p3,
         double lambda[4] ) ;
 
-
     void RINGMESH_API rotation_matrix_about_arbitrary_axis(
         const vec3& origin,
         const vec3& axis,
         double theta,
         bool degrees,
         GEO::Matrix< double, 4 >& rot_mat ) ;
-        
-
-    template< typename VEC >
-    VEC random_point_in_triangle(
-        const VEC& p1,
-        const VEC& p2,
-        const VEC& p3 )
-    {
-        double l1 = std::rand() ;
-        double l2 = std::rand() ;
-        if( l1 + l2 > 1.0 ) {
-            l1 = 1.0 - l1 ;
-            l2 = 1.0 - l2 ;
-        }
-        double l3 = 1.0 - l1 - l2 ;
-        return l1 * p1 + l2 * p2 + l3 * p3 ;
-    }
 
     /*!
-    * Given an array of vec3, this class computes the colocated points
-    * and a database to identify which colocated point corresponds to
-    *
-    * @todo Do we really need this class ? [JP]
-    * Move it in another file it depends on geogram... We need to compartimentalize.
-    *
-    */
+     * Given an array of vec3, this class computes the colocated points
+     * and a database to identify which colocated point corresponds to
+     *
+     * @todo Do we really need this class ? [JP]
+     * Move it in another file it depends on geogram... We need to compartimentalize.
+     *
+     */
     class RINGMESH_API MakeUnique {
     ringmesh_disable_copy( MakeUnique ) ;
     public:
@@ -432,15 +244,15 @@ namespace RINGMesh {
         {
             signed_index_t nb_points = 0 ;
             for( index_t i = 0; i < data.size(); i++ ) {
-                nb_points += data[ i ].points().size() ;
+                nb_points += data[i].points().size() ;
             }
             points_.resize( nb_points ) ;
             indices_.resize( nb_points ) ;
             signed_index_t cur_id = 0 ;
             for( index_t i = 0; i < data.size(); i++ ) {
-                for( index_t p = 0; p < data[ i ].points().size(); p++, cur_id++ ) {
-                    points_[ cur_id ] = data[ i ].points()[ p ] ;
-                    indices_[ cur_id ] = cur_id ;
+                for( index_t p = 0; p < data[i].points().size(); p++, cur_id++ ) {
+                    points_[cur_id] = data[i].points()[p] ;
+                    indices_[cur_id] = cur_id ;
                 }
             }
         }
@@ -452,15 +264,15 @@ namespace RINGMesh {
             ringmesh_unused( T_is_a_pointer ) ;
             index_t nb_points = 0 ;
             for( index_t i = 0; i < data.size(); i++ ) {
-                nb_points += data[ i ]->nb_vertices() ;
+                nb_points += data[i]->nb_vertices() ;
             }
             points_.resize( nb_points ) ;
             indices_.resize( nb_points ) ;
             index_t cur_id = 0 ;
             for( index_t i = 0; i < data.size(); i++ ) {
-                for( index_t p = 0; p < data[ i ]->nb_vertices(); p++, cur_id++ ) {
-                    points_[ cur_id ] = data[ i ]->vertex( p ) ;
-                    indices_[ cur_id ] = cur_id ;
+                for( index_t p = 0; p < data[i]->nb_vertices(); p++, cur_id++ ) {
+                    points_[cur_id] = data[i]->vertex( p ) ;
+                    indices_[cur_id] = cur_id ;
                 }
             }
         }
@@ -472,17 +284,17 @@ namespace RINGMesh {
         void unique() ;
 
         /*!
-        * Gets the input vector of vec3
-        */
+         * Gets the input vector of vec3
+         */
         const std::vector< vec3 >& points() const
         {
             return points_ ;
         }
 
         /*!
-        * Gets the number of points in the database
-        * @return returns the corresponding number
-        */
+         * Gets the number of points in the database
+         * @return returns the corresponding number
+         */
         index_t nb_points() const
         {
             return static_cast< index_t >( points_.size() ) ;
@@ -491,9 +303,9 @@ namespace RINGMesh {
         void unique_points( std::vector< vec3 >& results ) const ;
 
         /*!
-        * Gets the computed database that maps
-        * the colocated point to the unique one
-        */
+         * Gets the computed database that maps
+         * the colocated point to the unique one
+         */
         const std::vector< index_t >& indices() const
         {
             return indices_ ;
@@ -506,9 +318,8 @@ namespace RINGMesh {
         std::vector< index_t > indices_ ;
     } ;
 
-
     class RINGMESH_API ColocaterANN {
-        ringmesh_disable_copy( ColocaterANN ) ;
+    ringmesh_disable_copy( ColocaterANN ) ;
     public:
         enum MeshLocation {
             VERTICES, EDGES, FACETS, CELLS, CELL_FACETS, NB_LOCATION
@@ -534,7 +345,8 @@ namespace RINGMesh {
          *     index_map = [0, 1, 0, 3, 1, 5]
          *     return 2
          */
-        index_t get_colocated_index_mapping( GEO::vector< index_t >& index_map ) const ;
+        index_t get_colocated_index_mapping(
+            GEO::vector< index_t >& index_map ) const ;
         /*!
          * @brief Gets the \p index_map that link all the points
          * to a no duplicated list of index in the list of \p unique_points.
@@ -550,18 +362,21 @@ namespace RINGMesh {
             GEO::vector< vec3 >& unique_points ) const ;
         /*!
          * Gets the closest neighbor point
-        * @param[in] v the point to test
-        * @param[out] dist the square distance to the closest point
-        * return returns the index of the closest point
-        */
-        index_t get_closest_neighbor(
-            const vec3& v,
-            double& dist ) const
+         * @param[in] v the point to test
+         * @param[out] dist the square distance to the closest point
+         * return returns the index of the closest point
+         */
+        index_t get_closest_neighbor( const vec3& v, double& dist ) const
         {
             std::vector< index_t > result ;
             get_neighbors( v, 1, result, &dist ) ;
-            return result[ 0 ] ;
+            return result[0] ;
         }
+
+        bool get_neighbors(
+            const vec3& v,
+            std::vector< index_t >& result,
+            double threshold_distance ) const ;
 
         index_t get_neighbors(
             const vec3& v,
@@ -569,7 +384,8 @@ namespace RINGMesh {
             std::vector< index_t >& result,
             double* dist = nil ) const ;
 
-        index_t nb_points() const {
+        index_t nb_points() const
+        {
             return ann_tree_->nb_points() ;
         }
 
@@ -579,9 +395,7 @@ namespace RINGMesh {
         void build_colocater_ann_facets( const GEO::Mesh& mesh ) ;
         void build_colocater_ann_cells( const GEO::Mesh& mesh ) ;
         void build_colocater_ann_cell_facets( const GEO::Mesh& mesh ) ;
-        void fill_ann_points(
-            index_t index_in_ann,
-            const vec3& center ) ;
+        void fill_ann_points( index_t index_in_ann, const vec3& center ) ;
 
     private:
         /// KdTree to compute the nearest neighbor search
