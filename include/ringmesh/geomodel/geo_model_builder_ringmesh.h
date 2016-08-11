@@ -81,11 +81,6 @@ namespace RINGMesh {
 
         void load_file() ;
 
-        /*!
-         * @brief Unzip a file in a zip file and set it to the current unZIP file
-         */
-//        void unzip_one_file( unzFile& uz, const char filename[MAX_FILENAME] ) ;
-
         void load_mesh_entities( GEO::LineInput& file_line ) ;
 
         /*!
@@ -96,28 +91,6 @@ namespace RINGMesh {
     } ;
 
     class RINGMESH_API OldGeoModelBuilderGM: public GeoModelBuilderFile {
-    private:
-        enum TYPE {
-            /// Points at LINE extremities
-            CORNER = 0,
-            /// One connected component of the intersection of at least 2 SURFACE
-            LINE,
-            /// One 2-manifold connected component
-            SURFACE,
-            /// One volumetric region defined by its boundary SURFACE and
-            /// is optionally meshed
-            REGION,
-            /// A group of LINE, intersection of at least 2 INTERFACE
-            CONTACT,
-            /// A group of SURFACE, delimit maximum 2 LAYER
-            INTERFACE,
-            /// A group of REGION
-            LAYER,
-            /// Default TYPE
-            NO_TYPE,
-            /// Any type - to access generically entities
-            ALL_TYPES
-        } ;
     public:
         OldGeoModelBuilderGM( GeoModel& model, const std::string& filename )
             : GeoModelBuilderFile( model, filename )
@@ -128,38 +101,31 @@ namespace RINGMesh {
         }
 
     private:
-        /*!
-         * @brief Load the connectivities. These are how corners are
-         * connected to lines, lines connected to surfaces and surfaces
-         * connected to regions
-         */
-        //void load_connectivities( GEO::LineInput& file_line ) ;
+
         /*!
          * @brief Load elements of one type from a zip file
          * @param[in] gme_t the GeoModelElement type
          * @param[in] uz the zip file
          */
-        void load_entities( TYPE type, unzFile& uz ) ;
+        void load_entities( const std::string& old_type_name, unzFile& uz ) ;
 
         void load_file() ;
-        /*!
-         * @brief Unzip a file in a zip file and set it to the current unZIP file
-         */
-        //void unzip_one_file( unzFile& uz, const char filename[MAX_FILENAME] ) ;
-
         /*!
          * @brief Load the topology. Topology is how corners, lines, surfaces and
          * regions are organized into contacts, interfaces and layers. It also contains
          * basics information on the GeoModel.
          */
         void load_topology( GEO::LineInput& file_line ) ;
-        TYPE match_nb_entities( const char* s ) ;
-        std::string type_name( TYPE t ) ;
-        EntityType old2new( TYPE type ) ;
+        std::string match_nb_entities( const char* s ) ;
+        EntityType old2new( const std::string& old_type_name ) ;
         bool match_high_level_type( const char* s ) ;
-        OldGeoModelBuilderGM::TYPE match_type( const char* s ) ;
-//        EntityType child_type( TYPE type ) ;
+        /*!
+         * @brief Load the connectivities. These are how corners are
+         * connected to lines, lines connected to surfaces and surfaces
+         * connected to regions
+         */
         void load_connectivities( GEO::LineInput& file_line ) ;
+        void repair_line_boundary_vertex_order() ;
     } ;
 }
 
