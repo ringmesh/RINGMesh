@@ -507,13 +507,12 @@ namespace RINGMesh {
                 * ( mesh_element_vertex( edge_index, 0 )
                     + mesh_element_vertex( edge_index, 1 ) ) ;
         }
+        bool is_first_corner_first_vertex() const ;
 
     protected:
         Line( const GeoModel& model, index_t id ) ;
 
         virtual bool is_mesh_valid() const ;
-    public:
-        bool is_first_corner_first_vertex() const ;
     } ;
 
     /*!
