@@ -544,7 +544,7 @@ namespace {
         }
         virtual void save( const GeoModel& model, const std::string& filename )
         {
-            std::string message = "Convertion from the new GeoModel format " ;
+            std::string message = "Conversion from the new GeoModel format " ;
             message += "to the old GeoModel format will never be implemented." ;
             throw RINGMeshException( "I/O", message ) ;
         }
