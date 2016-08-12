@@ -782,6 +782,14 @@ namespace RINGMesh {
         const vec3& p1,
         vec3& new_p )
     {
+        if( inexact_equal( p, p0 ) ) {
+            new_p = p0 ;
+            return true ;
+        }
+        if( inexact_equal( p, p1 ) ) {
+            new_p = p1 ;
+            return true ;
+        }
         vec3 center = ( p0 + p1 ) * 0.5 ;
         vec3 diff = p - center ;
         vec3 edge = p1 - p0 ;
@@ -789,7 +797,7 @@ namespace RINGMesh {
         edge = normalize( edge ) ;
         double d = dot( edge, diff ) ;
 
-        if( fabs( d ) <= extent ) {
+        if( fabs( d ) < extent ) {
             new_p = center + d * edge ;
             return true ;
         }
