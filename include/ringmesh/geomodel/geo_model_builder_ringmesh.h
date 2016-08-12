@@ -125,11 +125,6 @@ namespace RINGMesh {
          * connected to regions
          */
         void load_connectivities( GEO::LineInput& file_line ) ;
-        /*!
-         * @brief For all the lines in the geomodel, switch line boundaries
-         * if the way of their indices do not follow the way of the vertex indices.
-         */
-        void repair_line_boundary_vertex_order() ;
     } ;
 }
 

@@ -35,6 +35,7 @@
 
 #include <ringmesh/geomodel/geo_model_builder_ringmesh.h>
 
+#include <ringmesh/geomodel/geo_model_repair.h>
 #include <geogram/basic/file_system.h>
 
 /*!
@@ -471,20 +472,6 @@ namespace RINGMesh {
 
     }
 
-    void OldGeoModelBuilderGM::repair_line_boundary_vertex_order()
-    {
-        for( index_t line_itr = 0; line_itr < model().nb_lines(); ++line_itr ) {
-            const Line& cur_line = model().line( line_itr ) ;
-            if( !cur_line.is_first_corner_first_vertex() ) {
-                const index_t first_boundary_index = cur_line.boundary( 0 ).index() ;
-                set_mesh_entity_boundary( cur_line.gme_id(), 0,
-                    cur_line.boundary_gme( 1 ).index ) ;
-                set_mesh_entity_boundary( cur_line.gme_id(), 1,
-                    first_boundary_index ) ;
-            }
-        }
-    }
-
     void OldGeoModelBuilderGM::load_file()
     {
         unzFile uz = unzOpen( filename_.c_str() ) ;
@@ -514,8 +501,10 @@ namespace RINGMesh {
         load_connectivities( line_connectivity ) ;
         GEO::FileSystem::delete_file( connectivity ) ;
 
+        // Repair line boundary order.
         complete_entity_connectivity() ;
-        repair_line_boundary_vertex_order() ;
+        GeoModelRepair repair( model() ) ;
+        repair.repair_line_boundary_vertex_order() ;
 
         unzClose( uz ) ;
     }
