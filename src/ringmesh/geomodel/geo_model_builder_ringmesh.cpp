@@ -41,6 +41,9 @@
  * @file ringmesh/geomodel/geo_model_builder_ringmesh.cpp
  */
 
+#define MAX_FILENAME 512
+#define READ_SIZE 8192
+
 namespace {
     using namespace RINGMesh ;
 
@@ -63,7 +66,7 @@ namespace {
     void unzip_one_file( unzFile& uz, const char filename[MAX_FILENAME] )
     {
         unzLocateFile( uz, filename, 0 ) ;
-        char read_buffer[ READ_SIZE] ;
+        char read_buffer[READ_SIZE] ;
 
         if( unzOpenCurrentFile( uz ) != UNZ_OK ) {
             unzClose( uz ) ;
