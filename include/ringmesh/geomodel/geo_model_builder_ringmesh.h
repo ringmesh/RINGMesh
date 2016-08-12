@@ -48,9 +48,6 @@
 
 #include <ringmesh/geomodel/geo_model_builder.h>
 
-#define MAX_FILENAME 512
-#define READ_SIZE 8192
-
 /*!
  * @file ringmesh/geo_model_builder_ringmesh.h
  * @brief Classes to build GeoModel from various inputs
