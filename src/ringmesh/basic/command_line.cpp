@@ -83,6 +83,17 @@ namespace RINGMesh {
                 "Print statistics on the number of entities" ) ;
         }
 
+        void import_arg_group_repair()
+        {
+            GEO::CmdLine::declare_arg_group( "repair", "GeoModel repair processes" ) ;
+            GEO::CmdLine::declare_arg(
+                "repair:basic", false,
+                "Basic repair: remove colocated vertices, degenerated facets..." ) ;
+            GEO::CmdLine::declare_arg(
+                "repair:line_boundary", false,
+                "Reorder line boundary to follow line vertex order." ) ;
+        }
+
         bool import_arg_group( const std::string& name )
         {
             if( name == "in" ) {
@@ -91,6 +102,8 @@ namespace RINGMesh {
                 import_arg_group_out() ;
             } else if( name == "stats" ) {
                 import_arg_group_stats() ;
+            } else if( name == "repair" ) {
+                import_arg_group_repair() ;
             } else {
                 return GEO::CmdLine::import_arg_group( name ) ;
             }
