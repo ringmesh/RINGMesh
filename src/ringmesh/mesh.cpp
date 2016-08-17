@@ -66,7 +66,7 @@ namespace RINGMesh {
                 }
             }
 
-            facets_aabb_ = new GEO::MeshFacetsAABB( *mesh_ ) ;
+            facets_aabb_ = new GEO::MeshFacetsAABB( *mesh_ ,false) ;
         }
         return *facets_aabb_ ;
     }
@@ -95,7 +95,7 @@ namespace RINGMesh {
                 }
             }
 
-            cells_aabb_ = new GEO::MeshCellsAABB( *mesh_ ) ;
+            cells_aabb_ = new GEO::MeshCellsAABB( *mesh_ ,false) ;
         }
         return *cells_aabb_ ;
     }
