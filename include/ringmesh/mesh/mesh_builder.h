@@ -413,7 +413,7 @@ namespace RINGMesh {
             return mesh_.mesh_->cells.create_cells( nb_cells, type ) ;
         }
 		/*
-		 * \brief Creates an Prism cell
+		 * \brief Creates a Prism cell
 		 * \param[in] index_vertex1 index of the vertex 1 of the cell
 		 * \param[in] index_vertex2 index of the vertex 2 of the cell
 		 * \param[in] index_vertex3 index of the vertex 3 of the cell
@@ -427,6 +427,25 @@ namespace RINGMesh {
 		{
 			return mesh_.mesh_->cells.create_prism(index_vertex1, index_vertex2, index_vertex3,
 			index_vertex4, index_vertex5, index_vertex6);
+		}
+		/*
+		 * \brief Creates an Hexahedron cell
+		 * \param[in] index_vertex1 index of the vertex 1 of the cell
+		 * \param[in] index_vertex2 index of the vertex 2 of the cell
+		 * \param[in] index_vertex3 index of the vertex 3 of the cell
+		 * \param[in] index_vertex4 index of the vertex 4 of the cell
+		 * \param[in] index_vertex5 index of the vertex 5 of the cell
+		 * \param[in] index_vertex6 index of the vertex 6 of the cell
+		 * \param[in] index_vertex7 index of the vertex 7 of the cell
+		 * \param[in] index_vertex8 index of the vertex 8 of the cell
+		 * \return the index of the created prism
+		 */
+		index_t create_hex(index_t index_vertex1, index_t index_vertex2, index_t index_vertex3,
+			index_t index_vertex4, index_t index_vertex5, index_t index_vertex6, 
+            index_t index_vertex7, index_t index_vertex8)
+		{
+			return mesh_.mesh_->cells.create_hex(index_vertex1, index_vertex2, index_vertex3,
+			index_vertex4, index_vertex5, index_vertex6, index_vertex7, index_vertex8);
 		}
 		/*
 		 * \brief Creates an Tetrahedron cell
