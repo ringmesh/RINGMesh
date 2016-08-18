@@ -412,6 +412,51 @@ namespace RINGMesh {
         {
             return mesh_.mesh_->cells.create_cells( nb_cells, type ) ;
         }
+		/*
+		 * \brief Creates an Prism cell
+		 * \param[in] index_vertex1 index of the vertex 1 of the cell
+		 * \param[in] index_vertex2 index of the vertex 2 of the cell
+		 * \param[in] index_vertex3 index of the vertex 3 of the cell
+		 * \param[in] index_vertex4 index of the vertex 4 of the cell
+		 * \param[in] index_vertex5 index of the vertex 5 of the cell
+		 * \param[in] index_vertex6 index of the vertex 6 of the cell
+		 * \return the index of the created prism
+		 */
+		index_t create_prism(index_t index_vertex1, index_t index_vertex2, index_t index_vertex3,
+			index_t index_vertex4, index_t index_vertex5, index_t index_vertex6)
+		{
+			return mesh_.mesh_->cells.create_prism(index_vertex1, index_vertex2, index_vertex3,
+			index_vertex4, index_vertex5, index_vertex6);
+		}
+		/*
+		 * \brief Creates an Tetrahedron cell
+		 * \param[in] index_vertex1 index of the vertex 1 of the cell
+		 * \param[in] index_vertex2 index of the vertex 2 of the cell
+		 * \param[in] index_vertex3 index of the vertex 3 of the cell
+		 * \param[in] index_vertex4 index of the vertex 4 of the cell
+		 * \return the index of the created tetrahedron
+		 */
+		index_t create_tet(index_t index_vertex1, index_t index_vertex2, index_t index_vertex3,
+			index_t index_vertex4)
+		{
+			return mesh_.mesh_->cells.create_tet(index_vertex1, index_vertex2, index_vertex3,
+			index_vertex4);
+		}
+		/*
+		 * \brief Creates an Pyramid cell
+		 * \param[in] index_vertex1 index of the vertex 1 of the cell
+		 * \param[in] index_vertex2 index of the vertex 2 of the cell
+		 * \param[in] index_vertex3 index of the vertex 3 of the cell
+		 * \param[in] index_vertex4 index of the vertex 4 of the cell
+		 * \param[in] index_vertex5 index of the vertex 5 of the cell
+		 * \return the index of the created pyramid
+		 */
+		index_t create_pyramid(index_t index_vertex1, index_t index_vertex2, index_t index_vertex3,
+			index_t index_vertex4, index_t index_vertex5)
+		{
+			return mesh_.mesh_->cells.create_pyramid(index_vertex1, index_vertex2, index_vertex3,
+			index_vertex4, index_vertex5);
+		}
         /*
          * \brief Copies a tets mesh into this Mesh.
          * \details Cells adjacence are not computed.
