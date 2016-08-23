@@ -40,6 +40,7 @@
 
 #include <geogram/basic/command_line.h>
 #include <geogram/mesh/mesh.h>
+#include <geogram/mesh/mesh_compare.h>
 #include <geogram/mesh/mesh_io.h>
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/mesh/mesh_topology.h>
@@ -105,6 +106,40 @@ namespace RINGMesh {
         {
             mesh_->copy( *rhs.mesh_, copy_attributes, what ) ;
         }
+
+		/*
+		 * \brief Compares the current mesh with an other.
+		 *  Compares the current mesh with mesh \p M1 according to the comparison
+		 *  flags \p flags (see #MeshCompareFlags). The function returns a
+		 *  comparison status similar to the comparison \p flags:
+		 *  - if a comparison failed for a test f in in \p flags, the same
+		 *  flag f is set in the status
+		 *  - otherwise the flag f is cleared in the status.
+		 *  A status of zero indicates that all comparisons succeeded.
+		 * \param[in] M1 the first input mesh
+		 * \param[in] M2 the second input mesh
+		 * \param[in] flags specifies which properties of the meshes should be
+		 *  compared. By default it is set to #MESH_COMPARE_SURFACE_PROPS
+		 *  information for the two meshes
+		 * \param[in] tolerance relative tolerance used to compare floating point
+		 * values (such as the mash areas)
+		 * \param[in] verbose enables/disables the display of mesh information
+		 *  for the two meshes, as well mesh comparison error messages.
+		 * \retval #MESH_COMPARE_OK if meshes \p M1 and \p M2 are identical
+		 *  according to the comparison criteria
+		 * \retval the comparison status otherwise.
+		 * \see MeshCompareFlags
+		 * \see Geom::mesh_area()
+		 * \see meshes_have_same_topology()
+		 */
+		 bool mesh_compare(
+			const Mesh& M1, 
+			GEO::MeshCompareFlags flags = GEO::MESH_COMPARE_SURFACE_PROPS,
+			double tolerance = 0.0,
+			bool verbose = true)
+		 {
+			 return GEO::mesh_compare(*mesh_, *M1.mesh_, flags, tolerance, verbose);
+		 }
 
         void save_mesh(
             const std::string& filename,
