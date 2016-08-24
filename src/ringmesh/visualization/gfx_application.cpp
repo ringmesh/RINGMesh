@@ -524,6 +524,39 @@ namespace RINGMesh {
         }
     }
 
+    RINGMeshApplication::MeshViewer::MeshViewer( RINGMeshApplication& app, GEO::Mesh& mesh ): app_(app){
+        mesh_.copy(mesh) ;
+    	is_visible_ = true ;
+
+        show_vertices_ = false ;
+        vertices_size_ = 1.0f ;
+
+        show_surface_ = true ;
+        show_surface_colors_ = true ;
+        show_mesh_ = true ;
+        show_surface_borders_ = false ;
+
+        show_volume_ = false ;
+        cells_shrink_ = 0.0f ;
+        show_colored_cells_ = false ;
+        show_hexes_ = true ;
+
+        show_attributes_ = false ;
+        current_colormap_texture_ = 0 ;
+        attribute_min_ = 0.0f ;
+        attribute_max_ = 0.0f ;
+        attribute_ = "vertices.point_fp32[0]" ;
+        attribute_name_ = "point_fp32[0]" ;
+        attribute_subelements_ = GEO::MESH_VERTICES ;
+
+        name_ = "mesh_cut";
+        mesh_gfx_.set_mesh( &mesh_ ) ;
+
+        for( index_t v = 0; v < mesh_.vertices.nb(); v++ ) {
+            bbox_.add_point( mesh_.vertices.point_ptr( v ) ) ;
+        }
+    }
+
     void RINGMeshApplication::MeshViewer::draw_object_properties()
     {
         ImGui::Checkbox( "attributes", &show_attributes_ ) ;
