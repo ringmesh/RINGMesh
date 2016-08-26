@@ -874,8 +874,8 @@ namespace {
 
                 time( &end_load ) ;
 
-                Logger::out( "I/O" ) << " Loaded model " << model.name()
-                    << " from " << std::endl << filename << " timing: "
+                Logger::out( "I/O" ) << " Loaded model " << model.name() << " from "
+                    << std::endl << filename << " timing: "
                     << difftime( end_load, start_load ) << "sec" << std::endl ;
             } else {
                 throw RINGMeshException( "I/O",
@@ -899,7 +899,7 @@ namespace {
                 << "END_ORIGINAL_COORDINATE_SYSTEM" << std::endl ;
 
             const GeoModelMesh& mesh = gm.mesh ;
-            mesh.set_duplicate_mode( GeoModelMeshCells::ALL ) ;
+            //mesh.set_duplicate_mode( GeoModelMeshCells::ALL ) ;
 
             std::vector< bool > vertex_exported( mesh.vertices.nb(), false ) ;
             std::vector< bool > atom_exported( mesh.cells.nb_duplicated_vertices(),
@@ -913,36 +913,38 @@ namespace {
                 out << "TVOLUME " << region.name() << std::endl ;
 
                 // Export not duplicated vertices
-                for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
+                for( index_t c = 0; c < region.nb_mesh_elements(); c++ ) {
                     index_t cell = mesh.cells.cell( r, c ) ;
-                    for( index_t v = 0; v < mesh.cells.nb_vertices( c ); v++ ) {
+                    for( index_t v = 0; v < mesh.cells.nb_vertices( cell ); v++ ) {
                         index_t atom_id ;
                         if( !mesh.cells.is_corner_duplicated( cell, v, atom_id ) ) {
                             index_t vertex_id = mesh.cells.vertex( cell, v ) ;
                             if( vertex_exported[vertex_id] ) continue ;
                             vertex_exported[vertex_id] = true ;
                             vertex_exported_id[vertex_id] = nb_vertices_exported ;
-                            out << "VRTX " << nb_vertices_exported++ << " "
+                            // PVRTX must be used instead of VRTX because
+                            // properties are not read by Gocad if it is VRTX.
+                            out << "PVRTX " << nb_vertices_exported++ << " "
                                 << mesh.vertices.vertex( vertex_id ) << std::endl ;
                         }
                     }
                 }
 
                 // Export duplicated vertices
-                for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
-                    index_t cell = mesh.cells.cell( r, c ) ;
-                    for( index_t v = 0; v < mesh.cells.nb_vertices( c ); v++ ) {
-                        index_t atom_id ;
-                        if( mesh.cells.is_corner_duplicated( cell, v, atom_id ) ) {
-                            if( atom_exported[atom_id] ) continue ;
-                            atom_exported[atom_id] = true ;
-                            atom_exported_id[atom_id] = nb_vertices_exported ;
-                            index_t vertex_id = mesh.cells.vertex( cell, v ) ;
-                            out << "ATOM " << nb_vertices_exported++ << " "
-                                << vertex_exported_id[vertex_id] << std::endl ;
-                        }
-                    }
-                }
+                /*for( index_t c = 0; c < region.nb_mesh_elements(); c++ ) {
+                 index_t cell = mesh.cells.cell( r, c ) ;
+                 for( index_t v = 0; v < mesh.cells.nb_vertices( cell ); v++ ) {
+                 index_t atom_id ;
+                 if( mesh.cells.is_corner_duplicated( cell, v, atom_id ) ) {
+                 if( atom_exported[atom_id] ) continue ;
+                 atom_exported[atom_id] = true ;
+                 atom_exported_id[atom_id] = nb_vertices_exported ;
+                 index_t vertex_id = mesh.cells.vertex( cell, v ) ;
+                 out << "ATOM " << nb_vertices_exported++ << " "
+                 << vertex_exported_id[vertex_id] << std::endl ;
+                 }
+                 }
+                 }*/
 
                 // Mark if a boundary is ending in the region
                 std::map< index_t, index_t > sides ;
@@ -954,14 +956,15 @@ namespace {
                         sides[region.boundary_gme( s ).index] = region.side( s ) ;
                 }
 
-                GEO::Attribute< index_t > attribute( mesh.facet_attribute_manager(),
-                    surface_att_name ) ;
-                for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
+                /*GEO::Attribute< index_t > attribute( mesh.facet_attribute_manager(),
+                 surface_att_name ) ;*/
+                for( index_t c = 0; c < region.nb_mesh_elements(); c++ ) {
                     out << "TETRA" ;
-                    for( index_t v = 0; v < mesh.cells.nb_vertices( c ); v++ ) {
+                    index_t cell = mesh.cells.cell( r, c ) ;
+                    for( index_t v = 0; v < mesh.cells.nb_vertices( cell ); v++ ) {
                         index_t atom_id ;
-                        if( !mesh.cells.is_corner_duplicated( c, v, atom_id ) ) {
-                            index_t vertex_id = mesh.cells.vertex( c, v ) ;
+                        if( !mesh.cells.is_corner_duplicated( cell, v, atom_id ) ) {
+                            index_t vertex_id = mesh.cells.vertex( cell, v ) ;
                             out << " " << vertex_exported_id[vertex_id] ;
                         } else {
                             out << " " << atom_exported_id[atom_id] ;
@@ -988,7 +991,8 @@ namespace {
 
             out << "MODEL" << std::endl ;
             int tface_count = 1 ;
-            for( index_t i = 0; i < model.nb_geological_entities( Interface::type_name_static() );
+            for( index_t i = 0;
+                i < model.nb_geological_entities( Interface::type_name_static() );
                 i++ ) {
                 const RINGMesh::GeoModelGeologicalEntity& interf =
                     model.geological_entity( Interface::type_name_static(), i ) ;
