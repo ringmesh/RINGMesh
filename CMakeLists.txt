@@ -62,6 +62,7 @@ option(RINGMESH_WITH_TETGEN "Use Tetgen tetrahedral mesher" ON)
 option(RINGMESH_WITH_GRAPHICS "Compile viewer" OFF)
 option(RINGMESH_WITH_UTILITIES "Compile utility executables" OFF)
 option(RINGMESH_WITH_TESTS "Compile test projects" OFF)
+option(RINGMESH_WITH_WEB_EXPORTER "Enable export to html" OFF)
 
 # Optional custom steps 
 option(BUILD_DOCUMENTATION "Create and install the HTML documentation (requires Doxygen)")
@@ -74,6 +75,11 @@ if(RINGMESH_WITH_TESTS)
     # PROJECT_BINARY_DIR not defined at this point
     set(TEST_DATA_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/build/tests/output" CACHE PATH "Output data location")
 endif()
+
+#if(RINGMESH_WITH_WEB_EXPORTER)
+    set(GEOLOGY_JS_DIRECTORY "${CMAKE_SOURCE_DIR}/../geology.js/cpp" CACHE PATH "geology.js cpp directory location")
+    message(STATUS ${GEOLOGY_JS_DIRECTORY})
+#endif(RINGMESH_WITH_WEB_EXPORTER)
 
 # Turn on the ability to create folders to organize projects and files
 # It creates "CMakePredefinedTargets" folder by default and adds CMake
@@ -129,9 +135,11 @@ if(UNIX)
                 -DRINGMESH_WITH_GRAPHICS:BOOL=${RINGMESH_WITH_GRAPHICS}
                 -DRINGMESH_WITH_UTILITIES:BOOL=${RINGMESH_WITH_UTILITIES}
                 -DRINGMESH_WITH_TESTS:BOOL=${RINGMESH_WITH_TESTS}
+                -DRINGMESH_WITH_WEB_EXPORTER:BOOL=${RINGMESH_WITH_WEB_EXPORTER}
 			    -DBUILD_DOCUMENTATION:BOOL=${BUILD_DOCUMENTATION}
 				-DTEST_DATA_INPUT_DIRECTORY:STRING=${TEST_DATA_INPUT_DIRECTORY}
 			    -DTEST_DATA_OUTPUT_DIRECTORY:STRING=${TEST_DATA_OUTPUT_DIRECTORY}                
+			    -DGEOLOGY_JS_DIRECTORY:STRING=${GEOLOGY_JS_DIRECTORY}                
                 WORKING_DIRECTORY ${project_binary_dir_config})                
       endforeach()
       
@@ -285,6 +293,34 @@ if(USE_OPENMP)
         set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
     endif()
 endif(USE_OPENMP)
+
+#--------------------------------------------------------
+# geology.js library
+message(STATUS tata)
+if(RINGMESH_WITH_WEB_EXPORTER)
+    message(STATUS "Using geology.js directory = ${GEOLOGY_JS_DIRECTORY}")
+    message(STATUS toto)
+    # Geogram platform dependent settings
+    if(WIN32)
+        set(GEOLOGY_JS_PATH_BIN ${GEOLOGY_JS_DIRECTORY}/build)
+        #set(geoplatform Win-vs-dynamic-generic)  
+	    # Extra lib 
+        #set (EXTRA_LIBS ${EXTRA_LIBS} psapi)
+	    # TODO check that it is really necessary [JP]
+        #add_compile_options(-DGEO_DYNAMIC_LIBS) 
+    else(WIN32)
+        set(GEOLOGY_JS_PATH_BIN ${GEOLOGY_JS_DIRECTORY}/build/${CMAKE_BUILD_TYPE})
+        #set(geoplatform Linux64-gcc-dynamic)
+    endif(WIN32)
+    # Add geology.js include directories to the current ones
+    include_directories(${GEOLOGY_JS_DIRECTORY}/include)
+
+    # Add geology.js project libs to the libs with which RINGMesh will link
+    set(EXTRA_LIBS ${EXTRA_LIBS} GEOLOGYJS)
+    # Add geology.js bin directories to the current ones 
+    # It would be preferable to set the imported library location [JP]
+    link_directories(${GEOLOGY_JS_PATH_BIN}/lib)
+endif(RINGMESH_WITH_WEB_EXPORTER)
 
 #------------------------------------------------------------------------------------------------
 # Collect the library files

@@ -52,6 +52,8 @@
 #include <ringmesh/geomodel/geo_model_entity.h>
 #include <ringmesh/geomodel/geo_model_validity.h>
 
+#include <geologyjs/main_export.h>
+
 /*!
  * @file Implementation of classes to load and save surface GeoModels meshes
  * @author various
@@ -592,6 +594,139 @@ namespace {
         }
     } ;
 
+    class HTMLIOHandler: public GeoModelIOHandler {
+    public:
+        virtual void load( const std::string& filename, GeoModel& model )
+        {
+            throw RINGMeshException( "I/O",
+                "Geological model loading of a from HTML mesh not yet implemented" ) ;
+        }
+
+        virtual void save( const GeoModel& model, const std::string& filename )
+        {
+            GEOLOGYJS::JSWriter js( filename ) ;
+            js.build_js_gui_ = true ;
+
+            save_all_corners( model, js ) ;
+            save_all_vertices( model, js ) ;
+            save_all_lines( model, js ) ;
+            save_interfaces( model, js ) ;
+
+            // Check validity and write
+            std::string error_message ;
+            if( js.check_validity( error_message ) ) {
+                js.write() ;
+            } else {
+                throw RINGMeshException( "I/O", error_message ) ;
+            }
+        }
+
+    private:
+        void save_all_corners( const GeoModel& model, GEOLOGYJS::JSWriter& js ) const
+        {
+            std::vector< double > xyz ;
+            xyz.reserve( 3 * model.nb_corners() ) ;
+            for( index_t corner_itr = 0; corner_itr < model.nb_corners();
+                ++corner_itr ) {
+                xyz.push_back( model.corner( corner_itr ).vertex( 0 ).x ) ;
+                xyz.push_back( model.corner( corner_itr ).vertex( 0 ).y ) ;
+                xyz.push_back( model.corner( corner_itr ).vertex( 0 ).z ) ;
+            }
+            js.add_points( "all_corners", xyz ) ;
+        }
+
+        void save_all_vertices(
+            const GeoModel& model,
+            GEOLOGYJS::JSWriter& js ) const
+        {
+            const GeoModelMeshVertices& vertices = model.mesh.vertices ;
+            std::vector< double > xyz ;
+            xyz.reserve( 3 * vertices.nb() ) ;
+            for( index_t v_itr = 0; v_itr < vertices.nb(); ++v_itr ) {
+                xyz.push_back( vertices.vertex( v_itr ).x ) ;
+                xyz.push_back( vertices.vertex( v_itr ).y ) ;
+                xyz.push_back( vertices.vertex( v_itr ).z ) ;
+            }
+            js.add_points( "all_vertices", xyz ) ;
+        }
+
+        void save_all_lines( const GeoModel& model, GEOLOGYJS::JSWriter& js ) const
+        {
+            std::vector< std::vector< double > > xyz ;
+            xyz.resize( model.nb_lines() ) ;
+            for( index_t line_itr = 0; line_itr < model.nb_lines(); ++line_itr ) {
+                const Line& cur_line = model.line( line_itr ) ;
+                xyz[line_itr].reserve( 3 * cur_line.nb_vertices() ) ;
+                for( index_t v_itr = 0; v_itr < cur_line.nb_vertices(); ++v_itr ) {
+                    xyz[line_itr].push_back( cur_line.vertex( v_itr ).x ) ;
+                    xyz[line_itr].push_back( cur_line.vertex( v_itr ).y ) ;
+                    xyz[line_itr].push_back( cur_line.vertex( v_itr ).z ) ;
+                }
+            }
+            js.add_lines( "all_lines", xyz ) ;
+
+        }
+
+        void save_interfaces( const GeoModel& model, GEOLOGYJS::JSWriter& js ) const
+        {
+            for( index_t interface_itr = 0;
+                interface_itr
+                    < model.nb_geological_entities( Interface::type_name_static() );
+                ++interface_itr ) {
+                const GeoModelGeologicalEntity& cur_interface =
+                    model.geological_entity( Interface::type_name_static(),
+                        interface_itr ) ;
+                if( !GeoModelGeologicalEntity::is_stratigraphic_limit(
+                    cur_interface.geological_feature() )
+                    && !GeoModelGeologicalEntity::is_fault(
+                        cur_interface.geological_feature() ) ) {
+                    continue ;
+                }
+
+                index_t nb_vertices = 0 ;
+                index_t nb_triangles = 0 ;
+                for( index_t surf_itr = 0; surf_itr < cur_interface.nb_children();
+                    ++surf_itr ) {
+                    const Surface& cur_surface = model.surface(
+                        cur_interface.child( surf_itr ).index() ) ;
+                    nb_vertices += cur_surface.nb_vertices() ;
+                    nb_triangles += cur_surface.nb_mesh_elements() ;
+                }
+
+                std::vector< double > xyz ;
+                xyz.reserve( 3 * nb_vertices ) ;
+                std::vector< index_t > indices ;
+                indices.reserve( 3 * nb_triangles ) ;
+
+                index_t vertex_count = 0 ;
+                for( index_t surf_itr = 0; surf_itr < cur_interface.nb_children();
+                    ++surf_itr ) {
+                    const Surface& cur_surface = model.surface(
+                        cur_interface.child( surf_itr ).index() ) ;
+
+                    for( index_t v_itr = 0; v_itr < cur_surface.nb_vertices();++v_itr ) {
+                        xyz.push_back(cur_surface.vertex(v_itr).x);
+                        xyz.push_back(cur_surface.vertex(v_itr).y);
+                        xyz.push_back(cur_surface.vertex(v_itr).z);
+                    }
+
+                    for( index_t f_itr = 0; f_itr < cur_surface.nb_mesh_elements();
+                        ++f_itr ) {
+                        for( index_t v_itr = 0; v_itr < 3; ++v_itr ) {
+                            indices.push_back(
+                                vertex_count
+                                    + cur_surface.mesh_element_vertex_index( f_itr,
+                                        v_itr ) ) ;
+                        }
+                    }
+
+                    vertex_count += cur_surface.nb_vertices() ;
+                }
+                js.add_surface( cur_interface.name(), xyz, indices ) ;
+            }
+        }
+    } ;
+
 }
 /************************************************************************/
 namespace RINGMesh {
@@ -602,5 +737,6 @@ namespace RINGMesh {
     {
         ringmesh_register_GeoModelIOHandler_creator( MLIOHandler, "ml" ) ;
         ringmesh_register_GeoModelIOHandler_creator( UCDIOHandler, "inp" );
+        ringmesh_register_GeoModelIOHandler_creator( HTMLIOHandler, "html" );
     }
 }
