@@ -352,8 +352,167 @@ namespace RINGMesh {
         }
     }
 
+    void GeoModelEditor::remove_entities_and_dependencies(
+        const std::set< gme_t >& entities_to_remove )
+    {
+        // Asserts to remove when implementation is completed
+        ringmesh_assert(
+            entities_to_remove.size() == 1
+            && entities_to_remove.begin()->type == Region::type_name_static() ) ;
+
+        // Copy because it is not logical to have in output the removed elements. BC
+        /// @todo Review : youpiii what did the comment on the function just said ? [JP]
+        std::set< gme_t > entities = entities_to_remove ;
+        // TODO Handle the case of several objects in elements
+
+        const GeoModelMeshEntity& reg = model_.mesh_entity( *( entities.begin() ) ) ;
+        get_dependent_entities( entities ) ;
+
+        // TODO Dirty duplication of code------------------------
+        // We need to remove elements type by type since they are
+        // stored in different vectors and since we use indices in these
+        // vectors to identify them.
+        // Initialize the vector
+        std::vector< std::vector< index_t > > to_erase_by_type ;
+        const index_t nb_type = 7 ; // = GME::NO_TYPE. TODO to rework
+        to_erase_by_type.reserve( nb_type ) ;
+        to_erase_by_type.push_back(
+            std::vector< index_t >( model_.nb_entities( Corner::type_name_static() ),
+                0 ) ) ;
+        to_erase_by_type.push_back(
+            std::vector< index_t >( model_.nb_entities( Line::type_name_static() ),
+                0 ) ) ;
+        to_erase_by_type.push_back(
+            std::vector< index_t >(
+                model_.nb_entities( Surface::type_name_static() ), 0 ) ) ;
+        to_erase_by_type.push_back(
+            std::vector< index_t >( model_.nb_entities( Region::type_name_static() ),
+                0 ) ) ;
+        to_erase_by_type.push_back(
+            std::vector< index_t >(
+                model_.nb_entities( Contact::type_name_static() ), 0 ) ) ;
+        to_erase_by_type.push_back(
+            std::vector< index_t >(
+                model_.nb_entities( Interface::type_name_static() ), 0 ) ) ;
+        to_erase_by_type.push_back(
+            std::vector< index_t >( model_.nb_entities( Layer::type_name_static() ),
+                0 ) ) ;
+
+        // Flag the elements to erase
+        for( std::set< gme_t >::const_iterator it = entities.begin();
+            it != entities.end(); ++it ) {
+            gme_t cur = *it ;
+            ringmesh_assert( NO_ID != 0 ) ; // If one day NO_ID changes of value.
+            if( cur.type == Corner::type_name_static() ) {
+                to_erase_by_type[0][cur.index] = NO_ID ;
+            } else if( cur.type == Line::type_name_static() ) {
+                to_erase_by_type[1][cur.index] = NO_ID ;
+            } else if( cur.type == Surface::type_name_static() ) {
+                to_erase_by_type[2][cur.index] = NO_ID ;
+            } else if( cur.type == Region::type_name_static() ) {
+                to_erase_by_type[3][cur.index] = NO_ID ;
+            } else if( cur.type == Contact::type_name_static() ) {
+                to_erase_by_type[4][cur.index] = NO_ID ;
+            } else if( cur.type == Interface::type_name_static() ) {
+                to_erase_by_type[5][cur.index] = NO_ID ;
+            } else if( cur.type == Layer::type_name_static() ) {
+                to_erase_by_type[6][cur.index] = NO_ID ;
+            }
+        }
+
+        // Number of elements deleted for each TYPE
+        std::vector< index_t > nb_removed( to_erase_by_type.size(), 0 ) ;
+
+        /// 1. Get the mapping between old indices of the elements
+        ///    and new ones (when elements to remove will actually be removed)
+        for( index_t i = 0; i < to_erase_by_type.size(); ++i ) {
+            for( index_t j = 0; j < to_erase_by_type[i].size(); ++j ) {
+                if( to_erase_by_type[i][j] == NO_ID ) {
+                    nb_removed[i]++ ;
+                } else {
+                    to_erase_by_type[i][j] = j - nb_removed[i] ;
+                }
+            }
+        }
+        // TODO Dirty duplication of code--------------------------
+
+        std::vector< gme_t > to_add_in_universe ;
+
+        if( reg.type_name() == Region::type_name_static() ) {
+            index_t nb_added = 0 ;
+            for( index_t b_i = 0; b_i < reg.nb_boundaries(); ++b_i ) {
+                if( !reg.boundary( b_i ).is_on_voi() ) {
+                    to_add_in_universe.push_back( reg.boundary( b_i ).gme_id() ) ;
+                    if( reg.boundary( b_i ).type_name()
+                        == Corner::type_name_static() ) {
+                        ringmesh_assert(
+                            to_erase_by_type[0][reg.boundary(
+                                b_i ).index()] != NO_ID ) ;
+                        to_add_in_universe[nb_added].index =
+                            to_erase_by_type[0][reg.boundary( b_i ).index()] ;
+                    } else if( reg.boundary( b_i ).type_name()
+                        == Line::type_name_static() ) {
+                        ringmesh_assert(
+                            to_erase_by_type[1][reg.boundary(
+                                b_i ).index()] != NO_ID ) ;
+                        to_add_in_universe[nb_added].index =
+                            to_erase_by_type[1][reg.boundary( b_i ).index()] ;
+                    } else if( reg.boundary( b_i ).type_name()
+                        == Surface::type_name_static() ) {
+                        ringmesh_assert(
+                            to_erase_by_type[2][reg.boundary(
+                                b_i ).index()] != NO_ID ) ;
+                        to_add_in_universe[nb_added].index =
+                            to_erase_by_type[2][reg.boundary( b_i ).index()] ;
+                    } else if( reg.boundary( b_i ).type_name()
+                        == Region::type_name_static() ) {
+                        ringmesh_assert(
+                            to_erase_by_type[3][reg.boundary(
+                                b_i ).index()] != NO_ID ) ;
+                        to_add_in_universe[nb_added].index =
+                            to_erase_by_type[3][reg.boundary( b_i ).index()] ;
+                    } else if( reg.boundary( b_i ).type_name()
+                        == Contact::type_name_static() ) {
+                        ringmesh_assert(
+                            to_erase_by_type[4][reg.boundary(
+                                b_i ).index()] != NO_ID ) ;
+                        to_add_in_universe[nb_added].index =
+                            to_erase_by_type[4][reg.boundary( b_i ).index()] ;
+                    } else if( reg.boundary( b_i ).type_name()
+                        == Interface::type_name_static() ) {
+                        ringmesh_assert(
+                            to_erase_by_type[5][reg.boundary(
+                                b_i ).index()] != NO_ID ) ;
+                        to_add_in_universe[nb_added].index =
+                            to_erase_by_type[5][reg.boundary( b_i ).index()] ;
+                    } else if( reg.boundary( b_i ).type_name()
+                        == Layer::type_name_static() ) {
+                        ringmesh_assert(
+                            to_erase_by_type[6][reg.boundary(
+                                b_i ).index()] != NO_ID ) ;
+                        to_add_in_universe[nb_added].index =
+                            to_erase_by_type[6][reg.boundary( b_i ).index()] ;
+                    }
+                    ++nb_added ;
+                }
+            }
+        }
+
+        remove_entities( entities ) ;
+
+        // Update Universe
+        /// @todo You first need to clean the existing universe [JP]
+        for( std::vector< gme_t >::const_iterator itr =
+            to_add_in_universe.begin();
+            itr != to_add_in_universe.end(); ++itr ) {
+            add_universe_boundary( itr->index, true ) ;
+        }
+
+        //ringmesh_assert( model_.check_model_validity() ) ;
+    }
+
     /*!
-     * @brief Class in charge of removing entities from a GeoModel     
+     * @brief Class in charge of removing entities from a GeoModel
      */
     class GeoModelEntityRemoval: public GeoModelEditor {
     public:
