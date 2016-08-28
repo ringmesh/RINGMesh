@@ -52,7 +52,9 @@
 #include <ringmesh/geomodel/geo_model_entity.h>
 #include <ringmesh/geomodel/geo_model_validity.h>
 
+#ifdef RINGMESH_WITH_GEOLOGYJS
 #include <geologyjs/main_export.h>
+#endif
 
 /*!
  * @file Implementation of classes to load and save surface GeoModels meshes
@@ -594,6 +596,8 @@ namespace {
         }
     } ;
 
+#ifdef RINGMESH_WITH_GEOLOGYJS
+
     class HTMLIOHandler: public GeoModelIOHandler {
     public:
         virtual void load( const std::string& filename, GeoModel& model )
@@ -607,8 +611,6 @@ namespace {
             GEOLOGYJS::JSWriter js( filename ) ;
             js.build_js_gui_ = true ;
 
-            save_all_corners( model, js ) ;
-            save_all_vertices( model, js ) ;
             save_all_lines( model, js ) ;
             save_interfaces( model, js ) ;
 
@@ -622,34 +624,6 @@ namespace {
         }
 
     private:
-        void save_all_corners( const GeoModel& model, GEOLOGYJS::JSWriter& js ) const
-        {
-            std::vector< double > xyz ;
-            xyz.reserve( 3 * model.nb_corners() ) ;
-            for( index_t corner_itr = 0; corner_itr < model.nb_corners();
-                ++corner_itr ) {
-                xyz.push_back( model.corner( corner_itr ).vertex( 0 ).x ) ;
-                xyz.push_back( model.corner( corner_itr ).vertex( 0 ).y ) ;
-                xyz.push_back( model.corner( corner_itr ).vertex( 0 ).z ) ;
-            }
-            js.add_points( "all_corners", xyz ) ;
-        }
-
-        void save_all_vertices(
-            const GeoModel& model,
-            GEOLOGYJS::JSWriter& js ) const
-        {
-            const GeoModelMeshVertices& vertices = model.mesh.vertices ;
-            std::vector< double > xyz ;
-            xyz.reserve( 3 * vertices.nb() ) ;
-            for( index_t v_itr = 0; v_itr < vertices.nb(); ++v_itr ) {
-                xyz.push_back( vertices.vertex( v_itr ).x ) ;
-                xyz.push_back( vertices.vertex( v_itr ).y ) ;
-                xyz.push_back( vertices.vertex( v_itr ).z ) ;
-            }
-            js.add_points( "all_vertices", xyz ) ;
-        }
-
         void save_all_lines( const GeoModel& model, GEOLOGYJS::JSWriter& js ) const
         {
             std::vector< std::vector< double > > xyz ;
@@ -704,10 +678,10 @@ namespace {
                     const Surface& cur_surface = model.surface(
                         cur_interface.child( surf_itr ).index() ) ;
 
-                    for( index_t v_itr = 0; v_itr < cur_surface.nb_vertices();++v_itr ) {
-                        xyz.push_back(cur_surface.vertex(v_itr).x);
-                        xyz.push_back(cur_surface.vertex(v_itr).y);
-                        xyz.push_back(cur_surface.vertex(v_itr).z);
+                    for( index_t v_itr = 0; v_itr < cur_surface.nb_vertices(); ++v_itr ) {
+                        xyz.push_back( cur_surface.vertex( v_itr ).x );
+                        xyz.push_back( cur_surface.vertex( v_itr ).y );
+                        xyz.push_back( cur_surface.vertex( v_itr ).z );
                     }
 
                     for( index_t f_itr = 0; f_itr < cur_surface.nb_mesh_elements();
@@ -726,6 +700,7 @@ namespace {
             }
         }
     } ;
+#endif
 
 }
 /************************************************************************/
@@ -737,6 +712,8 @@ namespace RINGMesh {
     {
         ringmesh_register_GeoModelIOHandler_creator( MLIOHandler, "ml" ) ;
         ringmesh_register_GeoModelIOHandler_creator( UCDIOHandler, "inp" );
+#ifdef RINGMESH_WITH_GEOLOGYJS
         ringmesh_register_GeoModelIOHandler_creator( HTMLIOHandler, "html" );
+#endif
     }
 }
