@@ -619,6 +619,8 @@ namespace RINGMesh {
         std::vector< vec3 >& result )
     {
         vec3 O_inter, D_inter ;
+        N_plane = normalize( N_plane ) ;
+        N_circle = normalize( N_circle ) ;
         if( !plane_plane_intersection( O_plane, N_plane, O_circle, N_circle, O_inter,
             D_inter ) ) {
             return false ;
