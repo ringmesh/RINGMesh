@@ -298,17 +298,11 @@ endif(USE_OPENMP)
 # geology.js library
 if(RINGMESH_WITH_GEOLOGYJS)
     message(STATUS "Using geology.js directory = ${GEOLOGY_JS_DIRECTORY}")
-    # Geogram platform dependent settings
+    # geology.js platform dependent settings
     if(WIN32)
         set(GEOLOGY_JS_PATH_BIN ${GEOLOGY_JS_DIRECTORY}/build)
-        #set(geoplatform Win-vs-dynamic-generic)  
-	    # Extra lib 
-        #set (EXTRA_LIBS ${EXTRA_LIBS} psapi)
-	    # TODO check that it is really necessary [JP]
-        #add_compile_options(-DGEO_DYNAMIC_LIBS) 
     else(WIN32)
         set(GEOLOGY_JS_PATH_BIN ${GEOLOGY_JS_DIRECTORY}/build/${CMAKE_BUILD_TYPE})
-        #set(geoplatform Linux64-gcc-dynamic)
     endif(WIN32)
     # Add geology.js include directories to the current ones
     include_directories(${GEOLOGY_JS_DIRECTORY}/include)
@@ -383,6 +377,13 @@ if(WIN32)
            "${GEOGRAM_PATH_BIN}/bin/$<CONFIGURATION>"
            "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>" 
        COMMENT "Copy geogram binaries")
+	   if(RINGMESH_WITH_GEOLOGYJS)
+			add_custom_command(TARGET RINGMesh POST_BUILD 
+				COMMAND  "${CMAKE_COMMAND}" -E copy_directory 
+				"${GEOLOGY_JS_PATH_BIN}/bin/$<CONFIGURATION>"
+				"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>" 
+			COMMENT "Copy geogram binaries")
+	   endif(RINGMESH_WITH_GEOLOGYJS)
 endif(WIN32)
 
 
