@@ -78,14 +78,6 @@ namespace RINGMesh {
          * \name Creation - Deletion - Access to GeoModelEntities.
          * @{
          */
-        gme_t create_entity( const EntityType& type ) ;
-
-        template< typename T >
-        void add_entity_to_model( T* entity )
-        {
-            const EntityType entity_type = T::type_name_static() ;
-            modifiable_mesh_entities( entity_type ).push_back( entity ) ;
-        }
 
         template< typename T >
         gme_t create_mesh_entity()
@@ -94,21 +86,13 @@ namespace RINGMesh {
             index_t nb_entities( model().nb_mesh_entities( entity_type ) ) ;
             index_t new_id( nb_entities ) ;
             T* new_entity = new T( model(), new_id ) ;
-            add_entity_to_model( new_entity ) ;
+            modifiable_mesh_entities( entity_type ).push_back( new_entity ) ;
             return new_entity->gme_id() ;
         }
 
         gme_t create_geological_entity( const EntityType& type ) ;
 
         // ---- Duplicate of protected functions. Dangerous open-bar access.
-        GeoModelEntity& entity( const gme_t id )
-        {
-            if( model().is_mesh_entity_type( id.type ) ) {
-                return mesh_entity( id ) ;
-            } else {
-                return geological_entity( id ) ;
-            }
-        }
         GeoModelMeshEntity& mesh_entity( const gme_t& id )
         {
             return modifiable_mesh_entity( id ) ;
@@ -177,13 +161,21 @@ namespace RINGMesh {
         void complete_geological_entities_geol_feature_from_first_child(
             const EntityType& type ) ;
 
-        void set_entity_name( const gme_t& t, const EntityType& name )
+        void set_entity_name( const gme_t& t, const std::string& name )
         {
-            entity( t ).name_ = name ;
+        	if( model().is_mesh_entity_type( t.type ) ) {
+        		mesh_entity( t ).name_ = name ;
+        	} else {
+        		geological_entity( t ).name_ = name ;
+        	}
         }
         void set_entity_geol_feature( const gme_t& t, GME::GEOL_FEATURE geol )
         {
-            entity( t ).geol_feature_ = geol ;
+        	if( model().is_mesh_entity_type( t.type ) ) {
+        		mesh_entity( t ).geol_feature_ = geol ;
+        	} else {
+        		geological_entity( t ).geol_feature_ = geol ;
+        	}
         }
 
         void add_mesh_entity_boundary(
@@ -331,6 +323,8 @@ namespace RINGMesh {
             return model_ ;
         }
 
+        bool create_mesh_entities( const EntityType& type,
+            index_t nb_additional_entities ) ;
         template< typename ENTITY >
         bool create_mesh_entities( index_t nb_additionnal_entities )
         {
@@ -346,9 +340,6 @@ namespace RINGMesh {
             return true ;
         }
         bool create_geological_entities( const EntityType& type, index_t nb ) ;
-        bool create_entities(
-            const EntityType& type,
-            index_t nb_additionnal_entities ) ;
 
         index_t find_or_create_geological_entity_type( const EntityType& type )
         {

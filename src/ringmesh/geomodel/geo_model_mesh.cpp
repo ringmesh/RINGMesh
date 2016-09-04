@@ -103,16 +103,6 @@ namespace {
         const GEO::Attribute< index_t >& region_id_ ;
     } ;
 
-    index_t find_local_vertex_id( const Mesh& mesh, index_t cell, index_t vertex_id )
-    {
-        for( index_t v = 0; v < mesh.nb_cell_vertices( cell ); v++ ) {
-            if( mesh.cell_vertex( cell, v ) == vertex_id ) {
-                return v ;
-            }
-        }
-        return NO_ID ;
-    }
-
     void cell_facets_around_vertex(
         const Mesh& mesh,
         index_t cell,
