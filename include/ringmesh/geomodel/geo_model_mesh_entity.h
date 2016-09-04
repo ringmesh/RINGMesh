@@ -294,6 +294,7 @@ namespace RINGMesh {
             in_boundary_ = mesh_entity_from.in_boundary_ ;
             parents_ = mesh_entity_from.parents_ ;
         }
+        virtual bool is_index_valid() const ;
         virtual bool is_mesh_valid() const = 0 ;
 
         bool is_boundary_connectivity_valid() const ;

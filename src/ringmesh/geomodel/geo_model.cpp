@@ -187,18 +187,6 @@ namespace RINGMesh {
         }
     } 
 
-   const GeoModelEntity& GeoModel::entity( const EntityType& entity_type,
-            index_t entity_index ) const
-   {
-       if( is_mesh_entity_type( entity_type ) ) {
-           return static_cast<const GeoModelEntity&>(
-               mesh_entity( entity_type, entity_index )) ;
-       } else {
-           return static_cast<const GeoModelEntity&>(
-               geological_entity( entity_type, entity_index ));
-       }
-   }
-
    index_t GeoModel::nb_mesh_entities( const EntityType& type ) const
    {
        if( EntityTypeManager::is_corner( type ) ) {
@@ -233,18 +221,6 @@ namespace RINGMesh {
    }
 
    // I do know that this casts are really ugly. But we still have a big big design issue [JP]
-   const std::vector< GeoModelEntity* >& GeoModel::entities( const EntityType& type )
-   {
-       if( is_mesh_entity_type( type ) ) {
-           return *(std::vector< GeoModelEntity* > *) (&mesh_entities( type )) ;
-       } else if( is_geological_entity_type( type ) ) {
-           return *(std::vector< GeoModelEntity* > *) (&geological_entities( type )) ;
-       } else {
-           ringmesh_assert_not_reached ;
-           return *(std::vector< GeoModelEntity* > *) &surfaces_ ;
-       }
-   }
-
    const std::vector< GeoModelMeshEntity* >& GeoModel::mesh_entities(
        const EntityType& type ) const
    {

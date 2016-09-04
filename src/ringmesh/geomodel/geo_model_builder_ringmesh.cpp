@@ -430,7 +430,7 @@ namespace RINGMesh {
         unzFile& uz )
     {
         for( index_t el = 0;
-            el < model().nb_entities( type_name_old_to_new( old_type_name ) );
+            el < model().nb_mesh_entities( type_name_old_to_new( old_type_name ) );
             el++ ) {
             std::string file_to_extract_and_load = old_type_name + "_"
                 + GEO::String::to_string( el ) ;
@@ -462,7 +462,7 @@ namespace RINGMesh {
             MeshBuilder builder( cur_mesh ) ;
             builder.load_mesh( str_try, flags ) ;
             assign_mesh_to_entity( cur_mesh,
-                model().entity( type_name_old_to_new( old_type_name ), el ).gme_id() ) ;
+                model().mesh_entity( type_name_old_to_new( old_type_name ), el ).gme_id() ) ;
             GEO::Logger::instance()->set_minimal( false ) ;
 
             unzip_one_file( uz, str_try.c_str() ) ;

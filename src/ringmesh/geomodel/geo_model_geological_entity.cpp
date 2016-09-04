@@ -77,7 +77,10 @@ namespace RINGMesh {
         }
         return true ;
     }
-
+    bool GeoModelGeologicalEntity::is_index_valid() const
+    {
+    	return index() < model().nb_geological_entities( type_name() ) ;
+    }
     bool GeoModelGeologicalEntity::is_connectivity_valid() const
     {
         bool valid = true ;

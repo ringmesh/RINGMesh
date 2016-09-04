@@ -256,6 +256,10 @@ namespace RINGMesh {
         return false ;
     }
 
+    bool GeoModelMeshEntity::is_index_valid() const
+    {
+    	return index() < model().nb_mesh_entities( type_name() ) ;
+    }
     const std::string GeoModelMeshEntity::model_vertex_id_att_name()
     {
         return "model_vertex_id" ;

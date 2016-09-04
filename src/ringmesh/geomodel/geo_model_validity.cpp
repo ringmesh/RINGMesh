@@ -394,82 +394,6 @@ namespace {
 
     /***************************************************************************/
 
-    /*---------------------------------------------------------------------------*/
-    /*----- Some pieces of the code below are copied or modified from -----------*/
-    /*----- geogram\mesh\mesh_repair.cpp-----------------------------------------*/
-
-    /*!
-     * @brief Trigger an assertion if several vertices of a mesh at the same geometric location
-
-     */
-    void assert_no_colocate_vertices( const GEO::Mesh& M, double colocate_epsilon )
-    {
-        if( has_mesh_colocate_vertices( M, colocate_epsilon ) ) {
-            geo_assert_not_reached;
-        }
-    }
-
-    /*!
-     * @brief Get the colocated vertices of a mesh, i.e. which have the same geometric location
-     * @note Code modified from geogram/mesh/mesh_repair.cpp
-     * @param[in] M the mesh
-     * @param[in] colocate_epsilon tolerance for merging vertices
-     * @param[out] old2new if old2new[i] == i, point is to keep; otherwise
-     *             old2new[i] = j, j is the index of the matching point kept
-     * @returns true if there are colocated vertices
-     *
-     * @todo replace by a call to  GEO::mesh_detect_colocated_vertices since it
-     *       is now in the API
-     *
-     * @pre The mesh has no facet, cell or edges.
-     */
-    bool colocate_vertices(
-        GEO::Mesh& M,
-        double colocate_epsilon,
-        GEO::vector< index_t >& old2new )
-    {
-        old2new.clear() ;
-
-        if( M.edges.nb() > 0 || M.facets.nb() > 0 || M.cells.nb() > 0 ) {
-            // This function is not sufficient to update the complete mesh.
-            ringmesh_assert( false ) ;
-        }
-
-        index_t nb_new_vertices = 0 ;
-        if( colocate_epsilon == 0.0 ) {
-            nb_new_vertices = GEO::Geom::colocate_by_lexico_sort(
-                M.vertices.point_ptr( 0 ), 3, M.vertices.nb(), old2new,
-                M.vertices.dimension() ) ;
-        } else {
-            nb_new_vertices = GEO::Geom::colocate( M.vertices.point_ptr( 0 ), 3,
-                M.vertices.nb(), old2new, colocate_epsilon,
-                M.vertices.dimension() ) ;
-        }
-        return nb_new_vertices != M.vertices.nb() ;
-    }
-
-    /*----------------------------------------------------------------------------*/
-
-    /*!
-     * @brief Get the GMME defining the boundaries of an entity
-     */
-    void boundary_gmme(
-        const GeoModelMeshEntity& E,
-        std::vector< gme_t >& borders,
-        bool with_inside_borders )
-    {
-        borders.clear() ;
-        // We are dealing with basic entities
-        for( index_t i = 0; i < E.nb_boundaries(); ++i ) {
-            if( with_inside_borders
-                || ( !with_inside_borders && !E.boundary( i ).is_inside_border( E ) ) ) {
-                borders.push_back( E.boundary_gme( i ) ) ;
-            }
-        }
-    }
-
-
-
     /*!
      * @brief Check if entity @param is of the @param model is in the
      *        in_boundary vector of entity @param in.
@@ -1008,26 +932,19 @@ namespace RINGMesh {
         }
     }  
 
-    index_t check_validity_entities( const GeoModel& geomodel, const EntityType& type )
-    {
-        index_t count_invalid_entities = 0 ;
-        std::size_t nb_entities = geomodel.nb_entities( type ) ;
-        for( index_t i = 0; i < nb_entities; ++i ) {
-            const GeoModelEntity& E = geomodel.entity( type, i ) ;
-            bool valid_entity = E.is_valid() ;
-            if( !valid_entity ) {
-                count_invalid_entities++ ;
-            }
-        }
-        return count_invalid_entities ;
-    }
-
     bool are_geomodel_meshed_entities_valid( const GeoModel& geomodel ) 
     {
         const std::vector< EntityType >& meshed_types = EntityTypeManager::mesh_entity_types() ;
         index_t count_invalid = 0 ;
         for( index_t i = 0; i < meshed_types.size(); ++i ) {
-            count_invalid += check_validity_entities( geomodel, meshed_types[i] ) ;
+            const EntityType& type = meshed_types[i] ;
+            index_t nb_entities = geomodel.nb_mesh_entities( type ) ;
+            for( index_t i = 0; i < nb_entities; ++i ) {
+                const GeoModelEntity& E = geomodel.mesh_entity( type, i ) ;
+                if( !E.is_valid() ) {
+                	count_invalid++ ;
+                }
+            }
         }
         if( count_invalid != 0 ) {
             Logger::warn( "GeoModel" ) << count_invalid
@@ -1042,7 +959,14 @@ namespace RINGMesh {
             geomodel.entity_type_manager().geological_entity_types() ;
         index_t count_invalid = 0 ;
         for( index_t i = 0; i < geological_types.size(); ++i ) {
-            count_invalid += check_validity_entities( geomodel, geological_types[i] ) ;
+    		const EntityType& type = geological_types[i] ;
+    		index_t nb_entities = geomodel.nb_geological_entities( type ) ;
+            for( index_t i = 0; i < nb_entities; ++i ) {
+                const GeoModelEntity& E = geomodel.geological_entity( type, i ) ;
+                if( !E.is_valid() ) {
+                	count_invalid++ ;
+                }
+            }
         }
         if( count_invalid != 0 ) {
             Logger::warn( "GeoModel" ) << count_invalid
