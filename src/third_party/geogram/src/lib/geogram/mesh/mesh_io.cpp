@@ -199,7 +199,19 @@ namespace GEO {
                                     break;
                                 }
                             }
-                            index_t vertex_index = in.field_as_uint(i);
+                            
+                            // In .obj files, 
+                            // negative vertex index means
+                            // nb_vertices - vertex index
+                            int s_vertex_index = in.field_as_int(i);
+                            index_t vertex_index = 0;
+                            if(s_vertex_index < 0) {
+                                vertex_index = index_t(
+                                    1+int(M.vertices.nb()) + s_vertex_index
+                                );
+                            } else {
+                                vertex_index = index_t(s_vertex_index);
+                            }
                             if(
                                 (vertex_index < 1) ||
                                 (vertex_index > M.vertices.nb())
@@ -2217,7 +2229,14 @@ namespace GEO {
                         << normal[3*v+1] << ' '
                         << normal[3*v+2] << ' '
                         << std::endl;
-                    
+                } else if(M.vertices.dimension() >= 6 && M.vertices.double_precision()) {
+                    const double* p = M.vertices.point_ptr(v);
+                    out << p[0] << ' '
+                        << p[1] << ' '
+                        << p[2] << ' '
+                        << p[3] << ' '
+                        << p[4] << ' '
+                        << p[5] << std::endl;
                 } else {
                     out << point[0] << ' '
                         << point[1] << ' '
