@@ -59,10 +59,10 @@ A model is defined by its constitutive elements:
 
 \image html geomodel_elements.svg 
 
-GeoModelElement and derived classes
+GeoModelEntity and derived classes
 ---------------------------------
 
-The class RINGMesh::GeoModelElement is the base class implementing an element of 
+The class RINGMesh::GeoModelEntity is the base class implementing an element of 
 the RINGMesh::GeoModel.
 It stores the basic required information to describe an element of the model: 
 the model owning the element, the index and type of the element, a name, a geological feature,
@@ -72,8 +72,8 @@ This base class implements the model regions, contacts, interfaces and layers.
 Depending on the type of the elements, some of the attributes should not and are not filled.
 
 
-A RINGMesh::GeoModelMeshElement is an abstract class 
-for the RINGMesh::GeoModelElement storing a GEO::Mesh.
+A RINGMesh::GeoModelMeshEntity is an abstract class 
+for the RINGMesh::GeoModelEntity storing a RINGMesh::Mesh.
 From it derive RINGMesh::Surface, RINGMesh::Line, and RINGMesh::Corner
 that implement methods to operate on meshes of different dimensions.
 Meshes of the different element are independent one from another and
@@ -84,23 +84,21 @@ global indexing of the vertices of the different meshes.
  
  RINGMesh::GeoModelMesh : a global mesh representation of the GeoModel
  ---------------------------------------------------------------------
- @todo I am not convinced that this information is so important for the basic user [JP]
  
- The GeoModelMesh is one mesh built from copying and merging the RINGMesh::GeoModelMeshElement.
+ The GeoModelMesh is one mesh built from copying and merging the RINGMesh::GeoModelMeshEntity.
  \link ringmesh_geo_model_mesh Description of the GeoModelMesh \endlink
  
  
  Building a GeoModel
 -------------------------------
-@todo Update this section. Do we really need it? What is implemented is not relevant to the client [JP]
  
  The class RINGMesh::GeoModelBuilder implements functions to 
  build and modify the elements of a RINGMesh::GeoModel.
  Any new builder should derive from this class.
  Three builders are implemented:
-- RINGMesh::GeoModelBuilderGocad to load a SKUA-GOCAD structural model saved in a .ml file.
-- RINGMesh::GeoModelBuilderML to load a model saved in the native RINGMesh .bm file format.
-- RINGMesh::GeoModelBuilderSurface to build a structural model from a generic surface mesh.
+- RINGMesh::GeoModelBuilderGocad to load either 
+ - a SKUA-GOCAD structural model saved in a .ml (RINGMesh::GeoModelBuilderML) file or 
+ - a volumetric model saved in a .so (RINGMesh::GeoModelBuilderSO) file.
 
 */
 
