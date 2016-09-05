@@ -53,6 +53,7 @@
 #include <geogram/basic/process.h>
 #include <geogram/basic/file_system.h>
 #include <geogram/basic/geometry_nd.h>
+
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_io.h>
 #include <geogram/mesh/mesh_geometry.h>
@@ -62,8 +63,13 @@
 #include <geogram/mesh/mesh_frame_field.h>
 #include <geogram/mesh/mesh_tetrahedralize.h>
 #include <geogram/mesh/mesh_remesh.h>
+
 #include <geogram/delaunay/LFS.h>
+#include <geogram/voronoi/CVT.h>
 #include <geogram/points/co3ne.h>
+
+#include <geogram/third_party/PoissonRecon/poisson_geogram.h>
+
 #include <typeinfo>
 
 namespace {
@@ -100,19 +106,95 @@ namespace {
         Logger::div("reconstruction");
 
         Logger::out("Co3Ne") << "Preparing data" << std::endl;
-        // Remove all facets
-        M_in.facets.clear();
-        double bbox_diag = bbox_diagonal(M_in);
-        double epsilon = CmdLine::get_arg_percent(
-            "pre:epsilon", bbox_diag
-        );
-        mesh_repair(M_in, MESH_REPAIR_COLOCATE, epsilon);
-        index_t nb_neigh = CmdLine::get_arg_uint("co3ne:nb_neighbors");
+
         index_t Psmooth_iter = CmdLine::get_arg_uint("co3ne:Psmooth_iter");
-        double radius = CmdLine::get_arg_percent(
-            "co3ne:radius", bbox_diag
-        );
-        Co3Ne_smooth_and_reconstruct(M_in, nb_neigh, Psmooth_iter, radius);
+        index_t nb_neigh = CmdLine::get_arg_uint("co3ne:nb_neighbors");
+        
+        if(CmdLine::get_arg("algo:reconstruct") == "Poisson") {
+            if(Psmooth_iter != 0) {
+                Co3Ne_smooth(M_in, nb_neigh, Psmooth_iter);
+            }
+            bool has_normals = false;
+            {
+                Attribute<double> normal;
+                normal.bind_if_is_defined(M_in.vertices.attributes(), "normal");
+                has_normals = (normal.is_bound() && normal.dimension() == 3);
+            }
+            
+            if(!has_normals) {
+                // TODO: add a way of making normals orientation coherent
+                // in Co3Ne_compute_normals...
+
+                if(M_in.facets.nb() != 0) {
+                    Attribute<double> normal;
+                    normal.bind_if_is_defined(
+                        M_in.vertices.attributes(),"normal"
+                    );
+                    if(!normal.is_bound()) {
+                        normal.create_vector_attribute(
+                            M_in.vertices.attributes(), "normal", 3
+                        );
+                    }
+                    for(index_t i=0; i<M_in.vertices.nb()*3; ++i) {
+                        normal[i]=0.0;
+                    }
+                    for(index_t f=0; f<M_in.facets.nb(); ++f) {
+                        vec3 N = Geom::mesh_facet_normal(M_in, f);
+                        for(index_t lv=0; lv<M_in.facets.nb_vertices(f); ++lv) {
+                            index_t v = M_in.facets.vertex(f,lv);
+                            normal[3*v  ] += N.x;
+                            normal[3*v+1] += N.y;
+                            normal[3*v+2] += N.z;
+                        }
+                    }
+                    for(index_t v=0; v<M_in.vertices.nb(); ++v) {
+                        vec3 N(normal[3*v],normal[3*v+1],normal[3*v+2]);
+                        N = normalize(N);
+                        normal[3*v  ]=N.x;
+                        normal[3*v+1]=N.y;
+                        normal[3*v+2]=N.z;
+                    }
+                } else {
+                    Logger::out("Poisson")
+                        << "Dataset has no normals, estimating them"
+                        << std::endl;
+                    Logger::out("Poisson")
+                    << "(result may be not so good, normals may be incoherent)"
+                    << std::endl;
+                    Co3Ne_compute_normals(M_in, nb_neigh);
+                }
+            }
+            
+            index_t depth = CmdLine::get_arg_uint("poisson:octree_depth");
+            Mesh M_out;
+            PoissonReconstruction recons;
+            recons.set_depth(depth);
+            Logger::out("Reconstruct")
+                << "Starting Poisson reconstruction..."
+                << std::endl;
+            recons.reconstruct(&M_in, &M_out);
+            Logger::out("Reconstruct")
+                << "Poisson reconstruction done."
+                << std::endl;
+            MeshElementsFlags what = MeshElementsFlags(
+                MESH_VERTICES | MESH_FACETS 
+            );
+            M_in.copy(M_out, true, what);
+        } else {
+            // Remove all facets
+            M_in.facets.clear();
+            
+            double bbox_diag = bbox_diagonal(M_in);
+            double epsilon = CmdLine::get_arg_percent(
+                "pre:epsilon", bbox_diag
+            );
+            mesh_repair(M_in, MESH_REPAIR_COLOCATE, epsilon);
+            
+            double radius = CmdLine::get_arg_percent(
+                "co3ne:radius", bbox_diag
+            );
+            Co3Ne_smooth_and_reconstruct(M_in, nb_neigh, Psmooth_iter, radius);
+        }
     }
     
     /**
@@ -135,7 +217,10 @@ namespace {
         for(int k=0; k<nb_kills; ++k) {
             vector<index_t> to_kill(M_in.facets.nb(), 0);
             for(index_t f=0; f<M_in.facets.nb(); ++f) {
-                for(index_t c=M_in.facets.corners_begin(f); c<M_in.facets.corners_end(f); ++c) {
+                for(
+                    index_t c=M_in.facets.corners_begin(f);
+                    c<M_in.facets.corners_end(f); ++c
+                ) {
                     if(M_in.facet_corners.adjacent_facet(c) == NO_FACET) {
                         to_kill[f] = 1;
                     }
@@ -349,7 +434,79 @@ namespace {
         }
         return 0;
     }
-    
+
+
+    /**
+     * \brief Generates a polyhedral mesh.
+     * \param[in] input_filename name of the input file, can be
+     *   either a closed surfacic mesh or a tetrahedral mesh
+     * \param[in] output_filename name of the output file
+     * \retval 0 on success
+     * \retval non-zero value otherwise
+     */
+    int polyhedral_mesher(
+        const std::string& input_filename, const std::string& output_filename
+    ) {
+        Mesh M_in;
+        Mesh M_out;
+
+        MeshIOFlags flags;
+        flags.set_element(MESH_CELLS);
+
+        Logger::div("Polyhedral meshing");
+
+        if(!mesh_load(input_filename, M_in, flags)) {
+            return 1;
+        }
+        
+        if(M_in.cells.nb() == 0) {
+            Logger::out("Poly") << "Mesh is not a volume" << std::endl;
+            Logger::out("Poly") << "Trying to tetrahedralize" << std::endl;
+            double quality = 2.0;
+            if(!mesh_tetrahedralize(M_in, true, true, quality)) {
+                return 1;
+            }
+            M_in.cells.compute_borders();
+        }
+
+        CentroidalVoronoiTesselation CVT(&M_in, 3);
+        CVT.set_volumetric(true);
+        
+        Logger::div("Generate random samples");
+
+        CVT.compute_initial_sampling(CmdLine::get_arg_uint("remesh:nb_pts"));
+
+        Logger::div("Optimize sampling");
+
+        try {
+            ProgressTask progress("Lloyd", 10);
+            CVT.set_progress_logger(&progress);
+            CVT.Lloyd_iterations(CmdLine::get_arg_uint("opt:nb_Lloyd_iter"));
+        }
+        catch(const TaskCanceled&) {
+        }
+
+        try {
+            ProgressTask progress("Newton", 30);
+            CVT.set_progress_logger(&progress);
+            CVT.Newton_iterations(30);
+        }
+        catch(const TaskCanceled&) {
+        }
+        
+        CVT.set_progress_logger(nil);
+        
+        CVT.RVD()->compute_RVD(M_out, 0, false, false);
+        
+        MeshIOFlags RVDflags;
+        RVDflags.set_elements(MESH_CELLS);
+        RVDflags.set_attribute(MESH_FACET_REGION);
+        RVDflags.set_attributes(MESH_CELL_REGION);
+        mesh_save(M_out, output_filename, RVDflags);
+        
+        return 0;
+    }
+
 }
 
 int main(int argc, char** argv) {
@@ -369,6 +526,7 @@ int main(int argc, char** argv) {
         CmdLine::import_arg_group("opt");
         CmdLine::import_arg_group("co3ne");        
         CmdLine::import_arg_group("tet");
+        CmdLine::import_arg_group("poly");        
         
         std::vector<std::string> filenames;
 
@@ -396,6 +554,10 @@ int main(int argc, char** argv) {
 
         if(CmdLine::get_arg_bool("tet")) {
             return tetrahedral_mesher(input_filename, output_filename);
+        }
+
+        if(CmdLine::get_arg_bool("poly")) {
+            return polyhedral_mesher(input_filename, output_filename);
         }
         
         Mesh M_in, M_out;
