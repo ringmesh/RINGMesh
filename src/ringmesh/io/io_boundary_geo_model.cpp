@@ -53,7 +53,7 @@
 #include <ringmesh/geomodel/geo_model_validity.h>
 
 #ifdef RINGMESH_WITH_GEOLOGYJS
-#include <geologyjs/main_export.h>
+#    include <geologyjs/main_export.h>
 #endif
 
 /*!
