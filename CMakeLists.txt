@@ -299,11 +299,7 @@ endif(USE_OPENMP)
 if(RINGMESH_WITH_GEOLOGYJS)
     message(STATUS "Using geology.js directory = ${GEOLOGY_JS_DIRECTORY}")
     # geology.js platform dependent settings
-    if(WIN32)
-        set(GEOLOGY_JS_PATH_BIN ${GEOLOGY_JS_DIRECTORY}/build)
-    else(WIN32)
-        set(GEOLOGY_JS_PATH_BIN ${GEOLOGY_JS_DIRECTORY}/build/${CMAKE_BUILD_TYPE})
-    endif(WIN32)
+    set(GEOLOGY_JS_PATH_BIN ${GEOLOGY_JS_DIRECTORY}/build)
     # Add geology.js include directories to the current ones
     include_directories(${GEOLOGY_JS_DIRECTORY}/include)
 
