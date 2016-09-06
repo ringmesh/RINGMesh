@@ -831,6 +831,14 @@ namespace RINGMesh {
             return mesh_.cells_aabb() ;
         }
         /*!
+         * @brief Return the a colocater for the facets of the region
+         * @details The barycenter of the facets is used.
+         */
+        const ColocaterANN& facet_colocater_ann() const
+        {
+            return mesh_.colocater_ann( ColocaterANN::FACETS ) ;
+        }
+        /*!
          * @brief Return the a colocater for the cells of the region
          * @details The barycenter of the cells is used.
          */
