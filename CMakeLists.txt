@@ -61,6 +61,7 @@ option(RINGMESH_WITH_TETGEN "Use Tetgen tetrahedral mesher" ON)
 # Optional components of RINGMesh - creation of specific targets
 option(RINGMESH_WITH_GRAPHICS "Compile viewer" OFF)
 option(RINGMESH_WITH_UTILITIES "Compile utility executables" OFF)
+option(RINGMESH_WITH_EXAMPLES "Compile API trainings and examples" ON)
 option(RINGMESH_WITH_TESTS "Compile test projects" OFF)
 option(RINGMESH_WITH_GEOLOGYJS "Enable export to html" OFF)
 
@@ -135,6 +136,7 @@ if(UNIX)
                 -DRINGMESH_WITH_GRAPHICS:BOOL=${RINGMESH_WITH_GRAPHICS}
                 -DRINGMESH_WITH_UTILITIES:BOOL=${RINGMESH_WITH_UTILITIES}
                 -DRINGMESH_WITH_TESTS:BOOL=${RINGMESH_WITH_TESTS}
+                -DRINGMESH_WITH_EXAMPLES:BOOL=${RINGMESH_WITH_EXAMPLES}
                 -DRINGMESH_WITH_GEOLOGYJS:BOOL=${RINGMESH_WITH_GEOLOGYJS}
 			    -DBUILD_DOCUMENTATION:BOOL=${BUILD_DOCUMENTATION}
 				-DTEST_DATA_INPUT_DIRECTORY:STRING=${TEST_DATA_INPUT_DIRECTORY}
@@ -378,7 +380,7 @@ if(WIN32)
 				COMMAND  "${CMAKE_COMMAND}" -E copy_directory 
 				"${GEOLOGY_JS_PATH_BIN}/bin/$<CONFIGURATION>"
 				"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>" 
-			COMMENT "Copy geogram binaries")
+			COMMENT "Copy geology js binaries")
 	   endif(RINGMESH_WITH_GEOLOGYJS)
 endif(WIN32)
 
@@ -395,8 +397,12 @@ if(RINGMESH_WITH_UTILITIES)
     add_subdirectory(src/ringmeshconvert)
     add_subdirectory(src/ringmesh_surface_convert)
     add_subdirectory(src/ringmeshstats)
-    add_subdirectory(src/ringmesh_training)
 endif(RINGMESH_WITH_UTILITIES)
+
+if(RINGMESH_WITH_EXAMPLES)
+    message(STATUS "Configuring RINGMesh with examples")
+    add_subdirectory(examples)
+endif(RINGMESH_WITH_EXAMPLES)
 
 if(RINGMESH_WITH_TESTS)
     message(STATUS "Configuring RINGMesh with tests")
