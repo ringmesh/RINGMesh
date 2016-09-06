@@ -34,11 +34,15 @@
 # CMakeList for RINGMesh file format converter subproject
 
 # Set the target as an executable 
-add_executable(ringmesh_training main.cpp)
+add_executable(geomodel_building geomodel_building.cpp)
+add_executable(geomodel_basics geomodel_basics.cpp)
+
    
-target_link_libraries(ringmesh_training RINGMesh geogram)
+target_link_libraries(geomodel_building RINGMesh geogram)
+target_link_libraries(geomodel_basics RINGMesh geogram)
 
 # Add the project to a folder of projects for the tests 
-set_property(TARGET ringmesh_training PROPERTY FOLDER "Utilities")
+set_property(TARGET geomodel_building PROPERTY FOLDER "Utilities")
+set_property(TARGET geomodel_basics PROPERTY FOLDER "Utilities")
 
 
