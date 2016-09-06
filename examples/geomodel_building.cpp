@@ -161,7 +161,7 @@ int main( int argc, char** argv )
         }
 
         // Create the Interfaces
-        for( index_t interface = 0; interface < nb_interfaces; interface++ ) {
+        for( index_t interface_itr = 0; interface_itr < nb_interfaces; interface_itr++ ) {
             geomodel_builder.create_geological_entity(
                 Interface::type_name_static() ) ;
         }
