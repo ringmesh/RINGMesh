@@ -199,7 +199,7 @@ int main( int argc, char** argv )
 
         //We declare the coordinates of the corners. We arrange the corner in a
         // table
-        vec3 corners_table[nb_corners] ;
+        vec3 corners_table[11] ;
         corners_table[0] = vec3( 0, 0, 0 ) ;
         corners_table[1] = vec3( 5, 0, 0 ) ;
         corners_table[2] = vec3( 5, 5, 0 ) ;
