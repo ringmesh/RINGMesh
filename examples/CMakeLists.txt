@@ -31,18 +31,27 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
-# CMakeList for RINGMesh file format converter subproject
+# CMakeList for RINGMesh training examples
 
-# Set the target as an executable 
-add_executable(geomodel_building geomodel_building.cpp)
-add_executable(geomodel_basics geomodel_basics.cpp)
+# Get the name of the test files 
+file(GLOB EXAMPLES "${EXAMPLES_DIRECTORY}/*.cpp")
 
-   
-target_link_libraries(geomodel_building RINGMesh geogram)
-target_link_libraries(geomodel_basics RINGMesh geogram)
-
-# Add the project to a folder of projects for the tests 
-set_property(TARGET geomodel_building PROPERTY FOLDER "Utilities")
-set_property(TARGET geomodel_basics PROPERTY FOLDER "Utilities")
+# For all the test files found
+foreach(examplesourcefile ${EXAMPLES})
+    # Get the name of the file without extension
+    get_filename_component(examplename ${examplesourcefile} NAME_WE)
+    
+    # Add the target for that file
+    add_executable(${examplename} ${examplesourcefile})
+    
+    # Link RINGMesh Make sure YourLib is linked to each app
+    target_link_libraries(${examplename} geogram RINGMesh)
+    
+    add_dependencies(${examplename} RINGMesh)
+    
+    # Add the project to a folder of projects for the tests 
+    set_property(TARGET ${examplename} PROPERTY FOLDER "Examples")
+       
+endforeach(examplesourcefile ${EXAMPLES})
 
 
