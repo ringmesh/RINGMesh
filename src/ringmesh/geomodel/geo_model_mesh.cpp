@@ -165,7 +165,6 @@ namespace RINGMesh {
             const_cast< GeoModelMeshVertices* >( this )->initialize() ;
         }
     }
-
     
     index_t nb_entity_vertices( const GeoModel& M, const std::string& entity_type )
     {
@@ -280,6 +279,7 @@ namespace RINGMesh {
 
     index_t GeoModelMeshVertices::index( const vec3& p ) const
     {
+        test_and_initialize() ;
         std::vector< index_t > vertices ;
         const ColocaterANN& colocator = mesh_.colocater_ann( ColocaterANN::VERTICES ) ;
         colocator.get_colocated( p, vertices ) ;
@@ -399,7 +399,6 @@ namespace RINGMesh {
             erase_vertices( to_delete ) ;
         }
     }
-
 
     void update_entity_model_vertex_id( const GeoModel& M, const std::string& entity_type,
         std::vector<index_t>& to_delete, std::vector< std::vector< GMEVertex > >& gme_vertices )
