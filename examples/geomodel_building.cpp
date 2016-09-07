@@ -47,6 +47,8 @@
 
 /*!
  * @author Antoine Mazuyer
+ * @author Francois Bonneau
+ * @author Pierre Anquez
  */
 
 /*!
@@ -58,7 +60,7 @@
  *  !!   This is the brute force way to build a       !!
  *  !!   GeoModel, as you will see, the code is       !!
  *  !!   pretty heavy. Purpose of this main is to     !!
- *  !!   present the method to build a GeoModel, and. !!
+ *  !!   present the method to build a GeoModel, and  !!
  *  !!   to understand the relations between each     !!
  *  !!   GeoModelEntities. One can implement loop     !!
  *  !!   to automate these actions by reading         !!
@@ -112,8 +114,7 @@ int main( int argc, char** argv )
         Logger::div( "RINGMesh Training" ) ;
         Logger::out( "" ) << "Welcome to the training of RINGMesh ! !" << std::endl ;
 
-        // Next line is a feature of geogram which measure
-        // the time of execution.
+        // Measure the time between the GEO::Stopwatch creation and its destruction.
         GEO::Stopwatch total( "Total time" ) ;
 
         // We instantiate the class GeoModel
@@ -838,7 +839,7 @@ int main( int argc, char** argv )
         // This method will set the missing information for the boundaries
         // and parent/child relation. e. g., if you decide to use the
         // add_geological_entity_child (like above), the child has no information of who
-        // is his parent. This method deal with that by filling the missing informations
+        // is his parent. This method deal with that by filling the missing information
         geomodel_builder.end_model() ;
 
         // We save the builded model

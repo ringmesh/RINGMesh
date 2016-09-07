@@ -61,7 +61,7 @@ option(RINGMESH_WITH_TETGEN "Use Tetgen tetrahedral mesher" ON)
 # Optional components of RINGMesh - creation of specific targets
 option(RINGMESH_WITH_GRAPHICS "Compile viewer" OFF)
 option(RINGMESH_WITH_UTILITIES "Compile utility executables" OFF)
-option(RINGMESH_WITH_EXAMPLES "Compile API trainings and examples" ON)
+option(RINGMESH_WITH_EXAMPLES "Compile API trainings and examples" OFF)
 option(RINGMESH_WITH_TESTS "Compile test projects" OFF)
 option(RINGMESH_WITH_GEOLOGYJS "Enable export to html" OFF)
 
@@ -75,6 +75,11 @@ if(RINGMESH_WITH_TESTS)
     set(TEST_DATA_INPUT_DIRECTORY "${TEST_DIRECTORY}/data" CACHE PATH "Input data location")
     # PROJECT_BINARY_DIR not defined at this point
     set(TEST_DATA_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/build/tests/output" CACHE PATH "Output data location")
+endif()
+
+# Optional custom configuration of examples directories
+if(RINGMESH_WITH_EXAMPLES)
+    set(EXAMPLES_DIRECTORY ${CMAKE_SOURCE_DIR}/examples)
 endif()
 
 if(RINGMESH_WITH_GEOLOGYJS)
