@@ -69,7 +69,7 @@ int main( int argc, char** argv )
 
         // Say Hello
         Logger::div( "RINGMesh Training" ) ;
-        Logger::out( "" ) << "Welcome to the training of RINGMesh ! !" << std::endl ;
+        Logger::out( "" ) << "Welcome to the RINGMesh training for basics functionalities on GeoModel !" << std::endl ;
 
         // Next line is a feature of geogram which measure
         // the time of execution.
@@ -80,27 +80,26 @@ int main( int argc, char** argv )
 
         //load GeoModel
         //here you can load whatever the model you want in the ringmesh_home/test/data directory
-        std::string input_file_name = "../../../../tests/data/modelA1.ml";
+        std::string input_file_name( ringmesh_test_data_path ) ;
+        input_file_name += "modelA1.ml" ;
+        //std::string input_file_name = "../../../../tests/data/modelA1.ml";
 
-        //static function to load a geomodel
+        //function to load a geomodel
         geomodel_load( geomodel, input_file_name ) ;
 
-        //static function to print the statistics of the geomodel in the command terminal
+        //function to print the statistics of the geomodel in the command terminal
         print_geomodel_mesh_stats( geomodel ) ;
 
         // build volumetric mesh in regions
         tetgen_tetrahedralize_geomodel_regions( geomodel ) ;
 
-        //static function to print the statistics of the geomodel in the command terminal
+        //function to print the statistics of the geomodel in the command terminal
         print_geomodel_mesh_stats( geomodel ) ;
 
         //set the name of the geomodel to output
         //you can customize the path
         std::string output_file_name = "modelA1.gm";
         geomodel_save(geomodel, output_file_name);
-
-        //test with modelA3.ml
-        //testwith Annote.gm
 
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category() ) << e.what() << std::endl ;

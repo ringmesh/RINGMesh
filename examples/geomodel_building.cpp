@@ -133,7 +133,7 @@ int main( int argc, char** argv )
         // the concept of Geological Entity and Mesh Entities
         // Let's to a sum up of the GeoModel we try to build:
         // For the Geological Entities (handle by the class GeoModelGeologicalEntity):
-        // 21 Contacts
+        // 16 Contacts
         index_t nb_contacts = 16 ;
         // 1 horizons + 6 boundaries = 7 Interfaces
         index_t nb_interfaces = 7 ;
@@ -199,7 +199,7 @@ int main( int argc, char** argv )
 
         //We declare the coordinates of the corners. We arrange the corner in a
         // table
-        vec3 corners_table[11] ;
+        vec3 corners_table[12] ;
         corners_table[0] = vec3( 0, 0, 0 ) ;
         corners_table[1] = vec3( 5, 0, 0 ) ;
         corners_table[2] = vec3( 5, 5, 0 ) ;
