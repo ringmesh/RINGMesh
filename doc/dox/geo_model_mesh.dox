@@ -38,8 +38,6 @@
 
 \page ringmesh_geomodel_mesh Description of the GeoModelMesh
 
-@todo Update this page.
-
 Each RINGMesh::GeoModelMeshEntity has a RINGMesh::Mesh independent from the other ones.
 Even if there are dependencies through the RINGMesh::GeoModelGeologicalEntity,
 it implies that there is no connection between the different meshes, in other words,
