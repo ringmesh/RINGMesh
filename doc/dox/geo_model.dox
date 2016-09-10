@@ -86,12 +86,12 @@ A RINGMesh::GeoModelGeologicalEntity is an abstract class
 of the RINGMesh::GeoModelEntity. It stores the connectivity between RINGMesh::GeoModelMeshEntity
 to provide a geological meaning to geometrical entities. It uses a kind of parent/child implementation.
 Built-in RINGMesh::GeoModelGeologicalEntity (sub-classes) in RINGMesh are:
-- RINGMesh::Contact. It is the parent of several child RINGMesh::Line. A RINGMesh::Contact respresents
+- RINGMesh::Contact. It is the parent of several RINGMesh::Line (children). A RINGMesh::Contact represents
 a geological contact, i.e. the intersections between two RINGMesh::Interface (intersection between two
 faults or between a fault and a horizon for instance).
-- RINGMesh::Interface. It is the parent of several child RINGMesh::Surface.
+- RINGMesh::Interface. It is the parent of several RINGMesh::Surface (children).
 A RINGMesh::Interface represents a 2D geological objects such as a fault or a horizon.
-- RINGMesh::Layer. It is the parent of several child RINGMesh::Region. It represents
+- RINGMesh::Layer. It is the parent of several RINGMesh::Region (children). It represents
 a geological layer.
 
 It is possible to define other kinds of RINGMesh::GeoModelGeologicalEntity
