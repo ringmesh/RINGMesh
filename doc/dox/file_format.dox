@@ -124,7 +124,7 @@ GeoModel.
         Line 22 No_name no_geological_feature
         boundary 8 10 
 
-- For each RINGMesh::Surface are stored the indexes of its boundary (RINGMesh::Line). 
+- For each RINGMesh::Surface are stored the indexes of its boundaries (RINGMesh::Line). 
 In the example below the surface has the id 1 in the GeoModel, does not have a name.
 Its geological feature is top. Its boundaries are the line 1, the line 4, the line 7
 and the line 21 in the GeoModel.
@@ -140,7 +140,7 @@ This information must be written even if the region is not meshed.
 In the example below the region has the id 3 in the GeoModel. Its name is r3.
 It does not have any geological feature. Its boundaries are the surface 7, the surface 14,
 the surface 25 and the surface 29 in the GeoModel. Normals of surfaces 7 and 14 are oriented
-toward the region volume. Normals of surfaces 25 and 29 are oriented toward ouside the region
+toward the region volume. Normals of surfaces 25 and 29 are oriented toward outside the region
 volume.
         
         Region 3 r3 no_geological_feature
