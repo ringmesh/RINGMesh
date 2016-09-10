@@ -232,7 +232,7 @@ namespace GEO {
             Mesh_OrientedPointStream pointStream(*points);
             tree.SetTree<
                 double , NORMAL_DEGREE , WEIGHT_DEGREE , DATA_DEGREE ,
-                Point3D< unsigned char >, Point3D< double >
+                Point3D<unsigned char>, Point3D<double>
             >(
                 &pointStream , min_depth_ , depth_ , full_depth_ ,
                 kernel_depth_ ,
@@ -302,7 +302,7 @@ namespace GEO {
             DeletePointer(values);
         }
         
-        tree.GetMCIsoSurface< Degree , WEIGHT_DEGREE , DATA_DEGREE, Vertex >(
+        tree.GetMCIsoSurface< Degree , WEIGHT_DEGREE , DATA_DEGREE >(
             densityWeights , colorData , solution , isoValue ,
             mesh , !linear_fit_, !non_manifold_, polygon_mesh_
         );
