@@ -146,28 +146,22 @@ namespace {
     /*!
      * Finds a facet and its edge index that are colocalised with an edge
      * defined by its two model vertex indices
-     * @param[in] ann a ColocatorANN of the Surface \p surface using the keyword FACETS
      * @param[in] surface the surface where to find the facet
-     * @param[in] model_v0 the first model vertex index of the edge
-     * @param[in] model_v1 the second model vertex index of the edge
+     * @param[in] v0 the first vertex of the edge
+     * @param[in] v1 the second vertex of the edge
      * @param[out] f the found facet index
      * @param[out] e the found edge index
      * @return True if the facet and the edge indices are found
      * @todo RENAME these parameters and split in smaller functions !! [JP]
      */
     bool find_facet_and_edge(
-        const ColocaterANN& ann,
         const Surface& surface,
-        index_t model_v0,
-        index_t model_v1,
+        index_t v0,
+        index_t v1,
         index_t& f,
         index_t& e )
     {
-        // This is bad ! One level of abstraction is far far away
-        const vec3& v0 = surface.model().mesh.vertices.vertex( model_v0 ) ;
-        const vec3& v1 = surface.model().mesh.vertices.vertex( model_v1 ) ;
-        vec3 v_bary = 0.5 * ( v0 + v1 ) ;
-
+        vec3 v_bary = 0.5 * ( surface.vertex( v0 ) + surface.vertex( v1 ) ) ;
         index_t nb_neighbors = std::min( index_t( 5 ), surface.nb_mesh_elements() ) ;
         std::vector< index_t > neighbors ;
         index_t cur_neighbor = 0 ;
@@ -178,14 +172,15 @@ namespace {
             cur_neighbor = std::min( cur_neighbor, surface.nb_mesh_elements() ) ;
             neighbors.resize( cur_neighbor ) ;
             double* dist = (double*) alloca( sizeof(double) * cur_neighbor ) ;
-            nb_neighbors = ann.get_neighbors( v_bary, cur_neighbor, neighbors,
-                dist ) ;
+            nb_neighbors = surface.facet_colocater_ann().get_neighbors( v_bary,
+                cur_neighbor, neighbors, dist ) ;
             for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
                 f = neighbors[i] ;
-                for( index_t j = 0; j < surface.nb_mesh_element_vertices( f ); j++ ) {
-                    if( surface.model_vertex_id( f, j ) == model_v0 ) {
+                for( index_t j = 0; j < surface.nb_mesh_element_vertices( f );
+                    j++ ) {
+                    if( surface.mesh_element_vertex_index( f, j ) == v0 ) {
                         index_t j_next = surface.next_facet_vertex_index( f, j ) ;
-                        if( surface.model_vertex_id( f, j_next ) == model_v1 ) {
+                        if( surface.mesh_element_vertex_index( f, j_next ) == v1 ) {
                             e = j ;
                             return true ;
                         }
@@ -197,6 +192,25 @@ namespace {
         f = NO_ID ;
         e = NO_ID ;
         return false ;
+    }
+
+    index_t edge_index_from_facet_and_edge_vertex_indices(
+        const Surface& surface,
+        index_t f,
+        index_t v0,
+        index_t v1 )
+    {
+        for( index_t v = 0; v < surface.nb_mesh_element_vertices( f ); v++ ) {
+            if( surface.mesh_element_vertex_index( f, v ) != v0 ) continue ;
+            index_t prev_v = surface.prev_facet_vertex_index( f, v ) ;
+            index_t next_v = surface.next_facet_vertex_index( f, v ) ;
+            if( surface.mesh_element_vertex_index( f, prev_v ) == v1 ) {
+                return prev_v ;
+            } else if( surface.mesh_element_vertex_index( f, next_v ) == v1 ) {
+                return v ;
+            }
+        }
+        return NO_ID ;
     }
 
     bool is_corner_to_duplicate( const GeoModel& geomodel, index_t corner_id )
@@ -1560,30 +1574,31 @@ namespace RINGMesh {
     {
         Surface& S = dynamic_cast< Surface& >( mesh_entity(
             gme_t( Surface::type_name_static(), surface_id ) ) ) ;
+        const ColocaterANN& vertex_ann = S.vertex_colocater_ann() ;
         const GMME& L = mesh_entity( gme_t( Line::type_name_static(), line_id ) ) ;
-        const ColocaterANN& ann = S.facet_colocater_ann() ;
         MeshBuilder builder( S.mesh_ ) ;
         for( index_t i = 0; i + 1 < L.nb_vertices(); ++i ) {
-            index_t p0 = L.model_vertex_id( i ) ;
-            index_t p1 = L.model_vertex_id( i + 1 ) ;
+            double distance ;
+            const vec3& p0 = L.vertex( i ) ;
+            index_t v0_id = vertex_ann.get_closest_neighbor( p0, distance ) ;
+            ringmesh_assert( distance < epsilon ) ;
+            const vec3& p1 = L.vertex( i + 1 ) ;
+            index_t v1_id = vertex_ann.get_closest_neighbor( p1, distance ) ;
+            ringmesh_assert( distance < epsilon ) ;
 
             index_t f = NO_ID ;
-            index_t v = NO_ID ;
-            bool found = find_facet_and_edge( ann, S, p0, p1, f, v ) ;
+            index_t e = NO_ID ;
+            bool found = find_facet_and_edge( S, v0_id, v1_id, f, e ) ;
             ringmesh_unused( found ) ;
-            ringmesh_assert( found && f != NO_ID && v != NO_ID ) ;
+            ringmesh_assert( found && f != NO_ID && e != NO_ID ) ;
 
-            index_t f2 = S.facet_adjacent_index( f, v ) ;
+            index_t f2 = S.facet_adjacent_index( f, e ) ;
             if( f2 != NO_ID ) {
-                index_t v2 = NO_ID ;
-                // Get the edge in facet f2 matching model indices p0-p1
-                S.oriented_edge_from_model_vertex_ids( p0, p1, f2, v2 ) ;
-                if( v2 == NO_ID ) {
-                    S.oriented_edge_from_model_vertex_ids( p1, p0, f2, v2 ) ;
-                    ringmesh_assert( v2 != NO_ID ) ;
-                }
-                builder.set_facet_adjacent( f, v, NO_ID ) ;
-                builder.set_facet_adjacent( f2, v2, NO_ID ) ;
+                index_t e2 = edge_index_from_facet_and_edge_vertex_indices( S, f2,
+                    v0_id, v1_id ) ;
+                ringmesh_assert( e2 != NO_ID ) ;
+                builder.set_facet_adjacent( f, e, NO_ID ) ;
+                builder.set_facet_adjacent( f2, e2, NO_ID ) ;
             }
         }
     }
@@ -1601,12 +1616,17 @@ namespace RINGMesh {
         surface_vertex_0 = NO_ID ;
         surface_vertex_1 = NO_ID ;
 
-        const ColocaterANN& ann = S.facet_colocater_ann() ;
-        index_t p0 = L.model_vertex_id( 0 ) ;
-        index_t p1 = L.model_vertex_id( 1 ) ;
+        double distance ;
+        const ColocaterANN& vertex_ann = S.vertex_colocater_ann() ;
+        const vec3& p0 = L.vertex( 0 ) ;
+        index_t v0_id = vertex_ann.get_closest_neighbor( p0, distance ) ;
+        ringmesh_assert( distance < epsilon ) ;
+        const vec3& p1 = L.vertex( 1 ) ;
+        index_t v1_id = vertex_ann.get_closest_neighbor( p1, distance ) ;
+        ringmesh_assert( distance < epsilon ) ;
 
         index_t v( NO_ID ) ;
-        bool found = find_facet_and_edge( ann, S, p0, p1, facet_index, v ) ;
+        bool found = find_facet_and_edge( S, v0_id, v1_id, facet_index, v ) ;
         ringmesh_unused( found ) ;
         ringmesh_assert( found && facet_index != NO_ID && v != NO_ID ) ;
 
@@ -1726,9 +1746,6 @@ namespace RINGMesh {
 
         disconnect_surface_facets_along_line_edges( surface_id, line_id ) ;
         duplicate_surface_vertices_along_line( surface_id, line_id ) ;
-        MeshBuilder surface_mesh_builder(
-            mesh_entity( Surface::type_name_static(), surface_id ).mesh_ ) ;
-//        surface_mesh_builder.remove_isolated_vertices() ;
 
         if( !model_vertices_initialized ) {
              model().mesh.vertices.clear() ;
@@ -1768,7 +1785,7 @@ namespace RINGMesh {
     void GeoModelBuilder::cut_surfaces_by_internal_lines()
     {
         for( index_t s = 0; s < model().nb_surfaces(); s++ ) {
-            const Surface& S = model().surface( s ) ;
+            GeoModelMeshEntity& S = mesh_entity( Surface::type_name_static(), s ) ;
             std::set< index_t > cutting_lines ;
             for( index_t l = 0; l < S.nb_boundaries(); ++l ) {
                 const GeoModelMeshEntity& L = S.boundary( l ) ;
@@ -1782,6 +1799,10 @@ namespace RINGMesh {
                 // before performing the cut.
                 model().mesh.vertices.clear() ;
                 cut_surface_by_line( s, *it ) ;
+            }
+            if( !cutting_lines.empty() ) {
+                MeshBuilder surface_mesh_builder( S.mesh_ ) ;
+//                surface_mesh_builder.remove_isolated_vertices() ;
             }
         }
     }
