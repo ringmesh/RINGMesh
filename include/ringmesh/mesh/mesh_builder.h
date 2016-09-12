@@ -221,20 +221,20 @@ namespace RINGMesh {
 
             for( index_t e = 0; e < mesh_.nb_edges(); e++ ) {
                 for( index_t v = 0; v < 2; v++ ) {
-                    index_t v = mesh_.edge_vertex( e, v ) ;
-                    to_delete[v] = 0 ;
+                    index_t vertex_id = mesh_.edge_vertex( e, v ) ;
+                    to_delete[vertex_id] = 0 ;
                 }
             }
             for( index_t f = 0; f < mesh_.nb_facets(); f++ ) {
                 for( index_t v = 0; v < mesh_.nb_facet_vertices( f ); v++ ) {
-                    index_t v = mesh_.facet_vertex( f, v ) ;
-                    to_delete[v] = 0 ;
+                    index_t vertex_id = mesh_.facet_vertex( f, v ) ;
+                    to_delete[vertex_id] = 0 ;
                 }
             }
             for( index_t c = 0; c < mesh_.nb_cells(); c++ ) {
                 for( index_t v = 0; v < mesh_.nb_cell_vertices( c ); v++ ) {
-                    index_t v = mesh_.cell_vertex( c, v ) ;
-                    to_delete[v] = 0 ;
+                    index_t vertex_id = mesh_.cell_vertex( c, v ) ;
+                    to_delete[vertex_id] = 0 ;
                 }
             }
 
