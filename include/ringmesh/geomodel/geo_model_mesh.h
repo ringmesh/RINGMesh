@@ -40,6 +40,7 @@
 
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
 #include <ringmesh/mesh/mesh.h>
+#include <ringmesh/mesh/mesh_builder.h>
 
 /*!
  * @file ringmesh/geo_model_mesh.h
@@ -1073,7 +1074,8 @@ namespace RINGMesh {
          */
         void copy_mesh( Mesh& mesh ) const
         {
-            mesh.copy( *mesh_, false, GEO::MESH_ALL_ELEMENTS ) ;
+            MeshBuilder builder( mesh ) ;
+            builder.copy( *mesh_, false, GEO::MESH_ALL_ELEMENTS ) ;
         }
         void save_mesh( const std::string& filename ) const
         {
