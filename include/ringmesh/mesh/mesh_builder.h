@@ -66,7 +66,24 @@ namespace RINGMesh {
         ~MeshBuilder()
         {
         }
-        ;
+
+        /*!
+         * @brief Copy a mesh into this one.
+         * @param[in] rhs a const reference to the mesh to be copied.
+         * @param[in] copy_attributes if true, all attributes are copied.
+         * @param[in] what a combination of MESH_VERTICES, MESH_EDGES, MESH_FACETS, MESH_CELLS flags.
+         * Set to MESH_ALL_ELEMENTS to copy everything (default).
+         * If MESH_VERTICES is not set, then the mesh is cleared.
+         * @return a modifiable reference to the point that corresponds to the vertex.
+         */
+        void copy(
+            const Mesh& rhs,
+            bool copy_attributes,
+            GEO::MeshElementsFlags what )
+        {
+            mesh_.mesh_->copy( *rhs.mesh_, copy_attributes, what ) ;
+            clear_vertex_linked_objects() ;
+        }
 
         void load_mesh(
             const std::string& filename,
