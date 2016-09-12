@@ -283,12 +283,6 @@ namespace RINGMesh {
          * \name Misc
          * @{
          */
-        index_t find_or_create_duplicate_vertex(
-            const gme_t& E_id,
-            index_t model_vertex_id,
-            index_t surface_vertex_id ) ;
-
-        void cut_surface_by_line( index_t surface_id, index_t line_id ) ;
 
         void compute_surface_adjacencies( index_t surface_id ) ;
         void compute_region_adjacencies( index_t region_id ) ;
@@ -371,6 +365,13 @@ namespace RINGMesh {
             index_t region_id,
             const std::vector< index_t >& tet_vertices ) ;
 
+
+        index_t find_or_create_duplicate_vertex(
+            const gme_t& E_id,
+            index_t model_vertex_id,
+            index_t surface_vertex_id ) ;
+        void cut_surfaces_by_internal_lines() ;
+        void cut_surface_by_line( index_t surface_id, index_t line_id ) ;
         void duplicate_surface_vertices_along_line( index_t surface_id, index_t line_id ) ;
         void disconnect_surface_facets_along_line_edges(
             index_t surface_id, index_t line_id ) ;

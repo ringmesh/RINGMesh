@@ -1726,6 +1726,9 @@ namespace RINGMesh {
 
         disconnect_surface_facets_along_line_edges( surface_id, line_id ) ;
         duplicate_surface_vertices_along_line( surface_id, line_id ) ;
+        MeshBuilder surface_mesh_builder(
+            mesh_entity( Surface::type_name_static(), surface_id ).mesh_ ) ;
+//        surface_mesh_builder.remove_isolated_vertices() ;
 
         if( !model_vertices_initialized ) {
              model().mesh.vertices.clear() ;
@@ -1756,8 +1759,31 @@ namespace RINGMesh {
             complete_geological_entities_geol_feature_from_first_child( type ) ;
         }
 
+        cut_surfaces_by_internal_lines() ;
+
         // Deliberate clear of the model vertices used for model building
         model().mesh.vertices.clear() ;
+    }
+
+    void GeoModelBuilder::cut_surfaces_by_internal_lines()
+    {
+        for( index_t s = 0; s < model().nb_surfaces(); s++ ) {
+            const Surface& S = model().surface( s ) ;
+            std::set< index_t > cutting_lines ;
+            for( index_t l = 0; l < S.nb_boundaries(); ++l ) {
+                const GeoModelMeshEntity& L = S.boundary( l ) ;
+                if( L.is_inside_border( S ) ) {
+                    cutting_lines.insert( L.index() ) ;
+                }
+            }
+            for( std::set< index_t >::iterator it = cutting_lines.begin();
+                it != cutting_lines.end(); ++it ) {
+                // Force the recomputing of the model vertices
+                // before performing the cut.
+                model().mesh.vertices.clear() ;
+                cut_surface_by_line( s, *it ) ;
+            }
+        }
     }
 
     void GeoModelBuilder::recompute_geomodel_mesh()
