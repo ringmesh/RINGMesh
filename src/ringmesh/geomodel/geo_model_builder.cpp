@@ -1987,11 +1987,12 @@ namespace RINGMesh {
 
     void GeoModelBuilder::delete_mesh_entity_vertices(
         gme_t E_id,
-        GEO::vector< index_t >& to_delete )
+        GEO::vector< index_t >& to_delete,
+        bool remove_isolated_vertices )
     {
         Mesh& M = mesh_entity( E_id ).mesh_ ;
         MeshBuilder builder( M ) ;
-        builder.delete_vertices( to_delete, false ) ;
+        builder.delete_vertices( to_delete, remove_isolated_vertices ) ;
     }
 
     void GeoModelBuilder::delete_corner_vertex( index_t corner_id )
@@ -1999,31 +2000,34 @@ namespace RINGMesh {
         gme_t corner( Corner::type_name_static(), corner_id ) ;
         GEO::vector< index_t > to_delete ;
         to_delete.push_back( 1 ) ;
-        delete_mesh_entity_vertices( corner, to_delete ) ;
+        delete_mesh_entity_vertices( corner, to_delete, false ) ;
     }
     void GeoModelBuilder::delete_line_edges(
         index_t line_id,
-        GEO::vector< index_t >& to_delete )
+        GEO::vector< index_t >& to_delete,
+        bool remove_isolated_vertices )
     {
         Mesh& M = mesh_entity( Line::type_name_static(), line_id ).mesh_ ;
         MeshBuilder builder( M ) ;
-        builder.delete_edges( to_delete, false ) ;
+        builder.delete_edges( to_delete, remove_isolated_vertices ) ;
     }
     void GeoModelBuilder::delete_surface_facets(
         index_t surface_id,
-        GEO::vector< index_t >& to_delete )
+        GEO::vector< index_t >& to_delete,
+        bool remove_isolated_vertices )
     {
         Mesh& M = mesh_entity( Surface::type_name_static(), surface_id ).mesh_ ;
         MeshBuilder builder( M ) ;
-        builder.delete_facets( to_delete, false ) ;
+        builder.delete_facets( to_delete, remove_isolated_vertices ) ;
     }
     void GeoModelBuilder::delete_region_cells(
         index_t region_id,
-        GEO::vector< index_t >& to_delete )
+        GEO::vector< index_t >& to_delete,
+        bool remove_isolated_vertices )
     {
         Mesh& M = mesh_entity( Region::type_name_static(), region_id ).mesh_ ;
         MeshBuilder builder( M ) ;
-        builder.delete_cells( to_delete, false ) ;
+        builder.delete_cells( to_delete, remove_isolated_vertices ) ;
     }
 
 
