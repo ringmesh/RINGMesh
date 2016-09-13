@@ -272,7 +272,6 @@ namespace {
                 surfaces.push_back( line.in_boundary_gme( s ).index ) ;
             }
         }
-        DEBUG( std::count( surfaces.begin(), surfaces.end(), surface_id ) ) ;
         return std::count( surfaces.begin(), surfaces.end(), surface_id ) != 2 ;
     }
 
@@ -1698,11 +1697,11 @@ namespace RINGMesh {
      */
     void GeoModelBuilder::cut_surface_by_line( index_t surface_id, index_t line_id )
     {
-        model().surface( surface_id ).save( "to_cut.meshb", GEO::MeshIOFlags() ) ;
         index_t nb_disconnected_edges = disconnect_surface_facets_along_line_edges(
             surface_id, line_id ) ;
-        DEBUG( nb_disconnected_edges ) ;
-        duplicate_surface_vertices_along_line( surface_id, line_id ) ;
+        if( nb_disconnected_edges > 0 ) {
+            duplicate_surface_vertices_along_line( surface_id, line_id ) ;
+        }
     }
 
     void GeoModelBuilder::end_model()
