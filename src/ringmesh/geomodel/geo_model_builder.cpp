@@ -82,6 +82,16 @@ namespace {
         corners = corners_to_vertices ;
     }
 
+    bool inexact_equal( const vec3& v1, const vec3& v2 )
+    {
+        for( index_t i = 0; i < 3; i++ ) {
+            if( std::fabs( v1[i] - v2[i] ) > epsilon ) {
+                return false ;
+            }
+        }
+        return true ;
+    }
+
     /*************************************************************************/
 
     /*!
@@ -154,14 +164,14 @@ namespace {
      * @return True if the facet and the edge indices are found
      * @todo RENAME these parameters and split in smaller functions !! [JP]
      */
-    bool find_facet_and_edge(
+    bool find_facet_from_edge_vertices(
         const Surface& surface,
-        index_t v0,
-        index_t v1,
+        const vec3& v0,
+        const vec3& v1,
         index_t& f,
         index_t& e )
     {
-        vec3 v_bary = 0.5 * ( surface.vertex( v0 ) + surface.vertex( v1 ) ) ;
+        vec3 v_bary = 0.5 * ( v0 + v1 ) ;
         index_t nb_neighbors = std::min( index_t( 5 ), surface.nb_mesh_elements() ) ;
         std::vector< index_t > neighbors ;
         index_t cur_neighbor = 0 ;
@@ -178,9 +188,10 @@ namespace {
                 f = neighbors[i] ;
                 for( index_t j = 0; j < surface.nb_mesh_element_vertices( f );
                     j++ ) {
-                    if( surface.mesh_element_vertex_index( f, j ) == v0 ) {
+                    if( inexact_equal( surface.mesh_element_vertex( f, j ), v0 ) ) {
                         index_t j_next = surface.next_facet_vertex_index( f, j ) ;
-                        if( surface.mesh_element_vertex_index( f, j_next ) == v1 ) {
+                        if( inexact_equal( surface.mesh_element_vertex( f, j_next ),
+                            v1 ) ) {
                             e = j ;
                             return true ;
                         }
@@ -194,32 +205,75 @@ namespace {
         return false ;
     }
 
+    bool find_facet_from_vertex(
+        const Surface& surface,
+        const vec3& v,
+        index_t& facet_id,
+        index_t& vertex_id )
+    {
+        index_t nb_neighbors = std::min( index_t( 5 ), surface.nb_mesh_elements() ) ;
+        std::vector< index_t > neighbors ;
+        index_t cur_neighbor = 0 ;
+        index_t prev_neighbor = 0 ;
+        do {
+            prev_neighbor = cur_neighbor ;
+            cur_neighbor += nb_neighbors ;
+            cur_neighbor = std::min( cur_neighbor, surface.nb_mesh_elements() ) ;
+            neighbors.resize( cur_neighbor ) ;
+            double* dist = (double*) alloca( sizeof(double) * cur_neighbor ) ;
+            nb_neighbors = surface.facet_colocater_ann().get_neighbors( v,
+                cur_neighbor, neighbors, dist ) ;
+            for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
+                facet_id = neighbors[i] ;
+                for( index_t j = 0; j < surface.nb_mesh_element_vertices( facet_id );
+                    j++ ) {
+                    if( inexact_equal( surface.mesh_element_vertex( facet_id, j ), v ) ) {
+                        vertex_id = surface.mesh_element_vertex_index( facet_id, j ) ;
+                        return true ;
+                    }
+                }
+            }
+        } while( surface.nb_mesh_elements() != cur_neighbor ) ;
+
+        facet_id = NO_ID ;
+        vertex_id = NO_ID ;
+        return false ;
+    }
+
     index_t edge_index_from_facet_and_edge_vertex_indices(
         const Surface& surface,
         index_t f,
-        index_t v0,
-        index_t v1 )
+        const vec3& v0,
+        const vec3& v1 )
     {
         for( index_t v = 0; v < surface.nb_mesh_element_vertices( f ); v++ ) {
-            if( surface.mesh_element_vertex_index( f, v ) != v0 ) continue ;
+            if( !inexact_equal( surface.mesh_element_vertex( f, v ), v0 ) ) continue ;
             index_t prev_v = surface.prev_facet_vertex_index( f, v ) ;
             index_t next_v = surface.next_facet_vertex_index( f, v ) ;
-            if( surface.mesh_element_vertex_index( f, prev_v ) == v1 ) {
+            if( inexact_equal( surface.mesh_element_vertex( f, prev_v ), v1 ) ) {
                 return prev_v ;
-            } else if( surface.mesh_element_vertex_index( f, next_v ) == v1 ) {
+            } else if( inexact_equal( surface.mesh_element_vertex( f, next_v ), v1 ) ) {
                 return v ;
             }
         }
         return NO_ID ;
     }
 
-    bool is_corner_to_duplicate( const GeoModel& geomodel, index_t corner_id )
+    bool is_corner_to_duplicate(
+        const GeoModel& geomodel,
+        index_t corner_id,
+        index_t surface_id )
     {
-        if( geomodel.corner( corner_id ).nb_in_boundary() > 3 ) {
-            return true ;
-        } else {
-            return false ;
+        const Corner& corner = geomodel.corner( corner_id ) ;
+        std::vector< index_t > surfaces ;
+        for( index_t l = 0; l < corner.nb_in_boundary(); l++ ) {
+            const GMME& line = corner.in_boundary( l ) ;
+            for( index_t s = 0; s < line.nb_in_boundary(); s++ ) {
+                surfaces.push_back( line.in_boundary_gme( s ).index ) ;
+            }
         }
+        DEBUG( std::count( surfaces.begin(), surfaces.end(), surface_id ) ) ;
+        return std::count( surfaces.begin(), surfaces.end(), surface_id ) != 2 ;
     }
 
     void get_sorted_incident_surfaces(
@@ -1527,112 +1581,44 @@ namespace RINGMesh {
         builder.triangulate( surface_in.mesh_ ) ;
     }
 
-    /*!
-     * Finds duplicate vertex or creates it
-     */
-    index_t GeoModelBuilder::find_or_create_duplicate_vertex(
-        const gme_t& E_id,
-        index_t model_vertex_id,
-        index_t surface_vertex_id )
-    {
-        GeoModelMeshEntity& E = mesh_entity( E_id ) ;
-
-        const std::vector< GMEVertex >& vbme = model().mesh.vertices.gme_vertices(
-            model_vertex_id ) ;
-        index_t duplicate = NO_ID ;
-        for( index_t i = 0; i < vbme.size(); ++i ) {
-            if( vbme[i].gme_id == E.gme_id() ) {
-                if( vbme[i].v_id != surface_vertex_id ) {
-                    duplicate = vbme[i].v_id ;
-                }
-            }
-        }
-        if( duplicate == NO_ID ) {
-            // Duplicate the vertex in the surface
-            MeshBuilder builder( E.mesh_ ) ;
-            duplicate = builder.create_vertex(
-                model().mesh.vertices.vertex( model_vertex_id ) ) ;
-
-            // Set its model vertex index
-            ringmesh_assert( duplicate < E.nb_vertices() ) ;
-            E.model_vertex_id_[duplicate] = model_vertex_id ;
-
-            // Add the mapping from in the model vertices. Should we do this one ?
-            model().mesh.vertices.add_to_bme( model_vertex_id,
-                GMEVertex( E.gme_id(), duplicate ) ) ;
-        }
-        return duplicate ;
-    }
-
     /*
      * @brief Resets the adjacencies for all Surface facets adjacent to the Line
+     * @return The number of disconnection done
      * @pre All the edges of the Line are edges of at least one facet of the Surface
      */
-    void GeoModelBuilder::disconnect_surface_facets_along_line_edges(
+    index_t GeoModelBuilder::disconnect_surface_facets_along_line_edges(
         index_t surface_id,
         index_t line_id )
     {
+        ringmesh_assert( surface_id < model().nb_surfaces() ) ;
+        ringmesh_assert( line_id < model().nb_lines() ) ;
+
         Surface& S = dynamic_cast< Surface& >( mesh_entity(
             gme_t( Surface::type_name_static(), surface_id ) ) ) ;
-        const ColocaterANN& vertex_ann = S.vertex_colocater_ann() ;
-        const GMME& L = mesh_entity( gme_t( Line::type_name_static(), line_id ) ) ;
+        const Line& L = model().line( line_id ) ;
         MeshBuilder builder( S.mesh_ ) ;
-        for( index_t i = 0; i + 1 < L.nb_vertices(); ++i ) {
-            double distance ;
+        index_t nb_disconnected_edges = 0 ;
+        for( index_t i = 0; i < L.nb_mesh_elements(); ++i ) {
             const vec3& p0 = L.vertex( i ) ;
-            index_t v0_id = vertex_ann.get_closest_neighbor( p0, distance ) ;
-            ringmesh_assert( distance < epsilon ) ;
             const vec3& p1 = L.vertex( i + 1 ) ;
-            index_t v1_id = vertex_ann.get_closest_neighbor( p1, distance ) ;
-            ringmesh_assert( distance < epsilon ) ;
 
             index_t f = NO_ID ;
             index_t e = NO_ID ;
-            bool found = find_facet_and_edge( S, v0_id, v1_id, f, e ) ;
+            bool found = find_facet_from_edge_vertices( S, p0, p1, f, e ) ;
             ringmesh_unused( found ) ;
             ringmesh_assert( found && f != NO_ID && e != NO_ID ) ;
 
             index_t f2 = S.facet_adjacent_index( f, e ) ;
             if( f2 != NO_ID ) {
                 index_t e2 = edge_index_from_facet_and_edge_vertex_indices( S, f2,
-                    v0_id, v1_id ) ;
+                    p0, p1 ) ;
                 ringmesh_assert( e2 != NO_ID ) ;
                 builder.set_facet_adjacent( f, e, NO_ID ) ;
                 builder.set_facet_adjacent( f2, e2, NO_ID ) ;
+                nb_disconnected_edges++ ;
             }
         }
-    }
-
-    // Internal function - not very clean I know [JP]
-    void find_surface_vertices_adjacent_to_line_first_edge(
-        const Surface& S,
-        const Line& L,
-        index_t& facet_index,
-        index_t& surface_vertex_0,
-        index_t& surface_vertex_1 )
-    {
-        // Reset outputs
-        facet_index = NO_ID ;
-        surface_vertex_0 = NO_ID ;
-        surface_vertex_1 = NO_ID ;
-
-        double distance ;
-        const ColocaterANN& vertex_ann = S.vertex_colocater_ann() ;
-        const vec3& p0 = L.vertex( 0 ) ;
-        index_t v0_id = vertex_ann.get_closest_neighbor( p0, distance ) ;
-        ringmesh_assert( distance < epsilon ) ;
-        const vec3& p1 = L.vertex( 1 ) ;
-        index_t v1_id = vertex_ann.get_closest_neighbor( p1, distance ) ;
-        ringmesh_assert( distance < epsilon ) ;
-
-        index_t v( NO_ID ) ;
-        bool found = find_facet_and_edge( S, v0_id, v1_id, facet_index, v ) ;
-        ringmesh_unused( found ) ;
-        ringmesh_assert( found && facet_index != NO_ID && v != NO_ID ) ;
-
-        surface_vertex_0 = S.mesh_element_vertex_index( facet_index, v ) ;
-        surface_vertex_1 = S.mesh_element_vertex_index( facet_index,
-            S.next_facet_vertex_index( facet_index, v ) ) ;
+        return nb_disconnected_edges ;
     }
 
     /*!
@@ -1644,90 +1630,65 @@ namespace RINGMesh {
     void GeoModelBuilder::duplicate_surface_vertices_along_line(
         index_t surface_id, index_t line_id )
     {
-        gme_t S_id( Surface::type_name_static(), surface_id ) ;
-        Surface& S = dynamic_cast< Surface& >( mesh_entity( S_id ) ) ;
-        const Line& L = dynamic_cast< Line& >( mesh_entity(
-            gme_t( Line::type_name_static(), line_id ) ) ) ;
-        const Corner& line_first_corner = dynamic_cast< const Corner& >( L.boundary(
-            0 ) ) ;
-        const Corner& line_second_corner = dynamic_cast< const Corner& >( L.boundary(
-            1 ) ) ;
+        ringmesh_assert( surface_id < model().nb_surfaces() ) ;
+        ringmesh_assert( line_id < model().nb_lines() ) ;
 
-        // Surface vertex indices of the points along the line
-        index_t id0( NO_ID ) ;
-        index_t id1( NO_ID ) ;
+        gme_t surface_gme( Surface::type_name_static(), surface_id ) ;
+        Surface& S = dynamic_cast< Surface& >( mesh_entity( surface_gme ) ) ;
+        const Line& L = model().line( line_id ) ;
+
+        index_t vertex_id = create_mesh_entity_vertices( surface_gme,
+            L.nb_vertices() - 2 ) ;
+
+        MeshBuilder surface_mesh_builder( S.mesh_ ) ;
+        for( index_t v = 1; v + 1 < L.nb_vertices(); v++ ) {
+            const vec3& p0 = L.vertex( v-1 ) ;
+            const vec3& p1 = L.vertex( v ) ;
+
+            index_t e( NO_ID ) ;
+            index_t f( NO_ID ) ;
+            bool found = find_facet_from_edge_vertices( S, p0, p1, f, e ) ;
+            ringmesh_unused( found ) ;
+            ringmesh_assert( found && f != NO_ID && e != NO_ID ) ;
+
+            index_t e_next = S.next_facet_vertex_index( f, e ) ;
+            index_t p1_id = S.mesh_element_vertex_index( f, e_next ) ;
+            update_facet_vertices_around_facet_vertex( S, f, p1_id, vertex_id ) ;
+            surface_mesh_builder.set_vertex( vertex_id, p1 ) ;
+            vertex_id++ ;
+        }
+
+        duplicate_corner_if_needed( L.boundary_gme( 0 ).index, surface_id ) ;
+        duplicate_corner_if_needed( L.boundary_gme( 1 ).index, surface_id ) ;
+    }
+
+    void GeoModelBuilder::duplicate_corner_if_needed(
+        index_t corner_id,
+        index_t surface_id )
+    {
+        if( !is_corner_to_duplicate( model(), corner_id, surface_id ) ) return ;
+        const Corner& corner = model().corner( corner_id ) ;
+        Surface& S = dynamic_cast< Surface& >( mesh_entity(
+            Surface::type_name_static(), surface_id ) ) ;
+
+        MeshBuilder surface_mesh_builder( S.mesh_ ) ;
+        index_t vertex_id = surface_mesh_builder.create_vertex( corner.vertex( 0 ) ) ;
+
         index_t f( NO_ID ) ;
-        find_surface_vertices_adjacent_to_line_first_edge( S, L, f, id0, id1 ) ;
+        index_t v( NO_ID ) ;
+        find_facet_from_vertex( S, corner.vertex( 0 ), f, v ) ;
+        update_facet_vertices_around_facet_vertex( S, f, v, vertex_id ) ;
+    }
 
-        // Backup the starting vertex in the Surface
-        index_t first_corner_surf_id = id0 ;
-
-        while( S.model_vertex_id( id1 ) != line_second_corner.model_vertex_id() ) {
-            // Get the next facet and next triangle on this boundary
-            // Same algorithm than in determine_line_vertices function
-            index_t next_f( NO_ID ) ;
-            index_t id1_in_next( NO_ID ) ;
-            index_t next_id1_in_next( NO_ID ) ;
-
-            S.next_on_border( f, S.vertex_index_in_facet( f, id0 ),
-                S.vertex_index_in_facet( f, id1 ), next_f, id1_in_next,
-                next_id1_in_next ) ;
-            ringmesh_assert(
-                next_f != NO_ID && id1_in_next != NO_ID
-                && next_id1_in_next != NO_ID ) ;
-
-            index_t next_id1 = S.mesh_element_vertex_index( next_f, next_id1_in_next ) ;
-
-            // Duplicate the vertex at id1
-            // After having determined the next 1 we can probably get both at the same time
-            // but I am lazy, and we must be careful not to break next_on_border function (Jeanne)
-            std::vector< index_t > facets_around_id1 ;
-            S.facets_around_vertex( id1, facets_around_id1, false, f ) ;
-
-            index_t new_id1 = find_or_create_duplicate_vertex( S_id,
-                S.model_vertex_id( id1 ), id1 ) ;
-
-            // Update vertex index in facets
-            update_facet_corner( S, facets_around_id1, id1, new_id1 ) ;
-
-            // Update
-            f = next_f ;
-            id0 = new_id1 ;
-            id1 = next_id1 ;
-        }
-        // Point where the process ended on the Surface
-        index_t second_corner_surf_id = id1 ;
-
-        // Take care of the corners
-        bool duplicate_first_corner = is_corner_to_duplicate( S.model(),
-            line_first_corner.index() ) ;
-        bool duplicate_second_corner = is_corner_to_duplicate( S.model(),
-            line_second_corner.index() ) ;
-
-        if( duplicate_first_corner || duplicate_second_corner ) {
-            index_t to_duplicate_model_index ;
-            index_t to_duplicate_surface_index ;
-
-            if( duplicate_first_corner ) {
-                to_duplicate_model_index = line_first_corner.model_vertex_id() ;
-                to_duplicate_surface_index = first_corner_surf_id ;
-            } else if( duplicate_second_corner ) {
-                to_duplicate_model_index = line_second_corner.model_vertex_id() ;
-                to_duplicate_surface_index = second_corner_surf_id ;
-            }
-
-            index_t duplicated_surface_vertex = find_or_create_duplicate_vertex( S_id,
-                to_duplicate_model_index, to_duplicate_surface_index ) ;
-
-            std::vector< index_t > facets_around_to_duplicate ;
-            S.facets_around_vertex( to_duplicate_surface_index,
-                facets_around_to_duplicate, false ) ;
-            update_facet_corner( S, facets_around_to_duplicate,
-                to_duplicate_surface_index, duplicated_surface_vertex ) ;
-        } else {
-            // If both are duplicated, precondition is broken: line L cut S into 2 parts
-            ringmesh_assert( !duplicate_first_corner || !duplicate_second_corner ) ;
-        }
+    void GeoModelBuilder::update_facet_vertices_around_facet_vertex(
+        Surface& S,
+        index_t facet,
+        index_t old_vertex,
+        index_t new_vertex )
+    {
+        std::vector< index_t > facets ;
+        S.facets_around_vertex( old_vertex, facets, false, facet ) ;
+        update_facet_vertex( S, facets, old_vertex, new_vertex ) ;
     }
 
     /*!
@@ -1737,19 +1698,11 @@ namespace RINGMesh {
      */
     void GeoModelBuilder::cut_surface_by_line( index_t surface_id, index_t line_id )
     {
-        /// @todo Replace the use of the model vertices by only a colocater
-        /// of the surface vertices and the line vertices
-        bool model_vertices_initialized = model().mesh.vertices.is_initialized() ;
-        if( !model_vertices_initialized ) {
-            model().mesh.vertices.test_and_initialize() ;
-        }
-
-        disconnect_surface_facets_along_line_edges( surface_id, line_id ) ;
+        model().surface( surface_id ).save( "to_cut.meshb", GEO::MeshIOFlags() ) ;
+        index_t nb_disconnected_edges = disconnect_surface_facets_along_line_edges(
+            surface_id, line_id ) ;
+        DEBUG( nb_disconnected_edges ) ;
         duplicate_surface_vertices_along_line( surface_id, line_id ) ;
-
-        if( !model_vertices_initialized ) {
-             model().mesh.vertices.clear() ;
-        }
     }
 
     void GeoModelBuilder::end_model()
@@ -1795,14 +1748,11 @@ namespace RINGMesh {
             }
             for( std::set< index_t >::iterator it = cutting_lines.begin();
                 it != cutting_lines.end(); ++it ) {
-                // Force the recomputing of the model vertices
-                // before performing the cut.
-                model().mesh.vertices.clear() ;
                 cut_surface_by_line( s, *it ) ;
             }
             if( !cutting_lines.empty() ) {
                 MeshBuilder surface_mesh_builder( S.mesh_ ) ;
-//                surface_mesh_builder.remove_isolated_vertices() ;
+                surface_mesh_builder.remove_isolated_vertices() ;
             }
         }
     }
@@ -2007,19 +1957,19 @@ namespace RINGMesh {
         end_model() ;
     }
 
-    void GeoModelBuilder::update_facet_corner(
+    void GeoModelBuilder::update_facet_vertex(
         Surface& S,
         const std::vector< index_t >& facets,
-        index_t old_corner,
-        index_t new_corner )
+        index_t old_vertex,
+        index_t new_vertex )
     {
+        MeshBuilder builder( S.mesh_ ) ;
         for( index_t i = 0; i < facets.size(); ++i ) {
             index_t cur_f = facets[i] ;
             for( index_t cur_v = 0; cur_v < S.nb_mesh_element_vertices( cur_f );
                 cur_v++ ) {
-                if( S.mesh_element_vertex_index( cur_f, cur_v ) == old_corner ) {
-                    MeshBuilder builder( S.mesh_ ) ;
-                    builder.set_facet_vertex( cur_f, cur_v, new_corner ) ;
+                if( S.mesh_element_vertex_index( cur_f, cur_v ) == old_vertex ) {
+                    builder.set_facet_vertex( cur_f, cur_v, new_vertex ) ;
                 }
             }
         }

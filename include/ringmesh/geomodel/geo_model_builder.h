@@ -351,11 +351,16 @@ namespace RINGMesh {
         void assign_surface_triangle_mesh(
             index_t surface_id,
             const std::vector< index_t >& triangle_vertices ) ;
-        void update_facet_corner(
+        void update_facet_vertices_around_facet_vertex(
+            Surface& S,
+            index_t facet,
+            index_t old_vertex,
+            index_t new_vertex ) ;
+        void update_facet_vertex(
             Surface& S,
             const std::vector< index_t >& facets,
-            index_t old_corner,
-            index_t new_corner ) ;
+            index_t old_vertex,
+            index_t new_vertex ) ;
         void assign_surface_triangle_mesh(
             index_t surface_id,
             const std::vector< index_t >& triangle_vertices,
@@ -365,16 +370,13 @@ namespace RINGMesh {
             index_t region_id,
             const std::vector< index_t >& tet_vertices ) ;
 
-
-        index_t find_or_create_duplicate_vertex(
-            const gme_t& E_id,
-            index_t model_vertex_id,
-            index_t surface_vertex_id ) ;
         void cut_surfaces_by_internal_lines() ;
         void cut_surface_by_line( index_t surface_id, index_t line_id ) ;
         void duplicate_surface_vertices_along_line( index_t surface_id, index_t line_id ) ;
-        void disconnect_surface_facets_along_line_edges(
-            index_t surface_id, index_t line_id ) ;
+        index_t disconnect_surface_facets_along_line_edges(
+            index_t surface_id,
+            index_t line_id ) ;
+        void duplicate_corner_if_needed( index_t corner_id, index_t surface_id ) ;
     } ;
 
     /*!
