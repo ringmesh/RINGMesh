@@ -273,6 +273,7 @@ namespace RINGMesh {
          */
 
         void delete_mesh_entity_mesh( gme_t E_id ) ;
+        void delete_mesh_entity_isolated_vertices( gme_t E_id ) ;
         void delete_mesh_entity_vertices(
             gme_t E_id,
             GEO::vector< index_t >& to_delete,
