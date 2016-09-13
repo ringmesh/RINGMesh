@@ -997,8 +997,8 @@ namespace RINGMesh {
      */
     gme_t GeoModelBuilder::find_or_create_line(
         const std::vector< index_t >& sorted_adjacent_surfaces,
-        gme_t first_corner,
-        gme_t second_corner )
+        const gme_t& first_corner,
+        const gme_t& second_corner )
     {
         for( index_t i = 0; i < model().nb_lines(); ++i ) {
             const Line& L = model().line( i ) ;
@@ -1978,14 +1978,14 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelBuilder::delete_mesh_entity_mesh( gme_t E_id )
+    void GeoModelBuilder::delete_mesh_entity_mesh( const gme_t& E_id )
     {
         Mesh& M = mesh_entity( E_id ).mesh_ ;
         MeshBuilder builder( M ) ;
         builder.clear( true, false ) ;
     }
 
-    void GeoModelBuilder::delete_mesh_entity_isolated_vertices( gme_t E_id )
+    void GeoModelBuilder::delete_mesh_entity_isolated_vertices( const gme_t& E_id )
     {
         Mesh& M = mesh_entity( E_id ).mesh_ ;
         MeshBuilder builder( M ) ;
@@ -1993,7 +1993,7 @@ namespace RINGMesh {
     }
 
     void GeoModelBuilder::delete_mesh_entity_vertices(
-        gme_t E_id,
+        const gme_t& E_id,
         GEO::vector< index_t >& to_delete,
         bool remove_isolated_vertices )
     {
