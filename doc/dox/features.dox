@@ -55,6 +55,9 @@ Several small apps are provided with RINGMesh
  - ringmeshview.exe
  Visualization of geological models.
  
+ - ringmeshstats.exe
+ Load a GeoModel and print statistics in the command terminal.
+ 
 To use the full possibilities of ringmeshview and override an old graphic card driver,
 use the options gfx:GLUP_profile=GLUP150 gfx:GLSL_version=4.3 to specify the version supported by your graphic card.
  

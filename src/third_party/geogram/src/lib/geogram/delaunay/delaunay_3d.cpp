@@ -237,7 +237,9 @@ namespace GEO {
         //   Sort the vertices spatially. This makes localisation
         // faster.
         if(do_reorder_) {
-            compute_BRIO_order(nb_vertices, vertex_ptr(0), reorder_);
+            compute_BRIO_order(
+                nb_vertices, vertex_ptr(0), reorder_, dimension_
+            );
         } else {
             reorder_.resize(nb_vertices);
             for(index_t i = 0; i < nb_vertices; ++i) {
@@ -758,7 +760,7 @@ namespace GEO {
             for(index_t lf = 0; lf < 4; ++lf) {
                 if(orient[lf] == ZERO) {
                     index_t t2 = index_t(tet_adjacent(t, lf));
-                    find_conflict_zone_recursive(
+                    find_conflict_zone_iterative(
                         p,t2,t_bndry,f_bndry,first,last
                     );
                 }
@@ -766,126 +768,150 @@ namespace GEO {
         }
 
         // Determine the conflict list by greedy propagation from t.
-        find_conflict_zone_recursive(p,t,t_bndry,f_bndry,first,last);
+        find_conflict_zone_iterative(p,t,t_bndry,f_bndry,first,last);
     }
     
-    void Delaunay3d::find_conflict_zone_recursive(
-        const double* p, index_t t,
+    void Delaunay3d::find_conflict_zone_iterative(
+        const double* p, index_t t_in,
         index_t& t_bndry, index_t& f_bndry,
         index_t& first, index_t& last
     ) {
-        for(index_t lf = 0; lf < 4; ++lf) {
-            index_t t2 = index_t(tet_adjacent(t, lf));
 
-            if(
-                tet_is_in_list(t2) || // known as conflict
-                tet_is_marked(t2)     // known as non-conflict
-            ) {
-                continue;
-            }
+        //std::stack<index_t> S;
+        S_.push(t_in);
 
-            if(tet_is_conflict(t2, p)) {
-                // Chain t2 in conflict list
-                add_tet_to_list(t2, first, last);
-                find_conflict_zone_recursive(p,t2,t_bndry,f_bndry,first,last);
-                continue;
-            } 
+        while(!S_.empty()) {
+
+            index_t t = S_.top();
+            S_.pop();
+            
+            for(index_t lf = 0; lf < 4; ++lf) {
+                index_t t2 = index_t(tet_adjacent(t, lf));
+
+                if(
+                    tet_is_in_list(t2) || // known as conflict
+                    tet_is_marked(t2)     // known as non-conflict
+                ) {
+                    continue;
+                }
+
+                if(tet_is_conflict(t2, p)) {
+                    // Chain t2 in conflict list
+                    add_tet_to_list(t2, first, last);
+                    S_.push(t2);
+                    continue;
+                } 
                 
-            //   At this point, t is in conflict 
-            // and t2 is not in conflict. 
-            // We keep a reference to a tet on the boundary
-            t_bndry = t;
-            f_bndry = lf;
-            // Mark t2 as visited (but not conflict)
-            mark_tet(t2);
+                //   At this point, t is in conflict 
+                // and t2 is not in conflict. 
+                // We keep a reference to a tet on the boundary
+                t_bndry = t;
+                f_bndry = lf;
+                // Mark t2 as visited (but not conflict)
+                mark_tet(t2);
+            }
         }
     }
 
-
-    index_t Delaunay3d::stellate_conflict_zone(
-        index_t v_in, index_t t1, index_t f1, index_t prev_f
+    index_t Delaunay3d::stellate_conflict_zone_iterative(
+        index_t v_in, index_t t1, index_t t1fbord, index_t t1fprev
     ) {
+        //   This function is de-recursified because some degenerate
+        // inputs can cause stack overflow (system stack is limited to
+        // a few megs). For instance, it can happen when a large number
+        // of points are on the same sphere exactly.
+        
+        //   To de-recursify, it uses class StellateConflictStack
+        // that emulates system's stack for storing functions's
+        // parameters and local variables in all the nested stack
+        // frames. 
+        
+        signed_index_t v = signed_index_t(v_in);
+        
+        S2_.push(t1, t1fbord, t1fprev);
+
+        index_t new_t;   // the newly created tetrahedron.
+        
+        index_t t1ft2;   // traverses the 4 facets of t1.
+        
+        index_t t2;      // the tetrahedron on the border of
+                         // the conflict zone that shares an
+                         // edge with t1 along t1ft2.
+        
+        index_t t2fbord; // the facet of t2 on the border of
+                         // the conflict zone.
+        
+        index_t t2ft1;   // the facet of t2 that is incident to t1.
+        
+    entry_point:
+        S2_.get_parameters(t1, t1fbord, t1fprev);
         
         geo_debug_assert(tet_is_in_list(t1));
-        geo_debug_assert(tet_adjacent(t1,f1)>=0);
-        geo_debug_assert(!tet_is_in_list(index_t(tet_adjacent(t1,f1))));
-
-        signed_index_t v = signed_index_t(v_in);
+        geo_debug_assert(tet_adjacent(t1,t1fbord)>=0);
+        geo_debug_assert(!tet_is_in_list(index_t(tet_adjacent(t1,t1fbord))));
 
         // Create new tetrahedron with same vertices as t_bndry
-        index_t new_t = new_tetrahedron(
+        new_t = new_tetrahedron(
             tet_vertex(t1,0),
             tet_vertex(t1,1),
             tet_vertex(t1,2),
             tet_vertex(t1,3)
         );
 
-        // Replace in new_t the vertex opposite to f_bndry with v
-        set_tet_vertex(new_t, f1, v);
+        // Replace in new_t the vertex opposite to t1fbord with v
+        set_tet_vertex(new_t, t1fbord, v);
 
-        // Connect new_t with t1's neighbor accross f1
-        index_t t2 = index_t(tet_adjacent(t1,f1));
-        set_tet_adjacent(new_t, f1, t2);
-        set_tet_adjacent(t2, find_tet_adjacent(t2,t1), new_t);
-        
+        // Connect new_t with t1's neighbor accross t1fbord
+        {
+            index_t tbord = index_t(tet_adjacent(t1,t1fbord));
+            set_tet_adjacent(new_t, t1fbord, tbord);
+            set_tet_adjacent(tbord, find_tet_adjacent(tbord,t1), new_t);
+        }
+            
         //  Lookup new_t's neighbors accross its three other
         // facets and connect them
-        for(index_t new_f=0; new_f<4; ++new_f) {
-            if(new_f == prev_f || tet_adjacent(new_t,new_f) != -1) {
+        for(t1ft2=0; t1ft2<4; ++t1ft2) {
+            
+            if(t1ft2 == t1fprev || tet_adjacent(new_t,t1ft2) != -1) {
                 continue;
             }
 
-            //   Find two vertices that are both on facets new_f and f1
-            //  (the edge around which we are turning)
-            //  This uses duality as follows:
-            //  Primal form (not used here): 
-            //    halfedge_facet_[v1][v2] returns a facet that is incident
-            //    to both v1 and v2.
-            //  Dual form (used here):
-            //    halfedge_facet_[f1][f2] returns a vertex that both 
-            //    f1 and f2 are incident to.
-            signed_index_t ev1 = 
-                tet_vertex(t1, index_t(halfedge_facet_[new_f][f1]));
-            signed_index_t ev2 = 
-                tet_vertex(t1, index_t(halfedge_facet_[f1][new_f]));
+            // Get t1's neighbor along the border of the conflict zone
+            if(!get_neighbor_along_conflict_zone_border(
+                   t1,t1fbord,t1ft2, t2,t2fbord,t2ft1
+            )) {
+                //   If t1's neighbor is not a new tetrahedron,
+                // create a new tetrahedron through a recursive call.
+                S2_.save_locals(new_t, t1ft2, t2ft1);
+                S2_.push(t2, t2fbord, t2ft1);
+                goto entry_point;
 
-            //   Turn around edge [ev1,ev2] inside the conflict zone
-            // until we reach again the boundary of the conflict zone.
-            // Traversing inside the conflict zone is faster (as compared
-            // to outside) since it traverses a smaller number of tets.
-            index_t cur_t = t1;
-            index_t cur_f = new_f;
-            index_t next_t = index_t(tet_adjacent(t1,new_f));
-            while(tet_is_in_list(next_t)) {
-                geo_debug_assert(next_t != t1);
-                cur_t = next_t;
-                cur_f = get_facet_by_halfedge(cur_t,ev1,ev2);
-                next_t = index_t(tet_adjacent(cur_t, cur_f));
+            return_point:
+                // This is the return value of the called function.
+                index_t result = new_t;
+                S2_.pop();
+
+                // Special case: we were in the outermost frame, 
+                // then we (truly) return from the function.
+                if(S2_.empty()) {
+                    return result;
+                }
+                
+                S2_.get_parameters(t1, t1fbord, t1fprev);
+                S2_.get_locals(new_t, t1ft2, t2ft1); 
+                t2 = result; 
             }
 
-            //  At this point, cur_t is in conflict zone and
-            // next_t is outside the conflict zone.
-            index_t f12,f21;
-            get_facets_by_halfedge(next_t, ev1, ev2, f12, f21);
-            index_t t_neigh = index_t(tet_adjacent(next_t,f21));
-            signed_index_t v_neigh_opposite = tet_vertex(next_t,f12);
-            index_t v_neigh_index = find_tet_vertex(
-                t_neigh, v_neigh_opposite
-            );
-
-            //  Test whether the tet is created, if not 
-            // create it (recursive call)
-            if(t_neigh == cur_t) {
-                t_neigh = stellate_conflict_zone(
-                    v_in, t_neigh, cur_f, v_neigh_index
-                );
-            }
-            set_tet_adjacent(t_neigh, v_neigh_index, new_t);
-            set_tet_adjacent(new_t, new_f, t_neigh);
+            set_tet_adjacent(t2, t2ft1, new_t);
+            set_tet_adjacent(new_t, t1ft2, t2);
         }
-        return new_t;
-    }
 
+        // Except for the initial call (see "Special case" above),
+        // the nested calls all come from the same location,
+        // thus there is only one possible return point
+        // (no need to push any return address).
+        goto return_point;
+    }
 
     index_t Delaunay3d::insert(index_t v, index_t hint) {
        index_t t_bndry;
@@ -907,7 +933,7 @@ namespace GEO {
            return NO_TETRAHEDRON;
        }
 
-       index_t new_tet = stellate_conflict_zone(v,t_bndry,f_bndry);
+       index_t new_tet = stellate_conflict_zone_iterative(v,t_bndry,f_bndry);
        
        // Recycle the tetrahedra of the conflict zone.
        cell_next_[last_conflict] = first_free_;

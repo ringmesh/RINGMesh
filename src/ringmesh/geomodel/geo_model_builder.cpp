@@ -918,17 +918,24 @@ namespace RINGMesh {
     void GeoModelBuilder::copy_meshes( const GeoModel& from, const std::string& entity_type )
     {
         for( index_t i = 0; i < model().nb_mesh_entities( entity_type ); ++i ) {
-            const GeoModelMeshEntity& from_E = from.mesh_entity( entity_type,
-                i ) ;
-            assign_mesh_to_entity( from_E.mesh_, gme_t( entity_type, i ) ) ;
+            copy_mesh( from, gme_t( entity_type, i ) ) ;
         }
     }
 
-    void GeoModelBuilder::assign_mesh_to_entity( const Mesh& mesh, gme_t to )
+    void GeoModelBuilder::copy_mesh(
+        const GeoModel& from,
+        const gme_t& mesh_entity )
+    {
+        const GeoModelMeshEntity& from_E = from.mesh_entity( mesh_entity ) ;
+        assign_mesh_to_entity( from_E.mesh_, mesh_entity ) ;
+    }
+
+    void GeoModelBuilder::assign_mesh_to_entity( const Mesh& mesh, const gme_t& to )
     {
         GeoModelMeshEntity& E = mesh_entity( to ) ;
         E.unbind_model_vertex_id_attribute() ;
-        E.mesh_.copy( mesh, true, GEO::MESH_ALL_ELEMENTS ) ;
+        MeshBuilder builder( E.mesh_ ) ;
+        builder.copy( mesh, true, GEO::MESH_ALL_ELEMENTS ) ;
         E.bind_model_vertex_id_attribute() ;
         // Nothing else to do ? To test [JP]
     }

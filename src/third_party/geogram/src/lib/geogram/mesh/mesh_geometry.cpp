@@ -166,7 +166,7 @@ namespace GEO {
                 if(normals_only) {
                     double l = length(p[v]);
                     if(l > 1e-30) {
-                        Geom::mesh_vertex_normal_ref(M, v) = (1.0 / l) * p[v];
+                        Geom::mesh_vertex_normal_ref(M,v) = (1.0 / l) * p[v];
                     }
                 } else {
                     Geom::mesh_vertex_ref(M, v) = 1.0 / c[v] * p[v];
@@ -383,7 +383,7 @@ namespace GEO {
                 index_t c2 = M.facets.next_corner_around_facet(f,c1);
                 index_t v1 = M.facet_corners.vertex(c1);
                 index_t v2 = M.facet_corners.vertex(c2);
-                result += Geom::distance2(
+                result += Geom::distance(
                     M.vertices.point_ptr(v1),
                     M.vertices.point_ptr(v2),
                     coord_index_t(M.vertices.dimension())

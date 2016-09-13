@@ -61,7 +61,9 @@ option(RINGMESH_WITH_TETGEN "Use Tetgen tetrahedral mesher" ON)
 # Optional components of RINGMesh - creation of specific targets
 option(RINGMESH_WITH_GRAPHICS "Compile viewer" OFF)
 option(RINGMESH_WITH_UTILITIES "Compile utility executables" OFF)
+option(RINGMESH_WITH_EXAMPLES "Compile API trainings and examples" OFF)
 option(RINGMESH_WITH_TESTS "Compile test projects" OFF)
+option(RINGMESH_WITH_GEOLOGYJS "Enable export to html" OFF)
 
 # Optional custom steps 
 option(BUILD_DOCUMENTATION "Create and install the HTML documentation (requires Doxygen)")
@@ -74,6 +76,16 @@ if(RINGMESH_WITH_TESTS)
     # PROJECT_BINARY_DIR not defined at this point
     set(TEST_DATA_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/build/tests/output" CACHE PATH "Output data location")
 endif()
+
+# Optional custom configuration of examples directories
+if(RINGMESH_WITH_EXAMPLES)
+    set(EXAMPLES_DIRECTORY ${CMAKE_SOURCE_DIR}/examples)
+endif()
+
+if(RINGMESH_WITH_GEOLOGYJS)
+    set(GEOLOGY_JS_DIRECTORY "${CMAKE_SOURCE_DIR}/../geology.js/cpp" CACHE PATH "geology.js cpp directory location")
+    message(STATUS ${GEOLOGY_JS_DIRECTORY})
+endif(RINGMESH_WITH_GEOLOGYJS)
 
 # Turn on the ability to create folders to organize projects and files
 # It creates "CMakePredefinedTargets" folder by default and adds CMake
@@ -129,9 +141,12 @@ if(UNIX)
                 -DRINGMESH_WITH_GRAPHICS:BOOL=${RINGMESH_WITH_GRAPHICS}
                 -DRINGMESH_WITH_UTILITIES:BOOL=${RINGMESH_WITH_UTILITIES}
                 -DRINGMESH_WITH_TESTS:BOOL=${RINGMESH_WITH_TESTS}
+                -DRINGMESH_WITH_EXAMPLES:BOOL=${RINGMESH_WITH_EXAMPLES}
+                -DRINGMESH_WITH_GEOLOGYJS:BOOL=${RINGMESH_WITH_GEOLOGYJS}
 			    -DBUILD_DOCUMENTATION:BOOL=${BUILD_DOCUMENTATION}
 				-DTEST_DATA_INPUT_DIRECTORY:STRING=${TEST_DATA_INPUT_DIRECTORY}
 			    -DTEST_DATA_OUTPUT_DIRECTORY:STRING=${TEST_DATA_OUTPUT_DIRECTORY}                
+			    -DGEOLOGY_JS_DIRECTORY:STRING=${GEOLOGY_JS_DIRECTORY}                
                 WORKING_DIRECTORY ${project_binary_dir_config})                
       endforeach()
       
@@ -286,6 +301,22 @@ if(USE_OPENMP)
     endif()
 endif(USE_OPENMP)
 
+#--------------------------------------------------------
+# geology.js library
+if(RINGMESH_WITH_GEOLOGYJS)
+    message(STATUS "Using geology.js directory = ${GEOLOGY_JS_DIRECTORY}")
+    # geology.js platform dependent settings. CMAKE_BUILD_TYPE is empty on Windows.
+    set(GEOLOGY_JS_PATH_BIN ${GEOLOGY_JS_DIRECTORY}/build/${CMAKE_BUILD_TYPE})
+    # Add geology.js include directories to the current ones
+    include_directories(${GEOLOGY_JS_DIRECTORY}/include)
+
+    # Add geology.js project libs to the libs with which RINGMesh will link
+    set(EXTRA_LIBS ${EXTRA_LIBS} GEOLOGYJS)
+    # Add geology.js bin directories to the current ones 
+    # It would be preferable to set the imported library location [JP]
+    link_directories(${GEOLOGY_JS_PATH_BIN}/lib)
+endif(RINGMESH_WITH_GEOLOGYJS)
+
 #------------------------------------------------------------------------------------------------
 # Collect the library files
 function(source_file_directory var directory)
@@ -349,6 +380,13 @@ if(WIN32)
            "${GEOGRAM_PATH_BIN}/bin/$<CONFIGURATION>"
            "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>" 
        COMMENT "Copy geogram binaries")
+	   if(RINGMESH_WITH_GEOLOGYJS)
+			add_custom_command(TARGET RINGMesh POST_BUILD 
+				COMMAND  "${CMAKE_COMMAND}" -E copy_directory 
+				"${GEOLOGY_JS_PATH_BIN}/bin/$<CONFIGURATION>"
+				"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>" 
+			COMMENT "Copy geology js binaries")
+	   endif(RINGMESH_WITH_GEOLOGYJS)
 endif(WIN32)
 
 
@@ -365,6 +403,11 @@ if(RINGMESH_WITH_UTILITIES)
     add_subdirectory(src/ringmesh_surface_convert)
     add_subdirectory(src/ringmeshstats)
 endif(RINGMESH_WITH_UTILITIES)
+
+if(RINGMESH_WITH_EXAMPLES)
+    message(STATUS "Configuring RINGMesh with examples")
+    add_subdirectory(examples)
+endif(RINGMESH_WITH_EXAMPLES)
 
 if(RINGMESH_WITH_TESTS)
     message(STATUS "Configuring RINGMesh with tests")

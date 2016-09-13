@@ -156,12 +156,13 @@ namespace {
     std::string path_to_label(
         const std::string& viewer_path, const std::string& path
     ) {
-        if(GEO::String::string_starts_with(path, viewer_path)) {
-            return path.substr(
-                viewer_path.length(), path.length()-viewer_path.length()
+        std::string result = path;
+        if(GEO::String::string_starts_with(result, viewer_path)) {
+            result = result.substr(
+                viewer_path.length(), result.length()-viewer_path.length()
             );
         }
-        return path;
+        return result;
     }
 }
 
@@ -869,7 +870,7 @@ namespace GEO {
                 path_ = FileSystem::dir_name(filenames[filenames.size()-1]);
             }
         } else {
-            path_ = "./";
+            path_ = FileSystem::home_directory();
         }
 
         glup_viewer_set_window_title((char*)(name_.c_str()));
@@ -941,6 +942,12 @@ namespace GEO {
     void Application::browse(const std::string& path) {
         std::vector<std::string> files;
         GEO::FileSystem::get_directory_entries(path,files);
+
+        if(ImGui::BeginMenu("<parent>")) {
+            browse(path + "/..");
+            ImGui::EndMenu();
+        }
+        
         for(GEO::index_t i=0; i<files.size(); ++i) {
             if(GEO::FileSystem::is_directory(files[i])) {
                 if(skip_directory(files[i])) {
@@ -1383,6 +1390,7 @@ namespace GEO {
         anim_time_ = 0.0f;
 
         show_vertices_ = false;
+        show_vertices_selection_ = true;
         vertices_size_ = 1.0f;
         
         show_surface_ = true;
@@ -1433,8 +1441,10 @@ namespace GEO {
                 attribute_min_ = Numeric::max_float32();
                 attribute_max_ = Numeric::min_float32();
                 for(index_t i=0; i<subelements.nb(); ++i) {
-                    attribute_min_ = geo_min(attribute_min_, float(attribute[i]));
-                    attribute_max_ = geo_max(attribute_max_, float(attribute[i]));
+                    attribute_min_ =
+                        geo_min(attribute_min_, float(attribute[i]));
+                    attribute_max_ =
+                        geo_max(attribute_max_, float(attribute[i]));
                 }
             } 
         }
@@ -1465,7 +1475,9 @@ namespace GEO {
             if(attribute_min_ == 0.0f && attribute_max_ == 0.0f) {
                 autorange();
             } 
-            if(ImGui::Button((attribute_ + "##Attribute").c_str(), ImVec2(-1,0))) {
+            if(ImGui::Button(
+                   (attribute_ + "##Attribute").c_str(), ImVec2(-1,0))
+            ) {
                 ImGui::OpenPopup("##Attributes");                
             }
             if(ImGui::BeginPopup("##Attributes")) {
@@ -1517,6 +1529,7 @@ namespace GEO {
         ImGui::Separator();    
         ImGui::Checkbox("Vertices [p]", &show_vertices_);
         if(show_vertices_) {
+            ImGui::Checkbox("selection", &show_vertices_selection_);            
             ImGui::SliderFloat("sz.", &vertices_size_, 0.1f, 5.0f, "%.1f");
         }
 
@@ -1627,8 +1640,17 @@ namespace GEO {
         }
         
         if(show_vertices_) {
+            mesh_gfx_.set_points_color(0.0, 1.0, 0.0);
             mesh_gfx_.set_points_size(vertices_size_);
             mesh_gfx_.draw_vertices();
+        }
+
+        if(show_vertices_selection_) {
+            mesh_gfx_.set_points_color(1.0, 0.0, 0.0);
+            mesh_gfx_.set_points_size(2.0f * vertices_size_);
+            mesh_gfx_.set_vertices_selection("selection");
+            mesh_gfx_.draw_vertices();
+            mesh_gfx_.set_vertices_selection("");            
         }
 
         if(white_bg_) {
@@ -1743,6 +1765,15 @@ namespace GEO {
         return true;
     }
 
+    bool SimpleMeshApplication::save(const std::string& filename) {
+        MeshIOFlags flags;
+        if(CmdLine::get_arg_bool("attributes")) {
+            flags.set_attribute(MESH_FACET_REGION);
+            flags.set_attribute(MESH_CELL_REGION);            
+        } 
+        return mesh_save(mesh_, filename, flags);
+    }
+    
     void SimpleMeshApplication::get_bbox(
         const Mesh& M_in, double* xyzmin, double* xyzmax, bool animate
     ) {

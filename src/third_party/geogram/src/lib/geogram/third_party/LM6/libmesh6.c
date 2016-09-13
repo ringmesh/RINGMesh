@@ -13,6 +13,13 @@
 /*                                                                                                                      */
 /*----------------------------------------------------------*/
 
+/* [Bruno] suppress a warning related with setjmp/longjmp */
+#ifdef __GNUC__
+#ifndef __ICC
+#pragma GCC diagnostic ignored "-Wunknown-pragmas"
+#pragma GCC diagnostic ignored "-Wclobbered"
+#endif
+#endif
 
 /*----------------------------------------------------------*/
 /* Includes                                                                                                     */
