@@ -1985,6 +1985,13 @@ namespace RINGMesh {
         builder.clear( true, false ) ;
     }
 
+    void GeoModelBuilder::delete_mesh_entity_isolated_vertices( gme_t E_id )
+    {
+        Mesh& M = mesh_entity( E_id ).mesh_ ;
+        MeshBuilder builder( M ) ;
+        builder.remove_isolated_vertices() ;
+    }
+
     void GeoModelBuilder::delete_mesh_entity_vertices(
         gme_t E_id,
         GEO::vector< index_t >& to_delete,
