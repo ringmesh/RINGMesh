@@ -372,8 +372,13 @@ namespace RINGMesh {
 
         void cut_surfaces_by_internal_lines() ;
         void cut_surface_by_line( index_t surface_id, index_t line_id ) ;
-        void duplicate_surface_vertices_along_line( index_t surface_id, index_t line_id ) ;
+        void duplicate_surface_vertices_along_line(
+            index_t surface_id,
+            index_t line_id ) ;
         index_t disconnect_surface_facets_along_line_edges(
+            index_t surface_id,
+            index_t line_id ) ;
+        void duplicate_surface_vertices_at_line_boundaries(
             index_t surface_id,
             index_t line_id ) ;
         void duplicate_corner_if_needed( index_t corner_id, index_t surface_id ) ;

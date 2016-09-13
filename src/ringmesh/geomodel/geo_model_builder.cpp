@@ -1656,9 +1656,6 @@ namespace RINGMesh {
             surface_mesh_builder.set_vertex( vertex_id, p1 ) ;
             vertex_id++ ;
         }
-
-        duplicate_corner_if_needed( L.boundary_gme( 0 ).index, surface_id ) ;
-        duplicate_corner_if_needed( L.boundary_gme( 1 ).index, surface_id ) ;
     }
 
     void GeoModelBuilder::duplicate_corner_if_needed(
@@ -1702,6 +1699,17 @@ namespace RINGMesh {
         if( nb_disconnected_edges > 0 ) {
             duplicate_surface_vertices_along_line( surface_id, line_id ) ;
         }
+        duplicate_surface_vertices_at_line_boundaries( surface_id, line_id ) ;
+    }
+
+    void GeoModelBuilder::duplicate_surface_vertices_at_line_boundaries(
+        index_t surface_id,
+        index_t line_id )
+    {
+        const Line& L = model().line( line_id ) ;
+
+        duplicate_corner_if_needed( L.boundary_gme( 0 ).index, surface_id ) ;
+        duplicate_corner_if_needed( L.boundary_gme( 1 ).index, surface_id ) ;
     }
 
     void GeoModelBuilder::end_model()
