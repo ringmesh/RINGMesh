@@ -369,25 +369,25 @@ namespace RINGMesh {
         const index_t nb_type = 7 ; // = GME::NO_TYPE. TODO to rework
         to_erase_by_type.reserve( nb_type ) ;
         to_erase_by_type.push_back(
-            std::vector< index_t >( model_.nb_entities( Corner::type_name_static() ),
+            std::vector< index_t >( model_.nb_mesh_entities( Corner::type_name_static() ),
                 0 ) ) ;
         to_erase_by_type.push_back(
-            std::vector< index_t >( model_.nb_entities( Line::type_name_static() ),
-                0 ) ) ;
-        to_erase_by_type.push_back(
-            std::vector< index_t >(
-                model_.nb_entities( Surface::type_name_static() ), 0 ) ) ;
-        to_erase_by_type.push_back(
-            std::vector< index_t >( model_.nb_entities( Region::type_name_static() ),
+            std::vector< index_t >( model_.nb_mesh_entities( Line::type_name_static() ),
                 0 ) ) ;
         to_erase_by_type.push_back(
             std::vector< index_t >(
-                model_.nb_entities( Contact::type_name_static() ), 0 ) ) ;
+                model_.nb_mesh_entities( Surface::type_name_static() ), 0 ) ) ;
+        to_erase_by_type.push_back(
+            std::vector< index_t >( model_.nb_mesh_entities( Region::type_name_static() ),
+                0 ) ) ;
         to_erase_by_type.push_back(
             std::vector< index_t >(
-                model_.nb_entities( Interface::type_name_static() ), 0 ) ) ;
+                model_.nb_geological_entities( Contact::type_name_static() ), 0 ) ) ;
         to_erase_by_type.push_back(
-            std::vector< index_t >( model_.nb_entities( Layer::type_name_static() ),
+            std::vector< index_t >(
+                model_.nb_geological_entities( Interface::type_name_static() ), 0 ) ) ;
+        to_erase_by_type.push_back(
+            std::vector< index_t >( model_.nb_geological_entities( Layer::type_name_static() ),
                 0 ) ) ;
 
         // Flag the elements to erase
