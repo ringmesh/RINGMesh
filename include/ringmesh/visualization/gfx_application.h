@@ -65,24 +65,28 @@ namespace RINGMesh {
         RINGMeshApplication( int argc, char** argv ) ;
         ~RINGMeshApplication() ;
 
+    protected:
+        bool load_geogram( const std::string& filename ) ;
+        bool load_geogram( GEO::Mesh& mesh ) ;
+        virtual bool load( const std::string& filename ) ;
+
+
+        bool can_load_geogram( const std::string& filename ) ;
+        void browse_geogram( const std::string& path ) ;
+        void browse_ringmesh( const std::string& path ) ;
+        void update_region_of_interest() ;
     private:
         static RINGMeshApplication* instance() ;
 
         virtual std::string supported_read_file_extensions() ;
         std::string supported_geogram_read_file_extensions() ;
         virtual void init_graphics() ;
-        virtual bool load( const std::string& filename ) ;
         virtual void draw_scene() ;
         virtual void draw_object_properties() ;
         virtual void draw_viewer_properties() ;
         virtual void draw_application_menus() ;
         virtual void draw_load_menu() ;
 
-        bool load_geogram( const std::string& filename ) ;
-        bool can_load_geogram( const std::string& filename ) ;
-        void browse_geogram( const std::string& path ) ;
-        void browse_ringmesh( const std::string& path ) ;
-        void update_region_of_interest() ;
 
         static void increment_shrink() ;
         static void decrement_shrink() ;
@@ -97,7 +101,7 @@ namespace RINGMesh {
         static void show_colored_regions() ;
         static void show_colored_layers() ;
 
-    private:
+    protected:
         class GeoModelViewer {
         public:
             GeoModelViewer( RINGMeshApplication& app, const std::string& filename ) ;
@@ -167,6 +171,7 @@ namespace RINGMesh {
         class MeshViewer {
         public:
             MeshViewer( RINGMeshApplication& app, const std::string& filename ) ;
+            MeshViewer( RINGMeshApplication& app, GEO::Mesh& mesh ) ;
 
             void draw_object_properties() ;
             void draw_scene() ;
@@ -205,7 +210,7 @@ namespace RINGMesh {
             float attribute_max_ ;
         } ;
 
-    private:
+    protected:
         std::vector< GeoModelViewer* > models_ ;
         std::vector< MeshViewer* > meshes_ ;
         std::string ringmesh_file_extensions_ ;
