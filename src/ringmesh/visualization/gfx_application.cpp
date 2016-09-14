@@ -849,6 +849,15 @@ namespace RINGMesh {
         return true ;
     }
 
+    bool RINGMeshApplication::load_geogram( GEO::Mesh& mesh )
+    {
+            meshes_.push_back( new MeshViewer( *this, mesh) ) ;
+            current_viewer_ = meshes_.size() - 1 ;
+            current_viewer_type_ = MESH ;
+
+        update_region_of_interest() ;
+        return true ;
+    }
     void RINGMeshApplication::draw_load_menu()
     {
         if( ImGui::BeginMenu( "Load..." ) ) {

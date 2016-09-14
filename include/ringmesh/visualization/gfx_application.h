@@ -67,8 +67,14 @@ namespace RINGMesh {
 
     protected:
         bool load_geogram( const std::string& filename ) ;
+        bool load_geogram( GEO::Mesh& mesh ) ;
         virtual bool load( const std::string& filename ) ;
 
+
+        bool can_load_geogram( const std::string& filename ) ;
+        void browse_geogram( const std::string& path ) ;
+        void browse_ringmesh( const std::string& path ) ;
+        void update_region_of_interest() ;
     private:
         static RINGMeshApplication* instance() ;
 
@@ -81,10 +87,6 @@ namespace RINGMesh {
         virtual void draw_application_menus() ;
         virtual void draw_load_menu() ;
 
-        bool can_load_geogram( const std::string& filename ) ;
-        void browse_geogram( const std::string& path ) ;
-        void browse_ringmesh( const std::string& path ) ;
-        void update_region_of_interest() ;
 
         static void increment_shrink() ;
         static void decrement_shrink() ;
@@ -99,7 +101,7 @@ namespace RINGMesh {
         static void show_colored_regions() ;
         static void show_colored_layers() ;
 
-    private:
+    protected:
         class GeoModelViewer {
         public:
             GeoModelViewer( RINGMeshApplication& app, const std::string& filename ) ;
