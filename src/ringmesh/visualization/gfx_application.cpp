@@ -549,7 +549,7 @@ namespace RINGMesh {
         attribute_name_ = "point_fp32[0]" ;
         attribute_subelements_ = GEO::MESH_VERTICES ;
 
-        name_ = "mesh_cut";
+        name_ = "mesh_viewer";
         mesh_gfx_.set_mesh( &mesh_ ) ;
 
         for( index_t v = 0; v < mesh_.vertices.nb(); v++ ) {

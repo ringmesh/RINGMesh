@@ -69,6 +69,7 @@ namespace RINGMesh {
         bool load_geogram( const std::string& filename ) ;
         bool load_geogram( GEO::Mesh& mesh ) ;
         virtual bool load( const std::string& filename ) ;
+        virtual void draw_object_properties() ;
 
 
         bool can_load_geogram( const std::string& filename ) ;
@@ -82,7 +83,6 @@ namespace RINGMesh {
         std::string supported_geogram_read_file_extensions() ;
         virtual void init_graphics() ;
         virtual void draw_scene() ;
-        virtual void draw_object_properties() ;
         virtual void draw_viewer_properties() ;
         virtual void draw_application_menus() ;
         virtual void draw_load_menu() ;
