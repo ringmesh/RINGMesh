@@ -448,7 +448,7 @@ namespace {
         Logger* logger = Logger::instance() ;
         logger->set_quiet( true ) ;
         GEO::MeshIOFlags flags ;
-//        flags.set_attribute( GEO::MESH_ALL_ATTRIBUTES ) ;
+        flags.set_attribute( GEO::MESH_ALL_ATTRIBUTES ) ;
         bool is_saved = save_mesh( geo_model_entity_mesh, name, flags ) ;
         logger->set_quiet( false ) ;
 
