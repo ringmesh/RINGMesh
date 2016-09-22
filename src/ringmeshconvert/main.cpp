@@ -119,7 +119,12 @@ namespace {
         handler->save( model, filename ) ;
     }
 
-
+    void show_usage_example()
+    {
+        Logger::div( "Example" ) ;
+        Logger::out( "" ) << "ringmeshconvert in:geomodel=path/to/input/geomodel.ext "
+            << "out:geomodel=path/to/output/geomodel.ext" << std::endl ;
+    }
 }
 
 namespace RINGMesh {
@@ -167,11 +172,13 @@ int main( int argc, char** argv )
         CmdLine::import_temp_in_out() ;
         if( argc == 1 ) {
             GEO::CmdLine::show_usage() ;
+            show_usage_example() ;
             return 0 ;
         }
 
         std::vector< std::string > filenames ;
         if( !GEO::CmdLine::parse( argc, argv, filenames ) ) {
+            show_usage_example() ;
             return 1 ;
         }
 
