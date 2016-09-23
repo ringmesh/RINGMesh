@@ -134,19 +134,19 @@ namespace RINGMesh {
         {
             GEO::CmdLine::declare_arg( "in:model", "",
                 "Filename of the input structural model",
-                GEO::ARG_ADVANCED ) ;
+                GEO::CmdLine::ARG_ADVANCED ) ;
             GEO::CmdLine::declare_arg( "in:mesh", "",
                 "Filename of the input volumetric mesh",
-                GEO::ARG_ADVANCED ) ;
+                GEO::CmdLine::ARG_ADVANCED ) ;
             GEO::CmdLine::declare_arg( "out:model", "",
                 "Saves the structural model",
-                GEO::ARG_ADVANCED ) ;
+                GEO::CmdLine::ARG_ADVANCED ) ;
             GEO::CmdLine::declare_arg( "out:mesh", "",
                 "Saves the volumetric mesh of the structural model",
-                GEO::ARG_ADVANCED ) ;
+                GEO::CmdLine::ARG_ADVANCED ) ;
             GEO::CmdLine::declare_arg( "in:old_geomodel", "",
                 "Saves the volumetric mesh of the structural model",
-                GEO::ARG_ADVANCED ) ;
+                GEO::CmdLine::ARG_ADVANCED ) ;
         }
     }
 }
