@@ -56,14 +56,14 @@ namespace RINGMesh {
             GEO::CmdLine::declare_arg(
                 "in:intersection_check", true,
                 "Toggle the surface intersection check at loading",
-                GEO::ARG_ADVANCED ) ;
+                GEO::CmdLine::ARG_ADVANCED ) ;
             GEO::CmdLine::declare_arg(
                 "in:wells", "",
                 "Filename of the input wells" ) ;
             GEO::CmdLine::declare_arg(
                 "in:validity_save", true,
                 "Saves meshes representing geomodel inconsistencies",
-                GEO::ARG_ADVANCED ) ;
+                GEO::CmdLine::ARG_ADVANCED ) ;
         }
 
         void import_arg_group_out()
