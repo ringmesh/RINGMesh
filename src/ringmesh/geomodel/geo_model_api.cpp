@@ -874,4 +874,26 @@ namespace RINGMesh {
         }
         return gme_t() ;
     }
+
+    void save_surface_as_obj_file( const Surface& S, const std::string& file_name )
+    {
+        std::ofstream out( file_name.c_str() ) ;
+        if( out.bad() ) {
+            Logger::err( "I/O" ) << "Error when opening the file: "
+                << file_name.c_str() << std::endl ;
+            return ;
+        }
+        out.precision( 16 ) ;
+        for( index_t p = 0; p < S.nb_vertices(); p++ ) {
+            const vec3& V = S.vertex( p ) ;
+            out << "v" << " " << V.x << " " << V.y << " " << V.z << std::endl ;
+        }
+        for( index_t f = 0; f < S.nb_mesh_elements(); f++ ) {
+            out << "f" << " " ;
+            for( index_t v = 0; v < S.nb_mesh_element_vertices( f ); v++ ) {
+                out << S.mesh_element_vertex_index( f, v ) + 1 << " " ;
+            }
+            out << std::endl ;
+        }
+    }
 }

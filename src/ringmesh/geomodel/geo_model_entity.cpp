@@ -203,35 +203,6 @@ namespace {
         return check_mesh_entity_vertices_are_different( vertices, vertices_global )
             || volume < epsilon ;
 	}
-
-    /*!
-     * @brief Debug: Save a Surface of the model in the file OBJ format is used
-     * @todo Move this function to an API providing utility functions on a
-     * GeoModel and its Entities ? [JP]
-     */
-    void save_surface_as_obj_file( const Surface& S, const std::string& file_name )
-    {
-        std::ofstream out( file_name.c_str() ) ;
-        if( out.bad() ) {
-            Logger::err( "I/O" ) << "Error when opening the file: "
-                << file_name.c_str() << std::endl ;
-            return ;
-        }
-        out.precision( 16 ) ;
-        for( index_t p = 0; p < S.nb_vertices(); p++ ) {
-            const vec3& V = S.vertex( p ) ;
-            out << "v" << " " << V.x << " " << V.y << " " << V.z << std::endl ;
-        }
-        for( index_t f = 0; f < S.nb_mesh_elements(); f++ ) {
-            out << "f" << " " ;
-            for( index_t v = 0; v < S.nb_mesh_element_vertices( f ); v++ ) {
-                out << S.mesh_element_vertex_index( f, v ) + 1 << " " ;
-            }
-            out << std::endl ;
-        }
-    }
-
-
 }
 
 
@@ -312,16 +283,12 @@ namespace RINGMesh {
         }
     }
     
-    /*! 
-     * Check the validity of identification information
-     * in the model    
-     */
     bool GeoModelEntity::is_identification_valid() const
     {
         bool defined_id = true ;
         if( !gme_id().is_defined() ) {
             Logger::err( "GeoModelEntity" ) << " Entity associated to model "
-                << model().name() << "has no type and no index " << std::endl ;
+                << model().name() << "has no type and/or no index " << std::endl ;
             defined_id = false ;
             // No further checks are possible - This really should not happen
             ringmesh_assert_not_reached ;
@@ -329,29 +296,33 @@ namespace RINGMesh {
         bool valid_index = true ;
         if( index() >= model().nb_entities( type_name() ) ) {
             Logger::warn( "GeoModelEntity" ) << " Entity index " << gme_id()
-                << " is not valid " << " There are " << model().nb_entities( type_name() )
-                << " entity of that type in model " << model().name() << std::endl ;
+                << " is not valid. " << " There are "
+                << model().nb_entities( type_name() )
+                << " entities of that type in model " << model().name()
+                << std::endl ;
             // This really should not happen
             valid_index = false ;
             ringmesh_assert_not_reached ;
         }
         // If somebody - an Editor messed up with the Memory
-        bool valid_adress = true ;
+        bool valid_address = true ;
         if( model().is_mesh_entity_type( type_name() ) ) {
-            const GME* stored = static_cast<const GME*>( &model().mesh_entity( gme_id() ) );
-            valid_adress = stored == this ;
+            const GME* stored = static_cast< const GME* >( &model().mesh_entity(
+                gme_id() ) ) ;
+            valid_address = ( stored == this ) ;
         } else {
             ringmesh_assert( model().is_geological_entity_type( type_name() ) ) ;
-            const GME* stored = static_cast<const GME*>( &model().geological_entity( gme_id() ) ) ;
-            valid_adress = stored == this ;
+            const GME* stored =
+                static_cast< const GME* >( &model().geological_entity( gme_id() ) ) ;
+            valid_address = ( stored == this ) ;
         }
-        if( !valid_adress ) {
+        if( !valid_address ) {
             Logger::err( "GeoModelEntity" ) << " Entity " << gme_id()
-                << " in model " << model().name() << " does not match this entity"
-                << std::endl ;
+                << "address in model " << model().name()
+                << " does not match this entity" << std::endl ;
             ringmesh_assert_not_reached ;
         }
-        return defined_id && valid_index && valid_adress ;
+        return defined_id && valid_index && valid_address ;
     }
 
     const GeoModelEntity::EntityType GeoModelEntity::type_name_static()
