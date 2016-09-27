@@ -212,6 +212,7 @@ namespace RINGMesh {
         : GeoModelEntity( model, NO_ID )
     {
         id_.type = type_name() ;
+        name_ = universe_type_name() ;
     }
 
     /*!
