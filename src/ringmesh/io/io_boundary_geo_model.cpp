@@ -129,7 +129,7 @@ namespace {
 
     void save_universe( index_t count, const Universe& universe, std::ostream& out )
     {
-        out << "REGION " << count << "  " << universe.name() << " " << std::endl ;
+        out << "REGION " << count << "  " << universe.type_name() << " " << std::endl ;
         index_t it = 0 ;
 
         for( index_t i = 0; i < universe.nb_boundaries(); ++i ) {
