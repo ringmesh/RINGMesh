@@ -1077,7 +1077,6 @@ namespace RINGMesh {
         // Check if the given Entity is a MeshEntity or a GeologicalEntity
         // or the Universe and fill the volume_boundaries vector.
         if( gme_id.type == geomodel.universe().type_name() ) {
-            Logger::warn( "GeoModel" ) << "Universe =" << gme_id << std::endl ;
             index_t nb_boundaries = geomodel.universe().nb_boundaries() ;
             volume_boundaries.resize( nb_boundaries ) ;
             for( index_t b = 0; b < nb_boundaries; b++ ) {
@@ -1092,7 +1091,7 @@ namespace RINGMesh {
                     b ) ;
             }
         } else {
-            Logger::warn( "GeoModel" ) << "Checking for volume watertighness of "
+            Logger::warn( "GeoModel" ) << "Checking for volume watertightness of "
                 "a geological entity (" << gme_id << ") is not yet implemented."
                 << std::endl ;
             ringmesh_assert_not_reached ;
@@ -1100,7 +1099,7 @@ namespace RINGMesh {
 
 
 
-        if( geomodel.mesh_entity( gme_id ).nb_boundaries() == 0 ) {
+        if( volume_boundaries.empty() ) {
             Logger::warn( "GeoModel" ) << gme_id
                 << " has no boundary Surface" << std::endl ;
             return false ;
