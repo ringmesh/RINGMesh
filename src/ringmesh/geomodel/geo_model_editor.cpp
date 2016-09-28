@@ -791,21 +791,6 @@ namespace RINGMesh {
                 set_mesh_entity_in_boundary( E.gme_id(), i, new_id ) ;
             }
         }
-//        void update_entity_parents( GeoModelMeshEntity& E )
-//        {
-//            const EntityTypeManager& family_tree = model().entity_type_manager() ;
-//
-//            const std::vector< EntityType > parents = family_tree.parent_types( E.entity_type() ) ;
-//            for( index_t i = 0; i < parents.size(); ++i ) {
-//                const EntityType& parent_type = parents[i] ;
-//                index_t parent_type_index = entity_type_to_index( parent_type ) ;
-//
-////                index_t p_id = E.parent_id( parent_type ) ;
-//                index_t old_id = E.parent_gme( parent_type ).index ;
-//                index_t new_id = old_2_new_entity_[parent_type_index][old_id] ;
-//                set_mesh_entity_parent( E.gme_id(), p_id, gme_t( parent_type, new_id ) ) ;
-//            }
-//        }
         void update_entity_parents( GeoModelMeshEntity& E )
         {
             for( index_t p = 0; p < E.nb_parents(); ++p ) {
