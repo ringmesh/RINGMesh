@@ -95,6 +95,10 @@ namespace RINGMesh {
         }
         virtual bool is_connectivity_valid() const ;
 
+        /*!
+         * \name Boundary relationship functions
+         * @{
+         */
         index_t nb_boundaries() const
         {
             return static_cast< index_t >( boundaries_.size() ) ;
@@ -128,9 +132,21 @@ namespace RINGMesh {
          */
         bool is_inside_border( const GeoModelMeshEntity& rhs ) const ;
 
+
+        /*! @}
+         * \name Parents/children relationship functions
+         * @{
+         */
         bool has_parent() const
         {
             return nb_parents() != 0 ;
+        }
+        /*!
+         * @brief Check if the entity has a parent of the given type
+         */
+        bool has_parent( const EntityType& parent_type_name ) const
+        {
+            return parent_gme( parent_type_name ).is_defined() ;
         }
         index_t nb_parents() const
         {
@@ -153,6 +169,10 @@ namespace RINGMesh {
         const GeoModelGeologicalEntity& parent(
             const EntityType& parent_type_name ) const ;
 
+        /*!
+         * @}
+         */
+
         /*! @todo To remove when GFX Mesh is encapsulated */
         const GEO::Mesh& gfx_mesh() const
         {
@@ -161,7 +181,7 @@ namespace RINGMesh {
 
         void save(
             const std::string& filename,
-            const GEO::MeshIOFlags& ioflags ) const
+            const GEO::MeshIOFlags& ioflags = GEO::MeshIOFlags() ) const
         {
             mesh_.save_mesh( filename, ioflags ) ;
         }
@@ -183,7 +203,7 @@ namespace RINGMesh {
             return mesh_.nb_vertices() ;
         }
         /*!
-         * @brief Coordinates of the @param vertex_index.
+         * @brief Coordinates of the \p vertex_index.
          */
         const vec3& vertex( index_t vertex_index ) const
         {
@@ -203,20 +223,27 @@ namespace RINGMesh {
             index_t mesh_element_index ) const = 0 ;
         /*!
          * @brief Convert the index in a mesh element to an index in the Entity.
-         * @todo Review: I find this name confusing, maybe we should change it [JP]
+         * @param[in] mesh_element_index Index of a constitutive element of the mesh
+         * @param[in] vertex_local_index Local index of a vertex in the constitutive
+         * mesh element
+         * @return the global index of the vertex in the GeoModelMeshEntity
          */
         virtual index_t mesh_element_vertex_index(
             index_t mesh_element_index,
-            index_t vertex_index ) const = 0 ;
+            index_t vertex_local_index ) const = 0 ;
         /*!
          * @brief Coordinates of a vertex of a mesh element.
+         * @param[in] mesh_element_index Index of a constitutive element of the mesh
+         * @param[in] vertex_local_index Local index of a vertex in the constitutive
+         * mesh element
+         * @return the vertex coordinates in the GeoModelMeshEntity
          */
         const vec3& mesh_element_vertex(
             index_t mesh_element_index,
-            index_t vertex_index ) const
+            index_t vertex_local_index ) const
         {
             return vertex(
-                mesh_element_vertex_index( mesh_element_index, vertex_index ) ) ;
+                mesh_element_vertex_index( mesh_element_index, vertex_local_index ) ) ;
         }
 
         /*! @}
@@ -275,7 +302,7 @@ namespace RINGMesh {
          */
         index_t gmme_vertex_index_from_model( index_t model_vertex_id ) const ;
         /*!
-         * @ Get all the vertices of the Entity which corresponds
+         * @brief Get all the vertices of the Entity which corresponds
          * to the same point in the GeoModel.
          */
         std::vector< index_t > gme_vertex_indices( index_t model_vertex_id ) const ;
