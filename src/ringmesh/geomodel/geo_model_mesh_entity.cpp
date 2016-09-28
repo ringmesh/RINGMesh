@@ -454,7 +454,7 @@ namespace RINGMesh {
         ringmesh_assert( id.is_defined() ) ;
         return model().geological_entity( id ) ;
     }
-    const gme_t& GeoModelMeshEntity::parent_gme( const std::string& parent_type_name ) const
+    const gme_t& GeoModelMeshEntity::parent_gme( const EntityType& parent_type_name ) const
     {
         for( index_t i = 0; i < nb_parents(); ++i ) {
             if( parents_[i].type == parent_type_name ) {
