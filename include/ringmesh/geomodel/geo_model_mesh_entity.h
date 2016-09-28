@@ -105,7 +105,6 @@ namespace RINGMesh {
             return boundaries_[x] ;
         }
         const GeoModelMeshEntity& boundary( index_t x ) const ;
-        bool has_inside_border() const ;
 
         index_t nb_in_boundary() const
         {
@@ -117,7 +116,17 @@ namespace RINGMesh {
             return in_boundary_[x] ;
         }
         const GeoModelMeshEntity& in_boundary( index_t x ) const ;
-        bool is_inside_border( const GeoModelMeshEntity& e ) const ;
+
+        /*!
+         * @brief Check if one entity is twice in the boundary
+         */
+        bool has_inside_border() const ;
+        /*!
+         * @brief Check if this entity an inside border of rhs
+         * @details That can be Surface stopping in a Region, or Line stopping in a Surface.
+         * @param[in] rhs The entity to test
+         */
+        bool is_inside_border( const GeoModelMeshEntity& rhs ) const ;
 
         bool has_parent() const
         {
@@ -127,12 +136,18 @@ namespace RINGMesh {
         {
             return static_cast< index_t >( parents_.size() ) ;
         }
-        index_t parent_id( const EntityType& parent_type_name ) const ;
         const gme_t& parent_gme( index_t id ) const
         {
             ringmesh_assert( id < nb_parents() ) ;
             return parents_[id] ;
         }
+        /*!
+         * @brief Returns the gme_t of the parent of the given type.
+         * @note If this entity has no parent of the given type,
+         * it will return an undefined gme_t (with no type and no id).
+         * You should check on the returned gme_t.
+         * @param[in] parent_type_name the asking parent type
+         */
         const gme_t& parent_gme( const EntityType& parent_type_name ) const ;
         const GeoModelGeologicalEntity& parent( index_t id ) const ;
         const GeoModelGeologicalEntity& parent(
@@ -182,7 +197,7 @@ namespace RINGMesh {
          */
         virtual index_t nb_mesh_elements() const = 0 ;
         /*!
-         * @brief Number of vertices of a consitutive element of the mesh
+         * @brief Number of vertices of a constitutive element of the mesh
          */
         virtual index_t nb_mesh_element_vertices(
             index_t mesh_element_index ) const = 0 ;

@@ -231,11 +231,6 @@ namespace {
 }
 /******************************************************************************/
 namespace RINGMesh {
-    /*!
-     * @brief Check if this entity an inside border of rhs
-     * @details That can be Surface stopping in a Region, or Line stopping in a Surface.
-     * @param[in] rhs The entity to test
-     */
     bool GeoModelMeshEntity::is_inside_border( const GeoModelMeshEntity& rhs ) const
     {
         // Find out if this surface is twice in the in_boundary vector
@@ -243,9 +238,6 @@ namespace RINGMesh {
             > 1 ;
     }
 
-    /*!
-     * @brief Check if one entity is twice in the boundary
-     */
     bool GeoModelMeshEntity::has_inside_border() const
     {
         for( index_t i = 0; i < nb_boundaries(); ++i ) {
@@ -464,22 +456,12 @@ namespace RINGMesh {
     }
     const gme_t& GeoModelMeshEntity::parent_gme( const std::string& parent_type_name ) const
     {
-        index_t id = parent_id( parent_type_name ) ;
-        if( id != NO_ID ) {
-            return parent(id).gme_id() ;
-        }
-        else {
-            return gme_t() ; // We will probably crash because it returns the address of a local variable
-        }        
-    }
-    index_t GeoModelMeshEntity::parent_id( const std::string& parent_type_name ) const
-    {
         for( index_t i = 0; i < nb_parents(); ++i ) {
             if( parents_[i].type == parent_type_name ) {
-                return i ;
+                return parent_gme( i ) ;
             }
         }
-        return NO_ID ;
+        return gme_t() ;
     }
 
     const GeoModelMeshEntity& GeoModelMeshEntity::boundary( index_t x ) const
