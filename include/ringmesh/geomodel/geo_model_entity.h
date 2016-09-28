@@ -88,8 +88,8 @@ namespace RINGMesh {
         } ;
 
         static GEOL_FEATURE determine_geological_type( const std::string& in ) ;
-        static GEOL_FEATURE determine_type(
-            const std::vector< GEOL_FEATURE >& types ) ;
+//        static GEOL_FEATURE determine_type(
+//            const std::vector< GEOL_FEATURE >& types ) ;
         static std::string geol_name( GEOL_FEATURE ) ;
         static bool is_fault( GEOL_FEATURE T )
         {
@@ -135,7 +135,7 @@ namespace RINGMesh {
         }
         bool has_geological_feature() const
         {
-            return geol_feature_ != NO_GEOL ;
+            return geological_feature() != NO_GEOL ;
         }
         GEOL_FEATURE geological_feature() const
         {

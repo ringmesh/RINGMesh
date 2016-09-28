@@ -269,6 +269,13 @@ namespace RINGMesh {
         const GeoModel& geomodel,
         index_t model_point_id ) ;
 
+    /*-----------------------------------------------------------------------*
+
+    /*!
+     * @brief Save a Surface of the model in the file OBJ format is used
+     */
+    void save_surface_as_obj_file( const Surface& S, const std::string& file_name ) ;
+
 }
 
 #endif 
