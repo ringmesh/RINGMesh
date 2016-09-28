@@ -1307,48 +1307,10 @@ namespace RINGMesh {
      * @brief Checks that boundary surfaces of @param region define
      *        a one connected component closed manifold surface
      * @details Builds a GEO::Mesh from the surface meshes, repairs it and analyses it.
-     * @todo Put this function in Region class
      */
     bool Region::is_brep_region_valid() const 
     {
-        if( nb_boundaries() == 0 ) {
-            Logger::warn( "GeoModel" ) << gme_id()
-                << " has no boundary Surface" << std::endl ;
-            return false ;
-        } else {
-            GEO::Mesh mesh ;
-            Logger::instance()->set_quiet( true ) ;
-            build_mesh_from_model_mesh_entities( model(), boundaries_, mesh ) ;
-            GEO::mesh_repair( mesh ) ;
-            Logger::instance()->set_quiet( false ) ;
-
-            bool valid = true ;
-            index_t nb_cc = GEO::mesh_nb_connected_components( mesh ) ;
-            signed_index_t nb_b = GEO::mesh_nb_borders( mesh ) ;
-            if( nb_cc != 1 ) {
-                Logger::warn( "GeoModel" ) << " Surface boundary of "
-                    << gme_id() << " has " << nb_cc
-                    << " connected components " << std::endl ;
-                valid = false ;
-            }
-            if( nb_b != 0 ) {
-                Logger::warn( "GeoModel" ) << " Surface boundary of "
-                    << gme_id() << " has " << nb_b
-                    << " border connected components " << std::endl ;
-                valid = false ;
-            }
-            if( !valid ) {
-                std::ostringstream file ;
-                file << validity_errors_directory << "/boundary_surface_region_"
-                    << index() << ".mesh" ;
-                if( GEO::CmdLine::get_arg_bool( "in:validity_save" ) ) {
-                    GEO::mesh_save( mesh, file.str() ) ;
-                }
-                return false ;
-            } else {
-                return true ;
-            }
-        }
+        return check_volume_watertightness( model(), gme_id() ) ;
     }
 
     void Region::compute_region_volumes_per_cell_type(

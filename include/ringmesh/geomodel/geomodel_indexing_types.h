@@ -57,7 +57,7 @@ namespace RINGMesh {
     struct gme_t {
         gme_t()
             : type( "No_entity_type" ), index( NO_ID )
-        // Still not perfect  "No_entity_type" is also typed in in geo_model_entity.cpp
+        // Still not perfect  "No_entity_type" is also typed in geo_model_entity.cpp
         {
         }
         gme_t( const EntityType& entity_type, index_t id )
