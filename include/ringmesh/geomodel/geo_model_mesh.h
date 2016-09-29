@@ -115,9 +115,41 @@ namespace RINGMesh {
         index_t index( const vec3& p ) const ;
 
         /*!
+         * @brief Get the GeoModelMesh index of a GeoModelMeshEntity vertex from its
+         * index in that GeoModelMeshEntity
+         * @param[in] mesh_entity GeoModelMeshEntity that vertex belongs to
+         * @param[in] entity_vertex_index index of the query vertex in the GeoModelMeshEntity
+         * @return if found the vertex index in the model, else NO_ID.
+         */
+        index_t model_vertex_id(
+            const gme_t& mesh_entity,
+            index_t entity_vertex_index ) const ;
+
+        /*!
+         * @brief Get the GeoModelMesh index of a GeoModelMeshEntity vertex from its
+         * index in that GeoModelMeshEntity
+         * @param[in] mesh_entity GeoModelMeshEntity that vertex belongs to
+         * @param[in] entity_mesh_element_index index of the mesh element that vertex belongs to
+         * @param[in] vertex_local_index local index of the query vertex in the mesh element
+         * @return if found the vertex index in the model, else NO_ID.
+         */
+        index_t model_vertex_id(
+            const gme_t& mesh_entity,
+            index_t entity_mesh_element_index,
+            index_t vertex_local_index ) const ;
+
+        /*!
          * @brief Get the vertices in GME corresponding to the given unique vertex
          */
         const std::vector< GMEVertex >& gme_vertices( index_t v ) const ;
+
+        /*!
+         * @brief Get the vertex indices in the specified GeoModelMeshEntity
+         * corresponding to the given unique vertex
+         */
+        const std::vector< index_t > gme_vertices(
+            const gme_t& gme_id,
+            index_t v ) const ;
 
         /*!
          * @brief To use when building the model by first adding its vertices

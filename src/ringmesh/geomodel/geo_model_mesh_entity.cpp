@@ -264,18 +264,18 @@ namespace RINGMesh {
     /*!
      * @brief Binds attributes stored by the GME on the Mesh
      */
-    void GeoModelMeshEntity::bind_model_vertex_id_attribute()
-    {
-        model_vertex_id_.bind( mesh_.vertex_attribute_manager(),
-            model_vertex_id_att_name() ) ;
-    }
+//    void GeoModelMeshEntity::bind_model_vertex_id_attribute()
+//    {
+//        model_vertex_id_.bind( mesh_.vertex_attribute_manager(),
+//            model_vertex_id_att_name() ) ;
+//    }
     /*!
      * @brief Unbinds attributes stored by the GME on the Mesh
      */
-    void GeoModelMeshEntity::unbind_model_vertex_id_attribute()
-    {
-        model_vertex_id_.unbind() ;
-    }
+//    void GeoModelMeshEntity::unbind_model_vertex_id_attribute()
+//    {
+//        model_vertex_id_.unbind() ;
+//    }
 
     bool GeoModelMeshEntity::are_model_vertex_indices_valid() const
     {
@@ -474,36 +474,36 @@ namespace RINGMesh {
         return model().mesh_entity( in_boundary_gme( x ) ) ;
     }
 
-    index_t GeoModelMeshEntity::gmme_vertex_index_from_model(
-        index_t model_vertex_id ) const
-    {
-        const std::vector< GMEVertex >& gme_vertices =
-            model().mesh.vertices.gme_vertices( model_vertex_id ) ;
+//    index_t GeoModelMeshEntity::gmme_vertex_index_from_model(
+//        index_t model_vertex_id ) const
+//    {
+//        const std::vector< GMEVertex >& gme_vertices =
+//            model().mesh.vertices.gme_vertices( model_vertex_id ) ;
+//
+//        for( index_t i = 0; i < gme_vertices.size(); i++ ) {
+//            const GMEVertex& info = gme_vertices[i] ;
+//            if( info.gme_id == gme_id() ) {
+//                return info.v_id ;
+//            }
+//        }
+//        return NO_ID ;
+//    }
 
-        for( index_t i = 0; i < gme_vertices.size(); i++ ) {
-            const GMEVertex& info = gme_vertices[i] ;
-            if( info.gme_id == gme_id() ) {
-                return info.v_id ;
-            }
-        }
-        return NO_ID ;
-    }
-
-    std::vector< index_t > GeoModelMeshEntity::gme_vertex_indices(
-        index_t model_vertex_id ) const
-    {
-        const std::vector< GMEVertex >& all_vertices =
-            model().mesh.vertices.gme_vertices( model_vertex_id ) ;
-
-        std::vector< index_t > this_gme_vertices ;
-        for( index_t i = 0; i < all_vertices.size(); i++ ) {
-            const GMEVertex& gme_vertex = all_vertices[i] ;
-            if( gme_vertex.gme_id == gme_id() ) {
-                this_gme_vertices.push_back( gme_vertex.v_id ) ;
-            }
-        }
-        return this_gme_vertices ;
-    }
+//    std::vector< index_t > GeoModelMeshEntity::gme_vertex_indices(
+//        index_t model_vertex_id ) const
+//    {
+//        const std::vector< GMEVertex >& all_vertices =
+//            model().mesh.vertices.gme_vertices( model_vertex_id ) ;
+//
+//        std::vector< index_t > this_gme_vertices ;
+//        for( index_t i = 0; i < all_vertices.size(); i++ ) {
+//            const GMEVertex& gme_vertex = all_vertices[i] ;
+//            if( gme_vertex.gme_id == gme_id() ) {
+//                this_gme_vertices.push_back( gme_vertex.v_id ) ;
+//            }
+//        }
+//        return this_gme_vertices ;
+//    }
 
 
     /**************************************************************/
