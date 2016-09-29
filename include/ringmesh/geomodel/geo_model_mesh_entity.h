@@ -308,10 +308,10 @@ namespace RINGMesh {
 
         /*! @}
          */
-//        GEO::AttributesManager& vertex_attribute_manager() const
-//        {
-//            return mesh_.vertex_attribute_manager() ;
-//        }
+        GEO::AttributesManager& vertex_attribute_manager() const
+        {
+            return mesh_.vertex_attribute_manager() ;
+        }
 
     protected:
         GeoModelMeshEntity(
