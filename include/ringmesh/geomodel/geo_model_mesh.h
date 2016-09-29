@@ -123,7 +123,7 @@ namespace RINGMesh {
          */
         index_t model_vertex_id(
             const gme_t& mesh_entity,
-            index_t entity_vertex_index ) const ;
+            index_t entity_vertex_index = 0 ) const ;
 
         /*!
          * @brief Get the GeoModelMesh index of a GeoModelMeshEntity vertex from its

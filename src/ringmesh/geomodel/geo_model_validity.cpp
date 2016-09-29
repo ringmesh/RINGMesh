@@ -766,15 +766,20 @@ namespace {
      */
     bool surface_boundary_valid( const Surface& S )
     {
+        const GeoModelMeshVertices& model_vertices = S.model().mesh.vertices ;
         std::vector< index_t > invalid_corners ;
         for( index_t f = 0; f < S.nb_mesh_elements(); ++f ) {
             for( index_t v = 0; v < S.nb_mesh_element_vertices( f ); ++v ) {
                 if( S.facet_adjacent_index( f, v ) == NO_ID
-                    && !is_edge_on_line( S.model(), S.model_vertex_id( f, v ),
-                        S.model_vertex_id( f, S.next_facet_vertex_index( f, v ) ) ) ) {
-                    invalid_corners.push_back( S.model_vertex_id( f, v ) ) ;
+                    && !is_edge_on_line( S.model(),
+                        model_vertices.model_vertex_id( S.gme_id(), f, v ),
+                        model_vertices.model_vertex_id( S.gme_id(), f,
+                            S.next_facet_vertex_index( f, v ) ) ) ) {
                     invalid_corners.push_back(
-                        S.model_vertex_id( f, S.next_facet_vertex_index( f, v ) ) ) ;
+                        model_vertices.model_vertex_id( S.gme_id(), f, v ) ) ;
+                    invalid_corners.push_back(
+                        model_vertices.model_vertex_id( S.gme_id(), f,
+                            S.next_facet_vertex_index( f, v ) ) ) ;
                 }
             }
         }
