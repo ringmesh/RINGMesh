@@ -183,7 +183,8 @@ namespace RINGMesh {
         index_t& count )
     {
         for( index_t i = 0; i < M.nb_mesh_entities( entity_type ); ++i ) {
-            GeoModelMeshEntity& E = const_cast< GeoModelMeshEntity& >(M.mesh_entity( entity_type, i ) );
+            GeoModelMeshEntity& E = const_cast< GeoModelMeshEntity& >( M.mesh_entity(
+                entity_type, i ) ) ;
             if( E.nb_vertices() == 0 ) {
                 continue ;
             }
@@ -305,7 +306,7 @@ namespace RINGMesh {
         return builder.create_vertex( point ) ;
     }
 
-    void GeoModelMeshVertices::add_to_bme( index_t v, const GMEVertex& v_gme )
+    void GeoModelMeshVertices::add_to_gme( index_t v, const GMEVertex& v_gme )
     {
         test_and_initialize() ;
         ringmesh_assert( v < nb() ) ;
