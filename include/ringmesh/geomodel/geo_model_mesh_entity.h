@@ -59,8 +59,7 @@ namespace RINGMesh {
      * @brief Abstract base class for GeoModelMeshEntity.
      * @details The GeoModelMeshEntity geometrical representation
      * is stored as a RINGMesh::Mesh. We defines generic access to
-     * the RINGMesh::Mesh geometry. We also provide functions to link
-     * the GeoModelMeshEntity with GeoModelMesh.
+     * the RINGMesh::Mesh geometry.
      */
     class RINGMESH_API GeoModelMeshEntity: public GeoModelEntity {
     ringmesh_disable_copy( GeoModelMeshEntity ) ;
@@ -75,10 +74,10 @@ namespace RINGMesh {
         {
             return "No_entity_type" ;
         }
-        /*!
-         * @brief Name of the attribute storing the global index at the GeoModel level.
-         */
-        static const std::string model_vertex_id_att_name() ;
+//        /*!
+//         * @brief Name of the attribute storing the global index at the GeoModel level.
+//         */
+//        static const std::string model_vertex_id_att_name() ;
 
         virtual ~GeoModelMeshEntity() ;
         virtual const EntityType type_name() const
@@ -269,50 +268,50 @@ namespace RINGMesh {
             return size ;
         }
 
-        /*! @}
-         * \name Linking to GeoModelMesh indexing
-         * @{
-         */
-        /*!
-         * @brief Get the global index at the GeoModel from the index in the entity.
-         */
-        index_t model_vertex_id( index_t gmme_vertex_index = 0 ) const
-        {
-            ringmesh_assert( gmme_vertex_index < nb_vertices() ) ;
-            return model_vertex_id_[gmme_vertex_index] ;
-        }
-        /*!
-         * @brief Get the global index at the GeoModel from a
-         * index in a mesh element.
-         */
-        index_t model_vertex_id(
-            index_t mesh_element_index,
-            index_t vertex_index ) const
-        {
-            return model_vertex_id(
-                mesh_element_vertex_index( mesh_element_index, vertex_index ) ) ;
-        }
-        /*!
-         * @brief Get the first vertex index of the Entity
-         *  that corresponds to the vertex @param model_vertex_id.
-         * @details Returns NO_ID if no matching point is found.
-         *
-         * @param model_vertex_id Index of the vertex in the GeoModel
-         * @todo Change that name.
-         */
-        index_t gmme_vertex_index_from_model( index_t model_vertex_id ) const ;
-        /*!
-         * @brief Get all the vertices of the Entity which corresponds
-         * to the same point in the GeoModel.
-         */
-        std::vector< index_t > gme_vertex_indices( index_t model_vertex_id ) const ;
+//        /*! @}
+//         * \name Linking to GeoModelMesh indexing
+//         * @{
+//         */
+//        /*!
+//         * @brief Get the global index at the GeoModel from the index in the entity.
+//         */
+//        index_t model_vertex_id( index_t gmme_vertex_index = 0 ) const
+//        {
+//            ringmesh_assert( gmme_vertex_index < nb_vertices() ) ;
+//            return model_vertex_id_[gmme_vertex_index] ;
+//        }
+//        /*!
+//         * @brief Get the global index at the GeoModel from a
+//         * index in a mesh element.
+//         */
+//        index_t model_vertex_id(
+//            index_t mesh_element_index,
+//            index_t vertex_index ) const
+//        {
+//            return model_vertex_id(
+//                mesh_element_vertex_index( mesh_element_index, vertex_index ) ) ;
+//        }
+//        /*!
+//         * @brief Get the first vertex index of the Entity
+//         *  that corresponds to the vertex @param model_vertex_id.
+//         * @details Returns NO_ID if no matching point is found.
+//         *
+//         * @param model_vertex_id Index of the vertex in the GeoModel
+//         * @todo Change that name.
+//         */
+//        index_t gmme_vertex_index_from_model( index_t model_vertex_id ) const ;
+//        /*!
+//         * @brief Get all the vertices of the Entity which corresponds
+//         * to the same point in the GeoModel.
+//         */
+//        std::vector< index_t > gme_vertex_indices( index_t model_vertex_id ) const ;
 
         /*! @}
          */
-        GEO::AttributesManager& vertex_attribute_manager() const
-        {
-            return mesh_.vertex_attribute_manager() ;
-        }
+//        GEO::AttributesManager& vertex_attribute_manager() const
+//        {
+//            return mesh_.vertex_attribute_manager() ;
+//        }
 
     protected:
         GeoModelMeshEntity(
@@ -324,8 +323,8 @@ namespace RINGMesh {
                 GeoModelEntity( model, id, name, geological_feature ),
                 mesh_( model, 3, false )
         {
-            model_vertex_id_.bind( mesh_.vertex_attribute_manager(),
-                model_vertex_id_att_name() ) ;
+//            model_vertex_id_.bind( mesh_.vertex_attribute_manager(),
+//                model_vertex_id_att_name() ) ;
         }
         virtual void copy( const GeoModelEntity& from )
         {
@@ -348,16 +347,16 @@ namespace RINGMesh {
          */
         bool are_model_vertex_indices_valid() const ;
 
-        void bind_model_vertex_id_attribute() ;
-        void unbind_model_vertex_id_attribute() ;
+//        void bind_model_vertex_id_attribute() ;
+//        void unbind_model_vertex_id_attribute() ;
 
     protected:
         /// The RINGMesh::Mesh giving the geometry of this entity 
         Mesh mesh_ ;
-        /*! Attribute on the Mesh vertices storing the index of
-         *  the vertex in the GeoModel owning this entity
-         */
-        GEO::Attribute< index_t > model_vertex_id_ ;
+//        /*! Attribute on the Mesh vertices storing the index of
+//         *  the vertex in the GeoModel owning this entity
+//         */
+//        GEO::Attribute< index_t > model_vertex_id_ ;
 
         /// Entities on the boundary of this entity
         std::vector< gme_t > boundaries_ ;
@@ -731,36 +730,36 @@ namespace RINGMesh {
             bool border_only,
             index_t first_facet ) const ;
 
-        /*! @}
-         * \name Linking to GeoModelMesh indexing
-         * @{
-         */
-        void edge_from_model_vertex_ids(
-            index_t i0,
-            index_t i1,
-            index_t& f,
-            index_t& e ) const ;
-        void oriented_edge_from_model_vertex_ids(
-            index_t i0,
-            index_t i1,
-            index_t& facet,
-            index_t& edge ) const ;
-        /*!
-         * @brief Convert model vertex index to an index in a facet
-         * @param[in] f Index of the facet
-         * @param[in] model_v_id Index of the vertex in the GeoModel
-         * @return NO_ID or index of the vertex in the facet
-         */
-        index_t facet_id_from_model( index_t f, index_t model_vertex_index ) const
-        {
-            for( index_t v = 0; v < nb_mesh_element_vertices( f ); v++ ) {
-                if( model_vertex_id( f, v ) == model_vertex_index ) {
-                    return v ;
-                }
-            }
-            return NO_ID ;
-        }
-        index_t facet_from_model_vertex_ids( index_t i0, index_t i1 ) const ;
+//        /*! @}
+//         * \name Linking to GeoModelMesh indexing
+//         * @{
+//         */
+//        void edge_from_model_vertex_ids(
+//            index_t i0,
+//            index_t i1,
+//            index_t& f,
+//            index_t& e ) const ;
+//        void oriented_edge_from_model_vertex_ids(
+//            index_t i0,
+//            index_t i1,
+//            index_t& facet,
+//            index_t& edge ) const ;
+//        /*!
+//         * @brief Convert model vertex index to an index in a facet
+//         * @param[in] f Index of the facet
+//         * @param[in] model_v_id Index of the vertex in the GeoModel
+//         * @return NO_ID or index of the vertex in the facet
+//         */
+//        index_t facet_id_from_model( index_t f, index_t model_vertex_index ) const
+//        {
+//            for( index_t v = 0; v < nb_mesh_element_vertices( f ); v++ ) {
+//                if( model_vertex_id( f, v ) == model_vertex_index ) {
+//                    return v ;
+//                }
+//            }
+//            return NO_ID ;
+//        }
+//        index_t facet_from_model_vertex_ids( index_t i0, index_t i1 ) const ;
 
         /*! @}
          * \name Geometrical request on facets
