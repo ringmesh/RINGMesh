@@ -130,7 +130,7 @@ namespace RINGMesh {
          * @brief Add a vertex in a GeoModelEntity
          *        corresponding to an existing vertex of the model
          */
-        void add_to_bme( index_t v, const GMEVertex& v_gme ) ;
+        void add_to_gme( index_t v, const GMEVertex& v_gme ) ;
 
         /*!
          * @brief Change one of the GME vertex associated to a vertex
@@ -178,11 +178,11 @@ namespace RINGMesh {
          * @brief Delete vertices for which to_delete[i] != i
          * @detail The global vertices are deleted, gme_vertices_
          * is updated and the model_vertx_id in the GeoModelMeshEntity
-         * of the BoudnaryModel are updated too.
+         * of the GeoModel are updated too.
          *
          * @param[in,out] to_delete can be NO_ID or give the index of a
-         *  kept vertex with wich information should be merged.
-         *  It is recyled to give the mapping between old and new vertex indices
+         *  kept vertex with which information should be merged.
+         *  It is recycled to give the mapping between old and new vertex indices
          * @pre to_delete[ v ] is either NO_ID, or is equal or inferior to v
          */
         void erase_vertices( std::vector< index_t >& to_delete ) ;
@@ -1139,12 +1139,12 @@ namespace RINGMesh {
         /*!
          * @brief Delete vertices for which to_delete[i] != i
          * @detail The global vertices are deleted, gme_vertices_
-         * is updated and the model_vertx_id in the GeoModelMeshEntity
-         * of the BoudnaryModel are updated too.
+         * is updated and the model_vertex_id in the GeoModelMeshEntity
+         * of the GeoModel are updated too.
          *
          * @param[in,out] to_delete can be NO_ID or give the index of a
-         *  kept vertex with wich information should be merged.
-         *  It is recyled to give the mapping between old and new vertex indices
+         *  kept vertex with which information should be merged.
+         *  It is recycled to give the mapping between old and new vertex indices
          * @pre to_delete[ v ] is either NO_ID, or is equal or inferior to v
          */
         void erase_vertices( std::vector< index_t >& to_delete ) ;

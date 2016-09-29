@@ -336,7 +336,7 @@ namespace RINGMesh {
         }
         return valid ;
     }    
-    /*! All entities must be at leat in the boundary of another entity
+    /*! All entities must be at least in the boundary of another entity
      * and all entities in the in_boundary must have this entity in their
      * boundary vector
      */

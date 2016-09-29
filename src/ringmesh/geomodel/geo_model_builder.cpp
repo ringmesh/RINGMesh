@@ -1133,7 +1133,7 @@ namespace RINGMesh {
         GeoModelMeshEntity& E = mesh_entity( entity_id ) ;
         ringmesh_assert( v < E.nb_vertices() ) ;
         E.model_vertex_id_[v] = model_vertex ;
-        model().mesh.vertices.add_to_bme( model_vertex, GMEVertex( entity_id, v ) ) ;
+        model().mesh.vertices.add_to_gme( model_vertex, GMEVertex( entity_id, v ) ) ;
     }
 
     /*!

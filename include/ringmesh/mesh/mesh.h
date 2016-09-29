@@ -67,9 +67,10 @@ namespace RINGMesh {
     public:
         /*!
          * @brief Mesh constructor.
+         * @param[in] geo_model Associated GeoModel
          * @param[in] dimension dimension of the vertices.
          * @param[in] single_precision if true, vertices are stored in single precision (float),
-         * else they are stored as double precision (double)..
+         * else they are stored as double precision (double).
          */
         Mesh( const GeoModel& geo_model, index_t dimension, bool single_precision )
             : geo_model_( geo_model ), facets_aabb_( nil ), cells_aabb_( nil )
