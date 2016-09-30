@@ -572,8 +572,11 @@ namespace RINGMesh {
                 collect_region_information_( collect_region_info ),
                 cur_border_triangle_( 0 )
         {
+            std::cout << "start LGTGMS::const" << std::endl ;
             initialize_border_triangles_from_model_surfaces() ;
+            std::cout << "step into" << std::endl ;
             visited_.resize( border_triangles_.size(), false ) ;
+            std::cout << "end LGTGMS::const" << std::endl ;
         }
 
         /*!
@@ -828,6 +831,7 @@ namespace RINGMesh {
         {
             const GeoModelMeshVertices& model_vertices = geomodel_.mesh.vertices ;
             for( index_t i = 0; i < geomodel_.nb_surfaces(); ++i ) {
+//                std::cerr << "surface " << i << std::endl ;
                 const Surface& S = geomodel_.surface( i ) ;
                 for( index_t j = 0; j < S.nb_mesh_elements(); ++j ) {
                     for( index_t v = 0; v < S.nb_mesh_element_vertices( j ); ++v ) {
@@ -1778,11 +1782,13 @@ namespace RINGMesh {
 
     bool GeoModelBuilder::build_lines_and_corners_from_surfaces()
     {
+        std::cout << "start build_line" << std::endl ;
         LineGeometryFromGeoModelSurfaces line_computer( model(),
             options_.compute_regions_brep ) ;
 
         bool new_line_was_built = true ;
         while( new_line_was_built ) {
+            std::cout << "new while" << std::endl ;
             new_line_was_built = line_computer.compute_next_line_geometry() ;
 
             // I know this is a copy - but should'nt be too big [JP]
@@ -1793,15 +1799,18 @@ namespace RINGMesh {
                 reorder_line_vertices_to_start_at_corner( model(), vertices ) ;
             }
 
+            std::cout << "step1" << std::endl ;
             gme_t first_corner = find_or_create_corner( vertices.front() ) ;
             gme_t second_corner = find_or_create_corner( vertices.back() ) ;
             const std::vector< index_t >& adjacent_surfaces =
                 line_computer.adjacent_surfaces() ;
 
+            std::cout << "step2" << std::endl ;
             index_t backup_nb_lines = model().nb_lines() ;
             gme_t line_index = find_or_create_line( adjacent_surfaces, first_corner,
                 second_corner ) ;
 
+            std::cout << "step3" << std::endl ;
             bool created_line = model().nb_lines() != backup_nb_lines ;
             if( created_line ) {
                 set_line( line_index.index, vertices ) ;
@@ -1826,6 +1835,7 @@ namespace RINGMesh {
                 }
             }
         }
+        std::cout << "end build_line" << std::endl ;
         return true ;
     }
 
