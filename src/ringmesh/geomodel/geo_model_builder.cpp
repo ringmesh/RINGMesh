@@ -1737,6 +1737,7 @@ namespace RINGMesh {
         }
 
         cut_surfaces_by_internal_lines() ;
+        compute_universe() ;
 
         // Deliberate clear of the model vertices used for model building
         model().mesh.vertices.clear() ;
@@ -2041,6 +2042,27 @@ namespace RINGMesh {
         builder.delete_cells( to_delete, remove_isolated_vertices ) ;
     }
 
+    void GeoModelBuilder::compute_universe()
+    {
+        if( model().universe().nb_boundaries() != 0 ) return;
+        std::vector< bool > is_surface_universe_boundary( model().nb_surfaces(),
+            false ) ;
+        std::vector< bool > surface_side( model().nb_surfaces() ) ;
+        for( index_t r = 0; r < model().nb_regions(); r++ ) {
+            const Region& region = model().region( r ) ;
+        for( index_t s = 0; s < region.nb_boundaries(); s++ ) {
+                index_t surface_id = region.boundary_gme( s ).index ;
+                is_surface_universe_boundary[surface_id] =
+                    !is_surface_universe_boundary[surface_id] ;
+                surface_side[surface_id] = region.side( s ) ;
+            }
+        }
+
+        for( index_t s = 0; s < model().nb_surfaces(); s++ ) {
+            if( !is_surface_universe_boundary[s] ) continue ;
+            add_universe_boundary( s, surface_side[s] ) ;
+        }
+    }
 
     /*************************************************************************/
     GeoModelBuilderFile::GeoModelBuilderFile(
