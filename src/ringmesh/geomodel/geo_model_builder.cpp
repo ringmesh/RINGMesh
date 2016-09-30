@@ -2052,7 +2052,7 @@ namespace RINGMesh {
             const Region& region = model().region( r ) ;
         for( index_t s = 0; s < region.nb_boundaries(); s++ ) {
                 index_t surface_id = region.boundary_gme( s ).index ;
-                is_surafce_universe_boundary[surface_id] =
+                is_surface_universe_boundary[surface_id] =
                     !is_surface_universe_boundary[surface_id] ;
                 surface_side[surface_id] = region.side( s ) ;
             }
