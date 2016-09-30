@@ -1440,6 +1440,7 @@ namespace RINGMesh {
         for( index_t i = 0; i < nb_colocalised_per_thread.size(); i++ ) {
             nb_colocalised_vertices += nb_colocalised_per_thread[i] ;
         }
+
         return nb_colocalised_vertices ;
     }
 
@@ -1491,7 +1492,9 @@ namespace RINGMesh {
             cur_neighbor += nb_neighbors ;
             neighbors.resize( cur_neighbor ) ;
             double* dist = (double*) alloca( sizeof(double) * cur_neighbor ) ;
+//            std::cerr << "a" << std::endl ;
             nb_neighbors = get_neighbors( v, cur_neighbor, neighbors, dist ) ;
+//            std::cerr << "b" << std::endl ;
             for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
                 if( dist[i] > threshold_distance ) {
                     break ;

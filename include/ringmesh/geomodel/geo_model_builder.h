@@ -409,6 +409,7 @@ namespace RINGMesh {
         }
         void build_model()
         {
+            std::cout << "here in build_model" << std::endl ;
             load_file() ;
             end_model() ;
         }

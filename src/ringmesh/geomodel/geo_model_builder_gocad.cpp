@@ -1349,12 +1349,15 @@ namespace RINGMesh {
      */
     void GeoModelBuilderML::load_file()
     {
+        std::cout << "here in load_file" << std::endl ;
         read_file() ;
-
+        std::cout << "here in load_file 2" << std::endl ;
         model().mesh.vertices.test_and_initialize() ;
+        std::cout << "here in load_file 3" << std::endl ;
         build_lines_and_corners_from_surfaces() ;
-
+        std::cout << "here in load_file 4" << std::endl ;
         build_contacts() ;
+        std::cout << "here in load_file 5" << std::endl ;
     }
 
     void GeoModelBuilderML::read_line()

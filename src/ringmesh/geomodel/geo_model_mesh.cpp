@@ -175,34 +175,29 @@ namespace RINGMesh {
         return count ;
     }
 
-//    void fill_vertices(
-//        const GeoModel& M,
-//        const std::string& entity_type,
-//        MeshBuilder& builder,
-//        std::vector< std::vector< GMEVertex > >& gme_vertices,
-//        index_t& count )
-//    {
-//        for( index_t i = 0; i < M.nb_mesh_entities( entity_type ); ++i ) {
-//            GeoModelMeshEntity& E = const_cast< GeoModelMeshEntity& >( M.mesh_entity(
-//                entity_type, i ) ) ;
-//            if( E.nb_vertices() == 0 ) {
-//                continue ;
-//            }
-//
-//            GEO::Attribute< index_t > att( E.vertex_attribute_manager(),
-//                GeoModelMeshEntity::model_vertex_id_att_name() ) ;
-//
-//            for( index_t v = 0; v < E.nb_vertices(); v++ ) {
-//                builder.set_vertex( count, E.vertex( v ) ) ;
-//                // Global index stored at GME level
-//                att[v] = count ;
-//                // Index in the GME stored at global level
-//                gme_vertices[count].push_back( GMEVertex( E.gme_id(), v ) ) ;
-//                // Global vertex index increment
-//                count++ ;
-//            }
-//        }
-//    }
+    void fill_vertices(
+        const GeoModel& M,
+        const std::string& entity_type,
+        MeshBuilder& builder,
+        std::vector< std::vector< GMEVertex > >& gme_vertices,
+        index_t& count )
+    {
+        for( index_t i = 0; i < M.nb_mesh_entities( entity_type ); ++i ) {
+            GeoModelMeshEntity& E = const_cast< GeoModelMeshEntity& >( M.mesh_entity(
+                entity_type, i ) ) ;
+            if( E.nb_vertices() == 0 ) {
+                continue ;
+            }
+
+            for( index_t v = 0; v < E.nb_vertices(); v++ ) {
+                builder.set_vertex( count, E.vertex( v ) ) ;
+                // Index in the GME stored at global level
+                gme_vertices[count].push_back( GMEVertex( E.gme_id(), v ) ) ;
+                // Global vertex index increment
+                count++ ;
+            }
+        }
+    }
 
     void GeoModelMeshVertices::initialize()
     {
@@ -226,11 +221,11 @@ namespace RINGMesh {
         builder.create_vertices( nb ) ;
         gme_vertices_.resize( nb ) ;
 
-//        index_t count = 0 ;
-//        fill_vertices( gm_, Corner::type_name_static() , builder, gme_vertices_, count );
-//        fill_vertices( gm_, Line::type_name_static()   , builder, gme_vertices_, count );
-//        fill_vertices( gm_, Surface::type_name_static(), builder, gme_vertices_, count );
-//        fill_vertices( gm_, Region::type_name_static() , builder, gme_vertices_, count );
+        index_t count = 0 ;
+        fill_vertices( gm_, Corner::type_name_static() , builder, gme_vertices_, count );
+        fill_vertices( gm_, Line::type_name_static()   , builder, gme_vertices_, count );
+        fill_vertices( gm_, Surface::type_name_static(), builder, gme_vertices_, count );
+        fill_vertices( gm_, Region::type_name_static() , builder, gme_vertices_, count );
 
         // Remove colocated vertices
         remove_colocated() ;
