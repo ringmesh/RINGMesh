@@ -1,0 +1,34 @@
+<html>
+<head>
+<title>
+Visualisation of Gocad surface
+</title>
+<style>
+body {margin: 0;} canvas { width: 100%; height: 100% }
+</style>
+</head>
+<body>
+ <script src="js/three.min.js "></script>
+ <script src="js/OrbitControls.js "></script>
+ <script src="js/TrackballControls.js "></script>
+ <script src="js/KeyboardState.js "></script>
+ <script src="js/script01.js"></script>
+<script src="var/skua_model_horizon_A_ts.js"></script>
+<script src="var/skua_model_horizon_B_ts.js"></script>
+<script src="var/skua_model_horizon_C_ts.js"></script>
+<script src="var/skua_model_horizon_D_ts.js"></script>
+<script src="var/skua_model_horizon_E_ts.js"></script>
+
+<script>
+var scene,camera,material,light,ambientLight,renderer, keyboard, raycaster;
+var meshes=[];
+var mouse = new THREE.Vector2(), INTERSECTED;
+init();animate();
+function loadObjects(){
+var i = 0;
+
+addMeshes();
+};
+</script>
+</body>
+</html>
