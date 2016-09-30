@@ -294,7 +294,7 @@ namespace RINGMesh {
         test_and_initialize() ;
         const GMEVertex query_vertex( mesh_entity, entity_vertex_index ) ;
         ///@todo: Is it not a very costly way to find the returned index
-        /// (iteration on all the vertices of the model)
+        /// (iteration on all the vertices of the model) ?
         for( index_t v = 0; v < nb(); ++v ) {
             const std::vector< GMEVertex >& cur_gme_vertex = gme_vertices( v ) ;
             for( index_t gme_v = 0; gme_v < cur_gme_vertex.size(); ++gme_v ) {
@@ -313,7 +313,7 @@ namespace RINGMesh {
     {
         index_t entity_vertex_index =
             gm_.mesh_entity( mesh_entity ).mesh_element_vertex_index(
-                entity_vertex_index, vertex_local_index ) ;
+                entity_mesh_element_index, vertex_local_index ) ;
         return model_vertex_id( mesh_entity, entity_vertex_index ) ;
     }
 
