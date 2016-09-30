@@ -1739,9 +1739,7 @@ namespace RINGMesh {
 
     /*!
      * @brief Duplicates the surface vertices along the fake boundary
-     * (NO_ID adjacencies but shared vertices) and duplicate  the vertices
-     * @note Bad written code - error prone
-     * @todo Rewrite 
+     * (NO_ID adjacencies but shared vertices) and duplicate the vertices
      */
     void GeoModelBuilder::duplicate_surface_vertices_along_line(
         index_t surface_id, index_t line_id )
@@ -1771,6 +1769,43 @@ namespace RINGMesh {
             index_t p1_id = S.mesh_element_vertex_index( f, e_next ) ;
             update_facet_vertices_around_facet_vertex( S, f, p1_id, vertex_id ) ;
             surface_mesh_builder.set_vertex( vertex_id, p1 ) ;
+            vertex_id++ ;
+        }
+    }
+
+    void GeoModelBuilder::duplicate_region_vertices_along_surface(
+        index_t region_id, index_t surface_id )
+    {
+        ringmesh_assert( region_id < model().nb_regions() ) ;
+        ringmesh_assert( surface_id < model().nb_surfaces() ) ;
+
+        gme_t region_gme( Region::type_name_static(), region_id ) ;
+        Region& R = dynamic_cast< Region& >( mesh_entity( region_gme ) ) ;
+        const Surface& S = model().surface( surface_id ) ;
+
+        index_t vertex_id = create_mesh_entity_vertices( region_gme,
+            S.nb_vertices() ) ;
+
+        MeshBuilder region_mesh_builder( R.mesh_ ) ;
+        for( index_t v = 0; v < S.nb_vertices(); v++ ) {
+            const vec3& p = S.vertex( v ) ;
+
+            index_t cell = NO_ID ;
+            index_t cell_facet = NO_ID ;
+            bool found = find_cell_from_vertex( R, p, cell, cell_facet ) ;
+            ringmesh_unused( found ) ;
+            ringmesh_assert( found && cell != NO_ID && cell_facet != NO_ID ) ;
+
+            index_t e( NO_ID ) ;
+            index_t f( NO_ID ) ;
+            bool found = find_facet_from_edge_vertices( R, p0, p1, f, e ) ;
+            ringmesh_unused( found ) ;
+            ringmesh_assert( found && f != NO_ID && e != NO_ID ) ;
+
+            index_t e_next = R.next_facet_vertex_index( f, e ) ;
+            index_t p1_id = R.mesh_element_vertex_index( f, e_next ) ;
+            update_facet_vertices_around_facet_vertex( R, f, p1_id, vertex_id ) ;
+            region_mesh_builder.set_vertex( vertex_id, p1 ) ;
             vertex_id++ ;
         }
     }
@@ -1823,9 +1858,9 @@ namespace RINGMesh {
     {
         index_t nb_disconnected_facets = disconnect_region_cells_along_surface_facets(
             region_id, surface_id ) ;
-//        if( nb_disconnected_edges > 0 ) {
-//            duplicate_surface_vertices_along_line( region_id, surface_id ) ;
-//        }
+        if( nb_disconnected_facets > 0 ) {
+            duplicate_region_vertices_along_surface( region_id, surface_id ) ;
+        }
 //        duplicate_surface_vertices_at_line_boundaries( region_id, surface_id ) ;
     }
 
