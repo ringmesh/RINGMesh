@@ -393,6 +393,9 @@ namespace RINGMesh {
         void duplicate_surface_vertices_along_line(
             index_t surface_id,
             index_t line_id ) ;
+        void duplicate_region_vertices_along_surface(
+            index_t region_id,
+            index_t surface_id ) ;
         index_t disconnect_surface_facets_along_line_edges(
             index_t surface_id,
             index_t line_id ) ;
