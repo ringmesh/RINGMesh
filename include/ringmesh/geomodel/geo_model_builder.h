@@ -374,6 +374,11 @@ namespace RINGMesh {
             const std::vector< index_t >& facets,
             index_t old_vertex,
             index_t new_vertex ) ;
+        void update_cell_vertex(
+            Region& R,
+            const std::vector< index_t >& cells,
+            index_t old_vertex,
+            index_t new_vertex ) ;
         void assign_surface_triangle_mesh(
             index_t surface_id,
             const std::vector< index_t >& triangle_vertices,
@@ -401,10 +406,6 @@ namespace RINGMesh {
             index_t line_id ) ;
         index_t disconnect_region_cells_along_surface_facets(
             index_t region_id, index_t surface_id ) ;
-        void duplicate_surface_vertices_at_line_boundaries(
-            index_t surface_id,
-            index_t line_id ) ;
-        void duplicate_corner_if_needed( index_t corner_id, index_t surface_id ) ;
     } ;
 
     /*!
