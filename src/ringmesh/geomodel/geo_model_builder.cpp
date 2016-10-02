@@ -1916,6 +1916,7 @@ namespace RINGMesh {
     {
         for( index_t r = 0; r < model().nb_regions(); r++ ) {
             GeoModelMeshEntity& R = mesh_entity( Region::type_name_static(), r ) ;
+            if( R.nb_mesh_elements() == 0 ) continue ;
             std::set< index_t > cutting_surfaces ;
             get_internal_borders( R, cutting_surfaces ) ;
             for( std::set< index_t >::iterator it = cutting_surfaces.begin();
@@ -1994,7 +1995,7 @@ namespace RINGMesh {
 
         // Complete boundary information for surfaces
         // to compute volumetric regions
-        fill_mesh_entities_boundaries( Region::type_name_static() ) ;
+        fill_mesh_entities_boundaries( Surface::type_name_static() ) ;
 
         // Sort surfaces around the contacts
         for( index_t i = 0; i < regions_info_.size(); ++i ) {
