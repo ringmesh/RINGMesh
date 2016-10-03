@@ -1097,7 +1097,7 @@ namespace RINGMesh {
     {
         copy_meshes( geomodel, Corner::type_name_static() ) ;
         copy_meshes( geomodel, Line::type_name_static() ) ;
-        copy_meshes( geomodel, Region::type_name_static() ) ;
+        copy_meshes( geomodel, Surface::type_name_static() ) ;
         copy_meshes( geomodel, Region::type_name_static() ) ;
     }
 
