@@ -383,6 +383,8 @@ namespace RINGMesh {
             index_t region_id,
             const std::vector< index_t >& tet_vertices ) ;
 
+        void compute_universe() ;
+
         void cut_surfaces_by_internal_lines() ;
         void cut_surface_by_line( index_t surface_id, index_t line_id ) ;
         void duplicate_surface_vertices_along_line(
