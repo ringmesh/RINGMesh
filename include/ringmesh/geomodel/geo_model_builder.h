@@ -365,17 +365,17 @@ namespace RINGMesh {
             index_t surface_id,
             const std::vector< index_t >& triangle_vertices ) ;
         void update_facet_vertices_around_facet_vertex(
-            Surface& S,
+            Surface& surface,
             index_t facet,
             index_t old_vertex,
             index_t new_vertex ) ;
         void update_facet_vertex(
-            Surface& S,
+            Surface& surface,
             const std::vector< index_t >& facets,
             index_t old_vertex,
             index_t new_vertex ) ;
         void update_cell_vertex(
-            Region& R,
+            Region& region,
             const std::vector< index_t >& cells,
             index_t old_vertex,
             index_t new_vertex ) ;
