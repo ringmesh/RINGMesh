@@ -65,6 +65,7 @@ namespace {
 
     const std::string TAB = "\t" ;
     const std::string SPACE = " " ;
+    const std::string COMMA = "," ;
 
     /*!
      * @brief Write in the out stream things to save for CONTACT, INTERFACE and LAYERS
@@ -2178,6 +2179,123 @@ namespace {
 //            }
         }
     } ;
+
+
+    /************************************************************************/
+
+    struct RINGMesh2Abaqus {
+        std::string entity_type ;
+        index_t vertices[8] ;
+    } ;
+
+    static RINGMesh2Abaqus tet_descriptor_abaqus = {
+        "C3D4",                  // type
+        { 0, 1, 2, 3 }     // vertices
+    } ;
+
+    static RINGMesh2Abaqus hex_descriptor_abaqus = {
+        "C3D8",                         // type
+        { 0, 4, 5, 1, 2, 6, 7, 3 }     // vertices
+    } ;
+
+
+    class AbaqusIOHandler: public GeoModelIOHandler {
+    public:
+        static const index_t NB_ENTRY_PER_LINE = 16 ;
+
+        virtual void load( const std::string& filename, GeoModel& geomodel )
+        {
+            throw RINGMeshException( "I/O",
+                "Loading of a GeoModel from abaqus not implemented yet" ) ;
+        }
+        virtual void save( const GeoModel& gm, const std::string& filename )
+        {
+            std::ofstream out( filename.c_str() ) ;
+            out.precision( 16 ) ;
+
+            out << "*HEADING" << std::endl ;
+            out << "**Mesh exported from RINGMesh" << std::endl ;
+            out << "**https://bitbucket.org/ring_team/ringmesh" << std::endl ;
+
+            const GeoModelMesh& mesh = gm.mesh ;
+            out << "*NODE" << std::endl ;
+            for( index_t v = 0; v < mesh.vertices.nb(); v++ ) {
+                out << v + 1 ;
+                const vec3& vertex = mesh.vertices.vertex( v ) ;
+                for( index_t i = 0; i < 3; i++ ) {
+                    out << COMMA << SPACE << vertex[i] ;
+                }
+                out << std::endl ;
+            }
+
+            const GeoModelMeshCells& cells = mesh.cells ;
+            out << "*ELEMENT, type=" << tet_descriptor_abaqus.entity_type << std::endl ;
+            for( index_t r = 0; r < gm.nb_regions(); r++ ) {
+                for( index_t c = 0; c < cells.nb_tet( r ); c++ ) {
+                    index_t tetra = cells.tet( r, c ) ;
+                    out << tetra + 1 ;
+                    for( index_t v = 0; v < 4; v++ ) {
+                        index_t vertex_id = tet_descriptor_abaqus.vertices[v] ;
+                        out << COMMA << SPACE << cells.vertex( tetra, vertex_id ) ;
+                    }
+                    out << std::endl ;
+                }
+            }
+            out << "*ELEMENT, type=" << hex_descriptor_abaqus.entity_type << std::endl ;
+            for( index_t r = 0; r < gm.nb_regions(); r++ ) {
+                for( index_t c = 0; c < cells.nb_hex( r ); c++ ) {
+                    index_t hex = cells.hex( r, c ) ;
+                    out << hex + 1 ;
+                    for( index_t v = 0; v < 8; v++ ) {
+                        index_t vertex_id = hex_descriptor_abaqus.vertices[v] ;
+                        out << COMMA << SPACE << cells.vertex( hex, vertex_id ) ;
+                    }
+                    out << std::endl ;
+                }
+            }
+
+            for( index_t r = 0; r < gm.nb_regions(); r++ ) {
+                const std::string& name =  gm.region( r ).name() ;
+                out << "*ELSET, elset=" << name << std::endl ;
+                index_t count = 0 ;
+                std::string sep ;
+                for( index_t c = 0; c < cells.nb_tet( r ); c++ ) {
+                    index_t tetra = cells.tet( r, c ) ;
+                    out << sep << tetra + 1 ;
+                    sep = COMMA + SPACE ;
+                    new_line( count, out, sep ) ;
+
+                }
+                for( index_t c = 0; c < cells.nb_hex( r ); c++ ) {
+                    index_t hex = cells.hex( r, c ) ;
+                    out << sep << hex + 1 ;
+                    sep = COMMA + SPACE ;
+                    new_line( count, out, sep ) ;
+                }
+                reset_line( count, out ) ;
+
+                out << "*NSET, nset="  << name << ", elset=" << name << std::endl ;
+            }
+        }
+    private:
+        void new_line( index_t& count, std::ofstream& out, std::string& sep ) const
+        {
+            count++ ;
+            if( count == NB_ENTRY_PER_LINE ) {
+                count = 0 ;
+                sep = "" ;
+                out << std::endl ;
+            }
+        }
+        void reset_line( index_t& count, std::ofstream& out ) const
+        {
+            if( count != 0 ) {
+                count = 0 ;
+                out << std::endl ;
+            }
+        }
+    } ;
+
 }
 
 namespace RINGMesh {
@@ -2214,11 +2332,11 @@ namespace RINGMesh {
         ringmesh_register_GeoModelIOHandler_creator( CSMPIOHandler, "csmp" );
         ringmesh_register_GeoModelIOHandler_creator( AsterIOHandler, "mail" );
         ringmesh_register_GeoModelIOHandler_creator( VTKIOHandler, "vtk" );
-        ringmesh_register_GeoModelIOHandler_creator( GPRSIOHandler, "gprs" );
         ringmesh_register_GeoModelIOHandler_creator( MSHIOHandler, "msh" );
         ringmesh_register_GeoModelIOHandler_creator( MFEMIOHandler, "mfem" );
         ringmesh_register_GeoModelIOHandler_creator( GeoModelHandlerGM, "gm" );
         ringmesh_register_GeoModelIOHandler_creator( OldGeoModelHandlerGM, "ogm" );
+        ringmesh_register_GeoModelIOHandler_creator( AbaqusIOHandler, "inp" );
     }
 
 }
