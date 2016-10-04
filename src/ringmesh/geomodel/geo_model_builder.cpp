@@ -1187,19 +1187,19 @@ namespace RINGMesh {
         const gme_t& second_corner )
     {
         for( index_t i = 0; i < model().nb_lines(); ++i ) {
-            const Line& L = model().line( i ) ;
-            gme_t c0 = L.boundary_gme( 0 ) ;
-            gme_t c1 = L.boundary_gme( 1 ) ;
+            const Line& line = model().line( i ) ;
+            gme_t c0 = line.boundary_gme( 0 ) ;
+            gme_t c1 = line.boundary_gme( 1 ) ;
 
             if( ( c0 == first_corner && c1 == second_corner )
                 || ( c0 == second_corner && c1 == first_corner ) ) {
                 std::vector< index_t > cur_adjacent_surfaces ;
-                get_sorted_incident_surfaces( L, cur_adjacent_surfaces ) ;
+                get_sorted_incident_surfaces( line, cur_adjacent_surfaces ) ;
                 if( cur_adjacent_surfaces.size() == sorted_adjacent_surfaces.size()
                     && std::equal( cur_adjacent_surfaces.begin(),
                         cur_adjacent_surfaces.end(),
                         sorted_adjacent_surfaces.begin() ) ) {
-                    return L.gme_id() ;
+                    return line.gme_id() ;
                 }
             }
         }
@@ -1713,12 +1713,12 @@ namespace RINGMesh {
 
         Surface& surface = dynamic_cast< Surface& >( mesh_entity(
             gme_t( Surface::type_name_static(), surface_id ) ) ) ;
-        const Line& L = model().line( line_id ) ;
+        const Line& line = model().line( line_id ) ;
         MeshBuilder builder( surface.mesh_ ) ;
         index_t nb_disconnected_edges = 0 ;
-        for( index_t i = 0; i < L.nb_mesh_elements(); ++i ) {
-            const vec3& p0 = L.vertex( i ) ;
-            const vec3& p1 = L.vertex( i + 1 ) ;
+        for( index_t i = 0; i < line.nb_mesh_elements(); ++i ) {
+            const vec3& p0 = line.vertex( i ) ;
+            const vec3& p1 = line.vertex( i + 1 ) ;
 
             index_t f = NO_ID ;
             index_t e = NO_ID ;
@@ -1784,14 +1784,14 @@ namespace RINGMesh {
 
         gme_t surface_gme( Surface::type_name_static(), surface_id ) ;
         Surface& surface = dynamic_cast< Surface& >( mesh_entity( surface_gme ) ) ;
-        const Line& L = model().line( line_id ) ;
+        const Line& line = model().line( line_id ) ;
 
         index_t vertex_id = create_mesh_entity_vertices( surface_gme,
-            L.nb_vertices() ) ;
+            line.nb_vertices() ) ;
 
         MeshBuilder surface_mesh_builder( surface.mesh_ ) ;
-        for( index_t v = 0; v < L.nb_vertices(); v++ ) {
-            const vec3& p = L.vertex( v ) ;
+        for( index_t v = 0; v < line.nb_vertices(); v++ ) {
+            const vec3& p = line.vertex( v ) ;
 
             index_t v_id( NO_ID ) ;
             index_t f( NO_ID ) ;
