@@ -44,6 +44,45 @@
 
 namespace RINGMesh {
 
+    const GEO::MeshFacetsAABB& Mesh2D::facets_aabb() const
+    {
+   /*     GeoModel& M = const_cast< GeoModel& >( geo_model_ ) ;
+        if( facets_aabb_ == nil ) {
+            // Geogram triangulates the Mesh when creating the AABB tree
+            ringmesh_assert( mesh_->facets.are_simplices() ) ;
+
+            // Very bad side effect
+            // The root cause of the problem is the duplication of many things
+            // in our GeoModel structure [JP]
+            if( M.mesh.vertices.is_initialized() ) {
+                M.mesh.vertices.clear() ;
+            }
+            MeshBuilder builder( const_cast< Mesh& >( *this ) ) ;
+            builder.clear_vertex_linked_objects() ;
+
+            facets_aabb_ = new GEO::MeshFacetsAABB( *mesh_ ) ;
+        }
+        return *facets_aabb_ ;*/
+    }
+
+    const GEO::MeshCellsAABB& Mesh3D::cells_aabb() const
+    {
+/*        GeoModel& M = const_cast< GeoModel& >( geo_model_ ) ;
+        if( cells_aabb_ == nil ) {
+            // Very bad side effect
+            // The root cause of the problem is the duplication of many things
+            // in our GeoModel structure [JP]
+            if( M.mesh.vertices.is_initialized() ) {
+                M.mesh.vertices.clear() ;
+            }
+            MeshBuilder builder( const_cast< Mesh& >( *this ) ) ;
+            builder.clear_vertex_linked_objects() ;
+
+            cells_aabb_ = new GEO::MeshCellsAABB( *mesh_ ) ;
+        }
+        return *cells_aabb_ ;*/
+    }
+
     const GEO::MeshFacetsAABB& Mesh::facets_aabb() const
     {
         GeoModel& M = const_cast< GeoModel& >( geo_model_ ) ;
