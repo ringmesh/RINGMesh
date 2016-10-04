@@ -1726,13 +1726,13 @@ namespace RINGMesh {
             ringmesh_unused( found ) ;
             ringmesh_assert( found && f != NO_ID && e != NO_ID ) ;
 
-            index_t f2 = surface.facet_adjacent_index( f, e ) ;
-            if( f2 != NO_ID ) {
-                index_t e2 = edge_index_from_facet_and_edge_vertex_indices( surface, f2,
+            index_t adj_f = surface.facet_adjacent_index( f, e ) ;
+            if( adj_f != NO_ID ) {
+                index_t adj_e = edge_index_from_facet_and_edge_vertex_indices( surface, adj_f,
                     p0, p1 ) ;
-                ringmesh_assert( e2 != NO_ID ) ;
+                ringmesh_assert( adj_e != NO_ID ) ;
                 builder.set_facet_adjacent( f, e, NO_ID ) ;
-                builder.set_facet_adjacent( f2, e2, NO_ID ) ;
+                builder.set_facet_adjacent( adj_f, adj_e, NO_ID ) ;
                 nb_disconnected_edges++ ;
             }
         }
@@ -1759,13 +1759,13 @@ namespace RINGMesh {
             ringmesh_unused( found ) ;
             ringmesh_assert( found && cell != NO_ID && cell_facet != NO_ID ) ;
 
-            index_t cell2 = region.cell_adjacent_index( cell, cell_facet ) ;
-            if( cell2 != NO_ID ) {
-                index_t cell_facet2 = cell_facet_index_from_cell_and_facet( region, cell2,
+            index_t adj_cell = region.cell_adjacent_index( cell, cell_facet ) ;
+            if( adj_cell != NO_ID ) {
+                index_t adj_cell_facet = cell_facet_index_from_cell_and_facet( region, adj_cell,
                     surface, facet ) ;
-                ringmesh_assert( cell_facet2 != NO_ID ) ;
+                ringmesh_assert( adj_cell_facet != NO_ID ) ;
                 builder.set_cell_adjacent( cell, cell_facet, NO_ID ) ;
-                builder.set_cell_adjacent( cell2, cell_facet2, NO_ID ) ;
+                builder.set_cell_adjacent( adj_cell, adj_cell_facet, NO_ID ) ;
                 nb_disconnected_facets++ ;
             }
         }
