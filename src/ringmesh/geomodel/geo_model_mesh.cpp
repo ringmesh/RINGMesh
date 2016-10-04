@@ -293,6 +293,8 @@ namespace RINGMesh {
     {
         test_and_initialize() ;
         const GMEVertex query_vertex( mesh_entity, entity_vertex_index ) ;
+        DEBUG( mesh_entity ) ;
+        DEBUG( entity_vertex_index ) ;
         ///@todo: Is it not a very costly way to find the returned index
         /// (iteration on all the vertices of the model) ?
         for( index_t v = 0; v < nb(); ++v ) {
@@ -1548,7 +1550,8 @@ namespace RINGMesh {
             const Surface& surface = gm_.surface( s ) ;
             if( surface.is_simplicial() ) {
                 nb_facet_per_type[TRIANGLE] += surface.nb_mesh_elements() ;
-                surface_facet_ptr_[ALL * s + TRIANGLE + 1] += surface.nb_mesh_elements() ;
+                surface_facet_ptr_[ALL * s + TRIANGLE + 1] +=
+                    surface.nb_mesh_elements() ;
             } else {
                 for( index_t f = 0; f < surface.nb_mesh_elements(); f++ ) {
                     switch( surface.nb_mesh_element_vertices( f ) ) {
@@ -1581,7 +1584,7 @@ namespace RINGMesh {
         std::vector< index_t > facet_offset_per_type( ALL, 0 ) ;
         for( index_t t = TRIANGLE + 1; t < ALL; t++ ) {
             facet_offset_per_type[t] += facet_offset_per_type[t - 1] ;
-            facet_offset_per_type[t] += nb_facet_per_type[t-1] ;
+            facet_offset_per_type[t] += nb_facet_per_type[t - 1] ;
         }
         for( index_t i = 1; i < surface_facet_ptr_.size() - 1; i++ ) {
             surface_facet_ptr_[i + 1] += surface_facet_ptr_[i] ;
@@ -1601,20 +1604,21 @@ namespace RINGMesh {
                     FacetType T = static_cast< FacetType >( nb_vertices - 3 ) ;
                     cur_facet = facet_offset_per_type[T] + cur_facet_per_type[T]++ ;
                     for( index_t v = 0; v < nb_vertices; v++ ) {
-                    mesh_builder_.set_facet_vertex( cur_facet, v,
-                        model_vertices.model_vertex_id( surface.gme_id(), f, v ) ) ;
+                        mesh_builder_.set_facet_vertex( cur_facet, v,
+                            model_vertices.model_vertex_id( surface.gme_id(), f,
+                                v ) ) ;
+                    }
+                } else {
+                    GEO::vector< index_t > vertices( nb_vertices ) ;
+                    for( index_t v = 0; v < nb_vertices; v++ ) {
+                        vertices[v] = model_vertices.model_vertex_id(
+                            surface.gme_id(), f, v ) ;
+                    }
+                    cur_facet = mesh_builder_.create_facet_polygon( vertices ) ;
                 }
-            } else {
-                GEO::vector< index_t > vertices( nb_vertices ) ;
-                for( index_t v = 0; v < nb_vertices; v++ ) {
-                    vertices[v] = model_vertices.model_vertex_id( surface.gme_id(),
-                        f, v ) ;
-                }
-                cur_facet = mesh_builder_.create_facet_polygon( vertices ) ;
+                surface_id_[cur_facet] = s ;
             }
-            surface_id_[cur_facet] = s ;
         }
-    }
 
         // Compute facet adjacencies
         mesh_builder_.connect_facets() ;
