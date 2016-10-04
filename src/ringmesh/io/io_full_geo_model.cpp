@@ -2217,6 +2217,8 @@ namespace {
             out << "**Mesh exported from RINGMesh" << std::endl ;
             out << "**https://bitbucket.org/ring_team/ringmesh" << std::endl ;
 
+            out << "*PART, name=Part-1" << std::endl ;
+
             const GeoModelMesh& mesh = gm.mesh ;
             out << "*NODE" << std::endl ;
             for( index_t v = 0; v < mesh.vertices.nb(); v++ ) {
@@ -2229,28 +2231,36 @@ namespace {
             }
 
             const GeoModelMeshCells& cells = mesh.cells ;
-            out << "*ELEMENT, type=" << tet_descriptor_abaqus.entity_type << std::endl ;
-            for( index_t r = 0; r < gm.nb_regions(); r++ ) {
-                for( index_t c = 0; c < cells.nb_tet( r ); c++ ) {
-                    index_t tetra = cells.tet( r, c ) ;
-                    out << tetra + 1 ;
-                    for( index_t v = 0; v < 4; v++ ) {
-                        index_t vertex_id = tet_descriptor_abaqus.vertices[v] ;
-                        out << COMMA << SPACE << cells.vertex( tetra, vertex_id ) ;
+            if( cells.nb_tet() > 0 ) {
+                out << "*ELEMENT, type=" << tet_descriptor_abaqus.entity_type
+                    << std::endl ;
+                for( index_t r = 0; r < gm.nb_regions(); r++ ) {
+                    for( index_t c = 0; c < cells.nb_tet( r ); c++ ) {
+                        index_t tetra = cells.tet( r, c ) ;
+                        out << tetra + 1 ;
+                        for( index_t v = 0; v < 4; v++ ) {
+                            index_t vertex_id = tet_descriptor_abaqus.vertices[v] ;
+                            out << COMMA << SPACE
+                                << cells.vertex( tetra, vertex_id ) + 1 ;
+                        }
+                        out << std::endl ;
                     }
-                    out << std::endl ;
                 }
             }
-            out << "*ELEMENT, type=" << hex_descriptor_abaqus.entity_type << std::endl ;
-            for( index_t r = 0; r < gm.nb_regions(); r++ ) {
-                for( index_t c = 0; c < cells.nb_hex( r ); c++ ) {
-                    index_t hex = cells.hex( r, c ) ;
-                    out << hex + 1 ;
-                    for( index_t v = 0; v < 8; v++ ) {
-                        index_t vertex_id = hex_descriptor_abaqus.vertices[v] ;
-                        out << COMMA << SPACE << cells.vertex( hex, vertex_id ) ;
+            if( cells.nb_hex() > 0 ) {
+                out << "*ELEMENT, type=" << hex_descriptor_abaqus.entity_type
+                    << std::endl ;
+                for( index_t r = 0; r < gm.nb_regions(); r++ ) {
+                    for( index_t c = 0; c < cells.nb_hex( r ); c++ ) {
+                        index_t hex = cells.hex( r, c ) ;
+                        out << hex + 1 ;
+                        for( index_t v = 0; v < 8; v++ ) {
+                            index_t vertex_id = hex_descriptor_abaqus.vertices[v] ;
+                            out << COMMA << SPACE
+                                << cells.vertex( hex, vertex_id ) + 1 ;
+                        }
+                        out << std::endl ;
                     }
-                    out << std::endl ;
                 }
             }
 
@@ -2276,6 +2286,8 @@ namespace {
 
                 out << "*NSET, nset="  << name << ", elset=" << name << std::endl ;
             }
+
+            out << "*END PART" << std::endl ;
         }
     private:
         void new_line( index_t& count, std::ofstream& out, std::string& sep ) const
