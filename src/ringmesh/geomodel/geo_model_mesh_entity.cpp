@@ -1344,7 +1344,7 @@ namespace RINGMesh {
     }
 
     index_t Region::cells_around_vertex(
-        index_t P,
+        index_t vertex_id,
         std::vector< index_t >& result,
         index_t cell_hint ) const
     {
@@ -1369,7 +1369,7 @@ namespace RINGMesh {
 
             bool cell_includes_vertex = false ;
             for( index_t v = 0; v < nb_mesh_element_vertices( c ); v++ ) {
-                if( mesh_element_vertex_index( c, v ) == P ) {
+                if( mesh_element_vertex_index( c, v ) == vertex_id ) {
                     result.push_back( c ) ;
                     cell_includes_vertex = true ;
                     break ;
@@ -1382,7 +1382,7 @@ namespace RINGMesh {
             for( index_t f = 0; f < nb_cell_facets( c ); f++ ) {
                 for( index_t v = 0; v < nb_cell_facet_vertices( c, f ); v++ ) {
                     index_t vertex = cell_facet_vertex_index( c, f, v ) ;
-                    if( vertex == P ) {
+                    if( vertex == vertex_id ) {
                         index_t adj_P = cell_adjacent_index( c, f ) ;
 
                         if( adj_P != NO_ID ) {
