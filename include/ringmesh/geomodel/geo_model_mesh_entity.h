@@ -1047,7 +1047,7 @@ namespace RINGMesh {
         }
 
         index_t cells_around_vertex(
-            index_t P,
+            index_t vertex_id,
             std::vector< index_t >& result,
             index_t cell_hint ) const ;
 
