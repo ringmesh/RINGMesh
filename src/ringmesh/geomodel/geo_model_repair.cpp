@@ -156,25 +156,29 @@ namespace RINGMesh {
      * @pre Colocated vertices have already been removed
      */
     void GeoModelRepair::remove_degenerate_facet_and_edges(
-        std::set< gme_t >& to_remove )
+        std::set< gme_t >& geological_entities_to_remove,
+        std::set< gme_t >& mesh_entities_to_remove )
     {
-        to_remove.clear() ;
+        geological_entities_to_remove.clear() ;
+        mesh_entities_to_remove.clear() ;
         for( index_t i = 0; i < model().nb_lines(); ++i ) {
-            Line& line = dynamic_cast<Line&>(mesh_entity( gme_t( Line::type_name_static(), i ) ));
+            Line& line = dynamic_cast< Line& >( mesh_entity(
+                gme_t( Line::type_name_static(), i ) ) ) ;
             index_t nb = repair_line_mesh( line ) ;
             if( nb > 0 ) {
                 Logger::out( "GeoModel" ) << nb
                     << " degenerated edges removed in LINE " << i << std::endl ;
                 // If the Line is set it to remove
                 if( model().line( i ).nb_mesh_elements() == 0 ) {
-                    to_remove.insert( model().line( i ).gme_id() ) ;
+                    mesh_entities_to_remove.insert( model().line( i ).gme_id() ) ;
                 }
             }
         }
         // The builder might be needed
 
         for( index_t i = 0; i < model().nb_surfaces(); ++i ) {
-            Surface& surface = dynamic_cast<Surface&>(mesh_entity( gme_t(Surface::type_name_static(), i) ) );
+            Surface& surface = dynamic_cast< Surface& >( mesh_entity(
+                gme_t( Surface::type_name_static(), i ) ) ) ;
             index_t nb = detect_degenerate_facets( surface.mesh_ ) ;
             /// @todo Check if that cannot be simplified 
             if( nb > 0 ) {
@@ -199,15 +203,17 @@ namespace RINGMesh {
                     }
                 }
                 if( surface.nb_vertices() == 0 || surface.nb_mesh_elements() == 0 ) {
-                    to_remove.insert( model().surface( i ).gme_id() ) ;
+                    geological_entities_to_remove.insert(
+                        model().surface( i ).gme_id() ) ;
                 } else {
                     // If the Surface has internal boundaries, we need to 
                     // re-cut the Surface along these lines
-                    Surface& S = dynamic_cast<Surface&>(mesh_entity( gme_t(Surface::type_name_static(), i) ) );
+                    Surface& S = dynamic_cast< Surface& >( mesh_entity(
+                        gme_t( Surface::type_name_static(), i ) ) ) ;
                     std::set< index_t > cutting_lines ;
                     for( index_t l = 0; l < S.nb_boundaries(); ++l ) {
                         const Line& L = model().line( S.boundary_gme( l ).index ) ;
-                        if( to_remove.count( L.gme_id() ) == 0
+                        if( geological_entities_to_remove.count( L.gme_id() ) == 0
                             && L.is_inside_border( S ) ) {
                             cutting_lines.insert( L.index() ) ;
                         }
@@ -282,7 +288,8 @@ namespace RINGMesh {
     {
         to_remove.clear() ;
         // For all Lines and Surfaces
-        const std::string types[2] = { Line::type_name_static(), Surface::type_name_static() } ;
+        const std::string types[2] = {
+            Line::type_name_static(), Surface::type_name_static() } ;
         for( index_t t = 0; t < 2; ++t ) {
             const std::string& T = types[t] ;
 
@@ -350,18 +357,26 @@ namespace RINGMesh {
         model().mesh.vertices.clear() ;
 
         // Remove colocated vertices in each entity
-        std::set< gme_t > empty_entities ;
-        remove_colocated_entity_vertices( empty_entities ) ;
-        if( !empty_entities.empty() ) {
-            get_dependent_entities( empty_entities ) ;
-            remove_entities( empty_entities ) ;
+        std::set< gme_t > empty_mesh_entities ;
+        std::set< gme_t > empty_geological_entities ;
+
+        remove_colocated_entity_vertices( empty_mesh_entities ) ;
+        if( !empty_mesh_entities.empty() ) {
+            get_dependent_entities( empty_mesh_entities,
+                empty_geological_entities ) ;
+            remove_mesh_entities( empty_mesh_entities ) ;
+            remove_geological_entities( empty_geological_entities ) ;
+
         }
 
         // Basic mesh repair for surfaces and lines
-        remove_degenerate_facet_and_edges( empty_entities ) ;
-        if( !empty_entities.empty() ) {
-            get_dependent_entities( empty_entities ) ;
-            remove_entities( empty_entities ) ;
+        remove_degenerate_facet_and_edges( empty_geological_entities,
+            empty_mesh_entities ) ;
+        if( !empty_geological_entities.empty() ||!empty_mesh_entities.empty() ) {
+            get_dependent_entities( empty_mesh_entities,
+                empty_geological_entities ) ;
+            remove_mesh_entities( empty_mesh_entities ) ;
+            remove_geological_entities( empty_geological_entities ) ;
         }
 
         // This is basic requirement ! no_colocated model vertices !

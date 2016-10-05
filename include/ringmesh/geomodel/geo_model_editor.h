@@ -295,17 +295,26 @@ namespace RINGMesh {
             entity.children_[id] = child ;
         }
 
-        void remove_entities( const std::set< gme_t >& entities ) ;
+        void remove_geological_entities( const  std::set< gme_t >& entities ) ;
+        void remove_mesh_entities( const std::set< gme_t >& entities ) ;
 
         /*!
          * @todo Could be moved in the API [JP]
          */
-        bool get_dependent_entities( std::set< gme_t >& entities ) const ;
+        bool get_dependent_entities(
+            std::set< gme_t >& mesh_entities,
+            std::set< gme_t > geological_entities) const ;
 
         /*!
          * Should be rewritten. Put as it was before someone removed it...
          */
         void remove_entities_and_dependencies(
+            const std::set< gme_t >& entities_to_remove,
+            std::set< gme_t >& geological_entities_to_remove,
+            std::set< gme_t >& mesh_entities_to_remove) ;
+        void remove_geological_entities_and_dependencies(
+            const std::set< gme_t >& entities_to_remove ) ;
+        void remove_mesh_entities_and_dependencies(
             const std::set< gme_t >& entities_to_remove ) ;
 
         const GeoModel& model() const

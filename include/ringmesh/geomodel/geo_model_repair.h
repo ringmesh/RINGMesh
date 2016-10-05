@@ -95,7 +95,9 @@ namespace RINGMesh {
 
         index_t detect_degenerate_facets( Mesh& M ) ;
 
-        void remove_degenerate_facet_and_edges( std::set< gme_t >& to_remove ) ;
+        void remove_degenerate_facet_and_edges(
+            std::set< gme_t >& geological_entities_to_remove,
+            std::set< gme_t >& mesh_entities_to_remove ) ;
 
         void remove_colocated_element_vertices( std::set< gme_t >& to_remove ) ;
 

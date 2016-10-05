@@ -296,17 +296,21 @@ namespace RINGMesh {
      *        an entity in the set does not exist.
      * @return True if at least one entity was added.
      */
-    bool GeoModelEditor::get_dependent_entities( std::set< gme_t >& in ) const
+    bool GeoModelEditor::get_dependent_entities(
+        std::set< gme_t >& mesh_entities,
+        std::set< gme_t > geological_entities ) const
     {
-        std::size_t input_size = in.size() ;
+        std::size_t input_mesh_entities_size = mesh_entities.size() ;
+        std::size_t input_geological_entities_size = geological_entities.size() ;
 
         // Add children of geological entities
-        for( std::set< gme_t >::iterator it( in.begin() ); it != in.end(); ++it ) {
+        for( std::set< gme_t >::iterator it( geological_entities.begin() );
+            it != geological_entities.end(); ++it ) {
             gme_t cur = *it ;
             if( entity_type_manager().is_geological_entity_type( cur.type ) ) {
                 const GeoModelGeologicalEntity& E = model_.geological_entity( cur ) ;
                 for( index_t j = 0; j < E.nb_children(); ++j ) {
-                    in.insert( E.child_gme( j ) ) ;
+                    mesh_entities.insert( E.child_gme( j ) ) ;
                 }
             }
         }
@@ -322,13 +326,13 @@ namespace RINGMesh {
                 const GeoModelGeologicalEntity& E = model_.geological_entity( type,
                     j ) ;
                 for( index_t k = 0; k < E.nb_children(); ++k ) {
-                    if( in.count( E.child_gme( k ) ) == 0 ) {
+                    if( geological_entities.count( E.child_gme( k ) ) == 0 ) {
                         no_child = false ;
                         break ;
                     }
                 }
                 if( no_child ) {
-                    in.insert( E.gme_id() ) ;
+                    geological_entities.insert( E.gme_id() ) ;
                 }
             }
         }
@@ -344,27 +348,30 @@ namespace RINGMesh {
                     bool no_incident = true ;
                     const GeoModelMeshEntity& E = model_.mesh_entity( type, j ) ;
                     for( index_t k = 0; k < E.nb_in_boundary(); ++k ) {
-                        if( in.count( E.in_boundary_gme( k ) ) == 0 ) {
+                        if( mesh_entities.count( E.in_boundary_gme( k ) ) == 0 ) {
                             no_incident = false ;
                             break ;
                         }
                     }
                     if( no_incident ) {
-                        in.insert( E.gme_id() ) ;
+                        mesh_entities.insert( E.gme_id() ) ;
                     }
                 }
             }
         }
         // Recusive call till nothing is added
-        if( in.size() != input_size ) {
-            return get_dependent_entities( in ) ;
+        if( geological_entities.size() != input_geological_entities_size
+            && mesh_entities.size() != input_mesh_entities_size ) {
+            return get_dependent_entities( mesh_entities, geological_entities ) ;
         } else {
             return false ;
         }
     }
-
+/*
     void GeoModelEditor::remove_entities_and_dependencies(
-        const std::set< gme_t >& entities_to_remove )
+        const std::set< gme_t >& entities_to_remove,
+        std::set< gme_t >& geological_entities_to_remove,
+        std::set< gme_t >& mesh_entities_to_remove)
     {
         // Asserts to remove when implementation is completed
         ringmesh_assert(
@@ -373,11 +380,11 @@ namespace RINGMesh {
 
         // Copy because it is not logical to have in output the removed elements. BC
         /// @todo Review : youpiii what did the comment on the function just said ? [JP]
-        std::set< gme_t > entities = entities_to_remove ;
         // TODO Handle the case of several objects in elements
 
-        const GeoModelMeshEntity& reg = model_.mesh_entity( *( entities.begin() ) ) ;
-        get_dependent_entities( entities ) ;
+        const GeoModelMeshEntity& reg = model_.mesh_entity(
+            *( entities_out.begin() ) ) ;
+        get_dependent_entities (entities) ;
 
         // TODO Dirty duplication of code------------------------
         // We need to remove elements type by type since they are
@@ -411,8 +418,8 @@ namespace RINGMesh {
                 model_.nb_geological_entities( Layer::type_name_static() ), 0 ) ) ;
 
         // Flag the elements to erase
-        for( std::set< gme_t >::const_iterator it = entities.begin();
-            it != entities.end(); ++it ) {
+        for( std::set< gme_t >::const_iterator it = entities_out.begin();
+            it != entities_out.end(); ++it ) {
             gme_t cur = *it ;
             ringmesh_assert( NO_ID != 0 ) ; // If one day NO_ID changes of value.
             if( cur.type == Corner::type_name_static() ) {
@@ -510,8 +517,6 @@ namespace RINGMesh {
             }
         }
 
-        remove_entities( entities ) ;
-
         // Update Universe
         /// @todo You first need to clean the existing universe [JP]
         for( std::vector< gme_t >::const_iterator itr = to_add_in_universe.begin();
@@ -521,6 +526,25 @@ namespace RINGMesh {
 
         //ringmesh_assert( model_.check_model_validity() ) ;
     }
+    */
+
+//    void GeoModelEditor::remove_geological_entities_and_dependencies(
+//        const std::set< gme_t >& entities_to_remove )
+//    {
+//        std::set< gme_t > entities = entities ;
+//
+//        //remove_entities_and_dependencies( entities_to_remove, entities ) ;
+//        remove_geological_entities( entities ) ;
+//    }
+//
+//    void GeoModelEditor::remove_mesh_entities_and_dependencies(
+//        const std::set< gme_t >& entities_to_remove )
+//    {
+//        std::set< gme_t > entities = entities ;
+//
+//        //remove_entities_and_dependencies( entities_to_remove, entities ) ;
+//        remove_mesh_entities( entities ) ;
+//    }
 
     /*!
      * @brief Class in charge of removing entities from a GeoModel
@@ -654,7 +678,7 @@ namespace RINGMesh {
                         delete_mesh_entity( entity_type, j ) ;
                     }
                 }
-                clear_null_geological_entities( entity_type ) ;
+                clear_null_mesh_entities( entity_type ) ;
             }
         }
         void clear_model_mesh_vertices()
@@ -709,6 +733,15 @@ namespace RINGMesh {
         {
             std::vector< GeoModelGeologicalEntity* >& store =
                 modifiable_geological_entities( type ) ;
+            store.erase(
+                std::remove( store.begin(), store.end(),
+                    static_cast< GME* >( nil ) ), store.end() ) ;
+        }
+
+        void clear_null_mesh_entities( const EntityType& type )
+        {
+            std::vector< GeoModelMeshEntity* >& store =
+                modifiable_mesh_entities( type ) ;
             store.erase(
                 std::remove( store.begin(), store.end(),
                     static_cast< GME* >( nil ) ), store.end() ) ;
@@ -1149,15 +1182,24 @@ namespace RINGMesh {
      *          The client is responsible to set the proper connectivity
      *          information between the remaining model entities.
      */
-    void GeoModelEditor::remove_entities( const std::set< gme_t >& entities )
+    void GeoModelEditor::remove_geological_entities(
+        const std::set< gme_t >& entities )
     {
         if( entities.empty() ) {
             return ;
         } else {
-            throw RINGMeshException( "REMOVE",
-                "Entity removal is not fully implemented" ) ;
-//            GeoModelEntityRemoval remover( model() ) ;
-//            remover.remove_entities( entities ) ;
+            GeoModelEntityRemoval remover( model() ) ;
+            remover.remove_geological_entities( entities ) ;
+        }
+    }
+
+    void GeoModelEditor::remove_mesh_entities( const std::set< gme_t >& entities )
+    {
+        if( entities.empty() ) {
+            return ;
+        } else {
+            GeoModelEntityRemoval remover( model() ) ;
+            remover.remove_mesh_entities( entities ) ;
         }
     }
 
