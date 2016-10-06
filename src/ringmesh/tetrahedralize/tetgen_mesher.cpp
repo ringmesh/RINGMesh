@@ -1,37 +1,37 @@
 /*
-* Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
-* All rights reserved.
-*
-* Redistribution and use in source and binary forms, with or without
-* modification, are permitted provided that the following conditions are met:
-*     * Redistributions of source code must retain the above copyright
-*       notice, this list of conditions and the following disclaimer.
-*     * Redistributions in binary form must reproduce the above copyright
-*       notice, this list of conditions and the following disclaimer in the
-*       documentation and/or other materials provided with the distribution.
-*     * Neither the name of ASGA nor the
-*       names of its contributors may be used to endorse or promote products
-*       derived from this software without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-* ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-* WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
-* DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-* (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-* LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-* ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-* (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-* SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*
-*     http://www.ring-team.org
-*
-*     RING Project
-*     Ecole Nationale Superieure de Geologie - GeoRessources
-*     2 Rue du Doyen Marcel Roubault - TSA 70605
-*     54518 VANDOEUVRE-LES-NANCY
-*     FRANCE
-*/
+ * Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of ASGA nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ *     http://www.ring-team.org
+ *
+ *     RING Project
+ *     Ecole Nationale Superieure de Geologie - GeoRessources
+ *     2 Rue du Doyen Marcel Roubault - TSA 70605
+ *     54518 VANDOEUVRE-LES-NANCY
+ *     FRANCE
+ */
 
 #include <cstring>
 
@@ -42,9 +42,9 @@
 
 #ifdef RINGMESH_WITH_TETGEN
 /*!
-* @file Implementation of the interface of GEO::Mesh with Tetgen
-* @author Jeanne Pellerin
-*/
+ * @file Implementation of the interface of GEO::Mesh with Tetgen
+ * @author Jeanne Pellerin
+ */
 
 namespace RINGMesh {
 
@@ -84,7 +84,8 @@ namespace RINGMesh {
         polygons_ = nil ;
     }
 
-    void TetgenMesher::tetrahedralize( const Mesh& input_mesh,
+    void TetgenMesher::tetrahedralize(
+        const Mesh& input_mesh,
         const std::string& command_line,
         Mesh& output_mesh )
     {
@@ -95,7 +96,8 @@ namespace RINGMesh {
         assign_result_tetmesh_to_mesh( output_mesh ) ;
     }
 
-    void  TetgenMesher::tetrahedralize( const Mesh& input_mesh,
+    void TetgenMesher::tetrahedralize(
+        const Mesh& input_mesh,
         const std::vector< vec3 >& one_point_per_region,
         const std::string& command_line,
         Mesh& output_mesh )
@@ -182,36 +184,31 @@ namespace RINGMesh {
 
     void TetgenMesher::copy_vertices_to_tetgen_input( const Mesh& M )
     {
-        tetgen_in_.numberofpoints = static_cast<int>(M.vertices.nb()) ;
+        tetgen_in_.numberofpoints = static_cast< int >( M.vertices.nb() ) ;
         tetgen_in_.pointlist = new double[3 * tetgen_in_.numberofpoints] ;
-        GEO::Memory::copy(
-            tetgen_in_.pointlist, M.vertices.point_ptr( 0 ),
-            M.vertices.nb() * 3 * sizeof( double )
-            ) ;
+        GEO::Memory::copy( tetgen_in_.pointlist, M.vertices.point_ptr( 0 ),
+            M.vertices.nb() * 3 * sizeof(double) ) ;
     }
 
     void TetgenMesher::copy_edges_to_tetgen_input( const Mesh& M )
     {
-        tetgen_in_.numberofedges = static_cast<int>(M.edges.nb()) ;
+        tetgen_in_.numberofedges = static_cast< int >( M.edges.nb() ) ;
         tetgen_in_.edgelist = new int[2 * tetgen_in_.numberofedges] ;
-        GEO::Memory::copy(
-            tetgen_in_.edgelist, M.edges.vertex_index_ptr( 0 ),
-            M.edges.nb() * 2 * sizeof( int )
-            ) ;
+        GEO::Memory::copy( tetgen_in_.edgelist, M.edges.vertex_index_ptr( 0 ),
+            M.edges.nb() * 2 * sizeof(int) ) ;
     }
 
     void TetgenMesher::copy_facets_to_tetgen_input( const Mesh& M )
     {
         polygons_ = new GEO_3rdParty::tetgenio::polygon[M.facets.nb()] ;
 
-        tetgen_in_.numberoffacets = static_cast<int>(M.facets.nb()) ;
-        tetgen_in_.facetlist = new GEO_3rdParty::tetgenio::facet[tetgen_in_.numberoffacets] ;
+        tetgen_in_.numberoffacets = static_cast< int >( M.facets.nb() ) ;
+        tetgen_in_.facetlist =
+            new GEO_3rdParty::tetgenio::facet[tetgen_in_.numberoffacets] ;
 
         polygon_corners_ = new int[M.facet_corners.nb()] ;
-        GEO::Memory::copy(
-            polygon_corners_, M.facet_corners.vertex_index_ptr( 0 ),
-            M.facet_corners.nb()*sizeof( int )
-            ) ;
+        GEO::Memory::copy( polygon_corners_, M.facet_corners.vertex_index_ptr( 0 ),
+            M.facet_corners.nb() * sizeof(int) ) ;
 
         for( index_t f = 0; f < M.facets.nb(); ++f ) {
             GEO_3rdParty::tetgenio::facet& F = tetgen_in_.facetlist[f] ;
@@ -221,40 +218,44 @@ namespace RINGMesh {
 
             GEO_3rdParty::tetgenio::polygon& P = F.polygonlist[0] ;
             GEO_3rdParty::tetgenio::init( &P ) ;
-            P.numberofvertices = static_cast<int> (M.facets.nb_corners( f ) ) ;
+            P.numberofvertices = static_cast< int >( M.facets.nb_corners( f ) ) ;
             P.vertexlist = &polygon_corners_[M.facets.corners_begin( f )] ;
         }
     }
 
-    void TetgenMesher::set_regions( const std::vector< vec3 >& one_point_in_each_region )
+    void TetgenMesher::set_regions(
+        const std::vector< vec3 >& one_point_in_each_region )
     {
         index_t nb_regions = one_point_in_each_region.size() ;
-        tetgen_in_.numberofregions = static_cast<int> ( nb_regions ) ;
-        tetgen_in_.regionlist = new double[5*nb_regions] ;
+        tetgen_in_.numberofregions = static_cast< int >( nb_regions ) ;
+        tetgen_in_.regionlist = new double[5 * nb_regions] ;
 
         for( index_t i = 0; i != nb_regions; ++i ) {
-            tetgen_in_.regionlist[5*i] = one_point_in_each_region[i].x ;
-            tetgen_in_.regionlist[5*i+1] = one_point_in_each_region[i].y ;
-            tetgen_in_.regionlist[5*i+2] = one_point_in_each_region[i].z ;
-            tetgen_in_.regionlist[5*i+3] = i ;
-            tetgen_in_.regionlist[5*i+4] = DBL_MAX ; // Used only with the a switch
+            tetgen_in_.regionlist[5 * i] = one_point_in_each_region[i].x ;
+            tetgen_in_.regionlist[5 * i + 1] = one_point_in_each_region[i].y ;
+            tetgen_in_.regionlist[5 * i + 2] = one_point_in_each_region[i].z ;
+            tetgen_in_.regionlist[5 * i + 3] = i ;
+            tetgen_in_.regionlist[5 * i + 4] = DBL_MAX ; // Used only with the a switch
         }
     }
 
-    void TetgenMesher::fill_region_attribute_on_mesh_cells( Mesh& M, const std::string& attribute_name ) const
+    void TetgenMesher::fill_region_attribute_on_mesh_cells(
+        Mesh& M,
+        const std::string& attribute_name ) const
     {
         double* tet_attributes = tetgen_out_.tetrahedronattributelist ;
-        index_t one_tet_attribute_size = static_cast<index_t>
-            ( tetgen_out_.numberoftetrahedronattributes ) ;
+        index_t one_tet_attribute_size =
+            static_cast< index_t >( tetgen_out_.numberoftetrahedronattributes ) ;
         GEO::Attribute< index_t > region_id( M.cells.attributes(), attribute_name ) ;
         for( index_t i = 0; i < M.cells.nb(); ++i ) {
             // Nothing says where it is, so we hope that the shell id is the first 
             // attribute stored in tetgen [JP]
             // Assert to detect if the double is not an index_t [BC]
             ringmesh_assert( std::abs( static_cast<index_t> (
-                tet_attributes[one_tet_attribute_size*i] )
-                - tet_attributes[one_tet_attribute_size*i] ) < epsilon ) ;
-            region_id[i] = static_cast<index_t> ( tet_attributes[one_tet_attribute_size*i] ) ;
+                        tet_attributes[one_tet_attribute_size*i] )
+                    - tet_attributes[one_tet_attribute_size*i] ) < epsilon ) ;
+            region_id[i] =
+                static_cast< index_t >( tet_attributes[one_tet_attribute_size * i] ) ;
         }
         region_id.unbind() ;
     }
@@ -269,41 +270,81 @@ namespace RINGMesh {
 
     void TetgenMesher::assign_result_tetmesh_to_mesh( Mesh& M ) const
     {
-        GEO::vector<double> points ;
+        GEO::vector< double > points ;
         get_result_tetmesh_points( points ) ;
 
-        GEO::vector<index_t> tets ;
+        GEO::vector< index_t > tets ;
         get_result_tetmesh_tets( tets ) ;
 
         M.cells.assign_tet_mesh( 3, points, tets, true ) ;
+        M.vertices.remove_isolated() ;
         M.cells.connect() ;
     }
 
-    void TetgenMesher::get_result_tetmesh_points( GEO::vector< double >& points ) const
+    void TetgenMesher::get_result_tetmesh_points(
+        GEO::vector< double >& points ) const
     {
-        index_t nb_points = static_cast<index_t> ( tetgen_out_.numberofpoints ) ;
+        index_t nb_points = static_cast< index_t >( tetgen_out_.numberofpoints ) ;
         points.resize( 3 * nb_points ) ;
         double* points_ptr = tetgen_out_.pointlist ;
         RINGMESH_PARALLEL_LOOP
-            for( index_t i = 0; i < 3 * nb_points; ++i ) {
-                points[i] = points_ptr[i] ;
-            }
+        for( index_t i = 0; i < 3 * nb_points; ++i ) {
+            points[i] = points_ptr[i] ;
+        }
     }
 
-    void TetgenMesher::get_result_tetmesh_tets( GEO::vector< index_t>& tets ) const
+    void TetgenMesher::get_result_tetmesh_tets( GEO::vector< index_t >& tets ) const
     {
-        index_t nb_tets = static_cast<index_t> ( tetgen_out_.numberoftetrahedra );
-        tets.resize( 4 * nb_tets );
+        std::vector< index_t > tets_to_keep ;
+        determine_tets_to_keep( tets_to_keep ) ;
 
+        index_t nb_tets = static_cast< index_t >( tets_to_keep.size() ) ;
+        tets.resize( 4 * nb_tets ) ;
         int* tets_ptr = tetgen_out_.tetrahedronlist ;
-        index_t one_tet_size = static_cast<index_t> ( tetgen_out_.numberofcorners ) ;
         RINGMESH_PARALLEL_LOOP
-            for( index_t i = 0; i < nb_tets; ++i ) {
-                tets[4 * i + 0] = static_cast<index_t> ( tets_ptr[one_tet_size*i + 0] ) ;
-                tets[4 * i + 1] = static_cast<index_t> ( tets_ptr[one_tet_size*i + 1] ) ;
-                tets[4 * i + 2] = static_cast<index_t> ( tets_ptr[one_tet_size*i + 2] ) ;
-                tets[4 * i + 3] = static_cast<index_t> ( tets_ptr[one_tet_size*i + 3] ) ;
+        for( index_t i = 0; i < nb_tets; ++i ) {
+            index_t tetra = tets_to_keep[i] ;
+            for( index_t v = 0; v < 4; v++ ) {
+                tets[4 * i + v] = static_cast< index_t >( tets_ptr[4 * tetra + v] ) ;
             }
+        }
+    }
+
+    void TetgenMesher::determine_tet_regions_to_keep(
+        std::set< double >& regions_to_keep ) const
+    {
+        // Determine which regions are incident to
+        // the 'exterior' (neighbor = -1 or tet is adjacent to
+        // a tet in region 0).
+        // The region Id of tet t is determined by:
+        //  tetgen_out_.tetrahedronattributelist[t]
+
+        index_t nb_tets = static_cast< index_t >( tetgen_out_.numberoftetrahedra ) ;
+        for( index_t t = 0; t < nb_tets; ++t ) {
+            for( index_t f = 0; f < 4; ++f ) {
+                signed_index_t n = ( tetgen_out_.neighborlist[t * 4 + f] ) ;
+                if( n == -1 || tetgen_out_.tetrahedronattributelist[n] == 0.0 ) {
+                    regions_to_keep.insert( tetgen_out_.tetrahedronattributelist[t] ) ;
+                    break ;
+                }
+            }
+        }
+    }
+
+    void TetgenMesher::determine_tets_to_keep(
+        std::vector< index_t >& tets_to_keep ) const
+    {
+        std::set< double > regions_to_keep ;
+        determine_tet_regions_to_keep( regions_to_keep ) ;
+
+        index_t nb_tets = static_cast< index_t >( tetgen_out_.numberoftetrahedra ) ;
+        tets_to_keep.reserve( nb_tets ) ;
+        for( index_t t = 0; t < nb_tets; ++t ) {
+            if( regions_to_keep.find( tetgen_out_.tetrahedronattributelist[t] )
+                != regions_to_keep.end() ) {
+                tets_to_keep.push_back( t ) ;
+            }
+        }
     }
 
     void tetrahedralize_mesh_tetgen( Mesh& M, bool refine, double quality )
@@ -313,9 +354,10 @@ namespace RINGMesh {
         }
         TetgenMesher mesher ;
         if( refine ) {
-            mesher.tetrahedralize( M, "QpYAq"+GEO::String::to_string( quality ), M ) ;
+            mesher.tetrahedralize( M, "QpnYAAq" + GEO::String::to_string( quality ),
+                M ) ;
         } else {
-            mesher.tetrahedralize( M, "QpYA", M ) ;
+            mesher.tetrahedralize( M, "QpnYAA", M ) ;
         }
     }
 }
