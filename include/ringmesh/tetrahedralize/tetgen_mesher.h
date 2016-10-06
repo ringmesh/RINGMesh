@@ -127,6 +127,10 @@ namespace RINGMesh {
         void assign_result_tetmesh_to_mesh( Mesh& M ) const ;
         void get_result_tetmesh_points( GEO::vector< double >& points ) const ;
         void get_result_tetmesh_tets( GEO::vector< index_t >& tets ) const ;
+        void determine_tet_regions_to_keep(
+            std::set< double >& regions_to_keep ) const ;
+        void determine_tets_to_keep(
+            std::vector< index_t >& tets_to_keep ) const ;
 
     private:
         GEO_3rdParty::tetgenio tetgen_in_ ;
