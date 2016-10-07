@@ -2219,18 +2219,67 @@ namespace {
 
             out << "*PART, name=Part-1" << std::endl ;
 
-            const GeoModelMesh& mesh = gm.mesh ;
+            save_vertices( gm, out ) ;
+            save_facets( gm, out ) ;
+            save_cells( gm, out ) ;
+
+            out << "*END PART" << std::endl ;
+        }
+    private:
+        void save_vertices( const GeoModel& gm, std::ofstream& out ) const
+        {
+            const GeoModelMeshVertices& vertices = gm.mesh.vertices ;
             out << "*NODE" << std::endl ;
-            for( index_t v = 0; v < mesh.vertices.nb(); v++ ) {
+            for( index_t v = 0; v < vertices.nb(); v++ ) {
                 out << v + 1 ;
-                const vec3& vertex = mesh.vertices.vertex( v ) ;
+                const vec3& vertex = vertices.vertex( v ) ;
                 for( index_t i = 0; i < 3; i++ ) {
                     out << COMMA << SPACE << vertex[i] ;
                 }
                 out << std::endl ;
             }
 
-            const GeoModelMeshCells& cells = mesh.cells ;
+        }
+        void save_facets( const GeoModel& gm, std::ofstream& out ) const
+        {
+            const EntityType& type = Interface::type_name_static() ;
+            index_t nb_interfaces = gm.nb_geological_entities( type ) ;
+            for( index_t i = 0; i < nb_interfaces; i++ ) {
+                save_interface( gm, i, out ) ;
+            }
+        }
+        void save_interface(
+            const GeoModel& gm,
+            index_t interface_id,
+            std::ofstream& out ) const
+        {
+            const GeoModelMeshFacets& facets = gm.mesh.facets ;
+            const GeoModelGeologicalEntity& entity = gm.geological_entity(
+                Interface::type_name_static(), interface_id ) ;
+            std::string sep ;
+            index_t count = 0 ;
+            std::vector< bool > vertex_exported( gm.mesh.vertices.nb(), false ) ;
+            out << "*NSET, nset="  << entity.name() << std::endl ;
+            for( index_t s = 0; s < entity.nb_children(); s++ ) {
+                index_t surface_id = entity.child_gme( s ).index ;
+                for( index_t f = 0; f < facets.nb_facets( surface_id ); f++ ) {
+                    index_t facet_id = facets.facet( surface_id, f ) ;
+                    for( index_t v = 0; v < facets.nb_vertices( facet_id ); v++ ) {
+                        index_t vertex_id = facets.vertex( facet_id, v ) ;
+                        if( vertex_exported[vertex_id] ) continue ;
+                        vertex_exported[vertex_id] = true ;
+                        out << sep << vertex_id + 1 ;
+                        sep = COMMA + SPACE ;
+                        new_line( count, out, sep ) ;
+                    }
+                }
+            }
+            out << std::endl ;
+        }
+
+        void save_tets( const GeoModel& gm, std::ofstream& out ) const
+        {
+            const GeoModelMeshCells& cells = gm.mesh.cells ;
             if( cells.nb_tet() > 0 ) {
                 out << "*ELEMENT, type=" << tet_descriptor_abaqus.entity_type
                     << std::endl ;
@@ -2247,6 +2296,10 @@ namespace {
                     }
                 }
             }
+        }
+        void save_hex( const GeoModel& gm, std::ofstream& out ) const
+        {
+            const GeoModelMeshCells& cells = gm.mesh.cells ;
             if( cells.nb_hex() > 0 ) {
                 out << "*ELEMENT, type=" << hex_descriptor_abaqus.entity_type
                     << std::endl ;
@@ -2263,7 +2316,10 @@ namespace {
                     }
                 }
             }
-
+        }
+        void save_regions( const GeoModel& gm, std::ofstream& out ) const
+        {
+            const GeoModelMeshCells& cells = gm.mesh.cells ;
             for( index_t r = 0; r < gm.nb_regions(); r++ ) {
                 const std::string& name =  gm.region( r ).name() ;
                 out << "*ELSET, elset=" << name << std::endl ;
@@ -2286,10 +2342,13 @@ namespace {
 
                 out << "*NSET, nset="  << name << ", elset=" << name << std::endl ;
             }
-
-            out << "*END PART" << std::endl ;
         }
-    private:
+        void save_cells( const GeoModel& gm, std::ofstream& out ) const
+        {
+            save_tets( gm, out ) ;
+            save_hex( gm, out ) ;
+            save_regions( gm, out ) ;
+        }
         void new_line( index_t& count, std::ofstream& out, std::string& sep ) const
         {
             count++ ;
