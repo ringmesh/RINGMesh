@@ -293,8 +293,6 @@ namespace RINGMesh {
     {
         test_and_initialize() ;
         const GMEVertex query_vertex( mesh_entity, entity_vertex_index ) ;
-        DEBUG( mesh_entity ) ;
-        DEBUG( entity_vertex_index ) ;
         ///@todo: Is it not a very costly way to find the returned index
         /// (iteration on all the vertices of the model) ?
         for( index_t v = 0; v < nb(); ++v ) {
