@@ -68,9 +68,9 @@ namespace RINGMesh {
         friend class GeoModelBuilder ;
         friend class GeoModelRepair ;
 
-        typedef std::string EntityType ;
-
         virtual ~GeoModelMeshEntity() ;
+
+        typedef std::string EntityType ;        
 
         static const EntityType default_entity_type_name()
         {
@@ -983,6 +983,11 @@ namespace RINGMesh {
             ringmesh_assert_not_reached ;
             return vec3() ;
         }
+
+        index_t cells_around_vertex(
+            index_t vertex_id,
+            std::vector< index_t >& result,
+            index_t cell_hint ) const ;
 
         void compute_region_volumes_per_cell_type(
             double& tet_volume,
