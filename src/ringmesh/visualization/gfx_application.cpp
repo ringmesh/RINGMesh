@@ -816,40 +816,6 @@ namespace RINGMesh {
         return true ;
     }
 
-    void RINGMeshApplication::draw_load_menu()
-    {
-        if( ImGui::BeginMenu( "Load..." ) ) {
-            ImGui::Selectable( ".." ) ;
-            if( ImGui::IsItemClicked() ) {
-                path_ += "/.." ;
-            }
-            browse_ringmesh( path_ ) ;
-            ImGui::EndMenu() ;
-        }
-    }
-
-    void RINGMeshApplication::browse_ringmesh( const std::string& path )
-    {
-        std::vector< std::string > files ;
-        GEO::FileSystem::get_directory_entries( path, files ) ;
-        std::sort( files.begin(), files.end() ) ;
-        for( GEO::index_t i = 0; i < files.size(); ++i ) {
-            if( GEO::FileSystem::is_directory( files[i] ) ) {
-                if( ImGui::BeginMenu( path_to_label( path_, files[i] ).c_str() ) ) {
-                    browse_ringmesh( files[i] ) ;
-                    ImGui::EndMenu() ;
-                }
-            } else {
-                if( can_load( files[i] ) ) {
-                    if( ImGui::MenuItem(
-                        path_to_label( path_, files[i] ).c_str() ) ) {
-                        load( files[i] ) ;
-                    }
-                }
-            }
-        }
-    }
-
     void RINGMeshApplication::draw_application_menus()
     {
         if( ImGui::BeginMenu( "Debug" ) ) {

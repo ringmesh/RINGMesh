@@ -365,13 +365,18 @@ namespace RINGMesh {
             index_t surface_id,
             const std::vector< index_t >& triangle_vertices ) ;
         void update_facet_vertices_around_facet_vertex(
-            Surface& S,
+            Surface& surface,
             index_t facet,
             index_t old_vertex,
             index_t new_vertex ) ;
         void update_facet_vertex(
-            Surface& S,
+            Surface& surface,
             const std::vector< index_t >& facets,
+            index_t old_vertex,
+            index_t new_vertex ) ;
+        void update_cell_vertex(
+            Region& region,
+            const std::vector< index_t >& cells,
             index_t old_vertex,
             index_t new_vertex ) ;
         void assign_surface_triangle_mesh(
@@ -383,18 +388,24 @@ namespace RINGMesh {
             index_t region_id,
             const std::vector< index_t >& tet_vertices ) ;
 
+        void compute_universe() ;
+
         void cut_surfaces_by_internal_lines() ;
+        void cut_regions_by_internal_surfaces() ;
+
         void cut_surface_by_line( index_t surface_id, index_t line_id ) ;
+        void cut_region_by_surface( index_t region_id, index_t surface_id ) ;
         void duplicate_surface_vertices_along_line(
             index_t surface_id,
             index_t line_id ) ;
+        void duplicate_region_vertices_along_surface(
+            index_t region_id,
+            index_t surface_id ) ;
         index_t disconnect_surface_facets_along_line_edges(
             index_t surface_id,
             index_t line_id ) ;
-        void duplicate_surface_vertices_at_line_boundaries(
-            index_t surface_id,
-            index_t line_id ) ;
-        void duplicate_corner_if_needed( index_t corner_id, index_t surface_id ) ;
+        index_t disconnect_region_cells_along_surface_facets(
+            index_t region_id, index_t surface_id ) ;
     } ;
 
     /*!
@@ -409,7 +420,6 @@ namespace RINGMesh {
         }
         void build_model()
         {
-            std::cout << "here in build_model" << std::endl ;
             load_file() ;
             end_model() ;
         }
