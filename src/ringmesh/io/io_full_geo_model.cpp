@@ -2270,7 +2270,7 @@ namespace {
                         vertex_exported[vertex_id] = true ;
                         out << sep << vertex_id + 1 ;
                         sep = COMMA + SPACE ;
-                        new_line( count, out, sep ) ;
+                        new_line_if_needed( count, out, sep ) ;
                     }
                 }
             }
@@ -2329,14 +2329,14 @@ namespace {
                     index_t tetra = cells.tet( r, c ) ;
                     out << sep << tetra + 1 ;
                     sep = COMMA + SPACE ;
-                    new_line( count, out, sep ) ;
+                    new_line_if_needed( count, out, sep ) ;
 
                 }
                 for( index_t c = 0; c < cells.nb_hex( r ); c++ ) {
                     index_t hex = cells.hex( r, c ) ;
                     out << sep << hex + 1 ;
                     sep = COMMA + SPACE ;
-                    new_line( count, out, sep ) ;
+                    new_line_if_needed( count, out, sep ) ;
                 }
                 reset_line( count, out ) ;
 
@@ -2349,7 +2349,7 @@ namespace {
             save_hex( gm, out ) ;
             save_regions( gm, out ) ;
         }
-        void new_line( index_t& count, std::ofstream& out, std::string& sep ) const
+        void new_line_if_needed( index_t& count, std::ofstream& out, std::string& sep ) const
         {
             count++ ;
             if( count == NB_ENTRY_PER_LINE ) {
