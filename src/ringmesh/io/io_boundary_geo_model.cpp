@@ -524,78 +524,6 @@ namespace {
         }
     } ;
 
-    class UCDIOHandler: public GeoModelIOHandler {
-    public:
-        virtual void load( const std::string& filename, GeoModel& model )
-        {
-            throw RINGMeshException( "I/O",
-                "Geological model loading of a from UCD mesh not yet implemented" ) ;
-        }
-
-        virtual void save( const GeoModel& model, const std::string& filename )
-        {
-            std::string full_path ;
-            std::string directory ;
-            create_directory_from_filename( filename, full_path, directory ) ;
-
-            std::ostringstream oss_cmd ;
-            oss_cmd << full_path << "/cmd.lgi" ;
-            std::ofstream cmd( oss_cmd.str().c_str() ) ;
-            cmd << "cmo/create/3DMesh" << std::endl ;
-            for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
-                std::ostringstream oss ;
-                oss << full_path << "/surface_" << s << ".inp" ;
-                std::ofstream out( oss.str().c_str() ) ;
-                out.precision( 16 ) ;
-
-                const Surface& surface = model.surface( s ) ;
-                out << surface.nb_vertices() << " " << surface.nb_mesh_elements() << " 0 0 0"
-                    << std::endl ;
-                for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
-                    out << v << " " << surface.vertex( v ) << std::endl ;
-                }
-
-                for( index_t f = 0; f < surface.nb_mesh_elements(); f++ ) {
-                    out << f << " 0 tri" ;
-                    for( index_t v = 0; v < surface.nb_mesh_element_vertices( f );
-                        v++ ) {
-                        out << " " << surface.mesh_element_vertex_index( f, v ) ;
-                    }
-                    out << std::endl ;
-                }
-
-                cmd << "cmo/create/s_" << s << std::endl ;
-                cmd << "read/surface_" << s << ".inp/s_" << s << std::endl ;
-                cmd << "surface/surface_" << s << "/" ;
-                if( surface.is_on_voi() ) {
-                    cmd << "reflect" ;
-                } else {
-                    cmd << "interface" ;
-                }
-                cmd << "/sheet/s_" << s << std::endl ;
-            }
-
-            for( index_t r = 0; r < model.nb_regions(); r++ ) {
-                const Region& region = model.region( r ) ;
-                cmd << "region/" << region.name() << "/" ;
-                std::string sep = "" ;
-                for( index_t s = 0; s < region.nb_boundaries(); s++ ) {
-                    cmd << sep << "&" << std::endl ;
-                    if( region.side( s ) )
-                        cmd << "g" ;
-                    else
-                        cmd << "l" ;
-                    cmd << "e surface_" << region.boundary_gme( s ).index ;
-                    sep = " and " ;
-                }
-                cmd << std::endl ;
-                cmd << "mregion/mat" << r << "/" << region.name() << std::endl ;
-            }
-
-            cmd << "finish" << std::endl ;
-        }
-    } ;
-
 #ifdef RINGMESH_WITH_GEOLOGYJS
 
     class HTMLIOHandler: public GeoModelIOHandler {
@@ -711,7 +639,6 @@ namespace RINGMesh {
     void GeoModelIOHandler::initialize_boundary_geomodel_output()
     {
         ringmesh_register_GeoModelIOHandler_creator( MLIOHandler, "ml" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( UCDIOHandler, "inp" );
 #ifdef RINGMESH_WITH_GEOLOGYJS
         ringmesh_register_GeoModelIOHandler_creator( HTMLIOHandler, "html" );
 #endif
