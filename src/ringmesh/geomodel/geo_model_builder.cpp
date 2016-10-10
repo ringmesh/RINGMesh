@@ -945,6 +945,7 @@ namespace RINGMesh {
 
         void initialize_border_triangles_from_model_surfaces()
         {
+            const GeoModelMeshVertices& model_vertices = geomodel_.mesh.vertices ;
             for( index_t i = 0; i < geomodel_.nb_surfaces(); ++i ) {
                 const Surface& S = geomodel_.surface( i ) ;
                 for( index_t j = 0; j < S.nb_mesh_elements(); ++j ) {
