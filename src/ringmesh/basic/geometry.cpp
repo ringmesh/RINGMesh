@@ -1440,6 +1440,7 @@ namespace RINGMesh {
         for( index_t i = 0; i < nb_colocalised_per_thread.size(); i++ ) {
             nb_colocalised_vertices += nb_colocalised_per_thread[i] ;
         }
+
         return nb_colocalised_vertices ;
     }
 

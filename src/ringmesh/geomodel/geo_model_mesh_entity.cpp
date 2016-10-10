@@ -75,12 +75,14 @@ namespace {
      */
     bool check_range_model_vertex_ids( const GMME& E )
     {
+        const GeoModelMeshVertices& model_vertices = E.model().mesh.vertices ;
         /// Check that the stored model vertex indices are in a valid range
         for( index_t i = 0; i < E.nb_vertices(); ++i ) {
-            if( E.model_vertex_id( i ) == NO_ID
-                && E.model_vertex_id( i ) >= E.model().mesh.vertices.nb() ) {
-                Logger::warn( "GeoModelEntity" )
-                    << "Invalid model vertex index in " << E.gme_id() << std::endl ;
+            if( model_vertices.model_vertex_id( E.gme_id(), i ) == NO_ID
+                && model_vertices.model_vertex_id( E.gme_id(), i )
+                    >= E.model().mesh.vertices.nb() ) {
+                Logger::warn( "GeoModelEntity" ) << "Invalid model vertex index in "
+                    << E.gme_id() << std::endl ;
                 return false ;
             }
         }
@@ -176,9 +178,10 @@ namespace {
         std::vector< index_t > corners( nb_facet_vertices, NO_ID ) ;
         std::vector< index_t > corners_global( nb_facet_vertices, NO_ID ) ;
         index_t v = 0 ;
+        const GeoModelMeshVertices& model_vertices = S.model().mesh.vertices ;
         for( index_t c = S.facet_begin( f ); c < S.facet_end( f ); ++c ) {
             corners[v] = c ;
-            corners_global[v] = S.model_vertex_id( f, v ) ;
+            corners_global[v] = model_vertices.model_vertex_id( S.gme_id(), f, v ) ;
             v++ ;
         }
         return check_mesh_entity_vertices_are_different( corners, corners_global ) ;
@@ -193,9 +196,11 @@ namespace {
         index_t nb_vertices_in_cell = region.nb_mesh_element_vertices( cell_index ) ;
         std::vector< index_t > vertices( nb_vertices_in_cell, NO_ID ) ;
         std::vector< index_t > vertices_global( nb_vertices_in_cell, NO_ID ) ;
+        const GeoModelMeshVertices& model_vertices = region.model().mesh.vertices ;
         for( index_t v = 0; v < nb_vertices_in_cell; v++ ) {
             vertices[v] = region.mesh_element_vertex_index( cell_index, v ) ;
-            vertices_global[v] = region.model_vertex_id( cell_index, v ) ;
+            vertices_global[v] = model_vertices.model_vertex_id( region.gme_id(),
+                cell_index, v ) ;
         }
         double volume = region.mesh_element_size( cell_index ) ;
         return check_mesh_entity_vertices_are_different( vertices, vertices_global )
@@ -231,11 +236,6 @@ namespace {
 }
 /******************************************************************************/
 namespace RINGMesh {
-    /*!
-     * @brief Check if this entity an inside border of rhs
-     * @details That can be Surface stopping in a Region, or Line stopping in a Surface.
-     * @param[in] rhs The entity to test
-     */
     bool GeoModelMeshEntity::is_inside_border( const GeoModelMeshEntity& rhs ) const
     {
         // Find out if this surface is twice in the in_boundary vector
@@ -243,9 +243,6 @@ namespace RINGMesh {
             > 1 ;
     }
 
-    /*!
-     * @brief Check if one entity is twice in the boundary
-     */
     bool GeoModelMeshEntity::has_inside_border() const
     {
         for( index_t i = 0; i < nb_boundaries(); ++i ) {
@@ -256,14 +253,14 @@ namespace RINGMesh {
         return false ;
     }
 
-    const std::string GeoModelMeshEntity::model_vertex_id_att_name()
-    {
-        return "model_vertex_id" ;
-    }
+//    const std::string GeoModelMeshEntity::model_vertex_id_att_name()
+//    {
+//        return "model_vertex_id" ;
+//    }
 
     GeoModelMeshEntity::~GeoModelMeshEntity()
     {
-        unbind_model_vertex_id_attribute() ;
+//        unbind_model_vertex_id_attribute() ;
 #ifdef RINGMESH_DEBUG
         mesh_.print_mesh_bounded_attributes() ;
 #endif
@@ -272,18 +269,18 @@ namespace RINGMesh {
     /*!
      * @brief Binds attributes stored by the GME on the Mesh
      */
-    void GeoModelMeshEntity::bind_model_vertex_id_attribute()
-    {
-        model_vertex_id_.bind( mesh_.vertex_attribute_manager(),
-            model_vertex_id_att_name() ) ;
-    }
+//    void GeoModelMeshEntity::bind_model_vertex_id_attribute()
+//    {
+//        model_vertex_id_.bind( mesh_.vertex_attribute_manager(),
+//            model_vertex_id_att_name() ) ;
+//    }
     /*!
      * @brief Unbinds attributes stored by the GME on the Mesh
      */
-    void GeoModelMeshEntity::unbind_model_vertex_id_attribute()
-    {
-        model_vertex_id_.unbind() ;
-    }
+//    void GeoModelMeshEntity::unbind_model_vertex_id_attribute()
+//    {
+//        model_vertex_id_.unbind() ;
+//    }
 
     bool GeoModelMeshEntity::are_model_vertex_indices_valid() const
     {
@@ -291,8 +288,9 @@ namespace RINGMesh {
         // For all vertices
         // Check that the global vertex has an index backward to 
         // the vertex of this entity
+        const GeoModelMeshVertices& model_vertices = model().mesh.vertices ;
         for( index_t v = 0; v < nb_vertices(); ++v ) {
-            index_t model_v = model_vertex_id( v ) ;
+            index_t model_v = model_vertices.model_vertex_id( gme_id(), v ) ;
 
             const std::vector< GMEVertex >& backward =
                 model().mesh.vertices.gme_vertices( model_v ) ;
@@ -344,7 +342,7 @@ namespace RINGMesh {
         }
         return valid ;
     }    
-    /*! All entities must be at leat in the boundary of another entity
+    /*! All entities must be at least in the boundary of another entity
      * and all entities in the in_boundary must have this entity in their
      * boundary vector
      */
@@ -462,24 +460,14 @@ namespace RINGMesh {
         ringmesh_assert( id.is_defined() ) ;
         return model().geological_entity( id ) ;
     }
-    const gme_t& GeoModelMeshEntity::parent_gme( const std::string& parent_type_name ) const
-    {
-        index_t id = parent_id( parent_type_name ) ;
-        if( id != NO_ID ) {
-            return parent(id).gme_id() ;
-        }
-        else {
-            return gme_t() ; // We will probably crash because it returns the address of a local variable
-        }        
-    }
-    index_t GeoModelMeshEntity::parent_id( const std::string& parent_type_name ) const
+    const gme_t& GeoModelMeshEntity::parent_gme( const EntityType& parent_type_name ) const
     {
         for( index_t i = 0; i < nb_parents(); ++i ) {
             if( parents_[i].type == parent_type_name ) {
-                return i ;
+                return parent_gme( i ) ;
             }
         }
-        return NO_ID ;
+        return gme_t() ;
     }
 
     const GeoModelMeshEntity& GeoModelMeshEntity::boundary( index_t x ) const
@@ -492,36 +480,36 @@ namespace RINGMesh {
         return model().mesh_entity( in_boundary_gme( x ) ) ;
     }
 
-    index_t GeoModelMeshEntity::gmme_vertex_index_from_model(
-        index_t model_vertex_id ) const
-    {
-        const std::vector< GMEVertex >& gme_vertices =
-            model().mesh.vertices.gme_vertices( model_vertex_id ) ;
+//    index_t GeoModelMeshEntity::gmme_vertex_index_from_model(
+//        index_t model_vertex_id ) const
+//    {
+//        const std::vector< GMEVertex >& gme_vertices =
+//            model().mesh.vertices.gme_vertices( model_vertex_id ) ;
+//
+//        for( index_t i = 0; i < gme_vertices.size(); i++ ) {
+//            const GMEVertex& info = gme_vertices[i] ;
+//            if( info.gme_id == gme_id() ) {
+//                return info.v_id ;
+//            }
+//        }
+//        return NO_ID ;
+//    }
 
-        for( index_t i = 0; i < gme_vertices.size(); i++ ) {
-            const GMEVertex& info = gme_vertices[i] ;
-            if( info.gme_id == gme_id() ) {
-                return info.v_id ;
-            }
-        }
-        return NO_ID ;
-    }
-
-    std::vector< index_t > GeoModelMeshEntity::gme_vertex_indices(
-        index_t model_vertex_id ) const
-    {
-        const std::vector< GMEVertex >& all_vertices =
-            model().mesh.vertices.gme_vertices( model_vertex_id ) ;
-
-        std::vector< index_t > this_gme_vertices ;
-        for( index_t i = 0; i < all_vertices.size(); i++ ) {
-            const GMEVertex& gme_vertex = all_vertices[i] ;
-            if( gme_vertex.gme_id == gme_id() ) {
-                this_gme_vertices.push_back( gme_vertex.v_id ) ;
-            }
-        }
-        return this_gme_vertices ;
-    }
+//    std::vector< index_t > GeoModelMeshEntity::gme_vertex_indices(
+//        index_t model_vertex_id ) const
+//    {
+//        const std::vector< GMEVertex >& all_vertices =
+//            model().mesh.vertices.gme_vertices( model_vertex_id ) ;
+//
+//        std::vector< index_t > this_gme_vertices ;
+//        for( index_t i = 0; i < all_vertices.size(); i++ ) {
+//            const GMEVertex& gme_vertex = all_vertices[i] ;
+//            if( gme_vertex.gme_id == gme_id() ) {
+//                this_gme_vertices.push_back( gme_vertex.v_id ) ;
+//            }
+//        }
+//        return this_gme_vertices ;
+//    }
 
 
     /**************************************************************/
@@ -974,106 +962,106 @@ namespace RINGMesh {
         return NO_ID ;
     }
 
-    /*!
-     * @brief Get the first facet of the surface that has an edge linking the
-     * two vertices (ids in the model)
-     *
-     * @param[in] i0 Index of the first vertex in the model
-     * @param[in] i1 Index of the second vertex in the model
-     * @return NO_ID or the index of the facet
-     */
-    index_t Surface::facet_from_model_vertex_ids( index_t i0, index_t i1 ) const
-    {
-        index_t facet = NO_ID ;
-        index_t edge = NO_ID ;
-        edge_from_model_vertex_ids( i0, i1, facet, edge ) ;
-        return facet ;
-    }
-
-    /*!
-     * @brief Determine the facet and the edge in this facet linking the 2 vertices
-     * @details There might be two pairs facet-edge. This only gets the first.
-     *
-     * @param[in] i0 First vertex index in the model
-     * @param[in] i1 Second vertex index in the model
-     * @param[out] facet NO_ID or facet index in the surface
-     * @param[out] edge NO_ID or edge index in the facet
-     */
-    void Surface::edge_from_model_vertex_ids(
-        index_t i0,
-        index_t i1,
-        index_t& facet,
-        index_t& edge ) const
-    {
-        edge = NO_ID ;
-
-        // If a facet is given, look for the edge in this facet only
-        if( facet != NO_ID ) {
-            for( index_t v = 0; v < nb_mesh_element_vertices( facet ); ++v ) {
-                index_t prev = model_vertex_id( facet,
-                    prev_facet_vertex_index( facet, v ) ) ;
-                index_t p = model_vertex_id( facet, v ) ;
-                if( ( prev == i0 && p == i1 ) || ( prev == i1 && p == i0 ) ) {
-                    edge = prev_facet_vertex_index( facet, v ) ;
-                    return ;
-                }
-            }
-        } else {
-            for( index_t f = 0; f < nb_mesh_elements(); ++f ) {
-                facet = f ;
-                edge_from_model_vertex_ids( i0, i1, facet, edge ) ;
-                if( edge != NO_ID ) {
-                    return ;
-                }
-            }
-        }
-
-        // If we get here, no facet was found get out
-        facet = NO_ID ;
-        edge = NO_ID ;
-    }
-
-    /*!
-     * @brief Determine the facet and the edge linking the 2 vertices with the same orientation
-     * @details There might be two pairs facet-edge. This only gets the first.
-     *
-     * @param[in] i0 First vertex index in the model
-     * @param[in] i1 Second vertex index in the model
-     * @param[out] facet NO_ID or facet index in the surface
-     * @param[out] edge NO_ID or edge index in the facet
-     */
-    void Surface::oriented_edge_from_model_vertex_ids(
-        index_t i0,
-        index_t i1,
-        index_t& facet,
-        index_t& edge ) const
-    {
-        // Copy from above .. tant pis
-        edge = NO_ID ;
-
-        // If a facet is given, look for the oriented edge in this facet only
-        if( facet != NO_ID ) {
-            for( index_t v = 0; v < nb_mesh_element_vertices( facet ); ++v ) {
-                index_t p = model_vertex_id( facet, v ) ;
-                index_t next = model_vertex_id( facet,
-                    next_facet_vertex_index( facet, v ) ) ;
-
-                if( p == i0 && next == i1 ) {
-                    edge = v ;
-                    return ;
-                }
-            }
-        } else {
-            for( index_t f = 0; f < nb_mesh_elements(); ++f ) {
-                facet = f ;
-                oriented_edge_from_model_vertex_ids( i0, i1, facet, edge ) ;
-                if( edge != NO_ID ) {
-                    return ;
-                }
-            }
-        }
-        facet = NO_ID ;
-    }
+//    /*!
+//     * @brief Get the first facet of the surface that has an edge linking the
+//     * two vertices (ids in the model)
+//     *
+//     * @param[in] i0 Index of the first vertex in the model
+//     * @param[in] i1 Index of the second vertex in the model
+//     * @return NO_ID or the index of the facet
+//     */
+//    index_t Surface::facet_from_model_vertex_ids( index_t i0, index_t i1 ) const
+//    {
+//        index_t facet = NO_ID ;
+//        index_t edge = NO_ID ;
+//        edge_from_model_vertex_ids( i0, i1, facet, edge ) ;
+//        return facet ;
+//    }
+//
+//    /*!
+//     * @brief Determine the facet and the edge in this facet linking the 2 vertices
+//     * @details There might be two pairs facet-edge. This only gets the first.
+//     *
+//     * @param[in] i0 First vertex index in the model
+//     * @param[in] i1 Second vertex index in the model
+//     * @param[out] facet NO_ID or facet index in the surface
+//     * @param[out] edge NO_ID or edge index in the facet
+//     */
+//    void Surface::edge_from_model_vertex_ids(
+//        index_t i0,
+//        index_t i1,
+//        index_t& facet,
+//        index_t& edge ) const
+//    {
+//        edge = NO_ID ;
+//
+//        // If a facet is given, look for the edge in this facet only
+//        if( facet != NO_ID ) {
+//            for( index_t v = 0; v < nb_mesh_element_vertices( facet ); ++v ) {
+//                index_t prev = model_vertex_id( facet,
+//                    prev_facet_vertex_index( facet, v ) ) ;
+//                index_t p = model_vertex_id( facet, v ) ;
+//                if( ( prev == i0 && p == i1 ) || ( prev == i1 && p == i0 ) ) {
+//                    edge = prev_facet_vertex_index( facet, v ) ;
+//                    return ;
+//                }
+//            }
+//        } else {
+//            for( index_t f = 0; f < nb_mesh_elements(); ++f ) {
+//                facet = f ;
+//                edge_from_model_vertex_ids( i0, i1, facet, edge ) ;
+//                if( edge != NO_ID ) {
+//                    return ;
+//                }
+//            }
+//        }
+//
+//        // If we get here, no facet was found get out
+//        facet = NO_ID ;
+//        edge = NO_ID ;
+//    }
+//
+//    /*!
+//     * @brief Determine the facet and the edge linking the 2 vertices with the same orientation
+//     * @details There might be two pairs facet-edge. This only gets the first.
+//     *
+//     * @param[in] i0 First vertex index in the model
+//     * @param[in] i1 Second vertex index in the model
+//     * @param[out] facet NO_ID or facet index in the surface
+//     * @param[out] edge NO_ID or edge index in the facet
+//     */
+//    void Surface::oriented_edge_from_model_vertex_ids(
+//        index_t i0,
+//        index_t i1,
+//        index_t& facet,
+//        index_t& edge ) const
+//    {
+//        // Copy from above .. tant pis
+//        edge = NO_ID ;
+//
+//        // If a facet is given, look for the oriented edge in this facet only
+//        if( facet != NO_ID ) {
+//            for( index_t v = 0; v < nb_mesh_element_vertices( facet ); ++v ) {
+//                index_t p = model_vertex_id( facet, v ) ;
+//                index_t next = model_vertex_id( facet,
+//                    next_facet_vertex_index( facet, v ) ) ;
+//
+//                if( p == i0 && next == i1 ) {
+//                    edge = v ;
+//                    return ;
+//                }
+//            }
+//        } else {
+//            for( index_t f = 0; f < nb_mesh_elements(); ++f ) {
+//                facet = f ;
+//                oriented_edge_from_model_vertex_ids( i0, i1, facet, edge ) ;
+//                if( edge != NO_ID ) {
+//                    return ;
+//                }
+//            }
+//        }
+//        facet = NO_ID ;
+//    }
 
     /*!
      * @brief Comparator of two vec3
