@@ -86,10 +86,8 @@ namespace RINGMesh {
 
     void TetgenMesher::tetrahedralize(
         const Mesh& input_mesh,
-        const std::string& command_line,
         Mesh& output_mesh )
     {
-        set_command_line( command_line ) ;
         initialize() ;
         copy_mesh_to_tetgen_input( input_mesh ) ;
         tetrahedralize() ;
@@ -99,10 +97,8 @@ namespace RINGMesh {
     void TetgenMesher::tetrahedralize(
         const Mesh& input_mesh,
         const std::vector< vec3 >& one_point_per_region,
-        const std::string& command_line,
         Mesh& output_mesh )
     {
-        set_command_line( command_line ) ;
         initialize() ;
         copy_mesh_to_tetgen_input( input_mesh ) ;
         set_regions( one_point_per_region ) ;
@@ -116,11 +112,6 @@ namespace RINGMesh {
         initialize_tetgen_args() ;
         tetgen_in_.initialize() ;
         tetgen_out_.initialize() ;
-    }
-
-    void TetgenMesher::set_command_line( const std::string& command_line )
-    {
-        tetgen_command_line_ = command_line.c_str() ;
     }
 
     void TetgenMesher::tetrahedralize()
@@ -314,16 +305,15 @@ namespace RINGMesh {
         std::set< double >& regions_to_keep ) const
     {
         // Determine which regions are incident to
-        // the 'exterior' (neighbor = -1 or tet is adjacent to
-        // a tet in region 0).
+        // the 'exterior' (neighbor = -1).
         // The region Id of tet t is determined by:
         //  tetgen_out_.tetrahedronattributelist[t]
 
         index_t nb_tets = static_cast< index_t >( tetgen_out_.numberoftetrahedra ) ;
         for( index_t t = 0; t < nb_tets; ++t ) {
             for( index_t f = 0; f < 4; ++f ) {
-                signed_index_t n = ( tetgen_out_.neighborlist[t * 4 + f] ) ;
-                if( n == -1 || tetgen_out_.tetrahedronattributelist[n] == 0.0 ) {
+                signed_index_t n = tetgen_out_.neighborlist[t * 4 + f] ;
+                if( n == -1 ) {
                     regions_to_keep.insert( tetgen_out_.tetrahedronattributelist[t] ) ;
                     break ;
                 }
@@ -354,11 +344,13 @@ namespace RINGMesh {
         }
         TetgenMesher mesher ;
         if( refine ) {
-            mesher.tetrahedralize( M, "QpnYAAq" + GEO::String::to_string( quality ),
-                M ) ;
-        } else {
-            mesher.tetrahedralize( M, "QpnYAA", M ) ;
+            mesher.add_points_to_match_quality( quality ) ;
         }
+        mesher.tetrahedralize( M, M ) ;
+    }
+
+    void TetgenMesher::add_points_to_match_quality( double quality ) {
+        tetgen_command_line_ += "q" + GEO::String::to_string( quality ) ;
     }
 }
 

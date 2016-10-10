@@ -799,7 +799,7 @@ namespace RINGMesh {
         get_one_point_per_geomodel_region( geomodel, points_in_regions ) ;
 
         TetgenMesher mesher ;
-        mesher.tetrahedralize( mesh, points_in_regions, "QpnYAA", mesh ) ;
+        mesher.tetrahedralize( mesh, points_in_regions, mesh ) ;
 
         GeoModelBuilderMesh builder( geomodel, mesh, "", "region" ) ;
         builder.build_regions() ;
