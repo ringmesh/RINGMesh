@@ -959,12 +959,13 @@ namespace RINGMesh {
             ringmesh_assert( is_on_border( next_f ) ) ;
 
             // Local index of next vertex in the next facet
-            index_t next_e = vertex_index_in_facet( next_f, next_v_id ) ;
+            next_e = vertex_index_in_facet( next_f, next_v_id ) ;
             ringmesh_assert( is_on_border( next_f, next_e ) ) ;
         } else if( nb_around == 1 ) {
             // next_v_id must be in two border edges of facet f
-            // Get the id in the facet of the vertex neighbor of v1 that is not v0
-            next_e = next_facet_vertex_index( next_f, v_id ) ;
+            index_t next_v_in_next_facet = vertex_index_in_facet( next_f,
+                next_v_id ) ;
+            next_e = next_facet_vertex_index( next_f, next_v_in_next_facet ) ;
         }
     }
 
@@ -999,12 +1000,12 @@ namespace RINGMesh {
             // Local index of given vertex in the prev facet
             index_t v_in_prev_f = vertex_index_in_facet( prev_f, v_id ) ;
             // Local index of previous vertex in the prev facet
-            index_t prev_e = prev_facet_vertex_index( prev_f, v_in_prev_f ) ;
+            prev_e = prev_facet_vertex_index( prev_f, v_in_prev_f ) ;
             ringmesh_assert( is_on_border( prev_f, prev_e ) ) ;
         } else if( nb_around == 1 ) {
-            // next_v_id must be in two border edges of facet f
-            // Get the id in the facet of the vertex neighbor of v1 that is not v0
-            prev_e = prev_facet_vertex_index( prev_f, v_id ) ;
+            // v_id must be in two border edges of facet f
+            index_t v_in_next_facet = vertex_index_in_facet( prev_f, v_id ) ;
+            prev_e = prev_facet_vertex_index( prev_f, v_in_next_facet ) ;
         }
     }
 
