@@ -244,7 +244,7 @@ namespace RINGMesh {
             // Assert to detect if the double is not an index_t [BC]
             ringmesh_assert( std::abs( static_cast<index_t> (
                         tet_attributes[one_tet_attribute_size*i] )
-                    - tet_attributes[one_tet_attribute_size*i] ) < epsilon ) ;
+                    - tet_attributes[one_tet_attribute_size*i] ) < global_epsilon ) ;
             region_id[i] =
                 static_cast< index_t >( tet_attributes[one_tet_attribute_size * i] ) ;
         }

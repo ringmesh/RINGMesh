@@ -58,15 +58,15 @@ namespace {
      * Compare the coordinates of \param v1 and \param v2 one by one,
      * @return return true if coordinates are all epsilon close.
      */
-    bool inexact_equal( const vec3& v1, const vec3& v2 )
-    {
-        for( index_t i = 0; i < 3; i++ ) {
-            if( std::fabs( v1[i] - v2[i] ) > epsilon ) {
-                return false ;
-            }
-        }
-        return true ;
-    }
+//    bool inexact_equal( const vec3& v1, const vec3& v2 )
+//    {
+//        for( index_t i = 0; i < 3; i++ ) {
+//            if( std::fabs( v1[i] - v2[i] ) > epsilon ) {
+//                return false ;
+//            }
+//        }
+//        return true ;
+//    }
 
 }
 
@@ -639,9 +639,9 @@ namespace RINGMesh {
         double discr = a1 * a1 - a0 * a2 ;
         if( discr < 0.0 ) return false ;
 
-        if( fabs( a2 ) < epsilon ) return false ;
+        if( std::fabs( a2 ) < global_epsilon ) return false ;
         double inv = 1.0 / a2 ;
-        if( discr < epsilon ) {
+        if( discr < global_epsilon ) {
             result.push_back( vec3( O_inter - ( a1 * inv ) * D_inter ) ) ;
         } else {
             double root = sqrt( discr ) ;
@@ -685,7 +685,7 @@ namespace RINGMesh {
         // where det = 1 - d^2.
 
         double d = dot( N_P0, N_P1 ) ;
-        if( fabs( d - 1 ) < epsilon ) return false ;
+        if( std::fabs( d - 1 ) < global_epsilon ) return false ;
 
         double invDet = 1.0 / ( 1.0 - d * d ) ;
         double const_P0 = dot( N_P0, O_P0 ) ;
@@ -716,7 +716,7 @@ namespace RINGMesh {
         double lambda[4] )
     {
         double total_volume = GEO::Geom::tetra_signed_volume( p0, p1, p2, p3 ) ;
-        if( total_volume < epsilon_sq ) {
+        if( total_volume < global_epsilon ) {
             /// @todo Need to have a better handling of epsilon
             for( index_t i = 0; i < 4; i++ ) {
                 lambda[i] = 0 ;
@@ -784,14 +784,14 @@ namespace RINGMesh {
         const vec3& p1,
         vec3& new_p )
     {
-        if( inexact_equal( p, p0 ) ) {
-            new_p = p0 ;
-            return true ;
-        }
-        if( inexact_equal( p, p1 ) ) {
-            new_p = p1 ;
-            return true ;
-        }
+//        if( inexact_equal( p, p0 ) ) {
+//            new_p = p0 ;
+//            return true ;
+//        }
+//        if( inexact_equal( p, p1 ) ) {
+//            new_p = p1 ;
+//            return true ;
+//        }
         vec3 center = ( p0 + p1 ) * 0.5 ;
         vec3 diff = p - center ;
         vec3 edge = p1 - p0 ;
@@ -799,7 +799,7 @@ namespace RINGMesh {
         edge = normalize( edge ) ;
         double d = dot( edge, diff ) ;
 
-        if( fabs( d ) < extent ) {
+        if( std::fabs( d ) <= extent ) {
             new_p = center + d * edge ;
             return true ;
         }
@@ -898,9 +898,9 @@ namespace RINGMesh {
         vec3 D = normalize( seg1 - seg0 ) ;
         double DdN = dot( D, normal ) ;
         signed_index_t sign ;
-        if( DdN > epsilon ) {
+        if( DdN > global_epsilon ) {
             sign = 1 ;
-        } else if( DdN < -epsilon ) {
+        } else if( DdN < -global_epsilon ) {
             sign = -1 ;
             DdN = -DdN ;
         } else {
@@ -1250,12 +1250,14 @@ namespace RINGMesh {
         Sign s4 = sign(
             GEO::PCK::orient_3d( p.data(), q.data(), p3.data(), p0.data() ) ) ;
 
-        if( s1 == ZERO || s2 == ZERO || s3 == ZERO || s4 == ZERO ) {
-            if( inexact_equal( p, p0 ) || inexact_equal( p, p1 )
-                || inexact_equal( p, p2 ) || inexact_equal( p, p3 ) ) {
-                return true ;
-            }
-            return false ; // Arbitrary choice !!!!
+        if( s1 == ZERO ) {
+            return s2 == s3 && s3 == s4 ;
+        } else if( s2 == ZERO ) {
+            return s1 == s3 && s3 == s4 ;
+        } else if( s3 == ZERO ) {
+            return s1 == s2 && s2 == s4 ;
+        } else if( s4 == ZERO ) {
+            return s1 == s2 && s2 == s3 ;
         }
 
         return s1 == s2 && s2 == s3 && s3 == s4 ;
@@ -1292,13 +1294,13 @@ namespace RINGMesh {
     /*!
      * Computes the unique database
      */
-    void MakeUnique::unique()
+    void MakeUnique::unique( double epsilon )
     {
         ColocaterANN ann( points_ ) ;
         for( index_t i = 0; i < indices_.size(); i++ ) {
             if( indices_[i] != i ) continue ;
             std::vector< index_t > results ;
-            ann.get_colocated( points_[i], results ) ;
+            ann.get_neighbors( points_[i], results, epsilon ) ;
             index_t id = *std::min_element( results.begin(), results.end() ) ;
             for( index_t j = 0; j < results.size(); j++ ) {
                 if( id == results[j] ) continue ;
@@ -1401,20 +1403,8 @@ namespace RINGMesh {
         ann_tree_->set_points( nb_vertices, ann_points_ ) ;
     }
 
-    /*!
-     * Compute the colocated point(s) of a given point
-     * @param[in] v the point to test
-     * @param[out] result the colocated point indices with a precision epsilon.
-     * @return return true if there is at least one intersection
-     */
-    bool ColocaterANN::get_colocated(
-        const vec3& v,
-        std::vector< index_t >& result ) const
-    {
-        return get_neighbors( v, result, epsilon_sq ) ;
-    }
-
     index_t ColocaterANN::get_colocated_index_mapping(
+        double epsilon,
         GEO::vector< index_t >& index_map ) const
     {
         index_map.resize( ann_tree_->nb_points() ) ;
@@ -1428,7 +1418,7 @@ namespace RINGMesh {
             std::vector< index_t > results ;
             vec3 query( ann_points_[3 * i], ann_points_[3 * i + 1],
                 ann_points_[3 * i + 2] ) ;
-            get_colocated( query, results ) ;
+            get_neighbors( query, results, epsilon ) ;
             index_t id = *std::min_element( results.begin(), results.end() ) ;
             if( id < i ) {
                 index_map[i] = id ;
@@ -1444,10 +1434,12 @@ namespace RINGMesh {
     }
 
     index_t ColocaterANN::get_colocated_index_mapping(
+        double epsilon,
         GEO::vector< index_t >& index_map,
         GEO::vector< vec3 >& unique_points ) const
     {
-        index_t nb_colocalised_vertices = get_colocated_index_mapping( index_map ) ;
+        index_t nb_colocalised_vertices = get_colocated_index_mapping( epsilon,
+            index_map ) ;
         unique_points.reserve( nb_points() - nb_colocalised_vertices ) ;
         index_t offset = 0 ;
         for( index_t p = 0; p < index_map.size(); p++ ) {
@@ -1482,6 +1474,7 @@ namespace RINGMesh {
         if( nb_points == 0 ) {
             return false ;
         }
+        double threshold_distance_sq = threshold_distance * threshold_distance ;
         index_t nb_neighbors = std::min( index_t( 5 ), nb_points ) ;
         std::vector< index_t > neighbors ;
         index_t cur_neighbor = 0 ;
@@ -1493,7 +1486,7 @@ namespace RINGMesh {
             double* dist = (double*) alloca( sizeof(double) * cur_neighbor ) ;
             nb_neighbors = get_neighbors( v, cur_neighbor, neighbors, dist ) ;
             for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
-                if( dist[i] > threshold_distance ) {
+                if( dist[i] > threshold_distance_sq ) {
                     break ;
                 }
                 result.push_back( neighbors[i] ) ;

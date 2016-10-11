@@ -39,6 +39,7 @@
 
 #include <geogram/basic/logger.h>
 
+#include <ringmesh/basic/box3d.h>
 #include <ringmesh/geogram_extension/geogram_mesh_repair.h>
 #include <ringmesh/geomodel/geo_model_api.h>
 
@@ -49,6 +50,17 @@
  */
 
 namespace RINGMesh {
+
+    double compute_epsilon( const GEO::Mesh& mesh )
+    {
+        Box3d bbox ;
+        index_t nb_vertices = mesh.vertices.nb() ;
+        for( index_t i = 0; i < nb_vertices; ++i ) {
+            const vec3& point = mesh.vertices.point( i ) ;
+            bbox.add_point( point ) ;
+        }
+        return bbox.diagonal().length() * GEO::CmdLine::get_arg_double( "epsilon" ) ;
+    }
 
     bool is_surface_mesh( const GEO::Mesh& mesh )
     {
@@ -500,7 +512,7 @@ namespace RINGMesh {
                 << std::endl ;
             valid = false ;
         }
-        if( RINGMesh::has_mesh_colocate_vertices( mesh_, epsilon ) ) {
+        if( RINGMesh::has_mesh_colocate_vertices( mesh_, epsilon_ ) ) {
             Logger::warn( "GMBuilder" )
                 << " The Mesh has colocated vertices. Repair it beforehand "
                 << std::endl ;
@@ -527,7 +539,7 @@ namespace RINGMesh {
                 << " is not defined on the Mesh cells " << std::endl ;
             valid = false ;
         }
-        if( RINGMesh::has_mesh_colocate_vertices( mesh_, epsilon ) ) {
+        if( RINGMesh::has_mesh_colocate_vertices( mesh_, epsilon_ ) ) {
             Logger::warn( "GMBuilder" )
                 << " The Mesh has colocated vertices. Repair it beforehand. "
                 << std::endl ;
@@ -591,6 +603,7 @@ namespace RINGMesh {
             created_facet_attribute ) ;
 
         // Remove colocated vertices
+        double epsilon = compute_epsilon( mesh ) ;
         repair_colocate_vertices( mesh, epsilon ) ;
     }
 
@@ -717,8 +730,10 @@ namespace RINGMesh {
     {
         index_t nb_vertices = mesh_.vertices.nb() ;
         for( index_t i = 0; i < nb_vertices; ++i ) {
-            model().mesh.vertices.add_vertex( mesh_.vertices.point( i ) ) ;
+            const vec3& point = mesh_.vertices.point( i ) ;
+            model().mesh.vertices.add_vertex( point ) ;
         }
+        epsilon_ = compute_epsilon( mesh_ ) ;
     }
 
     void GeoModelBuilderMesh::initialize_surface_builder()
