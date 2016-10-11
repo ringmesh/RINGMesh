@@ -281,7 +281,7 @@ namespace RINGMesh {
 
         void add_points( const std::vector< vec3 >& points ) ;
 
-        void unique() ;
+        void unique( double epsilon ) ;
 
         /*!
          * Gets the input vector of vec3
@@ -335,7 +335,6 @@ namespace RINGMesh {
             if( delete_points_ ) delete[] ann_points_ ;
         }
 
-        bool get_colocated( const vec3& v, std::vector< index_t >& result ) const ;
         /*!
          * @brief Gets the \p index_map that link all the duplicated points
          * to their first occurancy
@@ -346,6 +345,7 @@ namespace RINGMesh {
          *     return 2
          */
         index_t get_colocated_index_mapping(
+            double epsilon,
             GEO::vector< index_t >& index_map ) const ;
         /*!
          * @brief Gets the \p index_map that link all the points
@@ -358,6 +358,7 @@ namespace RINGMesh {
          *     return 2
          */
         index_t get_colocated_index_mapping(
+            double epsilon,
             GEO::vector< index_t >& index_map,
             GEO::vector< vec3 >& unique_points ) const ;
         /*!
