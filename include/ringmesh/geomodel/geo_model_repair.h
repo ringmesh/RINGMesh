@@ -81,19 +81,19 @@ namespace RINGMesh {
     private:
         index_t repair_line_mesh( Line& line ) ;
         void mesh_detect_degenerate_edges(
-            const Mesh& M,
+            const Mesh1D& M,
             GEO::vector< index_t >& e_is_degenerate,
             GEO::vector< index_t >& colocated_vertices ) ;
         void mesh_detect_degenerate_facets(
-            const Mesh& M,
+            const Mesh2D& M,
             GEO::vector< index_t >& f_is_degenerate,
             GEO::vector< index_t >& colocated_vertices ) ;
         bool facet_is_degenerate(
-            const Mesh& M,
+            const Mesh2D& M,
             index_t f,
             GEO::vector< index_t >& colocated_vertices ) ;
 
-        index_t detect_degenerate_facets( Mesh& M ) ;
+        index_t detect_degenerate_facets( Mesh2D& M ) ;
 
         void remove_degenerate_facet_and_edges( std::set< gme_t >& to_remove ) ;
 
@@ -105,7 +105,7 @@ namespace RINGMesh {
             std::set< index_t >& vertices ) ;
 
         bool edge_is_degenerate(
-            const Mesh& M,
+            const Mesh1D& M,
             index_t e,
             GEO::vector< index_t >& colocated_vertices )
         {

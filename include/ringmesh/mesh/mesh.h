@@ -64,6 +64,10 @@ namespace RINGMesh {
     ringmesh_disable_copy( MeshBase ) ;
     public:
 
+        virtual ~MeshBase()
+        {
+        }
+
         virtual void save_mesh(
             const std::string& filename,
             const GEO::MeshIOFlags& ioflags ) const = 0 ;
@@ -117,9 +121,6 @@ namespace RINGMesh {
             : geo_model_( geo_model )
         {
         }
-        virtual ~MeshBase()
-        {
-        }
 
     protected:
         const GeoModel& geo_model_ ;
@@ -132,6 +133,10 @@ namespace RINGMesh {
     class RINGMESH_API Mesh0D: public virtual MeshBase {
     ringmesh_disable_copy( Mesh0D ) ;
 
+    public:
+        virtual ~Mesh0D()
+        {
+        }
     protected:
         /*!
          * @brief Mesh0D constructor.
@@ -144,9 +149,6 @@ namespace RINGMesh {
             : MeshBase( geo_model )
         {
         }
-        virtual ~Mesh0D()
-        {
-        }
 
     } ;
 
@@ -156,6 +158,9 @@ namespace RINGMesh {
     class RINGMESH_API Mesh1D: public virtual MeshBase {
     ringmesh_disable_copy( Mesh1D ) ;
     public:
+        virtual ~Mesh1D()
+        {
+        }
         /*
          * @brief Gets the index of an edge vertex.
          * @param[in] edge_id index of the edge.
@@ -181,9 +186,7 @@ namespace RINGMesh {
             : MeshBase( geo_model )
         {
         }
-        virtual ~Mesh1D()
-        {
-        }
+
     } ;
 
     /*!
@@ -192,6 +195,9 @@ namespace RINGMesh {
     class RINGMESH_API Mesh2D: public virtual MeshBase {
     ringmesh_disable_copy( Mesh2D ) ;
     public:
+        virtual ~Mesh2D()
+        {
+        }
         /*!
          * @brief Gets the vertex index by facet index and local vertex index.
          * @param[in] facet_id the facet index.
@@ -283,9 +289,6 @@ namespace RINGMesh {
             : MeshBase( geo_model )
         {
         }
-        virtual ~Mesh2D()
-        {
-        }
 
     } ;
 
@@ -295,6 +298,10 @@ namespace RINGMesh {
     class RINGMESH_API Mesh3D: public virtual MeshBase {
     ringmesh_disable_copy( Mesh3D ) ;
     public:
+        virtual ~Mesh3D()
+        {
+        }
+
         /*!
          * @brief Gets a vertex index by cell and local vertex index.
          * @param[in] cell_id the cell index.
@@ -448,9 +455,6 @@ namespace RINGMesh {
             : MeshBase( geo_model )
         {
         }
-        virtual ~Mesh3D()
-        {
-        }
 
     } ;
 
@@ -515,7 +519,10 @@ namespace RINGMesh {
             }
             delete mesh_ ;
         }
-
+        /*!
+         * \name MeshBase implementation
+         * @{
+         */
         void save_mesh(
             const std::string& filename,
             const GEO::MeshIOFlags& ioflags ) const
@@ -555,10 +562,6 @@ namespace RINGMesh {
             print_bounded_attributes( *mesh_ ) ;
         }
 
-        /*!
-         * \name Vertex methods
-         * @{
-         */
         /*
          * @brief Gets a point.
          * @param[in] v_id the vertex, in 0.. @function nb_vetices()-1.
@@ -582,11 +585,11 @@ namespace RINGMesh {
             return mesh_->vertices.attributes() ;
         }
 
-        /*!
-         *  @}
-         * \name Edge methods
+        /*!@}
+         * \name Mesh1D implementation
          * @{
          */
+
         /*
          * @brief Gets the index of an edge vertex.
          * @param[in] edge_id index of the edge.
@@ -618,10 +621,11 @@ namespace RINGMesh {
             return mesh_->edges.attributes() ;
         }
 
-        /*! @}
-         * \name Facets methods
+        /*!@}
+         * \name Mesh2D implementation
          * @{
          */
+
         /*!
          * @brief Gets the vertex index by facet index and local vertex index.
          * @param[in] facet_id the facet index.
@@ -756,8 +760,9 @@ namespace RINGMesh {
         {
             return GEO::Geom::mesh_facet_area( *mesh_, facet_id ) ;
         }
-        /*! @}
-         * \name Cells methods
+
+        /*!@}
+         * \name Mesh3D implementation
          * @{
          */
 

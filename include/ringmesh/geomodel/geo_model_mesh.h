@@ -83,8 +83,8 @@ namespace RINGMesh {
         GeoModelMeshVertices(
             GeoModelMesh& gmm,
             GeoModel& gm,
-            Mesh& mesh,
-            MeshBuilder& mesh_builder ) ;
+            Mesh0D& mesh,
+            Mesh0DBuilder& mesh_builder ) ;
         ~GeoModelMeshVertices() ;
 
         /*!
@@ -201,8 +201,8 @@ namespace RINGMesh {
         /// Attached GeoModel
         GeoModel& gm_ ;
         /// Attached Mesh
-        Mesh& mesh_ ;
-        MeshBuilder& mesh_builder_ ;
+        Mesh0D& mesh_ ;
+        Mesh0DBuilder& mesh_builder_ ;
 
         /*!
          * Vertices in GeoModelEntities corresponding to each vertex
@@ -222,8 +222,8 @@ namespace RINGMesh {
 
         GeoModelMeshFacets(
             GeoModelMesh& gmm,
-            Mesh& mesh,
-            MeshBuilder& mesh_builder ) ;
+            Mesh2D& mesh,
+            Mesh2DBuilder& mesh_builder ) ;
         ~GeoModelMeshFacets() ;
 
         /*!
@@ -420,8 +420,8 @@ namespace RINGMesh {
         /// Attached GeoModel
         const GeoModel& gm_ ;
         /// Attached Mesh
-        Mesh& mesh_ ;
-        MeshBuilder& mesh_builder_ ;
+        Mesh2D& mesh_ ;
+        Mesh2DBuilder& mesh_builder_ ;
 
         /// Attribute storing the surface index per facet
         GEO::Attribute< index_t > surface_id_ ;
@@ -450,8 +450,8 @@ namespace RINGMesh {
     public:
         GeoModelMeshEdges(
             GeoModelMesh& gmm,
-            Mesh& mesh,
-            MeshBuilder& mesh_builder ) ;
+            Mesh1D& mesh,
+            Mesh1DBuilder& mesh_builder ) ;
         ~GeoModelMeshEdges() ;
 
         /*!
@@ -503,8 +503,8 @@ namespace RINGMesh {
         /// Attached GeoModel
         const GeoModel& gm_ ;
         /// Attached Mesh
-        Mesh& mesh_ ;
-        MeshBuilder& mesh_builder_ ;
+        Mesh1D& mesh_ ;
+        Mesh1DBuilder& mesh_builder_ ;
 
         /*!
          * Vector storing the index of the starting edge index
@@ -531,8 +531,8 @@ namespace RINGMesh {
 
         GeoModelMeshCells(
             GeoModelMesh& gmm,
-            Mesh& mesh,
-            MeshBuilder& mesh_builder ) ;
+            Mesh3D& mesh,
+            Mesh3DBuilder& mesh_builder ) ;
         /*!
          * Test if the mesh cells are initialized
          */
@@ -913,8 +913,8 @@ namespace RINGMesh {
         /// Attached GeoModel
         const GeoModel& gm_ ;
         /// Attached Mesh
-        Mesh& mesh_ ;
-        MeshBuilder& mesh_builder_ ;
+        Mesh3D& mesh_ ;
+        Mesh3DBuilder& mesh_builder_ ;
 
         /// Attribute storing the region index per cell
         GEO::Attribute< index_t > region_id_ ;
@@ -968,7 +968,7 @@ namespace RINGMesh {
     public:
         friend class GeoModelMesh ;
 
-        GeoModelMeshOrder( GeoModelMesh& gmm, Mesh& mesh ) ;
+        GeoModelMeshOrder( GeoModelMesh& gmm, MeshAllD& mesh ) ;
 
         /*!
          * Test if the mesh high orders are initialized
@@ -1050,7 +1050,7 @@ namespace RINGMesh {
         /// Attached GeoModel
         const GeoModel& gm_ ;
         /// Attached Mesh
-        Mesh& mesh_ ;
+        MeshAllD& mesh_ ;
         /// Total number of vertices + new high order vertices on cell edges
         index_t nb_vertices_ ;
         /// New vertices
@@ -1080,10 +1080,12 @@ namespace RINGMesh {
          * Copy the current GeoModelMesh into a Mesh
          * @param[out] mesh The mesh to fill        
          */
-        void copy_mesh( Mesh& mesh ) const
+        void copy_mesh( MeshAllD& mesh ) const
         {
-            MeshBuilder builder( mesh ) ;
-            builder.copy( *mesh_, false, GEO::MESH_ALL_ELEMENTS ) ;
+            GeogramMesh& geomesh = dynamic_cast< GeogramMesh& >( mesh ) ;
+            MeshAllDBuilder* builder = new GeogramMeshBuilder( geomesh ) ;
+            builder->copy( *mesh_, false, GEO::MESH_ALL_ELEMENTS ) ;
+            delete builder ;
         }
         void save_mesh( const std::string& filename ) const
         {
@@ -1192,8 +1194,8 @@ namespace RINGMesh {
          * @details This means no colocated vertices, no duplicated edges, 
          * facets or cells.
          */
-        Mesh* mesh_ ;
-        MeshBuilder* mesh_builder_ ;
+        MeshAllD* mesh_ ;
+        MeshAllDBuilder* mesh_builder_ ;
 
         /// Optional duplication mode to compute the duplication of cells on surfaces
         mutable GeoModelMeshCells::DuplicateMode mode_ ;

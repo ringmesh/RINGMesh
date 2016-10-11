@@ -252,11 +252,11 @@ namespace RINGMesh {
                 return ; // a region is not necessary meshed.
             }
             unzip_one_file( uz, filename.c_str() ) ;
-            Mesh cur_mesh( model(), 3, false ) ;
+            GeogramMesh cur_mesh( model(), 3, false ) ;
             GEO::MeshIOFlags flags ;
             flags.set_attribute( GEO::MESH_ALL_ATTRIBUTES ) ;
             Logger::instance()->set_minimal( true ) ;
-            MeshBuilder builder( cur_mesh ) ;
+            GeogramMeshBuilder builder( cur_mesh ) ;
             builder.load_mesh( filename, flags ) ;
             assign_mesh_to_entity( cur_mesh, cur_gme ) ;
             Logger::instance()->set_minimal( false ) ;

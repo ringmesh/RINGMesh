@@ -62,7 +62,7 @@ namespace {
     class GeoModelMeshFacetsSort {
     public:
         GeoModelMeshFacetsSort(
-            const Mesh& mesh,
+            const Mesh2D& mesh,
             const GEO::Attribute< index_t >& surface_id )
             : mesh_( mesh ), surface_id_( surface_id )
         {
@@ -77,7 +77,7 @@ namespace {
             }
         }
     private:
-        const Mesh& mesh_ ;
+        const Mesh2D& mesh_ ;
         const GEO::Attribute< index_t >& surface_id_ ;
     } ;
 
@@ -99,11 +99,11 @@ namespace {
             }
         }
     private:
-        const Mesh& mesh_ ;
+        const Mesh3D& mesh_ ;
         const GEO::Attribute< index_t >& region_id_ ;
     } ;
 
-    index_t find_local_vertex_id( const Mesh& mesh, index_t cell, index_t vertex_id )
+    index_t find_local_vertex_id( const Mesh3D& mesh, index_t cell, index_t vertex_id )
     {
         for( index_t v = 0; v < mesh.nb_cell_vertices( cell ); v++ ) {
             if( mesh.cell_vertex( cell, v ) == vertex_id ) {
@@ -114,7 +114,7 @@ namespace {
     }
 
     void cell_facets_around_vertex(
-        const Mesh& mesh,
+        const Mesh3D& mesh,
         index_t cell,
         index_t vertex_id,
         std::vector< index_t >& facets )
@@ -144,8 +144,8 @@ namespace RINGMesh {
     GeoModelMeshVertices::GeoModelMeshVertices(
         GeoModelMesh& gmm,
         GeoModel& gm,
-        Mesh& mesh,
-        MeshBuilder& mesh_builder )
+        Mesh0D& mesh,
+        Mesh0DBuilder& mesh_builder )
         : gmm_( gmm ), gm_( gm ), mesh_( mesh ), mesh_builder_( mesh_builder )
     {
     }

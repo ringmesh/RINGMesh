@@ -58,6 +58,9 @@ namespace RINGMesh {
     ringmesh_disable_copy( MeshBaseBuilder ) ;
 
     public:
+    virtual ~MeshBaseBuilder()
+    {
+    }
         /*!
          * \name general methods
          * @{
@@ -140,20 +143,18 @@ namespace RINGMesh {
         MeshBaseBuilder()
         {
         }
-        virtual ~MeshBaseBuilder()
-        {
-        }
+
     } ;
 
     class RINGMESH_API Mesh0DBuilder: public virtual MeshBaseBuilder {
     ringmesh_disable_copy(Mesh0DBuilder) ;
-
+    public:
+        virtual ~Mesh0DBuilder()
+        {
+        }
     protected:
         Mesh0DBuilder()
             : MeshBaseBuilder()
-        {
-        }
-        virtual ~Mesh0DBuilder()
         {
         }
 
@@ -162,6 +163,9 @@ namespace RINGMesh {
     class RINGMESH_API Mesh1DBuilder: public virtual MeshBaseBuilder {
     ringmesh_disable_copy(Mesh1DBuilder) ;
     public:
+        ~Mesh1DBuilder()
+        {
+        }
         /*!
          * @brief Create a new edge.
          * @param[in] v1_id index of the starting vertex.
@@ -210,13 +214,14 @@ namespace RINGMesh {
             : MeshBaseBuilder()
         {
         }
-        ~Mesh1DBuilder()
-        {
-        }
+
     } ;
     class RINGMESH_API Mesh2DBuilder: public virtual MeshBaseBuilder {
     ringmesh_disable_copy(Mesh2DBuilder) ;
     public:
+        ~Mesh2DBuilder()
+        {
+        }
         /*!@}
          * \name Facet related methods
          * @{
@@ -329,14 +334,14 @@ namespace RINGMesh {
             : MeshBaseBuilder()
         {
         }
-        ~Mesh2DBuilder()
-        {
-        }
 
     } ;
     class RINGMESH_API Mesh3DBuilder: public virtual MeshBaseBuilder {
     ringmesh_disable_copy(Mesh3DBuilder) ;
     public:
+        virtual ~Mesh3DBuilder()
+        {
+        }
         /*!
          * @brief Creates a contiguous chunk of cells of the same type.
          * @param[in] nb_cells  number of cells to create
@@ -432,33 +437,32 @@ namespace RINGMesh {
             : MeshBaseBuilder()
         {
         }
-        virtual ~Mesh3DBuilder()
-        {
-        }
+
     } ;
 
-    class RINGMESH_API MeshAllBuilder: public Mesh0DBuilder,
+    class RINGMESH_API MeshAllDBuilder: public Mesh0DBuilder,
         public Mesh1DBuilder,
         public Mesh2DBuilder,
         public Mesh3DBuilder {
-    ringmesh_disable_copy(MeshAllBuilder) ;
-    protected:
-        MeshAllBuilder()
-            : Mesh0DBuilder(), Mesh1DBuilder(), Mesh2DBuilder(), Mesh3DBuilder()
+    ringmesh_disable_copy(MeshAllDBuilder) ;
+    public:
+        virtual ~MeshAllDBuilder()
         {
         }
-        virtual ~MeshAllBuilder()
+    protected:
+        MeshAllDBuilder()
+            : Mesh0DBuilder(), Mesh1DBuilder(), Mesh2DBuilder(), Mesh3DBuilder()
         {
         }
 
     } ;
 
-    class RINGMESH_API GeogramMeshBuilder: public MeshAllBuilder {
+    class RINGMESH_API GeogramMeshBuilder: public MeshAllDBuilder {
     ringmesh_disable_copy( GeogramMeshBuilder ) ;
 
     public:
         GeogramMeshBuilder( GeogramMesh& mesh )
-            : MeshAllBuilder(), mesh_( mesh )
+            : MeshAllDBuilder(), mesh_( mesh )
         {
         }
         ~GeogramMeshBuilder()
