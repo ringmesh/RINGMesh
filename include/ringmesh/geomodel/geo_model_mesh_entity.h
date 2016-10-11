@@ -639,6 +639,79 @@ namespace RINGMesh {
             return mesh_.facet_adjacent( facet_index, edge_index ) ;
         }
 
+//        /*!
+//         * @brief Traversal of a surface border
+//         * @details From the input facet f, get the facet that share vertex v and
+//         * get the indices of vertex v and of the following vertex in this new facet.
+//         * The next facet next_f may be the same, and from is required to avoid going back.
+//         *
+//         * @param[in] f Index of the facet
+//         * @param[in] from Index in the facet of the previous point on the border - gives the direction
+//         * @param[in] v Index in the facet of the point for which we want the next point on border
+//         * @param[out] next_f Index of the facet containing the next point on border
+//         * @param[out] v_in_next Index of vertex v in facet next_f
+//         * @param[out] next_in_next Index of the next vertex on border in facet v_in_next
+//         */
+//        void next_on_border(
+//            index_t f,
+//            index_t from,
+//            index_t v,
+//            index_t& next_f,
+//            index_t& v_in_next,
+//            index_t& to ) const ;
+
+        /*!
+         * @brief Get the next edge on the border
+         * @param[in] f Input facet index
+         * @param[in] e Edge index in the facet
+         * @param[out] next_f Next facet index
+         * @param[out] next_e Next edge index in the facet
+         *
+         * @pre The given edge of the given facet must be on border
+         * @details
+         */
+        void next_on_border(
+            index_t f,
+            index_t e,
+            index_t& next_f,
+            index_t& next_e ) const ;
+
+        /*!
+         * @brief Get the vertex index in a facet @param facet_index from its
+         * index in the Surface @param surface_vertex_index
+         * @return NO_ID or index of the vertex in the facet
+         */
+        index_t vertex_index_in_facet(
+            index_t facet_index,
+            index_t surface_vertex_index ) const
+        {
+            for( index_t v = 0; v < nb_mesh_element_vertices( facet_index ); v++ ) {
+                if( mesh_element_vertex_index( facet_index, v )
+                    == surface_vertex_index ) {
+                    return v ;
+                }
+            }
+            return NO_ID ;
+        }
+        index_t facet_from_surface_vertex_ids( index_t in0, index_t in1 ) const ;
+
+        /*!
+         * @brief Determines the facets around a vertex
+         *
+         * @param[in] P Index ot the vertex in the surface
+         * @param[in] result Indices of the facets containing @param P
+         * @param[in] border_only If true only facets on the border are considered
+         * @param[in] f0 Index of one facet containing the vertex @param P
+         * @return The number of facet found
+         *
+         * @todo Try to use a AABB tree to remove @param first_facet. [PA]
+         */
+        index_t facets_around_vertex(
+            index_t surf_vertex_id,
+            std::vector< index_t >& result,
+            bool border_only,
+            index_t first_facet ) const ;
+
         /*! @}
          * \name Geometrical request on facets
          * @{
