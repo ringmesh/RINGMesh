@@ -79,8 +79,8 @@ namespace {
         for( index_t i = 0; i < E.nb_vertices(); ++i ) {
             if( E.model_vertex_id( i ) == NO_ID
                 && E.model_vertex_id( i ) >= E.model().mesh.vertices.nb() ) {
-                Logger::warn( "GeoModelEntity" )
-                    << "Invalid model vertex index in " << E.gme_id() << std::endl ;
+                Logger::warn( "GeoModelEntity" ) << "Invalid model vertex index in "
+                    << E.gme_id() << std::endl ;
                 return false ;
             }
         }
@@ -129,10 +129,11 @@ namespace {
         std::vector< index_t >& nb )
     {
         nb.resize( E.nb_vertices(), 0 ) ;
-        for( index_t mesh_element_index = 0; mesh_element_index < E.nb_mesh_elements();
-            ++mesh_element_index ) {
+        for( index_t mesh_element_index = 0;
+            mesh_element_index < E.nb_mesh_elements(); ++mesh_element_index ) {
             for( index_t vertex = 0;
-                vertex < E.nb_mesh_element_vertices( mesh_element_index ); ++vertex ) {
+                vertex < E.nb_mesh_element_vertices( mesh_element_index );
+                ++vertex ) {
                 ++nb[E.mesh_element_vertex_index( mesh_element_index, vertex )] ;
             }
         }
@@ -144,7 +145,7 @@ namespace {
         count_vertex_occurences( mesh, nb ) ;
         return static_cast< index_t >( std::count( nb.begin(), nb.end(), 0 ) ) ;
     }
-    
+
     bool check_mesh_entity_vertices_are_different(
         std::vector< index_t >& vertices,
         std::vector< index_t >& vertices_global )
@@ -182,8 +183,8 @@ namespace {
             v++ ;
         }
         return check_mesh_entity_vertices_are_different( corners, corners_global ) ;
-    }    
-    
+    }
+
     /*!
      * @brief Returns true if the region cell is incident twice to the same vertex
      * or if the cell volume is negative or inferior to epsilon
@@ -200,7 +201,7 @@ namespace {
         double volume = region.mesh_element_size( cell_index ) ;
         return check_mesh_entity_vertices_are_different( vertices, vertices_global )
             || volume < epsilon ;
-	}
+    }
 
     /*!
      * @brief Debug: Save a Surface of the model in the file OBJ format is used
@@ -265,8 +266,10 @@ namespace RINGMesh {
     {
         unbind_model_vertex_id_attribute() ;
 #ifdef RINGMESH_DEBUG
-        mesh_.print_mesh_bounded_attributes() ;
+        ringmesh_assert( mesh_ != NULL ) ;
+        mesh_->print_mesh_bounded_attributes() ;
 #endif
+        delete mesh_ ;
     }
 
     /*!
@@ -274,7 +277,7 @@ namespace RINGMesh {
      */
     void GeoModelMeshEntity::bind_model_vertex_id_attribute()
     {
-        model_vertex_id_.bind( mesh_.vertex_attribute_manager(),
+        model_vertex_id_.bind( mesh_->vertex_attribute_manager(),
             model_vertex_id_att_name() ) ;
     }
     /*!
@@ -311,7 +314,7 @@ namespace RINGMesh {
         }
         return valid ;
     }
-    
+
     /*!
      * All entities in the boundary must have this in their
      *  in_boundary vector
@@ -321,9 +324,9 @@ namespace RINGMesh {
         const EntityTypeManager& family = model().entity_type_manager() ;
         const EntityType entity_type = type_name() ;
         const EntityType& boundary_type = family.boundary_type( entity_type ) ;
-        
+
         bool valid = true ;
-        if( family.is_valid_type( boundary_type )  ) {
+        if( family.is_valid_type( boundary_type ) ) {
             for( index_t i = 0; i < nb_boundaries(); ++i ) {
                 const GeoModelMeshEntity& E = boundary( i ) ;
                 bool found = false ;
@@ -343,7 +346,7 @@ namespace RINGMesh {
             }
         }
         return valid ;
-    }    
+    }
     /*! All entities must be at leat in the boundary of another entity
      * and all entities in the in_boundary must have this entity in their
      * boundary vector
@@ -385,26 +388,28 @@ namespace RINGMesh {
      *  If the parent type is defined for this EntityType, 
      *  and if the model has entities of that type, the entity must have a parent.
      * @todo Remove the second if condition ?
-     */    
+     */
     bool GeoModelMeshEntity::is_parent_connectivity_valid() const
     {
         bool valid = true ;
 
         const EntityTypeManager& family = model().entity_type_manager() ;
         const EntityType entity_type = type_name() ;
-       
-        const std::vector< EntityType > parent_types = family.parent_types( entity_type ) ;
-        for( index_t p_itr = 0 ; p_itr < parent_types.size(); ++p_itr ) {
+
+        const std::vector< EntityType > parent_types = family.parent_types(
+            entity_type ) ;
+        for( index_t p_itr = 0; p_itr < parent_types.size(); ++p_itr ) {
             const EntityType& parent_type = parent_types[p_itr] ;
-            index_t nb_parent_entities_in_geomodel = model_.nb_geological_entities( parent_type ) ;
+            index_t nb_parent_entities_in_geomodel = model_.nb_geological_entities(
+                parent_type ) ;
             if( nb_parent_entities_in_geomodel == 0 ) {
                 continue ;
             } else {
                 // There must be one and only one parent of that type in this entity
                 // And this parent msut have this entity in its children
                 index_t nb_found_parents = 0 ;
-                for( index_t i = 0 ; i < nb_parents(); ++i ) {
-                    const GeoModelGeologicalEntity& E = parent(i) ;
+                for( index_t i = 0; i < nb_parents(); ++i ) {
+                    const GeoModelGeologicalEntity& E = parent( i ) ;
                     if( E.type_name() == parent_type ) {
                         nb_found_parents++ ;
 
@@ -425,13 +430,12 @@ namespace RINGMesh {
                         }
                     }
                 }
-                if( nb_found_parents != 1 ) {                    
-                    Logger::warn( "GeoModelEntity" ) << gme_id()
-                        << " has "<< nb_found_parents 
-                        <<" geological parent entity of type "
+                if( nb_found_parents != 1 ) {
+                    Logger::warn( "GeoModelEntity" ) << gme_id() << " has "
+                        << nb_found_parents << " geological parent entity of type "
                         << parent_type << std::endl ;
                     valid = false ;
-                } 
+                }
             }
         }
         return valid ;
@@ -440,39 +444,41 @@ namespace RINGMesh {
      *    and that reverse information is stored by the corresponding
      *    entities
      */
-    bool GeoModelMeshEntity::is_connectivity_valid() const {
+    bool GeoModelMeshEntity::is_connectivity_valid() const
+    {
         return is_boundary_connectivity_valid()
-            && is_in_boundary_connectivity_valid()
-            && is_parent_connectivity_valid() ;
+            && is_in_boundary_connectivity_valid() && is_parent_connectivity_valid() ;
     }
-    
+
     /*!
      * @return Assert that the parent exists and returns it.
      */
-    const GeoModelGeologicalEntity& GeoModelMeshEntity::parent( index_t parent_index ) const
+    const GeoModelGeologicalEntity& GeoModelMeshEntity::parent(
+        index_t parent_index ) const
     {
         gme_t parent = parent_gme( parent_index ) ;
         ringmesh_assert( parent.is_defined() ) ;
         return model().geological_entity( parent ) ;
     }
-    const GeoModelGeologicalEntity& GeoModelMeshEntity::parent( 
+    const GeoModelGeologicalEntity& GeoModelMeshEntity::parent(
         const std::string& parent_type_name ) const
     {
         gme_t id = parent_gme( parent_type_name ) ;
         ringmesh_assert( id.is_defined() ) ;
         return model().geological_entity( id ) ;
     }
-    const gme_t& GeoModelMeshEntity::parent_gme( const std::string& parent_type_name ) const
+    const gme_t& GeoModelMeshEntity::parent_gme(
+        const std::string& parent_type_name ) const
     {
         index_t id = parent_id( parent_type_name ) ;
         if( id != NO_ID ) {
-            return parent(id).gme_id() ;
-        }
-        else {
+            return parent( id ).gme_id() ;
+        } else {
             return gme_t() ; // We will probably crash because it returns the address of a local variable
-        }        
+        }
     }
-    index_t GeoModelMeshEntity::parent_id( const std::string& parent_type_name ) const
+    index_t GeoModelMeshEntity::parent_id(
+        const std::string& parent_type_name ) const
     {
         for( index_t i = 0; i < nb_parents(); ++i ) {
             if( parents_[i].type == parent_type_name ) {
@@ -523,12 +529,11 @@ namespace RINGMesh {
         return this_gme_vertices ;
     }
 
-
     /**************************************************************/
     /*!
-    * @brief Checks if this entity define the model external boundary
-    * @details Test if the entity is in the Surfaces defining the universe 
-    */
+     * @brief Checks if this entity define the model external boundary
+     * @details Test if the entity is in the Surfaces defining the universe
+     */
     bool Corner::is_on_voi() const
     {
         // True if one of the incident surface define the universe
@@ -547,25 +552,11 @@ namespace RINGMesh {
     {
         bool valid = true ;
         if( nb_vertices() != 1 ) {
-            Logger::err( "GeoModelEntity" ) << "Corner " << index()
-                << " mesh has " << mesh_.nb_vertices() << " vertices " << std::endl ;
+            Logger::err( "GeoModelEntity" ) << "Corner " << index() << " mesh has "
+                << mesh0d_->nb_vertices() << " vertices " << std::endl ;
             valid = false ;
         }
-        if( mesh_.nb_edges() != 0 ) {
-            Logger::err( "GeoModelEntity" ) << "Corner " << index()
-                << " mesh has " << mesh_.nb_edges() << " edges " << std::endl ;
-            valid = false ;
-        }
-        if( mesh_.nb_facets() != 0 ) {
-            Logger::err( "GeoModelEntity" ) << "Corner " << index()
-                << " mesh has " << mesh_.nb_facets() << " facets " << std::endl ;
-            valid = false ;
-        }
-        if( mesh_.nb_cells() != 0 ) {
-            Logger::warn( "GeoModelEntity" ) << "Corner " << index()
-                << " mesh has " << mesh_.nb_cells() << " cells " << std::endl ;
-            valid = false ;
-        }
+
         // The default point is (0., 0., 0.) and there might be a valid
         // Corner at this position.
         /*if( mesh_.vertices.point( 0 ) == vec3() ) {
@@ -586,8 +577,12 @@ namespace RINGMesh {
      * @param[in] id The index of the line in the lines_ vector of the parent model
      */
     Line::Line( const GeoModel& model, index_t id )
-        : GeoModelMeshEntity( model, id )
+        :
+            GeoModelMeshEntity( model, id ),
+            mesh1d_( new GeogramMesh( model, 3, false ) )
     {
+        GeoModelMeshEntity::set_mesh( mesh1d_ ) ;
+
         id_.type = type_name_static() ;
     }
 
@@ -610,22 +605,12 @@ namespace RINGMesh {
         // Check that the GEO::Mesh has the expected entities
         if( nb_vertices() < 2 ) {
             Logger::err( "GeoModelEntity" ) << "Line " << index() << " has "
-                << mesh_.nb_vertices() << " vertices " << std::endl ;
+                << mesh1d_->nb_vertices() << " vertices " << std::endl ;
             valid = false ;
         }
-        if( mesh_.nb_edges() == 0 ) {
-            Logger::err( "GeoModelEntity" ) << "Line " << index()
-                << " mesh has " << mesh_.nb_edges() << " edges " << std::endl ;
-            valid = false ;
-        }
-        if( mesh_.nb_facets() != 0 ) {
-            Logger::err( "GeoModelEntity" ) << "Line " << index()
-                << " mesh has " << mesh_.nb_facets() << " facets " << std::endl ;
-            valid = false ;
-        }
-        if( mesh_.nb_cells() != 0 ) {
-            Logger::err( "GeoModelEntity" ) << "Line " << index()
-                << " mesh has " << mesh_.nb_cells() << " cells " << std::endl ;
+        if( mesh1d_->nb_edges() == 0 ) {
+            Logger::err( "GeoModelEntity" ) << "Line " << index() << " mesh has "
+                << mesh1d_->nb_edges() << " edges " << std::endl ;
             valid = false ;
         }
 
@@ -649,14 +634,14 @@ namespace RINGMesh {
 
             // Vertices at extremitites must be in only one edge
             if( nb.front() != 1 || nb.back() != 1 ) {
-                Logger::err( "GeoModelEntity" )
-                    << "Invalid extremity points in " << gme_id() << std::endl ;
+                Logger::err( "GeoModelEntity" ) << "Invalid extremity points in "
+                    << gme_id() << std::endl ;
                 valid = false ;
             }
             // No isolated vertices are allowed
             if( nb0 > 0 ) {
-                Logger::warn( "GeoModelEntity" ) << nb0
-                    << " isolated vertices in " << gme_id() << std::endl ;
+                Logger::warn( "GeoModelEntity" ) << nb0 << " isolated vertices in "
+                    << gme_id() << std::endl ;
                 valid = false ;
             }
             // Only the two extremities are in only 1 edge 
@@ -670,8 +655,8 @@ namespace RINGMesh {
             // All the others must be in 2 edges and 2 edges only
             // Manifold condition
             if( nb2 != nb.size() - 2 ) {
-                Logger::warn( "GeoModelEntity" ) << "Non-manifold entity"
-                    << gme_id() << std::endl ;
+                Logger::warn( "GeoModelEntity" ) << "Non-manifold entity" << gme_id()
+                    << std::endl ;
                 valid = false ;
             }
         }
@@ -679,7 +664,8 @@ namespace RINGMesh {
         // No zero edge length
         index_t nb_degenerated = 0 ;
         for( index_t e = 0; e < nb_mesh_elements(); ++e ) {
-            double l = length( mesh_element_vertex( e, 1 ) - mesh_element_vertex( e, 0 ) ) ;
+            double l = length(
+                mesh_element_vertex( e, 1 ) - mesh_element_vertex( e, 0 ) ) ;
             if( l < epsilon ) {
                 nb_degenerated++ ;
             }
@@ -690,8 +676,9 @@ namespace RINGMesh {
             valid = false ;
         }
         if( !is_first_corner_first_vertex() ) {
-            Logger::warn("GeoModelEntity") << "First and last vertex of Line"
-                << index() << " do not match first and second Corner respectively" << std::endl ;
+            Logger::warn( "GeoModelEntity" ) << "First and last vertex of Line"
+                << index() << " do not match first and second Corner respectively"
+                << std::endl ;
             valid = false ;
         }
         return valid ;
@@ -713,15 +700,14 @@ namespace RINGMesh {
 
     bool Line::is_first_corner_first_vertex() const
     {
-        if( nb_boundaries()!= 2 || nb_vertices() <  2 ) {
+        if( nb_boundaries() != 2 || nb_vertices() < 2 ) {
             return false ;
         } else {
             // Geometric comparison - not great at all
-            return boundary( 0 ).vertex(0) == vertex( 0 ) 
-                && boundary(1).vertex(0) == vertex( nb_vertices()-1 ) ; 
+            return boundary( 0 ).vertex( 0 ) == vertex( 0 )
+                && boundary( 1 ).vertex( 0 ) == vertex( nb_vertices() - 1 ) ;
         }
     }
-
 
     bool Line::is_on_voi() const
     {
@@ -731,7 +717,7 @@ namespace RINGMesh {
                 return true ;
             }
         }
-        return false ;        
+        return false ;
     }
 
     /********************************************************************/
@@ -769,14 +755,9 @@ namespace RINGMesh {
         }
         // Is it important to have edges or not ?
         // I would say we do not care (JP) - so no check on that 
-        if( mesh_.nb_facets() == 0 ) {
+        if( mesh2d_->nb_facets() == 0 ) {
             Logger::warn( "GeoModelEntity" ) << gme_id() << " has no facets "
                 << std::endl ;
-            valid = false ;
-        }
-        if( mesh_.nb_cells() != 0 ) {
-            Logger::warn( "GeoModelEntity" ) << gme_id() << " has "
-                << mesh_.nb_cells() << " cells " << std::endl ;
             valid = false ;
         }
 
@@ -791,7 +772,7 @@ namespace RINGMesh {
         // No zero area facet
         // No facet incident to the same vertex check local and global indices
         index_t nb_degenerate = 0 ;
-        for( index_t f = 0; f < mesh_.nb_facets(); f++ ) {
+        for( index_t f = 0; f < mesh2d_->nb_facets(); f++ ) {
             if( facet_is_degenerate( *this, f ) ) {
                 nb_degenerate++ ;
             }
@@ -818,7 +799,7 @@ namespace RINGMesh {
         }
 
         // One connected component  
-        index_t cc = mesh_.nb_connected_components() ;
+        index_t cc = mesh2d_->nb_connected_components() ;
         if( cc != 1 ) {
             Logger::warn( "GeoModelEntity" ) << gme_id() << " mesh has " << cc
                 << " connected components " << std::endl ;
@@ -1241,16 +1222,15 @@ namespace RINGMesh {
     bool Region::is_connectivity_valid() const
     {
         if( nb_boundaries() != sides_.size() ) {
-            Logger::err( "GeoModelEntity" )
-                << gme_id() << " boundary sides are invalid "
-                << std::endl ;
+            Logger::err( "GeoModelEntity" ) << gme_id()
+                << " boundary sides are invalid " << std::endl ;
             ringmesh_assert_not_reached ;
             return false ;
         }
         bool region_valid = GeoModelMeshEntity::is_connectivity_valid() ;
         if( nb_boundaries() == 0 ) {
-            Logger::warn( "GeoModelEntity" ) << gme_id()
-                << " has no boundaries " << std::endl ;
+            Logger::warn( "GeoModelEntity" ) << gme_id() << " has no boundaries "
+                << std::endl ;
             region_valid = false ;
         }
         return region_valid ;
@@ -1264,7 +1244,7 @@ namespace RINGMesh {
             bool valid = true ;
             // Check that the GEO::Mesh has the expected entities
             // at least 4 vertices and one cell.
-            if( mesh_.nb_vertices() < 4 ) {
+            if( mesh3d_->nb_vertices() < 4 ) {
                 Logger::warn( "GeoModelEntity" ) << gme_id()
                     << " has less than 4 vertices " << std::endl ;
                 valid = false ;
@@ -1281,7 +1261,7 @@ namespace RINGMesh {
             // No cell with negative volume
             // No cell incident to the same vertex check local and global indices
             index_t nb_degenerate = 0 ;
-            for( index_t c = 0; c < mesh_.nb_cells(); c++ ) {
+            for( index_t c = 0; c < mesh3d_->nb_cells(); c++ ) {
                 if( cell_is_degenerate( *this, c ) ) {
                     nb_degenerate++ ;
                 }
@@ -1295,8 +1275,8 @@ namespace RINGMesh {
             // One connected component
             index_t cc = compute_nb_volume_connected_components( *this ) ;
             if( cc != 1 ) {
-                Logger::warn( "GeoModelEntity" ) << gme_id() << " mesh has "
-                    << cc << " connected components " << std::endl ;
+                Logger::warn( "GeoModelEntity" ) << gme_id() << " mesh has " << cc
+                    << " connected components " << std::endl ;
                 valid = false ;
             }
             return valid ;
@@ -1308,7 +1288,7 @@ namespace RINGMesh {
      *        a one connected component closed manifold surface
      * @details Builds a GEO::Mesh from the surface meshes, repairs it and analyses it.
      */
-    bool Region::is_brep_region_valid() const 
+    bool Region::is_brep_region_valid() const
     {
         return check_volume_watertightness( model(), gme_id() ) ;
     }
@@ -1322,7 +1302,7 @@ namespace RINGMesh {
     {
         for( index_t c = 0; c < nb_mesh_elements(); c++ ) {
             index_t nb_vertices = nb_mesh_element_vertices( c ) ;
-            double volume = mesh_.cell_volume( c ) ;
+            double volume = mesh3d_->cell_volume( c ) ;
             switch( nb_vertices ) {
                 case 4:
                     tet_volume += volume ;

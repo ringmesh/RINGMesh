@@ -44,7 +44,8 @@
 
 namespace RINGMesh {
 
-    const GEO::MeshFacetsAABB& Mesh::facets_aabb() const
+
+    const GEO::MeshFacetsAABB& GeogramMesh::facets_aabb() const
     {
         GeoModel& M = const_cast< GeoModel& >( geo_model_ ) ;
         if( facets_aabb_ == nil ) {
@@ -65,7 +66,7 @@ namespace RINGMesh {
         return *facets_aabb_ ;
     }
 
-    const GEO::MeshCellsAABB& Mesh::cells_aabb() const
+    const GEO::MeshCellsAABB& GeogramMesh::cells_aabb() const
     {
         GeoModel& M = const_cast< GeoModel& >( geo_model_ ) ;
         if( cells_aabb_ == nil ) {
