@@ -647,13 +647,43 @@ namespace RINGMesh {
             ringmesh_assert( edge_index < nb_mesh_element_vertices( facet_index ) ) ;
             return mesh_.facet_adjacent( facet_index, edge_index ) ;
         }
-        void next_on_border(
+//        void next_on_border(
+//            index_t f,
+//            index_t from,
+//            index_t v,
+//            index_t& next_f,
+//            index_t& v_in_next,
+//            index_t& to ) const ;
+
+        /*!
+         * @brief Get the previous edge on the border
+         * @details The returned border edge is the previous in the way of facet edges
+         * orientation.
+         * @param[in] f Input facet index
+         * @param[in] e Edge index in the facet
+         * @param[out] prev_f Previous facet index
+         * @param[out] prev_e Previous edge index in the facet
+         *
+         * @pre the surface must be correctly oriented and
+         * the given facet edge must be on border
+         */
+        void prev_on_border(
             index_t f,
-            index_t from,
-            index_t v,
-            index_t& next_f,
-            index_t& v_in_next,
-            index_t& to ) const ;
+            index_t e,
+            index_t& prev_f,
+            index_t& prev_e ) const ;
+
+        /*!
+         * @brief Get the next edge on the border
+         * @details The returned border edge is the next in the way of facet edges
+         * orientation.
+         * @param[in] f Input facet index
+         * @param[in] e Edge index in the facet
+         * @param[out] next_f Next facet index
+         * @param[out] next_e Next edge index in the facet
+         *
+         * @pre the given facet edge must be on border
+         */
         void next_on_border(
             index_t f,
             index_t e,
