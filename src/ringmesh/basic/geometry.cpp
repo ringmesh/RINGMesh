@@ -87,7 +87,7 @@ namespace RINGMesh {
         double b0 = dot( diff, edge0 ) ;
         double b1 = dot( diff, edge1 ) ;
         double c = length2( diff ) ;
-        double det = ::fabs( a00 * a11 - a01 * a01 ) ;
+        double det = std::fabs( a00 * a11 - a01 * a01 ) ;
         double s = a01 * b1 - a11 * b0 ;
         double t = a01 * b0 - a00 * b1 ;
         double sqrDistance ;
