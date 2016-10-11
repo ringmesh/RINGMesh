@@ -31,8 +31,7 @@
  *     2 Rue du Doyen Marcel Roubault - TSA 70605
  *     54518 VANDOEUVRE-LES-NANCY 
  *     FRANCE
-*/
-
+ */
 
 #ifndef __RINGMESH_TYPES__
 #define __RINGMESH_TYPES__
@@ -63,10 +62,9 @@ namespace RINGMesh {
     using GEO::Numeric::max_float64 ;
     using GEO::Numeric::min_float64 ;
 
-    /// @todo This epsilon definition is ... not great. What should be done ?[JP]
-    static const float64 epsilon = 1E-8 ;
-    static const float64 epsilon_sq = epsilon*epsilon ;
-    static const float64 epsilon_3 = epsilon*epsilon*epsilon ;
+    static const double global_epsilon = 1E-8 ;
+//    static const double epsilon_sq = epsilon * epsilon ;
+//    static const double epsilon_3 = epsilon * epsilon * epsilon ;
 
     // This is an array of 3 doubles
     using GEO::vec3 ;
@@ -78,7 +76,7 @@ namespace RINGMesh {
     using GEO::Logger ;
 
     // This is the value used in RINGMesh for a invalid index
-    static const index_t NO_ID = index_t(-1) ;
+    static const index_t NO_ID = index_t( -1 ) ;
 
 }
 
