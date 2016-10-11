@@ -119,6 +119,7 @@ namespace RINGMesh {
 
     protected:
         const GEO::Mesh& mesh_ ;
+        double epsilon_ ;
         GeoModelEntityFromMesh* surface_builder_ ;
         GeoModelEntityFromMesh* region_builder_ ;
         std::string surface_attribute_name_ ;
