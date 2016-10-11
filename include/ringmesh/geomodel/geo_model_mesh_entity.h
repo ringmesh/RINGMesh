@@ -141,14 +141,14 @@ namespace RINGMesh {
         /*! @todo To remove when GFX Mesh is encapsulated */
         const GEO::Mesh& gfx_mesh() const
         {
-            return mesh_.gfx_mesh() ;
+            return mesh_->gfx_mesh() ;
         }
 
         void save(
             const std::string& filename,
             const GEO::MeshIOFlags& ioflags ) const
         {
-            mesh_.save_mesh( filename, ioflags ) ;
+            mesh_->save_mesh( filename, ioflags ) ;
         }
         /*!
          * @brief Return the colocater for the Entity vertices.
@@ -156,7 +156,7 @@ namespace RINGMesh {
 
         const ColocaterANN& vertex_colocater_ann() const
         {
-            return mesh_.colocater_ann( ColocaterANN::VERTICES ) ;
+            return mesh_->colocater_ann( ColocaterANN::VERTICES ) ;
         }
 
         /*!
@@ -165,14 +165,14 @@ namespace RINGMesh {
          */
         index_t nb_vertices() const
         {
-            return mesh_.nb_vertices() ;
+            return mesh_->nb_vertices() ;
         }
         /*!
          * @brief Coordinates of the @param vertex_index.
          */
         const vec3& vertex( index_t vertex_index ) const
         {
-            return mesh_.vertex( vertex_index ) ;
+            return mesh_->vertex( vertex_index ) ;
         }
 
         /*!
@@ -209,7 +209,8 @@ namespace RINGMesh {
          * @{
          */
         virtual double mesh_element_size( index_t mesh_element_index ) const = 0 ;
-        virtual vec3 mesh_element_barycenter( index_t mesh_element_index ) const = 0 ;
+        virtual vec3 mesh_element_barycenter(
+            index_t mesh_element_index ) const = 0 ;
         virtual vec3 entity_barycenter() const
         {
             vec3 result( 0., 0., 0. ) ;
@@ -269,7 +270,7 @@ namespace RINGMesh {
          */
         GEO::AttributesManager& vertex_attribute_manager() const
         {
-            return mesh_.vertex_attribute_manager() ;
+            return mesh_->vertex_attribute_manager() ;
         }
 
     protected:
@@ -278,11 +279,9 @@ namespace RINGMesh {
             index_t id,
             const std::string& name = "No_name",
             GEOL_FEATURE geological_feature = NO_GEOL )
-            :
-                GeoModelEntity( model, id, name, geological_feature ),
-                mesh_( model, 3, false )
+            : GeoModelEntity( model, id, name, geological_feature ), mesh_( NULL )
         {
-            model_vertex_id_.bind( mesh_.vertex_attribute_manager(),
+            model_vertex_id_.bind( mesh_->vertex_attribute_manager(),
                 model_vertex_id_att_name() ) ;
         }
         virtual void copy( const GeoModelEntity& from )
@@ -294,7 +293,16 @@ namespace RINGMesh {
             in_boundary_ = mesh_entity_from.in_boundary_ ;
             parents_ = mesh_entity_from.parents_ ;
         }
-        virtual bool is_mesh_valid() const = 0 ;
+        virtual bool is_mesh_valid() const
+        {
+            return mesh_ != NULL ;
+        }
+
+        void set_mesh( MeshBase* mesh )
+        {
+            ringmesh_assert( mesh != NULL ) ;
+            mesh_ = mesh ;
+        }
 
         bool is_boundary_connectivity_valid() const ;
         bool is_in_boundary_connectivity_valid() const ;
@@ -310,8 +318,6 @@ namespace RINGMesh {
         void unbind_model_vertex_id_attribute() ;
 
     protected:
-        /// The RINGMesh::Mesh giving the geometry of this entity 
-        Mesh mesh_ ;
         /*! Attribute on the Mesh vertices storing the index of
          *  the vertex in the GeoModel owning this entity
          */
@@ -326,6 +332,9 @@ namespace RINGMesh {
         /// The optional GeoModelGeologicalEntities 
         /// (groups of GeoModelMeshEntity this entity belongs to)
         std::vector< gme_t > parents_ ;
+    private:
+        /// The RINGMesh::Mesh giving the geometry of this entity
+        MeshBase* mesh_ ;
     } ;
 
     /*!
@@ -403,14 +412,23 @@ namespace RINGMesh {
          *  A point is added to its Mesh.
          */
         Corner( const GeoModel& model, index_t id )
-            : GeoModelMeshEntity( model, id )
+            :
+                GeoModelMeshEntity( model, id ),
+                mesh0d_( new GeogramMesh( model, 3, false ) )
         {
-            MeshBuilder builder( mesh_ ) ;
-            builder.create_vertex() ;
+            GeoModelMeshEntity::set_mesh( mesh0d_ ) ;
+
+            GeogramMesh* geomesh = dynamic_cast< GeogramMesh* >( mesh0d_ ) ;
+            Mesh0DBuilder* builder = new GeogramMeshBuilder( *geomesh ) ;
+            builder->create_vertex() ;
+            delete builder ;
+
             id_.type = type_name_static() ;
         }
 
         virtual bool is_mesh_valid() const ;
+    private:
+        Mesh0D* mesh0d_ ;
     } ;
 
     /*!
@@ -446,18 +464,18 @@ namespace RINGMesh {
          */
         const ColocaterANN& edge_colocater_ann() const
         {
-            return mesh_.colocater_ann( ColocaterANN::EDGES ) ;
+            return mesh1d_->colocater_ann( ColocaterANN::EDGES ) ;
         }
         virtual index_t vertex_index( index_t corner_index ) const
         {
-            return mesh_.edge_vertex( corner_index / 2, corner_index % 2 ) ;
+            return mesh1d_->edge_vertex( corner_index / 2, corner_index % 2 ) ;
         }
         /*!
          * Get the number of edges of the Line
          */
         virtual index_t nb_mesh_elements() const
         {
-            return mesh_.nb_edges() ;
+            return mesh1d_->nb_edges() ;
         }
         /*!
          * @Return The number of vertices per edge: 2.
@@ -477,7 +495,7 @@ namespace RINGMesh {
         {
             ringmesh_assert( edge_index < nb_mesh_elements() ) ;
             ringmesh_assert( vertex_index < 2 ) ;
-            return mesh_.edge_vertex( edge_index, vertex_index ) ;
+            return mesh1d_->edge_vertex( edge_index, vertex_index ) ;
         }
         /*!
          * @brief A Line is closed if its two extremities are identitical.
@@ -495,7 +513,7 @@ namespace RINGMesh {
         virtual double mesh_element_size( index_t edge_index ) const
         {
             ringmesh_assert( edge_index < nb_mesh_elements() ) ;
-            return mesh_.edge_length( edge_index ) ;
+            return mesh1d_->edge_length( edge_index ) ;
         }
         /*!
          * @brief Gets the barycenter of an edge
@@ -513,6 +531,9 @@ namespace RINGMesh {
         Line( const GeoModel& model, index_t id ) ;
 
         virtual bool is_mesh_valid() const ;
+
+    private:
+        Mesh1D* mesh1d_ ;
     } ;
 
     /*!
@@ -542,11 +563,11 @@ namespace RINGMesh {
 
         bool is_simplicial() const
         {
-            return mesh_.facets_are_simplicies() ;
+            return mesh2d_->facets_are_simplicies() ;
         }
         const GEO::MeshFacetsAABB& facets_aabb() const
         {
-            return mesh_.facets_aabb() ;
+            return mesh2d_->facets_aabb() ;
         }
         /*!
          * @brief Return the a colocater for the facets of the surface
@@ -554,12 +575,12 @@ namespace RINGMesh {
          */
         const ColocaterANN& facet_colocater_ann() const
         {
-            return mesh_.colocater_ann( ColocaterANN::FACETS ) ;
+            return mesh2d_->colocater_ann( ColocaterANN::FACETS ) ;
         }
 
         GEO::AttributesManager& facet_attribute_manager() const
         {
-            return mesh_.facet_attribute_manager() ;
+            return mesh2d_->facet_attribute_manager() ;
         }
 
         /*!
@@ -571,7 +592,7 @@ namespace RINGMesh {
          */
         virtual index_t nb_mesh_elements() const
         {
-            return mesh_.nb_facets() ;
+            return mesh2d_->nb_facets() ;
         }
         /*!
          * Number of vertices of a facet
@@ -579,7 +600,7 @@ namespace RINGMesh {
         virtual index_t nb_mesh_element_vertices( index_t facet_index ) const
         {
             ringmesh_assert( facet_index < nb_mesh_elements() ) ;
-            return mesh_.nb_facet_vertices( facet_index ) ;
+            return mesh2d_->nb_facet_vertices( facet_index ) ;
         }
         /*!
          * @brief Index of the vertex in the Surface
@@ -594,7 +615,7 @@ namespace RINGMesh {
         {
             ringmesh_assert( facet_index < nb_mesh_elements() ) ;
             ringmesh_assert( vertex_index < nb_mesh_element_vertices( facet_index ) ) ;
-            return mesh_.facet_vertex( facet_index, vertex_index ) ;
+            return mesh2d_->facet_vertex( facet_index, vertex_index ) ;
         }
 
         /*!
@@ -603,7 +624,7 @@ namespace RINGMesh {
          */
         index_t facet_begin( index_t facet_index ) const
         {
-            return mesh_.facet_begin( facet_index ) ;
+            return mesh2d_->facet_begin( facet_index ) ;
         }
         /*!
          * @brief Index of the last corner of a facet.
@@ -611,7 +632,7 @@ namespace RINGMesh {
          */
         index_t facet_end( index_t facet_id ) const
         {
-            return mesh_.facet_end( facet_id ) ;
+            return mesh2d_->facet_end( facet_id ) ;
         }
         /*!
          * @brief Gets the next vertex index in a facet.
@@ -622,7 +643,7 @@ namespace RINGMesh {
         {
             ringmesh_assert( facet_index < nb_mesh_elements() ) ;
             ringmesh_assert( vertex_index < nb_mesh_element_vertices( facet_index ) ) ;
-            return mesh_.next_facet_vertex( facet_index, vertex_index ) ;
+            return mesh2d_->next_facet_vertex( facet_index, vertex_index ) ;
         }
         /*!
          * @brief Gets the previous vertex index in a facet.
@@ -633,7 +654,7 @@ namespace RINGMesh {
         {
             ringmesh_assert( facet_index < nb_mesh_elements() ) ;
             ringmesh_assert( vertex_index < nb_mesh_element_vertices( facet_index ) ) ;
-            return mesh_.prev_facet_vertex( facet_index, vertex_index ) ;
+            return mesh2d_->prev_facet_vertex( facet_index, vertex_index ) ;
         }
         /*!
          * @brief Gets the facet adjacent along an edge of a facet.
@@ -645,7 +666,7 @@ namespace RINGMesh {
         {
             ringmesh_assert( facet_index < nb_mesh_elements() ) ;
             ringmesh_assert( edge_index < nb_mesh_element_vertices( facet_index ) ) ;
-            return mesh_.facet_adjacent( facet_index, edge_index ) ;
+            return mesh2d_->facet_adjacent( facet_index, edge_index ) ;
         }
         void next_on_border(
             index_t f,
@@ -730,7 +751,7 @@ namespace RINGMesh {
         vec3 facet_normal( index_t facet_index ) const
         {
             ringmesh_assert( facet_index < nb_mesh_elements() ) ;
-            return mesh_.facet_normal( facet_index ) ;
+            return mesh2d_->facet_normal( facet_index ) ;
         }
         /*!
          * @return Facet barycenter.
@@ -738,12 +759,12 @@ namespace RINGMesh {
         virtual vec3 mesh_element_barycenter( index_t facet_index ) const
         {
             ringmesh_assert( facet_index < nb_mesh_elements() ) ;
-            return mesh_.facet_barycenter( facet_index ) ;
+            return mesh2d_->facet_barycenter( facet_index ) ;
         }
         bool facet_is_triangle( index_t facet_index ) const
         {
             ringmesh_assert( facet_index < nb_mesh_elements() ) ;
-            return mesh_.is_triangle( facet_index ) ;
+            return mesh2d_->is_triangle( facet_index ) ;
         }
 
         /*!
@@ -752,7 +773,7 @@ namespace RINGMesh {
         virtual double mesh_element_size( index_t facet_index ) const
         {
             ringmesh_assert( facet_index < nb_mesh_elements() ) ;
-            return mesh_.facet_area( facet_index ) ;
+            return mesh2d_->facet_area( facet_index ) ;
         }
         index_t closest_vertex_in_facet(
             index_t facet_index,
@@ -769,7 +790,8 @@ namespace RINGMesh {
          */
         bool is_on_border( index_t facet_index ) const
         {
-            for( index_t v = 0; v < mesh_.nb_facet_vertices( facet_index ); v++ ) {
+            for( index_t v = 0; v < mesh2d_->nb_facet_vertices( facet_index );
+                v++ ) {
                 if( is_on_border( facet_index, v ) ) {
                     return true ;
                 }
@@ -781,12 +803,18 @@ namespace RINGMesh {
 
     protected:
         Surface( const GeoModel& model, index_t id )
-            : GeoModelMeshEntity( model, id )
+            :
+                GeoModelMeshEntity( model, id ),
+                mesh2d_( new GeogramMesh( model, 3, false ) )
         {
+            GeoModelMeshEntity::set_mesh( mesh2d_ ) ;
+
             id_.type = type_name_static() ;
         }
 
         virtual bool is_mesh_valid() const ;
+    private:
+        Mesh2D* mesh2d_ ;
     } ;
 
     /*!
@@ -820,15 +848,15 @@ namespace RINGMesh {
 
         bool is_meshed() const
         {
-            return mesh_.nb_cells() > 0 ;
+            return mesh3d_->nb_cells() > 0 ;
         }
         bool is_simplicial() const
         {
-            return mesh_.cells_are_simplicies() ;
+            return mesh3d_->cells_are_simplicies() ;
         }
         const GEO::MeshCellsAABB& cells_aabb() const
         {
-            return mesh_.cells_aabb() ;
+            return mesh3d_->cells_aabb() ;
         }
         /*!
          * @brief Return the a colocater for the cells of the region
@@ -836,11 +864,11 @@ namespace RINGMesh {
          */
         const ColocaterANN& cell_colocater_ann() const
         {
-            return mesh_.colocater_ann( ColocaterANN::CELLS ) ;
+            return mesh3d_->colocater_ann( ColocaterANN::CELLS ) ;
         }
         GEO::AttributesManager& cell_attribute_manager() const
         {
-            return mesh_.cell_attribute_manager() ;
+            return mesh3d_->cell_attribute_manager() ;
         }
 
         /*!
@@ -852,7 +880,7 @@ namespace RINGMesh {
          */
         virtual index_t nb_mesh_elements() const
         {
-            return mesh_.nb_cells() ;
+            return mesh3d_->nb_cells() ;
         }
         /*!
          * Get the number of vertex in the cell \param cell_index of the Region.
@@ -861,7 +889,7 @@ namespace RINGMesh {
         {
             if( is_meshed() ) {
                 ringmesh_assert( cell_index < nb_mesh_elements() ) ;
-                return mesh_.nb_cell_vertices( cell_index ) ;
+                return mesh3d_->nb_cell_vertices( cell_index ) ;
             }
             ringmesh_assert_not_reached ;
             return NO_ID ;
@@ -876,7 +904,7 @@ namespace RINGMesh {
             if( is_meshed() ) {
                 ringmesh_assert( cell_index < nb_mesh_elements() ) ;
                 ringmesh_assert( vertex_index < nb_mesh_element_vertices( cell_index ) ) ;
-                return mesh_.cell_vertex( cell_index, vertex_index ) ;
+                return mesh3d_->cell_vertex( cell_index, vertex_index ) ;
             }
             ringmesh_assert_not_reached ;
             return NO_ID ;
@@ -886,7 +914,7 @@ namespace RINGMesh {
         {
             if( is_meshed() ) {
                 ringmesh_assert( cell_index < nb_mesh_elements() ) ;
-                return mesh_.cell_type( cell_index ) ;
+                return mesh3d_->cell_type( cell_index ) ;
             }
             ringmesh_assert_not_reached ;
             return GEO::MESH_NB_CELL_TYPES ;
@@ -896,7 +924,7 @@ namespace RINGMesh {
         {
             if( is_meshed() ) {
                 ringmesh_assert( cell_index < nb_mesh_elements() ) ;
-                return mesh_.nb_cell_edges( cell_index ) ;
+                return mesh3d_->nb_cell_edges( cell_index ) ;
             }
             ringmesh_assert_not_reached ;
             return NO_ID ;
@@ -905,7 +933,7 @@ namespace RINGMesh {
         {
             if( is_meshed() ) {
                 ringmesh_assert( cell_index < nb_mesh_elements() ) ;
-                return mesh_.nb_cell_facets( cell_index ) ;
+                return mesh3d_->nb_cell_facets( cell_index ) ;
             }
             ringmesh_assert_not_reached ;
             return NO_ID ;
@@ -917,7 +945,7 @@ namespace RINGMesh {
             if( is_meshed() ) {
                 ringmesh_assert( cell_index < nb_mesh_elements() ) ;
                 ringmesh_assert( facet_index < nb_cell_facets( cell_index ) ) ;
-                return mesh_.nb_cell_facet_vertices( cell_index, facet_index ) ;
+                return mesh3d_->nb_cell_facet_vertices( cell_index, facet_index ) ;
             }
             ringmesh_assert_not_reached ;
             return NO_ID ;
@@ -931,7 +959,7 @@ namespace RINGMesh {
                 ringmesh_assert( cell_index < nb_mesh_elements() ) ;
                 ringmesh_assert( edge_index < nb_cell_edges( cell_index ) ) ;
                 ringmesh_assert( vertex_index < nb_mesh_element_vertices( cell_index ) ) ;
-                return mesh_.cell_edge_vertex( cell_index, edge_index, vertex_index ) ;
+                return mesh3d_->cell_edge_vertex( cell_index, edge_index, vertex_index ) ;
             }
             ringmesh_assert_not_reached ;
             return NO_ID ;
@@ -945,7 +973,7 @@ namespace RINGMesh {
                 ringmesh_assert( cell_index < nb_mesh_elements() ) ;
                 ringmesh_assert( facet_index < nb_cell_facets( cell_index ) ) ;
                 ringmesh_assert( vertex_index < nb_mesh_element_vertices( cell_index ) ) ;
-                return mesh_.cell_facet_vertex( cell_index, facet_index,
+                return mesh3d_->cell_facet_vertex( cell_index, facet_index,
                     vertex_index ) ;
             }
             ringmesh_assert_not_reached ;
@@ -956,7 +984,7 @@ namespace RINGMesh {
             if( is_meshed() ) {
                 ringmesh_assert( cell_index < nb_mesh_elements() ) ;
                 ringmesh_assert( facet_index < nb_cell_facets( cell_index ) ) ;
-                return mesh_.cell_adjacent( cell_index, facet_index ) ;
+                return mesh3d_->cell_adjacent( cell_index, facet_index ) ;
             }
             ringmesh_assert_not_reached ;
             return NO_ID ;
@@ -971,7 +999,7 @@ namespace RINGMesh {
             if( is_meshed() ) {
                 ringmesh_assert( cell_index < nb_mesh_elements() ) ;
                 ringmesh_assert( facet_index < nb_cell_facets( cell_index ) ) ;
-                return mesh_.cell_adjacent( cell_index, facet_index ) == GEO::NO_CELL ;
+                return mesh3d_->cell_adjacent( cell_index, facet_index ) == GEO::NO_CELL ;
             }
             ringmesh_assert_not_reached ;
             return false ;
@@ -981,7 +1009,7 @@ namespace RINGMesh {
             if( is_meshed() ) {
                 ringmesh_assert( cell_index < nb_mesh_elements() ) ;
                 ringmesh_assert( facet_index < nb_cell_facets( cell_index ) ) ;
-                return mesh_.cell_facet_barycenter( cell_index, facet_index ) ;
+                return mesh3d_->cell_facet_barycenter( cell_index, facet_index ) ;
             }
             ringmesh_assert_not_reached ;
             return vec3() ;
@@ -991,7 +1019,7 @@ namespace RINGMesh {
             if( is_meshed() ) {
                 ringmesh_assert( cell_index < nb_mesh_elements() ) ;
                 ringmesh_assert( facet_index < nb_cell_facets( cell_index ) ) ;
-                return mesh_.cell_facet_normal( cell_index, facet_index ) ;
+                return mesh3d_->cell_facet_normal( cell_index, facet_index ) ;
             }
             ringmesh_assert_not_reached ;
             return vec3() ;
@@ -1004,7 +1032,7 @@ namespace RINGMesh {
         {
             if( is_meshed() ) {
                 ringmesh_assert( cell_index < nb_mesh_elements() ) ;
-                return mesh_.cell_volume( cell_index ) ;
+                return mesh3d_->cell_volume( cell_index ) ;
             }
             ringmesh_assert_not_reached ;
             return 0 ;
@@ -1040,7 +1068,7 @@ namespace RINGMesh {
         {
             if( is_meshed() ) {
                 ringmesh_assert( cell_index < nb_mesh_elements() ) ;
-                return mesh_.cell_barycenter( cell_index ) ;
+                return mesh3d_->cell_barycenter( cell_index ) ;
             }
             ringmesh_assert_not_reached ;
             return vec3() ;
@@ -1071,8 +1099,12 @@ namespace RINGMesh {
             index_t id,
             const std::string& name,
             GEOL_FEATURE geological_feature )
-            : GeoModelMeshEntity( model, id, name, geological_feature )
+            :
+                GeoModelMeshEntity( model, id, name, geological_feature ),
+                mesh3d_( new GeogramMesh( model, 3, false ) )
         {
+            GeoModelMeshEntity::set_mesh (mesh3d_) ;
+
             id_.type = type_name_static() ;
         }
 
@@ -1092,6 +1124,8 @@ namespace RINGMesh {
          * The size of this vector must be the same than boundary_
          */
         std::vector< bool > sides_ ;
+    private:
+        Mesh3D* mesh3d_;
     } ;
 }
 

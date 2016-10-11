@@ -68,7 +68,7 @@ namespace RINGMesh {
      *  false otherwise
      */
     bool GeoModelRepair::facet_is_degenerate(
-        const Mesh& M,
+        const Mesh2D& M,
         index_t f,
         GEO::vector< index_t >& colocated_vertices )
     {
@@ -91,7 +91,7 @@ namespace RINGMesh {
     /*! \note Copied and modified from geogram\mesh\mesh_repair.cpp
      */
     void GeoModelRepair::mesh_detect_degenerate_facets(
-        const Mesh& M,
+        const Mesh2D& M,
         GEO::vector< index_t >& f_is_degenerate,
         GEO::vector< index_t >& colocated_vertices )
     {
@@ -104,7 +104,7 @@ namespace RINGMesh {
     /*!
      * @brief Detect and remove degenerated facets in a Mesh
      */
-    index_t GeoModelRepair::detect_degenerate_facets( Mesh& M )
+    index_t GeoModelRepair::detect_degenerate_facets( Mesh2D& M )
     {
         GEO::vector< index_t > colocated ;
         const ColocaterANN& kdtree = M.colocater_ann( ColocaterANN::VERTICES ) ;
@@ -117,7 +117,7 @@ namespace RINGMesh {
     }
 
     void GeoModelRepair::mesh_detect_degenerate_edges(
-        const Mesh& M,
+        const Mesh1D& M,
         GEO::vector< index_t >& e_is_degenerate,
         GEO::vector< index_t >& colocated_vertices )
     {
@@ -137,13 +137,15 @@ namespace RINGMesh {
         kdtree.get_colocated_index_mapping( colocated ) ;
 
         GEO::vector< index_t > degenerate ;
-        mesh_detect_degenerate_edges( line.mesh_, degenerate, colocated ) ;
+        mesh_detect_degenerate_edges( *line.mesh1d_, degenerate, colocated ) ;
         index_t nb = static_cast< index_t >( std::count( degenerate.begin(),
             degenerate.end(), 1 ) ) ;
         /// We have a problem if some vertices are left isolated
         /// If we remove them here we can kill all indices correspondances
-        MeshBuilder builder( line.mesh_ ) ;
-        builder.delete_edges( degenerate, false ) ;
+        GeogramMesh* geomesh = dynamic_cast<GeogramMesh*>(line.mesh1d_ );
+        Mesh1DBuilder* builder = new GeogramMeshBuilder( *geomesh ) ;
+        builder->delete_edges( degenerate, false ) ;
+        delete builder;
         return nb ;
     }
 
