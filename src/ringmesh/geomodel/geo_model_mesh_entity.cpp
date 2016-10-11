@@ -832,19 +832,6 @@ namespace RINGMesh {
         return false ;
     }
 
-    /*!
-     * @brief Traversal of a surface border
-     * @details From the input facet f, get the facet that share vertex v and
-     * get the indices of vertex v and of the following vertex in this new facet.
-     * The next facet next_f may be the same, and from is required to avoid going back.
-     *
-     * @param[in] f Index of the facet
-     * @param[in] from Index in the facet of the previous point on the border - gives the direction
-     * @param[in] v Index in the facet of the point for which we want the next point on border
-     * @param[out] next_f Index of the facet containing the next point on border
-     * @param[out] v_in_next Index of vertex v in facet next_f
-     * @param[out] next_in_next Index of the next vertex on border in facet v_in_next
-     */
     void Surface::next_on_border(
         index_t f,
         index_t from,
@@ -1079,63 +1066,6 @@ namespace RINGMesh {
         }
     } ;
 
-    /*!
-     * @brief Determines the facets around a vertex
-     *
-     * @param[in] v Index ot the vertex in the surface
-     * @param[in] result Indices of the facets containing @param v
-     * @param[in] border_only If true only facets on the border are considered
-     * @return The number of facet found
-     */
-    index_t Surface::facets_around_vertex(
-        index_t v,
-        std::vector< index_t >& result,
-        bool border_only ) const
-    {
-        index_t f = NO_ID ;
-
-        // I tried using an AABB tree to accelerate the function
-        // but apparently this does not do exactly the same than brute force
-        // I do not understand why (JP)
-        // I have problem with closed line in model A6. No idea why !! (JP)
-
-        /*   // What should be an adequate limit on the number of
-         // facets under which we do not use the AABB tree ?
-         // When building an AABB tree the Mesh is triangulated
-         // We do not want that
-         if( mesh().facets.are_simplices() && mesh().facets.nb() > 10 ) {
-         double dist = DBL_MAX ;
-         vec3 nearest ;
-         f = tools.aabb().nearest_facet( vertex( v ), nearest, dist ) ;
-         // Check that the point is indeed a vertex of the facet
-         if( facet_vertex_id( f, v ) == NO_ID ) {
-         f = NO_ID ;
-         }
-         }
-         */
-        // So, we are back to the brute force stupid approach             
-        for( index_t i = 0; i < nb_mesh_elements(); ++i ) {
-            for( index_t lv = 0; lv < nb_mesh_element_vertices( i ); lv++ ) {
-                if( mesh_element_vertex_index( i, lv ) == v ) {
-                    f = i ;
-                    break ;
-                }
-            }
-        }
-        return facets_around_vertex( v, result, border_only, f ) ;
-    }
-
-    /*!
-     * @brief Determines the facets around a vertex
-     *
-     * @param[in] P Index ot the vertex in the surface
-     * @param[in] result Indices of the facets containing @param P
-     * @param[in] border_only If true only facets on the border are considered
-     * @param[in] f0 Index of one facet containing the vertex @param P
-     * @return The number of facet found
-     *
-     * @todo Evaluate if this is fast enough !!
-     */
     index_t Surface::facets_around_vertex(
         index_t P,
         std::vector< index_t >& result,
