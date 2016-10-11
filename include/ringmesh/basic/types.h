@@ -63,8 +63,8 @@ namespace RINGMesh {
     using GEO::Numeric::min_float64 ;
 
     static const double global_epsilon = 1E-8 ;
-//    static const double epsilon_sq = epsilon * epsilon ;
-//    static const double epsilon_3 = epsilon * epsilon * epsilon ;
+    static const double global_epsilon_sq = global_epsilon * global_epsilon ;
+    static const double global_epsilon_3 = global_epsilon_sq * global_epsilon ;
 
     // This is an array of 3 doubles
     using GEO::vec3 ;
