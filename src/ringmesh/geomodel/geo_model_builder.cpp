@@ -983,9 +983,13 @@ namespace RINGMesh {
             index_t next_f_v1 = NO_ID ;
 
             if( !backward ) {
-                S.next_on_border( f, f_v0, f_v1, next_f, next_f_v0, next_f_v1 ) ;
+                S.next_on_border( f, f_v0, next_f, next_f_v0 ) ;
+                next_f_v1 = S.next_facet_vertex_index( next_f, next_f_v0 ) ;
+//                S.next_on_border( f, f_v0, f_v1, next_f, next_f_v0, next_f_v1 ) ;
             } else {
-                S.next_on_border( f, f_v1, f_v0, next_f, next_f_v0, next_f_v1 ) ;
+                S.prev_on_border( f, f_v1, next_f, next_f_v0 ) ;
+                next_f_v1 = S.next_facet_vertex_index( next_f, next_f_v0 ) ;
+//                S.next_on_border( f, f_v1, f_v0, next_f, next_f_v0, next_f_v1 ) ;
             }
 
             // Finds the BorderTriangle that is corresponding to this
