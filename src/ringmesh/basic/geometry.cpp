@@ -51,25 +51,6 @@
  * @todo Comment on the robustness of the tests
  */
 
-namespace {
-
-    using namespace RINGMesh ;
-    /*!
-     * Compare the coordinates of \param v1 and \param v2 one by one,
-     * @return return true if coordinates are all epsilon close.
-     */
-//    bool inexact_equal( const vec3& v1, const vec3& v2 )
-//    {
-//        for( index_t i = 0; i < 3; i++ ) {
-//            if( std::fabs( v1[i] - v2[i] ) > epsilon ) {
-//                return false ;
-//            }
-//        }
-//        return true ;
-//    }
-
-}
-
 namespace RINGMesh {
 
     bool operator==( const vec3& u, const vec3& v )
@@ -784,14 +765,6 @@ namespace RINGMesh {
         const vec3& p1,
         vec3& new_p )
     {
-//        if( inexact_equal( p, p0 ) ) {
-//            new_p = p0 ;
-//            return true ;
-//        }
-//        if( inexact_equal( p, p1 ) ) {
-//            new_p = p1 ;
-//            return true ;
-//        }
         vec3 center = ( p0 + p1 ) * 0.5 ;
         vec3 diff = p - center ;
         vec3 edge = p1 - p0 ;
