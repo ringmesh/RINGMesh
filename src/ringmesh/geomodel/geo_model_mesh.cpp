@@ -652,7 +652,7 @@ namespace RINGMesh {
             sorted_indices[i] = i ;
         }
         GeoModelMeshCellsSort action( mesh_, region_id_ ) ;
-        GEO::sort( sorted_indices.begin(), sorted_indices.end(), action ) ;
+        std::sort( sorted_indices.begin(), sorted_indices.end(), action ) ;
         mesh_builder_.permute_cells( sorted_indices ) ;
 
         // Cache some values
@@ -1632,7 +1632,7 @@ namespace RINGMesh {
             sorted_indices[i] = i ;
         }
         GeoModelMeshFacetsSort action( mesh_, surface_id_ ) ;
-        GEO::sort( sorted_indices.begin(), sorted_indices.end(), action ) ;
+        std::sort( sorted_indices.begin(), sorted_indices.end(), action ) ;
         mesh_builder_.permute_facets( sorted_indices ) ;
 
         // Cache some values
