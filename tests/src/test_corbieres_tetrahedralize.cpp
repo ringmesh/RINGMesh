@@ -82,6 +82,17 @@ int main( int argc, char** argv )
             std::string output_file_name( ringmesh_test_output_path ) ;
             output_file_name += "corbieres.gm" ;
             geomodel_save( M, output_file_name ) ;
+
+            GeoModel reloaded_model ;
+            geomodel_load( reloaded_model, output_file_name ) ;
+
+            if( !is_geomodel_valid( reloaded_model ) ) {
+                throw RINGMeshException( "RINGMesh Test",
+                    "Failed when loading the volumetric model "
+                        + reloaded_model.name()
+                        + ": the loaded model is not valid." ) ;
+            }
+
         } else {
             print_geomodel( M ) ;
             throw RINGMeshException( "RINGMesh Test",
