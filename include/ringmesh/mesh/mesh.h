@@ -50,6 +50,13 @@
 
 namespace RINGMesh {
     class GeoModel ;
+    class MeshBaseBuilder ;
+    class Mesh0DBuilder ;
+    class Mesh1DBuilder ;
+    class Mesh2DBuilder ;
+    class Mesh3DBuilder ;
+    class MeshAllDBuilder ;
+    class GeogramMeshBuilder;
 }
 
 namespace RINGMesh {
@@ -62,10 +69,14 @@ namespace RINGMesh {
      */
     class RINGMESH_API MeshBase {
     ringmesh_disable_copy( MeshBase ) ;
+    friend class MeshBaseBuilder ;
+
     public:
 
         virtual ~MeshBase()
         {
+            if( mesh_builder_ ) delete mesh_builder_ ;
+
         }
 
         virtual void save_mesh(
@@ -106,6 +117,12 @@ namespace RINGMesh {
         virtual index_t nb_vertices() const = 0 ;
 
         virtual GEO::AttributesManager& vertex_attribute_manager() const = 0 ;
+
+        MeshBaseBuilder* get_mesh_base_builder()
+        {
+            return get_mesh_builder_base() ;
+        }
+
         /*!
          * @}
          */
@@ -118,12 +135,14 @@ namespace RINGMesh {
          * else they are stored as double precision (double)..
          */
         MeshBase( const GeoModel& geo_model )
-            : geo_model_( geo_model )
+            : geo_model_( geo_model ), mesh_builder_( NULL )
         {
         }
+        virtual MeshBaseBuilder* get_mesh_builder_base() = 0 ;
 
     protected:
         const GeoModel& geo_model_ ;
+        MeshBaseBuilder* mesh_builder_ ;
 
     } ;
 
@@ -132,11 +151,14 @@ namespace RINGMesh {
      */
     class RINGMESH_API Mesh0D: public virtual MeshBase {
     ringmesh_disable_copy( Mesh0D ) ;
+    friend class Mesh0DBuilder ;
+
 
     public:
         virtual ~Mesh0D()
         {
         }
+        Mesh0DBuilder* get_mesh0d_builder() ;
     protected:
         /*!
          * @brief Mesh0D constructor.
@@ -157,6 +179,8 @@ namespace RINGMesh {
      */
     class RINGMESH_API Mesh1D: public virtual MeshBase {
     ringmesh_disable_copy( Mesh1D ) ;
+    friend class Mesh1DBuilder ;
+
     public:
         virtual ~Mesh1D()
         {
@@ -181,6 +205,8 @@ namespace RINGMesh {
 
         virtual GEO::AttributesManager& edge_attribute_manager() const = 0 ;
 
+        Mesh1DBuilder* get_mesh1d_builder() ;
+
     protected:
         Mesh1D( const GeoModel& geo_model )
             : MeshBase( geo_model )
@@ -194,6 +220,8 @@ namespace RINGMesh {
      */
     class RINGMESH_API Mesh2D: public virtual MeshBase {
     ringmesh_disable_copy( Mesh2D ) ;
+    friend class Mesh2DBuilder ;
+
     public:
         virtual ~Mesh2D()
         {
@@ -284,6 +312,9 @@ namespace RINGMesh {
          * @return the facet area
          */
         virtual double facet_area( index_t facet_id ) const=0 ;
+
+        Mesh2DBuilder* get_mesh2d_builder() ;
+
     protected:
         Mesh2D( const GeoModel& geo_model )
             : MeshBase( geo_model )
@@ -297,6 +328,8 @@ namespace RINGMesh {
      */
     class RINGMESH_API Mesh3D: public virtual MeshBase {
     ringmesh_disable_copy( Mesh3D ) ;
+    friend class Mesh3DBuilder ;
+
     public:
         virtual ~Mesh3D()
         {
@@ -450,6 +483,8 @@ namespace RINGMesh {
             index_t cell_id,
             index_t vertex_id ) const = 0 ;
 
+        Mesh3DBuilder* get_mesh3d_builder() ;
+
     protected:
         Mesh3D( const GeoModel& geo_model )
             : MeshBase( geo_model )
@@ -463,6 +498,13 @@ namespace RINGMesh {
         public Mesh2D,
         public Mesh3D {
     ringmesh_disable_copy( MeshAllD ) ;
+    friend class MeshAllDBuilder ;
+
+    public:
+        virtual ~MeshAllD()
+        {
+        }
+        MeshAllDBuilder* get_meshalld_builder() ;
     protected:
         MeshAllD( const GeoModel& geo_model )
             :
@@ -473,9 +515,7 @@ namespace RINGMesh {
                 Mesh3D( geo_model )
         {
         }
-        virtual ~MeshAllD()
-        {
-        }
+
     } ;
 
     /*!
@@ -962,6 +1002,10 @@ namespace RINGMesh {
         /*!
          * @}
          */
+
+        GeogramMeshBuilder* get_geogram_mesh_builder() ;
+    protected:
+        virtual MeshBaseBuilder* get_mesh_builder_base() ;
 
     private:
         mutable GEO::Mesh* mesh_ ;

@@ -80,20 +80,20 @@ namespace RINGMesh {
 
     private:
         index_t repair_line_mesh( Line& line ) ;
-        void mesh_detect_degenerate_edges(
-            const Mesh1D& M,
+        void mesh_detect_degenerate_edges (
+            const Line& line,
             GEO::vector< index_t >& e_is_degenerate,
             GEO::vector< index_t >& colocated_vertices ) ;
         void mesh_detect_degenerate_facets(
-            const Mesh2D& M,
+            const Surface& M,
             GEO::vector< index_t >& f_is_degenerate,
             GEO::vector< index_t >& colocated_vertices ) ;
         bool facet_is_degenerate(
-            const Mesh2D& M,
+            const Surface& M,
             index_t f,
             GEO::vector< index_t >& colocated_vertices ) ;
 
-        index_t detect_degenerate_facets( Mesh2D& M ) ;
+        index_t detect_degenerate_facets( Surface& M ) ;
 
         void remove_degenerate_facet_and_edges( std::set< gme_t >& to_remove ) ;
 
@@ -105,12 +105,12 @@ namespace RINGMesh {
             std::set< index_t >& vertices ) ;
 
         bool edge_is_degenerate(
-            const Mesh1D& M,
+            const Line& line,
             index_t e,
             GEO::vector< index_t >& colocated_vertices )
         {
-            index_t v1 = colocated_vertices[M.edge_vertex( e, 0 )] ;
-            index_t v2 = colocated_vertices[M.edge_vertex( e, 1 )] ;
+            index_t v1 = colocated_vertices[line.mesh_element_vertex_index( e, 0 )] ;
+            index_t v2 = colocated_vertices[line.mesh_element_vertex_index( e, 1 )] ;
             return v1 == v2 ;
         }
     } ;

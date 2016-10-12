@@ -48,6 +48,7 @@
 
 #include <ringmesh/basic/geometry.h>
 #include <ringmesh/geogram_extension/geogram_extension.h>
+#include <ringmesh/mesh/mesh.h>
 
 namespace RINGMesh {
     class GeoModel ;
