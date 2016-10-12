@@ -35,15 +35,9 @@
 
 #include <ringmesh/ringmesh_tests_config.h>
 
-#include <geogram/delaunay/delaunay.h>
-#include <geogram/mesh/mesh.h>
-#include <geogram/mesh/mesh_io.h>
-
-#include <ringmesh/geomodel/geo_model.h>
 #include <ringmesh/geomodel/geo_model_api.h>
-#include <ringmesh/geogram_extension/geogram_extension.h>
+#include <ringmesh/geomodel/geo_model_validity.h>
 #include <ringmesh/io/io.h>
-
 
 /*!
  * @file Test global tetrahedralization of a GeoModel
@@ -60,8 +54,6 @@ int main( int argc, char** argv )
         configure_geogram() ;
         configure_ringmesh() ;
 
-#ifdef RINGMESH_WITH_TETGEN
-
         // Set an output log file
         std::string log_file( ringmesh_test_output_path ) ;
         log_file += "log.txt" ;
@@ -73,19 +65,26 @@ int main( int argc, char** argv )
         std::string result_file_name( ringmesh_test_output_path ) ;
         result_file_name += "geomodel_tet_mesh.mesh" ;
 
+        // Loading the GeoModel
         GeoModel geomodel ;
         geomodel_load( geomodel, file_name ) ;
+
+        if( !is_geomodel_valid( geomodel ) ) {
+            throw RINGMeshException( "RINGMesh Test",
+                "Failed when building model " + geomodel.name()
+                    + ": the model is not valid." ) ;
+        }
+
+#ifdef RINGMESH_WITH_TETGEN
+
+        // Tetrahedralize the GeoModel
         tetgen_tetrahedralize_geomodel_regions( geomodel ) ;
 
-        // Save volumetric mesh with cell region attribute
-        /// @todo Implement a function to do it
-        GEO::Mesh geomodel_regions_mesh ;
-        build_mesh_from_geomodel( geomodel, geomodel_regions_mesh ) ;
-        GEO::MeshIOFlags mesh_io_flags ;
-        mesh_io_flags.set_elements(
-            GEO::MeshElementsFlags( GEO::MESH_VERTICES | GEO::MESH_CELLS ) ) ;
-        mesh_io_flags.set_attribute( GEO::MESH_CELL_REGION ) ;
-        GEO::mesh_save( geomodel_regions_mesh, result_file_name, mesh_io_flags ) ;
+        if( !is_geomodel_valid( geomodel ) ) {
+            throw RINGMeshException( "RINGMesh Test",
+                "Failed when tetrahedralize model " + geomodel.name()
+                    + ": the model bacomes invalid." ) ;
+        }
 #endif
 
     } catch( const RINGMeshException& e ) {
