@@ -83,7 +83,7 @@ int main( int argc, char** argv )
         if( !is_geomodel_valid( geomodel ) ) {
             throw RINGMeshException( "RINGMesh Test",
                 "Failed when tetrahedralize model " + geomodel.name()
-                    + ": the model bacomes invalid." ) ;
+                    + ": the model becomes invalid." ) ;
         }
 #endif
 
