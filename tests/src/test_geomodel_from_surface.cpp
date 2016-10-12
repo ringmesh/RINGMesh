@@ -35,10 +35,6 @@
 
 #include <ringmesh/ringmesh_tests_config.h>
 
-#include <geogram/mesh/mesh_io.h>
-#include <geogram/basic/logger.h>
-
-#include <ringmesh/geomodel/geo_model.h>
 #include <ringmesh/geomodel/geo_model_api.h>
 #include <ringmesh/geomodel/geo_model_validity.h>
 #include <ringmesh/geomodel/geo_model_builder_from_mesh.h>
@@ -55,7 +51,6 @@ int main( int argc, char** argv )
     using namespace RINGMesh ;
 
     try {
-
         GEO::initialize() ;
         configure_geogram() ;
         configure_ringmesh() ;
@@ -76,12 +71,83 @@ int main( int argc, char** argv )
         GEO::mesh_load( file_name, in ) ;
         GeoModel model ;
 
-        GeoModelBuilderSurfaceMesh BB( model, in ) ;
-        BB.build_polygonal_surfaces_from_connected_components() ;
-        BB.build_model_from_surfaces() ;
+        GeoModelBuilderSurfaceMesh builder( model, in ) ;
+        builder.build_polygonal_surfaces_from_connected_components() ;
+        builder.build_model_from_surfaces() ;
         print_geomodel( model ) ;
+
+        //Checking the validity of loaded model
+#ifdef RINGMESH_DEBUG
+        GEO::CmdLine::set_arg( "in:intersection_check", true ) ;
+#else
         GEO::CmdLine::set_arg( "in:intersection_check", false ) ;
-        is_geomodel_valid( model ) ;
+#endif
+
+        if( !is_geomodel_valid( model ) ) {
+            throw RINGMeshException( "RINGMesh Test",
+                "Failed when loading model " + model.name()
+                    + ": the loaded model is not valid." ) ;
+        }
+
+        // Save and reload the model to check to number of
+        // mesh elements and mesh entities
+        std::string output_file( ringmesh_test_output_path ) ;
+        output_file += "saved_modelA6.mesh" ;
+        geomodel_save( model, output_file ) ;
+
+        GEO::Mesh reloaded_mesh ;
+        GEO::mesh_load( output_file, reloaded_mesh ) ;
+        GeoModel reloaded_model ;
+
+        GeoModelBuilderSurfaceMesh builder2( reloaded_model, reloaded_mesh ) ;
+        builder2.build_polygonal_surfaces_from_connected_components() ;
+        builder2.build_model_from_surfaces() ;
+        print_geomodel( reloaded_model ) ;
+        // Checking if building has been successfully done
+        if( !is_geomodel_valid( reloaded_model ) ) {
+            throw RINGMeshException( "RINGMesh Test",
+                "Failed when reloading model " + reloaded_model.name()
+                    + ": the reloaded model is not valid." ) ;
+        }
+
+        // Checking number of mesh elements
+        if( reloaded_model.mesh.vertices.nb() != reloaded_mesh.vertices.nb() ) {
+            throw RINGMeshException( "RINGMesh Test",
+                "Error when building model: not same number of vertices "
+                    "than input mesh." ) ;
+        }
+        if( reloaded_model.mesh.facets.nb() != reloaded_mesh.facets.nb() ) {
+            throw RINGMeshException( "RINGMesh Test",
+                "Error when building model: not same number of facets "
+                    "than input mesh." ) ;
+        }
+        if( reloaded_model.mesh.cells.nb() != reloaded_mesh.cells.nb() ) {
+            throw RINGMeshException( "RINGMesh Test",
+                "Error when building model: not same number of cells "
+                    "than input mesh." ) ;
+        }
+
+        // Checking number of GeoModelMeshEntities
+        if( reloaded_model.nb_corners() != model.nb_corners() ) {
+            throw RINGMeshException( "RINGMesh Test",
+                "Error when reload model: not same number of corners "
+                    "between saved model and reload model." ) ;
+        }
+        if( reloaded_model.nb_lines() != model.nb_lines() ) {
+            throw RINGMeshException( "RINGMesh Test",
+                "Error when reload model: not same number of lines "
+                    "between saved model and reload model." ) ;
+        }
+        if( reloaded_model.nb_surfaces() != model.nb_surfaces() ) {
+            throw RINGMeshException( "RINGMesh Test",
+                "Error when reload model: not same number of surfaces "
+                    "between saved model and reload model." ) ;
+        }
+        if( reloaded_model.nb_regions() != model.nb_regions() ) {
+            throw RINGMeshException( "RINGMesh Test",
+                "Error when reload model: not same number of regions "
+                    "between saved model and reload model." ) ;
+        }
 
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category() ) << e.what() << std::endl ;
