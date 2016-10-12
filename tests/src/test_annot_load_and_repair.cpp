@@ -35,17 +35,12 @@
 
 #include <ringmesh/ringmesh_tests_config.h>
 
-#include <ringmesh/geomodel/geo_model.h>
-#include <ringmesh/geomodel/geo_model_api.h>
 #include <ringmesh/geomodel/geo_model_repair.h>
 #include <ringmesh/geomodel/geo_model_validity.h>
 #include <ringmesh/io/io.h>
 
-#include <geogram/basic/logger.h>
-
 /*! 
  * Load and fix a given structural model file.
- * @todo Make this executable generic by setting the file name as an argument of the command
  * @author Jeanne Pellerin
  */
 int main( int argc, char** argv )
@@ -75,8 +70,13 @@ int main( int argc, char** argv )
 
         // Load the model
         geomodel_load( M, file_name ) ;
+        if( is_geomodel_valid( M ) ) {
+            throw RINGMeshException( "RINGMesh Test",
+                "Input test model " + M.name()
+                    + " must be invalid to check the repair functionalities." ) ;
+        }
 
-        Logger::out( "RINGMesh Test" ) << "Reparing "
+        Logger::out( "RINGMesh Test" ) << "Repairing "
             << std::endl << std::endl << std::endl ;
         // Repair the model
         GeoModelRepair model_repair( M ) ;
