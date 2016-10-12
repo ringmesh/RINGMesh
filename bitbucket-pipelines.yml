@@ -13,7 +13,9 @@ pipelines:
           - tar vxzf cmake-3.0.2-Linux-i386.tar.gz
           - mkdir build
           - cd build
-          - ../cmake-3.0.2-Linux-i386/bin/cmake ..
+          - ls ../
+          - ls ../cmake-3.0.2-Linux-i386/
+          - ls ../cmake-3.0.2-Linux-i386/bin/
           - cd ringmesh/Debug
           - make
           - make test
