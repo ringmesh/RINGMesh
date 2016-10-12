@@ -71,9 +71,12 @@ int main( int argc, char** argv )
 
         /// Load and check the validity of the model
         geomodel_load( M, file_name ) ;
+
         if( is_geomodel_valid( M ) ) {
+#ifdef RINGMESH_WITH_TETGEN
             // Mesh the model with TetGen
             tetrahedralize( M, "TetGen" ) ;
+#endif
 
             // Output the mesh
             std::string output_file_name( ringmesh_test_output_path ) ;
