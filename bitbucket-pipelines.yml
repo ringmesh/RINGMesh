@@ -13,6 +13,7 @@ pipelines:
           - tar vxzf cmake-3.0.2-Linux-i386.tar.gz
           - mkdir build
           - cd build
+          - ls ../cmake-3.0.2-Linux-i386/bin/
           - ../cmake-3.0.2-Linux-i386/bin/cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON ..
           - cd ringmesh/Debug
           - make
