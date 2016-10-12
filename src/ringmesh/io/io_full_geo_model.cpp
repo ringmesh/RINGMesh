@@ -86,7 +86,7 @@ namespace {
     /*!
      * @brief Save the connectivity of a GeoModel in a file
      * @param[in] M the GeoModel
-     * @param[in] file_name the file name
+     * @param[in] file_name path to the input file
      */
     void save_geological_entities( const GeoModel& M, const std::string& file_name )
     {
