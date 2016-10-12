@@ -861,7 +861,6 @@ namespace RINGMesh {
         ringmesh_assert( is_on_border( f, e ) ) ;
 
         // Global indices in the surfaces
-        index_t v_id = mesh_element_vertex_index( f, e ) ;
         index_t next_v_id = mesh_element_vertex_index( f,
             next_facet_vertex_index( f, e ) ) ;
 
