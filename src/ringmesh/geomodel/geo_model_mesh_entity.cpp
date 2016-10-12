@@ -963,9 +963,9 @@ namespace RINGMesh {
             ringmesh_assert( is_on_border( next_f, next_e ) ) ;
         } else if( nb_around == 1 ) {
             // next_v_id must be in two border edges of facet f
-            index_t next_v_in_next_facet = vertex_index_in_facet( next_f,
+            next_e = vertex_index_in_facet( next_f,
                 next_v_id ) ;
-            next_e = next_facet_vertex_index( next_f, next_v_in_next_facet ) ;
+            ringmesh_assert( is_on_border( next_f, next_e ) ) ;
         }
     }
 
@@ -1006,6 +1006,7 @@ namespace RINGMesh {
             // v_id must be in two border edges of facet f
             index_t v_in_next_facet = vertex_index_in_facet( prev_f, v_id ) ;
             prev_e = prev_facet_vertex_index( prev_f, v_in_next_facet ) ;
+            ringmesh_assert( is_on_border( prev_f, prev_e ) ) ;
         }
     }
 
