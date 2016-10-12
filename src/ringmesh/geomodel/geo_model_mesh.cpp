@@ -84,7 +84,7 @@ namespace {
     class GeoModelMeshCellsSort {
     public:
         GeoModelMeshCellsSort(
-            const Mesh& mesh,
+            const Mesh3D& mesh,
             const GEO::Attribute< index_t >& region_id )
             : mesh_( mesh ), region_id_( region_id )
         {
@@ -178,7 +178,7 @@ namespace RINGMesh {
     void fill_vertices(
         const GeoModel& M,
         const std::string& entity_type,
-        MeshBuilder& builder,
+        Mesh0DBuilder& builder,
         std::vector< std::vector< GMEVertex > >& gme_vertices,
         index_t& count )
     {
@@ -206,8 +206,8 @@ namespace RINGMesh {
 
     void GeoModelMeshVertices::initialize()
     {
-        MeshBuilder builder( mesh_ ) ;
-        builder.clear( true, false ) ;
+        Mesh0DBuilder* builder = mesh_.get_mesh0d_builder() ;
+        builder->clear( true, false ) ;
 
         // Total number of vertices in the
         // Corners, Lines, Surfaces and Regions of the GeoModel
@@ -223,17 +223,17 @@ namespace RINGMesh {
         }
 
         // Fill the vertices
-        builder.create_vertices( nb ) ;
+        builder->create_vertices( nb ) ;
         gme_vertices_.resize( nb ) ;
 
         index_t count = 0 ;
-        fill_vertices( gm_, Corner::type_name_static(), builder, gme_vertices_,
+        fill_vertices( gm_, Corner::type_name_static(), *builder, gme_vertices_,
             count ) ;
-        fill_vertices( gm_, Line::type_name_static(), builder, gme_vertices_,
+        fill_vertices( gm_, Line::type_name_static(), *builder, gme_vertices_,
             count ) ;
-        fill_vertices( gm_, Surface::type_name_static(), builder, gme_vertices_,
+        fill_vertices( gm_, Surface::type_name_static(), *builder, gme_vertices_,
             count ) ;
-        fill_vertices( gm_, Region::type_name_static(), builder, gme_vertices_,
+        fill_vertices( gm_, Region::type_name_static(), *builder, gme_vertices_,
             count ) ;
 
         // Remove colocated vertices
@@ -260,8 +260,8 @@ namespace RINGMesh {
         gmm_.facets.clear() ;
         gmm_.edges.clear() ;
 
-        MeshBuilder builder( mesh_ ) ;
-        builder.clear_vertices( true, false ) ;
+        Mesh0DBuilder* builder = mesh_.get_mesh0d_builder() ;
+        builder->clear_vertices( true, false ) ;
         gme_vertices_.clear() ;
 
         // Clear the model vertex index information        

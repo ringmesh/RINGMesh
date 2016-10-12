@@ -39,11 +39,42 @@
 
 #include <ringmesh/geomodel/geo_model_entity.h>
 #include <ringmesh/geomodel/geo_model.h>
-
 #include <ringmesh/mesh/mesh_builder.h>
 
 namespace RINGMesh {
 
+    Mesh0DBuilder* Mesh0D::get_mesh0d_builder()
+    {
+        return dynamic_cast< Mesh0DBuilder* >( get_mesh_builder_base() ) ;
+    }
+    Mesh1DBuilder* Mesh1D::get_mesh1d_builder()
+    {
+        return dynamic_cast< Mesh1DBuilder* >( get_mesh_builder_base() ) ;
+    }
+    Mesh2DBuilder* Mesh2D::get_mesh2d_builder()
+    {
+        return dynamic_cast< Mesh2DBuilder* >( get_mesh_builder_base() ) ;
+    }
+    Mesh3DBuilder* Mesh3D::get_mesh3d_builder()
+    {
+        return dynamic_cast< Mesh3DBuilder* >( get_mesh_builder_base() ) ;
+    }
+    MeshAllDBuilder* MeshAllD::get_meshalld_builder()
+    {
+        return dynamic_cast< MeshAllDBuilder* >( get_mesh_builder_base() ) ;
+    }
+
+    GeogramMeshBuilder* GeogramMesh::get_geogram_mesh_builder()
+    {
+        return dynamic_cast< GeogramMeshBuilder* >( get_mesh_builder_base() ) ;
+    }
+    MeshBaseBuilder* GeogramMesh::get_mesh_builder_base()
+    {
+        if( mesh_builder_ == NULL ) {
+            mesh_builder_ = new GeogramMeshBuilder( *this ) ;
+        }
+        return mesh_builder_ ;
+    }
 
     const GEO::MeshFacetsAABB& GeogramMesh::facets_aabb() const
     {
@@ -58,7 +89,7 @@ namespace RINGMesh {
             if( M.mesh.vertices.is_initialized() ) {
                 M.mesh.vertices.clear() ;
             }
-            MeshBuilder builder( const_cast< Mesh& >( *this ) ) ;
+            GeogramMeshBuilder* builder = get_geogram_mesh_builder() ;
             builder.clear_vertex_linked_objects() ;
 
             facets_aabb_ = new GEO::MeshFacetsAABB( *mesh_ ) ;
@@ -76,12 +107,11 @@ namespace RINGMesh {
             if( M.mesh.vertices.is_initialized() ) {
                 M.mesh.vertices.clear() ;
             }
-            MeshBuilder builder( const_cast< Mesh& >( *this ) ) ;
+            GeogramMeshBuilder* builder = get_geogram_mesh_builder() ;
             builder.clear_vertex_linked_objects() ;
 
             cells_aabb_ = new GEO::MeshCellsAABB( *mesh_ ) ;
         }
         return *cells_aabb_ ;
     }
-
 } // namespace

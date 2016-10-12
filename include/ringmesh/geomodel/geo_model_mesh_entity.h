@@ -441,6 +441,7 @@ namespace RINGMesh {
     public:
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
+        friend class GeoModelRepair ;
 
         static const EntityType type_name_static()
         {
@@ -546,6 +547,8 @@ namespace RINGMesh {
     public:
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
+        friend class GeoModelRepair ;
+
 
         static const EntityType type_name_static()
         {
@@ -829,6 +832,7 @@ namespace RINGMesh {
     public:
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
+        friend class GeoModelRepair ;
 
         virtual ~Region()
         {
