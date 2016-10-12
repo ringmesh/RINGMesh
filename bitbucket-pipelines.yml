@@ -3,14 +3,12 @@
 # Only use spaces to indent your .yml configuration.
 # -----
 # You can specify a custom docker image from Docker Hub as your build environment.
-image: atlassian/default-image:latest
+image: ringteam/ubuntu:cmake_opengl
 
 pipelines:
   default:
     - step:
         script: # Modify the commands below to build your repository.
-          - apt-get update
-          - apt-get -y install cmake libx11-dev xorg-dev libglu1-mesa-dev
           - mkdir build
           - cd build
           - cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON ..
