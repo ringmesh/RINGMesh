@@ -697,8 +697,7 @@ namespace RINGMesh {
         double lambda[4] )
     {
         double total_volume = GEO::Geom::tetra_signed_volume( p0, p1, p2, p3 ) ;
-        if( total_volume < global_epsilon ) {
-            /// @todo Need to have a better handling of epsilon
+        if( total_volume < global_epsilon_3 ) {
             for( index_t i = 0; i < 4; i++ ) {
                 lambda[i] = 0 ;
             }
@@ -1456,10 +1455,10 @@ namespace RINGMesh {
             prev_neighbor = cur_neighbor ;
             cur_neighbor += nb_neighbors ;
             neighbors.resize( cur_neighbor ) ;
-            double* dist = (double*) alloca( sizeof(double) * cur_neighbor ) ;
-            nb_neighbors = get_neighbors( v, cur_neighbor, neighbors, dist ) ;
+            double* distance_sq = (double*) alloca( sizeof(double) * cur_neighbor ) ;
+            nb_neighbors = get_neighbors( v, cur_neighbor, neighbors, distance_sq ) ;
             for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
-                if( dist[i] > threshold_distance_sq ) {
+                if( distance_sq[i] > threshold_distance_sq ) {
                     break ;
                 }
                 result.push_back( neighbors[i] ) ;
