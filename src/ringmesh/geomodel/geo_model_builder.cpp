@@ -2026,6 +2026,7 @@ namespace RINGMesh {
         return true ;
     }
 
+
     void GeoModelBuilder::build_model_from_surfaces()
     {
         if( model().nb_surfaces() == 0 ) {
