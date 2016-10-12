@@ -36,12 +36,11 @@
 #include <ringmesh/ringmesh_tests_config.h>
 
 #include <ringmesh/geomodel/geo_model.h>
+#include <ringmesh/geomodel/geo_model_validity.h>
 #include <ringmesh/io/io.h>
-
-#include <geogram/basic/logger.h>
-
 /*!
- * @file Compare loading of surface geomodel ml (Gocad) and bm(RINGMesh own format) files
+ * @file Compare loading of surface GeoModel ml (Gocad)
+ * and gm (RINGMesh own format) files
  * @author Arnaud Botella
  */
 
@@ -50,7 +49,6 @@ int main()
     using namespace RINGMesh ;
 
     try {
-
         GEO::initialize() ;
         configure_geogram() ;
         configure_ringmesh() ;
@@ -62,12 +60,26 @@ int main()
         input_model_file_name += "modelA1.ml" ;
 
         geomodel_load( in, input_model_file_name ) ;
+
+        if( !is_geomodel_valid( in ) ) {
+            throw RINGMeshException( "RINGMesh Test",
+                "Failed when loading model " + in.name()
+                    + ": the loaded model is not valid." ) ;
+        }
+
         std::string output_model_file_name( ringmesh_test_output_path ) ;
         output_model_file_name += "modelA1_saved_out.gm" ;
         geomodel_save( in, output_model_file_name ) ;
 
         GeoModel in2 ;
         geomodel_load( in2, output_model_file_name ) ;
+
+        if( !is_geomodel_valid( in2 ) ) {
+            throw RINGMeshException( "RINGMesh Test",
+                "Failed when reloading model " + in2.name()
+                    + ": the reloaded model is not valid." ) ;
+        }
+
         std::string output_model_file_name_bis( ringmesh_test_output_path ) ;
         output_model_file_name_bis += "modelA1_saved_out_bis.gm" ;
         geomodel_save( in2, output_model_file_name_bis ) ;
