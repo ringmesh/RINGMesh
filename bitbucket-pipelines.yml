@@ -11,10 +11,9 @@ pipelines:
         script: # Modify the commands below to build your repository.
           - wget https://cmake.org/files/v3.0/cmake-3.0.2-Linux-i386.tar.gz
           - tar vxzf cmake-3.0.2-Linux-i386.tar.gz
-          - ls 
           - mkdir build
           - cd build
-          - cmake ..
+          - ../cmake-3.0.2-Linux-i386/bin/cmake ..
           - cd ringmesh/Debug
           - make
           - make test
