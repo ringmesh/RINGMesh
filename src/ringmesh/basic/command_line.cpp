@@ -49,7 +49,7 @@ namespace RINGMesh {
 
         void import_arg_group_global()
         {
-            GEO::CmdLine::declare_arg( "epsilon", 1e-7,
+            GEO::CmdLine::declare_arg( "epsilon", 1e-6,
                 "Threshold for numerical precision (ratio of the bbox diagonal)",
                 GEO::CmdLine::ARG_ADVANCED ) ;
         }
