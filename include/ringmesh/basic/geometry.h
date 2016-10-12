@@ -364,13 +364,13 @@ namespace RINGMesh {
         /*!
          * Gets the closest neighbor point
          * @param[in] v the point to test
-         * @param[out] dist the square distance to the closest point
+         * @param[out] distance_sq the square distance to the closest point
          * return returns the index of the closest point
          */
-        index_t get_closest_neighbor( const vec3& v, double& dist ) const
+        index_t get_closest_neighbor( const vec3& v, double& distance_sq ) const
         {
             std::vector< index_t > result ;
-            get_neighbors( v, 1, result, &dist ) ;
+            get_neighbors( v, 1, result, &distance_sq ) ;
             return result[0] ;
         }
 
