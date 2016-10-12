@@ -83,6 +83,9 @@ int main( int argc, char** argv )
             output_file_name += "corbieres.gm" ;
             geomodel_save( M, output_file_name ) ;
 
+            /* @todo Accelerate cut_region_by_internal_surfaces before
+             * uncomment this block which takes too long time
+             *
             GeoModel reloaded_model ;
             geomodel_load( reloaded_model, output_file_name ) ;
 
@@ -92,6 +95,7 @@ int main( int argc, char** argv )
                         + reloaded_model.name()
                         + ": the loaded model is not valid." ) ;
             }
+             */
 
         } else {
             print_geomodel( M ) ;
