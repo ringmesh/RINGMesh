@@ -983,9 +983,13 @@ namespace RINGMesh {
             index_t next_f_v1 = NO_ID ;
 
             if( !backward ) {
-                S.next_on_border( f, f_v0, f_v1, next_f, next_f_v0, next_f_v1 ) ;
+                S.next_on_border( f, f_v0, next_f, next_f_v0 ) ;
+                ringmesh_assert( next_f_v0 != NO_ID ) ;
+                next_f_v1 = S.next_facet_vertex_index( next_f, next_f_v0 ) ;
             } else {
-                S.next_on_border( f, f_v1, f_v0, next_f, next_f_v0, next_f_v1 ) ;
+                S.prev_on_border( f, f_v0, next_f, next_f_v0 ) ;
+                ringmesh_assert( next_f_v0 != NO_ID ) ;
+                next_f_v1 = S.next_facet_vertex_index( next_f, next_f_v0 ) ;
             }
 
             // Finds the BorderTriangle that is corresponding to this
@@ -997,6 +1001,7 @@ namespace RINGMesh {
                 std::lower_bound( border_triangles_.begin(), border_triangles_.end(),
                     bait ) - border_triangles_.begin() ) ;
 
+            ringmesh_assert( border_triangles_[result].same_edge( bait ) ) ;
             ringmesh_assert( result < border_triangles_.size() ) ;
             return result ;
         }
