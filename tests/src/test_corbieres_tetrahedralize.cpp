@@ -35,16 +35,12 @@
 
 #include <ringmesh/ringmesh_tests_config.h>
 
-#include <ringmesh/geomodel/geo_model.h>
 #include <ringmesh/geomodel/geo_model_api.h>
 #include <ringmesh/geomodel/geo_model_validity.h>
 #include <ringmesh/io/io.h>
 
-#include <geogram/basic/logger.h>
-
-
 /*!
- * @file Tetrahedralize the Corbiere model with Tetgen
+ * @file Tetrahedralize the Corbieres model with TetGen
  * @author Jeanne Pellerin
  */
  
@@ -68,18 +64,15 @@ int main( int argc, char** argv )
 
         GeoModel M ;
         std::string file_name( ringmesh_test_data_path ) ;
-
-        /*! @todo Make this executable generic by setting
-         *   the file name as an argument of the command */
         file_name += "corbi.ml" ;
 
         // Set the debug directory for the validity checks
         set_validity_errors_directory( ringmesh_test_output_path ) ;
 
-        /* Load and check the validity of the model */
+        /// Load and check the validity of the model
         geomodel_load( M, file_name ) ;
         if( is_geomodel_valid( M ) ) {
-            // Mesh the model with Tetgen
+            // Mesh the model with TetGen
             tetrahedralize( M, "TetGen" ) ;
 
             // Output the mesh
