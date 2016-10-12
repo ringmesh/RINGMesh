@@ -647,13 +647,6 @@ namespace RINGMesh {
             ringmesh_assert( edge_index < nb_mesh_element_vertices( facet_index ) ) ;
             return mesh_.facet_adjacent( facet_index, edge_index ) ;
         }
-//        void next_on_border(
-//            index_t f,
-//            index_t from,
-//            index_t v,
-//            index_t& next_f,
-//            index_t& v_in_next,
-//            index_t& to ) const ;
 
         /*!
          * @brief Get the previous edge on the border
