@@ -618,9 +618,13 @@ namespace RINGMesh {
         double a0 = diff.length2() - r * r ;
 
         double discr = a1 * a1 - a0 * a2 ;
-        if( discr < 0.0 ) return false ;
+        if( discr < 0.0 ) {
+            return false ;
+        }
 
-        if( std::fabs( a2 ) < global_epsilon ) return false ;
+        if( std::fabs( a2 ) < global_epsilon ) {
+            return false ;
+        }
         double inv = 1.0 / a2 ;
         if( discr < global_epsilon ) {
             result.push_back( vec3( O_inter - ( a1 * inv ) * D_inter ) ) ;
@@ -1270,12 +1274,16 @@ namespace RINGMesh {
     {
         ColocaterANN ann( points_ ) ;
         for( index_t i = 0; i < indices_.size(); i++ ) {
-            if( indices_[i] != i ) continue ;
+            if( indices_[i] != i ) {
+                continue ;
+            }
             std::vector< index_t > results ;
             ann.get_neighbors( points_[i], results, epsilon ) ;
             index_t id = *std::min_element( results.begin(), results.end() ) ;
             for( index_t j = 0; j < results.size(); j++ ) {
-                if( id == results[j] ) continue ;
+                if( id == results[j] ) {
+                    continue ;
+                }
                 indices_[results[j]] = id ;
             }
         }
@@ -1484,7 +1492,9 @@ namespace RINGMesh {
         std::vector< index_t >& result,
         double* dist ) const
     {
-        if( ann_tree_->nb_points() == 0 ) return 0 ;
+        if( ann_tree_->nb_points() == 0 ) {
+            return 0 ;
+        }
         if( !dist ) {
             dist = (double*) alloca( sizeof(double) * nb_neighbors ) ;
         }
