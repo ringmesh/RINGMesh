@@ -1001,6 +1001,7 @@ namespace RINGMesh {
                 std::lower_bound( border_triangles_.begin(), border_triangles_.end(),
                     bait ) - border_triangles_.begin() ) ;
 
+            ringmesh_assert( border_triangles_[result].same_edge( bait ) ) ;
             ringmesh_assert( result < border_triangles_.size() ) ;
             return result ;
         }
