@@ -36,13 +36,14 @@
 #include <ringmesh/ringmesh_tests_config.h>
 
 #include <ringmesh/geomodel/geo_model.h>
+#include <ringmesh/geomodel/geo_model_validity.h>
 #include <ringmesh/io/io.h>
 
 #include <geogram/basic/logger.h>
 
 /*! Tests the loading and writing of a Gocad model (.ml) file.
  * Loads a .ml file generated with Gocad, saves it, loads it again, saves it
- * again and comares the two saved versions.
+ * again and compares the two saved versions.
  * @returns 0 if success or an error code if not. 
  * @author Arnaud Botella
  */
@@ -74,6 +75,12 @@ int main()
         std::string output_model_file_name( ringmesh_test_output_path ) ;
         output_model_file_name += in.name() + "_saved_out.ml" ;
         geomodel_save( in, output_model_file_name ) ;
+
+        if( !is_geomodel_valid( in ) ) {
+            throw RINGMeshException( "RINGMesh Test",
+                "Failed when loading model " + in.name()
+                    + ": the loaded model is not valid." ) ;
+        }
 
         GeoModel in2 ;
         geomodel_load( in2, output_model_file_name ) ;
