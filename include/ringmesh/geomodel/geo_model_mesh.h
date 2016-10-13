@@ -56,7 +56,7 @@ namespace RINGMesh {
     class GeoModelMesh ;
     class GeoModel ;
     class GeoModelEntity ;
-    class MeshBuilder ;
+
 }
 
 namespace RINGMesh {
@@ -83,8 +83,8 @@ namespace RINGMesh {
         GeoModelMeshVertices(
             GeoModelMesh& gmm,
             GeoModel& gm,
-            Mesh0D& mesh,
-            Mesh0DBuilder& mesh_builder ) ;
+            MeshAllD& mesh,
+            MeshAllDBuilder& mesh_builder ) ;
         ~GeoModelMeshVertices() ;
 
         /*!
@@ -201,8 +201,8 @@ namespace RINGMesh {
         /// Attached GeoModel
         GeoModel& gm_ ;
         /// Attached Mesh
-        Mesh0D& mesh_ ;
-        Mesh0DBuilder& mesh_builder_ ;
+        MeshAllD& mesh_ ;
+        MeshAllDBuilder& mesh_builder_ ;
 
         /*!
          * Vertices in GeoModelEntities corresponding to each vertex
@@ -222,8 +222,8 @@ namespace RINGMesh {
 
         GeoModelMeshFacets(
             GeoModelMesh& gmm,
-            Mesh2D& mesh,
-            Mesh2DBuilder& mesh_builder ) ;
+            MeshAllD& mesh,
+            MeshAllDBuilder& mesh_builder ) ;
         ~GeoModelMeshFacets() ;
 
         /*!
@@ -420,8 +420,8 @@ namespace RINGMesh {
         /// Attached GeoModel
         const GeoModel& gm_ ;
         /// Attached Mesh
-        Mesh2D& mesh_ ;
-        Mesh2DBuilder& mesh_builder_ ;
+        MeshAllD& mesh_ ;
+        MeshAllDBuilder& mesh_builder_ ;
 
         /// Attribute storing the surface index per facet
         GEO::Attribute< index_t > surface_id_ ;
@@ -450,8 +450,8 @@ namespace RINGMesh {
     public:
         GeoModelMeshEdges(
             GeoModelMesh& gmm,
-            Mesh1D& mesh,
-            Mesh1DBuilder& mesh_builder ) ;
+            MeshAllD& mesh,
+            MeshAllDBuilder& mesh_builder ) ;
         ~GeoModelMeshEdges() ;
 
         /*!
@@ -503,8 +503,8 @@ namespace RINGMesh {
         /// Attached GeoModel
         const GeoModel& gm_ ;
         /// Attached Mesh
-        Mesh1D& mesh_ ;
-        Mesh1DBuilder& mesh_builder_ ;
+        MeshAllD& mesh_ ;
+        MeshAllDBuilder& mesh_builder_ ;
 
         /*!
          * Vector storing the index of the starting edge index
@@ -531,8 +531,8 @@ namespace RINGMesh {
 
         GeoModelMeshCells(
             GeoModelMesh& gmm,
-            Mesh3D& mesh,
-            Mesh3DBuilder& mesh_builder ) ;
+            MeshAllD& mesh,
+            MeshAllDBuilder& mesh_builder ) ;
         /*!
          * Test if the mesh cells are initialized
          */
@@ -913,8 +913,8 @@ namespace RINGMesh {
         /// Attached GeoModel
         const GeoModel& gm_ ;
         /// Attached Mesh
-        Mesh3D& mesh_ ;
-        Mesh3DBuilder& mesh_builder_ ;
+        MeshAllD& mesh_ ;
+        MeshAllDBuilder& mesh_builder_ ;
 
         /// Attribute storing the region index per cell
         GEO::Attribute< index_t > region_id_ ;

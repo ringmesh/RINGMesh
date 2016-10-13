@@ -56,7 +56,7 @@ namespace RINGMesh {
     class Mesh2DBuilder ;
     class Mesh3DBuilder ;
     class MeshAllDBuilder ;
-    class GeogramMeshBuilder;
+    class GeogramMeshBuilder ;
 }
 
 namespace RINGMesh {
@@ -69,14 +69,13 @@ namespace RINGMesh {
      */
     class RINGMESH_API MeshBase {
     ringmesh_disable_copy( MeshBase ) ;
-    friend class MeshBaseBuilder ;
+        friend class MeshBaseBuilder ;
 
     public:
 
         virtual ~MeshBase()
         {
             if( mesh_builder_ ) delete mesh_builder_ ;
-
         }
 
         virtual void save_mesh(
@@ -151,8 +150,7 @@ namespace RINGMesh {
      */
     class RINGMESH_API Mesh0D: public virtual MeshBase {
     ringmesh_disable_copy( Mesh0D ) ;
-    friend class Mesh0DBuilder ;
-
+        friend class Mesh0DBuilder ;
 
     public:
         virtual ~Mesh0D()
@@ -179,7 +177,7 @@ namespace RINGMesh {
      */
     class RINGMESH_API Mesh1D: public virtual MeshBase {
     ringmesh_disable_copy( Mesh1D ) ;
-    friend class Mesh1DBuilder ;
+        friend class Mesh1DBuilder ;
 
     public:
         virtual ~Mesh1D()
@@ -220,7 +218,7 @@ namespace RINGMesh {
      */
     class RINGMESH_API Mesh2D: public virtual MeshBase {
     ringmesh_disable_copy( Mesh2D ) ;
-    friend class Mesh2DBuilder ;
+        friend class Mesh2DBuilder ;
 
     public:
         virtual ~Mesh2D()
@@ -328,7 +326,7 @@ namespace RINGMesh {
      */
     class RINGMESH_API Mesh3D: public virtual MeshBase {
     ringmesh_disable_copy( Mesh3D ) ;
-    friend class Mesh3DBuilder ;
+        friend class Mesh3DBuilder ;
 
     public:
         virtual ~Mesh3D()
@@ -498,7 +496,7 @@ namespace RINGMesh {
         public Mesh2D,
         public Mesh3D {
     ringmesh_disable_copy( MeshAllD ) ;
-    friend class MeshAllDBuilder ;
+        friend class MeshAllDBuilder ;
 
     public:
         virtual ~MeshAllD()
@@ -542,8 +540,8 @@ namespace RINGMesh {
             :
                 MeshBase( geo_model ),
                 MeshAllD( geo_model ),
-                facets_aabb_( nil ),
-                cells_aabb_( nil )
+                facets_aabb_( NULL ),
+                cells_aabb_( NULL )
         {
             mesh_ = new GEO::Mesh( dimension, single_precision ) ;
             for( index_t i = 0; i < ColocaterANN::NB_LOCATION; i++ ) {

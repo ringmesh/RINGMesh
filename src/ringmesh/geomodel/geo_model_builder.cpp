@@ -1974,7 +1974,8 @@ namespace RINGMesh {
                 cut_region_by_surface( r, *it ) ;
             }
             if( !cutting_surfaces.empty() ) {
-                Mesh3DBuilder* region_mesh_builder = region.mesh3d_->get_mesh3d_builder() ;
+                Mesh3DBuilder* region_mesh_builder =
+                    region.mesh3d_->get_mesh3d_builder() ;
                 region_mesh_builder->remove_isolated_vertices() ;
             }
         }
@@ -2222,14 +2223,14 @@ namespace RINGMesh {
     void GeoModelBuilder::delete_mesh_entity_mesh( const gme_t& E_id )
     {
         MeshBase& M = *mesh_entity( E_id ).mesh_ ;
-        MeshBaseBuilder* builder = M.get_mesh_base_builder();
+        MeshBaseBuilder* builder = M.get_mesh_base_builder() ;
         builder->clear( true, false ) ;
     }
 
     void GeoModelBuilder::delete_mesh_entity_isolated_vertices( const gme_t& E_id )
     {
         MeshBase& M = *mesh_entity( E_id ).mesh_ ;
-        MeshBaseBuilder* builder = M.get_mesh_base_builder();
+        MeshBaseBuilder* builder = M.get_mesh_base_builder() ;
         builder->remove_isolated_vertices() ;
     }
 
@@ -2239,7 +2240,7 @@ namespace RINGMesh {
         bool remove_isolated_vertices )
     {
         MeshBase& M = *mesh_entity( E_id ).mesh_ ;
-        MeshBaseBuilder* builder = M.get_mesh_base_builder();
+        MeshBaseBuilder* builder = M.get_mesh_base_builder() ;
         builder->delete_vertices( to_delete, remove_isolated_vertices ) ;
     }
 
@@ -2255,8 +2256,9 @@ namespace RINGMesh {
         GEO::vector< index_t >& to_delete,
         bool remove_isolated_vertices )
     {
-        Line& line = dynamic_cast<Line&>(mesh_entity( Line::type_name_static(), line_id )) ;
-        Mesh1DBuilder* builder= line.mesh1d_->get_mesh1d_builder();
+        Line& line = dynamic_cast< Line& >( mesh_entity( Line::type_name_static(),
+            line_id ) ) ;
+        Mesh1DBuilder* builder = line.mesh1d_->get_mesh1d_builder() ;
         builder->delete_edges( to_delete, remove_isolated_vertices ) ;
     }
     void GeoModelBuilder::delete_surface_facets(
@@ -2264,8 +2266,9 @@ namespace RINGMesh {
         GEO::vector< index_t >& to_delete,
         bool remove_isolated_vertices )
     {
-        Surface& surface = dynamic_cast<Surface&> (mesh_entity( Surface::type_name_static(), surface_id )) ;
-        Mesh2DBuilder* builder= surface.mesh2d_->get_mesh2d_builder();
+        Surface& surface = dynamic_cast< Surface& >( mesh_entity(
+            Surface::type_name_static(), surface_id ) ) ;
+        Mesh2DBuilder* builder = surface.mesh2d_->get_mesh2d_builder() ;
         builder->delete_facets( to_delete, remove_isolated_vertices ) ;
     }
     void GeoModelBuilder::delete_region_cells(
@@ -2273,8 +2276,9 @@ namespace RINGMesh {
         GEO::vector< index_t >& to_delete,
         bool remove_isolated_vertices )
     {
-        Region& region = dynamic_cast<Region&> (mesh_entity( Region::type_name_static(), region_id )) ;
-        Mesh3DBuilder* builder= region.mesh3d_->get_mesh3d_builder();
+        Region& region = dynamic_cast< Region& >( mesh_entity(
+            Region::type_name_static(), region_id ) ) ;
+        Mesh3DBuilder* builder = region.mesh3d_->get_mesh3d_builder() ;
         builder->delete_cells( to_delete, remove_isolated_vertices ) ;
     }
 
