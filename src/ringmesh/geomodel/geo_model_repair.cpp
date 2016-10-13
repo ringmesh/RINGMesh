@@ -108,7 +108,7 @@ namespace RINGMesh {
     {
         GEO::vector< index_t > colocated ;
         const ColocaterANN& kdtree = M.colocater_ann( ColocaterANN::VERTICES ) ;
-        kdtree.get_colocated_index_mapping( colocated ) ;
+        kdtree.get_colocated_index_mapping( model().epsilon(), colocated ) ;
 
         GEO::vector< index_t > degenerate ;
         mesh_detect_degenerate_facets( M, degenerate, colocated ) ;
@@ -134,7 +134,7 @@ namespace RINGMesh {
     {
         GEO::vector< index_t > colocated ;
         const ColocaterANN& kdtree = line.vertex_colocater_ann() ;
-        kdtree.get_colocated_index_mapping( colocated ) ;
+        kdtree.get_colocated_index_mapping( model().epsilon(), colocated ) ;
 
         GEO::vector< index_t > degenerate ;
         mesh_detect_degenerate_edges( line.mesh_, degenerate, colocated ) ;
@@ -173,6 +173,7 @@ namespace RINGMesh {
         }
         // The builder might be needed
 
+        double epsilon_sq = model().epsilon() * model().epsilon() ;
         for( index_t i = 0; i < model().nb_surfaces(); ++i ) {
             Surface& surface = dynamic_cast<Surface&>(mesh_entity( gme_t(Surface::type_name_static(), i) ) );
             index_t nb = detect_degenerate_facets( surface.mesh_ ) ;
@@ -241,8 +242,8 @@ namespace RINGMesh {
             for( index_t i = 0; i < inside_border.size(); ++i ) {
                 for( index_t v = 0; v < inside_border[i]->nb_vertices(); ++v ) {
                     std::vector< index_t > colocated_indices ;
-                    kdtree.get_colocated( inside_border[i]->vertex( v ),
-                        colocated_indices ) ;
+                    kdtree.get_neighbors( inside_border[i]->vertex( v ),
+                        colocated_indices, model().epsilon() ) ;
                     if( colocated_indices.size() > 1 ) {
                         std::sort( colocated_indices.begin(),
                             colocated_indices.end() ) ;
@@ -273,7 +274,7 @@ namespace RINGMesh {
 
                 const ColocaterANN& kdtree = E.vertex_colocater_ann() ;
                 GEO::vector< index_t > colocated ;
-                kdtree.get_colocated_index_mapping( colocated ) ;
+                kdtree.get_colocated_index_mapping( model().epsilon(), colocated ) ;
 
                 // Get the vertices to delete
                 std::set< index_t > inside_border ;

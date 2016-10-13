@@ -64,17 +64,17 @@ namespace RINGMesh {
             initialized_ = false ;
         }
 
-        float64 width() const
+        double width() const
         {
             return xyz_max[0] - xyz_min[0] ;
         }
 
-        float64 height() const
+        double height() const
         {
             return xyz_max[1] - xyz_min[1] ;
         }
 
-        float64 depth() const
+        double depth() const
         {
             return xyz_max[2] - xyz_min[2] ;
         }
@@ -94,9 +94,9 @@ namespace RINGMesh {
             return 0.5 * ( min() + max() ) ;
         }
 
-        void add_point( const float64* p )
+        vec3 diagonal() const
         {
-            add_point( vec3( p ) ) ;
+            return max() - min() ;
         }
 
         void add_point( const vec3& p ) ;
@@ -148,9 +148,9 @@ namespace RINGMesh {
             return true ;
         }
 
-        float64 distance_to_center( const vec3& p ) const ;
+        double distance_to_center( const vec3& p ) const ;
 
-        float64 signed_distance( const vec3& p ) const ;
+        double signed_distance( const vec3& p ) const ;
 
     private:
         bool initialized_ ;
