@@ -89,20 +89,46 @@ int main( int argc, char** argv )
                     + ": the loaded model is not valid." ) ;
         }
 
-        // Save and reload the model to check to number of
-        // mesh elements and mesh entities
+        // Save and reload the model
         std::string output_file( ringmesh_test_output_path ) ;
         output_file += "saved_modelA6.mesh" ;
         geomodel_save( model, output_file ) ;
 
-        GEO::Mesh reloaded_mesh ;
-        GEO::mesh_load( output_file, reloaded_mesh ) ;
+        // Compute mesh with duplicated points to compares number
+        // of mesh elements and mesh entities
+        GEO::Mesh surface_meshes ;
+        for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
+            const Surface& surface = model.surface( s ) ;
+            index_t vertex_it = surface_meshes.vertices.create_vertices(
+                surface.nb_vertices() ) ;
+            for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
+                surface_meshes.vertices.point( vertex_it + v ) = surface.vertex(
+                    v ) ;
+            }
+            index_t facet_it = surface_meshes.facets.create_triangles(
+                surface.nb_mesh_elements() ) ;
+            for( index_t f = 0; f < surface.nb_mesh_elements(); f++ ) {
+                for( index_t v = 0; v < surface.nb_mesh_element_vertices( f );
+                    v++ ) {
+                    surface_meshes.facets.set_vertex( facet_it + f, v,
+                        vertex_it + surface.mesh_element_vertex_index( f, v ) ) ;
+                }
+            }
+        }
+        surface_meshes.facets.connect() ;
+
+        // Save computed mesh
+        std::string output_file2( ringmesh_test_output_path ) ;
+        output_file2 += "saved_modelA6_dupl_points.mesh" ;
+        GEO::mesh_save( surface_meshes, output_file2 ) ;
+
         GeoModel reloaded_model ;
 
-        GeoModelBuilderSurfaceMesh builder2( reloaded_model, reloaded_mesh ) ;
+        GeoModelBuilderSurfaceMesh builder2( reloaded_model, surface_meshes ) ;
         builder2.build_polygonal_surfaces_from_connected_components() ;
         builder2.build_model_from_surfaces() ;
         print_geomodel( reloaded_model ) ;
+
         // Checking if building has been successfully done
         if( !is_geomodel_valid( reloaded_model ) ) {
             throw RINGMeshException( "RINGMesh Test",
@@ -111,17 +137,17 @@ int main( int argc, char** argv )
         }
 
         // Checking number of mesh elements
-        if( reloaded_model.mesh.vertices.nb() != reloaded_mesh.vertices.nb() ) {
+        if( surface_meshes.vertices.nb() != in.vertices.nb() ) {
             throw RINGMeshException( "RINGMesh Test",
                 "Error when building model: not same number of vertices "
                     "than input mesh." ) ;
         }
-        if( reloaded_model.mesh.facets.nb() != reloaded_mesh.facets.nb() ) {
+        if( surface_meshes.facets.nb() != in.facets.nb() ) {
             throw RINGMeshException( "RINGMesh Test",
                 "Error when building model: not same number of facets "
                     "than input mesh." ) ;
         }
-        if( reloaded_model.mesh.cells.nb() != reloaded_mesh.cells.nb() ) {
+        if( surface_meshes.cells.nb() != in.cells.nb() ) {
             throw RINGMeshException( "RINGMesh Test",
                 "Error when building model: not same number of cells "
                     "than input mesh." ) ;
