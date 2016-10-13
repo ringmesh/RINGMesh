@@ -72,18 +72,25 @@ int main()
         GeoModel in ;
         geomodel_load( in, input_model_file_name ) ;
 
-        std::string output_model_file_name( ringmesh_test_output_path ) ;
-        output_model_file_name += in.name() + "_saved_out.ml" ;
-        geomodel_save( in, output_model_file_name ) ;
-
         if( !is_geomodel_valid( in ) ) {
             throw RINGMeshException( "RINGMesh Test",
                 "Failed when loading model " + in.name()
                     + ": the loaded model is not valid." ) ;
         }
 
+        std::string output_model_file_name( ringmesh_test_output_path ) ;
+        output_model_file_name += in.name() + "_saved_out.ml" ;
+        geomodel_save( in, output_model_file_name ) ;
+
         GeoModel in2 ;
         geomodel_load( in2, output_model_file_name ) ;
+
+        if( !is_geomodel_valid( in2 ) ) {
+            throw RINGMeshException( "RINGMesh Test",
+                "Failed when reloading model " + in2.name()
+                    + ": the reloaded model is not valid." ) ;
+        }
+
         std::string output_model_file_name_bis( ringmesh_test_output_path ) ;
         output_model_file_name_bis += in.name() + "_saved_out_bis.ml" ;
         geomodel_save( in2, output_model_file_name_bis ) ;
