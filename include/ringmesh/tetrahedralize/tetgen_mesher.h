@@ -113,11 +113,6 @@ namespace RINGMesh {
             const Mesh& input_mesh,
             Mesh& output_mesh ) ;
 
-        void tetrahedralize(
-            const Mesh& input_mesh,
-            const std::vector< vec3 >& one_point_per_region,
-            Mesh& output_mesh ) ;
-
         void add_points_to_match_quality( double quality ) ;
 
     private:
