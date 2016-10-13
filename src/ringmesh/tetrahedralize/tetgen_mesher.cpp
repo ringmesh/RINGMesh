@@ -217,27 +217,6 @@ namespace RINGMesh {
         }
     }
 
-    void TetgenMesher::fill_region_attribute_on_mesh_cells(
-        Mesh& M,
-        const std::string& attribute_name ) const
-    {
-        double* tet_attributes = tetgen_out_.tetrahedronattributelist ;
-        index_t one_tet_attribute_size =
-            static_cast< index_t >( tetgen_out_.numberoftetrahedronattributes ) ;
-        GEO::Attribute< index_t > region_id( M.cells.attributes(), attribute_name ) ;
-        for( index_t i = 0; i < M.cells.nb(); ++i ) {
-            // Nothing says where it is, so we hope that the shell id is the first 
-            // attribute stored in tetgen [JP]
-            // Assert to detect if the double is not an index_t [BC]
-            ringmesh_assert( std::abs( static_cast<index_t> (
-                        tet_attributes[one_tet_attribute_size*i] )
-                    - tet_attributes[one_tet_attribute_size*i] ) < epsilon ) ;
-            region_id[i] =
-                static_cast< index_t >( tet_attributes[one_tet_attribute_size * i] ) ;
-        }
-        region_id.unbind() ;
-    }
-
     void TetgenMesher::initialize_tetgen_args()
     {
         char* copy = new char[tetgen_command_line_.length() + 1] ;
