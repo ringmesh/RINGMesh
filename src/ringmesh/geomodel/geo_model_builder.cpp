@@ -94,14 +94,9 @@ namespace {
         }
     }
 
-    bool inexact_equal( const vec3& v1, const vec3& v2 )
+    bool inexact_equal( const vec3& v1, const vec3& v2, double epsilon )
     {
-        for( index_t i = 0; i < 3; i++ ) {
-            if( std::fabs( v1[i] - v2[i] ) > epsilon ) {
-                return false ;
-            }
-        }
-        return true ;
+        return length( v2 - v1 ) < epsilon ;
     }
 
     /*************************************************************************/
@@ -200,10 +195,11 @@ namespace {
                 f = neighbors[i] ;
                 for( index_t j = 0; j < surface.nb_mesh_element_vertices( f );
                     j++ ) {
-                    if( inexact_equal( surface.mesh_element_vertex( f, j ), v0 ) ) {
+                    if( inexact_equal( surface.mesh_element_vertex( f, j ), v0,
+                        surface.model().epsilon() ) ) {
                         index_t j_next = surface.next_facet_vertex_index( f, j ) ;
                         if( inexact_equal( surface.mesh_element_vertex( f, j_next ),
-                            v1 ) ) {
+                            v1, surface.model().epsilon() ) ) {
                             e = j ;
                             return true ;
                         }
@@ -232,7 +228,8 @@ namespace {
         }
         vec3 cell_facet_barycenter = region.cell_facet_barycenter( cell, cell_facet ) ;
         vec3 facet_barycenter = surface.mesh_element_barycenter( facet ) ;
-        return inexact_equal( cell_facet_barycenter, facet_barycenter ) ;
+        return inexact_equal( cell_facet_barycenter, facet_barycenter,
+            region.model().epsilon() ) ;
     }
 
     bool find_cell_facet_from_facet(
@@ -294,7 +291,8 @@ namespace {
                 element_id = neighbors[i] ;
                 for( index_t j = 0; j < surface.nb_mesh_element_vertices( element_id );
                     j++ ) {
-                    if( inexact_equal( surface.mesh_element_vertex( element_id, j ), v ) ) {
+                    if( inexact_equal( surface.mesh_element_vertex( element_id, j ),
+                        v, surface.model().epsilon() ) ) {
                         vertex_id = surface.mesh_element_vertex_index( element_id, j ) ;
                         return true ;
                     }
@@ -327,10 +325,12 @@ namespace {
                 cur_neighbor, neighbors, dist ) ;
             for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
                 element_id = neighbors[i] ;
-                for( index_t j = 0; j < entity.nb_mesh_element_vertices( element_id );
-                    j++ ) {
-                    if( inexact_equal( entity.mesh_element_vertex( element_id, j ), v ) ) {
-                        vertex_id = entity.mesh_element_vertex_index( element_id, j ) ;
+                for( index_t j = 0;
+                    j < entity.nb_mesh_element_vertices( element_id ); j++ ) {
+                    if( inexact_equal( entity.mesh_element_vertex( element_id, j ),
+                        v, entity.model().epsilon() ) ) {
+                        vertex_id = entity.mesh_element_vertex_index( element_id,
+                            j ) ;
                         return true ;
                     }
                 }
@@ -349,12 +349,15 @@ namespace {
         const vec3& v1 )
     {
         for( index_t v = 0; v < surface.nb_mesh_element_vertices( f ); v++ ) {
-            if( !inexact_equal( surface.mesh_element_vertex( f, v ), v0 ) ) continue ;
+            if( !inexact_equal( surface.mesh_element_vertex( f, v ), v0,
+                surface.model().epsilon() ) ) continue ;
             index_t prev_v = surface.prev_facet_vertex_index( f, v ) ;
             index_t next_v = surface.next_facet_vertex_index( f, v ) ;
-            if( inexact_equal( surface.mesh_element_vertex( f, prev_v ), v1 ) ) {
+            if( inexact_equal( surface.mesh_element_vertex( f, prev_v ), v1,
+                surface.model().epsilon() ) ) {
                 return prev_v ;
-            } else if( inexact_equal( surface.mesh_element_vertex( f, next_v ), v1 ) ) {
+            } else if( inexact_equal( surface.mesh_element_vertex( f, next_v ), v1,
+                surface.model().epsilon() ) ) {
                 return v ;
             }
         }
@@ -371,7 +374,8 @@ namespace {
         vec3 facet_barycenter = surface.mesh_element_barycenter( facet ) ;
         for( index_t f = 0; f < region.nb_cell_facets( cell ); f++ ) {
             vec3 cell_facet_barycenter = region.cell_facet_barycenter( cell, f ) ;
-            if( inexact_equal( cell_facet_barycenter, facet_barycenter ) ) {
+            if( inexact_equal( cell_facet_barycenter, facet_barycenter,
+                surface.model().epsilon() ) ) {
                 return f ;
             }
         }
@@ -450,16 +454,15 @@ namespace RINGMesh {
                 vec3 e2 = normalize( p2 - p0 ) ;
 
                 N_ = normalize( cross( e1, e2 ) ) ;
-                ringmesh_assert( dot( N_, e1 ) < epsilon ) ;
+                ringmesh_assert( dot( N_, e1 ) < global_epsilon ) ;
 
                 vec3 B = 0.5 * p1 + 0.5 * p0 ;
                 vec3 p2B = p2 - B ;
                 B_A_ = normalize( p2B - dot( p2B, e1 ) * e1 ) ;
 
-                ringmesh_assert( dot( B_A_, e1 ) < epsilon ) ;
-                ringmesh_assert( B_A_.length() > epsilon ) ;
+                ringmesh_assert( dot( B_A_, e1 ) < global_epsilon ) ;
+                ringmesh_assert( B_A_.length() > global_epsilon ) ;
             }
-            ;
 
             bool operator<( const TriangleToSort& r ) const
             {

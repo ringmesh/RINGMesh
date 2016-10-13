@@ -51,6 +51,7 @@ int main( int argc, char** argv )
         GEO::initialize() ;
         configure_geogram() ;
         configure_ringmesh() ;
+        GEO::CmdLine::set_arg( "epsilon", 1e-7 ) ;
 
         // Set an output log file
         std::string log_file( ringmesh_test_output_path ) ;
