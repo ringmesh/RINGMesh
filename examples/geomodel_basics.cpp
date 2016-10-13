@@ -91,7 +91,7 @@ int main( int argc, char** argv )
         print_geomodel_mesh_stats( geomodel ) ;
 
         // build volumetric mesh in regions
-        tetgen_tetrahedralize_geomodel_regions( geomodel ) ;
+        tetrahedralize( geomodel, "TetGen" ) ;
 
         //function to print the statistics of the geomodel in the command terminal
         print_geomodel_mesh_stats( geomodel ) ;

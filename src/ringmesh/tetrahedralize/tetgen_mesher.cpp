@@ -94,19 +94,6 @@ namespace RINGMesh {
         assign_result_tetmesh_to_mesh( output_mesh ) ;
     }
 
-    void TetgenMesher::tetrahedralize(
-        const Mesh& input_mesh,
-        const std::vector< vec3 >& one_point_per_region,
-        Mesh& output_mesh )
-    {
-        initialize() ;
-        copy_mesh_to_tetgen_input( input_mesh ) ;
-        set_regions( one_point_per_region ) ;
-        tetrahedralize() ;
-        assign_result_tetmesh_to_mesh( output_mesh ) ;
-        fill_region_attribute_on_mesh_cells( output_mesh, "region" ) ;
-    }
-
     void TetgenMesher::initialize()
     {
         initialize_tetgen_args() ;

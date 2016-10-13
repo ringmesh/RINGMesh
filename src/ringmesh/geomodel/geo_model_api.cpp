@@ -795,11 +795,8 @@ namespace RINGMesh {
         GEO::Mesh mesh ;
         build_mesh_from_geomodel( geomodel, mesh ) ;
 
-        std::vector< vec3 > points_in_regions ;
-        get_one_point_per_geomodel_region( geomodel, points_in_regions ) ;
-
         TetgenMesher mesher ;
-        mesher.tetrahedralize( mesh, points_in_regions, mesh ) ;
+        mesher.tetrahedralize( mesh, mesh ) ;
 
         GeoModelBuilderMesh builder( geomodel, mesh, "", "region" ) ;
         builder.build_regions() ;
