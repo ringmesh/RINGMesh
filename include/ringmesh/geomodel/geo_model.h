@@ -359,6 +359,8 @@ namespace RINGMesh {
             return universe_ ;
         }
 
+        double epsilon() const ;
+
         /*!
          * @}
          */
@@ -420,6 +422,7 @@ namespace RINGMesh {
 
     private:
         std::string geomodel_name_ ;
+        mutable double epsilon_ ;
 
         EntityTypeManager entity_type_manager_ ;
 

@@ -520,7 +520,7 @@ namespace RINGMesh {
         mesh_gfx_.set_mesh( &mesh_ ) ;
 
         for( index_t v = 0; v < mesh_.vertices.nb(); v++ ) {
-            bbox_.add_point( mesh_.vertices.point_ptr( v ) ) ;
+            bbox_.add_point( mesh_.vertices.point( v ) ) ;
         }
     }
 

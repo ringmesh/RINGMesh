@@ -47,6 +47,13 @@ namespace RINGMesh {
 
     namespace CmdLine {
 
+        void import_arg_group_global()
+        {
+            GEO::CmdLine::declare_arg( "epsilon", 1e-6,
+                "Threshold for numerical precision (ratio of the bbox diagonal)",
+                GEO::CmdLine::ARG_ADVANCED ) ;
+        }
+
         void import_arg_group_in()
         {
             GEO::CmdLine::declare_arg_group( "in", "Input data" ) ;
@@ -87,7 +94,9 @@ namespace RINGMesh {
 
         bool import_arg_group( const std::string& name )
         {
-            if( name == "in" ) {
+            if( name == "global" ) {
+                import_arg_group_global() ;
+            } else if( name == "in" ) {
                 import_arg_group_in() ;
             } else if( name == "out" ) {
                 import_arg_group_out() ;

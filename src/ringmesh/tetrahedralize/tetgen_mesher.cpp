@@ -94,6 +94,7 @@ namespace RINGMesh {
         assign_result_tetmesh_to_mesh( output_mesh ) ;
     }
 
+
     void TetgenMesher::initialize()
     {
         initialize_tetgen_args() ;
