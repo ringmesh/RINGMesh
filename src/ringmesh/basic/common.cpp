@@ -48,10 +48,11 @@
 #   include <geogram_gfx/basic/common.h>
 #endif
 
-#include <ringmesh/io/io.h>
+#include <ringmesh/basic/command_line.h>
 #include <ringmesh/geogram_extension/geogram_extension.h>
 #include <ringmesh/geomodel/geo_model_builder_gocad.h>
 #include <ringmesh/geomodel/geo_model_geological_entity.h>
+#include <ringmesh/io/io.h>
 #include <ringmesh/tetrahedralize/tetra_gen.h>
 
 namespace RINGMesh {
@@ -81,10 +82,11 @@ namespace RINGMesh {
      */
     void configure_ringmesh()
     {
-        RINGMesh::mesh_initialize() ;
-        RINGMesh::TetraGen::initialize() ;
-        RINGMesh::GeoModelGeologicalEntity::initialize() ;
-        RINGMesh::ringmesh_mesh_io_initialize() ;
-        RINGMesh::initialize_gocad_import_factories() ;
+        CmdLine::import_arg_group( "global" ) ;
+        mesh_initialize() ;
+        TetraGen::initialize() ;
+        GeoModelGeologicalEntity::initialize() ;
+        ringmesh_mesh_io_initialize() ;
+        initialize_gocad_import_factories() ;
     }
 }
