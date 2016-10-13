@@ -59,9 +59,9 @@ namespace RINGMesh {
     ringmesh_disable_copy( MeshBaseBuilder ) ;
 
     public:
-    virtual ~MeshBaseBuilder()
-    {
-    }
+        virtual ~MeshBaseBuilder()
+        {
+        }
         /*!
          * \name general methods
          * @{
@@ -164,7 +164,7 @@ namespace RINGMesh {
     class RINGMESH_API Mesh1DBuilder: public virtual MeshBaseBuilder {
     ringmesh_disable_copy(Mesh1DBuilder) ;
     public:
-        ~Mesh1DBuilder()
+        virtual ~Mesh1DBuilder()
         {
         }
         /*!
@@ -220,7 +220,7 @@ namespace RINGMesh {
     class RINGMESH_API Mesh2DBuilder: public virtual MeshBaseBuilder {
     ringmesh_disable_copy(Mesh2DBuilder) ;
     public:
-        ~Mesh2DBuilder()
+        virtual ~Mesh2DBuilder()
         {
         }
         /*!@}
@@ -466,7 +466,7 @@ namespace RINGMesh {
             : MeshAllDBuilder(), mesh_( mesh )
         {
         }
-        ~GeogramMeshBuilder()
+        virtual ~GeogramMeshBuilder()
         {
         }
         /*!

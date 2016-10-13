@@ -42,7 +42,9 @@
 #include <ringmesh/mesh/mesh_builder.h>
 
 namespace RINGMesh {
-
+    MeshBase::~MeshBase(){
+        if( mesh_builder_ ) delete mesh_builder_ ;
+    }
     Mesh0DBuilder* Mesh0D::get_mesh0d_builder()
     {
         return dynamic_cast< Mesh0DBuilder* >( get_mesh_builder_base() ) ;
