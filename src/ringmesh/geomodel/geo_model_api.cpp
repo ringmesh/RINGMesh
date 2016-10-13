@@ -790,23 +790,6 @@ namespace RINGMesh {
 
 #ifdef RINGMESH_WITH_TETGEN
 
-    void tetgen_tetrahedralize_geomodel_regions( GeoModel& geomodel )
-    {
-        GEO::Mesh mesh ;
-        build_mesh_from_geomodel( geomodel, mesh ) ;
-
-        TetgenMesher mesher ;
-        mesher.tetrahedralize( mesh, mesh ) ;
-
-        GeoModelBuilderMesh builder( geomodel, mesh, "", "region" ) ;
-        builder.build_regions() ;
-
-        // Force recomputation of global mesh vertices - otherwise we crash sooner or later
-        // because of model_vertex_id crazy sharing [JP]
-        geomodel.mesh.vertices.clear() ;
-        geomodel.mesh.vertices.test_and_initialize() ;
-    }
-
     void tetrahedralize(
         GeoModel& M,
         const std::string& method,
