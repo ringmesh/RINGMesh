@@ -89,8 +89,9 @@ namespace RINGMesh {
             if( M.mesh.vertices.is_initialized() ) {
                 M.mesh.vertices.clear() ;
             }
-            GeogramMeshBuilder* builder = get_geogram_mesh_builder() ;
-            builder.clear_vertex_linked_objects() ;
+            GeogramMeshBuilder* builder =
+                const_cast< GeogramMesh& >( *this ).get_geogram_mesh_builder() ;
+            builder->clear_vertex_linked_objects() ;
 
             facets_aabb_ = new GEO::MeshFacetsAABB( *mesh_ ) ;
         }
@@ -107,8 +108,9 @@ namespace RINGMesh {
             if( M.mesh.vertices.is_initialized() ) {
                 M.mesh.vertices.clear() ;
             }
-            GeogramMeshBuilder* builder = get_geogram_mesh_builder() ;
-            builder.clear_vertex_linked_objects() ;
+            GeogramMeshBuilder* builder =
+                const_cast< GeogramMesh& >( *this ).get_geogram_mesh_builder() ;
+            builder->clear_vertex_linked_objects() ;
 
             cells_aabb_ = new GEO::MeshCellsAABB( *mesh_ ) ;
         }

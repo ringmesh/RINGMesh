@@ -103,7 +103,10 @@ namespace {
         const GEO::Attribute< index_t >& region_id_ ;
     } ;
 
-    index_t find_local_vertex_id( const Mesh3D& mesh, index_t cell, index_t vertex_id )
+    index_t find_local_vertex_id(
+        const Mesh3D& mesh,
+        index_t cell,
+        index_t vertex_id )
     {
         for( index_t v = 0; v < mesh.nb_cell_vertices( cell ); v++ ) {
             if( mesh.cell_vertex( cell, v ) == vertex_id ) {
@@ -144,8 +147,8 @@ namespace RINGMesh {
     GeoModelMeshVertices::GeoModelMeshVertices(
         GeoModelMesh& gmm,
         GeoModel& gm,
-        Mesh0D& mesh,
-        Mesh0DBuilder& mesh_builder )
+        MeshAllD& mesh,
+        MeshAllDBuilder& mesh_builder )
         : gmm_( gmm ), gm_( gm ), mesh_( mesh ), mesh_builder_( mesh_builder )
     {
     }
@@ -310,8 +313,8 @@ namespace RINGMesh {
     index_t GeoModelMeshVertices::add_vertex( const vec3& point )
     {
         gme_vertices_.push_back( std::vector< GMEVertex >() ) ;
-        MeshBuilder builder( mesh_ ) ;
-        return builder.create_vertex( point ) ;
+        Mesh0DBuilder* builder = mesh_.get_mesh0d_builder() ;
+        return builder->create_vertex( point ) ;
     }
 
     void GeoModelMeshVertices::add_to_bme( index_t v, const GMEVertex& v_gme )
@@ -494,8 +497,8 @@ namespace RINGMesh {
 
         // Delete the vertices - false is to not remove
         // isolated vertices (here all the vertices)
-        MeshBuilder builder( mesh_ ) ;
-        builder.delete_vertices( to_delete_geo, false ) ;
+        Mesh0DBuilder* builder = mesh_.get_mesh0d_builder() ;
+        builder->delete_vertices( to_delete_geo, false ) ;
 
 #ifdef RINGMESH_DEBUG
         // Paranoia - check that we have the same mapping than the
@@ -520,8 +523,8 @@ namespace RINGMesh {
 
     GeoModelMeshCells::GeoModelMeshCells(
         GeoModelMesh& gmm,
-        Mesh& mesh,
-        MeshBuilder& mesh_builder )
+        MeshAllD& mesh,
+        MeshAllDBuilder& mesh_builder )
         :
             gmm_( gmm ),
             gm_( gmm.model() ),
@@ -1295,8 +1298,8 @@ namespace RINGMesh {
 
     GeoModelMeshFacets::GeoModelMeshFacets(
         GeoModelMesh& gmm,
-        Mesh& mesh,
-        MeshBuilder& mesh_builder )
+        MeshAllD& mesh,
+        MeshAllDBuilder& mesh_builder )
         :
             gmm_( gmm ),
             gm_( gmm.model() ),
@@ -1662,8 +1665,8 @@ namespace RINGMesh {
 
     GeoModelMeshEdges::GeoModelMeshEdges(
         GeoModelMesh& gmm,
-        Mesh& mesh,
-        MeshBuilder& mesh_builder )
+        MeshAllD& mesh,
+        MeshAllDBuilder& mesh_builder )
         :
             gmm_( gmm ),
             gm_( gmm.model() ),
@@ -1764,7 +1767,7 @@ namespace RINGMesh {
 
     /*******************************************************************************/
 
-    GeoModelMeshOrder::GeoModelMeshOrder( GeoModelMesh& gmm, Mesh& mesh )
+    GeoModelMeshOrder::GeoModelMeshOrder( GeoModelMesh& gmm, MeshAllD& mesh )
         :
             gmm_( gmm ),
             gm_( gmm.model() ),
@@ -2016,8 +2019,8 @@ namespace RINGMesh {
     GeoModelMesh::GeoModelMesh( GeoModel& gm )
         :
             geo_model_( gm ),
-            mesh_( new Mesh( gm, 3, false ) ),
-            mesh_builder_( new MeshBuilder( *mesh_ ) ),
+            mesh_( NULL ),
+            mesh_builder_( NULL ),
             mode_( GeoModelMeshCells::NONE ),
             order_value_( 1 ),
             vertices( *this, gm, *mesh_, *mesh_builder_ ),
@@ -2029,6 +2032,9 @@ namespace RINGMesh {
      * a ticking bomb (like those in Mesh, btw I don not understand how these can work)
      * If these classes are derived one day, I don't know what will happen [JP]*/
     {
+        GeogramMesh* geogrammesh = new GeogramMesh( gm, 3, false ) ;
+        mesh_ = geogrammesh ;
+        mesh_builder_ = new GeogramMeshBuilder( *geogrammesh ) ;
 
     }
 

@@ -80,7 +80,7 @@ namespace RINGMesh {
 
     private:
         index_t repair_line_mesh( Line& line ) ;
-        void mesh_detect_degenerate_edges (
+        void mesh_detect_degenerate_edges(
             const Line& line,
             GEO::vector< index_t >& e_is_degenerate,
             GEO::vector< index_t >& colocated_vertices ) ;

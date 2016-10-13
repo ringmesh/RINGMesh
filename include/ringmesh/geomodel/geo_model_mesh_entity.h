@@ -549,7 +549,6 @@ namespace RINGMesh {
         friend class GeoModelBuilder ;
         friend class GeoModelRepair ;
 
-
         static const EntityType type_name_static()
         {
             return "Surface" ;
@@ -963,7 +962,8 @@ namespace RINGMesh {
                 ringmesh_assert( cell_index < nb_mesh_elements() ) ;
                 ringmesh_assert( edge_index < nb_cell_edges( cell_index ) ) ;
                 ringmesh_assert( vertex_index < nb_mesh_element_vertices( cell_index ) ) ;
-                return mesh3d_->cell_edge_vertex( cell_index, edge_index, vertex_index ) ;
+                return mesh3d_->cell_edge_vertex( cell_index, edge_index,
+                    vertex_index ) ;
             }
             ringmesh_assert_not_reached ;
             return NO_ID ;
@@ -1003,7 +1003,8 @@ namespace RINGMesh {
             if( is_meshed() ) {
                 ringmesh_assert( cell_index < nb_mesh_elements() ) ;
                 ringmesh_assert( facet_index < nb_cell_facets( cell_index ) ) ;
-                return mesh3d_->cell_adjacent( cell_index, facet_index ) == GEO::NO_CELL ;
+                return mesh3d_->cell_adjacent( cell_index, facet_index )
+                    == GEO::NO_CELL ;
             }
             ringmesh_assert_not_reached ;
             return false ;
@@ -1112,7 +1113,7 @@ namespace RINGMesh {
                 GeoModelMeshEntity( model, id, name, geological_feature ),
                 mesh3d_( new GeogramMesh( model, 3, false ) )
         {
-            GeoModelMeshEntity::set_mesh (mesh3d_) ;
+            GeoModelMeshEntity::set_mesh( mesh3d_ ) ;
 
             id_.type = type_name_static() ;
         }
@@ -1134,7 +1135,7 @@ namespace RINGMesh {
          */
         std::vector< bool > sides_ ;
     private:
-        Mesh3D* mesh3d_;
+        Mesh3D* mesh3d_ ;
     } ;
 }
 

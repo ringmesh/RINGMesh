@@ -70,7 +70,9 @@ namespace {
     /*!
      * @brief Write in the out stream things to save for CONTACT, INTERFACE and LAYERS
      */
-    void save_geological_entity( std::ofstream& out, const GeoModelGeologicalEntity& E )
+    void save_geological_entity(
+        std::ofstream& out,
+        const GeoModelGeologicalEntity& E )
     {
         /// First line:  TYPE - ID - NAME - GEOL
         out << E.gme_id() << " " << E.name() << " " ;
@@ -78,7 +80,7 @@ namespace {
 
         /// Second line:  IDS of children
         for( index_t j = 0; j < E.nb_children(); ++j ) {
-            out  << E.child_gme( j ).index << " " ;
+            out << E.child_gme( j ).index << " " ;
         }
         out << std::endl ;
     }
@@ -101,7 +103,7 @@ namespace {
             // Compression of an empty files crashes ? (in debug on windows at least)
             out << "No geological entity in the model" << std::endl ;
             return ;
-        }        
+        }
         for( index_t i = 0; i < M.nb_geological_entity_types(); i++ ) {
             const std::string& type = M.geological_entity_type( i ) ;
             index_t nb = M.nb_geological_entities( type ) ;
@@ -121,11 +123,10 @@ namespace {
     {
         const std::string& type = ENTITY::type_name_static() ;
         for( index_t e = 0; e < M.nb_mesh_entities( type ); e++ ) {
-            const GeoModelMeshEntity& cur_mesh_entity = M.mesh_entity( type,
-                e ) ;
+            const GeoModelMeshEntity& cur_mesh_entity = M.mesh_entity( type, e ) ;
             out << type << " " << e << " " << cur_mesh_entity.name() << " "
-                << GeoModelEntity::geol_name(
-                    cur_mesh_entity.geological_feature() ) << std::endl ;
+                << GeoModelEntity::geol_name( cur_mesh_entity.geological_feature() )
+                << std::endl ;
             out << "boundary " ;
             for( index_t b = 0; b < cur_mesh_entity.nb_boundaries(); b++ ) {
                 out << cur_mesh_entity.boundary_gme( b ).index << " " ;
@@ -151,10 +152,14 @@ namespace {
         out << "GeoModel name " << M.name() << std::endl ;
 
         // Numbers of the different types of mesh entities
-        out << "Nb " << Corner::type_name_static() << " " << M.nb_corners() << std::endl ;
-        out << "Nb " << Line::type_name_static() << " " << M.nb_lines() << std::endl ;
-        out << "Nb " << Surface::type_name_static() << " " << M.nb_surfaces() << std::endl ;
-        out << "Nb " << Region::type_name_static() << " " << M.nb_regions() << std::endl ;
+        out << "Nb " << Corner::type_name_static() << " " << M.nb_corners()
+            << std::endl ;
+        out << "Nb " << Line::type_name_static() << " " << M.nb_lines()
+            << std::endl ;
+        out << "Nb " << Surface::type_name_static() << " " << M.nb_surfaces()
+            << std::endl ;
+        out << "Nb " << Region::type_name_static() << " " << M.nb_regions()
+            << std::endl ;
 
         save_mesh_entities_of_type< Corner >( M, out ) ;
         save_mesh_entities_of_type< Line >( M, out ) ;
@@ -288,7 +293,8 @@ namespace {
 
             /// 4. Write triangles
             out << "TRIA3" << std::endl ;
-            for( index_t i = 0; i < gm.nb_geological_entities( Interface::type_name_static() );
+            for( index_t i = 0;
+                i < gm.nb_geological_entities( Interface::type_name_static() );
                 i++ ) {
                 const RINGMesh::GeoModelGeologicalEntity& interf =
                     gm.geological_entity( Interface::type_name_static(), i ) ;
@@ -311,7 +317,8 @@ namespace {
             out << "FINSF" << std::endl ;
 
             /// 5. Associate triangles to each surface
-            for( index_t i = 0; i < gm.nb_geological_entities( Interface::type_name_static() );
+            for( index_t i = 0;
+                i < gm.nb_geological_entities( Interface::type_name_static() );
                 i++ ) {
                 const RINGMesh::GeoModelGeologicalEntity& interf =
                     gm.geological_entity( Interface::type_name_static(), i ) ;
@@ -334,7 +341,7 @@ namespace {
             out.close() ;
         }
     } ;
-    
+
     /// @todo Temporary fix! Waiting for clean attribute type manager
     /// by Bruno, for the moment we only deal with double
     bool is_attribute_a_double(
@@ -359,7 +366,7 @@ namespace {
         GEO::vector< std::string > attribute_names ;
         mesh_entity.attributes().list_attribute_names( attribute_names ) ;
         for( index_t att = 0; att < mesh_entity.attributes().nb(); att++ ) {
-           
+
             if( !is_attribute_a_double( mesh_entity.attributes(),
                 attribute_names[att] ) || attribute_names[att] == "point" ) {
                 continue ;
@@ -403,8 +410,7 @@ namespace {
         std::string cells_attributes_file_name = root_name
             + "_cells_attributes.txt" ;
 
-        save_mesh_entity_attributes( vertices_attributes_file_name,
-            mesh.vertices ) ;
+        save_mesh_entity_attributes( vertices_attributes_file_name, mesh.vertices ) ;
         if( GEO::FileSystem::is_file( vertices_attributes_file_name ) ) {
             zip_file( zf, vertices_attributes_file_name ) ;
             GEO::FileSystem::delete_file( vertices_attributes_file_name ) ;
@@ -443,7 +449,8 @@ namespace {
         zipFile& zf )
     {
         std::string name ;
-        build_string_for_geo_model_entity_export( geo_model_entity_mesh.gme_id(), name ) ;
+        build_string_for_geo_model_entity_export( geo_model_entity_mesh.gme_id(),
+            name ) ;
         //@TODO this will be removed and integrated in the build_string....
         name += ".geogram" ;
         Logger* logger = Logger::instance() ;
@@ -567,11 +574,11 @@ namespace {
             gm.mesh.facets.test_and_initialize() ;
             gm.mesh.cells.test_and_initialize() ;
 
-            Mesh mesh(gm, 3, false ) ;
+            GeogramMesh mesh( gm, 3, false ) ;
             gm.mesh.copy_mesh( mesh ) ;
 
             Logger::instance()->set_minimal( true ) ;
-            mesh.save_mesh( filename, GEO::MeshIOFlags()) ;
+            mesh.save_mesh( filename, GEO::MeshIOFlags() ) ;
             Logger::instance()->set_minimal( false ) ;
         }
     } ;
@@ -1133,7 +1140,8 @@ namespace {
             reset_line( count, data ) ;
 
             index_t nb_families = 0 ;
-            index_t nb_interfaces = gm.nb_geological_entities( Interface::type_name_static() ) ;
+            index_t nb_interfaces = gm.nb_geological_entities(
+                Interface::type_name_static() ) ;
             std::vector< index_t > nb_triangle_interface( nb_interfaces, 0 ) ;
             std::vector< index_t > nb_quad_interface( nb_interfaces, 0 ) ;
             for( index_t i = 0; i < nb_interfaces; i++ ) {
@@ -1175,12 +1183,12 @@ namespace {
             for( index_t i = 0; i < nb_interfaces; i++ ) {
                 regions << interface_csmp_name( i, gm ) << std::endl ;
                 if( nb_triangle_interface[i] > 0 ) {
-                    ascii << interface_csmp_name( i, gm ) << TAB << "TRI_3" << TAB << 0
-                        << TAB << nb_triangle_interface[i] << std::endl ;
+                    ascii << interface_csmp_name( i, gm ) << TAB << "TRI_3" << TAB
+                        << 0 << TAB << nb_triangle_interface[i] << std::endl ;
                 }
                 if( nb_quad_interface[i] > 0 ) {
-                    ascii << interface_csmp_name( i, gm ) << TAB << "QUAD_4" << TAB << 0
-                        << TAB << nb_quad_interface[i] << std::endl ;
+                    ascii << interface_csmp_name( i, gm ) << TAB << "QUAD_4" << TAB
+                        << 0 << TAB << nb_quad_interface[i] << std::endl ;
                 }
             }
             if( gm.wells() ) {
@@ -2180,7 +2188,6 @@ namespace {
         }
     } ;
 
-
     /************************************************************************/
 
     struct RINGMesh2Abaqus {
@@ -2188,16 +2195,13 @@ namespace {
         index_t vertices[8] ;
     } ;
 
-    static RINGMesh2Abaqus tet_descriptor_abaqus = {
-        "C3D4",                  // type
+    static RINGMesh2Abaqus tet_descriptor_abaqus = { "C3D4",                  // type
         { 0, 1, 2, 3 }     // vertices
     } ;
 
-    static RINGMesh2Abaqus hex_descriptor_abaqus = {
-        "C3D8",                         // type
+    static RINGMesh2Abaqus hex_descriptor_abaqus = { "C3D8",                  // type
         { 0, 4, 5, 1, 2, 6, 7, 3 }     // vertices
     } ;
-
 
     class AbaqusIOHandler: public GeoModelIOHandler {
     public:
@@ -2259,7 +2263,7 @@ namespace {
             std::string sep ;
             index_t count = 0 ;
             std::vector< bool > vertex_exported( gm.mesh.vertices.nb(), false ) ;
-            out << "*NSET, nset="  << entity.name() << std::endl ;
+            out << "*NSET, nset=" << entity.name() << std::endl ;
             for( index_t s = 0; s < entity.nb_children(); s++ ) {
                 index_t surface_id = entity.child_gme( s ).index ;
                 for( index_t f = 0; f < facets.nb_facets( surface_id ); f++ ) {
@@ -2321,7 +2325,7 @@ namespace {
         {
             const GeoModelMeshCells& cells = gm.mesh.cells ;
             for( index_t r = 0; r < gm.nb_regions(); r++ ) {
-                const std::string& name =  gm.region( r ).name() ;
+                const std::string& name = gm.region( r ).name() ;
                 out << "*ELSET, elset=" << name << std::endl ;
                 index_t count = 0 ;
                 std::string sep ;
@@ -2340,7 +2344,7 @@ namespace {
                 }
                 reset_line( count, out ) ;
 
-                out << "*NSET, nset="  << name << ", elset=" << name << std::endl ;
+                out << "*NSET, nset=" << name << ", elset=" << name << std::endl ;
             }
         }
         void save_cells( const GeoModel& gm, std::ofstream& out ) const
@@ -2349,7 +2353,10 @@ namespace {
             save_hex( gm, out ) ;
             save_regions( gm, out ) ;
         }
-        void new_line_if_needed( index_t& count, std::ofstream& out, std::string& sep ) const
+        void new_line_if_needed(
+            index_t& count,
+            std::ofstream& out,
+            std::string& sep ) const
         {
             count++ ;
             if( count == NB_ENTRY_PER_LINE ) {
@@ -2373,8 +2380,7 @@ namespace RINGMesh {
 
     void geomodel_load( GeoModel& model, const std::string& filename )
     {
-        Logger::out( "I/O" ) << "Loading file " << filename << "..."
-            << std::endl ;
+        Logger::out( "I/O" ) << "Loading file " << filename << "..." << std::endl ;
 
         GeoModelIOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
         handler->load( filename, model ) ;
@@ -2382,8 +2388,7 @@ namespace RINGMesh {
 
     void geomodel_save( const GeoModel& model, const std::string& filename )
     {
-        Logger::out( "I/O" ) << "Saving file " << filename << "..."
-            << std::endl ;
+        Logger::out( "I/O" ) << "Saving file " << filename << "..." << std::endl ;
 
         GeoModelIOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
         handler->save( model, filename ) ;
@@ -2396,19 +2401,19 @@ namespace RINGMesh {
      */
     void GeoModelIOHandler::initialize_full_geomodel_output()
     {
-        ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "meshb" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "mesh" );
-        ringmesh_register_GeoModelIOHandler_creator( TetGenIOHandler, "tetgen" );
-        ringmesh_register_GeoModelIOHandler_creator( TSolidIOHandler, "so" );
-        ringmesh_register_GeoModelIOHandler_creator( CSMPIOHandler, "csmp" );
-        ringmesh_register_GeoModelIOHandler_creator( AsterIOHandler, "mail" );
-        ringmesh_register_GeoModelIOHandler_creator( VTKIOHandler, "vtk" );
-        ringmesh_register_GeoModelIOHandler_creator( GPRSIOHandler, "gprs" );
-        ringmesh_register_GeoModelIOHandler_creator( MSHIOHandler, "msh" );
-        ringmesh_register_GeoModelIOHandler_creator( MFEMIOHandler, "mfem" );
-        ringmesh_register_GeoModelIOHandler_creator( GeoModelHandlerGM, "gm" );
-        ringmesh_register_GeoModelIOHandler_creator( OldGeoModelHandlerGM, "ogm" );
-        ringmesh_register_GeoModelIOHandler_creator( AbaqusIOHandler, "inp" );
-    }
+        ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "meshb" );
+    ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "mesh" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( TetGenIOHandler, "tetgen" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( TSolidIOHandler, "so" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( CSMPIOHandler, "csmp" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( AsterIOHandler, "mail" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( VTKIOHandler, "vtk" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( GPRSIOHandler, "gprs" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( MSHIOHandler, "msh" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( MFEMIOHandler, "mfem" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( GeoModelHandlerGM, "gm" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( OldGeoModelHandlerGM, "ogm" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( AbaqusIOHandler, "inp" ) ;
+}
 
 }
