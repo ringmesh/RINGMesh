@@ -3,17 +3,15 @@
 # Only use spaces to indent your .yml configuration.
 # -----
 # You can specify a custom docker image from Docker Hub as your build environment.
-image: atlassian/default-image:latest
+image: ringteam/ubuntu:cmake_opengl
 
 pipelines:
   default:
     - step:
         script: # Modify the commands below to build your repository.
-          - wget https://cmake.org/files/v3.0/cmake-3.0.2-Linux-i386.tar.gz
-          - tar vxzf cmake-3.0.2-Linux-i386.tar.gz
           - mkdir build
           - cd build
-          - ../cmake-3.0.2-Linux-i386/bin/cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON ..
+          - cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON ..
           - cd ringmesh/Debug
           - make
           - make test
