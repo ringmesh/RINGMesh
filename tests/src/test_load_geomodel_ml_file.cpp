@@ -39,8 +39,6 @@
 #include <ringmesh/geomodel/geo_model_validity.h>
 #include <ringmesh/io/io.h>
 
-#include <geogram/basic/logger.h>
-
 /*! Tests the loading and writing of a Gocad model (.ml) file.
  * Loads a .ml file generated with Gocad, saves it, loads it again, saves it
  * again and compares the two saved versions.
