@@ -260,73 +260,85 @@ namespace RINGMesh {
     /*!
      * @details Global GeoModel mesh is supposed to be empty
      */
-    /*   void GeoModelRepair::remove_colocated_entity_vertices(
-     std::set< gme_t >& to_remove )
-     {
-     to_remove.clear() ;
-     // For all Lines and Surfaces
-     const std::string types[2] = { Line::type_name_static(), Surface::type_name_static() } ;
-     for( index_t t = 0; t < 2; ++t ) {
-     const std::string& T = types[t] ;
+    void GeoModelRepair::remove_colocated_entity_vertices(
+        std::set< gme_t >& to_remove )
+    {
+        to_remove.clear() ;
+        // For all Lines and Surfaces
+        const std::string types[2] = {
+            Line::type_name_static(), Surface::type_name_static() } ;
+        for( index_t t = 0; t < 2; ++t ) {
+            const std::string& T = types[t] ;
 
-     for( index_t e = 0; e < model().nb_mesh_entities( T ); ++e ) {
-     gme_t entity_id( T, e ) ;
-     const GMME& E = model().mesh_entity( entity_id ) ;
+            for( index_t e = 0; e < model().nb_mesh_entities( T ); ++e ) {
+                gme_t entity_id( T, e ) ;
+                const GMME& E = model().mesh_entity( entity_id ) ;
 
-     const ColocaterANN& kdtree = E.vertex_colocater_ann() ;
-     GEO::vector< index_t > colocated ;
-     kdtree.get_colocated_index_mapping( colocated ) ;
+                const ColocaterANN& kdtree = E.vertex_colocater_ann() ;
+                GEO::vector< index_t > colocated ;
+                kdtree.get_colocated_index_mapping( colocated ) ;
 
-     // Get the vertices to delete
-     std::set< index_t > inside_border ;
-     vertices_on_inside_boundary( entity_id, inside_border ) ;
+                // Get the vertices to delete
+                std::set< index_t > inside_border ;
+                vertices_on_inside_boundary( entity_id, inside_border ) ;
 
-     GEO::vector< index_t > to_delete( colocated.size(), 0 ) ;
-     index_t nb_todelete = 0 ;
-     for( index_t v = 0; v < colocated.size(); ++v ) {
-     if( colocated[v] == v
-     || inside_border.find( v ) != inside_border.end() ) {
-     // This point is kept
-     // No colocated or on an inside boundary
-     } else {
-     // The point is to remove
-     to_delete[v] = 1 ;
-     nb_todelete++ ;
-     }
-     }
+                GEO::vector< index_t > to_delete( colocated.size(), 0 ) ;
+                index_t nb_todelete = 0 ;
+                for( index_t v = 0; v < colocated.size(); ++v ) {
+                    if( colocated[v] == v
+                        || inside_border.find( v ) != inside_border.end() ) {
+                        // This point is kept
+                        // No colocated or on an inside boundary
+                    } else {
+                        // The point is to remove
+                        to_delete[v] = 1 ;
+                        nb_todelete++ ;
+                    }
+                }
 
-     if( nb_todelete == 0 ) {
-     // Nothing to do there
-     continue ;
-     } else if( nb_todelete == E.nb_vertices() ) {
-     // The complete entity should be removed
-     to_remove.insert( E.gme_id() ) ;
-     continue ;
-     } else {
-     GMME& ME = modifiable_mesh_entity( entity_id ) ;
-     Mesh2DBuilder builder( ME.mesh_ ) ;
-     for( index_t f_itr = 0; f_itr < E.mesh_.nb_facets(); f_itr++ ) {
-     for( index_t fv_itr = 0;
-     fv_itr < E.nb_mesh_element_vertices( f_itr ); fv_itr++ ) {
-     set_mesh_entity_vertex(E,)
-     builder.set_facet_vertex( f_itr, fv_itr,
-     colocated[E.mesh_.facet_vertex( f_itr, fv_itr )] ) ;
-     }
-     }
-     for( index_t e_itr = 0; e_itr < E.mesh_.nb_edges(); e_itr++ ) {
-     builder.set_edge_vertex( e_itr, 0,
-     colocated[E.mesh_.edge_vertex( e_itr, 0 )] ) ;
-     builder.set_edge_vertex( e_itr, 1,
-     colocated[E.mesh_.edge_vertex( e_itr, 1 )] ) ;
-     }
-     builder.delete_vertices( to_delete, false ) ;
-     Logger::out( "Repair" ) << nb_todelete
-     << " colocated vertices deleted in " << entity_id
-     << std::endl ;
-     }
-     }
-     }
-     }*/
+                if( nb_todelete == 0 ) {
+                    // Nothing to do there
+                    continue ;
+                } else if( nb_todelete == E.nb_vertices() ) {
+                    // The complete entity should be removed
+                    to_remove.insert( E.gme_id() ) ;
+                    continue ;
+                } else if( t == 0 ) {
+                    Surface& ME = dynamic_cast< Surface& >( modifiable_mesh_entity(
+                        entity_id ) ) ;
+                    Mesh2DBuilder* builder = ME.mesh2d_->get_mesh2d_builder() ;
+                    for( index_t f_itr = 0; f_itr < E.nb_mesh_elements(); f_itr++ ) {
+                        for( index_t fv_itr = 0;
+                            fv_itr < E.nb_mesh_element_vertices( f_itr );
+                            fv_itr++ ) {
+                            builder->set_facet_vertex( f_itr, fv_itr,
+                                colocated[E.mesh_element_vertex_index( f_itr,
+                                    fv_itr )] ) ;
+                            builder->delete_vertices( to_delete, false ) ;
+                        }
+                    }
+                    Logger::out( "Repair" ) << nb_todelete
+                        << " colocated vertices deleted in " << entity_id
+                        << std::endl ;
+
+                } else if( t == 1 ) {
+                    Line& ME = dynamic_cast< Line& >( modifiable_mesh_entity(
+                        entity_id ) ) ;
+                    Mesh1DBuilder* builder = ME.mesh1d_->get_mesh1d_builder() ;
+                    for( index_t e_itr = 0; e_itr < E.nb_mesh_elements(); e_itr++ ) {
+                        builder->set_edge_vertex( e_itr, 0,
+                            colocated[E.mesh_element_vertex_index( e_itr, 0 )] ) ;
+                        builder->set_edge_vertex( e_itr, 1,
+                            colocated[E.mesh_element_vertex_index( e_itr, 1 )] ) ;
+                    }
+                    builder->delete_vertices( to_delete, false ) ;
+                    Logger::out( "Repair" ) << nb_todelete
+                        << " colocated vertices deleted in " << entity_id
+                        << std::endl ;
+                }
+            }
+        }
+    }
 
     void GeoModelRepair::geo_model_mesh_repair()
     {
@@ -349,7 +361,7 @@ namespace RINGMesh {
         }
 
         // This is basic requirement ! no_colocated model vertices !
-        // So remove them if there are any 
+        // So remove them if there are any
         model().mesh.remove_colocated_vertices() ;
 
         end_model() ;

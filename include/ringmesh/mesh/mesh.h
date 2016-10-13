@@ -75,7 +75,6 @@ namespace RINGMesh {
 
         virtual ~MeshBase();
 
-
         virtual void save_mesh(
             const std::string& filename,
             const GEO::MeshIOFlags& ioflags ) const = 0 ;
