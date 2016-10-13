@@ -91,6 +91,7 @@ int main( int argc, char** argv )
                 << M.name()
                 << " has been successfully fixed and is saved under: "
                 << fixed_file_name << std::endl ;
+            Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
             return 0 ;
         } else {
             throw RINGMeshException( "RINGMesh Test",

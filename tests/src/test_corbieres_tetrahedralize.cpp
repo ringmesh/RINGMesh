@@ -110,5 +110,6 @@ int main( int argc, char** argv )
         Logger::err( "Exception" ) << e.what() << std::endl ;
         return 1 ;
     }
+    Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
     return 0 ;
 }

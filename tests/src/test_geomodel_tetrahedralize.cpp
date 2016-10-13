@@ -36,6 +36,7 @@
 #include <ringmesh/ringmesh_tests_config.h>
 
 #include <ringmesh/geomodel/geo_model_api.h>
+#include <ringmesh/geomodel/geo_model_builder.h>
 #include <ringmesh/geomodel/geo_model_validity.h>
 #include <ringmesh/io/io.h>
 
@@ -62,8 +63,6 @@ int main( int argc, char** argv )
 
         std::string file_name( ringmesh_test_data_path ) ;
         file_name += "modelA6.ml" ;
-        std::string result_file_name( ringmesh_test_output_path ) ;
-        result_file_name += "geomodel_tet_mesh.mesh" ;
 
         // Loading the GeoModel
         GeoModel geomodel ;
@@ -78,13 +77,14 @@ int main( int argc, char** argv )
 #ifdef RINGMESH_WITH_TETGEN
 
         // Tetrahedralize the GeoModel
-        tetgen_tetrahedralize_geomodel_regions( geomodel ) ;
+        tetrahedralize( geomodel, "TetGen", NO_ID, false ) ;
 
         if( !is_geomodel_valid( geomodel ) ) {
             throw RINGMeshException( "RINGMesh Test",
                 "Failed when tetrahedralize model " + geomodel.name()
                     + ": the model becomes invalid." ) ;
         }
+
 #endif
 
     } catch( const RINGMeshException& e ) {
@@ -94,6 +94,7 @@ int main( int argc, char** argv )
         Logger::err( "Exception" ) << e.what() << std::endl ;
         return 1 ;
     }
+    Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
     return 0 ;
 }
 
