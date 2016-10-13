@@ -73,10 +73,8 @@ namespace RINGMesh {
 
     public:
 
-        virtual ~MeshBase()
-        {
-            if( mesh_builder_ ) delete mesh_builder_ ;
-        }
+        virtual ~MeshBase();
+
 
         virtual void save_mesh(
             const std::string& filename,
