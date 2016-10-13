@@ -212,6 +212,12 @@ namespace RINGMesh {
         while( !file_line.eof() && file_line.get_line() ) {
             file_line.get_fields() ;
             if( file_line.nb_fields() > 0 ) {
+                // If there is no geological entity
+                if( file_line.field_matches( 0, "No" )
+                    && file_line.field_matches( 1, "geological" )
+                    && file_line.field_matches( 2, "entity" ) ) {
+                    return ;
+                }
                 // Number of entities of a given type
                 if( file_line.field_matches( 0, "Nb" ) ) {
                     // Allocate the space
