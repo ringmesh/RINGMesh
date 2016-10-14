@@ -361,6 +361,16 @@ namespace RINGMesh {
 
         double epsilon() const ;
 
+        double epsilon2() const
+        {
+            return epsilon() * epsilon() ;
+        }
+
+        double epsilon3() const
+        {
+            return epsilon2() * epsilon() ;
+        }
+
         /*!
          * @}
          */
