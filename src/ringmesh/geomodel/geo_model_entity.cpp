@@ -205,7 +205,7 @@ namespace {
         }
         double volume = region.mesh_element_size( cell_index ) ;
         return check_mesh_entity_vertices_are_different( vertices, vertices_global )
-            || volume < epsilon ;
+            || volume < region.model().epsilon3() ;
     }
 }
 

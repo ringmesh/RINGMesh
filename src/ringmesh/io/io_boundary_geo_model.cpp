@@ -420,30 +420,6 @@ namespace {
         }
     }
 
-    /*! To save the attributes in a Graphite readable file, we need to write the correct
-     * keyword for the attribute type - We restrict ourselves to the 3 types
-     * int          "integer"
-     * double       "real"
-     * float        "real"
-     * bool         "boolean"
-     */
-    inline std::string alias_name( const std::string& in )
-    {
-        if( in == "int" ) {
-            return "integer" ;
-        } else if( in == "index" ) {
-            return "integer" ;
-        } else if( in == "double" ) {
-            return "real" ;
-        } else if( in == "float" ) {
-            return "real" ;
-        } else if( in == "bool" ) {
-            return "boolean" ;
-        }
-        ringmesh_assert_not_reached;
-        return "" ;
-    }
-
     /*!
      * @brief Save the model in smesh format
      * @details No attributes and no boundary marker are transferred
