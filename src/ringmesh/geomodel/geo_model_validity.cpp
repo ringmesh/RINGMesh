@@ -820,7 +820,8 @@ namespace {
         for( index_t f = 0; f < surface.nb_mesh_elements(); f++ ) {
             vec3 center = surface.mesh_element_barycenter( f ) ;
             std::vector< index_t > result ;
-            if( !cell_facet_barycenter_ann.get_colocated( center, result ) ) {
+            if( !cell_facet_barycenter_ann.get_neighbors( center, result,
+                surface.model().epsilon() ) ) {
                 unconformal_facets.push_back( f ) ;
             }
         }

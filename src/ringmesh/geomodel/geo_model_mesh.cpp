@@ -283,7 +283,7 @@ namespace RINGMesh {
         std::vector< index_t > vertices ;
         const ColocaterANN& colocator = mesh_.colocater_ann(
             ColocaterANN::VERTICES ) ;
-        colocator.get_colocated( p, vertices ) ;
+        colocator.get_neighbors( p, vertices, gm_.epsilon() ) ;
         if( vertices.empty() ) {
             return NO_ID ;
         } else {
@@ -401,7 +401,8 @@ namespace RINGMesh {
         // Identify and invalidate colocated vertices
         GEO::vector< index_t > old2new ;
         index_t nb_colocalised_vertices = mesh_.colocater_ann(
-            ColocaterANN::VERTICES ).get_colocated_index_mapping( old2new ) ;
+            ColocaterANN::VERTICES ).get_colocated_index_mapping( gm_.epsilon(),
+            old2new ) ;
         if( nb_colocalised_vertices > 0 ) {
             std::vector< index_t > stupid_copy( old2new.begin(), old2new.end() ) ;
             erase_vertices( stupid_copy ) ;
@@ -683,7 +684,7 @@ namespace RINGMesh {
             sorted_indices[i] = i ;
         }
         GeoModelMeshCellsSort action( mesh_, region_id_ ) ;
-        GEO::sort( sorted_indices.begin(), sorted_indices.end(), action ) ;
+        std::sort( sorted_indices.begin(), sorted_indices.end(), action ) ;
         mesh_builder_.permute_cells( sorted_indices ) ;
 
         // Cache some values
@@ -1027,7 +1028,8 @@ namespace RINGMesh {
                 const Surface& surface = gm_.surface( s ) ;
                 for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
                     std::vector< index_t > colocated_corners ;
-                    ann.get_colocated( surface.vertex( v ), colocated_corners ) ;
+                    ann.get_neighbors( surface.vertex( v ), colocated_corners,
+                        gm_.epsilon() ) ;
                     for( index_t co = 0; co < colocated_corners.size(); co++ ) {
                         is_vertex_to_duplicate[colocated_corners[co]] = true ;
                     }
@@ -1287,8 +1289,6 @@ namespace RINGMesh {
         }
     }
 
-    /* @todo Review : The use of geometrical computation (barycenter) is
-     * very much bug prone. Vertex indices should be used instead. [Jeanne] */
     void GeoModelMeshCells::initialize_cell_facet()
     {
         gmm_.facets.test_and_initialize() ;
@@ -1299,8 +1299,8 @@ namespace RINGMesh {
         for( index_t c = 0; c < mesh_.nb_cells(); c++ ) {
             for( index_t f = 0; f < mesh_.nb_cell_facets( c ); f++ ) {
                 std::vector< index_t > result ;
-                if( ann.get_colocated( mesh_.cell_facet_barycenter( c, f ),
-                    result ) ) {
+                if( ann.get_neighbors( mesh_.cell_facet_barycenter( c, f ),
+                    result, gm_.epsilon() ) ) {
                     facet_id_[mesh_.cell_facet( c, f )] = result[0] ;
                     // If there are more than 1 matching facet, this is WRONG
                     // and the vertex indices should be checked too [Jeanne]
@@ -1666,7 +1666,7 @@ namespace RINGMesh {
             sorted_indices[i] = i ;
         }
         GeoModelMeshFacetsSort action( mesh_, surface_id_ ) ;
-        GEO::sort( sorted_indices.begin(), sorted_indices.end(), action ) ;
+        std::sort( sorted_indices.begin(), sorted_indices.end(), action ) ;
         mesh_builder_.permute_facets( sorted_indices ) ;
 
         // Cache some values
@@ -1889,7 +1889,7 @@ namespace RINGMesh {
             }
 
             MakeUnique uniq( new_points ) ;
-            uniq.unique() ;
+            uniq.unique( gm_.epsilon() ) ;
             std::vector< vec3 > uniq_points ;
             uniq.unique_points( uniq_points ) ;
             std::vector< index_t > map = uniq.indices() ;
@@ -2025,7 +2025,7 @@ namespace RINGMesh {
                 }
 
                 MakeUnique uniq( new_points ) ;
-                uniq.unique() ;
+                uniq.unique( gm_.epsilon() ) ;
                 uniq.unique_points( high_order_vertices_ ) ;
             }
         }
@@ -2171,7 +2171,8 @@ namespace RINGMesh {
                     vec3 center = geo_model_.region( reg ).mesh_element_barycenter(
                         c ) ;
                     std::vector< index_t > c_in_geom_model_mesh ;
-                    ann.get_colocated( center, c_in_geom_model_mesh ) ;
+                    ann.get_neighbors( center, c_in_geom_model_mesh,
+                        geo_model_.epsilon() ) ;
                     ringmesh_assert( c_in_geom_model_mesh.size() == 1 ) ;
                     for( index_t att_e = 0; att_e < att_dim; att_e++ ) {
                         cur_att_on_geo_model_mesh_entity[c * att_dim + att_e] =
@@ -2182,6 +2183,7 @@ namespace RINGMesh {
             }
         }
     }
+
     GeoModelMesh::~GeoModelMesh()
     {
         facets.unbind_attribute() ;

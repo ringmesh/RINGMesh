@@ -726,7 +726,7 @@ namespace RINGMesh {
         double theta,
         bool degrees )
     {
-        if( length( axis ) < epsilon ) {
+        if( length( axis ) < M.epsilon() ) {
             Logger::err( "GeoModel" )
                 << "Rotation around an epsilon length axis is impossible"
                 << std::endl ;
@@ -768,7 +768,7 @@ namespace RINGMesh {
             region.boundary_gme( 0 ).index ) ;
         vec3 barycenter = first_boundary_surface.mesh_element_barycenter( 0 ) ;
         /// @todo Check that this is the right condition to have a correct enough barycenter
-        ringmesh_assert( first_boundary_surface.mesh_element_size( 0 ) > epsilon ) ;
+        ringmesh_assert( first_boundary_surface.mesh_element_size( 0 ) > geomodel.epsilon() ) ;
 
         double minimum_distance = DBL_MAX ;
         vec3 nearest_point ;
@@ -784,7 +784,7 @@ namespace RINGMesh {
             }
         }
         /// @todo Change implementation to use second triangle if that one failed, and further surfaces
-        ringmesh_assert( minimum_distance > epsilon ) ;
+        ringmesh_assert( minimum_distance > geomodel.epsilon() ) ;
         return 0.5 * ( barycenter + nearest_point ) ;
     }
 

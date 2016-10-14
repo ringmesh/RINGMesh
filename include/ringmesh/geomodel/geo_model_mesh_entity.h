@@ -174,8 +174,9 @@ namespace RINGMesh {
             return mesh_.gfx_mesh() ;
         }
 
-        void save( const std::string& filename, const GEO::MeshIOFlags& ioflags =
-            GEO::MeshIOFlags() ) const
+        void save(
+            const std::string& filename,
+            const GEO::MeshIOFlags& ioflags ) const
         {
             mesh_.save_mesh( filename, ioflags ) ;
         }
@@ -639,36 +640,34 @@ namespace RINGMesh {
             return mesh_.facet_adjacent( facet_index, edge_index ) ;
         }
 
-//        /*!
-//         * @brief Traversal of a surface border
-//         * @details From the input facet f, get the facet that share vertex v and
-//         * get the indices of vertex v and of the following vertex in this new facet.
-//         * The next facet next_f may be the same, and from is required to avoid going back.
-//         *
-//         * @param[in] f Index of the facet
-//         * @param[in] from Index in the facet of the previous point on the border - gives the direction
-//         * @param[in] v Index in the facet of the point for which we want the next point on border
-//         * @param[out] next_f Index of the facet containing the next point on border
-//         * @param[out] v_in_next Index of vertex v in facet next_f
-//         * @param[out] next_in_next Index of the next vertex on border in facet v_in_next
-//         */
-//        void next_on_border(
-//            index_t f,
-//            index_t from,
-//            index_t v,
-//            index_t& next_f,
-//            index_t& v_in_next,
-//            index_t& to ) const ;
+        /*!
+         * @brief Get the previous edge on the border
+         * @details The returned border edge is the previous in the way of facet edges
+         * orientation.
+         * @param[in] f Input facet index
+         * @param[in] e Edge index in the facet
+         * @param[out] prev_f Previous facet index
+         * @param[out] prev_e Previous edge index in the facet
+         *
+         * @pre the surface must be correctly oriented and
+         * the given facet edge must be on border
+         */
+        void prev_on_border(
+            index_t f,
+            index_t e,
+            index_t& prev_f,
+            index_t& prev_e ) const ;
 
         /*!
          * @brief Get the next edge on the border
+         * @details The returned border edge is the next in the way of facet edges
+         * orientation.
          * @param[in] f Input facet index
          * @param[in] e Edge index in the facet
          * @param[out] next_f Next facet index
          * @param[out] next_e Next edge index in the facet
          *
-         * @pre The given edge of the given facet must be on border
-         * @details
+         * @pre the given facet edge must be on border
          */
         void next_on_border(
             index_t f,

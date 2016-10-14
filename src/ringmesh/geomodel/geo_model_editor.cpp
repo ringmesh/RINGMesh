@@ -974,6 +974,7 @@ namespace RINGMesh {
         }
 
         model().universe_.copy( from.universe_ ) ;
+        model().epsilon_ = from.epsilon() ;
     }
 
     template< typename ENTITY >
