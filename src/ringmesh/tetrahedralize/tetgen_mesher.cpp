@@ -94,18 +94,6 @@ namespace RINGMesh {
         assign_result_tetmesh_to_mesh( output_mesh ) ;
     }
 
-    void TetgenMesher::tetrahedralize(
-        const Mesh& input_mesh,
-        const std::vector< vec3 >& one_point_per_region,
-        Mesh& output_mesh )
-    {
-        initialize() ;
-        copy_mesh_to_tetgen_input( input_mesh ) ;
-        set_regions( one_point_per_region ) ;
-        tetrahedralize() ;
-        assign_result_tetmesh_to_mesh( output_mesh ) ;
-        fill_region_attribute_on_mesh_cells( output_mesh, "region" ) ;
-    }
 
     void TetgenMesher::initialize()
     {
@@ -228,27 +216,6 @@ namespace RINGMesh {
             tetgen_in_.regionlist[5 * i + 3] = i ;
             tetgen_in_.regionlist[5 * i + 4] = DBL_MAX ; // Used only with the a switch
         }
-    }
-
-    void TetgenMesher::fill_region_attribute_on_mesh_cells(
-        Mesh& M,
-        const std::string& attribute_name ) const
-    {
-        double* tet_attributes = tetgen_out_.tetrahedronattributelist ;
-        index_t one_tet_attribute_size =
-            static_cast< index_t >( tetgen_out_.numberoftetrahedronattributes ) ;
-        GEO::Attribute< index_t > region_id( M.cells.attributes(), attribute_name ) ;
-        for( index_t i = 0; i < M.cells.nb(); ++i ) {
-            // Nothing says where it is, so we hope that the shell id is the first 
-            // attribute stored in tetgen [JP]
-            // Assert to detect if the double is not an index_t [BC]
-            ringmesh_assert( std::abs( static_cast<index_t> (
-                        tet_attributes[one_tet_attribute_size*i] )
-                    - tet_attributes[one_tet_attribute_size*i] ) < global_epsilon ) ;
-            region_id[i] =
-                static_cast< index_t >( tet_attributes[one_tet_attribute_size * i] ) ;
-        }
-        region_id.unbind() ;
     }
 
     void TetgenMesher::initialize_tetgen_args()

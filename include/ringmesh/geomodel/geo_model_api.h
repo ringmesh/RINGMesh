@@ -146,11 +146,6 @@ namespace RINGMesh {
     }
 
 #ifdef RINGMESH_WITH_TETGEN
-    /*!
-     * @brief Tetrahedralize the B-Rep defined regions of a GeoModel
-     */
-    void RINGMESH_API tetgen_tetrahedralize_geomodel_regions( GeoModel& geomodel ) ;
-#endif
 
     /*!
      * Compute the tetrahedral mesh of the input structural model
@@ -177,6 +172,8 @@ namespace RINGMesh {
         index_t region_id,
         bool add_steiner_points,
         const std::vector< std::vector< vec3 > >& internal_vertices ) ;
+
+#endif
 
     /*!
      * @brief Translates the boundary model by a vector.
