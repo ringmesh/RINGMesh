@@ -33,26 +33,18 @@
  *     FRANCE
  */
 
-#include <geogram/basic/logger.h>
-#include <geogram/mesh/mesh.h>
-#include <geogram/mesh/mesh_io.h>
+#include <ringmesh/ringmesh_tests_config.h>
 
 #include <ringmesh/geomodel/geo_model.h>
 #include <ringmesh/geomodel/geo_model_api.h>
 #include <ringmesh/geomodel/geo_model_builder_from_mesh.h>
 #include <ringmesh/geomodel/geo_model_validity.h>
-#include <ringmesh/ringmesh_tests_config.h>
 #include <ringmesh/io/io.h>
 
 /*!
  * @file Test GeoModel building from a Mesh
  * @author Jeanne Pellerin
  */
-
-using RINGMesh::Logger ;
-using RINGMesh::index_t ;
-using RINGMesh::GeoModel ;
-using RINGMesh::Surface ;
 
 int main( int argc, char** argv )
 {
@@ -92,7 +84,28 @@ int main( int argc, char** argv )
             builder.build_model_from_surfaces() ;
 
             print_geomodel( geomodel ) ;
-            is_geomodel_valid( geomodel ) ;
+
+            // Checking if building has been successfully done
+            if( !is_geomodel_valid( geomodel ) ) {
+                throw RINGMeshException( "RINGMesh Test",
+                    "Failed when building model " + geomodel.name()
+                        + ": the loaded model is not valid." ) ;
+            }
+            if( geomodel.mesh.vertices.nb() != mesh.vertices.nb() ) {
+                throw RINGMeshException( "RINGMesh Test",
+                    "Error when building model: not same number of vertices "
+                        "than input mesh." ) ;
+            }
+            if( geomodel.mesh.facets.nb() != mesh.facets.nb() ) {
+                throw RINGMeshException( "RINGMesh Test",
+                    "Error when building model: not same number of facets "
+                        "than input mesh." ) ;
+            }
+            if( geomodel.mesh.cells.nb() != mesh.cells.nb() ) {
+                throw RINGMeshException( "RINGMesh Test",
+                    "Error when building model: not same number of cells "
+                        "than input mesh." ) ;
+            }
             geomodel_save( geomodel, result_file_name ) ;
         }
 
@@ -114,29 +127,29 @@ int main( int argc, char** argv )
             builder.build_model_from_surfaces() ;
 
             print_geomodel( geomodel ) ;
-            is_geomodel_valid( geomodel ) ;
 
+            // Checking if building has been successfully done
+            if( !is_geomodel_valid( geomodel ) ) {
+                throw RINGMeshException( "RINGMesh Test",
+                    "Failed when building model " + geomodel.name()
+                        + ": the loaded model is not valid." ) ;
+            }
+            if( geomodel.mesh.vertices.nb() != mesh.vertices.nb() ) {
+                throw RINGMeshException( "RINGMesh Test",
+                    "Error when building model: not same number of vertices "
+                        "than input mesh." ) ;
+            }
+            if( geomodel.mesh.facets.nb() != mesh.facets.nb() ) {
+                throw RINGMeshException( "RINGMesh Test",
+                    "Error when building model: not same number of facets "
+                        "than input mesh." ) ;
+            }
+            if( geomodel.mesh.cells.nb() != mesh.cells.nb() ) {
+                throw RINGMeshException( "RINGMesh Test",
+                    "Error when building model: not same number of cells "
+                        "than input mesh." ) ;
+            }
         }
-
-        /*!
-         * @todo This is not working, the data are not here.... [AB]
-        {
-            // GeoModel from Region flagged by attribute
-            std::string file_name(
-                ringmesh_test_data_path + "split_cube_tets.mesh" ) ;
-            GEO::Mesh mesh ;
-            GEO::MeshIOFlags mesh_io_flags ;
-            mesh_io_flags.set_attribute( GEO::MESH_CELL_REGION ) ;
-            GEO::mesh_load( file_name, mesh, mesh_io_flags ) ;
-
-            GeoModel geomodel ;
-            GeoModelBuilderMesh builder( geomodel, mesh, "", "region" ) ;
-            builder.create_and_build_regions() ;
-            // This model is not completely built
-
-            print_geomodel( geomodel ) ;
-        }
-        */
 
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category() ) << e.what() << std::endl ;
@@ -145,5 +158,6 @@ int main( int argc, char** argv )
         Logger::err( "Exception" ) << e.what() << std::endl ;
         return 1 ;
     }
+    Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
     return 0 ;
 }

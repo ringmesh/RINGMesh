@@ -668,7 +668,7 @@ namespace RINGMesh {
         index_t nb_degenerated = 0 ;
         for( index_t e = 0; e < nb_mesh_elements(); ++e ) {
             double l = length( mesh_element_vertex( e, 1 ) - mesh_element_vertex( e, 0 ) ) ;
-            if( l < epsilon ) {
+            if( l < model().epsilon() ) {
                 nb_degenerated++ ;
             }
         }

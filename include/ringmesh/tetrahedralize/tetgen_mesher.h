@@ -113,11 +113,6 @@ namespace RINGMesh {
             const Mesh& input_mesh,
             Mesh& output_mesh ) ;
 
-        void tetrahedralize(
-            const Mesh& input_mesh,
-            const std::vector< vec3 >& one_point_per_region,
-            Mesh& output_mesh ) ;
-
         void add_points_to_match_quality( double quality ) ;
 
     private:
@@ -131,9 +126,6 @@ namespace RINGMesh {
         void copy_facets_to_tetgen_input( const Mesh& M ) ;
         void set_regions( const std::vector< vec3 >& one_point_per_region ) ;
 
-        void fill_region_attribute_on_mesh_cells(
-            Mesh& M,
-            const std::string& attribute_name ) const ;
         void assign_result_tetmesh_to_mesh( Mesh& M ) const ;
         void get_result_tetmesh_points( GEO::vector< double >& points ) const ;
         void get_result_tetmesh_tets( GEO::vector< index_t >& tets ) const ;
