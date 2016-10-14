@@ -179,8 +179,9 @@ namespace {
         std::vector< index_t > corners_global( nb_facet_vertices, NO_ID ) ;
         index_t v = 0 ;
         const GeoModelMeshVertices& model_vertices = S.model().mesh.vertices ;
-        for( index_t c = S.facet_begin( f ); c < S.facet_end( f ); ++c ) {
-            corners[v] = c ;
+        for( index_t c = 0; c < S.nb_mesh_element_vertices( f ); ++c ) {
+            index_t facet_vertex_index = S.mesh_element_vertex_index( f, c ) ;
+            corners[v] = facet_vertex_index ;
             corners_global[v] = model_vertices.model_vertex_id( S.gme_id(), f, v ) ;
             v++ ;
         }
@@ -208,33 +209,6 @@ namespace {
         return check_mesh_entity_vertices_are_different( vertices, vertices_global )
             || volume < region.model().epsilon3() ;
 	}
-
-    /*!
-     * @brief Debug: Save a Surface of the model in the file OBJ format is used
-     * @todo Move this function to an API providing utility functions on a
-     * GeoModel and its Entities ? [JP]
-     */
-    void save_surface_as_obj_file( const Surface& S, const std::string& file_name )
-    {
-        std::ofstream out( file_name.c_str() ) ;
-        if( out.bad() ) {
-            Logger::err( "I/O" ) << "Error when opening the file: "
-                << file_name.c_str() << std::endl ;
-            return ;
-        }
-        out.precision( 16 ) ;
-        for( index_t p = 0; p < S.nb_vertices(); p++ ) {
-            const vec3& V = S.vertex( p ) ;
-            out << "v" << " " << V.x << " " << V.y << " " << V.z << std::endl ;
-        }
-        for( index_t f = 0; f < S.nb_mesh_elements(); f++ ) {
-            out << "f" << " " ;
-            for( index_t v = 0; v < S.nb_mesh_element_vertices( f ); v++ ) {
-                out << S.mesh_element_vertex_index( f, v ) + 1 << " " ;
-            }
-            out << std::endl ;
-        }
-    }
 }
 /******************************************************************************/
 namespace RINGMesh {
