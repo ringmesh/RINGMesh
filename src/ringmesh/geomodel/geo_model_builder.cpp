@@ -1781,6 +1781,11 @@ namespace RINGMesh {
         return nb_disconnected_facets ;
     }
 
+    struct ElementVertex {
+        index_t element_ ;
+        index_t vertex_ ;
+    } ;
+
     /*!
      * @brief Duplicates the surface vertices along the fake boundary
      * (NO_ID adjacencies but shared vertices) and duplicate the vertices
@@ -1795,23 +1800,28 @@ namespace RINGMesh {
         Surface& surface = dynamic_cast< Surface& >( mesh_entity( surface_gme ) ) ;
         const Line& line = model().line( line_id ) ;
 
-        index_t vertex_id = create_mesh_entity_vertices( surface_gme,
-            line.nb_vertices() ) ;
-
-        MeshBuilder surface_mesh_builder( surface.mesh_ ) ;
+        std::vector< ElementVertex > facet_vertices( line.nb_vertices() ) ;
         for( index_t v = 0; v < line.nb_vertices(); v++ ) {
             const vec3& p = line.vertex( v ) ;
 
-            index_t v_id( NO_ID ) ;
-            index_t f( NO_ID ) ;
-            bool found = find_facet_from_vertex( surface, p, f, v_id ) ;
+            index_t& facet_vertex = facet_vertices[v].vertex_ ;
+            index_t& facet = facet_vertices[v].element_ ;
+            bool found = find_facet_from_vertex( surface, p, facet, facet_vertex ) ;
             ringmesh_unused( found ) ;
-            ringmesh_assert( found && f != NO_ID && v_id != NO_ID ) ;
+            ringmesh_assert( found && facet != NO_ID && facet_vertex != NO_ID ) ;
+        }
 
+        index_t vertex_id = create_mesh_entity_vertices( surface_gme,
+            line.nb_vertices() ) ;
+        MeshBuilder surface_mesh_builder( surface.mesh_ ) ;
+        for( index_t v = 0; v < line.nb_vertices(); v++ ) {
+            const vec3& p = line.vertex( v ) ;
+            const index_t& facet_vertex = facet_vertices[v].vertex_ ;
+            const index_t& facet = facet_vertices[v].element_ ;
 
             std::vector< index_t > facets ;
-            surface.facets_around_vertex( v_id, facets, false, f ) ;
-            update_facet_vertex( surface, facets, v_id, vertex_id ) ;
+            surface.facets_around_vertex( facet_vertex, facets, false, facet ) ;
+            update_facet_vertex( surface, facets, facet_vertex, vertex_id ) ;
             surface_mesh_builder.set_vertex( vertex_id, p ) ;
             vertex_id++ ;
         }
@@ -1825,21 +1835,27 @@ namespace RINGMesh {
 
         gme_t region_gme( Region::type_name_static(), region_id ) ;
         Region& region = dynamic_cast< Region& >( mesh_entity( region_gme ) ) ;
-        const Surface& S = model().surface( surface_id ) ;
+        const Surface& surface = model().surface( surface_id ) ;
 
-        index_t vertex_id = create_mesh_entity_vertices( region_gme,
-            S.nb_vertices() ) ;
+        std::vector< ElementVertex > cell_vertices( surface.nb_vertices() ) ;
+        for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
+            const vec3& p = surface.vertex( v ) ;
 
-        MeshBuilder region_mesh_builder( region.mesh_ ) ;
-        for( index_t v = 0; v < S.nb_vertices(); v++ ) {
-            const vec3& p = S.vertex( v ) ;
-
-            index_t cell = NO_ID ;
-            index_t cell_vertex = NO_ID ;
+            index_t& cell = cell_vertices[v].element_ ;
+            index_t& cell_vertex = cell_vertices[v].vertex_ ;
             bool found = find_cell_from_vertex( region, p, cell, cell_vertex ) ;
             ringmesh_unused( found ) ;
             ringmesh_assert( found && cell != NO_ID && cell_vertex != NO_ID ) ;
 
+        }
+
+        index_t vertex_id = create_mesh_entity_vertices( region_gme,
+            surface.nb_vertices() ) ;
+        MeshBuilder region_mesh_builder( region.mesh_ ) ;
+        for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
+            const vec3& p = surface.vertex( v ) ;
+            const index_t& cell = cell_vertices[v].element_ ;
+            const index_t& cell_vertex = cell_vertices[v].vertex_ ;
 
             std::vector< index_t > cells ;
             region.cells_around_vertex( cell_vertex, cells, cell ) ;
