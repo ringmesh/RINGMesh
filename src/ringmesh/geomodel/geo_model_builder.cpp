@@ -1641,9 +1641,10 @@ namespace RINGMesh {
         const std::vector< index_t >& facets,
         const std::vector< index_t >& facet_ptr )
     {
-        Mesh& M = mesh_entity( Surface::type_name_static(), surface_id ).mesh_ ;
-        ringmesh_assert( M.nb_vertices() > 0 ) ;
-        MeshBuilder builder( M ) ;
+        Mesh& surface_mesh =
+            mesh_entity( Surface::type_name_static(), surface_id ).mesh_ ;
+        ringmesh_assert( surface_mesh.nb_vertices() > 0 ) ;
+        MeshBuilder builder( surface_mesh ) ;
         builder.create_facet_polygons( facets, facet_ptr ) ;
         compute_surface_adjacencies( surface_id ) ;
     }

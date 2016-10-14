@@ -46,7 +46,7 @@
 
 /*!
  * @file ringmesh/geo_model_builder_from_mesh.h
- * @brief Classes to build GeoModel from meshes
+ * @brief Classes to build GeoModel from Geogram meshes
  * @author Jeanne Pellerin
  */
 

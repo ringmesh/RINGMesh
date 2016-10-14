@@ -216,6 +216,7 @@ namespace RINGMesh {
             for( index_t v = 0; v < nb_vertices(); v++ ) {
                 result += vertex( v ) ;
             }
+            ringmesh_assert( nb_vertices() > 0 ) ;
             return result / static_cast< double >( nb_vertices() ) ;
         }
         virtual double size() const
