@@ -78,10 +78,11 @@ namespace {
      */
     bool check_range_model_vertex_ids( const GMME& E )
     {
+        const GeoModelMeshVertices& model_vertices = E.model().mesh.vertices ;
         /// Check that the stored model vertex indices are in a valid range
         for( index_t i = 0; i < E.nb_vertices(); ++i ) {
-            if( E.model_vertex_id( i ) == NO_ID
-                && E.model_vertex_id( i ) >= E.model().mesh.vertices.nb() ) {
+            if( model_vertices.model_vertex_id( E.gme_id(), i ) == NO_ID
+                && model_vertices.model_vertex_id( E.gme_id(), i ) >= model_vertices.nb() ) {
                 Logger::warn( "GeoModelEntity" )
                     << "Invalid model vertex index in " << E.gme_id() << std::endl ;
                 return false ;
@@ -179,9 +180,10 @@ namespace {
         std::vector< index_t > corners( nb_facet_vertices, NO_ID ) ;
         std::vector< index_t > corners_global( nb_facet_vertices, NO_ID ) ;
         index_t v = 0 ;
+        const GeoModelMeshVertices& model_vertices = S.model().mesh.vertices ;
         for( index_t c = S.facet_begin( f ); c < S.facet_end( f ); ++c ) {
             corners[v] = c ;
-            corners_global[v] = S.model_vertex_id( f, v ) ;
+            corners_global[v] = model_vertices.model_vertex_id( S.gme_id(), f, v ) ;
             v++ ;
         }
         return check_mesh_entity_vertices_are_different( corners, corners_global ) ;
@@ -195,14 +197,16 @@ namespace {
         index_t nb_vertices_in_cell = region.nb_mesh_element_vertices( cell_index ) ;
         std::vector< index_t > vertices( nb_vertices_in_cell, NO_ID ) ;
         std::vector< index_t > vertices_global( nb_vertices_in_cell, NO_ID ) ;
+        const GeoModelMeshVertices& model_vertices = region.model().mesh.vertices ;
         for( index_t v = 0; v < nb_vertices_in_cell; v++ ) {
             vertices[v] = region.mesh_element_vertex_index( cell_index, v ) ;
-            vertices_global[v] = region.model_vertex_id( cell_index, v ) ;
+            vertices_global[v] = model_vertices.model_vertex_id( region.gme_id(),
+                cell_index, v ) ;
         }
         double volume = region.mesh_element_size( cell_index ) ;
         return check_mesh_entity_vertices_are_different( vertices, vertices_global )
-            || volume < region.model().epsilon() ;
-	}
+            || volume < epsilon ;
+    }
 }
 
 

@@ -117,9 +117,41 @@ namespace RINGMesh {
         index_t index( const vec3& p ) const ;
 
         /*!
+         * @brief Get the GeoModelMesh index of a GeoModelMeshEntity vertex from its
+         * index in that GeoModelMeshEntity
+         * @param[in] mesh_entity GeoModelMeshEntity that vertex belongs to
+         * @param[in] entity_vertex_index index of the query vertex in the GeoModelMeshEntity
+         * @return if found the vertex index in the model, else NO_ID.
+         */
+        index_t model_vertex_id(
+            const gme_t& mesh_entity,
+            index_t entity_vertex_index = 0 ) const ;
+
+        /*!
+         * @brief Get the GeoModelMesh index of a GeoModelMeshEntity vertex from its
+         * index in that GeoModelMeshEntity
+         * @param[in] mesh_entity GeoModelMeshEntity that vertex belongs to
+         * @param[in] entity_mesh_element_index index of the mesh element that vertex belongs to
+         * @param[in] vertex_local_index local index of the query vertex in the mesh element
+         * @return if found the vertex index in the model, else NO_ID.
+         */
+        index_t model_vertex_id(
+            const gme_t& mesh_entity,
+            index_t entity_mesh_element_index,
+            index_t vertex_local_index ) const ;
+
+        /*!
          * @brief Get the vertices in GME corresponding to the given unique vertex
          */
         const std::vector< GMEVertex >& gme_vertices( index_t v ) const ;
+
+        /*!
+         * @brief Get the vertex indices in the specified GeoModelMeshEntity
+         * corresponding to the given unique vertex
+         */
+        const std::vector< index_t > gme_vertices(
+            const gme_t& gme_id,
+            index_t v ) const ;
 
         /*!
          * @brief To use when building the model by first adding its vertices
@@ -132,7 +164,7 @@ namespace RINGMesh {
          * @brief Add a vertex in a GeoModelEntity
          *        corresponding to an existing vertex of the model
          */
-        void add_to_bme( index_t v, const GMEVertex& v_gme ) ;
+        void add_to_gme( index_t v, const GMEVertex& v_gme ) ;
 
         /*!
          * @brief Change one of the GME vertex associated to a vertex
@@ -180,11 +212,11 @@ namespace RINGMesh {
          * @brief Delete vertices for which to_delete[i] != i
          * @detail The global vertices are deleted, gme_vertices_
          * is updated and the model_vertx_id in the GeoModelMeshEntity
-         * of the BoudnaryModel are updated too.
+         * of the GeoModel are updated too.
          *
          * @param[in,out] to_delete can be NO_ID or give the index of a
-         *  kept vertex with wich information should be merged.
-         *  It is recyled to give the mapping between old and new vertex indices
+         *  kept vertex with which information should be merged.
+         *  It is recycled to give the mapping between old and new vertex indices
          * @pre to_delete[ v ] is either NO_ID, or is equal or inferior to v
          */
         void erase_vertices( std::vector< index_t >& to_delete ) ;
@@ -1147,12 +1179,12 @@ namespace RINGMesh {
         /*!
          * @brief Delete vertices for which to_delete[i] != i
          * @detail The global vertices are deleted, gme_vertices_
-         * is updated and the model_vertx_id in the GeoModelMeshEntity
-         * of the BoudnaryModel are updated too.
+         * is updated and the model_vertex_id in the GeoModelMeshEntity
+         * of the GeoModel are updated too.
          *
          * @param[in,out] to_delete can be NO_ID or give the index of a
-         *  kept vertex with wich information should be merged.
-         *  It is recyled to give the mapping between old and new vertex indices
+         *  kept vertex with which information should be merged.
+         *  It is recycled to give the mapping between old and new vertex indices
          * @pre to_delete[ v ] is either NO_ID, or is equal or inferior to v
          */
         void erase_vertices( std::vector< index_t >& to_delete ) ;
