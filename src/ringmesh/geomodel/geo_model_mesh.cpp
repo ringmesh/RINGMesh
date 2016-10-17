@@ -137,6 +137,15 @@ namespace {
         return GEO::Attribute< double >::is_defined( att_manager, att_name ) ;
     }
 
+    std::string entity_vertex_map_att_name(
+        const std::string& entity_type,
+        index_t entity_id )
+    {
+        std::ostringstream oss ;
+        oss << "vertex_map_" << entity_type << "_" << entity_id ;
+        return oss.str() ;
+    }
+
 }
 
 namespace RINGMesh {
@@ -163,6 +172,16 @@ namespace RINGMesh {
     {
         if( !is_initialized() ) {
             const_cast< GeoModelMeshVertices* >( this )->initialize() ;
+            DEBUG( " inti ") ;
+            std::string cur_entity_vertex_map_name = entity_vertex_map_att_name(
+               "Surface", 6 ) ;
+            GEO::Attribute< index_t > cur_entity_vertex_map(
+                gmm_.vertex_attribute_manager(), cur_entity_vertex_map_name ) ;
+            for( index_t v = 0 ; v < cur_entity_vertex_map.size(); v++ ) {
+                if( cur_entity_vertex_map[v] != NO_ID ) {
+                    std::cerr << v << "   :   " << cur_entity_vertex_map[v] << std::endl ;
+                }
+            }
         }
     }
 
@@ -183,16 +202,27 @@ namespace RINGMesh {
         index_t& count )
     {
         for( index_t i = 0; i < M.nb_mesh_entities( entity_type ); ++i ) {
+            // Map initialization ;
+            std::string cur_entity_vertex_map_name = entity_vertex_map_att_name(
+                entity_type, i ) ;
+            GEO::Attribute< index_t > cur_entity_vertex_map(
+                M.mesh.vertex_attribute_manager(), cur_entity_vertex_map_name ) ;
+            cur_entity_vertex_map.fill( NO_ID ) ;
+
             GeoModelMeshEntity& E = const_cast< GeoModelMeshEntity& >( M.mesh_entity(
                 entity_type, i ) ) ;
             if( E.nb_vertices() == 0 ) {
                 continue ;
             }
 
+            index_t before_count = count ;
             for( index_t v = 0; v < E.nb_vertices(); v++ ) {
                 builder.set_vertex( count, E.vertex( v ) ) ;
+                ///@todo to remove
                 // Index in the GME stored at global level
                 gme_vertices[count].push_back( GMEVertex( E.gme_id(), v ) ) ;
+                // Map from vertices of MeshEntities to GeoModelMeshVertices
+                cur_entity_vertex_map[count] = v ;
                 // Global vertex index increment
                 count++ ;
             }
@@ -230,7 +260,6 @@ namespace RINGMesh {
             count ) ;
         fill_vertices( gm_, Region::type_name_static(), builder, gme_vertices_,
             count ) ;
-
         // Remove colocated vertices
         remove_colocated() ;
     }
@@ -296,16 +325,19 @@ namespace RINGMesh {
         const gme_t& mesh_entity,
         index_t entity_vertex_index ) const
     {
+        ringmesh_assert(
+            gm_.mesh_entity( mesh_entity ).nb_vertices() > entity_vertex_index ) ;
         test_and_initialize() ;
-        const GMEVertex query_vertex( mesh_entity, entity_vertex_index ) ;
-        ///@todo: Is it not a very costly way to find the returned index
-        /// (iteration on all the vertices of the model) ?
+        std::string cur_entity_vertex_map_name = entity_vertex_map_att_name(
+            mesh_entity.type, mesh_entity.index ) ;
+        GEO::Attribute< index_t > cur_entity_vertex_map(
+            gmm_.vertex_attribute_manager(), cur_entity_vertex_map_name ) ;
         for( index_t v = 0; v < nb(); ++v ) {
-            const std::vector< GMEVertex >& cur_gme_vertex = gme_vertices( v ) ;
-            for( index_t gme_v = 0; gme_v < cur_gme_vertex.size(); ++gme_v ) {
-                if( cur_gme_vertex[gme_v] == query_vertex ) {
-                    return v ;
-                }
+            if( mesh_entity.index == 6 && mesh_entity.type == Surface::type_name_static() && entity_vertex_index == 2 && cur_entity_vertex_map[v] != NO_ID) {
+                DEBUG( cur_entity_vertex_map[v] ) ;
+            }
+            if( cur_entity_vertex_map[v] == entity_vertex_index ) {
+                return v ;
             }
         }
         return NO_ID ;
@@ -320,6 +352,18 @@ namespace RINGMesh {
             gm_.mesh_entity( mesh_entity ).mesh_element_vertex_index(
                 entity_mesh_element_index, vertex_local_index ) ;
         return model_vertex_id( mesh_entity, entity_vertex_index ) ;
+    }
+
+    index_t GeoModelMeshVertices::mesh_entity_vertex_id(
+        const gme_t& mesh_entity,
+        index_t model_vertex_id ) const
+    {
+        ringmesh_assert( model_vertex_id < nb() ) ;
+        std::string cur_entity_vertex_map_name = entity_vertex_map_att_name(
+            mesh_entity.type, mesh_entity.index ) ;
+        GEO::Attribute< index_t > cur_entity_vertex_map(
+            gmm_.vertex_attribute_manager(), cur_entity_vertex_map_name ) ;
+        return cur_entity_vertex_map[model_vertex_id] ;
     }
 
     const std::vector< GMEVertex >&
@@ -341,6 +385,7 @@ namespace RINGMesh {
                 gme_vertices.push_back( all_gme_vertices[gme_v].v_id ) ;
             }
         }
+        DEBUG( gme_vertices.size() ) ;
         return gme_vertices ;
     }
 
@@ -447,39 +492,75 @@ namespace RINGMesh {
         }
     }
 
-//    void update_entity_model_vertex_id( const GeoModel& M, const std::string& entity_type,
-//        std::vector<index_t>& to_delete, std::vector< std::vector< GMEVertex > >& gme_vertices )
+//    ///@todo change the name of the function
+//    void update_entity_model_vertex_id(
+//        const GeoModel& M,
+//        const std::string& entity_type,
+//        std::vector< index_t >& to_delete,
+//        std::vector< std::vector< GMEVertex > >& gme_vertices )
 //    {
 //        for( index_t i = 0; i < M.nb_mesh_entities( entity_type ); ++i ) {
-//            GeoModelMeshEntity& E = const_cast<GeoModelMeshEntity&>(M.mesh_entity( entity_type, i )) ;
+//            GeoModelMeshEntity& E = const_cast< GeoModelMeshEntity& >( M.mesh_entity(
+//                entity_type, i ) ) ;
 //
 //            GEO::Attribute< index_t > att( E.vertex_attribute_manager(),
 //                GeoModelMeshEntity::model_vertex_id_att_name() ) ;
+//            gme_t cur_entity( entity_type, i ) ;
 //
-//            for( index_t v = 0; v < E.nb_vertices(); v++ ) {
+//            for( index_t v = 0; v < M.mesh_entity( cur_entity ).nb_vertices(); v++ ) {
 //                index_t old_id = E.model_vertex_id( v ) ;
-//                index_t new_id = to_delete[old_id] ;
+//                index_t old_map_id = M.mesh.vertices.model_vertex_id( cur_entity, v ) ;
+//                index_t new_map_id = to_delete[old_map_id] ;
 //
 //                // If new_id is NO_ID the vertex should be removed afterwards
-//                // from the GMME
-//                ringmesh_assert( new_id != NO_ID ) ;
+////                 from the GMME
+//                ringmesh_assert( new_map_id != NO_ID ) ;
 //                att[v] = new_id ;
+//                std::string cur_entity_vertex_map_name = entity_vertex_map_att_name(
+//                    entity_type, i ) ;
+//                GEO::Attribute< index_t > cur_entity_vertex_map(
+//                    M.mesh.vertex_attribute_manager(), cur_entity_vertex_map_name ) ;
+//                cur_entity_vertex_map[ new_map_id ] = v ;
 //
 //                /*!
-//                * @todo Review: I don't understand this for and what it does...
-//                * When we remove a region, this for add stupid vertices inside the
-//                * vector... [AB]
-//                */
+//                 * @todo Review: I don't understand this for and what it does...
+//                 * When we remove a region, this for add stupid vertices inside the
+//                 * vector... [AB]
+//                 */
 //                // Merge gme_vertices_ information
-//                if( std::find( gme_vertices[new_id].begin(),
+//                if( std::find( gme_vertices[new_map_id].begin(),
 //                    gme_vertices[new_id].end(), GMEVertex( E.gme_id(), v ) )
 //                    == gme_vertices[new_id].end() ) {
-//                    gme_vertices[new_id].push_back(
-//                        GMEVertex( E.gme_id(), v ) ) ;
+//                    gme_vertices[new_id].push_back( GMEVertex( E.gme_id(), v ) ) ;
 //                }
 //            }
 //        }
 //    }
+
+    void update_mesh_entities_maps(
+        const GeoModel& geomodel,
+        const std::vector< index_t >& old2new )
+    {
+        const std::vector< EntityType >& all_mesh_entity_types =
+            EntityTypeManager::mesh_entity_types() ;
+        for( index_t t = 0; t < all_mesh_entity_types.size(); t++ ) {
+            EntityType cur_entity_type = all_mesh_entity_types[t] ;
+            for( index_t e = 0; e < geomodel.nb_mesh_entities( cur_entity_type ); e++ ) {
+                std::string cur_entity_vertex_map_name = entity_vertex_map_att_name(
+                    cur_entity_type, e ) ;
+                GEO::Attribute< index_t > cur_entity_vertex_map(
+                    geomodel.mesh.vertex_attribute_manager(), cur_entity_vertex_map_name ) ;
+
+                for( index_t v = 0; v < old2new.size(); v++ ) {
+                    if( old2new[v] != v && cur_entity_vertex_map[v] != NO_ID ) {
+                        cur_entity_vertex_map[old2new[old2new[v]]] = cur_entity_vertex_map[v] ;
+                        cur_entity_vertex_map[v] = NO_ID ;
+                    }
+                }
+            }
+        }
+
+    }
 
     void GeoModelMeshVertices::erase_vertices( std::vector< index_t >& to_delete )
     {
@@ -516,6 +597,18 @@ namespace RINGMesh {
             return ;
         }
 
+        DEBUG( " before ") ;
+        std::string cur_entity_vertex_map_name = entity_vertex_map_att_name(
+           "Surface", 6 ) ;
+        GEO::Attribute< index_t > cur_entity_vertex_map(
+            gmm_.vertex_attribute_manager(), cur_entity_vertex_map_name ) ;
+        for( index_t v = 0 ; v < cur_entity_vertex_map.size(); v++ ) {
+            if( cur_entity_vertex_map[v] != NO_ID ) {
+                std::cerr << v << "   :   " << cur_entity_vertex_map[v] << std::endl ;
+            }
+        }
+        update_mesh_entities_maps( gm_, to_delete ) ;
+
         // Empty the gme_vertices_ of the deleted vertices and erase them
         for( index_t v = 0; v < nb(); ++v ) {
             if( to_delete_geo[v] == 1 ) {
@@ -526,6 +619,14 @@ namespace RINGMesh {
         gme_vertices_.erase(
             std::remove( gme_vertices_.begin(), gme_vertices_.end(),
                 std::vector< GMEVertex >() ), gme_vertices_.end() ) ;
+
+        DEBUG( " after mimi ") ;
+        for( index_t v = 0 ; v < cur_entity_vertex_map.size(); v++ ) {
+            if( cur_entity_vertex_map[v] != NO_ID ) {
+                std::cerr << v << "   :   " << cur_entity_vertex_map[v] << "   |  "
+                    << to_delete_geo[v] << "    |    " << to_delete[v] << std::endl ;
+            }
+        }
 
         // Delete the vertices - false is to not remove
         // isolated vertices (here all the vertices)
@@ -1637,9 +1738,10 @@ namespace RINGMesh {
                     FacetType T = static_cast< FacetType >( nb_vertices - 3 ) ;
                     cur_facet = facet_offset_per_type[T] + cur_facet_per_type[T]++ ;
                     for( index_t v = 0; v < nb_vertices; v++ ) {
-                        mesh_builder_.set_facet_vertex( cur_facet, v,
-                            model_vertices.model_vertex_id( surface.gme_id(), f,
-                                v ) ) ;
+                        index_t v_id = model_vertices.model_vertex_id( surface.gme_id(), f,
+                            v ) ;
+                        ringmesh_assert( v_id != NO_ID ) ;
+                        mesh_builder_.set_facet_vertex( cur_facet, v, v_id ) ;
                     }
                 } else {
                     GEO::vector< index_t > vertices( nb_vertices ) ;

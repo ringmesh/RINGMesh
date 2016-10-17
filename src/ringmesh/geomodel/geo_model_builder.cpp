@@ -694,8 +694,11 @@ namespace RINGMesh {
                 collect_region_information_( collect_region_info ),
                 cur_border_triangle_( 0 )
         {
+            std::cerr << "step c1" << std::endl ;
             initialize_border_triangles_from_model_surfaces() ;
+            std::cerr << "step c2" << std::endl ;
             visited_.resize( border_triangles_.size(), false ) ;
+            std::cerr << "step c3" << std::endl ;
         }
 
         /*!
@@ -948,8 +951,10 @@ namespace RINGMesh {
 
         void initialize_border_triangles_from_model_surfaces()
         {
+            std::cerr << "step i1" << std::endl ;
             const GeoModelMeshVertices& model_vertices = geomodel_.mesh.vertices ;
             for( index_t i = 0; i < geomodel_.nb_surfaces(); ++i ) {
+                std::cerr << "surf " << i << std::endl ;
                 const Surface& S = geomodel_.surface( i ) ;
                 for( index_t j = 0; j < S.nb_mesh_elements(); ++j ) {
                     for( index_t v = 0; v < S.nb_mesh_element_vertices( j ); ++v ) {
@@ -982,23 +987,29 @@ namespace RINGMesh {
 
             // Gets the next edge on border in the Surface
             index_t f = border_triangle.facet_ ;
-            index_t model_facet_id = geomodel_.mesh.facets.facet( S.index(), f ) ;
-            index_t f_v0 = geomodel_.mesh.facets.vertex( model_facet_id,
-                border_triangle.v0_ ) ;
-            index_t f_v1 = geomodel_.mesh.facets.vertex( model_facet_id,
-                border_triangle.v1_ ) ;
-            ringmesh_assert( f_v0 != NO_ID && f_v1 != NO_ID ) ;
+//            index_t model_facet_id = geomodel_.mesh.facets.facet( S.index(), f ) ;
+            index_t v0_id_in_facet = S.vertex_index_in_facet( f,
+                model_vertices.mesh_entity_vertex_id( S.gme_id(),
+                    border_triangle.v0_ ) ) ;
+//            index_t f_v0 = geomodel_.mesh.facets.vertex( model_facet_id,
+//                v0_id_in_facet ) ;
+//            index_t v1_id_in_facet = S.vertex_index_in_facet( model_facet_id,
+//                model_vertices.mesh_entity_vertex_id( S.gme_id(),
+//                    border_triangle.v1_ ) ) ;
+//            index_t f_v1 = geomodel_.mesh.facets.vertex( model_facet_id,
+//                v1_id_in_facet ) ;
+            ringmesh_assert( v0_id_in_facet != NO_ID ) ;
 
             index_t next_f = NO_ID ;
             index_t next_f_v0 = NO_ID ;
             index_t next_f_v1 = NO_ID ;
 
             if( !backward ) {
-                S.next_on_border( f, f_v0, next_f, next_f_v0 ) ;
+                S.next_on_border( f, v0_id_in_facet, next_f, next_f_v0 ) ;
                 ringmesh_assert( next_f_v0 != NO_ID ) ;
                 next_f_v1 = S.next_facet_vertex_index( next_f, next_f_v0 ) ;
             } else {
-                S.prev_on_border( f, f_v0, next_f, next_f_v0 ) ;
+                S.prev_on_border( f, v0_id_in_facet, next_f, next_f_v0 ) ;
                 ringmesh_assert( next_f_v0 != NO_ID ) ;
                 next_f_v1 = S.next_facet_vertex_index( next_f, next_f_v0 ) ;
             }
@@ -1445,7 +1456,7 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Sest the vertices and facets for a surface
+     * @brief Sets the vertices and facets for a surface
      * @details If facet_adjacencies are not given they are computed.
      *
      * @param[in] surface_id Index of the surface
@@ -1969,11 +1980,14 @@ namespace RINGMesh {
 
     bool GeoModelBuilder::build_lines_and_corners_from_surfaces()
     {
+        std::cerr << "Constructor" << std::endl ;
         LineGeometryFromGeoModelSurfaces line_computer( model(),
             options_.compute_regions_brep ) ;
+        std::cerr << "Fin constructor" << std::endl ;
 
         bool new_line_was_built = true ;
         while( new_line_was_built ) {
+            std::cerr << "new line while" << std::endl ;
             new_line_was_built = line_computer.compute_next_line_geometry() ;
 
             // I know this is a copy - but should'nt be too big [JP]
@@ -1984,6 +1998,7 @@ namespace RINGMesh {
                 reorder_line_vertices_to_start_at_corner( model(), vertices ) ;
             }
 
+            std::cerr << "step 1" << std::endl ;
             gme_t first_corner = find_or_create_corner( vertices.front() ) ;
             gme_t second_corner = find_or_create_corner( vertices.back() ) ;
             const std::vector< index_t >& adjacent_surfaces =
@@ -1993,16 +2008,19 @@ namespace RINGMesh {
             gme_t line_index = find_or_create_line( adjacent_surfaces, first_corner,
                 second_corner ) ;
 
+            std::cerr << "step 2" << std::endl ;
             bool created_line = model().nb_lines() != backup_nb_lines ;
             if( created_line ) {
                 set_line( line_index.index, vertices ) ;
 
+                std::cerr << "step 3" << std::endl ;
                 for( index_t j = 0; j < adjacent_surfaces.size(); ++j ) {
                     add_mesh_entity_in_boundary( line_index, adjacent_surfaces[j] ) ;
                 }
                 add_mesh_entity_boundary( line_index, first_corner.index ) ;
                 add_mesh_entity_boundary( line_index, second_corner.index ) ;
 
+                std::cerr << "step 4" << std::endl ;
                 // If the plan is to then build_regions, get the information
                 if( options_.compute_regions_brep ) {
                     regions_info_.push_back(
@@ -2010,11 +2028,13 @@ namespace RINGMesh {
                             line_computer.region_information() ) ) ;
                 }
             } else {
+                std::cerr << "step 5" << std::endl ;
                 bool same_geometry = line_equal( model().line( line_index.index ),
                     vertices ) ;
                 if( !same_geometry ) {
                     set_line( line_index.index, vertices ) ;
                 }
+                std::cerr << "step 6" << std::endl ;
             }
         }
         return true ;

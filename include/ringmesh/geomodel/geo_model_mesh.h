@@ -141,6 +141,13 @@ namespace RINGMesh {
             index_t vertex_local_index ) const ;
 
         /*!
+         * @todo
+         */
+        index_t mesh_entity_vertex_id(
+            const gme_t& mesh_entity,
+            index_t model_vertex_id ) const ;
+
+        /*!
          * @brief Get the vertices in GME corresponding to the given unique vertex
          */
         const std::vector< GMEVertex >& gme_vertices( index_t v ) const ;
