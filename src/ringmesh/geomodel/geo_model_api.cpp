@@ -712,7 +712,7 @@ namespace RINGMesh {
         double theta,
         bool degrees )
     {
-        if( length( axis ) < epsilon ) {
+        if( length( axis ) < M.epsilon() ) {
             Logger::err( "GeoModel" )
                 << "Rotation around an epsilon length axis is impossible"
                 << std::endl ;
@@ -754,7 +754,7 @@ namespace RINGMesh {
             region.boundary_gme( 0 ).index ) ;
         vec3 barycenter = first_boundary_surface.mesh_element_barycenter( 0 ) ;
         /// @todo Check that this is the right condition to have a correct enough barycenter
-        ringmesh_assert( first_boundary_surface.mesh_element_size( 0 ) > epsilon ) ;
+        ringmesh_assert( first_boundary_surface.mesh_element_size( 0 ) > geomodel.epsilon() ) ;
 
         double minimum_distance = DBL_MAX ;
         vec3 nearest_point ;
@@ -770,7 +770,7 @@ namespace RINGMesh {
             }
         }
         /// @todo Change implementation to use second triangle if that one failed, and further surfaces
-        ringmesh_assert( minimum_distance > epsilon ) ;
+        ringmesh_assert( minimum_distance > geomodel.epsilon() ) ;
         return 0.5 * ( barycenter + nearest_point ) ;
     }
 
@@ -789,26 +789,6 @@ namespace RINGMesh {
     }
 
 #ifdef RINGMESH_WITH_TETGEN
-
-    void tetgen_tetrahedralize_geomodel_regions( GeoModel& geomodel )
-    {
-        GEO::Mesh mesh ;
-        build_mesh_from_geomodel( geomodel, mesh ) ;
-
-        std::vector< vec3 > points_in_regions ;
-        get_one_point_per_geomodel_region( geomodel, points_in_regions ) ;
-
-        TetgenMesher mesher ;
-        mesher.tetrahedralize( mesh, points_in_regions, mesh ) ;
-
-        GeoModelBuilderMesh builder( geomodel, mesh, "", "region" ) ;
-        builder.build_regions() ;
-
-        // Force recomputation of global mesh vertices - otherwise we crash sooner or later
-        // because of model_vertex_id crazy sharing [JP]
-        geomodel.mesh.vertices.clear() ;
-        geomodel.mesh.vertices.test_and_initialize() ;
-    }
 
     void tetrahedralize(
         GeoModel& M,

@@ -94,14 +94,9 @@ namespace {
         }
     }
 
-    bool inexact_equal( const vec3& v1, const vec3& v2 )
+    bool inexact_equal( const vec3& v1, const vec3& v2, double epsilon )
     {
-        for( index_t i = 0; i < 3; i++ ) {
-            if( std::fabs( v1[i] - v2[i] ) > epsilon ) {
-                return false ;
-            }
-        }
-        return true ;
+        return length( v2 - v1 ) < epsilon ;
     }
 
     /*************************************************************************/
@@ -200,10 +195,11 @@ namespace {
                 f = neighbors[i] ;
                 for( index_t j = 0; j < surface.nb_mesh_element_vertices( f );
                     j++ ) {
-                    if( inexact_equal( surface.mesh_element_vertex( f, j ), v0 ) ) {
+                    if( inexact_equal( surface.mesh_element_vertex( f, j ), v0,
+                        surface.model().epsilon() ) ) {
                         index_t j_next = surface.next_facet_vertex_index( f, j ) ;
                         if( inexact_equal( surface.mesh_element_vertex( f, j_next ),
-                            v1 ) ) {
+                            v1, surface.model().epsilon() ) ) {
                             e = j ;
                             return true ;
                         }
@@ -233,7 +229,8 @@ namespace {
         vec3 cell_facet_barycenter = region.cell_facet_barycenter( cell,
             cell_facet ) ;
         vec3 facet_barycenter = surface.mesh_element_barycenter( facet ) ;
-        return inexact_equal( cell_facet_barycenter, facet_barycenter ) ;
+        return inexact_equal( cell_facet_barycenter, facet_barycenter,
+            region.model().epsilon() ) ;
     }
 
     bool find_cell_facet_from_facet(
@@ -296,7 +293,7 @@ namespace {
                 for( index_t j = 0;
                     j < surface.nb_mesh_element_vertices( element_id ); j++ ) {
                     if( inexact_equal( surface.mesh_element_vertex( element_id, j ),
-                        v ) ) {
+                        v, surface.model().epsilon() ) ) {
                         vertex_id = surface.mesh_element_vertex_index( element_id,
                             j ) ;
                         return true ;
@@ -354,14 +351,15 @@ namespace {
         const vec3& v1 )
     {
         for( index_t v = 0; v < surface.nb_mesh_element_vertices( f ); v++ ) {
-            if( !inexact_equal( surface.mesh_element_vertex( f, v ), v0 ) )
-                continue ;
+            if( !inexact_equal( surface.mesh_element_vertex( f, v ), v0,
+                surface.model().epsilon() ) ) continue ;
             index_t prev_v = surface.prev_facet_vertex_index( f, v ) ;
             index_t next_v = surface.next_facet_vertex_index( f, v ) ;
-            if( inexact_equal( surface.mesh_element_vertex( f, prev_v ), v1 ) ) {
+            if( inexact_equal( surface.mesh_element_vertex( f, prev_v ), v1,
+                surface.model().epsilon() ) ) {
                 return prev_v ;
-            } else if( inexact_equal( surface.mesh_element_vertex( f, next_v ),
-                v1 ) ) {
+            } else if( inexact_equal( surface.mesh_element_vertex( f, next_v ), v1,
+                surface.model().epsilon() ) ) {
                 return v ;
             }
         }
@@ -377,7 +375,8 @@ namespace {
         vec3 facet_barycenter = surface.mesh_element_barycenter( facet ) ;
         for( index_t f = 0; f < region.nb_cell_facets( cell ); f++ ) {
             vec3 cell_facet_barycenter = region.cell_facet_barycenter( cell, f ) ;
-            if( inexact_equal( cell_facet_barycenter, facet_barycenter ) ) {
+            if( inexact_equal( cell_facet_barycenter, facet_barycenter,
+                surface.model().epsilon() ) ) {
                 return f ;
             }
         }
@@ -456,16 +455,15 @@ namespace RINGMesh {
                 vec3 e2 = normalize( p2 - p0 ) ;
 
                 N_ = normalize( cross( e1, e2 ) ) ;
-                ringmesh_assert( dot( N_, e1 ) < epsilon ) ;
+                ringmesh_assert( dot( N_, e1 ) < global_epsilon ) ;
 
                 vec3 B = 0.5 * p1 + 0.5 * p0 ;
                 vec3 p2B = p2 - B ;
                 B_A_ = normalize( p2B - dot( p2B, e1 ) * e1 ) ;
 
-                ringmesh_assert( dot( B_A_, e1 ) < epsilon ) ;
-                ringmesh_assert( B_A_.length() > epsilon ) ;
+                ringmesh_assert( dot( B_A_, e1 ) < global_epsilon ) ;
+                ringmesh_assert( B_A_.length() > global_epsilon ) ;
             }
-            ;
 
             bool operator<( const TriangleToSort& r ) const
             {
@@ -1818,6 +1816,11 @@ namespace RINGMesh {
         return nb_disconnected_facets ;
     }
 
+    struct ElementVertex {
+        index_t element_ ;
+        index_t vertex_ ;
+    } ;
+
     /*!
      * @brief Duplicates the surface vertices along the fake boundary
      * (NO_ID adjacencies but shared vertices) and duplicate the vertices
@@ -1833,23 +1836,29 @@ namespace RINGMesh {
         Surface& surface = dynamic_cast< Surface& >( mesh_entity( surface_gme ) ) ;
         const Line& line = model().line( line_id ) ;
 
-        index_t vertex_id = create_mesh_entity_vertices( surface_gme,
-            line.nb_vertices() ) ;
-
-        Mesh2DBuilder* surface_mesh_builder = surface.mesh2d_->get_mesh2d_builder() ;
+        std::vector< ElementVertex > facet_vertices( line.nb_vertices() ) ;
         for( index_t v = 0; v < line.nb_vertices(); v++ ) {
             const vec3& p = line.vertex( v ) ;
 
-            index_t v_id( NO_ID ) ;
-            index_t f( NO_ID ) ;
-            bool found = find_facet_from_vertex( surface, p, f, v_id ) ;
+            index_t& facet_vertex = facet_vertices[v].vertex_ ;
+            index_t& facet = facet_vertices[v].element_ ;
+            bool found = find_facet_from_vertex( surface, p, facet, facet_vertex ) ;
             ringmesh_unused( found ) ;
-            ringmesh_assert( found && f != NO_ID && v_id != NO_ID ) ;
+            ringmesh_assert( found && facet != NO_ID && facet_vertex != NO_ID ) ;
+        }
+
+        index_t vertex_id = create_mesh_entity_vertices( surface_gme,
+            line.nb_vertices() ) ;
+        Mesh2DBuilder* surface_mesh_builder = surface.mesh2d_->get_mesh2d_builder() ;
+        for( index_t v = 0; v < line.nb_vertices(); v++ ) {
+            const vec3& p = line.vertex( v ) ;
+            const index_t& facet_vertex = facet_vertices[v].vertex_ ;
+            const index_t& facet = facet_vertices[v].element_ ;
 
             std::vector< index_t > facets ;
-            surface.facets_around_vertex( v_id, facets, false, f ) ;
-            update_facet_vertex( surface, facets, v_id, vertex_id ) ;
-            surface_mesh_builder->set_vertex( vertex_id, p ) ;
+            surface.facets_around_vertex( facet_vertex, facets, false, facet ) ;
+            update_facet_vertex( surface, facets, facet_vertex, vertex_id ) ;
+            surface_mesh_builder.set_vertex( vertex_id, p ) ;
             vertex_id++ ;
         }
     }
@@ -1863,25 +1872,35 @@ namespace RINGMesh {
 
         gme_t region_gme( Region::type_name_static(), region_id ) ;
         Region& region = dynamic_cast< Region& >( mesh_entity( region_gme ) ) ;
-        const Surface& S = model().surface( surface_id ) ;
+        const Surface& surface = model().surface( surface_id ) ;
 
-        index_t vertex_id = create_mesh_entity_vertices( region_gme,
-            S.nb_vertices() ) ;
+        std::vector< ElementVertex > cell_vertices( surface.nb_vertices() ) ;
+        for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
+            const vec3& p = surface.vertex( v ) ;
 
-        Mesh3DBuilder* region_mesh_builder = region.mesh3d_->get_mesh3d_builder() ;
-        for( index_t v = 0; v < S.nb_vertices(); v++ ) {
-            const vec3& p = S.vertex( v ) ;
+        for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
+            const vec3& p = surface.vertex( v ) ;
 
-            index_t cell = NO_ID ;
-            index_t cell_vertex = NO_ID ;
+            index_t& cell = cell_vertices[v].element_ ;
+            index_t& cell_vertex = cell_vertices[v].vertex_ ;
             bool found = find_cell_from_vertex( region, p, cell, cell_vertex ) ;
             ringmesh_unused( found ) ;
             ringmesh_assert( found && cell != NO_ID && cell_vertex != NO_ID ) ;
 
+        }
+
+        index_t vertex_id = create_mesh_entity_vertices( region_gme,
+            surface.nb_vertices() ) ;
+        Mesh3DBuilder* region_mesh_builder = region.mesh3d_->get_mesh3d_builder() ;
+        for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
+            const vec3& p = surface.vertex( v ) ;
+            const index_t& cell = cell_vertices[v].element_ ;
+            const index_t& cell_vertex = cell_vertices[v].vertex_ ;
+
             std::vector< index_t > cells ;
             region.cells_around_vertex( cell_vertex, cells, cell ) ;
             update_cell_vertex( region, cells, cell_vertex, vertex_id ) ;
-            region_mesh_builder->set_vertex( vertex_id, p ) ;
+            region_mesh_builder.set_vertex( vertex_id, p ) ;
             vertex_id++ ;
         }
     }
