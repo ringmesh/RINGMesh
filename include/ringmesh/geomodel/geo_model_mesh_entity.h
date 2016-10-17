@@ -281,8 +281,6 @@ namespace RINGMesh {
             GEOL_FEATURE geological_feature = NO_GEOL )
             : GeoModelEntity( model, id, name, geological_feature ), mesh_( NULL )
         {
-            model_vertex_id_.bind( mesh_->vertex_attribute_manager(),
-                model_vertex_id_att_name() ) ;
         }
         virtual void copy( const GeoModelEntity& from )
         {
@@ -302,6 +300,8 @@ namespace RINGMesh {
         {
             ringmesh_assert( mesh != NULL ) ;
             mesh_ = mesh ;
+            model_vertex_id_.bind( mesh_->vertex_attribute_manager(),
+                model_vertex_id_att_name() ) ;
         }
 
         bool is_boundary_connectivity_valid() const ;
@@ -1123,23 +1123,14 @@ namespace RINGMesh {
 
     protected:
         Region( const GeoModel& model, index_t id )
-            : GeoModelMeshEntity( model, id )
-        {
-            id_.type = type_name_static() ;
-        }
-        Region(
-            const GeoModel& model,
-            index_t id,
-            const std::string& name,
-            GEOL_FEATURE geological_feature )
             :
-                GeoModelMeshEntity( model, id, name, geological_feature ),
+                GeoModelMeshEntity( model, id ),
                 mesh3d_( new GeogramMesh( model, 3, false ) )
         {
             GeoModelMeshEntity::set_mesh( mesh3d_ ) ;
 
             id_.type = type_name_static() ;
-        }
+       }
 
         void copy( const GeoModelEntity& from )
         {

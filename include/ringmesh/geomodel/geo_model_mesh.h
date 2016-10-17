@@ -82,9 +82,7 @@ namespace RINGMesh {
 
         GeoModelMeshVertices(
             GeoModelMesh& gmm,
-            GeoModel& gm,
-            MeshAllD& mesh,
-            MeshAllDBuilder& mesh_builder ) ;
+            GeoModel& gm ) ;
         ~GeoModelMeshVertices() ;
 
         /*!
@@ -160,7 +158,7 @@ namespace RINGMesh {
         const ColocaterANN& colocater() const
         {
             test_and_initialize() ;
-            return mesh_.colocater_ann( ColocaterANN::VERTICES ) ;
+            return mesh_->colocater_ann( ColocaterANN::VERTICES ) ;
         }
 
         /*!
@@ -201,8 +199,8 @@ namespace RINGMesh {
         /// Attached GeoModel
         GeoModel& gm_ ;
         /// Attached Mesh
-        MeshAllD& mesh_ ;
-        MeshAllDBuilder& mesh_builder_ ;
+        MeshAllD* mesh_ ;
+        MeshAllDBuilder* mesh_builder_ ;
 
         /*!
          * Vertices in GeoModelEntities corresponding to each vertex
@@ -221,9 +219,7 @@ namespace RINGMesh {
         } ;
 
         GeoModelMeshFacets(
-            GeoModelMesh& gmm,
-            MeshAllD& mesh,
-            MeshAllDBuilder& mesh_builder ) ;
+            GeoModelMesh& gmm ) ;
         ~GeoModelMeshFacets() ;
 
         /*!
@@ -392,7 +388,7 @@ namespace RINGMesh {
         const ColocaterANN& colocater() const
         {
             test_and_initialize() ;
-            return mesh_.colocater_ann( ColocaterANN::FACETS ) ;
+            return mesh_->colocater_ann( ColocaterANN::FACETS ) ;
         }
 
     private:
@@ -420,8 +416,8 @@ namespace RINGMesh {
         /// Attached GeoModel
         const GeoModel& gm_ ;
         /// Attached Mesh
-        MeshAllD& mesh_ ;
-        MeshAllDBuilder& mesh_builder_ ;
+        MeshAllD* mesh_ ;
+        MeshAllDBuilder* mesh_builder_ ;
 
         /// Attribute storing the surface index per facet
         GEO::Attribute< index_t > surface_id_ ;
@@ -448,10 +444,10 @@ namespace RINGMesh {
     class RINGMESH_API GeoModelMeshEdges {
     ringmesh_disable_copy( GeoModelMeshEdges ) ;
     public:
+        friend class GeoModelMesh ;
+
         GeoModelMeshEdges(
-            GeoModelMesh& gmm,
-            MeshAllD& mesh,
-            MeshAllDBuilder& mesh_builder ) ;
+            GeoModelMesh& gmm ) ;
         ~GeoModelMeshEdges() ;
 
         /*!
@@ -503,8 +499,8 @@ namespace RINGMesh {
         /// Attached GeoModel
         const GeoModel& gm_ ;
         /// Attached Mesh
-        MeshAllD& mesh_ ;
-        MeshAllDBuilder& mesh_builder_ ;
+        MeshAllD* mesh_ ;
+        MeshAllDBuilder* mesh_builder_ ;
 
         /*!
          * Vector storing the index of the starting edge index
@@ -530,9 +526,7 @@ namespace RINGMesh {
         } ;
 
         GeoModelMeshCells(
-            GeoModelMesh& gmm,
-            MeshAllD& mesh,
-            MeshAllDBuilder& mesh_builder ) ;
+            GeoModelMesh& gmm ) ;
         /*!
          * Test if the mesh cells are initialized
          */
@@ -829,12 +823,12 @@ namespace RINGMesh {
         const ColocaterANN& cell_colocater() const
         {
             test_and_initialize() ;
-            return mesh_.colocater_ann( ColocaterANN::CELLS ) ;
+            return mesh_->colocater_ann( ColocaterANN::CELLS ) ;
         }
         const ColocaterANN& cell_facet_colocater() const
         {
             test_and_initialize() ;
-            return mesh_.colocater_ann( ColocaterANN::CELL_FACETS ) ;
+            return mesh_->colocater_ann( ColocaterANN::CELL_FACETS ) ;
         }
 
     private:
@@ -913,8 +907,8 @@ namespace RINGMesh {
         /// Attached GeoModel
         const GeoModel& gm_ ;
         /// Attached Mesh
-        MeshAllD& mesh_ ;
-        MeshAllDBuilder& mesh_builder_ ;
+        MeshAllD* mesh_ ;
+        MeshAllDBuilder* mesh_builder_ ;
 
         /// Attribute storing the region index per cell
         GEO::Attribute< index_t > region_id_ ;
@@ -968,7 +962,7 @@ namespace RINGMesh {
     public:
         friend class GeoModelMesh ;
 
-        GeoModelMeshOrder( GeoModelMesh& gmm, MeshAllD& mesh ) ;
+        GeoModelMeshOrder( GeoModelMesh& gmm ) ;
 
         /*!
          * Test if the mesh high orders are initialized
@@ -1050,7 +1044,7 @@ namespace RINGMesh {
         /// Attached GeoModel
         const GeoModel& gm_ ;
         /// Attached Mesh
-        MeshAllD& mesh_ ;
+        MeshAllD* mesh_ ;
         /// Total number of vertices + new high order vertices on cell edges
         index_t nb_vertices_ ;
         /// New vertices
