@@ -95,7 +95,7 @@ int main()
 
         GEO::vector< index_t > old2new ;
         index_t geo_nb = GEO::Geom::colocate( all_vertices[0].data(), 3,
-            nb_non_unique_vertices, old2new, epsilon ) ;
+            nb_non_unique_vertices, old2new, in.epsilon() ) ;
 
         index_t ringmesh_nb = in.mesh.vertices.nb() ;
 

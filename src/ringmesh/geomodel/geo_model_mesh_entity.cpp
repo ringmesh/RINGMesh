@@ -182,7 +182,9 @@ namespace {
             corners_global[v] = S.model_vertex_id( f, v ) ;
             v++ ;
         }
-        return check_mesh_entity_vertices_are_different( corners, corners_global ) ;
+        double area = S.mesh_element_size( f ) ;
+        return check_mesh_entity_vertices_are_different( corners, corners_global )
+            || area < S.model().epsilon2() ;
     }
 
     /*!
@@ -200,7 +202,7 @@ namespace {
         }
         double volume = region.mesh_element_size( cell_index ) ;
         return check_mesh_entity_vertices_are_different( vertices, vertices_global )
-            || volume < epsilon ;
+            || volume < region.model().epsilon3() ;
     }
 
     /*!
@@ -666,7 +668,7 @@ namespace RINGMesh {
         for( index_t e = 0; e < nb_mesh_elements(); ++e ) {
             double l = length(
                 mesh_element_vertex( e, 1 ) - mesh_element_vertex( e, 0 ) ) ;
-            if( l < epsilon ) {
+            if( l < model().epsilon() ) {
                 nb_degenerated++ ;
             }
         }
