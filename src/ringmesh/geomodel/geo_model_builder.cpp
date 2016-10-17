@@ -330,7 +330,7 @@ namespace {
                 for( index_t j = 0;
                     j < entity.nb_mesh_element_vertices( element_id ); j++ ) {
                     if( inexact_equal( entity.mesh_element_vertex( element_id, j ),
-                        v ) ) {
+                        v, entity.model().epsilon() ) ) {
                         vertex_id = entity.mesh_element_vertex_index( element_id,
                             j ) ;
                         return true ;
@@ -1858,7 +1858,7 @@ namespace RINGMesh {
             std::vector< index_t > facets ;
             surface.facets_around_vertex( facet_vertex, facets, false, facet ) ;
             update_facet_vertex( surface, facets, facet_vertex, vertex_id ) ;
-            surface_mesh_builder.set_vertex( vertex_id, p ) ;
+            surface_mesh_builder->set_vertex( vertex_id, p ) ;
             vertex_id++ ;
         }
     }
@@ -1875,9 +1875,6 @@ namespace RINGMesh {
         const Surface& surface = model().surface( surface_id ) ;
 
         std::vector< ElementVertex > cell_vertices( surface.nb_vertices() ) ;
-        for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
-            const vec3& p = surface.vertex( v ) ;
-
         for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
             const vec3& p = surface.vertex( v ) ;
 
@@ -1900,7 +1897,7 @@ namespace RINGMesh {
             std::vector< index_t > cells ;
             region.cells_around_vertex( cell_vertex, cells, cell ) ;
             update_cell_vertex( region, cells, cell_vertex, vertex_id ) ;
-            region_mesh_builder.set_vertex( vertex_id, p ) ;
+            region_mesh_builder->set_vertex( vertex_id, p ) ;
             vertex_id++ ;
         }
     }
