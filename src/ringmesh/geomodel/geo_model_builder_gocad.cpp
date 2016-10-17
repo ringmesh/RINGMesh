@@ -1350,9 +1350,13 @@ namespace RINGMesh {
      */
     void GeoModelBuilderML::load_file()
     {
+        std::cerr << "Begin read" << std::endl ;
         read_file() ;
+        std::cerr << "GMMV init" << std::endl ;
         model().mesh.vertices.test_and_initialize() ;
+        std::cerr << "Build line/corners" << std::endl ;
         build_lines_and_corners_from_surfaces() ;
+        std::cerr << "Build contacts" << std::endl ;
         build_contacts() ;
     }
 

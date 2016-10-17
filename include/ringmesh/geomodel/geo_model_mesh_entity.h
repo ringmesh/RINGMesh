@@ -685,6 +685,7 @@ namespace RINGMesh {
             index_t facet_index,
             index_t surface_vertex_index ) const
         {
+            ringmesh_assert( facet_index < nb_mesh_elements() ) ;
             for( index_t v = 0; v < nb_mesh_element_vertices( facet_index ); v++ ) {
                 if( mesh_element_vertex_index( facet_index, v )
                     == surface_vertex_index ) {
