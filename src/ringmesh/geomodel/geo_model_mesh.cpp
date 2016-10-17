@@ -1264,8 +1264,8 @@ namespace RINGMesh {
         for( index_t c = 0; c < mesh_->nb_cells(); c++ ) {
             for( index_t f = 0; f < mesh_->nb_cell_facets( c ); f++ ) {
                 std::vector< index_t > result ;
-                if( ann.get_colocated( mesh_->cell_facet_barycenter( c, f ),
-                    result ) ) {
+                if( ann.get_neighbors( mesh_->cell_facet_barycenter( c, f ),
+                    result, gm_.epsilon() ) ) {
                     facet_id_[mesh_->cell_facet( c, f )] = result[0] ;
                     // If there are more than 1 matching facet, this is WRONG
                     // and the vertex indices should be checked too [Jeanne]
