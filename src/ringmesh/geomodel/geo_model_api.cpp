@@ -732,7 +732,7 @@ namespace RINGMesh {
                 << std::endl ;
             return ;
         }
-        GEO::Matrix< double, 4 > rot_mat ;
+        GEO::Matrix< 4, double > rot_mat ;
         rotation_matrix_about_arbitrary_axis( origin, axis, theta, degrees,
             rot_mat ) ;
 
