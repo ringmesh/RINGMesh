@@ -48,6 +48,7 @@ namespace RINGMesh {
 
     class RINGMESH_API AABBTree {
     public:
+        AABBTree( const MeshBase& mesh ) ;
         AABBTree( const std::vector< Box3d >& bboxes ) ;
 
     private:
