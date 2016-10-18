@@ -226,7 +226,7 @@ namespace RINGMesh {
         const vec3& axis,
         double theta,
         bool degrees,
-        GEO::Matrix< double, 4 >& rot_mat ) ;
+        GEO::Matrix< 4, double >& rot_mat ) ;
 
     /*!
      * Given an array of vec3, this class computes the colocated points
