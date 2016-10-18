@@ -227,8 +227,11 @@ namespace RINGMesh {
 
     void clear_mesh_entity_model_vertex_id( const GeoModel& M, const std::string& entity_type )
     {
+        DEBUG(entity_type) ;
+        DEBUG(M.nb_mesh_entities( entity_type )) ;
         RINGMESH_PARALLEL_LOOP_DYNAMIC        
         for( index_t i = 0; i < M.nb_mesh_entities( entity_type ); ++i ) {
+            DEBUG(i) ;
             GeoModelMeshEntity& E = const_cast < GeoModelMeshEntity& >( M.mesh_entity( entity_type, i ) );
             GEO::Attribute< index_t > att( E.vertex_attribute_manager(),
                 GeoModelMeshEntity::model_vertex_id_att_name() ) ;

@@ -581,6 +581,7 @@ namespace RINGMesh {
          */
         void remove_geological_entities( const std::set< gme_t >& entities )
         {
+            DEBUG("Remove Geological Entities") ;
             if( verify_geological_entities( entities ) ) {
                 throw RINGMeshException( "REMOVE",
                     "You try try to remove a mesh entity using geological entity method" ) ;
@@ -602,6 +603,7 @@ namespace RINGMesh {
          */
         void remove_mesh_entities( const std::set< gme_t >& entities )
         {
+            DEBUG("Remove Mesh Entities") ;
             if( verify_geological_entities( entities ) ) {
                 throw RINGMeshException( "REMOVE",
                     "You try try to remove a geological entity using mesh entity method" ) ;
@@ -673,8 +675,9 @@ namespace RINGMesh {
 
             for( index_t i = 0; i < nb_mesh_entity_types_; ++i ) {
                 const EntityType entity_type = index_to_mesh_type_.find( i )->second ;
-                for( index_t j = 0; j < nb_initial_geological_entities_[i]; ++j ) {
+                for( index_t j = 0; j < nb_initial_mesh_entities_[i]; ++j ) {
                     if( mesh_entities_to_erase_[i][j] == NO_ID ) {
+                        DEBUG("Delete a mesh entity " + i) ;
                         delete_mesh_entity( entity_type, j ) ;
                     }
                 }
@@ -735,16 +738,19 @@ namespace RINGMesh {
                 modifiable_geological_entities( type ) ;
             store.erase(
                 std::remove( store.begin(), store.end(),
-                    static_cast< GME* >( nil ) ), store.end() ) ;
+                    static_cast< GeoModelGeologicalEntity* >( nil ) ), store.end() ) ;
         }
 
         void clear_null_mesh_entities( const EntityType& type )
         {
             std::vector< GeoModelMeshEntity* >& store =
                 modifiable_mesh_entities( type ) ;
+            DEBUG(store.size()) ;
             store.erase(
                 std::remove( store.begin(), store.end(),
-                    static_cast< GME* >( nil ) ), store.end() ) ;
+                    static_cast< GeoModelMeshEntity* >( nil ) ), store.end() ) ;
+            DEBUG(store.size()) ;
+
         }
         void update_entity_connectivity()
         {
