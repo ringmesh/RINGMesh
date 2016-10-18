@@ -136,16 +136,6 @@ namespace {
     {
         return GEO::Attribute< double >::is_defined( att_manager, att_name ) ;
     }
-
-    std::string entity_vertex_map_att_name(
-        const std::string& entity_type,
-        index_t entity_id )
-    {
-        std::ostringstream oss ;
-        oss << "vertex_map_" << entity_type << "_" << entity_id ;
-        return oss.str() ;
-    }
-
 }
 
 namespace RINGMesh {
@@ -172,16 +162,6 @@ namespace RINGMesh {
     {
         if( !is_initialized() ) {
             const_cast< GeoModelMeshVertices* >( this )->initialize() ;
-            DEBUG( " inti ") ;
-            std::string cur_entity_vertex_map_name = entity_vertex_map_att_name(
-               "Surface", 6 ) ;
-            GEO::Attribute< index_t > cur_entity_vertex_map(
-                gmm_.vertex_attribute_manager(), cur_entity_vertex_map_name ) ;
-            for( index_t v = 0 ; v < cur_entity_vertex_map.size(); v++ ) {
-                if( cur_entity_vertex_map[v] != NO_ID ) {
-                    std::cerr << v << "   :   " << cur_entity_vertex_map[v] << std::endl ;
-                }
-            }
         }
     }
 
@@ -203,8 +183,8 @@ namespace RINGMesh {
     {
         for( index_t i = 0; i < M.nb_mesh_entities( entity_type ); ++i ) {
             // Map initialization ;
-            std::string cur_entity_vertex_map_name = entity_vertex_map_att_name(
-                entity_type, i ) ;
+            std::string cur_entity_vertex_map_name =
+                M.mesh.vertices.entity_vertex_map_att_name( entity_type, i ) ;
             GEO::Attribute< index_t > cur_entity_vertex_map(
                 M.mesh.vertex_attribute_manager(), cur_entity_vertex_map_name ) ;
             cur_entity_vertex_map.fill( NO_ID ) ;
@@ -231,6 +211,7 @@ namespace RINGMesh {
 
     void GeoModelMeshVertices::initialize()
     {
+        DEBUG( "############## PASS THROUGH INIT ######################") ;
         MeshBuilder builder( mesh_ ) ;
         builder.clear( true, false ) ;
 
@@ -333,9 +314,6 @@ namespace RINGMesh {
         GEO::Attribute< index_t > cur_entity_vertex_map(
             gmm_.vertex_attribute_manager(), cur_entity_vertex_map_name ) ;
         for( index_t v = 0; v < nb(); ++v ) {
-            if( mesh_entity.index == 6 && mesh_entity.type == Surface::type_name_static() && entity_vertex_index == 2 && cur_entity_vertex_map[v] != NO_ID) {
-                DEBUG( cur_entity_vertex_map[v] ) ;
-            }
             if( cur_entity_vertex_map[v] == entity_vertex_index ) {
                 return v ;
             }
@@ -385,7 +363,6 @@ namespace RINGMesh {
                 gme_vertices.push_back( all_gme_vertices[gme_v].v_id ) ;
             }
         }
-        DEBUG( gme_vertices.size() ) ;
         return gme_vertices ;
     }
 
@@ -546,8 +523,9 @@ namespace RINGMesh {
         for( index_t t = 0; t < all_mesh_entity_types.size(); t++ ) {
             EntityType cur_entity_type = all_mesh_entity_types[t] ;
             for( index_t e = 0; e < geomodel.nb_mesh_entities( cur_entity_type ); e++ ) {
-                std::string cur_entity_vertex_map_name = entity_vertex_map_att_name(
-                    cur_entity_type, e ) ;
+                std::string cur_entity_vertex_map_name =
+                    geomodel.mesh.vertices.entity_vertex_map_att_name(
+                        cur_entity_type, e ) ;
                 GEO::Attribute< index_t > cur_entity_vertex_map(
                     geomodel.mesh.vertex_attribute_manager(), cur_entity_vertex_map_name ) ;
 
@@ -604,7 +582,9 @@ namespace RINGMesh {
             gmm_.vertex_attribute_manager(), cur_entity_vertex_map_name ) ;
         for( index_t v = 0 ; v < cur_entity_vertex_map.size(); v++ ) {
             if( cur_entity_vertex_map[v] != NO_ID ) {
-                std::cerr << v << "   :   " << cur_entity_vertex_map[v] << std::endl ;
+                std::cerr << v << "   :   " << cur_entity_vertex_map[v] << " | "
+                    << to_delete[v] << " | " << to_delete[to_delete[v]]
+                    << std::endl ;
             }
         }
         update_mesh_entities_maps( gm_, to_delete ) ;
@@ -2247,7 +2227,6 @@ namespace RINGMesh {
         const ColocaterANN& ann = mesh_->colocater_ann( ColocaterANN::CELLS ) ;
 
         for( index_t att_c = 0; att_c < att_c_names.size(); att_c++ ) {
-            DEBUG(att_c_names[att_c]) ;
             if( !is_attribute_a_double( cell_attribute_manager(),
                 att_c_names[att_c] ) ) {
                 continue ;

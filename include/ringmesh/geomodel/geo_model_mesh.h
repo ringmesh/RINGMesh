@@ -116,6 +116,15 @@ namespace RINGMesh {
          */
         index_t index( const vec3& p ) const ;
 
+        std::string entity_vertex_map_att_name(
+            const std::string& entity_type,
+            index_t entity_id ) const
+        {
+            std::ostringstream oss ;
+            oss << "vertex_map_" << entity_type << "_" << entity_id ;
+            return oss.str() ;
+        }
+
         /*!
          * @brief Get the GeoModelMesh index of a GeoModelMeshEntity vertex from its
          * index in that GeoModelMeshEntity
