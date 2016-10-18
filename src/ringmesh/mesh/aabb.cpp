@@ -59,6 +59,14 @@ namespace {
         }
     }
 
+    void compute_element_bboxes( const MeshBase& mesh, std::vector< Box3d >& bboxes )
+    {
+        bboxes.resize( mesh.nb_mesh_elements() ) ;
+        for( index_t i = 0; i < mesh.nb_mesh_elements(); i++ ) {
+            get_element_bbox( mesh, i, bboxes[i] ) ;
+        }
+    }
+
     /**
      * \brief Computes the maximum node index in a subtree
      * \param[in] node_index node index of the root of the subtree
@@ -187,14 +195,21 @@ namespace {
 
 namespace RINGMesh {
 
+    AABBTree::AABBTree( const MeshBase& mesh )
+    {
+        std::vector< Box3d > bboxes ;
+        compute_element_bboxes( mesh, bboxes ) ;
+        initialize_tree( bboxes ) ;
+    }
+
     AABBTree::AABBTree( const std::vector< Box3d >& bboxes )
     {
-        morton_sort( bboxes, mapping_morton_ ) ;
         initialize_tree( bboxes ) ;
     }
 
     void AABBTree::initialize_tree( const std::vector< Box3d >& bboxes )
     {
+        morton_sort( bboxes, mapping_morton_ ) ;
         index_t nb_bboxes = static_cast< index_t >( bboxes.size() ) ;
         tree_.resize( max_node_index( 1, 0, nb_bboxes ) + 1 ) ;
         initialize_tree_recursive( bboxes, 1, 0, nb_bboxes ) ;
