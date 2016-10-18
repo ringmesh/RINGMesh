@@ -187,6 +187,7 @@ namespace RINGMesh {
         }
         virtual index_t nb_mesh_element_vertices( index_t element ) const
         {
+            ringmesh_unused( element ) ;
             return 1 ;
         }
         virtual index_t mesh_element_vertex_index(
@@ -236,6 +237,7 @@ namespace RINGMesh {
         }
         virtual index_t nb_mesh_element_vertices( index_t element ) const
         {
+            ringmesh_unused( element ) ;
             return 2 ;
         }
         virtual index_t mesh_element_vertex_index(
@@ -578,6 +580,7 @@ namespace RINGMesh {
         }
         virtual index_t nb_mesh_element_vertices( index_t element ) const
         {
+            ringmesh_unused( element ) ;
             ringmesh_assert_not_reached ;
             return NO_ID ;
         }
@@ -585,6 +588,8 @@ namespace RINGMesh {
             index_t element,
             index_t vertex ) const
         {
+            ringmesh_unused( element ) ;
+            ringmesh_unused( vertex ) ;
             ringmesh_assert_not_reached ;
             return NO_ID ;
         }

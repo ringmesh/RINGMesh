@@ -33,37 +33,57 @@
  *     FRANCE
  */
 
-#ifndef RINGMESH_MESH_AABB
-#define RINGMESH_MESH_AABB
+#include <ringmesh/ringmesh_tests_config.h>
 
-#include <ringmesh/basic/common.h>
+#include <geogram/mesh/mesh.h>
+#include <geogram/mesh/mesh_io.h>
+#include <geogram/mesh/mesh_geometry.h>
+#include <geogram/mesh/mesh_reorder.h>
 
-#include <ringmesh/basic/box3d.h>
+#include <ringmesh/mesh/aabb.h>
 
-namespace RINGMesh {
-    class MeshBase ;
+/*!
+ * @author Arnaud Botella
+ */
+
+int main()
+{
+    using namespace RINGMesh ;
+
+    try {
+
+        GEO::initialize() ;
+        configure_geogram() ;
+        configure_ringmesh() ;
+
+        Logger::out( "TEST" ) << "Test AABB" << std::endl ;
+
+        GEO::Mesh M ;
+        std::vector< Box3d > bboxes( 100 ) ;
+        index_t current_box = 0 ;
+        for( index_t i = 0; i < 10; i++ ) {
+            for( index_t j = 0; j < 10; j++ ) {
+                bboxes[current_box].add_point( vec3( i, j, 0 ) ) ;
+                bboxes[current_box].add_point( vec3( i+1, j+1, 0 ) ) ;
+                current_box++ ;
+
+                index_t v0 = M.vertices.create_vertex( vec3( i, j, 0 ).data() ) ;
+                index_t v1 = M.vertices.create_vertex( vec3( i+1, j, 0 ).data() ) ;
+                index_t v2 = M.vertices.create_vertex( vec3( i, j+1, 0 ).data() ) ;
+                M.facets.create_triangle( v0, v1, v2 ) ;
+            }
+        }
+
+        AABBTree tree( bboxes ) ;
+
+
+    } catch( const RINGMeshException& e ) {
+        Logger::err( e.category() ) << e.what() << std::endl ;
+        return 1 ;
+    } catch( const std::exception& e ) {
+        Logger::err( "Exception" ) << e.what() << std::endl ;
+        return 1 ;
+    }
+    Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
+    return 0 ;
 }
-
-namespace RINGMesh {
-
-    class RINGMESH_API AABBTree {
-    public:
-        AABBTree( const std::vector< Box3d >& bboxes ) ;
-
-    private:
-        void initialize_tree( const std::vector< Box3d >& bboxes ) ;
-
-        void initialize_tree_recursive(
-            const std::vector< Box3d >& bboxes,
-            index_t node_index,
-            index_t element_begin,
-            index_t element_end ) ;
-
-    private:
-        std::vector< Box3d > tree_;
-        std::vector< index_t > mapping_morton_ ;
-    } ;
-}
-
-#endif
-

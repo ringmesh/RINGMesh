@@ -43,7 +43,7 @@ namespace {
 
     using namespace RINGMesh ;
 
-    typedef std::vector< index_t >::iterator vector_itr ;
+    typedef const std::vector< index_t >::iterator const_vector_itr ;
 
     /**
      * \brief Computes the axis-aligned bounding box of a mesh cell
@@ -82,8 +82,9 @@ namespace {
     template< index_t COORD >
     class Morton_cmp {
     public:
-        Morton_cmp(const std::vector< Box3d >& bboxes) :
-            bboxes_(bboxes) {
+        Morton_cmp( const std::vector< Box3d >& bboxes )
+            : bboxes_( bboxes )
+        {
         }
 
         bool operator()( index_t box1, index_t box2 )
@@ -92,8 +93,8 @@ namespace {
         }
 
     private:
-        const std::vector< Box3d >& bboxes_;
-    };
+        const std::vector< Box3d >& bboxes_ ;
+    } ;
 
     /**
      * \brief Splits a sequence into two ordered halves.
@@ -108,19 +109,18 @@ namespace {
      *  the two halves
      */
     template< class CMP >
-    inline vector_itr split( vector_itr begin, vector_itr end, CMP cmp )
+    inline const_vector_itr split( const_vector_itr& begin, const_vector_itr& end, CMP cmp )
     {
         if( begin >= end ) {
             return begin ;
         }
-        vector_itr middle = begin + ( end - begin ) / 2 ;
+        const_vector_itr middle = begin + ( end - begin ) / 2 ;
         std::nth_element( begin, middle, end, cmp ) ;
         return middle ;
     }
 
     /**
-     * \brief Generic class for sorting arbitrary elements in
-     *  Hilbert and Morton orders.
+     * \brief Generic class for sorting arbitrary elements in Morton order.
      * \details The implementation is inspired by:
      *  - Christophe Delage and Olivier Devillers. Spatial Sorting.
      *   In CGAL User and Reference Manual. CGAL Editorial Board,
@@ -131,36 +131,27 @@ namespace {
      *      sorted
      */
     template< template< index_t COORD > class CMP >
-    struct HilbertSort {
+    struct MortonSort {
 
-        /**
-         * \brief Low-level recursive spatial sorting function
-         * \details This function is recursive
-         * \param[in] M the mesh in which the elements reside
-         * \param[in] begin an iterator that points to the
-         *  first element of the sequence
-         * \param[in] end an interator that points one position past the
-         *  last element of the sequence
-         */
         template< index_t COORDX >
         static void sort(
             const std::vector< Box3d >& bboxes,
-            vector_itr begin,
-            vector_itr end )
+            const_vector_itr& begin,
+            const_vector_itr& end )
         {
             if( end - begin <= 1 ) {
                 return ;
             }
-            const index_t COORDY = (COORDX + 1) % 3, COORDZ = (COORDY + 1) % 3;
+            const index_t COORDY = ( COORDX + 1 ) % 3, COORDZ = ( COORDY + 1 ) % 3 ;
 
-            vector_itr m0 = begin, m8 = end ;
-            vector_itr m4 = split( m0, m8, CMP< COORDX >( bboxes ) ) ;
-            vector_itr m2 = split( m0, m4, CMP< COORDY >( bboxes ) ) ;
-            vector_itr m1 = split( m0, m2, CMP< COORDZ >( bboxes ) ) ;
-            vector_itr m3 = split( m2, m4, CMP< COORDZ >( bboxes ) ) ;
-            vector_itr m6 = split( m4, m8, CMP< COORDY >( bboxes ) ) ;
-            vector_itr m5 = split( m4, m6, CMP< COORDZ >( bboxes ) ) ;
-            vector_itr m7 = split( m6, m8, CMP< COORDZ >( bboxes ) ) ;
+            const_vector_itr m0 = begin, m8 = end ;
+            const_vector_itr m4 = split( m0, m8, CMP< COORDX >( bboxes ) ) ;
+            const_vector_itr m2 = split( m0, m4, CMP< COORDY >( bboxes ) ) ;
+            const_vector_itr m1 = split( m0, m2, CMP< COORDZ >( bboxes ) ) ;
+            const_vector_itr m3 = split( m2, m4, CMP< COORDZ >( bboxes ) ) ;
+            const_vector_itr m6 = split( m4, m8, CMP< COORDY >( bboxes ) ) ;
+            const_vector_itr m5 = split( m4, m6, CMP< COORDZ >( bboxes ) ) ;
+            const_vector_itr m7 = split( m6, m8, CMP< COORDZ >( bboxes ) ) ;
             sort< COORDZ >( bboxes, m0, m1 ) ;
             sort< COORDY >( bboxes, m1, m2 ) ;
             sort< COORDY >( bboxes, m2, m3 ) ;
@@ -171,23 +162,11 @@ namespace {
             sort< COORDZ >( bboxes, m7, m8 ) ;
         }
 
-        /**
-         * \brief Sorts a sequence of boxes spatially.
-         * \details This function does an indirect sort,
-         *  in the sense that a sequence
-         *  of indices that refer to the elements is sorted.
-         * \param[in] bboxes the array of bounding boxes
-         * \param[in] box_begin an interator to the first index to be sorted
-         * \param[in] box_end an interator one position past the last index
-         *  to be sorted
-         */
-        HilbertSort(
+        MortonSort(
             const std::vector< Box3d >& bboxes,
-            vector_itr box_begin,
-            vector_itr box_end )
+            std::vector< index_t >& mapping_morton )
         {
-            ringmesh_assert( box_end > box_begin ) ;
-            sort< 0 >( bboxes, box_begin, box_end ) ;
+            sort< 0 >( bboxes, mapping_morton.begin(), mapping_morton.end() ) ;
         }
     } ;
 
@@ -199,7 +178,7 @@ namespace {
         for( index_t i = 0; i < bboxes.size(); i++ ) {
             mapping_morton[i] = i ;
         }
-        HilbertSort< Morton_cmp >( bboxes, mapping_morton.begin(), mapping_morton.end() ) ;
+        MortonSort< Morton_cmp >( bboxes, mapping_morton ) ;
     }
 
 }
@@ -211,8 +190,14 @@ namespace RINGMesh {
     AABBTree::AABBTree( const std::vector< Box3d >& bboxes )
     {
         morton_sort( bboxes, mapping_morton_ ) ;
-        tree_.resize( max_node_index( 1, 0, bboxes.size() ) + 1 ) ;
-        init_bboxes_recursive( bboxes, 1, 0, bboxes.size() ) ;
+        initialize_tree( bboxes ) ;
+    }
+
+    void AABBTree::initialize_tree( const std::vector< Box3d >& bboxes )
+    {
+        index_t nb_bboxes = static_cast< index_t >( bboxes.size() ) ;
+        tree_.resize( max_node_index( 1, 0, nb_bboxes ) + 1 ) ;
+        initialize_tree_recursive( bboxes, 1, 0, nb_bboxes ) ;
     }
 
     /**
@@ -222,16 +207,16 @@ namespace RINGMesh {
      * \param[in] box_begin first box index in the vector \p bboxes
      * \param[in] box_end one position past the last box index in the vector \p bboxes
      */
-    void AABBTree::init_bboxes_recursive(
+    void AABBTree::initialize_tree_recursive(
         const std::vector< Box3d >& bboxes,
         index_t node_index,
         index_t box_begin,
         index_t box_end )
     {
-        ringmesh_assert( node_index < bboxes.size() ) ;
+        ringmesh_assert( node_index < tree_.size() ) ;
         ringmesh_assert( box_begin != box_end ) ;
         if( box_begin + 1 == box_end ) {
-            tree_[node_index] = bboxes[box_begin] ;
+            tree_[node_index] = bboxes[mapping_morton_[box_begin]] ;
             return ;
         }
         index_t element_middle = box_begin + ( box_end - box_begin ) / 2 ;
@@ -239,10 +224,8 @@ namespace RINGMesh {
         index_t child_right = 2 * node_index + 1 ;
         ringmesh_assert( child_left < tree_.size() ) ;
         ringmesh_assert( child_right < tree_.size() ) ;
-        init_bboxes_recursive( bboxes, child_left, box_begin, element_middle ) ;
-        init_bboxes_recursive( bboxes, child_right, element_middle, box_end ) ;
-        ringmesh_assert( child_left < bboxes.size() ) ;
-        ringmesh_assert( child_right < bboxes.size() ) ;
+        initialize_tree_recursive( bboxes, child_left, box_begin, element_middle ) ;
+        initialize_tree_recursive( bboxes, child_right, element_middle, box_end ) ;
         tree_[node_index] = tree_[child_left].bbox_union( tree_[child_right] ) ;
     }
 

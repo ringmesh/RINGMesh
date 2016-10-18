@@ -792,6 +792,7 @@ namespace {
 
             // If the sequence is smaller than 1024, use sequential sorting
             if(index_t(e - b) < 1024) {
+                std::cout << "********" << std::endl ; ;
                 sort<0, false, false, false>(M_, b, e);
                 return;
             }
