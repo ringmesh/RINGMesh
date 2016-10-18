@@ -143,7 +143,8 @@ namespace {
         const GeoModelMeshVertices& model_vertices = L.model().mesh.vertices ;
         bool equal = true ;
         for( index_t i = 0; i < L.nb_vertices(); i++ ) {
-            if( rhs_vertices[i] != model_vertices.model_vertex_id( L.gme_id(), i ) ) {
+            if( rhs_vertices[i]
+                != model_vertices.model_vertex_id( L.gme_id(), i ) ) {
                 equal = false ;
                 break ;
             }
@@ -151,9 +152,12 @@ namespace {
         if( equal ) {
             return true ;
         }
+        // If the order is the other one
         equal = true ;
         for( index_t i = 0; i < L.nb_vertices(); i++ ) {
-            if( rhs_vertices[i] != model_vertices.model_vertex_id( L.gme_id(), L.nb_vertices() - i - 1 ) ) {
+            if( rhs_vertices[i]
+                != model_vertices.model_vertex_id( L.gme_id(),
+                    L.nb_vertices() - i - 1 ) ) {
                 equal = false ;
                 break ;
             }
@@ -953,21 +957,26 @@ namespace RINGMesh {
         {
             std::cerr << "step i1" << std::endl ;
             const GeoModelMeshVertices& model_vertices = geomodel_.mesh.vertices ;
-            for( index_t i = 0; i < geomodel_.nb_surfaces(); ++i ) {
-                std::cerr << "surf " << i << std::endl ;
-                const Surface& S = geomodel_.surface( i ) ;
-                for( index_t j = 0; j < S.nb_mesh_elements(); ++j ) {
-                    for( index_t v = 0; v < S.nb_mesh_element_vertices( j ); ++v ) {
-                        if( S.is_on_border( j, v ) ) {
+            for( index_t s = 0; s < geomodel_.nb_surfaces(); ++s ) {
+                std::cerr << "surf " << s << std::endl ;
+                const Surface& S = geomodel_.surface( s ) ;
+                for( index_t f = 0; f < S.nb_mesh_elements(); ++f ) {
+                    for( index_t v = 0; v < S.nb_mesh_element_vertices( f ); ++v ) {
+                        if( S.is_on_border( f, v ) ) {
                             index_t vertex = model_vertices.model_vertex_id(
-                                S.gme_id(), j, v ) ;
+                                S.gme_id(), f, v ) ;
                             index_t next_vertex = model_vertices.model_vertex_id(
-                                S.gme_id(), j, S.next_facet_vertex_index( j, v ) ) ;
+                                S.gme_id(), f, S.next_facet_vertex_index( f, v ) ) ;
                             index_t previous_vertex = model_vertices.model_vertex_id(
-                                S.gme_id(), j, S.prev_facet_vertex_index( j, v ) ) ;
+                                S.gme_id(), f, S.prev_facet_vertex_index( f, v ) ) ;
                             border_triangles_.push_back(
-                                BorderTriangle( i, j, vertex, next_vertex,
+                                BorderTriangle( s, f, vertex, next_vertex,
                                     previous_vertex ) ) ;
+
+                            index_t me_v_id = model_vertices.mesh_entity_vertex_id(
+                                S.gme_id(), vertex ) ;
+                            ringmesh_assert(
+                                S.vertex_index_in_facet( f, me_v_id ) == v ) ;
                         }
                     }
                 }
@@ -1443,11 +1452,22 @@ namespace RINGMesh {
     {
         bool clear_vertices = false ;
         GeoModelMeshEntity& E = mesh_entity( Line::type_name_static(), line_id ) ;
+
         ringmesh_assert( E.nb_vertices() == 0 ) ; // If there are already some vertices
         // we are doomed because they are not removed
         /// @todo Do this test for all others set_something
         set_mesh_entity_vertices( gme_t( Line::type_name_static(), line_id ), unique_vertices,
             clear_vertices ) ;
+
+        std::string line_vertex_map_name =
+            model().mesh.vertices.entity_vertex_map_att_name(
+                Line::type_name_static(), line_id ) ;
+        GEO::Attribute< index_t > cur_line_vertex_map(
+            model().mesh.vertex_attribute_manager(), line_vertex_map_name ) ;
+        cur_line_vertex_map.fill( NO_ID ) ;
+        for( index_t v = 0; v < unique_vertices.size(); v++ ) {
+            cur_line_vertex_map[unique_vertices[v]] = v ;
+        }
 
         MeshBuilder builder( E.mesh_ ) ;
         for( index_t e = 1; e < E.nb_vertices(); e++ ) {
@@ -1987,7 +2007,6 @@ namespace RINGMesh {
 
         bool new_line_was_built = true ;
         while( new_line_was_built ) {
-            std::cerr << "new line while" << std::endl ;
             new_line_was_built = line_computer.compute_next_line_geometry() ;
 
             // I know this is a copy - but should'nt be too big [JP]
@@ -1998,7 +2017,6 @@ namespace RINGMesh {
                 reorder_line_vertices_to_start_at_corner( model(), vertices ) ;
             }
 
-            std::cerr << "step 1" << std::endl ;
             gme_t first_corner = find_or_create_corner( vertices.front() ) ;
             gme_t second_corner = find_or_create_corner( vertices.back() ) ;
             const std::vector< index_t >& adjacent_surfaces =
@@ -2008,19 +2026,16 @@ namespace RINGMesh {
             gme_t line_index = find_or_create_line( adjacent_surfaces, first_corner,
                 second_corner ) ;
 
-            std::cerr << "step 2" << std::endl ;
             bool created_line = model().nb_lines() != backup_nb_lines ;
             if( created_line ) {
                 set_line( line_index.index, vertices ) ;
 
-                std::cerr << "step 3" << std::endl ;
                 for( index_t j = 0; j < adjacent_surfaces.size(); ++j ) {
                     add_mesh_entity_in_boundary( line_index, adjacent_surfaces[j] ) ;
                 }
                 add_mesh_entity_boundary( line_index, first_corner.index ) ;
                 add_mesh_entity_boundary( line_index, second_corner.index ) ;
 
-                std::cerr << "step 4" << std::endl ;
                 // If the plan is to then build_regions, get the information
                 if( options_.compute_regions_brep ) {
                     regions_info_.push_back(
@@ -2028,13 +2043,11 @@ namespace RINGMesh {
                             line_computer.region_information() ) ) ;
                 }
             } else {
-                std::cerr << "step 5" << std::endl ;
                 bool same_geometry = line_equal( model().line( line_index.index ),
                     vertices ) ;
                 if( !same_geometry ) {
                     set_line( line_index.index, vertices ) ;
                 }
-                std::cerr << "step 6" << std::endl ;
             }
         }
         return true ;
