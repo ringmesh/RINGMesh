@@ -526,7 +526,7 @@ namespace RINGMesh {
      *
      * @param[in] rot_mat matrix which defines the rotation.
      */
-    void rotate_mesh( GEO::Mesh& mesh, const GEO::Matrix< double, 4 >& rot_mat )
+    void rotate_mesh( GEO::Mesh& mesh, const GEO::Matrix< 4, double >& rot_mat )
     {
         for( index_t v = 0; v < mesh.vertices.nb(); v++ ) {
             double old_coords[4] ;

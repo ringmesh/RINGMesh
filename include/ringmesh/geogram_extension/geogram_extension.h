@@ -99,7 +99,7 @@ namespace RINGMesh {
 
     void RINGMESH_API rotate_mesh(
         GEO::Mesh& mesh,
-        const GEO::Matrix< double, 4 >& rot_mat ) ;
+        const GEO::Matrix< 4, double >& rot_mat ) ;
 
     double RINGMESH_API mesh_cell_signed_volume( const GEO::Mesh& M, index_t c ) ;
     double RINGMESH_API mesh_cell_volume( const GEO::Mesh& M, index_t c ) ;
