@@ -48,12 +48,18 @@ namespace RINGMesh {
 
     class RINGMESH_API AABBTree {
     public:
+        static const index_t ROOT_INDEX = 1 ;
         AABBTree( const MeshBase& mesh ) ;
         AABBTree( const std::vector< Box3d >& bboxes ) ;
 
+        void save_tree( const std::string& name ) const ;
+        index_t nb_bboxes() const
+        {
+            return static_cast< index_t >( mapping_morton_.size() ) ;
+        }
+
     private:
         void initialize_tree( const std::vector< Box3d >& bboxes ) ;
-
         void initialize_tree_recursive(
             const std::vector< Box3d >& bboxes,
             index_t node_index,

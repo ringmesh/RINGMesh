@@ -75,6 +75,7 @@ int main()
         }
 
         AABBTree tree( bboxes ) ;
+        tree.save_tree( "toto" ) ;
 
 
     } catch( const RINGMeshException& e ) {
