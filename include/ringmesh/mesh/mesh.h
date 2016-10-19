@@ -50,9 +50,468 @@
 
 namespace RINGMesh {
     class GeoModel ;
+    class MeshBaseBuilder ;
+    class Mesh0DBuilder ;
+    class Mesh1DBuilder ;
+    class Mesh2DBuilder ;
+    class Mesh3DBuilder ;
+    class MeshAllDBuilder ;
+    class GeogramMeshBuilder ;
 }
 
 namespace RINGMesh {
+
+    /*!
+     * class base class for encapsulating Mesh structure
+     * @brief encapsulate adimensional mesh functionalities in order to provide an API
+     * on which we base the RINGMesh algorithm
+     * @note For now, we encapsulate the GEO::Mesh class.
+     */
+    class RINGMESH_API MeshBase {
+    ringmesh_disable_copy( MeshBase ) ;
+        friend class MeshBaseBuilder ;
+
+    public:
+
+        virtual ~MeshBase();
+
+        virtual void save_mesh(
+            const std::string& filename,
+            const GEO::MeshIOFlags& ioflags ) const = 0 ;
+
+        /*!
+         * @brief return the ColocaterANN at the given ColocaterANN::MeshLocation
+         * @warning the ColocaterANN is destroy when calling the Mesh::facets_aabb() and Mesh::cells_aabb()
+         */
+        virtual const ColocaterANN& colocater_ann(
+            ColocaterANN::MeshLocation location ) const = 0 ;
+
+        /*!
+         * get access to GEO::MESH... only for GFX..
+         * @todo Remove this function as soon as the GEO::MeshGFX is encapsulated
+         */
+        virtual const GEO::Mesh& gfx_mesh() const = 0 ;
+
+        virtual index_t nb_connected_components() const = 0 ;
+
+        //TODO maybe reimplement the function with a RINGMesh::Mesh??
+        virtual void print_mesh_bounded_attributes() const = 0 ;
+        /*!
+         * \name Vertex methods
+         * @{
+         */
+        /*!
+         * @brief Gets a point.
+         * @param[in] v_id the vertex, in 0.. @function nb_vetices()-1.
+         * @return const reference to the point that corresponds to the vertex.
+         */
+        virtual const vec3& vertex( index_t v_id ) const = 0 ;
+
+        /*
+         * @brief Gets the number of point in the Mesh.
+         */
+        virtual index_t nb_vertices() const = 0 ;
+
+        virtual GEO::AttributesManager& vertex_attribute_manager() const = 0 ;
+
+        MeshBaseBuilder* get_mesh_base_builder()
+        {
+            return get_mesh_builder_base() ;
+        }
+
+        /*!
+         * @}
+         */
+    protected:
+        /*!
+         * @brief MeshBase constructor.
+         * @param[in] geo_model GeoModel from which the MeshBase depend on.
+         * @param[in] dimension dimension of the vertices.
+         * @param[in] single_precision if true, vertices are stored in single precision (float),
+         * else they are stored as double precision (double)..
+         */
+        MeshBase( const GeoModel& geo_model )
+            : geo_model_( geo_model ), mesh_builder_( NULL )
+        {
+        }
+        virtual MeshBaseBuilder* get_mesh_builder_base() = 0 ;
+
+    protected:
+        const GeoModel& geo_model_ ;
+        MeshBaseBuilder* mesh_builder_ ;
+
+    } ;
+
+    /*!
+     * class for encapsulating isoated vertices structure
+     */
+    class RINGMESH_API Mesh0D: public virtual MeshBase {
+    ringmesh_disable_copy( Mesh0D ) ;
+        friend class Mesh0DBuilder ;
+
+    public:
+        virtual ~Mesh0D()
+        {
+        }
+        Mesh0DBuilder* get_mesh0d_builder() ;
+    protected:
+        /*!
+         * @brief Mesh0D constructor.
+         * @param[in] geo_model GeoModel from which the MeshBase depend on.
+         * @param[in] dimension dimension of the vertices.
+         * @param[in] single_precision if true, vertices are stored in single precision (float),
+         * else they are stored as double precision (double)..
+         */
+        Mesh0D( const GeoModel& geo_model )
+            : MeshBase( geo_model )
+        {
+        }
+
+    } ;
+
+    /*!
+     * class for encapsulating 1D mesh component
+     */
+    class RINGMESH_API Mesh1D: public virtual MeshBase {
+    ringmesh_disable_copy( Mesh1D ) ;
+        friend class Mesh1DBuilder ;
+
+    public:
+        virtual ~Mesh1D()
+        {
+        }
+        /*
+         * @brief Gets the index of an edge vertex.
+         * @param[in] edge_id index of the edge.
+         * @param[in] vertex_id local index of the vertex, in {0,1}
+         * @return the global index of vertex \param vertex_id in edge \param edge_id.
+         */
+        virtual index_t edge_vertex( index_t edge_id, index_t vertex_id ) const = 0 ;
+
+        /*!
+         * @brief Gets the number of all the edges in the whole Mesh.
+         */
+        virtual index_t nb_edges() const =0 ;
+
+        /*!
+         * @brief Gets the length of the edge \param edge_id
+         */
+        virtual double edge_length( index_t edge_id ) const = 0 ;
+
+        virtual GEO::AttributesManager& edge_attribute_manager() const = 0 ;
+
+        Mesh1DBuilder* get_mesh1d_builder() ;
+
+    protected:
+        Mesh1D( const GeoModel& geo_model )
+            : MeshBase( geo_model )
+        {
+        }
+
+    } ;
+
+    /*!
+     * class for encapsulating 2D mesh component
+     */
+    class RINGMESH_API Mesh2D: public virtual MeshBase {
+    ringmesh_disable_copy( Mesh2D ) ;
+        friend class Mesh2DBuilder ;
+
+    public:
+        virtual ~Mesh2D()
+        {
+        }
+        /*!
+         * @brief Gets the vertex index by facet index and local vertex index.
+         * @param[in] facet_id the facet index.
+         * @param[in] vertex_id the local edge index in \param facet_id.
+         * @return the global facet index adjacent to the \param edge_id of the facet \param facet_id.
+         * @precondition  \param edge_id < number of edge of the facet \param facet_id .
+         */
+        virtual index_t facet_vertex( index_t facet_id, index_t vertex_id ) const=0 ;
+        /*!
+         * @brief Gets the number of all facets in the whole Mesh.
+         */
+        virtual index_t nb_facets() const=0 ;
+        /*!
+         * @brief Gets the number of vertices in the facet \param facet_id.
+         * @param[in] facet_id facet index
+         */
+        virtual index_t nb_facet_vertices( index_t facet_id ) const=0 ;
+        /*!
+         * @brief Get the first vertex index of a facet.
+         * @param[in] facet_id facet index
+         */
+        virtual index_t facet_begin( index_t facet_id ) const=0 ;
+        /*!
+         * @brief Get the last vertex index of a facet.
+         * @param[in] facet_id facet index
+         */
+        virtual index_t facet_end( index_t facet_id ) const=0 ;
+        /*!
+         * @brief Gets the next vertex index in the facet \param facet_id.
+         * @param[in] facet_id facet index
+         * @param[in] vertex_id current index
+         */
+        virtual index_t next_facet_vertex(
+            index_t facet_id,
+            index_t vertex_id ) const=0 ;
+        /*!
+         * @brief Gets the previous vertex index in the facet \param facet_id.
+         * @param[in] facet_id facet index
+         * @param[in] vertex_id current index
+         */
+        virtual index_t prev_facet_vertex(
+            index_t facet_id,
+            index_t vertex_id ) const=0 ;
+        /*!
+         * @brief Gets an adjacent facet index by facet index and local edge index.
+         * @param[in] facet_id the facet index.
+         * @param[in] edge_id the local edge index in \param facet_id.
+         * @return the global facet index adjacent to the \param edge_id of the facet \param facet_id.
+         * @precondition  \param edge_id < number of edge of the facet \param facet_id .
+         */
+        virtual index_t facet_adjacent( index_t facet_id, index_t edge_id ) const=0 ;
+        virtual GEO::AttributesManager& facet_attribute_manager() const=0 ;
+        /*!
+         * @brief Tests whether all the facets are triangles. when all the facets are triangles, storage and access is optimized.
+         * @return True if all facets are triangles and False otherwise.
+         */
+        virtual bool facets_are_simplicies() const=0 ;
+        /*!
+         * return true if the facet \param facet_id is a triangle
+         */
+        virtual bool is_triangle( index_t facet_id ) const=0 ;
+        /*!
+         * @brief Create an AABB tree for a Mesh facets
+         * @pre The GeoModelEntity must be simplicial
+         * @warning SIDE EFFECTS: The mesh vertices are reordered.
+         * @warning calling this function will destroy the ColocaterANN.
+         */
+        virtual const GEO::MeshFacetsAABB& facets_aabb() const = 0 ;
+        /*!
+         * Computes the Mesh facet normal
+         * @param[in] facet_id the facet index
+         * @return the facet normal
+         */
+        virtual vec3 facet_normal( index_t facet_id ) const=0 ;
+        /*!
+         * Computes the Mesh facet barycenter
+         * @param[in] facet_id the facet index
+         * @return the facet center
+         */
+        virtual vec3 facet_barycenter( index_t facet_id ) const=0 ;
+        /*!
+         * Computes the Mesh facet area
+         * @param[in] facet_id the facet index
+         * @return the facet area
+         */
+        virtual double facet_area( index_t facet_id ) const=0 ;
+
+        Mesh2DBuilder* get_mesh2d_builder() ;
+
+    protected:
+        Mesh2D( const GeoModel& geo_model )
+            : MeshBase( geo_model )
+        {
+        }
+
+    } ;
+
+    /*!
+     * class for encapsulating 3D mesh component
+     */
+    class RINGMESH_API Mesh3D: public virtual MeshBase {
+    ringmesh_disable_copy( Mesh3D ) ;
+        friend class Mesh3DBuilder ;
+
+    public:
+        virtual ~Mesh3D()
+        {
+        }
+
+        /*!
+         * @brief Gets a vertex index by cell and local vertex index.
+         * @param[in] cell_id the cell index.
+         * @param[in] vertex_id the local vertex index in \param cell_id.
+         * @return the global vertex index.
+         * @precondition vertex_id<number of vertices of the cell.
+         */
+        virtual index_t cell_vertex( index_t cell_id, index_t vertex_id ) const = 0 ;
+
+        /*!
+         * @brief Gets a vertex index by cell and local edge and local vertex index.
+         * @param[in] cell_id the cell index.
+         * @param[in] edge_id the local edge index in \param cell_id.
+         * @param[in] vertex_id the local vertex index in \param cell_id.
+         * @return the global vertex index.
+         * @precondition vertex_id<number of vertices of the cell.
+         */
+        virtual index_t cell_edge_vertex(
+            index_t cell_id,
+            index_t edge_id,
+            index_t vertex_id ) const = 0 ;
+
+        /*!
+         * @brief Gets a vertex by cell facet and local vertex index.
+         * @param[in] cell_id index of the cell
+         * @param[in] facet_id index of the facet in the cell \param cell_id
+         * @param[in] vertex_id index of the vertex in the facet \param facet_id
+         * @return the global vertex index.
+         * @precondition vertex_id < number of vertices in the facet \param facet_id
+         * and facet_id number of facet in th cell \param cell_id
+         */
+        virtual index_t cell_facet_vertex(
+            index_t cell_id,
+            index_t facet_id,
+            index_t vertex_id ) const = 0 ;
+
+        /*!
+         * @brief Gets a facet index by cell and local facet index.
+         * @param[in] cell_id index of the cell
+         * @param[in] facet_id index of the facet in the cell \param cell_id
+         * @return the global facet index.
+         */
+        virtual index_t cell_facet( index_t cell_id, index_t facet_id ) const = 0 ;
+
+        /*!
+         * @brief Gets the number of facet in a cell
+         * @param[in] cell_id index of the cell
+         * @return the number of facet of the cell \param cell_id
+         */
+        virtual index_t nb_cell_facets( index_t cell_id ) const = 0 ;
+
+        /*!
+         * @brief Gets the number of edges in a cell
+         * @param[in] cell_id index of the cell
+         * @return the number of facet of the cell \param cell_id
+         */
+        virtual index_t nb_cell_edges( index_t cell_id ) const = 0 ;
+
+        /*!
+         * @brief Gets the number of vertices of a facet in a cell
+         * @param[in] cell_id index of the cell
+         * @param[in] facet_id index of the facet in the cell \param cell_id
+         * @return the number of vertices in the facet \param facet_id in the cell \param cell_id
+         */
+        virtual index_t nb_cell_facet_vertices(
+            index_t cell_id,
+            index_t facet_id ) const = 0 ;
+
+        /*!
+         * @brief Gets the number of vertices of a cell
+         * @param[in] cell_id index of the cell
+         * @return the number of vertices in the cell \param cell_id
+         */
+        virtual index_t nb_cell_vertices( index_t cell_id ) const = 0 ;
+
+        /*!
+         * @brief Gets the number of cells in the Mesh.
+         */
+        virtual index_t nb_cells() const = 0 ;
+
+        /*!
+         * @return the index of the adjacent cell of \param cell_id along the facet \param facet_id
+         */
+        virtual index_t cell_adjacent(
+            index_t cell_id,
+            index_t facet_id ) const = 0 ;
+
+        virtual GEO::AttributesManager& cell_attribute_manager() const = 0 ;
+
+        virtual GEO::AttributesManager& cell_facet_attribute_manager() const = 0 ;
+
+        /*!
+         * @brief Gets the type of a cell.
+         * @param[in] cell_id the cell index, in 0..nb()-1
+         */
+        virtual GEO::MeshCellType cell_type( index_t cell_id ) const = 0 ;
+
+        /*!
+         * @brief Tests whether all the cells are tetrahedra. when all the cells are tetrahedra, storage and access is optimized.
+         * @return True if all cells are tetrahedra and False otherwise.
+         */
+        virtual bool cells_are_simplicies() const = 0 ;
+
+        /*!
+         * @brief Create an AABB tree for a Mesh cells
+         * @pre The GeoModelEntity must be simplicial
+         * @warning SIDE EFFECTS: The mesh vertices are reordered.
+         * @warning calling this function will destroy the ColocaterANN.
+         */
+        virtual const GEO::MeshCellsAABB& cells_aabb() const = 0 ;
+        /*!
+         * Computes the Mesh cell facet barycenter
+         * @param[in] cell_id the cell index
+         * @param[in] facet_id the facet index in the cell
+         * @return the cell facet center
+         */
+        virtual vec3 cell_facet_barycenter(
+            index_t cell_id,
+            index_t facet_id ) const = 0 ;
+
+        /*!
+         * Compute the non weighted barycenter of the \param cell_id
+         */
+        virtual vec3 cell_barycenter( index_t cell_id ) const = 0 ;
+
+        /*!
+         * Computes the Mesh cell facet normal
+         * @param[in] cell_id the cell index
+         * @param[in] facet_id the facet index in the cell
+         * @return the cell facet normal
+         */
+        virtual vec3 cell_facet_normal(
+            index_t cell_id,
+            index_t facet_id ) const = 0 ;
+
+        /*!
+         * @brief compute the volume of the cell \param cell_id.
+         */
+        virtual double cell_volume( index_t cell_id ) const = 0 ;
+
+        virtual index_t cell_begin( index_t cell_id ) const = 0 ;
+
+        virtual index_t cell_end( index_t cell_id ) const = 0 ;
+
+        virtual index_t find_cell_corner(
+            index_t cell_id,
+            index_t vertex_id ) const = 0 ;
+
+        Mesh3DBuilder* get_mesh3d_builder() ;
+
+    protected:
+        Mesh3D( const GeoModel& geo_model )
+            : MeshBase( geo_model )
+        {
+        }
+
+    } ;
+
+    class RINGMESH_API MeshAllD: public Mesh0D,
+        public Mesh1D,
+        public Mesh2D,
+        public Mesh3D {
+    ringmesh_disable_copy( MeshAllD ) ;
+        friend class MeshAllDBuilder ;
+
+    public:
+        virtual ~MeshAllD()
+        {
+        }
+        MeshAllDBuilder* get_meshalld_builder() ;
+    protected:
+        MeshAllD( const GeoModel& geo_model )
+            :
+                MeshBase( geo_model ),
+                Mesh0D( geo_model ),
+                Mesh1D( geo_model ),
+                Mesh2D( geo_model ),
+                Mesh3D( geo_model )
+        {
+        }
+
+    } ;
 
     /*!
      * @brief class to encapsulate mesh structure in order to provide an API
@@ -60,10 +519,10 @@ namespace RINGMesh {
      * @note For now, we encapsulate the GEO::Mesh class. We can develop the concept
      * using a factory to build several encapsulating classes. 
      */
-    class RINGMESH_API Mesh {
-    ringmesh_disable_copy( Mesh ) ;
-        friend class MeshBuilder ;
-    
+    class RINGMESH_API GeogramMesh: public MeshAllD {
+    ringmesh_disable_copy( GeogramMesh ) ;
+        friend class GeogramMeshBuilder ;
+
     public:
         /*!
          * @brief Mesh constructor.
@@ -71,15 +530,22 @@ namespace RINGMesh {
          * @param[in] single_precision if true, vertices are stored in single precision (float),
          * else they are stored as double precision (double)..
          */
-        Mesh( const GeoModel& geo_model, index_t dimension, bool single_precision )
-            : geo_model_( geo_model ), facets_aabb_( nil ), cells_aabb_( nil )
+        GeogramMesh(
+            const GeoModel& geo_model,
+            index_t dimension,
+            bool single_precision )
+            :
+                MeshBase( geo_model ),
+                MeshAllD( geo_model ),
+                facets_aabb_( NULL ),
+                cells_aabb_( NULL )
         {
             mesh_ = new GEO::Mesh( dimension, single_precision ) ;
             for( index_t i = 0; i < ColocaterANN::NB_LOCATION; i++ ) {
                 ann_[i] = nil ;
             }
         }
-        ~Mesh()
+        ~GeogramMesh()
         {
             if( facets_aabb_ ) delete facets_aabb_ ;
             if( cells_aabb_ ) delete cells_aabb_ ;
@@ -88,7 +554,10 @@ namespace RINGMesh {
             }
             delete mesh_ ;
         }
-
+        /*!
+         * \name MeshBase implementation
+         * @{
+         */
         void save_mesh(
             const std::string& filename,
             const GEO::MeshIOFlags& ioflags ) const
@@ -128,10 +597,6 @@ namespace RINGMesh {
             print_bounded_attributes( *mesh_ ) ;
         }
 
-        /*!
-         * \name Vertex methods
-         * @{
-         */
         /*
          * @brief Gets a point.
          * @param[in] v_id the vertex, in 0.. @function nb_vetices()-1.
@@ -155,11 +620,11 @@ namespace RINGMesh {
             return mesh_->vertices.attributes() ;
         }
 
-        /*!
-         *  @}
-         * \name Edge methods
+        /*!@}
+         * \name Mesh1D implementation
          * @{
          */
+
         /*
          * @brief Gets the index of an edge vertex.
          * @param[in] edge_id index of the edge.
@@ -191,10 +656,11 @@ namespace RINGMesh {
             return mesh_->edges.attributes() ;
         }
 
-        /*! @}
-         * \name Facets methods
+        /*!@}
+         * \name Mesh2D implementation
          * @{
          */
+
         /*!
          * @brief Gets the vertex index by facet index and local vertex index.
          * @param[in] facet_id the facet index.
@@ -329,8 +795,9 @@ namespace RINGMesh {
         {
             return GEO::Geom::mesh_facet_area( *mesh_, facet_id ) ;
         }
-        /*! @}
-         * \name Cells methods
+
+        /*!@}
+         * \name Mesh3D implementation
          * @{
          */
 
@@ -382,8 +849,9 @@ namespace RINGMesh {
          * @param[in] facet_id index of the facet in the cell \param cell_id
          * @return the global facet index.
          */
-        index_t cell_facet( index_t cell_id, index_t facet_id ) const {
-            return mesh_->cells.facet( cell_id,facet_id ) ;
+        index_t cell_facet( index_t cell_id, index_t facet_id ) const
+        {
+            return mesh_->cells.facet( cell_id, facet_id ) ;
         }
         /*!
          * @brief Gets the number of facet in a cell
@@ -509,15 +977,18 @@ namespace RINGMesh {
             return RINGMesh::mesh_cell_volume( *mesh_, cell_id ) ;
         }
 
-        index_t cell_begin(index_t cell_id )const{
+        index_t cell_begin( index_t cell_id ) const
+        {
             return mesh_->cells.corners_begin( cell_id ) ;
         }
-        index_t cell_end( index_t cell_id )const{
+        index_t cell_end( index_t cell_id ) const
+        {
             return mesh_->cells.corners_end( cell_id ) ;
         }
-        index_t find_cell_corner( index_t cell_id, index_t vertex_id ) const {
-            for( index_t v=0 ; v < nb_cell_vertices( cell_id ) ; ++v ){
-                if( cell_vertex( cell_id, v ) == vertex_id ){
+        index_t find_cell_corner( index_t cell_id, index_t vertex_id ) const
+        {
+            for( index_t v = 0; v < nb_cell_vertices( cell_id ); ++v ) {
+                if( cell_vertex( cell_id, v ) == vertex_id ) {
                     return cell_begin( cell_id ) + v ;
                 }
             }
@@ -527,9 +998,12 @@ namespace RINGMesh {
          * @}
          */
 
+        GeogramMeshBuilder* get_geogram_mesh_builder() ;
+    protected:
+        virtual MeshBaseBuilder* get_mesh_builder_base() ;
+
     private:
         mutable GEO::Mesh* mesh_ ;
-        const GeoModel& geo_model_ ;
 
         mutable GEO::MeshFacetsAABB* facets_aabb_ ;
         mutable GEO::MeshCellsAABB* cells_aabb_ ;
