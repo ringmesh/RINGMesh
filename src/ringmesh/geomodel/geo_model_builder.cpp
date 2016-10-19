@@ -698,11 +698,8 @@ namespace RINGMesh {
                 collect_region_information_( collect_region_info ),
                 cur_border_triangle_( 0 )
         {
-            std::cerr << "step c1" << std::endl ;
             initialize_border_triangles_from_model_surfaces() ;
-            std::cerr << "step c2" << std::endl ;
             visited_.resize( border_triangles_.size(), false ) ;
-            std::cerr << "step c3" << std::endl ;
         }
 
         /*!
@@ -713,6 +710,8 @@ namespace RINGMesh {
         bool compute_next_line_geometry()
         {
             go_to_next_non_visited_border_triangle() ;
+//            DEBUG( border_triangles_[cur_border_triangle_].v0_ ) ;
+//            DEBUG( border_triangles_[cur_border_triangle_].v1_ ) ;
 
             if( is_not_the_end() ) {
                 init_next_line_computation() ;
@@ -816,10 +815,17 @@ namespace RINGMesh {
             get_adjacent_surfaces( cur_border_triangle_,
                 cur_line_adjacent_surfaces_ ) ;
 
+//            for( index_t s = 0; s < cur_line_adjacent_surfaces_.size(); s++ ) {
+//                DEBUG(cur_line_adjacent_surfaces_[s]) ;
+//            }
+
             bool backward = false ;
+//            DEBUG(cur_line_vertices_.size()) ;
             get_one_line_vertices( backward ) ;
+//            DEBUG(cur_line_vertices_.size()) ;
             backward = true ;
             get_one_line_vertices( backward ) ;
+//            DEBUG(cur_line_vertices_.size()) ;
 
             if( collect_region_information_ ) {
                 collect_region_information() ;
@@ -1066,8 +1072,13 @@ namespace RINGMesh {
             std::vector< index_t >& adjacent_surfaces )
         {
             index_t j = i ;
+//            DEBUG(i) ;
             while( j < border_triangles_.size()
                 && border_triangles_[i].same_edge( border_triangles_[j] ) ) {
+//                DEBUG( border_triangles_[j].v0_ ) ;
+//                DEBUG( border_triangles_[j].v1_ ) ;
+//                DEBUG( border_triangles_[j].surface_ ) ;
+//                DEBUG( border_triangles_[j].facet_ ) ;
                 adjacent_surfaces.push_back( border_triangles_[j].surface_ ) ;
                 j++ ;
             }
@@ -1456,8 +1467,8 @@ namespace RINGMesh {
         ringmesh_assert( E.nb_vertices() == 0 ) ; // If there are already some vertices
         // we are doomed because they are not removed
         /// @todo Do this test for all others set_something
-        set_mesh_entity_vertices( gme_t( Line::type_name_static(), line_id ), unique_vertices,
-            clear_vertices ) ;
+        set_mesh_entity_vertices( gme_t( Line::type_name_static(), line_id ),
+            unique_vertices, clear_vertices ) ;
 
         std::string line_vertex_map_name =
             model().mesh.vertices.entity_vertex_map_att_name(
@@ -2011,6 +2022,7 @@ namespace RINGMesh {
 
             // I know this is a copy - but should'nt be too big [JP]
             std::vector< index_t > vertices = line_computer.vertices() ;
+
             bool is_line_closed = vertices.front() == vertices.back() ;
             if( is_line_closed ) {
                 // Vertices can begin and end at any vertex
@@ -2025,6 +2037,12 @@ namespace RINGMesh {
             index_t backup_nb_lines = model().nb_lines() ;
             gme_t line_index = find_or_create_line( adjacent_surfaces, first_corner,
                 second_corner ) ;
+
+//            std::cerr<< " line number " << line_index.index << std::endl ;
+//            for( index_t v = 0; v < vertices.size(); v++ ) {
+//                std::cerr << vertices[v] << " = "
+//                    << model().mesh.vertices.vertex( vertices[v] ) << std::endl ;
+//            }
 
             bool created_line = model().nb_lines() != backup_nb_lines ;
             if( created_line ) {

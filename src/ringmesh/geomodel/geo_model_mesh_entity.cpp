@@ -268,17 +268,20 @@ namespace RINGMesh {
         for( index_t v = 0; v < nb_vertices(); ++v ) {
             index_t model_v = model_vertices.model_vertex_id( gme_id(), v ) ;
 
-            const std::vector< GMEVertex >& backward =
-                model().mesh.vertices.gme_vertices( model_v ) ;
-
-            GMEVertex cur_v( gme_id(), v ) ;
-            index_t count_v = static_cast< index_t >( std::count( backward.begin(),
-                backward.end(), cur_v ) ) ;
-
-            if( count_v != 1 ) {
+            if( model_v == NO_ID ) {
                 Logger::warn( "GeoModelEntity" ) << gme_id() << " vertex " << v
-                    << " appears " << count_v
-                    << " in the related global model vertex " << model_v
+                    << " is not mapped to the related global model vertex indices."
+                    << std::endl ;
+                valid = false ;
+            }
+
+            index_t backward_v = model_vertices.mesh_entity_vertex_id( gme_id(),
+                model_v ) ;
+
+            if( backward_v != v ) {
+                Logger::warn( "GeoModelEntity" ) << "Error in mapping of "
+                    << gme_id() << " vertex " << v
+                    << " to the related global model vertex indices."
                     << std::endl ;
                 valid = false ;
             }
