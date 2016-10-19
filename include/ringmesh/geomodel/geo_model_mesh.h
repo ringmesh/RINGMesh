@@ -158,8 +158,10 @@ namespace RINGMesh {
 
         /*!
          * @brief Get the vertices in GME corresponding to the given unique vertex
+         * @param[in] v Vertex index in the model
+         * @param[out] gme_vertices Result
          */
-        const std::vector< GMEVertex >& gme_vertices( index_t v ) const ;
+        void gme_vertices( index_t v, std::vector< GMEVertex >& gme_vertices ) const ;
 
         /*!
          * @brief Get the vertex indices in the specified GeoModelMeshEntity
@@ -176,11 +178,11 @@ namespace RINGMesh {
          */
         index_t add_vertex( const vec3& point ) ;
 
-        /*!
-         * @brief Add a vertex in a GeoModelEntity
-         *        corresponding to an existing vertex of the model
-         */
-        void add_to_gme( index_t v, const GMEVertex& v_gme ) ;
+//        /*!
+//         * @brief Add a vertex in a GeoModelEntity
+//         *        corresponding to an existing vertex of the model
+//         */
+//        void add_to_gme( index_t v, const GMEVertex& v_gme ) ;
 
         /*!
          * @brief Change one of the GME vertex associated to a vertex
@@ -252,11 +254,11 @@ namespace RINGMesh {
         Mesh& mesh_ ;
         MeshBuilder& mesh_builder_ ;
 
-        /*!
-         * Vertices in GeoModelEntities corresponding to each vertex
-         * @todo Change this extremely expensive storage !!!
-         */
-        std::vector< std::vector< GMEVertex > > gme_vertices_ ;
+//        /*!
+//         * Vertices in GeoModelEntities corresponding to each vertex
+//         * @todo Change this extremely expensive storage !!!
+//         */
+//        std::vector< std::vector< GMEVertex > > gme_vertices_ ;
     } ;
 
     class RINGMESH_API GeoModelMeshFacets {
