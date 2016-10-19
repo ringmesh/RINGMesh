@@ -486,6 +486,11 @@ namespace {
 
             builder.build_model() ;
             print_geomodel( model ) ;
+            DEBUG( " lines checking") ;
+            for( index_t c = 0; c < model.nb_corners(); c++) {
+                std::cerr << c << " : " << model.corner(c).nb_in_boundary() << std::endl ;
+            }
+            geomodel_save( model, "/tmp/invalid.gm" );
             // Check validity
             is_geomodel_valid( model ) ;
 
