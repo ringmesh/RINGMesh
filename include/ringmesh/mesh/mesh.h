@@ -246,6 +246,7 @@ namespace RINGMesh {
         {
             return edge_vertex( element, vertex ) ;
         }
+
         Mesh1DBuilder* get_mesh1d_builder() ;
 
     protected:

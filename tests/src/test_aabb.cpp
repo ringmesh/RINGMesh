@@ -74,7 +74,7 @@ int main()
             }
         }
 
-        AABBTree tree( bboxes ) ;
+        AABBTreeBox tree( bboxes ) ;
         tree.save_tree( "toto" ) ;
 
 

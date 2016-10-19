@@ -69,7 +69,13 @@ namespace RINGMesh {
     /*!
      * See http://www.geometrictools.com/LibMathematics/Distance/Distance.html
      */
-    double point_triangle_distance(
+    double RINGMESH_API point_segment_distance(
+         const vec3& p,
+         const vec3& p0,
+         const vec3& p1,
+         vec3& nearest_p  ) ;
+
+    double RINGMESH_API point_triangle_distance(
         const vec3& point,
         const vec3& V0,
         const vec3& V1,
