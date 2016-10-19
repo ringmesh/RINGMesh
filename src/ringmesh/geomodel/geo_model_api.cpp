@@ -862,8 +862,8 @@ namespace RINGMesh {
     gme_t find_corner( const GeoModel& geomodel, index_t model_point_id )
     {
         const GeoModelMeshVertices& model_vertices = geomodel.mesh.vertices ;
-        const std::vector< GMEVertex >& vertices = model_vertices.gme_vertices(
-            model_point_id ) ;
+        std::vector< GMEVertex > vertices ;
+        model_vertices.gme_vertices( model_point_id, vertices ) ;
         for( index_t i = 0; i < vertices.size(); ++i ) {
             if( vertices[i].gme_id.type == Corner::type_name_static() ) {
                 return vertices[i].gme_id ;

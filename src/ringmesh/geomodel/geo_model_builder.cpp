@@ -1281,7 +1281,6 @@ namespace RINGMesh {
 
     /*!
      * @brief Sets the geometrical position of a vertex from a model vertex
-     * @details Sets also both mapping from GeoModelMeshVertices to GeoModelMeshEntity.
      * @param[in] entity_id Entity index
      * @param[in] v Index of the vertex to modify
      * @param[in] model_vertex Index in GeoModelMeshVertices of the vertex giving
@@ -1297,7 +1296,7 @@ namespace RINGMesh {
             model_vertices.vertex( model_vertex ), false ) ;
 
         ringmesh_assert( v < mesh_entity( entity_id ).nb_vertices() ) ;
-        model_vertices.add_to_gme( model_vertex, GMEVertex( entity_id, v ) ) ;
+//        model_vertices.add_to_gme( model_vertex, GMEVertex( entity_id, v ) ) ;
     }
 
     /*!

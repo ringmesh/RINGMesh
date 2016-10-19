@@ -181,10 +181,10 @@ namespace {
      */
     bool is_edge_on_line( const GeoModel& model, index_t v0, index_t v1 )
     {
-        const std::vector< GMEVertex >& v0_bme = model.mesh.vertices.gme_vertices(
-            v0 ) ;
-        const std::vector< GMEVertex >& v1_bme = model.mesh.vertices.gme_vertices(
-            v1 ) ;
+        std::vector< GMEVertex > v0_bme ;
+        model.mesh.vertices.gme_vertices( v0, v0_bme ) ;
+        std::vector< GMEVertex > v1_bme ;
+        model.mesh.vertices.gme_vertices( v1, v1_bme ) ;
 
         bool found_line = false ;
         for( index_t i = 0; i < v0_bme.size(); ++i ) {
@@ -524,8 +524,8 @@ namespace {
             std::vector< index_t > surfaces ;
             std::vector< index_t > regions ;
 
-            const std::vector< GMEVertex >& bmes = M.mesh.vertices.gme_vertices(
-                i ) ;
+            std::vector< GMEVertex > bmes ;
+            M.mesh.vertices.gme_vertices( i, bmes ) ;
 
             for( index_t j = 0; j < bmes.size(); ++j ) {
                 const std::string& T = bmes[j].gme_id.type ;
