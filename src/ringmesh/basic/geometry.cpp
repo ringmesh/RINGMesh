@@ -782,6 +782,27 @@ namespace RINGMesh {
         return false ;
     }
 
+    double point_segment_distance(
+        const vec3& p,
+        const vec3& p0,
+        const vec3& p1,
+        vec3& nearest_p )
+    {
+        if( point_segment_projection( p, p0, p1, nearest_p ) ) {
+            return length( nearest_p - p ) ;
+        } else {
+            double p0_distance_sq = length2( p0 - p ) ;
+            double p1_distance_sq = length2( p1 - p ) ;
+            if( p0_distance_sq < p1_distance_sq ) {
+                nearest_p = p0 ;
+                return std::sqrt( p0_distance_sq ) ;
+            } else {
+                nearest_p = p1 ;
+                return std::sqrt( p1_distance_sq ) ;
+            }
+        }
+    }
+
     /*!
      * Computes the smallest distance between a point and a quad
      * @param[in] p the point to test

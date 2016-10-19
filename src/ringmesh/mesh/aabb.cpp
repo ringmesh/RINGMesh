@@ -74,18 +74,7 @@ namespace {
      * \param[in] box_end one position past the last box index
      * \return the maximum node index in the subtree rooted at \p node_index
      */
-    index_t max_node_index( index_t node_index, index_t box_begin, index_t box_end )
-    {
-        ringmesh_assert( box_end > box_begin ) ;
-        if( box_begin + 1 == box_end ) {
-            return node_index ;
-        }
-        index_t element_middle = box_begin + ( box_end - box_begin ) / 2 ;
-        index_t child_left = 2 * node_index ;
-        index_t child_right = 2 * node_index + 1 ;
-        return std::max( max_node_index( child_left, box_begin, element_middle ),
-            max_node_index( child_right, element_middle, box_end ) ) ;
-    }
+
 
     template< index_t COORD >
     class Morton_cmp {
@@ -226,24 +215,28 @@ namespace {
 
 namespace RINGMesh {
 
-    AABBTree::AABBTree( const MeshBase& mesh )
-    {
-        std::vector< Box3d > bboxes ;
-        compute_element_bboxes( mesh, bboxes ) ;
-        initialize_tree( bboxes ) ;
-    }
-
-    AABBTree::AABBTree( const std::vector< Box3d >& bboxes )
-    {
-        initialize_tree( bboxes ) ;
-    }
-
     void AABBTree::initialize_tree( const std::vector< Box3d >& bboxes )
     {
         morton_sort( bboxes, mapping_morton_ ) ;
         index_t nb_bboxes = static_cast< index_t >( bboxes.size() ) ;
         tree_.resize( max_node_index( ROOT_INDEX, 0, nb_bboxes ) + ROOT_INDEX ) ;
         initialize_tree_recursive( bboxes, ROOT_INDEX, 0, nb_bboxes ) ;
+    }
+
+    index_t AABBTree::max_node_index(
+        index_t node_index,
+        index_t box_begin,
+        index_t box_end )
+    {
+        ringmesh_assert( box_end > box_begin ) ;
+        if( is_leaf( box_begin, box_end ) ) {
+            return node_index ;
+        }
+        index_t element_middle, child_left, child_right ;
+        get_recursive_iterators( node_index, box_begin, box_end,
+            element_middle, child_left, child_right ) ;
+        return std::max( max_node_index( child_left, box_begin, element_middle ),
+            max_node_index( child_right, element_middle, box_end ) ) ;
     }
 
     /**
@@ -261,13 +254,13 @@ namespace RINGMesh {
     {
         ringmesh_assert( node_index < tree_.size() ) ;
         ringmesh_assert( box_begin != box_end ) ;
-        if( box_begin + 1 == box_end ) {
+        if( is_leaf( box_begin, box_end ) ) {
             tree_[node_index] = bboxes[mapping_morton_[box_begin]] ;
             return ;
         }
-        index_t element_middle = box_begin + ( box_end - box_begin ) / 2 ;
-        index_t child_left = 2 * node_index ;
-        index_t child_right = 2 * node_index + 1 ;
+        index_t element_middle, child_left, child_right ;
+        get_recursive_iterators( node_index, box_begin, box_end, element_middle,
+            child_left, child_right ) ;
         ringmesh_assert( child_left < tree_.size() ) ;
         ringmesh_assert( child_right < tree_.size() ) ;
         initialize_tree_recursive( bboxes, child_left, box_begin, element_middle ) ;
@@ -292,5 +285,88 @@ namespace RINGMesh {
         }
     }
 
+
+    void AABBTree::get_nearest_element_box_hint(
+        const vec3& query,
+        vec3& nearest_point,
+        double& distance ) const
+    {
+        index_t box_begin = 0 ;
+        index_t box_end = nb_bboxes() ;
+        index_t node_index = ROOT_INDEX ;
+        while( !is_leaf( box_end, box_begin ) ) {
+            index_t box_middle, child_left, child_right ;
+            get_recursive_iterators( node_index, box_begin, box_end, box_middle,
+                child_left, child_right ) ;
+            if( length2( tree_[child_left].center() - query )
+                < length2( tree_[child_right].center() - query ) ) {
+                box_end = box_middle ;
+                node_index = child_left ;
+            } else {
+                box_begin = box_middle ;
+                node_index = child_right ;
+            }
+        }
+
+        nearest_point = get_point_hint_from_box( tree_[box_begin],
+            mapping_morton_[box_begin] ) ;
+        distance = length( query - nearest_point ) ;
+    }
+
+    /****************************************************************************/
+
+    AABBTreeBox::AABBTreeBox( const std::vector< Box3d >& bboxes )
+    {
+        initialize_tree( bboxes ) ;
+    }
+
+    vec3 AABBTreeBox::get_point_hint_from_box( const Box3d& box, index_t element_id ) const
+    {
+        ringmesh_unused( element_id ) ;
+        return box.center() ;
+    }
+
+    /****************************************************************************/
+
+    AABBTreeMesh::AABBTreeMesh( const MeshBase& mesh )
+    {
+        std::vector< Box3d > bboxes ;
+        compute_element_bboxes( mesh, bboxes ) ;
+        initialize_tree( bboxes ) ;
+    }
+
+    /****************************************************************************/
+
+    AABBTree1D::AABBTree1D( const Mesh1D& mesh )
+        : AABBTreeMesh( mesh ), mesh_( mesh )
+    {
+    }
+
+    index_t AABBTree1D::closest_edge(
+        const vec3& query,
+        vec3& nearest_point,
+        double& distance ) const
+    {
+        DistanceToEdge action( mesh_ ) ;
+        return closest_element_box< DistanceToEdge >( query, nearest_point, distance,
+            action ) ;
+    }
+
+    vec3 AABBTree1D::get_point_hint_from_box( const Box3d& box, index_t element_id ) const
+    {
+        ringmesh_unused( box ) ;
+        return mesh_.mesh_element_vertex( element_id, 0 ) ;
+    }
+
+    void AABBTree1D::DistanceToEdge::operator()(
+        const vec3& query,
+        index_t cur_box,
+        vec3& nearest_point,
+        double& distance ) const
+    {
+        const vec3& v0 = mesh_.vertex( mesh_.edge_vertex( cur_box, 0 ) ) ;
+        const vec3& v1 = mesh_.vertex( mesh_.edge_vertex( cur_box, 1 ) ) ;
+        distance = point_segment_distance( query, v0, v1, nearest_point ) ;
+    }
 }
 
