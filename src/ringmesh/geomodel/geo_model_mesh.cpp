@@ -103,14 +103,24 @@ namespace {
         const GEO::Attribute< index_t >& region_id_ ;
     } ;
 
-    index_t find_local_vertex_id( const Mesh& mesh, index_t cell, index_t vertex_id )
+//    index_t find_local_vertex_id( const Mesh& mesh, index_t cell, index_t vertex_id )
+//    {
+//        for( index_t v = 0; v < mesh.nb_cell_vertices( cell ); v++ ) {
+//            if( mesh.cell_vertex( cell, v ) == vertex_id ) {
+//                return v ;
+//            }
+//        }
+//        return NO_ID ;
+//    }
+
+    std::string mesh_entity_vertex_map_name(
+        const gme_t& mesh_entity_id )
     {
-        for( index_t v = 0; v < mesh.nb_cell_vertices( cell ); v++ ) {
-            if( mesh.cell_vertex( cell, v ) == vertex_id ) {
-                return v ;
-            }
-        }
-        return NO_ID ;
+        ringmesh_assert(
+            EntityTypeManager::is_mesh_entity_type( mesh_entity_id.type ) ) ;
+        std::ostringstream oss ;
+        oss << "vertex_map_" << mesh_entity_id.type << "_" << mesh_entity_id.index ;
+        return oss.str() ;
     }
 
     void cell_facets_around_vertex(
@@ -139,13 +149,141 @@ namespace {
 }
 
 namespace RINGMesh {
+    index_t GeoModelVertexMapper::model_vertex_index(
+        const gme_t& mesh_entity_id,
+        const index_t mesh_entity_vertex_index ) const
+    {
+        ringmesh_assert(
+            EntityTypeManager::is_mesh_entity_type( mesh_entity_id.type ) ) ;
+        ringmesh_assert( mesh_entity_vertex_index <
+            geomodel_.mesh_entity( mesh_entity_id ).nb_vertices() ) ;
+
+        GEO::Attribute< index_t > mesh_entity_vertex_map(
+            mesh_entity_vertex_attribute_manager( mesh_entity_id ),
+            mesh_entity_vertex_map_name( mesh_entity_id ) ) ;
+
+        return mesh_entity_vertex_map[mesh_entity_vertex_index] ;
+    }
+
+    std::vector< index_t > GeoModelVertexMapper::mesh_entity_vertex_indices(
+        const gme_t& mesh_entity_id,
+        const index_t model_vertex_index ) const
+    {
+        ringmesh_assert(
+            EntityTypeManager::is_mesh_entity_type( mesh_entity_id.type ) ) ;
+        ringmesh_assert( model_vertex_index < model_vertices_.nb() ) ;
+
+        std::vector< index_t > mesh_entity_vertex_indices ;
+        GEO::Attribute< index_t > mesh_entity_vertex_map(
+            mesh_entity_vertex_attribute_manager( mesh_entity_id ),
+            mesh_entity_vertex_map_name( mesh_entity_id ) ) ;
+        index_t nb_mesh_entity_vertices =
+            geomodel_.mesh_entity( mesh_entity_id ).nb_vertices() ;
+
+        for( index_t v = 0; v < nb_mesh_entity_vertices; v++ ) {
+            if( mesh_entity_vertex_map[v] == model_vertex_index ) {
+                mesh_entity_vertex_indices.push_back( v ) ;
+            }
+        }
+        return mesh_entity_vertex_indices ;
+    }
+
+    void GeoModelVertexMapper::all_mesh_entity_vertices(
+        index_t v,
+        std::vector< GMEVertex >& gme_vertices ) const
+    {
+        const std::vector< EntityType >& all_mesh_entity_types =
+            EntityTypeManager::mesh_entity_types() ;
+        for( index_t t = 0; t < all_mesh_entity_types.size(); t++ ) {
+            EntityType cur_entity_type = all_mesh_entity_types[t] ;
+            for( index_t e = 0; e < geomodel_.nb_mesh_entities( cur_entity_type );
+                e++ ) {
+                gme_t cur_entity( cur_entity_type, e ) ;
+                std::vector< index_t > cur_gme_vertices = mesh_entity_vertex_indices(
+                    cur_entity, v ) ;
+                for( index_t gme_v = 0; gme_v < cur_gme_vertices.size(); gme_v++ ) {
+                    gme_vertices.push_back(
+                        GMEVertex( cur_entity, cur_gme_vertices[gme_v] ) ) ;
+                }
+            }
+        }
+    }
+
+    void  GeoModelVertexMapper::set_vertex_map_value(
+        const gme_t& mesh_entity_id,
+        const index_t mesh_entity_vertex_index,
+        const index_t model_entity_vertex_index ) const
+    {
+        ringmesh_assert(
+            EntityTypeManager::is_mesh_entity_type( mesh_entity_id.type ) ) ;
+        ringmesh_assert( mesh_entity_vertex_index <
+            geomodel_.mesh_entity( mesh_entity_id ).nb_vertices() ) ;
+        ringmesh_assert( model_entity_vertex_index < model_vertices_.nb() ) ;
+
+        GEO::Attribute< index_t > mesh_entity_vertex_map(
+            mesh_entity_vertex_attribute_manager( mesh_entity_id ),
+            mesh_entity_vertex_map_name( mesh_entity_id ) ) ;
+
+        mesh_entity_vertex_map[mesh_entity_vertex_index] =
+            model_entity_vertex_index ;
+    }
+
+    void GeoModelVertexMapper::initialize_mesh_entity_vertex_map(
+        const gme_t& mesh_entity_id ) const
+    {
+        ringmesh_assert(
+            EntityTypeManager::is_mesh_entity_type( mesh_entity_id.type ) ) ;
+
+        GEO::Attribute< index_t > mesh_entity_vertex_map(
+            mesh_entity_vertex_attribute_manager( mesh_entity_id ),
+            mesh_entity_vertex_map_name( mesh_entity_id ) ) ;
+        mesh_entity_vertex_map.fill( NO_ID ) ;
+    }
+
+    void GeoModelVertexMapper::update_mesh_entities_maps(
+        const std::vector< index_t >& old2new ) const
+    {
+        const std::vector< EntityType >& all_mesh_entity_types =
+            EntityTypeManager::mesh_entity_types() ;
+        for( index_t t = 0; t < all_mesh_entity_types.size(); t++ ) {
+            EntityType cur_entity_type = all_mesh_entity_types[t] ;
+            for( index_t e = 0; e < geomodel_.nb_mesh_entities( cur_entity_type );
+                e++ ) {
+                const GeoModelMeshEntity& E = geomodel_.mesh_entity( cur_entity_type,
+                    e ) ;
+                for( index_t v = 0; v < E.nb_vertices(); v++ ) {
+                    index_t old_m_id = model_vertex_index( E.gme_id(), v ) ;
+                    index_t new_m_id = old2new[ old_m_id ] ;
+                    set_vertex_map_value( E.gme_id(), v, new_m_id ) ;
+                }
+            }
+        }
+
+    }
+
+    GEO::AttributesManager& GeoModelVertexMapper::mesh_entity_vertex_attribute_manager(
+        const gme_t& mesh_entity_id ) const
+    {
+        ringmesh_assert(
+            EntityTypeManager::is_mesh_entity_type( mesh_entity_id.type ) ) ;
+            const GeoModelMeshEntity& mesh_entity = geomodel_.mesh_entity(
+                mesh_entity_id ) ;
+        return mesh_entity.vertex_attribute_manager() ;
+    }
+
+
 
     GeoModelMeshVertices::GeoModelMeshVertices(
         GeoModelMesh& gmm,
         GeoModel& gm,
         Mesh& mesh,
         MeshBuilder& mesh_builder )
-        : gmm_( gmm ), gm_( gm ), mesh_( mesh ), mesh_builder_( mesh_builder )
+        :
+            gmm_( gmm ),
+            gm_( gm ),
+            mesh_( mesh ),
+            mesh_builder_( mesh_builder ),
+            vertex_mapper_( *this, gm )
     {
     }
 
@@ -199,31 +337,31 @@ namespace RINGMesh {
         const GeoModel& M,
         const std::string& entity_type,
         MeshBuilder& builder,
+        const GeoModelVertexMapper& vertex_mapper,
 //        std::vector< std::vector< GMEVertex > >& gme_vertices,
         index_t& count )
     {
         for( index_t i = 0; i < M.nb_mesh_entities( entity_type ); ++i ) {
-            // Map initialization ;
-            std::string cur_entity_vertex_map_name =
-                M.mesh.vertices.entity_vertex_map_att_name( entity_type, i ) ;
-            GEO::Attribute< index_t > cur_entity_vertex_map(
-                M.mesh.vertex_attribute_manager(), cur_entity_vertex_map_name ) ;
-            cur_entity_vertex_map.fill( NO_ID ) ;
-
             GeoModelMeshEntity& E = const_cast< GeoModelMeshEntity& >( M.mesh_entity(
                 entity_type, i ) ) ;
             if( E.nb_vertices() == 0 ) {
                 continue ;
             }
 
-            index_t before_count = count ;
+            // Map initialization ;
+            vertex_mapper.initialize_mesh_entity_vertex_map( E.gme_id() ) ;
+//            GEO::Attribute< index_t > cur_entity_vertex_map =
+//                get_mesh_entity_vertex_map( E ) ;
+//            cur_entity_vertex_map.fill( NO_ID ) ;
+
+//            index_t before_count = count ;
             for( index_t v = 0; v < E.nb_vertices(); v++ ) {
                 builder.set_vertex( count, E.vertex( v ) ) ;
 //                ///@todo to remove
 //                // Index in the GME stored at global level
 //                gme_vertices[count].push_back( GMEVertex( E.gme_id(), v ) ) ;
                 // Map from vertices of MeshEntities to GeoModelMeshVertices
-                cur_entity_vertex_map[count] = v ;
+                vertex_mapper.set_vertex_map_value( E.gme_id(), v, count ) ;
                 // Global vertex index increment
                 count++ ;
             }
@@ -254,13 +392,13 @@ namespace RINGMesh {
 //        gme_vertices_.resize( nb ) ;
 
         index_t count = 0 ;
-        fill_vertices( gm_, Corner::type_name_static(), builder, //gme_vertices_,
+        fill_vertices( gm_, Corner::type_name_static(), builder, vertex_mapper_, //gme_vertices_,
             count ) ;
-        fill_vertices( gm_, Line::type_name_static(), builder, //gme_vertices_,
+        fill_vertices( gm_, Line::type_name_static(), builder, vertex_mapper_, //gme_vertices_,
             count ) ;
-        fill_vertices( gm_, Surface::type_name_static(), builder, //gme_vertices_,
+        fill_vertices( gm_, Surface::type_name_static(), builder, vertex_mapper_, //gme_vertices_,
             count ) ;
-        fill_vertices( gm_, Region::type_name_static(), builder, //gme_vertices_,
+        fill_vertices( gm_, Region::type_name_static(), builder, vertex_mapper_, //gme_vertices_,
             count ) ;
         // Remove colocated vertices
         remove_colocated() ;
@@ -327,19 +465,8 @@ namespace RINGMesh {
         const gme_t& mesh_entity,
         index_t entity_vertex_index ) const
     {
-        ringmesh_assert(
-            gm_.mesh_entity( mesh_entity ).nb_vertices() > entity_vertex_index ) ;
         test_and_initialize() ;
-        std::string cur_entity_vertex_map_name = entity_vertex_map_att_name(
-            mesh_entity.type, mesh_entity.index ) ;
-        GEO::Attribute< index_t > cur_entity_vertex_map(
-            gmm_.vertex_attribute_manager(), cur_entity_vertex_map_name ) ;
-        for( index_t v = 0; v < nb(); ++v ) {
-            if( cur_entity_vertex_map[v] == entity_vertex_index ) {
-                return v ;
-            }
-        }
-        return NO_ID ;
+        return vertex_mapper_.model_vertex_index( mesh_entity, entity_vertex_index ) ;
     }
 
     index_t GeoModelMeshVertices::model_vertex_id(
@@ -353,16 +480,14 @@ namespace RINGMesh {
         return model_vertex_id( mesh_entity, entity_vertex_index ) ;
     }
 
-    index_t GeoModelMeshVertices::mesh_entity_vertex_id(
+    std::vector< index_t > GeoModelMeshVertices::mesh_entity_vertex_id(
         const gme_t& mesh_entity,
-        index_t model_vertex_id ) const
+        index_t model_vertex_index ) const
     {
-        ringmesh_assert( model_vertex_id < nb() ) ;
-        std::string cur_entity_vertex_map_name = entity_vertex_map_att_name(
-            mesh_entity.type, mesh_entity.index ) ;
-        GEO::Attribute< index_t > cur_entity_vertex_map(
-            gmm_.vertex_attribute_manager(), cur_entity_vertex_map_name ) ;
-        return cur_entity_vertex_map[model_vertex_id] ;
+        test_and_initialize() ;
+        ringmesh_assert( model_vertex_index < nb() ) ;
+        return vertex_mapper_.mesh_entity_vertex_indices( mesh_entity,
+            model_vertex_index ) ;
     }
 
     void GeoModelMeshVertices::gme_vertices(
@@ -370,23 +495,7 @@ namespace RINGMesh {
         std::vector< GMEVertex >& gme_vertices ) const
     {
         test_and_initialize() ;
-
-        const std::vector< EntityType >& all_mesh_entity_types =
-            EntityTypeManager::mesh_entity_types() ;
-        for( index_t t = 0; t < all_mesh_entity_types.size(); t++ ) {
-            EntityType cur_entity_type = all_mesh_entity_types[t] ;
-            for( index_t e = 0; e < gm_.nb_mesh_entities( cur_entity_type ); e++ ) {
-                gme_t cur_entity( cur_entity_type, e ) ;
-                std::string cur_entity_vertex_map_name = entity_vertex_map_att_name(
-                    cur_entity_type, e ) ;
-                GEO::Attribute< index_t > cur_entity_vertex_map(
-                    gmm_.vertex_attribute_manager(), cur_entity_vertex_map_name ) ;
-                if( cur_entity_vertex_map[v] != NO_ID ) {
-                    gme_vertices.push_back(
-                        GMEVertex( cur_entity, cur_entity_vertex_map[v] ) ) ;
-                }
-            }
-        }
+        vertex_mapper_.all_mesh_entity_vertices( v, gme_vertices ) ;
     }
 
     const std::vector< index_t > GeoModelMeshVertices::gme_vertices(
@@ -554,33 +663,6 @@ namespace RINGMesh {
 //        }
 //    }
 
-    void update_mesh_entities_maps(
-        const GeoModel& geomodel,
-        const std::vector< index_t >& old2new )
-    {
-        const std::vector< EntityType >& all_mesh_entity_types =
-            EntityTypeManager::mesh_entity_types() ;
-        for( index_t t = 0; t < all_mesh_entity_types.size(); t++ ) {
-            EntityType cur_entity_type = all_mesh_entity_types[t] ;
-            for( index_t e = 0; e < geomodel.nb_mesh_entities( cur_entity_type ); e++ ) {
-                std::string cur_entity_vertex_map_name =
-                    geomodel.mesh.vertices.entity_vertex_map_att_name(
-                        cur_entity_type, e ) ;
-                GEO::Attribute< index_t > cur_entity_vertex_map(
-                    geomodel.mesh.vertex_attribute_manager(), cur_entity_vertex_map_name ) ;
-
-                for( index_t v = 0; v < old2new.size(); v++ ) {
-                    if( old2new[v] != v && cur_entity_vertex_map[v] != NO_ID ) {
-//                        cur_entity_vertex_map[old2new[old2new[v]]] = cur_entity_vertex_map[v] ;
-                        cur_entity_vertex_map[old2new[v]] = cur_entity_vertex_map[v] ;
-                        cur_entity_vertex_map[v] = NO_ID ;
-                    }
-                }
-            }
-        }
-
-    }
-
     void GeoModelMeshVertices::erase_vertices( std::vector< index_t >& to_delete )
     {
         ringmesh_assert( to_delete.size() == nb() ) ;
@@ -588,7 +670,7 @@ namespace RINGMesh {
         // For mesh vertices deletion
         GEO::vector< index_t > to_delete_geo( nb(), 0 ) ;
 
-        update_mesh_entities_maps( gm_, to_delete ) ;
+//        update_mesh_entities_maps( gm_, to_delete ) ;
 
         // Fill the delete information for geogram
         // Recycle the to_delete vertex to get the mapping between
@@ -633,7 +715,7 @@ namespace RINGMesh {
 //                    << std::endl ;
 //            }
 //        }
-//        update_mesh_entities_maps( gm_, to_delete ) ;
+        vertex_mapper_.update_mesh_entities_maps( to_delete ) ;
 
 //        // Empty the gme_vertices_ of the deleted vertices and erase them
 //        for( index_t v = 0; v < nb(); ++v ) {
