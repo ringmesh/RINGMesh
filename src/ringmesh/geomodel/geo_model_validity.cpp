@@ -176,30 +176,33 @@ namespace {
      * @brief Returns the Line identification if the given points define
      *       an edge of one of the Line of the model
      * @param[in] model The GeoModel to consider
-     * @param[in] v0 Index of the first point in the model
-     * @param[in] v1 Index of the second point in the model
+     * @param[in] v0 Index in the model of the edge first point
+     * @param[in] v1 Index in the model of the edge second point
      */
     bool is_edge_on_line( const GeoModel& model, index_t v0, index_t v1 )
     {
-        std::vector< GMEVertex > v0_bme ;
-        model.mesh.vertices.gme_vertices( v0, v0_bme ) ;
-        std::vector< GMEVertex > v1_bme ;
-        model.mesh.vertices.gme_vertices( v1, v1_bme ) ;
+        std::vector< GMEVertex > v0_line_bme ;
+        model.mesh.vertices.gme_type_vertices( Line::type_name_static(), v0, v0_line_bme ) ;
+        if( v0_line_bme.empty() ) {
+            return false ;
+        }
+        std::vector< GMEVertex > v1_line_bme ;
+        model.mesh.vertices.gme_type_vertices( Line::type_name_static(), v1, v1_line_bme ) ;
+        if( v1_line_bme.empty() ) {
+            return false ;
+        }
 
         bool found_line = false ;
-        for( index_t i = 0; i < v0_bme.size(); ++i ) {
-            if( EntityTypeManager::is_line( v0_bme[i].gme_id.type ) ) {
-                index_t line0_id = v0_bme[i].gme_id.index ;
-                for( index_t j = 0; j < v1_bme.size(); ++j ) {
-                    if( EntityTypeManager::is_line( v1_bme[j].gme_id.type )
-                        && line0_id == v1_bme[j].gme_id.index ) {
-                        if( !is_edge_on_line( model.line( line0_id ), v0_bme[i].v_id,
-                            v1_bme[j].v_id ) ) {
-                            return false ;
-                        }
-                        found_line = true ;
-                        break ;
+        for( index_t i = 0; i < v0_line_bme.size(); ++i ) {
+            index_t line0_id = v0_line_bme[i].gme_id.index ;
+            for( index_t j = 0; j < v1_line_bme.size(); ++j ) {
+                if( line0_id == v1_line_bme[j].gme_id.index ) {
+                    if( !is_edge_on_line( model.line( line0_id ), v0_line_bme[i].v_id,
+                        v1_line_bme[j].v_id ) ) {
+                        return false ;
                     }
+                    found_line = true ;
+                    break ;
                 }
             }
         }
