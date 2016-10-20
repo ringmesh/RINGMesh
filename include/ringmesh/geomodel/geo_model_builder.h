@@ -342,6 +342,13 @@ namespace RINGMesh {
         void end_model() ;
 
     protected:
+        /*!
+         * @brief Build the Contacts
+         * @details One contact is a group of lines shared by the same Interfaces
+         */
+        void build_contacts() ;
+        void invert_surface_normals( index_t surface_id ) ;
+
         void set_surface_facet_adjacencies(
                 index_t surface_id,
                 const std::vector< index_t >& facets_id,

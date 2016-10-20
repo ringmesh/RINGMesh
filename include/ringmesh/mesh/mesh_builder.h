@@ -602,6 +602,10 @@ namespace RINGMesh {
             delete_cell_aabb() ;
             delete_cell_colocater() ;
         }
+        void invert_normals()
+        {
+            GEO::invert_normals( *mesh_.mesh_ ) ;
+        }
     private:
         /*!
          * @brief Deletes the ColocaterANN on vertices
