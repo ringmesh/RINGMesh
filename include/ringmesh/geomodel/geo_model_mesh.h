@@ -54,8 +54,10 @@
 
 namespace RINGMesh {
     class GeoModelMesh ;
+    class GeoModelMeshVertices ;
     class GeoModel ;
     class GeoModelEntity ;
+    class GeoModelMeshEntity ;
     class MeshBuilder ;
 }
 
@@ -68,13 +70,64 @@ namespace RINGMesh {
     const std::string cell_region_att_name = "cell_region" ;
     const std::string facet_surface_att_name = "facet_surface" ;
 
+
+    /*!
+     * Class which manages the mapping informations between vertices
+     * of GeoModelMeshEntites (entity_index) and GeoModelMeshVertices (global index)
+     */
+    class RINGMESH_API GeoModelVertexMapper {
+    ringmesh_disable_copy( GeoModelVertexMapper ) ;
+    public:
+        GeoModelVertexMapper(
+            GeoModelMeshVertices& model_vertices,
+            const GeoModel& geomodel )
+            : model_vertices_( model_vertices ), geomodel_( geomodel )
+        {
+        }
+
+        index_t model_vertex_index(
+            const gme_t& mesh_entity_id,
+            const index_t mesh_entity_vertex_index ) const ;
+
+        std::vector< index_t > mesh_entity_vertex_indices(
+            const gme_t& mesh_entity_id,
+            const index_t model_vertex_index ) const ;
+
+        void all_mesh_entity_vertices(
+            index_t v,
+            std::vector< GMEVertex >& gme_vertices ) const ;
+
+        void set_vertex_map_value(
+            const gme_t& mesh_entity_id,
+            const index_t mesh_entity_vertex_index,
+            const index_t model_entity_vertex_index ) const ;
+
+        void initialize_mesh_entity_vertex_map( const gme_t& mesh_entity_id ) const ;
+
+        void update_mesh_entities_maps(
+            const std::vector< index_t >& old2new ) const ;
+
+    private:
+
+        /*!
+         * @todo
+         */
+    GEO::AttributesManager& mesh_entity_vertex_attribute_manager(
+        const gme_t& mesh_entity_id ) const ;
+
+    private:
+        GeoModelMeshVertices& model_vertices_ ;
+        const GeoModel& geomodel_ ;
+
+    } ;
+
+
     /*! 
      * This design is a catastrophe !
      * The vertices are used at building step, at saving steps ...
      * Update mechanisms are BAD... very difficult to change, specially because of 
      * the building [JP]
      */
-
     class RINGMESH_API GeoModelMeshVertices {
     ringmesh_disable_copy( GeoModelMeshVertices ) ;
     public:
@@ -116,15 +169,6 @@ namespace RINGMesh {
          */
         index_t index( const vec3& p ) const ;
 
-        std::string entity_vertex_map_att_name(
-            const std::string& entity_type,
-            index_t entity_id ) const
-        {
-            std::ostringstream oss ;
-            oss << "vertex_map_" << entity_type << "_" << entity_id ;
-            return oss.str() ;
-        }
-
         /*!
          * @brief Get the GeoModelMesh index of a GeoModelMeshEntity vertex from its
          * index in that GeoModelMeshEntity
@@ -152,7 +196,7 @@ namespace RINGMesh {
         /*!
          * @todo
          */
-        index_t mesh_entity_vertex_id(
+        std::vector< index_t > mesh_entity_vertex_id(
             const gme_t& mesh_entity,
             index_t model_vertex_id ) const ;
 
@@ -239,11 +283,11 @@ namespace RINGMesh {
          */
         void erase_vertices( std::vector< index_t >& to_delete ) ;
 
-        /*!
-         * @brief Remove all invalid GMEVertex and delete the vertices
-         * that are not anymore in any GeoModelEntity
-         */
-        void erase_invalid_vertices() ;
+//        /*!
+//         * @brief Remove all invalid GMEVertex and delete the vertices
+//         * that are not anymore in any GeoModelEntity
+//         */
+//        void erase_invalid_vertices() ;
 
     private:
         /// Attached GeoModelMesh owning the vertices
@@ -253,7 +297,8 @@ namespace RINGMesh {
         /// Attached Mesh
         Mesh& mesh_ ;
         MeshBuilder& mesh_builder_ ;
-
+        /// Mapper from/to GeoModelMeshEntity vertices
+        GeoModelVertexMapper vertex_mapper_ ;
 //        /*!
 //         * Vertices in GeoModelEntities corresponding to each vertex
 //         * @todo Change this extremely expensive storage !!!

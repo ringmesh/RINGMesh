@@ -236,23 +236,24 @@ namespace RINGMesh {
 
     GeoModelMeshEntity::~GeoModelMeshEntity()
     {
+        //@todo Unbind attribute about mapping
 //        unbind_model_vertex_id_attribute() ;
 #ifdef RINGMESH_DEBUG
         mesh_.print_mesh_bounded_attributes() ;
 #endif
     }
 
-    /*!
-     * @brief Binds attributes stored by the GME on the Mesh
-     */
+//    /*!
+//     * @brief Binds attributes stored by the GME on the Mesh
+//     */
 //    void GeoModelMeshEntity::bind_model_vertex_id_attribute()
 //    {
 //        model_vertex_id_.bind( mesh_.vertex_attribute_manager(),
 //            model_vertex_id_att_name() ) ;
 //    }
-    /*!
-     * @brief Unbinds attributes stored by the GME on the Mesh
-     */
+//    /*!
+//     * @brief Unbinds attributes stored by the GME on the Mesh
+//     */
 //    void GeoModelMeshEntity::unbind_model_vertex_id_attribute()
 //    {
 //        model_vertex_id_.unbind() ;
@@ -275,10 +276,15 @@ namespace RINGMesh {
                 valid = false ;
             }
 
-            index_t backward_v = model_vertices.mesh_entity_vertex_id( gme_id(),
-                model_v ) ;
-
-            if( backward_v != v ) {
+            std::vector< index_t > backward_vertices =
+                model_vertices.mesh_entity_vertex_id( gme_id(), model_v ) ;
+            bool found_in_backward = false ;
+            for( index_t bv = 0; bv < backward_vertices.size(); bv++ ) {
+                if( backward_vertices[bv] == v ) {
+                    found_in_backward = true ;
+                }
+            }
+            if( !found_in_backward ) {
                 Logger::warn( "GeoModelEntity" ) << "Error in mapping of "
                     << gme_id() << " vertex " << v
                     << " to the related global model vertex indices."

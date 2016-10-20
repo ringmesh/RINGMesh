@@ -979,10 +979,16 @@ namespace RINGMesh {
                                 BorderTriangle( s, f, vertex, next_vertex,
                                     previous_vertex ) ) ;
 
-                            index_t me_v_id = model_vertices.mesh_entity_vertex_id(
-                                S.gme_id(), vertex ) ;
-                            ringmesh_assert(
-                                S.vertex_index_in_facet( f, me_v_id ) == v ) ;
+                            //@todo to remove (check that the good me_v_id is retrieve)
+                            std::vector< index_t > me_v_ids =
+                                model_vertices.mesh_entity_vertex_id( S.gme_id(),
+                                    vertex ) ;
+                            for( index_t me_v_id = 0; me_v_id < me_v_ids.size(); me_v_id++ ) {
+                                if( S.vertex_index_in_facet( f, me_v_id ) == v ) {
+                                    return ;
+                                }
+                            }
+                            ringmesh_assert_not_reached ;
                         }
                     }
                 }
@@ -1003,9 +1009,19 @@ namespace RINGMesh {
             // Gets the next edge on border in the Surface
             index_t f = border_triangle.facet_ ;
 //            index_t model_facet_id = geomodel_.mesh.facets.facet( S.index(), f ) ;
-            index_t v0_id_in_facet = S.vertex_index_in_facet( f,
+            std::vector< index_t > possible_v0_id =
                 model_vertices.mesh_entity_vertex_id( S.gme_id(),
-                    border_triangle.v0_ ) ) ;
+                    border_triangle.v0_ ) ;
+            ringmesh_assert( !possible_v0_id.empty() ) ;
+            index_t v0_id = NO_ID ;
+            for( index_t i = 0; i < possible_v0_id.size(); i++ ) {
+                if( S.vertex_index_in_facet( f, i ) != NO_ID ) {
+                    v0_id = possible_v0_id[i] ;
+                }
+            }
+            ringmesh_assert( v0_id != NO_ID ) ;
+            index_t v0_id_in_facet = S.vertex_index_in_facet( f,
+                 v0_id ) ;
 //            index_t f_v0 = geomodel_.mesh.facets.vertex( model_facet_id,
 //                v0_id_in_facet ) ;
 //            index_t v1_id_in_facet = S.vertex_index_in_facet( model_facet_id,
@@ -1466,18 +1482,16 @@ namespace RINGMesh {
         ringmesh_assert( E.nb_vertices() == 0 ) ; // If there are already some vertices
         // we are doomed because they are not removed
         /// @todo Do this test for all others set_something
-        set_mesh_entity_vertices( gme_t( Line::type_name_static(), line_id ),
-            unique_vertices, clear_vertices ) ;
+        set_mesh_entity_vertices( E.gme_id(), unique_vertices, clear_vertices ) ;
 
-        std::string line_vertex_map_name =
-            model().mesh.vertices.entity_vertex_map_att_name(
-                Line::type_name_static(), line_id ) ;
-        GEO::Attribute< index_t > cur_line_vertex_map(
-            model().mesh.vertex_attribute_manager(), line_vertex_map_name ) ;
-        cur_line_vertex_map.fill( NO_ID ) ;
-        for( index_t v = 0; v < unique_vertices.size(); v++ ) {
-            cur_line_vertex_map[unique_vertices[v]] = v ;
-        }
+        //@todo Mapping of line
+//        GEO::Attribute< index_t > line_vertex_map =
+//            model().mesh.vertices.get_mesh_entity_vertex_map( E ) ;
+//
+//        line_vertex_map.fill( NO_ID ) ;
+//        for( index_t v = 0; v < unique_vertices.size(); v++ ) {
+//            line_vertex_map[v] = unique_vertices[v] ;
+//        }
 
         MeshBuilder builder( E.mesh_ ) ;
         for( index_t e = 1; e < E.nb_vertices(); e++ ) {
