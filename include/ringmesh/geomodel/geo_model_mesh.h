@@ -225,34 +225,12 @@ namespace RINGMesh {
             index_t v,
             std::vector< GMEVertex >& gme_vertices ) const ;
 
-//        /*!
-//         * @brief Get the vertex indices in the specified GeoModelMeshEntity
-//         * corresponding to the given unique vertex
-//         */
-//        const std::vector< index_t > gme_vertices(
-//            const gme_t& gme_id,
-//            index_t v ) const ;
-
         /*!
          * @brief To use when building the model by first adding its vertices
          * @warning The client is responsible for setting the mapping between the points
          * of the GME and the unique vertex
          */
         index_t add_vertex( const vec3& point ) ;
-
-//        /*!
-//         * @brief Add a vertex in a GeoModelEntity
-//         *        corresponding to an existing vertex of the model
-//         */
-//        void add_to_gme( index_t v, const GMEVertex& v_gme ) ;
-
-//        /*!
-//         * @brief Change one of the GME vertex associated to a vertex
-//         * @param[in] v Index of the vertex
-//         * @param[in] i Index of the GME vertex
-//         * @param[in] v_gme index of GME and of the vertex in that GME
-//         */
-//        void set_gme( index_t v, index_t i, const GMEVertex& v_gme ) ;
 
         /*!
          * @brief Set the point coordinates of all the vertices that
@@ -301,12 +279,6 @@ namespace RINGMesh {
          */
         void erase_vertices( std::vector< index_t >& to_delete ) ;
 
-//        /*!
-//         * @brief Remove all invalid GMEVertex and delete the vertices
-//         * that are not anymore in any GeoModelEntity
-//         */
-//        void erase_invalid_vertices() ;
-
     private:
         /// Attached GeoModelMesh owning the vertices
         GeoModelMesh& gmm_ ;
@@ -317,11 +289,6 @@ namespace RINGMesh {
         MeshBuilder& mesh_builder_ ;
         /// Mapper from/to GeoModelMeshEntity vertices
         GeoModelVertexMapper vertex_mapper_ ;
-//        /*!
-//         * Vertices in GeoModelEntities corresponding to each vertex
-//         * @todo Change this extremely expensive storage !!!
-//         */
-//        std::vector< std::vector< GMEVertex > > gme_vertices_ ;
     } ;
 
     class RINGMESH_API GeoModelMeshFacets {
