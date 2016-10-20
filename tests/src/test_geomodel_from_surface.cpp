@@ -44,6 +44,8 @@
 #include <ringmesh/geomodel/geo_model_builder_from_mesh.h>
 #include <ringmesh/io/io.h>
 
+#include <chrono>
+
 /*! 
  * Test the creation of a GeoModel from a conformal surface mesh 
  * @todo Test on other datasets: nested spheres.
@@ -72,16 +74,25 @@ int main( int argc, char** argv )
         Logger::out( "TEST" ) << "Test GeoModel building from Surface"
             << std::endl ;
 
+
         GEO::Mesh in ;
         GEO::mesh_load( file_name, in ) ;
-        GeoModel model ;
 
+
+		auto t0 = std::chrono::steady_clock::now();
+
+        GeoModel model ;
         GeoModelBuilderSurfaceMesh BB( model, in ) ;
         BB.build_polygonal_surfaces_from_connected_components() ;
         BB.build_model_from_surfaces() ;
+
+		auto t1 = std::chrono::steady_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0);
+		Logger::out("TIMING") << "Model construction: " << duration.count() << " milliseconds" << std::endl;
+
         print_geomodel( model ) ;
-        GEO::CmdLine::set_arg( "in:intersection_check", false ) ;
-        is_geomodel_valid( model ) ;
+        //GEO::CmdLine::set_arg( "in:intersection_check", false ) ;
+        is_geomodel_valid( model, true ) ;
 
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category() ) << e.what() << std::endl ;

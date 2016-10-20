@@ -70,6 +70,8 @@
 #include <ringmesh/geomodel/geo_model_geological_entity.h>
 #include <ringmesh/mesh/mesh.h>
 
+#include <chrono>
+
 /*!
  * @file ringmesh/geomodel/geo_model_validity.cpp
  * @brief Implementation of functions to check the validity of GeoModels
@@ -868,8 +870,14 @@ namespace {
             test_finite_extension() ;
             test_geometry_connectivity_consistency() ;
             test_non_manifold_edges() ;
+
             if( check_surface_intersections_ ) {
+				auto t0 = std::chrono::steady_clock::now();
                 test_facet_intersections() ;
+				auto t1 = std::chrono::steady_clock::now();
+				auto t = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0);
+				Logger::out("TIMING") << "Validity facet intersection test "
+					<< t.count() << " milliseconds" << std::endl;
             }
         }   
         /*! 
@@ -1053,10 +1061,17 @@ namespace RINGMesh {
  
     bool is_geomodel_valid( const GeoModel& GM, bool intersection_check )
     {
+
+		auto t0 = std::chrono::steady_clock::now();
+		
         GeoModelValidityCheck validity_checker( GM,
             intersection_check ) ;
 
         bool valid = validity_checker.is_geomodel_valid() ;
+
+		auto t1 = std::chrono::steady_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0);
+		Logger::out("TIMING") << "Model validity check: " << duration.count() << " milliseconds" << std::endl;
 
         if( valid ) {
             Logger::out( "GeoModel" ) << "Model " << GM.name() << " is valid "

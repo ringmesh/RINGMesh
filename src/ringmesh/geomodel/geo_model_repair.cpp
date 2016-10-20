@@ -36,6 +36,7 @@
 #include <ringmesh/geomodel/geo_model_repair.h>
 
 #include <algorithm>
+#include <chrono>
 
 #include <geogram/basic/logger.h>
 
@@ -327,6 +328,8 @@ namespace RINGMesh {
 
     void GeoModelRepair::geo_model_mesh_repair()
     {
+		auto t0 = std::chrono::steady_clock::now();
+
         // Force removal of global vertices - Bugs ? I do not know where [JP]
         model().mesh.vertices.clear() ;
 
@@ -350,6 +353,11 @@ namespace RINGMesh {
         model().mesh.remove_colocated_vertices() ;
 
         end_model() ;
+
+		auto t1 = std::chrono::steady_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0);
+		Logger::out("TIMING") << "Model repair: " << duration.count() << " milliseconds" << std::endl;
+
     }
 
     void GeoModelRepair::repair_line_boundary_vertex_order()

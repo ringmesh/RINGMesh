@@ -78,7 +78,7 @@ namespace RINGMesh {
      * @todo Check the consistency of gme_vertices vs. model_vertex_id
      * @todo Add options to expensive tests
      */
-    bool RINGMESH_API is_geomodel_valid( const GeoModel& geomodel ) ;
+    bool RINGMESH_API is_geomodel_valid( const GeoModel& geomodel, bool intersection_check ) ;
 
     /*!
      * @brief Check the validity of all individual entities

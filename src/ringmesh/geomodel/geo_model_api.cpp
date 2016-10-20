@@ -37,6 +37,7 @@
 
 #include <iomanip>
 #include <iostream>
+#include <chrono>
 
 #include <geogram/basic/geometry_nd.h>
 #include <geogram/basic/logger.h>
@@ -816,6 +817,8 @@ namespace RINGMesh {
         index_t region_id,
         bool add_steiner_points )
     {
+		auto t0 = std::chrono::steady_clock::now();
+
         /* @todo Review: Maybe rethink these functions
          *       to have a function that can mesh a region of a geomodel
          *       taking only one vector of points [JP]
@@ -823,6 +826,11 @@ namespace RINGMesh {
         std::vector< std::vector< vec3 > > internal_vertices( M.nb_regions() ) ;
         tetrahedralize( M, method, region_id, add_steiner_points,
             internal_vertices ) ;
+
+		auto t1 = std::chrono::steady_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0);
+		Logger::out("TIMING") << "Tetrahedralization: " << duration.count() << " milliseconds" << std::endl;
+
     }
 
     void tetrahedralize(

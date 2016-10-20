@@ -37,6 +37,7 @@
 
 #include <iomanip>
 #include <stack>
+#include <chrono>
 
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/file_system.h>
@@ -485,7 +486,7 @@ namespace {
             Logger::out( "I/O" ) << " Loaded model " << model.name() << " from "
                 << filename << std::endl ;
             print_geomodel( model ) ;
-            is_geomodel_valid( model ) ;
+            is_geomodel_valid( model, true ) ;
             GEO::FileSystem::set_current_working_directory( pwd ) ;
 
         }
@@ -538,7 +539,7 @@ namespace {
             GEO::Logger::out( "I/O" ) << " Loaded model " << model.name() << " from "
                 << filename << std::endl ;
             print_geomodel( model ) ;
-            is_geomodel_valid( model ) ;
+            is_geomodel_valid( model, true ) ;
             GEO::FileSystem::set_current_working_directory( pwd ) ;
 
         }
@@ -870,7 +871,7 @@ namespace {
                 builder.build_model() ;
                 print_geomodel( model ) ;
                 // Check boundary model validity
-                RINGMesh::is_geomodel_valid( model ) ;
+                RINGMesh::is_geomodel_valid( model, true ) ;
 
                 time( &end_load ) ;
 
@@ -2186,9 +2187,15 @@ namespace RINGMesh {
     {
         Logger::out( "I/O" ) << "Loading file " << filename << "..."
             << std::endl ;
+		
+		auto t0 = std::chrono::steady_clock::now();
 
         GeoModelIOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
         handler->load( filename, model ) ;
+		
+		auto t1 = std::chrono::steady_clock::now();
+		auto load_duration = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0);
+		Logger::out("TIMING") << "Model loading: "<< load_duration.count() << " milliseconds" << std::endl;
     }
 
     void geomodel_save( const GeoModel& model, const std::string& filename )
@@ -2196,8 +2203,14 @@ namespace RINGMesh {
         Logger::out( "I/O" ) << "Saving file " << filename << "..."
             << std::endl ;
 
+		auto t0 = std::chrono::steady_clock::now();
+
         GeoModelIOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
         handler->save( model, filename ) ;
+
+		auto t1 = std::chrono::steady_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0);
+		Logger::out("TIMING") << "Model saving: " << duration.count() << " milliseconds" << std::endl;
     }
 
     /************************************************************************/
