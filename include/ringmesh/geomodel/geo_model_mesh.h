@@ -97,6 +97,11 @@ namespace RINGMesh {
             index_t v,
             std::vector< GMEVertex >& gme_vertices ) const ;
 
+        void mesh_entity_type_vertices(
+            index_t v,
+            const EntityType& entity_type,
+            std::vector< GMEVertex >& gme_vertices ) const ;
+
         void set_vertex_map_value(
             const gme_t& mesh_entity_id,
             const index_t mesh_entity_vertex_index,
@@ -212,12 +217,21 @@ namespace RINGMesh {
         void gme_vertices( index_t v, std::vector< GMEVertex >& gme_vertices ) const ;
 
         /*!
-         * @brief Get the vertex indices in the specified GeoModelMeshEntity
+         * @brief Get the vertex indices in the specified MeshEntity type
          * corresponding to the given unique vertex
          */
-        const std::vector< index_t > gme_vertices(
-            const gme_t& gme_id,
-            index_t v ) const ;
+        void gme_type_vertices(
+            const EntityType& entity_type,
+            index_t v,
+            std::vector< GMEVertex >& gme_vertices ) const ;
+
+//        /*!
+//         * @brief Get the vertex indices in the specified GeoModelMeshEntity
+//         * corresponding to the given unique vertex
+//         */
+//        const std::vector< index_t > gme_vertices(
+//            const gme_t& gme_id,
+//            index_t v ) const ;
 
         /*!
          * @brief To use when building the model by first adding its vertices
