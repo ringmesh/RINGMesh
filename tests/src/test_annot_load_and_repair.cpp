@@ -43,6 +43,8 @@
 
 #include <geogram/basic/logger.h>
 
+#include <chrono>
+
 /*! 
  * Load and fix a given structural model file.
  * @todo Make this executable generic by setting the file name as an argument of the command
@@ -73,14 +75,22 @@ int main( int argc, char** argv )
         // Set the debug directory for the validity checks
         set_validity_errors_directory( ringmesh_test_output_path ) ;
 
+		auto t0 = std::chrono::steady_clock::now();
+
         // Load the model
         geomodel_load( M, file_name ) ;
 
-        Logger::out( "RINGMesh Test" ) << "Reparing "
+		auto t1 = std::chrono::steady_clock::now();
+
+		Logger::out( "RINGMesh Test" ) << "Reparing "
             << std::endl << std::endl << std::endl ;
-        // Repair the model
-        GeoModelRepair model_repair( M ) ;
+        
+		bool is_valid = is_geomodel_valid(M);
+		// Repair the model        
+		GeoModelRepair model_repair( M ) ;
         model_repair.geo_model_mesh_repair() ;
+
+		auto t3 = std::chrono::steady_clock::now();
 
         // Test the validity again
         if( is_geomodel_valid( M ) ) {

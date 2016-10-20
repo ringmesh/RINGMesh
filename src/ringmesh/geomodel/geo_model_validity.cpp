@@ -1051,10 +1051,10 @@ namespace RINGMesh {
         return count_invalid == 0 ;
     }
  
-    bool is_geomodel_valid( const GeoModel& GM )
+    bool is_geomodel_valid( const GeoModel& GM, bool intersection_check )
     {
         GeoModelValidityCheck validity_checker( GM,
-            GEO::CmdLine::get_arg_bool( "in:intersection_check" ) ) ;
+            intersection_check ) ;
 
         bool valid = validity_checker.is_geomodel_valid() ;
 
