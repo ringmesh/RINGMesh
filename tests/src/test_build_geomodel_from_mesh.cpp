@@ -92,7 +92,7 @@ int main( int argc, char** argv )
             builder.build_model_from_surfaces() ;
 
             print_geomodel( geomodel ) ;
-            is_geomodel_valid( geomodel ) ;
+            is_geomodel_valid( geomodel, true ) ;
             geomodel_save( geomodel, result_file_name ) ;
         }
 
@@ -114,7 +114,7 @@ int main( int argc, char** argv )
             builder.build_model_from_surfaces() ;
 
             print_geomodel( geomodel ) ;
-            is_geomodel_valid( geomodel ) ;
+            is_geomodel_valid( geomodel, false ) ;
 
         }
 

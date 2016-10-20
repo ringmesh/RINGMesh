@@ -78,7 +78,7 @@ int main( int argc, char** argv )
 
         /* Load and check the validity of the model */
         geomodel_load( M, file_name ) ;
-        if( is_geomodel_valid( M ) ) {
+        if( is_geomodel_valid( M, true ) ) {
             // Mesh the model with Tetgen
             tetrahedralize( M, "TetGen" ) ;
 

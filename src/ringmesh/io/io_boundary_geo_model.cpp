@@ -508,7 +508,7 @@ namespace {
             builder.build_model() ;
             print_geomodel( model ) ;
             // Check validity
-            is_geomodel_valid( model ) ;
+            is_geomodel_valid( model, true ) ;
 
             time( &end_load ) ;
             Logger::out( "I/O" ) << " Loaded model " << model.name() << " from "
