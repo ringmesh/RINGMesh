@@ -102,12 +102,16 @@ namespace RINGMesh {
             const index_t mesh_entity_vertex_index,
             const index_t model_entity_vertex_index ) const ;
 
-        void initialize_mesh_entity_vertex_map( const gme_t& mesh_entity_id ) const ;
+        void initialize_mesh_entity_vertex_map_to_default( const gme_t& mesh_entity_id ) const ;
 
         void update_mesh_entities_maps(
             const std::vector< index_t >& old2new ) const ;
 
     private:
+
+        void test_and_initialize( const gme_t& mesh_entity_id ) const ;
+
+        void initialize( const gme_t& mesh_entity_id ) const ;
 
         /*!
          * @todo
@@ -228,13 +232,13 @@ namespace RINGMesh {
 //         */
 //        void add_to_gme( index_t v, const GMEVertex& v_gme ) ;
 
-        /*!
-         * @brief Change one of the GME vertex associated to a vertex
-         * @param[in] v Index of the vertex
-         * @param[in] i Index of the GME vertex
-         * @param[in] v_gme index of GME and of the vertex in that GME
-         */
-        void set_gme( index_t v, index_t i, const GMEVertex& v_gme ) ;
+//        /*!
+//         * @brief Change one of the GME vertex associated to a vertex
+//         * @param[in] v Index of the vertex
+//         * @param[in] i Index of the GME vertex
+//         * @param[in] v_gme index of GME and of the vertex in that GME
+//         */
+//        void set_gme( index_t v, index_t i, const GMEVertex& v_gme ) ;
 
         /*!
          * @brief Set the point coordinates of all the vertices that
