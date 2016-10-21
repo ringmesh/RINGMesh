@@ -342,11 +342,24 @@ namespace RINGMesh {
         void end_model() ;
 
     protected:
+        /*!
+         * @brief Build the Contacts
+         * @details One contact is a group of lines shared by the same Interfaces
+         */
+        void build_contacts() ;
+        void invert_surface_normals( index_t surface_id ) ;
+        index_t mesh_nb_connected_components( const gme_t& gmme_id ) const ;
+        void remove_isolated_vertices( const gme_t& gmme_id ) ;
+
         void set_surface_facet_adjacencies(
                 index_t surface_id,
                 const std::vector< index_t >& facets_id,
                 const std::vector< index_t >& edges_id,
                 const std::vector< index_t >& adjacent_triangles ) ;
+        void cut_surface_by_line( index_t surface_id, index_t line_id ) ;
+        index_t disconnect_surface_facets_along_line_edges(
+            index_t surface_id,
+            index_t line_id ) ;
 
     protected:
         /*! Options to toggle the building of entities from the available entities */
@@ -393,7 +406,6 @@ namespace RINGMesh {
         void cut_surfaces_by_internal_lines() ;
         void cut_regions_by_internal_surfaces() ;
 
-        void cut_surface_by_line( index_t surface_id, index_t line_id ) ;
         void cut_region_by_surface( index_t region_id, index_t surface_id ) ;
         void duplicate_surface_vertices_along_line(
             index_t surface_id,
@@ -401,9 +413,6 @@ namespace RINGMesh {
         void duplicate_region_vertices_along_surface(
             index_t region_id,
             index_t surface_id ) ;
-        index_t disconnect_surface_facets_along_line_edges(
-            index_t surface_id,
-            index_t line_id ) ;
         index_t disconnect_region_cells_along_surface_facets(
             index_t region_id, index_t surface_id ) ;
     } ;

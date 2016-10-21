@@ -87,8 +87,6 @@ namespace RINGMesh {
          * \name Creation - Deletion - Access to GeoModelEntities.
          * @{
          */
-        gme_t create_entity( const EntityType& type ) ;
-
         template< typename T >
         void add_entity_to_model( T* entity )
         {
@@ -452,10 +450,16 @@ namespace RINGMesh {
         {
             E.id_.index = new_index_in_geomodel ;
         }
-        void set_boundary_sign( Region& R, index_t boundary_index, bool new_side )
+        void set_region_boundary_side( Region& R, index_t boundary_index, bool new_side )
         {
             ringmesh_assert( boundary_index < R.nb_boundaries() ) ;
             R.sides_[boundary_index] = new_side ;
+        }
+
+        void set_universe_boundary_side( index_t boundary_index, bool new_side )
+        {
+            ringmesh_assert( boundary_index < universe().nb_boundaries() ) ;
+            universe().boundary_surface_sides_[boundary_index] = new_side ;
         }
 
         std::vector< gme_t >& modifiable_children( GeoModelGeologicalEntity& E )
