@@ -33,15 +33,15 @@
  *     FRANCE
  */
 
-#include <ringmesh/common.h>
+#include <ringmesh/basic/common.h>
 
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/stopwatch.h>
 
-#include <ringmesh/command_line.h>
-#include <ringmesh/geo_model.h>
-#include <ringmesh/io.h>
-#include <ringmesh/duplicate_interface_builder.h>
+#include <ringmesh/basic/command_line.h>
+#include <ringmesh/geomodel/geo_model.h>
+#include <ringmesh/io/io.h>
+#include <ringmesh/geomodel/duplicate_fntk_builder.h>
 
 /*!
  * @author Benjamin Chauvin

@@ -2221,6 +2221,19 @@ namespace RINGMesh {
         }
     }
 
+    index_t GeoModelBuilder::mesh_nb_connected_components( const gme_t& gmme_id ) const
+    {
+        const Mesh& mesh = model().mesh_entity( gmme_id ).mesh_ ;
+        return mesh.nb_connected_components() ;
+    }
+
+    void GeoModelBuilder::remove_isolated_vertices( const gme_t& gmme_id )
+    {
+        Mesh& mesh = mesh_entity( gmme_id ).mesh_ ;
+        MeshBuilder mesh_builder( mesh ) ;
+        mesh_builder.remove_isolated_vertices() ;
+    }
+
     void GeoModelBuilder::update_cell_vertex(
         Region& region,
         const std::vector< index_t >& cells,

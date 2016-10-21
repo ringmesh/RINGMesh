@@ -185,12 +185,12 @@ namespace RINGMesh {
             const Corner& corner,
             const Line& line_one_in_boundary ) const ;
 
-        /// TODO copy paste from removal of remove entity
+        /// TODO copy paste from removal of remove entity, and it is in private in GeoModelEditor
         index_t entity_type_to_index( const EntityType& type ) const
         {
             return find( all_entity_types_, type ) ;
         }
-        /// TODO copy paste from removal of remove entity
+        /// TODO copy paste from removal of remove entity, and it is in private in GeoModelEditor
         void fill_entity_type_to_index_map()
         {
             const EntityTypeManager& manager = entity_type_manager() ;
@@ -202,7 +202,7 @@ namespace RINGMesh {
                 manager.geological_entity_types().begin(),
                 manager.geological_entity_types().end() ) ;
         }
-        /// TODO copy paste from removal of remove entity
+        /// TODO copy paste from removal of remove entity, and it is in private in GeoModelEditor
         const EntityType& index_to_entity_type( index_t index ) const
         {
             return all_entity_types_.at( index ) ;

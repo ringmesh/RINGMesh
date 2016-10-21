@@ -773,7 +773,7 @@ namespace RINGMesh {
                     offset++ ;
                 } else {
                     bool new_side = R.side( i + offset ) ;
-                    set_boundary_sign( R, i, new_side ) ;
+                    set_region_boundary_side( R, i, new_side ) ;
                 }
             }
         }
