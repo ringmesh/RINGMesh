@@ -89,10 +89,14 @@ namespace RINGMesh {
             const gme_t& mesh_entity_id,
             const index_t mesh_entity_vertex_index ) const ;
 
-        std::vector< index_t > mesh_entity_vertex_indices(
+        void mesh_entity_vertex_indices(
             const gme_t& mesh_entity_id,
-            const index_t model_vertex_index ) const ;
+            const index_t model_vertex_index,
+            std::vector< index_t >& result ) const ;
 
+        /*!
+         * @note Calling this function can take long time.
+         */
         void all_mesh_entity_vertices(
             index_t v,
             std::vector< GMEVertex >& gme_vertices ) const ;
@@ -118,15 +122,21 @@ namespace RINGMesh {
 
         void initialize( const gme_t& mesh_entity_id ) const ;
 
+        bool is_initialized( const gme_t& mesh_entity_id ) const ;
+
         /*!
          * @todo
          */
-    GEO::AttributesManager& mesh_entity_vertex_attribute_manager(
-        const gme_t& mesh_entity_id ) const ;
+        GEO::AttributesManager& mesh_entity_vertex_attribute_manager(
+            const gme_t& mesh_entity_id ) const ;
 
     private:
         GeoModelMeshVertices& model_vertices_ ;
         const GeoModel& geomodel_ ;
+
+        std::vector< index_t > first_gme_vertex_position_ ;
+        std::vector< GMEVertex > gme_vertices_ ;
+
 
     } ;
 
