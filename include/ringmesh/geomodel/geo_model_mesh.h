@@ -85,44 +85,81 @@ namespace RINGMesh {
         {
         }
 
+        //@todo scope global initialization
+        void test_and_initialize() const ;
+
         index_t model_vertex_index(
             const gme_t& mesh_entity_id,
             const index_t mesh_entity_vertex_index ) const ;
 
-        void mesh_entity_vertex_indices(
-            const gme_t& mesh_entity_id,
-            const index_t model_vertex_index,
-            std::vector< index_t >& result ) const ;
+        //@todo this is a copy - not really good
+        std::vector< GMEVertex > mesh_entity_vertex_indices(
+            const index_t v ) const ;
 
-        /*!
-         * @note Calling this function can take long time.
-         */
-        void all_mesh_entity_vertices(
-            index_t v,
-            std::vector< GMEVertex >& gme_vertices ) const ;
+        std::vector< GMEVertex > mesh_entity_vertex_indices(
+            const index_t v,
+            const EntityType& mesh_entity_type ) const ;
 
-        void mesh_entity_type_vertices(
-            index_t v,
-            const EntityType& entity_type,
-            std::vector< GMEVertex >& gme_vertices ) const ;
+        std::vector< index_t > mesh_entity_vertex_indices(
+            const index_t v,
+            const gme_t& mesh_entity_id ) const ;
+
+
+
+
+
+
 
         void set_vertex_map_value(
             const gme_t& mesh_entity_id,
             const index_t mesh_entity_vertex_index,
             const index_t model_entity_vertex_index ) const ;
 
-        void initialize_mesh_entity_vertex_map_to_default( const gme_t& mesh_entity_id ) const ;
+        void initialize_mesh_entity_vertex_map_to_default(
+            const gme_t& mesh_entity_id ) const ;
 
-        void update_mesh_entities_maps(
-            const std::vector< index_t >& old2new ) const ;
+//        void update_mesh_entities_maps(
+//            const std::vector< index_t >& old2new ) const ;
 
     private:
+        //@todo scope global initialization
+        void initialize() ;
 
-        void test_and_initialize( const gme_t& mesh_entity_id ) const ;
+        bool is_initialized() const ;
 
-        void initialize( const gme_t& mesh_entity_id ) const ;
+        //@todo scope GeoModelMeshEntity map initializations
+        void initialize_mesh_entity_vertex_maps() const ;
 
-        bool is_initialized( const gme_t& mesh_entity_id ) const ;
+//        void test_and_initialize( const gme_t& mesh_entity_id ) const ;
+
+        void initialize_mesh_entity_vertex_map( const gme_t& mesh_entity_id ) const ;
+
+//        bool is_initialized( const gme_t& mesh_entity_id ) const ;
+
+        //@todo gme_vertices vector computations
+        void fill_gme_vertices() ;
+
+        /*!
+         * @note Calling this function can take long time.
+         */
+        void compute_all_mesh_entity_vertices(
+            index_t v,
+            std::vector< GMEVertex >& gme_vertices ) const ;
+
+        void compute_mesh_entity_type_vertices(
+            index_t v,
+            const EntityType& entity_type,
+            std::vector< GMEVertex >& gme_vertices ) const ;
+
+        void compute_mesh_entity_vertex_indices(
+            const gme_t& mesh_entity_id,
+            const index_t model_vertex_index,
+            std::vector< index_t >& result ) const ;
+
+
+
+
+
 
         /*!
          * @todo
