@@ -187,6 +187,63 @@ namespace RINGMesh {
         }
     }
 
+    void DuplicateInterfaceBuilder::duplicate_fault_network()
+    {
+        check_geomodel_validity_for_duplication() ;
+
+        std::vector< std::vector< index_t > > to_erase_by_type ;
+        to_erase_by_type.reserve( all_entity_types_.size() ) ;
+        for( index_t i = 0; i < all_entity_types_.size(); ++i ) {
+            to_erase_by_type.push_back(
+                std::vector< index_t >(
+                    model().nb_entities( index_to_entity_type( i ) ), 0 ) ) ;
+        }
+
+        homogenize_normal_orientation_surface_all_interfaces() ;
+        const index_t nb_initial_interfaces = model().nb_geological_entities(
+            Interface::type_name_static() ) ;
+        build_new_fault_surfaces( to_erase_by_type ) ;
+
+        add_hole_between_faults( to_erase_by_type, nb_initial_interfaces ) ;
+        // Put here for new.
+        /// @todo if all the lines are removed, is it still necessary to fill the new
+        /// interface children with them? They should be recomputed with
+        /// build_lines_and_corners_from_surfaces.
+        flag_corners_lines_contacts_to_be_deleted( to_erase_by_type ) ;
+        delete_old_entities( to_erase_by_type ) ;
+        rebuild_valid_geomodel() ;
+    }
+
+    void DuplicateInterfaceBuilder::check_geomodel_validity_for_duplication()
+    {
+        if( model().nb_regions() == 0 ) {
+            throw RINGMeshException( "Fault Network Duplication",
+                "The model must contain at least one region." ) ;
+        }
+        all_meshed_ = model().region( 0 ).is_meshed() ;
+        for( index_t reg_itr = 1; reg_itr < model().nb_regions(); ++reg_itr ) {
+            if( model().region( reg_itr ).is_meshed() != all_meshed_ ) {
+                throw RINGMeshException( "Fault Network Duplication",
+                    "The regions must be all meshed or all unmeshed." ) ;
+            }
+        }
+
+        for( index_t interface_itr = 0;
+            interface_itr
+                < model().nb_geological_entities( Interface::type_name_static() );
+            ++interface_itr ) {
+            const GeoModelGeologicalEntity& cur_interface =
+                model().geological_entity( Interface::type_name_static(),
+                    interface_itr ) ;
+            if( GeoModelEntity::is_fault( cur_interface.geological_feature() ) ) {
+                return ;
+            }
+        }
+        std::string message = "There is no fault inside the model.\n" ;
+        message += "Assign your fault interfaces to fault geological features." ;
+        throw RINGMeshException( "Fault Network Duplication", message ) ;
+    }
+
     void DuplicateInterfaceBuilder::homogenize_normal_orientation_surface_all_interfaces()
     {
         std::vector< index_t > surfaces_to_inverse_normals ;
@@ -195,16 +252,13 @@ namespace RINGMesh {
             interface_itr
                 < model().nb_geological_entities( Interface::type_name_static() );
             ++interface_itr ) {
-            const GeoModelGeologicalEntity& cur_interface =
-                model().geological_entity( Interface::type_name_static(),
-                    interface_itr ) ;
+            const GeoModelGeologicalEntity& cur_interface = interface(
+                interface_itr ) ;
             if( !GeoModelEntity::is_fault( cur_interface.geological_feature() ) ) {
                 continue ;
             }
-            save_normals_on_one_old_interface(
-                dynamic_cast< const Interface& >( cur_interface ) ) ;
-            homogenize_normal_orientation_surface_one_interface(
-                dynamic_cast< const Interface& >( cur_interface ),
+            save_normals_on_one_old_interface( interface_itr ) ;
+            homogenize_normal_orientation_surface_one_interface( interface_itr,
                 surfaces_to_inverse_normals ) ;
         }
 
@@ -216,9 +270,11 @@ namespace RINGMesh {
     }
 
     void DuplicateInterfaceBuilder::homogenize_normal_orientation_surface_one_interface(
-        const Interface& fault_interface,
+        index_t fault_interface_id,
         std::vector< index_t >& surfaces_to_inverse_normals )
     {
+        const GeoModelGeologicalEntity& fault_interface = interface(
+            fault_interface_id ) ;
         ringmesh_assert( GeoModelEntity::is_fault( fault_interface.geological_feature() ) ) ;
         ringmesh_assert( fault_interface.nb_children() >= 1 ) ;
         if( fault_interface.nb_children() == 1 ) {
@@ -234,16 +290,25 @@ namespace RINGMesh {
         /// form one connected component. What happens in case of a fault cut into
         /// 2 distinct parts by another fault??? A trick would be to define each part
         /// as a different fault interface...
-        homogenize_surfaces_around_surface( fault_interface, first_child,
+        homogenize_surfaces_around_surface( fault_interface_id, first_child,
             already_seen, surfaces_to_inverse_normals ) ;
     }
 
+    const GeoModelGeologicalEntity& DuplicateInterfaceBuilder::interface(
+        index_t interface_id ) const
+    {
+        return model().geological_entity( Interface::type_name_static(),
+            interface_id ) ;
+    }
+
     void DuplicateInterfaceBuilder::homogenize_surfaces_around_surface(
-        const Interface& fault_interface,
+        index_t fault_interface_id,
         const Surface& first_child,
         std::vector< bool >& already_seen,
         std::vector< index_t >& surfaces_to_inverse_normals )
     {
+        const GeoModelGeologicalEntity& fault_interface = interface(
+            fault_interface_id ) ;
         for( index_t line_boundary_itr = 0;
             line_boundary_itr < first_child.nb_boundaries(); ++line_boundary_itr ) {
             const GeoModelMeshEntity& cur_line_boun = first_child.boundary(
@@ -260,8 +325,8 @@ namespace RINGMesh {
                 if( cur_surf_in_boun.index() == first_child.index() ) {
                     continue ;
                 }
-                if( !does_surface_belong_to_interface( cur_surf_in_boun,
-                    fault_interface ) ) {
+                if( !does_surface_belong_to_interface( cur_surf_in_boun.index(),
+                    fault_interface_id ) ) {
                     continue ;
                 }
 
@@ -318,7 +383,7 @@ namespace RINGMesh {
                     update_region_polarity( cur_surf_in_boun ) ;
                 }
                 already_seen[cur_surf_in_boun.index()] = true ;
-                homogenize_surfaces_around_surface( fault_interface,
+                homogenize_surfaces_around_surface( fault_interface_id,
                     cur_surf_in_boun, already_seen, surfaces_to_inverse_normals ) ;
                 break ;
             }
@@ -404,8 +469,9 @@ namespace RINGMesh {
     /// @todo COPY PASTE OF save_normals_on_one_new_interface
     /// @todo TO REFACTORE
     void DuplicateInterfaceBuilder::save_normals_on_one_old_interface(
-        const Interface& interface_gme ) const
+        index_t interface_id ) const
     {
+        const GeoModelGeologicalEntity& interface_gme = interface( interface_id ) ;
         for( index_t child_itr = 0; child_itr < interface_gme.nb_children();
             ++child_itr ) {
             const GeoModelEntity& cur_child = interface_gme.child( child_itr ) ;
@@ -421,49 +487,24 @@ namespace RINGMesh {
     /// @todo could a more generic function (is_child_of ?)
     /// @todo such function exists?
     bool DuplicateInterfaceBuilder::does_surface_belong_to_interface(
-        const Surface& surface,
-        const Interface& interface ) const
+        index_t surface_id,
+        index_t interface_id ) const
     {
-        ringmesh_assert( interface.type_name_static() == Interface::type_name_static() ) ;
-        for( index_t child_itr = 0; child_itr < interface.nb_children();
+        const GeoModelGeologicalEntity& interface_gme = interface( interface_id ) ;
+        for( index_t child_itr = 0; child_itr < interface_gme.nb_children();
             ++child_itr ) {
-            const GeoModelEntity& cur_child = interface.child( child_itr ) ;
+            const GeoModelEntity& cur_child = interface_gme.child( child_itr ) ;
             ringmesh_assert( cur_child.type_name_static() == Surface::type_name_static() ) ;
-            if( cur_child.index() == surface.index() ) {
+            if( cur_child.index() == surface_id ) {
                 return true ;
             }
         }
         return false ;
     }
 
-    void DuplicateInterfaceBuilder::duplicate_fault_network()
+    void DuplicateInterfaceBuilder::build_new_fault_surfaces(
+        std::vector< std::vector< index_t > >& to_erase_by_type )
     {
-        if( model().nb_regions() == 0 ) {
-            throw RINGMeshException( "Duplication",
-                "The model must contain at least one region." ) ;
-        }
-        all_meshed_ = model().region( 0 ).is_meshed() ;
-        for( index_t reg_itr = 1; reg_itr < model().nb_regions(); ++reg_itr ) {
-            if( model().region( reg_itr ).is_meshed() != all_meshed_ ) {
-                throw RINGMeshException( "Duplication",
-                    "The regions must be all meshed or all unmeshed." ) ;
-            }
-        }
-
-        //////////////////////////////////////////
-        // copy paste from void GeoModelEditor::remove_elements( const std::set< gme_t >& elements )
-        std::vector< std::vector< index_t > > to_erase_by_type ;
-        to_erase_by_type.reserve( all_entity_types_.size() ) ;
-        for( index_t i = 0; i < all_entity_types_.size(); ++i ) {
-            to_erase_by_type.push_back(
-                std::vector< index_t >(
-                    model().nb_entities( index_to_entity_type( i ) ), 0 ) ) ;
-        }
-        //////////////////////////////////////////
-
-        homogenize_normal_orientation_surface_all_interfaces() ;
-
-        index_t nb_faults = 0 ;
         const index_t nb_initial_interfaces = model().nb_geological_entities(
             Interface::type_name_static() ) ;
         // Loop to nb_initial_interfaces. model().nb_interfaces() cannot be inside
@@ -472,35 +513,35 @@ namespace RINGMesh {
         DEBUG( "Build new surfaces" ) ;
         for( index_t interface_itr = 0; interface_itr < nb_initial_interfaces;
             ++interface_itr ) {
-            const GeoModelGeologicalEntity& cur_interface =
-                model().geological_entity( Interface::type_name_static(),
-                    interface_itr ) ;
+            const GeoModelGeologicalEntity& cur_interface = interface(
+                interface_itr ) ;
             if( !GeoModelEntity::is_fault( cur_interface.geological_feature() ) ) {
                 continue ;
             }
-            ++nb_faults ;
 
             // Delete of the interface (will be replaced by a custom interface with
             // side informations)
             to_erase_by_type[entity_type_to_index( Interface::type_name_static() )][cur_interface.index()] =
                 NO_ID ;
-            get_new_surfaces( dynamic_cast< const Interface& >( cur_interface ),
-                to_erase_by_type ) ;
+            get_new_surfaces( interface_itr, to_erase_by_type ) ;
         }
+    }
 
-        if( nb_faults == 0 ) {
-            std::string message = "There is no fault inside the model.\n" ;
-            message += "Assign your fault interfaces to fault geological features." ;
-            throw std::runtime_error( message ) ;
-        }
+    void DuplicateInterfaceBuilder::flag_corners_lines_contacts_to_be_deleted(
+        std::vector< std::vector< index_t > >& to_erase_by_type )
+    {
+        fill_vect_with_NO_ID(
+            to_erase_by_type[entity_type_to_index( Corner::type_name_static() )] ) ;
+        fill_vect_with_NO_ID(
+            to_erase_by_type[entity_type_to_index( Line::type_name_static() )] ) ;
+        fill_vect_with_NO_ID(
+            to_erase_by_type[entity_type_to_index( Contact::type_name_static() )] ) ;
+    }
 
-//        recompute_geomodel_mesh() ; /// @todo necessary???
-
-        // The new surfaces has no internal borders made by the intersections
-        // with other new surfaces. Some of these may cut some of these
-        // new surfaces by two (two connected components). In this last case,
-        // two new surfaces are built to replace the new uncut surface.
-
+    void DuplicateInterfaceBuilder::add_hole_between_faults(
+        std::vector< std::vector< index_t > >& to_erase_by_type,
+        index_t nb_initial_interfaces )
+    {
         // compute translation vectors
         if( all_meshed_ ) {
             ringmesh_assert( model().nb_geological_entities(Interface::type_name_static()) - nb_initial_interfaces >= 2 ) ;
@@ -524,11 +565,8 @@ namespace RINGMesh {
                 }
 #endif
 
-                const GeoModelGeologicalEntity& interface_gme =
-                    model().geological_entity( Interface::type_name_static(),
-                        new_interface_itr ) ;
                 save_normals_on_one_new_interface( to_erase_by_type,
-                    dynamic_cast< const Interface& >( interface_gme ) ) ;
+                    new_interface_itr ) ;
             }
             DEBUG("define_global_motion_relation") ;
             define_global_motion_relation( to_erase_by_type ) ;
@@ -548,20 +586,11 @@ namespace RINGMesh {
         // apply translation
         DEBUG("translate_duplicated_fault_network") ;
         translate_duplicated_fault_network( to_erase_by_type ) ;
+    }
 
-        DEBUG( "last part" ) ;
-
-        // Put here for new.
-        /// @todo if all the lines are removed, is it still necessary to fill the new
-        /// interface children with them? They should be recomputed with
-        /// build_lines_and_corners_from_surfaces.
-        fill_vect_with_NO_ID(
-            to_erase_by_type[entity_type_to_index( Corner::type_name_static() )] ) ;
-        fill_vect_with_NO_ID(
-            to_erase_by_type[entity_type_to_index( Line::type_name_static() )] ) ;
-        fill_vect_with_NO_ID(
-            to_erase_by_type[entity_type_to_index( Contact::type_name_static() )] ) ;
-
+    void DuplicateInterfaceBuilder::delete_old_entities(
+        std::vector< std::vector< index_t > >& to_erase_by_type )
+    {
         recompute_geomodel_mesh() ;
 
         std::set< gme_t > to_delete ;
@@ -573,7 +602,10 @@ namespace RINGMesh {
             }
         }
         remove_entities( to_delete ) ;
+    }
 
+    void DuplicateInterfaceBuilder::rebuild_valid_geomodel()
+    {
         recompute_geomodel_mesh() ;
         build_lines_and_corners_from_surfaces() ;
         complete_entity_connectivity() ;
@@ -1005,9 +1037,11 @@ namespace RINGMesh {
     }
 
     void DuplicateInterfaceBuilder::get_new_surfaces(
-        const Interface& interface_to_duplicate,
+        index_t interface_to_duplicate_id,
         std::vector< std::vector< index_t > >& to_erase_by_type )
     {
+        const GeoModelGeologicalEntity& interface_to_duplicate = interface(
+            interface_to_duplicate_id ) ;
         // minus = false, plus = true
         std::map< index_t, std::vector< index_t > > surfaces_boundary_regions_side_minus ;
         std::map< index_t, std::vector< index_t > > surfaces_boundary_regions_side_plus ;
@@ -1113,21 +1147,23 @@ namespace RINGMesh {
         }
 
         build_merged_surfaces( surfaces_boundary_regions_side_plus, "_plus",
-            to_erase_by_type, interface_plus_gme_t, interface_to_duplicate ) ;
+            to_erase_by_type, interface_plus_gme_t.index,
+            interface_to_duplicate_id ) ;
         build_merged_surfaces( surfaces_boundary_regions_side_minus, "_minus",
-            to_erase_by_type, interface_minus_gme_t, interface_to_duplicate ) ;
+            to_erase_by_type, interface_minus_gme_t.index,
+            interface_to_duplicate_id ) ;
     }
 
     void DuplicateInterfaceBuilder::build_merged_surfaces(
         const std::map< index_t, std::vector< index_t > >& surfaces_boundary_regions,
         const std::string& side_name,
         std::vector< std::vector< index_t > >& to_erase_by_type,
-        const gme_t& sided_interface_gme_t,
-        const Interface& interface_to_duplicate )
+        index_t sided_interface_id,
+        index_t interface_to_duplicate_id )
     {
         if( surfaces_boundary_regions.empty() ) {
             // May happen when a fault is entirely a model boundary
-            to_erase_by_type[entity_type_to_index( Interface::type_name_static() )][sided_interface_gme_t.index] =
+            to_erase_by_type[entity_type_to_index( Interface::type_name_static() )][sided_interface_id] =
                 NO_ID ;
             return ;
         }
@@ -1230,22 +1266,22 @@ namespace RINGMesh {
                 NO_ID ) ;
 
             add_fake_internal_boudnary_lines_to_merged_surface( all_surface_lines,
-                side_name, sided_interface_gme_t, interface_to_duplicate,
-                new_surface_gme_t, to_erase_by_type, region_index ) ;
+                side_name, sided_interface_id, interface_to_duplicate_id,
+                new_surface_gme_t.index, to_erase_by_type, region_index ) ;
         }
     }
 
     void DuplicateInterfaceBuilder::add_fake_internal_boudnary_lines_to_merged_surface(
         const std::map< index_t, index_t >& all_surface_lines,
         const std::string& side_name,
-        const gme_t& sided_interface_gme_t,
-        const Interface& interface_to_duplicate,
-        const gme_t& new_surface_gme_t,
+        index_t sided_interface_id,
+        index_t interface_to_duplicate_id,
+        index_t new_surface_id,
         std::vector< std::vector< index_t > >& to_erase_by_type,
         index_t region_index )
     {
         recompute_geomodel_mesh() ; // to take into account the new surface in gme_vertices.
-        save_normal_on_one_surface( model().surface( new_surface_gme_t.index ) ) ;
+        save_normal_on_one_surface( model().surface( new_surface_id ) ) ;
         // I DO THAT HERE BUT MAYBE IT IS SIMPLIER TO DO THAT AFTER HAVING
         // CREATED ALL THE NEW INTERFACES.
         // Add all the lines of the old surfaces, which served to build the
@@ -1278,33 +1314,29 @@ namespace RINGMesh {
                     continue ;
                 }
 
-                if( does_surface_belong_to_interface(
-                    model().surface( cur_in_boun_gme.index() ),
-                    dynamic_cast< const Interface& >( model().geological_entity(
-                        Interface::type_name_static(), sided_interface_gme_t.index ) ) ) ) {
+                if( does_surface_belong_to_interface( cur_in_boun_gme.index(),
+                    sided_interface_id ) ) {
                     continue ;
                 }
 
                 // minus side is done before the plus side
                 if( side_name == "_minus" ) {
 
-                    ringmesh_assert(sided_interface_gme_t.index + 1 < model().nb_geological_entities(Interface::type_name_static())) ;
+                    ringmesh_assert(sided_interface_id + 1 < model().nb_geological_entities(Interface::type_name_static())) ;
                     const GeoModelGeologicalEntity& plus_side_gme =
                         model().geological_entity( Interface::type_name_static(),
-                            sided_interface_gme_t.index + 1 ) ;
+                            sided_interface_id + 1 ) ;
 
-                    if( does_surface_belong_to_interface(
-                        model().surface( cur_in_boun_gme.index() ),
-                        dynamic_cast< const Interface& >( plus_side_gme ) ) ) {
+                    if( does_surface_belong_to_interface( cur_in_boun_gme.index(),
+                        plus_side_gme.index() ) ) {
                         continue ;
                     }
                 }
 
                 // Check if the surface is not from the old interface to
                 // duplicate.
-                if( does_surface_belong_to_interface(
-                    model().surface( cur_in_boun_gme.index() ),
-                    interface_to_duplicate ) ) {
+                if( does_surface_belong_to_interface( cur_in_boun_gme.index(),
+                    interface_to_duplicate_id ) ) {
                     continue ;
                 }
 
@@ -1328,7 +1360,7 @@ namespace RINGMesh {
                     if( cur_gme_vertex.gme_id.type != Surface::type_name_static() ) {
                         continue ;
                     }
-                    if( cur_gme_vertex.gme_id.index == new_surface_gme_t.index ) {
+                    if( cur_gme_vertex.gme_id.index == new_surface_id ) {
                         vertex_id_in_new_surface = cur_gme_vertex.v_id ;
                     } else if( cur_gme_vertex.gme_id.index
                         == cur_in_boun_gme.index() ) {
@@ -1347,10 +1379,9 @@ namespace RINGMesh {
                 // for the homogenization of normals.
 
                 const vec3 local_translation_normal = get_local_translation_normal(
-                    model().surface( new_surface_gme_t.index ),
-                    vertex_id_in_new_surface ) ;
+                    model().surface( new_surface_id ), vertex_id_in_new_surface ) ;
 
-                vec3 vertex_pos = model().surface( new_surface_gme_t.index ).vertex(
+                vec3 vertex_pos = model().surface( new_surface_id ).vertex(
                     vertex_id_in_new_surface ) ;
                 if( !is_surface_on_right_side_of_sided_interface(
                     cur_in_boun_gme.index(), local_translation_normal,
@@ -1358,13 +1389,12 @@ namespace RINGMesh {
                     continue ;
                 }
 
-                add_mesh_entity_boundary( new_surface_gme_t,
+                add_mesh_entity_boundary(
+                    gme_t( Surface::type_name_static(), new_surface_id ),
                     cur_line.gme_id().index ) ;
                 // Adds twice in boundary for internal border.
-                add_mesh_entity_in_boundary( cur_line.gme_id(),
-                    new_surface_gme_t.index ) ;
-                add_mesh_entity_in_boundary( cur_line.gme_id(),
-                    new_surface_gme_t.index ) ;
+                add_mesh_entity_in_boundary( cur_line.gme_id(), new_surface_id ) ;
+                add_mesh_entity_in_boundary( cur_line.gme_id(), new_surface_id ) ;
 
                 good_line = true ;
                 break ;
@@ -1374,18 +1404,20 @@ namespace RINGMesh {
             }
         }
 
-        split_merged_surface( new_surface_gme_t, side_name, sided_interface_gme_t,
+        split_merged_surface( new_surface_id, side_name, sided_interface_id,
             to_erase_by_type, region_index ) ;
     }
 
     void DuplicateInterfaceBuilder::split_merged_surface(
-        const gme_t& new_surface_gme_t,
+        index_t new_surface_id,
         const std::string& side_name,
-        const gme_t& sided_interface_gme_t,
+        index_t sided_interface_id,
         std::vector< std::vector< index_t > >& to_erase_by_type,
         index_t region_index )
     {
-        const Surface& cur_surface = model().surface( new_surface_gme_t.index ) ;
+        const Surface& cur_surface = model().surface( new_surface_id ) ;
+        const gme_t& sided_interface_gme_t =
+            interface( sided_interface_id ).gme_id() ;
         // ========= bad copy paste from geo model repair
         std::set< index_t > cutting_lines ;
         for( index_t l = 0; l < cur_surface.nb_boundaries(); ++l ) {
@@ -1408,16 +1440,14 @@ namespace RINGMesh {
         // connected components and not the other lines (such as borders of the entire
         // surface).
 
-        ringmesh_assert( new_surface_gme_t.type == Surface::type_name_static() ) ;
         GEO::vector< index_t > components ;
         index_t nb_connected_components = mesh_nb_connected_components(
             cur_surface.gme_id() ) ;
         if( nb_connected_components == 1 ) {
             DEBUG( "ONE CONNECTED COMPONENT" ) ;
             ringmesh_assert( cur_surface.nb_parents() == 0 ) ;
-            add_mesh_entity_parent( new_surface_gme_t, sided_interface_gme_t ) ;
-            add_geological_entity_child( sided_interface_gme_t,
-                new_surface_gme_t.index ) ;
+            add_mesh_entity_parent( cur_surface.gme_id(), sided_interface_gme_t ) ;
+            add_geological_entity_child( sided_interface_gme_t, new_surface_id ) ;
             // boundary informations are defined in build_merged_surfaces
             // expected for the universe.
             /*add_entity_in_boundary( new_surface_gme_t,
@@ -1427,9 +1457,9 @@ namespace RINGMesh {
              new_surface_gme_t, side ) ;*/
 
             // Add to universe (other side of the surface)
-            add_universe_boundary( new_surface_gme_t.index, !side ) ;
+            add_universe_boundary( new_surface_id, !side ) ;
 
-            to_erase_by_type[entity_type_to_index( Surface::type_name_static() )][new_surface_gme_t.index] =
+            to_erase_by_type[entity_type_to_index( Surface::type_name_static() )][new_surface_id] =
                 0 ;
 
             // Cut for internal border. Some of the cutting lines are on the
@@ -1438,7 +1468,7 @@ namespace RINGMesh {
             for( std::set< index_t >::iterator it = cutting_lines.begin();
                 it != cutting_lines.end(); ++it ) {
                 DEBUG( "RECUT FOR INTERNAL BORDERS" ) ;
-                cut_surface_by_line( new_surface_gme_t.index, *it ) ;
+                cut_surface_by_line( new_surface_id, *it ) ;
             }
             return ;
         }
@@ -1495,7 +1525,7 @@ namespace RINGMesh {
                     facet_ptr.push_back( count_facet_vertices ) ;
                 }
             }
-            gme_t new_new_surface_gme_t = create_mesh_entity<Surface>() ;
+            gme_t new_new_surface_gme_t = create_mesh_entity< Surface >() ;
             set_surface_geometry( new_new_surface_gme_t.index, facet_points,
                 facet_indices, facet_ptr ) ;
 
@@ -1598,8 +1628,9 @@ namespace RINGMesh {
 
     void DuplicateInterfaceBuilder::save_normals_on_one_new_interface(
         const std::vector< std::vector< index_t > >& to_erase_by_type,
-        const Interface& interface_gme ) const
+        index_t interface_id ) const
     {
+        const GeoModelGeologicalEntity& interface_gme = interface( interface_id ) ;
         for( index_t child_itr = 0; child_itr < interface_gme.nb_children();
             ++child_itr ) {
             const GeoModelEntity& cur_child = interface_gme.child( child_itr ) ;
@@ -1776,7 +1807,7 @@ namespace RINGMesh {
             step_to_other_side *= -1 ;
 
             save_normals_on_one_new_interface( to_erase_by_type,
-                dynamic_cast< const Interface& >( interface_gme ) ) ;
+                interface_gme.index() ) ;
 
             // Clear to take into account the new gme in the geomodel.
             recompute_geomodel_mesh() ; // not done in model_vertex_id
@@ -1834,8 +1865,8 @@ namespace RINGMesh {
                             cur_gme_t, local_translation_normal,
                             gme_vertices[gme_vertex_itr].v_id,
                             model().mesh.vertices.vertex( vertex_id_in_gmm ),
-                            dynamic_cast< const Interface& >( interface_gme ),
-                            dynamic_cast< const Interface& >( other_side_interface_gme ) ) ) {
+                            interface_gme.index(),
+                            other_side_interface_gme.index() ) ) {
                             store_displacement_in_gme(
                                 model().mesh_entity( cur_gme_t ),
                                 gme_vertices[gme_vertex_itr].v_id,
@@ -1852,9 +1883,12 @@ namespace RINGMesh {
         const vec3& normal_on_vertex_interface,
         index_t vertex_id_in_gmme,
         const vec3& vertex_pos,
-        const Interface& interface_gme,
-        const Interface& other_side_interface_gme ) const
+        index_t interface_id,
+        index_t other_side_interface_id ) const
     {
+        const GeoModelGeologicalEntity& interface_gme = interface( interface_id ) ;
+        const GeoModelGeologicalEntity& other_side_interface_gme = interface(
+            other_side_interface_id ) ;
         if( cur_gme_t.type == Region::type_name_static() ) {
             if( !model().region( cur_gme_t.index ).is_meshed() ) {
                 return false ;

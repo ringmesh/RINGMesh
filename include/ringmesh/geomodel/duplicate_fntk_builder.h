@@ -60,19 +60,32 @@ namespace RINGMesh {
         virtual ~DuplicateInterfaceBuilder() ;
         void duplicate_fault_network() ;
     private:
+        const GeoModelGeologicalEntity& interface(index_t interface_id) const ;
+        void check_geomodel_validity_for_duplication() ;
+        void build_new_fault_surfaces(
+            std::vector< std::vector< index_t > >& to_erase_by_type ) ;
+        void flag_corners_lines_contacts_to_be_deleted(
+            std::vector< std::vector< index_t > >& to_erase_by_type ) ;
+        void add_hole_between_faults(
+            std::vector< std::vector< index_t > >& to_erase_by_type,
+            index_t nb_initial_interfaces ) ;
+        void delete_old_entities(
+            std::vector< std::vector< index_t > >& to_erase_by_type ) ;
+        void rebuild_valid_geomodel() ;
+
         void homogenize_normal_orientation_surface_all_interfaces() ;
         void homogenize_normal_orientation_surface_one_interface(
-            const Interface& fault_interface,
+            index_t fault_interface_id,
             std::vector< index_t >& surfaces_to_inverse_normals ) ;
         void get_new_surfaces(
-            const Interface& interface_to_duplicate,
+            index_t interface_to_duplicate_id,
             std::vector< std::vector< index_t > >& to_erase_by_type ) ;
         void build_merged_surfaces(
             const std::map< index_t, std::vector< index_t > >& surfaces_boundary_regions,
             const std::string& side_name,
             std::vector< std::vector< index_t > >& to_erase_by_type,
-            const gme_t& sided_interface_gme_t,
-            const Interface& interface_to_duplicate ) ;
+            index_t sided_interface_id,
+            index_t interface_to_duplicate_id ) ;
         void compute_translation_vectors_duplicated_fault_network_surfaces_and_regions(
             index_t first_new_interface_index,
             const std::vector< std::vector< index_t > >& to_erase_by_type ) ;
@@ -83,7 +96,7 @@ namespace RINGMesh {
             const std::vector< std::vector< index_t > >& to_erase_by_type ) ;
         void save_normals_on_one_new_interface(
             const std::vector< std::vector< index_t > >& to_erase_by_type,
-            const Interface& interface_gme ) const ;
+            index_t interface_id ) const ;
         vec3 get_local_translation_normal(
             const Surface& surface,
             index_t vertex_id_in_surface ) const ;
@@ -109,20 +122,20 @@ namespace RINGMesh {
             const vec3& normal_on_vertex_interface,
             index_t vertex_id_in_gmme,
             const vec3& vertex_pos,
-            const Interface& interface_gme,
-            const Interface& other_side_interface_gme ) const ;
+            index_t interface_id,
+            index_t other_side_interface_id ) const ;
         void set_no_displacement_on_fault_real_extension(
             const std::vector< std::vector< index_t > >& to_erase_by_type ) ;
         bool does_surface_belong_to_interface(
-            const Surface& surface,
-            const Interface& interface ) const ;
+            index_t surface_id,
+            index_t interface_id ) const ;
         void save_normals_on_one_old_interface(
-            const Interface& interface_gme ) const ;
+            index_t interface_id ) const ;
         vec3 get_normal_on_surface_vertex(
             const Surface& surface,
             index_t vertex_id_on_surface ) const ;
         void homogenize_surfaces_around_surface(
-            const Interface& fault_interface,
+            index_t fault_interface_id,
             const Surface& first_child,
             std::vector< bool >& already_seen,
             std::vector< index_t >& surfaces_to_inverse_normals ) ;
@@ -131,16 +144,16 @@ namespace RINGMesh {
         void add_fake_internal_boudnary_lines_to_merged_surface(
             const std::map< index_t, index_t >& all_surface_lines,
             const std::string& side_name,
-            const gme_t& sided_interface_gme_t,
-            const Interface& interface_to_duplicate,
-            const gme_t& new_surface_gme_t,
+            index_t sided_interface_id,
+            index_t interface_to_duplicate_id,
+            index_t new_surface_id,
             std::vector< std::vector< index_t > >& to_erase_by_type,
             index_t region_index ) ;
         void save_normal_on_one_surface( const Surface& surface ) const ;
         void split_merged_surface(
-            const gme_t& new_surface_gme_t,
+            index_t new_surface_id,
             const std::string& side_name,
-            const gme_t& sided_interface_gme_t,
+            index_t sided_interface_id,
             std::vector< std::vector< index_t > >& to_erase_by_type,
             index_t region_index ) ;
         void define_global_motion_relation(
