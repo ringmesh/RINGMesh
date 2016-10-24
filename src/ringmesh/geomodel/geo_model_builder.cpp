@@ -710,8 +710,6 @@ namespace RINGMesh {
         bool compute_next_line_geometry()
         {
             go_to_next_non_visited_border_triangle() ;
-//            DEBUG( border_triangles_[cur_border_triangle_].v0_ ) ;
-//            DEBUG( border_triangles_[cur_border_triangle_].v1_ ) ;
 
             if( is_not_the_end() ) {
                 init_next_line_computation() ;
@@ -815,17 +813,10 @@ namespace RINGMesh {
             get_adjacent_surfaces( cur_border_triangle_,
                 cur_line_adjacent_surfaces_ ) ;
 
-//            for( index_t s = 0; s < cur_line_adjacent_surfaces_.size(); s++ ) {
-//                DEBUG(cur_line_adjacent_surfaces_[s]) ;
-//            }
-
             bool backward = false ;
-//            DEBUG(cur_line_vertices_.size()) ;
             get_one_line_vertices( backward ) ;
-//            DEBUG(cur_line_vertices_.size()) ;
             backward = true ;
             get_one_line_vertices( backward ) ;
-//            DEBUG(cur_line_vertices_.size()) ;
 
             if( collect_region_information_ ) {
                 collect_region_information() ;
@@ -844,7 +835,6 @@ namespace RINGMesh {
             ringmesh_assert( start != NO_ID ) ;
 
             index_t t = get_next_border_triangle( start, backward ) ;
-            ringmesh_assert( t != start ) ;
 
             while( t != start ) {
                 ringmesh_assert( t != NO_ID ) ;
@@ -976,22 +966,6 @@ namespace RINGMesh {
                             border_triangles_.push_back(
                                 BorderTriangle( s, f, vertex, next_vertex,
                                     previous_vertex ) ) ;
-
-//                            //@todo to remove (check that the good me_v_id is retrieve)
-//                            std::vector< index_t > me_v_ids =
-//                                model_vertices.mesh_entity_vertex_id( S.gme_id(),
-//                                    vertex ) ;
-//                            for( index_t me_v_id = 0; me_v_id < me_v_ids.size(); me_v_id++ ) {
-//                                if( S.vertex_index_in_facet( f, me_v_ids[me_v_id] ) == v ) {
-//                                    return ;
-//                                }
-//                            }
-//                            DEBUG( v ) ;
-//                            DEBUG( vertex ) ;
-//                            for( index_t me_v_id = 0; me_v_id < me_v_ids.size(); me_v_id++ ) {
-//                                DEBUG( me_v_ids[me_v_id] ) ;
-//                            }
-//                            ringmesh_assert_not_reached ;
                         }
                     }
                 }
@@ -1011,7 +985,6 @@ namespace RINGMesh {
 
             // Gets the next edge on border in the Surface
             index_t f = border_triangle.facet_ ;
-//            index_t model_facet_id = geomodel_.mesh.facets.facet( S.index(), f ) ;
             std::vector< index_t > possible_v0_id =
                 model_vertices.mesh_entity_vertex_id( S.gme_id(),
                     border_triangle.v0_ ) ;
@@ -1025,13 +998,6 @@ namespace RINGMesh {
             ringmesh_assert( v0_id != NO_ID ) ;
             index_t v0_id_in_facet = S.vertex_index_in_facet( f,
                  v0_id ) ;
-//            index_t f_v0 = geomodel_.mesh.facets.vertex( model_facet_id,
-//                v0_id_in_facet ) ;
-//            index_t v1_id_in_facet = S.vertex_index_in_facet( model_facet_id,
-//                model_vertices.mesh_entity_vertex_id( S.gme_id(),
-//                    border_triangle.v1_ ) ) ;
-//            index_t f_v1 = geomodel_.mesh.facets.vertex( model_facet_id,
-//                v1_id_in_facet ) ;
             ringmesh_assert( v0_id_in_facet != NO_ID ) ;
 
             index_t next_f = NO_ID ;
@@ -1091,13 +1057,8 @@ namespace RINGMesh {
             std::vector< index_t >& adjacent_surfaces )
         {
             index_t j = i ;
-//            DEBUG(i) ;
             while( j < border_triangles_.size()
                 && border_triangles_[i].same_edge( border_triangles_[j] ) ) {
-//                DEBUG( border_triangles_[j].v0_ ) ;
-//                DEBUG( border_triangles_[j].v1_ ) ;
-//                DEBUG( border_triangles_[j].surface_ ) ;
-//                DEBUG( border_triangles_[j].facet_ ) ;
                 adjacent_surfaces.push_back( border_triangles_[j].surface_ ) ;
                 j++ ;
             }
@@ -1315,7 +1276,6 @@ namespace RINGMesh {
             model_vertices.vertex( model_vertex ), false ) ;
 
         ringmesh_assert( v < mesh_entity( entity_id ).nb_vertices() ) ;
-//        model_vertices.add_to_gme( model_vertex, GMEVertex( entity_id, v ) ) ;
     }
 
     /*!
@@ -1449,15 +1409,6 @@ namespace RINGMesh {
         assign_region_tet_mesh( region_id, tetras ) ;
     }
 
-//    /*!
-//     * @brief Add a point to the GeoModel and not to one of its entities
-//     * @details To use when adding the points to the model before building its entities
-//     */
-//    index_t GeoModelBuilder::add_unique_vertex( const vec3& p )
-//    {
-//        return model().mesh.vertices.add_vertex( p ) ;
-//    }
-
     /*!
      * @brief Sets the vertex for a Corner. Store the info in the geomodel vertices
      *
@@ -1486,15 +1437,6 @@ namespace RINGMesh {
         // we are doomed because they are not removed
         /// @todo Do this test for all others set_something
         set_mesh_entity_vertices( E.gme_id(), unique_vertices, clear_vertices ) ;
-
-        //@todo Mapping of line
-//        GEO::Attribute< index_t > line_vertex_map =
-//            model().mesh.vertices.get_mesh_entity_vertex_map( E ) ;
-//
-//        line_vertex_map.fill( NO_ID ) ;
-//        for( index_t v = 0; v < unique_vertices.size(); v++ ) {
-//            line_vertex_map[v] = unique_vertices[v] ;
-//        }
 
         MeshBuilder builder( E.mesh_ ) ;
         for( index_t e = 1; e < E.nb_vertices(); e++ ) {
@@ -2051,12 +1993,6 @@ namespace RINGMesh {
             index_t backup_nb_lines = model().nb_lines() ;
             gme_t line_index = find_or_create_line( adjacent_surfaces, first_corner,
                 second_corner ) ;
-
-//            std::cerr<< " line number " << line_index.index << std::endl ;
-//            for( index_t v = 0; v < vertices.size(); v++ ) {
-//                std::cerr << vertices[v] << " = "
-//                    << model().mesh.vertices.vertex( vertices[v] ) << std::endl ;
-//            }
 
             bool created_line = model().nb_lines() != backup_nb_lines ;
             if( created_line ) {
