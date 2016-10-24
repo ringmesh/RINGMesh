@@ -284,8 +284,6 @@ namespace RINGMesh {
         if( nb_vertex_maps_ == total_nb_mesh_entities() ) {
             return ;
         }
-//        DEBUG( nb_vertex_maps_ ) ;
-//        DEBUG( total_nb_mesh_entities() ) ;
         const std::vector< EntityType >& all_mesh_entity_types =
             EntityTypeManager::mesh_entity_types() ;
         for( index_t t = 0; t < all_mesh_entity_types.size(); t++ ) {
@@ -296,7 +294,6 @@ namespace RINGMesh {
                 bool cur_map_was_init = test_and_initialize_mesh_entity_vertex_map(
                     cur_mesh_entity ) ;
                 if( !cur_map_was_init ) {
-//                    DEBUG( cur_mesh_entity ) ;
                      add_mesh_entity_vertices_to_gme( cur_mesh_entity ) ;
                 }
             }
@@ -349,7 +346,6 @@ namespace RINGMesh {
     {
         return mesh_entity_vertex_attribute_manager( mesh_entity_id ).is_defined(
             vertex_map_name() ) ;
-//        return find( initialized_gmes_, mesh_entity_id ) != NO_ID ;
     }
 
     void GeoModelVertexMapper::clear_all_mesh_entity_vertex_map()
@@ -374,13 +370,9 @@ namespace RINGMesh {
         // Set the size of gme_vertices to the total number of model vertices
         gme_vertices_.resize( model_vertices_.nb() ) ;
 
-        // @todo
         for( index_t v = 0; v < model_vertices_.nb(); v++ ) {
             std::vector< GMEVertex >& cur_v_gme_vertices = gme_vertices_[v] ;
-//            DEBUG( v ) ;
-//            DEBUG( cur_v_gme_vertices.size() ) ;
             compute_all_mesh_entity_vertices( v, cur_v_gme_vertices ) ;
-//            DEBUG( cur_v_gme_vertices.size() ) ;
         }
 
     }
@@ -670,7 +662,6 @@ namespace RINGMesh {
 
     index_t GeoModelMeshVertices::add_vertex( const vec3& point )
     {
-//        gme_vertices_.push_back( std::vector< GMEVertex >() ) ;
         MeshBuilder builder( mesh_ ) ;
         return builder.create_vertex( point ) ;
     }
@@ -756,15 +747,6 @@ namespace RINGMesh {
         // isolated vertices (here all the vertices)
         MeshBuilder builder( mesh_ ) ;
         builder.delete_vertices( to_delete_geo, false ) ;
-
-//#ifdef RINGMESH_DEBUG
-//        // Paranoia - check that we have the same mapping than the
-//        // delete_elements function in Geogram
-//        for( index_t v = 0; v < nb(); ++v ) {
-//            ringmesh_assert(
-//                to_delete_geo[v] == NO_ID || to_delete_geo[v] == to_delete[v] ) ;
-//        }
-//#endif
 
         vertex_mapper_.update_mesh_entity_maps_and_gmes( to_delete ) ;
     }
