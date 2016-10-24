@@ -1451,14 +1451,14 @@ namespace RINGMesh {
         assign_region_tet_mesh( region_id, tetras ) ;
     }
 
-    /*!
-     * @brief Add a point to the GeoModel and not to one of its entities
-     * @details To use when adding the points to the model before building its entities
-     */
-    index_t GeoModelBuilder::add_unique_vertex( const vec3& p )
-    {
-        return model().mesh.vertices.add_vertex( p ) ;
-    }
+//    /*!
+//     * @brief Add a point to the GeoModel and not to one of its entities
+//     * @details To use when adding the points to the model before building its entities
+//     */
+//    index_t GeoModelBuilder::add_unique_vertex( const vec3& p )
+//    {
+//        return model().mesh.vertices.add_vertex( p ) ;
+//    }
 
     /*!
      * @brief Sets the vertex for a Corner. Store the info in the geomodel vertices
