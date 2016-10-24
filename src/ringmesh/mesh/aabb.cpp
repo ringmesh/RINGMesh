@@ -75,7 +75,6 @@ namespace {
      * \return the maximum node index in the subtree rooted at \p node_index
      */
 
-
     template< index_t COORD >
     class Morton_cmp {
     public:
@@ -106,7 +105,10 @@ namespace {
      *  the two halves
      */
     template< class CMP >
-    inline const_vector_itr split( const_vector_itr& begin, const_vector_itr& end, CMP cmp )
+    inline const_vector_itr split(
+        const_vector_itr& begin,
+        const_vector_itr& end,
+        CMP cmp )
     {
         if( begin >= end ) {
             return begin ;
@@ -183,7 +185,7 @@ namespace {
         if( box.diagonal().length() == 0 ) return ;
         const vec3& min_vertex = box.min() ;
         const vec3& max_vertex = box.max() ;
-        vec3 width( box.width(), 0, 0 )  ;
+        vec3 width( box.width(), 0, 0 ) ;
         vec3 height( 0, box.height(), 0 ) ;
         vec3 depth( 0, 0, box.depth() ) ;
         index_t v0 = M.vertices.create_vertex( min_vertex.data() ) ;
@@ -233,8 +235,8 @@ namespace RINGMesh {
             return node_index ;
         }
         index_t element_middle, child_left, child_right ;
-        get_recursive_iterators( node_index, box_begin, box_end,
-            element_middle, child_left, child_right ) ;
+        get_recursive_iterators( node_index, box_begin, box_end, element_middle,
+            child_left, child_right ) ;
         return std::max( max_node_index( child_left, box_begin, element_middle ),
             max_node_index( child_right, element_middle, box_end ) ) ;
     }
@@ -268,7 +270,6 @@ namespace RINGMesh {
         tree_[node_index] = tree_[child_left].bbox_union( tree_[child_right] ) ;
     }
 
-
     void AABBTree::save_tree( const std::string& name ) const
     {
         index_t nb_nodes = 0 ;
@@ -284,7 +285,6 @@ namespace RINGMesh {
             GEO::mesh_save( M, oss.str() ) ;
         }
     }
-
 
     void AABBTree::get_nearest_element_box_hint(
         const vec3& query,
@@ -320,7 +320,9 @@ namespace RINGMesh {
         initialize_tree( bboxes ) ;
     }
 
-    vec3 AABBTreeBox::get_point_hint_from_box( const Box3d& box, index_t element_id ) const
+    vec3 AABBTreeBox::get_point_hint_from_box(
+        const Box3d& box,
+        index_t element_id ) const
     {
         ringmesh_unused( element_id ) ;
         return box.center() ;
@@ -329,10 +331,19 @@ namespace RINGMesh {
     /****************************************************************************/
 
     AABBTreeMesh::AABBTreeMesh( const MeshBase& mesh )
+        : mesh_base_( mesh )
     {
         std::vector< Box3d > bboxes ;
         compute_element_bboxes( mesh, bboxes ) ;
         initialize_tree( bboxes ) ;
+    }
+
+    vec3 AABBTreeMesh::get_point_hint_from_box(
+        const Box3d& box,
+        index_t element_id ) const
+    {
+        ringmesh_unused( box ) ;
+        return mesh_base_.mesh_element_vertex( element_id, 0 ) ;
     }
 
     /****************************************************************************/
@@ -352,12 +363,6 @@ namespace RINGMesh {
             action ) ;
     }
 
-    vec3 AABBTree1D::get_point_hint_from_box( const Box3d& box, index_t element_id ) const
-    {
-        ringmesh_unused( box ) ;
-        return mesh_.mesh_element_vertex( element_id, 0 ) ;
-    }
-
     void AABBTree1D::DistanceToEdge::operator()(
         const vec3& query,
         index_t cur_box,
@@ -367,6 +372,37 @@ namespace RINGMesh {
         const vec3& v0 = mesh_.vertex( mesh_.edge_vertex( cur_box, 0 ) ) ;
         const vec3& v1 = mesh_.vertex( mesh_.edge_vertex( cur_box, 1 ) ) ;
         distance = point_segment_distance( query, v0, v1, nearest_point ) ;
+    }
+
+    /****************************************************************************/
+
+    AABBTree2D::AABBTree2D( const Mesh2D& mesh )
+        : AABBTreeMesh( mesh ), mesh_( mesh )
+    {
+    }
+
+    index_t AABBTree2D::closest_triangle(
+        const vec3& query,
+        vec3& nearest_point,
+        double& distance ) const
+    {
+        DistanceToTriangle action( mesh_ ) ;
+        return closest_element_box< DistanceToTriangle >( query, nearest_point,
+            distance, action ) ;
+    }
+
+    void AABBTree2D::DistanceToTriangle::operator()(
+        const vec3& query,
+        index_t cur_box,
+        vec3& nearest_point,
+        double& distance ) const
+    {
+        const vec3& v0 = mesh_.vertex( mesh_.facet_vertex( cur_box, 0 ) ) ;
+        const vec3& v1 = mesh_.vertex( mesh_.facet_vertex( cur_box, 1 ) ) ;
+        const vec3& v2 = mesh_.vertex( mesh_.facet_vertex( cur_box, 2 ) ) ;
+        double lambda0, lambda1, lambda2 ;
+        distance = point_triangle_distance( query, v0, v1, v2, nearest_point,
+            lambda0, lambda1, lambda2 ) ;
     }
 }
 
