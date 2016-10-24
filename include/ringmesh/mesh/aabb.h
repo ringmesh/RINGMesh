@@ -43,6 +43,7 @@
 namespace RINGMesh {
     class MeshBase ;
     class Mesh1D ;
+    class Mesh2D ;
 }
 
 namespace RINGMesh {
@@ -57,16 +58,16 @@ namespace RINGMesh {
             return static_cast< index_t >( mapping_morton_.size() ) ;
         }
 
-        template< typename ACTION >
+        template< typename EvalDistance >
         index_t closest_element_box(
             const vec3& query,
             vec3& nearest_point,
             double& distance,
-            const ACTION& action ) const
+            const EvalDistance& action ) const
         {
             get_nearest_element_box_hint( query, nearest_point, distance ) ;
             index_t nearest_box ;
-            closest_element_box_recursive< ACTION >( query, nearest_box,
+            closest_element_box_recursive< EvalDistance >( query, nearest_box,
                 nearest_point, distance, ROOT_INDEX, 0, nb_bboxes(), action ) ;
             return nearest_box ;
         }
@@ -147,6 +148,12 @@ namespace RINGMesh {
         virtual ~AABBTreeMesh()
         {
         }
+        virtual vec3 get_point_hint_from_box(
+            const Box3d& box,
+            index_t element_id ) const ;
+
+    private:
+        const MeshBase& mesh_base_ ;
     } ;
 
     class RINGMESH_API AABBTree1D: public AABBTreeMesh {
@@ -161,10 +168,6 @@ namespace RINGMesh {
             vec3& nearest_point,
             double& distance ) const ;
     private:
-        virtual vec3 get_point_hint_from_box(
-            const Box3d& box,
-            index_t element_id ) const ;
-
         class DistanceToEdge {
         public:
             DistanceToEdge( const Mesh1D& mesh )
@@ -184,6 +187,39 @@ namespace RINGMesh {
 
     private:
         const Mesh1D& mesh_ ;
+    } ;
+
+    class RINGMESH_API AABBTree2D: public AABBTreeMesh {
+    public:
+        AABBTree2D( const Mesh2D& mesh ) ;
+        virtual ~AABBTree2D()
+        {
+        }
+
+        index_t closest_triangle(
+            const vec3& query,
+            vec3& nearest_point,
+            double& distance ) const ;
+    private:
+        class DistanceToTriangle {
+        public:
+            DistanceToTriangle( const Mesh2D& mesh )
+                : mesh_( mesh )
+            {
+            }
+
+            void operator()(
+                const vec3& query,
+                index_t cur_box,
+                vec3& nearest_point,
+                double& distance ) const ;
+
+        private:
+            const Mesh2D& mesh_ ;
+        } ;
+
+    private:
+        const Mesh2D& mesh_ ;
     } ;
 
     template< typename ACTION >
