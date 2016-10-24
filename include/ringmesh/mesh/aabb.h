@@ -44,6 +44,7 @@ namespace RINGMesh {
     class MeshBase ;
     class Mesh1D ;
     class Mesh2D ;
+    class Mesh3D ;
 }
 
 namespace RINGMesh {
@@ -124,7 +125,7 @@ namespace RINGMesh {
             const Box3d& box,
             index_t element_id ) const = 0 ;
 
-    private:
+    protected:
         std::vector< Box3d > tree_ ;
         std::vector< index_t > mapping_morton_ ;
     } ;
@@ -220,6 +221,27 @@ namespace RINGMesh {
 
     private:
         const Mesh2D& mesh_ ;
+    } ;
+
+
+    class RINGMESH_API AABBTree3D: public AABBTreeMesh {
+    public:
+        AABBTree3D( const Mesh3D& mesh ) ;
+        virtual ~AABBTree3D()
+        {
+        }
+
+        index_t containing_cell( const vec3& query ) const ;
+
+    private:
+        index_t containing_cell_recursive(
+            const vec3& query,
+            index_t node_index,
+            index_t box_begin,
+            index_t box_end ) const ;
+
+    private:
+        const Mesh3D& mesh_ ;
     } ;
 
     template< typename ACTION >
