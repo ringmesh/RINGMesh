@@ -187,7 +187,7 @@ namespace RINGMesh {
         }
     }
 
-    void DuplicateInterfaceBuilder::duplicate_fault_network()
+    void DuplicateInterfaceBuilder::duplicate_fault_network( bool gap )
     {
         check_geomodel_validity_for_duplication() ;
 
@@ -212,6 +212,9 @@ namespace RINGMesh {
         flag_corners_lines_contacts_to_be_deleted( to_erase_by_type ) ;
         delete_old_entities( to_erase_by_type ) ;
         rebuild_valid_geomodel() ;
+        if(!gap) {
+            remove_gap() ;
+        }
     }
 
     void DuplicateInterfaceBuilder::check_geomodel_validity_for_duplication()
@@ -262,11 +265,17 @@ namespace RINGMesh {
                 surfaces_to_inverse_normals ) ;
         }
 
+        invert_normals_of_surface_list( surfaces_to_inverse_normals ) ;
+        recompute_geomodel_mesh() ;
+    }
+
+    void DuplicateInterfaceBuilder::invert_normals_of_surface_list(
+        std::vector< index_t >& surfaces_to_inverse_normals )
+    {
         for( index_t to_inverse_itr = 0;
             to_inverse_itr < surfaces_to_inverse_normals.size(); ++to_inverse_itr ) {
             invert_surface_normals( surfaces_to_inverse_normals[to_inverse_itr] ) ;
         }
-        recompute_geomodel_mesh() ;
     }
 
     void DuplicateInterfaceBuilder::homogenize_normal_orientation_surface_one_interface(
@@ -307,8 +316,6 @@ namespace RINGMesh {
         std::vector< bool >& already_seen,
         std::vector< index_t >& surfaces_to_inverse_normals )
     {
-        const GeoModelGeologicalEntity& fault_interface = interface(
-            fault_interface_id ) ;
         for( index_t line_boundary_itr = 0;
             line_boundary_itr < first_child.nb_boundaries(); ++line_boundary_itr ) {
             const GeoModelMeshEntity& cur_line_boun = first_child.boundary(
@@ -510,7 +517,6 @@ namespace RINGMesh {
         // Loop to nb_initial_interfaces. model().nb_interfaces() cannot be inside
         // the for statement since the number of interfaces will increase during
         // the duplication.
-        DEBUG( "Build new surfaces" ) ;
         for( index_t interface_itr = 0; interface_itr < nb_initial_interfaces;
             ++interface_itr ) {
             const GeoModelGeologicalEntity& cur_interface = interface(
@@ -2193,5 +2199,10 @@ namespace RINGMesh {
                 "translation_attr_z" ) ;
             translation_att_z[cur_gme_vertex.v_id] = 0 ;
         }
+    }
+
+    void DuplicateInterfaceBuilder::remove_gap()
+    {
+        // TODO
     }
 }

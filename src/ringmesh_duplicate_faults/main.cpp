@@ -66,6 +66,7 @@ namespace RINGMesh {
     {
         CmdLine::import_arg_group( "in" ) ;
         CmdLine::import_arg_group( "out" ) ;
+        CmdLine::import_arg_group( "duplication" ) ;
     }
 
     void init()
@@ -87,8 +88,9 @@ namespace RINGMesh {
 
     void duplicate_fntk( GeoModel& geomodel )
     {
+        bool gap = GEO::CmdLine::get_arg( "duplication:gap" ) ;
         DuplicateInterfaceBuilder dib( geomodel ) ;
-        dib.duplicate_fault_network() ;
+        dib.duplicate_fault_network( gap ) ;
     }
 
     void save_duplicated_fntk_geomodel( GeoModel& geomodel )

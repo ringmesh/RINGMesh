@@ -56,11 +56,11 @@ namespace RINGMesh {
     class RINGMESH_API DuplicateInterfaceBuilder: public GeoModelBuilder {
     ringmesh_disable_copy(DuplicateInterfaceBuilder) ;
     public:
-        DuplicateInterfaceBuilder( GeoModel& model ) ;
+        DuplicateInterfaceBuilder( GeoModel& model) ;
         virtual ~DuplicateInterfaceBuilder() ;
-        void duplicate_fault_network() ;
+        void duplicate_fault_network( bool gap ) ;
     private:
-        const GeoModelGeologicalEntity& interface(index_t interface_id) const ;
+        const GeoModelGeologicalEntity& interface( index_t interface_id ) const ;
         void check_geomodel_validity_for_duplication() ;
         void build_new_fault_surfaces(
             std::vector< std::vector< index_t > >& to_erase_by_type ) ;
@@ -97,6 +97,8 @@ namespace RINGMesh {
         void save_normals_on_one_new_interface(
             const std::vector< std::vector< index_t > >& to_erase_by_type,
             index_t interface_id ) const ;
+        void invert_normals_of_surface_list(
+            std::vector< index_t >& surfaces_to_inverse_normals ) ;
         vec3 get_local_translation_normal(
             const Surface& surface,
             index_t vertex_id_in_surface ) const ;
@@ -129,8 +131,7 @@ namespace RINGMesh {
         bool does_surface_belong_to_interface(
             index_t surface_id,
             index_t interface_id ) const ;
-        void save_normals_on_one_old_interface(
-            index_t interface_id ) const ;
+        void save_normals_on_one_old_interface( index_t interface_id ) const ;
         vec3 get_normal_on_surface_vertex(
             const Surface& surface,
             index_t vertex_id_on_surface ) const ;
@@ -220,6 +221,8 @@ namespace RINGMesh {
         {
             return all_entity_types_.at( index ) ;
         }
+
+        void remove_gap() ;
 
     private:
         class GMEVertexLink {
