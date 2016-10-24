@@ -1209,10 +1209,8 @@ namespace RINGMesh {
     {
         gme_t result = find_corner( model(), model_point_id ) ;
         if( !result.is_defined() ) {
-//            std::cout << "to create" << std::endl ;
             result = create_mesh_entity<Corner>() ;
             set_corner( result.index, model_point_id ) ;
-//            model().mesh.vertices.set_gme()
         }
         return result ;
     }

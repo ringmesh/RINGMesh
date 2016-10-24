@@ -107,21 +107,28 @@ namespace RINGMesh {
             const gme_t& mesh_entity_id ) const ;
 
 
-
-
-
-
-//
-//        void set_vertex_map_value(
-//            const gme_t& mesh_entity_id,
-//            const index_t mesh_entity_vertex_index,
-//            const index_t model_entity_vertex_index ) const ;
+        void set_vertex_map_value(
+            const gme_t& mesh_entity_id,
+            const index_t mesh_entity_vertex_index,
+            const index_t model_entity_vertex_index ) const ;
 
         void initialize_mesh_entity_vertex_map_to_default(
             const gme_t& mesh_entity_id ) const ;
 
-//        void update_mesh_entities_maps(
-//            const std::vector< index_t >& old2new ) const ;
+        void update_mesh_entity_maps_and_gmes(
+            const std::vector< index_t >& old2new ) ;
+
+        void clear_model_vertex_gmes( const index_t v )
+        {
+            ringmesh_assert( v < gme_vertices_.size() ) ;
+            gme_vertices_[v].clear() ;
+        }
+
+        void resize_model_vertex_gmes( const index_t nb )
+        {
+            gme_vertices_.clear() ;
+            gme_vertices_.resize( nb ) ;
+        }
 
     private:
         //@todo scope global initialization
