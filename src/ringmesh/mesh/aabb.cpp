@@ -211,6 +211,50 @@ namespace {
         id[M.edges.create_edge( v2, v6 )] = n ;
         id[M.edges.create_edge( v3, v7 )] = n ;
     }
+
+    bool mesh_cell_contains_point( const Mesh3D& M, index_t cell, const vec3& p )
+    {
+        switch( M.cell_type( cell ) ) {
+            case GEO::MESH_TET: {
+                const vec3& p0 = M.vertex( M.cell_vertex( cell, 0 ) ) ;
+                const vec3& p1 = M.vertex( M.cell_vertex( cell, 1 ) ) ;
+                const vec3& p2 = M.vertex( M.cell_vertex( cell, 2 ) ) ;
+                const vec3& p3 = M.vertex( M.cell_vertex( cell, 3 ) ) ;
+                return point_inside_tetra( p, p0, p1, p2, p3 ) ;
+            }
+            case GEO::MESH_PYRAMID: {
+                const vec3& p0 = M.vertex( M.cell_vertex( cell, 0 ) ) ;
+                const vec3& p1 = M.vertex( M.cell_vertex( cell, 1 ) ) ;
+                const vec3& p2 = M.vertex( M.cell_vertex( cell, 2 ) ) ;
+                const vec3& p3 = M.vertex( M.cell_vertex( cell, 3 ) ) ;
+                const vec3& p4 = M.vertex( M.cell_vertex( cell, 4 ) ) ;
+                return point_inside_pyramid( p, p0, p1, p2, p3, p4 ) ;
+            }
+            case GEO::MESH_PRISM: {
+                const vec3& p0 = M.vertex( M.cell_vertex( cell, 0 ) ) ;
+                const vec3& p1 = M.vertex( M.cell_vertex( cell, 1 ) ) ;
+                const vec3& p2 = M.vertex( M.cell_vertex( cell, 2 ) ) ;
+                const vec3& p3 = M.vertex( M.cell_vertex( cell, 3 ) ) ;
+                const vec3& p4 = M.vertex( M.cell_vertex( cell, 4 ) ) ;
+                const vec3& p5 = M.vertex( M.cell_vertex( cell, 5 ) ) ;
+                return point_inside_prism( p, p0, p1, p2, p3, p4, p5 ) ;
+            }
+            case GEO::MESH_HEX: {
+                const vec3& p0 = M.vertex( M.cell_vertex( cell, 0 ) ) ;
+                const vec3& p1 = M.vertex( M.cell_vertex( cell, 1 ) ) ;
+                const vec3& p2 = M.vertex( M.cell_vertex( cell, 2 ) ) ;
+                const vec3& p3 = M.vertex( M.cell_vertex( cell, 3 ) ) ;
+                const vec3& p4 = M.vertex( M.cell_vertex( cell, 4 ) ) ;
+                const vec3& p5 = M.vertex( M.cell_vertex( cell, 5 ) ) ;
+                const vec3& p6 = M.vertex( M.cell_vertex( cell, 6 ) ) ;
+                const vec3& p7 = M.vertex( M.cell_vertex( cell, 7 ) ) ;
+                return point_inside_hexa( p, p0, p1, p2, p3, p4, p5, p6, p7 ) ;
+            }
+            default:
+                ringmesh_assert_not_reached ;
+                return false ;
+        }
+    }
 }
 
 /****************************************************************************/
@@ -403,6 +447,51 @@ namespace RINGMesh {
         double lambda0, lambda1, lambda2 ;
         distance = point_triangle_distance( query, v0, v1, v2, nearest_point,
             lambda0, lambda1, lambda2 ) ;
+    }
+
+    /****************************************************************************/
+
+    AABBTree3D::AABBTree3D( const Mesh3D& mesh )
+        : AABBTreeMesh( mesh ), mesh_( mesh )
+    {
+    }
+
+    index_t AABBTree3D::containing_cell( const vec3& query ) const
+    {
+        return containing_cell_recursive( query, ROOT_INDEX, 0, nb_bboxes() ) ;
+    }
+
+    index_t AABBTree3D::containing_cell_recursive(
+        const vec3& query,
+        index_t node_index,
+        index_t box_begin,
+        index_t box_end ) const
+    {
+
+        if( !tree_[node_index].contains( query ) ) {
+            return NO_ID ;
+        }
+
+        if( box_end == box_begin + 1 ) {
+            if( mesh_cell_contains_point( mesh_, mapping_morton_[box_begin],
+                query ) ) {
+                return box_begin ;
+            } else {
+                return NO_ID ;
+            }
+        }
+
+        index_t box_middle, child_left, child_right ;
+        get_recursive_iterators( node_index, box_begin, box_end, box_middle,
+            child_left, child_right ) ;
+
+        index_t result = containing_cell_recursive( query, child_left, box_begin,
+            box_middle ) ;
+        if( result == NO_ID ) {
+            result = containing_cell_recursive( query, child_right, box_middle,
+                box_end ) ;
+        }
+        return result ;
     }
 }
 
