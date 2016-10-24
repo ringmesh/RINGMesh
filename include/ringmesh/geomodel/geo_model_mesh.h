@@ -81,19 +81,21 @@ namespace RINGMesh {
         GeoModelVertexMapper(
             GeoModelMeshVertices& model_vertices,
             const GeoModel& geomodel )
-            : model_vertices_( model_vertices ), geomodel_( geomodel )
+            : model_vertices_( model_vertices ), geomodel_( geomodel ), nb_vertex_maps_( 0 )
         {
         }
 
         //@todo scope global initialization
         void test_and_initialize() const ;
 
+        void clear() ;
+
         index_t model_vertex_index(
             const gme_t& mesh_entity_id,
             const index_t mesh_entity_vertex_index ) const ;
 
         //@todo this is a copy - not really good
-        std::vector< GMEVertex > mesh_entity_vertex_indices(
+        const std::vector< GMEVertex >& mesh_entity_vertex_indices(
             const index_t v ) const ;
 
         std::vector< GMEVertex > mesh_entity_vertex_indices(
@@ -109,11 +111,11 @@ namespace RINGMesh {
 
 
 
-
-        void set_vertex_map_value(
-            const gme_t& mesh_entity_id,
-            const index_t mesh_entity_vertex_index,
-            const index_t model_entity_vertex_index ) const ;
+//
+//        void set_vertex_map_value(
+//            const gme_t& mesh_entity_id,
+//            const index_t mesh_entity_vertex_index,
+//            const index_t model_entity_vertex_index ) const ;
 
         void initialize_mesh_entity_vertex_map_to_default(
             const gme_t& mesh_entity_id ) const ;
@@ -127,17 +129,23 @@ namespace RINGMesh {
 
         bool is_initialized() const ;
 
-        //@todo scope GeoModelMeshEntity map initializations
-        void initialize_mesh_entity_vertex_maps() const ;
+        void check_mesh_entity_maps() ;
 
-//        void test_and_initialize( const gme_t& mesh_entity_id ) const ;
+        //@todo scope GeoModelMeshEntity map initializations
+        void initialize_mesh_entity_vertex_maps() ;
 
         void initialize_mesh_entity_vertex_map( const gme_t& mesh_entity_id ) const ;
 
-//        bool is_initialized( const gme_t& mesh_entity_id ) const ;
+        bool test_and_initialize_mesh_entity_vertex_map( const gme_t& mesh_entity_id ) const ;
+
+        bool is_mesh_entity_vertex_map_initialized( const gme_t& mesh_entity_id ) const ;
+
+        void clear_all_mesh_entity_vertex_map() ;
 
         //@todo gme_vertices vector computations
         void fill_gme_vertices() ;
+
+        void add_mesh_entity_vertices_to_gme( const gme_t& mesh_entity_id ) ;
 
         /*!
          * @note Calling this function can take long time.
@@ -156,6 +164,7 @@ namespace RINGMesh {
             const index_t model_vertex_index,
             std::vector< index_t >& result ) const ;
 
+        index_t total_nb_mesh_entities() const ;
 
 
 
@@ -171,8 +180,9 @@ namespace RINGMesh {
         GeoModelMeshVertices& model_vertices_ ;
         const GeoModel& geomodel_ ;
 
-        std::vector< index_t > first_gme_vertex_position_ ;
-        std::vector< GMEVertex > gme_vertices_ ;
+        mutable index_t nb_vertex_maps_ ;
+//        std::vector< gme_t > initialized_gmes_ ;
+        std::vector< std::vector< GMEVertex > > gme_vertices_ ;
 
 
     } ;
