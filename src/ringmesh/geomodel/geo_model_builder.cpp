@@ -985,9 +985,9 @@ namespace RINGMesh {
 
             // Gets the next edge on border in the Surface
             index_t f = border_triangle.facet_ ;
-            std::vector< index_t > possible_v0_id =
-                model_vertices.mesh_entity_vertex_id( S.gme_id(),
-                    border_triangle.v0_ ) ;
+            std::vector< index_t > possible_v0_id ;
+            model_vertices.mesh_entity_vertex_id( S.gme_id(), border_triangle.v0_,
+                possible_v0_id ) ;
             ringmesh_assert( !possible_v0_id.empty() ) ;
             index_t v0_id = NO_ID ;
             for( index_t i = 0; i < possible_v0_id.size(); i++ ) {

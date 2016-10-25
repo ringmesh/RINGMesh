@@ -172,34 +172,32 @@ namespace RINGMesh {
         return gme_vertices_[v] ;
     }
 
-    std::vector< GMEVertex > GeoModelVertexMapper::mesh_entity_vertex_indices(
+    void GeoModelVertexMapper::mesh_entity_vertex_indices(
         index_t v,
-        const EntityType& mesh_entity_type ) const
+        const EntityType& mesh_entity_type,
+        std::vector< GMEVertex >& result ) const
     {
-        std::vector< GMEVertex > all_gmes = mesh_entity_vertex_indices( v ) ;
-        std::vector< GMEVertex > mesh_entity_type_gmes ;
-        mesh_entity_type_gmes.reserve( all_gmes.size() ) ;
+        result.clear() ;
+        const std::vector< GMEVertex >& all_gmes = mesh_entity_vertex_indices( v ) ;
         for( index_t i = 0; i < all_gmes.size(); i++ ) {
             if( all_gmes[i].gme_id.type == mesh_entity_type ) {
-                mesh_entity_type_gmes.push_back( all_gmes[i] ) ;
+                result.push_back( all_gmes[i] ) ;
             }
         }
-        return mesh_entity_type_gmes ;
     }
 
-    std::vector< index_t > GeoModelVertexMapper::mesh_entity_vertex_indices(
+    void GeoModelVertexMapper::mesh_entity_vertex_indices(
         index_t v,
-        const gme_t& mesh_entity_id ) const
+        const gme_t& mesh_entity_id,
+        std::vector< index_t >& result ) const
     {
+        result.clear() ;
         std::vector< GMEVertex > all_gmes = mesh_entity_vertex_indices( v ) ;
-        std::vector< index_t > mesh_entity_vertex_ids ;
-        mesh_entity_vertex_ids.reserve( all_gmes.size() ) ;
         for( index_t i = 0; i < all_gmes.size(); i++ ) {
             if( all_gmes[i].gme_id == mesh_entity_id ) {
-                mesh_entity_vertex_ids.push_back( all_gmes[i].v_id ) ;
+                result.push_back( all_gmes[i].v_id ) ;
             }
         }
-        return mesh_entity_vertex_ids ;
     }
 
     void  GeoModelVertexMapper::set_vertex_map_value(
@@ -639,15 +637,15 @@ namespace RINGMesh {
         return model_vertex_id( mesh_entity, entity_vertex_index ) ;
     }
 
-    std::vector< index_t > GeoModelMeshVertices::mesh_entity_vertex_id(
+    void GeoModelMeshVertices::mesh_entity_vertex_id(
         const gme_t& mesh_entity,
-        index_t model_vertex_index ) const
+        index_t model_vertex_index,
+        std::vector< index_t >& mesh_entity_vertex_ids ) const
     {
         test_and_initialize() ;
         ringmesh_assert( model_vertex_index < nb() ) ;
-        std::vector< index_t > mesh_entity_vertices ;
-        return vertex_mapper_.mesh_entity_vertex_indices( model_vertex_index,
-            mesh_entity ) ;
+        vertex_mapper_.mesh_entity_vertex_indices( model_vertex_index, mesh_entity,
+            mesh_entity_vertex_ids ) ;
     }
 
     void GeoModelMeshVertices::gme_vertices(
@@ -664,7 +662,7 @@ namespace RINGMesh {
         std::vector< GMEVertex >& gme_vertices ) const
     {
         test_and_initialize() ;
-        gme_vertices = vertex_mapper_.mesh_entity_vertex_indices( v, entity_type ) ;
+        vertex_mapper_.mesh_entity_vertex_indices( v, entity_type, gme_vertices ) ;
     }
 
     index_t GeoModelMeshVertices::add_vertex( const vec3& point )

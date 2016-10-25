@@ -255,8 +255,9 @@ namespace RINGMesh {
                 valid = false ;
             }
 
-            std::vector< index_t > backward_vertices =
-                model_vertices.mesh_entity_vertex_id( gme_id(), model_v ) ;
+            std::vector< index_t > backward_vertices ;
+            model_vertices.mesh_entity_vertex_id( gme_id(), model_v,
+                backward_vertices ) ;
             bool found_in_backward = false ;
             for( index_t bv = 0; bv < backward_vertices.size(); bv++ ) {
                 if( backward_vertices[bv] == v ) {

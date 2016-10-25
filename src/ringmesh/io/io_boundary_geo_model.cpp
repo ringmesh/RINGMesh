@@ -350,12 +350,12 @@ namespace {
                     index_t v0_model_id = model_vertices.model_vertex_id( L.gme_id(), 0 ) ;
                     index_t v1_model_id = model_vertices.model_vertex_id( L.gme_id(), 1 ) ;
 
-                    std::vector< index_t > v0_surface_ids =
-                        model_vertices.mesh_entity_vertex_id( S.gme_id(),
-                            v0_model_id ) ;
-                    std::vector< index_t > v1_surface_ids =
-                        model_vertices.mesh_entity_vertex_id( S.gme_id(),
-                            v1_model_id ) ;
+                    std::vector< index_t > v0_surface_ids ;
+                    model_vertices.mesh_entity_vertex_id( S.gme_id(), v0_model_id,
+                        v0_surface_ids ) ;
+                    std::vector< index_t > v1_surface_ids ;
+                    model_vertices.mesh_entity_vertex_id( S.gme_id(), v1_model_id,
+                        v1_surface_ids ) ;
 
                     if( !S.has_inside_border() ) {
                         ringmesh_assert(
@@ -401,10 +401,10 @@ namespace {
                     }
                     // Set a BSTONE at the line other extremity
                     const gme_t& c1_id = L.boundary_gme( 1 ) ;
-                    corners.insert(
-                        model_vertices.mesh_entity_vertex_id( S.gme_id(),
-                            model_vertices.model_vertex_id( c1_id ) ).front()
-                            + offset ) ;
+                    std::vector< index_t > gme_vertices ;
+                    model_vertices.mesh_entity_vertex_id( S.gme_id(),
+                        model_vertices.model_vertex_id( c1_id ), gme_vertices ) ;
+                    corners.insert( gme_vertices.front() + offset ) ;
                 }
             }
             // Add the remaining bstones that are not already in bstones
