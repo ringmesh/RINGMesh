@@ -103,7 +103,7 @@ namespace RINGMesh {
          */
         index_t model_vertex_index(
             const gme_t& mesh_entity_id,
-            const index_t mesh_entity_vertex_index ) const ;
+            index_t mesh_entity_vertex_index ) const ;
 
         /*!
          * @brief Returns all the corresponding vertices in GeoModelMeshEntities
@@ -112,7 +112,7 @@ namespace RINGMesh {
          * @returns All the corresponding vertices in their local indexing
          */
         const std::vector< GMEVertex >& mesh_entity_vertex_indices(
-            const index_t v ) const ;
+            index_t v ) const ;
 
         /*!
          * @brief Returns all the corresponding vertices in GeoModelMeshEntities
@@ -122,7 +122,7 @@ namespace RINGMesh {
          * @returns All the corresponding vertices in their local indexing
          */
         std::vector< GMEVertex > mesh_entity_vertex_indices(
-            const index_t v,
+            index_t v,
             const EntityType& mesh_entity_type ) const ;
 
         /*!
@@ -133,7 +133,7 @@ namespace RINGMesh {
          * @returns All the corresponding vertices in their local indexing
          */
         std::vector< index_t > mesh_entity_vertex_indices(
-            const index_t v,
+            index_t v,
             const gme_t& mesh_entity_id ) const ;
 
         /*! @}
@@ -151,8 +151,8 @@ namespace RINGMesh {
          */
         void set_vertex_map_value(
             const gme_t& mesh_entity_id,
-            const index_t mesh_entity_vertex_index,
-            const index_t model_entity_vertex_index ) const ;
+            index_t mesh_entity_vertex_index,
+            index_t model_entity_vertex_index ) const ;
 
         /*!
          * @brief Updates all the vertex maps with regards to the global indexing
@@ -205,7 +205,7 @@ namespace RINGMesh {
         /*!
          * @brief Clears the GME_Vertices about one model vertex
          */
-        void clear_model_vertex_gmes( const index_t v )
+        void clear_model_vertex_gmes( index_t v )
         {
             ringmesh_assert( v < gme_vertices_.size() ) ;
             gme_vertices_[v].clear() ;
@@ -316,7 +316,7 @@ namespace RINGMesh {
          */
         void compute_mesh_entity_vertex_indices(
             const gme_t& mesh_entity_id,
-            const index_t v,
+            index_t v,
             std::vector< index_t >& result ) const ;
 
         /*!
