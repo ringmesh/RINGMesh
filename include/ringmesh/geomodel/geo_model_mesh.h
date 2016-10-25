@@ -119,22 +119,26 @@ namespace RINGMesh {
          * of a specific type to a given model vertex
          * @param[in] v Model vertex index
          * @param[in] mesh_entity_type Type of GeoModelMeshEntity
-         * @returns All the corresponding vertices in their local indexing
+         * @param[out] result corresponding vertices in GeoModelMeshEntities
+         * of a specific type
          */
-        std::vector< GMEVertex > mesh_entity_vertex_indices(
+        void mesh_entity_vertex_indices(
             index_t v,
-            const EntityType& mesh_entity_type ) const ;
+            const EntityType& mesh_entity_type,
+            std::vector< GMEVertex >& result ) const ;
 
         /*!
          * @brief Returns all the corresponding vertices to a model vertex
          * in a specific GeoModelMeshEntities
          * @param[in] v Model vertex index
          * @param[in] mesh_entity_id Unique id to a GeoModelMeshEntity
+         * @param[out] result corresponding vertices in the GeoModelMeshEntity
          * @returns All the corresponding vertices in their local indexing
          */
-        std::vector< index_t > mesh_entity_vertex_indices(
+        void mesh_entity_vertex_indices(
             index_t v,
-            const gme_t& mesh_entity_id ) const ;
+            const gme_t& mesh_entity_id,
+            std::vector< index_t >& result ) const ;
 
         /*! @}
          * \name Updating
@@ -417,12 +421,13 @@ namespace RINGMesh {
         /*!
          * @brief Get the GeoModelMeshEntity vertices from its index in the GeoModelMesh
          * @param[in] mesh_entity Unique id to a GeoModelMeshEntity
-         * @param[in] model_vertex_id index of the query vertex in the model
-         * @return if found the vertex index in the model, else NO_ID.
+         * @param[in] model_vertex_id Index of the query vertex in the model
+         * @param[out] mesh_entity_vertex_ids Corresponding GeoModelMeshEntity vertices
          */
-        std::vector< index_t > mesh_entity_vertex_id(
+        void mesh_entity_vertex_id(
             const gme_t& mesh_entity,
-            index_t model_vertex_id ) const ;
+            index_t model_vertex_id,
+            std::vector< index_t >& mesh_entity_vertex_ids ) const ;
 
         /*!
          * @brief Get the vertices in GME corresponding to the given unique vertex
