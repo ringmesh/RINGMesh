@@ -112,7 +112,7 @@ namespace RINGMesh {
             void reset_attribute_name() ;
             void set_attribute_names( const GEO::AttributesManager& attributes ) ;
             void autorange() ;
-            void daw_color_table_popup( ImColor& color ) ;
+            void show_color_table_popup( ImColor& color ) ;
         public:
             struct OldNewStatus {
                 void operator=( bool value )

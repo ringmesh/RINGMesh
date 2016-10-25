@@ -437,7 +437,7 @@ namespace RINGMesh {
         }
         ImGui::PopStyleColor() ;
         if( ImGui::BeginPopup( "##MeshColorTable" ) ) {
-            daw_color_table_popup( mesh_color_ ) ;
+            show_color_table_popup( mesh_color_ ) ;
         }
 
         ImGui::Separator() ;
@@ -449,7 +449,7 @@ namespace RINGMesh {
         }
         ImGui::PopStyleColor() ;
         if( ImGui::BeginPopup( "##CornerColorTable" ) ) {
-            daw_color_table_popup( corner_color_ ) ;
+            show_color_table_popup( corner_color_ ) ;
         }
 
         ImGui::Checkbox( "Line [e]", &show_lines_ ) ;
@@ -460,7 +460,7 @@ namespace RINGMesh {
         }
         ImGui::PopStyleColor() ;
         if( ImGui::BeginPopup( "##LineColorTable" ) ) {
-            daw_color_table_popup( line_color_ ) ;
+            show_color_table_popup( line_color_ ) ;
         }
 
         ImGui::Checkbox( "Surface [s]", &show_surface_ ) ;
@@ -471,7 +471,7 @@ namespace RINGMesh {
         }
         ImGui::PopStyleColor() ;
         if( ImGui::BeginPopup( "##SurfaceColorTable" ) ) {
-            daw_color_table_popup( surface_color_ ) ;
+            show_color_table_popup( surface_color_ ) ;
         }
 
         if( meshed_regions_ ) {
@@ -484,7 +484,7 @@ namespace RINGMesh {
             }
             ImGui::PopStyleColor() ;
             if( ImGui::BeginPopup( "##VolumeColorTable" ) ) {
-                daw_color_table_popup( volume_color_ ) ;
+                show_color_table_popup( volume_color_ ) ;
             }
             if( show_volume_ ) {
                 ImGui::Checkbox( "Col. cells [C]", &colored_cells_.new_status ) ;
@@ -501,7 +501,7 @@ namespace RINGMesh {
         }
     }
 
-    void RINGMeshApplication::GeoModelViewer::daw_color_table_popup( ImColor& color )
+    void RINGMeshApplication::GeoModelViewer::show_color_table_popup( ImColor& color )
     {
         int id = 0 ;
         for( index_t i = 0; i < color_table_.size(); i++ ) {
