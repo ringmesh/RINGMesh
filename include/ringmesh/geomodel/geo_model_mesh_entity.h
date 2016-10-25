@@ -122,7 +122,7 @@ namespace RINGMesh {
          */
         bool has_inside_border() const ;
         /*!
-         * @brief Check if this entity an inside border of rhs
+         * @brief Check if this entity is an inside border of rhs
          * @details That can be Surface stopping in a Region, or Line stopping in a Surface.
          * @param[in] rhs The entity to test
          */

@@ -144,7 +144,6 @@ namespace RINGMesh {
     {
         gme_vertices_.clear() ;
         clear_all_mesh_entity_vertex_map() ;
-
     }
 
     index_t GeoModelVertexMapper::model_vertex_index(
