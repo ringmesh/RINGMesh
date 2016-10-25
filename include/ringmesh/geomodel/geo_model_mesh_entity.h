@@ -446,11 +446,6 @@ namespace RINGMesh {
             return mesh_.colocater_ann( ColocaterANN::EDGES ) ;
         }
 
-        virtual index_t vertex_index( index_t corner_index ) const
-        {
-            return mesh_.edge_vertex( corner_index / 2, corner_index % 2 ) ;
-        }
-
         /*!
          * Get the number of edges of the Line
          */
