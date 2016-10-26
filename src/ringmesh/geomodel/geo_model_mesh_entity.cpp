@@ -231,7 +231,7 @@ namespace RINGMesh {
 
     GeoModelMeshEntity::~GeoModelMeshEntity()
     {
-        // Unbind attribute about mapping
+        // Unbind attribute about vertex mapping
         model().mesh.vertices.unbind_model_vertex_map( *this ) ;
 #ifdef RINGMESH_DEBUG
         mesh_.print_mesh_bounded_attributes() ;
