@@ -1235,7 +1235,6 @@ namespace RINGMesh {
                 }
             }
         }
-//        ImGui::ShowTestWindow() ;
     }
 
     void RINGMeshApplication::draw_object_properties()
