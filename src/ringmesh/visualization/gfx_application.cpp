@@ -174,6 +174,7 @@ namespace RINGMesh {
             }
         }
         selected_entity_type_ = 0 ;
+        selected_entity_id_ = 0 ;
         entity_types_.push_back( "All" ) ;
         entity_types_.push_back( Corner::type_name_static() ) ;
         entity_types_.push_back( Line::type_name_static() ) ;
@@ -261,9 +262,12 @@ namespace RINGMesh {
             GM_gfx_.surfaces.GeoModelGfxManager::set_mesh_element_color(
                 surface_color_.Value.x, surface_color_.Value.y,
                 surface_color_.Value.z ) ;
-            for( GEO::index_t s = 0; s < GM_.nb_surfaces(); s++ ) {
-                if( GM_.surface( s ).is_on_voi() ) {
-                    GM_gfx_.surfaces.set_mesh_element_visibility( s, show_voi_ ) ;
+            if( selected_entity_type_ == 0 ) {
+                for( GEO::index_t s = 0; s < GM_.nb_surfaces(); s++ ) {
+                    if( GM_.surface( s ).is_on_voi() ) {
+                        GM_gfx_.surfaces.set_mesh_element_visibility( s,
+                            show_voi_ ) ;
+                    }
                 }
             }
             GM_gfx_.surfaces.draw() ;
@@ -332,13 +336,110 @@ namespace RINGMesh {
         attribute_min_ = GM_gfx_.attribute.minimum() ;
     }
 
+    void RINGMeshApplication::GeoModelViewer::update_entity_visibility()
+    {
+        const std::string& type = entity_types_[selected_entity_type_] ;
+        if( selected_entity_type_ == 0 ) {
+            GM_gfx_.corners.GeoModelGfxManager::set_mesh_element_visibility( true ) ;
+            GM_gfx_.lines.GeoModelGfxManager::set_mesh_element_visibility( true ) ;
+            GM_gfx_.surfaces.GeoModelGfxManager::set_mesh_element_visibility( true ) ;
+            GM_gfx_.regions.GeoModelGfxManager::set_mesh_element_visibility( true ) ;
+        } else {
+            GM_gfx_.corners.GeoModelGfxManager::set_mesh_element_visibility(
+                false ) ;
+            GM_gfx_.lines.GeoModelGfxManager::set_mesh_element_visibility( false ) ;
+            GM_gfx_.surfaces.GeoModelGfxManager::set_mesh_element_visibility(
+                false ) ;
+            GM_gfx_.regions.GeoModelGfxManager::set_mesh_element_visibility(
+                false ) ;
+            if( selected_entity_type_
+                < EntityTypeManager::nb_mesh_entity_types() + 1 ) {
+                selected_entity_id_ = std::min(
+                    static_cast< int >( GM_.nb_mesh_entities( type ) - 1 ),
+                    selected_entity_id_ ) ;
+                gme_t entity_id( type, selected_entity_id_ ) ;
+                toggle_mesh_entity_and_boundaries_visibility( entity_id ) ;
+            } else {
+                selected_entity_id_ = std::min(
+                    static_cast< int >( GM_.nb_geological_entities( type ) - 1 ),
+                    selected_entity_id_ ) ;
+                gme_t entity_id( type, selected_entity_id_ ) ;
+                toggle_geological_entity_visibility( entity_id ) ;
+            }
+        }
+    }
+
+    void RINGMeshApplication::GeoModelViewer::toggle_mesh_entity_and_boundaries_visibility(
+        const gme_t& entity_id )
+    {
+        if( EntityTypeManager::is_corner( entity_id.type ) ) {
+            toggle_corner_visibility( entity_id.index ) ;
+        } else if( EntityTypeManager::is_line( entity_id.type ) ) {
+            toggle_line_and_boundaries_visibility( entity_id.index ) ;
+        } else if( EntityTypeManager::is_surface( entity_id.type ) ) {
+            toggle_surface_and_boundaries_visibility( entity_id.index ) ;
+        } else if( EntityTypeManager::is_region( entity_id.type ) ) {
+            toggle_region_and_boundaries_visibility( entity_id.index ) ;
+        } else {
+            ringmesh_assert_not_reached ;
+        }
+    }
+
+    void RINGMeshApplication::GeoModelViewer::toggle_corner_visibility( index_t corner_id )
+    {
+        GM_gfx_.corners.set_mesh_element_visibility( corner_id, true ) ;
+    }
+
+    void RINGMeshApplication::GeoModelViewer::toggle_line_and_boundaries_visibility( index_t line_id )
+    {
+        GM_gfx_.lines.set_mesh_element_visibility( line_id, true ) ;
+        const Line& line = GM_.line( line_id ) ;
+        toggle_corner_visibility( line.boundary_gme( 0 ).index ) ;
+        toggle_corner_visibility( line.boundary_gme( 1 ).index ) ;
+    }
+
+    void RINGMeshApplication::GeoModelViewer::toggle_surface_and_boundaries_visibility( index_t surface_id )
+    {
+        GM_gfx_.surfaces.set_mesh_element_visibility( surface_id, true ) ;
+        const Surface& surface = GM_.surface( surface_id ) ;
+        for( index_t i = 0; i < surface.nb_boundaries(); i++ ) {
+            toggle_line_and_boundaries_visibility(
+                surface.boundary_gme( i ).index ) ;
+        }
+    }
+
+    void RINGMeshApplication::GeoModelViewer::toggle_region_and_boundaries_visibility( index_t region_id )
+    {
+        GM_gfx_.regions.set_mesh_element_visibility( region_id, true ) ;
+        const Region& region = GM_.region( region_id ) ;
+        for( index_t i = 0; i < region.nb_boundaries(); i++ ) {
+            toggle_surface_and_boundaries_visibility(
+                region.boundary_gme( i ).index ) ;
+        }
+    }
+
+    void RINGMeshApplication::GeoModelViewer::toggle_geological_entity_visibility(
+        const gme_t& entity_id )
+    {
+        const GeoModelGeologicalEntity& entity = GM_.geological_entity( entity_id ) ;
+        for( index_t i = 0; i < entity.nb_children(); i++ ) {
+            const gme_t& child_id = entity.child_gme( i ) ;
+            toggle_mesh_entity_and_boundaries_visibility( child_id ) ;
+        }
+    }
+
     void RINGMeshApplication::GeoModelViewer::draw_object_properties()
     {
-        ImGui::Combo( "Entity", &selected_entity_type_, GetChar,
+        if( ImGui::Combo( "Entity", &selected_entity_type_, GetChar,
             static_cast< void* >( &entity_types_ ),
-            static_cast< int >( entity_types_.size() ) ) ;
+            static_cast< int >( entity_types_.size() ) ) ) {
+            update_entity_visibility() ;
+        }
         if( selected_entity_type_ > 0 ) {
-            ImGui::InputInt( "Index", &selected_id_, 1 ) ;
+            if( ImGui::InputInt( "Index", &selected_entity_id_, 1 ) ) {
+                selected_entity_id_ = std::max( 0, selected_entity_id_ ) ;
+                update_entity_visibility() ;
+            }
         }
         ImGui::Separator() ;
         ImGui::Checkbox( "Attributes", &show_attributes_ ) ;

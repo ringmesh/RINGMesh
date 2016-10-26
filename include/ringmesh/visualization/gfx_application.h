@@ -113,6 +113,15 @@ namespace RINGMesh {
             void set_attribute_names( const GEO::AttributesManager& attributes ) ;
             void autorange() ;
             void daw_color_table_popup( ImColor& color ) ;
+            void update_entity_visibility() ;
+
+            void toggle_corner_visibility( index_t corner_id ) ;
+            void toggle_line_and_boundaries_visibility( index_t line_id ) ;
+            void toggle_surface_and_boundaries_visibility( index_t surface_id ) ;
+            void toggle_region_and_boundaries_visibility( index_t region_id ) ;
+            void toggle_geological_entity_visibility( const gme_t& entity_id ) ;
+            void toggle_mesh_entity_and_boundaries_visibility(
+                const gme_t& entity_id ) ;
         public:
             struct OldNewStatus {
                 void operator=( bool value )
@@ -140,7 +149,7 @@ namespace RINGMesh {
             Box3d bbox_ ;
             std::vector< std::string > entity_types_ ;
             int selected_entity_type_ ;
-            int selected_id_ ;
+            int selected_entity_id_ ;
 
             bool show_corners_ ;
             ImColor corner_color_ ;
