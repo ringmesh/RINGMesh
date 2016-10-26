@@ -1214,12 +1214,14 @@ namespace RINGMesh {
             ImGui::Text( "GeoModel" ) ;
             for( index_t i = 0; i < models_.size(); i++ ) {
                 GeoModelViewer& viewer = *models_[i] ;
+                ImGui::PushID( i ) ;
                 if( ImGui::Checkbox( viewer.GM_.name().c_str(),
                     &viewer.is_visible_ ) ) {
                     current_viewer_ = i ;
                     current_viewer_type_ = GEOMODEL ;
                     update_region_of_interest() ;
                 }
+                ImGui::PopID() ;
             }
         }
 
@@ -1228,11 +1230,13 @@ namespace RINGMesh {
             ImGui::Text( "Mesh" ) ;
             for( index_t i = 0; i < meshes_.size(); i++ ) {
                 MeshViewer& viewer = *meshes_[i] ;
+                ImGui::PushID( i ) ;
                 if( ImGui::Checkbox( viewer.name_.c_str(), &viewer.is_visible_ ) ) {
                     current_viewer_ = i ;
                     current_viewer_type_ = MESH ;
                     update_region_of_interest() ;
                 }
+                ImGui::PopID() ;
             }
         }
     }
