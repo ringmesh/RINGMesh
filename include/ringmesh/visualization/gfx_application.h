@@ -138,6 +138,9 @@ namespace RINGMesh {
             GeoModel GM_ ;
             GeoModelGfx GM_gfx_ ;
             Box3d bbox_ ;
+            std::vector< std::string > entity_types_ ;
+            int selected_entity_type_ ;
+            int selected_id_ ;
 
             bool show_corners_ ;
             ImColor corner_color_ ;

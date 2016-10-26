@@ -117,26 +117,13 @@ namespace {
         return path ;
     }
 
-    std::string get_attribute_name_with_coordinate(
-        const std::string& name,
-        index_t coordinate )
+    bool GetChar( void* data, int idx, const char** out_text )
     {
-        return name + "[" + GEO::String::to_string( coordinate ) + "]" ;
+        *out_text = static_cast< const std::vector< std::string >* >( data )->at(
+            idx ).c_str() ;
+        return true ;
     }
 
-    void compute_attribute_range(
-        GEO::ReadOnlyScalarAttributeAdapter& attribute,
-        double& min,
-        double& max )
-    {
-        if( attribute.is_bound() ) {
-            for( index_t i = 0; i < attribute.size(); ++i ) {
-                double value = attribute[i] ;
-                min = GEO::geo_min( min, value ) ;
-                max = GEO::geo_max( max, value ) ;
-            }
-        }
-    }
 }
 namespace RINGMesh {
 
@@ -186,7 +173,15 @@ namespace RINGMesh {
                 bbox_.add_point( p ) ;
             }
         }
-
+        selected_entity_type_ = 0 ;
+        entity_types_.push_back( "All" ) ;
+        entity_types_.push_back( Corner::type_name_static() ) ;
+        entity_types_.push_back( Line::type_name_static() ) ;
+        entity_types_.push_back( Surface::type_name_static() ) ;
+        entity_types_.push_back( Region::type_name_static() ) ;
+        for( index_t i = 0; i < GM_.nb_geological_entity_types(); i++ ) {
+            entity_types_.push_back( GM_.geological_entity_type( i ) ) ;
+        }
         meshed_regions_ = GM_.region( 0 ).is_meshed() ;
         if( meshed_regions_ ) {
             show_volume_ = true ;
@@ -339,6 +334,13 @@ namespace RINGMesh {
 
     void RINGMeshApplication::GeoModelViewer::draw_object_properties()
     {
+        ImGui::Combo( "Entity", &selected_entity_type_, GetChar,
+            static_cast< void* >( &entity_types_ ),
+            static_cast< int >( entity_types_.size() ) ) ;
+        if( selected_entity_type_ > 0 ) {
+            ImGui::InputInt( "Index", &selected_id_, 1 ) ;
+        }
+        ImGui::Separator() ;
         ImGui::Checkbox( "Attributes", &show_attributes_ ) ;
         if( show_attributes_ ) {
             if( ImGui::Button(
@@ -539,10 +541,10 @@ namespace RINGMesh {
         glupLoadIdentity() ;
 
         const float z = -1.0f ;
-        const float w = 0.3 ;
-        const float h = 0.1 ;
-        const float x1 = 0. ;
-        const float y1 = -0.9 ;
+        const float w = 0.3f ;
+        const float h = 0.1f ;
+        const float x1 = 0.f ;
+        const float y1 = -0.9f ;
         const float tmin = float( GM_gfx_.attribute.minimum() ) ;
         const float tmax = float( GM_gfx_.attribute.maximum() ) ;
         GEO::glupMapTexCoords1d( tmin, tmax, 1. ) ;
@@ -1132,6 +1134,7 @@ namespace RINGMesh {
                 }
             }
         }
+//        ImGui::ShowTestWindow() ;
     }
 
     void RINGMeshApplication::draw_object_properties()
