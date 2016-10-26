@@ -481,7 +481,7 @@ namespace RINGMesh {
          */
         void clear() ;
 
-        void unbind_model_vertex_map( GeoModelMeshEntity& E ) const ;
+        void unbind_model_vertex_map( const gme_t& mesh_entity_id ) ;
 
 
         const ColocaterANN& colocater() const

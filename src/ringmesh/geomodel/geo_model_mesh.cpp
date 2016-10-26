@@ -274,6 +274,10 @@ namespace RINGMesh {
     GEO::Attribute< index_t >& GeoModelVertexMapper::bind_mesh_entity_vertex_map(
         const gme_t& mesh_entity_id )
     {
+        if( vertex_maps_.size() < total_nb_mesh_entities() ) {
+            vertex_maps_.resize( total_nb_mesh_entities(), nil ) ;
+            vertex_map_entities_.resize( total_nb_mesh_entities(), gme_t() ) ;
+        }
         vertex_maps_.bind_one_attribute( nb_init_vertex_maps_ ,
             mesh_entity_vertex_attribute_manager( mesh_entity_id ),
             vertex_map_name() ) ;
@@ -313,6 +317,16 @@ namespace RINGMesh {
     void GeoModelVertexMapper::unbind_vertex_map( const gme_t& mesh_entity_id )
     {
         vertex_map( mesh_entity_id ).unbind() ;
+        nb_init_vertex_maps_-- ;
+        for( index_t m = 0; m < vertex_map_entities_.size(); m++ ) {
+            if( vertex_map_entities_[m] == mesh_entity_id ) {
+                vertex_map_entities_.erase( vertex_map_entities_.begin() + m ) ;
+                vertex_maps_.erase( vertex_maps_.begin() + m ) ;
+                break ;
+            }
+        }
+        ringmesh_assert( vertex_maps_.size() == vertex_map_entities_.size() ) ;
+        ringmesh_assert( nb_init_vertex_maps_ == vertex_maps_.size() ) ;
     }
 
     void GeoModelVertexMapper::initialize()
@@ -335,7 +349,7 @@ namespace RINGMesh {
 
     void GeoModelVertexMapper::check_mesh_entity_maps()
     {
-        if( vertex_map_entities_.size() == total_nb_mesh_entities() ) {
+        if( nb_init_vertex_maps_ == total_nb_mesh_entities() ) {
             return ;
         }
         const std::vector< EntityType >& all_mesh_entity_types =
@@ -407,6 +421,7 @@ namespace RINGMesh {
         }
         vertex_maps_.clear() ;
         vertex_map_entities_.clear() ;
+        nb_init_vertex_maps_ = 0 ;
     }
 
     void GeoModelVertexMapper::fill_gme_vertices()
@@ -627,10 +642,9 @@ namespace RINGMesh {
     }
 
     void GeoModelMeshVertices::unbind_model_vertex_map(
-        GeoModelMeshEntity& E ) const
+        const gme_t& mesh_entity_id )
     {
-        const_cast< GeoModelMeshVertices* >( this )->vertex_mapper_.unbind_vertex_map(
-            E.gme_id() ) ;
+        vertex_mapper_.unbind_vertex_map( mesh_entity_id ) ;
     }
 
     index_t GeoModelMeshVertices::nb() const
