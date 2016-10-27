@@ -278,6 +278,8 @@ namespace RINGMesh {
             vertex_maps_.resize( total_nb_mesh_entities(), nil ) ;
             vertex_map_entities_.resize( total_nb_mesh_entities(), gme_t() ) ;
         }
+        ringmesh_assert( nb_init_vertex_maps_ <= vertex_maps_.size() ) ;
+        ringmesh_assert( vertex_map_entities_.size() == vertex_maps_.size() ) ;
         vertex_maps_.bind_one_attribute( nb_init_vertex_maps_ ,
             mesh_entity_vertex_attribute_manager( mesh_entity_id ),
             vertex_map_name() ) ;
@@ -316,6 +318,10 @@ namespace RINGMesh {
 
     void GeoModelVertexMapper::unbind_vertex_map( const gme_t& mesh_entity_id )
     {
+        if( !is_mesh_entity_vertex_map_initialized( mesh_entity_id ) ) {
+            // The vertex map was not unbind
+            return ;
+        }
         vertex_map( mesh_entity_id ).unbind() ;
         nb_init_vertex_maps_-- ;
         for( index_t m = 0; m < vertex_map_entities_.size(); m++ ) {
@@ -377,7 +383,9 @@ namespace RINGMesh {
             for( index_t e = 0; e < geomodel_.nb_mesh_entities( cur_entity_type );
                 e++ ) {
                 const gme_t cur_mesh_entity( cur_entity_type, e ) ;
-                initialize_mesh_entity_vertex_map( cur_mesh_entity ) ;
+                if( !is_mesh_entity_vertex_map_initialized( cur_mesh_entity ) ) {
+                    initialize_mesh_entity_vertex_map( cur_mesh_entity ) ;
+                }
             }
         }
     }
