@@ -59,6 +59,53 @@
 namespace {
     using namespace RINGMesh ;
 
+    typedef std::vector< std::vector< ImColor > > ColorTable ;
+
+    ImColor black( 0, 0, 0 ) ;
+    ImColor dark_grey( 128, 128, 128 ) ;
+    ImColor grey( 192, 192, 192 ) ;
+    ImColor white( 255, 255, 255 ) ;
+
+    ImColor violet( 71, 61, 139 ) ;
+    ImColor blue( 0, 0, 255 ) ;
+    ImColor other_blue( 100, 151, 237 ) ;
+    ImColor light_blue( 136, 207, 235 ) ;
+
+    ImColor grass_green( 85, 107, 47 ) ;
+    ImColor green( 50, 205, 50 ) ;
+    ImColor light_green( 175, 255, 47 ) ;
+    ImColor brown( 160, 81, 45 ) ;
+
+    ImColor red( 255, 0, 0 ) ;
+    ImColor orange( 255, 162, 0 ) ;
+    ImColor yellow( 255, 255, 0 ) ;
+    ImColor pink( 255, 0, 255 ) ;
+
+    ColorTable create_color_table()
+    {
+        ColorTable color_table_init( 4 ) ;
+        color_table_init[0].push_back( black ) ;
+        color_table_init[0].push_back( dark_grey ) ;
+        color_table_init[0].push_back( grey ) ;
+        color_table_init[0].push_back( white ) ;
+
+        color_table_init[1].push_back( violet ) ;
+        color_table_init[1].push_back( blue ) ;
+        color_table_init[1].push_back( other_blue ) ;
+        color_table_init[1].push_back( light_blue ) ;
+
+        color_table_init[2].push_back( grass_green ) ;
+        color_table_init[2].push_back( green ) ;
+        color_table_init[2].push_back( light_green ) ;
+        color_table_init[2].push_back( brown ) ;
+
+        color_table_init[3].push_back( red ) ;
+        color_table_init[3].push_back( orange ) ;
+        color_table_init[3].push_back( yellow ) ;
+        color_table_init[3].push_back( pink ) ;
+        return color_table_init ;
+    }
+
     std::string path_to_label(
         const std::string& viewer_path,
         const std::string& path )
@@ -93,6 +140,8 @@ namespace {
 }
 namespace RINGMesh {
 
+    ColorTable RINGMeshApplication::GeoModelViewer::color_table_ = create_color_table() ;
+
     RINGMeshApplication::GeoModelViewer::GeoModelViewer(
         RINGMeshApplication& app,
         const std::string& filename )
@@ -101,9 +150,13 @@ namespace RINGMesh {
         is_visible_ = true ;
 
         show_corners_ = true ;
+        corner_color_ = red ;
         show_lines_ = true ;
+        line_color_ = black ;
         show_surface_ = true ;
+        surface_color_ = grey ;
         show_volume_ = false ;
+        volume_color_ = grey ;
         colored_cells_ = false ;
         show_voi_ = false ;
         show_colored_regions_ = false ;
@@ -117,6 +170,7 @@ namespace RINGMesh {
 
         shrink_ = 0.0 ;
         mesh_visible_ = true ;
+        mesh_color_ = black ;
         meshed_regions_ = false ;
 
         show_attributes_ = false ;
@@ -195,30 +249,23 @@ namespace RINGMesh {
         }
 
         if( show_corners_ ) {
+            GM_gfx_.corners.GeoModelGfxManager::set_mesh_element_color(
+                corner_color_.Value.x, corner_color_.Value.y, corner_color_.Value.z ) ;
             GM_gfx_.corners.draw() ;
         }
 
         if( show_lines_ ) {
-            if( app_.white_bg_ ) {
-                GM_gfx_.lines.GeoModelGfxManager::set_mesh_element_color( 0.0f, 0.0f,
-                    0.0f ) ;
-            } else {
-                GM_gfx_.lines.GeoModelGfxManager::set_mesh_element_color( 1.0f, 1.0f,
-                    1.0f ) ;
-            }
+            GM_gfx_.lines.GeoModelGfxManager::set_mesh_element_color(
+                line_color_.Value.x, line_color_.Value.y, line_color_.Value.z ) ;
             GM_gfx_.lines.draw() ;
         }
 
         if( show_surface_ ) {
-            if( app_.white_bg_ ) {
-                GM_gfx_.surfaces.GeoModelGfxManager::set_mesh_element_color( 0.9f,
-                    0.9f, 0.9f ) ;
-                GM_gfx_.surfaces.set_mesh_color( 0.0f, 0.0f, 0.0f ) ;
-            } else {
-                GM_gfx_.surfaces.GeoModelGfxManager::set_mesh_element_color( 0.1f,
-                    0.1f, 0.1f ) ;
-                GM_gfx_.surfaces.set_mesh_color( 1.0f, 1.0f, 1.0f ) ;
-            }
+            GM_gfx_.surfaces.set_mesh_color( mesh_color_.Value.x,
+                mesh_color_.Value.y, mesh_color_.Value.z ) ;
+            GM_gfx_.surfaces.GeoModelGfxManager::set_mesh_element_color(
+                surface_color_.Value.x, surface_color_.Value.y,
+                surface_color_.Value.z ) ;
             for( GEO::index_t s = 0; s < GM_.nb_surfaces(); s++ ) {
                 if( GM_.surface( s ).is_on_voi() ) {
                     GM_gfx_.surfaces.set_mesh_element_visibility( s, show_voi_ ) ;
@@ -249,15 +296,11 @@ namespace RINGMesh {
                 colored_cells_.update() ;
                 show_colored_regions_.update() ;
                 show_colored_layers_.update() ;
-                if( app_.white_bg_ ) {
-                    GM_gfx_.regions.GeoModelGfxManager::set_mesh_element_color( 0.9f,
-                        0.9f, 0.9f ) ;
-                    GM_gfx_.regions.set_mesh_color( 0.0f, 0.0f, 0.0f ) ;
-                } else {
-                    GM_gfx_.regions.GeoModelGfxManager::set_mesh_element_color( 0.1f,
-                        0.1f, 0.1f ) ;
-                    GM_gfx_.regions.set_mesh_color( 1.0f, 1.0f, 1.0f ) ;
-                }
+                GM_gfx_.regions.set_mesh_color( mesh_color_.Value.x,
+                    mesh_color_.Value.y, mesh_color_.Value.z ) ;
+                GM_gfx_.regions.GeoModelGfxManager::set_mesh_element_color(
+                    volume_color_.Value.x, volume_color_.Value.y,
+                    volume_color_.Value.z ) ;
             }
             GM_gfx_.regions.set_draw_cells( GEO::MESH_HEX, show_hex_ ) ;
             GM_gfx_.regions.set_draw_cells( GEO::MESH_PRISM, show_prism_ ) ;
@@ -387,15 +430,62 @@ namespace RINGMesh {
         ImGui::Separator() ;
         ImGui::Checkbox( "VOI [V]", &show_voi_ ) ;
         ImGui::Checkbox( "Mesh [m]", &mesh_visible_ ) ;
+        ImGui::SameLine() ;
+        ImGui::PushStyleColor( ImGuiCol_Button, mesh_color_ ) ;
+        if( ImGui::Button( "  ##MeshColor" ) ) {
+            ImGui::OpenPopup( "##MeshColorTable" ) ;
+        }
+        ImGui::PopStyleColor() ;
+        if( ImGui::BeginPopup( "##MeshColorTable" ) ) {
+            daw_color_table_popup( mesh_color_ ) ;
+        }
 
         ImGui::Separator() ;
         ImGui::Checkbox( "Corner [c]", &show_corners_ ) ;
+        ImGui::SameLine() ;
+        ImGui::PushStyleColor( ImGuiCol_Button, corner_color_ ) ;
+        if( ImGui::Button( "  ##CornerColor" ) ) {
+            ImGui::OpenPopup( "##CornerColorTable" ) ;
+        }
+        ImGui::PopStyleColor() ;
+        if( ImGui::BeginPopup( "##CornerColorTable" ) ) {
+            daw_color_table_popup( corner_color_ ) ;
+        }
+
         ImGui::Checkbox( "Line [e]", &show_lines_ ) ;
+        ImGui::SameLine() ;
+        ImGui::PushStyleColor( ImGuiCol_Button, line_color_ ) ;
+        if( ImGui::Button( "  ##LineColor" ) ) {
+            ImGui::OpenPopup( "##LineColorTable" ) ;
+        }
+        ImGui::PopStyleColor() ;
+        if( ImGui::BeginPopup( "##LineColorTable" ) ) {
+            daw_color_table_popup( line_color_ ) ;
+        }
+
         ImGui::Checkbox( "Surface [s]", &show_surface_ ) ;
+        ImGui::SameLine() ;
+        ImGui::PushStyleColor( ImGuiCol_Button, surface_color_ ) ;
+        if( ImGui::Button( "  ##SurfaceColor" ) ) {
+            ImGui::OpenPopup( "##SurfaceColorTable" ) ;
+        }
+        ImGui::PopStyleColor() ;
+        if( ImGui::BeginPopup( "##SurfaceColorTable" ) ) {
+            daw_color_table_popup( surface_color_ ) ;
+        }
 
         if( meshed_regions_ ) {
             ImGui::Separator() ;
             ImGui::Checkbox( "Region [v]", &show_volume_ ) ;
+            ImGui::SameLine() ;
+            ImGui::PushStyleColor( ImGuiCol_Button, volume_color_ ) ;
+            if( ImGui::Button( "  ##VolumeColor" ) ) {
+                ImGui::OpenPopup( "##VolumeColorTable" ) ;
+            }
+            ImGui::PopStyleColor() ;
+            if( ImGui::BeginPopup( "##VolumeColorTable" ) ) {
+                daw_color_table_popup( volume_color_ ) ;
+            }
             if( show_volume_ ) {
                 ImGui::Checkbox( "Col. cells [C]", &colored_cells_.new_status ) ;
                 ImGui::Checkbox( "Col. regions [r]",
@@ -409,6 +499,27 @@ namespace RINGMesh {
                 ImGui::Checkbox( "Tetra", &show_tetra_ ) ;
             }
         }
+    }
+
+    void RINGMeshApplication::GeoModelViewer::daw_color_table_popup( ImColor& color )
+    {
+        int id = 0 ;
+        for( index_t i = 0; i < color_table_.size(); i++ ) {
+            for( index_t j = 0; j < color_table_[i].size(); j++ ) {
+                if( j > 0 ) {
+                    ImGui::SameLine() ;
+                }
+                ImGui::PushID( id++ ) ;
+                ImGui::PushStyleColor( ImGuiCol_Button, color_table_[i][j] ) ;
+                if( ImGui::Button( "  " ) ) {
+                    color = color_table_[i][j] ;
+                    ImGui::CloseCurrentPopup() ;
+                }
+                ImGui::PopStyleColor() ;
+                ImGui::PopID() ;
+            }
+        }
+        ImGui::EndPopup() ;
     }
 
     void RINGMeshApplication::GeoModelViewer::draw_colormap()
