@@ -469,6 +469,14 @@ namespace RINGMesh {
             }
             if( ImGui::BeginPopup( "##Attributes" ) ) {
                 switch( GM_gfx_.attribute.location() ) {
+                    case AttributeGfxManager::facets:
+                        set_attribute_names(
+                            GM_.surface( 0 ).facet_attribute_manager() ) ;
+                        break ;
+                    case AttributeGfxManager::facet_vertices:
+                        set_attribute_names(
+                            GM_.surface( 0 ).vertex_attribute_manager() ) ;
+                        break ;
                     case AttributeGfxManager::cells:
                         set_attribute_names(
                             GM_.region( 0 ).cell_attribute_manager() ) ;
