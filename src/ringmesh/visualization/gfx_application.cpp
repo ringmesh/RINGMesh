@@ -690,11 +690,15 @@ namespace RINGMesh {
         const float font_height = 0.4f
             * float( glQuickText::getFontHeight( font_sz ) ) ;
 
-        glQuickText::printfAt( x1 - w, y1 - font_height, z, font_sz,
-            GEO::String::to_string( GM_gfx_.attribute.minimum() ).c_str() ) ;
+        std::string min_value = GEO::String::to_string(
+            GM_gfx_.attribute.minimum() ) ;
+        glQuickText::printfAt( x1 - w - font_height * min_value.size() * 0.3,
+            y1 - font_height, z, font_sz, min_value.c_str() ) ;
 
-        glQuickText::printfAt( x1 + w, y1 - font_height, z, font_sz,
-            GEO::String::to_string( GM_gfx_.attribute.maximum() ).c_str() ) ;
+        std::string max_value = GEO::String::to_string(
+            GM_gfx_.attribute.maximum() ) ;
+        glQuickText::printfAt( x1 + w - font_height * max_value.size() * 0.3,
+            y1 - font_height, z, font_sz, max_value.c_str() ) ;
 
         glupMatrixMode( GLUP_PROJECTION_MATRIX ) ;
         glupPopMatrix() ;
