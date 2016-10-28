@@ -265,7 +265,7 @@ namespace RINGMesh {
          * @return True is the map was initialized, false if not.
          */
         bool test_and_initialize_mesh_entity_vertex_map(
-            const gme_t& mesh_entity_id ) const ;
+            const gme_t& mesh_entity_id ) ;
 
         /*!
          * @brief Tests if the given GeoModelMeshEntity vertex map exists.
