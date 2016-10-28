@@ -235,6 +235,7 @@ namespace RINGMesh {
         GeoModel& modifiable_model = const_cast< GeoModel& >( model() ) ;
         modifiable_model.mesh.vertices.unbind_model_vertex_map( gme_id() ) ;
 #ifdef RINGMESH_DEBUG
+        std::cerr << gme_id() << std::endl ;
         mesh_.print_mesh_bounded_attributes() ;
 #endif
     }

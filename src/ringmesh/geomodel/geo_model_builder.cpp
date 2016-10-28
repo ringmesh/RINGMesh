@@ -2136,6 +2136,9 @@ namespace RINGMesh {
                 add_universe_boundary( cur_region.boundary( i ).index(),
                     cur_region.side( i ) ) ;
             }
+            std::cerr <<"erasing universe" << std::endl ;
+            std::cerr << model().nb_regions() << std::endl ;
+            std::cerr << "id univ : " << universe_id << std::endl ;
             std::set< gme_t > to_erase ;
             to_erase.insert( cur_region.gme_id() ) ;
             remove_entities( to_erase ) ;
@@ -2154,9 +2157,11 @@ namespace RINGMesh {
 
         build_lines_and_corners_from_surfaces() ;
 
+        std::cerr << "step1 : " << model().nb_regions() << std::endl ;
         if( options_.compute_regions_brep ) {
             build_brep_regions_from_surfaces() ;
         }
+        std::cerr << "step2 : " << model().nb_regions() << std::endl ;
 
         // Finish up the model
         end_model() ;
