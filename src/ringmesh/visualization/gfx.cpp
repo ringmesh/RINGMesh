@@ -119,10 +119,7 @@ namespace RINGMesh {
         }
         virtual void draw_edges()
         {
-            index_t w = get_mesh_width() ;
-            set_mesh_width( w + 1 ) ;
             GEO::MeshGfx::draw_edges() ;
-            set_mesh_width( w ) ;
         }
 
         void set_vertices_visible( bool b )
