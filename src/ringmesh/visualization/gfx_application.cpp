@@ -137,13 +137,17 @@ namespace RINGMesh {
         is_visible_ = true ;
 
         show_corners_ = true ;
-        corner_color_ = red ;
+        corner_style_.color_ = red ;
+        corner_style_.size_ = 1 ;
         show_lines_ = true ;
-        line_color_ = black ;
+        line_style_.color_ = black ;
+        line_style_.size_ = 1 ;
         show_surface_ = true ;
-        surface_color_ = grey ;
+        surface_style_.color_ = grey ;
+        surface_style_.size_ = 1 ;
         show_volume_ = false ;
-        volume_color_ = grey ;
+        volume_style_.color_ = grey ;
+        volume_style_.size_ = 1 ;
         colored_cells_ = false ;
         show_voi_ = false ;
         show_colored_regions_ = false ;
@@ -246,13 +250,19 @@ namespace RINGMesh {
 
         if( show_corners_ ) {
             GM_gfx_.corners.GeoModelGfxManager::set_mesh_element_color(
-                corner_color_.Value.x, corner_color_.Value.y, corner_color_.Value.z ) ;
+                corner_style_.color_.Value.x, corner_style_.color_.Value.y,
+                corner_style_.color_.Value.z ) ;
+            GM_gfx_.corners.GeoModelGfxManager::set_mesh_element_size(
+                corner_style_.size_ ) ;
             GM_gfx_.corners.draw() ;
         }
 
         if( show_lines_ ) {
             GM_gfx_.lines.GeoModelGfxManager::set_mesh_element_color(
-                line_color_.Value.x, line_color_.Value.y, line_color_.Value.z ) ;
+                line_style_.color_.Value.x, line_style_.color_.Value.y,
+                line_style_.color_.Value.z ) ;
+            GM_gfx_.lines.GeoModelGfxManager::set_mesh_element_size(
+                line_style_.size_ ) ;
             GM_gfx_.lines.draw() ;
         }
 
@@ -260,8 +270,9 @@ namespace RINGMesh {
             GM_gfx_.surfaces.set_mesh_color( mesh_color_.Value.x,
                 mesh_color_.Value.y, mesh_color_.Value.z ) ;
             GM_gfx_.surfaces.GeoModelGfxManager::set_mesh_element_color(
-                surface_color_.Value.x, surface_color_.Value.y,
-                surface_color_.Value.z ) ;
+                surface_style_.color_.Value.x, surface_style_.color_.Value.y,
+                surface_style_.color_.Value.z ) ;
+            GM_gfx_.surfaces.set_mesh_size( surface_style_.size_ ) ;
             if( selected_entity_type_ == 0 ) {
                 for( GEO::index_t s = 0; s < GM_.nb_surfaces(); s++ ) {
                     if( GM_.surface( s ).is_on_voi() ) {
@@ -298,9 +309,10 @@ namespace RINGMesh {
                 GM_gfx_.regions.set_mesh_color( mesh_color_.Value.x,
                     mesh_color_.Value.y, mesh_color_.Value.z ) ;
                 GM_gfx_.regions.GeoModelGfxManager::set_mesh_element_color(
-                    volume_color_.Value.x, volume_color_.Value.y,
-                    volume_color_.Value.z ) ;
+                    volume_style_.color_.Value.x, volume_style_.color_.Value.y,
+                    volume_style_.color_.Value.z ) ;
             }
+            GM_gfx_.regions.set_mesh_size( volume_style_.size_ ) ;
             GM_gfx_.regions.set_draw_cells( GEO::MESH_HEX, show_hex_ ) ;
             GM_gfx_.regions.set_draw_cells( GEO::MESH_PRISM, show_prism_ ) ;
             GM_gfx_.regions.set_draw_cells( GEO::MESH_PYRAMID, show_pyramid_ ) ;
@@ -430,13 +442,13 @@ namespace RINGMesh {
 
     void RINGMeshApplication::GeoModelViewer::draw_object_properties()
     {
-        if( ImGui::Combo( "Entity", &selected_entity_type_, GetChar,
+        if( ImGui::Combo( "Type", &selected_entity_type_, GetChar,
             static_cast< void* >( &entity_types_ ),
             static_cast< int >( entity_types_.size() ) ) ) {
             update_entity_visibility() ;
         }
         if( selected_entity_type_ > 0 ) {
-            if( ImGui::InputInt( "Index", &selected_entity_id_, 1 ) ) {
+            if( ImGui::InputInt( "Id", &selected_entity_id_, 1 ) ) {
                 selected_entity_id_ = std::max( 0, selected_entity_id_ ) ;
                 update_entity_visibility() ;
             }
@@ -553,50 +565,18 @@ namespace RINGMesh {
 
         ImGui::Separator() ;
         ImGui::Checkbox( "Corner [c]", &show_corners_ ) ;
-        ImGui::SameLine() ;
-        ImGui::PushStyleColor( ImGuiCol_Button, corner_color_ ) ;
-        if( ImGui::Button( "  ##CornerColor" ) ) {
-            ImGui::OpenPopup( "##CornerColorTable" ) ;
-        }
-        ImGui::PopStyleColor() ;
-        if( ImGui::BeginPopup( "##CornerColorTable" ) ) {
-            daw_color_table_popup( corner_color_ ) ;
-        }
+        draw_entity_style_editor( "##CornerColor", corner_style_ ) ;
 
         ImGui::Checkbox( "Line [e]", &show_lines_ ) ;
-        ImGui::SameLine() ;
-        ImGui::PushStyleColor( ImGuiCol_Button, line_color_ ) ;
-        if( ImGui::Button( "  ##LineColor" ) ) {
-            ImGui::OpenPopup( "##LineColorTable" ) ;
-        }
-        ImGui::PopStyleColor() ;
-        if( ImGui::BeginPopup( "##LineColorTable" ) ) {
-            daw_color_table_popup( line_color_ ) ;
-        }
+        draw_entity_style_editor( "##LineColor", line_style_) ;
 
         ImGui::Checkbox( "Surface [s]", &show_surface_ ) ;
-        ImGui::SameLine() ;
-        ImGui::PushStyleColor( ImGuiCol_Button, surface_color_ ) ;
-        if( ImGui::Button( "  ##SurfaceColor" ) ) {
-            ImGui::OpenPopup( "##SurfaceColorTable" ) ;
-        }
-        ImGui::PopStyleColor() ;
-        if( ImGui::BeginPopup( "##SurfaceColorTable" ) ) {
-            daw_color_table_popup( surface_color_ ) ;
-        }
+        draw_entity_style_editor( "##SurfaceColor", surface_style_ ) ;
 
         if( meshed_regions_ ) {
             ImGui::Separator() ;
             ImGui::Checkbox( "Region [v]", &show_volume_ ) ;
-            ImGui::SameLine() ;
-            ImGui::PushStyleColor( ImGuiCol_Button, volume_color_ ) ;
-            if( ImGui::Button( "  ##VolumeColor" ) ) {
-                ImGui::OpenPopup( "##VolumeColorTable" ) ;
-            }
-            ImGui::PopStyleColor() ;
-            if( ImGui::BeginPopup( "##VolumeColorTable" ) ) {
-                daw_color_table_popup( volume_color_ ) ;
-            }
+            draw_entity_style_editor( "##VolumeColor", volume_style_ ) ;
             if( show_volume_ ) {
                 ImGui::Checkbox( "Col. cells [C]", &colored_cells_.new_status ) ;
                 ImGui::Checkbox( "Col. regions [r]",
@@ -610,6 +590,23 @@ namespace RINGMesh {
                 ImGui::Checkbox( "Tetra", &show_tetra_ ) ;
             }
         }
+    }
+
+    void RINGMeshApplication::GeoModelViewer::draw_entity_style_editor(
+        const std::string& label,
+        EntityStyle& style )
+    {
+        ImGui::PushStyleColor( ImGuiCol_Button, style.color_ ) ;
+        if( ImGui::Button( ("  " + label ).c_str() ) ) {
+            ImGui::OpenPopup( label.c_str() ) ;
+        }
+        ImGui::PopStyleColor() ;
+        if( ImGui::BeginPopup( label.c_str() ) ) {
+            daw_color_table_popup( style.color_ ) ;
+        }
+        ImGui::SameLine() ;
+        ImGui::InputInt( "", &style.size_, 1 ) ;
+        std::max( style.size_, 0 ) ;
     }
 
     void RINGMeshApplication::GeoModelViewer::daw_color_table_popup( ImColor& color )
