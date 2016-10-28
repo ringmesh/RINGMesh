@@ -83,8 +83,7 @@ namespace RINGMesh {
             const GeoModel& geomodel )
             :
                 model_vertices_( model_vertices ),
-                geomodel_( geomodel ),
-                nb_init_vertex_maps_( 0 )
+                geomodel_( geomodel )
         {
         }
 
@@ -334,10 +333,12 @@ namespace RINGMesh {
             index_t v,
             std::vector< index_t >& result ) const ;
 
-        /*!
-         * @brief Returns the total number of GeoModelMeshEntities
-         */
-        index_t total_nb_mesh_entities() const ;
+        void resize_all_mesh_entity_vertex_maps() ;
+
+//        /*!
+//         * @brief Returns the total number of GeoModelMeshEntities
+//         */
+//        index_t total_nb_mesh_entities() const ;
 
         /*!
          * @brief Returns the vertex attribute of a GeoModelMeshEntity
@@ -351,10 +352,13 @@ namespace RINGMesh {
         const GeoModel& geomodel_ ;
 
         ///Initialized vertex maps
-        AttributeVector< index_t > vertex_maps_ ;
-        std::vector< gme_t > vertex_map_entities_ ;
-        /// Counter of number of initialized vertex maps
-        index_t nb_init_vertex_maps_ ;
+        AttributeVector< index_t > corner_vertex_maps_ ;
+        AttributeVector< index_t > line_vertex_maps_ ;
+        AttributeVector< index_t > surface_vertex_maps_ ;
+        AttributeVector< index_t > region_vertex_maps_ ;
+//        std::vector< gme_t > vertex_map_entities_ ;
+//        /// Counter of number of initialized vertex maps
+//        index_t nb_init_vertex_maps_ ;
 
         /// GME Vertices for each model vertex
         std::vector< std::vector< GMEVertex > > gme_vertices_ ;
