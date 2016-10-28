@@ -156,7 +156,8 @@ namespace RINGMesh {
         ringmesh_assert( mesh_entity_vertex_index <
             geomodel_.mesh_entity( mesh_entity_id ).nb_vertices() ) ;
 
-        test_and_initialize_mesh_entity_vertex_map( mesh_entity_id ) ;
+        const_cast< GeoModelVertexMapper* >( this )->test_and_initialize_mesh_entity_vertex_map(
+            mesh_entity_id ) ;
 
         return vertex_map( mesh_entity_id )[mesh_entity_vertex_index] ;
     }
@@ -245,20 +246,6 @@ namespace RINGMesh {
             model_entity_vertex_index ;
     }
 
-//    void GeoModelVertexMapper::initialize_mesh_entity_vertex_map_to_default(
-//        const gme_t& mesh_entity_id ) const
-//    {
-//        ringmesh_assert(
-//            EntityTypeManager::is_mesh_entity_type( mesh_entity_id.type ) ) ;
-//
-//        const index_t vertex_map_pos = get_vertex_map_position( mesh_entity_id ) ;
-//        vertex_maps_[vertex_map_pos].fill( NO_ID ) ;
-//        GEO::Attribute< index_t > mesh_entity_vertex_map(
-//            mesh_entity_vertex_attribute_manager( mesh_entity_id ),
-//            vertex_map_name() ) ;
-//        mesh_entity_vertex_map.fill( NO_ID ) ;
-//    }
-
     void GeoModelVertexMapper::bind_all_mesh_entity_vertex_maps()
     {
         corner_vertex_maps_.clear() ;
@@ -284,10 +271,6 @@ namespace RINGMesh {
     GEO::Attribute< index_t >& GeoModelVertexMapper::bind_mesh_entity_vertex_map(
         const gme_t& mesh_entity_id )
     {
-//        if( vertex_maps_.size() < total_nb_mesh_entities() ) {
-//            vertex_maps_.resize( total_nb_mesh_entities(), nil ) ;
-//            vertex_map_entities_.resize( total_nb_mesh_entities(), gme_t() ) ;
-//        }
         if( mesh_entity_id.type == Corner::type_name_static() ) {
             ringmesh_assert( mesh_entity_id.index < corner_vertex_maps_.size() ) ;
             corner_vertex_maps_.bind_one_attribute( mesh_entity_id.index ,
@@ -470,11 +453,11 @@ namespace RINGMesh {
     }
 
     bool GeoModelVertexMapper::test_and_initialize_mesh_entity_vertex_map(
-        const gme_t& mesh_entity_id ) const
+        const gme_t& mesh_entity_id )
     {
+        resize_all_mesh_entity_vertex_maps() ;
         if( !is_mesh_entity_vertex_map_initialized( mesh_entity_id ) ) {
-            const_cast< GeoModelVertexMapper* >( this )->initialize_mesh_entity_vertex_map(
-                mesh_entity_id ) ;
+            initialize_mesh_entity_vertex_map( mesh_entity_id ) ;
             return false ;
         }
         return true ;
