@@ -606,7 +606,7 @@ namespace RINGMesh {
         }
         ImGui::SameLine() ;
         ImGui::InputInt( "", &style.size_, 1 ) ;
-        std::max( style.size_, 0 ) ;
+        style.size_ = std::max( style.size_, 0 ) ;
     }
 
     void RINGMeshApplication::GeoModelViewer::daw_color_table_popup( ImColor& color )
