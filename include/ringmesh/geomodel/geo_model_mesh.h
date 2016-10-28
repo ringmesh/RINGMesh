@@ -182,13 +182,6 @@ namespace RINGMesh {
          */
         void test_and_initialize() const ;
 
-//        /*!
-//         * @brief Creates and initializes a GeoModelMeshEntity vertex map
-//         * @details All the vertices are mapped to the default value (NO_ID)
-//         */
-//        void initialize_mesh_entity_vertex_map_to_default(
-//            const gme_t& mesh_entity_id ) const ;
-
         /*!
          * @brief Clears and resizes the GME_Vertex vectors
          * @param[in] nb Size of the vector
@@ -335,11 +328,6 @@ namespace RINGMesh {
 
         void resize_all_mesh_entity_vertex_maps() ;
 
-//        /*!
-//         * @brief Returns the total number of GeoModelMeshEntities
-//         */
-//        index_t total_nb_mesh_entities() const ;
-
         /*!
          * @brief Returns the vertex attribute of a GeoModelMeshEntity
          * @param[in] mesh_entity_id Unique id to a GeoModelMeshEntity
@@ -356,9 +344,6 @@ namespace RINGMesh {
         AttributeVector< index_t > line_vertex_maps_ ;
         AttributeVector< index_t > surface_vertex_maps_ ;
         AttributeVector< index_t > region_vertex_maps_ ;
-//        std::vector< gme_t > vertex_map_entities_ ;
-//        /// Counter of number of initialized vertex maps
-//        index_t nb_init_vertex_maps_ ;
 
         /// GME Vertices for each model vertex
         std::vector< std::vector< GMEVertex > > gme_vertices_ ;

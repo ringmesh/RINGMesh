@@ -201,7 +201,6 @@ namespace RINGMesh {
     const GEO::Attribute< index_t >& GeoModelVertexMapper::vertex_map(
         const gme_t& mesh_entity_id ) const
     {
-        //@todo: check that it is defined
         if( mesh_entity_id.type == Corner::type_name_static() ) {
             return corner_vertex_maps_[mesh_entity_id.index] ;
         } else if( mesh_entity_id.type == Line::type_name_static() ) {
@@ -219,7 +218,6 @@ namespace RINGMesh {
     GEO::Attribute< index_t >& GeoModelVertexMapper::vertex_map(
         const gme_t& mesh_entity_id )
     {
-        //@todo: check that it is defined
         if( mesh_entity_id.type == Corner::type_name_static() ) {
             return corner_vertex_maps_[mesh_entity_id.index] ;
         } else if( mesh_entity_id.type == Line::type_name_static() ) {
@@ -377,6 +375,7 @@ namespace RINGMesh {
     void GeoModelVertexMapper::check_mesh_entity_maps()
     {
         if( corner_vertex_maps_.size() < geomodel_.nb_corners() ) {
+            index_t first_init = corner_vertex_maps_.size() ;
             corner_vertex_maps_.resize( geomodel_.nb_corners() ) ;
         }
         for( index_t c = 0; c < corner_vertex_maps_.size(); c++ ) {
@@ -586,17 +585,6 @@ namespace RINGMesh {
         region_vertex_maps_.resize( geomodel_.nb_regions(), nil ) ;
     }
 
-//    index_t GeoModelVertexMapper::total_nb_mesh_entities() const
-//    {
-//        index_t nb_total = 0 ;
-//        const std::vector< EntityType >& all_mesh_entity_types =
-//            EntityTypeManager::mesh_entity_types() ;
-//        for( index_t t = 0; t < all_mesh_entity_types.size(); t++ ) {
-//            nb_total += geomodel_.nb_mesh_entities( all_mesh_entity_types[t] ) ;
-//        }
-//        return nb_total ;
-//    }
-
     GEO::AttributesManager& GeoModelVertexMapper::mesh_entity_vertex_attribute_manager(
         const gme_t& mesh_entity_id ) const
     {
@@ -659,10 +647,6 @@ namespace RINGMesh {
         for( index_t i = 0; i < M.nb_mesh_entities( entity_type ); ++i ) {
             GeoModelMeshEntity& E = const_cast< GeoModelMeshEntity& >( M.mesh_entity(
                 entity_type, i ) ) ;
-
-//            // Map initialization ;
-//            vertex_mapper.initialize_mesh_entity_vertex_map_to_default( E.gme_id() ) ;
-
             if( E.nb_vertices() == 0 ) {
                 continue ;
             }
