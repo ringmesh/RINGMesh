@@ -74,7 +74,7 @@ int main( int argc, char** argv )
         Logger::out( "TEST" ) << "Test GeoModel building from Surface"
             << std::endl ;
 
-
+		auto t00 = std::chrono::steady_clock::now();
         GEO::Mesh in ;
         GEO::mesh_load( file_name, in ) ;
 
@@ -86,14 +86,20 @@ int main( int argc, char** argv )
         BB.build_polygonal_surfaces_from_connected_components() ;
         BB.build_model_from_surfaces() ;
 
+		
 		auto t1 = std::chrono::steady_clock::now();
+		auto duration0 = std::chrono::duration_cast<std::chrono::milliseconds>(t0 - t00);
 		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0);
+		Logger::out("TIMING") << "Mesh load: " << duration0.count() << " milliseconds" << std::endl;
 		Logger::out("TIMING") << "Model construction: " << duration.count() << " milliseconds" << std::endl;
 
         print_geomodel( model ) ;
         //GEO::CmdLine::set_arg( "in:intersection_check", false ) ;
         is_geomodel_valid( model, true ) ;
 
+		std::string output_file_name(ringmesh_test_output_path);
+		output_file_name += model.name() + "_reconstructed.gm";
+		geomodel_save(model, output_file_name);	
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category() ) << e.what() << std::endl ;
         return 1 ;
