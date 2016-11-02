@@ -138,7 +138,7 @@ namespace RINGMesh {
             void draw_entity_style_editor(
                 const std::string& label,
                 EntityStyle& style ) ;
-            void daw_color_table_popup( ImColor& color ) ;
+            void show_color_table_popup( ImColor& color ) ;
             void update_entity_visibility() ;
 
             void toggle_corner_visibility( index_t corner_id ) ;
