@@ -560,7 +560,7 @@ namespace RINGMesh {
         }
         ImGui::PopStyleColor() ;
         if( ImGui::BeginPopup( "##MeshColorTable" ) ) {
-            daw_color_table_popup( mesh_color_ ) ;
+            show_color_table_popup( mesh_color_ ) ;
         }
 
         ImGui::Separator() ;
@@ -602,14 +602,14 @@ namespace RINGMesh {
         }
         ImGui::PopStyleColor() ;
         if( ImGui::BeginPopup( label.c_str() ) ) {
-            daw_color_table_popup( style.color_ ) ;
+            show_color_table_popup( style.color_ ) ;
         }
         ImGui::SameLine() ;
         ImGui::InputInt( "", &style.size_, 1 ) ;
         style.size_ = std::max( style.size_, 0 ) ;
     }
 
-    void RINGMeshApplication::GeoModelViewer::daw_color_table_popup( ImColor& color )
+    void RINGMeshApplication::GeoModelViewer::show_color_table_popup( ImColor& color )
     {
         int id = 0 ;
         for( index_t i = 0; i < color_table_.size(); i++ ) {
