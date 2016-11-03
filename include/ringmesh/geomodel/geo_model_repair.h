@@ -59,6 +59,15 @@ namespace RINGMesh {
      * to the internal meshes of the GeoModel. This class is otherwise artificial.
      */
     class RINGMESH_API GeoModelRepair: public GeoModelBuilder {
+        ringmesh_disable_copy( GeoModelRepair ) ;
+    public:
+        enum RepairMode {
+            ALL,
+            BASIC,
+            COLOCATED_VERTICES,
+            DEGENERATE_FACETS_EDGES,
+            LINE_BOUNDARY_ORDER
+        } ;
     public:
         GeoModelRepair( GeoModel& model )
             : GeoModelBuilder( model )
@@ -67,18 +76,20 @@ namespace RINGMesh {
         virtual ~GeoModelRepair()
         {
         }
+        void repair( RepairMode repair_mode ) ;
+    private:
         /*!
          * @brief Detect and remove degenerated edges in a \param line.
          * @return the number of degenerated edges that have been removed from the line.
          */
         void geo_model_mesh_repair() ;
+        void remove_colocated_entity_vertices_and_update_gm() ;
+        void remove_degenerate_facets_and_edges_and_update_gm() ;
         /*!
          * @brief For all the lines in the geomodel, switch line boundaries
          * if the way of their indices do not follow the way of the vertex indices.
          */
         void repair_line_boundary_vertex_order() ;
-
-    private:
         index_t repair_line_mesh( Line& line ) ;
         void mesh_detect_degenerate_edges(
             const Mesh& M,
@@ -95,7 +106,7 @@ namespace RINGMesh {
 
         index_t detect_degenerate_facets( Mesh& M ) ;
 
-        void remove_degenerate_facet_and_edges( std::set< gme_t >& to_remove ) ;
+        void remove_degenerate_facets_and_edges( std::set< gme_t >& to_remove ) ;
 
         void remove_colocated_element_vertices( std::set< gme_t >& to_remove ) ;
 

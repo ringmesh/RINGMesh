@@ -87,14 +87,10 @@ int main( int argc, char** argv )
         GeoModel geomodel ;
         geomodel_load( geomodel, in_model_file_name ) ;
 
+        index_t repair_mode = GEO::CmdLine::get_arg_uint( "repair:mode" ) ;
         GeoModelRepair geo_model_repair( geomodel ) ;
-        if( GEO::CmdLine::get_arg_bool( "repair:basic" ) ) {
-            geo_model_repair.geo_model_mesh_repair() ;
-        }
-
-        if( GEO::CmdLine::get_arg_bool( "repair:line_boundary" ) ) {
-            geo_model_repair.repair_line_boundary_vertex_order() ;
-        }
+        geo_model_repair.repair(
+            static_cast< GeoModelRepair::RepairMode >( repair_mode ) ) ;
 
         std::string out_model_file_name = GEO::CmdLine::get_arg( "out:geomodel" ) ;
         if( out_model_file_name.empty() ) {
