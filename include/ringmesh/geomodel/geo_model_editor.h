@@ -284,9 +284,9 @@ namespace RINGMesh {
         {
             /// No check on the validity of the index of the entity parents_
             /// NO_ID is used to flag entities to delete
-            GeoModelMeshEntity& mesh = mesh_entity( t ) ;
-            ringmesh_assert( id < mesh.nb_parents() ) ;
-            mesh.parents_[id] = parent_index ;
+            GeoModelMeshEntity& entity = mesh_entity( t ) ;
+            ringmesh_assert( id < entity.nb_parents() ) ;
+            entity.parents_[id] = parent_index ;
         }
 
         void add_geological_entity_child( const gme_t& t, index_t child_id )

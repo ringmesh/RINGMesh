@@ -199,8 +199,6 @@ namespace RINGMesh {
             const std::vector< index_t >& model_vertices,
             bool clear ) ;
 
-        index_t add_unique_vertex( const vec3& p ) ;
-
         void set_corner( index_t corner_id, index_t unique_vertex ) ;
 
         void set_line( index_t id, const std::vector< index_t >& unique_vertices ) ;

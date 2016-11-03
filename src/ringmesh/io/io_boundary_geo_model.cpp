@@ -305,6 +305,7 @@ namespace {
         }
         out << "END" << std::endl ;
 
+        const GeoModelMeshVertices& model_vertices = M.mesh.vertices ;
         // Save the geometry of the Surfaces, Interface per Interface
         for( index_t i = 0; i < nb_interfaces; ++i ) {
             const GeoModelGeologicalEntity& tsurf = M.geological_entity( Interface::type_name_static(), i ) ;
@@ -346,13 +347,15 @@ namespace {
                 }
                 for( index_t k = 0; k < S.nb_boundaries(); ++k ) {
                     const Line& L = dynamic_cast< const Line& >( S.boundary( k ) ) ;
-                    index_t v0_model_id = L.model_vertex_id( 0 ) ;
-                    index_t v1_model_id = L.model_vertex_id( 1 ) ;
+                    index_t v0_model_id = model_vertices.model_vertex_id( L.gme_id(), 0 ) ;
+                    index_t v1_model_id = model_vertices.model_vertex_id( L.gme_id(), 1 ) ;
 
-                    std::vector< index_t > v0_surface_ids = S.gme_vertex_indices(
-                        v0_model_id ) ;
-                    std::vector< index_t > v1_surface_ids = S.gme_vertex_indices(
-                        v1_model_id ) ;
+                    std::vector< index_t > v0_surface_ids ;
+                    model_vertices.mesh_entity_vertex_id( S.gme_id(), v0_model_id,
+                        v0_surface_ids ) ;
+                    std::vector< index_t > v1_surface_ids ;
+                    model_vertices.mesh_entity_vertex_id( S.gme_id(), v1_model_id,
+                        v1_surface_ids ) ;
 
                     if( !S.has_inside_border() ) {
                         ringmesh_assert(
@@ -397,10 +400,11 @@ namespace {
                         }
                     }
                     // Set a BSTONE at the line other extremity
-                    const Corner& c1 =
-                        dynamic_cast< const Corner& >( L.boundary( 1 ) ) ;
-                    corners.insert(
-                        S.gmme_vertex_index_from_model( c1.model_vertex_id() ) + offset ) ;
+                    const gme_t& c1_id = L.boundary_gme( 1 ) ;
+                    std::vector< index_t > gme_vertices ;
+                    model_vertices.mesh_entity_vertex_id( S.gme_id(),
+                        model_vertices.model_vertex_id( c1_id ), gme_vertices ) ;
+                    corners.insert( gme_vertices.front() + offset ) ;
                 }
             }
             // Add the remaining bstones that are not already in bstones
@@ -416,30 +420,6 @@ namespace {
             }
             out << "END" << std::endl ;
         }
-    }
-
-    /*! To save the attributes in a Graphite readable file, we need to write the correct
-     * keyword for the attribute type - We restrict ourselves to the 3 types
-     * int          "integer"
-     * double       "real"
-     * float        "real"
-     * bool         "boolean"
-     */
-    inline std::string alias_name( const std::string& in )
-    {
-        if( in == "int" ) {
-            return "integer" ;
-        } else if( in == "index" ) {
-            return "integer" ;
-        } else if( in == "double" ) {
-            return "real" ;
-        } else if( in == "float" ) {
-            return "real" ;
-        } else if( in == "bool" ) {
-            return "boolean" ;
-        }
-        ringmesh_assert_not_reached;
-        return "" ;
     }
 
     /*!
@@ -472,12 +452,13 @@ namespace {
         out << "# facet count, no boundary marker" << std::endl ;
         out << nb_facets( M ) << "  0 " << std::endl ;
 
+        const GeoModelMeshVertices& model_vertices = M.mesh.vertices ;
         for( index_t i = 0; i < M.nb_surfaces(); ++i ) {
             const Surface& S = M.surface( i ) ;
             for( index_t f = 0; f < S.nb_mesh_elements(); f++ ) {
                 out << S.nb_mesh_element_vertices( f ) << " " ;
                 for( index_t v = 0; v < S.nb_mesh_element_vertices( f ); v++ ) {
-                    out << S.model_vertex_id( f, v ) << " " ;
+                    out << model_vertices.model_vertex_id( S.gme_id(), f, v ) << " " ;
                 }
                 out << std::endl ;
             }
