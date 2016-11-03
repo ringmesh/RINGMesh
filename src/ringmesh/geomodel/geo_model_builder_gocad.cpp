@@ -316,8 +316,8 @@ namespace {
         std::vector< index_t >& colocated_cell_facet_centers )
     {
         vec3 first_facet_center = surface.mesh_element_barycenter( 0 ) ;
-        region_ann.get_colocated( first_facet_center,
-            colocated_cell_facet_centers ) ;
+        region_ann.get_neighbors( first_facet_center,
+            colocated_cell_facet_centers, surface.model().epsilon() ) ;
         return static_cast< index_t >( colocated_cell_facet_centers.size() ) ;
     }
 
@@ -598,7 +598,8 @@ namespace {
         index_t tested_surf = 0 ;
         while( result.empty() && tested_surf < surface_anns.size() ) {
             if( surface_boxes[tested_surf].contains( barycenter ) ) {
-                surface_anns[tested_surf]->get_colocated( barycenter, result ) ;
+                surface_anns[tested_surf]->get_neighbors( barycenter, result,
+                    geomodel.epsilon() ) ;
             }
             ++tested_surf ;
         }
@@ -801,7 +802,7 @@ namespace {
 
             // Create the entity if it is not the universe
             // Set the region name and boundaries
-            if( name != "Universe" ) {
+            if( name != Universe::universe_type_name() ) {
                 gme_t region_id = builder().create_mesh_entity<Region>();
                 builder().set_entity_name( region_id, name ) ;
                 for( index_t i = 0; i < region_boundaries.size(); ++i ) {

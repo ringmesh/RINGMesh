@@ -56,6 +56,7 @@ namespace RINGMesh {
 	#cmakedefine RINGMESH_WITH_GRAPHICS
 	#cmakedefine RINGMESH_WITH_UTILITIES
 	#cmakedefine RINGMESH_WITH_TESTS
+	#cmakedefine RINGMESH_WITH_GEOLOGYJS
 
 }
 #endif

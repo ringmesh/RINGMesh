@@ -65,6 +65,7 @@ namespace {
 
     const std::string TAB = "\t" ;
     const std::string SPACE = " " ;
+    const std::string COMMA = "," ;
 
     /*!
      * @brief Write in the out stream things to save for CONTACT, INTERFACE and LAYERS
@@ -83,9 +84,9 @@ namespace {
     }
 
     /*!
-     * @brief Save the connectivity of a GeoModelin in a file
+     * @brief Save the connectivity of a GeoModel in a file
      * @param[in] M the GeoModel
-     * @param[in] file_name the file name (lol)
+     * @param[in] file_name path to the input file
      */
     void save_geological_entities( const GeoModel& M, const std::string& file_name )
     {
@@ -874,8 +875,8 @@ namespace {
 
                 time( &end_load ) ;
 
-                Logger::out( "I/O" ) << " Loaded model " << model.name()
-                    << " from " << std::endl << filename << " timing: "
+                Logger::out( "I/O" ) << " Loaded model " << model.name() << " from "
+                    << std::endl << filename << " timing: "
                     << difftime( end_load, start_load ) << "sec" << std::endl ;
             } else {
                 throw RINGMeshException( "I/O",
@@ -899,7 +900,7 @@ namespace {
                 << "END_ORIGINAL_COORDINATE_SYSTEM" << std::endl ;
 
             const GeoModelMesh& mesh = gm.mesh ;
-            mesh.set_duplicate_mode( GeoModelMeshCells::ALL ) ;
+            //mesh.set_duplicate_mode( GeoModelMeshCells::ALL ) ;
 
             std::vector< bool > vertex_exported( mesh.vertices.nb(), false ) ;
             std::vector< bool > atom_exported( mesh.cells.nb_duplicated_vertices(),
@@ -913,36 +914,38 @@ namespace {
                 out << "TVOLUME " << region.name() << std::endl ;
 
                 // Export not duplicated vertices
-                for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
+                for( index_t c = 0; c < region.nb_mesh_elements(); c++ ) {
                     index_t cell = mesh.cells.cell( r, c ) ;
-                    for( index_t v = 0; v < mesh.cells.nb_vertices( c ); v++ ) {
+                    for( index_t v = 0; v < mesh.cells.nb_vertices( cell ); v++ ) {
                         index_t atom_id ;
                         if( !mesh.cells.is_corner_duplicated( cell, v, atom_id ) ) {
                             index_t vertex_id = mesh.cells.vertex( cell, v ) ;
                             if( vertex_exported[vertex_id] ) continue ;
                             vertex_exported[vertex_id] = true ;
                             vertex_exported_id[vertex_id] = nb_vertices_exported ;
-                            out << "VRTX " << nb_vertices_exported++ << " "
+                            // PVRTX must be used instead of VRTX because
+                            // properties are not read by Gocad if it is VRTX.
+                            out << "PVRTX " << nb_vertices_exported++ << " "
                                 << mesh.vertices.vertex( vertex_id ) << std::endl ;
                         }
                     }
                 }
 
                 // Export duplicated vertices
-                for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
-                    index_t cell = mesh.cells.cell( r, c ) ;
-                    for( index_t v = 0; v < mesh.cells.nb_vertices( c ); v++ ) {
-                        index_t atom_id ;
-                        if( mesh.cells.is_corner_duplicated( cell, v, atom_id ) ) {
-                            if( atom_exported[atom_id] ) continue ;
-                            atom_exported[atom_id] = true ;
-                            atom_exported_id[atom_id] = nb_vertices_exported ;
-                            index_t vertex_id = mesh.cells.vertex( cell, v ) ;
-                            out << "ATOM " << nb_vertices_exported++ << " "
-                                << vertex_exported_id[vertex_id] << std::endl ;
-                        }
-                    }
-                }
+                /*for( index_t c = 0; c < region.nb_mesh_elements(); c++ ) {
+                 index_t cell = mesh.cells.cell( r, c ) ;
+                 for( index_t v = 0; v < mesh.cells.nb_vertices( cell ); v++ ) {
+                 index_t atom_id ;
+                 if( mesh.cells.is_corner_duplicated( cell, v, atom_id ) ) {
+                 if( atom_exported[atom_id] ) continue ;
+                 atom_exported[atom_id] = true ;
+                 atom_exported_id[atom_id] = nb_vertices_exported ;
+                 index_t vertex_id = mesh.cells.vertex( cell, v ) ;
+                 out << "ATOM " << nb_vertices_exported++ << " "
+                 << vertex_exported_id[vertex_id] << std::endl ;
+                 }
+                 }
+                 }*/
 
                 // Mark if a boundary is ending in the region
                 std::map< index_t, index_t > sides ;
@@ -954,14 +957,15 @@ namespace {
                         sides[region.boundary_gme( s ).index] = region.side( s ) ;
                 }
 
-                GEO::Attribute< index_t > attribute( mesh.facet_attribute_manager(),
-                    surface_att_name ) ;
-                for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
+                /*GEO::Attribute< index_t > attribute( mesh.facet_attribute_manager(),
+                 surface_att_name ) ;*/
+                for( index_t c = 0; c < region.nb_mesh_elements(); c++ ) {
                     out << "TETRA" ;
-                    for( index_t v = 0; v < mesh.cells.nb_vertices( c ); v++ ) {
+                    index_t cell = mesh.cells.cell( r, c ) ;
+                    for( index_t v = 0; v < mesh.cells.nb_vertices( cell ); v++ ) {
                         index_t atom_id ;
-                        if( !mesh.cells.is_corner_duplicated( c, v, atom_id ) ) {
-                            index_t vertex_id = mesh.cells.vertex( c, v ) ;
+                        if( !mesh.cells.is_corner_duplicated( cell, v, atom_id ) ) {
+                            index_t vertex_id = mesh.cells.vertex( cell, v ) ;
                             out << " " << vertex_exported_id[vertex_id] ;
                         } else {
                             out << " " << atom_exported_id[atom_id] ;
@@ -988,7 +992,8 @@ namespace {
 
             out << "MODEL" << std::endl ;
             int tface_count = 1 ;
-            for( index_t i = 0; i < model.nb_geological_entities( Interface::type_name_static() );
+            for( index_t i = 0;
+                i < model.nb_geological_entities( Interface::type_name_static() );
                 i++ ) {
                 const RINGMesh::GeoModelGeologicalEntity& interf =
                     model.geological_entity( Interface::type_name_static(), i ) ;
@@ -1809,7 +1814,7 @@ namespace {
                                 ( e + 1 ) % mesh.facets.nb_vertices( f ) ) ) ;
                         vec3 query = 0.5 * ( e0 + e1 ) ;
                         std::vector< index_t > results ;
-                        if( ann.get_colocated( query, results ) ) {
+                        if( ann.get_neighbors( query, results, gm.epsilon() ) ) {
                             edges[results[0]].push_back( cell_offset + f ) ;
                         } else {
                             ringmesh_assert_not_reached ;
@@ -2174,6 +2179,194 @@ namespace {
 //            }
         }
     } ;
+
+
+    /************************************************************************/
+
+    struct RINGMesh2Abaqus {
+        std::string entity_type ;
+        index_t vertices[8] ;
+    } ;
+
+    static RINGMesh2Abaqus tet_descriptor_abaqus = {
+        "C3D4",                  // type
+        { 0, 1, 2, 3 }     // vertices
+    } ;
+
+    static RINGMesh2Abaqus hex_descriptor_abaqus = {
+        "C3D8",                         // type
+        { 0, 4, 5, 1, 2, 6, 7, 3 }     // vertices
+    } ;
+
+
+    class AbaqusIOHandler: public GeoModelIOHandler {
+    public:
+        static const index_t NB_ENTRY_PER_LINE = 16 ;
+
+        virtual void load( const std::string& filename, GeoModel& geomodel )
+        {
+            throw RINGMeshException( "I/O",
+                "Loading of a GeoModel from abaqus not implemented yet" ) ;
+        }
+        virtual void save( const GeoModel& gm, const std::string& filename )
+        {
+            std::ofstream out( filename.c_str() ) ;
+            out.precision( 16 ) ;
+
+            out << "*HEADING" << std::endl ;
+            out << "**Mesh exported from RINGMesh" << std::endl ;
+            out << "**https://bitbucket.org/ring_team/ringmesh" << std::endl ;
+
+            out << "*PART, name=Part-1" << std::endl ;
+
+            save_vertices( gm, out ) ;
+            save_facets( gm, out ) ;
+            save_cells( gm, out ) ;
+
+            out << "*END PART" << std::endl ;
+        }
+    private:
+        void save_vertices( const GeoModel& gm, std::ofstream& out ) const
+        {
+            const GeoModelMeshVertices& vertices = gm.mesh.vertices ;
+            out << "*NODE" << std::endl ;
+            for( index_t v = 0; v < vertices.nb(); v++ ) {
+                out << v + 1 ;
+                const vec3& vertex = vertices.vertex( v ) ;
+                for( index_t i = 0; i < 3; i++ ) {
+                    out << COMMA << SPACE << vertex[i] ;
+                }
+                out << std::endl ;
+            }
+
+        }
+        void save_facets( const GeoModel& gm, std::ofstream& out ) const
+        {
+            const EntityType& type = Interface::type_name_static() ;
+            index_t nb_interfaces = gm.nb_geological_entities( type ) ;
+            for( index_t i = 0; i < nb_interfaces; i++ ) {
+                save_interface( gm, i, out ) ;
+            }
+        }
+        void save_interface(
+            const GeoModel& gm,
+            index_t interface_id,
+            std::ofstream& out ) const
+        {
+            const GeoModelMeshFacets& facets = gm.mesh.facets ;
+            const GeoModelGeologicalEntity& entity = gm.geological_entity(
+                Interface::type_name_static(), interface_id ) ;
+            std::string sep ;
+            index_t count = 0 ;
+            std::vector< bool > vertex_exported( gm.mesh.vertices.nb(), false ) ;
+            out << "*NSET, nset="  << entity.name() << std::endl ;
+            for( index_t s = 0; s < entity.nb_children(); s++ ) {
+                index_t surface_id = entity.child_gme( s ).index ;
+                for( index_t f = 0; f < facets.nb_facets( surface_id ); f++ ) {
+                    index_t facet_id = facets.facet( surface_id, f ) ;
+                    for( index_t v = 0; v < facets.nb_vertices( facet_id ); v++ ) {
+                        index_t vertex_id = facets.vertex( facet_id, v ) ;
+                        if( vertex_exported[vertex_id] ) continue ;
+                        vertex_exported[vertex_id] = true ;
+                        out << sep << vertex_id + 1 ;
+                        sep = COMMA + SPACE ;
+                        new_line_if_needed( count, out, sep ) ;
+                    }
+                }
+            }
+            out << std::endl ;
+        }
+
+        void save_tets( const GeoModel& gm, std::ofstream& out ) const
+        {
+            const GeoModelMeshCells& cells = gm.mesh.cells ;
+            if( cells.nb_tet() > 0 ) {
+                out << "*ELEMENT, type=" << tet_descriptor_abaqus.entity_type
+                    << std::endl ;
+                for( index_t r = 0; r < gm.nb_regions(); r++ ) {
+                    for( index_t c = 0; c < cells.nb_tet( r ); c++ ) {
+                        index_t tetra = cells.tet( r, c ) ;
+                        out << tetra + 1 ;
+                        for( index_t v = 0; v < 4; v++ ) {
+                            index_t vertex_id = tet_descriptor_abaqus.vertices[v] ;
+                            out << COMMA << SPACE
+                                << cells.vertex( tetra, vertex_id ) + 1 ;
+                        }
+                        out << std::endl ;
+                    }
+                }
+            }
+        }
+        void save_hex( const GeoModel& gm, std::ofstream& out ) const
+        {
+            const GeoModelMeshCells& cells = gm.mesh.cells ;
+            if( cells.nb_hex() > 0 ) {
+                out << "*ELEMENT, type=" << hex_descriptor_abaqus.entity_type
+                    << std::endl ;
+                for( index_t r = 0; r < gm.nb_regions(); r++ ) {
+                    for( index_t c = 0; c < cells.nb_hex( r ); c++ ) {
+                        index_t hex = cells.hex( r, c ) ;
+                        out << hex + 1 ;
+                        for( index_t v = 0; v < 8; v++ ) {
+                            index_t vertex_id = hex_descriptor_abaqus.vertices[v] ;
+                            out << COMMA << SPACE
+                                << cells.vertex( hex, vertex_id ) + 1 ;
+                        }
+                        out << std::endl ;
+                    }
+                }
+            }
+        }
+        void save_regions( const GeoModel& gm, std::ofstream& out ) const
+        {
+            const GeoModelMeshCells& cells = gm.mesh.cells ;
+            for( index_t r = 0; r < gm.nb_regions(); r++ ) {
+                const std::string& name =  gm.region( r ).name() ;
+                out << "*ELSET, elset=" << name << std::endl ;
+                index_t count = 0 ;
+                std::string sep ;
+                for( index_t c = 0; c < cells.nb_tet( r ); c++ ) {
+                    index_t tetra = cells.tet( r, c ) ;
+                    out << sep << tetra + 1 ;
+                    sep = COMMA + SPACE ;
+                    new_line_if_needed( count, out, sep ) ;
+
+                }
+                for( index_t c = 0; c < cells.nb_hex( r ); c++ ) {
+                    index_t hex = cells.hex( r, c ) ;
+                    out << sep << hex + 1 ;
+                    sep = COMMA + SPACE ;
+                    new_line_if_needed( count, out, sep ) ;
+                }
+                reset_line( count, out ) ;
+
+                out << "*NSET, nset="  << name << ", elset=" << name << std::endl ;
+            }
+        }
+        void save_cells( const GeoModel& gm, std::ofstream& out ) const
+        {
+            save_tets( gm, out ) ;
+            save_hex( gm, out ) ;
+            save_regions( gm, out ) ;
+        }
+        void new_line_if_needed( index_t& count, std::ofstream& out, std::string& sep ) const
+        {
+            count++ ;
+            if( count == NB_ENTRY_PER_LINE ) {
+                count = 0 ;
+                sep = "" ;
+                out << std::endl ;
+            }
+        }
+        void reset_line( index_t& count, std::ofstream& out ) const
+        {
+            if( count != 0 ) {
+                count = 0 ;
+                out << std::endl ;
+            }
+        }
+    } ;
+
 }
 
 namespace RINGMesh {
@@ -2215,6 +2408,7 @@ namespace RINGMesh {
         ringmesh_register_GeoModelIOHandler_creator( MFEMIOHandler, "mfem" );
         ringmesh_register_GeoModelIOHandler_creator( GeoModelHandlerGM, "gm" );
         ringmesh_register_GeoModelIOHandler_creator( OldGeoModelHandlerGM, "ogm" );
+        ringmesh_register_GeoModelIOHandler_creator( AbaqusIOHandler, "inp" );
     }
 
 }

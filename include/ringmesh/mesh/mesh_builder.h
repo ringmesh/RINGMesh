@@ -66,7 +66,24 @@ namespace RINGMesh {
         ~MeshBuilder()
         {
         }
-        ;
+
+        /*!
+         * @brief Copy a mesh into this one.
+         * @param[in] rhs a const reference to the mesh to be copied.
+         * @param[in] copy_attributes if true, all attributes are copied.
+         * @param[in] what a combination of MESH_VERTICES, MESH_EDGES, MESH_FACETS, MESH_CELLS flags.
+         * Set to MESH_ALL_ELEMENTS to copy everything (default).
+         * If MESH_VERTICES is not set, then the mesh is cleared.
+         * @return a modifiable reference to the point that corresponds to the vertex.
+         */
+        void copy(
+            const Mesh& rhs,
+            bool copy_attributes,
+            GEO::MeshElementsFlags what )
+        {
+            mesh_.mesh_->copy( *rhs.mesh_, copy_attributes, what ) ;
+            clear_vertex_linked_objects() ;
+        }
 
         void load_mesh(
             const std::string& filename,
@@ -177,8 +194,10 @@ namespace RINGMesh {
             GEO::vector< index_t >& to_delete,
             bool remove_isolated_vertices )
         {
-            mesh_.mesh_->vertices.delete_elements( to_delete,
-                remove_isolated_vertices ) ;
+            mesh_.mesh_->vertices.delete_elements( to_delete, false ) ;
+            if( remove_isolated_vertices ) {
+                this->remove_isolated_vertices() ;
+            }
             clear_vertex_linked_objects() ;
         }
         /*!
@@ -192,6 +211,34 @@ namespace RINGMesh {
         {
             mesh_.mesh_->vertices.clear( keep_attributes, keep_memory ) ;
             clear_vertex_linked_objects() ;
+        }
+        /*!
+         * @brief Remove vertices not connected to any mesh element
+         */
+        void remove_isolated_vertices()
+        {
+            GEO::vector< index_t > to_delete( mesh_.nb_vertices(), 1 ) ;
+
+            for( index_t e = 0; e < mesh_.nb_edges(); e++ ) {
+                for( index_t v = 0; v < 2; v++ ) {
+                    index_t vertex_id = mesh_.edge_vertex( e, v ) ;
+                    to_delete[vertex_id] = 0 ;
+                }
+            }
+            for( index_t f = 0; f < mesh_.nb_facets(); f++ ) {
+                for( index_t v = 0; v < mesh_.nb_facet_vertices( f ); v++ ) {
+                    index_t vertex_id = mesh_.facet_vertex( f, v ) ;
+                    to_delete[vertex_id] = 0 ;
+                }
+            }
+            for( index_t c = 0; c < mesh_.nb_cells(); c++ ) {
+                for( index_t v = 0; v < mesh_.nb_cell_vertices( c ); v++ ) {
+                    index_t vertex_id = mesh_.cell_vertex( c, v ) ;
+                    to_delete[vertex_id] = 0 ;
+                }
+            }
+
+            delete_vertices( to_delete, false ) ;
         }
 
         /*!@}
@@ -242,8 +289,10 @@ namespace RINGMesh {
             GEO::vector< index_t > to_delete,
             bool remove_isolated_vertices )
         {
-            mesh_.mesh_->edges.delete_elements( to_delete,
-                remove_isolated_vertices ) ;
+            mesh_.mesh_->edges.delete_elements( to_delete, false ) ;
+            if( remove_isolated_vertices ) {
+                this->remove_isolated_vertices() ;
+            }
             clear_edge_linked_objects() ;
         }
         /*!
@@ -392,8 +441,10 @@ namespace RINGMesh {
             GEO::vector< index_t >& to_delete,
             bool remove_isolated_vertices )
         {
-            mesh_.mesh_->facets.delete_elements( to_delete,
-                remove_isolated_vertices ) ;
+            mesh_.mesh_->facets.delete_elements( to_delete, false ) ;
+            if( remove_isolated_vertices ) {
+                this->remove_isolated_vertices() ;
+            }
             clear_facet_linked_objects() ;
         }
 
@@ -519,8 +570,10 @@ namespace RINGMesh {
             GEO::vector< index_t >& to_delete,
             bool remove_isolated_vertices )
         {
-            mesh_.mesh_->cells.delete_elements( to_delete,
-                remove_isolated_vertices ) ;
+            mesh_.mesh_->cells.delete_elements( to_delete, false ) ;
+            if( remove_isolated_vertices ) {
+                this->remove_isolated_vertices() ;
+            }
             clear_cell_linked_objects() ;
         }
 

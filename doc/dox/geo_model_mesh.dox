@@ -38,12 +38,12 @@
 
 \page ringmesh_geomodel_mesh Description of the GeoModelMesh
 
-@todo Update this page.
-
-Each GEO::Mesh representing a REGION is independent from the other ones.
-It implies that there is no connection between the different meshes, in other words,
+Each RINGMesh::GeoModelMeshEntity has a RINGMesh::Mesh independent from the other ones.
+Even if there are dependencies through the RINGMesh::GeoModelGeologicalEntity,
+it implies that there is no connection between the different meshes, in other words,
 each mesh stores its vertices, facets and cells.
-However, you may want/need a more general information than the one stores inside a mesh.
+However, you may want/need (1) a more general information than the one stores inside a mesh, and
+(2) a single mesh representing the entire geological model.
 
 To ease the global access, four optional databases are attached to the RINGMesh::GeoModelMesh:
  - RINGMesh::GeoModelMeshVertices: access to a global vertex without redundancy at the mesh interfaces.

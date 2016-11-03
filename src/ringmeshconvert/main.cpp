@@ -119,7 +119,12 @@ namespace {
         handler->save( model, filename ) ;
     }
 
-
+    void show_usage_example()
+    {
+        Logger::div( "Example" ) ;
+        Logger::out( "" ) << "ringmeshconvert in:geomodel=path/to/input/geomodel.ext "
+            << "out:geomodel=path/to/output/geomodel.ext" << std::endl ;
+    }
 }
 
 namespace RINGMesh {
@@ -128,15 +133,20 @@ namespace RINGMesh {
         void import_temp_in_out()
         {
             GEO::CmdLine::declare_arg( "in:model", "",
-                "Filename of the input structural model" ) ;
+                "Filename of the input structural model",
+                GEO::CmdLine::ARG_ADVANCED ) ;
             GEO::CmdLine::declare_arg( "in:mesh", "",
-                "Filename of the input volumetric mesh" ) ;
+                "Filename of the input volumetric mesh",
+                GEO::CmdLine::ARG_ADVANCED ) ;
             GEO::CmdLine::declare_arg( "out:model", "",
-                "Saves the structural model" ) ;
+                "Saves the structural model",
+                GEO::CmdLine::ARG_ADVANCED ) ;
             GEO::CmdLine::declare_arg( "out:mesh", "",
-                "Saves the volumetric mesh of the structural model" ) ;
+                "Saves the volumetric mesh of the structural model",
+                GEO::CmdLine::ARG_ADVANCED ) ;
             GEO::CmdLine::declare_arg( "in:old_geomodel", "",
-                "Saves the volumetric mesh of the structural model" ) ;
+                "Saves the volumetric mesh of the structural model",
+                GEO::CmdLine::ARG_ADVANCED ) ;
         }
     }
 }
@@ -162,11 +172,13 @@ int main( int argc, char** argv )
         CmdLine::import_temp_in_out() ;
         if( argc == 1 ) {
             GEO::CmdLine::show_usage() ;
+            show_usage_example() ;
             return 0 ;
         }
 
         std::vector< std::string > filenames ;
         if( !GEO::CmdLine::parse( argc, argv, filenames ) ) {
+            show_usage_example() ;
             return 1 ;
         }
 

@@ -5,8 +5,9 @@
 #
 # This module defines the following variables:
 #
-#   Geogram_FOUND       - True if geogram has been found.
-#   Geogram::geogram    - Imported target for the main Geogram library.
+#   Geogram_FOUND        - True if geogram has been found.
+#   Geogram::geogram     - Imported target for the main Geogram library.
+#   Geogram::geogram_gfx - Imported target for Geogram graphics library.
 #
 # This module reads hints about the Geogram location from the following
 # environment variables:
@@ -33,7 +34,7 @@ set (GEOGRAM_SEARCH_PATHS_SYSTEM
 find_path (GEOGRAM_INCLUDE_DIR
                 geogram/basic/common.h
                 PATHS ${GEOGRAM_SEARCH_PATHS}
-                PATH_SUFFIXES include
+                PATH_SUFFIXES include/geogram1
 )
 
 find_library (GEOGRAM_LIBRARY

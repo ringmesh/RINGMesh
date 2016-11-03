@@ -181,7 +181,9 @@ namespace {
             corners_global[v] = S.model_vertex_id( f, v ) ;
             v++ ;
         }
-        return check_mesh_entity_vertices_are_different( corners, corners_global ) ;
+        double area = S.mesh_element_size( f ) ;
+        return check_mesh_entity_vertices_are_different( corners, corners_global )
+            || area < S.model().epsilon2() ;
     }    
     
     /*!
@@ -199,7 +201,7 @@ namespace {
         }
         double volume = region.mesh_element_size( cell_index ) ;
         return check_mesh_entity_vertices_are_different( vertices, vertices_global )
-            || volume < epsilon ;
+            || volume < region.model().epsilon3() ;
 	}
 
     /*!
@@ -680,7 +682,7 @@ namespace RINGMesh {
         index_t nb_degenerated = 0 ;
         for( index_t e = 0; e < nb_mesh_elements(); ++e ) {
             double l = length( mesh_element_vertex( e, 1 ) - mesh_element_vertex( e, 0 ) ) ;
-            if( l < epsilon ) {
+            if( l < model().epsilon() ) {
                 nb_degenerated++ ;
             }
         }
@@ -845,83 +847,6 @@ namespace RINGMesh {
     }
 
     /*!
-     * @brief Traversal of a surface border
-     * @details From the input facet f, get the facet that share vertex v and
-     * get the indices of vertex v and of the following vertex in this new facet.
-     * The next facet next_f may be the same, and from is required to avoid going back.
-     *
-     * @param[in] f Index of the facet
-     * @param[in] from Index in the facet of the previous point on the border - gives the direction
-     * @param[in] v Index in the facet of the point for which we want the next point on border
-     * @param[out] next_f Index of the facet containing the next point on border
-     * @param[out] v_in_next Index of vertex v in facet next_f
-     * @param[out] next_in_next Index of the next vertex on border in facet v_in_next
-     */
-    void Surface::next_on_border(
-        index_t f,
-        index_t from,
-        index_t v,
-        index_t& next_f,
-        index_t& v_in_next,
-        index_t& next_in_next ) const
-    {
-        ringmesh_assert( v < nb_mesh_element_vertices( f ) ) ;
-        ringmesh_assert( is_on_border( f, v ) || is_on_border( f, from ) ) ;
-
-        index_t V = mesh_element_vertex_index( f, v ) ;
-
-        // We want the next triangle that is on the boundary and share V
-        // If there is no such triangle, the next vertex on the boundary
-        // is the vertex of F neighbor of V that is not from
-
-        // Get the facets around the shared vertex that are on the boundary
-        // There must be one (the current one) or two (the next one on boundary)
-        std::vector< index_t > facets ;
-        index_t nb_around = facets_around_vertex( V, facets, true, f ) ;
-        ringmesh_assert( nb_around < 3 && nb_around > 0 ) ;
-
-        next_f = facets[0] ;
-
-        if( nb_around == 2 ) {
-            if( next_f == f ) {
-                next_f = facets[1] ;
-            }
-            ringmesh_assert( next_f != NO_ID ) ;
-
-            // Now get the other vertex that is on the boundary opposite to p1
-            v_in_next = vertex_index_in_facet( next_f, V ) ;
-            ringmesh_assert( v_in_next != NO_ID ) ;
-
-            // The edges containing V in next_f are
-            // the edge starting at v_in_next and the one ending there
-            index_t prev_v_in_next = prev_facet_vertex_index( next_f, v_in_next ) ;
-
-            bool e0_on_boundary = is_on_border( next_f, v_in_next ) ;
-
-            // Only one must be on the boundary otherwise there is a corner missing
-            ringmesh_assert( e0_on_boundary != is_on_border( next_f, prev_v_in_next ) ) ;
-
-            // From the edge that is on boundary get the next vertex on this boundary
-            // If the edge starting at p_in_next is on boundary, new_vertex is its next
-            // If the edge ending at p_in_next is on boundary, new vertex is its prev
-            next_in_next =
-                e0_on_boundary ?
-                    next_facet_vertex_index( next_f, v_in_next ) : prev_v_in_next ;
-        } else if( nb_around == 1 ) {
-            // V must be in two border edges of facet f
-            // Get the id in the facet of the vertex neighbor of v1 that is not v0
-            v_in_next = v ;
-            if( prev_facet_vertex_index( f, v ) == from ) {
-                ringmesh_assert( is_on_border( f, v ) ) ;
-                next_in_next = next_facet_vertex_index( f, v ) ;
-            } else {
-                ringmesh_assert( is_on_border( f, prev_facet_vertex_index( f, v ) ) ) ;
-                next_in_next = prev_facet_vertex_index( f, v ) ;
-            }
-        }
-    }
-
-    /*!
      * @brief Get the next edge on the border
      * @param[in] f Input facet index
      * @param[in] e Edge index in the facet
@@ -934,9 +859,79 @@ namespace RINGMesh {
         index_t& next_f,
         index_t& next_e ) const
     {
-        index_t v = next_facet_vertex_index( f, e ) ;
-        index_t next_in_next( NO_ID ) ;
-        return next_on_border( f, e, v, next_f, next_e, next_in_next ) ;
+        ringmesh_assert( e < nb_mesh_element_vertices( f ) ) ;
+        ringmesh_assert( is_on_border( f, e ) ) ;
+
+        // Global indices in the surfaces
+        index_t next_v_id = mesh_element_vertex_index( f,
+            next_facet_vertex_index( f, e ) ) ;
+
+        // Get the facets around the shared vertex (next_v_id) that are on the boundary
+        // There must be one (the current one) or two (the next one on boundary)
+        std::vector< index_t > facets_around_next_v_id ;
+        index_t nb_around = facets_around_vertex( next_v_id, facets_around_next_v_id,
+            true, f ) ;
+        ringmesh_assert( nb_around == 1 || nb_around == 2 ) ;
+
+        next_f = facets_around_next_v_id[0] ;
+
+        if( nb_around == 2 ) {
+            if( next_f == f ) {
+                next_f = facets_around_next_v_id[1] ;
+            }
+            ringmesh_assert( next_f != NO_ID ) ;
+            ringmesh_assert( is_on_border( next_f ) ) ;
+
+            // Local index of next vertex in the next facet
+            next_e = vertex_index_in_facet( next_f, next_v_id ) ;
+            ringmesh_assert( is_on_border( next_f, next_e ) ) ;
+        } else if( nb_around == 1 ) {
+            // next_v_id must be in two border edges of facet f
+            next_e = vertex_index_in_facet( next_f,
+                next_v_id ) ;
+            ringmesh_assert( is_on_border( next_f, next_e ) ) ;
+        }
+    }
+
+    void Surface::prev_on_border(
+        index_t f,
+        index_t e,
+        index_t& prev_f,
+        index_t& prev_e ) const
+    {
+        ringmesh_assert( e < nb_mesh_element_vertices( f ) ) ;
+        ringmesh_assert( is_on_border( f, e ) ) ;
+
+        // Global indices in the surfaces
+        index_t v_id = mesh_element_vertex_index( f, e ) ;
+
+        // Get the facets around the shared vertex (v_id) that are on the boundary
+        // There must be one (the current one) or two (the next one on boundary)
+        std::vector< index_t > facets_around_v_id ;
+        index_t nb_around = facets_around_vertex( v_id, facets_around_v_id,
+            true, f ) ;
+        ringmesh_assert( nb_around == 1 || nb_around == 2 ) ;
+
+        prev_f = facets_around_v_id[0] ;
+
+        if( nb_around == 2 ) {
+            if( prev_f == f ) {
+                prev_f = facets_around_v_id[1] ;
+            }
+            ringmesh_assert( prev_f != NO_ID ) ;
+            ringmesh_assert( is_on_border( prev_f ) ) ;
+
+            // Local index of given vertex in the prev facet
+            index_t v_in_prev_f = vertex_index_in_facet( prev_f, v_id ) ;
+            // Local index of previous vertex in the prev facet
+            prev_e = prev_facet_vertex_index( prev_f, v_in_prev_f ) ;
+            ringmesh_assert( is_on_border( prev_f, prev_e ) ) ;
+        } else if( nb_around == 1 ) {
+            // v_id must be in two border edges of facet f
+            index_t v_in_next_facet = vertex_index_in_facet( prev_f, v_id ) ;
+            prev_e = prev_facet_vertex_index( prev_f, v_in_next_facet ) ;
+            ringmesh_assert( is_on_border( prev_f, prev_e ) ) ;
+        }
     }
 
     /*!
@@ -1307,48 +1302,10 @@ namespace RINGMesh {
      * @brief Checks that boundary surfaces of @param region define
      *        a one connected component closed manifold surface
      * @details Builds a GEO::Mesh from the surface meshes, repairs it and analyses it.
-     * @todo Put this function in Region class
      */
     bool Region::is_brep_region_valid() const 
     {
-        if( nb_boundaries() == 0 ) {
-            Logger::warn( "GeoModel" ) << gme_id()
-                << " has no boundary Surface" << std::endl ;
-            return false ;
-        } else {
-            GEO::Mesh mesh ;
-            Logger::instance()->set_quiet( true ) ;
-            build_mesh_from_model_mesh_entities( model(), boundaries_, mesh ) ;
-            GEO::mesh_repair( mesh ) ;
-            Logger::instance()->set_quiet( false ) ;
-
-            bool valid = true ;
-            index_t nb_cc = GEO::mesh_nb_connected_components( mesh ) ;
-            signed_index_t nb_b = GEO::mesh_nb_borders( mesh ) ;
-            if( nb_cc != 1 ) {
-                Logger::warn( "GeoModel" ) << " Surface boundary of "
-                    << gme_id() << " has " << nb_cc
-                    << " connected components " << std::endl ;
-                valid = false ;
-            }
-            if( nb_b != 0 ) {
-                Logger::warn( "GeoModel" ) << " Surface boundary of "
-                    << gme_id() << " has " << nb_b
-                    << " border connected components " << std::endl ;
-                valid = false ;
-            }
-            if( !valid ) {
-                std::ostringstream file ;
-                file << validity_errors_directory << "/boundary_surface_region_"
-                    << index() << ".mesh" ;
-                if( GEO::CmdLine::get_arg_bool( "in:validity_save" ) ) {
-                    GEO::mesh_save( mesh, file.str() ) ;
-                }
-                return false ;
-            } else {
-                return true ;
-            }
-        }
+        return check_volume_watertightness( model(), gme_id() ) ;
     }
 
     void Region::compute_region_volumes_per_cell_type(
@@ -1381,4 +1338,60 @@ namespace RINGMesh {
         }
     }
 
+    index_t Region::cells_around_vertex(
+        index_t vertex_id,
+        std::vector< index_t >& result,
+        index_t cell_hint ) const
+    {
+        result.resize( 0 ) ;
+
+        if( cell_hint == NO_ID ) {
+            return 0 ;
+        }
+
+        // Flag the visited cells
+        std::vector< index_t > visited ;
+        visited.reserve( 10 ) ;
+
+        // Stack of the adjacent cells
+        std::stack< index_t > S ;
+        S.push( cell_hint ) ;
+        visited.push_back( cell_hint ) ;
+
+        do {
+            index_t c = S.top() ;
+            S.pop() ;
+
+            bool cell_includes_vertex = false ;
+            for( index_t v = 0; v < nb_mesh_element_vertices( c ); v++ ) {
+                if( mesh_element_vertex_index( c, v ) == vertex_id ) {
+                    result.push_back( c ) ;
+                    cell_includes_vertex = true ;
+                    break ;
+                }
+            }
+            if( !cell_includes_vertex ) {
+                continue ;
+            }
+
+            for( index_t f = 0; f < nb_cell_facets( c ); f++ ) {
+                for( index_t v = 0; v < nb_cell_facet_vertices( c, f ); v++ ) {
+                    index_t vertex = cell_facet_vertex_index( c, f, v ) ;
+                    if( vertex == vertex_id ) {
+                        index_t adj_P = cell_adjacent_index( c, f ) ;
+
+                        if( adj_P != NO_ID ) {
+                            if( !contains( visited, adj_P ) ) {
+                                S.push( adj_P ) ;
+                                visited.push_back( adj_P ) ;
+                            }
+                        }
+                        break ;
+                    }
+                }
+            }
+        } while( !S.empty() ) ;
+
+        return static_cast< index_t >( result.size() ) ;
+    }
 }

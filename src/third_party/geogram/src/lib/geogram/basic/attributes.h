@@ -51,6 +51,8 @@
 #include <geogram/basic/memory.h>
 #include <geogram/basic/numeric.h>
 #include <geogram/basic/process.h>
+#include <geogram/basic/geofile.h>
+#include <geogram/basic/logger.h>
 #include <map>
 #include <typeinfo>
 #include <set>
@@ -152,7 +154,8 @@ namespace GEO {
          * \return a pointer to the newly created AttributeStore
          */
         virtual AttributeStore* create_attribute_store(index_t dimension) = 0;
-        
+
+
     private:
         std::string element_type_name_;            
         std::string element_typeid_name_;
@@ -405,7 +408,6 @@ namespace GEO {
                 create_attribute_store(dimension);
         }
 
-
         /**
          * \brief Gets an element type name from its mangled name
          * \param[in] element_typeid_name a const reference to a
@@ -437,7 +439,8 @@ namespace GEO {
 
         /**
          * \brief Registers a new element type
-         * \note One should use geo_register_attribute_type instead
+         * \note Internal use function, one should use 
+         *  geo_register_attribute_type instead
          * \param[in] creator a pointer to the AttributeStoreCreator
          * \param[in] element_type_name a const reference to a string with the 
          *  C++ type name of the elements
@@ -449,13 +452,23 @@ namespace GEO {
             const std::string& element_type_name,
             const std::string& element_typeid_name
         ) {
-            geo_assert(!element_type_name_is_known(element_type_name));
-            geo_assert(!element_typeid_name_is_known(element_typeid_name));   
+            if(element_type_name_is_known(element_type_name)) {
+                Logger::warn("Attributes") << element_type_name
+                                           << " already registered"
+                                           << std::endl;
+                if(element_typeid_name_is_known(element_typeid_name)) {
+                    bool already_registered_attribute_has_same_type = (
+                        type_name_to_typeid_name_[element_type_name] ==
+                        element_typeid_name
+                    );
+                    geo_assert(already_registered_attribute_has_same_type);
+                }
+            }
             type_name_to_creator_[element_type_name] = creator;
             typeid_name_to_type_name_[element_typeid_name] = element_type_name;
             type_name_to_typeid_name_[element_type_name] = element_typeid_name;
         }
-        
+
     protected:
         /**
          * \brief If size or base address differ from the
@@ -628,10 +641,19 @@ namespace GEO {
          * \brief geo_register_attribute_type constructor
          * \param[in] type_name a const reference to a string with
          *  the C++ type name.
+         * \details If the attribute is already registered with the same
+         *  \p type_name and same \p T, then a warning message is issued.
+         *  If the attribute is already registered with the same \p type_name
+         *  but a different \p T, then an assertion failure is triggered.
          */
         geo_register_attribute_type(const std::string& type_name) {
             AttributeStore::register_attribute_creator(
                 new TypedAttributeStoreCreator<T>, type_name, typeid(T).name()
+            );
+            GeoFile::register_ascii_attribute_serializer(
+                type_name,
+                read_ascii_attribute<T>,
+                write_ascii_attribute<T>
             );
         }
     };
@@ -1169,45 +1191,8 @@ namespace GEO {
             superclass(manager,name) {
         }
 
-        /**
-         * \brief Accessor class for adapting Attribute<bool>
-         *  indexing.
-         */
-        class BoolAttributeAccessor {
-        public:
-            /**
-             * \brief BoolAttributeAccessor constructor.
-             */
-            BoolAttributeAccessor(
-                Attribute<bool>& attribute,
-                index_t index
-            ) :
-                attribute_(&attribute),
-                index_(index) {
-            }
-
-            /**
-             * \brief Converts a BoolAttributeAccessor to a bool.
-             * \details Performs the actual lookup.
-             */
-            operator bool() const {
-                return (attribute_->element(index_) != 0);
-            }
-
-            /**
-             * \brief Assigns a bool to a BoolAttributeAccessor.
-             * \details Stores the boolean into the Attribute.
-             */
-            BoolAttributeAccessor& operator=(bool x) {
-                attribute_->element(index_) = Numeric::uint8(x);
-                return *this;
-            }
-            
-        private:
-            Attribute<bool>* attribute_;
-            index_t index_;
-        };
-
+        class BoolAttributeAccessor;
+        
 
         /**
          * \brief Accessor class for adapting Attribute<bool>
@@ -1237,8 +1222,87 @@ namespace GEO {
         private:
             const Attribute<bool>* attribute_;
             index_t index_;
+
+            friend class BoolAttributeAccessor;
         };
-        
+
+        /**
+         * \brief Accessor class for adapting Attribute<bool>
+         *  indexing.
+         */
+        class BoolAttributeAccessor {
+        public:
+            /**
+             * \brief BoolAttributeAccessor constructor.
+             */
+            BoolAttributeAccessor(
+                Attribute<bool>& attribute,
+                index_t index
+            ) :
+                attribute_(&attribute),
+                index_(index) {
+            }
+
+            /**
+             * \brief Converts a BoolAttributeAccessor to a bool.
+             * \details Performs the actual lookup.
+             */
+            operator bool() const {
+                return (attribute_->element(index_) != 0);
+            }
+
+            /**
+             * \brief Copy-constructor.
+             * \param[in] rhs a const reference to the 
+             *  BoolAttributeAccessor to be copied.
+             */
+            BoolAttributeAccessor(const BoolAttributeAccessor& rhs) {
+                attribute_ = rhs.attribute_;
+                index_ = rhs.index_;
+            }
+            
+            /**
+             * \brief Assigns a bool to a BoolAttributeAccessor.
+             * \details Stores the boolean into the Attribute.
+             */
+            BoolAttributeAccessor& operator=(bool x) {
+                attribute_->element(index_) = Numeric::uint8(x);
+                return *this;
+            }
+
+            /**
+             * \brief Copies a bool from another attribute.
+             * \param[in] rhs a const reference to the BoolAttributeAccessor
+             *  to be copied.
+             */
+            BoolAttributeAccessor& operator=(
+                const BoolAttributeAccessor& rhs
+            ) {
+                if(&rhs != this) {
+                    attribute_->element(index_) =
+                        rhs.attribute_->element(rhs.index_);
+                }
+                return *this;
+            }
+
+            /**
+             * \brief Copies a bool from another attribute.
+             * \param[in] rhs a const reference to the 
+             *  ConstBoolAttributeAccessor to be copied.
+             */
+            BoolAttributeAccessor& operator=(
+                const ConstBoolAttributeAccessor& rhs
+            ) {
+                attribute_->element(index_) =
+                    rhs.attribute_->element(rhs.index_);
+                return *this;
+            }
+            
+        private:
+            Attribute<bool>* attribute_;
+            index_t index_;
+        };
+
 
         BoolAttributeAccessor operator[](index_t i) {
             return BoolAttributeAccessor(*this,i);

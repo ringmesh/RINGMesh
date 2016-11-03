@@ -47,6 +47,13 @@ namespace RINGMesh {
 
     namespace CmdLine {
 
+        void import_arg_group_global()
+        {
+            GEO::CmdLine::declare_arg( "epsilon", 1e-7,
+                "Threshold for numerical precision (ratio of the bbox diagonal)",
+                GEO::CmdLine::ARG_ADVANCED ) ;
+        }
+
         void import_arg_group_in()
         {
             GEO::CmdLine::declare_arg_group( "in", "Input data" ) ;
@@ -55,13 +62,15 @@ namespace RINGMesh {
                 "Filename of the input geological model" ) ;
             GEO::CmdLine::declare_arg(
                 "in:intersection_check", true,
-                "Toggle the surface intersection check at loading" ) ;
+                "Toggle the surface intersection check at loading",
+                GEO::CmdLine::ARG_ADVANCED ) ;
             GEO::CmdLine::declare_arg(
                 "in:wells", "",
                 "Filename of the input wells" ) ;
             GEO::CmdLine::declare_arg(
                 "in:validity_save", true,
-                "Saves meshes representing geomodel inconsistencies" ) ;
+                "Saves meshes representing geomodel inconsistencies",
+                GEO::CmdLine::ARG_ADVANCED ) ;
         }
 
         void import_arg_group_out()
@@ -96,7 +105,9 @@ namespace RINGMesh {
 
         bool import_arg_group( const std::string& name )
         {
-            if( name == "in" ) {
+            if( name == "global" ) {
+                import_arg_group_global() ;
+            } else if( name == "in" ) {
                 import_arg_group_in() ;
             } else if( name == "out" ) {
                 import_arg_group_out() ;

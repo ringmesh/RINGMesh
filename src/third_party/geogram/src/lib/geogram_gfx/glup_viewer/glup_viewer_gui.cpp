@@ -61,6 +61,9 @@
 #include <emscripten.h>
 #endif
 
+#include <algorithm>
+#include <stdio.h>
+
 #include <geogram_gfx/glup_viewer/colormaps/french.xpm>
 #include <geogram_gfx/glup_viewer/colormaps/black_white.xpm>
 #include <geogram_gfx/glup_viewer/colormaps/viridis.xpm>
@@ -122,29 +125,6 @@ namespace {
         }
     }
 
-
-    /**
-     * \brief Tests whether a directory should be skipped in the
-     *  file browser.
-     * \details Emscripten has some default directories in its
-     *  root file system that are there just for compatibility 
-     *  reasons and that are not likely to contain any 3D file.
-     */
-     bool skip_directory(const std::string& dirname) {
-         GEO::geo_argused(dirname);
-#ifdef GEO_OS_EMSCRIPTEN            
-         if(
-             dirname == "proc" ||
-             dirname == "dev" ||
-             dirname == "home" ||
-             dirname == "tmp"
-         ) {
-             return true;
-         }
-#endif
-         return false;
-     }
-
    /**
     * \brief Converts a complete path to a file to a label
     *  displayed in the file browser.
@@ -156,12 +136,32 @@ namespace {
     std::string path_to_label(
         const std::string& viewer_path, const std::string& path
     ) {
-        if(GEO::String::string_starts_with(path, viewer_path)) {
-            return path.substr(
-                viewer_path.length(), path.length()-viewer_path.length()
+        std::string result = path;
+        if(GEO::String::string_starts_with(result, viewer_path)) {
+            result = result.substr(
+                viewer_path.length(), result.length()-viewer_path.length()
             );
         }
-        return path;
+        return result;
+    }
+
+    /**
+     * \brief Safer version of strncpy()
+     * \param[in] dest a pointer to the destination string
+     * \param[in] source a pointer to the source string
+     * \param[in] max_dest_size number of characters available in
+     *  destination string
+     * \return the length of the destination string after copy. If
+     *  the source string + null terminator was greater than max_dest_size,
+     *  then it is cropped. On exit, dest is always null-terminated (in 
+     *  contrast with strncpy()).
+     */
+    size_t safe_strncpy(
+        char* dest, const char* source, size_t max_dest_size
+    ) {
+        strncpy(dest, source, max_dest_size);
+        dest[max_dest_size-1] = '\0';
+        return strlen(dest);
     }
 }
 
@@ -234,6 +234,10 @@ namespace GEO {
     
     /*****************************************************************/
 
+    Console::Console(bool* visible_flag) :
+        visible_flag_(visible_flag) {
+    }
+    
     void Console::div(const std::string& value) {
         this->printf("========== %s", value.c_str());
     }
@@ -244,10 +248,16 @@ namespace GEO {
         
     void Console::warn(const std::string& value) {
         this->printf("[W] %s", value.c_str());
+        if(visible_flag_ != nil) {
+            *visible_flag_ = true;
+        }
     }
         
     void Console::err(const std::string& value) {
         this->printf("[E] %s", value.c_str());
+        if(visible_flag_ != nil) {
+            *visible_flag_ = true;
+        }
     }
         
     void Console::status(const std::string& value) {
@@ -274,9 +284,10 @@ namespace GEO {
         glup_viewer_gui_update();
     }
 
-    void Console::draw() {
+    void Console::draw(bool* visible) {
+        visible_flag_ = visible;
         ImGui::Begin(
-            "Console", NULL,
+            "Console", visible,
             ImGuiWindowFlags_NoResize |
             ImGuiWindowFlags_NoMove |
             ImGuiWindowFlags_NoCollapse 
@@ -324,6 +335,429 @@ namespace GEO {
     
     /*****************************************************************/
 
+    FileDialog::FileDialog(
+        Application* app, bool save_mode, const std::string& default_filename
+    ) :
+        application_(app),
+        visible_(false),
+        current_write_extension_index_(0),        
+        pinned_(false),
+        show_hidden_(false),
+        scroll_to_file_(false),
+        save_mode_(save_mode),
+        are_you_sure_(false)
+    {
+        directory_ = FileSystem::get_current_working_directory() + "/";
+        safe_strncpy(
+            current_file_, default_filename.c_str(), sizeof(current_file_)
+        );
+    }
+
+    void FileDialog::update_files() {
+        directories_.clear();
+        files_.clear();
+
+        directories_.push_back("../");
+        
+        std::vector<std::string> entries;
+        FileSystem::get_directory_entries(directory_, entries);
+        std::sort(entries.begin(), entries.end());
+        for(index_t i=0; i<entries.size(); ++i) {
+            if(
+                FileSystem::is_file(entries[i]) &&
+                application_->can_load(entries[i])
+            ) {
+                files_.push_back(path_to_label(directory_,entries[i]));
+            } else if(FileSystem::is_directory(entries[i])) {
+                std::string subdir =
+                    path_to_label(directory_,entries[i]) + "/";
+                if(show_hidden_ || subdir[0] != '.') {
+                    directories_.push_back(subdir);
+                }
+            }
+        }
+        if(current_directory_index_ >= directories_.size()) {
+            current_directory_index_ = 0;
+        }
+        if(current_file_index_ >= files_.size()) {
+            current_file_index_ = 0;
+        }
+        if(!save_mode_) {
+            if(current_file_index_ >= files_.size()) {
+                current_file_[0] = '\0';
+            } else {
+                safe_strncpy(
+                    current_file_,
+                    files_[current_file_index_].c_str(),
+                    sizeof(current_file_)
+                );
+            }
+        }
+    }
+
+    void FileDialog::set_directory(const std::string& directory) {
+        current_directory_index_ = 0;
+        current_file_index_ = 0;
+        if(directory[0] == '/' || directory[1] == ':') {
+            directory_ = directory;
+        } else {
+            directory_ = FileSystem::normalized_path(
+                directory_ + "/" +
+                directory 
+            );
+        }
+        if(directory_[directory_.length()-1] != '/') {
+            directory_ += "/";
+        }
+        update_files();
+    }
+
+    int FileDialog::text_input_callback(ImGuiTextEditCallbackData* data) {
+        FileDialog* dlg = static_cast<FileDialog*>(data->UserData);
+        if((data->EventFlag & ImGuiInputTextFlags_CallbackCompletion) != 0) {
+            dlg->tab_callback(data);
+        } else if(
+            (data->EventFlag & ImGuiInputTextFlags_CallbackHistory) != 0
+        ) {
+            if(data->EventKey == ImGuiKey_UpArrow) {
+                dlg->updown_callback(data,-1);
+            } else if(data->EventKey == ImGuiKey_DownArrow) {
+                dlg->updown_callback(data,1);                
+            }
+        } 
+        return 0;
+    }
+
+
+    void FileDialog::updown_callback(
+        ImGuiTextEditCallbackData* data, int direction
+    ) {
+        int next = int(current_file_index_) + direction;
+        if(next < 0) {
+            if(files_.size() == 0) {
+                current_file_index_ = 0;
+            } else {
+                current_file_index_ = index_t(files_.size()-1);
+            }
+        } else if(next >= int(files_.size())) {
+            current_file_index_ = 0;
+        } else {
+            current_file_index_ = index_t(next);
+        }
+
+        if(files_.size() == 0) {
+            current_file_[0] = '\0';
+        } else {
+            safe_strncpy(
+                current_file_,
+                files_[current_file_index_].c_str(),
+                sizeof(current_file_)
+            );
+        }
+        update_text_edit_callback_data(data);
+        scroll_to_file_ = true;        
+    }
+
+    void FileDialog::update_text_edit_callback_data(
+        ImGuiTextEditCallbackData* data
+    ) {
+        data->BufTextLen = int(
+            safe_strncpy(
+                data->Buf, current_file_, (size_t)data->BufSize
+            )
+        );
+        data->CursorPos = data->BufTextLen;
+        data->SelectionStart = data->BufTextLen;
+        data->SelectionEnd = data->BufTextLen;
+        data->BufDirty = true;
+    }
+    
+    void FileDialog::tab_callback(ImGuiTextEditCallbackData* data) {
+        std::string file(current_file_);
+        bool found = false;
+        for(index_t i=0; i<files_.size(); ++i) {
+            if(String::string_starts_with(files_[i],file)) {
+                current_file_index_ = i;
+                found = true;
+                break;
+            }
+        }
+        if(found) {
+            safe_strncpy(
+                current_file_,
+                files_[current_file_index_].c_str(),
+                sizeof(current_file_)
+            );
+            update_text_edit_callback_data(data);
+            scroll_to_file_ = true;
+        }
+    }
+
+    void FileDialog::file_selected(bool force) {
+        std::string file =
+            FileSystem::normalized_path(
+                directory_ + "/" +
+                current_file_
+            );
+        
+        if(save_mode_) {
+            if(!force && FileSystem::is_file(file)) {
+                are_you_sure_ = true;
+                return;
+            } else {
+                application_->save(file);
+            }
+        } else {
+            application_->load(file);
+        }
+        
+        if(!pinned_) {
+            // Note: If I do not do that, then the system thinks that the
+            // enter key is still pressed (it misses the key release event)
+            // I do not know why...
+            const int key_index = ImGui::GetIO().KeyMap[ImGuiKey_Enter];
+            ImGui::GetIO().KeysDown[key_index] = false;
+            hide();
+        }
+    }
+    
+    void FileDialog::draw() {
+        
+        if(!visible_) {
+            return;
+        }
+
+        ImGui::SetNextWindowSize(
+            ImVec2(
+                application_->scaling()*400.0f,
+                application_->scaling()*400.0f
+            ),
+            ImGuiSetCond_Once
+        );
+
+        ImGui::Begin(
+            (std::string(
+                save_mode_ ? "Save as...##" : "Load...##"
+             )+String::to_string(this)).c_str(),
+            &visible_,
+            ImGuiWindowFlags_NoCollapse 
+        );
+        
+        if(ImGui::Button("parent")) {
+            set_directory("../");
+        }
+        ImGui::SameLine();
+        if(ImGui::Button("home")) {
+            set_directory(FileSystem::home_directory());
+            update_files();
+        }
+        ImGui::SameLine();            
+        if(ImGui::Button("refresh")) {
+            update_files();
+        }
+
+        // There is probably a simpler way to align right...
+        ImGui::SameLine(
+            0.0f,
+            ImGui::GetWindowWidth()-application_->scaling()*215.0f
+        );        
+        ImGui::Text("pin");
+        ImGui::SameLine();
+        ImGui::Checkbox("##pin", &pinned_);
+        if(ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("Keeps this dialog open.");
+        }
+        
+        ImGui::Separator();
+        {
+            std::vector<std::string> path;
+            String::split_string(directory_, '/', path);
+            for(index_t i=0; i<path.size(); ++i) {
+                if(i != 0) {
+                    ImGui::SameLine();
+                }
+                // We need to generate a unique id, else there is an id
+                // clash with the "home" button right before !!
+                if(ImGui::SmallButton(
+                       (path[i] + "##path" + String::to_string(i)).c_str())
+                ) {
+                    std::string new_dir;
+                    if(path[0].length() >= 2 && path[0][1] == ':') {
+                        new_dir = path[0];
+                    } else {
+                        new_dir += "/";
+                        new_dir += path[0];
+                    }
+                    for(index_t j=1; j<=i; ++j) {
+                        new_dir += "/";
+                        new_dir += path[j];
+                    }
+                    set_directory(new_dir);
+                }
+            }
+        }
+
+        const float footer_size = 30.0f;
+        {
+            ImGui::BeginChild(
+                "##directories",
+                ImVec2(ImGui::GetWindowWidth() * 0.5f - 12.0f, -footer_size),
+                true
+            );
+            for(index_t i=0; i<directories_.size(); ++i) {
+                if(ImGui::Selectable(
+                       directories_[i].c_str(),
+                       (i == current_directory_index_)
+                       )
+                ) {
+                    current_directory_index_ = i;
+                    set_directory(directories_[current_directory_index_]);
+                }
+            }
+            ImGui::EndChild();
+        }
+        ImGui::SameLine();
+        {
+            ImGui::BeginChild(
+                "##files",
+                ImVec2(ImGui::GetWindowWidth() * 0.5f - 12.0f, -footer_size),
+                true
+            );
+            for(index_t i=0; i<files_.size(); ++i) {
+                if(ImGui::Selectable(
+                       files_[i].c_str(),
+                       (i == current_file_index_)
+                   )
+                ) {
+                    safe_strncpy(
+                        current_file_,files_[i].c_str(),sizeof(current_file_)
+                    );
+                    if(current_file_index_ == i) {
+                        file_selected();
+                    } else {
+                        current_file_index_ = i;
+                    }
+                }
+                if(scroll_to_file_ && i == current_file_index_) {
+                    ImGui::SetScrollHere();
+                    scroll_to_file_ = false;
+                }
+            }
+            ImGui::EndChild();
+
+            {
+                if(ImGui::Button(save_mode_ ? "Save as" : "Load")) {
+                    file_selected();
+                }
+                ImGui::SameLine();
+                ImGui::PushItemWidth(
+                    save_mode_ ? -80.0f*application_->scaling() : -1.0f
+                );
+                if(ImGui::InputText(
+                       "##filename",
+                       current_file_, 256,
+                       ImGuiInputTextFlags_EnterReturnsTrue    |
+                       ImGuiInputTextFlags_CallbackHistory     |
+                       ImGuiInputTextFlags_CallbackCompletion ,
+                       text_input_callback,
+                       this 
+                       )
+                ) {
+                    scroll_to_file_ = true;
+                    std::string file = current_file_;
+                    for(index_t i=0; i<files_.size(); ++i) {
+                        if(files_[i] == file) {
+                            current_file_index_ = i;
+                        }
+                    }
+                    file_selected();
+                }
+                ImGui::PopItemWidth();
+                // Keep auto focus on the input box
+                if (ImGui::IsItemHovered()) {
+                    // Auto focus previous widget                
+                    ImGui::SetKeyboardFocusHere(-1); 
+                }
+
+                if(save_mode_) {
+                    ImGui::SameLine();
+                    ImGui::PushItemWidth(-1.0);
+
+                    if(write_extensions_.size() == 0) {
+                        String::split_string(
+                            application_->supported_write_file_extensions(),
+                            ';', write_extensions_
+                        );
+                        std::string ext =
+                            FileSystem::extension(current_file_);
+                        for(index_t i=0; i<write_extensions_.size(); ++i) {
+                            if(write_extensions_[i] == ext) {
+                                current_write_extension_index_ = i;
+                            }
+                        }
+                    }
+                    std::vector<const char*> write_extensions;
+                    for(index_t i=0; i<write_extensions_.size(); ++i) {
+                        write_extensions.push_back(&write_extensions_[i][0]);
+                    }
+                    if(ImGui::Combo(
+                           "##extension",
+                           (int*)(&current_write_extension_index_),
+                           &write_extensions[0],
+                           int(write_extensions.size())
+                       )
+                    ) {
+                        std::string file = current_file_;
+                        file = FileSystem::base_name(file) + "." +
+                            write_extensions_[current_write_extension_index_];
+                        safe_strncpy(
+                            current_file_, file.c_str(), sizeof(current_file_)
+                        );
+                    }
+                    ImGui::PopItemWidth();
+                }
+                
+            }
+        }
+        
+        ImGui::End();
+        draw_are_you_sure();
+    }
+
+    void FileDialog::draw_are_you_sure() {
+        if(are_you_sure_) {
+            ImGui::OpenPopup("File exists");
+        }
+        if(
+            ImGui::BeginPopupModal(
+                "File exists", NULL, ImGuiWindowFlags_AlwaysAutoResize
+            )
+        ) {
+            ImGui::Text(
+                "%s",
+                 (std::string("File ") + current_file_ +
+                  " already exists\nDo you want to overwrite it ?"
+                 ).c_str()
+            );
+            ImGui::Separator();
+            float w = 120.0f*application_->scaling();
+            if (ImGui::Button("Overwrite", ImVec2(w,0))) {
+                are_you_sure_ = false;
+                ImGui::CloseCurrentPopup();
+                file_selected(true);
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel",ImVec2(w,0))) {
+                are_you_sure_ = false;                
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
+    }
+
+    
+    /*****************************************************************/
+    
     CommandInvoker::CommandInvoker() {
     }
 
@@ -345,7 +779,7 @@ namespace GEO {
     Command::~Command() {
     }
 
-    Command::Command(const std::string& prototype_in) {
+    Command::Command(const std::string& prototype_in) : visible_(false) {
 
         //   If there is no brace, then protype only has function
         // name, and then the invoker will construct the arguments
@@ -598,14 +1032,6 @@ namespace GEO {
         if(ImGui::IsItemHovered()) {
             ImGui::SetTooltip("reset factory settings");
         }
-        ImGui::SameLine();
-        if(ImGui::Button("X")) {
-            current_.reset();
-            return;
-        }
-        if(ImGui::IsItemHovered()) {
-            ImGui::SetTooltip("close command");
-        }
         ImGui::Separator();            
         for(index_t i=0; i<args_.size(); ++i) {
             args_[i].draw();
@@ -728,6 +1154,9 @@ namespace GEO {
         default_val.clear();
         geo_assert(x.length() < 63);
         Memory::copy(default_val.string_val,x.c_str(), x.length());
+        default_val.string_val[x.length()+1] = '\0';        
+        Memory::copy(val.string_val,x.c_str(), x.length());        
+        val.string_val[x.length()+1] = '\0';        
     }
 
     void Command::Arg::draw() {
@@ -811,7 +1240,9 @@ namespace GEO {
     ) :
         argc_(argc),
         argv_(argv),
-        usage_(usage)
+        usage_(usage),
+        load_dialog_(this,false),
+        save_dialog_(this,true, "out.meshb")
     {
         name_ = (argc == 0) ? "" : FileSystem::base_name(argv[0]);
         geo_assert(instance_ == nil);
@@ -829,7 +1260,7 @@ namespace GEO {
         right_pane_visible_ = true;
         console_visible_ = false;
 
-        console_ = new Console;
+        console_ = new Console(&console_visible_);
         status_bar_ = new StatusBar;
 
         lighting_ = true;
@@ -838,6 +1269,9 @@ namespace GEO {
         clip_mode_ = GLUP_CLIP_WHOLE_CELLS;
 
         geogram_logo_texture_ = 0;
+
+        scaling_ = 1.0f;
+        retina_mode_ = false;
     }
 
     Application::~Application() {
@@ -869,7 +1303,7 @@ namespace GEO {
                 path_ = FileSystem::dir_name(filenames[filenames.size()-1]);
             }
         } else {
-            path_ = "./";
+            path_ = FileSystem::home_directory();
         }
 
         glup_viewer_set_window_title((char*)(name_.c_str()));
@@ -938,14 +1372,12 @@ namespace GEO {
         return imgui_texture_id;
     }
     
-    void Application::browse(const std::string& path) {
+    void Application::browse(const std::string& path, bool subdirs) {
         std::vector<std::string> files;
         GEO::FileSystem::get_directory_entries(path,files);
+        
         for(GEO::index_t i=0; i<files.size(); ++i) {
-            if(GEO::FileSystem::is_directory(files[i])) {
-                if(skip_directory(files[i])) {
-                    continue;
-                }
+            if(GEO::FileSystem::is_directory(files[i]) && subdirs) {
                 if(ImGui::BeginMenu(path_to_label(path_,files[i]).c_str())) {
                     browse(files[i]);
                     ImGui::EndMenu();
@@ -994,6 +1426,11 @@ namespace GEO {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexImage2DXPM(geogram_logo_256_xpm);
+
+        if(glup_viewer_is_high_dpi()) {
+            retina_mode_ = true;                
+            scaling_ = 2.0f;
+        }
     }
 
     void Application::init_graphics_callback() {
@@ -1023,6 +1460,7 @@ namespace GEO {
     }
 
     void Application::draw_gui() {
+        ImGui::GetIO().FontGlobalScale = scaling_;
         draw_menu_bar();
         if(left_pane_visible_) {
             draw_left_pane();
@@ -1036,30 +1474,32 @@ namespace GEO {
         if(status_bar_->active()) {
             draw_status_bar();
         }
+        load_dialog_.draw();
+        save_dialog_.draw();
     }
 
     void Application::draw_left_pane() {
         int w,h;
         glup_viewer_get_screen_size(&w, &h);
         if(status_bar_->active()) {
-            h -= (STATUS_HEIGHT+1);
+            h -= (STATUS_HEIGHT()+1);
         }
         if(console_visible_) {
-            h -= (CONSOLE_HEIGHT+1);
+            h -= (CONSOLE_HEIGHT()+1);
         }
-        h -= MENU_HEIGHT;
+        h -= MENU_HEIGHT();
 
         if(Command::current() != nil) {
             h /= 2;
         }
         
         ImGui::SetNextWindowPos(
-            ImVec2(0.0f, float(MENU_HEIGHT)),
+            ImVec2(0.0f, float(MENU_HEIGHT())),
             ImGuiSetCond_Always
         );
         
         ImGui::SetNextWindowSize(
-            ImVec2(float(PANE_WIDTH), float(h)),
+            ImVec2(float(PANE_WIDTH()), float(h)),
             ImGuiSetCond_Always
         );
 
@@ -1067,11 +1507,11 @@ namespace GEO {
 
         if(Command::current() != nil) {
             ImGui::SetNextWindowPos(
-                ImVec2(0.0f, float(MENU_HEIGHT+h+1)),
+                ImVec2(0.0f, float(MENU_HEIGHT()+h+1)),
                 ImGuiSetCond_Always
             );
             ImGui::SetNextWindowSize(
-                ImVec2(float(PANE_WIDTH), float(h-1)),
+                ImVec2(float(PANE_WIDTH()), float(h-1)),
                 ImGuiSetCond_Always
             );
             draw_command();
@@ -1082,20 +1522,20 @@ namespace GEO {
         int w,h;
         glup_viewer_get_screen_size(&w, &h);
         if(status_bar_->active()) {
-            h -= (STATUS_HEIGHT+1);
+            h -= (STATUS_HEIGHT()+1);
         }
         if(console_visible_) {
-            h -= (CONSOLE_HEIGHT+1);
+            h -= (CONSOLE_HEIGHT()+1);
         }
-        h -= MENU_HEIGHT;
+        h -= MENU_HEIGHT();
 
         ImGui::SetNextWindowPos(
-            ImVec2(float(w-PANE_WIDTH), float(MENU_HEIGHT)),
+            ImVec2(float(w-PANE_WIDTH()), float(MENU_HEIGHT())),
             ImGuiSetCond_Always
         );
         
         ImGui::SetNextWindowSize(
-            ImVec2(float(PANE_WIDTH), float(h)),
+            ImVec2(float(PANE_WIDTH()), float(h)),
             ImGuiSetCond_Always
         );
         
@@ -1104,7 +1544,7 @@ namespace GEO {
 
     void Application::draw_viewer_properties_window() {
         ImGui::Begin(
-            "Viewer", NULL,
+            "Viewer", &left_pane_visible_,
             ImGuiWindowFlags_NoResize |
             ImGuiWindowFlags_NoMove |
             ImGuiWindowFlags_NoCollapse 
@@ -1159,7 +1599,7 @@ namespace GEO {
     
     void Application::draw_object_properties_window() {
         ImGui::Begin(
-            "Object", NULL,
+            "Object", &right_pane_visible_,
             ImGuiWindowFlags_NoResize |
             ImGuiWindowFlags_NoMove |
             ImGuiWindowFlags_NoCollapse 
@@ -1175,9 +1615,13 @@ namespace GEO {
     
     void Application::draw_command() {
         geo_assert(Command::current() != nil);
+        if(!Command::current()->is_visible()) {
+            Command::reset_current();
+            return;
+        }
         ImGui::Begin(
             Command::current()->name().c_str(),
-            NULL,
+            Command::current()->is_visible_ptr(),
             ImGuiWindowFlags_NoResize |
             ImGuiWindowFlags_NoMove |
             ImGuiWindowFlags_NoCollapse 
@@ -1189,30 +1633,30 @@ namespace GEO {
     void Application::draw_console() {
         int w,h;
         glup_viewer_get_screen_size(&w, &h);
-        h = h - CONSOLE_HEIGHT;
+        h = h - CONSOLE_HEIGHT();
         if(status_bar_->active()) {
-            h -= (STATUS_HEIGHT + 1);
+            h -= (STATUS_HEIGHT() + 1);
         }
         ImGui::SetNextWindowPos(
             ImVec2(0.0f, float(h)),
             ImGuiSetCond_Always
         );
         ImGui::SetNextWindowSize(
-            ImVec2(float(w),float(CONSOLE_HEIGHT)),
+            ImVec2(float(w),float(CONSOLE_HEIGHT())),
             ImGuiSetCond_Always
         );
-        console_->draw();
+        console_->draw(&console_visible_);
     }
 
     void Application::draw_status_bar() {
         int w,h;
         glup_viewer_get_screen_size(&w, &h);
         ImGui::SetNextWindowPos(
-            ImVec2(0.0f, float(h-STATUS_HEIGHT)),
+            ImVec2(0.0f, float(h-STATUS_HEIGHT())),
             ImGuiSetCond_Always
         );
         ImGui::SetNextWindowSize(
-            ImVec2(float(w),float(STATUS_HEIGHT-1)),
+            ImVec2(float(w),float(STATUS_HEIGHT()-1)),
             ImGuiSetCond_Always
         );
         status_bar_->draw();
@@ -1260,14 +1704,14 @@ namespace GEO {
                 ImGui::EndMenu(); 
             }
 #else
-        if(ImGui::BeginMenu("Load...")) {                    
-            browse(path_);
-            ImGui::EndMenu();
+        if(ImGui::MenuItem("Load...")) {
+            load_dialog_.show();
         }
 #endif        
     }
 
     void Application::draw_save_menu() {
+#ifdef GEO_OS_EMSCRIPTEN
         if(ImGui::BeginMenu("Save as...")) {
             std::vector<std::string> extensions;
             String::split_string(
@@ -1276,22 +1720,22 @@ namespace GEO {
             for(index_t i=0; i<extensions.size(); ++i) {
                 std::string filename = "out." + extensions[i];
                 if(ImGui::MenuItem(filename.c_str())) {
-#ifdef GEO_OS_EMSCRIPTEN
                     if(save(filename)) {
                         std::string command =
                             "saveFileFromMemoryFSToDisk(\'" +
                             filename +
-                            "\');"
-                        ;
+                            "\');" ;
                         emscripten_run_script(command.c_str());
                     }
-#else                    
-                    save(filename);
-#endif                    
                 }
             }
             ImGui::EndMenu();
         }
+#else        
+        if(ImGui::MenuItem("Save as...")) {
+            save_dialog_.show();
+        }
+#endif        
     }
     
     void Application::draw_about() {
@@ -1300,14 +1744,23 @@ namespace GEO {
             ImGui::Text("%s : a GEOGRAM application", name_.c_str());
             ImGui::Image(
                 convert_to_ImTextureID(geogram_logo_texture_),
-                ImVec2(256, 256)
+                ImVec2(256.0f * scaling(), 256.0f * scaling())
             );
             ImGui::Text("\n");            
             ImGui::Separator();
             ImGui::Text("\n");
             ImGui::Text("GEOGRAM website: ");
             ImGui::Text("http://alice.loria.fr/software/geogram");
-            
+
+            ImGui::Text("\n");
+            ImGui::Separator();
+            ImGui::Text(
+                "%s",
+                (
+                    "GEOGRAM version:" +
+                    Environment::instance()->get_value("version")
+                ).c_str()
+            );
             ImGui::EndMenu();
         }
     }
@@ -1321,6 +1774,11 @@ namespace GEO {
                 "show/hide GUI [T]", NULL,
                 (bool*)glup_viewer_is_enabled_ptr(GLUP_VIEWER_TWEAKBARS)
             )) {
+                glup_viewer_post_redisplay();
+            }
+            ImGui::Separator();
+            if(ImGui::MenuItem("Big text", NULL, &retina_mode_)) {
+                scaling_ = retina_mode_ ? 2.0f : 1.0f;
                 glup_viewer_post_redisplay();
             }
             ImGui::EndMenu();
@@ -1383,6 +1841,7 @@ namespace GEO {
         anim_time_ = 0.0f;
 
         show_vertices_ = false;
+        show_vertices_selection_ = true;
         vertices_size_ = 1.0f;
         
         show_surface_ = true;
@@ -1433,8 +1892,10 @@ namespace GEO {
                 attribute_min_ = Numeric::max_float32();
                 attribute_max_ = Numeric::min_float32();
                 for(index_t i=0; i<subelements.nb(); ++i) {
-                    attribute_min_ = geo_min(attribute_min_, float(attribute[i]));
-                    attribute_max_ = geo_max(attribute_max_, float(attribute[i]));
+                    attribute_min_ =
+                        geo_min(attribute_min_, float(attribute[i]));
+                    attribute_max_ =
+                        geo_max(attribute_max_, float(attribute[i]));
                 }
             } 
         }
@@ -1465,7 +1926,9 @@ namespace GEO {
             if(attribute_min_ == 0.0f && attribute_max_ == 0.0f) {
                 autorange();
             } 
-            if(ImGui::Button((attribute_ + "##Attribute").c_str(), ImVec2(-1,0))) {
+            if(ImGui::Button(
+                   (attribute_ + "##Attribute").c_str(), ImVec2(-1,0))
+            ) {
                 ImGui::OpenPopup("##Attributes");                
             }
             if(ImGui::BeginPopup("##Attributes")) {
@@ -1486,7 +1949,7 @@ namespace GEO {
             }
             if(ImGui::ImageButton(
                    convert_to_ImTextureID(current_colormap_texture_),
-                   ImVec2(115,8))
+                   ImVec2(115.0f*scaling(),8.0f*scaling()))
             ) {
                 ImGui::OpenPopup("##Colormap");
             }
@@ -1494,7 +1957,7 @@ namespace GEO {
                 for(index_t i=0; i<colormaps_.size(); ++i) {
                     if(ImGui::ImageButton(
                            convert_to_ImTextureID(colormaps_[i].texture),
-                           ImVec2(100,8))
+                           ImVec2(100.0f*scaling(),8.0f*scaling()))
                     ) {
                         current_colormap_texture_ = colormaps_[i].texture;
                         ImGui::CloseCurrentPopup();
@@ -1517,6 +1980,7 @@ namespace GEO {
         ImGui::Separator();    
         ImGui::Checkbox("Vertices [p]", &show_vertices_);
         if(show_vertices_) {
+            ImGui::Checkbox("selection", &show_vertices_selection_);            
             ImGui::SliderFloat("sz.", &vertices_size_, 0.1f, 5.0f, "%.1f");
         }
 
@@ -1627,8 +2091,17 @@ namespace GEO {
         }
         
         if(show_vertices_) {
+            mesh_gfx_.set_points_color(0.0, 1.0, 0.0);
             mesh_gfx_.set_points_size(vertices_size_);
             mesh_gfx_.draw_vertices();
+        }
+
+        if(show_vertices_selection_) {
+            mesh_gfx_.set_points_color(1.0, 0.0, 0.0);
+            mesh_gfx_.set_points_size(2.0f * vertices_size_);
+            mesh_gfx_.set_vertices_selection("selection");
+            mesh_gfx_.draw_vertices();
+            mesh_gfx_.set_vertices_selection("");            
         }
 
         if(white_bg_) {
@@ -1695,6 +2168,8 @@ namespace GEO {
         }
         mesh_gfx_.set_mesh(nil);
 
+        mesh_.clear(false,false);
+        
         if(GEO::CmdLine::get_arg_bool("single_precision")) {
             mesh_.vertices.set_single_precision();
         }
@@ -1743,6 +2218,15 @@ namespace GEO {
         return true;
     }
 
+    bool SimpleMeshApplication::save(const std::string& filename) {
+        MeshIOFlags flags;
+        if(CmdLine::get_arg_bool("attributes")) {
+            flags.set_attribute(MESH_FACET_REGION);
+            flags.set_attribute(MESH_CELL_REGION);            
+        } 
+        return mesh_save(mesh_, filename, flags);
+    }
+    
     void SimpleMeshApplication::get_bbox(
         const Mesh& M_in, double* xyzmin, double* xyzmax, bool animate
     ) {
@@ -1776,7 +2260,5 @@ namespace GEO {
             }
         }
     }
-
-    
 }
 

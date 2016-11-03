@@ -40,6 +40,7 @@
 
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
 #include <ringmesh/mesh/mesh.h>
+#include <ringmesh/mesh/mesh_builder.h>
 
 /*!
  * @file ringmesh/geo_model_mesh.h
@@ -64,6 +65,8 @@ namespace RINGMesh {
     const std::string surface_att_name = "region" ;
     const std::string region_att_name = "region" ;
     const std::string order_att_name = "order" ;
+    const std::string cell_region_att_name = "cell_region" ;
+    const std::string facet_surface_att_name = "facet_surface" ;
 
     /*! 
      * This design is a catastrophe !
@@ -422,6 +425,9 @@ namespace RINGMesh {
 
         /// Attribute storing the surface index per facet
         GEO::Attribute< index_t > surface_id_ ;
+        /// Attribute storing the facet index in surface per facet
+        GEO::Attribute< index_t > facet_id_ ;
+
         /*!
          * Vector storing the index of the starting facet index
          * for a given surface and a given facet type.
@@ -912,6 +918,9 @@ namespace RINGMesh {
 
         /// Attribute storing the region index per cell
         GEO::Attribute< index_t > region_id_ ;
+        /// Attribute storing the cell index in region per cell
+        GEO::Attribute< index_t > cell_id_ ;
+
         /*!
          * Vector storing the index of the starting cell index
          * for a given region and a given cell type.
@@ -1073,7 +1082,8 @@ namespace RINGMesh {
          */
         void copy_mesh( Mesh& mesh ) const
         {
-            mesh.copy( *mesh_, false, GEO::MESH_ALL_ELEMENTS ) ;
+            MeshBuilder builder( mesh ) ;
+            builder.copy( *mesh_, false, GEO::MESH_ALL_ELEMENTS ) ;
         }
         void save_mesh( const std::string& filename ) const
         {

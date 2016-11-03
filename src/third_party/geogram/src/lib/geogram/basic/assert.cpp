@@ -68,7 +68,11 @@
 namespace GEO {
 
     namespace {
+#ifdef GEO_DEBUG
+        AssertMode assert_mode_ = ASSERT_ABORT;        
+#else
         AssertMode assert_mode_ = ASSERT_THROW;
+#endif        
         bool aborting = false;
     }
 
@@ -99,6 +103,10 @@ namespace GEO {
         os << "Line: " << line;
 
         if(assert_mode_ == ASSERT_THROW) {
+            if(Logger::instance()->is_quiet()) {
+                std::cerr << os.str()
+                          << std::endl;
+            }
             throw std::runtime_error(os.str());
         } else {
             Logger::err("Assert") << os.str() << std::endl;
@@ -117,6 +125,10 @@ namespace GEO {
         os << "Line: " << line;
 
         if(assert_mode_ == ASSERT_THROW) {
+            if(Logger::instance()->is_quiet()) {
+                std::cerr << os.str()
+                          << std::endl;
+            }
             throw std::runtime_error(os.str());
         } else {
             Logger::err("Assert") << os.str() << std::endl;
@@ -133,6 +145,10 @@ namespace GEO {
         os << "Line: " << line;
 
         if(assert_mode_ == ASSERT_THROW) {
+            if(Logger::instance()->is_quiet()) {
+                std::cerr << os.str()
+                          << std::endl;
+            }
             throw std::runtime_error(os.str());
         } else {
             Logger::err("Assert") << os.str() << std::endl;
