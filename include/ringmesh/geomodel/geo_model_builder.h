@@ -117,10 +117,10 @@ namespace RINGMesh {
          * than the input geomodel.
          */
         void copy_meshes( const GeoModel& from ) ;
-
         void copy_meshes( const GeoModel& from, const std::string& entity_type ) ;
+        void copy_mesh( const GeoModel& from, const gme_t& mesh_entity ) ;
 
-        void assign_mesh_to_entity( const Mesh& mesh, gme_t to ) ;
+        void assign_mesh_to_entity( const Mesh& mesh, const gme_t& to ) ;
 
         /*!
          * \name Set entity geometry from geometrical positions
@@ -272,23 +272,30 @@ namespace RINGMesh {
          * @{
          */
 
-        void delete_mesh_entity_mesh( gme_t E_id ) ;
-        void delete_mesh_entity_vertices( gme_t E_id, GEO::vector< index_t >& to_delete ) ;
+        void delete_mesh_entity_mesh( const gme_t& E_id ) ;
+        void delete_mesh_entity_isolated_vertices( const gme_t& E_id ) ;
+        void delete_mesh_entity_vertices(
+            const gme_t& E_id,
+            GEO::vector< index_t >& to_delete,
+            bool remove_isolated_vertices ) ;
         void delete_corner_vertex( index_t corner_id ) ;
-        void delete_line_edges( index_t line_id, GEO::vector< index_t >& to_delete ) ;
-        void delete_surface_facets( index_t surface_id, GEO::vector< index_t >& to_delete ) ;
-        void delete_region_cells( index_t region_id, GEO::vector< index_t >& to_delete ) ;
+        void delete_line_edges(
+            index_t line_id,
+            GEO::vector< index_t >& to_delete,
+            bool remove_isolated_vertices ) ;
+        void delete_surface_facets(
+            index_t surface_id,
+            GEO::vector< index_t >& to_delete,
+            bool remove_isolated_vertices ) ;
+        void delete_region_cells(
+            index_t region_id,
+            GEO::vector< index_t >& to_delete,
+            bool remove_isolated_vertices ) ;
 
         /*! @}
          * \name Misc
          * @{
          */
-        index_t find_or_create_duplicate_vertex(
-            const gme_t& E_id,
-            index_t model_vertex_id,
-            index_t surface_vertex_id ) ;
-
-        void cut_surface_by_line( index_t surface_id, index_t line_id ) ;
 
         void compute_surface_adjacencies( index_t surface_id ) ;
         void compute_region_adjacencies( index_t region_id ) ;
@@ -301,8 +308,8 @@ namespace RINGMesh {
         gme_t find_or_create_line( const std::vector< vec3 >& vertices ) ;
         gme_t find_or_create_line(
             const std::vector< index_t >& incident_surfaces,
-            gme_t first_corner,
-            gme_t second_corner ) ;
+            const gme_t& first_corner,
+            const gme_t& second_corner ) ;
 
         void recompute_geomodel_mesh() ;
 
@@ -357,11 +364,21 @@ namespace RINGMesh {
         void assign_surface_triangle_mesh(
             index_t surface_id,
             const std::vector< index_t >& triangle_vertices ) ;
-        void update_facet_corner(
-            Surface& S,
+        void update_facet_vertices_around_facet_vertex(
+            Surface& surface,
+            index_t facet,
+            index_t old_vertex,
+            index_t new_vertex ) ;
+        void update_facet_vertex(
+            Surface& surface,
             const std::vector< index_t >& facets,
-            index_t old_corner,
-            index_t new_corner ) ;
+            index_t old_vertex,
+            index_t new_vertex ) ;
+        void update_cell_vertex(
+            Region& region,
+            const std::vector< index_t >& cells,
+            index_t old_vertex,
+            index_t new_vertex ) ;
         void assign_surface_triangle_mesh(
             index_t surface_id,
             const std::vector< index_t >& triangle_vertices,
@@ -371,9 +388,24 @@ namespace RINGMesh {
             index_t region_id,
             const std::vector< index_t >& tet_vertices ) ;
 
-        void duplicate_surface_vertices_along_line( index_t surface_id, index_t line_id ) ;
-        void disconnect_surface_facets_along_line_edges(
-            index_t surface_id, index_t line_id ) ;
+        void compute_universe() ;
+
+        void cut_surfaces_by_internal_lines() ;
+        void cut_regions_by_internal_surfaces() ;
+
+        void cut_surface_by_line( index_t surface_id, index_t line_id ) ;
+        void cut_region_by_surface( index_t region_id, index_t surface_id ) ;
+        void duplicate_surface_vertices_along_line(
+            index_t surface_id,
+            index_t line_id ) ;
+        void duplicate_region_vertices_along_surface(
+            index_t region_id,
+            index_t surface_id ) ;
+        index_t disconnect_surface_facets_along_line_edges(
+            index_t surface_id,
+            index_t line_id ) ;
+        index_t disconnect_region_cells_along_surface_facets(
+            index_t region_id, index_t surface_id ) ;
     } ;
 
     /*!

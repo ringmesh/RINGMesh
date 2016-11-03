@@ -40,6 +40,8 @@
 
 #include <geogram/basic/file_system.h>
 
+#include <ringmesh/geomodel/geomodel_indexing_types.h>
+
 /*!
  * @file ringmesh/geo_model_validity.h
  * @brief Functions to check the validity of GeoModels
@@ -88,6 +90,10 @@ namespace RINGMesh {
 
     bool RINGMESH_API are_geomodel_geological_entities_valid(
         const GeoModel& geomodel ) ;
+
+    bool RINGMESH_API check_volume_watertightness(
+        const GeoModel& geomodel,
+        const gme_t& gme_id ) ;
 
 }
 

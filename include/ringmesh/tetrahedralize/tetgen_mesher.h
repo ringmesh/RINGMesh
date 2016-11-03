@@ -95,24 +95,29 @@ namespace RINGMesh {
 
         TetgenMesher()
             : polygons_( nil ), polygon_corners_( nil )
-        {}
+        {
+            // Quiet (no output)
+            tetgen_command_line_ += "Q" ;
+            // Use a piecewise linear complex
+            tetgen_command_line_ += "p" ;
+            // Save tetrahedron neighbors
+            tetgen_command_line_ += "n" ;
+            // Do not add points on boundaries
+            tetgen_command_line_ += "Y" ;
+            // Save tetrahedron regions
+            tetgen_command_line_ += "AA" ;
+        }
         ~TetgenMesher() ;
 
         void tetrahedralize(
             const Mesh& input_mesh,
-            const std::string& command_line,
             Mesh& output_mesh ) ;
 
-        void tetrahedralize(
-            const Mesh& input_mesh,
-            const std::vector< vec3 >& one_point_per_region,
-            const std::string& command_line,
-            Mesh& output_mesh ) ;
+        void add_points_to_match_quality( double quality ) ;
 
     private:
         void initialize() ;
         void initialize_tetgen_args() ;
-        void set_command_line( const std::string& command_line ) ;
         void tetrahedralize() ;
 
         void copy_mesh_to_tetgen_input( const Mesh& M ) ;
@@ -121,12 +126,13 @@ namespace RINGMesh {
         void copy_facets_to_tetgen_input( const Mesh& M ) ;
         void set_regions( const std::vector< vec3 >& one_point_per_region ) ;
 
-        void fill_region_attribute_on_mesh_cells(
-            Mesh& M,
-            const std::string& attribute_name ) const ;
         void assign_result_tetmesh_to_mesh( Mesh& M ) const ;
         void get_result_tetmesh_points( GEO::vector< double >& points ) const ;
         void get_result_tetmesh_tets( GEO::vector< index_t >& tets ) const ;
+        void determine_tet_regions_to_keep(
+            std::set< double >& regions_to_keep ) const ;
+        void determine_tets_to_keep(
+            std::vector< index_t >& tets_to_keep ) const ;
 
     private:
         GEO_3rdParty::tetgenio tetgen_in_ ;

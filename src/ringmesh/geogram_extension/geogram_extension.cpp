@@ -60,7 +60,7 @@ namespace {
         const vec3 bc = c - b ;
         const vec3 bc_cross_ba = GEO::cross( bc, ba ) ;
         const double bc_dot_ba = GEO::dot( bc, ba ) ;
-        ringmesh_assert( bc_cross_ba.length() > epsilon ) ;
+        ringmesh_assert( bc_cross_ba.length() > global_epsilon ) ;
         return bc_dot_ba / bc_cross_ba.length() ;
     }
 }
@@ -507,12 +507,12 @@ namespace RINGMesh {
                 + cotangent( point_inside_facet, cur_vertex_vec, next_vec ) ) ;
             const double denominator =
                 ( point_inside_facet - cur_vertex_vec ).length2() ;
-            ringmesh_assert( denominator > epsilon ) ;
+            ringmesh_assert( denominator > global_epsilon ) ;
             barycentric_coordinates[facet_vertex_itr] = numerator / denominator ;
             sum += barycentric_coordinates[facet_vertex_itr] ;
         }
 
-        ringmesh_assert( sum > epsilon ) ;
+        ringmesh_assert( sum > global_epsilon ) ;
         for( index_t i = 0; i < nb_vertices; ++i ) {
             barycentric_coordinates[i] /= sum ;
         }
@@ -526,7 +526,7 @@ namespace RINGMesh {
      *
      * @param[in] rot_mat matrix which defines the rotation.
      */
-    void rotate_mesh( GEO::Mesh& mesh, const GEO::Matrix< double, 4 >& rot_mat )
+    void rotate_mesh( GEO::Mesh& mesh, const GEO::Matrix< 4, double >& rot_mat )
     {
         for( index_t v = 0; v < mesh.vertices.nb(); v++ ) {
             double old_coords[4] ;

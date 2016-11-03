@@ -76,12 +76,10 @@ namespace RINGMesh {
         virtual void draw_object_properties() ;
         virtual void draw_viewer_properties() ;
         virtual void draw_application_menus() ;
-        virtual void draw_load_menu() ;
 
         bool load_geogram( const std::string& filename ) ;
         bool can_load_geogram( const std::string& filename ) ;
         void browse_geogram( const std::string& path ) ;
-        void browse_ringmesh( const std::string& path ) ;
         void update_region_of_interest() ;
 
         static void increment_shrink() ;
@@ -114,6 +112,7 @@ namespace RINGMesh {
             void reset_attribute_name() ;
             void set_attribute_names( const GEO::AttributesManager& attributes ) ;
             void autorange() ;
+            void daw_color_table_popup( ImColor& color ) ;
         public:
             struct OldNewStatus {
                 void operator=( bool value )
@@ -141,9 +140,13 @@ namespace RINGMesh {
             Box3d bbox_ ;
 
             bool show_corners_ ;
+            ImColor corner_color_ ;
             bool show_lines_ ;
+            ImColor line_color_ ;
             bool show_surface_ ;
+            ImColor surface_color_ ;
             bool show_volume_ ;
+            ImColor volume_color_ ;
             bool show_voi_ ;
             OldNewStatus colored_cells_ ;
             OldNewStatus show_colored_regions_ ;
@@ -157,11 +160,14 @@ namespace RINGMesh {
 
             float shrink_ ;
             bool mesh_visible_ ;
+            ImColor mesh_color_ ;
             bool meshed_regions_ ;
 
             bool show_attributes_ ;
             float attribute_min_ ;
             float attribute_max_ ;
+
+            static std::vector< std::vector< ImColor > > color_table_ ;
         } ;
 
         class MeshViewer {
@@ -212,6 +218,7 @@ namespace RINGMesh {
         std::string geogram_file_extensions_ ;
         index_t current_viewer_ ;
         ViewerType current_viewer_type_ ;
+
 
     } ;
 }

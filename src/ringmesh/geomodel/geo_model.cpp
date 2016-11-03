@@ -40,9 +40,38 @@
 
 #include <ringmesh/geomodel/geo_model.h>
 
+#include <ringmesh/basic/box3d.h>
 #include <ringmesh/geomodel/geo_model_mesh_entity.h>
 #include <ringmesh/geomodel/geo_model_geological_entity.h>
 
+namespace {
+    using namespace RINGMesh ;
+
+    void compute_surface_bbox( const GeoModel& gm, index_t surface_id, Box3d& bbox )
+    {
+        const Surface& surface = gm.surface( surface_id ) ;
+        for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
+            bbox.add_point( surface.vertex( v ) ) ;
+        }
+    }
+
+    double compute_percentage_bbox_diagonal( const GeoModel& gm )
+    {
+        Box3d bbox ;
+        if( gm.universe().nb_boundaries() > 0 ) {
+            const Universe& universe = gm.universe() ;
+            for( index_t s = 0; s < universe.nb_boundaries(); s++ ) {
+                compute_surface_bbox( gm, universe.boundary_gme( s ).index, bbox ) ;
+            }
+        } else {
+            ringmesh_assert( gm.nb_surfaces() > 0 ) ;
+            for( index_t s = 0; s < gm.nb_surfaces(); s++ ) {
+                compute_surface_bbox( gm, s, bbox ) ;
+            }
+        }
+        return bbox.diagonal().length() * GEO::CmdLine::get_arg_double( "epsilon" ) ;
+    }
+}
 
 namespace RINGMesh {
 
@@ -156,10 +185,10 @@ namespace RINGMesh {
 
     // ------------------------------------------------------------------------//
 
-
     GeoModel::GeoModel()
         :
             mesh( *this ),
+            epsilon_( -1 ),
             universe_( *this ),
             wells_( nil )
     {
@@ -262,7 +291,6 @@ namespace RINGMesh {
        }
    }
 
-
     /*!
      * Associates a WellGroup to the GeoModel
      * @param[in] wells the WellGroup
@@ -274,5 +302,12 @@ namespace RINGMesh {
         wells_ = wells ;
     }
 
+    double GeoModel::epsilon() const
+    {
+        if( epsilon_ == -1 ) {
+            epsilon_ = compute_percentage_bbox_diagonal( *this ) ;
+        }
+        return epsilon_ ;
+    }
 
 } // namespace

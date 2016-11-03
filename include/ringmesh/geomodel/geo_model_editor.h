@@ -320,8 +320,7 @@ namespace RINGMesh {
         bool get_dependent_entities( std::set< gme_t >& entities ) const ;
 
         /*!
-         * @brief Not implemented
-         * @note The code was copied and wrong. To reimplement if needed. [JP]
+         * Should be rewritten. Put as it was before someone removed it...
          */
         void remove_entities_and_dependencies(
             const std::set< gme_t >& entities_to_remove ) ;

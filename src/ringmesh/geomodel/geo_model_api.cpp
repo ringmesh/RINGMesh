@@ -712,13 +712,13 @@ namespace RINGMesh {
         double theta,
         bool degrees )
     {
-        if( length( axis ) < epsilon ) {
+        if( length( axis ) < M.epsilon() ) {
             Logger::err( "GeoModel" )
                 << "Rotation around an epsilon length axis is impossible"
                 << std::endl ;
             return ;
         }
-        GEO::Matrix< double, 4 > rot_mat ;
+        GEO::Matrix< 4, double > rot_mat ;
         rotation_matrix_about_arbitrary_axis( origin, axis, theta, degrees,
             rot_mat ) ;
 
@@ -754,7 +754,7 @@ namespace RINGMesh {
             region.boundary_gme( 0 ).index ) ;
         vec3 barycenter = first_boundary_surface.mesh_element_barycenter( 0 ) ;
         /// @todo Check that this is the right condition to have a correct enough barycenter
-        ringmesh_assert( first_boundary_surface.mesh_element_size( 0 ) > epsilon ) ;
+        ringmesh_assert( first_boundary_surface.mesh_element_size( 0 ) > geomodel.epsilon() ) ;
 
         double minimum_distance = DBL_MAX ;
         vec3 nearest_point ;
@@ -770,7 +770,7 @@ namespace RINGMesh {
             }
         }
         /// @todo Change implementation to use second triangle if that one failed, and further surfaces
-        ringmesh_assert( minimum_distance > epsilon ) ;
+        ringmesh_assert( minimum_distance > geomodel.epsilon() ) ;
         return 0.5 * ( barycenter + nearest_point ) ;
     }
 
@@ -789,26 +789,6 @@ namespace RINGMesh {
     }
 
 #ifdef RINGMESH_WITH_TETGEN
-
-    void tetgen_tetrahedralize_geomodel_regions( GeoModel& geomodel )
-    {
-        GEO::Mesh mesh ;
-        build_mesh_from_geomodel( geomodel, mesh ) ;
-
-        std::vector< vec3 > points_in_regions ;
-        get_one_point_per_geomodel_region( geomodel, points_in_regions ) ;
-
-        TetgenMesher mesher ;
-        mesher.tetrahedralize( mesh, points_in_regions, "QpYA", mesh ) ;
-
-        GeoModelBuilderMesh builder( geomodel, mesh, "", "region" ) ;
-        builder.build_regions() ;
-
-        // Force recomputation of global mesh vertices - otherwise we crash sooner or later
-        // because of model_vertex_id crazy sharing [JP]
-        geomodel.mesh.vertices.clear() ;
-        geomodel.mesh.vertices.test_and_initialize() ;
-    }
 
     void tetrahedralize(
         GeoModel& M,
@@ -873,5 +853,27 @@ namespace RINGMesh {
             }
         }
         return gme_t() ;
+    }
+
+    void save_surface_as_obj_file( const Surface& S, const std::string& file_name )
+    {
+        std::ofstream out( file_name.c_str() ) ;
+        if( out.bad() ) {
+            Logger::err( "I/O" ) << "Error when opening the file: "
+                << file_name.c_str() << std::endl ;
+            return ;
+        }
+        out.precision( 16 ) ;
+        for( index_t p = 0; p < S.nb_vertices(); p++ ) {
+            const vec3& V = S.vertex( p ) ;
+            out << "v" << " " << V.x << " " << V.y << " " << V.z << std::endl ;
+        }
+        for( index_t f = 0; f < S.nb_mesh_elements(); f++ ) {
+            out << "f" << " " ;
+            for( index_t v = 0; v < S.nb_mesh_element_vertices( f ); v++ ) {
+                out << S.mesh_element_vertex_index( f, v ) + 1 << " " ;
+            }
+            out << std::endl ;
+        }
     }
 }

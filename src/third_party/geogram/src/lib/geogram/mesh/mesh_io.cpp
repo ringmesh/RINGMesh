@@ -57,7 +57,7 @@
 #include <fstream>
 
 extern "C" {
-#include <geogram/third_party/LM6/libmesh6.h>
+#include <geogram/third_party/LM7/libmeshb7.h>
 }
 
 #include <geogram/third_party/rply/rply.h>
@@ -199,7 +199,19 @@ namespace GEO {
                                     break;
                                 }
                             }
-                            index_t vertex_index = in.field_as_uint(i);
+                            
+                            // In .obj files, 
+                            // negative vertex index means
+                            // nb_vertices - vertex index
+                            int s_vertex_index = in.field_as_int(i);
+                            index_t vertex_index = 0;
+                            if(s_vertex_index < 0) {
+                                vertex_index = index_t(
+                                    1+int(M.vertices.nb()) + s_vertex_index
+                                );
+                            } else {
+                                vertex_index = index_t(s_vertex_index);
+                            }
                             if(
                                 (vertex_index < 1) ||
                                 (vertex_index > M.vertices.nb())
@@ -390,8 +402,8 @@ namespace GEO {
         ) {
 
             int ver, dim;
-            int mesh_file_handle = GmfOpenMesh(
-                filename.c_str(), GmfRead, &ver, &dim
+            int64_t mesh_file_handle = GmfOpenMesh(
+                const_cast<char*>(filename.c_str()), GmfRead, &ver, &dim
             );
             if(!mesh_file_handle) {
                 Logger::err("I/O") << "Could not open file: "
@@ -681,8 +693,8 @@ namespace GEO {
             const MeshIOFlags& ioflags
         ) {
             bool use_doubles = CmdLine::get_arg_bool("sys:use_doubles");
-            int mesh_file_handle = GmfOpenMesh(
-                filename.c_str(), GmfWrite,
+            int64_t mesh_file_handle = GmfOpenMesh(
+                const_cast<char*>(filename.c_str()), GmfWrite,
                 (use_doubles ? GmfDouble : GmfFloat), 3
             );
 
@@ -916,7 +928,7 @@ namespace GEO {
         }
 
     protected:
-        bool goto_elements(int mesh_file_handle, int keyword) {
+        bool goto_elements(int64_t mesh_file_handle, int keyword) {
             if(!GmfGotoKwd(mesh_file_handle, keyword)) {
                 Logger::err("I/O") << "Failed to access "
                                    << keyword2name_[keyword]
@@ -930,7 +942,7 @@ namespace GEO {
         }
         
         bool read_element(
-            int mesh_file_handle, 
+            int64_t mesh_file_handle, 
             int keyword, int *v, int& ref,
             Mesh& M, index_t element_id
         ) {
@@ -2217,7 +2229,17 @@ namespace GEO {
                         << normal[3*v+1] << ' '
                         << normal[3*v+2] << ' '
                         << std::endl;
-                    
+                } else if(
+                    M.vertices.dimension() >= 6 &&
+                    M.vertices.double_precision()
+                ) {
+                    const double* p = M.vertices.point_ptr(v);
+                    out << p[0] << ' '
+                        << p[1] << ' '
+                        << p[2] << ' '
+                        << p[3] << ' '
+                        << p[4] << ' '
+                        << p[5] << std::endl;
                 } else {
                     out << point[0] << ' '
                         << point[1] << ' '
@@ -2667,9 +2689,10 @@ namespace GEO {
         ) {
             M.clear();
             try {
-                
+
+                std::string chunk_class;
                 for(
-                    std::string chunk_class = in.next_chunk();
+                    chunk_class = in.next_chunk();
                     chunk_class != "EOFL" && chunk_class != "SPTR";
                     chunk_class = in.next_chunk()
                 ) {
@@ -2688,6 +2711,13 @@ namespace GEO {
                         }
                     } 
                 }
+                
+                if(chunk_class == "SPTR") {
+                    Logger::out("GeoFile")
+                        << "File may contain several objects"
+                        << std::endl;
+                }
+                
             } catch(const GeoFileException& exc) {
                 Logger::err("I/O") << exc.what() << std::endl;
                 M.clear();
@@ -2707,7 +2737,7 @@ namespace GEO {
             if(!M.cells.are_simplices()) {
                 M.cells.cell_ptr_[M.cells.nb()] = M.cell_corners.nb();
             }
-            
+
             return true;
         }
 
@@ -3228,6 +3258,30 @@ namespace GEO {
         }
     };
 
+    /**
+     * \brief IO handler for graphite files.
+     * \details Graphite files with a single object can be directly read
+     *  by geogram. 
+     */
+    class GraphiteIOHandler : public GeogramIOHandler {
+    public:
+        /**
+         * \copydoc MeshIOHandler::save()
+         */
+        virtual bool save(
+            const Mesh& M, const std::string& filename,
+            const MeshIOFlags& ioflags = MeshIOFlags()
+        ) {
+            geo_argused(M);
+            geo_argused(filename);
+            geo_argused(ioflags);
+            Logger::err("I/O")
+                << "graphite file format not supported for writing"
+                << std::endl;
+            return false;
+        }
+    };
+    
 }
 
 /****************************************************************************/
@@ -3406,7 +3460,9 @@ namespace GEO {
         geo_register_MeshIOHandler_creator(PTSIOHandler,  "pts");
         geo_register_MeshIOHandler_creator(TETIOHandler,  "tet");
         geo_register_MeshIOHandler_creator(TET6IOHandler, "tet6");
-        geo_register_MeshIOHandler_creator(GeogramIOHandler, "geogram");        
+        geo_register_MeshIOHandler_creator(GeogramIOHandler, "geogram");
+        geo_register_MeshIOHandler_creator(GeogramIOHandler, "geogram_ascii");
+        geo_register_MeshIOHandler_creator(GraphiteIOHandler, "graphite");
     }
 
     

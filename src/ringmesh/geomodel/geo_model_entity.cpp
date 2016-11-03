@@ -201,45 +201,18 @@ namespace {
         }
         double volume = region.mesh_element_size( cell_index ) ;
         return check_mesh_entity_vertices_are_different( vertices, vertices_global )
-            || volume < epsilon ;
+            || volume < region.model().epsilon() ;
 	}
-
-    /*!
-     * @brief Debug: Save a Surface of the model in the file OBJ format is used
-     * @todo Move this function to an API providing utility functions on a
-     * GeoModel and its Entities ? [JP]
-     */
-    void save_surface_as_obj_file( const Surface& S, const std::string& file_name )
-    {
-        std::ofstream out( file_name.c_str() ) ;
-        if( out.bad() ) {
-            Logger::err( "I/O" ) << "Error when opening the file: "
-                << file_name.c_str() << std::endl ;
-            return ;
-        }
-        out.precision( 16 ) ;
-        for( index_t p = 0; p < S.nb_vertices(); p++ ) {
-            const vec3& V = S.vertex( p ) ;
-            out << "v" << " " << V.x << " " << V.y << " " << V.z << std::endl ;
-        }
-        for( index_t f = 0; f < S.nb_mesh_elements(); f++ ) {
-            out << "f" << " " ;
-            for( index_t v = 0; v < S.nb_mesh_element_vertices( f ); v++ ) {
-                out << S.mesh_element_vertex_index( f, v ) + 1 << " " ;
-            }
-            out << std::endl ;
-        }
-    }
-
-
 }
 
 
 namespace RINGMesh {           
 
     Universe::Universe( const GeoModel& model )
-        : GeoModelEntity( model, NO_ID, universe_type_name() )
+        : GeoModelEntity( model, NO_ID )
     {
+        id_.type = type_name() ;
+        name_ = universe_type_name() ;
     }
 
     /*!
@@ -312,16 +285,12 @@ namespace RINGMesh {
         }
     }
     
-    /*! 
-     * Check the validity of identification information
-     * in the model    
-     */
     bool GeoModelEntity::is_identification_valid() const
     {
         bool defined_id = true ;
         if( !gme_id().is_defined() ) {
             Logger::err( "GeoModelEntity" ) << " Entity associated to model "
-                << model().name() << "has no type and no index " << std::endl ;
+                << model().name() << "has no type and/or no index " << std::endl ;
             defined_id = false ;
             // No further checks are possible - This really should not happen
             ringmesh_assert_not_reached ;
@@ -329,29 +298,33 @@ namespace RINGMesh {
         bool valid_index = true ;
         if( index() >= model().nb_entities( type_name() ) ) {
             Logger::warn( "GeoModelEntity" ) << " Entity index " << gme_id()
-                << " is not valid " << " There are " << model().nb_entities( type_name() )
-                << " entity of that type in model " << model().name() << std::endl ;
+                << " is not valid. " << " There are "
+                << model().nb_entities( type_name() )
+                << " entities of that type in model " << model().name()
+                << std::endl ;
             // This really should not happen
             valid_index = false ;
             ringmesh_assert_not_reached ;
         }
         // If somebody - an Editor messed up with the Memory
-        bool valid_adress = true ;
+        bool valid_address = true ;
         if( model().is_mesh_entity_type( type_name() ) ) {
-            const GME* stored = static_cast<const GME*>( &model().mesh_entity( gme_id() ) );
-            valid_adress = stored == this ;
+            const GME* stored = static_cast< const GME* >( &model().mesh_entity(
+                gme_id() ) ) ;
+            valid_address = ( stored == this ) ;
         } else {
             ringmesh_assert( model().is_geological_entity_type( type_name() ) ) ;
-            const GME* stored = static_cast<const GME*>( &model().geological_entity( gme_id() ) ) ;
-            valid_adress = stored == this ;
+            const GME* stored =
+                static_cast< const GME* >( &model().geological_entity( gme_id() ) ) ;
+            valid_address = ( stored == this ) ;
         }
-        if( !valid_adress ) {
+        if( !valid_address ) {
             Logger::err( "GeoModelEntity" ) << " Entity " << gme_id()
-                << " in model " << model().name() << " does not match this entity"
-                << std::endl ;
+                << "address in model " << model().name()
+                << " does not match this entity" << std::endl ;
             ringmesh_assert_not_reached ;
         }
-        return defined_id && valid_index && valid_adress ;
+        return defined_id && valid_index && valid_address ;
     }
 
     const GeoModelEntity::EntityType GeoModelEntity::type_name_static()
@@ -361,44 +334,7 @@ namespace RINGMesh {
 
     bool Universe::is_valid() const
     {
-        if( nb_boundaries() == 0 ) {
-            Logger::warn( "GeoModel" )
-                << " The Universe has no boundary Surface" << std::endl ;
-            return false ;
-        } else {
-            GEO::Mesh mesh ;
-            Logger::instance()->set_quiet( true ) ;
-            build_mesh_from_model_mesh_entities( model_, boundary_surfaces_, mesh ) ;
-            GEO::mesh_repair( mesh ) ;
-            Logger::instance()->set_quiet( false ) ;
-
-            bool valid = true ;
-            index_t nb_cc = GEO::mesh_nb_connected_components( mesh ) ;
-            signed_index_t nb_b = GEO::mesh_nb_borders( mesh ) ;
-            if( nb_cc != 1 ) {
-                Logger::warn( "GeoModel" ) << " Surface boundary of "
-                    << gme_id() << " has " << nb_cc
-                    << " connected components " << std::endl ;
-                valid = false ;
-            }
-            if( nb_b != 0 ) {
-                Logger::warn( "GeoModel" ) << " Surface boundary of "
-                    << gme_id() << " has " << nb_b
-                    << " border connected components " << std::endl ;
-                valid = false ;
-            }
-            if( !valid ) {
-                std::ostringstream file ;
-                file << validity_errors_directory << "/boundary_surface_region_"
-                    << index() << ".mesh" ;
-                if( GEO::CmdLine::get_arg_bool( "in:validity_save" ) ) {
-                    GEO::mesh_save( mesh, file.str() ) ;
-                }
-                return false ;
-            } else {
-                return true ;
-            }
-        }
+        return RINGMesh::check_volume_watertightness( model(), gme_id() ) ;
     }
 
 }
