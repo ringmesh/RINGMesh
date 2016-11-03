@@ -98,22 +98,6 @@ namespace RINGMesh {
     private:
         class GeoModelViewer {
         public:
-            GeoModelViewer( RINGMeshApplication& app, const std::string& filename ) ;
-
-            void draw_scene() ;
-            void draw_object_properties() ;
-            void draw_viewer_properties() ;
-
-            void draw_colormap() ;
-            void toggle_colored_cells() ;
-            void toggle_colored_regions() ;
-            void toggle_colored_layers() ;
-
-            void reset_attribute_name() ;
-            void set_attribute_names( const GEO::AttributesManager& attributes ) ;
-            void autorange() ;
-            void daw_color_table_popup( ImColor& color ) ;
-        public:
             struct OldNewStatus {
                 void operator=( bool value )
                 {
@@ -131,6 +115,39 @@ namespace RINGMesh {
                 bool old_status ;
                 bool new_status ;
             } ;
+            struct EntityStyle {
+                ImColor color_ ;
+                int size_ ;
+            };
+
+        public:
+            GeoModelViewer( RINGMeshApplication& app, const std::string& filename ) ;
+
+            void draw_scene() ;
+            void draw_object_properties() ;
+            void draw_viewer_properties() ;
+
+            void draw_colormap() ;
+            void toggle_colored_cells() ;
+            void toggle_colored_regions() ;
+            void toggle_colored_layers() ;
+
+            void reset_attribute_name() ;
+            void set_attribute_names( const GEO::AttributesManager& attributes ) ;
+            void autorange() ;
+            void draw_entity_style_editor(
+                const std::string& label,
+                EntityStyle& style ) ;
+            void show_color_table_popup( ImColor& color ) ;
+            void update_entity_visibility() ;
+
+            void toggle_corner_visibility( index_t corner_id ) ;
+            void toggle_line_and_boundaries_visibility( index_t line_id ) ;
+            void toggle_surface_and_boundaries_visibility( index_t surface_id ) ;
+            void toggle_region_and_boundaries_visibility( index_t region_id ) ;
+            void toggle_geological_entity_visibility( const gme_t& entity_id ) ;
+            void toggle_mesh_entity_and_boundaries_visibility(
+                const gme_t& entity_id ) ;
 
         public:
             RINGMeshApplication& app_ ;
@@ -138,15 +155,18 @@ namespace RINGMesh {
             GeoModel GM_ ;
             GeoModelGfx GM_gfx_ ;
             Box3d bbox_ ;
+            std::vector< std::string > entity_types_ ;
+            int selected_entity_type_ ;
+            int selected_entity_id_ ;
 
             bool show_corners_ ;
-            ImColor corner_color_ ;
+            EntityStyle corner_style_ ;
             bool show_lines_ ;
-            ImColor line_color_ ;
+            EntityStyle line_style_ ;
             bool show_surface_ ;
-            ImColor surface_color_ ;
+            EntityStyle surface_style_ ;
             bool show_volume_ ;
-            ImColor volume_color_ ;
+            EntityStyle volume_style_ ;
             bool show_voi_ ;
             OldNewStatus colored_cells_ ;
             OldNewStatus show_colored_regions_ ;
