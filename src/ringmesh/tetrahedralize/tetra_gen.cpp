@@ -523,7 +523,7 @@ namespace RINGMesh {
                 dynamic_cast< const Surface& >( *unique_surfaces[s] ) ;
 //            RINGMESH_PARALLEL_LOOP
             for( index_t t = 0; t < surface.nb_mesh_elements(); t++ ) {
-                ringmesh_assert( surface.facet_is_triangle( t ) ) ;
+                ringmesh_assert( surface.nb_mesh_element_vertices( t ) == 3 ) ;
                 for( index_t v = 0; v < 3; v++ ) {
                     tetmesh_constraint_.facets.set_vertex( offset_facets + t, v,
                         starting_index

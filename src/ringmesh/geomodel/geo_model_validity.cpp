@@ -176,30 +176,33 @@ namespace {
      * @brief Returns the Line identification if the given points define
      *       an edge of one of the Line of the model
      * @param[in] model The GeoModel to consider
-     * @param[in] v0 Index of the first point in the model
-     * @param[in] v1 Index of the second point in the model
+     * @param[in] v0 Index in the model of the edge first point
+     * @param[in] v1 Index in the model of the edge second point
      */
     bool is_edge_on_line( const GeoModel& model, index_t v0, index_t v1 )
     {
-        const std::vector< GMEVertex >& v0_bme = model.mesh.vertices.gme_vertices(
-            v0 ) ;
-        const std::vector< GMEVertex >& v1_bme = model.mesh.vertices.gme_vertices(
-            v1 ) ;
+        std::vector< GMEVertex > v0_line_bme ;
+        model.mesh.vertices.gme_type_vertices( Line::type_name_static(), v0, v0_line_bme ) ;
+        if( v0_line_bme.empty() ) {
+            return false ;
+        }
+        std::vector< GMEVertex > v1_line_bme ;
+        model.mesh.vertices.gme_type_vertices( Line::type_name_static(), v1, v1_line_bme ) ;
+        if( v1_line_bme.empty() ) {
+            return false ;
+        }
 
         bool found_line = false ;
-        for( index_t i = 0; i < v0_bme.size(); ++i ) {
-            if( EntityTypeManager::is_line( v0_bme[i].gme_id.type ) ) {
-                index_t line0_id = v0_bme[i].gme_id.index ;
-                for( index_t j = 0; j < v1_bme.size(); ++j ) {
-                    if( EntityTypeManager::is_line( v1_bme[j].gme_id.type )
-                        && line0_id == v1_bme[j].gme_id.index ) {
-                        if( !is_edge_on_line( model.line( line0_id ), v0_bme[i].v_id,
-                            v1_bme[j].v_id ) ) {
-                            return false ;
-                        }
-                        found_line = true ;
-                        break ;
+        for( index_t i = 0; i < v0_line_bme.size(); ++i ) {
+            index_t line0_id = v0_line_bme[i].gme_id.index ;
+            for( index_t j = 0; j < v1_line_bme.size(); ++j ) {
+                if( line0_id == v1_line_bme[j].gme_id.index ) {
+                    if( !is_edge_on_line( model.line( line0_id ), v0_line_bme[i].v_id,
+                        v1_line_bme[j].v_id ) ) {
+                        return false ;
                     }
+                    found_line = true ;
+                    break ;
                 }
             }
         }
@@ -524,8 +527,8 @@ namespace {
             std::vector< index_t > surfaces ;
             std::vector< index_t > regions ;
 
-            const std::vector< GMEVertex >& bmes = M.mesh.vertices.gme_vertices(
-                i ) ;
+            std::vector< GMEVertex > bmes ;
+            M.mesh.vertices.gme_vertices( i, bmes ) ;
 
             for( index_t j = 0; j < bmes.size(); ++j ) {
                 const std::string& T = bmes[j].gme_id.type ;
@@ -766,15 +769,20 @@ namespace {
      */
     bool surface_boundary_valid( const Surface& S )
     {
+        const GeoModelMeshVertices& model_vertices = S.model().mesh.vertices ;
         std::vector< index_t > invalid_corners ;
         for( index_t f = 0; f < S.nb_mesh_elements(); ++f ) {
             for( index_t v = 0; v < S.nb_mesh_element_vertices( f ); ++v ) {
                 if( S.facet_adjacent_index( f, v ) == NO_ID
-                    && !is_edge_on_line( S.model(), S.model_vertex_id( f, v ),
-                        S.model_vertex_id( f, S.next_facet_vertex_index( f, v ) ) ) ) {
-                    invalid_corners.push_back( S.model_vertex_id( f, v ) ) ;
+                    && !is_edge_on_line( S.model(),
+                        model_vertices.model_vertex_id( S.gme_id(), f, v ),
+                        model_vertices.model_vertex_id( S.gme_id(), f,
+                            S.next_facet_vertex_index( f, v ) ) ) ) {
                     invalid_corners.push_back(
-                        S.model_vertex_id( f, S.next_facet_vertex_index( f, v ) ) ) ;
+                        model_vertices.model_vertex_id( S.gme_id(), f, v ) ) ;
+                    invalid_corners.push_back(
+                        model_vertices.model_vertex_id( S.gme_id(), f,
+                            S.next_facet_vertex_index( f, v ) ) ) ;
                 }
             }
         }
