@@ -700,7 +700,7 @@ namespace RINGMesh {
          * @return The number of facet found
          */
         index_t facets_around_vertex(
-            index_t v,
+            index_t surf_vertex_id,
             std::vector< index_t >& result,
             bool border_only ) const ;
 

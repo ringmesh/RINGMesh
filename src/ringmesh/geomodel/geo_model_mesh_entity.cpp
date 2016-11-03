@@ -1002,7 +1002,7 @@ namespace RINGMesh {
 
 
     index_t Surface::facets_around_vertex(
-        index_t v,
+        index_t surf_vertex_id,
         std::vector< index_t >& result,
         bool border_only ) const
     {
@@ -1010,13 +1010,13 @@ namespace RINGMesh {
 
         for( index_t i = 0; i < nb_mesh_elements(); ++i ) {
             for( index_t lv = 0; lv < nb_mesh_element_vertices( i ); lv++ ) {
-                if( mesh_element_vertex_index( i, lv ) == v ) {
+                if( mesh_element_vertex_index( i, lv ) == surf_vertex_id ) {
                     f = i ;
                     break ;
                 }
             }
         }
-        return facets_around_vertex( v, result, border_only, f ) ;
+        return facets_around_vertex( surf_vertex_id, result, border_only, f ) ;
     }
 
     index_t Surface::facets_around_vertex(
