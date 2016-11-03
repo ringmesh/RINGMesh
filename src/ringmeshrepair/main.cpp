@@ -59,12 +59,12 @@ int main( int argc, char** argv )
 
         Logger::div( "RINGMeshRepair" ) ;
         Logger::out( "" ) << "Welcome to RINGMeshRepair !" << std::endl ;
-        Logger::out( "" ) << "People working on the project in RING"
-            << std::endl ;
-        Logger::out( "" ) << "Benjamin Chauvin <Benjamin.chauvin@univ-lorraine.fr> "
+        Logger::out( "" ) << "People working on the project in RING" << std::endl ;
+        Logger::out( "" ) << "Benjamin Chauvin <benjamin.chauvin@univ-lorraine.fr> "
             << std::endl ;
 
         CmdLine::import_arg_group( "in" ) ;
+        CmdLine::import_arg_group( "out" ) ;
         CmdLine::import_arg_group( "repair" ) ;
 
         if( argc == 1 ) {
@@ -79,13 +79,13 @@ int main( int argc, char** argv )
 
         GEO::Stopwatch total( "Total time" ) ;
 
-        std::string model_name = GEO::CmdLine::get_arg( "in:geomodel" ) ;
-        if( model_name.empty() ) {
+        std::string in_model_file_name = GEO::CmdLine::get_arg( "in:geomodel" ) ;
+        if( in_model_file_name.empty() ) {
             throw RINGMeshException( "I/O",
                 "Give at least a filename in in:geomodel" ) ;
         }
         GeoModel geomodel ;
-        geomodel_load( geomodel, model_name ) ;
+        geomodel_load( geomodel, in_model_file_name ) ;
 
         GeoModelRepair geo_model_repair( geomodel ) ;
         if( GEO::CmdLine::get_arg_bool( "repair:basic" ) ) {
@@ -95,6 +95,13 @@ int main( int argc, char** argv )
         if( GEO::CmdLine::get_arg_bool( "repair:line_boundary" ) ) {
             geo_model_repair.repair_line_boundary_vertex_order() ;
         }
+
+        std::string out_model_file_name = GEO::CmdLine::get_arg( "out:geomodel" ) ;
+        if( out_model_file_name.empty() ) {
+            throw RINGMeshException( "I/O",
+                "Give at least a filename in out:geomodel" ) ;
+        }
+        geomodel_save( geomodel, out_model_file_name ) ;
 
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category() ) << e.what() << std::endl ;
