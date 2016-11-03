@@ -82,7 +82,6 @@ namespace RINGMesh {
     // Implementation details
     class GeoModelRegionFromSurfaces ;
 
-
     /*!
      * @brief Base class for all classes building a GeoModel.
      * @details Derive from this class to build or modify a GeoModel. 
@@ -120,7 +119,7 @@ namespace RINGMesh {
         void copy_meshes( const GeoModel& from, const std::string& entity_type ) ;
         void copy_mesh( const GeoModel& from, const gme_t& mesh_entity ) ;
 
-        void assign_mesh_to_entity( const Mesh& mesh, const gme_t& to ) ;
+        void assign_mesh_to_entity( const MeshBase& mesh, const gme_t& to ) ;
 
         /*!
          * \name Set entity geometry from geometrical positions
@@ -341,10 +340,10 @@ namespace RINGMesh {
 
     protected:
         void set_surface_facet_adjacencies(
-                index_t surface_id,
-                const std::vector< index_t >& facets_id,
-                const std::vector< index_t >& edges_id,
-                const std::vector< index_t >& adjacent_triangles ) ;
+            index_t surface_id,
+            const std::vector< index_t >& facets_id,
+            const std::vector< index_t >& edges_id,
+            const std::vector< index_t >& adjacent_triangles ) ;
 
     protected:
         /*! Options to toggle the building of entities from the available entities */
@@ -403,7 +402,8 @@ namespace RINGMesh {
             index_t surface_id,
             index_t line_id ) ;
         index_t disconnect_region_cells_along_surface_facets(
-            index_t region_id, index_t surface_id ) ;
+            index_t region_id,
+            index_t surface_id ) ;
     } ;
 
     /*!
