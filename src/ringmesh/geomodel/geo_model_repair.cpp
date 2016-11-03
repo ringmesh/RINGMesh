@@ -375,6 +375,7 @@ namespace RINGMesh {
     {
         std::set< gme_t > empty_entities ;
         remove_colocated_entity_vertices( empty_entities ) ;
+        /// TODO when it works, use GeoModelEditor::remove_entities_and_dependencies
         if( !empty_entities.empty() ) {
             get_dependent_entities( empty_entities ) ;
             remove_entities( empty_entities ) ;
@@ -385,6 +386,7 @@ namespace RINGMesh {
     {
         std::set< gme_t > empty_entities ;
         remove_degenerate_facets_and_edges( empty_entities ) ;
+        /// TODO when it works, use GeoModelEditor::remove_entities_and_dependencies
         if( !empty_entities.empty() ) {
             get_dependent_entities( empty_entities ) ;
             remove_entities( empty_entities ) ;
