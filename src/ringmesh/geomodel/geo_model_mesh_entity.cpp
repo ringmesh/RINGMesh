@@ -1000,6 +1000,25 @@ namespace RINGMesh {
         }
     } ;
 
+
+    index_t Surface::facets_around_vertex(
+        index_t v,
+        std::vector< index_t >& result,
+        bool border_only ) const
+    {
+        index_t f = NO_ID ;
+
+        for( index_t i = 0; i < nb_mesh_elements(); ++i ) {
+            for( index_t lv = 0; lv < nb_mesh_element_vertices( i ); lv++ ) {
+                if( mesh_element_vertex_index( i, lv ) == v ) {
+                    f = i ;
+                    break ;
+                }
+            }
+        }
+        return facets_around_vertex( v, result, border_only, f ) ;
+    }
+
     index_t Surface::facets_around_vertex(
         index_t P,
         std::vector< index_t >& result,

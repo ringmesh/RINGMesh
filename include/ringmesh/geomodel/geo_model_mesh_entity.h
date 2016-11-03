@@ -694,6 +694,19 @@ namespace RINGMesh {
         /*!
          * @brief Determines the facets around a vertex
          *
+         * @param[in] v Index ot the vertex in the surface
+         * @param[in] result Indices of the facets containing @param v
+         * @param[in] border_only If true only facets on the border are considered
+         * @return The number of facet found
+         */
+        index_t facets_around_vertex(
+            index_t v,
+            std::vector< index_t >& result,
+            bool border_only ) const ;
+
+        /*!
+         * @brief Determines the facets around a vertex
+         *
          * @param[in] P Index ot the vertex in the surface
          * @param[in] result Indices of the facets containing @param P
          * @param[in] border_only If true only facets on the border are considered

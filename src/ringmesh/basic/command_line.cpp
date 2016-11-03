@@ -92,6 +92,14 @@ namespace RINGMesh {
                 "Print statistics on the number of entities" ) ;
         }
 
+        void import_arg_group_duplication_fntk()
+        {
+            GEO::CmdLine::declare_arg_group( "duplication",
+                "Duplication of the fault network" ) ;
+            GEO::CmdLine::declare_arg( "duplication:gap", true,
+                "Print statistics on the number of entities" ) ;
+        }
+
         bool import_arg_group( const std::string& name )
         {
             if( name == "global" ) {
@@ -102,6 +110,8 @@ namespace RINGMesh {
                 import_arg_group_out() ;
             } else if( name == "stats" ) {
                 import_arg_group_stats() ;
+            } else if( name == "duplication" ) {
+                import_arg_group_duplication_fntk() ;
             } else {
                 return GEO::CmdLine::import_arg_group( name ) ;
             }
