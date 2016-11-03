@@ -186,7 +186,7 @@ namespace RINGMesh {
         void complete_geological_entities_geol_feature_from_first_child(
             const EntityType& type ) ;
 
-        void set_entity_name( const gme_t& t, const EntityType& name )
+        void set_entity_name( const gme_t& t, const std::string& name )
         {
             entity( t ).name_ = name ;
         }

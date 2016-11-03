@@ -277,7 +277,7 @@ namespace RINGMesh {
         GeoModelMeshEntity(
             const GeoModel& model,
             index_t id,
-            const std::string& name = "No_name",
+            const std::string& name = "Unnamed",
             GEOL_FEATURE geological_feature = NO_GEOL )
             :
                 GeoModelEntity( model, id, name, geological_feature ),
@@ -509,7 +509,11 @@ namespace RINGMesh {
         bool is_first_corner_first_vertex() const ;
 
     protected:
-        Line( const GeoModel& model, index_t id ) ;
+        Line( const GeoModel& model, index_t id )
+            : GeoModelMeshEntity( model, id )
+        {
+            id_.type = type_name_static() ;
+        }
 
         virtual bool is_mesh_valid() const ;
     } ;

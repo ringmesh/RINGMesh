@@ -1897,7 +1897,7 @@ namespace RINGMesh {
     void GeoModelBuilder::end_model()
     {
         if( model().name().empty() ) {
-            set_model_name( "model_default_name" ) ;
+            set_model_name( "Unnamed_GeoModel" ) ;
         }
         // Get out if the model has no surface
         if( model().nb_surfaces() == 0 ) {

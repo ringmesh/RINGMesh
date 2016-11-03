@@ -85,7 +85,7 @@ namespace RINGMesh {
         GeoModelGeologicalEntity(
             const GeoModel& model,
             index_t id = NO_ID,
-            const std::string& name = "unnamed",
+            const std::string& name = "",
             GEOL_FEATURE geological_feature = NO_GEOL )
             : GeoModelEntity( model, id, name, geological_feature )
         {
