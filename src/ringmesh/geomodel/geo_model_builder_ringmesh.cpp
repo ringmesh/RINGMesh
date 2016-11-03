@@ -510,7 +510,7 @@ namespace RINGMesh {
         // Repair line boundary order.
         complete_entity_connectivity() ;
         GeoModelRepair repair( model() ) ;
-        repair.repair(GeoModelRepair::LINE_BOUNDARY_ORDER) ;
+        repair.repair( GeoModelRepair::LINE_BOUNDARY_ORDER ) ;
 
         unzClose( uz ) ;
     }
