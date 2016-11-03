@@ -80,7 +80,7 @@ int main( int argc, char** argv )
             << std::endl << std::endl << std::endl ;
         // Repair the model
         GeoModelRepair model_repair( M ) ;
-        model_repair.geo_model_mesh_repair() ;
+        model_repair.repair( GeoModelRepair::ALL ) ;
 
         // Test the validity again
         if( is_geomodel_valid( M ) ) {

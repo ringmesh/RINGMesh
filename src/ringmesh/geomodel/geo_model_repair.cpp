@@ -155,7 +155,7 @@ namespace RINGMesh {
      *  are emtpy once degenerate entities are removed
      * @pre Colocated vertices have already been removed
      */
-    void GeoModelRepair::remove_degenerate_facet_and_edges(
+    void GeoModelRepair::remove_degenerate_facets_and_edges(
         std::set< gme_t >& to_remove )
     {
         to_remove.clear() ;
@@ -326,31 +326,69 @@ namespace RINGMesh {
         }
     }
 
+    void GeoModelRepair::repair( RepairMode repair_mode )
+    {
+        switch( repair_mode )
+        {
+            case ALL :
+                geo_model_mesh_repair() ;
+                break ;
+            case BASIC :
+                end_model() ;
+                break ;
+            case COLOCATED_VERTICES :
+                remove_colocated_entity_vertices_and_update_gm() ;
+                break ;
+            case DEGENERATE_FACETS_EDGES :
+                remove_degenerate_facets_and_edges_and_update_gm() ;
+                break ;
+            case LINE_BOUNDARY_ORDER :
+                repair_line_boundary_vertex_order() ;
+                break ;
+            default :
+                ringmesh_assert_not_reached ;
+        }
+    }
+
     void GeoModelRepair::geo_model_mesh_repair()
     {
         // Force removal of global vertices - Bugs ? I do not know where [JP]
-        model().mesh.vertices.clear() ;
+        //model().mesh.vertices.clear() ; /// TODO Test now
 
         // Remove colocated vertices in each entity
+        remove_colocated_entity_vertices_and_update_gm() ;
+
+        // Basic mesh repair for surfaces and lines
+        remove_degenerate_facets_and_edges_and_update_gm() ;
+
+        // Proper reordering of line boundaries
+        repair_line_boundary_vertex_order() ;
+
+        // This is basic requirement ! no_colocated model vertices !
+        // So remove them if there are any
+        model().mesh.remove_colocated_vertices() ;
+
+        end_model() ;
+    }
+
+    void GeoModelRepair::remove_colocated_entity_vertices_and_update_gm()
+    {
         std::set< gme_t > empty_entities ;
         remove_colocated_entity_vertices( empty_entities ) ;
         if( !empty_entities.empty() ) {
             get_dependent_entities( empty_entities ) ;
             remove_entities( empty_entities ) ;
         }
+    }
 
-        // Basic mesh repair for surfaces and lines
-        remove_degenerate_facet_and_edges( empty_entities ) ;
+    void GeoModelRepair::remove_degenerate_facets_and_edges_and_update_gm()
+    {
+        std::set< gme_t > empty_entities ;
+        remove_degenerate_facets_and_edges( empty_entities ) ;
         if( !empty_entities.empty() ) {
             get_dependent_entities( empty_entities ) ;
             remove_entities( empty_entities ) ;
         }
-
-        // This is basic requirement ! no_colocated model vertices !
-        // So remove them if there are any 
-        model().mesh.remove_colocated_vertices() ;
-
-        end_model() ;
     }
 
     void GeoModelRepair::repair_line_boundary_vertex_order()

@@ -96,11 +96,8 @@ namespace RINGMesh {
         {
             GEO::CmdLine::declare_arg_group( "repair", "GeoModel repair processes" ) ;
             GEO::CmdLine::declare_arg(
-                "repair:basic", false,
-                "Basic repair: remove colocated vertices, degenerated facets..." ) ;
-            GEO::CmdLine::declare_arg(
-                "repair:line_boundary", false,
-                "Reorder line boundary to follow line vertex order." ) ;
+                "repair:mode", 0,
+                "Repair mode: repair process to apply to the geomodel" ) ;
         }
 
         bool import_arg_group( const std::string& name )
