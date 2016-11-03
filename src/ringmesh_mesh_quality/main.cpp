@@ -70,6 +70,7 @@ namespace {
     {
         CmdLine::import_arg_group( "in" ) ;
         CmdLine::import_arg_group( "quality" ) ;
+        CmdLine::import_arg_group( "out" ) ;
     }
 
     void check_geomodel_is_valid( const GeoModel& geomodel )
@@ -108,6 +109,13 @@ namespace {
         index_t quality_mode = GEO::CmdLine::get_arg_uint( "quality:mode" ) ;
         compute_prop_tet_mesh_quality(
             static_cast< MeshQualityMode >( quality_mode ), geomodel ) ;
+
+        std::string geomodel_out_name = GEO::CmdLine::get_arg( "out:geomodel" ) ;
+        if( geomodel_out_name.empty() ) {
+            throw RINGMeshException( "I/O",
+                "Give at least a filename in out:geomodel" ) ;
+        }
+        geomodel_save( geomodel, geomodel_out_name ) ;
     }
 }
 
