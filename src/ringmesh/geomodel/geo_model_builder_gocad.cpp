@@ -1351,10 +1351,8 @@ namespace RINGMesh {
     void GeoModelBuilderML::load_file()
     {
         read_file() ;
-
         model().mesh.vertices.test_and_initialize() ;
         build_lines_and_corners_from_surfaces() ;
-
         build_contacts() ;
     }
 
