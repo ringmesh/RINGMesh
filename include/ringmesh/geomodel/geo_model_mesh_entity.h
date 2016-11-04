@@ -300,8 +300,6 @@ namespace RINGMesh {
         {
             ringmesh_assert( mesh != NULL ) ;
             mesh_ = mesh ;
-            model_vertex_id_.bind( mesh_->vertex_attribute_manager(),
-                model_vertex_id_att_name() ) ;
         }
 
         bool is_boundary_connectivity_valid() const ;
