@@ -597,15 +597,13 @@ namespace RINGMesh {
         return mesh_entity.vertex_attribute_manager() ;
     }
 
-    GeoModelMeshVertices::GeoModelMeshVertices( 
-    GeoModelMesh& gmm, 
-    GeoModel& gm )
-        : 
-        gmm_( gmm ), 
-        gm_( gm ), 
-        mesh_( NULL ), 
-        mesh_builder_( NULL ),
-        vertex_mapper_( *this, gm )
+    GeoModelMeshVertices::GeoModelMeshVertices( GeoModelMesh& gmm, GeoModel& gm )
+        :
+            gmm_( gmm ),
+            gm_( gm ),
+            mesh_( NULL ),
+            mesh_builder_( NULL ),
+            vertex_mapper_( *this, gm )
     {
     }
 
@@ -637,7 +635,6 @@ namespace RINGMesh {
     void GeoModelMeshVertices::fill_vertices(
         const GeoModel& M,
         const std::string& entity_type,
-        Mesh0DBuilder& builder,
         index_t& count )
     {
         for( index_t i = 0; i < M.nb_mesh_entities( entity_type ); ++i ) {
@@ -649,7 +646,7 @@ namespace RINGMesh {
 
             // Map and vertex
             for( index_t v = 0; v < E.nb_vertices(); v++ ) {
-                builder.set_vertex( count, E.vertex( v ) ) ;
+                mesh_builder_->set_vertex( count, E.vertex( v ) ) ;
                 // Map from vertices of MeshEntities to GeoModelMeshVertices
                 vertex_mapper_.set_vertex_map_value( E.gme_id(), v, count ) ;
                 // Global vertex index increment
@@ -682,10 +679,10 @@ namespace RINGMesh {
         vertex_mapper_.bind_all_mesh_entity_vertex_maps() ;
 
         index_t count = 0 ;
-        fill_vertices( gm_, Corner::type_name_static(), *builder, count ) ;
-        fill_vertices( gm_, Line::type_name_static(), *builder, count ) ;
-        fill_vertices( gm_, Surface::type_name_static(), *builder, count ) ;
-        fill_vertices( gm_, Region::type_name_static(), *builder, count ) ;
+        fill_vertices( gm_, Corner::type_name_static(), count ) ;
+        fill_vertices( gm_, Line::type_name_static(), count ) ;
+        fill_vertices( gm_, Surface::type_name_static(), count ) ;
+        fill_vertices( gm_, Region::type_name_static(), count ) ;
 
         // Remove colocated vertices
         remove_colocated() ;
@@ -788,8 +785,8 @@ namespace RINGMesh {
 
     index_t GeoModelMeshVertices::add_vertex( const vec3& point )
     {
-        MeshBuilder builder( mesh_ ) ;
-        return builder.create_vertex( point ) ;
+        Mesh0DBuilder* builder = mesh_->get_mesh0d_builder() ;
+        return builder->create_vertex( point ) ;
     }
 
     void GeoModelMeshVertices::update_point( index_t v, const vec3& point )
@@ -1626,8 +1623,8 @@ namespace RINGMesh {
         for( index_t c = 0; c < mesh_->nb_cells(); c++ ) {
             for( index_t f = 0; f < mesh_->nb_cell_facets( c ); f++ ) {
                 std::vector< index_t > result ;
-                if( ann.get_neighbors( mesh_->cell_facet_barycenter( c, f ),
-                    result, gm_.epsilon() ) ) {
+                if( ann.get_neighbors( mesh_->cell_facet_barycenter( c, f ), result,
+                    gm_.epsilon() ) ) {
                     facet_id_[mesh_->cell_facet( c, f )] = result[0] ;
                     // If there are more than 1 matching facet, this is WRONG
                     // and the vertex indices should be checked too [Jeanne]
@@ -2405,7 +2402,7 @@ namespace RINGMesh {
     void GeoModelMesh::transfert_vertex_attributes() const
     {
         GEO::vector< std::string > att_v_names ;
-        std::vector < std::string > att_v_double_names ;
+        std::vector< std::string > att_v_double_names ;
         vertex_attribute_manager().list_attribute_names( att_v_names ) ;
         for( index_t att_v = 0; att_v < vertex_attribute_manager().nb(); att_v++ ) {
 
