@@ -73,7 +73,7 @@ namespace {
         CmdLine::import_arg_group( "out" ) ;
     }
 
-    void check_geomodel_is_valid( const GeoModel& geomodel )
+    void check_geomodel_is_3d_meshed_by_simplexes( const GeoModel& geomodel )
     {
         if( geomodel.nb_regions() == 0 ) {
             throw RINGMeshException( "I/O", "Input geomodel has no region." ) ;
@@ -104,7 +104,7 @@ namespace {
         }
         GeoModel geomodel ;
         geomodel_load( geomodel, geomodel_in_name ) ;
-        check_geomodel_is_valid( geomodel ) ;
+        check_geomodel_is_3d_meshed_by_simplexes( geomodel ) ;
 
         index_t quality_mode = GEO::CmdLine::get_arg_uint( "quality:mode" ) ;
         compute_prop_tet_mesh_quality(

@@ -5,13 +5,27 @@
 
 /*!
  * @author Benjamin Chauvin
+ * This code is inspired from
+ * http://people.sc.fsu.edu/~jburkardt/cpp_src/tet_mesh_quality/tet_mesh_quality.html
  */
 
 namespace {
 
     using namespace RINGMesh ;
 
-    double tetra_in_sphere_radius(
+    /*!
+     * @brief Computes the radius of the tetrahedron insphere.
+     *
+     * The tetrahedron insphere is the sphere inside the tetrahedron which
+     * is tangent to each tetrahedron facet.
+     *
+     * @param[in] v0 first vertex of the tetrahedron.
+     * @param[in] v1 second vertex of the tetrahedron.
+     * @param[in] v2 third vertex of the tetrahedron.
+     * @param[in] v3 fourth vertex of the tetrahedron.
+     * @return the radius of the tetrahedron insphere.
+     */
+    double tetra_insphere_radius(
         const vec3& v0,
         const vec3& v1,
         const vec3& v2,
@@ -26,6 +40,21 @@ namespace {
         return ( 3 * tet_volume ) / ( A1 + A2 + A3 + A4 ) ;
     }
 
+    /*!
+     * @brief Tetrahedron quality based on the insphere and circumsphere radii.
+     *
+     * The quality is between 0 and 1. 0 corresponds to a bad tetrahedron, and
+     * 1 to a good tetrahedron (equilaterality).
+     * For more information, see
+     * <a href="http://people.sc.fsu.edu/~jburkardt/cpp_src/tet_mesh_quality/tet_mesh_quality.html">
+     * TET_MESH_QUALITY Interactive Program for Tet Mesh Quality</a>
+     *
+     * @param[in] v0 first vertex of the tetrahedron.
+     * @param[in] v1 second vertex of the tetrahedron.
+     * @param[in] v2 third vertex of the tetrahedron.
+     * @param[in] v3 fourth vertex of the tetrahedron.
+     * @return 3 * the insphere radius divided by the circumsphere radius.
+     */
     double tet_quality_insphere_radius_by_circumsphere_radius(
         const vec3& v0,
         const vec3& v1,
@@ -47,10 +76,17 @@ namespace {
             < global_epsilon ) ;
 
         // insphere computation
-        double in_radius = tetra_in_sphere_radius( v0, v1, v2, v3 ) ;
+        double in_radius = tetra_insphere_radius( v0, v1, v2, v3 ) ;
         return 3. * in_radius / tetra_circum_radius ;
     }
 
+    /*!
+     * @param[in] v0 first vertex of the tetrahedron.
+     * @param[in] v1 second vertex of the tetrahedron.
+     * @param[in] v2 third vertex of the tetrahedron.
+     * @param[in] v3 fourth vertex of the tetrahedron.
+     * @return the maximum of the tetrahedron edge length.
+     */
     double max_tet_edge_length(
         const vec3& v0,
         const vec3& v1,
@@ -70,18 +106,45 @@ namespace {
 
     }
 
+    /*!
+     * @brief Tetrahedron quality based on the insphere radius and the maximum edge length.
+     *
+     * The quality is between 0 and 1. 0 corresponds to a bad tetrahedron, and
+     * 1 to a good tetrahedron (equilaterality).
+     * For more information see
+     * Du, Q., and D. Wang, 2005,
+     * The optimal centroidal Voronoi tessellations and the gersho's conjecture in the three-dimensional space,
+     * Computers & Mathematics with Applications, v. 49, no. 9, p. 1355-1373,
+     * <a href="http://doi.org/10.1016/j.camwa.2004.12.008">doi</a>,
+     * <a href="http://people.sc.fsu.edu/~jburkardt/cpp_src/tet_mesh_quality/tet_mesh_quality.html">
+     * TET_MESH_QUALITY Interactive Program for Tet Mesh Quality</a>
+     *
+     * @param[in] v0 first vertex of the tetrahedron.
+     * @param[in] v1 second vertex of the tetrahedron.
+     * @param[in] v2 third vertex of the tetrahedron.
+     * @param[in] v3 fourth vertex of the tetrahedron.
+     * @return 2 * sqrt( 6 ) * the insphere radius divided by the maximum of the
+     * tetrhedron edge length.
+     */
     double tet_quality_insphere_radius_by_max_edge_length(
         const vec3& v0,
         const vec3& v1,
         const vec3& v2,
         const vec3& v3 )
     {
-        double in_radius = tetra_in_sphere_radius( v0, v1, v2, v3 ) ;
+        double in_radius = tetra_insphere_radius( v0, v1, v2, v3 ) ;
         double edge_length = max_tet_edge_length( v0, v1, v2, v3 ) ;
 
         return 2 * sqrt( 6 ) * in_radius / edge_length ;
     }
 
+    /*!
+     * @param[in] v0 first vertex of the tetrahedron.
+     * @param[in] v1 second vertex of the tetrahedron.
+     * @param[in] v2 third vertex of the tetrahedron.
+     * @param[in] v3 fourth vertex of the tetrahedron.
+     * @return the sum of the square tetrahedron edge length.
+     */
     double sum_square_edge_length(
         const vec3& v0,
         const vec3& v1,
@@ -98,7 +161,24 @@ namespace {
 
     }
 
-    double tet_quality_volume_sum_square_edges(
+    /*!
+     * @brief Tetrahedron quality based on the tetrahedron volume and
+     * the sum of the square edges.
+     *
+     * The quality is between 0 and 1. 0 corresponds to a bad tetrahedron, and
+     * 1 to a good tetrahedron (equilaterality).
+     * For more information see
+     * <a href="http://people.sc.fsu.edu/~jburkardt/cpp_src/tet_mesh_quality/tet_mesh_quality.html">
+     * TET_MESH_QUALITY Interactive Program for Tet Mesh Quality</a>
+     *
+     * @param[in] v0 first vertex of the tetrahedron.
+     * @param[in] v1 second vertex of the tetrahedron.
+     * @param[in] v2 third vertex of the tetrahedron.
+     * @param[in] v3 fourth vertex of the tetrahedron.
+     *
+     * @return 12. * (3 * volume)^(2/3) / sum of the square edge.
+     */
+    double tet_quality_volume_by_sum_square_edges(
         const vec3& v0,
         const vec3& v1,
         const vec3& v2,
@@ -110,6 +190,16 @@ namespace {
         return 12. * std::pow( 3. * tet_volume, 2. / 3. ) / sum_square_edge ;
     }
 
+    /*!
+     * @bried Computes the sinus of the half solid angle relatively to a
+     * tetrahedron vertex.
+     * @param[in] v0 first vertex of the tetrahedron. The solid angle is computed
+     * relatively to this vertex.
+     * @param[in] v1 second vertex of the tetrahedron.
+     * @param[in] v2 third vertex of the tetrahedron.
+     * @param[in] v3 fourth vertex of the tetrahedron.
+     * @return the sinus of the half solid angle on the vertex \p v0.
+     */
     double sin_half_solid_angle(
         const vec3& v0,
         const vec3& v1,
@@ -133,6 +223,31 @@ namespace {
         return 12 * tet_volume / denominator ;
     }
 
+    /*!
+     * @brief Tetrahedron quality based on the solid angles.
+     *
+     * This metrics is based on the sinus of the half solid angle on each
+     * vertex. It was shown on the literature that the minimum of the four
+     * values provides an estimate of the tetrahedron quality.
+     * For more information, see:
+     * <a href="http://people.eecs.berkeley.edu/~jrs/meshpapers/robnotes.pdf">robnotes.pdf</a>
+     * p15,
+     * Liu, A., and B. Joe, 1994, Relationship between tetrahedron shape measures,
+     * BIT, v. 34, no. 2, p. 268-287, <a href="http://doi.org/10.1007/BF01955874">doi</a> and
+     * <a href="http://people.sc.fsu.edu/~jburkardt/cpp_src/tet_mesh_quality/tet_mesh_quality.html">
+     * TET_MESH_QUALITY Interactive Program for Tet Mesh Quality</a>
+     *
+     * @param[in] v0 first vertex of the tetrahedron.
+     * @param[in] v1 second vertex of the tetrahedron.
+     * @param[in] v2 third vertex of the tetrahedron.
+     * @param[in] v3 fourth vertex of the tetrahedron.
+     *
+     * @return 1.5 * sqrt( 6 ) * the minimun of the sinus of the half
+     * solid angles. 1.5 * sqrt( 6 ) is a factor to scale the metrics between
+     * 0 and 1.
+     * 0 corresponds to a bad tetrahedron, and
+     * 1 to a good tetrahedron (equilaterality).
+     */
     double tet_quality_min_solid_angle(
         const vec3& v0,
         const vec3& v1,
@@ -148,6 +263,11 @@ namespace {
         return 1.5 * sqrt( 6 ) * min_sin_half_solid_angle ;
     }
 
+    /*!
+     * @param[in] mesh_qual_mode mesh quality number.
+     * @return the property name associated to the mesh quality number
+     * \p mesh_qual_mode.
+     */
     std::string mesh_qual_mode_to_prop_name( MeshQualityMode mesh_qual_mode )
     {
         std::string quality_name = "" ;
@@ -171,6 +291,19 @@ namespace {
         return quality_name ;
     }
 
+    /*!
+     * @brief Gets the quality for one tetrahedron.
+     *
+     * The quality is between 0 and 1. 0 corresponds to a bad tetrahedron, and
+     * 1 to a good tetrahedron (equilaterality).
+     *
+     * @param[in] v0 first vertex of the tetrahedron.
+     * @param[in] v1 second vertex of the tetrahedron.
+     * @param[in] v2 third vertex of the tetrahedron.
+     * @param[in] v3 fourth vertex of the tetrahedron.
+     * @param[in] mesh_qual_mode tetrahedron quality to get.
+     * @return the tetrahedron quality.
+     */
     double get_tet_quality(
         const vec3& v0,
         const vec3& v1,
@@ -189,7 +322,7 @@ namespace {
                     v3 ) ;
                 break ;
             case VOLUME_BY_SUM_SQUARE_EDGE:
-                quality = tet_quality_volume_sum_square_edges( v0, v1, v2, v3 ) ;
+                quality = tet_quality_volume_by_sum_square_edges( v0, v1, v2, v3 ) ;
                 break ;
             case MIN_SOLID_ANGLE:
                 quality = tet_quality_min_solid_angle( v0, v1, v2, v3 ) ;
