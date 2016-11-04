@@ -157,7 +157,7 @@ namespace RINGMesh {
         std::vector< vec3 >& result ) ;
 
 
-    bool RINGMESH_API circle_segment_intersection(
+    bool RINGMESH_API disk_segment_intersection(
         const vec3& p0,
         const vec3& p1,
         const vec3& O_circle,
