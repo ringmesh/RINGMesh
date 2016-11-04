@@ -598,12 +598,7 @@ namespace RINGMesh {
     }
 
     GeoModelMeshVertices::GeoModelMeshVertices( GeoModelMesh& gmm, GeoModel& gm )
-        :
-            gmm_( gmm ),
-            gm_( gm ),
-            mesh_( NULL ),
-            mesh_builder_( NULL ),
-            vertex_mapper_( *this, gm )
+        : gmm_( gmm ), gm_( gm ), mesh_( NULL ), vertex_mapper_( *this, gm )
     {
     }
 
@@ -645,8 +640,9 @@ namespace RINGMesh {
             }
 
             // Map and vertex
+            Mesh0DBuilder* mesh_builder = mesh_->get_mesh0d_builder() ;
             for( index_t v = 0; v < E.nb_vertices(); v++ ) {
-                mesh_builder_->set_vertex( count, E.vertex( v ) ) ;
+                mesh_builder->set_vertex( count, E.vertex( v ) ) ;
                 // Map from vertices of MeshEntities to GeoModelMeshVertices
                 vertex_mapper_.set_vertex_map_value( E.gme_id(), v, count ) ;
                 // Global vertex index increment
@@ -794,7 +790,8 @@ namespace RINGMesh {
         test_and_initialize() ;
         ringmesh_assert( v < nb() ) ;
         // Change the position of the unique_vertex
-        mesh_builder_->set_vertex( v, point ) ;
+        Mesh0DBuilder* mesh_builder = mesh_->get_mesh0d_builder() ;
+        mesh_builder->set_vertex( v, point ) ;
 
         GeoModelBuilder builder( gm_ ) ;
 
@@ -881,7 +878,6 @@ namespace RINGMesh {
             gmm_( gmm ),
             gm_( gmm.model() ),
             mesh_( NULL ),
-            mesh_builder_( NULL ),
             nb_tet_( 0 ),
             nb_hex_( 0 ),
             nb_prism_( 0 ),
@@ -972,8 +968,9 @@ namespace RINGMesh {
         }
 
         // Create "empty" tet, hex, pyr and prism
+        Mesh3DBuilder* mesh_builder = mesh_->get_mesh3d_builder() ;
         for( index_t i = 0; i < GEO::MESH_NB_CELL_TYPES; ++i ) {
-            mesh_builder_->create_cells( nb_cells_per_type[i],
+            mesh_builder->create_cells( nb_cells_per_type[i],
                 GEO::MeshCellType( i ) ) ;
         }
 
@@ -992,7 +989,7 @@ namespace RINGMesh {
                         cur_region.mesh_element_vertex_index( c, v ) ;
                     index_t global_vertex_id = model_vertices.model_vertex_id(
                         cur_region.gme_id(), region_vertex_index ) ;
-                    mesh_builder_->set_cell_vertex( cur_cell, v, global_vertex_id ) ;
+                    mesh_builder->set_cell_vertex( cur_cell, v, global_vertex_id ) ;
                 }
                 region_id_[cur_cell] = r ;
                 cell_id_[cur_cell] = c ;
@@ -1000,7 +997,7 @@ namespace RINGMesh {
         }
 
         // Retrieve the adjacencies
-        mesh_builder_->connect_cells() ;
+        mesh_builder->connect_cells() ;
 
         // Permute cells to sort them per region and per type
         GEO::vector< index_t > sorted_indices( mesh_->nb_cells() ) ;
@@ -1009,7 +1006,7 @@ namespace RINGMesh {
         }
         GeoModelMeshCellsSort action( *mesh_, region_id_ ) ;
         std::sort( sorted_indices.begin(), sorted_indices.end(), action ) ;
-        mesh_builder_->permute_cells( sorted_indices ) ;
+        mesh_builder->permute_cells( sorted_indices ) ;
 
         // Cache some values
         nb_tet_ = nb_cells_per_type[GEO::MESH_TET] ;
@@ -1452,9 +1449,10 @@ namespace RINGMesh {
 
                     // Update all the cell corners on this side of the surface
                     // to the new duplicated vertex index
+                    Mesh3DBuilder* mesh_builder = mesh_->get_mesh3d_builder() ;
                     for( index_t cur_co = 0; cur_co < corner_used.size();
                         cur_co++ ) {
-                        mesh_builder_->set_cell_corner_vertex_index(
+                        mesh_builder->set_cell_corner_vertex_index(
                             corner_used[cur_co], duplicated_vertex_id ) ;
                     }
                 }
@@ -1578,7 +1576,8 @@ namespace RINGMesh {
 
     void GeoModelMeshCells::clear()
     {
-        mesh_builder_->clear_cells( true, false ) ;
+        Mesh3DBuilder* mesh_builder = mesh_->get_mesh3d_builder() ;
+        mesh_builder->clear_cells( true, false ) ;
         region_cell_ptr_.clear() ;
         nb_tet_ = 0 ;
         nb_hex_ = 0 ;
@@ -1592,11 +1591,12 @@ namespace RINGMesh {
 
     void GeoModelMeshCells::clear_duplication()
     {
+        Mesh3DBuilder* mesh_builder = mesh_->get_mesh3d_builder() ;
         for( index_t c = 0; c < mesh_->nb_cells(); c++ ) {
             for( index_t v = 0; v < mesh_->nb_cell_vertices( c ); v++ ) {
                 index_t index = NO_ID ;
                 if( is_corner_duplicated( c, v, index ) ) {
-                    mesh_builder_->set_cell_corner_vertex_index( c,
+                    mesh_builder->set_cell_corner_vertex_index( c,
                         duplicated_vertex( index ) ) ;
                 }
             }
@@ -1653,7 +1653,6 @@ namespace RINGMesh {
             gmm_( gmm ),
             gm_( gmm.model() ),
             mesh_( NULL ),
-            mesh_builder_( NULL ),
             nb_triangle_( 0 ),
             nb_quad_( 0 ),
             nb_polygon_( 0 )
@@ -1882,7 +1881,8 @@ namespace RINGMesh {
         surface_facet_ptr_.clear() ;
         nb_triangle_ = 0 ;
         nb_quad_ = 0 ;
-        mesh_builder_->clear_facets( true, false ) ;
+        Mesh2DBuilder* mesh_builder = mesh_->get_mesh2d_builder() ;
+        mesh_builder->clear_facets( true, false ) ;
     }
 
     void GeoModelMeshFacets::test_and_initialize() const
@@ -1927,11 +1927,12 @@ namespace RINGMesh {
         }
 
         // Create triangles and quads, the polygons will be handle later
+        Mesh2DBuilder* mesh_builder = mesh_->get_mesh2d_builder() ;
         if( nb_facet_per_type[TRIANGLE] ) {
-            mesh_builder_->create_facet_triangles( nb_facet_per_type[TRIANGLE] ) ;
+            mesh_builder->create_facet_triangles( nb_facet_per_type[TRIANGLE] ) ;
         }
         if( nb_facet_per_type[QUAD] ) {
-            mesh_builder_->create_facet_quads( nb_facet_per_type[QUAD] ) ;
+            mesh_builder->create_facet_quads( nb_facet_per_type[QUAD] ) ;
         }
 
         // Compute the facet offset
@@ -1961,7 +1962,7 @@ namespace RINGMesh {
                         index_t v_id = model_vertices.model_vertex_id(
                             surface.gme_id(), f, v ) ;
                         ringmesh_assert( v_id != NO_ID ) ;
-                        mesh_builder_->set_facet_vertex( cur_facet, v, v_id ) ;
+                        mesh_builder->set_facet_vertex( cur_facet, v, v_id ) ;
                     }
                 } else {
                     GEO::vector< index_t > vertices( nb_vertices ) ;
@@ -1969,7 +1970,7 @@ namespace RINGMesh {
                         vertices[v] = model_vertices.model_vertex_id(
                             surface.gme_id(), f, v ) ;
                     }
-                    cur_facet = mesh_builder_->create_facet_polygon( vertices ) ;
+                    cur_facet = mesh_builder->create_facet_polygon( vertices ) ;
                 }
                 surface_id_[cur_facet] = s ;
                 facet_id_[cur_facet] = f ;
@@ -1977,7 +1978,7 @@ namespace RINGMesh {
         }
 
         // Compute facet adjacencies
-        mesh_builder_->connect_facets() ;
+        mesh_builder->connect_facets() ;
 
         // Permute facets to sort them per surface and per type
         // Example for a mesh with two surfaces and only triangles and quads
@@ -1989,7 +1990,7 @@ namespace RINGMesh {
         }
         GeoModelMeshFacetsSort action( *mesh_, surface_id_ ) ;
         std::sort( sorted_indices.begin(), sorted_indices.end(), action ) ;
-        mesh_builder_->permute_facets( sorted_indices ) ;
+        mesh_builder->permute_facets( sorted_indices ) ;
 
         // Cache some values
         nb_triangle_ = nb_facet_per_type[TRIANGLE] ;
@@ -2017,7 +2018,7 @@ namespace RINGMesh {
     /*******************************************************************************/
 
     GeoModelMeshEdges::GeoModelMeshEdges( GeoModelMesh& gmm )
-        : gmm_( gmm ), gm_( gmm.model() ), mesh_( NULL ), mesh_builder_( NULL )
+        : gmm_( gmm ), gm_( gmm.model() ), mesh_( NULL )
     {
     }
 
@@ -2051,7 +2052,8 @@ namespace RINGMesh {
 
     void GeoModelMeshEdges::clear()
     {
-        mesh_builder_->clear_edges( true, false ) ;
+        Mesh1DBuilder* mesh_builder = mesh_->get_mesh1d_builder();
+        mesh_builder->clear_edges( true, false ) ;
         well_ptr_.clear() ;
     }
 
@@ -2088,7 +2090,8 @@ namespace RINGMesh {
         }
 
         // Create edges
-        mesh_builder_->create_edges( well_ptr_.back() ) ;
+        Mesh1DBuilder* mesh_builder = mesh_->get_mesh1d_builder();
+        mesh_builder->create_edges( well_ptr_.back() ) ;
 
         // Fill edges
         index_t cur_edge = 0 ;
@@ -2099,11 +2102,11 @@ namespace RINGMesh {
                 for( index_t e = 0; e < well.part( p ).nb_edges(); e++ ) {
                     const vec3& e0 = GEO::Geom::mesh_vertex( part,
                         part.edges.vertex( e, 0 ) ) ;
-                    mesh_builder_->set_edge_vertex( cur_edge, 0,
+                    mesh_builder->set_edge_vertex( cur_edge, 0,
                         gmm_.vertices.index( e0 ) ) ;
                     const vec3& e1 = GEO::Geom::mesh_vertex( part,
                         part.edges.vertex( e, 1 ) ) ;
-                    mesh_builder_->set_edge_vertex( cur_edge, 1,
+                    mesh_builder->set_edge_vertex( cur_edge, 1,
                         gmm_.vertices.index( e1 ) ) ;
                     cur_edge++ ;
                 }
@@ -2366,7 +2369,6 @@ namespace RINGMesh {
         :
             geo_model_( gm ),
             mesh_( NULL ),
-            mesh_builder_( NULL ),
             mode_( GeoModelMeshCells::NONE ),
             order_value_( 1 ),
             vertices( *this, gm ),
@@ -2380,15 +2382,10 @@ namespace RINGMesh {
     {
         GeogramMesh* geogrammesh = new GeogramMesh( gm, 3, false ) ;
         mesh_ = geogrammesh ;
-        mesh_builder_ = new GeogramMeshBuilder( *geogrammesh ) ;
         vertices.mesh_ = mesh_ ;
-        vertices.mesh_builder_ = mesh_builder_ ;
         edges.mesh_ = mesh_ ;
-        edges.mesh_builder_ = mesh_builder_ ;
         facets.mesh_ = mesh_ ;
-        facets.mesh_builder_ = mesh_builder_ ;
         cells.mesh_ = mesh_ ;
-        cells.mesh_builder_ = mesh_builder_ ;
         order.mesh_ = mesh_ ;
 
     }
@@ -2512,7 +2509,6 @@ namespace RINGMesh {
     {
         facets.unbind_attribute() ;
         cells.unbind_attribute() ;
-        delete mesh_builder_ ;
         delete mesh_ ;
     }
 

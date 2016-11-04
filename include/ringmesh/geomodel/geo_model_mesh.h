@@ -514,7 +514,6 @@ namespace RINGMesh {
         GeoModel& gm_ ;
         /// Attached Mesh
         MeshAllD* mesh_ ;
-        MeshAllDBuilder* mesh_builder_ ;
         /// Mapper from/to GeoModelMeshEntity vertices
         GeoModelVertexMapper vertex_mapper_ ;
     } ;
@@ -726,7 +725,6 @@ namespace RINGMesh {
         const GeoModel& gm_ ;
         /// Attached Mesh
         MeshAllD* mesh_ ;
-        MeshAllDBuilder* mesh_builder_ ;
 
         /// Attribute storing the surface index per facet
         GEO::Attribute< index_t > surface_id_ ;
@@ -809,7 +807,6 @@ namespace RINGMesh {
         const GeoModel& gm_ ;
         /// Attached Mesh
         MeshAllD* mesh_ ;
-        MeshAllDBuilder* mesh_builder_ ;
 
         /*!
          * Vector storing the index of the starting edge index
@@ -1217,7 +1214,6 @@ namespace RINGMesh {
         const GeoModel& gm_ ;
         /// Attached Mesh
         MeshAllD* mesh_ ;
-        MeshAllDBuilder* mesh_builder_ ;
 
         /// Attribute storing the region index per cell
         GEO::Attribute< index_t > region_id_ ;
@@ -1496,7 +1492,6 @@ namespace RINGMesh {
          * facets or cells.
          */
         MeshAllD* mesh_ ;
-        MeshAllDBuilder* mesh_builder_ ;
 
         /// Optional duplication mode to compute the duplication of cells on surfaces
         mutable GeoModelMeshCells::DuplicateMode mode_ ;
