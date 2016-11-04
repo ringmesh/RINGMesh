@@ -785,16 +785,16 @@ namespace RINGMesh {
     }
 
     /*!
-     * Computes the intersection between a circle and a segment
+     * Computes the intersection between a disk and a segment
      * @param[in] p0 the first vertex of the segment
      * @param[in] p1 the second vertex of the segment
-     * @param[in] O_circle the center of the circle
-     * @param[in] N_circle the normal of the plane supporting the circle
-     * @param[in] r the radius of the circle
+     * @param[in] O_circle the center of the disk
+     * @param[in] N_circle the normal of the plane supporting the disk
+     * @param[in] r the radius of the disk
      * @param[out] result the intersected point
      * @return returns true if there is an intersection
      */
-    bool circle_segment_intersection(
+    bool disk_segment_intersection(
         const vec3& p0,
         const vec3& p1,
         const vec3& O_circle,
