@@ -47,36 +47,34 @@
  * @author Benjamin Chauvin
  */
 
-int main( int argc, char** argv )
-{
+namespace {
     using namespace RINGMesh ;
 
-    try {
-
+    void global_configure()
+    {
         GEO::initialize() ;
         configure_geogram() ;
         configure_ringmesh() ;
+    }
 
+    void hello()
+    {
         Logger::div( "RINGMeshRepair" ) ;
         Logger::out( "" ) << "Welcome to RINGMeshRepair !" << std::endl ;
         Logger::out( "" ) << "People working on the project in RING" << std::endl ;
         Logger::out( "" ) << "Benjamin Chauvin <benjamin.chauvin@univ-lorraine.fr> "
             << std::endl ;
+    }
 
+    void import_arg_groups()
+    {
         CmdLine::import_arg_group( "in" ) ;
         CmdLine::import_arg_group( "out" ) ;
         CmdLine::import_arg_group( "repair" ) ;
+    }
 
-        if( argc == 1 ) {
-            GEO::CmdLine::show_usage() ;
-            return 0 ;
-        }
-
-        std::vector< std::string > filenames ;
-        if( !GEO::CmdLine::parse( argc, argv, filenames ) ) {
-            return 1 ;
-        }
-
+    void run()
+    {
         GEO::Stopwatch total( "Total time" ) ;
 
         std::string in_model_file_name = GEO::CmdLine::get_arg( "in:geomodel" ) ;
@@ -98,6 +96,29 @@ int main( int argc, char** argv )
                 "Give at least a filename in out:geomodel" ) ;
         }
         geomodel_save( geomodel, out_model_file_name ) ;
+    }
+}
+
+int main( int argc, char** argv )
+{
+    using namespace RINGMesh ;
+
+    try {
+        global_configure() ;
+        hello() ;
+        import_arg_groups() ;
+
+        if( argc == 1 ) {
+            GEO::CmdLine::show_usage() ;
+            return 0 ;
+        }
+
+        std::vector< std::string > filenames ;
+        if( !GEO::CmdLine::parse( argc, argv, filenames ) ) {
+            return 1 ;
+        }
+
+        run() ;
 
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category() ) << e.what() << std::endl ;

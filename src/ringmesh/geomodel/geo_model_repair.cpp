@@ -55,18 +55,9 @@
 
 namespace RINGMesh {
 
-    // using namespace RINGMesh ;
-
     typedef GeoModelMeshEntity GMME ;
 
-    /*! \note Copied and modified from geogram\mesh\mesh_repair.cpp
-     *
-     * \brief Tests whether a facet is degenerate.
-     * \param[in] M the mesh that the facet belongs to
-     * \param[in] f the index of the facet in \p M
-     * \return true if facet \p f has duplicated vertices,
-     *  false otherwise
-     */
+
     bool GeoModelRepair::facet_is_degenerate(
         const Mesh& M,
         index_t f,
@@ -88,8 +79,6 @@ namespace RINGMesh {
         return v1 == v2 || v2 == v3 || v3 == v1 ;
     }
 
-    /*! \note Copied and modified from geogram\mesh\mesh_repair.cpp
-     */
     void GeoModelRepair::mesh_detect_degenerate_facets(
         const Mesh& M,
         GEO::vector< index_t >& f_is_degenerate,
@@ -101,9 +90,6 @@ namespace RINGMesh {
         }
     }
 
-    /*!
-     * @brief Detect and remove degenerated facets in a Mesh
-     */
     index_t GeoModelRepair::detect_degenerate_facets( Mesh& M )
     {
         GEO::vector< index_t > colocated ;
@@ -127,9 +113,7 @@ namespace RINGMesh {
         }
     }
 
-    /*!
-     * @brief Detect and remove degenerated edges in a Mesh
-     */
+
     index_t GeoModelRepair::repair_line_mesh( Line& line )
     {
         GEO::vector< index_t > colocated ;
@@ -147,14 +131,6 @@ namespace RINGMesh {
         return nb ;
     }
 
-    /*!
-     * @brief Remove degenerate facets and edges from the Surface
-     *        and Line of the model.
-     * @param[in,out] GM Model to fix
-     * @param[out] to_remove Ids of the entities of the model that are
-     *  are emtpy once degenerate entities are removed
-     * @pre Colocated vertices have already been removed
-     */
     void GeoModelRepair::remove_degenerate_facets_and_edges(
         std::set< gme_t >& to_remove )
     {
@@ -206,11 +182,6 @@ namespace RINGMesh {
         }
     }
 
-    /*!
-     * Get the indices of the duplicated vertices that are on an inside border.
-     * Only the vertex with the biggest index are added.
-     * If there are more than 2 colocated vertices throws an assertion in debug mode
-     */
     void GeoModelRepair::vertices_on_inside_boundary(
         const gme_t& E_id,
         std::set< index_t >& vertices )
@@ -256,9 +227,6 @@ namespace RINGMesh {
         }
     }
 
-    /*!
-     * @details Global GeoModel mesh is supposed to be empty
-     */
     void GeoModelRepair::remove_colocated_entity_vertices(
         std::set< gme_t >& to_remove )
     {
