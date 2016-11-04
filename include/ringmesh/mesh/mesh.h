@@ -118,7 +118,7 @@ namespace RINGMesh {
                 for( index_t v = 0; v < nb_vertices(); ++v ) {
                     vec_vertices[v] = vertex( v ) ;
                 }
-                vertices_ann_ = new ColocaterANN( vec_vertices ) ;
+                vertices_ann_ = new ColocaterANN( vec_vertices, true ) ;
             }
             return *vertices_ann_ ;
         }
@@ -234,7 +234,7 @@ namespace RINGMesh {
                 for( index_t e = 0; e < nb_edges(); ++e ) {
                     edge_centers[e] = edge_barycenter( e ) ;
                 }
-                edges_ann_ = new ColocaterANN( edge_centers ) ;
+                edges_ann_ = new ColocaterANN( edge_centers, true ) ;
             }
             return *edges_ann_ ;
         }
@@ -385,7 +385,7 @@ namespace RINGMesh {
                 for( index_t f = 0; f < nb_facets(); ++f ) {
                     facet_centers[f] = facet_barycenter( f ) ;
                 }
-                facets_ann_ = new ColocaterANN( facet_centers ) ;
+                facets_ann_ = new ColocaterANN( facet_centers, true ) ;
             }
             return *facets_ann_ ;
         }
@@ -616,7 +616,7 @@ namespace RINGMesh {
                         ++cf ;
                     }
                 }
-                cell_facets_ann_ = new ColocaterANN( cell_facet_centers ) ;
+                cell_facets_ann_ = new ColocaterANN( cell_facet_centers, true ) ;
             }
             return *cell_facets_ann_ ;
         }
@@ -628,13 +628,12 @@ namespace RINGMesh {
         {
             if( cell_ann_ == NULL ) {
                 std::vector< vec3 > cell_centers( nb_cells() ) ;
-                index_t cf = 0 ;
                 for( index_t c = 0; c < nb_cells(); ++c ) {
                     cell_centers[c] = cell_barycenter( c ) ;
                 }
-                cell_ann_ = new ColocaterANN( cell_centers ) ;
+                cell_ann_ = new ColocaterANN( cell_centers, true ) ;
             }
-            return *cell_facets_ann_ ;
+            return *cell_ann_ ;
         }
     protected:
         Mesh3D( const GeoModel& geo_model )
