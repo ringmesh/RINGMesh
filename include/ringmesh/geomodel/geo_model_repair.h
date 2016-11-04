@@ -139,7 +139,7 @@ namespace RINGMesh {
             const Surface& S,
             index_t f,
             GEO::vector< index_t >& colocated_vertices ) ;
-
+            
         /*!
          * @brief Detect and remove degenerated facets in a Surface
          * @param[in,out] S Surface to check for potential degenerate facets.
