@@ -92,6 +92,14 @@ namespace RINGMesh {
                 "Print statistics on the number of entities" ) ;
         }
 
+        void import_arg_group_repair()
+        {
+            GEO::CmdLine::declare_arg_group( "repair", "GeoModel repair processes" ) ;
+            GEO::CmdLine::declare_arg(
+                "repair:mode", 0,
+                "Repair mode: repair process to apply to the geomodel" ) ;
+        }
+
         void import_arg_group_duplication_fntk()
         {
             GEO::CmdLine::declare_arg_group( "duplication",
@@ -110,6 +118,8 @@ namespace RINGMesh {
                 import_arg_group_out() ;
             } else if( name == "stats" ) {
                 import_arg_group_stats() ;
+            } else if( name == "repair" ) {
+                import_arg_group_repair() ;
             } else if( name == "duplication" ) {
                 import_arg_group_duplication_fntk() ;
             } else {

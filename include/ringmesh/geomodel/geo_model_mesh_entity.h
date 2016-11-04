@@ -693,33 +693,21 @@ namespace RINGMesh {
 
         /*!
          * @brief Determines the facets around a vertex
-         *
-         * @param[in] v Index ot the vertex in the surface
-         * @param[in] result Indices of the facets containing @param v
-         * @param[in] border_only If true only facets on the border are considered
-         * @return The number of facet found
-         */
-        index_t facets_around_vertex(
-            index_t surf_vertex_id,
-            std::vector< index_t >& result,
-            bool border_only ) const ;
-
-        /*!
-         * @brief Determines the facets around a vertex
-         *
-         * @param[in] P Index ot the vertex in the surface
+         * @param[in] surf_vertex_id Index of the vertex in the surface
          * @param[in] result Indices of the facets containing @param P
          * @param[in] border_only If true only facets on the border are considered
-         * @param[in] f0 Index of one facet containing the vertex @param P
-         * @return The number of facet found
-         *
-         * @todo Try to use a AABB tree to remove @param first_facet. [PA]
+         * @param[in] f0 (Optional) Index of one facet containing the vertex @p surf_vertex_id
+         * @return The number of facets found
+         * @note If a facet containing the vertex is given, facets around this
+         * vertex is search by propagation. Else, a first facet is found by brute
+         * force algorithm, and then the other by propagation
+         * @todo Try to use a AABB tree to remove @p first_facet. [PA]
          */
         index_t facets_around_vertex(
             index_t surf_vertex_id,
             std::vector< index_t >& result,
             bool border_only,
-            index_t first_facet ) const ;
+            index_t first_facet = NO_ID ) const ;
 
         /*! @}
          * \name Geometrical request on facets
