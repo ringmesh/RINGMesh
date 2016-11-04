@@ -242,7 +242,7 @@ namespace RINGMesh {
         delete mesh_ ;
     }
 
-     bool GeoModelMeshEntity::are_model_vertex_indices_valid() const
+    bool GeoModelMeshEntity::are_model_vertex_indices_valid() const
     {
         bool valid = true ;
         // For all vertices
@@ -271,8 +271,7 @@ namespace RINGMesh {
             if( !found_in_backward ) {
                 Logger::warn( "GeoModelEntity" ) << "Error in mapping of "
                     << gme_id() << " vertex " << v
-                    << " to the related global model vertex indices."
-                    << std::endl ;
+                    << " to the related global model vertex indices." << std::endl ;
                 valid = false ;
             }
         }
@@ -431,7 +430,8 @@ namespace RINGMesh {
         ringmesh_assert( id.is_defined() ) ;
         return model().geological_entity( id ) ;
     }
-    const gme_t& GeoModelMeshEntity::parent_gme( const EntityType& parent_type_name ) const
+    const gme_t& GeoModelMeshEntity::parent_gme(
+        const EntityType& parent_type_name ) const
     {
         for( index_t i = 0; i < nb_parents(); ++i ) {
             if( parents_[i].type == parent_type_name ) {
@@ -450,7 +450,6 @@ namespace RINGMesh {
     {
         return model().mesh_entity( in_boundary_gme( x ) ) ;
     }
-
 
     /**************************************************************/
     /*!
@@ -782,8 +781,7 @@ namespace RINGMesh {
             ringmesh_assert( is_on_border( next_f, next_e ) ) ;
         } else if( nb_around == 1 ) {
             // next_v_id must be in two border edges of facet f
-            next_e = vertex_index_in_facet( next_f,
-                next_v_id ) ;
+            next_e = vertex_index_in_facet( next_f, next_v_id ) ;
             ringmesh_assert( is_on_border( next_f, next_e ) ) ;
         }
     }
@@ -803,8 +801,8 @@ namespace RINGMesh {
         // Get the facets around the shared vertex (v_id) that are on the boundary
         // There must be one (the current one) or two (the next one on boundary)
         std::vector< index_t > facets_around_v_id ;
-        index_t nb_around = facets_around_vertex( v_id, facets_around_v_id,
-            true, f ) ;
+        index_t nb_around = facets_around_vertex( v_id, facets_around_v_id, true,
+            f ) ;
         ringmesh_assert( nb_around == 1 || nb_around == 2 ) ;
 
         prev_f = facets_around_v_id[0] ;

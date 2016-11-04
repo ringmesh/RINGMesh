@@ -70,6 +70,7 @@ namespace RINGMesh {
     class RINGMESH_API MeshBase {
     ringmesh_disable_copy( MeshBase ) ;
         friend class MeshBaseBuilder ;
+        friend class GeogramMeshBuilder ;
 
     public:
 
@@ -78,13 +79,6 @@ namespace RINGMesh {
         virtual void save_mesh(
             const std::string& filename,
             const GEO::MeshIOFlags& ioflags ) const = 0 ;
-
-        /*!
-         * @brief return the ColocaterANN at the given ColocaterANN::MeshLocation
-         * @warning the ColocaterANN is destroyed when calling the Mesh::facets_aabb() and Mesh::cells_aabb()
-         */
-        virtual const ColocaterANN& colocater_ann(
-            ColocaterANN::MeshLocation location ) const = 0 ;
 
         /*!
          * get access to GEO::MESH... only for GFX..
@@ -106,7 +100,6 @@ namespace RINGMesh {
          * @return const reference to the point that corresponds to the vertex.
          */
         virtual const vec3& vertex( index_t v_id ) const = 0 ;
-
         /*
          * @brief Gets the number of vertices in the Mesh.
          */
@@ -114,6 +107,21 @@ namespace RINGMesh {
 
         virtual GEO::AttributesManager& vertex_attribute_manager() const = 0 ;
 
+        /*!
+         * @brief return the ColocaterANN at vertices
+         * @warning the ColocaterANN is destroy when calling the Mesh::facets_aabb() and Mesh::cells_aabb()
+         */
+        const ColocaterANN& vertices_colocater_ann() const
+        {
+            if( vertices_ann_ == NULL ) {
+                std::vector< vec3 > vec_vertices( nb_vertices() ) ;
+                for( index_t v = 0; v < nb_vertices(); ++v ) {
+                    vec_vertices[v] = vertex( v ) ;
+                }
+                vertices_ann_ = new ColocaterANN( vec_vertices ) ;
+            }
+            return *vertices_ann_ ;
+        }
         MeshBaseBuilder* get_mesh_base_builder()
         {
             return get_mesh_builder_base() ;
@@ -131,7 +139,7 @@ namespace RINGMesh {
          * else they are stored as double precision (double)..
          */
         MeshBase( const GeoModel& geo_model )
-            : geo_model_( geo_model ), mesh_builder_( NULL )
+            : geo_model_( geo_model ), mesh_builder_( NULL ), vertices_ann_( NULL )
         {
         }
         virtual MeshBaseBuilder* get_mesh_builder_base() = 0 ;
@@ -139,7 +147,8 @@ namespace RINGMesh {
     protected:
         const GeoModel& geo_model_ ;
         MeshBaseBuilder* mesh_builder_ ;
-
+    private:
+        mutable ColocaterANN* vertices_ann_ ;
     } ;
 
     /*!
@@ -148,11 +157,13 @@ namespace RINGMesh {
     class RINGMESH_API Mesh0D: public virtual MeshBase {
     ringmesh_disable_copy( Mesh0D ) ;
         friend class Mesh0DBuilder ;
+        friend class GeogramMeshBuilder ;
 
     public:
         virtual ~Mesh0D()
         {
         }
+
         Mesh0DBuilder* get_mesh0d_builder() ;
     protected:
         /*!
@@ -175,10 +186,12 @@ namespace RINGMesh {
     class RINGMESH_API Mesh1D: public virtual MeshBase {
     ringmesh_disable_copy( Mesh1D ) ;
         friend class Mesh1DBuilder ;
+        friend class GeogramMeshBuilder ;
 
     public:
         virtual ~Mesh1D()
         {
+            if( edges_ann_ ) delete edges_ann_ ;
         }
         /*
          * @brief Gets the index of an edge vertex.
@@ -202,16 +215,42 @@ namespace RINGMesh {
             const vec3& e1 = vertex( edge_vertex( edge_id, 1 ) ) ;
             return ( e1 - e0 ).length() ;
         }
+
+        vec3 edge_barycenter( index_t edge_id ) const
+        {
+            const vec3& e0 = vertex( edge_vertex( edge_id, 0 ) ) ;
+            const vec3& e1 = vertex( edge_vertex( edge_id, 1 ) ) ;
+            return ( e1 + e0 ) / 2. ;
+        }
+
+        /*!
+         * @brief return the ColocaterANN at edges
+         * @warning the ColocaterANN is destroy when calling the Mesh::facets_aabb() and Mesh::cells_aabb()
+         */
+        const ColocaterANN& edges_colocater_ann() const
+        {
+            if( edges_ann_ == NULL ) {
+                std::vector< vec3 > edge_centers( nb_edges() ) ;
+                for( index_t e = 0; e < nb_edges(); ++e ) {
+                    edge_centers[e] = edge_barycenter( e ) ;
+                }
+                edges_ann_ = new ColocaterANN( edge_centers ) ;
+            }
+            return *edges_ann_ ;
+        }
+
         virtual GEO::AttributesManager& edge_attribute_manager() const = 0 ;
 
         Mesh1DBuilder* get_mesh1d_builder() ;
 
     protected:
         Mesh1D( const GeoModel& geo_model )
-            : MeshBase( geo_model )
+            : MeshBase( geo_model ), edges_ann_( NULL )
         {
         }
 
+    private:
+        mutable ColocaterANN* edges_ann_ ;
     } ;
 
     /*!
@@ -220,10 +259,12 @@ namespace RINGMesh {
     class RINGMESH_API Mesh2D: public virtual MeshBase {
     ringmesh_disable_copy( Mesh2D ) ;
         friend class Mesh2DBuilder ;
+        friend class GeogramMeshBuilder ;
 
     public:
         virtual ~Mesh2D()
         {
+            if( facets_ann_ ) delete facets_ann_ ;
         }
         /*!
          * @brief Gets the vertex index by facet index and local vertex index.
@@ -333,13 +374,32 @@ namespace RINGMesh {
          */
         virtual double facet_area( index_t facet_id ) const=0 ;
 
+        /*!
+         * @brief return the ColocaterANN at facets
+         * @warning the ColocaterANN is destroy when calling the Mesh::facets_aabb() and Mesh::cells_aabb()
+         */
+        const ColocaterANN& facets_colocater_ann() const
+        {
+            if( facets_ann_ == NULL ) {
+                std::vector< vec3 > facet_centers( nb_facets() ) ;
+                for( index_t f = 0; f < nb_facets(); ++f ) {
+                    facet_centers[f] = facet_barycenter( f ) ;
+                }
+                facets_ann_ = new ColocaterANN( facet_centers ) ;
+            }
+            return *facets_ann_ ;
+        }
+
         Mesh2DBuilder* get_mesh2d_builder() ;
 
     protected:
         Mesh2D( const GeoModel& geo_model )
-            : MeshBase( geo_model )
+            : MeshBase( geo_model ), facets_ann_( NULL )
         {
         }
+
+    private:
+        mutable ColocaterANN* facets_ann_ ;
 
     } ;
 
@@ -349,10 +409,13 @@ namespace RINGMesh {
     class RINGMESH_API Mesh3D: public virtual MeshBase {
     ringmesh_disable_copy( Mesh3D ) ;
         friend class Mesh3DBuilder ;
+        friend class GeogramMeshBuilder ;
 
     public:
         virtual ~Mesh3D()
         {
+            if( cell_facets_ann_ ) delete cell_facets_ann_ ;
+            if( cell_ann_ ) delete cell_ann_ ;
         }
 
         /*!
@@ -405,6 +468,10 @@ namespace RINGMesh {
          * @return the number of facet of the cell \param cell_id
          */
         virtual index_t nb_cell_facets( index_t cell_id ) const = 0 ;
+        /*!
+         * @brief Gets the total number of facet in a all cells
+         */
+        virtual index_t nb_cell_facets() const = 0 ;
 
         /*!
          * @brief Gets the number of edges in a cell
@@ -534,11 +601,50 @@ namespace RINGMesh {
 
         Mesh3DBuilder* get_mesh3d_builder() ;
 
+        /*!
+         * @brief return the ColocaterANN at cell facets
+         * @warning the ColocaterANN is destroy when calling the Mesh::facets_aabb() and Mesh::cells_aabb()
+         */
+        const ColocaterANN& cell_facets_colocater_ann() const
+        {
+            if( cell_facets_ann_ == NULL ) {
+                std::vector< vec3 > cell_facet_centers( nb_cell_facets() ) ;
+                index_t cf = 0 ;
+                for( index_t c = 0; c < nb_cells(); ++c ) {
+                    for( index_t f = 0; f < nb_cell_facets( c ); ++f ) {
+                        cell_facet_centers[cf] = cell_facet_barycenter( c, f ) ;
+                        ++cf ;
+                    }
+                }
+                cell_facets_ann_ = new ColocaterANN( cell_facet_centers ) ;
+            }
+            return *cell_facets_ann_ ;
+        }
+        /*!
+         * @brief return the ColocaterANN at cells
+         * @warning the ColocaterANN is destroy when calling the Mesh::facets_aabb() and Mesh::cells_aabb()
+         */
+        const ColocaterANN& cells_colocater_ann() const
+        {
+            if( cell_ann_ == NULL ) {
+                std::vector< vec3 > cell_centers( nb_cells() ) ;
+                index_t cf = 0 ;
+                for( index_t c = 0; c < nb_cells(); ++c ) {
+                    cell_centers[c] = cell_barycenter( c ) ;
+                }
+                cell_ann_ = new ColocaterANN( cell_centers ) ;
+            }
+            return *cell_facets_ann_ ;
+        }
     protected:
         Mesh3D( const GeoModel& geo_model )
-            : MeshBase( geo_model )
+            : MeshBase( geo_model ), cell_facets_ann_( NULL ), cell_ann_( NULL )
         {
         }
+
+    private:
+        mutable ColocaterANN* cell_facets_ann_ ;
+        mutable ColocaterANN* cell_ann_ ;
 
     } ;
 
@@ -548,6 +654,7 @@ namespace RINGMesh {
         public Mesh3D {
     ringmesh_disable_copy( MeshAllD ) ;
         friend class MeshAllDBuilder ;
+        friend class GeogramMeshBuilder ;
 
     public:
         virtual ~MeshAllD()
@@ -575,6 +682,7 @@ namespace RINGMesh {
      */
     class RINGMESH_API GeogramMesh: public MeshAllD {
     ringmesh_disable_copy( GeogramMesh ) ;
+
         friend class GeogramMeshBuilder ;
 
     public:
@@ -596,17 +704,11 @@ namespace RINGMesh {
                 cells_aabb_( NULL )
         {
             mesh_ = new GEO::Mesh( dimension, single_precision ) ;
-            for( index_t i = 0; i < ColocaterANN::NB_LOCATION; i++ ) {
-                ann_[i] = nil ;
-            }
         }
         ~GeogramMesh()
         {
             if( facets_aabb_ ) delete facets_aabb_ ;
             if( cells_aabb_ ) delete cells_aabb_ ;
-            for( index_t i = 0; i < ColocaterANN::NB_LOCATION; i++ ) {
-                if( ann_[i] ) delete ann_[i] ;
-            }
             delete mesh_ ;
         }
         /*!
@@ -618,18 +720,6 @@ namespace RINGMesh {
             const GEO::MeshIOFlags& ioflags ) const
         {
             GEO::mesh_save( *mesh_, filename, ioflags ) ;
-        }
-        /*!
-         * @brief return the ColocaterANN at the given ColocaterANN::MeshLocation
-         * @warning the ColocaterANN is destroy when calling the Mesh::facets_aabb() and Mesh::cells_aabb()
-         */
-        const ColocaterANN& colocater_ann(
-            ColocaterANN::MeshLocation location ) const
-        {
-            if( ann_[location] == nil ) {
-                ann_[location] = new ColocaterANN( *mesh_, location ) ;
-            }
-            return *ann_[location] ;
         }
 
         /*!
@@ -844,6 +934,13 @@ namespace RINGMesh {
             return mesh_->cells.nb_facets( cell_id ) ;
         }
         /*!
+         * @brief Gets the total number of facet in all cell
+         */
+        index_t nb_cell_facets() const
+        {
+            return mesh_->cell_facets.nb() ;
+        }
+        /*!
          * @brief Gets the number of edges in a cell
          * @param[in] cell_id index of the cell
          * @return the number of facet of the cell \param cell_id
@@ -947,7 +1044,6 @@ namespace RINGMesh {
 
         mutable GEO::MeshFacetsAABB* facets_aabb_ ;
         mutable GEO::MeshCellsAABB* cells_aabb_ ;
-        mutable ColocaterANN* ann_[ColocaterANN::NB_LOCATION] ;
 
     } ;
 }

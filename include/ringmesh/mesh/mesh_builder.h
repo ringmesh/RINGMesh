@@ -135,7 +135,9 @@ namespace RINGMesh {
          * @brief Remove vertices not connected to any mesh element
          */
         virtual void remove_isolated_vertices() = 0 ;
-
+        /*!
+         * @brief Deletes the ColocaterANN on vertices
+         */
         virtual void clear_vertex_linked_objects() = 0 ;
         /*!@}
          */
@@ -1012,14 +1014,12 @@ namespace RINGMesh {
             delete_cell_colocater() ;
         }
     private:
-        /*!
-         * @brief Deletes the ColocaterANN on vertices
-         */
+
         void delete_vertex_colocater()
         {
-            if( mesh_.ann_[ColocaterANN::VERTICES] ) {
-                delete mesh_.ann_[ColocaterANN::VERTICES] ;
-                mesh_.ann_[ColocaterANN::VERTICES] = nil ;
+            if( mesh_.vertices_ann_ ) {
+                delete mesh_.vertices_ann_ ;
+                mesh_.vertices_ann_ = NULL ;
             }
         }
         /*!
@@ -1027,9 +1027,9 @@ namespace RINGMesh {
          */
         void delete_edge_colocater()
         {
-            if( mesh_.ann_[ColocaterANN::EDGES] ) {
-                delete mesh_.ann_[ColocaterANN::EDGES] ;
-                mesh_.ann_[ColocaterANN::EDGES] = nil ;
+            if( mesh_.edges_ann_ ) {
+                delete mesh_.edges_ann_ ;
+                mesh_.edges_ann_ = NULL ;
             }
         }
         /*!
@@ -1037,9 +1037,9 @@ namespace RINGMesh {
          */
         void delete_facet_colocater()
         {
-            if( mesh_.ann_[ColocaterANN::FACETS] ) {
-                delete mesh_.ann_[ColocaterANN::FACETS] ;
-                mesh_.ann_[ColocaterANN::FACETS] = nil ;
+            if( mesh_.facets_ann_ ) {
+                delete mesh_.facets_ann_ ;
+                mesh_.facets_ann_ = NULL ;
             }
         }
         /*!
@@ -1057,13 +1057,13 @@ namespace RINGMesh {
          */
         void delete_cell_colocater()
         {
-            if( mesh_.ann_[ColocaterANN::CELLS] ) {
-                delete mesh_.ann_[ColocaterANN::CELLS] ;
-                mesh_.ann_[ColocaterANN::CELLS] = nil ;
+            if( mesh_.cell_ann_ ) {
+                delete mesh_.cell_ann_ ;
+                mesh_.cell_ann_ = NULL ;
             }
-            if( mesh_.ann_[ColocaterANN::CELL_FACETS] ) {
-                delete mesh_.ann_[ColocaterANN::CELL_FACETS] ;
-                mesh_.ann_[ColocaterANN::CELL_FACETS] = nil ;
+            if( mesh_.cell_facets_ann_ ) {
+                delete mesh_.cell_facets_ann_ ;
+                mesh_.cell_facets_ann_ = NULL ;
             }
         }
         /*!

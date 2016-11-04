@@ -70,7 +70,7 @@ namespace RINGMesh {
 
         virtual ~GeoModelMeshEntity() ;
 
-        typedef std::string EntityType ;        
+        typedef std::string EntityType ;
 
         static const EntityType default_entity_type_name()
         {
@@ -186,7 +186,7 @@ namespace RINGMesh {
 
         const ColocaterANN& vertex_colocater_ann() const
         {
-            return mesh_->colocater_ann( ColocaterANN::VERTICES ) ;
+            return mesh_->vertices_colocater_ann() ;
         }
 
         /*!
@@ -461,7 +461,7 @@ namespace RINGMesh {
          */
         const ColocaterANN& edge_colocater_ann() const
         {
-            return mesh1d_->colocater_ann( ColocaterANN::EDGES ) ;
+            return mesh1d_->edges_colocater_ann() ;
         }
 
         /*!
@@ -579,7 +579,7 @@ namespace RINGMesh {
          */
         const ColocaterANN& facet_colocater_ann() const
         {
-            return mesh2d_->colocater_ann( ColocaterANN::FACETS ) ;
+            return mesh2d_->facets_colocater_ann() ;
         }
 
         GEO::AttributesManager& facet_attribute_manager() const
@@ -858,7 +858,7 @@ namespace RINGMesh {
          */
         const ColocaterANN& cell_colocater_ann() const
         {
-            return mesh3d_->colocater_ann( ColocaterANN::CELLS ) ;
+            return mesh3d_->cells_colocater_ann() ;
         }
 
         GEO::AttributesManager& cell_attribute_manager() const
@@ -1120,9 +1120,9 @@ namespace RINGMesh {
             index_t id,
             const std::string& name,
             GEOL_FEATURE geological_feature )
-            : 
-            GeoModelMeshEntity( model, id, name, geological_feature ),
-            mesh3d_( new GeogramMesh( model, 3, false ) )
+            :
+                GeoModelMeshEntity( model, id, name, geological_feature ),
+                mesh3d_( new GeogramMesh( model, 3, false ) )
         {
             GeoModelMeshEntity::set_mesh( mesh3d_ ) ;
             id_.type = type_name_static() ;

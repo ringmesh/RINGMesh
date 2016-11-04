@@ -80,9 +80,7 @@ namespace RINGMesh {
     public:
         friend class GeoModelMesh ;
 
-        GeoModelMeshVertices(
-            GeoModelMesh& gmm,
-            GeoModel& gm ) ;
+        GeoModelMeshVertices( GeoModelMesh& gmm, GeoModel& gm ) ;
 
         ~GeoModelMeshVertices() ;
 
@@ -195,7 +193,7 @@ namespace RINGMesh {
         const ColocaterANN& colocater() const
         {
             test_and_initialize() ;
-            return mesh_->colocater_ann( ColocaterANN::VERTICES ) ;
+            return mesh_->vertices_colocater_ann() ;
         }
 
         /*!
@@ -696,7 +694,7 @@ namespace RINGMesh {
         const ColocaterANN& colocater() const
         {
             test_and_initialize() ;
-            return mesh_->colocater_ann( ColocaterANN::FACETS ) ;
+            return mesh_->facets_colocater_ann() ;
         }
 
     private:
@@ -753,8 +751,7 @@ namespace RINGMesh {
     public:
         friend class GeoModelMesh ;
 
-        GeoModelMeshEdges(
-            GeoModelMesh& gmm ) ;
+        GeoModelMeshEdges( GeoModelMesh& gmm ) ;
         ~GeoModelMeshEdges() ;
 
         /*!
@@ -831,8 +828,7 @@ namespace RINGMesh {
             NONE, FAULT, HORIZON, ALL
         } ;
 
-        GeoModelMeshCells(
-            GeoModelMesh& gmm ) ;
+        GeoModelMeshCells( GeoModelMesh& gmm ) ;
         /*!
          * Test if the mesh cells are initialized
          */
@@ -1129,12 +1125,12 @@ namespace RINGMesh {
         const ColocaterANN& cell_colocater() const
         {
             test_and_initialize() ;
-            return mesh_->colocater_ann( ColocaterANN::CELLS ) ;
+            return mesh_->cells_colocater_ann() ;
         }
         const ColocaterANN& cell_facet_colocater() const
         {
             test_and_initialize() ;
-            return mesh_->colocater_ann( ColocaterANN::CELL_FACETS ) ;
+            return mesh_->cell_facets_colocater_ann() ;
         }
 
     private:
