@@ -113,39 +113,39 @@ namespace RINGMesh {
          * @return the number of degenerated edges that have been removed from the line.
          */
         index_t repair_line_mesh( Line& line ) ;
-        void mesh_detect_degenerate_edges(
-            const Mesh& M,
+        void line_detect_degenerate_edges(
+            const Line& L,
             GEO::vector< index_t >& e_is_degenerate,
             GEO::vector< index_t >& colocated_vertices ) ;
         /*!
          * \note Copied and modified from geogram\mesh\mesh_repair.cpp
          */
-        void mesh_detect_degenerate_facets(
-            const Mesh& M,
+        void surface_detect_degenerate_facets(
+            const Surface& S,
             GEO::vector< index_t >& f_is_degenerate,
             GEO::vector< index_t >& colocated_vertices ) ;
         /*!
          * \note Copied and modified from geogram\mesh\mesh_repair.cpp
          *
          * @brief Tests whether a facet is degenerate.
-         * @param[in] M the mesh that the facet belongs to
-         * @param[in] f the index of the facet in \p M
+         * @param[in] S the Surface that the facet belongs to
+         * @param[in] f the index of the facet in \p S
          * @param[out] colocated_vertices contains the found colocated vertices
          * in \p f if any.
          * \return true if facet \p f has duplicated vertices,
          *  false otherwise
          */
         bool facet_is_degenerate(
-            const Mesh& M,
+            const Surface& S,
             index_t f,
             GEO::vector< index_t >& colocated_vertices ) ;
 
         /*!
-         * @brief Detect and remove degenerated facets in a Mesh
-         * @param[in,out] M Mesh to check for potential degenerate facets.
-         * @return the number of degenerate facets in \p M.
+         * @brief Detect and remove degenerated facets in a Surface
+         * @param[in,out] S Surface to check for potential degenerate facets.
+         * @return the number of degenerate facets in \p S.
          */
-        index_t detect_degenerate_facets( Mesh& M ) ;
+        index_t detect_degenerate_facets( Surface& S ) ;
 
         /*!
          * @brief Remove degenerate facets and edges from the Surface
@@ -177,18 +177,18 @@ namespace RINGMesh {
          *
          * An edge is degenerate if both vertices are colocated.
          *
-         * @param[in] M line mesh to check the edge \p e.
-         * @param[in] e edge index in line mesh \p M.
+         * @param[in] L Line to check the edge \p e.
+         * @param[in] e edge index in Line \p L.
          * @param[in] colocated_vertices contains the colocated mapping of the Line.
          * @return true if the edge is degenerate. Else false.
          */
         bool edge_is_degenerate(
-            const Mesh& M,
+            const Line& L,
             index_t e,
             const GEO::vector< index_t >& colocated_vertices )
         {
-            index_t v1 = colocated_vertices[M.edge_vertex( e, 0 )] ;
-            index_t v2 = colocated_vertices[M.edge_vertex( e, 1 )] ;
+            index_t v1 = colocated_vertices[L.mesh_element_vertex_index( e, 0 )] ;
+            index_t v2 = colocated_vertices[L.mesh_element_vertex_index( e, 1 )] ;
             return v1 == v2 ;
         }
     } ;
