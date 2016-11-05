@@ -883,107 +883,6 @@ namespace RINGMesh {
         return NO_ID ;
     }
 
-//    /*!
-//     * @brief Get the first facet of the surface that has an edge linking the
-//     * two vertices (ids in the model)
-//     *
-//     * @param[in] i0 Index of the first vertex in the model
-//     * @param[in] i1 Index of the second vertex in the model
-//     * @return NO_ID or the index of the facet
-//     */
-//    index_t Surface::facet_from_model_vertex_ids( index_t i0, index_t i1 ) const
-//    {
-//        index_t facet = NO_ID ;
-//        index_t edge = NO_ID ;
-//        edge_from_model_vertex_ids( i0, i1, facet, edge ) ;
-//        return facet ;
-//    }
-//
-//    /*!
-//     * @brief Determine the facet and the edge in this facet linking the 2 vertices
-//     * @details There might be two pairs facet-edge. This only gets the first.
-//     *
-//     * @param[in] i0 First vertex index in the model
-//     * @param[in] i1 Second vertex index in the model
-//     * @param[out] facet NO_ID or facet index in the surface
-//     * @param[out] edge NO_ID or edge index in the facet
-//     */
-//    void Surface::edge_from_model_vertex_ids(
-//        index_t i0,
-//        index_t i1,
-//        index_t& facet,
-//        index_t& edge ) const
-//    {
-//        edge = NO_ID ;
-//
-//        // If a facet is given, look for the edge in this facet only
-//        if( facet != NO_ID ) {
-//            for( index_t v = 0; v < nb_mesh_element_vertices( facet ); ++v ) {
-//                index_t prev = model_vertex_id( facet,
-//                    prev_facet_vertex_index( facet, v ) ) ;
-//                index_t p = model_vertex_id( facet, v ) ;
-//                if( ( prev == i0 && p == i1 ) || ( prev == i1 && p == i0 ) ) {
-//                    edge = prev_facet_vertex_index( facet, v ) ;
-//                    return ;
-//                }
-//            }
-//        } else {
-//            for( index_t f = 0; f < nb_mesh_elements(); ++f ) {
-//                facet = f ;
-//                edge_from_model_vertex_ids( i0, i1, facet, edge ) ;
-//                if( edge != NO_ID ) {
-//                    return ;
-//                }
-//            }
-//        }
-//
-//        // If we get here, no facet was found get out
-//        facet = NO_ID ;
-//        edge = NO_ID ;
-//    }
-//
-//    /*!
-//     * @brief Determine the facet and the edge linking the 2 vertices with the same orientation
-//     * @details There might be two pairs facet-edge. This only gets the first.
-//     *
-//     * @param[in] i0 First vertex index in the model
-//     * @param[in] i1 Second vertex index in the model
-//     * @param[out] facet NO_ID or facet index in the surface
-//     * @param[out] edge NO_ID or edge index in the facet
-//     */
-//    void Surface::oriented_edge_from_model_vertex_ids(
-//        index_t i0,
-//        index_t i1,
-//        index_t& facet,
-//        index_t& edge ) const
-//    {
-//        // Copy from above .. tant pis
-//        edge = NO_ID ;
-//
-//        // If a facet is given, look for the oriented edge in this facet only
-//        if( facet != NO_ID ) {
-//            for( index_t v = 0; v < nb_mesh_element_vertices( facet ); ++v ) {
-//                index_t p = model_vertex_id( facet, v ) ;
-//                index_t next = model_vertex_id( facet,
-//                    next_facet_vertex_index( facet, v ) ) ;
-//
-//                if( p == i0 && next == i1 ) {
-//                    edge = v ;
-//                    return ;
-//                }
-//            }
-//        } else {
-//            for( index_t f = 0; f < nb_mesh_elements(); ++f ) {
-//                facet = f ;
-//                oriented_edge_from_model_vertex_ids( i0, i1, facet, edge ) ;
-//                if( edge != NO_ID ) {
-//                    return ;
-//                }
-//            }
-//        }
-//        facet = NO_ID ;
-//    }
-
     /*!
      * @brief Comparator of two vec3
      */
@@ -1001,16 +900,25 @@ namespace RINGMesh {
     } ;
 
     index_t Surface::facets_around_vertex(
-        index_t P,
+        index_t surf_vertex_id,
         std::vector< index_t >& result,
         bool border_only,
         index_t f0 ) const
     {
-        result.resize( 0 ) ;
+        result.clear() ;
 
-        if( f0 == NO_ID ) {
-            return 0 ;
+        index_t f = 0 ;
+        while( f0 == NO_ID && f < nb_mesh_elements() ) {
+            for( index_t lv = 0; lv < nb_mesh_element_vertices( f ); lv++ ) {
+                if( mesh_element_vertex_index( f, lv ) == surf_vertex_id ) {
+                    f0 = f ;
+                    break ;
+                }
+            }
+            f++ ;
         }
+
+        ringmesh_assert( f0 != NO_ID ) ;
 
         // Flag the visited facets
         std::vector< index_t > visited ;
@@ -1026,7 +934,7 @@ namespace RINGMesh {
             S.pop() ;
 
             for( index_t v = 0; v < nb_mesh_element_vertices( f ); ++v ) {
-                if( mesh_element_vertex_index( f, v ) == P ) {
+                if( mesh_element_vertex_index( f, v ) == surf_vertex_id ) {
                     index_t adj_P = facet_adjacent_index( f, v ) ;
                     index_t prev = prev_facet_vertex_index( f, v ) ;
                     index_t adj_prev = facet_adjacent_index( f, prev ) ;

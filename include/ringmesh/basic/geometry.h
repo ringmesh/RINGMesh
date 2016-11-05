@@ -126,6 +126,28 @@ namespace RINGMesh {
         const vec3& p7,
         vec3& nearest_p ) ;
 
+    bool RINGMESH_API line_plane_intersection(
+        const vec3& O_line,
+        const vec3& D_line,
+        const vec3& O_plane,
+        const vec3& N_plane,
+        vec3& result ) ;
+
+    bool RINGMESH_API segment_plane_intersection(
+        const vec3& seg0,
+        const vec3& seg1,
+        const vec3& O_plane,
+        const vec3& N_plane,
+        vec3& result ) ;
+
+    bool RINGMESH_API segment_triangle_intersection(
+        const vec3& seg0,
+        const vec3& seg1,
+        const vec3& trgl0,
+        const vec3& trgl1,
+        const vec3& trgl2,
+        vec3& result ) ;
+
     bool RINGMESH_API circle_plane_intersection(
         const vec3& O_plane,
         const vec3& N_plane,
@@ -133,6 +155,15 @@ namespace RINGMesh {
         const vec3& N_circle,
         double r,
         std::vector< vec3 >& result ) ;
+
+
+    bool RINGMESH_API disk_segment_intersection(
+        const vec3& p0,
+        const vec3& p1,
+        const vec3& O_circle,
+        const vec3& N_circle,
+        double r,
+        vec3& result ) ;
 
     bool RINGMESH_API circle_triangle_intersection(
         const vec3& p0,
@@ -204,14 +235,6 @@ namespace RINGMesh {
         const vec3& p0,
         const vec3& p1,
         vec3& new_p ) ;
-
-    bool RINGMESH_API segment_triangle_intersection(
-        const vec3& seg0,
-        const vec3& seg1,
-        const vec3& trgl0,
-        const vec3& trgl1,
-        const vec3& trgl2,
-        vec3& result ) ;
 
     bool RINGMESH_API tetra_barycentric_coordinates(
         const vec3& p,
