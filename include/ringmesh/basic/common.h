@@ -110,6 +110,7 @@ namespace RINGMesh {
 
     void RINGMESH_API configure_geogram() ;
     void RINGMESH_API configure_ringmesh() ;
+    void RINGMESH_API global_configure() ;
 
     /*!
      * RINGMesh exception class.

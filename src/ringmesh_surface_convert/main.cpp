@@ -56,9 +56,7 @@ int main( int argc, char** argv )
 
 
     try {
-        GEO::initialize() ;
-        configure_geogram() ;
-        configure_ringmesh() ;
+        global_configure() ;
 
         // welcome
         Logger::div( "RINGMeshConvert" ) ;
