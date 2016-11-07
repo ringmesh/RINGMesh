@@ -135,12 +135,33 @@ namespace {
 }
 
 namespace RINGMesh {
+
+    GeoModelMeshVertices::GeoModelVertexMapper::GeoModelVertexMapper(
+        GeoModelMeshVertices& model_vertices,
+        const GeoModel& geomodel )
+        : model_vertices_( model_vertices ), geomodel_( geomodel )
+    {
+//        vertex_maps_.insert(
+//            std::make_pair( Corner::type_name_static(), &corner_vertex_maps_ ) ) ;
+//        vertex_maps_.insert(
+//            std::make_pair( Line::type_name_static(), &line_vertex_maps_ ) ) ;
+//        vertex_maps_.insert(
+//            std::make_pair( Surface::type_name_static(), &surface_vertex_maps_ ) ) ;
+//        vertex_maps_.insert(
+//            std::make_pair( Region::type_name_static(), &region_vertex_maps_ ) ) ;
+        vertex_maps_[Corner::type_name_static()] = &corner_vertex_maps_ ;
+        vertex_maps_[Line::type_name_static()] = &line_vertex_maps_ ;
+        vertex_maps_[Surface::type_name_static()] = &surface_vertex_maps_ ;
+        vertex_maps_[Region::type_name_static()] = &region_vertex_maps_ ;
+    }
+
     void GeoModelMeshVertices::GeoModelVertexMapper::test_and_initialize() const
     {
         if( !is_initialized() ) {
             const_cast< GeoModelVertexMapper* >( this )->initialize() ;
         }
     }
+
     void GeoModelMeshVertices::GeoModelVertexMapper::clear()
     {
         gme_vertices_.clear() ;
@@ -197,38 +218,41 @@ namespace RINGMesh {
         }
     }
 
-    const GEO::Attribute< index_t >& GeoModelMeshVertices::GeoModelVertexMapper::vertex_map(
+    const GEO::Attribute< index_t >&
+    GeoModelMeshVertices::GeoModelVertexMapper::vertex_map(
         const gme_t& mesh_entity_id ) const
     {
-        if( mesh_entity_id.type == Region::type_name_static() ) {
-            return region_vertex_maps_[mesh_entity_id.index] ;
-        } else if( mesh_entity_id.type == Surface::type_name_static() ) {
-            return surface_vertex_maps_[mesh_entity_id.index] ;
-        } else if( mesh_entity_id.type == Line::type_name_static() ) {
-            return line_vertex_maps_[mesh_entity_id.index] ;
-        } else if( mesh_entity_id.type == Corner::type_name_static() ) {
-            return corner_vertex_maps_[mesh_entity_id.index] ;
-        } else {
-            ringmesh_assert_not_reached ;
-            return corner_vertex_maps_[NO_ID] ;
-        }
+        return (*vertex_maps_.at( mesh_entity_id.type ))[mesh_entity_id.index] ;
+//        if( mesh_entity_id.type == Region::type_name_static() ) {
+//            return region_vertex_maps_[mesh_entity_id.index] ;
+//        } else if( mesh_entity_id.type == Surface::type_name_static() ) {
+//            return surface_vertex_maps_[mesh_entity_id.index] ;
+//        } else if( mesh_entity_id.type == Line::type_name_static() ) {
+//            return line_vertex_maps_[mesh_entity_id.index] ;
+//        } else if( mesh_entity_id.type == Corner::type_name_static() ) {
+//            return corner_vertex_maps_[mesh_entity_id.index] ;
+//        } else {
+//            ringmesh_assert_not_reached ;
+//            return corner_vertex_maps_[NO_ID] ;
+//        }
     }
 
     GEO::Attribute< index_t >& GeoModelMeshVertices::GeoModelVertexMapper::vertex_map(
         const gme_t& mesh_entity_id )
     {
-        if( mesh_entity_id.type == Region::type_name_static() ) {
-            return region_vertex_maps_[mesh_entity_id.index] ;
-        } else if( mesh_entity_id.type == Surface::type_name_static() ) {
-            return surface_vertex_maps_[mesh_entity_id.index] ;
-        } else if( mesh_entity_id.type == Line::type_name_static() ) {
-            return line_vertex_maps_[mesh_entity_id.index] ;
-        } else if( mesh_entity_id.type == Corner::type_name_static() ) {
-            return corner_vertex_maps_[mesh_entity_id.index] ;
-        } else {
-            ringmesh_assert_not_reached ;
-            return corner_vertex_maps_[NO_ID] ;
-        }
+        return (*vertex_maps_[mesh_entity_id.type])[mesh_entity_id.index] ;
+//        if( mesh_entity_id.type == Region::type_name_static() ) {
+//            return region_vertex_maps_[mesh_entity_id.index] ;
+//        } else if( mesh_entity_id.type == Surface::type_name_static() ) {
+//            return surface_vertex_maps_[mesh_entity_id.index] ;
+//        } else if( mesh_entity_id.type == Line::type_name_static() ) {
+//            return line_vertex_maps_[mesh_entity_id.index] ;
+//        } else if( mesh_entity_id.type == Corner::type_name_static() ) {
+//            return corner_vertex_maps_[mesh_entity_id.index] ;
+//        } else {
+//            ringmesh_assert_not_reached ;
+//            return corner_vertex_maps_[NO_ID] ;
+//        }
     }
 
     void GeoModelMeshVertices::GeoModelVertexMapper::set_vertex_map_value(
@@ -250,20 +274,23 @@ namespace RINGMesh {
 
     void GeoModelMeshVertices::GeoModelVertexMapper::bind_all_mesh_entity_vertex_maps()
     {
-        corner_vertex_maps_.clear() ;
-        corner_vertex_maps_.resize( geomodel_.nb_corners() ) ;
-        line_vertex_maps_.clear() ;
-        line_vertex_maps_.resize( geomodel_.nb_lines() ) ;
-        surface_vertex_maps_.clear() ;
-        surface_vertex_maps_.resize( geomodel_.nb_surfaces() ) ;
-        region_vertex_maps_.clear() ;
-        region_vertex_maps_.resize( geomodel_.nb_regions() ) ;
+//        corner_vertex_maps_.clear() ;
+//        corner_vertex_maps_.resize( geomodel_.nb_corners() ) ;
+//        line_vertex_maps_.clear() ;
+//        line_vertex_maps_.resize( geomodel_.nb_lines() ) ;
+//        surface_vertex_maps_.clear() ;
+//        surface_vertex_maps_.resize( geomodel_.nb_surfaces() ) ;
+//        region_vertex_maps_.clear() ;
+//        region_vertex_maps_.resize( geomodel_.nb_regions() ) ;
         const std::vector< EntityType >& all_mesh_entity_types =
             EntityTypeManager::mesh_entity_types() ;
         for( index_t t = 0; t < all_mesh_entity_types.size(); t++ ) {
             const EntityType& cur_entity_type = all_mesh_entity_types[t] ;
-            for( index_t e = 0; e < geomodel_.nb_mesh_entities( cur_entity_type );
-                e++ ) {
+            index_t nb_cur_type_entities = geomodel_.nb_mesh_entities(
+                cur_entity_type ) ;
+            vertex_maps_.at( cur_entity_type )->clear() ;
+            vertex_maps_.at( cur_entity_type )->resize( nb_cur_type_entities ) ;
+            for( index_t e = 0; e < nb_cur_type_entities; e++ ) {
                 const gme_t cur_entity( cur_entity_type, e ) ;
                 bind_mesh_entity_vertex_map( cur_entity ) ;
             }
@@ -274,38 +301,48 @@ namespace RINGMesh {
     GeoModelMeshVertices::GeoModelVertexMapper::bind_mesh_entity_vertex_map(
         const gme_t& mesh_entity_id )
     {
-        if( mesh_entity_id.type == Region::type_name_static() ) {
-            ringmesh_assert( mesh_entity_id.index < region_vertex_maps_.size() ) ;
-            region_vertex_maps_.bind_one_attribute( mesh_entity_id.index,
-                mesh_entity_vertex_attribute_manager( mesh_entity_id ),
-                vertex_map_name() ) ;
-            region_vertex_maps_[mesh_entity_id.index].fill( NO_ID ) ;
-            return region_vertex_maps_[mesh_entity_id.index] ;
-        } else if( mesh_entity_id.type == Surface::type_name_static() ) {
-            ringmesh_assert( mesh_entity_id.index < surface_vertex_maps_.size() ) ;
-            surface_vertex_maps_.bind_one_attribute( mesh_entity_id.index,
-                mesh_entity_vertex_attribute_manager( mesh_entity_id ),
-                vertex_map_name() ) ;
-            surface_vertex_maps_[mesh_entity_id.index].fill( NO_ID ) ;
-            return surface_vertex_maps_[mesh_entity_id.index] ;
-        } else if( mesh_entity_id.type == Line::type_name_static() ) {
-            ringmesh_assert( mesh_entity_id.index < line_vertex_maps_.size() ) ;
-            line_vertex_maps_.bind_one_attribute( mesh_entity_id.index,
-                mesh_entity_vertex_attribute_manager( mesh_entity_id ),
-                vertex_map_name() ) ;
-            line_vertex_maps_[mesh_entity_id.index].fill( NO_ID ) ;
-            return line_vertex_maps_[mesh_entity_id.index] ;
-        } else if( mesh_entity_id.type == Corner::type_name_static() ) {
-            ringmesh_assert( mesh_entity_id.index < corner_vertex_maps_.size() ) ;
-            corner_vertex_maps_.bind_one_attribute( mesh_entity_id.index,
-                mesh_entity_vertex_attribute_manager( mesh_entity_id ),
-                vertex_map_name() ) ;
-            corner_vertex_maps_[mesh_entity_id.index].fill( NO_ID ) ;
-            return corner_vertex_maps_[mesh_entity_id.index] ;
-        } else {
-            ringmesh_assert_not_reached ;
-            return corner_vertex_maps_[NO_ID] ;
-        }
+        ringmesh_assert(
+            mesh_entity_id.index < vertex_maps_[mesh_entity_id.type]->size() ) ;
+        vertex_maps_.at( mesh_entity_id.type )->bind_one_attribute(
+            mesh_entity_id.index,
+            mesh_entity_vertex_attribute_manager( mesh_entity_id ),
+            vertex_map_name() ) ;
+        vertex_map( mesh_entity_id ).fill( NO_ID ) ;
+        return vertex_map( mesh_entity_id ) ;
+
+//
+//        if( mesh_entity_id.type == Region::type_name_static() ) {
+//            ringmesh_assert( mesh_entity_id.index < region_vertex_maps_.size() ) ;
+//            region_vertex_maps_.bind_one_attribute( mesh_entity_id.index,
+//                mesh_entity_vertex_attribute_manager( mesh_entity_id ),
+//                vertex_map_name() ) ;
+//            region_vertex_maps_[mesh_entity_id.index].fill( NO_ID ) ;
+//            return region_vertex_maps_[mesh_entity_id.index] ;
+//        } else if( mesh_entity_id.type == Surface::type_name_static() ) {
+//            ringmesh_assert( mesh_entity_id.index < surface_vertex_maps_.size() ) ;
+//            surface_vertex_maps_.bind_one_attribute( mesh_entity_id.index,
+//                mesh_entity_vertex_attribute_manager( mesh_entity_id ),
+//                vertex_map_name() ) ;
+//            surface_vertex_maps_[mesh_entity_id.index].fill( NO_ID ) ;
+//            return surface_vertex_maps_[mesh_entity_id.index] ;
+//        } else if( mesh_entity_id.type == Line::type_name_static() ) {
+//            ringmesh_assert( mesh_entity_id.index < line_vertex_maps_.size() ) ;
+//            line_vertex_maps_.bind_one_attribute( mesh_entity_id.index,
+//                mesh_entity_vertex_attribute_manager( mesh_entity_id ),
+//                vertex_map_name() ) ;
+//            line_vertex_maps_[mesh_entity_id.index].fill( NO_ID ) ;
+//            return line_vertex_maps_[mesh_entity_id.index] ;
+//        } else if( mesh_entity_id.type == Corner::type_name_static() ) {
+//            ringmesh_assert( mesh_entity_id.index < corner_vertex_maps_.size() ) ;
+//            corner_vertex_maps_.bind_one_attribute( mesh_entity_id.index,
+//                mesh_entity_vertex_attribute_manager( mesh_entity_id ),
+//                vertex_map_name() ) ;
+//            corner_vertex_maps_[mesh_entity_id.index].fill( NO_ID ) ;
+//            return corner_vertex_maps_[mesh_entity_id.index] ;
+//        } else {
+//            ringmesh_assert_not_reached ;
+//            return corner_vertex_maps_[NO_ID] ;
+//        }
     }
 
     void GeoModelMeshVertices::GeoModelVertexMapper::update_mesh_entity_maps_and_gmes(
@@ -340,25 +377,30 @@ namespace RINGMesh {
         const gme_t& mesh_entity_id )
     {
         resize_all_mesh_entity_vertex_maps() ;
-        if( mesh_entity_id.type == Region::type_name_static() ) {
-            if( region_vertex_maps_.is_attribute_bound( mesh_entity_id.index ) ) {
-                region_vertex_maps_.unbind( mesh_entity_id.index ) ;
-            }
-        } else if( mesh_entity_id.type == Surface::type_name_static() ) {
-            if( surface_vertex_maps_.is_attribute_bound( mesh_entity_id.index ) ) {
-                surface_vertex_maps_.unbind( mesh_entity_id.index ) ;
-            }
-        } else if( mesh_entity_id.type == Line::type_name_static() ) {
-            if( line_vertex_maps_.is_attribute_bound( mesh_entity_id.index ) ) {
-                line_vertex_maps_.unbind( mesh_entity_id.index ) ;
-            }
-        } else if( mesh_entity_id.type == Corner::type_name_static() ) {
-            if( corner_vertex_maps_.is_attribute_bound( mesh_entity_id.index ) ) {
-                corner_vertex_maps_.unbind( mesh_entity_id.index ) ;
-            }
-        } else {
-            ringmesh_assert_not_reached ;
+        if( vertex_maps_.at( mesh_entity_id.type )->is_attribute_bound(
+            mesh_entity_id.index ) ) {
+            vertex_maps_.at( mesh_entity_id.type )->unbind( mesh_entity_id.index ) ;
         }
+//
+//        if( mesh_entity_id.type == Region::type_name_static() ) {
+//            if( region_vertex_maps_.is_attribute_bound( mesh_entity_id.index ) ) {
+//                region_vertex_maps_.unbind( mesh_entity_id.index ) ;
+//            }
+//        } else if( mesh_entity_id.type == Surface::type_name_static() ) {
+//            if( surface_vertex_maps_.is_attribute_bound( mesh_entity_id.index ) ) {
+//                surface_vertex_maps_.unbind( mesh_entity_id.index ) ;
+//            }
+//        } else if( mesh_entity_id.type == Line::type_name_static() ) {
+//            if( line_vertex_maps_.is_attribute_bound( mesh_entity_id.index ) ) {
+//                line_vertex_maps_.unbind( mesh_entity_id.index ) ;
+//            }
+//        } else if( mesh_entity_id.type == Corner::type_name_static() ) {
+//            if( corner_vertex_maps_.is_attribute_bound( mesh_entity_id.index ) ) {
+//                corner_vertex_maps_.unbind( mesh_entity_id.index ) ;
+//            }
+//        } else {
+//            ringmesh_assert_not_reached ;
+//        }
     }
 
     void GeoModelMeshVertices::GeoModelVertexMapper::initialize()
@@ -374,7 +416,6 @@ namespace RINGMesh {
         }
         return true ;
     }
-
 
     void GeoModelMeshVertices::GeoModelVertexMapper::initialize_mesh_entity_vertex_map(
         const gme_t& mesh_entity_id )
@@ -402,45 +443,60 @@ namespace RINGMesh {
         return true ;
     }
 
-    bool
-    GeoModelMeshVertices::GeoModelVertexMapper::is_mesh_entity_vertex_map_initialized(
+    bool GeoModelMeshVertices::GeoModelVertexMapper::is_mesh_entity_vertex_map_initialized(
         const gme_t& mesh_entity_id ) const
     {
-        if( mesh_entity_id.type == Region::type_name_static() ) {
-            return region_vertex_maps_.is_attribute_bound( mesh_entity_id.index ) ;
-        } else if( mesh_entity_id.type == Surface::type_name_static() ) {
-            return surface_vertex_maps_.is_attribute_bound( mesh_entity_id.index ) ;
-        } else if( mesh_entity_id.type == Line::type_name_static() ) {
-            return line_vertex_maps_.is_attribute_bound( mesh_entity_id.index ) ;
-        } else if( mesh_entity_id.type == Corner::type_name_static() ) {
-            return corner_vertex_maps_.is_attribute_bound( mesh_entity_id.index ) ;
-        } else {
-            ringmesh_assert_not_reached ;
-            return false ;
-        }
+//        if( mesh_entity_id.type == Region::type_name_static() ) {
+//            return region_vertex_maps_.is_attribute_bound( mesh_entity_id.index ) ;
+//        } else if( mesh_entity_id.type == Surface::type_name_static() ) {
+//            return surface_vertex_maps_.is_attribute_bound( mesh_entity_id.index ) ;
+//        } else if( mesh_entity_id.type == Line::type_name_static() ) {
+//            return line_vertex_maps_.is_attribute_bound( mesh_entity_id.index ) ;
+//        } else if( mesh_entity_id.type == Corner::type_name_static() ) {
+//            return corner_vertex_maps_.is_attribute_bound( mesh_entity_id.index ) ;
+//        } else {
+//            ringmesh_assert_not_reached ;
+//            return false ;
+//        }
+        return ( vertex_maps_.find( mesh_entity_id.type )->second )->is_attribute_bound(
+            mesh_entity_id.index ) ;
     }
 
     void GeoModelMeshVertices::GeoModelVertexMapper::clear_all_mesh_entity_vertex_map()
     {
-        for( index_t c = 0; c < corner_vertex_maps_.size(); c++ ) {
-            corner_vertex_maps_.unbind( c ) ;
-        }
-        corner_vertex_maps_.clear() ;
+//        for( index_t t = 0; t < vertex_maps_.size(); t++ ) {
+//            for( index_t e = 0; e < vertex_maps_.at(t).size(); e++ ) {
+//                vertex_maps_[t].unbind( e ) ;
+//            }
+//        }
+//        vertex_maps_.clear() ;
 
-        for( index_t l = 0; l < line_vertex_maps_.size(); l++ ) {
-            line_vertex_maps_.unbind( l ) ;
+        for( index_t t = 0; t < EntityTypeManager::nb_mesh_entity_types(); t++ ) {
+            const EntityType& cur_type = EntityTypeManager::mesh_entity_types()[t] ;
+            for( index_t e = 0; e < geomodel_.nb_mesh_entities( cur_type ); e++ ) {
+                vertex_maps_.at( cur_type )->unbind( e ) ;
+            }
         }
-        line_vertex_maps_.clear() ;
-
-        for( index_t s = 0; s < surface_vertex_maps_.size(); s++ ) {
-            surface_vertex_maps_.unbind( s ) ;
-        }
-        surface_vertex_maps_.clear() ;
-
-        for( index_t r = 0; r < region_vertex_maps_.size(); r++ ) {
-            region_vertex_maps_.unbind( r ) ;
-        }
-        region_vertex_maps_.clear() ;
+        vertex_maps_.clear() ;
+//        for( index_t c = 0; c < corner_vertex_maps_.size(); c++ ) {
+//            corner_vertex_maps_.unbind( c ) ;
+//        }
+//        corner_vertex_maps_.clear() ;
+//
+//        for( index_t l = 0; l < line_vertex_maps_.size(); l++ ) {
+//            line_vertex_maps_.unbind( l ) ;
+//        }
+//        line_vertex_maps_.clear() ;
+//
+//        for( index_t s = 0; s < surface_vertex_maps_.size(); s++ ) {
+//            surface_vertex_maps_.unbind( s ) ;
+//        }
+//        surface_vertex_maps_.clear() ;
+//
+//        for( index_t r = 0; r < region_vertex_maps_.size(); r++ ) {
+//            region_vertex_maps_.unbind( r ) ;
+//        }
+//        region_vertex_maps_.clear() ;
     }
 
     void GeoModelMeshVertices::GeoModelVertexMapper::fill_gme_vertices()
@@ -520,10 +576,16 @@ namespace RINGMesh {
 
     void GeoModelMeshVertices::GeoModelVertexMapper::resize_all_mesh_entity_vertex_maps()
     {
-        corner_vertex_maps_.resize( geomodel_.nb_corners(), nil ) ;
-        line_vertex_maps_.resize( geomodel_.nb_lines(), nil ) ;
-        surface_vertex_maps_.resize( geomodel_.nb_surfaces(), nil ) ;
-        region_vertex_maps_.resize( geomodel_.nb_regions(), nil ) ;
+        for( index_t t = 0; t < EntityTypeManager::nb_mesh_entity_types(); t++ ) {
+            const EntityType& cur_type = EntityTypeManager::mesh_entity_types()[t] ;
+            vertex_maps_.at( cur_type )->resize(
+                geomodel_.nb_mesh_entities( cur_type ),
+                nil ) ;
+        }
+//        corner_vertex_maps_.resize( geomodel_.nb_corners(), nil ) ;
+//        line_vertex_maps_.resize( geomodel_.nb_lines(), nil ) ;
+//        surface_vertex_maps_.resize( geomodel_.nb_surfaces(), nil ) ;
+//        region_vertex_maps_.resize( geomodel_.nb_regions(), nil ) ;
     }
 
     GEO::AttributesManager& GeoModelMeshVertices::GeoModelVertexMapper::mesh_entity_vertex_attribute_manager(
