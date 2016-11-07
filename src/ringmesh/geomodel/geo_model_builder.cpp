@@ -1656,18 +1656,18 @@ namespace RINGMesh {
 
     void GeoModelBuilder::set_surface_facet_adjacencies(
         index_t surface_id,
-        const std::vector< index_t >& facets_id,
-        const std::vector< index_t >& edges_id,
+        const std::vector< index_t >& facet_ids,
+        const std::vector< index_t >& edge_ids,
         const std::vector< index_t >& adjacent_triangles )
     {
         Surface& surface = dynamic_cast< Surface& >( mesh_entity(
             Surface::type_name_static(), surface_id ) ) ;
         ringmesh_assert( surface.nb_vertices() > 0 ) ;
         Mesh2DBuilder* builder = surface.mesh2d_->get_mesh2d_builder() ;
-        ringmesh_assert( facets_id.size() == edges_id.size() &&
-            facets_id.size() == adjacent_triangles.size() ) ;
-        for( index_t i = 0; i < facets_id.size(); ++i ) {
-            builder->set_facet_adjacent( facets_id[i], edges_id[i],
+        ringmesh_assert( facet_ids.size() == edge_ids.size() &&
+            facet_ids.size() == adjacent_triangles.size() ) ;
+        for( index_t i = 0; i < facet_ids.size(); ++i ) {
+            builder->set_facet_adjacent( facet_ids[i], edge_ids[i],
                 adjacent_triangles[i] ) ;
         }
     }
@@ -2210,6 +2210,54 @@ namespace RINGMesh {
         end_model() ;
     }
 
+    void GeoModelBuilder::build_contacts()
+    {
+        std::vector< std::set< gme_t > > interfaces ;
+        for( index_t i = 0; i < model().nb_lines(); ++i ) {
+            const Line& L = model().line( i ) ;
+            std::set< gme_t > cur_interfaces ;
+            for( index_t j = 0; j < L.nb_in_boundary(); ++j ) {
+                const GeoModelMeshEntity& S = L.in_boundary( j ) ;
+                gme_t parent_interface = S.parent_gme(
+                    Interface::type_name_static() ) ;
+                cur_interfaces.insert( parent_interface ) ;
+            }
+            gme_t contact_id ;
+            for( index_t j = 0; j < interfaces.size(); ++j ) {
+                if( cur_interfaces.size() == interfaces[j].size()
+                    && std::equal( cur_interfaces.begin(), cur_interfaces.end(),
+                        interfaces[j].begin() ) ) {
+                    contact_id = gme_t( Contact::type_name_static(), j ) ;
+                    break ;
+                }
+            }
+            if( !contact_id.is_defined() ) {
+                contact_id = create_geological_entity(
+                    Contact::type_name_static() ) ;
+                ringmesh_assert( contact_id.index == interfaces.size() ) ;
+                interfaces.push_back( cur_interfaces ) ;
+                // Create a name for this contact
+                std::string name = "contact" ;
+                for( std::set< gme_t >::const_iterator it( cur_interfaces.begin() );
+                    it != cur_interfaces.end(); ++it ) {
+                    name += "_" ;
+                    name += model().geological_entity( *it ).name() ;
+                }
+                set_entity_name( contact_id, name ) ;
+            }
+            add_geological_entity_child( contact_id, i ) ;
+        }
+    }
+
+    void GeoModelBuilder::invert_surface_normals( index_t surface_id )
+    {
+        ringmesh_assert( surface_id < model().nb_surfaces() ) ;
+        Surface& surface = dynamic_cast<Surface&> (
+            mesh_entity( Surface::type_name_static(), surface_id ) ) ;
+        Mesh2DBuilder* surf_mesh_builder = surface.mesh2d_->get_mesh2d_builder() ;
+        surf_mesh_builder->invert_normals() ;
+    }
+
     void GeoModelBuilder::update_facet_vertex(
         Surface& surface,
         const std::vector< index_t >& facets,
@@ -2227,6 +2275,14 @@ namespace RINGMesh {
                 }
             }
         }
+    }
+
+    index_t GeoModelBuilder::mesh_nb_connected_components(
+        const gme_t& gmme_id ) const
+    {
+        const MeshBase* mesh = model().mesh_entity( gmme_id ).mesh_ ;
+        ringmesh_assert( mesh != nil ) ;
+        return mesh->nb_connected_components() ;
     }
 
     void GeoModelBuilder::update_cell_vertex(
