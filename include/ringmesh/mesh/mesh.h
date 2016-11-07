@@ -321,12 +321,12 @@ namespace RINGMesh {
         virtual index_t facet_adjacent(
             index_t facet_id,
             index_t edge_id ) const = 0 ;
-        virtual GEO::AttributesManager& facet_attribute_manager() const=0 ;
+        virtual GEO::AttributesManager& facet_attribute_manager() const = 0 ;
         /*!
          * @brief Tests whether all the facets are triangles. when all the facets are triangles, storage and access is optimized.
          * @return True if all facets are triangles and False otherwise.
          */
-        virtual bool facets_are_simplicies() const=0 ;
+        virtual bool facets_are_simplicies() const = 0 ;
         /*!
          * return true if the facet \param facet_id is a triangle
          */
@@ -374,7 +374,7 @@ namespace RINGMesh {
          * @param[in] facet_id the facet index
          * @return the facet area
          */
-        virtual double facet_area( index_t facet_id ) const=0 ;
+        virtual double facet_area( index_t facet_id ) const = 0 ;
 
         /*!
          * @brief return the ColocaterANN at facets
