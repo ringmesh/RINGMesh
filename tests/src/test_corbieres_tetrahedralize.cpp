@@ -49,10 +49,7 @@ int main( int argc, char** argv )
     using namespace RINGMesh ;
 
     try {
-
-        GEO::initialize() ;
-        configure_geogram() ;
-        configure_ringmesh() ;
+        default_configure() ;
 
         // Set an output log file
         std::string log_file( ringmesh_test_output_path + "log.txt" ) ;

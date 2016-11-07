@@ -62,12 +62,10 @@ int main( int argc, char** argv )
 
     try {
 
-        // This three lines stands for the initialization
+        // This line stands for the initialization
         // of Geogram and the factories of RINGMesh
-        // There are MANDATORY
-        GEO::initialize() ;
-        configure_geogram() ;
-        configure_ringmesh() ;
+        // IT IS MANDATORY
+        default_configure() ;
 
         // Say Hello
         Logger::div( "RINGMesh Training" ) ;

@@ -51,6 +51,9 @@ BUILTIN_STL_SUPPORT    = NO
 
 GENERATE_HTMLHELP      = NO
 GENERATE_QHP           = YES
+QCH_FILE               = ringmesh.qch
+QHP_NAMESPACE          = RINGMesh
+QHG_LOCATION           = qhelpgenerator
 GENERATE_LATEX         = NO
 GENERATE_MAN           = NO
 GENERATE_RTF           = NO

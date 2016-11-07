@@ -135,7 +135,9 @@ namespace RINGMesh {
          * @brief Remove vertices not connected to any mesh element
          */
         virtual void remove_isolated_vertices() = 0 ;
-
+        /*!
+         * @brief Deletes the ColocaterANN on vertices
+         */
         virtual void clear_vertex_linked_objects() = 0 ;
         /*!@}
          */
@@ -326,7 +328,7 @@ namespace RINGMesh {
          */
         virtual void remove_small_connected_components(
             double min_area,
-            index_t min_facets )=0 ;
+            index_t min_facets ) = 0 ;
         virtual void triangulate( const Mesh2D& surface_in ) = 0 ;
         /*!@}
          */
@@ -345,8 +347,8 @@ namespace RINGMesh {
         }
         /*!
          * @brief Creates a contiguous chunk of cells of the same type.
-         * @param[in] nb_cells  number of cells to create
-         * @param[in] type   type of the cells to create, one of GEO::MESH_TET, GEO::MESH_HEX,
+         * @param[in] nb_cells number of cells to create
+         * @param[in] type type of the cells to create, one of GEO::MESH_TET, GEO::MESH_HEX,
          * GEO::MESH_PRISM, GEO::MESH_PYRAMID, GEO::MESH_CONNECTOR.
          * @return the first created cell.
          */
@@ -1012,14 +1014,12 @@ namespace RINGMesh {
             delete_cell_colocater() ;
         }
     private:
-        /*!
-         * @brief Deletes the ColocaterANN on vertices
-         */
+
         void delete_vertex_colocater()
         {
-            if( mesh_.ann_[ColocaterANN::VERTICES] ) {
-                delete mesh_.ann_[ColocaterANN::VERTICES] ;
-                mesh_.ann_[ColocaterANN::VERTICES] = nil ;
+            if( mesh_.vertices_ann_ != nil ) {
+                delete mesh_.vertices_ann_ ;
+                mesh_.vertices_ann_ = nil ;
             }
         }
         /*!
@@ -1027,9 +1027,9 @@ namespace RINGMesh {
          */
         void delete_edge_colocater()
         {
-            if( mesh_.ann_[ColocaterANN::EDGES] ) {
-                delete mesh_.ann_[ColocaterANN::EDGES] ;
-                mesh_.ann_[ColocaterANN::EDGES] = nil ;
+            if( mesh_.edges_ann_ != nil ) {
+                delete mesh_.edges_ann_ ;
+                mesh_.edges_ann_ = nil ;
             }
         }
         /*!
@@ -1037,9 +1037,9 @@ namespace RINGMesh {
          */
         void delete_facet_colocater()
         {
-            if( mesh_.ann_[ColocaterANN::FACETS] ) {
-                delete mesh_.ann_[ColocaterANN::FACETS] ;
-                mesh_.ann_[ColocaterANN::FACETS] = nil ;
+            if( mesh_.facets_ann_ != nil ) {
+                delete mesh_.facets_ann_ ;
+                mesh_.facets_ann_ = nil ;
             }
         }
         /*!
@@ -1047,7 +1047,7 @@ namespace RINGMesh {
          */
         void delete_facet_aabb()
         {
-            if( mesh_.facets_aabb_ ) {
+            if( mesh_.facets_aabb_ != nil ) {
                 delete mesh_.facets_aabb_ ;
                 mesh_.facets_aabb_ = nil ;
             }
@@ -1057,13 +1057,13 @@ namespace RINGMesh {
          */
         void delete_cell_colocater()
         {
-            if( mesh_.ann_[ColocaterANN::CELLS] ) {
-                delete mesh_.ann_[ColocaterANN::CELLS] ;
-                mesh_.ann_[ColocaterANN::CELLS] = nil ;
+            if( mesh_.cell_ann_ != nil ) {
+                delete mesh_.cell_ann_ ;
+                mesh_.cell_ann_ = nil ;
             }
-            if( mesh_.ann_[ColocaterANN::CELL_FACETS] ) {
-                delete mesh_.ann_[ColocaterANN::CELL_FACETS] ;
-                mesh_.ann_[ColocaterANN::CELL_FACETS] = nil ;
+            if( mesh_.cell_facets_ann_ != nil ) {
+                delete mesh_.cell_facets_ann_ ;
+                mesh_.cell_facets_ann_ = nil ;
             }
         }
         /*!
@@ -1071,7 +1071,7 @@ namespace RINGMesh {
          */
         void delete_cell_aabb()
         {
-            if( mesh_.cells_aabb_ ) {
+            if( mesh_.cells_aabb_ != nil ) {
                 delete mesh_.cells_aabb_ ;
                 mesh_.cells_aabb_ = nil ;
             }

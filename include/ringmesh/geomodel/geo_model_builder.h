@@ -198,8 +198,6 @@ namespace RINGMesh {
             const std::vector< index_t >& model_vertices,
             bool clear ) ;
 
-        index_t add_unique_vertex( const vec3& p ) ;
-
         void set_corner( index_t corner_id, index_t unique_vertex ) ;
 
         void set_line( index_t id, const std::vector< index_t >& unique_vertices ) ;
@@ -343,8 +341,8 @@ namespace RINGMesh {
     protected:
         void set_surface_facet_adjacencies(
             index_t surface_id,
-            const std::vector< index_t >& facets_id,
-            const std::vector< index_t >& edges_id,
+            const std::vector< index_t >& facets_ids,
+            const std::vector< index_t >& edges_ids,
             const std::vector< index_t >& adjacent_triangles ) ;
 
     protected:
