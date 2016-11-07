@@ -33,71 +33,85 @@
  *     FRANCE
  */
 
-#include <ringmesh/ringmesh_tests_config.h>
+#include <ringmesh/basic/common.h>
 
+#include <geogram/basic/command_line.h>
+#include <geogram/basic/stopwatch.h>
+
+#include <ringmesh/basic/command_line.h>
+#include <ringmesh/geomodel/geo_model.h>
 #include <ringmesh/geomodel/geo_model_repair.h>
-#include <ringmesh/geomodel/geo_model_validity.h>
 #include <ringmesh/io/io.h>
 
-/*! 
- * Load and fix a given structural model file.
- * @author Jeanne Pellerin
+/*!
+ * @author Benjamin Chauvin
  */
+
+namespace {
+    using namespace RINGMesh ;
+
+    void hello()
+    {
+        Logger::div( "RINGMeshRepair" ) ;
+        Logger::out( "" ) << "Welcome to RINGMeshRepair !" << std::endl ;
+        Logger::out( "" ) << "People working on the project in RING" << std::endl ;
+        Logger::out( "" ) << "Benjamin Chauvin <benjamin.chauvin@univ-lorraine.fr> "
+            << std::endl ;
+    }
+
+    void import_arg_groups()
+    {
+        CmdLine::import_arg_group( "in" ) ;
+        CmdLine::import_arg_group( "out" ) ;
+        CmdLine::import_arg_group( "repair" ) ;
+    }
+
+    void run()
+    {
+        GEO::Stopwatch total( "Total time" ) ;
+
+        std::string in_model_file_name = GEO::CmdLine::get_arg( "in:geomodel" ) ;
+        if( in_model_file_name.empty() ) {
+            throw RINGMeshException( "I/O",
+                "Give at least a filename in in:geomodel" ) ;
+        }
+        GeoModel geomodel ;
+        geomodel_load( geomodel, in_model_file_name ) ;
+
+        index_t repair_mode = GEO::CmdLine::get_arg_uint( "repair:mode" ) ;
+        GeoModelRepair geo_model_repair( geomodel ) ;
+        geo_model_repair.repair(
+            static_cast< GeoModelRepair::RepairMode >( repair_mode ) ) ;
+
+        std::string out_model_file_name = GEO::CmdLine::get_arg( "out:geomodel" ) ;
+        if( out_model_file_name.empty() ) {
+            throw RINGMeshException( "I/O",
+                "Give at least a filename in out:geomodel" ) ;
+        }
+        geomodel_save( geomodel, out_model_file_name ) ;
+    }
+}
+
 int main( int argc, char** argv )
 {
     using namespace RINGMesh ;
 
     try {
-        GEO::initialize() ;
-        configure_geogram() ;
-        configure_ringmesh() ;
+        default_configure() ;
+        hello() ;
+        import_arg_groups() ;
 
-        // Set an output log file
-        std::string log_file( ringmesh_test_output_path ) ;
-        log_file += "log.txt" ;
-        GEO::FileLogger* file_logger = new GEO::FileLogger( log_file ) ;
-        Logger::instance()->register_client( file_logger ) ;
-
-        GeoModel M ;
-        std::string file_name( ringmesh_test_data_path ) ;
-        file_name += "annot.ml" ;
-        
-        Logger::out( "RINGMesh Test" ) << "Loading and fixing structural model:"
-            << file_name << std::endl ;
-
-        // Set the debug directory for the validity checks
-        set_validity_errors_directory( ringmesh_test_output_path ) ;
-
-        // Load the model
-        geomodel_load( M, file_name ) ;
-        if( is_geomodel_valid( M ) ) {
-            throw RINGMeshException( "RINGMesh Test",
-                "Input test model " + M.name()
-                    + " must be invalid to check the repair functionalities." ) ;
-        }
-
-        Logger::out( "RINGMesh Test" ) << "Repairing "
-            << std::endl << std::endl << std::endl ;
-        // Repair the model
-        GeoModelRepair model_repair( M ) ;
-        model_repair.repair( GeoModelRepair::ALL ) ;
-
-        // Test the validity again
-        if( is_geomodel_valid( M ) ) {
-            std::string fixed_file_name( ringmesh_test_output_path ) ;
-            fixed_file_name += M.name() + "_repaired.ml" ;
-            geomodel_save( M, fixed_file_name ) ;
-            Logger::out( "RINGMesh Test" ) << "Invalid geological model "
-                << M.name()
-                << " has been successfully fixed and is saved under: "
-                << fixed_file_name << std::endl ;
-            Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
+        if( argc == 1 ) {
+            GEO::CmdLine::show_usage() ;
             return 0 ;
-        } else {
-            throw RINGMeshException( "RINGMesh Test",
-                "Fixing the invalid geological model " + M.name()
-                    + " failed." ) ;
         }
+
+        std::vector< std::string > filenames ;
+        if( !GEO::CmdLine::parse( argc, argv, filenames ) ) {
+            return 1 ;
+        }
+
+        run() ;
 
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category() ) << e.what() << std::endl ;
@@ -106,4 +120,5 @@ int main( int argc, char** argv )
         Logger::err( "Exception" ) << e.what() << std::endl ;
         return 1 ;
     }
+    return 0 ;
 }

@@ -602,8 +602,8 @@ namespace RINGMesh {
         vec3 O_inter, D_inter ;
         vec3 norm_N_plane = normalize( N_plane ) ;
         vec3 norm_N_circle = normalize( N_circle ) ;
-        if( !plane_plane_intersection( O_plane, norm_N_plane, O_circle, norm_N_circle, 
-            O_inter, D_inter ) ) {
+        if( !plane_plane_intersection( O_plane, norm_N_plane, O_circle,
+            norm_N_circle, O_inter, D_inter ) ) {
             return false ;
         }
 
@@ -717,6 +717,100 @@ namespace RINGMesh {
         lambda[2] = volume2 / total_volume ;
         lambda[3] = volume3 / total_volume ;
         return true ;
+    }
+
+    /*!
+     * Computes the intersection between a plane and a line
+     * @param[in] O_line a point on the line
+     * @param[in] D_line the direction of the plane
+     * @param[in] O_plane a point on the plane
+     * @param[in] N_plane the normal of the plane
+     * @param[out] result the intersected point
+     * @return returns true if there is an intersection
+     */
+    bool line_plane_intersection(
+        const vec3& O_line,
+        const vec3& D_line,
+        const vec3& O_plane,
+        const vec3& N_plane,
+        vec3& result )
+    {
+        double dot_directions = dot( D_line, N_plane ) ;
+        if( std::fabs( dot_directions ) > global_epsilon ) {
+            double plane_constant = 0.0 ;
+            for( index_t i = 0; i < 3; i++ ) {
+                plane_constant -= O_plane[i] * N_plane[i] ;
+            }
+            double signed_distance = dot( N_plane, O_line ) - plane_constant ;
+            result = O_line - signed_distance * D_line / dot_directions ;
+            return true ;
+        } else {
+            // line is parallel to the plane
+            return false ;
+        }
+    }
+
+    /*!
+     * Computes the intersection between a plane and a segment
+     * @param[in] p0 the first vertex of the segment
+     * @param[in] p1 the second vertex of the segment
+     * @param[in] O_plane a point on the plane
+     * @param[in] N_plane the normal of the plane
+     * @param[out] result the intersected point
+     * @return returns true if there is an intersection
+     */
+    bool segment_plane_intersection(
+        const vec3& seg0,
+        const vec3& seg1,
+        const vec3& O_plane,
+        const vec3& N_plane,
+        vec3& result )
+    {
+        vec3 segment_direction = normalize( seg1 - seg0 ) ;
+        vec3 segment_barycenter = 0.5 * ( seg0 + seg1 ) ;
+        vec3 line_plane_result ;
+        if( line_plane_intersection( segment_barycenter, segment_direction, O_plane,
+            N_plane, line_plane_result ) ) {
+            if( ( line_plane_result - segment_barycenter ).length2()
+                > ( seg0 - segment_barycenter ).length2() ) {
+                // result outside the segment
+                return false ;
+            } else {
+                result = line_plane_result ;
+                return true ;
+            }
+        } else {
+            return false ;
+        }
+    }
+
+    /*!
+     * Computes the intersection between a disk and a segment
+     * @param[in] p0 the first vertex of the segment
+     * @param[in] p1 the second vertex of the segment
+     * @param[in] O_circle the center of the disk
+     * @param[in] N_circle the normal of the plane supporting the disk
+     * @param[in] r the radius of the disk
+     * @param[out] result the intersected point
+     * @return returns true if there is an intersection
+     */
+    bool disk_segment_intersection(
+        const vec3& p0,
+        const vec3& p1,
+        const vec3& O_circle,
+        const vec3& N_circle,
+        double r,
+        vec3& result )
+    {
+        vec3 segment_plane_result ;
+        if( segment_plane_intersection( p0, p1, O_circle, N_circle,
+            segment_plane_result ) ) {
+            if( ( segment_plane_result - O_circle ).length() <= r ) {
+                result = segment_plane_result ;
+                return true ;
+            }
+        }
+        return false ;
     }
 
     /*!

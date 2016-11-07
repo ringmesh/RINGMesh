@@ -92,6 +92,20 @@ namespace RINGMesh {
                 "Print statistics on the number of entities" ) ;
         }
 
+        void import_arg_group_repair()
+        {
+            GEO::CmdLine::declare_arg_group( "repair", "GeoModel repair processes" ) ;
+            GEO::CmdLine::declare_arg(
+                "repair:mode", 0,
+                "Repair mode: repair process to apply to the geomodel" ) ;
+        }
+
+        void import_arg_group_quality()
+        {
+            GEO::CmdLine::declare_arg_group( "quality", "Mesh quality" ) ;
+            GEO::CmdLine::declare_arg( "quality:mode", 0, "Mesh quality mode" ) ;
+        }
+
         bool import_arg_group( const std::string& name )
         {
             if( name == "global" ) {
@@ -102,6 +116,10 @@ namespace RINGMesh {
                 import_arg_group_out() ;
             } else if( name == "stats" ) {
                 import_arg_group_stats() ;
+            } else if( name == "repair" ) {
+                import_arg_group_repair() ;
+            } else if( name == "quality" ) {
+                import_arg_group_quality() ;
             } else {
                 return GEO::CmdLine::import_arg_group( name ) ;
             }
