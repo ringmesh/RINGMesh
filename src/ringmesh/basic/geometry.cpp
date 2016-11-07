@@ -739,7 +739,7 @@ namespace RINGMesh {
         if( std::fabs( dot_directions ) > global_epsilon ) {
             double plane_constant = 0.0 ;
             for( index_t i = 0; i < 3; i++ ) {
-                plane_constant -= O_plane[i] * N_plane[i] ;
+                plane_constant += O_plane[i] * N_plane[i] ;
             }
             double signed_distance = dot( N_plane, O_line ) - plane_constant ;
             result = O_line - signed_distance * D_line / dot_directions ;
