@@ -1068,17 +1068,14 @@ namespace RINGMesh {
         double y,
         double z )
     {
-        index_t found_mesh = NO_ID ;
+        MeshViewer* viewer = nil ;
         for( index_t i = 0; i < meshes_.size(); i++ ) {
             if( meshes_[i]->name_ == name ) {
-                found_mesh = i ;
+                viewer = meshes_[i] ;
                 break ;
             }
         }
-        MeshViewer* viewer = nil ;
-        if( found_mesh != NO_ID ) {
-            viewer = meshes_[found_mesh] ;
-        } else {
+        if( !viewer ) {
             meshes_.push_back( new MeshViewer( *this, "" ) ) ;
             viewer = meshes_.back() ;
         }
