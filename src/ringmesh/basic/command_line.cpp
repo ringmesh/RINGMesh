@@ -100,6 +100,12 @@ namespace RINGMesh {
                 "Repair mode: repair process to apply to the geomodel" ) ;
         }
 
+        void import_arg_group_quality()
+        {
+            GEO::CmdLine::declare_arg_group( "quality", "Mesh quality" ) ;
+            GEO::CmdLine::declare_arg( "quality:mode", 0, "Mesh quality mode" ) ;
+        }
+
         bool import_arg_group( const std::string& name )
         {
             if( name == "global" ) {
@@ -112,6 +118,8 @@ namespace RINGMesh {
                 import_arg_group_stats() ;
             } else if( name == "repair" ) {
                 import_arg_group_repair() ;
+            } else if( name == "quality" ) {
+                import_arg_group_quality() ;
             } else {
                 return GEO::CmdLine::import_arg_group( name ) ;
             }
