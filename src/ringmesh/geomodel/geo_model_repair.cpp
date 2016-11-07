@@ -126,8 +126,7 @@ namespace RINGMesh {
             degenerate.end(), 1 ) ) ;
         /// We have a problem if some vertices are left isolated
         /// If we remove them here we can kill all indices correspondances
-        MeshBuilder builder( line.mesh_ ) ;
-        builder.delete_edges( degenerate, false ) ;
+        delete_line_edges( line.index(), degenerate, false ) ;
         return nb ;
     }
 
@@ -136,7 +135,8 @@ namespace RINGMesh {
     {
         to_remove.clear() ;
         for( index_t i = 0; i < model().nb_lines(); ++i ) {
-            Line& line = dynamic_cast<Line&>(mesh_entity( gme_t( Line::type_name_static(), i ) ));
+            Line& line = dynamic_cast< Line& >( mesh_entity(
+                gme_t( Line::type_name_static(), i ) ) ) ;
             index_t nb = repair_line_mesh( line ) ;
             if( nb > 0 ) {
                 Logger::out( "GeoModel" ) << nb
@@ -151,7 +151,8 @@ namespace RINGMesh {
 
         double epsilon_sq = model().epsilon() * model().epsilon() ;
         for( index_t i = 0; i < model().nb_surfaces(); ++i ) {
-            Surface& surface = dynamic_cast<Surface&>(mesh_entity( gme_t(Surface::type_name_static(), i) ) );
+            Surface& surface = dynamic_cast< Surface& >( mesh_entity(
+                gme_t( Surface::type_name_static(), i ) ) ) ;
             index_t nb = detect_degenerate_facets( surface ) ;
             /// @todo Check if that cannot be simplified 
             if( nb > 0 ) {
@@ -163,16 +164,16 @@ namespace RINGMesh {
                     // MESH_REPAIR_DUP_F 2 ;
                     GEO::MeshRepairMode mode =
                         static_cast< GEO::MeshRepairMode >( 2 ) ;
-                    MeshBuilder builder( surface.mesh_ ) ;
-                    builder.mesh_repair( mode, 0.0 ) ;
+                    Mesh2DBuilder* builder = surface.mesh2d_->get_mesh2d_builder() ;
+                    builder->mesh_repair( mode, 0.0 ) ;
 
                     // This might create some small components - remove them
                     /// @todo How to choose the epsilon ? and the maximum number of facets ?
-                    builder.remove_small_connected_components( epsilon_sq, 3 ) ;
+                    builder->remove_small_connected_components( epsilon_sq, 3 ) ;
 
                     // Alright, this is a bit of an overkill [JP]
                     if( surface.nb_vertices() > 0 ) {
-                        builder.mesh_repair( mode, 0.0 ) ;
+                        builder->mesh_repair( mode, 0.0 ) ;
                     }
                 }
                 if( surface.nb_vertices() == 0 || surface.nb_mesh_elements() == 0 ) {
@@ -232,7 +233,8 @@ namespace RINGMesh {
     {
         to_remove.clear() ;
         // For all Lines and Surfaces
-        const std::string types[2] = { Line::type_name_static(), Surface::type_name_static() } ;
+        const std::string types[2] = {
+            Line::type_name_static(), Surface::type_name_static() } ;
         for( index_t t = 0; t < 2; ++t ) {
             const std::string& T = types[t] ;
 
@@ -253,7 +255,7 @@ namespace RINGMesh {
                 for( index_t v = 0; v < colocated.size(); ++v ) {
                     if( colocated[v] == v
                         || inside_border.find( v ) != inside_border.end() ) {
-                        // This point is kept 
+                        // This point is kept
                         // No colocated or on an inside boundary
                     } else {
                         // The point is to remove
@@ -270,25 +272,44 @@ namespace RINGMesh {
                     to_remove.insert( E.gme_id() ) ;
                     continue ;
                 } else {
-                    GMME& ME = modifiable_mesh_entity( entity_id ) ;
-                    MeshBuilder builder( ME.mesh_ ) ;
-                    for( index_t f_itr = 0; f_itr < E.mesh_.nb_facets(); f_itr++ ) {
-                        for( index_t fv_itr = 0;
-                            fv_itr < E.mesh_.nb_facet_vertices( f_itr ); fv_itr++ ) {
-                            builder.set_facet_vertex( f_itr, fv_itr,
-                                colocated[E.mesh_.facet_vertex( f_itr, fv_itr )] ) ;
+                    if( t == 1 ) {
+                        Surface& ME =
+                            dynamic_cast< Surface& >( modifiable_mesh_entity(
+                                entity_id ) ) ;
+                        Mesh2DBuilder* builder = ME.mesh2d_->get_mesh2d_builder() ;
+                        for( index_t f_itr = 0; f_itr < E.nb_mesh_elements();
+                            f_itr++ ) {
+                            for( index_t fv_itr = 0;
+                                fv_itr < E.nb_mesh_element_vertices( f_itr );
+                                fv_itr++ ) {
+                                builder->set_facet_vertex( f_itr, fv_itr,
+                                    colocated[E.mesh_element_vertex_index( f_itr,
+                                        fv_itr )] ) ;
+                            }
                         }
+                        builder->delete_vertices( to_delete, false ) ;
+                        Logger::out( "Repair" ) << nb_todelete
+                            << " colocated vertices deleted in " << entity_id
+                            << std::endl ;
+
+                    } else if( t == 0 ) {
+                        Line& ME = dynamic_cast< Line& >( modifiable_mesh_entity(
+                            entity_id ) ) ;
+                        Mesh1DBuilder* builder = ME.mesh1d_->get_mesh1d_builder() ;
+                        for( index_t e_itr = 0; e_itr < E.nb_mesh_elements();
+                            e_itr++ ) {
+                            builder->set_edge_vertex( e_itr, 0,
+                                colocated[E.mesh_element_vertex_index( e_itr, 0 )] ) ;
+                            builder->set_edge_vertex( e_itr, 1,
+                                colocated[E.mesh_element_vertex_index( e_itr, 1 )] ) ;
+                        }
+                        builder->delete_vertices( to_delete, false ) ;
+                        Logger::out( "Repair" ) << nb_todelete
+                            << " colocated vertices deleted in " << entity_id
+                            << std::endl ;
+                    } else {
+                        ringmesh_assert_not_reached ;
                     }
-                    for( index_t e_itr = 0; e_itr < E.mesh_.nb_edges(); e_itr++ ) {
-                        builder.set_edge_vertex( e_itr, 0,
-                            colocated[E.mesh_.edge_vertex( e_itr, 0 )] ) ;
-                        builder.set_edge_vertex( e_itr, 1,
-                            colocated[E.mesh_.edge_vertex( e_itr, 1 )] ) ;
-                    }
-                    builder.delete_vertices( to_delete, false ) ;
-                    Logger::out( "Repair" ) << nb_todelete
-                        << " colocated vertices deleted in " << entity_id
-                        << std::endl ;
                 }
             }
         }
@@ -359,6 +380,12 @@ namespace RINGMesh {
             get_dependent_entities( empty_entities ) ;
             remove_entities( empty_entities ) ;
         }
+
+        // This is basic requirement ! no_colocated model vertices !
+        // So remove them if there are any
+        model().mesh.remove_colocated_vertices() ;
+
+        end_model() ;
     }
 
     void GeoModelRepair::repair_line_boundary_vertex_order()
