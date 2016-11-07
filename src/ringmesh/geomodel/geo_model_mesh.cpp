@@ -476,8 +476,9 @@ namespace RINGMesh {
             for( index_t e = 0; e < geomodel_.nb_mesh_entities( cur_type ); e++ ) {
                 vertex_maps_.at( cur_type )->unbind( e ) ;
             }
+            vertex_maps_[cur_type]->clear() ;
         }
-        vertex_maps_.clear() ;
+//        vertex_maps_.clear() ;
 //        for( index_t c = 0; c < corner_vertex_maps_.size(); c++ ) {
 //            corner_vertex_maps_.unbind( c ) ;
 //        }
