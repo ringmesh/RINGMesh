@@ -1356,7 +1356,7 @@ namespace RINGMesh {
                 }
 
                 GME::GEOL_FEATURE parent_geol_feature = cur_in_boun_gme.parent(
-                    Surface::type_name_static() ).geological_feature() ;
+                    Interface::type_name_static() ).geological_feature() ;
                 if( !GME::is_fault( parent_geol_feature ) ) {
                     continue ;
                 }
