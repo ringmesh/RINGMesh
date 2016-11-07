@@ -156,9 +156,7 @@ int main( int argc, char** argv )
 
     try {
 
-        GEO::initialize() ;
-        configure_geogram() ;
-        configure_ringmesh() ;
+        default_configure() ;
 
         Logger::div( "RINGMeshConvert" ) ;
         Logger::out( "" ) << "Welcome to RINGMeshConvert !" << std::endl ;

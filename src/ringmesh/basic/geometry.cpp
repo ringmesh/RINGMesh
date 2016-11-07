@@ -602,8 +602,8 @@ namespace RINGMesh {
         vec3 O_inter, D_inter ;
         vec3 norm_N_plane = normalize( N_plane ) ;
         vec3 norm_N_circle = normalize( N_circle ) ;
-        if( !plane_plane_intersection( O_plane, norm_N_plane, O_circle, norm_N_circle, 
-            O_inter, D_inter ) ) {
+        if( !plane_plane_intersection( O_plane, norm_N_plane, O_circle,
+            norm_N_circle, O_inter, D_inter ) ) {
             return false ;
         }
 
@@ -739,7 +739,7 @@ namespace RINGMesh {
         if( std::fabs( dot_directions ) > global_epsilon ) {
             double plane_constant = 0.0 ;
             for( index_t i = 0; i < 3; i++ ) {
-                plane_constant -= O_plane[i] * N_plane[i] ;
+                plane_constant += O_plane[i] * N_plane[i] ;
             }
             double signed_distance = dot( N_plane, O_line ) - plane_constant ;
             result = O_line - signed_distance * D_line / dot_directions ;
