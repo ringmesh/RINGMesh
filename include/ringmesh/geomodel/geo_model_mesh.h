@@ -404,17 +404,6 @@ namespace RINGMesh {
              */
             bool is_initialized() const ;
 
-//            /*!
-//             * @brief Checks that all the vertex maps are initialized. If some
-//             * vertex maps are not initialized, initialized them.
-//             */
-//            void check_mesh_entity_maps() ;
-//
-//            /*!
-//             * @brief Initializes all the GeoModelMeshEntity vertex maps
-//             */
-//            void initialize_mesh_entity_vertex_maps() ;
-
             /*!
              * @brief Initializes the given GeoModelMeshEntity vertex map
              * @param[in] mesh_entity_id Unique id to a GeoModelMeshEntity
