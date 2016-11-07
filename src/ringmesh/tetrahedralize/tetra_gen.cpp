@@ -297,20 +297,20 @@ namespace RINGMesh {
 
         void set_vertices()
         {
-            mesh_set_vertex_count( mesh_input_, tetmesh_->vertices.nb() ) ;
-            for( index_t p = 0; p < tetmesh_->vertices.nb(); p++ ) {
+            mesh_set_vertex_count( mesh_input_, tetmesh_constraint_.vertices.nb() ) ;
+            for( index_t p = 0; p < tetmesh_constraint_.vertices.nb(); p++ ) {
                 mesh_set_vertex_coordinates( mesh_input_, p + 1,
-                    tetmesh_->vertices.point_ptr( p ) ) ;
+                    tetmesh_constraint_.vertices.point_ptr( p ) ) ;
             }
         }
 
         void set_edges()
         {
-            mesh_set_edge_count( mesh_input_, tetmesh_->edges.nb() ) ;
-            for( index_t e = 0; e < tetmesh_->edges.nb(); e++ ) {
+            mesh_set_edge_count( mesh_input_, tetmesh_constraint_.edges.nb() ) ;
+            for( index_t e = 0; e < tetmesh_constraint_.edges.nb(); e++ ) {
                 meshgems_integer edge_indices[2] ;
-                edge_indices[0] = tetmesh_->edges.vertex( e, 0 ) + 1 ;
-                edge_indices[1] = tetmesh_->edges.vertex( e, 1 ) + 1 ;
+                edge_indices[0] = tetmesh_constraint_.edges.vertex( e, 0 ) + 1 ;
+                edge_indices[1] = tetmesh_constraint_.edges.vertex( e, 1 ) + 1 ;
                 mesh_set_edge_vertices( mesh_input_, e + 1, edge_indices ) ;
             }
 
@@ -318,12 +318,12 @@ namespace RINGMesh {
 
         void set_triangles()
         {
-            mesh_set_triangle_count( mesh_input_, tetmesh_->facets.nb() ) ;
-            for( index_t t = 0; t < tetmesh_->facets.nb(); t++ ) {
+            mesh_set_triangle_count( mesh_input_, tetmesh_constraint_.facets.nb() ) ;
+            for( index_t t = 0; t < tetmesh_constraint_.facets.nb(); t++ ) {
                 meshgems_integer triangle_indices[3] ;
-                triangle_indices[0] = tetmesh_->facets.vertex( t, 0 ) + 1 ;
-                triangle_indices[1] = tetmesh_->facets.vertex( t, 1 ) + 1 ;
-                triangle_indices[2] = tetmesh_->facets.vertex( t, 2 ) + 1 ;
+                triangle_indices[0] = tetmesh_constraint_.facets.vertex( t, 0 ) + 1 ;
+                triangle_indices[1] = tetmesh_constraint_.facets.vertex( t, 1 ) + 1 ;
+                triangle_indices[2] = tetmesh_constraint_.facets.vertex( t, 2 ) + 1 ;
                 mesh_set_triangle_vertices( mesh_input_, t + 1, triangle_indices ) ;
             }
         }
@@ -374,7 +374,7 @@ namespace RINGMesh {
         void write_vertices_in_ringmesh_data_structure()
         {
             RINGMESH_PARALLEL_LOOP
-            for( index_t p = 0; p < tetmesh_->vertices.nb(); p++ ) {
+            for( index_t p = 0; p < tetmesh_constraint_.vertices.nb(); p++ ) {
                 double point[3] ;
                 mesh_get_vertex_coordinates( mesh_output_, p + 1, point ) ;
                 set_point( p, point ) ;
@@ -384,12 +384,12 @@ namespace RINGMesh {
         void write_tet_in_ringmesh_data_structure()
         {
             RINGMESH_PARALLEL_LOOP
-            for( index_t t = 0; t < tetmesh_->cells.nb(); t++ ) {
+            for( index_t t = 0; t < tetmesh_constraint_.cells.nb(); t++ ) {
                 signed_index_t tet[4] ;
                 mesh_get_tetrahedron_vertices( mesh_output_, t + 1, tet ) ;
-                set_tetra( t, tet, tetmesh_->edges.nb(), tetmesh_->facets.nb() ) ;
+                set_tetra( t, tet) ;
             }
-            tetmesh_->cells.connect() ;
+            tetmesh_constraint_.cells.connect() ;
         }
 
     } ;
