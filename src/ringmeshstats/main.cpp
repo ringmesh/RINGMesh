@@ -53,9 +53,7 @@ int main( int argc, char** argv )
 
     try {
 
-        GEO::initialize() ;
-        configure_geogram() ;
-        configure_ringmesh() ;
+        global_configure() ;
 
         Logger::div( "RINGMeshStats" ) ;
         Logger::out( "" ) << "Welcome to RINGMeshStats !" << std::endl ;

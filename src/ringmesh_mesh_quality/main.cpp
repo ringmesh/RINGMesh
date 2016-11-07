@@ -50,13 +50,6 @@
 namespace {
     using namespace RINGMesh ;
 
-    void global_configure()
-    {
-        GEO::initialize() ;
-        configure_geogram() ;
-        configure_ringmesh() ;
-    }
-
     void hello()
     {
         Logger::div( "RINGMeshMeshQuality" ) ;
