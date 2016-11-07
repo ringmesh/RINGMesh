@@ -104,7 +104,26 @@ namespace RINGMesh {
          * @brief Gets the number of vertices in the Mesh.
          */
         virtual index_t nb_vertices() const = 0 ;
+        /*
+         * @brief Gets the number of element in the Mesh.
+         */
+        virtual index_t nb_mesh_elements() const = 0 ;
+        /*
+         * @brief Gets the number of vertices in an element.
+         * @param[in] element the index of the element
+         */
+        virtual index_t nb_mesh_element_vertices( index_t element ) const = 0 ;
 
+        virtual index_t mesh_element_vertex_index(
+            index_t element,
+            index_t vertex ) const = 0 ;
+
+        const vec3& mesh_element_vertex(
+            index_t element_id,
+            index_t vertex_id ) const
+        {
+            return vertex( mesh_element_vertex_index( element_id, vertex_id ) ) ;
+        }
         virtual GEO::AttributesManager& vertex_attribute_manager() const = 0 ;
 
         /*!
@@ -177,7 +196,30 @@ namespace RINGMesh {
             : MeshBase( geo_model )
         {
         }
-
+        /*
+         * @brief Gets the number of element in the Mesh.
+         */
+        virtual index_t nb_mesh_elements() const
+        {
+            return nb_vertices() ;
+        }
+        /*
+         * @brief Gets the number of vertices in an element.
+         * @param[in] element the index of the element
+         */
+        virtual index_t nb_mesh_element_vertices( index_t element ) const
+        {
+            ringmesh_unused( element ) ;
+            return 1 ;
+        }
+        virtual index_t mesh_element_vertex_index(
+            index_t element,
+            index_t vertex ) const
+        {
+            ringmesh_assert( element < nb_mesh_elements() ) ;
+            ringmesh_unused( vertex ) ;
+            return element ;
+        }
     } ;
 
     /*!
@@ -222,7 +264,29 @@ namespace RINGMesh {
             const vec3& e1 = vertex( edge_vertex( edge_id, 1 ) ) ;
             return ( e1 + e0 ) / 2. ;
         }
-
+        /*
+         * @brief Gets the number of element in the Mesh.
+         */
+        virtual index_t nb_mesh_elements() const
+        {
+            return nb_edges() ;
+        }
+        /*
+         * @brief Gets the number of vertices in an element.
+         * @param[in] element the index of the element
+         */
+        virtual index_t nb_mesh_element_vertices( index_t element ) const
+        {
+            ringmesh_unused( element ) ;
+            return 2 ;
+        }
+        virtual index_t mesh_element_vertex_index(
+            index_t element,
+            index_t vertex ) const
+        {
+            return edge_vertex( element, vertex ) ;
+        }
+        
         /*!
          * @brief return the ColocaterANN at edges
          * @warning the ColocaterANN is destroy when calling the Mesh::facets_aabb() and Mesh::cells_aabb()
@@ -375,7 +439,28 @@ namespace RINGMesh {
          * @return the facet area
          */
         virtual double facet_area( index_t facet_id ) const = 0 ;
-
+        /*
+         * @brief Gets the number of element in the Mesh.
+         */
+        virtual index_t nb_mesh_elements() const
+        {
+            return nb_facets() ;
+        }
+        /*
+         * @brief Gets the number of vertices in an element.
+         * @param[in] element the index of the element
+         */
+        virtual index_t nb_mesh_element_vertices( index_t element ) const
+        {
+            return nb_facet_vertices( element ) ;
+        }
+        virtual index_t mesh_element_vertex_index(
+            index_t element,
+            index_t vertex ) const
+        {
+            return facet_vertex( element, vertex ) ;
+        }
+        
         /*!
          * @brief return the ColocaterANN at facets
          * @warning the ColocaterANN is destroy when calling the Mesh::facets_aabb() and Mesh::cells_aabb()
@@ -600,7 +685,28 @@ namespace RINGMesh {
             }
             return NO_ID ;
         }
-
+        /*
+         * @brief Gets the number of element in the Mesh.
+         */
+        virtual index_t nb_mesh_elements() const
+        {
+            return nb_cells() ;
+        }
+        /*
+         * @brief Gets the number of vertices in an element.
+         * @param[in] element the index of the element
+         */
+        virtual index_t nb_mesh_element_vertices( index_t element ) const
+        {
+            return nb_cell_vertices( element ) ;
+        }
+        virtual index_t mesh_element_vertex_index(
+            index_t element,
+            index_t vertex ) const
+        {
+            return cell_vertex( element, vertex ) ;
+        }
+        
         Mesh3DBuilder* get_mesh3d_builder() ;
 
         /*!
@@ -660,6 +766,26 @@ namespace RINGMesh {
     public:
         virtual ~MeshAllD()
         {
+        }       
+        virtual index_t nb_mesh_elements() const
+        {
+            return Mesh0D::nb_mesh_elements() + Mesh1D::nb_mesh_elements()
+                + Mesh2D::nb_mesh_elements() + Mesh3D::nb_mesh_elements() ;
+        }
+        virtual index_t nb_mesh_element_vertices( index_t element ) const
+        {
+            ringmesh_unused( element ) ;
+            ringmesh_assert_not_reached ;
+            return NO_ID ;
+        }
+        virtual index_t mesh_element_vertex_index(
+            index_t element,
+            index_t vertex ) const
+        {
+            ringmesh_unused( element ) ;
+            ringmesh_unused( vertex ) ;
+            ringmesh_assert_not_reached ;
+            return NO_ID ;
         }
         MeshAllDBuilder* get_meshalld_builder() ;
     protected:
