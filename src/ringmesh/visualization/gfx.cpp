@@ -119,10 +119,7 @@ namespace RINGMesh {
         }
         virtual void draw_edges()
         {
-            index_t w = get_mesh_width() ;
-            set_mesh_width( w + 1 ) ;
             GEO::MeshGfx::draw_edges() ;
-            set_mesh_width( w ) ;
         }
 
         void set_vertices_visible( bool b )
@@ -971,19 +968,13 @@ namespace RINGMesh {
         {
             std::string attribute_name = get_attribute_name_with_coordinate(
                 manager_.name(), manager_.coordinate() ) ;
-            const GeoModel* model = manager_.gfx().geo_model() ;
-            for( index_t r = 0; r < model->nb_regions(); r++ ) {
-                manager_.gfx().regions.set_scalar_attribute( GEO::MESH_CELLS,
-                    attribute_name, manager_.minimum(), manager_.maximum(),
-                    manager_.colormap() ) ;
-            }
+            manager_.gfx().regions.set_scalar_attribute( GEO::MESH_CELLS,
+                attribute_name, manager_.minimum(), manager_.maximum(),
+                manager_.colormap() ) ;
         }
         virtual void unbind_attribute()
         {
-            const GeoModel* model = manager_.gfx().geo_model() ;
-            for( index_t r = 0; r < model->nb_regions(); r++ ) {
-                manager_.gfx().regions.unset_scalar_attribute() ;
-            }
+            manager_.gfx().regions.unset_scalar_attribute() ;
         }
         virtual index_t nb_coordinates()
         {
@@ -1024,19 +1015,13 @@ namespace RINGMesh {
         {
             std::string attribute_name = get_attribute_name_with_coordinate(
                 manager_.name(), manager_.coordinate() ) ;
-            const GeoModel* model = manager_.gfx().geo_model() ;
-            for( index_t r = 0; r < model->nb_regions(); r++ ) {
-                manager_.gfx().regions.set_scalar_attribute( GEO::MESH_VERTICES,
-                    attribute_name, manager_.minimum(), manager_.maximum(),
-                    manager_.colormap() ) ;
-            }
+            manager_.gfx().regions.set_scalar_attribute( GEO::MESH_VERTICES,
+                attribute_name, manager_.minimum(), manager_.maximum(),
+                manager_.colormap() ) ;
         }
         virtual void unbind_attribute()
         {
-            const GeoModel* model = manager_.gfx().geo_model() ;
-            for( index_t r = 0; r < model->nb_regions(); r++ ) {
-                manager_.gfx().regions.unset_scalar_attribute() ;
-            }
+            manager_.gfx().regions.unset_scalar_attribute() ;
         }
         virtual index_t nb_coordinates()
         {
@@ -1062,6 +1047,101 @@ namespace RINGMesh {
         }
     } ;
 
+    class FacetAttributeGfx: public AttributeGfx {
+    public:
+        FacetAttributeGfx( AttributeGfxManager& manager )
+            : AttributeGfx( manager )
+        {
+        }
+
+        virtual std::string location_name() const
+        {
+            return "facet" ;
+        }
+        virtual void bind_attribute()
+        {
+            std::string attribute_name = get_attribute_name_with_coordinate(
+                manager_.name(), manager_.coordinate() ) ;
+            manager_.gfx().surfaces.set_scalar_attribute( GEO::MESH_FACETS,
+                attribute_name, manager_.minimum(), manager_.maximum(),
+                manager_.colormap() ) ;
+        }
+        virtual void unbind_attribute()
+        {
+            manager_.gfx().surfaces.unset_scalar_attribute() ;
+        }
+        virtual index_t nb_coordinates()
+        {
+            const GeoModel* model = manager_.gfx().geo_model() ;
+            GEO::AttributeStore* store =
+                model->surface( 0 ).facet_attribute_manager().find_attribute_store(
+                    manager_.name() ) ;
+
+            if( store == nil ) return 0 ;
+            return store->dimension() ;
+        }
+    private:
+        virtual void do_compute_range( double& attribute_min, double& attribute_max )
+        {
+            std::string attribute_name = get_attribute_name_with_coordinate(
+                manager_.name(), manager_.coordinate() ) ;
+            const GeoModel* model = manager_.gfx().geo_model() ;
+            for( index_t s = 0; s < model->nb_surfaces(); s++ ) {
+                GEO::ReadOnlyScalarAttributeAdapter attribute(
+                    model->surface( s ).facet_attribute_manager(), attribute_name ) ;
+                compute_attribute_range( attribute, attribute_min, attribute_max ) ;
+            }
+        }
+    } ;
+
+    class FacetVertexAttributeGfx: public AttributeGfx {
+    public:
+        FacetVertexAttributeGfx( AttributeGfxManager& manager )
+            : AttributeGfx( manager )
+        {
+        }
+
+        virtual std::string location_name() const
+        {
+            return "facet_vertices" ;
+        }
+        virtual void bind_attribute()
+        {
+            std::string attribute_name = get_attribute_name_with_coordinate(
+                manager_.name(), manager_.coordinate() ) ;
+            manager_.gfx().surfaces.set_scalar_attribute( GEO::MESH_VERTICES,
+                attribute_name, manager_.minimum(), manager_.maximum(),
+                manager_.colormap() ) ;
+        }
+        virtual void unbind_attribute()
+        {
+            manager_.gfx().surfaces.unset_scalar_attribute() ;
+        }
+        virtual index_t nb_coordinates()
+        {
+            const GeoModel* model = manager_.gfx().geo_model() ;
+            GEO::AttributeStore* store =
+                model->surface( 0 ).vertex_attribute_manager().find_attribute_store(
+                    manager_.name() ) ;
+
+            if( store == nil ) return 0 ;
+            return store->dimension() ;
+        }
+    private:
+        virtual void do_compute_range( double& attribute_min, double& attribute_max )
+        {
+            std::string attribute_name = get_attribute_name_with_coordinate(
+                manager_.name(), manager_.coordinate() ) ;
+            const GeoModel* model = manager_.gfx().geo_model() ;
+            for( index_t s = 0; s < model->nb_surfaces(); s++ ) {
+                GEO::ReadOnlyScalarAttributeAdapter attribute(
+                    model->surface( s ).vertex_attribute_manager(), attribute_name ) ;
+                compute_attribute_range( attribute, attribute_min, attribute_max ) ;
+            }
+        }
+    } ;
+
+
     AttributeGfxManager::AttributeGfxManager( GeoModelGfx& gfx )
         :
             gfx_( gfx ),
@@ -1070,14 +1150,17 @@ namespace RINGMesh {
             minimum_( 0.0 ),
             maximum_( 0.0 )
     {
+        attributes_[facets] = new FacetAttributeGfx( *this ) ;
+        attributes_[facet_vertices] = new FacetVertexAttributeGfx( *this ) ;
         attributes_[cells] = new CellAttributeGfx( *this ) ;
         attributes_[cell_vertices] = new CellVertexAttributeGfx( *this ) ;
     }
 
     AttributeGfxManager::~AttributeGfxManager()
     {
-        delete attributes_[cells] ;
-        delete attributes_[cell_vertices] ;
+        for( index_t i = 0; i < nb_locations; i++ ) {
+            delete attributes_[i] ;
+        }
     }
 
     std::string AttributeGfxManager::location_name( Attribute_location location )

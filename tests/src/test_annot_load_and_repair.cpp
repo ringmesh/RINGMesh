@@ -48,9 +48,7 @@ int main( int argc, char** argv )
     using namespace RINGMesh ;
 
     try {
-        GEO::initialize() ;
-        configure_geogram() ;
-        configure_ringmesh() ;
+        default_configure() ;
 
         // Set an output log file
         std::string log_file( ringmesh_test_output_path ) ;
@@ -80,7 +78,7 @@ int main( int argc, char** argv )
             << std::endl << std::endl << std::endl ;
         // Repair the model
         GeoModelRepair model_repair( M ) ;
-        model_repair.geo_model_mesh_repair() ;
+        model_repair.repair( GeoModelRepair::ALL ) ;
 
         // Test the validity again
         if( is_geomodel_valid( M ) ) {

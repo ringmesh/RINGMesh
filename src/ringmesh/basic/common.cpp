@@ -89,4 +89,11 @@ namespace RINGMesh {
         ringmesh_mesh_io_initialize() ;
         initialize_gocad_import_factories() ;
     }
+
+    void default_configure()
+    {
+        GEO::initialize() ;
+        configure_geogram() ;
+        configure_ringmesh() ;
+    }
 }

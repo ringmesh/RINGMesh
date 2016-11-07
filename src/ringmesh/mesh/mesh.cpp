@@ -42,8 +42,10 @@
 #include <ringmesh/mesh/mesh_builder.h>
 
 namespace RINGMesh {
-    MeshBase::~MeshBase(){
+    MeshBase::~MeshBase()
+    {
         if( mesh_builder_ ) delete mesh_builder_ ;
+        if( vertices_ann_ ) delete vertices_ann_ ;
     }
     Mesh0DBuilder* Mesh0D::get_mesh0d_builder()
     {
@@ -72,7 +74,7 @@ namespace RINGMesh {
     }
     MeshBaseBuilder* GeogramMesh::get_mesh_builder_base()
     {
-        if( mesh_builder_ == NULL ) {
+        if( mesh_builder_ == nil ) {
             mesh_builder_ = new GeogramMeshBuilder( *this ) ;
         }
         return mesh_builder_ ;

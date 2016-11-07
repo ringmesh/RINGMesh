@@ -182,14 +182,25 @@ namespace RINGMesh {
             return *base_class::operator[]( i ) ;
         }
 
+        bool is_attribute_bound( index_t i ) const
+        {
+            return base_class::operator[]( i ) != nil ;
+        }
+
+        void unbind( index_t i )
+        {
+            if( base_class::operator[]( i ) ) {
+                // I am not sure, but unbind should do the deallocation [JP]
+                operator[]( i ).unbind() ;
+                delete base_class::operator[]( i ) ;
+                base_class::operator[]( i ) = nil ;
+            }
+        }
+
         ~AttributeVector()
         {
             for( index_t i = 0; i < base_class::size(); i++ ) {
-                if( base_class::operator[]( i ) ) {
-                    // I am not sure, but unbind should do the deallocation [JP]
-                    operator[]( i ).unbind() ;
-                    delete base_class::operator[]( i ) ;
-                }
+                unbind( i ) ;
             }
         }
     } ;
