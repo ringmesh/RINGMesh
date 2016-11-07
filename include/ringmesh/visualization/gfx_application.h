@@ -95,6 +95,12 @@ namespace RINGMesh {
         static void show_colored_regions() ;
         static void show_colored_layers() ;
 
+        void create_point(
+            std::string name = "debug",
+            double x = 0,
+            double y = 0,
+            double z = 0 ) ;
+
     private:
         class GeoModelViewer {
         public:

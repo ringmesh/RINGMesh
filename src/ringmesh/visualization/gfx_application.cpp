@@ -738,8 +738,10 @@ namespace RINGMesh {
         attribute_name_ = "point_fp32[0]" ;
         attribute_subelements_ = GEO::MESH_VERTICES ;
 
-        GEO::mesh_load( filename, mesh_ ) ;
-        name_ = GEO::FileSystem::base_name( filename, true ) ;
+        if( !filename.empty() ) {
+            GEO::mesh_load( filename, mesh_ ) ;
+            name_ = GEO::FileSystem::base_name( filename, true ) ;
+        }
         mesh_gfx_.set_mesh( &mesh_ ) ;
 
         for( index_t v = 0; v < mesh_.vertices.nb(); v++ ) {
@@ -1050,8 +1052,31 @@ namespace RINGMesh {
                 browse_geogram( path_ ) ;
                 ImGui::EndMenu() ;
             }
+            if( ImGui::MenuItem( "Create point" ) ) {
+                GEO::Command::set_current(
+                    "create_point(std::string name=\"debug\","
+                        " double x=0, double y=0, double z=0)", this,
+                    &RINGMeshApplication::create_point ) ;
+            }
             ImGui::EndMenu() ;
         }
+    }
+
+    void RINGMeshApplication::create_point(
+        std::string name,
+        double x,
+        double y,
+        double z )
+    {
+        meshes_.push_back( new MeshViewer( *this, "" ) ) ;
+        MeshViewer& viewer = *meshes_.back() ;
+        vec3 point( x, y, z ) ;
+        viewer.mesh_.vertices.create_vertex( point.data() ) ;
+        viewer.bbox_.add_point( point ) ;
+        viewer.name_ = name ;
+        current_viewer_ = meshes_.size() - 1 ;
+        current_viewer_type_ = MESH ;
+        update_region_of_interest() ;
     }
 
     void RINGMeshApplication::init_graphics()
