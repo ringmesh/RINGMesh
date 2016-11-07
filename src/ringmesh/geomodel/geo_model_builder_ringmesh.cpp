@@ -258,11 +258,11 @@ namespace RINGMesh {
                 return ; // a region is not necessary meshed.
             }
             unzip_one_file( uz, filename.c_str() ) ;
-            Mesh cur_mesh( model(), 3, false ) ;
+            GeogramMesh cur_mesh( model(), 3, false ) ;
             GEO::MeshIOFlags flags ;
             flags.set_attribute( GEO::MESH_ALL_ATTRIBUTES ) ;
             Logger::instance()->set_minimal( true ) ;
-            MeshBuilder builder( cur_mesh ) ;
+            GeogramMeshBuilder builder( cur_mesh ) ;
             builder.load_mesh( filename, flags ) ;
             assign_mesh_to_entity( cur_mesh, cur_gme ) ;
             Logger::instance()->set_minimal( false ) ;
@@ -461,11 +461,11 @@ namespace RINGMesh {
                 }
             }
             unzip_one_file( uz, str_try.c_str() ) ;
-            Mesh cur_mesh( model(), 3, false ) ;
+            GeogramMesh cur_mesh( model(), 3, false ) ;
             GEO::MeshIOFlags flags ;
             flags.set_attribute( GEO::MESH_ALL_ATTRIBUTES ) ;
             GEO::Logger::instance()->set_minimal( true ) ;
-            MeshBuilder builder( cur_mesh ) ;
+            GeogramMeshBuilder builder( cur_mesh ) ;
             builder.load_mesh( str_try, flags ) ;
             assign_mesh_to_entity( cur_mesh,
                 model().entity( type_name_old_to_new( old_type_name ), el ).gme_id() ) ;
@@ -510,7 +510,7 @@ namespace RINGMesh {
         // Repair line boundary order.
         complete_entity_connectivity() ;
         GeoModelRepair repair( model() ) ;
-        repair.repair_line_boundary_vertex_order() ;
+        repair.repair( GeoModelRepair::LINE_BOUNDARY_ORDER ) ;
 
         unzClose( uz ) ;
     }
