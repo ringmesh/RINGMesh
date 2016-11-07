@@ -1068,12 +1068,24 @@ namespace RINGMesh {
         double y,
         double z )
     {
-        meshes_.push_back( new MeshViewer( *this, "" ) ) ;
-        MeshViewer& viewer = *meshes_.back() ;
+        index_t found_mesh = NO_ID ;
+        for( index_t i = 0; i < meshes_.size(); i++ ) {
+            if( meshes_[i]->name_ == name ) {
+                found_mesh = i ;
+                break ;
+            }
+        }
+        MeshViewer* viewer = nil ;
+        if( found_mesh != NO_ID ) {
+            viewer = meshes_[found_mesh] ;
+        } else {
+            meshes_.push_back( new MeshViewer( *this, "" ) ) ;
+            viewer = meshes_.back() ;
+        }
         vec3 point( x, y, z ) ;
-        viewer.mesh_.vertices.create_vertex( point.data() ) ;
-        viewer.bbox_.add_point( point ) ;
-        viewer.name_ = name ;
+        viewer->mesh_.vertices.create_vertex( point.data() ) ;
+        viewer->bbox_.add_point( point ) ;
+        viewer->name_ = name ;
         current_viewer_ = meshes_.size() - 1 ;
         current_viewer_type_ = MESH ;
         update_region_of_interest() ;
