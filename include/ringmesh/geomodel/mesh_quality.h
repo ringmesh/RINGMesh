@@ -32,68 +32,55 @@
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
  */
- 
- /*!
- * @file Initialization of the RINGMesh and geogram library on loading
- * @author Arnaud Botella
- */
+
+#ifndef __RINGMESH_MESH_QUALITY__
+#define __RINGMESH_MESH_QUALITY__
 
 #include <ringmesh/basic/common.h>
 
-#include <geogram/basic/common.h>
-#include <geogram/basic/command_line.h>
-#include <geogram/basic/command_line_args.h>
+/*!
+ * @author Benjamin Chauvin
+ * This code is inspired from
+ * http://people.sc.fsu.edu/~jburkardt/cpp_src/tet_mesh_quality/tet_mesh_quality.html
+ */
 
-#ifdef RINGMESH_WITH_GRAPHICS
-#   include <geogram_gfx/basic/common.h>
-#endif
-
-#include <ringmesh/basic/command_line.h>
-#include <ringmesh/geogram_extension/geogram_extension.h>
-#include <ringmesh/geomodel/geo_model_builder_gocad.h>
-#include <ringmesh/geomodel/geo_model_geological_entity.h>
-#include <ringmesh/io/io.h>
-#include <ringmesh/tetrahedralize/tetra_gen.h>
+namespace RINGMesh {
+    class GeoModel ;
+}
 
 namespace RINGMesh {
 
-    /*!
-     * This function configures geogram by setting some geogram options.
-     * \pre This function should be call after GEO::initialize().
-     */
-    void configure_geogram()
-    {
-        GEO::CmdLine::import_arg_group( "sys" ) ;
-#ifdef RINGMESH_DEBUG
-        GEO::CmdLine::set_arg( "sys:assert", "abort" ) ;
-#endif
-        GEO::CmdLine::set_arg( "sys:FPE", true ) ;
-        GEO::CmdLine::import_arg_group( "algo" ) ;
-        GEO::CmdLine::set_arg( "algo:predicates", "exact" ) ;
-        GEO::CmdLine::import_arg_group( "log" ) ;
-        GEO::CmdLine::set_arg( "sys:use_doubles", true ) ;
-#ifdef RINGMESH_WITH_GRAPHICS
-        GEO::CmdLine::import_arg_group( "gfx" ) ;
-#endif
-    }
+    enum MeshQualityMode {
+        INSPHERE_RADIUS_BY_CIRCUMSPHERE_RADIUS,
+        INSPHERE_RADIUS_BY_MAX_EDGE_LENGTH,
+        VOLUME_BY_SUM_SQUARE_EDGE,
+        MIN_SOLID_ANGLE
+    } ;
 
     /*!
-     * This function configures RINGMesh by initializing its factories.
+     * @brief Computes and stores mesh quality in the GeoModel.
+     *
+     * Enables to have a metrics on the quality of the 3D mesh. This is
+     * important for instance for numerical processes. For now all the qualities
+     * are based on the regular tetrahedron: a good element here is an element
+     * near equilaterality (this definition may change in function of the
+     * requirements of the numerical process).
+     * The quality is between 0 and 1. 0 corresponds to a bad tetrahedron, and
+     * 1 to a good tetrahedron (equilaterality).
+     * For more information about the mesh quality, see
+     * <a href="http://people.sc.fsu.edu/~jburkardt/cpp_src/tet_mesh_quality/tet_mesh_quality.html">
+     * TET_MESH_QUALITY Interactive Program for Tet Mesh Quality</a>
+     *
+     * @param[in] mesh_qual_mode mesh quality to compute.
+     * @param[in,out] geo_model GeoModel in which the mesh quality is performed.
+     * The quality is stored on the cells of each Region.
+     *
+     * @warning The GeoModel must have at least one region. All the regions
+     * must be meshed by simplexes (tetrahedra).
      */
-    void configure_ringmesh()
-    {
-        CmdLine::import_arg_group( "global" ) ;
-        mesh_initialize() ;
-        TetraGen::initialize() ;
-        GeoModelGeologicalEntity::initialize() ;
-        ringmesh_mesh_io_initialize() ;
-        initialize_gocad_import_factories() ;
-    }
-
-    void default_configure()
-    {
-        GEO::initialize() ;
-        configure_geogram() ;
-        configure_ringmesh() ;
-    }
+    void RINGMESH_API compute_prop_tet_mesh_quality(
+        MeshQualityMode mesh_qual_mode,
+        const GeoModel& geo_model ) ;
 }
+
+#endif
