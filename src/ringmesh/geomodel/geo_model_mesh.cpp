@@ -473,8 +473,8 @@ namespace RINGMesh {
 
         for( index_t t = 0; t < EntityTypeManager::nb_mesh_entity_types(); t++ ) {
             const EntityType& cur_type = EntityTypeManager::mesh_entity_types()[t] ;
-            for( index_t e = 0; e < geomodel_.nb_mesh_entities( cur_type ); e++ ) {
-                vertex_maps_.at( cur_type )->unbind( e ) ;
+            for( index_t e = 0; e < vertex_maps_[cur_type]->size(); e++ ) {
+                vertex_maps_[cur_type]->unbind( e ) ;
             }
             vertex_maps_[cur_type]->clear() ;
         }
