@@ -44,12 +44,6 @@
 #include <ringmesh/geomodel/duplicate_fntk_builder.h>
 
 namespace RINGMesh {
-    void ringmesh_config()
-    {
-        GEO::initialize() ;
-        configure_geogram() ;
-        configure_ringmesh() ;
-    }
 
     void hello()
     {
@@ -71,7 +65,7 @@ namespace RINGMesh {
 
     void init()
     {
-        ringmesh_config() ;
+        default_configure() ;
         hello() ;
         import_arg_groups() ;
     }
