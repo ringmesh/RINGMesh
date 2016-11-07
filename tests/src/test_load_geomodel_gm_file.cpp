@@ -51,7 +51,7 @@ int main()
     try {
         default_configure() ;
 
-        Logger::out( "TEST" ) << "Test IO for a GeoModel in .bm" << std::endl ;
+        Logger::out( "TEST" ) << "Test IO for a GeoModel in .gm" << std::endl ;
 
         GeoModel in ;
         std::string input_model_file_name( ringmesh_test_data_path ) ;
