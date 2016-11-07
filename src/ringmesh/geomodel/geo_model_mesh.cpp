@@ -822,6 +822,7 @@ namespace RINGMesh {
     {
         vertex_mapper_.set_vertex_map_value( entity_id, entity_vertex_index,
             model_vertex_index ) ;
+        vertex_mapper_.test_and_initialize() ;
         vertex_mapper_.add_to_gme_vertices(
             GMEVertex( entity_id, entity_vertex_index ), model_vertex_index ) ;
     }
