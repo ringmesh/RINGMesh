@@ -328,7 +328,7 @@ namespace RINGMesh {
          */
         virtual void remove_small_connected_components(
             double min_area,
-            index_t min_facets )=0 ;
+            index_t min_facets ) = 0 ;
         virtual void triangulate( const Mesh2D& surface_in ) = 0 ;
         /*!@}
          */

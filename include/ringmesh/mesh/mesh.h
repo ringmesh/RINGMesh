@@ -204,7 +204,7 @@ namespace RINGMesh {
         /*!
          * @brief Gets the number of all the edges in the whole Mesh.
          */
-        virtual index_t nb_edges() const =0 ;
+        virtual index_t nb_edges() const = 0 ;
 
         /*!
          * @brief Gets the length of the edge \param edge_id
@@ -273,16 +273,16 @@ namespace RINGMesh {
          * @return the global facet index adjacent to the \param edge_id of the facet \param facet_id.
          * @precondition  \param edge_id < number of edge of the facet \param facet_id .
          */
-        virtual index_t facet_vertex( index_t facet_id, index_t vertex_id ) const=0 ;
+        virtual index_t facet_vertex( index_t facet_id, index_t vertex_id ) const = 0 ;
         /*!
          * @brief Gets the number of all facets in the whole Mesh.
          */
-        virtual index_t nb_facets() const=0 ;
+        virtual index_t nb_facets() const = 0 ;
         /*!
          * @brief Gets the number of vertices in the facet \param facet_id.
          * @param[in] facet_id facet index
          */
-        virtual index_t nb_facet_vertices( index_t facet_id ) const=0 ;
+        virtual index_t nb_facet_vertices( index_t facet_id ) const = 0 ;
         /*!
          * @brief Gets the next vertex index in the facet \param facet_id.
          * @param[in] facet_id facet index
