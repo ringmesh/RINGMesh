@@ -53,10 +53,7 @@ int main()
     using namespace RINGMesh ;
 
     try {
-
-        GEO::initialize() ;
-        configure_geogram() ;
-        configure_ringmesh() ;
+        default_configure() ;
 
         Logger::out( "TEST" ) << "Test MakeUnique" << std::endl ;
 
