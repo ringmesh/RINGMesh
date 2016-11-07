@@ -1081,6 +1081,7 @@ namespace RINGMesh {
         }
         vec3 point( x, y, z ) ;
         viewer->mesh_.vertices.create_vertex( point.data() ) ;
+        viewer->mesh_gfx_.set_mesh( &viewer->mesh_ ) ;
         viewer->bbox_.add_point( point ) ;
         viewer->name_ = name ;
         current_viewer_ = meshes_.size() - 1 ;
