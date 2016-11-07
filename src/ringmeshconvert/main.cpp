@@ -156,7 +156,7 @@ int main( int argc, char** argv )
 
     try {
 
-        global_configure() ;
+        default_configure() ;
 
         Logger::div( "RINGMeshConvert" ) ;
         Logger::out( "" ) << "Welcome to RINGMeshConvert !" << std::endl ;

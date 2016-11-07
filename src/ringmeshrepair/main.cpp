@@ -97,7 +97,7 @@ int main( int argc, char** argv )
     using namespace RINGMesh ;
 
     try {
-        global_configure() ;
+        default_configure() ;
         hello() ;
         import_arg_groups() ;
 

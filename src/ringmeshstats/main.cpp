@@ -53,7 +53,7 @@ int main( int argc, char** argv )
 
     try {
 
-        global_configure() ;
+        default_configure() ;
 
         Logger::div( "RINGMeshStats" ) ;
         Logger::out( "" ) << "Welcome to RINGMeshStats !" << std::endl ;
