@@ -248,10 +248,7 @@ namespace RINGMesh {
         public:
             GeoModelVertexMapper(
                 GeoModelMeshVertices& model_vertices,
-                const GeoModel& geomodel )
-                : model_vertices_( model_vertices ), geomodel_( geomodel )
-            {
-            }
+                const GeoModel& geomodel ) ;
 
             /*!
              * \name Query
@@ -498,11 +495,12 @@ namespace RINGMesh {
             GeoModelMeshVertices& model_vertices_ ;
             const GeoModel& geomodel_ ;
 
-            ///Initialized vertex maps
+            /// Vertex maps
             AttributeVector< index_t > corner_vertex_maps_ ;
             AttributeVector< index_t > line_vertex_maps_ ;
             AttributeVector< index_t > surface_vertex_maps_ ;
             AttributeVector< index_t > region_vertex_maps_ ;
+            std::map< EntityType, AttributeVector< index_t >* > vertex_maps_ ;
 
             /// GME Vertices for each model vertex
             std::vector< std::vector< GMEVertex > > gme_vertices_ ;
