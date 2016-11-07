@@ -181,6 +181,11 @@ namespace RINGMesh {
          */
         void update_point( index_t v, const vec3& point ) ;
 
+        void update_vertex_mapping(
+            const gme_t& entity_id,
+            index_t entity_vertex_index,
+            index_t model_vertex_index ) ;
+
         /*!
          * @brief Clear the vertices - clear the gme_vertices_ -
          *        clear global vertex information in the all BMME
@@ -238,10 +243,7 @@ namespace RINGMesh {
         public:
             GeoModelVertexMapper(
                 GeoModelMeshVertices& model_vertices,
-                const GeoModel& geomodel )
-                : model_vertices_( model_vertices ), geomodel_( geomodel )
-            {
-            }
+                const GeoModel& geomodel ) ;
 
             /*!
              * \name Query
@@ -318,6 +320,10 @@ namespace RINGMesh {
                 index_t mesh_entity_vertex_index,
                 index_t model_entity_vertex_index ) ;
 
+            void add_to_gme_vertices(
+                const GMEVertex& gme_vertex,
+                index_t model_vertex_index ) ;
+
             /*!
              * @brief Updates all the vertex maps with regards to the global indexing
              * changes
@@ -389,17 +395,6 @@ namespace RINGMesh {
              * @return false if GMEVertices are not initialized, otherwise true.
              */
             bool is_initialized() const ;
-
-            /*!
-             * @brief Checks that all the vertex maps are initialized. If some
-             * vertex maps are not initialized, initialized them.
-             */
-            void check_mesh_entity_maps() ;
-
-            /*!
-             * @brief Initializes all the GeoModelMeshEntity vertex maps
-             */
-            void initialize_mesh_entity_vertex_maps() ;
 
             /*!
              * @brief Initializes the given GeoModelMeshEntity vertex map
@@ -495,11 +490,12 @@ namespace RINGMesh {
             GeoModelMeshVertices& model_vertices_ ;
             const GeoModel& geomodel_ ;
 
-            ///Initialized vertex maps
+            /// Vertex maps
             AttributeVector< index_t > corner_vertex_maps_ ;
             AttributeVector< index_t > line_vertex_maps_ ;
             AttributeVector< index_t > surface_vertex_maps_ ;
             AttributeVector< index_t > region_vertex_maps_ ;
+            std::map< EntityType, AttributeVector< index_t >* > vertex_maps_ ;
 
             /// GME Vertices for each model vertex
             std::vector< std::vector< GMEVertex > > gme_vertices_ ;
