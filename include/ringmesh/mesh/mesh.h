@@ -191,7 +191,7 @@ namespace RINGMesh {
     public:
         virtual ~Mesh1D()
         {
-            if( edges_ann_ ) delete edges_ann_ ;
+            if( edges_ann_ != NULL ) delete edges_ann_ ;
         }
         /*
          * @brief Gets the index of an edge vertex.
@@ -229,7 +229,7 @@ namespace RINGMesh {
          */
         const ColocaterANN& edges_colocater_ann() const
         {
-            if( edges_ann_ == NULL ) {
+            if( edges_ann_ == nil ) {
                 std::vector< vec3 > edge_centers( nb_edges() ) ;
                 for( index_t e = 0; e < nb_edges(); ++e ) {
                     edge_centers[e] = edge_barycenter( e ) ;
@@ -245,7 +245,7 @@ namespace RINGMesh {
 
     protected:
         Mesh1D( const GeoModel& geo_model )
-            : MeshBase( geo_model ), edges_ann_( NULL )
+            : MeshBase( geo_model ), edges_ann_( nil )
         {
         }
 
@@ -264,7 +264,7 @@ namespace RINGMesh {
     public:
         virtual ~Mesh2D()
         {
-            if( facets_ann_ ) delete facets_ann_ ;
+            if( facets_ann_ != nil ) delete facets_ann_ ;
         }
         /*!
          * @brief Gets the vertex index by facet index and local vertex index.
@@ -318,7 +318,9 @@ namespace RINGMesh {
          * @return the global facet index adjacent to the \param edge_id of the facet \param facet_id.
          * @precondition  \param edge_id < number of edge of the facet \param facet_id .
          */
-        virtual index_t facet_adjacent( index_t facet_id, index_t edge_id ) const=0 ;
+        virtual index_t facet_adjacent(
+            index_t facet_id,
+            index_t edge_id ) const = 0 ;
         virtual GEO::AttributesManager& facet_attribute_manager() const=0 ;
         /*!
          * @brief Tests whether all the facets are triangles. when all the facets are triangles, storage and access is optimized.
@@ -380,7 +382,7 @@ namespace RINGMesh {
          */
         const ColocaterANN& facets_colocater_ann() const
         {
-            if( facets_ann_ == NULL ) {
+            if( facets_ann_ == nil ) {
                 std::vector< vec3 > facet_centers( nb_facets() ) ;
                 for( index_t f = 0; f < nb_facets(); ++f ) {
                     facet_centers[f] = facet_barycenter( f ) ;
@@ -394,7 +396,7 @@ namespace RINGMesh {
 
     protected:
         Mesh2D( const GeoModel& geo_model )
-            : MeshBase( geo_model ), facets_ann_( NULL )
+            : MeshBase( geo_model ), facets_ann_( nil )
         {
         }
 
@@ -414,8 +416,8 @@ namespace RINGMesh {
     public:
         virtual ~Mesh3D()
         {
-            if( cell_facets_ann_ ) delete cell_facets_ann_ ;
-            if( cell_ann_ ) delete cell_ann_ ;
+            if( cell_facets_ann_ != nil ) delete cell_facets_ann_ ;
+            if( cell_ann_ != nil ) delete cell_ann_ ;
         }
 
         /*!
@@ -607,7 +609,7 @@ namespace RINGMesh {
          */
         const ColocaterANN& cell_facets_colocater_ann() const
         {
-            if( cell_facets_ann_ == NULL ) {
+            if( cell_facets_ann_ == nil ) {
                 std::vector< vec3 > cell_facet_centers( nb_cell_facets() ) ;
                 index_t cf = 0 ;
                 for( index_t c = 0; c < nb_cells(); ++c ) {
@@ -626,7 +628,7 @@ namespace RINGMesh {
          */
         const ColocaterANN& cells_colocater_ann() const
         {
-            if( cell_ann_ == NULL ) {
+            if( cell_ann_ == nil ) {
                 std::vector< vec3 > cell_centers( nb_cells() ) ;
                 for( index_t c = 0; c < nb_cells(); ++c ) {
                     cell_centers[c] = cell_barycenter( c ) ;
@@ -637,7 +639,7 @@ namespace RINGMesh {
         }
     protected:
         Mesh3D( const GeoModel& geo_model )
-            : MeshBase( geo_model ), cell_facets_ann_( NULL ), cell_ann_( NULL )
+            : MeshBase( geo_model ), cell_facets_ann_( nil ), cell_ann_( nil )
         {
         }
 
@@ -699,15 +701,15 @@ namespace RINGMesh {
             :
                 MeshBase( geo_model ),
                 MeshAllD( geo_model ),
-                facets_aabb_( NULL ),
-                cells_aabb_( NULL )
+                facets_aabb_( nil ),
+                cells_aabb_( nil )
         {
             mesh_ = new GEO::Mesh( dimension, single_precision ) ;
         }
         ~GeogramMesh()
         {
-            if( facets_aabb_ ) delete facets_aabb_ ;
-            if( cells_aabb_ ) delete cells_aabb_ ;
+            if( facets_aabb_ != nil ) delete facets_aabb_ ;
+            if( cells_aabb_ != nil ) delete cells_aabb_ ;
             delete mesh_ ;
         }
         /*!

@@ -347,8 +347,8 @@ namespace RINGMesh {
         }
         /*!
          * @brief Creates a contiguous chunk of cells of the same type.
-         * @param[in] nb_cells  number of cells to create
-         * @param[in] type   type of the cells to create, one of GEO::MESH_TET, GEO::MESH_HEX,
+         * @param[in] nb_cells number of cells to create
+         * @param[in] type type of the cells to create, one of GEO::MESH_TET, GEO::MESH_HEX,
          * GEO::MESH_PRISM, GEO::MESH_PYRAMID, GEO::MESH_CONNECTOR.
          * @return the first created cell.
          */
@@ -1017,9 +1017,9 @@ namespace RINGMesh {
 
         void delete_vertex_colocater()
         {
-            if( mesh_.vertices_ann_ ) {
+            if( mesh_.vertices_ann_ != nil ) {
                 delete mesh_.vertices_ann_ ;
-                mesh_.vertices_ann_ = NULL ;
+                mesh_.vertices_ann_ = nil ;
             }
         }
         /*!
@@ -1027,9 +1027,9 @@ namespace RINGMesh {
          */
         void delete_edge_colocater()
         {
-            if( mesh_.edges_ann_ ) {
+            if( mesh_.edges_ann_ != nil ) {
                 delete mesh_.edges_ann_ ;
-                mesh_.edges_ann_ = NULL ;
+                mesh_.edges_ann_ = nil ;
             }
         }
         /*!
@@ -1037,9 +1037,9 @@ namespace RINGMesh {
          */
         void delete_facet_colocater()
         {
-            if( mesh_.facets_ann_ ) {
+            if( mesh_.facets_ann_ != nil ) {
                 delete mesh_.facets_ann_ ;
-                mesh_.facets_ann_ = NULL ;
+                mesh_.facets_ann_ = nil ;
             }
         }
         /*!
@@ -1047,7 +1047,7 @@ namespace RINGMesh {
          */
         void delete_facet_aabb()
         {
-            if( mesh_.facets_aabb_ ) {
+            if( mesh_.facets_aabb_ != nil ) {
                 delete mesh_.facets_aabb_ ;
                 mesh_.facets_aabb_ = nil ;
             }
@@ -1057,13 +1057,13 @@ namespace RINGMesh {
          */
         void delete_cell_colocater()
         {
-            if( mesh_.cell_ann_ ) {
+            if( mesh_.cell_ann_ != nil ) {
                 delete mesh_.cell_ann_ ;
-                mesh_.cell_ann_ = NULL ;
+                mesh_.cell_ann_ = nil ;
             }
-            if( mesh_.cell_facets_ann_ ) {
+            if( mesh_.cell_facets_ann_ != nil ) {
                 delete mesh_.cell_facets_ann_ ;
-                mesh_.cell_facets_ann_ = NULL ;
+                mesh_.cell_facets_ann_ = nil ;
             }
         }
         /*!
@@ -1071,7 +1071,7 @@ namespace RINGMesh {
          */
         void delete_cell_aabb()
         {
-            if( mesh_.cells_aabb_ ) {
+            if( mesh_.cells_aabb_ != nil ) {
                 delete mesh_.cells_aabb_ ;
                 mesh_.cells_aabb_ = nil ;
             }

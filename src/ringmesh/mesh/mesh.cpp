@@ -74,7 +74,7 @@ namespace RINGMesh {
     }
     MeshBaseBuilder* GeogramMesh::get_mesh_builder_base()
     {
-        if( mesh_builder_ == NULL ) {
+        if( mesh_builder_ == nil ) {
             mesh_builder_ = new GeogramMeshBuilder( *this ) ;
         }
         return mesh_builder_ ;
