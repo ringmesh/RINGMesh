@@ -1279,6 +1279,7 @@ namespace RINGMesh {
             model_vertices.vertex( model_vertex ), false ) ;
 
         ringmesh_assert( v < mesh_entity( entity_id ).nb_vertices() ) ;
+        model_vertices.update_vertex_mapping( entity_id, v, model_vertex ) ;
     }
 
     /*!
