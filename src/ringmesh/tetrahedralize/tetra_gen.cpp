@@ -189,7 +189,7 @@ namespace RINGMesh {
             set_meshing_parameters() ;
 
             generate_mesh( refine ) ;
-
+            initialize_ringmesh_storage() ;
             write_vertices_in_ringmesh_data_structure() ;
             write_tet_in_ringmesh_data_structure() ;
 
