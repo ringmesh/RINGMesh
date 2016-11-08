@@ -395,6 +395,10 @@ namespace RINGMesh {
                         output_region_ ).nb_mesh_elements(); t++ ) {
                 signed_index_t tet[4] ;
                 mesh_get_tetrahedron_vertices( mesh_output_, t + 1, tet ) ;
+                // Because MG Tetra count the vertices starting with 1
+                for( index_t v = 0; v < 4; v++ ) {
+                    tet[v]-- ;
+                }
                 set_tetra( t, tet ) ;
             }
             builder_->compute_region_adjacencies( output_region_ ) ;
@@ -576,7 +580,7 @@ namespace RINGMesh {
     {
         std::vector< index_t > corners( 4 ) ;
         for( index_t v = 0; v < 4; v++ ) {
-            index_t vertex_id = static_cast< index_t >( vertex_indices[v] - 1 ) ;
+            index_t vertex_id = static_cast< index_t >( vertex_indices[v]) ;
             corners[v] = vertex_id ;
         }
         builder_->set_region_element_geometry( output_region_, tetra_index,
@@ -594,11 +598,11 @@ namespace RINGMesh {
     void TetraGen::initialize()
     {
 #ifdef RINGMESH_WITH_TETGEN
-        ringmesh_register_tetragen( TetraGen_TetGen, "TetGen" ) ;
+        ringmesh_register_tetragen( TetraGen_TetGen, "TetGen" );
 #endif
 
 #ifdef USE_MG_TETRA
-        ringmesh_register_tetragen( TetraGen_MG_Tetra, "MG_Tetra" );
+    ringmesh_register_tetragen( TetraGen_MG_Tetra, "MG_Tetra" ) ;
 #endif
-    }
+}
 }
