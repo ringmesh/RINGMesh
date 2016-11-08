@@ -43,7 +43,6 @@
 
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_geometry.h>
-#include <geogram/mesh/mesh_AABB.h>
 
 #include <cmath>
 #include <stack>
@@ -455,7 +454,7 @@ namespace RINGMesh {
                 index_t s_id = potential_surfaces[s] ;
                 const Surface& surface = model()->surface( s_id ) ;
                 EdgeConformerAction action( surface, v_from, v_to, intersections ) ;
-                surface.facets_aabb().compute_bbox_facet_bbox_intersections( box,
+                surface.facets_aabb().compute_bbox_element_bbox_intersections( box,
                     action ) ;
             }
             if( !intersections.empty() ) {
@@ -554,7 +553,7 @@ namespace RINGMesh {
                 index_t s_id = potential_surfaces[s] ;
                 const Surface& surface = model()->surface( s_id ) ;
                 EdgeConformerAction action( surface, v_from, v_to, intersections ) ;
-                surface.facets_aabb().compute_bbox_facet_bbox_intersections( box,
+                surface.facets_aabb().compute_bbox_element_bbox_intersections( box,
                     action ) ;
             }
             if( !intersections.empty() ) {

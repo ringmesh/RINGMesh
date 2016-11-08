@@ -43,10 +43,10 @@
 #include <geogram/mesh/mesh_io.h>
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/mesh/mesh_topology.h>
-#include <geogram/mesh/mesh_AABB.h>
 
 #include <ringmesh/basic/geometry.h>
 #include <ringmesh/geogram_extension/geogram_extension.h>
+#include <ringmesh/mesh/aabb.h>
 
 namespace RINGMesh {
     class GeoModel ;
@@ -152,19 +152,17 @@ namespace RINGMesh {
     protected:
         /*!
          * @brief MeshBase constructor.
-         * @param[in] geo_model GeoModel from which the MeshBase depend on.
          * @param[in] dimension dimension of the vertices.
          * @param[in] single_precision if true, vertices are stored in single precision (float),
          * else they are stored as double precision (double)..
          */
-        MeshBase( const GeoModel& geo_model )
-            : geo_model_( geo_model ), mesh_builder_( NULL ), vertices_ann_( NULL )
+        MeshBase()
+            : mesh_builder_( NULL ), vertices_ann_( NULL )
         {
         }
         virtual MeshBaseBuilder* get_mesh_builder_base() = 0 ;
 
     protected:
-        const GeoModel& geo_model_ ;
         MeshBaseBuilder* mesh_builder_ ;
     private:
         mutable ColocaterANN* vertices_ann_ ;
@@ -187,13 +185,9 @@ namespace RINGMesh {
     protected:
         /*!
          * @brief Mesh0D constructor.
-         * @param[in] geo_model GeoModel from which the MeshBase depend on.
-         * @param[in] dimension dimension of the vertices.
-         * @param[in] single_precision if true, vertices are stored in single precision (float),
-         * else they are stored as double precision (double)..
          */
-        Mesh0D( const GeoModel& geo_model )
-            : MeshBase( geo_model )
+        Mesh0D()
+            : MeshBase()
         {
         }
         /*
@@ -234,6 +228,7 @@ namespace RINGMesh {
         virtual ~Mesh1D()
         {
             if( edges_ann_ != NULL ) delete edges_ann_ ;
+            if( edges_aabb_ != NULL ) delete edges_aabb_ ;
         }
         /*
          * @brief Gets the index of an edge vertex.
@@ -302,19 +297,30 @@ namespace RINGMesh {
             }
             return *edges_ann_ ;
         }
+        /*!
+         * @brief Creates an AABB tree for a Mesh edges
+         */
+        const AABBTree1D& edges_aabb() const
+        {
+            if( edges_aabb_ == nil ) {
+                edges_aabb_ = new AABBTree1D( *this ) ;
+            }
+            return *edges_aabb_ ;
+        }
 
         virtual GEO::AttributesManager& edge_attribute_manager() const = 0 ;
 
         Mesh1DBuilder* get_mesh1d_builder() ;
 
     protected:
-        Mesh1D( const GeoModel& geo_model )
-            : MeshBase( geo_model ), edges_ann_( nil )
+        Mesh1D()
+            : MeshBase(), edges_ann_( nil ), edges_aabb_( nil )
         {
         }
 
     private:
         mutable ColocaterANN* edges_ann_ ;
+        mutable AABBTree1D* edges_aabb_ ;
     } ;
 
     /*!
@@ -329,6 +335,7 @@ namespace RINGMesh {
         virtual ~Mesh2D()
         {
             if( facets_ann_ != nil ) delete facets_ann_ ;
+            if( facets_aabb_ != nil ) delete facets_aabb_ ;
         }
         /*!
          * @brief Gets the vertex index by facet index and local vertex index.
@@ -398,13 +405,7 @@ namespace RINGMesh {
         {
             return nb_facet_vertices( facet_id ) == 3 ;
         }
-        /*!
-         * @brief Creates an AABB tree for a Mesh facets
-         * @pre The GeoModelEntity must be simplicial
-         * @warning SIDE EFFECTS: The mesh vertices are reordered.
-         * @warning calling this function will destroy the ColocaterANN.
-         */
-        virtual const GEO::MeshFacetsAABB& facets_aabb() const = 0 ;
+
         /*!
          * Computes the Mesh facet normal
          * @param[in] facet_id the facet index
@@ -463,7 +464,6 @@ namespace RINGMesh {
         
         /*!
          * @brief return the ColocaterANN at facets
-         * @warning the ColocaterANN is destroy when calling the Mesh::facets_aabb() and Mesh::cells_aabb()
          */
         const ColocaterANN& facets_colocater_ann() const
         {
@@ -476,17 +476,28 @@ namespace RINGMesh {
             }
             return *facets_ann_ ;
         }
+        /*!
+         * @brief Creates an AABB tree for a Mesh facets
+         */
+        const AABBTree2D& facets_aabb() const
+        {
+            if( facets_aabb_ == nil ) {
+                facets_aabb_ = new AABBTree2D( *this ) ;
+            }
+            return *facets_aabb_ ;
+        }
 
         Mesh2DBuilder* get_mesh2d_builder() ;
 
     protected:
-        Mesh2D( const GeoModel& geo_model )
-            : MeshBase( geo_model ), facets_ann_( nil )
+        Mesh2D()
+            : MeshBase(), facets_ann_( nil ), facets_aabb_( nil )
         {
         }
 
     private:
         mutable ColocaterANN* facets_ann_ ;
+        mutable AABBTree2D* facets_aabb_ ;
 
     } ;
 
@@ -503,6 +514,7 @@ namespace RINGMesh {
         {
             if( cell_facets_ann_ != nil ) delete cell_facets_ann_ ;
             if( cell_ann_ != nil ) delete cell_ann_ ;
+            if( cell_aabb_ != nil ) delete cell_aabb_ ;
         }
 
         /*!
@@ -617,13 +629,6 @@ namespace RINGMesh {
         virtual bool cells_are_simplicies() const = 0 ;
 
         /*!
-         * @brief Create an AABB tree for a Mesh cells
-         * @pre The GeoModelEntity must be simplicial
-         * @warning SIDE EFFECTS: The mesh vertices are reordered.
-         * @warning calling this function will destroy the ColocaterANN.
-         */
-        virtual const GEO::MeshCellsAABB& cells_aabb() const = 0 ;
-        /*!
          * Computes the Mesh cell facet barycenter
          * @param[in] cell_id the cell index
          * @param[in] facet_id the facet index in the cell
@@ -730,7 +735,6 @@ namespace RINGMesh {
         }
         /*!
          * @brief return the ColocaterANN at cells
-         * @warning the ColocaterANN is destroy when calling the Mesh::facets_aabb() and Mesh::cells_aabb()
          */
         const ColocaterANN& cells_colocater_ann() const
         {
@@ -743,15 +747,30 @@ namespace RINGMesh {
             }
             return *cell_ann_ ;
         }
+        /*!
+         * @brief Creates an AABB tree for a Mesh cells
+         */
+        const AABBTree3D& cells_aabb() const
+        {
+            if( cell_aabb_ == nil ) {
+                cell_aabb_ = new AABBTree3D( *this ) ;
+            }
+            return *cell_aabb_ ;
+        }
     protected:
-        Mesh3D( const GeoModel& geo_model )
-            : MeshBase( geo_model ), cell_facets_ann_( nil ), cell_ann_( nil )
+        Mesh3D()
+            :
+                MeshBase(),
+                cell_facets_ann_( nil ),
+                cell_ann_( nil ),
+                cell_aabb_( nil )
         {
         }
 
     private:
         mutable ColocaterANN* cell_facets_ann_ ;
         mutable ColocaterANN* cell_ann_ ;
+        mutable AABBTree3D* cell_aabb_ ;
 
     } ;
 
@@ -789,13 +808,8 @@ namespace RINGMesh {
         }
         MeshAllDBuilder* get_meshalld_builder() ;
     protected:
-        MeshAllD( const GeoModel& geo_model )
-            :
-                MeshBase( geo_model ),
-                Mesh0D( geo_model ),
-                Mesh1D( geo_model ),
-                Mesh2D( geo_model ),
-                Mesh3D( geo_model )
+        MeshAllD()
+            : Mesh0D(), Mesh1D(), Mesh2D(), Mesh3D()
         {
         }
 
@@ -815,27 +829,19 @@ namespace RINGMesh {
     public:
         /*!
          * @brief Mesh constructor.
-         * @param[in] geo_model Associated GeoModel
          * @param[in] dimension dimension of the vertices.
          * @param[in] single_precision if true, vertices are stored in single precision (float),
          * else they are stored as double precision (double).
          */
         GeogramMesh(
-            const GeoModel& geo_model,
             index_t dimension,
             bool single_precision )
-            :
-                MeshBase( geo_model ),
-                MeshAllD( geo_model ),
-                facets_aabb_( nil ),
-                cells_aabb_( nil )
+            : MeshAllD()
         {
             mesh_ = new GEO::Mesh( dimension, single_precision ) ;
         }
         ~GeogramMesh()
         {
-            if( facets_aabb_ != nil ) delete facets_aabb_ ;
-            if( cells_aabb_ != nil ) delete cells_aabb_ ;
             delete mesh_ ;
         }
         /*!
@@ -975,14 +981,6 @@ namespace RINGMesh {
         {
             return mesh_->facets.are_simplices() ;
         }
-
-        /*!
-         * @brief Create an AABB tree for a Mesh facets
-         * @pre The GeoModelEntity must be simplicial
-         * @warning SIDE EFFECTS: The mesh vertices are reordered.
-         * @warning calling this function will destroy the ColocaterANN.
-         */
-        const GEO::MeshFacetsAABB& facets_aabb() const ;
 
         /*!
          * Computes the Mesh facet area
@@ -1142,13 +1140,6 @@ namespace RINGMesh {
         {
             return mesh_->cells.are_simplices() ;
         }
-        /*!
-         * @brief Create an AABB tree for a Mesh cells
-         * @pre The GeoModelEntity must be simplicial
-         * @warning SIDE EFFECTS: The mesh vertices are reordered.
-         * @warning calling this function will destroy the ColocaterANN.
-         */
-        const GEO::MeshCellsAABB& cells_aabb() const ;
 
         /*!
          * @brief compute the volume of the cell \param cell_id.
@@ -1168,9 +1159,6 @@ namespace RINGMesh {
 
     private:
         mutable GEO::Mesh* mesh_ ;
-
-        mutable GEO::MeshFacetsAABB* facets_aabb_ ;
-        mutable GEO::MeshCellsAABB* cells_aabb_ ;
 
     } ;
 }

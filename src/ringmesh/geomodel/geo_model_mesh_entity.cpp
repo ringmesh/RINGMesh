@@ -48,7 +48,6 @@
 #include <geogram/basic/logger.h>
 #include <geogram/basic/geometry_nd.h>
 
-#include <geogram/mesh/mesh_AABB.h>
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/mesh/mesh_intersection.h>
 #include <geogram/mesh/mesh_repair.h>
@@ -501,7 +500,7 @@ namespace RINGMesh {
     Line::Line( const GeoModel& model, index_t id )
         :
             GeoModelMeshEntity( model, id ),
-            mesh1d_( new GeogramMesh( model, 3, false ) )
+            mesh1d_( new GeogramMesh( 3, false ) )
     {
         GeoModelMeshEntity::set_mesh( mesh1d_ ) ;
 
