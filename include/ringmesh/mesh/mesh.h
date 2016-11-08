@@ -105,7 +105,7 @@ namespace RINGMesh {
          */
         virtual index_t nb_vertices() const = 0 ;
         /*
-         * @brief Gets the number of element in the Mesh.
+         * @brief Gets the number of elements in the Mesh.
          */
         virtual index_t nb_mesh_elements() const = 0 ;
         /*
@@ -197,7 +197,7 @@ namespace RINGMesh {
         {
         }
         /*
-         * @brief Gets the number of element in the Mesh.
+         * @brief Gets the number of elements in the Mesh.
          */
         virtual index_t nb_mesh_elements() const
         {
@@ -265,7 +265,7 @@ namespace RINGMesh {
             return ( e1 + e0 ) / 2. ;
         }
         /*
-         * @brief Gets the number of element in the Mesh.
+         * @brief Gets the number of elements in the Mesh.
          */
         virtual index_t nb_mesh_elements() const
         {
@@ -440,7 +440,7 @@ namespace RINGMesh {
          */
         virtual double facet_area( index_t facet_id ) const = 0 ;
         /*
-         * @brief Gets the number of element in the Mesh.
+         * @brief Gets the number of elements in the Mesh.
          */
         virtual index_t nb_mesh_elements() const
         {
@@ -686,7 +686,7 @@ namespace RINGMesh {
             return NO_ID ;
         }
         /*
-         * @brief Gets the number of element in the Mesh.
+         * @brief Gets the number of elements in the Mesh.
          */
         virtual index_t nb_mesh_elements() const
         {
