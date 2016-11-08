@@ -62,6 +62,7 @@ namespace RINGMesh {
      */
     class RINGMESH_API AABBTree {
     public:
+        /// The index where to store the root. It starts to one for algorithm trick.
         static const index_t ROOT_INDEX = 1 ;
 
         /*!
@@ -107,6 +108,25 @@ namespace RINGMesh {
             closest_element_box_recursive< EvalDistance >( query, nearest_box,
                 nearest_point, distance, ROOT_INDEX, 0, nb_bboxes(), action ) ;
             return nearest_box ;
+        }
+        /*
+         * @brief Computes the intersections between a given
+         *  box and the element boxes.
+         * @param[in] box the box to test
+         * @param[in] action The functor used to compute intersection
+         * with the element boxes when they intersect \p box
+         * @tparam EvalIntersection this functor should have an operator() defined like this:
+         *  void operator()( index_t cur_box ) const ;
+         * where cur_box is the element box index
+         * (e.g. in the case of AABBTree2D, this index is a facet index)
+         */
+        template< class EvalIntersection >
+        void compute_bbox_element_bbox_intersections(
+            const Box3d& box,
+            EvalIntersection& action ) const
+        {
+            bbox_intersect_recursive< EvalIntersection >( box, 1, 0, nb_bboxes(),
+                action ) ;
         }
     protected:
         virtual ~AABBTree()
@@ -167,6 +187,14 @@ namespace RINGMesh {
             index_t element_begin,
             index_t element_end,
             const ACTION& action ) const ;
+
+        template< class ACTION >
+        void bbox_intersect_recursive(
+            const Box3d& box,
+            index_t node_index,
+            index_t element_begin,
+            index_t element_end,
+            ACTION& action ) const ;
 
         /*!
          * @brief Gets an hint of the result
@@ -402,6 +430,39 @@ namespace RINGMesh {
                     action ) ;
             }
         }
+    }
+
+    template< typename ACTION >
+    void AABBTree::bbox_intersect_recursive(
+        const Box3d& box,
+        index_t node_index,
+        index_t element_begin,
+        index_t element_end,
+        ACTION& action ) const
+    {
+        ringmesh_assert( node_index < tree_.size() ) ;
+        ringmesh_assert( element_begin != element_end ) ;
+
+        // Prune sub-tree that does not have intersection
+        if( !bboxes_overlap( box, tree_[node_index] ) ) {
+            return ;
+        }
+
+        // Leaf case
+        if( is_leaf( element_begin, element_end ) ) {
+            index_t cur_box = mapping_morton_[element_begin] ;
+            action( cur_box ) ;
+            return ;
+        }
+
+        index_t box_middle, child_left, child_right ;
+        get_recursive_iterators( node_index, element_begin, element_end, box_middle,
+            child_left, child_right ) ;
+
+        bbox_intersect_recursive< ACTION >( action, box, child_left, element_begin,
+            box_middle ) ;
+        bbox_intersect_recursive< ACTION >( action, box, child_right, box_middle,
+            element_end ) ;
     }
 }
 
