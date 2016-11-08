@@ -459,10 +459,10 @@ namespace RINGMesh {
         get_recursive_iterators( node_index, element_begin, element_end, box_middle,
             child_left, child_right ) ;
 
-        bbox_intersect_recursive< ACTION >( action, box, child_left, element_begin,
-            box_middle ) ;
-        bbox_intersect_recursive< ACTION >( action, box, child_right, box_middle,
-            element_end ) ;
+        bbox_intersect_recursive< ACTION >( box, child_left, element_begin,
+            box_middle, action ) ;
+        bbox_intersect_recursive< ACTION >( box, child_right, box_middle,
+            element_end, action ) ;
     }
 }
 

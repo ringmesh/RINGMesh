@@ -42,7 +42,6 @@
 #include <geogram/basic/logger.h>
 #include <geogram/basic/progress.h>
 
-#include <geogram/mesh/mesh_AABB.h>
 #include <geogram/mesh/mesh_geometry.h>
 
 #include <ringmesh/basic/geometry.h>
@@ -776,7 +775,7 @@ namespace RINGMesh {
             const Surface& S = geomodel.surface( region.boundary_gme( i ).index ) ;
             double distance = DBL_MAX ;
             vec3 point ;
-            S.facets_aabb().nearest_facet( barycenter, point, distance ) ;
+            S.facets_aabb().closest_triangle( barycenter, point, distance ) ;
 
             if( distance < minimum_distance ) {
                 minimum_distance = distance ;

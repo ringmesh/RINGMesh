@@ -46,7 +46,6 @@
 
 
 #include <geogram/mesh/mesh.h>
-#include <geogram/mesh/mesh_AABB.h>
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/mesh/mesh_repair.h>
 
