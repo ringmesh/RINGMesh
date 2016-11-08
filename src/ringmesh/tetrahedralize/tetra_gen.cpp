@@ -594,11 +594,11 @@ namespace RINGMesh {
     void TetraGen::initialize()
     {
 #ifdef RINGMESH_WITH_TETGEN
-        ringmesh_register_tetragen( TetraGen_TetGen, "TetGen" );
+        ringmesh_register_tetragen( TetraGen_TetGen, "TetGen" ) ;
 #endif
 
 #ifdef USE_MG_TETRA
-    ringmesh_register_tetragen( TetraGen_MG_Tetra, "MG_Tetra" ) ;
+        ringmesh_register_tetragen( TetraGen_MG_Tetra, "MG_Tetra" );
 #endif
-}
+    }
 }
