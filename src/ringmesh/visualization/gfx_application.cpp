@@ -222,9 +222,8 @@ namespace RINGMesh {
 
     void RINGMeshApplication::GeoModelViewer::toggle_colored_layers()
     {
-        /*! TODO Implement something more adaptable - layers are optional */
-        if( GM_.nb_geological_entities( Layer::type_name_static() ) == 0 )
-        {
+        // To disable the key 'R'.
+        if( GM_.nb_geological_entities( Layer::type_name_static() ) == 0 ) {
             show_colored_layers_.new_status = false ;
             return ;
         }
@@ -587,8 +586,10 @@ namespace RINGMesh {
                 ImGui::Checkbox( "Col. cells [C]", &colored_cells_.new_status ) ;
                 ImGui::Checkbox( "Col. regions [r]",
                     &show_colored_regions_.new_status ) ;
-                ImGui::Checkbox( "Col. layers [R]",
-                    &show_colored_layers_.new_status ) ;
+                if( GM_.nb_geological_entities( Layer::type_name_static() ) != 0 ) {
+                    ImGui::Checkbox( "Col. layers [R]",
+                        &show_colored_layers_.new_status ) ;
+                }
                 ImGui::SliderFloat( "Shrk.", &shrink_, 0.0f, 1.0f, "%.1f" ) ;
                 ImGui::Checkbox( "Hex", &show_hex_ ) ;
                 ImGui::Checkbox( "Prism", &show_prism_ ) ;
