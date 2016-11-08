@@ -78,7 +78,13 @@ int main( int argc, char** argv )
 
         // Tetrahedralize the GeoModel
         tetrahedralize( geomodel, "TetGen", NO_ID, false ) ;
-
+        for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
+            if( !geomodel.region( r ).is_meshed() ) {
+                throw RINGMeshException( "RINGMesh Test",
+                    "Failed when tetrahedralize model " + geomodel.name()
+                        + "maybe the Tetgen call have failed" ) ;
+            }
+        }
         if( !is_geomodel_valid( geomodel ) ) {
             throw RINGMeshException( "RINGMesh Test",
                 "Failed when tetrahedralize model " + geomodel.name()
