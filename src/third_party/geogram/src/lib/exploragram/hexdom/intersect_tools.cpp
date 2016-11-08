@@ -132,7 +132,7 @@ namespace GEO {
 	FOR(p, G.size())  tree_pos_to_org[p] = p;
 	sort(G, 0, tree_pos_to_org.size());
 
-	offset = index_t(pow(2., 1 + mylog2(G.size()))) - 1;
+	offset = index_t(pow(2., 1. + mylog2(G.size()))) - 1;
 	tree.resize(offset + G.size());
 	FOR(i, G.size())  tree[offset + i] = inboxes[tree_pos_to_org[i]];
 	for (int i = int(offset) - 1; i >= 0; i--) {
