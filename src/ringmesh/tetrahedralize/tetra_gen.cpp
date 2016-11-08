@@ -44,7 +44,6 @@
 #   include <io.h>
 #endif 
 
-
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_AABB.h>
 #include <geogram/mesh/mesh_geometry.h>
@@ -98,7 +97,9 @@ namespace RINGMesh {
             for( index_t tet = 0; tet < tetmesh_constraint_.cells.nb(); tet++ ) {
                 int vertex_indices[4] ;
                 for( index_t v = 0; v < 4; v++ ) {
-                    vertex_indices[v] = static_cast< int >( tetmesh_constraint_.cells.vertex( tet, v ) ) ;
+                    vertex_indices[v] =
+                        static_cast< int >( tetmesh_constraint_.cells.vertex( tet,
+                            v ) ) ;
                 }
                 set_tetra( tet, vertex_indices ) ;
             }
@@ -177,10 +178,10 @@ namespace RINGMesh {
         {
             fpos_t pos ;
             int fd = 0 ;
-            start_redirect( pos, stdout, fd ) ;
+//            start_redirect( pos, stdout, fd ) ;
             fpos_t pos_err ;
             int fd_err = 0 ;
-            start_redirect( pos_err, stderr, fd_err ) ;
+//            start_redirect( pos_err, stderr, fd_err ) ;
 
             initialize_mgtetra_variables() ;
 
@@ -193,8 +194,8 @@ namespace RINGMesh {
             write_vertices_in_ringmesh_data_structure() ;
             write_tet_in_ringmesh_data_structure() ;
 
-            stop_redirect( pos, stdout, fd ) ;
-            stop_redirect( pos_err, stderr, fd_err ) ;
+//            stop_redirect( pos, stdout, fd ) ;
+//            stop_redirect( pos_err, stderr, fd_err ) ;
 
             return true ;
         }
@@ -255,10 +256,7 @@ namespace RINGMesh {
         }
 
     private:
-        context_t* context_ ;
-        mesh_t* mesh_input_ ;
-        mesh_t* mesh_output_ ;
-        tetra_session_t* tms_ ;
+        context_t* context_ ;mesh_t* mesh_input_ ;mesh_t* mesh_output_ ;tetra_session_t* tms_ ;
 
     private:
 
@@ -272,7 +270,8 @@ namespace RINGMesh {
             initialize_storage( nb_points, nb_tets ) ;
         }
 
-        void initialize_mgtetra_variables() {
+        void initialize_mgtetra_variables()
+        {
             context_ = context_new() ;
             mesh_input_ = mesh_new_in_memory( context_ ) ;
         }
@@ -374,22 +373,28 @@ namespace RINGMesh {
         void write_vertices_in_ringmesh_data_structure()
         {
             RINGMESH_PARALLEL_LOOP
-            for( index_t p = 0; p < tetmesh_constraint_.vertices.nb(); p++ ) {
+            for( index_t v = 0;
+                v
+                    < builder_->mesh_entity( Region::type_name_static(),
+                        output_region_ ).nb_vertices(); v++ ) {
                 double point[3] ;
-                mesh_get_vertex_coordinates( mesh_output_, p + 1, point ) ;
-                set_point( p, point ) ;
+                mesh_get_vertex_coordinates( mesh_output_, v + 1, point ) ;
+                set_point( v, point ) ;
             }
         }
 
         void write_tet_in_ringmesh_data_structure()
         {
             RINGMESH_PARALLEL_LOOP
-            for( index_t t = 0; t < tetmesh_constraint_.cells.nb(); t++ ) {
+            for( index_t t = 0;
+                t
+                    < builder_->mesh_entity( Region::type_name_static(),
+                        output_region_ ).nb_mesh_elements(); t++ ) {
                 signed_index_t tet[4] ;
                 mesh_get_tetrahedron_vertices( mesh_output_, t + 1, tet ) ;
-                set_tetra( t, tet) ;
+                set_tetra( t, tet ) ;
             }
-            tetmesh_constraint_.cells.connect() ;
+            builder_->compute_region_adjacencies(output_region_) ;
         }
 
     } ;
@@ -412,7 +417,7 @@ namespace RINGMesh {
             std::vector< std::string > names ;
             TetraGenFactory::list_creators( names ) ;
             Logger::err( "I/O" ) << "Currently supported mesher are: " ;
-            for( index_t i = 0; i < names.size(); i++ ) {
+            for( index_t i = 0 ; i < names.size() ; i++ ) {
                 Logger::out( "I/O" ) << " " << names[ i ] ;
             }
             Logger::out( "I/O" ) << std::endl ;
@@ -436,9 +441,7 @@ namespace RINGMesh {
      * @param[in] region The Region of the GeoModel to mesh
      * @param[in] wells the wells to be conformal to
      */
-    void TetraGen::set_boundaries(
-        const Region& region,
-        const WellGroup* wells )
+    void TetraGen::set_boundaries( const Region& region, const WellGroup* wells )
     {
         region_ = &region ;
         index_t nb_surfaces = region_->nb_boundaries() ;
@@ -498,8 +501,8 @@ namespace RINGMesh {
                 nb_well_edges += well_edges[w].size() ;
             }
             tetmesh_constraint_.edges.create_edges( nb_well_edges ) ;
-            GEO::Attribute< index_t > edge_region( tetmesh_constraint_.edges.attributes(),
-                surface_att_name ) ;
+            GEO::Attribute< index_t > edge_region(
+                tetmesh_constraint_.edges.attributes(), surface_att_name ) ;
             index_t cur_vertex_id = nb_surface_points ;
             index_t cur_edge = 0 ;
             for( index_t w = 0; w < well_edges.size(); w++ ) {
@@ -516,8 +519,8 @@ namespace RINGMesh {
         index_t offset_vertices = 0 ;
         index_t offset_facets = 0 ;
         tetmesh_constraint_.facets.create_triangles( nb_facets ) ;
-        GEO::Attribute< index_t > surface_region( tetmesh_constraint_.facets.attributes(),
-            surface_att_name ) ;
+        GEO::Attribute< index_t > surface_region(
+            tetmesh_constraint_.facets.attributes(), surface_att_name ) ;
         for( index_t s = 0; s < unique_surfaces.size(); s++ ) {
             const Surface& surface =
                 dynamic_cast< const Surface& >( *unique_surfaces[s] ) ;
@@ -546,7 +549,8 @@ namespace RINGMesh {
     void TetraGen::set_internal_points( const std::vector< vec3 >& points )
     {
         if( points.empty() ) return ;
-        index_t start = tetmesh_constraint_.vertices.create_vertices( points.size() ) ;
+        index_t start = tetmesh_constraint_.vertices.create_vertices(
+            points.size() ) ;
         GEO::Memory::copy( tetmesh_constraint_.vertices.point_ptr( start ),
             points.front().data(), points.size() * 3 * sizeof(double) ) ;
     }
@@ -560,20 +564,20 @@ namespace RINGMesh {
     {
         bool update = false ;
         vec3 vertex( point ) ;
-        builder_->set_mesh_entity_vertex( gme_t( Region::type_name_static(), output_region_ ),
-            index, vertex, update ) ;
+        builder_->set_mesh_entity_vertex(
+            gme_t( Region::type_name_static(), output_region_ ), index, vertex,
+            update ) ;
     }
 
-    void TetraGen::set_tetra(
-        index_t tetra_index,
-        int* vertex_indices )
+    void TetraGen::set_tetra( index_t tetra_index, int* vertex_indices )
     {
         std::vector< index_t > corners( 4 ) ;
         for( index_t v = 0; v < 4; v++ ) {
-            index_t vertex_id = static_cast< index_t >( vertex_indices[v] ) ;
+            index_t vertex_id = static_cast< index_t >( vertex_indices[v] -1 ) ;
             corners[v] = vertex_id ;
         }
-        builder_->set_region_element_geometry( output_region_, tetra_index, corners ) ;
+        builder_->set_region_element_geometry( output_region_, tetra_index,
+            corners ) ;
     }
 
     void TetraGen::initialize_storage( index_t nb_points, index_t nb_tets )
@@ -581,8 +585,7 @@ namespace RINGMesh {
         gme_t region_id( Region::type_name_static(), output_region_ ) ;
         builder_->delete_mesh_entity_mesh( region_id ) ;
         builder_->create_mesh_entity_vertices( region_id, nb_points ) ;
-        builder_->create_region_cells( output_region_, GEO::MESH_TET,
-            nb_tets ) ;
+        builder_->create_region_cells( output_region_, GEO::MESH_TET, nb_tets ) ;
     }
 
     void TetraGen::initialize()
