@@ -192,6 +192,7 @@ namespace RINGMesh {
 
     void DuplicateInterfaceBuilder::duplicate_fault_network( bool gap )
     {
+        DEBUG( model().epsilon() ) ;
         check_geomodel_validity_for_duplication() ;
 
         std::vector< std::vector< index_t > > to_erase_by_type ;
@@ -637,6 +638,11 @@ namespace RINGMesh {
         for( index_t reg_itr = 0; reg_itr < model().nb_regions(); ++reg_itr ) {
             const Region& cur_region = model().region( reg_itr ) ;
             ringmesh_assert( cur_region.is_meshed() ) ;
+
+            /// tmp to replace by colocater ann reg cell_facets ???
+            const_cast< GEO::MeshCells& >( cur_region.gfx_mesh().cells ).compute_borders() ;
+            /// tmp
+
             reg_anns_.push_back(
                 new ColocaterANN( cur_region.gfx_mesh(), ColocaterANN::FACETS ) ) ; /// @todo use CELL_FACETS instead ? in theory the region have facets...
         }
@@ -725,7 +731,7 @@ namespace RINGMesh {
             std::vector< index_t > colocated_facets_reg ;
             colocated_facets_reg.reserve( 1 ) ;
             reg_anns_[reg.index()]->get_neighbors( facet_bary, colocated_facets_reg,
-                global_epsilon ) ;
+                model().epsilon() ) ;
             ringmesh_assert( colocated_facets_reg.size() == 1 ) ;
             return find_reg_vertex_id_in_facet_reg_matching_surf_vertex_id_in_gmm(
                 reg, colocated_facets_reg[0], surf_v_id_in_gmm ) ;
@@ -774,7 +780,7 @@ namespace RINGMesh {
             std::vector< index_t > colocated_facets_reg1 ;
             colocated_facets_reg1.reserve( 2 ) ;
             reg_anns_[reg1.index()]->get_neighbors( facet_bary,
-                colocated_facets_reg1, global_epsilon ) ;
+                colocated_facets_reg1, model().epsilon() ) ;
             if( colocated_facets_reg1.size() == 1 ) {
                 // Case of a voi horizon or voi boundary
                 v_id_in_reg1 =
@@ -1204,7 +1210,7 @@ namespace RINGMesh {
             }
 
             MakeUnique make_unique_surf( all_points ) ;
-            make_unique_surf.unique( global_epsilon ) ;
+            make_unique_surf.unique( model().epsilon() ) ;
             std::vector< vec3 > facet_points ;
             make_unique_surf.unique_points( facet_points ) ;
             const std::vector< index_t >& unique_id = make_unique_surf.indices() ;
@@ -1484,7 +1490,11 @@ namespace RINGMesh {
             for( std::set< index_t >::iterator it = cutting_lines.begin();
                 it != cutting_lines.end(); ++it ) {
                 DEBUG( "RECUT FOR INTERNAL BORDERS" ) ;
+                DEBUG(new_surface_id) ;
                 cut_surface_by_line( new_surface_id, *it ) ;
+            }
+            if( !cutting_lines.empty() ) {
+                const_cast< GEO::MeshVertices& >( model().surface( new_surface_id ).gfx_mesh().vertices ).remove_isolated() ;
             }
             return ;
         }
@@ -1516,7 +1526,7 @@ namespace RINGMesh {
         for( index_t all_points_itr = 0; all_points_itr < all_points.size();
             ++all_points_itr ) {
             MakeUnique make_unique_surf( all_points[all_points_itr] ) ;
-            make_unique_surf.unique( global_epsilon ) ;
+            make_unique_surf.unique( model().epsilon() ) ;
             std::vector< vec3 > facet_points ;
             make_unique_surf.unique_points( facet_points ) ;
             const std::vector< index_t >& unique_id = make_unique_surf.indices() ;
@@ -1595,8 +1605,17 @@ namespace RINGMesh {
                 }
 
                 DEBUG( "RECUT FOR INTERNAL BORDERS 2" ) ;
+                DEBUG(new_new_surf.index()) ;
                 cut_surface_by_line( new_new_surf.index(),
                     cur_cutting_line.index() ) ;
+                /*if( !cutting_lines.empty() ) {
+                 const_cast< GEO::MeshVertices& >( model().surface(
+                 new_new_surf.index() ).gfx_mesh().vertices ).remove_isolated() ;
+                 }*/
+            }
+            if( !cutting_lines.empty() ) {
+                const_cast< GEO::MeshVertices& >( model().surface(
+                    new_new_surf.index() ).gfx_mesh().vertices ).remove_isolated() ;
             }
         }
     }
@@ -1729,7 +1748,7 @@ namespace RINGMesh {
     vec3 DuplicateInterfaceBuilder::get_local_translation_vector(
         const vec3& normal ) const
     {
-        vec3 displacement = normal * 1.5 * global_epsilon ;
+        vec3 displacement = normal * 1.5 * model().epsilon() ; //global_epsilon ;
         return displacement ;
     }
 
@@ -1961,8 +1980,8 @@ namespace RINGMesh {
         const Region& region_to_check = model().region( region_to_check_id ) ;
         std::vector< index_t > cells_around ;
         cells_around.reserve( 10 ) ;
-        region_to_check.cells_around_vertex( vertex_id_in_region, cells_around,
-            false ) ;
+        region_to_check.cells_around_vertex( vertex_id_in_region, cells_around ) ;
+//            false ) ;
         ringmesh_assert( !cells_around.empty() ) ;
 
         vec3 region_to_check_mean_normal_on_vertex( 0., 0., 0. ) ;
