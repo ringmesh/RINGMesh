@@ -178,10 +178,10 @@ namespace RINGMesh {
         {
             fpos_t pos ;
             int fd = 0 ;
-//            start_redirect( pos, stdout, fd ) ;
+            start_redirect( pos, stdout, fd ) ;
             fpos_t pos_err ;
             int fd_err = 0 ;
-//            start_redirect( pos_err, stderr, fd_err ) ;
+            start_redirect( pos_err, stderr, fd_err ) ;
 
             initialize_mgtetra_variables() ;
 
@@ -194,8 +194,8 @@ namespace RINGMesh {
             write_vertices_in_ringmesh_data_structure() ;
             write_tet_in_ringmesh_data_structure() ;
 
-//            stop_redirect( pos, stdout, fd ) ;
-//            stop_redirect( pos_err, stderr, fd_err ) ;
+            stop_redirect( pos, stdout, fd ) ;
+            stop_redirect( pos_err, stderr, fd_err ) ;
 
             return true ;
         }
@@ -256,7 +256,10 @@ namespace RINGMesh {
         }
 
     private:
-        context_t* context_ ;mesh_t* mesh_input_ ;mesh_t* mesh_output_ ;tetra_session_t* tms_ ;
+        context_t* context_ ;
+        mesh_t* mesh_input_ ;
+        mesh_t* mesh_output_ ;
+        tetra_session_t* tms_ ;
 
     private:
 
@@ -394,7 +397,7 @@ namespace RINGMesh {
                 mesh_get_tetrahedron_vertices( mesh_output_, t + 1, tet ) ;
                 set_tetra( t, tet ) ;
             }
-            builder_->compute_region_adjacencies(output_region_) ;
+            builder_->compute_region_adjacencies( output_region_ ) ;
         }
 
     } ;
@@ -573,7 +576,7 @@ namespace RINGMesh {
     {
         std::vector< index_t > corners( 4 ) ;
         for( index_t v = 0; v < 4; v++ ) {
-            index_t vertex_id = static_cast< index_t >( vertex_indices[v] -1 ) ;
+            index_t vertex_id = static_cast< index_t >( vertex_indices[v] - 1 ) ;
             corners[v] = vertex_id ;
         }
         builder_->set_region_element_geometry( output_region_, tetra_index,
@@ -591,11 +594,11 @@ namespace RINGMesh {
     void TetraGen::initialize()
     {
 #ifdef RINGMESH_WITH_TETGEN
-        ringmesh_register_tetragen( TetraGen_TetGen, "TetGen" ) ;
+        ringmesh_register_tetragen( TetraGen_TetGen, "TetGen" );
 #endif
 
 #ifdef USE_MG_TETRA
-        ringmesh_register_tetragen( TetraGen_MG_Tetra, "MG_Tetra" );
+    ringmesh_register_tetragen( TetraGen_MG_Tetra, "MG_Tetra" ) ;
 #endif
-    }
+}
 }
