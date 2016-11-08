@@ -170,7 +170,7 @@ namespace {
         double in_radius = tetra_insphere_radius( v0, v1, v2, v3 ) ;
         double edge_length = max_tet_edge_length( v0, v1, v2, v3 ) ;
 
-        return 2 * std::sqrt( 6 ) * in_radius / edge_length ;
+        return 2 * std::sqrt( 6. ) * in_radius / edge_length ;
     }
 
     /*!
@@ -295,7 +295,7 @@ namespace {
                     sin_half_solid_angle( v1, v0, v2, v3 ) ),
                 sin_half_solid_angle( v2, v0, v1, v3 ) ),
             sin_half_solid_angle( v3, v0, v1, v2 ) ) ;
-        return 1.5 * std::sqrt( 6 ) * min_sin_half_solid_angle ;
+        return 1.5 * std::sqrt( 6. ) * min_sin_half_solid_angle ;
     }
 
     /*!
