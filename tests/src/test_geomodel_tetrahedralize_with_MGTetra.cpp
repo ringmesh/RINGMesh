@@ -79,7 +79,7 @@ int main( int argc, char** argv )
         for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
             if( !geomodel.region( r ).is_meshed() ) {
                 throw RINGMeshException( "RINGMesh Test",
-                    "Failed when tetrahedralize model " + geomodel.name() + "Region "
+                    "Failed when tetrahedralize model " + geomodel.name() + " Region "
                         + r + " is not meshed "
                         + "maybe the MG Tetra Licence can not be reached" ) ;
             }
