@@ -79,8 +79,8 @@ int main( int argc, char** argv )
             if( !geomodel.region( r ).is_meshed() ) {
                 throw RINGMeshException( "RINGMesh Test",
                     "Failed when tetrahedralize model " + geomodel.name()
-                        + " Region " + r + " is not meshed "
-                        + "maybe the Tetgen call have failed" ) ;
+                        + " Region " + GEO::String::to_string( r )
+                        + " is not meshed " + "maybe the Tetgen call have failed" ) ;
             }
         }
         if( !is_geomodel_valid( geomodel ) ) {
