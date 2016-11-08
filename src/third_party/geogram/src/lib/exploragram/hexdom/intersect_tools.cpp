@@ -156,7 +156,7 @@ namespace GEO {
 	IndexPointCmp cmp(G, dim);
 	std::sort(tree_pos_to_org.begin() + int(org), tree_pos_to_org.begin() + int(dest), cmp);
 	if (dest - org <= 2) return;
-	index_t m = org + index_t(pow(2, int(mylog2(dest - org - 1))));
+	index_t m = org + index_t(pow(2., int(mylog2(dest - org - 1))));
 	sort(G, org, m);
 	sort(G, m, dest);
     }
