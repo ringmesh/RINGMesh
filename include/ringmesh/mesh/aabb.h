@@ -49,16 +49,52 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
+    /*!
+     * @brief AABB tree structure
+     * @details The tree is store in s single vector following this example:
+     *                          ROOT
+     *                        /      \
+     *                      A1        A2
+     *                    /    \     /   \
+     *                  B1     B2   B3    B4
+     *  where B* are the input bboxes
+     *  Storage: |empty|ROOT|A1|A2|B1|B2|B3|B4|
+     */
     class RINGMESH_API AABBTree {
     public:
         static const index_t ROOT_INDEX = 1 ;
 
+        /*!
+         * @brief Saves the tree in a set of files
+         * @details Each level of the tree is saved in a .geogram file
+         * prefixed by \p name
+         * @param[in] name the prefix used for the file naming
+         */
         void save_tree( const std::string& name ) const ;
         index_t nb_bboxes() const
         {
             return static_cast< index_t >( mapping_morton_.size() ) ;
         }
 
+        /*!
+         * @brief Gets the closest element box to a point
+         * @param[in] query the point to test
+         * @param[out] nearest_point the nearest point on the element box
+         * @param[out] distance the distance between the \p query
+         * and \p nearest_point
+         * @param[in] action the functor to compute the distance between
+         * the \p query and the tree element boxes
+         * @return the index of the closest element box
+         * @tparam EvalDistance this functor should have an operator() defined like this:
+         *  void operator()(
+         *      const vec3& query,
+         *      index_t cur_box,
+         *      vec3& nearest_point,
+         *      double& distance ) const ;
+         * where query is the same than \p query, cur_box is the element box index
+         * (e.g. in the case of AABBTree2D, this index is a facet index) and nearest_point
+         * and distance are the value computed using the element in the \p cur_box.
+         */
         template< typename EvalDistance >
         index_t closest_element_box(
             const vec3& query,
@@ -76,6 +112,12 @@ namespace RINGMesh {
         virtual ~AABBTree()
         {
         }
+        /*!
+         * @brief Builds the tree
+         * @details Comptes the morton order and build the tree
+         * using the ordered bboxes
+         * @param[in] bboxes the set of unordered bboxes
+         */
         void initialize_tree( const std::vector< Box3d >& bboxes ) ;
 
         bool is_leaf( index_t box_begin, index_t box_end ) const
@@ -96,16 +138,25 @@ namespace RINGMesh {
         }
 
     private:
+        /*!
+         * @brief Gets the number of nodes in the tree subset
+         */
         index_t max_node_index(
             index_t node_index,
             index_t box_begin,
             index_t box_end ) ;
+        /*!
+         * @brief The recursive instruction used in initialize_tree()
+         */
         void initialize_tree_recursive(
             const std::vector< Box3d >& bboxes,
             index_t node_index,
             index_t element_begin,
             index_t element_end ) ;
 
+        /*!
+         * @brief The recursive instruction used in closest_element_box()
+         */
         template< typename ACTION >
         void closest_element_box_recursive(
             const vec3& query,
@@ -117,10 +168,21 @@ namespace RINGMesh {
             index_t element_end,
             const ACTION& action ) const ;
 
+        /*!
+         * @brief Gets an hint of the result
+         * @details Compute the result by approximating each bbox to its barycenter.
+         * This result is then used to speed-up the computation by minimizing
+         * the distance computation between \p query and the real elements
+         * inside the bboxes
+         */
         void get_nearest_element_box_hint(
             const vec3& query,
             vec3& nearest_point,
             double& distance ) const ;
+        /*!
+         * @brief Gets an element point from its box
+         * @details This function is used to get a result from the selected hint box
+         */
         virtual vec3 get_point_hint_from_box(
             const Box3d& box,
             index_t element_id ) const = 0 ;
@@ -138,6 +200,10 @@ namespace RINGMesh {
         }
 
     private:
+        /*!
+         * @brief Gets an element point from its box
+         * @details In this case, the point is the barycenter of the box
+         */
         virtual vec3 get_point_hint_from_box(
             const Box3d& box,
             index_t element_id ) const ;
@@ -149,6 +215,10 @@ namespace RINGMesh {
         virtual ~AABBTreeMesh()
         {
         }
+        /*!
+         * @brief Gets an element point from its box
+         * @details In this case, the point is the first vertex of the element
+         */
         virtual vec3 get_point_hint_from_box(
             const Box3d& box,
             index_t element_id ) const ;
@@ -164,11 +234,22 @@ namespace RINGMesh {
         {
         }
 
+        /*!
+         * @brief Gets the closest edge to a given point
+         * @param[in] query the point to use
+         * @param[out] nearest_point the nearest point on the closest edge
+         * @param[out] distance the distance between \p query and \p nearest_point
+         * @return the closest edge index
+         */
         index_t closest_edge(
             const vec3& query,
             vec3& nearest_point,
             double& distance ) const ;
     private:
+        /*!
+         * This class is used as functor in closest_element_box() to compute
+         * the distance between a point and an edge
+         */
         class DistanceToEdge {
         public:
             DistanceToEdge( const Mesh1D& mesh )
@@ -197,11 +278,23 @@ namespace RINGMesh {
         {
         }
 
+        /*!
+         * @brief Gets the closest triangle to a given point
+         * @pre The mesh needs to be triangulated
+         * @param[in] query the point to use
+         * @param[out] nearest_point the nearest point on the closest edge
+         * @param[out] distance the distance between \p query and \p nearest_point
+         * @return the closest triangle index
+         */
         index_t closest_triangle(
             const vec3& query,
             vec3& nearest_point,
             double& distance ) const ;
     private:
+        /*!
+         * This class is used as functor in closest_element_box() to compute
+         * the distance between a point and a triangle
+         */
         class DistanceToTriangle {
         public:
             DistanceToTriangle( const Mesh2D& mesh )
@@ -223,7 +316,6 @@ namespace RINGMesh {
         const Mesh2D& mesh_ ;
     } ;
 
-
     class RINGMESH_API AABBTree3D: public AABBTreeMesh {
     public:
         AABBTree3D( const Mesh3D& mesh ) ;
@@ -231,6 +323,12 @@ namespace RINGMesh {
         {
         }
 
+        /*!
+         * @brief Gets the cell contining a point
+         * @param[in] query the point to use
+         * @return the cell index containing \p query,
+         * NO_ID if no cell is corresponding
+         */
         index_t containing_cell( const vec3& query ) const ;
 
     private:
