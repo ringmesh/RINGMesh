@@ -2278,12 +2278,13 @@ namespace RINGMesh {
         }
     }
 
-    index_t GeoModelBuilder::mesh_nb_connected_components(
-        const gme_t& gmme_id ) const
+    index_t GeoModelBuilder::get_connected_commoponents(
+        const gme_t& gmme_id,
+        GEO::vector< index_t >& component ) const
     {
         const MeshBase* mesh = model().mesh_entity( gmme_id ).mesh_ ;
         ringmesh_assert( mesh != nil ) ;
-        return mesh->nb_connected_components() ;
+        return mesh->get_connected_commoponents( component ) ;
     }
 
     void GeoModelBuilder::update_cell_vertex(

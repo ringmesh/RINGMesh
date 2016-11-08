@@ -1457,8 +1457,8 @@ namespace RINGMesh {
         // surface).
 
         GEO::vector< index_t > components ;
-        index_t nb_connected_components = mesh_nb_connected_components(
-            cur_surface.gme_id() ) ;
+        index_t nb_connected_components = get_connected_commoponents(
+            cur_surface.gme_id(), components ) ;
         if( nb_connected_components == 1 ) {
             DEBUG( "ONE CONNECTED COMPONENT" ) ;
             ringmesh_assert( cur_surface.nb_parents() == 0 ) ;

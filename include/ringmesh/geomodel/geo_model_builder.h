@@ -346,7 +346,9 @@ namespace RINGMesh {
          */
         void build_contacts() ;
         void invert_surface_normals( index_t surface_id ) ;
-        index_t mesh_nb_connected_components( const gme_t& gmme_id ) const ;
+        index_t get_connected_commoponents(
+            const gme_t& gmme_id,
+            GEO::vector< index_t >& component ) const ;
 
         void set_surface_facet_adjacencies(
                 index_t surface_id,
