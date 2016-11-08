@@ -26,7 +26,7 @@
 								<option id="gnu.cpp.compiler.option.include.paths.791559926" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/src/third_party/geogram/src/lib&quot;"/>
-									<listOptionValue builtIn="false" value="/home/mazuyer/RING/DISTENE/MeshGems-2.4/Products/include"/>
+									<listOptionValue builtIn="false" value="&quot;${APPLICATIONS}/DISTENE/MeshGems-2.4/Products/include&quot;"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.1044941177" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="USE_MG_TETRA=TRUE"/>
