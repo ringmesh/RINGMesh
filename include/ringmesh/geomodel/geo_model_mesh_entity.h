@@ -210,12 +210,17 @@ namespace RINGMesh {
          * @details Constitutive elements are those of the dimension of the object.
          * segments for lines, facets for surfaces and cells for volumetric meshes.
          */
-        virtual index_t nb_mesh_elements() const = 0 ;
+        index_t nb_mesh_elements() const
+        {
+            return mesh_->nb_mesh_elements() ;
+        }
         /*!
          * @brief Number of vertices of a constitutive element of the mesh
          */
-        virtual index_t nb_mesh_element_vertices(
-            index_t mesh_element_index ) const = 0 ;
+        index_t nb_mesh_element_vertices( index_t mesh_element_index ) const
+        {
+            return mesh_->nb_mesh_element_vertices( mesh_element_index ) ;
+        }
         /*!
          * @brief Convert the index in a mesh element to an index in the Entity.
          * @param[in] mesh_element_index Index of a constitutive element of the mesh
@@ -223,9 +228,13 @@ namespace RINGMesh {
          * mesh element
          * @return the global index of the vertex in the GeoModelMeshEntity
          */
-        virtual index_t mesh_element_vertex_index(
+        index_t mesh_element_vertex_index(
             index_t mesh_element_index,
-            index_t vertex_local_index ) const = 0 ;
+            index_t vertex_local_index ) const
+        {
+            return mesh_->mesh_element_vertex_index( mesh_element_index,
+                vertex_local_index ) ;
+        }
         /*!
          * @brief Coordinates of a vertex of a mesh element.
          * @param[in] mesh_element_index Index of a constitutive element of the mesh
@@ -352,22 +361,6 @@ namespace RINGMesh {
         }
 
         virtual bool is_on_voi() const ;
-
-        /*!
-         * @return 0, no mesh_element are defined for corners.
-         */
-        virtual index_t nb_mesh_elements() const
-        {
-            return 0 ;
-        }
-        /*!
-         * @return 1 the number of vertices of the Corner
-         */
-        virtual index_t nb_mesh_element_vertices( index_t mesh_element = 0 ) const
-        {
-            ringmesh_unused( mesh_element ) ;
-            return 1 ;
-        }
 
         /*! @}
          * \name Geometrical request on Corner
@@ -591,35 +584,6 @@ namespace RINGMesh {
          * \name Accessors to Surface facets, edges and vertices
          * @{
          */
-        /*!
-         * Number of facets of the Surface.
-         */
-        virtual index_t nb_mesh_elements() const
-        {
-            return mesh2d_->nb_facets() ;
-        }
-
-        /*!
-         * Number of vertices of a facet
-         */
-        virtual index_t nb_mesh_element_vertices( index_t facet_index ) const
-        {
-            ringmesh_assert( facet_index < nb_mesh_elements() ) ;
-            return mesh2d_->nb_facet_vertices( facet_index ) ;
-        }
-
-        /*!
-         * @brief Index of the vertex in the Surface
-         * from its index in a facet of the mesh.
-         */
-        virtual index_t mesh_element_vertex_index(
-            index_t facet_index,
-            index_t vertex_index ) const
-        {
-            ringmesh_assert( facet_index < nb_mesh_elements() ) ;
-            ringmesh_assert( vertex_index < nb_mesh_element_vertices( facet_index ) ) ;
-            return mesh2d_->facet_vertex( facet_index, vertex_index ) ;
-        }
 
         /*!
          * @brief Gets the next vertex index in a facet.
@@ -871,43 +835,6 @@ namespace RINGMesh {
          * \name Accessors to Region cells, facets, edges and vertices
          * @{
          */
-
-        /*!
-         * Get the number of cells of the Region.
-         */
-        virtual index_t nb_mesh_elements() const
-        {
-            return mesh3d_->nb_cells() ;
-        }
-
-        /*!
-         * Get the number of vertex in the cell \param cell_index of the Region.
-         */
-        virtual index_t nb_mesh_element_vertices( index_t cell_index ) const
-        {
-            if( is_meshed() ) {
-                ringmesh_assert( cell_index < nb_mesh_elements() ) ;
-                return mesh3d_->nb_cell_vertices( cell_index ) ;
-            }
-            ringmesh_assert_not_reached ;
-            return NO_ID ;
-        }
-
-        /*!
-         * @brief Index of a vertex in the Region from its index in a cell
-         */
-        virtual index_t mesh_element_vertex_index(
-            index_t cell_index,
-            index_t vertex_index ) const
-        {
-            if( is_meshed() ) {
-                ringmesh_assert( cell_index < nb_mesh_elements() ) ;
-                ringmesh_assert( vertex_index < nb_mesh_element_vertices( cell_index ) ) ;
-                return mesh3d_->cell_vertex( cell_index, vertex_index ) ;
-            }
-            ringmesh_assert_not_reached ;
-            return NO_ID ;
-        }
 
         /*!
          * Get the type of a given cell.
