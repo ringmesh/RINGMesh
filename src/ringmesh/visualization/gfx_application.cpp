@@ -222,19 +222,24 @@ namespace RINGMesh {
 
     void RINGMeshApplication::GeoModelViewer::toggle_colored_layers()
     {
-        /*! Implement something more adaptable - layers are optional */
-        /*     colored_cells_.new_status = false ;
-         show_colored_regions_.new_status = false ;
-         for( GEO::index_t l = 0; l < GM_.nb_layers(); l++ ) {
-         float red = std::fmod( GEO::Numeric::random_float32(), 1 ) ;
-         float green = std::fmod( GEO::Numeric::random_float32(), 1 ) ;
-         float blue = std::fmod( GEO::Numeric::random_float32(), 1 ) ;
-         const GeoModelEntity& cur_layer = GM_.layer( l ) ;
-         for( index_t r = 0; r < cur_layer.nb_children(); ++r )
-         GM_gfx_.regions.set_mesh_element_color( cur_layer.child( r ).index(),
-         red, green, blue ) ;
-         } */
-
+        // To disable the key 'R'.
+        if( GM_.nb_geological_entities( Layer::type_name_static() ) == 0 ) {
+            show_colored_layers_.new_status = false ;
+            return ;
+        }
+        colored_cells_.new_status = false ;
+        show_colored_regions_.new_status = false ;
+        for( GEO::index_t l = 0;
+            l < GM_.nb_geological_entities( Layer::type_name_static() ); l++ ) {
+            float red = std::fmod( GEO::Numeric::random_float32(), 1 ) ;
+            float green = std::fmod( GEO::Numeric::random_float32(), 1 ) ;
+            float blue = std::fmod( GEO::Numeric::random_float32(), 1 ) ;
+            const GeoModelGeologicalEntity& cur_layer = GM_.geological_entity(
+                Layer::type_name_static(), l ) ;
+            for( index_t r = 0; r < cur_layer.nb_children(); ++r )
+                GM_gfx_.regions.set_mesh_element_color( cur_layer.child( r ).index(),
+                    red, green, blue ) ;
+        }
     }
 
     void RINGMeshApplication::GeoModelViewer::draw_scene()
@@ -581,8 +586,10 @@ namespace RINGMesh {
                 ImGui::Checkbox( "Col. cells [C]", &colored_cells_.new_status ) ;
                 ImGui::Checkbox( "Col. regions [r]",
                     &show_colored_regions_.new_status ) ;
-                ImGui::Checkbox( "Col. layers [R]",
-                    &show_colored_layers_.new_status ) ;
+                if( GM_.nb_geological_entities( Layer::type_name_static() ) != 0 ) {
+                    ImGui::Checkbox( "Col. layers [R]",
+                        &show_colored_layers_.new_status ) ;
+                }
                 ImGui::SliderFloat( "Shrk.", &shrink_, 0.0f, 1.0f, "%.1f" ) ;
                 ImGui::Checkbox( "Hex", &show_hex_ ) ;
                 ImGui::Checkbox( "Prism", &show_prism_ ) ;
