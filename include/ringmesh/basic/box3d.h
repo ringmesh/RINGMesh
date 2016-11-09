@@ -38,8 +38,6 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <geogram/basic/geometry.h>
-
 /*!
  * @file Box3D class declaration
  * @author Arnaud Botella
@@ -47,7 +45,7 @@
 
 namespace RINGMesh {
 
-    class RINGMESH_API Box3d: public GEO::Box {
+    class RINGMESH_API Box3d {
     public:
         Box3d()
             : initialized_( false )
@@ -66,27 +64,27 @@ namespace RINGMesh {
 
         double width() const
         {
-            return xyz_max[0] - xyz_min[0] ;
+            return max_[0] - min_[0] ;
         }
 
         double height() const
         {
-            return xyz_max[1] - xyz_min[1] ;
+            return max_[1] - min_[1] ;
         }
 
         double depth() const
         {
-            return xyz_max[2] - xyz_min[2] ;
+            return max_[2] - min_[2] ;
         }
 
-        vec3 min() const
+        const vec3& min() const
         {
-            return vec3( xyz_min[0], xyz_min[1], xyz_min[2] ) ;
+            return min_ ;
         }
 
-        vec3 max() const
+        const vec3& max() const
         {
-            return vec3( xyz_max[0], xyz_max[1], xyz_max[2] ) ;
+            return max_ ;
         }
 
         vec3 center() const
@@ -111,15 +109,11 @@ namespace RINGMesh {
 
         inline bool bboxes_overlap( const Box3d& B ) const
         {
-            vec3 minimum = min() ;
-            vec3 b_minimum = B.min() ;
-            vec3 maximum = max() ;
-            vec3 b_maximum = B.max() ;
             for( index_t c = 0; c < 3; ++c ) {
-                if( maximum[c] < b_minimum[c] ) {
+                if( max()[c] < B.min()[c] ) {
                     return false ;
                 }
-                if( minimum[c] > b_maximum[c] ) {
+                if( min()[c] > B.max()[c] ) {
                     return false ;
                 }
             }
@@ -135,13 +129,11 @@ namespace RINGMesh {
 
         bool contains( const vec3& b ) const
         {
-            vec3 minimum = min() ;
-            vec3 maximum = max() ;
             for( index_t c = 0; c < 3; ++c ) {
-                if( b[c] < minimum[c] ) {
+                if( b[c] < min()[c] ) {
                     return false ;
                 }
-                if( b[c] > maximum[c] ) {
+                if( b[c] > max()[c] ) {
                     return false ;
                 }
             }
@@ -154,6 +146,9 @@ namespace RINGMesh {
 
     private:
         bool initialized_ ;
+        vec3 min_ ;
+        vec3 max_ ;
+
     } ;
 
 }

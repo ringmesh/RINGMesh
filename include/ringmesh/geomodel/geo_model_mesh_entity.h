@@ -395,7 +395,7 @@ namespace RINGMesh {
         Corner( const GeoModel& model, index_t id )
             :
                 GeoModelMeshEntity( model, id ),
-                mesh0d_( new GeogramMesh( model, 3, false ) )
+                mesh0d_( new GeogramMesh( 3, false ) )
         {
             GeoModelMeshEntity::set_mesh( mesh0d_ ) ;
 
@@ -568,7 +568,7 @@ namespace RINGMesh {
             return mesh2d_->facets_are_simplicies() ;
         }
 
-        const GEO::MeshFacetsAABB& facets_aabb() const
+        const AABBTree2D& facets_aabb() const
         {
             return mesh2d_->facets_aabb() ;
         }
@@ -794,7 +794,7 @@ namespace RINGMesh {
         Surface( const GeoModel& model, index_t id )
             :
                 GeoModelMeshEntity( model, id ),
-                mesh2d_( new GeogramMesh( model, 3, false ) )
+                mesh2d_( new GeogramMesh( 3, false ) )
         {
             GeoModelMeshEntity::set_mesh( mesh2d_ ) ;
 
@@ -848,7 +848,7 @@ namespace RINGMesh {
             return mesh3d_->cells_are_simplicies() ;
         }
 
-        const GEO::MeshCellsAABB& cells_aabb() const
+        const AABBTree3D& cells_aabb() const
         {
             return mesh3d_->cells_aabb() ;
         }
@@ -1110,25 +1110,13 @@ namespace RINGMesh {
         Region( const GeoModel& model, index_t id )
             :
                 GeoModelMeshEntity( model, id ),
-                mesh3d_( new GeogramMesh( model, 3, false ) )
+                mesh3d_( new GeogramMesh( 3, false ) )
         {
             GeoModelMeshEntity::set_mesh( mesh3d_ ) ;
 
             id_.type = type_name_static() ;
         }
 
-        Region(
-            const GeoModel& model,
-            index_t id,
-            const std::string& name,
-            GEOL_FEATURE geological_feature )
-            :
-                GeoModelMeshEntity( model, id, name, geological_feature ),
-                mesh3d_( new GeogramMesh( model, 3, false ) )
-        {
-            GeoModelMeshEntity::set_mesh( mesh3d_ ) ;
-            id_.type = type_name_static() ;
-        }
         void copy( const GeoModelEntity& from )
         {
             const Region& region_from = dynamic_cast< const Region& >( from ) ;
