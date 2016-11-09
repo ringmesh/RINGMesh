@@ -71,23 +71,21 @@ namespace RINGMesh {
     {
         bool inside = true ;
         double result = 0.0 ;
-        vec3 minimum = min() ;
-        vec3 maximum = max() ;
         for( index_t c = 0; c < 3; c++ ) {
-            if( p[c] < minimum[c] ) {
+            if( p[c] < min()[c] ) {
                 inside = false ;
-                result += sqr( p[c] - minimum[c] ) ;
-            } else if( p[c] > maximum[c] ) {
+                result += sqr( p[c] - min()[c] ) ;
+            } else if( p[c] > max()[c] ) {
                 inside = false ;
-                result += sqr( p[c] - maximum[c] ) ;
+                result += sqr( p[c] - max()[c] ) ;
             }
         }
         if( inside ) {
-            result = sqr( p[0] - minimum[0] ) ;
-            result = std::min( result, sqr( p[0] - maximum[0] ) ) ;
+            result = sqr( p[0] - min()[0] ) ;
+            result = std::min( result, sqr( p[0] - max()[0] ) ) ;
             for( index_t c = 1; c < 3; ++c ) {
-                result = std::min( result, sqr( p[c] - minimum[c] ) ) ;
-                result = std::min( result, sqr( p[c] - maximum[c] ) ) ;
+                result = std::min( result, sqr( p[c] - min()[c] ) ) ;
+                result = std::min( result, sqr( p[c] - max()[c] ) ) ;
             }
             result = -result ;
         }
@@ -97,10 +95,8 @@ namespace RINGMesh {
     double Box3d::distance_to_center( const vec3& p ) const
     {
         double result = 0.0 ;
-        vec3 minimum = min() ;
-        vec3 maximum = max() ;
         for( index_t c = 0; c < 3; ++c ) {
-            double d = p[c] - 0.5 * ( minimum[c] + maximum[c] ) ;
+            double d = p[c] - 0.5 * ( min()[c] + max()[c] ) ;
             result += sqr( d ) ;
         }
         return result ;
