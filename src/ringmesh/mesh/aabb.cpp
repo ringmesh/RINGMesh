@@ -302,6 +302,7 @@ namespace RINGMesh {
 
     void AABBTree::get_nearest_element_box_hint(
         const vec3& query,
+        index_t& nearest_box,
         vec3& nearest_point,
         double& distance ) const
     {
@@ -322,8 +323,8 @@ namespace RINGMesh {
             }
         }
 
-        nearest_point = get_point_hint_from_box( tree_[box_begin],
-            mapping_morton_[box_begin] ) ;
+        nearest_box = mapping_morton_[box_begin] ;
+        nearest_point = get_point_hint_from_box( tree_[box_begin], nearest_box ) ;
         distance = length( query - nearest_point ) ;
     }
 
@@ -496,14 +497,27 @@ namespace RINGMesh {
         }
         return result ;
     }
-    vec3 inner_point_box_distance( const vec3& p, const Box3d& B )
+//    double inner_point_box_distance( const vec3& p, const Box3d& B )
+//    {
+//        ringmesh_assert( B.contains( p ) ) ;
+//        double result = std::abs( p[0] - B.min()[0] ) ;
+//        result = std::min( result, std::abs( p[0] - B.max()[0] ) ) ;
+//        for( index_t c = 1; c < 3; ++c ) {
+//            result = std::min( result, std::abs( p[c] - B.min()[c] ) ) ;
+//            result = std::min( result, std::abs( p[c] - B.max()[c] ) ) ;
+//        }
+//        return result ;
+//    }
+    double inner_point_box_distance( const vec3& p, const Box3d& B )
     {
-        ringmesh_assert( B.contains( p ) ) ;
-        vec3 result ;
+        geo_debug_assert( B.contains( p ) ) ;
+        double result = ( p[0] - B.min()[0] ) * ( p[0] - B.min()[0] ) ;
+        result = std::min( result, ( p[0] - B.max()[0] ) *( p[0] - B.max()[0] ) ) ;
         for( index_t c = 1; c < 3; ++c ) {
-            result[c] = std::min( p[c] - B.max()[c], p[c] - B.min()[c] ) ;
+            result = std::min( result, ( p[c] - B.min()[c] ) *( p[c] - B.min()[c] ) ) ;
+            result = std::min( result, ( p[c] - B.max()[c] )*( p[c] - B.max()[c] ) ) ;
         }
-        return result ;
+        return std::sqrt(result );
     }
     double point_box_signed_distance( const vec3& p, const Box3d& B )
     {
@@ -519,9 +533,10 @@ namespace RINGMesh {
             }
         }
         if( inside ) {
-            result = -inner_point_box_distance( p, B ) ;
+            return -inner_point_box_distance( p, B ) ;
+        } else {
+            return result.length() ;
         }
-        return result.length() ;
     }
 }
 
