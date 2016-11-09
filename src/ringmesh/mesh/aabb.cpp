@@ -45,36 +45,6 @@ namespace {
 
     typedef const std::vector< index_t >::iterator const_vector_itr ;
 
-    /**
-     * \brief Computes the axis-aligned bounding box of a mesh cell
-     * \param[in] mesh the mesh
-     * \param[in] element_id the index of the element in mesh \p mesh
-     * \param[out] bbox the bounding box of the facet
-     */
-    void get_element_bbox( const MeshBase& mesh, index_t element_id, Box3d& bbox )
-    {
-        for( index_t v = 0; v < mesh.nb_mesh_element_vertices( element_id ); v++ ) {
-            const vec3& point = mesh.mesh_element_vertex( element_id, v ) ;
-            bbox.add_point( point ) ;
-        }
-    }
-
-    void compute_element_bboxes( const MeshBase& mesh, std::vector< Box3d >& bboxes )
-    {
-        bboxes.resize( mesh.nb_mesh_elements() ) ;
-        for( index_t i = 0; i < mesh.nb_mesh_elements(); i++ ) {
-            get_element_bbox( mesh, i, bboxes[i] ) ;
-        }
-    }
-
-    /**
-     * \brief Computes the maximum node index in a subtree
-     * \param[in] node_index node index of the root of the subtree
-     * \param[in] box_begin first box index
-     * \param[in] box_end one position past the last box index
-     * \return the maximum node index in the subtree rooted at \p node_index
-     */
-
     template< index_t COORD >
     class Morton_cmp {
     public:
@@ -182,7 +152,7 @@ namespace {
 
     void add_cube( GEO::Mesh& M, const Box3d& box, index_t n )
     {
-        if( box.diagonal().length() == 0 ) return ;
+        if( !box.initialized() ) return ;
         const vec3& min_vertex = box.min() ;
         const vec3& max_vertex = box.max() ;
         vec3 width( box.width(), 0, 0 ) ;
@@ -338,7 +308,7 @@ namespace RINGMesh {
         index_t box_begin = 0 ;
         index_t box_end = nb_bboxes() ;
         index_t node_index = ROOT_INDEX ;
-        while( !is_leaf( box_end, box_begin ) ) {
+        while( !is_leaf( box_begin, box_end ) ) {
             index_t box_middle, child_left, child_right ;
             get_recursive_iterators( node_index, box_begin, box_end, box_middle,
                 child_left, child_right ) ;
@@ -374,27 +344,18 @@ namespace RINGMesh {
 
     /****************************************************************************/
 
-    AABBTreeMesh::AABBTreeMesh( const MeshBase& mesh )
-        : mesh_base_( mesh )
+    AABBTree1D::AABBTree1D( const Mesh1D& mesh )
+        : AABBTree(), mesh_( mesh )
     {
         std::vector< Box3d > bboxes ;
-        compute_element_bboxes( mesh, bboxes ) ;
+        bboxes.resize( mesh.nb_edges() ) ;
+        for( index_t i = 0; i < mesh.nb_edges(); i++ ) {
+            for( index_t v = 0; v < 2; v++ ) {
+                const vec3& point = mesh.vertex( mesh.edge_vertex( i, v ) ) ;
+                bboxes[i].add_point( point ) ;
+            }
+        }
         initialize_tree( bboxes ) ;
-    }
-
-    vec3 AABBTreeMesh::get_point_hint_from_box(
-        const Box3d& box,
-        index_t element_id ) const
-    {
-        ringmesh_unused( box ) ;
-        return mesh_base_.mesh_element_vertex( element_id, 0 ) ;
-    }
-
-    /****************************************************************************/
-
-    AABBTree1D::AABBTree1D( const Mesh1D& mesh )
-        : AABBTreeMesh( mesh ), mesh_( mesh )
-    {
     }
 
     index_t AABBTree1D::closest_edge(
@@ -418,11 +379,28 @@ namespace RINGMesh {
         distance = point_segment_distance( query, v0, v1, nearest_point ) ;
     }
 
+    vec3 AABBTree1D::get_point_hint_from_box(
+        const Box3d& box,
+        index_t element_id ) const
+    {
+        ringmesh_unused( box ) ;
+        return mesh_.vertex( mesh_.edge_vertex( element_id, 0 ) ) ;
+    }
+
     /****************************************************************************/
 
     AABBTree2D::AABBTree2D( const Mesh2D& mesh )
-        : AABBTreeMesh( mesh ), mesh_( mesh )
+        : AABBTree(), mesh_( mesh )
     {
+        std::vector< Box3d > bboxes ;
+        bboxes.resize( mesh.nb_facets() ) ;
+        for( index_t i = 0; i < mesh.nb_facets(); i++ ) {
+            for( index_t v = 0; v < mesh.nb_facet_vertices( i ); v++ ) {
+                const vec3& point = mesh.vertex( mesh.facet_vertex( i, v ) ) ;
+                bboxes[i].add_point( point ) ;
+            }
+        }
+        initialize_tree( bboxes ) ;
     }
 
     index_t AABBTree2D::closest_triangle(
@@ -449,11 +427,36 @@ namespace RINGMesh {
             lambda0, lambda1, lambda2 ) ;
     }
 
+    vec3 AABBTree2D::get_point_hint_from_box(
+        const Box3d& box,
+        index_t element_id ) const
+    {
+        ringmesh_unused( box ) ;
+        return mesh_.vertex( mesh_.facet_vertex( element_id, 0 ) ) ;
+    }
+
     /****************************************************************************/
 
     AABBTree3D::AABBTree3D( const Mesh3D& mesh )
-        : AABBTreeMesh( mesh ), mesh_( mesh )
+        : AABBTree(), mesh_( mesh )
     {
+        std::vector< Box3d > bboxes ;
+        bboxes.resize( mesh.nb_cells() ) ;
+        for( index_t i = 0; i < mesh.nb_cells(); i++ ) {
+            for( index_t v = 0; v < mesh.nb_cell_vertices( i ); v++ ) {
+                const vec3& point = mesh.vertex( mesh.cell_vertex( i, v ) ) ;
+                bboxes[i].add_point( point ) ;
+            }
+        }
+        initialize_tree( bboxes ) ;
+    }
+
+    vec3 AABBTree3D::get_point_hint_from_box(
+        const Box3d& box,
+        index_t element_id ) const
+    {
+        ringmesh_unused( box ) ;
+        return mesh_.vertex( mesh_.cell_vertex( element_id, 0 ) ) ;
     }
 
     index_t AABBTree3D::containing_cell( const vec3& query ) const
@@ -492,6 +495,33 @@ namespace RINGMesh {
                 box_end ) ;
         }
         return result ;
+    }
+    vec3 inner_point_box_distance( const vec3& p, const Box3d& B )
+    {
+        ringmesh_assert( B.contains( p ) ) ;
+        vec3 result ;
+        for( index_t c = 1; c < 3; ++c ) {
+            result[c] = std::min( p[c] - B.max()[c], p[c] - B.min()[c] ) ;
+        }
+        return result ;
+    }
+    double point_box_signed_distance( const vec3& p, const Box3d& B )
+    {
+        bool inside = true ;
+        vec3 result ;
+        for( index_t c = 0; c < 3; c++ ) {
+            if( p[c] < B.min()[c] ) {
+                inside = false ;
+                result[c] = p[c] - B.min()[c] ;
+            } else if( p[c] > B.max()[c] ) {
+                inside = false ;
+                result[c] = p[c] - B.max()[c] ;
+            }
+        }
+        if( inside ) {
+            result = -inner_point_box_distance( p, B ) ;
+        }
+        return result.length() ;
     }
 }
 

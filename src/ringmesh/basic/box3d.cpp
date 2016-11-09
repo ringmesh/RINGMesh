@@ -56,23 +56,21 @@ namespace RINGMesh {
     void Box3d::add_point( const vec3& p )
     {
         if( !initialized_ ) {
-            for( index_t i = 0; i < 3; i++ ) {
-                xyz_min[i] = p[i] ;
-                xyz_max[i] = p[i] ;
-            }
+            min_ = p ;
+            max_ = p ;
             initialized_ = true ;
         } else {
             for( index_t i = 0; i < 3; i++ ) {
-                xyz_min[i] = std::min( xyz_min[i], p[i] ) ;
-                xyz_max[i] = std::max( xyz_max[i], p[i] ) ;
+                min_[i] = std::min( min_[i], p[i] ) ;
+                max_[i] = std::max( max_[i], p[i] ) ;
             }
         }
     }
 
-    float64 Box3d::signed_distance( const vec3& p ) const
+    double Box3d::signed_distance( const vec3& p ) const
     {
         bool inside = true ;
-        float64 result = 0.0 ;
+        double result = 0.0 ;
         vec3 minimum = min() ;
         vec3 maximum = max() ;
         for( index_t c = 0; c < 3; c++ ) {
@@ -96,13 +94,13 @@ namespace RINGMesh {
         return result ;
     }
 
-    float64 Box3d::distance_to_center( const vec3& p ) const
+    double Box3d::distance_to_center( const vec3& p ) const
     {
-        float64 result = 0.0 ;
+        double result = 0.0 ;
         vec3 minimum = min() ;
         vec3 maximum = max() ;
         for( index_t c = 0; c < 3; ++c ) {
-            float64 d = p[c] - 0.5 * ( minimum[c] + maximum[c] ) ;
+            double d = p[c] - 0.5 * ( minimum[c] + maximum[c] ) ;
             result += sqr( d ) ;
         }
         return result ;
