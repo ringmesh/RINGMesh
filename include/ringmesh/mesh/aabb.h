@@ -237,25 +237,7 @@ namespace RINGMesh {
             index_t element_id ) const ;
     } ;
 
-    class RINGMESH_API AABBTreeMesh: public AABBTree {
-    protected:
-        AABBTreeMesh( const MeshBase& mesh ) ;
-        virtual ~AABBTreeMesh()
-        {
-        }
-        /*!
-         * @brief Gets an element point from its box
-         * @details In this case, the point is the first vertex of the element
-         */
-        virtual vec3 get_point_hint_from_box(
-            const Box3d& box,
-            index_t element_id ) const ;
-
-    private:
-        const MeshBase& mesh_base_ ;
-    } ;
-
-    class RINGMESH_API AABBTree1D: public AABBTreeMesh {
+    class RINGMESH_API AABBTree1D: public AABBTree {
     public:
         AABBTree1D( const Mesh1D& mesh ) ;
         virtual ~AABBTree1D()
@@ -274,6 +256,13 @@ namespace RINGMesh {
             vec3& nearest_point,
             double& distance ) const ;
     private:
+        /*!
+         * @brief Gets an element point from its box
+         * @details In this case, the point is the first vertex of the element
+         */
+        virtual vec3 get_point_hint_from_box(
+            const Box3d& box,
+            index_t element_id ) const ;
         /*!
          * This class is used as functor in closest_element_box() to compute
          * the distance between a point and an edge
@@ -299,7 +288,7 @@ namespace RINGMesh {
         const Mesh1D& mesh_ ;
     } ;
 
-    class RINGMESH_API AABBTree2D: public AABBTreeMesh {
+    class RINGMESH_API AABBTree2D: public AABBTree {
     public:
         AABBTree2D( const Mesh2D& mesh ) ;
         virtual ~AABBTree2D()
@@ -319,6 +308,13 @@ namespace RINGMesh {
             vec3& nearest_point,
             double& distance ) const ;
     private:
+        /*!
+         * @brief Gets an element point from its box
+         * @details In this case, the point is the first vertex of the element
+         */
+        virtual vec3 get_point_hint_from_box(
+            const Box3d& box,
+            index_t element_id ) const ;
         /*!
          * This class is used as functor in closest_element_box() to compute
          * the distance between a point and a triangle
@@ -344,7 +340,7 @@ namespace RINGMesh {
         const Mesh2D& mesh_ ;
     } ;
 
-    class RINGMESH_API AABBTree3D: public AABBTreeMesh {
+    class RINGMESH_API AABBTree3D: public AABBTree {
     public:
         AABBTree3D( const Mesh3D& mesh ) ;
         virtual ~AABBTree3D()
@@ -360,6 +356,13 @@ namespace RINGMesh {
         index_t containing_cell( const vec3& query ) const ;
 
     private:
+        /*!
+         * @brief Gets an element point from its box
+         * @details In this case, the point is the first vertex of the element
+         */
+        virtual vec3 get_point_hint_from_box(
+            const Box3d& box,
+            index_t element_id ) const ;
         index_t containing_cell_recursive(
             const vec3& query,
             index_t node_index,
@@ -369,6 +372,9 @@ namespace RINGMesh {
     private:
         const Mesh3D& mesh_ ;
     } ;
+
+    vec3 inner_point_box_distance( const vec3& p, const Box3d& B );
+    double point_box_signed_distance( const vec3& p, const Box3d& B );
 
     template< typename ACTION >
     void AABBTree::closest_element_box_recursive(
@@ -402,29 +408,29 @@ namespace RINGMesh {
         get_recursive_iterators( node_index, box_begin, box_end, box_middle,
             child_left, child_right ) ;
 
-        double distance_left = length2( tree_[child_left].center() - query ) ;
-        double distance_right = length2( tree_[child_right].center() - query ) ;
+        double distance_left = point_box_signed_distance( query , tree_[child_left] ) ;
+        double distance_right = point_box_signed_distance( query , tree_[child_right] ) ;
 
         // Traverse the "nearest" child first, so that it has more chances
         // to prune the traversal of the other child.
         if( distance_left < distance_right ) {
-            if( distance_left < distance ) {
+            if( distance_left <= distance ) {
                 closest_element_box_recursive< ACTION >( query, nearest_box,
                     nearest_point, distance, child_left, box_begin, box_middle,
                     action ) ;
             }
-            if( distance_right < distance ) {
+            if( distance_right <= distance ) {
                 closest_element_box_recursive< ACTION >( query, nearest_box,
                     nearest_point, distance, child_right, box_middle, box_end,
                     action ) ;
             }
         } else {
-            if( distance_right < distance ) {
+            if( distance_right <= distance ) {
                 closest_element_box_recursive< ACTION >( query, nearest_box,
                     nearest_point, distance, child_right, box_middle, box_end,
                     action ) ;
             }
-            if( distance_left < distance ) {
+            if( distance_left <= distance ) {
                 closest_element_box_recursive< ACTION >( query, nearest_box,
                     nearest_point, distance, child_left, box_begin, box_middle,
                     action ) ;
@@ -444,7 +450,7 @@ namespace RINGMesh {
         ringmesh_assert( element_begin != element_end ) ;
 
         // Prune sub-tree that does not have intersection
-        if( !bboxes_overlap( box, tree_[node_index] ) ) {
+        if( !box.bboxes_overlap( tree_[node_index] ) ) {
             return ;
         }
 

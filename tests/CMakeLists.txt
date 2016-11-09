@@ -31,7 +31,6 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
-
 # CMakeLists for RINGMesh tests
 # This file is included by the root CMakeList of the RINGMesh project 
 # Author Jeanne Pellerin
