@@ -390,50 +390,6 @@ namespace {
 
     }
 
-    /*!
-     * @brief Save the attribute of all the GeomModelEntity
-     * @param[in] root_name it contains the GeoModelEntity type and its id
-     * @param[in] mesh the mesh on which the attribute are stored
-     * @param[in] zf the zip file
-     */
-    void save_geo_mesh_attributes(
-        const std::string& root_name,
-        const GEO::Mesh& mesh,
-        zipFile& zf )
-    {
-        std::string vertices_attributes_file_name = root_name
-            + "_vertices_attributes.txt" ;
-        std::string edges_attributes_file_name = root_name
-            + "_edges_attributes.txt" ;
-        std::string facets_attributes_file_name = root_name
-            + "_facets_attributes.txt" ;
-        std::string cells_attributes_file_name = root_name
-            + "_cells_attributes.txt" ;
-
-        save_mesh_entity_attributes( vertices_attributes_file_name, mesh.vertices ) ;
-        if( GEO::FileSystem::is_file( vertices_attributes_file_name ) ) {
-            zip_file( zf, vertices_attributes_file_name ) ;
-            GEO::FileSystem::delete_file( vertices_attributes_file_name ) ;
-        }
-
-        save_mesh_entity_attributes( edges_attributes_file_name, mesh.edges ) ;
-        if( GEO::FileSystem::is_file( edges_attributes_file_name ) ) {
-            zip_file( zf, edges_attributes_file_name ) ;
-            GEO::FileSystem::delete_file( edges_attributes_file_name ) ;
-        }
-
-        save_mesh_entity_attributes( facets_attributes_file_name, mesh.facets ) ;
-        if( GEO::FileSystem::is_file( facets_attributes_file_name ) ) {
-            zip_file( zf, facets_attributes_file_name ) ;
-            GEO::FileSystem::delete_file( facets_attributes_file_name ) ;
-        }
-        save_mesh_entity_attributes( cells_attributes_file_name, mesh.cells ) ;
-        if( GEO::FileSystem::is_file( cells_attributes_file_name ) ) {
-            zip_file( zf, cells_attributes_file_name ) ;
-            GEO::FileSystem::delete_file( cells_attributes_file_name ) ;
-        }
-    }
-
     void build_string_for_geo_model_entity_export( gme_t id, std::string& name )
     {
         name += id.type + "_" + GEO::String::to_string( id.index ) ;

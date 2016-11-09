@@ -277,6 +277,11 @@ namespace RINGMesh {
         return valid ;
     }
 
+    bool GeoModelMeshEntity::is_index_valid() const
+    {
+        return index() < model().nb_mesh_entities( type_name() ) ;
+    }
+
     /*!
      * All entities in the boundary must have this in their
      *  in_boundary vector
@@ -498,9 +503,7 @@ namespace RINGMesh {
      * @param[in] id The index of the line in the lines_ vector of the parent model
      */
     Line::Line( const GeoModel& model, index_t id )
-        :
-            GeoModelMeshEntity( model, id ),
-            mesh1d_( new GeogramMesh( 3, false ) )
+        : GeoModelMeshEntity( model, id ), mesh1d_( new GeogramMesh( 3, false ) )
     {
         GeoModelMeshEntity::set_mesh( mesh1d_ ) ;
 
