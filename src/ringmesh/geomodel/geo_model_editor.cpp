@@ -65,6 +65,21 @@ namespace RINGMesh {
         return E ;
     }
 
+    bool GeoModelEditor::create_mesh_entities( const EntityType& type,
+        index_t nb_additional_entities )
+    {
+        if( EntityTypeManager::is_corner( type ) ) {
+            return create_mesh_entities< Corner >( nb_additional_entities ) ;
+        } else if( EntityTypeManager::is_line( type ) ) {
+            return create_mesh_entities< Line >( nb_additional_entities ) ;
+        } else if( EntityTypeManager::is_surface( type) ) {
+            return create_mesh_entities< Surface >( nb_additional_entities ) ;
+        } else {
+            // Must be regions.
+            return create_mesh_entities< Region >( nb_additional_entities ) ;
+        }
+    }
+
     void GeoModelEditor::set_model_name( const std::string& name )
     {
         model_.geomodel_name_ = name ;
@@ -113,27 +128,6 @@ namespace RINGMesh {
             store[i] = create_geological_entity( type, i ) ;
         }
         return true ;
-    }
-
-    bool GeoModelEditor::create_entities( const EntityType& type, 
-        index_t nb_additional_entities )
-    {
-        if( EntityTypeManager::is_mesh_entity_type( type ) ) {
-            if( EntityTypeManager::is_corner( type ) ) {
-                return create_mesh_entities< Corner >( nb_additional_entities ) ;
-            } else if( EntityTypeManager::is_line( type ) ) {
-                return create_mesh_entities< Line >( nb_additional_entities ) ;
-            } else if( EntityTypeManager::is_surface( type) ) {
-                return create_mesh_entities< Surface >( nb_additional_entities ) ;
-            } else {
-                // Must be regions.
-                return create_mesh_entities< Region >( nb_additional_entities ) ;
-            }
-        } else if( entity_type_manager().is_geological_entity_type( type ) ) {
-            return create_geological_entities( type, nb_additional_entities ) ;
-        } else {
-            return false ;
-        }
     }
 
     void GeoModelEditor::complete_entity_connectivity()
