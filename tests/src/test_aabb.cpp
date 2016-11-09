@@ -83,7 +83,7 @@ void check_tree( const AABBTree2D& tree, index_t size )
     index_t id = 0 ;
     for( index_t i = 0; i < size - 1; i++ ) {
         for( index_t j = 0; j < size - 1; j++ ) {
-            vec3 query1( i + offset, j + offset, offset ) ;
+            vec3 query1( i + offset, j + offset, 0 ) ;
             vec3 nearest_point1 ;
             double distance1 ;
             index_t triangle1 = tree.closest_triangle( query1, nearest_point1,
@@ -109,6 +109,16 @@ void check_tree( const AABBTree2D& tree, index_t size )
         }
     }
 
+    vec3 query( 0, 0, 0 ) ;
+    vec3 nearest_point ;
+    double distance ;
+    index_t triangle = tree.closest_triangle( query, nearest_point, distance ) ;
+    if( triangle != 0 ) {
+        throw RINGMeshException( "TEST", "Not the correct triangle found" ) ;
+    }
+    if( nearest_point != vec3( 0, 0, 0 ) ) {
+        throw RINGMeshException( "TEST", "Not the correct nearest point found" ) ;
+    }
 }
 
 int main()
