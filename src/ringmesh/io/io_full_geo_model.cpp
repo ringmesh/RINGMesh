@@ -574,7 +574,7 @@ namespace {
             gm.mesh.facets.test_and_initialize() ;
             gm.mesh.cells.test_and_initialize() ;
 
-            GeogramMesh mesh( gm, 3, false ) ;
+            GeogramMesh mesh( 3, false ) ;
             gm.mesh.copy_mesh( mesh ) ;
 
             Logger::instance()->set_minimal( true ) ;
