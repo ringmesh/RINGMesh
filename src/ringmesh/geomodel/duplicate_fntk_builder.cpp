@@ -165,6 +165,9 @@ namespace {
 
 namespace RINGMesh {
 
+    const std::string DuplicateInterfaceBuilder::translation_attribute_name_ =
+        "translation_attr_x" ;
+
     DuplicateInterfaceBuilder::DuplicateInterfaceBuilder( GeoModel& model )
         :
             GeoModelBuilder( model ),
@@ -188,6 +191,21 @@ namespace RINGMesh {
             ++reg_anns_itr ) {
             delete reg_anns_[reg_anns_itr] ;
         }
+
+        /*for( index_t surface_itr = 0; surface_itr < model().nb_surfaces();
+            ++surface_itr ) {
+            const Surface& surface = model().surface( surface_itr ) ;
+            GEO::AttributesManager& att_mgr = surface.vertex_attribute_manager() ;
+            ringmesh_assert( att_mgr.is_defined("normal_attr_x") ) ; /// TODO assert or if ???
+            ringmesh_assert( att_mgr.is_defined("normal_attr_y") ) ; /// TODO assert or if ???
+            ringmesh_assert( att_mgr.is_defined("normal_attr_z") ) ; /// TODO assert or if ???
+            GEO::Attribute< double > normal_att_x( att_mgr, "normal_attr_x" ) ;
+            normal_att_x.destroy() ;
+            GEO::Attribute< double > normal_att_y( att_mgr, "normal_attr_y" ) ;
+            normal_att_y.destroy() ;
+            GEO::Attribute< double > normal_att_z( att_mgr, "normal_attr_z" ) ;
+            normal_att_z.destroy() ;
+        }*/
     }
 
     void DuplicateInterfaceBuilder::duplicate_fault_network( bool gap )
@@ -209,6 +227,93 @@ namespace RINGMesh {
         build_new_fault_surfaces( to_erase_by_type ) ;
 
         add_hole_between_faults( to_erase_by_type, nb_initial_interfaces ) ;
+
+        //// tmp debug
+        double dist = 5 ;
+        index_t count_surf = 0 ;
+        vec3 studied_point( 28463.5, 16992, -7114.35 ) ;
+        for( index_t i = 0; i < model().nb_surfaces(); ++i ) {
+            if( to_erase_by_type[entity_type_to_index( Surface::type_name_static() )][i]
+                != NO_ID ) {
+                const Surface& cur_surf = model().surface( i ) ;
+                const ColocaterANN& v_ann = cur_surf.vertex_colocater_ann() ;
+                std::vector< index_t > colocated ;
+                bool found = v_ann.get_neighbors( studied_point, colocated, dist ) ;
+                if( !found ) {
+                    continue ;
+                }
+                count_surf++ ;
+                DEBUG( "=========== New surf =============" ) ;
+
+                GEO::mesh_save( cur_surf.gfx_mesh(),
+                    "surface_" + GEO::String::to_string( i ) + ".meshb" ) ;
+
+                for( index_t k = 0; k < colocated.size(); ++k ) {
+                    DEBUG("----------new colocated vertex----------") ;
+
+                    GEO::AttributesManager& att_mgr =
+                        cur_surf.vertex_attribute_manager() ;
+                    GEO::Attribute< double > translation_att_x( att_mgr,
+                        "translation_attr_x" ) ;
+                    GEO::Attribute< double > translation_att_y( att_mgr,
+                        "translation_attr_y" ) ;
+                    GEO::Attribute< double > translation_att_z( att_mgr,
+                        "translation_attr_z" ) ;
+                    DEBUG(translation_att_x[colocated[k]]) ;
+                    DEBUG(translation_att_y[colocated[k]]) ;
+                    DEBUG(translation_att_z[colocated[k]]) ;
+                    vec3 difff = cur_surf.vertex( colocated[k] )
+                        - vec3( translation_att_x[colocated[k]],
+                            translation_att_y[colocated[k]],
+                            translation_att_z[colocated[k]] ) ;
+                    DEBUG( difff ) ;
+                }
+            }
+        }
+        DEBUG( count_surf ) ;
+
+        index_t count_reg = 0 ;
+        for( index_t i = 0; i < model().nb_regions(); ++i ) {
+            if( to_erase_by_type[entity_type_to_index( Region::type_name_static() )][i]
+                != NO_ID ) {
+                const Region& cur_reg = model().region( i ) ;
+                const ColocaterANN& v_ann = cur_reg.vertex_colocater_ann() ;
+                std::vector< index_t > colocated ;
+                bool found = v_ann.get_neighbors( studied_point, colocated, dist ) ;
+                if( !found ) {
+                    continue ;
+                }
+                count_reg++ ;
+                DEBUG( "=========== New reg =============" ) ;
+
+                GEO::mesh_save( cur_reg.gfx_mesh(),
+                    "region_" + GEO::String::to_string( i ) + ".meshb" ) ;
+
+                for( index_t k = 0; k < colocated.size(); ++k ) {
+                    DEBUG("----------new colocated vertex----------") ;
+
+                    GEO::AttributesManager& att_mgr =
+                        cur_reg.vertex_attribute_manager() ;
+                    GEO::Attribute< double > translation_att_x( att_mgr,
+                        "translation_attr_x" ) ;
+                    GEO::Attribute< double > translation_att_y( att_mgr,
+                        "translation_attr_y" ) ;
+                    GEO::Attribute< double > translation_att_z( att_mgr,
+                        "translation_attr_z" ) ;
+                    DEBUG(translation_att_x[colocated[k]]) ;
+                    DEBUG(translation_att_y[colocated[k]]) ;
+                    DEBUG(translation_att_z[colocated[k]]) ;
+                    vec3 difff = cur_reg.vertex( colocated[k] )
+                        - vec3( translation_att_x[colocated[k]],
+                            translation_att_y[colocated[k]],
+                            translation_att_z[colocated[k]] ) ;
+                    DEBUG( difff ) ;
+                }
+            }
+        }
+        DEBUG( count_reg ) ;
+        //// tmp debug
+
         // Put here for new.
         /// @todo if all the lines are removed, is it still necessary to fill the new
         /// interface children with them? They should be recomputed with
@@ -387,7 +492,7 @@ namespace RINGMesh {
                 ringmesh_assert( std::abs( first_normal.length() - 1 ) < global_epsilon ) ;
                 ringmesh_assert( std::abs( second_normal.length() - 1 ) < global_epsilon ) ;
                 double dot_product = GEO::dot( first_normal, second_normal ) ;
-//                ringmesh_assert( std::abs( std::abs( dot_product ) -1 ) < 3e-1 ) ; TODO to reput
+                ringmesh_assert( std::abs( std::abs( dot_product ) -1 ) < 3e-1 ) ; //TODO to reput
                 if( dot_product < 0 ) {
                     surfaces_to_inverse_normals.push_back(
                         cur_surf_in_boun.index() ) ;
@@ -793,7 +898,7 @@ namespace RINGMesh {
                 ringmesh_assert( GME::is_fault(
                         cur_surface.parent(Interface::type_name_static()).geological_feature()) ) ;
 
-                // Try to find which region facet is realy on the surface.
+                // Try to find which region facet is really on the surface.
                 v_id_in_reg1 =
                     find_reg_vertex_id_in_facet_reg_matching_surf_vertex_id_in_gmm(
                         reg1, colocated_facets_reg1[0], surf_v_id_in_gmm ) ;

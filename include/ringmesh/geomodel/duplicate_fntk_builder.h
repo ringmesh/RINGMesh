@@ -247,6 +247,8 @@ namespace RINGMesh {
             const GMEVertex gme_vertex_ ;
             std::vector< index_t > linked_gme_vertices_ ;
             const std::vector< GMEVertexLink* >& gme_vertices_links_ ;
+        private:
+            static const std::string id_in_link_vector_attribute_name_ ;
         } ;
     private:
         bool all_meshed_ ;
@@ -255,6 +257,9 @@ namespace RINGMesh {
 
         /// TODO copy paste from removal of remove entity
         std::vector< EntityType > all_entity_types_ ;
+    private:
+        static const std::string translation_attribute_name_ ;
+        static const std::string normal_attribute_name_ ;
     } ;
 }
 
