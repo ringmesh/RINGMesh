@@ -287,7 +287,7 @@ namespace RINGMesh {
     void AABBTree::save_tree( const std::string& name ) const
     {
         index_t nb_nodes = 0 ;
-        for( index_t level = 1; nb_nodes < tree_.size(); level++ ) {
+        for( double level = 1.; nb_nodes < tree_.size(); level++ ) {
             index_t start_node = static_cast< index_t >( std::pow( 2., level ) ) ;
             nb_nodes = 2 * start_node ;
             GEO::Mesh M ;
