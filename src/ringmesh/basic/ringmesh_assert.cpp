@@ -33,10 +33,11 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_ASSERT__
-#define __RINGMESH_ASSERT__
+#include <ringmesh/basic/ringmesh_assert.h>
 
-#include <ringmesh/basic/common.h>
+#include <string>
+
+#include <geogram/basic/assert.h>
 
 /*!
  * @file Custom assertions
@@ -46,21 +47,21 @@ namespace RINGMesh {
     void ringmesh_assertion_failed(
         const std::string& condition_string,
         const std::string& file,
-        int line ) ;
+        int line )
+    {
+#ifdef WIN32
+        DebugBreak() ;
+#endif
+        GEO::geo_assertion_failed( condition_string, file, line ) ;
+    }
 
     void ringmesh_should_not_have_reached(
         const std::string& file,
-        int line ) ;
+        int line )
+    {
+#ifdef WIN32
+        DebugBreak() ;
+#endif
+        GEO::geo_should_not_have_reached( file, line ) ;
+    }
 }
-
-#ifdef RINGMESH_DEBUG
-  #define ringmesh_assert( x )  \
-        if( !( x ) )  ::ringmesh_assertion_failed( # x, __FILE__, __LINE__ )
-  #define ringmesh_assert_not_reached \
-        ::ringmesh_should_not_have_reached( __FILE__, __LINE__ )
-#else
-  #define ringmesh_assert( x )
-  #define ringmesh_assert_not_reached
-#endif
-
-#endif
