@@ -43,7 +43,6 @@
 #include <geogram/mesh/mesh_io.h>
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/mesh/mesh_preprocessing.h>
-#include <geogram/mesh/mesh_AABB.h>
 #include <geogram/voronoi/CVT.h>
 
 #include <ringmesh/basic/geometry.h>
@@ -1071,9 +1070,9 @@ namespace RINGMesh {
          */
         void delete_cell_aabb()
         {
-            if( mesh_.cells_aabb_ != nil ) {
-                delete mesh_.cells_aabb_ ;
-                mesh_.cells_aabb_ = nil ;
+            if( mesh_.cell_aabb_ != nil ) {
+                delete mesh_.cell_aabb_ ;
+                mesh_.cell_aabb_ = nil ;
             }
         }
 

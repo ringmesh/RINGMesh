@@ -258,7 +258,7 @@ namespace RINGMesh {
                 return ; // a region is not necessary meshed.
             }
             unzip_one_file( uz, filename.c_str() ) ;
-            GeogramMesh cur_mesh( model(), 3, false ) ;
+            GeogramMesh cur_mesh( 3, false ) ;
             GEO::MeshIOFlags flags ;
             flags.set_attribute( GEO::MESH_ALL_ATTRIBUTES ) ;
             Logger::instance()->set_minimal( true ) ;
@@ -461,7 +461,7 @@ namespace RINGMesh {
                 }
             }
             unzip_one_file( uz, str_try.c_str() ) ;
-            GeogramMesh cur_mesh( model(), 3, false ) ;
+            GeogramMesh cur_mesh( 3, false ) ;
             GEO::MeshIOFlags flags ;
             flags.set_attribute( GEO::MESH_ALL_ATTRIBUTES ) ;
             GEO::Logger::instance()->set_minimal( true ) ;
