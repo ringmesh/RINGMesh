@@ -77,12 +77,12 @@ namespace RINGMesh {
             return max_[2] - min_[2] ;
         }
 
-        vec3 min() const
+        const vec3& min() const
         {
             return min_ ;
         }
 
-        vec3 max() const
+        const vec3& max() const
         {
             return max_ ;
         }
@@ -109,15 +109,11 @@ namespace RINGMesh {
 
         inline bool bboxes_overlap( const Box3d& B ) const
         {
-            vec3 minimum = min() ;
-            vec3 b_minimum = B.min() ;
-            vec3 maximum = max() ;
-            vec3 b_maximum = B.max() ;
             for( index_t c = 0; c < 3; ++c ) {
-                if( maximum[c] < b_minimum[c] ) {
+                if( max()[c] < B.min()[c] ) {
                     return false ;
                 }
-                if( minimum[c] > b_maximum[c] ) {
+                if( min()[c] > B.max()[c] ) {
                     return false ;
                 }
             }
@@ -133,13 +129,11 @@ namespace RINGMesh {
 
         bool contains( const vec3& b ) const
         {
-            vec3 minimum = min() ;
-            vec3 maximum = max() ;
             for( index_t c = 0; c < 3; ++c ) {
-                if( b[c] < minimum[c] ) {
+                if( b[c] < min()[c] ) {
                     return false ;
                 }
-                if( b[c] > maximum[c] ) {
+                if( b[c] > max()[c] ) {
                     return false ;
                 }
             }
