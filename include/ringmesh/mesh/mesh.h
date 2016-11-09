@@ -113,7 +113,7 @@ namespace RINGMesh {
          */
         const ColocaterANN& vertices_colocater_ann() const
         {
-            if( vertices_ann_ == NULL ) {
+            if( vertices_ann_ == nil ) {
                 std::vector< vec3 > vec_vertices( nb_vertices() ) ;
                 for( index_t v = 0; v < nb_vertices(); ++v ) {
                     vec_vertices[v] = vertex( v ) ;
@@ -138,7 +138,7 @@ namespace RINGMesh {
          * else they are stored as double precision (double)..
          */
         MeshBase()
-            : mesh_builder_( NULL ), vertices_ann_( NULL )
+            : mesh_builder_( nil ), vertices_ann_( nil )
         {
         }
         virtual MeshBaseBuilder* get_mesh_builder_base() = 0 ;
@@ -184,8 +184,8 @@ namespace RINGMesh {
     public:
         virtual ~Mesh1D()
         {
-            if( edges_ann_ != NULL ) delete edges_ann_ ;
-            if( edges_aabb_ != NULL ) delete edges_aabb_ ;
+            if( edges_ann_ != nil ) delete edges_ann_ ;
+            if( edges_aabb_ != nil ) delete edges_aabb_ ;
         }
         /*
          * @brief Gets the index of an edge vertex.
