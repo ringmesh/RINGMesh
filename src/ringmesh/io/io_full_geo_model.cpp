@@ -342,53 +342,8 @@ namespace {
         }
     } ;
 
-    /// @todo Temporary fix! Waiting for clean attribute type manager
-    /// by Bruno, for the moment we only deal with double
-    bool is_attribute_a_double(
-        GEO::AttributesManager& att_manager,
-        const std::string& att_name )
-    {
-        return GEO::Attribute< double >::is_defined( att_manager, att_name ) ;
-    }
 
     /************************************************************************/
-
-    /*!
-     * @brief Save the attribute of one GeomModelEntity
-     * @param[in] filename path to the text file
-     * @param[in] mesh_entity the MeshEntity of the original GEO::Mesh
-     */
-    void save_mesh_entity_attributes(
-        const std::string& filename,
-        const GEO::MeshSubElementsStore& mesh_entity )
-    {
-
-        GEO::vector< std::string > attribute_names ;
-        mesh_entity.attributes().list_attribute_names( attribute_names ) ;
-        for( index_t att = 0; att < mesh_entity.attributes().nb(); att++ ) {
-
-            if( !is_attribute_a_double( mesh_entity.attributes(),
-                attribute_names[att] ) || attribute_names[att] == "point" ) {
-                continue ;
-            }
-            std::ofstream out( filename.c_str(), std::ios::out | std::ios::app ) ;
-            out.precision( 16 ) ;
-            GEO::Attribute< double > cur_att( mesh_entity.attributes(),
-                attribute_names[att] ) ;
-            index_t attribute_dim = cur_att.dimension() ;
-            out << "# " << attribute_names[att] << " double " << attribute_dim
-                << std::endl ;
-
-            for( index_t el = 0; el < mesh_entity.nb(); el++ ) {
-                for( index_t dim = 0; dim < attribute_dim; dim++ ) {
-                    out << cur_att[el * attribute_dim + dim] << " " ;
-                }
-                out << std::endl ;
-            }
-
-        }
-
-    }
 
     void build_string_for_geo_model_entity_export( gme_t id, std::string& name )
     {
