@@ -104,7 +104,8 @@ namespace RINGMesh {
             const EvalDistance& action ) const
         {
             index_t nearest_box = NO_ID ;
-            get_nearest_element_box_hint( query, nearest_box, nearest_point, distance ) ;
+            get_nearest_element_box_hint( query, nearest_box, nearest_point,
+                distance ) ;
             closest_element_box_recursive< EvalDistance >( query, nearest_box,
                 nearest_point, distance, ROOT_INDEX, 0, nb_bboxes(), action ) ;
             ringmesh_assert( nearest_box != NO_ID ) ;
@@ -375,9 +376,9 @@ namespace RINGMesh {
         const Mesh3D& mesh_ ;
     } ;
 
-    double inner_point_box_distance( const vec3& p, const Box3d& B );
+    double inner_point_box_distance( const vec3& p, const Box3d& B ) ;
 
-    double point_box_signed_distance( const vec3& p, const Box3d& B );
+    double point_box_signed_distance( const vec3& p, const Box3d& B ) ;
 
     template< typename ACTION >
     void AABBTree::closest_element_box_recursive(
@@ -411,8 +412,10 @@ namespace RINGMesh {
         get_recursive_iterators( node_index, box_begin, box_end, box_middle,
             child_left, child_right ) ;
 
-        double distance_left = point_box_signed_distance( query , tree_[child_left] ) ;
-        double distance_right = point_box_signed_distance( query , tree_[child_right] ) ;
+        double distance_left = point_box_signed_distance( query,
+            tree_[child_left] ) ;
+        double distance_right = point_box_signed_distance( query,
+            tree_[child_right] ) ;
 
         // Traverse the "nearest" child first, so that it has more chances
         // to prune the traversal of the other child.
