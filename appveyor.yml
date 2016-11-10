@@ -5,6 +5,7 @@ environment:
     secure: h3STBSYmb0eJYYQmEuI2XBWo5VkvRBGv8u6POp/fIN7ROz5R0762/kj/eXz6mM8k
 
 build_script:
+- nuget restore
 - cmd: >-
     mkdir build
 
@@ -21,3 +22,6 @@ build_script:
     
 test_script:
 - cmd: cmake --build . --target RUN_TESTS --config Debug
+
+after_test:
+  - cmd: .\appveyor_code_coverage.cmd
