@@ -1,0 +1,20 @@
+version: 1.0.{build}
+environment:
+  COVERALLS_REPO_TOKEN:
+    secure: h3STBSYmb0eJYYQmEuI2XBWo5VkvRBGv8u6POp/fIN7ROz5R0762/kj/eXz6mM8k
+build_script:
+- cmd: >-
+    mkdir build
+
+    cd build
+
+    mkdir ringmesh
+
+    cd ringmesh
+
+    cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON ../..
+
+
+    cmake --build . --config Debug
+test_script:
+- cmd: cmake --build . --target RUN_TESTS --config Debug
