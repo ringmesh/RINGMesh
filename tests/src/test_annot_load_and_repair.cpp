@@ -43,7 +43,7 @@
  * Load and fix a given structural model file.
  * @author Jeanne Pellerin
  */
-int main( int argc, char** argv )
+int main()
 {
     using namespace RINGMesh ;
 

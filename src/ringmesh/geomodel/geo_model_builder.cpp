@@ -498,8 +498,9 @@ namespace RINGMesh {
             const vec3& p1,
             const vec3& p2 )
         {
+            index_t triangle_id = static_cast< index_t >( triangles_.size() ) ;
             triangles_.push_back(
-                TriangleToSort( triangles_.size(), surface_index, p0, p1, p2 ) ) ;
+                TriangleToSort( triangle_id, surface_index, p0, p1, p2 ) ) ;
         }
 
         /*!
@@ -1019,10 +1020,11 @@ namespace RINGMesh {
             // It must exist and there is only one
             BorderTriangle bait( border_triangle.surface_, next_f,
                 model_vertices.model_vertex_id( S.gme_id(), next_f, next_f_v0 ),
-                model_vertices.model_vertex_id( S.gme_id(), next_f, next_f_v1 ), NO_ID ) ;
-            index_t result(
-                std::lower_bound( border_triangles_.begin(), border_triangles_.end(),
-                    bait ) - border_triangles_.begin() ) ;
+                model_vertices.model_vertex_id( S.gme_id(), next_f, next_f_v1 ),
+                NO_ID ) ;
+            index_t result = static_cast< index_t >( std::lower_bound(
+                border_triangles_.begin(), border_triangles_.end(), bait )
+                - border_triangles_.begin() ) ;
 
             ringmesh_assert( border_triangles_[result].same_edge( bait ) ) ;
             ringmesh_assert( result < border_triangles_.size() ) ;
@@ -1102,8 +1104,8 @@ namespace RINGMesh {
                 std::vector< index_t > shuffled_vertices( line_vertices.size() ) ;
                 std::copy( line_vertices.begin() + i, line_vertices.end(),
                     shuffled_vertices.begin() ) ;
-                index_t nb_copied(
-                    line_vertices.end() - line_vertices.begin() - i ) ;
+                index_t nb_copied = static_cast< index_t >( line_vertices.end()
+                    - line_vertices.begin() - i ) ;
                 std::copy( line_vertices.begin() + 1, line_vertices.begin() + i + 1,
                     shuffled_vertices.begin() + nb_copied ) ;
                 line_vertices = shuffled_vertices ;
@@ -1301,8 +1303,9 @@ namespace RINGMesh {
             builder->clear( true, true ) ;
         }
         if( !points.empty() ) {
-            index_t start = builder->create_vertices( points.size() ) ;
-            for( index_t v = 0; v < points.size(); v++ ) {
+            index_t nb_points = static_cast< index_t >( points.size() ) ;
+            index_t start = builder->create_vertices( nb_points ) ;
+            for( index_t v = 0; v < nb_points; v++ ) {
                 builder->set_vertex( start + v, points[v] ) ;
             }
         }
@@ -1342,8 +1345,9 @@ namespace RINGMesh {
         if( clear ) {
             builder->clear( true, true ) ;
         }
-        index_t start = builder->create_vertices( model_vertices.size() ) ;
-        for( index_t v = 0; v < model_vertices.size(); v++ ) {
+        index_t nb_model_vertices = static_cast< index_t >( model_vertices.size() ) ;
+        index_t start = builder->create_vertices( nb_model_vertices ) ;
+        for( index_t v = 0; v < nb_model_vertices; v++ ) {
             set_mesh_entity_vertex( entity_id, start + v, model_vertices[v] ) ;
         }
     }
