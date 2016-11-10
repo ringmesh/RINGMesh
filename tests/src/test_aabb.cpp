@@ -58,19 +58,18 @@ void add_vertices( Mesh2DBuilder* builder, index_t size )
     }
 }
 
-
 void add_triangles( Mesh2DBuilder* builder, index_t size )
 {
-    builder->create_facet_triangles( (size-1) * (size-1) * 2 ) ;
+    builder->create_facet_triangles( ( size - 1 ) * ( size - 1 ) * 2 ) ;
     index_t id = 0 ;
     for( index_t i = 0; i < size - 1; i++ ) {
         for( index_t j = 0; j < size - 1; j++ ) {
             builder->set_facet_vertex( id, 0, i * size + j ) ;
-            builder->set_facet_vertex( id, 1, i * size + j+ 1 ) ;
+            builder->set_facet_vertex( id, 1, i * size + j + 1 ) ;
             builder->set_facet_vertex( id, 2, ( i + 1 ) * size + j ) ;
             id++ ;
-            builder->set_facet_vertex( id, 0, i * size + j+ 1 ) ;
-            builder->set_facet_vertex( id, 1, ( i + 1 ) * size + j+ 1 ) ;
+            builder->set_facet_vertex( id, 0, i * size + j + 1 ) ;
+            builder->set_facet_vertex( id, 1, ( i + 1 ) * size + j + 1 ) ;
             builder->set_facet_vertex( id, 2, ( i + 1 ) * size + j ) ;
             id++ ;
         }
@@ -92,7 +91,8 @@ void check_tree( const AABBTree2D& tree, index_t size )
                 throw RINGMeshException( "TEST", "Not the correct triangle found" ) ;
             }
             if( nearest_point1 != vec3( i + offset, j + offset, 0 ) ) {
-                throw RINGMeshException( "TEST", "Not the correct nearest point found" ) ;
+                throw RINGMeshException( "TEST",
+                    "Not the correct nearest point found" ) ;
             }
 
             vec3 query2( i + 1 - offset, j + 1 - offset, offset ) ;
@@ -104,7 +104,8 @@ void check_tree( const AABBTree2D& tree, index_t size )
                 throw RINGMeshException( "TEST", "Not the correct triangle found" ) ;
             }
             if( nearest_point2 != vec3( i + 1 - offset, j + 1 - offset, 0 ) ) {
-                throw RINGMeshException( "TEST", "Not the correct nearest point found" ) ;
+                throw RINGMeshException( "TEST",
+                    "Not the correct nearest point found" ) ;
             }
         }
     }

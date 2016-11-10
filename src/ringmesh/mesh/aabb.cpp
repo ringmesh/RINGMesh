@@ -497,27 +497,16 @@ namespace RINGMesh {
         }
         return result ;
     }
-//    double inner_point_box_distance( const vec3& p, const Box3d& B )
-//    {
-//        ringmesh_assert( B.contains( p ) ) ;
-//        double result = std::abs( p[0] - B.min()[0] ) ;
-//        result = std::min( result, std::abs( p[0] - B.max()[0] ) ) ;
-//        for( index_t c = 1; c < 3; ++c ) {
-//            result = std::min( result, std::abs( p[c] - B.min()[c] ) ) ;
-//            result = std::min( result, std::abs( p[c] - B.max()[c] ) ) ;
-//        }
-//        return result ;
-//    }
     double inner_point_box_distance( const vec3& p, const Box3d& B )
     {
-        geo_debug_assert( B.contains( p ) ) ;
-        double result = ( p[0] - B.min()[0] ) * ( p[0] - B.min()[0] ) ;
-        result = std::min( result, ( p[0] - B.max()[0] ) *( p[0] - B.max()[0] ) ) ;
+        ringmesh_assert( B.contains( p ) ) ;
+        double result = std::abs( p[0] - B.min()[0] ) ;
+        result = std::min( result, std::abs( p[0] - B.max()[0] ) ) ;
         for( index_t c = 1; c < 3; ++c ) {
-            result = std::min( result, ( p[c] - B.min()[c] ) *( p[c] - B.min()[c] ) ) ;
-            result = std::min( result, ( p[c] - B.max()[c] )*( p[c] - B.max()[c] ) ) ;
+            result = std::min( result, std::abs( p[c] - B.min()[c] ) ) ;
+            result = std::min( result, std::abs( p[c] - B.max()[c] ) ) ;
         }
-        return std::sqrt(result );
+        return result ;
     }
     double point_box_signed_distance( const vec3& p, const Box3d& B )
     {
