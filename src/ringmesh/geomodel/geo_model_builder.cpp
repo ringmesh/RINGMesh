@@ -1871,7 +1871,8 @@ namespace RINGMesh {
             index_t& facet_vertex_0 = facet_vertices[v0_id].vertex_ ;
             index_t& facet_vertex_1 = facet_vertices[v1_id].vertex_ ;
             index_t& facet = facet_vertices[v0_id].element_ ;
-            bool found = find_facet_from_vertex( surface, v0, v1, facet, facet_vertex_0, facet_vertex_1 ) ;
+            bool found = find_facet_from_vertex( surface, v0, v1, facet,
+                facet_vertex_0, facet_vertex_1 ) ;
             ringmesh_unused( found ) ;
             ringmesh_assert( found && facet != NO_ID && facet_vertex_0 != NO_ID ) ;
             facet_vertices[v1_id].element_ = facet ;
