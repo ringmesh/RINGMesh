@@ -8,22 +8,19 @@ build:
   parallel: true
 
 build_script:
-- cmd: >-
+ - cmd: >-
     mkdir build
-
     cd build
-
     mkdir ringmesh
-
     cd ringmesh
-
     cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON ../..
-
-
     cmake --build . --config Debug
     
 test_script:
-- cmd: cmake --build . --target RUN_TESTS --config Debug
+ - cmd: cmake --build . --target RUN_TESTS --config Debug
 
 after_test:
-  - cmd: .\appveyor_code_coverage.cmd
+ - cmd: >-
+    nuget install OpenCover -Version 4.6.519 -OutputDirectory tools
+    nuget install coveralls.net -Version 0.412.0 -OutputDirectory tools
+    
