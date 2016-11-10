@@ -340,7 +340,7 @@ namespace RINGMesh {
      */
     void GeoModelGfxManager::set_vertex_size( index_t e, index_t s )
     {
-        entities_[e]->set_points_size( s ) ;
+        entities_[e]->set_points_size( static_cast< float >( s ) ) ;
     }
 
     /*!
@@ -1147,6 +1147,7 @@ namespace RINGMesh {
             gfx_( gfx ),
             location_( nb_locations ),
             coordinate_( 0 ),
+            colormap_texture_( 0 ),
             minimum_( 0.0 ),
             maximum_( 0.0 )
     {
