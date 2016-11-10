@@ -475,7 +475,7 @@ namespace {
         /*! Load a .ml (Gocad file)
          * @pre Filename is valid
          */
-        virtual void load( const std::string& filename, GeoModel& model )
+        virtual bool load( const std::string& filename, GeoModel& model )
         {
             std::ifstream input( filename.c_str() ) ;
             if( !input ) {
@@ -489,12 +489,13 @@ namespace {
             builder.build_model() ;
             print_geomodel( model ) ;
             // Check validity
-            is_geomodel_valid( model ) ;
+            bool is_valid = is_geomodel_valid( model ) ;
 
             time( &end_load ) ;
             Logger::out( "I/O" ) << " Loaded model " << model.name() << " from "
                 << std::endl << filename << " timing: "
                 << difftime( end_load, start_load ) << "sec" << std::endl ;
+            return is_valid ;
         }
 
         virtual void save( const GeoModel& model, const std::string& filename )
@@ -509,10 +510,11 @@ namespace {
 
     class HTMLIOHandler: public GeoModelIOHandler {
     public:
-        virtual void load( const std::string& filename, GeoModel& model )
+        virtual bool load( const std::string& filename, GeoModel& model )
         {
             throw RINGMeshException( "I/O",
                 "Geological model loading of a from HTML mesh not yet implemented" ) ;
+            return false ;
         }
 
         virtual void save( const GeoModel& model, const std::string& filename )
