@@ -277,9 +277,11 @@ namespace {
 
     bool find_facet_from_vertex(
         const Surface& surface,
-        const vec3& v,
+        const vec3& v0,
+        const vec3& v1,
         index_t& element_id,
-        index_t& vertex_id )
+        index_t& vertex_0_id,
+        index_t& vertex_1_id )
     {
         index_t nb_neighbors = std::min( index_t( 5 ), surface.nb_mesh_elements() ) ;
         std::vector< index_t > neighbors ;
@@ -291,16 +293,27 @@ namespace {
             cur_neighbor = std::min( cur_neighbor, surface.nb_mesh_elements() ) ;
             neighbors.resize( cur_neighbor ) ;
             double* dist = (double*) alloca( sizeof(double) * cur_neighbor ) ;
-            nb_neighbors = surface.facet_colocater_ann().get_neighbors( v,
+            nb_neighbors = surface.facet_colocater_ann().get_neighbors( v0,
                 cur_neighbor, neighbors, dist ) ;
             for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
                 element_id = neighbors[i] ;
+                vertex_0_id = NO_ID ;
+                vertex_1_id = NO_ID ;
                 for( index_t j = 0;
                     j < surface.nb_mesh_element_vertices( element_id ); j++ ) {
                     if( inexact_equal( surface.mesh_element_vertex( element_id, j ),
-                        v, surface.model().epsilon() ) ) {
-                        vertex_id = surface.mesh_element_vertex_index( element_id,
+                        v0, surface.model().epsilon() ) ) {
+
+                        vertex_0_id = surface.mesh_element_vertex_index( element_id,
                             j ) ;
+                    } else if( inexact_equal(
+                        surface.mesh_element_vertex( element_id, j ), v1,
+                        surface.model().epsilon() ) ) {
+
+                        vertex_1_id = surface.mesh_element_vertex_index( element_id,
+                            j ) ;
+                    }
+                    if( vertex_0_id != NO_ID && vertex_1_id != NO_ID ) {
                         return true ;
                     }
                 }
@@ -308,7 +321,8 @@ namespace {
         } while( surface.nb_mesh_elements() != cur_neighbor ) ;
 
         element_id = NO_ID ;
-        vertex_id = NO_ID ;
+        vertex_0_id = NO_ID ;
+        vertex_1_id = NO_ID ;
         return false ;
     }
 
@@ -1848,14 +1862,19 @@ namespace RINGMesh {
         const Line& line = model().line( line_id ) ;
 
         std::vector< ElementVertex > facet_vertices( line.nb_vertices() ) ;
-        for( index_t v = 0; v < line.nb_vertices(); v++ ) {
-            const vec3& p = line.vertex( v ) ;
+        for( index_t e = 0; e < line.nb_mesh_elements(); e++ ) {
+            const index_t v0_id = line.mesh_element_vertex_index( e, 0 ) ;
+            const vec3& v0 = line.vertex( v0_id ) ;
+            const index_t v1_id = line.mesh_element_vertex_index( e, 1 ) ;
+            const vec3& v1 = line.vertex( v1_id ) ;
 
-            index_t& facet_vertex = facet_vertices[v].vertex_ ;
-            index_t& facet = facet_vertices[v].element_ ;
-            bool found = find_facet_from_vertex( surface, p, facet, facet_vertex ) ;
+            index_t& facet_vertex_0 = facet_vertices[v0_id].vertex_ ;
+            index_t& facet_vertex_1 = facet_vertices[v1_id].vertex_ ;
+            index_t& facet = facet_vertices[v0_id].element_ ;
+            bool found = find_facet_from_vertex( surface, v0, v1, facet, facet_vertex_0, facet_vertex_1 ) ;
             ringmesh_unused( found ) ;
-            ringmesh_assert( found && facet != NO_ID && facet_vertex != NO_ID ) ;
+            ringmesh_assert( found && facet != NO_ID && facet_vertex_0 != NO_ID ) ;
+            facet_vertices[v1_id].element_ = facet ;
         }
 
         index_t vertex_id = create_mesh_entity_vertices( surface_gme,
