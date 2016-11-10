@@ -67,8 +67,8 @@ int main()
         set_validity_errors_directory( ringmesh_test_output_path ) ;
 
         // Load the model
-        geomodel_load( M, file_name ) ;
-        if( is_geomodel_valid( M ) ) {
+        bool init_model_is_valid = geomodel_load( M, file_name ) ;
+        if( init_model_is_valid ) {
             throw RINGMeshException( "RINGMesh Test",
                 "Input test model " + M.name()
                     + " must be invalid to check the repair functionalities." ) ;

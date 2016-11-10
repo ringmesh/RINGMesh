@@ -63,9 +63,9 @@ int main() {
         file_name += "modelA4.so" ;
 
         GeoModel model ;
-        geomodel_load( model, file_name ) ;
+        bool loaded_model_is_valid = geomodel_load( model, file_name ) ;
 
-        if( !is_geomodel_valid( model ) ) {
+        if( !loaded_model_is_valid ) {
             throw RINGMeshException( "RINGMesh Test",
                 "Failed when loading model " + model.name()
                     + ": the loaded model is not valid." ) ;
@@ -82,10 +82,6 @@ int main() {
                 "Failed when loading model " + model.name()
                     + ": wrong number of entities." ) ;
         }
-
-        std::string output_file_name( ringmesh_test_output_path ) ;
-        output_file_name += "modelA4.gm" ;
-        geomodel_save( model, output_file_name ) ;
 
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category() ) << e.what() << std::endl ;

@@ -67,9 +67,9 @@ int main()
         set_validity_errors_directory( ringmesh_test_output_path ) ;
 
         /// Load and check the validity of the model
-        geomodel_load( M, file_name ) ;
+        bool surf_model_is_valid = geomodel_load( M, file_name ) ;
 
-        if( is_geomodel_valid( M ) ) {
+        if( surf_model_is_valid ) {
 #ifdef RINGMESH_WITH_TETGEN
             // Mesh the model with TetGen
             tetrahedralize( M, "TetGen" ) ;
@@ -82,9 +82,10 @@ int main()
 
             // Reload it and test its validity
             GeoModel reloaded_model ;
-            geomodel_load( reloaded_model, output_file_name ) ;
+            bool reloaded_model_is_valid = geomodel_load( reloaded_model,
+                output_file_name ) ;
 
-            if( !is_geomodel_valid( reloaded_model ) ) {
+            if( !reloaded_model_is_valid ) {
                 throw RINGMeshException( "RINGMesh Test",
                     "Failed when loading the volumetric model "
                         + reloaded_model.name()
