@@ -30,3 +30,9 @@ after_test:
     
     nuget install coveralls.net -Version 0.412.0 -OutputDirectory tools
     
+    .\tools\OpenCover.4.6.519\tools\OpenCover.Console.exe -target:.\build\ringmesh\Release\bin\test_aabb -mergeoutput
+    
+    .\tools\OpenCover.4.6.519\tools\OpenCover.Console.exe -target:.\build\ringmesh\Release\bin\test_make_unique -mergeoutput
+    
+    .\tools\coveralls.net.0.412\tools\csmacnz.Coveralls.exe --opencover -i .\results.xml 
+    
