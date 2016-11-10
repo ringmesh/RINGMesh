@@ -45,12 +45,12 @@
  * @author Jeanne Pellerin
  */
 
-int main()
+int main( int argc, char** argv )
 {
     using namespace RINGMesh ;
 
     try {
-        default_configure() ;
+        default_configure();
 
         // Set an output log file
         std::string log_file( ringmesh_test_output_path ) ;
@@ -71,16 +71,17 @@ int main()
                     + ": the model is not valid." ) ;
         }
 
-#ifdef RINGMESH_WITH_TETGEN
+#ifdef USE_MG_TETRA
 
         // Tetrahedralize the GeoModel
-        tetrahedralize( geomodel, "TetGen", NO_ID, false ) ;
+        tetrahedralize( geomodel, "MG_Tetra", NO_ID, false ) ;
+
         for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
             if( !geomodel.region( r ).is_meshed() ) {
                 throw RINGMeshException( "RINGMesh Test",
-                    "Failed when tetrahedralize model " + geomodel.name()
-                        + " Region " + GEO::String::to_string( r )
-                        + " is not meshed " + "maybe the Tetgen call have failed" ) ;
+                    "Failed when tetrahedralize model " + geomodel.name() + " Region "
+                        +  GEO::String::to_string(r) + " is not meshed "
+                        + "maybe the MG Tetra Licence can not be reached" ) ;
             }
         }
         if( !is_geomodel_valid( geomodel ) ) {
