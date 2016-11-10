@@ -10,17 +10,23 @@ build:
 build_script:
  - cmd: >-
     mkdir build
+    
     cd build
+    
     mkdir ringmesh
+    
     cd ringmesh
+    
     cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON ../..
-    cmake --build . --config Debug
+    
+    cmake --build . --config Release
     
 test_script:
- - cmd: cmake --build . --target RUN_TESTS --config Debug
+ - cmd: cmake --build . --target RUN_TESTS --config Release
 
 after_test:
  - cmd: >-
     nuget install OpenCover -Version 4.6.519 -OutputDirectory tools
+    
     nuget install coveralls.net -Version 0.412.0 -OutputDirectory tools
     
