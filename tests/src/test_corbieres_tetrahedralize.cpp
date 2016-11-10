@@ -75,20 +75,10 @@ int main()
             tetrahedralize( M, "TetGen" ) ;
 #endif
 
-            // Output the mesh
-            std::string output_file_name( ringmesh_test_output_path ) ;
-            output_file_name += "corbieres.gm" ;
-            geomodel_save( M, output_file_name ) ;
-
-            // Reload it and test its validity
-            GeoModel reloaded_model ;
-            bool reloaded_model_is_valid = geomodel_load( reloaded_model,
-                output_file_name ) ;
-
-            if( !reloaded_model_is_valid ) {
+            if( !is_geomodel_valid( M ) ) {
                 throw RINGMeshException( "RINGMesh Test",
                     "Failed when loading the volumetric model "
-                        + reloaded_model.name()
+                        + M.name()
                         + ": the loaded model is not valid." ) ;
             }
 
