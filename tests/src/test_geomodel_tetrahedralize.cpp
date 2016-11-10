@@ -83,7 +83,18 @@ int main()
                         + " is not meshed " + "maybe the Tetgen call have failed" ) ;
             }
         }
-        if( !is_geomodel_valid( geomodel ) ) {
+
+        // Output the mesh
+        std::string output_file_name( ringmesh_test_output_path ) ;
+        output_file_name += "modelA6_tetgen.gm" ;
+        geomodel_save( geomodel, output_file_name ) ;
+
+        // Reload it and test its validity
+        GeoModel reloaded_model ;
+        bool reloaded_model_is_valid = geomodel_load( reloaded_model,
+            output_file_name ) ;
+
+        if( !reloaded_model_is_valid ) {
             throw RINGMeshException( "RINGMesh Test",
                 "Failed when tetrahedralize model " + geomodel.name()
                     + ": the model becomes invalid." ) ;
