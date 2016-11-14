@@ -36,4 +36,3 @@ after_test:
     .\tools\OpenCover.4.6.519\tools\OpenCover.Console.exe -target:"C:\Program Files (x86)\CMake\bin\cmake.exe" -targetargs:"--build . --target RUN_TESTS --config Debug"
         
     .\tools\coveralls.net.0.412\tools\csmacnz.Coveralls.exe --opencover -i .\results.xml 
-    
