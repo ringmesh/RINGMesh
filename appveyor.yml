@@ -31,13 +31,13 @@ after_test:
  - cmd: >-
     dir
     
-    dir Debug
+    dir bin
     
     nuget install OpenCover -Version 4.6.519 -OutputDirectory tools
     
     nuget install coveralls.net -Version 0.412.0 -OutputDirectory tools
     
-    .\tools\OpenCover.4.6.519\tools\OpenCover.Console.exe -target:"C:\Program Files (x86)\CMake\bin\cmake.exe" -targetargs:"--build . --target RUN_TESTS --config Debug"
+    .\tools\OpenCover.4.6.519\tools\OpenCover.Console.exe -target:"C:\Program Files (x86)\CMake\bin\cmake.exe" -targetargs:"--build . --target RUN_TESTS --config Debug" -searchdirs:bin
         
     .\tools\coveralls.net.0.412\tools\csmacnz.Coveralls.exe --opencover -i .\results.xml 
     
