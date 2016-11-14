@@ -6,7 +6,10 @@ environment:
 
 build:
   parallel: true
-
+  
+before_build:
+ - del "C:\Program Files (x86)\MSBuild\14.0\Microsoft.Common.targets\ImportAfter\Xamarin.Common.targets"
+ 
 build_script:
  - cmd: >-
     mkdir build
@@ -26,6 +29,10 @@ build_script:
 
 after_test:
  - cmd: >-
+    dir
+    
+    dir Debug
+    
     nuget install OpenCover -Version 4.6.519 -OutputDirectory tools
     
     nuget install coveralls.net -Version 0.412.0 -OutputDirectory tools
