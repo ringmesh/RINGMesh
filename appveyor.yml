@@ -37,7 +37,13 @@ after_test:
     
     nuget install coveralls.net -Version 0.412.0 -OutputDirectory tools
     
-    .\tools\OpenCover.4.6.519\tools\OpenCover.Console.exe -target:test_aabb.exe
+    .\tools\OpenCover.4.6.519\tools\OpenCover.Console.exe -target:test_aabb.exe -register
+    
+    .\tools\OpenCover.4.6.519\tools\OpenCover.Console.exe -target:test_aabb.exe -register:user
+    
+    .\tools\OpenCover.4.6.519\tools\OpenCover.Console.exe -target:test_aabb.exe -register:Path32
+    
+    .\tools\OpenCover.4.6.519\tools\OpenCover.Console.exe -target:test_aabb.exe -register:Path64
         
     .\tools\coveralls.net.0.412\tools\csmacnz.Coveralls.exe --opencover -i .\results.xml 
     
