@@ -613,10 +613,14 @@ namespace RINGMesh {
             mesh_entity_types_.insert( mesh_entity_types_.end(),
                 manager.mesh_entity_types().begin(),
                 manager.mesh_entity_types().end() ) ;
+            DEBUG(mesh_entity_types_.size()) ;
 
             geological_entity_types_.insert( geological_entity_types_.end(),
                 manager.geological_entity_types().begin(),
                 manager.geological_entity_types().end() ) ;
+            DEBUG(geological_entity_types_.size()) ;
+            DEBUG(manager.geological_entity_types().size()) ;
+
         }
 
         // ---- Easier access to relationships between EntityTypes
