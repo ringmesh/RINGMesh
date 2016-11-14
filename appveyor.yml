@@ -21,8 +21,8 @@ build_script:
     
     cmake --build . --config Release
     
-test_script:
- - cmd: cmake --build . --target RUN_TESTS --config Release
+#test_script:
+# - cmd: cmake --build . --target RUN_TESTS --config Release
 
 after_test:
  - cmd: >-
@@ -30,9 +30,7 @@ after_test:
     
     nuget install coveralls.net -Version 0.412.0 -OutputDirectory tools
     
-    cd build\ringmesh\Release
-    
-    ..\..\..\tools\OpenCover.4.6.519\tools\OpenCover.Console.exe -target:ctest
+    .\tools\OpenCover.4.6.519\tools\OpenCover.Console.exe -target:cmake -targetargs:"--build . --target RUN_TESTS --config Release"
         
-    ..\..\..\tools\coveralls.net.0.412\tools\csmacnz.Coveralls.exe --opencover -i .\results.xml 
+    .\tools\coveralls.net.0.412\tools\csmacnz.Coveralls.exe --opencover -i .\results.xml 
     
