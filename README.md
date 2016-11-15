@@ -1,6 +1,13 @@
 [![Coverage Status](https://coveralls.io/repos/bitbucket/ring_team/ringmesh/badge.svg?branch=default)](https://coveralls.io/bitbucket/ring_team/ringmesh?branch=default)
 [![Build status](https://ci.appveyor.com/api/projects/status/d2hkhxnlb4ke6gy0/branch/default?svg=true)](https://ci.appveyor.com/project/ArnaudBotella/ringmesh/branch/default)
 
+.. image:: https://coveralls.io/repos/bitbucket/ring_team/ringmesh/badge.svg?branch=default
+:target: https://coveralls.io/bitbucket/ring_team/ringmesh?branch=default
+
+.. image:: https://coveralls.io/repos/bitbucket/ring_team/ringmesh/badge.svg?branch=master
+:target: https://coveralls.io/bitbucket/ring_team/ringmesh?branch=master
+
+
 Instructions for compiling RINGMesh
 ===================================
 
