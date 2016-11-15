@@ -75,6 +75,7 @@ if(RINGMESH_WITH_TESTS)
     set(TEST_DATA_INPUT_DIRECTORY "${TEST_DIRECTORY}/data" CACHE PATH "Input data location")
     # PROJECT_BINARY_DIR not defined at this point
     set(TEST_DATA_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/build/tests/output" CACHE PATH "Output data location")
+    list(APPEND CMAKE_CONFIGURATION_TYPES Coverage)    
 endif()
 
 # Optional custom configuration of examples directories
@@ -185,8 +186,14 @@ elseif(UNIX)
         add_compile_options(-Wdouble-promotion)
     endif()
     
+    if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
+      add_compile_options(-g -O0 -fprofile-arcs -ftest-coverage)
+      set(CMAKE_EXE_LINKER_FLAGS="-fprofile-arcs -ftest-coverage")
+      set(EXTRA_LIBS ${EXTRA_LIBS} gcov)
+    endif()
+    
     # Enable parallel computation
-    set(COMPILATION_OPTION -- -j4)    
+    set(COMPILATION_OPTION -- -j)    
 else(WIN32)
     # Nothing else really supported
     message(FATAL_ERROR "Your platform is not supported. Please modify the cmakelist file.")    

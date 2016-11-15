@@ -64,6 +64,10 @@ foreach(testsourcefile ${TESTS})
     # Link RINGMesh Make sure YourLib is linked to each app
     target_link_libraries(${testname} geogram RINGMesh)
     
+    if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
+      target_link_libraries(${testname} gcov)
+    endif()
+    
     add_dependencies(${testname} RINGMesh)
     
     # Add the project to a folder of projects for the tests 
