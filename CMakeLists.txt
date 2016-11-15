@@ -186,10 +186,12 @@ elseif(UNIX)
         add_compile_options(-Wdouble-promotion)
     endif()
     
-    if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
-      add_compile_options(-g -O0 -fprofile-arcs -ftest-coverage)
-      set(CMAKE_EXE_LINKER_FLAGS="-fprofile-arcs -ftest-coverage")
-      set(EXTRA_LIBS ${EXTRA_LIBS} gcov)
+     if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
+       set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
+       set(COVERALLS ON)
+       set(COVERALLS_UPLOAD OFF)
+       include(Coveralls)
+	   coveralls_turn_on_coverage()
     endif()
     
     # Enable parallel computation
@@ -428,6 +430,15 @@ endif(RINGMESH_WITH_TESTS)
 if(BUILD_DOCUMENTATION)
     message(STATUS "Configuring RINGMesh with doxygen")
     add_subdirectory(doc)
+endif()
+
+
+if (COVERALLS)
+set(ringmesh_files ${ringmesh_include} ${ringmesh_src})
+	coveralls_setup(
+    "${ringmesh_files}" 
+        ${COVERALLS_UPLOAD}                 
+        "${PROJECT_SOURCE_DIR}/cmake")
 endif()
 
 #------------------------------------------------------------------------------------------------
