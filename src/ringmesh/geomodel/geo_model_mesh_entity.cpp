@@ -88,6 +88,11 @@ namespace {
         return true ;
     }
 
+    /*!
+     * @brief Computes and returns the surface connected components
+     * @details In Debug mode, the connected components are saved into 
+     * an Attribute on surface facets.
+     */
     index_t compute_nb_surface_connected_components( const Surface& M )
     {
         const index_t NO_COMPONENT = index_t( -1 ) ;
@@ -123,6 +128,11 @@ namespace {
         return nb_components ;
     }
 
+    /*!
+     * @brief Computes and returns the region connected components
+     * @details In Debug mode, the connected components are saved into 
+     * an Attribute on region cells.
+     */
     index_t compute_nb_volume_connected_components( const Region& M )
     {
         const index_t NO_COMPONENT = index_t( -1 ) ;
