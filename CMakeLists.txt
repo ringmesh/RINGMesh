@@ -75,7 +75,9 @@ if(RINGMESH_WITH_TESTS)
     set(TEST_DATA_INPUT_DIRECTORY "${TEST_DIRECTORY}/data" CACHE PATH "Input data location")
     # PROJECT_BINARY_DIR not defined at this point
     set(TEST_DATA_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/build/tests/output" CACHE PATH "Output data location")
-    list(APPEND CMAKE_CONFIGURATION_TYPES Coverage)    
+    if(UNIX)    
+      list(APPEND CMAKE_CONFIGURATION_TYPES Coverage)
+    endif()    
 endif()
 
 # Optional custom configuration of examples directories
