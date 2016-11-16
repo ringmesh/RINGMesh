@@ -1,9 +1,5 @@
 version: 1.0.{build}
 
-environment:
-  COVERALLS_REPO_TOKEN:
-    secure: h3STBSYmb0eJYYQmEuI2XBWo5VkvRBGv8u6POp/fIN7ROz5R0762/kj/eXz6mM8k
-
 build:
   parallel: true
   
@@ -24,15 +20,6 @@ build_script:
     
     cmake --build . --config Debug
     
-#test_script:
-# - cmd: cmake --build . --target RUN_TESTS --config Release
+test_script:
+ - cmd: cmake --build . --target RUN_TESTS --config Debug
 
-after_test:
- - cmd: >-
-    nuget install OpenCover -Version 4.6.519 -OutputDirectory tools
-    
-    nuget install coveralls.net -Version 0.412.0 -OutputDirectory tools
-    
-    .\tools\OpenCover.4.6.519\tools\OpenCover.Console.exe -target:"C:\Program Files (x86)\CMake\bin\cmake.exe" -targetargs:"--build . --target RUN_TESTS --config Debug"
-        
-    .\tools\coveralls.net.0.412\tools\csmacnz.Coveralls.exe --opencover -i .\results.xml 
