@@ -45,7 +45,7 @@
  * @author Jeanne Pellerin
  */
 
-int main( int argc, char** argv )
+int main()
 {
     using namespace RINGMesh ;
 
@@ -63,9 +63,9 @@ int main( int argc, char** argv )
 
         // Loading the GeoModel
         GeoModel geomodel ;
-        geomodel_load( geomodel, file_name ) ;
+        bool loaded_model_is_valid = geomodel_load( geomodel, file_name ) ;
 
-        if( !is_geomodel_valid( geomodel ) ) {
+        if( !loaded_model_is_valid ) {
             throw RINGMeshException( "RINGMesh Test",
                 "Failed when building model " + geomodel.name()
                     + ": the model is not valid." ) ;
