@@ -77,7 +77,6 @@ int main( int argc, char** argv )
         Logger::out( "RINGMesh Test" ) << "Repairing "
             << std::endl << std::endl << std::endl ;
         // Repair the model
-        DEBUG(M.nb_geological_entities( "Contact" )) ;
 
         GeoModelRepair model_repair( M ) ;
         model_repair.repair( GeoModelRepair::ALL ) ;
