@@ -154,6 +154,17 @@ namespace RINGMesh {
         }
 
     private:
+        void register_geological_entity_type(
+            const GeologicalEntityType& geological_type_name )
+        {
+            DEBUG(geological_entity_types_.size()) ;
+            DEBUG(find( geological_entity_types_, geological_type_name )) ;
+            if( find( geological_entity_types_, geological_type_name ) == NO_ID ) {
+            DEBUG("register " + geological_type_name) ;
+                geological_entity_types_.push_back( ( geological_type_name ) ) ;
+            }
+        }
+
         void register_relationship(
             const EntityType& parent_type_name,
             const EntityType& child_type_name )
