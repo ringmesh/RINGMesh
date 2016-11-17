@@ -106,6 +106,7 @@ namespace RINGMesh {
 
     index_t GeoModelEditor::create_geological_entity_type( const EntityType& type )
     {
+        DEBUG("CREATE GEOLOGOCIAL ENTITY TYPE") ;
         ringmesh_assert( GeoModelGeologicalEntityFactory::has_creator( type ) ) ;
         entity_type_manager().geological_entity_types_.push_back( type ) ;
         model_.geological_entities_.push_back(
@@ -277,6 +278,7 @@ namespace RINGMesh {
         if( model().nb_geological_entities( type ) == 0 ) {
             return ;
         }
+        DEBUG(model().nb_geological_entities( type )) ;
         const EntityType& child_type = entity_type_manager().child_type( type ) ;
         if( EntityTypeManager::is_defined_type( child_type ) ) {
             for( index_t i = 0; i < model().nb_geological_entities( type ); ++i ) {
@@ -398,6 +400,14 @@ namespace RINGMesh {
          */
         void remove_entities( const std::set< gme_t >& entities )
         {
+            for( std::set< gme_t >::const_iterator it = entities.begin();
+                it != entities.end(); ++it ) {
+                std::cout << " We remove : " << std::endl ;
+                std::cout << *it << std::endl ;
+                std::cout << "which have : "
+                    << model().mesh_entity( *it ).nb_parents() << "  parents."
+                    << std::endl ;
+            }
             initialize_for_removal( entities ) ;
             do_delete_flagged_entities() ;
             clear_model_mesh_vertices() ;
@@ -427,6 +437,7 @@ namespace RINGMesh {
             for( index_t i = 0; i < nb_mesh_entity_types_; ++i ) {
                 for( index_t j = 0; j < nb_initial_mesh_entities_[i]; ++j ) {
                     if( mesh_entity_to_erase_[i][j] ) {
+
                         delete_entity( i, j ) ;
                     }
                 }
@@ -615,11 +626,11 @@ namespace RINGMesh {
                 manager.mesh_entity_types().end() ) ;
             DEBUG(mesh_entity_types_.size()) ;
 
-            geological_entity_types_.insert( geological_entity_types_.end(),
-                manager.geological_entity_types().begin(),
-                manager.geological_entity_types().end() ) ;
-            DEBUG(geological_entity_types_.size()) ;
-            DEBUG(manager.geological_entity_types().size()) ;
+            if( nb_geological_entity_types_ != 0 ) {
+                geological_entity_types_.insert( geological_entity_types_.end(),
+                    manager.geological_entity_types().begin(),
+                    manager.geological_entity_types().end() ) ;
+            }
 
         }
 
@@ -695,9 +706,19 @@ namespace RINGMesh {
                     i ) ;
                 for( index_t j = 0;
                     j < model().nb_geological_entities( cur_geol_type ); j++ ) {
-
+                    index_t nb_no_id_child = 0 ;
+                    for( index_t k = 0;
+                        k
+                            < model().geological_entity( cur_geol_type, j ).nb_children();
+                        k++ ) {
+                        if( model().geological_entity( cur_geol_type, j ).child( k ).index()
+                            == NO_ID ) {
+                            nb_no_id_child++ ;
+                        }
+                    }
                     if( model().geological_entity( cur_geol_type, j ).nb_children()
-                        == 0 ) {
+                        == nb_no_id_child ) {
+                        DEBUG("DELETE ONE GEOLOGICAL ENTITY") ;
                         nb_removed_geological_entities_[i]++ ;
                         old_2_new_geological_entity_[i][j] = NO_ID ;
                         GeoModelEditor::delete_geological_entity( cur_geol_type,
@@ -779,7 +800,7 @@ namespace RINGMesh {
         {
             for( index_t p = 0; p < E.nb_parents(); ++p ) {
                 const EntityType& parent_type = E.parent_gme( p ).type ;
-                index_t parent_type_index = mesh_entity_type_to_index(
+                index_t parent_type_index = geological_entity_type_to_index(
                     parent_type ) ;
 
                 index_t old_id = E.parent_gme( p ).index ;
@@ -902,12 +923,12 @@ namespace RINGMesh {
         {
             return find( geological_entity_types_, type ) ;
         }
-        const EntityType& index_to_geological_entity_type( index_t index ) const
+        const EntityType& index_to_mesh_entity_type( index_t index ) const
         {
             return mesh_entity_types_.at( index ) ;
         }
 
-        const EntityType& index_to_mesh_entity_type( index_t index ) const
+        const EntityType& index_to_geological_entity_type( index_t index ) const
         {
             return geological_entity_types_.at( index ) ;
         }

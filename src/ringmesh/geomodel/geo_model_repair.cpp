@@ -377,7 +377,6 @@ namespace RINGMesh {
         remove_degenerate_facets_and_edges( empty_entities ) ;
         /// TODO when it works, use GeoModelEditor::remove_entities_and_dependencies
         if( !empty_entities.empty() ) {
-            get_dependent_entities( empty_entities ) ;
             remove_entities( empty_entities ) ;
         }
 
