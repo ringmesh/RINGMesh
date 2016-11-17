@@ -2171,6 +2171,7 @@ namespace RINGMesh {
                 ringmesh_assert( false ) ;
             }
 
+            compute_universe() ;
             // We need to remove from the regions_ the one corresponding
             // to the universe_, the one with the biggest volume
             double max_volume = -1. ;

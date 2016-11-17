@@ -154,6 +154,17 @@ namespace RINGMesh {
         }
 
     private:
+        void register_geological_entity_type(
+            const GeologicalEntityType& geological_type_name )
+        {
+            DEBUG(geological_entity_types_.size()) ;
+            DEBUG(find( geological_entity_types_, geological_type_name )) ;
+            if( find( geological_entity_types_, geological_type_name ) == NO_ID ) {
+            DEBUG("register " + geological_type_name) ;
+                geological_entity_types_.push_back( ( geological_type_name ) ) ;
+            }
+        }
+
         void register_relationship(
             const EntityType& parent_type_name,
             const EntityType& child_type_name )
@@ -223,21 +234,7 @@ namespace RINGMesh {
         {
             return entity_type_manager_.is_geological_entity_type( type ) ;
         }
-        /*!
-         * @brief Gets the number of entities of the given type
-         * @param[in] type the requested EntityType
-         * @return the number of entities, 0 if the type is not known
-         */
-        index_t nb_entities( const EntityType& type ) const
-        {
-            if( is_mesh_entity_type( type ) ) {
-                return nb_mesh_entities( type ) ;
-            } else if( is_geological_entity_type( type ) ) {
-                return nb_geological_entities( type ) ;
-            } else {
-                return 0 ;
-            }
-        }
+
         /*!
          * @brief Returns the number of mesh entities of the given type
          * @details Default value is 0
@@ -288,7 +285,6 @@ namespace RINGMesh {
          */
         const GeoModelGeologicalEntity& geological_entity( gme_t id ) const
         {
-            assert_gme_valid( id ) ;
             return *geological_entities( id.type )[id.index] ;
         }
         /*!
@@ -314,9 +310,6 @@ namespace RINGMesh {
         {
             return mesh_entity( gme_t( entity_type, entity_index ) ) ;
         }
-        const GeoModelEntity& entity(
-            const EntityType& entity_type,
-            index_t entity_index ) const ;
         /*! @}
          * \name Specialized accessors.
          * @{
@@ -385,28 +378,6 @@ namespace RINGMesh {
         GeoModelMesh mesh ;
 
     private:
-        /*! @brief Throws an assertion if the given GeoModelEntity id
-         *  is not valid for this model
-         */
-        void assert_gme_valid( gme_t id ) const
-        {
-            ringmesh_unused( id ) ;
-            ringmesh_assert( is_valid_gme( id ) ) ;
-        }
-        bool is_valid_gme( gme_t id ) const
-        {
-            return is_valid_type( id.type ) && is_valid_index( id.type, id.index ) ;
-        }
-        bool is_valid_type( const EntityType& type ) const
-        {
-            return entity_type_manager_.is_valid_type( type ) ;
-        }
-        bool is_valid_index( const EntityType& type, index_t index ) const
-        {
-            return index < nb_entities( type ) ;
-        }
-
-        const std::vector< GeoModelEntity* >& entities( const EntityType& type ) ;
         /*!
          * @brief Generic accessor to the storage of mesh entities of the given type
          */

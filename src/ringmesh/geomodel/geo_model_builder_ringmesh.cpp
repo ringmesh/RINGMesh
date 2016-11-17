@@ -116,7 +116,7 @@ namespace RINGMesh {
                 // Number of entities of a given type
                 else if( file_line.field_matches( 0, "Nb" ) ) {
                     // Allocate the space
-                    create_entities( file_line.field( 1 ),
+                    create_mesh_entities( file_line.field( 1 ),
                         file_line.field_as_uint( 2 ) ) ;
                 }
                 // Mesh entities
@@ -314,10 +314,6 @@ namespace RINGMesh {
 
     void OldGeoModelBuilderGM::load_topology( GEO::LineInput& file_line )
     {
-        // To store the basic GeoModelGeologicalEntities in the manager.
-        find_or_create_geological_entity_type( Contact::type_name_static() ) ;
-        find_or_create_geological_entity_type( Interface::type_name_static() ) ;
-        find_or_create_geological_entity_type( Layer::type_name_static() ) ;
         while( !file_line.eof() && file_line.get_line() ) {
 
             file_line.get_fields() ;
@@ -333,8 +329,14 @@ namespace RINGMesh {
                     != GeoModelEntity::type_name_static() ) {
                     // Allocate the space
                     if( file_line.nb_fields() > 1 ) {
-                        create_entities( match_nb_entities( file_line.field( 0 ) ),
-                            file_line.field_as_uint( 1 ) ) ;
+                        EntityType type = match_nb_entities( file_line.field( 0 ) ) ;
+                        index_t nb_entities = file_line.field_as_uint( 1 ) ;
+                        if( model().is_mesh_entity_type( type ) ) {
+                            create_mesh_entities( type, nb_entities ) ;
+                        } else {
+                            create_geological_entities( type, nb_entities ) ;
+                        }
+
                     }
                 }
                 // High-level entities
@@ -436,7 +438,7 @@ namespace RINGMesh {
         unzFile& uz )
     {
         for( index_t el = 0;
-            el < model().nb_entities( type_name_old_to_new( old_type_name ) );
+            el < model().nb_mesh_entities( type_name_old_to_new( old_type_name ) );
             el++ ) {
             std::string file_to_extract_and_load = old_type_name + "_"
                 + GEO::String::to_string( el ) ;
@@ -468,7 +470,7 @@ namespace RINGMesh {
             GeogramMeshBuilder builder( cur_mesh ) ;
             builder.load_mesh( str_try, flags ) ;
             assign_mesh_to_entity( cur_mesh,
-                model().entity( type_name_old_to_new( old_type_name ), el ).gme_id() ) ;
+                model().mesh_entity( type_name_old_to_new( old_type_name ), el ).gme_id() ) ;
             GEO::Logger::instance()->set_minimal( false ) ;
 
             unzip_one_file( uz, str_try.c_str() ) ;
