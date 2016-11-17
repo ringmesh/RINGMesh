@@ -44,7 +44,7 @@
  * @author Jeanne Pellerin
  */
  
-int main( int argc, char** argv )
+int main()
 {
     using namespace RINGMesh ;
 
@@ -67,27 +67,18 @@ int main( int argc, char** argv )
         set_validity_errors_directory( ringmesh_test_output_path ) ;
 
         /// Load and check the validity of the model
-        geomodel_load( M, file_name ) ;
+        bool surf_model_is_valid = geomodel_load( M, file_name ) ;
 
-        if( is_geomodel_valid( M ) ) {
+        if( surf_model_is_valid ) {
 #ifdef RINGMESH_WITH_TETGEN
             // Mesh the model with TetGen
             tetrahedralize( M, "TetGen" ) ;
 #endif
 
-            // Output the mesh
-            std::string output_file_name( ringmesh_test_output_path ) ;
-            output_file_name += "corbieres.gm" ;
-            geomodel_save( M, output_file_name ) ;
-
-            // Reload it and test its validity
-            GeoModel reloaded_model ;
-            geomodel_load( reloaded_model, output_file_name ) ;
-
-            if( !is_geomodel_valid( reloaded_model ) ) {
+            if( !is_geomodel_valid( M ) ) {
                 throw RINGMeshException( "RINGMesh Test",
                     "Failed when loading the volumetric model "
-                        + reloaded_model.name()
+                        + M.name()
                         + ": the loaded model is not valid." ) ;
             }
 

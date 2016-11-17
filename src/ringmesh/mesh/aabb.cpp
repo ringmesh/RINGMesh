@@ -287,8 +287,8 @@ namespace RINGMesh {
     void AABBTree::save_tree( const std::string& name ) const
     {
         index_t nb_nodes = 0 ;
-        for( index_t level = 1; nb_nodes < tree_.size(); level++ ) {
-            index_t start_node = static_cast< index_t >( std::pow( 2, level ) ) ;
+        for( double level = 1.; nb_nodes < tree_.size(); level++ ) {
+            index_t start_node = static_cast< index_t >( std::pow( 2., level ) ) ;
             nb_nodes = 2 * start_node ;
             GEO::Mesh M ;
             for( index_t n = start_node; n < nb_nodes; n++ ) {
@@ -302,6 +302,7 @@ namespace RINGMesh {
 
     void AABBTree::get_nearest_element_box_hint(
         const vec3& query,
+        index_t& nearest_box,
         vec3& nearest_point,
         double& distance ) const
     {
@@ -322,8 +323,8 @@ namespace RINGMesh {
             }
         }
 
-        nearest_point = get_point_hint_from_box( tree_[box_begin],
-            mapping_morton_[box_begin] ) ;
+        nearest_box = mapping_morton_[box_begin] ;
+        nearest_point = get_point_hint_from_box( tree_[box_begin], nearest_box ) ;
         distance = length( query - nearest_point ) ;
     }
 
@@ -496,12 +497,14 @@ namespace RINGMesh {
         }
         return result ;
     }
-    vec3 inner_point_box_distance( const vec3& p, const Box3d& B )
+    double inner_point_box_distance( const vec3& p, const Box3d& B )
     {
         ringmesh_assert( B.contains( p ) ) ;
-        vec3 result ;
+        double result = std::abs( p[0] - B.min()[0] ) ;
+        result = std::min( result, std::abs( p[0] - B.max()[0] ) ) ;
         for( index_t c = 1; c < 3; ++c ) {
-            result[c] = std::min( p[c] - B.max()[c], p[c] - B.min()[c] ) ;
+            result = std::min( result, std::abs( p[c] - B.min()[c] ) ) ;
+            result = std::min( result, std::abs( p[c] - B.max()[c] ) ) ;
         }
         return result ;
     }
@@ -519,9 +522,10 @@ namespace RINGMesh {
             }
         }
         if( inside ) {
-            result = -inner_point_box_distance( p, B ) ;
+            return -inner_point_box_distance( p, B ) ;
+        } else {
+            return result.length() ;
         }
-        return result.length() ;
     }
 }
 

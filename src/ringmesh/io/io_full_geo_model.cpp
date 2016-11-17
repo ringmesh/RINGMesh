@@ -217,10 +217,11 @@ namespace {
     /************************************************************************/
     class AsterIOHandler: public GeoModelIOHandler {
     public:
-        virtual void load( const std::string& filename, GeoModel& geomodel )
+        virtual bool load( const std::string& filename, GeoModel& geomodel )
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from Code_Aster mesh not implemented yet" ) ;
+            return false ;
         }
         virtual void save( const GeoModel& gm, const std::string& filename )
         {
@@ -393,7 +394,7 @@ namespace {
     }
 
     class GeoModelHandlerGM: public GeoModelIOHandler {
-        virtual void load( const std::string& filename, GeoModel& model )
+        virtual bool load( const std::string& filename, GeoModel& model )
         {
             std::string pwd = GEO::FileSystem::get_current_working_directory() ;
             GEO::FileSystem::set_current_working_directory(
@@ -404,8 +405,9 @@ namespace {
             Logger::out( "I/O" ) << " Loaded model " << model.name() << " from "
                 << filename << std::endl ;
             print_geomodel( model ) ;
-            is_geomodel_valid( model ) ;
+            bool is_valid = is_geomodel_valid( model ) ;
             GEO::FileSystem::set_current_working_directory( pwd ) ;
+            return is_valid ;
 
         }
         virtual void save( const GeoModel& model, const std::string& filename )
@@ -446,7 +448,7 @@ namespace {
     } ;
 
     class OldGeoModelHandlerGM: public GeoModelIOHandler {
-        virtual void load( const std::string& filename, GeoModel& model )
+        virtual bool load( const std::string& filename, GeoModel& model )
         {
             std::string pwd = GEO::FileSystem::get_current_working_directory() ;
             GEO::FileSystem::set_current_working_directory(
@@ -457,8 +459,9 @@ namespace {
             GEO::Logger::out( "I/O" ) << " Loaded model " << model.name() << " from "
                 << filename << std::endl ;
             print_geomodel( model ) ;
-            is_geomodel_valid( model ) ;
+            bool is_valid = is_geomodel_valid( model ) ;
             GEO::FileSystem::set_current_working_directory( pwd ) ;
+            return is_valid ;
 
         }
         virtual void save( const GeoModel& model, const std::string& filename )
@@ -474,10 +477,11 @@ namespace {
 
     class LMIOHandler: public GeoModelIOHandler {
     public:
-        virtual void load( const std::string& filename, GeoModel& geomodel )
+        virtual bool load( const std::string& filename, GeoModel& geomodel )
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from a mesh not implemented yet" ) ;
+            return false ;
         }
         virtual void save( const GeoModel& gm, const std::string& filename )
         {
@@ -497,10 +501,11 @@ namespace {
     /************************************************************************/
     class TetGenIOHandler: public GeoModelIOHandler {
     public:
-        virtual void load( const std::string& filename, GeoModel& geomodel )
+        virtual bool load( const std::string& filename, GeoModel& geomodel )
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from TetGen not implemented yet" ) ;
+            return false ;
         }
         virtual void save( const GeoModel& gm, const std::string& filename )
         {
@@ -582,10 +587,11 @@ namespace {
 
     class VTKIOHandler: public GeoModelIOHandler {
     public:
-        virtual void load( const std::string& filename, GeoModel& geomodel )
+        virtual bool load( const std::string& filename, GeoModel& geomodel )
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from VTK not implemented yet" ) ;
+            return false ;
         }
         virtual void save( const GeoModel& gm, const std::string& filename )
         {
@@ -657,10 +663,11 @@ namespace {
      */
     class MFEMIOHandler: public GeoModelIOHandler {
     public:
-        virtual void load( const std::string& filename, GeoModel& geomodel )
+        virtual bool load( const std::string& filename, GeoModel& geomodel )
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from VTK not implemented yet" ) ;
+            return false ;
         }
         virtual void save( const GeoModel& gm, const std::string& filename )
         {
@@ -777,7 +784,7 @@ namespace {
 
     class TSolidIOHandler: public GeoModelIOHandler {
     public:
-        virtual void load( const std::string& filename, GeoModel& model )
+        virtual bool load( const std::string& filename, GeoModel& model )
         {
             std::ifstream input( filename.c_str() ) ;
             if( input ) {
@@ -789,16 +796,18 @@ namespace {
                 builder.build_model() ;
                 print_geomodel( model ) ;
                 // Check boundary model validity
-                RINGMesh::is_geomodel_valid( model ) ;
+                bool is_valid = is_geomodel_valid( model ) ;
 
                 time( &end_load ) ;
 
                 Logger::out( "I/O" ) << " Loaded model " << model.name() << " from "
                     << std::endl << filename << " timing: "
                     << difftime( end_load, start_load ) << "sec" << std::endl ;
+                return is_valid ;
             } else {
                 throw RINGMeshException( "I/O",
                     "Failed loading model from file " + filename ) ;
+                return false ;
             }
         }
         virtual void save( const GeoModel& gm, const std::string& filename )
@@ -1002,10 +1011,11 @@ namespace {
             clear() ;
         }
 
-        virtual void load( const std::string& filename, GeoModel& geomodel )
+        virtual bool load( const std::string& filename, GeoModel& geomodel )
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from CSMP not implemented yet" ) ;
+            return false ;
         }
         virtual void save( const GeoModel& gm, const std::string& filename )
         {
@@ -1651,10 +1661,11 @@ namespace {
             index_t v0 ;
             index_t v1 ;
         } ;
-        virtual void load( const std::string& filename, GeoModel& geomodel )
+        virtual bool load( const std::string& filename, GeoModel& geomodel )
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from GPRS not implemented yet" ) ;
+            return false ;
         }
         virtual void save( const GeoModel& gm, const std::string& filename )
         {
@@ -1852,10 +1863,11 @@ namespace {
 //                   { { 0, 1, 2, 3 }, { 0, 4, 1 }, { 0, 3, 4 }, { 2, 4, 3 }, { 2, 1, 4 } } } ;
     class MSHIOHandler: public GeoModelIOHandler {
     public:
-        virtual void load( const std::string& filename, GeoModel& geomodel )
+        virtual bool load( const std::string& filename, GeoModel& geomodel )
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from GMSH not implemented yet" ) ;
+            return false ;
         }
         virtual void save( const GeoModel& gm, const std::string& filename )
         {
@@ -2118,10 +2130,11 @@ namespace {
     public:
         static const index_t NB_ENTRY_PER_LINE = 16 ;
 
-        virtual void load( const std::string& filename, GeoModel& geomodel )
+        virtual bool load( const std::string& filename, GeoModel& geomodel )
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from abaqus not implemented yet" ) ;
+            return false ;
         }
         virtual void save( const GeoModel& gm, const std::string& filename )
         {
@@ -2289,12 +2302,12 @@ namespace {
 
 namespace RINGMesh {
 
-    void geomodel_load( GeoModel& model, const std::string& filename )
+    bool geomodel_load( GeoModel& model, const std::string& filename )
     {
         Logger::out( "I/O" ) << "Loading file " << filename << "..." << std::endl ;
 
         GeoModelIOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
-        handler->load( filename, model ) ;
+        return handler->load( filename, model ) ;
     }
 
     void geomodel_save( const GeoModel& model, const std::string& filename )

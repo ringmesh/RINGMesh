@@ -120,14 +120,15 @@ namespace {
     bool GetChar( void* data, int idx, const char** out_text )
     {
         *out_text = static_cast< const std::vector< std::string >* >( data )->at(
-            idx ).c_str() ;
+            static_cast< long unsigned int >( idx ) ).c_str() ;
         return true ;
     }
 
 }
 namespace RINGMesh {
 
-    ColorTable RINGMeshApplication::GeoModelViewer::color_table_ = create_color_table() ;
+    ColorTable RINGMeshApplication::GeoModelViewer::color_table_ =
+        create_color_table() ;
 
     RINGMeshApplication::GeoModelViewer::GeoModelViewer(
         RINGMeshApplication& app,
@@ -258,7 +259,7 @@ namespace RINGMesh {
                 corner_style_.color_.Value.x, corner_style_.color_.Value.y,
                 corner_style_.color_.Value.z ) ;
             GM_gfx_.corners.GeoModelGfxManager::set_mesh_element_size(
-                corner_style_.size_ ) ;
+                static_cast< index_t >( corner_style_.size_ ) ) ;
             GM_gfx_.corners.draw() ;
         }
 
@@ -267,7 +268,7 @@ namespace RINGMesh {
                 line_style_.color_.Value.x, line_style_.color_.Value.y,
                 line_style_.color_.Value.z ) ;
             GM_gfx_.lines.GeoModelGfxManager::set_mesh_element_size(
-                line_style_.size_ ) ;
+                static_cast< index_t >( line_style_.size_ ) ) ;
             GM_gfx_.lines.draw() ;
         }
 
@@ -277,7 +278,8 @@ namespace RINGMesh {
             GM_gfx_.surfaces.GeoModelGfxManager::set_mesh_element_color(
                 surface_style_.color_.Value.x, surface_style_.color_.Value.y,
                 surface_style_.color_.Value.z ) ;
-            GM_gfx_.surfaces.set_mesh_size( surface_style_.size_ ) ;
+            GM_gfx_.surfaces.set_mesh_size(
+                static_cast< index_t >( surface_style_.size_ ) ) ;
             if( selected_entity_type_ == 0 ) {
                 for( GEO::index_t s = 0; s < GM_.nb_surfaces(); s++ ) {
                     if( GM_.surface( s ).is_on_voi() ) {
@@ -317,7 +319,8 @@ namespace RINGMesh {
                     volume_style_.color_.Value.x, volume_style_.color_.Value.y,
                     volume_style_.color_.Value.z ) ;
             }
-            GM_gfx_.regions.set_mesh_size( volume_style_.size_ ) ;
+            GM_gfx_.regions.set_mesh_size(
+                static_cast< index_t >( volume_style_.size_ ) ) ;
             GM_gfx_.regions.set_draw_cells( GEO::MESH_HEX, show_hex_ ) ;
             GM_gfx_.regions.set_draw_cells( GEO::MESH_PRISM, show_prism_ ) ;
             GM_gfx_.regions.set_draw_cells( GEO::MESH_PYRAMID, show_pyramid_ ) ;
@@ -349,17 +352,20 @@ namespace RINGMesh {
     void RINGMeshApplication::GeoModelViewer::autorange()
     {
         GM_gfx_.attribute.compute_range() ;
-        attribute_max_ = GM_gfx_.attribute.maximum() ;
-        attribute_min_ = GM_gfx_.attribute.minimum() ;
+        attribute_max_ = static_cast< float >( GM_gfx_.attribute.maximum() ) ;
+        attribute_min_ = static_cast< float >( GM_gfx_.attribute.minimum() ) ;
     }
 
     void RINGMeshApplication::GeoModelViewer::update_entity_visibility()
     {
-        const std::string& type = entity_types_[selected_entity_type_] ;
+        index_t selected_entity_type_casted =
+            static_cast< index_t >( selected_entity_type_ ) ;
+        const std::string& type = entity_types_[selected_entity_type_casted] ;
         if( selected_entity_type_ == 0 ) {
             GM_gfx_.corners.GeoModelGfxManager::set_mesh_element_visibility( true ) ;
             GM_gfx_.lines.GeoModelGfxManager::set_mesh_element_visibility( true ) ;
-            GM_gfx_.surfaces.GeoModelGfxManager::set_mesh_element_visibility( true ) ;
+            GM_gfx_.surfaces.GeoModelGfxManager::set_mesh_element_visibility(
+                true ) ;
             GM_gfx_.regions.GeoModelGfxManager::set_mesh_element_visibility( true ) ;
         } else {
             GM_gfx_.corners.GeoModelGfxManager::set_mesh_element_visibility(
@@ -369,18 +375,20 @@ namespace RINGMesh {
                 false ) ;
             GM_gfx_.regions.GeoModelGfxManager::set_mesh_element_visibility(
                 false ) ;
-            if( selected_entity_type_
+            if( selected_entity_type_casted
                 < EntityTypeManager::nb_mesh_entity_types() + 1 ) {
                 selected_entity_id_ = std::min(
                     static_cast< int >( GM_.nb_mesh_entities( type ) - 1 ),
                     selected_entity_id_ ) ;
-                gme_t entity_id( type, selected_entity_id_ ) ;
+                gme_t entity_id( type,
+                    static_cast< index_t >( selected_entity_id_ ) ) ;
                 toggle_mesh_entity_and_boundaries_visibility( entity_id ) ;
             } else {
                 selected_entity_id_ = std::min(
                     static_cast< int >( GM_.nb_geological_entities( type ) - 1 ),
                     selected_entity_id_ ) ;
-                gme_t entity_id( type, selected_entity_id_ ) ;
+                gme_t entity_id( type,
+                    static_cast< index_t >( selected_entity_id_ ) ) ;
                 toggle_geological_entity_visibility( entity_id ) ;
             }
         }
@@ -402,12 +410,14 @@ namespace RINGMesh {
         }
     }
 
-    void RINGMeshApplication::GeoModelViewer::toggle_corner_visibility( index_t corner_id )
+    void RINGMeshApplication::GeoModelViewer::toggle_corner_visibility(
+        index_t corner_id )
     {
         GM_gfx_.corners.set_mesh_element_visibility( corner_id, true ) ;
     }
 
-    void RINGMeshApplication::GeoModelViewer::toggle_line_and_boundaries_visibility( index_t line_id )
+    void RINGMeshApplication::GeoModelViewer::toggle_line_and_boundaries_visibility(
+        index_t line_id )
     {
         GM_gfx_.lines.set_mesh_element_visibility( line_id, true ) ;
         const Line& line = GM_.line( line_id ) ;
@@ -415,7 +425,8 @@ namespace RINGMesh {
         toggle_corner_visibility( line.boundary_gme( 1 ).index ) ;
     }
 
-    void RINGMeshApplication::GeoModelViewer::toggle_surface_and_boundaries_visibility( index_t surface_id )
+    void RINGMeshApplication::GeoModelViewer::toggle_surface_and_boundaries_visibility(
+        index_t surface_id )
     {
         GM_gfx_.surfaces.set_mesh_element_visibility( surface_id, true ) ;
         const Surface& surface = GM_.surface( surface_id ) ;
@@ -425,7 +436,8 @@ namespace RINGMesh {
         }
     }
 
-    void RINGMeshApplication::GeoModelViewer::toggle_region_and_boundaries_visibility( index_t region_id )
+    void RINGMeshApplication::GeoModelViewer::toggle_region_and_boundaries_visibility(
+        index_t region_id )
     {
         GM_gfx_.regions.set_mesh_element_visibility( region_id, true ) ;
         const Region& region = GM_.region( region_id ) ;
@@ -573,7 +585,7 @@ namespace RINGMesh {
         draw_entity_style_editor( "##CornerColor", corner_style_ ) ;
 
         ImGui::Checkbox( "Line [e]", &show_lines_ ) ;
-        draw_entity_style_editor( "##LineColor", line_style_) ;
+        draw_entity_style_editor( "##LineColor", line_style_ ) ;
 
         ImGui::Checkbox( "Surface [s]", &show_surface_ ) ;
         draw_entity_style_editor( "##SurfaceColor", surface_style_ ) ;
@@ -604,7 +616,7 @@ namespace RINGMesh {
         EntityStyle& style )
     {
         ImGui::PushStyleColor( ImGuiCol_Button, style.color_ ) ;
-        if( ImGui::Button( ("  " + label ).c_str() ) ) {
+        if( ImGui::Button( ( "  " + label ).c_str() ) ) {
             ImGui::OpenPopup( label.c_str() ) ;
         }
         ImGui::PopStyleColor() ;
@@ -616,7 +628,8 @@ namespace RINGMesh {
         style.size_ = std::max( style.size_, 0 ) ;
     }
 
-    void RINGMeshApplication::GeoModelViewer::show_color_table_popup( ImColor& color )
+    void RINGMeshApplication::GeoModelViewer::show_color_table_popup(
+        ImColor& color )
     {
         int id = 0 ;
         for( index_t i = 0; i < color_table_.size(); i++ ) {
@@ -696,12 +709,14 @@ namespace RINGMesh {
 
         std::string min_value = GEO::String::to_string(
             GM_gfx_.attribute.minimum() ) ;
-        glQuickText::printfAt( x1 - w - font_height * min_value.size() * 0.3,
+        float nb_min_letter = static_cast< float >( min_value.size() ) ;
+        glQuickText::printfAt( x1 - w - font_height * nb_min_letter * 0.3,
             y1 - font_height, z, font_sz, min_value.c_str() ) ;
 
         std::string max_value = GEO::String::to_string(
             GM_gfx_.attribute.maximum() ) ;
-        glQuickText::printfAt( x1 + w - font_height * max_value.size() * 0.3,
+        float nb_max_letter = static_cast< float >( max_value.size() ) ;
+        glQuickText::printfAt( x1 + w - font_height * nb_max_letter * 0.3,
             y1 - font_height, z, font_sz, max_value.c_str() ) ;
 
         glupMatrixMode( GLUP_PROJECTION_MATRIX ) ;
@@ -1040,7 +1055,7 @@ namespace RINGMesh {
     {
         if( !filename.empty() ) {
             meshes_.push_back( new MeshViewer( *this, filename ) ) ;
-            current_viewer_ = meshes_.size() - 1 ;
+            current_viewer_ = static_cast< index_t >( meshes_.size() - 1 ) ;
             current_viewer_type_ = MESH ;
         }
 
@@ -1060,9 +1075,8 @@ namespace RINGMesh {
                 ImGui::EndMenu() ;
             }
             if( ImGui::MenuItem( "Create point" ) ) {
-                GEO::Command::set_current(
-                    "create_point(std::string name=\"debug\","
-                        " double x=0, double y=0, double z=0)", this,
+                GEO::Command::set_current( "create_point(std::string name=\"debug\","
+                    " double x=0, double y=0, double z=0)", this,
                     &RINGMeshApplication::create_point ) ;
             }
             ImGui::EndMenu() ;
@@ -1091,7 +1105,7 @@ namespace RINGMesh {
         viewer->mesh_gfx_.set_mesh( &viewer->mesh_ ) ;
         viewer->bbox_.add_point( point ) ;
         viewer->name_ = name ;
-        current_viewer_ = meshes_.size() - 1 ;
+        current_viewer_ = static_cast< index_t >( meshes_.size() - 1 ) ;
         current_viewer_type_ = MESH ;
         update_region_of_interest() ;
     }
@@ -1200,7 +1214,7 @@ namespace RINGMesh {
     {
         if( !filename.empty() ) {
             models_.push_back( new GeoModelViewer( *this, filename ) ) ;
-            current_viewer_ = models_.size() - 1 ;
+            current_viewer_ = static_cast< index_t >( models_.size() - 1 ) ;
             current_viewer_type_ = GEOMODEL ;
         }
 
@@ -1265,7 +1279,7 @@ namespace RINGMesh {
             ImGui::Text( "GeoModel" ) ;
             for( index_t i = 0; i < models_.size(); i++ ) {
                 GeoModelViewer& viewer = *models_[i] ;
-                ImGui::PushID( i ) ;
+                ImGui::PushID( static_cast< int >( i ) ) ;
                 if( ImGui::Checkbox( viewer.GM_.name().c_str(),
                     &viewer.is_visible_ ) ) {
                     current_viewer_ = i ;
@@ -1281,7 +1295,7 @@ namespace RINGMesh {
             ImGui::Text( "Mesh" ) ;
             for( index_t i = 0; i < meshes_.size(); i++ ) {
                 MeshViewer& viewer = *meshes_[i] ;
-                ImGui::PushID( i ) ;
+                ImGui::PushID( static_cast< int >( i ) ) ;
                 if( ImGui::Checkbox( viewer.name_.c_str(), &viewer.is_visible_ ) ) {
                     current_viewer_ = i ;
                     current_viewer_type_ = MESH ;

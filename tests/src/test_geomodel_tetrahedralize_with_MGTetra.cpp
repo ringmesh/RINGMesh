@@ -50,7 +50,7 @@ int main()
     using namespace RINGMesh ;
 
     try {
-        default_configure() ;
+        default_configure();
 
         // Set an output log file
         std::string log_file( ringmesh_test_output_path ) ;
@@ -71,30 +71,20 @@ int main()
                     + ": the model is not valid." ) ;
         }
 
-#ifdef RINGMESH_WITH_TETGEN
+#ifdef USE_MG_TETRA
 
         // Tetrahedralize the GeoModel
-        tetrahedralize( geomodel, "TetGen", NO_ID, false ) ;
+        tetrahedralize( geomodel, "MG_Tetra", NO_ID, false ) ;
+
         for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
             if( !geomodel.region( r ).is_meshed() ) {
                 throw RINGMeshException( "RINGMesh Test",
-                    "Failed when tetrahedralize model " + geomodel.name()
-                        + " Region " + GEO::String::to_string( r )
-                        + " is not meshed " + "maybe the Tetgen call have failed" ) ;
+                    "Failed when tetrahedralize model " + geomodel.name() + " Region "
+                        +  GEO::String::to_string(r) + " is not meshed "
+                        + "maybe the MG Tetra Licence can not be reached" ) ;
             }
         }
-
-        // Output the mesh
-        std::string output_file_name( ringmesh_test_output_path ) ;
-        output_file_name += "modelA6_tetgen.gm" ;
-        geomodel_save( geomodel, output_file_name ) ;
-
-        // Reload it and test its validity
-        GeoModel reloaded_model ;
-        bool reloaded_model_is_valid = geomodel_load( reloaded_model,
-            output_file_name ) ;
-
-        if( !reloaded_model_is_valid ) {
+        if( !is_geomodel_valid( geomodel ) ) {
             throw RINGMeshException( "RINGMesh Test",
                 "Failed when tetrahedralize model " + geomodel.name()
                     + ": the model becomes invalid." ) ;

@@ -1,4 +1,6 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/d2hkhxnlb4ke6gy0/branch/default?svg=true)](https://ci.appveyor.com/project/ArnaudBotella/ringmesh/branch/default)
+[![Coverage Status](https://coveralls.io/repos/bitbucket/ring_team/ringmesh/badge.svg?branch=default)](https://coveralls.io/bitbucket/ring_team/ringmesh?branch=default)
+
 
 Instructions for compiling RINGMesh
 ===================================

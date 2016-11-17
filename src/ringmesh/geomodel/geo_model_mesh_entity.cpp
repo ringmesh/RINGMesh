@@ -442,7 +442,8 @@ namespace RINGMesh {
                 return parent_gme( i ) ;
             }
         }
-        return gme_t() ;
+        ringmesh_assert_not_reached ;
+        return gme_id() ;
     }
 
     const GeoModelMeshEntity& GeoModelMeshEntity::boundary( index_t x ) const
