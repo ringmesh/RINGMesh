@@ -35,6 +35,9 @@
 
 #include <ringmesh/geogram_extension/geogram_extension.h>
 
+#include <fstream>
+
+#include <geogram/basic/file_system.h>
 #include <geogram/basic/line_stream.h>
 #include <geogram/basic/logger.h>
 
@@ -80,6 +83,7 @@ namespace RINGMesh {
     public:
         TSurfMeshIOHandler()
             :
+                starting_index_( 1 ),
                 mesh_dimension_( 3 ),
                 nb_vertices_( 0 ),
                 nb_triangles_( 0 ),
@@ -121,17 +125,53 @@ namespace RINGMesh {
          * @todo To be implemented.
          */
         virtual bool save(
-            const GEO::Mesh&,
-            const std::string&,
-            const GEO::MeshIOFlags& )
+            const GEO::Mesh& mesh,
+            const std::string& filename,
+            const GEO::MeshIOFlags& flag = GEO::MeshIOFlags() )
         {
-            Logger::err( "I/O" )
-                << "Saving a Mesh into TSurf format not implemented yet"
-                << std::endl ;
+            ringmesh_unused( flag ) ;
+            if( !mesh.facets.are_simplices() ) {
+                throw RINGMeshException( "I/O",
+                    "Cannot save a non triangulated mesh into TSurf format" ) ;
+            }
+
+            std::ofstream out( filename.c_str() ) ;
+            out.precision( 16 ) ;
+            save_header( out, GEO::FileSystem::base_name( filename ) ) ;
+
+            out << "TFACE" << std::endl ;
+            save_vertices( out, mesh ) ;
+            save_triangles( out, mesh ) ;
+            out << "END" << std::endl ;
+
             return false ;
         }
 
     private:
+        void save_vertices( std::ofstream& out, const GEO::Mesh& mesh )
+        {
+            for( index_t v = 0; v < mesh.vertices.nb(); v++ ) {
+                out << "VTRX " << v + starting_index_ << mesh.vertices.point( v )
+                    << std::endl ;
+            }
+        }
+        void save_triangles( std::ofstream& out, const GEO::Mesh& mesh )
+        {
+            for( index_t t = 0; t < mesh.facets.nb(); t++ ) {
+                out << "TRGL" ;
+                for( index_t v = 0; v < 3; v++ ) {
+                    out << " " << mesh.facets.vertex( t, v ) + starting_index_ ;
+                }
+                out << std::endl ;
+            }
+        }
+        void save_header( std::ofstream& out, const std::string& mesh_name )
+        {
+            out << "GOCAD TSurf" << std::endl ;
+            out << "HEADER {" << std::endl ;
+            out << "name: " << mesh_name << std::endl ;
+            out << "}" << std::endl ;
+        }
         // This function read the z_sign too [PA]
         void read_number_of_vertices_and_triangles()
         {
@@ -169,20 +209,28 @@ namespace RINGMesh {
                     if( in.field_matches( 0, "VRTX" )
                         || in.field_matches( 0, "PVRTX" ) ) {
                         vertices_[mesh_dimension_ * v] = in.field_as_double( 2 ) ;
-                        vertices_[mesh_dimension_ * v + 1] = in.field_as_double( 3 ) ;
-                        vertices_[mesh_dimension_ * v + 2] = in.field_as_double( 4 ) * z_sign_ ;
+                        vertices_[mesh_dimension_ * v + 1] = in.field_as_double(
+                            3 ) ;
+                        vertices_[mesh_dimension_ * v + 2] = in.field_as_double( 4 )
+                            * z_sign_ ;
                         ++v ;
                     } else if( in.field_matches( 0, "PATOM" )
                         || in.field_matches( 0, "ATOM" ) ) {
-                        index_t v0 = in.field_as_uint( 2 ) - 1 ;
-                        vertices_[mesh_dimension_ * v] = vertices_[mesh_dimension_ * v0] ;
-                        vertices_[mesh_dimension_ * v + 1] = vertices_[mesh_dimension_ * v0 + 1] ;
-                        vertices_[mesh_dimension_ * v + 2] = vertices_[mesh_dimension_ * v0 + 2] ;
+                        index_t v0 = in.field_as_uint( 2 ) - starting_index_ ;
+                        vertices_[mesh_dimension_ * v] = vertices_[mesh_dimension_
+                            * v0] ;
+                        vertices_[mesh_dimension_ * v + 1] =
+                            vertices_[mesh_dimension_ * v0 + 1] ;
+                        vertices_[mesh_dimension_ * v + 2] =
+                            vertices_[mesh_dimension_ * v0 + 2] ;
                         ++v ;
                     } else if( in.field_matches( 0, "TRGL" ) ) {
-                        triangles_[3 * t] = index_t( in.field_as_uint( 1 ) - 1 ) ;
-                        triangles_[3 * t + 1] = index_t( in.field_as_uint( 2 ) - 1 ) ;
-                        triangles_[3 * t + 2] = index_t( in.field_as_uint( 3 ) - 1 ) ;
+                        triangles_[3 * t] = index_t(
+                            in.field_as_uint( 1 ) - starting_index_ ) ;
+                        triangles_[3 * t + 1] = index_t(
+                            in.field_as_uint( 2 ) - starting_index_ ) ;
+                        triangles_[3 * t + 2] = index_t(
+                            in.field_as_uint( 3 ) - starting_index_ ) ;
                         t++ ;
                     }
                 }
@@ -221,6 +269,7 @@ namespace RINGMesh {
         }
 
     private:
+        index_t starting_index_ ;
         index_t mesh_dimension_ ;
         index_t nb_vertices_ ;
         index_t nb_triangles_ ;
@@ -283,15 +332,6 @@ namespace RINGMesh {
         geo_register_MeshIOHandler_creator( TSurfMeshIOHandler, "ts" ) ;
         geo_register_MeshIOHandler_creator( LINMeshIOHandler, "lin" ) ;
     }
-
-    /***********************************************************************/
-#ifdef __GNUC__
-#   pragma GCC diagnostic ignored "-Wsign-conversion"
-#endif
-
-#ifdef __GNUC__
-#   pragma GCC diagnostic warning "-Wsign-conversion"
-#endif
 
     /*!
      * Computes the volume of a Mesh cell
