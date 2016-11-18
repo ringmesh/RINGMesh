@@ -418,6 +418,7 @@ namespace RINGMesh {
 
     // The more I think about it the more this design
     // for editing the GeoModel and its Entities appears bad.
+    // AM.
     void set_entity_index( GeoModelEntity& E, index_t new_index_in_geomodel )
     {
         E.id_.index = new_index_in_geomodel ;

@@ -463,7 +463,7 @@ namespace RINGMesh {
                             nb_childs_[geological_entity_type_to_index( parent.type )][parent.index]-- ;
                         }
 
-                        delete_entity( i, j ) ;
+                        delete_mesh_entity( i, j ) ;
                     }
                 }
                 clear_null_mesh_entities( i ) ;
@@ -540,7 +540,7 @@ namespace RINGMesh {
             }
 
         }
-        void delete_entity( index_t type, index_t index )
+        void delete_mesh_entity( index_t type, index_t index )
         {
             const EntityType& type_name = index_to_mesh_entity_type( type ) ;
             gme_t id( type_name, index ) ;
@@ -650,7 +650,7 @@ namespace RINGMesh {
             }
             if( starting_dependency_ != Corner::type_name_static() ) {
                 starting_dependency_
-                    == EntityTypeManager::boundary_type( starting_dependency_ ) ;
+                    = EntityTypeManager::boundary_type( starting_dependency_ ) ;
                 remove_mesh_entities_with_dependencies( new_gmme_to_remove ) ;
             }
         }
@@ -680,7 +680,6 @@ namespace RINGMesh {
 
                 index_t type_index = mesh_entity_type_to_index( cur.type ) ;
                 mesh_entity_to_erase_[type_index][cur.index] = true ;
-                ;
             }
         }
 
