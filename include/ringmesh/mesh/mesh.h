@@ -86,8 +86,6 @@ namespace RINGMesh {
          */
         virtual const GEO::Mesh& gfx_mesh() const = 0 ;
 
-        virtual index_t nb_connected_components() const = 0 ;
-
         //TODO maybe reimplement the function with a RINGMesh::Mesh??
         virtual void print_mesh_bounded_attributes() const = 0 ;
         /*!
@@ -735,11 +733,6 @@ namespace RINGMesh {
         const GEO::Mesh& gfx_mesh() const
         {
             return *mesh_ ;
-        }
-
-        index_t nb_connected_components() const
-        {
-            return GEO::mesh_nb_connected_components( *mesh_ ) ;
         }
 
         //TODO maybe reimplement the function with a RINGMesh::Mesh??
