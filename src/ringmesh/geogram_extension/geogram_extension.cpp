@@ -144,7 +144,7 @@ namespace RINGMesh {
             save_triangles( out, mesh ) ;
             out << "END" << std::endl ;
 
-            return false ;
+            return true ;
         }
 
     private:
