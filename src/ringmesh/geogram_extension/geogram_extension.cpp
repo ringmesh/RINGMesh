@@ -151,8 +151,8 @@ namespace RINGMesh {
         void save_vertices( std::ofstream& out, const GEO::Mesh& mesh )
         {
             for( index_t v = 0; v < mesh.vertices.nb(); v++ ) {
-                out << "VTRX " << v + starting_index_ << mesh.vertices.point( v )
-                    << std::endl ;
+                out << "VRTX " << v + starting_index_ << " "
+                    << mesh.vertices.point( v ) << std::endl ;
             }
         }
         void save_triangles( std::ofstream& out, const GEO::Mesh& mesh )
