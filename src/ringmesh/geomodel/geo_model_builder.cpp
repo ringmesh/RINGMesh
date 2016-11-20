@@ -275,11 +275,13 @@ namespace {
         return false ;
     }
 
-    bool find_facet_from_vertex(
+    bool find_facet_sharing_two_different_vertices(
         const Surface& surface,
-        const vec3& v,
+        const vec3& v0,
+        const vec3& v1,
         index_t& element_id,
-        index_t& vertex_id )
+        index_t& vertex_0_id,
+        index_t& vertex_1_id )
     {
         index_t nb_neighbors = std::min( index_t( 5 ), surface.nb_mesh_elements() ) ;
         std::vector< index_t > neighbors ;
@@ -291,16 +293,27 @@ namespace {
             cur_neighbor = std::min( cur_neighbor, surface.nb_mesh_elements() ) ;
             neighbors.resize( cur_neighbor ) ;
             double* dist = (double*) alloca( sizeof(double) * cur_neighbor ) ;
-            nb_neighbors = surface.facet_colocater_ann().get_neighbors( v,
+            nb_neighbors = surface.facet_colocater_ann().get_neighbors( v0,
                 cur_neighbor, neighbors, dist ) ;
             for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
                 element_id = neighbors[i] ;
+                vertex_0_id = NO_ID ;
+                vertex_1_id = NO_ID ;
                 for( index_t j = 0;
                     j < surface.nb_mesh_element_vertices( element_id ); j++ ) {
                     if( inexact_equal( surface.mesh_element_vertex( element_id, j ),
-                        v, surface.model().epsilon() ) ) {
-                        vertex_id = surface.mesh_element_vertex_index( element_id,
+                        v0, surface.model().epsilon() ) ) {
+                        ringmesh_assert( vertex_0_id == NO_ID ) ;
+                        vertex_0_id = surface.mesh_element_vertex_index( element_id,
                             j ) ;
+                    } else if( inexact_equal(
+                        surface.mesh_element_vertex( element_id, j ), v1,
+                        surface.model().epsilon() ) ) {
+                        ringmesh_assert( vertex_1_id == NO_ID ) ;
+                        vertex_1_id = surface.mesh_element_vertex_index( element_id,
+                            j ) ;
+                    }
+                    if( vertex_0_id != NO_ID && vertex_1_id != NO_ID ) {
                         return true ;
                     }
                 }
@@ -308,15 +321,20 @@ namespace {
         } while( surface.nb_mesh_elements() != cur_neighbor ) ;
 
         element_id = NO_ID ;
-        vertex_id = NO_ID ;
+        vertex_0_id = NO_ID ;
+        vertex_1_id = NO_ID ;
         return false ;
     }
 
     bool find_cell_from_vertex(
         const Region& entity,
-        const vec3& v,
+        const vec3& v0,
+        const vec3& v1,
+        const vec3& v2,
         index_t& element_id,
-        index_t& vertex_id )
+        index_t& vertex_0_id,
+        index_t& vertex_1_id,
+        index_t& vertex_2_id )
     {
         index_t nb_neighbors = std::min( index_t( 5 ), entity.nb_mesh_elements() ) ;
         std::vector< index_t > neighbors ;
@@ -328,16 +346,35 @@ namespace {
             cur_neighbor = std::min( cur_neighbor, entity.nb_mesh_elements() ) ;
             neighbors.resize( cur_neighbor ) ;
             double* dist = (double*) alloca( sizeof(double) * cur_neighbor ) ;
-            nb_neighbors = entity.cell_colocater_ann().get_neighbors( v,
+            nb_neighbors = entity.cell_colocater_ann().get_neighbors( v0,
                 cur_neighbor, neighbors, dist ) ;
             for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
                 element_id = neighbors[i] ;
+                vertex_0_id = NO_ID ;
+                vertex_1_id = NO_ID ;
+                vertex_2_id = NO_ID ;
                 for( index_t j = 0;
                     j < entity.nb_mesh_element_vertices( element_id ); j++ ) {
                     if( inexact_equal( entity.mesh_element_vertex( element_id, j ),
-                        v, entity.model().epsilon() ) ) {
-                        vertex_id = entity.mesh_element_vertex_index( element_id,
+                        v0, entity.model().epsilon() ) ) {
+                        ringmesh_assert( vertex_0_id == NO_ID ) ;
+                        vertex_0_id = entity.mesh_element_vertex_index( element_id,
                             j ) ;
+                    } else if( inexact_equal(
+                        entity.mesh_element_vertex( element_id, j ), v1,
+                        entity.model().epsilon() ) ) {
+                        ringmesh_assert( vertex_1_id == NO_ID ) ;
+                        vertex_1_id = entity.mesh_element_vertex_index( element_id,
+                            j ) ;
+                    } else if( inexact_equal(
+                        entity.mesh_element_vertex( element_id, j ), v2,
+                        entity.model().epsilon() ) ) {
+                        ringmesh_assert( vertex_2_id == NO_ID ) ;
+                        vertex_2_id = entity.mesh_element_vertex_index( element_id,
+                            j ) ;
+                    }
+                    if( vertex_0_id != NO_ID && vertex_1_id != NO_ID
+                        && vertex_2_id != NO_ID ) {
                         return true ;
                     }
                 }
@@ -345,7 +382,9 @@ namespace {
         } while( entity.nb_mesh_elements() != cur_neighbor ) ;
 
         element_id = NO_ID ;
-        vertex_id = NO_ID ;
+        vertex_0_id = NO_ID ;
+        vertex_1_id = NO_ID ;
+        vertex_2_id = NO_ID ;
         return false ;
     }
 
@@ -1848,14 +1887,21 @@ namespace RINGMesh {
         const Line& line = model().line( line_id ) ;
 
         std::vector< ElementVertex > facet_vertices( line.nb_vertices() ) ;
-        for( index_t v = 0; v < line.nb_vertices(); v++ ) {
-            const vec3& p = line.vertex( v ) ;
+        for( index_t e = 0; e < line.nb_mesh_elements(); e++ ) {
+            const index_t v0_id = line.mesh_element_vertex_index( e, 0 ) ;
+            const vec3& v0 = line.vertex( v0_id ) ;
+            const index_t v1_id = line.mesh_element_vertex_index( e, 1 ) ;
+            const vec3& v1 = line.vertex( v1_id ) ;
 
-            index_t& facet_vertex = facet_vertices[v].vertex_ ;
-            index_t& facet = facet_vertices[v].element_ ;
-            bool found = find_facet_from_vertex( surface, p, facet, facet_vertex ) ;
+            index_t& facet_vertex_0 = facet_vertices[v0_id].vertex_ ;
+            index_t& facet_vertex_1 = facet_vertices[v1_id].vertex_ ;
+            index_t& facet = facet_vertices[v0_id].element_ ;
+            bool found = find_facet_sharing_two_different_vertices( surface, v0, v1, facet,
+                facet_vertex_0, facet_vertex_1 ) ;
             ringmesh_unused( found ) ;
-            ringmesh_assert( found && facet != NO_ID && facet_vertex != NO_ID ) ;
+            ringmesh_assert( found && facet != NO_ID && facet_vertex_0 != NO_ID
+                && facet_vertex_1 != NO_ID ) ;
+            facet_vertices[v1_id].element_ = facet ;
         }
 
         index_t vertex_id = create_mesh_entity_vertices( surface_gme,
@@ -1886,15 +1932,26 @@ namespace RINGMesh {
         const Surface& surface = model().surface( surface_id ) ;
 
         std::vector< ElementVertex > cell_vertices( surface.nb_vertices() ) ;
-        for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
-            const vec3& p = surface.vertex( v ) ;
+        for( index_t f = 0; f < surface.nb_mesh_elements(); f++ ) {
+            ringmesh_assert( surface.nb_mesh_element_vertices( f ) >= 3 ) ;
+            const index_t v0_id = surface.mesh_element_vertex_index( f, 0 ) ;
+            const vec3& v0 = surface.vertex( v0_id ) ;
+            const index_t v1_id = surface.mesh_element_vertex_index( f, 1 ) ;
+            const vec3& v1 = surface.vertex( v1_id ) ;
+            const index_t v2_id = surface.mesh_element_vertex_index( f, 2 ) ;
+            const vec3& v2 = surface.vertex( v2_id ) ;
 
-            index_t& cell = cell_vertices[v].element_ ;
-            index_t& cell_vertex = cell_vertices[v].vertex_ ;
-            bool found = find_cell_from_vertex( region, p, cell, cell_vertex ) ;
+            index_t& cell = cell_vertices[v0_id].element_ ;
+            index_t& cell_vertex_0 = cell_vertices[v0_id].vertex_ ;
+            index_t& cell_vertex_1 = cell_vertices[v1_id].vertex_ ;
+            index_t& cell_vertex_2 = cell_vertices[v2_id].vertex_ ;
+            bool found = find_cell_from_vertex( region, v0, v1, v2, cell,
+                cell_vertex_0, cell_vertex_1, cell_vertex_2 ) ;
             ringmesh_unused( found ) ;
-            ringmesh_assert( found && cell != NO_ID && cell_vertex != NO_ID ) ;
-
+            ringmesh_assert( found && cell != NO_ID && cell_vertex_0 != NO_ID
+                && cell_vertex_1 != NO_ID && cell_vertex_2 != NO_ID ) ;
+            cell_vertices[v1_id].element_= cell ;
+            cell_vertices[v2_id].element_= cell ;
         }
 
         index_t vertex_id = create_mesh_entity_vertices( region_gme,
