@@ -329,6 +329,7 @@ namespace RINGMesh {
             double min_area,
             index_t min_facets ) = 0 ;
         virtual void triangulate( const Mesh2D& surface_in ) = 0 ;
+        virtual void invert_normals() = 0 ;
         /*!@}
          */
     protected:
@@ -856,6 +857,10 @@ namespace RINGMesh {
                 this->remove_isolated_vertices() ;
             }
             clear_facet_linked_objects() ;
+        }
+        virtual void invert_normals()
+        {
+            GEO::invert_normals( *mesh_.mesh_ ) ;
         }
 
         /*!@}
