@@ -299,7 +299,6 @@ namespace RINGMesh {
 
         void remove_geological_entities( const std::set< gme_t >& entities ) ;
 
-
         /*!
          * @todo Could be moved in the API [JP]
          */
