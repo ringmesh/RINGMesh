@@ -83,7 +83,7 @@ namespace RINGMesh {
             // Must be regions.
             return create_mesh_entities< Region >( nb_additional_entities ) ;
         }
-        ringmesh_assert_not_reached() ;
+        ringmesh_assert_not_reached ;
     }
 
     void GeoModelEditor::set_model_name( const std::string& name )
@@ -642,24 +642,24 @@ namespace RINGMesh {
             delete_invalid_universe_sided_boundaries( U ) ;
         }
 
-        void remove_dependencies()
-        {
-            std::set< gme_t > new_gmme_to_remove ;
-            for( index_t me = 0;
-                me < model().nb_mesh_entities( starting_dependency_ ); me++ ) {
-                const GeoModelMeshEntity& cur_gmme = model().mesh_entity(
-                    starting_dependency_, me ) ;
-                if( cur_gmme.in_boundary( 0 ).index() == NO_ID
-                    && cur_gmme.nb_in_boundary() == 1 ) {
-                    new_gmme_to_remove.insert( cur_gmme.gme_id() ) ;
-                }
-            }
-            if( starting_dependency_ != Corner::type_name_static() ) {
-                starting_dependency_ = EntityTypeManager::boundary_type(
-                    starting_dependency_ ) ;
-                remove_mesh_entities_with_dependencies( new_gmme_to_remove ) ;
-            }
-        }
+//        void remove_dependencies()
+//        {
+//            std::set< gme_t > new_gmme_to_remove ;
+//            for( index_t me = 0;
+//                me < model().nb_mesh_entities( starting_dependency_ ); me++ ) {
+//                const GeoModelMeshEntity& cur_gmme = model().mesh_entity(
+//                    starting_dependency_, me ) ;
+//                if( cur_gmme.in_boundary( 0 ).index() == NO_ID
+//                    && cur_gmme.nb_in_boundary() == 1 ) {
+//                    new_gmme_to_remove.insert( cur_gmme.gme_id() ) ;
+//                }
+//            }
+//            if( starting_dependency_ != Corner::type_name_static() ) {
+//                starting_dependency_ = EntityTypeManager::boundary_type(
+//                    starting_dependency_ ) ;
+//                remove_mesh_entities_with_dependencies( new_gmme_to_remove ) ;
+//            }
+//        }
 
         //------  Initialization -------
         void fill_removed_entities_and_mapping()
