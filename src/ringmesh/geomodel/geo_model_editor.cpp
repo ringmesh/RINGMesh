@@ -1069,7 +1069,8 @@ namespace RINGMesh {
      *          with a prior call to get_dependent_entities function.
      *
      */
-    void GeoModelEditor::remove_geological_entities( const std::set< gme_t >& entities )
+    void GeoModelEditor::remove_geological_entities(
+        const std::set< gme_t >& entities )
     {
         if( entities.empty() ) {
             return ;

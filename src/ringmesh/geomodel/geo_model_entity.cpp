@@ -63,7 +63,7 @@
 #include <ringmesh/geomodel/geo_model_mesh_entity.h>
 #include <ringmesh/geomodel/geo_model_validity.h>
 
-namespace RINGMesh {           
+namespace RINGMesh {
 
     Universe::Universe( const GeoModel& model )
         : GeoModelEntity( model, NO_ID )
@@ -114,7 +114,7 @@ namespace RINGMesh {
             return NO_GEOL ;
         }
     }
-    
+
     /*!
      * \return the (lowercase) string associated to a
      * GeoModelELement::GEOL_FEATURE
@@ -141,7 +141,7 @@ namespace RINGMesh {
                 break ;
         }
     }
-    
+
     bool GeoModelEntity::is_identification_valid() const
     {
         bool is_valid = true ;
@@ -150,17 +150,16 @@ namespace RINGMesh {
                 << model().name() << "has no type and/or no index " << std::endl ;
             is_valid = false ;
             // No further checks are possible - This really should not happen
-            ringmesh_assert_not_reached ;
+            ringmesh_assert_not_reached;
         }
         if( !is_index_valid() ) {
             Logger::warn( "GeoModelEntity" ) << " Entity index " << gme_id()
-                << " is not valid. "
-                << std::endl ;
+                << " is not valid. " << std::endl ;
             // This really should not happen
             is_valid = false ;
-            ringmesh_assert_not_reached ;
+            ringmesh_assert_not_reached;
         }
-        return is_valid;
+        return is_valid ;
     }
 
     const GeoModelEntity::EntityType GeoModelEntity::type_name_static()
