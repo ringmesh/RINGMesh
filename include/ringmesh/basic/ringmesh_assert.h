@@ -43,12 +43,12 @@
  */
 
 namespace RINGMesh {
-    void ringmesh_assertion_failed(
+    void RINGMESH_API ringmesh_assertion_failed(
         const std::string& condition_string,
         const std::string& file,
         int line ) ;
 
-    void ringmesh_should_not_have_reached(
+    void RINGMESH_API ringmesh_should_not_have_reached(
         const std::string& file,
         int line ) ;
 }

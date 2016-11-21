@@ -2192,7 +2192,7 @@ namespace RINGMesh {
             }
             std::set< gme_t > to_erase ;
             to_erase.insert( cur_region.gme_id() ) ;
-            remove_entities( to_erase ) ;
+            remove_mesh_entities( to_erase ) ;
         }
         return true ;
     }
