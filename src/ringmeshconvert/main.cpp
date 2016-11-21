@@ -165,7 +165,7 @@ int main( int argc, char** argv )
         Logger::out( "" ) << "RINGMesh-dev <georessources-ringmesh-dev@univ-lorraine.fr> "
             << std::endl ;
         Logger::out( "" ) << "You can have access to the full code through "
-            << "its Bitbucket repository: "	<< std::endl ;
+            << "its Bitbucket repository: " << std::endl ;
         Logger::out( "" ) << "https://bitbucket.org/ring_team/ringmesh" 
             << std::endl ; 
         Logger::out( "" ) << "More information on this project and other " 
