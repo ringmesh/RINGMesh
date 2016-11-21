@@ -102,13 +102,22 @@ int main( int argc, char** argv )
     using namespace RINGMesh ;
 
     try {
+
         default_configure() ;
 
         Logger::div( "RINGMeshConvert" ) ;
         Logger::out( "" ) << "Welcome to RINGMeshConvert !" << std::endl ;
-        Logger::out( "" ) << "People working on the project in RING" << std::endl ;
-        Logger::out( "" ) << "Arnaud Botella <arnaud.botella@univ-lorraine.fr> "
+        Logger::out( "" ) << "This project is developped by the RINGMesh"
+            << " developpers team:" << std::endl ;
+        Logger::out( "" ) << "RINGMesh-dev <georessources-ringmesh-dev@univ-lorraine.fr> "
             << std::endl ;
+        Logger::out( "" ) << "You can have access to the full code through "
+            << "its Bitbucket repository: " << std::endl ;
+        Logger::out( "" ) << "https://bitbucket.org/ring_team/ringmesh" 
+            << std::endl ; 
+        Logger::out( "" ) << "More information on this project and other " 
+            << "projects of the team: " << std::endl ;
+        Logger::out( "" ) << "http://www.ring-team.org" << std::endl ; 
 
         CmdLine::import_arg_group( "in" ) ;
         CmdLine::import_arg_group( "out" ) ;
