@@ -160,6 +160,10 @@ namespace RINGMesh {
         {
         }
 
+        virtual void remove_isolated_vertices()
+        {
+            // All vertices are isolated in a Mesh0D
+        }
     } ;
 
     class RINGMESH_API Mesh1DBuilder: public virtual MeshBaseBuilder {

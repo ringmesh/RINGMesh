@@ -397,12 +397,12 @@ namespace RINGMesh {
         Corner( const GeoModel& model, index_t id )
             :
                 GeoModelMeshEntity( model, id ),
-                mesh0d_( new GeogramMesh( 3, false ) )
+                mesh0d_( new GeogramMesh0D )
         {
             GeoModelMeshEntity::set_mesh( mesh0d_ ) ;
 
-            GeogramMesh* geomesh = dynamic_cast< GeogramMesh* >( mesh0d_ ) ;
-            Mesh0DBuilder* builder = new GeogramMeshBuilder( *geomesh ) ;
+            GeogramMesh0D* geomesh = dynamic_cast< GeogramMesh0D* >( mesh0d_ ) ;
+            Mesh0DBuilder* builder = new GeogramMesh0DBuilder( *geomesh ) ;
             builder->create_vertex() ;
             delete builder ;
 
