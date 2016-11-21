@@ -67,7 +67,7 @@ namespace RINGMesh {
 
     bool RINGMESH_API compare_files( const std::string& f1, const std::string& f2 ) ;
 
-    void RINGMESH_API geomodel_load(
+    bool RINGMESH_API geomodel_load(
         GeoModel& model,
         const std::string& filename ) ;
 
@@ -87,7 +87,7 @@ namespace RINGMesh {
 
         static GeoModelIOHandler* get_handler( const std::string& filename ) ;
 
-        virtual void load( const std::string& filename, GeoModel& model ) = 0 ;
+        virtual bool load( const std::string& filename, GeoModel& model ) = 0 ;
 
         virtual void save( const GeoModel& model, const std::string& filename ) = 0 ;
 
