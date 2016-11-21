@@ -189,35 +189,6 @@ namespace RINGMesh {
             mesh_.mesh_->vertices.clear( keep_attributes, keep_memory ) ;
             clear_vertex_linked_objects() ;
         }
-        /*!
-         * @brief Remove vertices not connected to any mesh element
-         */
-//        virtual void remove_isolated_vertices()
-//        {
-//            GEO::vector< index_t > to_delete( mesh_.nb_vertices(), 1 ) ;
-//
-//            for( index_t e = 0; e < mesh_.nb_edges(); e++ ) {
-//                for( index_t v = 0; v < 2; v++ ) {
-//                    index_t vertex_id = mesh_.edge_vertex( e, v ) ;
-//                    to_delete[vertex_id] = 0 ;
-//                }
-//            }
-//            for( index_t f = 0; f < mesh_.nb_facets(); f++ ) {
-//                for( index_t v = 0; v < mesh_.nb_facet_vertices( f ); v++ ) {
-//                    index_t vertex_id = mesh_.facet_vertex( f, v ) ;
-//                    to_delete[vertex_id] = 0 ;
-//                }
-//            }
-//            for( index_t c = 0; c < mesh_.nb_cells(); c++ ) {
-//                for( index_t v = 0; v < mesh_.nb_cell_vertices( c ); v++ ) {
-//                    index_t vertex_id = mesh_.cell_vertex( c, v ) ;
-//                    to_delete[vertex_id] = 0 ;
-//                }
-//            }
-//
-//            delete_vertices( to_delete, false ) ;
-//        }
-
 
         virtual void clear_vertex_linked_objects()
         {
@@ -252,6 +223,121 @@ namespace RINGMesh {
         }
     private:
         GeogramMesh0D& mesh_ ;
+    } ;
+
+
+    class RINGMESH_API GeogramMesh1DBuilder: public GeogramMeshBaseBuilder,
+        public Mesh1DBuilder {
+    ringmesh_disable_copy( GeogramMesh1DBuilder ) ;
+
+    public:
+        GeogramMesh1DBuilder( GeogramMesh1D& mesh )
+            : GeogramMeshBaseBuilder( mesh ), Mesh1DBuilder(), mesh_( mesh )
+        {
+        }
+        virtual ~GeogramMesh1DBuilder()
+        {
+        }
+
+        /*!
+         * @brief Create a new edge.
+         * @param[in] v1_id index of the starting vertex.
+         * @param[in] v2_id index of the ending vertex.
+         */
+        virtual void create_edge( index_t v1_id, index_t v2_id )
+        {
+            mesh_.mesh_->edges.create_edge( v1_id, v2_id ) ;
+            clear_edge_linked_objects() ;
+        }
+        /*!
+         * \brief Creates a contiguous chunk of edges
+         * \param[in] nb_edges number of edges to create
+         * \return the index of the first edge
+         */
+        virtual index_t create_edges( index_t nb_edges )
+        {
+            return mesh_.mesh_->edges.create_edges( nb_edges ) ;
+        }
+        /*!
+         * @brief Sets a vertex of a facet by local vertex index.
+         * @param[in] edge_id index of the edge, in 0..nb()-1.
+         * @param[in] local_vertex_id index of the vertex in the facet. Local index between 0 and @function nb_vertices(cell_id) - 1.
+         * @param[in] vertex_id specifies the vertex \param local_vertex_id of facet \param of the facet facet_id. Index between 0 and @function nb() - 1.
+         */
+        virtual void set_edge_vertex(
+            index_t edge_id,
+            index_t local_vertex_id,
+            index_t vertex_id )
+        {
+            mesh_.mesh_->edges.set_vertex( edge_id, local_vertex_id, vertex_id ) ;
+            clear_edge_linked_objects() ;
+        }
+        /*!
+         * @brief Deletes a set of edges.
+         * @param[in] to_delete a vector of size @function nb(). If to_delete[e] is different from 0,
+         * then entity e will be destroyed, else it will be kept. On exit, to_delete is modified
+         * (it is used for internal bookkeeping).
+         * @param[in] remove_isolated_vertices if true, then the vertices that are no longer incident to any entity are deleted.
+         */
+        virtual void delete_edges(
+            GEO::vector< index_t > to_delete,
+            bool remove_isolated_vertices )
+        {
+            mesh_.mesh_->edges.delete_elements( to_delete, false ) ;
+            if( remove_isolated_vertices ) {
+                this->remove_isolated_vertices() ;
+            }
+            clear_edge_linked_objects() ;
+        }
+        /*!
+         * @brief Removes all the edges and attributes.
+         * @param[in] keep_attributes if true, then all the existing attribute
+         * names / bindings are kept (but they are cleared). If false, they are destroyed.
+         * @param[in] keep_memory if true, then memory is kept and can be reused
+         * by subsequent mesh entity creations.
+         */
+        virtual void clear_edges( bool keep_attributes, bool keep_memory )
+        {
+            mesh_.mesh_->edges.clear( keep_attributes, keep_memory ) ;
+            clear_edge_linked_objects() ;
+        }
+
+
+        /*!
+         * @brief Remove vertices not connected to any mesh element
+         */
+        virtual void remove_isolated_vertices()
+        {
+            GEO::vector< index_t > to_delete( mesh_.nb_vertices(), 1 ) ;
+
+            for( index_t e = 0; e < mesh_.nb_edges(); e++ ) {
+                for( index_t v = 0; v < 2; v++ ) {
+                    index_t vertex_id = mesh_.edge_vertex( e, v ) ;
+                    to_delete[vertex_id] = 0 ;
+                }
+            }
+            delete_vertices( to_delete, false ) ;
+
+        }
+        virtual void clear_edge_linked_objects()
+        {
+            delete_edge_colocater() ;
+        }
+
+    private:
+        /*!
+         * @brief Deletes the ColocaterANN on edges
+         */
+        void delete_edge_colocater()
+        {
+            if( mesh_.edges_ann_ != nil ) {
+                delete mesh_.edges_ann_ ;
+                mesh_.edges_ann_ = nil ;
+            }
+        }
+
+    private:
+        GeogramMesh1D& mesh_ ;
     } ;
 
     class RINGMESH_API GeogramMeshBuilder: public MeshAllDBuilder {
