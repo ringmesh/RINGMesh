@@ -371,7 +371,21 @@ namespace RINGMesh {
          * @param[in] facet_id the facet index
          * @return the facet area
          */
-        virtual double facet_area( index_t facet_id ) const = 0 ;
+        double facet_area( index_t facet_id ) const
+        {
+            double result = 0.0 ;
+            if( nb_facet_vertices( facet_id ) == 0 ) {
+                return result ;
+            }
+            const vec3& p1 = vertex( facet_vertex( facet_id, 0 ) ) ;
+            for( index_t i = 1; i + 1 < nb_facet_vertices( facet_id ); i++ ) {
+                const vec3& p2 = vertex( facet_vertex( facet_id, i ) ) ;
+                const vec3& p3 = vertex( facet_vertex( facet_id, i + 1 ) ) ;
+                result += 0.5 * length( cross( p2 - p1, p3 - p1 ) ) ;
+            }
+            return result ;
+        }
+
         
         /*!
          * @brief return the ColocaterANN at facets
@@ -406,7 +420,7 @@ namespace RINGMesh {
         {
         }
 
-    private:
+    protected:
         mutable ColocaterANN* facets_ann_ ;
         mutable AABBTree2D* facets_aabb_ ;
 

@@ -107,4 +107,17 @@ namespace RINGMesh {
         return mesh_builder_ ;
     }
 
+
+    GeogramMesh2DBuilder* GeogramMesh2D::get_geogram_mesh_builder()
+    {
+        return dynamic_cast< GeogramMesh2DBuilder* >( get_mesh_builder_base() ) ;
+    }
+    MeshBaseBuilder* GeogramMesh2D::get_mesh_builder_base()
+    {
+        if( mesh_builder_ == nil ) {
+            mesh_builder_ = new GeogramMesh2DBuilder( *this ) ;
+        }
+        return mesh_builder_ ;
+    }
+
 } // namespace

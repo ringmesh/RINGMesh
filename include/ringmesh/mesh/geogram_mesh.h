@@ -195,6 +195,77 @@ namespace RINGMesh {
         virtual MeshBaseBuilder* get_mesh_builder_base() ;
     } ;
 
+
+    class RINGMESH_API GeogramMesh2D: public virtual GeogramMeshBase, public Mesh2D {
+    ringmesh_disable_copy( GeogramMesh2D ) ;
+        friend class GeogramMesh2DBuilder ;
+
+    public:
+        GeogramMesh2D()
+            : GeogramMeshBase(), Mesh2D()
+        {
+        }
+        virtual ~GeogramMesh2D()
+        {
+        }
+
+        /*!
+         * @brief Gets the vertex index by facet index and local vertex index.
+         * @param[in] facet_id the facet index.
+         * @param[in] vertex_id the local edge index in \param facet_id.
+         * @return the global facet index adjacent to the \param edge_id of the facet \param facet_id.
+         * @precondition  \param edge_id < number of edge of the facet \param facet_id .
+         */
+        index_t facet_vertex( index_t facet_id, index_t vertex_id ) const
+        {
+            return mesh_->facets.vertex( facet_id, vertex_id ) ;
+        }
+        /*!
+         * @brief Gets the number of all facets in the whole Mesh.
+         */
+        index_t nb_facets() const
+        {
+            return mesh_->facets.nb() ;
+        }
+        /*!
+         * @brief Gets the number of vertices in the facet \param facet_id.
+         * @param[in] facet_id facet index
+         */
+        index_t nb_facet_vertices( index_t facet_id ) const
+        {
+            return mesh_->facets.nb_vertices( facet_id ) ;
+        }
+
+        /*!
+         * @brief Gets an adjacent facet index by facet index and local edge index.
+         * @param[in] facet_id the facet index.
+         * @param[in] edge_id the local edge index in \param facet_id.
+         * @return the global facet index adjacent to the \param edge_id of the facet \param facet_id.
+         * @precondition  \param edge_id < number of edge of the facet \param facet_id .
+         */
+        index_t facet_adjacent( index_t facet_id, index_t edge_id ) const
+        {
+            return mesh_->facets.adjacent( facet_id, edge_id ) ;
+        }
+        GEO::AttributesManager& facet_attribute_manager() const
+        {
+            return mesh_->facets.attributes() ;
+        }
+        /*!
+         * @brief Tests whether all the facets are triangles. when all the facets are triangles, storage and access is optimized.
+         * @return True if all facets are triangles and False otherwise.
+         */
+        bool facets_are_simplicies() const
+        {
+            return mesh_->facets.are_simplices() ;
+        }
+
+        GeogramMesh2DBuilder* get_geogram_mesh_builder() ;
+    protected:
+        virtual MeshBaseBuilder* get_mesh_builder_base() ;
+
+    } ;
+
     /*!
      * @brief class to encapsulate mesh structure in order to provide an API
      * on which we base the RINGMesh algorithm
