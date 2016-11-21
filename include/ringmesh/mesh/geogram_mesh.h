@@ -46,17 +46,8 @@
 
 #include <ringmesh/basic/geometry.h>
 #include <ringmesh/geogram_extension/geogram_extension.h>
-#include <ringmesh/mesh/aabb.h>
 
 namespace RINGMesh {
-    class GeoModel ;
-    class MeshBaseBuilder ;
-    class Mesh0DBuilder ;
-    class Mesh1DBuilder ;
-    class Mesh2DBuilder ;
-    class Mesh3DBuilder ;
-    class MeshAllDBuilder ;
-    class GeogramMeshBuilder ;
     class GeogramMeshBaseBuilder ;
     class GeogramMesh0DBuilder ;
     class GeogramMesh1DBuilder ;
