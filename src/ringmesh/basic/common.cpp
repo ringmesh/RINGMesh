@@ -99,12 +99,12 @@ namespace RINGMesh {
     
     void print_header_information()
     {
-        Logger::out( "" ) << "This project is developped by the RINGMesh"
+        Logger::out( "" ) << "This project is developed by the RINGMesh"
             << " developpers team:" << std::endl ;
         Logger::out( "" ) << "RINGMesh-dev <georessources-ringmesh-dev@univ-lorraine.fr> "
             << std::endl ;
-        Logger::out( "" ) << "You can have access to the full code through "
-            << "its Bitbucket repository: " << std::endl ;
+        Logger::out( "" ) << "You can have access to the full open-source " 
+            << "code through its Bitbucket repository: " << std::endl ;
         Logger::out( "" ) << "https://bitbucket.org/ring_team/ringmesh" 
             << std::endl ; 
         Logger::out( "" ) << "More information on this project and other " 
