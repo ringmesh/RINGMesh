@@ -46,7 +46,6 @@
 #include <ringmesh/geomodel/geo_model_validity.h>
 #include <ringmesh/io/io.h>
 
-
 /*!
  * @author Arnaud Botella
  */
@@ -54,75 +53,35 @@
 namespace {
     using namespace RINGMesh ;
 
-    /************************************************************************/
-    /*!
-     * Loads a GeoModel from a file
-     * @param[in] filename the file to load
-     * @param[out] model the model to fill
-     */
-    void geomodel_surface_load( const std::string& filename, GeoModel& model )
+    void convert_mesh( const std::string& mesh_in_name )
     {
-        if( filename.empty() ) {
+        GEO::Mesh mesh ;
+        GEO::mesh_load( mesh_in_name, mesh ) ;
+        std::string mesh_out_name = GEO::CmdLine::get_arg( "out:mesh" ) ;
+        if( mesh_out_name.empty() ) {
             throw RINGMeshException( "I/O",
-                "No filename provided for structural model, use in:model" ) ;
+                "Give the parameter out:mesh to save the mesh" ) ;
         }
-        std::ifstream input( filename.c_str() ) ;
-        if( !input ) {
-            throw RINGMeshException( "I/O", "Cannot open file: " + filename ) ;
+        GEO::mesh_save( mesh, mesh_out_name ) ;
+    }
+
+    void convert_geomodel( const std::string& geomodel_in_name )
+    {
+        GeoModel geomodel ;
+        geomodel_load( geomodel, geomodel_in_name ) ;
+        std::string geomodel_out_name = GEO::CmdLine::get_arg( "out:geomodel" ) ;
+        if( geomodel_out_name.empty() ) {
+            throw RINGMeshException( "I/O",
+                "Give the parameter out:geomodel to save the geomodel" ) ;
         }
-
-        Logger::out( "I/O" ) << "Loading file: " << filename << std::endl ;
-
-        GeoModelIOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
-        handler->load( filename, model ) ;
-    }
-
-    /*!
-     * Saves a GeoModel in a file
-     * @param[in] model the model to save
-     * @param[in] filename the filename where to save it
-     */
-    void geomodel_surface_save( const GeoModel& model, const std::string& filename )
-    {
-        Logger::out( "I/O" ) << "Saving file " << filename << std::endl ;
-
-        GeoModelIOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
-        handler->save( model, filename ) ;
-    }
-
-
-    /*!
-     * Loads a GeoModel from a file
-     * @param[in] filename the file to load
-     * @param][out] model the mesh to fill
-     */
-    void geomodel_volume_load( const std::string& filename, GeoModel& model )
-    {
-        Logger::out( "I/O" ) << "Loading file " << filename << "..."
-            << std::endl ;
-
-        GeoModelIOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
-        handler->load( filename, model ) ;
-    }
-
-    /*!
-     * Saves a GeoModel in a file
-     * @param[in] model the mesh to save
-     * @param[in] filename the file where to save
-     */
-    void geomodel_volume_save( const GeoModel& model, const std::string& filename )
-    {
-        Logger::out( "I/O" ) << "Saving file " << filename << "..."
-            << std::endl ;
-
-        GeoModelIOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
-        handler->save( model, filename ) ;
+        geomodel_save( geomodel, geomodel_out_name ) ;
     }
 
     void show_usage_example()
     {
         Logger::div( "Example" ) ;
-        Logger::out( "" ) << "ringmeshconvert in:geomodel=path/to/input/geomodel.ext "
+        Logger::out( "" )
+            << "ringmeshconvert in:geomodel=path/to/input/geomodel.ext "
             << "out:geomodel=path/to/output/geomodel.ext" << std::endl ;
     }
 }
@@ -130,23 +89,11 @@ namespace {
 namespace RINGMesh {
 
     namespace CmdLine {
-        void import_temp_in_out()
+        void import_more_in_out()
         {
-            GEO::CmdLine::declare_arg( "in:model", "",
-                "Filename of the input structural model",
-                GEO::CmdLine::ARG_ADVANCED ) ;
             GEO::CmdLine::declare_arg( "in:mesh", "",
-                "Filename of the input volumetric mesh",
-                GEO::CmdLine::ARG_ADVANCED ) ;
-            GEO::CmdLine::declare_arg( "out:model", "",
-                "Saves the structural model",
-                GEO::CmdLine::ARG_ADVANCED ) ;
-            GEO::CmdLine::declare_arg( "out:mesh", "",
-                "Saves the volumetric mesh of the structural model",
-                GEO::CmdLine::ARG_ADVANCED ) ;
-            GEO::CmdLine::declare_arg( "in:old_geomodel", "",
-                "Saves the volumetric mesh of the structural model",
-                GEO::CmdLine::ARG_ADVANCED ) ;
+                "Filename of the input mesh" ) ;
+            GEO::CmdLine::declare_arg( "out:mesh", "", "Saves the mesh" ) ;
         }
     }
 }
@@ -174,7 +121,7 @@ int main( int argc, char** argv )
 
         CmdLine::import_arg_group( "in" ) ;
         CmdLine::import_arg_group( "out" ) ;
-        CmdLine::import_temp_in_out() ;
+        CmdLine::import_more_in_out() ;
         if( argc == 1 ) {
             GEO::CmdLine::show_usage() ;
             show_usage_example() ;
@@ -189,41 +136,17 @@ int main( int argc, char** argv )
 
         GEO::Stopwatch total( "Total time" ) ;
 
-        GeoModel model_in ;
-
         std::string geomodel_in_name = GEO::CmdLine::get_arg( "in:geomodel" ) ;
+        std::string mesh_in_name = GEO::CmdLine::get_arg( "in:mesh" ) ;
+        if( mesh_in_name.empty() ) {
+            throw RINGMeshException( "I/O",
+                "Give at least a filename in in:geomodel or in:mesh" ) ;
+        }
+
         if( geomodel_in_name.empty() ) {
-            geomodel_in_name = GEO::CmdLine::get_arg( "in:model" ) ;
-            if( geomodel_in_name.empty() ) {
-                throw RINGMeshException( "I/O",
-                    "Give at least a filename in in:model or in:geomodel" ) ;
-            } else {
-                geomodel_surface_load( geomodel_in_name, model_in ) ;
-            }
+            convert_mesh( mesh_in_name ) ;
         } else {
-            geomodel_load( model_in, geomodel_in_name ) ;
-        }
-
-        if( GEO::CmdLine::get_arg( "in:geomodel" ).empty() ) {
-            std::string mesh_in_name = GEO::CmdLine::get_arg( "in:mesh" ) ;
-            if( !mesh_in_name.empty() ) {
-                geomodel_volume_load( mesh_in_name, model_in ) ;
-            }
-        }
-
-        std::string geomodel_out_name = GEO::CmdLine::get_arg( "out:geomodel" ) ;
-        if(geomodel_out_name.empty()) {
-            std::string model_out_name = GEO::CmdLine::get_arg( "out:model" ) ;
-            std::string mesh_out_name = GEO::CmdLine::get_arg( "out:mesh" ) ;
-            if( !model_out_name.empty() ) {
-                geomodel_surface_save( model_in, model_out_name ) ;
-            }
-            if( !mesh_out_name.empty() ) {
-                 geomodel_volume_save( model_in, mesh_out_name ) ;
-             }
-        }
-        else {
-            geomodel_save(model_in,geomodel_out_name) ;
+            convert_geomodel( geomodel_in_name ) ;
         }
 
     } catch( const RINGMeshException& e ) {
