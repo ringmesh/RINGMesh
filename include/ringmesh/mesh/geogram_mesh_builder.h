@@ -55,6 +55,205 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
+    class RINGMESH_API GeogramMeshBaseBuilder: public virtual MeshBaseBuilder {
+    ringmesh_disable_copy( GeogramMeshBaseBuilder ) ;
+
+    public:
+    GeogramMeshBaseBuilder( GeogramMeshBase& mesh )
+            : MeshBaseBuilder(), mesh_( mesh )
+        {
+        }
+        virtual ~GeogramMeshBaseBuilder()
+        {
+        }
+        /*!
+         * \name MeshBaseBuilder implementation
+         * @{
+         */
+        /*!
+         * @brief Copy a mesh into this one.
+         * @param[in] rhs a const reference to the mesh to be copied.
+         * @param[in] copy_attributes if true, all attributes are copied.
+         * @param[in] what a combination of MESH_VERTICES, MESH_EDGES, MESH_FACETS, MESH_CELLS flags.
+         * Set to MESH_ALL_ELEMENTS to copy everything (default).
+         * If MESH_VERTICES is not set, then the mesh is cleared.
+         * @return a modifiable reference to the point that corresponds to the vertex.
+         */
+        virtual void copy(
+            const MeshBase& rhs,
+            bool copy_attributes,
+            GEO::MeshElementsFlags what )
+        {
+            const GeogramMeshBase& geogrammesh =
+                dynamic_cast< const GeogramMeshBase& >( rhs ) ;
+            mesh_.mesh_->copy( *geogrammesh.mesh_, copy_attributes, what ) ;
+            clear_vertex_linked_objects() ;
+        }
+
+        virtual void load_mesh(
+            const std::string& filename,
+            const GEO::MeshIOFlags& ioflags )
+        {
+            GEO::mesh_load( filename, *mesh_.mesh_, ioflags ) ;
+        }
+        /*!
+         * @brief Removes all the entities and attributes of this mesh.
+         * @param[in] keep_attributes if true, then all the existing attribute
+         * names / bindings are kept (but they are cleared). If false, they are destroyed.
+         * @param[in] keep_memory if true, then memory is kept and can be reused
+         * by subsequent mesh entity creations.
+         */
+        virtual void clear( bool keep_attributes, bool keep_memory )
+        {
+            mesh_.mesh_->clear( keep_attributes, keep_memory ) ;
+            clear_vertex_linked_objects() ;
+        }
+        /**
+         * \brief Fixes some defaults in a mesh.
+         * \param[in] mode a combination of #MeshRepairMode flags.
+         *  Combine them with the 'bitwise or' (|) operator.
+         * \param[in] colocate_epsilon tolerance used to colocate vertices
+         *  (if #MESH_REPAIR_COLOCATE is set in mode).
+         */
+        virtual void mesh_repair( GEO::MeshRepairMode mode, double colocate_epsilon )
+        {
+            GEO::mesh_repair( *mesh_.mesh_, mode, colocate_epsilon ) ;
+
+        }
+
+        /*!
+         * @brief Sets a point.
+         * @param[in] v_id the vertex, in 0.. @function nb_vetices()-1.
+         * @param[in] vertex the vertex coordinates
+         * @return reference to the point that corresponds to the vertex.
+         */
+        virtual void set_vertex( index_t v_id, const vec3& vertex )
+        {
+            mesh_.mesh_->vertices.point( v_id ) = vertex ;
+            clear_vertex_linked_objects() ;
+        }
+        /*!
+         * @brief Creates a new vertex.
+         * @return the index of the created vertex
+         */
+        virtual index_t create_vertex()
+        {
+            return mesh_.mesh_->vertices.create_vertex() ;
+        }
+        /*!
+         * @brief Creates a new vertex.
+         * @param[in] coords a pointer to @function dimension() coordinate.
+         * @return the index of the created vertex
+         */
+        virtual index_t create_vertex( const vec3& vertex )
+        {
+            index_t index = create_vertex() ;
+            set_vertex( index, vertex ) ;
+            return index ;
+        }
+        /*!
+         * @brief Creates a contiguous chunk of vertices.
+         * @param[in] nb number of sub-entities to create.
+         * @return the index of the first created vertex
+         */
+        virtual index_t create_vertices( index_t nb )
+        {
+            return mesh_.mesh_->vertices.create_vertices( nb ) ;
+        }
+        /*!
+         * @brief Deletes a set of vertices.
+         * @param[in] to_delete     a vector of size @function nb(). If to_delete[e] is different from 0,
+         * then entity e will be destroyed, else it will be kept. On exit, to_delete is modified
+         * (it is used for internal bookkeeping).
+         * @param[in] remove_isolated_vertices if true, then the vertices that are no longer incident to any entity are deleted.
+         */
+        virtual void delete_vertices(
+            GEO::vector< index_t >& to_delete,
+            bool remove_isolated_vertices )
+        {
+            mesh_.mesh_->vertices.delete_elements( to_delete, false ) ;
+            if( remove_isolated_vertices ) {
+                this->remove_isolated_vertices() ;
+            }
+            clear_vertex_linked_objects() ;
+        }
+        /*!
+         * @brief Removes all the vertices and attributes.
+         * @param[in] keep_attributes if true, then all the existing attribute
+         * names / bindings are kept (but they are cleared). If false, they are destroyed.
+         * @param[in] keep_memory if true, then memory is kept and can be reused
+         * by subsequent mesh entity creations.
+         */
+        virtual void clear_vertices( bool keep_attributes, bool keep_memory )
+        {
+            mesh_.mesh_->vertices.clear( keep_attributes, keep_memory ) ;
+            clear_vertex_linked_objects() ;
+        }
+        /*!
+         * @brief Remove vertices not connected to any mesh element
+         */
+//        virtual void remove_isolated_vertices()
+//        {
+//            GEO::vector< index_t > to_delete( mesh_.nb_vertices(), 1 ) ;
+//
+//            for( index_t e = 0; e < mesh_.nb_edges(); e++ ) {
+//                for( index_t v = 0; v < 2; v++ ) {
+//                    index_t vertex_id = mesh_.edge_vertex( e, v ) ;
+//                    to_delete[vertex_id] = 0 ;
+//                }
+//            }
+//            for( index_t f = 0; f < mesh_.nb_facets(); f++ ) {
+//                for( index_t v = 0; v < mesh_.nb_facet_vertices( f ); v++ ) {
+//                    index_t vertex_id = mesh_.facet_vertex( f, v ) ;
+//                    to_delete[vertex_id] = 0 ;
+//                }
+//            }
+//            for( index_t c = 0; c < mesh_.nb_cells(); c++ ) {
+//                for( index_t v = 0; v < mesh_.nb_cell_vertices( c ); v++ ) {
+//                    index_t vertex_id = mesh_.cell_vertex( c, v ) ;
+//                    to_delete[vertex_id] = 0 ;
+//                }
+//            }
+//
+//            delete_vertices( to_delete, false ) ;
+//        }
+
+
+        virtual void clear_vertex_linked_objects()
+        {
+            delete_vertex_colocater() ;
+        }
+
+    private:
+
+        void delete_vertex_colocater()
+        {
+            if( mesh_.vertices_ann_ != nil ) {
+                delete mesh_.vertices_ann_ ;
+                mesh_.vertices_ann_ = nil ;
+            }
+        }
+
+    private:
+        GeogramMeshBase& mesh_ ;
+    } ;
+
+    class RINGMESH_API GeogramMesh0DBuilder: public GeogramMeshBaseBuilder,
+        public Mesh0DBuilder {
+    ringmesh_disable_copy( GeogramMesh0DBuilder ) ;
+
+    public:
+        GeogramMesh0DBuilder( GeogramMesh0D& mesh )
+            : GeogramMeshBaseBuilder( mesh ), Mesh0DBuilder(), mesh_( mesh )
+        {
+        }
+        virtual ~GeogramMesh0DBuilder()
+        {
+        }
+    private:
+        GeogramMesh0D& mesh_ ;
+    } ;
+
     class RINGMESH_API GeogramMeshBuilder: public MeshAllDBuilder {
     ringmesh_disable_copy( GeogramMeshBuilder ) ;
 

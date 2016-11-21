@@ -82,4 +82,16 @@ namespace RINGMesh {
         return mesh_builder_ ;
     }
 
+    GeogramMesh0DBuilder* GeogramMesh0D::get_geogram_mesh_builder()
+    {
+        return dynamic_cast< GeogramMesh0DBuilder* >( get_mesh_builder_base() ) ;
+    }
+    MeshBaseBuilder* GeogramMesh0D::get_mesh_builder_base()
+    {
+        if( mesh_builder_ == nil ) {
+            mesh_builder_ = new GeogramMesh0DBuilder( *this ) ;
+        }
+        return mesh_builder_ ;
+    }
+
 } // namespace

@@ -143,7 +143,6 @@ namespace RINGMesh {
 
     protected:
         MeshBaseBuilder* mesh_builder_ ;
-    private:
         mutable ColocaterANN* vertices_ann_ ;
     } ;
 

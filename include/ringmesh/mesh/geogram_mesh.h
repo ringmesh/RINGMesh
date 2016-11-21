@@ -57,9 +57,118 @@ namespace RINGMesh {
     class Mesh3DBuilder ;
     class MeshAllDBuilder ;
     class GeogramMeshBuilder ;
+    class GeogramMeshBaseBuilder ;
+    class GeogramMesh0DBuilder ;
+    class GeogramMesh1DBuilder ;
+    class GeogramMesh2DBuilder ;
+    class GeogramMesh3DBuilder ;
 }
 
 namespace RINGMesh {
+
+    /*!
+     * @brief class to encapsulate mesh structure in order to provide an API
+     * on which we base the RINGMesh algorithm
+     * @note For now, we encapsulate the GEO::Mesh class. We can develop the concept
+     * using a factory to build several encapsulating classes.
+     */
+    class RINGMESH_API GeogramMeshBase: public virtual MeshBase {
+    ringmesh_disable_copy( GeogramMeshBase ) ;
+
+        friend class GeogramMeshBaseBuilder ;
+
+    public:
+        /*!
+         * @brief Mesh constructor.
+         * @param[in] dimension dimension of the vertices.
+         * @param[in] single_precision if true, vertices are stored in single precision (float),
+         * else they are stored as double precision (double).
+         */
+        GeogramMeshBase()
+            : MeshBase()
+        {
+            mesh_ = new GEO::Mesh( 3, false ) ;
+        }
+        virtual ~GeogramMeshBase()
+        {
+            delete mesh_ ;
+        }
+        /*!
+         * \name MeshBase implementation
+         * @{
+         */
+        void save_mesh(
+            const std::string& filename,
+            const GEO::MeshIOFlags& ioflags ) const
+        {
+            GEO::mesh_save( *mesh_, filename, ioflags ) ;
+        }
+
+        /*!
+         * get access to GEO::MESH... only for GFX..
+         * @todo Remove this function as soon as the GEO::MeshGFX is encapsulated
+         */
+        const GEO::Mesh& gfx_mesh() const
+        {
+            return *mesh_ ;
+        }
+
+        //TODO maybe reimplement the function with a RINGMesh::Mesh??
+        void print_mesh_bounded_attributes() const
+        {
+            print_bounded_attributes( *mesh_ ) ;
+        }
+
+        /*
+         * @brief Gets a point.
+         * @param[in] v_id the vertex, in 0.. @function nb_vetices()-1.
+         * @return const reference to the point that corresponds to the vertex.
+         */
+        const vec3& vertex( index_t v_id ) const
+        {
+            ringmesh_assert( v_id < nb_vertices() ) ;
+            return mesh_->vertices.point( v_id ) ;
+        }
+
+        /*
+         * @brief Gets the number of point in the Mesh.
+         */
+        index_t nb_vertices() const
+        {
+            return mesh_->vertices.nb() ;
+        }
+        GEO::AttributesManager& vertex_attribute_manager() const
+        {
+            return mesh_->vertices.attributes() ;
+        }
+
+    protected:
+        mutable GEO::Mesh* mesh_ ;
+    } ;
+
+    class RINGMESH_API GeogramMesh0D: public virtual GeogramMeshBase, public Mesh0D {
+    ringmesh_disable_copy( GeogramMesh0D ) ;
+
+        friend class GeogramMeshBuilder ;
+
+    public:
+        /*!
+         * @brief Mesh constructor.
+         * @param[in] dimension dimension of the vertices.
+         * @param[in] single_precision if true, vertices are stored in single precision (float),
+         * else they are stored as double precision (double).
+         */
+        GeogramMesh0D()
+            : GeogramMeshBase(), Mesh0D()
+        {
+        }
+        virtual ~GeogramMesh0D()
+        {
+        }
+        GeogramMesh0DBuilder* get_geogram_mesh_builder() ;
+    protected:
+        virtual MeshBaseBuilder* get_mesh_builder_base() ;
+    } ;
 
     /*!
      * @brief class to encapsulate mesh structure in order to provide an API
@@ -79,9 +188,7 @@ namespace RINGMesh {
          * @param[in] single_precision if true, vertices are stored in single precision (float),
          * else they are stored as double precision (double).
          */
-        GeogramMesh(
-            index_t dimension,
-            bool single_precision )
+        GeogramMesh( index_t dimension, bool single_precision )
             : MeshAllD()
         {
             mesh_ = new GEO::Mesh( dimension, single_precision ) ;
