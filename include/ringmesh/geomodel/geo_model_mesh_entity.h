@@ -796,7 +796,7 @@ namespace RINGMesh {
         Surface( const GeoModel& model, index_t id )
             :
                 GeoModelMeshEntity( model, id ),
-                mesh2d_( new GeogramMesh( 3, false ) )
+                mesh2d_( new GeogramMesh2D )
         {
             GeoModelMeshEntity::set_mesh( mesh2d_ ) ;
 

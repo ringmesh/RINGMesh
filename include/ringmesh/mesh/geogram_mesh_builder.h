@@ -59,7 +59,7 @@ namespace RINGMesh {
     ringmesh_disable_copy( GeogramMeshBaseBuilder ) ;
 
     public:
-    GeogramMeshBaseBuilder( GeogramMeshBase& mesh )
+        GeogramMeshBaseBuilder( GeogramMeshBase& mesh )
             : MeshBaseBuilder(), mesh_( mesh )
         {
         }
@@ -225,7 +225,6 @@ namespace RINGMesh {
         GeogramMesh0D& mesh_ ;
     } ;
 
-
     class RINGMESH_API GeogramMesh1DBuilder: public GeogramMeshBaseBuilder,
         public Mesh1DBuilder {
     ringmesh_disable_copy( GeogramMesh1DBuilder ) ;
@@ -302,7 +301,6 @@ namespace RINGMesh {
             clear_edge_linked_objects() ;
         }
 
-
         /*!
          * @brief Remove vertices not connected to any mesh element
          */
@@ -338,6 +336,231 @@ namespace RINGMesh {
 
     private:
         GeogramMesh1D& mesh_ ;
+    } ;
+
+    class RINGMESH_API GeogramMesh2DBuilder: public GeogramMeshBaseBuilder,
+        public Mesh2DBuilder {
+    ringmesh_disable_copy( GeogramMesh2DBuilder ) ;
+
+    public:
+        GeogramMesh2DBuilder( GeogramMesh2D& mesh )
+            : GeogramMeshBaseBuilder( mesh ), Mesh2DBuilder(), mesh_( mesh )
+        {
+        }
+        virtual ~GeogramMesh2DBuilder()
+        {
+        }
+
+        /**
+         * \brief Removes the connected components that have an area
+         *  smaller than a given threshold.
+         * \param[in] min_area the connected components with an
+         *  area smaller than this threshold are removed
+         * \param[in] min_facets the connected components with
+         *  less than \param min_facets facets are removed
+         */
+        virtual void remove_small_connected_components(
+            double min_area,
+            index_t min_facets )
+        {
+            GEO::remove_small_connected_components( *mesh_.mesh_, min_area,
+                min_facets ) ;
+        }
+
+        virtual void triangulate( const Mesh2D& surface_in )
+        {
+            Logger::instance()->set_minimal( true ) ;
+            const GeogramMesh2D& geogram_surf_in =
+                dynamic_cast< const GeogramMesh2D& >( surface_in ) ;
+            GEO::CentroidalVoronoiTesselation CVT( geogram_surf_in.mesh_, 3,
+                GEO::CmdLine::get_arg( "algo:delaunay" ) ) ;
+            CVT.set_points( mesh_.nb_vertices(),
+                mesh_.mesh_->vertices.point_ptr( 0 ) ) ;
+            CVT.compute_surface( mesh_.mesh_, false ) ;
+            Logger::instance()->set_minimal( false ) ;
+        }
+        /*!
+         * brief create facet polygons
+         * @param[in] facets is the vector of vertex index for each facet
+         * @param[in] facet_ptr is the vector addressing the first facet vertex for each facet.
+         */
+        virtual void create_facet_polygons(
+            const std::vector< index_t >& facets,
+            const std::vector< index_t >& facet_ptr )
+        {
+            for( index_t f = 0; f + 1 < facet_ptr.size(); f++ ) {
+                index_t start = facet_ptr[f] ;
+                index_t end = facet_ptr[f + 1] ;
+                GEO::vector< index_t > facet_vertices ;
+                copy_std_vector_to_geo_vector( facets, start, end, facet_vertices ) ;
+
+                mesh_.mesh_->facets.create_polygon( facet_vertices ) ;
+            }
+            clear_facet_linked_objects() ;
+        }
+        /*!
+         * \brief Creates a polygonal facet
+         * \param[in] vertices a const reference to a vector that
+         *  contains the vertices
+         * \return the index of the created facet
+         */
+        virtual index_t create_facet_polygon(
+            const GEO::vector< index_t >& vertices )
+        {
+            index_t index = mesh_.mesh_->facets.create_polygon( vertices ) ;
+            clear_facet_linked_objects() ;
+            return index ;
+        }
+
+        /*!
+         * \brief Creates a contiguous chunk of triangles
+         * \param[in] nb_triangles number of triangles to create
+         * \return the index of the first triangle
+         */
+        virtual index_t create_facet_triangles( index_t nb_triangles )
+        {
+            return mesh_.mesh_->facets.create_triangles( nb_triangles ) ;
+
+        }
+        /*!
+         * \brief Creates a contiguous chunk of quads
+         * \param[in] nb_quads number of quads to create
+         * \return the index of the first quad
+         */
+        virtual index_t create_facet_quads( index_t nb_quads )
+        {
+            return mesh_.mesh_->facets.create_quads( nb_quads ) ;
+        }
+        /*!
+         * @brief Sets a vertex of a facet by local vertex index.
+         * @param[in] facet_id index of the facet, in 0.. @function nb() - 1.
+         * @param[in] local_vertex_id index of the vertex in the facet. Local index between 0 and @function nb_vertices(cell_id) - 1.
+         * @param[in] vertex_id specifies the vertex \param local_vertex_id of the facet \param facet_id. Index between 0 and @function nb() - 1.
+         */
+        virtual void set_facet_vertex(
+            index_t facet_id,
+            index_t local_vertex_id,
+            index_t vertex_id )
+        {
+            mesh_.mesh_->facets.set_vertex( facet_id, local_vertex_id, vertex_id ) ;
+            clear_facet_linked_objects() ;
+        }
+        /*!
+         * @brief Sets an adjacent facet by both its facet \param facet_id and its local edge index \param edge_id.
+         * @param[in] facet_id the facet index
+         * @param[in] edge_id the local index of an edge in facet \p facet_id
+         * @param[in] specifies the facet adjacent to \param facet_id along edge \param edge_id or GEO::NO_FACET if the parameter \param edge_id is on the border.
+         */
+        virtual void set_facet_adjacent(
+            index_t facet_id,
+            index_t edge_id,
+            index_t specifies )
+        {
+            mesh_.mesh_->facets.set_adjacent( facet_id, edge_id, specifies ) ;
+        }
+        /*
+         * \brief Copies a triangle mesh into this Mesh.
+         * \details Facet adjacence are not computed.
+         *   Facet and corner attributes are zeroed.
+         * \param[in] triangles facet to vertex links
+         * \param[in] steal_args if set, vertices and triangles
+         * are 'stolen' from the arguments
+         * (using vector::swap).
+         */
+        virtual void assign_facet_triangle_mesh(
+            const std::vector< index_t >& triangles,
+            bool steal_args )
+        {
+            GEO::vector< index_t > copy ;
+            copy_std_vector_to_geo_vector( triangles, copy ) ;
+            mesh_.mesh_->facets.assign_triangle_mesh( copy, steal_args ) ;
+            clear_facet_linked_objects() ;
+        }
+        /*!
+         * @brief Removes all the facets and attributes.
+         * @param[in] keep_attributes if true, then all the existing attribute
+         * names / bindings are kept (but they are cleared). If false, they are destroyed.
+         * @param[in] keep_memory if true, then memory is kept and can be reused
+         * by subsequent mesh entity creations.
+         */
+        virtual void clear_facets( bool keep_attributes, bool keep_memory )
+        {
+            mesh_.mesh_->facets.clear( keep_attributes, keep_memory ) ;
+        }
+        /*!
+         * @brief Retrieve the adjacencies of facets
+         */
+        virtual void connect_facets()
+        {
+            mesh_.mesh_->facets.connect() ;
+        }
+        virtual void permute_facets( GEO::vector< index_t >& permutation )
+        {
+            mesh_.mesh_->facets.permute_elements( permutation ) ;
+        }
+        /*!
+         * @brief Deletes a set of facets.
+         * @param[in] to_delete     a vector of size @function nb(). If to_delete[f] is different from 0,
+         * then facet f will be destroyed, else it will be kept. On exit, to_delete is modified
+         * (it is used for internal bookkeeping).
+         * @param[in] remove_isolated_vertices if true, then the vertices that are no longer incident to any entity are deleted.
+         */
+        virtual void delete_facets(
+            GEO::vector< index_t >& to_delete,
+            bool remove_isolated_vertices )
+        {
+            mesh_.mesh_->facets.delete_elements( to_delete, false ) ;
+            if( remove_isolated_vertices ) {
+                this->remove_isolated_vertices() ;
+            }
+            clear_facet_linked_objects() ;
+        }
+        /*!
+         * @brief Remove vertices not connected to any mesh element
+         */
+        virtual void remove_isolated_vertices()
+        {
+            GEO::vector< index_t > to_delete( mesh_.nb_vertices(), 1 ) ;
+
+            for( index_t f = 0; f < mesh_.nb_facets(); f++ ) {
+                for( index_t v = 0; v < mesh_.nb_facet_vertices( f ); v++ ) {
+                    index_t vertex_id = mesh_.facet_vertex( f, v ) ;
+                    to_delete[vertex_id] = 0 ;
+                }
+            }
+
+            delete_vertices( to_delete, false ) ;
+        }
+
+        virtual void clear_facet_linked_objects()
+        {
+            delete_facet_aabb() ;
+            delete_facet_colocater() ;
+        }
+    private:
+        /*!
+         * @brief Deletes the ColocaterANN on facets
+         */
+        void delete_facet_colocater()
+        {
+            if( mesh_.facets_ann_ != nil ) {
+                delete mesh_.facets_ann_ ;
+                mesh_.facets_ann_ = nil ;
+            }
+        }
+        /*!
+         * @brief Deletes the AABB on facets
+         */
+        void delete_facet_aabb()
+        {
+            if( mesh_.facets_aabb_ != nil ) {
+                delete mesh_.facets_aabb_ ;
+                mesh_.facets_aabb_ = nil ;
+            }
+        }
+
+    private:
+        GeogramMesh2D& mesh_ ;
     } ;
 
     class RINGMESH_API GeogramMeshBuilder: public MeshAllDBuilder {
