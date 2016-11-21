@@ -446,10 +446,10 @@ namespace RINGMesh {
 
     } ;
 
-    class RINGMESH_API MeshAllDBuilder: public Mesh0DBuilder,
-        public Mesh1DBuilder,
-        public Mesh2DBuilder,
-        public Mesh3DBuilder {
+    class RINGMESH_API MeshAllDBuilder: public virtual Mesh0DBuilder,
+        public virtual Mesh1DBuilder,
+        public virtual Mesh2DBuilder,
+        public virtual Mesh3DBuilder {
     ringmesh_disable_copy(MeshAllDBuilder) ;
     public:
         virtual ~MeshAllDBuilder()

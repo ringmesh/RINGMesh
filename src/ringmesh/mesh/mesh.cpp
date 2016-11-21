@@ -70,18 +70,6 @@ namespace RINGMesh {
         return dynamic_cast< MeshAllDBuilder* >( get_mesh_builder_base() ) ;
     }
 
-    GeogramMeshBuilder* GeogramMesh::get_geogram_mesh_builder()
-    {
-        return dynamic_cast< GeogramMeshBuilder* >( get_mesh_builder_base() ) ;
-    }
-    MeshBaseBuilder* GeogramMesh::get_mesh_builder_base()
-    {
-        if( mesh_builder_ == nil ) {
-            mesh_builder_ = new GeogramMeshBuilder( *this ) ;
-        }
-        return mesh_builder_ ;
-    }
-
     GeogramMesh0DBuilder* GeogramMesh0D::get_geogram_mesh_builder()
     {
         return dynamic_cast< GeogramMesh0DBuilder* >( get_mesh_builder_base() ) ;
@@ -128,6 +116,18 @@ namespace RINGMesh {
     {
         if( mesh_builder_ == nil ) {
             mesh_builder_ = new GeogramMesh3DBuilder( *this ) ;
+        }
+        return mesh_builder_ ;
+    }
+
+    GeogramMeshAllDBuilder* GeogramMeshAllD::get_geogram_mesh_builder()
+    {
+        return dynamic_cast< GeogramMeshAllDBuilder* >( get_mesh_builder_base() ) ;
+    }
+    MeshBaseBuilder* GeogramMeshAllD::get_mesh_builder_base()
+    {
+        if( mesh_builder_ == nil ) {
+            mesh_builder_ = new GeogramMeshAllDBuilder( *this ) ;
         }
         return mesh_builder_ ;
     }

@@ -678,10 +678,10 @@ namespace RINGMesh {
 
     } ;
 
-    class RINGMESH_API MeshAllD: public Mesh0D,
-        public Mesh1D,
-        public Mesh2D,
-        public Mesh3D {
+    class RINGMESH_API MeshAllD: public virtual Mesh0D,
+        public virtual Mesh1D,
+        public virtual Mesh2D,
+        public virtual Mesh3D {
     ringmesh_disable_copy( MeshAllD ) ;
         friend class MeshAllDBuilder ;
         friend class GeogramMeshBuilder ;
