@@ -671,7 +671,7 @@ namespace RINGMesh {
         {
         }
 
-    private:
+    protected:
         mutable ColocaterANN* cell_facets_ann_ ;
         mutable ColocaterANN* cell_ann_ ;
         mutable AABBTree3D* cell_aabb_ ;

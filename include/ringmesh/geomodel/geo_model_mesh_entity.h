@@ -1111,7 +1111,7 @@ namespace RINGMesh {
         Region( const GeoModel& model, index_t id )
             :
                 GeoModelMeshEntity( model, id ),
-                mesh3d_( new GeogramMesh( 3, false ) )
+                mesh3d_( new GeogramMesh3D )
         {
             GeoModelMeshEntity::set_mesh( mesh3d_ ) ;
 
