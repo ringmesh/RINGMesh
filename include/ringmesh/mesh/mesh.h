@@ -250,7 +250,7 @@ namespace RINGMesh {
         {
         }
 
-    private:
+    protected:
         mutable ColocaterANN* edges_ann_ ;
         mutable AABBTree1D* edges_aabb_ ;
     } ;

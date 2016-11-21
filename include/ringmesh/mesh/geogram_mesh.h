@@ -78,12 +78,6 @@ namespace RINGMesh {
         friend class GeogramMeshBaseBuilder ;
 
     public:
-        /*!
-         * @brief Mesh constructor.
-         * @param[in] dimension dimension of the vertices.
-         * @param[in] single_precision if true, vertices are stored in single precision (float),
-         * else they are stored as double precision (double).
-         */
         GeogramMeshBase()
             : MeshBase()
         {
@@ -93,10 +87,6 @@ namespace RINGMesh {
         {
             delete mesh_ ;
         }
-        /*!
-         * \name MeshBase implementation
-         * @{
-         */
         void save_mesh(
             const std::string& filename,
             const GEO::MeshIOFlags& ioflags ) const
@@ -148,16 +138,9 @@ namespace RINGMesh {
 
     class RINGMESH_API GeogramMesh0D: public virtual GeogramMeshBase, public Mesh0D {
     ringmesh_disable_copy( GeogramMesh0D ) ;
-
-        friend class GeogramMeshBuilder ;
+        friend class GeogramMesh0DBuilder ;
 
     public:
-        /*!
-         * @brief Mesh constructor.
-         * @param[in] dimension dimension of the vertices.
-         * @param[in] single_precision if true, vertices are stored in single precision (float),
-         * else they are stored as double precision (double).
-         */
         GeogramMesh0D()
             : GeogramMeshBase(), Mesh0D()
         {
@@ -166,6 +149,48 @@ namespace RINGMesh {
         {
         }
         GeogramMesh0DBuilder* get_geogram_mesh_builder() ;
+    protected:
+        virtual MeshBaseBuilder* get_mesh_builder_base() ;
+    } ;
+
+
+    class RINGMESH_API GeogramMesh1D: public virtual GeogramMeshBase, public Mesh1D {
+    ringmesh_disable_copy( GeogramMesh1D ) ;
+        friend class GeogramMesh1DBuilder ;
+
+    public:
+        GeogramMesh1D()
+            : GeogramMeshBase(), Mesh1D()
+        {
+        }
+        virtual ~GeogramMesh1D()
+        {
+        }
+
+        /*
+         * @brief Gets the index of an edge vertex.
+         * @param[in] edge_id index of the edge.
+         * @param[in] vertex_id local index of the vertex, in {0,1}
+         * @return the global index of vertex \param vertex_id in edge \param edge_id.
+         */
+        index_t edge_vertex( index_t edge_id, index_t vertex_id ) const
+        {
+            return mesh_->edges.vertex( edge_id, vertex_id ) ;
+        }
+        /*!
+         * @brief Gets the number of all the edges in the whole Mesh.
+         */
+        index_t nb_edges() const
+        {
+            return mesh_->edges.nb() ;
+        }
+
+        GEO::AttributesManager& edge_attribute_manager() const
+        {
+            return mesh_->edges.attributes() ;
+        }
+
+        GeogramMesh1DBuilder* get_geogram_mesh_builder() ;
     protected:
         virtual MeshBaseBuilder* get_mesh_builder_base() ;
     } ;
