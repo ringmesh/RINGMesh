@@ -295,7 +295,10 @@ namespace RINGMesh {
             entity.children_[id] = child ;
         }
 
-        void remove_entities( const std::set< gme_t >& entities ) ;
+        void remove_mesh_entities( const std::set< gme_t >& entities ) ;
+
+        void remove_geological_entities( const std::set< gme_t >& entities ) ;
+
 
         /*!
          * @todo Could be moved in the API [JP]

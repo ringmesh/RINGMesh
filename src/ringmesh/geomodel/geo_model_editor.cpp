@@ -83,6 +83,7 @@ namespace RINGMesh {
             // Must be regions.
             return create_mesh_entities< Region >( nb_additional_entities ) ;
         }
+        ringmesh_assert_not_reached() ;
     }
 
     void GeoModelEditor::set_model_name( const std::string& name )
@@ -389,7 +390,7 @@ namespace RINGMesh {
 
         }
         /*!
-         * @brief Removes the given entites from the model
+         * @brief Removes the given entities from the model
          * @warning ONLY takes care of deleting these entities and update
          * all references ( gme indices ) all over the model.
          * The client MUST:
@@ -411,33 +412,37 @@ namespace RINGMesh {
 
         }
 
-        void remove_mesh_entities_with_dependencies( const std::set< gme_t >& entities )
-        {
-            remove_mesh_entities(entities) ;
-            remove_dependencies() ;
-        }
+//        void remove_mesh_entities_with_dependencies(
+//            const std::set< gme_t >& entities )
+//        {
+//            remove_mesh_entities( entities ) ;
+//            remove_dependencies() ;
+//        }
+// TODO it doesn't work ! Will be done with the new struct of
+//      relations between GME
 
         void remove_geological_entities( const std::set< gme_t >& entities )
         {
-            check_if_entities_are_not_meshed( entities ) ;
-            std::set <gme_t> mesh_entities ;
-            for( std::set< gme_t >::const_iterator it =
-                entities.begin(); it != entities.end();
-                ++it ) {
-                const GeoModelGeologicalEntity& cur_gmge = geological_entity(*it) ;
-                for(index_t i = 0 ; i < cur_gmge.nb_children() ; i++) {
-                    mesh_entities.insert(cur_gmge.child(i).gme_id()) ;
+            check_if_entities_are_not_meshed_entities( entities ) ;
+            std::set< gme_t > mesh_entities ;
+            for( std::set< gme_t >::const_iterator it = entities.begin();
+                it != entities.end(); ++it ) {
+                const GeoModelGeologicalEntity& cur_gmge = geological_entity( *it ) ;
+                for( index_t i = 0; i < cur_gmge.nb_children(); i++ ) {
+                    mesh_entities.insert( cur_gmge.child( i ).gme_id() ) ;
                 }
             }
-            remove_mesh_entities(mesh_entities) ;
+            remove_mesh_entities( mesh_entities ) ;
         }
 
-        void remove_geological_entities_with_dependencies(
-            const std::set< gme_t >& entities )
-        {
-            remove_geological_entities(entities) ;
-            remove_dependencies() ;
-        }
+//        void remove_geological_entities_with_dependencies(
+//            const std::set< gme_t >& entities )
+//        {
+//            remove_geological_entities( entities ) ;
+//            remove_dependencies() ;
+//        }
+// TODO it doesn't work ! Will be done with the new struct of
+//      relations between GME
 
     private:
         // ---  High level functions ----------
@@ -500,7 +505,7 @@ namespace RINGMesh {
             }
         }
 
-        void check_if_entities_are_not_meshed(
+        void check_if_entities_are_not_meshed_entities(
             const std::set< gme_t >& mesh_entities_to_remove )
         {
             for( std::set< gme_t >::const_iterator it =
@@ -591,7 +596,7 @@ namespace RINGMesh {
                     update_mesh_entity_in_boundary( ME ) ;
                     delete_invalid_in_boundary( ME ) ;
 
-                    if( is_region_entity( i ) ) {
+                    if( ME.entity_type() == Region::type_name_static() ) {
                         Region& R = dynamic_cast< Region& >( ME ) ;
                         update_region_boundary_signs( R ) ;
                         delete_invalid_signs( R ) ;
@@ -630,7 +635,8 @@ namespace RINGMesh {
             }
         }
 
-        void update_universe() {
+        void update_universe()
+        {
             Universe& U = universe() ;
             update_universe_sided_boundaries( U ) ;
             delete_invalid_universe_sided_boundaries( U ) ;
@@ -649,8 +655,8 @@ namespace RINGMesh {
                 }
             }
             if( starting_dependency_ != Corner::type_name_static() ) {
-                starting_dependency_
-                    = EntityTypeManager::boundary_type( starting_dependency_ ) ;
+                starting_dependency_ = EntityTypeManager::boundary_type(
+                    starting_dependency_ ) ;
                 remove_mesh_entities_with_dependencies( new_gmme_to_remove ) ;
             }
         }
@@ -691,7 +697,6 @@ namespace RINGMesh {
                         index_to_geological_entity_type( i ), j ).nb_children() ;
                 }
             }
-
         }
 
         void fill_nb_initial_entities()
@@ -783,10 +788,6 @@ namespace RINGMesh {
         {
             return !is_mesh_entity( i ) ;
         }
-        bool is_region_entity( index_t i ) const
-        {
-            return i == 3 ; // Magic number = bad
-        }
 
         // ----  Update connectivity functions  ------
 
@@ -806,8 +807,8 @@ namespace RINGMesh {
 
                 }
             }
-
         }
+
         void update_mesh_entity_index( GeoModelMeshEntity& ME )
         {
             index_t old_id = ME.index() ;
@@ -1043,31 +1044,44 @@ namespace RINGMesh {
     } ;
 
     /*!
-     * @brief Remove a list of entities of the model
+     * @brief Remove a list of mesh entities of the model
      * @details No check is done on the consistency of this removal
      *          The entities and all references to them are removed.
      *          All dependent entities should be in the set of entities to remove,
      *          with a prior call to get_dependent_entities function.
      *
-     * @warning NOT FULLY TESTED.
-     *          The client is responsible to set the proper connectivity
-     *          information between the remaining model entities.
      */
-    void GeoModelEditor::remove_entities( const std::set< gme_t >& entities )
+    void GeoModelEditor::remove_mesh_entities( const std::set< gme_t >& entities )
     {
         if( entities.empty() ) {
             return ;
         } else {
-//            throw RINGMeshException( "REMOVE",
-//                "Entity removal is not fully implemented" ) ;
             GeoModelEntityRemoval remover( model() ) ;
             remover.remove_mesh_entities( entities ) ;
         }
     }
 
     /*!
+     * @brief Remove a list of geological entities of the model
+     * @details No check is done on the consistency of this removal
+     *          The entities and all references to them are removed.
+     *          All dependent entities should be in the set of entities to remove,
+     *          with a prior call to get_dependent_entities function.
+     *
+     */
+    void GeoModelEditor::remove_geological_entities( const std::set< gme_t >& entities )
+    {
+        if( entities.empty() ) {
+            return ;
+        } else {
+            GeoModelEntityRemoval remover( model() ) ;
+            remover.remove_geological_entities( entities ) ;
+        }
+    }
+
+    /*!
      * @brief Copy macro information from a model
-     * @details Copy the all the model entities and their relationship ignoring their geometry
+     * @details Copy all the model entities and their relationship ignoring their geometry
      *
      * @param[in] from Model to copy the information from
      */
