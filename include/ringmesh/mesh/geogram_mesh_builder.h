@@ -563,6 +563,198 @@ namespace RINGMesh {
         GeogramMesh2D& mesh_ ;
     } ;
 
+
+    class RINGMESH_API GeogramMesh3DBuilder: public GeogramMeshBaseBuilder,
+        public Mesh3DBuilder {
+    ringmesh_disable_copy( GeogramMesh3DBuilder ) ;
+
+    public:
+        GeogramMesh3DBuilder( GeogramMesh3D& mesh )
+            : GeogramMeshBaseBuilder( mesh ), Mesh3DBuilder(), mesh_( mesh )
+        {
+        }
+        virtual ~GeogramMesh3DBuilder()
+        {
+        }
+        /*!
+         * @brief Creates a contiguous chunk of cells of the same type.
+         * @param[in] nb_cells  number of cells to create
+         * @param[in] type   type of the cells to create, one of GEO::MESH_TET, GEO::MESH_HEX,
+         * GEO::MESH_PRISM, GEO::MESH_PYRAMID, GEO::MESH_CONNECTOR.
+         * @return the first created cell.
+         */
+        virtual index_t create_cells( index_t nb_cells, GEO::MeshCellType type )
+        {
+            return mesh_.mesh_->cells.create_cells( nb_cells, type ) ;
+        }
+        /*
+         * \brief Copies a tets mesh into this Mesh.
+         * \details Cells adjacence are not computed.
+         *   cell and corner attributes are zeroed.
+         * \param[in] tets cells to vertex links
+         * \param[in] steal_args if set, vertices and tets
+         * are 'stolen' from the arguments
+         * (using vector::swap).
+         */
+        virtual void assign_cell_tet_mesh(
+            const std::vector< index_t >& tets,
+            bool steal_args )
+        {
+            GEO::vector< index_t > copy ;
+            copy_std_vector_to_geo_vector( tets, copy ) ;
+            mesh_.mesh_->cells.assign_tet_mesh( copy, steal_args ) ;
+            clear_cell_linked_objects() ;
+        }
+
+        /*!
+         * @brief Sets a vertex of a cell by local vertex index.
+         * @param[in] cell_id index of the cell, in 0.. @function nb() - 1.
+         * @param[in] local_vertex_id index of the vertex in the cell. Local index between 0 and @function nb_vertices(cell_id) - 1.
+         * @param[in] vertex_id specifies the global index of the vertex \param local_vertex_id in the cell \param cell_id. Index between 0 and @function nb() - 1.
+         */
+        virtual void set_cell_vertex(
+            index_t cell_id,
+            index_t local_vertex_id,
+            index_t vertex_id )
+        {
+            mesh_.mesh_->cells.set_vertex( cell_id, local_vertex_id, vertex_id ) ;
+            clear_cell_linked_objects() ;
+        }
+        /*!
+         * \brief Sets the vertex that a corner is incident to
+         * \param[in] corner_index the corner, in 0.. @function nb() - 1
+         * \param[in] vertex_index specifies the vertex that corner \param corner_index is incident to
+         */
+        virtual void set_cell_corner_vertex_index(
+            index_t corner_index,
+            index_t vertex_index )
+        {
+            mesh_.mesh_->cell_corners.set_vertex( corner_index, vertex_index ) ;
+            clear_cell_linked_objects() ;
+        }
+        /*!
+         * \brief Sets the cell adjacent
+         * \param[in] cell_index index of the cell
+         * \param[in] facet_index local index of the cell facet
+         * \param[in] cell_adjacent adjacent value to set
+         */
+        virtual void set_cell_adjacent(
+            index_t cell_index,
+            index_t facet_index,
+            index_t cell_adjacent )
+        {
+            mesh_.mesh_->cells.set_adjacent( cell_index, facet_index,
+                cell_adjacent ) ;
+        }
+        /*!
+         * @brief Retrieve the adjacencies
+         */
+        virtual void connect_cells()
+        {
+            mesh_.mesh_->cells.connect() ;
+        }
+        /*!
+         * @brief Applies a permutation to the entities and their attributes.
+         * On exit, permutation is modified (used for internal bookkeeping).
+         * Applying a permutation permutation is equivalent to:
+         * <code>
+         *  for(i=0; i<permutation.size(); i++) {
+         *      data2[i] = data[permutation[i]]
+         *       }
+         *  data = data2 ;
+         *  </code>
+         */
+        virtual void cells_permute_elements( GEO::vector< index_t >& permutation )
+        {
+            mesh_.mesh_->cells.permute_elements( permutation ) ;
+        }
+        /*!
+         * @brief Removes all the cells and attributes.
+         * @param[in] keep_attributes if true, then all the existing attribute
+         * names / bindings are kept (but they are cleared). If false, they are destroyed.
+         * @param[in] keep_memory if true, then memory is kept and can be reused
+         * by subsequent mesh entity creations.
+         */
+        virtual void clear_cells( bool keep_attributes, bool keep_memory )
+        {
+            mesh_.mesh_->cells.clear( keep_attributes, keep_memory ) ;
+        }
+        virtual void permute_cells( GEO::vector< index_t >& permutation )
+        {
+            mesh_.mesh_->cells.permute_elements( permutation ) ;
+        }
+        /*!
+         * @brief Deletes a set of cells.
+         * @param[in] to_delete     a vector of size @function nb(). If to_delete[c] is different from 0,
+         * then cell c will be destroyed, else it will be kept. On exit, to_delete is modified
+         * (it is used for internal bookkeeping).
+         * @param[in] remove_isolated_vertices if true, then the vertices that are no longer incident to any entity are deleted.
+         */
+        virtual void delete_cells(
+            GEO::vector< index_t >& to_delete,
+            bool remove_isolated_vertices )
+        {
+            mesh_.mesh_->cells.delete_elements( to_delete, false ) ;
+            if( remove_isolated_vertices ) {
+                this->remove_isolated_vertices() ;
+            }
+            clear_cell_linked_objects() ;
+        }
+        /*!
+         * @brief Remove vertices not connected to any mesh element
+         */
+        virtual void remove_isolated_vertices()
+        {
+            GEO::vector< index_t > to_delete( mesh_.nb_vertices(), 1 ) ;
+
+            for( index_t c = 0; c < mesh_.nb_cells(); c++ ) {
+                for( index_t v = 0; v < mesh_.nb_cell_vertices( c ); v++ ) {
+                    index_t vertex_id = mesh_.cell_vertex( c, v ) ;
+                    to_delete[vertex_id] = 0 ;
+                }
+            }
+
+            delete_vertices( to_delete, false ) ;
+        }
+
+
+        virtual void clear_cell_linked_objects()
+        {
+            delete_cell_aabb() ;
+            delete_cell_colocater() ;
+        }
+
+    private:
+        /*!
+         * @brief Deletes the ColocaterANN on cells
+         */
+        void delete_cell_colocater()
+        {
+            if( mesh_.cell_ann_ != nil ) {
+                delete mesh_.cell_ann_ ;
+                mesh_.cell_ann_ = nil ;
+            }
+            if( mesh_.cell_facets_ann_ != nil ) {
+                delete mesh_.cell_facets_ann_ ;
+                mesh_.cell_facets_ann_ = nil ;
+            }
+        }
+        /*!
+         * @brief Deletes the AABB on cells
+         */
+        void delete_cell_aabb()
+        {
+            if( mesh_.cell_aabb_ != nil ) {
+                delete mesh_.cell_aabb_ ;
+                mesh_.cell_aabb_ = nil ;
+            }
+        }
+
+
+    private:
+        GeogramMesh3D& mesh_ ;
+    } ;
+
     class RINGMESH_API GeogramMeshBuilder: public MeshAllDBuilder {
     ringmesh_disable_copy( GeogramMeshBuilder ) ;
 

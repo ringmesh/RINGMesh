@@ -120,4 +120,16 @@ namespace RINGMesh {
         return mesh_builder_ ;
     }
 
+    GeogramMesh3DBuilder* GeogramMesh3D::get_geogram_mesh_builder()
+    {
+        return dynamic_cast< GeogramMesh3DBuilder* >( get_mesh_builder_base() ) ;
+    }
+    MeshBaseBuilder* GeogramMesh3D::get_mesh_builder_base()
+    {
+        if( mesh_builder_ == nil ) {
+            mesh_builder_ = new GeogramMesh3DBuilder( *this ) ;
+        }
+        return mesh_builder_ ;
+    }
+
 } // namespace
