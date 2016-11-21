@@ -112,6 +112,8 @@ namespace RINGMesh {
     void RINGMESH_API configure_ringmesh() ;
     void RINGMESH_API default_configure() ;
 
+    void RINGMESH_API print_header_information() ;
+
     /*!
      * RINGMesh exception class.
      * Example:
