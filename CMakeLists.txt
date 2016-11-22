@@ -256,7 +256,7 @@ ExternalProject_Add_Step(geogram_ext forcebuild
   )
 
 # Add geogram include directories to the current ones
-include_directories(${GEOGRAM_PATH}/src/lib)
+include_directories( SYSTEM ${GEOGRAM_PATH}/src/lib)
 
 # Add geogram project libs to the libs with which RINGMesh will link
 set(EXTRA_LIBS ${EXTRA_LIBS} geogram)
@@ -272,7 +272,7 @@ link_directories(${GEOGRAM_PATH_BIN}/lib)
 #------------------------------------------------------------------------------------------------    
 # Get MG-Tetra if a path is given
 if(MG_TETRA)   
-  include_directories(${MG_TETRA}/include)
+  include_directories(SYSTEM ${MG_TETRA}/include)
  
   if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(PLATFORM _64)
@@ -307,7 +307,7 @@ if(RINGMESH_WITH_GEOLOGYJS)
     # geology.js platform dependent settings. CMAKE_BUILD_TYPE is empty on Windows.
     set(GEOLOGY_JS_PATH_BIN ${GEOLOGY_JS_DIRECTORY}/build/${CMAKE_BUILD_TYPE})
     # Add geology.js include directories to the current ones
-    include_directories(${GEOLOGY_JS_DIRECTORY}/include)
+    include_directories(SYSTEM ${GEOLOGY_JS_DIRECTORY}/include)
 
     # Add geology.js project libs to the libs with which RINGMesh will link
     set(EXTRA_LIBS ${EXTRA_LIBS} GEOLOGYJS)
