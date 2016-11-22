@@ -101,7 +101,7 @@ namespace RINGMesh {
     {
         Logger::div( "RINGMesh" ) ;
         Logger::out( "" ) << "This project is developed by the RINGMesh"
-            << " developpers team:" << std::endl ;
+            << " developers team:" << std::endl ;
         Logger::out( "" ) << "RINGMesh-dev <georessources-ringmesh-dev@univ-lorraine.fr> "
             << std::endl ;
         Logger::out( "" ) << "You can have access to the full open-source " 
