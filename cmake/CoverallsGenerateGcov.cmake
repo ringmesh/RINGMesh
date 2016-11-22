@@ -112,7 +112,7 @@ set(JSON_REPO_TEMPLATE
 #GIT_COMMITTER_NAME=$(hg tip --template '{author|person}\n') 
 #GIT_COMMITTER_EMAIL=$(hg tip --template '{author|email}\n') 
 set(GIT_MESSAGE $ENV{CI_MESSAGE}) 
-"GIT_BRANCH=$(hg branch)
+#GIT_BRANCH=$(hg branch)
 
 # TODO: Fill in git remote data
 if (GIT_FOUND)
