@@ -52,11 +52,9 @@ namespace {
 
     void hello()
     {
+        print_header_information() ;
         Logger::div( "RINGMeshRepair" ) ;
         Logger::out( "" ) << "Welcome to RINGMeshRepair !" << std::endl ;
-        Logger::out( "" ) << "People working on the project in RING" << std::endl ;
-        Logger::out( "" ) << "Benjamin Chauvin <benjamin.chauvin@univ-lorraine.fr> "
-            << std::endl ;
     }
 
     void import_arg_groups()

@@ -102,13 +102,12 @@ int main( int argc, char** argv )
     using namespace RINGMesh ;
 
     try {
+
         default_configure() ;
 
+        print_header_information() ;
         Logger::div( "RINGMeshConvert" ) ;
         Logger::out( "" ) << "Welcome to RINGMeshConvert !" << std::endl ;
-        Logger::out( "" ) << "People working on the project in RING" << std::endl ;
-        Logger::out( "" ) << "Arnaud Botella <arnaud.botella@univ-lorraine.fr> "
-            << std::endl ;
 
         CmdLine::import_arg_group( "in" ) ;
         CmdLine::import_arg_group( "out" ) ;

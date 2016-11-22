@@ -109,6 +109,7 @@ int main()
         default_configure() ;
 
         // Say Hello
+        print_header_information() ;
         Logger::div( "RINGMesh Training" ) ;
         Logger::out( "" ) << "Welcome to the training of RINGMesh ! !" << std::endl ;
 
