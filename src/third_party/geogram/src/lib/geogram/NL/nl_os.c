@@ -1,0 +1,179 @@
+/*
+ *  Copyright (c) 2004-2010, Bruno Levy
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions are met:
+ *
+ *  * Redistributions of source code must retain the above copyright notice,
+ *  this list of conditions and the following disclaimer.
+ *  * Redistributions in binary form must reproduce the above copyright notice,
+ *  this list of conditions and the following disclaimer in the documentation
+ *  and/or other materials provided with the distribution.
+ *  * Neither the name of the ALICE Project-Team nor the names of its
+ *  contributors may be used to endorse or promote products derived from this
+ *  software without specific prior written permission.
+ * 
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ *  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *  POSSIBILITY OF SUCH DAMAGE.
+ *
+ *  If you modify this software, you should include a notice giving the
+ *  name of the person performing the modification, the date of modification,
+ *  and the reason for such modification.
+ *
+ *  Contact: Bruno Levy
+ *
+ *     levy@loria.fr
+ *
+ *     ALICE Project
+ *     LORIA, INRIA Lorraine, 
+ *     Campus Scientifique, BP 239
+ *     54506 VANDOEUVRE LES NANCY CEDEX 
+ *     FRANCE
+ *
+ */
+
+#include "nl_private.h"
+
+#if (defined (WIN32) || defined(_WIN64))
+#include <windows.h>
+#else
+#include <sys/types.h>
+#include <sys/times.h> 
+#endif
+
+#if defined(GEO_DYNAMIC_LIBS) && defined(NL_OS_UNIX)
+#include <dlfcn.h>
+#endif
+
+/******************************************************************************/
+/* Assertions */
+
+
+void nl_assertion_failed(const char* cond, const char* file, int line) {
+    fprintf(
+        stderr, 
+        "OpenNL assertion failed: %s, file:%s, line:%d\n",
+        cond,file,line
+    ) ;
+    abort() ;
+}
+
+void nl_range_assertion_failed(
+    double x, double min_val, double max_val, const char* file, int line
+) {
+    fprintf(
+        stderr, 
+        "OpenNL range assertion failed: %f in [ %f ... %f ], file:%s, line:%d\n",
+        x, min_val, max_val, file,line
+    ) ;
+    abort() ;
+}
+
+void nl_should_not_have_reached(const char* file, int line) {
+    fprintf(
+        stderr, 
+        "OpenNL should not have reached this point: file:%s, line:%d\n",
+        file,line
+    ) ;
+    abort() ;
+}
+
+
+/************************************************************************************/
+/* Timing */
+
+#ifdef WIN32
+NLdouble nlCurrentTime() {
+    return (NLdouble)GetTickCount() / 1000.0 ;
+}
+#else
+double nlCurrentTime() {
+    clock_t user_clock ;
+    struct tms user_tms ;
+    user_clock = times(&user_tms) ;
+    return (NLdouble)user_clock / 100.0 ;
+}
+#endif
+
+/************************************************************************************/
+/* DLLs/shared objects/dylibs */
+
+#if defined(GEO_DYNAMIC_LIBS) && defined(NL_OS_UNIX)
+
+NLdll nlOpenDLL(const char* name) {
+    void* result=dlopen(name, RTLD_NOW);
+    if(result == NULL) {
+        nlError("nlOpenDLL/dlopen",dlerror());
+    }
+    return result;
+}
+
+void nlCloseDLL(void* handle) {
+    dlclose(handle);
+}
+
+NLfunc nlFindFunction(void* handle, const char* name) {
+    /*
+     * It is not legal in modern C to cast a void*
+     *  pointer into a function pointer, thus requiring this
+     *  (quite dirty) function that uses a union.    
+     */
+    union {
+        void* ptr;
+        NLfunc fptr;
+    } u;
+    u.ptr = dlsym(handle, name);
+    return u.fptr;
+}
+
+#else
+
+NLdll nlOpenDLL(const char* name) {
+    nl_arg_used(name);
+#ifdef NL_OS_UNIX
+    nlError("nlOpenDLL","Was not compiled with dynamic linking enabled");
+    nlError("nlOpenDLL","(see VORPALINE_BUILD_DYNAMIC in CMakeLists.txt)");        
+#else    
+    nlError("nlOpenDLL","Not implemented");
+#endif    
+    return NULL;
+}
+
+void nlCloseDLL(void* handle) {
+    nl_arg_used(handle);
+    nlError("nlCloseDLL","Not implemented");        
+}
+
+NLfunc nlFindFunction(void* handle, const char* name) {
+    nl_arg_used(handle);
+    nl_arg_used(name);
+    nlError("nlFindFunction","Not implemented");            
+    return NULL;
+}
+
+#endif
+
+/************************************************************************************/
+/* Error-reporting functions */
+
+void nlError(const char* function, const char* message) {
+    fprintf(stderr, "OpenNL error in %s(): %s\n", function, message) ; 
+}
+
+void nlWarning(const char* function, const char* message) {
+    fprintf(stderr, "OpenNL warning in %s(): %s\n", function, message) ; 
+}
+
+/************************************************************************************/
+
+
