@@ -31,7 +31,6 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
-
 # Root CMakeList of RINGMesh project
 # Author Jeanne Pellerin
 cmake_minimum_required(VERSION 2.8)
