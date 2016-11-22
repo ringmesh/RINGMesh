@@ -244,12 +244,12 @@ message( STATUS "REPO TOKEN = ${JSON_REPO_TOKEN}")
 set(JSON_TEMPLATE
 "{
   \"repo_token\": \"\@JSON_REPO_TOKEN\@\",
-  \"source_files\": \@JSON_GCOV_FILES\@
+  \"source_files\": \@JSON_GCOV_FILES\@,
+  \"git\": \@JSON_REPO_DATA\@
 }"
 )
   #\"service_name\": \"\@JSON_SERVICE_NAME\@\",
   #\"service_job_id\": \"\@JSON_SERVICE_JOB_ID\@\",,
-  #\"git\": \@JSON_REPO_DATA\@
 
 set(SRC_FILE_TEMPLATE
 "{
