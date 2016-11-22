@@ -99,6 +99,7 @@ namespace RINGMesh {
     
     void print_header_information()
     {
+        Logger::div( "RINGMesh" ) ;
         Logger::out( "" ) << "This project is developed by the RINGMesh"
             << " developpers team:" << std::endl ;
         Logger::out( "" ) << "RINGMesh-dev <georessources-ringmesh-dev@univ-lorraine.fr> "

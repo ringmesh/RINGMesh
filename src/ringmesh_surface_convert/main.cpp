@@ -59,10 +59,9 @@ int main( int argc, char** argv )
         default_configure() ;
 
         // welcome
+        print_header_information() ;
         Logger::div( "RINGMeshConvert" ) ;
-        Logger::out( "" ) << "Welcome to RINGMeshSurfaceConvert !"
-            << std::endl ;
-        print_header_information() ; 
+        Logger::out( "" ) << "Welcome to RINGMeshSurfaceConvert !" << std::endl ;
 
         // help
         if( argc == 1 ) {

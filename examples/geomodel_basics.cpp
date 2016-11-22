@@ -68,9 +68,9 @@ int main()
         default_configure() ;
 
         // Say Hello
+        print_header_information() ;
         Logger::div( "RINGMesh Training" ) ;
         Logger::out( "" ) << "Welcome to the RINGMesh training for basics functionalities on GeoModel !" << std::endl ;
-        print_header_information() ;
 
         // Next line is a feature of geogram which measure
         // the time of execution.
