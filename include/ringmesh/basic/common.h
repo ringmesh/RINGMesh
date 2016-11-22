@@ -42,7 +42,7 @@
  File is in RINGMESH_BIN/ringmesh directory.
  */
 #include <ringmesh/ringmesh_config.h>
-#include <ringmesh/ringmesh_dll_export.h>
+
 
 #if defined( _WIN32 )
 #    ifndef WIN32
@@ -54,6 +54,10 @@
 #   define RINGMESH_DEBUG
 #else
 #   undef RINGMESH_DEBUG
+#endif
+
+#ifdef WIN32
+    #include <ringmesh/ringmesh_dll_export.h>
 #endif
 
 #ifdef WIN32
