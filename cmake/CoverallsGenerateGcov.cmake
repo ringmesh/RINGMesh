@@ -94,8 +94,6 @@ set(JSON_REPO_TEMPLATE
   "{
     \"head\": {
       \"id\": \"\@GIT_COMMIT_HASH\@\",
-      \"author_name\": \"\@GIT_AUTHOR_NAME\@\",
-      \"author_email\": \"\@GIT_AUTHOR_EMAIL\@\",
       \"committer_name\": \"\@GIT_COMMITTER_NAME\@\",
       \"committer_email\": \"\@GIT_COMMITTER_EMAIL\@\",
       \"message\": \"\@GIT_COMMIT_MESSAGE\@\"
@@ -106,57 +104,14 @@ set(JSON_REPO_TEMPLATE
 )
 
 
-#set(GIT_ID $(hg tip --template '{node}\n')
-#GIT_AUTHOR_NAME=$(hg tip --template '{author|person}\n') 
-#GIT_AUTHOR_EMAIL=$(hg tip --template '{author|email}\n') 
-#GIT_COMMITTER_NAME=$(hg tip --template '{author|person}\n') 
-#GIT_COMMITTER_EMAIL=$(hg tip --template '{author|email}\n') 
-set(GIT_MESSAGE $ENV{CI_MESSAGE}) 
-#GIT_BRANCH=$(hg branch)
+set(GIT_COMMIT_HASH $ENV{CI_COMMIT_ID}) 
+set(GIT_COMMITTER_NAME $ENV{CI_COMMITTER_NAME}) 
+set(GIT_COMMITTER_EMAIL $ENV{CI_COMMITTER_EMAIL}) 
+set(GIT_COMMIT_MESSAGE $ENV{CI_MESSAGE}) 
+set(GIT_BRANCH $ENV{CI_BRANCH}) 
 
-# TODO: Fill in git remote data
-if (GIT_FOUND)
-	# Branch.
-	execute_process(
-		COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
-		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		OUTPUT_VARIABLE GIT_BRANCH
-		OUTPUT_STRIP_TRAILING_WHITESPACE
-	)
-
-	macro (git_log_format FORMAT_CHARS VAR_NAME)
-		execute_process(
-			COMMAND ${GIT_EXECUTABLE} log -1 --pretty=format:%${FORMAT_CHARS}
-			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-			OUTPUT_VARIABLE ${VAR_NAME}
-			OUTPUT_STRIP_TRAILING_WHITESPACE
-		)
-	endmacro()
-
-	#git_log_format(an GIT_AUTHOR_NAME)
-	#git_log_format(ae GIT_AUTHOR_EMAIL)
-	#git_log_format(cn GIT_COMMITTER_NAME)
-	#git_log_format(ce GIT_COMMITTER_EMAIL)
-	#git_log_format(B GIT_COMMIT_MESSAGE)
-	#git_log_format(H GIT_COMMIT_HASH)
-
-	if(GIT_COMMIT_MESSAGE)
-		string(REPLACE "\n" "\\n" GIT_COMMIT_MESSAGE ${GIT_COMMIT_MESSAGE})
-	endif()
-
-	message("Git exe: ${GIT_EXECUTABLE}")
-	message("Git branch: ${GIT_BRANCH}")
-	message("Git author: ${GIT_AUTHOR_NAME}")
-	message("Git e-mail: ${GIT_AUTHOR_EMAIL}")
-	message("Git commiter name: ${GIT_COMMITTER_NAME}")
-	message("Git commiter e-mail: ${GIT_COMMITTER_EMAIL}")
-	message("Git commit hash: ${GIT_COMMIT_HASH}")
-	message("Git commit message: ${GIT_COMMIT_MESSAGE}")
-
-	string(CONFIGURE ${JSON_REPO_TEMPLATE} JSON_REPO_DATA)
-else()
-	set(JSON_REPO_DATA "{}")
-endif()
+string(CONFIGURE ${JSON_REPO_TEMPLATE} JSON_REPO_DATA)
+	
 
 ############################# Macros #########################################
 
