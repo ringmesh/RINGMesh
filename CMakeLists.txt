@@ -94,6 +94,8 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 #------------------------------------------------------------------------------------------------
 # Additional cmake modules
 include(ExternalProject)
+# build export dll macros
+include (GenerateExportHeader) 
 
 # Enable testing with CTest
 enable_testing()
@@ -163,7 +165,7 @@ message(STATUS "RINGMesh source directory is: ${PROJECT_SOURCE_DIR}")
 #------------------------------------------------------------------------------------------------
 # Platform dependent settings
 if(WIN32)
-    add_compile_options(-DRINGMESH_EXPORTS) 
+    #add_compile_options(-DRINGMESH_EXPORTS) 
 	
 	# Select the CMAKE_CONFIGURATION_TYPES from Visual Studio
     set(COMPILATION_OPTION --config ${CMAKE_CFG_INTDIR})
@@ -200,7 +202,7 @@ configure_file(${input_configure_file} ${generated_configure_file})
 
 # We want to be able to include this file
 include_directories(${PROJECT_BINARY_DIR})
- 
+
 #------------------------------------------------------------------------------------------------
 # GEOGRAM 
 # Set the path to Geogram code
@@ -371,6 +373,8 @@ add_dependencies(RINGMesh geogram_ext)
 target_link_libraries(RINGMesh ${EXTRA_LIBS})
 
 if(WIN32)
+	# Function for generation of export macros for libraries (dll)
+	generate_export_header(RINGMesh EXPORT_MACRO_NAME RINGMESH_API EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_dll_export.h)
     # On windows, without proper installation steps, we need to 
     # copy of Geogram dll and pdb information to RINGMesh
     # to be able to launch RINGMesh utilities and tests from the debugger
