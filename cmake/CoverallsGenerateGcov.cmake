@@ -105,6 +105,15 @@ set(JSON_REPO_TEMPLATE
   }"
 )
 
+
+#set(GIT_ID $(hg tip --template '{node}\n')
+#GIT_AUTHOR_NAME=$(hg tip --template '{author|person}\n') 
+#GIT_AUTHOR_EMAIL=$(hg tip --template '{author|email}\n') 
+#GIT_COMMITTER_NAME=$(hg tip --template '{author|person}\n') 
+#GIT_COMMITTER_EMAIL=$(hg tip --template '{author|email}\n') 
+set(GIT_MESSAGE $ENV{CI_MESSAGE}) 
+"GIT_BRANCH=$(hg branch)
+
 # TODO: Fill in git remote data
 if (GIT_FOUND)
 	# Branch.
@@ -124,12 +133,12 @@ if (GIT_FOUND)
 		)
 	endmacro()
 
-	git_log_format(an GIT_AUTHOR_NAME)
-	git_log_format(ae GIT_AUTHOR_EMAIL)
-	git_log_format(cn GIT_COMMITTER_NAME)
-	git_log_format(ce GIT_COMMITTER_EMAIL)
-	git_log_format(B GIT_COMMIT_MESSAGE)
-	git_log_format(H GIT_COMMIT_HASH)
+	#git_log_format(an GIT_AUTHOR_NAME)
+	#git_log_format(ae GIT_AUTHOR_EMAIL)
+	#git_log_format(cn GIT_COMMITTER_NAME)
+	#git_log_format(ce GIT_COMMITTER_EMAIL)
+	#git_log_format(B GIT_COMMIT_MESSAGE)
+	#git_log_format(H GIT_COMMIT_HASH)
 
 	if(GIT_COMMIT_MESSAGE)
 		string(REPLACE "\n" "\\n" GIT_COMMIT_MESSAGE ${GIT_COMMIT_MESSAGE})
@@ -476,6 +485,8 @@ set(JSON_GCOV_FILES "${JSON_GCOV_FILES}]")
 # Generate the final complete JSON!
 message("Generate final JSON...")
 string(CONFIGURE ${JSON_TEMPLATE} JSON)
+
+message(${JSON})
 
 file(WRITE "${COVERALLS_OUTPUT_FILE}" "${JSON}")
 message("###########################################################################")
