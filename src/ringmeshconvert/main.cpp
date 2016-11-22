@@ -105,9 +105,9 @@ int main( int argc, char** argv )
 
         default_configure() ;
 
+        print_header_information() ;
         Logger::div( "RINGMeshConvert" ) ;
         Logger::out( "" ) << "Welcome to RINGMeshConvert !" << std::endl ;
-        print_header_information() ;
 
         CmdLine::import_arg_group( "in" ) ;
         CmdLine::import_arg_group( "out" ) ;

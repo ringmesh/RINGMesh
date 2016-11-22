@@ -109,9 +109,9 @@ int main()
         default_configure() ;
 
         // Say Hello
+        print_header_information() ;
         Logger::div( "RINGMesh Training" ) ;
         Logger::out( "" ) << "Welcome to the training of RINGMesh ! !" << std::endl ;
-        print_header_information() ;
 
         // Measure the time between the GEO::Stopwatch creation and its destruction.
         GEO::Stopwatch total( "Total time" ) ;

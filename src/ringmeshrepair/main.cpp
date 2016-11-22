@@ -52,9 +52,9 @@ namespace {
 
     void hello()
     {
+        print_header_information() ;
         Logger::div( "RINGMeshRepair" ) ;
         Logger::out( "" ) << "Welcome to RINGMeshRepair !" << std::endl ;
-        print_header_information() ;
     }
 
     void import_arg_groups()

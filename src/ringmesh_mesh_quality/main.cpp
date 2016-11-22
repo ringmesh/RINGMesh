@@ -52,9 +52,9 @@ namespace {
 
     void hello()
     {
+        print_header_information() ;
         Logger::div( "RINGMeshMeshQuality" ) ;
         Logger::out( "" ) << "Welcome to RINGMeshMeshQuality !" << std::endl ;
-        print_header_information() ;
     }
 
     void import_arg_groups()
