@@ -57,6 +57,8 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
+    typedef std::string MeshType ;
+
     /*!
      * class base class for encapsulating Mesh structure
      * @brief encapsulate adimensional mesh functionalities in order to provide an API
@@ -66,7 +68,6 @@ namespace RINGMesh {
     class RINGMESH_API MeshBase {
     ringmesh_disable_copy( MeshBase ) ;
         friend class MeshBaseBuilder ;
-        friend class GeogramMeshBuilder ;
 
     public:
 
@@ -121,6 +122,8 @@ namespace RINGMesh {
             return get_mesh_builder_base() ;
         }
 
+        virtual const MeshType type_name() const = 0 ;
+
         /*!
          * @}
          */
@@ -148,12 +151,13 @@ namespace RINGMesh {
     class RINGMESH_API Mesh0D: public virtual MeshBase {
     ringmesh_disable_copy( Mesh0D ) ;
         friend class Mesh0DBuilder ;
-        friend class GeogramMeshBuilder ;
 
     public:
         virtual ~Mesh0D()
         {
         }
+
+        static Mesh0D* create_mesh( const MeshType type ) ;
 
         Mesh0DBuilder* get_mesh0d_builder() ;
     protected:
@@ -165,6 +169,11 @@ namespace RINGMesh {
         {
         }
     } ;
+    typedef GEO::SmartPointer< Mesh0D > Mesh0D_var ;
+    typedef GEO::Factory0< Mesh0D > Mesh0DFactory ;
+#define ringmesh_register_mesh_0d(type) \
+    geo_register_creator(Mesh0DFactory, type, type::type_name_static())
+
 
     /*!
      * class for encapsulating 1D mesh component
@@ -180,6 +189,9 @@ namespace RINGMesh {
             if( edges_ann_ != nil ) delete edges_ann_ ;
             if( edges_aabb_ != nil ) delete edges_aabb_ ;
         }
+
+        static Mesh1D* create_mesh( const MeshType type ) ;
+
         /*
          * @brief Gets the index of an edge vertex.
          * @param[in] edge_id index of the edge.
@@ -250,6 +262,10 @@ namespace RINGMesh {
         mutable ColocaterANN* edges_ann_ ;
         mutable AABBTree1D* edges_aabb_ ;
     } ;
+    typedef GEO::SmartPointer< Mesh1D > Mesh1D_var ;
+    typedef GEO::Factory0< Mesh1D > Mesh1DFactory ;
+#define ringmesh_register_mesh_1d(type) \
+    geo_register_creator(Mesh1DFactory, type, type::type_name_static())
 
     /*!
      * class for encapsulating 2D mesh component
@@ -257,7 +273,6 @@ namespace RINGMesh {
     class RINGMESH_API Mesh2D: public virtual MeshBase {
     ringmesh_disable_copy( Mesh2D ) ;
         friend class Mesh2DBuilder ;
-        friend class GeogramMeshBuilder ;
 
     public:
         virtual ~Mesh2D()
@@ -265,6 +280,9 @@ namespace RINGMesh {
             if( facets_ann_ != nil ) delete facets_ann_ ;
             if( facets_aabb_ != nil ) delete facets_aabb_ ;
         }
+
+        static Mesh2D* create_mesh( const MeshType type ) ;
+
         /*!
          * @brief Gets the vertex index by facet index and local vertex index.
          * @param[in] facet_id the facet index.
@@ -419,8 +437,11 @@ namespace RINGMesh {
     protected:
         mutable ColocaterANN* facets_ann_ ;
         mutable AABBTree2D* facets_aabb_ ;
-
     } ;
+    typedef GEO::SmartPointer< Mesh2D > Mesh2D_var ;
+    typedef GEO::Factory0< Mesh2D > Mesh2DFactory ;
+#define ringmesh_register_mesh_2d(type) \
+    geo_register_creator(Mesh2DFactory, type, type::type_name_static())
 
     /*!
      * class for encapsulating 3D mesh component
@@ -428,7 +449,6 @@ namespace RINGMesh {
     class RINGMESH_API Mesh3D: public virtual MeshBase {
     ringmesh_disable_copy( Mesh3D ) ;
         friend class Mesh3DBuilder ;
-        friend class GeogramMeshBuilder ;
 
     public:
         virtual ~Mesh3D()
@@ -437,6 +457,8 @@ namespace RINGMesh {
             if( cell_ann_ != nil ) delete cell_ann_ ;
             if( cell_aabb_ != nil ) delete cell_aabb_ ;
         }
+
+        static Mesh3D* create_mesh( const MeshType type ) ;
 
         /*!
          * @brief Gets a vertex index by cell and local vertex index.
@@ -671,8 +693,11 @@ namespace RINGMesh {
         mutable ColocaterANN* cell_facets_ann_ ;
         mutable ColocaterANN* cell_ann_ ;
         mutable AABBTree3D* cell_aabb_ ;
-
     } ;
+    typedef GEO::SmartPointer< Mesh3D > Mesh3D_var ;
+    typedef GEO::Factory0< Mesh3D > Mesh3DFactory ;
+#define ringmesh_register_mesh_3d(type) \
+    geo_register_creator(Mesh3DFactory, type, type::type_name_static())
 
     class RINGMESH_API MeshAllD: public virtual Mesh0D,
         public virtual Mesh1D,
@@ -680,20 +705,25 @@ namespace RINGMesh {
         public virtual Mesh3D {
     ringmesh_disable_copy( MeshAllD ) ;
         friend class MeshAllDBuilder ;
-        friend class GeogramMeshBuilder ;
 
     public:
         virtual ~MeshAllD()
         {
         }
+
+        static MeshAllD* create_mesh( const MeshType type ) ;
+
         MeshAllDBuilder* get_meshalld_builder() ;
     protected:
         MeshAllD()
             : Mesh0D(), Mesh1D(), Mesh2D(), Mesh3D()
         {
         }
-
     } ;
+    typedef GEO::SmartPointer< MeshAllD > MeshAllD_var ;
+    typedef GEO::Factory0< MeshAllD > MeshAllDFactory ;
+#define ringmesh_register_mesh_alld(type) \
+    geo_register_creator(MeshAllDFactory, type, type::type_name_static())
 }
 
 #endif

@@ -132,4 +132,80 @@ namespace RINGMesh {
         return mesh_builder_ ;
     }
 
+    Mesh0D* Mesh0D::create_mesh( const MeshType type )
+    {
+        Mesh0D* mesh = Mesh0DFactory::create_object( type ) ;
+        if( !mesh ) {
+            Logger::warn( "Mesh0D" )
+                << "Could not create mesh data structure: " << type
+                << std::endl ;
+            Logger::warn( "Mesh0D" ) << "Falling back to GeogramMesh0D data structure"
+                << std::endl ;
+
+            mesh = new GeogramMesh0D ;
+        }
+        return mesh ;
+    }
+
+    Mesh1D* Mesh1D::create_mesh( const MeshType type )
+    {
+        Mesh1D* mesh = Mesh1DFactory::create_object( type ) ;
+        if( !mesh ) {
+            Logger::warn( "Mesh1D" )
+                << "Could not create mesh data structure: " << type
+                << std::endl ;
+            Logger::warn( "Mesh1D" ) << "Falling back to GeogramMesh1D data structure"
+                << std::endl ;
+
+            mesh = new GeogramMesh1D ;
+        }
+        return mesh ;
+    }
+
+    Mesh2D* Mesh2D::create_mesh( const MeshType type )
+    {
+        Mesh2D* mesh = Mesh2DFactory::create_object( type ) ;
+        if( !mesh ) {
+            Logger::warn( "Mesh2D" )
+                << "Could not create mesh data structure: " << type
+                << std::endl ;
+            Logger::warn( "Mesh2D" ) << "Falling back to GeogramMesh2D data structure"
+                << std::endl ;
+
+            mesh = new GeogramMesh2D ;
+        }
+        return mesh ;
+    }
+
+    Mesh3D* Mesh3D::create_mesh( const MeshType type )
+    {
+        Mesh3D* mesh = Mesh3DFactory::create_object( type ) ;
+        if( !mesh ) {
+            Logger::warn( "Mesh3D" )
+                << "Could not create mesh data structure: " << type
+                << std::endl ;
+            Logger::warn( "Mesh3D" ) << "Falling back to GeogramMesh3D data structure"
+                << std::endl ;
+
+            mesh = new GeogramMesh3D ;
+        }
+        return mesh ;
+    }
+
+    MeshAllD* MeshAllD::create_mesh( const MeshType type )
+    {
+        MeshAllD* mesh = MeshAllDFactory::create_object( type ) ;
+        if( !mesh ) {
+            Logger::warn( "MeshAllD" )
+                << "Could not create mesh data structure: " << type
+                << std::endl ;
+            Logger::warn( "MeshAllD" ) << "Falling back to GeogramMeshAllD data structure"
+                << std::endl ;
+
+            mesh = new GeogramMeshAllD ;
+        }
+        return mesh ;
+    }
+
+
 } // namespace
