@@ -94,7 +94,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 #------------------------------------------------------------------------------------------------
 # Additional cmake modules
 include(ExternalProject)
-# build export dll macros
+# build export macros
 include (GenerateExportHeader) 
 
 # Enable testing with CTest
