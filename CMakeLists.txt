@@ -165,8 +165,6 @@ message(STATUS "RINGMesh source directory is: ${PROJECT_SOURCE_DIR}")
 #------------------------------------------------------------------------------------------------
 # Platform dependent settings
 if(WIN32)
-    #add_compile_options(-DRINGMESH_EXPORTS) 
-	
 	# Select the CMAKE_CONFIGURATION_TYPES from Visual Studio
     set(COMPILATION_OPTION --config ${CMAKE_CFG_INTDIR})
 elseif(UNIX)
@@ -365,6 +363,9 @@ add_library(RINGMesh SHARED
     ${ringmesh_src} 
     ${zlib_src}
     ${zlib_include})
+	
+# Function for generation of export macros for libraries (dll)
+generate_export_header(RINGMesh EXPORT_MACRO_NAME RINGMESH_API EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_export.h)
 
 # RINGMesh depends on Geogram
 add_dependencies(RINGMesh geogram_ext)
@@ -373,8 +374,6 @@ add_dependencies(RINGMesh geogram_ext)
 target_link_libraries(RINGMesh ${EXTRA_LIBS})
 
 if(WIN32)
-	# Function for generation of export macros for libraries (dll)
-	generate_export_header(RINGMesh EXPORT_MACRO_NAME RINGMESH_API EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_dll_export.h)
     # On windows, without proper installation steps, we need to 
     # copy of Geogram dll and pdb information to RINGMesh
     # to be able to launch RINGMesh utilities and tests from the debugger
