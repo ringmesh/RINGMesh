@@ -233,8 +233,8 @@ namespace {
         const double& cell_volume_total,
         const std::string& cell_type )
     {
-        Logger::out( "GeoModel" ) << "* " << cell_type << " volume "
-            << cell_volume << " ("
+        Logger::out( "GeoModel" ) << "* " << cell_type << " volume " << cell_volume
+            << " ("
             << static_cast< index_t >( cell_volume * 100 / cell_volume_total + 0.5 )
             << "%)\n" ;
     }
@@ -244,21 +244,25 @@ namespace {
 namespace RINGMesh {
     typedef std::string EntityType ;
 
-    void print_nb_mesh_entities( const GeoModel& geomodel, const std::string& entity_type_name )
+    void print_nb_mesh_entities(
+        const GeoModel& geomodel,
+        const std::string& entity_type_name )
     {
         Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left
-            << geomodel.nb_mesh_entities( entity_type_name ) << " " << entity_type_name
-            << std::endl ;
+            << geomodel.nb_mesh_entities( entity_type_name ) << " "
+            << entity_type_name << std::endl ;
     }
-    
-    void print_nb_geological_entities( const GeoModel& geomodel, const std::string& entity_type_name )
+
+    void print_nb_geological_entities(
+        const GeoModel& geomodel,
+        const std::string& entity_type_name )
     {
         if( geomodel.nb_geological_entities( entity_type_name ) == 0 ) {
             return ;
         }
         Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left
-            << geomodel.nb_geological_entities( entity_type_name ) << " " << entity_type_name
-            << std::endl ;
+            << geomodel.nb_geological_entities( entity_type_name ) << " "
+            << entity_type_name << std::endl ;
     }
 
     void print_geomodel( const GeoModel& geomodel )
@@ -278,21 +282,21 @@ namespace RINGMesh {
         const std::vector< EntityType >& mesh_entity_types =
             manager.mesh_entity_types() ;
         for( index_t i = 0; i < mesh_entity_types.size(); ++i ) {
-            print_nb_mesh_entities( geomodel, mesh_entity_types[i] ) ; 
+            print_nb_mesh_entities( geomodel, mesh_entity_types[i] ) ;
         }
-        const std::vector< EntityType>& geological_entity_types =
+        const std::vector< EntityType >& geological_entity_types =
             manager.geological_entity_types() ;
         for( index_t i = 0; i < geological_entity_types.size(); ++i ) {
             print_nb_geological_entities( geomodel, geological_entity_types[i] ) ;
-        }        
+        }
     }
 
     void print_geomodel_mesh_stats( const GeoModel& geomodel )
     {
-        Logger::out( "GeoModel" ) << "Model " << geomodel.name()
-            << " is made of\n" << std::setw( 10 ) << std::left
-            << geomodel.mesh.vertices.nb() << " vertices\n" << std::setw( 10 )
-            << std::left << count_geomodel_edges( geomodel ) << " edges\n" ;
+        Logger::out( "GeoModel" ) << "Model " << geomodel.name() << " is made of\n"
+            << std::setw( 10 ) << std::left << geomodel.mesh.vertices.nb()
+            << " vertices\n" << std::setw( 10 ) << std::left
+            << count_geomodel_edges( geomodel ) << " edges\n" ;
 
         index_t nb_triangles = 0 ;
         index_t nb_quads = 0 ;
@@ -651,7 +655,8 @@ namespace RINGMesh {
                 index_t nbv = S.nb_mesh_element_vertices( f ) ;
                 GEO::vector< index_t > ids( nbv ) ;
                 for( index_t v = 0; v < nbv; ++v ) {
-                    ids[v] = old2new[model_vertices.model_vertex_id( S.gme_id(), f, v )] ;
+                    ids[v] = old2new[model_vertices.model_vertex_id( S.gme_id(), f,
+                        v )] ;
                 }
                 M.facets.create_polygon( ids ) ;
             }
@@ -670,7 +675,8 @@ namespace RINGMesh {
         return result ;
     }
 
-    double model_entity_size( const GeoModelMeshEntity& E ){
+    double model_entity_size( const GeoModelMeshEntity& E )
+    {
         return E.size() ;
     }
 
@@ -679,7 +685,8 @@ namespace RINGMesh {
         return E.entity_barycenter() ;
     }
 
-    vec3 model_entity_barycenter( const GeoModelGeologicalEntity& E ) {
+    vec3 model_entity_barycenter( const GeoModelGeologicalEntity& E )
+    {
 
         vec3 result( 0., 0., 0. ) ;
         index_t nb_vertices = 0 ;
