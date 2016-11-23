@@ -23,3 +23,8 @@ build_script:
 test_script:
  - cmd: cmake --build . --target RUN_TESTS --config Debug
 
+on_success:
+ - cmd: >-
+    cd $(appveyor_build_folder)
+    
+    dir
