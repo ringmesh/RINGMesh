@@ -88,8 +88,6 @@ if (NOT GCOV_EXECUTABLE)
 	message(FATAL_ERROR "gcov not found! Aborting...")
 endif()
 
-find_package(Git)
-
 set(JSON_REPO_TEMPLATE
   "{
     \"head\": {
