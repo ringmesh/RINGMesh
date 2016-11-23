@@ -174,8 +174,7 @@ namespace RINGMesh {
                     << mesh.vertices.point( v ) ;
                 for( index_t attr_dbl_itr = 0;
                     attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
-                    GEO::ReadOnlyScalarAttributeAdapter cur_attr(
-                        mesh.vertices.attributes(),
+                    GEO::Attribute< double > cur_attr( mesh.vertices.attributes(),
                         att_v_double_names[attr_dbl_itr] ) ;
                     for( index_t dim_itr = 0;
                         dim_itr < vertex_attr_dims[attr_dbl_itr]; ++dim_itr ) {
@@ -220,8 +219,7 @@ namespace RINGMesh {
                     continue ;
                 }
 
-                if( !GEO::ReadOnlyScalarAttributeAdapter::is_defined( mesh_vertex_mgr,
-                    att_v_names[att_v] ) ) {
+                if( !is_attribute_a_double( mesh_vertex_mgr, att_v_names[att_v] ) ) {
                     continue ;
                 }
                 att_v_double_names.push_back( att_v_names[att_v] ) ;
