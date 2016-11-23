@@ -184,7 +184,9 @@ namespace RINGMesh {
      * @param[in] geomodel GeoModel on which compute the translation
      * @param[in] translation_vector vector of translation.
      */
-    void RINGMESH_API translate( GeoModel& geomodel, const vec3& translation_vector ) ;
+    void RINGMESH_API translate(
+        GeoModel& geomodel,
+        const vec3& translation_vector ) ;
 
     /*!
      * \brief Rotate the boundary model.
