@@ -68,6 +68,7 @@ int main()
         default_configure() ;
 
         // Say Hello
+        print_header_information() ;
         Logger::div( "RINGMesh Training" ) ;
         Logger::out( "" ) << "Welcome to the RINGMesh training for basics functionalities on GeoModel !" << std::endl ;
 
