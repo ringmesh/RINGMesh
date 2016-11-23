@@ -660,7 +660,6 @@ namespace RINGMesh {
     }
 
     /*******************************************************************************/
-    /*******************************************************************************/
 
     double model_entity_size( const GeoModelGeologicalEntity& E )
     {
@@ -675,34 +674,24 @@ namespace RINGMesh {
         return E.size() ;
     }
 
-    double model_entity_cell_size( const Region& R, index_t cell )
-    {
-        return R.mesh_element_size( cell ) ;       
-    }
-
-    vec3 model_entity_center( const GeoModelMeshEntity& E )
+    vec3 model_entity_barycenter( const GeoModelMeshEntity& E )
     {
         return E.entity_barycenter() ;
     }
 
-    vec3 model_entity_center( const GeoModelGeologicalEntity& E ) {
-    
+    vec3 model_entity_barycenter( const GeoModelGeologicalEntity& E ) {
+
         vec3 result( 0., 0., 0. ) ;
         index_t nb_vertices = 0 ;
 
         for( index_t i = 0; i < E.nb_children(); ++i ) {
             const GeoModelMeshEntity& child = E.child( i ) ;
             nb_vertices += child.nb_vertices() ;
-            result += child.entity_barycenter() *child.nb_vertices() ;
+            result += child.entity_barycenter() * child.nb_vertices() ;
         }
         result /= static_cast< double >( nb_vertices ) ;
-        
-        return result ;
-    }
 
-    vec3 model_entity_cell_barycenter( const GeoModelMeshEntity& E, index_t cell )
-    {
-        return E.mesh_element_barycenter( cell ) ;
+        return result ;
     }
 
     void translate( GeoModel& M, const vec3& translation_vector )
@@ -744,60 +733,6 @@ namespace RINGMesh {
             ringmesh_assert( new_p[3] == 1. ) ;
 
             M.mesh.vertices.update_point( v, vec3( new_p[0], new_p[1], new_p[2] ) ) ;
-        }
-    }
-
-    /*!
-     * @brief Generates a point that lies strictly a Region defined by its boundary Surfaces.
-     * @details Returns the midpoint of A: the barycenter of the 1st facet of the 1st Surface
-     * and B: the closest point of a A in the other Surfaces defining the Region.
-     * @warning Incomplete implementation.
-     */
-    vec3 generate_point_in_region( const Region& region )
-    {
-        if( region.nb_boundaries() == 1 ) {                    
-            /// @todo This might fail if the Region is non-convex
-            return model_entity_center( region.boundary(0) );
-        }
-
-        ringmesh_assert( region.nb_boundaries() > 0 ) ;
-
-        const GeoModel& geomodel = region.model() ;
-        const Surface& first_boundary_surface = geomodel.surface(
-            region.boundary_gme( 0 ).index ) ;
-        vec3 barycenter = first_boundary_surface.mesh_element_barycenter( 0 ) ;
-        /// @todo Check that this is the right condition to have a correct enough barycenter
-        ringmesh_assert( first_boundary_surface.mesh_element_size( 0 ) > geomodel.epsilon() ) ;
-
-        double minimum_distance = DBL_MAX ;
-        vec3 nearest_point ;
-        for( index_t i = 1; i != region.nb_boundaries(); ++i ) {
-            const Surface& S = geomodel.surface( region.boundary_gme( i ).index ) ;
-            double distance = DBL_MAX ;
-            vec3 point ;
-            S.facets_aabb().closest_triangle( barycenter, point, distance ) ;
-
-            if( distance < minimum_distance ) {
-                minimum_distance = distance ;
-                nearest_point = point ;
-            }
-        }
-        /// @todo Change implementation to use second triangle if that one failed, and further surfaces
-        ringmesh_assert( minimum_distance > geomodel.epsilon() ) ;
-        return 0.5 * ( barycenter + nearest_point ) ;
-    }
-
-    /*!
-     * @brief For each region of the geomodel computes a point inside that region
-     */
-    void get_one_point_per_geomodel_region(
-        const GeoModel& geomodel,
-        std::vector< vec3 >& one_point_one_region )
-    {
-        one_point_one_region.resize( geomodel.nb_regions() ) ;
-        for( index_t i = 0; i != geomodel.nb_regions(); ++i ) {
-            vec3 point = generate_point_in_region( geomodel.region( i ) ) ;
-            one_point_one_region[i] = point ;
         }
     }
 

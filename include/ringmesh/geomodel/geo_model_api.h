@@ -220,31 +220,11 @@ namespace RINGMesh {
     double RINGMESH_API model_entity_size( const GeoModelGeologicalEntity& E ) ;
 
     /*!
-     * Compute the size (volume, area, length) of an Entity cell (cell, facet, edge)
-     * @param[in] E Entity to evaluate
-     * @param[in] c the cell index
-     */
-    double RINGMESH_API model_entity_cell_size(
-        const GeoModelEntity& E,
-        index_t c ) ;
-
-    /*!
      * @brief Compute the barycenter of a GeoModelEntity
      * @param[in] E Entity to evaluate
      * @return The coordinates of the barycenter
      */
     vec3 RINGMESH_API model_entity_barycenter( const GeoModelEntity& E ) ;
-
-    /*!
-     * @brief Compute the centroid of a GeoModelMeshEntity cell (cell, facet, edge)
-     * @param[in] E Entity to evaluate
-     * @param[in] c the cell index
-     * @return The coordinates of the center
-     * @pre E has a valid mesh.
-     */
-    vec3 RINGMESH_API model_entity_cell_barycenter(
-        const GeoModelMeshEntity& E,
-        index_t c ) ;
 
     /*-----------------------------------------------------------------------*/
 
