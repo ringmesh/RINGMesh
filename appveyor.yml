@@ -25,6 +25,6 @@ test_script:
 
 on_success:
  - cmd: >-
-    cd $(appveyor_build_folder)
+    cd $($env:appveyor_build_folder)
     
     dir
