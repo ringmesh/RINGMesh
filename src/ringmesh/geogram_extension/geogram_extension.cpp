@@ -120,6 +120,7 @@ namespace RINGMesh {
             } else {
                 read_number_of_vertices_and_triangles() ;
                 read_vertex_property_names() ;
+                read_vertex_property_sizes() ;
                 allocate_vertices() ;
                 allocate_triangles() ;
                 allocate_vertex_properties() ;
@@ -131,7 +132,6 @@ namespace RINGMesh {
 
         /*!
          * @brief Save a Mesh in .ts format
-         * @todo To be implemented.
          */
         virtual bool save(
             const GEO::Mesh& mesh,
@@ -174,7 +174,7 @@ namespace RINGMesh {
                     << mesh.vertices.point( v ) ;
                 for( index_t attr_dbl_itr = 0;
                     attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
-                    GEO::Attribute< double > cur_attr(
+                    GEO::ReadOnlyScalarAttributeAdapter cur_attr(
                         mesh.vertices.attributes(),
                         att_v_double_names[attr_dbl_itr] ) ;
                     for( index_t dim_itr = 0;
@@ -220,7 +220,7 @@ namespace RINGMesh {
                     continue ;
                 }
 
-                if( !is_attribute_a_double( mesh_vertex_mgr,
+                if( !GEO::ReadOnlyScalarAttributeAdapter::is_defined( mesh_vertex_mgr,
                     att_v_names[att_v] ) ) {
                     continue ;
                 }
@@ -340,12 +340,17 @@ namespace RINGMesh {
                             * z_sign_ ;
                         if( in.field_matches( 0, "PVRTX" ) )
                         {
-                            ringmesh_assert( in.nb_fields() == vertex_property_names_.size() + 5 ) ;
+                            index_t offset = 5 ;
                             for( index_t prop_name_itr = 0;
                                 prop_name_itr < vertex_property_names_.size();
                                 ++prop_name_itr ) {
-                                vertex_attributes_[nb_vertices_ * prop_name_itr
-                                    + v] = in.field_as_double( 5 + prop_name_itr ) ;
+                                for( index_t v_attr_dim_itr = 0;
+                                    v_attr_dim_itr
+                                        < vertex_attribute_dims_[prop_name_itr];
+                                    ++v_attr_dim_itr ) {
+                                    vertex_attributes_[prop_name_itr][v][v_attr_dim_itr] = in.field_as_double( offset ) ;
+                                    ++offset ;
+                                }
                             }
                         }
                         ++v ;
@@ -392,6 +397,26 @@ namespace RINGMesh {
             }
         }
 
+        void read_vertex_property_sizes()
+        {
+            GEO::LineInput in( filename_ ) ;
+            while( !in.eof() && in.get_line() ) {
+                in.get_fields() ;
+                if( in.nb_fields() > 0 ) {
+                    if( !in.field_matches( 0, "ESIZES" ) ) {
+                        continue ;
+                    }
+                    vertex_property_names_.reserve( in.nb_fields() - 1 ) ;
+                    for( index_t prop_size_itr = 1; prop_size_itr < in.nb_fields();
+                        ++prop_size_itr ) {
+                        vertex_attribute_dims_.push_back(
+                            in.field_as_uint( prop_size_itr ) ) ;
+                    }
+                    return ; // No need to continue.
+                }
+            }
+        }
+
         void assign_and_repair_mesh( GEO::Mesh& mesh )
         {
             GEO::coord_index_t dimension =
@@ -399,19 +424,31 @@ namespace RINGMesh {
             mesh.facets.assign_triangle_mesh( dimension, vertices_, triangles_,
                 true ) ;
 
-            for( index_t prop_name_itr = 0; prop_name_itr < vertex_property_names_.size();
-                ++prop_name_itr ) {
-                GEO::Attribute< double > attr( mesh.vertices.attributes(),
-                    vertex_property_names_[prop_name_itr] ) ;
-                for( index_t v_itr = 0; v_itr<nb_vertices_; ++v_itr ) {
-                    attr[v_itr] = vertex_attributes_[prop_name_itr * nb_vertices_
-                        + v_itr] ;
-                }
-            }
+            assign_tsurf_properties_to_geogram_mesh( mesh ) ;
 
-            // Do not use GEO::MESH_REPAIR_DEFAULT because it glues the 
+            // Do not use GEO::MESH_REPAIR_DEFAULT because it glues the
             // disconnected edges along internal boundaries
             GEO::mesh_repair( mesh, GEO::MESH_REPAIR_DUP_F ) ;
+        }
+
+        void assign_tsurf_properties_to_geogram_mesh( GEO::Mesh& mesh )
+        {
+            for( index_t prop_name_itr = 0;
+                prop_name_itr < vertex_property_names_.size(); ++prop_name_itr ) {
+                GEO::Attribute< double > attr ;
+                attr.create_vector_attribute( mesh.vertices.attributes(),
+                    vertex_property_names_[prop_name_itr],
+                    vertex_attribute_dims_[prop_name_itr] ) ;
+                for( index_t v_itr = 0; v_itr < nb_vertices_; ++v_itr ) {
+                    for( index_t prop_dim_itr = 0;
+                        prop_dim_itr < vertex_attribute_dims_[prop_name_itr];
+                        ++prop_dim_itr ) {
+                        attr[v_itr * vertex_attribute_dims_[prop_name_itr]
+                            + prop_dim_itr] =
+                            vertex_attributes_[prop_name_itr][v_itr][prop_dim_itr] ;
+                    }
+                }
+            }
         }
 
         bool is_file_valid()
@@ -435,7 +472,19 @@ namespace RINGMesh {
         }
         void allocate_vertex_properties()
         {
-            vertex_attributes_.resize( nb_vertices_ * vertex_property_names_.size() ) ;
+            vertex_attributes_.resize( vertex_property_names_.size() ) ;
+            for( index_t vertex_attributes_itr = 0;
+                vertex_attributes_itr < vertex_attributes_.size();
+                ++vertex_attributes_itr ) {
+                vertex_attributes_[vertex_attributes_itr].resize(
+                    nb_vertices_ ) ;
+                for( index_t vertex_itr = 0;
+                    vertex_itr < nb_vertices_;
+                    ++vertex_itr ) {
+                    vertex_attributes_[vertex_attributes_itr][vertex_itr].resize(
+                        vertex_attribute_dims_[vertex_attributes_itr], 0 ) ;
+                }
+            }
         }
 
     private:
@@ -448,7 +497,8 @@ namespace RINGMesh {
         GEO::vector< double > vertices_ ;
         GEO::vector< index_t > triangles_ ;
         GEO::vector< std::string > vertex_property_names_ ;
-        GEO::vector< double > vertex_attributes_ ;
+        GEO::vector< index_t > vertex_attribute_dims_ ;
+        GEO::vector< GEO::vector< GEO::vector< double > > > vertex_attributes_ ;
     } ;
 
     class LINMeshIOHandler: public GEO::MeshIOHandler {
