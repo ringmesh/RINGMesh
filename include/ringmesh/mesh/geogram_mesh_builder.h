@@ -48,6 +48,7 @@
 #include <ringmesh/basic/geometry.h>
 #include <ringmesh/geogram_extension/geogram_extension.h>
 #include <ringmesh/mesh/mesh.h>
+#include <ringmesh/mesh/geogram_mesh.h>
 
 namespace RINGMesh {
     class GeoModel ;
@@ -59,10 +60,6 @@ namespace RINGMesh {
     ringmesh_disable_copy( GeogramMeshBaseBuilder ) ;
 
     public:
-        GeogramMeshBaseBuilder( GeogramMeshBase& mesh )
-            : MeshBaseBuilder(), mesh_( mesh )
-        {
-        }
         virtual ~GeogramMeshBaseBuilder()
         {
         }
@@ -196,6 +193,10 @@ namespace RINGMesh {
         }
 
     protected:
+        GeogramMeshBaseBuilder( MeshBase& mesh )
+            : MeshBaseBuilder(), mesh_( dynamic_cast< GeogramMeshBase& >( mesh ) )
+        {
+        }
 
         void delete_vertex_colocater()
         {
@@ -214,8 +215,11 @@ namespace RINGMesh {
     ringmesh_disable_copy( GeogramMesh0DBuilder ) ;
 
     public:
-        GeogramMesh0DBuilder( GeogramMesh0D& mesh )
-            : GeogramMeshBaseBuilder( mesh ), Mesh0DBuilder(), mesh_( mesh )
+        GeogramMesh0DBuilder( Mesh0D& mesh )
+            :
+                GeogramMeshBaseBuilder( mesh ),
+                Mesh0DBuilder(),
+                mesh_( dynamic_cast< GeogramMesh0D& >( mesh ) )
         {
         }
         virtual ~GeogramMesh0DBuilder()
@@ -230,8 +234,11 @@ namespace RINGMesh {
     ringmesh_disable_copy( GeogramMesh1DBuilder ) ;
 
     public:
-        GeogramMesh1DBuilder( GeogramMesh1D& mesh )
-            : GeogramMeshBaseBuilder( mesh ), Mesh1DBuilder(), mesh_( mesh )
+        GeogramMesh1DBuilder( Mesh1D& mesh )
+            :
+                GeogramMeshBaseBuilder( mesh ),
+                Mesh1DBuilder(),
+                mesh_( dynamic_cast< GeogramMesh1D& >( mesh ) )
         {
         }
         virtual ~GeogramMesh1DBuilder()
@@ -348,8 +355,11 @@ namespace RINGMesh {
     ringmesh_disable_copy( GeogramMesh2DBuilder ) ;
 
     public:
-        GeogramMesh2DBuilder( GeogramMesh2D& mesh )
-            : GeogramMeshBaseBuilder( mesh ), Mesh2DBuilder(), mesh_( mesh )
+        GeogramMesh2DBuilder( Mesh2D& mesh )
+            :
+                GeogramMeshBaseBuilder( mesh ),
+                Mesh2DBuilder(),
+                mesh_( dynamic_cast< GeogramMesh2D& >( mesh ) )
         {
         }
         virtual ~GeogramMesh2DBuilder()
@@ -577,8 +587,11 @@ namespace RINGMesh {
     ringmesh_disable_copy( GeogramMesh3DBuilder ) ;
 
     public:
-        GeogramMesh3DBuilder( GeogramMesh3D& mesh )
-            : GeogramMeshBaseBuilder( mesh ), Mesh3DBuilder(), mesh_( mesh )
+        GeogramMesh3DBuilder( Mesh3D& mesh )
+            :
+                GeogramMeshBaseBuilder( mesh ),
+                Mesh3DBuilder(),
+                mesh_( dynamic_cast< GeogramMesh3D& >( mesh ) )
         {
         }
         virtual ~GeogramMesh3DBuilder()
@@ -775,7 +788,7 @@ namespace RINGMesh {
     ringmesh_disable_copy( GeogramMeshAllDBuilder ) ;
 
     public:
-        GeogramMeshAllDBuilder( GeogramMeshAllD& mesh )
+        GeogramMeshAllDBuilder( MeshAllD& mesh )
             :
                 GeogramMeshBaseBuilder( mesh ),
                 GeogramMesh0DBuilder( mesh ),
@@ -783,7 +796,7 @@ namespace RINGMesh {
                 GeogramMesh2DBuilder( mesh ),
                 GeogramMesh3DBuilder( mesh ),
                 MeshAllDBuilder(),
-                mesh_( mesh )
+                mesh_( dynamic_cast< GeogramMeshAllD& >( mesh ) )
         {
         }
         virtual ~GeogramMeshAllDBuilder()

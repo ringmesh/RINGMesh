@@ -46,6 +46,7 @@
 
 #include <ringmesh/basic/geometry.h>
 #include <ringmesh/geogram_extension/geogram_extension.h>
+#include <ringmesh/mesh/mesh.h>
 
 namespace RINGMesh {
     class GeogramMeshBaseBuilder ;
@@ -70,11 +71,6 @@ namespace RINGMesh {
         friend class GeogramMeshBaseBuilder ;
 
     public:
-        GeogramMeshBase()
-            : MeshBase()
-        {
-            mesh_ = new GEO::Mesh( 3, false ) ;
-        }
         virtual ~GeogramMeshBase()
         {
             delete mesh_ ;
@@ -125,6 +121,13 @@ namespace RINGMesh {
         }
 
     protected:
+        GeogramMeshBase()
+            : MeshBase()
+        {
+            mesh_ = new GEO::Mesh( 3, false ) ;
+        }
+
+    protected:
         mutable GEO::Mesh* mesh_ ;
     } ;
 
@@ -142,6 +145,15 @@ namespace RINGMesh {
         {
         }
         GeogramMesh0DBuilder* get_geogram_mesh_builder() ;
+        static const MeshType type_name_static()
+        {
+            return "GeogramMesh0D" ;
+        }
+
+        virtual const MeshType type_name() const
+        {
+            return type_name_static() ;
+        }
     protected:
         virtual MeshBaseBuilder* get_mesh_builder_base() ;
     } ;
@@ -159,7 +171,15 @@ namespace RINGMesh {
         virtual ~GeogramMesh1D()
         {
         }
+        static const MeshType type_name_static()
+        {
+            return "GeogramMesh1D" ;
+        }
 
+        virtual const MeshType type_name() const
+        {
+            return type_name_static() ;
+        }
         /*
          * @brief Gets the index of an edge vertex.
          * @param[in] edge_id index of the edge.
@@ -201,7 +221,15 @@ namespace RINGMesh {
         virtual ~GeogramMesh2D()
         {
         }
+        static const MeshType type_name_static()
+        {
+            return "GeogramMesh2D" ;
+        }
 
+        virtual const MeshType type_name() const
+        {
+            return type_name_static() ;
+        }
         /*!
          * @brief Gets the vertex index by facet index and local vertex index.
          * @param[in] facet_id the facet index.
@@ -272,7 +300,15 @@ namespace RINGMesh {
         virtual ~GeogramMesh3D()
         {
         }
+        static const MeshType type_name_static()
+        {
+            return "GeogramMesh3D" ;
+        }
 
+        virtual const MeshType type_name() const
+        {
+            return type_name_static() ;
+        }
         /*!
          * @brief Gets a vertex index by cell and local vertex index.
          * @param[in] cell_id the cell index.
@@ -446,12 +482,21 @@ namespace RINGMesh {
         virtual ~GeogramMeshAllD()
         {
         }
+        static const MeshType type_name_static()
+        {
+            return "GeogramMeshAllD" ;
+        }
 
+        virtual const MeshType type_name() const
+        {
+            return type_name_static() ;
+        }
         GeogramMeshAllDBuilder* get_geogram_mesh_builder() ;
     protected:
         virtual MeshBaseBuilder* get_mesh_builder_base() ;
     } ;
 
+//    void RINGMESH_API register_geogram_mesh() ;
 }
 
 #endif
