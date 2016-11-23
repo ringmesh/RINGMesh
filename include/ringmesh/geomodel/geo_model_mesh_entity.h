@@ -50,6 +50,8 @@
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
 #include <ringmesh/mesh/mesh.h>
 #include <ringmesh/mesh/mesh_builder.h>
+#include <ringmesh/mesh/geogram_mesh.h>
+#include <ringmesh/mesh/geogram_mesh_builder.h>
 
 namespace RINGMesh {
     class GeoModel ;
@@ -396,12 +398,12 @@ namespace RINGMesh {
         Corner( const GeoModel& model, index_t id )
             :
                 GeoModelMeshEntity( model, id ),
-                mesh0d_( new GeogramMesh( 3, false ) )
+                mesh0d_( new GeogramMesh0D )
         {
             GeoModelMeshEntity::set_mesh( mesh0d_ ) ;
 
-            GeogramMesh* geomesh = dynamic_cast< GeogramMesh* >( mesh0d_ ) ;
-            Mesh0DBuilder* builder = new GeogramMeshBuilder( *geomesh ) ;
+            GeogramMesh0D* geomesh = dynamic_cast< GeogramMesh0D* >( mesh0d_ ) ;
+            Mesh0DBuilder* builder = new GeogramMesh0DBuilder( *geomesh ) ;
             builder->create_vertex() ;
             delete builder ;
 
@@ -795,7 +797,7 @@ namespace RINGMesh {
         Surface( const GeoModel& model, index_t id )
             :
                 GeoModelMeshEntity( model, id ),
-                mesh2d_( new GeogramMesh( 3, false ) )
+                mesh2d_( new GeogramMesh2D )
         {
             GeoModelMeshEntity::set_mesh( mesh2d_ ) ;
 
@@ -1110,7 +1112,7 @@ namespace RINGMesh {
         Region( const GeoModel& model, index_t id )
             :
                 GeoModelMeshEntity( model, id ),
-                mesh3d_( new GeogramMesh( 3, false ) )
+                mesh3d_( new GeogramMesh3D )
         {
             GeoModelMeshEntity::set_mesh( mesh3d_ ) ;
 

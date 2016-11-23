@@ -489,7 +489,7 @@ namespace {
             gm.mesh.facets.test_and_initialize() ;
             gm.mesh.cells.test_and_initialize() ;
 
-            GeogramMesh mesh( 3, false ) ;
+            GeogramMeshAllD mesh ;
             gm.mesh.copy_mesh( mesh ) ;
 
             Logger::instance()->set_minimal( true ) ;

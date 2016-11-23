@@ -1,0 +1,18 @@
+
+--This line, and those below, will be ignored--
+
+A  + Attic/medit
+M    CMakeLists.txt
+M    cmake/platforms/Linux-gcc.cmake
+D    src/bin/medit
+M    src/lib/geogram/NL/nl_linkage.h
+M    src/lib/geogram/api/defs.h
+M    src/lib/geogram/mesh/mesh.h
+M    src/lib/geogram/points/co3ne.cpp
+M    src/lib/geogram/points/co3ne.h
+M    src/lib/geogram/points/kd_tree.cpp
+M    src/lib/geogram/points/kd_tree.h
+M    src/lib/geogram/third_party/zlib/zconf.h
+M    src/lib/geogram_gfx/api/defs.h
+M    src/lib/geogram_gfx/glut_viewer/glut_viewer.h
+M    src/lib/geogram_gfx/third_party/freeglut/freeglut_std.h

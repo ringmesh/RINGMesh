@@ -88,10 +88,57 @@ namespace {
         return true ;
     }
 
+    /*!
+     * @brief Computes and returns the surface connected components
+     * @details In Debug mode, the connected components are saved into 
+     * an Attribute on surface facets.
+     */
+    index_t compute_nb_surface_connected_components( const Surface& M )
+    {
+        const index_t NO_COMPONENT = index_t( -1 ) ;
+        GEO::Attribute< index_t > component( M.facet_attribute_manager(),
+            "component" ) ;
+        component.fill( NO_COMPONENT ) ;
+        index_t nb_components = 0 ;
+        for( index_t facet = 0; facet < M.nb_mesh_elements(); facet++ ) {
+            if( component[facet] == NO_COMPONENT ) {
+                std::stack< index_t > S ;
+                S.push( facet ) ;
+                component[facet] = nb_components ;
+                do {
+                    index_t cur_facet = S.top() ;
+                    S.pop() ;
+                    for( index_t edge = 0;
+                        edge < M.nb_mesh_element_vertices( cur_facet ); edge++ ) {
+                        index_t adj_facet = M.facet_adjacent_index( cur_facet,
+                            edge ) ;
+                        if( adj_facet != NO_ID
+                            && component[adj_facet] == NO_COMPONENT ) {
+                            S.push( adj_facet ) ;
+                            component[adj_facet] = nb_components ;
+                        }
+                    }
+                } while( !S.empty() ) ;
+                nb_components++ ;
+            }
+        }
+#ifndef RINGMESH_DEBUG
+        component.destroy() ;
+#endif
+        return nb_components ;
+    }
+
+    /*!
+     * @brief Computes and returns the region connected components
+     * @details In Debug mode, the connected components are saved into 
+     * an Attribute on region cells.
+     */
     index_t compute_nb_volume_connected_components( const Region& M )
     {
-        static const index_t NO_COMPONENT = index_t( -1 ) ;
-        std::vector< index_t > component( M.nb_mesh_elements(), NO_COMPONENT ) ;
+        const index_t NO_COMPONENT = index_t( -1 ) ;
+        GEO::Attribute< index_t > component( M.cell_attribute_manager(),
+            "component" ) ;
+        component.fill( NO_COMPONENT ) ;
         index_t nb_components = 0 ;
         for( index_t cell = 0; cell < M.nb_mesh_elements(); cell++ ) {
             if( component[cell] == NO_COMPONENT ) {
@@ -104,7 +151,7 @@ namespace {
                     for( index_t facet = 0; facet < M.nb_cell_facets( cur_cell );
                         facet++ ) {
                         index_t adj_cell = M.cell_adjacent_index( cur_cell, facet ) ;
-                        if( adj_cell != GEO::NO_CELL
+                        if( adj_cell != NO_ID
                             && component[adj_cell] == NO_COMPONENT ) {
                             S.push( adj_cell ) ;
                             component[adj_cell] = nb_components ;
@@ -114,6 +161,9 @@ namespace {
                 nb_components++ ;
             }
         }
+#ifndef RINGMESH_DEBUG
+        component.destroy() ;
+#endif
         return nb_components ;
     }
 
@@ -504,8 +554,9 @@ namespace RINGMesh {
      * @param[in] id The index of the line in the lines_ vector of the parent model
      */
     Line::Line( const GeoModel& model, index_t id )
-        : GeoModelMeshEntity( model, id ), mesh1d_( new GeogramMesh( 3, false ) )
-    {
+        :
+            GeoModelMeshEntity( model, id ),
+            mesh1d_( new GeogramMesh1D )    {
         GeoModelMeshEntity::set_mesh( mesh1d_ ) ;
 
         id_.type = type_name_static() ;
@@ -724,7 +775,7 @@ namespace RINGMesh {
         }
 
         // One connected component  
-        index_t cc = mesh2d_->nb_connected_components() ;
+        index_t cc = compute_nb_surface_connected_components( *this ) ;
         if( cc != 1 ) {
             Logger::warn( "GeoModelEntity" ) << gme_id() << " mesh has " << cc
                 << " connected components " << std::endl ;

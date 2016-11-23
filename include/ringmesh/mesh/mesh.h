@@ -39,10 +39,7 @@
 #include <ringmesh/basic/common.h>
 
 #include <geogram/basic/command_line.h>
-#include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_io.h>
-#include <geogram/mesh/mesh_geometry.h>
-#include <geogram/mesh/mesh_topology.h>
 
 #include <ringmesh/basic/geometry.h>
 #include <ringmesh/geogram_extension/geogram_extension.h>
@@ -56,7 +53,6 @@ namespace RINGMesh {
     class Mesh2DBuilder ;
     class Mesh3DBuilder ;
     class MeshAllDBuilder ;
-    class GeogramMeshBuilder ;
 }
 
 namespace RINGMesh {
@@ -85,8 +81,6 @@ namespace RINGMesh {
          * @todo Remove this function as soon as the GEO::MeshGFX is encapsulated
          */
         virtual const GEO::Mesh& gfx_mesh() const = 0 ;
-
-        virtual index_t nb_connected_components() const = 0 ;
 
         //TODO maybe reimplement the function with a RINGMesh::Mesh??
         virtual void print_mesh_bounded_attributes() const = 0 ;
@@ -145,7 +139,6 @@ namespace RINGMesh {
 
     protected:
         MeshBaseBuilder* mesh_builder_ ;
-    private:
         mutable ColocaterANN* vertices_ann_ ;
     } ;
 
@@ -253,7 +246,7 @@ namespace RINGMesh {
         {
         }
 
-    private:
+    protected:
         mutable ColocaterANN* edges_ann_ ;
         mutable AABBTree1D* edges_aabb_ ;
     } ;
@@ -374,7 +367,21 @@ namespace RINGMesh {
          * @param[in] facet_id the facet index
          * @return the facet area
          */
-        virtual double facet_area( index_t facet_id ) const = 0 ;
+        double facet_area( index_t facet_id ) const
+        {
+            double result = 0.0 ;
+            if( nb_facet_vertices( facet_id ) == 0 ) {
+                return result ;
+            }
+            const vec3& p1 = vertex( facet_vertex( facet_id, 0 ) ) ;
+            for( index_t i = 1; i + 1 < nb_facet_vertices( facet_id ); i++ ) {
+                const vec3& p2 = vertex( facet_vertex( facet_id, i ) ) ;
+                const vec3& p3 = vertex( facet_vertex( facet_id, i + 1 ) ) ;
+                result += 0.5 * length( cross( p2 - p1, p3 - p1 ) ) ;
+            }
+            return result ;
+        }
+
         
         /*!
          * @brief return the ColocaterANN at facets
@@ -409,7 +416,7 @@ namespace RINGMesh {
         {
         }
 
-    private:
+    protected:
         mutable ColocaterANN* facets_ann_ ;
         mutable AABBTree2D* facets_aabb_ ;
 
@@ -660,17 +667,17 @@ namespace RINGMesh {
         {
         }
 
-    private:
+    protected:
         mutable ColocaterANN* cell_facets_ann_ ;
         mutable ColocaterANN* cell_ann_ ;
         mutable AABBTree3D* cell_aabb_ ;
 
     } ;
 
-    class RINGMESH_API MeshAllD: public Mesh0D,
-        public Mesh1D,
-        public Mesh2D,
-        public Mesh3D {
+    class RINGMESH_API MeshAllD: public virtual Mesh0D,
+        public virtual Mesh1D,
+        public virtual Mesh2D,
+        public virtual Mesh3D {
     ringmesh_disable_copy( MeshAllD ) ;
         friend class MeshAllDBuilder ;
         friend class GeogramMeshBuilder ;
@@ -685,353 +692,6 @@ namespace RINGMesh {
             : Mesh0D(), Mesh1D(), Mesh2D(), Mesh3D()
         {
         }
-
-    } ;
-
-    /*!
-     * @brief class to encapsulate mesh structure in order to provide an API
-     * on which we base the RINGMesh algorithm
-     * @note For now, we encapsulate the GEO::Mesh class. We can develop the concept
-     * using a factory to build several encapsulating classes.
-     */
-    class RINGMESH_API GeogramMesh: public MeshAllD {
-    ringmesh_disable_copy( GeogramMesh ) ;
-
-        friend class GeogramMeshBuilder ;
-
-    public:
-        /*!
-         * @brief Mesh constructor.
-         * @param[in] dimension dimension of the vertices.
-         * @param[in] single_precision if true, vertices are stored in single precision (float),
-         * else they are stored as double precision (double).
-         */
-        GeogramMesh(
-            index_t dimension,
-            bool single_precision )
-            : MeshAllD()
-        {
-            mesh_ = new GEO::Mesh( dimension, single_precision ) ;
-        }
-        ~GeogramMesh()
-        {
-            delete mesh_ ;
-        }
-        /*!
-         * \name MeshBase implementation
-         * @{
-         */
-        void save_mesh(
-            const std::string& filename,
-            const GEO::MeshIOFlags& ioflags ) const
-        {
-            GEO::mesh_save( *mesh_, filename, ioflags ) ;
-        }
-
-        /*!
-         * get access to GEO::MESH... only for GFX..
-         * @todo Remove this function as soon as the GEO::MeshGFX is encapsulated
-         */
-        const GEO::Mesh& gfx_mesh() const
-        {
-            return *mesh_ ;
-        }
-
-        index_t nb_connected_components() const
-        {
-            return GEO::mesh_nb_connected_components( *mesh_ ) ;
-        }
-
-        //TODO maybe reimplement the function with a RINGMesh::Mesh??
-        void print_mesh_bounded_attributes() const
-        {
-            print_bounded_attributes( *mesh_ ) ;
-        }
-
-        /*
-         * @brief Gets a point.
-         * @param[in] v_id the vertex, in 0.. @function nb_vetices()-1.
-         * @return const reference to the point that corresponds to the vertex.
-         */
-        const vec3& vertex( index_t v_id ) const
-        {
-            ringmesh_assert( v_id < nb_vertices() ) ;
-            return mesh_->vertices.point( v_id ) ;
-        }
-
-        /*
-         * @brief Gets the number of point in the Mesh.
-         */
-        index_t nb_vertices() const
-        {
-            return mesh_->vertices.nb() ;
-        }
-        GEO::AttributesManager& vertex_attribute_manager() const
-        {
-            return mesh_->vertices.attributes() ;
-        }
-
-        /*!@}
-         * \name Mesh1D implementation
-         * @{
-         */
-
-        /*
-         * @brief Gets the index of an edge vertex.
-         * @param[in] edge_id index of the edge.
-         * @param[in] vertex_id local index of the vertex, in {0,1}
-         * @return the global index of vertex \param vertex_id in edge \param edge_id.
-         */
-        index_t edge_vertex( index_t edge_id, index_t vertex_id ) const
-        {
-            return mesh_->edges.vertex( edge_id, vertex_id ) ;
-        }
-        /*!
-         * @brief Gets the number of all the edges in the whole Mesh.
-         */
-        index_t nb_edges() const
-        {
-            return mesh_->edges.nb() ;
-        }
-
-        GEO::AttributesManager& edge_attribute_manager() const
-        {
-            return mesh_->edges.attributes() ;
-        }
-
-        /*!@}
-         * \name Mesh2D implementation
-         * @{
-         */
-
-        /*!
-         * @brief Gets the vertex index by facet index and local vertex index.
-         * @param[in] facet_id the facet index.
-         * @param[in] vertex_id the local edge index in \param facet_id.
-         * @return the global facet index adjacent to the \param edge_id of the facet \param facet_id.
-         * @precondition  \param edge_id < number of edge of the facet \param facet_id .
-         */
-        index_t facet_vertex( index_t facet_id, index_t vertex_id ) const
-        {
-            return mesh_->facets.vertex( facet_id, vertex_id ) ;
-        }
-        /*!
-         * @brief Gets the number of all facets in the whole Mesh.
-         */
-        index_t nb_facets() const
-        {
-            return mesh_->facets.nb() ;
-        }
-        /*!
-         * @brief Gets the number of vertices in the facet \param facet_id.
-         * @param[in] facet_id facet index
-         */
-        index_t nb_facet_vertices( index_t facet_id ) const
-        {
-            return mesh_->facets.nb_vertices( facet_id ) ;
-        }
-
-        /*!
-         * @brief Gets an adjacent facet index by facet index and local edge index.
-         * @param[in] facet_id the facet index.
-         * @param[in] edge_id the local edge index in \param facet_id.
-         * @return the global facet index adjacent to the \param edge_id of the facet \param facet_id.
-         * @precondition  \param edge_id < number of edge of the facet \param facet_id .
-         */
-        index_t facet_adjacent( index_t facet_id, index_t edge_id ) const
-        {
-            return mesh_->facets.adjacent( facet_id, edge_id ) ;
-        }
-        GEO::AttributesManager& facet_attribute_manager() const
-        {
-            return mesh_->facets.attributes() ;
-        }
-        /*!
-         * @brief Tests whether all the facets are triangles. when all the facets are triangles, storage and access is optimized.
-         * @return True if all facets are triangles and False otherwise.
-         */
-        bool facets_are_simplicies() const
-        {
-            return mesh_->facets.are_simplices() ;
-        }
-
-        /*!
-         * Computes the Mesh facet area
-         * @param[in] facet_id the facet index
-         * @return the facet area
-         */
-        double facet_area( index_t facet_id ) const
-        {
-            return GEO::Geom::mesh_facet_area( *mesh_, facet_id ) ;
-        }
-
-        /*!@}
-         * \name Mesh3D implementation
-         * @{
-         */
-
-        /*!
-         * @brief Gets a vertex index by cell and local vertex index.
-         * @param[in] cell_id the cell index.
-         * @param[in] vertex_id the local vertex index in \param cell_id.
-         * @return the global vertex index.
-         * @precondition vertex_id<number of vertices of the cell.
-         */
-        index_t cell_vertex( index_t cell_id, index_t vertex_id ) const
-        {
-            return mesh_->cells.vertex( cell_id, vertex_id ) ;
-        }
-        /*!
-         * @brief Gets a vertex index by cell and local edge and local vertex index.
-         * @param[in] cell_id the cell index.
-         * @param[in] edge_id the local edge index in \param cell_id.
-         * @param[in] vertex_id the local vertex index in \param cell_id.
-         * @return the global vertex index.
-         * @precondition vertex_id<number of vertices of the cell.
-         */
-        index_t cell_edge_vertex(
-            index_t cell_id,
-            index_t edge_id,
-            index_t vertex_id ) const
-        {
-            return mesh_->cells.edge_vertex( cell_id, edge_id, vertex_id ) ;
-        }
-        /*!
-         * @brief Gets a vertex by cell facet and local vertex index.
-         * @param[in] cell_id index of the cell
-         * @param[in] facet_id index of the facet in the cell \param cell_id
-         * @param[in] vertex_id index of the vertex in the facet \param facet_id
-         * @return the global vertex index.
-         * @precondition vertex_id < number of vertices in the facet \param facet_id
-         * and facet_id number of facet in th cell \param cell_id
-         */
-        index_t cell_facet_vertex(
-            index_t cell_id,
-            index_t facet_id,
-            index_t vertex_id ) const
-        {
-            return mesh_->cells.facet_vertex( cell_id, facet_id, vertex_id ) ;
-        }
-        /*!
-         * @brief Gets a facet index by cell and local facet index.
-         * @param[in] cell_id index of the cell
-         * @param[in] facet_id index of the facet in the cell \param cell_id
-         * @return the global facet index.
-         */
-        index_t cell_facet( index_t cell_id, index_t facet_id ) const
-        {
-            return mesh_->cells.facet( cell_id, facet_id ) ;
-        }
-        /*!
-         * @brief Gets the number of facet in a cell
-         * @param[in] cell_id index of the cell
-         * @return the number of facet of the cell \param cell_id
-         */
-        index_t nb_cell_facets( index_t cell_id ) const
-        {
-            return mesh_->cells.nb_facets( cell_id ) ;
-        }
-        /*!
-         * @brief Gets the total number of facet in all cell
-         */
-        index_t nb_cell_facets() const
-        {
-            return mesh_->cell_facets.nb() ;
-        }
-        /*!
-         * @brief Gets the number of edges in a cell
-         * @param[in] cell_id index of the cell
-         * @return the number of facet of the cell \param cell_id
-         */
-        index_t nb_cell_edges( index_t cell_id ) const
-        {
-            return mesh_->cells.nb_edges( cell_id ) ;
-        }
-        /*!
-         * @brief Gets the number of vertices of a facet in a cell
-         * @param[in] cell_id index of the cell
-         * @param[in] facet_id index of the facet in the cell \param cell_id
-         * @return the number of vertices in the facet \param facet_id in the cell \param cell_id
-         */
-        index_t nb_cell_facet_vertices( index_t cell_id, index_t facet_id ) const
-        {
-            return mesh_->cells.facet_nb_vertices( cell_id, facet_id ) ;
-        }
-        /*!
-         * @brief Gets the number of vertices of a cell
-         * @param[in] cell_id index of the cell
-         * @return the number of vertices in the cell \param cell_id
-         */
-        index_t nb_cell_vertices( index_t cell_id ) const
-        {
-            return mesh_->cells.nb_vertices( cell_id ) ;
-        }
-        /*!
-         * @brief Gets the number of cells in the Mesh.
-         */
-        index_t nb_cells() const
-        {
-            return mesh_->cells.nb() ;
-        }
-
-        index_t cell_begin( index_t cell_id ) const
-        {
-            return mesh_->cells.corners_begin( cell_id ) ;
-        }
-        index_t cell_end( index_t cell_id ) const
-        {
-            return mesh_->cells.corners_end( cell_id ) ;
-        }
-        /*!
-         * @return the index of the adjacent cell of \param cell_id along the facet \param facet_id
-         */
-        index_t cell_adjacent( index_t cell_id, index_t facet_id ) const
-        {
-            return mesh_->cells.adjacent( cell_id, facet_id ) ;
-        }
-        GEO::AttributesManager& cell_attribute_manager() const
-        {
-            return mesh_->cells.attributes() ;
-        }
-        GEO::AttributesManager& cell_facet_attribute_manager() const
-        {
-            return mesh_->cell_facets.attributes() ;
-        }
-        /*!
-         * @brief Gets the type of a cell.
-         * @param[in] cell_id the cell index, in 0..nb()-1
-         */
-        GEO::MeshCellType cell_type( index_t cell_id ) const
-        {
-            return mesh_->cells.type( cell_id ) ;
-        }
-        /*!
-         * @brief Tests whether all the cells are tetrahedra. when all the cells are tetrahedra, storage and access is optimized.
-         * @return True if all cells are tetrahedra and False otherwise.
-         */
-        bool cells_are_simplicies() const
-        {
-            return mesh_->cells.are_simplices() ;
-        }
-
-        /*!
-         * @brief compute the volume of the cell \param cell_id.
-         */
-        double cell_volume( index_t cell_id ) const
-        {
-            return RINGMesh::mesh_cell_volume( *mesh_, cell_id ) ;
-        }
-
-        /*!
-         * @}
-         */
-
-        GeogramMeshBuilder* get_geogram_mesh_builder() ;
-    protected:
-        virtual MeshBaseBuilder* get_mesh_builder_base() ;
-
-    private:
-        mutable GEO::Mesh* mesh_ ;
 
     } ;
 }
