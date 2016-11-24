@@ -47,27 +47,15 @@
  * @todo Do we really need them ? [JP]
  */
 
-namespace {
+namespace RINGMesh {
     void RINGMESH_API ringmesh_assertion_failed(
         const std::string& condition_string,
         const std::string& file,
-        int line )
-    {
-#ifdef WIN32
-        DebugBreak() ;
-#endif
-        GEO::geo_assertion_failed( condition_string, file, line ) ;
-    }
+        int line ) ;
 
     void RINGMESH_API ringmesh_should_not_have_reached(
         const std::string& file,
-        int line )
-    {
-#ifdef WIN32
-        DebugBreak() ;
-#endif
-        GEO::geo_should_not_have_reached( file, line ) ;
-    }
+        int line ) ;
 }
 
 #ifdef RINGMESH_DEBUG
