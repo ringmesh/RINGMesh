@@ -55,12 +55,9 @@ int main( int argc, char** argv )
 
         default_configure() ;
 
+        print_header_information() ;
         Logger::div( "RINGMeshStats" ) ;
         Logger::out( "" ) << "Welcome to RINGMeshStats !" << std::endl ;
-        Logger::out( "" ) << "People working on the project in RING"
-            << std::endl ;
-        Logger::out( "" ) << "Arnaud Botella <arnaud.botella@univ-lorraine.fr> "
-            << std::endl ;
 
         CmdLine::import_arg_group( "in" ) ;
         CmdLine::import_arg_group( "stats" ) ;

@@ -77,6 +77,7 @@ int main()
         Logger::out( "RINGMesh Test" ) << "Repairing "
             << std::endl << std::endl << std::endl ;
         // Repair the model
+
         GeoModelRepair model_repair( M ) ;
         model_repair.repair( GeoModelRepair::ALL ) ;
 
