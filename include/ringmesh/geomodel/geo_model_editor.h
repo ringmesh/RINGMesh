@@ -477,12 +477,12 @@ namespace RINGMesh {
             const EntityType& type ) ;
 
     private:
-        /*! The model edited 
-         */
+        /*! The model edited
+        */
         GeoModel& model_ ;
         /*! Parameter to forbid element creation. Crucial to control
-         *  building of the model and detect errors in find_or_create functions
-         */
+        *  building of the model and detect errors in find_or_create functions
+        */
         bool create_entity_allowed_ ;
     } ;
 
