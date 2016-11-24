@@ -478,7 +478,7 @@ namespace RINGMesh {
         }
     } ;
 
-//    void RINGMESH_API register_geogram_mesh() ;
+    void register_geogram_mesh() ;
 }
 
 #endif
