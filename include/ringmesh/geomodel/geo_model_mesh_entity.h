@@ -391,6 +391,24 @@ namespace RINGMesh {
             return vertex( 0 ) ;
         }
 
+        /*!
+         * @brief Get the low level mesh data structure
+         * @warn This function is for ADVANCED user only. If you use it,
+         * you are responsible for low level mesh consistency.
+         */
+        Mesh0D& low_level_mesh_storage()
+        {
+            return *mesh0d_ ;
+        }
+        /*!
+         * @brief Get the low level mesh data structure
+         * @warn This function is for ADVANCED user only. If you use it,
+         * you are responsible for low level mesh consistency.
+         */
+        const Mesh0D& low_level_mesh_storage() const
+        {
+            return *mesh0d_ ;
+        }
     protected:
         /*! @brief Creates a Corner.
          *  A point is added to its Mesh.
@@ -403,9 +421,9 @@ namespace RINGMesh {
             GeoModelMeshEntity::set_mesh( mesh0d_ ) ;
 
             GeogramMesh0D* geomesh = dynamic_cast< GeogramMesh0D* >( mesh0d_ ) ;
-            Mesh0DBuilder* builder = new GeogramMesh0DBuilder( *geomesh ) ;
-            builder->create_vertex() ;
-            delete builder ;
+//            Mesh0DBuilder* builder = new GeogramMesh0DBuilder( *geomesh ) ;
+//            builder->create_vertex() ;
+//            delete builder ;
 
             id_.type = type_name_static() ;
         }
@@ -424,6 +442,8 @@ namespace RINGMesh {
         }
 
         virtual bool is_mesh_valid() const ;
+
+
     private:
         Mesh0D* mesh0d_ ;
     } ;
@@ -528,7 +548,24 @@ namespace RINGMesh {
         }
 
         bool is_first_corner_first_vertex() const ;
-
+        /*!
+         * @brief Get the low level mesh data structure
+         * @warn This function is for ADVANCED user only. If you use it,
+         * you are responsible for low level mesh consistency.
+         */
+        Mesh1D& low_level_mesh_storage()
+        {
+            return *mesh1d_ ;
+        }
+        /*!
+         * @brief Get the low level mesh data structure
+         * @warn This function is for ADVANCED user only. If you use it,
+         * you are responsible for low level mesh consistency.
+         */
+        const Mesh1D& low_level_mesh_storage() const
+        {
+            return *mesh1d_ ;
+        }
     protected:
         Line( const GeoModel& model, index_t id ) ;
 
@@ -792,7 +829,24 @@ namespace RINGMesh {
         }
         /*! @}
          */
-
+        /*!
+         * @brief Get the low level mesh data structure
+         * @warn This function is for ADVANCED user only. If you use it,
+         * you are responsible for low level mesh consistency.
+         */
+        Mesh2D& low_level_mesh_storage()
+        {
+            return *mesh2d_ ;
+        }
+        /*!
+         * @brief Get the low level mesh data structure
+         * @warn This function is for ADVANCED user only. If you use it,
+         * you are responsible for low level mesh consistency.
+         */
+        const Mesh2D& low_level_mesh_storage() const
+        {
+            return *mesh2d_ ;
+        }
     protected:
         Surface( const GeoModel& model, index_t id )
             :
@@ -1107,7 +1161,24 @@ namespace RINGMesh {
         }
         /*! @}
          */
-
+        /*!
+         * @brief Get the low level mesh data structure
+         * @warn This function is for ADVANCED user only. If you use it,
+         * you are responsible for low level mesh consistency.
+         */
+        Mesh3D& low_level_mesh_storage()
+        {
+            return *mesh3d_ ;
+        }
+        /*!
+         * @brief Get the low level mesh data structure
+         * @warn This function is for ADVANCED user only. If you use it,
+         * you are responsible for low level mesh consistency.
+         */
+        const Mesh3D& low_level_mesh_storage() const
+        {
+            return *mesh3d_ ;
+        }
     protected:
         Region( const GeoModel& model, index_t id )
             :
