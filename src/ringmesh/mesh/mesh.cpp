@@ -51,10 +51,14 @@ namespace RINGMesh {
 
     Mesh0D* Mesh0D::create_mesh( const MeshType type )
     {
-        Mesh0D* mesh = Mesh0DFactory::create_object( type ) ;
+        MeshType new_type = type ;
+        if( new_type.empty() ) {
+            new_type = GeogramMesh0D::type_name_static() ;
+        }
+        Mesh0D* mesh = Mesh0DFactory::create_object( new_type ) ;
         if( !mesh ) {
             Logger::warn( "Mesh0D" )
-                << "Could not create mesh data structure: " << type
+                << "Could not create mesh data structure: " << new_type
                 << std::endl ;
             Logger::warn( "Mesh0D" ) << "Falling back to GeogramMesh0D data structure"
                 << std::endl ;
@@ -66,10 +70,14 @@ namespace RINGMesh {
 
     Mesh1D* Mesh1D::create_mesh( const MeshType type )
     {
-        Mesh1D* mesh = Mesh1DFactory::create_object( type ) ;
+        MeshType new_type = type ;
+        if( new_type.empty() ) {
+            new_type = GeogramMesh1D::type_name_static() ;
+        }
+        Mesh1D* mesh = Mesh1DFactory::create_object( new_type ) ;
         if( !mesh ) {
             Logger::warn( "Mesh1D" )
-                << "Could not create mesh data structure: " << type
+                << "Could not create mesh data structure: " << new_type
                 << std::endl ;
             Logger::warn( "Mesh1D" ) << "Falling back to GeogramMesh1D data structure"
                 << std::endl ;
@@ -81,10 +89,14 @@ namespace RINGMesh {
 
     Mesh2D* Mesh2D::create_mesh( const MeshType type )
     {
-        Mesh2D* mesh = Mesh2DFactory::create_object( type ) ;
+        MeshType new_type = type ;
+        if( new_type.empty() ) {
+            new_type = GeogramMesh2D::type_name_static() ;
+        }
+        Mesh2D* mesh = Mesh2DFactory::create_object( new_type ) ;
         if( !mesh ) {
             Logger::warn( "Mesh2D" )
-                << "Could not create mesh data structure: " << type
+                << "Could not create mesh data structure: " << new_type
                 << std::endl ;
             Logger::warn( "Mesh2D" ) << "Falling back to GeogramMesh2D data structure"
                 << std::endl ;
@@ -96,10 +108,14 @@ namespace RINGMesh {
 
     Mesh3D* Mesh3D::create_mesh( const MeshType type )
     {
-        Mesh3D* mesh = Mesh3DFactory::create_object( type ) ;
+        MeshType new_type = type ;
+        if( new_type.empty() ) {
+            new_type = GeogramMesh3D::type_name_static() ;
+        }
+        Mesh3D* mesh = Mesh3DFactory::create_object( new_type ) ;
         if( !mesh ) {
             Logger::warn( "Mesh3D" )
-                << "Could not create mesh data structure: " << type
+                << "Could not create mesh data structure: " << new_type
                 << std::endl ;
             Logger::warn( "Mesh3D" ) << "Falling back to GeogramMesh3D data structure"
                 << std::endl ;
@@ -111,10 +127,14 @@ namespace RINGMesh {
 
     MeshAllD* MeshAllD::create_mesh( const MeshType type )
     {
-        MeshAllD* mesh = MeshAllDFactory::create_object( type ) ;
+        MeshType new_type = type ;
+        if( new_type.empty() ) {
+            new_type = GeogramMeshAllD::type_name_static() ;
+        }
+        MeshAllD* mesh = MeshAllDFactory::create_object( new_type ) ;
         if( !mesh ) {
             Logger::warn( "MeshAllD" )
-                << "Could not create mesh data structure: " << type
+                << "Could not create mesh data structure: " << new_type
                 << std::endl ;
             Logger::warn( "MeshAllD" ) << "Falling back to GeogramMeshAllD data structure"
                 << std::endl ;

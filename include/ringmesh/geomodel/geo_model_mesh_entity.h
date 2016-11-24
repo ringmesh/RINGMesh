@@ -413,17 +413,15 @@ namespace RINGMesh {
         /*! @brief Creates a Corner.
          *  A point is added to its Mesh.
          */
-        Corner( const GeoModel& model, index_t id )
+        Corner( const GeoModel& model, index_t id, const MeshType type )
             :
                 GeoModelMeshEntity( model, id ),
-                mesh0d_( new GeogramMesh0D )
+                mesh0d_( Mesh0D::create_mesh( type ) )
         {
             GeoModelMeshEntity::set_mesh( mesh0d_ ) ;
 
-            GeogramMesh0D* geomesh = dynamic_cast< GeogramMesh0D* >( mesh0d_ ) ;
-//            Mesh0DBuilder* builder = new GeogramMesh0DBuilder( *geomesh ) ;
-//            builder->create_vertex() ;
-//            delete builder ;
+            Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder( *mesh0d_ ) ;
+            builder->create_vertex() ;
 
             id_.type = type_name_static() ;
         }
@@ -567,7 +565,7 @@ namespace RINGMesh {
             return *mesh1d_ ;
         }
     protected:
-        Line( const GeoModel& model, index_t id ) ;
+        Line( const GeoModel& model, index_t id, const MeshType type ) ;
 
         virtual bool is_mesh_valid() const ;
 
@@ -848,10 +846,10 @@ namespace RINGMesh {
             return *mesh2d_ ;
         }
     protected:
-        Surface( const GeoModel& model, index_t id )
+        Surface( const GeoModel& model, index_t id, const MeshType type )
             :
                 GeoModelMeshEntity( model, id ),
-                mesh2d_( new GeogramMesh2D )
+                mesh2d_( Mesh2D::create_mesh( type ) )
         {
             GeoModelMeshEntity::set_mesh( mesh2d_ ) ;
 
@@ -1180,10 +1178,10 @@ namespace RINGMesh {
             return *mesh3d_ ;
         }
     protected:
-        Region( const GeoModel& model, index_t id )
+        Region( const GeoModel& model, index_t id, const MeshType type )
             :
                 GeoModelMeshEntity( model, id ),
-                mesh3d_( new GeogramMesh3D )
+                mesh3d_( Mesh3D::create_mesh( type ) )
         {
             GeoModelMeshEntity::set_mesh( mesh3d_ ) ;
 

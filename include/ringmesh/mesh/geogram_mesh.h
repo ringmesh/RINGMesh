@@ -154,8 +154,6 @@ namespace RINGMesh {
         {
             return type_name_static() ;
         }
-    protected:
-        virtual MeshBaseBuilder* get_mesh_builder_base() ;
     } ;
 
     class RINGMESH_API GeogramMesh1D: public virtual GeogramMeshBase,
@@ -202,10 +200,6 @@ namespace RINGMesh {
         {
             return mesh_->edges.attributes() ;
         }
-
-        GeogramMesh1DBuilder* get_geogram_mesh_builder() ;
-    protected:
-        virtual MeshBaseBuilder* get_mesh_builder_base() ;
     } ;
 
     class RINGMESH_API GeogramMesh2D: public virtual GeogramMeshBase,
@@ -280,11 +274,6 @@ namespace RINGMesh {
         {
             return mesh_->facets.are_simplices() ;
         }
-
-        GeogramMesh2DBuilder* get_geogram_mesh_builder() ;
-    protected:
-        virtual MeshBaseBuilder* get_mesh_builder_base() ;
-
     } ;
 
     class RINGMESH_API GeogramMesh3D: public virtual GeogramMeshBase,
@@ -460,10 +449,6 @@ namespace RINGMesh {
         {
             return RINGMesh::mesh_cell_volume( *mesh_, cell_id ) ;
         }
-
-        GeogramMesh3DBuilder* get_geogram_mesh_builder() ;
-    protected:
-        virtual MeshBaseBuilder* get_mesh_builder_base() ;
     } ;
 
     class RINGMESH_API GeogramMeshAllD: public GeogramMesh0D,
@@ -491,9 +476,6 @@ namespace RINGMesh {
         {
             return type_name_static() ;
         }
-        GeogramMeshAllDBuilder* get_geogram_mesh_builder() ;
-    protected:
-        virtual MeshBaseBuilder* get_mesh_builder_base() ;
     } ;
 
 //    void RINGMESH_API register_geogram_mesh() ;

@@ -740,7 +740,7 @@ namespace RINGMesh {
         // Delete the vertices - false is to not remove
         // isolated vertices (here all the vertices)
         Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder( *mesh_ ) ;
-        builder->delete_vertices( to_delete_geo, false ) ;
+        builder->delete_vertices( to_delete_geo ) ;
 
         vertex_mapper_.update_mesh_entity_maps_and_gmes( to_delete ) ;
     }
