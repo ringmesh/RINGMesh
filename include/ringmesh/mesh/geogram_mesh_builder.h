@@ -61,6 +61,10 @@ namespace RINGMesh {
     ringmesh_disable_copy( GeogramMeshBaseBuilder ) ;
 
     public:
+        GeogramMeshBaseBuilder()
+            : MeshBaseBuilder(), mesh_( nil )
+        {
+        }
         virtual ~GeogramMeshBaseBuilder()
         {
         }
@@ -163,16 +167,10 @@ namespace RINGMesh {
          * @param[in] to_delete     a vector of size @function nb(). If to_delete[e] is different from 0,
          * then entity e will be destroyed, else it will be kept. On exit, to_delete is modified
          * (it is used for internal bookkeeping).
-         * @param[in] remove_isolated_vertices if true, then the vertices that are no longer incident to any entity are deleted.
          */
-        virtual void delete_vertices(
-            GEO::vector< index_t >& to_delete,
-            bool remove_isolated_vertices )
+        virtual void delete_vertices( GEO::vector< index_t >& to_delete )
         {
             mesh_->mesh_->vertices.delete_elements( to_delete, false ) ;
-            if( remove_isolated_vertices ) {
-                this->remove_isolated_vertices() ;
-            }
             clear_vertex_linked_objects() ;
         }
         /*!
@@ -198,10 +196,6 @@ namespace RINGMesh {
             mesh_ = &dynamic_cast< GeogramMeshBase& >( mesh ) ;
         }
     protected:
-        GeogramMeshBaseBuilder()
-            : MeshBaseBuilder(), mesh_( nil )
-        {
-        }
 
         void delete_vertex_colocater()
         {
@@ -338,7 +332,7 @@ namespace RINGMesh {
                     to_delete[vertex_id] = 0 ;
                 }
             }
-            delete_vertices( to_delete, false ) ;
+            delete_vertices( to_delete ) ;
 
         }
         virtual void clear_vertex_linked_objects()
@@ -564,7 +558,7 @@ namespace RINGMesh {
                 }
             }
 
-            delete_vertices( to_delete, false ) ;
+            delete_vertices( to_delete ) ;
         }
         virtual void clear_vertex_linked_objects()
         {
@@ -758,7 +752,7 @@ namespace RINGMesh {
                 }
             }
 
-            delete_vertices( to_delete, false ) ;
+            delete_vertices( to_delete ) ;
         }
 
         virtual void clear_vertex_linked_objects()
@@ -854,7 +848,7 @@ namespace RINGMesh {
                 }
             }
 
-            delete_vertices( to_delete, false ) ;
+            delete_vertices( to_delete ) ;
         }
 
         virtual void clear_vertex_linked_objects()

@@ -117,11 +117,9 @@ namespace RINGMesh {
          * @param[in] to_delete     a vector of size @function nb(). If to_delete[e] is different from 0,
          * then entity e will be destroyed, else it will be kept. On exit, to_delete is modified
          * (it is used for internal bookkeeping).
-         * @param[in] remove_isolated_vertices if true, then the vertices that are no longer incident to any entity are deleted.
          */
         virtual void delete_vertices(
-            GEO::vector< index_t >& to_delete,
-            bool remove_isolated_vertices ) = 0 ;
+            GEO::vector< index_t >& to_delete ) = 0 ;
         /*!
          * @brief Removes all the vertices and attributes.
          * @param[in] keep_attributes if true, then all the existing attribute

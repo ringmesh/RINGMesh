@@ -289,7 +289,7 @@ namespace RINGMesh {
                                         fv_itr )] ) ;
                             }
                         }
-                        builder->delete_vertices( to_delete, false ) ;
+                        builder->delete_vertices( to_delete ) ;
                         Logger::out( "Repair" ) << nb_todelete
                             << " colocated vertices deleted in " << entity_id
                             << std::endl ;
@@ -305,7 +305,7 @@ namespace RINGMesh {
                             builder->set_edge_vertex( e_itr, 1,
                                 colocated[E.mesh_element_vertex_index( e_itr, 1 )] ) ;
                         }
-                        builder->delete_vertices( to_delete, false ) ;
+                        builder->delete_vertices( to_delete ) ;
                         Logger::out( "Repair" ) << nb_todelete
                             << " colocated vertices deleted in " << entity_id
                             << std::endl ;

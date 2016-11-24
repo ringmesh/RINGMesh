@@ -132,7 +132,7 @@ int main()
 
         Logger::out( "TEST" ) << "Test AABB" << std::endl ;
         GeogramMesh2D geogram_mesh ;
-        Mesh2DBuilder* builder = geogram_mesh.get_mesh2d_builder() ;
+        Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder( geogram_mesh ) ;
 
         index_t size = 10 ;
         add_vertices( builder, size ) ;

@@ -1766,7 +1766,7 @@ namespace RINGMesh {
         Surface& surface_out = dynamic_cast< Surface& >( mesh_entity(
             Surface::type_name_static(), surface_out_id ) ) ;
         Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder(
-            *surface_in.mesh2d_ ) ;
+            surface_out.low_level_mesh_storage() ) ;
         builder->triangulate( *surface_in.mesh2d_ ) ;
     }
 
@@ -2287,19 +2287,38 @@ namespace RINGMesh {
 
     void GeoModelBuilder::delete_mesh_entity_isolated_vertices( const gme_t& E_id )
     {
-        MeshBase& M = *mesh_entity( E_id ).mesh_ ;
-        MeshBaseBuilder* builder = M.get_mesh_base_builder() ;
-        builder->remove_isolated_vertices() ;
+        if( model().entity_type_manager().is_line( E_id.type ) ) {
+            Line& line = dynamic_cast< Line& >( mesh_entity( E_id ) ) ;
+            Mesh1DBuilder_var builder = Mesh1DBuilder::create_builder(
+                line.low_level_mesh_storage() ) ;
+            builder->remove_isolated_vertices() ;
+        } else if( model().entity_type_manager().is_surface( E_id.type ) ) {
+            Surface& surface = dynamic_cast< Surface& >( mesh_entity( E_id ) ) ;
+            Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder(
+                surface.low_level_mesh_storage() ) ;
+            builder->remove_isolated_vertices() ;
+        } else if( model().entity_type_manager().is_region( E_id.type ) ) {
+            Region& region = dynamic_cast< Region& >( mesh_entity( E_id ) ) ;
+            Mesh3DBuilder_var builder = Mesh3DBuilder::create_builder(
+                region.low_level_mesh_storage() ) ;
+            builder->remove_isolated_vertices() ;
+        } else if( model().entity_type_manager().is_corner( E_id.type ) ) {
+            Corner& corner = dynamic_cast< Corner& >( mesh_entity( E_id ) ) ;
+            Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder(
+                corner.low_level_mesh_storage() ) ;
+            builder->remove_isolated_vertices() ;
+        } else {
+            ringmesh_assert_not_reached ;
+        }
     }
 
     void GeoModelBuilder::delete_mesh_entity_vertices(
         const gme_t& E_id,
-        GEO::vector< index_t >& to_delete,
-        bool remove_isolated_vertices )
+        GEO::vector< index_t >& to_delete )
     {
         MeshBase& M = *mesh_entity( E_id ).mesh_ ;
         MeshBaseBuilder_var builder = MeshBaseBuilder::create_builder( M ) ;
-        builder->delete_vertices( to_delete, remove_isolated_vertices ) ;
+        builder->delete_vertices( to_delete ) ;
     }
 
     void GeoModelBuilder::delete_corner_vertex( index_t corner_id )
@@ -2307,7 +2326,7 @@ namespace RINGMesh {
         gme_t corner( Corner::type_name_static(), corner_id ) ;
         GEO::vector< index_t > to_delete ;
         to_delete.push_back( 1 ) ;
-        delete_mesh_entity_vertices( corner, to_delete, false ) ;
+        delete_mesh_entity_vertices( corner, to_delete ) ;
     }
     void GeoModelBuilder::delete_line_edges(
         index_t line_id,
