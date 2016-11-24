@@ -980,15 +980,10 @@ namespace RINGMesh {
         geogram_file_extensions_ = GEO::String::join_strings( geogram_extensions,
             ';' ) ;
 
+        print_header_information() ;
+
         Logger::div( "RINGMeshView" ) ;
         Logger::out( "" ) << "Welcome to RINGMeshView !" << std::endl ;
-        Logger::out( "" ) << "People working on the project in RING" << std::endl ;
-        Logger::out( "" ) << "Arnaud Botella <arnaud.botella@univ-lorraine.fr> "
-            << std::endl ;
-        Logger::out( "" ) << "Benjamin Chauvin <benjamin.chauvin@univ-lorraine.fr> "
-            << std::endl ;
-        Logger::out( "" ) << "Antoine Mazuyer <antoine.mazuyer@univ-lorraine.fr> "
-            << std::endl ;
     }
 
     RINGMeshApplication::~RINGMeshApplication()

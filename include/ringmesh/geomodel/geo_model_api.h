@@ -149,7 +149,7 @@ namespace RINGMesh {
 
     /*!
      * Compute the tetrahedral mesh of the input structural model
-     * @param[in] geomodel GeoModel to tetrahedralize
+     * @param[in/out] geomodel GeoModel to tetrahedralize
      * @param[in] method External mesher used, Tetgen by default
      * @param[in] region_id Region to mesh. By default it set to NO_ID and all regions are meshed.
      * @param[in] add_steiner_points if true (default value), the mesher will add some points inside the region.
@@ -159,7 +159,7 @@ namespace RINGMesh {
 
     /*!
      * Compute the tetrahedral mesh of the input structural model
-     * @param[in] geomodel GeoModel to tetrahedralize
+     * @param[in/out] geomodel GeoModel to tetrahedralize
      * @param[in] method External mesher used
      * @param[in] region_id Region to mesh. If set to NO_ID and all regions are meshed.
      * @param[in] add_steiner_points if true, the mesher will add some points inside the region.
@@ -181,10 +181,12 @@ namespace RINGMesh {
      * Every single mesh of the boundary model is translated:
      * corners, lines and surfaces.
      *
-     * @param[in] geomodel GeoModel on which compute the translation
+     * @param[in/out] geomodel GeoModel on which compute the translation
      * @param[in] translation_vector vector of translation.
      */
-    void RINGMESH_API translate( GeoModel& geomodel, const vec3& translation_vector ) ;
+    void RINGMESH_API translate(
+        GeoModel& geomodel,
+        const vec3& translation_vector ) ;
 
     /*!
      * \brief Rotate the boundary model.
@@ -196,7 +198,7 @@ namespace RINGMesh {
      * undergo the rotation (each mesh inside the boundary model:
      * corners, lines and surfaces).
      *
-     * @param[in] geomodel GeoModel on which compute the rotation
+     * @param[in/out] geomodel GeoModel on which compute the rotation
      * @param[in] origin point in which passes the rotation axis.
      * @param[in] axis vector which defines the rotation axis.
      * @param[in] angle rotation angle (in radians or degrees).
@@ -207,7 +209,7 @@ namespace RINGMesh {
         GeoModel& geomodel,
         const vec3& origin,
         const vec3& axis,
-        float64 angle,
+        double angle,
         bool degrees = false ) ;
 
     /*-----------------------------------------------------------------------*/
@@ -220,31 +222,11 @@ namespace RINGMesh {
     double RINGMESH_API model_entity_size( const GeoModelGeologicalEntity& E ) ;
 
     /*!
-     * Compute the size (volume, area, length) of an Entity cell (cell, facet, edge)
-     * @param[in] E Entity to evaluate
-     * @param[in] c the cell index
-     */
-    double RINGMESH_API model_entity_cell_size(
-        const GeoModelEntity& E,
-        index_t c ) ;
-
-    /*!
      * @brief Compute the barycenter of a GeoModelEntity
      * @param[in] E Entity to evaluate
      * @return The coordinates of the barycenter
      */
     vec3 RINGMESH_API model_entity_barycenter( const GeoModelEntity& E ) ;
-
-    /*!
-     * @brief Compute the centroid of a GeoModelMeshEntity cell (cell, facet, edge)
-     * @param[in] E Entity to evaluate
-     * @param[in] c the cell index
-     * @return The coordinates of the center
-     * @pre E has a valid mesh.
-     */
-    vec3 RINGMESH_API model_entity_cell_barycenter(
-        const GeoModelMeshEntity& E,
-        index_t c ) ;
 
     /*-----------------------------------------------------------------------*/
 

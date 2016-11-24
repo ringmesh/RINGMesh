@@ -193,19 +193,19 @@ namespace RINGMesh {
         }
 
         /*for( index_t surface_itr = 0; surface_itr < model().nb_surfaces();
-            ++surface_itr ) {
-            const Surface& surface = model().surface( surface_itr ) ;
-            GEO::AttributesManager& att_mgr = surface.vertex_attribute_manager() ;
-            ringmesh_assert( att_mgr.is_defined("normal_attr_x") ) ; /// TODO assert or if ???
-            ringmesh_assert( att_mgr.is_defined("normal_attr_y") ) ; /// TODO assert or if ???
-            ringmesh_assert( att_mgr.is_defined("normal_attr_z") ) ; /// TODO assert or if ???
-            GEO::Attribute< double > normal_att_x( att_mgr, "normal_attr_x" ) ;
-            normal_att_x.destroy() ;
-            GEO::Attribute< double > normal_att_y( att_mgr, "normal_attr_y" ) ;
-            normal_att_y.destroy() ;
-            GEO::Attribute< double > normal_att_z( att_mgr, "normal_attr_z" ) ;
-            normal_att_z.destroy() ;
-        }*/
+         ++surface_itr ) {
+         const Surface& surface = model().surface( surface_itr ) ;
+         GEO::AttributesManager& att_mgr = surface.vertex_attribute_manager() ;
+         ringmesh_assert( att_mgr.is_defined("normal_attr_x") ) ; /// TODO assert or if ???
+         ringmesh_assert( att_mgr.is_defined("normal_attr_y") ) ; /// TODO assert or if ???
+         ringmesh_assert( att_mgr.is_defined("normal_attr_z") ) ; /// TODO assert or if ???
+         GEO::Attribute< double > normal_att_x( att_mgr, "normal_attr_x" ) ;
+         normal_att_x.destroy() ;
+         GEO::Attribute< double > normal_att_y( att_mgr, "normal_attr_y" ) ;
+         normal_att_y.destroy() ;
+         GEO::Attribute< double > normal_att_z( att_mgr, "normal_attr_z" ) ;
+         normal_att_z.destroy() ;
+         }*/
     }
 
     void DuplicateInterfaceBuilder::duplicate_fault_network( bool gap )
@@ -216,9 +216,15 @@ namespace RINGMesh {
         std::vector< std::vector< index_t > > to_erase_by_type ;
         to_erase_by_type.reserve( all_entity_types_.size() ) ;
         for( index_t i = 0; i < all_entity_types_.size(); ++i ) {
-            to_erase_by_type.push_back(
-                std::vector< index_t >(
-                    model().nb_entities( index_to_entity_type( i ) ), 0 ) ) ;
+            index_t nb_entities = NO_ID ;
+            if( i < model().entity_type_manager().nb_mesh_entity_types() ) {
+                nb_entities = model().nb_mesh_entities( index_to_entity_type( i ) ) ;
+            } else {
+                nb_entities = model().nb_geological_entities(
+                    index_to_entity_type( i ) ) ;
+            }
+            ringmesh_assert( nb_entities != NO_ID ) ;
+            to_erase_by_type.push_back( std::vector< index_t >( nb_entities, 0 ) ) ;
         }
 
         homogenize_normal_orientation_surface_all_interfaces() ;
@@ -517,12 +523,12 @@ namespace RINGMesh {
             index_t boundary_id = find_local_boundary_id( reg_gme, surface ) ;
             Region& reg = const_cast< Region& >( model().region( reg_gme.index() ) ) ;
             bool cur_side = reg.side( boundary_id ) ;
-            set_region_boundary_side( reg, boundary_id, !cur_side ) ;
+            set_boundary_sign( reg, boundary_id, !cur_side ) ;
 
             // Add to universe (other side of the surface)
             boundary_id = find_local_boundary_id( model().universe(), surface ) ;
             ringmesh_assert(model().universe().side(boundary_id) != cur_side) ;
-            set_universe_boundary_side( boundary_id, cur_side ) ;
+            set_universe_boundary_sign( boundary_id, cur_side ) ;
         } else {
             const GeoModelMeshEntity& reg_gme1 = surface.in_boundary( 0 ) ;
             index_t boundary_id1 = find_local_boundary_id(
@@ -541,16 +547,16 @@ namespace RINGMesh {
 
             if( reg1.index() != reg2.index() ) {
                 ringmesh_assert( cur_side1 != cur_side2 ) ;
-                set_region_boundary_side( reg1, boundary_id1, !cur_side1 ) ;
-                set_region_boundary_side( reg2, boundary_id2, !cur_side2 ) ;
+                set_boundary_sign( reg1, boundary_id1, !cur_side1 ) ;
+                set_boundary_sign( reg2, boundary_id2, !cur_side2 ) ;
             } else {
                 // Same region on the both side of the interface.
                 boundary_id2 = find_second_local_boundary_id( reg1, surface ) ;
                 ringmesh_assert( boundary_id2 != NO_ID ) ;
                 cur_side2 = reg1.side( boundary_id2 ) ;
                 ringmesh_assert( cur_side1 != cur_side2 ) ;
-                set_region_boundary_side( reg1, boundary_id1, !cur_side1 ) ;
-                set_region_boundary_side( reg1, boundary_id2, !cur_side2 ) ;
+                set_boundary_sign( reg1, boundary_id1, !cur_side1 ) ;
+                set_boundary_sign( reg1, boundary_id2, !cur_side2 ) ;
             }
         }
     }
@@ -709,15 +715,23 @@ namespace RINGMesh {
     {
         recompute_geomodel_mesh() ;
 
-        std::set< gme_t > to_delete ;
+        std::set< gme_t > to_delete_mesh_entities ;
+        std::set< gme_t > to_delete_geological_entities ;
         for( index_t i = 0; i < to_erase_by_type.size(); ++i ) {
             for( index_t j = 0; j < to_erase_by_type[i].size(); ++j ) {
                 if( to_erase_by_type[i][j] == NO_ID ) {
-                    to_delete.insert( gme_t( index_to_entity_type( i ), j ) ) ;
+                    if( i < model().entity_type_manager().nb_mesh_entity_types() ) {
+                        to_delete_mesh_entities.insert(
+                            gme_t( index_to_entity_type( i ), j ) ) ;
+                    } else {
+                        to_delete_geological_entities.insert(
+                            gme_t( index_to_entity_type( i ), j ) ) ;
+                    }
                 }
             }
         }
-        remove_entities( to_delete ) ;
+        remove_mesh_entities( to_delete_mesh_entities ) ;
+        remove_geological_entities( to_delete_geological_entities ) ;
     }
 
     void DuplicateInterfaceBuilder::rebuild_valid_geomodel()

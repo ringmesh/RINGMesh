@@ -2171,6 +2171,7 @@ namespace RINGMesh {
                 ringmesh_assert( false ) ;
             }
 
+            compute_universe() ;
             // We need to remove from the regions_ the one corresponding
             // to the universe_, the one with the biggest volume
             double max_volume = -1. ;
@@ -2191,7 +2192,7 @@ namespace RINGMesh {
             }
             std::set< gme_t > to_erase ;
             to_erase.insert( cur_region.gme_id() ) ;
-            remove_entities( to_erase ) ;
+            remove_mesh_entities( to_erase ) ;
         }
         return true ;
     }
