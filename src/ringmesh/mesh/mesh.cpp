@@ -95,11 +95,6 @@ namespace RINGMesh {
         }
         Mesh2D* mesh = Mesh2DFactory::create_object( new_type ) ;
         if( !mesh ) {
-            std::vector< std::string > names ;
-            Mesh2DFactory::list_creators( names ) ;
-            for( index_t i = 0; i< names.size(); i++ ) {
-                DEBUG( names[i] ) ;
-            }
             Logger::warn( "Mesh2D" )
                 << "Could not create mesh data structure: " << new_type
                 << std::endl ;
