@@ -1,5 +1,9 @@
 version: 1.0.{build}
 
+environment:
+  password:
+    secure: 61164urZVvsMrnw+6P+GBQ==
+    
 build:
   parallel: true
   
@@ -27,4 +31,16 @@ on_success:
  - cmd: >-
     cd %appveyor_build_folder%
     
-    dir
+    echo [ui] > C:\Users\appveyor\mercurial.ini
+  
+    echo username = ArnaudBotella >> C:\Users\appveyor\mercurial.ini 
+
+    echo [auth] >> C:\Users\appveyor\mercurial.ini
+  
+    echo bb.prefix = https://bitbucket.org >> C:\Users\appveyor\mercurial.ini
+  
+    echo bb.username = ArnaudBotella >> C:\Users\appveyor\mercurial.ini
+  
+    echo bb.password = %password% >> C:\Users\appveyor\mercurial.ini
+
+    hg push https://bitbucket.org/ring_team/ringmeshcoverage
