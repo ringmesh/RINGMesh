@@ -170,6 +170,8 @@ namespace RINGMesh {
             geol_feature_ = from.geol_feature_ ;
         }
 
+        virtual bool is_index_valid() const = 0 ;
+
     protected:
         /// Reference to the GeoModel owning this entity
         const GeoModel& model_ ;
@@ -230,6 +232,11 @@ namespace RINGMesh {
             const Universe& universe_from = dynamic_cast< const Universe& >( from ) ;
             boundary_surfaces_ = universe_from.boundary_surfaces_ ;
             boundary_surface_sides_ = universe_from.boundary_surface_sides_ ;
+        }
+
+        virtual bool is_index_valid() const
+        {
+            return true ;
         }
 
     private:

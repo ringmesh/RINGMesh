@@ -96,6 +96,8 @@ namespace RINGMesh {
             children_ = from.children_ ;
         }
 
+        virtual bool is_index_valid() const ;
+
     protected:
         /// Entities constituting this one - see child_type( TYPE )
         std::vector< gme_t > children_ ;
