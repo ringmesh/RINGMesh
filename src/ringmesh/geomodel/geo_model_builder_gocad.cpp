@@ -119,8 +119,11 @@ namespace {
         const GeoModel& geomodel,
         const std::string& interface_name )
     {
-        for( index_t i = 0; i < geomodel.nb_geological_entities( Interface::type_name_static() ); ++i ) {
-            if( geomodel.geological_entity( Interface::type_name_static(), i ).name() == interface_name ) {
+        for( index_t i = 0;
+            i < geomodel.nb_geological_entities( Interface::type_name_static() );
+            ++i ) {
+            if( geomodel.geological_entity( Interface::type_name_static(), i ).name()
+                == interface_name ) {
                 return geomodel.geological_entity( Interface::type_name_static(), i ).gme_id() ;
             }
         }
@@ -316,8 +319,8 @@ namespace {
         std::vector< index_t >& colocated_cell_facet_centers )
     {
         vec3 first_facet_center = surface.mesh_element_barycenter( 0 ) ;
-        region_ann.get_neighbors( first_facet_center,
-            colocated_cell_facet_centers, surface.model().epsilon() ) ;
+        region_ann.get_neighbors( first_facet_center, colocated_cell_facet_centers,
+            surface.model().epsilon() ) ;
         return static_cast< index_t >( colocated_cell_facet_centers.size() ) ;
     }
 
@@ -362,8 +365,7 @@ namespace {
         GeoModelBuilderTSolid& geomodel_builder )
     {
         geomodel_builder.add_mesh_entity_boundary(
-            gme_t( Region::type_name_static(), region_id ), surface_id,
-            surf_side ) ;
+            gme_t( Region::type_name_static(), region_id ), surface_id, surf_side ) ;
         geomodel_builder.add_mesh_entity_in_boundary(
             gme_t( Surface::type_name_static(), surface_id ), region_id ) ;
     }
@@ -440,8 +442,8 @@ namespace {
                 break ;
             default:
                 ringmesh_assert_not_reached ;
+            }
         }
-    }
 
     /*!
      * @brief Sets the given surface as regions boundaries
@@ -541,7 +543,7 @@ namespace {
                     surface_sides[2 * geomodel.region( r ).boundary( s ).index()] =
                         true ;
                 } else {
-                    ringmesh_assert_not_reached ;
+                    ringmesh_assert_not_reached;
                 }
             }
         }
@@ -643,8 +645,7 @@ namespace {
             load_storage.cur_surf_facet_corners_gocad_id_[i] -=
                 load_storage.tface_vertex_ptr_ ;
         }
-        builder.set_surface_geometry( load_storage.cur_surface_,
-            vertices,
+        builder.set_surface_geometry( load_storage.cur_surface_, vertices,
             load_storage.cur_surf_facet_corners_gocad_id_,
             load_storage.cur_surf_facet_ptr_ ) ;
         load_storage.cur_surf_facet_corners_gocad_id_.clear() ;
@@ -671,9 +672,7 @@ namespace {
 
     class LoadTSurf: public MLLineParser {
     private:
-        virtual void execute(
-            GEO::LineInput& line,
-            MLLoadingStorage& load_storage )
+        virtual void execute( GEO::LineInput& line, MLLoadingStorage& load_storage )
         {
             ringmesh_unused( load_storage ) ;
             std::string interface_name = read_name_with_spaces( 1, line ) ;
@@ -686,9 +685,7 @@ namespace {
 
     class LoadMLSurface: public MLLineParser {
     private:
-        virtual void execute(
-            GEO::LineInput& line,
-            MLLoadingStorage& load_storage )
+        virtual void execute( GEO::LineInput& line, MLLoadingStorage& load_storage )
         {
             if( !load_storage.is_header_read_ ) {
                 /// Create Surface from the name of its parent Interface
@@ -715,7 +712,7 @@ namespace {
                 ringmesh_assert( parent.is_defined() ) ;
             }
 
-            gme_t id = builder().create_mesh_entity<Surface>() ;
+            gme_t id = builder().create_mesh_entity< Surface >() ;
             builder().add_mesh_entity_parent( id, parent ) ;
             builder().set_entity_geol_feature( parent,
                 GME::determine_geological_type( type ) ) ;
@@ -724,9 +721,7 @@ namespace {
 
     class LoadLayer: public MLLineParser {
     private:
-        virtual void execute(
-            GEO::LineInput& line,
-            MLLoadingStorage& load_storage )
+        virtual void execute( GEO::LineInput& line, MLLoadingStorage& load_storage )
         {
             ringmesh_unused( load_storage ) ;
             /// Build the volumetric layers from their name and
@@ -747,7 +742,8 @@ namespace {
                         // Remove Universe region
                         region_id -= geomodel().nb_surfaces() + 1 ;
                         // Correction because ids begin at 1 in the file
-                        builder().add_geological_entity_child( layer_id, region_id - 1 ) ;
+                        builder().add_geological_entity_child( layer_id,
+                            region_id - 1 ) ;
                     }
                 }
             }
@@ -756,9 +752,7 @@ namespace {
 
     class MLEndSection: public MLLineParser {
     private:
-        virtual void execute(
-            GEO::LineInput& line,
-            MLLoadingStorage& load_storage )
+        virtual void execute( GEO::LineInput& line, MLLoadingStorage& load_storage )
         {
             ringmesh_unused( line ) ;
             if( !load_storage.is_header_read_ ) {
@@ -773,24 +767,21 @@ namespace {
 
     class LoadCorner: public MLLineParser {
     private:
-        virtual void execute(
-            GEO::LineInput& line,
-            MLLoadingStorage& load_storage )
+        virtual void execute( GEO::LineInput& line, MLLoadingStorage& load_storage )
         {
             index_t v_id = line.field_as_uint( 1 ) - 1 ;
             if( !find_corner( geomodel(), load_storage.vertices_[v_id] ).is_defined() ) {
                 // Create the corner
-                gme_t corner_gme = builder().create_mesh_entity<Corner>() ;
-                builder().set_corner( corner_gme.index, load_storage.vertices_[v_id] ) ;
+                gme_t corner_gme = builder().create_mesh_entity< Corner >() ;
+                builder().set_corner( corner_gme.index,
+                    load_storage.vertices_[v_id] ) ;
             }
         }
     } ;
 
     class LoadMLRegion: public MLLineParser {
     private:
-        virtual void execute(
-            GEO::LineInput& line,
-            MLLoadingStorage& load_storage )
+        virtual void execute( GEO::LineInput& line, MLLoadingStorage& load_storage )
         {
             ringmesh_unused( load_storage ) ;
             /// Read Region information and create them from their name,
@@ -803,7 +794,7 @@ namespace {
             // Create the entity if it is not the universe
             // Set the region name and boundaries
             if( name != Universe::universe_type_name() ) {
-                gme_t region_id = builder().create_mesh_entity<Region>();
+                gme_t region_id = builder().create_mesh_entity< Region >() ;
                 builder().set_entity_name( region_id, name ) ;
                 for( index_t i = 0; i < region_boundaries.size(); ++i ) {
                     builder().add_mesh_entity_boundary( region_id,
@@ -826,21 +817,19 @@ namespace {
                 line.get_line() ;
                 line.get_fields() ;
                 for( index_t i = 0; i < 5; ++i ) {
-                    signed_index_t signed_id = line.field_as_int(
-                        i ) ;
+                    signed_index_t signed_id = line.field_as_int( i ) ;
                     if( signed_id == 0 ) {
                         end_region = true ;
                         break ;
                     }
                     bool side = signed_id > 0 ;
-                    index_t id = static_cast< index_t >( std::abs(
-                        signed_id ) - 1 ) ;
+                    index_t id = static_cast< index_t >( std::abs( signed_id ) - 1 ) ;
                     region_boundaries.push_back(
                         std::pair< index_t, bool >( id, side ) ) ;
                 }
             }
         }
-    };
+    } ;
 
     class LoadRegion: public TSolidLineParser {
     private:
@@ -869,7 +858,7 @@ namespace {
             const std::string& region_name,
             GeoModelBuilderGocad& geomodel_builder )
         {
-            gme_t cur_region = geomodel_builder.create_mesh_entity<Region>() ;
+            gme_t cur_region = geomodel_builder.create_mesh_entity< Region >() ;
             geomodel_builder.set_entity_name( cur_region, region_name ) ;
             return cur_region.index ;
         }
@@ -888,9 +877,7 @@ namespace {
 
     class LoadMLAtom: public MLLineParser {
     private:
-        virtual void execute(
-            GEO::LineInput& line,
-            MLLoadingStorage& load_storage )
+        virtual void execute( GEO::LineInput& line, MLLoadingStorage& load_storage )
         {
             index_t vertex_id = line.field_as_uint( 2 ) - 1 ;
             const vec3& vertex = load_storage.vertices_[vertex_id] ;
@@ -904,7 +891,8 @@ namespace {
             GEO::LineInput& line,
             TSolidLoadingStorage& load_storage )
         {
-            index_t vertex_id = static_cast< index_t >( load_storage.vertices_.size() ) ;
+            index_t vertex_id =
+                static_cast< index_t >( load_storage.vertices_.size() ) ;
             load_storage.vertex_map_.add_vertex( vertex_id,
                 load_storage.cur_region_ ) ;
             GocadLineParser::create( "VRTX", builder(), geomodel() )->execute( line,
@@ -1049,10 +1037,11 @@ namespace {
                 build_surface( builder(), geomodel(), load_storage ) ;
             }
             // Create a new surface
-            gme_t new_surface = builder().create_mesh_entity<Surface>() ;
+            gme_t new_surface = builder().create_mesh_entity< Surface >() ;
             load_storage.cur_surface_ = new_surface.index ;
             builder().add_mesh_entity_parent( new_surface,
-                gme_t( Interface::type_name_static(), load_storage.cur_interface_ ) ) ;
+                gme_t( Interface::type_name_static(),
+                    load_storage.cur_interface_ ) ) ;
             builder().add_geological_entity_child(
                 gme_t( Interface::type_name_static(), load_storage.cur_interface_ ),
                 new_surface.index ) ;
@@ -1104,30 +1093,29 @@ namespace {
     void tsolid_import_factory_initialize()
     {
         ringmesh_register_TSolidLineParser_creator( LoadRegion, "TVOLUME" ) ;
-        ringmesh_register_TSolidLineParser_creator( LoadTSolidVertex, "VRTX" ) ;
-        ringmesh_register_TSolidLineParser_creator( LoadTSolidVertex, "PVRTX" ) ;
-        ringmesh_register_TSolidLineParser_creator( LoadTSAtomic, "ATOM" ) ;
-        ringmesh_register_TSolidLineParser_creator( LoadTSAtomic, "PATOM" ) ;
-        ringmesh_register_TSolidLineParser_creator( LoadTetra, "TETRA" ) ;
-        ringmesh_register_TSolidLineParser_creator( LoadLastRegion, "MODEL" ) ;
-        ringmesh_register_TSolidLineParser_creator( LoadInterface, "SURFACE" ) ;
-        ringmesh_register_TSolidLineParser_creator( LoadSurface, "TFACE" ) ;
-        ringmesh_register_TSolidLineParser_creator( LoadLastSurface, "END" ) ;
+        ringmesh_register_TSolidLineParser_creator( LoadTSolidVertex, "VRTX" );
+        ringmesh_register_TSolidLineParser_creator( LoadTSolidVertex, "PVRTX" );
+        ringmesh_register_TSolidLineParser_creator( LoadTSAtomic, "ATOM" );
+        ringmesh_register_TSolidLineParser_creator( LoadTSAtomic, "PATOM" );
+        ringmesh_register_TSolidLineParser_creator( LoadTetra, "TETRA" );
+        ringmesh_register_TSolidLineParser_creator( LoadLastRegion, "MODEL" );
+        ringmesh_register_TSolidLineParser_creator( LoadInterface, "SURFACE" );
+        ringmesh_register_TSolidLineParser_creator( LoadSurface, "TFACE" );
+        ringmesh_register_TSolidLineParser_creator( LoadLastSurface, "END" );
     }
-
 
     void ml_import_factory_initialize()
     {
         ringmesh_register_MLLineParser_creator( LoadTSurf, "TSURF" ) ;
-        ringmesh_register_MLLineParser_creator( LoadMLSurface, "TFACE" ) ;
-        ringmesh_register_MLLineParser_creator( LoadMLRegion, "REGION" ) ;
-        ringmesh_register_MLLineParser_creator( LoadLayer, "LAYER" ) ;
-        ringmesh_register_MLLineParser_creator( MLEndSection, "END" ) ;
-        ringmesh_register_MLLineParser_creator( LoadMLAtom, "ATOM" ) ;
-        ringmesh_register_MLLineParser_creator( LoadMLAtom, "PATOM" ) ;
-    }
+        ringmesh_register_MLLineParser_creator( LoadMLSurface, "TFACE" );
+        ringmesh_register_MLLineParser_creator( LoadMLRegion, "REGION" );
+        ringmesh_register_MLLineParser_creator( LoadLayer, "LAYER" );
+        ringmesh_register_MLLineParser_creator( MLEndSection, "END" );
+        ringmesh_register_MLLineParser_creator( LoadMLAtom, "ATOM" );
+        ringmesh_register_MLLineParser_creator( LoadMLAtom, "PATOM" );}
 
-} // anonymous namespace
+}
+// anonymous namespace
 
 namespace RINGMesh {
 
@@ -1143,8 +1131,9 @@ namespace RINGMesh {
             std::set< gme_t > cur_interfaces ;
             for( index_t j = 0; j < L.nb_in_boundary(); ++j ) {
                 const GeoModelMeshEntity& S = L.in_boundary( j ) ;
-                gme_t  parent_interface = S.parent_gme( Interface::type_name_static() ) ;
-                cur_interfaces.insert(parent_interface) ;
+                gme_t parent_interface = S.parent_gme(
+                    Interface::type_name_static() ) ;
+                cur_interfaces.insert( parent_interface ) ;
             }
             gme_t contact_id ;
             for( index_t j = 0; j < interfaces.size(); ++j ) {
@@ -1156,7 +1145,8 @@ namespace RINGMesh {
                 }
             }
             if( !contact_id.is_defined() ) {
-                contact_id = create_geological_entity( Contact::type_name_static() ) ;
+                contact_id = create_geological_entity(
+                    Contact::type_name_static() ) ;
                 ringmesh_assert( contact_id.index == interfaces.size() ) ;
                 interfaces.push_back( cur_interfaces ) ;
                 // Create a name for this contact
@@ -1193,8 +1183,7 @@ namespace RINGMesh {
         GeoModelBuilderGocad& gm_builder,
         GeoModel& geomodel )
     {
-        GocadLineParser* parser = GocadLineParserFactory::create_object(
-            keyword ) ;
+        GocadLineParser* parser = GocadLineParserFactory::create_object( keyword ) ;
         if( parser ) {
             parser->set_builder( gm_builder ) ;
             parser->set_geomodel( geomodel ) ;
@@ -1233,9 +1222,9 @@ namespace RINGMesh {
         if( tsolid_parser ) {
             tsolid_parser->execute( file_line_, tsolid_load_storage_ ) ;
         } else {
-            GocadLineParser_var gocad_parser = GocadLineParser::create( keyword, *this,
-                model() ) ;
-            if( gocad_parser  ) {
+            GocadLineParser_var gocad_parser = GocadLineParser::create( keyword,
+                *this, model() ) ;
+            if( gocad_parser ) {
                 gocad_parser->execute( file_line_, tsolid_load_storage_ ) ;
             }
         }
@@ -1253,8 +1242,8 @@ namespace RINGMesh {
         for( index_t f = 0; f < S.nb_mesh_elements(); ++f ) {
             for( index_t e = 0; e < 3; ++e ) {
                 if( !S.is_on_border( f, e ) ) {
-                    bool internal_border = is_edge_in_several_surfaces( model(), surface_id,
-                        f, e, surface_anns, surface_boxes ) ;
+                    bool internal_border = is_edge_in_several_surfaces( model(),
+                        surface_id, f, e, surface_anns, surface_boxes ) ;
                     if( internal_border ) {
                         facets_id.push_back( f ) ;
                         edges_id.push_back( e ) ;
@@ -1280,7 +1269,8 @@ namespace RINGMesh {
                 surface_boxes[s].add_point( S.vertex( p ) ) ;
             }
             std::vector< vec3 > border_edge_barycenters ;
-            get_surface_border_edge_barycenters( model(), s, border_edge_barycenters ) ;
+            get_surface_border_edge_barycenters( model(), s,
+                border_edge_barycenters ) ;
             surface_anns[s] = new ColocaterANN( border_edge_barycenters, true ) ;
         }
     }
@@ -1319,8 +1309,7 @@ namespace RINGMesh {
         GeoModelBuilderML& gm_builder,
         GeoModel& geomodel )
     {
-        MLLineParser* parser = MLLineParserFactory::create_object(
-            keyword ) ;
+        MLLineParser* parser = MLLineParserFactory::create_object( keyword ) ;
         if( parser ) {
             parser->set_builder( gm_builder ) ;
             parser->set_geomodel( geomodel ) ;
@@ -1359,14 +1348,14 @@ namespace RINGMesh {
     void GeoModelBuilderML::read_line()
     {
         std::string keyword = file_line_.field( 0 ) ;
-        MLLineParser_var tsolid_parser = MLLineParser::create( keyword,
-            *this, model() ) ;
+        MLLineParser_var tsolid_parser = MLLineParser::create( keyword, *this,
+            model() ) ;
         if( tsolid_parser ) {
             tsolid_parser->execute( file_line_, ml_load_storage_ ) ;
         } else {
-            GocadLineParser_var gocad_parser = GocadLineParser::create( keyword, *this,
-                model() ) ;
-            if( gocad_parser  ) {
+            GocadLineParser_var gocad_parser = GocadLineParser::create( keyword,
+                *this, model() ) ;
+            if( gocad_parser ) {
                 gocad_parser->execute( file_line_, ml_load_storage_ ) ;
             }
         }
@@ -1374,12 +1363,13 @@ namespace RINGMesh {
     void initialize_gocad_import_factories()
     {
         ringmesh_register_GocadLineParser_creator( LoadZSign, "ZPOSITIVE" );
-        ringmesh_register_GocadLineParser_creator( LoadVertex, "VRTX" ) ;
-        ringmesh_register_GocadLineParser_creator( LoadVertex, "PVRTX" ) ;
-        ringmesh_register_GocadLineParser_creator( LoadName, "name:" ) ;
-        ringmesh_register_GocadLineParser_creator( LoadTriangle, "TRGL" ) ;
-        tsolid_import_factory_initialize() ;
-        ml_import_factory_initialize() ;
-    }
+    ringmesh_register_GocadLineParser_creator( LoadVertex, "VRTX" ) ;
+    ringmesh_register_GocadLineParser_creator( LoadVertex, "PVRTX" ) ;
+    ringmesh_register_GocadLineParser_creator( LoadName, "name:" ) ;
+    ringmesh_register_GocadLineParser_creator( LoadTriangle, "TRGL" ) ;
+    tsolid_import_factory_initialize() ;
+    ml_import_factory_initialize() ;
+}
 
-} // RINGMesh namespace
+}
+ // RINGMesh namespace
