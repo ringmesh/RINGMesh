@@ -403,84 +403,84 @@ namespace RINGMesh {
                 return modifiable_geological_entity( id ) ;
             } else {
                 ringmesh_assert_not_reached;
-            gme_t first_surface( Surface::type_name_static(), 0 ) ;
-            return modifiable_mesh_entity( first_surface ) ;
+                gme_t first_surface( Surface::type_name_static(), 0 ) ;
+                return modifiable_mesh_entity( first_surface ) ;
+            }
         }
-    }
-    GeoModelMeshEntity& modifiable_mesh_entity( const gme_t& id )
-    {
-        return *modifiable_mesh_entities( id.type )[id.index] ;
-    }
-    GeoModelGeologicalEntity& modifiable_geological_entity( const gme_t& id )
-    {
-        return *modifiable_geological_entities( id.type )[id.index] ;
-    }
-    Universe& universe()
-    {
-        return model_.universe_ ;
-    }
+        GeoModelMeshEntity& modifiable_mesh_entity( const gme_t& id )
+        {
+            return *modifiable_mesh_entities( id.type )[id.index] ;
+        }
+        GeoModelGeologicalEntity& modifiable_geological_entity( const gme_t& id )
+        {
+            return *modifiable_geological_entities( id.type )[id.index] ;
+        }
+        Universe& universe()
+        {
+            return model_.universe_ ;
+        }
 
-    // The more I think about it the more this design
-    // for editing the GeoModel and its Entities appears bad.
-    // AM.
-    void set_entity_index( GeoModelEntity& E, index_t new_index_in_geomodel )
-    {
-        E.id_.index = new_index_in_geomodel ;
-    }
-    void set_boundary_sign( Region& R, index_t boundary_index, bool new_side )
-    {
-        ringmesh_assert( boundary_index < R.nb_boundaries() ) ;
-        R.sides_[boundary_index] = new_side ;
-    }
+        // The more I think about it the more this design
+        // for editing the GeoModel and its Entities appears bad.
+        // AM.
+        void set_entity_index( GeoModelEntity& E, index_t new_index_in_geomodel )
+        {
+            E.id_.index = new_index_in_geomodel ;
+        }
+        void set_boundary_sign( Region& R, index_t boundary_index, bool new_side )
+        {
+            ringmesh_assert( boundary_index < R.nb_boundaries() ) ;
+            R.sides_[boundary_index] = new_side ;
+        }
 
-    std::vector< gme_t >& modifiable_children( GeoModelGeologicalEntity& E )
-    {
-        return E.children_ ;
-    }
-    std::vector< gme_t >& modifiable_boundaries( GeoModelMeshEntity& E )
-    {
-        return E.boundaries_ ;
-    }
-    std::vector< gme_t >& modifiable_boundaries( Universe& U )
-    {
-        return U.boundary_surfaces_ ;
-    }
-    std::vector< gme_t >& modifiable_in_boundaries( GeoModelMeshEntity& E )
-    {
-        return E.in_boundary_ ;
-    }
-    std::vector< gme_t >& modifiable_parents( GeoModelMeshEntity& E )
-    {
-        return E.parents_ ;
-    }
-    std::vector< bool >& modifiable_sides( Region& R )
-    {
-        return R.sides_ ;
-    }
-    std::vector< bool >& modifiable_sides( Universe& U )
-    {
-        return U.boundary_surface_sides_ ;
-    }
+        std::vector< gme_t >& modifiable_children( GeoModelGeologicalEntity& E )
+        {
+            return E.children_ ;
+        }
+        std::vector< gme_t >& modifiable_boundaries( GeoModelMeshEntity& E )
+        {
+            return E.boundaries_ ;
+        }
+        std::vector< gme_t >& modifiable_boundaries( Universe& U )
+        {
+            return U.boundary_surfaces_ ;
+        }
+        std::vector< gme_t >& modifiable_in_boundaries( GeoModelMeshEntity& E )
+        {
+            return E.in_boundary_ ;
+        }
+        std::vector< gme_t >& modifiable_parents( GeoModelMeshEntity& E )
+        {
+            return E.parents_ ;
+        }
+        std::vector< bool >& modifiable_sides( Region& R )
+        {
+            return R.sides_ ;
+        }
+        std::vector< bool >& modifiable_sides( Universe& U )
+        {
+            return U.boundary_surface_sides_ ;
+        }
 
-private:
-    template< typename T >
-    void complete_mesh_entity_connectivity() ;
+    private:
+        template< typename T >
+        void complete_mesh_entity_connectivity() ;
 
-    template< typename T >
-    void copy_mesh_entity_topology( const GeoModel& from ) ;
-    void copy_geological_entity_topology(
-        const GeoModel& from,
-        const EntityType& type ) ;
+        template< typename T >
+        void copy_mesh_entity_topology( const GeoModel& from ) ;
+        void copy_geological_entity_topology(
+            const GeoModel& from,
+            const EntityType& type ) ;
 
-private:
-    /*! The model edited
-     */
-    GeoModel& model_ ;
-    /*! Parameter to forbid element creation. Crucial to control
-     *  building of the model and detect errors in find_or_create functions
-     */
-    bool create_entity_allowed_ ;
-} ;
+    private:
+        /*! The model edited
+        */
+        GeoModel& model_ ;
+        /*! Parameter to forbid element creation. Crucial to control
+        *  building of the model and detect errors in find_or_create functions
+        */
+        bool create_entity_allowed_ ;
+    } ;
 
 }
 
