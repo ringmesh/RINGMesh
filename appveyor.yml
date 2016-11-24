@@ -42,5 +42,7 @@ on_success:
     echo bb.username = ArnaudBotella >> C:\Users\appveyor\mercurial.ini
   
     echo bb.password = %password% >> C:\Users\appveyor\mercurial.ini
+    
+    hg status
 
     hg push https://bitbucket.org/ring_team/ringmeshcoverage
