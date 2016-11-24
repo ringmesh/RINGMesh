@@ -46,90 +46,108 @@
 namespace RINGMesh {
     MeshBase::~MeshBase()
     {
-        if( mesh_builder_ ) delete mesh_builder_ ;
         if( vertices_ann_ ) delete vertices_ann_ ;
     }
-    Mesh0DBuilder* Mesh0D::get_mesh0d_builder()
-    {
-        return dynamic_cast< Mesh0DBuilder* >( get_mesh_builder_base() ) ;
-    }
-    Mesh1DBuilder* Mesh1D::get_mesh1d_builder()
-    {
-        return dynamic_cast< Mesh1DBuilder* >( get_mesh_builder_base() ) ;
-    }
-    Mesh2DBuilder* Mesh2D::get_mesh2d_builder()
-    {
-        return dynamic_cast< Mesh2DBuilder* >( get_mesh_builder_base() ) ;
-    }
-    Mesh3DBuilder* Mesh3D::get_mesh3d_builder()
-    {
-        return dynamic_cast< Mesh3DBuilder* >( get_mesh_builder_base() ) ;
-    }
-    MeshAllDBuilder* MeshAllD::get_meshalld_builder()
-    {
-        return dynamic_cast< MeshAllDBuilder* >( get_mesh_builder_base() ) ;
-    }
 
-    GeogramMesh0DBuilder* GeogramMesh0D::get_geogram_mesh_builder()
+    Mesh0D* Mesh0D::create_mesh( const MeshType type )
     {
-        return dynamic_cast< GeogramMesh0DBuilder* >( get_mesh_builder_base() ) ;
-    }
-    MeshBaseBuilder* GeogramMesh0D::get_mesh_builder_base()
-    {
-        if( mesh_builder_ == nil ) {
-            mesh_builder_ = new GeogramMesh0DBuilder( *this ) ;
+        MeshType new_type = type ;
+        if( new_type.empty() ) {
+            new_type = GeogramMesh0D::type_name_static() ;
         }
-        return mesh_builder_ ;
-    }
+        Mesh0D* mesh = Mesh0DFactory::create_object( new_type ) ;
+        if( !mesh ) {
+            Logger::warn( "Mesh0D" )
+                << "Could not create mesh data structure: " << new_type
+                << std::endl ;
+            Logger::warn( "Mesh0D" ) << "Falling back to GeogramMesh0D data structure"
+                << std::endl ;
 
-
-    GeogramMesh1DBuilder* GeogramMesh1D::get_geogram_mesh_builder()
-    {
-        return dynamic_cast< GeogramMesh1DBuilder* >( get_mesh_builder_base() ) ;
-    }
-    MeshBaseBuilder* GeogramMesh1D::get_mesh_builder_base()
-    {
-        if( mesh_builder_ == nil ) {
-            mesh_builder_ = new GeogramMesh1DBuilder( *this ) ;
+            mesh = new GeogramMesh0D ;
         }
-        return mesh_builder_ ;
+        return mesh ;
     }
 
-
-    GeogramMesh2DBuilder* GeogramMesh2D::get_geogram_mesh_builder()
+    Mesh1D* Mesh1D::create_mesh( const MeshType type )
     {
-        return dynamic_cast< GeogramMesh2DBuilder* >( get_mesh_builder_base() ) ;
-    }
-    MeshBaseBuilder* GeogramMesh2D::get_mesh_builder_base()
-    {
-        if( mesh_builder_ == nil ) {
-            mesh_builder_ = new GeogramMesh2DBuilder( *this ) ;
+        MeshType new_type = type ;
+        if( new_type.empty() ) {
+            new_type = GeogramMesh1D::type_name_static() ;
         }
-        return mesh_builder_ ;
+        Mesh1D* mesh = Mesh1DFactory::create_object( new_type ) ;
+        if( !mesh ) {
+            Logger::warn( "Mesh1D" )
+                << "Could not create mesh data structure: " << new_type
+                << std::endl ;
+            Logger::warn( "Mesh1D" ) << "Falling back to GeogramMesh1D data structure"
+                << std::endl ;
+
+            mesh = new GeogramMesh1D ;
+        }
+        return mesh ;
     }
 
-    GeogramMesh3DBuilder* GeogramMesh3D::get_geogram_mesh_builder()
+    Mesh2D* Mesh2D::create_mesh( const MeshType type )
     {
-        return dynamic_cast< GeogramMesh3DBuilder* >( get_mesh_builder_base() ) ;
-    }
-    MeshBaseBuilder* GeogramMesh3D::get_mesh_builder_base()
-    {
-        if( mesh_builder_ == nil ) {
-            mesh_builder_ = new GeogramMesh3DBuilder( *this ) ;
+        MeshType new_type = type ;
+        if( new_type.empty() ) {
+            new_type = GeogramMesh2D::type_name_static() ;
         }
-        return mesh_builder_ ;
+        Mesh2D* mesh = Mesh2DFactory::create_object( new_type ) ;
+        if( !mesh ) {
+            std::vector< std::string > names ;
+            Mesh2DFactory::list_creators( names ) ;
+            for( index_t i = 0; i< names.size(); i++ ) {
+                DEBUG( names[i] ) ;
+            }
+            Logger::warn( "Mesh2D" )
+                << "Could not create mesh data structure: " << new_type
+                << std::endl ;
+            Logger::warn( "Mesh2D" ) << "Falling back to GeogramMesh2D data structure"
+                << std::endl ;
+
+            mesh = new GeogramMesh2D ;
+        }
+        return mesh ;
     }
 
-    GeogramMeshAllDBuilder* GeogramMeshAllD::get_geogram_mesh_builder()
+    Mesh3D* Mesh3D::create_mesh( const MeshType type )
     {
-        return dynamic_cast< GeogramMeshAllDBuilder* >( get_mesh_builder_base() ) ;
-    }
-    MeshBaseBuilder* GeogramMeshAllD::get_mesh_builder_base()
-    {
-        if( mesh_builder_ == nil ) {
-            mesh_builder_ = new GeogramMeshAllDBuilder( *this ) ;
+        MeshType new_type = type ;
+        if( new_type.empty() ) {
+            new_type = GeogramMesh3D::type_name_static() ;
         }
-        return mesh_builder_ ;
+        Mesh3D* mesh = Mesh3DFactory::create_object( new_type ) ;
+        if( !mesh ) {
+            Logger::warn( "Mesh3D" )
+                << "Could not create mesh data structure: " << new_type
+                << std::endl ;
+            Logger::warn( "Mesh3D" ) << "Falling back to GeogramMesh3D data structure"
+                << std::endl ;
+
+            mesh = new GeogramMesh3D ;
+        }
+        return mesh ;
     }
+
+    MeshAllD* MeshAllD::create_mesh( const MeshType type )
+    {
+        MeshType new_type = type ;
+        if( new_type.empty() ) {
+            new_type = GeogramMeshAllD::type_name_static() ;
+        }
+        MeshAllD* mesh = MeshAllDFactory::create_object( new_type ) ;
+        if( !mesh ) {
+            Logger::warn( "MeshAllD" )
+                << "Could not create mesh data structure: " << new_type
+                << std::endl ;
+            Logger::warn( "MeshAllD" ) << "Falling back to GeogramMeshAllD data structure"
+                << std::endl ;
+
+            mesh = new GeogramMeshAllD ;
+        }
+        return mesh ;
+    }
+
 
 } // namespace

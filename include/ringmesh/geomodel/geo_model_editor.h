@@ -79,12 +79,12 @@ namespace RINGMesh {
          * @{
          */
         template< typename T >
-        gme_t create_mesh_entity()
+        gme_t create_mesh_entity( const MeshType type = "" )
         {
             const EntityType entity_type = T::type_name_static() ;
             index_t nb_entities( model().nb_mesh_entities( entity_type ) ) ;
             index_t new_id( nb_entities ) ;
-            T* new_entity = new T( model(), new_id ) ;
+            T* new_entity = new T( model(), new_id, type ) ;
             modifiable_mesh_entities( entity_type ).push_back( new_entity ) ;
             return new_entity->gme_id() ;
 
@@ -329,7 +329,9 @@ namespace RINGMesh {
             index_t nb_additional_entities ) ;
 
         template< typename ENTITY >
-        bool create_mesh_entities( index_t nb_additionnal_entities )
+        bool create_mesh_entities(
+            index_t nb_additionnal_entities,
+            const MeshType type = "" )
         {
             const EntityType entity_type = ENTITY::type_name_static() ;
             std::vector< GeoModelMeshEntity* >& store = modifiable_mesh_entities(
@@ -338,7 +340,7 @@ namespace RINGMesh {
             index_t new_size = old_size + nb_additionnal_entities ;
             store.resize( new_size, nil ) ;
             for( index_t i = old_size; i < new_size; i++ ) {
-                store[i] = new ENTITY( model(), i ) ;
+                store[i] = new ENTITY( model(), i, type ) ;
             }
             return true ;
         }

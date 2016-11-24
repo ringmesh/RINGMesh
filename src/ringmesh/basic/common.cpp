@@ -53,6 +53,7 @@
 #include <ringmesh/geomodel/geo_model_builder_gocad.h>
 #include <ringmesh/geomodel/geo_model_geological_entity.h>
 #include <ringmesh/io/io.h>
+#include <ringmesh/mesh/geogram_mesh.h>
 #include <ringmesh/tetrahedralize/tetra_gen.h>
 
 namespace RINGMesh {
@@ -88,6 +89,7 @@ namespace RINGMesh {
         GeoModelGeologicalEntity::initialize() ;
         ringmesh_mesh_io_initialize() ;
         initialize_gocad_import_factories() ;
+        register_geogram_mesh() ;
     }
 
     void default_configure()
