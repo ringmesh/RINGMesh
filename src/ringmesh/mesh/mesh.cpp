@@ -36,10 +36,12 @@
 /*! \author Francois Bonneau */
 
 #include <ringmesh/mesh/mesh.h>
+#include <ringmesh/mesh/geogram_mesh.h>
 
 #include <ringmesh/geomodel/geo_model_entity.h>
 #include <ringmesh/geomodel/geo_model.h>
 #include <ringmesh/mesh/mesh_builder.h>
+#include <ringmesh/mesh/geogram_mesh_builder.h>
 
 namespace RINGMesh {
     MeshBase::~MeshBase()
@@ -68,14 +70,64 @@ namespace RINGMesh {
         return dynamic_cast< MeshAllDBuilder* >( get_mesh_builder_base() ) ;
     }
 
-    GeogramMeshBuilder* GeogramMesh::get_geogram_mesh_builder()
+    GeogramMesh0DBuilder* GeogramMesh0D::get_geogram_mesh_builder()
     {
-        return dynamic_cast< GeogramMeshBuilder* >( get_mesh_builder_base() ) ;
+        return dynamic_cast< GeogramMesh0DBuilder* >( get_mesh_builder_base() ) ;
     }
-    MeshBaseBuilder* GeogramMesh::get_mesh_builder_base()
+    MeshBaseBuilder* GeogramMesh0D::get_mesh_builder_base()
     {
         if( mesh_builder_ == nil ) {
-            mesh_builder_ = new GeogramMeshBuilder( *this ) ;
+            mesh_builder_ = new GeogramMesh0DBuilder( *this ) ;
+        }
+        return mesh_builder_ ;
+    }
+
+
+    GeogramMesh1DBuilder* GeogramMesh1D::get_geogram_mesh_builder()
+    {
+        return dynamic_cast< GeogramMesh1DBuilder* >( get_mesh_builder_base() ) ;
+    }
+    MeshBaseBuilder* GeogramMesh1D::get_mesh_builder_base()
+    {
+        if( mesh_builder_ == nil ) {
+            mesh_builder_ = new GeogramMesh1DBuilder( *this ) ;
+        }
+        return mesh_builder_ ;
+    }
+
+
+    GeogramMesh2DBuilder* GeogramMesh2D::get_geogram_mesh_builder()
+    {
+        return dynamic_cast< GeogramMesh2DBuilder* >( get_mesh_builder_base() ) ;
+    }
+    MeshBaseBuilder* GeogramMesh2D::get_mesh_builder_base()
+    {
+        if( mesh_builder_ == nil ) {
+            mesh_builder_ = new GeogramMesh2DBuilder( *this ) ;
+        }
+        return mesh_builder_ ;
+    }
+
+    GeogramMesh3DBuilder* GeogramMesh3D::get_geogram_mesh_builder()
+    {
+        return dynamic_cast< GeogramMesh3DBuilder* >( get_mesh_builder_base() ) ;
+    }
+    MeshBaseBuilder* GeogramMesh3D::get_mesh_builder_base()
+    {
+        if( mesh_builder_ == nil ) {
+            mesh_builder_ = new GeogramMesh3DBuilder( *this ) ;
+        }
+        return mesh_builder_ ;
+    }
+
+    GeogramMeshAllDBuilder* GeogramMeshAllD::get_geogram_mesh_builder()
+    {
+        return dynamic_cast< GeogramMeshAllDBuilder* >( get_mesh_builder_base() ) ;
+    }
+    MeshBaseBuilder* GeogramMeshAllD::get_mesh_builder_base()
+    {
+        if( mesh_builder_ == nil ) {
+            mesh_builder_ = new GeogramMeshAllDBuilder( *this ) ;
         }
         return mesh_builder_ ;
     }
