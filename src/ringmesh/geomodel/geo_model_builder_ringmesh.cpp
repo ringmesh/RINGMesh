@@ -262,7 +262,8 @@ namespace RINGMesh {
             GEO::MeshIOFlags flags ;
             flags.set_attribute( GEO::MESH_ALL_ATTRIBUTES ) ;
             Logger::instance()->set_minimal( true ) ;
-            GeogramMeshAllDBuilder builder( cur_mesh ) ;
+            GeogramMeshAllDBuilder builder ;
+            builder.set_mesh( cur_mesh ) ;
             builder.load_mesh( filename, flags ) ;
             assign_mesh_to_entity( cur_mesh, cur_gme ) ;
             Logger::instance()->set_minimal( false ) ;
@@ -467,7 +468,8 @@ namespace RINGMesh {
             GEO::MeshIOFlags flags ;
             flags.set_attribute( GEO::MESH_ALL_ATTRIBUTES ) ;
             GEO::Logger::instance()->set_minimal( true ) ;
-            GeogramMeshAllDBuilder builder( cur_mesh ) ;
+            GeogramMeshAllDBuilder builder ;
+            builder.set_mesh( cur_mesh ) ;
             builder.load_mesh( str_try, flags ) ;
             assign_mesh_to_entity( cur_mesh,
                 model().mesh_entity( type_name_old_to_new( old_type_name ), el ).gme_id() ) ;

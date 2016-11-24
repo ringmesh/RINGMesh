@@ -34,12 +34,14 @@
  */
 
 #include <ringmesh/mesh/geogram_mesh.h>
+#include <ringmesh/mesh/geogram_mesh_builder.h>
 
 namespace RINGMesh {
 
     void register_geogram_mesh()
     {
         ringmesh_register_mesh_0d( GeogramMesh0D ) ;
+        ringmesh_register_mesh_0d_builder( GeogramMesh0D ) ;
         ringmesh_register_mesh_1d( GeogramMesh1D ) ;
         ringmesh_register_mesh_2d( GeogramMesh2D ) ;
         ringmesh_register_mesh_3d( GeogramMesh3D ) ;

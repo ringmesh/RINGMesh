@@ -54,7 +54,7 @@ namespace RINGMesh {
 }
 
 namespace RINGMesh {
-    class RINGMESH_API MeshBaseBuilder {
+    class RINGMESH_API MeshBaseBuilder: public GEO::Counted {
     ringmesh_disable_copy( MeshBaseBuilder ) ;
 
     public:
@@ -131,22 +131,24 @@ namespace RINGMesh {
          */
         virtual void clear_vertices( bool keep_attributes, bool keep_memory ) = 0 ;
         /*!
-         * @brief Remove vertices not connected to any mesh element
-         */
-        virtual void remove_isolated_vertices() = 0 ;
-        /*!
          * @brief Deletes the ColocaterANN on vertices
          */
         virtual void clear_vertex_linked_objects() = 0 ;
         /*!@}
          */
 
+        static MeshBaseBuilder* create_builder( MeshBase& mesh ) ;
     protected:
         MeshBaseBuilder()
         {
         }
-
+        virtual void set_mesh( MeshBase& mesh ) = 0 ;
     } ;
+    typedef GEO::SmartPointer< MeshBaseBuilder > MeshBaseBuilder_var ;
+    typedef GEO::Factory0< MeshBaseBuilder > MeshBaseBuilderFactory ;
+#define ringmesh_register_mesh_base_builder(type) \
+    geo_register_creator(MeshBaseBuilderFactory, type ## Builder, type::type_name_static())
+
 
     class RINGMESH_API Mesh0DBuilder: public virtual MeshBaseBuilder {
     ringmesh_disable_copy(Mesh0DBuilder) ;
@@ -156,19 +158,22 @@ namespace RINGMesh {
         }
 
         static Mesh0DBuilder* create_builder( Mesh0D& mesh ) ;
+
+        virtual void remove_isolated_vertices()
+        {
+            // All vertices are isolated in a Mesh0D
+        }
     protected:
         Mesh0DBuilder()
             : MeshBaseBuilder()
         {
         }
 
-        virtual void remove_isolated_vertices()
-        {
-            // All vertices are isolated in a Mesh0D
-        }
+        virtual void set_mesh( Mesh0D& mesh ) = 0 ;
+
     } ;
     typedef GEO::SmartPointer< Mesh0DBuilder > Mesh0DBuilder_var ;
-    typedef GEO::Factory1< Mesh0DBuilder, Mesh0D > Mesh0DBuilderFactory ;
+    typedef GEO::Factory0< Mesh0DBuilder > Mesh0DBuilderFactory ;
 #define ringmesh_register_mesh_0d_builder(type) \
     geo_register_creator(Mesh0DBuilderFactory, type ## Builder, type::type_name_static())
 
@@ -222,15 +227,20 @@ namespace RINGMesh {
         virtual void clear_edges( bool keep_attributes, bool keep_memory ) = 0 ;
 
         virtual void clear_edge_linked_objects() = 0 ;
-
+        /*!
+         * @brief Remove vertices not connected to any mesh element
+         */
+        virtual void remove_isolated_vertices() = 0 ;
     protected:
         Mesh1DBuilder()
             : MeshBaseBuilder()
         {
         }
+
+        virtual void set_mesh( Mesh1D& mesh ) = 0 ;
     } ;
     typedef GEO::SmartPointer< Mesh1DBuilder > Mesh1DBuilder_var ;
-    typedef GEO::Factory1< Mesh1DBuilder, Mesh1D > Mesh1DBuilderFactory ;
+    typedef GEO::Factory0< Mesh1DBuilder > Mesh1DBuilderFactory ;
 #define ringmesh_register_mesh_1d_builder(type) \
     geo_register_creator(Mesh1DBuilderFactory, type ## Builder, type::type_name_static())
 
@@ -349,14 +359,20 @@ namespace RINGMesh {
         virtual void triangulate( const Mesh2D& surface_in ) = 0 ;
         /*!@}
          */
+        /*!
+         * @brief Remove vertices not connected to any mesh element
+         */
+        virtual void remove_isolated_vertices() = 0 ;
     protected:
         Mesh2DBuilder()
             : MeshBaseBuilder()
         {
         }
+
+        virtual void set_mesh( Mesh2D& mesh ) = 0 ;
     } ;
     typedef GEO::SmartPointer< Mesh2DBuilder > Mesh2DBuilder_var ;
-    typedef GEO::Factory1< Mesh2DBuilder, Mesh2D > Mesh2DBuilderFactory ;
+    typedef GEO::Factory0< Mesh2DBuilder > Mesh2DBuilderFactory ;
 #define ringmesh_register_mesh_2d_builder(type) \
     geo_register_creator(Mesh2DBuilderFactory, type ## Builder, type::type_name_static())
 
@@ -457,15 +473,20 @@ namespace RINGMesh {
             bool remove_isolated_vertices ) = 0 ;
 
         virtual void clear_cell_linked_objects() = 0 ;
-
+        /*!
+         * @brief Remove vertices not connected to any mesh element
+         */
+        virtual void remove_isolated_vertices() = 0 ;
     protected:
         Mesh3DBuilder()
             : MeshBaseBuilder()
         {
         }
+
+        virtual void set_mesh( Mesh3D& mesh ) = 0 ;
     } ;
     typedef GEO::SmartPointer< Mesh3DBuilder > Mesh3DBuilder_var ;
-    typedef GEO::Factory1< Mesh3DBuilder, Mesh3D > Mesh3DBuilderFactory ;
+    typedef GEO::Factory0< Mesh3DBuilder > Mesh3DBuilderFactory ;
 #define ringmesh_register_mesh_3d_builder(type) \
     geo_register_creator(Mesh3DBuilderFactory, type ## Builder, type::type_name_static())
 
@@ -485,9 +506,11 @@ namespace RINGMesh {
             : Mesh0DBuilder(), Mesh1DBuilder(), Mesh2DBuilder(), Mesh3DBuilder()
         {
         }
+
+        virtual void set_mesh( MeshAllD& mesh ) = 0 ;
     } ;
     typedef GEO::SmartPointer< MeshAllDBuilder > MeshAllDBuilder_var ;
-    typedef GEO::Factory1< MeshAllDBuilder, MeshAllD > MeshAllDBuilderFactory ;
+    typedef GEO::Factory0< MeshAllDBuilder > MeshAllDBuilderFactory ;
 #define ringmesh_register_mesh_alld_builder(type) \
     geo_register_creator(MeshAllDBuilderFactory, type ## Builder, type::type_name_static())
 }

@@ -65,7 +65,7 @@ namespace RINGMesh {
      * on which we base the RINGMesh algorithm
      * @note For now, we encapsulate the GEO::Mesh class.
      */
-    class RINGMESH_API MeshBase {
+    class RINGMESH_API MeshBase: public GEO::Counted {
     ringmesh_disable_copy( MeshBase ) ;
         friend class MeshBaseBuilder ;
 
@@ -117,10 +117,6 @@ namespace RINGMesh {
             }
             return *vertices_ann_ ;
         }
-        MeshBaseBuilder* get_mesh_base_builder()
-        {
-            return get_mesh_builder_base() ;
-        }
 
         virtual const MeshType type_name() const = 0 ;
 
@@ -135,13 +131,11 @@ namespace RINGMesh {
          * else they are stored as double precision (double)..
          */
         MeshBase()
-            : mesh_builder_( nil ), vertices_ann_( nil )
+            : vertices_ann_( nil )
         {
         }
-        virtual MeshBaseBuilder* get_mesh_builder_base() = 0 ;
 
     protected:
-        MeshBaseBuilder* mesh_builder_ ;
         mutable ColocaterANN* vertices_ann_ ;
     } ;
 
@@ -158,8 +152,6 @@ namespace RINGMesh {
         }
 
         static Mesh0D* create_mesh( const MeshType type ) ;
-
-        Mesh0DBuilder* get_mesh0d_builder() ;
     protected:
         /*!
          * @brief Mesh0D constructor.
@@ -249,9 +241,6 @@ namespace RINGMesh {
         }
 
         virtual GEO::AttributesManager& edge_attribute_manager() const = 0 ;
-
-        Mesh1DBuilder* get_mesh1d_builder() ;
-
     protected:
         Mesh1D()
             : MeshBase(), edges_ann_( nil ), edges_aabb_( nil )
@@ -425,9 +414,6 @@ namespace RINGMesh {
             }
             return *facets_aabb_ ;
         }
-
-        Mesh2DBuilder* get_mesh2d_builder() ;
-
     protected:
         Mesh2D()
             : MeshBase(), facets_ann_( nil ), facets_aabb_( nil )
@@ -633,8 +619,6 @@ namespace RINGMesh {
             }
             return NO_ID ;
         }
-        
-        Mesh3DBuilder* get_mesh3d_builder() ;
 
         /*!
          * @brief return the ColocaterANN at cell facets
@@ -712,8 +696,6 @@ namespace RINGMesh {
         }
 
         static MeshAllD* create_mesh( const MeshType type ) ;
-
-        MeshAllDBuilder* get_meshalld_builder() ;
     protected:
         MeshAllD()
             : Mesh0D(), Mesh1D(), Mesh2D(), Mesh3D()
