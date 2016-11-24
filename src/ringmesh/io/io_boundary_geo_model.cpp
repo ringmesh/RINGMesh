@@ -423,52 +423,59 @@ namespace {
     }
 
     /*!
-     * @brief Save the model in smesh format
-     * @details No attributes and no boundary marker are transferred
-     * @todo Test this function - Create the appropriate handler
-     */
-    void save_smesh_file( const GeoModel& M, const std::string& file_name )
-    {
-        std::ofstream out( file_name.c_str() ) ;
-        if( out.bad() ) {
-            Logger::err( "I/O" ) << "Error when opening the file: "
-                << file_name.c_str() << std::endl ;
-            return ;
-        }
-        out.precision( 16 ) ;
-
-        /// 1. Write the unique vertices
-        out << "# Node list" << std::endl ;
-        out << "# node count, 3 dim, no attribute, no boundary marker" << std::endl ;
-        out << M.mesh.vertices.nb() << " 3 0 0" << std::endl ;
-        out << "# node index, node coordinates " << std::endl ;
-        for( index_t p = 0; p < M.mesh.vertices.nb(); p++ ) {
-            const vec3& V = M.mesh.vertices.vertex( p ) ;
-            out << p << " " << " " << V.x << " " << V.y << " " << V.z << std::endl ;
-        }
-
-        /// 2. Write the triangles
-        out << "# Part 2 - facet list" << std::endl ;
-        out << "# facet count, no boundary marker" << std::endl ;
-        out << nb_facets( M ) << "  0 " << std::endl ;
-
-        const GeoModelMeshVertices& model_vertices = M.mesh.vertices ;
-        for( index_t i = 0; i < M.nb_surfaces(); ++i ) {
-            const Surface& S = M.surface( i ) ;
-            for( index_t f = 0; f < S.nb_mesh_elements(); f++ ) {
-                out << S.nb_mesh_element_vertices( f ) << " " ;
-                for( index_t v = 0; v < S.nb_mesh_element_vertices( f ); v++ ) {
-                    out << model_vertices.model_vertex_id( S.gme_id(), f, v ) << " " ;
-                }
-                out << std::endl ;
+         * @brief Save the model in smesh format
+         * @details No attributes and no boundary marker are transferred
+         */
+        class SMESHIOHandler: public GeoModelIOHandler {
+            public:
+            virtual bool load( const std::string& filename, GeoModel& model )
+            {
+                throw RINGMeshException( "I/O",
+                    "Geological model loading of a from UCD mesh not yet implemented" ) ;
             }
-        }
 
-        // Do not forget the stupid zeros at the end of the file
-        out << std::endl << "0" << std::endl << "0" << std::endl ;
-    }
+            virtual void save( const GeoModel& model, const std::string& filename )
+            {
+                std::ofstream out( filename.c_str() ) ;
+                if( out.bad() ) {
+                    Logger::err( "I/O" ) << "Error when opening the file: "
+                        << filename.c_str() << std::endl ;
+                    return ;
+                }
+                out.precision( 16 ) ;
 
-    /************************************************************************/
+                /// 1. Write the unique vertices
+                out << "# Node list" << std::endl ;
+                out << "# node count, 3 dim, no attribute, no boundary marker" << std::endl ;
+                out << model.mesh.vertices.nb() << " 3 0 0" << std::endl ;
+                out << "# node index, node coordinates " << std::endl ;
+                for( index_t p = 0; p < model.mesh.vertices.nb(); p++ ) {
+                    const vec3& V = model.mesh.vertices.vertex( p ) ;
+                    out << p << " " << " " << V.x << " " << V.y << " " << V.z << std::endl ;
+                }
+
+                /// 2. Write the triangles
+                out << "# Part 2 - facet list" << std::endl ;
+                out << "# facet count, no boundary marker" << std::endl ;
+                out << nb_facets( model ) << "  0 " << std::endl ;
+
+                for( index_t i = 0; i < model.nb_surfaces(); ++i ) {
+                    const Surface& S = model.surface( i ) ;
+                    for( index_t f = 0; f < S.nb_mesh_elements(); f++ ) {
+                        out << S.nb_mesh_element_vertices( f ) << " " ;
+                        for( index_t v = 0; v < S.nb_mesh_element_vertices( f ); v++ ) {
+                            out <<model.mesh.vertices.model_vertex_id(S.gme_id(),f,v) << " " ;
+                        }
+                        out << std::endl ;
+                    }
+                }
+
+                // Do not forget the stupid zeros at the end of the file
+                out << std::endl << "0" << std::endl << "0" << std::endl ;
+            }
+        } ;
+
+        /************************************************************************/
 
     class MLIOHandler: public GeoModelIOHandler {
     public:
@@ -622,6 +629,7 @@ namespace RINGMesh {
     void GeoModelIOHandler::initialize_boundary_geomodel_output()
     {
         ringmesh_register_GeoModelIOHandler_creator( MLIOHandler, "ml" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( SMESHIOHandler, "smesh" );
 #ifdef RINGMESH_WITH_GEOLOGYJS
         ringmesh_register_GeoModelIOHandler_creator( HTMLIOHandler, "html" );
 #endif
