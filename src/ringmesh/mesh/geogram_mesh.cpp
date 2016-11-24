@@ -43,9 +43,13 @@ namespace RINGMesh {
         ringmesh_register_mesh_0d( GeogramMesh0D ) ;
         ringmesh_register_mesh_0d_builder( GeogramMesh0D ) ;
         ringmesh_register_mesh_1d( GeogramMesh1D ) ;
+        ringmesh_register_mesh_1d_builder( GeogramMesh1D ) ;
         ringmesh_register_mesh_2d( GeogramMesh2D ) ;
+        ringmesh_register_mesh_2d_builder( GeogramMesh2D ) ;
         ringmesh_register_mesh_3d( GeogramMesh3D ) ;
+        ringmesh_register_mesh_3d_builder( GeogramMesh3D ) ;
         ringmesh_register_mesh_alld( GeogramMeshAllD ) ;
+        ringmesh_register_mesh_alld_builder( GeogramMeshAllD ) ;
     }
 }
 
