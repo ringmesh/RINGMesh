@@ -2254,7 +2254,7 @@ namespace RINGMesh {
      * a ticking bomb (like those in Mesh, btw I don not understand how these can work)
      * If these classes are derived one day, I don't know what will happen [JP]*/
     {
-        GeogramMesh* geogrammesh = new GeogramMesh( 3, false ) ;
+        GeogramMeshAllD* geogrammesh = new GeogramMeshAllD ;
         mesh_ = geogrammesh ;
         vertices.mesh_ = mesh_ ;
         edges.mesh_ = mesh_ ;

@@ -42,21 +42,12 @@
  File is in RINGMESH_BIN/ringmesh directory.
  */
 #include <ringmesh/ringmesh_config.h>
+#include <ringmesh/ringmesh_export.h>
 
 #if defined( _WIN32 )
 #    ifndef WIN32
 #        define WIN32
 #    endif
-#endif
-
-#ifdef WIN32
-#   ifdef RINGMESH_EXPORTS
-#        define RINGMESH_API __declspec( dllexport )
-#    else
-#        define RINGMESH_API __declspec( dllimport )
-#    endif
-#else
-#   define RINGMESH_API
 #endif
 
 #ifndef NDEBUG
@@ -111,6 +102,8 @@ namespace RINGMesh {
     void RINGMESH_API configure_geogram() ;
     void RINGMESH_API configure_ringmesh() ;
     void RINGMESH_API default_configure() ;
+
+    void RINGMESH_API print_header_information() ;
 
     /*!
      * RINGMesh exception class.
