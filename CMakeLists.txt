@@ -97,6 +97,8 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 #------------------------------------------------------------------------------------------------
 # Additional cmake modules
 include(ExternalProject)
+# build export macros
+include (GenerateExportHeader) 
 
 # Enable testing with CTest
 enable_testing()
@@ -166,8 +168,6 @@ message(STATUS "RINGMesh source directory is: ${PROJECT_SOURCE_DIR}")
 #------------------------------------------------------------------------------------------------
 # Platform dependent settings
 if(WIN32)
-    add_compile_options(-DRINGMESH_EXPORTS) 
-	
 	# Select the CMAKE_CONFIGURATION_TYPES from Visual Studio
     set(COMPILATION_OPTION --config ${CMAKE_CFG_INTDIR})
 elseif(UNIX)
@@ -211,7 +211,7 @@ configure_file(${input_configure_file} ${generated_configure_file})
 
 # We want to be able to include this file
 include_directories(${PROJECT_BINARY_DIR})
- 
+
 #------------------------------------------------------------------------------------------------
 # GEOGRAM 
 # Set the path to Geogram code
@@ -267,7 +267,7 @@ ExternalProject_Add_Step(geogram_ext forcebuild
   )
 
 # Add geogram include directories to the current ones
-include_directories(${GEOGRAM_PATH}/src/lib)
+include_directories( SYSTEM ${GEOGRAM_PATH}/src/lib)
 
 # Add geogram project libs to the libs with which RINGMesh will link
 set(EXTRA_LIBS ${EXTRA_LIBS} geogram)
@@ -283,7 +283,7 @@ link_directories(${GEOGRAM_PATH_BIN}/lib)
 #------------------------------------------------------------------------------------------------    
 # Get MG-Tetra if a path is given
 if(MG_TETRA)   
-  include_directories(${MG_TETRA}/include)
+  include_directories(SYSTEM ${MG_TETRA}/include)
  
   if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(PLATFORM _64)
@@ -318,7 +318,7 @@ if(RINGMESH_WITH_GEOLOGYJS)
     # geology.js platform dependent settings. CMAKE_BUILD_TYPE is empty on Windows.
     set(GEOLOGY_JS_PATH_BIN ${GEOLOGY_JS_DIRECTORY}/build/${CMAKE_BUILD_TYPE})
     # Add geology.js include directories to the current ones
-    include_directories(${GEOLOGY_JS_DIRECTORY}/include)
+    include_directories(SYSTEM ${GEOLOGY_JS_DIRECTORY}/include)
 
     # Add geology.js project libs to the libs with which RINGMesh will link
     set(EXTRA_LIBS ${EXTRA_LIBS} GEOLOGYJS)
@@ -374,6 +374,9 @@ add_library(RINGMesh SHARED
     ${ringmesh_src} 
     ${zlib_src}
     ${zlib_include})
+	
+# Function for generation of export macros for libraries (dll)
+generate_export_header(RINGMesh EXPORT_MACRO_NAME RINGMESH_API EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_export.h)
 
 # RINGMesh depends on Geogram
 add_dependencies(RINGMesh geogram_ext)
