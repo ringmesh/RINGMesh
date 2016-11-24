@@ -43,6 +43,4 @@ on_success:
   
     echo bb.password = %password% >> C:\Users\appveyor\mercurial.ini
     
-    hg status
-
-    hg push https://bitbucket.org/ring_team/ringmeshcoverage
+    hg push --new-branch https://bitbucket.org/ring_team/ringmeshcoverage
