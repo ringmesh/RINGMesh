@@ -63,7 +63,7 @@
 #include <ringmesh/geomodel/geo_model_mesh_entity.h>
 #include <ringmesh/geomodel/geo_model_validity.h>
 
-namespace RINGMesh {           
+namespace RINGMesh {
 
     Universe::Universe( const GeoModel& model )
         : GeoModelEntity( model, NO_ID )
@@ -114,7 +114,7 @@ namespace RINGMesh {
             return NO_GEOL ;
         }
     }
-    
+
     /*!
      * \return the (lowercase) string associated to a
      * GeoModelELement::GEOL_FEATURE
@@ -141,47 +141,25 @@ namespace RINGMesh {
                 break ;
         }
     }
-    
+
     bool GeoModelEntity::is_identification_valid() const
     {
-        bool defined_id = true ;
+        bool is_valid = true ;
         if( !gme_id().is_defined() ) {
             Logger::err( "GeoModelEntity" ) << " Entity associated to model "
                 << model().name() << "has no type and/or no index " << std::endl ;
-            defined_id = false ;
+            is_valid = false ;
             // No further checks are possible - This really should not happen
-            ringmesh_assert_not_reached ;
+            ringmesh_assert_not_reached;
         }
-        bool valid_index = true ;
-        if( index() >= model().nb_entities( type_name() ) ) {
+        if( !is_index_valid() ) {
             Logger::warn( "GeoModelEntity" ) << " Entity index " << gme_id()
-                << " is not valid. " << " There are "
-                << model().nb_entities( type_name() )
-                << " entities of that type in model " << model().name()
-                << std::endl ;
+                << " is not valid. " << std::endl ;
             // This really should not happen
-            valid_index = false ;
-            ringmesh_assert_not_reached ;
+            is_valid = false ;
+            ringmesh_assert_not_reached;
         }
-        // If somebody - an Editor messed up with the Memory
-        bool valid_address = true ;
-        if( model().is_mesh_entity_type( type_name() ) ) {
-            const GME* stored = static_cast< const GME* >( &model().mesh_entity(
-                gme_id() ) ) ;
-            valid_address = ( stored == this ) ;
-        } else {
-            ringmesh_assert( model().is_geological_entity_type( type_name() ) ) ;
-            const GME* stored =
-                static_cast< const GME* >( &model().geological_entity( gme_id() ) ) ;
-            valid_address = ( stored == this ) ;
-        }
-        if( !valid_address ) {
-            Logger::err( "GeoModelEntity" ) << " Entity " << gme_id()
-                << "address in model " << model().name()
-                << " does not match this entity" << std::endl ;
-            ringmesh_assert_not_reached ;
-        }
-        return defined_id && valid_index && valid_address ;
+        return is_valid ;
     }
 
     const GeoModelEntity::EntityType GeoModelEntity::type_name_static()
