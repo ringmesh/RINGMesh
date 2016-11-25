@@ -232,6 +232,7 @@ namespace RINGMesh {
 
         virtual void set_mesh( Mesh0D& mesh ) {
             mesh_ = &dynamic_cast< GeogramMesh0D& >( mesh ) ;
+            GeogramMeshBaseBuilder::set_mesh( *mesh_ ) ;
         }
     private:
         GeogramMesh0D* mesh_ ;
@@ -255,6 +256,7 @@ namespace RINGMesh {
 
         virtual void set_mesh( Mesh1D& mesh ) {
             mesh_ = &dynamic_cast< GeogramMesh1D& >( mesh ) ;
+            GeogramMeshBaseBuilder::set_mesh( *mesh_ ) ;
         }
         /*!
          * @brief Create a new edge.
@@ -379,6 +381,7 @@ namespace RINGMesh {
 
         virtual void set_mesh( Mesh2D& mesh ) {
             mesh_ = &dynamic_cast< GeogramMesh2D& >( mesh ) ;
+            GeogramMeshBaseBuilder::set_mesh( *mesh_ ) ;
         }
         /**
          * \brief Removes the connected components that have an area
@@ -610,6 +613,7 @@ namespace RINGMesh {
         }
         virtual void set_mesh( Mesh3D& mesh ) {
             mesh_ = &dynamic_cast< GeogramMesh3D& >( mesh ) ;
+            GeogramMeshBaseBuilder::set_mesh( *mesh_ ) ;
         }
         virtual ~GeogramMesh3DBuilder()
         {
@@ -821,6 +825,11 @@ namespace RINGMesh {
         }
         virtual void set_mesh( MeshAllD& mesh ) {
             mesh_ = &dynamic_cast< GeogramMeshAllD& >( mesh ) ;
+            GeogramMesh0DBuilder::set_mesh( *mesh_ ) ;
+            GeogramMesh1DBuilder::set_mesh( *mesh_ ) ;
+            GeogramMesh2DBuilder::set_mesh( *mesh_ ) ;
+            GeogramMesh3DBuilder::set_mesh( *mesh_ ) ;
+
         }
         /*!
          * @brief Remove vertices not connected to any mesh element

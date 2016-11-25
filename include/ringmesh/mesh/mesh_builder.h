@@ -155,6 +155,8 @@ namespace RINGMesh {
         {
         }
 
+        virtual void set_mesh( Mesh0D& mesh ) = 0 ;
+
         static Mesh0DBuilder* create_builder( Mesh0D& mesh ) ;
 
         virtual void remove_isolated_vertices()
@@ -166,9 +168,6 @@ namespace RINGMesh {
             : MeshBaseBuilder()
         {
         }
-
-        virtual void set_mesh( Mesh0D& mesh ) = 0 ;
-
     } ;
     typedef GEO::SmartPointer< Mesh0DBuilder > Mesh0DBuilder_var ;
     typedef GEO::Factory0< Mesh0DBuilder > Mesh0DBuilderFactory ;
@@ -181,6 +180,8 @@ namespace RINGMesh {
         virtual ~Mesh1DBuilder()
         {
         }
+
+        virtual void set_mesh( Mesh1D& mesh ) = 0 ;
 
         static Mesh1DBuilder* create_builder( Mesh1D& mesh ) ;
         /*!
@@ -234,8 +235,6 @@ namespace RINGMesh {
             : MeshBaseBuilder()
         {
         }
-
-        virtual void set_mesh( Mesh1D& mesh ) = 0 ;
     } ;
     typedef GEO::SmartPointer< Mesh1DBuilder > Mesh1DBuilder_var ;
     typedef GEO::Factory0< Mesh1DBuilder > Mesh1DBuilderFactory ;
@@ -248,6 +247,8 @@ namespace RINGMesh {
         virtual ~Mesh2DBuilder()
         {
         }
+
+        virtual void set_mesh( Mesh2D& mesh ) = 0 ;
 
         static Mesh2DBuilder* create_builder( Mesh2D& mesh ) ;
         /*!@}
@@ -366,8 +367,6 @@ namespace RINGMesh {
             : MeshBaseBuilder()
         {
         }
-
-        virtual void set_mesh( Mesh2D& mesh ) = 0 ;
     } ;
     typedef GEO::SmartPointer< Mesh2DBuilder > Mesh2DBuilder_var ;
     typedef GEO::Factory0< Mesh2DBuilder > Mesh2DBuilderFactory ;
@@ -380,6 +379,8 @@ namespace RINGMesh {
         virtual ~Mesh3DBuilder()
         {
         }
+
+        virtual void set_mesh( Mesh3D& mesh ) = 0 ;
 
         static Mesh3DBuilder* create_builder( Mesh3D& mesh ) ;
         /*!
@@ -480,8 +481,6 @@ namespace RINGMesh {
             : MeshBaseBuilder()
         {
         }
-
-        virtual void set_mesh( Mesh3D& mesh ) = 0 ;
     } ;
     typedef GEO::SmartPointer< Mesh3DBuilder > Mesh3DBuilder_var ;
     typedef GEO::Factory0< Mesh3DBuilder > Mesh3DBuilderFactory ;
@@ -498,14 +497,14 @@ namespace RINGMesh {
         {
         }
 
+        virtual void set_mesh( MeshAllD& mesh ) = 0 ;
+
         static MeshAllDBuilder* create_builder( MeshAllD& mesh ) ;
     protected:
         MeshAllDBuilder()
             : Mesh0DBuilder(), Mesh1DBuilder(), Mesh2DBuilder(), Mesh3DBuilder()
         {
         }
-
-        virtual void set_mesh( MeshAllD& mesh ) = 0 ;
     } ;
     typedef GEO::SmartPointer< MeshAllDBuilder > MeshAllDBuilder_var ;
     typedef GEO::Factory0< MeshAllDBuilder > MeshAllDBuilderFactory ;
