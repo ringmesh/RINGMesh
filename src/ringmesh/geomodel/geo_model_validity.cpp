@@ -862,7 +862,7 @@ namespace {
          */
         void create_model_mesh()
         {
-            bool status = Logger::instance()->is_quiet() ;
+            bool logger_status = Logger::instance()->is_quiet() ;
             Logger::instance()->set_quiet( true ) ;
 
             bool connect_facets = false ;
@@ -871,7 +871,7 @@ namespace {
             GEO::mesh_repair( triangulated_global_model_mesh_,
                 GEO::MESH_REPAIR_TRIANGULATE ) ;
 
-            Logger::instance()->set_quiet( status ) ;
+            Logger::instance()->set_quiet( logger_status ) ;
         }
         /*!
          * @brief Returns true if there are non-manifold edges that are
@@ -1033,13 +1033,13 @@ namespace RINGMesh {
             return false ;
         } else {
             GEO::Mesh mesh ;
-            bool status = Logger::instance()->is_quiet() ;
+            bool logger_status = Logger::instance()->is_quiet() ;
 
             Logger::instance()->set_quiet( true ) ;
             build_mesh_from_model_mesh_entities( geomodel, volume_boundaries,
                 mesh ) ;
             GEO::mesh_repair( mesh ) ;
-            Logger::instance()->set_quiet( status ) ;
+            Logger::instance()->set_quiet( logger_status ) ;
 
             bool valid = true ;
             index_t nb_cc = GEO::mesh_nb_connected_components( mesh ) ;
