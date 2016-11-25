@@ -39,6 +39,60 @@
 
 #include <ringmesh/mesh/geogram_mesh_builder.h>
 
+namespace {
+    using namespace RINGMesh ;
+
+    Mesh0DBuilder* create_builder_0d( MeshBase& mesh )
+    {
+        Mesh0DBuilder* builder = Mesh0DBuilderFactory::create_object(
+            mesh.type_name() ) ;
+        if( builder ) {
+            builder->set_mesh( dynamic_cast< Mesh0D& >( mesh ) ) ;
+        }
+        return builder ;
+    }
+
+    Mesh1DBuilder* create_builder_1d( MeshBase& mesh )
+    {
+        Mesh1DBuilder* builder = Mesh1DBuilderFactory::create_object(
+            mesh.type_name() ) ;
+        if( builder ) {
+            builder->set_mesh( dynamic_cast< Mesh1D& >( mesh ) ) ;
+        }
+        return builder ;
+    }
+
+    Mesh2DBuilder* create_builder_2d( MeshBase& mesh )
+    {
+        Mesh2DBuilder* builder = Mesh2DBuilderFactory::create_object(
+            mesh.type_name() ) ;
+        if( builder ) {
+            builder->set_mesh( dynamic_cast< Mesh2D& >( mesh ) ) ;
+        }
+        return builder ;
+    }
+
+    Mesh3DBuilder* create_builder_3d( MeshBase& mesh )
+    {
+        Mesh3DBuilder* builder = Mesh3DBuilderFactory::create_object(
+            mesh.type_name() ) ;
+        if( builder ) {
+            builder->set_mesh( dynamic_cast< Mesh3D& >( mesh ) ) ;
+        }
+        return builder ;
+    }
+
+    MeshAllDBuilder* create_builder_alld( MeshBase& mesh )
+    {
+        MeshAllDBuilder* builder = MeshAllDBuilderFactory::create_object(
+            mesh.type_name() ) ;
+        if( builder ) {
+            builder->set_mesh( dynamic_cast< MeshAllD& >( mesh ) ) ;
+        }
+        return builder ;
+    }
+}
+
 namespace RINGMesh {
 
     MeshBaseBuilder* MeshBaseBuilder::create_builder( MeshBase& mesh )
@@ -46,10 +100,25 @@ namespace RINGMesh {
         MeshBaseBuilder* builder = MeshBaseBuilderFactory::create_object(
             mesh.type_name() ) ;
         if( !builder ) {
-            Logger::warn( "Mesh0DBuilder" )
+            builder = create_builder_alld( mesh ) ;
+            if( !builder ) {
+                builder = create_builder_0d( mesh ) ;
+                if( !builder ) {
+                    builder = create_builder_1d( mesh ) ;
+                    if( !builder ) {
+                        builder = create_builder_2d( mesh ) ;
+                        if( !builder ) {
+                            builder = create_builder_3d( mesh ) ;
+                        }
+                    }
+                }
+            }
+        }
+        if( !builder ) {
+            Logger::warn( "MeshBaseBuilder" )
                 << "Could not create mesh data structure: " << mesh.type_name()
                 << std::endl ;
-            Logger::warn( "Mesh0DBuilder" )
+            Logger::warn( "MeshBaseBuilder" )
                 << "Falling back to GeogramMesh0DBuilder data structure"
                 << std::endl ;
 
@@ -63,6 +132,9 @@ namespace RINGMesh {
     {
         Mesh0DBuilder* builder = Mesh0DBuilderFactory::create_object(
             mesh.type_name() ) ;
+        if( !builder ) {
+            builder = create_builder_alld( mesh ) ;
+        }
         if( !builder ) {
             Logger::warn( "Mesh0DBuilder" )
                 << "Could not create mesh data structure: " << mesh.type_name()
@@ -82,6 +154,9 @@ namespace RINGMesh {
         Mesh1DBuilder* builder = Mesh1DBuilderFactory::create_object(
             mesh.type_name() ) ;
         if( !builder ) {
+            builder = create_builder_alld( mesh ) ;
+        }
+        if( !builder ) {
             Logger::warn( "Mesh1DBuilder" )
                 << "Could not create mesh data structure: " << mesh.type_name()
                 << std::endl ;
@@ -100,6 +175,9 @@ namespace RINGMesh {
         Mesh2DBuilder* builder = Mesh2DBuilderFactory::create_object(
             mesh.type_name() ) ;
         if( !builder ) {
+            builder = create_builder_alld( mesh ) ;
+        }
+        if( !builder ) {
             Logger::warn( "Mesh2DBuilder" )
                 << "Could not create mesh data structure: " << mesh.type_name()
                 << std::endl ;
@@ -117,6 +195,9 @@ namespace RINGMesh {
     {
         Mesh3DBuilder* builder = Mesh3DBuilderFactory::create_object(
             mesh.type_name() ) ;
+        if( !builder ) {
+            builder = create_builder_alld( mesh ) ;
+        }
         if( !builder ) {
             Logger::warn( "Mesh3DBuilder" )
                 << "Could not create mesh data structure: " << mesh.type_name()
