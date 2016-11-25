@@ -142,7 +142,6 @@ namespace RINGMesh {
         index_t facet,
         std::vector<double>& barycentric_coordinates ) ;
 
-
     /*!
      * @brief Vector of pointers to Geogram attributes
      * @note Necessary since one cannot create, vectors of Geogram attributes does
