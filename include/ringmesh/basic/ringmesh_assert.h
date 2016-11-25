@@ -59,13 +59,13 @@ namespace RINGMesh {
 }
 
 #ifdef RINGMESH_DEBUG
-  #define ringmesh_assert( x )  \
-        if( !( x ) )  ::ringmesh_assertion_failed( # x, __FILE__, __LINE__ )
-  #define ringmesh_assert_not_reached \
-        ::ringmesh_should_not_have_reached( __FILE__, __LINE__ )
+#  define ringmesh_assert( x )  \
+        if( !( x ) )  RINGMesh::ringmesh_assertion_failed( # x, __FILE__, __LINE__ )
+#  define ringmesh_assert_not_reached \
+        RINGMesh::ringmesh_should_not_have_reached( __FILE__, __LINE__ )
 #else
-  #define ringmesh_assert( x )
-  #define ringmesh_assert_not_reached
+#  define ringmesh_assert( x )
+#  define ringmesh_assert_not_reached
 #endif
 
 #endif
