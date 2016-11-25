@@ -366,11 +366,12 @@ namespace {
         //@TODO this will be removed and integrated in the build_string....
         name += ".geogram" ;
         Logger* logger = Logger::instance() ;
+        bool logger_status = logger->is_quiet() ;
         logger->set_quiet( true ) ;
         GEO::MeshIOFlags flags ;
 //        flags.set_attribute( GEO::MESH_ALL_ATTRIBUTES ) ;
         bool is_saved = save_mesh( geo_model_entity_mesh, name, flags ) ;
-        logger->set_quiet( false ) ;
+        logger->set_quiet( logger_status ) ;
 
         if( is_saved ) {
             zip_file( zf, name ) ;

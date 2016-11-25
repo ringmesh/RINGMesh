@@ -779,9 +779,10 @@ namespace RINGMesh {
             TetraGen_var tetragen = TetraGen::create( M, region_id, method ) ;
             tetragen->set_boundaries( M.region( region_id ), M.wells() ) ;
             tetragen->set_internal_points( internal_vertices[region_id] ) ;
+            bool status = Logger::instance()->is_quiet() ;
             Logger::instance()->set_quiet( true ) ;
             tetragen->tetrahedralize( add_steiner_points ) ;
-            Logger::instance()->set_quiet( false ) ;
+            Logger::instance()->set_quiet( status ) ;
         }
 
         // The GeoModelMesh should be updated, just erase everything
