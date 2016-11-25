@@ -38,8 +38,13 @@
 
 #include <ringmesh/basic/common.h>
 
+#include <string>
+
+#include <geogram/basic/assert.h>
+
 /*!
  * @file Custom assertions
+ * @todo Do we really need them ? [JP]
  */
 
 namespace RINGMesh {
@@ -54,13 +59,13 @@ namespace RINGMesh {
 }
 
 #ifdef RINGMESH_DEBUG
-#define ringmesh_assert( x )  \
+#  define ringmesh_assert( x )  \
         if( !( x ) )  RINGMesh::ringmesh_assertion_failed( # x, __FILE__, __LINE__ )
-#define ringmesh_assert_not_reached \
+#  define ringmesh_assert_not_reached \
         RINGMesh::ringmesh_should_not_have_reached( __FILE__, __LINE__ )
 #else
-#define ringmesh_assert( x )
-#define ringmesh_assert_not_reached
+#  define ringmesh_assert( x )
+#  define ringmesh_assert_not_reached
 #endif
 
 #endif
