@@ -100,7 +100,7 @@ namespace RINGMesh {
 
     void zip_file( zipFile zf, const std::string& name )
     {
-        zip_fileinfo zfi = {} ;
+        zip_fileinfo zfi ;
         std::fstream file( name.c_str(), std::ios::in | std::ios::binary ) ;
         file.seekg( 0, std::ios::end ) ;
         long size = file.tellg() ;
