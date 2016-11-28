@@ -1022,8 +1022,8 @@ namespace RINGMesh {
             default:
                 ringmesh_assert_not_reached ;
                 return 0 ;
-            }
         }
+    }
 
     index_t GeoModelMeshCells::nb_cells( index_t r, GEO::MeshCellType type ) const
     {
@@ -1048,8 +1048,8 @@ namespace RINGMesh {
             default:
                 ringmesh_assert_not_reached ;
                 return 0 ;
-            }
         }
+    }
 
     index_t GeoModelMeshCells::cell(
         index_t r,
@@ -1073,8 +1073,8 @@ namespace RINGMesh {
             default:
                 ringmesh_assert_not_reached ;
                 return 0 ;
-            }
         }
+    }
 
     index_t GeoModelMeshCells::nb_tet() const
     {
@@ -1651,8 +1651,8 @@ namespace RINGMesh {
             default:
                 ringmesh_assert_not_reached ;
                 return 0 ;
-            }
         }
+    }
 
     index_t GeoModelMeshFacets::nb_facets( index_t s, FacetType type ) const
     {
@@ -1671,8 +1671,8 @@ namespace RINGMesh {
             default:
                 ringmesh_assert_not_reached ;
                 return 0 ;
-            }
         }
+    }
 
     index_t GeoModelMeshFacets::facet( index_t s, index_t f, FacetType type ) const
     {
@@ -1690,8 +1690,8 @@ namespace RINGMesh {
             default:
                 ringmesh_assert_not_reached ;
                 return 0 ;
-            }
         }
+    }
 
     index_t GeoModelMeshFacets::nb_triangle() const
     {
