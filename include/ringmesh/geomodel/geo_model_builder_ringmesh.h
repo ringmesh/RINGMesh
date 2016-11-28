@@ -55,16 +55,16 @@
  */
 
 namespace RINGMesh {
+    class GeoModelBuilderGMImpl ;
+}
+
+namespace RINGMesh {
 
     class RINGMESH_API GeoModelBuilderGM: public GeoModelBuilderFile {
     public:
-        GeoModelBuilderGM( GeoModel& model, const std::string& filename )
-            : GeoModelBuilderFile( model, filename )
-        {
-        }
-        virtual ~GeoModelBuilderGM()
-        {
-        }
+        static const index_t NB_VERSION = 2 ;
+        GeoModelBuilderGM( GeoModel& model, const std::string& filename ) ;
+        virtual ~GeoModelBuilderGM() ;
 
     private:
         void load_geological_entities( GEO::LineInput& file_line ) ;
@@ -85,6 +85,10 @@ namespace RINGMesh {
          * is equivalent to the first vertex of each Line
          */
         void match_line_corners_to_first_and_last_vertex() ;
+
+    private:
+        index_t file_version_ ;
+        GeoModelBuilderGMImpl* version_impl_[NB_VERSION] ;
     } ;
 
     class RINGMESH_API OldGeoModelBuilderGM: public GeoModelBuilderFile {
