@@ -94,7 +94,6 @@ namespace RINGMesh {
 
         virtual void read_mesh_entity_line( GEO::LineInput& file_line )
         {
-            // Read this entity
             // First line : type - id - name - geol_feature
             if( file_line.nb_fields() < 4 ) {
                 throw RINGMeshException( "I/O",
@@ -122,7 +121,7 @@ namespace RINGMesh {
             file_line.get_fields() ;
             if( EntityTypeManager::is_region( entity.type ) ) {
                 // Second line : signed indices of boundaries
-                for( index_t c = 1; c < file_line.nb_fields(); c++ ) {
+                for( index_t c = 0; c < file_line.nb_fields(); c++ ) {
                     bool side = false ;
                     if( strncmp( file_line.field( c ), "+", 1 ) == 0 ) {
                         side = true ;
