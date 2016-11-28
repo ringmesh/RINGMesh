@@ -123,9 +123,11 @@ namespace {
     {
         const std::string& type = ENTITY::type_name_static() ;
         for( index_t e = 0; e < M.nb_mesh_entities( type ); e++ ) {
-            const GeoModelMeshEntity& cur_mesh_entity = M.mesh_entity( type, e ) ;
+            const ENTITY& cur_mesh_entity =
+                dynamic_cast< const ENTITY& >( M.mesh_entity( type, e ) ) ;
             out << type << " " << e << " " << cur_mesh_entity.name() << " "
                 << GeoModelEntity::geol_name( cur_mesh_entity.geological_feature() )
+                << " " << cur_mesh_entity.low_level_mesh_storage().type_name()
                 << std::endl ;
             out << "boundary " ;
             for( index_t b = 0; b < cur_mesh_entity.nb_boundaries(); b++ ) {
@@ -138,7 +140,7 @@ namespace {
     /*!
      * @brief Save the topology of a GeoModelin a file
      * @param[in] M the GeoModel
-     * @param[in] file_name the file name (lol)
+     * @param[in] file_name the output file name
      */
     void save_mesh_entities( const GeoModel& M, const std::string& file_name )
     {
@@ -149,6 +151,7 @@ namespace {
                 "Error when opening the file: " + file_name ) ;
         }
 
+        out << "Version 1" << std::endl ;
         out << "GeoModel name " << M.name() << std::endl ;
 
         // Numbers of the different types of mesh entities
@@ -170,7 +173,8 @@ namespace {
             const Region& E = M.region( i ) ;
             // Save ID - NAME
             out << Region::type_name_static() << " " << i << " " << E.name() << " "
-                << GeoModelEntity::geol_name( E.geological_feature() ) << std::endl ;
+                << GeoModelEntity::geol_name( E.geological_feature() ) << " "
+                << E.low_level_mesh_storage().type_name() << std::endl ;
             // Second line Signed ids of boundary surfaces
             for( index_t j = 0; j < E.nb_boundaries(); ++j ) {
                 if( E.side( j ) ) {
