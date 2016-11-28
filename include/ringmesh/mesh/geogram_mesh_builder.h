@@ -829,7 +829,6 @@ namespace RINGMesh {
             GeogramMesh1DBuilder::set_mesh( *mesh_ ) ;
             GeogramMesh2DBuilder::set_mesh( *mesh_ ) ;
             GeogramMesh3DBuilder::set_mesh( *mesh_ ) ;
-
         }
         /*!
          * @brief Remove vertices not connected to any mesh element
