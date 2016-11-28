@@ -35,8 +35,10 @@
 
 #include <ringmesh/geomodel/geo_model_builder_ringmesh.h>
 
-#include <ringmesh/geomodel/geo_model_repair.h>
 #include <geogram/basic/file_system.h>
+
+#include <ringmesh/geomodel/geo_model_repair.h>
+#include <ringmesh/io/io.h>
 
 /*!
  * @file ringmesh/geomodel/geo_model_builder_ringmesh.cpp
@@ -59,43 +61,6 @@ namespace {
     void build_string_for_geo_model_entity_export( gme_t id, std::string& name )
     {
         name += id.type + "_" + GEO::String::to_string( id.index ) ;
-    }
-
-    /*!
-     * @brief Unzip a file in a zip file and set it to the current unZIP file
-     */
-    void unzip_one_file( unzFile& uz, const char filename[MAX_FILENAME] )
-    {
-        unzLocateFile( uz, filename, 0 ) ;
-        char read_buffer[READ_SIZE] ;
-
-        if( unzOpenCurrentFile( uz ) != UNZ_OK ) {
-            unzClose( uz ) ;
-            throw RINGMeshException( "ZLIB", "Could not open file" ) ;
-        }
-        FILE *out = fopen( filename, "wb" ) ;
-        if( out == NULL ) {
-            unzCloseCurrentFile( uz ) ;
-            unzClose( uz ) ;
-            throw RINGMeshException( "ZLIB", "Could not open destination file" ) ;
-        }
-        int error = UNZ_OK ;
-        do {
-            error = unzReadCurrentFile( uz, read_buffer, READ_SIZE ) ;
-            if( error < 0 ) {
-                unzCloseCurrentFile( uz ) ;
-                unzClose( uz ) ;
-                fclose( out ) ;
-                throw RINGMeshException( "ZLIB",
-                    "Invalid error: " + GEO::String::to_string( error ) ) ;
-            }
-            if( error > 0 ) {
-                fwrite( read_buffer, error, 1, out ) ;
-            }
-        } while( error > 0 ) ;
-        fclose( out ) ;
-        unzCloseCurrentFile( uz ) ;
-
     }
 }
 
@@ -261,18 +226,14 @@ namespace RINGMesh {
         }
 
         const std::string mesh_entity_file( "mesh_entities.txt" ) ;
-        unzip_one_file( uz, mesh_entity_file.c_str() ) ;
+        unzip_file( uz, mesh_entity_file.c_str() ) ;
         GEO::LineInput line_mesh_entity( mesh_entity_file ) ;
         load_mesh_entities( line_mesh_entity ) ;
         GEO::FileSystem::delete_file( mesh_entity_file ) ;
-
-        load_meshes( Corner::type_name_static(), uz ) ;
-        load_meshes( Line::type_name_static(), uz ) ;
-        load_meshes( Surface::type_name_static(), uz ) ;
-        load_meshes( Region::type_name_static(), uz ) ;
+        load_meshes( uz ) ;
 
         const std::string geological_entity_file( "geological_entities.txt" ) ;
-        unzip_one_file( uz, geological_entity_file.c_str() ) ;
+        unzip_file( uz, geological_entity_file.c_str() ) ;
         GEO::LineInput line_geological_entity( geological_entity_file ) ;
         load_geological_entities( line_geological_entity ) ;
         GEO::FileSystem::delete_file( geological_entity_file ) ;
@@ -314,70 +275,60 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelBuilderGM::load_meshes( const std::string& type, unzFile& uz )
+    void GeoModelBuilderGM::load_meshes( unzFile& uz )
     {
-        for( index_t el = 0; el < model().nb_mesh_entities( type ); el++ ) {
-            gme_t cur_gme( type, el ) ;
-            std::string file_to_extract_and_load ;
-            build_string_for_geo_model_entity_export( cur_gme,
-                file_to_extract_and_load ) ;
-            std::string filename = file_to_extract_and_load + ".geogram" ;
-            if( unzLocateFile( uz, filename.c_str(), 0 ) != UNZ_OK ) {
-                if( type != Region::type_name_static() ) {
-                    std::string message = "Invalid format of .gm file" ;
-                    message += "\n.geogram file (defining mesh) is missing." ;
-                    throw RINGMeshException( "I/O", message ) ;
-                }
-                return ; // a region is not necessary meshed.
-            }
-            unzip_one_file( uz, filename.c_str() ) ;
-            GeogramMeshAllD cur_mesh ;
-            GEO::MeshIOFlags flags ;
-            flags.set_attribute( GEO::MESH_ALL_ATTRIBUTES ) ;
-            Logger::instance()->set_minimal( true ) ;
-            GeogramMeshAllDBuilder builder ;
-            builder.set_mesh( cur_mesh ) ;
-            builder.load_mesh( filename, flags ) ;
-            assign_mesh_to_entity( cur_mesh, cur_gme ) ;
-            Logger::instance()->set_minimal( false ) ;
-
-            GEO::FileSystem::delete_file( filename ) ;
+        if( unzGoToFirstFile( uz ) != UNZ_OK ) {
+            throw RINGMeshException( "I/O", "Unable to uncompress the first file" ) ;
         }
-    }
+        do {
+            char char_file_name[MAX_FILENAME] ;
+            if( unzGetCurrentFileInfo64( uz, NULL, char_file_name,
+                MAX_FILENAME, NULL, 0, NULL, 0 ) != UNZ_OK ) {
+                throw RINGMeshException( "I/O", "Unable to get file name" ) ;
+            }
+            std::string file_name( char_file_name ) ;
+            if( GEO::FileSystem::extension( file_name ) == "txt" ) {
+                continue ;
+            }
 
-//    void GeoModelBuilderGM::load_meshes( unzFile& uz )
-//    {
-//        if( unzGoToFirstFile( uz ) != UNZ_OK ) {
-//            throw RINGMeshException( "I/O", "Unable to uncompress the first file" ) ;
-//        }
-//        for( index_t el = 0; el < model().nb_mesh_entities( type ); el++ ) {
-//            gme_t cur_gme( type, el ) ;
-//            std::string file_to_extract_and_load ;
-//            build_string_for_geo_model_entity_export( cur_gme,
-//                file_to_extract_and_load ) ;
-//            std::string filename = file_to_extract_and_load + ".geogram" ;
-//            if( unzLocateFile( uz, filename.c_str(), 0 ) != UNZ_OK ) {
-//                if( type != Region::type_name_static() ) {
-//                    std::string message = "Invalid format of .gm file" ;
-//                    message += "\n.geogram file (defining mesh) is missing." ;
-//                    throw RINGMeshException( "I/O", message ) ;
-//                }
-//                return ; // a region is not necessary meshed.
-//            }
-//            unzip_one_file( uz, filename.c_str() ) ;
-//            GeogramMeshAllD cur_mesh ;
-//            GEO::MeshIOFlags flags ;
-//            flags.set_attribute( GEO::MESH_ALL_ATTRIBUTES ) ;
-//            Logger::instance()->set_minimal( true ) ;
-//            GeogramMeshAllDBuilder builder ;
-//            builder.set_mesh( cur_mesh ) ;
-//            builder.load_mesh( filename, flags ) ;
-//            assign_mesh_to_entity( cur_mesh, cur_gme ) ;
-//            Logger::instance()->set_minimal( false ) ;
-//
-//            GEO::FileSystem::delete_file( filename ) ;
-//        }
-//    }
+            unzip_current_file( uz, file_name.c_str() ) ;
+            std::string file_without_extension = GEO::FileSystem::base_name(
+                file_name ) ;
+            std::string entity_type, entity_id ;
+            GEO::String::split_string( file_without_extension, '_', entity_type,
+                entity_id ) ;
+            index_t id = NO_ID ;
+            GEO::String::from_string( entity_id, id ) ;
+            Logger::instance()->set_minimal( true ) ;
+            if( EntityTypeManager::is_corner( entity_type ) ) {
+                Corner& corner = dynamic_cast< Corner& >( mesh_entity( entity_type,
+                    id ) ) ;
+                Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder(
+                    corner.low_level_mesh_storage() ) ;
+                builder->load_mesh( file_name, GEO::MeshIOFlags() ) ;
+            } else if( EntityTypeManager::is_line( entity_type ) ) {
+                Line& line = dynamic_cast< Line& >( mesh_entity( entity_type, id ) ) ;
+                Mesh1DBuilder_var builder = Mesh1DBuilder::create_builder(
+                    line.low_level_mesh_storage() ) ;
+                builder->load_mesh( file_name, GEO::MeshIOFlags() ) ;
+            } else if( EntityTypeManager::is_surface( entity_type ) ) {
+                Surface& surface = dynamic_cast< Surface& >( mesh_entity(
+                    entity_type, id ) ) ;
+                Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder(
+                    surface.low_level_mesh_storage() ) ;
+                builder->load_mesh( file_name, GEO::MeshIOFlags() ) ;
+            } else if( EntityTypeManager::is_region( entity_type ) ) {
+                Region& region = dynamic_cast< Region& >( mesh_entity( entity_type,
+                    id ) ) ;
+                Mesh3DBuilder_var builder = Mesh3DBuilder::create_builder(
+                    region.low_level_mesh_storage() ) ;
+                builder->load_mesh( file_name, GEO::MeshIOFlags() ) ;
+            }
+            Logger::instance()->set_minimal( false ) ;
+            GEO::FileSystem::delete_file( file_name ) ;
+
+        } while( unzGoToNextFile( uz ) == UNZ_OK ) ;
+    }
 
     // ------------------------------------------------------------------------//
 
@@ -569,7 +520,7 @@ namespace RINGMesh {
                     GEO::Logger::warn( "I/O" ) << message << std::endl ;
                 }
             }
-            unzip_one_file( uz, str_try.c_str() ) ;
+            unzip_file( uz, str_try.c_str() ) ;
             GeogramMeshAllD cur_mesh ;
             GEO::MeshIOFlags flags ;
             flags.set_attribute( GEO::MESH_ALL_ATTRIBUTES ) ;
@@ -581,7 +532,7 @@ namespace RINGMesh {
                 model().mesh_entity( type_name_old_to_new( old_type_name ), el ).gme_id() ) ;
             GEO::Logger::instance()->set_minimal( false ) ;
 
-            unzip_one_file( uz, str_try.c_str() ) ;
+            unzip_file( uz, str_try.c_str() ) ;
 
             GEO::FileSystem::delete_file( str_try ) ;
         }
@@ -598,7 +549,7 @@ namespace RINGMesh {
         }
 
         std::string topology = "topology.txt" ;
-        unzip_one_file( uz, topology.c_str() ) ;
+        unzip_file( uz, topology.c_str() ) ;
 
         GEO::LineInput line_topo( topology ) ;
 
@@ -611,7 +562,7 @@ namespace RINGMesh {
         load_entities( "REGION", uz ) ;
 
         std::string connectivity = "connectivity.txt" ;
-        unzip_one_file( uz, connectivity.c_str() ) ;
+        unzip_file( uz, connectivity.c_str() ) ;
 
         GEO::LineInput line_connectivity( connectivity ) ;
         load_connectivities( line_connectivity ) ;
