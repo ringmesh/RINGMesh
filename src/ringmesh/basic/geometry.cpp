@@ -1516,7 +1516,8 @@ namespace RINGMesh {
             index_t id = *std::min_element( results.begin(), results.end() ) ;
             if( id < i ) {
                 index_map[i] = id ;
-                nb_colocalised_per_thread[omp_get_thread_num()]++ ;
+                index_t thread_id = static_cast< index_t >( omp_get_thread_num() ) ;
+                nb_colocalised_per_thread[thread_id]++ ;
             }
         }
 

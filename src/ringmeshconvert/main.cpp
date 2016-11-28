@@ -128,7 +128,7 @@ int main( int argc, char** argv )
 
         std::string geomodel_in_name = GEO::CmdLine::get_arg( "in:geomodel" ) ;
         std::string mesh_in_name = GEO::CmdLine::get_arg( "in:mesh" ) ;
-        if( mesh_in_name.empty() ) {
+        if( geomodel_in_name.empty() && mesh_in_name.empty() ) {
             throw RINGMeshException( "I/O",
                 "Give at least a filename in in:geomodel or in:mesh" ) ;
         }
