@@ -522,7 +522,6 @@ namespace RINGMesh {
                     i ) ;
                 for( index_t j = 0;
                     j < model().nb_geological_entities( entity_type ); ++j ) {
-                    gme_t new_id( entity_type, j ) ;
                     if( old_2_new_geological_entity_[i][j] == NO_ID ) {
                         delete_geological_entity( entity_type, j ) ;
                     }
