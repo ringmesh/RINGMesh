@@ -56,6 +56,8 @@
 #include <cmath>
 #include <cassert>
 
+#include <algorithm> // [RINGMESH] Not included
+
 /******************************************************************************/
 /* Basic geometric types */
 
