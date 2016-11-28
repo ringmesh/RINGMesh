@@ -176,7 +176,6 @@ namespace {
                 << GeoModelEntity::geol_name( E.geological_feature() ) << " "
                 << E.low_level_mesh_storage().type_name() << std::endl ;
             // Second line Signed ids of boundary surfaces
-            out << "boundary " ;
             for( index_t j = 0; j < E.nb_boundaries(); ++j ) {
                 if( E.side( j ) ) {
                     out << "+" ;
