@@ -830,7 +830,7 @@ namespace RINGMesh {
                 }
             }
 
-            // Compute the cell offsets
+        // Compute the cell offsets
         std::vector< index_t > cells_offset_per_type( GEO::MESH_NB_CELL_TYPES, 0 ) ;
         for( index_t t = GEO::MESH_TET + 1; t < GEO::MESH_NB_CELL_TYPES; t++ ) {
             cells_offset_per_type[t] += cells_offset_per_type[t - 1] ;
