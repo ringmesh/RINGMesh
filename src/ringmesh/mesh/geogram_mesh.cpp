@@ -41,24 +41,11 @@ namespace RINGMesh {
     void register_geogram_mesh()
     {
         ringmesh_register_mesh_0d( GeogramMesh0D ) ;
-
         ringmesh_register_mesh_0d_builder( GeogramMesh0D ) ;
         ringmesh_register_mesh_1d( GeogramMesh1D ) ;
         ringmesh_register_mesh_1d_builder( GeogramMesh1D ) ;
         ringmesh_register_mesh_2d( GeogramMesh2D ) ;
-        std::vector< std::string > names_before ;
-        Mesh2DBuilderFactory::list_creators( names_before ) ;
-        DEBUG( names_before.size() ) ;
-        for( index_t i = 0; i< names_before.size(); i++ ) {
-            DEBUG( names_before[i] ) ;
-        }
         ringmesh_register_mesh_2d_builder( GeogramMesh2D ) ;
-        std::vector< std::string > names_after ;
-        Mesh2DBuilderFactory::list_creators( names_after ) ;
-        DEBUG( names_after.size() ) ;
-        for( index_t i = 0; i< names_after.size(); i++ ) {
-            DEBUG( names_after[i] ) ;
-        }
         ringmesh_register_mesh_3d( GeogramMesh3D ) ;
         ringmesh_register_mesh_3d_builder( GeogramMesh3D ) ;
         ringmesh_register_mesh_alld( GeogramMeshAllD ) ;
