@@ -826,9 +826,9 @@ namespace RINGMesh {
                     default:
                         ringmesh_assert_not_reached ;
                         break ;
-                    }
                 }
             }
+        }
 
         // Compute the cell offsets
         std::vector< index_t > cells_offset_per_type( GEO::MESH_NB_CELL_TYPES, 0 ) ;
