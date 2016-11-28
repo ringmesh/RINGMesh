@@ -214,13 +214,13 @@ namespace RINGMesh {
     GeoModelMeshVertices::GeoModelVertexMapper::vertex_map(
         const gme_t& mesh_entity_id ) const
     {
-        return (*vertex_maps_.at( mesh_entity_id.type ))[mesh_entity_id.index] ;
+        return ( *vertex_maps_.at( mesh_entity_id.type ) )[mesh_entity_id.index] ;
     }
 
     GEO::Attribute< index_t >& GeoModelMeshVertices::GeoModelVertexMapper::vertex_map(
         const gme_t& mesh_entity_id )
     {
-        return (*vertex_maps_[mesh_entity_id.type])[mesh_entity_id.index] ;
+        return ( *vertex_maps_[mesh_entity_id.type] )[mesh_entity_id.index] ;
     }
 
     void GeoModelMeshVertices::GeoModelVertexMapper::set_vertex_map_value(
@@ -824,13 +824,13 @@ namespace RINGMesh {
                             + GEO::MESH_CONNECTOR + 1]++ ;
                         break ;
                     default:
-                        ringmesh_assert_not_reached ;
+                        ringmesh_assert_not_reached;
                         break ;
+                    }
                 }
             }
-        }
 
-        // Compute the cell offsets
+            // Compute the cell offsets
         std::vector< index_t > cells_offset_per_type( GEO::MESH_NB_CELL_TYPES, 0 ) ;
         for( index_t t = GEO::MESH_TET + 1; t < GEO::MESH_NB_CELL_TYPES; t++ ) {
             cells_offset_per_type[t] += cells_offset_per_type[t - 1] ;
@@ -1020,10 +1020,10 @@ namespace RINGMesh {
             case GEO::MESH_NB_CELL_TYPES:
                 return nb() ;
             default:
-                ringmesh_assert_not_reached ;
+                ringmesh_assert_not_reached;
                 return 0 ;
+            }
         }
-    }
 
     index_t GeoModelMeshCells::nb_cells( index_t r, GEO::MeshCellType type ) const
     {
@@ -1046,10 +1046,10 @@ namespace RINGMesh {
                 return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * ( r + 1 )]
                     - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r] ;
             default:
-                ringmesh_assert_not_reached ;
+                ringmesh_assert_not_reached;
                 return 0 ;
+            }
         }
-    }
 
     index_t GeoModelMeshCells::cell(
         index_t r,
@@ -1071,10 +1071,10 @@ namespace RINGMesh {
             case GEO::MESH_NB_CELL_TYPES:
                 return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r] + c ;
             default:
-                ringmesh_assert_not_reached ;
+                ringmesh_assert_not_reached;
                 return 0 ;
+            }
         }
-    }
 
     index_t GeoModelMeshCells::nb_tet() const
     {
@@ -1520,6 +1520,12 @@ namespace RINGMesh {
         return mesh_->cell_volume( c ) ;
     }
 
+    const AABBTree3D& GeoModelMeshCells::aabb() const
+    {
+        test_and_initialize() ;
+        return mesh_->cells_aabb() ;
+    }
+
     /*******************************************************************************/
 
     GeoModelMeshFacets::GeoModelMeshFacets( GeoModelMesh& gmm )
@@ -1626,7 +1632,7 @@ namespace RINGMesh {
             facet -= nb_facets( s, T ) ;
         }
         index = NO_ID ;
-        ringmesh_assert_not_reached ;
+        ringmesh_assert_not_reached;
         return NO_FACET ;
     }
 
@@ -1643,10 +1649,10 @@ namespace RINGMesh {
             case ALL:
                 return nb() ;
             default:
-                ringmesh_assert_not_reached ;
+                ringmesh_assert_not_reached;
                 return 0 ;
+            }
         }
-    }
 
     index_t GeoModelMeshFacets::nb_facets( index_t s, FacetType type ) const
     {
@@ -1663,10 +1669,10 @@ namespace RINGMesh {
                 return surface_facet_ptr_[ALL * ( s + 1 )]
                     - surface_facet_ptr_[ALL * s] ;
             default:
-                ringmesh_assert_not_reached ;
+                ringmesh_assert_not_reached;
                 return 0 ;
+            }
         }
-    }
 
     index_t GeoModelMeshFacets::facet( index_t s, index_t f, FacetType type ) const
     {
@@ -1682,10 +1688,10 @@ namespace RINGMesh {
             case ALL:
                 return surface_facet_ptr_[ALL * s] + f ;
             default:
-                ringmesh_assert_not_reached ;
+                ringmesh_assert_not_reached;
                 return 0 ;
+            }
         }
-    }
 
     index_t GeoModelMeshFacets::nb_triangle() const
     {
@@ -1889,6 +1895,12 @@ namespace RINGMesh {
         test_and_initialize() ;
         return mesh_->facet_area( f ) ;
     }
+
+    const AABBTree2D& GeoModelMeshFacets::aabb() const
+    {
+        test_and_initialize() ;
+        return mesh_->facets_aabb() ;
+    }
     /*******************************************************************************/
 
     GeoModelMeshEdges::GeoModelMeshEdges( GeoModelMesh& gmm )
@@ -1986,6 +1998,12 @@ namespace RINGMesh {
                 }
             }
         }
+    }
+
+    const AABBTree1D& GeoModelMeshEdges::aabb() const
+    {
+        test_and_initialize() ;
+        return mesh_->edges_aabb() ;
     }
 
     /*******************************************************************************/
