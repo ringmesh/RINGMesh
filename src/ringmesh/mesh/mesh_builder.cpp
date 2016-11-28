@@ -230,5 +230,4 @@ namespace RINGMesh {
         return builder ;
     }
 
-
 } // namespace

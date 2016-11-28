@@ -90,6 +90,13 @@ namespace RINGMesh {
 
         }
 
+        /*!
+         * @brief Transfer general mesh information from one mesh data structure to another one
+         * @param[in] id the GeoModelMeshEntity id to operate on
+         * @param[in] type the new mesh data structure type
+         */
+        void change_mesh_data_structure( const gme_t& id, const MeshType type ) ;
+
         gme_t create_geological_entity( const EntityType& type ) ;
 
         // ---- Duplicate of protected functions. Dangerous open-bar access.
