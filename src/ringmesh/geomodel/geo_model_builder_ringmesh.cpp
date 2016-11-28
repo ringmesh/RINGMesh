@@ -102,19 +102,27 @@ namespace RINGMesh {
                         + GEO::String::to_string( file_line.line_number() )
                         + ", 4 fields are expected, the type, id, name, and geological feature" ) ;
             }
-            const std::string type = file_line.field( 0 ) ;
-            index_t id = file_line.field_as_uint( 1 ) ;
-            gme_t entity( type, id ) ;
+            gme_t entity ;
+            read_first_line( file_line, entity ) ;
+            read_second_line( file_line, entity ) ;
+        }
+
+    protected:
+        void read_first_line( GEO::LineInput& file_line, gme_t& entity )
+        {
+            entity.type = file_line.field( 0 ) ;
+            entity.index = file_line.field_as_uint( 1 ) ;
             builder_.set_entity_name( entity, file_line.field( 2 ) ) ;
             builder_.set_entity_geol_feature( entity,
                 GME::determine_geological_type( file_line.field( 3 ) ) ) ;
-
-            // Read second line
+        }
+        void read_second_line( GEO::LineInput& file_line, const gme_t& entity )
+        {
             file_line.get_line() ;
             file_line.get_fields() ;
-            if( type == Region::type_name_static() ) {
+            if( EntityTypeManager::is_region( entity.type ) ) {
                 // Second line : signed indices of boundaries
-                for( index_t c = 0; c < file_line.nb_fields(); c++ ) {
+                for( index_t c = 1; c < file_line.nb_fields(); c++ ) {
                     bool side = false ;
                     if( strncmp( file_line.field( c ), "+", 1 ) == 0 ) {
                         side = true ;
@@ -146,15 +154,22 @@ namespace RINGMesh {
 
         virtual void read_mesh_entity_line( GEO::LineInput& file_line )
         {
-            GeoModelBuilderGMImpl_0::read_mesh_entity_line( file_line ) ;
-
-            if( file_line.nb_fields() > 4 ) {
-                const std::string type = file_line.field( 0 ) ;
-                index_t id = file_line.field_as_uint( 1 ) ;
-                gme_t entity( type, id ) ;
-                const std::string mesh_type = file_line.field( 5 ) ;
-                builder_.change_mesh_data_structure( entity, mesh_type ) ;
+            // Read this entity
+            // First line : type - id - name - geol_feature - mesh type
+            if( file_line.nb_fields() < 5 ) {
+                throw RINGMeshException( "I/O",
+                    "Invalid line: "
+                        + GEO::String::to_string( file_line.line_number() )
+                        + ", 5 fields are expected, the type, id, name, "
+                        + "geological feature, and mesh type" ) ;
             }
+            gme_t entity ;
+            read_first_line( file_line, entity ) ;
+
+            const std::string mesh_type = file_line.field( 4 ) ;
+            builder_.change_mesh_data_structure( entity, mesh_type ) ;
+
+            read_second_line( file_line, entity ) ;
         }
     } ;
 
