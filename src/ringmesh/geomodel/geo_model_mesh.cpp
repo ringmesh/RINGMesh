@@ -824,7 +824,7 @@ namespace RINGMesh {
                             + GEO::MESH_CONNECTOR + 1]++ ;
                         break ;
                     default:
-                        ringmesh_assert_not_reached;
+                        ringmesh_assert_not_reached ;
                         break ;
                     }
                 }
@@ -1020,7 +1020,7 @@ namespace RINGMesh {
             case GEO::MESH_NB_CELL_TYPES:
                 return nb() ;
             default:
-                ringmesh_assert_not_reached;
+                ringmesh_assert_not_reached ;
                 return 0 ;
             }
         }
@@ -1046,7 +1046,7 @@ namespace RINGMesh {
                 return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * ( r + 1 )]
                     - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r] ;
             default:
-                ringmesh_assert_not_reached;
+                ringmesh_assert_not_reached ;
                 return 0 ;
             }
         }
@@ -1071,7 +1071,7 @@ namespace RINGMesh {
             case GEO::MESH_NB_CELL_TYPES:
                 return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r] + c ;
             default:
-                ringmesh_assert_not_reached;
+                ringmesh_assert_not_reached ;
                 return 0 ;
             }
         }
@@ -1632,7 +1632,7 @@ namespace RINGMesh {
             facet -= nb_facets( s, T ) ;
         }
         index = NO_ID ;
-        ringmesh_assert_not_reached;
+        ringmesh_assert_not_reached ;
         return NO_FACET ;
     }
 
@@ -1649,7 +1649,7 @@ namespace RINGMesh {
             case ALL:
                 return nb() ;
             default:
-                ringmesh_assert_not_reached;
+                ringmesh_assert_not_reached ;
                 return 0 ;
             }
         }
@@ -1669,7 +1669,7 @@ namespace RINGMesh {
                 return surface_facet_ptr_[ALL * ( s + 1 )]
                     - surface_facet_ptr_[ALL * s] ;
             default:
-                ringmesh_assert_not_reached;
+                ringmesh_assert_not_reached ;
                 return 0 ;
             }
         }
@@ -1688,7 +1688,7 @@ namespace RINGMesh {
             case ALL:
                 return surface_facet_ptr_[ALL * s] + f ;
             default:
-                ringmesh_assert_not_reached;
+                ringmesh_assert_not_reached ;
                 return 0 ;
             }
         }
