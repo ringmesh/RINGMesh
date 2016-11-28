@@ -101,14 +101,123 @@ namespace {
 
 namespace RINGMesh {
 
+    class GeoModelBuilderGMImpl {
+    public:
+        GeoModelBuilderGMImpl( GeoModelBuilderGM& builder )
+            : builder_( builder )
+        {
+        }
+        virtual ~GeoModelBuilderGMImpl()
+        {
+        }
+
+        virtual void read_mesh_entity_line( GEO::LineInput& file_line ) = 0 ;
+
+    protected:
+        GeoModelBuilderGM& builder_ ;
+    } ;
+
+    class GeoModelBuilderGMImpl_0: public GeoModelBuilderGMImpl {
+    public:
+        GeoModelBuilderGMImpl_0( GeoModelBuilderGM& builder )
+            : GeoModelBuilderGMImpl( builder )
+        {
+        }
+        virtual ~GeoModelBuilderGMImpl_0()
+        {
+        }
+
+        virtual void read_mesh_entity_line( GEO::LineInput& file_line )
+        {
+            // Read this entity
+            // First line : type - id - name - geol_feature
+            if( file_line.nb_fields() < 4 ) {
+                throw RINGMeshException( "I/O",
+                    "Invalid line: "
+                        + GEO::String::to_string( file_line.line_number() )
+                        + ", 4 fields are expected, the type, id, name, and geological feature" ) ;
+            }
+            const std::string type = file_line.field( 0 ) ;
+            index_t id = file_line.field_as_uint( 1 ) ;
+            gme_t entity( type, id ) ;
+            builder_.set_entity_name( entity, file_line.field( 2 ) ) ;
+            builder_.set_entity_geol_feature( entity,
+                GME::determine_geological_type( file_line.field( 3 ) ) ) ;
+
+            // Read second line
+            file_line.get_line() ;
+            file_line.get_fields() ;
+            if( type == Region::type_name_static() ) {
+                // Second line : signed indices of boundaries
+                for( index_t c = 0; c < file_line.nb_fields(); c++ ) {
+                    bool side = false ;
+                    if( strncmp( file_line.field( c ), "+", 1 ) == 0 ) {
+                        side = true ;
+                    }
+                    index_t s = NO_ID ;
+                    GEO::String::from_string( &file_line.field( c )[1], s ) ;
+
+                    builder_.add_mesh_entity_boundary( entity, s, side ) ;
+                }
+            } else {
+                // Second line : indices of its in boundaries
+                for( index_t c = 1; c < file_line.nb_fields(); c++ ) {
+                    builder_.add_mesh_entity_boundary( entity,
+                        file_line.field_as_uint( c ) ) ;
+                }
+            }
+        }
+    } ;
+
+    class GeoModelBuilderGMImpl_1: public GeoModelBuilderGMImpl_0 {
+    public:
+        GeoModelBuilderGMImpl_1( GeoModelBuilderGM& builder )
+            : GeoModelBuilderGMImpl_0( builder )
+        {
+        }
+        virtual ~GeoModelBuilderGMImpl_1()
+        {
+        }
+
+        virtual void read_mesh_entity_line( GEO::LineInput& file_line )
+        {
+            GeoModelBuilderGMImpl_0::read_mesh_entity_line( file_line ) ;
+
+            if( file_line.nb_fields() > 4 ) {
+                const std::string type = file_line.field( 0 ) ;
+                index_t id = file_line.field_as_uint( 1 ) ;
+                gme_t entity( type, id ) ;
+                const std::string mesh_type = file_line.field( 5 ) ;
+                builder_.change_mesh_data_structure( entity, mesh_type ) ;
+            }
+        }
+    } ;
+
+    GeoModelBuilderGM::GeoModelBuilderGM( GeoModel& model, const std::string& filename )
+        : GeoModelBuilderFile( model, filename ), file_version_( 0 )
+    {
+        version_impl_[0] = new GeoModelBuilderGMImpl_0( *this ) ;
+        version_impl_[1] = new GeoModelBuilderGMImpl_1( *this ) ;
+    }
+
+    GeoModelBuilderGM::~GeoModelBuilderGM()
+    {
+        for( index_t i = 0; i < NB_VERSION; i++ ) {
+            delete version_impl_[i] ;
+        }
+    }
+
     void GeoModelBuilderGM::load_mesh_entities( GEO::LineInput& file_line )
     {
         while( !file_line.eof() && file_line.get_line() ) {
 
             file_line.get_fields() ;
             if( file_line.nb_fields() > 0 ) {
+                if( file_line.field_matches( 0, "Version" ) ) {
+                    file_version_ = file_line.field_as_uint( 1 ) ;
+                }
                 // Name of the model
-                if( file_line.field_matches( 0, "GeoModel" ) ) {
+                else if( file_line.field_matches( 0, "GeoModel" ) ) {
                     if( file_line.nb_fields() > 2 ) {
                         set_model_name( file_line.field( 2 ) ) ;
                     }
@@ -121,43 +230,7 @@ namespace RINGMesh {
                 }
                 // Mesh entities
                 else if( match_mesh_entity_type( file_line.field( 0 ) ) ) {
-                    // Read this entity
-                    // First line : type - id - name - geol_feature
-                    if( file_line.nb_fields() < 4 ) {
-                        throw RINGMeshException( "I/O",
-                            "Invalid line: "
-                                + GEO::String::to_string( file_line.line_number() )
-                                + ", 4 fields are expected, the type, id, name, and geological feature" ) ;
-                    }
-                    const std::string type = file_line.field( 0 ) ;
-                    index_t id = file_line.field_as_uint( 1 ) ;
-                    gme_t entity( type, id ) ;
-                    set_entity_name( entity, file_line.field( 2 ) ) ;
-                    set_entity_geol_feature( entity,
-                        GME::determine_geological_type( file_line.field( 3 ) ) ) ;
-
-                    // Read second line
-                    file_line.get_line() ;
-                    file_line.get_fields() ;
-                    if( type == Region::type_name_static() ) {
-                        // Second line : signed indices of boundaries
-                        for( index_t c = 0; c < file_line.nb_fields(); c++ ) {
-                            bool side = false ;
-                            if( strncmp( file_line.field( c ), "+", 1 ) == 0 ) {
-                                side = true ;
-                            }
-                            index_t s = NO_ID ;
-                            GEO::String::from_string( &file_line.field( c )[1], s ) ;
-
-                            add_mesh_entity_boundary( entity, s, side ) ;
-                        }
-                    } else {
-                        // Second line : indices of its in boundaries
-                        for( index_t c = 1; c < file_line.nb_fields(); c++ ) {
-                            add_mesh_entity_boundary( entity,
-                                file_line.field_as_uint( c ) ) ;
-                        }
-                    }
+                    version_impl_[file_version_]->read_mesh_entity_line( file_line ) ;
                 }
                 // Universe
                 else if( file_line.field_matches( 0, "Universe" ) ) {
@@ -270,8 +343,41 @@ namespace RINGMesh {
 
             GEO::FileSystem::delete_file( filename ) ;
         }
-
     }
+
+//    void GeoModelBuilderGM::load_meshes( unzFile& uz )
+//    {
+//        if( unzGoToFirstFile( uz ) != UNZ_OK ) {
+//            throw RINGMeshException( "I/O", "Unable to uncompress the first file" ) ;
+//        }
+//        for( index_t el = 0; el < model().nb_mesh_entities( type ); el++ ) {
+//            gme_t cur_gme( type, el ) ;
+//            std::string file_to_extract_and_load ;
+//            build_string_for_geo_model_entity_export( cur_gme,
+//                file_to_extract_and_load ) ;
+//            std::string filename = file_to_extract_and_load + ".geogram" ;
+//            if( unzLocateFile( uz, filename.c_str(), 0 ) != UNZ_OK ) {
+//                if( type != Region::type_name_static() ) {
+//                    std::string message = "Invalid format of .gm file" ;
+//                    message += "\n.geogram file (defining mesh) is missing." ;
+//                    throw RINGMeshException( "I/O", message ) ;
+//                }
+//                return ; // a region is not necessary meshed.
+//            }
+//            unzip_one_file( uz, filename.c_str() ) ;
+//            GeogramMeshAllD cur_mesh ;
+//            GEO::MeshIOFlags flags ;
+//            flags.set_attribute( GEO::MESH_ALL_ATTRIBUTES ) ;
+//            Logger::instance()->set_minimal( true ) ;
+//            GeogramMeshAllDBuilder builder ;
+//            builder.set_mesh( cur_mesh ) ;
+//            builder.load_mesh( filename, flags ) ;
+//            assign_mesh_to_entity( cur_mesh, cur_gme ) ;
+//            Logger::instance()->set_minimal( false ) ;
+//
+//            GEO::FileSystem::delete_file( filename ) ;
+//        }
+//    }
 
     // ------------------------------------------------------------------------//
 
