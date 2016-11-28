@@ -1,18 +1,15 @@
+Eigensolver is now functional:
+* fixed incoherency in f2c.h header (integer size was different between 
+   libf2c and the rest -> now it is 32 bits everywhere)
+* test program for eigensolver
 
 --This line, and those below, will be ignored--
 
-A  + Attic/medit
-M    CMakeLists.txt
-M    cmake/platforms/Linux-gcc.cmake
-D    src/bin/medit
-M    src/lib/geogram/NL/nl_linkage.h
-M    src/lib/geogram/api/defs.h
-M    src/lib/geogram/mesh/mesh.h
-M    src/lib/geogram/points/co3ne.cpp
-M    src/lib/geogram/points/co3ne.h
-M    src/lib/geogram/points/kd_tree.cpp
-M    src/lib/geogram/points/kd_tree.h
-M    src/lib/geogram/third_party/zlib/zconf.h
-M    src/lib/geogram_gfx/api/defs.h
-M    src/lib/geogram_gfx/glut_viewer/glut_viewer.h
-M    src/lib/geogram_gfx/third_party/freeglut/freeglut_std.h
+M    src/lib/geogram/NL/nl.h
+M    src/lib/geogram/NL/nl_api.c
+M    src/lib/geogram/NL/nl_arpack.c
+M    src/lib/third_party/numerics/LIBF2C/f2c.h
+M    src/test/CMakeLists.txt
+A    src/test/test_MH
+AM   src/test/test_MH/CMakeLists.txt
+A    src/test/test_MH/main.cpp
