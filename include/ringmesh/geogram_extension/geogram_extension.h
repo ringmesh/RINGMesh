@@ -141,7 +141,6 @@ namespace RINGMesh {
         const GEO::Mesh& mesh,
         index_t facet,
         std::vector<double>& barycentric_coordinates ) ;
- 
 
     /*!
      * @brief Vector of pointers to Geogram attributes
