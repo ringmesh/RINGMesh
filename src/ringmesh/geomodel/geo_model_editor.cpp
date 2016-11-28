@@ -481,9 +481,6 @@ namespace RINGMesh {
                     i ) ;
                 for( index_t j = 0;
                     j < model().nb_geological_entities( entity_type ); ++j ) {
-                    gme_t new_id( entity_type, j ) ;
-                    GeoModelGeologicalEntity& GE = modifiable_geological_entity(
-                        new_id ) ;
                     if( old_2_new_geological_entity_[i][j] == NO_ID ) {
                         delete_geological_entity( entity_type, j ) ;
                     }
@@ -794,8 +791,6 @@ namespace RINGMesh {
         void flag_geological_entities_without_children()
         {
             for( index_t i = 0; i < nb_childs_.size(); i++ ) {
-                const EntityType& cur_geol_type = index_to_geological_entity_type(
-                    i ) ;
                 for( index_t j = 0; j < nb_childs_[i].size(); j++ ) {
                     if( nb_childs_[i][j] == 0 ) {
                         nb_removed_geological_entities_[i]++ ;
