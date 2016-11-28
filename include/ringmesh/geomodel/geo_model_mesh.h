@@ -1373,7 +1373,7 @@ namespace RINGMesh {
          */
         void copy_mesh( MeshAllD& mesh ) const
         {
-            MeshAllDBuilder* builder = mesh.get_meshalld_builder() ;
+            MeshAllDBuilder_var builder = MeshAllDBuilder::create_builder( mesh ) ;
             builder->copy( *mesh_, false, GEO::MESH_ALL_ELEMENTS ) ;
         }
         void save_mesh( const std::string& filename ) const
