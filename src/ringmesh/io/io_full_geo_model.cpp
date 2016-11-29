@@ -350,9 +350,13 @@ namespace {
 
     /************************************************************************/
 
-    void build_string_for_geo_model_entity_export( gme_t id, std::string& name )
+    template< typename ENTITY >
+    std::string build_string_for_geo_model_entity_export(
+        const ENTITY& entity )
     {
-        name += id.type + "_" + GEO::String::to_string( id.index ) ;
+        const gme_t& id = entity.gme_id() ;
+        std::string base_name = id.type + "_" + GEO::String::to_string( id.index ) ;
+        return base_name + "." + entity.low_level_mesh_storage().default_extension() ;
     }
 
     /*!
@@ -360,20 +364,17 @@ namespace {
      * @param[in] geo_model_entity_mesh the GeoModelMeshEntity you want to save
      * @param[in] zf the zip file
      */
+    template< typename ENTITY >
     void save_geo_model_mesh_entity(
-        const GeoModelMeshEntity& geo_model_entity_mesh,
+        const ENTITY& geo_model_entity_mesh,
         zipFile& zf )
     {
-        std::string name ;
-        build_string_for_geo_model_entity_export( geo_model_entity_mesh.gme_id(),
-            name ) ;
-        //@TODO this will be removed and integrated in the build_string....
-        name += ".geogram" ;
+        std::string name = build_string_for_geo_model_entity_export(
+            geo_model_entity_mesh ) ;
         Logger* logger = Logger::instance() ;
         bool logger_status = logger->is_quiet() ;
         logger->set_quiet( true ) ;
         GEO::MeshIOFlags flags ;
-//        flags.set_attribute( GEO::MESH_ALL_ATTRIBUTES ) ;
         bool is_saved = save_mesh( geo_model_entity_mesh, name, flags ) ;
         logger->set_quiet( logger_status ) ;
 
@@ -382,11 +383,6 @@ namespace {
             GEO::FileSystem::delete_file( name ) ;
         }
 
-//        std::string root_name ;
-//        std::string handler ;
-//        char separator = '.' ;
-//        GEO::String::split_string( name, separator, root_name, handler ) ;
-//        save_geo_mesh_attributes( root_name, geo_model_entity_mesh.mesh(), zf ) ;
     }
 
     template< typename ENTITY >
@@ -394,7 +390,9 @@ namespace {
     {
         const std::string& type = ENTITY::type_name_static() ;
         for( index_t e = 0; e < model.nb_mesh_entities( type ); e++ ) {
-            save_geo_model_mesh_entity( model.mesh_entity( type, e ), zf ) ;
+            const ENTITY& entity = dynamic_cast< const ENTITY& >( model.mesh_entity(
+                type, e ) ) ;
+            save_geo_model_mesh_entity< ENTITY >( entity, zf ) ;
         }
     }
 

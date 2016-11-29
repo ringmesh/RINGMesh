@@ -120,6 +120,16 @@ namespace RINGMesh {
             return mesh_->vertices.attributes() ;
         }
 
+        static const std::string default_extension_static()
+        {
+            return "geogram" ;
+        }
+
+        virtual const std::string default_extension() const
+        {
+            return default_extension_static() ;
+        }
+
     protected:
         GeogramMeshBase()
             : MeshBase()
@@ -154,6 +164,11 @@ namespace RINGMesh {
         {
             return type_name_static() ;
         }
+
+        static const std::string default_extension_static()
+        {
+            return "geogram" ;
+        }
     } ;
 
     class RINGMESH_API GeogramMesh1D: public virtual GeogramMeshBase,
@@ -177,6 +192,11 @@ namespace RINGMesh {
         virtual const MeshType type_name() const
         {
             return type_name_static() ;
+        }
+
+        static const std::string default_extension_static()
+        {
+            return "geogram" ;
         }
         /*
          * @brief Gets the index of an edge vertex.
@@ -223,6 +243,11 @@ namespace RINGMesh {
         virtual const MeshType type_name() const
         {
             return type_name_static() ;
+        }
+
+        static const std::string default_extension_static()
+        {
+            return "geogram" ;
         }
         /*!
          * @brief Gets the vertex index by facet index and local vertex index.
@@ -297,6 +322,11 @@ namespace RINGMesh {
         virtual const MeshType type_name() const
         {
             return type_name_static() ;
+        }
+
+        static const std::string default_extension_static()
+        {
+            return "geogram" ;
         }
         /*!
          * @brief Gets a vertex index by cell and local vertex index.
@@ -475,6 +505,11 @@ namespace RINGMesh {
         virtual const MeshType type_name() const
         {
             return type_name_static() ;
+        }
+
+        static const std::string default_extension_static()
+        {
+            return "geogram" ;
         }
     } ;
 

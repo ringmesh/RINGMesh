@@ -120,6 +120,8 @@ namespace RINGMesh {
 
         virtual const MeshType type_name() const = 0 ;
 
+        virtual const std::string default_extension() const = 0 ;
+
         /*!
          * @}
          */
