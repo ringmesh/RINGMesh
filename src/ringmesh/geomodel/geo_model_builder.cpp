@@ -1706,7 +1706,7 @@ namespace RINGMesh {
      * @brief Computes and sets the adjacencies between the facets
      * @details The adjacent facet is given for each vertex of each facet for the edge
      * starting at this vertex.
-     * If there is no neighbor inside the same Surface adjacent is set to NO_ADJACENT
+     * If there is no neighbor inside the same Surface adjacent is set to NO_ID
      *
      * @param[in] surface_id Index of the surface
      * @param[in] recompute_adjacency If true, recompute the existing adjacencies
@@ -1729,7 +1729,14 @@ namespace RINGMesh {
         }
         builder->connect_facets() ;
     }
-
+    /*!
+     * @brief Computes and sets the adjacencies between the cells
+     * @details The adjacent cell is given for each facet of each cell
+     * If there is no neighbor inside the same Region adjacent is set to NO_ID
+     *
+     * @param[in] region_id Index of the region
+     * @param[in] recompute_adjacency If true, recompute the existing adjacencies
+     */
     void GeoModelBuilder::compute_region_adjacencies(
         index_t region_id,
         bool recompute_adjacency )
