@@ -1709,29 +1709,40 @@ namespace RINGMesh {
      * If there is no neighbor inside the same Surface adjacent is set to NO_ADJACENT
      *
      * @param[in] surface_id Index of the surface
+     * @param[in] recompute_adjacency If true, recompute the existing adjacencies
      */
-    void GeoModelBuilder::compute_surface_adjacencies( index_t surface_id )
+    void GeoModelBuilder::compute_surface_adjacencies(
+        index_t surface_id,
+        bool recompute_adjacency )
     {
         Surface& surface = dynamic_cast< Surface& >( mesh_entity(
             Surface::type_name_static(), surface_id ) ) ;
         Mesh2DBuilder* builder = surface.mesh2d_->get_mesh2d_builder() ;
 
-        for( index_t f = 0; f < surface.nb_mesh_elements(); f++ ) {
-            for( index_t v = 0; v < surface.nb_mesh_element_vertices( f ); v++ ) {
-                builder->set_facet_adjacent( f, v, NO_ID ) ;
+        if( recompute_adjacency ) {
+            for( index_t f = 0; f < surface.nb_mesh_elements(); f++ ) {
+                for( index_t v = 0; v < surface.nb_mesh_element_vertices( f );
+                    v++ ) {
+                    builder->set_facet_adjacent( f, v, NO_ID ) ;
+                }
             }
         }
         builder->connect_facets() ;
     }
 
-    void GeoModelBuilder::compute_region_adjacencies( index_t region_id )
+    void GeoModelBuilder::compute_region_adjacencies(
+        index_t region_id,
+        bool recompute_adjacency )
     {
         Region& region = dynamic_cast< Region& >( mesh_entity(
             Region::type_name_static(), region_id ) ) ;
         Mesh3DBuilder* builder = region.mesh3d_->get_mesh3d_builder() ;
-        for( index_t c = 0; c < region.nb_mesh_elements(); c++ ) {
-            for( index_t f = 0; f < region.nb_cell_facets( c ); f++ ) {
-                builder->set_cell_adjacent( c, f, NO_ID ) ;
+
+        if( recompute_adjacency ) {
+            for( index_t c = 0; c < region.nb_mesh_elements(); c++ ) {
+                for( index_t f = 0; f < region.nb_cell_facets( c ); f++ ) {
+                    builder->set_cell_adjacent( c, f, NO_ID ) ;
+                }
             }
         }
         builder->connect_cells() ;
