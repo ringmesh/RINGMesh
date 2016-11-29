@@ -145,7 +145,7 @@ namespace RINGMesh {
     typedef GEO::SmartPointer< MeshBaseBuilder > MeshBaseBuilder_var ;
     typedef GEO::Factory0< MeshBaseBuilder > MeshBaseBuilderFactory ;
 #define ringmesh_register_mesh_base_builder(type) \
-    geo_register_creator(MeshBaseBuilderFactory, type ## Builder, type::type_name_static())
+    geo_register_creator(RINGMesh::MeshBaseBuilderFactory, type ## Builder, type::type_name_static())
 
 
     class RINGMESH_API Mesh0DBuilder: public virtual MeshBaseBuilder {
@@ -172,7 +172,7 @@ namespace RINGMesh {
     typedef GEO::SmartPointer< Mesh0DBuilder > Mesh0DBuilder_var ;
     typedef GEO::Factory0< Mesh0DBuilder > Mesh0DBuilderFactory ;
 #define ringmesh_register_mesh_0d_builder(type) \
-    geo_register_creator(Mesh0DBuilderFactory, type ## Builder, type::type_name_static())
+    geo_register_creator(RINGMesh::Mesh0DBuilderFactory, type ## Builder, type::type_name_static())
 
     class RINGMESH_API Mesh1DBuilder: public virtual MeshBaseBuilder {
     ringmesh_disable_copy(Mesh1DBuilder) ;
@@ -239,7 +239,7 @@ namespace RINGMesh {
     typedef GEO::SmartPointer< Mesh1DBuilder > Mesh1DBuilder_var ;
     typedef GEO::Factory0< Mesh1DBuilder > Mesh1DBuilderFactory ;
 #define ringmesh_register_mesh_1d_builder(type) \
-    geo_register_creator(Mesh1DBuilderFactory, type ## Builder, type::type_name_static())
+    geo_register_creator(RINGMesh::Mesh1DBuilderFactory, type ## Builder, type::type_name_static())
 
     class RINGMESH_API Mesh2DBuilder: public virtual MeshBaseBuilder {
     ringmesh_disable_copy(Mesh2DBuilder) ;
@@ -371,7 +371,7 @@ namespace RINGMesh {
     typedef GEO::SmartPointer< Mesh2DBuilder > Mesh2DBuilder_var ;
     typedef GEO::Factory0< Mesh2DBuilder > Mesh2DBuilderFactory ;
 #define ringmesh_register_mesh_2d_builder(type) \
-    geo_register_creator(Mesh2DBuilderFactory, type ## Builder, type::type_name_static())
+    geo_register_creator(RINGMesh::Mesh2DBuilderFactory, type ## Builder, type::type_name_static())
 
     class RINGMESH_API Mesh3DBuilder: public virtual MeshBaseBuilder {
     ringmesh_disable_copy(Mesh3DBuilder) ;
@@ -485,7 +485,7 @@ namespace RINGMesh {
     typedef GEO::SmartPointer< Mesh3DBuilder > Mesh3DBuilder_var ;
     typedef GEO::Factory0< Mesh3DBuilder > Mesh3DBuilderFactory ;
 #define ringmesh_register_mesh_3d_builder(type) \
-    geo_register_creator(Mesh3DBuilderFactory, type ## Builder, type::type_name_static())
+    geo_register_creator(RINGMesh::Mesh3DBuilderFactory, type ## Builder, type::type_name_static())
 
     class RINGMESH_API MeshAllDBuilder: public virtual Mesh0DBuilder,
         public virtual Mesh1DBuilder,
@@ -509,7 +509,7 @@ namespace RINGMesh {
     typedef GEO::SmartPointer< MeshAllDBuilder > MeshAllDBuilder_var ;
     typedef GEO::Factory0< MeshAllDBuilder > MeshAllDBuilderFactory ;
 #define ringmesh_register_mesh_alld_builder(type) \
-    geo_register_creator(MeshAllDBuilderFactory, type ## Builder, type::type_name_static())
+    geo_register_creator(RINGMesh::MeshAllDBuilderFactory, type ## Builder, type::type_name_static())
 }
 
 #endif
