@@ -26,8 +26,8 @@ build_script:
     
 test_script:
  - cmd: cmake --build . --target RUN_TESTS --config Debug
- 
--
+
+after_test:
   branches:
     only:
       - default
