@@ -1,0 +1,46 @@
+version: 1.0.{build}
+
+environment:
+  password:
+    secure: 61164urZVvsMrnw+6P+GBQ==
+    
+build:
+  parallel: true
+  
+before_build:
+ - del "C:\Program Files (x86)\MSBuild\14.0\Microsoft.Common.targets\ImportAfter\Xamarin.Common.targets"
+ 
+build_script:
+ - cmd: >-
+    mkdir build
+    
+    cd build
+    
+    mkdir ringmesh
+    
+    cd ringmesh
+    
+    cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON ../..
+    
+    cmake --build . --config Debug
+    
+test_script:
+ - cmd: cmake --build . --target RUN_TESTS --config Debug
+
+on_success:
+ - cmd: >-
+    cd %appveyor_build_folder%
+    
+    echo [ui] > C:\Users\appveyor\mercurial.ini
+  
+    echo username = ArnaudBotella >> C:\Users\appveyor\mercurial.ini 
+
+    echo [auth] >> C:\Users\appveyor\mercurial.ini
+  
+    echo bb.prefix = https://bitbucket.org >> C:\Users\appveyor\mercurial.ini
+  
+    echo bb.username = ArnaudBotella >> C:\Users\appveyor\mercurial.ini
+  
+    echo bb.password = %password% >> C:\Users\appveyor\mercurial.ini
+    
+    hg push --new-branch https://bitbucket.org/ring_team/ringmeshcoverage
