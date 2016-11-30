@@ -32,7 +32,9 @@ on_success:
  - cmd: >-
     set branch=%APPVEYOR_REPO_BRANCH%
     
-    echo $branch
+    echo %branch%
+    
+    if %branch% == "default" ; then echo branch_default
     
     cd %appveyor_build_folder%
       
