@@ -36,8 +36,6 @@ on_success:
 
     echo branch 
 
-    if [ "$branch" == "branch" ]; then
-
     cd %appveyor_build_folder%
       
     echo [ui] > C:\Users\appveyor\mercurial.ini
