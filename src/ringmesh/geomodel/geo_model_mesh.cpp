@@ -214,13 +214,13 @@ namespace RINGMesh {
     GeoModelMeshVertices::GeoModelVertexMapper::vertex_map(
         const gme_t& mesh_entity_id ) const
     {
-        return (*vertex_maps_.at( mesh_entity_id.type ))[mesh_entity_id.index] ;
+        return ( *vertex_maps_.at( mesh_entity_id.type ) )[mesh_entity_id.index] ;
     }
 
     GEO::Attribute< index_t >& GeoModelMeshVertices::GeoModelVertexMapper::vertex_map(
         const gme_t& mesh_entity_id )
     {
-        return (*vertex_maps_[mesh_entity_id.type])[mesh_entity_id.index] ;
+        return ( *vertex_maps_[mesh_entity_id.type] )[mesh_entity_id.index] ;
     }
 
     void GeoModelMeshVertices::GeoModelVertexMapper::set_vertex_map_value(
@@ -498,6 +498,7 @@ namespace RINGMesh {
         const std::string& entity_type,
         index_t& count )
     {
+        Mesh0DBuilder_var mesh_builder = Mesh0DBuilder::create_builder( *mesh_ ) ;
         for( index_t i = 0; i < M.nb_mesh_entities( entity_type ); ++i ) {
             GeoModelMeshEntity& E = const_cast< GeoModelMeshEntity& >( M.mesh_entity(
                 entity_type, i ) ) ;
@@ -506,7 +507,6 @@ namespace RINGMesh {
             }
 
             // Map and vertex
-            Mesh0DBuilder* mesh_builder = mesh_->get_mesh0d_builder() ;
             for( index_t v = 0; v < E.nb_vertices(); v++ ) {
                 mesh_builder->set_vertex( count, E.vertex( v ) ) ;
                 // Map from vertices of MeshEntities to GeoModelMeshVertices
@@ -519,7 +519,7 @@ namespace RINGMesh {
 
     void GeoModelMeshVertices::initialize()
     {
-        Mesh0DBuilder* builder = mesh_->get_mesh0d_builder() ;
+        Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder( *mesh_ ) ;
         builder->clear( true, false ) ;
 
         // Total number of vertices in the
@@ -557,7 +557,7 @@ namespace RINGMesh {
         gmm_.edges.clear() ;
         vertex_mapper_.clear() ;
 
-        Mesh0DBuilder* builder = mesh_->get_mesh0d_builder() ;
+        Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder( *mesh_ ) ;
         builder->clear_vertices( true, false ) ;
     }
 
@@ -643,7 +643,7 @@ namespace RINGMesh {
 
     index_t GeoModelMeshVertices::add_vertex( const vec3& point )
     {
-        Mesh0DBuilder* builder = mesh_->get_mesh0d_builder() ;
+        Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder( *mesh_ ) ;
         return builder->create_vertex( point ) ;
     }
 
@@ -652,7 +652,7 @@ namespace RINGMesh {
         test_and_initialize() ;
         ringmesh_assert( v < nb() ) ;
         // Change the position of the unique_vertex
-        Mesh0DBuilder* mesh_builder = mesh_->get_mesh0d_builder() ;
+        Mesh0DBuilder_var mesh_builder = Mesh0DBuilder::create_builder( *mesh_ ) ;
         mesh_builder->set_vertex( v, point ) ;
 
         GeoModelBuilder builder( gm_ ) ;
@@ -739,8 +739,8 @@ namespace RINGMesh {
 
         // Delete the vertices - false is to not remove
         // isolated vertices (here all the vertices)
-        Mesh0DBuilder* builder = mesh_->get_mesh0d_builder() ;
-        builder->delete_vertices( to_delete_geo, false ) ;
+        Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder( *mesh_ ) ;
+        builder->delete_vertices( to_delete_geo ) ;
 
         vertex_mapper_.update_mesh_entity_maps_and_gmes( to_delete ) ;
     }
@@ -842,7 +842,7 @@ namespace RINGMesh {
         }
 
         // Create "empty" tet, hex, pyr and prism
-        Mesh3DBuilder* mesh_builder = mesh_->get_mesh3d_builder() ;
+        Mesh3DBuilder_var mesh_builder = Mesh3DBuilder::create_builder( *mesh_ ) ;
         for( index_t i = 0; i < GEO::MESH_NB_CELL_TYPES; ++i ) {
             mesh_builder->create_cells( nb_cells_per_type[i],
                 GEO::MeshCellType( i ) ) ;
@@ -1323,7 +1323,8 @@ namespace RINGMesh {
 
                     // Update all the cell corners on this side of the surface
                     // to the new duplicated vertex index
-                    Mesh3DBuilder* mesh_builder = mesh_->get_mesh3d_builder() ;
+                    Mesh3DBuilder_var mesh_builder = Mesh3DBuilder::create_builder(
+                        *mesh_ ) ;
                     for( index_t cur_co = 0; cur_co < corner_used.size();
                         cur_co++ ) {
                         mesh_builder->set_cell_corner_vertex_index(
@@ -1450,7 +1451,7 @@ namespace RINGMesh {
 
     void GeoModelMeshCells::clear()
     {
-        Mesh3DBuilder* mesh_builder = mesh_->get_mesh3d_builder() ;
+        Mesh3DBuilder_var mesh_builder = Mesh3DBuilder::create_builder( *mesh_ ) ;
         mesh_builder->clear_cells( true, false ) ;
         region_cell_ptr_.clear() ;
         nb_tet_ = 0 ;
@@ -1465,7 +1466,7 @@ namespace RINGMesh {
 
     void GeoModelMeshCells::clear_duplication()
     {
-        Mesh3DBuilder* mesh_builder = mesh_->get_mesh3d_builder() ;
+        Mesh3DBuilder_var mesh_builder = Mesh3DBuilder::create_builder( *mesh_ ) ;
         for( index_t c = 0; c < mesh_->nb_cells(); c++ ) {
             for( index_t v = 0; v < mesh_->nb_cell_vertices( c ); v++ ) {
                 index_t index = NO_ID ;
@@ -1518,6 +1519,12 @@ namespace RINGMesh {
     {
         test_and_initialize() ;
         return mesh_->cell_volume( c ) ;
+    }
+
+    const AABBTree3D& GeoModelMeshCells::aabb() const
+    {
+        test_and_initialize() ;
+        return mesh_->cells_aabb() ;
     }
 
     /*******************************************************************************/
@@ -1755,7 +1762,7 @@ namespace RINGMesh {
         surface_facet_ptr_.clear() ;
         nb_triangle_ = 0 ;
         nb_quad_ = 0 ;
-        Mesh2DBuilder* mesh_builder = mesh_->get_mesh2d_builder() ;
+        Mesh2DBuilder_var mesh_builder = Mesh2DBuilder::create_builder( *mesh_ ) ;
         mesh_builder->clear_facets( true, false ) ;
     }
 
@@ -1801,7 +1808,7 @@ namespace RINGMesh {
         }
 
         // Create triangles and quads, the polygons will be handle later
-        Mesh2DBuilder* mesh_builder = mesh_->get_mesh2d_builder() ;
+        Mesh2DBuilder_var mesh_builder = Mesh2DBuilder::create_builder( *mesh_ ) ;
         if( nb_facet_per_type[TRIANGLE] ) {
             mesh_builder->create_facet_triangles( nb_facet_per_type[TRIANGLE] ) ;
         }
@@ -1889,6 +1896,12 @@ namespace RINGMesh {
         test_and_initialize() ;
         return mesh_->facet_area( f ) ;
     }
+
+    const AABBTree2D& GeoModelMeshFacets::aabb() const
+    {
+        test_and_initialize() ;
+        return mesh_->facets_aabb() ;
+    }
     /*******************************************************************************/
 
     GeoModelMeshEdges::GeoModelMeshEdges( GeoModelMesh& gmm )
@@ -1926,7 +1939,7 @@ namespace RINGMesh {
 
     void GeoModelMeshEdges::clear()
     {
-        Mesh1DBuilder* mesh_builder = mesh_->get_mesh1d_builder() ;
+        Mesh1DBuilder_var mesh_builder = Mesh1DBuilder::create_builder( *mesh_ ) ;
         mesh_builder->clear_edges( true, false ) ;
         well_ptr_.clear() ;
     }
@@ -1964,7 +1977,7 @@ namespace RINGMesh {
         }
 
         // Create edges
-        Mesh1DBuilder* mesh_builder = mesh_->get_mesh1d_builder() ;
+        Mesh1DBuilder_var mesh_builder = Mesh1DBuilder::create_builder( *mesh_ ) ;
         mesh_builder->create_edges( well_ptr_.back() ) ;
 
         // Fill edges
@@ -1986,6 +1999,12 @@ namespace RINGMesh {
                 }
             }
         }
+    }
+
+    const AABBTree1D& GeoModelMeshEdges::aabb() const
+    {
+        test_and_initialize() ;
+        return mesh_->edges_aabb() ;
     }
 
     /*******************************************************************************/
@@ -2254,7 +2273,7 @@ namespace RINGMesh {
      * a ticking bomb (like those in Mesh, btw I don not understand how these can work)
      * If these classes are derived one day, I don't know what will happen [JP]*/
     {
-        GeogramMesh* geogrammesh = new GeogramMesh( 3, false ) ;
+        GeogramMeshAllD* geogrammesh = new GeogramMeshAllD ;
         mesh_ = geogrammesh ;
         vertices.mesh_ = mesh_ ;
         edges.mesh_ = mesh_ ;

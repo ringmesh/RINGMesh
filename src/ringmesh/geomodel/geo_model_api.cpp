@@ -233,8 +233,8 @@ namespace {
         const double& cell_volume_total,
         const std::string& cell_type )
     {
-        Logger::out( "GeoModel" ) << "* " << cell_type << " volume "
-            << cell_volume << " ("
+        Logger::out( "GeoModel" ) << "* " << cell_type << " volume " << cell_volume
+            << " ("
             << static_cast< index_t >( cell_volume * 100 / cell_volume_total + 0.5 )
             << "%)\n" ;
     }
@@ -244,21 +244,25 @@ namespace {
 namespace RINGMesh {
     typedef std::string EntityType ;
 
-    void print_nb_mesh_entities( const GeoModel& geomodel, const std::string& entity_type_name )
+    void print_nb_mesh_entities(
+        const GeoModel& geomodel,
+        const std::string& entity_type_name )
     {
         Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left
-            << geomodel.nb_mesh_entities( entity_type_name ) << " " << entity_type_name
-            << std::endl ;
+            << geomodel.nb_mesh_entities( entity_type_name ) << " "
+            << entity_type_name << std::endl ;
     }
-    
-    void print_nb_geological_entities( const GeoModel& geomodel, const std::string& entity_type_name )
+
+    void print_nb_geological_entities(
+        const GeoModel& geomodel,
+        const std::string& entity_type_name )
     {
         if( geomodel.nb_geological_entities( entity_type_name ) == 0 ) {
             return ;
         }
         Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left
-            << geomodel.nb_geological_entities( entity_type_name ) << " " << entity_type_name
-            << std::endl ;
+            << geomodel.nb_geological_entities( entity_type_name ) << " "
+            << entity_type_name << std::endl ;
     }
 
     void print_geomodel( const GeoModel& geomodel )
@@ -278,21 +282,21 @@ namespace RINGMesh {
         const std::vector< EntityType >& mesh_entity_types =
             manager.mesh_entity_types() ;
         for( index_t i = 0; i < mesh_entity_types.size(); ++i ) {
-            print_nb_mesh_entities( geomodel, mesh_entity_types[i] ) ; 
+            print_nb_mesh_entities( geomodel, mesh_entity_types[i] ) ;
         }
-        const std::vector< EntityType>& geological_entity_types =
+        const std::vector< EntityType >& geological_entity_types =
             manager.geological_entity_types() ;
         for( index_t i = 0; i < geological_entity_types.size(); ++i ) {
             print_nb_geological_entities( geomodel, geological_entity_types[i] ) ;
-        }        
+        }
     }
 
     void print_geomodel_mesh_stats( const GeoModel& geomodel )
     {
-        Logger::out( "GeoModel" ) << "Model " << geomodel.name()
-            << " is made of\n" << std::setw( 10 ) << std::left
-            << geomodel.mesh.vertices.nb() << " vertices\n" << std::setw( 10 )
-            << std::left << count_geomodel_edges( geomodel ) << " edges\n" ;
+        Logger::out( "GeoModel" ) << "Model " << geomodel.name() << " is made of\n"
+            << std::setw( 10 ) << std::left << geomodel.mesh.vertices.nb()
+            << " vertices\n" << std::setw( 10 ) << std::left
+            << count_geomodel_edges( geomodel ) << " edges\n" ;
 
         index_t nb_triangles = 0 ;
         index_t nb_quads = 0 ;
@@ -651,7 +655,8 @@ namespace RINGMesh {
                 index_t nbv = S.nb_mesh_element_vertices( f ) ;
                 GEO::vector< index_t > ids( nbv ) ;
                 for( index_t v = 0; v < nbv; ++v ) {
-                    ids[v] = old2new[model_vertices.model_vertex_id( S.gme_id(), f, v )] ;
+                    ids[v] = old2new[model_vertices.model_vertex_id( S.gme_id(), f,
+                        v )] ;
                 }
                 M.facets.create_polygon( ids ) ;
             }
@@ -659,7 +664,6 @@ namespace RINGMesh {
         old2new.unbind() ;
     }
 
-    /*******************************************************************************/
     /*******************************************************************************/
 
     double model_entity_size( const GeoModelGeologicalEntity& E )
@@ -671,38 +675,30 @@ namespace RINGMesh {
         return result ;
     }
 
-    double model_entity_size( const GeoModelMeshEntity& E ){
+    double model_entity_size( const GeoModelMeshEntity& E )
+    {
         return E.size() ;
     }
 
-    double model_entity_cell_size( const Region& R, index_t cell )
-    {
-        return R.mesh_element_size( cell ) ;       
-    }
-
-    vec3 model_entity_center( const GeoModelMeshEntity& E )
+    vec3 model_entity_barycenter( const GeoModelMeshEntity& E )
     {
         return E.entity_barycenter() ;
     }
 
-    vec3 model_entity_center( const GeoModelGeologicalEntity& E ) {
-    
+    vec3 model_entity_barycenter( const GeoModelGeologicalEntity& E )
+    {
+
         vec3 result( 0., 0., 0. ) ;
         index_t nb_vertices = 0 ;
 
         for( index_t i = 0; i < E.nb_children(); ++i ) {
             const GeoModelMeshEntity& child = E.child( i ) ;
             nb_vertices += child.nb_vertices() ;
-            result += child.entity_barycenter() *child.nb_vertices() ;
+            result += child.entity_barycenter() * child.nb_vertices() ;
         }
         result /= static_cast< double >( nb_vertices ) ;
-        
-        return result ;
-    }
 
-    vec3 model_entity_cell_barycenter( const GeoModelMeshEntity& E, index_t cell )
-    {
-        return E.mesh_element_barycenter( cell ) ;
+        return result ;
     }
 
     void translate( GeoModel& M, const vec3& translation_vector )
@@ -747,60 +743,6 @@ namespace RINGMesh {
         }
     }
 
-    /*!
-     * @brief Generates a point that lies strictly a Region defined by its boundary Surfaces.
-     * @details Returns the midpoint of A: the barycenter of the 1st facet of the 1st Surface
-     * and B: the closest point of a A in the other Surfaces defining the Region.
-     * @warning Incomplete implementation.
-     */
-    vec3 generate_point_in_region( const Region& region )
-    {
-        if( region.nb_boundaries() == 1 ) {                    
-            /// @todo This might fail if the Region is non-convex
-            return model_entity_center( region.boundary(0) );
-        }
-
-        ringmesh_assert( region.nb_boundaries() > 0 ) ;
-
-        const GeoModel& geomodel = region.model() ;
-        const Surface& first_boundary_surface = geomodel.surface(
-            region.boundary_gme( 0 ).index ) ;
-        vec3 barycenter = first_boundary_surface.mesh_element_barycenter( 0 ) ;
-        /// @todo Check that this is the right condition to have a correct enough barycenter
-        ringmesh_assert( first_boundary_surface.mesh_element_size( 0 ) > geomodel.epsilon() ) ;
-
-        double minimum_distance = DBL_MAX ;
-        vec3 nearest_point ;
-        for( index_t i = 1; i != region.nb_boundaries(); ++i ) {
-            const Surface& S = geomodel.surface( region.boundary_gme( i ).index ) ;
-            double distance = DBL_MAX ;
-            vec3 point ;
-            S.facets_aabb().closest_triangle( barycenter, point, distance ) ;
-
-            if( distance < minimum_distance ) {
-                minimum_distance = distance ;
-                nearest_point = point ;
-            }
-        }
-        /// @todo Change implementation to use second triangle if that one failed, and further surfaces
-        ringmesh_assert( minimum_distance > geomodel.epsilon() ) ;
-        return 0.5 * ( barycenter + nearest_point ) ;
-    }
-
-    /*!
-     * @brief For each region of the geomodel computes a point inside that region
-     */
-    void get_one_point_per_geomodel_region(
-        const GeoModel& geomodel,
-        std::vector< vec3 >& one_point_one_region )
-    {
-        one_point_one_region.resize( geomodel.nb_regions() ) ;
-        for( index_t i = 0; i != geomodel.nb_regions(); ++i ) {
-            vec3 point = generate_point_in_region( geomodel.region( i ) ) ;
-            one_point_one_region[i] = point ;
-        }
-    }
-
 #ifdef RINGMESH_WITH_TETGEN
 
     void tetrahedralize(
@@ -837,9 +779,10 @@ namespace RINGMesh {
             TetraGen_var tetragen = TetraGen::create( M, region_id, method ) ;
             tetragen->set_boundaries( M.region( region_id ), M.wells() ) ;
             tetragen->set_internal_points( internal_vertices[region_id] ) ;
+            bool status = Logger::instance()->is_quiet() ;
             Logger::instance()->set_quiet( true ) ;
             tetragen->tetrahedralize( add_steiner_points ) ;
-            Logger::instance()->set_quiet( false ) ;
+            Logger::instance()->set_quiet( status ) ;
         }
 
         // The GeoModelMesh should be updated, just erase everything

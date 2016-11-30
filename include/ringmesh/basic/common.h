@@ -42,21 +42,12 @@
  File is in RINGMESH_BIN/ringmesh directory.
  */
 #include <ringmesh/ringmesh_config.h>
+#include <ringmesh/ringmesh_export.h>
 
 #if defined( _WIN32 )
 #    ifndef WIN32
 #        define WIN32
 #    endif
-#endif
-
-#ifdef WIN32
-#   ifdef RINGMESH_EXPORTS
-#        define RINGMESH_API __declspec( dllexport )
-#    else
-#        define RINGMESH_API __declspec( dllimport )
-#    endif
-#else
-#   define RINGMESH_API
 #endif
 
 #ifndef NDEBUG
@@ -66,7 +57,8 @@
 #endif
 
 #ifdef WIN32
-#   pragma warning( disable: 4267 )
+#   pragma warning( disable: 4267 ) // conversion between long unsigned int and unsigned int
+#   pragma warning( disable: 4250 ) // warning about diamond inheritance
 #   pragma warning( disable: 4251 ) // dll interface warnings
 #   pragma warning( disable: 4275 ) // let's pray we have no issues
 #endif

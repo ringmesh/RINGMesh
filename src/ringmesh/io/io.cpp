@@ -100,14 +100,13 @@ namespace RINGMesh {
 
     void zip_file( zipFile zf, const std::string& name )
     {
-        zip_fileinfo zfi = {} ;
         std::fstream file( name.c_str(), std::ios::in | std::ios::binary ) ;
         file.seekg( 0, std::ios::end ) ;
         long size = file.tellg() ;
         file.seekg( 0, std::ios::beg ) ;
         std::vector< char > buffer( size ) ;
         file.read( &buffer[0], size ) ;
-        zipOpenNewFileInZip( zf, name.c_str(), &zfi,
+        zipOpenNewFileInZip( zf, name.c_str(), NULL,
         NULL, 0, NULL, 0, NULL, Z_DEFLATED, Z_DEFAULT_COMPRESSION ) ;
         zipWriteInFileInZip( zf, size == 0 ? "" : &buffer[0], size ) ;
         zipCloseFileInZip( zf ) ;

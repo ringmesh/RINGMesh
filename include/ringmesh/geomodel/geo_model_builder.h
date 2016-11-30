@@ -273,8 +273,7 @@ namespace RINGMesh {
         void delete_mesh_entity_isolated_vertices( const gme_t& E_id ) ;
         void delete_mesh_entity_vertices(
             const gme_t& E_id,
-            GEO::vector< index_t >& to_delete,
-            bool remove_isolated_vertices ) ;
+            GEO::vector< index_t >& to_delete ) ;
         void delete_corner_vertex( index_t corner_id ) ;
         void delete_line_edges(
             index_t line_id,
@@ -294,8 +293,12 @@ namespace RINGMesh {
          * @{
          */
 
-        void compute_surface_adjacencies( index_t surface_id ) ;
-        void compute_region_adjacencies( index_t region_id ) ;
+        void compute_surface_adjacencies(
+            index_t surface_id,
+            bool recompute_adjacency = true ) ;
+        void compute_region_adjacencies(
+            index_t region_id,
+            bool recompute_adjacency = true ) ;
         void triangulate_surface(
             const RINGMesh::Surface& surface_in,
             index_t surface_out ) ;

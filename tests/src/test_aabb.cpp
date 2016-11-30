@@ -39,6 +39,7 @@
 
 #include <ringmesh/mesh/aabb.h>
 #include <ringmesh/mesh/mesh.h>
+#include <ringmesh/mesh/geogram_mesh.h>
 #include <ringmesh/mesh/mesh_builder.h>
 
 /*!
@@ -130,15 +131,14 @@ int main()
         default_configure() ;
 
         Logger::out( "TEST" ) << "Test AABB" << std::endl ;
-        GeogramMesh geogram_mesh( 3, false ) ;
-        Mesh2D* mesh = &geogram_mesh ;
-        Mesh2DBuilder* builder = mesh->get_mesh2d_builder() ;
+        GeogramMesh2D geogram_mesh ;
+        Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder( geogram_mesh ) ;
 
         index_t size = 10 ;
         add_vertices( builder, size ) ;
         add_triangles( builder, size ) ;
 
-        AABBTree2D tree( *mesh ) ;
+        AABBTree2D tree( geogram_mesh ) ;
         tree.save_tree( "tree" ) ;
         check_tree( tree, size ) ;
 

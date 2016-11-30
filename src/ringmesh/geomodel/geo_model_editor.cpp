@@ -50,19 +50,81 @@
 namespace RINGMesh {
 
     typedef std::string EntityType ;
-  
+
     GeoModelEditor::GeoModelEditor( GeoModel& model )
         : model_( model ), create_entity_allowed_( true )
-    {}
-    GeoModelEditor::~GeoModelEditor() {}
+    {
+    }
+    GeoModelEditor::~GeoModelEditor()
+    {
+    }
 
     GeoModelGeologicalEntity* GeoModelEditor::create_geological_entity(
-        const EntityType& type, index_t index_in_geomodel )
+        const EntityType& type,
+        index_t index_in_geomodel )
     {
-        GeoModelGeologicalEntity* E = 
-            GeoModelGeologicalEntityFactory::create_object( type, model() ) ;
+        GeoModelGeologicalEntity* E = GeoModelGeologicalEntityFactory::create_object(
+            type, model() ) ;
         E->id_.index = index_in_geomodel ;
         return E ;
+    }
+
+    bool GeoModelEditor::create_mesh_entities(
+        const EntityType& type,
+        index_t nb_additional_entities )
+    {
+        if( EntityTypeManager::is_corner( type ) ) {
+            return create_mesh_entities< Corner >( nb_additional_entities ) ;
+        } else if( EntityTypeManager::is_line( type ) ) {
+            return create_mesh_entities< Line >( nb_additional_entities ) ;
+        } else if( EntityTypeManager::is_surface( type ) ) {
+            return create_mesh_entities< Surface >( nb_additional_entities ) ;
+        } else {
+            // Must be regions.
+            return create_mesh_entities< Region >( nb_additional_entities ) ;
+        }
+        ringmesh_assert_not_reached ;
+    }
+
+    void GeoModelEditor::change_mesh_data_structure(
+        const gme_t& id,
+        const MeshType type )
+    {
+        if( EntityTypeManager::is_corner( id.type ) ) {
+            Corner& corner = dynamic_cast< Corner& >( mesh_entity( id ) ) ;
+            Mesh0D* old_mesh = corner.mesh0d_ ;
+            corner.update_mesh_storage_type( Mesh0D::create_mesh( type ) ) ;
+            Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder(
+                *corner.mesh0d_ ) ;
+            builder->copy( *old_mesh, true, GEO::MeshElementsFlags() ) ;
+            delete old_mesh ;
+        } else if( EntityTypeManager::is_line( id.type ) ) {
+            Line& line = dynamic_cast< Line& >( mesh_entity( id ) ) ;
+            Mesh1D* old_mesh = line.mesh1d_ ;
+            line.update_mesh_storage_type( Mesh1D::create_mesh( type ) ) ;
+            Mesh1DBuilder_var builder = Mesh1DBuilder::create_builder(
+                *line.mesh1d_ ) ;
+            builder->copy( *old_mesh, true, GEO::MeshElementsFlags() ) ;
+            delete old_mesh ;
+        } else if( EntityTypeManager::is_surface( id.type ) ) {
+            Surface& surface = dynamic_cast< Surface& >( mesh_entity( id ) ) ;
+            Mesh2D* old_mesh = surface.mesh2d_ ;
+            surface.update_mesh_storage_type( Mesh2D::create_mesh( type ) ) ;
+            Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder(
+                *surface.mesh2d_ ) ;
+            builder->copy( *old_mesh, true, GEO::MeshElementsFlags() ) ;
+            delete old_mesh ;
+        } else if( EntityTypeManager::is_region( id.type ) ) {
+            Region& region = dynamic_cast< Region& >( mesh_entity( id ) ) ;
+            Mesh3D* old_mesh = region.mesh3d_ ;
+            region.update_mesh_storage_type( Mesh3D::create_mesh( type ) ) ;
+            Mesh3DBuilder_var builder = Mesh3DBuilder::create_builder(
+                *region.mesh3d_ ) ;
+            builder->copy( *old_mesh, true, GEO::MeshElementsFlags() ) ;
+            delete old_mesh ;
+        } else {
+            ringmesh_assert_not_reached ;
+        }
     }
 
     void GeoModelEditor::set_model_name( const std::string& name )
@@ -77,7 +139,8 @@ namespace RINGMesh {
     gme_t GeoModelEditor::create_geological_entity( const EntityType& type )
     {
         index_t index = find_or_create_geological_entity_type( type ) ;
-        index_t id = static_cast<index_t>(model_.geological_entities_[index].size()) ;
+        index_t id =
+            static_cast< index_t >( model_.geological_entities_[index].size() ) ;
         GeoModelGeologicalEntity* E = create_geological_entity( type, id ) ;
         model_.geological_entities_[index].push_back( E ) ;
         return E->gme_id() ;
@@ -87,9 +150,10 @@ namespace RINGMesh {
     {
         ringmesh_assert( GeoModelGeologicalEntityFactory::has_creator( type ) ) ;
         entity_type_manager().geological_entity_types_.push_back( type ) ;
-        model_.geological_entities_.push_back( std::vector< GeoModelGeologicalEntity* >() ) ;
-        GeoModelGeologicalEntity* E = 
-            GeoModelGeologicalEntityFactory::create_object( type, model() ) ;
+        model_.geological_entities_.push_back(
+            std::vector< GeoModelGeologicalEntity* >() ) ;
+        GeoModelGeologicalEntity* E = GeoModelGeologicalEntityFactory::create_object(
+            type, model() ) ;
 
         const EntityType child_type = E->child_type_name() ;
 
@@ -99,10 +163,10 @@ namespace RINGMesh {
         return entity_type_manager().nb_geological_entity_types() - 1 ;
     }
 
-    bool GeoModelEditor::create_geological_entities( const EntityType& type, 
+    bool GeoModelEditor::create_geological_entities(
+        const EntityType& type,
         index_t nb_additional_entities )
     {
-        assert_entity_creation_allowed() ;
         find_or_create_geological_entity_type( type ) ;
         std::vector< GeoModelGeologicalEntity* >& store =
             modifiable_geological_entities( type ) ;
@@ -114,28 +178,6 @@ namespace RINGMesh {
             store[i] = create_geological_entity( type, i ) ;
         }
         return true ;
-    }
-
-    bool GeoModelEditor::create_entities( const EntityType& type, 
-        index_t nb_additional_entities )
-    {
-        assert_entity_creation_allowed() ;        
-        if( EntityTypeManager::is_mesh_entity_type( type ) ) {
-            if( EntityTypeManager::is_corner( type ) ) {
-                return create_mesh_entities< Corner >( nb_additional_entities ) ;
-            } else if( EntityTypeManager::is_line( type ) ) {
-                return create_mesh_entities< Line >( nb_additional_entities ) ;
-            } else if( EntityTypeManager::is_surface( type) ) {
-                return create_mesh_entities< Surface >( nb_additional_entities ) ;
-            } else {
-                // Must be regions.
-                return create_mesh_entities< Region >( nb_additional_entities ) ;
-            }
-        } else if( entity_type_manager().is_geological_entity_type( type ) ) {
-            return create_geological_entities( type, nb_additional_entities ) ;
-        } else {
-            return false ;
-        }
     }
 
     void GeoModelEditor::complete_entity_connectivity()
@@ -196,7 +238,8 @@ namespace RINGMesh {
         if( model().nb_mesh_entities( type ) == 0 ) {
             return ;
         }
-        const EntityType& in_b_type = entity_type_manager().in_boundary_type( type ) ;
+        const EntityType& in_b_type = entity_type_manager().in_boundary_type(
+            type ) ;
         if( EntityTypeManager::is_defined_type( in_b_type ) ) {
             for( index_t i = 0; i < model().nb_mesh_entities( in_b_type ); ++i ) {
                 const GeoModelMeshEntity& in_b = mesh_entity( in_b_type, i ) ;
@@ -213,15 +256,18 @@ namespace RINGMesh {
         if( M.nb_mesh_entities( type ) == 0 ) {
             return ;
         }
-        const std::vector< EntityType > parent_types( entity_type_manager().parent_types( type ) ) ;
+        const std::vector< EntityType > parent_types(
+            entity_type_manager().parent_types( type ) ) ;
         for( index_t i = 0; i < parent_types.size(); ++i ) {
             const EntityType& parent_type = parent_types[i] ;
             if( EntityTypeManager::is_defined_type( parent_type ) ) {
-                for( index_t j = 0; j < M.nb_geological_entities( parent_type ); ++j ) {
+                for( index_t j = 0; j < M.nb_geological_entities( parent_type );
+                    ++j ) {
                     const GeoModelGeologicalEntity& parent = geological_entity(
                         parent_type, j ) ;
                     for( index_t k = 0; k < parent.nb_children(); ++k ) {
-                        add_mesh_entity_parent( parent.child_gme( k ), parent.gme_id() ) ;
+                        add_mesh_entity_parent( parent.child_gme( k ),
+                            parent.gme_id() ) ;
                     }
                 }
             }
@@ -234,7 +280,7 @@ namespace RINGMesh {
             return ;
         }
         const EntityType& c_type = geological_entity( type, 0 ).child_type_name() ;
-        if( EntityTypeManager::is_defined_type(c_type) ) {
+        if( EntityTypeManager::is_defined_type( c_type ) ) {
             for( index_t i = 0; i < model().nb_mesh_entities( c_type ); ++i ) {
                 const GeoModelMeshEntity& p = mesh_entity( c_type, i ) ;
                 for( index_t j = 0; j < p.nb_parents(); j++ ) {
@@ -250,18 +296,20 @@ namespace RINGMesh {
         if( model().nb_mesh_entities( type ) == 0 ) {
             return ;
         }
-        const std::vector< EntityType> parents = entity_type_manager().parent_types( type ) ;
+        const std::vector< EntityType > parents = entity_type_manager().parent_types(
+            type ) ;
         if( parents.size() == 0 ) {
             return ;
         } else {
             for( index_t i = 0; i < model().nb_mesh_entities( type ); ++i ) {
                 GeoModelMeshEntity& E = mesh_entity( type, i ) ;
                 if( !E.has_geological_feature() ) {
-                    if( E.nb_parents() > 0 && E.parent( 0 ).has_geological_feature() ) {
+                    if( E.nb_parents() > 0
+                        && E.parent( 0 ).has_geological_feature() ) {
                         E.geol_feature_ = E.parent( 0 ).geological_feature() ;
                     }
                 }
-            }        
+            }
         }
     }
 
@@ -276,7 +324,8 @@ namespace RINGMesh {
             for( index_t i = 0; i < model().nb_geological_entities( type ); ++i ) {
                 GeoModelGeologicalEntity& p = geological_entity( type, i ) ;
                 if( !p.has_geological_feature() ) {
-                    if( p.nb_children() > 0 && p.child( 0 ).has_geological_feature() ) {
+                    if( p.nb_children() > 0
+                        && p.child( 0 ).has_geological_feature() ) {
                         p.geol_feature_ = p.child( 0 ).geological_feature() ;
                     }
                 }
@@ -304,13 +353,16 @@ namespace RINGMesh {
             }
         }
         // Add geological entities which have no child
-        index_t nb_geological_entity_types = entity_type_manager().nb_geological_entity_types() ;
+        index_t nb_geological_entity_types =
+            entity_type_manager().nb_geological_entity_types() ;
         for( index_t i = 0; i < nb_geological_entity_types; ++i ) {
-            const EntityType& type = entity_type_manager().geological_entity_type( i ) ;
+            const EntityType& type = entity_type_manager().geological_entity_type(
+                i ) ;
 
             for( index_t j = 0; j < model_.nb_geological_entities( type ); ++j ) {
                 bool no_child = true ;
-                const GeoModelGeologicalEntity& E = model_.geological_entity( type, j ) ;
+                const GeoModelGeologicalEntity& E = model_.geological_entity( type,
+                    j ) ;
                 for( index_t k = 0; k < E.nb_children(); ++k ) {
                     if( in.count( E.child_gme( k ) ) == 0 ) {
                         no_child = false ;
@@ -323,9 +375,10 @@ namespace RINGMesh {
             }
         }
         // Add mesh entities that are in the boundary of no mesh entity 
-        for( index_t i = 0; i < EntityTypeManager::nb_mesh_entity_types() ; ++i ) {
+        for( index_t i = 0; i < EntityTypeManager::nb_mesh_entity_types(); ++i ) {
             const EntityType& type = EntityTypeManager::mesh_entity_types()[i] ;
-            const EntityType& in_boundary_type = EntityTypeManager::in_boundary_type( type ) ;
+            const EntityType& in_boundary_type = EntityTypeManager::in_boundary_type(
+                type ) ;
             if( !EntityTypeManager::is_mesh_entity_type( in_boundary_type ) ) {
                 continue ;
             } else {
@@ -352,348 +405,385 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelEditor::remove_entities_and_dependencies(
-        const std::set< gme_t >& entities_to_remove )
-    {
-        // Asserts to remove when implementation is completed
-        ringmesh_assert(
-            entities_to_remove.size() == 1
-            && entities_to_remove.begin()->type == Region::type_name_static() ) ;
-
-        // Copy because it is not logical to have in output the removed elements. BC
-        /// @todo Review : youpiii what did the comment on the function just said ? [JP]
-        std::set< gme_t > entities = entities_to_remove ;
-        // TODO Handle the case of several objects in elements
-
-        const GeoModelMeshEntity& reg = model_.mesh_entity( *( entities.begin() ) ) ;
-        get_dependent_entities( entities ) ;
-
-        // TODO Dirty duplication of code------------------------
-        // We need to remove elements type by type since they are
-        // stored in different vectors and since we use indices in these
-        // vectors to identify them.
-        // Initialize the vector
-        std::vector< std::vector< index_t > > to_erase_by_type ;
-        const index_t nb_type = 7 ; // = GME::NO_TYPE. TODO to rework
-        to_erase_by_type.reserve( nb_type ) ;
-        to_erase_by_type.push_back(
-            std::vector< index_t >( model_.nb_entities( Corner::type_name_static() ),
-                0 ) ) ;
-        to_erase_by_type.push_back(
-            std::vector< index_t >( model_.nb_entities( Line::type_name_static() ),
-                0 ) ) ;
-        to_erase_by_type.push_back(
-            std::vector< index_t >(
-                model_.nb_entities( Surface::type_name_static() ), 0 ) ) ;
-        to_erase_by_type.push_back(
-            std::vector< index_t >( model_.nb_entities( Region::type_name_static() ),
-                0 ) ) ;
-        to_erase_by_type.push_back(
-            std::vector< index_t >(
-                model_.nb_entities( Contact::type_name_static() ), 0 ) ) ;
-        to_erase_by_type.push_back(
-            std::vector< index_t >(
-                model_.nb_entities( Interface::type_name_static() ), 0 ) ) ;
-        to_erase_by_type.push_back(
-            std::vector< index_t >( model_.nb_entities( Layer::type_name_static() ),
-                0 ) ) ;
-
-        // Flag the elements to erase
-        for( std::set< gme_t >::const_iterator it = entities.begin();
-            it != entities.end(); ++it ) {
-            gme_t cur = *it ;
-            ringmesh_assert( NO_ID != 0 ) ; // If one day NO_ID changes of value.
-            if( cur.type == Corner::type_name_static() ) {
-                to_erase_by_type[0][cur.index] = NO_ID ;
-            } else if( cur.type == Line::type_name_static() ) {
-                to_erase_by_type[1][cur.index] = NO_ID ;
-            } else if( cur.type == Surface::type_name_static() ) {
-                to_erase_by_type[2][cur.index] = NO_ID ;
-            } else if( cur.type == Region::type_name_static() ) {
-                to_erase_by_type[3][cur.index] = NO_ID ;
-            } else if( cur.type == Contact::type_name_static() ) {
-                to_erase_by_type[4][cur.index] = NO_ID ;
-            } else if( cur.type == Interface::type_name_static() ) {
-                to_erase_by_type[5][cur.index] = NO_ID ;
-            } else if( cur.type == Layer::type_name_static() ) {
-                to_erase_by_type[6][cur.index] = NO_ID ;
-            }
-        }
-
-        // Number of elements deleted for each TYPE
-        std::vector< index_t > nb_removed( to_erase_by_type.size(), 0 ) ;
-
-        /// 1. Get the mapping between old indices of the elements
-        ///    and new ones (when elements to remove will actually be removed)
-        for( index_t i = 0; i < to_erase_by_type.size(); ++i ) {
-            for( index_t j = 0; j < to_erase_by_type[i].size(); ++j ) {
-                if( to_erase_by_type[i][j] == NO_ID ) {
-                    nb_removed[i]++ ;
-                } else {
-                    to_erase_by_type[i][j] = j - nb_removed[i] ;
-                }
-            }
-        }
-        // TODO Dirty duplication of code--------------------------
-
-        std::vector< gme_t > to_add_in_universe ;
-
-        if( reg.type_name() == Region::type_name_static() ) {
-            index_t nb_added = 0 ;
-            for( index_t b_i = 0; b_i < reg.nb_boundaries(); ++b_i ) {
-                if( !reg.boundary( b_i ).is_on_voi() ) {
-                    to_add_in_universe.push_back( reg.boundary( b_i ).gme_id() ) ;
-                    if( reg.boundary( b_i ).type_name()
-                        == Corner::type_name_static() ) {
-                        ringmesh_assert(
-                            to_erase_by_type[0][reg.boundary(
-                                b_i ).index()] != NO_ID ) ;
-                        to_add_in_universe[nb_added].index =
-                            to_erase_by_type[0][reg.boundary( b_i ).index()] ;
-                    } else if( reg.boundary( b_i ).type_name()
-                        == Line::type_name_static() ) {
-                        ringmesh_assert(
-                            to_erase_by_type[1][reg.boundary(
-                                b_i ).index()] != NO_ID ) ;
-                        to_add_in_universe[nb_added].index =
-                            to_erase_by_type[1][reg.boundary( b_i ).index()] ;
-                    } else if( reg.boundary( b_i ).type_name()
-                        == Surface::type_name_static() ) {
-                        ringmesh_assert(
-                            to_erase_by_type[2][reg.boundary(
-                                b_i ).index()] != NO_ID ) ;
-                        to_add_in_universe[nb_added].index =
-                            to_erase_by_type[2][reg.boundary( b_i ).index()] ;
-                    } else if( reg.boundary( b_i ).type_name()
-                        == Region::type_name_static() ) {
-                        ringmesh_assert(
-                            to_erase_by_type[3][reg.boundary(
-                                b_i ).index()] != NO_ID ) ;
-                        to_add_in_universe[nb_added].index =
-                            to_erase_by_type[3][reg.boundary( b_i ).index()] ;
-                    } else if( reg.boundary( b_i ).type_name()
-                        == Contact::type_name_static() ) {
-                        ringmesh_assert(
-                            to_erase_by_type[4][reg.boundary(
-                                b_i ).index()] != NO_ID ) ;
-                        to_add_in_universe[nb_added].index =
-                            to_erase_by_type[4][reg.boundary( b_i ).index()] ;
-                    } else if( reg.boundary( b_i ).type_name()
-                        == Interface::type_name_static() ) {
-                        ringmesh_assert(
-                            to_erase_by_type[5][reg.boundary(
-                                b_i ).index()] != NO_ID ) ;
-                        to_add_in_universe[nb_added].index =
-                            to_erase_by_type[5][reg.boundary( b_i ).index()] ;
-                    } else if( reg.boundary( b_i ).type_name()
-                        == Layer::type_name_static() ) {
-                        ringmesh_assert(
-                            to_erase_by_type[6][reg.boundary(
-                                b_i ).index()] != NO_ID ) ;
-                        to_add_in_universe[nb_added].index =
-                            to_erase_by_type[6][reg.boundary( b_i ).index()] ;
-                    }
-                    ++nb_added ;
-                }
-            }
-        }
-
-        remove_entities( entities ) ;
-
-        // Update Universe
-        /// @todo You first need to clean the existing universe [JP]
-        for( std::vector< gme_t >::const_iterator itr =
-            to_add_in_universe.begin();
-            itr != to_add_in_universe.end(); ++itr ) {
-            add_universe_boundary( itr->index, true ) ;
-        }
-
-        //ringmesh_assert( model_.check_model_validity() ) ;
-    }
-
     /*!
      * @brief Class in charge of removing entities from a GeoModel
      */
     class GeoModelEntityRemoval: public GeoModelEditor {
     public:
-        typedef std::string EntityType ;   
+        typedef std::string EntityType ;
         typedef std::map< EntityType, index_t > TypeToIndex ;
         typedef std::map< index_t, EntityType > IndexToType ;
-   
-        GeoModelEntityRemoval( GeoModel& model ) :
-            GeoModelEditor( model )
-        { 
+
+        GeoModelEntityRemoval( GeoModel& model )
+            : GeoModelEditor( model )
+        {
             nb_mesh_entity_types_ = EntityTypeManager::nb_mesh_entity_types() ;
-            nb_geological_entity_types_ = GeoModelEditor::model().nb_geological_entity_types() ;
+            nb_geological_entity_types_ =
+                GeoModelEditor::model().nb_geological_entity_types() ;
             nb_entity_types_ = nb_geological_entity_types_ + nb_mesh_entity_types_ ;
-            nb_removed_entities_.resize( nb_entity_types_, 0 ) ;
-            
-            fill_entity_type_to_index_map() ;           
+            nb_removed_mesh_entities_.resize( nb_mesh_entity_types_, 0 ) ;
+            nb_removed_geological_entities_.resize( nb_geological_entity_types_,
+                0 ) ;
+            fill_entity_type_to_index_map() ;
             fill_nb_initial_entities() ;
             initialize_costly_storage() ;
+            fill_nb_children_vector() ;
+
         }
-        /*! 
-         * @brief Removes the given entites from the model 
-         * @warning ONLY takes care of deleting these entities and update 
+        /*!
+         * @brief Removes the given entities from the model
+         * @warning ONLY takes care of deleting these entities and update
          * all references ( gme indices ) all over the model.
          * The client MUST:
-         *    - ensure that the provided set is consistent to ensure 
+         *    - ensure that the provided set is consistent to ensure
          *      the GeoModel validity.
-         *    - ensure that eventual new connections between remaining entities 
+         *    - ensure that eventual new connections between remaining entities
          *      are set to ensure the GeoModel validity
          */
-        void remove_entities( const std::set< gme_t >& entities )
+        void remove_mesh_entities( const std::set< gme_t >& entities )
         {
-            initialize_for_removal(entities) ;
-            do_delete_flagged_entities() ;
+            initialize_for_removal( entities ) ;
+            do_delete_flagged_mesh_entities() ;
             clear_model_mesh_vertices() ;
-            update_entity_connectivity() ;
+            update_mesh_entity_connectivity() ;
+            flag_geological_entities_without_children() ;
+            do_delete_flagged_geological_entities() ;
+            update_geological_entity_connectivity() ;
+            update_universe() ;
+
         }
+
+//        void remove_mesh_entities_with_dependencies(
+//            const std::set< gme_t >& entities )
+//        {
+//            remove_mesh_entities( entities ) ;
+//            remove_dependencies() ;
+//        }
+// TODO it doesn't work ! Will be done with the new struct of
+//      relations between GME
+
+        void remove_geological_entities( const std::set< gme_t >& entities )
+        {
+            check_if_entities_are_not_meshed_entities( entities ) ;
+            std::set< gme_t > mesh_entities ;
+            for( std::set< gme_t >::const_iterator it = entities.begin();
+                it != entities.end(); ++it ) {
+                const GeoModelGeologicalEntity& cur_gmge = geological_entity( *it ) ;
+                for( index_t i = 0; i < cur_gmge.nb_children(); i++ ) {
+                    mesh_entities.insert( cur_gmge.child( i ).gme_id() ) ;
+                }
+            }
+            remove_mesh_entities( mesh_entities ) ;
+        }
+
+//        void remove_geological_entities_with_dependencies(
+//            const std::set< gme_t >& entities )
+//        {
+//            remove_geological_entities( entities ) ;
+//            remove_dependencies() ;
+//        }
+// TODO it doesn't work ! Will be done with the new struct of
+//      relations between GME
 
     private:
         // ---  High level functions ----------
-        void initialize_for_removal( const std::set< gme_t >& entities_to_remove )
+        void initialize_for_removal(
+            const std::set< gme_t >& mesh_entities_to_remove )
         {
-            fill_to_erase_vectors( entities_to_remove ) ;
+            check_if_entities_are_meshed( mesh_entities_to_remove ) ;
+            fill_to_erase_vectors( mesh_entities_to_remove ) ;
             fill_removed_entities_and_mapping() ;
         }
-        void do_delete_flagged_entities()
+        void do_delete_flagged_mesh_entities()
         {
-            for( index_t i = 0; i < nb_entity_types_; ++i ) {
-                for( index_t j = 0; j < nb_initial_entities_[i]; ++j ) {
-                    if( to_erase_[i][j] == NO_ID ) {
-                        delete_entity( i, j ) ;
+            for( index_t i = 0; i < nb_mesh_entity_types_; ++i ) {
+                for( index_t j = 0; j < nb_initial_mesh_entities_[i]; ++j ) {
+                    if( mesh_entity_to_erase_[i][j] ) {
+                        const EntityType& type_name = index_to_mesh_entity_type(
+                            i ) ;
+                        for( index_t p = 0;
+                            p < model().mesh_entity( type_name, j ).nb_parents();
+                            p++ ) {
+                            gme_t parent =
+                                model().mesh_entity( type_name, j ).parent_gme( p ) ;
+                            nb_childs_[geological_entity_type_to_index( parent.type )][parent.index]-- ;
+                        }
+
+                        delete_mesh_entity( i, j ) ;
                     }
                 }
-                clear_null_entities( i ) ;
+                clear_null_mesh_entities( i ) ;
+            }
+        }
+        void do_delete_flagged_geological_entities()
+        {
+            for( index_t i = 0; i < nb_geological_entity_types_; ++i ) {
+                const EntityType& entity_type = index_to_geological_entity_type(
+                    i ) ;
+                for( index_t j = 0;
+                    j < model().nb_geological_entities( entity_type ); ++j ) {
+                    if( old_2_new_geological_entity_[i][j] == NO_ID ) {
+                        delete_geological_entity( entity_type, j ) ;
+                    }
+                }
+                clear_null_geological_entities( i ) ;
+            }
+        }
+
+        void check_if_entities_are_meshed(
+            const std::set< gme_t >& mesh_entities_to_remove )
+        {
+            for( std::set< gme_t >::const_iterator it =
+                mesh_entities_to_remove.begin(); it != mesh_entities_to_remove.end();
+                ++it ) {
+                if( !RINGMesh::EntityTypeManager::is_mesh_entity_type( it->type ) ) {
+                    throw RINGMeshException( "REMOVE",
+                        "You try to remove a Geological Entity using mesh removal." ) ;
+                }
+            }
+        }
+
+        void check_if_entities_are_not_meshed_entities(
+            const std::set< gme_t >& mesh_entities_to_remove )
+        {
+            for( std::set< gme_t >::const_iterator it =
+                mesh_entities_to_remove.begin(); it != mesh_entities_to_remove.end();
+                ++it ) {
+                if( RINGMesh::EntityTypeManager::is_mesh_entity_type( it->type ) ) {
+                    throw RINGMeshException( "REMOVE",
+                        "You try to remove a Mesh Entity using geological removal" ) ;
+                }
             }
         }
         void clear_model_mesh_vertices()
         {
             model().mesh.vertices.clear() ;
-        }        
+        }
         void initialize_costly_storage()
         {
-            to_erase_.resize( nb_entity_types_ ) ;
-            old_2_new_entity_.resize( nb_entity_types_ ) ;
-            for( index_t i = 0; i < nb_entity_types_; ++i ) {
-                index_t size = model().nb_entities( index_to_entity_type( i ) ) ;
-                to_erase_[i].resize( size, 0 ) ;
-                old_2_new_entity_[i].resize( size, 0 ) ;
+            mesh_entity_to_erase_.resize( nb_mesh_entity_types_ ) ;
+
+            old_2_new_mesh_entity_.resize( nb_mesh_entity_types_ ) ;
+            old_2_new_geological_entity_.resize( nb_geological_entity_types_ ) ;
+            nb_childs_.resize( nb_geological_entity_types_ ) ;
+            for( index_t i = 0; i < nb_mesh_entity_types_; ++i ) {
+                index_t size = model().nb_mesh_entities(
+                    index_to_mesh_entity_type( i ) ) ;
+                mesh_entity_to_erase_[i].resize( size, false ) ;
+                old_2_new_mesh_entity_[i].resize( size, 0 ) ;
             }
+
+            for( index_t i = 0; i < nb_geological_entity_types_; ++i ) {
+                index_t size = model().nb_geological_entities(
+                    index_to_geological_entity_type( i ) ) ;
+                old_2_new_geological_entity_[i].resize( size, 0 ) ;
+
+                nb_childs_[i].resize( size, 0 ) ;
+
+            }
+
         }
-        void delete_entity( index_t type, index_t index )
+        void delete_mesh_entity( index_t type, index_t index )
         {
-            const EntityType& type_name = index_to_entity_type( type ) ;
+            const EntityType& type_name = index_to_mesh_entity_type( type ) ;
             gme_t id( type_name, index ) ;
-            GeoModelEditor::delete_entity( type_name, index ) ;
+            GeoModelEditor::delete_mesh_entity( type_name, index ) ;
         }
-        void clear_null_entities( index_t type )
+        void clear_null_mesh_entities( index_t type )
         {
-            const EntityType& type_name = index_to_entity_type( type ) ;
-            std::vector< GME* >& store = modifiable_entities( type_name ) ;
+            const EntityType& type_name = index_to_mesh_entity_type( type ) ;
+            std::vector< GeoModelMeshEntity* >& store = modifiable_mesh_entities(
+                type_name ) ;
             store.erase(
                 std::remove( store.begin(), store.end(),
-                static_cast<GME*>(nil) ), store.end() ) ;
+                    static_cast< GeoModelMeshEntity* >( nil ) ), store.end() ) ;
 
             // QC
-            ringmesh_assert( model().nb_entities( type_name )
-                == nb_initial_entities_[type] - nb_removed_entities_[type] ) ;
+            ringmesh_assert( model().nb_mesh_entities( type_name )
+                == nb_initial_mesh_entities_[type] - nb_removed_mesh_entities_[type] ) ;
         }
-        void update_entity_connectivity()
+
+        void clear_null_geological_entities( index_t type )
         {
-            for( index_t i = 0; i < nb_entity_types_; ++i ) {
-                const EntityType& entity_type = index_to_entity_type( i ) ;
+            const EntityType& type_name = index_to_geological_entity_type( type ) ;
+            std::vector< GeoModelGeologicalEntity* >& store =
+                modifiable_geological_entities( type_name ) ;
+            store.erase(
+                std::remove( store.begin(), store.end(),
+                    static_cast< GeoModelGeologicalEntity* >( nil ) ),
+                store.end() ) ;
 
-                for( index_t j = 0; j < model().nb_entities( entity_type ); ++j ) {
+            // QC
+            ringmesh_assert( model().nb_geological_entities( type_name )
+                == nb_initial_geological_entities_[type] - nb_removed_geological_entities_[type] ) ;
+        }
+        void update_mesh_entity_connectivity()
+        {
+            for( index_t i = 0; i < nb_mesh_entity_types_; ++i ) {
+                const EntityType& entity_type = index_to_mesh_entity_type( i ) ;
+
+                for( index_t j = 0; j < model().nb_mesh_entities( entity_type );
+                    ++j ) {
                     gme_t new_id( entity_type, j ) ;
-                    GeoModelEntity& E = modifiable_entity( new_id ) ;
-                    update_entity_index( E ) ;
-                    ringmesh_assert( new_id == E.gme_id() ) ;
+                    GeoModelMeshEntity& ME = modifiable_mesh_entity( new_id ) ;
+                    update_mesh_entity_index( ME ) ;
+                    ringmesh_assert( new_id == ME.gme_id() ) ;
+                    update_mesh_entity_boundaries( ME ) ;
+                    delete_invalid_boundaries( ME ) ;
 
-                    if( is_mesh_entity(i) ){
-                        GeoModelMeshEntity& ME = dynamic_cast<GeoModelMeshEntity&>(E);
-                        update_entity_boundaries( ME ) ;
-                        delete_invalid_boundaries( ME ) ;
+                    update_mesh_entity_in_boundary( ME ) ;
+                    delete_invalid_in_boundary( ME ) ;
 
-                        update_entity_in_boundary( ME ) ;
-                        delete_invalid_in_boundary( ME ) ;
-
-                        update_entity_parents( ME ) ;
-                        delete_invalid_parents( ME ) ;
-                    }
-                    if( is_region_entity(i) ) {
-                        Region& R = dynamic_cast<Region&>(E);
+                    if( ME.entity_type() == Region::type_name_static() ) {
+                        Region& R = dynamic_cast< Region& >( ME ) ;
                         update_region_boundary_signs( R ) ;
                         delete_invalid_signs( R ) ;
                     }
-                    if( is_geological_entity( i ) ) {
-                        GeoModelGeologicalEntity& GE = dynamic_cast<GeoModelGeologicalEntity&>(E);                         
-                        update_entity_children( GE ) ;
-                        delete_invalid_children( GE ) ;
-                    }          
                 }
             }
-            Universe& U = universe() ;
-            update_universe_sided_boundaries( U ) ;
-            delete_invalid_universe_sided_boundaries( U ) ;            
         }
 
+        void update_geological_entity_connectivity()
+        {
 
-        //------  Initialization ------- 
+            for( index_t i = 0; i < nb_geological_entity_types_; ++i ) {
+                const EntityType& entity_type = index_to_geological_entity_type(
+                    i ) ;
+                for( index_t j = 0;
+                    j < model().nb_geological_entities( entity_type ); ++j ) {
+                    gme_t new_id( entity_type, j ) ;
+                    GeoModelGeologicalEntity& GE = modifiable_geological_entity(
+                        new_id ) ;
+                    update_geological_entity_index( GE ) ;
+                    update_geological_entity_children( GE ) ;
+                    delete_invalid_children( GE ) ;
+                }
+            }
+
+            for( index_t i = 0; i < nb_mesh_entity_types_; ++i ) {
+                const EntityType& entity_type = index_to_mesh_entity_type( i ) ;
+
+                for( index_t j = 0; j < model().nb_mesh_entities( entity_type );
+                    ++j ) {
+                    gme_t new_id( entity_type, j ) ;
+                    GeoModelMeshEntity& ME = modifiable_mesh_entity( new_id ) ;
+                    update_mesh_entity_parents( ME ) ;
+                    delete_invalid_parents( ME ) ;
+                }
+            }
+        }
+
+        void update_universe()
+        {
+            Universe& U = universe() ;
+            update_universe_sided_boundaries( U ) ;
+            delete_invalid_universe_sided_boundaries( U ) ;
+        }
+
+//        void remove_dependencies()
+//        {
+//            std::set< gme_t > new_gmme_to_remove ;
+//            for( index_t me = 0;
+//                me < model().nb_mesh_entities( starting_dependency_ ); me++ ) {
+//                const GeoModelMeshEntity& cur_gmme = model().mesh_entity(
+//                    starting_dependency_, me ) ;
+//                if( cur_gmme.in_boundary( 0 ).index() == NO_ID
+//                    && cur_gmme.nb_in_boundary() == 1 ) {
+//                    new_gmme_to_remove.insert( cur_gmme.gme_id() ) ;
+//                }
+//            }
+//            if( starting_dependency_ != Corner::type_name_static() ) {
+//                starting_dependency_ = EntityTypeManager::boundary_type(
+//                    starting_dependency_ ) ;
+//                remove_mesh_entities_with_dependencies( new_gmme_to_remove ) ;
+//            }
+//        }
+
+        //------  Initialization -------
         void fill_removed_entities_and_mapping()
         {
-            for( index_t i = 0; i < nb_entity_types_; ++i ) {
-                for( index_t j = 0; j < nb_initial_entities_[i]; ++j ) {
-                    if( to_erase_[i][j] == NO_ID ) {
-                        nb_removed_entities_[i]++ ;
-                        old_2_new_entity_[i][j] = NO_ID ;
+            for( index_t i = 0; i < nb_mesh_entity_types_; ++i ) {
+                for( index_t j = 0; j < nb_initial_mesh_entities_[i]; ++j ) {
+                    if( mesh_entity_to_erase_[i][j] ) {
+                        nb_removed_mesh_entities_[i]++ ;
+                        old_2_new_mesh_entity_[i][j] = NO_ID ;
                     } else {
-                        old_2_new_entity_[i][j] = j - nb_removed_entities_[i] ;
+                        old_2_new_mesh_entity_[i][j] = j
+                            - nb_removed_mesh_entities_[i] ;
                     }
                 }
             }
         }
-        void fill_to_erase_vectors( const std::set< gme_t >& entities_to_remove )
+        void fill_to_erase_vectors(
+            const std::set< gme_t >& mesh_entities_to_remove )
         {
-            for( std::set< gme_t >::const_iterator it = entities_to_remove.begin();
-                it != entities_to_remove.end(); ++it ) {
+            for( std::set< gme_t >::const_iterator it =
+                mesh_entities_to_remove.begin(); it != mesh_entities_to_remove.end();
+                ++it ) {
                 gme_t cur = *it ;
 
-                index_t type_index = entity_type_to_index( cur.type ) ;
-                to_erase_[type_index][cur.index] = NO_ID ;
+                index_t type_index = mesh_entity_type_to_index( cur.type ) ;
+                mesh_entity_to_erase_[type_index][cur.index] = true ;
             }
         }
+
+        void fill_nb_children_vector()
+        {
+            for( index_t i = 0; i < nb_childs_.size(); i++ ) {
+                for( index_t j = 0; j < nb_childs_[i].size(); j++ ) {
+                    nb_childs_[i][j] = model().geological_entity(
+                        index_to_geological_entity_type( i ), j ).nb_children() ;
+                }
+            }
+        }
+
         void fill_nb_initial_entities()
         {
-            nb_initial_entities_.resize( nb_entity_types_, 0 ) ;
-            for( index_t i = 0; i < nb_entity_types_; ++i ) {
-                const EntityType& type = index_to_entity_type( i ) ;
-                nb_initial_entities_[i] = model().nb_entities( type )  ;
+            nb_initial_mesh_entities_.resize( nb_mesh_entity_types_, 0 ) ;
+            for( index_t i = 0; i < nb_mesh_entity_types_; ++i ) {
+                const EntityType& type = index_to_mesh_entity_type( i ) ;
+                nb_initial_mesh_entities_[i] = model().nb_mesh_entities( type ) ;
+            }
+
+            nb_initial_geological_entities_.resize( nb_geological_entity_types_,
+                0 ) ;
+            for( index_t i = 0; i < nb_geological_entity_types_; ++i ) {
+                const EntityType& type = index_to_geological_entity_type( i ) ;
+                nb_initial_geological_entities_[i] = model().nb_geological_entities(
+                    type ) ;
             }
         }
         void fill_entity_type_to_index_map()
         {
             const EntityTypeManager& manager = entity_type_manager() ;
-            all_entity_types_.insert(all_entity_types_.end(), 
-                manager.mesh_entity_types().begin(), 
+            mesh_entity_types_.insert( mesh_entity_types_.end(),
+                manager.mesh_entity_types().begin(),
                 manager.mesh_entity_types().end() ) ;
 
-            all_entity_types_.insert( all_entity_types_.end(),
-                manager.geological_entity_types().begin(), 
-                manager.geological_entity_types().end() ) ;                
+            if( nb_geological_entity_types_ != 0 ) {
+                geological_entity_types_.insert( geological_entity_types_.end(),
+                    manager.geological_entity_types().begin(),
+                    manager.geological_entity_types().end() ) ;
+            }
+
         }
 
         // ---- Easier access to relationships between EntityTypes
-        index_t entity_type_index( const GeoModelEntity& E ) const
+        index_t mesh_entity_type_index( const GeoModelMeshEntity& E ) const
         {
-            const EntityType& type = E.type_name() ;            
-            return entity_type_to_index( type ) ;
+            const EntityType& type = E.type_name() ;
+            return mesh_entity_type_to_index( type ) ;
+        }
+        index_t geological_entity_type_index(
+            const GeoModelGeologicalEntity& E ) const
+        {
+            const EntityType& type = E.type_name() ;
+            return geological_entity_type_to_index( type ) ;
         }
         index_t children_type_index( const EntityType& type ) const
         {
             const EntityType& child_type = children_type( type ) ;
-            return entity_type_to_index( child_type );
+            return mesh_entity_type_to_index( child_type ) ;
         }
         const EntityType children_type( const EntityType& type ) const
         {
@@ -701,12 +791,12 @@ namespace RINGMesh {
             return family.child_type( type ) ;
         }
         index_t boundary_type_index( const EntityType& type ) const
-        {           
+        {
             const EntityType& b_type = boundary_type( type ) ;
             if( !EntityTypeManager::is_defined_type( b_type ) ) {
                 return NO_ID ;
             } else {
-                return entity_type_to_index( b_type ) ;
+                return mesh_entity_type_to_index( b_type ) ;
             }
         }
         const EntityType& boundary_type( const EntityType& type ) const
@@ -715,12 +805,12 @@ namespace RINGMesh {
             return family.boundary_type( type ) ;
         }
         index_t in_boundary_type_index( const EntityType& type ) const
-        {           
+        {
             const EntityType& in_b_type = in_boundary_type( type ) ;
             if( !EntityTypeManager::is_defined_type( in_b_type ) ) {
                 return NO_ID ;
             } else {
-                return entity_type_to_index( in_b_type) ;
+                return mesh_entity_type_to_index( in_b_type ) ;
             }
         }
         const EntityType& in_boundary_type( const EntityType& type ) const
@@ -736,30 +826,54 @@ namespace RINGMesh {
         {
             return !is_mesh_entity( i ) ;
         }
-        bool is_region_entity( index_t i ) const
-        {
-            return i == 3 ; // Magic number = bad 
-        }
 
         // ----  Update connectivity functions  ------
-        void update_entity_index( GeoModelEntity& E )
+
+        void flag_geological_entities_without_children()
         {
-            index_t old_id = E.index() ;
-            index_t type = entity_type_index( E ) ;
-            index_t new_id = old_2_new_entity_[type][old_id] ;
-            ringmesh_assert( new_id != NO_ID ) ;
-            set_entity_index( E, new_id ) ;
+            for( index_t i = 0; i < nb_childs_.size(); i++ ) {
+                for( index_t j = 0; j < nb_childs_[i].size(); j++ ) {
+                    if( nb_childs_[i][j] == 0 ) {
+                        nb_removed_geological_entities_[i]++ ;
+                        old_2_new_geological_entity_[i][j] = NO_ID ;
+                    } else {
+                        old_2_new_geological_entity_[i][j] = j
+                            - nb_removed_geological_entities_[i] ;
+                    }
+
+                }
+            }
         }
-        void update_entity_boundaries( GeoModelMeshEntity& E )
+
+        void update_mesh_entity_index( GeoModelMeshEntity& ME )
         {
-            index_t type_index = boundary_type_index( E.entity_type() ) ;
+            index_t old_id = ME.index() ;
+            index_t type = mesh_entity_type_index( ME ) ;
+            index_t new_id = old_2_new_mesh_entity_[type][old_id] ;
+            ringmesh_assert( new_id != NO_ID ) ;
+            set_entity_index( ME, new_id ) ;
+        }
+
+        void update_geological_entity_index( GeoModelGeologicalEntity& GE )
+        {
+            index_t old_id = GE.index() ;
+            index_t type = geological_entity_type_index( GE ) ;
+            index_t new_id = old_2_new_geological_entity_[type][old_id] ;
+            ringmesh_assert( new_id != NO_ID ) ;
+            set_entity_index( GE, new_id ) ;
+        }
+
+        void update_mesh_entity_boundaries( GeoModelMeshEntity& ME )
+        {
+            index_t type_index = boundary_type_index( ME.entity_type() ) ;
             if( type_index == NO_ID ) {
                 return ;
             }
-            for( index_t i = 0; i < E.nb_boundaries(); ++i ) {
-                index_t old_boundary = E.boundary_gme( i ).index ;
-                index_t new_boundary = old_2_new_entity_[type_index][old_boundary] ;
-                set_mesh_entity_boundary( E.gme_id(), i, new_boundary ) ;
+            for( index_t i = 0; i < ME.nb_boundaries(); ++i ) {
+                index_t old_boundary = ME.boundary_gme( i ).index ;
+                index_t new_boundary =
+                    old_2_new_mesh_entity_[type_index][old_boundary] ;
+                set_mesh_entity_boundary( ME.gme_id(), i, new_boundary ) ;
             }
         }
         void update_region_boundary_signs( Region& R )
@@ -769,7 +883,7 @@ namespace RINGMesh {
 
             index_t offset = 0 ;
             for( index_t i = 0; i + offset < R.nb_boundaries(); ++i ) {
-                if( R.boundary_gme(i) == invalid_value ) {
+                if( R.boundary_gme( i ) == invalid_value ) {
                     offset++ ;
                 } else {
                     bool new_side = R.side( i + offset ) ;
@@ -777,68 +891,78 @@ namespace RINGMesh {
                 }
             }
         }
-        void update_entity_in_boundary( GeoModelMeshEntity& E )
+        void update_mesh_entity_in_boundary( GeoModelMeshEntity& E )
         {
-            const EntityType& in_boundary_type = EntityTypeManager::in_boundary_type( E.entity_type() ) ;
-            bool valid_type = EntityTypeManager::is_defined_type( in_boundary_type ) ;
+            const EntityType& in_boundary_type = EntityTypeManager::in_boundary_type(
+                E.entity_type() ) ;
+            bool valid_type = EntityTypeManager::is_defined_type(
+                in_boundary_type ) ;
             if( !valid_type ) {
                 return ;
             }
-            index_t in_boundary_type_index = entity_type_to_index( in_boundary_type ) ;
+            index_t in_boundary_type_index = mesh_entity_type_to_index(
+                in_boundary_type ) ;
             for( index_t i = 0; i < E.nb_in_boundary(); ++i ) {
                 index_t old_id = E.in_boundary_gme( i ).index ;
-                index_t new_id = old_2_new_entity_[in_boundary_type_index][old_id] ;
+                index_t new_id =
+                    old_2_new_mesh_entity_[in_boundary_type_index][old_id] ;
                 set_mesh_entity_in_boundary( E.gme_id(), i, new_id ) ;
             }
         }
-        void update_entity_parents( GeoModelMeshEntity& E )
+        void update_mesh_entity_parents( GeoModelMeshEntity& E )
         {
             for( index_t p = 0; p < E.nb_parents(); ++p ) {
                 const EntityType& parent_type = E.parent_gme( p ).type ;
-                index_t parent_type_index = entity_type_to_index( parent_type ) ;
+                index_t parent_type_index = geological_entity_type_to_index(
+                    parent_type ) ;
 
                 index_t old_id = E.parent_gme( p ).index ;
-                index_t new_id = old_2_new_entity_[parent_type_index][old_id] ;
-                set_mesh_entity_parent( E.gme_id(), p, gme_t( parent_type, new_id ) ) ;
+                index_t new_id =
+                    old_2_new_geological_entity_[parent_type_index][old_id] ;
+                set_mesh_entity_parent( E.gme_id(), p,
+                    gme_t( parent_type, new_id ) ) ;
             }
         }
-        void update_entity_children( GeoModelGeologicalEntity& E )
+        void update_geological_entity_children( GeoModelGeologicalEntity& E )
         {
             if( E.nb_children() > 0 ) {
                 index_t child_type = children_type_index( E.entity_type() ) ;
                 for( index_t i = 0; i < E.nb_children(); ++i ) {
                     index_t old_id = E.child_gme( i ).index ;
-                    index_t new_id = old_2_new_entity_[child_type][old_id] ;
+                    index_t new_id = old_2_new_mesh_entity_[child_type][old_id] ;
                     set_geological_entity_child( E.gme_id(), i, new_id ) ;
                 }
             }
         }
         void update_universe_sided_boundaries( Universe& U )
         {
-            index_t b_type_index = entity_type_to_index( Surface::type_name_static() ) ;
+            index_t b_type_index = mesh_entity_type_to_index(
+                Surface::type_name_static() ) ;
             index_t side_offset = 0 ;
             for( index_t i = 0; i < U.nb_boundaries(); ++i ) {
                 index_t old_id = U.boundary_gme( i ).index ;
-                index_t new_id = old_2_new_entity_[b_type_index][old_id] ;
+                index_t new_id = old_2_new_mesh_entity_[b_type_index][old_id] ;
 
                 bool new_side = false ;
                 // Mechanism to update the sides is not the same than to update
-                // the boundary indices -- annoying            
+                // the boundary indices -- annoying
                 if( new_id == NO_ID ) {
                     side_offset++ ;
-                } else if( i+side_offset < U.nb_boundaries() ) {
+                } else if( i + side_offset < U.nb_boundaries() ) {
                     // After that we do not care the values will be dropped
-                    new_side = U.side( i+side_offset ) ;                    
+                    new_side = U.side( i + side_offset ) ;
                 }
                 set_universe_boundary( i, new_id, new_side ) ;
             }
         }
-        
+
         // --- Deletion of some values the GeoModel storage
-        void remove_invalid_values( std::vector< gme_t >& vector, const gme_t& invalid_value )
+        void remove_invalid_values(
+            std::vector< gme_t >& vector,
+            const gme_t& invalid_value )
         {
-            std::vector< gme_t >::iterator new_end = std::remove(
-                vector.begin(), vector.end(), invalid_value ) ;
+            std::vector< gme_t >::iterator new_end = std::remove( vector.begin(),
+                vector.end(), invalid_value ) ;
             if( new_end == vector.begin() ) {
                 // Clear instead of erase, because the behavior would be undefined.
                 vector.clear() ;
@@ -853,7 +977,7 @@ namespace RINGMesh {
             } else {
                 const EntityType& child_type = children_type( E.entity_type() ) ;
                 gme_t invalid_child( child_type, NO_ID ) ;
-                remove_invalid_values( modifiable_children(E), invalid_child ) ;
+                remove_invalid_values( modifiable_children( E ), invalid_child ) ;
             }
         }
         void delete_invalid_boundaries( GeoModelMeshEntity& E )
@@ -863,7 +987,7 @@ namespace RINGMesh {
             if( !EntityTypeManager::is_defined_type( b_type ) ) {
                 return ;
             } else {
-                remove_invalid_values( modifiable_boundaries(E), invalid ) ;
+                remove_invalid_values( modifiable_boundaries( E ), invalid ) ;
             }
         }
         void delete_invalid_in_boundary( GeoModelMeshEntity& E )
@@ -873,7 +997,7 @@ namespace RINGMesh {
             if( !EntityTypeManager::is_defined_type( in_b_type ) ) {
                 return ;
             } else {
-                remove_invalid_values( modifiable_in_boundaries(E), invalid ) ;
+                remove_invalid_values( modifiable_in_boundaries( E ), invalid ) ;
             }
         }
         void delete_invalid_parents( GeoModelMeshEntity& E )
@@ -888,29 +1012,39 @@ namespace RINGMesh {
                     gme_t new_id = E.parent_gme( i + offset ) ;
                     set_mesh_entity_parent( E.gme_id(), i, new_id ) ;
                 }
-                new_size = i +1 ; /// @todo Check that this is the correct size
+                new_size = i + 1 ; /// @todo Check that this is the correct size
             }
-            modifiable_parents(E).resize( new_size ) ; 
+            modifiable_parents( E ).resize( new_size ) ;
         }
         void delete_invalid_signs( Region& R )
         {
-            modifiable_sides(R).resize( R.nb_boundaries() ) ;
+            modifiable_sides( R ).resize( R.nb_boundaries() ) ;
         }
         void delete_invalid_universe_sided_boundaries( Universe& U )
         {
             const EntityType& b_type = Surface::type_name_static() ;
             gme_t invalid( b_type, NO_ID ) ;
-            remove_invalid_values( modifiable_boundaries(U), invalid ) ;
-            modifiable_sides(U).resize( U.nb_boundaries() ) ;
+            remove_invalid_values( modifiable_boundaries( U ), invalid ) ;
+            modifiable_sides( U ).resize( U.nb_boundaries() ) ;
         }
 
-        index_t entity_type_to_index( const EntityType& type ) const
+        index_t mesh_entity_type_to_index( const EntityType& type ) const
         {
-            return find( all_entity_types_, type ) ;
+            return find( mesh_entity_types_, type ) ;
         }
-        const EntityType& index_to_entity_type( index_t index ) const
+
+        index_t geological_entity_type_to_index( const EntityType& type ) const
         {
-            return all_entity_types_.at( index );
+            return find( geological_entity_types_, type ) ;
+        }
+        const EntityType& index_to_mesh_entity_type( index_t index ) const
+        {
+            return mesh_entity_types_.at( index ) ;
+        }
+
+        const EntityType& index_to_geological_entity_type( index_t index ) const
+        {
+            return geological_entity_types_.at( index ) ;
         }
 
     private:
@@ -918,51 +1052,78 @@ namespace RINGMesh {
         index_t nb_geological_entity_types_ ;
         index_t nb_mesh_entity_types_ ;
 
-        std::vector< index_t > nb_initial_entities_ ;
-        std::vector< index_t > nb_removed_entities_ ;
+        std::vector< index_t > nb_initial_mesh_entities_ ;
+        std::vector< index_t > nb_initial_geological_entities_ ;
+
+        std::vector< index_t > nb_removed_mesh_entities_ ;
+        std::vector< index_t > nb_removed_geological_entities_ ;
 
         /*! For each type of entity, store a vector of where the
-        * entities to remove from the model are flagged with NO_ID. */
-        std::vector< std::vector< index_t > > to_erase_ ;
+         * entities to remove from the model are flagged with NO_ID. */
+        std::vector< std::vector< bool > > mesh_entity_to_erase_ ;
         /*! Stores the mapping table between indices for each type of
-        *  element before and after the removal of entities */
-        std::vector< std::vector< index_t > > old_2_new_entity_ ;
+         *  element before and after the removal of entities */
+        std::vector< std::vector< index_t > > old_2_new_mesh_entity_ ;
+        std::vector< std::vector< index_t > > nb_childs_ ;
+
+        std::vector< std::vector< index_t > > old_2_new_geological_entity_ ;
 
         //std::map< EntityType, index_t > entity_type_to_index_ ;
         //std::map< index_t, EntityType > index_to_entity_type_ ;
-        std::vector< EntityType > all_entity_types_ ;
-    };
+//        std::vector< EntityType > all_entity_types_ ;
+
+        std::vector< EntityType > mesh_entity_types_ ;
+        std::vector< EntityType > geological_entity_types_ ;
+
+        EntityType starting_dependency_ ;
+
+    } ;
 
     /*!
-    * @brief Remove a list of entities of the model
-    * @details No check is done on the consistency of this removal
-    *          The entities and all references to them are removed.
-    *          All dependent entities should be in the set of entities to remove,
-    *          with a prior call to get_dependent_entities function.
-    *
-    * @warning NOT FULLY TESTED.
-    *          The client is responsible to set the proper connectivity
-    *          information between the remaining model entities.
-    */
-    void GeoModelEditor::remove_entities( const std::set< gme_t >& entities )
+     * @brief Remove a list of mesh entities of the model
+     * @details No check is done on the consistency of this removal
+     *          The entities and all references to them are removed.
+     *          All dependent entities should be in the set of entities to remove,
+     *          with a prior call to get_dependent_entities function.
+     *
+     */
+    void GeoModelEditor::remove_mesh_entities( const std::set< gme_t >& entities )
     {
         if( entities.empty() ) {
             return ;
         } else {
             GeoModelEntityRemoval remover( model() ) ;
-            remover.remove_entities( entities ) ;
+            remover.remove_mesh_entities( entities ) ;
         }
     }
 
     /*!
-    * @brief Copy macro information from a model
-    * @details Copy the all the model entities and their relationship ignoring their geometry
-    *
-    * @param[in] from Model to copy the information from
-    */
+     * @brief Remove a list of geological entities of the model
+     * @details No check is done on the consistency of this removal
+     *          The entities and all references to them are removed.
+     *          All dependent entities should be in the set of entities to remove,
+     *          with a prior call to get_dependent_entities function.
+     *
+     */
+    void GeoModelEditor::remove_geological_entities(
+        const std::set< gme_t >& entities )
+    {
+        if( entities.empty() ) {
+            return ;
+        } else {
+            GeoModelEntityRemoval remover( model() ) ;
+            remover.remove_geological_entities( entities ) ;
+        }
+    }
+
+    /*!
+     * @brief Copy macro information from a model
+     * @details Copy all the model entities and their relationship ignoring their geometry
+     *
+     * @param[in] from Model to copy the information from
+     */
     void GeoModelEditor::copy_macro_topology( const GeoModel& from )
     {
-        assert_entity_creation_allowed() ;
         copy_mesh_entity_topology< Corner >( from ) ;
         copy_mesh_entity_topology< Line >( from ) ;
         copy_mesh_entity_topology< Surface >( from ) ;
