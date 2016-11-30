@@ -34,7 +34,7 @@ on_success:
     
     echo %branch%
     
-    if %branch% == "default" ; then echo branch_default
+    if %branch% == "default" ; then
     
     cd %appveyor_build_folder%
       
@@ -51,3 +51,5 @@ on_success:
     echo bb.password = %password% >> C:\Users\appveyor\mercurial.ini
       
     hg push --new-branch https://bitbucket.org/ring_team/ringmeshcoverage
+    
+    fi
