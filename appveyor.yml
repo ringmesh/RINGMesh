@@ -34,4 +34,4 @@ on_success:
     
     echo %branch%
     
-    if %branch% == "default" ; then launch_coverage.sh
+    if %branch% == "launch_coveralls_only_on_default" ; then launch_coverage.sh
