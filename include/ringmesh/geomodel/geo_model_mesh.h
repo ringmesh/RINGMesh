@@ -693,6 +693,11 @@ namespace RINGMesh {
             return mesh_->facets_colocater_ann() ;
         }
 
+        /*!
+         * @brief return the AABB tree for the facets of the mesh
+         */
+        const AABBTree2D& aabb() const ;
+
     private:
         /*!
          * Initialize the facets of the GeoModelMesh
@@ -792,6 +797,11 @@ namespace RINGMesh {
          * Initialize the mesh edges
          */
         void initialize() ;
+
+        /*!
+         * @brief return the AABB tree for the edges of the mesh
+         */
+        const AABBTree1D& aabb() const ;
 
     private:
         /// Attached GeoModelMesh owning the vertices
@@ -1128,6 +1138,11 @@ namespace RINGMesh {
             test_and_initialize() ;
             return mesh_->cell_facets_colocater_ann() ;
         }
+
+        /*!
+         * @brief return the AABB tree for the cells of the mesh
+         */
+        const AABBTree3D& aabb() const ;
 
     private:
         /// enum to characterize the action to do concerning a surface

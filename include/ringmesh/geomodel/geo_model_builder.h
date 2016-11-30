@@ -293,8 +293,12 @@ namespace RINGMesh {
          * @{
          */
 
-        void compute_surface_adjacencies( index_t surface_id ) ;
-        void compute_region_adjacencies( index_t region_id ) ;
+        void compute_surface_adjacencies(
+            index_t surface_id,
+            bool recompute_adjacency = true ) ;
+        void compute_region_adjacencies(
+            index_t region_id,
+            bool recompute_adjacency = true ) ;
         void triangulate_surface(
             const RINGMesh::Surface& surface_in,
             index_t surface_out ) ;
