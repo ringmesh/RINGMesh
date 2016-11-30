@@ -215,6 +215,11 @@ namespace RINGMesh {
 
         virtual void clear_edge_linked_objects() = 0 ;
 
+        /*!
+         * @brief Remove vertices not connected to any mesh element
+         */
+        virtual void remove_isolated_vertices() = 0 ;
+
     protected:
         Mesh1DBuilder()
             : MeshBaseBuilder()
@@ -317,6 +322,10 @@ namespace RINGMesh {
             bool remove_isolated_vertices ) = 0 ;
 
         virtual void clear_facet_linked_objects() = 0 ;
+        /*!
+         * @brief Remove vertices not connected to any mesh element
+         */
+        virtual void remove_isolated_vertices() = 0 ;
         /*!@}
          * \name Mesh2D algorithms
          * @{
@@ -437,6 +446,10 @@ namespace RINGMesh {
             bool remove_isolated_vertices ) = 0 ;
 
         virtual void clear_cell_linked_objects() = 0 ;
+        /*!
+         * @brief Remove vertices not connected to any mesh element
+         */
+        virtual void remove_isolated_vertices() = 0 ;
 
     protected:
         Mesh3DBuilder()
@@ -455,6 +468,10 @@ namespace RINGMesh {
         virtual ~MeshAllDBuilder()
         {
         }
+        /*!
+         * @brief Remove vertices not connected to any mesh element
+         */
+        virtual void remove_isolated_vertices() = 0 ;
     protected:
         MeshAllDBuilder()
             : Mesh0DBuilder(), Mesh1DBuilder(), Mesh2DBuilder(), Mesh3DBuilder()
