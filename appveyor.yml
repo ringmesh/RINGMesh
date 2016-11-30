@@ -22,13 +22,21 @@ build_script:
     
     cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON ../..
     
-    cmake --build . --config Debug
+#    cmake --build . --config Debug
     
 #test_script:
 # - cmd: cmake --build . --target RUN_TESTS --config Debug
 
+test_script:
+  - echo in test_script in default
+
 on_success:
-  - if [%APPVEYOR_REPO_BRANCH%]==[default]( 
+  - cmd: >-
+    set branch=%APPVEYOR_REPO_BRANCH%
+
+    echo branch 
+
+    if [ "$branch" == "branch" ]; then
 
     cd %appveyor_build_folder%
       
