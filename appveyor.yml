@@ -34,7 +34,7 @@ on_success:
     
     echo %branch%
     
-    if %branch% == "default" ; then
+    if %branch% == "default" (
     
     cd %appveyor_build_folder%
       
@@ -50,6 +50,4 @@ on_success:
       
     echo bb.password = %password% >> C:\Users\appveyor\mercurial.ini
       
-    hg push --new-branch https://bitbucket.org/ring_team/ringmeshcoverage
-    
-    fi
+    hg push --new-branch https://bitbucket.org/ring_team/ringmeshcoverage )
