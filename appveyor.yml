@@ -24,15 +24,16 @@ build_script:
     
 #    cmake --build . --config Debug
     
-#test_script:
+test_script:
 # - cmd: cmake --build . --target RUN_TESTS --config Debug
+  - echo test
 
 on_success:
-  - cmd: >-
+ - cmd: >-
     set branch=%APPVEYOR_REPO_BRANCH%
-
-    echo branch 
-
+    
+    echo $branch
+    
     cd %appveyor_build_folder%
       
     echo [ui] > C:\Users\appveyor\mercurial.ini
