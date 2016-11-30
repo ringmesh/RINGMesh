@@ -166,7 +166,7 @@ namespace RINGMesh {
     typedef GEO::SmartPointer< Mesh0D > Mesh0D_var ;
     typedef GEO::Factory0< Mesh0D > Mesh0DFactory ;
 #define ringmesh_register_mesh_0d(type) \
-    geo_register_creator(Mesh0DFactory, type, type::type_name_static())
+    geo_register_creator(RINGMesh::Mesh0DFactory, type, type::type_name_static())
 
 
     /*!
@@ -256,7 +256,7 @@ namespace RINGMesh {
     typedef GEO::SmartPointer< Mesh1D > Mesh1D_var ;
     typedef GEO::Factory0< Mesh1D > Mesh1DFactory ;
 #define ringmesh_register_mesh_1d(type) \
-    geo_register_creator(Mesh1DFactory, type, type::type_name_static())
+    geo_register_creator(RINGMesh::Mesh1DFactory, type, type::type_name_static())
 
     /*!
      * class for encapsulating 2D mesh component
@@ -429,7 +429,7 @@ namespace RINGMesh {
     typedef GEO::SmartPointer< Mesh2D > Mesh2D_var ;
     typedef GEO::Factory0< Mesh2D > Mesh2DFactory ;
 #define ringmesh_register_mesh_2d(type) \
-    geo_register_creator(Mesh2DFactory, type, type::type_name_static())
+    geo_register_creator(RINGMesh::Mesh2DFactory, type, type::type_name_static())
 
     /*!
      * class for encapsulating 3D mesh component
@@ -683,7 +683,7 @@ namespace RINGMesh {
     typedef GEO::SmartPointer< Mesh3D > Mesh3D_var ;
     typedef GEO::Factory0< Mesh3D > Mesh3DFactory ;
 #define ringmesh_register_mesh_3d(type) \
-    geo_register_creator(Mesh3DFactory, type, type::type_name_static())
+    geo_register_creator(RINGMesh::Mesh3DFactory, type, type::type_name_static())
 
     class RINGMESH_API MeshAllD: public virtual Mesh0D,
         public virtual Mesh1D,
@@ -707,7 +707,7 @@ namespace RINGMesh {
     typedef GEO::SmartPointer< MeshAllD > MeshAllD_var ;
     typedef GEO::Factory0< MeshAllD > MeshAllDFactory ;
 #define ringmesh_register_mesh_alld(type) \
-    geo_register_creator(MeshAllDFactory, type, type::type_name_static())
+    geo_register_creator(RINGMesh::MeshAllDFactory, type, type::type_name_static())
 }
 
 #endif

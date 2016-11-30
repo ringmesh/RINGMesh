@@ -554,12 +554,9 @@ namespace RINGMesh {
      * @param[in] id The index of the line in the lines_ vector of the parent model
      */
     Line::Line( const GeoModel& model, index_t id, const MeshType type )
-        :
-            GeoModelMeshEntity( model, id ),
-            mesh1d_( Mesh1D::create_mesh( type ) )
+        : GeoModelMeshEntity( model, id )
     {
-        GeoModelMeshEntity::set_mesh( mesh1d_ ) ;
-
+        update_mesh_storage_type( Mesh1D::create_mesh( type ) ) ;
         id_.type = type_name_static() ;
     }
 

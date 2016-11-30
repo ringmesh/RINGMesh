@@ -414,12 +414,9 @@ namespace RINGMesh {
          *  A point is added to its Mesh.
          */
         Corner( const GeoModel& model, index_t id, const MeshType type )
-            :
-                GeoModelMeshEntity( model, id ),
-                mesh0d_( Mesh0D::create_mesh( type ) )
+            : GeoModelMeshEntity( model, id )
         {
-            GeoModelMeshEntity::set_mesh( mesh0d_ ) ;
-
+            update_mesh_storage_type( Mesh0D::create_mesh( type ) ) ;
             Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder( *mesh0d_ ) ;
             builder->create_vertex() ;
 
@@ -440,6 +437,12 @@ namespace RINGMesh {
         }
 
         virtual bool is_mesh_valid() const ;
+
+        void update_mesh_storage_type( Mesh0D* mesh )
+        {
+            mesh0d_ = mesh ;
+            GeoModelMeshEntity::set_mesh( mesh0d_ ) ;
+        }
 
 
     private:
@@ -568,6 +571,12 @@ namespace RINGMesh {
         Line( const GeoModel& model, index_t id, const MeshType type ) ;
 
         virtual bool is_mesh_valid() const ;
+
+        void update_mesh_storage_type( Mesh1D* mesh )
+        {
+            mesh1d_ = mesh ;
+            GeoModelMeshEntity::set_mesh( mesh1d_ ) ;
+        }
 
     private:
         Mesh1D* mesh1d_ ;
@@ -847,16 +856,19 @@ namespace RINGMesh {
         }
     protected:
         Surface( const GeoModel& model, index_t id, const MeshType type )
-            :
-                GeoModelMeshEntity( model, id ),
-                mesh2d_( Mesh2D::create_mesh( type ) )
+            : GeoModelMeshEntity( model, id )
         {
-            GeoModelMeshEntity::set_mesh( mesh2d_ ) ;
-
+            update_mesh_storage_type( Mesh2D::create_mesh( type ) ) ;
             id_.type = type_name_static() ;
         }
 
         virtual bool is_mesh_valid() const ;
+
+        void update_mesh_storage_type( Mesh2D* mesh )
+        {
+            mesh2d_ = mesh ;
+            GeoModelMeshEntity::set_mesh( mesh2d_ ) ;
+        }
     private:
         Mesh2D* mesh2d_ ;
     } ;
@@ -1179,12 +1191,9 @@ namespace RINGMesh {
         }
     protected:
         Region( const GeoModel& model, index_t id, const MeshType type )
-            :
-                GeoModelMeshEntity( model, id ),
-                mesh3d_( Mesh3D::create_mesh( type ) )
+            : GeoModelMeshEntity( model, id )
         {
-            GeoModelMeshEntity::set_mesh( mesh3d_ ) ;
-
+            update_mesh_storage_type( Mesh3D::create_mesh( type ) ) ;
             id_.type = type_name_static() ;
         }
 
@@ -1198,6 +1207,12 @@ namespace RINGMesh {
         virtual bool is_mesh_valid() const ;
 
         bool is_brep_region_valid() const ;
+
+        void update_mesh_storage_type( Mesh3D* mesh )
+        {
+            mesh3d_ = mesh ;
+            GeoModelMeshEntity::set_mesh( mesh3d_ ) ;
+        }
 
     protected:
         /*! Additional information to store oriented boundary Surfaces
