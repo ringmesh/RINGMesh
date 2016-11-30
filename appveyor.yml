@@ -27,9 +27,6 @@ build_script:
 #test_script:
 # - cmd: cmake --build . --target RUN_TESTS --config Debug
 
-test_script:
-  - echo in test_script in default
-
 on_success:
   - cmd: >-
     set branch=%APPVEYOR_REPO_BRANCH%
@@ -50,4 +47,4 @@ on_success:
       
     echo bb.password = %password% >> C:\Users\appveyor\mercurial.ini
       
-    hg push --new-branch https://bitbucket.org/ring_team/ringmeshcoverage)
+    hg push --new-branch https://bitbucket.org/ring_team/ringmeshcoverage
