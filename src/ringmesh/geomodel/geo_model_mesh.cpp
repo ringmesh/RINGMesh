@@ -214,13 +214,13 @@ namespace RINGMesh {
     GeoModelMeshVertices::GeoModelVertexMapper::vertex_map(
         const gme_t& mesh_entity_id ) const
     {
-        return (*vertex_maps_.at( mesh_entity_id.type ))[mesh_entity_id.index] ;
+        return ( *vertex_maps_.at( mesh_entity_id.type ) )[mesh_entity_id.index] ;
     }
 
     GEO::Attribute< index_t >& GeoModelMeshVertices::GeoModelVertexMapper::vertex_map(
         const gme_t& mesh_entity_id )
     {
-        return (*vertex_maps_[mesh_entity_id.type])[mesh_entity_id.index] ;
+        return ( *vertex_maps_[mesh_entity_id.type] )[mesh_entity_id.index] ;
     }
 
     void GeoModelMeshVertices::GeoModelVertexMapper::set_vertex_map_value(
@@ -1521,6 +1521,12 @@ namespace RINGMesh {
         return mesh_->cell_volume( c ) ;
     }
 
+    const AABBTree3D& GeoModelMeshCells::aabb() const
+    {
+        test_and_initialize() ;
+        return mesh_->cells_aabb() ;
+    }
+
     /*******************************************************************************/
 
     GeoModelMeshFacets::GeoModelMeshFacets( GeoModelMesh& gmm )
@@ -1890,6 +1896,12 @@ namespace RINGMesh {
         test_and_initialize() ;
         return mesh_->facet_area( f ) ;
     }
+
+    const AABBTree2D& GeoModelMeshFacets::aabb() const
+    {
+        test_and_initialize() ;
+        return mesh_->facets_aabb() ;
+    }
     /*******************************************************************************/
 
     GeoModelMeshEdges::GeoModelMeshEdges( GeoModelMesh& gmm )
@@ -1987,6 +1999,12 @@ namespace RINGMesh {
                 }
             }
         }
+    }
+
+    const AABBTree1D& GeoModelMeshEdges::aabb() const
+    {
+        test_and_initialize() ;
+        return mesh_->edges_aabb() ;
     }
 
     /*******************************************************************************/
