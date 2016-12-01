@@ -29,9 +29,6 @@ test_script:
   - echo test
 
 on_success:
- - cmd: >-
-    set branch=%APPVEYOR_REPO_BRANCH%
-    
-    echo %branch%
-    
-    if %branch% == launch_coveralls_only_on_default ; then echo toto
+ - IF "%APPVEYOR_REPO_BRANCH%"=="launch_coveralls_only_on_default" (
+     launch_coverage.cmd
+   )
