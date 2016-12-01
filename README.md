@@ -72,7 +72,7 @@ RINGMesh has previously been compiled with:
 * Visual Studio 10 2010 Win64
 * Visual Studio 11 2012 Win64
 * Visual Studio 12 2013 Win64
-
+* Visual Studio 14 2015 Win64
 
 Compiling RINGMesh
 ------------------
