@@ -164,7 +164,8 @@ namespace RINGMesh {
                     // MESH_REPAIR_DUP_F 2 ;
                     GEO::MeshRepairMode mode =
                         static_cast< GEO::MeshRepairMode >( 2 ) ;
-                    Mesh2DBuilder* builder = surface.mesh2d_->get_mesh2d_builder() ;
+                    Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder(
+                        *surface.mesh2d_ ) ;
                     builder->mesh_repair( mode, 0.0 ) ;
 
                     // This might create some small components - remove them
@@ -276,7 +277,8 @@ namespace RINGMesh {
                         Surface& ME =
                             dynamic_cast< Surface& >( modifiable_mesh_entity(
                                 entity_id ) ) ;
-                        Mesh2DBuilder* builder = ME.mesh2d_->get_mesh2d_builder() ;
+                        Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder(
+                            *ME.mesh2d_ ) ;
                         for( index_t f_itr = 0; f_itr < E.nb_mesh_elements();
                             f_itr++ ) {
                             for( index_t fv_itr = 0;
@@ -287,7 +289,7 @@ namespace RINGMesh {
                                         fv_itr )] ) ;
                             }
                         }
-                        builder->delete_vertices( to_delete, false ) ;
+                        builder->delete_vertices( to_delete ) ;
                         Logger::out( "Repair" ) << nb_todelete
                             << " colocated vertices deleted in " << entity_id
                             << std::endl ;
@@ -295,7 +297,7 @@ namespace RINGMesh {
                     } else if( t == 0 ) {
                         Line& ME = dynamic_cast< Line& >( modifiable_mesh_entity(
                             entity_id ) ) ;
-                        Mesh1DBuilder* builder = ME.mesh1d_->get_mesh1d_builder() ;
+                        Mesh1DBuilder_var builder = Mesh1DBuilder::create_builder( *ME.mesh1d_ ) ;
                         for( index_t e_itr = 0; e_itr < E.nb_mesh_elements();
                             e_itr++ ) {
                             builder->set_edge_vertex( e_itr, 0,
@@ -303,7 +305,7 @@ namespace RINGMesh {
                             builder->set_edge_vertex( e_itr, 1,
                                 colocated[E.mesh_element_vertex_index( e_itr, 1 )] ) ;
                         }
-                        builder->delete_vertices( to_delete, false ) ;
+                        builder->delete_vertices( to_delete ) ;
                         Logger::out( "Repair" ) << nb_todelete
                             << " colocated vertices deleted in " << entity_id
                             << std::endl ;
