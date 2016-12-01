@@ -26,7 +26,6 @@ build_script:
     
 test_script:
  - cmd: cmake --build . --target RUN_TESTS --config Debug
-  - echo test
 
 on_success:
  - IF "%APPVEYOR_REPO_BRANCH%"=="default" (
