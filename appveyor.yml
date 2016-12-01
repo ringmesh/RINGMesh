@@ -29,6 +29,6 @@ test_script:
   - echo test
 
 on_success:
- - IF "%APPVEYOR_REPO_BRANCH%"=="launch_coveralls_only_on_default" (
+ - IF "%APPVEYOR_REPO_BRANCH%"=="default" (
      C:\projects\ringmesh\launch_coverage.cmd
    )

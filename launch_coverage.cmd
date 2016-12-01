@@ -1,4 +1,4 @@
-# Script to launch a push on RINGMeshCoverage repo
+REM Script to run a push on RINGMeshCoverage repo (and then run code coverage tools)
  
 cd %appveyor_build_folder%
 echo [ui] > C:\Users\appveyor\mercurial.ini
