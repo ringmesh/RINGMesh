@@ -207,6 +207,7 @@ void decompose_in_tet(
 }
 void test_AABB2D()
 {
+    Logger::out( "TEST" ) << "Test AABB 2D" << std::endl ;
     GeogramMesh2D geogram_mesh ;
     Mesh2DBuilder* builder = geogram_mesh.get_mesh2d_builder() ;
 
@@ -222,10 +223,11 @@ void test_AABB2D()
 
 void test_AABB3D()
 {
+    Logger::out( "TEST" ) << "Test AABB 3D" << std::endl ;
     GeogramMesh3D geogram_mesh_hex ;
     Mesh3DBuilder* builder = geogram_mesh_hex.get_mesh3d_builder() ;
 
-    index_t size = 10 ;
+    index_t size = 3 ;
     add_vertices( builder, size ) ;
     add_hexs( builder, size ) ;
     GeogramMesh3D geogram_mesh_tet ;
@@ -234,8 +236,8 @@ void test_AABB3D()
     for( index_t c = 0; c < geogram_mesh_tet.nb_cells(); c++ ) {
         vec3 barycenter = geogram_mesh_tet.cell_barycenter( c ) ;
         const AABBTree3D& aabb3D = geogram_mesh_tet.cells_aabb() ;
-        index_t containing_cells = aabb3D.containing_cell( barycenter ) ;
-        if( containing_cells != c ) {
+        index_t containing_cell = aabb3D.containing_cell( barycenter ) ;
+        if( containing_cell != c ) {
             throw RINGMeshException( "TEST", "Not the correct cell found" ) ;
         }
     }
