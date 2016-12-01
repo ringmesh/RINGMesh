@@ -197,7 +197,7 @@ void decompose_in_tet(
     GeogramMesh3D& tet_mesh,
     index_t size )
 {
-    Mesh3DBuilder* builder = tet_mesh.get_mesh3d_builder() ;
+    Mesh3DBuilder_var builder = Mesh3DBuilder::create_builder( tet_mesh ) ;
     builder->create_cells( hex_mesh.nb_cells() * 5, GEO::MESH_TET ) ;
     add_vertices( builder, size ) ;
     for( index_t hex = 0; hex < hex_mesh.nb_cells(); hex++ ) {
@@ -209,7 +209,7 @@ void test_AABB2D()
 {
     Logger::out( "TEST" ) << "Test AABB 2D" << std::endl ;
     GeogramMesh2D geogram_mesh ;
-    Mesh2DBuilder* builder = geogram_mesh.get_mesh2d_builder() ;
+    Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder( geogram_mesh ) ;
 
     index_t size = 10 ;
     add_vertices( builder, size ) ;
@@ -225,7 +225,7 @@ void test_AABB3D()
 {
     Logger::out( "TEST" ) << "Test AABB 3D" << std::endl ;
     GeogramMesh3D geogram_mesh_hex ;
-    Mesh3DBuilder* builder = geogram_mesh_hex.get_mesh3d_builder() ;
+    Mesh3DBuilder_var builder = Mesh3DBuilder::create_builder( geogram_mesh_hex ) ;
 
     index_t size = 3 ;
     add_vertices( builder, size ) ;
