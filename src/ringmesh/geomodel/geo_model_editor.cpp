@@ -86,6 +86,47 @@ namespace RINGMesh {
         ringmesh_assert_not_reached ;
     }
 
+    void GeoModelEditor::change_mesh_data_structure(
+        const gme_t& id,
+        const MeshType type )
+    {
+        if( EntityTypeManager::is_corner( id.type ) ) {
+            Corner& corner = dynamic_cast< Corner& >( mesh_entity( id ) ) ;
+            Mesh0D* old_mesh = corner.mesh0d_ ;
+            corner.update_mesh_storage_type( Mesh0D::create_mesh( type ) ) ;
+            Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder(
+                *corner.mesh0d_ ) ;
+            builder->copy( *old_mesh, true, GEO::MeshElementsFlags() ) ;
+            delete old_mesh ;
+        } else if( EntityTypeManager::is_line( id.type ) ) {
+            Line& line = dynamic_cast< Line& >( mesh_entity( id ) ) ;
+            Mesh1D* old_mesh = line.mesh1d_ ;
+            line.update_mesh_storage_type( Mesh1D::create_mesh( type ) ) ;
+            Mesh1DBuilder_var builder = Mesh1DBuilder::create_builder(
+                *line.mesh1d_ ) ;
+            builder->copy( *old_mesh, true, GEO::MeshElementsFlags() ) ;
+            delete old_mesh ;
+        } else if( EntityTypeManager::is_surface( id.type ) ) {
+            Surface& surface = dynamic_cast< Surface& >( mesh_entity( id ) ) ;
+            Mesh2D* old_mesh = surface.mesh2d_ ;
+            surface.update_mesh_storage_type( Mesh2D::create_mesh( type ) ) ;
+            Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder(
+                *surface.mesh2d_ ) ;
+            builder->copy( *old_mesh, true, GEO::MeshElementsFlags() ) ;
+            delete old_mesh ;
+        } else if( EntityTypeManager::is_region( id.type ) ) {
+            Region& region = dynamic_cast< Region& >( mesh_entity( id ) ) ;
+            Mesh3D* old_mesh = region.mesh3d_ ;
+            region.update_mesh_storage_type( Mesh3D::create_mesh( type ) ) ;
+            Mesh3DBuilder_var builder = Mesh3DBuilder::create_builder(
+                *region.mesh3d_ ) ;
+            builder->copy( *old_mesh, true, GEO::MeshElementsFlags() ) ;
+            delete old_mesh ;
+        } else {
+            ringmesh_assert_not_reached ;
+        }
+    }
+
     void GeoModelEditor::set_model_name( const std::string& name )
     {
         model_.geomodel_name_ = name ;

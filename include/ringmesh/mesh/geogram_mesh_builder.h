@@ -48,6 +48,8 @@
 #include <ringmesh/basic/geometry.h>
 #include <ringmesh/geogram_extension/geogram_extension.h>
 #include <ringmesh/mesh/mesh.h>
+#include <ringmesh/mesh/mesh_builder.h>
+#include <ringmesh/mesh/geogram_mesh.h>
 
 namespace RINGMesh {
     class GeoModel ;
@@ -59,8 +61,8 @@ namespace RINGMesh {
     ringmesh_disable_copy( GeogramMeshBaseBuilder ) ;
 
     public:
-        GeogramMeshBaseBuilder( GeogramMeshBase& mesh )
-            : MeshBaseBuilder(), mesh_( mesh )
+        GeogramMeshBaseBuilder()
+            : MeshBaseBuilder(), mesh_( nil )
         {
         }
         virtual ~GeogramMeshBaseBuilder()
@@ -86,7 +88,7 @@ namespace RINGMesh {
         {
             const GeogramMeshBase& geogrammesh =
                 dynamic_cast< const GeogramMeshBase& >( rhs ) ;
-            mesh_.mesh_->copy( *geogrammesh.mesh_, copy_attributes, what ) ;
+            mesh_->mesh_->copy( *geogrammesh.mesh_, copy_attributes, what ) ;
             clear_vertex_linked_objects() ;
         }
 
@@ -94,7 +96,7 @@ namespace RINGMesh {
             const std::string& filename,
             const GEO::MeshIOFlags& ioflags )
         {
-            GEO::mesh_load( filename, *mesh_.mesh_, ioflags ) ;
+            GEO::mesh_load( filename, *mesh_->mesh_, ioflags ) ;
         }
         /*!
          * @brief Removes all the entities and attributes of this mesh.
@@ -105,7 +107,7 @@ namespace RINGMesh {
          */
         virtual void clear( bool keep_attributes, bool keep_memory )
         {
-            mesh_.mesh_->clear( keep_attributes, keep_memory ) ;
+            mesh_->mesh_->clear( keep_attributes, keep_memory ) ;
             clear_vertex_linked_objects() ;
         }
         /**
@@ -117,7 +119,7 @@ namespace RINGMesh {
          */
         virtual void mesh_repair( GEO::MeshRepairMode mode, double colocate_epsilon )
         {
-            GEO::mesh_repair( *mesh_.mesh_, mode, colocate_epsilon ) ;
+            GEO::mesh_repair( *mesh_->mesh_, mode, colocate_epsilon ) ;
 
         }
 
@@ -129,7 +131,7 @@ namespace RINGMesh {
          */
         virtual void set_vertex( index_t v_id, const vec3& vertex )
         {
-            mesh_.mesh_->vertices.point( v_id ) = vertex ;
+            mesh_->mesh_->vertices.point( v_id ) = vertex ;
             clear_vertex_linked_objects() ;
         }
         /*!
@@ -138,7 +140,7 @@ namespace RINGMesh {
          */
         virtual index_t create_vertex()
         {
-            return mesh_.mesh_->vertices.create_vertex() ;
+            return mesh_->mesh_->vertices.create_vertex() ;
         }
         /*!
          * @brief Creates a new vertex.
@@ -158,23 +160,17 @@ namespace RINGMesh {
          */
         virtual index_t create_vertices( index_t nb )
         {
-            return mesh_.mesh_->vertices.create_vertices( nb ) ;
+            return mesh_->mesh_->vertices.create_vertices( nb ) ;
         }
         /*!
          * @brief Deletes a set of vertices.
          * @param[in] to_delete     a vector of size @function nb(). If to_delete[e] is different from 0,
          * then entity e will be destroyed, else it will be kept. On exit, to_delete is modified
          * (it is used for internal bookkeeping).
-         * @param[in] remove_isolated_vertices if true, then the vertices that are no longer incident to any entity are deleted.
          */
-        virtual void delete_vertices(
-            GEO::vector< index_t >& to_delete,
-            bool remove_isolated_vertices )
+        virtual void delete_vertices( GEO::vector< index_t >& to_delete )
         {
-            mesh_.mesh_->vertices.delete_elements( to_delete, false ) ;
-            if( remove_isolated_vertices ) {
-                this->remove_isolated_vertices() ;
-            }
+            mesh_->mesh_->vertices.delete_elements( to_delete, false ) ;
             clear_vertex_linked_objects() ;
         }
         /*!
@@ -186,7 +182,7 @@ namespace RINGMesh {
          */
         virtual void clear_vertices( bool keep_attributes, bool keep_memory )
         {
-            mesh_.mesh_->vertices.clear( keep_attributes, keep_memory ) ;
+            mesh_->mesh_->vertices.clear( keep_attributes, keep_memory ) ;
             clear_vertex_linked_objects() ;
         }
 
@@ -195,18 +191,27 @@ namespace RINGMesh {
             delete_vertex_colocater() ;
         }
 
+        virtual void set_mesh( MeshBase& mesh )
+        {
+            mesh_ = &dynamic_cast< GeogramMeshBase& >( mesh ) ;
+        }
     protected:
 
         void delete_vertex_colocater()
         {
-            if( mesh_.vertices_ann_ != nil ) {
-                delete mesh_.vertices_ann_ ;
-                mesh_.vertices_ann_ = nil ;
+            if( mesh_->vertices_ann_ != nil ) {
+                delete mesh_->vertices_ann_ ;
+                mesh_->vertices_ann_ = nil ;
             }
         }
 
+        void set_geogram_base_mesh( MeshBase& mesh )
+        {
+            mesh_ = &dynamic_cast< GeogramMeshBase& >( mesh ) ;
+        }
+
     private:
-        GeogramMeshBase& mesh_ ;
+        GeogramMeshBase* mesh_ ;
     } ;
 
     class RINGMESH_API GeogramMesh0DBuilder: public virtual GeogramMeshBaseBuilder,
@@ -214,15 +219,23 @@ namespace RINGMesh {
     ringmesh_disable_copy( GeogramMesh0DBuilder ) ;
 
     public:
-        GeogramMesh0DBuilder( GeogramMesh0D& mesh )
-            : GeogramMeshBaseBuilder( mesh ), Mesh0DBuilder(), mesh_( mesh )
+        GeogramMesh0DBuilder()
+            :
+                GeogramMeshBaseBuilder(),
+                Mesh0DBuilder(),
+                mesh_( nil )
         {
         }
         virtual ~GeogramMesh0DBuilder()
         {
         }
+
+        virtual void set_mesh( Mesh0D& mesh ) {
+            mesh_ = &dynamic_cast< GeogramMesh0D& >( mesh ) ;
+            GeogramMeshBaseBuilder::set_mesh( *mesh_ ) ;
+        }
     private:
-        GeogramMesh0D& mesh_ ;
+        GeogramMesh0D* mesh_ ;
     } ;
 
     class RINGMESH_API GeogramMesh1DBuilder: public virtual GeogramMeshBaseBuilder,
@@ -230,14 +243,21 @@ namespace RINGMesh {
     ringmesh_disable_copy( GeogramMesh1DBuilder ) ;
 
     public:
-        GeogramMesh1DBuilder( GeogramMesh1D& mesh )
-            : GeogramMeshBaseBuilder( mesh ), Mesh1DBuilder(), mesh_( mesh )
+        GeogramMesh1DBuilder()
+            :
+                GeogramMeshBaseBuilder(),
+                Mesh1DBuilder(),
+                mesh_( nil )
         {
         }
         virtual ~GeogramMesh1DBuilder()
         {
         }
 
+        virtual void set_mesh( Mesh1D& mesh ) {
+            mesh_ = &dynamic_cast< GeogramMesh1D& >( mesh ) ;
+            GeogramMeshBaseBuilder::set_mesh( *mesh_ ) ;
+        }
         /*!
          * @brief Create a new edge.
          * @param[in] v1_id index of the starting vertex.
@@ -245,7 +265,7 @@ namespace RINGMesh {
          */
         virtual void create_edge( index_t v1_id, index_t v2_id )
         {
-            mesh_.mesh_->edges.create_edge( v1_id, v2_id ) ;
+            mesh_->mesh_->edges.create_edge( v1_id, v2_id ) ;
             clear_edge_linked_objects() ;
         }
         /*!
@@ -255,7 +275,7 @@ namespace RINGMesh {
          */
         virtual index_t create_edges( index_t nb_edges )
         {
-            return mesh_.mesh_->edges.create_edges( nb_edges ) ;
+            return mesh_->mesh_->edges.create_edges( nb_edges ) ;
         }
         /*!
          * @brief Sets a vertex of a facet by local vertex index.
@@ -268,7 +288,7 @@ namespace RINGMesh {
             index_t local_vertex_id,
             index_t vertex_id )
         {
-            mesh_.mesh_->edges.set_vertex( edge_id, local_vertex_id, vertex_id ) ;
+            mesh_->mesh_->edges.set_vertex( edge_id, local_vertex_id, vertex_id ) ;
             clear_edge_linked_objects() ;
         }
         /*!
@@ -282,7 +302,7 @@ namespace RINGMesh {
             GEO::vector< index_t > to_delete,
             bool remove_isolated_vertices )
         {
-            mesh_.mesh_->edges.delete_elements( to_delete, false ) ;
+            mesh_->mesh_->edges.delete_elements( to_delete, false ) ;
             if( remove_isolated_vertices ) {
                 this->remove_isolated_vertices() ;
             }
@@ -297,7 +317,7 @@ namespace RINGMesh {
          */
         virtual void clear_edges( bool keep_attributes, bool keep_memory )
         {
-            mesh_.mesh_->edges.clear( keep_attributes, keep_memory ) ;
+            mesh_->mesh_->edges.clear( keep_attributes, keep_memory ) ;
             clear_edge_linked_objects() ;
         }
 
@@ -306,15 +326,15 @@ namespace RINGMesh {
          */
         virtual void remove_isolated_vertices()
         {
-            GEO::vector< index_t > to_delete( mesh_.nb_vertices(), 1 ) ;
+            GEO::vector< index_t > to_delete( mesh_->nb_vertices(), 1 ) ;
 
-            for( index_t e = 0; e < mesh_.nb_edges(); e++ ) {
+            for( index_t e = 0; e < mesh_->nb_edges(); e++ ) {
                 for( index_t v = 0; v < 2; v++ ) {
-                    index_t vertex_id = mesh_.edge_vertex( e, v ) ;
+                    index_t vertex_id = mesh_->edge_vertex( e, v ) ;
                     to_delete[vertex_id] = 0 ;
                 }
             }
-            delete_vertices( to_delete, false ) ;
+            delete_vertices( to_delete ) ;
 
         }
         virtual void clear_vertex_linked_objects()
@@ -333,14 +353,14 @@ namespace RINGMesh {
          */
         void delete_edge_colocater()
         {
-            if( mesh_.edges_ann_ != nil ) {
-                delete mesh_.edges_ann_ ;
-                mesh_.edges_ann_ = nil ;
+            if( mesh_->edges_ann_ != nil ) {
+                delete mesh_->edges_ann_ ;
+                mesh_->edges_ann_ = nil ;
             }
         }
 
     private:
-        GeogramMesh1D& mesh_ ;
+        GeogramMesh1D* mesh_ ;
     } ;
 
     class RINGMESH_API GeogramMesh2DBuilder: public virtual GeogramMeshBaseBuilder,
@@ -348,14 +368,21 @@ namespace RINGMesh {
     ringmesh_disable_copy( GeogramMesh2DBuilder ) ;
 
     public:
-        GeogramMesh2DBuilder( GeogramMesh2D& mesh )
-            : GeogramMeshBaseBuilder( mesh ), Mesh2DBuilder(), mesh_( mesh )
+        GeogramMesh2DBuilder()
+            :
+                GeogramMeshBaseBuilder(),
+                Mesh2DBuilder(),
+                mesh_( nil )
         {
         }
         virtual ~GeogramMesh2DBuilder()
         {
         }
 
+        virtual void set_mesh( Mesh2D& mesh ) {
+            mesh_ = &dynamic_cast< GeogramMesh2D& >( mesh ) ;
+            GeogramMeshBaseBuilder::set_mesh( *mesh_ ) ;
+        }
         /**
          * \brief Removes the connected components that have an area
          *  smaller than a given threshold.
@@ -368,7 +395,7 @@ namespace RINGMesh {
             double min_area,
             index_t min_facets )
         {
-            GEO::remove_small_connected_components( *mesh_.mesh_, min_area,
+            GEO::remove_small_connected_components( *mesh_->mesh_, min_area,
                 min_facets ) ;
         }
 
@@ -379,9 +406,9 @@ namespace RINGMesh {
                 dynamic_cast< const GeogramMesh2D& >( surface_in ) ;
             GEO::CentroidalVoronoiTesselation CVT( geogram_surf_in.mesh_, 3,
                 GEO::CmdLine::get_arg( "algo:delaunay" ) ) ;
-            CVT.set_points( mesh_.nb_vertices(),
-                mesh_.mesh_->vertices.point_ptr( 0 ) ) ;
-            CVT.compute_surface( mesh_.mesh_, false ) ;
+            CVT.set_points( mesh_->nb_vertices(),
+                mesh_->mesh_->vertices.point_ptr( 0 ) ) ;
+            CVT.compute_surface( mesh_->mesh_, false ) ;
             Logger::instance()->set_minimal( false ) ;
         }
         /*!
@@ -399,7 +426,7 @@ namespace RINGMesh {
                 GEO::vector< index_t > facet_vertices ;
                 copy_std_vector_to_geo_vector( facets, start, end, facet_vertices ) ;
 
-                mesh_.mesh_->facets.create_polygon( facet_vertices ) ;
+                mesh_->mesh_->facets.create_polygon( facet_vertices ) ;
             }
             clear_facet_linked_objects() ;
         }
@@ -412,7 +439,7 @@ namespace RINGMesh {
         virtual index_t create_facet_polygon(
             const GEO::vector< index_t >& vertices )
         {
-            index_t index = mesh_.mesh_->facets.create_polygon( vertices ) ;
+            index_t index = mesh_->mesh_->facets.create_polygon( vertices ) ;
             clear_facet_linked_objects() ;
             return index ;
         }
@@ -424,7 +451,7 @@ namespace RINGMesh {
          */
         virtual index_t create_facet_triangles( index_t nb_triangles )
         {
-            return mesh_.mesh_->facets.create_triangles( nb_triangles ) ;
+            return mesh_->mesh_->facets.create_triangles( nb_triangles ) ;
 
         }
         /*!
@@ -434,7 +461,7 @@ namespace RINGMesh {
          */
         virtual index_t create_facet_quads( index_t nb_quads )
         {
-            return mesh_.mesh_->facets.create_quads( nb_quads ) ;
+            return mesh_->mesh_->facets.create_quads( nb_quads ) ;
         }
         /*!
          * @brief Sets a vertex of a facet by local vertex index.
@@ -447,7 +474,7 @@ namespace RINGMesh {
             index_t local_vertex_id,
             index_t vertex_id )
         {
-            mesh_.mesh_->facets.set_vertex( facet_id, local_vertex_id, vertex_id ) ;
+            mesh_->mesh_->facets.set_vertex( facet_id, local_vertex_id, vertex_id ) ;
             clear_facet_linked_objects() ;
         }
         /*!
@@ -461,7 +488,7 @@ namespace RINGMesh {
             index_t edge_id,
             index_t specifies )
         {
-            mesh_.mesh_->facets.set_adjacent( facet_id, edge_id, specifies ) ;
+            mesh_->mesh_->facets.set_adjacent( facet_id, edge_id, specifies ) ;
         }
         /*
          * \brief Copies a triangle mesh into this Mesh.
@@ -478,7 +505,7 @@ namespace RINGMesh {
         {
             GEO::vector< index_t > copy ;
             copy_std_vector_to_geo_vector( triangles, copy ) ;
-            mesh_.mesh_->facets.assign_triangle_mesh( copy, steal_args ) ;
+            mesh_->mesh_->facets.assign_triangle_mesh( copy, steal_args ) ;
             clear_facet_linked_objects() ;
         }
         /*!
@@ -490,18 +517,18 @@ namespace RINGMesh {
          */
         virtual void clear_facets( bool keep_attributes, bool keep_memory )
         {
-            mesh_.mesh_->facets.clear( keep_attributes, keep_memory ) ;
+            mesh_->mesh_->facets.clear( keep_attributes, keep_memory ) ;
         }
         /*!
          * @brief Retrieve the adjacencies of facets
          */
         virtual void connect_facets()
         {
-            mesh_.mesh_->facets.connect() ;
+            mesh_->mesh_->facets.connect() ;
         }
         virtual void permute_facets( GEO::vector< index_t >& permutation )
         {
-            mesh_.mesh_->facets.permute_elements( permutation ) ;
+            mesh_->mesh_->facets.permute_elements( permutation ) ;
         }
         /*!
          * @brief Deletes a set of facets.
@@ -514,7 +541,7 @@ namespace RINGMesh {
             GEO::vector< index_t >& to_delete,
             bool remove_isolated_vertices )
         {
-            mesh_.mesh_->facets.delete_elements( to_delete, false ) ;
+            mesh_->mesh_->facets.delete_elements( to_delete, false ) ;
             if( remove_isolated_vertices ) {
                 this->remove_isolated_vertices() ;
             }
@@ -525,16 +552,16 @@ namespace RINGMesh {
          */
         virtual void remove_isolated_vertices()
         {
-            GEO::vector< index_t > to_delete( mesh_.nb_vertices(), 1 ) ;
+            GEO::vector< index_t > to_delete( mesh_->nb_vertices(), 1 ) ;
 
-            for( index_t f = 0; f < mesh_.nb_facets(); f++ ) {
-                for( index_t v = 0; v < mesh_.nb_facet_vertices( f ); v++ ) {
-                    index_t vertex_id = mesh_.facet_vertex( f, v ) ;
+            for( index_t f = 0; f < mesh_->nb_facets(); f++ ) {
+                for( index_t v = 0; v < mesh_->nb_facet_vertices( f ); v++ ) {
+                    index_t vertex_id = mesh_->facet_vertex( f, v ) ;
                     to_delete[vertex_id] = 0 ;
                 }
             }
 
-            delete_vertices( to_delete, false ) ;
+            delete_vertices( to_delete ) ;
         }
         virtual void clear_vertex_linked_objects()
         {
@@ -552,9 +579,9 @@ namespace RINGMesh {
          */
         void delete_facet_colocater()
         {
-            if( mesh_.facets_ann_ != nil ) {
-                delete mesh_.facets_ann_ ;
-                mesh_.facets_ann_ = nil ;
+            if( mesh_->facets_ann_ != nil ) {
+                delete mesh_->facets_ann_ ;
+                mesh_->facets_ann_ = nil ;
             }
         }
         /*!
@@ -562,14 +589,14 @@ namespace RINGMesh {
          */
         void delete_facet_aabb()
         {
-            if( mesh_.facets_aabb_ != nil ) {
-                delete mesh_.facets_aabb_ ;
-                mesh_.facets_aabb_ = nil ;
+            if( mesh_->facets_aabb_ != nil ) {
+                delete mesh_->facets_aabb_ ;
+                mesh_->facets_aabb_ = nil ;
             }
         }
 
     private:
-        GeogramMesh2D& mesh_ ;
+        GeogramMesh2D* mesh_ ;
     } ;
 
     class RINGMESH_API GeogramMesh3DBuilder: public virtual GeogramMeshBaseBuilder,
@@ -577,9 +604,16 @@ namespace RINGMesh {
     ringmesh_disable_copy( GeogramMesh3DBuilder ) ;
 
     public:
-        GeogramMesh3DBuilder( GeogramMesh3D& mesh )
-            : GeogramMeshBaseBuilder( mesh ), Mesh3DBuilder(), mesh_( mesh )
+        GeogramMesh3DBuilder()
+            :
+                GeogramMeshBaseBuilder(),
+                Mesh3DBuilder(),
+                mesh_()
         {
+        }
+        virtual void set_mesh( Mesh3D& mesh ) {
+            mesh_ = &dynamic_cast< GeogramMesh3D& >( mesh ) ;
+            GeogramMeshBaseBuilder::set_mesh( *mesh_ ) ;
         }
         virtual ~GeogramMesh3DBuilder()
         {
@@ -593,7 +627,7 @@ namespace RINGMesh {
          */
         virtual index_t create_cells( index_t nb_cells, GEO::MeshCellType type )
         {
-            return mesh_.mesh_->cells.create_cells( nb_cells, type ) ;
+            return mesh_->mesh_->cells.create_cells( nb_cells, type ) ;
         }
         /*
          * \brief Copies a tets mesh into this Mesh.
@@ -610,7 +644,7 @@ namespace RINGMesh {
         {
             GEO::vector< index_t > copy ;
             copy_std_vector_to_geo_vector( tets, copy ) ;
-            mesh_.mesh_->cells.assign_tet_mesh( copy, steal_args ) ;
+            mesh_->mesh_->cells.assign_tet_mesh( copy, steal_args ) ;
             clear_cell_linked_objects() ;
         }
 
@@ -625,7 +659,7 @@ namespace RINGMesh {
             index_t local_vertex_id,
             index_t vertex_id )
         {
-            mesh_.mesh_->cells.set_vertex( cell_id, local_vertex_id, vertex_id ) ;
+            mesh_->mesh_->cells.set_vertex( cell_id, local_vertex_id, vertex_id ) ;
             clear_cell_linked_objects() ;
         }
         /*!
@@ -637,7 +671,7 @@ namespace RINGMesh {
             index_t corner_index,
             index_t vertex_index )
         {
-            mesh_.mesh_->cell_corners.set_vertex( corner_index, vertex_index ) ;
+            mesh_->mesh_->cell_corners.set_vertex( corner_index, vertex_index ) ;
             clear_cell_linked_objects() ;
         }
         /*!
@@ -651,7 +685,7 @@ namespace RINGMesh {
             index_t facet_index,
             index_t cell_adjacent )
         {
-            mesh_.mesh_->cells.set_adjacent( cell_index, facet_index,
+            mesh_->mesh_->cells.set_adjacent( cell_index, facet_index,
                 cell_adjacent ) ;
         }
         /*!
@@ -659,7 +693,7 @@ namespace RINGMesh {
          */
         virtual void connect_cells()
         {
-            mesh_.mesh_->cells.connect() ;
+            mesh_->mesh_->cells.connect() ;
         }
         /*!
          * @brief Applies a permutation to the entities and their attributes.
@@ -674,7 +708,7 @@ namespace RINGMesh {
          */
         virtual void cells_permute_elements( GEO::vector< index_t >& permutation )
         {
-            mesh_.mesh_->cells.permute_elements( permutation ) ;
+            mesh_->mesh_->cells.permute_elements( permutation ) ;
         }
         /*!
          * @brief Removes all the cells and attributes.
@@ -685,11 +719,11 @@ namespace RINGMesh {
          */
         virtual void clear_cells( bool keep_attributes, bool keep_memory )
         {
-            mesh_.mesh_->cells.clear( keep_attributes, keep_memory ) ;
+            mesh_->mesh_->cells.clear( keep_attributes, keep_memory ) ;
         }
         virtual void permute_cells( GEO::vector< index_t >& permutation )
         {
-            mesh_.mesh_->cells.permute_elements( permutation ) ;
+            mesh_->mesh_->cells.permute_elements( permutation ) ;
         }
         /*!
          * @brief Deletes a set of cells.
@@ -702,7 +736,7 @@ namespace RINGMesh {
             GEO::vector< index_t >& to_delete,
             bool remove_isolated_vertices )
         {
-            mesh_.mesh_->cells.delete_elements( to_delete, false ) ;
+            mesh_->mesh_->cells.delete_elements( to_delete, false ) ;
             if( remove_isolated_vertices ) {
                 this->remove_isolated_vertices() ;
             }
@@ -713,16 +747,16 @@ namespace RINGMesh {
          */
         virtual void remove_isolated_vertices()
         {
-            GEO::vector< index_t > to_delete( mesh_.nb_vertices(), 1 ) ;
+            GEO::vector< index_t > to_delete( mesh_->nb_vertices(), 1 ) ;
 
-            for( index_t c = 0; c < mesh_.nb_cells(); c++ ) {
-                for( index_t v = 0; v < mesh_.nb_cell_vertices( c ); v++ ) {
-                    index_t vertex_id = mesh_.cell_vertex( c, v ) ;
+            for( index_t c = 0; c < mesh_->nb_cells(); c++ ) {
+                for( index_t v = 0; v < mesh_->nb_cell_vertices( c ); v++ ) {
+                    index_t vertex_id = mesh_->cell_vertex( c, v ) ;
                     to_delete[vertex_id] = 0 ;
                 }
             }
 
-            delete_vertices( to_delete, false ) ;
+            delete_vertices( to_delete ) ;
         }
 
         virtual void clear_vertex_linked_objects()
@@ -743,13 +777,13 @@ namespace RINGMesh {
          */
         void delete_cell_colocater()
         {
-            if( mesh_.cell_ann_ != nil ) {
-                delete mesh_.cell_ann_ ;
-                mesh_.cell_ann_ = nil ;
+            if( mesh_->cell_ann_ != nil ) {
+                delete mesh_->cell_ann_ ;
+                mesh_->cell_ann_ = nil ;
             }
-            if( mesh_.cell_facets_ann_ != nil ) {
-                delete mesh_.cell_facets_ann_ ;
-                mesh_.cell_facets_ann_ = nil ;
+            if( mesh_->cell_facets_ann_ != nil ) {
+                delete mesh_->cell_facets_ann_ ;
+                mesh_->cell_facets_ann_ = nil ;
             }
         }
         /*!
@@ -757,65 +791,72 @@ namespace RINGMesh {
          */
         void delete_cell_aabb()
         {
-            if( mesh_.cell_aabb_ != nil ) {
-                delete mesh_.cell_aabb_ ;
-                mesh_.cell_aabb_ = nil ;
+            if( mesh_->cell_aabb_ != nil ) {
+                delete mesh_->cell_aabb_ ;
+                mesh_->cell_aabb_ = nil ;
             }
         }
 
     private:
-        GeogramMesh3D& mesh_ ;
+        GeogramMesh3D* mesh_ ;
     } ;
 
-    class RINGMESH_API GeogramMeshAllDBuilder: public  GeogramMesh0DBuilder,
-        public  GeogramMesh1DBuilder,
-        public  GeogramMesh2DBuilder,
-        public  GeogramMesh3DBuilder,
-        public  MeshAllDBuilder {
+    class RINGMESH_API GeogramMeshAllDBuilder: public GeogramMesh0DBuilder,
+        public GeogramMesh1DBuilder,
+        public GeogramMesh2DBuilder,
+        public GeogramMesh3DBuilder,
+        public MeshAllDBuilder {
     ringmesh_disable_copy( GeogramMeshAllDBuilder ) ;
 
     public:
-        GeogramMeshAllDBuilder( GeogramMeshAllD& mesh )
+        GeogramMeshAllDBuilder()
             :
-                GeogramMeshBaseBuilder( mesh ),
-                GeogramMesh0DBuilder( mesh ),
-                GeogramMesh1DBuilder( mesh ),
-                GeogramMesh2DBuilder( mesh ),
-                GeogramMesh3DBuilder( mesh ),
+                GeogramMeshBaseBuilder(),
+                GeogramMesh0DBuilder(),
+                GeogramMesh1DBuilder(),
+                GeogramMesh2DBuilder(),
+                GeogramMesh3DBuilder(),
                 MeshAllDBuilder(),
-                mesh_( mesh )
+                mesh_( nil )
         {
         }
         virtual ~GeogramMeshAllDBuilder()
         {
+        }
+        virtual void set_mesh( MeshAllD& mesh ) {
+            mesh_ = &dynamic_cast< GeogramMeshAllD& >( mesh ) ;
+            GeogramMesh0DBuilder::set_mesh( *mesh_ ) ;
+            GeogramMesh1DBuilder::set_mesh( *mesh_ ) ;
+            GeogramMesh2DBuilder::set_mesh( *mesh_ ) ;
+            GeogramMesh3DBuilder::set_mesh( *mesh_ ) ;
         }
         /*!
          * @brief Remove vertices not connected to any mesh element
          */
         virtual void remove_isolated_vertices()
         {
-            GEO::vector< index_t > to_delete( mesh_.nb_vertices(), 1 ) ;
+            GEO::vector< index_t > to_delete( mesh_->nb_vertices(), 1 ) ;
 
-            for( index_t e = 0; e < mesh_.nb_edges(); e++ ) {
+            for( index_t e = 0; e < mesh_->nb_edges(); e++ ) {
                 for( index_t v = 0; v < 2; v++ ) {
-                    index_t vertex_id = mesh_.edge_vertex( e, v ) ;
+                    index_t vertex_id = mesh_->edge_vertex( e, v ) ;
                     to_delete[vertex_id] = 0 ;
                 }
             }
-            for( index_t f = 0; f < mesh_.nb_facets(); f++ ) {
-                for( index_t v = 0; v < mesh_.nb_facet_vertices( f ); v++ ) {
-                    index_t vertex_id = mesh_.facet_vertex( f, v ) ;
+            for( index_t f = 0; f < mesh_->nb_facets(); f++ ) {
+                for( index_t v = 0; v < mesh_->nb_facet_vertices( f ); v++ ) {
+                    index_t vertex_id = mesh_->facet_vertex( f, v ) ;
                     to_delete[vertex_id] = 0 ;
                 }
             }
-            for( index_t c = 0; c < mesh_.nb_cells(); c++ ) {
-                for( index_t v = 0; v < mesh_.nb_cell_vertices( c ); v++ ) {
-                    index_t vertex_id = mesh_.cell_vertex( c, v ) ;
+            for( index_t c = 0; c < mesh_->nb_cells(); c++ ) {
+                for( index_t v = 0; v < mesh_->nb_cell_vertices( c ); v++ ) {
+                    index_t vertex_id = mesh_->cell_vertex( c, v ) ;
                     to_delete[vertex_id] = 0 ;
                 }
             }
 
-            delete_vertices( to_delete, false ) ;
+            delete_vertices( to_delete ) ;
         }
 
         virtual void clear_vertex_linked_objects()
@@ -826,7 +867,7 @@ namespace RINGMesh {
             clear_cell_linked_objects() ;
         }
     private:
-        GeogramMeshAllD& mesh_ ;
+        GeogramMeshAllD* mesh_ ;
     } ;
 
 }
