@@ -1,5 +1,4 @@
- #!/bin/bash
- # Script to launch a push on RINGMeshCoverage repo
+# Script to launch a push on RINGMeshCoverage repo
  
 cd %appveyor_build_folder%
 echo [ui] > C:\Users\appveyor\mercurial.ini
