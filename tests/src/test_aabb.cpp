@@ -48,6 +48,14 @@
 
 using namespace RINGMesh ;
 
+void add_vertices( Mesh1DBuilder* builder, index_t size )
+{
+    builder->create_vertices( size ) ;
+    for( index_t i = 0; i < size; i++ ) {
+        builder->set_vertex( i, vec3( i, i + 1, 0 ) ) ;
+    }
+}
+
 void add_vertices( Mesh2DBuilder* builder, index_t size )
 {
     builder->create_vertices( size * size ) ;
@@ -69,6 +77,15 @@ void add_vertices( Mesh3DBuilder* builder, index_t size )
                 builder->set_vertex( id++, vec3( i, j, k ) ) ;
             }
         }
+    }
+}
+
+void add_edges( Mesh1DBuilder* builder, index_t size )
+{
+    builder->create_edges( size - 1 ) ;
+    for( index_t i = 0; i < size - 1; i++ ) {
+        builder->set_edge_vertex( i, 0, i ) ;
+        builder->set_edge_vertex( i, 1, i + 1 ) ;
     }
 }
 
@@ -305,7 +322,6 @@ void test_AABB2D()
 
 void test_locate_cell_on_3D_mesh( const GeogramMesh3D& mesh )
 {
-
     for( index_t c = 0; c < mesh.nb_cells(); c++ ) {
         vec3 barycenter = mesh.cell_barycenter( c ) ;
         const AABBTree3D& aabb3D = mesh.cells_aabb() ;
@@ -315,13 +331,14 @@ void test_locate_cell_on_3D_mesh( const GeogramMesh3D& mesh )
         }
     }
 }
+
 void test_AABB3D()
 {
     Logger::out( "TEST" ) << "Test AABB 3D" << std::endl ;
     GeogramMesh3D geogram_mesh_hex ;
     Mesh3DBuilder_var builder = Mesh3DBuilder::create_builder( geogram_mesh_hex ) ;
 
-    index_t size = ;
+    index_t size = 10 ;
     add_vertices( builder, size ) ;
     add_hexs( builder, size ) ;
     test_locate_cell_on_3D_mesh( geogram_mesh_hex ) ;
@@ -339,6 +356,33 @@ void test_AABB3D()
     test_locate_cell_on_3D_mesh( geogram_mesh_pyrs ) ;
 }
 
+void test_locate_edge_on_1D_mesh( const GeogramMesh1D& mesh )
+{
+    double distance ;
+    vec3 nearest_point ;
+    for( index_t e = 0; e < mesh.nb_edges(); e++ ) {
+        vec3 barycenter = mesh.edge_barycenter( e ) ;
+        const AABBTree1D& aabb1D = mesh.edges_aabb() ;
+        index_t closest_edge = aabb1D.closest_edge( barycenter, nearest_point,
+            distance ) ;
+        if( closest_edge != e ) {
+            throw RINGMeshException( "TEST", "Not the correct edge found" ) ;
+        }
+    }
+}
+
+void test_AABB1D()
+{
+    Logger::out( "TEST" ) << "Test AABB 1D" << std::endl ;
+    GeogramMesh1D geogram_mesh ;
+    Mesh1DBuilder_var builder = Mesh1DBuilder::create_builder( geogram_mesh ) ;
+
+    index_t size = 10 ;
+    add_vertices( builder, size ) ;
+    add_edges( builder, size ) ;
+    test_locate_edge_on_1D_mesh( geogram_mesh ) ;
+}
+
 int main()
 {
     using namespace RINGMesh ;
@@ -347,6 +391,7 @@ int main()
         default_configure() ;
 
         Logger::out( "TEST" ) << "Test AABB" << std::endl ;
+        test_AABB1D() ;
         test_AABB2D() ;
         test_AABB3D() ;
 
