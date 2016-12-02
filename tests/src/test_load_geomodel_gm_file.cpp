@@ -38,24 +38,20 @@
 #include <ringmesh/geomodel/geo_model.h>
 #include <ringmesh/geomodel/geo_model_validity.h>
 #include <ringmesh/io/io.h>
+
 /*!
  * @file Compare loading of surface GeoModel ml (Gocad)
  * and gm (RINGMesh own format) files
  * @author Arnaud Botella
  */
 
-int main()
-{
+namespace {
     using namespace RINGMesh ;
 
-    try {
-        default_configure() ;
-
-        Logger::out( "TEST" ) << "Test IO for a GeoModel in .gm" << std::endl ;
-
-        GeoModel in ;
+    void load_geomodel( GeoModel& in, const std::string& filename )
+    {
         std::string input_model_file_name( ringmesh_test_data_path ) ;
-        input_model_file_name += "modelA1.ml" ;
+        input_model_file_name += filename ;
 
         bool loaded_model_is_valid = geomodel_load( in, input_model_file_name ) ;
 
@@ -64,7 +60,10 @@ int main()
                 "Failed when loading model " + in.name()
                     + ": the loaded model is not valid." ) ;
         }
+    }
 
+    void save_and_compare_geomodels( const GeoModel& in )
+    {
         std::string output_model_file_name( ringmesh_test_output_path ) ;
         output_model_file_name += "modelA1_saved_out.gm" ;
         geomodel_save( in, output_model_file_name ) ;
@@ -85,6 +84,28 @@ int main()
         if( !compare_files( output_model_file_name, output_model_file_name_bis ) ) {
             throw RINGMeshException( "TEST", "FAILED" ) ;
         }
+    }
+
+    void test_file( const std::string& filename )
+    {
+        GeoModel in ;
+        load_geomodel( in, filename ) ;
+        save_and_compare_geomodels( in ) ;
+    }
+}
+
+int main()
+{
+    using namespace RINGMesh ;
+
+    try {
+        default_configure() ;
+
+        Logger::out( "TEST" ) << "Test IO for a GeoModel in .gm" << std::endl ;
+
+        test_file( "modelA1_version0.gm" ) ;
+        test_file( "modelA1_version1.gm" ) ;
+
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category() ) << e.what() << std::endl ;
         return 1 ;

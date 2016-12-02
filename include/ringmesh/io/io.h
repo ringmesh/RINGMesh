@@ -141,7 +141,9 @@ namespace RINGMesh {
 
     void RINGMESH_API zip_file( zipFile zf, const std::string& name ) ;
 
-    void RINGMESH_API unzip_file( unzFile uz, char filename[MAX_FILENAME] ) ;
+    void RINGMESH_API unzip_file( unzFile uz, const char filename[MAX_FILENAME] ) ;
+
+    void RINGMESH_API unzip_current_file( unzFile uz, const char filename[MAX_FILENAME] ) ;
 
 }
 #endif
