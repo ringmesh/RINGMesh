@@ -499,6 +499,8 @@ namespace RINGMesh {
 
         virtual void set_mesh( MeshAllD& mesh ) = 0 ;
 
+        virtual void remove_isolated_vertices() = 0 ;
+
         static MeshAllDBuilder* create_builder( MeshAllD& mesh ) ;
     protected:
         MeshAllDBuilder()

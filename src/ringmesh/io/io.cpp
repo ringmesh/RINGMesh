@@ -113,16 +113,15 @@ namespace RINGMesh {
         file.close() ;
     }
 
-    void unzip_file( unzFile uz, char filename[MAX_FILENAME] )
+    void unzip_file( unzFile uz, const char filename[MAX_FILENAME] )
     {
-        char read_buffer[ READ_SIZE] ;
-        unz_file_info file_info ;
-        if( unzGetCurrentFileInfo( uz, &file_info, filename,
-        MAX_FILENAME,
-        NULL, 0, NULL, 0 ) != UNZ_OK ) {
-            unzClose( uz ) ;
-            throw RINGMeshException( "ZLIB", "Could not read file global info" ) ;
-        }
+        unzLocateFile( uz, filename, 0 ) ;
+        unzip_current_file( uz, filename ) ;
+    }
+
+    void unzip_current_file( unzFile uz, const char filename[MAX_FILENAME] )
+    {
+        char read_buffer[READ_SIZE] ;
         if( unzOpenCurrentFile( uz ) != UNZ_OK ) {
             unzClose( uz ) ;
             throw RINGMeshException( "ZLIB", "Could not open file" ) ;
@@ -150,6 +149,7 @@ namespace RINGMesh {
         fclose( out ) ;
         unzCloseCurrentFile( uz ) ;
     }
+
     /***************************************************************************/
 
 
