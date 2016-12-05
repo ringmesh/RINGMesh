@@ -526,7 +526,7 @@ namespace RINGMesh {
         const vec3& p5 )
     {
         vec3 vertices[6] = { p0, p1, p2, p3, p4, p5 } ;
-        GEO::Sign signs[6] ;
+        GEO::Sign signs[5] ;
         for( index_t f = 0; f < GEO::MeshCellDescriptors::prism_descriptor.nb_facets;
             f++ ) {
             signs[f] =
@@ -536,9 +536,9 @@ namespace RINGMesh {
                     vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][2]].data() ) ;
         }
         return ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0 && signs[3] >= 0
-            && signs[4] >= 0 && signs[5] >= 0 )
+            && signs[4] >= 0 )
             || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0
-                && signs[4] <= 0 && signs[5] <= 0 ) ;
+                && signs[4] <= 0 ) ;
     }
     /*!
      * Tests if a point is inside a hexahedron
@@ -565,7 +565,7 @@ namespace RINGMesh {
         const vec3& p7 )
     {
         vec3 vertices[8] = { p0, p1, p2, p3, p4, p5, p6, p7 } ;
-        GEO::Sign signs[8] ;
+        GEO::Sign signs[6] ;
         for( index_t f = 0; f < GEO::MeshCellDescriptors::hex_descriptor.nb_facets;
             f++ ) {
             signs[f] =
@@ -575,9 +575,9 @@ namespace RINGMesh {
                     vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][2]].data() ) ;
         }
         return ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0 && signs[3] >= 0
-            && signs[4] >= 0 && signs[5] >= 0 && signs[6] >= 0 && signs[7] >= 0 )
+            && signs[4] >= 0 && signs[5] >= 0 )
             || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0
-                && signs[4] <= 0 && signs[5] <= 0 && signs[6] <= 0 && signs[7] <= 0 ) ;
+                && signs[4] <= 0 && signs[5] <= 0 ) ;
     }
 
     /*!

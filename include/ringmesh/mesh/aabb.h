@@ -118,7 +118,7 @@ namespace RINGMesh {
          * @param[in] action The functor used to compute intersection
          * with the element boxes when they intersect \p box
          * @tparam EvalIntersection this functor should have an operator() defined like this:
-         *  void operator()( index_t cur_box ) const ;
+         *  void operator()( index_t cur_box ) ;
          * where cur_box is the element box index
          * (e.g. in the case of AABBTree2D, this index is a facet index)
          */
