@@ -336,7 +336,7 @@ namespace RINGMesh {
              * @param[in] old2new Map between actual model indexing and wanted
              * model indexing. Its size is equal to the number of model vertices.
              */
-            void update_mesh_entity_maps(
+            void update_mesh_entity_maps_and_gmes(
                 const std::vector< index_t >& old2new ) ;
 
             /*! @}

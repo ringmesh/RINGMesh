@@ -271,7 +271,7 @@ namespace RINGMesh {
         return vertex_map( mesh_entity_id ) ;
     }
 
-    void GeoModelMeshVertices::GeoModelVertexMapper::update_mesh_entity_maps(
+    void GeoModelMeshVertices::GeoModelVertexMapper::update_mesh_entity_maps_and_gmes(
         const std::vector< index_t >& old2new )
     {
         const std::vector< EntityType >& all_mesh_entity_types =
@@ -742,7 +742,7 @@ namespace RINGMesh {
         Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder( *mesh_ ) ;
         builder->delete_vertices( to_delete_geo ) ;
 
-        vertex_mapper_.update_mesh_entity_maps( to_delete ) ;
+        vertex_mapper_.update_mesh_entity_maps_and_gmes( to_delete ) ;
     }
 
     /*******************************************************************************/
