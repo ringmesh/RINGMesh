@@ -1152,7 +1152,7 @@ namespace RINGMesh {
     {
         GeoModelMeshEntity& E = mesh_entity( to ) ;
         MeshBaseBuilder_var builder = MeshBaseBuilder::create_builder( *E.mesh_ ) ;
-        builder->copy( mesh, true, GEO::MESH_ALL_ELEMENTS ) ;
+        builder->copy( mesh, true ) ;
         // Nothing else to do ? To test [JP]
     }
 
