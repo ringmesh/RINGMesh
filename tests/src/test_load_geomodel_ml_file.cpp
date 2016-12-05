@@ -93,6 +93,14 @@ int main()
         if( !compare_files( output_model_file_name, output_model_file_name_bis ) ) {
             throw RINGMeshException( "TEST", "FAILED" ) ;
         }
+
+        // Load a model without region : 6 surfaces defining a cube with holes
+        // between surfaces (all surface borders are free borders)
+        GeoModel not_sealed_cube_geomodel ;
+        std::string input_cube_model_file_name( ringmesh_test_data_path ) ;
+        input_cube_model_file_name += "not_sealed_cube.ml" ;
+        geomodel_load( not_sealed_cube_geomodel, input_cube_model_file_name ) ;
+
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category() ) << e.what() << std::endl ;
         return 1 ;
