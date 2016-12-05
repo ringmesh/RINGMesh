@@ -87,9 +87,11 @@ namespace RINGMesh {
 
         static GeoModelIOHandler* get_handler( const std::string& filename ) ;
 
-        virtual bool load( const std::string& filename, GeoModel& model ) = 0 ;
+        virtual bool load( const std::string& filename, GeoModel& geomodel ) = 0 ;
 
-        virtual void save( const GeoModel& model, const std::string& filename ) = 0 ;
+        virtual void save(
+            const GeoModel& geomodel,
+            const std::string& filename ) = 0 ;
 
     protected:
         GeoModelIOHandler()

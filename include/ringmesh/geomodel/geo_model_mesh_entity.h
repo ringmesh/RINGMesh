@@ -89,7 +89,7 @@ namespace RINGMesh {
         virtual bool is_valid() const
         {
             return is_identification_valid() && is_connectivity_valid()
-                && is_mesh_valid() && are_model_vertex_indices_valid() ;
+                && is_mesh_valid() && are_geomodel_vertex_indices_valid() ;
         }
         virtual bool is_connectivity_valid() const ;
 
@@ -277,11 +277,11 @@ namespace RINGMesh {
 
     protected:
         GeoModelMeshEntity(
-            const GeoModel& model,
+            const GeoModel& geomodel,
             index_t id,
             const std::string& name = "No_name",
             GEOL_FEATURE geological_feature = NO_GEOL )
-            : GeoModelEntity( model, id, name, geological_feature ), mesh_( NULL )
+            : GeoModelEntity( geomodel, id, name, geological_feature ), mesh_( NULL )
         {
         }
         virtual void copy( const GeoModelEntity& from )
@@ -309,11 +309,11 @@ namespace RINGMesh {
         bool is_in_boundary_connectivity_valid() const ;
         bool is_parent_connectivity_valid() const ;
         /*!
-         * @brief Check that model vertex indices are consistent
+         * @brief Check that geomodel vertex indices are consistent
          * with what is stored at the GeoModel level.
          * @todo Review: this dependancy is bad, and puts us in a lot of trouble [JP]
          */
-        bool are_model_vertex_indices_valid() const ;
+        bool are_geomodel_vertex_indices_valid() const ;
 
     protected:
 
@@ -413,8 +413,8 @@ namespace RINGMesh {
         /*! @brief Creates a Corner.
          *  A point is added to its Mesh.
          */
-        Corner( const GeoModel& model, index_t id, const MeshType type )
-            : GeoModelMeshEntity( model, id )
+        Corner( const GeoModel& geomodel, index_t id, const MeshType type )
+            : GeoModelMeshEntity( geomodel, id )
         {
             update_mesh_storage_type( Mesh0D::create_mesh( type ) ) ;
             Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder( *mesh0d_ ) ;
@@ -568,7 +568,7 @@ namespace RINGMesh {
             return *mesh1d_ ;
         }
     protected:
-        Line( const GeoModel& model, index_t id, const MeshType type ) ;
+        Line( const GeoModel& geomodel, index_t id, const MeshType type ) ;
 
         virtual bool is_mesh_valid() const ;
 
@@ -855,8 +855,8 @@ namespace RINGMesh {
             return *mesh2d_ ;
         }
     protected:
-        Surface( const GeoModel& model, index_t id, const MeshType type )
-            : GeoModelMeshEntity( model, id )
+        Surface( const GeoModel& geomodel, index_t id, const MeshType type )
+            : GeoModelMeshEntity( geomodel, id )
         {
             update_mesh_storage_type( Mesh2D::create_mesh( type ) ) ;
             id_.type = type_name_static() ;
@@ -876,8 +876,8 @@ namespace RINGMesh {
     /*!
      * @brief A GeoModelEntity of type REGION
      *
-     * @details A Region a volumetric connected component of the model defined
-     * by a set of surfaces.
+     * @details A Region a volumetric connected component of the geomodel
+     * defined by a set of surfaces.
      * The Region can be only defined by its boundary Surfaces.
      * Its volumetric mesh is optional.
      */
@@ -1190,8 +1190,8 @@ namespace RINGMesh {
             return *mesh3d_ ;
         }
     protected:
-        Region( const GeoModel& model, index_t id, const MeshType type )
-            : GeoModelMeshEntity( model, id )
+        Region( const GeoModel& geomodel, index_t id, const MeshType type )
+            : GeoModelMeshEntity( geomodel, id )
         {
             update_mesh_storage_type( Mesh3D::create_mesh( type ) ) ;
             id_.type = type_name_static() ;

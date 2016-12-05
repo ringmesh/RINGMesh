@@ -320,7 +320,7 @@ namespace {
     {
         vec3 first_facet_center = surface.mesh_element_barycenter( 0 ) ;
         region_ann.get_neighbors( first_facet_center, colocated_cell_facet_centers,
-            surface.model().epsilon() ) ;
+            surface.geomodel().epsilon() ) ;
         return static_cast< index_t >( colocated_cell_facet_centers.size() ) ;
     }
 

@@ -427,7 +427,7 @@ namespace RINGMesh {
 
     void add_line_edges_to_mesh( const Line& line, GEO::Mesh& M )
     {
-        const GeoModelMeshVertices& model_vertices = line.model().mesh.vertices ;
+        const GeoModelMeshVertices& model_vertices = line.geomodel().mesh.vertices ;
         index_t from = M.edges.create_edges( line.nb_mesh_elements() ) ;
         for( index_t i = 0; i < line.nb_mesh_elements(); ++i ) {
             index_t v0 = model_vertices.model_vertex_id( line.gme_id(), i, 0 ) ;
@@ -470,7 +470,7 @@ namespace RINGMesh {
 
     void add_surface_facets_to_mesh( const Surface& surface, GEO::Mesh& M )
     {
-        const GeoModelMeshVertices& model_vertices = surface.model().mesh.vertices ;
+        const GeoModelMeshVertices& model_vertices = surface.geomodel().mesh.vertices ;
         for( index_t j = 0; j < surface.nb_mesh_elements(); ++j ) {
             index_t nbv = surface.nb_mesh_element_vertices( j ) ;
             GEO::vector< index_t > ids( nbv ) ;

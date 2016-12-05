@@ -111,9 +111,9 @@ namespace RINGMesh {
         virtual bool is_on_voi() const = 0 ;
         virtual bool is_valid() const = 0 ;
 
-        const GeoModel& model() const
+        const GeoModel& geomodel() const
         {
-            return model_ ;
+            return geomodel_ ;
         }
         const std::string& name() const
         {
@@ -149,15 +149,15 @@ namespace RINGMesh {
          * @details Client code should only create GeoModelEntities through
          * GeoModelEditor derived classes.
          *
-         * @param[in] model Geomodel owning the Entity to create
+         * @param[in] geomodel Geomodel owning the Entity to create
          * @param[in] id Index of the entity in the corresponding vector in the model
          * @param[in] name Name of the entity
          * @param[in] geological_feature Geological feature of the entity, none by default.
          */
-        GeoModelEntity( const GeoModel& model, index_t id, const std::string& name =
+        GeoModelEntity( const GeoModel& geomodel, index_t id, const std::string& name =
             "Unnamed", GEOL_FEATURE geological_feature = NO_GEOL )
             :
-                model_( model ),
+                geomodel_( geomodel ),
                 id_( type_name_static(), id ),
                 name_( name ),
                 geol_feature_( geological_feature )
@@ -174,8 +174,8 @@ namespace RINGMesh {
 
     protected:
         /// Reference to the GeoModel owning this entity
-        const GeoModel& model_ ;
-        /// Unique identifier of this GeoModelEntity in the model
+        const GeoModel& geomodel_ ;
+        /// Unique identifier of this GeoModelEntity in the geomodel
         gme_t id_ ;
         /// Name of the entity - default is "Unnamed"
         std::string name_ ;
@@ -190,7 +190,7 @@ namespace RINGMesh {
     public:
         friend class GeoModelEditor ;
 
-        Universe( const GeoModel& model ) ;
+        Universe( const GeoModel& geomodel ) ;
 
         static const EntityType universe_type_name()
         {

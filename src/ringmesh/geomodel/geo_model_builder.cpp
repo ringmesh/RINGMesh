@@ -140,7 +140,7 @@ namespace {
         if( L.nb_vertices() != rhs_vertices.size() ) {
             return false ;
         }
-        const GeoModelMeshVertices& model_vertices = L.model().mesh.vertices ;
+        const GeoModelMeshVertices& model_vertices = L.geomodel().mesh.vertices ;
         bool equal = true ;
         for( index_t i = 0; i < L.nb_vertices(); i++ ) {
             if( rhs_vertices[i]
@@ -201,10 +201,10 @@ namespace {
                 for( index_t j = 0; j < surface.nb_mesh_element_vertices( f );
                     j++ ) {
                     if( inexact_equal( surface.mesh_element_vertex( f, j ), v0,
-                        surface.model().epsilon() ) ) {
+                        surface.geomodel().epsilon() ) ) {
                         index_t j_next = surface.next_facet_vertex_index( f, j ) ;
                         if( inexact_equal( surface.mesh_element_vertex( f, j_next ),
-                            v1, surface.model().epsilon() ) ) {
+                            v1, surface.geomodel().epsilon() ) ) {
                             e = j ;
                             return true ;
                         }
@@ -235,7 +235,7 @@ namespace {
             cell_facet ) ;
         vec3 facet_barycenter = surface.mesh_element_barycenter( facet ) ;
         return inexact_equal( cell_facet_barycenter, facet_barycenter,
-            region.model().epsilon() ) ;
+            region.geomodel().epsilon() ) ;
     }
 
     bool find_cell_facet_from_facet(
@@ -298,7 +298,7 @@ namespace {
                 for( index_t j = 0;
                     j < surface.nb_mesh_element_vertices( element_id ); j++ ) {
                     if( inexact_equal( surface.mesh_element_vertex( element_id, j ),
-                        v, surface.model().epsilon() ) ) {
+                        v, surface.geomodel().epsilon() ) ) {
                         vertex_id = surface.mesh_element_vertex_index( element_id,
                             j ) ;
                         return true ;
@@ -335,7 +335,7 @@ namespace {
                 for( index_t j = 0;
                     j < entity.nb_mesh_element_vertices( element_id ); j++ ) {
                     if( inexact_equal( entity.mesh_element_vertex( element_id, j ),
-                        v, entity.model().epsilon() ) ) {
+                        v, entity.geomodel().epsilon() ) ) {
                         vertex_id = entity.mesh_element_vertex_index( element_id,
                             j ) ;
                         return true ;
@@ -357,14 +357,14 @@ namespace {
     {
         for( index_t v = 0; v < surface.nb_mesh_element_vertices( f ); v++ ) {
             if( !inexact_equal( surface.mesh_element_vertex( f, v ), v0,
-                surface.model().epsilon() ) ) continue ;
+                surface.geomodel().epsilon() ) ) continue ;
             index_t prev_v = surface.prev_facet_vertex_index( f, v ) ;
             index_t next_v = surface.next_facet_vertex_index( f, v ) ;
             if( inexact_equal( surface.mesh_element_vertex( f, prev_v ), v1,
-                surface.model().epsilon() ) ) {
+                surface.geomodel().epsilon() ) ) {
                 return prev_v ;
             } else if( inexact_equal( surface.mesh_element_vertex( f, next_v ), v1,
-                surface.model().epsilon() ) ) {
+                surface.geomodel().epsilon() ) ) {
                 return v ;
             }
         }
@@ -381,7 +381,7 @@ namespace {
         for( index_t f = 0; f < region.nb_cell_facets( cell ); f++ ) {
             vec3 cell_facet_barycenter = region.cell_facet_barycenter( cell, f ) ;
             if( inexact_equal( cell_facet_barycenter, facet_barycenter,
-                surface.model().epsilon() ) ) {
+                surface.geomodel().epsilon() ) ) {
                 return f ;
             }
         }
