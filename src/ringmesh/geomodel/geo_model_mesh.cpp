@@ -271,7 +271,7 @@ namespace RINGMesh {
         return vertex_map( mesh_entity_id ) ;
     }
 
-    void GeoModelMeshVertices::GeoModelVertexMapper::update_mesh_entity_maps_and_gmes(
+    void GeoModelMeshVertices::GeoModelVertexMapper::update_mesh_entity_maps(
         const std::vector< index_t >& old2new )
     {
         const std::vector< EntityType >& all_mesh_entity_types =
@@ -287,13 +287,13 @@ namespace RINGMesh {
                     index_t new_m_id = old2new[old_m_id] ;
                     set_vertex_map_value( E.gme_id(), v, new_m_id ) ;
 
-                    // Merge gme_vertices_ information
-                    if( std::find( gme_vertices_[new_m_id].begin(),
-                        gme_vertices_[new_m_id].end(), GMEVertex( E.gme_id(), v ) )
-                        == gme_vertices_[new_m_id].end() ) {
-                        gme_vertices_[new_m_id].push_back(
-                            GMEVertex( E.gme_id(), v ) ) ;
-                    }
+//                    // Merge gme_vertices_ information
+//                    if( std::find( gme_vertices_[new_m_id].begin(),
+//                        gme_vertices_[new_m_id].end(), GMEVertex( E.gme_id(), v ) )
+//                        == gme_vertices_[new_m_id].end() ) {
+//                        gme_vertices_[new_m_id].push_back(
+//                            GMEVertex( E.gme_id(), v ) ) ;
+//                    }
                 }
             }
         }
@@ -370,6 +370,7 @@ namespace RINGMesh {
     void GeoModelMeshVertices::GeoModelVertexMapper::fill_gme_vertices()
     {
         // Set the size of gme_vertices to the total number of model vertices
+        gme_vertices_.clear() ;
         gme_vertices_.resize( model_vertices_.nb() ) ;
 
         for( index_t v = 0; v < model_vertices_.nb(); v++ ) {
@@ -548,6 +549,9 @@ namespace RINGMesh {
 
         // Remove colocated vertices
         remove_colocated() ;
+
+        // Create gme_vertices for each model point.
+        vertex_mapper_.fill_gme_vertices() ;
     }
 
     void GeoModelMeshVertices::clear()
@@ -742,7 +746,7 @@ namespace RINGMesh {
         Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder( *mesh_ ) ;
         builder->delete_vertices( to_delete_geo ) ;
 
-        vertex_mapper_.update_mesh_entity_maps_and_gmes( to_delete ) ;
+        vertex_mapper_.update_mesh_entity_maps( to_delete ) ;
     }
 
     /*******************************************************************************/
