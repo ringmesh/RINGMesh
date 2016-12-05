@@ -692,12 +692,12 @@ namespace {
      */
     bool surface_boundary_valid( const Surface& S )
     {
-        const GeoModelMeshVertices& model_vertices = S.model().mesh.vertices ;
+        const GeoModelMeshVertices& model_vertices = S.geomodel().mesh.vertices ;
         std::vector< index_t > invalid_corners ;
         for( index_t f = 0; f < S.nb_mesh_elements(); ++f ) {
             for( index_t v = 0; v < S.nb_mesh_element_vertices( f ); ++v ) {
                 if( S.facet_adjacent_index( f, v ) == NO_ID
-                    && !is_edge_on_line( S.model(),
+                    && !is_edge_on_line( S.geomodel(),
                         model_vertices.model_vertex_id( S.gme_id(), f, v ),
                         model_vertices.model_vertex_id( S.gme_id(), f,
                             S.next_facet_vertex_index( f, v ) ) ) ) {
@@ -713,7 +713,7 @@ namespace {
             std::ostringstream file ;
             file << validity_errors_directory << "/invalid_boundary_surface_"
                 << S.index() << ".mesh" ;
-            save_edges( file, S.model(), invalid_corners ) ;
+            save_edges( file, S.geomodel(), invalid_corners ) ;
 
             Logger::warn( "GeoModel" ) << " Invalid surface boundary: "
                 << invalid_corners.size() / 2 << " boundary edges of " << S.gme_id()
@@ -747,7 +747,7 @@ namespace {
             vec3 center = surface.mesh_element_barycenter( f ) ;
             std::vector< index_t > result ;
             if( !cell_facet_barycenter_ann.get_neighbors( center, result,
-                surface.model().epsilon() ) ) {
+                surface.geomodel().epsilon() ) ) {
                 unconformal_facets.push_back( f ) ;
             }
         }

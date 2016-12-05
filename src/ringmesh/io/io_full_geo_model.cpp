@@ -207,7 +207,7 @@ namespace {
         const GEO::MeshIOFlags& flags )
     {
         if( geo_model_entity_mesh.type_name() == Region::type_name_static() ) {
-            const Region& region = geo_model_entity_mesh.model().region(
+            const Region& region = geo_model_entity_mesh.geomodel().region(
                 geo_model_entity_mesh.index() ) ;
             if( !region.is_meshed() ) {
                 // a region is not necessary meshed.

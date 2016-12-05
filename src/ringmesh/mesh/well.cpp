@@ -302,7 +302,7 @@ namespace RINGMesh {
 
 
     WellGroup::WellGroup()
-          : model_( nil )
+          : geomodel_( nil )
     {
     }
 
@@ -418,16 +418,16 @@ namespace RINGMesh {
      */
     void WellGroup::add_well( const GEO::Mesh& mesh, const std::string& name )
     {
-        ringmesh_assert( model() ) ;
+        ringmesh_assert( geomodel() ) ;
         if( find_well( name ) != NO_ID ) return ;
         wells_.push_back( new Well ) ;
         Well& new_well = *wells_.back() ;
         new_well.set_name( name ) ;
 
-        std::vector< Box3d > boxes( model()->nb_surfaces() ) ;
-        for( index_t s = 0; s < model()->nb_surfaces(); s++ ) {
+        std::vector< Box3d > boxes( geomodel()->nb_surfaces() ) ;
+        for( index_t s = 0; s < geomodel()->nb_surfaces(); s++ ) {
             Box3d& box = boxes[s] ;
-            const Surface& surface = model()->surface( s ) ;
+            const Surface& surface = geomodel()->surface( s ) ;
             for( unsigned int p = 0; p < surface.nb_vertices(); p++ ) {
                 box.add_point( surface.vertex( p ) ) ;
             }
@@ -444,7 +444,7 @@ namespace RINGMesh {
             box.add_point( v_from ) ;
             box.add_point( v_to ) ;
             std::vector< index_t > potential_surfaces ;
-            for( index_t s = 0; s < model()->nb_surfaces(); s++ ) {
+            for( index_t s = 0; s < geomodel()->nb_surfaces(); s++ ) {
                 if( box.bboxes_overlap( boxes[s] ) ) {
                     potential_surfaces.push_back( s ) ;
                 }
@@ -452,7 +452,7 @@ namespace RINGMesh {
             std::vector< LineInstersection > intersections ;
             for( index_t s = 0; s < potential_surfaces.size(); s++ ) {
                 index_t s_id = potential_surfaces[s] ;
-                const Surface& surface = model()->surface( s_id ) ;
+                const Surface& surface = geomodel()->surface( s_id ) ;
                 EdgeConformerAction action( surface, v_from, v_to, intersections ) ;
                 surface.facets_aabb().compute_bbox_element_bbox_intersections( box,
                     action ) ;
@@ -476,11 +476,11 @@ namespace RINGMesh {
                     vec3 direction = v_prev - intersections[index].intersection_ ;
                     bool sign =
                         dot( direction,
-                        model()->surface( intersections[ index ].surface_id_ ).facet_normal(
+                            geomodel()->surface( intersections[ index ].surface_id_ ).facet_normal(
                                 intersections[index].trgl_id_ ) ) > 0 ;
                     last_sign = sign ;
                     index_t region = find_region(
-                        *model_, intersections[index].surface_id_, sign ) ;
+                        *geomodel_, intersections[index].surface_id_, sign ) ;
                     if( region != NO_ID ) {
                         index_t new_well_part_id = new_well.create_part( region ) ;
                         WellPart& well_part = new_well.part( new_well_part_id ) ;
@@ -526,11 +526,11 @@ namespace RINGMesh {
         }
         index_t region = NO_ID ;
         if( start.surface_id_ != NO_ID )
-            region = find_region( *model_, start.surface_id_, !last_sign ) ;
+            region = find_region( *geomodel_, start.surface_id_, !last_sign ) ;
         else {
             Box3d box ;
-            for( index_t s = 0; s < model()->nb_surfaces(); s++ ) {
-                const Surface& surface = model()->surface( s ) ;
+            for( index_t s = 0; s < geomodel()->nb_surfaces(); s++ ) {
+                const Surface& surface = geomodel()->surface( s ) ;
                 for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
                     box.add_point( surface.vertex( v ) ) ;
                 }
@@ -543,7 +543,7 @@ namespace RINGMesh {
             edge_box.add_point( v_from ) ;
             edge_box.add_point( v_to ) ;
             std::vector< index_t > potential_surfaces ;
-            for( index_t s = 0; s < model()->nb_surfaces(); s++ ) {
+            for( index_t s = 0; s < geomodel()->nb_surfaces(); s++ ) {
                 if( edge_box.bboxes_overlap( boxes[s] ) ) {
                     potential_surfaces.push_back( s ) ;
                 }
@@ -551,7 +551,7 @@ namespace RINGMesh {
             std::vector< LineInstersection > intersections ;
             for( index_t s = 0; s < potential_surfaces.size(); s++ ) {
                 index_t s_id = potential_surfaces[s] ;
-                const Surface& surface = model()->surface( s_id ) ;
+                const Surface& surface = geomodel()->surface( s_id ) ;
                 EdgeConformerAction action( surface, v_from, v_to, intersections ) ;
                 surface.facets_aabb().compute_bbox_element_bbox_intersections( box,
                     action ) ;
@@ -571,10 +571,11 @@ namespace RINGMesh {
                 }
                 index_t index = indices[0] ;
                 vec3 direction = v_from - intersections[index].intersection_ ;
-                bool sign = dot( direction,
-                                 model()->surface( intersections[ index ].surface_id_ ).facet_normal(
-                        intersections[index].trgl_id_ ) ) > 0 ;
-                region = find_region( *model_, intersections[index].surface_id_,
+                bool sign =
+                    dot( direction,
+                        geomodel()->surface( intersections[index].surface_id_ ).facet_normal(
+                            intersections[index].trgl_id_ ) ) > 0 ;
+                region = find_region( *geomodel_, intersections[index].surface_id_,
                     sign ) ;
             }
         }
