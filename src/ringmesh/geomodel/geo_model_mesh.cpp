@@ -287,13 +287,13 @@ namespace RINGMesh {
                     index_t new_m_id = old2new[old_m_id] ;
                     set_vertex_map_value( E.gme_id(), v, new_m_id ) ;
 
-//                    // Merge gme_vertices_ information
-//                    if( std::find( gme_vertices_[new_m_id].begin(),
-//                        gme_vertices_[new_m_id].end(), GMEVertex( E.gme_id(), v ) )
-//                        == gme_vertices_[new_m_id].end() ) {
-//                        gme_vertices_[new_m_id].push_back(
-//                            GMEVertex( E.gme_id(), v ) ) ;
-//                    }
+                    // Merge gme_vertices information
+                    if( std::find( gme_vertices_[new_m_id].begin(),
+                        gme_vertices_[new_m_id].end(), GMEVertex( E.gme_id(), v ) )
+                        == gme_vertices_[new_m_id].end() ) {
+                        gme_vertices_[new_m_id].push_back(
+                            GMEVertex( E.gme_id(), v ) ) ;
+                    }
                 }
             }
         }
@@ -512,6 +512,7 @@ namespace RINGMesh {
                 mesh_builder->set_vertex( count, E.vertex( v ) ) ;
                 // Map from vertices of MeshEntities to GeoModelMeshVertices
                 vertex_mapper_.set_vertex_map_value( E.gme_id(), v, count ) ;
+                vertex_mapper_.add_to_gme_vertices( GMEVertex( E.gme_id(), v ), count ) ;
                 // Global vertex index increment
                 count++ ;
             }
@@ -549,9 +550,6 @@ namespace RINGMesh {
 
         // Remove colocated vertices
         remove_colocated() ;
-
-        // Create gme_vertices for each model point.
-        vertex_mapper_.fill_gme_vertices() ;
     }
 
     void GeoModelMeshVertices::clear()
@@ -736,9 +734,7 @@ namespace RINGMesh {
 
         // Empty the gme_vertices_ of the deleted vertices and erase them
         for( index_t v = 0; v < nb(); ++v ) {
-            if( to_delete_geo[v] == 1 ) {
-                vertex_mapper_.clear_model_vertex_gmes( v ) ;
-            }
+            vertex_mapper_.clear_model_vertex_gmes( v ) ;
         }
 
         // Delete the vertices - false is to not remove
