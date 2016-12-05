@@ -320,6 +320,12 @@ namespace RINGMesh {
                 index_t mesh_entity_vertex_index,
                 index_t model_entity_vertex_index ) ;
 
+            /*!
+             * @brief Sizes and fills the vector of GMEVertices for all the
+             * GeoModelMeshEntities of the GeoModel
+             */
+            void fill_gme_vertices() ;
+
             void add_to_gme_vertices(
                 const GMEVertex& gme_vertex,
                 index_t model_vertex_index ) ;
@@ -330,7 +336,7 @@ namespace RINGMesh {
              * @param[in] old2new Map between actual model indexing and wanted
              * model indexing. Its size is equal to the number of model vertices.
              */
-            void update_mesh_entity_maps_and_gmes(
+            void update_mesh_entity_maps(
                 const std::vector< index_t >& old2new ) ;
 
             /*! @}
@@ -425,12 +431,6 @@ namespace RINGMesh {
              * @brief Unbinds all the GeoModelMeshEntity vertex maps
              */
             void clear_all_mesh_entity_vertex_map() ;
-
-            /*!
-             * @brief Sizes and fills the vector of GMEVertices for all the
-             * GeoModelMeshEntities of the GeoModel
-             */
-            void fill_gme_vertices() ;
 
             /*!
              * @brief Add to GMEVertices those corresponding of a given GeoModelMeshENtity
