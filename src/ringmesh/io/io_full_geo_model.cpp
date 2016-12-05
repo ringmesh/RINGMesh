@@ -2307,7 +2307,7 @@ namespace RINGMesh {
 
     bool geomodel_load( GeoModel& model, const std::string& filename )
     {
-        if( !GEO::FileSystem::is_file(filename ) ) {
+        if( !GEO::FileSystem::is_file( filename ) ) {
                 throw RINGMeshException( "I/O",
                     "File does not exist: " + filename ) ;
         }
