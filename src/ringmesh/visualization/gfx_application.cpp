@@ -188,7 +188,10 @@ namespace RINGMesh {
         for( index_t i = 0; i < GM_.nb_geological_entity_types(); i++ ) {
             entity_types_.push_back( GM_.geological_entity_type( i ) ) ;
         }
-        meshed_regions_ = GM_.region( 0 ).is_meshed() ;
+        meshed_regions_ = false ;
+        if( GM_.nb_regions() > 0 ) {
+            meshed_regions_ = GM_.region( 0 ).is_meshed() ;
+        }
         if( meshed_regions_ ) {
             show_volume_ = true ;
         }
