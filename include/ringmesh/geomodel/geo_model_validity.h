@@ -56,7 +56,7 @@ namespace RINGMesh {
 namespace RINGMesh {
     /*! 
      * @brief Set the global default directory to store invalid entities of 
-     *  models to be the current working directory
+     *  geomodels to be the current working directory
      */
     static std::string validity_errors_directory =
         GEO::FileSystem::get_current_working_directory() ;
@@ -69,20 +69,20 @@ namespace RINGMesh {
     void RINGMESH_API set_validity_errors_directory( const std::string& directory ) ;
 
     /*!
-     * @brief Check global model validity
+     * @brief Check global geomodel validity
      * @details In debug mode problematic vertices, edges, entities are
      *          saved in the validity_errors_directory
      *          An optional expensive check of the intersections between
-     *          the model surfaces can be disabled using command line
+     *          the geomodel surfaces can be disabled using command line
      *          argument "in:intersection_check"
-     * @todo Check the consistency of gme_vertices vs. model_vertex_id
+     * @todo Check the consistency of gme_vertices vs. geomodel_vertex_id
      * @todo Add options to expensive tests
      */
     bool RINGMESH_API is_geomodel_valid( const GeoModel& geomodel ) ;
 
     /*!
      * @brief Check the validity of all individual entities
-     * @details Check that the entities belong to this model,
+     * @details Check that the entities belong to this geomodel,
      *          call the check validity for each entity
      */
     bool RINGMESH_API are_geomodel_meshed_entities_valid(

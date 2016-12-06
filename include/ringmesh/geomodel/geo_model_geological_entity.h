@@ -83,11 +83,11 @@ namespace RINGMesh {
 
     protected:
         GeoModelGeologicalEntity(
-            const GeoModel& model,
+            const GeoModel& geomodel,
             index_t id = NO_ID,
             const std::string& name = "unnamed",
             GEOL_FEATURE geological_feature = NO_GEOL )
-            : GeoModelEntity( model, id, name, geological_feature )
+            : GeoModelEntity( geomodel, id, name, geological_feature )
         {
         }
         virtual void copy( const GeoModelGeologicalEntity& from )
@@ -107,8 +107,8 @@ namespace RINGMesh {
     /// derive the base class to define new entities. [JP]
     class RINGMESH_API Contact: public GeoModelGeologicalEntity {
     public:
-        Contact( const GeoModel& model )
-            : GeoModelGeologicalEntity( model )
+        Contact( const GeoModel& geomodel )
+            : GeoModelGeologicalEntity( geomodel )
         {
             id_.type = type_name_static() ;
         }
@@ -131,8 +131,8 @@ namespace RINGMesh {
 
     class RINGMESH_API Interface: public GeoModelGeologicalEntity {
     public:
-        Interface( const GeoModel& model )
-            : GeoModelGeologicalEntity( model )
+        Interface( const GeoModel& geomodel )
+            : GeoModelGeologicalEntity( geomodel )
         {
             id_.type = type_name_static() ;
         }
@@ -155,8 +155,8 @@ namespace RINGMesh {
 
     class RINGMESH_API Layer: public GeoModelGeologicalEntity {
     public:
-        Layer( const GeoModel& model )
-            : GeoModelGeologicalEntity( model )
+        Layer( const GeoModel& geomodel )
+            : GeoModelGeologicalEntity( geomodel )
         {
             id_.type = type_name_static() ;
         }

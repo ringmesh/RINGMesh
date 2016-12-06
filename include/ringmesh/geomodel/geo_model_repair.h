@@ -51,9 +51,9 @@ namespace RINGMesh {
      * @brief Try repairing a supposedly invalid GeoModel
      * @details Remove colocated vertices in all GeoModelMeshEntity.
      *          Remove degenerated edges and facets in Surfaces and Lines.
-     * @warning The Mesh of the model is deleted.
+     * @warning The Mesh of the geomodel is deleted.
      *          This function will by no mean fix all errors in a GeoModel
-     *          It has been tested on a very small number of models.
+     *          It has been tested on a very small number of geomodels.
      *
      * @todo Convenience design to change. This allows an easy access for repair
      * to the internal meshes of the GeoModel. This class is otherwise artificial.
@@ -72,8 +72,8 @@ namespace RINGMesh {
             LINE_BOUNDARY_ORDER
         } ;
     public:
-        GeoModelRepair( GeoModel& model )
-            : GeoModelBuilder( model )
+        GeoModelRepair( GeoModel& geomodel )
+            : GeoModelBuilder( geomodel )
         {
         }
         virtual ~GeoModelRepair()
@@ -88,7 +88,7 @@ namespace RINGMesh {
         /*!
          * All implemented repair for a GeoModel.
          */
-        void geo_model_mesh_repair() ;
+        void geomodel_mesh_repair() ;
         /*!
          * Removes the colocated vertices in all the GeoModelMeshEntity within
          * the GeoModel. GeoModelMeshEntity without any vertex anymore
@@ -149,16 +149,16 @@ namespace RINGMesh {
 
         /*!
          * @brief Remove degenerate facets and edges from the Surface
-         *        and Line of the model.
+         *        and Line of the geomodel.
          * @param[out] to_remove gme_t of the entities (Surface and Line)
-         * of the model that are empty once degenerate entities are removed
+         * of the geomodel that are empty once degenerate entities are removed
          * @pre Colocated vertices have already been removed
          */
         void remove_degenerate_facets_and_edges( std::set< gme_t >& to_remove ) ;
 
         /*!
-         * @brief Remove colocated vertices of the model.
-         * @param[out] to_remove gme_t of the entities of the model that
+         * @brief Remove colocated vertices of the geomodel.
+         * @param[out] to_remove gme_t of the entities of the geomodel that
          *  are empty once degenerate entities are removed
          */
         void remove_colocated_entity_vertices( std::set< gme_t >& to_remove ) ;
