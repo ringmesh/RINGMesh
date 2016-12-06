@@ -109,7 +109,7 @@ namespace RINGMesh {
     /*!
      * RINGMesh exception class.
      * Example:
-     *       throw RINGMeshException( "I/O", "Error while loading the model" ) ;
+     *       throw RINGMeshException( "I/O", "Error while loading the GeoModel" ) ;
      *
      *       try {
      *          ...

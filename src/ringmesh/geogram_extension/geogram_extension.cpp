@@ -667,32 +667,6 @@ namespace RINGMesh {
         return ( 1.0 / count ) * result ;
     }
 
-    /*!
-     * Get vertices when an edge is divide into \p nb_parts parts
-     * @param[in] mesh the mesh
-     * @param[in] edge the edge id in \p mesh
-     * @param[in] nb_parts the number of edge division
-     * @param[out] points the points which divide the edge
-     */
-    void divide_edge_in_parts(
-        const GEO::Mesh& mesh,
-        index_t edge,
-        index_t nb_parts,
-        std::vector< vec3 >& points )
-    {
-        points.resize( nb_parts - 1 ) ;
-        double pond = 1. / nb_parts ;
-        vec3 node0 = GEO::Geom::mesh_vertex( mesh, mesh.edges.vertex( edge, 0 ) ) ;
-        vec3 node1 = GEO::Geom::mesh_vertex( mesh, mesh.edges.vertex( edge, 1 ) ) ;
-        for( index_t i = 0; i < nb_parts - 1; i++ ) {
-            for( index_t j = 0; j < 3; j++ ) {
-                points[i][j] = ( i + 1 ) * pond * node1[j]
-                    + ( 1. - ( i + 1 ) * pond ) * node0[j] ;
-            }
-        }
-
-    }
-
     void divide_edge_in_parts(
         vec3& node0,
         vec3& node1,
@@ -708,73 +682,6 @@ namespace RINGMesh {
                         + ( 1. - ( i + 1 ) * pond ) * node0[j] ;
                 }
             }
-        }
-    }
-    /*!
-     * Gets the closest local vertex index in a mesh cell of a point
-     * @param[in] mesh the mesh
-     * @param[in] p the point to test
-     * @param[in] t the cell index
-     * @return the local vertex index
-     */
-    index_t get_nearest_vertex_index(
-        const GEO::Mesh& mesh,
-        const vec3& p,
-        index_t t )
-    {
-        double dist = GEO::Numeric::max_float64() ;
-        index_t result = NO_ID ;
-        for( index_t v = 0; v < mesh.cells.nb_vertices( t ); v++ ) {
-            double distance = length2(
-                GEO::Geom::mesh_vertex( mesh, mesh.cells.vertex( t, v ) ) - p ) ;
-            if( distance < dist ) {
-                result = v ;
-            }
-        }
-        return result ;
-    }
-
-    void barycentric_coordinates_point_inside_mesh_facet(
-        const vec3& point_inside_facet,
-        const GEO::Mesh& mesh,
-        index_t facet,
-        std::vector< double >& barycentric_coordinates )
-    {
-        const GEO::MeshVertices& mesh_vertices = mesh.vertices ;
-        const GEO::MeshFacets& mesh_facets = mesh.facets ;
-        ringmesh_assert( facet < mesh_facets.nb() ) ;
-        const index_t nb_vertices = mesh_facets.nb_vertices( facet ) ;
-        barycentric_coordinates.resize( nb_vertices, 0. ) ;
-        double sum = 0. ;
-        for( index_t facet_vertex_itr = 0;
-            facet_vertex_itr < mesh_facets.nb_vertices( facet );
-            ++facet_vertex_itr ) {
-            const index_t cur_vertex_id = mesh_facets.vertex( facet,
-                facet_vertex_itr ) ;
-            const vec3& cur_vertex_vec = mesh_vertices.point( cur_vertex_id ) ;
-
-            const index_t prev_local_id = mesh_facets.prev_corner_around_facet(
-                facet, cur_vertex_id ) ;
-            const index_t prev_id = mesh_facets.vertex( facet, prev_local_id ) ;
-            const vec3& prev_vec = mesh_vertices.point( prev_id ) ;
-            const index_t next_local_id = mesh_facets.next_corner_around_facet(
-                facet, cur_vertex_id ) ;
-            const index_t next_id = mesh_facets.vertex( facet, next_local_id ) ;
-            const vec3& next_vec = mesh_vertices.point( next_id ) ;
-
-            const double numerator = ( cotangent( point_inside_facet, cur_vertex_vec,
-                prev_vec )
-                + cotangent( point_inside_facet, cur_vertex_vec, next_vec ) ) ;
-            const double denominator =
-                ( point_inside_facet - cur_vertex_vec ).length2() ;
-            ringmesh_assert( denominator > global_epsilon ) ;
-            barycentric_coordinates[facet_vertex_itr] = numerator / denominator ;
-            sum += barycentric_coordinates[facet_vertex_itr] ;
-        }
-
-        ringmesh_assert( sum > global_epsilon ) ;
-        for( index_t i = 0; i < nb_vertices; ++i ) {
-            barycentric_coordinates[i] /= sum ;
         }
     }
 

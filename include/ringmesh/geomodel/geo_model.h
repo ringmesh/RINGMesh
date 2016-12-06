@@ -49,7 +49,7 @@
 
 /*!
  * @file ringmesh/geo_model.h
- * @brief Class representing a geological structural model: GeoModel
+ * @brief Class representing a geological structural geomodel: GeoModel
  * @author Jeanne Pellerin and Arnaud Botella
  */
 
@@ -177,7 +177,7 @@ namespace RINGMesh {
     } ;
 
     /*!
-     * @brief The class to describe a geological model represented 
+     * @brief The class to describe a geological geomodel represented 
      * by its boundary surfaces and whose regions can be optionally meshed
      */
     class RINGMESH_API GeoModel {
@@ -405,7 +405,7 @@ namespace RINGMesh {
         EntityTypeManager entity_type_manager_ ;
 
         /*!
-         * \name Mandatory entities of the model
+         * \name Mandatory entities of the geomodel
          * @{
          */
         std::vector< Corner* > corners_ ;
@@ -428,7 +428,7 @@ namespace RINGMesh {
          * @}
          */
 
-        /*! Optional WellGroup associated with the model
+        /*! Optional WellGroup associated with the geomodel
          * @todo Move it out. It has nothing to do here. [JP]
          */
         const WellGroup* wells_ ;
