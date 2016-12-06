@@ -1361,14 +1361,6 @@ namespace RINGMesh {
          * that are not anymore in any GeoModelEntity
          */
         void erase_invalid_vertices() ;
-        /*!
-         * Gets the mesh entities order
-         * @return the const order
-         */
-        index_t get_order() const
-        {
-            return order_value_ ;
-        }
 
     private:
         /*! Attached GeoModel */
@@ -1384,7 +1376,6 @@ namespace RINGMesh {
         /// Optional duplication mode to compute the duplication of cells on surfaces
         mutable GeoModelMeshCells::DuplicateMode mode_ ;
         /// Order of the GeoModelMesh
-        index_t order_value_ ;
 
     public:
         // This is not compliant with the guidelines 
