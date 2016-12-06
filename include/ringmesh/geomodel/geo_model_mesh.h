@@ -1389,11 +1389,11 @@ namespace RINGMesh {
         void copy_mesh( MeshAllD& mesh ) const
         {
             MeshAllDBuilder_var builder = MeshAllDBuilder::create_builder( mesh ) ;
-            builder->copy( *mesh_, false, GEO::MESH_ALL_ELEMENTS ) ;
+            builder->copy( *mesh_, false ) ;
         }
         void save_mesh( const std::string& filename ) const
         {
-            mesh_->save_mesh( filename, GEO::MeshIOFlags() ) ;
+            mesh_->save_mesh( filename ) ;
         }
 
         GEO::AttributesManager& vertex_attribute_manager() const

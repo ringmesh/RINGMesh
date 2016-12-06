@@ -76,19 +76,15 @@ namespace RINGMesh {
          * @brief Copy a mesh into this one.
          * @param[in] rhs a const reference to the mesh to be copied.
          * @param[in] copy_attributes if true, all attributes are copied.
-         * @param[in] what a combination of MESH_VERTICES, MESH_EDGES, MESH_FACETS, MESH_CELLS flags.
-         * Set to MESH_ALL_ELEMENTS to copy everything (default).
-         * If MESH_VERTICES is not set, then the mesh is cleared.
          * @return a modifiable reference to the point that corresponds to the vertex.
          */
         virtual void copy(
             const MeshBase& rhs,
-            bool copy_attributes,
-            GEO::MeshElementsFlags what )
+            bool copy_attributes )
         {
             const GeogramMeshBase& geogrammesh =
                 dynamic_cast< const GeogramMeshBase& >( rhs ) ;
-            mesh_->mesh_->copy( *geogrammesh.mesh_, copy_attributes, what ) ;
+            mesh_->mesh_->copy( *geogrammesh.mesh_, copy_attributes, GEO::MESH_ALL_ELEMENTS ) ;
             clear_vertex_linked_objects() ;
         }
 

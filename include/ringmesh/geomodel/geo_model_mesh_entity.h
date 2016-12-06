@@ -176,11 +176,9 @@ namespace RINGMesh {
             return mesh_->gfx_mesh() ;
         }
 
-        void save(
-            const std::string& filename,
-            const GEO::MeshIOFlags& ioflags ) const
+        void save( const std::string& filename ) const
         {
-            mesh_->save_mesh( filename, ioflags ) ;
+            mesh_->save_mesh( filename ) ;
         }
         /*!
          * @brief Return the colocater for the Entity vertices.

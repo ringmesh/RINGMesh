@@ -203,8 +203,7 @@ namespace {
 
     bool save_mesh(
         const GeoModelMeshEntity& geo_model_entity_mesh,
-        const std::string& name,
-        const GEO::MeshIOFlags& flags )
+        const std::string& name )
     {
         if( geo_model_entity_mesh.type_name() == Region::type_name_static() ) {
             const Region& region = geo_model_entity_mesh.model().region(
@@ -214,7 +213,7 @@ namespace {
                 return false ;
             }
         }
-        geo_model_entity_mesh.save( name, flags ) ;
+        geo_model_entity_mesh.save( name ) ;
         return true ;
     }
 
@@ -347,7 +346,6 @@ namespace {
         }
     } ;
 
-
     /************************************************************************/
 
     template< typename ENTITY >
@@ -374,15 +372,13 @@ namespace {
         Logger* logger = Logger::instance() ;
         bool logger_status = logger->is_quiet() ;
         logger->set_quiet( true ) ;
-        GEO::MeshIOFlags flags ;
-        bool is_saved = save_mesh( geo_model_entity_mesh, name, flags ) ;
+        bool is_saved = save_mesh( geo_model_entity_mesh, name ) ;
         logger->set_quiet( logger_status ) ;
 
         if( is_saved ) {
             zip_file( zf, name ) ;
             GEO::FileSystem::delete_file( name ) ;
         }
-
     }
 
     template< typename ENTITY >
@@ -496,7 +492,7 @@ namespace {
             gm.mesh.copy_mesh( mesh ) ;
 
             Logger::instance()->set_minimal( true ) ;
-            mesh.save_mesh( filename, GEO::MeshIOFlags() ) ;
+            mesh.save_mesh( filename ) ;
             Logger::instance()->set_minimal( false ) ;
         }
     } ;
