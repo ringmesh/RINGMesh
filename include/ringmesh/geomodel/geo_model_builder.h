@@ -334,12 +334,12 @@ namespace RINGMesh {
          * and regions depending on the building flags
          * @note Valdity is not checked
          */
-        void build_model_from_surfaces() ;
+        void build_geomodel_from_surfaces() ;
 
         /*!
          * @brief Finish up model building and complete missing information.
          */
-        void end_model() ;
+        void end_geomodel() ;
 
     protected:
         void set_surface_facet_adjacencies(
@@ -419,10 +419,10 @@ namespace RINGMesh {
         virtual ~GeoModelBuilderFile()
         {
         }
-        void build_model()
+        void build_geomodel()
         {
             load_file() ;
-            end_model() ;
+            end_geomodel() ;
         }
 
     private:

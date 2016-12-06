@@ -192,7 +192,7 @@ namespace RINGMesh {
         if( meshed_regions_ ) {
             show_volume_ = true ;
         }
-        GM_gfx_.set_geo_model( GM_ ) ;
+        GM_gfx_.set_geomodel( GM_ ) ;
         if( !app.colormaps_.empty() ) {
             GM_gfx_.attribute.set_colormap( app.colormaps_[0].texture ) ;
         }

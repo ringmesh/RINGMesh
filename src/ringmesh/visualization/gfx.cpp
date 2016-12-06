@@ -408,9 +408,9 @@ namespace RINGMesh {
     void CornerGfxManager::initialize()
     {
         if( entities_.empty() ) {
-            entities_.resize( gfx_.geo_model()->nb_corners(), nil ) ;
+            entities_.resize( gfx_.geomodel()->nb_corners(), nil ) ;
             for( index_t e = 0; e < entities_.size(); e++ ) {
-                entities_[e] = new CornerGfx( gfx_, gfx_.geo_model()->corner( e ) ) ;
+                entities_[e] = new CornerGfx( gfx_, gfx_.geomodel()->corner( e ) ) ;
             }
         }
     }
@@ -453,9 +453,9 @@ namespace RINGMesh {
     void LineGfxManager::initialize()
     {
         if( entities_.empty() ) {
-            entities_.resize( gfx_.geo_model()->nb_lines(), nil ) ;
+            entities_.resize( gfx_.geomodel()->nb_lines(), nil ) ;
             for( index_t e = 0; e < entities_.size(); e++ ) {
-                entities_[e] = new LineGfx( gfx_, gfx_.geo_model()->line( e ) ) ;
+                entities_[e] = new LineGfx( gfx_, gfx_.geomodel()->line( e ) ) ;
             }
         }
     }
@@ -515,10 +515,10 @@ namespace RINGMesh {
     void SurfaceGfxManager::initialize()
     {
         if( entities_.empty() ) {
-            entities_.resize( gfx_.geo_model()->nb_surfaces(), nil ) ;
+            entities_.resize( gfx_.geomodel()->nb_surfaces(), nil ) ;
             for( index_t e = 0; e < entities_.size(); e++ ) {
                 entities_[e] = new SurfaceGfx( gfx_,
-                    gfx_.geo_model()->surface( e ) ) ;
+                    gfx_.geomodel()->surface( e ) ) ;
             }
         }
     }
@@ -657,9 +657,9 @@ namespace RINGMesh {
     void RegionGfxManager::initialize()
     {
         if( entities_.empty() ) {
-            entities_.resize( gfx_.geo_model()->nb_regions(), nil ) ;
+            entities_.resize( gfx_.geomodel()->nb_regions(), nil ) ;
             for( index_t e = 0; e < entities_.size(); e++ ) {
-                entities_[e] = new RegionGfx( gfx_, gfx_.geo_model()->region( e ) ) ;
+                entities_[e] = new RegionGfx( gfx_, gfx_.geomodel()->region( e ) ) ;
             }
         }
     }
@@ -978,7 +978,7 @@ namespace RINGMesh {
         }
         virtual index_t nb_coordinates()
         {
-            const GeoModel* model = manager_.gfx().geo_model() ;
+            const GeoModel* model = manager_.gfx().geomodel() ;
             GEO::AttributeStore* store =
                 model->region( 0 ).cell_attribute_manager().find_attribute_store(
                     manager_.name() ) ;
@@ -991,7 +991,7 @@ namespace RINGMesh {
         {
             std::string attribute_name = get_attribute_name_with_coordinate(
                 manager_.name(), manager_.coordinate() ) ;
-            const GeoModel* model = manager_.gfx().geo_model() ;
+            const GeoModel* model = manager_.gfx().geomodel() ;
             for( index_t r = 0; r < model->nb_regions(); r++ ) {
                 GEO::ReadOnlyScalarAttributeAdapter attribute(
                     model->region( r ).cell_attribute_manager(), attribute_name ) ;
@@ -1025,7 +1025,7 @@ namespace RINGMesh {
         }
         virtual index_t nb_coordinates()
         {
-            const GeoModel* model = manager_.gfx().geo_model() ;
+            const GeoModel* model = manager_.gfx().geomodel() ;
             GEO::AttributeStore* store =
                 model->region( 0 ).vertex_attribute_manager().find_attribute_store(
                     manager_.name() ) ;
@@ -1038,7 +1038,7 @@ namespace RINGMesh {
         {
             std::string attribute_name = get_attribute_name_with_coordinate(
                 manager_.name(), manager_.coordinate() ) ;
-            const GeoModel* model = manager_.gfx().geo_model() ;
+            const GeoModel* model = manager_.gfx().geomodel() ;
             for( index_t r = 0; r < model->nb_regions(); r++ ) {
                 GEO::ReadOnlyScalarAttributeAdapter attribute(
                     model->region( r ).vertex_attribute_manager(), attribute_name ) ;
@@ -1072,7 +1072,7 @@ namespace RINGMesh {
         }
         virtual index_t nb_coordinates()
         {
-            const GeoModel* model = manager_.gfx().geo_model() ;
+            const GeoModel* model = manager_.gfx().geomodel() ;
             GEO::AttributeStore* store =
                 model->surface( 0 ).facet_attribute_manager().find_attribute_store(
                     manager_.name() ) ;
@@ -1085,7 +1085,7 @@ namespace RINGMesh {
         {
             std::string attribute_name = get_attribute_name_with_coordinate(
                 manager_.name(), manager_.coordinate() ) ;
-            const GeoModel* model = manager_.gfx().geo_model() ;
+            const GeoModel* model = manager_.gfx().geomodel() ;
             for( index_t s = 0; s < model->nb_surfaces(); s++ ) {
                 GEO::ReadOnlyScalarAttributeAdapter attribute(
                     model->surface( s ).facet_attribute_manager(), attribute_name ) ;
@@ -1119,7 +1119,7 @@ namespace RINGMesh {
         }
         virtual index_t nb_coordinates()
         {
-            const GeoModel* model = manager_.gfx().geo_model() ;
+            const GeoModel* model = manager_.gfx().geomodel() ;
             GEO::AttributeStore* store =
                 model->surface( 0 ).vertex_attribute_manager().find_attribute_store(
                     manager_.name() ) ;
@@ -1132,7 +1132,7 @@ namespace RINGMesh {
         {
             std::string attribute_name = get_attribute_name_with_coordinate(
                 manager_.name(), manager_.coordinate() ) ;
-            const GeoModel* model = manager_.gfx().geo_model() ;
+            const GeoModel* model = manager_.gfx().geomodel() ;
             for( index_t s = 0; s < model->nb_surfaces(); s++ ) {
                 GEO::ReadOnlyScalarAttributeAdapter attribute(
                     model->surface( s ).vertex_attribute_manager(), attribute_name ) ;
@@ -1205,7 +1205,7 @@ namespace RINGMesh {
 
     GeoModelGfx::GeoModelGfx()
         :
-            model_( nil ),
+            geomodel_( nil ),
             corners( *this ),
             lines( *this ),
             surfaces( *this ),
@@ -1222,9 +1222,9 @@ namespace RINGMesh {
      * Sets the GeoModel associated to the graphics
      * @param[in] model the GeoModel
      */
-    void GeoModelGfx::set_geo_model( const GeoModel& model )
+    void GeoModelGfx::set_geomodel( const GeoModel& model )
     {
-        model_ = &model ;
+        geomodel_ = &model ;
         initialize() ;
     }
 
@@ -1232,9 +1232,9 @@ namespace RINGMesh {
      * Gets the GeoModel associated to the graphics
      * @return the GeoModel
      */
-    const GeoModel* GeoModelGfx::geo_model() const
+    const GeoModel* GeoModelGfx::geomodel() const
     {
-        return model_ ;
+        return geomodel_ ;
     }
 
     /*!
@@ -1242,7 +1242,7 @@ namespace RINGMesh {
      */
     void GeoModelGfx::initialize()
     {
-        ringmesh_assert( model_ ) ;
+        ringmesh_assert( geomodel_ ) ;
         corners.initialize() ;
         lines.initialize() ;
         surfaces.initialize() ;

@@ -537,7 +537,7 @@ namespace RINGMesh {
 
         // Fill the vertices
         builder->create_vertices( nb ) ;
-        vertex_mapper_.resize_model_vertex_gmes( nb ) ;
+        vertex_mapper_.resize_geomodel_vertex_gmes( nb ) ;
         vertex_mapper_.bind_all_mesh_entity_vertex_maps() ;
 
         index_t count = 0 ;
@@ -561,7 +561,7 @@ namespace RINGMesh {
         builder->clear_vertices( true, false ) ;
     }
 
-    void GeoModelMeshVertices::unbind_model_vertex_map( const gme_t& mesh_entity_id )
+    void GeoModelMeshVertices::unbind_geomodel_vertex_map( const gme_t& mesh_entity_id )
     {
         vertex_mapper_.unbind_vertex_map( mesh_entity_id ) ;
     }
@@ -733,7 +733,7 @@ namespace RINGMesh {
         // Empty the gme_vertices_ of the deleted vertices and erase them
         for( index_t v = 0; v < nb(); ++v ) {
             if( to_delete_geo[v] == 1 ) {
-                vertex_mapper_.clear_model_vertex_gmes( v ) ;
+                vertex_mapper_.clear_geomodel_vertex_gmes( v ) ;
             }
         }
 
@@ -750,7 +750,7 @@ namespace RINGMesh {
     GeoModelMeshCells::GeoModelMeshCells( GeoModelMesh& gmm )
         :
             gmm_( gmm ),
-            gm_( gmm.model() ),
+            gm_( gmm.geomodel() ),
             mesh_( NULL ),
             nb_tet_( 0 ),
             nb_hex_( 0 ),
@@ -1532,7 +1532,7 @@ namespace RINGMesh {
     GeoModelMeshFacets::GeoModelMeshFacets( GeoModelMesh& gmm )
         :
             gmm_( gmm ),
-            gm_( gmm.model() ),
+            gm_( gmm.geomodel() ),
             mesh_( NULL ),
             nb_triangle_( 0 ),
             nb_quad_( 0 ),
@@ -1905,7 +1905,7 @@ namespace RINGMesh {
     /*******************************************************************************/
 
     GeoModelMeshEdges::GeoModelMeshEdges( GeoModelMesh& gmm )
-        : gmm_( gmm ), gm_( gmm.model() ), mesh_( NULL )
+        : gmm_( gmm ), gm_( gmm.geomodel() ), mesh_( NULL )
     {
     }
 
@@ -2012,7 +2012,7 @@ namespace RINGMesh {
     GeoModelMeshOrder::GeoModelMeshOrder( GeoModelMesh& gmm )
         :
             gmm_( gmm ),
-            gm_( gmm.model() ),
+            gm_( gmm.geomodel() ),
             mesh_( NULL ),
             nb_vertices_( 0 ),
             high_order_vertices_( 0 ),
@@ -2258,13 +2258,13 @@ namespace RINGMesh {
 
     /*******************************************************************************/
 
-    GeoModelMesh::GeoModelMesh( GeoModel& gm )
+    GeoModelMesh::GeoModelMesh( GeoModel& geomodel )
         :
-            geo_model_( gm ),
+            geomodel_( geomodel ),
             mesh_( NULL ),
             mode_( GeoModelMeshCells::NONE ),
             order_value_( 1 ),
-            vertices( *this, gm ),
+            vertices( *this, geomodel ),
             edges( *this ),
             facets( *this ),
             cells( *this ),
@@ -2301,9 +2301,9 @@ namespace RINGMesh {
                 continue ;
             }
             att_v_double_names.push_back( att_v_names[att_v] ) ;
-            for( index_t reg = 0; reg < geo_model_.nb_regions(); reg++ ) {
+            for( index_t reg = 0; reg < geomodel_.nb_regions(); reg++ ) {
 
-                if( geo_model_.region( reg ).vertex_attribute_manager().is_defined(
+                if( geomodel_.region( reg ).vertex_attribute_manager().is_defined(
                     att_v_names[att_v] ) ) {
                     Logger::warn( "Transfer attribute" ) << "The attribute "
                         << att_v_names[att_v] << " already exist on the region "
@@ -2312,7 +2312,7 @@ namespace RINGMesh {
                 }
                 GEO::Attribute< double > cur_v_att ;
                 cur_v_att.create_vector_attribute(
-                    geo_model_.region( reg ).vertex_attribute_manager(),
+                    geomodel_.region( reg ).vertex_attribute_manager(),
                     att_v_names[att_v],
                     vertex_attribute_manager().find_attribute_store(
                         att_v_names[att_v] )->dimension() ) ;
@@ -2324,11 +2324,11 @@ namespace RINGMesh {
                 vertex_attribute_manager(), att_v_double_names[att_v] ) ;
             index_t att_dim = cur_att_on_geomodelmesh.dimension() ;
 
-            AttributeVector< double > att_on_regions( geo_model_.nb_regions() ) ;
+            AttributeVector< double > att_on_regions( geomodel_.nb_regions() ) ;
 
-            for( index_t reg = 0; reg < geo_model_.nb_regions(); reg++ ) {
+            for( index_t reg = 0; reg < geomodel_.nb_regions(); reg++ ) {
                 att_on_regions.bind_one_attribute( reg,
-                    geo_model_.region( reg ).vertex_attribute_manager(),
+                    geomodel_.region( reg ).vertex_attribute_manager(),
                     att_v_double_names[att_v] ) ;
             }
 
@@ -2368,8 +2368,8 @@ namespace RINGMesh {
                 cell_attribute_manager(), att_c_names[att_c] ) ;
             index_t att_dim = cur_att_on_geo_model_mesh.dimension() ;
 
-            for( index_t reg = 0; reg < geo_model_.nb_regions(); reg++ ) {
-                if( geo_model_.region( reg ).cell_attribute_manager().is_defined(
+            for( index_t reg = 0; reg < geomodel_.nb_regions(); reg++ ) {
+                if( geomodel_.region( reg ).cell_attribute_manager().is_defined(
                     att_c_names[att_c] ) ) {
                     Logger::warn( "Transfer attribute" ) << "The attribute "
                         << att_c_names[att_c] << " already exist on the region "
@@ -2378,15 +2378,15 @@ namespace RINGMesh {
                 }
                 GEO::Attribute< double > cur_att_on_geo_model_mesh_entity ;
                 cur_att_on_geo_model_mesh_entity.create_vector_attribute(
-                    geo_model_.region( reg ).cell_attribute_manager(),
+                    geomodel_.region( reg ).cell_attribute_manager(),
                     att_c_names[att_c], att_dim ) ;
-                for( index_t c = 0; c < geo_model_.region( reg ).nb_mesh_elements();
+                for( index_t c = 0; c < geomodel_.region( reg ).nb_mesh_elements();
                     c++ ) {
-                    vec3 center = geo_model_.region( reg ).mesh_element_barycenter(
+                    vec3 center = geomodel_.region( reg ).mesh_element_barycenter(
                         c ) ;
                     std::vector< index_t > c_in_geom_model_mesh ;
                     ann.get_neighbors( center, c_in_geom_model_mesh,
-                        geo_model_.epsilon() ) ;
+                        geomodel_.epsilon() ) ;
                     ringmesh_assert( c_in_geom_model_mesh.size() == 1 ) ;
                     for( index_t att_e = 0; att_e < att_dim; att_e++ ) {
                         cur_att_on_geo_model_mesh_entity[c * att_dim + att_e] =

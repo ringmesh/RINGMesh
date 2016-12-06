@@ -622,7 +622,7 @@ namespace RINGMesh {
         }
     }
 
-    void build_mesh_from_model_mesh_entities(
+    void build_mesh_from_geomodel_mesh_entities(
         const GeoModel& model,
         const std::vector< gme_t >& surface_entities,
         GEO::Mesh& M )

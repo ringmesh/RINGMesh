@@ -322,10 +322,10 @@ namespace RINGMesh {
         switch( repair_mode )
         {
             case ALL :
-                geo_model_mesh_repair() ;
+                geomodel_mesh_repair() ;
                 break ;
             case BASIC :
-                end_model() ;
+                end_geomodel() ;
                 break ;
             case COLOCATED_VERTICES :
                 remove_colocated_entity_vertices_and_update_gm() ;
@@ -341,7 +341,7 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelRepair::geo_model_mesh_repair()
+    void GeoModelRepair::geomodel_mesh_repair()
     {
         // Force removal of global vertices - Bugs ? I do not know where [JP]
         //model().mesh.vertices.clear() ; /// TODO Test now
@@ -359,7 +359,7 @@ namespace RINGMesh {
         // So remove them if there are any
         model().mesh.remove_colocated_vertices() ;
 
-        end_model() ;
+        end_geomodel() ;
     }
 
     void GeoModelRepair::remove_colocated_entity_vertices_and_update_gm()
@@ -385,7 +385,7 @@ namespace RINGMesh {
         // So remove them if there are any
         model().mesh.remove_colocated_vertices() ;
 
-        end_model() ;
+        end_geomodel() ;
     }
 
     void GeoModelRepair::repair_line_boundary_vertex_order()

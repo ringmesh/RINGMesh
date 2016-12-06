@@ -88,7 +88,7 @@ namespace RINGMesh {
         /*!
          * All implemented repair for a GeoModel.
          */
-        void geo_model_mesh_repair() ;
+        void geomodel_mesh_repair() ;
         /*!
          * Removes the colocated vertices in all the GeoModelMeshEntity within
          * the GeoModel. GeoModelMeshEntity without any vertex anymore

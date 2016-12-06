@@ -193,7 +193,7 @@ namespace RINGMesh {
          */
         void clear() ;
 
-        void unbind_model_vertex_map( const gme_t& mesh_entity_id ) ;
+        void unbind_geomodel_vertex_map( const gme_t& mesh_entity_id ) ;
 
         const ColocaterANN& colocater() const
         {
@@ -348,7 +348,7 @@ namespace RINGMesh {
              * @brief Clears and resizes the GME_Vertex vectors
              * @param[in] nb Size of the vector
              */
-            void resize_model_vertex_gmes( const index_t nb )
+            void resize_geomodel_vertex_gmes( const index_t nb )
             {
                 gme_vertices_.clear() ;
                 gme_vertices_.resize( nb ) ;
@@ -370,7 +370,7 @@ namespace RINGMesh {
             /*!
              * @brief Clears the GME_Vertices about one model vertex
              */
-            void clear_model_vertex_gmes( index_t v )
+            void clear_geomodel_vertex_gmes( index_t v )
             {
                 ringmesh_assert( v < gme_vertices_.size() ) ;
                 gme_vertices_[v].clear() ;
@@ -1374,12 +1374,12 @@ namespace RINGMesh {
     class RINGMESH_API GeoModelMesh {
     ringmesh_disable_copy( GeoModelMesh ) ;
     public:
-        GeoModelMesh( GeoModel& gm ) ;
+        GeoModelMesh( GeoModel& geomodel ) ;
         ~GeoModelMesh() ;
 
-        const GeoModel& model() const
+        const GeoModel& geomodel() const
         {
-            return geo_model_ ;
+            return geomodel_ ;
         }
 
         /*!
@@ -1491,7 +1491,7 @@ namespace RINGMesh {
 
     private:
         /*! Attached GeoModel */
-        const GeoModel& geo_model_ ;
+        const GeoModel& geomodel_ ;
         /*!
          * @brief Mesh owned by the GeoModelMesh, stores unique vertices, edges, 
          * facets and cells.

@@ -107,9 +107,9 @@ namespace RINGMesh {
     protected:
         /*!
          * @brief Set the unique vertices used to build the GeoModel
-         * @details They are cleared when end_model() is called
+         * @details They are cleared when end_geomodel() is called
          */
-        void add_mesh_vertices_to_model() ;
+        void add_mesh_vertices_to_geomodel() ;
 
         void initialize_surface_builder() ;
         void initialize_region_builder() ;

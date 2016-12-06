@@ -1976,10 +1976,10 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelBuilder::end_model()
+    void GeoModelBuilder::end_geomodel()
     {
         if( model().name().empty() ) {
-            set_model_name( "model_default_name" ) ;
+            set_geomodel_name( "model_default_name" ) ;
         }
         // Get out if the model has no surface
         if( model().nb_surfaces() == 0 ) {
@@ -2237,7 +2237,7 @@ namespace RINGMesh {
         return true ;
     }
 
-    void GeoModelBuilder::build_model_from_surfaces()
+    void GeoModelBuilder::build_geomodel_from_surfaces()
     {
         if( model().nb_surfaces() == 0 ) {
             throw RINGMeshException( "GeoModel", "No surface to build the model " ) ;
@@ -2253,7 +2253,7 @@ namespace RINGMesh {
         }
 
         // Finish up the model
-        end_model() ;
+        end_geomodel() ;
     }
 
     void GeoModelBuilder::update_facet_vertex(

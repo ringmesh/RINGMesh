@@ -1036,7 +1036,7 @@ namespace RINGMesh {
             bool logger_status = Logger::instance()->is_quiet() ;
 
             Logger::instance()->set_quiet( true ) ;
-            build_mesh_from_model_mesh_entities( geomodel, volume_boundaries,
+            build_mesh_from_geomodel_mesh_entities( geomodel, volume_boundaries,
                 mesh ) ;
             GEO::mesh_repair( mesh ) ;
             Logger::instance()->set_quiet( logger_status ) ;

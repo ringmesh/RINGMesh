@@ -283,7 +283,7 @@ namespace RINGMesh {
     {
         // Unbind attribute about vertex mapping
         GeoModel& modifiable_model = const_cast< GeoModel& >( geomodel() ) ;
-        modifiable_model.mesh.vertices.unbind_model_vertex_map( gme_id() ) ;
+        modifiable_model.mesh.vertices.unbind_geomodel_vertex_map( gme_id() ) ;
 #ifdef RINGMESH_DEBUG
         ringmesh_assert( mesh_ != NULL ) ;
         mesh_->print_mesh_bounded_attributes() ;

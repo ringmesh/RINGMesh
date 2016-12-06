@@ -198,7 +198,7 @@ namespace RINGMesh {
                 // Name of the model
                 else if( file_line.field_matches( 0, "GeoModel" ) ) {
                     if( file_line.nb_fields() > 2 ) {
-                        set_model_name( file_line.field( 2 ) ) ;
+                        set_geomodel_name( file_line.field( 2 ) ) ;
                     }
                 }
                 // Number of entities of a given type
@@ -393,7 +393,7 @@ namespace RINGMesh {
                 // Name of the model
                 if( file_line.field_matches( 0, "NAME" ) ) {
                     if( file_line.nb_fields() > 1 ) {
-                        set_model_name( file_line.field( 1 ) ) ;
+                        set_geomodel_name( file_line.field( 1 ) ) ;
                     }
                 }
                 // Number of entities of a given type

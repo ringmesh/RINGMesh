@@ -273,14 +273,14 @@ namespace RINGMesh {
         GeoModelGfx() ;
         ~GeoModelGfx() ;
 
-        void set_geo_model( const GeoModel& model ) ;
-        const GeoModel* geo_model() const ;
+        void set_geomodel( const GeoModel& model ) ;
+        const GeoModel* geomodel() const ;
         void initialize() ;
         void need_to_update() ;
 
     private:
         /// The GeoModel associated to the graphics
-        const GeoModel* model_ ;
+        const GeoModel* geomodel_ ;
 
     public:
         CornerGfxManager corners ;
