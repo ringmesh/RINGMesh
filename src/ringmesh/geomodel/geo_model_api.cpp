@@ -655,7 +655,7 @@ namespace RINGMesh {
                 index_t nbv = S.nb_mesh_element_vertices( f ) ;
                 GEO::vector< index_t > ids( nbv ) ;
                 for( index_t v = 0; v < nbv; ++v ) {
-                    ids[v] = old2new[model_vertices.geomodel_vertex_id( S.gme_id(), f,
+                    ids[v] = old2new[geomodel_vertices.geomodel_vertex_id( S.gme_id(), f,
                         v )] ;
                 }
                 M.facets.create_polygon( ids ) ;

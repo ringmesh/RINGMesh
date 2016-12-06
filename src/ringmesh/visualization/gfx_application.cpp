@@ -1133,75 +1133,87 @@ namespace RINGMesh {
     void RINGMeshApplication::show_corners()
     {
         if( instance()->current_viewer_type_ != GEOMODEL ) return ;
-        GeoModelViewer& viewver = *instance()->models_[instance()->current_viewer_] ;
+        GeoModelViewer& viewver =
+            *instance()->geomodels_[instance()->current_viewer_] ;
         viewver.show_corners_ = !viewver.show_corners_ ;
     }
     void RINGMeshApplication::show_lines()
     {
         if( instance()->current_viewer_type_ != GEOMODEL ) return ;
-        GeoModelViewer& viewver = *instance()->models_[instance()->current_viewer_] ;
+        GeoModelViewer& viewver =
+            *instance()->geomodels_[instance()->current_viewer_] ;
         viewver.show_lines_ = !viewver.show_lines_ ;
     }
     void RINGMeshApplication::show_surface()
     {
         if( instance()->current_viewer_type_ != GEOMODEL ) return ;
-        GeoModelViewer& viewver = *instance()->models_[instance()->current_viewer_] ;
+        GeoModelViewer& viewver =
+            *instance()->geomodels_[instance()->current_viewer_] ;
         viewver.show_surface_ = !viewver.show_surface_ ;
     }
     void RINGMeshApplication::show_volume()
     {
         if( instance()->current_viewer_type_ != GEOMODEL ) return ;
-        GeoModelViewer& viewver = *instance()->models_[instance()->current_viewer_] ;
+        GeoModelViewer& viewver =
+            *instance()->geomodels_[instance()->current_viewer_] ;
         viewver.show_volume_ = !viewver.show_volume_ ;
     }
     void RINGMeshApplication::show_voi()
     {
         if( instance()->current_viewer_type_ != GEOMODEL ) return ;
-        GeoModelViewer& viewver = *instance()->models_[instance()->current_viewer_] ;
+        GeoModelViewer& viewver =
+            *instance()->geomodels_[instance()->current_viewer_] ;
         viewver.show_voi_ = !viewver.show_voi_ ;
     }
     void RINGMeshApplication::mesh_visible()
     {
         if( instance()->current_viewer_type_ != GEOMODEL ) return ;
-        GeoModelViewer& viewver = *instance()->models_[instance()->current_viewer_] ;
+        GeoModelViewer& viewver =
+            *instance()->geomodels_[instance()->current_viewer_] ;
         viewver.mesh_visible_ = !viewver.mesh_visible_ ;
     }
     void RINGMeshApplication::show_colormap()
     {
         if( instance()->current_viewer_type_ != GEOMODEL ) return ;
-        GeoModelViewer& viewver = *instance()->models_[instance()->current_viewer_] ;
+        GeoModelViewer& viewver =
+            *instance()->geomodels_[instance()->current_viewer_] ;
         viewver.show_colormap_ = !viewver.show_colormap_ ;
     }
     void RINGMeshApplication::colored_cells()
     {
         if( instance()->current_viewer_type_ != GEOMODEL ) return ;
-        GeoModelViewer& viewver = *instance()->models_[instance()->current_viewer_] ;
+        GeoModelViewer& viewver =
+            *instance()->geomodels_[instance()->current_viewer_] ;
         viewver.colored_cells_.new_status = !viewver.colored_cells_.new_status ;
     }
     void RINGMeshApplication::show_colored_regions()
     {
         if( instance()->current_viewer_type_ != GEOMODEL ) return ;
-        GeoModelViewer& viewver = *instance()->models_[instance()->current_viewer_] ;
+        GeoModelViewer& viewver =
+            *instance()->geomodels_[instance()->current_viewer_] ;
         viewver.show_colored_regions_.new_status =
             !viewver.show_colored_regions_.new_status ;
     }
     void RINGMeshApplication::show_colored_layers()
     {
         if( instance()->current_viewer_type_ != GEOMODEL ) return ;
-        GeoModelViewer& viewver = *instance()->models_[instance()->current_viewer_] ;
+        GeoModelViewer& viewver =
+            *instance()->geomodels_[instance()->current_viewer_] ;
         viewver.show_colored_layers_.new_status =
             !viewver.show_colored_layers_.new_status ;
     }
     void RINGMeshApplication::increment_shrink()
     {
         if( instance()->current_viewer_type_ != GEOMODEL ) return ;
-        GeoModelViewer& viewver = *instance()->models_[instance()->current_viewer_] ;
+        GeoModelViewer& viewver =
+            *instance()->geomodels_[instance()->current_viewer_] ;
         viewver.shrink_ = std::min( viewver.shrink_ + 0.1f, 1.f ) ;
     }
     void RINGMeshApplication::decrement_shrink()
     {
         if( instance()->current_viewer_type_ != GEOMODEL ) return ;
-        GeoModelViewer& viewver = *instance()->models_[instance()->current_viewer_] ;
+        GeoModelViewer& viewver =
+            *instance()->geomodels_[instance()->current_viewer_] ;
         viewver.shrink_ = std::max( viewver.shrink_ - 0.1f, 0.f ) ;
     }
 
@@ -1249,7 +1261,7 @@ namespace RINGMesh {
         }
 
         if( current_viewer_type_ == GEOMODEL ) {
-            GeoModelViewer& viewer = *models_[current_viewer_] ;
+            GeoModelViewer& viewer = *geomodels_[current_viewer_] ;
             if( viewer.show_colormap_ ) {
                 viewer.draw_colormap() ;
             }
@@ -1269,11 +1281,11 @@ namespace RINGMesh {
     {
         GEO::Application::draw_viewer_properties() ;
 
-        if( !models_.empty() ) {
+        if( !geomodels_.empty() ) {
             ImGui::Separator() ;
             ImGui::Text( "GeoModel" ) ;
             for( index_t i = 0; i < geomodels_.size(); i++ ) {
-                GeoModelViewer& viewer = *models_[i] ;
+                GeoModelViewer& viewer = *geomodels_[i] ;
                 ImGui::PushID( static_cast< int >( i ) ) ;
                 if( ImGui::Checkbox( viewer.GM_.name().c_str(),
                     &viewer.is_visible_ ) ) {

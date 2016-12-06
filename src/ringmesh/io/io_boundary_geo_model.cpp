@@ -464,7 +464,8 @@ namespace {
                     for( index_t f = 0; f < S.nb_mesh_elements(); f++ ) {
                         out << S.nb_mesh_element_vertices( f ) << " " ;
                         for( index_t v = 0; v < S.nb_mesh_element_vertices( f ); v++ ) {
-                            out <<model.mesh.vertices.geomodel_vertex_id(S.gme_id(),f,v) << " " ;
+                        out << geomodel.mesh.vertices.geomodel_vertex_id( S.gme_id(),
+                            f, v ) << " " ;
                         }
                         out << std::endl ;
                     }

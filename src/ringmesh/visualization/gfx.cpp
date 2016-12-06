@@ -994,7 +994,8 @@ namespace RINGMesh {
             const GeoModel* geomodel = manager_.gfx().geomodel() ;
             for( index_t r = 0; r < geomodel->nb_regions(); r++ ) {
                 GEO::ReadOnlyScalarAttributeAdapter attribute(
-                    geomodel->region( r ).cell_attribute_manager(), attribute_name ) ;
+                    geomodel->region( r ).cell_attribute_manager(),
+                    attribute_name ) ;
                 compute_attribute_range( attribute, attribute_min, attribute_max ) ;
             }
         }
@@ -1041,7 +1042,8 @@ namespace RINGMesh {
             const GeoModel* geomodel = manager_.gfx().geomodel() ;
             for( index_t r = 0; r < geomodel->nb_regions(); r++ ) {
                 GEO::ReadOnlyScalarAttributeAdapter attribute(
-                    geomodel->region( r ).vertex_attribute_manager(), attribute_name ) ;
+                    geomodel->region( r ).vertex_attribute_manager(),
+                    attribute_name ) ;
                 compute_attribute_range( attribute, attribute_min, attribute_max ) ;
             }
         }
@@ -1088,7 +1090,8 @@ namespace RINGMesh {
             const GeoModel* geomodel = manager_.gfx().geomodel() ;
             for( index_t s = 0; s < geomodel->nb_surfaces(); s++ ) {
                 GEO::ReadOnlyScalarAttributeAdapter attribute(
-                    geomodel->surface( s ).facet_attribute_manager(), attribute_name ) ;
+                    geomodel->surface( s ).facet_attribute_manager(),
+                    attribute_name ) ;
                 compute_attribute_range( attribute, attribute_min, attribute_max ) ;
             }
         }
@@ -1135,12 +1138,12 @@ namespace RINGMesh {
             const GeoModel* geomodel = manager_.gfx().geomodel() ;
             for( index_t s = 0; s < geomodel->nb_surfaces(); s++ ) {
                 GEO::ReadOnlyScalarAttributeAdapter attribute(
-                    geomodel->surface( s ).vertex_attribute_manager(), attribute_name ) ;
+                    geomodel->surface( s ).vertex_attribute_manager(),
+                    attribute_name ) ;
                 compute_attribute_range( attribute, attribute_min, attribute_max ) ;
             }
         }
     } ;
-
 
     AttributeGfxManager::AttributeGfxManager( GeoModelGfx& gfx )
         :
@@ -1224,7 +1227,7 @@ namespace RINGMesh {
      */
     void GeoModelGfx::set_geomodel( const GeoModel& geomodel )
     {
-        geomodel_ = &model ;
+        geomodel_ = &geomodel ;
         initialize() ;
     }
 

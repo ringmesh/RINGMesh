@@ -160,7 +160,7 @@ namespace RINGMesh {
         clear_all_mesh_entity_vertex_map() ;
     }
 
-    index_t GeoModelMeshVertices::GeoModelVertexMapper::model_vertex_index(
+    index_t GeoModelMeshVertices::GeoModelVertexMapper::geomodel_vertex_index(
         const gme_t& mesh_entity_id,
         index_t mesh_entity_vertex_index ) const
     {
@@ -237,7 +237,7 @@ namespace RINGMesh {
         const GMEVertex& gme_vertex,
         index_t geomodel_vertex_index )
     {
-        gme_vertices_[model_vertex_index].push_back( gme_vertex ) ;
+        gme_vertices_[geomodel_vertex_index].push_back( gme_vertex ) ;
     }
 
     void GeoModelMeshVertices::GeoModelVertexMapper::bind_all_mesh_entity_vertex_maps()
@@ -593,7 +593,7 @@ namespace RINGMesh {
         }
     }
 
-    index_t GeoModelMeshVertices::model_vertex_id(
+    index_t GeoModelMeshVertices::geomodel_vertex_id(
         const gme_t& mesh_entity,
         index_t entity_vertex_index ) const
     {
@@ -601,7 +601,7 @@ namespace RINGMesh {
         return vertex_mapper_.geomodel_vertex_index( mesh_entity, entity_vertex_index ) ;
     }
 
-    index_t GeoModelMeshVertices::model_vertex_id(
+    index_t GeoModelMeshVertices::geomodel_vertex_id(
         const gme_t& mesh_entity,
         index_t entity_mesh_element_index,
         index_t vertex_local_index ) const
