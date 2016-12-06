@@ -50,6 +50,15 @@
  * @todo Comment on the robustness of the tests
  */
 
+namespace {
+    using namespace RINGMesh ;
+
+    bool is_almost_zero( const double& value )
+    {
+        return value < global_epsilon && value > -global_epsilon ;
+    }
+}
+
 namespace RINGMesh {
 
     bool operator==( const vec3& u, const vec3& v )
@@ -1289,23 +1298,43 @@ namespace RINGMesh {
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
-        const vec3& p2 )
+        const vec3& p2,
+        bool exact_predicates )
     {
         vec3 n = cross( p2 - p0, p1 - p0 ) ;
         vec3 q = p + n ;
 
-        Sign s1 = sign(
-            GEO::PCK::orient_3d( p.data(), q.data(), p0.data(), p1.data() ) ) ;
-        Sign s2 = sign(
-            GEO::PCK::orient_3d( p.data(), q.data(), p1.data(), p2.data() ) ) ;
-        Sign s3 = sign(
-            GEO::PCK::orient_3d( p.data(), q.data(), p2.data(), p0.data() ) ) ;
-        if( s1 == ZERO ) {
-            return s2 == s3 ;
-        } else if( s2 == ZERO ) {
-            return s1 == s3 ;
-        } else if( s3 == ZERO ) {
-            return s1 == s2 ;
+        Sign s1, s2, s3 ;
+        if( !exact_predicates ) {
+            double vol1 = GEO::Geom::tetra_signed_volume( p, q, p0, p1 ) ;
+            if( is_almost_zero( vol1 ) ) {
+                return point_inside_triangle( p, p0, p1, p2, true ) ;
+            }
+            s1 = sign( vol1 ) ;
+            double vol2 = GEO::Geom::tetra_signed_volume( p, q, p1, p2 ) ;
+            if( is_almost_zero( vol2 ) ) {
+                return point_inside_triangle( p, p0, p1, p2, true ) ;
+            }
+            s2 = sign( vol2 ) ;
+            double vol3 = GEO::Geom::tetra_signed_volume( p, q, p2, p0 ) ;
+            if( is_almost_zero( vol3 ) ) {
+                return point_inside_triangle( p, p0, p1, p2, true ) ;
+            }
+            s3 = sign( vol3 ) ;
+        } else {
+            s1 = sign(
+                GEO::PCK::orient_3d( p.data(), q.data(), p0.data(), p1.data() ) ) ;
+            s2 = sign(
+                GEO::PCK::orient_3d( p.data(), q.data(), p1.data(), p2.data() ) ) ;
+            s3 = sign(
+                GEO::PCK::orient_3d( p.data(), q.data(), p2.data(), p0.data() ) ) ;
+            if( s1 == ZERO ) {
+                return s2 == s3 ;
+            } else if( s2 == ZERO ) {
+                return s1 == s3 ;
+            } else if( s3 == ZERO ) {
+                return s1 == s2 ;
+            }
         }
 
         return s1 == s2 && s2 == s3 ;
