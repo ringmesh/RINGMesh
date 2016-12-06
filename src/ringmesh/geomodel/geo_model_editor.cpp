@@ -431,7 +431,7 @@ namespace RINGMesh {
         {
             nb_mesh_entity_types_ = EntityTypeManager::nb_mesh_entity_types() ;
             nb_geological_entity_types_ =
-                GeoModelEditor::model().nb_geological_entity_types() ;
+                GeoModelEditor::geomodel().nb_geological_entity_types() ;
             nb_entity_types_ = nb_geological_entity_types_ + nb_mesh_entity_types_ ;
             nb_removed_mesh_entities_.resize( nb_mesh_entity_types_, 0 ) ;
             nb_removed_geological_entities_.resize( nb_geological_entity_types_,
