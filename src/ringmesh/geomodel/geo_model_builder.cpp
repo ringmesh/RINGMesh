@@ -144,7 +144,7 @@ namespace {
         bool equal = true ;
         for( index_t i = 0; i < L.nb_vertices(); i++ ) {
             if( rhs_vertices[i]
-                != geomodel_vertices.model_vertex_id( L.gme_id(), i ) ) {
+                != geomodel_vertices.geomodel_vertex_id( L.gme_id(), i ) ) {
                 equal = false ;
                 break ;
             }
@@ -156,7 +156,7 @@ namespace {
         equal = true ;
         for( index_t i = 0; i < L.nb_vertices(); i++ ) {
             if( rhs_vertices[i]
-                != geomodel_vertices.model_vertex_id( L.gme_id(),
+                != geomodel_vertices.geomodel_vertex_id( L.gme_id(),
                     L.nb_vertices() - i - 1 ) ) {
                 equal = false ;
                 break ;
@@ -959,11 +959,11 @@ namespace RINGMesh {
                 for( index_t f = 0; f < S.nb_mesh_elements(); ++f ) {
                     for( index_t v = 0; v < S.nb_mesh_element_vertices( f ); ++v ) {
                         if( S.is_on_border( f, v ) ) {
-                            index_t vertex = geomodel_vertices.model_vertex_id(
+                            index_t vertex = geomodel_vertices.geomodel_vertex_id(
                                 S.gme_id(), f, v ) ;
-                            index_t next_vertex = geomodel_vertices.model_vertex_id(
+                            index_t next_vertex = geomodel_vertices.geomodel_vertex_id(
                                 S.gme_id(), f, S.next_facet_vertex_index( f, v ) ) ;
-                            index_t previous_vertex = geomodel_vertices.model_vertex_id(
+                            index_t previous_vertex = geomodel_vertices.geomodel_vertex_id(
                                 S.gme_id(), f, S.prev_facet_vertex_index( f, v ) ) ;
                             border_triangles_.push_back(
                                 BorderTriangle( s, f, vertex, next_vertex,
@@ -1019,8 +1019,8 @@ namespace RINGMesh {
             // Finds the BorderTriangle that is corresponding to this
             // It must exist and there is only one
             BorderTriangle bait( border_triangle.surface_, next_f,
-                geomodel_vertices.model_vertex_id( S.gme_id(), next_f, next_f_v0 ),
-                geomodel_vertices.model_vertex_id( S.gme_id(), next_f, next_f_v1 ),
+                geomodel_vertices.geomodel_vertex_id( S.gme_id(), next_f, next_f_v0 ),
+                geomodel_vertices.geomodel_vertex_id( S.gme_id(), next_f, next_f_v1 ),
                 NO_ID ) ;
             index_t result = static_cast< index_t >( std::lower_bound(
                 border_triangles_.begin(), border_triangles_.end(), bait )
@@ -1257,7 +1257,7 @@ namespace RINGMesh {
         ringmesh_assert( v < E.nb_vertices() ) ;
         if( update ) {
             geomodel_vertices.update_point(
-                geomodel_vertices.model_vertex_id( E.gme_id(), v ), point ) ;
+                geomodel_vertices.geomodel_vertex_id( E.gme_id(), v ), point ) ;
         } else {
             MeshBaseBuilder_var builder = MeshBaseBuilder::create_builder(
                 *E.mesh_ ) ;

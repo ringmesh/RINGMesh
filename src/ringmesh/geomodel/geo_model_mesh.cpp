@@ -598,7 +598,7 @@ namespace RINGMesh {
         index_t entity_vertex_index ) const
     {
         test_and_initialize() ;
-        return vertex_mapper_.model_vertex_index( mesh_entity, entity_vertex_index ) ;
+        return vertex_mapper_.geomodel_vertex_index( mesh_entity, entity_vertex_index ) ;
     }
 
     index_t GeoModelMeshVertices::model_vertex_id(
@@ -861,7 +861,7 @@ namespace RINGMesh {
                 for( index_t v = 0; v < mesh_->nb_cell_vertices( cur_cell ); v++ ) {
                     index_t region_vertex_index =
                         cur_region.mesh_element_vertex_index( c, v ) ;
-                    index_t global_vertex_id = geomodel_vertices.model_vertex_id(
+                    index_t global_vertex_id = geomodel_vertices.geomodel_vertex_id(
                         cur_region.gme_id(), region_vertex_index ) ;
                     mesh_builder->set_cell_vertex( cur_cell, v, global_vertex_id ) ;
                 }
@@ -1840,7 +1840,7 @@ namespace RINGMesh {
                     FacetType T = static_cast< FacetType >( nb_vertices - 3 ) ;
                     cur_facet = facet_offset_per_type[T] + cur_facet_per_type[T]++ ;
                     for( index_t v = 0; v < nb_vertices; v++ ) {
-                        index_t v_id = geomodel_vertices.model_vertex_id(
+                        index_t v_id = geomodel_vertices.geomodel_vertex_id(
                             surface.gme_id(), f, v ) ;
                         ringmesh_assert( v_id != NO_ID ) ;
                         mesh_builder->set_facet_vertex( cur_facet, v, v_id ) ;
@@ -1848,7 +1848,7 @@ namespace RINGMesh {
                 } else {
                     GEO::vector< index_t > vertices( nb_vertices ) ;
                     for( index_t v = 0; v < nb_vertices; v++ ) {
-                        vertices[v] = geomodel_vertices.model_vertex_id(
+                        vertices[v] = geomodel_vertices.geomodel_vertex_id(
                             surface.gme_id(), f, v ) ;
                     }
                     cur_facet = mesh_builder->create_facet_polygon( vertices ) ;

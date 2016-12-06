@@ -698,13 +698,13 @@ namespace {
             for( index_t v = 0; v < S.nb_mesh_element_vertices( f ); ++v ) {
                 if( S.facet_adjacent_index( f, v ) == NO_ID
                     && !is_edge_on_line( S.geomodel(),
-                        geomodel_vertices.model_vertex_id( S.gme_id(), f, v ),
-                        geomodel_vertices.model_vertex_id( S.gme_id(), f,
+                        geomodel_vertices.geomodel_vertex_id( S.gme_id(), f, v ),
+                        geomodel_vertices.geomodel_vertex_id( S.gme_id(), f,
                             S.next_facet_vertex_index( f, v ) ) ) ) {
                     invalid_corners.push_back(
-                        geomodel_vertices.model_vertex_id( S.gme_id(), f, v ) ) ;
+                        geomodel_vertices.geomodel_vertex_id( S.gme_id(), f, v ) ) ;
                     invalid_corners.push_back(
-                        geomodel_vertices.model_vertex_id( S.gme_id(), f,
+                        geomodel_vertices.geomodel_vertex_id( S.gme_id(), f,
                             S.next_facet_vertex_index( f, v ) ) ) ;
                 }
             }

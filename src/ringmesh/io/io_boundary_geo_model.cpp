@@ -347,8 +347,8 @@ namespace {
                 }
                 for( index_t k = 0; k < S.nb_boundaries(); ++k ) {
                     const Line& L = dynamic_cast< const Line& >( S.boundary( k ) ) ;
-                    index_t v0_model_id = geomodel_vertices.model_vertex_id( L.gme_id(), 0 ) ;
-                    index_t v1_model_id = geomodel_vertices.model_vertex_id( L.gme_id(), 1 ) ;
+                    index_t v0_model_id = geomodel_vertices.geomodel_vertex_id( L.gme_id(), 0 ) ;
+                    index_t v1_model_id = geomodel_vertices.geomodel_vertex_id( L.gme_id(), 1 ) ;
 
                     std::vector< index_t > v0_surface_ids ;
                     geomodel_vertices.mesh_entity_vertex_id( S.gme_id(), v0_model_id,
@@ -403,7 +403,7 @@ namespace {
                     const gme_t& c1_id = L.boundary_gme( 1 ) ;
                     std::vector< index_t > gme_vertices ;
                     geomodel_vertices.mesh_entity_vertex_id( S.gme_id(),
-                        geomodel_vertices.model_vertex_id( c1_id ), gme_vertices ) ;
+                        geomodel_vertices.geomodel_vertex_id( c1_id ), gme_vertices ) ;
                     corners.insert( gme_vertices.front() + offset ) ;
                 }
             }
@@ -464,7 +464,7 @@ namespace {
                     for( index_t f = 0; f < S.nb_mesh_elements(); f++ ) {
                         out << S.nb_mesh_element_vertices( f ) << " " ;
                         for( index_t v = 0; v < S.nb_mesh_element_vertices( f ); v++ ) {
-                            out <<model.mesh.vertices.model_vertex_id(S.gme_id(),f,v) << " " ;
+                            out <<model.mesh.vertices.geomodel_vertex_id(S.gme_id(),f,v) << " " ;
                         }
                         out << std::endl ;
                     }

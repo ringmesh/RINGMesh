@@ -77,8 +77,8 @@ namespace {
         const GeoModelMeshVertices& geomodel_vertices = E.geomodel().mesh.vertices ;
         /// Check that the stored geomodel vertex indices are in a valid range
         for( index_t i = 0; i < E.nb_vertices(); ++i ) {
-            if( geomodel_vertices.model_vertex_id( E.gme_id(), i ) == NO_ID
-                && geomodel_vertices.model_vertex_id( E.gme_id(), i )
+            if( geomodel_vertices.geomodel_vertex_id( E.gme_id(), i ) == NO_ID
+                && geomodel_vertices.geomodel_vertex_id( E.gme_id(), i )
                     >= E.geomodel().mesh.vertices.nb() ) {
                 Logger::warn( "GeoModelEntity" ) << "Invalid geomodel vertex index in "
                     << E.gme_id() << std::endl ;
@@ -232,7 +232,7 @@ namespace {
         for( index_t c = 0; c < S.nb_mesh_element_vertices( f ); ++c ) {
             index_t facet_vertex_index = S.mesh_element_vertex_index( f, c ) ;
             corners[v] = facet_vertex_index ;
-            corners_global[v] = geomodel_vertices.model_vertex_id( S.gme_id(), f, v ) ;
+            corners_global[v] = geomodel_vertices.geomodel_vertex_id( S.gme_id(), f, v ) ;
             v++ ;
         }
         double area = S.mesh_element_size( f ) ;
@@ -252,7 +252,7 @@ namespace {
         const GeoModelMeshVertices& geomodel_vertices = region.geomodel().mesh.vertices ;
         for( index_t v = 0; v < nb_vertices_in_cell; v++ ) {
             vertices[v] = region.mesh_element_vertex_index( cell_index, v ) ;
-            vertices_global[v] = geomodel_vertices.model_vertex_id( region.gme_id(),
+            vertices_global[v] = geomodel_vertices.geomodel_vertex_id( region.gme_id(),
                 cell_index, v ) ;
         }
         double volume = region.mesh_element_size( cell_index ) ;
@@ -299,7 +299,7 @@ namespace RINGMesh {
         // the vertex of this entity
         const GeoModelMeshVertices& geomodel_vertices = geomodel().mesh.vertices ;
         for( index_t v = 0; v < nb_vertices(); ++v ) {
-            index_t geomodel_v = geomodel_vertices.model_vertex_id( gme_id(), v ) ;
+            index_t geomodel_v = geomodel_vertices.geomodel_vertex_id( gme_id(), v ) ;
 
             if( geomodel_v == NO_ID ) {
                 Logger::warn( "GeoModelEntity" ) << gme_id() << " vertex " << v
