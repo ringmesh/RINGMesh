@@ -256,11 +256,11 @@ namespace RINGMesh {
         template< typename T >
         void copy_simplex_attribute_from_mesh_to_geomodel(
             GEO::Attribute< T >& mesh_attribute,
-            AttributeVector< T >& model_attributes ) const
+            AttributeVector< T >& geomodel_attributes ) const
         {
             for( index_t i = 0; i < nb_mesh_simplexes(); ++i ) {
                 const GMESimplex& copy_to = mesh_simplex_to_gme_simplex_[i] ;
-                model_attributes[copy_to.gme_id][copy_to.gme_simplex_id] =
+                geomodel_attributes[copy_to.gme_id][copy_to.gme_simplex_id] =
                     mesh_attribute[i] ;
             }
         }
@@ -467,12 +467,12 @@ namespace RINGMesh {
 
     /*************************************************************************/
     GeoModelBuilderMesh::GeoModelBuilderMesh(
-        GeoModel& model,
+        GeoModel& geomodel,
         const GEO::Mesh& mesh,
         const std::string& surface_attribute_name,
         const std::string& region_attribute_name )
         :
-        GeoModelBuilder( model ),
+        GeoModelBuilder( geomodel ),
         mesh_( mesh ),
         surface_builder_( nil ),
         region_builder_( nil ),
@@ -608,7 +608,7 @@ namespace RINGMesh {
     }
 
     /*! @details Adds separately each connected component of the mesh
-     *          as a Surface of the model under construction.
+     *          as a Surface of the geomodel under construction.
      *          All the facets of the input mesh are visited and added to a
      *          Surface of the GeoModel.
      *          Connected components of the mesh are determined with a
@@ -686,7 +686,7 @@ namespace RINGMesh {
             return ;
         }
 
-        index_t nb_surfaces = model().nb_surfaces() ;
+        index_t nb_surfaces = geomodel().nb_surfaces() ;
         surface_builder_->set_default_gme_id_attribute_mapping( nb_surfaces ) ;
         surface_builder_->compute_gme_simplexes() ;
         surface_builder_->compute_gme_adjacencies() ;
@@ -715,7 +715,7 @@ namespace RINGMesh {
             return ;
         }
 
-        index_t nb_regions = model().nb_regions() ;
+        index_t nb_regions = geomodel().nb_regions() ;
         region_builder_->set_default_gme_id_attribute_mapping( nb_regions ) ;
 
         region_builder_->compute_gme_simplexes() ;
@@ -731,7 +731,7 @@ namespace RINGMesh {
         index_t nb_vertices = mesh_.vertices.nb() ;
         for( index_t i = 0; i < nb_vertices; ++i ) {
             const vec3& point = mesh_.vertices.point( i ) ;
-            model().mesh.vertices.add_vertex( point ) ;
+            geomodel().mesh.vertices.add_vertex( point ) ;
         }
         epsilon_ = compute_epsilon( mesh_ ) ;
     }
@@ -765,7 +765,7 @@ namespace RINGMesh {
         GEO::Attribute< index_t > attribute( mesh_.facets.attributes(),
             attribute_name ) ;
         AttributeVector< index_t > attributes ;
-        create_attributes_on_geomodel_surfaces_facets< index_t >( model(),
+        create_attributes_on_geomodel_surfaces_facets< index_t >( geomodel(),
           attribute_name, attributes ) ;
         surface_builder_->copy_simplex_attribute_from_mesh_to_geomodel< index_t >(
             attribute, attributes ) ;
@@ -782,7 +782,7 @@ namespace RINGMesh {
         GEO::Attribute< index_t > attribute( mesh_.cells.attributes(),
             attribute_name ) ;
         AttributeVector< index_t > attributes ;
-        create_attributes_on_geomodel_regions_cells< index_t >( model(),
+        create_attributes_on_geomodel_regions_cells< index_t >( geomodel(),
             attribute_name, attributes ) ;
         region_builder_->copy_simplex_attribute_from_mesh_to_geomodel< index_t >(
             attribute, attributes ) ;

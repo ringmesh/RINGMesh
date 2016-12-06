@@ -113,7 +113,7 @@ namespace {
      * @brief Gets the index of an Interface from its name
      * @param[in] geomodel GeoModel to consider
      * @param[in] interface_name Name of the interface to find
-     * @return Index of the interface in the model, NO_ID if not found.
+     * @return Index of the interface in the geomodel, NO_ID if not found.
      */
     gme_t find_interface(
         const GeoModel& geomodel,
@@ -449,9 +449,9 @@ namespace {
      * @brief Sets the given surface as regions boundaries
      * @details Based on ColocaterANN, retrieves the regions bounded by the
      * given surface. One side or the both sides of the surface
-     * could bound model regions.
+     * could bound geomodel regions.
      * @param[in] surface_id Index of the surface
-     * @param[in] region_anns Vector of ColocaterANN of the model regions
+     * @param[in] region_anns Vector of ColocaterANN of the geomodel regions
      * @param[in,out] geomodel_builder Builder of the GeoModel to consider
      */
     void add_surface_to_region_boundaries(
@@ -502,9 +502,9 @@ namespace {
     /*
      * @brief Adds the right surface sides in universe boundaries
      * @param[in] surf_side_minus Vector indicating if the '-' side of
-     * surfaces are in the boundaries of model regions
+     * surfaces are in the boundaries of geomodel regions
      * @param[in] surf_side_plus Vector indicating if the '+' side of
-     * surfaces are in the boundaries of model regions
+     * surfaces are in the boundaries of geomodel regions
      * @param[in,out] geomodel_builder Builder of the GeoModel to consider
      */
     void add_surfaces_to_universe_boundaries(
@@ -523,12 +523,12 @@ namespace {
 
     /*
      * @brief Determines if each side of the surfaces are
-     * in the boundaries of model regions
+     * in the boundaries of geomodel regions
      * @param[in] geomodel GeoModel to consider
      * @param[out] surf_side_minus Vector indicating if the '-' side of
-     * surfaces are in the boundaries of model regions
+     * surfaces are in the boundaries of geomodel regions
      * @param[out] surf_side_plus Vector indicating if the '+' side of
-     * surfaces are in the boundaries of model regions
+     * surfaces are in the boundaries of geomodel regions
      */
     void determine_if_surface_sides_bound_regions(
         const GeoModel& geomodel,
@@ -1126,8 +1126,8 @@ namespace RINGMesh {
     void GeoModelBuilderGocad::build_contacts()
     {
         std::vector< std::set< gme_t > > interfaces ;
-        for( index_t i = 0; i < model().nb_lines(); ++i ) {
-            const Line& L = model().line( i ) ;
+        for( index_t i = 0; i < geomodel().nb_lines(); ++i ) {
+            const Line& L = geomodel().line( i ) ;
             std::set< gme_t > cur_interfaces ;
             for( index_t j = 0; j < L.nb_in_boundary(); ++j ) {
                 const GeoModelMeshEntity& S = L.in_boundary( j ) ;
@@ -1154,7 +1154,7 @@ namespace RINGMesh {
                 for( std::set< gme_t >::const_iterator it( cur_interfaces.begin() );
                     it != cur_interfaces.end(); ++it ) {
                     name += "_" ;
-                    name += model().geological_entity( *it ).name() ;
+                    name += geomodel().geological_entity( *it ).name() ;
                 }
                 set_entity_name( contact_id, name ) ;
             }
@@ -1204,7 +1204,7 @@ namespace RINGMesh {
         // triangle edges common to at least two surfaces)
         compute_surfaces_internal_borders() ;
 
-        model().mesh.vertices.test_and_initialize() ;
+        geomodel().mesh.vertices.test_and_initialize() ;
         build_lines_and_corners_from_surfaces() ;
 
         compute_boundaries_of_geomodel_regions( *this, ( *this ).model() ) ;
@@ -1218,12 +1218,12 @@ namespace RINGMesh {
     {
         std::string keyword = file_line_.field( 0 ) ;
         TSolidLineParser_var tsolid_parser = TSolidLineParser::create( keyword,
-            *this, model() ) ;
+            *this, geomodel() ) ;
         if( tsolid_parser ) {
             tsolid_parser->execute( file_line_, tsolid_load_storage_ ) ;
         } else {
             GocadLineParser_var gocad_parser = GocadLineParser::create( keyword,
-                *this, model() ) ;
+                *this, geomodel() ) ;
             if( gocad_parser ) {
                 gocad_parser->execute( file_line_, tsolid_load_storage_ ) ;
             }
@@ -1235,14 +1235,14 @@ namespace RINGMesh {
         const std::vector< ColocaterANN* >& surface_anns,
         const std::vector< Box3d >& surface_boxes )
     {
-        const Surface& S = model().surface( surface_id ) ;
+        const Surface& S = geomodel().surface( surface_id ) ;
         std::vector< index_t > facets_id ;
         std::vector< index_t > edges_id ;
 
         for( index_t f = 0; f < S.nb_mesh_elements(); ++f ) {
             for( index_t e = 0; e < 3; ++e ) {
                 if( !S.is_on_border( f, e ) ) {
-                    bool internal_border = is_edge_in_several_surfaces( model(),
+                    bool internal_border = is_edge_in_several_surfaces( geomodel(),
                         surface_id, f, e, surface_anns, surface_boxes ) ;
                     if( internal_border ) {
                         facets_id.push_back( f ) ;
@@ -1263,13 +1263,13 @@ namespace RINGMesh {
         std::vector< ColocaterANN* >& surface_anns,
         std::vector< Box3d >& surface_boxes )
     {
-        for( index_t s = 0; s < model().nb_surfaces(); ++s ) {
-            const Surface& S = model().surface( s ) ;
+        for( index_t s = 0; s < geomodel().nb_surfaces(); ++s ) {
+            const Surface& S = geomodel().surface( s ) ;
             for( index_t p = 0; p < S.nb_vertices(); p++ ) {
                 surface_boxes[s].add_point( S.vertex( p ) ) ;
             }
             std::vector< vec3 > border_edge_barycenters ;
-            get_surface_border_edge_barycenters( model(), s,
+            get_surface_border_edge_barycenters( geomodel(), s,
                 border_edge_barycenters ) ;
             surface_anns[s] = new ColocaterANN( border_edge_barycenters, true ) ;
         }
@@ -1277,13 +1277,13 @@ namespace RINGMesh {
 
     void GeoModelBuilderTSolid::compute_surfaces_internal_borders()
     {
-        std::vector< ColocaterANN* > anns( model().nb_surfaces(), nil ) ;
-        std::vector< Box3d > boxes( model().nb_surfaces() ) ;
+        std::vector< ColocaterANN* > anns( geomodel().nb_surfaces(), nil ) ;
+        std::vector< Box3d > boxes( geomodel().nb_surfaces() ) ;
         compute_facet_edge_centers_anns_and_surface_boxes( anns, boxes ) ;
-        for( index_t s = 0; s < model().nb_surfaces(); ++s ) {
+        for( index_t s = 0; s < geomodel().nb_surfaces(); ++s ) {
             compute_surface_internal_borders( s, anns, boxes ) ;
         }
-        for( index_t s = 0; s < model().nb_surfaces(); ++s ) {
+        for( index_t s = 0; s < geomodel().nb_surfaces(); ++s ) {
             delete anns[s] ;
         }
     }
@@ -1340,7 +1340,7 @@ namespace RINGMesh {
     void GeoModelBuilderML::load_file()
     {
         read_file() ;
-        model().mesh.vertices.test_and_initialize() ;
+        geomodel().mesh.vertices.test_and_initialize() ;
         build_lines_and_corners_from_surfaces() ;
         build_contacts() ;
     }
@@ -1349,12 +1349,12 @@ namespace RINGMesh {
     {
         std::string keyword = file_line_.field( 0 ) ;
         MLLineParser_var tsolid_parser = MLLineParser::create( keyword, *this,
-            model() ) ;
+            geomodel() ) ;
         if( tsolid_parser ) {
             tsolid_parser->execute( file_line_, ml_load_storage_ ) ;
         } else {
             GocadLineParser_var gocad_parser = GocadLineParser::create( keyword,
-                *this, model() ) ;
+                *this, geomodel() ) ;
             if( gocad_parser ) {
                 gocad_parser->execute( file_line_, ml_load_storage_ ) ;
             }

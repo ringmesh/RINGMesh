@@ -172,8 +172,8 @@ namespace RINGMesh {
         }
     } ;
 
-    GeoModelBuilderGM::GeoModelBuilderGM( GeoModel& model, const std::string& filename )
-        : GeoModelBuilderFile( model, filename ), file_version_( 0 )
+    GeoModelBuilderGM::GeoModelBuilderGM( GeoModel& geomodel, const std::string& filename )
+        : GeoModelBuilderFile( geomodel, filename ), file_version_( 0 )
     {
         version_impl_[0] = new GeoModelBuilderGMImpl_0( *this ) ;
         version_impl_[1] = new GeoModelBuilderGMImpl_1( *this ) ;
@@ -195,7 +195,7 @@ namespace RINGMesh {
                 if( file_line.field_matches( 0, "Version" ) ) {
                     file_version_ = file_line.field_as_uint( 1 ) ;
                 }
-                // Name of the model
+                // Name of the geomodel
                 else if( file_line.field_matches( 0, "GeoModel" ) ) {
                     if( file_line.nb_fields() > 2 ) {
                         set_geomodel_name( file_line.field( 2 ) ) ;
@@ -390,7 +390,7 @@ namespace RINGMesh {
 
             file_line.get_fields() ;
             if( file_line.nb_fields() > 0 ) {
-                // Name of the model
+                // Name of the geomodel
                 if( file_line.field_matches( 0, "NAME" ) ) {
                     if( file_line.nb_fields() > 1 ) {
                         set_geomodel_name( file_line.field( 1 ) ) ;
@@ -403,7 +403,7 @@ namespace RINGMesh {
                     if( file_line.nb_fields() > 1 ) {
                         EntityType type = match_nb_entities( file_line.field( 0 ) ) ;
                         index_t nb_entities = file_line.field_as_uint( 1 ) ;
-                        if( model().is_mesh_entity_type( type ) ) {
+                        if( geomodel().is_mesh_entity_type( type ) ) {
                             create_mesh_entities( type, nb_entities ) ;
                         } else {
                             create_geological_entities( type, nb_entities ) ;
@@ -510,7 +510,7 @@ namespace RINGMesh {
         unzFile& uz )
     {
         for( index_t el = 0;
-            el < model().nb_mesh_entities( type_name_old_to_new( old_type_name ) );
+            el < geomodel().nb_mesh_entities( type_name_old_to_new( old_type_name ) );
             el++ ) {
             std::string file_to_extract_and_load = old_type_name + "_"
                 + GEO::String::to_string( el ) ;
@@ -543,7 +543,7 @@ namespace RINGMesh {
             builder.set_mesh( cur_mesh ) ;
             builder.load_mesh( str_try, flags ) ;
             assign_mesh_to_entity( cur_mesh,
-                model().mesh_entity( type_name_old_to_new( old_type_name ), el ).gme_id() ) ;
+                geomodel().mesh_entity( type_name_old_to_new( old_type_name ), el ).gme_id() ) ;
             GEO::Logger::instance()->set_minimal( false ) ;
 
             unzip_file( uz, str_try.c_str() ) ;
@@ -584,7 +584,7 @@ namespace RINGMesh {
 
         // Repair line boundary order.
         complete_entity_connectivity() ;
-        GeoModelRepair repair( model() ) ;
+        GeoModelRepair repair( geomodel() ) ;
         repair.repair( GeoModelRepair::LINE_BOUNDARY_ORDER ) ;
 
         unzClose( uz ) ;
