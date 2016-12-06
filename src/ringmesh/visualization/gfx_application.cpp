@@ -988,8 +988,8 @@ namespace RINGMesh {
 
     RINGMeshApplication::~RINGMeshApplication()
     {
-        for( index_t i = 0; i < models_.size(); i++ ) {
-            delete models_[i] ;
+        for( index_t i = 0; i < geomodels_.size(); i++ ) {
+            delete geomodels_[i] ;
         }
         for( index_t i = 0; i < meshes_.size(); i++ ) {
             delete meshes_[i] ;
@@ -1124,8 +1124,8 @@ namespace RINGMesh {
             "toggle colored layers" ) ;
 
         init_colormaps() ;
-        for( index_t i = 0; i < models_.size(); i++ ) {
-            models_[i]->GM_gfx_.attribute.set_colormap( colormaps_[0].texture ) ;
+        for( index_t i = 0; i < geomodels_.size(); i++ ) {
+            geomodels_[i]->GM_gfx_.attribute.set_colormap( colormaps_[0].texture ) ;
         }
         glup_viewer_disable( GLUP_VIEWER_BACKGROUND ) ;
     }
@@ -1208,8 +1208,8 @@ namespace RINGMesh {
     bool RINGMeshApplication::load( const std::string& filename )
     {
         if( !filename.empty() ) {
-            models_.push_back( new GeoModelViewer( *this, filename ) ) ;
-            current_viewer_ = static_cast< index_t >( models_.size() - 1 ) ;
+            geomodels_.push_back( new GeoModelViewer( *this, filename ) ) ;
+            current_viewer_ = static_cast< index_t >( geomodels_.size() - 1 ) ;
             current_viewer_type_ = GEOMODEL ;
         }
 
@@ -1221,9 +1221,9 @@ namespace RINGMesh {
     {
         Box3d bbox ;
 
-        for( index_t i = 0; i < models_.size(); i++ ) {
-            if( models_[i]->is_visible_ ) {
-                bbox.add_box( models_[i]->bbox_ ) ;
+        for( index_t i = 0; i < geomodels_.size(); i++ ) {
+            if( geomodels_[i]->is_visible_ ) {
+                bbox.add_box( geomodels_[i]->bbox_ ) ;
             }
         }
         for( index_t i = 0; i < meshes_.size(); i++ ) {
@@ -1244,8 +1244,8 @@ namespace RINGMesh {
         for( index_t i = 0; i < meshes_.size(); i++ ) {
             if( meshes_[i]->is_visible_ ) meshes_[i]->draw_scene() ;
         }
-        for( index_t i = 0; i < models_.size(); i++ ) {
-            if( models_[i]->is_visible_ ) models_[i]->draw_scene() ;
+        for( index_t i = 0; i < geomodels_.size(); i++ ) {
+            if( geomodels_[i]->is_visible_ ) geomodels_[i]->draw_scene() ;
         }
 
         if( current_viewer_type_ == GEOMODEL ) {
@@ -1272,7 +1272,7 @@ namespace RINGMesh {
         if( !models_.empty() ) {
             ImGui::Separator() ;
             ImGui::Text( "GeoModel" ) ;
-            for( index_t i = 0; i < models_.size(); i++ ) {
+            for( index_t i = 0; i < geomodels_.size(); i++ ) {
                 GeoModelViewer& viewer = *models_[i] ;
                 ImGui::PushID( static_cast< int >( i ) ) ;
                 if( ImGui::Checkbox( viewer.GM_.name().c_str(),
@@ -1306,8 +1306,8 @@ namespace RINGMesh {
         if( current_viewer_ == NO_ID ) return ;
         switch( current_viewer_type_ ) {
             case GEOMODEL:
-                ringmesh_assert( current_viewer_ < models_.size() ) ;
-                models_[current_viewer_]->draw_object_properties() ;
+                ringmesh_assert( current_viewer_ < geomodels_.size() ) ;
+                geomodels_[current_viewer_]->draw_object_properties() ;
                 return ;
             case MESH:
                 ringmesh_assert( current_viewer_ < meshes_.size() ) ;

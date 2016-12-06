@@ -56,8 +56,8 @@ namespace {
     using namespace RINGMesh ;
 
     /*!
-    * @brief Returns the index of the region of the model neighboring the surface.
-    * @param[in] model to consider
+    * @brief Returns the index of the region of the geomodel neighboring the surface.
+    * @param[in] geomodel to consider
     * @param[in] surface_part_id Index of the Surface
     * @param[in] side Side of the Surface
     * @return The region index or NO_ID if none found.
