@@ -323,11 +323,11 @@ namespace RINGMesh {
         /*!
          * Gets the associated GeoModel
          */
-        const GeoModel* model() const { return model_ ;}
+        const GeoModel* geomodel() const { return geomodel_ ;}
         /*!
          * Sets the associated GeoModel
          */
-        void set_model( RINGMesh::GeoModel* model ) { model_ = model ;}
+        void set_geomodel( RINGMesh::GeoModel* geomodel ) { geomodel_ = geomodel ;}
         index_t find_well( const std::string& name ) const ;
 
         void create_wells( index_t nb_wells ) ;
@@ -351,7 +351,7 @@ namespace RINGMesh {
         /// Vector of the wells
         std::vector< Well* > wells_ ;
         /// Associated GeoModel
-        GeoModel* model_ ;
+        GeoModel* geomodel_ ;
     } ;
 }
 #endif
