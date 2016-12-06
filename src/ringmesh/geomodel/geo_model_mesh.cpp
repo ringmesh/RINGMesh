@@ -333,7 +333,8 @@ namespace RINGMesh {
         const GeoModelMeshEntity& E = geomodel_.mesh_entity( mesh_entity_id ) ;
         for( index_t v = 0; v < E.nb_vertices(); v++ ) {
             std::vector< index_t > result ;
-            geomodel_vertices_.colocater().get_neighbors( E.vertex( v ), 1, result ) ;
+            geomodel_vertices_.colocater().get_neighbors( E.vertex( v ), 1,
+                result ) ;
             mesh_entity_vertex_map[v] = result[0] ;
         }
     }
@@ -511,7 +512,8 @@ namespace RINGMesh {
                 mesh_builder->set_vertex( count, E.vertex( v ) ) ;
                 // Map from vertices of MeshEntities to GeoModelMeshVertices
                 vertex_mapper_.set_vertex_map_value( E.gme_id(), v, count ) ;
-                vertex_mapper_.add_to_gme_vertices( GMEVertex( E.gme_id(), v ), count ) ;
+                vertex_mapper_.add_to_gme_vertices( GMEVertex( E.gme_id(), v ),
+                    count ) ;
                 // Global vertex index increment
                 count++ ;
             }
@@ -562,7 +564,8 @@ namespace RINGMesh {
         builder->clear_vertices( true, false ) ;
     }
 
-    void GeoModelMeshVertices::unbind_geomodel_vertex_map( const gme_t& mesh_entity_id )
+    void GeoModelMeshVertices::unbind_geomodel_vertex_map(
+        const gme_t& mesh_entity_id )
     {
         vertex_mapper_.unbind_vertex_map( mesh_entity_id ) ;
     }
@@ -599,7 +602,8 @@ namespace RINGMesh {
         index_t entity_vertex_index ) const
     {
         test_and_initialize() ;
-        return vertex_mapper_.geomodel_vertex_index( mesh_entity, entity_vertex_index ) ;
+        return vertex_mapper_.geomodel_vertex_index( mesh_entity,
+            entity_vertex_index ) ;
     }
 
     index_t GeoModelMeshVertices::geomodel_vertex_id(
@@ -621,8 +625,8 @@ namespace RINGMesh {
     {
         test_and_initialize() ;
         ringmesh_assert( geomodel_vertex_index < nb() ) ;
-        vertex_mapper_.mesh_entity_vertex_indices( geomodel_vertex_index, mesh_entity,
-            mesh_entity_vertex_ids ) ;
+        vertex_mapper_.mesh_entity_vertex_indices( geomodel_vertex_index,
+            mesh_entity, mesh_entity_vertex_ids ) ;
     }
 
     void GeoModelMeshVertices::gme_vertices(
@@ -2008,255 +2012,6 @@ namespace RINGMesh {
 
     /*******************************************************************************/
 
-    GeoModelMeshOrder::GeoModelMeshOrder( GeoModelMesh& gmm )
-        :
-            gmm_( gmm ),
-            gm_( gmm.geomodel() ),
-            mesh_( NULL ),
-            nb_vertices_( 0 ),
-            high_order_vertices_( 0 ),
-            max_new_points_on_cell_( 0 ),
-            max_new_points_on_facet_( 0 )
-    {
-        for( index_t i = 0; i < 4; i++ ) {
-            nb_high_order_points_per_cell_type_[i] = 0 ;
-        }
-
-        for( index_t i = 0; i < 2; i++ ) {
-            nb_high_order_points_per_facet_type_[i] = 0 ;
-        }
-    }
-
-    void GeoModelMeshOrder::initialize()
-    {
-
-        index_t offset = 0 ;
-        nb_vertices_ = gmm_.vertices.nb() ;
-        ;
-        index_t order = gmm_.get_order() ;
-        if( order != 1 ) {
-
-            index_t nb_total_edges = 0 ;
-
-            if( gmm_.cells.nb_cells() == gmm_.cells.nb_tet() ) {
-                max_new_points_on_cell_ = 6 * ( order - 1 ) ;
-                max_new_points_on_facet_ = 3 * ( order - 1 ) ;
-            } else {
-                max_new_points_on_cell_ = 12 * ( order - 1 ) ;
-                max_new_points_on_facet_ = 4 * ( order - 1 ) ;
-            }
-
-            GEO::Attribute< index_t > order_vertices_cell ;
-            ( gmm_.cell_attribute_manager(), order_att_name ) ;
-            order_vertices_cell.create_vector_attribute(
-                gmm_.cell_attribute_manager(), order_att_name,
-                max_new_points_on_cell_ ) ;
-            GEO::Attribute< index_t > order_vertices_facet ;
-            order_vertices_facet.create_vector_attribute(
-                gmm_.facet_attribute_manager(), order_att_name,
-                max_new_points_on_facet_ ) ;
-
-            /// First loop to find a maximum number of new points
-            for( index_t r = 0; r < gm_.nb_regions(); r++ ) {
-                for( index_t c = 0; c < gmm_.cells.nb(); c++ ) {
-                    for( index_t e = 0; e < gmm_.cells.nb_edges( c ); e++ ) {
-                        nb_total_edges++ ;
-                    }
-                }
-            }
-
-            /// Fill nb_added_points_per_cell_type_ with the number of high order vertices
-            nb_high_order_points_per_cell_type_[GEO::MESH_TET] = 6 * ( order - 1 ) ;
-            nb_high_order_points_per_cell_type_[GEO::MESH_HEX] = 12 * ( order - 1 ) ;
-            nb_high_order_points_per_cell_type_[GEO::MESH_PYRAMID] = 8
-                * ( order - 1 ) ;
-            nb_high_order_points_per_cell_type_[GEO::MESH_PRISM] = 9
-                * ( order - 1 ) ;
-
-            /// Fill nb_added_points_per_facet_type_ with the number of high order vertices
-            nb_high_order_points_per_facet_type_[0] = 3 * ( order - 1 ) ;
-            nb_high_order_points_per_facet_type_[1] = 4 * ( order - 1 ) ;
-
-            std::vector< vec3 > new_points( nb_total_edges * ( order - 1 ) ) ;
-
-            /// Adding new indices on cells edges
-            for( index_t c = 0; c < gmm_.cells.nb(); c++ ) {
-                for( index_t e = 0; e < gmm_.cells.nb_edges( c ); e++ ) {
-                    std::vector< vec3 > new_points_in_edge ;
-                    vec3 node0 = gmm_.vertices.vertex(
-                        gmm_.cells.edge_vertex( c, e, 0 ) ) ;
-                    vec3 node1 = gmm_.vertices.vertex(
-                        gmm_.cells.edge_vertex( c, e, 1 ) ) ;
-                    divide_edge_in_parts( node0, node1, order, new_points_in_edge ) ;
-
-                    for( index_t v = 0; v < new_points_in_edge.size(); v++ ) {
-                        new_points[offset] = new_points_in_edge[v] ;
-                        order_vertices_cell[c * max_new_points_on_cell_ + e + v] =
-                            offset ;
-                        offset++ ;
-                    }
-                }
-            }
-
-            MakeUnique uniq( new_points ) ;
-            uniq.unique( gm_.epsilon() ) ;
-            std::vector< vec3 > uniq_points ;
-            uniq.unique_points( uniq_points ) ;
-            std::vector< index_t > map = uniq.indices() ;
-            ColocaterANN ann( uniq_points, false ) ;
-
-            /// Rewriting the right new indices on the cell attribute
-            for( index_t c = 0; c < gmm_.cells.nb(); c++ ) {
-                for( index_t v = 0; v < gmm_.cells.nb_edges( c ) * ( order - 1 );
-                    v++ ) {
-                    order_vertices_cell[c * max_new_points_on_cell_ + v] =
-                        map[order_vertices_cell[c * max_new_points_on_cell_ + v]]
-                            + nb_vertices_ ;
-                }
-            }
-
-            /// Writing new indices on an attribute for the facet
-            for( index_t f = 0; f < gmm_.facets.nb(); f++ ) {
-                for( index_t e = 0; e < gmm_.facets.nb_vertices( f ); e++ ) {
-                    vec3 node0 ;
-                    vec3 node1 ;
-                    std::vector< vec3 > new_points_in_edge ;
-                    if( e == gmm_.facets.nb_vertices( f ) - 1 ) {
-                        node0 = gmm_.vertices.vertex( gmm_.facets.vertex( f, e ) ) ;
-                        node1 = gmm_.vertices.vertex( gmm_.facets.vertex( f, 0 ) ) ;
-                    } else {
-                        node0 = gmm_.vertices.vertex( gmm_.facets.vertex( f, e ) ) ;
-                        node1 = gmm_.vertices.vertex(
-                            gmm_.facets.vertex( f, e + 1 ) ) ;
-                    }
-                    divide_edge_in_parts( node0, node1, order, new_points_in_edge ) ;
-                    for( index_t v = 0; v < new_points_in_edge.size(); v++ ) {
-                        std::vector< index_t > colocated_vertices ;
-                        ringmesh_assert( colocated_vertices.size() == 1 ) ;
-
-                        order_vertices_facet[f * max_new_points_on_facet_ + e + v] =
-                            colocated_vertices[0] + nb_vertices_ ;
-
-                    }
-                }
-            }
-            nb_vertices_ += static_cast< index_t >( uniq_points.size() ) ;
-        }
-
-    }
-
-    void GeoModelMeshOrder::test_and_initialize() const
-    {
-        if( !is_initialized() ) {
-            const_cast< GeoModelMeshOrder* >( this )->initialize() ;
-        }
-    }
-
-    bool GeoModelMeshOrder::is_initialized() const
-    {
-        return nb_vertices_ > 0 ;
-    }
-
-    void GeoModelMeshOrder::clear()
-    {
-        nb_vertices_ = 0 ;
-    }
-
-    index_t GeoModelMeshOrder::nb_total_vertices() const
-    {
-        test_and_initialize() ;
-        return nb_vertices_ ;
-    }
-
-    const vec3& GeoModelMeshOrder::vertex( const index_t index ) const
-    {
-        const_cast< GeoModelMeshOrder* >( this )->test_point_list_initialized() ;
-        return high_order_vertices_[index] ;
-    }
-
-    index_t GeoModelMeshOrder::indice_on_cell( index_t c, index_t component ) const
-    {
-        test_and_initialize() ;
-        ringmesh_assert( c < gmm_.cells.nb() ) ;
-        ringmesh_assert( component < max_new_points_on_cell_ ) ;
-        GEO::Attribute< index_t > order_vertices_cell ;
-        ( gmm_.cell_attribute_manager(), order_att_name ) ;
-        return order_vertices_cell[max_new_points_on_cell_ * c + component] ;
-    }
-
-    index_t GeoModelMeshOrder::indice_on_facet( index_t f, index_t component ) const
-    {
-        test_and_initialize() ;
-        ringmesh_assert( f < gmm_.facets.nb_facets() ) ;
-        ringmesh_assert( component < max_new_points_on_cell_ ) ;
-        GEO::Attribute< index_t > order_vertices_facet ;
-        ( gmm_.facet_attribute_manager(), order_att_name ) ;
-        return order_vertices_facet[max_new_points_on_cell_ * f + component] ;
-    }
-
-    void GeoModelMeshOrder::move_point( const index_t index, const vec3& u )
-    {
-        test_point_list_initialized() ;
-        for( index_t i = 0; i < 3; i++ ) {
-            high_order_vertices_[index][i] += u[i] ;
-        }
-    }
-
-    void GeoModelMeshOrder::test_point_list_initialized()
-    {
-        if( high_order_vertices_.empty() ) {
-            index_t order = gmm_.get_order() ;
-
-            if( high_order_vertices_.empty() && order > 1 ) {
-                index_t offset = 0 ;
-                index_t nb_total_edges = 0 ;
-                for( index_t c = 0; c < gmm_.cells.nb(); c++ ) {
-                    for( index_t e = 0; e < gmm_.cells.nb_edges( c ); e++ ) {
-                        nb_total_edges++ ;
-                    }
-                }
-
-                std::vector< vec3 > new_points( nb_total_edges * ( order - 1 ) ) ;
-                for( index_t c = 0; c < gmm_.cells.nb(); c++ ) {
-                    for( index_t e = 0; e < gmm_.cells.nb_edges( c ); e++ ) {
-                        std::vector< vec3 > new_points_in_edge ;
-                        vec3 node0 = gmm_.vertices.vertex(
-                            gmm_.cells.edge_vertex( c, e, 0 ) ) ;
-                        vec3 node1 = gmm_.vertices.vertex(
-                            gmm_.cells.edge_vertex( c, e, 1 ) ) ;
-                        divide_edge_in_parts( node0, node1, order,
-                            new_points_in_edge ) ;
-
-                        for( index_t v = 0; v < new_points_in_edge.size(); v++ ) {
-                            new_points[offset] = new_points_in_edge[v] ;
-                            offset++ ;
-                        }
-                    }
-                }
-
-                MakeUnique uniq( new_points ) ;
-                uniq.unique( gm_.epsilon() ) ;
-                uniq.unique_points( high_order_vertices_ ) ;
-            }
-        }
-    }
-
-    index_t GeoModelMeshOrder::nb_high_order_vertices_per_facet( index_t f ) const
-    {
-        test_and_initialize() ;
-        ringmesh_assert( f < gmm_.facets.nb() ) ;
-        return nb_high_order_points_per_facet_type_[gmm_.facets.nb_vertices( f ) - 3] ;
-    }
-
-    index_t GeoModelMeshOrder::nb_high_order_vertices_per_cell( index_t c ) const
-    {
-        test_and_initialize() ;
-        ringmesh_assert( c < gmm_.cells.nb() ) ;
-        return nb_high_order_points_per_cell_type_[gmm_.cells.type( c )] ;
-    }
-
-    /*******************************************************************************/
-
     GeoModelMesh::GeoModelMesh( GeoModel& geomodel )
         :
             geomodel_( geomodel ),
@@ -2266,8 +2021,7 @@ namespace RINGMesh {
             vertices( *this, geomodel ),
             edges( *this ),
             facets( *this ),
-            cells( *this ),
-            order( *this )
+            cells( *this )
     /*! @todo I am no expert but this initialization list looks like
      * a ticking bomb (like those in Mesh, btw I don not understand how these can work)
      * If these classes are derived one day, I don't know what will happen [JP]*/
@@ -2278,7 +2032,6 @@ namespace RINGMesh {
         edges.mesh_ = mesh_ ;
         facets.mesh_ = mesh_ ;
         cells.mesh_ = mesh_ ;
-        order.mesh_ = mesh_ ;
 
     }
 
