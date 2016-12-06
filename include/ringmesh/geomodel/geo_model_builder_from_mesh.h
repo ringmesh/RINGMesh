@@ -59,8 +59,8 @@ namespace RINGMesh {
      */
     class RINGMESH_API GeoModelBuilderSurfaceMesh: public GeoModelBuilder {
     public:
-        GeoModelBuilderSurfaceMesh( GeoModel& model, const GEO::Mesh& mesh )
-            : GeoModelBuilder( model ), mesh_( mesh )
+        GeoModelBuilderSurfaceMesh( GeoModel& geomodel, const GEO::Mesh& mesh )
+            : GeoModelBuilder( geomodel ), mesh_( mesh )
         {
             options_.compute_lines = true ;
             options_.compute_corners = true ;
@@ -80,7 +80,7 @@ namespace RINGMesh {
     class RINGMESH_API GeoModelBuilderMesh: public GeoModelBuilder {
     public:
         GeoModelBuilderMesh(
-            GeoModel& model,
+            GeoModel& geomodel,
             const GEO::Mesh& mesh,
             const std::string& surface_attribute_name,
             const std::string& region_attribute_name ) ;

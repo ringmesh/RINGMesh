@@ -150,7 +150,7 @@ namespace RINGMesh {
          * GeoModelEditor derived classes.
          *
          * @param[in] geomodel Geomodel owning the Entity to create
-         * @param[in] id Index of the entity in the corresponding vector in the model
+         * @param[in] id Index of the entity in the corresponding vector in the geomodel
          * @param[in] name Name of the entity
          * @param[in] geological_feature Geological feature of the entity, none by default.
          */

@@ -273,7 +273,7 @@ namespace RINGMesh {
         GeoModelGfx() ;
         ~GeoModelGfx() ;
 
-        void set_geomodel( const GeoModel& model ) ;
+        void set_geomodel( const GeoModel& geomodel ) ;
         const GeoModel* geomodel() const ;
         void initialize() ;
         void need_to_update() ;
