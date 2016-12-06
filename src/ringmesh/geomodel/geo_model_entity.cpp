@@ -65,8 +65,8 @@
 
 namespace RINGMesh {
 
-    Universe::Universe( const GeoModel& model )
-        : GeoModelEntity( model, NO_ID )
+    Universe::Universe( const GeoModel& geomodel )
+        : GeoModelEntity( geomodel, NO_ID )
     {
         id_.type = type_name() ;
         name_ = universe_type_name() ;
@@ -146,8 +146,8 @@ namespace RINGMesh {
     {
         bool is_valid = true ;
         if( !gme_id().is_defined() ) {
-            Logger::err( "GeoModelEntity" ) << " Entity associated to model "
-                << model().name() << "has no type and/or no index " << std::endl ;
+            Logger::err( "GeoModelEntity" ) << " Entity associated to geomodel "
+                << geomodel().name() << "has no type and/or no index " << std::endl ;
             is_valid = false ;
             // No further checks are possible - This really should not happen
             ringmesh_assert_not_reached;
@@ -169,7 +169,7 @@ namespace RINGMesh {
 
     bool Universe::is_valid() const
     {
-        return RINGMesh::check_volume_watertightness( model(), gme_id() ) ;
+        return RINGMesh::check_volume_watertightness( geomodel(), gme_id() ) ;
     }
 
 }
