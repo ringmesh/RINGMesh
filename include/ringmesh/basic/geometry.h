@@ -192,7 +192,8 @@ namespace RINGMesh {
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
-        const vec3& p2 ) ;
+        const vec3& p2,
+        bool exact_predicates = false ) ;
 
     bool RINGMESH_API point_inside_quad(
         const vec3& p,
