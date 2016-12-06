@@ -67,8 +67,7 @@ namespace RINGMesh {
          */
         virtual void copy(
             const MeshBase& rhs,
-            bool copy_attributes,
-            GEO::MeshElementsFlags what ) = 0 ;
+            bool copy_attributes ) = 0 ;
         virtual void load_mesh(
             const std::string& filename,
             const GEO::MeshIOFlags& ioflags ) = 0 ;
