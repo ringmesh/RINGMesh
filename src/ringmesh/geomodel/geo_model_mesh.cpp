@@ -2013,7 +2013,6 @@ namespace RINGMesh {
             geomodel_( geomodel ),
             mesh_( NULL ),
             mode_( GeoModelMeshCells::NONE ),
-            order_value_( 1 ),
             vertices( *this, geomodel ),
             edges( *this ),
             facets( *this ),
