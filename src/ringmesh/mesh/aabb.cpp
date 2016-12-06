@@ -475,11 +475,10 @@ namespace RINGMesh {
         if( !tree_[node_index].contains( query ) ) {
             return NO_ID ;
         }
-
         if( box_end == box_begin + 1 ) {
-            if( mesh_cell_contains_point( mesh_, mapping_morton_[box_begin],
-                query ) ) {
-                return box_begin ;
+            index_t cell_id = mapping_morton_[box_begin] ;
+            if( mesh_cell_contains_point( mesh_, cell_id, query ) ) {
+                return cell_id ;
             } else {
                 return NO_ID ;
             }

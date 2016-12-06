@@ -48,6 +48,14 @@
 
 using namespace RINGMesh ;
 
+void add_vertices( Mesh1DBuilder* builder, index_t size )
+{
+    builder->create_vertices( size ) ;
+    for( index_t i = 0; i < size; i++ ) {
+        builder->set_vertex( i, vec3( i, i + 1, 0 ) ) ;
+    }
+}
+
 void add_vertices( Mesh2DBuilder* builder, index_t size )
 {
     builder->create_vertices( size * size ) ;
@@ -56,6 +64,28 @@ void add_vertices( Mesh2DBuilder* builder, index_t size )
         for( index_t j = 0; j < size; j++ ) {
             builder->set_vertex( id++, vec3( i, j, 0 ) ) ;
         }
+    }
+}
+
+void add_vertices( Mesh3DBuilder* builder, index_t size )
+{
+    builder->create_vertices( size * size * size ) ;
+    index_t id = 0 ;
+    for( index_t i = 0; i < size; i++ ) {
+        for( index_t j = 0; j < size; j++ ) {
+            for( index_t k = 0; k < size; k++ ) {
+                builder->set_vertex( id++, vec3( i, j, k ) ) ;
+            }
+        }
+    }
+}
+
+void add_edges( Mesh1DBuilder* builder, index_t size )
+{
+    builder->create_edges( size - 1 ) ;
+    for( index_t i = 0; i < size - 1; i++ ) {
+        builder->set_edge_vertex( i, 0, i ) ;
+        builder->set_edge_vertex( i, 1, i + 1 ) ;
     }
 }
 
@@ -75,6 +105,31 @@ void add_triangles( Mesh2DBuilder* builder, index_t size )
             id++ ;
         }
     }
+}
+
+void add_hexs( Mesh3DBuilder* builder, index_t size )
+{
+    builder->create_cells( ( size - 1 ) * ( size - 1 ) * ( size - 1 ),
+        GEO::MESH_HEX ) ;
+    index_t id = 0 ;
+    for( index_t i = 0; i < ( size - 1 ); i++ ) {
+        for( index_t j = 0; j < ( size - 1 ); j++ ) {
+            for( index_t k = 0; k < ( size - 1 ); k++ ) {
+                index_t corner = i + j * size + k * size * size ;
+                builder->set_cell_vertex( id, 0, corner ) ;
+                builder->set_cell_vertex( id, 4, corner + size * size ) ;
+                builder->set_cell_vertex( id, 6, corner + size * size + 1 ) ;
+                builder->set_cell_vertex( id, 2, corner + 1 ) ;
+                builder->set_cell_vertex( id, 1, corner + size ) ;
+                builder->set_cell_vertex( id, 5, corner + size * size + size ) ;
+                builder->set_cell_vertex( id, 7, corner + size * size + size + 1 ) ;
+                builder->set_cell_vertex( id, 3, corner + size + 1 ) ;
+                id++ ;
+            }
+
+        }
+    }
+    builder->connect_cells() ;
 }
 
 void check_tree( const AABBTree2D& tree, index_t size )
@@ -123,6 +178,211 @@ void check_tree( const AABBTree2D& tree, index_t size )
     }
 }
 
+void create_5_tets_from_hex(
+    Mesh3DBuilder& builder,
+    const GeogramMesh3D& mesh_hex,
+    index_t hex )
+{
+    std::vector< index_t > vertices_in_hex( 8 ) ;
+    for( index_t v = 0; v < 8; v++ ) {
+        vertices_in_hex[v] = mesh_hex.cell_vertex( hex, v ) ;
+    }
+    builder.set_cell_vertex( 5 * hex, 0, vertices_in_hex[0] ) ;
+    builder.set_cell_vertex( 5 * hex, 1, vertices_in_hex[4] ) ;
+    builder.set_cell_vertex( 5 * hex, 2, vertices_in_hex[5] ) ;
+    builder.set_cell_vertex( 5 * hex, 3, vertices_in_hex[6] ) ;
+
+    builder.set_cell_vertex( 5 * hex + 1, 0, vertices_in_hex[0] ) ;
+    builder.set_cell_vertex( 5 * hex + 1, 1, vertices_in_hex[2] ) ;
+    builder.set_cell_vertex( 5 * hex + 1, 2, vertices_in_hex[3] ) ;
+    builder.set_cell_vertex( 5 * hex + 1, 3, vertices_in_hex[6] ) ;
+
+    builder.set_cell_vertex( 5 * hex + 2, 0, vertices_in_hex[7] ) ;
+    builder.set_cell_vertex( 5 * hex + 2, 1, vertices_in_hex[6] ) ;
+    builder.set_cell_vertex( 5 * hex + 2, 2, vertices_in_hex[3] ) ;
+    builder.set_cell_vertex( 5 * hex + 2, 3, vertices_in_hex[5] ) ;
+
+    builder.set_cell_vertex( 5 * hex + 3, 0, vertices_in_hex[1] ) ;
+    builder.set_cell_vertex( 5 * hex + 3, 1, vertices_in_hex[0] ) ;
+    builder.set_cell_vertex( 5 * hex + 3, 2, vertices_in_hex[5] ) ;
+    builder.set_cell_vertex( 5 * hex + 3, 3, vertices_in_hex[3] ) ;
+
+    builder.set_cell_vertex( 5 * hex + 4, 0, vertices_in_hex[0] ) ;
+    builder.set_cell_vertex( 5 * hex + 4, 1, vertices_in_hex[5] ) ;
+    builder.set_cell_vertex( 5 * hex + 4, 2, vertices_in_hex[6] ) ;
+    builder.set_cell_vertex( 5 * hex + 4, 3, vertices_in_hex[3] ) ;
+}
+
+void create_2_prisms_from_hex(
+    Mesh3DBuilder& builder,
+    const GeogramMesh3D& mesh_hex,
+    index_t hex )
+{
+    std::vector< index_t > vertices_in_hex( 8 ) ;
+    for( index_t v = 0; v < 8; v++ ) {
+        vertices_in_hex[v] = mesh_hex.cell_vertex( hex, v ) ;
+    }
+    builder.set_cell_vertex( 2 * hex, 0, vertices_in_hex[1] ) ;
+    builder.set_cell_vertex( 2 * hex, 1, vertices_in_hex[5] ) ;
+    builder.set_cell_vertex( 2 * hex, 2, vertices_in_hex[3] ) ;
+    builder.set_cell_vertex( 2 * hex, 3, vertices_in_hex[0] ) ;
+    builder.set_cell_vertex( 2 * hex, 4, vertices_in_hex[4] ) ;
+    builder.set_cell_vertex( 2 * hex, 5, vertices_in_hex[2] ) ;
+
+    builder.set_cell_vertex( 2 * hex + 1, 0, vertices_in_hex[2] ) ;
+    builder.set_cell_vertex( 2 * hex + 1, 1, vertices_in_hex[6] ) ;
+    builder.set_cell_vertex( 2 * hex + 1, 2, vertices_in_hex[4] ) ;
+    builder.set_cell_vertex( 2 * hex + 1, 3, vertices_in_hex[3] ) ;
+    builder.set_cell_vertex( 2 * hex + 1, 4, vertices_in_hex[7] ) ;
+    builder.set_cell_vertex( 2 * hex + 1, 5, vertices_in_hex[5] ) ;
+}
+
+void create_3_pyrs_from_hex(
+    Mesh3DBuilder& builder,
+    const GeogramMesh3D& mesh_hex,
+    index_t hex )
+{
+    std::vector< index_t > vertices_in_hex( 8 ) ;
+    for( index_t v = 0; v < 8; v++ ) {
+        vertices_in_hex[v] = mesh_hex.cell_vertex( hex, v ) ;
+    }
+    builder.set_cell_vertex( 3 * hex, 0, vertices_in_hex[0] ) ;
+    builder.set_cell_vertex( 3 * hex, 1, vertices_in_hex[4] ) ;
+    builder.set_cell_vertex( 3 * hex, 2, vertices_in_hex[5] ) ;
+    builder.set_cell_vertex( 3 * hex, 3, vertices_in_hex[1] ) ;
+    builder.set_cell_vertex( 3 * hex, 4, vertices_in_hex[7] ) ;
+
+    builder.set_cell_vertex( 3 * hex + 1, 0, vertices_in_hex[3] ) ;
+    builder.set_cell_vertex( 3 * hex + 1, 1, vertices_in_hex[2] ) ;
+    builder.set_cell_vertex( 3 * hex + 1, 2, vertices_in_hex[0] ) ;
+    builder.set_cell_vertex( 3 * hex + 1, 3, vertices_in_hex[1] ) ;
+    builder.set_cell_vertex( 3 * hex + 1, 4, vertices_in_hex[7] ) ;
+
+    builder.set_cell_vertex( 3 * hex + 2, 0, vertices_in_hex[2] ) ;
+    builder.set_cell_vertex( 3 * hex + 2, 1, vertices_in_hex[6] ) ;
+    builder.set_cell_vertex( 3 * hex + 2, 2, vertices_in_hex[4] ) ;
+    builder.set_cell_vertex( 3 * hex + 2, 3, vertices_in_hex[0] ) ;
+    builder.set_cell_vertex( 3 * hex + 2, 4, vertices_in_hex[7] ) ;
+}
+void decompose_in_tet(
+    const GeogramMesh3D& hex_mesh,
+    GeogramMesh3D& tet_mesh,
+    index_t size )
+{
+    Mesh3DBuilder_var builder = Mesh3DBuilder::create_builder( tet_mesh ) ;
+    builder->create_cells( hex_mesh.nb_cells() * 5, GEO::MESH_TET ) ;
+    add_vertices( builder, size ) ;
+    for( index_t hex = 0; hex < hex_mesh.nb_cells(); hex++ ) {
+        create_5_tets_from_hex( *builder, hex_mesh, hex ) ;
+    }
+
+}
+
+void decompose_in_prisms(
+    const GeogramMesh3D& hex_mesh,
+    GeogramMesh3D& prism_mesh,
+    index_t size )
+{
+    Mesh3DBuilder_var builder = Mesh3DBuilder::create_builder( prism_mesh ) ;
+    builder->create_cells( hex_mesh.nb_cells() * 2, GEO::MESH_PRISM ) ;
+    add_vertices( builder, size ) ;
+    for( index_t hex = 0; hex < hex_mesh.nb_cells(); hex++ ) {
+        create_2_prisms_from_hex( *builder, hex_mesh, hex ) ;
+    }
+}
+
+void decompose_in_pyrs(
+    const GeogramMesh3D& hex_mesh,
+    GeogramMesh3D& pyr_mesh,
+    index_t size )
+{
+    Mesh3DBuilder_var builder = Mesh3DBuilder::create_builder( pyr_mesh ) ;
+    builder->create_cells( hex_mesh.nb_cells() * 3, GEO::MESH_PYRAMID ) ;
+    add_vertices( builder, size ) ;
+    for( index_t hex = 0; hex < hex_mesh.nb_cells(); hex++ ) {
+        create_3_pyrs_from_hex( *builder, hex_mesh, hex ) ;
+    }
+}
+
+void test_AABB2D()
+{
+    Logger::out( "TEST" ) << "Test AABB 2D" << std::endl ;
+    GeogramMesh2D geogram_mesh ;
+    Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder( geogram_mesh ) ;
+
+    index_t size = 10 ;
+    add_vertices( builder, size ) ;
+    add_triangles( builder, size ) ;
+
+    AABBTree2D tree( geogram_mesh ) ;
+    tree.save_tree( "tree" ) ;
+    check_tree( tree, size ) ;
+
+}
+
+void test_locate_cell_on_3D_mesh( const GeogramMesh3D& mesh )
+{
+    for( index_t c = 0; c < mesh.nb_cells(); c++ ) {
+        vec3 barycenter = mesh.cell_barycenter( c ) ;
+        const AABBTree3D& aabb3D = mesh.cells_aabb() ;
+        index_t containing_cell = aabb3D.containing_cell( barycenter ) ;
+        if( containing_cell != c ) {
+            throw RINGMeshException( "TEST", "Not the correct cell found" ) ;
+        }
+    }
+}
+
+void test_AABB3D()
+{
+    Logger::out( "TEST" ) << "Test AABB 3D" << std::endl ;
+    GeogramMesh3D geogram_mesh_hex ;
+    Mesh3DBuilder_var builder = Mesh3DBuilder::create_builder( geogram_mesh_hex ) ;
+
+    index_t size = 10 ;
+    add_vertices( builder, size ) ;
+    add_hexs( builder, size ) ;
+    test_locate_cell_on_3D_mesh( geogram_mesh_hex ) ;
+
+    GeogramMesh3D geogram_mesh_tet ;
+    decompose_in_tet( geogram_mesh_hex, geogram_mesh_tet, size ) ;
+    test_locate_cell_on_3D_mesh( geogram_mesh_tet ) ;
+
+    GeogramMesh3D geogram_mesh_prisms ;
+    decompose_in_prisms( geogram_mesh_hex, geogram_mesh_prisms, size ) ;
+    test_locate_cell_on_3D_mesh( geogram_mesh_prisms ) ;
+
+    GeogramMesh3D geogram_mesh_pyrs ;
+    decompose_in_pyrs( geogram_mesh_hex, geogram_mesh_pyrs, size ) ;
+    test_locate_cell_on_3D_mesh( geogram_mesh_pyrs ) ;
+}
+
+void test_locate_edge_on_1D_mesh( const GeogramMesh1D& mesh )
+{
+    double distance ;
+    vec3 nearest_point ;
+    for( index_t e = 0; e < mesh.nb_edges(); e++ ) {
+        vec3 barycenter = mesh.edge_barycenter( e ) ;
+        const AABBTree1D& aabb1D = mesh.edges_aabb() ;
+        index_t closest_edge = aabb1D.closest_edge( barycenter, nearest_point,
+            distance ) ;
+        if( closest_edge != e ) {
+            throw RINGMeshException( "TEST", "Not the correct edge found" ) ;
+        }
+    }
+}
+
+void test_AABB1D()
+{
+    Logger::out( "TEST" ) << "Test AABB 1D" << std::endl ;
+    GeogramMesh1D geogram_mesh ;
+    Mesh1DBuilder_var builder = Mesh1DBuilder::create_builder( geogram_mesh ) ;
+
+    index_t size = 10 ;
+    add_vertices( builder, size ) ;
+    add_edges( builder, size ) ;
+    test_locate_edge_on_1D_mesh( geogram_mesh ) ;
+}
+
 int main()
 {
     using namespace RINGMesh ;
@@ -131,16 +391,9 @@ int main()
         default_configure() ;
 
         Logger::out( "TEST" ) << "Test AABB" << std::endl ;
-        GeogramMesh2D geogram_mesh ;
-        Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder( geogram_mesh ) ;
-
-        index_t size = 10 ;
-        add_vertices( builder, size ) ;
-        add_triangles( builder, size ) ;
-
-        AABBTree2D tree( geogram_mesh ) ;
-        tree.save_tree( "tree" ) ;
-        check_tree( tree, size ) ;
+        test_AABB1D() ;
+        test_AABB2D() ;
+        test_AABB3D() ;
 
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category() ) << e.what() << std::endl ;
