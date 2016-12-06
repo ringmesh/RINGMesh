@@ -1264,113 +1264,6 @@ namespace RINGMesh {
         GEO::Attribute< index_t > facet_id_ ;
     } ;
 
-    /*!
-     * Optional storage of new vertices when using meshes with order > 1
-     * This is especially useful for simulations based on the MacroMesh (e.g. FEM)
-     * It is possible to introduce new points on the cell edges.
-     */
-    class RINGMESH_API GeoModelMeshOrder {
-    ringmesh_disable_copy( GeoModelMeshOrder ) ;
-    public:
-        friend class GeoModelMesh ;
-
-        GeoModelMeshOrder( GeoModelMesh& gmm ) ;
-
-        /*!
-         * Test if the mesh high orders are initialized
-         */
-        bool is_initialized() const ;
-        /*!
-         * Test if the order needs to be initialized,
-         * if so initialize them.
-         */
-        void test_and_initialize() const ;
-        /*!
-         * Clear the MacroMeshOrder database
-         */
-        void clear() ;
-        /*!
-         * Gets the total number of mesh vertices. It is the number of unique nodes
-         * on the mesh plus the high order vertices on the entities edges
-         * @return the const number of vertices
-         */
-        index_t nb_total_vertices() const ;
-        /*!
-         * Gets the number of high order mesh vertices.
-         * @return the const number of high order vertices
-         */
-        index_t nb_vertices() ;
-        /*!
-         * Gets the point of a high order vertex
-         * @param[in] id an index of the new created point for order > 2
-         * @return the vec3 matching with the id
-         */
-        const vec3& vertex( index_t id ) const ;
-        /*!
-         * Gets the index of a high order vertex on the cell edges
-         * @param[in] c global index of the cell on the GeoModelMesh
-         * @param[in] component local high order vertex index in the cell
-         * @return the const index of the point
-         */
-        index_t indice_on_cell( index_t c, index_t component ) const ;
-        /*!
-         * Gets the index of a high order vertex on a facet
-         * @param[in] f global index of the facet on the GeoModelMesh
-         * @param[in] component local high order vertex index in the cell
-         * @return the const index of the point
-         */
-        index_t indice_on_facet( index_t f, index_t component ) const ;
-        /*!
-         * Move an added point
-         * @param[in] index the index of the high order vertex
-         * @param[in] u the displacement applied on this point
-         */
-        void move_point( index_t index, const vec3& u ) ;
-        /*!
-         * Gets the number of high order vertices on a facet
-         * @param[in] f global index of the facet on the GeoModelMesh
-         * @return the const number of high order vertices
-         */
-        index_t nb_high_order_vertices_per_facet( index_t f ) const ;
-        /*!
-         * Gets the number of high order vertices on a cell
-         * @param[in] c index of the cell on the GeoModelMesh
-         * @return the const number of high order vertices
-         */
-        index_t nb_high_order_vertices_per_cell( index_t c ) const ;
-
-    private:
-        /*!
-         * Initialize the database by computing the new vertices of the mesh.
-         */
-        void initialize() ;
-        /*!
-         * Test whether the  high_order_vertices_ list is initialize. If not, the point
-         * list is initialize
-         */
-        void test_point_list_initialized() ;
-
-    private:
-        /// Attached GeoModelMesh owning the vertices
-        GeoModelMesh& gmm_ ;
-        /// Attached GeoModel
-        const GeoModel& gm_ ;
-        /// Attached Mesh
-        MeshAllD* mesh_ ;
-        /// Total number of vertices + new high order vertices on cell edges
-        index_t nb_vertices_ ;
-        /// New vertices
-        std::vector< vec3 > high_order_vertices_ ;
-        /// The max number of high order vertices a cell could have
-        index_t max_new_points_on_cell_ ;
-        /// The max number of high order vertices a facet could have
-        index_t max_new_points_on_facet_ ;
-        /// Number of high order vertices function of the cell type
-        index_t nb_high_order_points_per_cell_type_[4] ;
-        /// Number of high order vertices function of the facet type
-        index_t nb_high_order_points_per_facet_type_[2] ;
-    } ;
-
     class RINGMESH_API GeoModelMesh {
     ringmesh_disable_copy( GeoModelMesh ) ;
     public:
@@ -1476,18 +1369,6 @@ namespace RINGMesh {
         {
             return order_value_ ;
         }
-        /*!
-         * Change the order of the GeoModelMesh
-         * @param[in] order the new GeoModelMesh order
-         *
-         */
-        void set_order( index_t new_order )
-        {
-            if( new_order != order_value_ ) {
-                order.clear() ;
-            }
-            order_value_ = new_order ;
-        }
 
     private:
         /*! Attached GeoModel */
@@ -1513,7 +1394,6 @@ namespace RINGMesh {
         GeoModelMeshEdges edges ;
         GeoModelMeshFacets facets ;
         GeoModelMeshCells cells ;
-        GeoModelMeshOrder order ;
     } ;
 
 }
