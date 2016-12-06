@@ -667,24 +667,6 @@ namespace RINGMesh {
         return ( 1.0 / count ) * result ;
     }
 
-    void divide_edge_in_parts(
-        vec3& node0,
-        vec3& node1,
-        index_t nb_parts,
-        std::vector< vec3 >& points )
-    {
-        if( nb_parts > 0 ) {
-            points.resize( nb_parts - 1 ) ;
-            double pond = 1. / nb_parts ;
-            for( index_t i = 0; i < nb_parts - 1; i++ ) {
-                for( index_t j = 0; j < 3; j++ ) {
-                    points[i][j] = ( i + 1 ) * pond * node1[j]
-                        + ( 1. - ( i + 1 ) * pond ) * node0[j] ;
-                }
-            }
-        }
-    }
-
     /*!
      * Rotation of all the vertices of a mesh following
      * a defined rotational matrix.
