@@ -621,8 +621,8 @@ namespace RINGMesh {
     {
         test_and_initialize() ;
         ringmesh_assert( geomodel_vertex_index < nb() ) ;
-        vertex_mapper_.mesh_entity_vertex_indices( geomodel_vertex_index,
-            mesh_entity, mesh_entity_vertex_ids ) ;
+        vertex_mapper_.mesh_entity_vertex_indices( geomodel_vertex_index, mesh_entity,
+            mesh_entity_vertex_ids ) ;
     }
 
     void GeoModelMeshVertices::gme_vertices(
