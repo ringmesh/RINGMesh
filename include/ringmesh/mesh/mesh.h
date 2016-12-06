@@ -73,9 +73,7 @@ namespace RINGMesh {
 
         virtual ~MeshBase() ;
 
-        virtual void save_mesh(
-            const std::string& filename,
-            const GEO::MeshIOFlags& ioflags ) const = 0 ;
+        virtual void save_mesh( const std::string& filename ) const = 0 ;
 
         /*!
          * get access to GEO::MESH... only for GFX..
