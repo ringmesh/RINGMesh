@@ -333,8 +333,7 @@ namespace RINGMesh {
         const GeoModelMeshEntity& E = geomodel_.mesh_entity( mesh_entity_id ) ;
         for( index_t v = 0; v < E.nb_vertices(); v++ ) {
             std::vector< index_t > result ;
-            geomodel_vertices_.colocater().get_neighbors( E.vertex( v ), 1,
-                result ) ;
+            geomodel_vertices_.colocater().get_neighbors( E.vertex( v ), 1, result ) ;
             mesh_entity_vertex_map[v] = result[0] ;
         }
     }
@@ -512,8 +511,7 @@ namespace RINGMesh {
                 mesh_builder->set_vertex( count, E.vertex( v ) ) ;
                 // Map from vertices of MeshEntities to GeoModelMeshVertices
                 vertex_mapper_.set_vertex_map_value( E.gme_id(), v, count ) ;
-                vertex_mapper_.add_to_gme_vertices( GMEVertex( E.gme_id(), v ),
-                    count ) ;
+                vertex_mapper_.add_to_gme_vertices( GMEVertex( E.gme_id(), v ), count ) ;
                 // Global vertex index increment
                 count++ ;
             }
@@ -564,8 +562,7 @@ namespace RINGMesh {
         builder->clear_vertices( true, false ) ;
     }
 
-    void GeoModelMeshVertices::unbind_geomodel_vertex_map(
-        const gme_t& mesh_entity_id )
+    void GeoModelMeshVertices::unbind_geomodel_vertex_map( const gme_t& mesh_entity_id )
     {
         vertex_mapper_.unbind_vertex_map( mesh_entity_id ) ;
     }
@@ -602,8 +599,7 @@ namespace RINGMesh {
         index_t entity_vertex_index ) const
     {
         test_and_initialize() ;
-        return vertex_mapper_.geomodel_vertex_index( mesh_entity,
-            entity_vertex_index ) ;
+        return vertex_mapper_.geomodel_vertex_index( mesh_entity, entity_vertex_index ) ;
     }
 
     index_t GeoModelMeshVertices::geomodel_vertex_id(
