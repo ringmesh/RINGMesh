@@ -1207,9 +1207,9 @@ namespace RINGMesh {
         geomodel().mesh.vertices.test_and_initialize() ;
         build_lines_and_corners_from_surfaces() ;
 
-        compute_boundaries_of_geomodel_regions( *this, ( *this ).model() ) ;
+        compute_boundaries_of_geomodel_regions( *this, ( *this ).geomodel() ) ;
 
-        compute_universe_boundaries( ( *this ).model(), *this ) ;
+        compute_universe_boundaries( ( *this ).geomodel(), *this ) ;
 
         build_contacts() ;
     }
