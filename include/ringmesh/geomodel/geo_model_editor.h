@@ -72,7 +72,7 @@ namespace RINGMesh {
         /*!
          *@brief Set the name of the model
          */
-        void set_model_name( const std::string& name ) ;
+        void set_geomodel_name( const std::string& name ) ;
 
         /*! @}
          * \name Creation - Deletion - Access to GeoModelEntities.

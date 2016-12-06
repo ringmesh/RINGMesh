@@ -481,7 +481,7 @@ namespace RINGMesh {
     {
         initialize_surface_builder() ;
         initialize_region_builder() ;
-        add_mesh_vertices_to_model() ;
+        add_mesh_vertices_to_geomodel() ;
     }
 
 
@@ -726,7 +726,7 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelBuilderMesh::add_mesh_vertices_to_model()
+    void GeoModelBuilderMesh::add_mesh_vertices_to_geomodel()
     {
         index_t nb_vertices = mesh_.vertices.nb() ;
         for( index_t i = 0; i < nb_vertices; ++i ) {

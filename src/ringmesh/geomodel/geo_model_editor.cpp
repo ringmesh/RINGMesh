@@ -139,7 +139,7 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelEditor::set_model_name( const std::string& name )
+    void GeoModelEditor::set_geomodel_name( const std::string& name )
     {
         model_.geomodel_name_ = name ;
     }

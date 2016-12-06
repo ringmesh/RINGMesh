@@ -102,7 +102,7 @@ namespace RINGMesh {
         GEO::Mesh& M,
         bool connect_facets ) ;
 
-    void RINGMESH_API build_mesh_from_model_mesh_entities(
+    void RINGMESH_API build_mesh_from_geomodel_mesh_entities(
         const GeoModel& model,
         const std::vector< gme_t >& surface_entities,
         GEO::Mesh& M ) ;

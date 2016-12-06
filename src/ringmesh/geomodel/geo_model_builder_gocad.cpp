@@ -991,7 +991,7 @@ namespace {
             ringmesh_unused( load_storage ) ;
             // Set to the GeoModel name if empty
             if( geomodel().name().empty() ) {
-                builder().set_model_name( read_name_with_spaces( 1, line ) ) ;
+                builder().set_geomodel_name( read_name_with_spaces( 1, line ) ) ;
             }
         }
     } ;

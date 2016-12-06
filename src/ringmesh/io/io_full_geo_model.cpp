@@ -404,7 +404,7 @@ namespace {
                 GEO::FileSystem::dir_name( filename ) ) ;
             GeoModelBuilderGM builder( model,
                 GEO::FileSystem::base_name( filename, false ) ) ;
-            builder.build_model() ;
+            builder.build_geomodel() ;
             Logger::out( "I/O" ) << " Loaded model " << model.name() << " from "
                 << filename << std::endl ;
             print_geomodel( model ) ;
@@ -458,7 +458,7 @@ namespace {
                 GEO::FileSystem::dir_name( filename ) ) ;
             OldGeoModelBuilderGM builder( model,
                 GEO::FileSystem::base_name( filename, false ) ) ;
-            builder.build_model() ;
+            builder.build_geomodel() ;
             GEO::Logger::out( "I/O" ) << " Loaded model " << model.name() << " from "
                 << filename << std::endl ;
             print_geomodel( model ) ;
@@ -746,7 +746,7 @@ namespace {
          */
         void write_facets( const GeoModelMesh& geomodel_mesh, std::ofstream& out )
         {
-            index_t offset = geomodel_mesh.model().nb_regions() ;
+            index_t offset = geomodel_mesh.geomodel().nb_regions() ;
             out << "boundary" << std::endl ;
             out << geomodel_mesh.facets.nb() << std::endl ;
             for( index_t f = 0; f < geomodel_mesh.facets.nb(); f++ ) {
@@ -796,7 +796,7 @@ namespace {
                 time_t start_load, end_load ;
                 time( &start_load ) ;
 
-                builder.build_model() ;
+                builder.build_geomodel() ;
                 print_geomodel( model ) ;
                 // Check boundary model validity
                 bool is_valid = is_geomodel_valid( model ) ;

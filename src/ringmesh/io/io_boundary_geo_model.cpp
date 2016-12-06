@@ -493,7 +493,7 @@ namespace {
             time_t start_load, end_load ;
             time( &start_load ) ;
 
-            builder.build_model() ;
+            builder.build_geomodel() ;
             print_geomodel( model ) ;
             // Check validity
             bool is_valid = is_geomodel_valid( model ) ;

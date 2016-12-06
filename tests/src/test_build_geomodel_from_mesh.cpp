@@ -79,7 +79,7 @@ int main()
             builder.set_options( building_flags ) ;
 
             builder.create_and_build_surfaces() ;
-            builder.build_model_from_surfaces() ;
+            builder.build_geomodel_from_surfaces() ;
 
             print_geomodel( geomodel ) ;
 
@@ -122,7 +122,7 @@ int main()
             builder.set_options( building_flags ) ;
 
             builder.create_and_build_surfaces() ;
-            builder.build_model_from_surfaces() ;
+            builder.build_geomodel_from_surfaces() ;
 
             print_geomodel( geomodel ) ;
 

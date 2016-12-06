@@ -72,7 +72,7 @@ namespace RINGMesh {
      * TET_MESH_QUALITY Interactive Program for Tet Mesh Quality</a>
      *
      * @param[in] mesh_qual_mode mesh quality to compute.
-     * @param[in,out] geo_model GeoModel in which the mesh quality is performed.
+     * @param[in,out] geomodel GeoModel in which the mesh quality is performed.
      * The quality is stored on the cells of each Region.
      *
      * @warning The GeoModel must have at least one region. All the regions
