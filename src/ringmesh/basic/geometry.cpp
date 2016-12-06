@@ -1457,13 +1457,13 @@ namespace RINGMesh {
             }
             s4 = sign( vol4 ) ;
         } else {
-            Sign s1 = sign(
+            s1 = sign(
                 GEO::PCK::orient_3d( p.data(), q.data(), p0.data(), p1.data() ) ) ;
-            Sign s2 = sign(
+            s2 = sign(
                 GEO::PCK::orient_3d( p.data(), q.data(), p1.data(), p2.data() ) ) ;
-            Sign s3 = sign(
+            s3 = sign(
                 GEO::PCK::orient_3d( p.data(), q.data(), p2.data(), p3.data() ) ) ;
-            Sign s4 = sign(
+            s4 = sign(
                 GEO::PCK::orient_3d( p.data(), q.data(), p3.data(), p0.data() ) ) ;
             if( s1 == ZERO ) {
                 return s2 == s3 && s3 == s4 ;
