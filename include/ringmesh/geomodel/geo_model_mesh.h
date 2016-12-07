@@ -1375,7 +1375,6 @@ namespace RINGMesh {
 
         /// Optional duplication mode to compute the duplication of cells on surfaces
         mutable GeoModelMeshCells::DuplicateMode mode_ ;
-        /// Order of the GeoModelMesh
 
     public:
         // This is not compliant with the guidelines 
