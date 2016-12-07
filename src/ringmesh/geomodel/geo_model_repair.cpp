@@ -93,7 +93,7 @@ namespace RINGMesh {
     index_t GeoModelRepair::detect_degenerate_facets( Surface& S )
     {
         GEO::vector< index_t > colocated ;
-        const ColocaterANN& kdtree = S.vertex_colocater_ann() ;
+        const NNSearch& kdtree = S.vertex_colocater_ann() ;
         kdtree.get_colocated_index_mapping( geomodel().epsilon(), colocated ) ;
 
         GEO::vector< index_t > degenerate ;
@@ -117,7 +117,7 @@ namespace RINGMesh {
     index_t GeoModelRepair::repair_line_mesh( Line& line )
     {
         GEO::vector< index_t > colocated ;
-        const ColocaterANN& kdtree = line.vertex_colocater_ann() ;
+        const NNSearch& kdtree = line.vertex_colocater_ann() ;
         kdtree.get_colocated_index_mapping( geomodel().epsilon(), colocated ) ;
 
         GEO::vector< index_t > degenerate ;
@@ -210,7 +210,7 @@ namespace RINGMesh {
             // We want to get the indices of the vertices in E
             // that are colocated with those of the inside boundary
             // We assume that the geomodel vertices are not computed
-            const ColocaterANN& kdtree = E.vertex_colocater_ann() ;
+            const NNSearch& kdtree = E.vertex_colocater_ann() ;
 
             for( index_t i = 0; i < inside_border.size(); ++i ) {
                 for( index_t v = 0; v < inside_border[i]->nb_vertices(); ++v ) {
@@ -243,7 +243,7 @@ namespace RINGMesh {
                 gme_t entity_id( T, e ) ;
                 const GMME& E = geomodel().mesh_entity( entity_id ) ;
 
-                const ColocaterANN& kdtree = E.vertex_colocater_ann() ;
+                const NNSearch& kdtree = E.vertex_colocater_ann() ;
                 GEO::vector< index_t > colocated ;
                 kdtree.get_colocated_index_mapping( geomodel().epsilon(), colocated ) ;
 

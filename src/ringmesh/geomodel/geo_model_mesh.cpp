@@ -584,7 +584,7 @@ namespace RINGMesh {
     {
         test_and_initialize() ;
         std::vector< index_t > vertices ;
-        const ColocaterANN& colocator = mesh_->vertices_colocater_ann() ;
+        const NNSearch& colocator = mesh_->vertices_colocater_ann() ;
         colocator.get_neighbors( p, vertices, gm_.epsilon() ) ;
         if( vertices.empty() ) {
             return NO_ID ;
@@ -1215,7 +1215,7 @@ namespace RINGMesh {
             SKIP ) ;
         std::vector< bool > is_vertex_to_duplicate( corner_vertices.size(), false ) ;
         {
-            ColocaterANN ann( corner_vertices, false ) ;
+            NNSearch ann( corner_vertices, false ) ;
             for( index_t s = 0; s < gm_.nb_surfaces(); s++ ) {
                 if( !is_surface_to_duplicate( s ) ) continue ;
                 actions_on_surfaces[s] = TO_PROCESS ;
@@ -1493,7 +1493,7 @@ namespace RINGMesh {
 
         facet_id_.bind( mesh_->cell_facet_attribute_manager(), "facet_id" ) ;
         facet_id_.fill( NO_ID ) ;
-        const ColocaterANN& ann = mesh_->facets_colocater_ann() ;
+        const NNSearch& ann = mesh_->facets_colocater_ann() ;
         for( index_t c = 0; c < mesh_->nb_cells(); c++ ) {
             for( index_t f = 0; f < mesh_->nb_cell_facets( c ); f++ ) {
                 std::vector< index_t > result ;
@@ -2104,7 +2104,7 @@ namespace RINGMesh {
         GEO::vector< std::string > att_c_names ;
         cell_attribute_manager().list_attribute_names( att_c_names ) ;
 
-        const ColocaterANN& ann = mesh_->cells_colocater_ann() ;
+        const NNSearch& ann = mesh_->cells_colocater_ann() ;
 
         for( index_t att_c = 0; att_c < att_c_names.size(); att_c++ ) {
             if( !is_attribute_a_double( cell_attribute_manager(),

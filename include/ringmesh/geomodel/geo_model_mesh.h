@@ -195,7 +195,7 @@ namespace RINGMesh {
 
         void unbind_geomodel_vertex_map( const gme_t& mesh_entity_id ) ;
 
-        const ColocaterANN& colocater() const
+        const NNSearch& colocater() const
         {
             test_and_initialize() ;
             return mesh_->vertices_colocater_ann() ;
@@ -687,7 +687,7 @@ namespace RINGMesh {
          */
         vec3 normal( index_t f ) const ;
 
-        const ColocaterANN& colocater() const
+        const NNSearch& colocater() const
         {
             test_and_initialize() ;
             return mesh_->facets_colocater_ann() ;
@@ -1128,12 +1128,12 @@ namespace RINGMesh {
          */
         double volume( index_t c ) const ;
 
-        const ColocaterANN& cell_colocater() const
+        const NNSearch& cell_colocater() const
         {
             test_and_initialize() ;
             return mesh_->cells_colocater_ann() ;
         }
-        const ColocaterANN& cell_facet_colocater() const
+        const NNSearch& cell_facet_colocater() const
         {
             test_and_initialize() ;
             return mesh_->cell_facets_colocater_ann() ;

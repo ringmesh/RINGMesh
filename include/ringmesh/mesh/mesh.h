@@ -104,14 +104,14 @@ namespace RINGMesh {
          * @brief return the ColocaterANN at vertices
          * @warning the ColocaterANN is destroy when calling the Mesh::facets_aabb() and Mesh::cells_aabb()
          */
-        const ColocaterANN& vertices_colocater_ann() const
+        const NNSearch& vertices_colocater_ann() const
         {
             if( vertices_ann_ == nil ) {
                 std::vector< vec3 > vec_vertices( nb_vertices() ) ;
                 for( index_t v = 0; v < nb_vertices(); ++v ) {
                     vec_vertices[v] = vertex( v ) ;
                 }
-                vertices_ann_ = new ColocaterANN( vec_vertices, true ) ;
+                vertices_ann_ = new NNSearch( vec_vertices, true ) ;
             }
             return *vertices_ann_ ;
         }
@@ -136,7 +136,7 @@ namespace RINGMesh {
         }
 
     protected:
-        mutable ColocaterANN* vertices_ann_ ;
+        mutable NNSearch* vertices_ann_ ;
     } ;
 
     /*!
@@ -218,14 +218,14 @@ namespace RINGMesh {
          * @brief return the ColocaterANN at edges
          * @warning the ColocaterANN is destroy when calling the Mesh::facets_aabb() and Mesh::cells_aabb()
          */
-        const ColocaterANN& edges_colocater_ann() const
+        const NNSearch& edges_colocater_ann() const
         {
             if( edges_ann_ == nil ) {
                 std::vector< vec3 > edge_centers( nb_edges() ) ;
                 for( index_t e = 0; e < nb_edges(); ++e ) {
                     edge_centers[e] = edge_barycenter( e ) ;
                 }
-                edges_ann_ = new ColocaterANN( edge_centers, true ) ;
+                edges_ann_ = new NNSearch( edge_centers, true ) ;
             }
             return *edges_ann_ ;
         }
@@ -248,7 +248,7 @@ namespace RINGMesh {
         }
 
     protected:
-        mutable ColocaterANN* edges_ann_ ;
+        mutable NNSearch* edges_ann_ ;
         mutable AABBTree1D* edges_aabb_ ;
     } ;
     typedef GEO::SmartPointer< Mesh1D > Mesh1D_var ;
@@ -393,14 +393,14 @@ namespace RINGMesh {
         /*!
          * @brief return the ColocaterANN at facets
          */
-        const ColocaterANN& facets_colocater_ann() const
+        const NNSearch& facets_colocater_ann() const
         {
             if( facets_ann_ == nil ) {
                 std::vector< vec3 > facet_centers( nb_facets() ) ;
                 for( index_t f = 0; f < nb_facets(); ++f ) {
                     facet_centers[f] = facet_barycenter( f ) ;
                 }
-                facets_ann_ = new ColocaterANN( facet_centers, true ) ;
+                facets_ann_ = new NNSearch( facet_centers, true ) ;
             }
             return *facets_ann_ ;
         }
@@ -421,7 +421,7 @@ namespace RINGMesh {
         }
 
     protected:
-        mutable ColocaterANN* facets_ann_ ;
+        mutable NNSearch* facets_ann_ ;
         mutable AABBTree2D* facets_aabb_ ;
     } ;
     typedef GEO::SmartPointer< Mesh2D > Mesh2D_var ;
@@ -624,7 +624,7 @@ namespace RINGMesh {
          * @brief return the ColocaterANN at cell facets
          * @warning the ColocaterANN is destroy when calling the Mesh::facets_aabb() and Mesh::cells_aabb()
          */
-        const ColocaterANN& cell_facets_colocater_ann() const
+        const NNSearch& cell_facets_colocater_ann() const
         {
             if( cell_facets_ann_ == nil ) {
                 std::vector< vec3 > cell_facet_centers( nb_cell_facets() ) ;
@@ -635,21 +635,21 @@ namespace RINGMesh {
                         ++cf ;
                     }
                 }
-                cell_facets_ann_ = new ColocaterANN( cell_facet_centers, true ) ;
+                cell_facets_ann_ = new NNSearch( cell_facet_centers, true ) ;
             }
             return *cell_facets_ann_ ;
         }
         /*!
          * @brief return the ColocaterANN at cells
          */
-        const ColocaterANN& cells_colocater_ann() const
+        const NNSearch& cells_colocater_ann() const
         {
             if( cell_ann_ == nil ) {
                 std::vector< vec3 > cell_centers( nb_cells() ) ;
                 for( index_t c = 0; c < nb_cells(); ++c ) {
                     cell_centers[c] = cell_barycenter( c ) ;
                 }
-                cell_ann_ = new ColocaterANN( cell_centers, true ) ;
+                cell_ann_ = new NNSearch( cell_centers, true ) ;
             }
             return *cell_ann_ ;
         }
@@ -674,8 +674,8 @@ namespace RINGMesh {
         }
 
     protected:
-        mutable ColocaterANN* cell_facets_ann_ ;
-        mutable ColocaterANN* cell_ann_ ;
+        mutable NNSearch* cell_facets_ann_ ;
+        mutable NNSearch* cell_ann_ ;
         mutable AABBTree3D* cell_aabb_ ;
     } ;
     typedef GEO::SmartPointer< Mesh3D > Mesh3D_var ;

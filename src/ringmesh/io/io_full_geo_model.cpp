@@ -1727,7 +1727,7 @@ namespace {
                         * ( line.vertex( e ) + line.vertex( e + 1 ) ) ;
                 }
             }
-            ColocaterANN ann( edge_vertices, false ) ;
+            NNSearch ann( edge_vertices, false ) ;
 
             for( index_t f = 0; f < mesh.facets.nb(); f++ ) {
                 for( index_t e = 0; e < mesh.facets.nb_vertices( f ); e++ ) {

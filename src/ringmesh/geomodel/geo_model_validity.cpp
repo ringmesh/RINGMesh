@@ -740,7 +740,7 @@ namespace {
 
     bool is_surface_conformal_to_volume(
         const Surface& surface,
-        const ColocaterANN& cell_facet_barycenter_ann )
+        const NNSearch& cell_facet_barycenter_ann )
     {
         std::vector< index_t > unconformal_facets ;
         for( index_t f = 0; f < surface.nb_mesh_elements(); f++ ) {
@@ -847,7 +847,7 @@ namespace {
             }
             if( geomodel_.mesh.cells.nb() > 0 ) {
                 // Check the consistency between Surface facets and Region cell facets
-                const ColocaterANN& ann =
+                const NNSearch& ann =
                     geomodel_.mesh.cells.cell_facet_colocater() ;
                 for( index_t i = 0; i < geomodel_.nb_surfaces(); ++i ) {
                     if( !is_surface_conformal_to_volume( geomodel_.surface( i ),
