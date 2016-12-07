@@ -243,7 +243,7 @@ namespace RINGMesh {
 
         private:
             bool has_moved_ ;
-            const GeoModel& model_ ;
+            const GeoModel& geomodel_ ;
             const GMEVertex gme_vertex_ ;
             std::vector< index_t > linked_gme_vertices_ ;
             const std::vector< GMEVertexLink* >& gme_vertices_links_ ;

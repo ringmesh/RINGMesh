@@ -47,13 +47,10 @@ namespace RINGMesh {
 
     void hello()
     {
+        print_header_information() ;
         GEO::Logger::div( "RINGMeshDuplicateFaults" ) ;
         GEO::Logger::out( "" ) << "Welcome to RINGMeshDuplicateFaults !"
             << std::endl ;
-        GEO::Logger::out( "" ) << "People working on the project in RING"
-            << std::endl ;
-        GEO::Logger::out( "" )
-            << "Benjamin Chauvin <benjamin.chauvin@univ-lorraine.fr> " << std::endl ;
     }
 
     void import_arg_groups()

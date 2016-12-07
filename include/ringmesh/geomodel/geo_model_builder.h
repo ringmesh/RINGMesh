@@ -92,8 +92,8 @@ namespace RINGMesh {
      */
     class RINGMESH_API GeoModelBuilder: public GeoModelEditor {
     public:
-        GeoModelBuilder( GeoModel& model )
-            : GeoModelEditor( model ), options_()
+        GeoModelBuilder( GeoModel& geomodel )
+            : GeoModelEditor( geomodel ), options_()
         {
         }
         virtual ~GeoModelBuilder() ;
@@ -113,7 +113,7 @@ namespace RINGMesh {
         }
         /*!
          * @brief Copy all entity meshes from the input geomodel
-         * @pre The model under construction has exaclty the same number of entities
+         * @pre The geomodel under construction has exaclty the same number of entities
          * than the input geomodel.
          */
         void copy_meshes( const GeoModel& from ) ;
@@ -192,11 +192,11 @@ namespace RINGMesh {
         void set_mesh_entity_vertex(
             const gme_t& id,
             index_t v,
-            index_t model_vertex ) ;
+            index_t geomodel_vertex ) ;
 
         void set_mesh_entity_vertices(
             const gme_t& entity_id,
-            const std::vector< index_t >& model_vertices,
+            const std::vector< index_t >& geomodel_vertices,
             bool clear ) ;
 
         void set_corner( index_t corner_id, index_t unique_vertex ) ;
@@ -274,8 +274,7 @@ namespace RINGMesh {
         void delete_mesh_entity_isolated_vertices( const gme_t& E_id ) ;
         void delete_mesh_entity_vertices(
             const gme_t& E_id,
-            GEO::vector< index_t >& to_delete,
-            bool remove_isolated_vertices ) ;
+            GEO::vector< index_t >& to_delete ) ;
         void delete_corner_vertex( index_t corner_id ) ;
         void delete_line_edges(
             index_t line_id,
@@ -295,14 +294,18 @@ namespace RINGMesh {
          * @{
          */
 
-        void compute_surface_adjacencies( index_t surface_id ) ;
-        void compute_region_adjacencies( index_t region_id ) ;
+        void compute_surface_adjacencies(
+            index_t surface_id,
+            bool recompute_adjacency = true ) ;
+        void compute_region_adjacencies(
+            index_t region_id,
+            bool recompute_adjacency = true ) ;
         void triangulate_surface(
             const RINGMesh::Surface& surface_in,
             index_t surface_out ) ;
 
         gme_t find_or_create_corner( const vec3& point ) ;
-        gme_t find_or_create_corner( index_t model_point_id ) ;
+        gme_t find_or_create_corner( index_t geomodel_point_id ) ;
         gme_t find_or_create_line( const std::vector< vec3 >& vertices ) ;
         gme_t find_or_create_line(
             const std::vector< index_t >& incident_surfaces,
@@ -332,12 +335,12 @@ namespace RINGMesh {
          * and regions depending on the building flags
          * @note Valdity is not checked
          */
-        void build_model_from_surfaces() ;
+        void build_geomodel_from_surfaces() ;
 
         /*!
-         * @brief Finish up model building and complete missing information.
+         * @brief Finish up geomodel building and complete missing information.
          */
-        void end_model() ;
+        void end_geomodel() ;
 
     protected:
         /*!
@@ -421,15 +424,15 @@ namespace RINGMesh {
      */
     class RINGMESH_API GeoModelBuilderFile: public GeoModelBuilder {
     public:
-        GeoModelBuilderFile( GeoModel& model, const std::string& filename ) ;
+        GeoModelBuilderFile( GeoModel& geomodel, const std::string& filename ) ;
 
         virtual ~GeoModelBuilderFile()
         {
         }
-        void build_model()
+        void build_geomodel()
         {
             load_file() ;
-            end_model() ;
+            end_geomodel() ;
         }
 
     private:

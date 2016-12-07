@@ -94,7 +94,7 @@ namespace RINGMesh {
     {
         GEO::vector< index_t > colocated ;
         const ColocaterANN& kdtree = S.vertex_colocater_ann() ;
-        kdtree.get_colocated_index_mapping( model().epsilon(), colocated ) ;
+        kdtree.get_colocated_index_mapping( geomodel().epsilon(), colocated ) ;
 
         GEO::vector< index_t > degenerate ;
         surface_detect_degenerate_facets( S, degenerate, colocated ) ;
@@ -118,7 +118,7 @@ namespace RINGMesh {
     {
         GEO::vector< index_t > colocated ;
         const ColocaterANN& kdtree = line.vertex_colocater_ann() ;
-        kdtree.get_colocated_index_mapping( model().epsilon(), colocated ) ;
+        kdtree.get_colocated_index_mapping( geomodel().epsilon(), colocated ) ;
 
         GEO::vector< index_t > degenerate ;
         line_detect_degenerate_edges( line, degenerate, colocated ) ;
@@ -134,7 +134,7 @@ namespace RINGMesh {
         std::set< gme_t >& to_remove )
     {
         to_remove.clear() ;
-        for( index_t i = 0; i < model().nb_lines(); ++i ) {
+        for( index_t i = 0; i < geomodel().nb_lines(); ++i ) {
             Line& line = dynamic_cast< Line& >( mesh_entity(
                 gme_t( Line::type_name_static(), i ) ) ) ;
             index_t nb = repair_line_mesh( line ) ;
@@ -142,15 +142,15 @@ namespace RINGMesh {
                 Logger::out( "GeoModel" ) << nb
                     << " degenerated edges removed in LINE " << i << std::endl ;
                 // If the Line is set it to remove
-                if( model().line( i ).nb_mesh_elements() == 0 ) {
-                    to_remove.insert( model().line( i ).gme_id() ) ;
+                if( geomodel().line( i ).nb_mesh_elements() == 0 ) {
+                    to_remove.insert( geomodel().line( i ).gme_id() ) ;
                 }
             }
         }
         // The builder might be needed
 
-        double epsilon_sq = model().epsilon() * model().epsilon() ;
-        for( index_t i = 0; i < model().nb_surfaces(); ++i ) {
+        double epsilon_sq = geomodel().epsilon() * geomodel().epsilon() ;
+        for( index_t i = 0; i < geomodel().nb_surfaces(); ++i ) {
             Surface& surface = dynamic_cast< Surface& >( mesh_entity(
                 gme_t( Surface::type_name_static(), i ) ) ) ;
             index_t nb = detect_degenerate_facets( surface ) ;
@@ -164,7 +164,8 @@ namespace RINGMesh {
                     // MESH_REPAIR_DUP_F 2 ;
                     GEO::MeshRepairMode mode =
                         static_cast< GEO::MeshRepairMode >( 2 ) ;
-                    Mesh2DBuilder* builder = surface.mesh2d_->get_mesh2d_builder() ;
+                    Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder(
+                        *surface.mesh2d_ ) ;
                     builder->mesh_repair( mode, 0.0 ) ;
 
                     // This might create some small components - remove them
@@ -177,7 +178,7 @@ namespace RINGMesh {
                     }
                 }
                 if( surface.nb_vertices() == 0 || surface.nb_mesh_elements() == 0 ) {
-                    to_remove.insert( model().surface( i ).gme_id() ) ;
+                    to_remove.insert( geomodel().surface( i ).gme_id() ) ;
                 }
             }
         }
@@ -208,14 +209,14 @@ namespace RINGMesh {
         if( !inside_border.empty() ) {
             // We want to get the indices of the vertices in E
             // that are colocated with those of the inside boundary
-            // We assume that the model vertices are not computed
+            // We assume that the geomodel vertices are not computed
             const ColocaterANN& kdtree = E.vertex_colocater_ann() ;
 
             for( index_t i = 0; i < inside_border.size(); ++i ) {
                 for( index_t v = 0; v < inside_border[i]->nb_vertices(); ++v ) {
                     std::vector< index_t > colocated_indices ;
                     kdtree.get_neighbors( inside_border[i]->vertex( v ),
-                        colocated_indices, model().epsilon() ) ;
+                        colocated_indices, geomodel().epsilon() ) ;
                     if( colocated_indices.size() > 1 ) {
                         std::sort( colocated_indices.begin(),
                             colocated_indices.end() ) ;
@@ -238,13 +239,13 @@ namespace RINGMesh {
         for( index_t t = 0; t < 2; ++t ) {
             const std::string& T = types[t] ;
 
-            for( index_t e = 0; e < model().nb_mesh_entities( T ); ++e ) {
+            for( index_t e = 0; e < geomodel().nb_mesh_entities( T ); ++e ) {
                 gme_t entity_id( T, e ) ;
-                const GMME& E = model().mesh_entity( entity_id ) ;
+                const GMME& E = geomodel().mesh_entity( entity_id ) ;
 
                 const ColocaterANN& kdtree = E.vertex_colocater_ann() ;
                 GEO::vector< index_t > colocated ;
-                kdtree.get_colocated_index_mapping( model().epsilon(), colocated ) ;
+                kdtree.get_colocated_index_mapping( geomodel().epsilon(), colocated ) ;
 
                 // Get the vertices to delete
                 std::set< index_t > inside_border ;
@@ -276,7 +277,8 @@ namespace RINGMesh {
                         Surface& ME =
                             dynamic_cast< Surface& >( modifiable_mesh_entity(
                                 entity_id ) ) ;
-                        Mesh2DBuilder* builder = ME.mesh2d_->get_mesh2d_builder() ;
+                        Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder(
+                            *ME.mesh2d_ ) ;
                         for( index_t f_itr = 0; f_itr < E.nb_mesh_elements();
                             f_itr++ ) {
                             for( index_t fv_itr = 0;
@@ -287,7 +289,7 @@ namespace RINGMesh {
                                         fv_itr )] ) ;
                             }
                         }
-                        builder->delete_vertices( to_delete, false ) ;
+                        builder->delete_vertices( to_delete ) ;
                         Logger::out( "Repair" ) << nb_todelete
                             << " colocated vertices deleted in " << entity_id
                             << std::endl ;
@@ -295,7 +297,7 @@ namespace RINGMesh {
                     } else if( t == 0 ) {
                         Line& ME = dynamic_cast< Line& >( modifiable_mesh_entity(
                             entity_id ) ) ;
-                        Mesh1DBuilder* builder = ME.mesh1d_->get_mesh1d_builder() ;
+                        Mesh1DBuilder_var builder = Mesh1DBuilder::create_builder( *ME.mesh1d_ ) ;
                         for( index_t e_itr = 0; e_itr < E.nb_mesh_elements();
                             e_itr++ ) {
                             builder->set_edge_vertex( e_itr, 0,
@@ -303,7 +305,7 @@ namespace RINGMesh {
                             builder->set_edge_vertex( e_itr, 1,
                                 colocated[E.mesh_element_vertex_index( e_itr, 1 )] ) ;
                         }
-                        builder->delete_vertices( to_delete, false ) ;
+                        builder->delete_vertices( to_delete ) ;
                         Logger::out( "Repair" ) << nb_todelete
                             << " colocated vertices deleted in " << entity_id
                             << std::endl ;
@@ -320,10 +322,10 @@ namespace RINGMesh {
         switch( repair_mode )
         {
             case ALL :
-                geo_model_mesh_repair() ;
+                geomodel_mesh_repair() ;
                 break ;
             case BASIC :
-                end_model() ;
+                end_geomodel() ;
                 break ;
             case COLOCATED_VERTICES :
                 remove_colocated_entity_vertices_and_update_gm() ;
@@ -339,7 +341,7 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelRepair::geo_model_mesh_repair()
+    void GeoModelRepair::geomodel_mesh_repair()
     {
         // Force removal of global vertices - Bugs ? I do not know where [JP]
         //model().mesh.vertices.clear() ; /// TODO Test now
@@ -353,11 +355,11 @@ namespace RINGMesh {
         // Proper reordering of line boundaries
         repair_line_boundary_vertex_order() ;
 
-        // This is basic requirement ! no_colocated model vertices !
+        // This is basic requirement ! no_colocated geomodel vertices !
         // So remove them if there are any
-        model().mesh.remove_colocated_vertices() ;
+        geomodel().mesh.remove_colocated_vertices() ;
 
-        end_model() ;
+        end_geomodel() ;
     }
 
     void GeoModelRepair::remove_colocated_entity_vertices_and_update_gm()
@@ -379,17 +381,17 @@ namespace RINGMesh {
             remove_mesh_entities( empty_entities ) ;
         }
 
-        // This is basic requirement ! no_colocated model vertices !
+        // This is basic requirement ! no_colocated geomodel vertices !
         // So remove them if there are any
-        model().mesh.remove_colocated_vertices() ;
+        geomodel().mesh.remove_colocated_vertices() ;
 
-        end_model() ;
+        end_geomodel() ;
     }
 
     void GeoModelRepair::repair_line_boundary_vertex_order()
     {
-        for( index_t line_itr = 0; line_itr < model().nb_lines(); ++line_itr ) {
-            const Line& cur_line = model().line( line_itr ) ;
+        for( index_t line_itr = 0; line_itr < geomodel().nb_lines(); ++line_itr ) {
+            const Line& cur_line = geomodel().line( line_itr ) ;
             if( !cur_line.is_first_corner_first_vertex() ) {
                 const index_t first_boundary_index = cur_line.boundary( 0 ).index() ;
                 set_mesh_entity_boundary( cur_line.gme_id(), 0,
