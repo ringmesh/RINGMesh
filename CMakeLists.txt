@@ -74,6 +74,9 @@ if(RINGMESH_WITH_TESTS)
     set(TEST_DATA_INPUT_DIRECTORY "${TEST_DIRECTORY}/data" CACHE PATH "Input data location")
     # PROJECT_BINARY_DIR not defined at this point
     set(TEST_DATA_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/build/tests/output" CACHE PATH "Output data location")
+    if(UNIX)    
+      list(APPEND CMAKE_CONFIGURATION_TYPES Coverage)
+    endif()    
 endif()
 
 # Optional custom configuration of examples directories
@@ -184,8 +187,16 @@ elseif(UNIX)
         add_compile_options(-Wdouble-promotion)
     endif()
     
+     if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
+       set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
+       set(COVERALLS ON)
+       set(COVERALLS_UPLOAD ON)
+       include(Coveralls)
+	   coveralls_turn_on_coverage()
+    endif()
+    
     # Enable parallel computation
-    set(COMPILATION_OPTION -- -j4)    
+    set(COMPILATION_OPTION -- -j)    
 else(WIN32)
     # Nothing else really supported
     message(FATAL_ERROR "Your platform is not supported. Please modify the cmakelist file.")    
@@ -423,6 +434,15 @@ endif(RINGMESH_WITH_TESTS)
 if(BUILD_DOCUMENTATION)
     message(STATUS "Configuring RINGMesh with doxygen")
     add_subdirectory(doc)
+endif()
+
+
+if (COVERALLS)
+set(ringmesh_files ${ringmesh_include} ${ringmesh_src})
+	coveralls_setup(
+    "${ringmesh_files}" 
+        ${COVERALLS_UPLOAD}                 
+        "${PROJECT_SOURCE_DIR}/cmake")
 endif()
 
 #------------------------------------------------------------------------------------------------

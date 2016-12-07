@@ -57,7 +57,8 @@
 #endif
 
 #ifdef WIN32
-#   pragma warning( disable: 4267 )
+#   pragma warning( disable: 4267 ) // conversion between long unsigned int and unsigned int
+#   pragma warning( disable: 4250 ) // warning about diamond inheritance
 #   pragma warning( disable: 4251 ) // dll interface warnings
 #   pragma warning( disable: 4275 ) // let's pray we have no issues
 #endif
@@ -108,7 +109,7 @@ namespace RINGMesh {
     /*!
      * RINGMesh exception class.
      * Example:
-     *       throw RINGMeshException( "I/O", "Error while loading the model" ) ;
+     *       throw RINGMeshException( "I/O", "Error while loading the GeoModel" ) ;
      *
      *       try {
      *          ...

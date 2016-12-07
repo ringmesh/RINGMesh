@@ -106,9 +106,9 @@ namespace RINGMesh {
         const vec3& vertex( index_t v ) const ;
 
         /*!
-         * @brief Returns the index of the given vertex in the model
+         * @brief Returns the index of the given vertex in the geomodel
          * @param[in] p input point coordinates
-         * @return index of the vertex in the model if found
+         * @return index of the vertex in the geomodel if found
          * (distance < epsilon), otherwise NO_ID
          */
         index_t index( const vec3& p ) const ;
@@ -118,9 +118,9 @@ namespace RINGMesh {
          * index in that GeoModelMeshEntity
          * @param[in] mesh_entity GeoModelMeshEntity that vertex belongs to
          * @param[in] entity_vertex_index index of the query vertex in the GeoModelMeshEntity
-         * @return if found the vertex index in the model, else NO_ID.
+         * @return if found the vertex index in the geomodel, else NO_ID.
          */
-        index_t model_vertex_id(
+        index_t geomodel_vertex_id(
             const gme_t& mesh_entity,
             index_t entity_vertex_index = 0 ) const ;
 
@@ -130,9 +130,9 @@ namespace RINGMesh {
          * @param[in] mesh_entity GeoModelMeshEntity that vertex belongs to
          * @param[in] entity_mesh_element_index index of the mesh element that vertex belongs to
          * @param[in] vertex_local_index local index of the query vertex in the mesh element
-         * @return if found the vertex index in the model, else NO_ID.
+         * @return if found the vertex index in the geomodel, else NO_ID.
          */
-        index_t model_vertex_id(
+        index_t geomodel_vertex_id(
             const gme_t& mesh_entity,
             index_t entity_mesh_element_index,
             index_t vertex_local_index ) const ;
@@ -140,17 +140,17 @@ namespace RINGMesh {
         /*!
          * @brief Get the GeoModelMeshEntity vertices from its index in the GeoModelMesh
          * @param[in] mesh_entity Unique id to a GeoModelMeshEntity
-         * @param[in] model_vertex_id Index of the query vertex in the model
+         * @param[in] geomodel_vertex_id Index of the query vertex in the geomodel
          * @param[out] mesh_entity_vertex_ids Corresponding GeoModelMeshEntity vertices
          */
         void mesh_entity_vertex_id(
             const gme_t& mesh_entity,
-            index_t model_vertex_id,
+            index_t geomodel_vertex_id,
             std::vector< index_t >& mesh_entity_vertex_ids ) const ;
 
         /*!
          * @brief Get the vertices in GME corresponding to the given unique vertex
-         * @param[in] v Vertex index in the model
+         * @param[in] v Vertex index in the geomodel
          * @param[out] gme_vertices Result
          */
         void gme_vertices(
@@ -167,7 +167,7 @@ namespace RINGMesh {
             std::vector< GMEVertex >& gme_vertices ) const ;
 
         /*!
-         * @brief To use when building the model by first adding its vertices
+         * @brief To use when building the geomodel by first adding its vertices
          * @warning The client is responsible for setting the mapping between the points
          * of the GME and the unique vertex
          */
@@ -184,7 +184,7 @@ namespace RINGMesh {
         void update_vertex_mapping(
             const gme_t& entity_id,
             index_t entity_vertex_index,
-            index_t model_vertex_index ) ;
+            index_t geomodel_vertex_index ) ;
 
         /*!
          * @brief Clear the vertices - clear the gme_vertices_ -
@@ -193,7 +193,7 @@ namespace RINGMesh {
          */
         void clear() ;
 
-        void unbind_model_vertex_map( const gme_t& mesh_entity_id ) ;
+        void unbind_geomodel_vertex_map( const gme_t& mesh_entity_id ) ;
 
         const ColocaterANN& colocater() const
         {
@@ -217,7 +217,7 @@ namespace RINGMesh {
         /*!
          * @brief Delete vertices for which to_delete[i] != i
          * @detail The global vertices are deleted, gme_vertices_
-         * is updated and the model_vertx_id in the GeoModelMeshEntity
+         * is updated and the geomodel_vertx_id in the GeoModelMeshEntity
          * of the GeoModel are updated too.
          *
          * @param[in,out] to_delete can be NO_ID or give the index of a
@@ -242,7 +242,7 @@ namespace RINGMesh {
         ringmesh_disable_copy( GeoModelVertexMapper ) ;
         public:
             GeoModelVertexMapper(
-                GeoModelMeshVertices& model_vertices,
+                GeoModelMeshVertices& geomodel_vertices,
                 const GeoModel& geomodel ) ;
 
             /*!
@@ -251,20 +251,20 @@ namespace RINGMesh {
              */
 
             /*!
-             * @brief Returns the index of a GeoModelMeshEntity vertex in the model
+             * @brief Returns the index of a GeoModelMeshEntity vertex in the geomodel
              * global indexing
              * @param[in] mesh_entity_id Unique id to a GeoModelMeshEntity
              * @param[in] mesh_entity_vertex_index Index of query vertex in the
              * GeoModelMeshEntity indexing
              * @returns Model index of the GeoModelMeshEntity vertex
              */
-            index_t model_vertex_index(
+            index_t geomodel_vertex_index(
                 const gme_t& mesh_entity_id,
                 index_t mesh_entity_vertex_index ) const ;
 
             /*!
              * @brief Returns all the corresponding vertices in GeoModelMeshEntities
-             * to a given model vertex
+             * to a given geomodel vertex
              * @param[in] v Model vertex index
              * @returns All the corresponding vertices in their local indexing
              */
@@ -273,7 +273,7 @@ namespace RINGMesh {
 
             /*!
              * @brief Returns all the corresponding vertices in GeoModelMeshEntities
-             * of a specific type to a given model vertex
+             * of a specific type to a given geomodel vertex
              * @param[in] v Model vertex index
              * @param[in] mesh_entity_type Type of GeoModelMeshEntity
              * @param[out] result corresponding vertices in GeoModelMeshEntities
@@ -285,7 +285,7 @@ namespace RINGMesh {
                 std::vector< GMEVertex >& result ) const ;
 
             /*!
-             * @brief Returns all the corresponding vertices to a model vertex
+             * @brief Returns all the corresponding vertices to a geomodel vertex
              * in a specific GeoModelMeshEntities
              * @param[in] v Model vertex index
              * @param[in] mesh_entity_id Unique id to a GeoModelMeshEntity
@@ -308,27 +308,27 @@ namespace RINGMesh {
              */
 
             /*!
-             * @brief Sets the model vertex mapping value of a given vertex
+             * @brief Sets the geomodel vertex mapping value of a given vertex
              * in a GeoModelMeshEntity
              * @param[in] mesh_entity_id Unique id to a GeoModelMeshEntity
              * @param[in] mesh_entity_vertex_index Index of query vertex in the
              * GeoModelMeshEntity indexing
-             * @param[in] model_entity_vertex_index Model vertex index to map with
+             * @param[in] geomodel_entity_vertex_index Model vertex index to map with
              */
             void set_vertex_map_value(
                 const gme_t& mesh_entity_id,
                 index_t mesh_entity_vertex_index,
-                index_t model_entity_vertex_index ) ;
+                index_t geomodel_entity_vertex_index ) ;
 
             void add_to_gme_vertices(
                 const GMEVertex& gme_vertex,
-                index_t model_vertex_index ) ;
+                index_t geomodel_vertex_index ) ;
 
             /*!
              * @brief Updates all the vertex maps with regards to the global indexing
              * changes
-             * @param[in] old2new Map between actual model indexing and wanted
-             * model indexing. Its size is equal to the number of model vertices.
+             * @param[in] old2new Map between actual geomodel indexing and wanted
+             * geomodel indexing. Its size is equal to the number of geomodel vertices.
              */
             void update_mesh_entity_maps_and_gmes(
                 const std::vector< index_t >& old2new ) ;
@@ -348,7 +348,7 @@ namespace RINGMesh {
              * @brief Clears and resizes the GME_Vertex vectors
              * @param[in] nb Size of the vector
              */
-            void resize_model_vertex_gmes( const index_t nb )
+            void resize_geomodel_vertex_gmes( const index_t nb )
             {
                 gme_vertices_.clear() ;
                 gme_vertices_.resize( nb ) ;
@@ -368,9 +368,9 @@ namespace RINGMesh {
             void clear() ;
 
             /*!
-             * @brief Clears the GME_Vertices about one model vertex
+             * @brief Clears the GME_Vertices about one geomodel vertex
              */
-            void clear_model_vertex_gmes( index_t v )
+            void clear_geomodel_vertex_gmes( index_t v )
             {
                 ringmesh_assert( v < gme_vertices_.size() ) ;
                 gme_vertices_[v].clear() ;
@@ -439,7 +439,7 @@ namespace RINGMesh {
             void add_mesh_entity_vertices_to_gme( const gme_t& mesh_entity_id ) ;
 
             /*!
-             * @brief Compute all the corresponding GMEVertices of a given model vertex
+             * @brief Compute all the corresponding GMEVertices of a given geomodel vertex
              * @param[in] v Model vertex index
              * @param[out] gme_vertices GeoModelMeshEntity vertex indices
              * corresponding to v
@@ -487,7 +487,7 @@ namespace RINGMesh {
                 const gme_t& mesh_entity_id ) const ;
 
         private:
-            GeoModelMeshVertices& model_vertices_ ;
+            GeoModelMeshVertices& geomodel_vertices_ ;
             const GeoModel& geomodel_ ;
 
             /// Vertex maps
@@ -497,7 +497,7 @@ namespace RINGMesh {
             AttributeVector< index_t > region_vertex_maps_ ;
             std::map< EntityType, AttributeVector< index_t >* > vertex_maps_ ;
 
-            /// GME Vertices for each model vertex
+            /// GME Vertices for each geomodel vertex
             std::vector< std::vector< GMEVertex > > gme_vertices_ ;
         } ;
 
@@ -693,6 +693,11 @@ namespace RINGMesh {
             return mesh_->facets_colocater_ann() ;
         }
 
+        /*!
+         * @brief return the AABB tree for the facets of the mesh
+         */
+        const AABBTree2D& aabb() const ;
+
     private:
         /*!
          * Initialize the facets of the GeoModelMesh
@@ -792,6 +797,11 @@ namespace RINGMesh {
          * Initialize the mesh edges
          */
         void initialize() ;
+
+        /*!
+         * @brief return the AABB tree for the edges of the mesh
+         */
+        const AABBTree1D& aabb() const ;
 
     private:
         /// Attached GeoModelMesh owning the vertices
@@ -1129,6 +1139,11 @@ namespace RINGMesh {
             return mesh_->cell_facets_colocater_ann() ;
         }
 
+        /*!
+         * @brief return the AABB tree for the cells of the mesh
+         */
+        const AABBTree3D& aabb() const ;
+
     private:
         /// enum to characterize the action to do concerning a surface
         /// Action concerns the vertices of a Surface and not the Surface
@@ -1249,122 +1264,15 @@ namespace RINGMesh {
         GEO::Attribute< index_t > facet_id_ ;
     } ;
 
-    /*!
-     * Optional storage of new vertices when using meshes with order > 1
-     * This is especially useful for simulations based on the MacroMesh (e.g. FEM)
-     * It is possible to introduce new points on the cell edges.
-     */
-    class RINGMESH_API GeoModelMeshOrder {
-    ringmesh_disable_copy( GeoModelMeshOrder ) ;
-    public:
-        friend class GeoModelMesh ;
-
-        GeoModelMeshOrder( GeoModelMesh& gmm ) ;
-
-        /*!
-         * Test if the mesh high orders are initialized
-         */
-        bool is_initialized() const ;
-        /*!
-         * Test if the order needs to be initialized,
-         * if so initialize them.
-         */
-        void test_and_initialize() const ;
-        /*!
-         * Clear the MacroMeshOrder database
-         */
-        void clear() ;
-        /*!
-         * Gets the total number of mesh vertices. It is the number of unique nodes
-         * on the mesh plus the high order vertices on the entities edges
-         * @return the const number of vertices
-         */
-        index_t nb_total_vertices() const ;
-        /*!
-         * Gets the number of high order mesh vertices.
-         * @return the const number of high order vertices
-         */
-        index_t nb_vertices() ;
-        /*!
-         * Gets the point of a high order vertex
-         * @param[in] id an index of the new created point for order > 2
-         * @return the vec3 matching with the id
-         */
-        const vec3& vertex( index_t id ) const ;
-        /*!
-         * Gets the index of a high order vertex on the cell edges
-         * @param[in] c global index of the cell on the GeoModelMesh
-         * @param[in] component local high order vertex index in the cell
-         * @return the const index of the point
-         */
-        index_t indice_on_cell( index_t c, index_t component ) const ;
-        /*!
-         * Gets the index of a high order vertex on a facet
-         * @param[in] f global index of the facet on the GeoModelMesh
-         * @param[in] component local high order vertex index in the cell
-         * @return the const index of the point
-         */
-        index_t indice_on_facet( index_t f, index_t component ) const ;
-        /*!
-         * Move an added point
-         * @param[in] index the index of the high order vertex
-         * @param[in] u the displacement applied on this point
-         */
-        void move_point( index_t index, const vec3& u ) ;
-        /*!
-         * Gets the number of high order vertices on a facet
-         * @param[in] f global index of the facet on the GeoModelMesh
-         * @return the const number of high order vertices
-         */
-        index_t nb_high_order_vertices_per_facet( index_t f ) const ;
-        /*!
-         * Gets the number of high order vertices on a cell
-         * @param[in] c index of the cell on the GeoModelMesh
-         * @return the const number of high order vertices
-         */
-        index_t nb_high_order_vertices_per_cell( index_t c ) const ;
-
-    private:
-        /*!
-         * Initialize the database by computing the new vertices of the mesh.
-         */
-        void initialize() ;
-        /*!
-         * Test whether the  high_order_vertices_ list is initialize. If not, the point
-         * list is initialize
-         */
-        void test_point_list_initialized() ;
-
-    private:
-        /// Attached GeoModelMesh owning the vertices
-        GeoModelMesh& gmm_ ;
-        /// Attached GeoModel
-        const GeoModel& gm_ ;
-        /// Attached Mesh
-        MeshAllD* mesh_ ;
-        /// Total number of vertices + new high order vertices on cell edges
-        index_t nb_vertices_ ;
-        /// New vertices
-        std::vector< vec3 > high_order_vertices_ ;
-        /// The max number of high order vertices a cell could have
-        index_t max_new_points_on_cell_ ;
-        /// The max number of high order vertices a facet could have
-        index_t max_new_points_on_facet_ ;
-        /// Number of high order vertices function of the cell type
-        index_t nb_high_order_points_per_cell_type_[4] ;
-        /// Number of high order vertices function of the facet type
-        index_t nb_high_order_points_per_facet_type_[2] ;
-    } ;
-
     class RINGMESH_API GeoModelMesh {
     ringmesh_disable_copy( GeoModelMesh ) ;
     public:
-        GeoModelMesh( GeoModel& gm ) ;
+        GeoModelMesh( GeoModel& geomodel ) ;
         ~GeoModelMesh() ;
 
-        const GeoModel& model() const
+        const GeoModel& geomodel() const
         {
-            return geo_model_ ;
+            return geomodel_ ;
         }
 
         /*!
@@ -1373,12 +1281,12 @@ namespace RINGMesh {
          */
         void copy_mesh( MeshAllD& mesh ) const
         {
-            MeshAllDBuilder* builder = mesh.get_meshalld_builder() ;
-            builder->copy( *mesh_, false, GEO::MESH_ALL_ELEMENTS ) ;
+            MeshAllDBuilder_var builder = MeshAllDBuilder::create_builder( mesh ) ;
+            builder->copy( *mesh_, false ) ;
         }
         void save_mesh( const std::string& filename ) const
         {
-            mesh_->save_mesh( filename, GEO::MeshIOFlags() ) ;
+            mesh_->save_mesh( filename ) ;
         }
 
         GEO::AttributesManager& vertex_attribute_manager() const
@@ -1441,7 +1349,7 @@ namespace RINGMesh {
         /*!
          * @brief Delete vertices for which to_delete[i] != i
          * @detail The global vertices are deleted, gme_vertices_
-         * is updated and the model_vertex_id in the GeoModelMeshEntity
+         * is updated and the geomodel_vertex_id in the GeoModelMeshEntity
          * of the GeoModel are updated too.
          *
          * @param[in,out] to_delete can be NO_ID or give the index of a
@@ -1456,30 +1364,10 @@ namespace RINGMesh {
          * that are not anymore in any GeoModelEntity
          */
         void erase_invalid_vertices() ;
-        /*!
-         * Gets the mesh entities order
-         * @return the const order
-         */
-        index_t get_order() const
-        {
-            return order_value_ ;
-        }
-        /*!
-         * Change the order of the GeoModelMesh
-         * @param[in] order the new GeoModelMesh order
-         *
-         */
-        void set_order( index_t new_order )
-        {
-            if( new_order != order_value_ ) {
-                order.clear() ;
-            }
-            order_value_ = new_order ;
-        }
 
     private:
         /*! Attached GeoModel */
-        const GeoModel& geo_model_ ;
+        const GeoModel& geomodel_ ;
         /*!
          * @brief Mesh owned by the GeoModelMesh, stores unique vertices, edges, 
          * facets and cells.
@@ -1490,8 +1378,6 @@ namespace RINGMesh {
 
         /// Optional duplication mode to compute the duplication of cells on surfaces
         mutable GeoModelMeshCells::DuplicateMode mode_ ;
-        /// Order of the GeoModelMesh
-        index_t order_value_ ;
 
     public:
         // This is not compliant with the guidelines 
@@ -1501,7 +1387,6 @@ namespace RINGMesh {
         GeoModelMeshEdges edges ;
         GeoModelMeshFacets facets ;
         GeoModelMeshCells cells ;
-        GeoModelMeshOrder order ;
     } ;
 
 }
