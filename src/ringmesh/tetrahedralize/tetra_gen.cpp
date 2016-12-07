@@ -465,7 +465,7 @@ namespace RINGMesh {
             if( contains( surface_id, surface.index() ) ) continue ;
             nb_surface_vertices += surface.nb_vertices() ;
             nb_facets += surface.nb_mesh_elements() ;
-
+            DEBUG( nb_surface_vertices ) ;
             surface_id.push_back( surface.index() ) ;
             unique_surfaces.push_back( &surface ) ;
         }
@@ -473,31 +473,31 @@ namespace RINGMesh {
         std::vector< vec3 > region_surfaces_and_wells_vertices ;
         std::vector< std::vector< Edge > > well_edges ;
         index_t nb_region_vertices = region.nb_vertices() ;
+        index_t nb_well_vertices = 0 ;
         if( wells ) {
-            index_t nb_well_vertices = 0 ;
             for( index_t w = 0; w < well_edges.size(); w++ ) {
                 nb_well_vertices += 2 * well_edges[w].size() ;
             }
-            region_surfaces_and_wells_vertices.resize(nb_surface_vertices + nb_region_vertices + nb_well_vertices ) ;
-        } else {
-            region_surfaces_and_wells_vertices.resize(nb_surface_vertices + nb_region_vertices ) ;
         }
+        region_surfaces_and_wells_vertices.reserve(
+            nb_surface_vertices + nb_region_vertices + nb_well_vertices ) ;
+
 
         // Add the surfaces vertices
-        index_t offset = 0 ;
+//        index_t offset = 0 ;
         for(index_t s = 0 ; s < unique_surfaces.size() ; s++) {
             for(index_t v = 0; v < unique_surfaces[s]->nb_vertices() ; v++) {
-                region_surfaces_and_wells_vertices[offset] = unique_surfaces[s]->vertex(v) ;
-                offset++ ;
+                region_surfaces_and_wells_vertices.push_back( unique_surfaces[s]->vertex(v) ) ;
+//                offset++ ;
             }
         }
-        DEBUG(offset) ;
+//        DEBUG(offset) ;
         DEBUG(region_surfaces_and_wells_vertices.size()) ;
 
         // Add the region vertices
         for( index_t v = 0; v < nb_region_vertices; v++ ) {
-            region_surfaces_and_wells_vertices[ offset] = region.vertex( v ) ;
-            offset++ ;
+            region_surfaces_and_wells_vertices.push_back( region.vertex( v ) ) ;
+//            offset++ ;
         }
 
         // Add the well vertices
@@ -510,12 +510,12 @@ namespace RINGMesh {
                     well_edges[w].size() ) ;
 
                 for( index_t i = 0; i < wells_copy.size(); ++i ) {
-                    region_surfaces_and_wells_vertices[offset ] =
-                        well_edges[w][i].value( 0 ) ;
-                    offset++ ;
-                    region_surfaces_and_wells_vertices[offset ] =
-                        well_edges[w][i].value( 1 ) ;
-                    offset++ ;
+                    region_surfaces_and_wells_vertices.push_back(
+                        well_edges[w][i].value( 0 ) );
+//                    offset++ ;
+                    region_surfaces_and_wells_vertices.push_back(
+                        well_edges[w][i].value( 1 ) );
+//                    offset++ ;
                 }
             }
         }
@@ -527,8 +527,9 @@ namespace RINGMesh {
         ColocaterANN colocater( region_surfaces_and_wells_vertices ) ;
         GEO::vector< index_t > unique_indices ;
         GEO::vector< vec3 > unique_points ;
-        colocater.get_colocated_index_mapping(region.geomodel().epsilon(),unique_indices, unique_points) ;
-        std::ofstream out2("out_vec3.txt") ;
+        colocater.get_colocated_index_mapping( region.geomodel().epsilon(),
+            unique_indices, unique_points ) ;
+        std::ofstream out2( "out_vec3.txt" ) ;
         for(index_t i = 0 ; i < unique_points.size() ; i ++) {
             out2 << unique_points[i] << std::endl ;
         }
@@ -574,8 +575,7 @@ namespace RINGMesh {
         GEO::Attribute< index_t > surface_region(
             tetmesh_constraint_.facets.attributes(), surface_att_name ) ;
         for( index_t s = 0; s < unique_surfaces.size(); s++ ) {
-            const Surface& surface =
-                dynamic_cast< const Surface& >( *unique_surfaces[s] ) ;
+            const GeoModelMeshEntity& surface = *unique_surfaces[s] ;
 //            RINGMESH_PARALLEL_LOOP
             for( index_t t = 0; t < surface.nb_mesh_elements(); t++ ) {
                 ringmesh_assert( surface.nb_mesh_element_vertices( t ) == 3 ) ;
@@ -594,9 +594,14 @@ namespace RINGMesh {
             offset_vertices += surface.nb_vertices() ;
             offset_facets += surface.nb_mesh_elements() ;
         }
+        DEBUG( offset_facets ) ;
         tetmesh_constraint_.facets.connect() ;
         GEO::MeshIOFlags flags ;
             GEO::mesh_save(tetmesh_constraint_,"toto.mesh", flags) ;
+
+        for( index_t i = 0; i < unique_indices.size(); i++ ) {
+            ringmesh_assert( region_surfaces_and_wells_vertices[i] == unique_points[unique_indices[i]] ) ;
+        }
     }
 
     /*!
