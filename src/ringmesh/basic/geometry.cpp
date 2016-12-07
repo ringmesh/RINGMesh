@@ -800,6 +800,52 @@ namespace RINGMesh {
     }
 
     /*!
+      * Computes barycentric coordinates of \p p
+      * @param[in] p the query point
+      * @param[in] p0 the first triangle vertex
+      * @param[in] p1 the second triangle vertex
+      * @param[in] p2 the third triangle vertex
+      * @param[out] lambda the parametric coordinate corresponding to points
+      * @return false if the computation failed because of too small triangle area
+      */
+    bool triangle_barycentric_coordinates(
+        const vec3& p,
+        const vec3& p0,
+        const vec3& p1,
+        const vec3& p2,
+        double lambda[3] )
+    {
+        double total_area = GEO::Geom::triangle_area( p0, p1, p2 ) ;
+        if( total_area < global_epsilon_sq ) {
+            for( index_t i = 0; i < 3; i++ ) {
+                lambda[i] = 0 ;
+            }
+            return false ;
+        }
+        vec3 triangle_normal = cross( p2 - p0, p1 - p0 ) ;
+        double area0 = GEO::Geom::triangle_area( p1, p2, p ) ;
+        vec3 area0_normal = cross( p1 - p, p2 - p ) ;
+        if( dot( triangle_normal, area0_normal ) < 0 ) {
+            area0 = -area0 ;
+        }
+        double area1 = GEO::Geom::triangle_area( p0, p2, p ) ;
+        vec3 area1_normal = cross( p0 - p, p2 - p ) ;
+        if( dot( triangle_normal, area1_normal ) < 0 ) {
+            area1 = -area1 ;
+        }
+        double area2 = GEO::Geom::triangle_area( p0, p1, p ) ;
+        vec3 area2_normal = cross( p0 - p, p1 - p ) ;
+        if( dot( triangle_normal, area2_normal ) < 0 ) {
+            area2 = -area2 ;
+        }
+
+        lambda[0] = area0 / total_area ;
+        lambda[1] = area1 / total_area ;
+        lambda[2] = area2 / total_area ;
+        return true ;
+    }
+
+    /*!
      * Computes the intersection between a plane and a line
      * @param[in] O_line a point on the line
      * @param[in] D_line the direction of the plane
