@@ -575,10 +575,6 @@ namespace RINGMesh {
             offset_facets += surface.nb_mesh_elements() ;
         }
         tetmesh_constraint_.facets.connect() ;
-
-        for( index_t i = 0; i < unique_indices.size(); i++ ) {
-            ringmesh_assert( region_surfaces_and_wells_vertices[i] == unique_points[unique_indices[i]] ) ;
-        }
     }
 
     /*!
@@ -634,7 +630,7 @@ namespace RINGMesh {
 #endif
 
 #ifdef USE_MG_TETRA
-        ringmesh_register_tetragen( TetraGen_MG_Tetra, "MG_Tetra" );
+    ringmesh_register_tetragen( TetraGen_MG_Tetra, "MG_Tetra" ) ;
 #endif
     }
 }
