@@ -1576,6 +1576,9 @@ namespace RINGMesh {
                 index_map[p] = p - offset ;
             } else {
                 offset++ ;
+                DEBUG( index_map[p] ) ;
+                DEBUG( index_map[index_map[p]] ) ;
+                index_map[p] = index_map[index_map[p]] ;
             }
         }
         ringmesh_assert( offset == nb_colocalised_vertices ) ;
