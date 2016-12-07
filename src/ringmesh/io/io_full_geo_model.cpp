@@ -101,7 +101,7 @@ namespace {
 
         if( M.nb_geological_entity_types() == 0 ) {
             // Compression of an empty files crashes ? (in debug on windows at least)
-            out << "No geological entity in the model" << std::endl ;
+            out << "No geological entity in the geomodel" << std::endl ;
             return ;
         }
         for( index_t i = 0; i < M.nb_geological_entity_types(); i++ ) {
@@ -123,9 +123,11 @@ namespace {
     {
         const std::string& type = ENTITY::type_name_static() ;
         for( index_t e = 0; e < M.nb_mesh_entities( type ); e++ ) {
-            const GeoModelMeshEntity& cur_mesh_entity = M.mesh_entity( type, e ) ;
+            const ENTITY& cur_mesh_entity =
+                dynamic_cast< const ENTITY& >( M.mesh_entity( type, e ) ) ;
             out << type << " " << e << " " << cur_mesh_entity.name() << " "
                 << GeoModelEntity::geol_name( cur_mesh_entity.geological_feature() )
+                << " " << cur_mesh_entity.low_level_mesh_storage().type_name()
                 << std::endl ;
             out << "boundary " ;
             for( index_t b = 0; b < cur_mesh_entity.nb_boundaries(); b++ ) {
@@ -138,7 +140,7 @@ namespace {
     /*!
      * @brief Save the topology of a GeoModelin a file
      * @param[in] M the GeoModel
-     * @param[in] file_name the file name (lol)
+     * @param[in] file_name the output file name
      */
     void save_mesh_entities( const GeoModel& M, const std::string& file_name )
     {
@@ -149,6 +151,7 @@ namespace {
                 "Error when opening the file: " + file_name ) ;
         }
 
+        out << "Version 1" << std::endl ;
         out << "GeoModel name " << M.name() << std::endl ;
 
         // Numbers of the different types of mesh entities
@@ -170,7 +173,8 @@ namespace {
             const Region& E = M.region( i ) ;
             // Save ID - NAME
             out << Region::type_name_static() << " " << i << " " << E.name() << " "
-                << GeoModelEntity::geol_name( E.geological_feature() ) << std::endl ;
+                << GeoModelEntity::geol_name( E.geological_feature() ) << " "
+                << E.low_level_mesh_storage().type_name() << std::endl ;
             // Second line Signed ids of boundary surfaces
             for( index_t j = 0; j < E.nb_boundaries(); ++j ) {
                 if( E.side( j ) ) {
@@ -199,18 +203,17 @@ namespace {
 
     bool save_mesh(
         const GeoModelMeshEntity& geo_model_entity_mesh,
-        const std::string& name,
-        const GEO::MeshIOFlags& flags )
+        const std::string& name )
     {
         if( geo_model_entity_mesh.type_name() == Region::type_name_static() ) {
-            const Region& region = geo_model_entity_mesh.model().region(
+            const Region& region = geo_model_entity_mesh.geomodel().region(
                 geo_model_entity_mesh.index() ) ;
             if( !region.is_meshed() ) {
                 // a region is not necessary meshed.
                 return false ;
             }
         }
-        geo_model_entity_mesh.save( name, flags ) ;
+        geo_model_entity_mesh.save( name ) ;
         return true ;
     }
 
@@ -343,101 +346,15 @@ namespace {
         }
     } ;
 
-    /// @todo Temporary fix! Waiting for clean attribute type manager
-    /// by Bruno, for the moment we only deal with double
-    bool is_attribute_a_double(
-        GEO::AttributesManager& att_manager,
-        const std::string& att_name )
-    {
-        return GEO::Attribute< double >::is_defined( att_manager, att_name ) ;
-    }
-
     /************************************************************************/
 
-    /*!
-     * @brief Save the attribute of one GeomModelEntity
-     * @param[in] filename path to the text file
-     * @param[in] mesh_entity the MeshEntity of the original GEO::Mesh
-     */
-    void save_mesh_entity_attributes(
-        const std::string& filename,
-        const GEO::MeshSubElementsStore& mesh_entity )
+    template< typename ENTITY >
+    std::string build_string_for_geo_model_entity_export(
+        const ENTITY& entity )
     {
-
-        GEO::vector< std::string > attribute_names ;
-        mesh_entity.attributes().list_attribute_names( attribute_names ) ;
-        for( index_t att = 0; att < mesh_entity.attributes().nb(); att++ ) {
-
-            if( !is_attribute_a_double( mesh_entity.attributes(),
-                attribute_names[att] ) || attribute_names[att] == "point" ) {
-                continue ;
-            }
-            std::ofstream out( filename.c_str(), std::ios::out | std::ios::app ) ;
-            out.precision( 16 ) ;
-            GEO::Attribute< double > cur_att( mesh_entity.attributes(),
-                attribute_names[att] ) ;
-            index_t attribute_dim = cur_att.dimension() ;
-            out << "# " << attribute_names[att] << " double " << attribute_dim
-                << std::endl ;
-
-            for( index_t el = 0; el < mesh_entity.nb(); el++ ) {
-                for( index_t dim = 0; dim < attribute_dim; dim++ ) {
-                    out << cur_att[el * attribute_dim + dim] << " " ;
-                }
-                out << std::endl ;
-            }
-
-        }
-
-    }
-
-    /*!
-     * @brief Save the attribute of all the GeomModelEntity
-     * @param[in] root_name it contains the GeoModelEntity type and its id
-     * @param[in] mesh the mesh on which the attribute are stored
-     * @param[in] zf the zip file
-     */
-    void save_geo_mesh_attributes(
-        const std::string& root_name,
-        const GEO::Mesh& mesh,
-        zipFile& zf )
-    {
-        std::string vertices_attributes_file_name = root_name
-            + "_vertices_attributes.txt" ;
-        std::string edges_attributes_file_name = root_name
-            + "_edges_attributes.txt" ;
-        std::string facets_attributes_file_name = root_name
-            + "_facets_attributes.txt" ;
-        std::string cells_attributes_file_name = root_name
-            + "_cells_attributes.txt" ;
-
-        save_mesh_entity_attributes( vertices_attributes_file_name, mesh.vertices ) ;
-        if( GEO::FileSystem::is_file( vertices_attributes_file_name ) ) {
-            zip_file( zf, vertices_attributes_file_name ) ;
-            GEO::FileSystem::delete_file( vertices_attributes_file_name ) ;
-        }
-
-        save_mesh_entity_attributes( edges_attributes_file_name, mesh.edges ) ;
-        if( GEO::FileSystem::is_file( edges_attributes_file_name ) ) {
-            zip_file( zf, edges_attributes_file_name ) ;
-            GEO::FileSystem::delete_file( edges_attributes_file_name ) ;
-        }
-
-        save_mesh_entity_attributes( facets_attributes_file_name, mesh.facets ) ;
-        if( GEO::FileSystem::is_file( facets_attributes_file_name ) ) {
-            zip_file( zf, facets_attributes_file_name ) ;
-            GEO::FileSystem::delete_file( facets_attributes_file_name ) ;
-        }
-        save_mesh_entity_attributes( cells_attributes_file_name, mesh.cells ) ;
-        if( GEO::FileSystem::is_file( cells_attributes_file_name ) ) {
-            zip_file( zf, cells_attributes_file_name ) ;
-            GEO::FileSystem::delete_file( cells_attributes_file_name ) ;
-        }
-    }
-
-    void build_string_for_geo_model_entity_export( gme_t id, std::string& name )
-    {
-        name += id.type + "_" + GEO::String::to_string( id.index ) ;
+        const gme_t& id = entity.gme_id() ;
+        std::string base_name = id.type + "_" + GEO::String::to_string( id.index ) ;
+        return base_name + "." + entity.low_level_mesh_storage().default_extension() ;
     }
 
     /*!
@@ -445,61 +362,54 @@ namespace {
      * @param[in] geo_model_entity_mesh the GeoModelMeshEntity you want to save
      * @param[in] zf the zip file
      */
+    template< typename ENTITY >
     void save_geo_model_mesh_entity(
-        const GeoModelMeshEntity& geo_model_entity_mesh,
+        const ENTITY& geo_model_entity_mesh,
         zipFile& zf )
     {
-        std::string name ;
-        build_string_for_geo_model_entity_export( geo_model_entity_mesh.gme_id(),
-            name ) ;
-        //@TODO this will be removed and integrated in the build_string....
-        name += ".geogram" ;
+        std::string name = build_string_for_geo_model_entity_export(
+            geo_model_entity_mesh ) ;
         Logger* logger = Logger::instance() ;
+        bool logger_status = logger->is_quiet() ;
         logger->set_quiet( true ) ;
-        GEO::MeshIOFlags flags ;
-//        flags.set_attribute( GEO::MESH_ALL_ATTRIBUTES ) ;
-        bool is_saved = save_mesh( geo_model_entity_mesh, name, flags ) ;
-        logger->set_quiet( false ) ;
+        bool is_saved = save_mesh( geo_model_entity_mesh, name ) ;
+        logger->set_quiet( logger_status ) ;
 
         if( is_saved ) {
             zip_file( zf, name ) ;
             GEO::FileSystem::delete_file( name ) ;
         }
-
-//        std::string root_name ;
-//        std::string handler ;
-//        char separator = '.' ;
-//        GEO::String::split_string( name, separator, root_name, handler ) ;
-//        save_geo_mesh_attributes( root_name, geo_model_entity_mesh.mesh(), zf ) ;
     }
 
     template< typename ENTITY >
-    void save_geo_model_mesh_entities( const GeoModel& model, zipFile& zf )
+    void save_geo_model_mesh_entities( const GeoModel& geomodel, zipFile& zf )
     {
         const std::string& type = ENTITY::type_name_static() ;
-        for( index_t e = 0; e < model.nb_mesh_entities( type ); e++ ) {
-            save_geo_model_mesh_entity( model.mesh_entity( type, e ), zf ) ;
+        for( index_t e = 0; e < geomodel.nb_mesh_entities( type ); e++ ) {
+            const ENTITY& entity = dynamic_cast< const ENTITY& >( geomodel.mesh_entity(
+                type, e ) ) ;
+            save_geo_model_mesh_entity< ENTITY >( entity, zf ) ;
         }
     }
 
     class GeoModelHandlerGM: public GeoModelIOHandler {
-        virtual bool load( const std::string& filename, GeoModel& model )
+        virtual bool load( const std::string& filename, GeoModel& geomodel )
         {
             std::string pwd = GEO::FileSystem::get_current_working_directory() ;
             GEO::FileSystem::set_current_working_directory(
                 GEO::FileSystem::dir_name( filename ) ) ;
-            GeoModelBuilderGM builder( model,
+            GeoModelBuilderGM builder( geomodel,
                 GEO::FileSystem::base_name( filename, false ) ) ;
-            builder.build_model() ;
-            Logger::out( "I/O" ) << " Loaded model " << model.name() << " from "
+            builder.build_geomodel() ;
+            Logger::out( "I/O" ) << " Loaded geomodel " << geomodel.name() << " from "
                 << filename << std::endl ;
-            print_geomodel( model ) ;
-            bool is_valid = is_geomodel_valid( model ) ;
+            print_geomodel( geomodel ) ;
+            bool is_valid = is_geomodel_valid( geomodel ) ;
             GEO::FileSystem::set_current_working_directory( pwd ) ;
             return is_valid ;
 
         }
-        virtual void save( const GeoModel& model, const std::string& filename )
+        virtual void save( const GeoModel& geomodel, const std::string& filename )
         {
             const std::string pwd =
                 GEO::FileSystem::get_current_working_directory() ;
@@ -516,19 +426,19 @@ namespace {
             ringmesh_assert( zf != nil ) ;
 
             const std::string mesh_entity_file( "mesh_entities.txt" ) ;
-            save_mesh_entities( model, mesh_entity_file ) ;
+            save_mesh_entities( geomodel, mesh_entity_file ) ;
             zip_file( zf, mesh_entity_file ) ;
             GEO::FileSystem::delete_file( mesh_entity_file ) ;
 
             const std::string geological_entity_file( "geological_entities.txt" ) ;
-            save_geological_entities( model, geological_entity_file ) ;
+            save_geological_entities( geomodel, geological_entity_file ) ;
             zip_file( zf, geological_entity_file ) ;
             GEO::FileSystem::delete_file( geological_entity_file ) ;
 
-            save_geo_model_mesh_entities< Corner >( model, zf ) ;
-            save_geo_model_mesh_entities< Line >( model, zf ) ;
-            save_geo_model_mesh_entities< Surface >( model, zf ) ;
-            save_geo_model_mesh_entities< Region >( model, zf ) ;
+            save_geo_model_mesh_entities< Corner >( geomodel, zf ) ;
+            save_geo_model_mesh_entities< Line >( geomodel, zf ) ;
+            save_geo_model_mesh_entities< Surface >( geomodel, zf ) ;
+            save_geo_model_mesh_entities< Region >( geomodel, zf ) ;
 
             zipClose( zf, NULL ) ;
             GEO::FileSystem::set_current_working_directory( pwd ) ;
@@ -537,23 +447,23 @@ namespace {
     } ;
 
     class OldGeoModelHandlerGM: public GeoModelIOHandler {
-        virtual bool load( const std::string& filename, GeoModel& model )
+        virtual bool load( const std::string& filename, GeoModel& geomodel )
         {
             std::string pwd = GEO::FileSystem::get_current_working_directory() ;
             GEO::FileSystem::set_current_working_directory(
                 GEO::FileSystem::dir_name( filename ) ) ;
-            OldGeoModelBuilderGM builder( model,
+            OldGeoModelBuilderGM builder( geomodel,
                 GEO::FileSystem::base_name( filename, false ) ) ;
-            builder.build_model() ;
-            GEO::Logger::out( "I/O" ) << " Loaded model " << model.name() << " from "
+            builder.build_geomodel() ;
+            GEO::Logger::out( "I/O" ) << " Loaded geomodel " << geomodel.name() << " from "
                 << filename << std::endl ;
-            print_geomodel( model ) ;
-            bool is_valid = is_geomodel_valid( model ) ;
+            print_geomodel( geomodel ) ;
+            bool is_valid = is_geomodel_valid( geomodel ) ;
             GEO::FileSystem::set_current_working_directory( pwd ) ;
             return is_valid ;
 
         }
-        virtual void save( const GeoModel& model, const std::string& filename )
+        virtual void save( const GeoModel& geomodel, const std::string& filename )
         {
             std::string message = "Conversion from the new GeoModel format " ;
             message += "to the old GeoModel format will never be implemented." ;
@@ -578,11 +488,11 @@ namespace {
             gm.mesh.facets.test_and_initialize() ;
             gm.mesh.cells.test_and_initialize() ;
 
-            GeogramMesh mesh( 3, false ) ;
+            GeogramMeshAllD mesh ;
             gm.mesh.copy_mesh( mesh ) ;
 
             Logger::instance()->set_minimal( true ) ;
-            mesh.save_mesh( filename, GEO::MeshIOFlags() ) ;
+            mesh.save_mesh( filename ) ;
             Logger::instance()->set_minimal( false ) ;
         }
     } ;
@@ -832,7 +742,7 @@ namespace {
          */
         void write_facets( const GeoModelMesh& geomodel_mesh, std::ofstream& out )
         {
-            index_t offset = geomodel_mesh.model().nb_regions() ;
+            index_t offset = geomodel_mesh.geomodel().nb_regions() ;
             out << "boundary" << std::endl ;
             out << geomodel_mesh.facets.nb() << std::endl ;
             for( index_t f = 0; f < geomodel_mesh.facets.nb(); f++ ) {
@@ -873,29 +783,29 @@ namespace {
 
     class TSolidIOHandler: public GeoModelIOHandler {
     public:
-        virtual bool load( const std::string& filename, GeoModel& model )
+        virtual bool load( const std::string& filename, GeoModel& geomodel )
         {
             std::ifstream input( filename.c_str() ) ;
             if( input ) {
-                GeoModelBuilderTSolid builder( model, filename ) ;
+                GeoModelBuilderTSolid builder( geomodel, filename ) ;
 
                 time_t start_load, end_load ;
                 time( &start_load ) ;
 
-                builder.build_model() ;
-                print_geomodel( model ) ;
-                // Check boundary model validity
-                bool is_valid = is_geomodel_valid( model ) ;
+                builder.build_geomodel() ;
+                print_geomodel( geomodel ) ;
+                // Check boundary geomodel validity
+                bool is_valid = is_geomodel_valid( geomodel ) ;
 
                 time( &end_load ) ;
 
-                Logger::out( "I/O" ) << " Loaded model " << model.name() << " from "
+                Logger::out( "I/O" ) << " Loaded geomodel " << geomodel.name() << " from "
                     << std::endl << filename << " timing: "
                     << difftime( end_load, start_load ) << "sec" << std::endl ;
                 return is_valid ;
             } else {
                 throw RINGMeshException( "I/O",
-                    "Failed loading model from file " + filename ) ;
+                    "Failed loading geomodel from file " + filename ) ;
                 return false ;
             }
         }
@@ -904,10 +814,10 @@ namespace {
             std::ofstream out( filename.c_str() ) ;
             out.precision( 16 ) ;
 
-            const GeoModel& model = gm ;
+            const GeoModel& geomodel = gm ;
             // Print Model3d headers
             out << "GOCAD TSolid 1" << std::endl << "HEADER {" << std::endl
-                << "name:" << model.name() << std::endl << "}" << std::endl ;
+                << "name:" << geomodel.name() << std::endl << "}" << std::endl ;
 
             out << "GOCAD_ORIGINAL_COORDINATE_SYSTEM" << std::endl << "NAME Default"
                 << std::endl << "AXIS_NAME \"X\" \"Y\" \"Z\"" << std::endl
@@ -925,8 +835,8 @@ namespace {
             std::vector< index_t > atom_exported_id(
                 mesh.cells.nb_duplicated_vertices(), NO_ID ) ;
             index_t nb_vertices_exported = 1 ;
-            for( index_t r = 0; r < model.nb_regions(); r++ ) {
-                const RINGMesh::Region& region = model.region( r ) ;
+            for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
+                const RINGMesh::Region& region = geomodel.region( r ) ;
                 out << "TVOLUME " << region.name() << std::endl ;
 
                 // Export not duplicated vertices
@@ -997,7 +907,7 @@ namespace {
                             side ) ) {
                             index_t surface_id = mesh.facets.surface( facet ) ;
                             side ? out << "+" : out << "-" ;
-                            out << model.surface( surface_id ).parent( 0 ).name() ;
+                            out << geomodel.surface( surface_id ).parent( 0 ).name() ;
                         } else {
                             out << "none" ;
                         }
@@ -1009,10 +919,10 @@ namespace {
             out << "MODEL" << std::endl ;
             int tface_count = 1 ;
             for( index_t i = 0;
-                i < model.nb_geological_entities( Interface::type_name_static() );
+                i < geomodel.nb_geological_entities( Interface::type_name_static() );
                 i++ ) {
                 const RINGMesh::GeoModelGeologicalEntity& interf =
-                    model.geological_entity( Interface::type_name_static(), i ) ;
+                    geomodel.geological_entity( Interface::type_name_static(), i ) ;
                 out << "SURFACE " << interf.name() << std::endl ;
                 for( index_t s = 0; s < interf.nb_children(); s++ ) {
                     out << "TFACE " << tface_count++ << std::endl ;
@@ -1041,8 +951,8 @@ namespace {
                 }
             }
 
-            for( index_t r = 0; r < model.nb_regions(); r++ ) {
-                const RINGMesh::Region& region = model.region( r ) ;
+            for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
+                const RINGMesh::Region& region = geomodel.region( r ) ;
                 out << "MODEL_REGION " << region.name() << " " ;
                 region.side( 0 ) ? out << "+" : out << "-" ;
                 out << region.boundary_gme( 0 ).index + 1 << std::endl ;
@@ -1501,7 +1411,7 @@ namespace {
         {
             clear() ;
 
-            const GeoModel& model = gm ;
+            const GeoModel& geomodel = gm ;
             std::string cmsp_filename = GEO::CmdLine::get_arg( "out:csmp" ) ;
             box_model_ = cmsp_filename != "" ;
             if( box_model_ ) {
@@ -1521,9 +1431,9 @@ namespace {
                         std::string name = parser.field( 2 ) ;
                         for( index_t i = 0;
                             i
-                                < model.nb_geological_entities(
+                                < geomodel.nb_geological_entities(
                                     Interface::type_name_static() ); i++ ) {
-                            if( model.geological_entity(
+                            if( geomodel.geological_entity(
                                 Interface::type_name_static(), i ).name() == name ) {
                                 interface_id = i ;
                                 break ;
@@ -1661,8 +1571,8 @@ namespace {
             }
 
             point_boundaries_.resize( gm.mesh.vertices.nb() ) ;
-            for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
-                index_t interface_id = model.surface( s ).parent_gme( 0 ).index ;
+            for( index_t s = 0; s < geomodel.nb_surfaces(); s++ ) {
+                index_t interface_id = geomodel.surface( s ).parent_gme( 0 ).index ;
                 for( index_t f = 0; f < gm.mesh.facets.nb_facets( s ); f++ ) {
                     index_t f_id = gm.mesh.facets.facet( s, f ) ;
                     for( index_t v = 0; v < gm.mesh.facets.nb_vertices( f_id );
@@ -2017,17 +1927,17 @@ namespace {
 //                    << " for the gmsh export. The export will take order 1 entities"
 //                    << std::endl ;
 //            }
-//            const GeoModel& model = gm ;
+//            const GeoModel& geomodel = gm ;
 //            index_t offset_region = gm.nb_regions() ;
-//            index_t offset_interface = model.nb_interfaces() * 2 ; // one for each side
+//            index_t offset_interface = geomodel.nb_interfaces() * 2 ; // one for each side
 //            index_t nb_facets = 0 ;
-//            std::vector< ColocaterANN* > anns( model.nb_surfaces(), nil ) ;
-//            for( index_t s = 0; s < model.nb_surfaces(); s++ ) {
+//            std::vector< ColocaterANN* > anns( geomodel.nb_surfaces(), nil ) ;
+//            for( index_t s = 0; s < geomodel.nb_surfaces(); s++ ) {
 //                if( gm.vertices.is_surface_to_duplicate( s ) )
 //                    nb_facets += 2 * gm.facets.nb_facets( s ) ;
 //                else
 //                    nb_facets += gm.facets.nb_facets( s ) ;
-//                anns[s] = new ColocaterANN( model.surface( s ).mesh(),
+//                anns[s] = new ColocaterANN( geomodel.surface( s ).mesh(),
 //                    ColocaterANN::FACETS ) ;
 //            }
 //            out << "$Entities" << std::endl ;
@@ -2037,7 +1947,7 @@ namespace {
 //                const GEO::Mesh& mesh = gm.mesh( m ) ;
 //                GEO::Attribute< index_t > attribute( mesh.facets.attributes(),
 //                    surface_att_name ) ;
-//                const GeoModelEntity& region = model.region( m ) ;
+//                const GeoModelEntity& region = geomodel.region( m ) ;
 //                std::vector< index_t > surfaces ;
 //                surfaces.reserve( region.nb_boundaries() ) ;
 //                for( index_t b = 0; b < region.nb_boundaries(); b++ ) {
@@ -2087,7 +1997,7 @@ namespace {
 //                            if( anns[surface_id]->get_colocated( facet_bary,
 //                                result ) ) {
 //                                vec3 facet_normal =
-//                                    model.surface( surface_id ).facet_normal(
+//                                    geomodel.surface( surface_id ).facet_normal(
 //                                        result[0] ) ;
 //                                bool side = dot( facet_normal, cell_facet_normal )
 //                                    > 0 ;
@@ -2096,7 +2006,7 @@ namespace {
 //                                        f )] << " 2 "
 //                                    << offset_region
 //                                        + 2
-//                                            * model.surface( surface_id ).parent_id().index
+//                                            * geomodel.surface( surface_id ).parent_id().index
 //                                        + side + 1 << SPACE
 //                                    << offset_region + offset_interface
 //                                        + 2 * surface_id + side ;
@@ -2125,8 +2035,8 @@ namespace {
 //                }
 //            }
 //
-//            for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
-//                const GeoModelEntity& interf = model.one_interface( i ) ;
+//            for( index_t i = 0; i < geomodel.nb_interfaces(); i++ ) {
+//                const GeoModelEntity& interf = geomodel.one_interface( i ) ;
 //                for( index_t s = 0; s < interf.nb_children(); s++ ) {
 //                    index_t s_id = interf.child_id( s ).index ;
 //                    if( gm.vertices.is_surface_to_duplicate( s_id ) ) continue ;
@@ -2163,12 +2073,12 @@ namespace {
 //                std::ostringstream oss_kine ;
 //                oss_kine << directory << "/" << file << ".gmsh_info" ;
 //                std::ofstream kine3d( oss_kine.str().c_str() ) ;
-//                for( index_t i = 0; i < model.nb_interfaces(); i++ ) {
-//                    const GeoModelEntity& interf = model.one_interface( i ) ;
+//                for( index_t i = 0; i < geomodel.nb_interfaces(); i++ ) {
+//                    const GeoModelEntity& interf = geomodel.one_interface( i ) ;
 //                    index_t s_id = interf.child_id( 0 ).index ;
 //                    kine3d << offset_region + 2 * i + 1 << ":" << interf.name()
 //                        << ",1," ;
-//                    const RINGMesh::GeoModelEntity& E = model.one_interface( i ) ;
+//                    const RINGMesh::GeoModelEntity& E = geomodel.one_interface( i ) ;
 //                    if( RINGMesh::GeoModelEntity::is_fault(
 //                        E.geological_feature() ) ) {
 //                        kine3d << "FaultFeatureClass" ;
@@ -2182,7 +2092,7 @@ namespace {
 //                    if( gm.vertices.is_surface_to_duplicate( s_id ) ) {
 //                        kine3d << offset_region + 2 * i + 1 << ":" << interf.name()
 //                            << ",0," ;
-//                        const RINGMesh::GeoModelEntity& E = model.one_interface(
+//                        const RINGMesh::GeoModelEntity& E = geomodel.one_interface(
 //                            i ) ;
 //                        if( RINGMesh::GeoModelEntity::is_fault(
 //                            E.geological_feature() ) ) {
@@ -2391,20 +2301,24 @@ namespace {
 
 namespace RINGMesh {
 
-    bool geomodel_load( GeoModel& model, const std::string& filename )
+    bool geomodel_load( GeoModel& geomodel, const std::string& filename )
     {
+        if( !GEO::FileSystem::is_file( filename ) ) {
+                throw RINGMeshException( "I/O",
+                    "File does not exist: " + filename ) ;
+        }
         Logger::out( "I/O" ) << "Loading file " << filename << "..." << std::endl ;
 
         GeoModelIOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
-        return handler->load( filename, model ) ;
+        return handler->load( filename, geomodel ) ;
     }
 
-    void geomodel_save( const GeoModel& model, const std::string& filename )
+    void geomodel_save( const GeoModel& geomodel, const std::string& filename )
     {
         Logger::out( "I/O" ) << "Saving file " << filename << "..." << std::endl ;
 
         GeoModelIOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
-        handler->save( model, filename ) ;
+        handler->save( geomodel, filename ) ;
     }
 
     /************************************************************************/
@@ -2415,17 +2329,18 @@ namespace RINGMesh {
     void GeoModelIOHandler::initialize_full_geomodel_output()
     {
         ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "meshb" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "mesh" );
-        ringmesh_register_GeoModelIOHandler_creator( TetGenIOHandler, "tetgen" );
-        ringmesh_register_GeoModelIOHandler_creator( TSolidIOHandler, "so" );
-        ringmesh_register_GeoModelIOHandler_creator( CSMPIOHandler, "csmp" );
-        ringmesh_register_GeoModelIOHandler_creator( AsterIOHandler, "mail" );
-        ringmesh_register_GeoModelIOHandler_creator( VTKIOHandler, "vtk" );
-        ringmesh_register_GeoModelIOHandler_creator( GPRSIOHandler, "gprs" );
-        ringmesh_register_GeoModelIOHandler_creator( MSHIOHandler, "msh" );
-        ringmesh_register_GeoModelIOHandler_creator( MFEMIOHandler, "mfem" );
-        ringmesh_register_GeoModelIOHandler_creator( GeoModelHandlerGM, "gm" );
-        ringmesh_register_GeoModelIOHandler_creator( OldGeoModelHandlerGM, "ogm" );
-        ringmesh_register_GeoModelIOHandler_creator( AbaqusIOHandler, "inp" );}
+        ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "mesh" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( TetGenIOHandler, "tetgen" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( TSolidIOHandler, "so" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( CSMPIOHandler, "csmp" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( AsterIOHandler, "mail" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( VTKIOHandler, "vtk" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( GPRSIOHandler, "gprs" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( MSHIOHandler, "msh" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( MFEMIOHandler, "mfem" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( GeoModelHandlerGM, "gm" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( OldGeoModelHandlerGM, "ogm" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( AbaqusIOHandler, "inp" ) ;
+    }
 
 }

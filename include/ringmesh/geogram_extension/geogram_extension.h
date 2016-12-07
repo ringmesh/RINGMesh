@@ -111,38 +111,6 @@ namespace RINGMesh {
 
     vec3 RINGMESH_API mesh_cell_barycenter( const GEO::Mesh& M, index_t cell ) ;
 
-    void RINGMESH_API divide_edge_in_parts(
-        const GEO::Mesh& mesh,
-        index_t edge,
-        index_t nb_parts,
-        std::vector< vec3 >& points ) ;
-
-    void RINGMESH_API divide_edge_in_parts(
-        vec3& node0,
-        vec3& node1,
-        index_t nb_parts,
-        std::vector< vec3 >& points ) ;
-
-    index_t RINGMESH_API get_nearest_vertex_index(
-        const GEO::Mesh& mesh,
-        const vec3& p,
-        index_t t ) ;
-
-    bool RINGMESH_API facets_have_same_orientation(
-        const GEO::Mesh& mesh,
-        index_t f1,
-        index_t c11,
-        index_t f2 ) ;
-
-    void RINGMESH_API mesh_facet_connect( GEO::Mesh& mesh ) ;
-
-    void RINGMESH_API barycentric_coordinates_point_inside_mesh_facet(
-        const vec3& point_inside_facet,
-        const GEO::Mesh& mesh,
-        index_t facet,
-        std::vector<double>& barycentric_coordinates ) ;
- 
-
     /*!
      * @brief Vector of pointers to Geogram attributes
      * @note Necessary since one cannot create, vectors of Geogram attributes does

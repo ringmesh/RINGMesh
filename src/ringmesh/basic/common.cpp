@@ -53,6 +53,7 @@
 #include <ringmesh/geomodel/geo_model_builder_gocad.h>
 #include <ringmesh/geomodel/geo_model_geological_entity.h>
 #include <ringmesh/io/io.h>
+#include <ringmesh/mesh/geogram_mesh.h>
 #include <ringmesh/tetrahedralize/tetra_gen.h>
 
 namespace RINGMesh {
@@ -88,6 +89,7 @@ namespace RINGMesh {
         GeoModelGeologicalEntity::initialize() ;
         ringmesh_mesh_io_initialize() ;
         initialize_gocad_import_factories() ;
+        register_geogram_mesh() ;
     }
 
     void default_configure()
@@ -95,5 +97,21 @@ namespace RINGMesh {
         GEO::initialize() ;
         configure_geogram() ;
         configure_ringmesh() ;
+    }
+    
+    void print_header_information()
+    {
+        Logger::div( "RINGMesh" ) ;
+        Logger::out( "" ) << "This project is developed by the RINGMesh"
+            << " developers team:" << std::endl ;
+        Logger::out( "" ) << "RINGMesh-dev <georessources-ringmesh-dev@univ-lorraine.fr> "
+            << std::endl ;
+        Logger::out( "" ) << "You can have access to the full open-source " 
+            << "code through its Bitbucket repository: " << std::endl ;
+        Logger::out( "" ) << "https://bitbucket.org/ring_team/ringmesh" 
+            << std::endl ; 
+        Logger::out( "" ) << "More information on this project and other " 
+            << "projects of the team: " << std::endl ;
+        Logger::out( "" ) << "http://www.ring-team.org" << std::endl ; 
     }
 }

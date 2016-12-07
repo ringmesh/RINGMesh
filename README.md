@@ -1,5 +1,5 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/d2hkhxnlb4ke6gy0/branch/default?svg=true)](https://ci.appveyor.com/project/ArnaudBotella/ringmesh/branch/default)
-[![Coverage Status](https://coveralls.io/repos/bitbucket/ring_team/ringmesh/badge.svg?branch=default)](https://coveralls.io/bitbucket/ring_team/ringmesh?branch=default)
+[![Coverage Status](https://coveralls.io/repos/bitbucket/ring_team/ringmeshcoverage/badge.svg?branch=default)](https://coveralls.io/bitbucket/ring_team/ringmeshcoverage?branch=default)
 
 
 Instructions for compiling RINGMesh
@@ -72,7 +72,7 @@ RINGMesh has previously been compiled with:
 * Visual Studio 10 2010 Win64
 * Visual Studio 11 2012 Win64
 * Visual Studio 12 2013 Win64
-
+* Visual Studio 14 2015 Win64
 
 Compiling RINGMesh
 ------------------

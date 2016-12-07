@@ -46,7 +46,6 @@
 #include <ringmesh/geomodel/geo_model_mesh_entity.h>
 #include <ringmesh/io/io.h>
 
-
 namespace {
     using namespace RINGMesh ;
 
@@ -62,12 +61,12 @@ namespace {
 }
 
 namespace RINGMesh {
-    
+
     typedef std::string EntityType ;
 
     const GeoModelMeshEntity& GeoModelGeologicalEntity::child( index_t x ) const
     {
-        return model().mesh_entity( child_gme( x ) ) ;
+        return geomodel().mesh_entity( child_gme( x ) ) ;
     }
 
     bool GeoModelGeologicalEntity::is_on_voi() const
@@ -78,13 +77,17 @@ namespace RINGMesh {
         return true ;
     }
 
+    bool GeoModelGeologicalEntity::is_index_valid() const
+    {
+        return index() < geomodel().nb_geological_entities( type_name() ) ;
+    }
+
     bool GeoModelGeologicalEntity::is_connectivity_valid() const
     {
         bool valid = true ;
         if( nb_children() == 0 ) {
             Logger::warn( "GeologicalEntity" ) << gme_id()
-                << " is undefined. No child. "
-                << std::endl ;
+                << " is undefined. No child. " << std::endl ;
             valid = false ;
         } else {
             // All children must have this entity as a parent
@@ -104,7 +107,7 @@ namespace RINGMesh {
 
     void GeoModelGeologicalEntity::initialize()
     {
-        ringmesh_register_GeoModelGeologicalEntity_creator( Contact ) ;
+        ringmesh_register_GeoModelGeologicalEntity_creator( Contact );
         ringmesh_register_GeoModelGeologicalEntity_creator( Interface ) ;
         ringmesh_register_GeoModelGeologicalEntity_creator( Layer ) ;
     }
@@ -138,5 +141,5 @@ namespace RINGMesh {
     {
         return check_has_children( *this ) ;
     }
-      
+
 }

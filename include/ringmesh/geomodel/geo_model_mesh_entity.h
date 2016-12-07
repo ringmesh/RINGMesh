@@ -50,6 +50,8 @@
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
 #include <ringmesh/mesh/mesh.h>
 #include <ringmesh/mesh/mesh_builder.h>
+#include <ringmesh/mesh/geogram_mesh.h>
+#include <ringmesh/mesh/geogram_mesh_builder.h>
 
 namespace RINGMesh {
     class GeoModel ;
@@ -87,7 +89,7 @@ namespace RINGMesh {
         virtual bool is_valid() const
         {
             return is_identification_valid() && is_connectivity_valid()
-                && is_mesh_valid() && are_model_vertex_indices_valid() ;
+                && is_mesh_valid() && are_geomodel_vertex_indices_valid() ;
         }
         virtual bool is_connectivity_valid() const ;
 
@@ -174,11 +176,9 @@ namespace RINGMesh {
             return mesh_->gfx_mesh() ;
         }
 
-        void save(
-            const std::string& filename,
-            const GEO::MeshIOFlags& ioflags ) const
+        void save( const std::string& filename ) const
         {
-            mesh_->save_mesh( filename, ioflags ) ;
+            mesh_->save_mesh( filename ) ;
         }
         /*!
          * @brief Return the colocater for the Entity vertices.
@@ -275,11 +275,11 @@ namespace RINGMesh {
 
     protected:
         GeoModelMeshEntity(
-            const GeoModel& model,
+            const GeoModel& geomodel,
             index_t id,
             const std::string& name = "No_name",
             GEOL_FEATURE geological_feature = NO_GEOL )
-            : GeoModelEntity( model, id, name, geological_feature ), mesh_( NULL )
+            : GeoModelEntity( geomodel, id, name, geological_feature ), mesh_( NULL )
         {
         }
         virtual void copy( const GeoModelEntity& from )
@@ -291,6 +291,7 @@ namespace RINGMesh {
             in_boundary_ = mesh_entity_from.in_boundary_ ;
             parents_ = mesh_entity_from.parents_ ;
         }
+        virtual bool is_index_valid() const ;
         virtual bool is_mesh_valid() const
         {
             return mesh_ != NULL ;
@@ -306,11 +307,11 @@ namespace RINGMesh {
         bool is_in_boundary_connectivity_valid() const ;
         bool is_parent_connectivity_valid() const ;
         /*!
-         * @brief Check that model vertex indices are consistent
+         * @brief Check that geomodel vertex indices are consistent
          * with what is stored at the GeoModel level.
          * @todo Review: this dependancy is bad, and puts us in a lot of trouble [JP]
          */
-        bool are_model_vertex_indices_valid() const ;
+        bool are_geomodel_vertex_indices_valid() const ;
 
     protected:
 
@@ -388,21 +389,34 @@ namespace RINGMesh {
             return vertex( 0 ) ;
         }
 
+        /*!
+         * @brief Get the low level mesh data structure
+         * @warn This function is for ADVANCED user only. If you use it,
+         * you are responsible for low level mesh consistency.
+         */
+        Mesh0D& low_level_mesh_storage()
+        {
+            return *mesh0d_ ;
+        }
+        /*!
+         * @brief Get the low level mesh data structure
+         * @warn This function is for ADVANCED user only. If you use it,
+         * you are responsible for low level mesh consistency.
+         */
+        const Mesh0D& low_level_mesh_storage() const
+        {
+            return *mesh0d_ ;
+        }
     protected:
         /*! @brief Creates a Corner.
          *  A point is added to its Mesh.
          */
-        Corner( const GeoModel& model, index_t id )
-            :
-                GeoModelMeshEntity( model, id ),
-                mesh0d_( new GeogramMesh( 3, false ) )
+        Corner( const GeoModel& geomodel, index_t id, const MeshType type )
+            : GeoModelMeshEntity( geomodel, id )
         {
-            GeoModelMeshEntity::set_mesh( mesh0d_ ) ;
-
-            GeogramMesh* geomesh = dynamic_cast< GeogramMesh* >( mesh0d_ ) ;
-            Mesh0DBuilder* builder = new GeogramMeshBuilder( *geomesh ) ;
+            update_mesh_storage_type( Mesh0D::create_mesh( type ) ) ;
+            Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder( *mesh0d_ ) ;
             builder->create_vertex() ;
-            delete builder ;
 
             id_.type = type_name_static() ;
         }
@@ -421,6 +435,14 @@ namespace RINGMesh {
         }
 
         virtual bool is_mesh_valid() const ;
+
+        void update_mesh_storage_type( Mesh0D* mesh )
+        {
+            mesh0d_ = mesh ;
+            GeoModelMeshEntity::set_mesh( mesh0d_ ) ;
+        }
+
+
     private:
         Mesh0D* mesh0d_ ;
     } ;
@@ -525,11 +547,34 @@ namespace RINGMesh {
         }
 
         bool is_first_corner_first_vertex() const ;
-
+        /*!
+         * @brief Get the low level mesh data structure
+         * @warn This function is for ADVANCED user only. If you use it,
+         * you are responsible for low level mesh consistency.
+         */
+        Mesh1D& low_level_mesh_storage()
+        {
+            return *mesh1d_ ;
+        }
+        /*!
+         * @brief Get the low level mesh data structure
+         * @warn This function is for ADVANCED user only. If you use it,
+         * you are responsible for low level mesh consistency.
+         */
+        const Mesh1D& low_level_mesh_storage() const
+        {
+            return *mesh1d_ ;
+        }
     protected:
-        Line( const GeoModel& model, index_t id ) ;
+        Line( const GeoModel& geomodel, index_t id, const MeshType type ) ;
 
         virtual bool is_mesh_valid() const ;
+
+        void update_mesh_storage_type( Mesh1D* mesh )
+        {
+            mesh1d_ = mesh ;
+            GeoModelMeshEntity::set_mesh( mesh1d_ ) ;
+        }
 
     private:
         Mesh1D* mesh1d_ ;
@@ -789,19 +834,39 @@ namespace RINGMesh {
         }
         /*! @}
          */
-
-    protected:
-        Surface( const GeoModel& model, index_t id )
-            :
-                GeoModelMeshEntity( model, id ),
-                mesh2d_( new GeogramMesh( 3, false ) )
+        /*!
+         * @brief Get the low level mesh data structure
+         * @warn This function is for ADVANCED user only. If you use it,
+         * you are responsible for low level mesh consistency.
+         */
+        Mesh2D& low_level_mesh_storage()
         {
-            GeoModelMeshEntity::set_mesh( mesh2d_ ) ;
-
+            return *mesh2d_ ;
+        }
+        /*!
+         * @brief Get the low level mesh data structure
+         * @warn This function is for ADVANCED user only. If you use it,
+         * you are responsible for low level mesh consistency.
+         */
+        const Mesh2D& low_level_mesh_storage() const
+        {
+            return *mesh2d_ ;
+        }
+    protected:
+        Surface( const GeoModel& geomodel, index_t id, const MeshType type )
+            : GeoModelMeshEntity( geomodel, id )
+        {
+            update_mesh_storage_type( Mesh2D::create_mesh( type ) ) ;
             id_.type = type_name_static() ;
         }
 
         virtual bool is_mesh_valid() const ;
+
+        void update_mesh_storage_type( Mesh2D* mesh )
+        {
+            mesh2d_ = mesh ;
+            GeoModelMeshEntity::set_mesh( mesh2d_ ) ;
+        }
     private:
         Mesh2D* mesh2d_ ;
     } ;
@@ -809,8 +874,8 @@ namespace RINGMesh {
     /*!
      * @brief A GeoModelEntity of type REGION
      *
-     * @details A Region a volumetric connected component of the model defined
-     * by a set of surfaces.
+     * @details A Region a volumetric connected component of the geomodel
+     * defined by a set of surfaces.
      * The Region can be only defined by its boundary Surfaces.
      * Its volumetric mesh is optional.
      */
@@ -1104,15 +1169,29 @@ namespace RINGMesh {
         }
         /*! @}
          */
-
-    protected:
-        Region( const GeoModel& model, index_t id )
-            :
-                GeoModelMeshEntity( model, id ),
-                mesh3d_( new GeogramMesh( 3, false ) )
+        /*!
+         * @brief Get the low level mesh data structure
+         * @warn This function is for ADVANCED user only. If you use it,
+         * you are responsible for low level mesh consistency.
+         */
+        Mesh3D& low_level_mesh_storage()
         {
-            GeoModelMeshEntity::set_mesh( mesh3d_ ) ;
-
+            return *mesh3d_ ;
+        }
+        /*!
+         * @brief Get the low level mesh data structure
+         * @warn This function is for ADVANCED user only. If you use it,
+         * you are responsible for low level mesh consistency.
+         */
+        const Mesh3D& low_level_mesh_storage() const
+        {
+            return *mesh3d_ ;
+        }
+    protected:
+        Region( const GeoModel& geomodel, index_t id, const MeshType type )
+            : GeoModelMeshEntity( geomodel, id )
+        {
+            update_mesh_storage_type( Mesh3D::create_mesh( type ) ) ;
             id_.type = type_name_static() ;
         }
 
@@ -1126,6 +1205,12 @@ namespace RINGMesh {
         virtual bool is_mesh_valid() const ;
 
         bool is_brep_region_valid() const ;
+
+        void update_mesh_storage_type( Mesh3D* mesh )
+        {
+            mesh3d_ = mesh ;
+            GeoModelMeshEntity::set_mesh( mesh3d_ ) ;
+        }
 
     protected:
         /*! Additional information to store oriented boundary Surfaces

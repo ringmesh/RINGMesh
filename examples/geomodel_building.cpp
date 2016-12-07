@@ -109,6 +109,7 @@ int main()
         default_configure() ;
 
         // Say Hello
+        print_header_information() ;
         Logger::div( "RINGMesh Training" ) ;
         Logger::out( "" ) << "Welcome to the training of RINGMesh ! !" << std::endl ;
 
@@ -838,7 +839,7 @@ int main()
         // and parent/child relation. e. g., if you decide to use the
         // add_geological_entity_child (like above), the child has no information of who
         // is his parent. This method deal with that by filling the missing information
-        geomodel_builder.end_model() ;
+        geomodel_builder.end_geomodel() ;
 
         // We save the builded model
         geomodel_save( geomodel, "builded_model.gm" ) ;

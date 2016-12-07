@@ -192,21 +192,24 @@ namespace RINGMesh {
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
-        const vec3& p2 ) ;
+        const vec3& p2,
+        bool exact_predicates = false ) ;
 
     bool RINGMESH_API point_inside_quad(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
         const vec3& p2,
-        const vec3& p3 ) ;
+        const vec3& p3,
+        bool exact_predicates = false ) ;
 
     bool RINGMESH_API point_inside_tetra(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
         const vec3& p2,
-        const vec3& p3 ) ;
+        const vec3& p3,
+        bool exact_predicates = false ) ;
 
     bool RINGMESH_API point_inside_pyramid(
         const vec3& p,
@@ -214,7 +217,8 @@ namespace RINGMesh {
         const vec3& p1,
         const vec3& p2,
         const vec3& p3,
-        const vec3& p4 ) ;
+        const vec3& p4,
+        bool exact_predicates = false ) ;
 
     bool RINGMESH_API point_inside_prism(
         const vec3& p,
@@ -223,7 +227,8 @@ namespace RINGMesh {
         const vec3& p2,
         const vec3& p3,
         const vec3& p4,
-        const vec3& p5 ) ;
+        const vec3& p5,
+        bool exact_predicates = false ) ;
 
     bool RINGMESH_API point_inside_hexa(
         const vec3& p,
@@ -234,7 +239,8 @@ namespace RINGMesh {
         const vec3& p4,
         const vec3& p5,
         const vec3& p6,
-        const vec3& p7 ) ;
+        const vec3& p7,
+        bool exact_predicates = false ) ;
 
     bool RINGMESH_API point_segment_projection(
         const vec3& p,
@@ -249,6 +255,13 @@ namespace RINGMesh {
         const vec3& p2,
         const vec3& p3,
         double lambda[4] ) ;
+
+    bool RINGMESH_API triangle_barycentric_coordinates(
+        const vec3& p,
+        const vec3& p0,
+        const vec3& p1,
+        const vec3& p2,
+        double lambda[3] ) ;
 
     void RINGMESH_API rotation_matrix_about_arbitrary_axis(
         const vec3& origin,

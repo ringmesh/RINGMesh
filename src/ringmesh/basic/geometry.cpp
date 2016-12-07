@@ -50,6 +50,29 @@
  * @todo Comment on the robustness of the tests
  */
 
+namespace {
+    using namespace RINGMesh ;
+
+    bool is_almost_zero( const double& value )
+    {
+        return value < global_epsilon && value > -global_epsilon ;
+    }
+
+    double triangle_signed_area(
+        const vec3& p0,
+        const vec3& p1,
+        const vec3& p2,
+        const vec3& triangle_normal )
+    {
+        double area = GEO::Geom::triangle_area( p0, p1, p2 ) ;
+        vec3 area_normal = cross( p0 - p2, p1 - p2 ) ;
+        if( dot( triangle_normal, area_normal ) < 0 ) {
+            area = -area ;
+        }
+        return area ;
+    }
+}
+
 namespace RINGMesh {
 
     bool operator==( const vec3& u, const vec3& v )
@@ -448,6 +471,7 @@ namespace RINGMesh {
      * @param[in] p1 the second vertex of the tetrahedron
      * @param[in] p2 the third vertex of the tetrahedron
      * @param[in] p3 the fourth vertex of the tetrahedron
+     * @param[in] exact_predicates if true, the algorithm uses exact predicates
      * @return returns true if the point is inside the tetrahedron
      */
     bool point_inside_tetra(
@@ -455,17 +479,34 @@ namespace RINGMesh {
         const vec3& p0,
         const vec3& p1,
         const vec3& p2,
-        const vec3& p3 )
+        const vec3& p3,
+        bool exact_predicates )
     {
         vec3 vertices[4] = { p0, p1, p2, p3 } ;
-        GEO::Sign signs[4] ;
-        for( index_t f = 0; f < GEO::MeshCellDescriptors::tet_descriptor.nb_facets;
-            f++ ) {
-            signs[f] =
-                GEO::PCK::orient_3d( p.data(),
-                    vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][0]].data(),
-                    vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][1]].data(),
-                    vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][2]].data() ) ;
+        Sign signs[4] ;
+        if( !exact_predicates ) {
+            for( index_t f = 0;
+                f < GEO::MeshCellDescriptors::tet_descriptor.nb_facets; f++ ) {
+                double volume =
+                    GEO::Geom::tetra_signed_volume( p,
+                        vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][0]],
+                        vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][1]],
+                        vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][2]] ) ;
+                if( is_almost_zero( volume ) ) {
+                    return point_inside_tetra( p, p0, p1, p2, p3, true ) ;
+                }
+                signs[f] = sign( volume ) ;
+            }
+        } else {
+            for( index_t f = 0;
+                f < GEO::MeshCellDescriptors::tet_descriptor.nb_facets; f++ ) {
+                signs[f] =
+                    sign(
+                        GEO::PCK::orient_3d( p.data(),
+                            vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][0]].data(),
+                            vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][1]].data(),
+                            vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][2]].data() ) ) ;
+            }
         }
         return ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0 && signs[3] >= 0 )
             || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0 ) ;
@@ -479,6 +520,7 @@ namespace RINGMesh {
      * @param[in] p2 the third vertex of the pyramid
      * @param[in] p3 the fourth vertex of the pyramid
      * @param[in] p4 the fifth vertex of the pyramid
+     * @param[in] exact_predicates if true, the algorithm uses exact predicates
      * @return returns true if the point is inside the pyramid
      */
     bool point_inside_pyramid(
@@ -487,17 +529,34 @@ namespace RINGMesh {
         const vec3& p1,
         const vec3& p2,
         const vec3& p3,
-        const vec3& p4 )
+        const vec3& p4,
+        bool exact_predicates )
     {
         vec3 vertices[5] = { p0, p1, p2, p3, p4 } ;
-        GEO::Sign signs[5] ;
-        for( index_t f = 0;
-            f < GEO::MeshCellDescriptors::pyramid_descriptor.nb_facets; f++ ) {
-            signs[f] =
-                GEO::PCK::orient_3d( p.data(),
-                    vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][0]].data(),
-                    vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][1]].data(),
-                    vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][2]].data() ) ;
+        Sign signs[5] ;
+        if( !exact_predicates ) {
+            for( index_t f = 0;
+                f < GEO::MeshCellDescriptors::pyramid_descriptor.nb_facets; f++ ) {
+                double volume =
+                    GEO::Geom::tetra_signed_volume( p,
+                        vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][0]],
+                        vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][1]],
+                        vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][2]] ) ;
+                if( is_almost_zero( volume ) ) {
+                    return point_inside_pyramid( p, p0, p1, p2, p3, p4, true ) ;
+                }
+                signs[f] = sign( volume ) ;
+            }
+        } else {
+            for( index_t f = 0;
+                f < GEO::MeshCellDescriptors::pyramid_descriptor.nb_facets; f++ ) {
+                signs[f] =
+                    sign(
+                        GEO::PCK::orient_3d( p.data(),
+                            vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][0]].data(),
+                            vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][1]].data(),
+                            vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][2]].data() ) ) ;
+            }
         }
         return ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0 && signs[3] >= 0
             && signs[4] >= 0 )
@@ -514,6 +573,7 @@ namespace RINGMesh {
      * @param[in] p3 the fourth vertex of the prism
      * @param[in] p4 the fifth vertex of the prism
      * @param[in] p5 the sixth vertex of the prism
+     * @param[in] exact_predicates if true, the algorithm uses exact predicates
      * @return returns true if the point is inside the prism
      */
     bool point_inside_prism(
@@ -523,22 +583,39 @@ namespace RINGMesh {
         const vec3& p2,
         const vec3& p3,
         const vec3& p4,
-        const vec3& p5 )
+        const vec3& p5,
+        bool exact_predicates )
     {
         vec3 vertices[6] = { p0, p1, p2, p3, p4, p5 } ;
-        GEO::Sign signs[6] ;
-        for( index_t f = 0; f < GEO::MeshCellDescriptors::prism_descriptor.nb_facets;
-            f++ ) {
-            signs[f] =
-                GEO::PCK::orient_3d( p.data(),
-                    vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][0]].data(),
-                    vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][1]].data(),
-                    vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][2]].data() ) ;
+        Sign signs[5] ;
+        if( !exact_predicates ) {
+            for( index_t f = 0;
+                f < GEO::MeshCellDescriptors::prism_descriptor.nb_facets; f++ ) {
+                double volume =
+                    GEO::Geom::tetra_signed_volume( p,
+                        vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][0]],
+                        vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][1]],
+                        vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][2]] ) ;
+                if( is_almost_zero( volume ) ) {
+                    return point_inside_prism( p, p0, p1, p2, p3, p4, p5, true ) ;
+                }
+                signs[f] = sign( volume ) ;
+            }
+        } else {
+            for( index_t f = 0;
+                f < GEO::MeshCellDescriptors::prism_descriptor.nb_facets; f++ ) {
+                signs[f] =
+                    sign(
+                        GEO::PCK::orient_3d( p.data(),
+                            vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][0]].data(),
+                            vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][1]].data(),
+                            vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][2]].data() ) ) ;
+            }
         }
         return ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0 && signs[3] >= 0
-            && signs[4] >= 0 && signs[5] >= 0 )
+            && signs[4] >= 0 )
             || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0
-                && signs[4] <= 0 && signs[5] <= 0 ) ;
+                && signs[4] <= 0 ) ;
     }
     /*!
      * Tests if a point is inside a hexahedron
@@ -551,6 +628,7 @@ namespace RINGMesh {
      * @param[in] p5 the sixth vertex of the hexahedron
      * @param[in] p6 the seventh vertex of the hexahedron
      * @param[in] p7 the heigth vertex of the hexahedron
+     * @param[in] exact_predicates if true, the algorithm uses exact predicates
      * @return returns true if the point is inside the hexahedron
      */
     bool point_inside_hexa(
@@ -562,22 +640,39 @@ namespace RINGMesh {
         const vec3& p4,
         const vec3& p5,
         const vec3& p6,
-        const vec3& p7 )
+        const vec3& p7,
+        bool exact_predicates )
     {
         vec3 vertices[8] = { p0, p1, p2, p3, p4, p5, p6, p7 } ;
-        GEO::Sign signs[8] ;
-        for( index_t f = 0; f < GEO::MeshCellDescriptors::hex_descriptor.nb_facets;
-            f++ ) {
-            signs[f] =
-                GEO::PCK::orient_3d( p.data(),
-                    vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][0]].data(),
-                    vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][1]].data(),
-                    vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][2]].data() ) ;
+        Sign signs[6] ;
+        if( !exact_predicates ) {
+            for( index_t f = 0;
+                f < GEO::MeshCellDescriptors::hex_descriptor.nb_facets; f++ ) {
+                double volume =
+                    GEO::Geom::tetra_signed_volume( p,
+                        vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][0]],
+                        vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][1]],
+                        vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][2]] ) ;
+                if( is_almost_zero( volume ) ) {
+                    return point_inside_hexa( p, p0, p1, p2, p3, p4, p5, p6, p7, true ) ;
+                }
+                signs[f] = sign( volume ) ;
+            }
+        } else {
+            for( index_t f = 0;
+                f < GEO::MeshCellDescriptors::hex_descriptor.nb_facets; f++ ) {
+                signs[f] =
+                    sign(
+                        GEO::PCK::orient_3d( p.data(),
+                            vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][0]].data(),
+                            vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][1]].data(),
+                            vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][2]].data() ) ) ;
+            }
         }
         return ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0 && signs[3] >= 0
-            && signs[4] >= 0 && signs[5] >= 0 && signs[6] >= 0 && signs[7] >= 0 )
+            && signs[4] >= 0 && signs[5] >= 0 )
             || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0
-                && signs[4] <= 0 && signs[5] <= 0 && signs[6] <= 0 && signs[7] <= 0 ) ;
+                && signs[4] <= 0 && signs[5] <= 0 ) ;
     }
 
     /*!
@@ -688,7 +783,7 @@ namespace RINGMesh {
      * @param[in] p1 the second tetra vertex
      * @param[in] p2 the third tetra vertex
      * @param[in] p3 the fourth tetra vertex
-     * @param[out] lambda the parametric coordinate corresponding to points
+     * @param[out] lambda the parametric coordinates corresponding to points
      * @return false if the computation failed because of too small tetrahedron volume
      */
     bool tetra_barycentric_coordinates(
@@ -715,6 +810,40 @@ namespace RINGMesh {
         lambda[1] = volume1 / total_volume ;
         lambda[2] = volume2 / total_volume ;
         lambda[3] = volume3 / total_volume ;
+        return true ;
+    }
+
+    /*!
+      * Computes barycentric coordinates of \p p
+      * @param[in] p the query point
+      * @param[in] p0 the first triangle vertex
+      * @param[in] p1 the second triangle vertex
+      * @param[in] p2 the third triangle vertex
+      * @param[out] lambda the parametric coordinates corresponding to points
+      * @return false if the computation failed because of too small triangle area
+      */
+    bool triangle_barycentric_coordinates(
+        const vec3& p,
+        const vec3& p0,
+        const vec3& p1,
+        const vec3& p2,
+        double lambda[3] )
+    {
+        double total_area = GEO::Geom::triangle_area( p0, p1, p2 ) ;
+        if( total_area < global_epsilon_sq ) {
+            for( index_t i = 0; i < 3; i++ ) {
+                lambda[i] = 0 ;
+            }
+            return false ;
+        }
+        vec3 triangle_normal = cross( p2 - p0, p1 - p0 ) ;
+        double area0 = triangle_signed_area( p2, p1, p, triangle_normal ) ;
+        double area1 = triangle_signed_area( p0, p2, p, triangle_normal ) ;
+        double area2 = triangle_signed_area( p1, p0, p, triangle_normal ) ;
+
+        lambda[0] = area0 / total_area ;
+        lambda[1] = area1 / total_area ;
+        lambda[2] = area2 / total_area ;
         return true ;
     }
 
@@ -1283,29 +1412,50 @@ namespace RINGMesh {
      * @param[in] p0 the first vertex of the triangle
      * @param[in] p1 the second vertex of the triangle
      * @param[in] p2 the third vertex of the triangle
+     * @param[in] exact_predicates if true, the algorithm uses exact predicates
      * @return returns true if the point is inside
      */
     bool point_inside_triangle(
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
-        const vec3& p2 )
+        const vec3& p2,
+        bool exact_predicates )
     {
         vec3 n = cross( p2 - p0, p1 - p0 ) ;
         vec3 q = p + n ;
 
-        Sign s1 = sign(
-            GEO::PCK::orient_3d( p.data(), q.data(), p0.data(), p1.data() ) ) ;
-        Sign s2 = sign(
-            GEO::PCK::orient_3d( p.data(), q.data(), p1.data(), p2.data() ) ) ;
-        Sign s3 = sign(
-            GEO::PCK::orient_3d( p.data(), q.data(), p2.data(), p0.data() ) ) ;
-        if( s1 == ZERO ) {
-            return s2 == s3 ;
-        } else if( s2 == ZERO ) {
-            return s1 == s3 ;
-        } else if( s3 == ZERO ) {
-            return s1 == s2 ;
+        Sign s1, s2, s3 ;
+        if( !exact_predicates ) {
+            double vol1 = GEO::Geom::tetra_signed_volume( p, q, p0, p1 ) ;
+            if( is_almost_zero( vol1 ) ) {
+                return point_inside_triangle( p, p0, p1, p2, true ) ;
+            }
+            s1 = sign( vol1 ) ;
+            double vol2 = GEO::Geom::tetra_signed_volume( p, q, p1, p2 ) ;
+            if( is_almost_zero( vol2 ) ) {
+                return point_inside_triangle( p, p0, p1, p2, true ) ;
+            }
+            s2 = sign( vol2 ) ;
+            double vol3 = GEO::Geom::tetra_signed_volume( p, q, p2, p0 ) ;
+            if( is_almost_zero( vol3 ) ) {
+                return point_inside_triangle( p, p0, p1, p2, true ) ;
+            }
+            s3 = sign( vol3 ) ;
+        } else {
+            s1 = sign(
+                GEO::PCK::orient_3d( p.data(), q.data(), p0.data(), p1.data() ) ) ;
+            s2 = sign(
+                GEO::PCK::orient_3d( p.data(), q.data(), p1.data(), p2.data() ) ) ;
+            s3 = sign(
+                GEO::PCK::orient_3d( p.data(), q.data(), p2.data(), p0.data() ) ) ;
+            if( s1 == ZERO ) {
+                return s2 == s3 ;
+            } else if( s2 == ZERO ) {
+                return s1 == s3 ;
+            } else if( s3 == ZERO ) {
+                return s1 == s2 ;
+            }
         }
 
         return s1 == s2 && s2 == s3 ;
@@ -1319,6 +1469,7 @@ namespace RINGMesh {
      * @param[in] p1 the second vertex of the quad
      * @param[in] p2 the third vertex of the quad
      * @param[in] p3 the fourth vertex of the quad
+     * @param[in] exact_predicates if true, the algorithm uses exact predicates
      * @return returns true if the point is inside
      */
     bool point_inside_quad(
@@ -1326,30 +1477,52 @@ namespace RINGMesh {
         const vec3& p0,
         const vec3& p1,
         const vec3& p2,
-        const vec3& p3 )
+        const vec3& p3,
+        bool exact_predicates )
     {
         vec3 n = cross( p2 - p0, p1 - p0 ) ;
         vec3 q = p + n ;
-
-        Sign s1 = sign(
-            GEO::PCK::orient_3d( p.data(), q.data(), p0.data(), p1.data() ) ) ;
-        Sign s2 = sign(
-            GEO::PCK::orient_3d( p.data(), q.data(), p1.data(), p2.data() ) ) ;
-        Sign s3 = sign(
-            GEO::PCK::orient_3d( p.data(), q.data(), p2.data(), p3.data() ) ) ;
-        Sign s4 = sign(
-            GEO::PCK::orient_3d( p.data(), q.data(), p3.data(), p0.data() ) ) ;
-
-        if( s1 == ZERO ) {
-            return s2 == s3 && s3 == s4 ;
-        } else if( s2 == ZERO ) {
-            return s1 == s3 && s3 == s4 ;
-        } else if( s3 == ZERO ) {
-            return s1 == s2 && s2 == s4 ;
-        } else if( s4 == ZERO ) {
-            return s1 == s2 && s2 == s3 ;
+        Sign s1, s2, s3, s4 ;
+        if( !exact_predicates ) {
+            double vol1 = GEO::Geom::tetra_signed_volume( p, q, p0, p1 ) ;
+            if( is_almost_zero( vol1 ) ) {
+                return point_inside_quad( p, p0, p1, p2, p3, true ) ;
+            }
+            s1 = sign( vol1 ) ;
+            double vol2 = GEO::Geom::tetra_signed_volume( p, q, p1, p2 ) ;
+            if( is_almost_zero( vol2 ) ) {
+                return point_inside_quad( p, p0, p1, p2, p3, true ) ;
+            }
+            s2 = sign( vol2 ) ;
+            double vol3 = GEO::Geom::tetra_signed_volume( p, q, p2, p3 ) ;
+            if( is_almost_zero( vol3 ) ) {
+                return point_inside_quad( p, p0, p1, p2, p3, true ) ;
+            }
+            s3 = sign( vol3 ) ;
+            double vol4 = GEO::Geom::tetra_signed_volume( p, q, p3, p0 ) ;
+            if( is_almost_zero( vol4 ) ) {
+                return point_inside_quad( p, p0, p1, p2, p3, true ) ;
+            }
+            s4 = sign( vol4 ) ;
+        } else {
+            s1 = sign(
+                GEO::PCK::orient_3d( p.data(), q.data(), p0.data(), p1.data() ) ) ;
+            s2 = sign(
+                GEO::PCK::orient_3d( p.data(), q.data(), p1.data(), p2.data() ) ) ;
+            s3 = sign(
+                GEO::PCK::orient_3d( p.data(), q.data(), p2.data(), p3.data() ) ) ;
+            s4 = sign(
+                GEO::PCK::orient_3d( p.data(), q.data(), p3.data(), p0.data() ) ) ;
+            if( s1 == ZERO ) {
+                return s2 == s3 && s3 == s4 ;
+            } else if( s2 == ZERO ) {
+                return s1 == s3 && s3 == s4 ;
+            } else if( s3 == ZERO ) {
+                return s1 == s2 && s2 == s4 ;
+            } else if( s4 == ZERO ) {
+                return s1 == s2 && s2 == s3 ;
+            }
         }
-
         return s1 == s2 && s2 == s3 && s3 == s4 ;
     }
 
@@ -1516,7 +1689,8 @@ namespace RINGMesh {
             index_t id = *std::min_element( results.begin(), results.end() ) ;
             if( id < i ) {
                 index_map[i] = id ;
-                nb_colocalised_per_thread[omp_get_thread_num()]++ ;
+                index_t thread_id = static_cast< index_t >( omp_get_thread_num() ) ;
+                nb_colocalised_per_thread[thread_id]++ ;
             }
         }
 

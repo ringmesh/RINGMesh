@@ -492,7 +492,7 @@ namespace RINGMesh {
         }
         uniqueID.add_points( region_vertices ) ;
 
-        uniqueID.unique( region.model().epsilon() ) ;
+        uniqueID.unique( region.geomodel().epsilon() ) ;
         const std::vector< index_t >& unique_indices = uniqueID.indices() ;
         std::vector< vec3 > unique_points ;
         uniqueID.unique_points( unique_points ) ;

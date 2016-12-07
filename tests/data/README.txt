@@ -32,16 +32,3 @@ Model Annot
 	pages = {199--220}
 }
 
-
-Model Corbieres
-
-@article{caumon_surface-based_2009,
-	title = {Surface-based 3D modeling of geological structures},
-	volume = {41},
-	doi = {10.1007/s11004-009-9244-2},
-	number = {9},
-	journal = {Mathematical Geosciences},
-	author = {Caumon, Guillaume and Collon-Drouaillet, Pauline and Le Carlier de Veslud, Christian and Sausse, Judith and Viseur, Sophie},
-	year = {2009},
-	pages = {927--945}
-}

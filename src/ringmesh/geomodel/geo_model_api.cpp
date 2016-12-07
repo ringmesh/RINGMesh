@@ -233,8 +233,8 @@ namespace {
         const double& cell_volume_total,
         const std::string& cell_type )
     {
-        Logger::out( "GeoModel" ) << "* " << cell_type << " volume "
-            << cell_volume << " ("
+        Logger::out( "GeoModel" ) << "* " << cell_type << " volume " << cell_volume
+            << " ("
             << static_cast< index_t >( cell_volume * 100 / cell_volume_total + 0.5 )
             << "%)\n" ;
     }
@@ -244,21 +244,25 @@ namespace {
 namespace RINGMesh {
     typedef std::string EntityType ;
 
-    void print_nb_mesh_entities( const GeoModel& geomodel, const std::string& entity_type_name )
+    void print_nb_mesh_entities(
+        const GeoModel& geomodel,
+        const std::string& entity_type_name )
     {
         Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left
-            << geomodel.nb_mesh_entities( entity_type_name ) << " " << entity_type_name
-            << std::endl ;
+            << geomodel.nb_mesh_entities( entity_type_name ) << " "
+            << entity_type_name << std::endl ;
     }
-    
-    void print_nb_geological_entities( const GeoModel& geomodel, const std::string& entity_type_name )
+
+    void print_nb_geological_entities(
+        const GeoModel& geomodel,
+        const std::string& entity_type_name )
     {
         if( geomodel.nb_geological_entities( entity_type_name ) == 0 ) {
             return ;
         }
         Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left
-            << geomodel.nb_geological_entities( entity_type_name ) << " " << entity_type_name
-            << std::endl ;
+            << geomodel.nb_geological_entities( entity_type_name ) << " "
+            << entity_type_name << std::endl ;
     }
 
     void print_geomodel( const GeoModel& geomodel )
@@ -278,21 +282,21 @@ namespace RINGMesh {
         const std::vector< EntityType >& mesh_entity_types =
             manager.mesh_entity_types() ;
         for( index_t i = 0; i < mesh_entity_types.size(); ++i ) {
-            print_nb_mesh_entities( geomodel, mesh_entity_types[i] ) ; 
+            print_nb_mesh_entities( geomodel, mesh_entity_types[i] ) ;
         }
-        const std::vector< EntityType>& geological_entity_types =
+        const std::vector< EntityType >& geological_entity_types =
             manager.geological_entity_types() ;
         for( index_t i = 0; i < geological_entity_types.size(); ++i ) {
             print_nb_geological_entities( geomodel, geological_entity_types[i] ) ;
-        }        
+        }
     }
 
     void print_geomodel_mesh_stats( const GeoModel& geomodel )
     {
-        Logger::out( "GeoModel" ) << "Model " << geomodel.name()
-            << " is made of\n" << std::setw( 10 ) << std::left
-            << geomodel.mesh.vertices.nb() << " vertices\n" << std::setw( 10 )
-            << std::left << count_geomodel_edges( geomodel ) << " edges\n" ;
+        Logger::out( "GeoModel" ) << "Model " << geomodel.name() << " is made of\n"
+            << std::setw( 10 ) << std::left << geomodel.mesh.vertices.nb()
+            << " vertices\n" << std::setw( 10 ) << std::left
+            << count_geomodel_edges( geomodel ) << " edges\n" ;
 
         index_t nb_triangles = 0 ;
         index_t nb_quads = 0 ;
@@ -399,9 +403,9 @@ namespace RINGMesh {
         GEO::Attribute< index_t > corner_attribute( M.vertices.attributes(),
             attribute_name ) ;
         corner_attribute.fill( NO_ID ) ;
-        const GeoModelMeshVertices& model_vertices = geomodel.mesh.vertices ;
+        const GeoModelMeshVertices& geomodel_vertices = geomodel.mesh.vertices ;
         for( index_t i = 0; i < geomodel.nb_corners(); ++i ) {
-            index_t vertex_index = model_vertices.model_vertex_id(
+            index_t vertex_index = geomodel_vertices.geomodel_vertex_id(
                 geomodel.corner( i ).gme_id() ) ;
             corner_attribute[vertex_index] = i ;
         }
@@ -423,11 +427,11 @@ namespace RINGMesh {
 
     void add_line_edges_to_mesh( const Line& line, GEO::Mesh& M )
     {
-        const GeoModelMeshVertices& model_vertices = line.model().mesh.vertices ;
+        const GeoModelMeshVertices& geomodel_vertices = line.geomodel().mesh.vertices ;
         index_t from = M.edges.create_edges( line.nb_mesh_elements() ) ;
         for( index_t i = 0; i < line.nb_mesh_elements(); ++i ) {
-            index_t v0 = model_vertices.model_vertex_id( line.gme_id(), i, 0 ) ;
-            index_t v1 = model_vertices.model_vertex_id( line.gme_id(), i, 1 ) ;
+            index_t v0 = geomodel_vertices.geomodel_vertex_id( line.gme_id(), i, 0 ) ;
+            index_t v1 = geomodel_vertices.geomodel_vertex_id( line.gme_id(), i, 1 ) ;
             M.edges.set_vertex( from + i, 0, v0 ) ;
             M.edges.set_vertex( from + i, 1, v1 ) ;
         }
@@ -466,12 +470,12 @@ namespace RINGMesh {
 
     void add_surface_facets_to_mesh( const Surface& surface, GEO::Mesh& M )
     {
-        const GeoModelMeshVertices& model_vertices = surface.model().mesh.vertices ;
+        const GeoModelMeshVertices& geomodel_vertices = surface.geomodel().mesh.vertices ;
         for( index_t j = 0; j < surface.nb_mesh_elements(); ++j ) {
             index_t nbv = surface.nb_mesh_element_vertices( j ) ;
             GEO::vector< index_t > ids( nbv ) ;
             for( index_t v = 0; v < nbv; ++v ) {
-                ids[v] = model_vertices.model_vertex_id( surface.gme_id(), j, v ) ;
+                ids[v] = geomodel_vertices.geomodel_vertex_id( surface.gme_id(), j, v ) ;
             }
             M.facets.create_polygon( ids ) ;
         }
@@ -479,18 +483,18 @@ namespace RINGMesh {
 
     void add_surfaces_triangles_to_mesh( const GeoModel& geomodel, GEO::Mesh& M )
     {
-        const GeoModelMeshVertices& model_vertices = geomodel.mesh.vertices ;
+        const GeoModelMeshVertices& geomodel_vertices = geomodel.mesh.vertices ;
         GEO::vector< index_t > triangles( 3 * count_geomodel_facets( geomodel ) ) ;
         index_t triangle_index = 0 ;
         for( index_t i = 0; i < geomodel.nb_surfaces(); ++i ) {
             const Surface& S = geomodel.surface( i ) ;
             index_t nb_surface_triangles = S.nb_mesh_elements() ;
             for( index_t j = 0; j != nb_surface_triangles; ++j ) {
-                triangles[3 * triangle_index] = model_vertices.model_vertex_id(
+                triangles[3 * triangle_index] = geomodel_vertices.geomodel_vertex_id(
                     S.gme_id(), j, 0 ) ;
-                triangles[3 * triangle_index + 1] = model_vertices.model_vertex_id(
+                triangles[3 * triangle_index + 1] = geomodel_vertices.geomodel_vertex_id(
                     S.gme_id(), j, 1 ) ;
-                triangles[3 * triangle_index + 2] = model_vertices.model_vertex_id(
+                triangles[3 * triangle_index + 2] = geomodel_vertices.geomodel_vertex_id(
                     S.gme_id(), j, 2 ) ;
                 ++triangle_index ;
             }
@@ -537,20 +541,20 @@ namespace RINGMesh {
 
     void add_regions_tets_to_mesh( const GeoModel& geomodel, GEO::Mesh& M )
     {
-        const GeoModelMeshVertices& model_vertices = geomodel.mesh.vertices ;
+        const GeoModelMeshVertices& geomodel_vertices = geomodel.mesh.vertices ;
         GEO::vector< index_t > tets( 4 * count_geomodel_cells( geomodel ) ) ;
         index_t tet_index = 0 ;
         for( index_t i = 0; i < geomodel.nb_regions(); ++i ) {
             const Region& region = geomodel.region( i ) ;
             index_t nb_region_tets = region.nb_mesh_elements() ;
             for( index_t j = 0; j < nb_region_tets; ++j ) {
-                tets[4 * tet_index] = model_vertices.model_vertex_id(
+                tets[4 * tet_index] = geomodel_vertices.geomodel_vertex_id(
                     region.gme_id(), j, 0 ) ;
-                tets[4 * tet_index + 1] = model_vertices.model_vertex_id(
+                tets[4 * tet_index + 1] = geomodel_vertices.geomodel_vertex_id(
                     region.gme_id(), j, 1 ) ;
-                tets[4 * tet_index + 2] = model_vertices.model_vertex_id(
+                tets[4 * tet_index + 2] = geomodel_vertices.geomodel_vertex_id(
                     region.gme_id(), j, 2 ) ;
-                tets[4 * tet_index + 3] = model_vertices.model_vertex_id(
+                tets[4 * tet_index + 3] = geomodel_vertices.geomodel_vertex_id(
                     region.gme_id(), j, 3 ) ;
                 ++tet_index ;
             }
@@ -608,18 +612,18 @@ namespace RINGMesh {
     }
 
     void build_mesh_from_geomodel(
-        const GeoModel& model,
+        const GeoModel& geomodel,
         GEO::Mesh& M,
         bool connect_facets )
     {
-        build_mesh_from_geomodel( model, M ) ;
+        build_mesh_from_geomodel( geomodel, M ) ;
         if( connect_facets ) {
             connect_mesh_facets_except_on_mesh_edges( M ) ;
         }
     }
 
-    void build_mesh_from_model_mesh_entities(
-        const GeoModel& model,
+    void build_mesh_from_geomodel_mesh_entities(
+        const GeoModel& geomodel,
         const std::vector< gme_t >& surface_entities,
         GEO::Mesh& M )
     {
@@ -627,18 +631,18 @@ namespace RINGMesh {
         // Put an attribute on the ModelVertices to know its index
         // in this Mesh
         GEO::Attribute< index_t > old2new ;
-        old2new.bind( model.mesh.vertex_attribute_manager(), "old2new" ) ;
+        old2new.bind( geomodel.mesh.vertex_attribute_manager(), "old2new" ) ;
         old2new.fill( NO_ID ) ;
-        const GeoModelMeshVertices& model_vertices = model.mesh.vertices ;
+        const GeoModelMeshVertices& geomodel_vertices = geomodel.mesh.vertices ;
 
         // Add the vertices
         for( index_t i = 0; i < nb_entities; ++i ) {
-            const GeoModelMeshEntity& b = model.mesh_entity( surface_entities[i] ) ;
+            const GeoModelMeshEntity& b = geomodel.mesh_entity( surface_entities[i] ) ;
             for( index_t v = 0; v < b.nb_vertices(); ++v ) {
-                index_t global_v = model_vertices.model_vertex_id( b.gme_id(), v ) ;
+                index_t global_v = geomodel_vertices.geomodel_vertex_id( b.gme_id(), v ) ;
                 if( old2new[global_v] == NO_ID ) {
                     old2new[global_v] = M.vertices.create_vertex(
-                        model.mesh.vertices.vertex( global_v ).data() ) ;
+                        geomodel.mesh.vertices.vertex( global_v ).data() ) ;
                 }
             }
         }
@@ -646,12 +650,13 @@ namespace RINGMesh {
         // Build facets
         for( index_t i = 0; i < nb_entities; ++i ) {
             ringmesh_assert( surface_entities[i].type == Surface::type_name_static() ) ;
-            const Surface& S = model.surface( surface_entities[i].index ) ;
+            const Surface& S = geomodel.surface( surface_entities[i].index ) ;
             for( index_t f = 0; f < S.nb_mesh_elements(); ++f ) {
                 index_t nbv = S.nb_mesh_element_vertices( f ) ;
                 GEO::vector< index_t > ids( nbv ) ;
                 for( index_t v = 0; v < nbv; ++v ) {
-                    ids[v] = old2new[model_vertices.model_vertex_id( S.gme_id(), f, v )] ;
+                    ids[v] = old2new[geomodel_vertices.geomodel_vertex_id( S.gme_id(), f,
+                        v )] ;
                 }
                 M.facets.create_polygon( ids ) ;
             }
@@ -660,49 +665,40 @@ namespace RINGMesh {
     }
 
     /*******************************************************************************/
-    /*******************************************************************************/
 
-    double model_entity_size( const GeoModelGeologicalEntity& E )
+    double geomodel_entity_size( const GeoModelGeologicalEntity& E )
     {
         double result = 0. ;
         for( index_t i = 0; i < E.nb_children(); ++i ) {
-            result += model_entity_size( E.child( i ) ) ;
+            result += geomodel_entity_size( E.child( i ) ) ;
         }
         return result ;
     }
 
-    double model_entity_size( const GeoModelMeshEntity& E ){
+    double geomodel_entity_size( const GeoModelMeshEntity& E )
+    {
         return E.size() ;
     }
 
-    double model_entity_cell_size( const Region& R, index_t cell )
-    {
-        return R.mesh_element_size( cell ) ;       
-    }
-
-    vec3 model_entity_center( const GeoModelMeshEntity& E )
+    vec3 geomodel_entity_barycenter( const GeoModelMeshEntity& E )
     {
         return E.entity_barycenter() ;
     }
 
-    vec3 model_entity_center( const GeoModelGeologicalEntity& E ) {
-    
+    vec3 geomodel_entity_barycenter( const GeoModelGeologicalEntity& E )
+    {
+
         vec3 result( 0., 0., 0. ) ;
         index_t nb_vertices = 0 ;
 
         for( index_t i = 0; i < E.nb_children(); ++i ) {
             const GeoModelMeshEntity& child = E.child( i ) ;
             nb_vertices += child.nb_vertices() ;
-            result += child.entity_barycenter() *child.nb_vertices() ;
+            result += child.entity_barycenter() * child.nb_vertices() ;
         }
         result /= static_cast< double >( nb_vertices ) ;
-        
-        return result ;
-    }
 
-    vec3 model_entity_cell_barycenter( const GeoModelMeshEntity& E, index_t cell )
-    {
-        return E.mesh_element_barycenter( cell ) ;
+        return result ;
     }
 
     void translate( GeoModel& M, const vec3& translation_vector )
@@ -747,60 +743,6 @@ namespace RINGMesh {
         }
     }
 
-    /*!
-     * @brief Generates a point that lies strictly a Region defined by its boundary Surfaces.
-     * @details Returns the midpoint of A: the barycenter of the 1st facet of the 1st Surface
-     * and B: the closest point of a A in the other Surfaces defining the Region.
-     * @warning Incomplete implementation.
-     */
-    vec3 generate_point_in_region( const Region& region )
-    {
-        if( region.nb_boundaries() == 1 ) {                    
-            /// @todo This might fail if the Region is non-convex
-            return model_entity_center( region.boundary(0) );
-        }
-
-        ringmesh_assert( region.nb_boundaries() > 0 ) ;
-
-        const GeoModel& geomodel = region.model() ;
-        const Surface& first_boundary_surface = geomodel.surface(
-            region.boundary_gme( 0 ).index ) ;
-        vec3 barycenter = first_boundary_surface.mesh_element_barycenter( 0 ) ;
-        /// @todo Check that this is the right condition to have a correct enough barycenter
-        ringmesh_assert( first_boundary_surface.mesh_element_size( 0 ) > geomodel.epsilon() ) ;
-
-        double minimum_distance = DBL_MAX ;
-        vec3 nearest_point ;
-        for( index_t i = 1; i != region.nb_boundaries(); ++i ) {
-            const Surface& S = geomodel.surface( region.boundary_gme( i ).index ) ;
-            double distance = DBL_MAX ;
-            vec3 point ;
-            S.facets_aabb().closest_triangle( barycenter, point, distance ) ;
-
-            if( distance < minimum_distance ) {
-                minimum_distance = distance ;
-                nearest_point = point ;
-            }
-        }
-        /// @todo Change implementation to use second triangle if that one failed, and further surfaces
-        ringmesh_assert( minimum_distance > geomodel.epsilon() ) ;
-        return 0.5 * ( barycenter + nearest_point ) ;
-    }
-
-    /*!
-     * @brief For each region of the geomodel computes a point inside that region
-     */
-    void get_one_point_per_geomodel_region(
-        const GeoModel& geomodel,
-        std::vector< vec3 >& one_point_one_region )
-    {
-        one_point_one_region.resize( geomodel.nb_regions() ) ;
-        for( index_t i = 0; i != geomodel.nb_regions(); ++i ) {
-            vec3 point = generate_point_in_region( geomodel.region( i ) ) ;
-            one_point_one_region[i] = point ;
-        }
-    }
-
 #ifdef RINGMESH_WITH_TETGEN
 
     void tetrahedralize(
@@ -837,9 +779,10 @@ namespace RINGMesh {
             TetraGen_var tetragen = TetraGen::create( M, region_id, method ) ;
             tetragen->set_boundaries( M.region( region_id ), M.wells() ) ;
             tetragen->set_internal_points( internal_vertices[region_id] ) ;
+            bool status = Logger::instance()->is_quiet() ;
             Logger::instance()->set_quiet( true ) ;
             tetragen->tetrahedralize( add_steiner_points ) ;
-            Logger::instance()->set_quiet( false ) ;
+            Logger::instance()->set_quiet( status ) ;
         }
 
         // The GeoModelMesh should be updated, just erase everything
@@ -858,11 +801,11 @@ namespace RINGMesh {
         return gme_t() ;
     }
 
-    gme_t find_corner( const GeoModel& geomodel, index_t model_point_id )
+    gme_t find_corner( const GeoModel& geomodel, index_t geomodel_point_id )
     {
-        const GeoModelMeshVertices& model_vertices = geomodel.mesh.vertices ;
+        const GeoModelMeshVertices& geomodel_vertices = geomodel.mesh.vertices ;
         std::vector< GMEVertex > vertices ;
-        model_vertices.gme_vertices( model_point_id, vertices ) ;
+        geomodel_vertices.gme_vertices( geomodel_point_id, vertices ) ;
         for( index_t i = 0; i < vertices.size(); ++i ) {
             if( vertices[i].gme_id.type == Corner::type_name_static() ) {
                 return vertices[i].gme_id ;

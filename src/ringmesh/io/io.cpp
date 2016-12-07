@@ -100,30 +100,28 @@ namespace RINGMesh {
 
     void zip_file( zipFile zf, const std::string& name )
     {
-        zip_fileinfo zfi = {} ;
         std::fstream file( name.c_str(), std::ios::in | std::ios::binary ) ;
         file.seekg( 0, std::ios::end ) ;
         long size = file.tellg() ;
         file.seekg( 0, std::ios::beg ) ;
         std::vector< char > buffer( size ) ;
         file.read( &buffer[0], size ) ;
-        zipOpenNewFileInZip( zf, name.c_str(), &zfi,
+        zipOpenNewFileInZip( zf, name.c_str(), NULL,
         NULL, 0, NULL, 0, NULL, Z_DEFLATED, Z_DEFAULT_COMPRESSION ) ;
         zipWriteInFileInZip( zf, size == 0 ? "" : &buffer[0], size ) ;
         zipCloseFileInZip( zf ) ;
         file.close() ;
     }
 
-    void unzip_file( unzFile uz, char filename[MAX_FILENAME] )
+    void unzip_file( unzFile uz, const char filename[MAX_FILENAME] )
     {
-        char read_buffer[ READ_SIZE] ;
-        unz_file_info file_info ;
-        if( unzGetCurrentFileInfo( uz, &file_info, filename,
-        MAX_FILENAME,
-        NULL, 0, NULL, 0 ) != UNZ_OK ) {
-            unzClose( uz ) ;
-            throw RINGMeshException( "ZLIB", "Could not read file global info" ) ;
-        }
+        unzLocateFile( uz, filename, 0 ) ;
+        unzip_current_file( uz, filename ) ;
+    }
+
+    void unzip_current_file( unzFile uz, const char filename[MAX_FILENAME] )
+    {
+        char read_buffer[READ_SIZE] ;
         if( unzOpenCurrentFile( uz ) != UNZ_OK ) {
             unzClose( uz ) ;
             throw RINGMeshException( "ZLIB", "Could not open file" ) ;
@@ -151,6 +149,7 @@ namespace RINGMesh {
         fclose( out ) ;
         unzCloseCurrentFile( uz ) ;
     }
+
     /***************************************************************************/
 
 
