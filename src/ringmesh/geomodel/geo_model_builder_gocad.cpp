@@ -287,12 +287,12 @@ namespace {
     }
 
     /*!
-     * @brief Computes the colocaters of the centers of cell facets for
+     * @brief Computes the NNSearchs of the centers of cell facets for
      * each region
      * @param[in] geomodel GeoModel to consider
-     * @param[out] region_anns Pointers to the ColocaterANNs of regions
+     * @param[out] region_anns Pointers to the NNSearchs of regions
      */
-    void compute_cell_facet_centers_region_anns(
+    void compute_cell_facet_centers_region_nn_searchs(
         const GeoModel& geomodel,
         std::vector< NNSearch* >& region_anns )
     {
@@ -308,7 +308,7 @@ namespace {
      * @details If it is the case, add the surface to the boundaries of
      * the region and the region to the in_boundaries of the surface
      * @param[in] surface Surface to test
-     * @param[in] region_ann Vector of ColocaterANN of the region to test
+     * @param[in] region_ann Vector of NNSearch of the region to test
      * @param[out] colocated_cell_facet_centers Vector of colocated cell
      * facet centers
      * @return The number of surface sides bounding the region
@@ -447,11 +447,11 @@ namespace {
 
     /*!
      * @brief Sets the given surface as regions boundaries
-     * @details Based on ColocaterANN, retrieves the regions bounded by the
+     * @details Based on NNSearch, retrieves the regions bounded by the
      * given surface. One side or the both sides of the surface
      * could bound geomodel regions.
      * @param[in] surface_id Index of the surface
-     * @param[in] region_anns Vector of ColocaterANN of the geomodel regions
+     * @param[in] region_anns Vector of NNSearchs of the geomodel regions
      * @param[in,out] geomodel_builder Builder of the GeoModel to consider
      */
     void add_surface_to_region_boundaries(
@@ -489,7 +489,7 @@ namespace {
         const GeoModel& geomodel )
     {
         std::vector< NNSearch* > reg_anns( geomodel.nb_regions(), nil ) ;
-        compute_cell_facet_centers_region_anns( geomodel, reg_anns ) ;
+        compute_cell_facet_centers_region_nn_searchs( geomodel, reg_anns ) ;
         for( index_t s = 0; s < geomodel.nb_surfaces(); ++s ) {
             add_surface_to_region_boundaries( s, reg_anns, geomodel,
                 geomodel_builder ) ;
@@ -579,7 +579,7 @@ namespace {
      * @param[in] surface_id Index of the surface
      * @param[in] facet Index of the facet in the surface
      * @param[in] edge Index of the edge in the facet
-     * @param[in] surface_anns Pointers to the ColocaterANNs of surfaces
+     * @param[in] surface_nns Pointers to the NNSearchs of surfaces
      * @param[in] surface_boxes Bounding Box of surfaces
      * @return True is the edge is found in at least another surface
      */
@@ -588,7 +588,7 @@ namespace {
         index_t surface_id,
         index_t facet,
         index_t edge,
-        const std::vector< NNSearch* >& surface_anns,
+        const std::vector< NNSearch* >& surface_nns,
         const std::vector< Box3d >& surface_boxes )
     {
         /// @todo Replace "S.vertex( facet, ( edge + 1 ) % 3 )" [PA]
@@ -598,9 +598,9 @@ namespace {
             S.mesh_element_vertex( facet, ( edge + 1 ) % 3 ) ) ;
         std::vector< index_t > result ;
         index_t tested_surf = 0 ;
-        while( result.empty() && tested_surf < surface_anns.size() ) {
+        while( result.empty() && tested_surf < surface_nns.size() ) {
             if( surface_boxes[tested_surf].contains( barycenter ) ) {
-                surface_anns[tested_surf]->get_neighbors( barycenter, result,
+                surface_nns[tested_surf]->get_neighbors( barycenter, result,
                     geomodel.epsilon() ) ;
             }
             ++tested_surf ;
@@ -1232,7 +1232,7 @@ namespace RINGMesh {
 
     void GeoModelBuilderTSolid::compute_surface_internal_borders(
         index_t surface_id,
-        const std::vector< NNSearch* >& surface_anns,
+        const std::vector< NNSearch* >& surface_nns,
         const std::vector< Box3d >& surface_boxes )
     {
         const Surface& S = geomodel().surface( surface_id ) ;
@@ -1243,7 +1243,7 @@ namespace RINGMesh {
             for( index_t e = 0; e < 3; ++e ) {
                 if( !S.is_on_border( f, e ) ) {
                     bool internal_border = is_edge_in_several_surfaces( geomodel(),
-                        surface_id, f, e, surface_anns, surface_boxes ) ;
+                        surface_id, f, e, surface_nns, surface_boxes ) ;
                     if( internal_border ) {
                         facets_id.push_back( f ) ;
                         edges_id.push_back( e ) ;
@@ -1260,7 +1260,7 @@ namespace RINGMesh {
     }
 
     void GeoModelBuilderTSolid::compute_facet_edge_centers_anns_and_surface_boxes(
-        std::vector< NNSearch* >& surface_anns,
+        std::vector< NNSearch* >& surface_nns,
         std::vector< Box3d >& surface_boxes )
     {
         for( index_t s = 0; s < geomodel().nb_surfaces(); ++s ) {
@@ -1271,7 +1271,7 @@ namespace RINGMesh {
             std::vector< vec3 > border_edge_barycenters ;
             get_surface_border_edge_barycenters( geomodel(), s,
                 border_edge_barycenters ) ;
-            surface_anns[s] = new NNSearch( border_edge_barycenters, true ) ;
+            surface_nns[s] = new NNSearch( border_edge_barycenters, true ) ;
         }
     }
 

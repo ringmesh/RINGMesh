@@ -333,7 +333,7 @@ namespace RINGMesh {
         const GeoModelMeshEntity& E = geomodel_.mesh_entity( mesh_entity_id ) ;
         for( index_t v = 0; v < E.nb_vertices(); v++ ) {
             std::vector< index_t > result ;
-            geomodel_vertices_.colocater().get_neighbors( E.vertex( v ), 1, result ) ;
+            geomodel_vertices_.nn_search().get_neighbors( E.vertex( v ), 1, result ) ;
             mesh_entity_vertex_map[v] = result[0] ;
         }
     }
@@ -584,7 +584,7 @@ namespace RINGMesh {
     {
         test_and_initialize() ;
         std::vector< index_t > vertices ;
-        const NNSearch& colocator = mesh_->vertices_colocater_ann() ;
+        const NNSearch& colocator = mesh_->vertices_nn_search() ;
         colocator.get_neighbors( p, vertices, gm_.epsilon() ) ;
         if( vertices.empty() ) {
             return NO_ID ;
@@ -688,7 +688,7 @@ namespace RINGMesh {
         // Identify and invalidate colocated vertices
         GEO::vector< index_t > old2new ;
         index_t nb_colocalised_vertices =
-            mesh_->vertices_colocater_ann().get_colocated_index_mapping(
+            mesh_->vertices_nn_search().get_colocated_index_mapping(
                 gm_.epsilon(), old2new ) ;
         if( nb_colocalised_vertices > 0 ) {
             std::vector< index_t > vector_copy( old2new.begin(), old2new.end() ) ;
@@ -1493,7 +1493,7 @@ namespace RINGMesh {
 
         facet_id_.bind( mesh_->cell_facet_attribute_manager(), "facet_id" ) ;
         facet_id_.fill( NO_ID ) ;
-        const NNSearch& ann = mesh_->facets_colocater_ann() ;
+        const NNSearch& ann = mesh_->facets_nn_search() ;
         for( index_t c = 0; c < mesh_->nb_cells(); c++ ) {
             for( index_t f = 0; f < mesh_->nb_cell_facets( c ); f++ ) {
                 std::vector< index_t > result ;
@@ -2104,7 +2104,7 @@ namespace RINGMesh {
         GEO::vector< std::string > att_c_names ;
         cell_attribute_manager().list_attribute_names( att_c_names ) ;
 
-        const NNSearch& ann = mesh_->cells_colocater_ann() ;
+        const NNSearch& ann = mesh_->cells_nn_search() ;
 
         for( index_t att_c = 0; att_c < att_c_names.size(); att_c++ ) {
             if( !is_attribute_a_double( cell_attribute_manager(),
