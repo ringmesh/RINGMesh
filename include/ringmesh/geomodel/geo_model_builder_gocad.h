@@ -57,8 +57,8 @@ namespace RINGMesh {
 
     class RINGMESH_API GeoModelBuilderGocad: public GeoModelBuilderFile {
     public:
-        GeoModelBuilderGocad( GeoModel& model, const std::string& filename )
-            : GeoModelBuilderFile( model, filename ), file_line_( filename )
+        GeoModelBuilderGocad( GeoModel& geomodel, const std::string& filename )
+            : GeoModelBuilderFile( geomodel, filename ), file_line_( filename )
         {
             /*! @todo Review: A constructor is not supposed to throw, the object is left in an
              * undefined state [JP] */
@@ -269,8 +269,8 @@ namespace RINGMesh {
      */
     class RINGMESH_API GeoModelBuilderTSolid: public GeoModelBuilderGocad {
     public:
-        GeoModelBuilderTSolid( GeoModel& model, const std::string& filename )
-            : GeoModelBuilderGocad( model, filename )
+        GeoModelBuilderTSolid( GeoModel& geomodel, const std::string& filename )
+            : GeoModelBuilderGocad( geomodel, filename )
         {
         }
         virtual ~GeoModelBuilderTSolid()
@@ -313,7 +313,7 @@ namespace RINGMesh {
             std::vector< Box3d >& surface_boxes ) ;
 
         /*!
-         * @brief Computes internal borders of the model surfaces
+         * @brief Computes internal borders of the geomodel surfaces
          * @details An surface facet edge is an internal border if it is shared
          * by at least two surfaces. Adjacency of such a facet edge is set to
          * GEO::NO_FACET.
@@ -359,8 +359,8 @@ namespace RINGMesh {
      */
     class RINGMESH_API GeoModelBuilderML: public GeoModelBuilderGocad {
     public:
-        GeoModelBuilderML( GeoModel& model, const std::string& filename )
-            : GeoModelBuilderGocad( model, filename )
+        GeoModelBuilderML( GeoModel& geomodel, const std::string& filename )
+            : GeoModelBuilderGocad( geomodel, filename )
         {
         }
         virtual ~GeoModelBuilderML()

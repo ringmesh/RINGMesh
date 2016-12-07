@@ -191,8 +191,8 @@ namespace {
     }
 
     /*!
-     * @brief Check if the model can be saved in a skua-gocad .ml file
-     * @details It assumes that the model is valid and verifies that:
+     * @brief Check if the geomodel can be saved in a skua-gocad .ml file
+     * @details It assumes that the geomodel is valid and verifies that:
      *   - all Interfaces have a name and geological feature
      *   - all Surfaces are in an Interface
      *   - all Surfaces are triangulated
@@ -218,7 +218,7 @@ namespace {
             const Surface& S = M.surface( s ) ;
             if( !S.has_parent() ) {
                 Logger::err( "" ) << S.gme_id()
-                    << " does not belong to any Interface of the model"
+                    << " does not belong to any Interface of the geomodel"
                     << std::endl ;
                 return false ;
             }
@@ -247,8 +247,8 @@ namespace {
     }
 
     /*!
-     * @brief Save the model in a .ml file if it can
-     * @param[in] M the model to save
+     * @brief Save the geomodel in a .ml file if it can
+     * @param[in] M the geomodel to save
      * @param[in,out] out Output file stream
      */
     void save_gocad_model3d( const GeoModel& M, std::ostream& out )
@@ -305,7 +305,7 @@ namespace {
         }
         out << "END" << std::endl ;
 
-        const GeoModelMeshVertices& model_vertices = M.mesh.vertices ;
+        const GeoModelMeshVertices& geomodel_vertices = M.mesh.vertices ;
         // Save the geometry of the Surfaces, Interface per Interface
         for( index_t i = 0; i < nb_interfaces; ++i ) {
             const GeoModelGeologicalEntity& tsurf = M.geological_entity( Interface::type_name_static(), i ) ;
@@ -347,14 +347,14 @@ namespace {
                 }
                 for( index_t k = 0; k < S.nb_boundaries(); ++k ) {
                     const Line& L = dynamic_cast< const Line& >( S.boundary( k ) ) ;
-                    index_t v0_model_id = model_vertices.model_vertex_id( L.gme_id(), 0 ) ;
-                    index_t v1_model_id = model_vertices.model_vertex_id( L.gme_id(), 1 ) ;
+                    index_t v0_model_id = geomodel_vertices.geomodel_vertex_id( L.gme_id(), 0 ) ;
+                    index_t v1_model_id = geomodel_vertices.geomodel_vertex_id( L.gme_id(), 1 ) ;
 
                     std::vector< index_t > v0_surface_ids ;
-                    model_vertices.mesh_entity_vertex_id( S.gme_id(), v0_model_id,
+                    geomodel_vertices.mesh_entity_vertex_id( S.gme_id(), v0_model_id,
                         v0_surface_ids ) ;
                     std::vector< index_t > v1_surface_ids ;
-                    model_vertices.mesh_entity_vertex_id( S.gme_id(), v1_model_id,
+                    geomodel_vertices.mesh_entity_vertex_id( S.gme_id(), v1_model_id,
                         v1_surface_ids ) ;
 
                     if( !S.has_inside_border() ) {
@@ -402,8 +402,8 @@ namespace {
                     // Set a BSTONE at the line other extremity
                     const gme_t& c1_id = L.boundary_gme( 1 ) ;
                     std::vector< index_t > gme_vertices ;
-                    model_vertices.mesh_entity_vertex_id( S.gme_id(),
-                        model_vertices.model_vertex_id( c1_id ), gme_vertices ) ;
+                    geomodel_vertices.mesh_entity_vertex_id( S.gme_id(),
+                        geomodel_vertices.geomodel_vertex_id( c1_id ), gme_vertices ) ;
                     corners.insert( gme_vertices.front() + offset ) ;
                 }
             }
@@ -423,18 +423,18 @@ namespace {
     }
 
     /*!
-         * @brief Save the model in smesh format
+         * @brief Save the geomodel in smesh format
          * @details No attributes and no boundary marker are transferred
          */
         class SMESHIOHandler: public GeoModelIOHandler {
             public:
-            virtual bool load( const std::string& filename, GeoModel& model )
+            virtual bool load( const std::string& filename, GeoModel& geomodel )
             {
                 throw RINGMeshException( "I/O",
                     "Geological model loading of a from UCD mesh not yet implemented" ) ;
             }
 
-            virtual void save( const GeoModel& model, const std::string& filename )
+            virtual void save( const GeoModel& geomodel, const std::string& filename )
             {
                 std::ofstream out( filename.c_str() ) ;
                 if( out.bad() ) {
@@ -447,24 +447,25 @@ namespace {
                 /// 1. Write the unique vertices
                 out << "# Node list" << std::endl ;
                 out << "# node count, 3 dim, no attribute, no boundary marker" << std::endl ;
-                out << model.mesh.vertices.nb() << " 3 0 0" << std::endl ;
+                out << geomodel.mesh.vertices.nb() << " 3 0 0" << std::endl ;
                 out << "# node index, node coordinates " << std::endl ;
-                for( index_t p = 0; p < model.mesh.vertices.nb(); p++ ) {
-                    const vec3& V = model.mesh.vertices.vertex( p ) ;
+                for( index_t p = 0; p < geomodel.mesh.vertices.nb(); p++ ) {
+                    const vec3& V = geomodel.mesh.vertices.vertex( p ) ;
                     out << p << " " << " " << V.x << " " << V.y << " " << V.z << std::endl ;
                 }
 
                 /// 2. Write the triangles
                 out << "# Part 2 - facet list" << std::endl ;
                 out << "# facet count, no boundary marker" << std::endl ;
-                out << nb_facets( model ) << "  0 " << std::endl ;
+                out << nb_facets( geomodel ) << "  0 " << std::endl ;
 
-                for( index_t i = 0; i < model.nb_surfaces(); ++i ) {
-                    const Surface& S = model.surface( i ) ;
+                for( index_t i = 0; i < geomodel.nb_surfaces(); ++i ) {
+                    const Surface& S = geomodel.surface( i ) ;
                     for( index_t f = 0; f < S.nb_mesh_elements(); f++ ) {
                         out << S.nb_mesh_element_vertices( f ) << " " ;
                         for( index_t v = 0; v < S.nb_mesh_element_vertices( f ); v++ ) {
-                            out <<model.mesh.vertices.model_vertex_id(S.gme_id(),f,v) << " " ;
+                        out << geomodel.mesh.vertices.geomodel_vertex_id( S.gme_id(),
+                            f, v ) << " " ;
                         }
                         out << std::endl ;
                     }
@@ -482,34 +483,34 @@ namespace {
         /*! Load a .ml (Gocad file)
          * @pre Filename is valid
          */
-        virtual bool load( const std::string& filename, GeoModel& model )
+        virtual bool load( const std::string& filename, GeoModel& geomodel )
         {
             std::ifstream input( filename.c_str() ) ;
             if( !input ) {
                 throw RINGMeshException( "I/O", "Failed to open file " + filename ) ;
             }
-            GeoModelBuilderML builder( model, filename ) ;
+            GeoModelBuilderML builder( geomodel, filename ) ;
 
             time_t start_load, end_load ;
             time( &start_load ) ;
 
-            builder.build_model() ;
-            print_geomodel( model ) ;
+            builder.build_geomodel() ;
+            print_geomodel( geomodel ) ;
             // Check validity
-            bool is_valid = is_geomodel_valid( model ) ;
+            bool is_valid = is_geomodel_valid( geomodel ) ;
 
             time( &end_load ) ;
-            Logger::out( "I/O" ) << " Loaded model " << model.name() << " from "
+            Logger::out( "I/O" ) << " Loaded geomodel " << geomodel.name() << " from "
                 << std::endl << filename << " timing: "
                 << difftime( end_load, start_load ) << "sec" << std::endl ;
             return is_valid ;
         }
 
-        virtual void save( const GeoModel& model, const std::string& filename )
+        virtual void save( const GeoModel& geomodel, const std::string& filename )
         {
 
             std::ofstream out( filename.c_str() ) ;
-            save_gocad_model3d( model, out ) ;
+            save_gocad_model3d( geomodel, out ) ;
         }
     } ;
 
@@ -517,20 +518,20 @@ namespace {
 
     class HTMLIOHandler: public GeoModelIOHandler {
     public:
-        virtual bool load( const std::string& filename, GeoModel& model )
+        virtual bool load( const std::string& filename, GeoModel& geomodel )
         {
             throw RINGMeshException( "I/O",
                 "Geological model loading of a from HTML mesh not yet implemented" ) ;
             return false ;
         }
 
-        virtual void save( const GeoModel& model, const std::string& filename )
+        virtual void save( const GeoModel& geomodel, const std::string& filename )
         {
             GEOLOGYJS::JSWriter js( filename ) ;
             js.build_js_gui_ = true ;
 
-            save_all_lines( model, js ) ;
-            save_interfaces( model, js ) ;
+            save_all_lines( geomodel, js ) ;
+            save_interfaces( geomodel, js ) ;
 
             // Check validity and write
             std::string error_message ;
@@ -542,12 +543,12 @@ namespace {
         }
 
     private:
-        void save_all_lines( const GeoModel& model, GEOLOGYJS::JSWriter& js ) const
+        void save_all_lines( const GeoModel& geomodel, GEOLOGYJS::JSWriter& js ) const
         {
             std::vector< std::vector< double > > xyz ;
-            xyz.resize( model.nb_lines() ) ;
-            for( index_t line_itr = 0; line_itr < model.nb_lines(); ++line_itr ) {
-                const Line& cur_line = model.line( line_itr ) ;
+            xyz.resize( geomodel.nb_lines() ) ;
+            for( index_t line_itr = 0; line_itr < geomodel.nb_lines(); ++line_itr ) {
+                const Line& cur_line = geomodel.line( line_itr ) ;
                 xyz[line_itr].reserve( 3 * cur_line.nb_vertices() ) ;
                 for( index_t v_itr = 0; v_itr < cur_line.nb_vertices(); ++v_itr ) {
                     xyz[line_itr].push_back( cur_line.vertex( v_itr ).x ) ;
@@ -559,14 +560,14 @@ namespace {
 
         }
 
-        void save_interfaces( const GeoModel& model, GEOLOGYJS::JSWriter& js ) const
+        void save_interfaces( const GeoModel& geomodel, GEOLOGYJS::JSWriter& js ) const
         {
             for( index_t interface_itr = 0;
                 interface_itr
-                    < model.nb_geological_entities( Interface::type_name_static() );
+                    < geomodel.nb_geological_entities( Interface::type_name_static() );
                 ++interface_itr ) {
                 const GeoModelGeologicalEntity& cur_interface =
-                    model.geological_entity( Interface::type_name_static(),
+                    geomodel.geological_entity( Interface::type_name_static(),
                         interface_itr ) ;
                 if( !GeoModelGeologicalEntity::is_stratigraphic_limit(
                     cur_interface.geological_feature() )
@@ -579,7 +580,7 @@ namespace {
                 index_t nb_triangles = 0 ;
                 for( index_t surf_itr = 0; surf_itr < cur_interface.nb_children();
                     ++surf_itr ) {
-                    const Surface& cur_surface = model.surface(
+                    const Surface& cur_surface = geomodel.surface(
                         cur_interface.child( surf_itr ).index() ) ;
                     nb_vertices += cur_surface.nb_vertices() ;
                     nb_triangles += cur_surface.nb_mesh_elements() ;
@@ -593,7 +594,7 @@ namespace {
                 index_t vertex_count = 0 ;
                 for( index_t surf_itr = 0; surf_itr < cur_interface.nb_children();
                     ++surf_itr ) {
-                    const Surface& cur_surface = model.surface(
+                    const Surface& cur_surface = geomodel.surface(
                         cur_interface.child( surf_itr ).index() ) ;
 
                     for( index_t v_itr = 0; v_itr < cur_surface.nb_vertices(); ++v_itr ) {
