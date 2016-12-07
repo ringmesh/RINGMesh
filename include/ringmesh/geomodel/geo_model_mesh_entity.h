@@ -186,7 +186,7 @@ namespace RINGMesh {
 
         const NNSearch& vertex_colocater_ann() const
         {
-            return mesh_->vertices_colocater_ann() ;
+            return mesh_->vertices_nn_search() ;
         }
 
         /*!
@@ -483,7 +483,7 @@ namespace RINGMesh {
          */
         const NNSearch& edge_colocater_ann() const
         {
-            return mesh1d_->edges_colocater_ann() ;
+            return mesh1d_->edges_nn_search() ;
         }
 
         /*!
@@ -624,7 +624,7 @@ namespace RINGMesh {
          */
         const NNSearch& facet_colocater_ann() const
         {
-            return mesh2d_->facets_colocater_ann() ;
+            return mesh2d_->facets_nn_search() ;
         }
 
         GEO::AttributesManager& facet_attribute_manager() const
@@ -924,7 +924,7 @@ namespace RINGMesh {
          */
         const NNSearch& cell_colocater_ann() const
         {
-            return mesh3d_->cells_colocater_ann() ;
+            return mesh3d_->cells_nn_search() ;
         }
 
         GEO::AttributesManager& cell_attribute_manager() const

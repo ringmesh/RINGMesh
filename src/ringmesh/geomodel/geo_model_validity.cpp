@@ -848,7 +848,7 @@ namespace {
             if( geomodel_.mesh.cells.nb() > 0 ) {
                 // Check the consistency between Surface facets and Region cell facets
                 const NNSearch& ann =
-                    geomodel_.mesh.cells.cell_facet_colocater() ;
+                    geomodel_.mesh.cells.cell_facet_nn_search() ;
                 for( index_t i = 0; i < geomodel_.nb_surfaces(); ++i ) {
                     if( !is_surface_conformal_to_volume( geomodel_.surface( i ),
                         ann ) ) {

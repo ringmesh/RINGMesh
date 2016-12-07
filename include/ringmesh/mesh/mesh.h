@@ -101,10 +101,10 @@ namespace RINGMesh {
         virtual GEO::AttributesManager& vertex_attribute_manager() const = 0 ;
 
         /*!
-         * @brief return the ColocaterANN at vertices
-         * @warning the ColocaterANN is destroy when calling the Mesh::facets_aabb() and Mesh::cells_aabb()
+         * @brief return the NNSearch at vertices
+         * @warning the NNSearch is destroy when calling the Mesh::facets_aabb() and Mesh::cells_aabb()
          */
-        const NNSearch& vertices_colocater_ann() const
+        const NNSearch& vertices_nn_search() const
         {
             if( vertices_ann_ == nil ) {
                 std::vector< vec3 > vec_vertices( nb_vertices() ) ;
@@ -215,10 +215,10 @@ namespace RINGMesh {
         }
         
         /*!
-         * @brief return the ColocaterANN at edges
-         * @warning the ColocaterANN is destroy when calling the Mesh::facets_aabb() and Mesh::cells_aabb()
+         * @brief return the NNSearch at edges
+         * @warning the NNSearch is destroy when calling the Mesh::facets_aabb() and Mesh::cells_aabb()
          */
-        const NNSearch& edges_colocater_ann() const
+        const NNSearch& edges_nn_search() const
         {
             if( edges_ann_ == nil ) {
                 std::vector< vec3 > edge_centers( nb_edges() ) ;
@@ -391,9 +391,9 @@ namespace RINGMesh {
 
         
         /*!
-         * @brief return the ColocaterANN at facets
+         * @brief return the NNSearch at facets
          */
-        const NNSearch& facets_colocater_ann() const
+        const NNSearch& facets_nn_search() const
         {
             if( facets_ann_ == nil ) {
                 std::vector< vec3 > facet_centers( nb_facets() ) ;
@@ -621,10 +621,10 @@ namespace RINGMesh {
         }
 
         /*!
-         * @brief return the ColocaterANN at cell facets
-         * @warning the ColocaterANN is destroy when calling the Mesh::facets_aabb() and Mesh::cells_aabb()
+         * @brief return the NNSearch at cell facets
+         * @warning the NNSearch is destroy when calling the Mesh::facets_aabb() and Mesh::cells_aabb()
          */
-        const NNSearch& cell_facets_colocater_ann() const
+        const NNSearch& cell_facets_nn_search() const
         {
             if( cell_facets_ann_ == nil ) {
                 std::vector< vec3 > cell_facet_centers( nb_cell_facets() ) ;
@@ -640,9 +640,9 @@ namespace RINGMesh {
             return *cell_facets_ann_ ;
         }
         /*!
-         * @brief return the ColocaterANN at cells
+         * @brief return the NNSearch at cells
          */
-        const NNSearch& cells_colocater_ann() const
+        const NNSearch& cells_nn_search() const
         {
             if( cell_ann_ == nil ) {
                 std::vector< vec3 > cell_centers( nb_cells() ) ;

@@ -184,7 +184,7 @@ namespace RINGMesh {
 
         virtual void clear_vertex_linked_objects()
         {
-            delete_vertex_colocater() ;
+            delete_vertex_nn_search() ;
         }
 
         virtual void set_mesh( MeshBase& mesh )
@@ -193,7 +193,7 @@ namespace RINGMesh {
         }
     protected:
 
-        void delete_vertex_colocater()
+        void delete_vertex_nn_search()
         {
             if( mesh_->vertices_ann_ != nil ) {
                 delete mesh_->vertices_ann_ ;
@@ -335,19 +335,19 @@ namespace RINGMesh {
         }
         virtual void clear_vertex_linked_objects()
         {
-            delete_vertex_colocater() ;
+            delete_vertex_nn_search() ;
             clear_edge_linked_objects() ;
         }
         virtual void clear_edge_linked_objects()
         {
-            delete_edge_colocater() ;
+            delete_edge_nn_search() ;
         }
 
     protected:
         /*!
-         * @brief Deletes the ColocaterANN on edges
+         * @brief Deletes the NNSearch on edges
          */
-        void delete_edge_colocater()
+        void delete_edge_nn_search()
         {
             if( mesh_->edges_ann_ != nil ) {
                 delete mesh_->edges_ann_ ;
@@ -561,19 +561,19 @@ namespace RINGMesh {
         }
         virtual void clear_vertex_linked_objects()
         {
-            delete_vertex_colocater() ;
+            delete_vertex_nn_search() ;
             clear_facet_linked_objects() ;
         }
         virtual void clear_facet_linked_objects()
         {
             delete_facet_aabb() ;
-            delete_facet_colocater() ;
+            delete_facet_nn_search() ;
         }
     protected:
         /*!
-         * @brief Deletes the ColocaterANN on facets
+         * @brief Deletes the NNSearch on facets
          */
-        void delete_facet_colocater()
+        void delete_facet_nn_search()
         {
             if( mesh_->facets_ann_ != nil ) {
                 delete mesh_->facets_ann_ ;
@@ -757,21 +757,21 @@ namespace RINGMesh {
 
         virtual void clear_vertex_linked_objects()
         {
-            delete_vertex_colocater() ;
+            delete_vertex_nn_search() ;
             clear_cell_linked_objects() ;
         }
 
         virtual void clear_cell_linked_objects()
         {
             delete_cell_aabb() ;
-            delete_cell_colocater() ;
+            delete_cell_nn_search() ;
         }
 
     protected:
         /*!
-         * @brief Deletes the ColocaterANN on cells
+         * @brief Deletes the NNSearch on cells
          */
-        void delete_cell_colocater()
+        void delete_cell_nn_search()
         {
             if( mesh_->cell_ann_ != nil ) {
                 delete mesh_->cell_ann_ ;
@@ -857,7 +857,7 @@ namespace RINGMesh {
 
         virtual void clear_vertex_linked_objects()
         {
-            delete_vertex_colocater() ;
+            delete_vertex_nn_search() ;
             clear_edge_linked_objects() ;
             clear_facet_linked_objects() ;
             clear_cell_linked_objects() ;
