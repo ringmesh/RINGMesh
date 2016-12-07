@@ -83,7 +83,7 @@ void test_ann_ringmesh()
     hardcoded_unique_vertices[2] = p3 ;
     hardcoded_unique_vertices[3] = p4 ;
 
-    ColocaterANN ann( vertices ) ;
+    NNSearch ann( vertices ) ;
     GEO::vector< vec3 > unique_vertices ;
     GEO::vector< index_t > index_map ;
     ann.get_colocated_index_mapping( global_epsilon, index_map, unique_vertices ) ;

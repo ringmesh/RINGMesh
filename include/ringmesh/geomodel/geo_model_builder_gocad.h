@@ -298,7 +298,7 @@ namespace RINGMesh {
          */
         void compute_surface_internal_borders(
             index_t surface_id,
-            const std::vector< ColocaterANN* >& surface_anns,
+            const std::vector< NNSearch* >& surface_anns,
             const std::vector< Box3d >& surface_boxes ) ;
 
         /*!
@@ -309,7 +309,7 @@ namespace RINGMesh {
          * @param[out] surface_boxes Bounding Box of surfaces
          */
         void compute_facet_edge_centers_anns_and_surface_boxes(
-            std::vector< ColocaterANN* >& surface_anns,
+            std::vector< NNSearch* >& surface_anns,
             std::vector< Box3d >& surface_boxes ) ;
 
         /*!

@@ -184,7 +184,7 @@ namespace RINGMesh {
          * @brief Return the colocater for the Entity vertices.
          */
 
-        const ColocaterANN& vertex_colocater_ann() const
+        const NNSearch& vertex_colocater_ann() const
         {
             return mesh_->vertices_colocater_ann() ;
         }
@@ -481,7 +481,7 @@ namespace RINGMesh {
          * @brief Return the colocater for the edges of the line
          * @details The barycenter of the edges is used.
          */
-        const ColocaterANN& edge_colocater_ann() const
+        const NNSearch& edge_colocater_ann() const
         {
             return mesh1d_->edges_colocater_ann() ;
         }
@@ -622,7 +622,7 @@ namespace RINGMesh {
          * @brief Return the colocater for the facets of the surface
          * @details The barycenter of the facets is used.
          */
-        const ColocaterANN& facet_colocater_ann() const
+        const NNSearch& facet_colocater_ann() const
         {
             return mesh2d_->facets_colocater_ann() ;
         }
@@ -922,7 +922,7 @@ namespace RINGMesh {
          * @brief Return the colocater for the cells of the region
          * @details The barycenter of the cells is used.
          */
-        const ColocaterANN& cell_colocater_ann() const
+        const NNSearch& cell_colocater_ann() const
         {
             return mesh3d_->cells_colocater_ann() ;
         }

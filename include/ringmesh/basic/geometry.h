@@ -70,10 +70,10 @@ namespace RINGMesh {
      * See http://www.geometrictools.com/LibMathematics/Distance/Distance.html
      */
     double RINGMESH_API point_segment_distance(
-         const vec3& p,
-         const vec3& p0,
-         const vec3& p1,
-         vec3& nearest_p  ) ;
+        const vec3& p,
+        const vec3& p0,
+        const vec3& p1,
+        vec3& nearest_p ) ;
 
     double RINGMESH_API point_triangle_distance(
         const vec3& point,
@@ -161,7 +161,6 @@ namespace RINGMesh {
         const vec3& N_circle,
         double r,
         std::vector< vec3 >& result ) ;
-
 
     bool RINGMESH_API disk_segment_intersection(
         const vec3& p0,
@@ -263,19 +262,17 @@ namespace RINGMesh {
         bool degrees,
         GEO::Matrix< 4, double >& rot_mat ) ;
 
-    class RINGMESH_API ColocaterANN {
-    ringmesh_disable_copy( ColocaterANN ) ;
+    class RINGMESH_API NNSearch {
+    ringmesh_disable_copy( NNSearch ) ;
     public:
         enum MeshLocation {
             VERTICES, EDGES, FACETS, CELLS, CELL_FACETS, NB_LOCATION
         } ;
-        ColocaterANN(
-            const GEO::Mesh& mesh,
-            const MeshLocation& location,
-            bool copy = false ) ;
-        ColocaterANN( const std::vector< vec3 >& vertices, bool copy = true ) ;
+        NNSearch( const GEO::Mesh& mesh, const MeshLocation& location, bool copy =
+            false ) ;
+        NNSearch( const std::vector< vec3 >& vertices, bool copy = true ) ;
 
-        ~ColocaterANN()
+        ~NNSearch()
         {
             if( delete_points_ ) delete[] ann_points_ ;
         }
