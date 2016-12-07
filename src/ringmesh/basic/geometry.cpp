@@ -823,8 +823,8 @@ namespace RINGMesh {
             return false ;
         }
         vec3 triangle_normal = cross( p2 - p0, p1 - p0 ) ;
-        double area0 = GEO::Geom::triangle_area( p1, p2, p ) ;
-        vec3 area0_normal = cross( p1 - p, p2 - p ) ;
+        double area0 = GEO::Geom::triangle_area( p2, p1, p ) ;
+        vec3 area0_normal = cross( p2 - p, p1 - p ) ;
         if( dot( triangle_normal, area0_normal ) < 0 ) {
             area0 = -area0 ;
         }
@@ -833,8 +833,8 @@ namespace RINGMesh {
         if( dot( triangle_normal, area1_normal ) < 0 ) {
             area1 = -area1 ;
         }
-        double area2 = GEO::Geom::triangle_area( p0, p1, p ) ;
-        vec3 area2_normal = cross( p0 - p, p1 - p ) ;
+        double area2 = GEO::Geom::triangle_area( p1, p0, p ) ;
+        vec3 area2_normal = cross( p1 - p, p0 - p ) ;
         if( dot( triangle_normal, area2_normal ) < 0 ) {
             area2 = -area2 ;
         }
