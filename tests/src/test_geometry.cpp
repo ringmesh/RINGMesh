@@ -35,12 +35,7 @@
 
 #include <ringmesh/ringmesh_tests_config.h>
 
-#include <vector>
-
-#include <ringmesh/mesh/aabb.h>
-#include <ringmesh/mesh/mesh.h>
-#include <ringmesh/mesh/geogram_mesh.h>
-#include <ringmesh/mesh/mesh_builder.h>
+#include <ringmesh/basic/geometry.h>
 
 /*!
  * @author Arnaud Botella
