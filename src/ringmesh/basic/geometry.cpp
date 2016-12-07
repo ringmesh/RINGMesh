@@ -783,7 +783,7 @@ namespace RINGMesh {
      * @param[in] p1 the second tetra vertex
      * @param[in] p2 the third tetra vertex
      * @param[in] p3 the fourth tetra vertex
-     * @param[out] lambda the parametric coordinate corresponding to points
+     * @param[out] lambda the parametric coordinates corresponding to points
      * @return false if the computation failed because of too small tetrahedron volume
      */
     bool tetra_barycentric_coordinates(
