@@ -59,17 +59,17 @@ void test_triangle_barycentric_coordinates()
     triangle_barycentric_coordinates( vec3( 0.25, 0.25, 0 ), p0, p1, p2, lambda ) ;
     if( lambda[0] != 0.5 || lambda[1] != 0.25 || lambda[2] != 0.25 ) {
         throw RINGMeshException( "TEST",
-            "Error in triangle barycentric coordinate" ) ;
+            "Error in triangle barycentric coordinates" ) ;
     }
     triangle_barycentric_coordinates( vec3( 0.5, 0.5, 0 ), p0, p1, p2, lambda ) ;
     if( lambda[0] != 0 || lambda[1] != 0.5 || lambda[2] != 0.5 ) {
         throw RINGMeshException( "TEST",
-            "Error in triangle barycentric coordinate" ) ;
+            "Error in triangle barycentric coordinates" ) ;
     }
     triangle_barycentric_coordinates( vec3( 1, 1, 0 ), p0, p1, p2, lambda ) ;
     if( lambda[0] != -1 || lambda[1] != 1 || lambda[2] != 1 ) {
         throw RINGMeshException( "TEST",
-            "Error in triangle barycentric coordinate" ) ;
+            "Error in triangle barycentric coordinates" ) ;
     }
 }
 
