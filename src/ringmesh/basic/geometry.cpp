@@ -57,6 +57,20 @@ namespace {
     {
         return value < global_epsilon && value > -global_epsilon ;
     }
+
+    double triangle_signed_area(
+        const vec3& p0,
+        const vec3& p1,
+        const vec3& p2,
+        const vec3& triangle_normal )
+    {
+        double area = GEO::Geom::triangle_area( p0, p1, p2 ) ;
+        vec3 area_normal = cross( p0 - p2, p1 - p2 ) ;
+        if( dot( triangle_normal, area_normal ) < 0 ) {
+            area = -area ;
+        }
+        return area ;
+    }
 }
 
 namespace RINGMesh {
@@ -823,21 +837,9 @@ namespace RINGMesh {
             return false ;
         }
         vec3 triangle_normal = cross( p2 - p0, p1 - p0 ) ;
-        double area0 = GEO::Geom::triangle_area( p2, p1, p ) ;
-        vec3 area0_normal = cross( p2 - p, p1 - p ) ;
-        if( dot( triangle_normal, area0_normal ) < 0 ) {
-            area0 = -area0 ;
-        }
-        double area1 = GEO::Geom::triangle_area( p0, p2, p ) ;
-        vec3 area1_normal = cross( p0 - p, p2 - p ) ;
-        if( dot( triangle_normal, area1_normal ) < 0 ) {
-            area1 = -area1 ;
-        }
-        double area2 = GEO::Geom::triangle_area( p1, p0, p ) ;
-        vec3 area2_normal = cross( p1 - p, p0 - p ) ;
-        if( dot( triangle_normal, area2_normal ) < 0 ) {
-            area2 = -area2 ;
-        }
+        double area0 = triangle_signed_area( p2, p1, p, triangle_normal ) ;
+        double area1 = triangle_signed_area( p0, p2, p, triangle_normal ) ;
+        double area2 = triangle_signed_area( p1, p0, p, triangle_normal ) ;
 
         lambda[0] = area0 / total_area ;
         lambda[1] = area1 / total_area ;
