@@ -1686,8 +1686,8 @@ namespace RINGMesh {
             const vec3& second_vertex_vec = mesh.vertices.point( second_vertex_id ) ;
 
             vec3 center = ( first_vertex_vec + second_vertex_vec ) / 2. ;
-            index_t index_in_ann = 3 * i ;
-            fill_nn_search_points( index_in_ann, center ) ;
+            index_t index_in_nn_search = 3 * i ;
+            fill_nn_search_points( index_in_nn_search, center ) ;
         }
         nn_tree_->set_points( nb_edges, nn_points_ ) ;
     }
@@ -1701,8 +1701,8 @@ namespace RINGMesh {
         nn_points_ = new double[nb_facets * 3] ;
         for( index_t i = 0; i < nb_facets; i++ ) {
             vec3 center = GEO::Geom::mesh_facet_center( mesh, i ) ;
-            index_t index_in_ann = 3 * i ;
-            fill_nn_search_points( index_in_ann, center ) ;
+            index_t index_in_nn_search = 3 * i ;
+            fill_nn_search_points( index_in_nn_search, center ) ;
         }
         nn_tree_->set_points( nb_facets, nn_points_ ) ;
     }
@@ -1711,12 +1711,12 @@ namespace RINGMesh {
     {
         index_t nb_cell_facets = mesh.cell_facets.nb() ;
         nn_points_ = new double[nb_cell_facets * 3] ;
-        index_t index_in_ann = 0 ;
+        index_t index_in_nn_search = 0 ;
         for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
             for( index_t f = 0; f < mesh.cells.nb_facets( c ); f++ ) {
                 vec3 center = mesh_cell_facet_barycenter( mesh, c, f ) ;
-                fill_nn_search_points( index_in_ann, center ) ;
-                index_in_ann += 3 ;
+                fill_nn_search_points( index_in_nn_search, center ) ;
+                index_in_nn_search += 3 ;
             }
         }
         nn_tree_->set_points( nb_cell_facets, nn_points_ ) ;
@@ -1731,16 +1731,16 @@ namespace RINGMesh {
         nn_points_ = new double[nb_cells * 3] ;
         for( index_t i = 0; i < nb_cells; i++ ) {
             vec3 center = mesh_cell_barycenter( mesh, i ) ;
-            index_t index_in_ann = 3 * i ;
-            fill_nn_search_points( index_in_ann, center ) ;
+            index_t index_in_nn_search = 3 * i ;
+            fill_nn_search_points( index_in_nn_search, center ) ;
         }
         nn_tree_->set_points( nb_cells, nn_points_ ) ;
     }
 
-    void NNSearch::fill_nn_search_points( index_t index_in_ann, const vec3& center )
+    void NNSearch::fill_nn_search_points( index_t index_in_nn_search, const vec3& center )
     {
-        nn_points_[index_in_ann] = center.x ;
-        nn_points_[index_in_ann + 1] = center.y ;
-        nn_points_[index_in_ann + 2] = center.z ;
+        nn_points_[index_in_nn_search] = center.x ;
+        nn_points_[index_in_nn_search + 1] = center.y ;
+        nn_points_[index_in_nn_search + 2] = center.z ;
     }
 }
