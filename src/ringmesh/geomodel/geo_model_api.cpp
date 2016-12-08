@@ -45,7 +45,6 @@
 #include <ringmesh/geomodel/geo_model_entity.h>
 #include <ringmesh/geomodel/geo_model_mesh_entity.h>
 #include <ringmesh/geomodel/geo_model_geological_entity.h>
-//#include <ringmesh/geomodel/geo_model_builder.h>
 #include <ringmesh/tetrahedralize/tetra_gen.h>
 
 /*!
