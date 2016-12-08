@@ -274,7 +274,7 @@ namespace RINGMesh {
 
         ~NNSearch()
         {
-            if( delete_points_ ) delete[] ann_points_ ;
+            if( delete_points_ ) delete[] nn_points_ ;
         }
 
         /*!
@@ -329,25 +329,25 @@ namespace RINGMesh {
 
         index_t nb_points() const
         {
-            return ann_tree_->nb_points() ;
+            return nn_tree_->nb_points() ;
         }
 
     private:
-        void build_colocater_ann_vertices( const GEO::Mesh& mesh, bool copy ) ;
-        void build_colocater_ann_edges( const GEO::Mesh& mesh ) ;
-        void build_colocater_ann_facets( const GEO::Mesh& mesh ) ;
-        void build_colocater_ann_cells( const GEO::Mesh& mesh ) ;
-        void build_colocater_ann_cell_facets( const GEO::Mesh& mesh ) ;
-        void fill_ann_points( index_t index_in_ann, const vec3& center ) ;
+        void build_nn_search_vertices( const GEO::Mesh& mesh, bool copy ) ;
+        void build_nn_search_edges( const GEO::Mesh& mesh ) ;
+        void build_nn_search_facets( const GEO::Mesh& mesh ) ;
+        void build_nn_search_cells( const GEO::Mesh& mesh ) ;
+        void build_nn_search_cell_facets( const GEO::Mesh& mesh ) ;
+        void fill_nn_search_points( index_t index_in_nn, const vec3& center ) ;
 
     private:
         /// KdTree to compute the nearest neighbor search
-        GEO::NearestNeighborSearch_var ann_tree_ ;
+        GEO::NearestNeighborSearch_var nn_tree_ ;
         /// Array of the points (size of 3xnumber of points)
-        double* ann_points_ ;
+        double* nn_points_ ;
         /*!
          * @brief Indicates if ann_points_ should ne deleted.
-         * @details No need to delete ann_points_ if it is a simple pointer
+         * @details No need to delete nn_points_ if it is a simple pointer
          * to the mesh vertex array.
          */
         bool delete_points_ ;
