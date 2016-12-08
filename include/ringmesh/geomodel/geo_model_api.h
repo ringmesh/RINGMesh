@@ -107,44 +107,6 @@ namespace RINGMesh {
         const std::vector< gme_t >& surface_entities,
         GEO::Mesh& M ) ;
 
-    /*! 
-     * @brief Bind named GEO::Attribute on the GeoModel entity facets
-     * @pre Entities of geomodel_entity_type are GeoModelMeshEntity
-     */
-    template< typename T >
-    void create_attributes_on_geomodel_surfaces_facets(
-        const GeoModel& geomodel,
-        const std::string& attribute_name,
-        AttributeVector< T >& attributes )
-    {
-        index_t nb_entities = geomodel.nb_surfaces() ;
-        attributes.resize( nb_entities ) ;
-        for( index_t i = 0; i < nb_entities; ++i ) {
-            const Surface& S = geomodel.surface( i ) ;
-            GEO::AttributesManager& manager = S.facet_attribute_manager() ;
-            attributes.bind_one_attribute( i, manager, attribute_name ) ;
-        }
-    }
-
-    /*!
-     * @brief Bind named GEO::Attribute on the GeoModel entities cells
-     * @pre Entities of mesh_entity_type are GeoModelMeshEntity
-     */
-    template< typename T >
-    void create_attributes_on_geomodel_regions_cells(
-        const GeoModel& geomodel,
-        const std::string& attribute_name,
-        AttributeVector< T >& attributes )
-    {
-        index_t nb_entities = geomodel.nb_regions() ;
-        attributes.resize( nb_entities ) ;
-        for( index_t i = 0; i < nb_entities; ++i ) {
-            const Region& R = geomodel.region( i ) ;
-            GEO::AttributesManager& manager = R.cell_attribute_manager() ;
-            attributes.bind_one_attribute( i, manager, attribute_name ) ;
-        }
-    }
-
 #ifdef RINGMESH_WITH_TETGEN
 
     /*!
