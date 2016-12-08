@@ -93,8 +93,8 @@ namespace RINGMesh {
     index_t GeoModelRepair::detect_degenerate_facets( Surface& S )
     {
         GEO::vector< index_t > colocated ;
-        const NNSearch& kdtree = S.vertex_colocater_ann() ;
-        kdtree.get_colocated_index_mapping( geomodel().epsilon(), colocated ) ;
+        const NNSearch& nn_search = S.vertex_nn_search() ;
+        nn_search.get_colocated_index_mapping( geomodel().epsilon(), colocated ) ;
 
         GEO::vector< index_t > degenerate ;
         surface_detect_degenerate_facets( S, degenerate, colocated ) ;
@@ -117,8 +117,8 @@ namespace RINGMesh {
     index_t GeoModelRepair::repair_line_mesh( Line& line )
     {
         GEO::vector< index_t > colocated ;
-        const NNSearch& kdtree = line.vertex_colocater_ann() ;
-        kdtree.get_colocated_index_mapping( geomodel().epsilon(), colocated ) ;
+        const NNSearch& nn_search = line.vertex_nn_search() ;
+        nn_search.get_colocated_index_mapping( geomodel().epsilon(), colocated ) ;
 
         GEO::vector< index_t > degenerate ;
         line_detect_degenerate_edges( line, degenerate, colocated ) ;
@@ -210,12 +210,12 @@ namespace RINGMesh {
             // We want to get the indices of the vertices in E
             // that are colocated with those of the inside boundary
             // We assume that the geomodel vertices are not computed
-            const NNSearch& kdtree = E.vertex_colocater_ann() ;
+            const NNSearch& nn_search = E.vertex_nn_search() ;
 
             for( index_t i = 0; i < inside_border.size(); ++i ) {
                 for( index_t v = 0; v < inside_border[i]->nb_vertices(); ++v ) {
                     std::vector< index_t > colocated_indices ;
-                    kdtree.get_neighbors( inside_border[i]->vertex( v ),
+                    nn_search.get_neighbors( inside_border[i]->vertex( v ),
                         colocated_indices, geomodel().epsilon() ) ;
                     if( colocated_indices.size() > 1 ) {
                         std::sort( colocated_indices.begin(),
@@ -243,7 +243,7 @@ namespace RINGMesh {
                 gme_t entity_id( T, e ) ;
                 const GMME& E = geomodel().mesh_entity( entity_id ) ;
 
-                const NNSearch& kdtree = E.vertex_colocater_ann() ;
+                const NNSearch& kdtree = E.vertex_nn_search() ;
                 GEO::vector< index_t > colocated ;
                 kdtree.get_colocated_index_mapping( geomodel().epsilon(), colocated ) ;
 

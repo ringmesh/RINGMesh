@@ -302,13 +302,13 @@ namespace RINGMesh {
             const std::vector< Box3d >& surface_boxes ) ;
 
         /*!
-         * @brief Computes the colocaters of the centers of facet edges for
+         * @brief Computes the NNSearchs of the centers of facet edges for
          * each surface and their Box3d
          * @param[in] geomodel GeoModel to consider
          * @param[out] surface_nns Pointers to the NNSearchs of surfaces
          * @param[out] surface_boxes Bounding Box of surfaces
          */
-        void compute_facet_edge_centers_anns_and_surface_boxes(
+        void compute_facet_edge_centers_nn_and_surface_boxes(
             std::vector< NNSearch* >& surface_nns,
             std::vector< Box3d >& surface_boxes ) ;
 

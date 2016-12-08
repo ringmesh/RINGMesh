@@ -181,10 +181,10 @@ namespace RINGMesh {
             mesh_->save_mesh( filename ) ;
         }
         /*!
-         * @brief Return the colocater for the Entity vertices.
+         * @brief Return the NNSearch for the Entity vertices.
          */
 
-        const NNSearch& vertex_colocater_ann() const
+        const NNSearch& vertex_nn_search() const
         {
             return mesh_->vertices_nn_search() ;
         }
@@ -478,10 +478,10 @@ namespace RINGMesh {
         virtual bool is_connectivity_valid() const ;
 
         /*!
-         * @brief Return the colocater for the edges of the line
+         * @brief Return the NNSearch for the edges of the line
          * @details The barycenter of the edges is used.
          */
-        const NNSearch& edge_colocater_ann() const
+        const NNSearch& edge_nn_search() const
         {
             return mesh1d_->edges_nn_search() ;
         }
@@ -619,10 +619,10 @@ namespace RINGMesh {
         }
 
         /*!
-         * @brief Return the colocater for the facets of the surface
+         * @brief Return the NNSearch for the facets of the surface
          * @details The barycenter of the facets is used.
          */
-        const NNSearch& facet_colocater_ann() const
+        const NNSearch& facet_nn_search() const
         {
             return mesh2d_->facets_nn_search() ;
         }
@@ -919,10 +919,10 @@ namespace RINGMesh {
         }
 
         /*!
-         * @brief Return the colocater for the cells of the region
+         * @brief Return the NNSearch for the cells of the region
          * @details The barycenter of the cells is used.
          */
-        const NNSearch& cell_colocater_ann() const
+        const NNSearch& cell_nn_search() const
         {
             return mesh3d_->cells_nn_search() ;
         }

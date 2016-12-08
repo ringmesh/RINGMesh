@@ -50,7 +50,7 @@
 
 using namespace RINGMesh ;
 
-void test_ann_ringmesh()
+void test_nn_search_ringmesh()
 {
     Logger::out( "TEST" ) << "Test MakeUnique RINGMesh" << std::endl ;
     vec3 p1( 0, 0, 0 ) ;
@@ -104,7 +104,7 @@ int main()
     try {
         default_configure() ;
 
-        test_ann_ringmesh() ;
+        test_nn_search_ringmesh() ;
 
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category() ) << e.what() << std::endl ;
