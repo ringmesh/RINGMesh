@@ -740,13 +740,13 @@ namespace {
 
     bool is_surface_conformal_to_volume(
         const Surface& surface,
-        const ColocaterANN& cell_facet_barycenter_ann )
+        const NNSearch& cell_facet_barycenter_nn_search )
     {
         std::vector< index_t > unconformal_facets ;
         for( index_t f = 0; f < surface.nb_mesh_elements(); f++ ) {
             vec3 center = surface.mesh_element_barycenter( f ) ;
             std::vector< index_t > result ;
-            if( !cell_facet_barycenter_ann.get_neighbors( center, result,
+            if( !cell_facet_barycenter_nn_search.get_neighbors( center, result,
                 surface.geomodel().epsilon() ) ) {
                 unconformal_facets.push_back( f ) ;
             }
@@ -847,11 +847,11 @@ namespace {
             }
             if( geomodel_.mesh.cells.nb() > 0 ) {
                 // Check the consistency between Surface facets and Region cell facets
-                const ColocaterANN& ann =
-                    geomodel_.mesh.cells.cell_facet_colocater() ;
+                const NNSearch& nn_search =
+                    geomodel_.mesh.cells.cell_facet_nn_search() ;
                 for( index_t i = 0; i < geomodel_.nb_surfaces(); ++i ) {
                     if( !is_surface_conformal_to_volume( geomodel_.surface( i ),
-                        ann ) ) {
+                        nn_search ) ) {
                         set_invalid_model() ;
                     }
                 }

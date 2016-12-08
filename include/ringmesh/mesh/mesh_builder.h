@@ -128,7 +128,7 @@ namespace RINGMesh {
          */
         virtual void clear_vertices( bool keep_attributes, bool keep_memory ) = 0 ;
         /*!
-         * @brief Deletes the ColocaterANN on vertices
+         * @brief Deletes the NNSearch on vertices
          */
         virtual void clear_vertex_linked_objects() = 0 ;
         /*!@}
