@@ -781,9 +781,8 @@ namespace RINGMesh {
 #ifdef RINGMESH_DEBUG
             std::ostringstream file ;
             file << validity_errors_directory << "/" << "invalid_surf_" << index()
-                << ".obj" ;
-            save_surface_as_obj_file( *this, file.str() ) ;
-
+                << ".geogram" ;
+            save( file.str() ) ;
 #endif  
         }
         return valid ;

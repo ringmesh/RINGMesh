@@ -388,22 +388,6 @@ namespace {
         return NO_ID ;
     }
 
-    bool is_corner_to_duplicate(
-        const GeoModel& geomodel,
-        index_t corner_id,
-        index_t surface_id )
-    {
-        const Corner& corner = geomodel.corner( corner_id ) ;
-        std::vector< index_t > surfaces ;
-        for( index_t l = 0; l < corner.nb_in_boundary(); l++ ) {
-            const GMME& line = corner.in_boundary( l ) ;
-            for( index_t s = 0; s < line.nb_in_boundary(); s++ ) {
-                surfaces.push_back( line.in_boundary_gme( s ).index ) ;
-            }
-        }
-        return std::count( surfaces.begin(), surfaces.end(), surface_id ) != 2 ;
-    }
-
     void get_sorted_incident_surfaces(
         const GeoModelMeshEntity& E,
         std::vector< index_t >& incident_surfaces )
