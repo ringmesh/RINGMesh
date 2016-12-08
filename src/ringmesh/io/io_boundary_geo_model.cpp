@@ -65,27 +65,6 @@ namespace {
     using namespace RINGMesh ;
 
     /*!
-     * From a given file name (MyFile.ext), create a MyFile directory
-     * in the directory containing that file, or the current working directory.
-     * @param[in] filename the filename
-     * @param[out] path full path to the created directory
-     * @param[out] directory name of the created directory
-     */
-    void create_directory_from_filename(
-        const std::string& filename,
-        std::string& path,
-        std::string& directory )
-    {
-        path = GEO::FileSystem::dir_name( filename ) ;
-        directory = GEO::FileSystem::base_name( filename, true ) ;
-        if( path == "." ) {
-            path = GEO::FileSystem::get_current_working_directory() ;
-        }
-        path += "/" + directory ;
-        GEO::FileSystem::create_directory( path ) ;
-    }
-
-    /*!
      * @brief Total number of facets in the Surfaces of a BM
      */
     inline index_t nb_facets( const GeoModel& BM )

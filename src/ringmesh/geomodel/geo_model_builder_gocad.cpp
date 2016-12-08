@@ -77,34 +77,7 @@ namespace {
         return vertex ;
     }
 
-    /*! @}
-     * \name Information on the number of mesh entities from .so file
-     * @{
-     */
-
     /*!
-     * @brief Shows number of vertices and tetras in each region
-     * @param[in] nb_entities_per_region Vector built from number of vertices
-     * and tetras region after region
-     * (i.e. [nb_v1, nb_t1, nb_v2, nb_t2, nb_v3, nb_t3, ...]
-     */
-    void print_nb_vertices_and_tetras_per_region(
-        const std::vector< index_t >& nb_entities_per_region )
-    {
-        const index_t nb_regions =
-            static_cast< index_t >( nb_entities_per_region.size() / 2 ) ;
-        Logger::out( "Mesh" ) << "Mesh has " << nb_regions << " regions "
-            << std::endl ;
-        for( index_t i = 0; i < nb_regions; ++i ) {
-            Logger::out( "Mesh" ) << "Region " << i << " has" << std::endl
-                << std::setw( 10 ) << std::left << nb_entities_per_region.at( 2 * i )
-                << " vertices " << std::endl << std::setw( 10 ) << std::left
-                << nb_entities_per_region.at( 2 * i + 1 ) << " tetras "
-                << std::endl ;
-        }
-    }
-
-    /*! @}
      * \name Building surface
      * @{
      */
