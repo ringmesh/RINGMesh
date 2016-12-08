@@ -35,37 +35,12 @@
 
 #include <ringmesh/geomodel/geo_model_validity.h>
 
-#include <cmath>
-#include <ctime>
-#include <fstream>
-#include <iomanip>
-#include <iostream>
-#include <map>
-#include <set>
-
-#include <geogram/basic/algorithm.h>
-#include <geogram/basic/geometry_nd.h>
-#include <geogram/basic/logger.h>
-#include <geogram/basic/string.h>
-#include <geogram/basic/command_line.h>
-
 #include <geogram/mesh/mesh.h>
-#include <geogram/mesh/mesh_AABB.h>
-#include <geogram/mesh/mesh_geometry.h>
-#include <geogram/mesh/mesh_intersection.h>
 #include <geogram/mesh/mesh_io.h>
-#include <geogram/mesh/mesh_repair.h>
-#include <geogram/mesh/mesh_topology.h>
 #include <geogram/mesh/triangle_intersection.h>
 
-#include <geogram/points/colocate.h>
-
 #include <ringmesh/basic/geometry.h>
-#include <ringmesh/geogram_extension/geogram_extension.h>
-#include <ringmesh/geogram_extension/geogram_mesh_repair.h>
 #include <ringmesh/geomodel/geo_model.h>
-#include <ringmesh/geomodel/geo_model_api.h>
-#include <ringmesh/geomodel/geo_model_entity.h>
 #include <ringmesh/geomodel/geo_model_mesh_entity.h>
 #include <ringmesh/geomodel/geo_model_geological_entity.h>
 #include <ringmesh/mesh/mesh.h>
