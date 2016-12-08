@@ -180,7 +180,7 @@ namespace RINGMesh {
         void link_surf_vertex_id_to_reg_vertex_id(
             index_t link_id_surf,
             index_t link_id_reg ) ;
-        void fill_reg_anns() ;
+        void fill_reg_nn_searches() ;
         index_t find_region_vertex_id_from_surface_facet_among_colocated_points_in_one_region(
             const std::vector< GMEVertex >& gme_vertices,
             std::vector< index_t > found_gmev_reg,
@@ -253,7 +253,7 @@ namespace RINGMesh {
     private:
         bool all_meshed_ ;
         std::vector< GMEVertexLink* > gme_vertices_links_ ;
-        std::vector< const NNSearch* > reg_anns_ ;
+        std::vector< const NNSearch* > reg_nn_searches_ ;
 
         /// TODO copy paste from removal of remove entity
         std::vector< EntityType > all_entity_types_ ;

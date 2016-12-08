@@ -68,7 +68,7 @@ namespace {
      * @todo RENAME these parameters and split in smaller functions !! [JP]
      */
     bool find_facet_and_edge(
-        const NNSearch& ann,
+        const NNSearch& nn_search,
         const Surface& surface,
         index_t geomodel_v0,
         index_t geomodel_v1,
@@ -91,7 +91,7 @@ namespace {
             cur_neighbor = std::min( cur_neighbor, surface.nb_mesh_elements() ) ;
             neighbors.resize( cur_neighbor ) ;
             double* dist = (double*) alloca( sizeof(double) * cur_neighbor ) ;
-            nb_neighbors = ann.get_neighbors( v_bary, cur_neighbor, neighbors,
+            nb_neighbors = nn_search.get_neighbors( v_bary, cur_neighbor, neighbors,
                 dist ) ;
             for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
                 f = neighbors[i] ;
@@ -183,10 +183,10 @@ namespace RINGMesh {
             GeoModelBuilder( geomodel ),
             all_meshed_( true ),
             gme_vertices_links_(),
-            reg_anns_()
+            reg_nn_searches_()
     {
         fill_entity_type_to_index_map() ;
-        reg_anns_.reserve( geomodel.nb_regions() ) ;
+        reg_nn_searches_.reserve( geomodel.nb_regions() ) ;
     }
 
     DuplicateInterfaceBuilder::~DuplicateInterfaceBuilder()
@@ -197,9 +197,9 @@ namespace RINGMesh {
             ringmesh_assert( gme_vertices_links_[gme_vertices_links_itr] ) ;
             delete gme_vertices_links_[gme_vertices_links_itr] ;
         }
-        for( index_t reg_anns_itr = 0; reg_anns_itr < reg_anns_.size();
-            ++reg_anns_itr ) {
-            delete reg_anns_[reg_anns_itr] ;
+        for( index_t reg_nn_searches_itr = 0; reg_nn_searches_itr < reg_nn_searches_.size();
+            ++reg_nn_searches_itr ) {
+            delete reg_nn_searches_[reg_nn_searches_itr] ;
         }
 
         /*for( index_t surface_itr = 0; surface_itr < geomodel().nb_surfaces();
@@ -253,9 +253,9 @@ namespace RINGMesh {
             if( to_erase_by_type[entity_type_to_index( Surface::type_name_static() )][i]
                 != NO_ID ) {
                 const Surface& cur_surf = geomodel().surface( i ) ;
-                const NNSearch& v_ann = cur_surf.vertex_nn_search() ;
+                const NNSearch& v_nn_search = cur_surf.vertex_nn_search() ;
                 std::vector< index_t > colocated ;
-                bool found = v_ann.get_neighbors( studied_point, colocated, dist ) ;
+                bool found = v_nn_search.get_neighbors( studied_point, colocated, dist ) ;
                 if( !found ) {
                     continue ;
                 }
@@ -294,9 +294,9 @@ namespace RINGMesh {
             if( to_erase_by_type[entity_type_to_index( Region::type_name_static() )][i]
                 != NO_ID ) {
                 const Region& cur_reg = geomodel().region( i ) ;
-                const NNSearch& v_ann = cur_reg.vertex_nn_search() ;
+                const NNSearch& v_nn_search = cur_reg.vertex_nn_search() ;
                 std::vector< index_t > colocated ;
-                bool found = v_ann.get_neighbors( studied_point, colocated, dist ) ;
+                bool found = v_nn_search.get_neighbors( studied_point, colocated, dist ) ;
                 if( !found ) {
                     continue ;
                 }
@@ -760,12 +760,12 @@ namespace RINGMesh {
     {
         DEBUG("initialize_gme_vertices_links") ;
         initialize_gme_vertices_links( to_erase_by_type ) ;
-        fill_reg_anns() ;
+        fill_reg_nn_searches() ;
         DEBUG( "do_define_motion_relation" ) ;
         do_define_motion_relation( to_erase_by_type ) ;
     }
 
-    void DuplicateInterfaceBuilder::fill_reg_anns()
+    void DuplicateInterfaceBuilder::fill_reg_nn_searches()
     {
         for( index_t reg_itr = 0; reg_itr < geomodel().nb_regions(); ++reg_itr ) {
             const Region& cur_region = geomodel().region( reg_itr ) ;
@@ -775,7 +775,7 @@ namespace RINGMesh {
             const_cast< GEO::MeshCells& >( cur_region.gfx_mesh().cells ).compute_borders() ;
             /// tmp
 
-            reg_anns_.push_back(
+            reg_nn_searches_.push_back(
                 new NNSearch( cur_region.gfx_mesh(), NNSearch::FACETS ) ) ; /// @todo use CELL_FACETS instead ? in theory the region have facets...
         }
     }
@@ -862,7 +862,7 @@ namespace RINGMesh {
                 surf_facet_itr ) ;
             std::vector< index_t > colocated_facets_reg ;
             colocated_facets_reg.reserve( 1 ) ;
-            reg_anns_[reg.index()]->get_neighbors( facet_bary, colocated_facets_reg,
+            reg_nn_searches_[reg.index()]->get_neighbors( facet_bary, colocated_facets_reg,
                 geomodel().epsilon() ) ;
             ringmesh_assert( colocated_facets_reg.size() == 1 ) ;
             return find_reg_vertex_id_in_facet_reg_matching_surf_vertex_id_in_gmm(
@@ -911,7 +911,7 @@ namespace RINGMesh {
                 surf_facet_itr ) ;
             std::vector< index_t > colocated_facets_reg1 ;
             colocated_facets_reg1.reserve( 2 ) ;
-            reg_anns_[reg1.index()]->get_neighbors( facet_bary,
+            reg_nn_searches_[reg1.index()]->get_neighbors( facet_bary,
                 colocated_facets_reg1, geomodel().epsilon() ) ;
             if( colocated_facets_reg1.size() == 1 ) {
                 // Case of a voi horizon or voi boundary
