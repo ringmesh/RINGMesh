@@ -78,45 +78,7 @@
  */
 
 namespace {
-
     using namespace RINGMesh ;
-    using GEO::index_t ;
-    using GEO::vec3 ;
-
-    typedef GeoModelMeshEntity GMME ;
-    typedef std::string EntityType ;
-
-    /*---------------------------------------------------------------------------*/
-    /*----- Some pieces of the code below are copied or modified from -----------*/
-    /*----- geogram\mesh\mesh_intersection.cpp-----------------------------------*/
-    /*
-     *  Copyright (c) 2012-2014, Bruno Levy
-     *  All rights reserved.
-     *
-     *  Redistribution and use in source and binary forms, with or without
-     *  modification, are permitted provided that the following conditions are met:
-     *
-     *  * Redistributions of source code must retain the above copyright notice,
-     *  this list of conditions and the following disclaimer.
-     *  * Redistributions in binary form must reproduce the above copyright notice,
-     *  this list of conditions and the following disclaimer in the documentation
-     *  and/or other materials provided with the distribution.
-     *  * Neither the name of the ALICE Project-Team nor the names of its
-     *  contributors may be used to endorse or promote products derived from this
-     *  software without specific prior written permission.
-     *
-     *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-     *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-     *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-     *  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-     *  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-     *  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-     *  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-     *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-     *  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-     *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-     *  POSSIBILITY OF SUCH DAMAGE.
-     */
 
     bool triangles_intersect(
         const GeoModel& geomodel,
@@ -136,6 +98,67 @@ namespace {
         const vec3& q3 = vertices.vertex( facets.vertex( f2, 2 ) ) ;
         GEO::vector< GEO::TriangleIsect > sym ;
         return triangles_intersections( p1, p2, p3, q1, q2, q3, sym ) ;
+    }
+
+    bool triangle_quad_intersect(
+        const GeoModel& geomodel,
+        const GeoModelMeshFacets& facets,
+        index_t f1,
+        index_t f2 )
+    {
+        ringmesh_assert( facets.nb_vertices( f1 ) == 3 ) ;
+        ringmesh_assert( facets.nb_vertices( f2 ) == 4 ) ;
+        const GeoModelMeshVertices& vertices = geomodel.mesh.vertices ;
+        const vec3& p1 = vertices.vertex( facets.vertex( f1, 0 ) ) ;
+        const vec3& p2 = vertices.vertex( facets.vertex( f1, 1 ) ) ;
+        const vec3& p3 = vertices.vertex( facets.vertex( f1, 2 ) ) ;
+
+        const vec3& q1 = vertices.vertex( facets.vertex( f2, 0 ) ) ;
+        const vec3& q2 = vertices.vertex( facets.vertex( f2, 1 ) ) ;
+        const vec3& q3 = vertices.vertex( facets.vertex( f2, 2 ) ) ;
+        const vec3& q4 = vertices.vertex( facets.vertex( f2, 3 ) ) ;
+        GEO::vector< GEO::TriangleIsect > sym ;
+        if( triangles_intersections( p1, p2, p3, q1, q2, q3, sym ) ) {
+            return true ;
+        }
+        if( triangles_intersections( p1, p2, p3, q1, q3, q4, sym ) ) {
+            return true ;
+        }
+        return false ;
+    }
+
+    bool quad_quad_intersect(
+        const GeoModel& geomodel,
+        const GeoModelMeshFacets& facets,
+        index_t f1,
+        index_t f2 )
+    {
+        ringmesh_assert( facets.nb_vertices( f1 ) == 4 ) ;
+        ringmesh_assert( facets.nb_vertices( f2 ) == 4 ) ;
+        const GeoModelMeshVertices& vertices = geomodel.mesh.vertices ;
+        const vec3& p1 = vertices.vertex( facets.vertex( f1, 0 ) ) ;
+        const vec3& p2 = vertices.vertex( facets.vertex( f1, 1 ) ) ;
+        const vec3& p3 = vertices.vertex( facets.vertex( f1, 2 ) ) ;
+        const vec3& p4 = vertices.vertex( facets.vertex( f1, 3 ) ) ;
+
+        const vec3& q1 = vertices.vertex( facets.vertex( f2, 0 ) ) ;
+        const vec3& q2 = vertices.vertex( facets.vertex( f2, 1 ) ) ;
+        const vec3& q3 = vertices.vertex( facets.vertex( f2, 2 ) ) ;
+        const vec3& q4 = vertices.vertex( facets.vertex( f2, 3 ) ) ;
+        GEO::vector< GEO::TriangleIsect > sym ;
+        if( triangles_intersections( p1, p2, p3, q1, q2, q3, sym ) ) {
+            return true ;
+        }
+        if( triangles_intersections( p1, p2, p3, q1, q3, q4, sym ) ) {
+            return true ;
+        }
+        if( triangles_intersections( p1, p3, p4, q1, q2, q3, sym ) ) {
+            return true ;
+        }
+        if( triangles_intersections( p1, p3, p4, q1, q3, q4, sym ) ) {
+            return true ;
+        }
+        return false ;
     }
 
     bool is_edge_on_line( const Line& line, index_t v0, index_t v1 )
@@ -283,14 +306,38 @@ namespace {
          */
         void operator()( index_t f1, index_t f2 )
         {
-            if( f1 == f2 ) return ;
+            if( f1 == f2 || facets_are_adjacent( facets_, f1, f2 )
+                || facets_share_line_edge( geomodel_, facets_, f1, f2 ) ) {
+                return ;
+            }
 
-            if( is_triangle( f1 ) && is_triangle( f2 ) ) {
-                if( !facets_are_adjacent( facets_, f1, f2 )
-                    && !facets_share_line_edge( geomodel_, facets_, f1, f2 )
-                    && triangles_intersect( geomodel_, facets_, f1, f2 ) ) {
-                    has_intersection_[f1] = 1 ;
-                    has_intersection_[f2] = 1 ;
+            if( is_triangle( f1 ) ) {
+                if( is_triangle( f2 ) ) {
+                    if( triangles_intersect( geomodel_, facets_, f1, f2 ) ) {
+                        has_intersection_[f1] = 1 ;
+                        has_intersection_[f2] = 1 ;
+                    }
+                } else if( is_quad( f2 ) ) {
+                    if( triangle_quad_intersect( geomodel_, facets_, f1, f2 ) ) {
+                        has_intersection_[f1] = 1 ;
+                        has_intersection_[f2] = 1 ;
+                    }
+                } else {
+                    ringmesh_assert_not_reached ;
+                }
+            } else if( is_quad( f1 ) ) {
+                if( is_triangle( f2 ) ) {
+                    if( triangle_quad_intersect( geomodel_, facets_, f2, f1 ) ) {
+                        has_intersection_[f1] = 1 ;
+                        has_intersection_[f2] = 1 ;
+                    }
+                } else if( is_quad( f2 ) ) {
+                    if( quad_quad_intersect( geomodel_, facets_, f1, f2 ) ) {
+                        has_intersection_[f1] = 1 ;
+                        has_intersection_[f2] = 1 ;
+                    }
+                } else {
+                    ringmesh_assert_not_reached ;
                 }
             } else {
                 ringmesh_assert_not_reached ;
@@ -739,7 +786,7 @@ namespace {
         edge_barycenters.reserve( edge_indices.size() * 0.5 ) ;
         for( index_t e = 0; e < edge_indices.size(); e += 2 ) {
             const vec3& v0 = vertices.vertex( edge_indices[e] ) ;
-            const vec3& v1 = vertices.vertex( edge_indices[e+1] ) ;
+            const vec3& v1 = vertices.vertex( edge_indices[e + 1] ) ;
             edge_barycenters.push_back( ( v0 + v1 ) * 0.5 ) ;
         }
     }
@@ -886,7 +933,8 @@ namespace {
             if( !non_manifold_edges.empty() ) {
                 Logger::warn( "GeoModel" ) << non_manifold_edges.size()
                     << "non-manifold edges " << std::endl ;
-                debug_save_non_manifold_edges( geomodel_, edge_indices, non_manifold_edges ) ;
+                debug_save_non_manifold_edges( geomodel_, edge_indices,
+                    non_manifold_edges ) ;
 
                 set_invalid_model() ;
             }
@@ -914,7 +962,7 @@ namespace {
                     for( index_t f = 0; f < has_intersection.size(); f++ ) {
                         if( !has_intersection[f] ) continue ;
                         GEO::vector< index_t > vertices ;
-                        vertices.reserve( 3 ) ;
+                        vertices.reserve( geomodel_.mesh.facets.nb_vertices( f ) ) ;
                         for( index_t v = 0;
                             v < geomodel_.mesh.facets.nb_vertices( f ); v++ ) {
                             index_t id = mesh.vertices.create_vertex(
