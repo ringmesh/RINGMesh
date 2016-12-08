@@ -750,7 +750,7 @@ namespace {
         std::vector< bool >& edge_on_lines )
     {
         edge_on_lines.resize( edge_barycenters.size(), false ) ;
-        ColocaterANN nn( edge_barycenters ) ;
+        NNSearch nn( edge_barycenters ) ;
         for( index_t l = 0; l < geomodel.nb_lines(); l++ ) {
             const Line& line = geomodel.line( l ) ;
             for( index_t e = 0; e < line.nb_mesh_elements(); e++ ) {
