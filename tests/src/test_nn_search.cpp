@@ -83,10 +83,10 @@ void test_nn_search_ringmesh()
     hardcoded_unique_vertices[2] = p3 ;
     hardcoded_unique_vertices[3] = p4 ;
 
-    NNSearch ann( vertices ) ;
+    NNSearch nn_search( vertices ) ;
     GEO::vector< vec3 > unique_vertices ;
     GEO::vector< index_t > index_map ;
-    ann.get_colocated_index_mapping( global_epsilon, index_map, unique_vertices ) ;
+    nn_search.get_colocated_index_mapping( global_epsilon, index_map, unique_vertices ) ;
     for( index_t i = 0; i < index_map.size(); i++ ) {
         if( index_map[i] != hardcoded_index_map[i] ) {
             throw RINGMeshException( "TEST", "Index map found is wrong" ) ;
