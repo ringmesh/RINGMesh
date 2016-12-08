@@ -901,7 +901,7 @@ namespace {
             if( geomodel_.mesh.facets.nb()
                 == geomodel_.mesh.facets.nb_triangle()
                     + geomodel_.mesh.facets.nb_quad() ) {
-                std::vector< index_t > has_intersection ;
+                std::vector< bool > has_intersection ;
                 StoreIntersections action( geomodel_, has_intersection ) ;
                 const AABBTree2D& AABB = geomodel_.mesh.facets.aabb() ;
                 AABB.compute_self_element_bbox_intersections( action ) ;
@@ -915,9 +915,11 @@ namespace {
                         if( !has_intersection[f] ) continue ;
                         GEO::vector< index_t > vertices ;
                         vertices.reserve( 3 ) ;
-                        for( index_t v = 0; v < M.facets.nb_vertices( f ); v++ ) {
+                        for( index_t v = 0;
+                            v < geomodel_.mesh.facets.nb_vertices( f ); v++ ) {
                             index_t id = mesh.vertices.create_vertex(
-                                M.vertices.point_ptr( M.facets.vertex( f, v ) ) ) ;
+                                geomodel_.mesh.vertices.vertex(
+                                    geomodel_.mesh.facets.vertex( f, v ) ).data() ) ;
                             vertices.push_back( id ) ;
                         }
                         mesh.facets.create_polygon( vertices ) ;
