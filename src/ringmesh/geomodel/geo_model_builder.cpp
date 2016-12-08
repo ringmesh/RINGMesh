@@ -194,7 +194,7 @@ namespace {
             cur_neighbor = std::min( cur_neighbor, surface.nb_mesh_elements() ) ;
             neighbors.resize( cur_neighbor ) ;
             double* dist = (double*) alloca( sizeof(double) * cur_neighbor ) ;
-            nb_neighbors = surface.facet_colocater_ann().get_neighbors( v_bary,
+            nb_neighbors = surface.facet_nn_search().get_neighbors( v_bary,
                 cur_neighbor, neighbors, dist ) ;
             for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
                 f = neighbors[i] ;
@@ -256,7 +256,7 @@ namespace {
             cur_neighbor = std::min( cur_neighbor, region.nb_mesh_elements() ) ;
             neighbors.resize( cur_neighbor ) ;
             double* dist = (double*) alloca( sizeof(double) * cur_neighbor ) ;
-            nb_neighbors = region.cell_colocater_ann().get_neighbors( v_bary,
+            nb_neighbors = region.cell_nn_search().get_neighbors( v_bary,
                 cur_neighbor, neighbors, dist ) ;
             for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
                 cell = neighbors[i] ;
@@ -291,7 +291,7 @@ namespace {
             cur_neighbor = std::min( cur_neighbor, surface.nb_mesh_elements() ) ;
             neighbors.resize( cur_neighbor ) ;
             double* dist = (double*) alloca( sizeof(double) * cur_neighbor ) ;
-            nb_neighbors = surface.facet_colocater_ann().get_neighbors( v,
+            nb_neighbors = surface.facet_nn_search().get_neighbors( v,
                 cur_neighbor, neighbors, dist ) ;
             for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
                 element_id = neighbors[i] ;
@@ -328,7 +328,7 @@ namespace {
             cur_neighbor = std::min( cur_neighbor, entity.nb_mesh_elements() ) ;
             neighbors.resize( cur_neighbor ) ;
             double* dist = (double*) alloca( sizeof(double) * cur_neighbor ) ;
-            nb_neighbors = entity.cell_colocater_ann().get_neighbors( v,
+            nb_neighbors = entity.cell_nn_search().get_neighbors( v,
                 cur_neighbor, neighbors, dist ) ;
             for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
                 element_id = neighbors[i] ;

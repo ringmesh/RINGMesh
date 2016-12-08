@@ -70,10 +70,10 @@ namespace RINGMesh {
      * See http://www.geometrictools.com/LibMathematics/Distance/Distance.html
      */
     double RINGMESH_API point_segment_distance(
-         const vec3& p,
-         const vec3& p0,
-         const vec3& p1,
-         vec3& nearest_p  ) ;
+        const vec3& p,
+        const vec3& p0,
+        const vec3& p1,
+        vec3& nearest_p ) ;
 
     double RINGMESH_API point_triangle_distance(
         const vec3& point,
@@ -161,7 +161,6 @@ namespace RINGMesh {
         const vec3& N_circle,
         double r,
         std::vector< vec3 >& result ) ;
-
 
     bool RINGMESH_API disk_segment_intersection(
         const vec3& p0,
@@ -270,111 +269,19 @@ namespace RINGMesh {
         bool degrees,
         GEO::Matrix< 4, double >& rot_mat ) ;
 
-    /*!
-     * Given an array of vec3, this class computes the colocated points
-     * and a database to identify which colocated point corresponds to
-     *
-     * @todo Do we really need this class ? [JP]
-     * Move it in another file it depends on geogram... We need to compartimentalize.
-     *
-     */
-    class RINGMESH_API MakeUnique {
-    ringmesh_disable_copy( MakeUnique ) ;
-    public:
-        MakeUnique( const std::vector< vec3 >& data ) ;
-        template< typename T > MakeUnique( const std::vector< T >& data )
-        {
-            signed_index_t nb_points = 0 ;
-            for( index_t i = 0; i < data.size(); i++ ) {
-                nb_points += data[i].points().size() ;
-            }
-            points_.resize( nb_points ) ;
-            indices_.resize( nb_points ) ;
-            signed_index_t cur_id = 0 ;
-            for( index_t i = 0; i < data.size(); i++ ) {
-                for( index_t p = 0; p < data[i].points().size(); p++, cur_id++ ) {
-                    points_[cur_id] = data[i].points()[p] ;
-                    indices_[cur_id] = cur_id ;
-                }
-            }
-        }
-
-        template< typename T > MakeUnique(
-            const std::vector< T >& data,
-            bool T_is_a_pointer )
-        {
-            ringmesh_unused( T_is_a_pointer ) ;
-            index_t nb_points = 0 ;
-            for( index_t i = 0; i < data.size(); i++ ) {
-                nb_points += data[i]->nb_vertices() ;
-            }
-            points_.resize( nb_points ) ;
-            indices_.resize( nb_points ) ;
-            index_t cur_id = 0 ;
-            for( index_t i = 0; i < data.size(); i++ ) {
-                for( index_t p = 0; p < data[i]->nb_vertices(); p++, cur_id++ ) {
-                    points_[cur_id] = data[i]->vertex( p ) ;
-                    indices_[cur_id] = cur_id ;
-                }
-            }
-        }
-
-        void add_edges( const std::vector< std::pair< vec3, vec3 > > & points ) ;
-
-        void add_points( const std::vector< vec3 >& points ) ;
-
-        void unique( double epsilon ) ;
-
-        /*!
-         * Gets the input vector of vec3
-         */
-        const std::vector< vec3 >& points() const
-        {
-            return points_ ;
-        }
-
-        /*!
-         * Gets the number of points in the database
-         * @return returns the corresponding number
-         */
-        index_t nb_points() const
-        {
-            return static_cast< index_t >( points_.size() ) ;
-        }
-
-        void unique_points( std::vector< vec3 >& results ) const ;
-
-        /*!
-         * Gets the computed database that maps
-         * the colocated point to the unique one
-         */
-        const std::vector< index_t >& indices() const
-        {
-            return indices_ ;
-        }
-
-    private:
-        /// Input vector of vec3
-        std::vector< vec3 > points_ ;
-        /// computed database that maps the colocated point to the unique one
-        std::vector< index_t > indices_ ;
-    } ;
-
-    class RINGMESH_API ColocaterANN {
-    ringmesh_disable_copy( ColocaterANN ) ;
+    class RINGMESH_API NNSearch {
+    ringmesh_disable_copy( NNSearch ) ;
     public:
         enum MeshLocation {
             VERTICES, EDGES, FACETS, CELLS, CELL_FACETS, NB_LOCATION
         } ;
-        ColocaterANN(
-            const GEO::Mesh& mesh,
-            const MeshLocation& location,
-            bool copy = false ) ;
-        ColocaterANN( const std::vector< vec3 >& vertices, bool copy = true ) ;
+        NNSearch( const GEO::Mesh& mesh, const MeshLocation& location, bool copy =
+            false ) ;
+        NNSearch( const std::vector< vec3 >& vertices, bool copy = true ) ;
 
-        ~ColocaterANN()
+        ~NNSearch()
         {
-            if( delete_points_ ) delete[] ann_points_ ;
+            if( delete_points_ ) delete[] nn_points_ ;
         }
 
         /*!
@@ -429,25 +336,25 @@ namespace RINGMesh {
 
         index_t nb_points() const
         {
-            return ann_tree_->nb_points() ;
+            return nn_tree_->nb_points() ;
         }
 
     private:
-        void build_colocater_ann_vertices( const GEO::Mesh& mesh, bool copy ) ;
-        void build_colocater_ann_edges( const GEO::Mesh& mesh ) ;
-        void build_colocater_ann_facets( const GEO::Mesh& mesh ) ;
-        void build_colocater_ann_cells( const GEO::Mesh& mesh ) ;
-        void build_colocater_ann_cell_facets( const GEO::Mesh& mesh ) ;
-        void fill_ann_points( index_t index_in_ann, const vec3& center ) ;
+        void build_nn_search_vertices( const GEO::Mesh& mesh, bool copy ) ;
+        void build_nn_search_edges( const GEO::Mesh& mesh ) ;
+        void build_nn_search_facets( const GEO::Mesh& mesh ) ;
+        void build_nn_search_cells( const GEO::Mesh& mesh ) ;
+        void build_nn_search_cell_facets( const GEO::Mesh& mesh ) ;
+        void fill_nn_search_points( index_t index_in_nn, const vec3& center ) ;
 
     private:
         /// KdTree to compute the nearest neighbor search
-        GEO::NearestNeighborSearch_var ann_tree_ ;
+        GEO::NearestNeighborSearch_var nn_tree_ ;
         /// Array of the points (size of 3xnumber of points)
-        double* ann_points_ ;
+        double* nn_points_ ;
         /*!
          * @brief Indicates if ann_points_ should ne deleted.
-         * @details No need to delete ann_points_ if it is a simple pointer
+         * @details No need to delete nn_points_ if it is a simple pointer
          * to the mesh vertex array.
          */
         bool delete_points_ ;

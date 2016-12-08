@@ -151,7 +151,7 @@ namespace RINGMesh {
                 mesh_input_( nil ),
                 mesh_output_( nil ),
                 tms_( nil ),
-                starting_index_(1)
+                starting_index_( 1 )
         {
 
         }
@@ -312,9 +312,12 @@ namespace RINGMesh {
             mesh_set_edge_count( mesh_input_, tetmesh_constraint_.edges.nb() ) ;
             for( index_t e = 0; e < tetmesh_constraint_.edges.nb(); e++ ) {
                 meshgems_integer edge_indices[2] ;
-                edge_indices[0] = tetmesh_constraint_.edges.vertex( e, 0 ) + starting_index_ ;
-                edge_indices[1] = tetmesh_constraint_.edges.vertex( e, 1 ) + starting_index_ ;
-                mesh_set_edge_vertices( mesh_input_, e + starting_index_, edge_indices ) ;
+                edge_indices[0] = tetmesh_constraint_.edges.vertex( e, 0 )
+                    + starting_index_ ;
+                edge_indices[1] = tetmesh_constraint_.edges.vertex( e, 1 )
+                    + starting_index_ ;
+                mesh_set_edge_vertices( mesh_input_, e + starting_index_,
+                    edge_indices ) ;
             }
 
         }
@@ -324,10 +327,14 @@ namespace RINGMesh {
             mesh_set_triangle_count( mesh_input_, tetmesh_constraint_.facets.nb() ) ;
             for( index_t t = 0; t < tetmesh_constraint_.facets.nb(); t++ ) {
                 meshgems_integer triangle_indices[3] ;
-                triangle_indices[0] = tetmesh_constraint_.facets.vertex( t, 0 ) + starting_index_ ;
-                triangle_indices[1] = tetmesh_constraint_.facets.vertex( t, 1 ) + starting_index_ ;
-                triangle_indices[2] = tetmesh_constraint_.facets.vertex( t, 2 ) + starting_index_ ;
-                mesh_set_triangle_vertices( mesh_input_, t + starting_index_, triangle_indices ) ;
+                triangle_indices[0] = tetmesh_constraint_.facets.vertex( t, 0 )
+                    + starting_index_ ;
+                triangle_indices[1] = tetmesh_constraint_.facets.vertex( t, 1 )
+                    + starting_index_ ;
+                triangle_indices[2] = tetmesh_constraint_.facets.vertex( t, 2 )
+                    + starting_index_ ;
+                mesh_set_triangle_vertices( mesh_input_, t + starting_index_,
+                    triangle_indices ) ;
             }
         }
 
@@ -382,7 +389,8 @@ namespace RINGMesh {
                     < builder_->mesh_entity( Region::type_name_static(),
                         output_region_ ).nb_vertices(); v++ ) {
                 double point[3] ;
-                mesh_get_vertex_coordinates( mesh_output_, v + starting_index_, point ) ;
+                mesh_get_vertex_coordinates( mesh_output_, v + starting_index_,
+                    point ) ;
                 set_point( v, point ) ;
             }
         }
@@ -395,10 +403,11 @@ namespace RINGMesh {
                     < builder_->mesh_entity( Region::type_name_static(),
                         output_region_ ).nb_mesh_elements(); t++ ) {
                 signed_index_t tet[4] ;
-                mesh_get_tetrahedron_vertices( mesh_output_, t + starting_index_, tet ) ;
+                mesh_get_tetrahedron_vertices( mesh_output_, t + starting_index_,
+                    tet ) ;
                 // Because MG Tetra count the vertices starting with 1
                 for( index_t v = 0; v < 4; v++ ) {
-                    tet[v]-=starting_index_ ;
+                    tet[v] -= starting_index_ ;
                 }
                 set_tetra( t, tet ) ;
             }
@@ -457,20 +466,43 @@ namespace RINGMesh {
         unique_surfaces.reserve( nb_surfaces ) ;
         std::vector< index_t > surface_id ;
         surface_id.reserve( nb_surfaces ) ;
-        index_t nb_surface_points = 0, nb_facets = 0 ;
+        index_t nb_surface_vertices = 0, nb_facets = 0 ;
         for( index_t s = 0; s < nb_surfaces; s++ ) {
             const Surface& surface =
                 dynamic_cast< const Surface& >( region_->boundary( s ) ) ;
             if( contains( surface_id, surface.index() ) ) continue ;
-            nb_surface_points += surface.nb_vertices() ;
+            nb_surface_vertices += surface.nb_vertices() ;
             nb_facets += surface.nb_mesh_elements() ;
-
             surface_id.push_back( surface.index() ) ;
             unique_surfaces.push_back( &surface ) ;
         }
 
-        MakeUnique uniqueID( unique_surfaces, true ) ;
+        std::vector< vec3 > region_surfaces_and_wells_vertices ;
         std::vector< std::vector< Edge > > well_edges ;
+        index_t nb_region_vertices = region.nb_vertices() ;
+        index_t nb_well_vertices = 0 ;
+        if( wells ) {
+            for( index_t w = 0; w < well_edges.size(); w++ ) {
+                nb_well_vertices += 2 * well_edges[w].size() ;
+            }
+        }
+        region_surfaces_and_wells_vertices.reserve(
+            nb_surface_vertices + nb_region_vertices + nb_well_vertices ) ;
+
+        // Add the surfaces vertices
+        for( index_t s = 0; s < unique_surfaces.size(); s++ ) {
+            for( index_t v = 0; v < unique_surfaces[s]->nb_vertices(); v++ ) {
+                region_surfaces_and_wells_vertices.push_back(
+                    unique_surfaces[s]->vertex( v ) ) ;
+            }
+        }
+
+        // Add the region vertices
+        for( index_t v = 0; v < nb_region_vertices; v++ ) {
+            region_surfaces_and_wells_vertices.push_back( region.vertex( v ) ) ;
+        }
+
+        // Add the well vertices
         if( wells ) {
             wells->get_region_edges( region.index(), well_edges ) ;
             // Copy result of porting. Stupid, I know, but because of the interface
@@ -478,31 +510,27 @@ namespace RINGMesh {
             for( index_t w = 0; w < well_edges.size(); w++ ) {
                 std::vector< std::pair< vec3, vec3 > > wells_copy(
                     well_edges[w].size() ) ;
+
                 for( index_t i = 0; i < wells_copy.size(); ++i ) {
-                    wells_copy[i] = std::pair< vec3, vec3 >(
-                        well_edges[w][i].value( 0 ), well_edges[w][i].value( 1 ) ) ;
+                    region_surfaces_and_wells_vertices.push_back(
+                        well_edges[w][i].value( 0 ) ) ;
+                    region_surfaces_and_wells_vertices.push_back(
+                        well_edges[w][i].value( 1 ) ) ;
                 }
-                uniqueID.add_edges( wells_copy ) ;
             }
         }
 
-        std::vector< vec3 > region_vertices( region.nb_vertices() ) ;
-        for( index_t v = 0; v < region.nb_vertices(); v++ ) {
-            region_vertices[v] = region.vertex( v ) ;
-        }
-        uniqueID.add_points( region_vertices ) ;
-
-        uniqueID.unique( region.geomodel().epsilon() ) ;
-        const std::vector< index_t >& unique_indices = uniqueID.indices() ;
-        std::vector< vec3 > unique_points ;
-        uniqueID.unique_points( unique_points ) ;
+        NNSearch nn_search( region_surfaces_and_wells_vertices ) ;
+        GEO::vector< index_t > unique_indices ;
+        GEO::vector< vec3 > unique_points ;
+        nn_search.get_colocated_index_mapping( region.geomodel().epsilon(),
+            unique_indices, unique_points ) ;
 
         index_t starting_index = tetmesh_constraint_.vertices.create_vertices(
             unique_points.size() ) ;
         GEO::Memory::copy( tetmesh_constraint_.vertices.point_ptr( starting_index ),
             unique_points.data()->data(),
             3 * sizeof(double) * unique_points.size() ) ;
-
         if( !well_edges.empty() ) {
             index_t nb_well_edges = 0 ;
             for( index_t w = 0; w < well_edges.size(); w++ ) {
@@ -511,7 +539,7 @@ namespace RINGMesh {
             tetmesh_constraint_.edges.create_edges( nb_well_edges ) ;
             GEO::Attribute< index_t > edge_region(
                 tetmesh_constraint_.edges.attributes(), surface_att_name ) ;
-            index_t cur_vertex_id = nb_surface_points ;
+            index_t cur_vertex_id = nb_surface_vertices ;
             index_t cur_edge = 0 ;
             for( index_t w = 0; w < well_edges.size(); w++ ) {
                 for( index_t e = 0; e < well_edges[w].size(); e++ ) {
@@ -530,8 +558,7 @@ namespace RINGMesh {
         GEO::Attribute< index_t > surface_region(
             tetmesh_constraint_.facets.attributes(), surface_att_name ) ;
         for( index_t s = 0; s < unique_surfaces.size(); s++ ) {
-            const Surface& surface =
-                dynamic_cast< const Surface& >( *unique_surfaces[s] ) ;
+            const GeoModelMeshEntity& surface = *unique_surfaces[s] ;
 //            RINGMESH_PARALLEL_LOOP
             for( index_t t = 0; t < surface.nb_mesh_elements(); t++ ) {
                 ringmesh_assert( surface.nb_mesh_element_vertices( t ) == 3 ) ;
@@ -599,11 +626,11 @@ namespace RINGMesh {
     void TetraGen::initialize()
     {
 #ifdef RINGMESH_WITH_TETGEN
-        ringmesh_register_tetragen( TetraGen_TetGen, "TetGen" );
+        ringmesh_register_tetragen( TetraGen_TetGen, "TetGen" ) ;
 #endif
 
 #ifdef USE_MG_TETRA
     ringmesh_register_tetragen( TetraGen_MG_Tetra, "MG_Tetra" ) ;
 #endif
-}
+    }
 }
