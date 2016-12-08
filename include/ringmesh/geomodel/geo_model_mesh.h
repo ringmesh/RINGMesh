@@ -716,6 +716,10 @@ namespace RINGMesh {
          * Unbind attribute to the facets attribute manager
          */
         void unbind_attribute() ;
+        /*!
+         * @brief Removes facet adjacencies along lines
+         */
+        void disconnect_along_lines() ;
 
     private:
         /// Attached GeoModelMesh owning the vertices

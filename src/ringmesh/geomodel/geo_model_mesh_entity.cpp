@@ -781,9 +781,8 @@ namespace RINGMesh {
 #ifdef RINGMESH_DEBUG
             std::ostringstream file ;
             file << validity_errors_directory << "/" << "invalid_surf_" << index()
-                << ".obj" ;
-            save_surface_as_obj_file( *this, file.str() ) ;
-
+                << ".geogram" ;
+            save( file.str() ) ;
 #endif  
         }
         return valid ;
@@ -1091,16 +1090,6 @@ namespace RINGMesh {
             }
             return valid ;
         }
-    }
-
-    /*
-     * @brief Checks that boundary surfaces of @param region define
-     *        a one connected component closed manifold surface
-     * @details Builds a GEO::Mesh from the surface meshes, repairs it and analyses it.
-     */
-    bool Region::is_brep_region_valid() const
-    {
-        return check_volume_watertightness( geomodel(), gme_id() ) ;
     }
 
     void Region::compute_region_volumes_per_cell_type(

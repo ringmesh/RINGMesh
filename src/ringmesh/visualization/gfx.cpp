@@ -59,17 +59,6 @@
 namespace {
     using namespace RINGMesh ;
 
-    std::string path_to_label(
-        const std::string& viewer_path,
-        const std::string& path )
-    {
-        if( GEO::String::string_starts_with( path, viewer_path ) ) {
-            return path.substr( viewer_path.length(),
-                path.length() - viewer_path.length() ) ;
-        }
-        return path ;
-    }
-
     std::string get_attribute_name_with_coordinate(
         const std::string& name,
         index_t coordinate )
