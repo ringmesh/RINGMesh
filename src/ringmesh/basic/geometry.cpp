@@ -57,6 +57,20 @@ namespace {
     {
         return value < global_epsilon && value > -global_epsilon ;
     }
+
+    double triangle_signed_area(
+        const vec3& p0,
+        const vec3& p1,
+        const vec3& p2,
+        const vec3& triangle_normal )
+    {
+        double area = GEO::Geom::triangle_area( p0, p1, p2 ) ;
+        vec3 area_normal = cross( p0 - p2, p1 - p2 ) ;
+        if( dot( triangle_normal, area_normal ) < 0 ) {
+            area = -area ;
+        }
+        return area ;
+    }
 }
 
 namespace RINGMesh {
@@ -770,7 +784,7 @@ namespace RINGMesh {
      * @param[in] p1 the second tetra vertex
      * @param[in] p2 the third tetra vertex
      * @param[in] p3 the fourth tetra vertex
-     * @param[out] lambda the parametric coordinate corresponding to points
+     * @param[out] lambda the parametric coordinates corresponding to points
      * @return false if the computation failed because of too small tetrahedron volume
      */
     bool tetra_barycentric_coordinates(
@@ -797,6 +811,40 @@ namespace RINGMesh {
         lambda[1] = volume1 / total_volume ;
         lambda[2] = volume2 / total_volume ;
         lambda[3] = volume3 / total_volume ;
+        return true ;
+    }
+
+    /*!
+      * Computes barycentric coordinates of \p p
+      * @param[in] p the query point
+      * @param[in] p0 the first triangle vertex
+      * @param[in] p1 the second triangle vertex
+      * @param[in] p2 the third triangle vertex
+      * @param[out] lambda the parametric coordinates corresponding to points
+      * @return false if the computation failed because of too small triangle area
+      */
+    bool triangle_barycentric_coordinates(
+        const vec3& p,
+        const vec3& p0,
+        const vec3& p1,
+        const vec3& p2,
+        double lambda[3] )
+    {
+        double total_area = GEO::Geom::triangle_area( p0, p1, p2 ) ;
+        if( total_area < global_epsilon_sq ) {
+            for( index_t i = 0; i < 3; i++ ) {
+                lambda[i] = 0 ;
+            }
+            return false ;
+        }
+        vec3 triangle_normal = cross( p2 - p0, p1 - p0 ) ;
+        double area0 = triangle_signed_area( p2, p1, p, triangle_normal ) ;
+        double area1 = triangle_signed_area( p0, p2, p, triangle_normal ) ;
+        double area2 = triangle_signed_area( p1, p0, p, triangle_normal ) ;
+
+        lambda[0] = area0 / total_area ;
+        lambda[1] = area1 / total_area ;
+        lambda[2] = area2 / total_area ;
         return true ;
     }
 
