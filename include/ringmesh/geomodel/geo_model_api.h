@@ -55,10 +55,6 @@
  * @todo Encapsulate these functions in a namespace and TEST them.
  */
 
-namespace GEO {
-    class Mesh ;
-}
-
 namespace RINGMesh {
 
     /*!
