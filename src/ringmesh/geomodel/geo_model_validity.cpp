@@ -730,12 +730,26 @@ namespace {
      */
     void debug_save_non_manifold_edges(
         const GeoModel& geomodel,
-        const std::vector< index_t >& edge_vertices )
+        const std::vector< index_t >& edge_indices,
+        const std::vector< index_t >& non_manifold_edges )
     {
-        std::ostringstream file_name(
-            validity_errors_directory + "/non_manifold_edges.mesh" ) ;
-
-        save_edges( file_name, geomodel, edge_vertices ) ;
+        GeogramMesh1D mesh ;
+        GeogramMesh1DBuilder builder ;
+        builder.set_mesh( mesh ) ;
+        index_t nb_edges = static_cast< index_t >( non_manifold_edges.size() ) ;
+        builder.create_vertices( 2 * nb_edges ) ;
+        builder.create_edges( nb_edges ) ;
+        const GeoModelMeshVertices& vertices = geomodel.mesh.vertices ;
+        for( index_t e = 0; e < non_manifold_edges.size(); e++ ) {
+            index_t edge_id = non_manifold_edges[e] ;
+            const vec3& v0 = vertices.vertex( edge_indices[edge_id] ) ;
+            const vec3& v1 = vertices.vertex( edge_indices[edge_id + 1] ) ;
+            builder.set_vertex( 2 * e, v0 ) ;
+            builder.set_vertex( 2 * e + 1, v1 ) ;
+            builder.set_edge_vertex( e, 0, 2 * e ) ;
+            builder.set_edge_vertex( e, 1, 2 * e + 1 ) ;
+        }
+        mesh.save_mesh( validity_errors_directory + "/non_manifold_edges.geogram" ) ;
     }
 
     bool is_surface_conformal_to_volume(
@@ -764,6 +778,71 @@ namespace {
             return false ;
         } else {
             return true ;
+        }
+    }
+
+    void compute_border_edges(
+        const GeoModel& geomodel,
+        std::vector< index_t >& edge_indices )
+    {
+        const GeoModelMeshFacets& facets = geomodel.mesh.facets ;
+        for( index_t s = 0; s < geomodel.nb_surfaces(); s++ ) {
+            for( index_t f = 0; f < facets.nb_facets( s ); f++ ) {
+                index_t facet_id = facets.facet( s, f ) ;
+                for( index_t v = 0; v < facets.nb_vertices( facet_id ); v++ ) {
+                    index_t adj = facets.adjacent( facet_id, v ) ;
+                    if( adj == NO_ID ) {
+                        edge_indices.push_back( facets.vertex( facet_id, v ) ) ;
+                        index_t next_v = ( v + 1 ) % facets.nb_vertices( facet_id ) ;
+                        edge_indices.push_back( facets.vertex( facet_id, next_v ) ) ;
+                    }
+                }
+            }
+        }
+    }
+
+    void compute_border_edge_barycenters(
+        const GeoModel& geomodel,
+        const std::vector< index_t >& edge_indices,
+        std::vector< vec3 >& edge_barycenters )
+    {
+        const GeoModelMeshVertices& vertices = geomodel.mesh.vertices ;
+        edge_barycenters.reserve( edge_indices.size() * 0.5 ) ;
+        for( index_t e = 0; e < edge_indices.size(); e += 2 ) {
+            const vec3& v0 = vertices.vertex( edge_indices[e] ) ;
+            const vec3& v1 = vertices.vertex( edge_indices[e+1] ) ;
+            edge_barycenters.push_back( ( v0 + v1 ) * 0.5 ) ;
+        }
+    }
+
+    void compute_edge_on_lines(
+        const GeoModel& geomodel,
+        const std::vector< vec3 >& edge_barycenters,
+        std::vector< bool >& edge_on_lines )
+    {
+        edge_on_lines.resize( edge_barycenters.size(), false ) ;
+        ColocaterANN nn( edge_barycenters ) ;
+        for( index_t l = 0; l < geomodel.nb_lines(); l++ ) {
+            const Line& line = geomodel.line( l ) ;
+            for( index_t e = 0; e < line.nb_mesh_elements(); e++ ) {
+                const vec3 query = line.mesh_element_barycenter( e ) ;
+                std::vector< index_t > results ;
+                nn.get_neighbors( query, results, geomodel.epsilon() ) ;
+                for( index_t i = 0; i < results.size(); i++ ) {
+                    edge_on_lines[results[i]] = true ;
+                }
+            }
+        }
+    }
+
+    void compute_non_manifold_edges(
+        const std::vector< bool >& edge_on_lines,
+        std::vector< index_t >& non_manifold_edges )
+    {
+        for( index_t e = 0; e < edge_on_lines.size(); e++ ) {
+            if( !edge_on_lines[e] ) {
+                non_manifold_edges.push_back( e ) ;
+            }
         }
     }
 
@@ -881,15 +960,20 @@ namespace {
          */
         void test_non_manifold_edges()
         {
-            create_model_mesh() ;
+            std::vector< index_t > edge_indices ;
+            compute_border_edges( geomodel_, edge_indices ) ;
+            std::vector< vec3 > edge_barycenters ;
+            compute_border_edge_barycenters( geomodel_, edge_indices,
+                edge_barycenters ) ;
+            std::vector< bool > edge_on_lines ;
+            compute_edge_on_lines( geomodel_, edge_barycenters, edge_on_lines ) ;
             std::vector< index_t > non_manifold_edges ;
-            connect_mesh_facets_except_on_mesh_edges(
-                triangulated_global_model_mesh_, non_manifold_edges ) ;
+            compute_non_manifold_edges( edge_on_lines, non_manifold_edges ) ;
 
             if( !non_manifold_edges.empty() ) {
-                Logger::warn( "GeoModel" ) << non_manifold_edges.size() / 2
+                Logger::warn( "GeoModel" ) << non_manifold_edges.size()
                     << "non-manifold edges " << std::endl ;
-                debug_save_non_manifold_edges( geomodel_, non_manifold_edges ) ;
+                debug_save_non_manifold_edges( geomodel_, edge_indices, non_manifold_edges ) ;
 
                 set_invalid_model() ;
             }
