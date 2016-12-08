@@ -373,6 +373,7 @@ namespace RINGMesh {
             delete store[index] ;
             store[index] = nil ;
         }
+
         void delete_geological_entity( const EntityType& type, index_t index )
         {
             std::vector< GeoModelGeologicalEntity* >& store =
@@ -438,6 +439,11 @@ namespace RINGMesh {
         {
             ringmesh_assert( boundary_index < R.nb_boundaries() ) ;
             R.sides_[boundary_index] = new_side ;
+        }
+        void set_universe_boundary_sign( index_t boundary_index, bool new_side )
+        {
+            ringmesh_assert( boundary_index < universe().nb_boundaries() ) ;
+            universe().boundary_surface_sides_[boundary_index] = new_side ;
         }
 
         std::vector< gme_t >& modifiable_children( GeoModelGeologicalEntity& E )
