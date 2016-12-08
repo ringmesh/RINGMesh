@@ -1093,16 +1093,6 @@ namespace RINGMesh {
         }
     }
 
-    /*
-     * @brief Checks that boundary surfaces of @param region define
-     *        a one connected component closed manifold surface
-     * @details Builds a GEO::Mesh from the surface meshes, repairs it and analyses it.
-     */
-    bool Region::is_brep_region_valid() const
-    {
-        return check_volume_watertightness( geomodel(), gme_id() ) ;
-    }
-
     void Region::compute_region_volumes_per_cell_type(
         double& tet_volume,
         double& pyramid_volume,

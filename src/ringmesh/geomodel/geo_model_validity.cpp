@@ -936,22 +936,6 @@ namespace {
                 }
             }
         }
-        /*! 
-         * @brief Creates a Mesh from the GeoModel and triangulates it
-         */
-        void create_model_mesh()
-        {
-            bool logger_status = Logger::instance()->is_quiet() ;
-            Logger::instance()->set_quiet( true ) ;
-
-            bool connect_facets = false ;
-            build_mesh_from_geomodel( geomodel_, triangulated_global_model_mesh_,
-                connect_facets ) ;
-            GEO::mesh_repair( triangulated_global_model_mesh_,
-                GEO::MESH_REPAIR_TRIANGULATE ) ;
-
-            Logger::instance()->set_quiet( logger_status ) ;
-        }
         /*!
          * @brief Returns true if there are non-manifold edges that are
          *        not in any Line of the geomodel
@@ -1082,75 +1066,6 @@ namespace RINGMesh {
                 << std::endl << std::endl ;
         }
         return valid ;
-    }
-
-    bool check_volume_watertightness( const GeoModel& geomodel, const gme_t& gme_id )
-    {
-        std::vector< gme_t > volume_boundaries ;
-
-        // Check if the given Entity is a MeshEntity or a GeologicalEntity
-        // or the Universe and fill the volume_boundaries vector.
-        if( gme_id.type == geomodel.universe().type_name() ) {
-            index_t nb_boundaries = geomodel.universe().nb_boundaries() ;
-            volume_boundaries.resize( nb_boundaries ) ;
-            for( index_t b = 0; b < nb_boundaries; b++ ) {
-                volume_boundaries[b] = geomodel.universe().boundary_gme( b ) ;
-            }
-        } else if( geomodel.entity_type_manager().is_mesh_entity_type(
-            gme_id.type ) ) {
-            index_t nb_boundaries = geomodel.mesh_entity( gme_id ).nb_boundaries() ;
-            volume_boundaries.resize( nb_boundaries ) ;
-            for( index_t b = 0; b < nb_boundaries; b++ ) {
-                volume_boundaries[b] = geomodel.mesh_entity( gme_id ).boundary_gme(
-                    b ) ;
-            }
-        } else {
-            Logger::warn( "GeoModel" ) << "Checking for volume watertightness of "
-                "a geological entity (" << gme_id << ") is not yet implemented."
-                << std::endl ;
-            ringmesh_assert_not_reached ;
-        }
-
-        if( volume_boundaries.empty() ) {
-            Logger::warn( "GeoModel" ) << gme_id << " has no boundary Surface"
-                << std::endl ;
-            return false ;
-        } else {
-            GEO::Mesh mesh ;
-            bool logger_status = Logger::instance()->is_quiet() ;
-
-            Logger::instance()->set_quiet( true ) ;
-            build_mesh_from_geomodel_mesh_entities( geomodel, volume_boundaries,
-                mesh ) ;
-            GEO::mesh_repair( mesh ) ;
-            Logger::instance()->set_quiet( logger_status ) ;
-
-            bool valid = true ;
-            index_t nb_cc = GEO::mesh_nb_connected_components( mesh ) ;
-            signed_index_t nb_b = GEO::mesh_nb_borders( mesh ) ;
-            if( nb_cc != 1 ) {
-                Logger::warn( "GeoModel" ) << " Surface boundary of " << gme_id
-                    << " has " << nb_cc << " connected components " << std::endl ;
-                valid = false ;
-            }
-            if( nb_b != 0 ) {
-                Logger::warn( "GeoModel" ) << " Surface boundary of " << gme_id
-                    << " has " << nb_b << " border connected components "
-                    << std::endl ;
-                valid = false ;
-            }
-            if( !valid ) {
-                std::ostringstream file ;
-                file << validity_errors_directory << "/boundary_surface_region_"
-                    << gme_id.index << ".mesh" ;
-                if( GEO::CmdLine::get_arg_bool( "in:validity_save" ) ) {
-                    GEO::mesh_save( mesh, file.str() ) ;
-                }
-                return false ;
-            } else {
-                return true ;
-            }
-        }
     }
 
 } // namespace RINGMesh
