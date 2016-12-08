@@ -339,12 +339,6 @@ namespace RINGMesh {
              */
 
             /*!
-             * @brief Tests if all the GeoModelMeshEntity maps have been computed
-             * (+ GME_Vertices), and initializes them if needed
-             */
-            void test_and_initialize() const ;
-
-            /*!
              * @brief Clears and resizes the GME_Vertex vectors
              * @param[in] nb Size of the vector
              */
@@ -384,19 +378,6 @@ namespace RINGMesh {
 
         private:
             /*!
-             * @brief Initializes vertex maps and GMEVertex vectors
-             */
-            void initialize() ;
-
-            /*!
-             * @brief Checks if GMEVertices are initialized.
-             * @details Checks also that all the vertex maps are initialized. If some
-             * vertex maps are not initialized, calling these function initialized them.
-             * @return false if GMEVertices are not initialized, otherwise true.
-             */
-            bool is_initialized() const ;
-
-            /*!
              * @brief Initializes the given GeoModelMeshEntity vertex map
              * @param[in] mesh_entity_id Unique id to a GeoModelMeshEntity
              */
@@ -425,57 +406,6 @@ namespace RINGMesh {
              * @brief Unbinds all the GeoModelMeshEntity vertex maps
              */
             void clear_all_mesh_entity_vertex_map() ;
-
-            /*!
-             * @brief Sizes and fills the vector of GMEVertices for all the
-             * GeoModelMeshEntities of the GeoModel
-             */
-            void fill_gme_vertices() ;
-
-            /*!
-             * @brief Add to GMEVertices those corresponding of a given GeoModelMeshENtity
-             * @param[in] mesh_entity_id Unique id to a GeoModelMeshEntity
-             */
-            void add_mesh_entity_vertices_to_gme( const gme_t& mesh_entity_id ) ;
-
-            /*!
-             * @brief Compute all the corresponding GMEVertices of a given geomodel vertex
-             * @param[in] v Model vertex index
-             * @param[out] gme_vertices GeoModelMeshEntity vertex indices
-             * corresponding to v
-             * @note Calling this function can take long time.
-             */
-            void compute_all_mesh_entity_vertices(
-                index_t v,
-                std::vector< GMEVertex >& gme_vertices ) const ;
-
-            /*!
-             * @brief Compute the corresponding GMEVertices in the GeoModelMeshEntities
-             * of a given type
-             * @param[in] v Model vertex index
-             * @param[in] entity_type GeoModelMeshEntity type
-             * @param[out] gme_vertices GeoModelMeshEntity vertex indices
-             * corresponding to v
-             * @note Calling this function can take long time.
-             */
-            void compute_mesh_entity_type_vertices(
-                index_t v,
-                const EntityType& entity_type,
-                std::vector< GMEVertex >& gme_vertices ) const ;
-
-            /*!
-             * @brief Compute the corresponding GMEVertices in a specific
-             * GeoModelMeshEntity
-             * @param[in] mesh_entity_id Unique id to a GeoModelMeshEntity
-             * @param[in] v Model vertex index
-             * @param[out] result GeoModelMeshEntity vertex indices
-             * corresponding to v
-             * @note Calling this function can take long time.
-             */
-            void compute_mesh_entity_vertex_indices(
-                const gme_t& mesh_entity_id,
-                index_t v,
-                std::vector< index_t >& result ) const ;
 
             void resize_all_mesh_entity_vertex_maps() ;
 
