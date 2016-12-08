@@ -37,12 +37,7 @@
 
 #include <vector>
 
-#include <geogram/points/colocate.h>
-#include <geogram/basic/logger.h>
-
-#include <ringmesh/geomodel/geo_model.h>
-#include <ringmesh/geomodel/geo_model_mesh_entity.h>
-#include <ringmesh/io/io.h>
+#include <ringmesh/basic/geometry.h>
 
 /*!
  * @author Arnaud Botella
