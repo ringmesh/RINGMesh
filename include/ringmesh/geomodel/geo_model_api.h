@@ -38,14 +38,6 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <vector>
-
-#include <geogram/basic/attributes.h>
-
-#include <ringmesh/geogram_extension/geogram_extension.h>
-#include <ringmesh/geomodel/geo_model.h>
-#include <ringmesh/geomodel/geo_model_entity.h>
-#include <ringmesh/geomodel/geo_model_mesh_entity.h>
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
 
 /*!
@@ -57,6 +49,14 @@
 
 namespace GEO {
     class Mesh ;
+}
+
+namespace RINGMesh {
+    class GeoModel ;
+    class Surface ;
+    class GeoModelEntity ;
+    class GeoModelMeshEntity ;
+    class GeoModelGeologicalEntity ;
 }
 
 namespace RINGMesh {
