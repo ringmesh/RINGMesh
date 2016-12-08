@@ -58,6 +58,12 @@ N.1: Abbreviations and acronyms are minimized
 N.2: Each word of Class and NameSpace names is capitalized 
 N.3: Function and local variables names are lowercase; words_are_separated_by_underscore
 N.4: Member variables names are lowercase; words_are_separated_by_underscore_and_have_trailing_underscore_
+N.5: Prefer "geomodel" than "model", "geo_model", "gm", ...
+N.6: There are three level of vertex indices: 
+	- 'geomodel_vertex_index' for global indexation in the whole model
+	- 'vertex_index' for indexation in a GeoModelMeshEntity
+	- 'mesh_element_vertex_index' for indexation in a mesh element 
+		of a GeoModelMeshEntity (e.g., segment, triangle, prism).
 
 Documentation
 -------------
