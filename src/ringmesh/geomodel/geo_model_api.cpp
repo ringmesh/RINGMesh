@@ -38,23 +38,15 @@
 #include <iomanip>
 #include <iostream>
 
-#include <geogram/basic/geometry_nd.h>
-#include <geogram/basic/logger.h>
 #include <geogram/basic/progress.h>
 
-#include <geogram/mesh/mesh_geometry.h>
-
 #include <ringmesh/basic/geometry.h>
-#include <ringmesh/geogram_extension/geogram_extension.h>
-#include <ringmesh/geogram_extension/geogram_mesh_repair.h>
 #include <ringmesh/geomodel/geo_model.h>
 #include <ringmesh/geomodel/geo_model_entity.h>
 #include <ringmesh/geomodel/geo_model_mesh_entity.h>
 #include <ringmesh/geomodel/geo_model_geological_entity.h>
-#include <ringmesh/geomodel/geo_model_builder.h>
-#include <ringmesh/geomodel/geo_model_builder_from_mesh.h>
+//#include <ringmesh/geomodel/geo_model_builder.h>
 #include <ringmesh/tetrahedralize/tetra_gen.h>
-#include <ringmesh/tetrahedralize/tetgen_mesher.h>
 
 /*!
  * @file Bunch of functions that shouldn't be there
