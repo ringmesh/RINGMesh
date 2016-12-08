@@ -376,7 +376,10 @@ namespace {
      * @brief Check if entity @param is of the @param geomodel is in the
      *        in_boundary vector of entity @param in.
      */
-    bool is_in_in_boundary( const GeoModel& geomodel, gme_t is, gme_t in )
+    bool is_in_in_boundary(
+        const GeoModel& geomodel,
+        const gme_t& is,
+        const gme_t& in )
     {
         const GeoModelMeshEntity& E = geomodel.mesh_entity( in ) ;
         for( index_t i = 0; i < E.nb_in_boundary(); ++i ) {
@@ -389,13 +392,13 @@ namespace {
 
     void save_invalid_points(
         const std::ostringstream& file,
-        const GeoModel& M,
+        const GeoModel& geomodel,
         const std::vector< bool >& valid )
     {
         GEO::Mesh point_mesh ;
         for( index_t i = 0; i < valid.size(); ++i ) {
             if( !valid[i] ) {
-                const vec3& V = M.mesh.vertices.vertex( i ) ;
+                const vec3& V = geomodel.mesh.vertices.vertex( i ) ;
                 point_mesh.vertices.create_vertex( V.data() ) ;
             }
         }
@@ -411,13 +414,13 @@ namespace {
      * @todo Implementation for regions
      * @todo Split in smaller functions
      */
-    bool check_model_points_validity( const GeoModel& M )
+    bool check_model_points_validity( const GeoModel& geomodel )
     {
         // For all the vertices of the geomodel 
         // We check that the entities in which they are are consistent 
         // to have a valid B-Rep geomodel
-        std::vector< bool > valid( M.mesh.vertices.nb(), true ) ;
-        for( index_t i = 0; i < M.mesh.vertices.nb(); ++i ) {
+        std::vector< bool > valid( geomodel.mesh.vertices.nb(), true ) ;
+        for( index_t i = 0; i < geomodel.mesh.vertices.nb(); ++i ) {
             bool valid_vertex = true ;
 
             // Get the mesh entities in which this vertex is            
@@ -427,7 +430,7 @@ namespace {
             std::vector< index_t > regions ;
 
             std::vector< GMEVertex > bmes ;
-            M.mesh.vertices.gme_vertices( i, bmes ) ;
+            geomodel.mesh.vertices.gme_vertices( i, bmes ) ;
 
             for( index_t j = 0; j < bmes.size(); ++j ) {
                 const std::string& T = bmes[j].gme_id.type ;
@@ -500,7 +503,7 @@ namespace {
                             if( nb > 2 ) {
                                 Logger::warn( "GeoModel" ) << " Vertex " << i
                                     << " is " << nb << " times in Surface "
-                                    << M.surface( surfaces[k] ).gme_id()
+                                    << geomodel.surface( surfaces[k] ).gme_id()
                                     << std::endl ;
                                 valid_vertex = false ;
                             } else if( nb == 2 ) {
@@ -508,8 +511,8 @@ namespace {
                                 // on an internal boundary Line.
                                 bool internal_boundary = false ;
                                 for( index_t l = 0; l < lines.size(); ++l ) {
-                                    if( M.line( lines[l] ).is_inside_border(
-                                        M.surface( surfaces[k] ) ) ) {
+                                    if( geomodel.line( lines[l] ).is_inside_border(
+                                        geomodel.surface( surfaces[k] ) ) ) {
                                         internal_boundary = true ;
                                         break ;
                                     }
@@ -517,7 +520,7 @@ namespace {
                                 if( !internal_boundary ) {
                                     Logger::warn( "GeoModel" ) << " Vertex " << i
                                         << " appears " << nb << " times in Surface "
-                                        << M.surface( surfaces[k] ).gme_id()
+                                        << geomodel.surface( surfaces[k] ).gme_id()
                                         << std::endl ;
                                     valid_vertex = false ;
                                 }
@@ -530,7 +533,7 @@ namespace {
                                 gme_t s_id( Surface::type_name_static(),
                                     surfaces[k] ) ;
                                 gme_t l_id( Line::type_name_static(), lines[l] ) ;
-                                if( !is_in_in_boundary( M, s_id, l_id ) ) {
+                                if( !is_in_in_boundary( geomodel, s_id, l_id ) ) {
                                     Logger::warn( "GeoModel" )
                                         << " Inconsistent Line-Surface connectivity "
                                         << " Vertex " << i << " shows that " << s_id
@@ -561,7 +564,7 @@ namespace {
                                 lines.begin(), lines.end(), lines[k] ) ) ;
                             if( nb == 2 ) {
                                 // The line must be closed
-                                if( !M.line( lines[k] ).is_closed() ) {
+                                if( !geomodel.line( lines[k] ).is_closed() ) {
                                     Logger::warn( "GeoModel" ) << " Vertex " << i
                                         << " is twice in Line " << lines[k]
                                         << std::endl ;
@@ -580,7 +583,7 @@ namespace {
                         for( index_t k = 0; k < lines.size(); ++k ) {
                             gme_t l_id( Line::type_name_static(), lines[k] ) ;
                             gme_t c_id( Corner::type_name_static(), corner ) ;
-                            if( !is_in_in_boundary( M, l_id, c_id ) ) {
+                            if( !is_in_in_boundary( geomodel, l_id, c_id ) ) {
                                 Logger::warn( "GeoModel" )
                                     << " Inconsistent Line-Corner connectivity "
                                     << " vertex " << i << " shows that " << l_id
@@ -606,7 +609,7 @@ namespace {
         if( nb_invalid > 0 ) {
             std::ostringstream file ;
             file << validity_errors_directory << "/invalid_global_vertices.mesh" ;
-            save_invalid_points( file, M, valid ) ;
+            save_invalid_points( file, geomodel, valid ) ;
 
             Logger::warn( "GeoModel" ) << nb_invalid << " invalid vertices "
                 << std::endl << "Saved in file: " << file.str() << std::endl ;
@@ -618,14 +621,14 @@ namespace {
 
     void save_edges(
         const std::ostringstream& file,
-        const GeoModel& M,
+        const GeoModel& geomodel,
         const std::vector< index_t >& e )
     {
         GEO::Mesh edge_mesh ;
         index_t previous_vertex_id = NO_ID ;
         for( index_t i = 0; i < e.size(); ++i ) {
             index_t cur_vertex_id = edge_mesh.vertices.create_vertex(
-                M.mesh.vertices.vertex( e[i] ).data() ) ;
+                geomodel.mesh.vertices.vertex( e[i] ).data() ) ;
             if( i % 2 == 0 ) {
                 ringmesh_assert( previous_vertex_id == NO_ID ) ;
                 previous_vertex_id = cur_vertex_id ;
@@ -666,33 +669,36 @@ namespace {
      *          of the associated geomodel
      *          The Line boundaries must form a closed manifold line.
      */
-    bool surface_boundary_valid( const Surface& S )
+    bool surface_boundary_valid( const Surface& surface )
     {
-        const GeoModelMeshVertices& geomodel_vertices = S.geomodel().mesh.vertices ;
+        const GeoModelMeshVertices& geomodel_vertices =
+            surface.geomodel().mesh.vertices ;
         std::vector< index_t > invalid_corners ;
-        for( index_t f = 0; f < S.nb_mesh_elements(); ++f ) {
-            for( index_t v = 0; v < S.nb_mesh_element_vertices( f ); ++v ) {
-                if( S.facet_adjacent_index( f, v ) == NO_ID
-                    && !is_edge_on_line( S.geomodel(),
-                        geomodel_vertices.geomodel_vertex_id( S.gme_id(), f, v ),
-                        geomodel_vertices.geomodel_vertex_id( S.gme_id(), f,
-                            S.next_facet_vertex_index( f, v ) ) ) ) {
+        for( index_t f = 0; f < surface.nb_mesh_elements(); ++f ) {
+            for( index_t v = 0; v < surface.nb_mesh_element_vertices( f ); ++v ) {
+                if( surface.facet_adjacent_index( f, v ) == NO_ID
+                    && !is_edge_on_line( surface.geomodel(),
+                        geomodel_vertices.geomodel_vertex_id( surface.gme_id(), f,
+                            v ),
+                        geomodel_vertices.geomodel_vertex_id( surface.gme_id(), f,
+                            surface.next_facet_vertex_index( f, v ) ) ) ) {
                     invalid_corners.push_back(
-                        geomodel_vertices.geomodel_vertex_id( S.gme_id(), f, v ) ) ;
+                        geomodel_vertices.geomodel_vertex_id( surface.gme_id(), f,
+                            v ) ) ;
                     invalid_corners.push_back(
-                        geomodel_vertices.geomodel_vertex_id( S.gme_id(), f,
-                            S.next_facet_vertex_index( f, v ) ) ) ;
+                        geomodel_vertices.geomodel_vertex_id( surface.gme_id(), f,
+                            surface.next_facet_vertex_index( f, v ) ) ) ;
                 }
             }
         }
         if( !invalid_corners.empty() ) {
             std::ostringstream file ;
             file << validity_errors_directory << "/invalid_boundary_surface_"
-                << S.index() << ".mesh" ;
-            save_edges( file, S.geomodel(), invalid_corners ) ;
+                << surface.index() << ".mesh" ;
+            save_edges( file, surface.geomodel(), invalid_corners ) ;
 
             Logger::warn( "GeoModel" ) << " Invalid surface boundary: "
-                << invalid_corners.size() / 2 << " boundary edges of " << S.gme_id()
+                << invalid_corners.size() / 2 << " boundary edges of " << surface.gme_id()
                 << "  are in no line of the geomodel " << std::endl
                 << " Saved in file: " << file.str() << std::endl ;
             return false ;
@@ -1060,18 +1066,18 @@ namespace RINGMesh {
         return count_invalid == 0 ;
     }
 
-    bool is_geomodel_valid( const GeoModel& GM )
+    bool is_geomodel_valid( const GeoModel& geomodel )
     {
-        GeoModelValidityCheck validity_checker( GM,
+        GeoModelValidityCheck validity_checker( geomodel,
             GEO::CmdLine::get_arg_bool( "in:intersection_check" ) ) ;
 
         bool valid = validity_checker.is_geomodel_valid() ;
 
         if( valid ) {
-            Logger::out( "GeoModel" ) << "Model " << GM.name() << " is valid "
+            Logger::out( "GeoModel" ) << "Model " << geomodel.name() << " is valid "
                 << std::endl << std::endl ;
         } else {
-            Logger::warn( "GeoModel" ) << "Model " << GM.name() << " is invalid "
+            Logger::warn( "GeoModel" ) << "Model " << geomodel.name() << " is invalid "
                 << std::endl << std::endl ;
         }
         return valid ;
