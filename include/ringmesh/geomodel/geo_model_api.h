@@ -89,25 +89,6 @@ namespace RINGMesh {
         const GeoModel& geomodel ) ;
 
     /*!
-     * @brief Build a Mesh from the geomodel non-duplicated vertices and its Surface facets.
-     * @details Adjacencies are not set. Client should call mesh repair functions afterwards.
-     * @todo Add flag options to specify which Mesh should be created, with what attributes.
-     */
-    void RINGMESH_API build_mesh_from_geomodel(
-        const GeoModel& geomodel,
-        GEO::Mesh& M ) ;
-
-    void RINGMESH_API build_mesh_from_geomodel(
-        const GeoModel& geomodel,
-        GEO::Mesh& M,
-        bool connect_facets ) ;
-
-    void RINGMESH_API build_mesh_from_geomodel_mesh_entities(
-        const GeoModel& geomodel,
-        const std::vector< gme_t >& surface_entities,
-        GEO::Mesh& M ) ;
-
-    /*! 
      * @brief Bind named GEO::Attribute on the GeoModel entity facets
      * @pre Entities of geomodel_entity_type are GeoModelMeshEntity
      */
