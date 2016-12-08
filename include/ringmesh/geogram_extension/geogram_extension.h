@@ -111,12 +111,6 @@ namespace RINGMesh {
 
     vec3 RINGMESH_API mesh_cell_barycenter( const GEO::Mesh& M, index_t cell ) ;
 
-    void RINGMESH_API divide_edge_in_parts(
-        vec3& node0,
-        vec3& node1,
-        index_t nb_parts,
-        std::vector< vec3 >& points ) ;
-
     /*!
      * @brief Vector of pointers to Geogram attributes
      * @note Necessary since one cannot create, vectors of Geogram attributes does
