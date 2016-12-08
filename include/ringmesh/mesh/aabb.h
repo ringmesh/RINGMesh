@@ -127,8 +127,24 @@ namespace RINGMesh {
             const Box3d& box,
             EvalIntersection& action ) const
         {
-            bbox_intersect_recursive< EvalIntersection >( box, 1, 0, nb_bboxes(),
-                action ) ;
+            bbox_intersect_recursive< EvalIntersection >( box, ROOT_INDEX, 0,
+                nb_bboxes(), action ) ;
+        }
+        /*
+         * @brief Computes the self intersections of the element boxes.
+         * @param[in] action The functor used to compute intersection
+         * with the intersected element boxes
+         * @tparam EvalIntersection this functor should have an operator() defined like this:
+         *  void operator()( index_t box1, index_t box2 ) ;
+         * where box1 and box2 are the element box indices
+         * (e.g. in the case of AABBTree2D, this index is a facet index)
+         */
+        template< class EvalIntersection >
+        void compute_self_element_bbox_intersections(
+            EvalIntersection& action ) const
+        {
+            self_intersect_recursive< EvalIntersection >( ROOT_INDEX, 0, nb_bboxes(),
+                ROOT_INDEX, 0, nb_bboxes(), action ) ;
         }
     protected:
         virtual ~AABBTree()
@@ -196,6 +212,16 @@ namespace RINGMesh {
             index_t node_index,
             index_t element_begin,
             index_t element_end,
+            ACTION& action ) const ;
+
+        template< class ACTION >
+        void self_intersect_recursive(
+            index_t node_index1,
+            index_t element_begin1,
+            index_t element_end1,
+            index_t node_index2,
+            index_t element_begin2,
+            index_t element_end2,
             ACTION& action ) const ;
 
         /*!
@@ -475,6 +501,63 @@ namespace RINGMesh {
             box_middle, action ) ;
         bbox_intersect_recursive< ACTION >( box, child_right, box_middle,
             element_end, action ) ;
+    }
+
+    template< class ACTION >
+    void AABBTree::self_intersect_recursive(
+        index_t node_index1,
+        index_t element_begin1,
+        index_t element_end1,
+        index_t node_index2,
+        index_t element_begin2,
+        index_t element_end2,
+        ACTION& action ) const
+    {
+        ringmesh_assert( element_end1 != element_begin1 ) ;
+        ringmesh_assert( element_end2 != element_begin2 ) ;
+
+        // Since we are intersecting the AABBTree with *itself*,
+        // we can prune half of the cases by skipping the test
+        // whenever node2's facet index interval is greated than
+        // node1's facet index interval.
+        if( element_end2 <= element_begin1 ) {
+            return ;
+        }
+
+        // The acceleration is here:
+        if( !tree_[node_index1].bboxes_overlap( tree_[node_index2] ) ) {
+            return ;
+        }
+
+        // Simple case: leaf - leaf intersection.
+        if( is_leaf( element_begin1, element_end1 )
+            && is_leaf( element_begin2, element_end2 ) ) {
+            action( mapping_morton_[element_begin1],
+                mapping_morton_[element_begin2] ) ;
+            return ;
+        }
+
+        // If node2 has more facets than node1, then
+        //   intersect node2's two children with node1
+        // else
+        //   intersect node1's two children with node2
+        if( element_end2 - element_begin2 > element_end1 - element_begin1 ) {
+            index_t middle_box2, child_left2, child_right2 ;
+            get_recursive_iterators( node_index2, element_begin2, element_end2,
+                middle_box2, child_left2, child_right2 ) ;
+            self_intersect_recursive< ACTION >( action, node_index1, element_begin1,
+                element_end1, child_left2, element_begin2, middle_box2 ) ;
+            self_intersect_recursive< ACTION >( action, node_index1, element_begin1,
+                element_end1, child_right2, middle_box2, element_end2 ) ;
+        } else {
+            index_t middle_box1, child_left1, child_right1 ;
+            get_recursive_iterators( node_index1, element_begin1, element_end1,
+                middle_box1, child_left1, child_right1 ) ;
+            self_intersect_recursive< ACTION >( action, child_left1, element_begin1,
+                middle_box1, node_index2, element_begin2, element_end2 ) ;
+            self_intersect_recursive< ACTION >( action, child_right1, middle_box1,
+                element_end1, node_index2, element_begin2, element_end2 ) ;
+        }
     }
 }
 
