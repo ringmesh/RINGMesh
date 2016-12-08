@@ -46,7 +46,7 @@
 namespace RINGMesh {
     MeshBase::~MeshBase()
     {
-        if( vertices_ann_ ) delete vertices_ann_ ;
+        if( vertices_nn_search_ ) delete vertices_nn_search_ ;
     }
 
     Mesh0D* Mesh0D::create_mesh( const MeshType type )
