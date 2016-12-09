@@ -477,6 +477,11 @@ namespace RINGMesh {
 
         virtual bool is_connectivity_valid() const ;
 
+        const AABBTree1D& edges_aabb() const
+        {
+            return mesh1d_->edges_aabb() ;
+        }
+
         /*!
          * @brief Return the NNSearch for the edges of the line
          * @details The barycenter of the edges is used.
