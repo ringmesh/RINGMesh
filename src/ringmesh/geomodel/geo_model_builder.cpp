@@ -194,7 +194,7 @@ namespace {
             cur_neighbor = std::min( cur_neighbor, surface.nb_mesh_elements() ) ;
             neighbors.resize( cur_neighbor ) ;
             double* dist = (double*) alloca( sizeof(double) * cur_neighbor ) ;
-            nb_neighbors = surface.facet_colocater_ann().get_neighbors( v_bary,
+            nb_neighbors = surface.facet_nn_search().get_neighbors( v_bary,
                 cur_neighbor, neighbors, dist ) ;
             for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
                 f = neighbors[i] ;
@@ -256,7 +256,7 @@ namespace {
             cur_neighbor = std::min( cur_neighbor, region.nb_mesh_elements() ) ;
             neighbors.resize( cur_neighbor ) ;
             double* dist = (double*) alloca( sizeof(double) * cur_neighbor ) ;
-            nb_neighbors = region.cell_colocater_ann().get_neighbors( v_bary,
+            nb_neighbors = region.cell_nn_search().get_neighbors( v_bary,
                 cur_neighbor, neighbors, dist ) ;
             for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
                 cell = neighbors[i] ;
@@ -291,7 +291,7 @@ namespace {
             cur_neighbor = std::min( cur_neighbor, surface.nb_mesh_elements() ) ;
             neighbors.resize( cur_neighbor ) ;
             double* dist = (double*) alloca( sizeof(double) * cur_neighbor ) ;
-            nb_neighbors = surface.facet_colocater_ann().get_neighbors( v,
+            nb_neighbors = surface.facet_nn_search().get_neighbors( v,
                 cur_neighbor, neighbors, dist ) ;
             for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
                 element_id = neighbors[i] ;
@@ -328,7 +328,7 @@ namespace {
             cur_neighbor = std::min( cur_neighbor, entity.nb_mesh_elements() ) ;
             neighbors.resize( cur_neighbor ) ;
             double* dist = (double*) alloca( sizeof(double) * cur_neighbor ) ;
-            nb_neighbors = entity.cell_colocater_ann().get_neighbors( v,
+            nb_neighbors = entity.cell_nn_search().get_neighbors( v,
                 cur_neighbor, neighbors, dist ) ;
             for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
                 element_id = neighbors[i] ;
@@ -386,22 +386,6 @@ namespace {
             }
         }
         return NO_ID ;
-    }
-
-    bool is_corner_to_duplicate(
-        const GeoModel& geomodel,
-        index_t corner_id,
-        index_t surface_id )
-    {
-        const Corner& corner = geomodel.corner( corner_id ) ;
-        std::vector< index_t > surfaces ;
-        for( index_t l = 0; l < corner.nb_in_boundary(); l++ ) {
-            const GMME& line = corner.in_boundary( l ) ;
-            for( index_t s = 0; s < line.nb_in_boundary(); s++ ) {
-                surfaces.push_back( line.in_boundary_gme( s ).index ) ;
-            }
-        }
-        return std::count( surfaces.begin(), surfaces.end(), surface_id ) != 2 ;
     }
 
     void get_sorted_incident_surfaces(

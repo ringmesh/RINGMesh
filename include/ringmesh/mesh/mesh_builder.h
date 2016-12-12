@@ -68,9 +68,7 @@ namespace RINGMesh {
         virtual void copy(
             const MeshBase& rhs,
             bool copy_attributes ) = 0 ;
-        virtual void load_mesh(
-            const std::string& filename,
-            const GEO::MeshIOFlags& ioflags ) = 0 ;
+        virtual void load_mesh( const std::string& filename ) = 0 ;
         /*!
          * @brief Removes all the entities and attributes of this mesh.
          * @param[in] keep_attributes if true, then all the existing attribute
@@ -128,7 +126,7 @@ namespace RINGMesh {
          */
         virtual void clear_vertices( bool keep_attributes, bool keep_memory ) = 0 ;
         /*!
-         * @brief Deletes the ColocaterANN on vertices
+         * @brief Deletes the NNSearch on vertices
          */
         virtual void clear_vertex_linked_objects() = 0 ;
         /*!@}

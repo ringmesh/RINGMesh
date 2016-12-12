@@ -53,20 +53,6 @@
 namespace {
     using namespace RINGMesh ;
 
-    /*!
-     * @return the cotangent (inverse of the tangent) at point b
-     * in the triangle abc.
-     */
-    double cotangent( const vec3& a, const vec3& b, const vec3& c )
-    {
-        const vec3 ba = a - b ;
-        const vec3 bc = c - b ;
-        const vec3 bc_cross_ba = GEO::cross( bc, ba ) ;
-        const double bc_dot_ba = GEO::dot( bc, ba ) ;
-        ringmesh_assert( bc_cross_ba.length() > global_epsilon ) ;
-        return bc_dot_ba / bc_cross_ba.length() ;
-    }
-
     bool is_attribute_a_double(
         GEO::AttributesManager& att_manager,
         const std::string& att_name )

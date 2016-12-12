@@ -195,10 +195,10 @@ namespace RINGMesh {
 
         void unbind_geomodel_vertex_map( const gme_t& mesh_entity_id ) ;
 
-        const ColocaterANN& colocater() const
+        const NNSearch& nn_search() const
         {
             test_and_initialize() ;
-            return mesh_->vertices_colocater_ann() ;
+            return mesh_->vertices_nn_search() ;
         }
 
         /*!
@@ -617,10 +617,10 @@ namespace RINGMesh {
          */
         vec3 normal( index_t f ) const ;
 
-        const ColocaterANN& colocater() const
+        const NNSearch& nn_search() const
         {
             test_and_initialize() ;
-            return mesh_->facets_colocater_ann() ;
+            return mesh_->facets_nn_search() ;
         }
 
         /*!
@@ -646,6 +646,10 @@ namespace RINGMesh {
          * Unbind attribute to the facets attribute manager
          */
         void unbind_attribute() ;
+        /*!
+         * @brief Removes facet adjacencies along lines
+         */
+        void disconnect_along_lines() ;
 
     private:
         /// Attached GeoModelMesh owning the vertices
@@ -1058,15 +1062,15 @@ namespace RINGMesh {
          */
         double volume( index_t c ) const ;
 
-        const ColocaterANN& cell_colocater() const
+        const NNSearch& cell_nn_search() const
         {
             test_and_initialize() ;
-            return mesh_->cells_colocater_ann() ;
+            return mesh_->cells_nn_search() ;
         }
-        const ColocaterANN& cell_facet_colocater() const
+        const NNSearch& cell_facet_nn_search() const
         {
             test_and_initialize() ;
-            return mesh_->cell_facets_colocater_ann() ;
+            return mesh_->cell_facets_nn_search() ;
         }
 
         /*!
