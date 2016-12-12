@@ -764,7 +764,8 @@ namespace {
         std::vector< vec3 >& edge_barycenters )
     {
         const GeoModelMeshVertices& vertices = geomodel.mesh.vertices ;
-        edge_barycenters.reserve( edge_indices.size() * 0.5 ) ;
+        index_t nb_edges = static_cast< index_t >( edge_indices.size() / 2 ) ;
+        edge_barycenters.reserve( nb_edges ) ;
         for( index_t e = 0; e < edge_indices.size(); e += 2 ) {
             const vec3& v0 = vertices.vertex( edge_indices[e] ) ;
             const vec3& v1 = vertices.vertex( edge_indices[e + 1] ) ;
@@ -977,8 +978,6 @@ namespace {
         const GeoModel& geomodel_ ;
         bool valid_ ;
         bool check_surface_intersections_ ;
-        // Global mesh of the GeoModel used for some validity checks
-        GEO::Mesh triangulated_global_model_mesh_ ;
     } ;
 
 } // anonymous namespace
