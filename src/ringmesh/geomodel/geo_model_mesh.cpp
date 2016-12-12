@@ -2142,6 +2142,11 @@ namespace RINGMesh {
                     reg_cell_attr_mgr, att_c_names[att_c] ) ;
                 for( index_t c_in_reg_itr = 0; c_in_reg_itr < cur_reg.nb_mesh_elements();
                     ++c_in_reg_itr ) {
+                    /// TODO if code is wrong since GeoModelMeshCells::cell does
+                    /// not take as second parameter the cell index in the region.
+                    /// Rewrite the first loop of this function by iterating on
+                    /// the cells of the GeoModelMeshCells and then find the
+                    /// Region cell with GeoModelMeshCells::index_in_region (to avoid a NNSearch).
                     index_t cell_id_in_gmm = cells.cell( reg_itr, c_in_reg_itr ) ;
                     ringmesh_assert( cell_id_in_gmm != NO_ID ) ;
                     for( index_t dim_itr = 0; dim_itr < dim; ++dim_itr ) {
