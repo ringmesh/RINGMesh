@@ -58,19 +58,19 @@ namespace {
     bool triangles_intersect(
         const GeoModel& geomodel,
         const GeoModelMeshFacets& facets,
-        index_t f1,
-        index_t f2 )
+        index_t triangle1,
+        index_t triangle2 )
     {
-        ringmesh_assert( facets.nb_vertices( f1 ) == 3 ) ;
-        ringmesh_assert( facets.nb_vertices( f2 ) == 3 ) ;
+        ringmesh_assert( facets.nb_vertices( triangle1 ) == 3 ) ;
+        ringmesh_assert( facets.nb_vertices( triangle2 ) == 3 ) ;
         const GeoModelMeshVertices& vertices = geomodel.mesh.vertices ;
-        const vec3& p1 = vertices.vertex( facets.vertex( f1, 0 ) ) ;
-        const vec3& p2 = vertices.vertex( facets.vertex( f1, 1 ) ) ;
-        const vec3& p3 = vertices.vertex( facets.vertex( f1, 2 ) ) ;
+        const vec3& p1 = vertices.vertex( facets.vertex( triangle1, 0 ) ) ;
+        const vec3& p2 = vertices.vertex( facets.vertex( triangle1, 1 ) ) ;
+        const vec3& p3 = vertices.vertex( facets.vertex( triangle1, 2 ) ) ;
 
-        const vec3& q1 = vertices.vertex( facets.vertex( f2, 0 ) ) ;
-        const vec3& q2 = vertices.vertex( facets.vertex( f2, 1 ) ) ;
-        const vec3& q3 = vertices.vertex( facets.vertex( f2, 2 ) ) ;
+        const vec3& q1 = vertices.vertex( facets.vertex( triangle2, 0 ) ) ;
+        const vec3& q2 = vertices.vertex( facets.vertex( triangle2, 1 ) ) ;
+        const vec3& q3 = vertices.vertex( facets.vertex( triangle2, 2 ) ) ;
         GEO::vector< GEO::TriangleIsect > sym ;
         return triangles_intersections( p1, p2, p3, q1, q2, q3, sym ) ;
     }
@@ -78,20 +78,20 @@ namespace {
     bool triangle_quad_intersect(
         const GeoModel& geomodel,
         const GeoModelMeshFacets& facets,
-        index_t f1,
-        index_t f2 )
+        index_t triangle,
+        index_t quad )
     {
-        ringmesh_assert( facets.nb_vertices( f1 ) == 3 ) ;
-        ringmesh_assert( facets.nb_vertices( f2 ) == 4 ) ;
+        ringmesh_assert( facets.nb_vertices( triangle ) == 3 ) ;
+        ringmesh_assert( facets.nb_vertices( quad ) == 4 ) ;
         const GeoModelMeshVertices& vertices = geomodel.mesh.vertices ;
-        const vec3& p1 = vertices.vertex( facets.vertex( f1, 0 ) ) ;
-        const vec3& p2 = vertices.vertex( facets.vertex( f1, 1 ) ) ;
-        const vec3& p3 = vertices.vertex( facets.vertex( f1, 2 ) ) ;
+        const vec3& p1 = vertices.vertex( facets.vertex( triangle, 0 ) ) ;
+        const vec3& p2 = vertices.vertex( facets.vertex( triangle, 1 ) ) ;
+        const vec3& p3 = vertices.vertex( facets.vertex( triangle, 2 ) ) ;
 
-        const vec3& q1 = vertices.vertex( facets.vertex( f2, 0 ) ) ;
-        const vec3& q2 = vertices.vertex( facets.vertex( f2, 1 ) ) ;
-        const vec3& q3 = vertices.vertex( facets.vertex( f2, 2 ) ) ;
-        const vec3& q4 = vertices.vertex( facets.vertex( f2, 3 ) ) ;
+        const vec3& q1 = vertices.vertex( facets.vertex( quad, 0 ) ) ;
+        const vec3& q2 = vertices.vertex( facets.vertex( quad, 1 ) ) ;
+        const vec3& q3 = vertices.vertex( facets.vertex( quad, 2 ) ) ;
+        const vec3& q4 = vertices.vertex( facets.vertex( quad, 3 ) ) ;
         GEO::vector< GEO::TriangleIsect > sym ;
         if( triangles_intersections( p1, p2, p3, q1, q2, q3, sym ) ) {
             return true ;
@@ -105,21 +105,21 @@ namespace {
     bool quad_quad_intersect(
         const GeoModel& geomodel,
         const GeoModelMeshFacets& facets,
-        index_t f1,
-        index_t f2 )
+        index_t quad1,
+        index_t quad2 )
     {
-        ringmesh_assert( facets.nb_vertices( f1 ) == 4 ) ;
-        ringmesh_assert( facets.nb_vertices( f2 ) == 4 ) ;
+        ringmesh_assert( facets.nb_vertices( quad1 ) == 4 ) ;
+        ringmesh_assert( facets.nb_vertices( quad2 ) == 4 ) ;
         const GeoModelMeshVertices& vertices = geomodel.mesh.vertices ;
-        const vec3& p1 = vertices.vertex( facets.vertex( f1, 0 ) ) ;
-        const vec3& p2 = vertices.vertex( facets.vertex( f1, 1 ) ) ;
-        const vec3& p3 = vertices.vertex( facets.vertex( f1, 2 ) ) ;
-        const vec3& p4 = vertices.vertex( facets.vertex( f1, 3 ) ) ;
+        const vec3& p1 = vertices.vertex( facets.vertex( quad1, 0 ) ) ;
+        const vec3& p2 = vertices.vertex( facets.vertex( quad1, 1 ) ) ;
+        const vec3& p3 = vertices.vertex( facets.vertex( quad1, 2 ) ) ;
+        const vec3& p4 = vertices.vertex( facets.vertex( quad1, 3 ) ) ;
 
-        const vec3& q1 = vertices.vertex( facets.vertex( f2, 0 ) ) ;
-        const vec3& q2 = vertices.vertex( facets.vertex( f2, 1 ) ) ;
-        const vec3& q3 = vertices.vertex( facets.vertex( f2, 2 ) ) ;
-        const vec3& q4 = vertices.vertex( facets.vertex( f2, 3 ) ) ;
+        const vec3& q1 = vertices.vertex( facets.vertex( quad2, 0 ) ) ;
+        const vec3& q2 = vertices.vertex( facets.vertex( quad2, 1 ) ) ;
+        const vec3& q3 = vertices.vertex( facets.vertex( quad2, 2 ) ) ;
+        const vec3& q4 = vertices.vertex( facets.vertex( quad2, 3 ) ) ;
         GEO::vector< GEO::TriangleIsect > sym ;
         if( triangles_intersections( p1, p2, p3, q1, q2, q3, sym ) ) {
             return true ;
@@ -207,7 +207,7 @@ namespace {
         index_t f1,
         index_t f2 )
     {
-        // I only want to test the edges that are on boundary 
+        // Only test the edges on boundary
         for( index_t v1 = 0; v1 < facets.nb_vertices( f1 ); v1++ ) {
             if( facets.adjacent( f1, v1 ) != NO_ID ) {
                 continue ;
