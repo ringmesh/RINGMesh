@@ -88,10 +88,10 @@ namespace RINGMesh {
             clear_vertex_linked_objects() ;
         }
 
-        virtual void load_mesh(
-            const std::string& filename,
-            const GEO::MeshIOFlags& ioflags )
+        virtual void load_mesh( const std::string& filename )
         {
+            GEO::MeshIOFlags ioflags ;
+            ioflags.set_attribute( GEO::MESH_ALL_ATTRIBUTES ) ;
             GEO::mesh_load( filename, *mesh_->mesh_, ioflags ) ;
         }
         /*!

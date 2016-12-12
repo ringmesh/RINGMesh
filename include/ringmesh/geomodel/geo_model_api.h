@@ -38,14 +38,6 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <vector>
-
-#include <geogram/basic/attributes.h>
-
-#include <ringmesh/geogram_extension/geogram_extension.h>
-#include <ringmesh/geomodel/geo_model.h>
-#include <ringmesh/geomodel/geo_model_entity.h>
-#include <ringmesh/geomodel/geo_model_mesh_entity.h>
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
 
 /*!
@@ -54,6 +46,18 @@
  * @author Jeanne Pellerin and Arnaud Botella
  * @todo Encapsulate these functions in a namespace and TEST them.
  */
+
+namespace GEO {
+    class Mesh ;
+}
+
+namespace RINGMesh {
+    class GeoModel ;
+    class Surface ;
+    class GeoModelEntity ;
+    class GeoModelMeshEntity ;
+    class GeoModelGeologicalEntity ;
+}
 
 namespace RINGMesh {
 
@@ -85,42 +89,23 @@ namespace RINGMesh {
         const GeoModel& geomodel ) ;
 
     /*!
-     * @brief Bind named GEO::Attribute on the GeoModel entity facets
-     * @pre Entities of geomodel_entity_type are GeoModelMeshEntity
+     * @brief Build a Mesh from the geomodel non-duplicated vertices and its Surface facets.
+     * @details Adjacencies are not set. Client should call mesh repair functions afterwards.
+     * @todo Add flag options to specify which Mesh should be created, with what attributes.
      */
-    template< typename T >
-    void create_attributes_on_geomodel_surfaces_facets(
+    void RINGMESH_API build_mesh_from_geomodel(
         const GeoModel& geomodel,
-        const std::string& attribute_name,
-        AttributeVector< T >& attributes )
-    {
-        index_t nb_entities = geomodel.nb_surfaces() ;
-        attributes.resize( nb_entities ) ;
-        for( index_t i = 0; i < nb_entities; ++i ) {
-            const Surface& S = geomodel.surface( i ) ;
-            GEO::AttributesManager& manager = S.facet_attribute_manager() ;
-            attributes.bind_one_attribute( i, manager, attribute_name ) ;
-        }
-    }
+        GEO::Mesh& M ) ;
 
-    /*!
-     * @brief Bind named GEO::Attribute on the GeoModel entities cells
-     * @pre Entities of mesh_entity_type are GeoModelMeshEntity
-     */
-    template< typename T >
-    void create_attributes_on_geomodel_regions_cells(
+    void RINGMESH_API build_mesh_from_geomodel(
         const GeoModel& geomodel,
-        const std::string& attribute_name,
-        AttributeVector< T >& attributes )
-    {
-        index_t nb_entities = geomodel.nb_regions() ;
-        attributes.resize( nb_entities ) ;
-        for( index_t i = 0; i < nb_entities; ++i ) {
-            const Region& R = geomodel.region( i ) ;
-            GEO::AttributesManager& manager = R.cell_attribute_manager() ;
-            attributes.bind_one_attribute( i, manager, attribute_name ) ;
-        }
-    }
+        GEO::Mesh& M,
+        bool connect_facets ) ;
+
+    void RINGMESH_API build_mesh_from_geomodel_mesh_entities(
+        const GeoModel& geomodel,
+        const std::vector< gme_t >& surface_entities,
+        GEO::Mesh& M ) ;
 
 #ifdef RINGMESH_WITH_TETGEN
 
@@ -224,6 +209,13 @@ namespace RINGMesh {
     gme_t RINGMESH_API find_corner(
         const GeoModel& geomodel,
         index_t geomodel_point_id ) ;
+
+    /*-----------------------------------------------------------------------*/
+
+    /*!
+     * @brief Save a Surface of the geomodel in the file OBJ format is used
+     */
+    void save_surface_as_obj_file( const Surface& S, const std::string& file_name ) ;
 
 }
 
