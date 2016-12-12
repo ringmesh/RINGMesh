@@ -319,24 +319,24 @@ namespace RINGMesh {
                     id ) ) ;
                 Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder(
                     corner.low_level_mesh_storage() ) ;
-                builder->load_mesh( file_name, GEO::MeshIOFlags() ) ;
+                builder->load_mesh( file_name ) ;
             } else if( EntityTypeManager::is_line( entity_type ) ) {
                 Line& line = dynamic_cast< Line& >( mesh_entity( entity_type, id ) ) ;
                 Mesh1DBuilder_var builder = Mesh1DBuilder::create_builder(
                     line.low_level_mesh_storage() ) ;
-                builder->load_mesh( file_name, GEO::MeshIOFlags() ) ;
+                builder->load_mesh( file_name ) ;
             } else if( EntityTypeManager::is_surface( entity_type ) ) {
                 Surface& surface = dynamic_cast< Surface& >( mesh_entity(
                     entity_type, id ) ) ;
                 Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder(
                     surface.low_level_mesh_storage() ) ;
-                builder->load_mesh( file_name, GEO::MeshIOFlags() ) ;
+                builder->load_mesh( file_name ) ;
             } else if( EntityTypeManager::is_region( entity_type ) ) {
                 Region& region = dynamic_cast< Region& >( mesh_entity( entity_type,
                     id ) ) ;
                 Mesh3DBuilder_var builder = Mesh3DBuilder::create_builder(
                     region.low_level_mesh_storage() ) ;
-                builder->load_mesh( file_name, GEO::MeshIOFlags() ) ;
+                builder->load_mesh( file_name ) ;
             }
             Logger::instance()->set_minimal( false ) ;
             GEO::FileSystem::delete_file( file_name ) ;
@@ -536,12 +536,10 @@ namespace RINGMesh {
             }
             unzip_file( uz, str_try.c_str() ) ;
             GeogramMeshAllD cur_mesh ;
-            GEO::MeshIOFlags flags ;
-            flags.set_attribute( GEO::MESH_ALL_ATTRIBUTES ) ;
             GEO::Logger::instance()->set_minimal( true ) ;
             GeogramMeshAllDBuilder builder ;
             builder.set_mesh( cur_mesh ) ;
-            builder.load_mesh( str_try, flags ) ;
+            builder.load_mesh( str_try ) ;
             assign_mesh_to_entity( cur_mesh,
                 geomodel().mesh_entity( type_name_old_to_new( old_type_name ), el ).gme_id() ) ;
             GEO::Logger::instance()->set_minimal( false ) ;
