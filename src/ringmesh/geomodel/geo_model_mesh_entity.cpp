@@ -209,7 +209,7 @@ namespace {
         // If we have only 0 either this is a degenerate facets, but most certainly
         // geomodel vertex ids are not good
         ringmesh_assert(
-            std::count( vertices_global.begin(), vertices_global.end(), 0 )
+            static_cast< index_t >( std::count( vertices_global.begin(), vertices_global.end(), 0 ) )
             != vertices_global.size() ) ;
 
         std::sort( vertices.begin(), vertices.end() ) ;
