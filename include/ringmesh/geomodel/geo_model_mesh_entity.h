@@ -1209,8 +1209,6 @@ namespace RINGMesh {
 
         virtual bool is_mesh_valid() const ;
 
-        bool is_brep_region_valid() const ;
-
         void update_mesh_storage_type( Mesh3D* mesh )
         {
             mesh3d_ = mesh ;
