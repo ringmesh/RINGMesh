@@ -885,7 +885,7 @@ namespace RINGMesh {
          * the region owing the cell
          * @param[in] c the cell index
          * @return the cell index varying from 0 to nb_cells
-         * in the region owing \p f
+         * in the region owing \p c
          */
         index_t index_in_region( index_t c ) const ;
         /*!
@@ -894,7 +894,7 @@ namespace RINGMesh {
          * @param[in] c the cell index
          * @param[out] index the cell index varying from 0 to nb_cells
          * of the corresponding type of \p c in the owing region
-         * @return the type of the cell \p f
+         * @return the type of the cell \p c
          */
         GEO::MeshCellType type( index_t c ) const ;
 
@@ -917,10 +917,10 @@ namespace RINGMesh {
         /*!
          * Get the cell index in the GeoModelMesh
          * @param[in] r the region index owing the cell
-         * @param[in] c the cell index varying from 0 to nb_cells in the region
-         * @param[in] type it can specify the cell type used. For example, if type = QUAD
-         * then \p c represents the fth quad in the region \p s and \p c can vary from 0
-         * to nb_quads( s ).
+         * @param[in] c the cell index varying from 0 to nb_cells in the region \p r
+         * @param[in] type it can specify the cell type used. For example, if type = GEO::MESH_HEX
+         * then \p c represents the fth hex in the region \p r and \p c can vary from 0
+         * to nb_hex( r ).
          * @return the cell index
          */
         index_t cell( index_t r, index_t c, GEO::MeshCellType type =
