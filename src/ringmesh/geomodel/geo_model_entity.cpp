@@ -58,7 +58,6 @@
 #include <ringmesh/basic/geometry.h>
 #include <ringmesh/geogram_extension/geogram_extension.h>
 #include <ringmesh/geomodel/geo_model.h>
-#include <ringmesh/geomodel/geo_model_api.h>
 #include <ringmesh/geomodel/geo_model_geological_entity.h>
 #include <ringmesh/geomodel/geo_model_mesh_entity.h>
 #include <ringmesh/geomodel/geo_model_validity.h>
@@ -169,7 +168,7 @@ namespace RINGMesh {
 
     bool Universe::is_valid() const
     {
-        return RINGMesh::check_volume_watertightness( geomodel(), gme_id() ) ;
+        return true ;
     }
 
 }
