@@ -417,6 +417,7 @@ if(RINGMESH_WITH_UTILITIES)
     add_subdirectory(src/ringmeshstats)
     add_subdirectory(src/ringmeshrepair)
     add_subdirectory(src/ringmesh_mesh_quality)
+    add_subdirectory(src/ringmesh_duplicate_faults)
 endif(RINGMESH_WITH_UTILITIES)
 
 if(RINGMESH_WITH_EXAMPLES)
