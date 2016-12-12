@@ -90,11 +90,6 @@ namespace RINGMesh {
 
     bool RINGMESH_API are_geomodel_geological_entities_valid(
         const GeoModel& geomodel ) ;
-
-    bool RINGMESH_API check_volume_watertightness(
-        const GeoModel& geomodel,
-        const gme_t& gme_id ) ;
-
 }
 
 #endif
