@@ -243,6 +243,8 @@ namespace {
      * http://www.code-aster.org/doc/v12/fr/man_u/u3/u3.01.00.pdf
      * Aster support multi-element mesh, so the export is region
      * based (the cells are written region by region)
+     * @warning It supposes you have the mesh duplicate around the
+     * fauls if you want to use friction laws in aster
      */
     class AsterIOHandler: public GeoModelIOHandler {
     public:
