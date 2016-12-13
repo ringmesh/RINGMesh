@@ -244,8 +244,10 @@ namespace {
      * Aster support multi-element mesh, so the export is region
      * based (the cells are written region by region).
      * The group of cells/facets in aster are handle by "GROUP_MA"
-     * Here, there will be one group for each Region, and one group
-     * for each Surface. The name of the Regions are the one given
+     * Here, there will be one group for each Region, one group
+     * for each Surface and one group for each Interfaces. It doesn't
+     * matter if one facet or cell is in several group
+     *  The name of the Regions are the one given
      * by the GeoModel, the name of the Surfaces are the one given
      * by the parent Interface + the index of the child
      * @warning It supposes you have the mesh duplicate around the
@@ -390,13 +392,25 @@ namespace {
                     index_t surface_id = cur_interface.child( s ).index() ;
                     out << "GROUP_MA" << std::endl ;
                     out << cur_interface.name() << "_" << s << std::endl ;
-                    for( index_t f = 0; f < geomodel.mesh.facets.nb_facets( s );
-                        f++ ) {
-                        out << "F" << geomodel.mesh.facets.facet( s, f )
+                    for( index_t f = 0;
+                        f < geomodel.mesh.facets.nb_facets( surface_id ); f++ ) {
+                        out << "F" << geomodel.mesh.facets.facet( surface_id, f )
                             << std::endl ;
                     }
                     out << "FINSF" << std::endl ;
                 }
+
+                out << "GROUP_MA" << std::endl ;
+                out << cur_interface.name() << std::endl ;
+                for( index_t s = 0; s < cur_interface.nb_children(); s++ ) {
+                    index_t surface_id = cur_interface.child( s ).index() ;
+                    for( index_t f = 0;
+                        f < geomodel.mesh.facets.nb_facets( surface_id ); f++ ) {
+                        out << "F" << geomodel.mesh.facets.facet( surface_id, f )
+                            << std::endl ;
+                    }
+                }
+                out << "FINSF" << std::endl ;
             }
         }
     } ;
@@ -2383,18 +2397,18 @@ namespace RINGMesh {
      */
     void GeoModelIOHandler::initialize_full_geomodel_output()
     {
-        ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "meshb" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "mesh" );
-        ringmesh_register_GeoModelIOHandler_creator( TetGenIOHandler, "tetgen" );
-        ringmesh_register_GeoModelIOHandler_creator( TSolidIOHandler, "so" );
-        ringmesh_register_GeoModelIOHandler_creator( CSMPIOHandler, "csmp" );
-        ringmesh_register_GeoModelIOHandler_creator( AsterIOHandler, "mail" );
-        ringmesh_register_GeoModelIOHandler_creator( VTKIOHandler, "vtk" );
-        ringmesh_register_GeoModelIOHandler_creator( GPRSIOHandler, "gprs" );
-        ringmesh_register_GeoModelIOHandler_creator( MSHIOHandler, "msh" );
-        ringmesh_register_GeoModelIOHandler_creator( MFEMIOHandler, "mfem" );
-        ringmesh_register_GeoModelIOHandler_creator( GeoModelHandlerGM, "gm" );
-        ringmesh_register_GeoModelIOHandler_creator( OldGeoModelHandlerGM, "ogm" );
-        ringmesh_register_GeoModelIOHandler_creator( AbaqusIOHandler, "inp" );}
+        ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "meshb" );
+    ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "mesh" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( TetGenIOHandler, "tetgen" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( TSolidIOHandler, "so" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( CSMPIOHandler, "csmp" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( AsterIOHandler, "mail" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( VTKIOHandler, "vtk" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( GPRSIOHandler, "gprs" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( MSHIOHandler, "msh" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( MFEMIOHandler, "mfem" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( GeoModelHandlerGM, "gm" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( OldGeoModelHandlerGM, "ogm" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( AbaqusIOHandler, "inp" ) ;}
 
 }
