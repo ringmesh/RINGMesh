@@ -927,8 +927,8 @@ namespace RINGMesh {
         /*!
          * Get the cell index in the GeoModelMesh
          * @param[in] r the region index owing the cell
-         * @param[in] c the cell index varying from 0 to nb_cells of type \p type
-         * in the region \p r.
+         * @param[in] c the cell index varying from 0 to number of cells
+         * of type \p type in the region \p r.
          * @warning \p c is NOT a cell id of the region \p r,
          * It is cth cell of type \p type in the internal storage of the
          * GeoModelMeshCells (see GeoModelMeshCells::region_cell_ptr_).
