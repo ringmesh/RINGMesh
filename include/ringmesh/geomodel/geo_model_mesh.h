@@ -528,10 +528,20 @@ namespace RINGMesh {
         /*!
          * Get the facet index in the GeoModelMesh
          * @param[in] s the surface index owing the facet
-         * @param[in] f the facet index varying from 0 to nb_facets in the surface
+         * @param[in] f the facet index varying from 0 to the number of facets
+         * of type \p type in the surface \p s.
+         * @warning \p f is NOT a facet id
+         * of the surface \p s.
+         * It is fth facet of type \p type in the internal storage of the
+         * GeoModelMeshFacets (see GeoModelMeshFacets::surface_facet_ptr_).
+         * @note to find the facet id of the GeoModelMeshFacets from a surface
+         * and a facet id of this surface, you need to perform a search using
+         * NNSearch and the barycenter of the facet for instance.
          * @param[in] type it can specify the facet type used. For example, if type = QUAD
          * then \p f represents the fth quad in the surface \p s and \p f can vary from 0
          * to nb_quads( s ).
+         * If \p type is FacetType::ALL, all the facet types are
+         * taken into account.
          * @return the facet index
          */
         index_t facet( index_t s, index_t f, FacetType type = ALL ) const ;
@@ -917,10 +927,19 @@ namespace RINGMesh {
         /*!
          * Get the cell index in the GeoModelMesh
          * @param[in] r the region index owing the cell
-         * @param[in] c the cell index varying from 0 to nb_cells in the region \p r
-         * @param[in] type it can specify the cell type used. For example, if type = GEO::MESH_HEX
-         * then \p c represents the fth hex in the region \p r and \p c can vary from 0
-         * to nb_hex( r ).
+         * @param[in] c the cell index varying from 0 to nb_cells of type \p type
+         * in the region \p r.
+         * @warning \p c is NOT a cell id of the region \p r,
+         * It is cth cell of type \p type in the internal storage of the
+         * GeoModelMeshCells (see GeoModelMeshCells::region_cell_ptr_).
+         * @note to find the cell id of the GeoModelMeshCells from a region
+         * and a cell id of this region, you need to perform a search using
+         * NNSearch and the barycenter of the cell for instance.
+         * @param[in] type it can specify the cell type used. For example,
+         * if type = GEO::MESH_HEX then \p c represents the cth hex in the
+         * region \p r and \p c can vary from 0 to nb_hex( r ).
+         * If \p type is GEO::MESH_NB_CELL_TYPES, all the cell types are
+         * taken into account.
          * @return the cell index
          */
         index_t cell( index_t r, index_t c, GEO::MeshCellType type =
