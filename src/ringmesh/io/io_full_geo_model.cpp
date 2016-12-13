@@ -292,8 +292,8 @@ namespace {
                 for( index_t c = 0; c < mesh.cells.nb_tet( r ); c++ ) {
                     out << "C" << cur_cell++ << std::endl ;
                 }
-            }
             out << "FINSF" << std::endl ;
+            }
 
             /// 4. Write triangles
             out << "TRIA3" << std::endl ;
@@ -329,7 +329,7 @@ namespace {
                 for( index_t s = 0; s < interf.nb_children(); s++ ) {
                     index_t surface_id = interf.child_gme( s ).index ;
                     out << "GROUP_MA" << std::endl ;
-                    out << interf.name() << std::endl ;
+                    out << interf.name() << "_"<< s << std::endl ;
                     for( index_t f = 0; f < mesh.facets.nb_triangle( surface_id );
                         f++ ) {
                         index_t facet_id = mesh.facets.triangle( surface_id, f ) ;
