@@ -744,7 +744,7 @@ namespace RINGMesh {
             }
         }
         remove_mesh_entities( to_delete_mesh_entities ) ;
-        remove_geological_entities( to_delete_geological_entities ) ;
+//        remove_geological_entities( to_delete_geological_entities ) ;
     }
 
     void DuplicateInterfaceBuilder::rebuild_valid_geomodel()
