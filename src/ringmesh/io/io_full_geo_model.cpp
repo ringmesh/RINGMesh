@@ -242,7 +242,12 @@ namespace {
      * @details The descriptor of the .mail is available here:
      * http://www.code-aster.org/doc/v12/fr/man_u/u3/u3.01.00.pdf
      * Aster support multi-element mesh, so the export is region
-     * based (the cells are written region by region)
+     * based (the cells are written region by region).
+     * The group of cells/facets in aster are handle by "GROUP_MA"
+     * Here, there will be one group for each Region, and one group
+     * for each Surface. The name of the Regions are the one given
+     * by the GeoModel, the name of the Surfaces are the one given
+     * by the parent Interface + the index of the child
      * @warning It supposes you have the mesh duplicate around the
      * fauls if you want to use friction laws in aster
      */
@@ -384,7 +389,7 @@ namespace {
                 for( index_t s = 0; s < cur_interface.nb_children(); s++ ) {
                     index_t surface_id = cur_interface.child( s ).index() ;
                     out << "GROUP_MA" << std::endl ;
-                    out << cur_interface.name() << "_" << surface_id << std::endl ;
+                    out << cur_interface.name() << "_" << s << std::endl ;
                     for( index_t f = 0; f < geomodel.mesh.facets.nb_facets( s );
                         f++ ) {
                         out << "F" << geomodel.mesh.facets.facet( s, f )
