@@ -308,8 +308,8 @@ namespace {
                 for( index_t ct = 0; ct < GEO::MESH_NB_CELL_TYPES - 1; ct++ ) {
                     if( geomodel_mesh.cells.nb_cells( r,
                         GEO::MeshCellType( ct ) ) ) {
-                        write_cells_in_region( GEO::MeshCellType( ct ), r, out,
-                            geomodel_mesh ) ;
+                        write_cells_in_region( GEO::MeshCellType( ct ), r, geomodel_mesh,
+                            out ) ;
                     }
                 }
             }
@@ -317,14 +317,14 @@ namespace {
 
         void write_facets( const RINGMesh::GeoModel& geomodel, std::ofstream& out )
         {
-            const RINGMesh::GeoModelMesh& mesh = geomodel.mesh ;
+            const RINGMesh::GeoModelMesh& geomodel_mesh = geomodel.mesh ;
             for( index_t s = 0; s < geomodel.nb_surfaces(); s++ ) {
                 // -1 because polygons doesn' t exist in aster
                 for( index_t ft = 0; ft < GeoModelMeshFacets::ALL - 1; ft++ ) {
-                    if( mesh.facets.nb_facets( s,
+                    if( geomodel_mesh.facets.nb_facets( s,
                         GeoModelMeshFacets::FacetType( ft ) ) > 0 ) {
                         write_facets_in_interface(
-                            GeoModelMeshFacets::FacetType( ft ), s, out, mesh ) ;
+                            GeoModelMeshFacets::FacetType( ft ), s, geomodel_mesh, out ) ;
                     }
                 }
             }
@@ -332,8 +332,8 @@ namespace {
         void write_cells_in_region(
             const GEO::MeshCellType& cell_type,
             index_t reg,
-            std::ofstream& out,
-            const RINGMesh::GeoModelMesh& geomodel_mesh )
+            const RINGMesh::GeoModelMesh& geomodel_mesh,
+            std::ofstream& out )
         {
             out << *cell_name_in_aster_mail_file[cell_type] << std::endl ;
             for( index_t c = 0; c < geomodel_mesh.cells.nb_cells( reg, cell_type );
@@ -351,8 +351,8 @@ namespace {
         void write_facets_in_interface(
             const GeoModelMeshFacets::FacetType& facet_type,
             index_t sur,
-            std::ofstream& out,
-            const RINGMesh::GeoModelMesh& mesh )
+            const RINGMesh::GeoModelMesh& mesh,
+            std::ofstream& out )
         {
 
             out << *facet_name_in_aster_mail_file[facet_type] << std::endl ;
