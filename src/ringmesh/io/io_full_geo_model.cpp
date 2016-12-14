@@ -223,20 +223,16 @@ namespace {
     static std::string hex_name_in_aster_mail_file = "HEXA10" ;
     static std::string prism_name_in_aster_mail_file = "PENTA6" ;
     static std::string pyr_name_in_aster_mail_file = "PYRAM5" ;
-    static std::string connector_name_in_aster_mail_file = "" ;
 
-    static std::string* cell_name_in_aster_mail_file[5] = {
+    static std::string* cell_name_in_aster_mail_file[4] = {
         &tet_name_in_aster_mail_file, &hex_name_in_aster_mail_file,
-        &prism_name_in_aster_mail_file, &pyr_name_in_aster_mail_file,
-        &connector_name_in_aster_mail_file } ;
+        &prism_name_in_aster_mail_file, &pyr_name_in_aster_mail_file } ;
 
     static std::string triangle_name_in_aster_mail_file = "TRIA3" ;
     static std::string quad_name_in_aster_mail_file = "QUAD4" ;
-    static std::string poly_name_in_aster_mail_file = "" ;
 
-    static std::string* facet_name_in_aster_mail_file[3] = {
-        &triangle_name_in_aster_mail_file, &quad_name_in_aster_mail_file,
-        &poly_name_in_aster_mail_file } ;
+    static std::string* facet_name_in_aster_mail_file[2] = {
+        &triangle_name_in_aster_mail_file, &quad_name_in_aster_mail_file } ;
     /*!
      * @brief Export to the .mail mesh format of code aster
      * @details The descriptor of the .mail is available here:
@@ -308,7 +304,8 @@ namespace {
         {
             const RINGMesh::GeoModelMesh& geomodel_mesh = geomodel.mesh ;
             for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
-                for( index_t ct = 0; ct < GEO::MESH_NB_CELL_TYPES; ct++ ) {
+                // -1 Because connectors doesn't exist in aster
+                for( index_t ct = 0; ct < GEO::MESH_NB_CELL_TYPES - 1; ct++ ) {
                     if( geomodel_mesh.cells.nb_cells( r,
                         GEO::MeshCellType( ct ) ) ) {
                         write_cells_in_region( GEO::MeshCellType( ct ), r, out,
@@ -322,7 +319,8 @@ namespace {
         {
             const RINGMesh::GeoModelMesh& mesh = geomodel.mesh ;
             for( index_t s = 0; s < geomodel.nb_surfaces(); s++ ) {
-                for( index_t ft = 0; ft < GeoModelMeshFacets::ALL; ft++ ) {
+                // -1 because polygons doesn' t exist in aster
+                for( index_t ft = 0; ft < GeoModelMeshFacets::ALL - 1; ft++ ) {
                     if( mesh.facets.nb_facets( s,
                         GeoModelMeshFacets::FacetType( ft ) ) > 0 ) {
                         write_facets_in_interface(
@@ -383,11 +381,11 @@ namespace {
 
         void write_interfaces( const GeoModel& geomodel, std::ofstream& out )
         {
-            for( index_t i = 0;
-                i < geomodel.nb_geological_entities( Interface::type_name_static() );
-                i++ ) {
+            for( index_t inter = 0;
+                inter < geomodel.nb_geological_entities( Interface::type_name_static() );
+                inter++ ) {
                 const GeoModelGeologicalEntity& cur_interface =
-                    geomodel.geological_entity( Interface::type_name_static(), i ) ;
+                    geomodel.geological_entity( Interface::type_name_static(), inter ) ;
                 for( index_t s = 0; s < cur_interface.nb_children(); s++ ) {
                     index_t surface_id = cur_interface.child( s ).index() ;
                     out << "GROUP_MA" << std::endl ;
@@ -2398,17 +2396,18 @@ namespace RINGMesh {
     void GeoModelIOHandler::initialize_full_geomodel_output()
     {
         ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "meshb" );
-    ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "mesh" ) ;
-    ringmesh_register_GeoModelIOHandler_creator( TetGenIOHandler, "tetgen" ) ;
-    ringmesh_register_GeoModelIOHandler_creator( TSolidIOHandler, "so" ) ;
-    ringmesh_register_GeoModelIOHandler_creator( CSMPIOHandler, "csmp" ) ;
-    ringmesh_register_GeoModelIOHandler_creator( AsterIOHandler, "mail" ) ;
-    ringmesh_register_GeoModelIOHandler_creator( VTKIOHandler, "vtk" ) ;
-    ringmesh_register_GeoModelIOHandler_creator( GPRSIOHandler, "gprs" ) ;
-    ringmesh_register_GeoModelIOHandler_creator( MSHIOHandler, "msh" ) ;
-    ringmesh_register_GeoModelIOHandler_creator( MFEMIOHandler, "mfem" ) ;
-    ringmesh_register_GeoModelIOHandler_creator( GeoModelHandlerGM, "gm" ) ;
-    ringmesh_register_GeoModelIOHandler_creator( OldGeoModelHandlerGM, "ogm" ) ;
-    ringmesh_register_GeoModelIOHandler_creator( AbaqusIOHandler, "inp" ) ;}
+        ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "mesh" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( TetGenIOHandler, "tetgen" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( TSolidIOHandler, "so" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( CSMPIOHandler, "csmp" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( AsterIOHandler, "mail" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( VTKIOHandler, "vtk" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( GPRSIOHandler, "gprs" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( MSHIOHandler, "msh" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( MFEMIOHandler, "mfem" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( GeoModelHandlerGM, "gm" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( OldGeoModelHandlerGM, "ogm" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( AbaqusIOHandler, "inp" ) ;
+    }
 
 }
