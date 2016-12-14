@@ -247,7 +247,7 @@ namespace {
      * by the GeoModel, the name of the Surfaces are the one given
      * by the parent Interface + the index of the child
      * @warning It supposes you have the mesh duplicate around the
-     * fauls if you want to use friction laws in aster
+     * faults if you want to use friction laws in aster
      */
     class AsterIOHandler: public GeoModelIOHandler {
     public:
@@ -973,8 +973,7 @@ namespace {
                             side ) ) {
                             index_t surface_id = mesh.facets.surface( facet ) ;
                             side ? out << "+" : out << "-" ;
-                            out
-                                << geomodel.surface( surface_id ).parent( 0 ).name() ;
+                            out << geomodel.surface( surface_id ).parent( 0 ).name() ;
                         } else {
                             out << "none" ;
                         }
@@ -2395,7 +2394,7 @@ namespace RINGMesh {
      */
     void GeoModelIOHandler::initialize_full_geomodel_output()
     {
-        ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "meshb" );
+        ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "meshb" ) ;
         ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "mesh" ) ;
         ringmesh_register_GeoModelIOHandler_creator( TetGenIOHandler, "tetgen" ) ;
         ringmesh_register_GeoModelIOHandler_creator( TSolidIOHandler, "so" ) ;
