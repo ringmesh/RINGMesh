@@ -10,7 +10,8 @@ in vec4 tex_coord_in;
 
 out VertexData {                           
     vec4 color;                             
-    vec4 tex_coord;                         
+    vec4 tex_coord;
+    float depth_radius;
 } VertexOut;
 
 void main() {                                              
@@ -32,5 +33,9 @@ void main() {
         }                                                    
     }                                                       
     gl_PointSize = GLUP.point_size;                         
-    gl_Position = GLUP.modelviewprojection_matrix*vertex_in; 
+    gl_Position = GLUP.modelviewprojection_matrix*vertex_in;
+
+    // TODO (depth radius corresponds to maximum difference of depth,
+    // at the center of the displayed GL_POINT).
+    VertexOut.depth_radius = 0.001;
 }
