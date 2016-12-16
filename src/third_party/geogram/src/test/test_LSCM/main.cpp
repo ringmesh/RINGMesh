@@ -45,6 +45,7 @@
 
 #include <geogram/NL/nl.h>
 
+#include <algorithm>
 #include <vector>
 #include <set>
 #include <string>
@@ -55,8 +56,6 @@
 #include <cstring>
 #include <cmath>
 #include <cassert>
-
-#include <algorithm> // [RINGMESH] Not included
 
 /******************************************************************************/
 /* Basic geometric types */
