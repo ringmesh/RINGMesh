@@ -71,62 +71,6 @@ namespace RINGMesh {
     private:
         const GEO::Mesh& mesh_ ;
     } ;
-
-    /*!
-     * @brief Builder of a GeoModel from a simplicial surface/volumetric mesh 
-     * @details Regions and Surfaces are identified with an attribute of type index_t
-     * on the mesh cells or facet 
-     */
-    class RINGMESH_API GeoModelBuilderMesh: public GeoModelBuilder {
-    public:
-        GeoModelBuilderMesh(
-            GeoModel& geomodel,
-            const GEO::Mesh& mesh,
-            const std::string& surface_attribute_name,
-            const std::string& region_attribute_name ) ;
-        virtual ~GeoModelBuilderMesh() ;
-
-        /*!
-         * @brief Prepare a Mesh so that it can be used to build one GeoModel Surfaces
-         * @details Repairs the mesh, triangulates it, computes a connected component 
-         * attribute of type index_t on the mesh facets and removes colocated vertices. 
-         */
-        static void prepare_surface_mesh_from_connected_components(
-            GEO::Mesh& mesh,
-            const std::string& created_surface_attribute ) ;
-
-        void create_and_build_surfaces() ;
-        void build_surfaces() ;
-
-        void create_and_build_regions() ;
-        void build_regions() ;
-
-        void copy_facet_attribute_from_mesh( const std::string& attribute_name ) ;
-        void copy_cell_attribute_from_mesh( const std::string& attribute_name ) ;
-
-    protected:
-        /*!
-         * @brief Set the unique vertices used to build the GeoModel
-         * @details They are cleared when end_geomodel() is called
-         */
-        void add_mesh_vertices_to_geomodel() ;
-
-        void initialize_surface_builder() ;
-        void initialize_region_builder() ;
-
-        bool is_mesh_valid_for_surface_building() const ;
-        bool is_mesh_valid_for_region_building() const ;
-
-    protected:
-        const GEO::Mesh& mesh_ ;
-        double epsilon_ ;
-        GeoModelEntityFromMesh* surface_builder_ ;
-        GeoModelEntityFromMesh* region_builder_ ;
-        std::string surface_attribute_name_ ;
-        std::string region_attribute_name_ ;
-        index_t nb_surface_attribute_values_ ;
-        index_t nb_region_attribute_values_ ;
-    } ;
 }
 
 #endif

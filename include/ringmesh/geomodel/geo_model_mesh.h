@@ -339,12 +339,6 @@ namespace RINGMesh {
              */
 
             /*!
-             * @brief Tests if all the GeoModelMeshEntity maps have been computed
-             * (+ GME_Vertices), and initializes them if needed
-             */
-            void test_and_initialize() const ;
-
-            /*!
              * @brief Clears and resizes the GME_Vertex vectors
              * @param[in] nb Size of the vector
              */
@@ -384,19 +378,6 @@ namespace RINGMesh {
 
         private:
             /*!
-             * @brief Initializes vertex maps and GMEVertex vectors
-             */
-            void initialize() ;
-
-            /*!
-             * @brief Checks if GMEVertices are initialized.
-             * @details Checks also that all the vertex maps are initialized. If some
-             * vertex maps are not initialized, calling these function initialized them.
-             * @return false if GMEVertices are not initialized, otherwise true.
-             */
-            bool is_initialized() const ;
-
-            /*!
              * @brief Initializes the given GeoModelMeshEntity vertex map
              * @param[in] mesh_entity_id Unique id to a GeoModelMeshEntity
              */
@@ -425,57 +406,6 @@ namespace RINGMesh {
              * @brief Unbinds all the GeoModelMeshEntity vertex maps
              */
             void clear_all_mesh_entity_vertex_map() ;
-
-            /*!
-             * @brief Sizes and fills the vector of GMEVertices for all the
-             * GeoModelMeshEntities of the GeoModel
-             */
-            void fill_gme_vertices() ;
-
-            /*!
-             * @brief Add to GMEVertices those corresponding of a given GeoModelMeshENtity
-             * @param[in] mesh_entity_id Unique id to a GeoModelMeshEntity
-             */
-            void add_mesh_entity_vertices_to_gme( const gme_t& mesh_entity_id ) ;
-
-            /*!
-             * @brief Compute all the corresponding GMEVertices of a given geomodel vertex
-             * @param[in] v Model vertex index
-             * @param[out] gme_vertices GeoModelMeshEntity vertex indices
-             * corresponding to v
-             * @note Calling this function can take long time.
-             */
-            void compute_all_mesh_entity_vertices(
-                index_t v,
-                std::vector< GMEVertex >& gme_vertices ) const ;
-
-            /*!
-             * @brief Compute the corresponding GMEVertices in the GeoModelMeshEntities
-             * of a given type
-             * @param[in] v Model vertex index
-             * @param[in] entity_type GeoModelMeshEntity type
-             * @param[out] gme_vertices GeoModelMeshEntity vertex indices
-             * corresponding to v
-             * @note Calling this function can take long time.
-             */
-            void compute_mesh_entity_type_vertices(
-                index_t v,
-                const EntityType& entity_type,
-                std::vector< GMEVertex >& gme_vertices ) const ;
-
-            /*!
-             * @brief Compute the corresponding GMEVertices in a specific
-             * GeoModelMeshEntity
-             * @param[in] mesh_entity_id Unique id to a GeoModelMeshEntity
-             * @param[in] v Model vertex index
-             * @param[out] result GeoModelMeshEntity vertex indices
-             * corresponding to v
-             * @note Calling this function can take long time.
-             */
-            void compute_mesh_entity_vertex_indices(
-                const gme_t& mesh_entity_id,
-                index_t v,
-                std::vector< index_t >& result ) const ;
 
             void resize_all_mesh_entity_vertex_maps() ;
 
@@ -598,10 +528,20 @@ namespace RINGMesh {
         /*!
          * Get the facet index in the GeoModelMesh
          * @param[in] s the surface index owing the facet
-         * @param[in] f the facet index varying from 0 to nb_facets in the surface
+         * @param[in] f the facet index varying from 0 to the number of facets
+         * of type \p type in the surface \p s.
+         * @warning \p f is NOT a facet id
+         * of the surface \p s.
+         * It is fth facet of type \p type in the internal storage of the
+         * GeoModelMeshFacets (see GeoModelMeshFacets::surface_facet_ptr_).
+         * @note to find the facet id of the GeoModelMeshFacets from a surface
+         * and a facet id of this surface, you need to perform a search using
+         * NNSearch and the barycenter of the facet for instance.
          * @param[in] type it can specify the facet type used. For example, if type = QUAD
          * then \p f represents the fth quad in the surface \p s and \p f can vary from 0
          * to nb_quads( s ).
+         * If \p type is FacetType::ALL, all the facet types are
+         * taken into account.
          * @return the facet index
          */
         index_t facet( index_t s, index_t f, FacetType type = ALL ) const ;
@@ -955,7 +895,7 @@ namespace RINGMesh {
          * the region owing the cell
          * @param[in] c the cell index
          * @return the cell index varying from 0 to nb_cells
-         * in the region owing \p f
+         * in the region owing \p c
          */
         index_t index_in_region( index_t c ) const ;
         /*!
@@ -964,7 +904,7 @@ namespace RINGMesh {
          * @param[in] c the cell index
          * @param[out] index the cell index varying from 0 to nb_cells
          * of the corresponding type of \p c in the owing region
-         * @return the type of the cell \p f
+         * @return the type of the cell \p c
          */
         GEO::MeshCellType type( index_t c ) const ;
 
@@ -987,10 +927,19 @@ namespace RINGMesh {
         /*!
          * Get the cell index in the GeoModelMesh
          * @param[in] r the region index owing the cell
-         * @param[in] c the cell index varying from 0 to nb_cells in the region
-         * @param[in] type it can specify the cell type used. For example, if type = QUAD
-         * then \p c represents the fth quad in the region \p s and \p c can vary from 0
-         * to nb_quads( s ).
+         * @param[in] c the cell index varying from 0 to number of cells
+         * of type \p type in the region \p r.
+         * @warning \p c is NOT a cell id of the region \p r,
+         * It is cth cell of type \p type in the internal storage of the
+         * GeoModelMeshCells (see GeoModelMeshCells::region_cell_ptr_).
+         * @note to find the cell id of the GeoModelMeshCells from a region
+         * and a cell id of this region, you need to perform a search using
+         * NNSearch and the barycenter of the cell for instance.
+         * @param[in] type it can specify the cell type used. For example,
+         * if type = GEO::MESH_HEX then \p c represents the cth hex in the
+         * region \p r and \p c can vary from 0 to nb_hex( r ).
+         * If \p type is GEO::MESH_NB_CELL_TYPES, all the cell types are
+         * taken into account.
          * @return the cell index
          */
         index_t cell( index_t r, index_t c, GEO::MeshCellType type =
