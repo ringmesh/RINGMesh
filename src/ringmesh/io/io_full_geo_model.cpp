@@ -354,7 +354,6 @@ namespace {
             const RINGMesh::GeoModelMesh& mesh,
             std::ofstream& out )
         {
-
             out << *facet_name_in_aster_mail_file[facet_type] << std::endl ;
             for( index_t f = 0; f < mesh.facets.nb_facets( sur, facet_type ); f++ ) {
                 index_t global_id = mesh.facets.facet( sur, f, facet_type ) ;
