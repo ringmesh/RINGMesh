@@ -219,19 +219,19 @@ namespace {
 
     /************************************************************************/
 
-    static std::string tet_name_in_aster_mail_file = "TETRA4" ;
-    static std::string hex_name_in_aster_mail_file = "HEXA10" ;
-    static std::string prism_name_in_aster_mail_file = "PENTA6" ;
-    static std::string pyr_name_in_aster_mail_file = "PYRAM5" ;
+    const static std::string tet_name_in_aster_mail_file = "TETRA4" ;
+    const static std::string hex_name_in_aster_mail_file = "HEXA10" ;
+    const static std::string prism_name_in_aster_mail_file = "PENTA6" ;
+    const static std::string pyr_name_in_aster_mail_file = "PYRAM5" ;
 
-    static std::string* cell_name_in_aster_mail_file[4] = {
+    const static std::string* cell_name_in_aster_mail_file[4] = {
         &tet_name_in_aster_mail_file, &hex_name_in_aster_mail_file,
         &prism_name_in_aster_mail_file, &pyr_name_in_aster_mail_file } ;
 
-    static std::string triangle_name_in_aster_mail_file = "TRIA3" ;
-    static std::string quad_name_in_aster_mail_file = "QUAD4" ;
+    const static std::string triangle_name_in_aster_mail_file = "TRIA3" ;
+    const static std::string quad_name_in_aster_mail_file = "QUAD4" ;
 
-    static std::string* facet_name_in_aster_mail_file[2] = {
+    const static std::string* facet_name_in_aster_mail_file[2] = {
         &triangle_name_in_aster_mail_file, &quad_name_in_aster_mail_file } ;
     /*!
      * @brief Export to the .mail mesh format of code aster
@@ -306,10 +306,10 @@ namespace {
             for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
                 // -1 Because connectors doesn't exist in aster
                 for( index_t ct = 0; ct < GEO::MESH_NB_CELL_TYPES - 1; ct++ ) {
-                    if( geomodel_mesh.cells.nb_cells( r,
-                        GEO::MeshCellType( ct ) ) ) {
-                        write_cells_in_region( GEO::MeshCellType( ct ), r, geomodel_mesh,
-                            out ) ;
+                    if( geomodel_mesh.cells.nb_cells( r, GEO::MeshCellType( ct ) )
+                        > 0 ) {
+                        write_cells_in_region( GEO::MeshCellType( ct ), r,
+                            geomodel_mesh, out ) ;
                     }
                 }
             }
@@ -324,21 +324,23 @@ namespace {
                     if( geomodel_mesh.facets.nb_facets( s,
                         GeoModelMeshFacets::FacetType( ft ) ) > 0 ) {
                         write_facets_in_interface(
-                            GeoModelMeshFacets::FacetType( ft ), s, geomodel_mesh, out ) ;
+                            GeoModelMeshFacets::FacetType( ft ), s, geomodel_mesh,
+                            out ) ;
                     }
                 }
             }
         }
         void write_cells_in_region(
             const GEO::MeshCellType& cell_type,
-            index_t reg,
+            index_t region,
             const RINGMesh::GeoModelMesh& geomodel_mesh,
             std::ofstream& out )
         {
             out << *cell_name_in_aster_mail_file[cell_type] << std::endl ;
-            for( index_t c = 0; c < geomodel_mesh.cells.nb_cells( reg, cell_type );
-                c++ ) {
-                index_t global_id = geomodel_mesh.cells.cell( reg, c, cell_type ) ;
+            for( index_t c = 0;
+                c < geomodel_mesh.cells.nb_cells( region, cell_type ); c++ ) {
+                index_t global_id = geomodel_mesh.cells.cell( region, c,
+                    cell_type ) ;
                 out << "C" << global_id << " " ;
                 for( index_t v = 0; v < geomodel_mesh.cells.nb_vertices( c ); v++ ) {
                     out << "V" << geomodel_mesh.cells.vertex( global_id, v ) << " " ;
@@ -381,10 +383,12 @@ namespace {
         void write_interfaces( const GeoModel& geomodel, std::ofstream& out )
         {
             for( index_t inter = 0;
-                inter < geomodel.nb_geological_entities( Interface::type_name_static() );
-                inter++ ) {
+                inter
+                    < geomodel.nb_geological_entities(
+                        Interface::type_name_static() ); inter++ ) {
                 const GeoModelGeologicalEntity& cur_interface =
-                    geomodel.geological_entity( Interface::type_name_static(), inter ) ;
+                    geomodel.geological_entity( Interface::type_name_static(),
+                        inter ) ;
                 for( index_t s = 0; s < cur_interface.nb_children(); s++ ) {
                     index_t surface_id = cur_interface.child( s ).index() ;
                     out << "GROUP_MA" << std::endl ;
@@ -547,14 +551,14 @@ namespace {
                 "Loading of a GeoModel from a mesh not implemented yet" ) ;
             return false ;
         }
-        virtual void save( const GeoModel& gm, const std::string& filename )
+        virtual void save( const GeoModel& geomodel, const std::string& filename )
         {
-            gm.mesh.edges.test_and_initialize() ;
-            gm.mesh.facets.test_and_initialize() ;
-            gm.mesh.cells.test_and_initialize() ;
+            geomodel.mesh.edges.test_and_initialize() ;
+            geomodel.mesh.facets.test_and_initialize() ;
+            geomodel.mesh.cells.test_and_initialize() ;
 
             GeogramMeshAllD mesh ;
-            gm.mesh.copy_mesh( mesh ) ;
+            geomodel.mesh.copy_mesh( mesh ) ;
 
             Logger::instance()->set_minimal( true ) ;
             mesh.save_mesh( filename ) ;
@@ -571,7 +575,7 @@ namespace {
                 "Loading of a GeoModel from TetGen not implemented yet" ) ;
             return false ;
         }
-        virtual void save( const GeoModel& gm, const std::string& filename )
+        virtual void save( const GeoModel& geomodel, const std::string& filename )
         {
             std::string directory = GEO::FileSystem::dir_name( filename ) ;
             std::string file = GEO::FileSystem::base_name( filename ) ;
@@ -581,7 +585,7 @@ namespace {
             std::ofstream node( oss_node.str().c_str() ) ;
             node.precision( 16 ) ;
 
-            const GeoModelMesh& mesh = gm.mesh ;
+            const GeoModelMesh& mesh = geomodel.mesh ;
             node << mesh.vertices.nb() << " 3 0 0" << std::endl ;
             for( index_t v = 0; v < mesh.vertices.nb(); v++ ) {
                 node << v << SPACE << mesh.vertices.vertex( v ) << std::endl ;
@@ -597,7 +601,7 @@ namespace {
             ele << mesh.cells.nb() << " 4 1" << std::endl ;
             neigh << mesh.cells.nb() << " 4" << std::endl ;
             index_t nb_tet_exported = 0 ;
-            for( index_t m = 0; m < gm.nb_regions(); m++ ) {
+            for( index_t m = 0; m < geomodel.nb_regions(); m++ ) {
                 for( index_t tet = 0; tet < mesh.cells.nb_tet( m ); tet++ ) {
                     index_t cell = mesh.cells.tet( m, tet ) ;
                     ele << nb_tet_exported << SPACE << mesh.cells.vertex( cell, 0 )
@@ -657,7 +661,7 @@ namespace {
                 "Loading of a GeoModel from VTK not implemented yet" ) ;
             return false ;
         }
-        virtual void save( const GeoModel& gm, const std::string& filename )
+        virtual void save( const GeoModel& geomodel, const std::string& filename )
         {
             std::ofstream out( filename.c_str() ) ;
             out.precision( 16 ) ;
@@ -667,7 +671,7 @@ namespace {
             out << "ASCII" << std::endl ;
             out << "DATASET UNSTRUCTURED_GRID" << std::endl ;
 
-            const GeoModelMesh& mesh = gm.mesh ;
+            const GeoModelMesh& mesh = geomodel.mesh ;
             out << "POINTS " << mesh.vertices.nb() << " double" << std::endl ;
             for( index_t v = 0; v < mesh.vertices.nb(); v++ ) {
                 out << mesh.vertices.vertex( v ) << std::endl ;
@@ -733,9 +737,9 @@ namespace {
                 "Loading of a GeoModel from VTK not implemented yet" ) ;
             return false ;
         }
-        virtual void save( const GeoModel& gm, const std::string& filename )
+        virtual void save( const GeoModel& geomodel, const std::string& filename )
         {
-            const GeoModelMesh& geomodel_mesh = gm.mesh ;
+            const GeoModelMesh& geomodel_mesh = geomodel.mesh ;
             index_t nb_cells = geomodel_mesh.cells.nb() ;
             if( geomodel_mesh.cells.nb_tet() != nb_cells
                 && geomodel_mesh.cells.nb_hex() != nb_cells ) {
@@ -874,12 +878,11 @@ namespace {
                 return false ;
             }
         }
-        virtual void save( const GeoModel& gm, const std::string& filename )
+        virtual void save( const GeoModel& geomodel, const std::string& filename )
         {
             std::ofstream out( filename.c_str() ) ;
             out.precision( 16 ) ;
 
-            const GeoModel& geomodel = gm ;
             // Print Model3d headers
             out << "GOCAD TSolid 1" << std::endl << "HEADER {" << std::endl
                 << "name:" << geomodel.name() << std::endl << "}" << std::endl ;
@@ -890,7 +893,7 @@ namespace {
                 << "ZPOSITIVE Elevation" << std::endl
                 << "END_ORIGINAL_COORDINATE_SYSTEM" << std::endl ;
 
-            const GeoModelMesh& mesh = gm.mesh ;
+            const GeoModelMesh& mesh = geomodel.mesh ;
             //mesh.set_duplicate_mode( GeoModelMeshCells::ALL ) ;
 
             std::vector< bool > vertex_exported( mesh.vertices.nb(), false ) ;
@@ -972,7 +975,8 @@ namespace {
                             side ) ) {
                             index_t surface_id = mesh.facets.surface( facet ) ;
                             side ? out << "+" : out << "-" ;
-                            out << geomodel.surface( surface_id ).parent( 0 ).name() ;
+                            out
+                                << geomodel.surface( surface_id ).parent( 0 ).name() ;
                         } else {
                             out << "none" ;
                         }
@@ -1648,7 +1652,7 @@ namespace {
                 }
             }
         }
-        std::string interface_csmp_name( index_t i, const GeoModel& gm )
+        std::string interface_csmp_name( index_t i, const GeoModel& geomodel )
         {
             if( box_model_ ) {
                 if( i == back_ ) {
@@ -1665,7 +1669,7 @@ namespace {
                     return "RIGHT" ;
                 }
             }
-            return gm.geological_entity( Interface::type_name_static(), i ).name() ;
+            return geomodel.geological_entity( Interface::type_name_static(), i ).name() ;
         }
         signed_index_t point_boundary( index_t p )
         {
@@ -1731,7 +1735,7 @@ namespace {
                 "Loading of a GeoModel from GPRS not implemented yet" ) ;
             return false ;
         }
-        virtual void save( const GeoModel& gm, const std::string& filename )
+        virtual void save( const GeoModel& geomodel, const std::string& filename )
         {
             std::string path = GEO::FileSystem::dir_name( filename ) ;
             std::string directory = GEO::FileSystem::base_name( filename ) ;
@@ -1757,7 +1761,7 @@ namespace {
             std::ofstream out_xyz( oss_xyz.str().c_str() ) ;
             out_xyz.precision( 16 ) ;
 
-            const GeoModelMesh& mesh = gm.mesh ;
+            const GeoModelMesh& mesh = geomodel.mesh ;
             std::deque< Pipe > pipes ;
             index_t cell_offset = mesh.cells.nb() ;
             for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
@@ -1777,16 +1781,16 @@ namespace {
             }
 
             index_t nb_edges = 0 ;
-            for( index_t l = 0; l < gm.nb_lines(); l++ ) {
-                nb_edges += gm.line( l ).nb_mesh_elements() ;
+            for( index_t l = 0; l < geomodel.nb_lines(); l++ ) {
+                nb_edges += geomodel.line( l ).nb_mesh_elements() ;
             }
             std::vector< index_t > temp ;
             temp.reserve( 3 ) ;
             std::vector< std::vector< index_t > > edges( nb_edges, temp ) ;
             std::vector< vec3 > edge_vertices( nb_edges ) ;
             index_t count_edge = 0 ;
-            for( index_t l = 0; l < gm.nb_lines(); l++ ) {
-                const Line& line = gm.line( l ) ;
+            for( index_t l = 0; l < geomodel.nb_lines(); l++ ) {
+                const Line& line = geomodel.line( l ) ;
                 for( index_t e = 0; e < line.nb_mesh_elements(); e++ ) {
                     edge_vertices[count_edge++ ] = 0.5
                         * ( line.vertex( e ) + line.vertex( e + 1 ) ) ;
@@ -1809,7 +1813,7 @@ namespace {
                         vec3 query = 0.5 * ( e0 + e1 ) ;
                         std::vector< index_t > results ;
                         if( nn_search.get_neighbors( query, results,
-                            gm.epsilon() ) ) {
+                            geomodel.epsilon() ) ) {
                             edges[results[0]].push_back( cell_offset + f ) ;
                         } else {
                             ringmesh_assert_not_reached ;
@@ -1934,12 +1938,12 @@ namespace {
                 "Loading of a GeoModel from GMSH not implemented yet" ) ;
             return false ;
         }
-        virtual void save( const GeoModel& gm, const std::string& filename )
+        virtual void save( const GeoModel& geomodel, const std::string& filename )
         {
             /// @todo after implementing GMMOrder
             throw RINGMeshException( "I/O",
                 "Saving of a GeoModel from GMSH not implemented yet" ) ;
-//                gm.set_duplicate_mode( FAULT ) ;
+//                geomodel.set_duplicate_mode( FAULT ) ;
 
             std::ofstream out( filename.c_str() ) ;
             out.precision( 16 ) ;
@@ -2201,7 +2205,7 @@ namespace {
                 "Loading of a GeoModel from abaqus not implemented yet" ) ;
             return false ;
         }
-        virtual void save( const GeoModel& gm, const std::string& filename )
+        virtual void save( const GeoModel& geomodel, const std::string& filename )
         {
             std::ofstream out( filename.c_str() ) ;
             out.precision( 16 ) ;
@@ -2212,16 +2216,16 @@ namespace {
 
             out << "*PART, name=Part-1" << std::endl ;
 
-            save_vertices( gm, out ) ;
-            save_facets( gm, out ) ;
-            save_cells( gm, out ) ;
+            save_vertices( geomodel, out ) ;
+            save_facets( geomodel, out ) ;
+            save_cells( geomodel, out ) ;
 
             out << "*END PART" << std::endl ;
         }
     private:
-        void save_vertices( const GeoModel& gm, std::ofstream& out ) const
+        void save_vertices( const GeoModel& geomodel, std::ofstream& out ) const
         {
-            const GeoModelMeshVertices& vertices = gm.mesh.vertices ;
+            const GeoModelMeshVertices& vertices = geomodel.mesh.vertices ;
             out << "*NODE" << std::endl ;
             for( index_t v = 0; v < vertices.nb(); v++ ) {
                 out << v + 1 ;
@@ -2233,25 +2237,26 @@ namespace {
             }
 
         }
-        void save_facets( const GeoModel& gm, std::ofstream& out ) const
+        void save_facets( const GeoModel& geomodel, std::ofstream& out ) const
         {
             const EntityType& type = Interface::type_name_static() ;
-            index_t nb_interfaces = gm.nb_geological_entities( type ) ;
+            index_t nb_interfaces = geomodel.nb_geological_entities( type ) ;
             for( index_t i = 0; i < nb_interfaces; i++ ) {
-                save_interface( gm, i, out ) ;
+                save_interface( geomodel, i, out ) ;
             }
         }
         void save_interface(
-            const GeoModel& gm,
+            const GeoModel& geomodel,
             index_t interface_id,
             std::ofstream& out ) const
         {
-            const GeoModelMeshFacets& facets = gm.mesh.facets ;
-            const GeoModelGeologicalEntity& entity = gm.geological_entity(
+            const GeoModelMeshFacets& facets = geomodel.mesh.facets ;
+            const GeoModelGeologicalEntity& entity = geomodel.geological_entity(
                 Interface::type_name_static(), interface_id ) ;
             std::string sep ;
             index_t count = 0 ;
-            std::vector< bool > vertex_exported( gm.mesh.vertices.nb(), false ) ;
+            std::vector< bool > vertex_exported( geomodel.mesh.vertices.nb(),
+                false ) ;
             out << "*NSET, nset=" << entity.name() << std::endl ;
             for( index_t s = 0; s < entity.nb_children(); s++ ) {
                 index_t surface_id = entity.child_gme( s ).index ;
@@ -2270,13 +2275,13 @@ namespace {
             out << std::endl ;
         }
 
-        void save_tets( const GeoModel& gm, std::ofstream& out ) const
+        void save_tets( const GeoModel& geomodel, std::ofstream& out ) const
         {
-            const GeoModelMeshCells& cells = gm.mesh.cells ;
+            const GeoModelMeshCells& cells = geomodel.mesh.cells ;
             if( cells.nb_tet() > 0 ) {
                 out << "*ELEMENT, type=" << tet_descriptor_abaqus.entity_type
                     << std::endl ;
-                for( index_t r = 0; r < gm.nb_regions(); r++ ) {
+                for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
                     for( index_t c = 0; c < cells.nb_tet( r ); c++ ) {
                         index_t tetra = cells.tet( r, c ) ;
                         out << tetra + 1 ;
@@ -2290,13 +2295,13 @@ namespace {
                 }
             }
         }
-        void save_hex( const GeoModel& gm, std::ofstream& out ) const
+        void save_hex( const GeoModel& geomodel, std::ofstream& out ) const
         {
-            const GeoModelMeshCells& cells = gm.mesh.cells ;
+            const GeoModelMeshCells& cells = geomodel.mesh.cells ;
             if( cells.nb_hex() > 0 ) {
                 out << "*ELEMENT, type=" << hex_descriptor_abaqus.entity_type
                     << std::endl ;
-                for( index_t r = 0; r < gm.nb_regions(); r++ ) {
+                for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
                     for( index_t c = 0; c < cells.nb_hex( r ); c++ ) {
                         index_t hex = cells.hex( r, c ) ;
                         out << hex + 1 ;
@@ -2310,11 +2315,11 @@ namespace {
                 }
             }
         }
-        void save_regions( const GeoModel& gm, std::ofstream& out ) const
+        void save_regions( const GeoModel& geomodel, std::ofstream& out ) const
         {
-            const GeoModelMeshCells& cells = gm.mesh.cells ;
-            for( index_t r = 0; r < gm.nb_regions(); r++ ) {
-                const std::string& name = gm.region( r ).name() ;
+            const GeoModelMeshCells& cells = geomodel.mesh.cells ;
+            for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
+                const std::string& name = geomodel.region( r ).name() ;
                 out << "*ELSET, elset=" << name << std::endl ;
                 index_t count = 0 ;
                 std::string sep ;
@@ -2336,11 +2341,11 @@ namespace {
                 out << "*NSET, nset=" << name << ", elset=" << name << std::endl ;
             }
         }
-        void save_cells( const GeoModel& gm, std::ofstream& out ) const
+        void save_cells( const GeoModel& geomodel, std::ofstream& out ) const
         {
-            save_tets( gm, out ) ;
-            save_hex( gm, out ) ;
-            save_regions( gm, out ) ;
+            save_tets( geomodel, out ) ;
+            save_hex( geomodel, out ) ;
+            save_regions( geomodel, out ) ;
         }
         void new_line_if_needed(
             index_t& count,
@@ -2393,7 +2398,7 @@ namespace RINGMesh {
      */
     void GeoModelIOHandler::initialize_full_geomodel_output()
     {
-        ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "meshb" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "meshb" );
         ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "mesh" ) ;
         ringmesh_register_GeoModelIOHandler_creator( TetGenIOHandler, "tetgen" ) ;
         ringmesh_register_GeoModelIOHandler_creator( TSolidIOHandler, "so" ) ;
