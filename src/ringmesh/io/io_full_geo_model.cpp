@@ -352,13 +352,13 @@ namespace {
 
         void write_facets_in_interface(
             const GeoModelMeshFacets::FacetType& facet_type,
-            index_t sur,
+            index_t surface,
             const RINGMesh::GeoModelMesh& mesh,
             std::ofstream& out )
         {
             out << *facet_name_in_aster_mail_file[facet_type] << std::endl ;
-            for( index_t f = 0; f < mesh.facets.nb_facets( sur, facet_type ); f++ ) {
-                index_t global_id = mesh.facets.facet( sur, f, facet_type ) ;
+            for( index_t f = 0; f < mesh.facets.nb_facets( surface, facet_type ); f++ ) {
+                index_t global_id = mesh.facets.facet( surface, f, facet_type ) ;
                 out << "F" << global_id << " " ;
                 for( index_t v = 0; v < mesh.facets.nb_vertices( f ); v++ ) {
                     out << "V" << mesh.facets.vertex( global_id, v ) << " " ;
@@ -2398,7 +2398,7 @@ namespace RINGMesh {
      */
     void GeoModelIOHandler::initialize_full_geomodel_output()
     {
-        ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "meshb" );
+        ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "meshb" ) ;
         ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "mesh" ) ;
         ringmesh_register_GeoModelIOHandler_creator( TetGenIOHandler, "tetgen" ) ;
         ringmesh_register_GeoModelIOHandler_creator( TSolidIOHandler, "so" ) ;
