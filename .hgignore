@@ -1,0 +1,33 @@
+
+syntax: regexp
+^.settings$
+syntax: regexp
+^build$
+syntax: regexp
+^doc/html$
+syntax: regexp
+^src/third_party/geogram/CMakeOptions\.txt$
+syntax: regexp
+^doc/ringmesh\.qch$
+syntax: regexp
+^tests/bin$
+syntax: regexp
+\.aux$
+syntax: regexp
+\.gz$
+syntax: regexp
+\.pdf$
+syntax: regexp
+\.orig$
+syntax: regexp
+^doc/doc_online$
+syntax: regexp
+^src/third_party/geogram/src/geogram_ext-stamp$
+syntax: regexp
+^src/third_party/geogram/CMakeFiles$
+syntax: regexp
+^src/third_party/geogram/tmp$
+syntax: regexp
+^CMakeFiles$
+syntax: glob
+src/ringmesh/tetra_gen.cpp.orig
