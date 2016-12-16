@@ -415,8 +415,8 @@ namespace {
                 break ;
             default:
                 ringmesh_assert_not_reached ;
-            }
         }
+    }
 
     /*!
      * @brief Sets the given surface as regions boundaries
@@ -1077,6 +1077,7 @@ namespace {
         ringmesh_register_TSolidLineParser_creator( LoadLastSurface, "END" );
     }
 
+
     void ml_import_factory_initialize()
     {
         ringmesh_register_MLLineParser_creator( LoadTSurf, "TSURF" ) ;
@@ -1091,49 +1092,6 @@ namespace {
 // anonymous namespace
 
 namespace RINGMesh {
-
-    /*!
-     * @brief Build the Contacts
-     * @details One contact is a group of lines shared by the same Interfaces
-     */
-    void GeoModelBuilderGocad::build_contacts()
-    {
-        std::vector< std::set< gme_t > > interfaces ;
-        for( index_t i = 0; i < geomodel().nb_lines(); ++i ) {
-            const Line& L = geomodel().line( i ) ;
-            std::set< gme_t > cur_interfaces ;
-            for( index_t j = 0; j < L.nb_in_boundary(); ++j ) {
-                const GeoModelMeshEntity& S = L.in_boundary( j ) ;
-                gme_t parent_interface = S.parent_gme(
-                    Interface::type_name_static() ) ;
-                cur_interfaces.insert( parent_interface ) ;
-            }
-            gme_t contact_id ;
-            for( index_t j = 0; j < interfaces.size(); ++j ) {
-                if( cur_interfaces.size() == interfaces[j].size()
-                    && std::equal( cur_interfaces.begin(), cur_interfaces.end(),
-                        interfaces[j].begin() ) ) {
-                    contact_id = gme_t( Contact::type_name_static(), j ) ;
-                    break ;
-                }
-            }
-            if( !contact_id.is_defined() ) {
-                contact_id = create_geological_entity(
-                    Contact::type_name_static() ) ;
-                ringmesh_assert( contact_id.index == interfaces.size() ) ;
-                interfaces.push_back( cur_interfaces ) ;
-                // Create a name for this contact
-                std::string name = "contact" ;
-                for( std::set< gme_t >::const_iterator it( cur_interfaces.begin() );
-                    it != cur_interfaces.end(); ++it ) {
-                    name += "_" ;
-                    name += geomodel().geological_entity( *it ).name() ;
-                }
-                set_entity_name( contact_id, name ) ;
-            }
-            add_geological_entity_child( contact_id, i ) ;
-        }
-    }
 
     void GeoModelBuilderGocad::read_file()
     {

@@ -89,6 +89,17 @@ namespace RINGMesh {
             return *mesh_ ;
         }
 
+        virtual index_t nb_connected_components() const
+        {
+            return GEO::mesh_nb_connected_components( *mesh_ ) ;
+        }
+        virtual index_t get_connected_commoponents(
+            GEO::vector< index_t >& component ) const
+        {
+            return GEO::get_connected_components( *mesh_, component ) ;
+        }
+
+
         //TODO maybe reimplement the function with a RINGMesh::Mesh??
         void print_mesh_bounded_attributes() const
         {
