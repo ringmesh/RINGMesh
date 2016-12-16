@@ -48,6 +48,8 @@
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/NL/nl.h>
 
+#include <algorithm>
+
 namespace {
     using namespace GEO;
 
