@@ -38,7 +38,6 @@
 #include <ringmesh/geomodel/geomodel_api.h>
 #include <ringmesh/geomodel/geomodel_builder.h>
 
-
 /*!
  * @author Arnaud Botella
  */
@@ -147,7 +146,6 @@ void test_translate( GeoModel& geomodel )
     check_vertex( vertices.vertex( 7 ), vec3( 1., 3.5, -2.5 ) ) ;
 }
 
-
 void test_rotation( GeoModel& geomodel )
 {
     Logger::out( "TEST" ) << "Test rotation" << std::endl ;
@@ -166,6 +164,110 @@ void test_rotation( GeoModel& geomodel )
     check_vertex( vertices.vertex( 7 ), vec3( 0., 2.5, -2.5 ) ) ;
 }
 
+void check_matrices(
+    const GEO::Matrix< 4, double >& lhs,
+    const GEO::Matrix< 4, double >& rhs )
+{
+    for( index_t mat_i = 0; mat_i < 4; ++mat_i ) {
+        for( index_t mat_j = 0; mat_j < 4; ++mat_j ) {
+            double diff = lhs( mat_i, mat_j ) - rhs( mat_i, mat_j ) ;
+            if( std::fabs( diff ) > global_epsilon ) {
+                throw RINGMeshException( "Test", "Error in rotation matrix" ) ;
+            }
+        }
+    }
+}
+
+void test_rotation_matrix()
+{
+    const vec3 origin( 0, 0, 0 ) ;
+    const double pi = M_PI ;
+    const double step = 0.1 ;
+
+    GEO::Matrix< 4, double > rot_mat_degree ;
+    GEO::Matrix< 4, double > rot_mat_radian ;
+    GEO::Matrix< 4, double > result ;
+    result( 0, 3 ) = 0 ;
+    result( 1, 3 ) = 0 ;
+    result( 2, 3 ) = 0 ;
+    result( 3, 0 ) = 0 ;
+    result( 3, 1 ) = 0 ;
+    result( 3, 2 ) = 0 ;
+    result( 3, 3 ) = 1 ;
+
+    // Tests rotation along x axis
+    vec3 axis( 1, 0, 0 ) ;
+    for( double angle = 0.; angle <= 360.; angle += step ) {
+        rotation_matrix_about_arbitrary_axis( origin, axis, angle, true,
+            rot_mat_degree ) ;
+        double angle_rad = angle * pi / 180. ;
+        rotation_matrix_about_arbitrary_axis( origin, axis, angle_rad, false,
+            rot_mat_radian ) ;
+        result( 0, 0 ) = 1 ;
+        result( 0, 1 ) = 0 ;
+        result( 0, 2 ) = 0 ;
+
+        result( 1, 0 ) = 0 ;
+        result( 1, 1 ) = std::cos( angle_rad ) ;
+        result( 1, 2 ) = -std::sin( angle_rad ) ;
+
+        result( 2, 0 ) = 0 ;
+        result( 2, 1 ) = std::sin( angle_rad ) ;
+        result( 2, 2 ) = std::cos( angle_rad ) ;
+
+        check_matrices( rot_mat_degree, result ) ;
+        check_matrices( rot_mat_radian, result ) ;
+    }
+
+    // Tests rotation along y axis
+    axis = vec3( 0, 1, 0 ) ;
+    for( double angle = 0.; angle <= 360.; angle += step ) {
+        rotation_matrix_about_arbitrary_axis( origin, axis, angle, true,
+            rot_mat_degree ) ;
+        double angle_rad = angle * pi / 180. ;
+        rotation_matrix_about_arbitrary_axis( origin, axis, angle_rad, false,
+            rot_mat_radian ) ;
+        result( 0, 0 ) = std::cos( angle_rad ) ;
+        result( 0, 1 ) = 0 ;
+        result( 0, 2 ) = std::sin( angle_rad ) ;
+
+        result( 1, 0 ) = 0 ;
+        result( 1, 1 ) = 1 ;
+        result( 1, 2 ) = 0 ;
+
+        result( 2, 0 ) = -std::sin( angle_rad ) ;
+        result( 2, 1 ) = 0 ;
+        result( 2, 2 ) = std::cos( angle_rad ) ;
+
+        check_matrices( rot_mat_degree, result ) ;
+        check_matrices( rot_mat_radian, result ) ;
+    }
+
+    // Tests rotation along z axis
+    axis = vec3( 0, 0, 1 ) ;
+    for( double angle = 0.; angle <= 360.; angle += step ) {
+        rotation_matrix_about_arbitrary_axis( origin, axis, angle, true,
+            rot_mat_degree ) ;
+        double angle_rad = angle * pi / 180. ;
+        rotation_matrix_about_arbitrary_axis( origin, axis, angle_rad, false,
+            rot_mat_radian ) ;
+        result( 0, 0 ) = std::cos( angle_rad ) ;
+        result( 0, 1 ) = -std::sin( angle_rad ) ;
+        result( 0, 2 ) = 0 ;
+
+        result( 1, 0 ) = std::sin( angle_rad ) ;
+        result( 1, 1 ) = std::cos( angle_rad ) ;
+        result( 1, 2 ) = 0 ;
+
+        result( 2, 0 ) = 0 ;
+        result( 2, 1 ) = 0 ;
+        result( 2, 2 ) = 1 ;
+
+        check_matrices( rot_mat_degree, result ) ;
+        check_matrices( rot_mat_radian, result ) ;
+    }
+}
+
 int main()
 {
     using namespace RINGMesh ;
@@ -176,6 +278,7 @@ int main()
         GeoModel geomodel ;
         build_geomodel( geomodel ) ;
         test_translate( geomodel ) ;
+        test_rotation_matrix() ;
         test_rotation( geomodel ) ;
 
     } catch( const RINGMeshException& e ) {
