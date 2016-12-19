@@ -1009,7 +1009,7 @@ namespace RINGMesh {
      * Computes the orthogonal projection of a point on a plane
      * @param[in] p the point to project
      * @param[in] N_plane the normal of the plane
-     * @param[in] O_plane the origin of the plane
+     * @param[in] O_plane a point of the plane
      * @param[out] projected_p the projected point
      */
     void point_plane_projection(
