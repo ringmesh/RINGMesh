@@ -35,8 +35,6 @@
 
 #include <ringmesh/basic/ringmesh_assert.h>
 
-#include <string>
-
 #include <geogram/basic/assert.h>
 
 /*!

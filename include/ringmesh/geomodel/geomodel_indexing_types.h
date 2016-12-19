@@ -36,7 +36,7 @@
 #ifndef __RINGMESH_GEOMODEL_INDEXING_TYPES__
 #define __RINGMESH_GEOMODEL_INDEXING_TYPES__
 
-#include <string>
+#include <ringmesh/basic/common.h>
 
 /*!
  * @brief Structures and classes used to index elements in a GeoModel,
@@ -57,7 +57,7 @@ namespace RINGMesh {
     struct gme_t {
         gme_t()
             : type( "No_entity_type" ), index( NO_ID )
-        // Still not perfect  "No_entity_type" is also typed in geo_model_entity.cpp
+        // Still not perfect  "No_entity_type" is also typed in geomodel_entity.cpp
         {
         }
         gme_t( const EntityType& entity_type, index_t id )

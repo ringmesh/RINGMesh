@@ -35,8 +35,6 @@
 
 #include <ringmesh/geogram_extension/geogram_extension.h>
 
-#include <fstream>
-
 #include <geogram/basic/file_system.h>
 #include <geogram/basic/line_stream.h>
 #include <geogram/basic/logger.h>

@@ -33,20 +33,19 @@
  *     FRANCE
  */
 
-#include <ringmesh/geomodel/geo_model_validity.h>
+#include <ringmesh/geomodel/geomodel_validity.h>
 
-#include <geogram/mesh/mesh.h>
-#include <geogram/mesh/mesh_io.h>
 #include <geogram/mesh/triangle_intersection.h>
 
-#include <ringmesh/basic/geometry.h>
-#include <ringmesh/geomodel/geo_model.h>
-#include <ringmesh/geomodel/geo_model_mesh_entity.h>
-#include <ringmesh/geomodel/geo_model_geological_entity.h>
-#include <ringmesh/mesh/mesh.h>
+#include <ringmesh/geomodel/geomodel.h>
+#include <ringmesh/geomodel/geomodel_mesh_entity.h>
+#include <ringmesh/geomodel/geomodel_geological_entity.h>
+
+#include <ringmesh/mesh/geogram_mesh.h>
+#include <ringmesh/mesh/geogram_mesh_builder.h>
 
 /*!
- * @file ringmesh/geomodel/geo_model_validity.cpp
+ * @file ringmesh/geomodel/geomodel_validity.cpp
  * @brief Implementation of functions to check the validity of GeoModels
  * @author Jeanne Pellerin
  * @todo Refactor the functions - reorganize to have a cleaner code.
