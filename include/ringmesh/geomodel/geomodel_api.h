@@ -88,25 +88,6 @@ namespace RINGMesh {
     bool RINGMESH_API are_geomodel_region_meshes_simplicial(
         const GeoModel& geomodel ) ;
 
-    /*!
-     * @brief Build a Mesh from the geomodel non-duplicated vertices and its Surface facets.
-     * @details Adjacencies are not set. Client should call mesh repair functions afterwards.
-     * @todo Add flag options to specify which Mesh should be created, with what attributes.
-     */
-    void RINGMESH_API build_mesh_from_geomodel(
-        const GeoModel& geomodel,
-        GEO::Mesh& M ) ;
-
-    void RINGMESH_API build_mesh_from_geomodel(
-        const GeoModel& geomodel,
-        GEO::Mesh& M,
-        bool connect_facets ) ;
-
-    void RINGMESH_API build_mesh_from_geomodel_mesh_entities(
-        const GeoModel& geomodel,
-        const std::vector< gme_t >& surface_entities,
-        GEO::Mesh& M ) ;
-
 #ifdef RINGMESH_WITH_TETGEN
 
     /*!
@@ -209,14 +190,6 @@ namespace RINGMesh {
     gme_t RINGMESH_API find_corner(
         const GeoModel& geomodel,
         index_t geomodel_point_id ) ;
-
-    /*-----------------------------------------------------------------------*/
-
-    /*!
-     * @brief Save a Surface of the geomodel in the file OBJ format is used
-     */
-    void save_surface_as_obj_file( const Surface& S, const std::string& file_name ) ;
-
 }
 
 #endif 
