@@ -35,22 +35,12 @@
 
 #include <ringmesh/io/io.h>
 
-#include <ctime>
-
-#include <geogram/basic/algorithm.h>
-#include <geogram/basic/file_system.h>
-#include <geogram/basic/line_stream.h>
-#include <geogram/basic/logger.h>
-#include <geogram/mesh/mesh_io.h>
-#include <geogram/basic/attributes.h>
-#include <geogram/basic/memory.h>
-
-#include <ringmesh/geomodel/geo_model.h>
-#include <ringmesh/geomodel/geo_model_api.h>
-#include <ringmesh/geomodel/geo_model_builder.h>
-#include <ringmesh/geomodel/geo_model_builder_gocad.h>
-#include <ringmesh/geomodel/geo_model_entity.h>
-#include <ringmesh/geomodel/geo_model_validity.h>
+#include <ringmesh/geomodel/geomodel.h>
+#include <ringmesh/geomodel/geomodel_api.h>
+#include <ringmesh/geomodel/geomodel_builder.h>
+#include <ringmesh/geomodel/geomodel_builder_gocad.h>
+#include <ringmesh/geomodel/geomodel_entity.h>
+#include <ringmesh/geomodel/geomodel_validity.h>
 
 #ifdef RINGMESH_WITH_GEOLOGYJS
 #    include <geologyjs/main_export.h>

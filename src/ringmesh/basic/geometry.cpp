@@ -40,7 +40,6 @@
 
 #include <geogram/numerics/predicates.h>
 
-#include <ringmesh/basic/algorithm.h>
 #include <ringmesh/geogram_extension/geogram_extension.h>
 
 /*!

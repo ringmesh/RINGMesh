@@ -36,12 +36,8 @@
 /*! \author Francois Bonneau */
 
 #include <ringmesh/mesh/mesh.h>
-#include <ringmesh/mesh/geogram_mesh.h>
 
-#include <ringmesh/geomodel/geo_model_entity.h>
-#include <ringmesh/geomodel/geo_model.h>
-#include <ringmesh/mesh/mesh_builder.h>
-#include <ringmesh/mesh/geogram_mesh_builder.h>
+#include <ringmesh/mesh/geogram_mesh.h>
 
 namespace RINGMesh {
     MeshBase::~MeshBase()
