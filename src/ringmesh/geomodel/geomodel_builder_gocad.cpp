@@ -33,20 +33,10 @@
  *     FRANCE
  */
 
-#include <ringmesh/geomodel/geo_model_builder_gocad.h>
+#include <ringmesh/geomodel/geomodel_builder_gocad.h>
 
-#include <iostream>
-#include <iomanip>
+#include <ringmesh/geomodel/geomodel_api.h>
 
-#include <geogram/basic/logger.h>
-#include <geogram/mesh/mesh_geometry.h>
-
-#include <ringmesh/basic/box3d.h>
-#include <ringmesh/basic/geometry.h>
-#include <ringmesh/geogram_extension/geogram_extension.h>
-#include <ringmesh/geomodel/geo_model_api.h>
-
-#include <ringmesh/geomodel/geo_model_api.h>
 /*!
  * @brief Implementation of the class to build GeoModel from input
  * Gocad TSolid .so file

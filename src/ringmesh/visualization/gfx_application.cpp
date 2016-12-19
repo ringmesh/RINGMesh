@@ -42,18 +42,23 @@
 
 #ifdef RINGMESH_WITH_GRAPHICS
 
+#include <geogram/basic/command_line.h>
 #include <geogram/basic/file_system.h>
-#include <geogram/basic/logger.h>
-#include <geogram/mesh/mesh_geometry.h>
+
+#include <geogram/mesh/mesh_io.h>
 
 #include <geogram_gfx/basic/GL.h>
+
 #include <geogram_gfx/glup_viewer/glup_viewer.h>
+
 #include <geogram_gfx/third_party/quicktext/glQuickText.h>
 
 #include <ringmesh/basic/command_line.h>
-#include <ringmesh/geomodel/geo_model_entity.h>
-#include <ringmesh/geomodel/geo_model_mesh_entity.h>
-#include <ringmesh/geomodel/geo_model_geological_entity.h>
+
+#include <ringmesh/geomodel/geomodel_entity.h>
+#include <ringmesh/geomodel/geomodel_mesh_entity.h>
+#include <ringmesh/geomodel/geomodel_geological_entity.h>
+
 #include <ringmesh/io/io.h>
 
 namespace {

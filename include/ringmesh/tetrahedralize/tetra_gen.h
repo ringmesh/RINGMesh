@@ -38,11 +38,10 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <vector>
-
 #include <geogram/basic/counted.h>
 #include <geogram/basic/smart_pointer.h>
 #include <geogram/basic/factory.h>
+
 #include <geogram/mesh/mesh.h>
 
 /*!
