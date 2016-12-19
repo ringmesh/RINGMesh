@@ -333,11 +333,8 @@ namespace RINGMesh {
         for( index_t v = 0; v < M.mesh.vertices.nb(); ++v ) {
             // Coordinates are not directly modified to
             // update the matching vertices in geomodel entities
-            vec3 p = M.mesh.vertices.vertex( v ) ;
-            for( index_t i = 0; i < 3; i++ ) {
-                p[i] += translation_vector[i] ;
-            }
-            M.mesh.vertices.update_point( v, p ) ;
+            const vec3& p = M.mesh.vertices.vertex( v ) ;
+            M.mesh.vertices.update_point( v, p + translation_vector ) ;
         }
     }
 
@@ -363,8 +360,7 @@ namespace RINGMesh {
             double old[4] = { p[0], p[1], p[2], 1. } ;
             double new_p[4] = { 0, 0, 0, 1. } ;
             GEO::mult( rot_mat, old, new_p ) ;
-            /*! @todo You need an epsilon tolerance here [JP] */
-            ringmesh_assert( new_p[3] == 1. ) ;
+            ringmesh_assert( std::fabs( new_p[3] - 1. ) < global_epsilon ) ;
 
             M.mesh.vertices.update_point( v, vec3( new_p[0], new_p[1], new_p[2] ) ) ;
         }
