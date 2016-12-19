@@ -396,6 +396,7 @@ namespace {
                 for( index_t s = 0; s < cur_interface.nb_children(); s++ ) {
                     index_t surface_id = cur_interface.child( s ).index() ;
                     out << "GROUP_MA" << std::endl ;
+                    out << cur_interface.name() << "_" << s << std::endl ;
                     for( index_t f = 0;
                         f < geomodel.mesh.facets.nb_facets( surface_id ); f++ ) {
                         out << "F" << geomodel.mesh.facets.facet( surface_id, f )
