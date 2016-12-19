@@ -35,6 +35,8 @@
 
 #include <ringmesh/basic/box3d.h>
 
+#include <algorithm>
+
 /*!
  * @file Implementation of Box3D class
  * @author Arnaud Botella
