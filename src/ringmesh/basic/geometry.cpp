@@ -1018,9 +1018,10 @@ namespace RINGMesh {
         const vec3& O_plane,
         vec3& projected_p )
     {
+        vec3 N_unit_plane = normalize( N_plane ) ;
         vec3 v( p - O_plane ) ;
-        double distance = dot( v, N_plane ) ;
-        projected_p = p - distance * N_plane ;
+        double distance = dot( v, N_unit_plane ) ;
+        projected_p = p - distance * N_unit_plane ;
     }
 
     double point_segment_distance(
