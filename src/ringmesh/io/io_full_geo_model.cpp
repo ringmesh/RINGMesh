@@ -422,14 +422,14 @@ namespace {
 
     /************************************************************************/
 
-    // The reg phys field in the .msh format is set to 0 for each element
+    // The reg phys field in the GMSH format is set to 0 for each element
     const static index_t reg_phys = 0 ;
 
-    const static int adeli_point_type = 15 ;
-    const static int adeli_line_type = 1 ;
-    const static int adeli_triangle_type = 2 ;
-    const static int adeli_tet_type = 4 ;
-    const static int adeli_cell_types[4] = {
+    const static index_t adeli_point_type = 15 ;
+    const static index_t adeli_line_type = 1 ;
+    const static index_t adeli_triangle_type = 2 ;
+    const static index_t adeli_tet_type = 4 ;
+    const static index_t adeli_cell_types[4] = {
         adeli_point_type, adeli_line_type, adeli_triangle_type, adeli_tet_type } ;
 
     // The index begins at 1.
