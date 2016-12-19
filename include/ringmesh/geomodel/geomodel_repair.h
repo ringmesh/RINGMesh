@@ -33,15 +33,15 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_GEO_MODEL_REPAIR__
-#define __RINGMESH_GEO_MODEL_REPAIR__
+#ifndef __RINGMESH_GEOMODEL_REPAIR__
+#define __RINGMESH_GEOMODEL_REPAIR__
 
 #include <ringmesh/basic/common.h>
 
-#include <ringmesh/geomodel/geo_model_builder.h>
+#include <ringmesh/geomodel/geomodel_builder.h>
 
 /*!
- * @file ringmesh/geo_model_repair.h
+ * @file ringmesh/geomodel_repair.h
  * @brief Functions to repair GeoModel.
  * @author Jeanne Pellerin
  */

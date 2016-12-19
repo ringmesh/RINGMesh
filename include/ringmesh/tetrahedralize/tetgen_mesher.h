@@ -39,11 +39,6 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <string> 
-#include <vector>
-
-#include <geogram/basic/memory.h>
-
 #ifdef RINGMESH_WITH_TETGEN
 
 #include <geogram/third_party/tetgen/tetgen.h>

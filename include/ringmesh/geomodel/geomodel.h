@@ -33,22 +33,23 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_GEO_MODEL__
-#define __RINGMESH_GEO_MODEL__
+#ifndef __RINGMESH_GEOMODEL__
+#define __RINGMESH_GEOMODEL__
 
 #include <ringmesh/basic/common.h>
 
 #include <geogram/basic/factory.h>
 
 #include <ringmesh/basic/algorithm.h>
+
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
-#include <ringmesh/geomodel/geo_model_entity.h>
-#include <ringmesh/geomodel/geo_model_mesh.h>
+#include <ringmesh/geomodel/geomodel_entity.h>
+#include <ringmesh/geomodel/geomodel_mesh.h>
 
 #include <vector>
 
 /*!
- * @file ringmesh/geo_model.h
+ * @file ringmesh/geomodel.h
  * @brief Class representing a geological structural geomodel: GeoModel
  * @author Jeanne Pellerin and Arnaud Botella
  */

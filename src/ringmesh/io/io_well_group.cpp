@@ -37,7 +37,6 @@
 
 #include <geogram/basic/file_system.h>
 #include <geogram/basic/line_stream.h>
-#include <geogram/basic/logger.h>
 
 #include <ringmesh/mesh/well.h>
 

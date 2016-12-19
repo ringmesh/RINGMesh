@@ -38,14 +38,10 @@
  * @author Jeanne Pellerin and Arnaud Botella 
  */
 
-#ifndef __RINGMESH_GEO_MODEL_ENTITY__
-#define __RINGMESH_GEO_MODEL_ENTITY__
+#ifndef __RINGMESH_GEOMODEL_ENTITY__
+#define __RINGMESH_GEOMODEL_ENTITY__
 
 #include <ringmesh/basic/common.h>
-
-#include <string>
-#include <vector>
-#include <map>
 
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
 

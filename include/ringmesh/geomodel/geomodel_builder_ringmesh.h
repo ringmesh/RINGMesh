@@ -33,23 +33,19 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_GEO_MODEL_BUILDER_RINGMESH__
-#define __RINGMESH_GEO_MODEL_BUILDER_RINGMESH__
+#ifndef __RINGMESH_GEOMODEL_BUILDER_RINGMESH__
+#define __RINGMESH_GEOMODEL_BUILDER_RINGMESH__
 
 #include <ringmesh/basic/common.h>
-
-#include <vector>
-#include <string>
-#include <stack>
 
 #include <geogram/basic/line_stream.h>
 
 #include <third_party/zlib/unzip.h>
 
-#include <ringmesh/geomodel/geo_model_builder.h>
+#include <ringmesh/geomodel/geomodel_builder.h>
 
 /*!
- * @file ringmesh/geo_model_builder_ringmesh.h
+ * @file ringmesh/geomodel_builder_ringmesh.h
  * @brief Classes to build GeoModel from various inputs
  * @author 
  */

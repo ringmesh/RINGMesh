@@ -33,19 +33,20 @@
  *     FRANCE
  */
 
-#include <ringmesh/geomodel/geo_model_builder_ringmesh.h>
+#include <ringmesh/geomodel/geomodel_builder_ringmesh.h>
 
 #include <geogram/basic/file_system.h>
 
-#include <ringmesh/geomodel/geo_model_repair.h>
+#include <ringmesh/geomodel/geomodel_repair.h>
+
 #include <ringmesh/io/io.h>
 
-/*!
- * @file ringmesh/geomodel/geo_model_builder_ringmesh.cpp
- */
+#include <ringmesh/mesh/geogram_mesh.h>
+#include <ringmesh/mesh/geogram_mesh_builder.h>
 
-#define MAX_FILENAME 512
-#define READ_SIZE 8192
+/*!
+ * @file ringmesh/geomodel/geomodel_builder_ringmesh.cpp
+ */
 
 namespace {
     using namespace RINGMesh ;
