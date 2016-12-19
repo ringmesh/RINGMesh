@@ -35,8 +35,8 @@
 
 #include <ringmesh/geomodel/mesh_quality.h>
 
-#include <ringmesh/geomodel/geo_model.h>
-#include <ringmesh/geomodel/geo_model_mesh_entity.h>
+#include <ringmesh/geomodel/geomodel.h>
+#include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
 /*!
  * @author Benjamin Chauvin
@@ -374,11 +374,11 @@ namespace RINGMesh {
 
     void compute_prop_tet_mesh_quality(
         MeshQualityMode mesh_qual_mode,
-        const GeoModel& geo_model )
+        const GeoModel& geomodel )
     {
-        ringmesh_assert( geo_model.nb_regions() != 0 ) ;
-        for( index_t reg_itr = 0; reg_itr < geo_model.nb_regions(); ++reg_itr ) {
-            const Region& cur_reg = geo_model.region( reg_itr ) ;
+        ringmesh_assert( geomodel.nb_regions() != 0 ) ;
+        for( index_t reg_itr = 0; reg_itr < geomodel.nb_regions(); ++reg_itr ) {
+            const Region& cur_reg = geomodel.region( reg_itr ) ;
             ringmesh_assert( cur_reg.is_meshed() ) ;
             ringmesh_assert( cur_reg.is_simplicial() ) ;
             GEO::AttributesManager& reg_attr_mgr = cur_reg.cell_attribute_manager() ;

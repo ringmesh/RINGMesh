@@ -50,8 +50,8 @@
 
 #include <ringmesh/basic/command_line.h>
 #include <ringmesh/geogram_extension/geogram_extension.h>
-#include <ringmesh/geomodel/geo_model_builder_gocad.h>
-#include <ringmesh/geomodel/geo_model_geological_entity.h>
+#include <ringmesh/geomodel/geomodel_builder_gocad.h>
+#include <ringmesh/geomodel/geomodel_geological_entity.h>
 #include <ringmesh/io/io.h>
 #include <ringmesh/mesh/geogram_mesh.h>
 #include <ringmesh/tetrahedralize/tetra_gen.h>

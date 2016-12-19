@@ -38,16 +38,13 @@
  * @author Jeanne Pellerin and Arnaud Botella 
  */
 
-#ifndef __RINGMESH_GEO_MODEL_GEOLOGICAL_ENTITY__
-#define __RINGMESH_GEO_MODEL_GEOLOGICAL_ENTITY__
+#ifndef __RINGMESH_GEOMODEL_GEOLOGICAL_ENTITY__
+#define __RINGMESH_GEOMODEL_GEOLOGICAL_ENTITY__
 
 #include <ringmesh/basic/common.h>
 
-#include <string>
-#include <vector>
-
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
-#include <ringmesh/geomodel/geo_model_entity.h>
+#include <ringmesh/geomodel/geomodel_entity.h>
 
 namespace RINGMesh {
     class GeoModel ;

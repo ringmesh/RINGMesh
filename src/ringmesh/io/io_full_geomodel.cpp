@@ -36,24 +36,18 @@
 #include <ringmesh/io/io.h>
 
 #include <iomanip>
-#include <stack>
+#include <deque>
 
 #include <geogram/basic/command_line.h>
-#include <geogram/basic/file_system.h>
-#include <geogram/basic/line_stream.h>
-#include <geogram/basic/logger.h>
 
-#include <geogram/mesh/mesh_geometry.h>
-#include <geogram/mesh/mesh_io.h>
+#include <ringmesh/geomodel/geomodel.h>
+#include <ringmesh/geomodel/geomodel_api.h>
+#include <ringmesh/geomodel/geomodel_builder_gocad.h>
+#include <ringmesh/geomodel/geomodel_builder_ringmesh.h>
+#include <ringmesh/geomodel/geomodel_validity.h>
 
-#include <ringmesh/basic/geometry.h>
-#include <ringmesh/geogram_extension/geogram_extension.h>
-#include <ringmesh/geomodel/geo_model.h>
-#include <ringmesh/geomodel/geo_model_api.h>
-#include <ringmesh/geomodel/geo_model_builder_gocad.h>
-#include <ringmesh/geomodel/geo_model_builder_ringmesh.h>
-#include <ringmesh/geomodel/geo_model_validity.h>
 #include <ringmesh/mesh/well.h>
+#include <ringmesh/mesh/geogram_mesh.h>
 
 /*!
  * @file Implementation of classes loading volumetric GeoModels
@@ -202,18 +196,18 @@ namespace {
     }
 
     bool save_mesh(
-        const GeoModelMeshEntity& geo_model_entity_mesh,
+        const GeoModelMeshEntity& geomodel_entity_mesh,
         const std::string& name )
     {
-        if( geo_model_entity_mesh.type_name() == Region::type_name_static() ) {
-            const Region& region = geo_model_entity_mesh.geomodel().region(
-                geo_model_entity_mesh.index() ) ;
+        if( geomodel_entity_mesh.type_name() == Region::type_name_static() ) {
+            const Region& region = geomodel_entity_mesh.geomodel().region(
+                geomodel_entity_mesh.index() ) ;
             if( !region.is_meshed() ) {
                 // a region is not necessary meshed.
                 return false ;
             }
         }
-        geo_model_entity_mesh.save( name ) ;
+        geomodel_entity_mesh.save( name ) ;
         return true ;
     }
 
@@ -575,7 +569,7 @@ namespace {
     /************************************************************************/
 
     template< typename ENTITY >
-    std::string build_string_for_geo_model_entity_export( const ENTITY& entity )
+    std::string build_string_for_geomodel_entity_export( const ENTITY& entity )
     {
         const gme_t& id = entity.gme_id() ;
         std::string base_name = id.type + "_" + GEO::String::to_string( id.index ) ;
@@ -584,20 +578,20 @@ namespace {
 
     /*!
      * @brief Save the GeoModelMeshEntity in a meshb file
-     * @param[in] geo_model_entity_mesh the GeoModelMeshEntity you want to save
+     * @param[in] geomodel_entity_mesh the GeoModelMeshEntity you want to save
      * @param[in] zf the zip file
      */
     template< typename ENTITY >
-    void save_geo_model_mesh_entity(
-        const ENTITY& geo_model_entity_mesh,
+    void save_geomodel_mesh_entity(
+        const ENTITY& geomodel_entity_mesh,
         zipFile& zf )
     {
-        std::string name = build_string_for_geo_model_entity_export(
-            geo_model_entity_mesh ) ;
+        std::string name = build_string_for_geomodel_entity_export(
+            geomodel_entity_mesh ) ;
         Logger* logger = Logger::instance() ;
         bool logger_status = logger->is_quiet() ;
         logger->set_quiet( true ) ;
-        bool is_saved = save_mesh( geo_model_entity_mesh, name ) ;
+        bool is_saved = save_mesh( geomodel_entity_mesh, name ) ;
         logger->set_quiet( logger_status ) ;
 
         if( is_saved ) {
@@ -607,13 +601,13 @@ namespace {
     }
 
     template< typename ENTITY >
-    void save_geo_model_mesh_entities( const GeoModel& geomodel, zipFile& zf )
+    void save_geomodel_mesh_entities( const GeoModel& geomodel, zipFile& zf )
     {
         const std::string& type = ENTITY::type_name_static() ;
         for( index_t e = 0; e < geomodel.nb_mesh_entities( type ); e++ ) {
             const ENTITY& entity =
                 dynamic_cast< const ENTITY& >( geomodel.mesh_entity( type, e ) ) ;
-            save_geo_model_mesh_entity< ENTITY >( entity, zf ) ;
+            save_geomodel_mesh_entity< ENTITY >( entity, zf ) ;
         }
     }
 
@@ -660,10 +654,10 @@ namespace {
             zip_file( zf, geological_entity_file ) ;
             GEO::FileSystem::delete_file( geological_entity_file ) ;
 
-            save_geo_model_mesh_entities< Corner >( geomodel, zf ) ;
-            save_geo_model_mesh_entities< Line >( geomodel, zf ) ;
-            save_geo_model_mesh_entities< Surface >( geomodel, zf ) ;
-            save_geo_model_mesh_entities< Region >( geomodel, zf ) ;
+            save_geomodel_mesh_entities< Corner >( geomodel, zf ) ;
+            save_geomodel_mesh_entities< Line >( geomodel, zf ) ;
+            save_geomodel_mesh_entities< Surface >( geomodel, zf ) ;
+            save_geomodel_mesh_entities< Region >( geomodel, zf ) ;
 
             zipClose( zf, NULL ) ;
             GEO::FileSystem::set_current_working_directory( pwd ) ;

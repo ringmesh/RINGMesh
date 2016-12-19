@@ -33,25 +33,19 @@
  *     FRANCE
  */
 
-#include <ringmesh/geomodel/geo_model_mesh.h>
+#include <ringmesh/geomodel/geomodel_mesh.h>
 
 #include <stack>
-#include <algorithm>
 
 #include <geogram/basic/algorithm.h>
 
-#include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_geometry.h>
-#include <geogram/mesh/mesh_repair.h>
-#include <geogram/points/colocate.h>
 
-#include <ringmesh/basic/algorithm.h>
-#include <ringmesh/basic/box3d.h>
-#include <ringmesh/basic/geometry.h>
-#include <ringmesh/geogram_extension/geogram_extension.h>
-#include <ringmesh/geomodel/geo_model.h>
-#include <ringmesh/geomodel/geo_model_builder.h>
+#include <ringmesh/geomodel/geomodel.h>
+#include <ringmesh/geomodel/geomodel_builder.h>
+
 #include <ringmesh/mesh/well.h>
+#include <ringmesh/mesh/geogram_mesh.h>
 
 /*!
  * @author Arnaud Botella - Jeanne Pellerin - Antoine Mazuyer
@@ -2005,10 +1999,10 @@ namespace RINGMesh {
                     vertices_on_geomodel_region ) ;
                 for( index_t gme_v = 0; gme_v < vertices_on_geomodel_region.size();
                     gme_v++ ) {
-                    const GMEVertex& cur_vertex_on_geo_model =
+                    const GMEVertex& cur_vertex_on_geomodel =
                         vertices_on_geomodel_region[gme_v] ;
                     for( index_t att_e = 0; att_e < att_dim; att_e++ ) {
-                        att_on_regions[cur_vertex_on_geo_model.gme_id.index][cur_vertex_on_geo_model.v_id
+                        att_on_regions[cur_vertex_on_geomodel.gme_id.index][cur_vertex_on_geomodel.v_id
                             * att_dim + att_e] = cur_att_on_geomodelmesh[v * att_dim
                             + att_e] ;
                     }
@@ -2031,9 +2025,9 @@ namespace RINGMesh {
                 att_c_names[att_c] ) ) {
                 continue ;
             }
-            GEO::Attribute< double > cur_att_on_geo_model_mesh(
+            GEO::Attribute< double > cur_att_on_geomodel_mesh(
                 cell_attribute_manager(), att_c_names[att_c] ) ;
-            index_t att_dim = cur_att_on_geo_model_mesh.dimension() ;
+            index_t att_dim = cur_att_on_geomodel_mesh.dimension() ;
 
             for( index_t reg = 0; reg < geomodel_.nb_regions(); reg++ ) {
                 if( geomodel_.region( reg ).cell_attribute_manager().is_defined(
@@ -2043,8 +2037,8 @@ namespace RINGMesh {
                         << reg << std::endl ;
                     continue ;
                 }
-                GEO::Attribute< double > cur_att_on_geo_model_mesh_entity ;
-                cur_att_on_geo_model_mesh_entity.create_vector_attribute(
+                GEO::Attribute< double > cur_att_on_geomodel_mesh_entity ;
+                cur_att_on_geomodel_mesh_entity.create_vector_attribute(
                     geomodel_.region( reg ).cell_attribute_manager(),
                     att_c_names[att_c], att_dim ) ;
                 for( index_t c = 0; c < geomodel_.region( reg ).nb_mesh_elements();
@@ -2056,8 +2050,8 @@ namespace RINGMesh {
                         geomodel_.epsilon() ) ;
                     ringmesh_assert( c_in_geom_model_mesh.size() == 1 ) ;
                     for( index_t att_e = 0; att_e < att_dim; att_e++ ) {
-                        cur_att_on_geo_model_mesh_entity[c * att_dim + att_e] =
-                            cur_att_on_geo_model_mesh[c_in_geom_model_mesh[0]
+                        cur_att_on_geomodel_mesh_entity[c * att_dim + att_e] =
+                            cur_att_on_geomodel_mesh[c_in_geom_model_mesh[0]
                                 * att_dim + att_e] ;
                     }
                 }

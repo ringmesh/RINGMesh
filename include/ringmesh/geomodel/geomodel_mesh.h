@@ -33,17 +33,20 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_GEO_MODEL_MESH__
-#define __RINGMESH_GEO_MODEL_MESH__
+#ifndef __RINGMESH_GEOMODEL_MESH__
+#define __RINGMESH_GEOMODEL_MESH__
 
 #include <ringmesh/basic/common.h>
 
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
+
+#include <ringmesh/geogram_extension/geogram_extension.h>
+
 #include <ringmesh/mesh/mesh.h>
 #include <ringmesh/mesh/mesh_builder.h>
 
 /*!
- * @file ringmesh/geo_model_mesh.h
+ * @file ringmesh/geomodel_mesh.h
  * @brief Classes to manage globally the indexing of mesh entities of a GeoModel
  * @author Arnaud Botella and Jeanne Pellerin
  */

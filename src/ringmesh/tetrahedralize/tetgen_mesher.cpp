@@ -33,11 +33,10 @@
  *     FRANCE
  */
 
-#include <cstring>
-
 #include <ringmesh/tetrahedralize/tetgen_mesher.h>
 
-#include <geogram/basic/string.h>
+#include <cstring>
+
 #include <geogram/mesh/mesh.h>
 
 #ifdef RINGMESH_WITH_TETGEN
