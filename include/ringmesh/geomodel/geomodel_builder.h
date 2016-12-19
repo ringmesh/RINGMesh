@@ -33,19 +33,15 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_GEO_MODEL_BUILDER__
-#define __RINGMESH_GEO_MODEL_BUILDER__
+#ifndef __RINGMESH_GEOMODEL_BUILDER__
+#define __RINGMESH_GEOMODEL_BUILDER__
 
 #include <ringmesh/basic/common.h>
 
-#include <vector>
-#include <string>
-#include <stack>
-
-#include <ringmesh/geomodel/geo_model_editor.h>
+#include <ringmesh/geomodel/geomodel_editor.h>
 
 /*!
- * @file ringmesh/geo_model_builder.h
+ * @file ringmesh/geomodel_builder.h
  * @brief Classes to build GeoModel from various inputs
  * @author Jeanne Pellerin
  */

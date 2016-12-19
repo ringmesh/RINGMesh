@@ -34,6 +34,7 @@
  */
 
 #include <ringmesh/mesh/geogram_mesh.h>
+
 #include <ringmesh/mesh/geogram_mesh_builder.h>
 
 namespace RINGMesh {

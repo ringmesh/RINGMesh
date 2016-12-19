@@ -33,15 +33,15 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_GEO_MODEL_API__
-#define __RINGMESH_GEO_MODEL_API__
+#ifndef __RINGMESH_GEOMODEL_API__
+#define __RINGMESH_GEOMODEL_API__
 
 #include <ringmesh/basic/common.h>
 
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
 
 /*!
- * @file ringmesh/geo_model_api.h
+ * @file ringmesh/geomodel_api.h
  * @brief High level functions on GeoModel
  * @author Jeanne Pellerin and Arnaud Botella
  * @todo Encapsulate these functions in a namespace and TEST them.

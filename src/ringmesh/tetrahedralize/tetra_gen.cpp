@@ -35,26 +35,15 @@
 
 #include <ringmesh/tetrahedralize/tetra_gen.h>
 
-#include <cstdio>
-#include <iomanip>
-#include <stack>
-#include <sstream>
-
 #ifdef WIN32
 #   include <io.h>
-#endif 
+#endif
 
-#include <geogram/mesh/mesh.h>
-#include <geogram/mesh/mesh_geometry.h>
-#include <geogram/mesh/mesh_repair.h>
+#include <ringmesh/geomodel/geomodel.h>
+#include <ringmesh/geomodel/geomodel_builder.h>
 
-#include <ringmesh/basic/algorithm.h>
-#include <ringmesh/basic/geometry.h>
-#include <ringmesh/geomodel/geo_model.h>
-#include <ringmesh/geomodel/geo_model_api.h>
-#include <ringmesh/geomodel/geo_model_builder.h>
-#include <ringmesh/geomodel/geo_model_entity.h>
 #include <ringmesh/mesh/well.h>
+
 #include <ringmesh/tetrahedralize/tetgen_mesher.h>
 
 /*!

@@ -35,17 +35,9 @@
 
 #include <ringmesh/io/io.h>
 
-#include <geogram/basic/file_system.h>
-#include <geogram/mesh/mesh.h>
-#include <geogram/basic/string.h>
-#include <geogram/mesh/mesh_io.h>
-
-#include <ringmesh/geomodel/geo_model_builder.h>
-#include <ringmesh/geomodel/geo_model_validity.h>
-#include <ringmesh/geomodel/geo_model_api.h>
-
 #include <cstring>
-#include <fstream>
+
+#include <geogram/basic/file_system.h>
 
 /*!
  * @file Please add a file description
@@ -94,9 +86,7 @@ namespace RINGMesh {
         WellGroupIOHandler::initialize() ;
     }
 
-
     /***************************************************************************/
-
 
     void zip_file( zipFile zf, const std::string& name )
     {

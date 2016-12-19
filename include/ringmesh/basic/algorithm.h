@@ -78,7 +78,6 @@ namespace RINGMesh {
         }
     }
 
-
     template< typename T, typename container >
     inline bool contains( const container& in, const T& value, bool sorted = false )
     {
@@ -88,7 +87,6 @@ namespace RINGMesh {
             return find( in, value ) != NO_ID ;
         }
     }
-
 
     /*!
      * @brief Bubble sorting of input and output vectors according to values of input.
