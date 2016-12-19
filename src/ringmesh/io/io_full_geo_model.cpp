@@ -507,7 +507,7 @@ namespace {
             std::ofstream& out,
             index_t& elt )
         {
-            // Corners are already written to we start this loop at 1
+            // Corners are already written so we start this loop at 1
             for( index_t geomodel_mesh_entities = 1;
                 geomodel_mesh_entities < EntityTypeManager::nb_mesh_entity_types();
                 geomodel_mesh_entities++ ) {
@@ -528,7 +528,7 @@ namespace {
 
         index_t nb_total_elements( const GeoModel& geomodel )
         {
-            //Because corners does not have mesh elements, but are considered as elements
+            // Because corners does not have mesh elements, but are considered as elements
             // in adeli, we have to count the vertex of each corner in a different
             // way
             index_t nb_mesh_entities = geomodel.nb_corners() ;
