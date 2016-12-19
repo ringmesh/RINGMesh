@@ -33,37 +33,19 @@
  *     FRANCE
  */
 
-#include <ringmesh/geomodel/geo_model_builder.h>
+#include <ringmesh/geomodel/geomodel_builder.h>
 
-#include <iostream>
-#include <iomanip>
-#include <fstream>
-#include <cmath>
-#include <set>
 #include <stack>
 
-#include <geogram/basic/line_stream.h>
-#include <geogram/basic/logger.h>
-#include <geogram/mesh/mesh_io.h>
-#include <geogram/mesh/mesh_repair.h>
-#include <geogram/points/colocate.h>
-
-#include <ringmesh/basic/algorithm.h>
-#include <ringmesh/basic/box3d.h>
-#include <ringmesh/basic/geometry.h>
-#include <ringmesh/geogram_extension/geogram_mesh_repair.h>
-#include <ringmesh/geomodel/geo_model.h>
-#include <ringmesh/geomodel/geo_model_api.h>
-#include <ringmesh/geomodel/geo_model_validity.h>
-#include <ringmesh/io/io.h>
+#include <ringmesh/geomodel/geomodel_api.h>
 
 /*!
- * @file ringmesh/geomodel/geo_model_builder.cpp
+ * @file ringmesh/geomodel/geomodel_builder.cpp
  * @brief Implementation of the classes to build GeoModel from various inputs
  * @author Jeanne Pellerin
  */
 
-/*! @todo Split All functions of geo_model_builder.cpp into smaller functions
+/*! @todo Split All functions of geomodel_builder.cpp into smaller functions
  * Split this file into at least 4 files.
  */
 

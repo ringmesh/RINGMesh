@@ -58,10 +58,8 @@
 
 #include <ringmesh/geogram_extension/geogram_mesh_repair.h>
 
-#include <algorithm>
 #include <stack>
 
-#include <geogram/basic/memory.h>
 #include <geogram/basic/algorithm.h>
 #include <geogram/mesh/mesh.h>
 #include <geogram/points/colocate.h>

@@ -33,15 +33,15 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_GEO_MODEL_BUILDER_GOCAD__
-#define __RINGMESH_GEO_MODEL_BUILDER_GOCAD__
+#ifndef __RINGMESH_GEOMODEL_BUILDER_GOCAD__
+#define __RINGMESH_GEOMODEL_BUILDER_GOCAD__
 
 #include <ringmesh/basic/common.h>
 
 #include <geogram/basic/factory.h>
-#include <geogram/basic/line_stream.h> 
+#include <geogram/basic/line_stream.h>
 
-#include <ringmesh/geomodel/geo_model_builder.h>
+#include <ringmesh/geomodel/geomodel_builder.h>
 
 namespace RINGMesh {
     class GeoModelBuilderTSolid ;

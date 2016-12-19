@@ -38,11 +38,12 @@
  * @author Jeanne Pellerin and Arnaud Botella 
  */
 
-#include <ringmesh/geomodel/geo_model.h>
+#include <ringmesh/geomodel/geomodel.h>
 
-#include <ringmesh/basic/box3d.h>
-#include <ringmesh/geomodel/geo_model_mesh_entity.h>
-#include <ringmesh/geomodel/geo_model_geological_entity.h>
+#include <geogram/basic/command_line.h>
+
+#include <ringmesh/geomodel/geomodel_mesh_entity.h>
+#include <ringmesh/geomodel/geomodel_geological_entity.h>
 
 namespace {
     using namespace RINGMesh ;

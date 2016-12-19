@@ -42,15 +42,13 @@
 
 #include <geogram_gfx/glup_viewer/glup_viewer_gui.h>
 
-#include <ringmesh/basic/box3d.h>
-#include <ringmesh/geomodel/geo_model.h>
-
 /*!
  * @file Classes for GeoModel visualization
  * @author Benjamin Chauvin and Arnaud Botella
  */
 
 namespace RINGMesh {
+    class GeoModel ;
     class GeoModelGfx ;
     class AttributeGfx ;
     class CornerGfx ;

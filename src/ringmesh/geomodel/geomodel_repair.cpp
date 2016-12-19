@@ -33,20 +33,9 @@
  *     FRANCE
  */
 
-#include <ringmesh/geomodel/geo_model_repair.h>
+#include <ringmesh/geomodel/geomodel_repair.h>
 
-#include <algorithm>
-
-#include <geogram/basic/logger.h>
-
-#include <geogram/mesh/mesh_preprocessing.h>
-#include <geogram/mesh/mesh_repair.h>
-
-#include <ringmesh/basic/geometry.h>
-#include <ringmesh/geomodel/geo_model.h>
-#include <ringmesh/geomodel/geo_model_builder.h>
-#include <ringmesh/geomodel/geo_model_editor.h>
-#include <ringmesh/geomodel/geo_model_entity.h>
+#include <ringmesh/geomodel/geomodel.h>
 
 /*!
  * @file Implementation of repair function of the surfaces of a GeoModel
@@ -56,7 +45,6 @@
 namespace RINGMesh {
 
     typedef GeoModelMeshEntity GMME ;
-
 
     bool GeoModelRepair::facet_is_degenerate(
         const Surface& S,
@@ -112,7 +100,6 @@ namespace RINGMesh {
             e_is_degenerate[e] = edge_is_degenerate( L, e, colocated_vertices ) ;
         }
     }
-
 
     index_t GeoModelRepair::repair_line_mesh( Line& line )
     {

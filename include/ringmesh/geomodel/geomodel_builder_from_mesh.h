@@ -33,63 +33,40 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_GEO_MODEL_VALIDITY__
-#define __RINGMESH_GEO_MODEL_VALIDITY__
+#ifndef __RINGMESH_GEOMODEL_BUILDER_FROM_MESH__
+#define __RINGMESH_GEOMODEL_BUILDER_FROM_MESH__
 
 #include <ringmesh/basic/common.h>
 
-#include <geogram/basic/file_system.h>
-
-#include <ringmesh/geomodel/geomodel_indexing_types.h>
+#include <ringmesh/geomodel/geomodel_builder.h>
 
 /*!
- * @file ringmesh/geo_model_validity.h
- * @brief Functions to check the validity of GeoModels
+ * @file ringmesh/geomodel_builder_from_mesh.h
+ * @brief Classes to build GeoModel from Geogram meshes
  * @author Jeanne Pellerin
  */
 
 namespace RINGMesh {
-    class GeoModel ;
-    class GeoModelEntity ;
-}
-
-namespace RINGMesh {
-    /*! 
-     * @brief Set the global default directory to store invalid entities of 
-     *  geomodels to be the current working directory
-     */
-    static std::string validity_errors_directory =
-        GEO::FileSystem::get_current_working_directory() ;
+    // Implementation class
+    class GeoModelEntityFromMesh ;
 
     /*!
-     * @brief Set the directory where debugging information on 
-     * invalid entities shall be stored
-     * @details If directory does not exist keep the previous value.
+     * @brief To build a GeoModel from a set of disconnected polygonal surfaces
      */
-    void RINGMESH_API set_validity_errors_directory( const std::string& directory ) ;
+    class RINGMESH_API GeoModelBuilderSurfaceMesh: public GeoModelBuilder {
+    public:
+        GeoModelBuilderSurfaceMesh( GeoModel& geomodel, const GEO::Mesh& mesh )
+            : GeoModelBuilder( geomodel ), mesh_( mesh )
+        {
+            options_.compute_lines = true ;
+            options_.compute_corners = true ;
+            options_.compute_regions_brep = true ;
+        }
+        void build_polygonal_surfaces_from_connected_components() ;
 
-    /*!
-     * @brief Check global geomodel validity
-     * @details In debug mode problematic vertices, edges, entities are
-     *          saved in the validity_errors_directory
-     *          An optional expensive check of the intersections between
-     *          the geomodel surfaces can be disabled using command line
-     *          argument "in:intersection_check"
-     * @todo Check the consistency of gme_vertices vs. geomodel_vertex_id
-     * @todo Add options to expensive tests
-     */
-    bool RINGMESH_API is_geomodel_valid( const GeoModel& geomodel ) ;
-
-    /*!
-     * @brief Check the validity of all individual entities
-     * @details Check that the entities belong to this geomodel,
-     *          call the check validity for each entity
-     */
-    bool RINGMESH_API are_geomodel_meshed_entities_valid(
-        const GeoModel& geomodel ) ;
-
-    bool RINGMESH_API are_geomodel_geological_entities_valid(
-        const GeoModel& geomodel ) ;
+    private:
+        const GEO::Mesh& mesh_ ;
+    } ;
 }
 
 #endif
