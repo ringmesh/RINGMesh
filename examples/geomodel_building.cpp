@@ -40,9 +40,8 @@
 
 #include <ringmesh/basic/command_line.h>
 #include <ringmesh/geomodel/geo_model.h>
-#include <ringmesh/geomodel/geo_model_builder.h>
-
-#include <ringmesh/geomodel/geo_model_api.h>
+#include <ringmesh/geomodel/geomodel_api.h>
+#include <ringmesh/geomodel/geomodel_builder.h>
 #include <ringmesh/io/io.h>
 
 /*!

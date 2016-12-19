@@ -33,14 +33,7 @@
  *     FRANCE
  */
 
-#include <ringmesh/geomodel/geo_model_editor.h>
-
-#include <algorithm>
-#include <vector> 
-#include <map>
-#include <set>
-
-#include <ringmesh/geomodel/geo_model.h>
+#include <ringmesh/geomodel/geomodel_editor.h>
 
 /*!
  * @file Implementation of the GeoModelEditor

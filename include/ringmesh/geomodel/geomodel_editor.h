@@ -33,17 +33,15 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_GEO_MODEL_EDITOR__
-#define __RINGMESH_GEO_MODEL_EDITOR__
+#ifndef __RINGMESH_GEOMODEL_EDITOR__
+#define __RINGMESH_GEOMODEL_EDITOR__
 
 #include <ringmesh/basic/common.h>
 
-#include <set>
-
-#include <ringmesh/geomodel/geo_model.h>
-#include <ringmesh/geomodel/geo_model_entity.h>
-#include <ringmesh/geomodel/geo_model_mesh_entity.h>
-#include <ringmesh/geomodel/geo_model_geological_entity.h>
+#include <ringmesh/geomodel/geomodel.h>
+#include <ringmesh/geomodel/geomodel_entity.h>
+#include <ringmesh/geomodel/geomodel_mesh_entity.h>
+#include <ringmesh/geomodel/geomodel_geological_entity.h>
 
 /*!
  * @file Declaration of GeoModelEditor class.

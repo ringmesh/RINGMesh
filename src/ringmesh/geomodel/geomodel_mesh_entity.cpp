@@ -38,29 +38,13 @@
  * @author Jeanne Pellerin and Arnaud Botella 
  */
 
-#include <ringmesh/geomodel/geo_model_mesh_entity.h>
+#include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
-#include <algorithm>
-#include <fstream>
-#include <set>
 #include <stack>
 
-#include <geogram/basic/logger.h>
-#include <geogram/basic/geometry_nd.h>
-
-#include <geogram/mesh/mesh_geometry.h>
-#include <geogram/mesh/mesh_intersection.h>
-#include <geogram/mesh/mesh_repair.h>
-#include <geogram/mesh/mesh_topology.h>
-#include <geogram/mesh/triangle_intersection.h>
-
-#include <ringmesh/basic/algorithm.h>
-#include <ringmesh/basic/geometry.h>
-#include <ringmesh/geogram_extension/geogram_extension.h>
-#include <ringmesh/geomodel/geo_model.h>
-#include <ringmesh/geomodel/geo_model_api.h>
-#include <ringmesh/geomodel/geo_model_geological_entity.h>
-#include <ringmesh/geomodel/geo_model_validity.h>
+#include <ringmesh/geomodel/geomodel.h>
+#include <ringmesh/geomodel/geomodel_geological_entity.h>
+#include <ringmesh/geomodel/geomodel_validity.h>
 
 namespace {
     using namespace RINGMesh ;

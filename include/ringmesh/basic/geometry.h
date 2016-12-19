@@ -247,6 +247,12 @@ namespace RINGMesh {
         const vec3& p1,
         vec3& new_p ) ;
 
+    void RINGMESH_API point_plane_projection(
+        const vec3& p,
+        const vec3& N_plane,
+        const vec3& O_plane,
+        vec3& projected_p ) ;
+
     bool RINGMESH_API tetra_barycentric_coordinates(
         const vec3& p,
         const vec3& p0,
