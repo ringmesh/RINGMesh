@@ -1005,6 +1005,24 @@ namespace RINGMesh {
         return false ;
     }
 
+    /*!
+     * Computes the orthogonal projection of a point on a plane
+     * @param[in] p the point to project
+     * @param[in] N_plane the normal of the plane
+     * @param[in] O_plane the origin of the plane
+     * @param[out] projected_p the projected point
+     */
+    void point_plane_projection(
+        const vec3& p,
+        const vec3& N_plane,
+        const vec3& O_plane,
+        vec3& projected_p )
+    {
+        vec3 v( p - O_plane ) ;
+        double distance = dot( v, N_plane ) ;
+        projected_p = p - distance * N_plane ;
+    }
+
     double point_segment_distance(
         const vec3& p,
         const vec3& p0,
