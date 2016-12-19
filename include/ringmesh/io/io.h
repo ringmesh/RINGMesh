@@ -44,8 +44,6 @@
 #include <geogram/basic/factory.h>
 #include <geogram/basic/string.h>
 
-#include <ringmesh/geomodel/geo_model_entity.h>
-
 #define MAX_FILENAME 512
 #define READ_SIZE 8192
 
