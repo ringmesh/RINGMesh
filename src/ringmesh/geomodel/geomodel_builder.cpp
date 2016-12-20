@@ -2183,7 +2183,7 @@ namespace RINGMesh {
             double max_volume = -1. ;
             index_t universe_id = NO_ID ;
             for( index_t i = 0; i < geomodel().nb_regions(); ++i ) {
-                double cur_volume = geomodel_entity_size( geomodel().region( i ) ) ;
+                double cur_volume = geomodel().region( i ).size() ;
                 if( cur_volume > max_volume ) {
                     max_volume = cur_volume ;
                     universe_id = i ;

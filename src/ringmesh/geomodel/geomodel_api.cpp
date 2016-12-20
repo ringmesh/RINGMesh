@@ -293,41 +293,6 @@ namespace RINGMesh {
 
     /*******************************************************************************/
 
-    double geomodel_entity_size( const GeoModelGeologicalEntity& E )
-    {
-        double result = 0. ;
-        for( index_t i = 0; i < E.nb_children(); ++i ) {
-            result += geomodel_entity_size( E.child( i ) ) ;
-        }
-        return result ;
-    }
-
-    double geomodel_entity_size( const GeoModelMeshEntity& E )
-    {
-        return E.size() ;
-    }
-
-    vec3 geomodel_entity_barycenter( const GeoModelMeshEntity& E )
-    {
-        return E.entity_barycenter() ;
-    }
-
-    vec3 geomodel_entity_barycenter( const GeoModelGeologicalEntity& E )
-    {
-
-        vec3 result( 0., 0., 0. ) ;
-        index_t nb_vertices = 0 ;
-
-        for( index_t i = 0; i < E.nb_children(); ++i ) {
-            const GeoModelMeshEntity& child = E.child( i ) ;
-            nb_vertices += child.nb_vertices() ;
-            result += child.entity_barycenter() * child.nb_vertices() ;
-        }
-        result /= static_cast< double >( nb_vertices ) ;
-
-        return result ;
-    }
-
     void translate( GeoModel& M, const vec3& translation_vector )
     {
         for( index_t v = 0; v < M.mesh.vertices.nb(); ++v ) {
