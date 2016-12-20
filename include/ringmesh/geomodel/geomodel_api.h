@@ -158,22 +158,6 @@ namespace RINGMesh {
     /*-----------------------------------------------------------------------*/
 
     /*!
-     * @brief Compute the size (volume, area, length) of an Entity
-     * @param[in] E Entity to evaluate
-     */
-    double RINGMESH_API geomodel_entity_size( const GeoModelMeshEntity& E ) ;
-    double RINGMESH_API geomodel_entity_size( const GeoModelGeologicalEntity& E ) ;
-
-    /*!
-     * @brief Compute the barycenter of a GeoModelEntity
-     * @param[in] E Entity to evaluate
-     * @return The coordinates of the barycenter
-     */
-    vec3 RINGMESH_API geomodel_entity_barycenter( const GeoModelEntity& E ) ;
-
-    /*-----------------------------------------------------------------------*/
-
-    /*!
      * @brief Gets the index of the Corner for a given point
      * @param[in] geomodel GeoModel to consider
      * @param[in] point Geometric location to look for
