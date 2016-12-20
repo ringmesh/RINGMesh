@@ -47,16 +47,8 @@
  * @todo Encapsulate these functions in a namespace and TEST them.
  */
 
-namespace GEO {
-    class Mesh ;
-}
-
 namespace RINGMesh {
     class GeoModel ;
-    class Surface ;
-    class GeoModelEntity ;
-    class GeoModelMeshEntity ;
-    class GeoModelGeologicalEntity ;
 }
 
 namespace RINGMesh {
