@@ -178,6 +178,11 @@ namespace RINGMesh {
             clear_vertex_linked_objects() ;
         }
 
+        virtual void permute_vertices( GEO::vector< index_t >& permutation )
+        {
+            mesh_->mesh_->vertices.permute_elements( permutation ) ;
+        }
+
         virtual void clear_vertex_linked_objects()
         {
             delete_vertex_nn_search() ;
@@ -329,6 +334,12 @@ namespace RINGMesh {
             delete_vertices( to_delete ) ;
 
         }
+
+        virtual void permute_edges( GEO::vector< index_t >& permutation )
+        {
+            mesh_->mesh_->edges.permute_elements( permutation ) ;
+        }
+
         virtual void clear_vertex_linked_objects()
         {
             delete_vertex_nn_search() ;

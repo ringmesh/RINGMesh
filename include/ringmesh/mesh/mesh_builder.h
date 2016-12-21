@@ -118,6 +118,7 @@ namespace RINGMesh {
          * by subsequent mesh entity creations.
          */
         virtual void clear_vertices( bool keep_attributes, bool keep_memory ) = 0 ;
+        virtual void permute_vertices( GEO::vector< index_t >& permutation ) = 0 ;
         /*!
          * @brief Deletes the NNSearch on vertices
          */
@@ -153,6 +154,7 @@ namespace RINGMesh {
         {
             // All vertices are isolated in a Mesh0D
         }
+
     protected:
         Mesh0DBuilder()
             : MeshBaseBuilder()
@@ -214,6 +216,7 @@ namespace RINGMesh {
          * by subsequent mesh entity creations.
          */
         virtual void clear_edges( bool keep_attributes, bool keep_memory ) = 0 ;
+        virtual void permute_edges( GEO::vector< index_t >& permutation ) = 0 ;
 
         virtual void clear_edge_linked_objects() = 0 ;
         /*!
