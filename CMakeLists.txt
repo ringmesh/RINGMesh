@@ -368,6 +368,10 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 # Add include directories of RINGMesh
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
+#add generated export file to include directories
+set(generated_export_file ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_export.h)
+set(ringmesh_include ${ringmesh_include} ${generated_export_file})
+
 # Add the RINGMesh target as a shared library
 add_library(RINGMesh SHARED
     ${ringmesh_include} 
@@ -376,7 +380,7 @@ add_library(RINGMesh SHARED
     ${zlib_include})
 	
 # Function for generation of export macros for libraries (dll)
-generate_export_header(RINGMesh EXPORT_MACRO_NAME RINGMESH_API EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_export.h)
+generate_export_header(RINGMesh EXPORT_MACRO_NAME RINGMESH_API EXPORT_FILE_NAME ${generated_export_file} )
 
 # RINGMesh depends on Geogram
 add_dependencies(RINGMesh geogram_ext)
