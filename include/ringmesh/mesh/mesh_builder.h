@@ -38,15 +38,8 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <geogram/basic/command_line.h>
-#include <geogram/mesh/mesh.h>
-#include <geogram/mesh/mesh_io.h>
-#include <geogram/mesh/mesh_geometry.h>
-#include <geogram/mesh/mesh_preprocessing.h>
-#include <geogram/voronoi/CVT.h>
+#include <geogram/mesh/mesh_repair.h>
 
-#include <ringmesh/basic/geometry.h>
-#include <ringmesh/geogram_extension/geogram_extension.h>
 #include <ringmesh/mesh/mesh.h>
 
 namespace RINGMesh {
@@ -125,6 +118,7 @@ namespace RINGMesh {
          * by subsequent mesh entity creations.
          */
         virtual void clear_vertices( bool keep_attributes, bool keep_memory ) = 0 ;
+        virtual void permute_vertices( GEO::vector< index_t >& permutation ) = 0 ;
         /*!
          * @brief Deletes the NNSearch on vertices
          */
@@ -160,6 +154,7 @@ namespace RINGMesh {
         {
             // All vertices are isolated in a Mesh0D
         }
+
     protected:
         Mesh0DBuilder()
             : MeshBaseBuilder()
@@ -221,6 +216,7 @@ namespace RINGMesh {
          * by subsequent mesh entity creations.
          */
         virtual void clear_edges( bool keep_attributes, bool keep_memory ) = 0 ;
+        virtual void permute_edges( GEO::vector< index_t >& permutation ) = 0 ;
 
         virtual void clear_edge_linked_objects() = 0 ;
         /*!

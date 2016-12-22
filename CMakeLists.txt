@@ -196,7 +196,12 @@ elseif(UNIX)
     endif()
     
     # Enable parallel computation
-    set(COMPILATION_OPTION -- -j)    
+    set(cpuinfo_file "/proc/cpuinfo")
+    if(EXISTS "${cpuinfo_file}")
+        file(STRINGS "${cpuinfo_file}" procs REGEX "^processor.: [0-9]+$")
+        list(LENGTH procs PROCESSOR_COUNT)
+    endif()
+    set(COMPILATION_OPTION -- -j${PROCESSOR_COUNT})
 else(WIN32)
     # Nothing else really supported
     message(FATAL_ERROR "Your platform is not supported. Please modify the cmakelist file.")    

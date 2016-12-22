@@ -38,8 +38,8 @@
 #include <ringmesh/basic/algorithm.h>
 #include <ringmesh/basic/box3d.h>
 #include <ringmesh/basic/geometry.h>
-#include <ringmesh/geomodel/geo_model.h>
-#include <ringmesh/geomodel/geo_model_mesh_entity.h>
+#include <ringmesh/geomodel/geomodel.h>
+#include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_geometry.h>

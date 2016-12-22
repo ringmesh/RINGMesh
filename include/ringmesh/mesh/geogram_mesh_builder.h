@@ -39,17 +39,13 @@
 #include <ringmesh/basic/common.h>
 
 #include <geogram/basic/command_line.h>
-#include <geogram/mesh/mesh.h>
-#include <geogram/mesh/mesh_io.h>
-#include <geogram/mesh/mesh_geometry.h>
+
 #include <geogram/mesh/mesh_preprocessing.h>
+
 #include <geogram/voronoi/CVT.h>
 
-#include <ringmesh/basic/geometry.h>
-#include <ringmesh/geogram_extension/geogram_extension.h>
-#include <ringmesh/mesh/mesh.h>
-#include <ringmesh/mesh/mesh_builder.h>
 #include <ringmesh/mesh/geogram_mesh.h>
+#include <ringmesh/mesh/mesh_builder.h>
 
 namespace RINGMesh {
     class GeoModel ;
@@ -180,6 +176,11 @@ namespace RINGMesh {
         {
             mesh_->mesh_->vertices.clear( keep_attributes, keep_memory ) ;
             clear_vertex_linked_objects() ;
+        }
+
+        virtual void permute_vertices( GEO::vector< index_t >& permutation )
+        {
+            mesh_->mesh_->vertices.permute_elements( permutation ) ;
         }
 
         virtual void clear_vertex_linked_objects()
@@ -333,6 +334,12 @@ namespace RINGMesh {
             delete_vertices( to_delete ) ;
 
         }
+
+        virtual void permute_edges( GEO::vector< index_t >& permutation )
+        {
+            mesh_->mesh_->edges.permute_elements( permutation ) ;
+        }
+
         virtual void clear_vertex_linked_objects()
         {
             delete_vertex_nn_search() ;
