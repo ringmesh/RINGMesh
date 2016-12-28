@@ -1012,7 +1012,6 @@ namespace RINGMesh {
 
     void RINGMeshApplication::quit()
     {
-        std::cout << "here" << std::endl ;
         glup_viewer_exit_main_loop() ;
     }
 
