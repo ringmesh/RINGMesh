@@ -112,6 +112,7 @@ int main()
     using namespace RINGMesh ;
 
     try {
+        default_configure() ;
         std::string input_model_file_name( ringmesh_test_data_path ) ;
         input_model_file_name += "modelA6.ml" ;
 
@@ -122,14 +123,16 @@ int main()
         int argc = 1 ; //2
         // Two arguments: one for 'ringmeshview' and one for the input file
 
-        const std::string GLUP_profiles[4] = {
-            "auto", "GLUP150", "GLUP440", "VanillaGL" } ;
+        std::vector< std::string > GLUP_profiles( 4, "" ) ;
+        GLUP_profiles[0] = "auto" ;
+        GLUP_profiles[1] = "GLUP150" ;
+        GLUP_profiles[2] = "GLUP440" ;
+        GLUP_profiles[3] = "VanillaGL" ;
 
-//        std::cout << "ICI" << std::endl ;
-//        for( index_t profile = 0; profile < 4; profile++ ) {
-//            GEO::CmdLine::set_arg( "gfx:GLUP_profile", GLUP_profiles[profile] ) ;
-//            std::cout << GEO::CmdLine::get_arg( "gfx:GLUP_profile" ) << std::endl ;
-//        }
+    for( index_t profile = 0; profile < GLUP_profiles.size(); profile++ ) {
+        std::cout << "Profile nb = " << profile << std::endl ;
+        GEO::CmdLine::set_arg( "GLUP_profile", GLUP_profiles[profile] ) ;
+
         RINGMeshApplication app( argc, p_input ) ;
 
         // Create the threads for launching the app window
@@ -145,27 +148,32 @@ int main()
         // Run concurrently the both threads
         GEO::Process::run_threads( thread_group ) ;
 
-        return 0 ;
-
-    } catch( const RINGMeshException& e ) {
-        Logger::err( e.category() ) << e.what() << std::endl ;
-        return 1 ;
-    } catch( const std::exception& e ) {
-        Logger::err( "Exception" ) << e.what() << std::endl ;
-        return 1 ;
+        std::cout << "Next" << std::endl ;
     }
+
+
     return 0 ;
+
+}
+catch( const RINGMeshException& e ) {
+    Logger::err( e.category() ) << e.what() << std::endl ;
+    return 1 ;
+} catch( const std::exception& e ) {
+    Logger::err( "Exception" ) << e.what() << std::endl ;
+    return 1 ;
+}
+return 0 ;
 }
 
 #else
 #include <geogram/basic/logger.h>
 int main() {
 
-    default_configure() ;
-    Logger::out("RINGMeshView")
-    << "To compile RINGMesh viewer you need to configure "
-    << "the project with the RINGMESH_WITH_GRAPHICS option ON"
-    << std::endl ;
-    return 0 ;
+default_configure() ;
+Logger::out("RINGMeshView")
+<< "To compile RINGMesh viewer you need to configure "
+<< "the project with the RINGMESH_WITH_GRAPHICS option ON"
+<< std::endl ;
+return 0 ;
 }
 #endif
