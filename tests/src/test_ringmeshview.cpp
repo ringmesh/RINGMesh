@@ -50,6 +50,10 @@
 
 namespace RINGMesh {
 
+    /*!
+     * Cross-platform function to make a pause
+     */
+
 #ifdef WIN32
 #include <windows.h>
 #else
@@ -61,7 +65,8 @@ namespace RINGMesh {
 #ifdef WIN32
         Sleep(milliseconds) ;
 #else
-        usleep( static_cast< __useconds_t >( milliseconds * 1000 ) ) ; // usleep takes microseconds
+        // usleep takes microseconds
+        usleep( static_cast< __useconds_t >( milliseconds * 1000 ) ) ;
 #endif
     }
 
@@ -69,55 +74,11 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
-    /**
-     * \brief Single thread ThreadManager
-     * \details MonoThreadingThreadManager implements a ThreadManager for
-     * single thread environments.
-     */
-    class ApplicationThreadManager: public GEO::ThreadManager {
+    class StartAppThread: public GEO::Thread {
     public:
-
-        /**
-         * \copydoc ThreadManager::maximum_concurrent_threads()
-         * \note This implementation always returns 2.
-         */
-        virtual index_t maximum_concurrent_threads()
-        {
-            return 2 ;
-        }
-
-        /**
-         * \copydoc ThreadManager::enter_critical_section()
-         * \note This implementation does actually nothing
-         */
-        virtual void enter_critical_section()
-        {
-
-        }
-
-        /**
-         * \copydoc ThreadManager::leave_critical_section()
-         * \note This implementation does actually nothing
-         */
-        virtual void leave_critical_section()
-        {
-
-        }
-
-    protected:
-        /** MonoThreadingThreadManager destructor */
-        virtual ~ApplicationThreadManager()
-        {
-
-        }
-    } ;
-
-    class DoWindowThread: public GEO::Thread {
-    public:
-        DoWindowThread( RINGMeshApplication* app )
+        StartAppThread( RINGMeshApplication* app )
             : GEO::Thread(), app_( app )
         {
-
         }
 
         virtual void run()
@@ -129,16 +90,16 @@ namespace RINGMesh {
         RINGMeshApplication* app_ ;
     } ;
 
-    class CloseWindowThread: public GEO::Thread {
+    class QuitAppThread: public GEO::Thread {
     public:
-        CloseWindowThread( RINGMeshApplication* app )
+        QuitAppThread( RINGMeshApplication* app )
             : GEO::Thread(), app_( app )
         {
-
         }
 
         virtual void run()
         {
+            // Wait one second to be sure that the windows is really opened
             wait( 1000 ) ;
             app_->quit() ;
         }
@@ -169,17 +130,18 @@ int main()
 
         RINGMeshApplication app( argc, p_input ) ;
 
-//        GEO::MonoThreadingThreadManager toto ;
-//        GEO::ApplicationThreadManager thread_manager ;
+        // Create the threads for launching the app window
+        // and the one for closing the window
+        StartAppThread start_thread( &app ) ;
+        QuitAppThread quit_thread( &app ) ;
+
+        // Add the both threads in a group
         GEO::ThreadGroup thread_group ;
+        thread_group.push_back( &start_thread ) ;
+        thread_group.push_back( &quit_thread ) ;
 
-        DoWindowThread do_thread( &app ) ;
-        CloseWindowThread close_thread( &app ) ;
-        thread_group.push_back( &do_thread ) ;
-        thread_group.push_back( &close_thread ) ;
-
+        // Run concurrently the both threads
         GEO::Process::run_threads( thread_group ) ;
-
 
         return 0 ;
 
@@ -197,8 +159,7 @@ int main()
 #include <geogram/basic/logger.h>
 int main() {
 
-    configure_geogram() ;
-    configure_ringmesh() ;
+    default_configure() ;
     Logger::out("RINGMeshView")
     << "To compile RINGMesh viewer you need to configure "
     << "the project with the RINGMESH_WITH_GRAPHICS option ON"
