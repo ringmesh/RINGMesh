@@ -40,6 +40,7 @@
 #ifdef RINGMESH_WITH_GRAPHICS
 
 #include <geogram/basic/logger.h>
+#include <geogram/basic/process.h>
 
 #include <ringmesh/visualization/gfx_application.h>
 
@@ -47,11 +48,114 @@
  * @author Pierre Anquez
  */
 
+namespace RINGMesh {
+
+#ifdef WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
+
+    void wait( const index_t milliseconds )
+    {
+#ifdef WIN32
+        Sleep(milliseconds) ;
+#else
+        usleep( static_cast< __useconds_t >( milliseconds * 1000 ) ) ; // usleep takes microseconds
+#endif
+    }
+
+}
+
+namespace RINGMesh {
+
+    /**
+     * \brief Single thread ThreadManager
+     * \details MonoThreadingThreadManager implements a ThreadManager for
+     * single thread environments.
+     */
+    class ApplicationThreadManager: public GEO::ThreadManager {
+    public:
+
+        /**
+         * \copydoc ThreadManager::maximum_concurrent_threads()
+         * \note This implementation always returns 2.
+         */
+        virtual index_t maximum_concurrent_threads()
+        {
+            return 2 ;
+        }
+
+        /**
+         * \copydoc ThreadManager::enter_critical_section()
+         * \note This implementation does actually nothing
+         */
+        virtual void enter_critical_section()
+        {
+
+        }
+
+        /**
+         * \copydoc ThreadManager::leave_critical_section()
+         * \note This implementation does actually nothing
+         */
+        virtual void leave_critical_section()
+        {
+
+        }
+
+    protected:
+        /** MonoThreadingThreadManager destructor */
+        virtual ~ApplicationThreadManager()
+        {
+
+        }
+    } ;
+
+    class DoWindowThread: public GEO::Thread {
+    public:
+        DoWindowThread( RINGMeshApplication* app )
+            : GEO::Thread(), app_( app )
+        {
+
+        }
+
+        virtual void run()
+        {
+            app_->start() ;
+        }
+
+    private:
+        RINGMeshApplication* app_ ;
+    } ;
+
+    class CloseWindowThread: public GEO::Thread {
+    public:
+        CloseWindowThread( RINGMeshApplication* app )
+            : GEO::Thread(), app_( app )
+        {
+
+        }
+
+        virtual void run()
+        {
+            wait( 1000 ) ;
+            app_->quit() ;
+        }
+
+    private:
+        RINGMeshApplication* app_ ;
+    } ;
+
+}
+
 int main()
 {
     using namespace RINGMesh ;
 
     try {
+
+//        CmdLine::declare_arg("array_size", 2, "number of cells in array");
 
         std::string input_model_file_name( ringmesh_test_data_path ) ;
         input_model_file_name += "modelA6.ml" ;
@@ -60,12 +164,23 @@ int main()
         char** p_input = new char* ;
         p_input = &input ;
 
-        int argc = 1 ;
+        int argc = 1 ; //2
         // Two arguments: one for 'ringmeshview' the second one for the input file
 
         RINGMeshApplication app( argc, p_input ) ;
-        app.start() ;
-        app.quit() ;
+
+//        GEO::MonoThreadingThreadManager toto ;
+//        GEO::ApplicationThreadManager thread_manager ;
+        GEO::ThreadGroup thread_group ;
+
+        DoWindowThread do_thread( &app ) ;
+        CloseWindowThread close_thread( &app ) ;
+        thread_group.push_back( &do_thread ) ;
+        thread_group.push_back( &close_thread ) ;
+
+        GEO::Process::run_threads( thread_group ) ;
+
+
         return 0 ;
 
     } catch( const RINGMeshException& e ) {
