@@ -39,6 +39,7 @@
 
 #ifdef RINGMESH_WITH_GRAPHICS
 
+#include <geogram/basic/command_line.h>
 #include <geogram/basic/logger.h>
 #include <geogram/basic/process.h>
 
@@ -70,29 +71,25 @@ namespace RINGMesh {
 #endif
     }
 
-}
-
-namespace RINGMesh {
-
     class StartAppThread: public GEO::Thread {
     public:
-        StartAppThread( RINGMeshApplication* app )
+        StartAppThread( RINGMeshApplication& app )
             : GEO::Thread(), app_( app )
         {
         }
 
         virtual void run()
         {
-            app_->start() ;
+            app_.start() ;
         }
 
     private:
-        RINGMeshApplication* app_ ;
+        RINGMeshApplication& app_ ;
     } ;
 
     class QuitAppThread: public GEO::Thread {
     public:
-        QuitAppThread( RINGMeshApplication* app )
+        QuitAppThread( RINGMeshApplication& app )
             : GEO::Thread(), app_( app )
         {
         }
@@ -101,11 +98,11 @@ namespace RINGMesh {
         {
             // Wait one second to be sure that the windows is really opened
             wait( 1000 ) ;
-            app_->quit() ;
+            app_.quit() ;
         }
 
     private:
-        RINGMeshApplication* app_ ;
+        RINGMeshApplication& app_ ;
     } ;
 
 }
@@ -115,9 +112,6 @@ int main()
     using namespace RINGMesh ;
 
     try {
-
-//        CmdLine::declare_arg("array_size", 2, "number of cells in array");
-
         std::string input_model_file_name( ringmesh_test_data_path ) ;
         input_model_file_name += "modelA6.ml" ;
 
@@ -126,19 +120,27 @@ int main()
         p_input = &input ;
 
         int argc = 1 ; //2
-        // Two arguments: one for 'ringmeshview' the second one for the input file
+        // Two arguments: one for 'ringmeshview' and one for the input file
 
+        const std::string GLUP_profiles[4] = {
+            "auto", "GLUP150", "GLUP440", "VanillaGL" } ;
+
+//        std::cout << "ICI" << std::endl ;
+//        for( index_t profile = 0; profile < 4; profile++ ) {
+//            GEO::CmdLine::set_arg( "gfx:GLUP_profile", GLUP_profiles[profile] ) ;
+//            std::cout << GEO::CmdLine::get_arg( "gfx:GLUP_profile" ) << std::endl ;
+//        }
         RINGMeshApplication app( argc, p_input ) ;
 
         // Create the threads for launching the app window
         // and the one for closing the window
-        StartAppThread start_thread( &app ) ;
-        QuitAppThread quit_thread( &app ) ;
+        StartAppThread* start_thread = new StartAppThread( app ) ;
+        QuitAppThread* quit_thread = new QuitAppThread( app ) ;
 
         // Add the both threads in a group
         GEO::ThreadGroup thread_group ;
-        thread_group.push_back( &start_thread ) ;
-        thread_group.push_back( &quit_thread ) ;
+        thread_group.push_back( start_thread ) ;
+        thread_group.push_back( quit_thread ) ;
 
         // Run concurrently the both threads
         GEO::Process::run_threads( thread_group ) ;
