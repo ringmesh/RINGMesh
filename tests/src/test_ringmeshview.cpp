@@ -123,11 +123,11 @@ int main()
         int argc = 1 ; //2
         // Two arguments: one for 'ringmeshview' and one for the input file
 
-        std::vector< std::string > GLUP_profiles( 4, "" ) ;
+        std::vector< std::string > GLUP_profiles( 1, "" ) ;
         GLUP_profiles[0] = "auto" ;
-        GLUP_profiles[1] = "GLUP150" ;
-        GLUP_profiles[2] = "GLUP440" ;
-        GLUP_profiles[3] = "VanillaGL" ;
+//        GLUP_profiles[1] = "GLUP150" ;
+//        GLUP_profiles[2] = "GLUP440" ;
+//        GLUP_profiles[3] = "VanillaGL" ;
 
     for( index_t profile = 0; profile < GLUP_profiles.size(); profile++ ) {
         std::cout << "Profile nb = " << profile << std::endl ;
