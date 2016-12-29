@@ -221,11 +221,12 @@ namespace RINGMesh {
     {
         colored_cells_.new_status = false ;
         show_colored_layers_.new_status = false ;
+        float one = 1 ;
         for( GEO::index_t r = 0; r < GM_.nb_regions(); r++ ) {
             GM_gfx_.regions.set_mesh_element_color( r,
-                std::fmod( GEO::Numeric::random_float32(), 1 ),
-                std::fmod( GEO::Numeric::random_float32(), 1 ),
-                std::fmod( GEO::Numeric::random_float32(), 1 ) ) ;
+                std::fmod( GEO::Numeric::random_float32(), one ),
+                std::fmod( GEO::Numeric::random_float32(), one ),
+                std::fmod( GEO::Numeric::random_float32(), one ) ) ;
         }
     }
 
@@ -238,11 +239,12 @@ namespace RINGMesh {
         }
         colored_cells_.new_status = false ;
         show_colored_regions_.new_status = false ;
+        float one = 1 ;
         for( GEO::index_t l = 0;
             l < GM_.nb_geological_entities( Layer::type_name_static() ); l++ ) {
-            float red = std::fmod( GEO::Numeric::random_float32(), 1 ) ;
-            float green = std::fmod( GEO::Numeric::random_float32(), 1 ) ;
-            float blue = std::fmod( GEO::Numeric::random_float32(), 1 ) ;
+            float red = std::fmod( GEO::Numeric::random_float32(), one ) ;
+            float green = std::fmod( GEO::Numeric::random_float32(), one ) ;
+            float blue = std::fmod( GEO::Numeric::random_float32(), one ) ;
             const GeoModelGeologicalEntity& cur_layer = GM_.geological_entity(
                 Layer::type_name_static(), l ) ;
             for( index_t r = 0; r < cur_layer.nb_children(); ++r )
@@ -718,14 +720,18 @@ namespace RINGMesh {
         std::string min_value = GEO::String::to_string(
             GM_gfx_.attribute.minimum() ) ;
         float nb_min_letter = static_cast< float >( min_value.size() ) ;
-        glQuickText::printfAt( x1 - w - font_height * nb_min_letter * 0.3,
-            y1 - font_height, z, font_sz, min_value.c_str() ) ;
+        glQuickText::printfAt(
+            static_cast< double >( x1 - w - font_height * nb_min_letter * (float) 0.3 ),
+            static_cast< double >( y1 - font_height ), static_cast< double >( z ),
+            static_cast< double >( font_sz ), min_value.c_str() ) ;
 
         std::string max_value = GEO::String::to_string(
             GM_gfx_.attribute.maximum() ) ;
         float nb_max_letter = static_cast< float >( max_value.size() ) ;
-        glQuickText::printfAt( x1 + w - font_height * nb_max_letter * 0.3,
-            y1 - font_height, z, font_sz, max_value.c_str() ) ;
+        glQuickText::printfAt(
+            static_cast< double >( x1 - w - font_height * nb_max_letter * (float) 0.3 ),
+            static_cast< double >( y1 - font_height ), static_cast< double >( z ),
+            static_cast< double >( font_sz ), max_value.c_str() ) ;
 
         glupMatrixMode( GLUP_PROJECTION_MATRIX ) ;
         glupPopMatrix() ;
@@ -1002,6 +1008,11 @@ namespace RINGMesh {
         for( index_t i = 0; i < meshes_.size(); i++ ) {
             delete meshes_[i] ;
         }
+    }
+
+    void RINGMeshApplication::quit()
+    {
+        glup_viewer_exit_main_loop() ;
     }
 
     RINGMeshApplication* RINGMeshApplication::instance()
