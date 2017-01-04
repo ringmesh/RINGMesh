@@ -16,8 +16,6 @@ syntax: regexp
 syntax: regexp
 \.gz$
 syntax: regexp
-\.pdf$
-syntax: regexp
 \.orig$
 syntax: regexp
 ^doc/doc_online$
