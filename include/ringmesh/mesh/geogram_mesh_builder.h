@@ -162,8 +162,7 @@ namespace RINGMesh {
         virtual void delete_vertices( std::vector< index_t >& to_delete )
         {
             GEO::vector< index_t > vertices_to_delete ;
-            copy_std_vector_to_geo_vector( to_delete, 0,
-                static_cast< index_t >( to_delete.size() ), vertices_to_delete ) ;
+            copy_std_vector_to_geo_vector( to_delete, vertices_to_delete ) ;
             mesh_->mesh_->vertices.delete_elements( vertices_to_delete, false ) ;
             clear_vertex_linked_objects() ;
         }
@@ -183,9 +182,7 @@ namespace RINGMesh {
         virtual void permute_vertices( std::vector< index_t >& permutation )
         {
             GEO::vector< index_t > geo_vector_permutation ;
-            copy_std_vector_to_geo_vector( permutation, 0,
-                static_cast< index_t >( permutation.size() ),
-                geo_vector_permutation ) ;
+            copy_std_vector_to_geo_vector( permutation, geo_vector_permutation ) ;
             mesh_->mesh_->vertices.permute_elements( geo_vector_permutation ) ;
         }
 
@@ -302,8 +299,7 @@ namespace RINGMesh {
             bool remove_isolated_vertices )
         {
             GEO::vector< index_t > edges_to_delete ;
-            copy_std_vector_to_geo_vector( to_delete, 0,
-                static_cast< index_t >( to_delete.size() ), edges_to_delete ) ;
+            copy_std_vector_to_geo_vector( to_delete, edges_to_delete ) ;
             mesh_->mesh_->edges.delete_elements( edges_to_delete, false ) ;
             if( remove_isolated_vertices ) {
                 this->remove_isolated_vertices() ;
@@ -343,9 +339,7 @@ namespace RINGMesh {
         virtual void permute_edges( std::vector< index_t >& permutation )
         {
             GEO::vector< index_t > geo_vector_permutation ;
-            copy_std_vector_to_geo_vector( permutation, 0,
-                static_cast< index_t >( permutation.size() ),
-                geo_vector_permutation ) ;
+            copy_std_vector_to_geo_vector( permutation, geo_vector_permutation ) ;
             mesh_->mesh_->edges.permute_elements( geo_vector_permutation ) ;
         }
 
@@ -450,8 +444,7 @@ namespace RINGMesh {
             const std::vector< index_t >& vertices )
         {
             GEO::vector< index_t > facet_vertices ;
-            copy_std_vector_to_geo_vector( vertices, 0,
-                static_cast< index_t >( vertices.size() ), facet_vertices ) ;
+            copy_std_vector_to_geo_vector( vertices, facet_vertices ) ;
             index_t index = mesh_->mesh_->facets.create_polygon( facet_vertices ) ;
             clear_facet_linked_objects() ;
             return index ;
@@ -542,9 +535,7 @@ namespace RINGMesh {
         virtual void permute_facets( std::vector< index_t >& permutation )
         {
             GEO::vector< index_t > geo_vector_permutation ;
-            copy_std_vector_to_geo_vector( permutation, 0,
-                static_cast< index_t >( permutation.size() ),
-                geo_vector_permutation ) ;
+            copy_std_vector_to_geo_vector( permutation, geo_vector_permutation ) ;
             mesh_->mesh_->facets.permute_elements( geo_vector_permutation ) ;
         }
         /*!
@@ -559,8 +550,7 @@ namespace RINGMesh {
             bool remove_isolated_vertices )
         {
             GEO::vector< index_t > facets_to_delete ;
-            copy_std_vector_to_geo_vector( to_delete, 0,
-                static_cast< index_t >( to_delete.size() ), facets_to_delete ) ;
+            copy_std_vector_to_geo_vector( to_delete, facets_to_delete ) ;
             mesh_->mesh_->facets.delete_elements( facets_to_delete, false ) ;
             if( remove_isolated_vertices ) {
                 this->remove_isolated_vertices() ;
@@ -739,9 +729,7 @@ namespace RINGMesh {
         virtual void permute_cells( std::vector< index_t >& permutation )
         {
             GEO::vector< index_t > geo_vector_permutation ;
-            copy_std_vector_to_geo_vector( permutation, 0,
-                static_cast< index_t >( permutation.size() ),
-                geo_vector_permutation ) ;
+            copy_std_vector_to_geo_vector( permutation, geo_vector_permutation ) ;
             mesh_->mesh_->cells.permute_elements( geo_vector_permutation ) ;
         }
         /*!
