@@ -180,9 +180,13 @@ namespace RINGMesh {
             clear_vertex_linked_objects() ;
         }
 
-        virtual void permute_vertices( GEO::vector< index_t >& permutation )
+        virtual void permute_vertices( std::vector< index_t >& permutation )
         {
-            mesh_->mesh_->vertices.permute_elements( permutation ) ;
+            GEO::vector< index_t > geo_vector_permutation ;
+            copy_std_vector_to_geo_vector( permutation, 0,
+                static_cast< index_t >( permutation.size() ),
+                geo_vector_permutation ) ;
+            mesh_->mesh_->vertices.permute_elements( geo_vector_permutation ) ;
         }
 
         virtual void clear_vertex_linked_objects()
@@ -720,9 +724,13 @@ namespace RINGMesh {
          *  data = data2 ;
          *  </code>
          */
-        virtual void cells_permute_elements( GEO::vector< index_t >& permutation )
+        virtual void cells_permute_elements( std::vector< index_t >& permutation )
         {
-            mesh_->mesh_->cells.permute_elements( permutation ) ;
+            GEO::vector< index_t > geo_vector_permutation ;
+            copy_std_vector_to_geo_vector( permutation, 0,
+                static_cast< index_t >( permutation.size() ),
+                geo_vector_permutation ) ;
+            mesh_->mesh_->cells.permute_elements( geo_vector_permutation ) ;
         }
         /*!
          * @brief Removes all the cells and attributes.
@@ -735,9 +743,13 @@ namespace RINGMesh {
         {
             mesh_->mesh_->cells.clear( keep_attributes, keep_memory ) ;
         }
-        virtual void permute_cells( GEO::vector< index_t >& permutation )
+        virtual void permute_cells( std::vector< index_t >& permutation )
         {
-            mesh_->mesh_->cells.permute_elements( permutation ) ;
+            GEO::vector< index_t > geo_vector_permutation ;
+            copy_std_vector_to_geo_vector( permutation, 0,
+                static_cast< index_t >( permutation.size() ),
+                geo_vector_permutation ) ;
+            mesh_->mesh_->cells.permute_elements( geo_vector_permutation ) ;
         }
         /*!
          * @brief Deletes a set of cells.

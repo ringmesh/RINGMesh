@@ -767,7 +767,7 @@ namespace RINGMesh {
         mesh_builder->connect_cells() ;
 
         // Permute cells to sort them per region and per type
-        GEO::vector< index_t > sorted_indices( mesh_->nb_cells() ) ;
+        std::vector< index_t > sorted_indices( mesh_->nb_cells() ) ;
         for( index_t i = 0; i < mesh_->nb_cells(); i++ ) {
             sorted_indices[i] = i ;
         }

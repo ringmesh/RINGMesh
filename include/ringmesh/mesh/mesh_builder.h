@@ -118,7 +118,7 @@ namespace RINGMesh {
          * by subsequent mesh entity creations.
          */
         virtual void clear_vertices( bool keep_attributes, bool keep_memory ) = 0 ;
-        virtual void permute_vertices( GEO::vector< index_t >& permutation ) = 0 ;
+        virtual void permute_vertices( std::vector< index_t >& permutation ) = 0 ;
         /*!
          * @brief Deletes the NNSearch on vertices
          */
@@ -443,7 +443,7 @@ namespace RINGMesh {
          *  </code>
          */
         virtual void cells_permute_elements(
-            GEO::vector< index_t >& permutation ) = 0 ;
+            std::vector< index_t >& permutation ) = 0 ;
         /*!
          * @brief Removes all the cells and attributes.
          * @param[in] keep_attributes if true, then all the existing attribute
@@ -452,7 +452,7 @@ namespace RINGMesh {
          * by subsequent mesh entity creations.
          */
         virtual void clear_cells( bool keep_attributes, bool keep_memory ) = 0 ;
-        virtual void permute_cells( GEO::vector< index_t >& permutation ) = 0 ;
+        virtual void permute_cells( std::vector< index_t >& permutation ) = 0 ;
         /*!
          * @brief Deletes a set of cells.
          * @param[in] to_delete     a vector of size @function nb(). If to_delete[c] is different from 0,
