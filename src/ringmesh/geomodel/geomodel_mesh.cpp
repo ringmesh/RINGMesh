@@ -580,7 +580,7 @@ namespace RINGMesh {
             return ;
         }
         // Identify and invalidate colocated vertices
-        GEO::vector< index_t > old2new ;
+        std::vector< index_t > old2new ;
         index_t nb_colocalised_vertices =
             mesh_->vertices_nn_search().get_colocated_index_mapping(
                 gm_.epsilon(), old2new ) ;
@@ -595,7 +595,7 @@ namespace RINGMesh {
         ringmesh_assert( to_delete.size() == nb() ) ;
 
         // For mesh vertices deletion
-        GEO::vector< index_t > to_delete_geo( nb(), 0 ) ;
+        std::vector< index_t > to_delete_bool( nb(), 0 ) ;
 
         // Fill the delete information for geogram
         // Recycle the to_delete vertex to get the mapping between
@@ -605,7 +605,7 @@ namespace RINGMesh {
         index_t cur = 0 ;
         for( index_t v = 0; v < nb(); ++v ) {
             if( to_delete[v] != v ) {
-                to_delete_geo[v] = 1 ;
+                to_delete_bool[v] = 1 ;
                 nb_todelete++ ;
                 if( to_delete[v] != NO_ID ) {
                     ringmesh_assert( to_delete[v] < v ) ;
@@ -633,7 +633,7 @@ namespace RINGMesh {
         // Delete the vertices - false is to not remove
         // isolated vertices (here all the vertices)
         Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder( *mesh_ ) ;
-        builder->delete_vertices( to_delete_geo ) ;
+        builder->delete_vertices( to_delete_bool ) ;
 
         vertex_mapper_.update_mesh_entity_maps_and_gmes( to_delete ) ;
     }
@@ -1759,7 +1759,7 @@ namespace RINGMesh {
         // Example for a mesh with two surfaces and only triangles and quads
         // [TRGL,TRGL, .. , QUAD, QUAD .. , TRGL, TRGL, ... , QUAD, QUAD ..]
         // |          surface 0           |             surface 1           |
-        GEO::vector< index_t > sorted_indices( mesh_->nb_facets() ) ;
+        std::vector< index_t > sorted_indices( mesh_->nb_facets() ) ;
         for( index_t i = 0; i < mesh_->nb_facets(); i++ ) {
             sorted_indices[i] = i ;
         }

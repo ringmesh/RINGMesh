@@ -269,19 +269,19 @@ namespace RINGMesh {
         void delete_mesh_entity_isolated_vertices( const gme_t& E_id ) ;
         void delete_mesh_entity_vertices(
             const gme_t& E_id,
-            GEO::vector< index_t >& to_delete ) ;
+            std::vector< index_t >& to_delete ) ;
         void delete_corner_vertex( index_t corner_id ) ;
         void delete_line_edges(
             index_t line_id,
-            GEO::vector< index_t >& to_delete,
+            std::vector< index_t >& to_delete,
             bool remove_isolated_vertices ) ;
         void delete_surface_facets(
             index_t surface_id,
-            GEO::vector< index_t >& to_delete,
+            std::vector< index_t >& to_delete,
             bool remove_isolated_vertices ) ;
         void delete_region_cells(
             index_t region_id,
-            GEO::vector< index_t >& to_delete,
+            std::vector< index_t >& to_delete,
             bool remove_isolated_vertices ) ;
 
         /*! @}
