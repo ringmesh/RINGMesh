@@ -115,15 +115,15 @@ namespace RINGMesh {
         index_t repair_line_mesh( Line& line ) ;
         void line_detect_degenerate_edges(
             const Line& L,
-            GEO::vector< index_t >& e_is_degenerate,
-            GEO::vector< index_t >& colocated_vertices ) ;
+            std::vector< index_t >& e_is_degenerate,
+            std::vector< index_t >& colocated_vertices ) ;
         /*!
          * \note Copied and modified from geogram\mesh\mesh_repair.cpp
          */
         void surface_detect_degenerate_facets(
             const Surface& S,
-            GEO::vector< index_t >& f_is_degenerate,
-            GEO::vector< index_t >& colocated_vertices ) ;
+            std::vector< index_t >& f_is_degenerate,
+            std::vector< index_t >& colocated_vertices ) ;
         /*!
          * \note Copied and modified from geogram\mesh\mesh_repair.cpp
          *
@@ -138,7 +138,7 @@ namespace RINGMesh {
         bool facet_is_degenerate(
             const Surface& S,
             index_t f,
-            GEO::vector< index_t >& colocated_vertices ) ;
+            std::vector< index_t >& colocated_vertices ) ;
             
         /*!
          * @brief Detect and remove degenerated facets in a Surface
@@ -185,7 +185,7 @@ namespace RINGMesh {
         bool edge_is_degenerate(
             const Line& L,
             index_t e,
-            const GEO::vector< index_t >& colocated_vertices )
+            const std::vector< index_t >& colocated_vertices )
         {
             index_t v1 = colocated_vertices[L.mesh_element_vertex_index( e, 0 )] ;
             index_t v2 = colocated_vertices[L.mesh_element_vertex_index( e, 1 )] ;
