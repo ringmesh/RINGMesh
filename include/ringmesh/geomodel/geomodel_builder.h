@@ -248,7 +248,7 @@ namespace RINGMesh {
 
         index_t create_surface_facet(
             index_t surface_id,
-            const GEO::vector< index_t >& vertex_indices ) ;
+            const std::vector< index_t >& vertex_indices ) ;
 
         index_t create_region_cell(
             index_t region_id,

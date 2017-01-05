@@ -263,7 +263,7 @@ namespace RINGMesh {
          * \return the index of the created facet
          */
         virtual index_t create_facet_polygon(
-            const GEO::vector< index_t >& vertices ) = 0 ;
+            const std::vector< index_t >& vertices ) = 0 ;
         /*!
          * \brief Creates a contiguous chunk of triangles
          * \param[in] nb_triangles number of triangles to create

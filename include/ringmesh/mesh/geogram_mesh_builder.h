@@ -74,13 +74,12 @@ namespace RINGMesh {
          * @param[in] copy_attributes if true, all attributes are copied.
          * @return a modifiable reference to the point that corresponds to the vertex.
          */
-        virtual void copy(
-            const MeshBase& rhs,
-            bool copy_attributes )
+        virtual void copy( const MeshBase& rhs, bool copy_attributes )
         {
             const GeogramMeshBase& geogrammesh =
                 dynamic_cast< const GeogramMeshBase& >( rhs ) ;
-            mesh_->mesh_->copy( *geogrammesh.mesh_, copy_attributes, GEO::MESH_ALL_ELEMENTS ) ;
+            mesh_->mesh_->copy( *geogrammesh.mesh_, copy_attributes,
+                GEO::MESH_ALL_ELEMENTS ) ;
             clear_vertex_linked_objects() ;
         }
 
@@ -217,17 +216,15 @@ namespace RINGMesh {
 
     public:
         GeogramMesh0DBuilder()
-            :
-                GeogramMeshBaseBuilder(),
-                Mesh0DBuilder(),
-                mesh_( nil )
+            : GeogramMeshBaseBuilder(), Mesh0DBuilder(), mesh_( nil )
         {
         }
         virtual ~GeogramMesh0DBuilder()
         {
         }
 
-        virtual void set_mesh( Mesh0D& mesh ) {
+        virtual void set_mesh( Mesh0D& mesh )
+        {
             mesh_ = &dynamic_cast< GeogramMesh0D& >( mesh ) ;
             GeogramMeshBaseBuilder::set_mesh( *mesh_ ) ;
         }
@@ -241,17 +238,15 @@ namespace RINGMesh {
 
     public:
         GeogramMesh1DBuilder()
-            :
-                GeogramMeshBaseBuilder(),
-                Mesh1DBuilder(),
-                mesh_( nil )
+            : GeogramMeshBaseBuilder(), Mesh1DBuilder(), mesh_( nil )
         {
         }
         virtual ~GeogramMesh1DBuilder()
         {
         }
 
-        virtual void set_mesh( Mesh1D& mesh ) {
+        virtual void set_mesh( Mesh1D& mesh )
+        {
             mesh_ = &dynamic_cast< GeogramMesh1D& >( mesh ) ;
             GeogramMeshBaseBuilder::set_mesh( *mesh_ ) ;
         }
@@ -372,17 +367,15 @@ namespace RINGMesh {
 
     public:
         GeogramMesh2DBuilder()
-            :
-                GeogramMeshBaseBuilder(),
-                Mesh2DBuilder(),
-                mesh_( nil )
+            : GeogramMeshBaseBuilder(), Mesh2DBuilder(), mesh_( nil )
         {
         }
         virtual ~GeogramMesh2DBuilder()
         {
         }
 
-        virtual void set_mesh( Mesh2D& mesh ) {
+        virtual void set_mesh( Mesh2D& mesh )
+        {
             mesh_ = &dynamic_cast< GeogramMesh2D& >( mesh ) ;
             GeogramMeshBaseBuilder::set_mesh( *mesh_ ) ;
         }
@@ -440,9 +433,12 @@ namespace RINGMesh {
          * \return the index of the created facet
          */
         virtual index_t create_facet_polygon(
-            const GEO::vector< index_t >& vertices )
+            const std::vector< index_t >& vertices )
         {
-            index_t index = mesh_->mesh_->facets.create_polygon( vertices ) ;
+            GEO::vector< index_t > facet_vertices ;
+            copy_std_vector_to_geo_vector( vertices, 0, vertices.size(),
+                facet_vertices ) ;
+            index_t index = mesh_->mesh_->facets.create_polygon( facet_vertices ) ;
             clear_facet_linked_objects() ;
             return index ;
         }
@@ -608,13 +604,11 @@ namespace RINGMesh {
 
     public:
         GeogramMesh3DBuilder()
-            :
-                GeogramMeshBaseBuilder(),
-                Mesh3DBuilder(),
-                mesh_()
+            : GeogramMeshBaseBuilder(), Mesh3DBuilder(), mesh_()
         {
         }
-        virtual void set_mesh( Mesh3D& mesh ) {
+        virtual void set_mesh( Mesh3D& mesh )
+        {
             mesh_ = &dynamic_cast< GeogramMesh3D& >( mesh ) ;
             GeogramMeshBaseBuilder::set_mesh( *mesh_ ) ;
         }
@@ -826,7 +820,8 @@ namespace RINGMesh {
         virtual ~GeogramMeshAllDBuilder()
         {
         }
-        virtual void set_mesh( MeshAllD& mesh ) {
+        virtual void set_mesh( MeshAllD& mesh )
+        {
             mesh_ = &dynamic_cast< GeogramMeshAllD& >( mesh ) ;
             GeogramMesh0DBuilder::set_mesh( *mesh_ ) ;
             GeogramMesh1DBuilder::set_mesh( *mesh_ ) ;

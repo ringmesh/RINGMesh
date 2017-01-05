@@ -1592,7 +1592,7 @@ namespace RINGMesh {
 
     index_t GeoModelBuilder::create_surface_facet(
         index_t surface_id,
-        const GEO::vector< index_t >& vertex_indices )
+        const std::vector< index_t >& vertex_indices )
     {
         GeoModelMeshEntity& E = mesh_entity( Surface::type_name_static(),
             surface_id ) ;

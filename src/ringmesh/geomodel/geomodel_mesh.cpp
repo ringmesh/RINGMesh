@@ -1739,7 +1739,7 @@ namespace RINGMesh {
                         mesh_builder->set_facet_vertex( cur_facet, v, v_id ) ;
                     }
                 } else {
-                    GEO::vector< index_t > vertices( nb_vertices ) ;
+                    std::vector< index_t > vertices( nb_vertices ) ;
                     for( index_t v = 0; v < nb_vertices; v++ ) {
                         vertices[v] = geomodel_vertices.geomodel_vertex_id(
                             surface.gme_id(), f, v ) ;
