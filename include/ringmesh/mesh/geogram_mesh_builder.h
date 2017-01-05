@@ -713,25 +713,7 @@ namespace RINGMesh {
         {
             mesh_->mesh_->cells.connect() ;
         }
-        /*!
-         * @brief Applies a permutation to the entities and their attributes.
-         * On exit, permutation is modified (used for internal bookkeeping).
-         * Applying a permutation permutation is equivalent to:
-         * <code>
-         *  for(i=0; i<permutation.size(); i++) {
-         *      data2[i] = data[permutation[i]]
-         *       }
-         *  data = data2 ;
-         *  </code>
-         */
-        virtual void cells_permute_elements( std::vector< index_t >& permutation )
-        {
-            GEO::vector< index_t > geo_vector_permutation ;
-            copy_std_vector_to_geo_vector( permutation, 0,
-                static_cast< index_t >( permutation.size() ),
-                geo_vector_permutation ) ;
-            mesh_->mesh_->cells.permute_elements( geo_vector_permutation ) ;
-        }
+
         /*!
          * @brief Removes all the cells and attributes.
          * @param[in] keep_attributes if true, then all the existing attribute
@@ -743,6 +725,17 @@ namespace RINGMesh {
         {
             mesh_->mesh_->cells.clear( keep_attributes, keep_memory ) ;
         }
+        /*!
+         * @brief Applies a permutation to the entities and their attributes.
+         * On exit, permutation is modified (used for internal bookkeeping).
+         * Applying a permutation permutation is equivalent to:
+         * <code>
+         *  for(i=0; i<permutation.size(); i++) {
+         *      data2[i] = data[permutation[i]]
+         *       }
+         *  data = data2 ;
+         *  </code>
+         */
         virtual void permute_cells( std::vector< index_t >& permutation )
         {
             GEO::vector< index_t > geo_vector_permutation ;
