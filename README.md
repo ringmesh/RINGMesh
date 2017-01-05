@@ -49,6 +49,10 @@ Compiling the documentation
 The documentation can be generated using [Doxygen](http://www.stack.nl/~dimitri/doxygen/):
 
 * Check the BUILD_DOCUMENTATION option when using cmake
+ * cd build
+ * ccmake ..
+ * set BUILD_DOCUMENTATION option to ON
+ * configure and generate
 * cd build/ringmesh/Release
 * make doc-devkit OR make doc-devkit-lite
 
