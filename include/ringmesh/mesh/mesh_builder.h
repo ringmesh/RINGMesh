@@ -431,6 +431,15 @@ namespace RINGMesh {
          * @brief Retrieve the adjacencies
          */
         virtual void connect_cells() = 0 ;
+
+        /*!
+         * @brief Removes all the cells and attributes.
+         * @param[in] keep_attributes if true, then all the existing attribute
+         * names / bindings are kept (but they are cleared). If false, they are destroyed.
+         * @param[in] keep_memory if true, then memory is kept and can be reused
+         * by subsequent mesh entity creations.
+         */
+        virtual void clear_cells( bool keep_attributes, bool keep_memory ) = 0 ;
         /*!
          * @brief Applies a permutation to the entities and their attributes.
          * On exit, permutation is modified (used for internal bookkeeping).
@@ -442,16 +451,6 @@ namespace RINGMesh {
          *  data = data2 ;
          *  </code>
          */
-        virtual void cells_permute_elements(
-            std::vector< index_t >& permutation ) = 0 ;
-        /*!
-         * @brief Removes all the cells and attributes.
-         * @param[in] keep_attributes if true, then all the existing attribute
-         * names / bindings are kept (but they are cleared). If false, they are destroyed.
-         * @param[in] keep_memory if true, then memory is kept and can be reused
-         * by subsequent mesh entity creations.
-         */
-        virtual void clear_cells( bool keep_attributes, bool keep_memory ) = 0 ;
         virtual void permute_cells( std::vector< index_t >& permutation ) = 0 ;
         /*!
          * @brief Deletes a set of cells.
