@@ -510,8 +510,8 @@ namespace RINGMesh {
         }
 
         NNSearch nn_search( region_surfaces_and_wells_vertices ) ;
-        GEO::vector< index_t > unique_indices ;
-        GEO::vector< vec3 > unique_points ;
+        std::vector< index_t > unique_indices ;
+        std::vector< vec3 > unique_points ;
         nn_search.get_colocated_index_mapping( region.geomodel().epsilon(),
             unique_indices, unique_points ) ;
 
