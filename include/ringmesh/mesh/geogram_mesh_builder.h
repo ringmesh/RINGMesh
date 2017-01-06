@@ -74,13 +74,12 @@ namespace RINGMesh {
          * @param[in] copy_attributes if true, all attributes are copied.
          * @return a modifiable reference to the point that corresponds to the vertex.
          */
-        virtual void copy(
-            const MeshBase& rhs,
-            bool copy_attributes )
+        virtual void copy( const MeshBase& rhs, bool copy_attributes )
         {
             const GeogramMeshBase& geogrammesh =
                 dynamic_cast< const GeogramMeshBase& >( rhs ) ;
-            mesh_->mesh_->copy( *geogrammesh.mesh_, copy_attributes, GEO::MESH_ALL_ELEMENTS ) ;
+            mesh_->mesh_->copy( *geogrammesh.mesh_, copy_attributes,
+                GEO::MESH_ALL_ELEMENTS ) ;
             clear_vertex_linked_objects() ;
         }
 
@@ -156,13 +155,14 @@ namespace RINGMesh {
         }
         /*!
          * @brief Deletes a set of vertices.
-         * @param[in] to_delete     a vector of size @function nb(). If to_delete[e] is different from 0,
-         * then entity e will be destroyed, else it will be kept. On exit, to_delete is modified
-         * (it is used for internal bookkeeping).
+         * @param[in] to_delete     a vector of size @function nb().
+         * If to_delete[e] is true, then entity e will be destroyed, else it will be kept.
          */
-        virtual void delete_vertices( GEO::vector< index_t >& to_delete )
+        virtual void delete_vertices( const std::vector< bool >& to_delete )
         {
-            mesh_->mesh_->vertices.delete_elements( to_delete, false ) ;
+            GEO::vector< index_t > vertices_to_delete ;
+            copy_std_vector_to_geo_vector( to_delete, vertices_to_delete ) ;
+            mesh_->mesh_->vertices.delete_elements( vertices_to_delete, false ) ;
             clear_vertex_linked_objects() ;
         }
         /*!
@@ -176,6 +176,13 @@ namespace RINGMesh {
         {
             mesh_->mesh_->vertices.clear( keep_attributes, keep_memory ) ;
             clear_vertex_linked_objects() ;
+        }
+
+        virtual void permute_vertices( const std::vector< index_t >& permutation )
+        {
+            GEO::vector< index_t > geo_vector_permutation ;
+            copy_std_vector_to_geo_vector( permutation, geo_vector_permutation ) ;
+            mesh_->mesh_->vertices.permute_elements( geo_vector_permutation ) ;
         }
 
         virtual void clear_vertex_linked_objects()
@@ -212,17 +219,15 @@ namespace RINGMesh {
 
     public:
         GeogramMesh0DBuilder()
-            :
-                GeogramMeshBaseBuilder(),
-                Mesh0DBuilder(),
-                mesh_( nil )
+            : GeogramMeshBaseBuilder(), Mesh0DBuilder(), mesh_( nil )
         {
         }
         virtual ~GeogramMesh0DBuilder()
         {
         }
 
-        virtual void set_mesh( Mesh0D& mesh ) {
+        virtual void set_mesh( Mesh0D& mesh )
+        {
             mesh_ = &dynamic_cast< GeogramMesh0D& >( mesh ) ;
             GeogramMeshBaseBuilder::set_mesh( *mesh_ ) ;
         }
@@ -236,17 +241,15 @@ namespace RINGMesh {
 
     public:
         GeogramMesh1DBuilder()
-            :
-                GeogramMeshBaseBuilder(),
-                Mesh1DBuilder(),
-                mesh_( nil )
+            : GeogramMeshBaseBuilder(), Mesh1DBuilder(), mesh_( nil )
         {
         }
         virtual ~GeogramMesh1DBuilder()
         {
         }
 
-        virtual void set_mesh( Mesh1D& mesh ) {
+        virtual void set_mesh( Mesh1D& mesh )
+        {
             mesh_ = &dynamic_cast< GeogramMesh1D& >( mesh ) ;
             GeogramMeshBaseBuilder::set_mesh( *mesh_ ) ;
         }
@@ -285,16 +288,18 @@ namespace RINGMesh {
         }
         /*!
          * @brief Deletes a set of edges.
-         * @param[in] to_delete a vector of size @function nb(). If to_delete[e] is different from 0,
-         * then entity e will be destroyed, else it will be kept. On exit, to_delete is modified
-         * (it is used for internal bookkeeping).
-         * @param[in] remove_isolated_vertices if true, then the vertices that are no longer incident to any entity are deleted.
+         * @param[in] to_delete     a vector of size @function nb().
+         * If to_delete[e] is true, then entity e will be destroyed, else it will be kept.
+         * @param[in] remove_isolated_vertices if true, then the vertices that are
+         * no longer incident to any entity are deleted.
          */
         virtual void delete_edges(
-            GEO::vector< index_t > to_delete,
+            const std::vector< bool >& to_delete,
             bool remove_isolated_vertices )
         {
-            mesh_->mesh_->edges.delete_elements( to_delete, false ) ;
+            GEO::vector< index_t > edges_to_delete ;
+            copy_std_vector_to_geo_vector( to_delete, edges_to_delete ) ;
+            mesh_->mesh_->edges.delete_elements( edges_to_delete, false ) ;
             if( remove_isolated_vertices ) {
                 this->remove_isolated_vertices() ;
             }
@@ -318,17 +323,25 @@ namespace RINGMesh {
          */
         virtual void remove_isolated_vertices()
         {
-            GEO::vector< index_t > to_delete( mesh_->nb_vertices(), 1 ) ;
+            std::vector< bool > to_delete( mesh_->nb_vertices(), true ) ;
 
             for( index_t e = 0; e < mesh_->nb_edges(); e++ ) {
                 for( index_t v = 0; v < 2; v++ ) {
                     index_t vertex_id = mesh_->edge_vertex( e, v ) ;
-                    to_delete[vertex_id] = 0 ;
+                    to_delete[vertex_id] = false ;
                 }
             }
             delete_vertices( to_delete ) ;
 
         }
+
+        virtual void permute_edges( const std::vector< index_t >& permutation )
+        {
+            GEO::vector< index_t > geo_vector_permutation ;
+            copy_std_vector_to_geo_vector( permutation, geo_vector_permutation ) ;
+            mesh_->mesh_->edges.permute_elements( geo_vector_permutation ) ;
+        }
+
         virtual void clear_vertex_linked_objects()
         {
             delete_vertex_nn_search() ;
@@ -361,17 +374,15 @@ namespace RINGMesh {
 
     public:
         GeogramMesh2DBuilder()
-            :
-                GeogramMeshBaseBuilder(),
-                Mesh2DBuilder(),
-                mesh_( nil )
+            : GeogramMeshBaseBuilder(), Mesh2DBuilder(), mesh_( nil )
         {
         }
         virtual ~GeogramMesh2DBuilder()
         {
         }
 
-        virtual void set_mesh( Mesh2D& mesh ) {
+        virtual void set_mesh( Mesh2D& mesh )
+        {
             mesh_ = &dynamic_cast< GeogramMesh2D& >( mesh ) ;
             GeogramMeshBaseBuilder::set_mesh( *mesh_ ) ;
         }
@@ -429,9 +440,11 @@ namespace RINGMesh {
          * \return the index of the created facet
          */
         virtual index_t create_facet_polygon(
-            const GEO::vector< index_t >& vertices )
+            const std::vector< index_t >& vertices )
         {
-            index_t index = mesh_->mesh_->facets.create_polygon( vertices ) ;
+            GEO::vector< index_t > facet_vertices ;
+            copy_std_vector_to_geo_vector( vertices, facet_vertices ) ;
+            index_t index = mesh_->mesh_->facets.create_polygon( facet_vertices ) ;
             clear_facet_linked_objects() ;
             return index ;
         }
@@ -518,22 +531,26 @@ namespace RINGMesh {
         {
             mesh_->mesh_->facets.connect() ;
         }
-        virtual void permute_facets( GEO::vector< index_t >& permutation )
+        virtual void permute_facets( const std::vector< index_t >& permutation )
         {
-            mesh_->mesh_->facets.permute_elements( permutation ) ;
+            GEO::vector< index_t > geo_vector_permutation ;
+            copy_std_vector_to_geo_vector( permutation, geo_vector_permutation ) ;
+            mesh_->mesh_->facets.permute_elements( geo_vector_permutation ) ;
         }
         /*!
          * @brief Deletes a set of facets.
-         * @param[in] to_delete     a vector of size @function nb(). If to_delete[f] is different from 0,
-         * then facet f will be destroyed, else it will be kept. On exit, to_delete is modified
-         * (it is used for internal bookkeeping).
-         * @param[in] remove_isolated_vertices if true, then the vertices that are no longer incident to any entity are deleted.
+         * @param[in] to_delete     a vector of size @function nb().
+         * If to_delete[e] is true, then entity e will be destroyed, else it will be kept.
+         * @param[in] remove_isolated_vertices if true, then the vertices that are
+         * no longer incident to any entity are deleted.
          */
         virtual void delete_facets(
-            GEO::vector< index_t >& to_delete,
+            const std::vector< bool >& to_delete,
             bool remove_isolated_vertices )
         {
-            mesh_->mesh_->facets.delete_elements( to_delete, false ) ;
+            GEO::vector< index_t > facets_to_delete ;
+            copy_std_vector_to_geo_vector( to_delete, facets_to_delete ) ;
+            mesh_->mesh_->facets.delete_elements( facets_to_delete, false ) ;
             if( remove_isolated_vertices ) {
                 this->remove_isolated_vertices() ;
             }
@@ -544,12 +561,12 @@ namespace RINGMesh {
          */
         virtual void remove_isolated_vertices()
         {
-            GEO::vector< index_t > to_delete( mesh_->nb_vertices(), 1 ) ;
+            std::vector< bool > to_delete( mesh_->nb_vertices(), true ) ;
 
             for( index_t f = 0; f < mesh_->nb_facets(); f++ ) {
                 for( index_t v = 0; v < mesh_->nb_facet_vertices( f ); v++ ) {
                     index_t vertex_id = mesh_->facet_vertex( f, v ) ;
-                    to_delete[vertex_id] = 0 ;
+                    to_delete[vertex_id] = false ;
                 }
             }
 
@@ -597,13 +614,11 @@ namespace RINGMesh {
 
     public:
         GeogramMesh3DBuilder()
-            :
-                GeogramMeshBaseBuilder(),
-                Mesh3DBuilder(),
-                mesh_()
+            : GeogramMeshBaseBuilder(), Mesh3DBuilder(), mesh_()
         {
         }
-        virtual void set_mesh( Mesh3D& mesh ) {
+        virtual void set_mesh( Mesh3D& mesh )
+        {
             mesh_ = &dynamic_cast< GeogramMesh3D& >( mesh ) ;
             GeogramMeshBaseBuilder::set_mesh( *mesh_ ) ;
         }
@@ -687,21 +702,7 @@ namespace RINGMesh {
         {
             mesh_->mesh_->cells.connect() ;
         }
-        /*!
-         * @brief Applies a permutation to the entities and their attributes.
-         * On exit, permutation is modified (used for internal bookkeeping).
-         * Applying a permutation permutation is equivalent to:
-         * <code>
-         *  for(i=0; i<permutation.size(); i++) {
-         *      data2[i] = data[permutation[i]]
-         *       }
-         *  data = data2 ;
-         *  </code>
-         */
-        virtual void cells_permute_elements( GEO::vector< index_t >& permutation )
-        {
-            mesh_->mesh_->cells.permute_elements( permutation ) ;
-        }
+
         /*!
          * @brief Removes all the cells and attributes.
          * @param[in] keep_attributes if true, then all the existing attribute
@@ -713,22 +714,37 @@ namespace RINGMesh {
         {
             mesh_->mesh_->cells.clear( keep_attributes, keep_memory ) ;
         }
-        virtual void permute_cells( GEO::vector< index_t >& permutation )
+        /*!
+         * @brief Applies a permutation to the entities and their attributes.
+         * On exit, permutation is modified (used for internal bookkeeping).
+         * Applying a permutation permutation is equivalent to:
+         * <code>
+         *  for(i=0; i<permutation.size(); i++) {
+         *      data2[i] = data[permutation[i]]
+         *       }
+         *  data = data2 ;
+         *  </code>
+         */
+        virtual void permute_cells( const std::vector< index_t >& permutation )
         {
-            mesh_->mesh_->cells.permute_elements( permutation ) ;
+            GEO::vector< index_t > geo_vector_permutation ;
+            copy_std_vector_to_geo_vector( permutation, geo_vector_permutation ) ;
+            mesh_->mesh_->cells.permute_elements( geo_vector_permutation ) ;
         }
         /*!
          * @brief Deletes a set of cells.
-         * @param[in] to_delete     a vector of size @function nb(). If to_delete[c] is different from 0,
-         * then cell c will be destroyed, else it will be kept. On exit, to_delete is modified
-         * (it is used for internal bookkeeping).
-         * @param[in] remove_isolated_vertices if true, then the vertices that are no longer incident to any entity are deleted.
+         * @param[in] to_delete     a vector of size @function nb().
+         * If to_delete[e] is true, then entity e will be destroyed, else it will be kept.
+         * @param[in] remove_isolated_vertices if true, then the vertices that are
+         * no longer incident to any entity are deleted.
          */
         virtual void delete_cells(
-            GEO::vector< index_t >& to_delete,
+            const std::vector< bool >& to_delete,
             bool remove_isolated_vertices )
         {
-            mesh_->mesh_->cells.delete_elements( to_delete, false ) ;
+            GEO::vector< index_t > cells_to_delete ;
+            copy_std_vector_to_geo_vector( to_delete, cells_to_delete ) ;
+            mesh_->mesh_->cells.delete_elements( cells_to_delete, false ) ;
             if( remove_isolated_vertices ) {
                 this->remove_isolated_vertices() ;
             }
@@ -739,12 +755,12 @@ namespace RINGMesh {
          */
         virtual void remove_isolated_vertices()
         {
-            GEO::vector< index_t > to_delete( mesh_->nb_vertices(), 1 ) ;
+            std::vector< bool > to_delete( mesh_->nb_vertices(), true ) ;
 
             for( index_t c = 0; c < mesh_->nb_cells(); c++ ) {
                 for( index_t v = 0; v < mesh_->nb_cell_vertices( c ); v++ ) {
                     index_t vertex_id = mesh_->cell_vertex( c, v ) ;
-                    to_delete[vertex_id] = 0 ;
+                    to_delete[vertex_id] = false ;
                 }
             }
 
@@ -815,7 +831,8 @@ namespace RINGMesh {
         virtual ~GeogramMeshAllDBuilder()
         {
         }
-        virtual void set_mesh( MeshAllD& mesh ) {
+        virtual void set_mesh( MeshAllD& mesh )
+        {
             mesh_ = &dynamic_cast< GeogramMeshAllD& >( mesh ) ;
             GeogramMesh0DBuilder::set_mesh( *mesh_ ) ;
             GeogramMesh1DBuilder::set_mesh( *mesh_ ) ;
@@ -827,24 +844,24 @@ namespace RINGMesh {
          */
         virtual void remove_isolated_vertices()
         {
-            GEO::vector< index_t > to_delete( mesh_->nb_vertices(), 1 ) ;
+            std::vector< bool > to_delete( mesh_->nb_vertices(), true ) ;
 
             for( index_t e = 0; e < mesh_->nb_edges(); e++ ) {
                 for( index_t v = 0; v < 2; v++ ) {
                     index_t vertex_id = mesh_->edge_vertex( e, v ) ;
-                    to_delete[vertex_id] = 0 ;
+                    to_delete[vertex_id] = false ;
                 }
             }
             for( index_t f = 0; f < mesh_->nb_facets(); f++ ) {
                 for( index_t v = 0; v < mesh_->nb_facet_vertices( f ); v++ ) {
                     index_t vertex_id = mesh_->facet_vertex( f, v ) ;
-                    to_delete[vertex_id] = 0 ;
+                    to_delete[vertex_id] = false ;
                 }
             }
             for( index_t c = 0; c < mesh_->nb_cells(); c++ ) {
                 for( index_t v = 0; v < mesh_->nb_cell_vertices( c ); v++ ) {
                     index_t vertex_id = mesh_->cell_vertex( c, v ) ;
-                    to_delete[vertex_id] = 0 ;
+                    to_delete[vertex_id] = false ;
                 }
             }
 
