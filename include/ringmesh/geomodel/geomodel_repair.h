@@ -115,7 +115,7 @@ namespace RINGMesh {
         index_t repair_line_mesh( Line& line ) ;
         void line_detect_degenerate_edges(
             const Line& L,
-            std::vector< index_t >& e_is_degenerate,
+            std::vector< bool >& e_is_degenerate,
             std::vector< index_t >& colocated_vertices ) ;
         /*!
          * \note Copied and modified from geogram\mesh\mesh_repair.cpp
