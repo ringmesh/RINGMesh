@@ -104,12 +104,11 @@ namespace RINGMesh {
         virtual index_t create_vertices( index_t nb ) = 0 ;
         /*!
          * @brief Deletes a set of vertices.
-         * @param[in] to_delete     a vector of size @function nb(). If to_delete[e] is different from 0,
-         * then entity e will be destroyed, else it will be kept. On exit, to_delete is modified
-         * (it is used for internal bookkeeping).
+         * @param[in] to_delete     a vector of size @function nb(). If to_delete[e] is true,
+         * then entity e will be destroyed, else it will be kept.
          */
         virtual void delete_vertices(
-            std::vector< index_t >& to_delete ) = 0 ;
+            const std::vector< bool >& to_delete ) = 0 ;
         /*!
          * @brief Removes all the vertices and attributes.
          * @param[in] keep_attributes if true, then all the existing attribute
@@ -118,7 +117,7 @@ namespace RINGMesh {
          * by subsequent mesh entity creations.
          */
         virtual void clear_vertices( bool keep_attributes, bool keep_memory ) = 0 ;
-        virtual void permute_vertices( std::vector< index_t >& permutation ) = 0 ;
+        virtual void permute_vertices( const std::vector< index_t >& permutation ) = 0 ;
         /*!
          * @brief Deletes the NNSearch on vertices
          */
@@ -200,13 +199,13 @@ namespace RINGMesh {
             index_t vertex_id ) = 0 ;
         /*!
          * @brief Deletes a set of edges.
-         * @param[in] to_delete a vector of size @function nb(). If to_delete[e] is different from 0,
-         * then entity e will be destroyed, else it will be kept. On exit, to_delete is modified
-         * (it is used for internal bookkeeping).
-         * @param[in] remove_isolated_vertices if true, then the vertices that are no longer incident to any entity are deleted.
+         * @param[in] to_delete     a vector of size @function nb().
+         * If to_delete[e] is true, then entity e will be destroyed, else it will be kept.
+         * @param[in] remove_isolated_vertices if true, then the vertices
+         * that are no longer incident to any entity are deleted.
          */
         virtual void delete_edges(
-            std::vector< index_t > to_delete,
+            const std::vector< bool >& to_delete,
             bool remove_isolated_vertices ) = 0 ;
         /*!
          * @brief Removes all the edges and attributes.
@@ -216,7 +215,7 @@ namespace RINGMesh {
          * by subsequent mesh entity creations.
          */
         virtual void clear_edges( bool keep_attributes, bool keep_memory ) = 0 ;
-        virtual void permute_edges( std::vector< index_t >& permutation ) = 0 ;
+        virtual void permute_edges( const std::vector< index_t >& permutation ) = 0 ;
 
         virtual void clear_edge_linked_objects() = 0 ;
         /*!
@@ -320,16 +319,16 @@ namespace RINGMesh {
          * @brief Retrieve the adjacencies of facets
          */
         virtual void connect_facets() = 0 ;
-        virtual void permute_facets( std::vector< index_t >& permutation ) = 0 ;
+        virtual void permute_facets( const std::vector< index_t >& permutation ) = 0 ;
         /*!
          * @brief Deletes a set of facets.
-         * @param[in] to_delete     a vector of size @function nb(). If to_delete[f] is different from 0,
-         * then facet f will be destroyed, else it will be kept. On exit, to_delete is modified
-         * (it is used for internal bookkeeping).
-         * @param[in] remove_isolated_vertices if true, then the vertices that are no longer incident to any entity are deleted.
+         * @param[in] to_delete     a vector of size @function nb().
+         * If to_delete[e] is true, then entity e will be destroyed, else it will be kept.
+         * @param[in] remove_isolated_vertices if true, then the vertices that are
+         * no longer incident to any entity are deleted.
          */
         virtual void delete_facets(
-            std::vector< index_t >& to_delete,
+            const std::vector< bool >& to_delete,
             bool remove_isolated_vertices ) = 0 ;
 
         virtual void clear_facet_linked_objects() = 0 ;
@@ -451,16 +450,16 @@ namespace RINGMesh {
          *  data = data2 ;
          *  </code>
          */
-        virtual void permute_cells( std::vector< index_t >& permutation ) = 0 ;
+        virtual void permute_cells( const std::vector< index_t >& permutation ) = 0 ;
         /*!
          * @brief Deletes a set of cells.
-         * @param[in] to_delete     a vector of size @function nb(). If to_delete[c] is different from 0,
-         * then cell c will be destroyed, else it will be kept. On exit, to_delete is modified
-         * (it is used for internal bookkeeping).
-         * @param[in] remove_isolated_vertices if true, then the vertices that are no longer incident to any entity are deleted.
+         * @param[in] to_delete     a vector of size @function nb().
+         * If to_delete[e] is true, then entity e will be destroyed, else it will be kept.
+         * @param[in] remove_isolated_vertices if true, then the vertices that are
+         * no longer incident to any entity are deleted.
          */
         virtual void delete_cells(
-            std::vector< index_t >& to_delete,
+            const std::vector< bool >& to_delete,
             bool remove_isolated_vertices ) = 0 ;
 
         virtual void clear_cell_linked_objects() = 0 ;

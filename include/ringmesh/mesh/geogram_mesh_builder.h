@@ -155,11 +155,10 @@ namespace RINGMesh {
         }
         /*!
          * @brief Deletes a set of vertices.
-         * @param[in] to_delete     a vector of size @function nb(). If to_delete[e] is different from 0,
-         * then entity e will be destroyed, else it will be kept. On exit, to_delete is modified
-         * (it is used for internal bookkeeping).
+         * @param[in] to_delete     a vector of size @function nb().
+         * If to_delete[e] is true, then entity e will be destroyed, else it will be kept.
          */
-        virtual void delete_vertices( std::vector< index_t >& to_delete )
+        virtual void delete_vertices( const std::vector< bool >& to_delete )
         {
             GEO::vector< index_t > vertices_to_delete ;
             copy_std_vector_to_geo_vector( to_delete, vertices_to_delete ) ;
@@ -179,7 +178,7 @@ namespace RINGMesh {
             clear_vertex_linked_objects() ;
         }
 
-        virtual void permute_vertices( std::vector< index_t >& permutation )
+        virtual void permute_vertices( const std::vector< index_t >& permutation )
         {
             GEO::vector< index_t > geo_vector_permutation ;
             copy_std_vector_to_geo_vector( permutation, geo_vector_permutation ) ;
@@ -289,13 +288,13 @@ namespace RINGMesh {
         }
         /*!
          * @brief Deletes a set of edges.
-         * @param[in] to_delete a vector of size @function nb(). If to_delete[e] is different from 0,
-         * then entity e will be destroyed, else it will be kept. On exit, to_delete is modified
-         * (it is used for internal bookkeeping).
-         * @param[in] remove_isolated_vertices if true, then the vertices that are no longer incident to any entity are deleted.
+         * @param[in] to_delete     a vector of size @function nb().
+         * If to_delete[e] is true, then entity e will be destroyed, else it will be kept.
+         * @param[in] remove_isolated_vertices if true, then the vertices that are
+         * no longer incident to any entity are deleted.
          */
         virtual void delete_edges(
-            std::vector< index_t > to_delete,
+            const std::vector< bool >& to_delete,
             bool remove_isolated_vertices )
         {
             GEO::vector< index_t > edges_to_delete ;
@@ -324,19 +323,19 @@ namespace RINGMesh {
          */
         virtual void remove_isolated_vertices()
         {
-            std::vector< index_t > to_delete( mesh_->nb_vertices(), 1 ) ;
+            std::vector< bool > to_delete( mesh_->nb_vertices(), true ) ;
 
             for( index_t e = 0; e < mesh_->nb_edges(); e++ ) {
                 for( index_t v = 0; v < 2; v++ ) {
                     index_t vertex_id = mesh_->edge_vertex( e, v ) ;
-                    to_delete[vertex_id] = 0 ;
+                    to_delete[vertex_id] = false ;
                 }
             }
             delete_vertices( to_delete ) ;
 
         }
 
-        virtual void permute_edges( std::vector< index_t >& permutation )
+        virtual void permute_edges( const std::vector< index_t >& permutation )
         {
             GEO::vector< index_t > geo_vector_permutation ;
             copy_std_vector_to_geo_vector( permutation, geo_vector_permutation ) ;
@@ -532,7 +531,7 @@ namespace RINGMesh {
         {
             mesh_->mesh_->facets.connect() ;
         }
-        virtual void permute_facets( std::vector< index_t >& permutation )
+        virtual void permute_facets( const std::vector< index_t >& permutation )
         {
             GEO::vector< index_t > geo_vector_permutation ;
             copy_std_vector_to_geo_vector( permutation, geo_vector_permutation ) ;
@@ -540,13 +539,13 @@ namespace RINGMesh {
         }
         /*!
          * @brief Deletes a set of facets.
-         * @param[in] to_delete     a vector of size @function nb(). If to_delete[f] is different from 0,
-         * then facet f will be destroyed, else it will be kept. On exit, to_delete is modified
-         * (it is used for internal bookkeeping).
-         * @param[in] remove_isolated_vertices if true, then the vertices that are no longer incident to any entity are deleted.
+         * @param[in] to_delete     a vector of size @function nb().
+         * If to_delete[e] is true, then entity e will be destroyed, else it will be kept.
+         * @param[in] remove_isolated_vertices if true, then the vertices that are
+         * no longer incident to any entity are deleted.
          */
         virtual void delete_facets(
-            std::vector< index_t >& to_delete,
+            const std::vector< bool >& to_delete,
             bool remove_isolated_vertices )
         {
             GEO::vector< index_t > facets_to_delete ;
@@ -562,12 +561,12 @@ namespace RINGMesh {
          */
         virtual void remove_isolated_vertices()
         {
-            std::vector< index_t > to_delete( mesh_->nb_vertices(), 1 ) ;
+            std::vector< bool > to_delete( mesh_->nb_vertices(), true ) ;
 
             for( index_t f = 0; f < mesh_->nb_facets(); f++ ) {
                 for( index_t v = 0; v < mesh_->nb_facet_vertices( f ); v++ ) {
                     index_t vertex_id = mesh_->facet_vertex( f, v ) ;
-                    to_delete[vertex_id] = 0 ;
+                    to_delete[vertex_id] = false ;
                 }
             }
 
@@ -726,7 +725,7 @@ namespace RINGMesh {
          *  data = data2 ;
          *  </code>
          */
-        virtual void permute_cells( std::vector< index_t >& permutation )
+        virtual void permute_cells( const std::vector< index_t >& permutation )
         {
             GEO::vector< index_t > geo_vector_permutation ;
             copy_std_vector_to_geo_vector( permutation, geo_vector_permutation ) ;
@@ -734,13 +733,13 @@ namespace RINGMesh {
         }
         /*!
          * @brief Deletes a set of cells.
-         * @param[in] to_delete     a vector of size @function nb(). If to_delete[c] is different from 0,
-         * then cell c will be destroyed, else it will be kept. On exit, to_delete is modified
-         * (it is used for internal bookkeeping).
-         * @param[in] remove_isolated_vertices if true, then the vertices that are no longer incident to any entity are deleted.
+         * @param[in] to_delete     a vector of size @function nb().
+         * If to_delete[e] is true, then entity e will be destroyed, else it will be kept.
+         * @param[in] remove_isolated_vertices if true, then the vertices that are
+         * no longer incident to any entity are deleted.
          */
         virtual void delete_cells(
-            std::vector< index_t >& to_delete,
+            const std::vector< bool >& to_delete,
             bool remove_isolated_vertices )
         {
             GEO::vector< index_t > cells_to_delete ;
@@ -756,12 +755,12 @@ namespace RINGMesh {
          */
         virtual void remove_isolated_vertices()
         {
-            std::vector< index_t > to_delete( mesh_->nb_vertices(), 1 ) ;
+            std::vector< bool > to_delete( mesh_->nb_vertices(), true ) ;
 
             for( index_t c = 0; c < mesh_->nb_cells(); c++ ) {
                 for( index_t v = 0; v < mesh_->nb_cell_vertices( c ); v++ ) {
                     index_t vertex_id = mesh_->cell_vertex( c, v ) ;
-                    to_delete[vertex_id] = 0 ;
+                    to_delete[vertex_id] = false ;
                 }
             }
 
@@ -845,24 +844,24 @@ namespace RINGMesh {
          */
         virtual void remove_isolated_vertices()
         {
-            std::vector< index_t > to_delete( mesh_->nb_vertices(), 1 ) ;
+            std::vector< bool > to_delete( mesh_->nb_vertices(), true ) ;
 
             for( index_t e = 0; e < mesh_->nb_edges(); e++ ) {
                 for( index_t v = 0; v < 2; v++ ) {
                     index_t vertex_id = mesh_->edge_vertex( e, v ) ;
-                    to_delete[vertex_id] = 0 ;
+                    to_delete[vertex_id] = false ;
                 }
             }
             for( index_t f = 0; f < mesh_->nb_facets(); f++ ) {
                 for( index_t v = 0; v < mesh_->nb_facet_vertices( f ); v++ ) {
                     index_t vertex_id = mesh_->facet_vertex( f, v ) ;
-                    to_delete[vertex_id] = 0 ;
+                    to_delete[vertex_id] = false ;
                 }
             }
             for( index_t c = 0; c < mesh_->nb_cells(); c++ ) {
                 for( index_t v = 0; v < mesh_->nb_cell_vertices( c ); v++ ) {
                     index_t vertex_id = mesh_->cell_vertex( c, v ) ;
-                    to_delete[vertex_id] = 0 ;
+                    to_delete[vertex_id] = false ;
                 }
             }
 

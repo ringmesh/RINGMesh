@@ -595,7 +595,7 @@ namespace RINGMesh {
         ringmesh_assert( to_delete.size() == nb() ) ;
 
         // For mesh vertices deletion
-        std::vector< index_t > to_delete_bool( nb(), 0 ) ;
+        std::vector< bool > to_delete_bool( nb(), false ) ;
 
         // Fill the delete information for geogram
         // Recycle the to_delete vertex to get the mapping between
@@ -605,7 +605,7 @@ namespace RINGMesh {
         index_t cur = 0 ;
         for( index_t v = 0; v < nb(); ++v ) {
             if( to_delete[v] != v ) {
-                to_delete_bool[v] = 1 ;
+                to_delete_bool[v] = true ;
                 nb_todelete++ ;
                 if( to_delete[v] != NO_ID ) {
                     ringmesh_assert( to_delete[v] < v ) ;

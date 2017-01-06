@@ -92,7 +92,7 @@ namespace RINGMesh {
 
     void GeoModelRepair::line_detect_degenerate_edges(
         const Line& L,
-        std::vector< index_t >& e_is_degenerate,
+        std::vector< bool >& e_is_degenerate,
         std::vector< index_t >& colocated_vertices )
     {
         e_is_degenerate.resize( L.nb_mesh_elements() ) ;
@@ -107,7 +107,7 @@ namespace RINGMesh {
         const NNSearch& nn_search = line.vertex_nn_search() ;
         nn_search.get_colocated_index_mapping( geomodel().epsilon(), colocated ) ;
 
-        std::vector< index_t > degenerate ;
+        std::vector< bool > degenerate ;
         line_detect_degenerate_edges( line, degenerate, colocated ) ;
         index_t nb = static_cast< index_t >( std::count( degenerate.begin(),
             degenerate.end(), 1 ) ) ;
@@ -238,7 +238,7 @@ namespace RINGMesh {
                 std::set< index_t > inside_border ;
                 vertices_on_inside_boundary( entity_id, inside_border ) ;
 
-                std::vector< index_t > to_delete( colocated.size(), 0 ) ;
+                std::vector< bool > to_delete( colocated.size(), false ) ;
                 index_t nb_todelete = 0 ;
                 for( index_t v = 0; v < colocated.size(); ++v ) {
                     if( colocated[v] == v
@@ -247,7 +247,7 @@ namespace RINGMesh {
                         // No colocated or on an inside boundary
                     } else {
                         // The point is to remove
-                        to_delete[v] = 1 ;
+                        to_delete[v] = true ;
                         nb_todelete++ ;
                     }
                 }
