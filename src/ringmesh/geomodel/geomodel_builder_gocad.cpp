@@ -46,6 +46,16 @@
 namespace {
     using namespace RINGMesh ;
 
+    gme_t find_corner( const GeoModel& geomodel, const vec3& point )
+    {
+        for( index_t i = 0; i < geomodel.nb_corners(); ++i ) {
+            if( geomodel.corner( i ).vertex( 0 ) == point ) {
+                return gme_t( Corner::type_name_static(), i ) ;
+            }
+        }
+        return gme_t() ;
+    }
+
     std::string read_name_with_spaces( index_t field_id, const GEO::LineInput& line )
     {
         std::ostringstream oss ;
