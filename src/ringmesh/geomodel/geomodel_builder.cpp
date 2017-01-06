@@ -2325,7 +2325,7 @@ namespace RINGMesh {
     }
     void GeoModelBuilder::delete_surface_facets(
         index_t surface_id,
-        std::vector< bool >& to_delete,
+        const std::vector< bool >& to_delete,
         bool remove_isolated_vertices )
     {
         Surface& surface = dynamic_cast< Surface& >( mesh_entity(
@@ -2336,7 +2336,7 @@ namespace RINGMesh {
     }
     void GeoModelBuilder::delete_region_cells(
         index_t region_id,
-        std::vector< bool >& to_delete,
+        const std::vector< bool >& to_delete,
         bool remove_isolated_vertices )
     {
         Region& region = dynamic_cast< Region& >( mesh_entity(
