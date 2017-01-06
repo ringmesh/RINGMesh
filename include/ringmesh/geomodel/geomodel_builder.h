@@ -277,11 +277,11 @@ namespace RINGMesh {
             bool remove_isolated_vertices ) ;
         void delete_surface_facets(
             index_t surface_id,
-            std::vector< bool >& to_delete,
+            const std::vector< bool >& to_delete,
             bool remove_isolated_vertices ) ;
         void delete_region_cells(
             index_t region_id,
-            std::vector< bool >& to_delete,
+            const std::vector< bool >& to_delete,
             bool remove_isolated_vertices ) ;
 
         /*! @}
