@@ -45,7 +45,6 @@
 
 #include <geogram/NL/nl.h>
 
-#include <algorithm>
 #include <vector>
 #include <set>
 #include <string>
