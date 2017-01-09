@@ -31,3 +31,8 @@ syntax: regexp
 ^CMakeFiles$
 syntax: glob
 src/ringmesh/tetra_gen.cpp.orig
+
+syntax: regexp
+^lib_geogram$
+syntax: regexp
+^lib_ringmesh$
