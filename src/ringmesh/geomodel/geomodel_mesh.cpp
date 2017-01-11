@@ -1767,7 +1767,6 @@ namespace RINGMesh {
         mesh_builder->connect_facets() ;
         disconnect_along_lines() ;
 
-
         // Cache some values
         nb_triangle_ = nb_facet_per_type[TRIANGLE] ;
         nb_quad_ = nb_facet_per_type[QUAD] ;
