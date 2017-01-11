@@ -1751,10 +1751,6 @@ namespace RINGMesh {
             }
         }
 
-        // Compute facet adjacencies
-        mesh_builder->connect_facets() ;
-        disconnect_along_lines() ;
-
         // Permute facets to sort them per surface and per type
         // Example for a mesh with two surfaces and only triangles and quads
         // [TRGL,TRGL, .. , QUAD, QUAD .. , TRGL, TRGL, ... , QUAD, QUAD ..]
@@ -1766,6 +1762,11 @@ namespace RINGMesh {
         GeoModelMeshFacetsSort action( *mesh_, surface_id_ ) ;
         std::sort( sorted_indices.begin(), sorted_indices.end(), action ) ;
         mesh_builder->permute_facets( sorted_indices ) ;
+
+        // Compute facet adjacencies
+        mesh_builder->connect_facets() ;
+        disconnect_along_lines() ;
+
 
         // Cache some values
         nb_triangle_ = nb_facet_per_type[TRIANGLE] ;
