@@ -53,7 +53,7 @@ namespace RINGMesh {
                 "Threshold for numerical precision (ratio of the bbox diagonal)",
                 GEO::CmdLine::ARG_ADVANCED ) ;
             GEO::CmdLine::declare_arg(
-                "validity_save", true,
+                "validity_save", false,
                 "Saves meshes representing geomodel inconsistencies",
                 GEO::CmdLine::ARG_ADVANCED ) ;
         }
