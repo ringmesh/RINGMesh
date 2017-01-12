@@ -47,7 +47,6 @@
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/NL/nl.h>
-
 #include <algorithm>
 
 namespace {
