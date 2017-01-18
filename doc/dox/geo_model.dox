@@ -59,6 +59,7 @@ their geological meaning.
 - The RINGMesh::Universe that bounds the volume of interest.
 
 \image html geomodel_elements.svg 
+\image html ringmesh_uml.png
 
 The RINGMesh::GeoModelEntity stores the basic required information to identify an element of the RINGMesh::GeoModel: 
 - The RINGMesh::GeoModel owning the element.
