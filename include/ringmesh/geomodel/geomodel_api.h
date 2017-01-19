@@ -38,8 +38,6 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <ringmesh/geomodel/geomodel_indexing_types.h>
-
 /*!
  * @file ringmesh/geomodel_api.h
  * @brief High level functions on GeoModel
@@ -146,26 +144,6 @@ namespace RINGMesh {
         const vec3& axis,
         double angle,
         bool degrees = false ) ;
-
-    /*-----------------------------------------------------------------------*/
-
-    /*!
-     * @brief Gets the index of the Corner for a given point
-     * @param[in] geomodel GeoModel to consider
-     * @param[in] point Geometric location to look for
-     * @return NO_ID or the index of the Corner
-     */
-    gme_t RINGMESH_API find_corner( const GeoModel& geomodel, const vec3& point ) ;
-
-    /*!
-     * @brief Gets the index of the Corner at a given geomodel point
-     * @param[in] geomodel GeoModel to consider
-     * @param[in] geomodel_point_id Index of the point in the GeoModel
-     * @return NO_ID or the index of the Corner
-     */
-    gme_t RINGMESH_API find_corner(
-        const GeoModel& geomodel,
-        index_t geomodel_point_id ) ;
 }
 
 #endif 
