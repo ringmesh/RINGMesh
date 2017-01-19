@@ -106,6 +106,14 @@ namespace RINGMesh {
             GEO::CmdLine::declare_arg( "quality:mode", 0, "Mesh quality mode" ) ;
         }
 
+        void import_arg_group_duplication_fntk()
+        {
+            GEO::CmdLine::declare_arg_group( "duplication",
+                "Duplication of the fault network" ) ;
+            GEO::CmdLine::declare_arg( "duplication:gap", true,
+                "Print statistics on the number of entities" ) ;
+        }
+
         bool import_arg_group( const std::string& name )
         {
             if( name == "global" ) {
@@ -120,6 +128,8 @@ namespace RINGMesh {
                 import_arg_group_repair() ;
             } else if( name == "quality" ) {
                 import_arg_group_quality() ;
+            } else if( name == "duplication" ) {
+                import_arg_group_duplication_fntk() ;
             } else {
                 return GEO::CmdLine::import_arg_group( name ) ;
             }
