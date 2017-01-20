@@ -43,32 +43,45 @@
  *
  */
 
-#ifndef GEOGRAM_MESH_MESH_ABF
-#define GEOGRAM_MESH_MESH_ABF
+#ifndef GEOGRAM_GFX_GLUP_VIEWER_GLUP_VIEWER_LUA
+#define GEOGRAM_GFX_GLUP_VIEWER_GLUP_VIEWER_LUA
+
+#include <geogram_gfx/basic/common.h>
+extern "C" {
+#include <geogram/third_party/lua/lua.h>
+}
 
 /**
- * \file geogram/mesh/mesh_ABF.h
+ * \brief Registers all LUA extension functions.
+ * \details This registers LUA wrappers for GLUP and
+ *  ImGUI.
+ * \param[in] L a pointer to the LUA state.
  */
+void GEOGRAM_GFX_API init_lua_glup(lua_State* L);
 
-#include <geogram/basic/common.h>
-#include <geogram/basic/numeric.h>
 
-namespace GEO {
-    class Mesh;
+/**
+ * \brief Makes sure GLUP is in a valid state.
+ * \details Restores the previous depth of matrix stacks
+ *  and terminates pending GLUP primitives. This makes sure
+ *  GLUP is in a valid state even if there was an error in
+ *  LUA code.
+ */
+void GEOGRAM_GFX_API adjust_lua_glup_state(lua_State* L);
 
-    /**
-     * \brief Computes texture coordinates using Least Squares Conformal Maps.
-     * \details The method is described in the following reference:
-     *   ABF++: fast and robust angle-based flattening, A. Sheffer, B. Levy,
-     *   M. Mogilnitsky,  A. Bogomyakov, ACM Transactions on Graphics, 2005
-     * \param[in,out] M a reference to a surface mesh. Facets need to be triangulated.
-     * \param[in] attribute_name the name of the vertex attribute where 
-     *   texture coordinates are stored.
-     */
-    void GEOGRAM_API mesh_compute_ABF_plus_plus(
-	Mesh& M, const std::string& attribute_name="tex_coord"
-    );    
-}
+
+void GEOGRAM_GFX_API register_embedded_lua_file(
+   const char* filename, const char* data
+);
+
+void GEOGRAM_GFX_API list_embedded_lua_files(
+    std::vector<std::string>& filenames
+);
+
+void GEOGRAM_GFX_API get_embedded_lua_file(
+    const std::string& filename, const char** data
+);
+
 
 #endif
 

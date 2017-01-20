@@ -328,7 +328,7 @@ namespace RINGMesh {
          * @brief Gets the closest triangle to a given point
          * @pre The mesh needs to be triangulated
          * @param[in] query the point to use
-         * @param[out] nearest_point the nearest point on the closest edge
+         * @param[out] nearest_point the nearest point on the closest triangle
          * @param[out] distance the distance between \p query and \p nearest_point
          * @return the closest triangle index
          */

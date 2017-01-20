@@ -48,6 +48,8 @@
 #include <geogram/basic/process.h>
 #include <geogram/basic/logger.h>
 
+#include <set>
+
 namespace {
 
     using namespace GEO;
@@ -59,7 +61,7 @@ namespace {
     void import_arg_group_global() {
         declare_arg(
             "profile", "scan",
-            "Vorpaline mode (scan, convert, repair, heal, cad)"
+            "Vorpaline mode (scan, convert, repair, heal, cad, tet, poly)"
         );
         declare_arg(
             "debug", false,
@@ -147,14 +149,19 @@ namespace {
             "Number of samples for lfs (gradation)",
             ARG_ADVANCED
         );
+
+#ifdef GEOGRAM_WITH_VORPALINE	
         declare_arg(
             "remesh:sharp_edges", false,
             "Reconstruct sharp edges", ARG_ADVANCED
         );
+	
         declare_arg(
             "remesh:Nfactor", 5.0,
             "For sharp_edges", ARG_ADVANCED
         );
+#endif
+	
         declare_arg(
             "remesh:multi_nerve", true,
             "Insert new vertices to preserve topology",
@@ -439,6 +446,30 @@ namespace {
             "poly", false,
             "Toggles polyhedral meshing"
         );
+	declare_arg(
+	    "poly:simplify", "tets_voronoi",
+	    "one of none (generate all intersections), "
+	    "tets (regroup Vornoi cells), "
+	    "tets_voronoi (one polygon per Voronoi facet), "
+	    "tets_voronoi_boundary (simplify boundary)"
+	);
+	declare_arg(
+	    "poly:normal_angle_threshold", 1e-3,
+	    "maximum normal angle deviation (in degrees) for merging boundary facets"
+	    " (used if poly:simplify=tets_voronoi_boundary)"
+	);
+	declare_arg(
+	    "poly:cells_shrink", 0.0,
+	    "Voronoi cells shrink factor (for visualization purposes), between 0.0 and 1.0"
+	);
+	declare_arg(
+	    "poly:points_file", "",
+	    "optional points file name (if left blank, generates and optimizes remesh:nb_pts points)"
+	);
+	declare_arg(
+	    "poly:generate_ids", false,
+	    "generate unique ids for vertices and cells (saved in geogram and geogram_ascii file formats only)"
+	);
     }    
 
     /**
@@ -555,17 +586,20 @@ namespace {
      */
     void import_arg_group_gfx() {
         declare_arg_group("gfx", "OpenGL graphics options", ARG_ADVANCED);
-#ifdef GEO_OS_APPLE
+
+
+// Default profile will be "core" in a short future for all architectures,
+// but some users reported problems with it, so I keep for now
+// "compatibility" as the default (except on Mac/OS that prefers "core")	
         declare_arg(
-            "gfx:GL_profile", "core",
+            "gfx:GL_profile",
+#ifdef GEO_OS_APPLE	    
+	    "core",
+#else
+	    "compatibility",	    
+#endif	    
             "one of core,compatibility,ES"
         );
-#else        
-        declare_arg(
-            "gfx:GL_profile", "compatibility",
-            "one of core,compatibility,ES"
-        );
-#endif        
         declare_arg(
             "gfx:GL_version", 0.0,
             "If non-zero, override GL version detection"
@@ -688,6 +722,12 @@ namespace GEO {
         bool import_arg_group(
             const std::string& name
         ) {
+	    static std::set<std::string> imported;
+	    if(imported.find(name) != imported.end()) {
+		return true;
+	    }
+	    imported.insert(name);
+	    
             if(name == "standard") {
                 import_arg_group_global();
                 import_arg_group_sys();
