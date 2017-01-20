@@ -43,8 +43,8 @@
  *
  */
 
-#include <geogram/mesh/mesh_ABF.h>
-#include <geogram/mesh/mesh_LSCM.h>
+#include <geogram/parameterization/mesh_ABF.h>
+#include <geogram/parameterization/mesh_LSCM.h>
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/basic/memory.h>
@@ -92,62 +92,6 @@ namespace {
 
 	~ABFPlusPlus() {
 	    deallocate_variables();
-	}
-	
-        /**
-	 * \brief Gets the tolerance for the norm of the gradient.
-	 * \return the tolerance for the norm of the gradient.
-	 */
-        double get_newton_tolf() const {
-	    return newton_tolf_;
-	}
-
-        /**
-	 * \brief Sets the tolerance for the norm of the gradient.
-	 * \param[in] x the tolerance for the norm of the gradient.
-	 */
-	void set_newton_tolf(double x) {
-	    newton_tolf_ = x;
-	}
-
-	/**
-	 * \brief Gets the tolerance for the norm of delta (step vector).
-	 * \return the tolerance for the norm of delta (step vector).
-	 */
-        double get_newton_tolx() const {
-	    return newton_tolx_;
-	}
-
-	/**
-	 * \brief Sets the tolerance for the norm of delta (step vector).
-	 * \param[in] x the tolerance for the norm of delta (step vector).
-	 */
-        void set_newton_tolx(double x) {
-	    newton_tolx_ = x;
-	}
-
-        /**
-	 * \brief Gets the maximum number of newton iterations (outer loop).
-	 * \return the maximum number of newton iterations.
-	 */
-        index_t get_max_newton_iters() const {
-	    return max_newton_iter_;
-	}
-
-        /**
-	 * \brief Sets the maximum number of newton iterations (outer loop).
-	 * \param[in] n the maximum number of newton iterations.
-	 */
-	void set_max_newton_iters(index_t n) {
-	    max_newton_iter_ = n;
-	}
-
-        double get_step_length_factor() const {
-	    return step_length_factor_;
-	}
-
-	void set_step_length_factor(double x) {
-	    step_length_factor_ = x;
 	}
 
 	bool parameterize() {
