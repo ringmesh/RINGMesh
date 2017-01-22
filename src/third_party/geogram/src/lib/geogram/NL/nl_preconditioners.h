@@ -67,10 +67,11 @@ NLMatrix nlNewJacobiPreconditioner(NLMatrix M);
 
 /**
  * \brief Creates a new SSOR preconditioner
- * \param[in] M the matrix, needs to be of type NL_MATRIX_SPARSE_DYNAMIC and needs
- *  to have both rows and columns storage, and symmetric storage.
+ * \param[in] M the matrix, needs to be of type NL_MATRIX_SPARSE_DYNAMIC 
+ *  and needs to have both rows and columns storage, and symmetric storage.
  * \param[in] omega the relaxation parameter, within range [1.0,2.0].
- * \details A reference to the input matrix is kept and used in the computations.
+ * \details A reference to the input matrix is kept and used in the 
+ *  computations.
  * \return the SSOR preconditioner.
  */
 NLMatrix nlNewSSORPreconditioner(NLMatrix M, double omega);
