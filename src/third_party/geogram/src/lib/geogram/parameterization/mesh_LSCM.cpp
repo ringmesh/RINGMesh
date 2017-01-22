@@ -43,7 +43,7 @@
  *
  */
 
-#include <geogram/mesh/mesh_LSCM.h>
+#include <geogram/parameterization/mesh_LSCM.h>
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_geometry.h>
 #include <geogram/NL/nl.h>
