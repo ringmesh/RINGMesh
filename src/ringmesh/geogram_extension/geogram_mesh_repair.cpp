@@ -44,7 +44,7 @@
 *
 *  MODIFIED BY
 *
-* Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
+* Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
 * All rights reserved.
 *
 *     http://www.ring-team.org
