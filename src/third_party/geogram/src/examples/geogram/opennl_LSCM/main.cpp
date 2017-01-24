@@ -1,4 +1,12 @@
 /*
+ * GEOGRAM example program:
+ * compute LSCM (Least Squares Conformal Maps) using OpenNL
+ * Note: given as an example for using OpenNL, there is a
+ * directly usable version of LSCM in geogram/parameterization/LSCM.h
+ * that one may use instead.
+ */
+
+/*
  *  Copyright (c) 2004-2010, Bruno Levy
  *  All rights reserved.
  *

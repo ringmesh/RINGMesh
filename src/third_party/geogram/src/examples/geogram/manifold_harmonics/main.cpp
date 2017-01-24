@@ -1,4 +1,9 @@
 /*
+ * GEOGRAM example program:
+ * compute Manifold Harmonics (Laplacian eigenfunctions).
+ */
+
+/*
  *  Copyright (c) 2012-2014, Bruno Levy
  *  All rights reserved.
  *

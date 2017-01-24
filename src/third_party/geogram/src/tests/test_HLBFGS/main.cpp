@@ -1,4 +1,6 @@
 
+#ifdef GEOGRAM_WITH_HLBFGS
+
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/command_line_args.h>
 #include <geogram/numerics/optimizer.h>
@@ -276,3 +278,15 @@ int main(int argc, char** argv) {
 
     return 0;
 }
+
+#else
+
+#include <iostream>
+
+int main() {
+    std::cout << "This geogram was not compiled with HLBFGS support"
+	      << std::endl;
+    return 0;
+}
+
+#endif

@@ -1,4 +1,11 @@
 /*
+ * GEOGRAM example program:
+ * compute Restricted Voronoi diagrams, i.e.
+ * intersection between a Voronoi diagram and a
+ * tetrahedral mesh (or a triangulated mesh).
+ */ 
+
+/*
  *  Copyright (c) 2012-2014, Bruno Levy
  *  All rights reserved.
  *
@@ -193,9 +200,17 @@ namespace {
 	    vertex_map_->set_first_vertex_index(output_mesh_.vertices.nb());
 	}
 
-	virtual void begin_facet(index_t facet_seed, index_t facet_tet_facet) {
+	/**
+	 * \brief Called at the beginning of each RVD polyhedron.
+	 * \param[in] facet_seed if the facet is on a Voronoi bisector,
+	 *  the index of the Voronoi seed on the other side of the bisector,
+	 *  else index_t(-1)
+	 * \param[in] facet_tet if the facet is on a tethedral facet, then
+	 *  the index of the tetrahedron on the other side, else index_t(-1)
+	 */
+	virtual void begin_facet(index_t facet_seed, index_t facet_tet) {
 	    geo_argused(facet_seed);
-	    geo_argused(facet_tet_facet);
+	    geo_argused(facet_tet);
 	    current_facet_.resize(0);
 	}
 

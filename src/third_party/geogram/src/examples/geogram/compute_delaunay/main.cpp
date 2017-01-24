@@ -1,4 +1,9 @@
 /*
+ * GEOGRAM example program:
+ * compute 3D and 2D Delaunay triangulations.
+ */ 
+
+/*
  *  Copyright (c) 2012-2014, Bruno Levy
  *  All rights reserved.
  *
