@@ -29,7 +29,7 @@ option(GEOGRAM_WITH_TETGEN "Compile TetGen" ON)
 option(GEOGRAM_WITH_TRIANGLE "Compile Triangle" ON)
 option(GEOGRAM_WITH_EXPLORAGRAM "Compile exploragram" OFF)
 option(GEOGRAM_LIB_ONLY "Compile geogram library only" OFF)
-option(GEOGRAM_WITH_FPG "Compile FPG" ON)
+option(GEOGRAM_WITH_FPG "Compile FPG" OFF)
 
 #Choose the compilation platform for example: 
 #    Win-vs-dynamic-generic, Darwin-clang-dynamic, Linux64-gcc-dynamic
