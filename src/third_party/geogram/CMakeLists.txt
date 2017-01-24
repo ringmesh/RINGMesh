@@ -22,11 +22,19 @@ endif()
 # Optional modules
 # (can be overriden in CMakeOptions.txt)
 
-set(GEOGRAM_WITH_GRAPHICS TRUE)
-set(GEOGRAM_WITH_LEGACY_NUMERICS TRUE)
-set(GEOGRAM_WITH_HLBFGS TRUE)
-set(GEOGRAM_WITH_TETGEN TRUE)
-set(GEOGRAM_WITH_TRIANGLE TRUE)
+option(GEOGRAM_WITH_GRAPHICS "Compile viewer" ON)
+option(GEOGRAM_WITH_LEGACY_NUMERICS "compilation of legacy numerical libraries" ON)
+option(GEOGRAM_WITH_HLBFGS "Compile HLBFGS" ON)
+option(GEOGRAM_WITH_TETGEN "Compile TetGen" ON)
+option(GEOGRAM_WITH_TRIANGLE "Compile Triangle" ON)
+option(GEOGRAM_WITH_EXPLORAGRAM "Compile exploragram" OFF)
+option(GEOGRAM_LIB_ONLY "Compile geogram library only" OFF)
+option(GEOGRAM_WITH_FPG "Compile FPG" ON)
+
+#Choose the compilation platform for example: 
+#    Win-vs-dynamic-generic, Darwin-clang-dynamic, Linux64-gcc-dynamic
+#
+set(VORPALINE_PLATFORM "" CACHE STRING "")
 
 include(cmake/geogram.cmake)
 
@@ -106,9 +114,6 @@ if(GEOGRAM_WITH_GRAPHICS)
 endif()
 
 if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/lib/exploragram)
-  if(NOT DEFINED GEOGRAM_WITH_EXPLORAGRAM)
-     set(GEOGRAM_WITH_EXPLORAGRAM TRUE)
-  endif()
   if(GEOGRAM_WITH_EXPLORAGRAM)
      add_subdirectory(src/lib/exploragram)
   endif()
