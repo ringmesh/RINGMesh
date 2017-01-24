@@ -1,4 +1,10 @@
 /*
+ * GEOGRAM example program:
+ * least-squares mesh smoothing (Mallet's algorithm)
+ * implemented with OpenNL
+ */
+
+/*
  *  Copyright (c) 2012-2014, Bruno Levy
  *  All rights reserved.
  *
