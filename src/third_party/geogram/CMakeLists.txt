@@ -22,25 +22,22 @@ endif()
 # Optional modules
 # (can be overriden in CMakeOptions.txt)
 
-option(GEOGRAM_WITH_GRAPHICS "Compile viewer" ON)
-option(GEOGRAM_WITH_LEGACY_NUMERICS "compilation of legacy numerical libraries" ON)
-option(GEOGRAM_WITH_HLBFGS "Compile HLBFGS" ON)
-option(GEOGRAM_WITH_TETGEN "Compile TetGen" ON)
-option(GEOGRAM_WITH_TRIANGLE "Compile Triangle" ON)
-option(GEOGRAM_WITH_EXPLORAGRAM "Compile exploragram" OFF)
-option(GEOGRAM_LIB_ONLY "Compile geogram library only" OFF)
-option(GEOGRAM_WITH_FPG "Compile FPG" OFF)
+option(GEOGRAM_WITH_GRAPHICS "Viewers and geogram_gfx library" ON)
+option(GEOGRAM_WITH_LEGACY_NUMERICS "Legacy numerical libraries" ON)
+option(GEOGRAM_WITH_HLBFGS "Non-linear solver (Yang Liu's HLBFGS)" ON)
+option(GEOGRAM_WITH_TETGEN "Tetrahedral mesher (Hang Si's TetGen)" ON)
+option(GEOGRAM_WITH_TRIANGLE "Triangle mesher (Jonathan Shewchuk's triangle)" ON)
+option(GEOGRAM_WITH_EXPLORAGRAM "Experimental code (hexahedral meshing vpipeline and optimal transport)" ON)
+option(GEOGRAM_LIB_ONLY "Libraries only (no example programs/no viewer)" OFF)
+option(GEOGRAM_WITH_FPG "Predicate generator (Sylvain Pion's FPG)" OFF)
 
-#Choose the compilation platform for example: 
-#    Win-vs-dynamic-generic, Darwin-clang-dynamic, Linux64-gcc-dynamic
-#
 set(VORPALINE_PLATFORM "" CACHE STRING "")
 
 include(cmake/geogram.cmake)
 
 set(VORPALINE_VERSION_MAJOR 1)
 set(VORPALINE_VERSION_MINOR 3)
-set(VORPALINE_VERSION_PATCH 17)
+set(VORPALINE_VERSION_PATCH 18)
 set(VORPALINE_VERSION ${VORPALINE_VERSION_MAJOR}.${VORPALINE_VERSION_MINOR}.${VORPALINE_VERSION_PATCH})
 
 set(VORPALINE_INCLUDE_SUBPATH geogram${VORPALINE_VERSION_MAJOR})

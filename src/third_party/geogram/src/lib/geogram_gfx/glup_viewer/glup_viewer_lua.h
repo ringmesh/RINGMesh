@@ -52,6 +52,11 @@ extern "C" {
 }
 
 /**
+ * \file geogram_gfx/glup_viewer/glup_viewer_lua.h
+ * \brief LUA bindings for glup_viewer.
+ */
+
+/**
  * \brief Registers all LUA extension functions.
  * \details This registers LUA wrappers for GLUP and
  *  ImGUI.
