@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2012-2016, Bruno Levy
+ *  Copyright (c) 2012-2017, Bruno Levy
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -1664,7 +1664,7 @@ namespace GLUP {
             toggles_config_ = 0;
             for(index_t i=0; i<uniform_state_.toggle.size(); ++i) {
                 if(uniform_state_.toggle[i].get()) {
-                    toggles_config_ |= (1u << i);
+                    toggles_config_ |= (1u << Numeric::uint16(i));
                 }
             }
         }
