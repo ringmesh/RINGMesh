@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -223,9 +223,9 @@ namespace RINGMesh {
         show_colored_layers_.new_status = false ;
         for( GEO::index_t r = 0; r < GM_.nb_regions(); r++ ) {
             GM_gfx_.regions.set_mesh_element_color( r,
-                std::fmod( GEO::Numeric::random_float32(), 1 ),
-                std::fmod( GEO::Numeric::random_float32(), 1 ),
-                std::fmod( GEO::Numeric::random_float32(), 1 ) ) ;
+                std::fmod( GEO::Numeric::random_float32(), 1.f ),
+                std::fmod( GEO::Numeric::random_float32(), 1.f ),
+                std::fmod( GEO::Numeric::random_float32(), 1.f ) ) ;
         }
     }
 
@@ -240,9 +240,9 @@ namespace RINGMesh {
         show_colored_regions_.new_status = false ;
         for( GEO::index_t l = 0;
             l < GM_.nb_geological_entities( Layer::type_name_static() ); l++ ) {
-            float red = std::fmod( GEO::Numeric::random_float32(), 1 ) ;
-            float green = std::fmod( GEO::Numeric::random_float32(), 1 ) ;
-            float blue = std::fmod( GEO::Numeric::random_float32(), 1 ) ;
+            float red = std::fmod( GEO::Numeric::random_float32(), 1.f ) ;
+            float green = std::fmod( GEO::Numeric::random_float32(), 1.f ) ;
+            float blue = std::fmod( GEO::Numeric::random_float32(), 1.f ) ;
             const GeoModelGeologicalEntity& cur_layer = GM_.geological_entity(
                 Layer::type_name_static(), l ) ;
             for( index_t r = 0; r < cur_layer.nb_children(); ++r )
@@ -718,13 +718,13 @@ namespace RINGMesh {
         std::string min_value = GEO::String::to_string(
             GM_gfx_.attribute.minimum() ) ;
         float nb_min_letter = static_cast< float >( min_value.size() ) ;
-        glQuickText::printfAt( x1 - w - font_height * nb_min_letter * 0.3,
+        glQuickText::printfAt( x1 - w - font_height * nb_min_letter * 0.3f,
             y1 - font_height, z, font_sz, min_value.c_str() ) ;
 
         std::string max_value = GEO::String::to_string(
             GM_gfx_.attribute.maximum() ) ;
         float nb_max_letter = static_cast< float >( max_value.size() ) ;
-        glQuickText::printfAt( x1 + w - font_height * nb_max_letter * 0.3,
+        glQuickText::printfAt( x1 + w - font_height * nb_max_letter * 0.3f,
             y1 - font_height, z, font_sz, max_value.c_str() ) ;
 
         glupMatrixMode( GLUP_PROJECTION_MATRIX ) ;

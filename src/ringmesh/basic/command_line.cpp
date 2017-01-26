@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -52,6 +52,10 @@ namespace RINGMesh {
             GEO::CmdLine::declare_arg( "epsilon", 1e-7,
                 "Threshold for numerical precision (ratio of the bbox diagonal)",
                 GEO::CmdLine::ARG_ADVANCED ) ;
+            GEO::CmdLine::declare_arg(
+                "validity_save", false,
+                "Saves meshes representing geomodel inconsistencies",
+                GEO::CmdLine::ARG_ADVANCED ) ;
         }
 
         void import_arg_group_in()
@@ -67,10 +71,6 @@ namespace RINGMesh {
             GEO::CmdLine::declare_arg(
                 "in:wells", "",
                 "Filename of the input wells" ) ;
-            GEO::CmdLine::declare_arg(
-                "in:validity_save", true,
-                "Saves meshes representing geomodel inconsistencies",
-                GEO::CmdLine::ARG_ADVANCED ) ;
         }
 
         void import_arg_group_out()

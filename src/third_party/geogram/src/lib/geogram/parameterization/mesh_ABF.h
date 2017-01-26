@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2012-2016, Bruno Levy
+ *  Copyright (c) 2012-2017, Bruno Levy
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -61,7 +61,8 @@ namespace GEO {
      * \details The method is described in the following reference:
      *   ABF++: fast and robust angle-based flattening, A. Sheffer, B. Levy,
      *   M. Mogilnitsky,  A. Bogomyakov, ACM Transactions on Graphics, 2005
-     * \param[in,out] M a reference to a surface mesh. Facets need to be triangulated.
+     * \param[in,out] M a reference to a surface mesh. Facets need to be 
+     *   triangulated.
      * \param[in] attribute_name the name of the vertex attribute where 
      *   texture coordinates are stored.
      */

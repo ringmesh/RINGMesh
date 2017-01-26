@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -339,7 +339,7 @@ namespace {
         const GEO::Mesh& mesh,
         const std::ostringstream& file )
     {
-        if( GEO::CmdLine::get_arg_bool( "in:validity_save" ) ) {
+        if( GEO::CmdLine::get_arg_bool( "validity_save" ) ) {
             GEO::mesh_save( mesh, file.str() ) ;
         }
     }
@@ -582,11 +582,14 @@ namespace {
 
         if( nb_invalid > 0 ) {
             std::ostringstream file ;
-            file << validity_errors_directory << "/invalid_global_vertices.mesh" ;
+            file << validity_errors_directory << "/invalid_global_vertices.geogram" ;
             save_invalid_points( file, geomodel, valid ) ;
 
-            Logger::warn( "GeoModel" ) << nb_invalid << " invalid vertices "
-                << std::endl << "Saved in file: " << file.str() << std::endl ;
+            if( GEO::CmdLine::get_arg_bool( "validity_save" ) ) {
+                Logger::warn( "GeoModel" ) << nb_invalid << " invalid vertices "
+                    << std::endl << "Saved in file: " << file.str() << std::endl ;
+            }
+
             return false ;
         } else {
             return true ;
@@ -668,13 +671,16 @@ namespace {
         if( !invalid_corners.empty() ) {
             std::ostringstream file ;
             file << validity_errors_directory << "/invalid_boundary_surface_"
-                << surface.index() << ".mesh" ;
+                << surface.index() << ".geogram" ;
             save_edges( file, surface.geomodel(), invalid_corners ) ;
 
-            Logger::warn( "GeoModel" ) << " Invalid surface boundary: "
-                << invalid_corners.size() / 2 << " boundary edges of " << surface.gme_id()
-                << "  are in no line of the geomodel " << std::endl
-                << " Saved in file: " << file.str() << std::endl ;
+            if( GEO::CmdLine::get_arg_bool( "validity_save" ) ) {
+                Logger::warn( "GeoModel" ) << " Invalid surface boundary: "
+                    << invalid_corners.size() / 2 << " boundary edges of "
+                    << surface.gme_id() << "  are in no line of the geomodel "
+                    << std::endl << " Saved in file: " << file.str() << std::endl ;
+            }
+
             return false ;
         } else {
             return true ;
@@ -724,13 +730,16 @@ namespace {
         if( !unconformal_facets.empty() ) {
             std::ostringstream file ;
             file << validity_errors_directory << "/unconformal_surface_"
-                << surface.index() << ".mesh" ;
+                << surface.index() << ".geogram" ;
             save_facets( file.str(), surface, unconformal_facets ) ;
 
-            Logger::warn( "GeoModel" ) << " Unconformal surface: "
-                << unconformal_facets.size() << " facets of " << surface.gme_id()
-                << " are unconformal with the geomodel cells " << std::endl
-                << " Saved in file: " << file.str() << std::endl ;
+            if( GEO::CmdLine::get_arg_bool( "validity_save" ) ) {
+                Logger::warn( "GeoModel" ) << " Unconformal surface: "
+                    << unconformal_facets.size() << " facets of " << surface.gme_id()
+                    << " are unconformal with the geomodel cells " << std::endl
+                    << " Saved in file: " << file.str() << std::endl ;
+            }
+
             return false ;
         } else {
             return true ;
@@ -831,7 +840,7 @@ namespace {
     private:
         void do_check_validity()
         {
-            test_model_entities_validity() ;
+            test_geomodel_entities_validity() ;
             test_finite_extension() ;
             test_geometry_connectivity_consistency() ;
             test_non_manifold_edges() ;
@@ -842,7 +851,7 @@ namespace {
         /*! 
          * @brief Verify the validity of all GeoModelEntities
          */
-        void test_model_entities_validity()
+        void test_geomodel_entities_validity()
         {
             if( !are_geomodel_meshed_entities_valid( geomodel_ ) ) {
                 set_invalid_model() ;
@@ -954,7 +963,7 @@ namespace {
                         mesh.facets.create_polygon( vertices ) ;
                     }
                     std::ostringstream file ;
-                    file << validity_errors_directory << "/intersected_facets.mesh" ;
+                    file << validity_errors_directory << "/intersected_facets.geogram" ;
                     save_mesh_locating_geomodel_inconsistencies( mesh, file ) ;
                     Logger::out( "I/O" ) << std::endl ;
 
@@ -1048,10 +1057,15 @@ namespace RINGMesh {
 
         if( valid ) {
             Logger::out( "GeoModel" ) << "Model " << geomodel.name() << " is valid "
-                << std::endl << std::endl ;
+                << std::endl ;
         } else {
-            Logger::warn( "GeoModel" ) << "Model " << geomodel.name() << " is invalid "
-                << std::endl << std::endl ;
+            Logger::warn( "GeoModel" ) << "Model " << geomodel.name()
+                << " is invalid " << std::endl ;
+            if( !GEO::CmdLine::get_arg_bool( "validity_save" ) ) {
+                Logger::out( "Info" ) << "To save geomodel invalidities in files "
+                    "(.geogram) set \"validity_save\" to true in the command line."
+                    << std::endl ;
+            }
         }
         return valid ;
     }
