@@ -66,7 +66,7 @@ namespace {
         GEO::CmdLine::declare_arg( "rotation:axis", "0 0 1", "Axis of rotation" ) ;
         GEO::CmdLine::declare_arg( "rotation:angle", 90., "Angle of rotation" ) ;
         GEO::CmdLine::declare_arg( "rotation:unit", "deg",
-            "Angle unit (deg for degrees or rad for radians" ) ;
+            "Angle unit (deg for degrees or rad for radians)" ) ;
     }
 
     void import_arg_groups()
