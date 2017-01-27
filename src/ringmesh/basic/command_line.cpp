@@ -106,27 +106,6 @@ namespace RINGMesh {
             GEO::CmdLine::declare_arg( "quality:mode", 0, "Mesh quality mode" ) ;
         }
 
-        void import_arg_group_rotation()
-        {
-            GEO::CmdLine::declare_arg_group( "rotation",
-                "Options to rotate a GeoModel" ) ;
-            GEO::CmdLine::declare_arg( "rotation:origin", "0 0 0",
-                "Origin of the rotation" ) ;
-            GEO::CmdLine::declare_arg( "rotation:axis", "0 0 1",
-                "Axis of rotation" ) ;
-            GEO::CmdLine::declare_arg( "rotation:angle", 90., "Angle of rotation" ) ;
-            GEO::CmdLine::declare_arg( "rotation:unit", "deg",
-                "Angle unit (deg for degrees or rad for radians" ) ;
-        }
-
-        void import_arg_group_translation()
-        {
-            GEO::CmdLine::declare_arg_group( "translation",
-                "Options to rotate a GeoModel" ) ;
-            GEO::CmdLine::declare_arg( "translation:vector", "0 0 0",
-                "Translation vector" ) ;
-        }
-
         bool import_arg_group( const std::string& name )
         {
             if( name == "global" ) {
@@ -141,10 +120,6 @@ namespace RINGMesh {
                 import_arg_group_repair() ;
             } else if( name == "quality" ) {
                 import_arg_group_quality() ;
-            } else if( name == "rotation" ) {
-                import_arg_group_rotation() ;
-            } else if( name == "translation" ) {
-                import_arg_group_translation() ;
             } else {
                 return GEO::CmdLine::import_arg_group( name ) ;
             }
