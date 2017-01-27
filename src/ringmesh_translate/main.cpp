@@ -53,14 +53,14 @@ namespace {
     void hello()
     {
         print_header_information() ;
-        Logger::div( "RINGMeshRotate" ) ;
+        Logger::div( "RINGMeshTranslate" ) ;
         Logger::out( "" ) << "Welcome to RINGMeshTranslate !" << std::endl ;
     }
 
     void import_arg_groups()
     {
         CmdLine::import_arg_group( "in" ) ;
-        CmdLine::import_arg_group( "translate" ) ;
+        CmdLine::import_arg_group( "translation" ) ;
         CmdLine::import_arg_group( "out" ) ;
     }
 
