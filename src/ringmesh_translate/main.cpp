@@ -57,11 +57,19 @@ namespace {
         Logger::out( "" ) << "Welcome to RINGMeshTranslate !" << std::endl ;
     }
 
+    void import_arg_group_translation()
+    {
+        GEO::CmdLine::declare_arg_group( "translation",
+            "Options to rotate a GeoModel" ) ;
+        GEO::CmdLine::declare_arg( "translation:vector", "0 0 0",
+            "Translation vector" ) ;
+    }
+
     void import_arg_groups()
     {
         CmdLine::import_arg_group( "in" ) ;
-        CmdLine::import_arg_group( "translation" ) ;
         CmdLine::import_arg_group( "out" ) ;
+        import_arg_group_translation() ;
     }
 
     vec3 extract_coords_from_string( const std::string& coords_in_string )
@@ -94,8 +102,10 @@ namespace {
         GeoModel geomodel ;
         geomodel_load( geomodel, input_geomodel_name ) ;
 
-        std::string translation_vector_string = GEO::CmdLine::get_arg( "translation:vector" ) ;
-        vec3 translation_vector = extract_coords_from_string( translation_vector_string ) ;
+        std::string translation_vector_string = GEO::CmdLine::get_arg(
+            "translation:vector" ) ;
+        vec3 translation_vector = extract_coords_from_string(
+            translation_vector_string ) ;
 
         translate( geomodel, translation_vector ) ;
 

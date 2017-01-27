@@ -57,11 +57,23 @@ namespace {
         Logger::out( "" ) << "Welcome to RINGMeshRotate !" << std::endl ;
     }
 
+    void import_arg_group_rotation()
+    {
+        GEO::CmdLine::declare_arg_group( "rotation",
+            "Options to rotate a GeoModel" ) ;
+        GEO::CmdLine::declare_arg( "rotation:origin", "0 0 0",
+            "Origin of the rotation" ) ;
+        GEO::CmdLine::declare_arg( "rotation:axis", "0 0 1", "Axis of rotation" ) ;
+        GEO::CmdLine::declare_arg( "rotation:angle", 90., "Angle of rotation" ) ;
+        GEO::CmdLine::declare_arg( "rotation:unit", "deg",
+            "Angle unit (deg for degrees or rad for radians" ) ;
+    }
+
     void import_arg_groups()
     {
         CmdLine::import_arg_group( "in" ) ;
-        CmdLine::import_arg_group( "rotation" ) ;
         CmdLine::import_arg_group( "out" ) ;
+        import_arg_group_rotation() ;
     }
 
     vec3 extract_coords_from_string( const std::string& coords_in_string )
