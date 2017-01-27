@@ -762,12 +762,6 @@ namespace RINGMesh {
             Logger::warn( "GeoModelEntity" ) << gme_id() << " mesh has " << cc
                 << " connected components " << std::endl ;
             valid = false ;
-#ifdef RINGMESH_DEBUG
-            std::ostringstream file ;
-            file << validity_errors_directory << "/" << "invalid_surf_" << index()
-                << ".geogram" ;
-            save( file.str() ) ;
-#endif  
         }
         return valid ;
     }
