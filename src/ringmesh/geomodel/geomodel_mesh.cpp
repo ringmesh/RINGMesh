@@ -1925,15 +1925,12 @@ namespace RINGMesh {
     GeoModelMesh::GeoModelMesh( GeoModel& geomodel )
         :
             geomodel_( geomodel ),
-            mesh_( NULL ),
+            mesh_( nil ),
             mode_( GeoModelMeshCells::NONE ),
             vertices( *this, geomodel ),
             edges( *this ),
             facets( *this ),
             cells( *this )
-    /*! @todo I am no expert but this initialization list looks like
-     * a ticking bomb (like those in Mesh, btw I don not understand how these can work)
-     * If these classes are derived one day, I don't know what will happen [JP]*/
     {
         GeogramMeshAllD* geogrammesh = new GeogramMeshAllD ;
         mesh_ = geogrammesh ;

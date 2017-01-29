@@ -44,7 +44,6 @@
 
 /*!
  * @file Custom assertions
- * @todo Do we really need them ? [JP]
  */
 
 namespace RINGMesh {
