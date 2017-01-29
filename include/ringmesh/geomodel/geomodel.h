@@ -263,14 +263,6 @@ namespace RINGMesh {
             return entity_type_manager_.nb_geological_entity_types() ;
         }
 
-        /*!
-         * Access to the position of the entity of that type in storage.
-         * @note I don't like it to be public [JP]
-         */
-        index_t geological_entity_type_index( const EntityType& type ) const
-        {
-            return entity_type_manager_.geological_entity_type_index( type ) ;
-        }
         const EntityType& geological_entity_type( index_t index ) const
         {
             return entity_type_manager_.geological_entity_type( index ) ;
@@ -376,6 +368,13 @@ namespace RINGMesh {
         GeoModelMesh mesh ;
 
     private:
+        /*!
+         * Access to the position of the entity of that type in storage.
+         */
+        index_t geological_entity_type_index( const EntityType& type ) const
+        {
+            return entity_type_manager_.geological_entity_type_index( type ) ;
+        }
         /*!
          * @brief Generic accessor to the storage of mesh entities of the given type
          */

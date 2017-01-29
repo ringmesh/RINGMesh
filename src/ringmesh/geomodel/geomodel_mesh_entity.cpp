@@ -711,8 +711,6 @@ namespace RINGMesh {
                 << " has less than 3 vertices " << std::endl ;
             valid = false ;
         }
-        // Is it important to have edges or not ?
-        // I would say we do not care (JP) - so no check on that 
         if( mesh2d_->nb_facets() == 0 ) {
             Logger::warn( "GeoModelEntity" ) << gme_id() << " has no facets "
                 << std::endl ;
