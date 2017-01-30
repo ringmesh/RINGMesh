@@ -39,13 +39,6 @@
 
 #include <ringmesh/basic/common.h>
 
-/*!
- * @todo Is this file really necessary>
- * It is only used when applications are generated. 
- * Replace it by a ringmesh_application_utils.h and cpp that gather 
- * all we nee to run apps and that are not included if option unchecked [JP]
- */
-
 namespace RINGMesh {
 
     namespace CmdLine {
