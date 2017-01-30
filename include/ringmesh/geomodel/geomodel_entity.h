@@ -185,6 +185,7 @@ namespace RINGMesh {
     ringmesh_disable_copy( Universe ) ;
     public:
         friend class GeoModelEditor ;
+        friend class UniverseAccess ;
 
         Universe( const GeoModel& geomodel ) ;
 

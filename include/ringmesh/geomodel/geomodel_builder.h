@@ -427,6 +427,538 @@ namespace RINGMesh {
     protected:
         std::string filename_ ;
     } ;
+
+}
+
+namespace RINGMesh {
+    class GeoModelBuilder2 ;
+    class GeoModelBuilderTopology ;
+    class GeoModelBuilderGeometry ;
+    class GeoModelBuilderGeology ;
+}
+
+namespace RINGMesh {
+
+    class UniverseAccess {
+    ringmesh_disable_copy( UniverseAccess ) ;
+        friend class GeoModelBuilderTopology ;
+
+    public:
+        UniverseAccess( Universe& universe )
+            : universe_( universe )
+        {
+        }
+
+    private:
+        std::vector< gme_t >& modifiable_boundaries()
+        {
+            return universe_.boundary_surfaces_ ;
+        }
+
+        std::vector< bool >& modifiable_sides()
+        {
+            return universe_.boundary_surface_sides_ ;
+        }
+
+    private:
+        Universe& universe_ ;
+    } ;
+
+    class GeoModelMeshEntityAccess {
+    ringmesh_disable_copy( GeoModelMeshEntityAccess ) ;
+        friend class GeoModelBuilderTopology ;
+        friend class GeoModelBuilderGeology ;
+        friend class GeoModelBuilderInfo ;
+
+    public:
+        GeoModelMeshEntityAccess( GeoModelMeshEntity& gme )
+            : gme_( gme )
+        {
+        }
+
+    private:
+        std::string& modifiable_name()
+        {
+            return gme_.name_ ;
+        }
+
+        GME::GEOL_FEATURE& modifiable_geol_feature()
+        {
+            return gme_.geol_feature_ ;
+        }
+
+        std::vector< gme_t >& modifiable_boundaries()
+        {
+            return gme_.boundaries_ ;
+        }
+
+        std::vector< gme_t >& modifiable_in_boundaries()
+        {
+            return gme_.in_boundary_ ;
+        }
+
+        std::vector< bool >& modifiable_sides()
+        {
+            ringmesh_assert( gme_.type_name() == Region::type_name_static() ) ;
+            return dynamic_cast< Region& >( gme_ ).sides_ ;
+        }
+
+        std::vector< gme_t >& modifiable_parents()
+        {
+            return gme_.parents_ ;
+        }
+
+    private:
+        GeoModelMeshEntity& gme_ ;
+    } ;
+
+    class GeoModelGeologicalEntityAccess {
+    ringmesh_disable_copy( GeoModelGeologicalEntityAccess ) ;
+        friend class GeoModelBuilderGeology ;
+        friend class GeoModelBuilderInfo ;
+
+    public:
+        GeoModelGeologicalEntityAccess( GeoModelGeologicalEntity& gmge )
+            : gmge_( gmge )
+        {
+        }
+
+    private:
+        std::string& modifiable_name()
+        {
+            return gmge_.name_ ;
+        }
+
+        GME::GEOL_FEATURE& modifiable_geol_feature()
+        {
+            return gmge_.geol_feature_ ;
+        }
+
+        std::vector< gme_t >& modifiable_children()
+        {
+            return gmge_.children_ ;
+        }
+
+    private:
+        GeoModelGeologicalEntity& gmge_ ;
+    } ;
+
+    class GeoModelAccess {
+    ringmesh_disable_copy( GeoModelAccess ) ;
+        friend class GeoModelBuilder2 ;
+        friend class GeoModelBuilderTopology ;
+        friend class GeoModelBuilderGeometry ;
+        friend class GeoModelBuilderGeology ;
+        friend class GeoModelBuilderInfo ;
+
+    public:
+        GeoModelAccess( GeoModel& geomodel )
+            : geomodel_( geomodel )
+        {
+        }
+
+    private:
+        std::string& modifiable_name()
+        {
+            return geomodel_.geomodel_name_ ;
+        }
+
+        std::vector< GeoModelMeshEntity* >& modifiable_mesh_entities(
+            const EntityType& type )
+        {
+            return const_cast< std::vector< GeoModelMeshEntity* >& >( geomodel_.mesh_entities(
+                type ) ) ;
+        }
+
+        GeoModelMeshEntity& modifiable_mesh_entity( const gme_t& id )
+        {
+            return *modifiable_mesh_entities( id.type )[id.index] ;
+        }
+
+        std::vector< GeoModelGeologicalEntity* >& modifiable_geological_entities(
+            const EntityType& type )
+        {
+            return const_cast< std::vector< GeoModelGeologicalEntity* >& >( geomodel_.geological_entities(
+                type ) ) ;
+        }
+
+        GeoModelGeologicalEntity& modifiable_geological_entity( const gme_t& id )
+        {
+            return *modifiable_geological_entities( id.type )[id.index] ;
+        }
+
+        Universe& modifiable_universe()
+        {
+            return geomodel_.universe_ ;
+        }
+
+    private:
+        GeoModel& geomodel_ ;
+    } ;
+
+    class RINGMESH_API GeoModelBuilderTopology {
+    ringmesh_disable_copy( GeoModelBuilderTopology ) ;
+        friend class GeoModelBuilder2 ;
+
+    public:
+        void copy_topology( const GeoModel& from ) ;
+
+        template< typename T >
+        gme_t create_mesh_entity( const MeshType type = "" )
+        {
+            const EntityType entity_type = T::type_name_static() ;
+            index_t nb_entities( geomodel_.nb_mesh_entities( entity_type ) ) ;
+            index_t new_id( nb_entities ) ;
+            T* new_entity = new T( geomodel_, new_id, type ) ;
+            geomodel_access_.modifiable_mesh_entities( entity_type ).push_back(
+                new_entity ) ;
+            return new_entity->gme_id() ;
+        }
+
+        /*!
+         * @brief Complete missing information in GeoModelEntities
+         * boundaries - in_boundary - parent - children
+         * @details For all 7 types of entities, check what information is available
+         * for the first one and fill the entities of the same type accordingly
+         * THIS MEANS that the all the entities of the same type have been initialized with
+         * the same information
+         */
+        void complete_entity_connectivity() ;
+
+        /*!
+         * @brief Fill the boundaries of all entities of the given type
+         * @details If the boundary entities do not have any in_boundary
+         * information, nothing is done.
+         */
+        void fill_mesh_entities_boundaries( const EntityType& type ) ;
+
+        /*!
+         * @brief Fill the in_boundary vector of all entities of the given type
+         * @details If the in_boundary entities do not have any boundary
+         * information, nothing is done, and geomodel construction will eventually fail.
+         */
+        void fill_mesh_entities_in_boundaries( const EntityType& type ) ;
+
+        void add_mesh_entity_boundary(
+            const gme_t& gme_id,
+            index_t boundary_id,
+            bool side = false )
+        {
+            GeoModelMeshEntity& mesh_entity =
+                geomodel_access_.modifiable_mesh_entity( gme_id ) ;
+            const EntityType& b_type = geomodel_.entity_type_manager().boundary_type(
+                gme_id.type ) ;
+            gme_t boundary( b_type, boundary_id ) ;
+            GeoModelMeshEntityAccess gme_access( mesh_entity ) ;
+            gme_access.modifiable_boundaries().push_back( boundary ) ;
+
+            if( gme_id.type == Region::type_name_static() ) {
+                gme_access.modifiable_sides().push_back( side ) ;
+            }
+        }
+
+        void set_mesh_entity_boundary(
+            const gme_t& gme_id,
+            index_t id,
+            index_t boundary_id,
+            bool side = false )
+        {
+            ringmesh_assert( id < geomodel_.mesh_entity( gme_id ).nb_boundaries() ) ;
+            GeoModelMeshEntity& mesh_entity =
+                geomodel_access_.modifiable_mesh_entity( gme_id ) ;
+            const EntityType& b_type = geomodel_.entity_type_manager().boundary_type(
+                gme_id.type ) ;
+            gme_t boundary( b_type, boundary_id ) ;
+            GeoModelMeshEntityAccess gme_access( mesh_entity ) ;
+            gme_access.modifiable_boundaries()[id] = boundary ;
+
+            if( gme_id.type == Region::type_name_static() ) {
+                gme_access.modifiable_sides()[id] = side ;
+            }
+        }
+
+        void add_universe_boundary( index_t boundary_id, bool side )
+        {
+            gme_t boundary( Surface::type_name_static(), boundary_id ) ;
+            UniverseAccess universe_access(
+                geomodel_access_.modifiable_universe() ) ;
+            universe_access.modifiable_boundaries().push_back( boundary ) ;
+            universe_access.modifiable_sides().push_back( side ) ;
+        }
+
+        void set_universe_boundary( index_t id, index_t boundary_id, bool side )
+        {
+            ringmesh_assert( id < geomodel_.universe().nb_boundaries() ) ;
+            gme_t boundary( Surface::type_name_static(), boundary_id ) ;
+            UniverseAccess universe_access(
+                geomodel_access_.modifiable_universe() ) ;
+            universe_access.modifiable_boundaries()[id] = boundary ;
+            universe_access.modifiable_sides()[id] = side ;
+        }
+
+        void add_mesh_entity_in_boundary( const gme_t& t, index_t in_boundary_id )
+        {
+            GeoModelMeshEntity& mesh_entity =
+                geomodel_access_.modifiable_mesh_entity( t ) ;
+            const EntityType& in_b_type =
+                geomodel_.entity_type_manager().in_boundary_type( t.type ) ;
+            gme_t in_boundary( in_b_type, in_boundary_id ) ;
+            GeoModelMeshEntityAccess gme_access( mesh_entity ) ;
+            gme_access.modifiable_in_boundaries().push_back( in_boundary ) ;
+        }
+
+        void set_mesh_entity_in_boundary(
+            const gme_t& gme_id,
+            index_t id,
+            index_t in_boundary_id )
+        {
+            /// No check on the validity of the index of the entity in_boundary
+            /// NO_ID is used to flag entities to delete
+            GeoModelMeshEntity& mesh_entity =
+                geomodel_access_.modifiable_mesh_entity( gme_id ) ;
+            ringmesh_assert( id < mesh_entity.nb_in_boundary() ) ;
+            const EntityType& in_b_type =
+                geomodel_.entity_type_manager().in_boundary_type( gme_id.type ) ;
+            gme_t in_boundary( in_b_type, in_boundary_id ) ;
+            GeoModelMeshEntityAccess gme_access( mesh_entity ) ;
+            gme_access.modifiable_in_boundaries()[id] = in_boundary ;
+        }
+
+    protected:
+        GeoModelBuilderTopology( GeoModel& builder ) ;
+
+    private:
+        GeoModel& geomodel_ ;
+        GeoModelAccess geomodel_access_ ;
+    } ;
+
+    class RINGMESH_API GeoModelBuilderRemoval {
+    ringmesh_disable_copy( GeoModelBuilderRemoval ) ;
+        friend class GeoModelBuilder2 ;
+
+    public:
+        void remove_mesh_entities( const std::set< gme_t >& entities ) ;
+
+        void remove_geological_entities( const std::set< gme_t >& entities ) ;
+
+        /*!
+         * @todo Could be moved in the API [JP]
+         */
+        bool get_dependent_entities( std::set< gme_t >& entities ) const ;
+
+        /*!
+         * Should be rewritten. Put as it was before someone removed it...
+         */
+        void remove_entities_and_dependencies(
+            const std::set< gme_t >& entities_to_remove ) ;
+
+    protected:
+        GeoModelBuilderRemoval( GeoModel& builder ) ;
+
+    private:
+        GeoModel& geomodel_ ;
+        GeoModelAccess geomodel_access_ ;
+    } ;
+
+    class RINGMESH_API GeoModelBuilderGeometry {
+    ringmesh_disable_copy( GeoModelBuilderGeometry ) ;
+        friend class GeoModelBuilder2 ;
+
+    public:
+        /*!
+         * @brief Transfer general mesh information from one mesh
+         * data structure to another one
+         * @param[in] id the GeoModelMeshEntity id to operate on
+         * @param[in] type the new mesh data structure type
+         */
+        void change_mesh_data_structure( const gme_t& id, const MeshType type ) ;
+
+    protected:
+        GeoModelBuilderGeometry( GeoModel& builder ) ;
+
+    private:
+        GeoModel& geomodel_ ;
+        GeoModelAccess geomodel_access_ ;
+    } ;
+
+    class RINGMESH_API GeoModelBuilderInfo {
+    ringmesh_disable_copy( GeoModelBuilderInfo ) ;
+        friend class GeoModelBuilder2 ;
+
+    public:
+        /*!
+         *@brief Set the name of the geomodel
+         */
+        void set_geomodel_name( const std::string& name )
+        {
+            geomodel_access_.modifiable_name() = name ;
+        }
+
+        void set_entity_name( const gme_t& gme_id, const std::string& name )
+        {
+            if( geomodel_.is_mesh_entity_type( gme_id.type ) ) {
+                GeoModelMeshEntityAccess gmme_access(
+                    geomodel_access_.modifiable_mesh_entity( gme_id ) ) ;
+                gmme_access.modifiable_name() = name ;
+            } else {
+                GeoModelGeologicalEntityAccess gmge_access(
+                    geomodel_access_.modifiable_geological_entity( gme_id ) ) ;
+                gmge_access.modifiable_name() = name ;
+            }
+        }
+
+    protected:
+        GeoModelBuilderInfo( GeoModel& builder ) ;
+
+    private:
+        GeoModel& geomodel_ ;
+        GeoModelAccess geomodel_access_ ;
+
+    } ;
+
+    class RINGMESH_API GeoModelBuilderGeology {
+    ringmesh_disable_copy( GeoModelBuilderGeology ) ;
+        friend class GeoModelBuilder2 ;
+
+    public:
+        gme_t create_geological_entity( const EntityType& type ) ;
+
+        /*!
+         * @brief Fill the parent of all entities of the given type
+         * @details If the parents do not have any child nothing is done.
+         */
+        void fill_mesh_entities_parent( const EntityType& type ) ;
+
+        /*!
+         * @brief Fill the children of all entities of the given type
+         * @details If the children entities do not have any parent information
+         * nothing is done.
+         */
+        void fill_geological_entities_children( const EntityType& type ) ;
+
+        void complete_mesh_entities_geol_feature_from_first_parent(
+            const EntityType& type ) ;
+        void complete_geological_entities_geol_feature_from_first_child(
+            const EntityType& type ) ;
+
+        void set_entity_geol_feature(
+            const gme_t& gme_id,
+            GME::GEOL_FEATURE geol_feature )
+        {
+            if( geomodel_.is_mesh_entity_type( gme_id.type ) ) {
+                GeoModelMeshEntityAccess gmme_access(
+                    geomodel_access_.modifiable_mesh_entity( gme_id ) ) ;
+                gmme_access.modifiable_geol_feature() = geol_feature ;
+            } else {
+                GeoModelGeologicalEntityAccess gmge_access(
+                    geomodel_access_.modifiable_geological_entity( gme_id ) ) ;
+                gmge_access.modifiable_geol_feature() = geol_feature ;
+            }
+        }
+
+        void add_mesh_entity_parent( const gme_t& gme_id, const gme_t& parent_index )
+        {
+            GeoModelMeshEntity& mesh_entity =
+                geomodel_access_.modifiable_mesh_entity( gme_id ) ;
+            GeoModelMeshEntityAccess gmme_access( mesh_entity ) ;
+            gmme_access.modifiable_parents().push_back( parent_index ) ;
+        }
+
+        void set_mesh_entity_parent(
+            const gme_t& gme_id,
+            index_t id,
+            const gme_t& parent_index )
+        {
+            /// No check on the validity of the index of the entity parents_
+            /// NO_ID is used to flag entities to delete
+            GeoModelMeshEntity& mesh_entity =
+                geomodel_access_.modifiable_mesh_entity( gme_id ) ;
+            ringmesh_assert( id < mesh_entity.nb_parents() ) ;
+            GeoModelMeshEntityAccess gmme_access( mesh_entity ) ;
+            gmme_access.modifiable_parents()[id] = parent_index ;
+        }
+
+        void add_geological_entity_child( const gme_t& gme_id, index_t child_id )
+        {
+            GeoModelGeologicalEntity& geol_entity =
+                geomodel_access_.modifiable_geological_entity( gme_id ) ;
+            const EntityType& child_type =
+                geomodel_.entity_type_manager().child_type( gme_id.type ) ;
+            gme_t child( child_type, child_id ) ;
+            GeoModelGeologicalEntityAccess gmge_access( geol_entity ) ;
+            gmge_access.modifiable_children().push_back( child ) ;
+        }
+
+        void set_geological_entity_child(
+            const gme_t& gme_id,
+            index_t id,
+            index_t child_id )
+        {
+            /// No check on the validity of the index of the entity child_index
+            /// NO_ID is used to flag entities to delete
+            GeoModelGeologicalEntity& geol_entity =
+                geomodel_access_.modifiable_geological_entity( gme_id ) ;
+            const EntityType& child_type =
+                geomodel_.entity_type_manager().child_type( gme_id.type ) ;
+            gme_t child( child_type, child_id ) ;
+            GeoModelGeologicalEntityAccess gmge_access( geol_entity ) ;
+            gmge_access.modifiable_children()[id] = child ;
+        }
+
+    protected:
+        GeoModelBuilderGeology( GeoModel& builder ) ;
+
+    private:
+        GeoModel& geomodel_ ;
+        GeoModelAccess geomodel_access_ ;
+
+    } ;
+
+    class RINGMESH_API GeoModelBuilderCopy {
+    ringmesh_disable_copy( GeoModelBuilderCopy ) ;
+        friend class GeoModelBuilder2 ;
+
+    protected:
+        GeoModelBuilderCopy( GeoModel& builder ) ;
+
+    private:
+        GeoModel& geomodel_ ;
+        GeoModelAccess geomodel_access_ ;
+
+    } ;
+
+    class RINGMESH_API GeoModelBuilder2 {
+    ringmesh_disable_copy( GeoModelBuilder2 ) ;
+
+    public:
+        GeoModelBuilder2( GeoModel& geomodel ) ;
+        virtual ~GeoModelBuilder2()
+        {
+        }
+
+//        const GeoModel& geomodel() const
+//        {
+//            return geomodel_ ;
+//        }
+
+    private:
+//        /*! The geomodel edited
+//         */
+//        GeoModel& geomodel_ ;
+
+//        /*! Parameter to forbid element creation. Crucial to control
+//         *  building of the geomodel and detect errors in find_or_create functions
+//         */
+//        bool create_entity_allowed_ ;
+
+    public:
+        GeoModelBuilderTopology topology ;
+        GeoModelBuilderGeometry geometry ;
+        GeoModelBuilderGeology geology ;
+        GeoModelBuilderRemoval removal ;
+        GeoModelBuilderCopy copy ;
+        GeoModelBuilderInfo info ;
+    } ;
 }
 
 #endif

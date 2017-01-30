@@ -183,11 +183,12 @@ namespace RINGMesh {
      */
     class RINGMESH_API GeoModel {
     ringmesh_disable_copy( GeoModel ) ;
-    public:
         friend class GeoModelBuilder ;
         friend class GeoModelEditor ;
         friend class GeoModelRepair ;
+        friend class GeoModelAccess ;
 
+    public:
         typedef std::string EntityType ;
 
         /*!

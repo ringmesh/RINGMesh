@@ -85,7 +85,6 @@ namespace RINGMesh {
             T* new_entity = new T( geomodel(), new_id, type ) ;
             modifiable_mesh_entities( entity_type ).push_back( new_entity ) ;
             return new_entity->gme_id() ;
-
         }
 
         /*!
@@ -322,7 +321,7 @@ namespace RINGMesh {
 
     protected:
         /*!
-         * @ brief The geomodel under construction
+         * @brief The geomodel under construction
          */
         GeoModel& geomodel()
         {
