@@ -296,8 +296,8 @@ namespace {
             cur_neighbor = std::min( cur_neighbor, surface.nb_mesh_elements() ) ;
             neighbors.resize( cur_neighbor ) ;
             double* dist = (double*) alloca( sizeof(double) * cur_neighbor ) ;
-            nb_neighbors = surface.facet_nn_search().get_neighbors( v,
-                cur_neighbor, neighbors, dist ) ;
+            nb_neighbors = surface.facet_nn_search().get_neighbors( v, cur_neighbor,
+                neighbors, dist ) ;
             for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
                 element_id = neighbors[i] ;
                 for( index_t j = 0;
@@ -333,8 +333,8 @@ namespace {
             cur_neighbor = std::min( cur_neighbor, entity.nb_mesh_elements() ) ;
             neighbors.resize( cur_neighbor ) ;
             double* dist = (double*) alloca( sizeof(double) * cur_neighbor ) ;
-            nb_neighbors = entity.cell_nn_search().get_neighbors( v,
-                cur_neighbor, neighbors, dist ) ;
+            nb_neighbors = entity.cell_nn_search().get_neighbors( v, cur_neighbor,
+                neighbors, dist ) ;
             for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
                 element_id = neighbors[i] ;
                 for( index_t j = 0;
@@ -950,10 +950,12 @@ namespace RINGMesh {
                         if( S.is_on_border( f, v ) ) {
                             index_t vertex = geomodel_vertices.geomodel_vertex_id(
                                 S.gme_id(), f, v ) ;
-                            index_t next_vertex = geomodel_vertices.geomodel_vertex_id(
-                                S.gme_id(), f, S.next_facet_vertex_index( f, v ) ) ;
-                            index_t previous_vertex = geomodel_vertices.geomodel_vertex_id(
-                                S.gme_id(), f, S.prev_facet_vertex_index( f, v ) ) ;
+                            index_t next_vertex =
+                                geomodel_vertices.geomodel_vertex_id( S.gme_id(), f,
+                                    S.next_facet_vertex_index( f, v ) ) ;
+                            index_t previous_vertex =
+                                geomodel_vertices.geomodel_vertex_id( S.gme_id(), f,
+                                    S.prev_facet_vertex_index( f, v ) ) ;
                             border_triangles_.push_back(
                                 BorderTriangle( s, f, vertex, next_vertex,
                                     previous_vertex ) ) ;
@@ -987,8 +989,7 @@ namespace RINGMesh {
                 }
             }
             ringmesh_assert( v0_id != NO_ID ) ;
-            index_t v0_id_in_facet = S.vertex_index_in_facet( f,
-                 v0_id ) ;
+            index_t v0_id_in_facet = S.vertex_index_in_facet( f, v0_id ) ;
             ringmesh_assert( v0_id_in_facet != NO_ID ) ;
 
             index_t next_f = NO_ID ;
@@ -1008,9 +1009,10 @@ namespace RINGMesh {
             // Finds the BorderTriangle that is corresponding to this
             // It must exist and there is only one
             BorderTriangle bait( border_triangle.surface_, next_f,
-                geomodel_vertices.geomodel_vertex_id( S.gme_id(), next_f, next_f_v0 ),
-                geomodel_vertices.geomodel_vertex_id( S.gme_id(), next_f, next_f_v1 ),
-                NO_ID ) ;
+                geomodel_vertices.geomodel_vertex_id( S.gme_id(), next_f,
+                    next_f_v0 ),
+                geomodel_vertices.geomodel_vertex_id( S.gme_id(), next_f,
+                    next_f_v1 ), NO_ID ) ;
             index_t result = static_cast< index_t >( std::lower_bound(
                 border_triangles_.begin(), border_triangles_.end(), bait )
                 - border_triangles_.begin() ) ;
@@ -1334,7 +1336,8 @@ namespace RINGMesh {
         if( clear ) {
             builder->clear( true, true ) ;
         }
-        index_t nb_model_vertices = static_cast< index_t >( geomodel_vertices.size() ) ;
+        index_t nb_model_vertices =
+            static_cast< index_t >( geomodel_vertices.size() ) ;
         index_t start = builder->create_vertices( nb_model_vertices ) ;
         for( index_t v = 0; v < nb_model_vertices; v++ ) {
             set_mesh_entity_vertex( entity_id, start + v, geomodel_vertices[v] ) ;
@@ -2228,7 +2231,8 @@ namespace RINGMesh {
     void GeoModelBuilder::build_geomodel_from_surfaces()
     {
         if( geomodel().nb_surfaces() == 0 ) {
-            throw RINGMeshException( "GeoModel", "No surface to build the geomodel " ) ;
+            throw RINGMeshException( "GeoModel",
+                "No surface to build the geomodel " ) ;
         }
 
         // Initialize geomodel() global vertices
@@ -2397,6 +2401,50 @@ namespace RINGMesh {
         : GeoModelBuilder( geomodel ), filename_( filename )
     {
 
+    }
+
+////////////////////////////////////////////////////////////////////////////
+
+    GeoModelBuilderTopology::GeoModelBuilderTopology( GeoModel& geomodel )
+        : geomodel_( geomodel ), geomodel_access_( geomodel )
+    {
+    }
+
+    GeoModelBuilderRemoval::GeoModelBuilderRemoval( GeoModel& geomodel )
+        : geomodel_( geomodel ), geomodel_access_( geomodel )
+    {
+    }
+
+    GeoModelBuilderGeometry::GeoModelBuilderGeometry( GeoModel& geomodel )
+        : geomodel_( geomodel ), geomodel_access_( geomodel )
+    {
+    }
+
+    GeoModelBuilderGeology::GeoModelBuilderGeology( GeoModel& geomodel )
+        : geomodel_( geomodel ), geomodel_access_( geomodel )
+    {
+    }
+
+    GeoModelBuilderCopy::GeoModelBuilderCopy( GeoModel& geomodel )
+        : geomodel_( geomodel ), geomodel_access_( geomodel )
+    {
+    }
+
+    GeoModelBuilderInfo::GeoModelBuilderInfo( GeoModel& geomodel )
+        : geomodel_( geomodel ), geomodel_access_( geomodel )
+    {
+    }
+
+    GeoModelBuilder2::GeoModelBuilder2( GeoModel& geomodel )
+        :
+//            geomodel_( geomodel ),
+            topology( geomodel ),
+            geometry( geomodel ),
+            geology( geomodel ),
+            removal( geomodel ),
+            copy( geomodel ),
+            info( geomodel )
+    {
     }
 
 } // namespace

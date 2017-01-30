@@ -61,11 +61,12 @@ namespace RINGMesh {
      */
     class RINGMESH_API GeoModelMeshEntity: public GeoModelEntity {
     ringmesh_disable_copy( GeoModelMeshEntity ) ;
-    public:
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
         friend class GeoModelRepair ;
+        friend class GeoModelMeshEntityAccess ;
 
+    public:
         virtual ~GeoModelMeshEntity() ;
 
         typedef std::string EntityType ;
@@ -437,7 +438,6 @@ namespace RINGMesh {
             mesh0d_ = mesh ;
             GeoModelMeshEntity::set_mesh( mesh0d_ ) ;
         }
-
 
     private:
         Mesh0D* mesh0d_ ;
@@ -885,6 +885,7 @@ namespace RINGMesh {
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
         friend class GeoModelRepair ;
+        friend class GeoModelMeshEntityAccess ;
 
         virtual ~Region()
         {
