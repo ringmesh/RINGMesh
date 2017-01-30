@@ -133,17 +133,7 @@ namespace RINGMesh {
         {
             return mesh_->mesh_->vertices.create_vertex() ;
         }
-        /*!
-         * @brief Creates a new vertex.
-         * @param[in] coords a pointer to @function dimension() coordinate.
-         * @return the index of the created vertex
-         */
-        virtual index_t create_vertex( const vec3& vertex )
-        {
-            index_t index = create_vertex() ;
-            set_vertex( index, vertex ) ;
-            return index ;
-        }
+
         /*!
          * @brief Creates a contiguous chunk of vertices.
          * @param[in] nb number of sub-entities to create.
