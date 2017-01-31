@@ -607,6 +607,7 @@ namespace RINGMesh {
         friend class GeoModelBuilderRemoval ;
         friend class GeoModelBuilderCopy ;
         friend class GeoModelBuilderInfo ;
+        friend class GeoModelBuilderFromSurfaces ;
 
     private:
         GeoModelAccess( GeoModel& geomodel )
@@ -696,7 +697,8 @@ namespace RINGMesh {
             const EntityType entity_type = T::type_name_static() ;
             index_t nb_entities( geomodel_.nb_mesh_entities( entity_type ) ) ;
             index_t new_id( nb_entities ) ;
-            T* new_entity = new T( geomodel_, new_id, type ) ;
+            T* new_entity = GeoModelMeshEntityAccess::create_entity< T >( geomodel_,
+                new_id, type ) ;
             geomodel_access_.modifiable_mesh_entities( entity_type ).push_back(
                 new_entity ) ;
             return new_entity->gme_id() ;
@@ -811,8 +813,18 @@ namespace RINGMesh {
             gme_access.modifiable_in_boundaries()[id] = in_boundary ;
         }
 
+        gme_t find_or_create_corner( const vec3& point ) ;
+        gme_t find_or_create_corner( index_t geomodel_point_id ) ;
+        gme_t find_or_create_line( const std::vector< vec3 >& vertices ) ;
+        gme_t find_or_create_line(
+            const std::vector< index_t >& incident_surfaces,
+            const gme_t& first_corner,
+            const gme_t& second_corner ) ;
+
+        void compute_universe() ;
+
     private:
-        GeoModelBuilderTopology( GeoModel& builder ) ;
+        GeoModelBuilderTopology( GeoModelBuilder2& builder, GeoModel& geomodel ) ;
 
         bool create_mesh_entities(
             const EntityType& type,
@@ -853,11 +865,13 @@ namespace RINGMesh {
 
         template< typename T >
         void copy_mesh_entity_topology( const GeoModel& from ) ;
+
         void copy_geological_entity_topology(
             const GeoModel& from,
             const EntityType& type ) ;
 
     private:
+        GeoModelBuilder2& builder_ ;
         GeoModel& geomodel_ ;
         GeoModelAccess geomodel_access_ ;
     } ;
@@ -867,6 +881,15 @@ namespace RINGMesh {
         friend class GeoModelBuilder2 ;
 
     public:
+
+        /*!
+         * @brief Remove a list of mesh entities of the geomodel
+         * @details No check is done on the consistency of this removal
+         *          The entities and all references to them are removed.
+         *          All dependent entities should be in the set of entities to remove,
+         *          with a prior call to get_dependent_entities function.
+         *
+         */
         void remove_mesh_entities( const std::set< gme_t >& entities ) ;
 
         void remove_geological_entities( const std::set< gme_t >& entities ) ;
@@ -880,9 +903,10 @@ namespace RINGMesh {
             const std::set< gme_t >& entities_to_remove ) ;
 
     protected:
-        GeoModelBuilderRemoval( GeoModel& builder ) ;
+        GeoModelBuilderRemoval( GeoModelBuilder2& builder, GeoModel& geomodel ) ;
 
     private:
+        GeoModelBuilder2& builder_ ;
         GeoModel& geomodel_ ;
         GeoModelAccess geomodel_access_ ;
     } ;
@@ -892,6 +916,7 @@ namespace RINGMesh {
         friend class GeoModelBuilder2 ;
 
     public:
+        void recompute_geomodel_mesh() ;
         /*!
          * @brief Transfer general mesh information from one mesh
          * data structure to another one
@@ -1086,8 +1111,21 @@ namespace RINGMesh {
             index_t region_id,
             bool recompute_adjacency = true ) ;
 
+        void cut_surfaces_by_internal_lines() ;
+
+        void cut_regions_by_internal_surfaces() ;
+
+        /*!
+         * @brief Cuts a Surface along a Line assuming that the edges of the Line are edges of the Surface
+         * @pre Surface is not already cut. Line L does not cut the Surface S into 2 connected components.
+         * @todo Add a test for this function.
+         */
+        void cut_surface_by_line( index_t surface_id, index_t line_id ) ;
+
+        void cut_region_by_surface( index_t region_id, index_t surface_id ) ;
+
     protected:
-        GeoModelBuilderGeometry( GeoModel& builder ) ;
+        GeoModelBuilderGeometry( GeoModelBuilder2& builder, GeoModel& geomodel ) ;
 
     private:
         void copy_meshes( const GeoModel& from, const std::string& entity_type ) ;
@@ -1105,15 +1143,50 @@ namespace RINGMesh {
             const std::vector< index_t >& triangle_vertices ) ;
 
         void assign_surface_triangle_mesh(
-             index_t surface_id,
-             const std::vector< index_t >& triangle_vertices,
-             const std::vector< index_t >& adjacent_triangles ) ;
+            index_t surface_id,
+            const std::vector< index_t >& triangle_vertices,
+            const std::vector< index_t >& adjacent_triangles ) ;
 
         void assign_region_tet_mesh(
             index_t region_id,
             const std::vector< index_t >& tet_vertices ) ;
 
+        /*!
+         * @brief Duplicates the surface vertices along the fake boundary
+         * (NO_ID adjacencies but shared vertices) and duplicate the vertices
+         */
+        void duplicate_surface_vertices_along_line(
+            index_t surface_id,
+            index_t line_id ) ;
+        void duplicate_region_vertices_along_surface(
+            index_t region_id,
+            index_t surface_id ) ;
+        /*
+         * @brief Resets the adjacencies for all Surface facets adjacent to the Line
+         * @return The number of disconnection done
+         * @pre All the edges of the Line are edges of at least one facet of the Surface
+         */
+        index_t disconnect_surface_facets_along_line_edges(
+            index_t surface_id,
+            index_t line_id ) ;
+        index_t disconnect_region_cells_along_surface_facets(
+            index_t region_id,
+            index_t surface_id ) ;
+
+        void update_facet_vertex(
+            Surface& surface,
+            const std::vector< index_t >& facets,
+            index_t old_vertex,
+            index_t new_vertex ) ;
+
+        void update_cell_vertex(
+            Region& region,
+            const std::vector< index_t >& cells,
+            index_t old_vertex,
+            index_t new_vertex ) ;
+
     private:
+        GeoModelBuilder2& builder_ ;
         GeoModel& geomodel_ ;
         GeoModelAccess geomodel_access_ ;
     } ;
@@ -1145,9 +1218,10 @@ namespace RINGMesh {
         }
 
     protected:
-        GeoModelBuilderInfo( GeoModel& builder ) ;
+        GeoModelBuilderInfo( GeoModelBuilder2& builder, GeoModel& geomodel ) ;
 
     private:
+        GeoModelBuilder2& builder_ ;
         GeoModel& geomodel_ ;
         GeoModelAccess geomodel_access_ ;
 
@@ -1243,12 +1317,12 @@ namespace RINGMesh {
         }
 
     protected:
-        GeoModelBuilderGeology( GeoModel& builder ) ;
+        GeoModelBuilderGeology( GeoModelBuilder2& builder, GeoModel& geomodel ) ;
 
     private:
+        GeoModelBuilder2& builder_ ;
         GeoModel& geomodel_ ;
         GeoModelAccess geomodel_access_ ;
-
     } ;
 
     class RINGMESH_API GeoModelBuilderCopy {
@@ -1264,7 +1338,45 @@ namespace RINGMesh {
         GeoModelBuilder2& builder_ ;
         GeoModel& geomodel_ ;
         GeoModelAccess geomodel_access_ ;
+    } ;
 
+    class RINGMESH_API GeoModelBuilderFromSurfaces {
+    ringmesh_disable_copy( GeoModelBuilderFromSurfaces ) ;
+        friend class GeoModelBuilder2 ;
+
+    private:
+        GeoModelBuilderFromSurfaces(
+            GeoModelBuilder2& builder,
+            GeoModel& geomodel ) ;
+
+        /*
+         * @brief From a GeoModel in which only Surfaces are defined,
+         * create Corners, Lines and Regions depending on the building flags
+         * @note Valdity is not checked
+         */
+        void build() ;
+
+        /*!
+         * @brief From the Surfaces of the GeoModel, build its Lines and Corners
+         */
+        bool build_lines_and_corners_from_surfaces() ;
+
+        /*!
+         * @brief Build the regions of the GeoModel from the Surfaces
+         * @pre Function build_lines_and_corners_from_surfaces
+         * must have been called before
+         */
+        bool build_brep_regions_from_surfaces() ;
+
+    private:
+        GeoModelBuilder2& builder_ ;
+        GeoModel& geomodel_ ;
+        GeoModelAccess geomodel_access_ ;
+
+        /*! Options to toggle the building of entities from the available entities */
+        GeoModelBuildingFlags options_ ;
+        /*! Internal information */
+        std::vector< GeoModelRegionFromSurfaces* > regions_info_ ;
     } ;
 
     class RINGMESH_API GeoModelBuilder2 {
@@ -1276,20 +1388,10 @@ namespace RINGMesh {
         {
         }
 
-//        const GeoModel& geomodel() const
-//        {
-//            return geomodel_ ;
-//        }
-
-    private:
-//        /*! The geomodel edited
-//         */
-//        GeoModel& geomodel_ ;
-
-//        /*! Parameter to forbid element creation. Crucial to control
-//         *  building of the geomodel and detect errors in find_or_create functions
-//         */
-//        bool create_entity_allowed_ ;
+        /*!
+         * @brief Finish up geomodel building and complete missing information.
+         */
+        void end_geomodel() ;
 
     public:
         GeoModelBuilderTopology topology ;
@@ -1298,6 +1400,10 @@ namespace RINGMesh {
         GeoModelBuilderRemoval removal ;
         GeoModelBuilderCopy copy ;
         GeoModelBuilderInfo info ;
+        GeoModelBuilderFromSurfaces from_surfaces ;
+
+    private:
+        GeoModel& geomodel_ ;
     } ;
 }
 
