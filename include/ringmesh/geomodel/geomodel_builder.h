@@ -405,29 +405,6 @@ namespace RINGMesh {
             index_t surface_id ) ;
     } ;
 
-    /*!
-     * @brief Abstract interface class to load and build GeoModels from files 
-     */
-    class RINGMESH_API GeoModelBuilderFile: public GeoModelBuilder {
-    public:
-        GeoModelBuilderFile( GeoModel& geomodel, const std::string& filename ) ;
-
-        virtual ~GeoModelBuilderFile()
-        {
-        }
-        void build_geomodel()
-        {
-            load_file() ;
-            end_geomodel() ;
-        }
-
-    private:
-        virtual void load_file() = 0 ;
-
-    protected:
-        std::string filename_ ;
-    } ;
-
 }
 
 namespace RINGMesh {
@@ -947,6 +924,16 @@ namespace RINGMesh {
         void initialize_for_removal(
             const std::set< gme_t >& mesh_entities_to_remove )
         {
+            nb_mesh_entity_types_ = EntityTypeManager::nb_mesh_entity_types() ;
+            nb_geological_entity_types_ = geomodel_.nb_geological_entity_types() ;
+            nb_entity_types_ = nb_geological_entity_types_ + nb_mesh_entity_types_ ;
+            nb_removed_mesh_entities_.resize( nb_mesh_entity_types_, 0 ) ;
+            nb_removed_geological_entities_.resize( nb_geological_entity_types_, 0 ) ;
+            fill_entity_type_to_index_map() ;
+            fill_nb_initial_entities() ;
+            initialize_costly_storage() ;
+            fill_nb_children_vector() ;
+
             check_if_entities_are_meshed( mesh_entities_to_remove ) ;
             fill_to_erase_vectors( mesh_entities_to_remove ) ;
             fill_removed_entities_and_mapping() ;
@@ -1936,6 +1923,30 @@ namespace RINGMesh {
 
     private:
         GeoModel& geomodel_ ;
+    } ;
+
+
+    /*!
+     * @brief Abstract interface class to load and build GeoModels from files
+     */
+    class RINGMESH_API GeoModelBuilderFile: public GeoModelBuilder {
+    public:
+        GeoModelBuilderFile( GeoModel& geomodel, const std::string& filename ) ;
+
+        virtual ~GeoModelBuilderFile()
+        {
+        }
+        void build_geomodel()
+        {
+            load_file() ;
+            end_geomodel() ;
+        }
+
+    private:
+        virtual void load_file() = 0 ;
+
+    protected:
+        std::string filename_ ;
     } ;
 }
 
