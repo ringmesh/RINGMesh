@@ -624,6 +624,11 @@ namespace RINGMesh {
             return geomodel_.geomodel_name_ ;
         }
 
+        const EntityTypeManager& entity_type_manager() const
+        {
+            return geomodel_.entity_type_manager_ ;
+        }
+
         EntityTypeManager& modifiable_entity_type_manager()
         {
             return geomodel_.entity_type_manager_ ;
