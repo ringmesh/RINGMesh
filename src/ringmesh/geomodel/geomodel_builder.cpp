@@ -2885,6 +2885,147 @@ namespace RINGMesh {
         }
     }
 
+    index_t GeoModelBuilderGeometry::create_surface_facet(
+        index_t surface_id,
+        const std::vector< index_t >& vertex_indices )
+    {
+        GeoModelMeshEntity& E = geomodel_access_.modifiable_mesh_entity(
+            gme_t( Surface::type_name_static(), surface_id ) ) ;
+        Surface& surface = dynamic_cast< Surface& >( E ) ;
+        Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder(
+            surface.low_level_mesh_storage() ) ;
+        return builder->create_facet_polygon( vertex_indices ) ;
+    }
+
+    /*!
+     * @brief Creates new cells in the mesh
+     * @param[in] region_id Entity index
+     * @param[in] type Type of cell
+     * @param[in] nb_cells Number of cells to creates
+     * @return the index of the first created cell
+     */
+    index_t GeoModelBuilderGeometry::create_region_cells(
+        index_t region_id,
+        GEO::MeshCellType type,
+        index_t nb_cells )
+    {
+        GeoModelMeshEntity& E = geomodel_access_.modifiable_mesh_entity(
+            gme_t( Region::type_name_static(), region_id ) ) ;
+        Region& region = dynamic_cast< Region& >( E ) ;
+        Mesh3DBuilder_var builder = Mesh3DBuilder::create_builder(
+            region.low_level_mesh_storage() ) ;
+        return builder->create_cells( nb_cells, type ) ;
+    }
+
+    index_t GeoModelBuilderGeometry::create_region_cell(
+        index_t region_id,
+        GEO::MeshCellType type,
+        const std::vector< index_t >& vertex_indices )
+    {
+        index_t cell_id = create_region_cells( region_id, type, 1 ) ;
+        set_region_element_geometry( region_id, cell_id, vertex_indices ) ;
+        return cell_id ;
+    }
+
+    void GeoModelBuilderGeometry::delete_mesh_entity_mesh( const gme_t& E_id )
+    {
+        GeoModelMeshEntityAccess gmme_access(
+            geomodel_access_.modifiable_mesh_entity( E_id ) ) ;
+        MeshBase& M = *gmme_access.modifiable_mesh() ;
+        MeshBaseBuilder_var builder = MeshBaseBuilder::create_builder( M ) ;
+        builder->clear( true, false ) ;
+    }
+
+    void GeoModelBuilderGeometry::delete_mesh_entity_isolated_vertices(
+        const gme_t& E_id )
+    {
+        if( geomodel_access_.entity_type_manager().is_line( E_id.type ) ) {
+            Line& line =
+                dynamic_cast< Line& >( geomodel_access_.modifiable_mesh_entity(
+                    E_id ) ) ;
+            Mesh1DBuilder_var builder = Mesh1DBuilder::create_builder(
+                line.low_level_mesh_storage() ) ;
+            builder->remove_isolated_vertices() ;
+        } else if( geomodel_access_.entity_type_manager().is_surface( E_id.type ) ) {
+            Surface& surface =
+                dynamic_cast< Surface& >( geomodel_access_.modifiable_mesh_entity(
+                    E_id ) ) ;
+            Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder(
+                surface.low_level_mesh_storage() ) ;
+            builder->remove_isolated_vertices() ;
+        } else if( geomodel_access_.entity_type_manager().is_region( E_id.type ) ) {
+            Region& region =
+                dynamic_cast< Region& >( geomodel_access_.modifiable_mesh_entity(
+                    E_id ) ) ;
+            Mesh3DBuilder_var builder = Mesh3DBuilder::create_builder(
+                region.low_level_mesh_storage() ) ;
+            builder->remove_isolated_vertices() ;
+        } else if( geomodel_access_.entity_type_manager().is_corner( E_id.type ) ) {
+            Corner& corner =
+                dynamic_cast< Corner& >( geomodel_access_.modifiable_mesh_entity(
+                    E_id ) ) ;
+            Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder(
+                corner.low_level_mesh_storage() ) ;
+            builder->remove_isolated_vertices() ;
+        } else {
+            ringmesh_assert_not_reached ;
+        }
+    }
+
+    void GeoModelBuilderGeometry::delete_mesh_entity_vertices(
+        const gme_t& E_id,
+        const std::vector< bool >& to_delete )
+    {
+        GeoModelMeshEntityAccess gmme_access(
+            geomodel_access_.modifiable_mesh_entity( E_id ) ) ;
+        MeshBase& M = *gmme_access.modifiable_mesh() ;
+        MeshBaseBuilder_var builder = MeshBaseBuilder::create_builder( M ) ;
+        builder->delete_vertices( to_delete ) ;
+    }
+
+    void GeoModelBuilderGeometry::delete_corner_vertex( index_t corner_id )
+    {
+        gme_t corner( Corner::type_name_static(), corner_id ) ;
+        std::vector< bool > to_delete ;
+        to_delete.push_back( true ) ;
+        delete_mesh_entity_vertices( corner, to_delete ) ;
+    }
+    void GeoModelBuilderGeometry::delete_line_edges(
+        index_t line_id,
+        const std::vector< bool >& to_delete,
+        bool remove_isolated_vertices )
+    {
+        Line& line = dynamic_cast< Line& >( geomodel_access_.modifiable_mesh_entity(
+            gme_t( Line::type_name_static(), line_id ) ) ) ;
+        Mesh1DBuilder_var builder = Mesh1DBuilder::create_builder(
+            line.low_level_mesh_storage() ) ;
+        builder->delete_edges( to_delete, remove_isolated_vertices ) ;
+    }
+    void GeoModelBuilderGeometry::delete_surface_facets(
+        index_t surface_id,
+        const std::vector< bool >& to_delete,
+        bool remove_isolated_vertices )
+    {
+        Surface& surface =
+            dynamic_cast< Surface& >( geomodel_access_.modifiable_mesh_entity(
+                gme_t( Surface::type_name_static(), surface_id ) ) ) ;
+        Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder(
+            surface.low_level_mesh_storage() ) ;
+        builder->delete_facets( to_delete, remove_isolated_vertices ) ;
+    }
+    void GeoModelBuilderGeometry::delete_region_cells(
+        index_t region_id,
+        const std::vector< bool >& to_delete,
+        bool remove_isolated_vertices )
+    {
+        Region& region =
+            dynamic_cast< Region& >( geomodel_access_.modifiable_mesh_entity(
+                gme_t( Region::type_name_static(), region_id ) ) ) ;
+        Mesh3DBuilder_var builder = Mesh3DBuilder::create_builder(
+            region.low_level_mesh_storage() ) ;
+        builder->delete_cells( to_delete, remove_isolated_vertices ) ;
+    }
+
     /*!
      * @brief Computes and sets the adjacencies between the facets
      * @details The adjacent facet is given for each vertex of each facet for the edge
