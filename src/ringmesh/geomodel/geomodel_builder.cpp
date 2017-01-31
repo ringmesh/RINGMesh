@@ -2477,10 +2477,12 @@ namespace RINGMesh {
         return true ;
     }
 
-    index_t GeoModelBuilderTopology::create_geological_entity_type( const EntityType& type )
+    index_t GeoModelBuilderTopology::create_geological_entity_type(
+        const EntityType& type )
     {
         ringmesh_assert( GeoModelGeologicalEntityFactory::has_creator( type ) ) ;
-        EntityTypeManager& parentage = geomodel_access_.modifiable_entity_type_manager() ;
+        EntityTypeManager& parentage =
+            geomodel_access_.modifiable_entity_type_manager() ;
 
         parentage.geological_entity_types_.push_back( type ) ;
         geomodel_access_.modifiable_geological_entities().push_back(
@@ -2489,7 +2491,6 @@ namespace RINGMesh {
             type, geomodel_ ) ;
 
         const EntityType child_type = E->child_type_name() ;
-
 
         parentage.register_relationship( type, child_type ) ;
 
@@ -2512,6 +2513,85 @@ namespace RINGMesh {
         copy_meshes( geomodel, Line::type_name_static() ) ;
         copy_meshes( geomodel, Surface::type_name_static() ) ;
         copy_meshes( geomodel, Region::type_name_static() ) ;
+    }
+
+    /*!
+     * @brief Sets the geometrical position of a vertex
+     * @param[in] t Entity index
+     * @param[in] v Index of the vertex to modify
+     * @param[in] point New coordinates
+     * @param[in] update If true, all the vertices sharing the same geometrical position
+     *               in the GeoModel have their position updated, if false they
+     *               are not.
+     * @warning Be careful with this update parameter, it is a very nice source of nasty bugs
+     */
+    void GeoModelBuilderGeometry::set_mesh_entity_vertex(
+        const gme_t& t,
+        index_t v,
+        const vec3& point,
+        bool update )
+    {
+        GeoModelMeshEntity& E = geomodel_access_.modifiable_mesh_entity( t ) ;
+        GeoModelMeshVertices& geomodel_vertices = geomodel_.mesh.vertices ;
+        ringmesh_assert( v < E.nb_vertices() ) ;
+        if( update ) {
+            geomodel_vertices.update_point(
+                geomodel_vertices.geomodel_vertex_id( E.gme_id(), v ), point ) ;
+        } else {
+            GeoModelMeshEntityAccess gmme_access( E ) ;
+            MeshBaseBuilder_var builder = MeshBaseBuilder::create_builder(
+                *gmme_access.modifiable_mesh() ) ;
+            builder->set_vertex( v, point ) ;
+        }
+    }
+
+    /*!
+     * @brief Sets the geometrical position of a vertex from a geomodel vertex
+     * @param[in] entity_id Entity index
+     * @param[in] v Index of the vertex to modify
+     * @param[in] geomodel_vertex Index in GeoModelMeshVertices of the vertex giving
+     *                     the new position
+     */
+    void GeoModelBuilderGeometry::set_mesh_entity_vertex(
+        const gme_t& entity_id,
+        index_t v,
+        index_t geomodel_vertex )
+    {
+        GeoModelMeshVertices& geomodel_vertices = geomodel_.mesh.vertices ;
+        set_mesh_entity_vertex( entity_id, v,
+            geomodel_vertices.vertex( geomodel_vertex ), false ) ;
+
+        ringmesh_assert( v < geomodel_.mesh_entity( entity_id ).nb_vertices() ) ;
+        geomodel_vertices.update_vertex_mapping( entity_id, v, geomodel_vertex ) ;
+    }
+
+    /*!
+     * @brief Adds vertices to the mesh
+     * @details No update of the geomodel vertices is done
+     * @param[in] id Entity index
+     * @param[in] points Geometric positions of the vertices to add
+     * @param[in] clear If true the mesh is cleared, keeping its attributes
+     */
+    void GeoModelBuilderGeometry::set_mesh_entity_vertices(
+        const gme_t& id,
+        const std::vector< vec3 >& points,
+        bool clear )
+    {
+        GeoModelMeshEntity& E = geomodel_access_.modifiable_mesh_entity( id ) ;
+        GeoModelMeshEntityAccess gmme_access( E ) ;
+        MeshBaseBuilder_var builder = MeshBaseBuilder::create_builder(
+            *gmme_access.modifiable_mesh() ) ;
+        // Clear the mesh, but keep the attributes and the space
+        if( clear ) {
+            builder->clear( true, true ) ;
+        }
+        if( !points.empty() ) {
+            index_t nb_points = static_cast< index_t >( points.size() ) ;
+            index_t start = builder->create_vertices( nb_points ) ;
+            for( index_t v = 0; v < nb_points; v++ ) {
+                builder->set_vertex( start + v, points[v] ) ;
+            }
+        }
     }
 
     void GeoModelBuilderGeometry::copy_meshes(
