@@ -2410,6 +2410,92 @@ namespace RINGMesh {
     {
     }
 
+    void GeoModelBuilderTopology::copy_topology( const GeoModel& from )
+    {
+
+        copy_mesh_entity_topology< Corner >( from ) ;
+        copy_mesh_entity_topology< Line >( from ) ;
+        copy_mesh_entity_topology< Surface >( from ) ;
+        copy_mesh_entity_topology< Region >( from ) ;
+
+        for( index_t t = 0; t < from.nb_geological_entity_types(); t++ ) {
+            copy_geological_entity_topology( from,
+                from.geological_entity_type( t ) ) ;
+        }
+
+        UniverseAccess universe_access( geomodel_access_.modifiable_universe() ) ;
+        universe_access.copy( from.universe() ) ;
+        geomodel_access_.modifiable_epsilon() = from.epsilon() ;
+
+    }
+
+    template< typename ENTITY >
+    void GeoModelBuilderTopology::copy_mesh_entity_topology( const GeoModel& from )
+    {
+        const EntityType& type = ENTITY::type_name_static() ;
+        create_mesh_entities< ENTITY >( from.nb_mesh_entities( type ) ) ;
+
+        RINGMESH_PARALLEL_LOOP
+        for( index_t e = 0; e < geomodel_.nb_mesh_entities( type ); ++e ) {
+            gme_t id( type, e ) ;
+            GeoModelMeshEntityAccess gmme_access(
+                geomodel_access_.modifiable_mesh_entity( id ) ) ;
+            gmme_access.copy( from.mesh_entity( id ) ) ;
+        }
+    }
+
+    void GeoModelBuilderTopology::copy_geological_entity_topology(
+        const GeoModel& from,
+        const EntityType& type )
+    {
+        create_geological_entities( type, from.nb_geological_entities( type ) ) ;
+
+        RINGMESH_PARALLEL_LOOP
+        for( index_t e = 0; e < geomodel_.nb_geological_entities( type ); ++e ) {
+            gme_t id( type, e ) ;
+            GeoModelGeologicalEntityAccess gmge_access(
+                geomodel_access_.modifiable_geological_entity( id ) ) ;
+            gmge_access.copy( from.geological_entity( id ) ) ;
+        }
+    }
+
+    bool GeoModelBuilderTopology::create_geological_entities(
+        const EntityType& type,
+        index_t nb_additional_entities )
+    {
+        find_or_create_geological_entity_type( type ) ;
+        std::vector< GeoModelGeologicalEntity* >& store =
+            geomodel_access_.modifiable_geological_entities( type ) ;
+        index_t old_size = static_cast< index_t >( store.size() ) ;
+        index_t new_size = old_size + nb_additional_entities ;
+        store.resize( new_size, nil ) ;
+        for( index_t i = old_size; i < new_size; i++ ) {
+            ringmesh_assert( store[i] == nil ) ;
+            store[i] = GeoModelGeologicalEntityAccess::create_geological_entity(
+                type, geomodel_, i ) ;
+        }
+        return true ;
+    }
+
+    index_t GeoModelBuilderTopology::create_geological_entity_type( const EntityType& type )
+    {
+        ringmesh_assert( GeoModelGeologicalEntityFactory::has_creator( type ) ) ;
+        EntityTypeManager& parentage = geomodel_access_.modifiable_entity_type_manager() ;
+
+        parentage.geological_entity_types_.push_back( type ) ;
+        geomodel_access_.modifiable_geological_entities().push_back(
+            std::vector< GeoModelGeologicalEntity* >() ) ;
+        GeoModelGeologicalEntity* E = GeoModelGeologicalEntityFactory::create_object(
+            type, geomodel_ ) ;
+
+        const EntityType child_type = E->child_type_name() ;
+
+
+        parentage.register_relationship( type, child_type ) ;
+
+        return geomodel_.entity_type_manager().nb_geological_entity_types() - 1 ;
+    }
+
     GeoModelBuilderRemoval::GeoModelBuilderRemoval( GeoModel& geomodel )
         : geomodel_( geomodel ), geomodel_access_( geomodel )
     {
@@ -2420,14 +2506,61 @@ namespace RINGMesh {
     {
     }
 
+    void GeoModelBuilderGeometry::copy_meshes( const GeoModel& geomodel )
+    {
+        copy_meshes( geomodel, Corner::type_name_static() ) ;
+        copy_meshes( geomodel, Line::type_name_static() ) ;
+        copy_meshes( geomodel, Surface::type_name_static() ) ;
+        copy_meshes( geomodel, Region::type_name_static() ) ;
+    }
+
+    void GeoModelBuilderGeometry::copy_meshes(
+        const GeoModel& from,
+        const std::string& entity_type )
+    {
+        for( index_t i = 0; i < geomodel_.nb_mesh_entities( entity_type ); ++i ) {
+            copy_mesh( from, gme_t( entity_type, i ) ) ;
+        }
+    }
+
+    void GeoModelBuilderGeometry::copy_mesh(
+        const GeoModel& from,
+        const gme_t& mesh_entity )
+    {
+//        const GeoModelMeshEntity& from_E = from.mesh_entity( mesh_entity ) ;
+//        GeoModelAccess from_const_acess( from ) ;
+        const GeoModelMeshEntityConstAccess from_E_const_access(
+            from.mesh_entity( mesh_entity ) ) ;
+        assign_mesh_to_entity( *from_E_const_access.mesh(), mesh_entity ) ;
+    }
+
+    void GeoModelBuilderGeometry::assign_mesh_to_entity(
+        const MeshBase& mesh,
+        const gme_t& to )
+    {
+        GeoModelMeshEntity& E = geomodel_access_.modifiable_mesh_entity( to ) ;
+        GeoModelMeshEntityAccess gmme_access( E ) ;
+        MeshBaseBuilder_var builder = MeshBaseBuilder::create_builder(
+            *gmme_access.modifiable_mesh() ) ;
+        builder->copy( mesh, true ) ;
+    }
+
     GeoModelBuilderGeology::GeoModelBuilderGeology( GeoModel& geomodel )
         : geomodel_( geomodel ), geomodel_access_( geomodel )
     {
     }
 
-    GeoModelBuilderCopy::GeoModelBuilderCopy( GeoModel& geomodel )
-        : geomodel_( geomodel ), geomodel_access_( geomodel )
+    GeoModelBuilderCopy::GeoModelBuilderCopy(
+        GeoModelBuilder2& builder,
+        GeoModel& geomodel )
+        : builder_( builder ), geomodel_( geomodel ), geomodel_access_( geomodel )
     {
+    }
+
+    void GeoModelBuilderCopy::copy_geomodel( const GeoModel& from )
+    {
+        builder_.topology.copy_topology( from ) ;
+        builder_.geometry.copy_meshes( from ) ;
     }
 
     GeoModelBuilderInfo::GeoModelBuilderInfo( GeoModel& geomodel )
@@ -2442,7 +2575,7 @@ namespace RINGMesh {
             geometry( geomodel ),
             geology( geomodel ),
             removal( geomodel ),
-            copy( geomodel ),
+            copy( *this, geomodel ),
             info( geomodel )
     {
     }
