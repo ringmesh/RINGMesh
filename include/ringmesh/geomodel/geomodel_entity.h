@@ -223,12 +223,21 @@ namespace RINGMesh {
         }
 
     protected:
+        //@todo not used if editor is removed -> to delete
         void copy( const GeoModelEntity& from )
         {
             GME::copy( from ) ;
             const Universe& universe_from = dynamic_cast< const Universe& >( from ) ;
             boundary_surfaces_ = universe_from.boundary_surfaces_ ;
             boundary_surface_sides_ = universe_from.boundary_surface_sides_ ;
+        }
+
+        void copy( const Universe& from )
+        {
+            GME::copy( from ) ;
+//            const Universe& universe_from = dynamic_cast< const Universe& >( from ) ;
+            boundary_surfaces_ = from.boundary_surfaces_ ;
+            boundary_surface_sides_ = from.boundary_surface_sides_ ;
         }
 
         virtual bool is_index_valid() const

@@ -65,6 +65,7 @@ namespace RINGMesh {
         friend class GeoModelBuilder ;
         friend class GeoModelRepair ;
         friend class GeoModelMeshEntityAccess ;
+        friend class GeoModelMeshEntityConstAccess ;
 
     public:
         virtual ~GeoModelMeshEntity() ;
@@ -334,6 +335,8 @@ namespace RINGMesh {
     public:
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
+        friend class GeoModelMeshEntityAccess ;
+        friend class GeoModelMeshEntityConstAccess ;
 
         virtual ~Corner()
         {
@@ -454,6 +457,7 @@ namespace RINGMesh {
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
         friend class GeoModelRepair ;
+        friend class GeoModelMeshEntityAccess ;
 
         virtual ~Line()
         {
@@ -592,6 +596,7 @@ namespace RINGMesh {
         friend class GeoModelEditor ;
         friend class GeoModelBuilder ;
         friend class GeoModelRepair ;
+        friend class GeoModelMeshEntityAccess ;
 
         virtual ~Surface()
         {
