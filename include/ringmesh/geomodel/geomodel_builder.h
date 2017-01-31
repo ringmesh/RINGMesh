@@ -1872,17 +1872,18 @@ namespace RINGMesh {
     ringmesh_disable_copy( GeoModelBuilderFromSurfaces ) ;
         friend class GeoModelBuilder2 ;
 
-    private:
-        GeoModelBuilderFromSurfaces(
-            GeoModelBuilder2& builder,
-            GeoModel& geomodel ) ;
-
+    public:
         /*
          * @brief From a GeoModel in which only Surfaces are defined,
          * create Corners, Lines and Regions depending on the building flags
          * @note Valdity is not checked
          */
         void build() ;
+
+    private:
+        GeoModelBuilderFromSurfaces(
+            GeoModelBuilder2& builder,
+            GeoModel& geomodel ) ;
 
         /*!
          * @brief From the Surfaces of the GeoModel, build its Lines and Corners
@@ -1896,13 +1897,16 @@ namespace RINGMesh {
          */
         bool build_brep_regions_from_surfaces() ;
 
+    public:
+        /*! Options to toggle the building of entities from the available entities */
+        GeoModelBuildingFlags options_ ;
+
     private:
         GeoModelBuilder2& builder_ ;
         GeoModel& geomodel_ ;
         GeoModelAccess geomodel_access_ ;
 
-        /*! Options to toggle the building of entities from the available entities */
-        GeoModelBuildingFlags options_ ;
+
         /*! Internal information */
         std::vector< GeoModelRegionFromSurfaces* > regions_info_ ;
     } ;

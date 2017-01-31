@@ -2592,10 +2592,10 @@ namespace RINGMesh {
         GeoModelBuilder2& builder,
         GeoModel& geomodel )
         :
+            options_(),
             builder_( builder ),
             geomodel_( geomodel ),
-            geomodel_access_( geomodel ),
-            options_()
+            geomodel_access_( geomodel )
     {
     }
 
@@ -2958,7 +2958,8 @@ namespace RINGMesh {
                 dynamic_cast< GeoModelMeshEntity& >( E ) ) ;
             gmme_access.modifiable_index() = new_index_in_geomodel ;
             return ;
-        } else if( geomodel_.entity_type_manager().is_geological_entity_type( E.type_name() ) ) {
+        } else if( geomodel_.entity_type_manager().is_geological_entity_type(
+            E.type_name() ) ) {
             GeoModelGeologicalEntityAccess gmge_access(
                 dynamic_cast< GeoModelGeologicalEntity& >( E ) ) ;
             gmge_access.modifiable_index() = new_index_in_geomodel ;
@@ -3003,12 +3004,12 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelBuilderRemoval::update_mesh_entity_in_boundary( GeoModelMeshEntity& E )
+    void GeoModelBuilderRemoval::update_mesh_entity_in_boundary(
+        GeoModelMeshEntity& E )
     {
         const EntityType& in_boundary_type = EntityTypeManager::in_boundary_type(
             E.entity_type() ) ;
-        bool valid_type = EntityTypeManager::is_defined_type(
-            in_boundary_type ) ;
+        bool valid_type = EntityTypeManager::is_defined_type( in_boundary_type ) ;
         if( !valid_type ) {
             return ;
         }
@@ -3016,8 +3017,7 @@ namespace RINGMesh {
             in_boundary_type ) ;
         for( index_t i = 0; i < E.nb_in_boundary(); ++i ) {
             index_t old_id = E.in_boundary_gme( i ).index ;
-            index_t new_id =
-                old_2_new_mesh_entity_[in_boundary_type_index][old_id] ;
+            index_t new_id = old_2_new_mesh_entity_[in_boundary_type_index][old_id] ;
             builder_.topology.set_mesh_entity_in_boundary( E.gme_id(), i, new_id ) ;
         }
     }
@@ -3029,20 +3029,21 @@ namespace RINGMesh {
                 parent_type ) ;
 
             index_t old_id = E.parent_gme( p ).index ;
-            index_t new_id =
-                old_2_new_geological_entity_[parent_type_index][old_id] ;
+            index_t new_id = old_2_new_geological_entity_[parent_type_index][old_id] ;
             builder_.geology.set_mesh_entity_parent( E.gme_id(), p,
                 gme_t( parent_type, new_id ) ) ;
         }
     }
-    void GeoModelBuilderRemoval::update_geological_entity_children( GeoModelGeologicalEntity& E )
+    void GeoModelBuilderRemoval::update_geological_entity_children(
+        GeoModelGeologicalEntity& E )
     {
         if( E.nb_children() > 0 ) {
             index_t child_type = children_type_index( E.entity_type() ) ;
             for( index_t i = 0; i < E.nb_children(); ++i ) {
                 index_t old_id = E.child_gme( i ).index ;
                 index_t new_id = old_2_new_mesh_entity_[child_type][old_id] ;
-                builder_.geology.set_geological_entity_child( E.gme_id(), i, new_id ) ;
+                builder_.geology.set_geological_entity_child( E.gme_id(), i,
+                    new_id ) ;
             }
         }
     }
