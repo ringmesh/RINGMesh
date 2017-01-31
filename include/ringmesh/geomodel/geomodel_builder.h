@@ -905,6 +905,188 @@ namespace RINGMesh {
          */
         void copy_meshes( const GeoModel& from ) ;
 
+        /*!
+         * \name Set entity geometry from geometrical positions
+         * @{
+         */
+        /*!
+         * @brief Sets a vertex coordinates of a GeoModelMeshEntity
+         * @param[in] entity_id the entity to edit
+         * @param[in] v the index of the vertex in the entity
+         * @param[in] point the coordinates to set
+         * @param[in] update if true, updates all the colocated vertices
+         * to the new coordinates (ie if edit a Corner coordinates, it will updates
+         * its Lines, Surfaces...)
+         */
+        void set_mesh_entity_vertex(
+            const gme_t& entity_id,
+            index_t v,
+            const vec3& point,
+            bool update ) ;
+
+        void set_mesh_entity_vertices(
+            const gme_t& entity_id,
+            const std::vector< vec3 >& points,
+            bool clear ) ;
+
+        /*!
+         * @brief Sets the coordinates of a given existing Corner
+         * @param[in] corner_id the index of the corner in the GeoModel
+         * @param[in] point the coordinates to set
+         */
+        void set_corner( index_t corner_id, const vec3& point ) ;
+        /*!
+         * @brief Sets the mesh of a given existing Line
+         * @param[in] line_id the index of the line in the GeoModel
+         * @param[in] vertices the coordinates to set
+         * @warning the vertices should be ordered from the first boundary
+         * corner to the second one
+         */
+        void set_line( index_t line_id, const std::vector< vec3 >& vertices ) ;
+        /*!
+         * @brief Sets the mesh of a given existing Surface
+         * @param[in] surface_id the index of the surface in the GeoModel
+         * @param[in] surface_vertices the coordinates to set
+         * @param[in] surface_facets the vertex indices of the facets
+         * corresponding to \p surface_vertices
+         * @param[in] surface_facet_ptr the index of each new facet start in \p surface_facets
+         */
+        void set_surface_geometry(
+            index_t surface_id,
+            const std::vector< vec3 >& surface_vertices,
+            const std::vector< index_t >& surface_facets,
+            const std::vector< index_t >& surface_facet_ptr ) ;
+        /*!
+         * @brief Sets the tetrahedral mesh of a given existing Region
+         * @param[in] region_id the index of the region in the GeoModel
+         * @param[in] points the coordinates to set
+         * @param[in] tetras the vertex indices of the cells (to read 4 by 4)
+         * corresponding to \p points
+         */
+        void set_region_geometry(
+            index_t region_id,
+            const std::vector< vec3 >& points,
+            const std::vector< index_t >& tetras ) ;
+
+        /*! @}
+         * \name Set entity geometry using global GeoModel vertices
+         * @{
+         */
+        void set_mesh_entity_vertex(
+            const gme_t& id,
+            index_t v,
+            index_t geomodel_vertex ) ;
+
+        void set_mesh_entity_vertices(
+            const gme_t& entity_id,
+            const std::vector< index_t >& geomodel_vertices,
+            bool clear ) ;
+
+        void set_corner( index_t corner_id, index_t unique_vertex ) ;
+
+        void set_line( index_t id, const std::vector< index_t >& unique_vertices ) ;
+
+        void set_surface_geometry(
+            index_t surface_id,
+            const std::vector< index_t >& surface_vertices,
+            const std::vector< index_t >& surface_facets,
+            const std::vector< index_t >& surface_facet_ptr ) ;
+
+        void set_surface_geometry(
+            index_t surface_id,
+            const std::vector< index_t >& corners,
+            const std::vector< index_t >& facet_ptr ) ;
+
+        void set_surface_geometry(
+            index_t surface_id,
+            const std::vector< index_t >& triangle_corners ) ;
+
+        void set_surface_geometry_with_adjacencies(
+            index_t surface_id,
+            const std::vector< index_t >& triangle_corners,
+            const std::vector< index_t >& adjacent_triangles ) ;
+
+        void set_surface_element_geometry(
+            index_t surface_id,
+            index_t facet_id,
+            const std::vector< index_t >& corners ) ;
+
+        void set_surface_element_adjacency(
+            index_t surface_id,
+            index_t facet_id,
+            const std::vector< index_t >& adjacents ) ;
+
+        void set_region_geometry(
+            index_t region_id,
+            const std::vector< index_t >& tet_corners ) ;
+
+        void set_region_element_geometry(
+            index_t region_id,
+            index_t cell_id,
+            const std::vector< index_t >& corners ) ;
+
+        /*! @}
+         * \name Create entity element
+         * @{
+         */
+
+        index_t create_mesh_entity_vertices(
+            const gme_t& entity_id,
+            index_t nb_vertices ) ;
+
+        index_t create_surface_facet(
+            index_t surface_id,
+            const std::vector< index_t >& vertex_indices ) ;
+
+        index_t create_region_cell(
+            index_t region_id,
+            GEO::MeshCellType type,
+            const std::vector< index_t >& vertex_indices ) ;
+
+        index_t create_region_cells(
+            index_t region_id,
+            GEO::MeshCellType type,
+            index_t nb_cells ) ;
+
+        /*! @}
+         * \name Delete mesh element entities
+         * @{
+         */
+
+        void delete_mesh_entity_mesh( const gme_t& E_id ) ;
+        void delete_mesh_entity_isolated_vertices( const gme_t& E_id ) ;
+        void delete_mesh_entity_vertices(
+            const gme_t& E_id,
+            const std::vector< bool >& to_delete ) ;
+        void delete_corner_vertex( index_t corner_id ) ;
+        void delete_line_edges(
+            index_t line_id,
+            const std::vector< bool >& to_delete,
+            bool remove_isolated_vertices ) ;
+        void delete_surface_facets(
+            index_t surface_id,
+            const std::vector< bool >& to_delete,
+            bool remove_isolated_vertices ) ;
+        void delete_region_cells(
+            index_t region_id,
+            const std::vector< bool >& to_delete,
+            bool remove_isolated_vertices ) ;
+
+        /*! @}
+         * \name Misc
+         * @{
+         */
+
+        void compute_surface_adjacencies(
+            index_t surface_id,
+            bool recompute_adjacency = true ) ;
+        void compute_region_adjacencies(
+            index_t region_id,
+            bool recompute_adjacency = true ) ;
+        void triangulate_surface(
+            const RINGMesh::Surface& surface_in,
+            index_t surface_out ) ;
+
     protected:
         GeoModelBuilderGeometry( GeoModel& builder ) ;
 
