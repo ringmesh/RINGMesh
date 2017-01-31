@@ -2594,6 +2594,354 @@ namespace RINGMesh {
         }
     }
 
+    /*!
+     * @brief Creates new vertices to the mesh
+     * @param[in] id Entity index
+     * @param[in] nb_vertices Number of vertices to create
+     * @return the first vertex index created
+     */
+    index_t GeoModelBuilderGeometry::create_mesh_entity_vertices(
+        const gme_t& id,
+        index_t nb_vertices )
+    {
+        GeoModelMeshEntity& E = geomodel_access_.modifiable_mesh_entity( id ) ;
+        GeoModelMeshEntityAccess gmme_access( E ) ;
+        MeshBaseBuilder_var builder = MeshBaseBuilder::create_builder(
+            *gmme_access.modifiable_mesh() ) ;
+        return builder->create_vertices( nb_vertices ) ;
+    }
+
+    /*!
+     * @brief Adds vertices to the mesh
+     * @details No update of the geomodel vertices is done
+     *
+     * @param[in] id Entity index
+     * @param[in] geomodel_vertices Geometric positions of the vertices to add
+     * @param[in] clear If true the mesh if cleared, keeping its attributes
+     */
+    void GeoModelBuilderGeometry::set_mesh_entity_vertices(
+        const gme_t& entity_id,
+        const std::vector< index_t >& geomodel_vertices,
+        bool clear )
+    {
+        GeoModelMeshEntity& E = geomodel_access_.modifiable_mesh_entity(
+            entity_id ) ;
+        GeoModelMeshEntityAccess gmme_access( E ) ;
+        MeshBaseBuilder_var builder = MeshBaseBuilder::create_builder(
+            *gmme_access.modifiable_mesh() ) ;
+        // Clear the mesh, but keep the attributes and the space
+        if( clear ) {
+            builder->clear( true, true ) ;
+        }
+        index_t nb_model_vertices =
+            static_cast< index_t >( geomodel_vertices.size() ) ;
+        index_t start = builder->create_vertices( nb_model_vertices ) ;
+        for( index_t v = 0; v < nb_model_vertices; v++ ) {
+            set_mesh_entity_vertex( entity_id, start + v, geomodel_vertices[v] ) ;
+        }
+    }
+
+    /*!
+     * @brief Sets the geometric location of a Corner
+     *
+     * @param[in] corner_id Index of the corner
+     * @param[in] point Coordinates of the vertex
+     */
+    void GeoModelBuilderGeometry::set_corner( index_t corner_id, const vec3& point )
+    {
+        set_mesh_entity_vertex( gme_t( Corner::type_name_static(), corner_id ), 0,
+            point, false ) ;
+    }
+
+    /*!
+     * @brief Sets one Line points
+     *
+     * @param[in] line_id Line index
+     * @param[in] vertices Coordinates of the vertices on the line
+     */
+    void GeoModelBuilderGeometry::set_line(
+        index_t line_id,
+        const std::vector< vec3 >& vertices )
+    {
+        set_mesh_entity_vertices( gme_t( Line::type_name_static(), line_id ),
+            vertices, true ) ;
+
+        Line& line = dynamic_cast< Line& >( geomodel_access_.modifiable_mesh_entity(
+            gme_t( Line::type_name_static(), line_id ) ) ) ;
+        Mesh1DBuilder_var builder = Mesh1DBuilder::create_builder(
+            line.low_level_mesh_storage() ) ;
+        for( index_t e = 1; e < line.nb_vertices(); e++ ) {
+            builder->create_edge( e - 1, e ) ;
+        }
+    }
+
+    /*!
+     * @brief Sets the points and facets for a surface
+     * @details If facet_adjacencies are not given they are computed.
+     *
+     * @param[in] surface_id Index of the surface
+     * @param[in] points Coordinates of the vertices
+     * @param[in] facets Indices in the vertices vector to build facets
+     * @param[in] facet_ptr Pointer to the beginning of a facet in facets
+     */
+    void GeoModelBuilderGeometry::set_surface_geometry(
+        index_t surface_id,
+        const std::vector< vec3 >& points,
+        const std::vector< index_t >& facets,
+        const std::vector< index_t >& facet_ptr )
+    {
+        set_mesh_entity_vertices( gme_t( Surface::type_name_static(), surface_id ),
+            points, true ) ;
+        assign_surface_mesh_facets( surface_id, facets, facet_ptr ) ;
+    }
+
+    /*!
+     * @brief Set the points and tetras for a region
+     *
+     * @param[in] region_id Index of the regions
+     * @param[in] points Coordinates of the vertices
+     * @param[in] tetras Indices in the vertices vector to build tetras
+     */
+    void GeoModelBuilderGeometry::set_region_geometry(
+        index_t region_id,
+        const std::vector< vec3 >& points,
+        const std::vector< index_t >& tetras )
+    {
+        set_mesh_entity_vertices( gme_t( Region::type_name_static(), region_id ),
+            points, true ) ;
+        assign_region_tet_mesh( region_id, tetras ) ;
+    }
+
+    /*!
+     * @brief Sets the vertex for a Corner. Store the info in the geomodel vertices
+     *
+     * @param[in] corner_id Index of the corner
+     * @param[in] unique_vertex Index of the vertex in the geomodel
+     */
+    void GeoModelBuilderGeometry::set_corner(
+        index_t corner_id,
+        index_t geomodel_vertex_id )
+    {
+        set_mesh_entity_vertex( gme_t( Corner::type_name_static(), corner_id ), 0,
+            geomodel_vertex_id ) ;
+    }
+
+    /*!
+     * @brief Sets one Line vertices. Store the info in the geomodel vertices
+     *
+     * @param[in] id Line index
+     * @param[in] unique_vertices Indices in the geomodel of the unique vertices with which to build the Line
+     */
+    void GeoModelBuilderGeometry::set_line(
+        index_t line_id,
+        const std::vector< index_t >& unique_vertices )
+    {
+        bool clear_vertices = false ;
+        GeoModelMeshEntity& E = geomodel_access_.modifiable_mesh_entity(
+            gme_t( Line::type_name_static(), line_id ) ) ;
+
+        ringmesh_assert( E.nb_vertices() == 0 ) ; // If there are already some vertices
+        // we are doomed because they are not removed
+        /// @todo Do this test for all others set_something
+        set_mesh_entity_vertices( E.gme_id(), unique_vertices, clear_vertices ) ;
+
+        Line& line = dynamic_cast< Line& >( E ) ;
+        Mesh1DBuilder_var builder = Mesh1DBuilder::create_builder(
+            line.low_level_mesh_storage() ) ;
+        for( index_t e = 1; e < E.nb_vertices(); e++ ) {
+            builder->create_edge( e - 1, e ) ;
+        }
+    }
+
+    /*!
+     * @brief Sets the vertices and facets for a surface
+     * @details If facet_adjacencies are not given they are computed.
+     *
+     * @param[in] surface_id Index of the surface
+     * @param[in] geomodel_vertex_ids Indices of unique vertices in the GeoModel
+     * @param[in] facets Indices in the vertices vector to build facets
+     * @param[in] facet_ptr Pointer to the beginning of a facet in facets
+     */
+    void GeoModelBuilderGeometry::set_surface_geometry(
+        index_t surface_id,
+        const std::vector< index_t >& geomodel_vertex_ids,
+        const std::vector< index_t >& facets,
+        const std::vector< index_t >& facet_ptr )
+    {
+        set_mesh_entity_vertices( gme_t( Surface::type_name_static(), surface_id ),
+            geomodel_vertex_ids, false ) ;
+        assign_surface_mesh_facets( surface_id, facets, facet_ptr ) ;
+    }
+
+    /*!
+     * @brief Sets the facets of a surface
+     * @param[in] surface_id Index of the surface
+     * @param[in] facets Indices of the geomodel vertices defining the facets
+     * @param[in] facet_ptr Pointer to the beginning of a facet in facets
+     */
+    void GeoModelBuilderGeometry::set_surface_geometry(
+        index_t surface_id,
+        const std::vector< index_t >& facets,
+        const std::vector< index_t >& facet_ptr )
+    {
+        std::vector< index_t > vertices ;
+        std::vector< index_t > new_facets( facets ) ;
+        get_entity_vertices_and_update_corners( new_facets, vertices ) ;
+        set_surface_geometry( surface_id, vertices, new_facets, facet_ptr ) ;
+    }
+
+    void GeoModelBuilderGeometry::set_surface_geometry(
+        index_t surface_id,
+        const std::vector< index_t >& triangle_corners )
+    {
+        std::vector< index_t > vertices ;
+        std::vector< index_t > new_triangle_corners( triangle_corners ) ;
+        get_entity_vertices_and_update_corners( new_triangle_corners, vertices ) ;
+
+        set_mesh_entity_vertices( gme_t( Surface::type_name_static(), surface_id ),
+            vertices, false ) ;
+        assign_surface_triangle_mesh( surface_id, new_triangle_corners ) ;
+    }
+
+    void GeoModelBuilderGeometry::set_surface_geometry_with_adjacencies(
+        index_t surface_id,
+        const std::vector< index_t >& triangle_corners,
+        const std::vector< index_t >& adjacent_triangles )
+    {
+        /// @todo Reorganize to remove duplicated code in the class
+        std::vector< index_t > vertices ;
+        std::vector< index_t > new_triangle_corners( triangle_corners ) ;
+        get_entity_vertices_and_update_corners( new_triangle_corners, vertices ) ;
+
+        set_mesh_entity_vertices( gme_t( Surface::type_name_static(), surface_id ),
+            vertices, false ) ;
+
+        assign_surface_triangle_mesh( surface_id, new_triangle_corners,
+            adjacent_triangles ) ;
+    }
+
+    void GeoModelBuilderGeometry::set_surface_element_geometry(
+        index_t surface_id,
+        index_t facet_id,
+        const std::vector< index_t >& corners )
+    {
+        GeoModelMeshEntity& E = geomodel_access_.modifiable_mesh_entity(
+            gme_t( Surface::type_name_static(), surface_id ) ) ;
+        Surface& surface = dynamic_cast< Surface& >( E ) ;
+        Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder(
+            surface.low_level_mesh_storage() ) ;
+
+        for( index_t facet_vertex = 0; facet_vertex < corners.size();
+            facet_vertex++ ) {
+            builder->set_facet_vertex( facet_id, facet_vertex,
+                corners[facet_vertex] ) ;
+        }
+    }
+
+    void GeoModelBuilderGeometry::set_surface_element_adjacency(
+        index_t surface_id,
+        index_t facet_id,
+        const std::vector< index_t >& adjacents )
+    {
+        GeoModelMeshEntity& E = geomodel_access_.modifiable_mesh_entity(
+            gme_t( Surface::type_name_static(), surface_id ) ) ;
+        Surface& surface = dynamic_cast< Surface& >( E ) ;
+        Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder(
+            surface.low_level_mesh_storage() ) ;
+
+        for( index_t facet_edge = 0; facet_edge < adjacents.size(); facet_edge++ ) {
+            builder->set_facet_adjacent( facet_id, facet_edge,
+                adjacents[facet_edge] ) ;
+        }
+    }
+
+    void GeoModelBuilderGeometry::set_region_geometry(
+        index_t region_id,
+        const std::vector< index_t >& tet_corners )
+    {
+        std::vector< index_t > vertices ;
+        std::vector< index_t > new_tet_corners( tet_corners ) ;
+        get_entity_vertices_and_update_corners( new_tet_corners, vertices ) ;
+
+        set_mesh_entity_vertices( gme_t( Region::type_name_static(), region_id ),
+            vertices, false ) ;
+        assign_region_tet_mesh( region_id, new_tet_corners ) ;
+    }
+
+    void GeoModelBuilderGeometry::set_region_element_geometry(
+        index_t region_id,
+        index_t cell_id,
+        const std::vector< index_t >& corners )
+    {
+        GeoModelMeshEntity& E = geomodel_access_.modifiable_mesh_entity(
+            gme_t( Region::type_name_static(), region_id ) ) ;
+
+        Region& region = dynamic_cast< Region& >( E ) ;
+        Mesh3DBuilder_var builder = Mesh3DBuilder::create_builder(
+            region.low_level_mesh_storage() ) ;
+
+        for( index_t cell_vertex = 0; cell_vertex < corners.size(); cell_vertex++ ) {
+            builder->set_cell_vertex( cell_id, cell_vertex, corners[cell_vertex] ) ;
+        }
+    }
+
+    /*!
+     * @brief Computes and sets the adjacencies between the facets
+     * @details The adjacent facet is given for each vertex of each facet for the edge
+     * starting at this vertex.
+     * If there is no neighbor inside the same Surface adjacent is set to NO_ID
+     *
+     * @param[in] surface_id Index of the surface
+     * @param[in] recompute_adjacency If true, recompute the existing adjacencies
+     */
+    void GeoModelBuilderGeometry::compute_surface_adjacencies(
+        index_t surface_id,
+        bool recompute_adjacency )
+    {
+        Surface& surface =
+            dynamic_cast< Surface& >( geomodel_access_.modifiable_mesh_entity(
+                gme_t( Surface::type_name_static(), surface_id ) ) ) ;
+        Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder(
+            surface.low_level_mesh_storage() ) ;
+
+        if( recompute_adjacency ) {
+            for( index_t f = 0; f < surface.nb_mesh_elements(); f++ ) {
+                for( index_t v = 0; v < surface.nb_mesh_element_vertices( f );
+                    v++ ) {
+                    builder->set_facet_adjacent( f, v, NO_ID ) ;
+                }
+            }
+        }
+        builder->connect_facets() ;
+    }
+    /*!
+     * @brief Computes and sets the adjacencies between the cells
+     * @details The adjacent cell is given for each facet of each cell
+     * If there is no neighbor inside the same Region adjacent is set to NO_ID
+     *
+     * @param[in] region_id Index of the region
+     * @param[in] recompute_adjacency If true, recompute the existing adjacencies
+     */
+    void GeoModelBuilderGeometry::compute_region_adjacencies(
+        index_t region_id,
+        bool recompute_adjacency )
+    {
+        Region& region =
+            dynamic_cast< Region& >( geomodel_access_.modifiable_mesh_entity(
+                gme_t( Region::type_name_static(), region_id ) ) ) ;
+        Mesh3DBuilder_var builder = Mesh3DBuilder::create_builder(
+            region.low_level_mesh_storage() ) ;
+
+        if( recompute_adjacency ) {
+            for( index_t c = 0; c < region.nb_mesh_elements(); c++ ) {
+                for( index_t f = 0; f < region.nb_cell_facets( c ); f++ ) {
+                    builder->set_cell_adjacent( c, f, NO_ID ) ;
+                }
+            }
+        }
+        builder->connect_cells() ;
+    }
+
     void GeoModelBuilderGeometry::copy_meshes(
         const GeoModel& from,
         const std::string& entity_type )
@@ -2624,6 +2972,89 @@ namespace RINGMesh {
             *gmme_access.modifiable_mesh() ) ;
         builder->copy( mesh, true ) ;
     }
+
+    void GeoModelBuilderGeometry::assign_surface_triangle_mesh(
+        index_t surface_id,
+        const std::vector< index_t >& triangle_vertices )
+    {
+        Surface& surface =
+            dynamic_cast< Surface& >( geomodel_access_.modifiable_mesh_entity(
+                gme_t( Surface::type_name_static(), surface_id ) ) ) ;
+        ringmesh_assert( surface.nb_vertices() > 0 ) ;
+        Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder(
+            surface.low_level_mesh_storage() ) ;
+        builder->assign_facet_triangle_mesh( triangle_vertices, true ) ;
+        compute_surface_adjacencies( surface_id ) ;
+    }
+
+    void GeoModelBuilderGeometry::assign_surface_triangle_mesh(
+        index_t surface_id,
+        const std::vector< index_t >& triangle_vertices,
+        const std::vector< index_t >& adjacent_triangles )
+    {
+        Surface& surface =
+            dynamic_cast< Surface& >( geomodel_access_.modifiable_mesh_entity(
+                gme_t( Surface::type_name_static(), surface_id ) ) ) ;
+        ringmesh_assert( surface.nb_vertices() > 0 ) ;
+        Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder(
+            surface.low_level_mesh_storage() ) ;
+        builder->assign_facet_triangle_mesh( triangle_vertices, true ) ;
+
+        ringmesh_assert( adjacent_triangles.size() == surface.nb_mesh_elements() * 3 ) ;
+        for( index_t f = 0; f < surface.nb_mesh_elements(); f++ ) {
+            for( index_t v = 0; v < 3; v++ ) {
+                builder->set_facet_adjacent( f, v, adjacent_triangles[3 * f + v] ) ;
+            }
+        }
+    }
+
+    void GeoModelBuilderGeometry::assign_surface_mesh_facets(
+        index_t surface_id,
+        const std::vector< index_t >& facets,
+        const std::vector< index_t >& facet_ptr )
+    {
+        Surface& surface =
+            dynamic_cast< Surface& >( geomodel_access_.modifiable_mesh_entity(
+                gme_t( Surface::type_name_static(), surface_id ) ) ) ;
+        ringmesh_assert( surface.nb_vertices() > 0 ) ;
+        Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder(
+            surface.low_level_mesh_storage() ) ;
+        builder->create_facet_polygons( facets, facet_ptr ) ;
+        compute_surface_adjacencies( surface_id ) ;
+    }
+
+    void GeoModelBuilderGeometry::assign_region_tet_mesh(
+        index_t region_id,
+        const std::vector< index_t >& tet_vertices )
+    {
+        Region& region =
+            dynamic_cast< Region& >( geomodel_access_.modifiable_mesh_entity(
+                gme_t( Region::type_name_static(), region_id ) ) ) ;
+        ringmesh_assert( region.nb_vertices() > 0 ) ;
+        Mesh3DBuilder_var builder = Mesh3DBuilder::create_builder(
+            region.low_level_mesh_storage() ) ;
+        builder->assign_cell_tet_mesh( tet_vertices, true ) ;
+        builder->connect_cells() ;
+    }
+
+//    void GeoModelBuilderGeometry::set_surface_facet_adjacencies(
+//        index_t surface_id,
+//        const std::vector< index_t >& facets_id,
+//        const std::vector< index_t >& edges_id,
+//        const std::vector< index_t >& adjacent_triangles )
+//    {
+//        Surface& surface = dynamic_cast< Surface& >( mesh_entity(
+//            Surface::type_name_static(), surface_id ) ) ;
+//        ringmesh_assert( surface.nb_vertices() > 0 ) ;
+//        Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder(
+//            surface.low_level_mesh_storage() ) ;
+//        ringmesh_assert( facets_id.size() == edges_id.size() &&
+//            facets_id.size() == adjacent_triangles.size() ) ;
+//        for( index_t i = 0; i < facets_id.size(); ++i ) {
+//            builder->set_facet_adjacent( facets_id[i], edges_id[i],
+//                adjacent_triangles[i] ) ;
+//        }
+//    }
 
     GeoModelBuilderGeology::GeoModelBuilderGeology( GeoModel& geomodel )
         : geomodel_( geomodel ), geomodel_access_( geomodel )

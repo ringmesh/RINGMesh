@@ -866,9 +866,6 @@ namespace RINGMesh {
 
         void remove_geological_entities( const std::set< gme_t >& entities ) ;
 
-        /*!
-         * @todo Could be moved in the API [JP]
-         */
         bool get_dependent_entities( std::set< gme_t >& entities ) const ;
 
         /*!
@@ -1083,9 +1080,6 @@ namespace RINGMesh {
         void compute_region_adjacencies(
             index_t region_id,
             bool recompute_adjacency = true ) ;
-        void triangulate_surface(
-            const RINGMesh::Surface& surface_in,
-            index_t surface_out ) ;
 
     protected:
         GeoModelBuilderGeometry( GeoModel& builder ) ;
@@ -1095,6 +1089,24 @@ namespace RINGMesh {
         void copy_mesh( const GeoModel& from, const gme_t& mesh_entity ) ;
 
         void assign_mesh_to_entity( const MeshBase& mesh, const gme_t& to ) ;
+
+        void assign_surface_mesh_facets(
+            index_t surface_id,
+            const std::vector< index_t >& facets,
+            const std::vector< index_t >& facet_ptr ) ;
+
+        void assign_surface_triangle_mesh(
+            index_t surface_id,
+            const std::vector< index_t >& triangle_vertices ) ;
+
+        void assign_surface_triangle_mesh(
+             index_t surface_id,
+             const std::vector< index_t >& triangle_vertices,
+             const std::vector< index_t >& adjacent_triangles ) ;
+
+        void assign_region_tet_mesh(
+            index_t region_id,
+            const std::vector< index_t >& tet_vertices ) ;
 
     private:
         GeoModel& geomodel_ ;
