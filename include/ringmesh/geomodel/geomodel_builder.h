@@ -517,6 +517,57 @@ namespace RINGMesh {
             return gmme_.mesh_ ;
         }
 
+        void change_mesh_data_structure( const MeshType type )
+        {
+            if( EntityTypeManager::is_corner( gmme_.type_name() ) ) {
+                Corner& corner = dynamic_cast< Corner& >( gmme_ ) ;
+                Mesh0D* old_mesh = corner.mesh0d_ ;
+                if( old_mesh->type_name() == type ) {
+                    return ;
+                }
+                corner.update_mesh_storage_type( Mesh0D::create_mesh( type ) ) ;
+                Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder(
+                    *corner.mesh0d_ ) ;
+                builder->copy( *old_mesh, true ) ;
+                delete old_mesh ;
+            } else if( EntityTypeManager::is_line( gmme_.type_name() ) ) {
+                Line& line = dynamic_cast< Line& >( gmme_ ) ;
+                Mesh1D* old_mesh = line.mesh1d_ ;
+                if( old_mesh->type_name() == type ) {
+                    return ;
+                }
+                line.update_mesh_storage_type( Mesh1D::create_mesh( type ) ) ;
+                Mesh1DBuilder_var builder = Mesh1DBuilder::create_builder(
+                    *line.mesh1d_ ) ;
+                builder->copy( *old_mesh, true ) ;
+                delete old_mesh ;
+            } else if( EntityTypeManager::is_surface( gmme_.type_name() ) ) {
+                Surface& surface = dynamic_cast< Surface& >( gmme_ ) ;
+                Mesh2D* old_mesh = surface.mesh2d_ ;
+                if( old_mesh->type_name() == type ) {
+                    return ;
+                }
+                surface.update_mesh_storage_type( Mesh2D::create_mesh( type ) ) ;
+                Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder(
+                    *surface.mesh2d_ ) ;
+                builder->copy( *old_mesh, true ) ;
+                delete old_mesh ;
+            } else if( EntityTypeManager::is_region( gmme_.type_name() ) ) {
+                Region& region = dynamic_cast< Region& >( gmme_ ) ;
+                Mesh3D* old_mesh = region.mesh3d_ ;
+                if( old_mesh->type_name() == type ) {
+                    return ;
+                }
+                region.update_mesh_storage_type( Mesh3D::create_mesh( type ) ) ;
+                Mesh3DBuilder_var builder = Mesh3DBuilder::create_builder(
+                    *region.mesh3d_ ) ;
+                builder->copy( *old_mesh, true ) ;
+                delete old_mesh ;
+            } else {
+                ringmesh_assert_not_reached ;
+            }
+        }
+
         template< typename ENTITY >
         static ENTITY* create_entity(
             const GeoModel& geomodel,
@@ -591,6 +642,7 @@ namespace RINGMesh {
     class GeoModelAccess {
     ringmesh_disable_copy( GeoModelAccess ) ;
         friend class GeoModelBuilder2 ;
+        friend class GeoModelBuilderGM ;
         friend class GeoModelBuilderTopology ;
         friend class GeoModelBuilderGeometry ;
         friend class GeoModelBuilderGeology ;
@@ -688,6 +740,38 @@ namespace RINGMesh {
                 new_entity ) ;
             return new_entity->gme_id() ;
         }
+
+        gme_t create_geological_entity( const EntityType& type )
+        {
+            index_t index = find_or_create_geological_entity_type( type ) ;
+            index_t id = static_cast< index_t >( geomodel_.nb_geological_entities(
+                type ) ) ;
+            GeoModelGeologicalEntity* E =
+                GeoModelGeologicalEntityAccess::create_geological_entity( type,
+                    geomodel_, id ) ;
+            geomodel_access_.modifiable_geological_entities()[index].push_back( E ) ;
+            return E->gme_id() ;
+        }
+
+        bool create_mesh_entities(
+            const EntityType& type,
+            index_t nb_additional_entities )
+        {
+            if( EntityTypeManager::is_corner( type ) ) {
+                return create_mesh_entities< Corner >( nb_additional_entities ) ;
+            } else if( EntityTypeManager::is_line( type ) ) {
+                return create_mesh_entities< Line >( nb_additional_entities ) ;
+            } else if( EntityTypeManager::is_surface( type ) ) {
+                return create_mesh_entities< Surface >( nb_additional_entities ) ;
+            } else if( EntityTypeManager::is_region( type ) ) {
+                return create_mesh_entities< Region >( nb_additional_entities ) ;
+            } else {
+                ringmesh_assert_not_reached ;
+                return false ;
+            }
+        }
+
+        bool create_geological_entities( const EntityType& type, index_t nb ) ;
 
         /*!
          * @brief Complete missing information in GeoModelEntities
@@ -826,10 +910,6 @@ namespace RINGMesh {
     private:
         GeoModelBuilderTopology( GeoModelBuilder2& builder, GeoModel& geomodel ) ;
 
-        bool create_mesh_entities(
-            const EntityType& type,
-            index_t nb_additional_entities ) ;
-
         template< typename ENTITY >
         bool create_mesh_entities(
             index_t nb_additionnal_entities,
@@ -847,7 +927,8 @@ namespace RINGMesh {
             }
             return true ;
         }
-        bool create_geological_entities( const EntityType& type, index_t nb ) ;
+        index_t create_geological_entity_type( const EntityType& type ) ;
+
         index_t find_or_create_geological_entity_type( const EntityType& type )
         {
             index_t type_index =
@@ -858,7 +939,6 @@ namespace RINGMesh {
             }
             return type_index ;
         }
-        index_t create_geological_entity_type( const EntityType& type ) ;
 
         template< typename T >
         void complete_mesh_entity_connectivity() ;
@@ -928,7 +1008,8 @@ namespace RINGMesh {
             nb_geological_entity_types_ = geomodel_.nb_geological_entity_types() ;
             nb_entity_types_ = nb_geological_entity_types_ + nb_mesh_entity_types_ ;
             nb_removed_mesh_entities_.resize( nb_mesh_entity_types_, 0 ) ;
-            nb_removed_geological_entities_.resize( nb_geological_entity_types_, 0 ) ;
+            nb_removed_geological_entities_.resize( nb_geological_entity_types_,
+                0 ) ;
             fill_entity_type_to_index_map() ;
             fill_nb_initial_entities() ;
             initialize_costly_storage() ;
@@ -1438,7 +1519,12 @@ namespace RINGMesh {
          * @param[in] id the GeoModelMeshEntity id to operate on
          * @param[in] type the new mesh data structure type
          */
-        void change_mesh_data_structure( const gme_t& id, const MeshType type ) ;
+        void change_mesh_data_structure( const gme_t& id, const MeshType type )
+        {
+            GeoModelMeshEntityAccess gmme_access(
+                geomodel_access_.modifiable_mesh_entity( id ) ) ;
+            gmme_access.change_mesh_data_structure( type ) ;
+        }
 
         /*!
          * @brief Copy all entity meshes from the input geomodel
@@ -1446,6 +1532,8 @@ namespace RINGMesh {
          * than the input geomodel.
          */
         void copy_meshes( const GeoModel& from ) ;
+
+        void assign_mesh_to_entity( const MeshBase& mesh, const gme_t& to ) ;
 
         /*!
          * \name Set entity geometry from geometrical positions
@@ -1619,6 +1707,21 @@ namespace RINGMesh {
          * @{
          */
 
+        void set_surface_facet_adjacencies(
+            index_t surface_id,
+            const std::vector< index_t >& facets_ids,
+            const std::vector< index_t >& edges_ids,
+            const std::vector< index_t >& adjacent_triangles ) ;
+
+        /*!
+         * @brief Computes and sets the adjacencies between the facets
+         * @details The adjacent facet is given for each vertex of each facet for the edge
+         * starting at this vertex.
+         * If there is no neighbor inside the same Surface adjacent is set to NO_ID
+         *
+         * @param[in] surface_id Index of the surface
+         * @param[in] recompute_adjacency If true, recompute the existing adjacencies
+         */
         void compute_surface_adjacencies(
             index_t surface_id,
             bool recompute_adjacency = true ) ;
@@ -1645,8 +1748,6 @@ namespace RINGMesh {
     private:
         void copy_meshes( const GeoModel& from, const std::string& entity_type ) ;
         void copy_mesh( const GeoModel& from, const gme_t& mesh_entity ) ;
-
-        void assign_mesh_to_entity( const MeshBase& mesh, const gme_t& to ) ;
 
         void assign_surface_mesh_facets(
             index_t surface_id,
@@ -1867,15 +1968,15 @@ namespace RINGMesh {
          */
         void build() ;
 
-    private:
-        GeoModelBuilderFromSurfaces(
-            GeoModelBuilder2& builder,
-            GeoModel& geomodel ) ;
-
         /*!
          * @brief From the Surfaces of the GeoModel, build its Lines and Corners
          */
         bool build_lines_and_corners_from_surfaces() ;
+
+    private:
+        GeoModelBuilderFromSurfaces(
+            GeoModelBuilder2& builder,
+            GeoModel& geomodel ) ;
 
         /*!
          * @brief Build the regions of the GeoModel from the Surfaces
@@ -1892,7 +1993,6 @@ namespace RINGMesh {
         GeoModelBuilder2& builder_ ;
         GeoModel& geomodel_ ;
         GeoModelAccess geomodel_access_ ;
-
 
         /*! Internal information */
         std::vector< GeoModelRegionFromSurfaces* > regions_info_ ;
@@ -1921,15 +2021,15 @@ namespace RINGMesh {
         GeoModelBuilderInfo info ;
         GeoModelBuilderFromSurfaces from_surfaces ;
 
-    private:
+    protected:
         GeoModel& geomodel_ ;
+        GeoModelAccess geomodel_access_ ;
     } ;
-
 
     /*!
      * @brief Abstract interface class to load and build GeoModels from files
      */
-    class RINGMESH_API GeoModelBuilderFile: public GeoModelBuilder {
+    class RINGMESH_API GeoModelBuilderFile: public GeoModelBuilder2 {
     public:
         GeoModelBuilderFile( GeoModel& geomodel, const std::string& filename ) ;
 
