@@ -122,7 +122,7 @@ int main()
         // GeoModelBuilder, which is a safety for the user
         // Indeed, the GeoModel can't be directly modified,
         // It has to be done using the GeoModelBuilder
-        GeoModelBuilder geomodel_builder( geomodel ) ;
+        GeoModelBuilder2 builder( geomodel ) ;
 
         //#############################
         // Declaration of the Entities#
@@ -152,7 +152,7 @@ int main()
         //We first create the GeoModelGeoglogicalEntity
         // Create the contacts
         for( index_t contact = 0; contact < nb_contacts; contact++ ) {
-            geomodel_builder.create_geological_entity(
+            builder.topology.create_geological_entity(
                 Contact::type_name_static() ) ;
             // the static method type_name_static() is available for each
             // GeoModelEntity. It returns an EntityType which is a string
@@ -161,35 +161,35 @@ int main()
 
         // Create the Interfaces
         for( index_t interface_itr = 0; interface_itr < nb_interfaces; interface_itr++ ) {
-            geomodel_builder.create_geological_entity(
+            builder.topology.create_geological_entity(
                 Interface::type_name_static() ) ;
         }
 
         // Create the Layers
         for( index_t layer = 0; layer < nb_layers; layer++ ) {
-            geomodel_builder.create_geological_entity( Layer::type_name_static() ) ;
+            builder.topology.create_geological_entity( Layer::type_name_static() ) ;
         }
 
         // Then we create the GeoModelMEshEntity
         // Create the Corners
         for( index_t corner = 0; corner < nb_corners; corner++ ) {
-            geomodel_builder.create_mesh_entity< Corner >() ;
+            builder.topology.create_mesh_entity< Corner >() ;
         }
 
         // Create the Lines
         for( index_t lines = 0; lines < nb_lines; lines++ ) {
-            geomodel_builder.create_mesh_entity< Line >() ;
+            builder.topology.create_mesh_entity< Line >() ;
         }
 
         // Create the Surfaces
         for( index_t surface = 0; surface < nb_surfaces; surface++ ) {
-            geomodel_builder.create_mesh_entity< Surface >() ;
+            builder.topology.create_mesh_entity< Surface >() ;
 
         }
 
         // Create the Regions
         for( index_t region = 0; region < nb_regions; region++ ) {
-            geomodel_builder.create_mesh_entity< Region >() ;
+            builder.topology.create_mesh_entity< Region >() ;
         }
 
         //#############################
@@ -214,7 +214,7 @@ int main()
 
         // We associate the coordinates with the corners
         for( index_t corner = 0; corner < nb_corners; corner++ ) {
-            geomodel_builder.set_corner( corner, corners_table[corner] ) ;
+            builder.geometry.set_corner( corner, corners_table[corner] ) ;
         }
 
         // We associate the coordinates with the lines
@@ -223,83 +223,83 @@ int main()
         std::vector< vec3 > cur_coor_line( 2 ) ;
         cur_coor_line[0] = corners_table[0] ;
         cur_coor_line[1] = corners_table[3] ;
-        geomodel_builder.set_line( 0, cur_coor_line ) ;
+        builder.geometry.set_line( 0, cur_coor_line ) ;
 
         cur_coor_line[0] = corners_table[2] ;
         cur_coor_line[1] = corners_table[3] ;
-        geomodel_builder.set_line( 1, cur_coor_line ) ;
+        builder.geometry.set_line( 1, cur_coor_line ) ;
 
         cur_coor_line[0] = corners_table[1] ;
         cur_coor_line[1] = corners_table[2] ;
-        geomodel_builder.set_line( 2, cur_coor_line ) ;
+        builder.geometry.set_line( 2, cur_coor_line ) ;
 
         cur_coor_line[0] = corners_table[0] ;
         cur_coor_line[1] = corners_table[1] ;
-        geomodel_builder.set_line( 3, cur_coor_line ) ;
+        builder.geometry.set_line( 3, cur_coor_line ) ;
 
         cur_coor_line[0] = corners_table[8] ;
         cur_coor_line[1] = corners_table[11] ;
-        geomodel_builder.set_line( 4, cur_coor_line ) ;
+        builder.geometry.set_line( 4, cur_coor_line ) ;
 
         cur_coor_line[0] = corners_table[10] ;
         cur_coor_line[1] = corners_table[11] ;
-        geomodel_builder.set_line( 5, cur_coor_line ) ;
+        builder.geometry.set_line( 5, cur_coor_line ) ;
 
         cur_coor_line[0] = corners_table[9] ;
         cur_coor_line[1] = corners_table[10] ;
-        geomodel_builder.set_line( 6, cur_coor_line ) ;
+        builder.geometry.set_line( 6, cur_coor_line ) ;
 
         cur_coor_line[0] = corners_table[8] ;
         cur_coor_line[1] = corners_table[9] ;
-        geomodel_builder.set_line( 7, cur_coor_line ) ;
+        builder.geometry.set_line( 7, cur_coor_line ) ;
 
         cur_coor_line[0] = corners_table[4] ;
         cur_coor_line[1] = corners_table[7] ;
-        geomodel_builder.set_line( 8, cur_coor_line ) ;
+        builder.geometry.set_line( 8, cur_coor_line ) ;
 
         cur_coor_line[0] = corners_table[6] ;
         cur_coor_line[1] = corners_table[7] ;
-        geomodel_builder.set_line( 9, cur_coor_line ) ;
+        builder.geometry.set_line( 9, cur_coor_line ) ;
 
         cur_coor_line[0] = corners_table[5] ;
         cur_coor_line[1] = corners_table[6] ;
-        geomodel_builder.set_line( 10, cur_coor_line ) ;
+        builder.geometry.set_line( 10, cur_coor_line ) ;
 
         cur_coor_line[0] = corners_table[4] ;
         cur_coor_line[1] = corners_table[5] ;
-        geomodel_builder.set_line( 11, cur_coor_line ) ;
+        builder.geometry.set_line( 11, cur_coor_line ) ;
 
         cur_coor_line[0] = corners_table[4] ;
         cur_coor_line[1] = corners_table[8] ;
-        geomodel_builder.set_line( 12, cur_coor_line ) ;
+        builder.geometry.set_line( 12, cur_coor_line ) ;
 
         cur_coor_line[0] = corners_table[0] ;
         cur_coor_line[1] = corners_table[8] ;
-        geomodel_builder.set_line( 13, cur_coor_line ) ;
+        builder.geometry.set_line( 13, cur_coor_line ) ;
 
         cur_coor_line[0] = corners_table[7] ;
         cur_coor_line[1] = corners_table[11] ;
-        geomodel_builder.set_line( 14, cur_coor_line ) ;
+        builder.geometry.set_line( 14, cur_coor_line ) ;
 
         cur_coor_line[0] = corners_table[3] ;
         cur_coor_line[1] = corners_table[11] ;
-        geomodel_builder.set_line( 15, cur_coor_line ) ;
+        builder.geometry.set_line( 15, cur_coor_line ) ;
 
         cur_coor_line[0] = corners_table[5] ;
         cur_coor_line[1] = corners_table[9] ;
-        geomodel_builder.set_line( 16, cur_coor_line ) ;
+        builder.geometry.set_line( 16, cur_coor_line ) ;
 
         cur_coor_line[0] = corners_table[1] ;
         cur_coor_line[1] = corners_table[9] ;
-        geomodel_builder.set_line( 17, cur_coor_line ) ;
+        builder.geometry.set_line( 17, cur_coor_line ) ;
 
         cur_coor_line[0] = corners_table[6] ;
         cur_coor_line[1] = corners_table[10] ;
-        geomodel_builder.set_line( 18, cur_coor_line ) ;
+        builder.geometry.set_line( 18, cur_coor_line ) ;
 
         cur_coor_line[0] = corners_table[2] ;
         cur_coor_line[1] = corners_table[10] ;
-        geomodel_builder.set_line( 19, cur_coor_line ) ;
+        builder.geometry.set_line( 19, cur_coor_line ) ;
 
         // We associate the coordinates with the Surfaces
         // We create a vector cur_coor_surface containing 4 vertices.
@@ -320,77 +320,77 @@ int main()
         cur_coor_surface[1] = corners_table[1] ;
         cur_coor_surface[2] = corners_table[2] ;
         cur_coor_surface[3] = corners_table[3] ;
-        geomodel_builder.set_surface_geometry( 0, cur_coor_surface, facet,
+        builder.geometry.set_surface_geometry( 0, cur_coor_surface, facet,
             facet_ptr ) ;
 
         cur_coor_surface[0] = corners_table[8] ;
         cur_coor_surface[1] = corners_table[9] ;
         cur_coor_surface[2] = corners_table[10] ;
         cur_coor_surface[3] = corners_table[11] ;
-        geomodel_builder.set_surface_geometry( 1, cur_coor_surface, facet,
+        builder.geometry.set_surface_geometry( 1, cur_coor_surface, facet,
             facet_ptr ) ;
 
         cur_coor_surface[0] = corners_table[4] ;
         cur_coor_surface[1] = corners_table[5] ;
         cur_coor_surface[2] = corners_table[6] ;
         cur_coor_surface[3] = corners_table[7] ;
-        geomodel_builder.set_surface_geometry( 2, cur_coor_surface, facet,
+        builder.geometry.set_surface_geometry( 2, cur_coor_surface, facet,
             facet_ptr ) ;
 
         cur_coor_surface[0] = corners_table[8] ;
         cur_coor_surface[1] = corners_table[4] ;
         cur_coor_surface[2] = corners_table[7] ;
         cur_coor_surface[3] = corners_table[11] ;
-        geomodel_builder.set_surface_geometry( 3, cur_coor_surface, facet,
+        builder.geometry.set_surface_geometry( 3, cur_coor_surface, facet,
             facet_ptr ) ;
 
         cur_coor_surface[0] = corners_table[0] ;
         cur_coor_surface[1] = corners_table[8] ;
         cur_coor_surface[2] = corners_table[11] ;
         cur_coor_surface[3] = corners_table[3] ;
-        geomodel_builder.set_surface_geometry( 4, cur_coor_surface, facet,
+        builder.geometry.set_surface_geometry( 4, cur_coor_surface, facet,
             facet_ptr ) ;
 
         cur_coor_surface[0] = corners_table[5] ;
         cur_coor_surface[1] = corners_table[6] ;
         cur_coor_surface[2] = corners_table[10] ;
         cur_coor_surface[3] = corners_table[9] ;
-        geomodel_builder.set_surface_geometry( 5, cur_coor_surface, facet,
+        builder.geometry.set_surface_geometry( 5, cur_coor_surface, facet,
             facet_ptr ) ;
 
         cur_coor_surface[0] = corners_table[9] ;
         cur_coor_surface[1] = corners_table[10] ;
         cur_coor_surface[2] = corners_table[2] ;
         cur_coor_surface[3] = corners_table[1] ;
-        geomodel_builder.set_surface_geometry( 6, cur_coor_surface, facet,
+        builder.geometry.set_surface_geometry( 6, cur_coor_surface, facet,
             facet_ptr ) ;
 
         cur_coor_surface[0] = corners_table[8] ;
         cur_coor_surface[1] = corners_table[4] ;
         cur_coor_surface[2] = corners_table[5] ;
         cur_coor_surface[3] = corners_table[9] ;
-        geomodel_builder.set_surface_geometry( 7, cur_coor_surface, facet,
+        builder.geometry.set_surface_geometry( 7, cur_coor_surface, facet,
             facet_ptr ) ;
 
         cur_coor_surface[0] = corners_table[0] ;
         cur_coor_surface[1] = corners_table[8] ;
         cur_coor_surface[2] = corners_table[9] ;
         cur_coor_surface[3] = corners_table[1] ;
-        geomodel_builder.set_surface_geometry( 8, cur_coor_surface, facet,
+        builder.geometry.set_surface_geometry( 8, cur_coor_surface, facet,
             facet_ptr ) ;
 
         cur_coor_surface[0] = corners_table[6] ;
         cur_coor_surface[1] = corners_table[10] ;
         cur_coor_surface[2] = corners_table[11] ;
         cur_coor_surface[3] = corners_table[7] ;
-        geomodel_builder.set_surface_geometry( 9, cur_coor_surface, facet,
+        builder.geometry.set_surface_geometry( 9, cur_coor_surface, facet,
             facet_ptr ) ;
 
         cur_coor_surface[0] = corners_table[10] ;
         cur_coor_surface[1] = corners_table[2] ;
         cur_coor_surface[2] = corners_table[3] ;
         cur_coor_surface[3] = corners_table[11] ;
-        geomodel_builder.set_surface_geometry( 10, cur_coor_surface, facet,
+        builder.geometry.set_surface_geometry( 10, cur_coor_surface, facet,
             facet_ptr ) ;
 
         //###################################
@@ -406,297 +406,297 @@ int main()
         // Surfaces are bounded by Lines
         // Region are bounded by Surfaces
         // For corner 0
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 0 ), 0 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 0 ), 13 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 0 ), 3 ) ;
 
         // For corner 1
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 1 ), 2 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 1 ), 3 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 1 ), 17 ) ;
 
         // For corner 2
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 2 ), 2 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 2 ), 19 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 2 ), 1 ) ;
 
         // For corner 3
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 3 ), 0 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 3 ), 1 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 3 ), 15 ) ;
 
         // For corner 4
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 4 ), 12 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 4 ), 8 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 4 ), 11 ) ;
 
         // For corner 5
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 5 ), 10 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 5 ), 16 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 5 ), 11 ) ;
 
         // For corner 6
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 6 ), 10 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 6 ), 18 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 6 ), 9 ) ;
 
         // For corner 7
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 7 ), 8 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 7 ), 9 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 7 ), 14 ) ;
 
         // For corner 8
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 8 ), 12 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 8 ), 13 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 8 ), 7 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 8 ), 4 ) ;
 
         // For corner 9
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 9 ), 16 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 9 ), 17 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 9 ), 6 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 9 ), 7 ) ;
 
         // For corner 10
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 10 ), 6 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 10 ), 18 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 10 ), 19 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 10 ), 5 ) ;
 
         // For corner 11
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 11 ), 4 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 11 ), 14 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 11 ), 15 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Corner::type_name_static(), 11 ), 5 ) ;
 
         /////////////////////////////////////////////////////////
 
         // For line 0
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 0 ), 0 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 0 ), 4 ) ;
 
         // For line 1
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 1 ), 0 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 1 ), 10 ) ;
 
         // For line 2
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 2 ), 0 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 2 ), 6 ) ;
 
         // For line 3
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 3 ), 0 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 3 ), 8 ) ;
 
         // For line 4
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 4 ), 1 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 4 ), 4 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 4 ), 3 ) ;
 
         // For line 5
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 5 ), 1 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 5 ), 9 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 5 ), 10 ) ;
 
         // For line 6
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 6 ), 1 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 6 ), 6 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 6 ), 5 ) ;
 
         // For line 7
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 7 ), 1 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 7 ), 7 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 7 ), 8 ) ;
 
         // For line 8
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 8 ), 2 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 8 ), 3 ) ;
 
         // For line 9
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 9 ), 2 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 9 ), 9 ) ;
 
         // For line 10
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 10 ), 2 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 10 ), 5 ) ;
 
         // For line 11
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 11 ), 2 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 11 ), 7 ) ;
 
         // For line 12
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 12 ), 3 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 12 ), 7 ) ;
 
         // For line 13
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 13 ), 8 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 13 ), 4 ) ;
 
         // For line 14
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 14 ), 3 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 14 ), 9 ) ;
 
         // For line 15
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 15 ), 4 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 15 ), 10 ) ;
 
         // For line 16
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 16 ), 7 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 16 ), 5 ) ;
 
         // For line 17
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 17 ), 8 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 17 ), 6 ) ;
 
         // For line 18
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 18 ), 5 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 18 ), 9 ) ;
 
         // For line 19
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 19 ), 6 ) ;
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Line::type_name_static(), 19 ), 10 ) ;
 
         /////////////////////////////////////////////////////////
 
         // For surface 0
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Surface::type_name_static(), 0 ), 0 ) ;
 
         // For surface 1
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Surface::type_name_static(), 1 ), 0 ) ;
 
         // For surface 2
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Surface::type_name_static(), 2 ), 1 ) ;
 
         // For surface 3
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Surface::type_name_static(), 3 ), 1 ) ;
 
         // For surface 4
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Surface::type_name_static(), 4 ), 0 ) ;
 
         // For surface 5
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Surface::type_name_static(), 5 ), 1 ) ;
 
         // For surface 6
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Surface::type_name_static(), 6 ), 0 ) ;
 
         // For surface 7
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Surface::type_name_static(), 7 ), 1 ) ;
 
         // For surface 8
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Surface::type_name_static(), 8 ), 0 ) ;
 
         // For surface 9
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Surface::type_name_static(), 9 ), 1 ) ;
 
         // For surface 10
-        geomodel_builder.add_mesh_entity_in_boundary(
+        builder.topology.add_mesh_entity_in_boundary(
             gme_t( Surface::type_name_static(), 10 ), 0 ) ;
 
 
         // For the Universe Boundary
-        geomodel_builder.add_universe_boundary(0,true) ;
-        geomodel_builder.add_universe_boundary(2,true) ;
-        geomodel_builder.add_universe_boundary(3,true) ;
-        geomodel_builder.add_universe_boundary(4,true) ;
-        geomodel_builder.add_universe_boundary(5,true) ;
-        geomodel_builder.add_universe_boundary(6,true) ;
-        geomodel_builder.add_universe_boundary(7,true) ;
-        geomodel_builder.add_universe_boundary(8,true) ;
-        geomodel_builder.add_universe_boundary(9,true) ;
-        geomodel_builder.add_universe_boundary(10,true) ;
+        builder.topology.add_universe_boundary(0,true) ;
+        builder.topology.add_universe_boundary(2,true) ;
+        builder.topology.add_universe_boundary(3,true) ;
+        builder.topology.add_universe_boundary(4,true) ;
+        builder.topology.add_universe_boundary(5,true) ;
+        builder.topology.add_universe_boundary(6,true) ;
+        builder.topology.add_universe_boundary(7,true) ;
+        builder.topology.add_universe_boundary(8,true) ;
+        builder.topology.add_universe_boundary(9,true) ;
+        builder.topology.add_universe_boundary(10,true) ;
 
 
         //#####################################
@@ -713,123 +713,123 @@ int main()
         // Second argument is the index of the child (ie a GeoModelMeshEntity)
 
         // For Contact 0
-        geomodel_builder.add_geological_entity_child(
+        builder.geology.add_geological_entity_child(
             gme_t( Contact::type_name_static(), 0 ), 0 ) ;
 
         // For Contact 1
-        geomodel_builder.add_geological_entity_child(
+        builder.geology.add_geological_entity_child(
             gme_t( Contact::type_name_static(), 1 ), 1 ) ;
 
         // For Contact 2
-        geomodel_builder.add_geological_entity_child(
+        builder.geology.add_geological_entity_child(
             gme_t( Contact::type_name_static(), 2 ), 2 ) ;
 
         // For Contact 3
-        geomodel_builder.add_geological_entity_child(
+        builder.geology.add_geological_entity_child(
             gme_t( Contact::type_name_static(), 3 ), 3 ) ;
 
         // For Contact 4
-        geomodel_builder.add_geological_entity_child(
+        builder.geology.add_geological_entity_child(
             gme_t( Contact::type_name_static(), 4 ), 4 ) ;
 
         // For Contact 5
-        geomodel_builder.add_geological_entity_child(
+        builder.geology.add_geological_entity_child(
             gme_t( Contact::type_name_static(), 5 ), 5 ) ;
 
         // For Contact 6
-        geomodel_builder.add_geological_entity_child(
+        builder.geology.add_geological_entity_child(
             gme_t( Contact::type_name_static(), 6 ), 6 ) ;
 
         // For Contact 7
-        geomodel_builder.add_geological_entity_child(
+        builder.geology.add_geological_entity_child(
             gme_t( Contact::type_name_static(), 7 ), 7 ) ;
 
         // For Contact 8
-        geomodel_builder.add_geological_entity_child(
+        builder.geology.add_geological_entity_child(
             gme_t( Contact::type_name_static(), 8 ), 8 ) ;
 
         // For Contact 9
-        geomodel_builder.add_geological_entity_child(
+        builder.geology.add_geological_entity_child(
             gme_t( Contact::type_name_static(), 9 ), 9 ) ;
 
         // For Contact 10
-        geomodel_builder.add_geological_entity_child(
+        builder.geology.add_geological_entity_child(
             gme_t( Contact::type_name_static(), 10 ), 10 ) ;
 
         // For Contact 11
-        geomodel_builder.add_geological_entity_child(
+        builder.geology.add_geological_entity_child(
             gme_t( Contact::type_name_static(), 11 ), 11 ) ;
 
         // For Contact 12
-        geomodel_builder.add_geological_entity_child(
+        builder.geology.add_geological_entity_child(
             gme_t( Contact::type_name_static(), 12 ), 12 ) ;
-        geomodel_builder.add_geological_entity_child(
+        builder.geology.add_geological_entity_child(
             gme_t( Contact::type_name_static(), 12 ), 13 ) ;
 
         // For Contact 13
-        geomodel_builder.add_geological_entity_child(
+        builder.geology.add_geological_entity_child(
             gme_t( Contact::type_name_static(), 13 ), 14 ) ;
-        geomodel_builder.add_geological_entity_child(
+        builder.geology.add_geological_entity_child(
             gme_t( Contact::type_name_static(), 13 ), 15 ) ;
 
         // For Contact 14
-        geomodel_builder.add_geological_entity_child(
+        builder.geology.add_geological_entity_child(
             gme_t( Contact::type_name_static(), 14 ), 16 ) ;
-        geomodel_builder.add_geological_entity_child(
+        builder.geology.add_geological_entity_child(
             gme_t( Contact::type_name_static(), 14 ), 17 ) ;
 
         // For Contact 15
-        geomodel_builder.add_geological_entity_child(
+        builder.geology.add_geological_entity_child(
             gme_t( Contact::type_name_static(), 15 ), 19 ) ;
-        geomodel_builder.add_geological_entity_child(
+        builder.geology.add_geological_entity_child(
             gme_t( Contact::type_name_static(), 15 ), 18 ) ;
 
         /////////////////////////////////////////////////
 
         // For Interface 0
-        geomodel_builder.add_geological_entity_child(
+        builder.geology.add_geological_entity_child(
             gme_t( Interface::type_name_static(), 0 ), 0 ) ;
 
         // For Interface 1
-        geomodel_builder.add_geological_entity_child(
+        builder.geology.add_geological_entity_child(
             gme_t( Interface::type_name_static(), 1 ), 1 ) ;
 
         // For Interface 2
-        geomodel_builder.add_geological_entity_child(
+        builder.geology.add_geological_entity_child(
             gme_t( Interface::type_name_static(), 2 ), 2 ) ;
 
         // For Interface 3
-        geomodel_builder.add_geological_entity_child(
+        builder.geology.add_geological_entity_child(
             gme_t( Interface::type_name_static(), 3 ), 3 ) ;
-        geomodel_builder.add_geological_entity_child(
+        builder.geology.add_geological_entity_child(
             gme_t( Interface::type_name_static(), 3 ), 4 ) ;
 
         // For Interface 4
-        geomodel_builder.add_geological_entity_child(
+        builder.geology.add_geological_entity_child(
             gme_t( Interface::type_name_static(), 4 ), 5 ) ;
-        geomodel_builder.add_geological_entity_child(
+        builder.geology.add_geological_entity_child(
             gme_t( Interface::type_name_static(), 4 ), 6 ) ;
 
         // For Interface 5
-        geomodel_builder.add_geological_entity_child(
+        builder.geology.add_geological_entity_child(
             gme_t( Interface::type_name_static(), 5 ), 10 ) ;
-        geomodel_builder.add_geological_entity_child(
+        builder.geology.add_geological_entity_child(
             gme_t( Interface::type_name_static(), 5 ), 9 ) ;
 
         // For Interface 6
-        geomodel_builder.add_geological_entity_child(
+        builder.geology.add_geological_entity_child(
             gme_t( Interface::type_name_static(), 6 ), 8 ) ;
-        geomodel_builder.add_geological_entity_child(
+        builder.geology.add_geological_entity_child(
             gme_t( Interface::type_name_static(), 6 ), 7 ) ;
 
         ///////////////////////////////////////////////////
 
         // For Layer 0
-        geomodel_builder.add_geological_entity_child(
+        builder.geology.add_geological_entity_child(
             gme_t( Layer::type_name_static(), 0 ), 0 ) ;
 
         // For Layer 1
-        geomodel_builder.add_geological_entity_child(
+        builder.geology.add_geological_entity_child(
             gme_t( Layer::type_name_static(), 1 ), 1 ) ;
 
 
@@ -838,7 +838,7 @@ int main()
         // and parent/child relation. e. g., if you decide to use the
         // add_geological_entity_child (like above), the child has no information of who
         // is his parent. This method deal with that by filling the missing information
-        geomodel_builder.end_geomodel() ;
+        builder.end_geomodel() ;
 
         // We save the builded model
         geomodel_save( geomodel, "builded_model.gm" ) ;
