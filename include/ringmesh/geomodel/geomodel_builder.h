@@ -684,7 +684,7 @@ namespace RINGMesh {
             return *modifiable_mesh_entities( id.type )[id.index] ;
         }
 
-        std::vector< std::vector< GeoModelGeologicalEntity* > > modifiable_geological_entities()
+        std::vector< std::vector< GeoModelGeologicalEntity* > >& modifiable_geological_entities()
         {
             return geomodel_.geological_entities_ ;
         }
