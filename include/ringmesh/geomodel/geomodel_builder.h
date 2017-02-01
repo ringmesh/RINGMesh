@@ -446,6 +446,10 @@ namespace RINGMesh {
             return new_entity->gme_id() ;
         }
 
+        /*!
+         * @brief Create and store a geological entity of the given type
+         * @return The index of the created geological entity
+         */
         gme_t create_geological_entity( const EntityType& type )
         {
             index_t index = find_or_create_geological_entity_type( type ) ;
@@ -666,6 +670,9 @@ namespace RINGMesh {
         GeoModelAccess geomodel_access_ ;
     } ;
 
+    /*!
+     * @brief Builder tools to remove entities from a GeoModel
+     */
     class RINGMESH_API GeoModelBuilderRemoval {
     ringmesh_disable_copy( GeoModelBuilderRemoval ) ;
         friend class GeoModelBuilder2 ;
@@ -1528,6 +1535,9 @@ namespace RINGMesh {
             geomodel_access_.modifiable_name() = name ;
         }
 
+        /*!
+         *@brief Set the name of a geomodel entity
+         */
         void set_entity_name( const gme_t& gme_id, const std::string& name )
         {
             if( geomodel_.is_mesh_entity_type( gme_id.type ) ) {
@@ -1706,6 +1716,12 @@ namespace RINGMesh {
         std::vector< GeoModelRegionFromSurfaces* > regions_info_ ;
     } ;
 
+    /*!
+     * @brief Base class to build or edit a GeoModel
+     * @details All needed functions are organized in several specific builder
+     * in accordance with the kind of edition operation (copy, repair, ...) or
+     * with the GeoModel part which is edited (topology, geometry, geology, info)
+     */
     class RINGMESH_API GeoModelBuilder2 {
     ringmesh_disable_copy( GeoModelBuilder2 ) ;
 
