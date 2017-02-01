@@ -311,6 +311,12 @@ namespace RINGMesh {
          */
         bool are_geomodel_vertex_indices_valid() const ;
 
+//        void update_mesh_storage_type( MeshBase* mesh )
+//        {
+//            mesh_ = mesh ;
+//            GeoModelMeshEntity::set_mesh( mesh_ ) ;
+//        }
+
     protected:
 
         /// Entities on the boundary of this entity

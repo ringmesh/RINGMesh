@@ -2398,7 +2398,7 @@ namespace RINGMesh {
     GeoModelBuilderFile::GeoModelBuilderFile(
         GeoModel& geomodel,
         const std::string& filename )
-        : GeoModelBuilder( geomodel ), filename_( filename )
+        : GeoModelBuilder2( geomodel ), filename_( filename )
     {
 
     }
@@ -2900,15 +2900,15 @@ namespace RINGMesh {
         GeoModel& geomodel )
         : builder_( builder ), geomodel_( geomodel ), geomodel_access_( geomodel )
     {
-        nb_mesh_entity_types_ = EntityTypeManager::nb_mesh_entity_types() ;
-        nb_geological_entity_types_ = geomodel_.nb_geological_entity_types() ;
-        nb_entity_types_ = nb_geological_entity_types_ + nb_mesh_entity_types_ ;
-        nb_removed_mesh_entities_.resize( nb_mesh_entity_types_, 0 ) ;
-        nb_removed_geological_entities_.resize( nb_geological_entity_types_, 0 ) ;
-        fill_entity_type_to_index_map() ;
-        fill_nb_initial_entities() ;
-        initialize_costly_storage() ;
-        fill_nb_children_vector() ;
+//        nb_mesh_entity_types_ = EntityTypeManager::nb_mesh_entity_types() ;
+//        nb_geological_entity_types_ = geomodel_.nb_geological_entity_types() ;
+//        nb_entity_types_ = nb_geological_entity_types_ + nb_mesh_entity_types_ ;
+//        nb_removed_mesh_entities_.resize( nb_mesh_entity_types_, 0 ) ;
+//        nb_removed_geological_entities_.resize( nb_geological_entity_types_, 0 ) ;
+//        fill_entity_type_to_index_map() ;
+//        fill_nb_initial_entities() ;
+//        initialize_costly_storage() ;
+//        fill_nb_children_vector() ;
     }
 
     void GeoModelBuilderRemoval::remove_mesh_entities(
@@ -3619,15 +3619,26 @@ namespace RINGMesh {
         builder->delete_cells( to_delete, remove_isolated_vertices ) ;
     }
 
-    /*!
-     * @brief Computes and sets the adjacencies between the facets
-     * @details The adjacent facet is given for each vertex of each facet for the edge
-     * starting at this vertex.
-     * If there is no neighbor inside the same Surface adjacent is set to NO_ID
-     *
-     * @param[in] surface_id Index of the surface
-     * @param[in] recompute_adjacency If true, recompute the existing adjacencies
-     */
+    void GeoModelBuilderGeometry::set_surface_facet_adjacencies(
+        index_t surface_id,
+        const std::vector< index_t >& facets_id,
+        const std::vector< index_t >& edges_id,
+        const std::vector< index_t >& adjacent_triangles )
+    {
+        Surface& surface =
+            dynamic_cast< Surface& >( geomodel_access_.modifiable_mesh_entity(
+                gme_t( Surface::type_name_static(), surface_id ) ) ) ;
+        ringmesh_assert( surface.nb_vertices() > 0 ) ;
+        Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder(
+            surface.low_level_mesh_storage() ) ;
+        ringmesh_assert( facets_id.size() == edges_id.size() &&
+            facets_id.size() == adjacent_triangles.size() ) ;
+        for( index_t i = 0; i < facets_id.size(); ++i ) {
+            builder->set_facet_adjacent( facets_id[i], edges_id[i],
+                adjacent_triangles[i] ) ;
+        }
+    }
+
     void GeoModelBuilderGeometry::compute_surface_adjacencies(
         index_t surface_id,
         bool recompute_adjacency )
@@ -4182,7 +4193,8 @@ namespace RINGMesh {
             copy( *this, geomodel ),
             info( *this, geomodel ),
             from_surfaces( *this, geomodel ),
-            geomodel_( geomodel )
+            geomodel_( geomodel ),
+            geomodel_access_( geomodel )
     {
     }
 
