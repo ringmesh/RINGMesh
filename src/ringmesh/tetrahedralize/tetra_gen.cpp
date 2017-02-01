@@ -432,7 +432,7 @@ namespace RINGMesh {
 #endif
         }
 
-        mesher->builder_ = new GeoModelBuilder2( M ) ;
+        mesher->builder_ = new GeoModelBuilder( M ) ;
         mesher->output_region_ = region_id ;
         return mesher ;
     }

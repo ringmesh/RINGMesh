@@ -48,7 +48,7 @@
  */
 
 namespace RINGMesh {
-    class GeoModelBuilder2 ;
+    class GeoModelBuilder ;
 }
 
 namespace RINGMesh {
@@ -58,7 +58,7 @@ namespace RINGMesh {
      */
     class RINGMESH_API GeoModelBuilderRemoval {
     ringmesh_disable_copy( GeoModelBuilderRemoval ) ;
-        friend class GeoModelBuilder2 ;
+        friend class GeoModelBuilder ;
 
     public:
 
@@ -89,7 +89,7 @@ namespace RINGMesh {
             const std::set< gme_t >& entities_to_remove ) ;
 
     private:
-        GeoModelBuilderRemoval( GeoModelBuilder2& builder, GeoModel& geomodel ) ;
+        GeoModelBuilderRemoval( GeoModelBuilder& builder, GeoModel& geomodel ) ;
 
         // ---  High level functions ----------
         void initialize_for_removal(
@@ -541,7 +541,7 @@ namespace RINGMesh {
         }
 
     private:
-        GeoModelBuilder2& builder_ ;
+        GeoModelBuilder& builder_ ;
         GeoModel& geomodel_ ;
         GeoModelAccess geomodel_access_ ;
 

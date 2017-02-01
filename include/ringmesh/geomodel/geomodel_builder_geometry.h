@@ -48,14 +48,14 @@
  */
 
 namespace RINGMesh {
-    class GeoModelBuilder2 ;
+    class GeoModelBuilder ;
 }
 
 namespace RINGMesh {
 
     class RINGMESH_API GeoModelBuilderGeometry {
     ringmesh_disable_copy( GeoModelBuilderGeometry ) ;
-        friend class GeoModelBuilder2 ;
+        friend class GeoModelBuilder ;
 
     public:
         void recompute_geomodel_mesh() ;
@@ -362,7 +362,7 @@ namespace RINGMesh {
         void cut_region_by_surface( index_t region_id, index_t surface_id ) ;
 
     protected:
-        GeoModelBuilderGeometry( GeoModelBuilder2& builder, GeoModel& geomodel ) ;
+        GeoModelBuilderGeometry( GeoModelBuilder& builder, GeoModel& geomodel ) ;
 
     private:
         void copy_meshes( const GeoModel& from, const std::string& entity_type ) ;
@@ -421,7 +421,7 @@ namespace RINGMesh {
             index_t new_vertex ) ;
 
     private:
-        GeoModelBuilder2& builder_ ;
+        GeoModelBuilder& builder_ ;
         GeoModel& geomodel_ ;
         GeoModelAccess geomodel_access_ ;
     } ;

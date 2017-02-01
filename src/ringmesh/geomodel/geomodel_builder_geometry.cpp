@@ -293,7 +293,7 @@ namespace {
 
 namespace RINGMesh {
     GeoModelBuilderGeometry::GeoModelBuilderGeometry(
-        GeoModelBuilder2& builder,
+        GeoModelBuilder& builder,
         GeoModel& geomodel )
         : builder_( builder ), geomodel_( geomodel ), geomodel_access_( geomodel )
     {
@@ -1145,7 +1145,7 @@ namespace RINGMesh {
     }
 
     GeoModelBuilderGeology::GeoModelBuilderGeology(
-        GeoModelBuilder2& builder,
+        GeoModelBuilder& builder,
         GeoModel& geomodel )
         : builder_( builder ), geomodel_( geomodel ), geomodel_access_( geomodel )
     {

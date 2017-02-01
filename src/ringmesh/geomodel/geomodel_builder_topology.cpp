@@ -115,7 +115,7 @@ namespace {
 namespace RINGMesh {
 
     GeoModelBuilderTopology::GeoModelBuilderTopology(
-        GeoModelBuilder2& builder,
+        GeoModelBuilder& builder,
         GeoModel& geomodel )
         : builder_( builder ), geomodel_( geomodel ), geomodel_access_( geomodel )
     {

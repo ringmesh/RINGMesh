@@ -78,7 +78,7 @@ int main()
             << std::endl << std::endl << std::endl ;
         // Repair the model
 
-        GeoModelBuilder2 model_builder( M ) ;
+        GeoModelBuilder model_builder( M ) ;
         model_builder.repair.repair( GeoModelBuilderRepair::ALL ) ;
 
         // Test the validity again

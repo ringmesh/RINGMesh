@@ -438,7 +438,7 @@ namespace RINGMesh {
 
     class GeoModelAccess {
     ringmesh_disable_copy( GeoModelAccess ) ;
-        friend class GeoModelBuilder2 ;
+        friend class GeoModelBuilder ;
         friend class GeoModelBuilderGM ;
         friend class GeoModelBuilderTopology ;
         friend class GeoModelBuilderGeometry ;

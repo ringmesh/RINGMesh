@@ -47,7 +47,7 @@
  */
 
 namespace RINGMesh {
-    class GeoModelBuilder2 ;
+    class GeoModelBuilder ;
 }
 
 namespace RINGMesh {
@@ -61,7 +61,7 @@ namespace RINGMesh {
      */
     class RINGMESH_API GeoModelBuilderRepair {
     ringmesh_disable_copy( GeoModelBuilderRepair ) ;
-        friend class GeoModelBuilder2 ;
+        friend class GeoModelBuilder ;
 
     public:
         /*!
@@ -81,7 +81,7 @@ namespace RINGMesh {
          */
         void repair( RepairMode repair_mode ) ;
     private:
-        GeoModelBuilderRepair( GeoModelBuilder2& builder, GeoModel& geomodel ) ;
+        GeoModelBuilderRepair( GeoModelBuilder& builder, GeoModel& geomodel ) ;
 
         /*!
          * All implemented repair for a GeoModel.
@@ -186,7 +186,7 @@ namespace RINGMesh {
             const std::vector< index_t >& colocated_vertices ) ;
 
     private:
-        GeoModelBuilder2& builder_ ;
+        GeoModelBuilder& builder_ ;
         GeoModel& geomodel_ ;
         GeoModelAccess geomodel_access_ ;
     } ;
