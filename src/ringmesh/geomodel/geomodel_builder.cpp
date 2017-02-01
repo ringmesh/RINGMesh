@@ -2879,10 +2879,9 @@ namespace RINGMesh {
         const EntityType& type )
     {
         ringmesh_assert( GeoModelGeologicalEntityFactory::has_creator( type ) ) ;
-        EntityTypeManager& parentage =
-            geomodel_access_.modifiable_entity_type_manager() ;
 
-        parentage.geological_entity_types_.push_back( type ) ;
+        geomodel_access_.modifiable_entity_type_manager().geological_entity_types_.push_back(
+            type ) ;
         geomodel_access_.modifiable_geological_entities().push_back(
             std::vector< GeoModelGeologicalEntity* >() ) ;
         GeoModelGeologicalEntity* E = GeoModelGeologicalEntityFactory::create_object(
@@ -2890,6 +2889,8 @@ namespace RINGMesh {
 
         const EntityType child_type = E->child_type_name() ;
 
+        EntityTypeManager& parentage =
+        geomodel_access_.modifiable_entity_type_manager() ;
         parentage.register_relationship( type, child_type ) ;
 
         return geomodel_.entity_type_manager().nb_geological_entity_types() - 1 ;
