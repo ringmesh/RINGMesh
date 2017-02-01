@@ -414,36 +414,6 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
-    class UniverseAccess {
-    ringmesh_disable_copy( UniverseAccess ) ;
-        friend class GeoModelBuilderTopology ;
-        friend class GeoModelBuilderRemoval ;
-
-    private:
-        UniverseAccess( Universe& universe )
-            : universe_( universe )
-        {
-        }
-
-        std::vector< gme_t >& modifiable_boundaries()
-        {
-            return universe_.boundary_surfaces_ ;
-        }
-
-        std::vector< bool >& modifiable_sides()
-        {
-            return universe_.boundary_surface_sides_ ;
-        }
-
-        void copy( const Universe& from )
-        {
-            universe_.copy( from ) ;
-        }
-
-    private:
-        Universe& universe_ ;
-    } ;
-
     class GeoModelMeshEntityConstAccess {
     ringmesh_disable_copy( GeoModelMeshEntityConstAccess ) ;
         friend class GeoModelBuilderGeometry ;
