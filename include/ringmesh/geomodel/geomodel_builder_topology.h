@@ -42,7 +42,6 @@
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
 /*!
- * @file ringmesh/geomodel_builder_repair.h
  * @brief Builder tools to edit and build GeoModel topology
  * (connectivity, entity creation and deletion, ...).
  * @author Pierre Anquez
