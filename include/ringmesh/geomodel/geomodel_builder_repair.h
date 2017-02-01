@@ -33,8 +33,8 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_GEOMODEL_REPAIR__
-#define __RINGMESH_GEOMODEL_REPAIR__
+#ifndef __RINGMESH_GEOMODEL_BUILDER_REPAIR__
+#define __RINGMESH_GEOMODEL_BUILDER_REPAIR__
 
 #include <ringmesh/basic/common.h>
 

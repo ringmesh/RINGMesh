@@ -40,6 +40,7 @@
 /*!
  * @file Implementation of repair function of the surfaces of a GeoModel
  * @author Jeanne Pellerin
+ * @author Pierre Anquez
  */
 
 namespace RINGMesh {

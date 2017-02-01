@@ -48,16 +48,6 @@
 namespace {
     using namespace RINGMesh ;
 
-    gme_t find_corner( const GeoModel& geomodel, const vec3& point )
-    {
-        for( index_t i = 0; i < geomodel.nb_corners(); ++i ) {
-            if( geomodel.corner( i ).vertex( 0 ) == point ) {
-                return gme_t( Corner::type_name_static(), i ) ;
-            }
-        }
-        return gme_t() ;
-    }
-
     gme_t find_corner( const GeoModel& geomodel, index_t geomodel_point_id )
     {
         const GeoModelMeshVertices& geomodel_vertices = geomodel.mesh.vertices ;
@@ -69,65 +59,6 @@ namespace {
             }
         }
         return gme_t() ;
-    }
-
-    void get_entity_vertices_and_update_corners(
-        std::vector< index_t >& corners,
-        std::vector< index_t >& vertices )
-    {
-        std::vector< index_t > corners_to_vertices ;
-        get_unique_input_values_and_mapping< index_t >( corners, vertices,
-            corners_to_vertices ) ;
-        corners = corners_to_vertices ;
-    }
-
-    void get_internal_borders(
-        const GeoModelMeshEntity& entity,
-        std::set< index_t >& internal_borders )
-    {
-        for( index_t i = 0; i < entity.nb_boundaries(); ++i ) {
-            const GeoModelMeshEntity& border = entity.boundary( i ) ;
-            if( border.is_inside_border( entity ) ) {
-                internal_borders.insert( border.index() ) ;
-            }
-        }
-    }
-
-    bool inexact_equal( const vec3& v1, const vec3& v2, double epsilon )
-    {
-        return length( v2 - v1 ) < epsilon ;
-    }
-
-    /*************************************************************************/
-
-    /*!
-     * @brief Returns true if the Line has exactly the given vertices
-     *
-     * @param[in] L the line to compare to
-     * @param[in] rhs_vertices Vertices to compare to
-     */
-    bool line_equal( const Line& L, const std::vector< vec3 >& rhs_vertices )
-    {
-        if( L.nb_vertices() != rhs_vertices.size() ) {
-            return false ;
-        }
-        bool equal = true ;
-        for( index_t i = 0; i < L.nb_vertices(); i++ ) {
-            if( rhs_vertices[i] != L.vertex( i ) ) {
-                equal = false ;
-                break ;
-            }
-        }
-        if( equal ) return true ;
-
-        equal = true ;
-        for( index_t i = 0; i < L.nb_vertices(); i++ ) {
-            if( rhs_vertices[i] != L.vertex( L.nb_vertices() - i - 1 ) ) {
-                equal = false ;
-                break ;
-            }
-        }
-        return equal ;
     }
 
     /*!
@@ -162,6 +93,33 @@ namespace {
             }
         }
         return equal ;
+    }
+
+    void get_entity_vertices_and_update_corners(
+        std::vector< index_t >& corners,
+        std::vector< index_t >& vertices )
+    {
+        std::vector< index_t > corners_to_vertices ;
+        get_unique_input_values_and_mapping< index_t >( corners, vertices,
+            corners_to_vertices ) ;
+        corners = corners_to_vertices ;
+    }
+
+    void get_internal_borders(
+        const GeoModelMeshEntity& entity,
+        std::set< index_t >& internal_borders )
+    {
+        for( index_t i = 0; i < entity.nb_boundaries(); ++i ) {
+            const GeoModelMeshEntity& border = entity.boundary( i ) ;
+            if( border.is_inside_border( entity ) ) {
+                internal_borders.insert( border.index() ) ;
+            }
+        }
+    }
+
+    bool inexact_equal( const vec3& v1, const vec3& v2, double epsilon )
+    {
+        return length( v2 - v1 ) < epsilon ;
     }
 
     /*!
@@ -385,18 +343,6 @@ namespace {
             }
         }
         return NO_ID ;
-    }
-
-    void get_sorted_incident_surfaces(
-        const GeoModelMeshEntity& E,
-        std::vector< index_t >& incident_surfaces )
-    {
-        index_t nb = E.nb_in_boundary() ;
-        incident_surfaces.resize( nb ) ;
-        for( index_t i = 0; i < nb; ++i ) {
-            incident_surfaces[i] = E.in_boundary_gme( i ).index ;
-        }
-        std::sort( incident_surfaces.begin(), incident_surfaces.end() ) ;
     }
 } // anonymous namespace
 
@@ -2244,253 +2190,7 @@ namespace RINGMesh {
 
 ////////////////////////////////////////////////////////////////////////////
 
-    GeoModelBuilderTopology::GeoModelBuilderTopology(
-        GeoModelBuilder2& builder,
-        GeoModel& geomodel )
-        : builder_( builder ), geomodel_( geomodel ), geomodel_access_( geomodel )
-    {
-    }
 
-    void GeoModelBuilderTopology::copy_topology( const GeoModel& from )
-    {
-
-        copy_mesh_entity_topology< Corner >( from ) ;
-        copy_mesh_entity_topology< Line >( from ) ;
-        copy_mesh_entity_topology< Surface >( from ) ;
-        copy_mesh_entity_topology< Region >( from ) ;
-
-        for( index_t t = 0; t < from.nb_geological_entity_types(); t++ ) {
-            copy_geological_entity_topology( from,
-                from.geological_entity_type( t ) ) ;
-        }
-
-        UniverseAccess universe_access( geomodel_access_.modifiable_universe() ) ;
-        universe_access.copy( from.universe() ) ;
-        geomodel_access_.modifiable_epsilon() = from.epsilon() ;
-
-    }
-
-    bool GeoModelBuilderTopology::get_dependent_entities(
-        std::set< gme_t >& in ) const
-    {
-        std::size_t input_size = in.size() ;
-
-        // Add children of geological entities
-        for( std::set< gme_t >::iterator it( in.begin() ); it != in.end(); ++it ) {
-            gme_t cur = *it ;
-            if( geomodel_.entity_type_manager().is_geological_entity_type(
-                cur.type ) ) {
-                const GeoModelGeologicalEntity& E = geomodel_.geological_entity(
-                    cur ) ;
-                for( index_t j = 0; j < E.nb_children(); ++j ) {
-                    in.insert( E.child_gme( j ) ) ;
-                }
-            }
-        }
-        // Add geological entities which have no child
-        index_t nb_geological_entity_types =
-            geomodel_.entity_type_manager().nb_geological_entity_types() ;
-        for( index_t i = 0; i < nb_geological_entity_types; ++i ) {
-            const EntityType& type =
-                geomodel_.entity_type_manager().geological_entity_type( i ) ;
-
-            for( index_t j = 0; j < geomodel_.nb_geological_entities( type ); ++j ) {
-                bool no_child = true ;
-                const GeoModelGeologicalEntity& E = geomodel_.geological_entity(
-                    type, j ) ;
-                for( index_t k = 0; k < E.nb_children(); ++k ) {
-                    if( in.count( E.child_gme( k ) ) == 0 ) {
-                        no_child = false ;
-                        break ;
-                    }
-                }
-                if( no_child ) {
-                    in.insert( E.gme_id() ) ;
-                }
-            }
-        }
-        // Add mesh entities that are in the boundary of no mesh entity
-        for( index_t i = 0; i < EntityTypeManager::nb_mesh_entity_types(); ++i ) {
-            const EntityType& type = EntityTypeManager::mesh_entity_types()[i] ;
-            const EntityType& in_boundary_type = EntityTypeManager::in_boundary_type(
-                type ) ;
-            if( !EntityTypeManager::is_mesh_entity_type( in_boundary_type ) ) {
-                continue ;
-            } else {
-                for( index_t j = 0; j < geomodel_.nb_mesh_entities( type ); ++j ) {
-                    bool no_incident = true ;
-                    const GeoModelMeshEntity& E = geomodel_.mesh_entity( type, j ) ;
-                    for( index_t k = 0; k < E.nb_in_boundary(); ++k ) {
-                        if( in.count( E.in_boundary_gme( k ) ) == 0 ) {
-                            no_incident = false ;
-                            break ;
-                        }
-                    }
-                    if( no_incident ) {
-                        in.insert( E.gme_id() ) ;
-                    }
-                }
-            }
-        }
-        // Recursive call till nothing is added
-        if( in.size() != input_size ) {
-            return get_dependent_entities( in ) ;
-        } else {
-            return false ;
-        }
-    }
-
-    gme_t GeoModelBuilderTopology::find_or_create_corner( const vec3& point )
-    {
-        gme_t result = find_corner( geomodel_, point ) ;
-        if( !result.is_defined() ) {
-            result = create_mesh_entity< Corner >() ;
-            builder_.geometry.set_corner( result.index, point ) ;
-        }
-        return result ;
-    }
-
-    gme_t GeoModelBuilderTopology::find_or_create_corner( index_t geomodel_point_id )
-    {
-        gme_t result = find_corner( geomodel_, geomodel_point_id ) ;
-        if( !result.is_defined() ) {
-            result = create_mesh_entity< Corner >() ;
-            builder_.geometry.set_corner( result.index, geomodel_point_id ) ;
-        }
-        return result ;
-    }
-
-    /*!
-     * @brief Finds or creates a line
-     * @param[in] vertices Coordinates of the vertices of the line
-     * @return Index of the Line
-     */
-    gme_t GeoModelBuilderTopology::find_or_create_line(
-        const std::vector< vec3 >& vertices )
-    {
-        gme_t result ;
-        for( index_t i = 0; i < geomodel_.nb_lines(); ++i ) {
-            if( line_equal( geomodel_.line( i ), vertices ) ) {
-                result = geomodel_.line( i ).gme_id() ;
-            }
-        }
-        if( !result.is_defined() ) {
-            result = create_mesh_entity< Line >() ;
-            builder_.geometry.set_line( result.index, vertices ) ;
-
-            // Finds the indices of the corner at both extremities
-            // Both must be defined to have a valid LINE
-            add_mesh_entity_boundary( result,
-                find_or_create_corner( vertices.front() ).index ) ;
-            add_mesh_entity_boundary( result,
-                find_or_create_corner( vertices.back() ).index ) ;
-        }
-        return result ;
-    }
-
-    /*!
-     * @brief Finds or creates a line knowing its topological adjacencies
-     */
-    gme_t GeoModelBuilderTopology::find_or_create_line(
-        const std::vector< index_t >& sorted_adjacent_surfaces,
-        const gme_t& first_corner,
-        const gme_t& second_corner )
-    {
-        for( index_t i = 0; i < geomodel_.nb_lines(); ++i ) {
-            const Line& line = geomodel_.line( i ) ;
-            gme_t c0 = line.boundary_gme( 0 ) ;
-            gme_t c1 = line.boundary_gme( 1 ) ;
-
-            if( ( c0 == first_corner && c1 == second_corner )
-                || ( c0 == second_corner && c1 == first_corner ) ) {
-                std::vector< index_t > cur_adjacent_surfaces ;
-                get_sorted_incident_surfaces( line, cur_adjacent_surfaces ) ;
-                if( cur_adjacent_surfaces.size() == sorted_adjacent_surfaces.size()
-                    && std::equal( cur_adjacent_surfaces.begin(),
-                        cur_adjacent_surfaces.end(),
-                        sorted_adjacent_surfaces.begin() ) ) {
-                    return line.gme_id() ;
-                }
-            }
-        }
-        return create_mesh_entity< Line >() ;
-    }
-
-    void GeoModelBuilderTopology::complete_entity_connectivity()
-    {
-        // Order is important
-        complete_mesh_entity_connectivity< Line >() ;
-        complete_mesh_entity_connectivity< Corner >() ;
-        complete_mesh_entity_connectivity< Surface >() ;
-        complete_mesh_entity_connectivity< Region >() ;
-
-        // Geological entities
-        for( index_t i = 0; i < geomodel_.nb_geological_entity_types(); i++ ) {
-            const EntityType& type = geomodel_.geological_entity_type( i ) ;
-            if( geomodel_.nb_geological_entities( type ) > 0 ) {
-                if( geomodel_.geological_entity( type, 0 ).nb_children() == 0 ) {
-                    builder_.geology.fill_geological_entities_children( type ) ;
-                }
-            }
-        }
-    }
-
-    template< typename ENTITY >
-    void GeoModelBuilderTopology::complete_mesh_entity_connectivity()
-    {
-        const EntityType& type = ENTITY::type_name_static() ;
-        if( geomodel_.nb_mesh_entities( type ) > 0 ) {
-            const GeoModelMeshEntity& E = geomodel_.mesh_entity( type, 0 ) ;
-            if( E.nb_boundaries() == 0 ) {
-                fill_mesh_entities_boundaries( type ) ;
-            }
-            if( E.nb_in_boundary() == 0 ) {
-                fill_mesh_entities_in_boundaries( type ) ;
-            }
-            if( E.nb_parents() == 0 ) {
-                builder_.geology.fill_mesh_entities_parent( type ) ;
-            }
-        }
-    }
-
-    void GeoModelBuilderTopology::fill_mesh_entities_boundaries(
-        const EntityType& type )
-    {
-        if( geomodel_.nb_mesh_entities( type ) == 0 ) {
-            return ;
-        }
-        const EntityType& b_type = geomodel_.entity_type_manager().boundary_type(
-            type ) ;
-        if( EntityTypeManager::is_defined_type( b_type ) ) {
-            for( index_t i = 0; i < geomodel_.nb_mesh_entities( b_type ); ++i ) {
-                const GeoModelMeshEntity& b =
-                    geomodel_access_.modifiable_mesh_entity( gme_t( b_type, i ) ) ;
-                for( index_t j = 0; j < b.nb_in_boundary(); ++j ) {
-                    add_mesh_entity_boundary( b.in_boundary_gme( j ), i ) ;
-                }
-            }
-        }
-    }
-
-    void GeoModelBuilderTopology::fill_mesh_entities_in_boundaries(
-        const EntityType& type )
-    {
-        if( geomodel_.nb_mesh_entities( type ) == 0 ) {
-            return ;
-        }
-        const EntityType& in_b_type =
-            geomodel_.entity_type_manager().in_boundary_type( type ) ;
-        if( EntityTypeManager::is_defined_type( in_b_type ) ) {
-            for( index_t i = 0; i < geomodel_.nb_mesh_entities( in_b_type ); ++i ) {
-                const GeoModelMeshEntity& in_b =
-                    geomodel_access_.modifiable_mesh_entity(
-                        gme_t( in_b_type, i ) ) ;
-                for( index_t j = 0; j < in_b.nb_boundaries(); ++j ) {
-                    add_mesh_entity_in_boundary( in_b.boundary_gme( j ), i ) ;
-                }
-            }
-        }
-    }
 
     GeoModelBuilderFromSurfaces::GeoModelBuilderFromSurfaces(
         GeoModelBuilder2& builder,
@@ -2716,97 +2416,6 @@ namespace RINGMesh {
 
         // Finish up the geomodel
         builder_.end_geomodel() ;
-    }
-
-    template< typename ENTITY >
-    void GeoModelBuilderTopology::copy_mesh_entity_topology( const GeoModel& from )
-    {
-        const EntityType& type = ENTITY::type_name_static() ;
-        create_mesh_entities< ENTITY >( from.nb_mesh_entities( type ) ) ;
-
-        RINGMESH_PARALLEL_LOOP
-        for( index_t e = 0; e < geomodel_.nb_mesh_entities( type ); ++e ) {
-            gme_t id( type, e ) ;
-            GeoModelMeshEntityAccess gmme_access(
-                geomodel_access_.modifiable_mesh_entity( id ) ) ;
-            gmme_access.copy( from.mesh_entity( id ) ) ;
-        }
-    }
-
-    void GeoModelBuilderTopology::copy_geological_entity_topology(
-        const GeoModel& from,
-        const EntityType& type )
-    {
-        create_geological_entities( type, from.nb_geological_entities( type ) ) ;
-
-        RINGMESH_PARALLEL_LOOP
-        for( index_t e = 0; e < geomodel_.nb_geological_entities( type ); ++e ) {
-            gme_t id( type, e ) ;
-            GeoModelGeologicalEntityAccess gmge_access(
-                geomodel_access_.modifiable_geological_entity( id ) ) ;
-            gmge_access.copy( from.geological_entity( id ) ) ;
-        }
-    }
-
-    void GeoModelBuilderTopology::compute_universe()
-    {
-        if( geomodel_.universe().nb_boundaries() != 0 ) return ;
-        std::vector< bool > is_surface_universe_boundary( geomodel_.nb_surfaces(),
-            false ) ;
-        std::vector< bool > surface_side( geomodel_.nb_surfaces() ) ;
-        for( index_t r = 0; r < geomodel_.nb_regions(); r++ ) {
-            const Region& region = geomodel_.region( r ) ;
-            for( index_t s = 0; s < region.nb_boundaries(); s++ ) {
-                index_t surface_id = region.boundary_gme( s ).index ;
-                is_surface_universe_boundary[surface_id] =
-                    !is_surface_universe_boundary[surface_id] ;
-                surface_side[surface_id] = region.side( s ) ;
-            }
-        }
-
-        for( index_t s = 0; s < geomodel_.nb_surfaces(); s++ ) {
-            if( !is_surface_universe_boundary[s] ) continue ;
-            add_universe_boundary( s, surface_side[s] ) ;
-        }
-    }
-
-    bool GeoModelBuilderTopology::create_geological_entities(
-        const EntityType& type,
-        index_t nb_additional_entities )
-    {
-        find_or_create_geological_entity_type( type ) ;
-        std::vector< GeoModelGeologicalEntity* >& store =
-            geomodel_access_.modifiable_geological_entities( type ) ;
-        index_t old_size = static_cast< index_t >( store.size() ) ;
-        index_t new_size = old_size + nb_additional_entities ;
-        store.resize( new_size, nil ) ;
-        for( index_t i = old_size; i < new_size; i++ ) {
-            ringmesh_assert( store[i] == nil ) ;
-            store[i] = GeoModelGeologicalEntityAccess::create_geological_entity(
-                type, geomodel_, i ) ;
-        }
-        return true ;
-    }
-
-    index_t GeoModelBuilderTopology::create_geological_entity_type(
-        const EntityType& type )
-    {
-        ringmesh_assert( GeoModelGeologicalEntityFactory::has_creator( type ) ) ;
-
-        geomodel_access_.modifiable_entity_type_manager().geological_entity_types_.push_back(
-            type ) ;
-        geomodel_access_.modifiable_geological_entities().push_back(
-            std::vector< GeoModelGeologicalEntity* >() ) ;
-        GeoModelGeologicalEntity* E = GeoModelGeologicalEntityFactory::create_object(
-            type, geomodel_ ) ;
-
-        const EntityType child_type = E->child_type_name() ;
-
-        EntityTypeManager& parentage =
-            geomodel_access_.modifiable_entity_type_manager() ;
-        parentage.register_relationship( type, child_type ) ;
-
-        return geomodel_.entity_type_manager().nb_geological_entity_types() - 1 ;
     }
 
     GeoModelBuilderRemoval::GeoModelBuilderRemoval(
