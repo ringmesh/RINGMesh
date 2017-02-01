@@ -79,13 +79,13 @@ namespace RINGMesh {
     // Implementation details
     class GeoModelRegionFromSurfaces ;
 
-    /*!
-     * @brief Base class for all classes building a GeoModel.
-     * @details Derive from this class to build or modify a GeoModel. 
-     * @note NON Geometry related modifications are in GeoModelEditor class.
-     * @todo To refactor and rename. We need a GeoModelTopologyEditor 
-     * and a GeoModelGeometryEditor
-     */
+/*!
+ * @brief Base class for all classes building a GeoModel.
+ * @details Derive from this class to build or modify a GeoModel.
+ * @note NON Geometry related modifications are in GeoModelEditor class.
+ * @todo To refactor and rename. We need a GeoModelTopologyEditor
+ * and a GeoModelGeometryEditor
+ */
 //    class RINGMESH_API GeoModelBuilder: public GeoModelEditor {
 //    public:
 //        GeoModelBuilder( GeoModel& geomodel )
@@ -405,7 +405,6 @@ namespace RINGMesh {
 //            index_t region_id,
 //            index_t surface_id ) ;
 //    } ;
-
 }
 
 namespace RINGMesh {
@@ -413,204 +412,6 @@ namespace RINGMesh {
 }
 
 namespace RINGMesh {
-
-    class GeoModelMeshEntityConstAccess {
-    ringmesh_disable_copy( GeoModelMeshEntityConstAccess ) ;
-        friend class GeoModelBuilderGeometry ;
-
-    private:
-        GeoModelMeshEntityConstAccess( const GeoModelMeshEntity& gme )
-            : gmme_( gme )
-        {
-        }
-
-        const MeshBase* mesh() const
-        {
-            return gmme_.mesh_ ;
-        }
-
-    private:
-        const GeoModelMeshEntity& gmme_ ;
-    } ;
-
-    class GeoModelMeshEntityAccess {
-    ringmesh_disable_copy( GeoModelMeshEntityAccess ) ;
-        friend class GeoModelBuilderTopology ;
-        friend class GeoModelBuilderGeometry ;
-        friend class GeoModelBuilderGeology ;
-        friend class GeoModelBuilderInfo ;
-        friend class GeoModelBuilderRemoval ;
-
-    private:
-        GeoModelMeshEntityAccess( GeoModelMeshEntity& gme )
-            : gmme_( gme )
-        {
-        }
-
-        std::string& modifiable_name()
-        {
-            return gmme_.name_ ;
-        }
-
-        index_t& modifiable_index()
-        {
-            return gmme_.id_.index ;
-        }
-
-        GME::GEOL_FEATURE& modifiable_geol_feature()
-        {
-            return gmme_.geol_feature_ ;
-        }
-
-        std::vector< gme_t >& modifiable_boundaries()
-        {
-            return gmme_.boundaries_ ;
-        }
-
-        std::vector< gme_t >& modifiable_in_boundaries()
-        {
-            return gmme_.in_boundary_ ;
-        }
-
-        std::vector< bool >& modifiable_sides()
-        {
-            ringmesh_assert( gmme_.type_name() == Region::type_name_static() ) ;
-            return dynamic_cast< Region& >( gmme_ ).sides_ ;
-        }
-
-        std::vector< gme_t >& modifiable_parents()
-        {
-            return gmme_.parents_ ;
-        }
-
-        MeshBase* modifiable_mesh()
-        {
-            return gmme_.mesh_ ;
-        }
-
-        void change_mesh_data_structure( const MeshType type )
-        {
-            if( EntityTypeManager::is_corner( gmme_.type_name() ) ) {
-                Corner& corner = dynamic_cast< Corner& >( gmme_ ) ;
-                Mesh0D* old_mesh = corner.mesh0d_ ;
-                if( old_mesh->type_name() == type ) {
-                    return ;
-                }
-                corner.update_mesh_storage_type( Mesh0D::create_mesh( type ) ) ;
-                Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder(
-                    *corner.mesh0d_ ) ;
-                builder->copy( *old_mesh, true ) ;
-                delete old_mesh ;
-            } else if( EntityTypeManager::is_line( gmme_.type_name() ) ) {
-                Line& line = dynamic_cast< Line& >( gmme_ ) ;
-                Mesh1D* old_mesh = line.mesh1d_ ;
-                if( old_mesh->type_name() == type ) {
-                    return ;
-                }
-                line.update_mesh_storage_type( Mesh1D::create_mesh( type ) ) ;
-                Mesh1DBuilder_var builder = Mesh1DBuilder::create_builder(
-                    *line.mesh1d_ ) ;
-                builder->copy( *old_mesh, true ) ;
-                delete old_mesh ;
-            } else if( EntityTypeManager::is_surface( gmme_.type_name() ) ) {
-                Surface& surface = dynamic_cast< Surface& >( gmme_ ) ;
-                Mesh2D* old_mesh = surface.mesh2d_ ;
-                if( old_mesh->type_name() == type ) {
-                    return ;
-                }
-                surface.update_mesh_storage_type( Mesh2D::create_mesh( type ) ) ;
-                Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder(
-                    *surface.mesh2d_ ) ;
-                builder->copy( *old_mesh, true ) ;
-                delete old_mesh ;
-            } else if( EntityTypeManager::is_region( gmme_.type_name() ) ) {
-                Region& region = dynamic_cast< Region& >( gmme_ ) ;
-                Mesh3D* old_mesh = region.mesh3d_ ;
-                if( old_mesh->type_name() == type ) {
-                    return ;
-                }
-                region.update_mesh_storage_type( Mesh3D::create_mesh( type ) ) ;
-                Mesh3DBuilder_var builder = Mesh3DBuilder::create_builder(
-                    *region.mesh3d_ ) ;
-                builder->copy( *old_mesh, true ) ;
-                delete old_mesh ;
-            } else {
-                ringmesh_assert_not_reached ;
-            }
-        }
-
-        template< typename ENTITY >
-        static ENTITY* create_entity(
-            const GeoModel& geomodel,
-            index_t id,
-            const MeshType type )
-        {
-            return new ENTITY( geomodel, id, type ) ;
-        }
-
-        void copy( const GeoModelMeshEntity& from )
-        {
-            gmme_.copy( from ) ;
-        }
-
-    private:
-        GeoModelMeshEntity& gmme_ ;
-    } ;
-
-    class GeoModelGeologicalEntityAccess {
-    ringmesh_disable_copy( GeoModelGeologicalEntityAccess ) ;
-        friend class GeoModelBuilderTopology ;
-        friend class GeoModelBuilderGeology ;
-        friend class GeoModelBuilderInfo ;
-        friend class GeoModelBuilderRemoval ;
-
-    private:
-        GeoModelGeologicalEntityAccess( GeoModelGeologicalEntity& gmge )
-            : gmge_( gmge )
-        {
-        }
-
-        std::string& modifiable_name()
-        {
-            return gmge_.name_ ;
-        }
-
-        index_t& modifiable_index()
-        {
-            return gmge_.id_.index ;
-        }
-
-        GME::GEOL_FEATURE& modifiable_geol_feature()
-        {
-            return gmge_.geol_feature_ ;
-        }
-
-        std::vector< gme_t >& modifiable_children()
-        {
-            return gmge_.children_ ;
-        }
-
-        static GeoModelGeologicalEntity* create_geological_entity(
-            const EntityType& type,
-            const GeoModel& geomodel,
-            index_t index_in_geomodel )
-        {
-            GeoModelGeologicalEntity* E =
-                GeoModelGeologicalEntityFactory::create_object( type, geomodel ) ;
-            E->id_.index = index_in_geomodel ;
-            return E ;
-        }
-
-        void copy( const GeoModelGeologicalEntity& from )
-        {
-            gmge_.copy( from ) ;
-        }
-
-    private:
-        GeoModelGeologicalEntity& gmge_ ;
-    } ;
-
-
 
     class RINGMESH_API GeoModelBuilderTopology {
     ringmesh_disable_copy( GeoModelBuilderTopology ) ;
