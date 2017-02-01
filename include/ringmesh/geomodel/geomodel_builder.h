@@ -38,7 +38,10 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <ringmesh/geomodel/geomodel_editor.h>
+#include <ringmesh/geomodel/geomodel.h>
+#include <ringmesh/geomodel/geomodel_entity.h>
+#include <ringmesh/geomodel/geomodel_mesh_entity.h>
+#include <ringmesh/geomodel/geomodel_geological_entity.h>
 #include <ringmesh/geomodel/geomodel_builder_repair.h>
 
 /*!
@@ -689,6 +692,14 @@ namespace RINGMesh {
          */
         void remove_mesh_entities( const std::set< gme_t >& entities ) ;
 
+        /*!
+         * @brief Remove a list of geological entities of the geomodel
+         * @details No check is done on the consistency of this removal
+         *          The entities and all references to them are removed.
+         *          All dependent entities should be in the set of entities to remove,
+         *          with a prior call to get_dependent_entities function.
+         *
+         */
         void remove_geological_entities( const std::set< gme_t >& entities )
         {
             check_if_entities_are_not_meshed_entities( entities ) ;
