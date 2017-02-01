@@ -45,14 +45,8 @@
  * @author Jeanne Pellerin
  */
 
-/*! @todo Split All functions of geomodel_builder.cpp into smaller functions
- * Split this file into at least 4 files.
- */
-
 namespace {
     using namespace RINGMesh ;
-
-    typedef GeoModelMeshEntity GMME ;
 
     gme_t find_corner( const GeoModel& geomodel, const vec3& point )
     {
@@ -1105,163 +1099,8 @@ namespace RINGMesh {
         }
     }
 
-//    /*! Delete all GeoModelRegionFromSurfaces owned by the builder
-//     */
-//    GeoModelBuilder::~GeoModelBuilder()
-//    {
-//        for( index_t i = 0; i < regions_info_.size(); ++i ) {
-//            delete regions_info_[i] ;
-//        }
-//    }
 //
-//    void GeoModelBuilder::copy_meshes( const GeoModel& geomodel )
-//    {
-//        copy_meshes( geomodel, Corner::type_name_static() ) ;
-//        copy_meshes( geomodel, Line::type_name_static() ) ;
-//        copy_meshes( geomodel, Surface::type_name_static() ) ;
-//        copy_meshes( geomodel, Region::type_name_static() ) ;
-//    }
-//
-//    void GeoModelBuilder::copy_meshes(
-//        const GeoModel& from,
-//        const std::string& entity_type )
-//    {
-//        for( index_t i = 0; i < geomodel().nb_mesh_entities( entity_type ); ++i ) {
-//            copy_mesh( from, gme_t( entity_type, i ) ) ;
-//        }
-//    }
-//
-//    void GeoModelBuilder::copy_mesh( const GeoModel& from, const gme_t& mesh_entity )
-//    {
-//        const GeoModelMeshEntity& from_E = from.mesh_entity( mesh_entity ) ;
-//        assign_mesh_to_entity( *from_E.mesh_, mesh_entity ) ;
-//    }
-//
-//    void GeoModelBuilder::assign_mesh_to_entity(
-//        const MeshBase& mesh,
-//        const gme_t& to )
-//    {
-//        GeoModelMeshEntity& E = mesh_entity( to ) ;
-//        MeshBaseBuilder_var builder = MeshBaseBuilder::create_builder( *E.mesh_ ) ;
-//        builder->copy( mesh, true ) ;
-//    }
-//
-//    /*!
-//     * @brief Finds or creates a corner at given coordinates.
-//     * @param[in] point Geometric location of the Corner
-//     * @return Index of the Corner
-//     */
-//    gme_t GeoModelBuilder::find_or_create_corner( const vec3& point )
-//    {
-//        gme_t result = find_corner( geomodel(), point ) ;
-//        if( !result.is_defined() ) {
-//            result = create_mesh_entity< Corner >() ;
-//            set_corner( result.index, point ) ;
-//        }
-//        return result ;
-//    }
-//
-//    gme_t GeoModelBuilder::find_or_create_corner( index_t geomodel_point_id )
-//    {
-//        gme_t result = find_corner( geomodel(), geomodel_point_id ) ;
-//        if( !result.is_defined() ) {
-//            result = create_mesh_entity< Corner >() ;
-//            set_corner( result.index, geomodel_point_id ) ;
-//        }
-//        return result ;
-//    }
-//
-//    /*!
-//     * @brief Finds or creates a line
-//     * @param[in] vertices Coordinates of the vertices of the line
-//     * @return Index of the Line
-//     */
-//    gme_t GeoModelBuilder::find_or_create_line( const std::vector< vec3 >& vertices )
-//    {
-//        gme_t result ;
-//        for( index_t i = 0; i < geomodel().nb_lines(); ++i ) {
-//            if( line_equal( geomodel().line( i ), vertices ) ) {
-//                result = geomodel().line( i ).gme_id() ;
-//            }
-//        }
-//        if( !result.is_defined() ) {
-//            result = create_mesh_entity< Line >() ;
-//            set_line( result.index, vertices ) ;
-//
-//            // Finds the indices of the corner at both extremities
-//            // Both must be defined to have a valid LINE
-//            add_mesh_entity_boundary( result,
-//                find_or_create_corner( vertices.front() ).index ) ;
-//            add_mesh_entity_boundary( result,
-//                find_or_create_corner( vertices.back() ).index ) ;
-//        }
-//        return result ;
-//    }
-//
-//    /*!
-//     * @brief Finds or creates a line knowing its topological adjacencies
-//     */
-//    gme_t GeoModelBuilder::find_or_create_line(
-//        const std::vector< index_t >& sorted_adjacent_surfaces,
-//        const gme_t& first_corner,
-//        const gme_t& second_corner )
-//    {
-//        for( index_t i = 0; i < geomodel().nb_lines(); ++i ) {
-//            const Line& line = geomodel().line( i ) ;
-//            gme_t c0 = line.boundary_gme( 0 ) ;
-//            gme_t c1 = line.boundary_gme( 1 ) ;
-//
-//            if( ( c0 == first_corner && c1 == second_corner )
-//                || ( c0 == second_corner && c1 == first_corner ) ) {
-//                std::vector< index_t > cur_adjacent_surfaces ;
-//                get_sorted_incident_surfaces( line, cur_adjacent_surfaces ) ;
-//                if( cur_adjacent_surfaces.size() == sorted_adjacent_surfaces.size()
-//                    && std::equal( cur_adjacent_surfaces.begin(),
-//                        cur_adjacent_surfaces.end(),
-//                        sorted_adjacent_surfaces.begin() ) ) {
-//                    return line.gme_id() ;
-//                }
-//            }
-//        }
-//        return create_mesh_entity< Line >() ;
-//    }
-//
-//    /*!
-//     * @brief Sets the geometrical position of a vertex
-//     * @param[in] t Entity index
-//     * @param[in] v Index of the vertex to modify
-//     * @param[in] point New coordinates
-//     * @param[in] update If true, all the vertices sharing the same geometrical position
-//     *               in the GeoModel have their position updated, if false they
-//     *               are not.
-//     * @warning Be careful with this update parameter, it is a very nice source of nasty bugs
-//     */
-//    void GeoModelBuilder::set_mesh_entity_vertex(
-//        const gme_t& t,
-//        index_t v,
-//        const vec3& point,
-//        bool update )
-//    {
-//        GeoModelMeshEntity& E = mesh_entity( t ) ;
-//        GeoModelMeshVertices& geomodel_vertices = geomodel().mesh.vertices ;
-//        ringmesh_assert( v < E.nb_vertices() ) ;
-//        if( update ) {
-//            geomodel_vertices.update_point(
-//                geomodel_vertices.geomodel_vertex_id( E.gme_id(), v ), point ) ;
-//        } else {
-//            MeshBaseBuilder_var builder = MeshBaseBuilder::create_builder(
-//                *E.mesh_ ) ;
-//            builder->set_vertex( v, point ) ;
-//        }
-//    }
-//
-//    /*!
-//     * @brief Sets the geometrical position of a vertex from a geomodel vertex
-//     * @param[in] entity_id Entity index
-//     * @param[in] v Index of the vertex to modify
-//     * @param[in] geomodel_vertex Index in GeoModelMeshVertices of the vertex giving
-//     *                     the new position
-//     */
+
 //    void GeoModelBuilder::set_mesh_entity_vertex(
 //        const gme_t& entity_id,
 //        index_t v,
@@ -2664,6 +2503,15 @@ namespace RINGMesh {
     {
     }
 
+    /*! Delete all GeoModelRegionFromSurfaces owned by the builder
+     */
+    GeoModelBuilderFromSurfaces::~GeoModelBuilderFromSurfaces()
+    {
+        for( index_t i = 0; i < regions_info_.size(); ++i ) {
+            delete regions_info_[i] ;
+        }
+    }
+
     bool GeoModelBuilderFromSurfaces::build_lines_and_corners_from_surfaces()
     {
         LineGeometryFromGeoModelSurfaces line_computer( geomodel_,
@@ -3168,16 +3016,6 @@ namespace RINGMesh {
         copy_meshes( geomodel, Region::type_name_static() ) ;
     }
 
-    /*!
-     * @brief Sets the geometrical position of a vertex
-     * @param[in] t Entity index
-     * @param[in] v Index of the vertex to modify
-     * @param[in] point New coordinates
-     * @param[in] update If true, all the vertices sharing the same geometrical position
-     *               in the GeoModel have their position updated, if false they
-     *               are not.
-     * @warning Be careful with this update parameter, it is a very nice source of nasty bugs
-     */
     void GeoModelBuilderGeometry::set_mesh_entity_vertex(
         const gme_t& t,
         index_t v,
@@ -3198,13 +3036,6 @@ namespace RINGMesh {
         }
     }
 
-    /*!
-     * @brief Sets the geometrical position of a vertex from a geomodel vertex
-     * @param[in] entity_id Entity index
-     * @param[in] v Index of the vertex to modify
-     * @param[in] geomodel_vertex Index in GeoModelMeshVertices of the vertex giving
-     *                     the new position
-     */
     void GeoModelBuilderGeometry::set_mesh_entity_vertex(
         const gme_t& entity_id,
         index_t v,
@@ -3218,13 +3049,6 @@ namespace RINGMesh {
         geomodel_vertices.update_vertex_mapping( entity_id, v, geomodel_vertex ) ;
     }
 
-    /*!
-     * @brief Adds vertices to the mesh
-     * @details No update of the geomodel vertices is done
-     * @param[in] id Entity index
-     * @param[in] points Geometric positions of the vertices to add
-     * @param[in] clear If true the mesh is cleared, keeping its attributes
-     */
     void GeoModelBuilderGeometry::set_mesh_entity_vertices(
         const gme_t& id,
         const std::vector< vec3 >& points,
@@ -3247,31 +3071,18 @@ namespace RINGMesh {
         }
     }
 
-    /*!
-     * @brief Creates new vertices to the mesh
-     * @param[in] id Entity index
-     * @param[in] nb_vertices Number of vertices to create
-     * @return the first vertex index created
-     */
     index_t GeoModelBuilderGeometry::create_mesh_entity_vertices(
-        const gme_t& id,
+        const gme_t& entity_id,
         index_t nb_vertices )
     {
-        GeoModelMeshEntity& E = geomodel_access_.modifiable_mesh_entity( id ) ;
+        GeoModelMeshEntity& E = geomodel_access_.modifiable_mesh_entity(
+            entity_id ) ;
         GeoModelMeshEntityAccess gmme_access( E ) ;
         MeshBaseBuilder_var builder = MeshBaseBuilder::create_builder(
             *gmme_access.modifiable_mesh() ) ;
         return builder->create_vertices( nb_vertices ) ;
     }
 
-    /*!
-     * @brief Adds vertices to the mesh
-     * @details No update of the geomodel vertices is done
-     *
-     * @param[in] id Entity index
-     * @param[in] geomodel_vertices Geometric positions of the vertices to add
-     * @param[in] clear If true the mesh if cleared, keeping its attributes
-     */
     void GeoModelBuilderGeometry::set_mesh_entity_vertices(
         const gme_t& entity_id,
         const std::vector< index_t >& geomodel_vertices,
@@ -3294,24 +3105,12 @@ namespace RINGMesh {
         }
     }
 
-    /*!
-     * @brief Sets the geometric location of a Corner
-     *
-     * @param[in] corner_id Index of the corner
-     * @param[in] point Coordinates of the vertex
-     */
     void GeoModelBuilderGeometry::set_corner( index_t corner_id, const vec3& point )
     {
         set_mesh_entity_vertex( gme_t( Corner::type_name_static(), corner_id ), 0,
             point, false ) ;
     }
 
-    /*!
-     * @brief Sets one Line points
-     *
-     * @param[in] line_id Line index
-     * @param[in] vertices Coordinates of the vertices on the line
-     */
     void GeoModelBuilderGeometry::set_line(
         index_t line_id,
         const std::vector< vec3 >& vertices )
@@ -3328,33 +3127,17 @@ namespace RINGMesh {
         }
     }
 
-    /*!
-     * @brief Sets the points and facets for a surface
-     * @details If facet_adjacencies are not given they are computed.
-     *
-     * @param[in] surface_id Index of the surface
-     * @param[in] points Coordinates of the vertices
-     * @param[in] facets Indices in the vertices vector to build facets
-     * @param[in] facet_ptr Pointer to the beginning of a facet in facets
-     */
     void GeoModelBuilderGeometry::set_surface_geometry(
         index_t surface_id,
-        const std::vector< vec3 >& points,
-        const std::vector< index_t >& facets,
-        const std::vector< index_t >& facet_ptr )
+        const std::vector< vec3 >& surface_vertices,
+        const std::vector< index_t >& surface_facets,
+        const std::vector< index_t >& surface_facet_ptr )
     {
         set_mesh_entity_vertices( gme_t( Surface::type_name_static(), surface_id ),
-            points, true ) ;
-        assign_surface_mesh_facets( surface_id, facets, facet_ptr ) ;
+            surface_vertices, true ) ;
+        assign_surface_mesh_facets( surface_id, surface_facets, surface_facet_ptr ) ;
     }
 
-    /*!
-     * @brief Set the points and tetras for a region
-     *
-     * @param[in] region_id Index of the regions
-     * @param[in] points Coordinates of the vertices
-     * @param[in] tetras Indices in the vertices vector to build tetras
-     */
     void GeoModelBuilderGeometry::set_region_geometry(
         index_t region_id,
         const std::vector< vec3 >& points,
@@ -3365,12 +3148,6 @@ namespace RINGMesh {
         assign_region_tet_mesh( region_id, tetras ) ;
     }
 
-    /*!
-     * @brief Sets the vertex for a Corner. Store the info in the geomodel vertices
-     *
-     * @param[in] corner_id Index of the corner
-     * @param[in] unique_vertex Index of the vertex in the geomodel
-     */
     void GeoModelBuilderGeometry::set_corner(
         index_t corner_id,
         index_t geomodel_vertex_id )
@@ -3379,12 +3156,6 @@ namespace RINGMesh {
             geomodel_vertex_id ) ;
     }
 
-    /*!
-     * @brief Sets one Line vertices. Store the info in the geomodel vertices
-     *
-     * @param[in] id Line index
-     * @param[in] unique_vertices Indices in the geomodel of the unique vertices with which to build the Line
-     */
     void GeoModelBuilderGeometry::set_line(
         index_t line_id,
         const std::vector< index_t >& unique_vertices )
@@ -3393,7 +3164,8 @@ namespace RINGMesh {
         GeoModelMeshEntity& E = geomodel_access_.modifiable_mesh_entity(
             gme_t( Line::type_name_static(), line_id ) ) ;
 
-        ringmesh_assert( E.nb_vertices() == 0 ) ; // If there are already some vertices
+        ringmesh_assert( E.nb_vertices() == 0 ) ;
+        // If there are already some vertices
         // we are doomed because they are not removed
         /// @todo Do this test for all others set_something
         set_mesh_entity_vertices( E.gme_id(), unique_vertices, clear_vertices ) ;
@@ -3406,15 +3178,6 @@ namespace RINGMesh {
         }
     }
 
-    /*!
-     * @brief Sets the vertices and facets for a surface
-     * @details If facet_adjacencies are not given they are computed.
-     *
-     * @param[in] surface_id Index of the surface
-     * @param[in] geomodel_vertex_ids Indices of unique vertices in the GeoModel
-     * @param[in] facets Indices in the vertices vector to build facets
-     * @param[in] facet_ptr Pointer to the beginning of a facet in facets
-     */
     void GeoModelBuilderGeometry::set_surface_geometry(
         index_t surface_id,
         const std::vector< index_t >& geomodel_vertex_ids,
@@ -3426,12 +3189,6 @@ namespace RINGMesh {
         assign_surface_mesh_facets( surface_id, facets, facet_ptr ) ;
     }
 
-    /*!
-     * @brief Sets the facets of a surface
-     * @param[in] surface_id Index of the surface
-     * @param[in] facets Indices of the geomodel vertices defining the facets
-     * @param[in] facet_ptr Pointer to the beginning of a facet in facets
-     */
     void GeoModelBuilderGeometry::set_surface_geometry(
         index_t surface_id,
         const std::vector< index_t >& facets,
@@ -3550,13 +3307,6 @@ namespace RINGMesh {
         return builder->create_facet_polygon( vertex_indices ) ;
     }
 
-    /*!
-     * @brief Creates new cells in the mesh
-     * @param[in] region_id Entity index
-     * @param[in] type Type of cell
-     * @param[in] nb_cells Number of cells to creates
-     * @return the index of the first created cell
-     */
     index_t GeoModelBuilderGeometry::create_region_cells(
         index_t region_id,
         GEO::MeshCellType type,
@@ -3719,14 +3469,7 @@ namespace RINGMesh {
         }
         builder->connect_facets() ;
     }
-    /*!
-     * @brief Computes and sets the adjacencies between the cells
-     * @details The adjacent cell is given for each facet of each cell
-     * If there is no neighbor inside the same Region adjacent is set to NO_ID
-     *
-     * @param[in] region_id Index of the region
-     * @param[in] recompute_adjacency If true, recompute the existing adjacencies
-     */
+
     void GeoModelBuilderGeometry::compute_region_adjacencies(
         index_t region_id,
         bool recompute_adjacency )
@@ -4024,8 +3767,6 @@ namespace RINGMesh {
         const GeoModel& from,
         const gme_t& mesh_entity )
     {
-//        const GeoModelMeshEntity& from_E = from.mesh_entity( mesh_entity ) ;
-//        GeoModelAccess from_const_acess( from ) ;
         const GeoModelMeshEntityConstAccess from_E_const_access(
             from.mesh_entity( mesh_entity ) ) ;
         assign_mesh_to_entity( *from_E_const_access.mesh(), mesh_entity ) ;
@@ -4204,8 +3945,6 @@ namespace RINGMesh {
             }
         }
     }
-
-
 
     GeoModelBuilderCopy::GeoModelBuilderCopy(
         GeoModelBuilder2& builder,
