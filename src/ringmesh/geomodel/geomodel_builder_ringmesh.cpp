@@ -588,8 +588,7 @@ namespace RINGMesh {
 
         // Repair line boundary order.
         topology.complete_entity_connectivity() ;
-        GeoModelRepair repair( geomodel_ ) ;
-        repair.repair( GeoModelRepair::LINE_BOUNDARY_ORDER ) ;
+        repair.repair( GeoModelBuilderRepair::LINE_BOUNDARY_ORDER ) ;
 
         unzClose( uz ) ;
     }
