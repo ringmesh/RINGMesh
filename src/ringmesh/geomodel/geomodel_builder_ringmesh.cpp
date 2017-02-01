@@ -37,7 +37,7 @@
 
 #include <geogram/basic/file_system.h>
 
-#include <ringmesh/geomodel/geomodel_repair.h>
+#include <ringmesh/geomodel/geomodel_builder_repair.h>
 
 #include <ringmesh/io/io.h>
 

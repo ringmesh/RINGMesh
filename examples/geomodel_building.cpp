@@ -110,7 +110,7 @@ int main()
         // Say Hello
         print_header_information() ;
         Logger::div( "RINGMesh Training" ) ;
-        Logger::out( "" ) << "Welcome to the training of RINGMesh ! !" << std::endl ;
+        Logger::out( "" ) << "Welcome to the training of RINGMesh !" << std::endl ;
 
         // Measure the time between the GEO::Stopwatch creation and its destruction.
         GEO::Stopwatch total( "Total time" ) ;
@@ -196,7 +196,7 @@ int main()
         // Setting the Geometry       #
         //#############################
 
-        //We declare the coordinates of the corners. We arrange the corner in a
+        // We declare the coordinates of the corners. We arrange the corner in a
         // table
         vec3 corners_table[12] ;
         corners_table[0] = vec3( 0, 0, 0 ) ;
@@ -305,7 +305,7 @@ int main()
         // We create a vector cur_coor_surface containing 4 vertices.
         // These 4 vertices delimits each surface so each surface
         // will contain one unique quad as a facet.
-        // You can defined a more conplicated mesh (for example a
+        // You can defined a more complicated mesh (for example a
         // triangular mesh) with these methods.
         std::vector< index_t > facet( 4, 0 ) ;
         facet[0] = 0 ;
@@ -708,7 +708,7 @@ int main()
         // Child of an Interface is a Surface
         // Child of a Layer is a Region
 
-        //We use the method "add_geological_entity_child"
+        // We use the method "add_geological_entity_child"
         // First argument is the parent (ie a GeoModelGeologicalEntity)
         // Second argument is the index of the child (ie a GeoModelMeshEntity)
 
