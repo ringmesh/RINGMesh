@@ -48,14 +48,14 @@
  */
 
 namespace RINGMesh {
-    class GeoModelBuilder2 ;
+    class GeoModelBuilder ;
 }
 
 namespace RINGMesh {
 
     class RINGMESH_API GeoModelBuilderTopology {
     ringmesh_disable_copy( GeoModelBuilderTopology ) ;
-        friend class GeoModelBuilder2 ;
+        friend class GeoModelBuilder ;
 
     public:
         /*!
@@ -182,7 +182,7 @@ namespace RINGMesh {
         void compute_universe() ;
 
     private:
-        GeoModelBuilderTopology( GeoModelBuilder2& builder, GeoModel& geomodel ) ;
+        GeoModelBuilderTopology( GeoModelBuilder& builder, GeoModel& geomodel ) ;
 
         template< typename ENTITY >
         bool create_mesh_entities(
@@ -228,7 +228,7 @@ namespace RINGMesh {
             const EntityType& type ) ;
 
     private:
-        GeoModelBuilder2& builder_ ;
+        GeoModelBuilder& builder_ ;
         GeoModel& geomodel_ ;
         GeoModelAccess geomodel_access_ ;
     } ;

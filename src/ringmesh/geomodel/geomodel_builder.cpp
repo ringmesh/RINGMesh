@@ -799,13 +799,13 @@ namespace RINGMesh {
     GeoModelBuilderFile::GeoModelBuilderFile(
         GeoModel& geomodel,
         const std::string& filename )
-        : GeoModelBuilder2( geomodel ), filename_( filename )
+        : GeoModelBuilder( geomodel ), filename_( filename )
     {
 
     }
 
     GeoModelBuilderFromSurfaces::GeoModelBuilderFromSurfaces(
-        GeoModelBuilder2& builder,
+        GeoModelBuilder& builder,
         GeoModel& geomodel )
         :
             options_(),
@@ -1033,7 +1033,7 @@ namespace RINGMesh {
 
 
     GeoModelBuilderCopy::GeoModelBuilderCopy(
-        GeoModelBuilder2& builder,
+        GeoModelBuilder& builder,
         GeoModel& geomodel )
         : builder_( builder ), geomodel_( geomodel ), geomodel_access_( geomodel )
     {
@@ -1046,13 +1046,13 @@ namespace RINGMesh {
     }
 
     GeoModelBuilderInfo::GeoModelBuilderInfo(
-        GeoModelBuilder2& builder,
+        GeoModelBuilder& builder,
         GeoModel& geomodel )
         : builder_( builder ), geomodel_( geomodel ), geomodel_access_( geomodel )
     {
     }
 
-    GeoModelBuilder2::GeoModelBuilder2( GeoModel& geomodel )
+    GeoModelBuilder::GeoModelBuilder( GeoModel& geomodel )
         :
             topology( *this, geomodel ),
             geometry( *this, geomodel ),
@@ -1067,7 +1067,7 @@ namespace RINGMesh {
     {
     }
 
-    void GeoModelBuilder2::end_geomodel()
+    void GeoModelBuilder::end_geomodel()
     {
         if( geomodel_.name().empty() ) {
             info.set_geomodel_name( "model_default_name" ) ;

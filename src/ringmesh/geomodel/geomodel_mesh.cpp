@@ -551,7 +551,7 @@ namespace RINGMesh {
         Mesh0DBuilder_var mesh_builder = Mesh0DBuilder::create_builder( *mesh_ ) ;
         mesh_builder->set_vertex( v, point ) ;
 
-        GeoModelBuilder2 builder( gm_ ) ;
+        GeoModelBuilder builder( gm_ ) ;
 
         std::vector< GMEVertex > gme_v ;
         gme_vertices( v, gme_v ) ;

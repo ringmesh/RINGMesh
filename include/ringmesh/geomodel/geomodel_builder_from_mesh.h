@@ -53,10 +53,10 @@ namespace RINGMesh {
     /*!
      * @brief To build a GeoModel from a set of disconnected polygonal surfaces
      */
-    class RINGMESH_API GeoModelBuilderSurfaceMesh: public GeoModelBuilder2 {
+    class RINGMESH_API GeoModelBuilderSurfaceMesh: public GeoModelBuilder {
     public:
         GeoModelBuilderSurfaceMesh( GeoModel& geomodel, const GEO::Mesh& mesh )
-            : GeoModelBuilder2( geomodel ), mesh_( mesh )
+            : GeoModelBuilder( geomodel ), mesh_( mesh )
         {
             from_surfaces.options_.compute_lines = true ;
             from_surfaces.options_.compute_corners = true ;

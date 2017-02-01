@@ -46,7 +46,7 @@ using namespace RINGMesh ;
 
 void build_geomodel( GeoModel& geomodel )
 {
-    GeoModelBuilder2 builder( geomodel ) ;
+    GeoModelBuilder builder( geomodel ) ;
 
     vec3 v0( 0, 0, 0 ) ;
     vec3 v1( 1, 0, 0 ) ;
