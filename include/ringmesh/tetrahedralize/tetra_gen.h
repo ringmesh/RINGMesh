@@ -59,7 +59,7 @@ extern "C" {
 
 namespace RINGMesh {
     class GeoModel ;
-    class GeoModelBuilder ;
+    class GeoModelBuilder2 ;
     class Region ;
     class TetraGen ;
     class WellGroup ;
@@ -99,7 +99,7 @@ namespace RINGMesh {
         void set_tetra( index_t index, int* tet ) ;
 
     protected:
-        GeoModelBuilder* builder_ ;
+        GeoModelBuilder2* builder_ ;
         index_t output_region_ ;
         GEO::Mesh tetmesh_constraint_ ;
         const Region* region_ ;

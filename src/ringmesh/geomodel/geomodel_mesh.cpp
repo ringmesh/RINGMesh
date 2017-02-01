@@ -551,13 +551,13 @@ namespace RINGMesh {
         Mesh0DBuilder_var mesh_builder = Mesh0DBuilder::create_builder( *mesh_ ) ;
         mesh_builder->set_vertex( v, point ) ;
 
-        GeoModelBuilder builder( gm_ ) ;
+        GeoModelBuilder2 builder( gm_ ) ;
 
         std::vector< GMEVertex > gme_v ;
         gme_vertices( v, gme_v ) ;
         for( index_t i = 0; i < gme_v.size(); i++ ) {
             const GMEVertex& info = gme_v[i] ;
-            builder.set_mesh_entity_vertex( info.gme_id, info.v_id, point, false ) ;
+            builder.geometry.set_mesh_entity_vertex( info.gme_id, info.v_id, point, false ) ;
         }
     }
 
