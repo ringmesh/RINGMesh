@@ -2979,7 +2979,7 @@ namespace RINGMesh {
         } else {
             initialize_for_removal( entities ) ;
             do_delete_flagged_mesh_entities() ;
-            builder_.geometry.recompute_geomodel_mesh() ;
+            geomodel_.mesh.vertices.clear() ;
             update_mesh_entity_connectivity() ;
             flag_geological_entities_without_children() ;
             do_delete_flagged_geological_entities() ;
