@@ -37,10 +37,8 @@
 
 #include <geogram/basic/file_system.h>
 
-#include <ringmesh/geomodel/geomodel_builder_repair.h>
-
 #include <ringmesh/io/io.h>
-
+#include <ringmesh/geomodel/geomodel_builder_repair.h>
 #include <ringmesh/mesh/geogram_mesh.h>
 #include <ringmesh/mesh/geogram_mesh_builder.h>
 
@@ -297,7 +295,7 @@ namespace RINGMesh {
         do {
             char char_file_name[MAX_FILENAME] ;
             if( unzGetCurrentFileInfo64( uz, NULL, char_file_name,
-            MAX_FILENAME, NULL, 0, NULL, 0 ) != UNZ_OK ) {
+                MAX_FILENAME, NULL, 0, NULL, 0 ) != UNZ_OK ) {
                 throw RINGMeshException( "I/O", "Unable to get file name" ) ;
             }
             std::string file_name( char_file_name ) ;
