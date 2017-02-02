@@ -105,8 +105,8 @@ namespace RINGMesh {
     void GeoModelGeologicalEntity::initialize()
     {
         ringmesh_register_GeoModelGeologicalEntity_creator( Contact ) ;
-        ringmesh_register_GeoModelGeologicalEntity_creator( Interface );
-        ringmesh_register_GeoModelGeologicalEntity_creator( Layer );
+        ringmesh_register_GeoModelGeologicalEntity_creator( Interface ) ;
+        ringmesh_register_GeoModelGeologicalEntity_creator( Layer ) ;
     }
 
     const std::string Contact::child_type_name() const

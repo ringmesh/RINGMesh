@@ -84,15 +84,12 @@ namespace RINGMesh {
 
     // Implementation details
     class GeoModelRegionFromSurfaces ;
-    class GeoModelBuilder ;
 }
 
 namespace RINGMesh {
 
     class RINGMESH_API GeoModelBuilderInfo {
     ringmesh_disable_copy( GeoModelBuilderInfo ) ;
-        friend class GeoModelBuilder ;
-
     public:
         /*!
          *@brief Set the name of the geomodel
@@ -119,7 +116,9 @@ namespace RINGMesh {
         }
 
     protected:
-        GeoModelBuilderInfo( GeoModelBuilder& builder, GeoModel& geomodel ) ;
+        friend GeoModelBuilder::GeoModelBuilderInfo(
+            GeoModelBuilder& builder,
+            GeoModel& geomodel ) ;
 
     private:
         GeoModelBuilder& builder_ ;
@@ -260,9 +259,7 @@ namespace RINGMesh {
         bool build_lines_and_corners_from_surfaces() ;
 
     private:
-        GeoModelBuilderFromSurfaces(
-            GeoModelBuilder& builder,
-            GeoModel& geomodel ) ;
+        GeoModelBuilderFromSurfaces( GeoModelBuilder& builder, GeoModel& geomodel ) ;
 
         /*!
          * @brief Build the regions of the GeoModel from the Surfaces
