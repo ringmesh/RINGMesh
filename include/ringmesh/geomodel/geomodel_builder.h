@@ -90,6 +90,8 @@ namespace RINGMesh {
 
     class RINGMESH_API GeoModelBuilderInfo {
     ringmesh_disable_copy( GeoModelBuilderInfo ) ;
+        friend class GeoModelBuilder ;
+    
     public:
         /*!
          *@brief Set the name of the geomodel
@@ -116,7 +118,7 @@ namespace RINGMesh {
         }
 
     protected:
-        friend GeoModelBuilder::GeoModelBuilderInfo(
+        GeoModelBuilderInfo(
             GeoModelBuilder& builder,
             GeoModel& geomodel ) ;
 
