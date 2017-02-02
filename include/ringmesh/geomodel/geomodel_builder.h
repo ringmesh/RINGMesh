@@ -89,8 +89,6 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
-
-
     class RINGMESH_API GeoModelBuilderInfo {
     ringmesh_disable_copy( GeoModelBuilderInfo ) ;
         friend class GeoModelBuilder ;

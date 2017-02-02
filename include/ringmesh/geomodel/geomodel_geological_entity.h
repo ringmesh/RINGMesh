@@ -55,7 +55,6 @@ namespace RINGMesh {
     class RINGMESH_API GeoModelGeologicalEntity: public GeoModelEntity {
     ringmesh_disable_copy( GeoModelGeologicalEntity ) ;
     public:
-        friend class GeoModelEditor ;
         friend class GeoModelGeologicalEntityAccess ;
 
         static void initialize() ;

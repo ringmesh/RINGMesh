@@ -56,8 +56,6 @@ namespace RINGMesh {
     class RINGMESH_API GeoModelEntity {
     ringmesh_disable_copy( GeoModelEntity ) ;
     public:
-        friend class GeoModelEditor ;
-
         typedef std::string EntityType ;
 
         /*!
@@ -143,7 +141,7 @@ namespace RINGMesh {
     protected:
         /*!
          * @details Client code should only create GeoModelEntities through
-         * GeoModelEditor derived classes.
+         * GeoModelBuilderTopology class.
          *
          * @param[in] geomodel Geomodel owning the Entity to create
          * @param[in] id Index of the entity in the corresponding vector in the geomodel
@@ -184,7 +182,6 @@ namespace RINGMesh {
     class RINGMESH_API Universe: public GeoModelEntity {
     ringmesh_disable_copy( Universe ) ;
     public:
-        friend class GeoModelEditor ;
         friend class UniverseAccess ;
 
         Universe( const GeoModel& geomodel ) ;
