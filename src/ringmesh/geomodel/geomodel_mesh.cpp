@@ -557,7 +557,7 @@ namespace RINGMesh {
         gme_vertices( v, gme_v ) ;
         for( index_t i = 0; i < gme_v.size(); i++ ) {
             const GMEVertex& info = gme_v[i] ;
-            builder.set_mesh_entity_vertex( info.gme_id, info.v_id, point, false ) ;
+            builder.geometry.set_mesh_entity_vertex( info.gme_id, info.v_id, point, false ) ;
         }
     }
 
