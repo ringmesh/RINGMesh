@@ -69,7 +69,7 @@ namespace RINGMesh {
      * @brief Manages the type relationship between GeoModelEntities
      * Each GeoModel owns one instance of it.
      */
-    class RINGMESH_API EntityTypeManager {
+    class RINGMESH_API EntityTyspeManager {
     ringmesh_disable_copy( EntityTypeManager ) ;
     public:
         friend class GeoModelEditor ;
