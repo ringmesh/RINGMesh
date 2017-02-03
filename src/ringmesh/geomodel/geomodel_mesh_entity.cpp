@@ -64,8 +64,9 @@ namespace {
             if( geomodel_vertices.geomodel_vertex_id( E.gme_id(), i ) == NO_ID
                 && geomodel_vertices.geomodel_vertex_id( E.gme_id(), i )
                     >= E.geomodel().mesh.vertices.nb() ) {
-                Logger::warn( "GeoModelEntity" ) << "Invalid geomodel vertex index in "
-                    << E.gme_id() << std::endl ;
+                Logger::warn( "GeoModelEntity" )
+                    << "Invalid geomodel vertex index in " << E.gme_id()
+                    << std::endl ;
                 return false ;
             }
         }
@@ -216,7 +217,8 @@ namespace {
         for( index_t c = 0; c < S.nb_mesh_element_vertices( f ); ++c ) {
             index_t facet_vertex_index = S.mesh_element_vertex_index( f, c ) ;
             corners[v] = facet_vertex_index ;
-            corners_global[v] = geomodel_vertices.geomodel_vertex_id( S.gme_id(), f, v ) ;
+            corners_global[v] = geomodel_vertices.geomodel_vertex_id( S.gme_id(), f,
+                v ) ;
             v++ ;
         }
         double area = S.mesh_element_size( f ) ;
@@ -233,11 +235,12 @@ namespace {
         index_t nb_vertices_in_cell = region.nb_mesh_element_vertices( cell_index ) ;
         std::vector< index_t > vertices( nb_vertices_in_cell, NO_ID ) ;
         std::vector< index_t > vertices_global( nb_vertices_in_cell, NO_ID ) ;
-        const GeoModelMeshVertices& geomodel_vertices = region.geomodel().mesh.vertices ;
+        const GeoModelMeshVertices& geomodel_vertices =
+            region.geomodel().mesh.vertices ;
         for( index_t v = 0; v < nb_vertices_in_cell; v++ ) {
             vertices[v] = region.mesh_element_vertex_index( cell_index, v ) ;
-            vertices_global[v] = geomodel_vertices.geomodel_vertex_id( region.gme_id(),
-                cell_index, v ) ;
+            vertices_global[v] = geomodel_vertices.geomodel_vertex_id(
+                region.gme_id(), cell_index, v ) ;
         }
         double volume = region.mesh_element_size( cell_index ) ;
         return check_mesh_entity_vertices_are_different( vertices, vertices_global )
@@ -283,7 +286,8 @@ namespace RINGMesh {
         // the vertex of this entity
         const GeoModelMeshVertices& geomodel_vertices = geomodel().mesh.vertices ;
         for( index_t v = 0; v < nb_vertices(); ++v ) {
-            index_t geomodel_v = geomodel_vertices.geomodel_vertex_id( gme_id(), v ) ;
+            index_t geomodel_v = geomodel_vertices.geomodel_vertex_id( gme_id(),
+                v ) ;
 
             if( geomodel_v == NO_ID ) {
                 Logger::warn( "GeoModelEntity" ) << gme_id() << " vertex " << v
@@ -304,7 +308,8 @@ namespace RINGMesh {
             if( !found_in_backward ) {
                 Logger::warn( "GeoModelEntity" ) << "Error in mapping of "
                     << gme_id() << " vertex " << v
-                    << " to the related global geomodel vertex indices." << std::endl ;
+                    << " to the related global geomodel vertex indices."
+                    << std::endl ;
                 valid = false ;
             }
         }
@@ -401,8 +406,8 @@ namespace RINGMesh {
             entity_type ) ;
         for( index_t p_itr = 0; p_itr < parent_types.size(); ++p_itr ) {
             const EntityType& parent_type = parent_types[p_itr] ;
-            index_t nb_parent_entities_in_geomodel = geomodel_.nb_geological_entities(
-                parent_type ) ;
+            index_t nb_parent_entities_in_geomodel =
+                geomodel_.nb_geological_entities( parent_type ) ;
             if( nb_parent_entities_in_geomodel == 0 ) {
                 continue ;
             } else {
@@ -711,8 +716,6 @@ namespace RINGMesh {
                 << " has less than 3 vertices " << std::endl ;
             valid = false ;
         }
-        // Is it important to have edges or not ?
-        // I would say we do not care (JP) - so no check on that 
         if( mesh2d_->nb_facets() == 0 ) {
             Logger::warn( "GeoModelEntity" ) << gme_id() << " has no facets "
                 << std::endl ;
@@ -762,12 +765,6 @@ namespace RINGMesh {
             Logger::warn( "GeoModelEntity" ) << gme_id() << " mesh has " << cc
                 << " connected components " << std::endl ;
             valid = false ;
-#ifdef RINGMESH_DEBUG
-            std::ostringstream file ;
-            file << validity_errors_directory << "/" << "invalid_surf_" << index()
-                << ".geogram" ;
-            save( file.str() ) ;
-#endif  
         }
         return valid ;
     }
@@ -1161,5 +1158,56 @@ namespace RINGMesh {
         } while( !S.empty() ) ;
 
         return static_cast< index_t >( result.size() ) ;
+    }
+
+    void GeoModelMeshEntityAccess::change_mesh_data_structure( const MeshType type )
+    {
+        if( EntityTypeManager::is_corner( gmme_.type_name() ) ) {
+            Corner& corner = dynamic_cast< Corner& >( gmme_ ) ;
+            Mesh0D* old_mesh = corner.mesh0d_ ;
+            if( old_mesh->type_name() == type ) {
+                return ;
+            }
+            corner.update_mesh_storage_type( Mesh0D::create_mesh( type ) ) ;
+            Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder(
+                *corner.mesh0d_ ) ;
+            builder->copy( *old_mesh, true ) ;
+            delete old_mesh ;
+        } else if( EntityTypeManager::is_line( gmme_.type_name() ) ) {
+            Line& line = dynamic_cast< Line& >( gmme_ ) ;
+            Mesh1D* old_mesh = line.mesh1d_ ;
+            if( old_mesh->type_name() == type ) {
+                return ;
+            }
+            line.update_mesh_storage_type( Mesh1D::create_mesh( type ) ) ;
+            Mesh1DBuilder_var builder = Mesh1DBuilder::create_builder(
+                *line.mesh1d_ ) ;
+            builder->copy( *old_mesh, true ) ;
+            delete old_mesh ;
+        } else if( EntityTypeManager::is_surface( gmme_.type_name() ) ) {
+            Surface& surface = dynamic_cast< Surface& >( gmme_ ) ;
+            Mesh2D* old_mesh = surface.mesh2d_ ;
+            if( old_mesh->type_name() == type ) {
+                return ;
+            }
+            surface.update_mesh_storage_type( Mesh2D::create_mesh( type ) ) ;
+            Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder(
+                *surface.mesh2d_ ) ;
+            builder->copy( *old_mesh, true ) ;
+            delete old_mesh ;
+        } else if( EntityTypeManager::is_region( gmme_.type_name() ) ) {
+            Region& region = dynamic_cast< Region& >( gmme_ ) ;
+            Mesh3D* old_mesh = region.mesh3d_ ;
+            if( old_mesh->type_name() == type ) {
+                return ;
+            }
+            region.update_mesh_storage_type( Mesh3D::create_mesh( type ) ) ;
+            Mesh3DBuilder_var builder = Mesh3DBuilder::create_builder(
+                *region.mesh3d_ ) ;
+            builder->copy( *old_mesh, true ) ;
+            delete old_mesh ;
+        } else {
+            ringmesh_assert_not_reached ;
+        }
     }
 }

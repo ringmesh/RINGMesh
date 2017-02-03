@@ -1428,6 +1428,7 @@ namespace {
             clear();
         }
 
+	
         /**
          * \brief Sets or resets exact mode for nearest neighbor search
          * (default is exact).
@@ -2167,6 +2168,13 @@ namespace {
             set_max_angle(alpha);
         }
 
+	/**
+	 * \brief Runs the threads.
+	 */
+	void run_threads() {
+	    Process::run_threads(thread_);
+	}
+	
         /**
          * \brief Estimates the normals of the point set.
          * \details They are stored in the "normal" vertex attribute.
@@ -2186,7 +2194,7 @@ namespace {
             for(index_t t = 0; t < thread_.size(); t++) {
                 thread_[t]->set_mode(CO3NE_NORMALS);
             }
-            Process::run_threads(thread_);
+            run_threads();
         }
 
         /**
@@ -2202,7 +2210,7 @@ namespace {
             for(index_t t = 0; t < thread_.size(); t++) {
                 thread_[t]->set_mode(CO3NE_SMOOTH);
             }
-            Process::run_threads(thread_);
+            run_threads();
             /*
               // TODO: once 'steal-arg' mode works for vertices,
               // we can use this one.
@@ -2246,7 +2254,9 @@ namespace {
                     normal.is_bound() && normal.dimension() == 3
                 );
             }
-               
+
+	    ProgressTask progress("reconstruct",100);
+
             if(has_normals) {
                 Stopwatch W("Co3Ne recons");
                 RVD_.set_circles_radius(r);
@@ -2254,7 +2264,9 @@ namespace {
                     thread_[t]->set_mode(CO3NE_RECONSTRUCT);
                     thread_[t]->triangles().clear();
                 }
-                Process::run_threads(thread_);
+		progress.progress(1);
+                run_threads();
+		progress.progress(50);
             } else {
                 Stopwatch W("Co3Ne recons");                
                 Logger::out("Co3Ne")
@@ -2268,7 +2280,9 @@ namespace {
                     thread_[t]->set_mode(CO3NE_NORMALS_AND_RECONSTRUCT);
                     thread_[t]->triangles().clear();
                 }
-                Process::run_threads(thread_);
+		progress.progress(1);		
+                run_threads();
+		progress.progress(50);		
             }
 
             {
@@ -2344,16 +2358,23 @@ namespace {
                     mesh_save(M, "co3ne_T12.geogram");
                 }
 
+		progress.progress(53);		
                 
                 Co3NeManifoldExtraction manifold_extraction(
                     mesh_, good_triangles
                 );
 
+		progress.progress(55);				
+
                 if(CmdLine::get_arg_bool("co3ne:T12")) {
                     manifold_extraction.add_triangles(not_so_good_triangles);
                 }
 
+		progress.progress(57);
+
                 mesh_reorient(mesh_);
+
+		progress.progress(60);		
 
                 if(CmdLine::get_arg_bool("dbg:co3ne")) {
                     Logger::out("Co3Ne") << ">> co3ne_manif.geogram"
@@ -2376,6 +2397,8 @@ namespace {
                 }                
             }
 
+	    progress.progress(100);		
+	    
             Logger::out("Topology") 
                 << "nb components=" << mesh_nb_connected_components(mesh_)
                 << " nb borders=" <<  mesh_nb_borders(mesh_)
@@ -2443,6 +2466,7 @@ namespace {
         index_t nb_neigh = RVD.nb_neighbors();
         vector<index_t> neigh(nb_neigh);
         vector<double> sq_dist(nb_neigh);
+
         for(index_t i = from_; i < to_; i++) {
             RVD.get_neighbors(
                 i, neigh, sq_dist, nb_neigh
@@ -2461,6 +2485,7 @@ namespace {
         index_t nb_neigh = RVD.nb_neighbors();
         vector<index_t> neigh(nb_neigh);
         vector<double> sq_dist(nb_neigh);
+
         for(index_t i = from_; i < to_; i++) {
             RVD.get_neighbors(
                 i, neigh, sq_dist, nb_neigh
@@ -2485,11 +2510,6 @@ namespace {
         Co3NeRestrictedVoronoiDiagram::Polygon P(100);
         Co3NeRestrictedVoronoiDiagram::Polygon Q(100);
 
-	ProgressTask* progress = nil;
-	if(from_ == 0) {
-	    progress = new ProgressTask("Co3Ne",100);
-	}
-	
         for(index_t i = from_; i < to_; i++) {
             RVD.get_RVC(i, P, Q, neigh, sq_dist);
             for(index_t v1 = 0; v1 < P.nb_vertices(); v1++) {
@@ -2504,12 +2524,7 @@ namespace {
                     triangles_.push_back(index_t(k));
                 }
             }
-	    if(progress != nil) {
-		progress->progress(i*100/to_);
-	    }
         }
-
-	delete progress;
     }
 
     void Co3NeThread::run_normals_and_reconstruct() {
@@ -2552,11 +2567,6 @@ namespace {
         Co3NeRestrictedVoronoiDiagram::Polygon P(100);
         Co3NeRestrictedVoronoiDiagram::Polygon Q(100);
 
-	ProgressTask* progress = nil;
-	if(from_ == 0) {
-	    progress = new ProgressTask("Co3Ne",100);
-	}
-	
         for(index_t i = from_; i < to_; i++) {
 
             vec3 N;
@@ -2613,13 +2623,8 @@ namespace {
                     triangles_.push_back(index_t(k));
                 }
             }
-	    if(progress != nil) {
-		progress->progress(i*100/to_);
-	    }
         }
 
-	delete progress;
-	
         if(normal.is_bound()) {
             Process::enter_critical_section();
             normal.unbind();
@@ -2666,7 +2671,7 @@ namespace GEO {
 
     void Co3Ne_reconstruct(Mesh& M, double radius) {
         Co3Ne co3ne(M);
-        co3ne.reconstruct(radius);
+	co3ne.reconstruct(radius);
     }
 
     void Co3Ne_smooth_and_reconstruct(

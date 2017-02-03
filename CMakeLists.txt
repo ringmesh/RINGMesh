@@ -147,10 +147,10 @@ if(UNIX)
                 -DRINGMESH_WITH_TESTS:BOOL=${RINGMESH_WITH_TESTS}
                 -DRINGMESH_WITH_EXAMPLES:BOOL=${RINGMESH_WITH_EXAMPLES}
                 -DRINGMESH_WITH_GEOLOGYJS:BOOL=${RINGMESH_WITH_GEOLOGYJS}
-			    -DBUILD_DOCUMENTATION:BOOL=${BUILD_DOCUMENTATION}
-				-DTEST_DATA_INPUT_DIRECTORY:STRING=${TEST_DATA_INPUT_DIRECTORY}
-			    -DTEST_DATA_OUTPUT_DIRECTORY:STRING=${TEST_DATA_OUTPUT_DIRECTORY}                
-			    -DGEOLOGY_JS_DIRECTORY:STRING=${GEOLOGY_JS_DIRECTORY}                
+                -DBUILD_DOCUMENTATION:BOOL=${BUILD_DOCUMENTATION}
+                -DTEST_DATA_INPUT_DIRECTORY:STRING=${TEST_DATA_INPUT_DIRECTORY}
+                -DTEST_DATA_OUTPUT_DIRECTORY:STRING=${TEST_DATA_OUTPUT_DIRECTORY}                
+                -DGEOLOGY_JS_DIRECTORY:STRING=${GEOLOGY_JS_DIRECTORY}                
                 WORKING_DIRECTORY ${project_binary_dir_config})                
       endforeach()
       
@@ -168,7 +168,7 @@ message(STATUS "RINGMesh source directory is: ${PROJECT_SOURCE_DIR}")
 #------------------------------------------------------------------------------------------------
 # Platform dependent settings
 if(WIN32)
-	# Select the CMAKE_CONFIGURATION_TYPES from Visual Studio
+    # Select the CMAKE_CONFIGURATION_TYPES from Visual Studio
     set(COMPILATION_OPTION --config ${CMAKE_CFG_INTDIR})
 elseif(UNIX)
     set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
@@ -192,7 +192,7 @@ elseif(UNIX)
        set(COVERALLS ON)
        set(COVERALLS_UPLOAD ON)
        include(Coveralls)
-	   coveralls_turn_on_coverage()
+       coveralls_turn_on_coverage()
     endif()
     
     # Enable parallel computation
@@ -226,9 +226,9 @@ set(GEOGRAM_PATH ${PROJECT_SOURCE_DIR}/src/third_party/geogram)
 if(WIN32)
     set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/geogram)
     set(geoplatform Win-vs-dynamic-generic)  
-	# Extra lib 
+    # Extra lib 
     set (EXTRA_LIBS ${EXTRA_LIBS} psapi)
-	# TODO check that it is really necessary [JP]
+    # TODO check that it is really necessary [JP]
     add_compile_options(-DGEO_DYNAMIC_LIBS) 
 else(WIN32)
     set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/geogram/${CMAKE_BUILD_TYPE})
@@ -252,10 +252,9 @@ ExternalProject_Add(geogram_ext
         -G ${CMAKE_GENERATOR} 
         -DVORPALINE_PLATFORM:STRING=${geoplatform}
         -DGEOGRAM_WITH_TETGEN:BOOL=${RINGMESH_WITH_TETGEN} 
-        -DGEOGRAM_WITH_MEDIT:BOOL=${RINGMESH_WITH_GRAPHICS}
         -DGEOGRAM_WITH_GRAPHICS:BOOL=${RINGMESH_WITH_GRAPHICS}
+        -DGEOGRAM_WITH_EXPLORAGRAM:BOOL=OFF
         -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-		-DVORPALINE_BUILD_DYNAMIC:BOOL=TRUE
   
   #--Build step-----------------
   BINARY_DIR ${GEOGRAM_PATH_BIN}
@@ -383,7 +382,7 @@ add_library(RINGMesh SHARED
     ${ringmesh_src} 
     ${zlib_src}
     ${zlib_include})
-	
+    
 # Function for generation of export macros for libraries (dll)
 generate_export_header(RINGMesh EXPORT_MACRO_NAME RINGMESH_API EXPORT_FILE_NAME ${generated_export_file} )
 
@@ -402,13 +401,13 @@ if(WIN32)
            "${GEOGRAM_PATH_BIN}/bin/$<CONFIGURATION>"
            "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>" 
        COMMENT "Copy geogram binaries")
-	   if(RINGMESH_WITH_GEOLOGYJS)
-			add_custom_command(TARGET RINGMesh POST_BUILD 
-				COMMAND  "${CMAKE_COMMAND}" -E copy_directory 
-				"${GEOLOGY_JS_PATH_BIN}/bin/$<CONFIGURATION>"
-				"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>" 
-			COMMENT "Copy geology js binaries")
-	   endif(RINGMESH_WITH_GEOLOGYJS)
+       if(RINGMESH_WITH_GEOLOGYJS)
+            add_custom_command(TARGET RINGMesh POST_BUILD 
+                COMMAND  "${CMAKE_COMMAND}" -E copy_directory 
+                "${GEOLOGY_JS_PATH_BIN}/bin/$<CONFIGURATION>"
+                "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>" 
+            COMMENT "Copy geology js binaries")
+       endif(RINGMESH_WITH_GEOLOGYJS)
 endif(WIN32)
 
 
@@ -426,6 +425,8 @@ if(RINGMESH_WITH_UTILITIES)
     add_subdirectory(src/ringmeshstats)
     add_subdirectory(src/ringmeshrepair)
     add_subdirectory(src/ringmesh_mesh_quality)
+    add_subdirectory(src/ringmesh_rotate)
+    add_subdirectory(src/ringmesh_translate)
 endif(RINGMESH_WITH_UTILITIES)
 
 if(RINGMESH_WITH_EXAMPLES)
@@ -448,7 +449,7 @@ endif()
 
 if (COVERALLS)
 set(ringmesh_files ${ringmesh_include} ${ringmesh_src})
-	coveralls_setup(
+    coveralls_setup(
     "${ringmesh_files}" 
         ${COVERALLS_UPLOAD}                 
         "${PROJECT_SOURCE_DIR}/cmake")
