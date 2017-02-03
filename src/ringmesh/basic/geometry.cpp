@@ -79,11 +79,6 @@ namespace RINGMesh {
         return u.x == v.x && u.y == v.y && u.z == v.z ;
     }
 
-    bool operator<( const vec3& u, const vec3& v )
-    {
-        return u.x < v.x && u.y < v.y && u.z < v.z ;
-    }
-
     bool operator!=( const vec3& u, const vec3& v )
     {
         return u.x != v.x || u.y != v.y || u.z != v.z ;
@@ -302,6 +297,127 @@ namespace RINGMesh {
             }
         }
         return dist ;
+    }
+
+    /*!
+     * Tests if a point is inside a triangle, more precisely if it is inside
+     * a prism based on the triangle and its normal
+     * @param[in] p the point to test
+     * @param[in] p0 the first vertex of the triangle
+     * @param[in] p1 the second vertex of the triangle
+     * @param[in] p2 the third vertex of the triangle
+     * @param[in] exact_predicates if true, the algorithm uses exact predicates
+     * @return returns true if the point is inside
+     */
+    bool point_inside_triangle(
+        const vec3& p,
+        const vec3& p0,
+        const vec3& p1,
+        const vec3& p2,
+        bool exact_predicates )
+    {
+        vec3 n = cross( p2 - p0, p1 - p0 ) ;
+        vec3 q = p + n ;
+
+        Sign s1, s2, s3 ;
+        if( !exact_predicates ) {
+            double vol1 = GEO::Geom::tetra_signed_volume( p, q, p0, p1 ) ;
+            if( is_almost_zero( vol1 ) ) {
+                return point_inside_triangle( p, p0, p1, p2, true ) ;
+            }
+            s1 = sign( vol1 ) ;
+            double vol2 = GEO::Geom::tetra_signed_volume( p, q, p1, p2 ) ;
+            if( is_almost_zero( vol2 ) ) {
+                return point_inside_triangle( p, p0, p1, p2, true ) ;
+            }
+            s2 = sign( vol2 ) ;
+            double vol3 = GEO::Geom::tetra_signed_volume( p, q, p2, p0 ) ;
+            if( is_almost_zero( vol3 ) ) {
+                return point_inside_triangle( p, p0, p1, p2, true ) ;
+            }
+            s3 = sign( vol3 ) ;
+        } else {
+            s1 = sign(
+                GEO::PCK::orient_3d( p.data(), q.data(), p0.data(), p1.data() ) ) ;
+            s2 = sign(
+                GEO::PCK::orient_3d( p.data(), q.data(), p1.data(), p2.data() ) ) ;
+            s3 = sign(
+                GEO::PCK::orient_3d( p.data(), q.data(), p2.data(), p0.data() ) ) ;
+            if( s1 == ZERO ) {
+                return s2 == s3 ;
+            } else if( s2 == ZERO ) {
+                return s1 == s3 ;
+            } else if( s3 == ZERO ) {
+                return s1 == s2 ;
+            }
+        }
+
+        return s1 == s2 && s2 == s3 ;
+    }
+
+    /*!
+     * Tests if a point is inside a quad, more precisely if it is inside the box
+     * based on the quad and its normal
+     * @param[in] p the point to test
+     * @param[in] p0 the first vertex of the quad
+     * @param[in] p1 the second vertex of the quad
+     * @param[in] p2 the third vertex of the quad
+     * @param[in] p3 the fourth vertex of the quad
+     * @param[in] exact_predicates if true, the algorithm uses exact predicates
+     * @return returns true if the point is inside
+     */
+    bool point_inside_quad(
+        const vec3& p,
+        const vec3& p0,
+        const vec3& p1,
+        const vec3& p2,
+        const vec3& p3,
+        bool exact_predicates )
+    {
+        vec3 n = cross( p2 - p0, p1 - p0 ) ;
+        vec3 q = p + n ;
+        Sign s1, s2, s3, s4 ;
+        if( !exact_predicates ) {
+            double vol1 = GEO::Geom::tetra_signed_volume( p, q, p0, p1 ) ;
+            if( is_almost_zero( vol1 ) ) {
+                return point_inside_quad( p, p0, p1, p2, p3, true ) ;
+            }
+            s1 = sign( vol1 ) ;
+            double vol2 = GEO::Geom::tetra_signed_volume( p, q, p1, p2 ) ;
+            if( is_almost_zero( vol2 ) ) {
+                return point_inside_quad( p, p0, p1, p2, p3, true ) ;
+            }
+            s2 = sign( vol2 ) ;
+            double vol3 = GEO::Geom::tetra_signed_volume( p, q, p2, p3 ) ;
+            if( is_almost_zero( vol3 ) ) {
+                return point_inside_quad( p, p0, p1, p2, p3, true ) ;
+            }
+            s3 = sign( vol3 ) ;
+            double vol4 = GEO::Geom::tetra_signed_volume( p, q, p3, p0 ) ;
+            if( is_almost_zero( vol4 ) ) {
+                return point_inside_quad( p, p0, p1, p2, p3, true ) ;
+            }
+            s4 = sign( vol4 ) ;
+        } else {
+            s1 = sign(
+                GEO::PCK::orient_3d( p.data(), q.data(), p0.data(), p1.data() ) ) ;
+            s2 = sign(
+                GEO::PCK::orient_3d( p.data(), q.data(), p1.data(), p2.data() ) ) ;
+            s3 = sign(
+                GEO::PCK::orient_3d( p.data(), q.data(), p2.data(), p3.data() ) ) ;
+            s4 = sign(
+                GEO::PCK::orient_3d( p.data(), q.data(), p3.data(), p0.data() ) ) ;
+            if( s1 == ZERO ) {
+                return s2 == s3 && s3 == s4 ;
+            } else if( s2 == ZERO ) {
+                return s1 == s3 && s3 == s4 ;
+            } else if( s3 == ZERO ) {
+                return s1 == s2 && s2 == s4 ;
+            } else if( s4 == ZERO ) {
+                return s1 == s2 && s2 == s3 ;
+            }
+        }
+        return s1 == s2 && s2 == s3 && s3 == s4 ;
     }
 
     /*!
@@ -850,11 +966,12 @@ namespace RINGMesh {
     /*!
      * Computes the intersection between a plane and a line
      * @param[in] O_line a point on the line
-     * @param[in] D_line the direction of the plane
+     * @param[in] D_line the direction of the line
      * @param[in] O_plane a point on the plane
      * @param[in] N_plane the normal of the plane
      * @param[out] result the intersected point
-     * @return returns true if there is an intersection
+     * @return returns true if there is an intersection point,
+     * false if the line is parallel to the plane or included into it.
      */
     bool line_plane_intersection(
         const vec3& O_line,
@@ -880,12 +997,13 @@ namespace RINGMesh {
 
     /*!
      * Computes the intersection between a plane and a segment
-     * @param[in] p0 the first vertex of the segment
-     * @param[in] p1 the second vertex of the segment
+     * @param[in] seg0 the first vertex of the segment
+     * @param[in] seg1 the second vertex of the segment
      * @param[in] O_plane a point on the plane
      * @param[in] N_plane the normal of the plane
      * @param[out] result the intersected point
-     * @return returns true if there is an intersection
+     * @return returns true if there is an intersection point,
+     * false if the segment is parallel to the plane or included into it.
      */
     bool segment_plane_intersection(
         const vec3& seg0,
@@ -1422,127 +1540,6 @@ namespace RINGMesh {
         Rz( 3, 3 ) = 1. ;
 
         rot_mat = inv_T * inv_Rx * inv_Ry * Rz * Ry * Rx * T ;
-    }
-
-    /*!
-     * Tests if a point is inside a triangle, more precisely if it is inside
-     * a prism based on the triangle and its normal
-     * @param[in] p the point to test
-     * @param[in] p0 the first vertex of the triangle
-     * @param[in] p1 the second vertex of the triangle
-     * @param[in] p2 the third vertex of the triangle
-     * @param[in] exact_predicates if true, the algorithm uses exact predicates
-     * @return returns true if the point is inside
-     */
-    bool point_inside_triangle(
-        const vec3& p,
-        const vec3& p0,
-        const vec3& p1,
-        const vec3& p2,
-        bool exact_predicates )
-    {
-        vec3 n = cross( p2 - p0, p1 - p0 ) ;
-        vec3 q = p + n ;
-
-        Sign s1, s2, s3 ;
-        if( !exact_predicates ) {
-            double vol1 = GEO::Geom::tetra_signed_volume( p, q, p0, p1 ) ;
-            if( is_almost_zero( vol1 ) ) {
-                return point_inside_triangle( p, p0, p1, p2, true ) ;
-            }
-            s1 = sign( vol1 ) ;
-            double vol2 = GEO::Geom::tetra_signed_volume( p, q, p1, p2 ) ;
-            if( is_almost_zero( vol2 ) ) {
-                return point_inside_triangle( p, p0, p1, p2, true ) ;
-            }
-            s2 = sign( vol2 ) ;
-            double vol3 = GEO::Geom::tetra_signed_volume( p, q, p2, p0 ) ;
-            if( is_almost_zero( vol3 ) ) {
-                return point_inside_triangle( p, p0, p1, p2, true ) ;
-            }
-            s3 = sign( vol3 ) ;
-        } else {
-            s1 = sign(
-                GEO::PCK::orient_3d( p.data(), q.data(), p0.data(), p1.data() ) ) ;
-            s2 = sign(
-                GEO::PCK::orient_3d( p.data(), q.data(), p1.data(), p2.data() ) ) ;
-            s3 = sign(
-                GEO::PCK::orient_3d( p.data(), q.data(), p2.data(), p0.data() ) ) ;
-            if( s1 == ZERO ) {
-                return s2 == s3 ;
-            } else if( s2 == ZERO ) {
-                return s1 == s3 ;
-            } else if( s3 == ZERO ) {
-                return s1 == s2 ;
-            }
-        }
-
-        return s1 == s2 && s2 == s3 ;
-    }
-
-    /*!
-     * Tests if a point is inside a quad, more precisely if it is inside the box
-     * based on the quad and its normal
-     * @param[in] p the point to test
-     * @param[in] p0 the first vertex of the quad
-     * @param[in] p1 the second vertex of the quad
-     * @param[in] p2 the third vertex of the quad
-     * @param[in] p3 the fourth vertex of the quad
-     * @param[in] exact_predicates if true, the algorithm uses exact predicates
-     * @return returns true if the point is inside
-     */
-    bool point_inside_quad(
-        const vec3& p,
-        const vec3& p0,
-        const vec3& p1,
-        const vec3& p2,
-        const vec3& p3,
-        bool exact_predicates )
-    {
-        vec3 n = cross( p2 - p0, p1 - p0 ) ;
-        vec3 q = p + n ;
-        Sign s1, s2, s3, s4 ;
-        if( !exact_predicates ) {
-            double vol1 = GEO::Geom::tetra_signed_volume( p, q, p0, p1 ) ;
-            if( is_almost_zero( vol1 ) ) {
-                return point_inside_quad( p, p0, p1, p2, p3, true ) ;
-            }
-            s1 = sign( vol1 ) ;
-            double vol2 = GEO::Geom::tetra_signed_volume( p, q, p1, p2 ) ;
-            if( is_almost_zero( vol2 ) ) {
-                return point_inside_quad( p, p0, p1, p2, p3, true ) ;
-            }
-            s2 = sign( vol2 ) ;
-            double vol3 = GEO::Geom::tetra_signed_volume( p, q, p2, p3 ) ;
-            if( is_almost_zero( vol3 ) ) {
-                return point_inside_quad( p, p0, p1, p2, p3, true ) ;
-            }
-            s3 = sign( vol3 ) ;
-            double vol4 = GEO::Geom::tetra_signed_volume( p, q, p3, p0 ) ;
-            if( is_almost_zero( vol4 ) ) {
-                return point_inside_quad( p, p0, p1, p2, p3, true ) ;
-            }
-            s4 = sign( vol4 ) ;
-        } else {
-            s1 = sign(
-                GEO::PCK::orient_3d( p.data(), q.data(), p0.data(), p1.data() ) ) ;
-            s2 = sign(
-                GEO::PCK::orient_3d( p.data(), q.data(), p1.data(), p2.data() ) ) ;
-            s3 = sign(
-                GEO::PCK::orient_3d( p.data(), q.data(), p2.data(), p3.data() ) ) ;
-            s4 = sign(
-                GEO::PCK::orient_3d( p.data(), q.data(), p3.data(), p0.data() ) ) ;
-            if( s1 == ZERO ) {
-                return s2 == s3 && s3 == s4 ;
-            } else if( s2 == ZERO ) {
-                return s1 == s3 && s3 == s4 ;
-            } else if( s3 == ZERO ) {
-                return s1 == s2 && s2 == s4 ;
-            } else if( s4 == ZERO ) {
-                return s1 == s2 && s2 == s3 ;
-            }
-        }
-        return s1 == s2 && s2 == s3 && s3 == s4 ;
     }
 
     NNSearch::NNSearch(
