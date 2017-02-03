@@ -55,7 +55,7 @@ namespace RINGMesh {
     class RINGMESH_API GeoModelGeologicalEntity: public GeoModelEntity {
     ringmesh_disable_copy( GeoModelGeologicalEntity ) ;
     public:
-        friend class GeoModelEditor ;
+        friend class GeoModelGeologicalEntityAccess ;
 
         static void initialize() ;
 
@@ -172,6 +172,53 @@ namespace RINGMesh {
         virtual const std::string child_type_name() const ;
 
         virtual bool is_valid() const ;
+    } ;
+
+    class GeoModelGeologicalEntityAccess {
+    ringmesh_disable_copy( GeoModelGeologicalEntityAccess ) ;
+        friend class GeoModelBuilderTopology ;
+        friend class GeoModelBuilderGeology ;
+        friend class GeoModelBuilderInfo ;
+        friend class GeoModelBuilderRemoval ;
+
+    private:
+        GeoModelGeologicalEntityAccess( GeoModelGeologicalEntity& gmge )
+            : gmge_( gmge )
+        {
+        }
+
+        std::string& modifiable_name()
+        {
+            return gmge_.name_ ;
+        }
+
+        index_t& modifiable_index()
+        {
+            return gmge_.id_.index ;
+        }
+
+        GME::GEOL_FEATURE& modifiable_geol_feature()
+        {
+            return gmge_.geol_feature_ ;
+        }
+
+        std::vector< gme_t >& modifiable_children()
+        {
+            return gmge_.children_ ;
+        }
+
+        static GeoModelGeologicalEntity* create_geological_entity(
+            const EntityType& type,
+            const GeoModel& geomodel,
+            index_t index_in_geomodel ) ;
+
+        void copy( const GeoModelGeologicalEntity& from )
+        {
+            gmge_.copy( from ) ;
+        }
+
+    private:
+        GeoModelGeologicalEntity& gmge_ ;
     } ;
 
 }

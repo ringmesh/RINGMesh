@@ -61,11 +61,10 @@ namespace RINGMesh {
      */
     class RINGMESH_API GeoModelMeshEntity: public GeoModelEntity {
     ringmesh_disable_copy( GeoModelMeshEntity ) ;
-    public:
-        friend class GeoModelEditor ;
-        friend class GeoModelBuilder ;
-        friend class GeoModelRepair ;
+        friend class GeoModelMeshEntityAccess ;
+        friend class GeoModelMeshEntityConstAccess ;
 
+    public:
         virtual ~GeoModelMeshEntity() ;
 
         typedef std::string EntityType ;
@@ -331,8 +330,8 @@ namespace RINGMesh {
      */
     class RINGMESH_API Corner: public GeoModelMeshEntity {
     public:
-        friend class GeoModelEditor ;
-        friend class GeoModelBuilder ;
+        friend class GeoModelMeshEntityAccess ;
+        friend class GeoModelMeshEntityConstAccess ;
 
         virtual ~Corner()
         {
@@ -438,7 +437,6 @@ namespace RINGMesh {
             GeoModelMeshEntity::set_mesh( mesh0d_ ) ;
         }
 
-
     private:
         Mesh0D* mesh0d_ ;
     } ;
@@ -451,9 +449,7 @@ namespace RINGMesh {
      */
     class RINGMESH_API Line: public GeoModelMeshEntity {
     public:
-        friend class GeoModelEditor ;
-        friend class GeoModelBuilder ;
-        friend class GeoModelRepair ;
+        friend class GeoModelMeshEntityAccess ;
 
         virtual ~Line()
         {
@@ -589,9 +585,7 @@ namespace RINGMesh {
      */
     class RINGMESH_API Surface: public GeoModelMeshEntity {
     public:
-        friend class GeoModelEditor ;
-        friend class GeoModelBuilder ;
-        friend class GeoModelRepair ;
+        friend class GeoModelMeshEntityAccess ;
 
         virtual ~Surface()
         {
@@ -882,9 +876,7 @@ namespace RINGMesh {
      */
     class RINGMESH_API Region: public GeoModelMeshEntity {
     public:
-        friend class GeoModelEditor ;
-        friend class GeoModelBuilder ;
-        friend class GeoModelRepair ;
+        friend class GeoModelMeshEntityAccess ;
 
         virtual ~Region()
         {
@@ -1219,6 +1211,100 @@ namespace RINGMesh {
         std::vector< bool > sides_ ;
     private:
         Mesh3D* mesh3d_ ;
+    } ;
+
+    class GeoModelMeshEntityConstAccess {
+    ringmesh_disable_copy( GeoModelMeshEntityConstAccess ) ;
+        friend class GeoModelBuilderGeometry ;
+
+    private:
+        GeoModelMeshEntityConstAccess( const GeoModelMeshEntity& gme )
+            : gmme_( gme )
+        {
+        }
+
+        const MeshBase* mesh() const
+        {
+            return gmme_.mesh_ ;
+        }
+
+    private:
+        const GeoModelMeshEntity& gmme_ ;
+    } ;
+
+    class GeoModelMeshEntityAccess {
+    ringmesh_disable_copy( GeoModelMeshEntityAccess ) ;
+        friend class GeoModelBuilderTopology ;
+        friend class GeoModelBuilderGeometry ;
+        friend class GeoModelBuilderGeology ;
+        friend class GeoModelBuilderInfo ;
+        friend class GeoModelBuilderRemoval ;
+
+    private:
+        GeoModelMeshEntityAccess( GeoModelMeshEntity& gme )
+            : gmme_( gme )
+        {
+        }
+
+        std::string& modifiable_name()
+        {
+            return gmme_.name_ ;
+        }
+
+        index_t& modifiable_index()
+        {
+            return gmme_.id_.index ;
+        }
+
+        GME::GEOL_FEATURE& modifiable_geol_feature()
+        {
+            return gmme_.geol_feature_ ;
+        }
+
+        std::vector< gme_t >& modifiable_boundaries()
+        {
+            return gmme_.boundaries_ ;
+        }
+
+        std::vector< gme_t >& modifiable_in_boundaries()
+        {
+            return gmme_.in_boundary_ ;
+        }
+
+        std::vector< bool >& modifiable_sides()
+        {
+            ringmesh_assert( gmme_.type_name() == Region::type_name_static() ) ;
+            return dynamic_cast< Region& >( gmme_ ).sides_ ;
+        }
+
+        std::vector< gme_t >& modifiable_parents()
+        {
+            return gmme_.parents_ ;
+        }
+
+        MeshBase* modifiable_mesh()
+        {
+            return gmme_.mesh_ ;
+        }
+
+        void change_mesh_data_structure( const MeshType type ) ;
+
+        template< typename ENTITY >
+        static ENTITY* create_entity(
+            const GeoModel& geomodel,
+            index_t id,
+            const MeshType type )
+        {
+            return new ENTITY( geomodel, id, type ) ;
+        }
+
+        void copy( const GeoModelMeshEntity& from )
+        {
+            gmme_.copy( from ) ;
+        }
+
+    private:
+        GeoModelMeshEntity& gmme_ ;
     } ;
 }
 
