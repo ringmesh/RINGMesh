@@ -758,12 +758,12 @@ namespace RINGMesh {
          * @param[in] surf_vertex_id Index of the vertex in the surface
          * @param[in] result Indices of the facets containing @param P
          * @param[in] border_only If true only facets on the border are considered
-         * @param[in] f0 (Optional) Index of one facet containing the vertex @param P
+         * @param[in] f0 (Optional) Index of one facet containing the vertex @p surf_vertex_id
          * @return The number of facets found
          * @note If a facet containing the vertex is given, facets around this
          * vertex is search by propagation. Else, a first facet is found by brute
          * force algorithm, and then the other by propagation
-         * @todo Try to use a AABB tree to remove @param first_facet. [PA]
+         * @todo Try to use a AABB tree to remove @p first_facet. [PA]
          */
         index_t facets_around_vertex(
             index_t surf_vertex_id,
@@ -1144,10 +1144,11 @@ namespace RINGMesh {
             return vec3() ;
         }
 
+        index_t find_first_cell_owing_vertex( index_t vertex_id_in_region ) const ;
         index_t cells_around_vertex(
             index_t vertex_id,
             std::vector< index_t >& result,
-            index_t cell_hint ) const ;
+            index_t cell_hint = NO_ID ) const ;
 
         void compute_region_volumes_per_cell_type(
             double& tet_volume,
