@@ -76,7 +76,7 @@ int main()
 
         GeoModelBuilderSurfaceMesh builder( model, in ) ;
         builder.build_polygonal_surfaces_from_connected_components() ;
-        builder.build_geomodel_from_surfaces() ;
+        builder.from_surfaces.build() ;
         print_geomodel( model ) ;
 
         //Checking the validity of loaded model
@@ -129,7 +129,7 @@ int main()
 
         GeoModelBuilderSurfaceMesh builder2( reloaded_model, surface_meshes ) ;
         builder2.build_polygonal_surfaces_from_connected_components() ;
-        builder2.build_geomodel_from_surfaces() ;
+        builder2.from_surfaces.build() ;
         print_geomodel( reloaded_model ) ;
 
         // Checking if building has been successfully done

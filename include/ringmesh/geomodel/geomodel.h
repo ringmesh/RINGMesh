@@ -72,7 +72,7 @@ namespace RINGMesh {
     class RINGMESH_API EntityTypeManager {
     ringmesh_disable_copy( EntityTypeManager ) ;
     public:
-        friend class GeoModelEditor ;
+        friend class GeoModelBuilderTopology ;
         EntityTypeManager()
         {
         }
@@ -183,11 +183,9 @@ namespace RINGMesh {
      */
     class RINGMESH_API GeoModel {
     ringmesh_disable_copy( GeoModel ) ;
-    public:
-        friend class GeoModelBuilder ;
-        friend class GeoModelEditor ;
-        friend class GeoModelRepair ;
+        friend class GeoModelAccess ;
 
+    public:
         typedef std::string EntityType ;
 
         /*!
@@ -432,6 +430,78 @@ namespace RINGMesh {
          * @todo Move it out. It has nothing to do here. [JP]
          */
         const WellGroup* wells_ ;
+    } ;
+
+    class GeoModelAccess {
+    ringmesh_disable_copy( GeoModelAccess ) ;
+        friend class GeoModelBuilder ;
+        friend class GeoModelBuilderGM ;
+        friend class GeoModelBuilderTopology ;
+        friend class GeoModelBuilderGeometry ;
+        friend class GeoModelBuilderGeology ;
+        friend class GeoModelBuilderRemoval ;
+        friend class GeoModelBuilderRepair ;
+        friend class GeoModelBuilderCopy ;
+        friend class GeoModelBuilderInfo ;
+        friend class GeoModelBuilderFromSurfaces ;
+
+    private:
+        GeoModelAccess( GeoModel& geomodel )
+            : geomodel_( geomodel )
+        {
+        }
+
+        std::string& modifiable_name()
+        {
+            return geomodel_.geomodel_name_ ;
+        }
+
+        EntityTypeManager& modifiable_entity_type_manager()
+        {
+            return geomodel_.entity_type_manager_ ;
+        }
+
+        std::vector< GeoModelMeshEntity* >& modifiable_mesh_entities(
+            const EntityType& type )
+        {
+            return const_cast< std::vector< GeoModelMeshEntity* >& >( geomodel_.mesh_entities(
+                type ) ) ;
+        }
+
+        GeoModelMeshEntity& modifiable_mesh_entity( const gme_t& id )
+        {
+            return *modifiable_mesh_entities( id.type )[id.index] ;
+        }
+
+        std::vector< std::vector< GeoModelGeologicalEntity* > >& modifiable_geological_entities()
+        {
+            return geomodel_.geological_entities_ ;
+        }
+
+        std::vector< GeoModelGeologicalEntity* >& modifiable_geological_entities(
+            const EntityType& type )
+        {
+            return const_cast< std::vector< GeoModelGeologicalEntity* >& >( geomodel_.geological_entities(
+                type ) ) ;
+        }
+
+        GeoModelGeologicalEntity& modifiable_geological_entity( const gme_t& id )
+        {
+            return *modifiable_geological_entities( id.type )[id.index] ;
+        }
+
+        Universe& modifiable_universe()
+        {
+            return geomodel_.universe_ ;
+        }
+
+        double& modifiable_epsilon()
+        {
+            return geomodel_.epsilon_ ;
+        }
+
+    private:
+        GeoModel& geomodel_ ;
     } ;
 
     typedef GEO::Factory1< GeoModelGeologicalEntity, GeoModel > GeoModelGeologicalEntityFactory ;

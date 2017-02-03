@@ -88,7 +88,8 @@ namespace RINGMesh {
                         c < mesh_.facets.corners_end( f ); ++c ) {
                         index_t v = mesh_.facet_corners.vertex( c ) ;
                         if( global_vertex_id_to_id_in_cc[v] == NO_ID ) {
-                            index_t index = static_cast< index_t >( cc_vertices.size() ) ;
+                            index_t index =
+                                static_cast< index_t >( cc_vertices.size() ) ;
                             global_vertex_id_to_id_in_cc[v] = index ;
                             cc_vertices.push_back( mesh_.vertices.point( v ) ) ;
                         }
@@ -100,13 +101,14 @@ namespace RINGMesh {
                             S.push( n ) ;
                         }
                     }
-                    index_t nb_cc_corners = static_cast< index_t >( cc_corners.size() ) ;
+                    index_t nb_cc_corners =
+                        static_cast< index_t >( cc_corners.size() ) ;
                     cc_facets_ptr.push_back( nb_cc_corners ) ;
                 }
 
-                gme_t surface_gme = create_mesh_entity<Surface>() ;
-                set_surface_geometry( surface_gme.index, cc_vertices, cc_corners,
-                    cc_facets_ptr ) ;
+                gme_t surface_gme = topology.create_mesh_entity< Surface >() ;
+                geometry.set_surface_geometry( surface_gme.index, cc_vertices,
+                    cc_corners, cc_facets_ptr ) ;
             }
         }
     }
