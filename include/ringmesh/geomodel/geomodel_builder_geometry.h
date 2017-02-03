@@ -78,6 +78,8 @@ namespace RINGMesh {
          * than the input geomodel.
          */
         void copy_meshes( const GeoModel& from ) ;
+        void copy_meshes( const GeoModel& from, const std::string& entity_type ) ;
+        void copy_mesh( const GeoModel& from, const gme_t& mesh_entity ) ;
 
         void assign_mesh_to_entity( const MeshBase& mesh, const gme_t& to ) ;
 
@@ -365,9 +367,6 @@ namespace RINGMesh {
         GeoModelBuilderGeometry( GeoModelBuilder& builder, GeoModel& geomodel ) ;
 
     private:
-        void copy_meshes( const GeoModel& from, const std::string& entity_type ) ;
-        void copy_mesh( const GeoModel& from, const gme_t& mesh_entity ) ;
-
         void assign_surface_mesh_facets(
             index_t surface_id,
             const std::vector< index_t >& facets,
