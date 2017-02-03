@@ -68,7 +68,6 @@ namespace RINGMesh {
     /*! @todo Move this global variables in a function */
     const std::string surface_att_name = "region" ;
     const std::string region_att_name = "region" ;
-    const std::string order_att_name = "order" ;
     const std::string cell_region_att_name = "cell_region" ;
     const std::string facet_surface_att_name = "facet_surface" ;
 

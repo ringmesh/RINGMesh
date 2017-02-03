@@ -33,20 +33,108 @@
  *     FRANCE
  */
 
-#include <ringmesh/geomodel/geomodel_repair.h>
+#include <ringmesh/geomodel/geomodel_builder_repair.h>
 
-#include <ringmesh/geomodel/geomodel.h>
+#include <ringmesh/geomodel/geomodel_builder.h>
 
 /*!
  * @file Implementation of repair function of the surfaces of a GeoModel
  * @author Jeanne Pellerin
+ * @author Pierre Anquez
  */
 
 namespace RINGMesh {
 
-    typedef GeoModelMeshEntity GMME ;
+    GeoModelBuilderRepair::GeoModelBuilderRepair(
+        GeoModelBuilder& builder,
+        GeoModel& geomodel )
+        : builder_( builder ), geomodel_( geomodel ), geomodel_access_( geomodel )
+    {
+    }
 
-    bool GeoModelRepair::facet_is_degenerate(
+    void GeoModelBuilderRepair::repair( RepairMode repair_mode )
+    {
+        switch( repair_mode ) {
+            case ALL:
+                geomodel_mesh_repair() ;
+                break ;
+            case BASIC:
+                builder_.end_geomodel() ;
+                break ;
+            case COLOCATED_VERTICES:
+                remove_colocated_entity_vertices_and_update_gm() ;
+                break ;
+            case DEGENERATE_FACETS_EDGES:
+                remove_degenerate_facets_and_edges_and_update_gm() ;
+                break ;
+            case LINE_BOUNDARY_ORDER:
+                repair_line_boundary_vertex_order() ;
+                break ;
+            default:
+                ringmesh_assert_not_reached ;
+        }
+    }
+
+    void GeoModelBuilderRepair::geomodel_mesh_repair()
+    {
+        // Remove colocated vertices in each entity
+        remove_colocated_entity_vertices_and_update_gm() ;
+
+        // Basic mesh repair for surfaces and lines
+        remove_degenerate_facets_and_edges_and_update_gm() ;
+
+        // Proper reordering of line boundaries
+        repair_line_boundary_vertex_order() ;
+
+        // This is basic requirement ! no_colocated geomodel vertices !
+        // So remove them if there are any
+        geomodel_.mesh.remove_colocated_vertices() ;
+
+        builder_.end_geomodel() ;
+    }
+
+    void GeoModelBuilderRepair::remove_colocated_entity_vertices_and_update_gm()
+    {
+        std::set< gme_t > empty_entities ;
+        remove_colocated_entity_vertices( empty_entities ) ;
+        if( !empty_entities.empty() ) {
+            builder_.topology.get_dependent_entities( empty_entities ) ;
+            builder_.removal.remove_mesh_entities( empty_entities ) ;
+        }
+    }
+
+    void GeoModelBuilderRepair::remove_degenerate_facets_and_edges_and_update_gm()
+    {
+        std::set< gme_t > empty_entities ;
+        remove_degenerate_facets_and_edges( empty_entities ) ;
+        /// TODO when it will works,
+        /// use GeoModelBuilderRemoval::remove_entities_and_dependencies
+        if( !empty_entities.empty() ) {
+            builder_.removal.remove_mesh_entities( empty_entities ) ;
+        }
+
+        // This is basic requirement ! no_colocated geomodel vertices !
+        // So remove them if there are any
+        geomodel_.mesh.remove_colocated_vertices() ;
+
+        builder_.end_geomodel() ;
+    }
+
+    void GeoModelBuilderRepair::repair_line_boundary_vertex_order()
+    {
+        for( index_t line_itr = 0; line_itr < geomodel_.nb_lines(); ++line_itr ) {
+            const Line& cur_line = geomodel_.line( line_itr ) ;
+            if( !cur_line.is_first_corner_first_vertex() ) {
+                const index_t first_boundary_index = cur_line.boundary( 0 ).index() ;
+                builder_.topology.set_mesh_entity_boundary( cur_line.gme_id(), 0,
+                    cur_line.boundary_gme( 1 ).index ) ;
+                builder_.topology.set_mesh_entity_boundary( cur_line.gme_id(), 1,
+                    first_boundary_index ) ;
+            }
+        }
+    }
+
+    bool GeoModelBuilderRepair::facet_is_degenerate(
         const Surface& S,
         index_t f,
         std::vector< index_t >& colocated_vertices )
@@ -55,7 +143,8 @@ namespace RINGMesh {
         if( nb_vertices != 3 ) {
             index_t* vertices = (index_t*) alloca( nb_vertices * sizeof(index_t) ) ;
             for( index_t lv = 0; lv < nb_vertices; ++lv ) {
-                vertices[lv] = colocated_vertices[S.mesh_element_vertex_index( f, lv )] ;
+                vertices[lv] = colocated_vertices[S.mesh_element_vertex_index( f,
+                    lv )] ;
             }
             std::sort( vertices, vertices + nb_vertices ) ;
             return std::unique( vertices, vertices + nb_vertices )
@@ -67,7 +156,7 @@ namespace RINGMesh {
         return v1 == v2 || v2 == v3 || v3 == v1 ;
     }
 
-    void GeoModelRepair::surface_detect_degenerate_facets(
+    void GeoModelBuilderRepair::surface_detect_degenerate_facets(
         const Surface& S,
         std::vector< index_t >& f_is_degenerate,
         std::vector< index_t >& colocated_vertices )
@@ -78,11 +167,11 @@ namespace RINGMesh {
         }
     }
 
-    index_t GeoModelRepair::detect_degenerate_facets( Surface& S )
+    index_t GeoModelBuilderRepair::detect_degenerate_facets( Surface& S )
     {
         std::vector< index_t > colocated ;
         const NNSearch& nn_search = S.vertex_nn_search() ;
-        nn_search.get_colocated_index_mapping( geomodel().epsilon(), colocated ) ;
+        nn_search.get_colocated_index_mapping( geomodel_.epsilon(), colocated ) ;
 
         std::vector< index_t > degenerate ;
         surface_detect_degenerate_facets( S, degenerate, colocated ) ;
@@ -90,7 +179,7 @@ namespace RINGMesh {
             degenerate.end(), 1 ) ) ;
     }
 
-    void GeoModelRepair::line_detect_degenerate_edges(
+    void GeoModelBuilderRepair::line_detect_degenerate_edges(
         const Line& L,
         std::vector< bool >& e_is_degenerate,
         std::vector< index_t >& colocated_vertices )
@@ -101,11 +190,11 @@ namespace RINGMesh {
         }
     }
 
-    index_t GeoModelRepair::repair_line_mesh( Line& line )
+    index_t GeoModelBuilderRepair::repair_line_mesh( Line& line )
     {
         std::vector< index_t > colocated ;
         const NNSearch& nn_search = line.vertex_nn_search() ;
-        nn_search.get_colocated_index_mapping( geomodel().epsilon(), colocated ) ;
+        nn_search.get_colocated_index_mapping( geomodel_.epsilon(), colocated ) ;
 
         std::vector< bool > degenerate ;
         line_detect_degenerate_edges( line, degenerate, colocated ) ;
@@ -113,37 +202,39 @@ namespace RINGMesh {
             degenerate.end(), 1 ) ) ;
         /// We have a problem if some vertices are left isolated
         /// If we remove them here we can kill all indices correspondances
-        delete_line_edges( line.index(), degenerate, false ) ;
+        builder_.geometry.delete_line_edges( line.index(), degenerate, false ) ;
         return nb ;
     }
 
-    void GeoModelRepair::remove_degenerate_facets_and_edges(
+    void GeoModelBuilderRepair::remove_degenerate_facets_and_edges(
         std::set< gme_t >& to_remove )
     {
         to_remove.clear() ;
-        for( index_t i = 0; i < geomodel().nb_lines(); ++i ) {
-            Line& line = dynamic_cast< Line& >( mesh_entity(
-                gme_t( Line::type_name_static(), i ) ) ) ;
+        for( index_t i = 0; i < geomodel_.nb_lines(); ++i ) {
+            Line& line =
+                dynamic_cast< Line& >( geomodel_access_.modifiable_mesh_entity(
+                    gme_t( Line::type_name_static(), i ) ) ) ;
             index_t nb = repair_line_mesh( line ) ;
             if( nb > 0 ) {
                 Logger::out( "GeoModel" ) << nb
                     << " degenerated edges removed in LINE " << i << std::endl ;
                 // If the Line is set it to remove
-                if( geomodel().line( i ).nb_mesh_elements() == 0 ) {
-                    to_remove.insert( geomodel().line( i ).gme_id() ) ;
+                if( geomodel_.line( i ).nb_mesh_elements() == 0 ) {
+                    to_remove.insert( geomodel_.line( i ).gme_id() ) ;
                 }
             }
         }
         // The builder might be needed
 
-        double epsilon_sq = geomodel().epsilon() * geomodel().epsilon() ;
-        for( index_t i = 0; i < geomodel().nb_surfaces(); ++i ) {
-            Surface& surface = dynamic_cast< Surface& >( mesh_entity(
-                gme_t( Surface::type_name_static(), i ) ) ) ;
+        double epsilon_sq = geomodel_.epsilon() * geomodel_.epsilon() ;
+        for( index_t i = 0; i < geomodel_.nb_surfaces(); ++i ) {
+            Surface& surface =
+                dynamic_cast< Surface& >( geomodel_access_.modifiable_mesh_entity(
+                    gme_t( Surface::type_name_static(), i ) ) ) ;
             index_t nb = detect_degenerate_facets( surface ) ;
-            /// @todo Check if that cannot be simplified 
+            /// @todo Check if that cannot be simplified
             if( nb > 0 ) {
-                // If there are some degenerated facets 
+                // If there are some degenerated facets
                 // Using repair function of geogram
                 // Warning - This triangulates the mesh
                 if( surface.nb_vertices() > 0 ) {
@@ -152,7 +243,7 @@ namespace RINGMesh {
                     GEO::MeshRepairMode mode =
                         static_cast< GEO::MeshRepairMode >( 2 ) ;
                     Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder(
-                        *surface.mesh2d_ ) ;
+                        surface.low_level_mesh_storage() ) ;
                     builder->mesh_repair( mode, 0.0 ) ;
 
                     // This might create some small components - remove them
@@ -165,13 +256,13 @@ namespace RINGMesh {
                     }
                 }
                 if( surface.nb_vertices() == 0 || surface.nb_mesh_elements() == 0 ) {
-                    to_remove.insert( geomodel().surface( i ).gme_id() ) ;
+                    to_remove.insert( geomodel_.surface( i ).gme_id() ) ;
                 }
             }
         }
     }
 
-    void GeoModelRepair::vertices_on_inside_boundary(
+    void GeoModelBuilderRepair::vertices_on_inside_boundary(
         const gme_t& E_id,
         std::set< index_t >& vertices )
     {
@@ -179,7 +270,7 @@ namespace RINGMesh {
         if( E_id.type == Corner::type_name_static() ) {
             return ;
         }
-        const GMME& E = mesh_entity( E_id ) ;
+        const GeoModelMeshEntity& E = geomodel_.mesh_entity( E_id ) ;
         if( E_id.type == Line::type_name_static() ) {
             if( E.boundary( 0 ).is_inside_border( E ) ) {
                 vertices.insert( E.nb_vertices() - 1 ) ;
@@ -203,7 +294,7 @@ namespace RINGMesh {
                 for( index_t v = 0; v < inside_border[i]->nb_vertices(); ++v ) {
                     std::vector< index_t > colocated_indices ;
                     nn_search.get_neighbors( inside_border[i]->vertex( v ),
-                        colocated_indices, geomodel().epsilon() ) ;
+                        colocated_indices, geomodel_.epsilon() ) ;
                     if( colocated_indices.size() > 1 ) {
                         std::sort( colocated_indices.begin(),
                             colocated_indices.end() ) ;
@@ -216,7 +307,7 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelRepair::remove_colocated_entity_vertices(
+    void GeoModelBuilderRepair::remove_colocated_entity_vertices(
         std::set< gme_t >& to_remove )
     {
         to_remove.clear() ;
@@ -226,13 +317,14 @@ namespace RINGMesh {
         for( index_t t = 0; t < 2; ++t ) {
             const std::string& T = types[t] ;
 
-            for( index_t e = 0; e < geomodel().nb_mesh_entities( T ); ++e ) {
+            for( index_t e = 0; e < geomodel_.nb_mesh_entities( T ); ++e ) {
                 gme_t entity_id( T, e ) ;
-                const GMME& E = geomodel().mesh_entity( entity_id ) ;
+                const GeoModelMeshEntity& E = geomodel_.mesh_entity( entity_id ) ;
 
                 const NNSearch& kdtree = E.vertex_nn_search() ;
                 std::vector< index_t > colocated ;
-                kdtree.get_colocated_index_mapping( geomodel().epsilon(), colocated ) ;
+                kdtree.get_colocated_index_mapping( geomodel_.epsilon(),
+                    colocated ) ;
 
                 // Get the vertices to delete
                 std::set< index_t > inside_border ;
@@ -262,10 +354,10 @@ namespace RINGMesh {
                 } else {
                     if( t == 1 ) {
                         Surface& ME =
-                            dynamic_cast< Surface& >( modifiable_mesh_entity(
+                            dynamic_cast< Surface& >( geomodel_access_.modifiable_mesh_entity(
                                 entity_id ) ) ;
                         Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder(
-                            *ME.mesh2d_ ) ;
+                            ME.low_level_mesh_storage() ) ;
                         for( index_t f_itr = 0; f_itr < E.nb_mesh_elements();
                             f_itr++ ) {
                             for( index_t fv_itr = 0;
@@ -282,9 +374,11 @@ namespace RINGMesh {
                             << std::endl ;
 
                     } else if( t == 0 ) {
-                        Line& ME = dynamic_cast< Line& >( modifiable_mesh_entity(
-                            entity_id ) ) ;
-                        Mesh1DBuilder_var builder = Mesh1DBuilder::create_builder( *ME.mesh1d_ ) ;
+                        Line& ME =
+                            dynamic_cast< Line& >( geomodel_access_.modifiable_mesh_entity(
+                                entity_id ) ) ;
+                        Mesh1DBuilder_var builder = Mesh1DBuilder::create_builder(
+                            ME.low_level_mesh_storage() ) ;
                         for( index_t e_itr = 0; e_itr < E.nb_mesh_elements();
                             e_itr++ ) {
                             builder->set_edge_vertex( e_itr, 0,
@@ -304,88 +398,14 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelRepair::repair( RepairMode repair_mode )
+    bool GeoModelBuilderRepair::edge_is_degenerate(
+        const Line& L,
+        index_t e,
+        const std::vector< index_t >& colocated_vertices )
     {
-        switch( repair_mode )
-        {
-            case ALL :
-                geomodel_mesh_repair() ;
-                break ;
-            case BASIC :
-                end_geomodel() ;
-                break ;
-            case COLOCATED_VERTICES :
-                remove_colocated_entity_vertices_and_update_gm() ;
-                break ;
-            case DEGENERATE_FACETS_EDGES :
-                remove_degenerate_facets_and_edges_and_update_gm() ;
-                break ;
-            case LINE_BOUNDARY_ORDER :
-                repair_line_boundary_vertex_order() ;
-                break ;
-            default :
-                ringmesh_assert_not_reached ;
-        }
+        index_t v1 = colocated_vertices[L.mesh_element_vertex_index( e, 0 )] ;
+        index_t v2 = colocated_vertices[L.mesh_element_vertex_index( e, 1 )] ;
+        return v1 == v2 ;
     }
 
-    void GeoModelRepair::geomodel_mesh_repair()
-    {
-        // Force removal of global vertices - Bugs ? I do not know where [JP]
-        //model().mesh.vertices.clear() ; /// TODO Test now
-
-        // Remove colocated vertices in each entity
-        remove_colocated_entity_vertices_and_update_gm() ;
-
-        // Basic mesh repair for surfaces and lines
-        remove_degenerate_facets_and_edges_and_update_gm() ;
-
-        // Proper reordering of line boundaries
-        repair_line_boundary_vertex_order() ;
-
-        // This is basic requirement ! no_colocated geomodel vertices !
-        // So remove them if there are any
-        geomodel().mesh.remove_colocated_vertices() ;
-
-        end_geomodel() ;
-    }
-
-    void GeoModelRepair::remove_colocated_entity_vertices_and_update_gm()
-    {
-        std::set< gme_t > empty_entities ;
-        remove_colocated_entity_vertices( empty_entities ) ;
-        if( !empty_entities.empty() ) {
-            get_dependent_entities( empty_entities ) ;
-            remove_mesh_entities( empty_entities ) ;
-        }
-    }
-
-    void GeoModelRepair::remove_degenerate_facets_and_edges_and_update_gm()
-    {
-        std::set< gme_t > empty_entities ;
-        remove_degenerate_facets_and_edges( empty_entities ) ;
-        /// TODO when it works, use GeoModelEditor::remove_entities_and_dependencies
-        if( !empty_entities.empty() ) {
-            remove_mesh_entities( empty_entities ) ;
-        }
-
-        // This is basic requirement ! no_colocated geomodel vertices !
-        // So remove them if there are any
-        geomodel().mesh.remove_colocated_vertices() ;
-
-        end_geomodel() ;
-    }
-
-    void GeoModelRepair::repair_line_boundary_vertex_order()
-    {
-        for( index_t line_itr = 0; line_itr < geomodel().nb_lines(); ++line_itr ) {
-            const Line& cur_line = geomodel().line( line_itr ) ;
-            if( !cur_line.is_first_corner_first_vertex() ) {
-                const index_t first_boundary_index = cur_line.boundary( 0 ).index() ;
-                set_mesh_entity_boundary( cur_line.gme_id(), 0,
-                    cur_line.boundary_gme( 1 ).index ) ;
-                set_mesh_entity_boundary( cur_line.gme_id(), 1,
-                    first_boundary_index ) ;
-            }
-        }
-    }
 }

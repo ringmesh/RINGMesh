@@ -33,33 +33,36 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_GEOMODEL_REPAIR__
-#define __RINGMESH_GEOMODEL_REPAIR__
+#ifndef __RINGMESH_GEOMODEL_BUILDER_REPAIR__
+#define __RINGMESH_GEOMODEL_BUILDER_REPAIR__
 
 #include <ringmesh/basic/common.h>
 
-#include <ringmesh/geomodel/geomodel_builder.h>
+#include <ringmesh/geomodel/geomodel.h>
 
 /*!
- * @file ringmesh/geomodel_repair.h
- * @brief Functions to repair GeoModel.
- * @author Jeanne Pellerin
+ * @file ringmesh/geomodel_builder_repair.h
+ * @brief Builder tools to repair GeoModels.
+ * @author Pierre Anquez
  */
 
 namespace RINGMesh {
+    class GeoModelBuilder ;
+}
+
+namespace RINGMesh {
+
     /*!
      * @brief Try repairing a supposedly invalid GeoModel
      * @details Remove colocated vertices in all GeoModelMeshEntity.
      *          Remove degenerated edges and facets in Surfaces and Lines.
-     * @warning The Mesh of the geomodel is deleted.
-     *          This function will by no mean fix all errors in a GeoModel
+     * @warning This function will by no mean fix all errors in a GeoModel
      *          It has been tested on a very small number of geomodels.
-     *
-     * @todo Convenience design to change. This allows an easy access for repair
-     * to the internal meshes of the GeoModel. This class is otherwise artificial.
      */
-    class RINGMESH_API GeoModelRepair: public GeoModelBuilder {
-        ringmesh_disable_copy( GeoModelRepair ) ;
+    class RINGMESH_API GeoModelBuilderRepair {
+    ringmesh_disable_copy( GeoModelBuilderRepair ) ;
+        friend class GeoModelBuilder ;
+
     public:
         /*!
          * Enumeration of the different repair modes.
@@ -71,46 +74,41 @@ namespace RINGMesh {
             DEGENERATE_FACETS_EDGES,
             LINE_BOUNDARY_ORDER
         } ;
-    public:
-        GeoModelRepair( GeoModel& geomodel )
-            : GeoModelBuilder( geomodel )
-        {
-        }
-        virtual ~GeoModelRepair()
-        {
-        }
+
         /*!
-         * @brief repair a GeoModel according a repair mode.
+         * @brief Repair a GeoModel according a repair mode.
          * @param[in] repair_mode repair mode to apply.
          */
         void repair( RepairMode repair_mode ) ;
     private:
+        GeoModelBuilderRepair( GeoModelBuilder& builder, GeoModel& geomodel ) ;
+
         /*!
          * All implemented repair for a GeoModel.
          */
         void geomodel_mesh_repair() ;
         /*!
-         * Removes the colocated vertices in all the GeoModelMeshEntity within
-         * the GeoModel. GeoModelMeshEntity without any vertex anymore
+         * Remove the colocated vertices in all the GeoModelMeshEntities within
+         * the GeoModel. GeoModelMeshEntities without any vertex anymore
          * (after the removal of the vertices) are removed off the GeoModel.
          */
         void remove_colocated_entity_vertices_and_update_gm() ;
         /*!
-         * Removes the degenerated facets in all the Surface and all the
-         * degenerated edges in all the Line within
+         * Remove the degenerated facets in all the Surfaces and all the
+         * degenerate edges in all the Lines within
          * the GeoModel. Degeneration is due to colocated vertices.
-         * Surface and Line without any vertex anymore
+         * Surfaces and Lines without any vertex anymore
          * (after the removal of the vertices) are removed off the GeoModel.
          */
         void remove_degenerate_facets_and_edges_and_update_gm() ;
         /*!
          * @brief For all the lines in the geomodel, switch line boundaries
-         * if the way of their indices do not follow the way of the vertex indices.
+         * if the way of their indices does not follow the way of the vertex indices.
          */
         void repair_line_boundary_vertex_order() ;
         /*!
-         * @brief Detect and remove degenerated edges in a \param line.
-         * @return the number of degenerated edges that have been removed from the line.
+         * @brief Detect and remove degenerate edges in a \param line.
+         * @return the number of degenerate edges that have been removed from the line.
          */
         index_t repair_line_mesh( Line& line ) ;
         void line_detect_degenerate_edges(
@@ -139,7 +137,7 @@ namespace RINGMesh {
             const Surface& S,
             index_t f,
             std::vector< index_t >& colocated_vertices ) ;
-            
+
         /*!
          * @brief Detect and remove degenerated facets in a Surface
          * @param[in,out] S Surface to check for potential degenerate facets.
@@ -185,12 +183,12 @@ namespace RINGMesh {
         bool edge_is_degenerate(
             const Line& L,
             index_t e,
-            const std::vector< index_t >& colocated_vertices )
-        {
-            index_t v1 = colocated_vertices[L.mesh_element_vertex_index( e, 0 )] ;
-            index_t v2 = colocated_vertices[L.mesh_element_vertex_index( e, 1 )] ;
-            return v1 == v2 ;
-        }
+            const std::vector< index_t >& colocated_vertices ) ;
+
+    private:
+        GeoModelBuilder& builder_ ;
+        GeoModel& geomodel_ ;
+        GeoModelAccess geomodel_access_ ;
     } ;
 
 } //namespace RINGMesh
