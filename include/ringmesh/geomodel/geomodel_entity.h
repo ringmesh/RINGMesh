@@ -56,8 +56,6 @@ namespace RINGMesh {
     class RINGMESH_API GeoModelEntity {
     ringmesh_disable_copy( GeoModelEntity ) ;
     public:
-        friend class GeoModelEditor ;
-
         typedef std::string EntityType ;
 
         /*!
@@ -143,7 +141,7 @@ namespace RINGMesh {
     protected:
         /*!
          * @details Client code should only create GeoModelEntities through
-         * GeoModelEditor derived classes.
+         * GeoModelBuilderTopology class.
          *
          * @param[in] geomodel Geomodel owning the Entity to create
          * @param[in] id Index of the entity in the corresponding vector in the geomodel
@@ -184,7 +182,7 @@ namespace RINGMesh {
     class RINGMESH_API Universe: public GeoModelEntity {
     ringmesh_disable_copy( Universe ) ;
     public:
-        friend class GeoModelEditor ;
+        friend class UniverseAccess ;
 
         Universe( const GeoModel& geomodel ) ;
 
@@ -222,12 +220,20 @@ namespace RINGMesh {
         }
 
     protected:
+        //@todo not used if editor is removed -> to delete
         void copy( const GeoModelEntity& from )
         {
             GME::copy( from ) ;
             const Universe& universe_from = dynamic_cast< const Universe& >( from ) ;
             boundary_surfaces_ = universe_from.boundary_surfaces_ ;
             boundary_surface_sides_ = universe_from.boundary_surface_sides_ ;
+        }
+
+        void copy( const Universe& from )
+        {
+            GME::copy( from ) ;
+            boundary_surfaces_ = from.boundary_surfaces_ ;
+            boundary_surface_sides_ = from.boundary_surface_sides_ ;
         }
 
         virtual bool is_index_valid() const
@@ -238,6 +244,36 @@ namespace RINGMesh {
     private:
         std::vector< gme_t > boundary_surfaces_ ;
         std::vector< bool > boundary_surface_sides_ ;
+    } ;
+
+    class UniverseAccess {
+    ringmesh_disable_copy( UniverseAccess ) ;
+        friend class GeoModelBuilderTopology ;
+        friend class GeoModelBuilderRemoval ;
+
+    private:
+        UniverseAccess( Universe& universe )
+            : universe_( universe )
+        {
+        }
+
+        std::vector< gme_t >& modifiable_boundaries()
+        {
+            return universe_.boundary_surfaces_ ;
+        }
+
+        std::vector< bool >& modifiable_sides()
+        {
+            return universe_.boundary_surface_sides_ ;
+        }
+
+        void copy( const Universe& from )
+        {
+            universe_.copy( from ) ;
+        }
+
+    private:
+        Universe& universe_ ;
     } ;
 
 } // namespace
