@@ -395,12 +395,6 @@ void test_plane_plane_intersection()
     vec3 D_inter_answer3( 0., 2., 1. ) ;
     bool intersect3 = plane_plane_intersection( O_P0, N_P0, O_P13, N_P13,
         O_inter_result3, D_inter_result3 ) ;
-//    DEBUG( intersect3 ) ;
-//    DEBUG(normalize( D_inter_answer3 )) ;
-//    DEBUG(normalize( D_inter_result3 )) ;
-//    DEBUG(normalize( D_inter_answer3 )) ;
-//    DEBUG(O_inter_result3 - O_inter_answer3) ;
-//    DEBUG(normalize( O_inter_result3 - O_inter_answer3 )) ;
     if( !intersect3
         || !are_almost_equal( normalize( D_inter_answer3 ),
             normalize( D_inter_result3 ) )
