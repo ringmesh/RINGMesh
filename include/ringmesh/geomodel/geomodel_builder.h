@@ -217,6 +217,7 @@ namespace RINGMesh {
             GeoModelGeologicalEntityAccess gmge_access( geol_entity ) ;
             gmge_access.modifiable_children()[id] = child ;
         }
+        void build_contacts() ;
 
     protected:
         GeoModelBuilderGeology( GeoModelBuilder& builder, GeoModel& geomodel ) ;

@@ -91,7 +91,7 @@ namespace RINGMesh {
         {
             return GEO::mesh_nb_connected_components( *mesh_ ) ;
         }
-        virtual index_t get_connected_commoponents(
+        virtual index_t get_connected_components(
             GEO::vector< index_t >& component ) const
         {
             return GEO::get_connected_components( *mesh_, component ) ;

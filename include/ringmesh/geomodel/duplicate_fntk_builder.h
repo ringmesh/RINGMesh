@@ -207,7 +207,7 @@ namespace RINGMesh {
         /// TODO copy paste from removal of remove entity, and it is in private in GeoModelEditor
         void fill_entity_type_to_index_map()
         {
-            const EntityTypeManager& manager = entity_type_manager() ;
+            const EntityTypeManager& manager = geomodel_.entity_type_manager() ;
             all_entity_types_.insert( all_entity_types_.end(),
                 manager.mesh_entity_types().begin(),
                 manager.mesh_entity_types().end() ) ;
