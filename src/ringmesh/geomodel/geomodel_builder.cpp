@@ -1103,5 +1103,103 @@ namespace RINGMesh {
         // Deliberate clear of the geomodel vertices used for geomodel building
         geomodel_.mesh.vertices.clear() ;
     }
+    GeoModelBuilderGeology::GeoModelBuilderGeology(
+        GeoModelBuilder& builder,
+        GeoModel& geomodel )
+        : builder_( builder ), geomodel_( geomodel ), geomodel_access_( geomodel )
+    {
+    }
+
+    void GeoModelBuilderGeology::fill_mesh_entities_parent( const EntityType& type )
+    {
+        if( geomodel_.nb_mesh_entities( type ) == 0 ) {
+            return ;
+        }
+        const std::vector< EntityType > parent_types(
+            geomodel_.entity_type_manager().parent_types( type ) ) ;
+        for( index_t i = 0; i < parent_types.size(); ++i ) {
+            const EntityType& parent_type = parent_types[i] ;
+            if( EntityTypeManager::is_defined_type( parent_type ) ) {
+                for( index_t j = 0;
+                    j < geomodel_.nb_geological_entities( parent_type ); ++j ) {
+                    const GeoModelGeologicalEntity& parent =
+                        geomodel_.geological_entity( parent_type, j ) ;
+                    for( index_t k = 0; k < parent.nb_children(); ++k ) {
+                        add_mesh_entity_parent( parent.child_gme( k ),
+                            parent.gme_id() ) ;
+                    }
+                }
+            }
+        }
+    }
+
+    void GeoModelBuilderGeology::fill_geological_entities_children(
+        const EntityType& type )
+    {
+        if( geomodel_.nb_geological_entities( type ) == 0 ) {
+            return ;
+        }
+        const EntityType& c_type =
+            geomodel_.geological_entity( type, 0 ).child_type_name() ;
+        if( EntityTypeManager::is_defined_type( c_type ) ) {
+            for( index_t i = 0; i < geomodel_.nb_mesh_entities( c_type ); ++i ) {
+                const GeoModelMeshEntity& p = geomodel_.mesh_entity( c_type, i ) ;
+                for( index_t j = 0; j < p.nb_parents(); j++ ) {
+                    add_geological_entity_child( p.parent_gme( j ), i ) ;
+                }
+            }
+        }
+    }
+
+    void GeoModelBuilderGeology::complete_mesh_entities_geol_feature_from_first_parent(
+        const EntityType& type )
+    {
+        if( geomodel_.nb_mesh_entities( type ) == 0 ) {
+            return ;
+        }
+        const std::vector< EntityType > parents =
+            geomodel_.entity_type_manager().parent_types( type ) ;
+        if( parents.size() == 0 ) {
+            return ;
+        } else {
+            for( index_t i = 0; i < geomodel_.nb_mesh_entities( type ); ++i ) {
+                GeoModelMeshEntity& E = geomodel_access_.modifiable_mesh_entity(
+                    gme_t( type, i ) ) ;
+                if( !E.has_geological_feature() ) {
+                    if( E.nb_parents() > 0
+                        && E.parent( 0 ).has_geological_feature() ) {
+                        GeoModelMeshEntityAccess gmme_access( E ) ;
+                        gmme_access.modifiable_geol_feature() =
+                            E.parent( 0 ).geological_feature() ;
+                    }
+                }
+            }
+        }
+    }
+
+    void GeoModelBuilderGeology::complete_geological_entities_geol_feature_from_first_child(
+        const EntityType& type )
+    {
+        if( geomodel_.nb_geological_entities( type ) == 0 ) {
+            return ;
+        }
+        const EntityType& child_type = geomodel_.entity_type_manager().child_type(
+            type ) ;
+        if( EntityTypeManager::is_defined_type( child_type ) ) {
+            for( index_t i = 0; i < geomodel_.nb_geological_entities( type ); ++i ) {
+                GeoModelGeologicalEntity& parent =
+                    geomodel_access_.modifiable_geological_entity(
+                        gme_t( type, i ) ) ;
+                if( !parent.has_geological_feature() ) {
+                    if( parent.nb_children() > 0
+                        && parent.child( 0 ).has_geological_feature() ) {
+                        GeoModelGeologicalEntityAccess gmge_access( parent ) ;
+                        gmge_access.modifiable_geol_feature() =
+                            parent.child( 0 ).geological_feature() ;
+                    }
+                }
+            }
+        }
+    }
 
 } // namespace
