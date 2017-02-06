@@ -58,10 +58,16 @@ namespace {
         Logger::out( "" ) << "Welcome to RINGMesh-Mesh-Quality !" << std::endl ;
     }
 
+    void import_arg_group_quality()
+    {
+        GEO::CmdLine::declare_arg_group( "quality", "Mesh quality" ) ;
+        GEO::CmdLine::declare_arg( "quality:mode", 0, "Mesh quality mode" ) ;
+    }
+
     void import_arg_groups()
     {
         CmdLine::import_arg_group( "in" ) ;
-        CmdLine::import_arg_group( "quality" ) ;
+        import_arg_group_quality() ;
         CmdLine::import_arg_group( "out" ) ;
     }
 
