@@ -365,7 +365,7 @@ source_group("Zlib" FILES ${zlib_src} ${zlib_include})
 #------------------------------------------------------------------------------------------------
 # Build configuration
 # Organize outputs in a Linux way
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
+#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 
@@ -416,6 +416,8 @@ endif(WIN32)
 
 if(RINGMESH_WITH_UTILITIES)
     message(STATUS "Configuring RINGMesh with utilities")
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/utilities)
+    message(STATUS "RINGMesh utilities directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
     add_subdirectory(src/bin/ringmesh-convert)
     add_subdirectory(src/bin/ringmesh-surface-convert)
     add_subdirectory(src/bin/ringmesh-stats)
@@ -432,11 +434,15 @@ endif(RINGMESH_WITH_UTILITIES)
 
 if(RINGMESH_WITH_EXAMPLES)
     message(STATUS "Configuring RINGMesh with examples")
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/examples)
+    message(STATUS "RINGMesh examples directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
     add_subdirectory(examples)
 endif(RINGMESH_WITH_EXAMPLES)
 
 if(RINGMESH_WITH_TESTS)
     message(STATUS "Configuring RINGMesh with tests")
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/tests)
+    message(STATUS "RINGMesh tests directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
     add_subdirectory(tests)
 endif(RINGMESH_WITH_TESTS)
 
