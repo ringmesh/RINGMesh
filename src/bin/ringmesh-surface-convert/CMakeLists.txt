@@ -31,14 +31,15 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
-# CMakeList for RINGMesh file format converter subproject
+# CMakeList for RINGMesh subproject for converting surface .ts format
+# Author Gautier Laurent
 
 # Set the target as an executable 
-add_executable(ringmeshstats main.cpp)
+add_executable(ringmesh-surface-convert main.cpp)
    
-target_link_libraries(ringmeshstats RINGMesh geogram)
+target_link_libraries(ringmesh-surface-convert RINGMesh geogram)
 
 # Add the project to a folder of projects for the tests 
-set_property(TARGET ringmeshstats PROPERTY FOLDER "Utilities")
+set_property(TARGET ringmesh-surface-convert PROPERTY FOLDER "Utilities")
 
 

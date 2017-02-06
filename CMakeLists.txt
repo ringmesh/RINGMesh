@@ -413,20 +413,21 @@ endif(WIN32)
 
 #------------------------------------------------------------------------------------------------
 # Optional modules configuration
-if(RINGMESH_WITH_GRAPHICS)
-    message(STATUS "Configuring RINGMesh with graphics")
-    add_subdirectory(src/ringmeshview)
-endif(RINGMESH_WITH_GRAPHICS)
 
 if(RINGMESH_WITH_UTILITIES)
     message(STATUS "Configuring RINGMesh with utilities")
-    add_subdirectory(src/ringmeshconvert)
-    add_subdirectory(src/ringmesh_surface_convert)
-    add_subdirectory(src/ringmeshstats)
-    add_subdirectory(src/ringmeshrepair)
-    add_subdirectory(src/ringmesh_mesh_quality)
-    add_subdirectory(src/ringmesh_rotate)
-    add_subdirectory(src/ringmesh_translate)
+    add_subdirectory(src/bin/ringmesh-convert)
+    add_subdirectory(src/bin/ringmesh-surface-convert)
+    add_subdirectory(src/bin/ringmesh-stats)
+    add_subdirectory(src/bin/ringmesh-repair)
+    add_subdirectory(src/bin/ringmesh-mesh-quality)
+    add_subdirectory(src/bin/ringmesh-rotate)
+    add_subdirectory(src/bin/ringmesh-translate)
+
+    if(RINGMESH_WITH_GRAPHICS)
+        message(STATUS "Configuring RINGMesh utilities with graphics")
+        add_subdirectory(src/bin/ringmesh-view)
+    endif(RINGMESH_WITH_GRAPHICS)
 endif(RINGMESH_WITH_UTILITIES)
 
 if(RINGMESH_WITH_EXAMPLES)

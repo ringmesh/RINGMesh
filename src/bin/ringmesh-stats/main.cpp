@@ -56,8 +56,8 @@ int main( int argc, char** argv )
         default_configure() ;
 
         print_header_information() ;
-        Logger::div( "RINGMeshStats" ) ;
-        Logger::out( "" ) << "Welcome to RINGMeshStats !" << std::endl ;
+        Logger::div( "RINGMesh-Stats" ) ;
+        Logger::out( "" ) << "Welcome to RINGMesh-Stats !" << std::endl ;
 
         CmdLine::import_arg_group( "in" ) ;
         CmdLine::import_arg_group( "stats" ) ;
