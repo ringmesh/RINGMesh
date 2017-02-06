@@ -82,9 +82,8 @@ namespace RINGMesh {
         Mesh0DBuilder* create_corner_builder( index_t corner_id )
         {
             gme_t id( Corner::type_name_static(), corner_id ) ;
-            Corner& corner =
-                dynamic_cast< Corner& >( geomodel_access_.modifiable_mesh_entity(
-                    id ) ) ;
+            GeoModelMeshEntity& corner = geomodel_access_.modifiable_mesh_entity(
+                id ) ;
             GeoModelMeshEntityAccess corner_access( corner ) ;
             Mesh0D& corner_mesh =
                 dynamic_cast< Mesh0D& >( *corner_access.modifiable_mesh() ) ;
@@ -101,9 +100,8 @@ namespace RINGMesh {
         Mesh1DBuilder* create_line_builder( index_t line_id )
         {
             gme_t id( Line::type_name_static(), line_id ) ;
-            Line& line =
-                dynamic_cast< Line& >( geomodel_access_.modifiable_mesh_entity(
-                    id ) ) ;
+            GeoModelMeshEntity& line = geomodel_access_.modifiable_mesh_entity(
+                id ) ;
             GeoModelMeshEntityAccess line_access( line ) ;
             Mesh1D& line_mesh =
                 dynamic_cast< Mesh1D& >( *line_access.modifiable_mesh() ) ;
@@ -120,9 +118,8 @@ namespace RINGMesh {
         Mesh2DBuilder* create_surface_builder( index_t surface_id )
         {
             gme_t id( Surface::type_name_static(), surface_id ) ;
-            Surface& surface =
-                dynamic_cast< Surface& >( geomodel_access_.modifiable_mesh_entity(
-                    id ) ) ;
+            GeoModelMeshEntity& surface = geomodel_access_.modifiable_mesh_entity(
+                id ) ;
             GeoModelMeshEntityAccess surface_access( surface ) ;
             Mesh2D& surface_mesh =
                 dynamic_cast< Mesh2D& >( *surface_access.modifiable_mesh() ) ;
@@ -139,9 +136,8 @@ namespace RINGMesh {
         Mesh3DBuilder* create_region_builder( index_t region_id )
         {
             gme_t id( Region::type_name_static(), region_id ) ;
-            Region& region =
-                dynamic_cast< Region& >( geomodel_access_.modifiable_mesh_entity(
-                    id ) ) ;
+            GeoModelMeshEntity& region = geomodel_access_.modifiable_mesh_entity(
+                id ) ;
             GeoModelMeshEntityAccess region_access( region ) ;
             Mesh3D& region_mesh =
                 dynamic_cast< Mesh3D& >( *region_access.modifiable_mesh() ) ;
