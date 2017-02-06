@@ -313,32 +313,16 @@ namespace RINGMesh {
             GEO::String::from_string( entity_id, id ) ;
             Logger::instance()->set_minimal( true ) ;
             if( EntityTypeManager::is_corner( entity_type ) ) {
-                Corner& corner =
-                    dynamic_cast< Corner& >( geomodel_access_.modifiable_mesh_entity(
-                        gme_t( entity_type, id ) ) ) ;
-                Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder(
-                    corner.low_level_mesh_storage() ) ;
+                Mesh0DBuilder_var builder = geometry.create_corner_builder( id ) ;
                 builder->load_mesh( file_name ) ;
             } else if( EntityTypeManager::is_line( entity_type ) ) {
-                Line& line =
-                    dynamic_cast< Line& >( geomodel_access_.modifiable_mesh_entity(
-                        gme_t( entity_type, id ) ) ) ;
-                Mesh1DBuilder_var builder = Mesh1DBuilder::create_builder(
-                    line.low_level_mesh_storage() ) ;
+                Mesh1DBuilder_var builder = geometry.create_line_builder( id ) ;
                 builder->load_mesh( file_name ) ;
             } else if( EntityTypeManager::is_surface( entity_type ) ) {
-                Surface& surface =
-                    dynamic_cast< Surface& >( geomodel_access_.modifiable_mesh_entity(
-                        gme_t( entity_type, id ) ) ) ;
-                Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder(
-                    surface.low_level_mesh_storage() ) ;
+                Mesh2DBuilder_var builder = geometry.create_surface_builder( id ) ;
                 builder->load_mesh( file_name ) ;
             } else if( EntityTypeManager::is_region( entity_type ) ) {
-                Region& region =
-                    dynamic_cast< Region& >( geomodel_access_.modifiable_mesh_entity(
-                        gme_t( entity_type, id ) ) ) ;
-                Mesh3DBuilder_var builder = Mesh3DBuilder::create_builder(
-                    region.low_level_mesh_storage() ) ;
+                Mesh3DBuilder_var builder = geometry.create_region_builder( id ) ;
                 builder->load_mesh( file_name ) ;
             }
             Logger::instance()->set_minimal( false ) ;

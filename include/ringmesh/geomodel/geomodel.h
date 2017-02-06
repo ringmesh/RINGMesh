@@ -451,7 +451,6 @@ namespace RINGMesh {
         {
         }
 
-    public:
         std::string& modifiable_name()
         {
             return geomodel_.geomodel_name_ ;
