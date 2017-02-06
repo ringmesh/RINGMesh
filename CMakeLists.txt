@@ -391,24 +391,34 @@ add_dependencies(RINGMesh geogram_ext)
 # Libraries to which RINGMesh should link
 target_link_libraries(RINGMesh ${EXTRA_LIBS})
 
+
+function(copy_for_windows)
 if(WIN32)
     # On windows, without proper installation steps, we need to 
     # copy of Geogram dll and pdb information to RINGMesh
     # to be able to launch RINGMesh utilities and tests from the debugger
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/utilities)
+	
+	# The dll and debug info of RINGMesh are in
+	# build/ringmesh/Debug or build/ringmesh/Release.
     add_custom_command(TARGET RINGMesh POST_BUILD 
-       COMMAND  "${CMAKE_COMMAND}" -E copy_directory 
-           "${GEOGRAM_PATH_BIN}/bin/$<CONFIGURATION>"
-           "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>" 
-       COMMENT "Copy geogram binaries")
-       if(RINGMESH_WITH_GEOLOGYJS)
-            add_custom_command(TARGET RINGMesh POST_BUILD 
-                COMMAND  "${CMAKE_COMMAND}" -E copy_directory 
+        COMMAND  "${CMAKE_COMMAND}" -E copy_directory 
+            "${PROJECT_BINARY_DIR}/$<CONFIGURATION>"
+            "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>" 
+            COMMENT "Copy RINGMesh dll")
+	add_custom_command(TARGET RINGMesh POST_BUILD 
+        COMMAND  "${CMAKE_COMMAND}" -E copy_directory 
+            "${GEOGRAM_PATH_BIN}/bin/$<CONFIGURATION>"
+            "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>" 
+            COMMENT "Copy geogram binaries")
+    if(RINGMESH_WITH_GEOLOGYJS)
+        add_custom_command(TARGET RINGMesh POST_BUILD 
+            COMMAND  "${CMAKE_COMMAND}" -E copy_directory 
                 "${GEOLOGY_JS_PATH_BIN}/bin/$<CONFIGURATION>"
                 "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>" 
-            COMMENT "Copy geology js binaries")
-       endif(RINGMESH_WITH_GEOLOGYJS)
+                COMMENT "Copy geology js binaries")
+    endif(RINGMESH_WITH_GEOLOGYJS)
 endif(WIN32)
+endfunction()
 
 
 #------------------------------------------------------------------------------------------------
@@ -430,6 +440,8 @@ if(RINGMESH_WITH_UTILITIES)
         message(STATUS "Configuring RINGMesh utilities with graphics")
         add_subdirectory(src/bin/ringmesh-view)
     endif(RINGMESH_WITH_GRAPHICS)
+	
+	copy_for_windows()
 endif(RINGMESH_WITH_UTILITIES)
 
 if(RINGMESH_WITH_EXAMPLES)
@@ -437,6 +449,7 @@ if(RINGMESH_WITH_EXAMPLES)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/examples)
     message(STATUS "RINGMesh examples directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
     add_subdirectory(examples)
+	copy_for_windows()
 endif(RINGMESH_WITH_EXAMPLES)
 
 if(RINGMESH_WITH_TESTS)
@@ -444,6 +457,7 @@ if(RINGMESH_WITH_TESTS)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/tests)
     message(STATUS "RINGMesh tests directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
     add_subdirectory(tests)
+	copy_for_windows()
 endif(RINGMESH_WITH_TESTS)
 
 

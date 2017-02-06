@@ -80,7 +80,7 @@ int main()
 
         //load GeoModel
         //here you can load whatever the model you want in the ringmesh_home/test/data directory
-        std::string input_file_name = "../../../../tests/data/modelA1.ml";
+        std::string input_file_name = "../../../../../tests/data/modelA1.ml";
 
         //function to load a geomodel
         geomodel_load( geomodel, input_file_name ) ;
