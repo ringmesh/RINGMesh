@@ -81,17 +81,6 @@ namespace RINGMesh {
                 "Saves the geological model" ) ;
         }
 
-        void import_arg_group_stats()
-        {
-            GEO::CmdLine::declare_arg_group( "stats", "Statistics options" ) ;
-            GEO::CmdLine::declare_arg(
-                "stats:volume", false,
-                "Print statistics on the volume" ) ;
-            GEO::CmdLine::declare_arg(
-                "stats:nb", true,
-                "Print statistics on the number of entities" ) ;
-        }
-
         void import_arg_group_repair()
         {
             GEO::CmdLine::declare_arg_group( "repair", "GeoModel repair processes" ) ;
@@ -100,11 +89,7 @@ namespace RINGMesh {
                 "Repair mode: repair process to apply to the geomodel" ) ;
         }
 
-        void import_arg_group_quality()
-        {
-            GEO::CmdLine::declare_arg_group( "quality", "Mesh quality" ) ;
-            GEO::CmdLine::declare_arg( "quality:mode", 0, "Mesh quality mode" ) ;
-        }
+
 
         bool import_arg_group( const std::string& name )
         {
@@ -114,12 +99,8 @@ namespace RINGMesh {
                 import_arg_group_in() ;
             } else if( name == "out" ) {
                 import_arg_group_out() ;
-            } else if( name == "stats" ) {
-                import_arg_group_stats() ;
             } else if( name == "repair" ) {
                 import_arg_group_repair() ;
-            } else if( name == "quality" ) {
-                import_arg_group_quality() ;
             } else {
                 return GEO::CmdLine::import_arg_group( name ) ;
             }

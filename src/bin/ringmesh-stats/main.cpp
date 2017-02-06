@@ -47,6 +47,17 @@
  * @author Arnaud Botella
  */
 
+namespace {
+    void import_arg_group_stats()
+    {
+        GEO::CmdLine::declare_arg_group( "stats", "Statistics options" ) ;
+        GEO::CmdLine::declare_arg( "stats:volume", false,
+            "Print statistics on the volume" ) ;
+        GEO::CmdLine::declare_arg( "stats:nb", true,
+            "Print statistics on the number of entities" ) ;
+    }
+}
+
 int main( int argc, char** argv )
 {
     using namespace RINGMesh ;
@@ -60,7 +71,7 @@ int main( int argc, char** argv )
         Logger::out( "" ) << "Welcome to RINGMesh-Stats !" << std::endl ;
 
         CmdLine::import_arg_group( "in" ) ;
-        CmdLine::import_arg_group( "stats" ) ;
+        import_arg_group_stats() ;
 
         if( argc == 1 ) {
             GEO::CmdLine::show_usage() ;
