@@ -59,6 +59,13 @@ option(RINGMESH_WITH_TETGEN "Use Tetgen tetrahedral mesher" ON)
 
 # Optional components of RINGMesh - creation of specific targets
 option(RINGMESH_WITH_GRAPHICS "Compile viewer" OFF)
+include(CMakeDependentOption)
+# Option to build ringmesh-view. Disable when RINGMESH_WITH_GRAPHICS
+# is OFF. The fist time RINGMESH_WITH_GRAPHICS is ON, this
+# option is ON.
+CMAKE_DEPENDENT_OPTION(BUILD_RINGMESH_VIEW "Build ringmesh-view" ON
+    "RINGMESH_WITH_GRAPHICS" OFF)
+
 option(RINGMESH_WITH_UTILITIES "Compile utility executables" OFF)
 option(RINGMESH_WITH_EXAMPLES "Compile API trainings and examples" OFF)
 option(RINGMESH_WITH_TESTS "Compile test projects" OFF)
@@ -143,6 +150,7 @@ if(UNIX)
                 -DUSE_OPENMP:BOOL=${USE_OPENMP}
                 -DRINGMESH_WITH_TETGEN:BOOL=${RINGMESH_WITH_TETGEN} 
                 -DRINGMESH_WITH_GRAPHICS:BOOL=${RINGMESH_WITH_GRAPHICS}
+                -DBUILD_RINGMESH_VIEW:BOOL=${BUILD_RINGMESH_VIEW}
                 -DRINGMESH_WITH_UTILITIES:BOOL=${RINGMESH_WITH_UTILITIES}
                 -DRINGMESH_WITH_TESTS:BOOL=${RINGMESH_WITH_TESTS}
                 -DRINGMESH_WITH_EXAMPLES:BOOL=${RINGMESH_WITH_EXAMPLES}
@@ -424,6 +432,14 @@ endfunction()
 #------------------------------------------------------------------------------------------------
 # Optional modules configuration
 
+if(BUILD_RINGMESH_VIEW)
+    message(STATUS "Configure ringmesh-view")
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
+    message(STATUS "ringmesh-view directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+    add_subdirectory(src/bin/ringmesh-view)
+    copy_for_windows()
+endif(BUILD_RINGMESH_VIEW)
+
 if(RINGMESH_WITH_UTILITIES)
     message(STATUS "Configuring RINGMesh with utilities")
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/utilities)
@@ -435,12 +451,6 @@ if(RINGMESH_WITH_UTILITIES)
     add_subdirectory(src/bin/ringmesh-mesh-quality)
     add_subdirectory(src/bin/ringmesh-rotate)
     add_subdirectory(src/bin/ringmesh-translate)
-
-    if(RINGMESH_WITH_GRAPHICS)
-        message(STATUS "Configuring RINGMesh utilities with graphics")
-        add_subdirectory(src/bin/ringmesh-view)
-    endif(RINGMESH_WITH_GRAPHICS)
-	
 	copy_for_windows()
 endif(RINGMESH_WITH_UTILITIES)
 
