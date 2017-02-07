@@ -62,121 +62,10 @@ namespace RINGMesh {
     class Surface ;
     class Line ;
     class Region ;
+    class EntityTypeManager ;
 }
 
 namespace RINGMesh {
-    /*!  
-     * @brief Manages the type relationship between GeoModelEntities
-     * Each GeoModel owns one instance of it.
-     */
-    class RINGMESH_API EntityTyspeManager {
-    ringmesh_disable_copy( EntityTypeManager ) ;
-    public:
-        friend class GeoModelBuilderTopology ;
-        EntityTypeManager()
-        {
-        }
-
-        typedef std::string EntityType ;
-        typedef std::string MeshEntityType ;
-        typedef std::string GeologicalEntityType ;
-        typedef std::map< MeshEntityType, std::set< GeologicalEntityType > > MeshEntityToParents ;
-        typedef std::map< GeologicalEntityType, MeshEntityType > GeologicalEntityToChild ;
-
-        static bool is_defined_type( const EntityType& type )
-        {
-            return type != default_entity_type() ;
-        }
-        static const EntityType default_entity_type() ;
-        bool is_valid_type( const EntityType& type ) const
-        {
-            return is_defined_type( type )
-                && ( is_mesh_entity_type( type ) || is_geological_entity_type( type ) ) ;
-        }
-
-        // ---- Static members : access to relationships between MeshEntities
-        // ---- Maybe they could be outside the class.
-        static bool is_mesh_entity_type( const EntityType& type ) ;
-        static bool is_corner( const EntityType& type ) ;
-        static bool is_line( const EntityType& type ) ;
-        static bool is_surface( const EntityType& type ) ;
-        static bool is_region( const EntityType& type ) ;
-        static const MeshEntityType& boundary_type( const MeshEntityType& type ) ;
-        static const MeshEntityType& in_boundary_type( const MeshEntityType& type ) ;
-        static const std::vector< MeshEntityType >& mesh_entity_types() ;
-        static index_t nb_mesh_entity_types() ;
-
-        // --- GeologicalEntity and MeshEntity relationships
-        std::vector< GeologicalEntityType > parent_types(
-            const MeshEntityType& child_type ) const
-        {
-            MeshEntityToParents::const_iterator itr = child_to_parents_.find(
-                child_type ) ;
-            std::vector< GeologicalEntityType > result ;
-            if( itr != child_to_parents_.end() ) {
-                result.insert( result.begin(), itr->second.begin(),
-                    itr->second.end() ) ;
-            }
-            return result ;
-        }
-        index_t nb_parent_types( const MeshEntityType& child_type ) const
-        {
-            return static_cast< index_t >( parent_types( child_type ).size() ) ;
-        }
-        const MeshEntityType child_type(
-            const GeologicalEntityType& parent_type ) const
-        {
-            GeologicalEntityToChild::const_iterator itr = parent_to_child_.find(
-                parent_type ) ;
-            if( itr == parent_to_child_.end() ) {
-                return default_entity_type() ;
-            } else {
-                return itr->second ;
-            }
-        }
-
-        // --- Geological entity types 
-        bool is_geological_entity_type( const EntityType& type ) const ;
-        index_t nb_geological_entity_types() const
-        {
-            return static_cast< index_t >( geological_entity_types_.size() ) ;
-        }
-        const std::vector< GeologicalEntityType >& geological_entity_types() const
-        {
-            return geological_entity_types_ ;
-        }
-        const EntityType& geological_entity_type( index_t index ) const
-        {
-            return geological_entity_types_.at( index ) ;
-        }
-        index_t geological_entity_type_index( const EntityType& type ) const
-        {
-            return find( geological_entity_types_, type ) ;
-        }
-
-    private:
-        void register_geological_entity_type(
-            const GeologicalEntityType& geological_type_name )
-        {
-            if( find( geological_entity_types_, geological_type_name ) == NO_ID ) {
-                geological_entity_types_.push_back( ( geological_type_name ) ) ;
-            }
-        }
-
-        void register_relationship(
-            const EntityType& parent_type_name,
-            const EntityType& child_type_name )
-        {
-            parent_to_child_[parent_type_name] = child_type_name ;
-            child_to_parents_[child_type_name].insert( parent_type_name ) ;
-        }
-
-    private:
-        std::vector< GeologicalEntityType > geological_entity_types_ ;
-        GeologicalEntityToChild parent_to_child_ ;
-        MeshEntityToParents child_to_parents_ ;
-    } ;
-
     /*!
      * @brief The class to describe a geological geomodel represented 
      * by its boundary surfaces and whose regions can be optionally meshed
@@ -211,24 +100,6 @@ namespace RINGMesh {
         const EntityTypeManager& entity_type_manager() const
         {
             return entity_type_manager_ ;
-        }
-        /*!
-         * @brief Tests if the EntityType corresponds to a GeoModelMeshEntity
-         * @param[in] type the EntityType to test
-         * @return true is it is a GeoModelMeshEntity type
-         */
-        bool is_mesh_entity_type( const EntityType& type ) const
-        {
-            return EntityTypeManager::is_mesh_entity_type( type ) ;
-        }
-        /*!
-         * @brief Tests if the EntityType corresponds to a GeoModelGeologicalEntity
-         * @param[in] type the EntityType to test
-         * @return true is it is a GeoModelGeologicalEntity type
-         */
-        bool is_geological_entity_type( const EntityType& type ) const
-        {
-            return entity_type_manager_.is_geological_entity_type( type ) ;
         }
 
         /*!

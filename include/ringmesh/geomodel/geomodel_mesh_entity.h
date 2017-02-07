@@ -44,6 +44,7 @@
 #include <ringmesh/basic/common.h>
 
 #include <ringmesh/geomodel/geomodel_entity.h>
+#include <ringmesh/geomodel/entity_type_manager.h>
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
 
 #include <ringmesh/mesh/mesh.h>
@@ -96,7 +97,7 @@ namespace RINGMesh {
         {
             return static_cast< index_t >( boundaries_.size() ) ;
         }
-        const gme_t& boundary_gme( index_t x ) const
+        const gmme_t& boundary_gme( index_t x ) const
         {
             ringmesh_assert( x < nb_boundaries() ) ;
             return boundaries_[x] ;
@@ -107,7 +108,7 @@ namespace RINGMesh {
         {
             return static_cast< index_t >( in_boundary_.size() ) ;
         }
-        const gme_t& in_boundary_gme( index_t x ) const
+        const gmme_t& in_boundary_gme( index_t x ) const
         {
             ringmesh_assert( x < nb_in_boundary() ) ;
             return in_boundary_[x] ;
@@ -144,7 +145,7 @@ namespace RINGMesh {
         {
             return static_cast< index_t >( parents_.size() ) ;
         }
-        const gme_t& parent_gme( index_t id ) const
+        const gmge_t& parent_gme( index_t id ) const
         {
             ringmesh_assert( id < nb_parents() ) ;
             return parents_[id] ;
@@ -311,14 +312,14 @@ namespace RINGMesh {
     protected:
 
         /// Entities on the boundary of this entity
-        std::vector< gme_t > boundaries_ ;
+        std::vector< gmme_t > boundaries_ ;
 
         /// Entities in which boundary this entity is
-        std::vector< gme_t > in_boundary_ ;
+        std::vector< gmme_t > in_boundary_ ;
 
         /// The optional GeoModelGeologicalEntities 
         /// (groups of GeoModelMeshEntity this entity belongs to)
-        std::vector< gme_t > parents_ ;
+        std::vector< gmge_t > parents_ ;
     private:
         /// The RINGMesh::Mesh giving the geometry of this entity
         MeshBase* mesh_ ;
@@ -413,7 +414,7 @@ namespace RINGMesh {
             Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder( *mesh0d_ ) ;
             builder->create_vertex() ;
 
-            id_.type = type_name_static() ;
+            id_.type() = type_name_static() ;
         }
 
         /*!
