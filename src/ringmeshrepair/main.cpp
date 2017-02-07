@@ -40,7 +40,7 @@
 
 #include <ringmesh/basic/command_line.h>
 #include <ringmesh/geomodel/geomodel.h>
-#include <ringmesh/geomodel/geomodel_repair.h>
+#include <ringmesh/geomodel/geomodel_builder.h>
 #include <ringmesh/io/io.h>
 
 /*!
@@ -77,9 +77,9 @@ namespace {
         geomodel_load( geomodel, in_model_file_name ) ;
 
         index_t repair_mode = GEO::CmdLine::get_arg_uint( "repair:mode" ) ;
-        GeoModelRepair geomodel_repair( geomodel ) ;
-        geomodel_repair.repair(
-            static_cast< GeoModelRepair::RepairMode >( repair_mode ) ) ;
+        GeoModelBuilder builder( geomodel ) ;
+        builder.repair.repair(
+            static_cast< GeoModelBuilderRepair::RepairMode >( repair_mode ) ) ;
 
         std::string out_model_file_name = GEO::CmdLine::get_arg( "out:geomodel" ) ;
         if( out_model_file_name.empty() ) {

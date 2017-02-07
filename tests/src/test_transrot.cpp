@@ -73,52 +73,52 @@ void build_geomodel( GeoModel& geomodel )
     std::vector< vec3 > vertices( 4 ) ;
     gme_t id ;
 
-    id = builder.create_mesh_entity< Surface >() ;
+    id = builder.topology.create_mesh_entity< Surface >() ;
     vertices[0] = v0 ;
     vertices[1] = v1 ;
     vertices[2] = v2 ;
     vertices[3] = v3 ;
-    builder.set_surface_geometry( id.index, vertices, triangles,
+    builder.geometry.set_surface_geometry( id.index, vertices, triangles,
         surface_facet_ptr ) ;
 
-    id = builder.create_mesh_entity< Surface >() ;
+    id = builder.topology.create_mesh_entity< Surface >() ;
     vertices[0] = v1 ;
     vertices[1] = v5 ;
     vertices[2] = v6 ;
     vertices[3] = v2 ;
-    builder.set_surface_geometry( id.index, vertices, triangles,
+    builder.geometry.set_surface_geometry( id.index, vertices, triangles,
         surface_facet_ptr ) ;
 
-    id = builder.create_mesh_entity< Surface >() ;
+    id = builder.topology.create_mesh_entity< Surface >() ;
     vertices[0] = v4 ;
     vertices[1] = v5 ;
     vertices[2] = v6 ;
     vertices[3] = v7 ;
-    builder.set_surface_geometry( id.index, vertices, triangles,
+    builder.geometry.set_surface_geometry( id.index, vertices, triangles,
         surface_facet_ptr ) ;
 
-    id = builder.create_mesh_entity< Surface >() ;
+    id = builder.topology.create_mesh_entity< Surface >() ;
     vertices[0] = v0 ;
     vertices[1] = v3 ;
     vertices[2] = v7 ;
     vertices[3] = v4 ;
-    builder.set_surface_geometry( id.index, vertices, triangles,
+    builder.geometry.set_surface_geometry( id.index, vertices, triangles,
         surface_facet_ptr ) ;
 
-    id = builder.create_mesh_entity< Surface >() ;
+    id = builder.topology.create_mesh_entity< Surface >() ;
     vertices[0] = v3 ;
     vertices[1] = v2 ;
     vertices[2] = v6 ;
     vertices[3] = v7 ;
-    builder.set_surface_geometry( id.index, vertices, triangles,
+    builder.geometry.set_surface_geometry( id.index, vertices, triangles,
         surface_facet_ptr ) ;
 
-    id = builder.create_mesh_entity< Surface >() ;
+    id = builder.topology.create_mesh_entity< Surface >() ;
     vertices[0] = v0 ;
     vertices[1] = v1 ;
     vertices[2] = v5 ;
     vertices[3] = v4 ;
-    builder.set_surface_geometry( id.index, vertices, triangles,
+    builder.geometry.set_surface_geometry( id.index, vertices, triangles,
         surface_facet_ptr ) ;
 }
 

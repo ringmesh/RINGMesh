@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2012-2017, Bruno Levy
+ *  Copyright (c) 2012-2016, Bruno Levy
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -50,6 +50,11 @@
 extern "C" {
 #include <geogram/third_party/lua/lua.h>
 }
+
+/**
+ * \file geogram_gfx/glup_viewer/glup_viewer_lua.h
+ * \brief LUA bindings for glup_viewer.
+ */
 
 /**
  * \brief Registers all LUA extension functions.

@@ -68,16 +68,9 @@ namespace RINGMesh {
     /*! @todo Move this global variables in a function */
     const std::string surface_att_name = "region" ;
     const std::string region_att_name = "region" ;
-    const std::string order_att_name = "order" ;
     const std::string cell_region_att_name = "cell_region" ;
     const std::string facet_surface_att_name = "facet_surface" ;
 
-    /*! 
-     * This design is a catastrophe !
-     * The vertices are used at building step, at saving steps ...
-     * Update mechanisms are BAD... very difficult to change, specially because of 
-     * the building [JP]
-     */
     class RINGMESH_API GeoModelMeshVertices {
     ringmesh_disable_copy( GeoModelMeshVertices ) ;
     public:
@@ -1333,9 +1326,6 @@ namespace RINGMesh {
         mutable GeoModelMeshCells::DuplicateMode mode_ ;
 
     public:
-        // This is not compliant with the guidelines 
-        // BUT THEY HAVE to be after the above private attributes 
-        // because of the dangerous constructor [JP]
         GeoModelMeshVertices vertices ;
         GeoModelMeshEdges edges ;
         GeoModelMeshFacets facets ;
