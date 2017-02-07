@@ -41,8 +41,6 @@
 
 namespace RINGMesh {
 
-
-
     // Not the smartest but hopefully compiles in C++98
     static const MeshEntityType hard_encoded_mesh_entity_types_array[4] = {
         Corner::type_name_static(), Line::type_name_static(),
@@ -50,6 +48,15 @@ namespace RINGMesh {
     static const std::vector< MeshEntityType > hard_encoded_mesh_entity_types(
         &hard_encoded_mesh_entity_types_array[0],
         &hard_encoded_mesh_entity_types_array[4] ) ;
+
+    MeshEntityTypeManager::MeshEntityTypeManager( EntityTypeManager& type_manager )
+        :
+            type_manager_( type_manager ),
+            boundary_relationships_(),
+            in_boundary_relationships_()
+    {
+
+    }
 
     bool MeshEntityTypeManager::is_corner( const MeshEntityType& type )
     {
@@ -85,6 +92,47 @@ namespace RINGMesh {
         return itr->second ;
     }
 
+    const std::vector< MeshEntityType >& MeshEntityTypeManager::mesh_entity_types()
+    {
+        return hard_encoded_mesh_entity_types ;
+    }
+    index_t MeshEntityTypeManager::nb_mesh_entity_types()
+    {
+        return static_cast< index_t >( hard_encoded_mesh_entity_types.size() ) ;
+
+    }
+
+    GeologicalTypeManager::GeologicalTypeManager( EntityTypeManager& type_manager )
+        : type_manager_( type_manager )
+    {
+
+    }
+
+    index_t GeologicalTypeManager::nb_geological_entity_types() const
+    {
+        return static_cast< index_t >( geological_entity_types_.size() ) ;
+    }
+    const std::vector< GeologicalEntityType >& GeologicalTypeManager::geological_entity_types() const
+    {
+        return geological_entity_types_ ;
+    }
+    const EntityType& GeologicalTypeManager::geological_entity_type(
+        index_t index ) const
+    {
+        return geological_entity_types_.at( index ) ;
+    }
+    index_t GeologicalTypeManager::geological_entity_type_index(
+        const EntityType& type ) const
+    {
+        return find( geological_entity_types_, type ) ;
+    }
+
+    RelationshipManager::RelationshipManager( EntityTypeManager& type_manager )
+        : type_manager_( type_manager )
+    {
+
+    }
+
     std::vector< GeologicalEntityType > RelationshipManager::parent_types(
         const MeshEntityType& child_type ) const
     {
@@ -107,7 +155,7 @@ namespace RINGMesh {
         GeologicalEntityToChild::const_iterator itr = parent_to_child_.find(
             parent_type ) ;
         if( itr == parent_to_child_.end() ) {
-            return EntityType::default_entity_type() ;
+            return DefaultEntityType::default_entity_type() ;
         } else {
             return itr->second ;
         }
