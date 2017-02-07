@@ -81,16 +81,6 @@ namespace RINGMesh {
                 "Saves the geological model" ) ;
         }
 
-        void import_arg_group_repair()
-        {
-            GEO::CmdLine::declare_arg_group( "repair", "GeoModel repair processes" ) ;
-            GEO::CmdLine::declare_arg(
-                "repair:mode", 0,
-                "Repair mode: repair process to apply to the geomodel" ) ;
-        }
-
-
-
         bool import_arg_group( const std::string& name )
         {
             if( name == "global" ) {
@@ -99,8 +89,6 @@ namespace RINGMesh {
                 import_arg_group_in() ;
             } else if( name == "out" ) {
                 import_arg_group_out() ;
-            } else if( name == "repair" ) {
-                import_arg_group_repair() ;
             } else {
                 return GEO::CmdLine::import_arg_group( name ) ;
             }

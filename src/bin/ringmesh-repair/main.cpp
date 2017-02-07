@@ -57,11 +57,18 @@ namespace {
         Logger::out( "" ) << "Welcome to RINGMesh-Repair !" << std::endl ;
     }
 
+    void import_arg_group_repair()
+    {
+        GEO::CmdLine::declare_arg_group( "repair", "GeoModel repair processes" ) ;
+        GEO::CmdLine::declare_arg( "repair:mode", 0,
+            "Repair mode: repair process to apply to the geomodel" ) ;
+    }
+
     void import_arg_groups()
     {
         CmdLine::import_arg_group( "in" ) ;
         CmdLine::import_arg_group( "out" ) ;
-        CmdLine::import_arg_group( "repair" ) ;
+        import_arg_group_repair() ;
     }
 
     void run()
