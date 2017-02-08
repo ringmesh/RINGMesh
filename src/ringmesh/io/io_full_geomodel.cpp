@@ -666,11 +666,15 @@ namespace {
             zip_file( zf, geological_entity_file ) ;
             GEO::FileSystem::delete_file( geological_entity_file ) ;
 
+            index_t nb_mesh_entites = geomodel.nb_corners() + geomodel.nb_lines()
+                + geomodel.nb_surfaces() + geomodel.nb_regions() ;
             std::vector< std::string > filenames ;
+            filenames.reserve( nb_mesh_entites ) ;
             save_geomodel_mesh_entities< Corner >( geomodel, filenames ) ;
             save_geomodel_mesh_entities< Line >( geomodel, filenames ) ;
             save_geomodel_mesh_entities< Surface >( geomodel, filenames ) ;
             save_geomodel_mesh_entities< Region >( geomodel, filenames ) ;
+            std::sort( filenames.begin(), filenames.end() ) ;
             zip_files( filenames, zf ) ;
 
             zipClose( zf, NULL ) ;
