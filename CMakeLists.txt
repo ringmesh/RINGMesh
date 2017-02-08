@@ -60,7 +60,7 @@ option(RINGMESH_WITH_TETGEN "Use Tetgen tetrahedral mesher" ON)
 # Optional components of RINGMesh - creation of specific targets
 option(RINGMESH_WITH_GRAPHICS "Compile viewer" OFF)
 option(RINGMESH_WITH_UTILITIES "Compile utility executables" OFF)
-option(RINGMESH_WITH_EXAMPLES "Compile API trainings and examples" OFF)
+option(RINGMESH_WITH_TUTORIALS "Compile API trainings and tuturials" OFF)
 option(RINGMESH_WITH_TESTS "Compile test projects" OFF)
 option(RINGMESH_WITH_GEOLOGYJS "Enable export to html" OFF)
 
@@ -79,9 +79,16 @@ if(RINGMESH_WITH_TESTS)
     endif()    
 endif()
 
-# Optional custom configuration of examples directories
-if(RINGMESH_WITH_EXAMPLES)
-    set(EXAMPLES_DIRECTORY ${CMAKE_SOURCE_DIR}/examples)
+# Optional custom configuration of tutorials directories
+if(RINGMESH_WITH_TUTORIALS)
+    set(TUTORIALS_DIRECTORY ${CMAKE_SOURCE_DIR}/doc/tutorials)
+    set(TUTORIALS_SOURCE_DIRECTORY ${TUTORIALS_DIRECTORY}/src)
+    set(TUTORIALS_DATA_INPUT_DIRECTORY "${TUTORIALS_DIRECTORY}/data" CACHE PATH "Input data location")
+    # PROJECT_BINARY_DIR not defined at this point
+    set(TUTORIALS_DATA_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/build/tutorials/output" CACHE PATH "Output data location")
+    if(UNIX)    
+      list(APPEND CMAKE_CONFIGURATION_TYPES Coverage)
+    endif() 
 endif()
 
 if(RINGMESH_WITH_GEOLOGYJS)
@@ -145,12 +152,14 @@ if(UNIX)
                 -DRINGMESH_WITH_GRAPHICS:BOOL=${RINGMESH_WITH_GRAPHICS}
                 -DRINGMESH_WITH_UTILITIES:BOOL=${RINGMESH_WITH_UTILITIES}
                 -DRINGMESH_WITH_TESTS:BOOL=${RINGMESH_WITH_TESTS}
-                -DRINGMESH_WITH_EXAMPLES:BOOL=${RINGMESH_WITH_EXAMPLES}
+				-DTEST_DATA_INPUT_DIRECTORY:STRING=${TEST_DATA_INPUT_DIRECTORY}
+                -DTEST_DATA_OUTPUT_DIRECTORY:STRING=${TEST_DATA_OUTPUT_DIRECTORY}        
+                -DRINGMESH_WITH_TUTORIALS:BOOL=${RINGMESH_WITH_TUTORIALS}
+				-DTUTORIALS_DATA_INPUT_DIRECTORY:STRING=${TUTORIALS_DATA_INPUT_DIRECTORY}
+                -DTUTORIALS_DATA_OUTPUT_DIRECTORY:STRING=${TUTORIALS_DATA_OUTPUT_DIRECTORY}  
                 -DRINGMESH_WITH_GEOLOGYJS:BOOL=${RINGMESH_WITH_GEOLOGYJS}
-                -DBUILD_DOCUMENTATION:BOOL=${BUILD_DOCUMENTATION}
-                -DTEST_DATA_INPUT_DIRECTORY:STRING=${TEST_DATA_INPUT_DIRECTORY}
-                -DTEST_DATA_OUTPUT_DIRECTORY:STRING=${TEST_DATA_OUTPUT_DIRECTORY}                
-                -DGEOLOGY_JS_DIRECTORY:STRING=${GEOLOGY_JS_DIRECTORY}                
+				-DGEOLOGY_JS_DIRECTORY:STRING=${GEOLOGY_JS_DIRECTORY} 
+                -DBUILD_DOCUMENTATION:BOOL=${BUILD_DOCUMENTATION}                     
                 WORKING_DIRECTORY ${project_binary_dir_config})                
       endforeach()
       
@@ -429,10 +438,10 @@ if(RINGMESH_WITH_UTILITIES)
     add_subdirectory(src/ringmesh_translate)
 endif(RINGMESH_WITH_UTILITIES)
 
-if(RINGMESH_WITH_EXAMPLES)
-    message(STATUS "Configuring RINGMesh with examples")
-    add_subdirectory(examples)
-endif(RINGMESH_WITH_EXAMPLES)
+if(RINGMESH_WITH_TUTORIALS)
+    message(STATUS "Configuring RINGMesh with tutorials")
+    add_subdirectory(doc/tutorials)
+endif(RINGMESH_WITH_TUTORIALS)
 
 if(RINGMESH_WITH_TESTS)
     message(STATUS "Configuring RINGMesh with tests")

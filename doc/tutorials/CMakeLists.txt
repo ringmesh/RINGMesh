@@ -31,46 +31,45 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
-# CMakeLists for RINGMesh tests
-# This file is included by the root CMakeList of the RINGMesh project 
-# Author Jeanne Pellerin
+# CMakeList for RINGMesh tutorials
 
-if(NOT IS_DIRECTORY ${TEST_DATA_INPUT_DIRECTORY})
-	message(STATUS "Defined data directory for tests does not exists, using default tests/data")
-	SET(TEST_DATA_INPUT_DIRECTORY "${TEST_DIRECTORY}/data" FORCE)
+if(NOT IS_DIRECTORY ${TUTORIALS_DATA_INPUT_DIRECTORY})
+	message(STATUS "Defined data directory for tests does not exists, using default doc/tutorials/data")
+	SET(TUTORIALS_DATA_INPUT_DIRECTORY "${TUTORIALS_DIRECTORY}/data" FORCE)
 endif()	
 		
 # Create the directory for the outputs of the tests
-# It is output in the configuration file as well as the test input data directory 
-file(MAKE_DIRECTORY ${TEST_DATA_OUTPUT_DIRECTORY}) 
+# It is output in the configuration file as well as the input data for tutorials 
+file(MAKE_DIRECTORY ${TUTORIALS_DATA_OUTPUT_DIRECTORY}) 
 
 # Configure a header file to pass some of the CMake settings
 # to the source code
-set(test_config_file_in ${TEST_SOURCE_DIRECTORY}/ringmesh_tests_config.h.in)
-set(test_config_file ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_tests_config.h)
-configure_file(${test_config_file_in} ${test_config_file})
+set(tutorial_config_file_in ${TUTORIALS_SOURCE_DIRECTORY}/ringmesh_tutorials_config.h.in)
+set(tutorial_config_file ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_tutorials_config.h)
+configure_file(${tutorial_config_file_in} ${tutorial_config_file})
 
-# Get the name of the test files 
-file(GLOB TESTS "${TEST_SOURCE_DIRECTORY}/*.cpp")
+# Get the name of the tutorial files 
+file(GLOB TUTORIAL "${TUTORIAL_DIRECTORY}/*.cpp")
 
 # For all the test files found
-foreach(testsourcefile ${TESTS})
+foreach(tutuorialsourcefile ${TUTORIAL})
     # Get the name of the file without extension
-    get_filename_component(testname ${testsourcefile} NAME_WE)
+    get_filename_component(tutorialname ${tutuorialsourcefile} NAME_WE)
     
     # Add the target for that file
-    add_executable(${testname} ${testsourcefile} ${test_config_file} ${test_config_file_in})
+    add_executable(${tutorialname} ${tutuorialsourcefile})
     
     # Link RINGMesh Make sure YourLib is linked to each app
-    target_link_libraries(${testname} geogram RINGMesh)
+    target_link_libraries(${tutorialname} geogram RINGMesh)
     
-    add_dependencies(${testname} RINGMesh)
+    add_dependencies(${tutorialname} RINGMesh)
     
     # Add the project to a folder of projects for the tests 
-    set_property(TARGET ${testname} PROPERTY FOLDER "Tests")
-    
+    set_property(TARGET ${tutorialname} PROPERTY FOLDER "TUTORIAL")
+		    
     # Add the test to CTest
-    add_test(NAME ${testname} COMMAND ${testname} -j${PROCESSOR_COUNT}) 
-   
-endforeach(testsourcefile ${TESTS})
+    add_test(NAME ${tutorialname} COMMAND ${tutorialname} -j${PROCESSOR_COUNT}) 
+       
+endforeach(tutuorialsourcefile ${TUTORIAL})
+
 
