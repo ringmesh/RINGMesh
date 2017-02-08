@@ -292,6 +292,7 @@ namespace RINGMesh {
         if( unzGoToFirstFile( uz ) != UNZ_OK ) {
             throw RINGMeshException( "I/O", "Unable to uncompress the first file" ) ;
         }
+        std::vector< std::string > filenames ;
         do {
             char char_file_name[MAX_FILENAME] ;
             if( unzGetCurrentFileInfo64( uz, NULL, char_file_name,
@@ -304,6 +305,13 @@ namespace RINGMesh {
             }
 
             unzip_current_file( uz, file_name.c_str() ) ;
+            filenames.push_back( file_name ) ;
+        } while( unzGoToNextFile( uz ) == UNZ_OK ) ;
+
+        Logger::instance()->set_minimal( true ) ;
+        RINGMESH_PARALLEL_LOOP_DYNAMIC
+        for( index_t i = 0; i < filenames.size(); i++ ) {
+            const std::string& file_name = filenames[i] ;
             std::string file_without_extension = GEO::FileSystem::base_name(
                 file_name ) ;
             std::string entity_type, entity_id ;
@@ -311,7 +319,6 @@ namespace RINGMesh {
                 entity_id ) ;
             index_t id = NO_ID ;
             GEO::String::from_string( entity_id, id ) ;
-            Logger::instance()->set_minimal( true ) ;
             if( EntityTypeManager::is_corner( entity_type ) ) {
                 Mesh0DBuilder_var builder = geometry.create_corner_builder( id ) ;
                 builder->load_mesh( file_name ) ;
@@ -325,10 +332,9 @@ namespace RINGMesh {
                 Mesh3DBuilder_var builder = geometry.create_region_builder( id ) ;
                 builder->load_mesh( file_name ) ;
             }
-            Logger::instance()->set_minimal( false ) ;
             GEO::FileSystem::delete_file( file_name ) ;
-
-        } while( unzGoToNextFile( uz ) == UNZ_OK ) ;
+        }
+        Logger::instance()->set_minimal( false ) ;
     }
 
     // ------------------------------------------------------------------------//
