@@ -31,15 +31,14 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
-# CMakeList for RINGMesh viewer subproject
-
-include(${CMAKE_SOURCE_DIR}/src/third_party/geogram/cmake/opengl.cmake)
+# CMakeList for assess the quality of the 3D mesh entities
 
 # Set the target as an executable 
-add_executable(ringmeshview main.cpp)
-
-target_link_libraries(ringmeshview RINGMesh geogram geogram_gfx ${OPENGL_LIBRARIES})
+add_executable(ringmesh-mesh-quality main.cpp)
+   
+target_link_libraries(ringmesh-mesh-quality RINGMesh geogram)
 
 # Add the project to a folder of projects for the tests 
-set_property(TARGET ringmeshview PROPERTY FOLDER "Utilities")
+set_property(TARGET ringmesh-mesh-quality PROPERTY FOLDER "Utilities")
+
 
