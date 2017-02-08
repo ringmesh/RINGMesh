@@ -36,7 +36,6 @@
 #include <ringmesh/geomodel/geomodel_validity.h>
 
 #include <geogram/mesh/triangle_intersection.h>
-#include <geogram/basic/stopwatch.h>
 
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>
@@ -851,8 +850,8 @@ namespace {
             threads.push_back( new TestGeometryConnectivityConsistency( *this ) ) ;
             threads.push_back( new TestNonManifoldEdges( *this ) ) ;
             RINGMESH_PARALLEL_LOOP_DYNAMIC
-            for(index_t i = 0; i < threads.size(); i++) {
-                threads[i]->run();
+            for( index_t i = 0; i < threads.size(); i++ ) {
+                threads[i]->run() ;
             }
         }
 
@@ -1065,7 +1064,7 @@ namespace {
         const GeoModel& geomodel_ ;
         bool valid_ ;
         bool check_surface_intersections_ ;
-    }    ;
+    } ;
 
 } // anonymous namespace
 
