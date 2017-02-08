@@ -96,7 +96,6 @@ if(RINGMESH_WITH_TUTORIALS)
     if(UNIX)    
       list(APPEND CMAKE_CONFIGURATION_TYPES Coverage)
     endif() 
-	message(STATUS "ici on y est")
 endif()
 
 if(RINGMESH_WITH_GEOLOGYJS)
