@@ -453,7 +453,7 @@ namespace {
             std::ofstream out( filename.c_str() ) ;
             out.precision( 16 ) ;
             const RINGMesh::GeoModelMesh& geomodel_mesh = geomodel.mesh ;
-            if( geomodel_mesh.cells.nb() != geomodel_mesh.cells.nb_tet() ){
+            if( geomodel_mesh.cells.nb() != geomodel_mesh.cells.nb_tet() ) {
                 {
                     throw RINGMeshException( "I/O",
                         "Adeli supports only tet meshes" ) ;
@@ -584,31 +584,43 @@ namespace {
     template< typename ENTITY >
     void save_geomodel_mesh_entity(
         const ENTITY& geomodel_entity_mesh,
-        zipFile& zf )
+        std::vector< std::string >& filenames )
     {
         std::string name = build_string_for_geomodel_entity_export(
             geomodel_entity_mesh ) ;
-        Logger* logger = Logger::instance() ;
-        bool logger_status = logger->is_quiet() ;
-        logger->set_quiet( true ) ;
-        bool is_saved = save_mesh( geomodel_entity_mesh, name ) ;
-        logger->set_quiet( logger_status ) ;
+        if( save_mesh( geomodel_entity_mesh, name ) ) {
+#pragma omp critical
+            {
+                filenames.push_back( name ) ;
+            }
+        }
+    }
 
-        if( is_saved ) {
+    void zip_files( const std::vector< std::string >& filenames, zipFile& zf )
+    {
+        for( index_t i = 0; i < filenames.size(); i++ ) {
+            const std::string& name = filenames[i] ;
             zip_file( zf, name ) ;
             GEO::FileSystem::delete_file( name ) ;
         }
     }
 
     template< typename ENTITY >
-    void save_geomodel_mesh_entities( const GeoModel& geomodel, zipFile& zf )
+    void save_geomodel_mesh_entities(
+        const GeoModel& geomodel,
+        std::vector< std::string >& filenames )
     {
         const std::string& type = ENTITY::type_name_static() ;
+        Logger* logger = Logger::instance() ;
+        bool logger_status = logger->is_quiet() ;
+        logger->set_quiet( true ) ;
+        RINGMESH_PARALLEL_LOOP_DYNAMIC
         for( index_t e = 0; e < geomodel.nb_mesh_entities( type ); e++ ) {
             const ENTITY& entity =
                 dynamic_cast< const ENTITY& >( geomodel.mesh_entity( type, e ) ) ;
-            save_geomodel_mesh_entity< ENTITY >( entity, zf ) ;
+            save_geomodel_mesh_entity< ENTITY >( entity, filenames ) ;
         }
+        logger->set_quiet( logger_status ) ;
     }
 
     class GeoModelHandlerGM: public GeoModelIOHandler {
@@ -654,15 +666,16 @@ namespace {
             zip_file( zf, geological_entity_file ) ;
             GEO::FileSystem::delete_file( geological_entity_file ) ;
 
-            save_geomodel_mesh_entities< Corner >( geomodel, zf ) ;
-            save_geomodel_mesh_entities< Line >( geomodel, zf ) ;
-            save_geomodel_mesh_entities< Surface >( geomodel, zf ) ;
-            save_geomodel_mesh_entities< Region >( geomodel, zf ) ;
+            std::vector< std::string > filenames ;
+            save_geomodel_mesh_entities< Corner >( geomodel, filenames ) ;
+            save_geomodel_mesh_entities< Line >( geomodel, filenames ) ;
+            save_geomodel_mesh_entities< Surface >( geomodel, filenames ) ;
+            save_geomodel_mesh_entities< Region >( geomodel, filenames ) ;
+            zip_files( filenames, zf ) ;
 
             zipClose( zf, NULL ) ;
             GEO::FileSystem::set_current_working_directory( pwd ) ;
         }
-
     } ;
 
     class OldGeoModelHandlerGM: public GeoModelIOHandler {
@@ -2548,20 +2561,20 @@ namespace RINGMesh {
      */
     void GeoModelIOHandler::initialize_full_geomodel_output()
     {
-        ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "meshb" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "mesh" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( TetGenIOHandler, "tetgen" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( TSolidIOHandler, "so" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( CSMPIOHandler, "csmp" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( AsterIOHandler, "mail" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( VTKIOHandler, "vtk" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( GPRSIOHandler, "gprs" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( MSHIOHandler, "msh" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( MFEMIOHandler, "mfem" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( GeoModelHandlerGM, "gm" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( OldGeoModelHandlerGM, "ogm" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( AbaqusIOHandler, "inp" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( AdeliIOHandler, "adeli" ) ;
-    }
+        ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "meshb" );
+    ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "mesh" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( TetGenIOHandler, "tetgen" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( TSolidIOHandler, "so" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( CSMPIOHandler, "csmp" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( AsterIOHandler, "mail" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( VTKIOHandler, "vtk" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( GPRSIOHandler, "gprs" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( MSHIOHandler, "msh" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( MFEMIOHandler, "mfem" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( GeoModelHandlerGM, "gm" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( OldGeoModelHandlerGM, "ogm" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( AbaqusIOHandler, "inp" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( AdeliIOHandler, "adeli" ) ;
+}
 
 }
