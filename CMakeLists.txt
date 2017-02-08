@@ -78,7 +78,7 @@ option(BUILD_DOCUMENTATION "Create and install the HTML documentation (requires 
 if(RINGMESH_WITH_TESTS)
     set(TEST_DIRECTORY ${CMAKE_SOURCE_DIR}/tests)
     set(TEST_SOURCE_DIRECTORY ${TEST_DIRECTORY}/src)
-    set(TEST_DATA_INPUT_DIRECTORY "${TEST_DIRECTORY}/data" CACHE PATH "Input data location")
+    set(TEST_DATA_INPUT_DIRECTORY "${TEST_DIRECTORY}/data")
     # PROJECT_BINARY_DIR not defined at this point
     set(TEST_DATA_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/build/tests/output" CACHE PATH "Output data location")
     if(UNIX)    
@@ -90,7 +90,7 @@ endif()
 if(RINGMESH_WITH_TUTORIALS)
     set(TUTORIALS_DIRECTORY ${CMAKE_SOURCE_DIR}/doc/tutorials)
     set(TUTORIALS_SOURCE_DIRECTORY ${TUTORIALS_DIRECTORY}/src)
-    set(TUTORIALS_DATA_INPUT_DIRECTORY "${TUTORIALS_DIRECTORY}/data" CACHE PATH "Input data location")
+    set(TUTORIALS_DATA_INPUT_DIRECTORY "${TUTORIALS_DIRECTORY}/data")
     # PROJECT_BINARY_DIR not defined at this point
     set(TUTORIALS_DATA_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/build/tutorials/output" CACHE PATH "Output data location")
     if(UNIX)    
