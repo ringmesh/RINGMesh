@@ -34,7 +34,7 @@
 # CMakeList for RINGMesh tutorials
 
 if(NOT IS_DIRECTORY ${TUTORIALS_DATA_INPUT_DIRECTORY})
-	message(STATUS "Defined data directory for tests does not exists, using default doc/tutorials/data")
+	message(STATUS "Defined data directory for tutorials does not exists, using default doc/tutorials/data")
 	SET(TUTORIALS_DATA_INPUT_DIRECTORY "${TUTORIALS_DIRECTORY}/data" FORCE)
 endif()	
 		
@@ -49,7 +49,7 @@ set(tutorial_config_file ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_tutorials_confi
 configure_file(${tutorial_config_file_in} ${tutorial_config_file})
 
 # Get the name of the tutorial files 
-file(GLOB TUTORIAL "${TUTORIAL_DIRECTORY}/*.cpp")
+file(GLOB TUTORIAL "${TUTORIALS_SOURCE_DIRECTORY}/*.cpp")
 
 # For all the test files found
 foreach(tutuorialsourcefile ${TUTORIAL})
@@ -65,10 +65,10 @@ foreach(tutuorialsourcefile ${TUTORIAL})
     add_dependencies(${tutorialname} RINGMesh)
     
     # Add the project to a folder of projects for the tests 
-    set_property(TARGET ${tutorialname} PROPERTY FOLDER "TUTORIAL")
+    set_property(TARGET ${tutorialname} PROPERTY FOLDER "Tutorials")
 		    
     # Add the test to CTest
-    add_test(NAME ${tutorialname} COMMAND ${tutorialname} -j${PROCESSOR_COUNT}) 
+    add_test(NAME ${tutorialname} COMMAND ${tutorialname}) 
        
 endforeach(tutuorialsourcefile ${TUTORIAL})
 

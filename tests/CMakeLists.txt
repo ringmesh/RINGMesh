@@ -70,7 +70,7 @@ foreach(testsourcefile ${TESTS})
     set_property(TARGET ${testname} PROPERTY FOLDER "Tests")
     
     # Add the test to CTest
-    add_test(NAME ${testname} COMMAND ${testname} -j${PROCESSOR_COUNT}) 
+    add_test(NAME ${testname} COMMAND ${testname}) 
    
 endforeach(testsourcefile ${TESTS})
 
