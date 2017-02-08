@@ -1,0 +1,33 @@
+version: 1.0.{build}
+
+environment:
+  password:
+    secure: 61164urZVvsMrnw+6P+GBQ==
+    
+build:
+  parallel: true
+  
+before_build:
+ - del "C:\Program Files (x86)\MSBuild\14.0\Microsoft.Common.targets\ImportAfter\Xamarin.Common.targets"
+ 
+build_script:
+ - cmd: >-
+    mkdir build
+    
+    cd build
+    
+    mkdir ringmesh
+    
+    cd ringmesh
+    
+    cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_EXAMPLES:BOOL=ON ../..
+    
+    cmake --build . --config Debug
+    
+test_script:
+ - cmd: cmake --build . --target RUN_TESTS --config Debug
+
+on_success:
+ - IF "%APPVEYOR_REPO_BRANCH%"=="default" (
+     C:\projects\ringmesh\launch_coverage.cmd
+   )
