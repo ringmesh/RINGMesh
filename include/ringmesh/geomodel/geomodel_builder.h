@@ -230,11 +230,11 @@ namespace RINGMesh {
     class RINGMESH_API GeoModelBuilderCopy {
     ringmesh_disable_copy( GeoModelBuilderCopy ) ;
         friend class GeoModelBuilder ;
+    public:
+        void copy_geomodel( const GeoModel& from ) ;
 
     private:
         GeoModelBuilderCopy( GeoModelBuilder& builder, GeoModel& geomodel ) ;
-
-        void copy_geomodel( const GeoModel& from ) ;
 
     private:
         GeoModelBuilder& builder_ ;
