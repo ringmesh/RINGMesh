@@ -31,14 +31,14 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
-# CMakeList for RINGMesh GeoModel repair subproject
+# CMakeList for RINGMesh file format converter subproject
 
 # Set the target as an executable 
-add_executable(ringmeshrepair main.cpp)
+add_executable(ringmesh-convert main.cpp)
    
-target_link_libraries(ringmeshrepair RINGMesh geogram)
+target_link_libraries(ringmesh-convert RINGMesh geogram)
 
 # Add the project to a folder of projects for the tests 
-set_property(TARGET ringmeshrepair PROPERTY FOLDER "Utilities")
+set_property(TARGET ringmesh-convert PROPERTY FOLDER "Utilities")
 
 

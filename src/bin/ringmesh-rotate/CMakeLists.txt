@@ -31,14 +31,14 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
-# CMakeList for assess the quality of the 3D mesh entities
+# CMakeList for rotating a geomodel.
 
 # Set the target as an executable 
-add_executable(ringmesh_mesh_quality main.cpp)
+add_executable(ringmesh-rotate main.cpp)
    
-target_link_libraries(ringmesh_mesh_quality RINGMesh geogram)
+target_link_libraries(ringmesh-rotate RINGMesh geogram)
 
 # Add the project to a folder of projects for the tests 
-set_property(TARGET ringmesh_mesh_quality PROPERTY FOLDER "Utilities")
+set_property(TARGET ringmesh-rotate PROPERTY FOLDER "Utilities")
 
 

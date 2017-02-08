@@ -111,7 +111,7 @@ int main() {
 
     configure_geogram() ;
     configure_ringmesh() ;
-    Logger::out("RINGMeshView")
+    Logger::out("RINGMesh-View")
     << "To compile RINGMesh viewer you need to configure "
     << "the project with the RINGMESH_WITH_GRAPHICS option ON"
     << std::endl ;

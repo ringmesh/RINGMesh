@@ -40,27 +40,71 @@
 
 #include <ringmesh/basic/command_line.h>
 #include <ringmesh/geomodel/geomodel.h>
-#include <ringmesh/geomodel/geomodel_api.h>
+#include <ringmesh/geomodel/geomodel_builder.h>
 #include <ringmesh/io/io.h>
 
 /*!
- * @author Arnaud Botella
+ * @author Benjamin Chauvin
  */
+
+namespace {
+    using namespace RINGMesh ;
+
+    void hello()
+    {
+        print_header_information() ;
+        Logger::div( "RINGMesh-Repair" ) ;
+        Logger::out( "" ) << "Welcome to RINGMesh-Repair !" << std::endl ;
+    }
+
+    void import_arg_group_repair()
+    {
+        GEO::CmdLine::declare_arg_group( "repair", "GeoModel repair processes" ) ;
+        GEO::CmdLine::declare_arg( "repair:mode", 0,
+            "Repair mode: repair process to apply to the geomodel" ) ;
+    }
+
+    void import_arg_groups()
+    {
+        CmdLine::import_arg_group( "in" ) ;
+        CmdLine::import_arg_group( "out" ) ;
+        import_arg_group_repair() ;
+    }
+
+    void run()
+    {
+        GEO::Stopwatch total( "Total time" ) ;
+
+        std::string in_model_file_name = GEO::CmdLine::get_arg( "in:geomodel" ) ;
+        if( in_model_file_name.empty() ) {
+            throw RINGMeshException( "I/O",
+                "Give at least a filename in in:geomodel" ) ;
+        }
+        GeoModel geomodel ;
+        geomodel_load( geomodel, in_model_file_name ) ;
+
+        index_t repair_mode = GEO::CmdLine::get_arg_uint( "repair:mode" ) ;
+        GeoModelBuilder builder( geomodel ) ;
+        builder.repair.repair(
+            static_cast< GeoModelBuilderRepair::RepairMode >( repair_mode ) ) ;
+
+        std::string out_model_file_name = GEO::CmdLine::get_arg( "out:geomodel" ) ;
+        if( out_model_file_name.empty() ) {
+            throw RINGMeshException( "I/O",
+                "Give at least a filename in out:geomodel" ) ;
+        }
+        geomodel_save( geomodel, out_model_file_name ) ;
+    }
+}
 
 int main( int argc, char** argv )
 {
     using namespace RINGMesh ;
 
     try {
-
         default_configure() ;
-
-        print_header_information() ;
-        Logger::div( "RINGMeshStats" ) ;
-        Logger::out( "" ) << "Welcome to RINGMeshStats !" << std::endl ;
-
-        CmdLine::import_arg_group( "in" ) ;
-        CmdLine::import_arg_group( "stats" ) ;
+        hello() ;
+        import_arg_groups() ;
 
         if( argc == 1 ) {
             GEO::CmdLine::show_usage() ;
@@ -72,23 +116,7 @@ int main( int argc, char** argv )
             return 1 ;
         }
 
-        GEO::Stopwatch total( "Total time" ) ;
-
-        std::string model_name = GEO::CmdLine::get_arg( "in:geomodel" ) ;
-        if( model_name.empty() ) {
-            throw RINGMeshException( "I/O",
-                "Give at least a filename in in:geomodel" ) ;
-        }
-        GeoModel geomodel ;
-        geomodel_load( geomodel, model_name ) ;
-
-        if( GEO::CmdLine::get_arg_bool( "stats:nb" ) ) {
-            print_geomodel_mesh_stats( geomodel ) ;
-        }
-
-        if( GEO::CmdLine::get_arg_bool( "stats:volume" ) ) {
-            print_geomodel_mesh_cell_volumes( geomodel ) ;
-        }
+        run() ;
 
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category() ) << e.what() << std::endl ;
