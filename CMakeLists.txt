@@ -407,15 +407,15 @@ if(WIN32)
     # On windows, without proper installation steps, we need to 
     # copy of Geogram dll and pdb information to RINGMesh
     # to be able to launch RINGMesh utilities and tests from the debugger
-	
-	# The dll and debug info of RINGMesh are in
-	# build/ringmesh/Debug or build/ringmesh/Release.
+
+    # The dll and debug info of RINGMesh are in
+    # build/ringmesh/Debug or build/ringmesh/Release.
     add_custom_command(TARGET RINGMesh POST_BUILD 
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory 
             "${PROJECT_BINARY_DIR}/$<CONFIGURATION>"
             "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>" 
             COMMENT "Copy RINGMesh dll")
-	add_custom_command(TARGET RINGMesh POST_BUILD 
+    add_custom_command(TARGET RINGMesh POST_BUILD 
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory 
             "${GEOGRAM_PATH_BIN}/bin/$<CONFIGURATION>"
             "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>" 
