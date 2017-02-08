@@ -399,6 +399,8 @@ add_dependencies(RINGMesh geogram_ext)
 # Libraries to which RINGMesh should link
 target_link_libraries(RINGMesh ${EXTRA_LIBS})
 
+#------------------------------------------------------------------------------------------------
+# Optional modules configuration
 
 function(copy_for_windows)
 if(WIN32)
@@ -427,10 +429,6 @@ if(WIN32)
     endif(RINGMESH_WITH_GEOLOGYJS)
 endif(WIN32)
 endfunction()
-
-
-#------------------------------------------------------------------------------------------------
-# Optional modules configuration
 
 if(BUILD_RINGMESH_VIEW)
     message(STATUS "Configure ringmesh-view")
