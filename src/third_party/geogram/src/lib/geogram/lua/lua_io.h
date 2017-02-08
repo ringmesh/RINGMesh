@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2004-2010, Bruno Levy
+ *  Copyright (c) 2012-2016, Bruno Levy
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,8 @@
  *
  *  Contact: Bruno Levy
  *
- *     levy@loria.fr
+ *     Bruno.Levy@inria.fr
+ *     http://www.loria.fr/~levy
  *
  *     ALICE Project
  *     LORIA, INRIA Lorraine, 
@@ -42,44 +43,72 @@
  *
  */
 
-#ifndef OPENNL_CNC_GPU_CUDA_H
-#define OPENNL_CNC_GPU_CUDA_H
+#ifndef GEOGRAM_LUA_LUA_FILESYSTEM
+#define GEOGRAM_LUA_LUA_FILESYSTEM
+
+/**
+ * \file geogram/lua/lua_io.h
+ * \brief LUA bindings for geogram IO and filesystem functions
+ */
+
+#include <geogram/api/defs.h>
+
+#ifdef __cplusplus
+#include <vector>
+#include <string>
+#endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include "nl_private.h"
-
-/**
- * \file geogram/NL/nl_cnc_gpu_cuda.h
- * \brief Internal OpenNL functions that implements 
- *  the Concurrent Number Cruncher.
- */
     
-/**
- * \brief Tests whether a solver is implemented
- *  in the Concurrent Number Cruncher (on the GPU)
- * \param[in] solver the symbolic constant that
- *  specifies the solver.
- * \retval NL_TRUE if the solver is implemented in the CNC
- * \retval NL_FALSE otherwise
- */
-NLboolean nlSolverIsCNC(NLint solver) ;
+#include <geogram/third_party/lua/lua.h>
 
 /**
- * \brief Solves a linear system using the Concurrent Number 
- *  Cruncher.
- * \details This function should not be called directly by client code.
- *  To use CNC, specify nlSolverParameteri(NL_SOLVER, NL_CNC_XXX) 
- *   where NL_CNC_XXX is one of the symbolic constant for CNC solvers
- *   (see nl.h). Works only if OpenNL was compiled with CNC support.
- * \return the used number of iterations
+ * \brief Initializes LUA filesystem operations.
+ * \param[in] L a pointer to the LUA state.
  */
-NLuint nlSolve_CNC(void) ;
+void GEOGRAM_API init_lua_io(lua_State* L);
 
-#ifdef __cplusplus
+
+/**
+ * \brief Registers an "embedded file", i.e. a 
+ *  static string with some LUA sources in it.
+ * \param[in] filename the name of the "file" to
+ *  be used to retreive the data.
+ * \param[in] data the static string with the sources
+ *  associated with the file.
+ */
+void GEOGRAM_API register_embedded_lua_file(
+    const char* filename, const char* data
+);
+
+/**
+ * \brief Gets an "embedded file" by its filename.
+ * \param[in] filename the name that was previously
+ *  used to register the file, using register_embedded_file()
+ * \param[out] data a pointer to the static string with the
+ *  "file" data, or nil if no file was registered with that
+ *  name.
+ */
+void GEOGRAM_API get_embedded_lua_file(
+    const char* filename, const char** data
+);
+
+#ifdef __cplusplus    
 }
+
+/**
+ * \brief Lists the "embedded file" filenames.
+ * \param[out] filenames a vector with all the filenames
+ *  that were previously registered using register_embedded_lua_file()
+ */
+void GEOGRAM_API list_embedded_lua_files(
+    std::vector<std::string>& filenames
+);
+
+
 #endif
 
 #endif
+

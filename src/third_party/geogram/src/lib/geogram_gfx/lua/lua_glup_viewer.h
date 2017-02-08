@@ -43,50 +43,30 @@
  *
  */
 
-#ifndef GEOGRAM_GFX_GLUP_VIEWER_GLUP_VIEWER_LUA
-#define GEOGRAM_GFX_GLUP_VIEWER_GLUP_VIEWER_LUA
+#ifndef GEOGRAM_GFX_LUA_LUA_GLUP_VIEWER
+#define GEOGRAM_GFX_LUA_LUA_GLUP_VIEWER
 
-#include <geogram_gfx/basic/common.h>
+#include <geogram_gfx/api/defs.h>
+#ifdef __cplusplus
 extern "C" {
+#endif
+
 #include <geogram/third_party/lua/lua.h>
-}
 
 /**
- * \file geogram_gfx/glup_viewer/glup_viewer_lua.h
+ * \file geogram_gfx/lua/lua_glup_viewer_lua.h
  * \brief LUA bindings for glup_viewer.
  */
 
 /**
- * \brief Registers all LUA extension functions.
- * \details This registers LUA wrappers for GLUP and
- *  ImGUI.
+ * \brief Registers glup_viewer functions to LUA.
  * \param[in] L a pointer to the LUA state.
  */
-void GEOGRAM_GFX_API init_lua_glup(lua_State* L);
+void GEOGRAM_GFX_API init_lua_glup_viewer(lua_State* L);
 
-
-/**
- * \brief Makes sure GLUP is in a valid state.
- * \details Restores the previous depth of matrix stacks
- *  and terminates pending GLUP primitives. This makes sure
- *  GLUP is in a valid state even if there was an error in
- *  LUA code.
- */
-void GEOGRAM_GFX_API adjust_lua_glup_state(lua_State* L);
-
-
-void GEOGRAM_GFX_API register_embedded_lua_file(
-   const char* filename, const char* data
-);
-
-void GEOGRAM_GFX_API list_embedded_lua_files(
-    std::vector<std::string>& filenames
-);
-
-void GEOGRAM_GFX_API get_embedded_lua_file(
-    const std::string& filename, const char** data
-);
-
-
+#ifdef __cplusplus
+}
+#endif
+    
 #endif
 

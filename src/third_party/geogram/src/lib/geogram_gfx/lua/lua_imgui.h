@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2004-2010, Bruno Levy
+ *  Copyright (c) 2012-2016, Bruno Levy
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,8 @@
  *
  *  Contact: Bruno Levy
  *
- *     levy@loria.fr
+ *     Bruno.Levy@inria.fr
+ *     http://www.loria.fr/~levy
  *
  *     ALICE Project
  *     LORIA, INRIA Lorraine, 
@@ -42,59 +43,30 @@
  *
  */
 
-#include "nl_cnc_gpu_cuda.h"
-#include "nl_context.h"
+#ifndef GEOGRAM_GFX_LUA_LUA_IMGUI
+#define GEOGRAM_GFX_LUA_LUA_IMGUI
 
-NLboolean nlSolverIsCNC(NLint solver){
-    return solver == NL_CNC_FLOAT_CRS_EXT 
-        || solver == NL_CNC_DOUBLE_CRS_EXT 
-        || solver == NL_CNC_FLOAT_BCRS2_EXT 
-        || solver == NL_CNC_DOUBLE_BCRS2_EXT         
-        || solver == NL_CNC_FLOAT_ELL_EXT         
-        || solver == NL_CNC_DOUBLE_ELL_EXT         
-        || solver == NL_CNC_FLOAT_HYB_EXT         
-        || solver == NL_CNC_DOUBLE_HYB_EXT ;        
-}
-
-
-/************************************************************************/
-/* CNC wrapper */
-
-#ifdef NL_USE_CNC
-
-NLuint nlSolve_CNC() {
-    unsigned int i;
-    NLdouble* b        = nlCurrentContext->b ;
-    NLdouble* x        = nlCurrentContext->x ;
-    NLdouble  eps      = nlCurrentContext->threshold ;
-    NLuint    max_iter = nlCurrentContext->max_iterations ;
-    NLSparseMatrix *M  = &(nlCurrentContext->M);
-    
-    /* local variables for the final error computation */
-    NLuint val_ret;
-    NLdouble * Ax=NL_NEW_ARRAY(NLdouble,nlCurrentContext->n);
-    NLdouble accu     = 0.0;
-    NLdouble b_square = 0.0;
-    
-    /** call to cnc solver */
-    val_ret=cnc_solve_cg(M, b, x, max_iter, eps, nlCurrentContext->solver);
-    
-    /* compute the final error */
-    nlCurrentContext->matrix_vector_prod(x,Ax);
-    for(i = 0 ; i < M->n ; ++i) { 
-        accu     +=(Ax[i]-b[i])*(Ax[i]-b[i]);
-        b_square += b[i]*b[i]; 
-    } 
-    printf("in OpenNL : ||Ax-b||/||b|| = %e\n",sqrt(accu)/sqrt(b_square));
-    /* cleaning */
-    NL_DELETE_ARRAY(Ax);
-    return val_ret;
-}
-
-#else
-
-NLuint nlSolve_CNC() {
-    nl_assert_not_reached ;
-}
-
+#include <geogram_gfx/api/defs.h>
+#ifdef __cplusplus
+extern "C" {
 #endif
+
+#include <geogram/third_party/lua/lua.h>
+
+/**
+ * \file geogram_gfx/lua/lua_imgui.h
+ * \brief LUA bindings for ImGUI.
+ */
+
+/**
+ * \brief Registers ImGUI functions to LUA.
+ * \param[in] L a pointer to the LUA state.
+ */
+void GEOGRAM_GFX_API init_lua_imgui(lua_State* L);
+
+#ifdef __cplusplus
+}
+#endif
+    
+#endif
+
