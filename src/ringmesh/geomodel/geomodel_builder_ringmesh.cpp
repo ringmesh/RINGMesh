@@ -183,8 +183,9 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelBuilderGM::load_mesh_entities( GEO::LineInput& file_line )
+    void GeoModelBuilderGM::load_mesh_entities( const std::string& mesh_entity_file )
     {
+        GEO::LineInput file_line( mesh_entity_file ) ;
         while( !file_line.eof() && file_line.get_line() ) {
 
             file_line.get_fields() ;
@@ -239,22 +240,24 @@ namespace RINGMesh {
 
         const std::string mesh_entity_file( "mesh_entities.txt" ) ;
         unzip_file( uz, mesh_entity_file.c_str() ) ;
-        GEO::LineInput line_mesh_entity( mesh_entity_file ) ;
-        load_mesh_entities( line_mesh_entity ) ;
-        GEO::FileSystem::delete_file( mesh_entity_file ) ;
+        load_mesh_entities( mesh_entity_file ) ;
+        bool ok = GEO::FileSystem::delete_file( mesh_entity_file ) ;
+        ringmesh_unused( ok ) ; // avoids warning in release
+        ringmesh_assert( ok ) ;
         load_meshes( uz ) ;
 
         const std::string geological_entity_file( "geological_entities.txt" ) ;
         unzip_file( uz, geological_entity_file.c_str() ) ;
-        GEO::LineInput line_geological_entity( geological_entity_file ) ;
-        load_geological_entities( line_geological_entity ) ;
-        GEO::FileSystem::delete_file( geological_entity_file ) ;
+        load_geological_entities( geological_entity_file ) ;
+        ok = GEO::FileSystem::delete_file( geological_entity_file ) ;
+        ringmesh_assert( ok ) ;
 
         unzClose( uz ) ;
     }
 
-    void GeoModelBuilderGM::load_geological_entities( GEO::LineInput& file_line )
+    void GeoModelBuilderGM::load_geological_entities( const std::string& geological_entity_file )
     {
+        GEO::LineInput file_line( geological_entity_file ) ;
         while( !file_line.eof() && file_line.get_line() ) {
             file_line.get_fields() ;
             if( file_line.nb_fields() > 0 ) {
