@@ -60,8 +60,8 @@ int main( int argc, char** argv )
 
         // welcome
         print_header_information() ;
-        Logger::div( "RINGMeshConvert" ) ;
-        Logger::out( "" ) << "Welcome to RINGMeshSurfaceConvert !" << std::endl ;
+        Logger::div( "RINGMesh-Surface-Convert" ) ;
+        Logger::out( "" ) << "Welcome to RINGMesh-Surface-Convert !" << std::endl ;
 
         // help
         if( argc == 1 ) {

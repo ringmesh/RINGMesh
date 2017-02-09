@@ -31,14 +31,15 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
-# CMakeList for translating a geomodel.
+# CMakeList for RINGMesh viewer subproject
+
+include(${CMAKE_SOURCE_DIR}/src/third_party/geogram/cmake/opengl.cmake)
 
 # Set the target as an executable 
-add_executable(ringmesh_translate main.cpp)
-   
-target_link_libraries(ringmesh_translate RINGMesh geogram)
+add_executable(ringmesh-view main.cpp)
+
+target_link_libraries(ringmesh-view RINGMesh geogram geogram_gfx ${OPENGL_LIBRARIES})
 
 # Add the project to a folder of projects for the tests 
-set_property(TARGET ringmesh_translate PROPERTY FOLDER "Utilities")
-
+set_property(TARGET ringmesh-view PROPERTY FOLDER "Utilities")
 

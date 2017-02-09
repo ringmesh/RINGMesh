@@ -37,13 +37,10 @@
 
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/stopwatch.h>
-#include <geogram/mesh/mesh_io.h>
 
 #include <ringmesh/basic/command_line.h>
 #include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_api.h>
-#include <ringmesh/geomodel/geomodel_builder.h>
-#include <ringmesh/geomodel/geomodel_validity.h>
 #include <ringmesh/io/io.h>
 
 /*!
@@ -51,52 +48,16 @@
  */
 
 namespace {
-    using namespace RINGMesh ;
-
-    void convert_mesh( const std::string& mesh_in_name )
+    void import_arg_group_stats()
     {
-        GEO::Mesh mesh ;
-        GEO::mesh_load( mesh_in_name, mesh ) ;
-        std::string mesh_out_name = GEO::CmdLine::get_arg( "out:mesh" ) ;
-        if( mesh_out_name.empty() ) {
-            throw RINGMeshException( "I/O",
-                "Give the parameter out:mesh to save the mesh" ) ;
-        }
-        GEO::mesh_save( mesh, mesh_out_name ) ;
-    }
-
-    void convert_geomodel( const std::string& geomodel_in_name )
-    {
-        GeoModel geomodel ;
-        geomodel_load( geomodel, geomodel_in_name ) ;
-        std::string geomodel_out_name = GEO::CmdLine::get_arg( "out:geomodel" ) ;
-        if( geomodel_out_name.empty() ) {
-            throw RINGMeshException( "I/O",
-                "Give the parameter out:geomodel to save the geomodel" ) ;
-        }
-        geomodel_save( geomodel, geomodel_out_name ) ;
-    }
-
-    void show_usage_example()
-    {
-        Logger::div( "Example" ) ;
-        Logger::out( "" )
-            << "ringmeshconvert in:geomodel=path/to/input/geomodel.ext "
-            << "out:geomodel=path/to/output/geomodel.ext" << std::endl ;
+        GEO::CmdLine::declare_arg_group( "stats", "Statistics options" ) ;
+        GEO::CmdLine::declare_arg( "stats:volume", false,
+            "Print statistics on the volume" ) ;
+        GEO::CmdLine::declare_arg( "stats:nb", true,
+            "Print statistics on the number of entities" ) ;
     }
 }
 
-namespace RINGMesh {
-
-    namespace CmdLine {
-        void import_more_in_out()
-        {
-            GEO::CmdLine::declare_arg( "in:mesh", "",
-                "Filename of the input mesh" ) ;
-            GEO::CmdLine::declare_arg( "out:mesh", "", "Saves the mesh" ) ;
-        }
-    }
-}
 int main( int argc, char** argv )
 {
     using namespace RINGMesh ;
@@ -106,37 +67,38 @@ int main( int argc, char** argv )
         default_configure() ;
 
         print_header_information() ;
-        Logger::div( "RINGMeshConvert" ) ;
-        Logger::out( "" ) << "Welcome to RINGMeshConvert !" << std::endl ;
+        Logger::div( "RINGMesh-Stats" ) ;
+        Logger::out( "" ) << "Welcome to RINGMesh-Stats !" << std::endl ;
 
         CmdLine::import_arg_group( "in" ) ;
-        CmdLine::import_arg_group( "out" ) ;
-        CmdLine::import_more_in_out() ;
+        import_arg_group_stats() ;
+
         if( argc == 1 ) {
             GEO::CmdLine::show_usage() ;
-            show_usage_example() ;
             return 0 ;
         }
 
         std::vector< std::string > filenames ;
         if( !GEO::CmdLine::parse( argc, argv, filenames ) ) {
-            show_usage_example() ;
             return 1 ;
         }
 
         GEO::Stopwatch total( "Total time" ) ;
 
-        std::string geomodel_in_name = GEO::CmdLine::get_arg( "in:geomodel" ) ;
-        std::string mesh_in_name = GEO::CmdLine::get_arg( "in:mesh" ) ;
-        if( geomodel_in_name.empty() && mesh_in_name.empty() ) {
+        std::string model_name = GEO::CmdLine::get_arg( "in:geomodel" ) ;
+        if( model_name.empty() ) {
             throw RINGMeshException( "I/O",
-                "Give at least a filename in in:geomodel or in:mesh" ) ;
+                "Give at least a filename in in:geomodel" ) ;
+        }
+        GeoModel geomodel ;
+        geomodel_load( geomodel, model_name ) ;
+
+        if( GEO::CmdLine::get_arg_bool( "stats:nb" ) ) {
+            print_geomodel_mesh_stats( geomodel ) ;
         }
 
-        if( geomodel_in_name.empty() ) {
-            convert_mesh( mesh_in_name ) ;
-        } else {
-            convert_geomodel( geomodel_in_name ) ;
+        if( GEO::CmdLine::get_arg_bool( "stats:volume" ) ) {
+            print_geomodel_mesh_cell_volumes( geomodel ) ;
         }
 
     } catch( const RINGMeshException& e ) {

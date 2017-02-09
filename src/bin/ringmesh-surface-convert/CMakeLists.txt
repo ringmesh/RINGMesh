@@ -31,27 +31,15 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
-# CMakeList for RINGMesh training examples
+# CMakeList for RINGMesh subproject for converting surface .ts format
+# Author Gautier Laurent
 
-# Get the name of the test files 
-file(GLOB EXAMPLES "${EXAMPLES_DIRECTORY}/*.cpp")
+# Set the target as an executable 
+add_executable(ringmesh-surface-convert main.cpp)
+   
+target_link_libraries(ringmesh-surface-convert RINGMesh geogram)
 
-# For all the test files found
-foreach(examplesourcefile ${EXAMPLES})
-    # Get the name of the file without extension
-    get_filename_component(examplename ${examplesourcefile} NAME_WE)
-    
-    # Add the target for that file
-    add_executable(${examplename} ${examplesourcefile})
-    
-    # Link RINGMesh Make sure YourLib is linked to each app
-    target_link_libraries(${examplename} geogram RINGMesh)
-    
-    add_dependencies(${examplename} RINGMesh)
-    
-    # Add the project to a folder of projects for the tests 
-    set_property(TARGET ${examplename} PROPERTY FOLDER "Examples")
-       
-endforeach(examplesourcefile ${EXAMPLES})
+# Add the project to a folder of projects for the tests 
+set_property(TARGET ringmesh-surface-convert PROPERTY FOLDER "Utilities")
 
 
