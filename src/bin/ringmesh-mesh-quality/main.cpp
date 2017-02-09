@@ -40,8 +40,9 @@
 
 #include <ringmesh/basic/command_line.h>
 #include <ringmesh/geomodel/geomodel.h>
+#include <ringmesh/geomodel/geomodel_mesh_entity.h>
 #include <ringmesh/io/io.h>
-#include <ringmesh/geomodel/geomodel_api.h>
+#include <ringmesh/geomodel/mesh_quality.h>
 
 /*!
  * @author Benjamin Chauvin
@@ -53,87 +54,66 @@ namespace {
     void hello()
     {
         print_header_information() ;
-        Logger::div( "RINGMeshRotate" ) ;
-        Logger::out( "" ) << "Welcome to RINGMeshRotate !" << std::endl ;
+        Logger::div( "RINGMesh-Mesh-Quality" ) ;
+        Logger::out( "" ) << "Welcome to RINGMesh-Mesh-Quality !" << std::endl ;
     }
 
-    void import_arg_group_rotation()
+    void import_arg_group_quality()
     {
-        GEO::CmdLine::declare_arg_group( "rotation",
-            "Options to rotate a GeoModel" ) ;
-        GEO::CmdLine::declare_arg( "rotation:origin", "0 0 0",
-            "Origin of the rotation" ) ;
-        GEO::CmdLine::declare_arg( "rotation:axis", "0 0 1", "Axis of rotation" ) ;
-        GEO::CmdLine::declare_arg( "rotation:angle", 90., "Angle of rotation" ) ;
-        GEO::CmdLine::declare_arg( "rotation:unit", "deg",
-            "Angle unit (deg for degrees or rad for radians)" ) ;
+        GEO::CmdLine::declare_arg_group( "quality", "Mesh quality" ) ;
+        GEO::CmdLine::declare_arg( "quality:mode", 0, "Mesh quality mode" ) ;
     }
 
     void import_arg_groups()
     {
         CmdLine::import_arg_group( "in" ) ;
+        import_arg_group_quality() ;
         CmdLine::import_arg_group( "out" ) ;
-        import_arg_group_rotation() ;
     }
 
-    vec3 extract_coords_from_string( const std::string& coords_in_string )
+    void check_geomodel_is_3d_meshed_by_simplexes( const GeoModel& geomodel )
     {
-        std::vector< std::string > split_coords ;
-        split_coords.reserve( 3 ) ;
-        GEO::String::split_string( coords_in_string, ' ', split_coords, true ) ;
-        if( split_coords.size() != 3 ) {
-            throw RINGMeshException( "I/O",
-                "Vector" + coords_in_string + "has not exactly 3 components" ) ;
+        if( geomodel.nb_regions() == 0 ) {
+            throw RINGMeshException( "I/O", "Input geomodel has no region." ) ;
         }
-        vec3 coords_vec ;
-        for( index_t split_coords_itr = 0; split_coords_itr < 3;
-            ++split_coords_itr ) {
-            coords_vec[split_coords_itr] = GEO::String::to_double(
-                split_coords[split_coords_itr] ) ;
+
+        for( index_t reg_itr = 0; reg_itr < geomodel.nb_regions(); ++reg_itr ) {
+            if( !geomodel.region( reg_itr ).is_meshed() ) {
+                throw RINGMeshException( "I/O",
+                    "Region " + GEO::String::to_string( reg_itr )
+                        + " is not meshed." ) ;
+            }
+            if( !geomodel.region( reg_itr ).is_simplicial() ) {
+                throw RINGMeshException( "I/O",
+                    "Region " + GEO::String::to_string( reg_itr )
+                        + " is not simplicial." ) ;
+            }
         }
-        return coords_vec ;
     }
 
     void run()
     {
         GEO::Stopwatch total( "Total time" ) ;
 
-        std::string input_geomodel_name = GEO::CmdLine::get_arg( "in:geomodel" ) ;
-        if( input_geomodel_name.empty() ) {
+        std::string geomodel_in_name = GEO::CmdLine::get_arg( "in:geomodel" ) ;
+        if( geomodel_in_name.empty() ) {
             throw RINGMeshException( "I/O",
                 "Give at least a filename in in:geomodel" ) ;
         }
         GeoModel geomodel ;
-        geomodel_load( geomodel, input_geomodel_name ) ;
+        geomodel_load( geomodel, geomodel_in_name ) ;
+        check_geomodel_is_3d_meshed_by_simplexes( geomodel ) ;
 
-        std::string rotation_origin_string = GEO::CmdLine::get_arg(
-            "rotation:origin" ) ;
-        vec3 rotation_origin_vec = extract_coords_from_string(
-            rotation_origin_string ) ;
+        index_t quality_mode = GEO::CmdLine::get_arg_uint( "quality:mode" ) ;
+        compute_prop_tet_mesh_quality(
+            static_cast< MeshQualityMode >( quality_mode ), geomodel ) ;
 
-        std::string rotation_axis_string = GEO::CmdLine::get_arg( "rotation:axis" ) ;
-        vec3 rotation_axis_vec = extract_coords_from_string( rotation_axis_string ) ;
-
-        double rotation_angle = GEO::CmdLine::get_arg_double( "rotation:angle" ) ;
-        std::string rotation_unit = GEO::CmdLine::get_arg( "rotation:unit" ) ;
-        bool is_deg ;
-        if( rotation_unit == "deg" ) {
-            is_deg = true ;
-        } else if( rotation_unit == "rad" ) {
-            is_deg = false ;
-        } else {
-            throw RINGMeshException( "I/O", "Unknown angle unit " + rotation_unit ) ;
-        }
-
-        rotate( geomodel, rotation_origin_vec, rotation_axis_vec, rotation_angle,
-            is_deg ) ;
-
-        std::string output_geomodel_name = GEO::CmdLine::get_arg( "out:geomodel" ) ;
-        if( output_geomodel_name.empty() ) {
+        std::string geomodel_out_name = GEO::CmdLine::get_arg( "out:geomodel" ) ;
+        if( geomodel_out_name.empty() ) {
             throw RINGMeshException( "I/O",
                 "Give at least a filename in out:geomodel" ) ;
         }
-        geomodel_save( geomodel, output_geomodel_name ) ;
+        geomodel_save( geomodel, geomodel_out_name ) ;
     }
 }
 
@@ -146,7 +126,6 @@ int main( int argc, char** argv )
         default_configure() ;
         hello() ;
         import_arg_groups() ;
-
         if( argc == 1 ) {
             GEO::CmdLine::show_usage() ;
             return 0 ;
@@ -156,13 +135,14 @@ int main( int argc, char** argv )
         if( !GEO::CmdLine::parse( argc, argv, filenames ) ) {
             return 1 ;
         }
+
         run() ;
 
     } catch( const RINGMeshException& e ) {
-        GEO::Logger::err( e.category() ) << e.what() << std::endl ;
+        Logger::err( e.category() ) << e.what() << std::endl ;
         return 1 ;
     } catch( const std::exception& e ) {
-        GEO::Logger::err( "Exception" ) << e.what() << std::endl ;
+        Logger::err( "Exception" ) << e.what() << std::endl ;
         return 1 ;
     }
     return 0 ;

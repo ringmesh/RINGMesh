@@ -31,14 +31,45 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
-# CMakeList for RINGMesh file format converter subproject
+# CMakeList for RINGMesh tutorials
 
-# Set the target as an executable 
-add_executable(ringmeshconvert main.cpp)
-   
-target_link_libraries(ringmeshconvert RINGMesh geogram)
+if(NOT IS_DIRECTORY ${TUTORIALS_DATA_INPUT_DIRECTORY})
+	message(STATUS "Defined data directory for tutorials does not exists, using default doc/tutorials/data")
+	SET(TUTORIALS_DATA_INPUT_DIRECTORY "${TUTORIALS_DIRECTORY}/data" FORCE)
+endif()	
+		
+# Create the directory for the outputs of the tests
+# It is output in the configuration file as well as the input data for tutorials 
+file(MAKE_DIRECTORY ${TUTORIALS_DATA_OUTPUT_DIRECTORY}) 
 
-# Add the project to a folder of projects for the tests 
-set_property(TARGET ringmeshconvert PROPERTY FOLDER "Utilities")
+# Configure a header file to pass some of the CMake settings
+# to the source code
+set(tutorial_config_file_in ${TUTORIALS_SOURCE_DIRECTORY}/ringmesh_tutorials_config.h.in)
+set(tutorial_config_file ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_tutorials_config.h)
+configure_file(${tutorial_config_file_in} ${tutorial_config_file})
+
+# Get the name of the tutorial files 
+file(GLOB TUTORIAL "${TUTORIALS_SOURCE_DIRECTORY}/*.cpp")
+
+# For all the test files found
+foreach(tutuorialsourcefile ${TUTORIAL})
+    # Get the name of the file without extension
+    get_filename_component(tutorialname ${tutuorialsourcefile} NAME_WE)
+    
+    # Add the target for that file
+    add_executable(${tutorialname} ${tutuorialsourcefile})
+    
+    # Link RINGMesh Make sure YourLib is linked to each app
+    target_link_libraries(${tutorialname} geogram RINGMesh)
+    
+    add_dependencies(${tutorialname} RINGMesh)
+    
+    # Add the project to a folder of projects for the tests 
+    set_property(TARGET ${tutorialname} PROPERTY FOLDER "Tutorials")
+		    
+    # Add the test to CTest
+    add_test(NAME ${tutorialname} COMMAND ${tutorialname}) 
+       
+endforeach(tutuorialsourcefile ${TUTORIAL})
 
 

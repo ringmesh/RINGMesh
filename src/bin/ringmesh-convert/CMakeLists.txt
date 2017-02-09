@@ -34,11 +34,11 @@
 # CMakeList for RINGMesh file format converter subproject
 
 # Set the target as an executable 
-add_executable(ringmeshstats main.cpp)
+add_executable(ringmesh-convert main.cpp)
    
-target_link_libraries(ringmeshstats RINGMesh geogram)
+target_link_libraries(ringmesh-convert RINGMesh geogram)
 
 # Add the project to a folder of projects for the tests 
-set_property(TARGET ringmeshstats PROPERTY FOLDER "Utilities")
+set_property(TARGET ringmesh-convert PROPERTY FOLDER "Utilities")
 
 

@@ -31,14 +31,14 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
-# CMakeList for rotating a geomodel.
+# CMakeList for RINGMesh GeoModel repair subproject
 
 # Set the target as an executable 
-add_executable(ringmesh_rotate main.cpp)
+add_executable(ringmesh-repair main.cpp)
    
-target_link_libraries(ringmesh_rotate RINGMesh geogram)
+target_link_libraries(ringmesh-repair RINGMesh geogram)
 
 # Add the project to a folder of projects for the tests 
-set_property(TARGET ringmesh_rotate PROPERTY FOLDER "Utilities")
+set_property(TARGET ringmesh-repair PROPERTY FOLDER "Utilities")
 
 
