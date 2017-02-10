@@ -134,8 +134,6 @@ namespace RINGMesh {
         friend class GeoModelBuilder ;
 
     public:
-        gme_t create_geological_entity( const EntityType& type ) ;
-
         /*!
          * @brief Fill the parent of all entities of the given type
          * @details If the parents do not have any child nothing is done.
