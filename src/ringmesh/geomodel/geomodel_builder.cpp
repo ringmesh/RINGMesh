@@ -1111,10 +1111,6 @@ namespace RINGMesh {
     {
     }
 
-    gme_t GeoModelBuilderGeology::create_geological_entity( const EntityType& type ) {
-
-    }
-
     void GeoModelBuilderGeology::fill_mesh_entities_parent( const EntityType& type )
     {
         if( geomodel_.nb_mesh_entities( type ) == 0 ) {
