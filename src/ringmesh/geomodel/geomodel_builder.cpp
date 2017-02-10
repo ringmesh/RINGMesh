@@ -1103,11 +1103,16 @@ namespace RINGMesh {
         // Deliberate clear of the geomodel vertices used for geomodel building
         geomodel_.mesh.vertices.clear() ;
     }
+
     GeoModelBuilderGeology::GeoModelBuilderGeology(
         GeoModelBuilder& builder,
         GeoModel& geomodel )
         : builder_( builder ), geomodel_( geomodel ), geomodel_access_( geomodel )
     {
+    }
+
+    gme_t GeoModelBuilderGeology::create_geological_entity( const EntityType& type ) {
+
     }
 
     void GeoModelBuilderGeology::fill_mesh_entities_parent( const EntityType& type )
