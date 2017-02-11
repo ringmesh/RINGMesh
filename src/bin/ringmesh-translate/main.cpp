@@ -62,7 +62,7 @@ namespace {
         GEO::CmdLine::declare_arg_group( "translation",
             "Options to rotate a GeoModel" ) ;
         GEO::CmdLine::declare_arg( "translation:vector", "0 0 0",
-            "Translation vector" ) ;
+            "Translation vector to be written between quotation marks" ) ;
     }
 
     void import_arg_groups()
@@ -79,7 +79,7 @@ namespace {
         GEO::String::split_string( coords_in_string, ' ', split_coords, true ) ;
         if( split_coords.size() != 3 ) {
             throw RINGMeshException( "I/O",
-                "Vector" + coords_in_string + "has not exactly 3 components" ) ;
+                "Vector " + coords_in_string + "has not exactly 3 components" ) ;
         }
         vec3 coords_vec ;
         for( index_t split_coords_itr = 0; split_coords_itr < 3;
