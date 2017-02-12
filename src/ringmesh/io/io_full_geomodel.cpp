@@ -882,13 +882,18 @@ namespace {
 
     /************************************************************************/
 
-/// Convert the cell type of RINGMesh to the MFEM one
-/// NO_ID for pyramids and prims because there are not supported by MFEM
+    /// Convert the cell type of RINGMesh to the MFEM one
+    /// NO_ID for pyramids and prims because there are not supported by MFEM
     static index_t cell_type_mfem[4] = { 4, 5, NO_ID, NO_ID } ;
 
-/// Convert the facet type of RINGMesh to the MFEM one
-/// NO_ID for polygons there are not supported by MFEM
+    /// Convert the facet type of RINGMesh to the MFEM one
+    /// NO_ID for polygons there are not supported by MFEM
     static index_t facet_type_mfem[3] = { 2, 3, NO_ID } ;
+
+    static index_t cell_geo2mfem[8] = { 0, 1, 3, 2, 4, 5, 7, 6 } ;
+
+    /// MFEM works with Surface and Region index begin with 1
+    static index_t mfem_offset = 1 ;
 
     /*!
      * Export for the MFEM format http://mfem.org/
@@ -956,10 +961,10 @@ namespace {
             out << "elements" << std::endl ;
             out << nb_cells << std::endl ;
             for( index_t c = 0; c < nb_cells; c++ ) {
-                out << geomodel_mesh.cells.region( c ) << " " ;
+                out << geomodel_mesh.cells.region( c ) + mfem_offset << " " ;
                 out << cell_type_mfem[geomodel_mesh.cells.type( c )] << " " ;
                 for( index_t v = 0; v < geomodel_mesh.cells.nb_vertices( c ); v++ ) {
-                    out << geomodel_mesh.cells.vertex( c, v ) << " " ;
+                    out << geomodel_mesh.cells.vertex( c, cell_geo2mfem[v] ) << " " ;
                 }
                 out << std::endl ;
             }
@@ -983,7 +988,7 @@ namespace {
             out << geomodel_mesh.facets.nb() << std::endl ;
             for( index_t f = 0; f < geomodel_mesh.facets.nb(); f++ ) {
                 index_t not_used = 0 ;
-                out << geomodel_mesh.facets.surface( f ) + offset + 1 << " " ;
+                out << geomodel_mesh.facets.surface( f ) + mfem_offset << " " ;
                 out << facet_type_mfem[geomodel_mesh.facets.type( f, not_used )]
                     << " " ;
                 for( index_t v = 0; v < geomodel_mesh.facets.nb_vertices( f );
@@ -2565,20 +2570,20 @@ namespace RINGMesh {
      */
     void GeoModelIOHandler::initialize_full_geomodel_output()
     {
-        ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "meshb" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "mesh" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( TetGenIOHandler, "tetgen" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( TSolidIOHandler, "so" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( CSMPIOHandler, "csmp" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( AsterIOHandler, "mail" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( VTKIOHandler, "vtk" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( GPRSIOHandler, "gprs" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( MSHIOHandler, "msh" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( MFEMIOHandler, "mfem" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( GeoModelHandlerGM, "gm" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( OldGeoModelHandlerGM, "ogm" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( AbaqusIOHandler, "inp" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( AdeliIOHandler, "adeli" ) ;
-    }
+        ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "meshb" );
+    ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "mesh" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( TetGenIOHandler, "tetgen" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( TSolidIOHandler, "so" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( CSMPIOHandler, "csmp" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( AsterIOHandler, "mail" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( VTKIOHandler, "vtk" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( GPRSIOHandler, "gprs" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( MSHIOHandler, "msh" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( MFEMIOHandler, "mfem" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( GeoModelHandlerGM, "gm" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( OldGeoModelHandlerGM, "ogm" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( AbaqusIOHandler, "inp" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( AdeliIOHandler, "adeli" ) ;
+}
 
 }
