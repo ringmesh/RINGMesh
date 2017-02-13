@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -453,7 +453,7 @@ namespace {
             std::ofstream out( filename.c_str() ) ;
             out.precision( 16 ) ;
             const RINGMesh::GeoModelMesh& geomodel_mesh = geomodel.mesh ;
-            if( geomodel_mesh.cells.nb() != geomodel_mesh.cells.nb_tet() ){
+            if( geomodel_mesh.cells.nb() != geomodel_mesh.cells.nb_tet() ) {
                 {
                     throw RINGMeshException( "I/O",
                         "Adeli supports only tet meshes" ) ;
@@ -584,31 +584,43 @@ namespace {
     template< typename ENTITY >
     void save_geomodel_mesh_entity(
         const ENTITY& geomodel_entity_mesh,
-        zipFile& zf )
+        std::vector< std::string >& filenames )
     {
         std::string name = build_string_for_geomodel_entity_export(
             geomodel_entity_mesh ) ;
-        Logger* logger = Logger::instance() ;
-        bool logger_status = logger->is_quiet() ;
-        logger->set_quiet( true ) ;
-        bool is_saved = save_mesh( geomodel_entity_mesh, name ) ;
-        logger->set_quiet( logger_status ) ;
+        if( save_mesh( geomodel_entity_mesh, name ) ) {
+#pragma omp critical
+            {
+                filenames.push_back( name ) ;
+            }
+        }
+    }
 
-        if( is_saved ) {
+    void zip_files( const std::vector< std::string >& filenames, zipFile& zf )
+    {
+        for( index_t i = 0; i < filenames.size(); i++ ) {
+            const std::string& name = filenames[i] ;
             zip_file( zf, name ) ;
             GEO::FileSystem::delete_file( name ) ;
         }
     }
 
     template< typename ENTITY >
-    void save_geomodel_mesh_entities( const GeoModel& geomodel, zipFile& zf )
+    void save_geomodel_mesh_entities(
+        const GeoModel& geomodel,
+        std::vector< std::string >& filenames )
     {
         const std::string& type = ENTITY::type_name_static() ;
+        Logger* logger = Logger::instance() ;
+        bool logger_status = logger->is_quiet() ;
+        logger->set_quiet( true ) ;
+        RINGMESH_PARALLEL_LOOP_DYNAMIC
         for( index_t e = 0; e < geomodel.nb_mesh_entities( type ); e++ ) {
             const ENTITY& entity =
                 dynamic_cast< const ENTITY& >( geomodel.mesh_entity( type, e ) ) ;
-            save_geomodel_mesh_entity< ENTITY >( entity, zf ) ;
+            save_geomodel_mesh_entity< ENTITY >( entity, filenames ) ;
         }
+        logger->set_quiet( logger_status ) ;
     }
 
     class GeoModelHandlerGM: public GeoModelIOHandler {
@@ -654,15 +666,20 @@ namespace {
             zip_file( zf, geological_entity_file ) ;
             GEO::FileSystem::delete_file( geological_entity_file ) ;
 
-            save_geomodel_mesh_entities< Corner >( geomodel, zf ) ;
-            save_geomodel_mesh_entities< Line >( geomodel, zf ) ;
-            save_geomodel_mesh_entities< Surface >( geomodel, zf ) ;
-            save_geomodel_mesh_entities< Region >( geomodel, zf ) ;
+            index_t nb_mesh_entites = geomodel.nb_corners() + geomodel.nb_lines()
+                + geomodel.nb_surfaces() + geomodel.nb_regions() ;
+            std::vector< std::string > filenames ;
+            filenames.reserve( nb_mesh_entites ) ;
+            save_geomodel_mesh_entities< Corner >( geomodel, filenames ) ;
+            save_geomodel_mesh_entities< Line >( geomodel, filenames ) ;
+            save_geomodel_mesh_entities< Surface >( geomodel, filenames ) ;
+            save_geomodel_mesh_entities< Region >( geomodel, filenames ) ;
+            std::sort( filenames.begin(), filenames.end() ) ;
+            zip_files( filenames, zf ) ;
 
             zipClose( zf, NULL ) ;
             GEO::FileSystem::set_current_working_directory( pwd ) ;
         }
-
     } ;
 
     class OldGeoModelHandlerGM: public GeoModelIOHandler {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,9 +58,9 @@ namespace RINGMesh {
         GeoModelBuilderSurfaceMesh( GeoModel& geomodel, const GEO::Mesh& mesh )
             : GeoModelBuilder( geomodel ), mesh_( mesh )
         {
-            options_.compute_lines = true ;
-            options_.compute_corners = true ;
-            options_.compute_regions_brep = true ;
+            from_surfaces.options_.compute_lines = true ;
+            from_surfaces.options_.compute_corners = true ;
+            from_surfaces.options_.compute_regions_brep = true ;
         }
         void build_polygonal_surfaces_from_connected_components() ;
 

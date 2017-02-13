@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -63,7 +63,7 @@ namespace RINGMesh {
         virtual ~GeoModelBuilderGM() ;
 
     private:
-        void load_geological_entities( GEO::LineInput& file_line ) ;
+        void load_geological_entities( const std::string& geological_entity_file ) ;
 
         /*!
          * @brief Load meshes of all the mesh entities from a zip file
@@ -73,7 +73,7 @@ namespace RINGMesh {
 
         void load_file() ;
 
-        void load_mesh_entities( GEO::LineInput& file_line ) ;
+        void load_mesh_entities( const std::string& mesh_entity_file ) ;
 
     private:
         index_t file_version_ ;

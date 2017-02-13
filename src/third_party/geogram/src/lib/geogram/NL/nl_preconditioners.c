@@ -87,12 +87,14 @@ static void nlJacobiPreconditionerDestroy(NLJacobiPreconditioner* M) {
     NL_DELETE_ARRAY(M->diag_inv);
 }
 
-static void nlJacobiPreconditionerMult(NLJacobiPreconditioner* M, const double* x, double* y) {
+static void nlJacobiPreconditionerMult(
+    NLJacobiPreconditioner* M, const double* x, double* y
+) {
     NLuint i;
     for(i=0; i<M->n; ++i) {
 	y[i] = x[i] * M->diag_inv[i];
     }
-    nlCurrentContext->flops += (NLulong)(M->n);    
+    nlHostBlas()->flops += (NLulong)(M->n);    
 }
 
 NLMatrix nlNewJacobiPreconditioner(NLMatrix M_in) {
@@ -203,10 +205,10 @@ static void nlSparseMatrixMultLowerInverse(
                 S += c->value * y[c->index]; 
             }
         }
-        nlCurrentContext->flops += (NLulong)(2*Ri->size);                    
+        nlHostBlas()->flops += (NLulong)(2*Ri->size);                    
         y[i] = (x[i] - S) * omega / diag[i];
     }
-    nlCurrentContext->flops += (NLulong)(n*3);                
+    nlHostBlas()->flops += (NLulong)(n*3);                
 }
 /**
  * \brief Multiplies a vector by the inverse of the
@@ -242,14 +244,16 @@ static void nlSparseMatrixMultUpperInverse(
                 S += c->value * y[c->index]; 
             }
         }
-        nlCurrentContext->flops += (NLulong)(2*Ci->size);                    
+        nlHostBlas()->flops += (NLulong)(2*Ci->size);                    
         y[i] = (x[i] - S) * omega / diag[i];
     }
-    nlCurrentContext->flops += (NLulong)(n*3);                
+    nlHostBlas()->flops += (NLulong)(n*3);                
 }
 
 
-static void nlSSORPreconditionerMult(NLSSORPreconditioner* P, const double* x, double* y) {
+static void nlSSORPreconditionerMult(
+    NLSSORPreconditioner* P, const double* x, double* y
+) {
     NLdouble* diag = P->M->diag;
     NLuint i;
     nlSparseMatrixMultLowerInverse(
@@ -258,12 +262,11 @@ static void nlSSORPreconditionerMult(NLSSORPreconditioner* P, const double* x, d
     for(i=0; i<P->n; i++) {
         P->work[i] *= (diag[i] / P->omega);
     }
-    nlCurrentContext->flops += (NLulong)(P->n);
+    nlHostBlas()->flops += (NLulong)(P->n);
     nlSparseMatrixMultUpperInverse(
         P->M, P->work, y, P->omega
     );
-    dscal((NLint)P->n, 2.0 - P->omega, y, 1);
-    nlCurrentContext->flops += (NLulong)(P->n);    
+    nlHostBlas()->dscal(nlHostBlas(),(NLint)P->n, 2.0 - P->omega, y, 1);
 }
 
 NLMatrix nlNewSSORPreconditioner(NLMatrix M_in, double omega) {

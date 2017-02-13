@@ -1,4 +1,4 @@
-# Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
+# Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -59,8 +59,15 @@ option(RINGMESH_WITH_TETGEN "Use Tetgen tetrahedral mesher" ON)
 
 # Optional components of RINGMesh - creation of specific targets
 option(RINGMESH_WITH_GRAPHICS "Compile viewer" OFF)
+include(CMakeDependentOption)
+# Option to build ringmesh-view. Disable when RINGMESH_WITH_GRAPHICS
+# is OFF. The fist time RINGMESH_WITH_GRAPHICS is ON, this
+# option is ON.
+CMAKE_DEPENDENT_OPTION(BUILD_RINGMESH_VIEW "Build ringmesh-view" ON
+    "RINGMESH_WITH_GRAPHICS" OFF)
+
 option(RINGMESH_WITH_UTILITIES "Compile utility executables" OFF)
-option(RINGMESH_WITH_EXAMPLES "Compile API trainings and examples" OFF)
+option(RINGMESH_WITH_TUTORIALS "Compile API trainings and tuturials" OFF)
 option(RINGMESH_WITH_TESTS "Compile test projects" OFF)
 option(RINGMESH_WITH_GEOLOGYJS "Enable export to html" OFF)
 
@@ -71,7 +78,7 @@ option(BUILD_DOCUMENTATION "Create and install the HTML documentation (requires 
 if(RINGMESH_WITH_TESTS)
     set(TEST_DIRECTORY ${CMAKE_SOURCE_DIR}/tests)
     set(TEST_SOURCE_DIRECTORY ${TEST_DIRECTORY}/src)
-    set(TEST_DATA_INPUT_DIRECTORY "${TEST_DIRECTORY}/data" CACHE PATH "Input data location")
+    set(TEST_DATA_INPUT_DIRECTORY "${TEST_DIRECTORY}/data")
     # PROJECT_BINARY_DIR not defined at this point
     set(TEST_DATA_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/build/tests/output" CACHE PATH "Output data location")
     if(UNIX)    
@@ -79,9 +86,16 @@ if(RINGMESH_WITH_TESTS)
     endif()    
 endif()
 
-# Optional custom configuration of examples directories
-if(RINGMESH_WITH_EXAMPLES)
-    set(EXAMPLES_DIRECTORY ${CMAKE_SOURCE_DIR}/examples)
+# Optional custom configuration of tutorials directories
+if(RINGMESH_WITH_TUTORIALS)
+    set(TUTORIALS_DIRECTORY ${CMAKE_SOURCE_DIR}/doc/tutorials)
+    set(TUTORIALS_SOURCE_DIRECTORY ${TUTORIALS_DIRECTORY}/src)
+    set(TUTORIALS_DATA_INPUT_DIRECTORY "${TUTORIALS_DIRECTORY}/data")
+    # PROJECT_BINARY_DIR not defined at this point
+    set(TUTORIALS_DATA_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/build/tutorials/output" CACHE PATH "Output data location")
+    if(UNIX)    
+      list(APPEND CMAKE_CONFIGURATION_TYPES Coverage)
+    endif() 
 endif()
 
 if(RINGMESH_WITH_GEOLOGYJS)
@@ -143,14 +157,17 @@ if(UNIX)
                 -DUSE_OPENMP:BOOL=${USE_OPENMP}
                 -DRINGMESH_WITH_TETGEN:BOOL=${RINGMESH_WITH_TETGEN} 
                 -DRINGMESH_WITH_GRAPHICS:BOOL=${RINGMESH_WITH_GRAPHICS}
+                -DBUILD_RINGMESH_VIEW:BOOL=${BUILD_RINGMESH_VIEW}
                 -DRINGMESH_WITH_UTILITIES:BOOL=${RINGMESH_WITH_UTILITIES}
                 -DRINGMESH_WITH_TESTS:BOOL=${RINGMESH_WITH_TESTS}
-                -DRINGMESH_WITH_EXAMPLES:BOOL=${RINGMESH_WITH_EXAMPLES}
+                -DTEST_DATA_INPUT_DIRECTORY:STRING=${TEST_DATA_INPUT_DIRECTORY}
+                -DTEST_DATA_OUTPUT_DIRECTORY:STRING=${TEST_DATA_OUTPUT_DIRECTORY}        
+                -DRINGMESH_WITH_TUTORIALS:BOOL=${RINGMESH_WITH_TUTORIALS}
+                -DTUTORIALS_DATA_INPUT_DIRECTORY:STRING=${TUTORIALS_DATA_INPUT_DIRECTORY}
+                -DTUTORIALS_DATA_OUTPUT_DIRECTORY:STRING=${TUTORIALS_DATA_OUTPUT_DIRECTORY}  
                 -DRINGMESH_WITH_GEOLOGYJS:BOOL=${RINGMESH_WITH_GEOLOGYJS}
-			    -DBUILD_DOCUMENTATION:BOOL=${BUILD_DOCUMENTATION}
-				-DTEST_DATA_INPUT_DIRECTORY:STRING=${TEST_DATA_INPUT_DIRECTORY}
-			    -DTEST_DATA_OUTPUT_DIRECTORY:STRING=${TEST_DATA_OUTPUT_DIRECTORY}                
-			    -DGEOLOGY_JS_DIRECTORY:STRING=${GEOLOGY_JS_DIRECTORY}                
+                -DGEOLOGY_JS_DIRECTORY:STRING=${GEOLOGY_JS_DIRECTORY} 
+                -DBUILD_DOCUMENTATION:BOOL=${BUILD_DOCUMENTATION}                     
                 WORKING_DIRECTORY ${project_binary_dir_config})                
       endforeach()
       
@@ -168,7 +185,7 @@ message(STATUS "RINGMesh source directory is: ${PROJECT_SOURCE_DIR}")
 #------------------------------------------------------------------------------------------------
 # Platform dependent settings
 if(WIN32)
-	# Select the CMAKE_CONFIGURATION_TYPES from Visual Studio
+    # Select the CMAKE_CONFIGURATION_TYPES from Visual Studio
     set(COMPILATION_OPTION --config ${CMAKE_CFG_INTDIR})
 elseif(UNIX)
     set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
@@ -192,7 +209,7 @@ elseif(UNIX)
        set(COVERALLS ON)
        set(COVERALLS_UPLOAD ON)
        include(Coveralls)
-	   coveralls_turn_on_coverage()
+       coveralls_turn_on_coverage()
     endif()
     
     # Enable parallel computation
@@ -226,9 +243,9 @@ set(GEOGRAM_PATH ${PROJECT_SOURCE_DIR}/src/third_party/geogram)
 if(WIN32)
     set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/geogram)
     set(geoplatform Win-vs-dynamic-generic)  
-	# Extra lib 
+    # Extra lib 
     set (EXTRA_LIBS ${EXTRA_LIBS} psapi)
-	# TODO check that it is really necessary [JP]
+    # TODO check that it is really necessary [JP]
     add_compile_options(-DGEO_DYNAMIC_LIBS) 
 else(WIN32)
     set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/geogram/${CMAKE_BUILD_TYPE})
@@ -252,10 +269,9 @@ ExternalProject_Add(geogram_ext
         -G ${CMAKE_GENERATOR} 
         -DVORPALINE_PLATFORM:STRING=${geoplatform}
         -DGEOGRAM_WITH_TETGEN:BOOL=${RINGMESH_WITH_TETGEN} 
-        -DGEOGRAM_WITH_MEDIT:BOOL=${RINGMESH_WITH_GRAPHICS}
         -DGEOGRAM_WITH_GRAPHICS:BOOL=${RINGMESH_WITH_GRAPHICS}
+        -DGEOGRAM_WITH_EXPLORAGRAM:BOOL=OFF
         -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-		-DVORPALINE_BUILD_DYNAMIC:BOOL=TRUE
   
   #--Build step-----------------
   BINARY_DIR ${GEOGRAM_PATH_BIN}
@@ -366,7 +382,6 @@ source_group("Zlib" FILES ${zlib_src} ${zlib_include})
 #------------------------------------------------------------------------------------------------
 # Build configuration
 # Organize outputs in a Linux way
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 
@@ -383,7 +398,7 @@ add_library(RINGMesh SHARED
     ${ringmesh_src} 
     ${zlib_src}
     ${zlib_include})
-	
+    
 # Function for generation of export macros for libraries (dll)
 generate_export_header(RINGMesh EXPORT_MACRO_NAME RINGMESH_API EXPORT_FILE_NAME ${generated_export_file} )
 
@@ -393,49 +408,73 @@ add_dependencies(RINGMesh geogram_ext)
 # Libraries to which RINGMesh should link
 target_link_libraries(RINGMesh ${EXTRA_LIBS})
 
+#------------------------------------------------------------------------------------------------
+# Optional modules configuration
+
+function(copy_for_windows)
 if(WIN32)
     # On windows, without proper installation steps, we need to 
     # copy of Geogram dll and pdb information to RINGMesh
     # to be able to launch RINGMesh utilities and tests from the debugger
+
+    # The dll and debug info of RINGMesh are in
+    # build/ringmesh/Debug or build/ringmesh/Release.
     add_custom_command(TARGET RINGMesh POST_BUILD 
-       COMMAND  "${CMAKE_COMMAND}" -E copy_directory 
-           "${GEOGRAM_PATH_BIN}/bin/$<CONFIGURATION>"
-           "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>" 
-       COMMENT "Copy geogram binaries")
-	   if(RINGMESH_WITH_GEOLOGYJS)
-			add_custom_command(TARGET RINGMesh POST_BUILD 
-				COMMAND  "${CMAKE_COMMAND}" -E copy_directory 
-				"${GEOLOGY_JS_PATH_BIN}/bin/$<CONFIGURATION>"
-				"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>" 
-			COMMENT "Copy geology js binaries")
-	   endif(RINGMESH_WITH_GEOLOGYJS)
+        COMMAND  "${CMAKE_COMMAND}" -E copy_directory 
+            "${PROJECT_BINARY_DIR}/$<CONFIGURATION>"
+            "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>" 
+            COMMENT "Copy RINGMesh dll")
+    add_custom_command(TARGET RINGMesh POST_BUILD 
+        COMMAND  "${CMAKE_COMMAND}" -E copy_directory 
+            "${GEOGRAM_PATH_BIN}/bin/$<CONFIGURATION>"
+            "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>" 
+            COMMENT "Copy geogram binaries")
+    if(RINGMESH_WITH_GEOLOGYJS)
+        add_custom_command(TARGET RINGMesh POST_BUILD 
+            COMMAND  "${CMAKE_COMMAND}" -E copy_directory 
+                "${GEOLOGY_JS_PATH_BIN}/bin/$<CONFIGURATION>"
+                "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>" 
+                COMMENT "Copy geology js binaries")
+    endif(RINGMESH_WITH_GEOLOGYJS)
 endif(WIN32)
+endfunction()
 
-
-#------------------------------------------------------------------------------------------------
-# Optional modules configuration
-if(RINGMESH_WITH_GRAPHICS)
-    message(STATUS "Configuring RINGMesh with graphics")
-    add_subdirectory(src/ringmeshview)
-endif(RINGMESH_WITH_GRAPHICS)
+if(BUILD_RINGMESH_VIEW)
+    message(STATUS "Configure ringmesh-view")
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
+    message(STATUS "ringmesh-view directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+    add_subdirectory(src/bin/ringmesh-view)
+    copy_for_windows()
+endif(BUILD_RINGMESH_VIEW)
 
 if(RINGMESH_WITH_UTILITIES)
     message(STATUS "Configuring RINGMesh with utilities")
-    add_subdirectory(src/ringmeshconvert)
-    add_subdirectory(src/ringmesh_surface_convert)
-    add_subdirectory(src/ringmeshstats)
-    add_subdirectory(src/ringmeshrepair)
-    add_subdirectory(src/ringmesh_mesh_quality)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/utilities)
+    message(STATUS "RINGMesh utilities directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+    add_subdirectory(src/bin/ringmesh-convert)
+    add_subdirectory(src/bin/ringmesh-surface-convert)
+    add_subdirectory(src/bin/ringmesh-stats)
+    add_subdirectory(src/bin/ringmesh-repair)
+    add_subdirectory(src/bin/ringmesh-mesh-quality)
+    add_subdirectory(src/bin/ringmesh-rotate)
+    add_subdirectory(src/bin/ringmesh-translate)
+    copy_for_windows()
 endif(RINGMESH_WITH_UTILITIES)
 
-if(RINGMESH_WITH_EXAMPLES)
-    message(STATUS "Configuring RINGMesh with examples")
-    add_subdirectory(examples)
-endif(RINGMESH_WITH_EXAMPLES)
+if(RINGMESH_WITH_TUTORIALS)
+    message(STATUS "Configuring RINGMesh with tutorials")
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/tutorials)
+    message(STATUS "RINGMesh tutorials directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+    add_subdirectory(doc/tutorials)
+    copy_for_windows()
+endif(RINGMESH_WITH_TUTORIALS)
 
 if(RINGMESH_WITH_TESTS)
     message(STATUS "Configuring RINGMesh with tests")
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/tests)
+    message(STATUS "RINGMesh tests directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
     add_subdirectory(tests)
+    copy_for_windows()
 endif(RINGMESH_WITH_TESTS)
 
 
@@ -448,7 +487,7 @@ endif()
 
 if (COVERALLS)
 set(ringmesh_files ${ringmesh_include} ${ringmesh_src})
-	coveralls_setup(
+    coveralls_setup(
     "${ringmesh_files}" 
         ${COVERALLS_UPLOAD}                 
         "${PROJECT_SOURCE_DIR}/cmake")

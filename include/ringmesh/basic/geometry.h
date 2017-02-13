@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -301,7 +301,7 @@ namespace RINGMesh {
          */
         index_t get_colocated_index_mapping(
             double epsilon,
-            GEO::vector< index_t >& index_map ) const ;
+            std::vector< index_t >& index_map ) const ;
         /*!
          * @brief Gets the \p index_map that link all the points
          * to a no duplicated list of index in the list of \p unique_points.
@@ -314,8 +314,8 @@ namespace RINGMesh {
          */
         index_t get_colocated_index_mapping(
             double epsilon,
-            GEO::vector< index_t >& index_map,
-            GEO::vector< vec3 >& unique_points ) const ;
+            std::vector< index_t >& index_map,
+            std::vector< vec3 >& unique_points ) const ;
         /*!
          * Gets the closest neighbor point
          * @param[in] v the point to test

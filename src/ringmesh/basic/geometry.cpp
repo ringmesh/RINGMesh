@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1597,7 +1597,7 @@ namespace RINGMesh {
 
     index_t NNSearch::get_colocated_index_mapping(
         double epsilon,
-        GEO::vector< index_t >& index_map ) const
+        std::vector< index_t >& index_map ) const
     {
         index_map.resize( nn_tree_->nb_points() ) ;
         for( index_t i = 0; i < index_map.size(); i++ ) {
@@ -1628,8 +1628,8 @@ namespace RINGMesh {
 
     index_t NNSearch::get_colocated_index_mapping(
         double epsilon,
-        GEO::vector< index_t >& index_map,
-        GEO::vector< vec3 >& unique_points ) const
+        std::vector< index_t >& index_map,
+        std::vector< vec3 >& unique_points ) const
     {
         index_t nb_colocalised_vertices = get_colocated_index_mapping( epsilon,
             index_map ) ;

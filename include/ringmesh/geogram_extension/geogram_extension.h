@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -54,10 +54,10 @@ namespace RINGMesh {
      * A lot of copies, when we need to call Geogram functions. 
      * @todo Could we set Geogram vector to be a std::vector ?? 
      */
-    template< typename T >
+    template< typename T, typename U >
     void copy_std_vector_to_geo_vector(
         const std::vector< T >& in,
-        GEO::vector< T >& out )
+        GEO::vector< U >& out )
     {
         out.resize( in.size() ) ;
         for( index_t i = 0; i < in.size(); ++i ) {
@@ -70,12 +70,12 @@ namespace RINGMesh {
      * A lot of copies, when we need to call Geogram functions.
      * @todo Could we set Geogram vector to be a std::vector ??
      */
-    template< typename T >
+    template< typename T, typename U >
     void copy_std_vector_to_geo_vector(
         const std::vector< T >& in,
         index_t from,
         index_t to,
-        GEO::vector< T >& out )
+        GEO::vector< U >& out )
     {
         ringmesh_assert( to < in.size() + 1 ) ;
         ringmesh_assert( from < to ) ;

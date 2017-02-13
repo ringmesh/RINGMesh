@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -61,11 +61,10 @@ namespace RINGMesh {
      */
     class RINGMESH_API GeoModelMeshEntity: public GeoModelEntity {
     ringmesh_disable_copy( GeoModelMeshEntity ) ;
-    public:
-        friend class GeoModelEditor ;
-        friend class GeoModelBuilder ;
-        friend class GeoModelRepair ;
+        friend class GeoModelMeshEntityAccess ;
+        friend class GeoModelMeshEntityConstAccess ;
 
+    public:
         virtual ~GeoModelMeshEntity() ;
 
         typedef std::string EntityType ;
@@ -331,8 +330,8 @@ namespace RINGMesh {
      */
     class RINGMESH_API Corner: public GeoModelMeshEntity {
     public:
-        friend class GeoModelEditor ;
-        friend class GeoModelBuilder ;
+        friend class GeoModelMeshEntityAccess ;
+        friend class GeoModelMeshEntityConstAccess ;
 
         virtual ~Corner()
         {
@@ -390,15 +389,6 @@ namespace RINGMesh {
          * @warn This function is for ADVANCED user only. If you use it,
          * you are responsible for low level mesh consistency.
          */
-        Mesh0D& low_level_mesh_storage()
-        {
-            return *mesh0d_ ;
-        }
-        /*!
-         * @brief Get the low level mesh data structure
-         * @warn This function is for ADVANCED user only. If you use it,
-         * you are responsible for low level mesh consistency.
-         */
         const Mesh0D& low_level_mesh_storage() const
         {
             return *mesh0d_ ;
@@ -432,12 +422,13 @@ namespace RINGMesh {
 
         virtual bool is_mesh_valid() const ;
 
+    private:
+
         void update_mesh_storage_type( Mesh0D* mesh )
         {
             mesh0d_ = mesh ;
             GeoModelMeshEntity::set_mesh( mesh0d_ ) ;
         }
-
 
     private:
         Mesh0D* mesh0d_ ;
@@ -451,9 +442,7 @@ namespace RINGMesh {
      */
     class RINGMESH_API Line: public GeoModelMeshEntity {
     public:
-        friend class GeoModelEditor ;
-        friend class GeoModelBuilder ;
-        friend class GeoModelRepair ;
+        friend class GeoModelMeshEntityAccess ;
 
         virtual ~Line()
         {
@@ -548,15 +537,7 @@ namespace RINGMesh {
         }
 
         bool is_first_corner_first_vertex() const ;
-        /*!
-         * @brief Get the low level mesh data structure
-         * @warn This function is for ADVANCED user only. If you use it,
-         * you are responsible for low level mesh consistency.
-         */
-        Mesh1D& low_level_mesh_storage()
-        {
-            return *mesh1d_ ;
-        }
+
         /*!
          * @brief Get the low level mesh data structure
          * @warn This function is for ADVANCED user only. If you use it,
@@ -571,6 +552,7 @@ namespace RINGMesh {
 
         virtual bool is_mesh_valid() const ;
 
+    private:
         void update_mesh_storage_type( Mesh1D* mesh )
         {
             mesh1d_ = mesh ;
@@ -589,9 +571,7 @@ namespace RINGMesh {
      */
     class RINGMESH_API Surface: public GeoModelMeshEntity {
     public:
-        friend class GeoModelEditor ;
-        friend class GeoModelBuilder ;
-        friend class GeoModelRepair ;
+        friend class GeoModelMeshEntityAccess ;
 
         virtual ~Surface()
         {
@@ -835,15 +815,7 @@ namespace RINGMesh {
         }
         /*! @}
          */
-        /*!
-         * @brief Get the low level mesh data structure
-         * @warn This function is for ADVANCED user only. If you use it,
-         * you are responsible for low level mesh consistency.
-         */
-        Mesh2D& low_level_mesh_storage()
-        {
-            return *mesh2d_ ;
-        }
+
         /*!
          * @brief Get the low level mesh data structure
          * @warn This function is for ADVANCED user only. If you use it,
@@ -863,6 +835,7 @@ namespace RINGMesh {
 
         virtual bool is_mesh_valid() const ;
 
+    private:
         void update_mesh_storage_type( Mesh2D* mesh )
         {
             mesh2d_ = mesh ;
@@ -882,9 +855,7 @@ namespace RINGMesh {
      */
     class RINGMESH_API Region: public GeoModelMeshEntity {
     public:
-        friend class GeoModelEditor ;
-        friend class GeoModelBuilder ;
-        friend class GeoModelRepair ;
+        friend class GeoModelMeshEntityAccess ;
 
         virtual ~Region()
         {
@@ -1170,15 +1141,7 @@ namespace RINGMesh {
         }
         /*! @}
          */
-        /*!
-         * @brief Get the low level mesh data structure
-         * @warn This function is for ADVANCED user only. If you use it,
-         * you are responsible for low level mesh consistency.
-         */
-        Mesh3D& low_level_mesh_storage()
-        {
-            return *mesh3d_ ;
-        }
+
         /*!
          * @brief Get the low level mesh data structure
          * @warn This function is for ADVANCED user only. If you use it,
@@ -1205,6 +1168,7 @@ namespace RINGMesh {
 
         virtual bool is_mesh_valid() const ;
 
+    private:
         void update_mesh_storage_type( Mesh3D* mesh )
         {
             mesh3d_ = mesh ;
@@ -1219,6 +1183,100 @@ namespace RINGMesh {
         std::vector< bool > sides_ ;
     private:
         Mesh3D* mesh3d_ ;
+    } ;
+
+    class GeoModelMeshEntityConstAccess {
+    ringmesh_disable_copy( GeoModelMeshEntityConstAccess ) ;
+        friend class GeoModelBuilderGeometry ;
+
+    private:
+        GeoModelMeshEntityConstAccess( const GeoModelMeshEntity& gme )
+            : gmme_( gme )
+        {
+        }
+
+        const MeshBase* mesh() const
+        {
+            return gmme_.mesh_ ;
+        }
+
+    private:
+        const GeoModelMeshEntity& gmme_ ;
+    } ;
+
+    class GeoModelMeshEntityAccess {
+    ringmesh_disable_copy( GeoModelMeshEntityAccess ) ;
+        friend class GeoModelBuilderTopology ;
+        friend class GeoModelBuilderGeometry ;
+        friend class GeoModelBuilderGeology ;
+        friend class GeoModelBuilderInfo ;
+        friend class GeoModelBuilderRemoval ;
+
+    private:
+        GeoModelMeshEntityAccess( GeoModelMeshEntity& gme )
+            : gmme_( gme )
+        {
+        }
+
+        std::string& modifiable_name()
+        {
+            return gmme_.name_ ;
+        }
+
+        index_t& modifiable_index()
+        {
+            return gmme_.id_.index ;
+        }
+
+        GME::GEOL_FEATURE& modifiable_geol_feature()
+        {
+            return gmme_.geol_feature_ ;
+        }
+
+        std::vector< gme_t >& modifiable_boundaries()
+        {
+            return gmme_.boundaries_ ;
+        }
+
+        std::vector< gme_t >& modifiable_in_boundaries()
+        {
+            return gmme_.in_boundary_ ;
+        }
+
+        std::vector< bool >& modifiable_sides()
+        {
+            ringmesh_assert( gmme_.type_name() == Region::type_name_static() ) ;
+            return dynamic_cast< Region& >( gmme_ ).sides_ ;
+        }
+
+        std::vector< gme_t >& modifiable_parents()
+        {
+            return gmme_.parents_ ;
+        }
+
+        MeshBase* modifiable_mesh()
+        {
+            return gmme_.mesh_ ;
+        }
+
+        void change_mesh_data_structure( const MeshType type ) ;
+
+        template< typename ENTITY >
+        static ENTITY* create_entity(
+            const GeoModel& geomodel,
+            index_t id,
+            const MeshType type )
+        {
+            return new ENTITY( geomodel, id, type ) ;
+        }
+
+        void copy( const GeoModelMeshEntity& from )
+        {
+            gmme_.copy( from ) ;
+        }
+
+    private:
+        GeoModelMeshEntity& gmme_ ;
     } ;
 }
 

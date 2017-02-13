@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -104,7 +104,7 @@ namespace RINGMesh {
 
     void GeoModelGeologicalEntity::initialize()
     {
-        ringmesh_register_GeoModelGeologicalEntity_creator( Contact );
+        ringmesh_register_GeoModelGeologicalEntity_creator( Contact ) ;
         ringmesh_register_GeoModelGeologicalEntity_creator( Interface ) ;
         ringmesh_register_GeoModelGeologicalEntity_creator( Layer ) ;
     }
@@ -137,6 +137,17 @@ namespace RINGMesh {
     bool Layer::is_valid() const
     {
         return check_has_children( *this ) ;
+    }
+
+    GeoModelGeologicalEntity* GeoModelGeologicalEntityAccess::create_geological_entity(
+        const EntityType& type,
+        const GeoModel& geomodel,
+        index_t index_in_geomodel )
+    {
+        GeoModelGeologicalEntity* E = GeoModelGeologicalEntityFactory::create_object(
+            type, geomodel ) ;
+        E->id_.index = index_in_geomodel ;
+        return E ;
     }
 
 }
