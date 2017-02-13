@@ -890,7 +890,11 @@ namespace {
     /// NO_ID for polygons there are not supported by MFEM
     static index_t facet_type_mfem[3] = { 2, 3, NO_ID } ;
 
-    static index_t cell_geo2mfem[8] = { 0, 1, 3, 2, 4, 5, 7, 6 } ;
+    /// Convert the numerotation from RINGMesh to MFEM
+    /// It works for Hexaedron and also for Tetrahedron (in this
+    /// case, only the first four values of this table
+    /// are used while iterating on vertices)
+    static index_t cell2mfem[8] = { 0, 1, 3, 2, 4, 5, 7, 6 } ;
 
     /// MFEM works with Surface and Region index begin with 1
     static index_t mfem_offset = 1 ;
@@ -964,7 +968,7 @@ namespace {
                 out << geomodel_mesh.cells.region( c ) + mfem_offset << " " ;
                 out << cell_type_mfem[geomodel_mesh.cells.type( c )] << " " ;
                 for( index_t v = 0; v < geomodel_mesh.cells.nb_vertices( c ); v++ ) {
-                    out << geomodel_mesh.cells.vertex( c, cell_geo2mfem[v] ) << " " ;
+                    out << geomodel_mesh.cells.vertex( c, cell2mfem[v] ) << " " ;
                 }
                 out << std::endl ;
             }
