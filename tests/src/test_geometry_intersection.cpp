@@ -287,13 +287,74 @@ void test_segment_triangle_intersection()
 void test_circle_plane_intersection()
 {
     Logger::out( "TEST" ) << "Test Circle-Plane intersections" << std::endl ;
+    vec3 O_plane( 3., 1., -1. ) ;
+    vec3 N_plane( 0., 0., -2. ) ;
 
     // Circle parallel to the plane
+    vec3 O_circle1( 2., 3., 4. ) ;
+    vec3 N_circle1( 0., 0., 1. ) ;
+    double r1 = 4. ;
+    std::vector< vec3 > results1 ;
+    bool intersect1 = circle_plane_intersection( O_plane, N_plane, O_circle1,
+        N_circle1, r1, results1 ) ;
+    if( intersect1 ) {
+        throw RINGMeshException( "TEST", "Test circle parallel to plane: KO" ) ;
+    } else {
+        Logger::out( "TEST" ) << "Test circle parallel to plane: OK" << std::endl ;
+    }
 
     // Circle adjacent to the plane
+    vec3 O_circle2( 2., 3., 4. ) ;
+    vec3 N_circle2( -1., 2., 0. ) ;
+    double r2 = 5. ;
+    std::vector< vec3 > results2 ;
+    vec3 answer2( 2., 3., -1. ) ;
+    bool intersect2 = circle_plane_intersection( O_plane, N_plane, O_circle2,
+        N_circle2, r2, results2 ) ;
+    if( !intersect2 || results2.size() != 1 ) {
+        throw RINGMeshException( "TEST",
+            "Test circle adjacent to the plane: KO (wrong number of points)" ) ;
+    } else {
+        if( !are_almost_equal( results2[0], answer2 ) ) {
+            throw RINGMeshException( "TEST",
+                "Test circle adjacent to the plane: KO (wrong point coordinates)" ) ;
+        }
+        Logger::out( "TEST" ) << "Test circle adjacent to the plane: OK"
+            << std::endl ;
+    }
 
     // Circle crossing the plane
 
+    Logger::out( "TEST" ) << " " << std::endl ;
+    vec3 O_circle3( 2., 3., 4. ) ;
+    vec3 N_circle3( -1., 2., 0. ) ;
+    double r3 = 6. ;
+    std::vector< vec3 > results3 ;
+    vec3 answer31( -0.966479, 1.51676, -1. ) ;
+    vec3 answer32( 4.96648, 4.48324, -1. ) ;
+    bool intersect3 = circle_plane_intersection( O_plane, N_plane, O_circle3,
+        N_circle3, r3, results3 ) ;
+    if( !intersect3 || results3.size() != 2 ) {
+        throw RINGMeshException( "TEST",
+            "Test circle adjacent to the plane: KO (wrong number of points)" ) ;
+    } else {
+        if( !( are_almost_equal( results3[0], answer31 )
+            || ( are_almost_equal( results3[0], answer32 ) ) )
+            || !( are_almost_equal( results3[1], answer31 )
+                || ( are_almost_equal( results3[1], answer32 ) ) ) ) {
+            DEBUG( results3[0] ) ;
+            DEBUG( results3[1] ) ;
+            DEBUG(are_almost_equal( results3[0], answer31 )) ;
+            DEBUG(are_almost_equal( results3[0], answer32 )) ;
+            DEBUG(are_almost_equal( results3[1], answer31 )) ;
+            DEBUG(are_almost_equal( results3[1], answer32 )) ;
+
+            throw RINGMeshException( "TEST",
+                "Test circle adjacent to the plane: KO (wrong point coordinates)" ) ;
+        }
+        Logger::out( "TEST" ) << "Test circle adjacent to the plane: OK"
+            << std::endl ;
+    }
 }
 
 void test_disk_segment_intersection()
@@ -305,6 +366,7 @@ void test_disk_segment_intersection()
 
     // Circle crossing the disk
 
+    Logger::out( "TEST" ) << " " << std::endl ;
 }
 
 void test_circle_triangle_intersection()
@@ -322,8 +384,6 @@ void test_circle_triangle_intersection()
     vec3 answer1 = trgl1 ;
     bool intersect1 = circle_triangle_intersection( trgl0, trgl1, trgl2, O_circle1,
         N_circle1, r1, results1 ) ;
-    DEBUG( intersect1 ) ;
-    DEBUG( results1.size() ) ;
     if( !intersect1 || results1.size() != 1 ) {
         throw RINGMeshException( "TEST", "Test1: KO (wrong number of points)" ) ;
     } else {
@@ -351,6 +411,8 @@ void test_circle_triangle_intersection()
         }
         Logger::out( "TEST" ) << "Test2: OK" << std::endl ;
     }
+
+    Logger::out( "TEST" ) << " " << std::endl ;
 }
 
 void test_plane_plane_intersection()
@@ -405,6 +467,7 @@ void test_plane_plane_intersection()
         Logger::out( "TEST" ) << "Test intersecting planes: OK" << std::endl ;
     }
 
+    Logger::out( "TEST" ) << " " << std::endl ;
 }
 
 int main()
