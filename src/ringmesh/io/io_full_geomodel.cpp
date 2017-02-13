@@ -910,7 +910,7 @@ namespace {
         virtual bool load( const std::string& filename, GeoModel& geomodel )
         {
             throw RINGMeshException( "I/O",
-                "Loading of a GeoModel from VTK not implemented yet" ) ;
+                "Loading of a GeoModel from MFEM not implemented yet" ) ;
             return false ;
         }
         virtual void save( const GeoModel& geomodel, const std::string& filename )
