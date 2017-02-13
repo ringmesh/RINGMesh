@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -557,7 +557,7 @@ namespace RINGMesh {
         gme_vertices( v, gme_v ) ;
         for( index_t i = 0; i < gme_v.size(); i++ ) {
             const GMEVertex& info = gme_v[i] ;
-            builder.set_mesh_entity_vertex( info.gme_id, info.v_id, point, false ) ;
+            builder.geometry.set_mesh_entity_vertex( info.gme_id, info.v_id, point, false ) ;
         }
     }
 
@@ -580,7 +580,7 @@ namespace RINGMesh {
             return ;
         }
         // Identify and invalidate colocated vertices
-        GEO::vector< index_t > old2new ;
+        std::vector< index_t > old2new ;
         index_t nb_colocalised_vertices =
             mesh_->vertices_nn_search().get_colocated_index_mapping(
                 gm_.epsilon(), old2new ) ;
@@ -595,7 +595,7 @@ namespace RINGMesh {
         ringmesh_assert( to_delete.size() == nb() ) ;
 
         // For mesh vertices deletion
-        GEO::vector< index_t > to_delete_geo( nb(), 0 ) ;
+        std::vector< bool > to_delete_bool( nb(), false ) ;
 
         // Fill the delete information for geogram
         // Recycle the to_delete vertex to get the mapping between
@@ -605,7 +605,7 @@ namespace RINGMesh {
         index_t cur = 0 ;
         for( index_t v = 0; v < nb(); ++v ) {
             if( to_delete[v] != v ) {
-                to_delete_geo[v] = 1 ;
+                to_delete_bool[v] = true ;
                 nb_todelete++ ;
                 if( to_delete[v] != NO_ID ) {
                     ringmesh_assert( to_delete[v] < v ) ;
@@ -633,7 +633,7 @@ namespace RINGMesh {
         // Delete the vertices - false is to not remove
         // isolated vertices (here all the vertices)
         Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder( *mesh_ ) ;
-        builder->delete_vertices( to_delete_geo ) ;
+        builder->delete_vertices( to_delete_bool ) ;
 
         vertex_mapper_.update_mesh_entity_maps_and_gmes( to_delete ) ;
     }
@@ -767,7 +767,7 @@ namespace RINGMesh {
         mesh_builder->connect_cells() ;
 
         // Permute cells to sort them per region and per type
-        GEO::vector< index_t > sorted_indices( mesh_->nb_cells() ) ;
+        std::vector< index_t > sorted_indices( mesh_->nb_cells() ) ;
         for( index_t i = 0; i < mesh_->nb_cells(); i++ ) {
             sorted_indices[i] = i ;
         }
@@ -1739,7 +1739,7 @@ namespace RINGMesh {
                         mesh_builder->set_facet_vertex( cur_facet, v, v_id ) ;
                     }
                 } else {
-                    GEO::vector< index_t > vertices( nb_vertices ) ;
+                    std::vector< index_t > vertices( nb_vertices ) ;
                     for( index_t v = 0; v < nb_vertices; v++ ) {
                         vertices[v] = geomodel_vertices.geomodel_vertex_id(
                             surface.gme_id(), f, v ) ;
@@ -1751,21 +1751,21 @@ namespace RINGMesh {
             }
         }
 
-        // Compute facet adjacencies
-        mesh_builder->connect_facets() ;
-        disconnect_along_lines() ;
-
         // Permute facets to sort them per surface and per type
         // Example for a mesh with two surfaces and only triangles and quads
         // [TRGL,TRGL, .. , QUAD, QUAD .. , TRGL, TRGL, ... , QUAD, QUAD ..]
         // |          surface 0           |             surface 1           |
-        GEO::vector< index_t > sorted_indices( mesh_->nb_facets() ) ;
+        std::vector< index_t > sorted_indices( mesh_->nb_facets() ) ;
         for( index_t i = 0; i < mesh_->nb_facets(); i++ ) {
             sorted_indices[i] = i ;
         }
         GeoModelMeshFacetsSort action( *mesh_, surface_id_ ) ;
         std::sort( sorted_indices.begin(), sorted_indices.end(), action ) ;
         mesh_builder->permute_facets( sorted_indices ) ;
+
+        // Compute facet adjacencies
+        mesh_builder->connect_facets() ;
+        disconnect_along_lines() ;
 
         // Cache some values
         nb_triangle_ = nb_facet_per_type[TRIANGLE] ;
@@ -1925,15 +1925,12 @@ namespace RINGMesh {
     GeoModelMesh::GeoModelMesh( GeoModel& geomodel )
         :
             geomodel_( geomodel ),
-            mesh_( NULL ),
+            mesh_( nil ),
             mode_( GeoModelMeshCells::NONE ),
             vertices( *this, geomodel ),
             edges( *this ),
             facets( *this ),
             cells( *this )
-    /*! @todo I am no expert but this initialization list looks like
-     * a ticking bomb (like those in Mesh, btw I don not understand how these can work)
-     * If these classes are derived one day, I don't know what will happen [JP]*/
     {
         GeogramMeshAllD* geogrammesh = new GeogramMeshAllD ;
         mesh_ = geogrammesh ;

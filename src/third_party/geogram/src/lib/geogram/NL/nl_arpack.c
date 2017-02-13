@@ -157,6 +157,10 @@ static NLboolean ARPACK_is_initialized() {
         ARPACK()->dneupd != NULL;
 }
 
+NLboolean nlExtensionIsInitialized_ARPACK() {
+    return ARPACK_is_initialized();
+}
+
 static void nlTerminateExtension_ARPACK(void) {
     if(ARPACK()->DLL_handle != NULL) {
         nlCloseDLL(ARPACK()->DLL_handle);
@@ -181,7 +185,7 @@ static char* u(const char* str) {
  * \brief Finds and initializes a function pointer to
  *  one of the functions in ARPACK.
  * \details Function pointers are stored into the 
- *  SuperLUContext returned by the function ARPACK().
+ *  ARPACKContext returned by the function ARPACK().
  *  If a symbol is not found, returns NL_FALSE from the
  *  calling function.
  */
@@ -202,7 +206,10 @@ NLboolean nlInitExtension_ARPACK(void) {
         return ARPACK_is_initialized();
     }
 
-    ARPACK()->DLL_handle = nlOpenDLL(ARPACK_LIB_NAME);
+    ARPACK()->DLL_handle = nlOpenDLL(
+	ARPACK_LIB_NAME,
+	NL_LINK_NOW | NL_LINK_USE_FALLBACK
+    );
     if(ARPACK()->DLL_handle == NULL) {
         return NL_FALSE;
     }
@@ -247,7 +254,9 @@ static NLMatrix create_OP(NLboolean symmetric) {
 	    /*
 	     * A = A - shift * B
 	     */
-	    nlSparseMatrixAddMatrix(A, -nlCurrentContext->eigen_shift, nlCurrentContext->B);
+	    nlSparseMatrixAddMatrix(
+		A, -nlCurrentContext->eigen_shift, nlCurrentContext->B
+	    );
 	}
 
 	/* 
@@ -257,7 +266,8 @@ static NLMatrix create_OP(NLboolean symmetric) {
 	    fprintf(stderr, "Factorizing matrix...\n");
 	}
 	result = nlMatrixFactorize(
-	    (NLMatrix)A, symmetric ? NL_SYMMETRIC_SUPERLU_EXT : NL_PERM_SUPERLU_EXT
+	    (NLMatrix)A,
+	    symmetric ? NL_SYMMETRIC_SUPERLU_EXT : NL_PERM_SUPERLU_EXT
 	);
 	if(nlCurrentContext->verbose) {
 	    fprintf(stderr, "Matrix factorized\n");
@@ -271,7 +281,8 @@ static NLMatrix create_OP(NLboolean symmetric) {
 	    fprintf(stderr, "Factorizing matrix...\n");
 	}
 	result = nlMatrixFactorize(
-	    nlCurrentContext->M, symmetric ? NL_SYMMETRIC_SUPERLU_EXT : NL_PERM_SUPERLU_EXT
+	    nlCurrentContext->M,
+	    symmetric ? NL_SYMMETRIC_SUPERLU_EXT : NL_PERM_SUPERLU_EXT
 	    );
 	if(nlCurrentContext->verbose) {
 	    fprintf(stderr, "Matrix factorized\n");
@@ -303,7 +314,8 @@ static int eigencompare(const void* pi, const void* pj) {
 }
 
 void nlEigenSolve_ARPACK(void) {
-    NLboolean symmetric = nlCurrentContext->symmetric && (nlCurrentContext->B == NULL); 
+    NLboolean symmetric =
+	nlCurrentContext->symmetric && (nlCurrentContext->B == NULL); 
     int n = (int)nlCurrentContext->M->n; /* Dimension of the matrix */
     int nev = /* Number of eigenvectors requested */
 	(int)nlCurrentContext->nb_systems;
@@ -404,9 +416,9 @@ void nlEigenSolve_ARPACK(void) {
 	}
 	if(ido == 1) {
 	    nlMultMatrixVector(
-		OP,
-		workd+ipntr[1-1]-1, /*The "-1"'s are for FORTRAN-to-C conversion */
-		workd+ipntr[2-1]-1  /*to keep the same indices as in ARPACK doc */
+             OP,
+	     workd+ipntr[1-1]-1, /*The "-1"'s are for FORTRAN-to-C conversion */
+	     workd+ipntr[2-1]-1  /*to keep the same indices as in ARPACK doc  */
 	    );
 	} else {
 	    converged = NL_TRUE;

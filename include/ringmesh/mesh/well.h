@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -302,7 +302,7 @@ namespace RINGMesh {
 
     /*! 
      * @todo Implement something more generic than WellGroups
-     * We wnat to dela with Lines of Points that might not be Well [JP]
+     * We want to deal with Lines of Points that might not be Well [JP]
      *
      * @todo Comment
      */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -52,6 +52,10 @@ namespace RINGMesh {
             GEO::CmdLine::declare_arg( "epsilon", 1e-7,
                 "Threshold for numerical precision (ratio of the bbox diagonal)",
                 GEO::CmdLine::ARG_ADVANCED ) ;
+            GEO::CmdLine::declare_arg(
+                "validity_save", false,
+                "Saves meshes representing geomodel inconsistencies",
+                GEO::CmdLine::ARG_ADVANCED ) ;
         }
 
         void import_arg_group_in()
@@ -67,10 +71,6 @@ namespace RINGMesh {
             GEO::CmdLine::declare_arg(
                 "in:wells", "",
                 "Filename of the input wells" ) ;
-            GEO::CmdLine::declare_arg(
-                "in:validity_save", true,
-                "Saves meshes representing geomodel inconsistencies",
-                GEO::CmdLine::ARG_ADVANCED ) ;
         }
 
         void import_arg_group_out()
@@ -81,31 +81,6 @@ namespace RINGMesh {
                 "Saves the geological model" ) ;
         }
 
-        void import_arg_group_stats()
-        {
-            GEO::CmdLine::declare_arg_group( "stats", "Statistics options" ) ;
-            GEO::CmdLine::declare_arg(
-                "stats:volume", false,
-                "Print statistics on the volume" ) ;
-            GEO::CmdLine::declare_arg(
-                "stats:nb", true,
-                "Print statistics on the number of entities" ) ;
-        }
-
-        void import_arg_group_repair()
-        {
-            GEO::CmdLine::declare_arg_group( "repair", "GeoModel repair processes" ) ;
-            GEO::CmdLine::declare_arg(
-                "repair:mode", 0,
-                "Repair mode: repair process to apply to the geomodel" ) ;
-        }
-
-        void import_arg_group_quality()
-        {
-            GEO::CmdLine::declare_arg_group( "quality", "Mesh quality" ) ;
-            GEO::CmdLine::declare_arg( "quality:mode", 0, "Mesh quality mode" ) ;
-        }
-
         bool import_arg_group( const std::string& name )
         {
             if( name == "global" ) {
@@ -114,12 +89,6 @@ namespace RINGMesh {
                 import_arg_group_in() ;
             } else if( name == "out" ) {
                 import_arg_group_out() ;
-            } else if( name == "stats" ) {
-                import_arg_group_stats() ;
-            } else if( name == "repair" ) {
-                import_arg_group_repair() ;
-            } else if( name == "quality" ) {
-                import_arg_group_quality() ;
             } else {
                 return GEO::CmdLine::import_arg_group( name ) ;
             }

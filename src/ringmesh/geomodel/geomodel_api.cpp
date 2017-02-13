@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -378,28 +378,5 @@ namespace RINGMesh {
         M.mesh.vertices.clear() ;
     }
 #endif
-
-    gme_t find_corner( const GeoModel& geomodel, const vec3& point )
-    {
-        for( index_t i = 0; i < geomodel.nb_corners(); ++i ) {
-            if( geomodel.corner( i ).vertex( 0 ) == point ) {
-                return gme_t( Corner::type_name_static(), i ) ;
-            }
-        }
-        return gme_t() ;
-    }
-
-    gme_t find_corner( const GeoModel& geomodel, index_t geomodel_point_id )
-    {
-        const GeoModelMeshVertices& geomodel_vertices = geomodel.mesh.vertices ;
-        std::vector< GMEVertex > vertices ;
-        geomodel_vertices.gme_vertices( geomodel_point_id, vertices ) ;
-        for( index_t i = 0; i < vertices.size(); ++i ) {
-            if( vertices[i].gme_id.type == Corner::type_name_static() ) {
-                return vertices[i].gme_id ;
-            }
-        }
-        return gme_t() ;
-    }
 
 }

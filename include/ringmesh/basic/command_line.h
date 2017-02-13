@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,13 +38,6 @@
 #define __RINGMESH_COMMAND_LINE_
 
 #include <ringmesh/basic/common.h>
-
-/*!
- * @todo Is this file really necessary>
- * It is only used when applications are generated. 
- * Replace it by a ringmesh_application_utils.h and cpp that gather 
- * all we nee to run apps and that are not included if option unchecked [JP]
- */
 
 namespace RINGMesh {
 

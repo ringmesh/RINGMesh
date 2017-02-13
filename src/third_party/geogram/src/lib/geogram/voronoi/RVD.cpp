@@ -47,6 +47,7 @@
 #include <geogram/voronoi/generic_RVD.h>
 #include <geogram/voronoi/RVD_mesh_builder.h>
 #include <geogram/voronoi/integration_simplex.h>
+#include <geogram/voronoi/RVD_polyhedron_callback.h>
 #include <geogram/mesh/mesh_partition.h>
 #include <geogram/mesh/mesh_sampling.h>
 #include <geogram/mesh/mesh_repair.h>
@@ -118,24 +119,6 @@ namespace {
             return *(const Point*) mesh_->vertices.point_ptr(v);
         }
 
-        /**
-         * \brief Gets a mesh vertex from a corner index.
-         * \param[in] c index of the corner
-         * \return a const reference to a Point
-         */
-        const Point& mesh_corner_vertex(index_t c) {
-            index_t v = mesh_->facet_corners.vertex(c);
-            return mesh_vertex(v);
-        }
-
-        /**
-         * \brief Gets a Delaunay vertex from its index.
-         * \param[in] v index of the Delaunay vertex
-         * \return a const reference to a Point
-         */
-        const Point& seed(index_t v) {
-            return *(const Point*) delaunay_->vertex_ptr(v);
-        }
 
         /**
          * \brief Creates a RVD_Nd_Impl.
@@ -1484,6 +1467,22 @@ namespace {
             RVD_.set_mesh(tmp_mesh);
         }
 
+        /********************************************************************/
+
+	void for_each_polyhedron(
+	    GEO::RVDPolyhedronCallback& callback
+	) {
+	    bool sym_backup = RVD_.symbolic();
+	    RVD_.set_symbolic(true);
+	    RVD_.set_connected_components_priority(true);
+	    callback.set_dimension(RVD_.mesh()->vertices.dimension());
+	    callback.begin();
+	    RVD_.for_each_polyhedron(callback);
+	    callback.end();
+	    RVD_.set_symbolic(sym_backup);
+	    RVD_.set_connected_components_priority(false);
+	}
+	
         /********************************************************************/
         
         /**

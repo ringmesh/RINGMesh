@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -328,7 +328,7 @@ namespace RINGMesh {
          * @brief Gets the closest triangle to a given point
          * @pre The mesh needs to be triangulated
          * @param[in] query the point to use
-         * @param[out] nearest_point the nearest point on the closest edge
+         * @param[out] nearest_point the nearest point on the closest triangle
          * @param[out] distance the distance between \p query and \p nearest_point
          * @return the closest triangle index
          */
