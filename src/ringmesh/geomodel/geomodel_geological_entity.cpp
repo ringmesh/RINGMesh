@@ -104,7 +104,7 @@ namespace RINGMesh {
 
     void GeoModelGeologicalEntity::initialize()
     {
-        ringmesh_register_GeoModelGeologicalEntity_creator( Contact );
+        ringmesh_register_GeoModelGeologicalEntity_creator( Contact ) ;
         ringmesh_register_GeoModelGeologicalEntity_creator( Interface ) ;
         ringmesh_register_GeoModelGeologicalEntity_creator( Layer ) ;
     }
@@ -144,8 +144,8 @@ namespace RINGMesh {
         const GeoModel& geomodel,
         index_t index_in_geomodel )
     {
-        GeoModelGeologicalEntity* E =
-            GeoModelGeologicalEntityFactory::create_object( type, geomodel ) ;
+        GeoModelGeologicalEntity* E = GeoModelGeologicalEntityFactory::create_object(
+            type, geomodel ) ;
         E->id_.index = index_in_geomodel ;
         return E ;
     }

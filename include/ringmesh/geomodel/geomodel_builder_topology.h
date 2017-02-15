@@ -86,12 +86,6 @@ namespace RINGMesh {
             return new_entity->gme_id() ;
         }
 
-        /*!
-         * @brief Create and store a geological entity of the given type
-         * @return The index of the created geological entity
-         */
-        gme_t create_geological_entity( const EntityType& type ) ;
-
         bool create_mesh_entities(
             const EntityType& type,
             index_t nb_additional_entities )
@@ -109,8 +103,6 @@ namespace RINGMesh {
                 return false ;
             }
         }
-
-        bool create_geological_entities( const EntityType& type, index_t nb ) ;
 
         /*!
          * @brief Complete missing information in GeoModelEntities
@@ -160,8 +152,6 @@ namespace RINGMesh {
 
         void delete_mesh_entity( const EntityType& type, index_t index ) ;
 
-        void delete_geological_entity( const EntityType& type, index_t index ) ;
-
         /*!
          * @brief Finds or creates a corner at given coordinates.
          * @param[in] point Geometric location of the Corner
@@ -202,10 +192,6 @@ namespace RINGMesh {
             return true ;
         }
 
-        index_t create_geological_entity_type( const EntityType& type ) ;
-
-        index_t find_or_create_geological_entity_type( const EntityType& type ) ;
-
         void complete_mesh_entity_connectivity( const EntityType& type ) ;
 
         template< typename ENTITY >
@@ -222,10 +208,6 @@ namespace RINGMesh {
                 gmme_access.copy( from.mesh_entity( id ) ) ;
             }
         }
-
-        void copy_geological_entity_topology(
-            const GeoModel& from,
-            const EntityType& type ) ;
 
     private:
         GeoModelBuilder& builder_ ;

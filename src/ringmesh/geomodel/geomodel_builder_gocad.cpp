@@ -650,7 +650,7 @@ namespace {
             ringmesh_unused( load_storage ) ;
             std::string interface_name = read_name_with_spaces( 1, line ) ;
             // Create an interface and set its name
-            gme_t interface_id = builder().topology.create_geological_entity(
+            gme_t interface_id = builder().geology.create_geological_entity(
                 Interface::type_name_static() ) ;
             builder().info.set_entity_name( interface_id, interface_name ) ;
         }
@@ -699,7 +699,7 @@ namespace {
             ringmesh_unused( load_storage ) ;
             /// Build the volumetric layers from their name and
             /// the ids of the regions they contain
-            gme_t layer_id = builder().topology.create_geological_entity(
+            gme_t layer_id = builder().geology.create_geological_entity(
                 Layer::type_name_static() ) ;
             builder().info.set_entity_name( layer_id, line.field( 1 ) ) ;
             bool end_layer = false ;
@@ -994,7 +994,7 @@ namespace {
             GEO::LineInput& line,
             TSolidLoadingStorage& load_storage )
         {
-            gme_t created_interface = builder().topology.create_geological_entity(
+            gme_t created_interface = builder().geology.create_geological_entity(
                 Interface::type_name_static() ) ;
             load_storage.cur_interface_ = created_interface.index ;
             builder().info.set_entity_name( created_interface, line.field( 1 ) ) ;
@@ -1122,7 +1122,7 @@ namespace RINGMesh {
                 }
             }
             if( !contact_id.is_defined() ) {
-                contact_id = topology.create_geological_entity(
+                contact_id = geology.create_geological_entity(
                     Contact::type_name_static() ) ;
                 ringmesh_assert( contact_id.index == interfaces.size() ) ;
                 interfaces.push_back( cur_interfaces ) ;
