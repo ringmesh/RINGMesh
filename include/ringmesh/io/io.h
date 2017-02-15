@@ -48,7 +48,7 @@
 #define READ_SIZE 8192
 
 /*!
- * @file Global input - ouput functions of RINGMesh
+ * @file Global input - output functions of RINGMesh
  * @author Various
  */
 
