@@ -73,14 +73,14 @@ namespace RINGMesh {
          */
         bool get_dependent_entities( std::set< gme_t >& entities ) const ;
 
-        template< typename T >
-        gme_t create_mesh_entity( const MeshType type = "" )
+        template< typename ENTITY >
+        gme_t create_mesh_entity( const MeshType mesh_type = "" )
         {
-            const EntityType entity_type = T::type_name_static() ;
+            const EntityType entity_type = ENTITY::type_name_static() ;
             index_t nb_entities( geomodel_.nb_mesh_entities( entity_type ) ) ;
             index_t new_id( nb_entities ) ;
-            T* new_entity = GeoModelMeshEntityAccess::create_entity< T >( geomodel_,
-                new_id, type ) ;
+            ENTITY* new_entity = GeoModelMeshEntityAccess::create_entity< ENTITY >(
+                geomodel_, new_id, mesh_type ) ;
             geomodel_access_.modifiable_mesh_entities( entity_type ).push_back(
                 new_entity ) ;
             return new_entity->gme_id() ;
