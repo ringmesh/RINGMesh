@@ -1273,7 +1273,7 @@ namespace RINGMesh {
             type, geomodel_ ) ;
 
         const EntityType child_type = E->child_type_name() ;
-
+        delete E ;
         EntityTypeManager& parentage =
             geomodel_access_.modifiable_entity_type_manager() ;
         parentage.register_relationship( type, child_type ) ;
