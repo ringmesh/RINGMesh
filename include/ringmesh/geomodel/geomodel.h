@@ -72,7 +72,7 @@ namespace RINGMesh {
     class RINGMESH_API EntityTypeManager {
     ringmesh_disable_copy( EntityTypeManager ) ;
     public:
-        friend class GeoModelBuilderTopology ;
+        friend class GeoModelBuilderGeology ;
         EntityTypeManager()
         {
         }

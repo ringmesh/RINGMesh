@@ -1030,8 +1030,6 @@ namespace RINGMesh {
         builder_.end_geomodel() ;
     }
 
-
-
     GeoModelBuilderCopy::GeoModelBuilderCopy(
         GeoModelBuilder& builder,
         GeoModel& geomodel )
@@ -1043,6 +1041,7 @@ namespace RINGMesh {
     {
         builder_.topology.copy_topology( from ) ;
         builder_.geometry.copy_meshes( from ) ;
+        builder_.geology.copy_geology( from ) ;
     }
 
     GeoModelBuilderInfo::GeoModelBuilderInfo(
@@ -1103,11 +1102,48 @@ namespace RINGMesh {
         // Deliberate clear of the geomodel vertices used for geomodel building
         geomodel_.mesh.vertices.clear() ;
     }
+
     GeoModelBuilderGeology::GeoModelBuilderGeology(
         GeoModelBuilder& builder,
         GeoModel& geomodel )
         : builder_( builder ), geomodel_( geomodel ), geomodel_access_( geomodel )
     {
+    }
+
+    void GeoModelBuilderGeology::copy_geology( const GeoModel& from )
+    {
+        for( index_t t = 0; t < from.nb_geological_entity_types(); t++ ) {
+            builder_.geology.copy_geological_entity_topology( from,
+                from.geological_entity_type( t ) ) ;
+        }
+    }
+
+    bool GeoModelBuilderGeology::create_geological_entities(
+        const EntityType& type,
+        index_t nb_additional_entities )
+    {
+        find_or_create_geological_entity_type( type ) ;
+        std::vector< GeoModelGeologicalEntity* >& store =
+            geomodel_access_.modifiable_geological_entities( type ) ;
+        index_t old_size = static_cast< index_t >( store.size() ) ;
+        index_t new_size = old_size + nb_additional_entities ;
+        store.resize( new_size, nil ) ;
+        for( index_t i = old_size; i < new_size; i++ ) {
+            ringmesh_assert( store[i] == nil ) ;
+            store[i] = GeoModelGeologicalEntityAccess::create_geological_entity(
+                type, geomodel_, i ) ;
+        }
+        return true ;
+    }
+
+    void GeoModelBuilderGeology::delete_geological_entity(
+        const EntityType& type,
+        index_t index )
+    {
+        std::vector< GeoModelGeologicalEntity* >& store =
+            geomodel_access_.modifiable_geological_entities( type ) ;
+        delete store[index] ;
+        store[index] = nil ;
     }
 
     void GeoModelBuilderGeology::fill_mesh_entities_parent( const EntityType& type )
@@ -1199,6 +1235,64 @@ namespace RINGMesh {
                     }
                 }
             }
+        }
+    }
+
+    gme_t GeoModelBuilderGeology::create_geological_entity( const EntityType& type )
+    {
+        index_t index = find_or_create_geological_entity_type( type ) ;
+        index_t id =
+            static_cast< index_t >( geomodel_.nb_geological_entities( type ) ) ;
+        GeoModelGeologicalEntity* E =
+            GeoModelGeologicalEntityAccess::create_geological_entity( type,
+                geomodel_, id ) ;
+        geomodel_access_.modifiable_geological_entities()[index].push_back( E ) ;
+        return E->gme_id() ;
+    }
+    index_t GeoModelBuilderGeology::find_or_create_geological_entity_type(
+        const EntityType& type )
+    {
+        index_t type_index =
+            geomodel_.entity_type_manager().geological_entity_type_index( type ) ;
+        if( type_index == NO_ID ) {
+            type_index = create_geological_entity_type( type ) ;
+        }
+        return type_index ;
+    }
+
+    index_t GeoModelBuilderGeology::create_geological_entity_type(
+        const EntityType& type )
+    {
+        ringmesh_assert( GeoModelGeologicalEntityFactory::has_creator( type ) ) ;
+
+        geomodel_access_.modifiable_entity_type_manager().geological_entity_types_.push_back(
+            type ) ;
+        geomodel_access_.modifiable_geological_entities().push_back(
+            std::vector< GeoModelGeologicalEntity* >() ) ;
+        GeoModelGeologicalEntity* E = GeoModelGeologicalEntityFactory::create_object(
+            type, geomodel_ ) ;
+
+        const EntityType child_type = E->child_type_name() ;
+
+        EntityTypeManager& parentage =
+            geomodel_access_.modifiable_entity_type_manager() ;
+        parentage.register_relationship( type, child_type ) ;
+
+        return geomodel_.entity_type_manager().nb_geological_entity_types() - 1 ;
+    }
+
+    void GeoModelBuilderGeology::copy_geological_entity_topology(
+        const GeoModel& from,
+        const EntityType& type )
+    {
+        create_geological_entities( type, from.nb_geological_entities( type ) ) ;
+
+        RINGMESH_PARALLEL_LOOP
+        for( index_t e = 0; e < geomodel_.nb_geological_entities( type ); ++e ) {
+            gme_t id( type, e ) ;
+            GeoModelGeologicalEntityAccess gmge_access(
+                geomodel_access_.modifiable_geological_entity( id ) ) ;
+            gmge_access.copy( from.geological_entity( id ) ) ;
         }
     }
 
