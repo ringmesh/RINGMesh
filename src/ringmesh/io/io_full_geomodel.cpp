@@ -890,7 +890,7 @@ namespace {
     /// NO_ID for polygons there are not supported by MFEM
     static index_t facet_type_mfem[3] = { 2, 3, NO_ID } ;
 
-    static index_t cell_geo2mfem[8] = { 0, 1, 3, 2, 4, 5, 7, 6 } ;
+    static index_t cell_geo2mfem[8] = { 0, 1, 2, 3, 4, 5, 7, 6 } ;
 
     /// MFEM works with Surface and Region index begin with 1
     static index_t mfem_offset = 1 ;
