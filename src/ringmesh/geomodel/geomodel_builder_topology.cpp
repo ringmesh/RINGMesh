@@ -148,11 +148,11 @@ namespace RINGMesh {
             type ) ;
         geomodel_access_.modifiable_geological_entities().push_back(
             std::vector< GeoModelGeologicalEntity* >() ) ;
-        GeoModelGeologicalEntity* E = GeoModelGeologicalEntityFactory::create_object(
+        GeoModelGeologicalEntity * E = GeoModelGeologicalEntityFactory::create_object(
             type, geomodel_ ) ;
 
         const EntityType child_type = E->child_type_name() ;
-
+        delete E ;
         EntityTypeManager& parentage =
             geomodel_access_.modifiable_entity_type_manager() ;
         parentage.register_relationship( type, child_type ) ;
