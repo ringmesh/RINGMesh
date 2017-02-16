@@ -564,7 +564,6 @@ namespace {
         const std::vector< NNSearch* >& surface_nns,
         const std::vector< Box3d >& surface_boxes )
     {
-        /// @todo Replace "S.vertex( facet, ( edge + 1 ) % 3 )" [PA]
         const Surface& S = geomodel.surface( surface_id ) ;
         const vec3 barycenter = GEO::Geom::barycenter(
             S.mesh_element_vertex( facet, edge ),
@@ -626,6 +625,9 @@ namespace {
         load_storage.cur_surf_facet_ptr_.push_back( 0 ) ;
         load_storage.cur_surface_++ ;
     }
+
+    // Indices begin to 1 in Gocad
+    index_t GOCAD_OFFSET = 1 ;
 
     class LoadZSign: public GocadLineParser {
     private:
@@ -716,7 +718,7 @@ namespace {
                         region_id -= geomodel().nb_surfaces() + 1 ;
                         // Correction because ids begin at 1 in the file
                         builder().geology.add_geological_entity_child( layer_id,
-                            region_id - 1 ) ;
+                            region_id - GOCAD_OFFSET ) ;
                     }
                 }
             }
@@ -742,7 +744,7 @@ namespace {
     private:
         virtual void execute( GEO::LineInput& line, MLLoadingStorage& load_storage )
         {
-            index_t v_id = line.field_as_uint( 1 ) - 1 ;
+            index_t v_id = line.field_as_uint( 1 ) - GOCAD_OFFSET ;
             if( !find_corner( geomodel(), load_storage.vertices_[v_id] ).is_defined() ) {
                 // Create the corner
                 gme_t corner_gme =
@@ -797,7 +799,8 @@ namespace {
                         break ;
                     }
                     bool side = signed_id > 0 ;
-                    index_t id = static_cast< index_t >( std::abs( signed_id ) - 1 ) ;
+                    index_t id = static_cast< index_t >( std::abs( signed_id ) )
+                        - GOCAD_OFFSET ;
                     region_boundaries.push_back(
                         std::pair< index_t, bool >( id, side ) ) ;
                 }
@@ -854,7 +857,7 @@ namespace {
     private:
         virtual void execute( GEO::LineInput& line, MLLoadingStorage& load_storage )
         {
-            index_t vertex_id = line.field_as_uint( 2 ) - 1 ;
+            index_t vertex_id = line.field_as_uint( 2 ) - GOCAD_OFFSET ;
             const vec3& vertex = load_storage.vertices_[vertex_id] ;
             load_storage.vertices_.push_back( vertex ) ;
         }
@@ -902,7 +905,7 @@ namespace {
             std::vector< vec3 >& region_vertices,
             VertexMap& vertex_map )
         {
-            const index_t referring_vertex = line.field_as_uint( 2 ) - 1 ;
+            const index_t referring_vertex = line.field_as_uint( 2 ) - GOCAD_OFFSET ;
             const index_t referred_vertex_local_id = vertex_map.local_id(
                 referring_vertex ) ;
             const index_t referred_vertex_region_id = vertex_map.region(
@@ -950,10 +953,14 @@ namespace {
             std::vector< index_t >& corners_id )
         {
             ringmesh_assert( corners_id.size() == 4 ) ;
-            corners_id[0] = vertex_map.local_id( in.field_as_uint( 1 ) - 1 ) ;
-            corners_id[1] = vertex_map.local_id( in.field_as_uint( 2 ) - 1 ) ;
-            corners_id[2] = vertex_map.local_id( in.field_as_uint( 3 ) - 1 ) ;
-            corners_id[3] = vertex_map.local_id( in.field_as_uint( 4 ) - 1 ) ;
+            corners_id[0] = vertex_map.local_id(
+                in.field_as_uint( 1 ) - GOCAD_OFFSET ) ;
+            corners_id[1] = vertex_map.local_id(
+                in.field_as_uint( 2 ) - GOCAD_OFFSET ) ;
+            corners_id[2] = vertex_map.local_id(
+                in.field_as_uint( 3 ) - GOCAD_OFFSET ) ;
+            corners_id[3] = vertex_map.local_id(
+                in.field_as_uint( 4 ) - GOCAD_OFFSET ) ;
         }
     } ;
 
@@ -1060,9 +1067,9 @@ namespace {
             GEO::LineInput& in,
             std::vector< index_t >& cur_surf_facets )
         {
-            cur_surf_facets.push_back( in.field_as_uint( 1 ) - 1 ) ;
-            cur_surf_facets.push_back( in.field_as_uint( 2 ) - 1 ) ;
-            cur_surf_facets.push_back( in.field_as_uint( 3 ) - 1 ) ;
+            cur_surf_facets.push_back( in.field_as_uint( 1 ) - GOCAD_OFFSET ) ;
+            cur_surf_facets.push_back( in.field_as_uint( 2 ) - GOCAD_OFFSET ) ;
+            cur_surf_facets.push_back( in.field_as_uint( 3 ) - GOCAD_OFFSET ) ;
         }
     } ;
 
