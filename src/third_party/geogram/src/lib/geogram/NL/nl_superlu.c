@@ -321,17 +321,7 @@ static SuperLUContext* SuperLU() {
     return &context;
 }
 
-/**
- * \brief Tests whether SuperLU extension is
- *  initialized.
- * \details Tests whether SuperLU shared object
- *  was successfuly loaded and whether all the
- *  function pointers where found.
- * \retval NL_TRUE if SuperLU was successfully
- *  loaded and initialized
- * \retval NL_FALSE otherwise
- */
-static NLboolean SuperLU_is_initialized() {
+NLboolean nlExtensionIsInitialized_SUPERLU() {
     return
         SuperLU()->DLL_handle != NULL &&
         SuperLU()->set_default_options != NULL &&
@@ -385,10 +375,12 @@ static void nlTerminateExtension_SUPERLU(void) {
 NLboolean nlInitExtension_SUPERLU(void) {
     
     if(SuperLU()->DLL_handle != NULL) {
-        return SuperLU_is_initialized();
+        return nlExtensionIsInitialized_SUPERLU();
     }
 
-    SuperLU()->DLL_handle = nlOpenDLL(SUPERLU_LIB_NAME);
+    SuperLU()->DLL_handle = nlOpenDLL(
+	SUPERLU_LIB_NAME, NL_LINK_NOW | NL_LINK_USE_FALLBACK
+    );
     if(SuperLU()->DLL_handle == NULL) {
         return NL_FALSE;
     }

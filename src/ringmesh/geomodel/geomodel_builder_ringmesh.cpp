@@ -183,8 +183,9 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelBuilderGM::load_mesh_entities( GEO::LineInput& file_line )
+    void GeoModelBuilderGM::load_mesh_entities( const std::string& mesh_entity_file )
     {
+        GEO::LineInput file_line( mesh_entity_file ) ;
         while( !file_line.eof() && file_line.get_line() ) {
 
             file_line.get_fields() ;
@@ -239,22 +240,24 @@ namespace RINGMesh {
 
         const std::string mesh_entity_file( "mesh_entities.txt" ) ;
         unzip_file( uz, mesh_entity_file.c_str() ) ;
-        GEO::LineInput line_mesh_entity( mesh_entity_file ) ;
-        load_mesh_entities( line_mesh_entity ) ;
-        GEO::FileSystem::delete_file( mesh_entity_file ) ;
+        load_mesh_entities( mesh_entity_file ) ;
+        bool ok = GEO::FileSystem::delete_file( mesh_entity_file ) ;
+        ringmesh_unused( ok ) ; // avoids warning in release
+        ringmesh_assert( ok ) ;
         load_meshes( uz ) ;
 
         const std::string geological_entity_file( "geological_entities.txt" ) ;
         unzip_file( uz, geological_entity_file.c_str() ) ;
-        GEO::LineInput line_geological_entity( geological_entity_file ) ;
-        load_geological_entities( line_geological_entity ) ;
-        GEO::FileSystem::delete_file( geological_entity_file ) ;
+        load_geological_entities( geological_entity_file ) ;
+        ok = GEO::FileSystem::delete_file( geological_entity_file ) ;
+        ringmesh_assert( ok ) ;
 
         unzClose( uz ) ;
     }
 
-    void GeoModelBuilderGM::load_geological_entities( GEO::LineInput& file_line )
+    void GeoModelBuilderGM::load_geological_entities( const std::string& geological_entity_file )
     {
+        GEO::LineInput file_line( geological_entity_file ) ;
         while( !file_line.eof() && file_line.get_line() ) {
             file_line.get_fields() ;
             if( file_line.nb_fields() > 0 ) {
@@ -267,7 +270,7 @@ namespace RINGMesh {
                 // Number of entities of a given type
                 if( file_line.field_matches( 0, "Nb" ) ) {
                     // Allocate the space
-                    topology.create_geological_entities( file_line.field( 1 ),
+                    geology.create_geological_entities( file_line.field( 1 ),
                         file_line.field_as_uint( 2 ) ) ;
                 } else {
                     const std::string type = file_line.field( 0 ) ;
@@ -292,6 +295,7 @@ namespace RINGMesh {
         if( unzGoToFirstFile( uz ) != UNZ_OK ) {
             throw RINGMeshException( "I/O", "Unable to uncompress the first file" ) ;
         }
+        std::vector< std::string > filenames ;
         do {
             char char_file_name[MAX_FILENAME] ;
             if( unzGetCurrentFileInfo64( uz, NULL, char_file_name,
@@ -304,6 +308,13 @@ namespace RINGMesh {
             }
 
             unzip_current_file( uz, file_name.c_str() ) ;
+            filenames.push_back( file_name ) ;
+        } while( unzGoToNextFile( uz ) == UNZ_OK ) ;
+
+        Logger::instance()->set_minimal( true ) ;
+        RINGMESH_PARALLEL_LOOP_DYNAMIC
+        for( index_t i = 0; i < filenames.size(); i++ ) {
+            const std::string& file_name = filenames[i] ;
             std::string file_without_extension = GEO::FileSystem::base_name(
                 file_name ) ;
             std::string entity_type, entity_id ;
@@ -311,40 +322,22 @@ namespace RINGMesh {
                 entity_id ) ;
             index_t id = NO_ID ;
             GEO::String::from_string( entity_id, id ) ;
-            Logger::instance()->set_minimal( true ) ;
             if( EntityTypeManager::is_corner( entity_type ) ) {
-                Corner& corner =
-                    dynamic_cast< Corner& >( geomodel_access_.modifiable_mesh_entity(
-                        gme_t( entity_type, id ) ) ) ;
-                Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder(
-                    corner.low_level_mesh_storage() ) ;
+                Mesh0DBuilder_var builder = geometry.create_corner_builder( id ) ;
                 builder->load_mesh( file_name ) ;
             } else if( EntityTypeManager::is_line( entity_type ) ) {
-                Line& line =
-                    dynamic_cast< Line& >( geomodel_access_.modifiable_mesh_entity(
-                        gme_t( entity_type, id ) ) ) ;
-                Mesh1DBuilder_var builder = Mesh1DBuilder::create_builder(
-                    line.low_level_mesh_storage() ) ;
+                Mesh1DBuilder_var builder = geometry.create_line_builder( id ) ;
                 builder->load_mesh( file_name ) ;
             } else if( EntityTypeManager::is_surface( entity_type ) ) {
-                Surface& surface =
-                    dynamic_cast< Surface& >( geomodel_access_.modifiable_mesh_entity(
-                        gme_t( entity_type, id ) ) ) ;
-                Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder(
-                    surface.low_level_mesh_storage() ) ;
+                Mesh2DBuilder_var builder = geometry.create_surface_builder( id ) ;
                 builder->load_mesh( file_name ) ;
             } else if( EntityTypeManager::is_region( entity_type ) ) {
-                Region& region =
-                    dynamic_cast< Region& >( geomodel_access_.modifiable_mesh_entity(
-                        gme_t( entity_type, id ) ) ) ;
-                Mesh3DBuilder_var builder = Mesh3DBuilder::create_builder(
-                    region.low_level_mesh_storage() ) ;
+                Mesh3DBuilder_var builder = geometry.create_region_builder( id ) ;
                 builder->load_mesh( file_name ) ;
             }
-            Logger::instance()->set_minimal( false ) ;
             GEO::FileSystem::delete_file( file_name ) ;
-
-        } while( unzGoToNextFile( uz ) == UNZ_OK ) ;
+        }
+        Logger::instance()->set_minimal( false ) ;
     }
 
     // ------------------------------------------------------------------------//
@@ -409,7 +402,7 @@ namespace RINGMesh {
                         if( geomodel_.is_mesh_entity_type( type ) ) {
                             topology.create_mesh_entities( type, nb_entities ) ;
                         } else {
-                            topology.create_geological_entities( type,
+                            geology.create_geological_entities( type,
                                 nb_entities ) ;
                         }
 
