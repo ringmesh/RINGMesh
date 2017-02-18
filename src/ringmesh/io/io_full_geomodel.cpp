@@ -212,7 +212,6 @@ namespace {
     }
 
     /************************************************************************/
-
     const static std::string tet_name_in_aster_mail_file = "TETRA4" ;
     const static std::string hex_name_in_aster_mail_file = "HEXA10" ;
     const static std::string prism_name_in_aster_mail_file = "PENTA6" ;
@@ -398,7 +397,6 @@ namespace {
                     }
                     out << "FINSF" << std::endl ;
                 }
-
                 out << "GROUP_MA" << std::endl ;
                 out << cur_interface.name() << std::endl ;
                 for( index_t s = 0; s < cur_interface.nb_children(); s++ ) {
@@ -1069,7 +1067,15 @@ namespace {
                 << "END_ORIGINAL_COORDINATE_SYSTEM" << std::endl ;
 
             const GeoModelMesh& mesh = geomodel.mesh ;
+            mesh.transfert_attributes_from_gmm_to_gm() ;
             //mesh.set_duplicate_mode( GeoModelMeshCells::ALL ) ;
+
+            std::vector< std::string > att_v_double_names ;
+            std::vector< index_t > vertex_attr_dims ;
+            fill_vertex_attribute_header( mesh, out,att_v_double_names, vertex_attr_dims ) ;
+            std::vector< std::string > att_c_double_names ;
+            std::vector< index_t > cell_attr_dims ;
+            fill_cell_attribute_header( mesh, out, att_c_double_names, cell_attr_dims ) ;
 
             std::vector< bool > vertex_exported( mesh.vertices.nb(), false ) ;
             std::vector< bool > atom_exported( mesh.cells.nb_duplicated_vertices(),
@@ -1095,7 +1101,23 @@ namespace {
                             // PVRTX must be used instead of VRTX because
                             // properties are not read by Gocad if it is VRTX.
                             out << "PVRTX " << nb_vertices_exported++ << " "
-                                << mesh.vertices.vertex( vertex_id ) << std::endl ;
+                                << mesh.vertices.vertex( vertex_id ) ;
+                            for( index_t attr_dbl_itr = 0;
+                                attr_dbl_itr < att_v_double_names.size();
+                                ++attr_dbl_itr ) {
+                                GEO::Attribute< double > cur_attr(
+                                    mesh.vertex_attribute_manager(),
+                                    att_v_double_names[attr_dbl_itr] ) ;
+                                for( index_t dim_itr = 0;
+                                    dim_itr < vertex_attr_dims[attr_dbl_itr];
+                                    ++dim_itr ) {
+                                    out << " "
+                                        << cur_attr[vertex_id
+                                            * vertex_attr_dims[attr_dbl_itr]
+                                            + dim_itr] ;
+                                }
+                            }
+                            out << std::endl ;
                         }
                     }
                 }
@@ -1140,6 +1162,18 @@ namespace {
                             out << " " << atom_exported_id[atom_id] ;
                         }
                     }
+                    for( index_t attr_dbl_itr = 0;
+                        attr_dbl_itr < att_c_double_names.size(); ++attr_dbl_itr ) {
+                        GEO::Attribute< double > cur_attr(
+                            mesh.cell_attribute_manager(),
+                            att_c_double_names[attr_dbl_itr] ) ;
+                        for( index_t dim_itr = 0;
+                            dim_itr < cell_attr_dims[attr_dbl_itr]; ++dim_itr ) {
+                            out << " "
+                                << cur_attr[cell * cell_attr_dims[attr_dbl_itr]
+                                    + dim_itr] ;
+                        }
+                    }
                     out << std::endl ;
                     out << "# CTETRA " << region.name() ;
                     for( index_t f = 0; f < mesh.cells.nb_facets( c ); f++ ) {
@@ -1150,8 +1184,7 @@ namespace {
                             side ) ) {
                             index_t surface_id = mesh.facets.surface( facet ) ;
                             side ? out << "+" : out << "-" ;
-                            out
-                                << geomodel.surface( surface_id ).parent( 0 ).name() ;
+                            out << geomodel.surface( surface_id ).parent( 0 ).name() ;
                         } else {
                             out << "none" ;
                         }
@@ -1203,6 +1236,187 @@ namespace {
             }
 
             out << "END" << std::endl ;
+        }
+    private:
+        void fill_vertex_attribute_header(
+            const GeoModelMesh& mesh,
+            std::ofstream& out,
+            std::vector< std::string >& att_v_double_names,
+            std::vector< index_t >& vertex_attr_dims ) const
+        {
+            GEO::vector< std::string > att_v_names ;
+            mesh.vertex_attribute_manager().list_attribute_names( att_v_names ) ;
+            for( index_t att_v = 0; att_v < mesh.vertex_attribute_manager().nb();
+                att_v++ ) {
+
+                if( att_v_names[att_v] == "point" ) {
+                    continue ;
+                }
+
+                if( !GEO::Attribute< double >::is_defined(
+                    mesh.vertex_attribute_manager(), att_v_names[att_v] ) ) {
+                    continue ;
+                }
+                att_v_double_names.push_back( att_v_names[att_v] ) ;
+                index_t cur_dim =
+                    mesh.vertex_attribute_manager().find_attribute_store(
+                        att_v_names[att_v] )->dimension() ;
+                vertex_attr_dims.push_back( cur_dim ) ;
+            }
+
+            if( !att_v_double_names.empty() ) {
+                out << "PROPERTIES" ;
+                for( index_t attr_dbl_itr = 0;
+                    attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
+                    out << " " << att_v_double_names[attr_dbl_itr] ;
+                }
+                out << std::endl ;
+                out << "PROP_LEGAL_RANGES" ;
+                for( index_t attr_dbl_itr = 0;
+                    attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
+                    out << " **none**  **none**" ;
+                }
+                out << std::endl ;
+                out << "NO_DATA_VALUES" ;
+                for( index_t attr_dbl_itr = 0;
+                    attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
+                    out << " -99999" ;
+                }
+                out << std::endl ;
+                out << "READ_ONLY" ;
+                for( index_t attr_dbl_itr = 0;
+                    attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
+                    out << " 1" ;
+                }
+                out << std::endl ;
+                out << "PROPERTY_CLASSES" ;
+                for( index_t attr_dbl_itr = 0;
+                    attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
+                    out << " " << att_v_double_names[attr_dbl_itr] ;
+                }
+                out << std::endl ;
+                out << "PROPERTY_KINDS" ;
+                for( index_t attr_dbl_itr = 0;
+                    attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
+                    out << " \"Real Number\"" ;
+                }
+                out << std::endl ;
+                out << "PROPERTY_SUBCLASSES" ;
+                for( index_t attr_dbl_itr = 0;
+                    attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
+                    out << " QUANTITY Float" ;
+                }
+                out << std::endl ;
+                out << "ESIZES" ;
+                for( index_t attr_dbl_itr = 0;
+                    attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
+                    out << " "
+                        << GEO::String::to_string( vertex_attr_dims[attr_dbl_itr] ) ;
+                }
+                out << std::endl ;
+                out << "UNITS" ;
+                for( index_t attr_dbl_itr = 0;
+                    attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
+                    out << " unitless" ;
+                }
+                out << std::endl ;
+                for( index_t attr_dbl_itr = 0;
+                    attr_dbl_itr < att_v_double_names.size(); ++attr_dbl_itr ) {
+                    out << "PROPERTY_CLASS_HEADER "
+                        << att_v_double_names[attr_dbl_itr] << " {" << std::endl ;
+                    out << "kind: Real Number" << std::endl ;
+                    out << "unit: unitless" << std::endl ;
+                    out << "}" << std::endl ;
+                }
+            }
+        }
+
+        void fill_cell_attribute_header(
+            const GeoModelMesh& mesh,
+            std::ofstream& out,
+            std::vector< std::string >& att_c_double_names,
+            std::vector< index_t >& cell_attr_dims ) const
+        {
+            GEO::vector< std::string > att_c_names ;
+            mesh.cell_attribute_manager().list_attribute_names( att_c_names ) ;
+            for( index_t att_c = 0; att_c < mesh.cell_attribute_manager().nb();
+                att_c++ ) {
+
+                if( !GEO::Attribute< double >::is_defined(
+                    mesh.cell_attribute_manager(), att_c_names[att_c] ) ) {
+                    continue ;
+                }
+                att_c_double_names.push_back( att_c_names[att_c] ) ;
+                index_t cur_dim = mesh.cell_attribute_manager().find_attribute_store(
+                    att_c_names[att_c] )->dimension() ;
+                cell_attr_dims.push_back( cur_dim ) ;
+            }
+
+            if( !att_c_double_names.empty() ) {
+                out << "TETRA_PROPERTIES" ;
+                for( index_t attr_dbl_itr = 0;
+                    attr_dbl_itr < att_c_double_names.size(); ++attr_dbl_itr ) {
+                    out << " " << att_c_double_names[attr_dbl_itr] ;
+                }
+                out << std::endl ;
+                out << "TETRA_PROP_LEGAL_RANGES" ;
+                for( index_t attr_dbl_itr = 0;
+                    attr_dbl_itr < att_c_double_names.size(); ++attr_dbl_itr ) {
+                    out << " **none**  **none**" ;
+                }
+                out << std::endl ;
+                out << "TETRA_NO_DATA_VALUES" ;
+                for( index_t attr_dbl_itr = 0;
+                    attr_dbl_itr < att_c_double_names.size(); ++attr_dbl_itr ) {
+                    out << " -99999" ;
+                }
+                out << std::endl ;
+                out << "READ_ONLY" ;
+                 for( index_t attr_dbl_itr = 0;
+                 attr_dbl_itr < att_c_double_names.size(); ++attr_dbl_itr ) {
+                 out << " 1" ;
+                 }
+                 out << std::endl ;
+                out << "TETRA_PROPERTY_CLASSES" ;
+                for( index_t attr_dbl_itr = 0;
+                    attr_dbl_itr < att_c_double_names.size(); ++attr_dbl_itr ) {
+                    out << " " << att_c_double_names[attr_dbl_itr] ;
+                }
+                out << std::endl ;
+                out << "TETRA_PROPERTY_KINDS" ;
+                for( index_t attr_dbl_itr = 0;
+                    attr_dbl_itr < att_c_double_names.size(); ++attr_dbl_itr ) {
+                    out << " \"Real Number\"" ;
+                }
+                out << std::endl ;
+                out << "TETRA_PROPERTY_SUBCLASSES" ;
+                for( index_t attr_dbl_itr = 0;
+                    attr_dbl_itr < att_c_double_names.size(); ++attr_dbl_itr ) {
+                    out << " QUANTITY Float" ;
+                }
+                out << std::endl ;
+                out << "TETRA_ESIZES" ;
+                for( index_t attr_dbl_itr = 0;
+                    attr_dbl_itr < att_c_double_names.size(); ++attr_dbl_itr ) {
+                    out << " "
+                        << GEO::String::to_string( cell_attr_dims[attr_dbl_itr] ) ;
+                }
+                out << std::endl ;
+                out << "TETRA_UNITS" ;
+                for( index_t attr_dbl_itr = 0;
+                    attr_dbl_itr < att_c_double_names.size(); ++attr_dbl_itr ) {
+                    out << " unitless" ;
+                }
+                out << std::endl ;
+                for( index_t attr_dbl_itr = 0;
+                    attr_dbl_itr < att_c_double_names.size(); ++attr_dbl_itr ) {
+                    out << "TETRA_PROPERTY_CLASS_HEADER "
+                        << att_c_double_names[attr_dbl_itr] << " {" << std::endl ;
+                    out << "kind: Real Number" << std::endl ;
+                    out << "unit: unitless" << std::endl ;
+                    out << "}" << std::endl ;
+                }
+            }
         }
     } ;
 
