@@ -389,15 +389,6 @@ namespace RINGMesh {
          * @warn This function is for ADVANCED user only. If you use it,
          * you are responsible for low level mesh consistency.
          */
-        Mesh0D& low_level_mesh_storage()
-        {
-            return *mesh0d_ ;
-        }
-        /*!
-         * @brief Get the low level mesh data structure
-         * @warn This function is for ADVANCED user only. If you use it,
-         * you are responsible for low level mesh consistency.
-         */
         const Mesh0D& low_level_mesh_storage() const
         {
             return *mesh0d_ ;
@@ -430,6 +421,8 @@ namespace RINGMesh {
         }
 
         virtual bool is_mesh_valid() const ;
+
+    private:
 
         void update_mesh_storage_type( Mesh0D* mesh )
         {
@@ -544,15 +537,7 @@ namespace RINGMesh {
         }
 
         bool is_first_corner_first_vertex() const ;
-        /*!
-         * @brief Get the low level mesh data structure
-         * @warn This function is for ADVANCED user only. If you use it,
-         * you are responsible for low level mesh consistency.
-         */
-        Mesh1D& low_level_mesh_storage()
-        {
-            return *mesh1d_ ;
-        }
+
         /*!
          * @brief Get the low level mesh data structure
          * @warn This function is for ADVANCED user only. If you use it,
@@ -567,6 +552,7 @@ namespace RINGMesh {
 
         virtual bool is_mesh_valid() const ;
 
+    private:
         void update_mesh_storage_type( Mesh1D* mesh )
         {
             mesh1d_ = mesh ;
@@ -829,15 +815,7 @@ namespace RINGMesh {
         }
         /*! @}
          */
-        /*!
-         * @brief Get the low level mesh data structure
-         * @warn This function is for ADVANCED user only. If you use it,
-         * you are responsible for low level mesh consistency.
-         */
-        Mesh2D& low_level_mesh_storage()
-        {
-            return *mesh2d_ ;
-        }
+
         /*!
          * @brief Get the low level mesh data structure
          * @warn This function is for ADVANCED user only. If you use it,
@@ -857,6 +835,7 @@ namespace RINGMesh {
 
         virtual bool is_mesh_valid() const ;
 
+    private:
         void update_mesh_storage_type( Mesh2D* mesh )
         {
             mesh2d_ = mesh ;
@@ -1163,15 +1142,7 @@ namespace RINGMesh {
         }
         /*! @}
          */
-        /*!
-         * @brief Get the low level mesh data structure
-         * @warn This function is for ADVANCED user only. If you use it,
-         * you are responsible for low level mesh consistency.
-         */
-        Mesh3D& low_level_mesh_storage()
-        {
-            return *mesh3d_ ;
-        }
+
         /*!
          * @brief Get the low level mesh data structure
          * @warn This function is for ADVANCED user only. If you use it,
@@ -1198,6 +1169,7 @@ namespace RINGMesh {
 
         virtual bool is_mesh_valid() const ;
 
+    private:
         void update_mesh_storage_type( Mesh3D* mesh )
         {
             mesh3d_ = mesh ;

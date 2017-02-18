@@ -94,7 +94,7 @@ namespace RINGMesh {
             for( index_t j = 0; j < geomodel_.nb_geological_entities( entity_type );
                 ++j ) {
                 if( old_2_new_geological_entity_[i][j] == NO_ID ) {
-                    builder_.topology.delete_geological_entity( entity_type, j ) ;
+                    builder_.geology.delete_geological_entity( entity_type, j ) ;
                 }
             }
             clear_null_geological_entities( i ) ;

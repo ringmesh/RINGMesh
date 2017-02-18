@@ -134,7 +134,16 @@ namespace RINGMesh {
         friend class GeoModelBuilder ;
 
     public:
+        void copy_geology( const GeoModel& from ) ;
+
+        /*!
+         * @brief Create and store a geological entity of the given type
+         * @return The index of the created geological entity
+         */
         gme_t create_geological_entity( const EntityType& type ) ;
+
+        bool create_geological_entities( const EntityType& type, index_t nb ) ;
+
 
         /*!
          * @brief Fill the parent of all entities of the given type
@@ -219,8 +228,19 @@ namespace RINGMesh {
         }
         void build_contacts() ;
 
+        void delete_geological_entity( const EntityType& type, index_t index ) ;
+
     protected:
         GeoModelBuilderGeology( GeoModelBuilder& builder, GeoModel& geomodel ) ;
+
+    private:
+        index_t create_geological_entity_type( const EntityType& type ) ;
+
+        index_t find_or_create_geological_entity_type( const EntityType& type ) ;
+
+        void copy_geological_entity_topology(
+            const GeoModel& from,
+            const EntityType& type ) ;
 
     private:
         GeoModelBuilder& builder_ ;
@@ -231,11 +251,11 @@ namespace RINGMesh {
     class RINGMESH_API GeoModelBuilderCopy {
     ringmesh_disable_copy( GeoModelBuilderCopy ) ;
         friend class GeoModelBuilder ;
+    public:
+        void copy_geomodel( const GeoModel& from ) ;
 
     private:
         GeoModelBuilderCopy( GeoModelBuilder& builder, GeoModel& geomodel ) ;
-
-        void copy_geomodel( const GeoModel& from ) ;
 
     private:
         GeoModelBuilder& builder_ ;

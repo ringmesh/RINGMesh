@@ -110,7 +110,7 @@ namespace RINGMesh {
          * @brief Detect and remove degenerate edges in a \param line.
          * @return the number of degenerate edges that have been removed from the line.
          */
-        index_t repair_line_mesh( Line& line ) ;
+        index_t repair_line_mesh( const Line& line ) ;
         void line_detect_degenerate_edges(
             const Line& L,
             std::vector< bool >& e_is_degenerate,
@@ -143,7 +143,7 @@ namespace RINGMesh {
          * @param[in,out] S Surface to check for potential degenerate facets.
          * @return the number of degenerate facets in \p S.
          */
-        index_t detect_degenerate_facets( Surface& S ) ;
+        index_t detect_degenerate_facets( const Surface& S ) ;
 
         /*!
          * @brief Remove degenerate facets and edges from the Surface

@@ -73,24 +73,18 @@ namespace RINGMesh {
          */
         bool get_dependent_entities( std::set< gme_t >& entities ) const ;
 
-        template< typename T >
-        gme_t create_mesh_entity( const MeshType type = "" )
+        template< typename ENTITY >
+        gme_t create_mesh_entity( const MeshType mesh_type = "" )
         {
-            const EntityType entity_type = T::type_name_static() ;
+            const EntityType entity_type = ENTITY::type_name_static() ;
             index_t nb_entities( geomodel_.nb_mesh_entities( entity_type ) ) ;
             index_t new_id( nb_entities ) ;
-            T* new_entity = GeoModelMeshEntityAccess::create_entity< T >( geomodel_,
-                new_id, type ) ;
+            ENTITY* new_entity = GeoModelMeshEntityAccess::create_entity< ENTITY >(
+                geomodel_, new_id, mesh_type ) ;
             geomodel_access_.modifiable_mesh_entities( entity_type ).push_back(
                 new_entity ) ;
             return new_entity->gme_id() ;
         }
-
-        /*!
-         * @brief Create and store a geological entity of the given type
-         * @return The index of the created geological entity
-         */
-        gme_t create_geological_entity( const EntityType& type ) ;
 
         bool create_mesh_entities(
             const EntityType& type,
@@ -109,8 +103,6 @@ namespace RINGMesh {
                 return false ;
             }
         }
-
-        bool create_geological_entities( const EntityType& type, index_t nb ) ;
 
         /*!
          * @brief Complete missing information in GeoModelEntities
@@ -160,8 +152,6 @@ namespace RINGMesh {
 
         void delete_mesh_entity( const EntityType& type, index_t index ) ;
 
-        void delete_geological_entity( const EntityType& type, index_t index ) ;
-
         /*!
          * @brief Finds or creates a corner at given coordinates.
          * @param[in] point Geometric location of the Corner
@@ -210,10 +200,6 @@ namespace RINGMesh {
             return true ;
         }
 
-        index_t create_geological_entity_type( const EntityType& type ) ;
-
-        index_t find_or_create_geological_entity_type( const EntityType& type ) ;
-
         void complete_mesh_entity_connectivity( const EntityType& type ) ;
 
         template< typename ENTITY >
@@ -230,10 +216,6 @@ namespace RINGMesh {
                 gmme_access.copy( from.mesh_entity( id ) ) ;
             }
         }
-
-        void copy_geological_entity_topology(
-            const GeoModel& from,
-            const EntityType& type ) ;
 
     private:
         GeoModelBuilder& builder_ ;

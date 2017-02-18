@@ -2,7 +2,7 @@
  * This file was automatically generated, do not edit.
  */
 
-#include <geogram_gfx/glup_viewer/glup_viewer_lua.h>
+#include <geogram/lua/lua_io.h>
 
 void register_embedded_lua_files(void);
    
@@ -40,9 +40,9 @@ void register_embedded_lua_files() {
 
      register_embedded_lua_file("lib/pixel.lua",
         "--             pixel.lua \n"
-        "-- FR bibliotheque interne, incluse quand on appelle import(\"pixel\") \n"
+        "-- FR bibliotheque interne, incluse quand on appelle require(\"pixel\") \n"
         "-- FR fournit des fonctions simples pour afficher des (gros) pixels \n"
-        "-- EN internal library, included when one calls import(\"pixel\") \n"
+        "-- EN internal library, included when one calls require(\"pixel\") \n"
         "-- EN defines easy-to-use functions for displaying (big) pixels \n"
         " \n"
         "function GLUP.Pixel3D(x,y,z) \n"
@@ -74,18 +74,64 @@ void register_embedded_lua_files() {
         "   GLUP.Disable(GLUP.VERTEX_COLORS) \n"
         "end \n"
         " \n"
+        " \n"
+        "GLUP.numbersGeom = { \n"
+        "   {{1/6,1/8}, {2/6,1/8}}, \n"
+        "   {{1/6,1/2}, {2/6,1/2}}, \n"
+        "   {{1/6,7/8}, {2/6,7/8}}, \n"
+        "   {{1/6,1/8}, {1/6,1/2}}, \n"
+        "   {{2/6,1/8}, {2/6,1/2}}, \n"
+        "   {{1/6,1/2}, {1/6,7/8}}, \n"
+        "   {{2/6,1/2}, {2/6,7/8}} \n"
+        "} \n"
+        " \n"
+        "GLUP.numbersSeg = { \n"
+        "   0x7D, 0x50, 0x4F, 0x57, 0xF2, 0x37, 0x3F, 0x54, 0x7F, 0x77 \n"
+        "} \n"
+        " \n"
+        "function GLUP.drawDigit(x,y,n) \n"
+        "   for i=0,6 do \n"
+        "       if (GLUP.numbersSeg[n+1] & (1 << i)) ~= 0 then \n"
+        "	   GLUP.Vertex(GLUP.numbersGeom[i+1][1][1]+x, GLUP.numbersGeom[i+1][1][2]+y) \n"
+        "	   GLUP.Vertex(GLUP.numbersGeom[i+1][2][1]+x, GLUP.numbersGeom[i+1][2][2]+y) \n"
+        "       end \n"
+        "   end \n"
+        "end \n"
+        " \n"
+        "function GLUP.drawNumber(x,y,n) \n"
+        "    if n >= 100 then \n"
+        "    else \n"
+        "        if n < 10 then \n"
+        "	   GLUP.drawDigit(x+0.25,y,math.floor(n)) \n"
+        "	else \n"
+        "	   GLUP.drawDigit(x,y,math.floor(n/10))	 \n"
+        "	   GLUP.drawDigit(x+0.5,y,math.floor(n%10)) \n"
+        "	end \n"
+        "    end \n"
+        "end \n"
+        " \n"
+        " \n"
         "function pixGrid() \n"
         "   GLUP.SetColor(GLUP.FRONT_COLOR,0,0,0.5) \n"
         "   GLUP.Begin(GLUP.LINES) \n"
         "   local xm,ym,zm,xM,yM,zM \n"
         "   xm,ym,zm,xM,yM,zM = GLUP.GetRegionOfInterest() \n"
         "   for x=xm,xM,1 do \n"
-        "      GLUP.Vertex(x,ym,0) \n"
+        "      GLUP.Vertex(x,ym-0.5,0) \n"
         "      GLUP.Vertex(x,yM,0) \n"
         "   end \n"
         "   for y=ym,yM,1 do \n"
-        "      GLUP.Vertex(xm,y,0) \n"
+        "      GLUP.Vertex(xm-0.5,y,0) \n"
         "      GLUP.Vertex(xM,y,0) \n"
+        "   end \n"
+        "   GLUP.End() \n"
+        "   GLUP.SetColor(GLUP.FRONT_COLOR,0.2,0.2,0.2) \n"
+        "   GLUP.Begin(GLUP.LINES) \n"
+        "   for x=xm,xM-1,1 do \n"
+        "       GLUP.drawNumber(x,ym-1.2,x) \n"
+        "   end \n"
+        "   for y=ym,yM-1,1 do \n"
+        "       GLUP.drawNumber(xm-1.2,y,y) \n"
         "   end \n"
         "   GLUP.End() \n"
         "end \n"
@@ -93,13 +139,18 @@ void register_embedded_lua_files() {
         "function GLUP.init_graphics() \n"
         "   GLUP.SetRegionOfInterest(1,1,1,21,21,1) \n"
         "end \n"
+        " \n"
+        "function GLUP.draw_scene() \n"
+        "   pixGrid() \n"
+        "end \n"
+        " \n"
      );
 
      register_embedded_lua_file("lib/turtle.lua",
         "--             turtle.lua \n"
-        "-- FR bibliotheque interne, incluse quand on appelle import(\"turtle\") \n"
+        "-- FR bibliotheque interne, incluse quand on appelle require(\"turtle\") \n"
         "-- FR fournit des fonctions pour l'affichage graphique en mode \"tortue\" \n"
-        "-- EN internal library, included when one calls import(\"turtle\") \n"
+        "-- EN internal library, included when one calls require(\"turtle\") \n"
         "-- EN defines functions for \"turtle\" graphics \n"
         " \n"
         "turtle={} \n"
@@ -197,7 +248,7 @@ void register_embedded_lua_files() {
      );
 
      register_embedded_lua_file("templates/pixel_program.lua",
-        "import(\"pixel\") \n"
+        "require(\"pixel\") \n"
         " \n"
         "function GLUP.init_graphics() \n"
         "   GLUP.SetRegionOfInterest(1,1,1,11,11,1) \n"
@@ -216,7 +267,7 @@ void register_embedded_lua_files() {
         "end \n"     );
 
      register_embedded_lua_file("templates/turtle_program.lua",
-        "import(\"turtle\") \n"
+        "require(\"turtle\") \n"
         " \n"
         "function GLUP.draw_scene() \n"
         "    home() \n"
@@ -227,7 +278,7 @@ void register_embedded_lua_files() {
         "end \n"     );
 
      register_embedded_lua_file("examples/arbre.lua",
-        "import(\"turtle\") \n"
+        "require(\"turtle\") \n"
         " \n"
         "a=30 \n"
         "level=5 \n"
@@ -318,7 +369,7 @@ void register_embedded_lua_files() {
      );
 
      register_embedded_lua_file("examples/flake.lua",
-        "import(\"turtle\") \n"
+        "require(\"turtle\") \n"
         " \n"
         "function VonKoch(level) \n"
         "   if level==1 then \n"
@@ -360,7 +411,7 @@ void register_embedded_lua_files() {
      );
 
      register_embedded_lua_file("examples/sierpinski.lua",
-        "import(\"turtle\") \n"
+        "require(\"turtle\") \n"
         " \n"
         " \n"
         "function Sierpinski(a, level) \n"
@@ -405,7 +456,7 @@ void register_embedded_lua_files() {
      );
 
      register_embedded_lua_file("examples/sponge.lua",
-        "import(\"pixel\") \n"
+        "require(\"pixel\") \n"
         " \n"
         "N=3*3 \n"
         " \n"
@@ -453,7 +504,7 @@ void register_embedded_lua_files() {
         "-- Dessin d'un \"creeper\" \n"
         "-- Par Nathan Levy, Decembre 2016 \n"
         " \n"
-        "import(\"pixel\") \n"
+        "require(\"pixel\") \n"
         " \n"
         "function GLUP.draw_scene() \n"
         "   GLUP.SetCellsShrink(0.1) \n"
@@ -534,7 +585,7 @@ void register_embedded_lua_files() {
      );
 
      register_embedded_lua_file("games/hackman.lua",
-        "import(\"pixel\") \n"
+        "require(\"pixel\") \n"
         " \n"
         "GLUP.ArcadeStyle() \n"
         " \n"
@@ -922,7 +973,7 @@ void register_embedded_lua_files() {
         "-- FR Repare la fusee de Shift et Tab en utilisant pix et col \n"
         "-- EN Repair Shift and Tab's rocket by using pix and col \n"
         " \n"
-        "import(\"pixel\") \n"
+        "require(\"pixel\") \n"
         " \n"
         "function GLUP.draw_scene() \n"
         " \n"
@@ -967,7 +1018,7 @@ void register_embedded_lua_files() {
         "-- FR Fais decoller la fusee de Shift et Tab \n"
         "-- EN Launch Shift and Tab's rocket \n"
         " \n"
-        "import(\"pixel\") \n"
+        "require(\"pixel\") \n"
         " \n"
         "function GLUP.draw_scene() \n"
         " \n"

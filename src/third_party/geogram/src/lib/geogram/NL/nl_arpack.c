@@ -138,17 +138,7 @@ static ARPACKContext* ARPACK() {
     return &context;
 }
 
-/**
- * \brief Tests whether ARPACK extension is
- *  initialized.
- * \details Tests whether ARPACK shared object
- *  was successfuly loaded and whether all the
- *  function pointers where found.
- * \retval NL_TRUE if ARPACK was successfully
- *  loaded and initialized
- * \retval NL_FALSE otherwise
- */
-static NLboolean ARPACK_is_initialized() {
+NLboolean nlExtensionIsInitialized_ARPACK() {
     return
         ARPACK()->DLL_handle != NULL &&
         ARPACK()->dsaupd != NULL &&
@@ -181,7 +171,7 @@ static char* u(const char* str) {
  * \brief Finds and initializes a function pointer to
  *  one of the functions in ARPACK.
  * \details Function pointers are stored into the 
- *  SuperLUContext returned by the function ARPACK().
+ *  ARPACKContext returned by the function ARPACK().
  *  If a symbol is not found, returns NL_FALSE from the
  *  calling function.
  */
@@ -199,10 +189,13 @@ static char* u(const char* str) {
 
 NLboolean nlInitExtension_ARPACK(void) {
     if(ARPACK()->DLL_handle != NULL) {
-        return ARPACK_is_initialized();
+        return nlExtensionIsInitialized_ARPACK();
     }
 
-    ARPACK()->DLL_handle = nlOpenDLL(ARPACK_LIB_NAME);
+    ARPACK()->DLL_handle = nlOpenDLL(
+	ARPACK_LIB_NAME,
+	NL_LINK_NOW | NL_LINK_USE_FALLBACK
+    );
     if(ARPACK()->DLL_handle == NULL) {
         return NL_FALSE;
     }
