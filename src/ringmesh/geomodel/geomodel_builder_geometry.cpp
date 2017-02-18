@@ -787,15 +787,19 @@ namespace RINGMesh {
     }
 
     void GeoModelBuilderGeometry::invert_surface_normals( index_t surface_id )
-        {
-            ringmesh_assert( surface_id < geomodel_.nb_surfaces() ) ;
+    {
+        ringmesh_assert( surface_id < geomodel_.nb_surfaces() ) ;
         Surface& surface =
             dynamic_cast< Surface& >( geomodel_access_.modifiable_mesh_entity(
                 gme_t( Surface::type_name_static(), surface_id ) ) ) ;
-            Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder(
-                surface.low_level_mesh_storage() ) ;
-            builder->invert_normals() ;
-        }
+        /// TODO find a way to avoid the const_cast. May create a mesh2d which
+        /// is the same as the one of the surface, and then inverse the normals
+        /// in this new mesh2d. At the end the new mesh2d is assigned to the
+        /// surface (the previous mesh should be deleted?)... to discuss BC
+        Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder(
+            const_cast< Mesh2D& >( surface.low_level_mesh_storage() ) ) ;
+        builder->invert_normals() ;
+    }
 
 
     struct ElementVertex {

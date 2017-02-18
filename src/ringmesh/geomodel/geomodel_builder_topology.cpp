@@ -303,15 +303,6 @@ namespace RINGMesh {
         }
     }
 
-    index_t GeoModelBuilderTopology::get_connected_components(
-        const gme_t& gmme_id,
-        GEO::vector< index_t >& component ) const
-    {
-        const MeshBase* mesh = geomodel_.mesh_entity( gmme_id ).mesh_ ;
-        ringmesh_assert( mesh != nil ) ;
-        return mesh->get_connected_components( component ) ;
-    }
-
     void GeoModelBuilderTopology::complete_entity_connectivity()
     {
         // Order is important

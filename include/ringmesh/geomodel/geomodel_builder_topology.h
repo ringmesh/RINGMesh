@@ -171,14 +171,6 @@ namespace RINGMesh {
 
         void compute_universe() ;
 
-        /// TODO this function has no sense since in a GeoModel each mesh entity has a unique
-        /// connected component. BC put it here for duplication of surfaces.
-        /// Work on a MeshBase alone and then put it in the GeoModel when
-        /// this mesh has just a single connected component?
-        index_t get_connected_components(
-            const gme_t& gmme_id,
-            GEO::vector< index_t >& component ) const ;
-
     private:
         GeoModelBuilderTopology( GeoModelBuilder& builder, GeoModel& geomodel ) ;
 

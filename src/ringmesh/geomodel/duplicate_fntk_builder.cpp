@@ -1621,8 +1621,13 @@ namespace RINGMesh {
         // surface).
 
         GEO::vector< index_t > components ;
-        index_t nb_connected_components = topology.get_connected_components(
-            cur_surface.gme_id(), components ) ;
+        /// TODO to avoid to use the low_level_mesh_storage we may create
+        /// a Mesh2D, work on it and then assign the meshes to the new surfaces?
+        /// To discuss.
+        /// But we need to find the meshtype to create (from existing surface type?).
+        index_t nb_connected_components =
+            cur_surface.low_level_mesh_storage().get_connected_components(
+                components ) ;
         if( nb_connected_components == 1 ) {
             DEBUG( "ONE CONNECTED COMPONENT" ) ;
             ringmesh_assert( cur_surface.nb_parents() == 0 ) ;

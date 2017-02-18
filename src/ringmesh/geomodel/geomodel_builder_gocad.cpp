@@ -1151,7 +1151,7 @@ namespace RINGMesh {
 
         compute_universe_boundaries( ( *this ).geomodel_, *this ) ;
 
-        build_contacts() ;
+        geology.build_contacts() ;
     }
 
     void GeoModelBuilderTSolid::read_line()
@@ -1282,7 +1282,7 @@ namespace RINGMesh {
         read_file() ;
         geomodel_.mesh.vertices.test_and_initialize() ;
         from_surfaces.build_lines_and_corners_from_surfaces() ;
-        build_contacts() ;
+        geology.build_contacts() ;
     }
 
     void GeoModelBuilderML::read_line()
