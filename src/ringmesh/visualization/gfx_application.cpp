@@ -132,9 +132,6 @@ namespace {
 }
 namespace RINGMesh {
 
-    ColorTable RINGMeshApplication::GeoModelViewer::color_table_ =
-        create_color_table() ;
-
     RINGMeshApplication::GeoModelViewer::GeoModelViewer(
         RINGMeshApplication& app,
         const std::string& filename )
@@ -636,28 +633,6 @@ namespace RINGMesh {
         style.size_ = std::max( style.size_, 0 ) ;
     }
 
-    void RINGMeshApplication::GeoModelViewer::show_color_table_popup(
-        ImColor& color )
-    {
-        int id = 0 ;
-        for( index_t i = 0; i < color_table_.size(); i++ ) {
-            for( index_t j = 0; j < color_table_[i].size(); j++ ) {
-                if( j > 0 ) {
-                    ImGui::SameLine() ;
-                }
-                ImGui::PushID( id++ ) ;
-                ImGui::PushStyleColor( ImGuiCol_Button, color_table_[i][j] ) ;
-                if( ImGui::Button( "  " ) ) {
-                    color = color_table_[i][j] ;
-                    ImGui::CloseCurrentPopup() ;
-                }
-                ImGui::PopStyleColor() ;
-                ImGui::PopID() ;
-            }
-        }
-        ImGui::EndPopup() ;
-    }
-
     void RINGMeshApplication::GeoModelViewer::draw_colormap()
     {
         GLUPboolean clipping_save = glupIsEnabled( GLUP_CLIPPING ) ;
@@ -749,6 +724,7 @@ namespace RINGMesh {
 
         show_vertices_ = false ;
         vertices_size_ = 1.0f ;
+        vertices_color_ = green ;
 
         show_surface_ = true ;
         show_surface_colors_ = true ;
@@ -828,6 +804,16 @@ namespace RINGMesh {
         ImGui::Checkbox( "Vertices [p]", &show_vertices_ ) ;
         if( show_vertices_ ) {
             ImGui::SliderFloat( "sz.", &vertices_size_, 0.1f, 5.0f, "%.1f" ) ;
+            ImGui::PushStyleColor( ImGuiCol_Button, vertices_color_ ) ;
+            if( ImGui::Button( "  ##VerticesColor" ) ) {
+                ImGui::OpenPopup( "##VerticesColorTable" ) ;
+            }
+            ImGui::PopStyleColor() ;
+            if( ImGui::BeginPopup( "##VerticesColorTable" ) ) {
+                show_color_table_popup( vertices_color_ ) ;
+            }
+            ImGui::SameLine() ;
+            ImGui::Text( "color" ) ;
         }
 
         if( mesh_.facets.nb() != 0 ) {
@@ -867,6 +853,8 @@ namespace RINGMesh {
 
         if( show_vertices_ ) {
             mesh_gfx_.set_points_size( vertices_size_ ) ;
+            mesh_gfx_.set_points_color( vertices_color_.Value.x,
+                vertices_color_.Value.y, vertices_color_.Value.z ) ;
             mesh_gfx_.draw_vertices() ;
         }
 
@@ -1142,88 +1130,97 @@ namespace RINGMesh {
     void RINGMeshApplication::show_corners()
     {
         if( instance()->current_viewer_type_ != GEOMODEL ) return ;
-        GeoModelViewer& viewver =
-            *instance()->geomodels_[instance()->current_viewer_] ;
-        viewver.show_corners_ = !viewver.show_corners_ ;
+        GeoModelViewer& viewer = *instance()->geomodels_[instance()->current_viewer_] ;
+        viewer.show_corners_ = !viewer.show_corners_ ;
     }
     void RINGMeshApplication::show_lines()
     {
         if( instance()->current_viewer_type_ != GEOMODEL ) return ;
-        GeoModelViewer& viewver =
-            *instance()->geomodels_[instance()->current_viewer_] ;
-        viewver.show_lines_ = !viewver.show_lines_ ;
+        GeoModelViewer& viewer = *instance()->geomodels_[instance()->current_viewer_] ;
+        viewer.show_lines_ = !viewer.show_lines_ ;
     }
     void RINGMeshApplication::show_surface()
     {
         if( instance()->current_viewer_type_ != GEOMODEL ) return ;
-        GeoModelViewer& viewver =
-            *instance()->geomodels_[instance()->current_viewer_] ;
-        viewver.show_surface_ = !viewver.show_surface_ ;
+        GeoModelViewer& viewer = *instance()->geomodels_[instance()->current_viewer_] ;
+        viewer.show_surface_ = !viewer.show_surface_ ;
     }
     void RINGMeshApplication::show_volume()
     {
         if( instance()->current_viewer_type_ != GEOMODEL ) return ;
-        GeoModelViewer& viewver =
-            *instance()->geomodels_[instance()->current_viewer_] ;
-        viewver.show_volume_ = !viewver.show_volume_ ;
+        GeoModelViewer& viewer = *instance()->geomodels_[instance()->current_viewer_] ;
+        viewer.show_volume_ = !viewer.show_volume_ ;
     }
     void RINGMeshApplication::show_voi()
     {
         if( instance()->current_viewer_type_ != GEOMODEL ) return ;
-        GeoModelViewer& viewver =
-            *instance()->geomodels_[instance()->current_viewer_] ;
-        viewver.show_voi_ = !viewver.show_voi_ ;
+        GeoModelViewer& viewer = *instance()->geomodels_[instance()->current_viewer_] ;
+        viewer.show_voi_ = !viewer.show_voi_ ;
     }
     void RINGMeshApplication::mesh_visible()
     {
         if( instance()->current_viewer_type_ != GEOMODEL ) return ;
-        GeoModelViewer& viewver =
-            *instance()->geomodels_[instance()->current_viewer_] ;
-        viewver.mesh_visible_ = !viewver.mesh_visible_ ;
+        GeoModelViewer& viewer = *instance()->geomodels_[instance()->current_viewer_] ;
+        viewer.mesh_visible_ = !viewer.mesh_visible_ ;
     }
     void RINGMeshApplication::show_colormap()
     {
         if( instance()->current_viewer_type_ != GEOMODEL ) return ;
-        GeoModelViewer& viewver =
-            *instance()->geomodels_[instance()->current_viewer_] ;
-        viewver.show_colormap_ = !viewver.show_colormap_ ;
+        GeoModelViewer& viewer = *instance()->geomodels_[instance()->current_viewer_] ;
+        viewer.show_colormap_ = !viewer.show_colormap_ ;
     }
     void RINGMeshApplication::colored_cells()
     {
         if( instance()->current_viewer_type_ != GEOMODEL ) return ;
-        GeoModelViewer& viewver =
-            *instance()->geomodels_[instance()->current_viewer_] ;
-        viewver.colored_cells_.new_status = !viewver.colored_cells_.new_status ;
+        GeoModelViewer& viewer = *instance()->geomodels_[instance()->current_viewer_] ;
+        viewer.colored_cells_.new_status = !viewer.colored_cells_.new_status ;
     }
     void RINGMeshApplication::show_colored_regions()
     {
         if( instance()->current_viewer_type_ != GEOMODEL ) return ;
-        GeoModelViewer& viewver =
-            *instance()->geomodels_[instance()->current_viewer_] ;
-        viewver.show_colored_regions_.new_status =
-            !viewver.show_colored_regions_.new_status ;
+        GeoModelViewer& viewer = *instance()->geomodels_[instance()->current_viewer_] ;
+        viewer.show_colored_regions_.new_status =
+            !viewer.show_colored_regions_.new_status ;
     }
     void RINGMeshApplication::show_colored_layers()
     {
         if( instance()->current_viewer_type_ != GEOMODEL ) return ;
-        GeoModelViewer& viewver =
-            *instance()->geomodels_[instance()->current_viewer_] ;
-        viewver.show_colored_layers_.new_status =
-            !viewver.show_colored_layers_.new_status ;
+        GeoModelViewer& viewer = *instance()->geomodels_[instance()->current_viewer_] ;
+        viewer.show_colored_layers_.new_status =
+            !viewer.show_colored_layers_.new_status ;
     }
     void RINGMeshApplication::increment_shrink()
     {
         if( instance()->current_viewer_type_ != GEOMODEL ) return ;
-        GeoModelViewer& viewver =
-            *instance()->geomodels_[instance()->current_viewer_] ;
-        viewver.shrink_ = std::min( viewver.shrink_ + 0.1f, 1.f ) ;
+        GeoModelViewer& viewer = *instance()->geomodels_[instance()->current_viewer_] ;
+        viewer.shrink_ = std::min( viewer.shrink_ + 0.1f, 1.f ) ;
     }
     void RINGMeshApplication::decrement_shrink()
     {
         if( instance()->current_viewer_type_ != GEOMODEL ) return ;
-        GeoModelViewer& viewver =
-            *instance()->geomodels_[instance()->current_viewer_] ;
-        viewver.shrink_ = std::max( viewver.shrink_ - 0.1f, 0.f ) ;
+        GeoModelViewer& viewer = *instance()->geomodels_[instance()->current_viewer_] ;
+        viewer.shrink_ = std::max( viewer.shrink_ - 0.1f, 0.f ) ;
+    }
+
+    void RINGMeshApplication::show_color_table_popup( ImColor& color )
+    {
+        int id = 0 ;
+        for( index_t i = 0; i < color_table_.size(); i++ ) {
+            for( index_t j = 0; j < color_table_[i].size(); j++ ) {
+                if( j > 0 ) {
+                    ImGui::SameLine() ;
+                }
+                ImGui::PushID( id++ ) ;
+                ImGui::PushStyleColor( ImGuiCol_Button, color_table_[i][j] ) ;
+                if( ImGui::Button( "  " ) ) {
+                    color = color_table_[i][j] ;
+                    ImGui::CloseCurrentPopup() ;
+                }
+                ImGui::PopStyleColor() ;
+                ImGui::PopID() ;
+            }
+        }
+        ImGui::EndPopup() ;
     }
 
     bool RINGMeshApplication::load( const std::string& filename )
@@ -1338,6 +1335,8 @@ namespace RINGMesh {
                 return ;
         }
     }
+
+    ColorTable RINGMeshApplication::color_table_ = create_color_table() ;
 }
 
 #endif
