@@ -142,16 +142,32 @@ namespace RINGMesh {
         show_corners_ = true ;
         corner_style_.color_ = red ;
         corner_style_.size_ = 1 ;
+        corner_style_.visible_vertices_ = false ;
+        corner_style_.vertex_color_ = pink ;
+        corner_style_.vertex_size_ = 0.3f ;
+
         show_lines_ = true ;
         line_style_.color_ = black ;
         line_style_.size_ = 1 ;
+        line_style_.visible_vertices_ = false ;
+        line_style_.vertex_color_ = orange ;
+        line_style_.vertex_size_ = 0.3f ;
+
         show_surface_ = true ;
         surface_style_.color_ = grey ;
         surface_style_.size_ = 1 ;
+        surface_style_.visible_vertices_ = false ;
+        surface_style_.vertex_color_ = light_blue ;
+        surface_style_.vertex_size_ = 3.0f ;
+
         show_volume_ = false ;
         volume_style_.color_ = grey ;
         volume_style_.size_ = 1 ;
+        volume_style_.visible_vertices_ = false ;
+        volume_style_.vertex_color_ = light_green ;
+        volume_style_.vertex_size_ = 0.3f ;
         colored_cells_ = false ;
+
         show_voi_ = false ;
         show_colored_regions_ = false ;
         show_colored_layers_ = false ;
@@ -274,6 +290,14 @@ namespace RINGMesh {
                 line_style_.color_.Value.z ) ;
             GM_gfx_.lines.GeoModelGfxManager::set_mesh_element_size(
                 static_cast< index_t >( line_style_.size_ ) ) ;
+            GM_gfx_.lines.set_vertex_visibility( line_style_.visible_vertices_ ) ;
+            if( line_style_.visible_vertices_ ) {
+                GM_gfx_.lines.set_vertex_size(
+                    static_cast< index_t >( line_style_.vertex_size_ ) ) ;
+                GM_gfx_.lines.set_vertex_color( line_style_.vertex_color_.Value.x,
+                    line_style_.vertex_color_.Value.y,
+                    line_style_.vertex_color_.Value.z ) ;
+            }
             GM_gfx_.lines.draw() ;
         }
 
@@ -285,6 +309,16 @@ namespace RINGMesh {
                 surface_style_.color_.Value.z ) ;
             GM_gfx_.surfaces.set_mesh_size(
                 static_cast< index_t >( surface_style_.size_ ) ) ;
+            GM_gfx_.surfaces.set_vertex_visibility(
+                surface_style_.visible_vertices_ ) ;
+            if( surface_style_.visible_vertices_ ) {
+                GM_gfx_.surfaces.set_vertex_size(
+                    static_cast< index_t >( surface_style_.vertex_size_ ) ) ;
+                GM_gfx_.surfaces.set_vertex_color(
+                    surface_style_.vertex_color_.Value.x,
+                    surface_style_.vertex_color_.Value.y,
+                    surface_style_.vertex_color_.Value.z ) ;
+            }
             if( selected_entity_type_ == 0 ) {
                 for( GEO::index_t s = 0; s < GM_.nb_surfaces(); s++ ) {
                     if( GM_.surface( s ).is_on_voi() ) {
@@ -326,6 +360,16 @@ namespace RINGMesh {
             }
             GM_gfx_.regions.set_mesh_size(
                 static_cast< index_t >( volume_style_.size_ ) ) ;
+            GM_gfx_.regions.set_vertex_visibility(
+                volume_style_.visible_vertices_ ) ;
+            if( volume_style_.visible_vertices_ ) {
+                GM_gfx_.regions.set_vertex_size(
+                    static_cast< index_t >( volume_style_.vertex_size_ ) ) ;
+                GM_gfx_.regions.set_vertex_color(
+                    volume_style_.vertex_color_.Value.x,
+                    volume_style_.vertex_color_.Value.y,
+                    volume_style_.vertex_color_.Value.z ) ;
+            }
             GM_gfx_.regions.set_draw_cells( GEO::MESH_HEX, show_hex_ ) ;
             GM_gfx_.regions.set_draw_cells( GEO::MESH_PRISM, show_prism_ ) ;
             GM_gfx_.regions.set_draw_cells( GEO::MESH_PYRAMID, show_pyramid_ ) ;
@@ -591,14 +635,28 @@ namespace RINGMesh {
 
         ImGui::Checkbox( "Line [e]", &show_lines_ ) ;
         draw_entity_style_editor( "##LineColor", line_style_ ) ;
+        ImGui::Checkbox( "Line vert.", &line_style_.visible_vertices_ ) ;
+        if( line_style_.visible_vertices_ ) {
+            draw_entity_vertex_style_editor( "##LineVertexColor", line_style_ ) ;
+        }
 
         ImGui::Checkbox( "Surface [s]", &show_surface_ ) ;
         draw_entity_style_editor( "##SurfaceColor", surface_style_ ) ;
+        ImGui::Checkbox( "Surface vert.", &surface_style_.visible_vertices_ ) ;
+        if( surface_style_.visible_vertices_ ) {
+            draw_entity_vertex_style_editor( "##SurfaceVertexColor",
+                surface_style_ ) ;
+        }
 
         if( meshed_regions_ ) {
             ImGui::Separator() ;
             ImGui::Checkbox( "Region [v]", &show_volume_ ) ;
             draw_entity_style_editor( "##VolumeColor", volume_style_ ) ;
+            ImGui::Checkbox( "Vertices", &volume_style_.visible_vertices_ ) ;
+            if( volume_style_.visible_vertices_ ) {
+                draw_entity_vertex_style_editor( "##VolumeVertexColor",
+                    volume_style_ ) ;
+            }
             if( show_volume_ ) {
                 ImGui::Checkbox( "Col. cells [C]", &colored_cells_.new_status ) ;
                 ImGui::Checkbox( "Col. regions [r]",
@@ -631,6 +689,23 @@ namespace RINGMesh {
         ImGui::SameLine() ;
         ImGui::InputInt( "", &style.size_, 1 ) ;
         style.size_ = std::max( style.size_, 0 ) ;
+
+    }
+
+    void RINGMeshApplication::GeoModelViewer::draw_entity_vertex_style_editor(
+        const std::string& label,
+        EntityStyle& style )
+    {
+        ImGui::PushStyleColor( ImGuiCol_Button, style.vertex_color_ ) ;
+        if( ImGui::Button( ( "  " + label ).c_str() ) ) {
+            ImGui::OpenPopup( label.c_str() ) ;
+        }
+        ImGui::PopStyleColor() ;
+        if( ImGui::BeginPopup( label.c_str() ) ) {
+            show_color_table_popup( style.vertex_color_ ) ;
+        }
+        ImGui::SameLine() ;
+        ImGui::SliderFloat( "", &style.vertex_size_, 0.1f, 5.0f, "size: %.1f" ) ;
     }
 
     void RINGMeshApplication::GeoModelViewer::draw_colormap()
