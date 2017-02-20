@@ -1108,6 +1108,7 @@ namespace RINGMesh {
         viewer->mesh_gfx_.set_mesh( &viewer->mesh_ ) ;
         viewer->bbox_.add_point( point ) ;
         viewer->name_ = name ;
+        viewer->show_vertices_ = true ;
         current_viewer_ = static_cast< index_t >( meshes_.size() - 1 ) ;
         current_viewer_type_ = MESH ;
         update_region_of_interest() ;
