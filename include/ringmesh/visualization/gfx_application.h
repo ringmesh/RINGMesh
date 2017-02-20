@@ -124,7 +124,10 @@ namespace RINGMesh {
             struct EntityStyle {
                 ImColor color_ ;
                 int size_ ;
-            };
+                bool visible_vertices_ ;
+                ImColor vertex_color_ ;
+                float vertex_size_ ;
+            } ;
 
         public:
             GeoModelViewer( RINGMeshApplication& app, const std::string& filename ) ;
@@ -142,6 +145,9 @@ namespace RINGMesh {
             void set_attribute_names( const GEO::AttributesManager& attributes ) ;
             void autorange() ;
             void draw_entity_style_editor(
+                const std::string& label,
+                EntityStyle& style ) ;
+            void draw_entity_vertex_style_editor(
                 const std::string& label,
                 EntityStyle& style ) ;
             void update_entity_visibility() ;
