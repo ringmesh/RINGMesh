@@ -170,7 +170,7 @@ int main()
             builder.geology.create_geological_entity( Layer::type_name_static() ) ;
         }
 
-        // Then we create the GeoModelMEshEntity
+        // Then we create the GeoModelMeshEntity
         // Create the Corners
         for( index_t corner = 0; corner < nb_corners; corner++ ) {
             builder.topology.create_mesh_entity< Corner >() ;
