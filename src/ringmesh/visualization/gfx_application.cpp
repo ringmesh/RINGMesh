@@ -295,7 +295,8 @@ namespace RINGMesh {
                     line_style_.visible_vertices_ ) ;
             }
             if( line_style_.visible_vertices_ ) {
-                GM_gfx_.lines.set_vertex_size( line_style_.vertex_size_ ) ;
+                GM_gfx_.lines.set_vertex_size(
+                    static_cast< index_t >( line_style_.vertex_size_ ) ) ;
                 GM_gfx_.lines.set_vertex_color( line_style_.vertex_color_.Value.x,
                     line_style_.vertex_color_.Value.y,
                     line_style_.vertex_color_.Value.z ) ;
@@ -316,7 +317,8 @@ namespace RINGMesh {
                     surface_style_.visible_vertices_ ) ;
             }
             if( surface_style_.visible_vertices_ ) {
-                GM_gfx_.surfaces.set_vertex_size( surface_style_.vertex_size_ ) ;
+                GM_gfx_.surfaces.set_vertex_size(
+                    static_cast< index_t >( surface_style_.vertex_size_ ) ) ;
                 GM_gfx_.surfaces.set_vertex_color(
                     surface_style_.vertex_color_.Value.x,
                     surface_style_.vertex_color_.Value.y,
@@ -368,7 +370,8 @@ namespace RINGMesh {
                     volume_style_.visible_vertices_ ) ;
             }
             if( volume_style_.visible_vertices_ ) {
-                GM_gfx_.regions.set_vertex_size( volume_style_.vertex_size_ ) ;
+                GM_gfx_.regions.set_vertex_size(
+                    static_cast< index_t >( volume_style_.vertex_size_ ) ) ;
                 GM_gfx_.regions.set_vertex_color(
                     volume_style_.vertex_color_.Value.x,
                     volume_style_.vertex_color_.Value.y,
