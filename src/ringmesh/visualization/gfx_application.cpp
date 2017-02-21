@@ -293,18 +293,6 @@ namespace RINGMesh {
             if( selected_entity_type_ == 0 ) {
                 GM_gfx_.lines.set_vertex_visibility(
                     line_style_.visible_vertices_ ) ;
-            } else {
-//
-//                index_t selected_entity_type_casted =
-//                    static_cast< index_t >( selected_entity_type_ ) ;
-//                const std::string& type = entity_types_[selected_entity_type_casted] ;
-//                selected_entity_type_
-//                for( index_t l = 0; l < GM_gfx_.geomodel()->nb_lines(); l++ ) {
-//                    if( ) {
-//                        GM_gfx_.lines.set_vertex_visibility( l,
-//                            line_style_.visible_vertices_ ) ;
-//                    }
-//                }
             }
             if( line_style_.visible_vertices_ ) {
                 GM_gfx_.lines.set_vertex_size( line_style_.vertex_size_ ) ;
@@ -323,8 +311,10 @@ namespace RINGMesh {
                 surface_style_.color_.Value.z ) ;
             GM_gfx_.surfaces.set_mesh_size(
                 static_cast< index_t >( surface_style_.size_ ) ) ;
-            GM_gfx_.surfaces.set_vertex_visibility(
-                surface_style_.visible_vertices_ ) ;
+            if( selected_entity_type_ == 0 ) {
+                GM_gfx_.surfaces.set_vertex_visibility(
+                    surface_style_.visible_vertices_ ) ;
+            }
             if( surface_style_.visible_vertices_ ) {
                 GM_gfx_.surfaces.set_vertex_size( surface_style_.vertex_size_ ) ;
                 GM_gfx_.surfaces.set_vertex_color(
@@ -373,8 +363,10 @@ namespace RINGMesh {
             }
             GM_gfx_.regions.set_mesh_size(
                 static_cast< index_t >( volume_style_.size_ ) ) ;
-            GM_gfx_.regions.set_vertex_visibility(
-                volume_style_.visible_vertices_ ) ;
+            if( selected_entity_type_ == 0 ) {
+                GM_gfx_.regions.set_vertex_visibility(
+                    volume_style_.visible_vertices_ ) ;
+            }
             if( volume_style_.visible_vertices_ ) {
                 GM_gfx_.regions.set_vertex_size( volume_style_.vertex_size_ ) ;
                 GM_gfx_.regions.set_vertex_color(
@@ -394,9 +386,6 @@ namespace RINGMesh {
             index_t selected_entity_type_casted =
                 static_cast< index_t >( selected_entity_type_ ) ;
             const std::string& type = entity_types_[selected_entity_type_casted] ;
-//            index_t selected_entity_id_casted =
-//                static_cast< index_t >( selected_entity_id_ ) ;
-//            toggle_
 
             if( selected_entity_type_casted
                 < EntityTypeManager::nb_mesh_entity_types() + 1 ) {
@@ -530,6 +519,8 @@ namespace RINGMesh {
         index_t surface_id )
     {
         GM_gfx_.surfaces.set_mesh_element_visibility( surface_id, true ) ;
+        GM_gfx_.surfaces.set_vertex_visibility( surface_id,
+            surface_style_.visible_vertices_ ) ;
         const Surface& surface = GM_.surface( surface_id ) ;
         for( index_t i = 0; i < surface.nb_boundaries(); i++ ) {
             toggle_line_and_boundaries_visibility(
@@ -541,6 +532,8 @@ namespace RINGMesh {
         index_t region_id )
     {
         GM_gfx_.regions.set_mesh_element_visibility( region_id, true ) ;
+        GM_gfx_.regions.set_vertex_visibility( region_id,
+            volume_style_.visible_vertices_ ) ;
         const Region& region = GM_.region( region_id ) ;
         for( index_t i = 0; i < region.nb_boundaries(); i++ ) {
             toggle_surface_and_boundaries_visibility(

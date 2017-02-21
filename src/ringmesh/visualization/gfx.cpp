@@ -143,11 +143,6 @@ namespace RINGMesh {
         {
             return edges_visible_ ;
         }
-//        void set_vertices_visible( bool b )
-//        {
-//            if( gfx_.lines.GeoModelGfxManager:: )
-//            vertices_visible_ = b ;
-//        }
 
     private:
         bool edges_visible_ ;
