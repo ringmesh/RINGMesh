@@ -307,7 +307,7 @@ namespace RINGMesh {
      * Sets the vertex size to all the elements
      * @param[in] s the size
      */
-    void GeoModelGfxManager::set_vertex_size( float s )
+    void GeoModelGfxManager::set_vertex_size( index_t s )
     {
         for( index_t e = 0; e < entities_.size(); e++ ) {
             set_vertex_size( e, s ) ;
@@ -318,7 +318,7 @@ namespace RINGMesh {
      * @param[in] e the entity index
      * @param[in] s the size
      */
-    void GeoModelGfxManager::set_vertex_size( index_t e, float s )
+    void GeoModelGfxManager::set_vertex_size( index_t e, index_t s )
     {
         entities_[e]->set_points_size( static_cast< float >( s ) ) ;
     }
@@ -409,7 +409,7 @@ namespace RINGMesh {
     }
     void CornerGfxManager::set_mesh_element_size( index_t e, index_t s )
     {
-        set_vertex_size( e, static_cast< float >( s ) ) ;
+        set_vertex_size( e, s ) ;
     }
 
     /*!

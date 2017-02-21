@@ -81,8 +81,8 @@ namespace RINGMesh {
         void set_vertex_color( index_t e, float r, float g, float b ) ;
         void set_vertex_visibility( bool b ) ;
         void set_vertex_visibility( index_t e, bool b ) ;
-        void set_vertex_size( float s ) ;
-        void set_vertex_size( index_t e, float s ) ;
+        void set_vertex_size( index_t s ) ;
+        void set_vertex_size( index_t e, index_t s ) ;
 
         void set_mesh_element_color( float r, float g, float b ) ;
         void set_mesh_element_visibility( bool b ) ;

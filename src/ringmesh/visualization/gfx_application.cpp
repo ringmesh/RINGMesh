@@ -144,28 +144,28 @@ namespace RINGMesh {
         corner_style_.size_ = 1 ;
         corner_style_.visible_vertices_ = false ;
         corner_style_.vertex_color_ = pink ;
-        corner_style_.vertex_size_ = 0.3f ;
+        corner_style_.vertex_size_ = 0 ;
 
         show_lines_ = true ;
         line_style_.color_ = black ;
         line_style_.size_ = 1 ;
         line_style_.visible_vertices_ = false ;
         line_style_.vertex_color_ = orange ;
-        line_style_.vertex_size_ = 0.3f ;
+        line_style_.vertex_size_ = 3 ;
 
         show_surface_ = true ;
         surface_style_.color_ = grey ;
         surface_style_.size_ = 1 ;
         surface_style_.visible_vertices_ = false ;
         surface_style_.vertex_color_ = light_blue ;
-        surface_style_.vertex_size_ = 3.0f ;
+        surface_style_.vertex_size_ = 3 ;
 
         show_volume_ = false ;
         volume_style_.color_ = grey ;
         volume_style_.size_ = 1 ;
         volume_style_.visible_vertices_ = false ;
         volume_style_.vertex_color_ = light_green ;
-        volume_style_.vertex_size_ = 0.3f ;
+        volume_style_.vertex_size_ = 3 ;
         colored_cells_ = false ;
 
         show_voi_ = false ;
@@ -750,7 +750,9 @@ namespace RINGMesh {
             show_color_table_popup( style.vertex_color_ ) ;
         }
         ImGui::SameLine() ;
-        ImGui::SliderFloat( "", &style.vertex_size_, 0.1f, 5.0f, "size: %.1f" ) ;
+        ImGui::InputInt( "", &style.vertex_size_, 1 ) ;
+        style.vertex_size_ = std::max( style.vertex_size_, 0 ) ;
+        style.vertex_size_ = std::min( style.vertex_size_, 50 ) ;
     }
 
     void RINGMeshApplication::GeoModelViewer::draw_colormap()
