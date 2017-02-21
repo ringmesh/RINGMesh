@@ -126,7 +126,7 @@ namespace RINGMesh {
                 int size_ ;
                 bool visible_vertices_ ;
                 ImColor vertex_color_ ;
-                float vertex_size_ ;
+                int vertex_size_ ;
             } ;
 
         public:
