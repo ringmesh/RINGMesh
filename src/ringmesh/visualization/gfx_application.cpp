@@ -290,7 +290,22 @@ namespace RINGMesh {
                 line_style_.color_.Value.z ) ;
             GM_gfx_.lines.GeoModelGfxManager::set_mesh_element_size(
                 static_cast< index_t >( line_style_.size_ ) ) ;
-            GM_gfx_.lines.set_vertex_visibility( line_style_.visible_vertices_ ) ;
+            if( selected_entity_type_ == 0 ) {
+                GM_gfx_.lines.set_vertex_visibility(
+                    line_style_.visible_vertices_ ) ;
+            } else {
+//
+//                index_t selected_entity_type_casted =
+//                    static_cast< index_t >( selected_entity_type_ ) ;
+//                const std::string& type = entity_types_[selected_entity_type_casted] ;
+//                selected_entity_type_
+//                for( index_t l = 0; l < GM_gfx_.geomodel()->nb_lines(); l++ ) {
+//                    if( ) {
+//                        GM_gfx_.lines.set_vertex_visibility( l,
+//                            line_style_.visible_vertices_ ) ;
+//                    }
+//                }
+            }
             if( line_style_.visible_vertices_ ) {
                 GM_gfx_.lines.set_vertex_size( line_style_.vertex_size_ ) ;
                 GM_gfx_.lines.set_vertex_color( line_style_.vertex_color_.Value.x,
@@ -374,6 +389,32 @@ namespace RINGMesh {
             GM_gfx_.regions.set_shrink( shrink_ ) ;
             GM_gfx_.regions.draw() ;
         }
+
+        if( selected_entity_type_ != 0 ) {
+            index_t selected_entity_type_casted =
+                static_cast< index_t >( selected_entity_type_ ) ;
+            const std::string& type = entity_types_[selected_entity_type_casted] ;
+//            index_t selected_entity_id_casted =
+//                static_cast< index_t >( selected_entity_id_ ) ;
+//            toggle_
+
+            if( selected_entity_type_casted
+                < EntityTypeManager::nb_mesh_entity_types() + 1 ) {
+                selected_entity_id_ = std::min(
+                    static_cast< int >( GM_.nb_mesh_entities( type ) - 1 ),
+                    selected_entity_id_ ) ;
+                gme_t entity_id( type,
+                    static_cast< index_t >( selected_entity_id_ ) ) ;
+                toggle_mesh_entity_and_boundaries_visibility( entity_id ) ;
+            } else {
+                selected_entity_id_ = std::min(
+                    static_cast< int >( GM_.nb_geological_entities( type ) - 1 ),
+                    selected_entity_id_ ) ;
+                gme_t entity_id( type,
+                    static_cast< index_t >( selected_entity_id_ ) ) ;
+                toggle_geological_entity_visibility( entity_id ) ;
+            }
+        }
     }
 
     void RINGMeshApplication::GeoModelViewer::set_attribute_names(
@@ -413,6 +454,15 @@ namespace RINGMesh {
             GM_gfx_.surfaces.GeoModelGfxManager::set_mesh_element_visibility(
                 true ) ;
             GM_gfx_.regions.GeoModelGfxManager::set_mesh_element_visibility( true ) ;
+            if( line_style_.visible_vertices_ ) {
+                GM_gfx_.lines.GeoModelGfxManager::set_vertex_visibility( true ) ;
+            }
+            if( surface_style_.visible_vertices_ ) {
+                GM_gfx_.surfaces.GeoModelGfxManager::set_vertex_visibility( true ) ;
+            }
+            if( volume_style_.visible_vertices_ ) {
+                GM_gfx_.regions.GeoModelGfxManager::set_vertex_visibility( true ) ;
+            }
         } else {
             GM_gfx_.corners.GeoModelGfxManager::set_mesh_element_visibility(
                 false ) ;
@@ -421,6 +471,9 @@ namespace RINGMesh {
                 false ) ;
             GM_gfx_.regions.GeoModelGfxManager::set_mesh_element_visibility(
                 false ) ;
+            GM_gfx_.lines.GeoModelGfxManager::set_vertex_visibility( false ) ;
+            GM_gfx_.surfaces.GeoModelGfxManager::set_vertex_visibility( false ) ;
+            GM_gfx_.regions.GeoModelGfxManager::set_vertex_visibility( false ) ;
             if( selected_entity_type_casted
                 < EntityTypeManager::nb_mesh_entity_types() + 1 ) {
                 selected_entity_id_ = std::min(
@@ -466,6 +519,8 @@ namespace RINGMesh {
         index_t line_id )
     {
         GM_gfx_.lines.set_mesh_element_visibility( line_id, true ) ;
+        GM_gfx_.lines.set_vertex_visibility( line_id,
+            line_style_.visible_vertices_ ) ;
         const Line& line = GM_.line( line_id ) ;
         toggle_corner_visibility( line.boundary_gme( 0 ).index ) ;
         toggle_corner_visibility( line.boundary_gme( 1 ).index ) ;
