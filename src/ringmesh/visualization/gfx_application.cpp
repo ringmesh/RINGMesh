@@ -681,16 +681,18 @@ namespace RINGMesh {
         ImGui::Checkbox( "Corner [c]", &show_corners_ ) ;
         draw_entity_style_editor( "##CornerColor", corner_style_ ) ;
 
+        ImGui::Separator() ;
         ImGui::Checkbox( "Line [e]", &show_lines_ ) ;
         draw_entity_style_editor( "##LineColor", line_style_ ) ;
-        ImGui::Checkbox( "Line vert.", &line_style_.visible_vertices_ ) ;
+        ImGui::Checkbox( "Vertices", &line_style_.visible_vertices_ ) ;
         if( line_style_.visible_vertices_ ) {
             draw_entity_vertex_style_editor( "##LineVertexColor", line_style_ ) ;
         }
 
+        ImGui::Separator() ;
         ImGui::Checkbox( "Surface [s]", &show_surface_ ) ;
         draw_entity_style_editor( "##SurfaceColor", surface_style_ ) ;
-        ImGui::Checkbox( "Surface vert.", &surface_style_.visible_vertices_ ) ;
+        ImGui::Checkbox( "Vertices", &surface_style_.visible_vertices_ ) ;
         if( surface_style_.visible_vertices_ ) {
             draw_entity_vertex_style_editor( "##SurfaceVertexColor",
                 surface_style_ ) ;
