@@ -52,9 +52,11 @@
  * @author Various
  */
 
+class StratigraphicColumn ;
 namespace RINGMesh {
     class GeoModel ;
     class WellGroup ;
+
 }
 
 namespace GEO {
@@ -146,4 +148,31 @@ namespace RINGMesh {
     void RINGMESH_API unzip_current_file( unzFile uz, const char filename[MAX_FILENAME] ) ;
 
 }
+/*********************************************************************************************/
+class RINGMESH_API StratColIOHandler: public GEO::Counted {
+    public:
+        static void initialize() ;
+
+        static StratColIOHandler* create( const std::string& format ) ;
+
+        static StratColIOHandler* get_handler( const std::string& filename ) ;
+
+        virtual void load( const std::string& filename, StratigraphicColumn& column ) = 0 ;
+
+        virtual void save( const StratigraphicColumn& column, const std::string& filename ) = 0 ;
+
+    protected:
+            StratColIOHandler()
+            {
+            }
+
+            virtual ~StratColIOHandler()
+            {
+            }
+};
+    typedef GEO::SmartPointer< StratColIOHandler > StratColIOHandler_var ;
+    typedef GEO::Factory0< StratColIOHandler > StratColIOHandlerFactory ;
+
+#define ringmesh_register_StratColIOHandler_creator( type, name ) \
+		geo_register_creator( StratColIOHandlerFactory, type, name )
 #endif
