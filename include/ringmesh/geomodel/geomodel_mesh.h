@@ -170,6 +170,14 @@ namespace RINGMesh {
         index_t add_vertex( const vec3& point ) ;
 
         /*!
+         * @brief Call this function after a change in the number of vertices.
+         * @details Typically use it after all your vertices have been added with @function add_vertex.
+         */
+        void update_vertex_mapper() {
+            vertex_mapper_.resize_geomodel_vertex_gmes( nb() ) ;
+        }
+
+        /*!
          * @brief Set the point coordinates of all the vertices that
          *        share this unique vertex, including the unique vertex itself.
          * @param[in] v Index of the vertex
