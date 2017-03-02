@@ -149,6 +149,7 @@ namespace RINGMesh {
 
 }
 /*********************************************************************************************/
+namespace RINGMesh{
 class RINGMESH_API StratColIOHandler: public GEO::Counted {
     public:
         static void initialize() ;
@@ -175,4 +176,5 @@ class RINGMESH_API StratColIOHandler: public GEO::Counted {
 
 #define ringmesh_register_StratColIOHandler_creator( type, name ) \
 		geo_register_creator( StratColIOHandlerFactory, type, name )
+}
 #endif

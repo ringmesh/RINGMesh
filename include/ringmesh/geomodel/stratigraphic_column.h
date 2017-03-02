@@ -324,7 +324,6 @@ public:
 
 private:
 
-    StratigraphicColumn( const StratigraphicColumn& to_copy ) ;
     /*!
      * @return the position of a unit in the stratigraphic column
      */
