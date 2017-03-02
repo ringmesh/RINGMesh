@@ -378,7 +378,7 @@ file(GLOB zlib_src "${PROJECT_SOURCE_DIR}/src/third_party/zlib/*.c")
 file(GLOB zlib_include "${PROJECT_SOURCE_DIR}/include/third_party/zlib/*.h")
 
 # Group files of a project in directories
-# For this to work, all the files should be added to the sources of the project
+# All the files should be added to the sources of the project
 # and the global property USE_FOLDERS must be ON
 source_group("Zlib" FILES ${zlib_src} ${zlib_include})
 
@@ -386,9 +386,9 @@ file(GLOB tinyxml2_src "${PROJECT_SOURCE_DIR}/src/third_party/tinyxml2/tinyxml2.
 file(GLOB tinyxml2_include "${PROJECT_SOURCE_DIR}/include/third_party/tinyxml2/tinyxml2.h")
 
 # Group files of a project in directories
-# For this to work, all the files should be added to the sources of the project
+# All the files should be added to the sources of the project
 # and the global property USE_FOLDERS must be ON
-source_group("Zlib" FILES ${tinyxml2_src} ${tinyxml2_include})
+source_group("tinyxml2" FILES ${tinyxml2_src} ${tinyxml2_include})
 
 #------------------------------------------------------------------------------------------------
 # Build configuration
