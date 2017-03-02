@@ -8,56 +8,57 @@
 #ifndef INCLUDE_RINGMESH_GEOMODEL_STRATIGRAPHIC_COLUMN_BUILDER_H_
 #define INCLUDE_RINGMESH_GEOMODEL_STRATIGRAPHIC_COLUMN_BUILDER_H_
 
-
 #include <ringmesh/basic/common.h>
 #include <ringmesh/geomodel/stratigraphic_column.h>
 
-namespace RINGMesh
-{
-    class StratColBuilder{
-    ringmesh_disable_copy(StratColBuilder);
+namespace RINGMesh {
+    class StratigraphicColumnBuilder {
+    ringmesh_disable_copy(StratigraphicColumnBuilder) ;
     public:
-        StratColBuilder(StratigraphicColumn& column);
-        virtual ~StratColBuilder()
+        StratigraphicColumnBuilder( StratigraphicColumn& column ) ;
+        virtual ~StratigraphicColumnBuilder()
         {
         }
     protected:
-        StratigraphicColumn& column_;
-    };
+        StratigraphicColumn& column_ ;
+    } ;
 
-    class StratColBuilderFile: public StratColBuilder{
+    class StratigraphicColumnBuilderFile: public StratigraphicColumnBuilder {
     public:
-        StratColBuilderFile(StratigraphicColumn& column, const std::string& filename);
-        virtual ~StratColBuilderFile()
+        StratigraphicColumnBuilderFile(
+            StratigraphicColumn& column,
+            const std::string& filename ) ;
+        virtual ~StratigraphicColumnBuilderFile()
         {
         }
         void build_column()
         {
-            load_file();
+            load_file() ;
         }
     private:
-        virtual void load_file() = 0;
+        virtual void load_file() = 0 ;
 
     protected:
-        std::string filename_;
-    };
+        std::string filename_ ;
+    } ;
 
-    class StratColBuilderXML: public StratColBuilderFile{
+    class StratigraphicColumnBuilderXML: public StratigraphicColumnBuilderFile {
     public:
-        StratColBuilderXML(StratigraphicColumn& column, const std::string& filename)
-            : StratColBuilderFile(column, filename)
+        StratigraphicColumnBuilderXML(
+            StratigraphicColumn& column,
+            const std::string& filename )
+            : StratigraphicColumnBuilderFile( column, filename )
         {
         }
-        virtual ~StratColBuilderXML()
+        virtual ~StratigraphicColumnBuilderXML()
         {
         }
 
     private:
-        void load_file();
-        void read_file();
-        virtual void read_line();
-    };
+        void load_file() ;
+        void read_file() ;
+        virtual void read_line() ;
+    } ;
 }
-
 
 #endif /* INCLUDE_RINGMESH_GEOMODEL_STRATIGRAPHIC_COLUMN_BUILDER_H_ */

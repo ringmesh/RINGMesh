@@ -52,8 +52,8 @@
  * @author Various
  */
 
-class StratigraphicColumn ;
 namespace RINGMesh {
+    class StratigraphicColumn ;
     class GeoModel ;
     class WellGroup ;
 
@@ -145,36 +145,43 @@ namespace RINGMesh {
 
     void RINGMESH_API unzip_file( unzFile uz, const char filename[MAX_FILENAME] ) ;
 
-    void RINGMESH_API unzip_current_file( unzFile uz, const char filename[MAX_FILENAME] ) ;
+    void RINGMESH_API unzip_current_file(
+        unzFile uz,
+        const char filename[MAX_FILENAME] ) ;
 
 }
 /*********************************************************************************************/
-namespace RINGMesh{
-class RINGMESH_API StratColIOHandler: public GEO::Counted {
+namespace RINGMesh {
+    class RINGMESH_API StratigraphicColumnIOHandler: public GEO::Counted {
     public:
         static void initialize() ;
 
-        static StratColIOHandler* create( const std::string& format ) ;
+        static StratigraphicColumnIOHandler* create( const std::string& format ) ;
 
-        static StratColIOHandler* get_handler( const std::string& filename ) ;
+        static StratigraphicColumnIOHandler* get_handler(
+            const std::string& filename ) ;
 
-        virtual void load( const std::string& filename, StratigraphicColumn& column ) = 0 ;
+        virtual void load(
+            const std::string& filename,
+            StratigraphicColumn& column ) = 0 ;
 
-        virtual void save( const StratigraphicColumn& column, const std::string& filename ) = 0 ;
+        virtual void save(
+            const StratigraphicColumn& column,
+            const std::string& filename ) = 0 ;
 
     protected:
-            StratColIOHandler()
-            {
-            }
+        StratigraphicColumnIOHandler()
+        {
+        }
 
-            virtual ~StratColIOHandler()
-            {
-            }
-};
-    typedef GEO::SmartPointer< StratColIOHandler > StratColIOHandler_var ;
-    typedef GEO::Factory0< StratColIOHandler > StratColIOHandlerFactory ;
+        virtual ~StratigraphicColumnIOHandler()
+        {
+        }
+    } ;
+    typedef GEO::SmartPointer< StratigraphicColumnIOHandler > StratigraphicColumnIOHandler_var ;
+    typedef GEO::Factory0< StratigraphicColumnIOHandler > StratigraphicColumnIOHandlerFactory ;
 
-#define ringmesh_register_StratColIOHandler_creator( type, name ) \
-		geo_register_creator( StratColIOHandlerFactory, type, name )
+#define ringmesh_register_StratigraphicColumnIOHandler_creator( type, name ) \
+		geo_register_creator( StratigraphicColumnIOHandlerFactory, type, name )
 }
 #endif
