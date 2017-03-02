@@ -87,6 +87,7 @@ namespace RINGMesh {
         mesh_initialize() ;
         TetraGen::initialize() ;
         GeoModelGeologicalEntity::initialize() ;
+        StratigraphicColumnIOHandler::initialize() ;
         ringmesh_mesh_io_initialize() ;
         initialize_gocad_import_factories() ;
         register_geogram_mesh() ;
