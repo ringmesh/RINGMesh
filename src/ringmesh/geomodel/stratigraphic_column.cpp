@@ -193,10 +193,6 @@ StratigraphicColumn::StratigraphicColumn(
 
 }
 
-StratigraphicColumn::StratigraphicColumn( const StratigraphicColumn& to_copy )
-    : name_( to_copy.name_ ), layers_( to_copy.layers_ ), type_( to_copy.type_ )
-{
-}
 
 StratigraphicColumn::~StratigraphicColumn()
 {

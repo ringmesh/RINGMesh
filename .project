@@ -24,4 +24,11 @@
 		<nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>include/third_party/tinyxml2</name>
+			<type>2</type>
+			<location>/home/UL/sirvent1u/RINGMesh/include/third_party/tinyxml2</location>
+		</link>
+	</linkedResources>
 </projectDescription>
