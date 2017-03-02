@@ -152,7 +152,7 @@ int main()
         //We first create the GeoModelGeoglogicalEntity
         // Create the contacts
         for( index_t contact = 0; contact < nb_contacts; contact++ ) {
-            builder.topology.create_geological_entity(
+            builder.geology.create_geological_entity(
                 Contact::type_name_static() ) ;
             // the static method type_name_static() is available for each
             // GeoModelEntity. It returns an EntityType which is a string
@@ -161,16 +161,16 @@ int main()
 
         // Create the Interfaces
         for( index_t interface_itr = 0; interface_itr < nb_interfaces; interface_itr++ ) {
-            builder.topology.create_geological_entity(
+            builder.geology.create_geological_entity(
                 Interface::type_name_static() ) ;
         }
 
         // Create the Layers
         for( index_t layer = 0; layer < nb_layers; layer++ ) {
-            builder.topology.create_geological_entity( Layer::type_name_static() ) ;
+            builder.geology.create_geological_entity( Layer::type_name_static() ) ;
         }
 
-        // Then we create the GeoModelMEshEntity
+        // Then we create the GeoModelMeshEntity
         // Create the Corners
         for( index_t corner = 0; corner < nb_corners; corner++ ) {
             builder.topology.create_mesh_entity< Corner >() ;
