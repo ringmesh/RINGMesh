@@ -149,6 +149,19 @@ namespace RINGMesh {
         return builder ;
     }
 
+	Mesh0D* Mesh0DBuilder::change_mesh_data_structure(Mesh0D* mesh, const MeshType type)
+	{
+		if (mesh->type_name() == type) {
+			return mesh;
+		}
+		Mesh0D* new_mesh = Mesh0D::create_mesh(type);
+		Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder(
+			*new_mesh);
+		builder->copy(*mesh, true);
+		delete mesh;
+		return new_mesh;
+	}
+
     Mesh1DBuilder* Mesh1DBuilder::create_builder( Mesh1D& mesh )
     {
         Mesh1DBuilder* builder = Mesh1DBuilderFactory::create_object(
@@ -169,6 +182,19 @@ namespace RINGMesh {
         builder->set_mesh( mesh ) ;
         return builder ;
     }
+
+	Mesh1D* Mesh1DBuilder::change_mesh_data_structure(Mesh1D* mesh, const MeshType type)
+	{
+		if (mesh->type_name() == type) {
+			return mesh;
+		}
+		Mesh1D* new_mesh = Mesh1D::create_mesh(type);
+		Mesh1DBuilder_var builder = Mesh1DBuilder::create_builder(
+			*new_mesh);
+		builder->copy(*mesh, true);
+		delete mesh;
+		return new_mesh;
+	}
 
     Mesh2DBuilder* Mesh2DBuilder::create_builder( Mesh2D& mesh )
     {
@@ -191,6 +217,19 @@ namespace RINGMesh {
         return builder ;
     }
 
+	Mesh2D* Mesh2DBuilder::change_mesh_data_structure(Mesh2D* mesh, const MeshType type)
+	{
+		if (mesh->type_name() == type) {
+			return mesh;
+		}
+		Mesh2D* new_mesh = Mesh2D::create_mesh(type);
+		Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder(
+			*new_mesh);
+		builder->copy(*mesh, true);
+		delete mesh;
+		return new_mesh;
+	}
+
     Mesh3DBuilder* Mesh3DBuilder::create_builder( Mesh3D& mesh )
     {
         Mesh3DBuilder* builder = Mesh3DBuilderFactory::create_object(
@@ -212,6 +251,19 @@ namespace RINGMesh {
         return builder ;
     }
 
+	Mesh3D* Mesh3DBuilder::change_mesh_data_structure(Mesh3D* mesh, const MeshType type)
+	{
+		if (mesh->type_name() == type) {
+			return mesh;
+		}
+		Mesh3D* new_mesh = Mesh3D::create_mesh(type);
+		Mesh3DBuilder_var builder = Mesh3DBuilder::create_builder(
+			*new_mesh);
+		builder->copy(*mesh, true);
+		delete mesh;
+		return new_mesh;
+	}
+
     MeshAllDBuilder* MeshAllDBuilder::create_builder( MeshAllD& mesh )
     {
         MeshAllDBuilder* builder = MeshAllDBuilderFactory::create_object(
@@ -230,4 +282,16 @@ namespace RINGMesh {
         return builder ;
     }
 
+	MeshAllD* MeshAllDBuilder::change_mesh_data_structure(MeshAllD* mesh, const MeshType type)
+	{
+		if (mesh->type_name() == type) {
+			return mesh;
+		}
+		MeshAllD* new_mesh = MeshAllD::create_mesh(type);
+		MeshAllDBuilder_var builder = MeshAllDBuilder::create_builder(
+			*new_mesh);
+		builder->copy(*mesh, true);
+		delete mesh;
+		return new_mesh;
+	}
 } // namespace

@@ -61,6 +61,7 @@ namespace RINGMesh {
         virtual void copy(
             const MeshBase& rhs,
             bool copy_attributes ) = 0 ;
+
         virtual void load_mesh( const std::string& filename ) = 0 ;
         /*!
          * @brief Removes all the entities and attributes of this mesh.
@@ -153,6 +154,8 @@ namespace RINGMesh {
 
         static Mesh0DBuilder* create_builder( Mesh0D& mesh ) ;
 
+		static Mesh0D* change_mesh_data_structure(Mesh0D* mesh, const MeshType type) ;
+
         virtual void remove_isolated_vertices()
         {
             // All vertices are isolated in a Mesh0D
@@ -179,6 +182,9 @@ namespace RINGMesh {
         virtual void set_mesh( Mesh1D& mesh ) = 0 ;
 
         static Mesh1DBuilder* create_builder( Mesh1D& mesh ) ;
+
+		static Mesh1D* change_mesh_data_structure(Mesh1D* mesh, const MeshType type) ;
+
         /*!
          * @brief Create a new edge.
          * @param[in] v1_id index of the starting vertex.
@@ -247,6 +253,9 @@ namespace RINGMesh {
         virtual void set_mesh( Mesh2D& mesh ) = 0 ;
 
         static Mesh2DBuilder* create_builder( Mesh2D& mesh ) ;
+
+		static Mesh2D* change_mesh_data_structure(Mesh2D* mesh, const MeshType type) ;
+
         /*!@}
          * \name Facet related methods
          * @{
@@ -379,6 +388,9 @@ namespace RINGMesh {
         virtual void set_mesh( Mesh3D& mesh ) = 0 ;
 
         static Mesh3DBuilder* create_builder( Mesh3D& mesh ) ;
+
+		static Mesh3D* change_mesh_data_structure(Mesh3D* mesh, const MeshType type) ;
+
         /*!
          * @brief Creates a contiguous chunk of cells of the same type.
          * @param[in] nb_cells number of cells to create
@@ -497,6 +509,9 @@ namespace RINGMesh {
         virtual void remove_isolated_vertices() = 0 ;
 
         static MeshAllDBuilder* create_builder( MeshAllD& mesh ) ;
+
+		static MeshAllD* change_mesh_data_structure(MeshAllD* mesh, const MeshType type) ;
+
     protected:
         MeshAllDBuilder()
             : Mesh0DBuilder(), Mesh1DBuilder(), Mesh2DBuilder(), Mesh3DBuilder()

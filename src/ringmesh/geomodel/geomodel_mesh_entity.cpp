@@ -1164,48 +1164,27 @@ namespace RINGMesh {
     {
         if( EntityTypeManager::is_corner( gmme_.type_name() ) ) {
             Corner& corner = dynamic_cast< Corner& >( gmme_ ) ;
-            Mesh0D* old_mesh = corner.mesh0d_ ;
-            if( old_mesh->type_name() == type ) {
-                return ;
-            }
-            corner.update_mesh_storage_type( Mesh0D::create_mesh( type ) ) ;
-            Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder(
-                *corner.mesh0d_ ) ;
-            builder->copy( *old_mesh, true ) ;
-            delete old_mesh ;
+			corner.update_mesh_storage_type(
+				Mesh0DBuilder::change_mesh_data_structure(
+				corner.mesh0d_, type)
+				);
         } else if( EntityTypeManager::is_line( gmme_.type_name() ) ) {
             Line& line = dynamic_cast< Line& >( gmme_ ) ;
-            Mesh1D* old_mesh = line.mesh1d_ ;
-            if( old_mesh->type_name() == type ) {
-                return ;
-            }
-            line.update_mesh_storage_type( Mesh1D::create_mesh( type ) ) ;
-            Mesh1DBuilder_var builder = Mesh1DBuilder::create_builder(
-                *line.mesh1d_ ) ;
-            builder->copy( *old_mesh, true ) ;
-            delete old_mesh ;
-        } else if( EntityTypeManager::is_surface( gmme_.type_name() ) ) {
+			line.update_mesh_storage_type(
+				Mesh1DBuilder::change_mesh_data_structure(line.mesh1d_, type)
+				);
+         } else if( EntityTypeManager::is_surface( gmme_.type_name() ) ) {
             Surface& surface = dynamic_cast< Surface& >( gmme_ ) ;
-            Mesh2D* old_mesh = surface.mesh2d_ ;
-            if( old_mesh->type_name() == type ) {
-                return ;
-            }
-            surface.update_mesh_storage_type( Mesh2D::create_mesh( type ) ) ;
-            Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder(
-                *surface.mesh2d_ ) ;
-            builder->copy( *old_mesh, true ) ;
-            delete old_mesh ;
+			surface.update_mesh_storage_type(
+				Mesh2DBuilder::change_mesh_data_structure(
+				surface.mesh2d_, type)
+				);
         } else if( EntityTypeManager::is_region( gmme_.type_name() ) ) {
             Region& region = dynamic_cast< Region& >( gmme_ ) ;
-            Mesh3D* old_mesh = region.mesh3d_ ;
-            if( old_mesh->type_name() == type ) {
-                return ;
-            }
-            region.update_mesh_storage_type( Mesh3D::create_mesh( type ) ) ;
-            Mesh3DBuilder_var builder = Mesh3DBuilder::create_builder(
-                *region.mesh3d_ ) ;
-            builder->copy( *old_mesh, true ) ;
-            delete old_mesh ;
+			region.update_mesh_storage_type(
+				Mesh3DBuilder::change_mesh_data_structure(
+				region.mesh3d_,type)
+				);
         } else {
             ringmesh_assert_not_reached ;
         }
