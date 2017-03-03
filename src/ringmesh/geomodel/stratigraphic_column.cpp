@@ -1,23 +1,50 @@
 /*
- * stratigraphic_column.cpp
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * All rights reserved.
  *
- *  Created on: Feb 14, 2017
- *      Author: sirvent1u
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of ASGA nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ *     http://www.ring-team.org
+ *
+ *     RING Project
+ *     Ecole Nationale Superieure de Geologie - GeoRessources
+ *     2 Rue du Doyen Marcel Roubault - TSA 70605
+ *     54518 VANDOEUVRE-LES-NANCY
+ *     FRANCE
  */
 
 #include <ringmesh/geomodel/stratigraphic_column.h>
 
 namespace RINGMesh {
-////// class RockFeature/////////
 
     RockFeature::RockFeature( const std::string& name )
         : name_( name )
     {
-        ROCKTYPE n = none ;
+        ROCKTYPE n = NONE ;
         type_ = n ;
     }
 
-    RockFeature::RockFeature( const std::string& name, const ROCKTYPE& type )
+    RockFeature::RockFeature( const std::string& name, ROCKTYPE type )
         : name_( name ), type_( type )
     {
     }
@@ -31,12 +58,11 @@ namespace RINGMesh {
         return type_ ;
     }
 
-    void RockFeature::set_rock_type( const ROCKTYPE& type )
+    void RockFeature::set_rock_type( ROCKTYPE type )
     {
         type_ = type ;
     }
 
-///////class StratigraphicUnit//////////////////
 
     StratigraphicUnit::StratigraphicUnit()
         :
@@ -44,21 +70,21 @@ namespace RINGMesh {
             interface_top_( nil ),
             interface_base_( nil ),
             layer_( nil ),
-            relation_top_( conformable ),
-            relation_base_( conformable ),
+            relation_top_( CONFORMABLE ),
+            relation_base_( CONFORMABLE ),
             rock_( RockFeature( "none" ) ),
             min_thick_( 0 ),
-            max_thick_( std::numeric_limits< double >::max() )
+            max_thick_( max_float64() )
 
     {
     }
     StratigraphicUnit::StratigraphicUnit(
         const std::string name,
-        const RINGMesh::GeoModelGeologicalEntity& interface_base,
-        const RINGMesh::GeoModelGeologicalEntity& interface_top,
-        const RINGMesh::GeoModelGeologicalEntity& layer,
-        const RELATION& relation_top,
-        const RELATION& relation_base,
+        const GeoModelGeologicalEntity& interface_base,
+        const GeoModelGeologicalEntity& interface_top,
+        const GeoModelGeologicalEntity& layer,
+        RELATION relation_top,
+        RELATION relation_base,
         const RockFeature& rock,
         double min_thick,
         double max_thick )
@@ -94,12 +120,12 @@ namespace RINGMesh {
 
     }
 
-    const RINGMesh::GeoModelGeologicalEntity& StratigraphicUnit::get_interface_base() const
+    const GeoModelGeologicalEntity& StratigraphicUnit::get_interface_base() const
     {
         return *interface_base_ ;
     }
 
-    const RINGMesh::GeoModelGeologicalEntity& StratigraphicUnit::get_interface_top() const
+    const GeoModelGeologicalEntity& StratigraphicUnit::get_interface_top() const
     {
         return *interface_top_ ;
     }
@@ -109,7 +135,7 @@ namespace RINGMesh {
         const StratigraphicColumn* cast_strat_col =
             dynamic_cast< const StratigraphicColumn* >( this ) ;
         if( cast_strat_col != nil ) {
-            out.set_rock_type( multiple ) ;
+            out.set_rock_type( MULTIPLE ) ;
             out.set_name( name_ ) ;
             return out ;
             //RockFeature rock_column("rock_column", multiple);
@@ -124,20 +150,20 @@ namespace RINGMesh {
 
     bool StratigraphicUnit::is_conformable_base() const
     {
-        return ( relation_base_ == conformable ) ;
+        return ( relation_base_ == CONFORMABLE ) ;
     }
 
     bool StratigraphicUnit::is_conformable_top() const
     {
-        return ( relation_top_ == conformable ) ;
+        return ( relation_top_ == CONFORMABLE ) ;
     }
 
-    const RELATION& StratigraphicUnit::get_relation_top() const
+    RELATION StratigraphicUnit::get_relation_top() const
     {
         return relation_top_ ;
     }
 
-    const RELATION& StratigraphicUnit::get_relation_base() const
+    RELATION StratigraphicUnit::get_relation_base() const
     {
         return relation_base_ ;
     }
@@ -165,20 +191,19 @@ namespace RINGMesh {
             return max_thick_ ;
         } //StratigraphicUnit
     }
-/////////////////class StratigraphicColumn////////////////
 
     StratigraphicColumn::StratigraphicColumn( const std::string& name )
-        : name_( name )
+        : name_( name ),
+          layers_(),
+          type_(CHRONOSTRATIGRAPHIC)
     {
-        type_ = chronostratigraphic ;
-        std::vector< const StratigraphicUnit* > layers ;
-        layers_ = layers ;
+
     }
 
     StratigraphicColumn::StratigraphicColumn(
         const std::string& name,
         const std::vector< const StratigraphicUnit* >& layers,
-        const STRATIGRAPHIC_PARADIGM& type )
+        STRATIGRAPHIC_PARADIGM type )
         : name_( name ), layers_( layers ), type_( type )
     {
 
@@ -188,33 +213,29 @@ namespace RINGMesh {
     {
     }
 
-    void StratigraphicColumn::set_paradigm( const STRATIGRAPHIC_PARADIGM& type )
+    void StratigraphicColumn::set_paradigm( STRATIGRAPHIC_PARADIGM type )
     {
         type_ = type ;
     }
 
-    index_t StratigraphicColumn::get_index( StratigraphicUnit* unit )
+    index_t StratigraphicColumn::get_index( const StratigraphicUnit& unit ) const
     {
-        return get_index( unit->get_name() ) ;
+        return get_index( unit.get_name() ) ;
     }
 
-    index_t StratigraphicColumn::get_index( const std::string& name )
+    index_t StratigraphicColumn::get_index( const std::string& name ) const
     {
-        index_t index = 0 ;
-        bool found = false ;
         for( index_t i = 0; i < layers_.size(); ++i ) {
             if( layers_[i]->get_name() == name ) {
-                index = i ;
-                found = true ;
-                return index ;
+                return i;
             }
         }
-        ringmesh_assert( found ) ;
-        return index ;
+        ringmesh_assert_not_reached;
+        return NO_ID;
     }
 
     const StratigraphicUnit* StratigraphicColumn::get_unit_above(
-        StratigraphicUnit* unit )
+        const StratigraphicUnit& unit )
     {
         index_t index = get_index( unit ) ;
         ringmesh_assert( index > 0 && index < layers_.size() + 1 ) ;
@@ -225,11 +246,10 @@ namespace RINGMesh {
         } else {
             return layers_[index - 1] ;
         }
-
     }
 
     const StratigraphicUnit* StratigraphicColumn::get_unit_below(
-        StratigraphicUnit* unit )
+        const StratigraphicUnit& unit )
     {
         index_t index = get_index( unit ) ;
         ringmesh_assert( index < layers_.size() ) ;
@@ -243,7 +263,7 @@ namespace RINGMesh {
 
     }
 
-    void StratigraphicColumn::remove_unit( StratigraphicUnit* unit )
+    void StratigraphicColumn::remove_unit( const StratigraphicUnit& unit )
     {
         index_t index = get_index( unit ) ;
         ringmesh_assert( index < layers_.size() ) ;
@@ -251,7 +271,7 @@ namespace RINGMesh {
     }
 
     void StratigraphicColumn::insert_unit_below(
-        StratigraphicUnit* above,
+        const StratigraphicUnit& above,
         const StratigraphicUnit& to_add )
     {
         index_t index = get_index( above ) ;
@@ -360,42 +380,35 @@ namespace RINGMesh {
     const StratigraphicUnit* StratigraphicColumn::find_unit_from_rock_feature(
         const RockFeature& feature )
     {
-        index_t index = 0 ;
-        bool found = false ;
+
         RockFeature out( "temporary_name" ) ;
         for( index_t i = 0; i < layers_.size(); ++i ) {
             if( layers_[i]->get_rock_feature( out ).get_name()
                 == feature.get_name() ) {
-                index = i ;
-                found = true ;
-                return layers_[index] ;
+                return layers_[i] ;
             }
         }
-        ringmesh_assert( found ) ;
-        return layers_[index] ;
+        ringmesh_assert_not_reached ;
+        return nil;
     }
 
     const StratigraphicUnit* StratigraphicColumn::find_unit_from_rock_feature_name(
         const std::string& name )
     {
-        index_t index = 0 ;
-        bool found = false ;
         RockFeature out( "temporary_name" ) ;
         for( index_t i = 0; i < layers_.size(); ++i ) {
             if( layers_[i]->get_rock_feature( out ).get_name() == name ) {
-                index = i ;
-                found = true ;
-                return layers_[index] ;
+                return layers_[i] ;
             }
         }
-        ringmesh_assert( found ) ;
-        return layers_[index] ;
+        ringmesh_assert_not_reached ;
+        return nil ;
     }
 
     void StratigraphicColumn::get_units_between(
-        StratigraphicUnit* top,
-        StratigraphicUnit* base,
-        std::vector< const StratigraphicUnit* > units )
+        const StratigraphicUnit& top,
+        const StratigraphicUnit& base,
+        std::vector< const StratigraphicUnit* >& units )
     {
         ringmesh_assert( units.empty() ) ;
         index_t index_top = get_index( top ) ;
@@ -413,37 +426,37 @@ namespace RINGMesh {
 
     }
 
-    const STRATIGRAPHIC_PARADIGM& StratigraphicColumn::get_paradigm() const
+    STRATIGRAPHIC_PARADIGM StratigraphicColumn::get_paradigm() const
     {
         return type_ ;
     }
 
-    bool StratigraphicColumn::is_conformable_base()
+    bool StratigraphicColumn::is_conformable_base() const
     {
         return ( layers_.back()->is_conformable_base() ) ;
     }
 
-    bool StratigraphicColumn::is_conformable_top()
+    bool StratigraphicColumn::is_conformable_top() const
     {
         return ( layers_[0]->is_conformable_top() ) ;
     }
 
-    const RELATION& StratigraphicColumn::get_relation_base()
+    RELATION StratigraphicColumn::get_relation_base()
     {
         return ( layers_[layers_.size() - 1]->get_relation_base() ) ;
     }
 
-    const RELATION& StratigraphicColumn::get_relation_top()
+    RELATION StratigraphicColumn::get_relation_top()
     {
         return ( layers_[0]->get_relation_top() ) ;
     }
 
-    const RINGMesh::GeoModelGeologicalEntity& StratigraphicColumn::get_interface_base() const
+    const GeoModelGeologicalEntity& StratigraphicColumn::get_interface_base() const
     {
         return ( layers_[layers_.size() - 1]->get_interface_base() ) ;
     }
 
-    const RINGMesh::GeoModelGeologicalEntity& StratigraphicColumn::get_interface_top() const
+    const GeoModelGeologicalEntity& StratigraphicColumn::get_interface_top() const
     {
         return ( layers_[0]->get_interface_top() ) ;
     }

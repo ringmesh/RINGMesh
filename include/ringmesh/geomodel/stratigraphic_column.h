@@ -1,8 +1,36 @@
 /*
  * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * All rights reserved.
  *
- *  Created on: Feb 14, 2017
- *      Author: sirvent1u
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of ASGA nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL ASGA BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ *     http://www.ring-team.org
+ *
+ *     RING Project
+ *     Ecole Nationale Superieure de Geologie - GeoRessources
+ *     2 Rue du Doyen Marcel Roubault - TSA 70605
+ *     54518 VANDOEUVRE-LES-NANCY
+ *     FRANCE
  */
 
 #ifndef INCLUDE_RINGMESH_GEOMODEL_STRATIGRAPHIC_COLUMN_H_
@@ -22,7 +50,7 @@ namespace RINGMesh {
     class GeoModelGeologicalEntity ;
 
     enum ROCKTYPE {
-        none, multiple
+        NONE, MULTIPLE
     } ;
 
     /*!
@@ -35,7 +63,7 @@ namespace RINGMesh {
          * @param[in] name Name of the feature
          * @param[in] type Rocktype
          */
-        RockFeature( const std::string& name, const ROCKTYPE& type ) ;
+        RockFeature( const std::string& name, ROCKTYPE type ) ;
         /*!
          * @brief Simple constructor of RockFeature
          * @param[in] name Name of the feature
@@ -44,7 +72,7 @@ namespace RINGMesh {
         /*!
          *@return name of the feature
          */
-        const std::string get_name() const
+        const std::string& get_name() const
         {
             return name_ ;
         }
@@ -52,26 +80,23 @@ namespace RINGMesh {
         {
             name_ = name ;
         }
-        ;
         ~RockFeature() ;
         const ROCKTYPE& get_rock_type() const ;
-        void set_rock_type( const ROCKTYPE& type ) ;
-
+        void set_rock_type( ROCKTYPE type ) ;
     private:
-
         std::string name_ ;
         ROCKTYPE type_ ;
 
     } ;
 
     enum RELATION {
-        conformable = 0,
-        eroded = 10,
-        truncation = 11,
-        toplap = 12,
-        baselap = 20,
-        onlap = 21,
-        downlap = 22
+        CONFORMABLE = 0,
+        ERODED = 10,
+        TRUNCATION = 11,
+        TOPLAP = 12,
+        BASELAP = 20,
+        ONLAP = 21,
+        DOWNLAP = 22
     } ;
 
     /*!
@@ -96,11 +121,11 @@ namespace RINGMesh {
          */
         StratigraphicUnit(
             const std::string name,
-            const RINGMesh::GeoModelGeologicalEntity& interface_base, // TODO interface
-            const RINGMesh::GeoModelGeologicalEntity& interface_top,
-            const RINGMesh::GeoModelGeologicalEntity& layer,
-            const RELATION& relation_top,
-            const RELATION& relation_base,
+            const GeoModelGeologicalEntity& interface_base, // TODO interface
+            const GeoModelGeologicalEntity& interface_top,
+            const GeoModelGeologicalEntity& layer,
+            RELATION relation_top,
+            RELATION relation_base,
             const RockFeature& rock,
             double min_thick,
             double max_thick ) ;
@@ -128,20 +153,20 @@ namespace RINGMesh {
         /*!
          * @return relation_base of unit, if StratigraphicColumn, return relation_base of last unit
          */
-        virtual const RELATION& get_relation_base() const ;
+        virtual RELATION get_relation_base() const ;
         /*!
          * @return relation_top of unit, if StratigraphicColumn, return relation_top of first unit
          */
-        virtual const RELATION& get_relation_top() const ;
+        virtual RELATION get_relation_top() const ;
 
         /*!
          * @return interface_base of unit, if StratigraphicColumn, return interface_base of last unit
          */
-        virtual const RINGMesh::GeoModelGeologicalEntity& get_interface_base() const ;
+        virtual const GeoModelGeologicalEntity& get_interface_base() const ;
         /*!
          * @return interface_top of unit, if StratigraphicColumn, return interface_top of first unit
          */
-        virtual const RINGMesh::GeoModelGeologicalEntity& get_interface_top() const ;
+        virtual const GeoModelGeologicalEntity& get_interface_top() const ;
 
         /*!
          * @return min_thick_ of unit, if StratigraphicColumn, return sum of min_thick_ on all units
@@ -161,9 +186,9 @@ namespace RINGMesh {
     private:
 
         std::string name_ ;
-        const RINGMesh::GeoModelGeologicalEntity* interface_top_ ;
-        const RINGMesh::GeoModelGeologicalEntity* interface_base_ ;
-        const RINGMesh::GeoModelGeologicalEntity* layer_ ;
+        const GeoModelGeologicalEntity* interface_top_ ;
+        const GeoModelGeologicalEntity* interface_base_ ;
+        const GeoModelGeologicalEntity* layer_ ;
         RELATION relation_top_ ;
         RELATION relation_base_ ;
         RockFeature rock_ ;
@@ -172,7 +197,7 @@ namespace RINGMesh {
     } ;
 
     enum STRATIGRAPHIC_PARADIGM {
-        chronostratigraphic, biostratigraphic, lithostratigraphic, unspecified
+        CHRONOSTRATIGRAPHIC, BIOSTRATIGRAPHIC, LITHOSTRATIGRAPHIC, UNSPECIFIED
     } ;
 
     /*!
@@ -189,7 +214,7 @@ namespace RINGMesh {
         StratigraphicColumn(
             const std::string& name,
             const std::vector< const StratigraphicUnit* >& layers,
-            const STRATIGRAPHIC_PARADIGM& type ) ;
+            STRATIGRAPHIC_PARADIGM type ) ;
         /*!
          * @brief Simple Constructor of StratigraphicColumn
          * @param[in] name Name of the unit
@@ -199,25 +224,25 @@ namespace RINGMesh {
         /*!
          * @param[in] type Chronostratigraphic, Lithostratigraphic or Biostratigraphic
          */
-        void set_paradigm( const STRATIGRAPHIC_PARADIGM& type ) ;
+        void set_paradigm( STRATIGRAPHIC_PARADIGM type ) ;
 
         /*!
          * @param[in] unit Reference unit
          * @return the StratigraphicUnit which position in the StratigraphicColumn is just above the reference unit
          */
-        const StratigraphicUnit* get_unit_above( StratigraphicUnit* unit ) ;
+        const StratigraphicUnit* get_unit_above( const StratigraphicUnit& unit ) ;
         /*!
          * @param[in] unit Reference unit
          * @return the StratigraphicUnit which position in the StratigraphicColumn is just below the reference unit
          */
-        const StratigraphicUnit* get_unit_below( StratigraphicUnit* unit ) ;
-        void remove_unit( StratigraphicUnit* unit ) ;
+        const StratigraphicUnit* get_unit_below( const StratigraphicUnit& unit ) ;
+        void remove_unit( const StratigraphicUnit& unit ) ;
         /*!
          * @param[in] above Reference unit, the new unit will be added below it
          * @param[in] unit_to_add Unit you want to add to the column
          */
         void insert_unit_below(
-            StratigraphicUnit* above,
+            const StratigraphicUnit& above,
             const StratigraphicUnit& unit_to_add ) ;
         /*!
          * @param[in] to_add Unit to add at the top of the column
@@ -267,40 +292,40 @@ namespace RINGMesh {
          * @return a vector of all the units of the column
          */
         const std::vector< const StratigraphicUnit* >& get_units() const ;
-        const STRATIGRAPHIC_PARADIGM& get_paradigm() const ;
+        STRATIGRAPHIC_PARADIGM get_paradigm() const ;
 
         /*!
          * @brief is_conformable_base for the Stratigraphic Column
          * @return true if the base of the last unit of the Stratigraphic Column is conformable
          */
-        virtual bool is_conformable_base() ;
+        virtual bool is_conformable_base() const ;
         /*!
          * @brief is_conformable_top for the Stratigraphic Column
          * @return true if the top of the first unit of the Stratigraphic Column is conformable
          */
-        virtual bool is_conformable_top() ;
+        virtual bool is_conformable_top() const ;
 
         /*!
          * @brief get_relation_base for the Stratigraphic Column
          * @return the relation of the base of the first unit of the StratigraphicColumn
          */
-        virtual const RELATION& get_relation_base() ;
+        virtual RELATION get_relation_base() ;
         /*!
          * @brief get_relation_top for the Stratigraphic Column
          * @return the relation of the top of the first unit of the StratigraphicColumn
          */
-        virtual const RELATION& get_relation_top() ;
+        virtual RELATION get_relation_top() ;
 
         /*!
          * @brief get_interface_base for the Stratigraphic Column
          * @return the base interface of the last unit in the Stratigraphic Column
          */
-        virtual const RINGMesh::GeoModelGeologicalEntity& get_interface_base() const ;
+        virtual const GeoModelGeologicalEntity& get_interface_base() const ;
         /*!
          * @brief get_interface_top for the Stratigraphic Column
          * @return the top interface of the first unit in the Stratigraphic Column
          */
-        virtual const RINGMesh::GeoModelGeologicalEntity& get_interface_top() const ;
+        virtual const GeoModelGeologicalEntity& get_interface_top() const ;
 
         /*!
          * @brief get_min_thick for the Stratigraphic Column
@@ -324,12 +349,12 @@ namespace RINGMesh {
         /*!
          * @return the position of a unit in the stratigraphic column
          */
-        index_t get_index( StratigraphicUnit* unit ) ;
+        index_t get_index( const StratigraphicUnit& unit ) const;
         /*!
          *@param[in] name of the unit to find
          * @return the position of a unit in the stratigraphic column
          */
-        index_t get_index( const std::string& name ) ;
+        index_t get_index( const std::string& name ) const;
 
         /*!
          * @param[in] feature RockFeature used to find the corresponding unit in the column
@@ -345,9 +370,9 @@ namespace RINGMesh {
          * @param[out] units Vector of StratigraphicUnit localized between top and base
          */
         void get_units_between(
-            StratigraphicUnit* top,
-            StratigraphicUnit* base,
-            std::vector< const StratigraphicUnit* > units ) ;
+            const StratigraphicUnit& top,
+            const StratigraphicUnit& base,
+            std::vector< const StratigraphicUnit* >& units ) ;
 
         std::string name_ ;
         std::vector< const StratigraphicUnit* > layers_ ;
