@@ -154,10 +154,10 @@ namespace RINGMesh {
 		if (mesh->type_name() == type) {
 			return mesh;
 		}
-		Mesh0D* new_mesh = Mesh0D::create_mesh(type);
+		Mesh0D* new_mesh = Mesh0D::create_mesh(type) ;
 		Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder(
-			*new_mesh);
-		builder->copy(*mesh, true);
+			*new_mesh) ;
+		builder->copy(*mesh, true) ;
 		delete mesh;
 		return new_mesh;
 	}
@@ -188,10 +188,10 @@ namespace RINGMesh {
 		if (mesh->type_name() == type) {
 			return mesh;
 		}
-		Mesh1D* new_mesh = Mesh1D::create_mesh(type);
+		Mesh1D* new_mesh = Mesh1D::create_mesh(type) ;
 		Mesh1DBuilder_var builder = Mesh1DBuilder::create_builder(
-			*new_mesh);
-		builder->copy(*mesh, true);
+			*new_mesh) ;
+		builder->copy(*mesh, true) ;
 		delete mesh;
 		return new_mesh;
 	}
@@ -222,10 +222,10 @@ namespace RINGMesh {
 		if (mesh->type_name() == type) {
 			return mesh;
 		}
-		Mesh2D* new_mesh = Mesh2D::create_mesh(type);
+		Mesh2D* new_mesh = Mesh2D::create_mesh(type) ;
 		Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder(
-			*new_mesh);
-		builder->copy(*mesh, true);
+			*new_mesh) ;
+		builder->copy(*mesh, true) ;
 		delete mesh;
 		return new_mesh;
 	}
@@ -256,10 +256,10 @@ namespace RINGMesh {
 		if (mesh->type_name() == type) {
 			return mesh;
 		}
-		Mesh3D* new_mesh = Mesh3D::create_mesh(type);
+		Mesh3D* new_mesh = Mesh3D::create_mesh(type) ;
 		Mesh3DBuilder_var builder = Mesh3DBuilder::create_builder(
-			*new_mesh);
-		builder->copy(*mesh, true);
+			*new_mesh) ;
+		builder->copy(*mesh, true) ;
 		delete mesh;
 		return new_mesh;
 	}
@@ -287,10 +287,10 @@ namespace RINGMesh {
 		if (mesh->type_name() == type) {
 			return mesh;
 		}
-		MeshAllD* new_mesh = MeshAllD::create_mesh(type);
+		MeshAllD* new_mesh = MeshAllD::create_mesh(type) ;
 		MeshAllDBuilder_var builder = MeshAllDBuilder::create_builder(
-			*new_mesh);
-		builder->copy(*mesh, true);
+			*new_mesh) ;
+		builder->copy(*mesh, true) ;
 		delete mesh;
 		return new_mesh;
 	}
