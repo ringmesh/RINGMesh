@@ -382,8 +382,8 @@ file(GLOB zlib_include "${PROJECT_SOURCE_DIR}/include/third_party/zlib/*.h")
 # and the global property USE_FOLDERS must be ON
 source_group("Zlib" FILES ${zlib_src} ${zlib_include})
 
-file(GLOB tinyxml2_src "${PROJECT_SOURCE_DIR}/src/third_party/tinyxml2/tinyxml2.cpp")
-file(GLOB tinyxml2_include "${PROJECT_SOURCE_DIR}/include/third_party/tinyxml2/tinyxml2.h")
+set(tinyxml2_src "${PROJECT_SOURCE_DIR}/src/third_party/tinyxml2/tinyxml2.cpp")
+set(tinyxml2_include "${PROJECT_SOURCE_DIR}/include/third_party/tinyxml2/tinyxml2.h")
 
 # Group files of a project in directories
 # All the files should be added to the sources of the project

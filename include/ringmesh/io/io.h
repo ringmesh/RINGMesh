@@ -56,7 +56,6 @@ namespace RINGMesh {
     class StratigraphicColumn ;
     class GeoModel ;
     class WellGroup ;
-
 }
 
 namespace GEO {
