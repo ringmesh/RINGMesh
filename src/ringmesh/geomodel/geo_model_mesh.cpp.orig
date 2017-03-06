@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,19 +33,25 @@
  *     FRANCE
  */
 
-#include <ringmesh/geomodel/geomodel_mesh.h>
+#include <ringmesh/geomodel/geo_model_mesh.h>
 
 #include <stack>
+#include <algorithm>
 
 #include <geogram/basic/algorithm.h>
 
+#include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_geometry.h>
+#include <geogram/mesh/mesh_repair.h>
+#include <geogram/points/colocate.h>
 
-#include <ringmesh/geomodel/geomodel.h>
-#include <ringmesh/geomodel/geomodel_builder.h>
-
+#include <ringmesh/basic/algorithm.h>
+#include <ringmesh/basic/box3d.h>
+#include <ringmesh/basic/geometry.h>
+#include <ringmesh/geogram_extension/geogram_extension.h>
+#include <ringmesh/geomodel/geo_model.h>
+#include <ringmesh/geomodel/geo_model_builder.h>
 #include <ringmesh/mesh/well.h>
-#include <ringmesh/mesh/geogram_mesh.h>
 
 /*!
  * @author Arnaud Botella - Jeanne Pellerin - Antoine Mazuyer
@@ -141,6 +147,13 @@ namespace RINGMesh {
         vertex_maps_[Region::type_name_static()] = &region_vertex_maps_ ;
     }
 
+    void GeoModelMeshVertices::GeoModelVertexMapper::test_and_initialize() const
+    {
+        if( !is_initialized() ) {
+            const_cast< GeoModelVertexMapper* >( this )->initialize() ;
+        }
+    }
+
     void GeoModelMeshVertices::GeoModelVertexMapper::clear()
     {
         gme_vertices_.clear() ;
@@ -156,12 +169,15 @@ namespace RINGMesh {
         ringmesh_assert( mesh_entity_vertex_index <
             geomodel_.mesh_entity( mesh_entity_id ).nb_vertices() ) ;
 
+        const_cast< GeoModelVertexMapper* >( this )->test_and_initialize() ;
+
         return vertex_map( mesh_entity_id )[mesh_entity_vertex_index] ;
     }
 
     const std::vector< GMEVertex >& GeoModelMeshVertices::GeoModelVertexMapper::mesh_entity_vertex_indices(
         index_t v ) const
     {
+        test_and_initialize() ;
         ringmesh_assert( v < gme_vertices_.size() ) ;
         return gme_vertices_[v] ;
     }
@@ -293,6 +309,20 @@ namespace RINGMesh {
         }
     }
 
+    void GeoModelMeshVertices::GeoModelVertexMapper::initialize()
+    {
+        // Fill the gme_vertices vectors
+        fill_gme_vertices() ;
+    }
+
+    bool GeoModelMeshVertices::GeoModelVertexMapper::is_initialized() const
+    {
+        if( gme_vertices_.empty() ) {
+            return false ;
+        }
+        return true ;
+    }
+
     void GeoModelMeshVertices::GeoModelVertexMapper::initialize_mesh_entity_vertex_map(
         const gme_t& mesh_entity_id )
     {
@@ -303,7 +333,7 @@ namespace RINGMesh {
         const GeoModelMeshEntity& E = geomodel_.mesh_entity( mesh_entity_id ) ;
         for( index_t v = 0; v < E.nb_vertices(); v++ ) {
             std::vector< index_t > result ;
-            geomodel_vertices_.nn_search().get_neighbors( E.vertex( v ), 1, result ) ;
+            geomodel_vertices_.colocater().get_neighbors( E.vertex( v ), 1, result ) ;
             mesh_entity_vertex_map[v] = result[0] ;
         }
     }
@@ -334,6 +364,81 @@ namespace RINGMesh {
                 vertex_maps_[cur_type]->unbind( e ) ;
             }
             vertex_maps_[cur_type]->clear() ;
+        }
+    }
+
+    void GeoModelMeshVertices::GeoModelVertexMapper::fill_gme_vertices()
+    {
+        // Set the size of gme_vertices to the total number of geomodel vertices
+        gme_vertices_.resize( geomodel_vertices_.nb() ) ;
+
+        for( index_t v = 0; v < geomodel_vertices_.nb(); v++ ) {
+            std::vector< GMEVertex >& cur_v_gme_vertices = gme_vertices_[v] ;
+            compute_all_mesh_entity_vertices( v, cur_v_gme_vertices ) ;
+        }
+
+    }
+
+    void GeoModelMeshVertices::GeoModelVertexMapper::add_mesh_entity_vertices_to_gme(
+        const gme_t& mesh_entity_id )
+    {
+        const GeoModelMeshEntity& E = geomodel_.mesh_entity( mesh_entity_id ) ;
+        for( index_t v = 0; v < E.nb_vertices(); v++ ) {
+            const GMEVertex cur_gme_vertex( mesh_entity_id, v ) ;
+            index_t cur_model_v_id = vertex_map( mesh_entity_id )[v] ;
+            gme_vertices_[cur_model_v_id].push_back( cur_gme_vertex ) ;
+        }
+    }
+
+    void GeoModelMeshVertices::GeoModelVertexMapper::compute_all_mesh_entity_vertices(
+        index_t v,
+        std::vector< GMEVertex >& gme_vertices ) const
+    {
+        const std::vector< EntityType >& all_mesh_entity_types =
+            EntityTypeManager::mesh_entity_types() ;
+        for( index_t t = 0; t < all_mesh_entity_types.size(); t++ ) {
+            EntityType cur_entity_type = all_mesh_entity_types[t] ;
+            compute_mesh_entity_type_vertices( v, cur_entity_type, gme_vertices ) ;
+        }
+    }
+
+    void GeoModelMeshVertices::GeoModelVertexMapper::compute_mesh_entity_type_vertices(
+        index_t v,
+        const EntityType& entity_type,
+        std::vector< GMEVertex >& gme_vertices ) const
+    {
+        ringmesh_assert(
+            EntityTypeManager::is_mesh_entity_type( entity_type ) ) ;
+
+        for( index_t e = 0; e < geomodel_.nb_mesh_entities( entity_type ); e++ ) {
+            gme_t cur_entity( entity_type, e ) ;
+            std::vector< index_t > cur_gme_vertices ;
+            compute_mesh_entity_vertex_indices( cur_entity, v, cur_gme_vertices ) ;
+            for( index_t gme_v = 0; gme_v < cur_gme_vertices.size(); gme_v++ ) {
+                gme_vertices.push_back(
+                    GMEVertex( cur_entity, cur_gme_vertices[gme_v] ) ) ;
+            }
+        }
+    }
+
+    void GeoModelMeshVertices::GeoModelVertexMapper::compute_mesh_entity_vertex_indices(
+        const gme_t& mesh_entity_id,
+        index_t v,
+        std::vector< index_t >& result ) const
+    {
+        ringmesh_assert(
+            EntityTypeManager::is_mesh_entity_type( mesh_entity_id.type ) ) ;
+        ringmesh_assert( v < geomodel_vertices_.nb() ) ;
+
+        const GEO::Attribute< index_t >& mesh_entity_vertex_map = vertex_map(
+            mesh_entity_id ) ;
+        index_t nb_mesh_entity_vertices =
+            geomodel_.mesh_entity( mesh_entity_id ).nb_vertices() ;
+
+        for( index_t vertex = 0; vertex < nb_mesh_entity_vertices; vertex++ ) {
+            if( mesh_entity_vertex_map[vertex] == v ) {
+                result.push_back( vertex ) ;
+            }
         }
     }
 
@@ -479,7 +584,7 @@ namespace RINGMesh {
     {
         test_and_initialize() ;
         std::vector< index_t > vertices ;
-        const NNSearch& colocator = mesh_->vertices_nn_search() ;
+        const ColocaterANN& colocator = mesh_->vertices_colocater_ann() ;
         colocator.get_neighbors( p, vertices, gm_.epsilon() ) ;
         if( vertices.empty() ) {
             return NO_ID ;
@@ -557,7 +662,7 @@ namespace RINGMesh {
         gme_vertices( v, gme_v ) ;
         for( index_t i = 0; i < gme_v.size(); i++ ) {
             const GMEVertex& info = gme_v[i] ;
-            builder.geometry.set_mesh_entity_vertex( info.gme_id, info.v_id, point, false ) ;
+            builder.set_mesh_entity_vertex( info.gme_id, info.v_id, point, false ) ;
         }
     }
 
@@ -568,6 +673,7 @@ namespace RINGMesh {
     {
         vertex_mapper_.set_vertex_map_value( entity_id, entity_vertex_index,
             geomodel_vertex_index ) ;
+        vertex_mapper_.test_and_initialize() ;
         vertex_mapper_.add_to_gme_vertices(
             GMEVertex( entity_id, entity_vertex_index ), geomodel_vertex_index ) ;
     }
@@ -580,9 +686,9 @@ namespace RINGMesh {
             return ;
         }
         // Identify and invalidate colocated vertices
-        std::vector< index_t > old2new ;
+        GEO::vector< index_t > old2new ;
         index_t nb_colocalised_vertices =
-            mesh_->vertices_nn_search().get_colocated_index_mapping(
+            mesh_->vertices_colocater_ann().get_colocated_index_mapping(
                 gm_.epsilon(), old2new ) ;
         if( nb_colocalised_vertices > 0 ) {
             std::vector< index_t > vector_copy( old2new.begin(), old2new.end() ) ;
@@ -595,7 +701,7 @@ namespace RINGMesh {
         ringmesh_assert( to_delete.size() == nb() ) ;
 
         // For mesh vertices deletion
-        std::vector< bool > to_delete_bool( nb(), false ) ;
+        GEO::vector< index_t > to_delete_geo( nb(), 0 ) ;
 
         // Fill the delete information for geogram
         // Recycle the to_delete vertex to get the mapping between
@@ -605,7 +711,7 @@ namespace RINGMesh {
         index_t cur = 0 ;
         for( index_t v = 0; v < nb(); ++v ) {
             if( to_delete[v] != v ) {
-                to_delete_bool[v] = true ;
+                to_delete_geo[v] = 1 ;
                 nb_todelete++ ;
                 if( to_delete[v] != NO_ID ) {
                     ringmesh_assert( to_delete[v] < v ) ;
@@ -633,7 +739,7 @@ namespace RINGMesh {
         // Delete the vertices - false is to not remove
         // isolated vertices (here all the vertices)
         Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder( *mesh_ ) ;
-        builder->delete_vertices( to_delete_bool ) ;
+        builder->delete_vertices( to_delete_geo ) ;
 
         vertex_mapper_.update_mesh_entity_maps_and_gmes( to_delete ) ;
     }
@@ -766,14 +872,14 @@ namespace RINGMesh {
         // Retrieve the adjacencies
         mesh_builder->connect_cells() ;
 
-//        // Permute cells to sort them per region and per type
-//        std::vector< index_t > sorted_indices( mesh_->nb_cells() ) ;
-//        for( index_t i = 0; i < mesh_->nb_cells(); i++ ) {
-//            sorted_indices[i] = i ;
-//        }
-//        GeoModelMeshCellsSort action( *mesh_, region_id_ ) ;
-//        std::sort( sorted_indices.begin(), sorted_indices.end(), action ) ;
-//        mesh_builder->permute_cells( sorted_indices ) ;
+        // Permute cells to sort them per region and per type
+        GEO::vector< index_t > sorted_indices( mesh_->nb_cells() ) ;
+        for( index_t i = 0; i < mesh_->nb_cells(); i++ ) {
+            sorted_indices[i] = i ;
+        }
+        GeoModelMeshCellsSort action( *mesh_, region_id_ ) ;
+        std::sort( sorted_indices.begin(), sorted_indices.end(), action ) ;
+        mesh_builder->permute_cells( sorted_indices ) ;
 
         // Cache some values
         nb_tet_ = nb_cells_per_type[GEO::MESH_TET] ;
@@ -1109,14 +1215,14 @@ namespace RINGMesh {
             SKIP ) ;
         std::vector< bool > is_vertex_to_duplicate( corner_vertices.size(), false ) ;
         {
-            NNSearch nn_search( corner_vertices, false ) ;
+            ColocaterANN ann( corner_vertices, false ) ;
             for( index_t s = 0; s < gm_.nb_surfaces(); s++ ) {
                 if( !is_surface_to_duplicate( s ) ) continue ;
                 actions_on_surfaces[s] = TO_PROCESS ;
                 const Surface& surface = gm_.surface( s ) ;
                 for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
                     std::vector< index_t > colocated_corners ;
-                    nn_search.get_neighbors( surface.vertex( v ), colocated_corners,
+                    ann.get_neighbors( surface.vertex( v ), colocated_corners,
                         gm_.epsilon() ) ;
                     for( index_t co = 0; co < colocated_corners.size(); co++ ) {
                         is_vertex_to_duplicate[colocated_corners[co]] = true ;
@@ -1387,11 +1493,11 @@ namespace RINGMesh {
 
         facet_id_.bind( mesh_->cell_facet_attribute_manager(), "facet_id" ) ;
         facet_id_.fill( NO_ID ) ;
-        const NNSearch& nn_search = mesh_->facets_nn_search() ;
+        const ColocaterANN& ann = mesh_->facets_colocater_ann() ;
         for( index_t c = 0; c < mesh_->nb_cells(); c++ ) {
             for( index_t f = 0; f < mesh_->nb_cell_facets( c ); f++ ) {
                 std::vector< index_t > result ;
-                if( nn_search.get_neighbors( mesh_->cell_facet_barycenter( c, f ), result,
+                if( ann.get_neighbors( mesh_->cell_facet_barycenter( c, f ), result,
                     gm_.epsilon() ) ) {
                     facet_id_[mesh_->cell_facet( c, f )] = result[0] ;
                     // If there are more than 1 matching facet, this is WRONG
@@ -1739,7 +1845,7 @@ namespace RINGMesh {
                         mesh_builder->set_facet_vertex( cur_facet, v, v_id ) ;
                     }
                 } else {
-                    std::vector< index_t > vertices( nb_vertices ) ;
+                    GEO::vector< index_t > vertices( nb_vertices ) ;
                     for( index_t v = 0; v < nb_vertices; v++ ) {
                         vertices[v] = geomodel_vertices.geomodel_vertex_id(
                             surface.gme_id(), f, v ) ;
@@ -1751,11 +1857,14 @@ namespace RINGMesh {
             }
         }
 
+        // Compute facet adjacencies
+        mesh_builder->connect_facets() ;
+
         // Permute facets to sort them per surface and per type
         // Example for a mesh with two surfaces and only triangles and quads
         // [TRGL,TRGL, .. , QUAD, QUAD .. , TRGL, TRGL, ... , QUAD, QUAD ..]
         // |          surface 0           |             surface 1           |
-        std::vector< index_t > sorted_indices( mesh_->nb_facets() ) ;
+        GEO::vector< index_t > sorted_indices( mesh_->nb_facets() ) ;
         for( index_t i = 0; i < mesh_->nb_facets(); i++ ) {
             sorted_indices[i] = i ;
         }
@@ -1763,33 +1872,10 @@ namespace RINGMesh {
         std::sort( sorted_indices.begin(), sorted_indices.end(), action ) ;
         mesh_builder->permute_facets( sorted_indices ) ;
 
-        // Compute facet adjacencies
-        mesh_builder->connect_facets() ;
-        disconnect_along_lines() ;
-
         // Cache some values
         nb_triangle_ = nb_facet_per_type[TRIANGLE] ;
         nb_quad_ = nb_facet_per_type[QUAD] ;
         nb_polygon_ = nb_facet_per_type[POLYGON] ;
-    }
-
-    void GeoModelMeshFacets::disconnect_along_lines()
-    {
-        Mesh2DBuilder_var mesh_builder = Mesh2DBuilder::create_builder( *mesh_ ) ;
-        for( index_t s = 0; s < gm_.nb_surfaces(); s++ ) {
-            const Surface& surface = gm_.surface( s ) ;
-            for( index_t f = 0; f < nb_facets( s ); f++ ) {
-                index_t facet_id = facet( s, f ) ;
-                index_t surface_facet_id = index_in_surface( facet_id ) ;
-                for( index_t v = 0; v < nb_vertices( facet_id ); v++ ) {
-                    index_t adj = surface.facet_adjacent_index( surface_facet_id,
-                        v ) ;
-                    if( adj == NO_ID ) {
-                        mesh_builder->set_facet_adjacent( facet_id, v, NO_ID ) ;
-                    }
-                }
-            }
-        }
     }
 
     vec3 GeoModelMeshFacets::center( index_t f ) const
@@ -1925,12 +2011,15 @@ namespace RINGMesh {
     GeoModelMesh::GeoModelMesh( GeoModel& geomodel )
         :
             geomodel_( geomodel ),
-            mesh_( nil ),
+            mesh_( NULL ),
             mode_( GeoModelMeshCells::NONE ),
             vertices( *this, geomodel ),
             edges( *this ),
             facets( *this ),
             cells( *this )
+    /*! @todo I am no expert but this initialization list looks like
+     * a ticking bomb (like those in Mesh, btw I don not understand how these can work)
+     * If these classes are derived one day, I don't know what will happen [JP]*/
     {
         GeogramMeshAllD* geogrammesh = new GeogramMeshAllD ;
         mesh_ = geogrammesh ;
@@ -1996,10 +2085,10 @@ namespace RINGMesh {
                     vertices_on_geomodel_region ) ;
                 for( index_t gme_v = 0; gme_v < vertices_on_geomodel_region.size();
                     gme_v++ ) {
-                    const GMEVertex& cur_vertex_on_geomodel =
+                    const GMEVertex& cur_vertex_on_geo_model =
                         vertices_on_geomodel_region[gme_v] ;
                     for( index_t att_e = 0; att_e < att_dim; att_e++ ) {
-                        att_on_regions[cur_vertex_on_geomodel.gme_id.index][cur_vertex_on_geomodel.v_id
+                        att_on_regions[cur_vertex_on_geo_model.gme_id.index][cur_vertex_on_geo_model.v_id
                             * att_dim + att_e] = cur_att_on_geomodelmesh[v * att_dim
                             + att_e] ;
                     }
@@ -2015,16 +2104,17 @@ namespace RINGMesh {
         GEO::vector< std::string > att_c_names ;
         cell_attribute_manager().list_attribute_names( att_c_names ) ;
 
-        const NNSearch& nn_search = mesh_->cells_nn_search() ;
+        const ColocaterANN& ann = mesh_->cells_colocater_ann() ;
 
         for( index_t att_c = 0; att_c < att_c_names.size(); att_c++ ) {
             if( !is_attribute_a_double( cell_attribute_manager(),
                 att_c_names[att_c] ) ) {
                 continue ;
             }
-            GEO::Attribute< double > cur_att_on_geomodel_mesh(
+            DEBUG(att_c_names[att_c]) ;
+            GEO::Attribute< double > cur_att_on_geo_model_mesh(
                 cell_attribute_manager(), att_c_names[att_c] ) ;
-            index_t att_dim = cur_att_on_geomodel_mesh.dimension() ;
+            index_t att_dim = cur_att_on_geo_model_mesh.dimension() ;
 
             for( index_t reg = 0; reg < geomodel_.nb_regions(); reg++ ) {
                 if( geomodel_.region( reg ).cell_attribute_manager().is_defined(
@@ -2034,8 +2124,8 @@ namespace RINGMesh {
                         << reg << std::endl ;
                     continue ;
                 }
-                GEO::Attribute< double > cur_att_on_geomodel_mesh_entity ;
-                cur_att_on_geomodel_mesh_entity.create_vector_attribute(
+                GEO::Attribute< double > cur_att_on_geo_model_mesh_entity ;
+                cur_att_on_geo_model_mesh_entity.create_vector_attribute(
                     geomodel_.region( reg ).cell_attribute_manager(),
                     att_c_names[att_c], att_dim ) ;
                 for( index_t c = 0; c < geomodel_.region( reg ).nb_mesh_elements();
@@ -2043,12 +2133,12 @@ namespace RINGMesh {
                     vec3 center = geomodel_.region( reg ).mesh_element_barycenter(
                         c ) ;
                     std::vector< index_t > c_in_geom_model_mesh ;
-                    nn_search.get_neighbors( center, c_in_geom_model_mesh,
+                    ann.get_neighbors( center, c_in_geom_model_mesh,
                         geomodel_.epsilon() ) ;
                     ringmesh_assert( c_in_geom_model_mesh.size() == 1 ) ;
                     for( index_t att_e = 0; att_e < att_dim; att_e++ ) {
-                        cur_att_on_geomodel_mesh_entity[c * att_dim + att_e] =
-                            cur_att_on_geomodel_mesh[c_in_geom_model_mesh[0]
+                        cur_att_on_geo_model_mesh_entity[c * att_dim + att_e] =
+                            cur_att_on_geo_model_mesh[c_in_geom_model_mesh[0]
                                 * att_dim + att_e] ;
                     }
                 }
