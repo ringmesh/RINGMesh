@@ -2,5 +2,3 @@ syntax: regexp
 ^.settings$
 syntax: regexp
 ^build$
-syntax: regexp
-\.orig$

@@ -270,7 +270,7 @@ namespace RINGMesh {
                 // Number of entities of a given type
                 if( file_line.field_matches( 0, "Nb" ) ) {
                     // Allocate the space
-                    topology.create_geological_entities( file_line.field( 1 ),
+                    geology.create_geological_entities( file_line.field( 1 ),
                         file_line.field_as_uint( 2 ) ) ;
                 } else {
                     const std::string type = file_line.field( 0 ) ;
@@ -402,7 +402,7 @@ namespace RINGMesh {
                         if( geomodel_.is_mesh_entity_type( type ) ) {
                             topology.create_mesh_entities( type, nb_entities ) ;
                         } else {
-                            topology.create_geological_entities( type,
+                            geology.create_geological_entities( type,
                                 nb_entities ) ;
                         }
 
