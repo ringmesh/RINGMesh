@@ -766,14 +766,14 @@ namespace RINGMesh {
         // Retrieve the adjacencies
         mesh_builder->connect_cells() ;
 
-//        // Permute cells to sort them per region and per type
-//        std::vector< index_t > sorted_indices( mesh_->nb_cells() ) ;
-//        for( index_t i = 0; i < mesh_->nb_cells(); i++ ) {
-//            sorted_indices[i] = i ;
-//        }
-//        GeoModelMeshCellsSort action( *mesh_, region_id_ ) ;
-//        std::sort( sorted_indices.begin(), sorted_indices.end(), action ) ;
-//        mesh_builder->permute_cells( sorted_indices ) ;
+        // Permute cells to sort them per region and per type
+        std::vector< index_t > sorted_indices( mesh_->nb_cells() ) ;
+        for( index_t i = 0; i < mesh_->nb_cells(); i++ ) {
+            sorted_indices[i] = i ;
+        }
+        GeoModelMeshCellsSort action( *mesh_, region_id_ ) ;
+        std::sort( sorted_indices.begin(), sorted_indices.end(), action ) ;
+        mesh_builder->permute_cells( sorted_indices ) ;
 
         // Cache some values
         nb_tet_ = nb_cells_per_type[GEO::MESH_TET] ;
