@@ -56,7 +56,7 @@ namespace RINGMesh {
     /*!
      * @brief Manages the RockFeature, which contains a RockType and more informations
      */
-    class RockFeature {
+    class RINGMESH_API RockFeature {
     public:
         /*!
          * @brief Complete constructor of a RockFeature
@@ -104,7 +104,7 @@ namespace RINGMesh {
      * Each Unit has a name, two delimiting interfaces with two corresponding relations, a layer, a RockFeature,
      * a minimum thickness and a maximum thickness. A StratigraphicColumn can be a StratigraphicUnit.
      */
-    class StratigraphicUnit {
+    class RINGMESH_API StratigraphicUnit {
     public:
 
         /*!
@@ -203,7 +203,7 @@ namespace RINGMesh {
     /*!
      * @brief Manages the Stratigraphic Column
      */
-    class StratigraphicColumn: public StratigraphicUnit {
+    class RINGMESH_API StratigraphicColumn: public StratigraphicUnit {
     public:
         /*!
          * @brief Complete constructor of StratigraphicColumn
