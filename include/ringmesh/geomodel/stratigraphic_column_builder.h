@@ -38,23 +38,26 @@
 
 #include <ringmesh/basic/common.h>
 #include <ringmesh/geomodel/stratigraphic_column.h>
+#include <ringmesh/geomodel/geomodel.h>
 
 namespace RINGMesh {
     class StratigraphicColumnBuilder {
     ringmesh_disable_copy(StratigraphicColumnBuilder) ;
     public:
-        StratigraphicColumnBuilder( StratigraphicColumn& column ) ;
+        StratigraphicColumnBuilder( StratigraphicColumn& column , GeoModel& model) ;
         virtual ~StratigraphicColumnBuilder()
         {
         }
     protected:
         StratigraphicColumn& column_ ;
+        GeoModel& model_;
     } ;
 
     class StratigraphicColumnBuilderFile: public StratigraphicColumnBuilder {
     public:
         StratigraphicColumnBuilderFile(
             StratigraphicColumn& column,
+			GeoModel& model,
             const std::string& filename ) ;
         virtual ~StratigraphicColumnBuilderFile()
         {
@@ -74,8 +77,9 @@ namespace RINGMesh {
     public:
         StratigraphicColumnBuilderXML(
             StratigraphicColumn& column,
+			GeoModel& model,
             const std::string& filename )
-            : StratigraphicColumnBuilderFile( column, filename )
+            : StratigraphicColumnBuilderFile( column, model , filename )
         {
         }
         virtual ~StratigraphicColumnBuilderXML()
