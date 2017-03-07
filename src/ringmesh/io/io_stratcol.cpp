@@ -33,64 +33,58 @@
  *     FRANCE
  */
 
-#ifndef INCLUDE_RINGMESH_GEOMODEL_STRATIGRAPHIC_COLUMN_BUILDER_H_
-#define INCLUDE_RINGMESH_GEOMODEL_STRATIGRAPHIC_COLUMN_BUILDER_H_
-
-#include <ringmesh/basic/common.h>
+#include <ringmesh/io/io.h>
 #include <ringmesh/geomodel/stratigraphic_column.h>
-#include <ringmesh/geomodel/geomodel.h>
+
+#include <geogram/basic/file_system.h>
 
 namespace RINGMesh {
-    class StratigraphicColumnBuilder {
-    ringmesh_disable_copy(StratigraphicColumnBuilder) ;
+    class XMLStratigraphicColumnIOHandler: public StratigraphicColumnIOHandler {
     public:
-        StratigraphicColumnBuilder( StratigraphicColumn& column , GeoModel& model) ;
-        virtual ~StratigraphicColumnBuilder()
+        virtual void load( const std::string& filename, StratigraphicColumn& column )
         {
+            throw RINGMeshException( "I/O", "This method is not implemented yet" ) ;
         }
-    protected:
-        StratigraphicColumn& column_ ;
-        GeoModel& model_;
-    } ;
 
-    class StratigraphicColumnBuilderFile: public StratigraphicColumnBuilder {
-    public:
-        StratigraphicColumnBuilderFile(
-            StratigraphicColumn& column,
-			GeoModel& model,
-            const std::string& filename ) ;
-        virtual ~StratigraphicColumnBuilderFile()
-        {
-        }
-        void build_column()
-        {
-            load_file() ;
-        }
-    private:
-        virtual void load_file() = 0 ;
-
-    protected:
-        std::string filename_ ;
-    } ;
-
-    class StratigraphicColumnBuilderXML: public StratigraphicColumnBuilderFile {
-    public:
-        StratigraphicColumnBuilderXML(
-            StratigraphicColumn& column,
-			GeoModel& model,
+        virtual void save(
+            const StratigraphicColumn& column,
             const std::string& filename )
-            : StratigraphicColumnBuilderFile( column, model , filename )
         {
-        }
-        virtual ~StratigraphicColumnBuilderXML()
-        {
+            throw RINGMeshException( "I/O",
+                "Saving of a StratigraphicColumn not implemented yet" ) ;
         }
 
-    private:
-        void load_file() ;
-        void read_file() ;
-        virtual void read_line() ;
     } ;
+
 }
 
-#endif /* INCLUDE_RINGMESH_GEOMODEL_STRATIGRAPHIC_COLUMN_BUILDER_H_ */
+namespace RINGMesh {
+
+    StratigraphicColumnIOHandler* StratigraphicColumnIOHandler::create(
+        const std::string& format )
+    {
+        StratigraphicColumnIOHandler* handler =
+            StratigraphicColumnIOHandlerFactory::create_object( format ) ;
+        if( !handler ) {
+            throw RINGMeshException( "I/O", "Unsupported file format: " + format ) ;
+        }
+        return handler ;
+    }
+
+    StratigraphicColumnIOHandler* StratigraphicColumnIOHandler::get_handler(
+        const std::string& filename )
+    {
+        std::string ext = GEO::FileSystem::extension( filename ) ;
+        return create( ext ) ;
+    }
+
+    /*
+     * Initializes the possible handler for IO files
+     */
+    void StratigraphicColumnIOHandler::initialize()
+    {
+        ringmesh_register_StratigraphicColumnIOHandler_creator(
+            XMLStratigraphicColumnIOHandler, "xml" ) ;
+    }
+}
+

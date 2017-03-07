@@ -33,64 +33,41 @@
  *     FRANCE
  */
 
-#ifndef INCLUDE_RINGMESH_GEOMODEL_STRATIGRAPHIC_COLUMN_BUILDER_H_
-#define INCLUDE_RINGMESH_GEOMODEL_STRATIGRAPHIC_COLUMN_BUILDER_H_
 
-#include <ringmesh/basic/common.h>
-#include <ringmesh/geomodel/stratigraphic_column.h>
-#include <ringmesh/geomodel/geomodel.h>
+#include <ringmesh/geomodel/stratigraphic_column_builder.h>
+#include <third_party/tinyxml2/tinyxml2.h>
 
 namespace RINGMesh {
-    class StratigraphicColumnBuilder {
-    ringmesh_disable_copy(StratigraphicColumnBuilder) ;
-    public:
-        StratigraphicColumnBuilder( StratigraphicColumn& column , GeoModel& model) ;
-        virtual ~StratigraphicColumnBuilder()
-        {
-        }
-    protected:
-        StratigraphicColumn& column_ ;
-        GeoModel& model_;
-    } ;
 
-    class StratigraphicColumnBuilderFile: public StratigraphicColumnBuilder {
-    public:
-        StratigraphicColumnBuilderFile(
-            StratigraphicColumn& column,
-			GeoModel& model,
-            const std::string& filename ) ;
-        virtual ~StratigraphicColumnBuilderFile()
-        {
-        }
-        void build_column()
-        {
-            load_file() ;
-        }
-    private:
-        virtual void load_file() = 0 ;
+    StratigraphicColumnBuilderFile::StratigraphicColumnBuilderFile(
+        StratigraphicColumn& column,
+		GeoModel& model,
+        const std::string& filename )
+        : StratigraphicColumnBuilder( column, model ), filename_( filename )
+    {
+    }
 
-    protected:
-        std::string filename_ ;
-    } ;
+    StratigraphicColumnBuilder::StratigraphicColumnBuilder(
+        StratigraphicColumn& column,
+		GeoModel& model)
+        : column_( column ), model_(model)
+    {
+    }
 
-    class StratigraphicColumnBuilderXML: public StratigraphicColumnBuilderFile {
-    public:
-        StratigraphicColumnBuilderXML(
-            StratigraphicColumn& column,
-			GeoModel& model,
-            const std::string& filename )
-            : StratigraphicColumnBuilderFile( column, model , filename )
-        {
-        }
-        virtual ~StratigraphicColumnBuilderXML()
-        {
-        }
+    void StratigraphicColumnBuilderXML::read_line()
+    {
+        throw RINGMeshException( "I/O", "This method is not implemented yet" ) ;
+    }
 
-    private:
-        void load_file() ;
-        void read_file() ;
-        virtual void read_line() ;
-    } ;
+    void StratigraphicColumnBuilderXML::read_file()
+    {
+        throw RINGMeshException( "I/O", "This method is not implemented yet" ) ;
+    }
+
+    void StratigraphicColumnBuilderXML::load_file()
+    {
+        read_file() ;
+        throw RINGMeshException( "I/O", "This method is not implemented yet" ) ;
+    }
+
 }
-
-#endif /* INCLUDE_RINGMESH_GEOMODEL_STRATIGRAPHIC_COLUMN_BUILDER_H_ */
