@@ -33,78 +33,66 @@
  *     FRANCE
  */
 
-
 #include <third_party/tinyxml2/tinyxml2.h>
 #include <ringmesh/basic/common.h>
 #include <ringmesh/ringmesh_tests_config.h>
 
-int main()
-{
-using namespace tinyxml2;
 using namespace RINGMesh;
-XMLDocument column;
-std::string input_model_file_name( ringmesh_test_data_path ) ;
-input_model_file_name += "column_gocad.xml" ;
-XMLError Result = column.LoadFile(input_model_file_name.c_str());
-if(Result != XML_SUCCESS)
-{
-	std::cout << "Error while loading file" << std::endl;
-}
-XMLNode *root = column.FirstChild();
-if (root == nil)
-{
-	std::cout << "Error when getting root" << std::endl;
-}
 
-XMLElement* local = root->FirstChildElement("LocalStratigraphicColumn");
-XMLElement* name_column = local->FirstChildElement("name");
-const char *name_of_column = name_column->GetText();
-std::cout<< "name of column:" << name_of_column << std::endl;
+int main() {
 
-XMLElement* paradigm = local->FirstChildElement("classification_type");
-std::cout<< "paradigm:" << paradigm->GetText() << std::endl;
-
-XMLElement* units = local->FirstChildElement("units");
-XMLElement* unit = units->FirstChildElement("unit");
-
-std::vector<const char*> unitList;
-while(unit != nil)
-{
-	XMLElement* name = unit->FirstChildElement("name");
-	//const char* NameValue;
-	//const char * TopValue;
-	const char* BaseValue;
-	std::cout << "name of unit:" << name->GetText() << std::endl;
-	unitList.push_back(name->GetText());
-	XMLElement* top = unit->FirstChildElement("top");
-	if(top != nil)
-	{
-		XMLElement* name_top = top->FirstChildElement("name");
-		unitList.push_back(name_top->GetText());
-		std::cout << "top of unit:" << name_top->GetText() << std::endl;
+	tinyxml2::XMLDocument column;
+	std::string input_model_file_name(ringmesh_test_data_path);
+	input_model_file_name += "column_gocad.xml";
+	tinyxml2::XMLError Result = column.LoadFile(input_model_file_name.c_str());
+	if (Result != tinyxml2::XML_SUCCESS) {
+		std::cout << "Error while loading file" << std::endl;
 	}
-	else
-	{
-		unitList.push_back("none");
-		std::cout << "top = none" << std::endl;
+	tinyxml2::XMLNode *root = column.FirstChild();
+	if (root == nil) {
+		std::cout << "Error when getting root" << std::endl;
 	}
-	XMLElement* base = unit->FirstChildElement("base");
-	if(base != nil)
-	{
-		XMLElement* name_base = base->FirstChildElement("name");
-		unitList.push_back(name_base->GetText());
-		std::cout << "base of unit:" << name_base->GetText()<< std::endl;
+
+	tinyxml2::XMLElement* local = root->FirstChildElement("LocalStratigraphicColumn");
+	tinyxml2::XMLElement* name_column = local->FirstChildElement("name");
+	const char *name_of_column = name_column->GetText();
+	std::cout << "name of column:" << name_of_column << std::endl;
+
+	tinyxml2::XMLElement* paradigm = local->FirstChildElement("classification_type");
+	std::cout << "paradigm:" << paradigm->GetText() << std::endl;
+
+	tinyxml2::XMLElement* units = local->FirstChildElement("units");
+	tinyxml2::XMLElement* unit = units->FirstChildElement("unit");
+
+	std::vector<const char*> unitList;
+	while (unit != nil) {
+		tinyxml2::XMLElement* name = unit->FirstChildElement("name");
+		//const char* NameValue;
+		//const char * TopValue;
+		const char* BaseValue;
+		std::cout << "name of unit:" << name->GetText() << std::endl;
+		unitList.push_back(name->GetText());
+		tinyxml2::XMLElement* top = unit->FirstChildElement("top");
+		if (top != nil) {
+			tinyxml2::XMLElement* name_top = top->FirstChildElement("name");
+			unitList.push_back(name_top->GetText());
+			std::cout << "top of unit:" << name_top->GetText() << std::endl;
+		} else {
+			unitList.push_back("none");
+			std::cout << "top = none" << std::endl;
+		}
+		tinyxml2::XMLElement* base = unit->FirstChildElement("base");
+		if (base != nil) {
+			tinyxml2::XMLElement* name_base = base->FirstChildElement("name");
+			unitList.push_back(name_base->GetText());
+			std::cout << "base of unit:" << name_base->GetText() << std::endl;
+		} else {
+			unitList.push_back("none");
+			std::cout << "base = none" << std::endl;
+		}
+		unit = unit->NextSiblingElement("unit");
+
 	}
-	else
-	{
-		unitList.push_back("none");
-		std::cout << "base = none" << std::endl;
-	}
-	unit = unit->NextSiblingElement("unit");
 
-}
-
-
-
-return 0;
+	return 0;
 }
