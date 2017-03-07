@@ -37,7 +37,7 @@
 
 #include <ringmesh/basic/common.h>
 
-#ifdef RINGMESH_WITH_GRAPHICS
+#ifdef RINGMESH_TEST_GRAPHICS
 
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/logger.h>
