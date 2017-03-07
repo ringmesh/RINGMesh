@@ -718,14 +718,18 @@ namespace RINGMesh {
         std::string min_value = GEO::String::to_string(
             GM_gfx_.attribute.minimum() ) ;
         float nb_min_letter = static_cast< float >( min_value.size() ) ;
-        glQuickText::printfAt( x1 - w - font_height * nb_min_letter * 0.3f,
-            y1 - font_height, z, font_sz, min_value.c_str() ) ;
+        glQuickText::printfAt(
+            static_cast< double >( x1 - w - font_height * nb_min_letter * (float) 0.3 ),
+            static_cast< double >( y1 - font_height ), static_cast< double >( z ),
+            static_cast< double >( font_sz ), min_value.c_str() ) ;
 
         std::string max_value = GEO::String::to_string(
             GM_gfx_.attribute.maximum() ) ;
         float nb_max_letter = static_cast< float >( max_value.size() ) ;
-        glQuickText::printfAt( x1 + w - font_height * nb_max_letter * 0.3f,
-            y1 - font_height, z, font_sz, max_value.c_str() ) ;
+        glQuickText::printfAt(
+            static_cast< double >( x1 - w - font_height * nb_max_letter * (float) 0.3 ),
+            static_cast< double >( y1 - font_height ), static_cast< double >( z ),
+            static_cast< double >( font_sz ), max_value.c_str() ) ;
 
         glupMatrixMode( GLUP_PROJECTION_MATRIX ) ;
         glupPopMatrix() ;
@@ -1002,6 +1006,11 @@ namespace RINGMesh {
         for( index_t i = 0; i < meshes_.size(); i++ ) {
             delete meshes_[i] ;
         }
+    }
+
+    void RINGMeshApplication::quit()
+    {
+        glup_viewer_exit_main_loop() ;
     }
 
     RINGMeshApplication* RINGMeshApplication::instance()

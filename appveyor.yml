@@ -25,6 +25,9 @@ build_script:
     cmake --build . --config Debug
     
 test_script:
+ - cmd: cd bin
+ - cmd: cd Debug
+ - cmd: .\test_ringmeshview
  - cmd: cmake --build . --target RUN_TESTS --config Debug
 
 on_success:
