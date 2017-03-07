@@ -33,41 +33,33 @@
  *     FRANCE
  */
 
-
 #include <ringmesh/geomodel/stratigraphic_column_builder.h>
 #include <third_party/tinyxml2/tinyxml2.h>
 
 namespace RINGMesh {
 
-    StratigraphicColumnBuilderFile::StratigraphicColumnBuilderFile(
-        StratigraphicColumn& column,
-		GeoModel& model,
-        const std::string& filename )
-        : StratigraphicColumnBuilder( column, model ), filename_( filename )
-    {
-    }
+StratigraphicColumnBuilderFile::StratigraphicColumnBuilderFile(
+		StratigraphicColumn& column, GeoModel& model,
+		const std::string& filename) :
+		StratigraphicColumnBuilder(column, model), filename_(filename) {
+}
 
-    StratigraphicColumnBuilder::StratigraphicColumnBuilder(
-        StratigraphicColumn& column,
-		GeoModel& model)
-        : column_( column ), model_(model)
-    {
-    }
+StratigraphicColumnBuilder::StratigraphicColumnBuilder(
+		StratigraphicColumn& column, GeoModel& model) :
+		column_(column), model_(model) {
+}
 
-    void StratigraphicColumnBuilderXML::read_line()
-    {
-        throw RINGMeshException( "I/O", "This method is not implemented yet" ) ;
-    }
+void StratigraphicColumnBuilderXML::read_line() {
+	throw RINGMeshException("I/O", "This method is not implemented yet");
+}
 
-    void StratigraphicColumnBuilderXML::read_file()
-    {
-        throw RINGMeshException( "I/O", "This method is not implemented yet" ) ;
-    }
+void StratigraphicColumnBuilderXML::read_file() {
+	throw RINGMeshException("I/O", "This method is not implemented yet");
+}
 
-    void StratigraphicColumnBuilderXML::load_file()
-    {
-        read_file() ;
-        throw RINGMeshException( "I/O", "This method is not implemented yet" ) ;
-    }
+void StratigraphicColumnBuilderXML::load_file() {
+	read_file();
+	throw RINGMeshException("I/O", "This method is not implemented yet");
+}
 
 }
