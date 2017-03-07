@@ -167,7 +167,7 @@ namespace RINGMesh {
         }
     }
 
-    index_t GeoModelBuilderRepair::detect_degenerate_facets( Surface& S )
+    index_t GeoModelBuilderRepair::detect_degenerate_facets( const Surface& S )
     {
         std::vector< index_t > colocated ;
         const NNSearch& nn_search = S.vertex_nn_search() ;
@@ -190,7 +190,7 @@ namespace RINGMesh {
         }
     }
 
-    index_t GeoModelBuilderRepair::repair_line_mesh( Line& line )
+    index_t GeoModelBuilderRepair::repair_line_mesh( const Line& line )
     {
         std::vector< index_t > colocated ;
         const NNSearch& nn_search = line.vertex_nn_search() ;
@@ -211,9 +211,7 @@ namespace RINGMesh {
     {
         to_remove.clear() ;
         for( index_t i = 0; i < geomodel_.nb_lines(); ++i ) {
-            Line& line =
-                dynamic_cast< Line& >( geomodel_access_.modifiable_mesh_entity(
-                    gme_t( Line::type_name_static(), i ) ) ) ;
+            const Line& line = geomodel_.line( i ) ;
             index_t nb = repair_line_mesh( line ) ;
             if( nb > 0 ) {
                 Logger::out( "GeoModel" ) << nb
@@ -228,9 +226,7 @@ namespace RINGMesh {
 
         double epsilon_sq = geomodel_.epsilon() * geomodel_.epsilon() ;
         for( index_t i = 0; i < geomodel_.nb_surfaces(); ++i ) {
-            Surface& surface =
-                dynamic_cast< Surface& >( geomodel_access_.modifiable_mesh_entity(
-                    gme_t( Surface::type_name_static(), i ) ) ) ;
+            const Surface& surface = geomodel_.surface( i ) ;
             index_t nb = detect_degenerate_facets( surface ) ;
             /// @todo Check if that cannot be simplified
             if( nb > 0 ) {
@@ -242,12 +238,11 @@ namespace RINGMesh {
                     // MESH_REPAIR_DUP_F 2 ;
                     GEO::MeshRepairMode mode =
                         static_cast< GEO::MeshRepairMode >( 2 ) ;
-                    Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder(
-                        surface.low_level_mesh_storage() ) ;
+                    Mesh2DBuilder_var builder =
+                        builder_.geometry.create_surface_builder( i ) ;
                     builder->mesh_repair( mode, 0.0 ) ;
 
                     // This might create some small components - remove them
-                    /// @todo How to choose the epsilon ? and the maximum number of facets ?
                     builder->remove_small_connected_components( epsilon_sq, 3 ) ;
 
                     // Alright, this is a bit of an overkill [JP]
@@ -353,11 +348,8 @@ namespace RINGMesh {
                     continue ;
                 } else {
                     if( t == 1 ) {
-                        Surface& ME =
-                            dynamic_cast< Surface& >( geomodel_access_.modifiable_mesh_entity(
-                                entity_id ) ) ;
-                        Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder(
-                            ME.low_level_mesh_storage() ) ;
+                        Mesh2DBuilder_var builder =
+                            builder_.geometry.create_surface_builder( e ) ;
                         for( index_t f_itr = 0; f_itr < E.nb_mesh_elements();
                             f_itr++ ) {
                             for( index_t fv_itr = 0;
@@ -374,11 +366,8 @@ namespace RINGMesh {
                             << std::endl ;
 
                     } else if( t == 0 ) {
-                        Line& ME =
-                            dynamic_cast< Line& >( geomodel_access_.modifiable_mesh_entity(
-                                entity_id ) ) ;
-                        Mesh1DBuilder_var builder = Mesh1DBuilder::create_builder(
-                            ME.low_level_mesh_storage() ) ;
+                        Mesh1DBuilder_var builder =
+                            builder_.geometry.create_line_builder( e ) ;
                         for( index_t e_itr = 0; e_itr < E.nb_mesh_elements();
                             e_itr++ ) {
                             builder->set_edge_vertex( e_itr, 0,

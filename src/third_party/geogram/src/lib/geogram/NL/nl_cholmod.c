@@ -44,6 +44,7 @@
 
 #include "nl_cholmod.h"
 #include "nl_context.h"
+#include "nl_mkl.h"
 
 /**
  * \file nl_cholmod.c
@@ -244,18 +245,7 @@ static CHOLMODContext* CHOLMOD() {
     return &context;
 }
 
-
-/**
- * \brief Tests whether CHOLMOD extension is
- *  initialized.
- * \details Tests whether CHOLMOD shared object
- *  was successfuly loaded and whether all the
- *  function pointers where found.
- * \retval NL_TRUE if CHOLMOD was successfully
- *  loaded and initialized
- * \retval NL_FALSE otherwise
- */
-static NLboolean CHOLMOD_is_initialized() {
+NLboolean nlExtensionIsInitialized_CHOLMOD() {
     return
         CHOLMOD()->DLL_handle != NULL &&
         CHOLMOD()->cholmod_start != NULL &&
@@ -300,10 +290,29 @@ static void nlTerminateExtension_CHOLMOD(void) {
 
 NLboolean nlInitExtension_CHOLMOD(void) {
     if(CHOLMOD()->DLL_handle != NULL) {
-        return CHOLMOD_is_initialized();
+        return nlExtensionIsInitialized_CHOLMOD();
     }
 
-    CHOLMOD()->DLL_handle = nlOpenDLL(CHOLMOD_LIB_NAME);
+    /*
+     *   MKL has a built-in CHOLMOD that conflicts with
+     * the CHOLMOD used by OpenNL (to be fixed). For now
+     * we simply output a warning message and deactivate the
+     * CHOLMOD extension if the MKL extension was initialized
+     * before.
+     */
+    if(NLMultMatrixVector_MKL != NULL) {
+	fprintf(
+	    stderr,
+	    "CHOLMOD extension incompatible with MKL (deactivating)"
+	);
+	return NL_FALSE;
+    }
+
+    
+    CHOLMOD()->DLL_handle = nlOpenDLL(
+	CHOLMOD_LIB_NAME,
+	NL_LINK_NOW | NL_LINK_USE_FALLBACK
+    );
     if(CHOLMOD()->DLL_handle == NULL) {
         return NL_FALSE;
     }
@@ -381,7 +390,9 @@ static void nlCholmodFactorizedMatrixMult(
     cholmod_dense_ptr Y=NULL;
 
     memcpy(X->x, x, M->n*sizeof(double));    
-    Y = CHOLMOD()->cholmod_solve(CHOLMOD_A, M->L, X, &CHOLMOD()->cholmod_common);
+    Y = CHOLMOD()->cholmod_solve(
+	CHOLMOD_A, M->L, X, &CHOLMOD()->cholmod_common
+    );
     memcpy(y, Y->x, M->n*sizeof(double));    
     
     CHOLMOD()->cholmod_free_dense(&X, &CHOLMOD()->cholmod_common);

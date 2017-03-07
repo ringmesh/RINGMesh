@@ -96,7 +96,7 @@ namespace {
             "pre:epsilon", 0,
             "Colocate tolerance (in % of bounding box diagonal)",
             ARG_ADVANCED
-        );  // 1e-4
+        );  
         declare_arg_percent(
             "pre:max_hole_area", 0,
             "Fill holes smaller than (in % total area)"
@@ -310,12 +310,12 @@ namespace {
 #ifdef GEO_DEBUG
         declare_arg(
             "sys:assert", "abort",
-            "Assertion behavior (abort, throw)"
+            "Assertion behavior (abort, throw, breakpoint)"
         );
 #else        
         declare_arg(
             "sys:assert", "throw",
-            "Assertion behavior (abort, throw)"
+            "Assertion behavior (abort, throw, breakpoint)"
         );
 #endif
         
@@ -353,6 +353,21 @@ namespace {
         );
     }
 
+    /**
+     * \brief Imports the NL (Numerical Library) option group
+     */
+    void import_arg_group_nl() {
+	declare_arg_group("nl", "OpenNL (numerical library)", ARG_ADVANCED);
+	declare_arg(
+	    "nl:MKL", false,
+	    "Use Intel Math Kernel Library (if available in the system)"
+	);
+	declare_arg(
+	    "nl:CUDA", false,
+	    "Use NVidia CUDA (if available in the system)"
+	);
+    }
+    
     /**
      * \brief Imports the Logger option group
      */
@@ -488,6 +503,10 @@ namespace {
 	declare_arg(
 	    "poly:generate_ids", false,
 	    "generate unique ids for vertices and cells (saved in geogram and geogram_ascii file formats only)"
+	);
+	declare_arg(
+	    "poly:embedding_dim", 0,
+	    "force embedding dimension (0 = use input dim.)"
 	);
     }    
 
@@ -750,10 +769,13 @@ namespace GEO {
             if(name == "standard") {
                 import_arg_group_global();
                 import_arg_group_sys();
+		import_arg_group_nl();		
                 import_arg_group_log();
             } else if(name == "global") {
                 import_arg_group_global();
-            } else if(name == "sys") {
+            } else if(name == "nl") {
+	        import_arg_group_nl();
+	    } else if(name == "sys") {
                 import_arg_group_sys();
             } else if(name == "log") {
                 import_arg_group_log();

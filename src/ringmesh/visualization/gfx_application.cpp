@@ -990,8 +990,8 @@ namespace RINGMesh {
 
         print_header_information() ;
 
-        Logger::div( "RINGMeshView" ) ;
-        Logger::out( "" ) << "Welcome to RINGMeshView !" << std::endl ;
+        Logger::div( "RINGMesh-View" ) ;
+        Logger::out( "" ) << "Welcome to RINGMesh-View !" << std::endl ;
     }
 
     RINGMeshApplication::~RINGMeshApplication()
