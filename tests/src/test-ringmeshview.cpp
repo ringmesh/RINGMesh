@@ -124,7 +124,7 @@ int main()
         // Two arguments: one for 'ringmeshview' and one for the input file
         int argc = 2 ;
 
-        std::vector< std::string > GLUP_profiles( 2, "" ) ;
+        std::vector< std::string > GLUP_profiles( 1, "" ) ;
         GLUP_profiles[0] = "auto" ;
 //        GLUP_profiles[1] = "GLUP150" ;
 //        GLUP_profiles[2] = "GLUP440" ;
@@ -149,8 +149,6 @@ int main()
             GEO::Process::run_threads( thread_group ) ;
         }
 
-        return 0 ;
-
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category() ) << e.what() << std::endl ;
         return 1 ;
@@ -158,6 +156,7 @@ int main()
         Logger::err( "Exception" ) << e.what() << std::endl ;
         return 1 ;
     }
+    Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
     return 0 ;
 }
 
