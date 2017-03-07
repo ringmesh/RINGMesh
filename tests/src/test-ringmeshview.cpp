@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -96,8 +96,8 @@ namespace RINGMesh {
 
         virtual void run()
         {
-            // Wait one second to be sure that the windows is really opened
-            wait( 1000 ) ;
+            // Wait some seconds to be sure that the windows is really opened
+            wait( 4000 ) ;
             app_.quit() ;
         }
 
@@ -113,67 +113,63 @@ int main()
 
     try {
         default_configure() ;
+
+        char ringmesh_view[] = "ringmesh-view" ;
         std::string input_model_file_name( ringmesh_test_data_path ) ;
         input_model_file_name += "modelA6.ml" ;
+        char* input_model = &input_model_file_name[0] ;
 
-        char* input = &input_model_file_name[0] ;
-        char** p_input = new char* ;
-        p_input = &input ;
+        char* array_input[2] = { ringmesh_view, input_model } ;
 
-        int argc = 1 ; //2
         // Two arguments: one for 'ringmeshview' and one for the input file
+        int argc = 2 ;
 
-        std::vector< std::string > GLUP_profiles( 1, "" ) ;
+        std::vector< std::string > GLUP_profiles( 2, "" ) ;
         GLUP_profiles[0] = "auto" ;
 //        GLUP_profiles[1] = "GLUP150" ;
 //        GLUP_profiles[2] = "GLUP440" ;
 //        GLUP_profiles[3] = "VanillaGL" ;
 
-    for( index_t profile = 0; profile < GLUP_profiles.size(); profile++ ) {
-        std::cout << "Profile nb = " << profile << std::endl ;
-        GEO::CmdLine::set_arg( "GLUP_profile", GLUP_profiles[profile] ) ;
+        for( index_t profile = 0; profile < GLUP_profiles.size(); profile++ ) {
+            GEO::CmdLine::set_arg( "GLUP_profile", GLUP_profiles[profile] ) ;
 
-        RINGMeshApplication app( argc, p_input ) ;
+            RINGMeshApplication app( argc, array_input ) ;
 
-        // Create the threads for launching the app window
-        // and the one for closing the window
-        StartAppThread* start_thread = new StartAppThread( app ) ;
-        QuitAppThread* quit_thread = new QuitAppThread( app ) ;
+            // Create the threads for launching the app window
+            // and the one for closing the window
+            StartAppThread* start_thread = new StartAppThread( app ) ;
+            QuitAppThread* quit_thread = new QuitAppThread( app ) ;
 
-        // Add the both threads in a group
-        GEO::ThreadGroup thread_group ;
-        thread_group.push_back( start_thread ) ;
-        thread_group.push_back( quit_thread ) ;
+            // Add the both threads in a group
+            GEO::ThreadGroup thread_group ;
+            thread_group.push_back( start_thread ) ;
+            thread_group.push_back( quit_thread ) ;
 
-        // Run concurrently the both threads
-        GEO::Process::run_threads( thread_group ) ;
+            // Run concurrently the both threads
+            GEO::Process::run_threads( thread_group ) ;
+        }
 
-        std::cout << "Next" << std::endl ;
+        return 0 ;
+
+    } catch( const RINGMeshException& e ) {
+        Logger::err( e.category() ) << e.what() << std::endl ;
+        return 1 ;
+    } catch( const std::exception& e ) {
+        Logger::err( "Exception" ) << e.what() << std::endl ;
+        return 1 ;
     }
-
-
     return 0 ;
-
-}
-catch( const RINGMeshException& e ) {
-    Logger::err( e.category() ) << e.what() << std::endl ;
-    return 1 ;
-} catch( const std::exception& e ) {
-    Logger::err( "Exception" ) << e.what() << std::endl ;
-    return 1 ;
-}
-return 0 ;
 }
 
 #else
 #include <geogram/basic/logger.h>
 int main() {
 
-default_configure() ;
-Logger::out("RINGMeshView")
-<< "To compile RINGMesh viewer you need to configure "
-<< "the project with the RINGMESH_WITH_GRAPHICS option ON"
-<< std::endl ;
-return 0 ;
+    default_configure() ;
+    Logger::out("RINGMeshView")
+    << "To compile RINGMesh viewer you need to configure "
+    << "the project with the RINGMESH_WITH_GRAPHICS option ON"
+    << std::endl ;
+    return 0 ;
 }
 #endif
