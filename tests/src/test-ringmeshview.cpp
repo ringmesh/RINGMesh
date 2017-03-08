@@ -106,6 +106,29 @@ namespace RINGMesh {
         RINGMeshApplication& app_ ;
     } ;
 
+    void open_viewer_load_geomodel_then_close(
+        const int argc,
+        char** argv,
+        const std::string& glup_profile )
+    {
+        GEO::CmdLine::set_arg( "GLUP_profile", glup_profile ) ;
+
+        RINGMeshApplication app( argc, argv ) ;
+
+        // Create the threads for launching the app window
+        // and the one for closing the window
+        StartAppThread* start_thread = new StartAppThread( app ) ;
+        QuitAppThread* quit_thread = new QuitAppThread( app ) ;
+
+        // Add the both threads in a group
+        GEO::ThreadGroup thread_group ;
+        thread_group.push_back( start_thread ) ;
+        thread_group.push_back( quit_thread ) ;
+
+        // Run concurrently the both threads
+        GEO::Process::run_threads( thread_group ) ;
+    }
+
 }
 
 int main()
@@ -120,10 +143,10 @@ int main()
         input_model_file_name += "modelA6.ml" ;
         char* input_model = &input_model_file_name[0] ;
 
-        char* array_input[2] = { ringmesh_view, input_model } ;
+        char* argv[2] = { ringmesh_view, input_model } ;
 
         // Two arguments: one for 'ringmeshview' and one for the input file
-        int argc = 2 ;
+        const int argc = 2 ;
 
         std::vector< std::string > GLUP_profiles( 1, "" ) ;
         GLUP_profiles[0] = "auto" ;
@@ -132,22 +155,8 @@ int main()
 //        GLUP_profiles[3] = "VanillaGL" ;
 
         for( index_t profile = 0; profile < GLUP_profiles.size(); profile++ ) {
-            GEO::CmdLine::set_arg( "GLUP_profile", GLUP_profiles[profile] ) ;
-
-            RINGMeshApplication app( argc, array_input ) ;
-
-            // Create the threads for launching the app window
-            // and the one for closing the window
-            StartAppThread* start_thread = new StartAppThread( app ) ;
-            QuitAppThread* quit_thread = new QuitAppThread( app ) ;
-
-            // Add the both threads in a group
-            GEO::ThreadGroup thread_group ;
-            thread_group.push_back( start_thread ) ;
-            thread_group.push_back( quit_thread ) ;
-
-            // Run concurrently the both threads
-            GEO::Process::run_threads( thread_group ) ;
+            open_viewer_load_geomodel_then_close( argc, argv,
+                GLUP_profiles[profile] ) ;
         }
 
     } catch( const RINGMeshException& e ) {
