@@ -35,12 +35,13 @@
 
 #include <ringmesh/ringmesh_tests_config.h>
 
+#include <geogram/basic/command_line.h>
+#include <geogram/basic/logger.h>
+
 #include <ringmesh/basic/common.h>
 
 #ifdef RINGMESH_TEST_GRAPHICS
 
-#include <geogram/basic/command_line.h>
-#include <geogram/basic/logger.h>
 #include <geogram/basic/process.h>
 
 #include <ringmesh/visualization/gfx_application.h>
@@ -161,8 +162,9 @@ int main()
 }
 
 #else
-#include <geogram/basic/logger.h>
 int main() {
+
+    using namespace RINGMesh ;
 
     default_configure() ;
     Logger::out("RINGMeshView")
