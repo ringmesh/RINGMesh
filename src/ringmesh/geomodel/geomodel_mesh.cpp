@@ -433,7 +433,7 @@ namespace RINGMesh {
 
         // Fill the vertices
         builder->create_vertices( nb ) ;
-        vertex_mapper_.resize_geomodel_vertex_gmes( nb ) ;
+        vertex_mapper_.clear_and_resize_geomodel_vertex_gmes( nb ) ;
         vertex_mapper_.bind_all_mesh_entity_vertex_maps() ;
 
         index_t count = 0 ;
@@ -540,7 +540,20 @@ namespace RINGMesh {
     index_t GeoModelMeshVertices::add_vertex( const vec3& point )
     {
         Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder( *mesh_ ) ;
-        return builder->create_vertex( point ) ;
+        const index_t index = builder->create_vertex( point ) ;
+        vertex_mapper_.resize_geomodel_vertex_gmes( nb() );
+        return index;
+    }
+
+    void GeoModelMeshVertices::add_vertices( const std::vector<vec3>& points, std::vector<index_t>& indices )
+    {
+        Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder( *mesh_ ) ;
+        indices.resize( points.size() );
+        for( size_t i = 0; i < points.size(); ++i ) {
+            indices[i] = builder->create_vertex( points[i] ) ;
+        }
+        vertex_mapper_.resize_geomodel_vertex_gmes( nb() );
+        return;
     }
 
     void GeoModelMeshVertices::update_point( index_t v, const vec3& point )
