@@ -247,9 +247,7 @@ namespace RINGMesh {
     {
         ringmesh_assert(
             mesh_entity_id.index < vertex_maps_[mesh_entity_id.type]->size() ) ;
-        if( GEO::Attribute< index_t >::is_defined(
-            mesh_entity_vertex_attribute_manager( mesh_entity_id ),
-            vertex_map_name() ) ) {
+        if( geomodel_vertices_.is_initialized() ) {
             vertex_maps_.at( mesh_entity_id.type )->bind_one_attribute(
                 mesh_entity_id.index,
                 mesh_entity_vertex_attribute_manager( mesh_entity_id ),
