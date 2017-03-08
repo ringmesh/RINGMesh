@@ -194,8 +194,10 @@ namespace RINGMesh {
         /*!
          * @brief Sets a vertex of a facet by local vertex index.
          * @param[in] edge_id index of the edge, in 0..nb()-1.
-         * @param[in] local_vertex_id index of the vertex in the facet. Local index between 0 and @function nb_vertices(cell_id) - 1.
-         * @param[in] vertex_id specifies the vertex \param local_vertex_id of facet \param of the facet facet_id. Index between 0 and @function nb() - 1.
+         * @param[in] local_vertex_id index of the vertex in the facet.
+         * Local index between 0 and @function nb_vertices(cell_id) - 1.
+         * @param[in] vertex_id specifies the vertex \param local_vertex_id of facet
+         * \param of the facet facet_id. Index between 0 and @function nb() - 1.
          */
         virtual void set_edge_vertex(
             index_t edge_id,
@@ -283,18 +285,23 @@ namespace RINGMesh {
         /*!
          * @brief Sets a vertex of a facet by local vertex index.
          * @param[in] facet_id index of the facet, in 0.. @function nb() - 1.
-         * @param[in] local_vertex_id index of the vertex in the facet. Local index between 0 and @function nb_vertices(cell_id) - 1.
-         * @param[in] vertex_id specifies the vertex \param local_vertex_id of the facet \param facet_id. Index between 0 and @function nb() - 1.
+         * @param[in] local_vertex_id index of the vertex in the facet.
+         * Local index between 0 and @function nb_vertices(cell_id) - 1.
+         * @param[in] vertex_id specifies the vertex \param local_vertex_id of the
+         * facet \param facet_id. Index between 0 and @function nb() - 1.
          */
         virtual void set_facet_vertex(
             index_t facet_id,
             index_t local_vertex_id,
             index_t vertex_id ) = 0 ;
         /*!
-         * @brief Sets an adjacent facet by both its facet \param facet_id and its local edge index \param edge_id.
+         * @brief Sets an adjacent facet by both its facet \param facet_id
+         * and its local edge index \param edge_id.
          * @param[in] facet_id the facet index
          * @param[in] edge_id the local index of an edge in facet \p facet_id
-         * @param[in] specifies the facet adjacent to \param facet_id along edge \param edge_id or GEO::NO_FACET if the parameter \param edge_id is on the border.
+         * @param[in] specifies the facet adjacent to \param facet_id along edge
+         * \param edge_id or GEO::NO_FACET if the parameter \param edge_id is
+         * on the border.
          */
         virtual void set_facet_adjacent(
             index_t facet_id,
@@ -407,8 +414,11 @@ namespace RINGMesh {
         /*!
          * @brief Sets a vertex of a cell by local vertex index.
          * @param[in] cell_id index of the cell, in 0.. @function nb() - 1.
-         * @param[in] local_vertex_id index of the vertex in the cell. Local index between 0 and @function nb_vertices(cell_id) - 1.
-         * @param[in] vertex_id specifies the global index of the vertex \param local_vertex_id in the cell \param cell_id. Index between 0 and @function nb() - 1.
+         * @param[in] local_vertex_id index of the vertex in the cell.
+         * Local index between 0 and @function nb_vertices(cell_id) - 1.
+         * @param[in] vertex_id specifies the global index of the vertex \param
+         * local_vertex_id in the cell \param cell_id. Index between 0 and
+         * @function nb() - 1.
          */
         virtual void set_cell_vertex(
             index_t cell_id,
@@ -417,7 +427,8 @@ namespace RINGMesh {
         /*!
          * \brief Sets the vertex that a corner is incident to
          * \param[in] corner_index the corner, in 0.. @function nb() - 1
-         * \param[in] vertex_index specifies the vertex that corner \param corner_index is incident to
+         * \param[in] vertex_index specifies the vertex that corner
+         * \param corner_index is incident to
          */
         virtual void set_cell_corner_vertex_index(
             index_t corner_index,
@@ -451,7 +462,7 @@ namespace RINGMesh {
          * On exit, permutation is modified (used for internal bookkeeping).
          * Applying a permutation permutation is equivalent to:
          * <code>
-         *  for(i=0 ; i<permutation.size() ; i++) {
+         *  for( i = 0 ; i < permutation.size() ; i++) {
          *      data2[i] = data[permutation[i]]
          *       }
          *  data = data2 ;

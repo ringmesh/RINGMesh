@@ -225,8 +225,8 @@ namespace RINGMesh {
 
         /*!
          * @brief Initialize the vertices from the vertices
-         *        of the GeoModel Corners, Lines, and Surfaces
-         * @details Fills the mesh_.vertices, gme_vertices_ and
+         *        of the GeoModel Corners, Lines, Surfaces and Regions
+         * @details Fills the mesh_.vertices, computes the vertex mapping and
          *         delete colocated vertices
          */
         void initialize() ;
