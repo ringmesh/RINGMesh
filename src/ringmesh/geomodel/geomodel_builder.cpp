@@ -771,25 +771,28 @@ namespace RINGMesh {
         RINGMesh::GeoModelRegionFromSurfaces cur_line_region_information_ ;
     } ;
 
-    void reorder_line_vertices_to_start_at_corner(
+    /*!
+     * @brief Reorders the line so that front() is a corner.
+     * @note Closed line has front()==back().
+     */
+    void reorder_closed_line_vertices_to_start_at_corner(
         const GeoModel& geomodel,
         std::vector< index_t >& line_vertices )
     {
         if( geomodel.nb_corners() == 0 ) {
             // Maybe should throw an assertion, but I am not sure [JP]
+            // this really may happen for sure, so no throw [RM]
             return ;
+        }
+        if( line_vertices.empty() ) {
+            return;
         }
         for( index_t i = 1; i + 1 < line_vertices.size(); ++i ) {
             gme_t corner = find_corner( geomodel, line_vertices[i] ) ;
             if( corner.is_defined() ) {
-                std::vector< index_t > shuffled_vertices( line_vertices.size() ) ;
-                std::copy( line_vertices.begin() + i, line_vertices.end(),
-                    shuffled_vertices.begin() ) ;
-                index_t nb_copied = static_cast< index_t >( line_vertices.end()
-                    - line_vertices.begin() - i ) ;
-                std::copy( line_vertices.begin() + 1, line_vertices.begin() + i + 1,
-                    shuffled_vertices.begin() + nb_copied ) ;
-                line_vertices = shuffled_vertices ;
+                line_vertices.pop_back();
+                std::rotate( line_vertices.begin(), line_vertices.begin() + i, line_vertices.end() );
+                line_vertices.push_back( line_vertices.front() );
                 break ;
             }
         }
@@ -839,7 +842,7 @@ namespace RINGMesh {
             bool is_line_closed = vertices.front() == vertices.back() ;
             if( is_line_closed ) {
                 // Vertices can begin and end at any vertex
-                reorder_line_vertices_to_start_at_corner( geomodel_, vertices ) ;
+                reorder_closed_line_vertices_to_start_at_corner( geomodel_, vertices ) ;
             }
 
             gme_t first_corner = builder_.topology.find_or_create_corner(
