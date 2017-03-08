@@ -308,6 +308,8 @@ namespace RINGMesh {
          */
         bool are_geomodel_vertex_indices_valid() const ;
 
+        void unbind_vertex_mapping_attribute() const ;
+        void bind_vertex_mapping_attribute() const ;
     protected:
 
         /// Entities on the boundary of this entity
