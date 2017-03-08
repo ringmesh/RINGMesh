@@ -719,7 +719,7 @@ namespace RINGMesh {
             GM_gfx_.attribute.minimum() ) ;
         float nb_min_letter = static_cast< float >( min_value.size() ) ;
         glQuickText::printfAt(
-            static_cast< double >( x1 - w - font_height * nb_min_letter * (float) 0.3 ),
+            static_cast< double >( x1 - w - font_height * nb_min_letter * 0.3f ),
             static_cast< double >( y1 - font_height ), static_cast< double >( z ),
             static_cast< double >( font_sz ), min_value.c_str() ) ;
 
@@ -727,7 +727,7 @@ namespace RINGMesh {
             GM_gfx_.attribute.maximum() ) ;
         float nb_max_letter = static_cast< float >( max_value.size() ) ;
         glQuickText::printfAt(
-            static_cast< double >( x1 - w - font_height * nb_max_letter * (float) 0.3 ),
+            static_cast< double >( x1 + w - font_height * nb_max_letter * 0.3f ),
             static_cast< double >( y1 - font_height ), static_cast< double >( z ),
             static_cast< double >( font_sz ), max_value.c_str() ) ;
 
