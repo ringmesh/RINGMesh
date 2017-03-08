@@ -58,9 +58,8 @@ namespace RINGMesh {
          * \name general methods
          * @{
          */
-        virtual void copy(
-            const MeshBase& rhs,
-            bool copy_attributes ) = 0 ;
+        virtual void copy( const MeshBase& rhs, bool copy_attributes ) = 0 ;
+
         virtual void load_mesh( const std::string& filename ) = 0 ;
         /*!
          * @brief Removes all the entities and attributes of this mesh.
@@ -95,10 +94,11 @@ namespace RINGMesh {
          * @param[in] coords a pointer to @function dimension() coordinate.
          * @return the index of the created vertex
          */
-        virtual index_t create_vertex(const vec3& vertex) {
-            index_t index = create_vertex();
-            set_vertex(index, vertex);
-            return index;
+        virtual index_t create_vertex( const vec3& vertex )
+        {
+            index_t index = create_vertex() ;
+            set_vertex( index, vertex ) ;
+            return index ;
         }
         /*!
          * @brief Creates a contiguous chunk of vertices.
@@ -111,8 +111,7 @@ namespace RINGMesh {
          * @param[in] to_delete     a vector of size @function nb(). If to_delete[e] is true,
          * then entity e will be destroyed, else it will be kept.
          */
-        virtual void delete_vertices(
-            const std::vector< bool >& to_delete ) = 0 ;
+        virtual void delete_vertices( const std::vector< bool >& to_delete ) = 0 ;
         /*!
          * @brief Removes all the vertices and attributes.
          * @param[in] keep_attributes if true, then all the existing attribute
@@ -121,7 +120,8 @@ namespace RINGMesh {
          * by subsequent mesh entity creations.
          */
         virtual void clear_vertices( bool keep_attributes, bool keep_memory ) = 0 ;
-        virtual void permute_vertices( const std::vector< index_t >& permutation ) = 0 ;
+        virtual void permute_vertices(
+            const std::vector< index_t >& permutation ) = 0 ;
         /*!
          * @brief Deletes the NNSearch on vertices
          */
@@ -141,9 +141,8 @@ namespace RINGMesh {
 #define ringmesh_register_mesh_base_builder(type) \
     geo_register_creator(RINGMesh::MeshBaseBuilderFactory, type ## Builder, type::type_name_static())
 
-
     class RINGMESH_API Mesh0DBuilder: public virtual MeshBaseBuilder {
-    ringmesh_disable_copy(Mesh0DBuilder) ;
+    ringmesh_disable_copy( Mesh0DBuilder ) ;
     public:
         virtual ~Mesh0DBuilder()
         {
@@ -170,7 +169,7 @@ namespace RINGMesh {
     geo_register_creator(RINGMesh::Mesh0DBuilderFactory, type ## Builder, type::type_name_static())
 
     class RINGMESH_API Mesh1DBuilder: public virtual MeshBaseBuilder {
-    ringmesh_disable_copy(Mesh1DBuilder) ;
+    ringmesh_disable_copy( Mesh1DBuilder ) ;
     public:
         virtual ~Mesh1DBuilder()
         {
@@ -179,6 +178,7 @@ namespace RINGMesh {
         virtual void set_mesh( Mesh1D& mesh ) = 0 ;
 
         static Mesh1DBuilder* create_builder( Mesh1D& mesh ) ;
+
         /*!
          * @brief Create a new edge.
          * @param[in] v1_id index of the starting vertex.
@@ -238,7 +238,7 @@ namespace RINGMesh {
     geo_register_creator(RINGMesh::Mesh1DBuilderFactory, type ## Builder, type::type_name_static())
 
     class RINGMESH_API Mesh2DBuilder: public virtual MeshBaseBuilder {
-    ringmesh_disable_copy(Mesh2DBuilder) ;
+    ringmesh_disable_copy( Mesh2DBuilder ) ;
     public:
         virtual ~Mesh2DBuilder()
         {
@@ -247,6 +247,7 @@ namespace RINGMesh {
         virtual void set_mesh( Mesh2D& mesh ) = 0 ;
 
         static Mesh2DBuilder* create_builder( Mesh2D& mesh ) ;
+
         /*!@}
          * \name Facet related methods
          * @{
@@ -323,7 +324,8 @@ namespace RINGMesh {
          * @brief Retrieve the adjacencies of facets
          */
         virtual void connect_facets() = 0 ;
-        virtual void permute_facets( const std::vector< index_t >& permutation ) = 0 ;
+        virtual void permute_facets(
+            const std::vector< index_t >& permutation ) = 0 ;
         /*!
          * @brief Deletes a set of facets.
          * @param[in] to_delete     a vector of size @function nb().
@@ -370,7 +372,7 @@ namespace RINGMesh {
     geo_register_creator(RINGMesh::Mesh2DBuilderFactory, type ## Builder, type::type_name_static())
 
     class RINGMESH_API Mesh3DBuilder: public virtual MeshBaseBuilder {
-    ringmesh_disable_copy(Mesh3DBuilder) ;
+    ringmesh_disable_copy( Mesh3DBuilder ) ;
     public:
         virtual ~Mesh3DBuilder()
         {
@@ -379,6 +381,7 @@ namespace RINGMesh {
         virtual void set_mesh( Mesh3D& mesh ) = 0 ;
 
         static Mesh3DBuilder* create_builder( Mesh3D& mesh ) ;
+
         /*!
          * @brief Creates a contiguous chunk of cells of the same type.
          * @param[in] nb_cells number of cells to create
@@ -448,7 +451,7 @@ namespace RINGMesh {
          * On exit, permutation is modified (used for internal bookkeeping).
          * Applying a permutation permutation is equivalent to:
          * <code>
-         *  for(i=0; i<permutation.size(); i++) {
+         *  for(i=0 ; i<permutation.size() ; i++) {
          *      data2[i] = data[permutation[i]]
          *       }
          *  data = data2 ;
@@ -486,7 +489,7 @@ namespace RINGMesh {
         public virtual Mesh1DBuilder,
         public virtual Mesh2DBuilder,
         public virtual Mesh3DBuilder {
-    ringmesh_disable_copy(MeshAllDBuilder) ;
+    ringmesh_disable_copy( MeshAllDBuilder ) ;
     public:
         virtual ~MeshAllDBuilder()
         {
@@ -497,6 +500,7 @@ namespace RINGMesh {
         virtual void remove_isolated_vertices() = 0 ;
 
         static MeshAllDBuilder* create_builder( MeshAllD& mesh ) ;
+
     protected:
         MeshAllDBuilder()
             : Mesh0DBuilder(), Mesh1DBuilder(), Mesh2DBuilder(), Mesh3DBuilder()
