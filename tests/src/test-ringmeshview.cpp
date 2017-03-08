@@ -168,8 +168,8 @@ int main() {
 
     default_configure() ;
     Logger::out("RINGMeshView")
-    << "To compile RINGMesh viewer you need to configure "
-    << "the project with the RINGMESH_WITH_GRAPHICS option ON"
+    << "To test RINGMesh viewer you need to configure "
+    << "the project with the RINGMESH_TEST_GRAPHICS option ON"
     << std::endl ;
     return 0 ;
 }
