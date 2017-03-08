@@ -37,12 +37,12 @@
 #include <ringmesh/basic/common.h>
 #include <ringmesh/ringmesh_tests_config.h>
 
-using namespace RINGMesh;
+//using namespace RINGMesh;
 
 int main() {
 
 	tinyxml2::XMLDocument column;
-	std::string input_model_file_name(ringmesh_test_data_path);
+	std::string input_model_file_name(RINGMesh::ringmesh_test_data_path);
 	input_model_file_name += "column_gocad.xml";
 	tinyxml2::XMLError Result = column.LoadFile(input_model_file_name.c_str());
 	if (Result != tinyxml2::XML_SUCCESS) {
@@ -69,7 +69,7 @@ int main() {
 		tinyxml2::XMLElement* name = unit->FirstChildElement("name");
 		//const char* NameValue;
 		//const char * TopValue;
-		const char* BaseValue;
+		//const char* BaseValue;
 		std::cout << "name of unit:" << name->GetText() << std::endl;
 		unitList.push_back(name->GetText());
 		tinyxml2::XMLElement* top = unit->FirstChildElement("top");
