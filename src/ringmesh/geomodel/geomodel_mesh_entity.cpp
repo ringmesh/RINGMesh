@@ -268,14 +268,24 @@ namespace RINGMesh {
 
     GeoModelMeshEntity::~GeoModelMeshEntity()
     {
-        // Unbind attribute about vertex mapping
-        GeoModel& modifiable_model = const_cast< GeoModel& >( geomodel() ) ;
-        modifiable_model.mesh.vertices.unbind_geomodel_vertex_map( gme_id() ) ;
+        unbind_vertex_mapping_attribute() ;
 #ifdef RINGMESH_DEBUG
         ringmesh_assert( mesh_ != NULL ) ;
         mesh_->print_mesh_bounded_attributes() ;
 #endif
         delete mesh_ ;
+    }
+
+    void GeoModelMeshEntity::unbind_vertex_mapping_attribute() const
+    {
+        GeoModel& modifiable_model = const_cast< GeoModel& >( geomodel() ) ;
+        modifiable_model.mesh.vertices.unbind_geomodel_vertex_map( gme_id() ) ;
+    }
+
+    void GeoModelMeshEntity::bind_vertex_mapping_attribute() const
+    {
+        GeoModel& modifiable_model = const_cast< GeoModel& >( geomodel() ) ;
+        modifiable_model.mesh.vertices.bind_geomodel_vertex_map( gme_id() ) ;
     }
 
     bool GeoModelMeshEntity::are_geomodel_vertex_indices_valid() const
@@ -1164,27 +1174,29 @@ namespace RINGMesh {
     {
         if( EntityTypeManager::is_corner( gmme_.type_name() ) ) {
             Corner& corner = dynamic_cast< Corner& >( gmme_ ) ;
-			corner.update_mesh_storage_type(
-				Mesh0DBuilder::change_mesh_data_structure(
-				corner.mesh0d_, type)
-				);
+            corner.unbind_vertex_mapping_attribute() ;
+            corner.update_mesh_storage_type(
+                Mesh0DBuilder::change_mesh_data_structure( corner.mesh0d_, type ) ) ;
+            corner.bind_vertex_mapping_attribute() ;
         } else if( EntityTypeManager::is_line( gmme_.type_name() ) ) {
             Line& line = dynamic_cast< Line& >( gmme_ ) ;
-			line.update_mesh_storage_type(
-				Mesh1DBuilder::change_mesh_data_structure(line.mesh1d_, type)
-				);
-         } else if( EntityTypeManager::is_surface( gmme_.type_name() ) ) {
+            line.unbind_vertex_mapping_attribute() ;
+            line.update_mesh_storage_type(
+                Mesh1DBuilder::change_mesh_data_structure( line.mesh1d_, type ) ) ;
+            line.bind_vertex_mapping_attribute() ;
+        } else if( EntityTypeManager::is_surface( gmme_.type_name() ) ) {
             Surface& surface = dynamic_cast< Surface& >( gmme_ ) ;
-			surface.update_mesh_storage_type(
-				Mesh2DBuilder::change_mesh_data_structure(
-				surface.mesh2d_, type)
-				);
+            surface.unbind_vertex_mapping_attribute() ;
+            surface.update_mesh_storage_type(
+                Mesh2DBuilder::change_mesh_data_structure( surface.mesh2d_,
+                    type ) ) ;
+            surface.bind_vertex_mapping_attribute() ;
         } else if( EntityTypeManager::is_region( gmme_.type_name() ) ) {
             Region& region = dynamic_cast< Region& >( gmme_ ) ;
-			region.update_mesh_storage_type(
-				Mesh3DBuilder::change_mesh_data_structure(
-				region.mesh3d_,type)
-				);
+            region.unbind_vertex_mapping_attribute() ;
+            region.update_mesh_storage_type(
+                Mesh3DBuilder::change_mesh_data_structure( region.mesh3d_, type ) ) ;
+            region.bind_vertex_mapping_attribute() ;
         } else {
             ringmesh_assert_not_reached ;
         }
