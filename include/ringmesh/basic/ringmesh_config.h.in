@@ -44,19 +44,19 @@
  
 namespace RINGMesh {
  
-    #define RINGMesh_VERSION_MAJOR @RINGMesh_VERSION_MAJOR@
-    #define RINGMesh_VERSION_MINOR @RINGMesh_VERSION_MINOR@
+	#define RINGMesh_VERSION_MAJOR @RINGMesh_VERSION_MAJOR@
+	#define RINGMesh_VERSION_MINOR @RINGMesh_VERSION_MINOR@
 
 	/* Optional components with which RINGMesh can be compiled */
 	#cmakedefine USE_MG_TETRA
 	#cmakedefine USE_OPENMP
     #cmakedefine RINGMESH_WITH_TETGEN
+    #cmakedefine RINGMESH_WITH_GEOLOGYJS
 
 	/* Optional components of RINGMesh */
 	#cmakedefine RINGMESH_WITH_GRAPHICS
 	#cmakedefine RINGMESH_WITH_UTILITIES
 	#cmakedefine RINGMESH_WITH_TESTS
-	#cmakedefine RINGMESH_WITH_GEOLOGYJS
-
+	#cmakedefine RINGMESH_TEST_GRAPHICS
 }
 #endif
