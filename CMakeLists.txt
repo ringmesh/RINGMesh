@@ -64,7 +64,7 @@ include(CMakeDependentOption)
 # is OFF. The fist time RINGMESH_WITH_GRAPHICS is ON, this
 # option is ON.
 CMAKE_DEPENDENT_OPTION(BUILD_RINGMESH_VIEW "Build ringmesh-view" ON
-    "RINGMESH_WITH_GRAPHICS;RINGMESH_WITH_TESTS" OFF)
+    "RINGMESH_WITH_GRAPHICS" OFF)
 
 option(RINGMESH_WITH_UTILITIES "Compile utility executables" OFF)
 option(RINGMESH_WITH_TUTORIALS "Compile API trainings and tuturials" OFF)
@@ -75,7 +75,7 @@ option(RINGMESH_WITH_GEOLOGYJS "Enable export to html" OFF)
 # is OFF. The fist time BUILD_RINGMESH_VIEW is ON, this
 # option is ON.
 CMAKE_DEPENDENT_OPTION(RINGMESH_TEST_GRAPHICS "Test ringmesh-view" ON
-    "BUILD_RINGMESH_VIEW" OFF)
+    "BUILD_RINGMESH_VIEW;RINGMESH_WITH_TESTS" OFF)
 
 # Optional custom steps 
 option(BUILD_DOCUMENTATION "Create and install the HTML documentation (requires Doxygen)")
