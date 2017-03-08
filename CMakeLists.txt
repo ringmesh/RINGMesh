@@ -64,12 +64,18 @@ include(CMakeDependentOption)
 # is OFF. The fist time RINGMESH_WITH_GRAPHICS is ON, this
 # option is ON.
 CMAKE_DEPENDENT_OPTION(BUILD_RINGMESH_VIEW "Build ringmesh-view" ON
-    "RINGMESH_WITH_GRAPHICS" OFF)
+    "RINGMESH_WITH_GRAPHICS;RINGMESH_WITH_TESTS" OFF)
 
 option(RINGMESH_WITH_UTILITIES "Compile utility executables" OFF)
 option(RINGMESH_WITH_TUTORIALS "Compile API trainings and tuturials" OFF)
 option(RINGMESH_WITH_TESTS "Compile test projects" OFF)
 option(RINGMESH_WITH_GEOLOGYJS "Enable export to html" OFF)
+
+# Option to test ringmesh-view. Disable when BUILD_RINGMESH_VIEW
+# is OFF. The fist time BUILD_RINGMESH_VIEW is ON, this
+# option is ON.
+CMAKE_DEPENDENT_OPTION(RINGMESH_TEST_GRAPHICS "Test ringmesh-view" ON
+    "BUILD_RINGMESH_VIEW" OFF)
 
 # Optional custom steps 
 option(BUILD_DOCUMENTATION "Create and install the HTML documentation (requires Doxygen)")
@@ -157,6 +163,7 @@ if(UNIX)
                 -DUSE_OPENMP:BOOL=${USE_OPENMP}
                 -DRINGMESH_WITH_TETGEN:BOOL=${RINGMESH_WITH_TETGEN} 
                 -DRINGMESH_WITH_GRAPHICS:BOOL=${RINGMESH_WITH_GRAPHICS}
+                -DRINGMESH_TEST_GRAPHICS:BOOL=${RINGMESH_TEST_GRAPHICS}
                 -DBUILD_RINGMESH_VIEW:BOOL=${BUILD_RINGMESH_VIEW}
                 -DRINGMESH_WITH_UTILITIES:BOOL=${RINGMESH_WITH_UTILITIES}
                 -DRINGMESH_WITH_TESTS:BOOL=${RINGMESH_WITH_TESTS}

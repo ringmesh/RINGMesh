@@ -63,6 +63,8 @@ namespace RINGMesh {
         RINGMeshApplication( int argc, char** argv ) ;
         ~RINGMeshApplication() ;
 
+        virtual void quit() ;
+
     private:
         static RINGMeshApplication* instance() ;
 
@@ -122,7 +124,7 @@ namespace RINGMesh {
             struct EntityStyle {
                 ImColor color_ ;
                 int size_ ;
-            };
+            } ;
 
         public:
             GeoModelViewer( RINGMeshApplication& app, const std::string& filename ) ;
@@ -242,7 +244,6 @@ namespace RINGMesh {
         std::string geogram_file_extensions_ ;
         index_t current_viewer_ ;
         ViewerType current_viewer_type_ ;
-
 
     } ;
 }
