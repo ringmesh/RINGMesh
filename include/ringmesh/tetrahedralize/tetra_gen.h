@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_TETRA_GEN__
-#define __RINGMESH_TETRA_GEN__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -112,5 +111,3 @@ namespace RINGMesh {
 #define ringmesh_register_tetragen(type, name) \
     geo_register_creator(TetraGenFactory, type, name)
 }
-
-#endif

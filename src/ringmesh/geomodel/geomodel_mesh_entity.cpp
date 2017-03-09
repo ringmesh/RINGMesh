@@ -271,14 +271,24 @@ namespace RINGMesh {
 
     GeoModelMeshEntity::~GeoModelMeshEntity()
     {
-        // Unbind attribute about vertex mapping
-        GeoModel& modifiable_model = const_cast< GeoModel& >( geomodel() ) ;
-        modifiable_model.mesh.vertices.unbind_geomodel_vertex_map( gme_id() ) ;
+        unbind_vertex_mapping_attribute() ;
 #ifdef RINGMESH_DEBUG
         ringmesh_assert( mesh_ != NULL ) ;
         mesh_->print_mesh_bounded_attributes() ;
 #endif
         delete mesh_ ;
+    }
+
+    void GeoModelMeshEntity::unbind_vertex_mapping_attribute() const
+    {
+        GeoModel& modifiable_model = const_cast< GeoModel& >( geomodel() ) ;
+        modifiable_model.mesh.vertices.unbind_geomodel_vertex_map( gme_id() ) ;
+    }
+
+    void GeoModelMeshEntity::bind_vertex_mapping_attribute() const
+    {
+        GeoModel& modifiable_model = const_cast< GeoModel& >( geomodel() ) ;
+        modifiable_model.mesh.vertices.bind_geomodel_vertex_map( gme_id() ) ;
     }
 
     bool GeoModelMeshEntity::are_geomodel_vertex_indices_valid() const
@@ -1254,52 +1264,47 @@ namespace RINGMesh {
 
     void GeoModelMeshEntityAccess::change_mesh_data_structure( const MeshType type )
     {
-        if( EntityTypeManager::is_corner( gmme_.type_name() ) ) {
-            Corner& corner = dynamic_cast< Corner& >( gmme_ ) ;
-            Mesh0D* old_mesh = corner.mesh0d_ ;
-            if( old_mesh->type_name() == type ) {
-                return ;
-            }
-            corner.update_mesh_storage_type( Mesh0D::create_mesh( type ) ) ;
-            Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder(
-                *corner.mesh0d_ ) ;
-            builder->copy( *old_mesh, true ) ;
-            delete old_mesh ;
-        } else if( EntityTypeManager::is_line( gmme_.type_name() ) ) {
-            Line& line = dynamic_cast< Line& >( gmme_ ) ;
-            Mesh1D* old_mesh = line.mesh1d_ ;
-            if( old_mesh->type_name() == type ) {
-                return ;
-            }
-            line.update_mesh_storage_type( Mesh1D::create_mesh( type ) ) ;
-            Mesh1DBuilder_var builder = Mesh1DBuilder::create_builder(
-                *line.mesh1d_ ) ;
-            builder->copy( *old_mesh, true ) ;
-            delete old_mesh ;
-        } else if( EntityTypeManager::is_surface( gmme_.type_name() ) ) {
-            Surface& surface = dynamic_cast< Surface& >( gmme_ ) ;
-            Mesh2D* old_mesh = surface.mesh2d_ ;
-            if( old_mesh->type_name() == type ) {
-                return ;
-            }
-            surface.update_mesh_storage_type( Mesh2D::create_mesh( type ) ) ;
-            Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder(
-                *surface.mesh2d_ ) ;
-            builder->copy( *old_mesh, true ) ;
-            delete old_mesh ;
-        } else if( EntityTypeManager::is_region( gmme_.type_name() ) ) {
-            Region& region = dynamic_cast< Region& >( gmme_ ) ;
-            Mesh3D* old_mesh = region.mesh3d_ ;
-            if( old_mesh->type_name() == type ) {
-                return ;
-            }
-            region.update_mesh_storage_type( Mesh3D::create_mesh( type ) ) ;
-            Mesh3DBuilder_var builder = Mesh3DBuilder::create_builder(
-                *region.mesh3d_ ) ;
-            builder->copy( *old_mesh, true ) ;
-            delete old_mesh ;
-        } else {
-            ringmesh_assert_not_reached ;
+        if( gmme_.mesh_->type_name() != type ) {
+            gmme_.unbind_vertex_mapping_attribute() ;
+            gmme_.change_mesh_data_structure( type ) ;
+            gmme_.bind_vertex_mapping_attribute() ;
         }
+    }
+
+    void Corner::change_mesh_data_structure( const MeshType type )
+    {
+        Mesh0D* new_mesh = Mesh0D::create_mesh( type ) ;
+        Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder( *new_mesh ) ;
+        builder->copy( *mesh0d_, true ) ;
+        delete mesh0d_ ;
+        update_mesh_storage_type( new_mesh ) ;
+    }
+
+    void Line::change_mesh_data_structure( const MeshType type )
+    {
+        Mesh1D* new_mesh = Mesh1D::create_mesh( type ) ;
+        Mesh1DBuilder_var builder = Mesh1DBuilder::create_builder( *new_mesh ) ;
+        builder->copy( *mesh1d_, true ) ;
+        delete mesh1d_ ;
+        update_mesh_storage_type( new_mesh ) ;
+    }
+
+
+    void Surface::change_mesh_data_structure( const MeshType type )
+    {
+        Mesh2D* new_mesh = Mesh2D::create_mesh( type ) ;
+        Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder( *new_mesh ) ;
+        builder->copy( *mesh2d_, true ) ;
+        delete mesh2d_ ;
+        update_mesh_storage_type( new_mesh ) ;
+    }
+
+    void Region::change_mesh_data_structure( const MeshType type )
+    {
+        Mesh3D* new_mesh = Mesh3D::create_mesh( type ) ;
+        Mesh3DBuilder_var builder = Mesh3DBuilder::create_builder( *new_mesh ) ;
+        builder->copy( *mesh3d_, true ) ;
+        delete mesh3d_ ;
+        update_mesh_storage_type( new_mesh ) ;
     }
 }

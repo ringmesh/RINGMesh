@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef RINGMESH_MESH_AABB
-#define RINGMESH_MESH_AABB
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -560,6 +559,3 @@ namespace RINGMesh {
         }
     }
 }
-
-#endif
-
