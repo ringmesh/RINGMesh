@@ -378,7 +378,7 @@ namespace RINGMesh {
         GeoModelMeshEntityAccess gme_access( mesh_entity ) ;
         gme_access.modifiable_boundaries().push_back( boundary ) ;
 
-        if( gmme_id.type == Region::type_name_static() ) {
+        if( gmme_id.type() == Region::type_name_static() ) {
             gme_access.modifiable_sides().push_back( side ) ;
         }
     }
@@ -399,7 +399,7 @@ namespace RINGMesh {
         GeoModelMeshEntityAccess gme_access( mesh_entity ) ;
         gme_access.modifiable_boundaries()[id] = boundary ;
 
-        if( gmme_id.type == Region::type_name_static() ) {
+        if( gmme_id.type() == Region::type_name_static() ) {
             gme_access.modifiable_sides()[id] = side ;
         }
     }

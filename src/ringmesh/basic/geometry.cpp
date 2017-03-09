@@ -79,11 +79,6 @@ namespace RINGMesh {
         return u.x == v.x && u.y == v.y && u.z == v.z ;
     }
 
-    bool operator<( const vec3& u, const vec3& v )
-    {
-        return u.x < v.x && u.y < v.y && u.z < v.z ;
-    }
-
     bool operator!=( const vec3& u, const vec3& v )
     {
         return u.x != v.x || u.y != v.y || u.z != v.z ;

@@ -45,6 +45,8 @@
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
 #include <ringmesh/geomodel/geomodel_entity.h>
 #include <ringmesh/geomodel/geomodel_mesh.h>
+#include <ringmesh/geomodel/entity_type.h>
+
 
 #include <vector>
 
@@ -138,10 +140,10 @@ namespace RINGMesh {
          */
         const GeoModelGeologicalEntity& geological_entity( gmge_t id ) const
         {
-            return *geological_entities( id.type )[id.index] ;
+            return *geological_entities( id.type() )[id.index()] ;
         }
         /*!
-         * Convenient overload of entity( gme_t id )
+         * Convenient overload of entity( gmge_t id )
          */
         const GeoModelGeologicalEntity& geological_entity(
             const GeologicalEntityType& entity_type,
@@ -155,7 +157,7 @@ namespace RINGMesh {
          */
         const GeoModelMeshEntity& mesh_entity( gmme_t id ) const ;
         /*!
-         * Convenient overload of mesh_entity( gme_t id )
+         * Convenient overload of mesh_entity( gmme_t id )
          */
         const GeoModelMeshEntity& mesh_entity(
             const MeshEntityType& entity_type,

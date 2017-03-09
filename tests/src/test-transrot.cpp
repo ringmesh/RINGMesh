@@ -71,14 +71,14 @@ void build_geomodel( GeoModel& geomodel )
     surface_facet_ptr.push_back( 6 ) ;
 
     std::vector< vec3 > vertices( 4 ) ;
-    gme_t id ;
+    gmme_t id ;
 
     id = builder.topology.create_mesh_entity< Surface >() ;
     vertices[0] = v0 ;
     vertices[1] = v1 ;
     vertices[2] = v2 ;
     vertices[3] = v3 ;
-    builder.geometry.set_surface_geometry( id.index, vertices, triangles,
+    builder.geometry.set_surface_geometry( id.index(), vertices, triangles,
         surface_facet_ptr ) ;
 
     id = builder.topology.create_mesh_entity< Surface >() ;
@@ -86,7 +86,7 @@ void build_geomodel( GeoModel& geomodel )
     vertices[1] = v5 ;
     vertices[2] = v6 ;
     vertices[3] = v2 ;
-    builder.geometry.set_surface_geometry( id.index, vertices, triangles,
+    builder.geometry.set_surface_geometry( id.index(), vertices, triangles,
         surface_facet_ptr ) ;
 
     id = builder.topology.create_mesh_entity< Surface >() ;
@@ -94,7 +94,7 @@ void build_geomodel( GeoModel& geomodel )
     vertices[1] = v5 ;
     vertices[2] = v6 ;
     vertices[3] = v7 ;
-    builder.geometry.set_surface_geometry( id.index, vertices, triangles,
+    builder.geometry.set_surface_geometry( id.index(), vertices, triangles,
         surface_facet_ptr ) ;
 
     id = builder.topology.create_mesh_entity< Surface >() ;
@@ -102,7 +102,7 @@ void build_geomodel( GeoModel& geomodel )
     vertices[1] = v3 ;
     vertices[2] = v7 ;
     vertices[3] = v4 ;
-    builder.geometry.set_surface_geometry( id.index, vertices, triangles,
+    builder.geometry.set_surface_geometry( id.index(), vertices, triangles,
         surface_facet_ptr ) ;
 
     id = builder.topology.create_mesh_entity< Surface >() ;
@@ -110,7 +110,7 @@ void build_geomodel( GeoModel& geomodel )
     vertices[1] = v2 ;
     vertices[2] = v6 ;
     vertices[3] = v7 ;
-    builder.geometry.set_surface_geometry( id.index, vertices, triangles,
+    builder.geometry.set_surface_geometry( id.index(), vertices, triangles,
         surface_facet_ptr ) ;
 
     id = builder.topology.create_mesh_entity< Surface >() ;
@@ -118,7 +118,7 @@ void build_geomodel( GeoModel& geomodel )
     vertices[1] = v1 ;
     vertices[2] = v5 ;
     vertices[3] = v4 ;
-    builder.geometry.set_surface_geometry( id.index, vertices, triangles,
+    builder.geometry.set_surface_geometry( id.index(), vertices, triangles,
         surface_facet_ptr ) ;
 }
 

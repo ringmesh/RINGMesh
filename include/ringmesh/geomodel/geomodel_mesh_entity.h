@@ -44,7 +44,7 @@
 #include <ringmesh/basic/common.h>
 
 #include <ringmesh/geomodel/geomodel_entity.h>
-#include <ringmesh/geomodel/entity_type_manager.h>
+#include <ringmesh/geomodel/entity_type.h>
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
 
 #include <ringmesh/mesh/mesh.h>
@@ -165,10 +165,10 @@ namespace RINGMesh {
         const gmge_t& parent_gmge(
             const GeologicalEntityType& parent_type_name ) const ;
         /*!
-         * @brief Returns the gme_t of the parent of the given type.
+         * @brief Returns the gmge_t of the parent of the given type.
          * @note If this entity has no parent of the given type,
-         * it will return an undefined gme_t (with no type and no id).
-         * You should check on the returned gme_t.
+         * it will return an undefined gmge_t (with no type and no id).
+         * You should check on the returned gmge_t.
          * @param[in] parent_type_name the asking parent type
          */
         const gmge_t& parent_of_gmme(

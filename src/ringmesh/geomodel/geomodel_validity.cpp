@@ -407,7 +407,7 @@ namespace {
             geomodel.mesh.vertices.gme_vertices( i, bmes ) ;
 
             for( index_t j = 0; j < bmes.size(); ++j ) {
-                const std::string& T = bmes[j].gmme_id.type ;
+                const MeshEntityType& T = bmes[j].gmme_id.type() ;
                 index_t id = bmes[j].gmme_id.index() ;
                 if( T == Region::type_name_static() ) {
                     regions.push_back( id ) ;

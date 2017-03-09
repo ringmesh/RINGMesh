@@ -49,7 +49,7 @@
 namespace {
     using namespace RINGMesh ;
 
-    bool match_mesh_entity_type( const std::string& type )
+    bool match_mesh_entity_type( const MeshEntityType& type )
     {
         if( type == Corner::type_name_static() ) return true ;
         if( type == Line::type_name_static() ) return true ;
@@ -104,7 +104,7 @@ namespace RINGMesh {
     protected:
         void read_first_line( GEO::LineInput& file_line, gmme_t& entity )
         {
-            entity.type() = file_line.field( 0 ) ;
+            entity.type() = MeshEntityType(file_line.field( 0 )) ;
             entity.index() = file_line.field_as_uint( 1 ) ;
             builder_.info.set_mesh_entity_name( entity, file_line.field( 2 ) ) ;
             builder_.geology.set_mesh_entity_geol_feature( entity,
@@ -207,7 +207,7 @@ namespace RINGMesh {
                         file_line.field_as_uint( 2 ) ) ;
                 }
                 // Mesh entities
-                else if( match_mesh_entity_type( file_line.field( 0 ) ) ) {
+                else if( match_mesh_entity_type( MeshEntityType(file_line.field( 0 ) )) ) {
                     version_impl_[file_version_]->read_mesh_entity_line(
                         file_line ) ;
                 }

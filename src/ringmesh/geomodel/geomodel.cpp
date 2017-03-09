@@ -126,7 +126,7 @@ namespace RINGMesh {
 
    const GeoModelMeshEntity& GeoModel::mesh_entity( gmme_t id ) const
    {
-       const MeshEntityType& type = id.type ;
+       const MeshEntityType& type = id.type() ;
        index_t index = id.index() ;
        if( MeshEntityTypeManager::is_corner( type ) ) {
            return corner( index ) ;

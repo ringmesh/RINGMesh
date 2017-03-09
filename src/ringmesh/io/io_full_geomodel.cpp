@@ -125,7 +125,7 @@ namespace {
                 << std::endl ;
             out << "boundary " ;
             for( index_t b = 0; b < cur_mesh_entity.nb_boundaries(); b++ ) {
-                out << cur_mesh_entity.boundary_gme( b ).index << " " ;
+                out << cur_mesh_entity.boundary_gmme( b ).index() << " " ;
             }
             out << std::endl ;
         }
@@ -503,7 +503,8 @@ namespace {
         {
             // Corners are already written so we start this loop at 1
             for( index_t geomodel_mesh_entities = 1;
-                geomodel_mesh_entities < MeshEntityTypeManager::nb_mesh_entity_types();
+                geomodel_mesh_entities
+                    < MeshEntityTypeManager::nb_mesh_entity_types();
                 geomodel_mesh_entities++ ) {
                 for( index_t entity = 0;
                     entity
@@ -527,7 +528,8 @@ namespace {
             // way
             index_t nb_mesh_entities = geomodel.nb_corners() ;
             for( index_t geomodel_mesh_entities = 1;
-                geomodel_mesh_entities < MeshEntityTypeManager::nb_mesh_entity_types();
+                geomodel_mesh_entities
+                    < MeshEntityTypeManager::nb_mesh_entity_types();
                 geomodel_mesh_entities++ ) {
                 for( index_t entity = 0;
                     entity
@@ -558,8 +560,8 @@ namespace {
                     v < geomodel_mesh_entity.nb_mesh_element_vertices( elt ); v++ ) {
                     out
                         << geomodel_mesh_entity.geomodel().mesh.vertices.geomodel_vertex_id(
-                            geomodel_mesh_entity.gmme_id(), elt, v ) + id_offset_adeli
-                        << " " ;
+                            geomodel_mesh_entity.gmme_id(), elt, v )
+                            + id_offset_adeli << " " ;
                 }
                 out << std::endl ;
             }
@@ -567,6 +569,14 @@ namespace {
     } ;
 
     /************************************************************************/
+    template< typename ENTITY >
+    std::string build_string_for_geomodel_mesh_entity_export( const ENTITY& entity )
+    {
+        const gmme_t& id = entity.gmme_id() ;
+        std::string base_name = static_cast< const std::string& >( id.type() ) + "_"
+            + GEO::String::to_string( id.index() ) ;
+        return base_name + "." + entity.low_level_mesh_storage().default_extension() ;
+    }
 
     /*!
      * @brief Save the GeoModelMeshEntity in a meshb file
@@ -578,7 +588,7 @@ namespace {
         const ENTITY& geomodel_entity_mesh,
         std::vector< std::string >& filenames )
     {
-        std::string name = build_string_for_geomodel_entity_export(
+        std::string name = build_string_for_geomodel_mesh_entity_export(
             geomodel_entity_mesh ) ;
         if( save_mesh( geomodel_entity_mesh, name ) ) {
 #pragma omp critical
@@ -1782,7 +1792,8 @@ namespace {
 
             point_boundaries_.resize( gm.mesh.vertices.nb() ) ;
             for( index_t s = 0; s < geomodel.nb_surfaces(); s++ ) {
-                index_t interface_id = geomodel.surface( s ).parent_gmge( 0 ).index() ;
+                index_t interface_id =
+                    geomodel.surface( s ).parent_gmge( 0 ).index() ;
                 for( index_t f = 0; f < gm.mesh.facets.nb_facets( s ); f++ ) {
                     index_t f_id = gm.mesh.facets.facet( s, f ) ;
                     for( index_t v = 0; v < gm.mesh.facets.nb_vertices( f_id );
@@ -2539,19 +2550,19 @@ namespace RINGMesh {
      */
     void GeoModelIOHandler::initialize_full_geomodel_output()
     {
-        ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "meshb" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "mesh" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( TetGenIOHandler, "tetgen" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( TSolidIOHandler, "so" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( CSMPIOHandler, "csmp" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( AsterIOHandler, "mail" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( VTKIOHandler, "vtk" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( GPRSIOHandler, "gprs" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( MSHIOHandler, "msh" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( MFEMIOHandler, "mfem" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( GeoModelHandlerGM, "gm" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( AbaqusIOHandler, "inp" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( AdeliIOHandler, "adeli" ) ;
-    }
+        ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "meshb" );
+    ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "mesh" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( TetGenIOHandler, "tetgen" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( TSolidIOHandler, "so" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( CSMPIOHandler, "csmp" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( AsterIOHandler, "mail" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( VTKIOHandler, "vtk" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( GPRSIOHandler, "gprs" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( MSHIOHandler, "msh" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( MFEMIOHandler, "mfem" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( GeoModelHandlerGM, "gm" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( AbaqusIOHandler, "inp" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( AdeliIOHandler, "adeli" ) ;
+}
 
 }

@@ -49,13 +49,27 @@ namespace RINGMesh {
         &hard_encoded_mesh_entity_types_array[0],
         &hard_encoded_mesh_entity_types_array[4] ) ;
 
-    MeshEntityTypeManager::MeshEntityTypeManager( EntityTypeManager& type_manager )
-        :
-            type_manager_( type_manager ),
-            boundary_relationships_(),
-            in_boundary_relationships_()
+    MeshEntityTypeManager::MeshEntityTypeBoundaryMap::MeshEntityTypeBoundaryMap()
     {
+        register_boundary( Corner::type_name_static(),
+            GeoModelMeshEntity::type_name_static() ) ;
+        register_boundary( Line::type_name_static(), Corner::type_name_static() ) ;
+        register_boundary( Surface::type_name_static(), Line::type_name_static() ) ;
+        register_boundary( Region::type_name_static(),
+            Surface::type_name_static() ) ;
+    }
 
+    MeshEntityTypeManager::MeshEntityTypeInBoundaryMap::MeshEntityTypeInBoundaryMap()
+
+    {
+        register_in_boundary( Corner::type_name_static(),
+            Line::type_name_static() ) ;
+        register_in_boundary( Line::type_name_static(),
+            Surface::type_name_static() ) ;
+        register_in_boundary( Surface::type_name_static(),
+            Region::type_name_static() ) ;
+        register_in_boundary( Region::type_name_static(),
+            GeoModelMeshEntity::type_name_static() ) ;
     }
 
     bool MeshEntityTypeManager::is_corner( const MeshEntityType& type )
@@ -75,7 +89,8 @@ namespace RINGMesh {
         return type == hard_encoded_mesh_entity_types[3] ;
     }
 
-    bool MeshEntityTypeManager::is_valid_type(const MeshEntityType& type ) {
+    bool MeshEntityTypeManager::is_valid_type( const MeshEntityType& type )
+    {
         return find( hard_encoded_mesh_entity_types, type ) != NO_ID ;
     }
 
@@ -106,12 +121,6 @@ namespace RINGMesh {
 
     }
 
-    GeologicalTypeManager::GeologicalTypeManager( EntityTypeManager& type_manager )
-        : type_manager_( type_manager )
-    {
-
-    }
-
     index_t GeologicalTypeManager::nb_geological_entity_types() const
     {
         return static_cast< index_t >( geological_entity_types_.size() ) ;
@@ -129,12 +138,6 @@ namespace RINGMesh {
         const GeologicalEntityType& type ) const
     {
         return find( geological_entity_types_, type ) ;
-    }
-
-    RelationshipManager::RelationshipManager( EntityTypeManager& type_manager )
-        : type_manager_( type_manager )
-    {
-
     }
 
     std::vector< GeologicalEntityType > RelationshipManager::parent_types(
