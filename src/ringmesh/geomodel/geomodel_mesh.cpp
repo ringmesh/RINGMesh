@@ -1911,14 +1911,11 @@ namespace RINGMesh {
         for( index_t w = 0; w < wells.nb_wells(); w++ ) {
             const Well& well = wells.well( w ) ;
             for( index_t p = 0; p < well.nb_parts(); p++ ) {
-                const GEO::Mesh& part = well.part( p ).mesh() ;
                 for( index_t e = 0; e < well.part( p ).nb_edges(); e++ ) {
-                    const vec3& e0 = GEO::Geom::mesh_vertex( part,
-                        part.edges.vertex( e, 0 ) ) ;
+                    const vec3& e0 = well.part( p ).edge_point( e, 0 ) ;
                     mesh_builder->set_edge_vertex( cur_edge, 0,
                         gmm_.vertices.index( e0 ) ) ;
-                    const vec3& e1 = GEO::Geom::mesh_vertex( part,
-                        part.edges.vertex( e, 1 ) ) ;
+                    const vec3& e1 = well.part( p ).edge_point( e, 1 ) ;
                     mesh_builder->set_edge_vertex( cur_edge, 1,
                         gmm_.vertices.index( e1 ) ) ;
                     cur_edge++ ;
