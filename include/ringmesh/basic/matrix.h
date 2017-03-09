@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_MATRIX__
-#define __RINGMESH_MATRIX__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -503,4 +502,3 @@ namespace RINGMesh {
     }
 
 }
-#endif

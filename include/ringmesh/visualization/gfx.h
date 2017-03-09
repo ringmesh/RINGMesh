@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_GFX__
-#define __RINGMESH_GFX__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -289,5 +288,4 @@ namespace RINGMesh {
     } ;
 }
 
-#endif
 #endif
