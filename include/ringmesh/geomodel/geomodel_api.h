@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_GEOMODEL_API__
-#define __RINGMESH_GEOMODEL_API__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -145,5 +144,3 @@ namespace RINGMesh {
         double angle,
         bool degrees = false ) ;
 }
-
-#endif 

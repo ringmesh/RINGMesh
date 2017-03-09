@@ -38,8 +38,7 @@
  * @author Jeanne Pellerin and Arnaud Botella 
  */
 
-#ifndef __RINGMESH_GEOMODEL_MESH_ENTITY__
-#define __RINGMESH_GEOMODEL_MESH_ENTITY__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -1292,5 +1291,3 @@ namespace RINGMesh {
         GeoModelMeshEntity& gmme_ ;
     } ;
 }
-
-#endif

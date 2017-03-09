@@ -44,8 +44,7 @@
  * and re-run the project configuration
  */
  
-#ifndef __RINGMESH_TESTS_CONFIG__
-#define __RINGMESH_TESTS_CONFIG__
+#pragma once
  
 #include <string>
 
@@ -57,5 +56,3 @@ namespace RINGMesh {
     static const std::string ringmesh_test_output_path = "@TEST_DATA_OUTPUT_DIRECTORY@/" ;
 
 }
-
-#endif

@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_MESH__
-#define __RINGMESH_MESH__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -708,5 +707,3 @@ namespace RINGMesh {
 #define ringmesh_register_mesh_alld(type) \
     geo_register_creator(RINGMesh::MeshAllDFactory, type, type::type_name_static())
 }
-
-#endif
