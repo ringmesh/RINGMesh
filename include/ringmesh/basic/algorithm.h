@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_ALGORITHM__
-#define __RINGMESH_ALGORITHM__
+#pragma once
 
 #include <algorithm>
 #include <vector>
@@ -232,5 +231,3 @@ namespace RINGMesh {
             container.end() ) ;
     }
 }
-
-#endif
