@@ -38,8 +38,7 @@
  * @author Jeanne Pellerin and Arnaud Botella 
  */
 
-#ifndef __RINGMESH_GEOMODEL_MESH_ENTITY__
-#define __RINGMESH_GEOMODEL_MESH_ENTITY__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -308,6 +307,11 @@ namespace RINGMesh {
          */
         bool are_geomodel_vertex_indices_valid() const ;
 
+        void unbind_vertex_mapping_attribute() const ;
+        void bind_vertex_mapping_attribute() const ;
+
+
+        virtual void change_mesh_data_structure( const MeshType type ) = 0 ;
     protected:
 
         /// Entities on the boundary of this entity
@@ -429,6 +433,8 @@ namespace RINGMesh {
             mesh0d_ = mesh ;
             GeoModelMeshEntity::set_mesh( mesh0d_ ) ;
         }
+
+        virtual void change_mesh_data_structure( const MeshType type ) ;
 
     private:
         Mesh0D* mesh0d_ ;
@@ -558,6 +564,8 @@ namespace RINGMesh {
             mesh1d_ = mesh ;
             GeoModelMeshEntity::set_mesh( mesh1d_ ) ;
         }
+
+        virtual void change_mesh_data_structure( const MeshType type ) ;
 
     private:
         Mesh1D* mesh1d_ ;
@@ -841,6 +849,8 @@ namespace RINGMesh {
             mesh2d_ = mesh ;
             GeoModelMeshEntity::set_mesh( mesh2d_ ) ;
         }
+
+        virtual void change_mesh_data_structure( const MeshType type ) ;
     private:
         Mesh2D* mesh2d_ ;
     } ;
@@ -1175,6 +1185,8 @@ namespace RINGMesh {
             GeoModelMeshEntity::set_mesh( mesh3d_ ) ;
         }
 
+        virtual void change_mesh_data_structure( const MeshType type ) ;
+
     protected:
         /*! Additional information to store oriented boundary Surfaces
          * Side: + (true) or - (false)
@@ -1279,5 +1291,3 @@ namespace RINGMesh {
         GeoModelMeshEntity& gmme_ ;
     } ;
 }
-
-#endif
