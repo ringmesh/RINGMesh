@@ -769,7 +769,7 @@ namespace {
 
             // Create the entity if it is not the universe
             // Set the region name and boundaries
-            if( name != Universe::universe_type_name() ) {
+            if( name != static_cast<std::string>(Universe::universe_type_name()) ) {
                 gmme_t region_id = builder().topology.create_mesh_entity< Region >() ;
                 builder().info.set_mesh_entity_name( region_id, name ) ;
                 for( index_t i = 0; i < region_boundaries.size(); ++i ) {

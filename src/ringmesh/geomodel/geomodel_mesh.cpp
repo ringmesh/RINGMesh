@@ -202,7 +202,7 @@ namespace RINGMesh {
     GEO::Attribute< index_t >& GeoModelMeshVertices::GeoModelVertexMapper::vertex_map(
         const gmme_t& mesh_entity_id )
     {
-        return ( *vertex_maps_[mesh_entity_id.type] )[mesh_entity_id.index()] ;
+        return ( *vertex_maps_[mesh_entity_id.type()] )[mesh_entity_id.index()] ;
     }
 
     void GeoModelMeshVertices::GeoModelVertexMapper::set_vertex_map_value(

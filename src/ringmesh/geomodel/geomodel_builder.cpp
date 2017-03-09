@@ -54,7 +54,7 @@ namespace {
         std::vector< GMEVertex > vertices ;
         geomodel_vertices.gme_vertices( geomodel_point_id, vertices ) ;
         for( index_t i = 0; i < vertices.size(); ++i ) {
-            if( vertices[i].gmme_id.type == Corner::type_name_static() ) {
+            if( vertices[i].gmme_id.type() == Corner::type_name_static() ) {
                 return vertices[i].gmme_id ;
             }
         }
@@ -1269,14 +1269,14 @@ namespace RINGMesh {
     index_t GeoModelBuilderGeology::create_geological_entity_type(
         const GeologicalEntityType& type )
     {
-        ringmesh_assert( GeoModelGeologicalEntityFactory::has_creator( std::string(type) ) ) ;
+        ringmesh_assert( GeoModelGeologicalEntityFactory::has_creator(type ) ) ;
 
         geomodel_access_.modifiable_entity_type_manager().geological_entity_manager.geological_entity_types_.push_back(
             type ) ;
         geomodel_access_.modifiable_geological_entities().push_back(
             std::vector< GeoModelGeologicalEntity* >() ) ;
         GeoModelGeologicalEntity* E = GeoModelGeologicalEntityFactory::create_object(
-            std::string(type), geomodel_ ) ;
+            type, geomodel_ ) ;
 
         const MeshEntityType child_type = E->child_type_name() ;
         delete E ;
@@ -1284,7 +1284,8 @@ namespace RINGMesh {
             geomodel_access_.modifiable_entity_type_manager().relationship_manager ;
         parentage.register_relationship( type, child_type ) ;
 
-        return geomodel_.entity_type_manager().geological_entity_manager.nb_geological_entity_types() - 1 ;
+        return geomodel_.entity_type_manager().geological_entity_manager.nb_geological_entity_types()
+            - 1 ;
     }
 
     void GeoModelBuilderGeology::copy_geological_entity_topology(

@@ -178,7 +178,7 @@ namespace RINGMesh {
         {
             return true ;
         }
-        virtual const EntityType type_name() const
+        const UniverseType type_name() const
         {
             return universe_type_name() ;
         }
@@ -197,6 +197,11 @@ namespace RINGMesh {
             ringmesh_assert( i < nb_boundaries() ) ;
             return boundary_surface_sides_[i] ;
         }
+
+        virtual bool is_identification_valid() const {
+            return true ;
+        }
+
 
     protected:
         //@todo not used if editor is removed -> to delete
