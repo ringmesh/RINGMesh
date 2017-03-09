@@ -112,21 +112,21 @@ void StratigraphicColumnBuilderXML::load_file() {
 	std::vector<const StratigraphicUnit*> units_vec_construction;
 	for (index_t i = 0; i < unitList.size(); i += 3) {
 		std::string name_of_unit = unitList[i];
-		//GeoModelGeologicalEntity* unit = get_entity(name_of_unit, Layer);
+		//GeoModelGeologicalEntity* unit = model_.get_entity(name_of_unit, Layer);
 		GeoModelGeologicalEntity* layer = nil;
 		GeoModelGeologicalEntity* top_interface;
 		GeoModelGeologicalEntity* base_interface;
 		RockFeature rock(name_of_unit);
 		if (unitList[i + 1] != "none") {
 			std::string name_of_interface_top = unitList[i + 1];
-			//top_interface = get_entity(name_of_interface_top, Interface);
+			//top_interface = model_.get_entity(name_of_interface_top, Interface);
 			top_interface = nil;
 		} else {
 			top_interface = nil;
 		}
 		if (unitList[i + 2] != "none") {
 			std::string name_of_interface_base = unitList[i + 1];
-			//base_interface = get_entity(name_of_interface_base, Interface);
+			//base_interface = model_.get_entity(name_of_interface_base, Interface);
 			base_interface = nil;
 		} else {
 			base_interface = nil;
@@ -149,7 +149,7 @@ void StratigraphicColumnBuilderXML::load_file() {
 	{
 		paradigm_upper = BIOSTRATIGRAPHIC;
 	}
-	StratigraphicColumn column_from_xml(name_of_column, units_vec, paradigm_upper);
+	column_ = StratigraphicColumn (name_of_column, units_vec, paradigm_upper);
 }
 
 }
