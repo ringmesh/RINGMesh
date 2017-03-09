@@ -44,7 +44,7 @@
  * and re-run the project configuration
  */
  
-#prama once
+#pragma once
  
 #include <string>
 
