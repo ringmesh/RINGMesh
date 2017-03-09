@@ -80,45 +80,47 @@ namespace RINGMesh {
         GeoModelBuilderGMImpl* version_impl_[NB_VERSION] ;
     } ;
 
-    class RINGMESH_API OldGeoModelBuilderGM: public GeoModelBuilderFile {
-    public:
-        OldGeoModelBuilderGM( GeoModel& geomodel, const std::string& filename )
-            : GeoModelBuilderFile( geomodel, filename )
-        {
-        }
-        virtual ~OldGeoModelBuilderGM()
-        {
-        }
-
-    private:
-
-        /*!
-         * @brief Load elements of one type from a zip file
-         * @param[in] gme_t the GeoModelElement type
-         * @param[in] uz the zip file
-         */
-        void load_entities( const std::string& old_type_name, unzFile& uz ) ;
-
-        void load_file() ;
-        /*!
-         * @brief Load the topology. Topology is how corners, lines, surfaces and
-         * regions are organized into contacts, interfaces and layers. It also contains
-         * basics information on the GeoModel.
-         */
-        void load_topology( GEO::LineInput& file_line ) ;
-        std::string match_nb_entities( const char* s ) const ;
-        /*!
-         * @brief Convert an old entity name to its new name.
-         */
-        EntityType type_name_old_to_new( const std::string& old_type_name ) const ;
-        bool child_allowed( const char* s ) const ;
-        /*!
-         * @brief Load the connectivities. These are how corners are
-         * connected to lines, lines connected to surfaces and surfaces
-         * connected to regions
-         */
-        void load_connectivities( GEO::LineInput& file_line ) ;
-    } ;
+//    class RINGMESH_API OldGeoModelBuilderGM: public GeoModelBuilderFile {
+//    public:
+//        OldGeoModelBuilderGM( GeoModel& geomodel, const std::string& filename )
+//            : GeoModelBuilderFile( geomodel, filename )
+//        {
+//        }
+//        virtual ~OldGeoModelBuilderGM()
+//        {
+//        }
+//
+//    private:
+//
+//        /*!
+//         * @brief Load elements of one type from a zip file
+//         * @param[in] gme_t the GeoModelElement type
+//         * @param[in] uz the zip file
+//         */
+//        void load_entities( const std::string& old_type_name, unzFile& uz ) ;
+//
+//        void load_file() ;
+//        /*!
+//         * @brief Load the topology. Topology is how corners, lines, surfaces and
+//         * regions are organized into contacts, interfaces and layers. It also contains
+//         * basics information on the GeoModel.
+//         */
+//        void load_topology( GEO::LineInput& file_line ) ;
+//        std::string match_nb_entities( const char* s ) const ;
+//        /*!
+//         * @brief Convert an old entity name to its new name.
+//         */
+//        MeshEntityType mesh_type_name_old_to_new( const std::string& old_type_name ) const ;
+//        GeologicalEntityType geological_type_name_old_to_new( const std::string& old_type_name ) const ;
+//
+//        bool child_allowed( const char* s ) const ;
+//        /*!
+//         * @brief Load the connectivities. These are how corners are
+//         * connected to lines, lines connected to surfaces and surfaces
+//         * connected to regions
+//         */
+//        void load_connectivities( GEO::LineInput& file_line ) ;
+//    } ;
 }
 
 #endif

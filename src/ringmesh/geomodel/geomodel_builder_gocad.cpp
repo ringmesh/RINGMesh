@@ -46,14 +46,14 @@
 namespace {
     using namespace RINGMesh ;
 
-    gme_t find_corner( const GeoModel& geomodel, const vec3& point )
+    gmme_t find_corner( const GeoModel& geomodel, const vec3& point )
     {
         for( index_t i = 0; i < geomodel.nb_corners(); ++i ) {
             if( geomodel.corner( i ).vertex( 0 ) == point ) {
-                return gme_t( Corner::type_name_static(), i ) ;
+                return gmme_t( Corner::type_name_static(), i ) ;
             }
         }
-        return gme_t() ;
+        return gmme_t() ;
     }
 
     std::string read_name_with_spaces( index_t field_id, const GEO::LineInput& line )
@@ -88,7 +88,7 @@ namespace {
      * @param[in] interface_name Name of the interface to find
      * @return Index of the interface in the geomodel, NO_ID if not found.
      */
-    gme_t find_interface(
+    gmge_t find_interface(
         const GeoModel& geomodel,
         const std::string& interface_name )
     {
@@ -97,10 +97,10 @@ namespace {
             ++i ) {
             if( geomodel.geological_entity( Interface::type_name_static(), i ).name()
                 == interface_name ) {
-                return geomodel.geological_entity( Interface::type_name_static(), i ).gme_id() ;
+                return geomodel.geological_entity( Interface::type_name_static(), i ).gmge_id() ;
             }
         }
-        return gme_t() ;
+        return gmge_t() ;
     }
 
     /*!
@@ -338,9 +338,9 @@ namespace {
         GeoModelBuilderTSolid& geomodel_builder )
     {
         geomodel_builder.topology.add_mesh_entity_boundary(
-            gme_t( Region::type_name_static(), region_id ), surface_id, surf_side ) ;
+            gmme_t( Region::type_name_static(), region_id ), surface_id, surf_side ) ;
         geomodel_builder.topology.add_mesh_entity_in_boundary(
-            gme_t( Surface::type_name_static(), surface_id ), region_id ) ;
+            gmme_t( Surface::type_name_static(), surface_id ), region_id ) ;
     }
 
     /*!
@@ -652,9 +652,9 @@ namespace {
             ringmesh_unused( load_storage ) ;
             std::string interface_name = read_name_with_spaces( 1, line ) ;
             // Create an interface and set its name
-            gme_t interface_id = builder().geology.create_geological_entity(
+            gmge_t interface_id = builder().geology.create_geological_entity(
                 Interface::type_name_static() ) ;
-            builder().info.set_entity_name( interface_id, interface_name ) ;
+            builder().info.set_geological_entity_name( interface_id, interface_name ) ;
         }
     } ;
 
@@ -682,14 +682,14 @@ namespace {
             const std::string& interface_name,
             const std::string& type )
         {
-            gme_t parent = find_interface( geomodel(), interface_name ) ;
+            gmge_t parent = find_interface( geomodel(), interface_name ) ;
             if( interface_name != "" ) {
                 ringmesh_assert( parent.is_defined() ) ;
             }
 
-            gme_t id = builder().topology.create_mesh_entity< Surface >() ;
+            gmme_t id = builder().topology.create_mesh_entity< Surface >() ;
             builder().geology.add_mesh_entity_parent( id, parent ) ;
-            builder().geology.set_entity_geol_feature( parent,
+            builder().geology.set_geological_entity_geol_feature( parent,
                 GME::determine_geological_type( type ) ) ;
         }
     } ;
@@ -701,9 +701,9 @@ namespace {
             ringmesh_unused( load_storage ) ;
             /// Build the volumetric layers from their name and
             /// the ids of the regions they contain
-            gme_t layer_id = builder().geology.create_geological_entity(
+            gmge_t layer_id = builder().geology.create_geological_entity(
                 Layer::type_name_static() ) ;
-            builder().info.set_entity_name( layer_id, line.field( 1 ) ) ;
+            builder().info.set_geological_entity_name( layer_id, line.field( 1 ) ) ;
             bool end_layer = false ;
             while( !end_layer ) {
                 line.get_line() ;
@@ -747,9 +747,9 @@ namespace {
             index_t v_id = line.field_as_uint( 1 ) - GOCAD_OFFSET ;
             if( !find_corner( geomodel(), load_storage.vertices_[v_id] ).is_defined() ) {
                 // Create the corner
-                gme_t corner_gme =
+                gmme_t corner_gme =
                     builder().topology.create_mesh_entity< Corner >() ;
-                builder().geometry.set_corner( corner_gme.index,
+                builder().geometry.set_corner( corner_gme.index(),
                     load_storage.vertices_[v_id] ) ;
             }
         }
@@ -770,8 +770,8 @@ namespace {
             // Create the entity if it is not the universe
             // Set the region name and boundaries
             if( name != Universe::universe_type_name() ) {
-                gme_t region_id = builder().topology.create_mesh_entity< Region >() ;
-                builder().info.set_entity_name( region_id, name ) ;
+                gmme_t region_id = builder().topology.create_mesh_entity< Region >() ;
+                builder().info.set_mesh_entity_name( region_id, name ) ;
                 for( index_t i = 0; i < region_boundaries.size(); ++i ) {
                     builder().topology.add_mesh_entity_boundary( region_id,
                         region_boundaries[i].first, region_boundaries[i].second ) ;
@@ -835,10 +835,10 @@ namespace {
             const std::string& region_name,
             GeoModelBuilderGocad& geomodel_builder )
         {
-            gme_t cur_region =
+            gmme_t cur_region =
                 geomodel_builder.topology.create_mesh_entity< Region >() ;
-            geomodel_builder.info.set_entity_name( cur_region, region_name ) ;
-            return cur_region.index ;
+            geomodel_builder.info.set_mesh_entity_name( cur_region, region_name ) ;
+            return cur_region.index() ;
         }
     } ;
 
@@ -1001,10 +1001,10 @@ namespace {
             GEO::LineInput& line,
             TSolidLoadingStorage& load_storage )
         {
-            gme_t created_interface = builder().geology.create_geological_entity(
+            gmge_t created_interface = builder().geology.create_geological_entity(
                 Interface::type_name_static() ) ;
-            load_storage.cur_interface_ = created_interface.index ;
-            builder().info.set_entity_name( created_interface, line.field( 1 ) ) ;
+            load_storage.cur_interface_ = created_interface.index() ;
+            builder().info.set_geological_entity_name( created_interface, line.field( 1 ) ) ;
         }
     } ;
 
@@ -1020,14 +1020,14 @@ namespace {
                 build_surface( builder(), geomodel(), load_storage ) ;
             }
             // Create a new surface
-            gme_t new_surface = builder().topology.create_mesh_entity< Surface >() ;
-            load_storage.cur_surface_ = new_surface.index ;
+            gmme_t new_surface = builder().topology.create_mesh_entity< Surface >() ;
+            load_storage.cur_surface_ = new_surface.index() ;
             builder().geology.add_mesh_entity_parent( new_surface,
-                gme_t( Interface::type_name_static(),
+                gmge_t( Interface::type_name_static(),
                     load_storage.cur_interface_ ) ) ;
             builder().geology.add_geological_entity_child(
-                gme_t( Interface::type_name_static(), load_storage.cur_interface_ ),
-                new_surface.index ) ;
+                gmge_t( Interface::type_name_static(), load_storage.cur_interface_ ),
+                new_surface.index() ) ;
         }
     } ;
 
@@ -1109,38 +1109,38 @@ namespace RINGMesh {
      */
     void GeoModelBuilderGocad::build_contacts()
     {
-        std::vector< std::set< gme_t > > interfaces ;
+        std::vector< std::set< gmge_t > > interfaces ;
         for( index_t i = 0; i < geomodel_.nb_lines(); ++i ) {
             const Line& L = geomodel_.line( i ) ;
-            std::set< gme_t > cur_interfaces ;
+            std::set< gmge_t > cur_interfaces ;
             for( index_t j = 0; j < L.nb_in_boundary(); ++j ) {
                 const GeoModelMeshEntity& S = L.in_boundary( j ) ;
-                gme_t parent_interface = S.parent_gme(
+                gmge_t parent_interface = S.parent_gmge(
                     Interface::type_name_static() ) ;
                 cur_interfaces.insert( parent_interface ) ;
             }
-            gme_t contact_id ;
+            gmge_t contact_id ;
             for( index_t j = 0; j < interfaces.size(); ++j ) {
                 if( cur_interfaces.size() == interfaces[j].size()
                     && std::equal( cur_interfaces.begin(), cur_interfaces.end(),
                         interfaces[j].begin() ) ) {
-                    contact_id = gme_t( Contact::type_name_static(), j ) ;
+                    contact_id = gmge_t( Contact::type_name_static(), j ) ;
                     break ;
                 }
             }
             if( !contact_id.is_defined() ) {
                 contact_id = geology.create_geological_entity(
                     Contact::type_name_static() ) ;
-                ringmesh_assert( contact_id.index == interfaces.size() ) ;
+                ringmesh_assert( contact_id.index() == interfaces.size() ) ;
                 interfaces.push_back( cur_interfaces ) ;
                 // Create a name for this contact
                 std::string name = "contact" ;
-                for( std::set< gme_t >::const_iterator it( cur_interfaces.begin() );
+                for( std::set< gmge_t >::const_iterator it( cur_interfaces.begin() );
                     it != cur_interfaces.end(); ++it ) {
                     name += "_" ;
                     name += geomodel_.geological_entity( *it ).name() ;
                 }
-                info.set_entity_name( contact_id, name ) ;
+                info.set_geological_entity_name( contact_id, name ) ;
             }
             geology.add_geological_entity_child( contact_id, i ) ;
         }

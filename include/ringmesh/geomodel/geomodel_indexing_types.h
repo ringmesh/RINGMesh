@@ -37,6 +37,7 @@
 #define __RINGMESH_GEOMODEL_INDEXING_TYPES__
 
 #include <ringmesh/basic/common.h>
+#include <ringmesh/geomodel/entity_type_manager.h>
 
 /*!
  * @brief Structures and classes used to index elements in a GeoModel,
@@ -111,32 +112,32 @@ namespace RINGMesh {
      * @brief Vertex in a GeoModelEntity
      */
     struct GMEVertex {
-        GMEVertex( gme_t t, index_t vertex_id_in )
-            : gme_id( t ), v_id( vertex_id_in )
+        GMEVertex( gmme_t t, index_t vertex_id_in )
+            : gmme_id( t ), v_id( vertex_id_in )
         {
         }
         GMEVertex()
-            : gme_id(), v_id( NO_ID )
+            : gmme_id(), v_id( NO_ID )
         {
         }
-        bool operator<( const GMEVertex& rhs ) const
-        {
-            if( gme_id != rhs.gme_id ) {
-                return gme_id < rhs.gme_id ;
-            } else {
-                return v_id < rhs.v_id ;
-            }
-        }
+//        bool operator<( const GMEVertex& rhs ) const
+//        {
+//            if( gmme_id != rhs.gmme_id ) {
+//                return gmme_id < rhs.gmme_id ;
+//            } else {
+//                return v_id < rhs.v_id ;
+//            }
+//        }
         bool operator==( const GMEVertex& rhs ) const
         {
-            return gme_id == rhs.gme_id && v_id == rhs.v_id ;
+            return gmme_id == rhs.gmme_id && v_id == rhs.v_id ;
         }
         bool is_defined() const
         {
-            return gme_id.is_defined() && v_id != NO_ID ;
+            return gmme_id.is_defined() && v_id != NO_ID ;
         }
         /// GeoModelEntity index in the GeoModel that owns it
-        gme_t gme_id ;
+        gmme_t gmme_id ;
         /// Index of the vertex in the GeoModelEntity
         index_t v_id ;
     } ;

@@ -108,7 +108,7 @@ namespace {
             } else {
                 out << "-" ;
             }
-            out << universe.boundary_gme( i ).index + 1 ;
+            out << universe.boundary_gmme( i ).index() + 1 ;
             it++ ;
             if( it == 5 ) {
                 out << std::endl ;
@@ -137,7 +137,7 @@ namespace {
         index_t it = 0 ;
 
         for( index_t i = 0; i < layer.nb_children(); ++i ) {
-            out << "  " << layer.child_gme( i ).index + offset + 1 ;
+            out << "  " << layer.child_gmme( i ).index() + offset + 1 ;
             it++ ;
             if( it == 5 ) {
                 out << std::endl ;
@@ -176,9 +176,9 @@ namespace {
             return false ;
         }
         for( index_t i = 0; i < nb_interfaces; ++i ) {
-            const GME& E = M.geological_entity( Interface::type_name_static(), i ) ;
+            const GeoModelGeologicalEntity& E = M.geological_entity( Interface::type_name_static(), i ) ;
             if( !E.has_geological_feature() ) {
-                Logger::err( "" ) << E.gme_id() << " has no geological feature"
+                Logger::err( "" ) << E.gmge_id() << " has no geological feature"
                     << std::endl ;
                 return false ;
             }
@@ -186,13 +186,13 @@ namespace {
         for( index_t s = 0; s < M.nb_surfaces(); ++s ) {
             const Surface& S = M.surface( s ) ;
             if( !S.has_parent() ) {
-                Logger::err( "" ) << S.gme_id()
+                Logger::err( "" ) << S.gmme_id()
                     << " does not belong to any Interface of the geomodel"
                     << std::endl ;
                 return false ;
             }
             if( !S.is_simplicial() ) {
-                Logger::err( "" ) << S.gme_id() << " is not triangulated "
+                Logger::err( "" ) << S.gmme_id() << " is not triangulated "
                     << std::endl ;
                 return false ;
             }
@@ -316,14 +316,14 @@ namespace {
                 }
                 for( index_t k = 0; k < S.nb_boundaries(); ++k ) {
                     const Line& L = dynamic_cast< const Line& >( S.boundary( k ) ) ;
-                    index_t v0_model_id = geomodel_vertices.geomodel_vertex_id( L.gme_id(), 0 ) ;
-                    index_t v1_model_id = geomodel_vertices.geomodel_vertex_id( L.gme_id(), 1 ) ;
+                    index_t v0_model_id = geomodel_vertices.geomodel_vertex_id( L.gmme_id(), 0 ) ;
+                    index_t v1_model_id = geomodel_vertices.geomodel_vertex_id( L.gmme_id(), 1 ) ;
 
                     std::vector< index_t > v0_surface_ids ;
-                    geomodel_vertices.mesh_entity_vertex_id( S.gme_id(), v0_model_id,
+                    geomodel_vertices.mesh_entity_vertex_id( S.gmme_id(), v0_model_id,
                         v0_surface_ids ) ;
                     std::vector< index_t > v1_surface_ids ;
-                    geomodel_vertices.mesh_entity_vertex_id( S.gme_id(), v1_model_id,
+                    geomodel_vertices.mesh_entity_vertex_id( S.gmme_id(), v1_model_id,
                         v1_surface_ids ) ;
 
                     if( !S.has_inside_border() ) {
@@ -369,9 +369,9 @@ namespace {
                         }
                     }
                     // Set a BSTONE at the line other extremity
-                    const gme_t& c1_id = L.boundary_gme( 1 ) ;
+                    const gmme_t& c1_id = L.boundary_gmme( 1 ) ;
                     std::vector< index_t > gme_vertices ;
-                    geomodel_vertices.mesh_entity_vertex_id( S.gme_id(),
+                    geomodel_vertices.mesh_entity_vertex_id( S.gmme_id(),
                         geomodel_vertices.geomodel_vertex_id( c1_id ), gme_vertices ) ;
                     corners.insert( gme_vertices.front() + offset ) ;
                 }
@@ -436,7 +436,7 @@ namespace {
                     out << S.nb_mesh_element_vertices( f ) << " " ;
                     for( index_t v = 0; v < S.nb_mesh_element_vertices( f ); v++ ) {
                         out
-                            << geomodel.mesh.vertices.geomodel_vertex_id( S.gme_id(),
+                            << geomodel.mesh.vertices.geomodel_vertex_id( S.gmme_id(),
                                 f, v ) << " " ;
                     }
                     out << std::endl ;

@@ -43,6 +43,7 @@
 
 namespace RINGMesh {
     class GeoModel ;
+    class GeoModelMeshEntity ;
     class Corner ;
     class Line ;
     class Surface ;
@@ -52,10 +53,9 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
-
     class RINGMESH_API EntityType {
     public:
-        bool operator==(  const EntityType& type2 ) const
+        bool operator==( const EntityType& type2 ) const
         {
             return type_ == type2.type_ ;
         }
@@ -63,21 +63,27 @@ namespace RINGMesh {
         {
             return type_ != type2.type_ ;
         }
-        friend std::ostream& operator<<( std::ostream& os, const EntityType& in ) {
-            os << in.type_  ;
+        friend std::ostream& operator<<( std::ostream& os, const EntityType& in )
+        {
+            os << in.type_ ;
             return os ;
         }
 
     private:
         std::string type_ ;
     protected:
-        EntityType( const std::string& type )
+        EntityType( std::string type )
             : type_( type )
         {
         }
         EntityType()
             : type_( default_entity_type_string() )
         {
+        }
+
+        void set_type( std::string type )
+        {
+            type_ = type ;
         }
     private:
         const std::string default_entity_type_string()
@@ -86,7 +92,18 @@ namespace RINGMesh {
         }
     } ;
 
-    class RINGMESH_API DefaultEntityType : public EntityType {
+    class RINGMESH_API DefaultMeshEntityType: public EntityType {
+    public:
+        static DefaultMeshEntityType& default_entity_type()
+        {
+            static DefaultMeshEntityType default_entity_type ;
+            return default_entity_type ;
+        }
+    private:
+        DefaultMeshEntityType() ;
+    } ;
+
+    class RINGMESH_API DefaultEntityType: public EntityType {
     public:
         static DefaultEntityType& default_entity_type()
         {
@@ -97,12 +114,20 @@ namespace RINGMesh {
         DefaultEntityType() ;
     } ;
 
-
-
+    class RINGMESH_API DefaultGeologicalEntityType: public EntityType {
+    public:
+        static DefaultGeologicalEntityType& default_entity_type()
+        {
+            static DefaultGeologicalEntityType default_entity_type ;
+            return default_entity_type ;
+        }
+    private:
+        DefaultGeologicalEntityType() ;
+    } ;
 
     class RINGMESH_API MeshEntityType: public EntityType {
     public:
-        MeshEntityType( const std::string& type )
+        MeshEntityType( std::string type )
             : EntityType( type )
         {
         }
@@ -110,17 +135,24 @@ namespace RINGMesh {
             : EntityType()
         {
         }
-
     } ;
 
     class RINGMESH_API GeologicalEntityType: public EntityType {
     public:
-        GeologicalEntityType( const std::string& type )
+        GeologicalEntityType( std::string type )
             : EntityType( type )
         {
         }
         GeologicalEntityType()
             : EntityType()
+        {
+        }
+    } ;
+
+    class RINGMESH_API UniverseType: public EntityType {
+    public:
+        UniverseType()
+            : EntityType( "Universe" )
         {
         }
     } ;
@@ -136,9 +168,10 @@ namespace RINGMesh {
         {
             return index_ ;
         }
-        const EntityType& type() const
+
+        index_t& index()
         {
-            return type_ ;
+            return index_ ;
         }
         bool operator!=( const gme_t& rhs ) const
         {
@@ -148,25 +181,37 @@ namespace RINGMesh {
         {
             return type_ == rhs.type_ && index_ == rhs.index_ ;
         }
-        /*!
-         * @details Compare first types, then compare indices,
-         *          beginning with NO_ID indices.
-         * @note In a sorted vector v of gme_t one can find the first surface with
-         *       std::lower_bound( v.begin(), v.end(), gme_t( SURFACE, NO_ID ) ) ;
-         */
-
+//        /*!
+//         * @details Compare first types, then compare indices,
+//         *          beginning with NO_ID indices.
+//         * @note In a sorted vector v of gme_t one can find the first surface with
+//         *       std::lower_bound( v.begin(), v.end(), gme_t( SURFACE, NO_ID ) ) ;
+//         */
+//        bool operator<( const gme_t& rhs ) const
+//        {
+//            if( type_ != rhs.type_ ) {
+//                /// @warning Is this now enough for EntityType = std::string?
+//                /// Did any code relied on that sorting? Maybe mine ... [JP]
+//                return type_ < rhs.type_ ;
+//            } else {
+//                if( index_ == NO_ID ) return true ;
+//                if( rhs.index_ == NO_ID ) return false ;
+//                return index_ < rhs.index_ ;
+//            }
+//        }
         friend std::ostream& operator<<( std::ostream& os, const gme_t& in )
         {
-            os << in.type() << " " << in.index_ ;
+            os << in.type_ << " " << in.index_ ;
             return os ;
         }
         bool is_defined() const
         {
-            return type_ != DefaultEntityType::default_entity_type() && index_ != NO_ID ;
+            return type_ != DefaultMeshEntityType::default_entity_type()
+                && index_ != NO_ID ;
         }
     protected:
         gme_t()
-            : type_( DefaultEntityType::default_entity_type()), index_( NO_ID )
+            : type_( DefaultMeshEntityType::default_entity_type() ), index_( NO_ID )
         {
         }
         gme_t( const EntityType& entity_type, index_t index )
@@ -174,45 +219,77 @@ namespace RINGMesh {
         {
         }
     protected:
-        EntityType type_ ;
+        const EntityType& type_ ;
         /*!
          * Index of the GeoModelEntity in the GeoModel
          */
         index_t index_ ;
     } ;
 
-    struct gmge_t: public gme_t {
-        gmge_t()
-            : gme_t()
+    template< class Entity_type_template > struct gme_template: public gme_t {
+    public:
+        const Entity_type_template& type() const
         {
+            return type_ ;
         }
-        gmge_t( const EntityType& entity_type, index_t index )
-            : gme_t( entity_type, index )
-        {
-        }
-    }
-    ;
 
-    struct gmme_t: public gme_t {
-        gmme_t()
+        gme_template()
             : gme_t()
         {
         }
-        gmme_t( const EntityType& entity_type, index_t index )
+        gme_template( const Entity_type_template& entity_type, index_t index )
             : gme_t( entity_type, index )
         {
         }
-    }
-    ;
+    } ;
+
+    typedef gme_template< GeologicalEntityType > gmge_t ;
+    typedef gme_template< MeshEntityType > gmme_t ;
+
+//    struct gmge_t: public gme_t {
+//
+//         const GeologicalEntityType& type() const
+//         {
+//             return static_cast <const GeologicalEntityType& >(type_) ;
+//         }
+//
+//        gmge_t()
+//            : gme_t()
+//        {
+//        }
+//        gmge_t( const GeologicalEntityType& entity_type, index_t index )
+//            : gme_t( entity_type, index )
+//        {
+//        }
+//    }
+//    ;
+//
+//    struct gmme_t: public gme_t {
+//        gmme_t()
+//            : gme_t()
+//        {
+//        }
+//        gmme_t( const GeologicalEntityType& entity_type, index_t index )
+//            : gme_t( entity_type, index )
+//        {
+//        }
+//
+//        const MeshEntityType& type() const
+//        {
+//            return static_cast <const MeshEntityType& >(type_) ;
+//        }
+//    }
+//    ;
 
     class RINGMESH_API MeshEntityTypeManager {
     public:
-        MeshEntityTypeManager(EntityTypeManager& type_manager) ;
+        MeshEntityTypeManager( EntityTypeManager& type_manager ) ;
 
         static bool is_corner( const MeshEntityType& type ) ;
         static bool is_line( const MeshEntityType& type ) ;
         static bool is_surface( const MeshEntityType& type ) ;
         static bool is_region( const MeshEntityType& type ) ;
+        static bool is_valid_type( const MeshEntityType& type ) ;
 
         static const MeshEntityType& boundary_type( const MeshEntityType& type ) ;
         static const MeshEntityType& in_boundary_type( const MeshEntityType& type ) ;
@@ -220,13 +297,12 @@ namespace RINGMesh {
         static const std::vector< MeshEntityType >& mesh_entity_types() ;
         static index_t nb_mesh_entity_types() ;
 
-
     private:
         typedef std::map< MeshEntityType, MeshEntityType > MeshEntityTypeMap ;
         struct MeshEntityTypeBoundaryMap {
             MeshEntityTypeBoundaryMap()
             {
-                register_boundary< Corner, GeoModelEntity >() ;
+                register_boundary< Corner, GeoModelMeshEntity >() ;
                 register_boundary< Line, Corner >() ;
                 register_boundary< Surface, Line >() ;
                 register_boundary< Region, Surface >() ;
@@ -247,7 +323,7 @@ namespace RINGMesh {
                 register_in_boundary< Corner, Line >() ;
                 register_in_boundary< Line, Surface >() ;
                 register_in_boundary< Surface, Region >() ;
-                register_in_boundary< Region, GeoModelEntity >() ;
+                register_in_boundary< Region, GeoModelMeshEntity >() ;
             }
             template< typename TYPE, typename IN_BOUNDARY >
             void register_in_boundary()
@@ -268,12 +344,13 @@ namespace RINGMesh {
 
     class RINGMESH_API GeologicalTypeManager {
     public:
-        GeologicalTypeManager(EntityTypeManager& type_manager) ;
+        GeologicalTypeManager( EntityTypeManager& type_manager ) ;
 
         index_t nb_geological_entity_types() const ;
         const std::vector< GeologicalEntityType >& geological_entity_types() const ;
-        const EntityType& geological_entity_type( index_t index ) const ;
-        index_t geological_entity_type_index( const EntityType& type ) const ;
+        const GeologicalEntityType& geological_entity_type( index_t index ) const ;
+        index_t geological_entity_type_index(
+            const GeologicalEntityType& type ) const ;
     private:
         std::vector< GeologicalEntityType > geological_entity_types_ ;
         const EntityTypeManager& type_manager_ ;
@@ -287,11 +364,12 @@ namespace RINGMesh {
         }
     } ;
     class RINGMESH_API RelationshipManager {
+        friend class GeoModelBuilderGeology ;
     public:
         typedef std::map< GeologicalEntityType, MeshEntityType > GeologicalEntityToChild ;
         typedef std::map< MeshEntityType, std::set< GeologicalEntityType > > MeshEntityToParents ;
 
-        RelationshipManager(EntityTypeManager& type_manager) ;
+        RelationshipManager( EntityTypeManager& type_manager ) ;
         std::vector< GeologicalEntityType > parent_types(
             const MeshEntityType& child_type ) const ;
         index_t nb_parent_types( const MeshEntityType& child_type ) const ;
