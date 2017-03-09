@@ -182,6 +182,8 @@ endif(UNIX)
 message(STATUS "RINGMesh binary directory is: ${PROJECT_BINARY_DIR}") 
 message(STATUS "RINGMesh source directory is: ${PROJECT_SOURCE_DIR}") 
 
+include(cmake/utils.cmake)
+
 #------------------------------------------------------------------------------------------------
 # Platform dependent settings
 if(WIN32)
@@ -194,16 +196,13 @@ elseif(UNIX)
     # Determine gcc version and activate additional warnings available in latest versions
     execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
 
-    if (GCC_VERSION VERSION_GREATER 4.3 OR GCC_VERSION VERSION_EQUAL 4.3)
-        message(STATUS "GCC version >= 4.3, activating sign conversion warnings")
-        add_compile_options(-Wsign-conversion)
+    if(GCC_VERSION VERSION_LESS 4.8 )
+        message(FATAL_ERROR "RINGMesh require GCC version >= 4.8")
     endif()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+    add_compile_options(-Wsign-conversion)
+    add_compile_options(-Wdouble-promotion)
 
-    if (GCC_VERSION VERSION_GREATER 4.6 OR GCC_VERSION VERSION_EQUAL 4.6)
-        message(STATUS "GCC version >= 4.6, activating double promotion warnings")
-        add_compile_options(-Wdouble-promotion)
-    endif()
-    
      if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
        set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
        set(COVERALLS ON)
@@ -350,17 +349,6 @@ endif(RINGMESH_WITH_GEOLOGYJS)
 
 #------------------------------------------------------------------------------------------------
 # Collect the library files
-function(source_file_directory var directory)
-    file(GLOB sources "${PROJECT_SOURCE_DIR}/src/ringmesh/${directory}/*.cpp")
-    source_group("Source Files\\${directory}" FILES ${sources})
-    set(${var} ${${var}} ${sources} PARENT_SCOPE)
-endfunction()
-function(include_file_directory var directory)
-    file(GLOB sources "${PROJECT_SOURCE_DIR}/include/ringmesh/${directory}/*.h")
-    source_group("Header Files\\${directory}" FILES ${sources})
-    set(${var} ${${var}} ${sources} PARENT_SCOPE)
-endfunction()
-
 FILE(GLOB directories RELATIVE ${PROJECT_SOURCE_DIR}/src/ringmesh ${PROJECT_SOURCE_DIR}/src/ringmesh/*)
 FOREACH(directory ${directories})
     IF(IS_DIRECTORY ${PROJECT_SOURCE_DIR}/src/ringmesh/${directory})
@@ -410,40 +398,12 @@ target_link_libraries(RINGMesh ${EXTRA_LIBS})
 
 #------------------------------------------------------------------------------------------------
 # Optional modules configuration
-
-function(copy_for_windows)
-if(WIN32)
-    # On windows, without proper installation steps, we need to 
-    # copy of Geogram dll and pdb information to RINGMesh
-    # to be able to launch RINGMesh utilities and tests from the debugger
-
-    # The dll and debug info of RINGMesh are in
-    # build/ringmesh/Debug or build/ringmesh/Release.
-    add_custom_command(TARGET RINGMesh POST_BUILD 
-        COMMAND  "${CMAKE_COMMAND}" -E copy_directory 
-            "${PROJECT_BINARY_DIR}/$<CONFIGURATION>"
-            "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>" 
-            COMMENT "Copy RINGMesh dll")
-    add_custom_command(TARGET RINGMesh POST_BUILD 
-        COMMAND  "${CMAKE_COMMAND}" -E copy_directory 
-            "${GEOGRAM_PATH_BIN}/bin/$<CONFIGURATION>"
-            "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>" 
-            COMMENT "Copy geogram binaries")
-    if(RINGMESH_WITH_GEOLOGYJS)
-        add_custom_command(TARGET RINGMesh POST_BUILD 
-            COMMAND  "${CMAKE_COMMAND}" -E copy_directory 
-                "${GEOLOGY_JS_PATH_BIN}/bin/$<CONFIGURATION>"
-                "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>" 
-                COMMENT "Copy geology js binaries")
-    endif(RINGMESH_WITH_GEOLOGYJS)
-endif(WIN32)
-endfunction()
-
 if(BUILD_RINGMESH_VIEW)
     message(STATUS "Configure ringmesh-view")
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
     message(STATUS "ringmesh-view directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
-    add_subdirectory(src/bin/ringmesh-view)
+    include(${CMAKE_SOURCE_DIR}/src/third_party/geogram/cmake/opengl.cmake)
+    add_ringmesh_binary(ringmesh-view geogram_gfx ${OPENGL_LIBRARIES})
     copy_for_windows()
 endif(BUILD_RINGMESH_VIEW)
 
@@ -451,13 +411,13 @@ if(RINGMESH_WITH_UTILITIES)
     message(STATUS "Configuring RINGMesh with utilities")
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/utilities)
     message(STATUS "RINGMesh utilities directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
-    add_subdirectory(src/bin/ringmesh-convert)
-    add_subdirectory(src/bin/ringmesh-surface-convert)
-    add_subdirectory(src/bin/ringmesh-stats)
-    add_subdirectory(src/bin/ringmesh-repair)
-    add_subdirectory(src/bin/ringmesh-mesh-quality)
-    add_subdirectory(src/bin/ringmesh-rotate)
-    add_subdirectory(src/bin/ringmesh-translate)
+    add_ringmesh_binary(ringmesh-convert)
+    add_ringmesh_binary(ringmesh-surface-convert)
+    add_ringmesh_binary(ringmesh-stats)
+    add_ringmesh_binary(ringmesh-repair)
+    add_ringmesh_binary(ringmesh-mesh-quality)
+    add_ringmesh_binary(ringmesh-rotate)
+    add_ringmesh_binary(ringmesh-translate)
     copy_for_windows()
 endif(RINGMESH_WITH_UTILITIES)
 
