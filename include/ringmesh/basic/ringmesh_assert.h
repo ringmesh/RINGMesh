@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_ASSERT__
-#define __RINGMESH_ASSERT__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -65,6 +64,4 @@ namespace RINGMesh {
 #else
 #  define ringmesh_assert( x )
 #  define ringmesh_assert_not_reached
-#endif
-
 #endif

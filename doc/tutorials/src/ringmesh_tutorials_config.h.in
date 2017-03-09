@@ -44,8 +44,7 @@
  * and re-run the project configuration
  */
  
-#ifndef __RINGMESH_TUTORIALS_CONFIG__
-#define __RINGMESH_TUTORIALS_CONFIG__
+#prama once
  
 #include <string>
 
@@ -57,5 +56,3 @@ namespace RINGMesh {
     static const std::string ringmesh_tutorials_output_path = "@TUTORIALS_DATA_OUTPUT_DIRECTORY@/" ;
 
 }
-
-#endif

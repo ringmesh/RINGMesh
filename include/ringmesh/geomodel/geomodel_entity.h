@@ -38,8 +38,7 @@
  * @author Jeanne Pellerin and Arnaud Botella 
  */
 
-#ifndef __RINGMESH_GEOMODEL_ENTITY__
-#define __RINGMESH_GEOMODEL_ENTITY__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -277,5 +276,3 @@ namespace RINGMesh {
     } ;
 
 } // namespace
-
-#endif

@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_IO__
-#define __RINGMESH_IO__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -146,4 +145,3 @@ namespace RINGMesh {
     void RINGMESH_API unzip_current_file( unzFile uz, const char filename[MAX_FILENAME] ) ;
 
 }
-#endif
