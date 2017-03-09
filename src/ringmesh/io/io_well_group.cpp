@@ -40,6 +40,9 @@
 
 #include <ringmesh/mesh/well.h>
 
+#include <ringmesh/mesh/mesh_builder.h>
+#include <ringmesh/mesh/geogram_mesh.h>
+
 /*!
  * @file Implements the input - output of WellGroup
  * @author Arnaud Botella
@@ -60,10 +63,11 @@ namespace {
                 throw RINGMeshException( "I/O", "Could not open file" ) ;
             }
 
-            GEO::Mesh mesh ;
+            Mesh1D* mesh = Mesh1D::create_mesh( GeogramMesh1D::type_name_static() ) ;
+            Mesh1DBuilder* builder = Mesh1DBuilder::create_builder( *mesh ) ;
             std::string name ;
             double z_sign = 1.0 ;
-            double vertex_ref[3] ;
+            vec3 vertex_ref ;
 
             while( !in.eof() ) {
                 in.get_line() ;
@@ -76,23 +80,29 @@ namespace {
                         z_sign = -1.0 ;
                     }
                 } else if( in.field_matches( 0, "WREF" ) ) {
-                    vertex_ref[0] =in.field_as_double(1) ;
-                    vertex_ref[1] = in.field_as_double(2);
-                    vertex_ref[2] = z_sign *in.field_as_double(3) ;
-                    mesh.vertices.create_vertex( vertex_ref ) ;
+                    vertex_ref[0] = in.field_as_double( 1 ) ;
+                    vertex_ref[1] = in.field_as_double( 2 ) ;
+                    vertex_ref[2] = z_sign * in.field_as_double( 3 ) ;
+                    builder->create_vertex( vertex_ref ) ;
                 } else if( in.field_matches( 0, "PATH" ) ) {
-                    if( in.field_as_double(1) == 0. ) continue ;
-                    double vertex[3] ;
-                    vertex[2] = z_sign * in.field_as_double(2);
-                    vertex[0] = in.field_as_double(3) + vertex_ref[0] ;
-                    vertex[1] = in.field_as_double(4) + vertex_ref[1] ;
-                    index_t id = mesh.vertices.create_vertex( vertex ) ;
-                    mesh.edges.create_edge( id - 1, id ) ;
+                    if( in.field_as_double( 1 ) == 0. ) continue ;
+                    vec3 vertex ;
+                    vertex[2] = z_sign * in.field_as_double( 2 ) ;
+                    vertex[0] = in.field_as_double( 3 ) + vertex_ref[0] ;
+                    vertex[1] = in.field_as_double( 4 ) + vertex_ref[1] ;
+                    index_t id = builder->create_vertex( vertex ) ;
+                    builder->create_edge( id - 1, id ) ;
                 } else if( in.field_matches( 0, "END" ) ) {
-                    wells.add_well( mesh, name ) ;
-                    mesh.clear() ;
+                    wells.add_well( *mesh, name ) ;
+                    delete mesh ;
+                    delete builder ;
+                    mesh = Mesh1D::create_mesh( GeogramMesh1D::type_name_static() ) ;
+                    builder = Mesh1DBuilder::create_builder( *mesh ) ;
                 }
             }
+
+            delete mesh ;
+            delete builder ;
         }
         virtual void save( const WellGroup& wells, const std::string& filename )
         {
@@ -113,8 +123,7 @@ namespace RINGMesh {
      */
     void well_load( const std::string& filename, WellGroup& wells )
     {
-        Logger::out( "I/O" ) << "Loading file " << filename << "..."
-            << std::endl ;
+        Logger::out( "I/O" ) << "Loading file " << filename << "..." << std::endl ;
 
         WellGroupIOHandler_var handler = WellGroupIOHandler::get_handler(
             filename ) ;
@@ -151,6 +160,5 @@ namespace RINGMesh {
      */
     void WellGroupIOHandler::initialize()
     {
-        ringmesh_register_WellGroupIOHandler_creator( WLIOHandler, "wl" ) ;
-    }
+        ringmesh_register_WellGroupIOHandler_creator( WLIOHandler, "wl" );}
 }
