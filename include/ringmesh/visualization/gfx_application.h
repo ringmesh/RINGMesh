@@ -62,6 +62,8 @@ namespace RINGMesh {
         RINGMeshApplication( int argc, char** argv ) ;
         ~RINGMeshApplication() ;
 
+        virtual void quit() ;
+
     private:
         static RINGMeshApplication* instance() ;
 
@@ -249,6 +251,7 @@ namespace RINGMesh {
         ViewerType current_viewer_type_ ;
 
         static std::vector< std::vector< ImColor > > color_table_ ;
+
     } ;
 }
 
