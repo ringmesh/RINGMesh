@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_GEOMODEL_BUILDER_FROM_MESH__
-#define __RINGMESH_GEOMODEL_BUILDER_FROM_MESH__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -68,5 +67,3 @@ namespace RINGMesh {
         const GEO::Mesh& mesh_ ;
     } ;
 }
-
-#endif

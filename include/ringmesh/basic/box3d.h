@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_BOX3D__
-#define __RINGMESH_BOX3D__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -152,5 +151,3 @@ namespace RINGMesh {
     } ;
 
 }
-
-#endif

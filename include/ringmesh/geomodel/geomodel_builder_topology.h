@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_GEOMODEL_BUILDER_TOPOLOGY__
-#define __RINGMESH_GEOMODEL_BUILDER_TOPOLOGY__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -216,5 +215,3 @@ namespace RINGMesh {
     } ;
 
 }
-
-#endif
