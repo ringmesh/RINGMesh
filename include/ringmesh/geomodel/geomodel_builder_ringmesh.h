@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_GEOMODEL_BUILDER_RINGMESH__
-#define __RINGMESH_GEOMODEL_BUILDER_RINGMESH__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -120,5 +119,3 @@ namespace RINGMesh {
         void load_connectivities( GEO::LineInput& file_line ) ;
     } ;
 }
-
-#endif
