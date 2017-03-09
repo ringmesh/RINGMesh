@@ -290,7 +290,55 @@ namespace RINGMesh {
         }
         return true ;
     }
+	index_t find_mesh_entity_id_from_name(
+		const GeoModel& geo_model,
+		const EntityType& gme_type,
+		const std::string& name)
+	{
+		index_t mesh_entity_id = NO_ID;
+		for (index_t elt_i = 0; elt_i < geo_model.nb_mesh_entities(gme_type);
+			elt_i++) {
+			const RINGMesh::GeoModelMeshEntity& cur_gme = geo_model.mesh_entity(
+				gme_type, elt_i);
+			if (cur_gme.name() == name) {
+				mesh_entity_id = cur_gme.index();
+				if (mesh_entity_id != NO_ID){
+					throw RINGMeshException(
+						"Repeated name : ", name
+						+ " At least Two GeoModelMeshEntityhave the same name in the GeoModel");
+				}
+			}
+		}
+		return mesh_entity_id;
+		throw RINGMeshException(
+			"GeoModelEntity name : ", name
+			+ " does not match with any actual GeoModelEntity name in the GeoModel");
+	}
 
+	index_t find_geological_entity_id_from_name(
+		const RINGMesh::GeoModel& geo_model,
+		const RINGMesh::EntityType& gme_type,
+		const std::string& name)
+	{
+		index_t geological_entity_id = NO_ID;
+		for (index_t elt_i = 0; elt_i < geo_model.nb_geological_entities(gme_type);
+			elt_i++) {
+			const RINGMesh::GeoModelGeologicalEntity& cur_gme = geo_model.geological_entity(
+				gme_type, elt_i);
+			if (cur_gme.name() == name) {
+				geological_entity_id = cur_gme.index();
+				if (geological_entity_id != NO_ID){
+					throw RINGMeshException(
+						"Repeated name : ", name
+						+ " At least Two GeoModelMeshEntityhave the same name in the GeoModel");
+				}
+			}
+		}
+		return geological_entity_id;
+		throw RINGMeshException(
+			"GeoModelEntity name : ", name
+			+ " does not match with any actual GeoModelEntity name in the GeoModel");
+	}
     /*******************************************************************************/
 
     void translate( GeoModel& M, const vec3& translation_vector )
