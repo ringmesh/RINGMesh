@@ -75,6 +75,10 @@ namespace RINGMesh {
         return type == hard_encoded_mesh_entity_types[3] ;
     }
 
+    bool MeshEntityTypeManager::is_valid_type(const MeshEntityType& type ) {
+        return find( hard_encoded_mesh_entity_types, type ) != NO_ID ;
+    }
+
     const MeshEntityType& MeshEntityTypeManager::boundary_type(
         const MeshEntityType& mesh_entity_type )
     {
@@ -116,13 +120,13 @@ namespace RINGMesh {
     {
         return geological_entity_types_ ;
     }
-    const EntityType& GeologicalTypeManager::geological_entity_type(
+    const GeologicalEntityType& GeologicalTypeManager::geological_entity_type(
         index_t index ) const
     {
         return geological_entity_types_.at( index ) ;
     }
     index_t GeologicalTypeManager::geological_entity_type_index(
-        const EntityType& type ) const
+        const GeologicalEntityType& type ) const
     {
         return find( geological_entity_types_, type ) ;
     }
@@ -155,7 +159,7 @@ namespace RINGMesh {
         GeologicalEntityToChild::const_iterator itr = parent_to_child_.find(
             parent_type ) ;
         if( itr == parent_to_child_.end() ) {
-            return DefaultEntityType::default_entity_type() ;
+            return DefaultMeshEntityType::default_entity_type() ;
         } else {
             return itr->second ;
         }

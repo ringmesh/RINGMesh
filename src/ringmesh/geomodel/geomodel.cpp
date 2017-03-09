@@ -62,7 +62,7 @@ namespace {
         if( gm.universe().nb_boundaries() > 0 ) {
             const Universe& universe = gm.universe() ;
             for( index_t s = 0; s < universe.nb_boundaries(); s++ ) {
-                compute_surface_bbox( gm, universe.boundary_gme( s ).index, bbox ) ;
+                compute_surface_bbox( gm, universe.boundary_gmme( s ).index(), bbox ) ;
             }
         } else {
             ringmesh_assert( gm.nb_surfaces() > 0 ) ;
@@ -108,7 +108,7 @@ namespace RINGMesh {
         }
     } 
 
-   index_t GeoModel::nb_mesh_entities( const EntityType& type ) const
+   index_t GeoModel::nb_mesh_entities( const MeshEntityType& type ) const
    {
        if( MeshEntityTypeManager::is_corner( type ) ) {
            return nb_corners();
@@ -124,10 +124,10 @@ namespace RINGMesh {
        }
    }
 
-   const GeoModelMeshEntity& GeoModel::mesh_entity( gme_t id ) const
+   const GeoModelMeshEntity& GeoModel::mesh_entity( gmme_t id ) const
    {
-       const EntityType& type = id.type ;
-       index_t index = id.index ;
+       const MeshEntityType& type = id.type ;
+       index_t index = id.index() ;
        if( MeshEntityTypeManager::is_corner( type ) ) {
            return corner( index ) ;
        } else if( MeshEntityTypeManager::is_line( type ) ) {
@@ -142,7 +142,7 @@ namespace RINGMesh {
    }
 
    const std::vector< GeoModelMeshEntity* >& GeoModel::mesh_entities(
-       const EntityType& type ) const
+       const MeshEntityType& type ) const
    {
        if( MeshEntityTypeManager::is_corner( type ) ) {
            return *(std::vector< GeoModelMeshEntity* > *) &corners_ ;

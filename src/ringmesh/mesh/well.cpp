@@ -65,14 +65,14 @@ namespace {
     index_t find_region( const GeoModel& BM, index_t surface_part_id, bool side )
     {
         ringmesh_assert( surface_part_id < BM.nb_surfaces() ) ;
-        gme_t cur_surface( Surface::type_name_static(), surface_part_id ) ;
+        gmme_t cur_surface( Surface::type_name_static(), surface_part_id ) ;
         /// @todo It would be better to directly check the region
         /// adjacent to the Surface.
         for( index_t r = 0; r < BM.nb_regions(); r++ ) {
             const Region& cur_region = BM.region( r ) ;
             for( index_t s = 0; s < cur_region.nb_boundaries(); s++ ) {
                 if( cur_region.side( s ) == side
-                    && cur_region.boundary_gme( s ) == cur_surface ) {
+                    && cur_region.boundary_gmme( s ) == cur_surface ) {
                     return r ;
                 }
             }
