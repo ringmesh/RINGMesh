@@ -151,8 +151,8 @@ namespace RINGMesh {
         {
             return id_ ;
         }
-        const vec3& point( index_t p ) const ;
-        const vec3& edge_point( index_t edge, index_t p ) const ;
+        const vec3& vertex( index_t v ) const ;
+        const vec3& edge_vertex( index_t edge, index_t v ) const ;
 
     private:
         /// id of the part corresponding to the position in the parts_ vector of the well
@@ -168,21 +168,21 @@ namespace RINGMesh {
     public:
         Edge( const vec3& v0, const vec3& v1 )
         {
-            values_[0] = v0 ;
-            values_[1] = v1 ;
+            vertices_[0] = v0 ;
+            vertices_[1] = v1 ;
         }
 
-        const vec3& value( index_t i ) const
+        const vec3& vertex( index_t i ) const
         {
-            return values_[i] ;
+            return vertices_[i] ;
         }
 
         vec3 barycenter() const
         {
-            return ( values_[0] + values_[1] ) * 0.5 ;
+            return ( vertices_[0] + vertices_[1] ) * 0.5 ;
         }
     private:
-        vec3 values_[2] ;
+        vec3 vertices_[2] ;
     } ;
 
 // --------------------------------------------------------------------------
@@ -195,25 +195,25 @@ namespace RINGMesh {
 
         void copy_corners_and_informations( Well& well ) const ;
 
-        void get_part_edges( index_t p, std::vector< Edge >& edges ) const ;
-        void get_region_edges( index_t p, std::vector< Edge >& edges ) const ;
+        void get_part_edges( index_t part_id, std::vector< Edge >& edges ) const ;
+        void get_region_edges( index_t part_id, std::vector< Edge >& edges ) const ;
 
         /*!
          * Creates a new corner
-         * @param[in] p the geometric position of the corner
+         * @param[in] vertex the geometric position of the corner
          * @param[in] corner_info the corner_info_t corresponding to the corner to create
          * @return the id of the created corner
          */
         index_t create_corner(
-            const vec3& p,
+            const vec3& vertex,
             bool is_on_surface,
             index_t id )
         {
             index_t corner_id = static_cast< index_t >( corners_.size() ) ;
-            corners_.push_back( new WellCorner( this, p, is_on_surface, id ) ) ;
+            corners_.push_back( new WellCorner( this, vertex, is_on_surface, id ) ) ;
             return corner_id ;
         }
-        index_t find_corner( const vec3& p ) const ;
+        index_t find_corner( const vec3& vertex ) const ;
         /*!
          * Gets a corner
          * @param[in] c the id of the corner
@@ -238,31 +238,31 @@ namespace RINGMesh {
         }
         /*!
          * Gets a part
-         * @param[in] part the part id
+         * @param[in] part_id the part id
          */
-        const WellPart& part( index_t part ) const
+        const WellPart& part( index_t part_id ) const
         {
-            ringmesh_assert( part < parts_.size() ) ;
-            return *parts_[part] ;
+            ringmesh_assert( part_id < parts_.size() ) ;
+            return *parts_[part_id] ;
         }
         /*!
          * Gets a part
-         * @param[in] part the part id
+         * @param[in] part_id the part id
          */
-        WellPart& part( index_t part )
+        WellPart& part( index_t part_id )
         {
-            ringmesh_assert( part < parts_.size() ) ;
-            return *parts_[part] ;
+            ringmesh_assert( part_id < parts_.size() ) ;
+            return *parts_[part_id] ;
         }
         /*!
          * Gets the region id of a part
-         * @param[in] part the part id
+         * @param[in] part_id the part id
          * @return the region id of the part
          */
-        index_t part_region_id( index_t part ) const
+        index_t part_region_id( index_t part_id ) const
         {
-            ringmesh_assert( part < nb_parts() ) ;
-            return part_region_id_[part] ;
+            ringmesh_assert( part_id < nb_parts() ) ;
+            return part_region_id_[part_id] ;
         }
 
         /*!

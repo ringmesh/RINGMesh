@@ -38,6 +38,8 @@
 #include <geogram/basic/file_system.h>
 #include <geogram/basic/line_stream.h>
 
+#include <ringmesh/geomodel/geomodel.h>
+
 #include <ringmesh/mesh/well.h>
 
 #include <ringmesh/mesh/mesh_builder.h>
@@ -53,6 +55,30 @@ namespace {
 
     static std::string TAB = "\t" ;
     static std::string SPACE = " " ;
+
+    void merge_colocated_vertices( double epsilon, Mesh1D& mesh )
+    {
+        std::vector< index_t > old2new ;
+        index_t nb_colocated = mesh.vertices_nn_search().get_colocated_index_mapping(
+            epsilon, old2new ) ;
+        DEBUG( nb_colocated ) ;
+        if( nb_colocated > 0 ) {
+            Mesh1DBuilder_var builder = Mesh1DBuilder::create_builder( mesh ) ;
+            for( index_t e = 0; e < mesh.nb_edges(); e++ ) {
+                for( index_t i = 0; i < 2; i++ ) {
+                    index_t v = mesh.edge_vertex( e, i ) ;
+                    builder->set_edge_vertex( e, i, old2new[v] ) ;
+                }
+            }
+            std::vector< bool > delete_vertices( mesh.nb_vertices(), false ) ;
+            for( index_t v = 0; v < mesh.nb_vertices(); v++ ) {
+                if( old2new[v] != v ) {
+                    delete_vertices[v] = true ;
+                }
+            }
+            builder->delete_vertices( delete_vertices ) ;
+        }
+    }
 
     class WLIOHandler: public WellGroupIOHandler {
     public:
@@ -124,7 +150,7 @@ namespace {
 
             Mesh1D* mesh = Mesh1D::create_mesh( GeogramMesh1D::type_name_static() ) ;
             Mesh1DBuilder* builder = Mesh1DBuilder::create_builder( *mesh ) ;
-            std::string name ;
+            std::string name = GEO::FileSystem::base_name( filename ) ;
 
             bool is_first_part = true ;
 
@@ -164,6 +190,8 @@ namespace {
                         builder->set_edge_vertex( e, 0, in.field_as_uint( 1 ) ) ;
                         builder->set_edge_vertex( e, 1, in.field_as_uint( 2 ) ) ;
                     }
+                    merge_colocated_vertices( wells.geomodel()->epsilon(), *mesh ) ;
+                    mesh->save_mesh( "test.geogram" ) ;
                     wells.add_well( *mesh, name ) ;
                     break ;
                 }
@@ -227,7 +255,7 @@ namespace RINGMesh {
      */
     void WellGroupIOHandler::initialize()
     {
-        ringmesh_register_WellGroupIOHandler_creator( WLIOHandler, "wl" );
-    ringmesh_register_WellGroupIOHandler_creator( SmeshIOHandler, "smesh" ) ;
-}
+        ringmesh_register_WellGroupIOHandler_creator( WLIOHandler, "wl" ) ;
+        ringmesh_register_WellGroupIOHandler_creator( SmeshIOHandler, "smesh" ) ;
+    }
 }
