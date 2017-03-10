@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_GEOMODEL__
-#define __RINGMESH_GEOMODEL__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -510,5 +509,3 @@ namespace RINGMesh {
     geo_register_creator( GeoModelGeologicalEntityFactory, type, type::type_name_static() )
 
 }
-
-#endif

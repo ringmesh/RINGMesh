@@ -33,9 +33,7 @@
  *     FRANCE
  */
  
-
-#ifndef __RINGMESH_COMMAND_LINE_
-#define __RINGMESH_COMMAND_LINE_
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -47,6 +45,3 @@ namespace RINGMesh {
 
     }
 }
-
-#endif
-
