@@ -310,11 +310,10 @@ namespace RINGMesh {
                 mesh_entity_id = cur_gme.index() ;
             }
         }
-		if (mesh_entity_id == NO_ID){
-			throw RINGMeshException("GeoModelEntity name : ",
-				name
-				+ " does not match with any actual GeoModelEntity name in the GeoModel");
-		}
+        if (mesh_entity_id == NO_ID){
+            throw RINGMeshException("GeoModelEntity name : ", name
+                + " does not match with any actual GeoModelEntity name in the GeoModel");
+        }
         return mesh_entity_id ;
     }
 
@@ -337,11 +336,10 @@ namespace RINGMesh {
                 geological_entity_id = cur_gme.index() ;
             }
         }
-		if (geological_entity_id == NO_ID){
-			throw RINGMeshException("GeoModelEntity name : ",
-				name
-				+ " does not match with any actual GeoModelEntity name in the GeoModel");
-		}
+        if (geological_entity_id == NO_ID){
+            throw RINGMeshException("GeoModelEntity name : ", name
+                + " does not match with any actual GeoModelEntity name in the GeoModel");
+        }
         return geological_entity_id ;
     }
 
