@@ -45,6 +45,7 @@
 #include <ringmesh/geomodel/geomodel_builder.h>
 #include <ringmesh/geomodel/geomodel_validity.h>
 #include <ringmesh/io/io.h>
+#include <ringmesh/mesh/well.h>
 
 /*!
  * @author Arnaud Botella
@@ -123,6 +124,14 @@ int main( int argc, char** argv )
             show_usage_example() ;
             return 1 ;
         }
+
+        GeoModel geomodel ;
+        geomodel_load( geomodel, GEO::CmdLine::get_arg( "in:geomodel" ) ) ;
+
+        WellGroup wells ;
+        wells.set_geomodel( &geomodel ) ;
+        well_load( GEO::CmdLine::get_arg( "in:wells" ), wells ) ;
+        exit(0);
 
         GEO::Stopwatch total( "Total time" ) ;
 
