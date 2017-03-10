@@ -312,9 +312,6 @@ namespace RINGMesh {
 // --------------------------------------------------------------------------
 
     /*! 
-     * @todo Implement something more generic than WellGroups
-     * We want to deal with Lines of Points that might not be Well [JP]
-     *
      * @todo Comment
      */
     class RINGMESH_API WellGroup {
