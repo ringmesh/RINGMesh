@@ -73,7 +73,7 @@ endfunction()
 
 function(add_ringmesh_binary name)
     # Set the target as an executable 
-    add_executable(${name} ${PROJECT_SOURCE_DIR}/src/bin/${name}/main.cpp)
+    add_executable(${name} ${PROJECT_SOURCE_DIR}/src/bin/${name}.cpp)
        
     set(BINARY_DEPENDANCIES RINGMesh geogram)
     foreach(arg ${ARGN})
