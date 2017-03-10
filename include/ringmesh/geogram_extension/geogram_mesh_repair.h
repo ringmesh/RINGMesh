@@ -33,8 +33,7 @@
 *     FRANCE
 */
 
-#ifndef __RINGMESH_GEOGRAM_MESH_REPAIR__
-#define __RINGMESH_GEOGRAM_MESH_REPAIR__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -119,5 +118,3 @@ namespace RINGMesh {
     */
     void RINGMESH_API repair_colocate_vertices( GEO::Mesh& M, double tolerance ) ;
 }
-
-#endif
