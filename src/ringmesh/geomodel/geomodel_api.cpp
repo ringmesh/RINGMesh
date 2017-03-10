@@ -329,7 +329,7 @@ namespace RINGMesh {
             if( cur_gme.name() == name ) {
                 if( geological_entity_id != NO_ID ) {
                     throw RINGMeshException( "Find GME",
-                        "At least two GeoModelGeologicalEntity have the same name in the GeoModel : "+ name) ;
+                        "At least two GeoModelGeologicalEntity have the same name in the GeoModel : " + name ) ;
                 }
                 geological_entity_id = cur_gme.index() ;
             }
