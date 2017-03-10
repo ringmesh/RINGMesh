@@ -502,9 +502,9 @@ namespace RINGMesh {
 
                 for( index_t i = 0; i < wells_copy.size(); ++i ) {
                     region_surfaces_and_wells_vertices.push_back(
-                        well_edges[w][i].value( 0 ) ) ;
+                        well_edges[w][i].vertex( 0 ) ) ;
                     region_surfaces_and_wells_vertices.push_back(
-                        well_edges[w][i].value( 1 ) ) ;
+                        well_edges[w][i].vertex( 1 ) ) ;
                 }
             }
         }

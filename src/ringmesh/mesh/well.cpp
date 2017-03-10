@@ -65,14 +65,17 @@ namespace {
      * @param[in] side Side of the Surface
      * @return The region index or NO_ID if none found.
      */
-    index_t find_region( const GeoModel& BM, index_t surface_part_id, bool side )
+    index_t find_region(
+        const GeoModel& geomodel,
+        index_t surface_part_id,
+        bool side )
     {
-        ringmesh_assert( surface_part_id < BM.nb_surfaces() ) ;
+        ringmesh_assert( surface_part_id < geomodel.nb_surfaces() ) ;
         gme_t cur_surface( Surface::type_name_static(), surface_part_id ) ;
         /// @todo It would be better to directly check the region
         /// adjacent to the Surface.
-        for( index_t r = 0; r < BM.nb_regions(); r++ ) {
-            const Region& cur_region = BM.region( r ) ;
+        for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
+            const Region& cur_region = geomodel.region( r ) ;
             for( index_t s = 0; s < cur_region.nb_boundaries(); s++ ) {
                 if( cur_region.side( s ) == side
                     && cur_region.boundary_gme( s ) == cur_surface ) {
@@ -170,14 +173,14 @@ namespace RINGMesh {
         return mesh_->nb_edges() ;
     }
 
-    const vec3& WellPart::point( index_t p ) const
+    const vec3& WellPart::vertex( index_t v ) const
     {
-        return mesh_->vertex( p ) ;
+        return mesh_->vertex( v ) ;
     }
 
-    const vec3& WellPart::edge_point( index_t edge, index_t p ) const
+    const vec3& WellPart::edge_vertex( index_t edge, index_t v ) const
     {
-        return point( mesh_->edge_vertex( edge, p ) ) ;
+        return vertex( mesh_->edge_vertex( edge, v ) ) ;
     }
     /*!
      * Gets the length of the part
@@ -186,7 +189,7 @@ namespace RINGMesh {
     {
         double l = 0.0 ;
         for( index_t e = 0; e < nb_edges(); e++ ) {
-            l += ( point( e + 1 ) - point( e ) ).length() ;
+            l += ( vertex( e + 1 ) - vertex( e ) ).length() ;
         }
         return l ;
     }
@@ -210,13 +213,13 @@ namespace RINGMesh {
 
     /*!
      * Finds if a corner at a given geometric position exist
-     * @param[in] p the geometric position to test
+     * @param[in] vertex the geometric position to test
      * @return the id of the corner or NO_ID if not found any corresponding to \p p
      */
-    index_t Well::find_corner( const vec3& p ) const
+    index_t Well::find_corner( const vec3& vertex ) const
     {
         for( index_t c = 0; c < nb_corners(); c++ ) {
-            if( p == corner( c ).point() ) {
+            if( vertex == corner( c ).point() ) {
                 return c ;
             }
         }
@@ -239,10 +242,10 @@ namespace RINGMesh {
         }
 
         well.parts_.reserve( nb_parts() ) ;
-        for( index_t p = 0; p < nb_parts(); p++ ) {
-            well.create_part( part_region_id( p ) ) ;
-            const WellPart& from_part = part( p ) ;
-            WellPart& cur_part = well.part( p ) ;
+        for( index_t part_id = 0; part_id < nb_parts(); part_id++ ) {
+            well.create_part( part_region_id( part_id ) ) ;
+            const WellPart& from_part = part( part_id ) ;
+            WellPart& cur_part = well.part( part_id ) ;
 //            cur_part.mesh().copy( from_part.mesh() ) ;
             cur_part.set_corner( 0, from_part.corner( 0 ) ) ;
             cur_part.set_corner( 1, from_part.corner( 1 ) ) ;
@@ -255,26 +258,26 @@ namespace RINGMesh {
     index_t Well::nb_edges() const
     {
         if( nb_edges_ == NO_ID ) {
-            index_t res = 0 ;
-            for( index_t p = 0; p < nb_parts(); p++ ) {
-                res += part( p ).nb_edges() ;
+            index_t nb_edges = 0 ;
+            for( index_t part_id = 0; part_id < nb_parts(); part_id++ ) {
+                nb_edges += part( part_id ).nb_edges() ;
             }
-            const_cast< Well* >( this )->nb_edges_ = res ;
+            const_cast< Well* >( this )->nb_edges_ = nb_edges ;
         }
         return nb_edges_ ;
     }
 
     /*!
      * Gets the edges of a part
-     * @param[in] p the part id
+     * @param[in] part_id the part id
      * @param[out] edges the edges of the part
      */
-    void Well::get_part_edges( index_t p, std::vector< Edge >& edges ) const
+    void Well::get_part_edges( index_t part_id, std::vector< Edge >& edges ) const
     {
-        const WellPart& well_part = part( p ) ;
+        const WellPart& well_part = part( part_id ) ;
         for( index_t e = 0; e < well_part.nb_edges(); e++ ) {
             edges.push_back(
-                Edge( well_part.point( e ), well_part.point( e + 1 ) ) ) ;
+                Edge( well_part.vertex( e ), well_part.vertex( e + 1 ) ) ) ;
         }
     }
 
@@ -285,9 +288,9 @@ namespace RINGMesh {
      */
     void Well::get_region_edges( index_t region, std::vector< Edge >& edges ) const
     {
-        for( index_t p = 0; p < nb_parts(); p++ ) {
-            if( part_region_id( p ) == region ) {
-                get_part_edges( p, edges ) ;
+        for( index_t part_id = 0; part_id < nb_parts(); part_id++ ) {
+            if( part_region_id( part_id ) == region ) {
+                get_part_edges( part_id, edges ) ;
             }
         }
     }
@@ -314,9 +317,9 @@ namespace RINGMesh {
     {
         for( index_t w = 0; w < nb_wells(); w++ ) {
             const Well& cur_well = well( w ) ;
-            for( index_t p = 0; p < cur_well.nb_parts(); p++ ) {
-                if( cur_well.part_region_id( p ) == region ) {
-                    cur_well.get_part_edges( p, edges ) ;
+            for( index_t part_id = 0; part_id < cur_well.nb_parts(); part_id++ ) {
+                if( cur_well.part_region_id( part_id ) == region ) {
+                    cur_well.get_part_edges( part_id, edges ) ;
                 }
             }
         }
@@ -402,6 +405,15 @@ namespace RINGMesh {
         }
     }
 
+    struct OrientedEdge {
+        OrientedEdge( index_t edge, index_t vertex_from )
+            : edge_( edge ), vertex_from_( vertex_from )
+        {
+        }
+        index_t edge_ ;
+        index_t vertex_from_ ;
+    } ;
+
     /*!
      * Add a well from its mesh and makes it conformal to the associated GeoModel
      * @param[in] mesh the mesh of the well
@@ -415,14 +427,25 @@ namespace RINGMesh {
         Well& new_well = *wells_.back() ;
         new_well.set_name( name ) ;
 
-        std::vector< Box3d > boxes( geomodel()->nb_surfaces() ) ;
-        for( index_t s = 0; s < geomodel()->nb_surfaces(); s++ ) {
-            Box3d& box = boxes[s] ;
-            const Surface& surface = geomodel()->surface( s ) ;
-            for( index_t p = 0; p < surface.nb_vertices(); p++ ) {
-                box.add_point( surface.vertex( p ) ) ;
+        std::vector< std::vector< index_t > > edges_around_vertices(
+            mesh.nb_vertices() ) ;
+        for( index_t e = 0; e < mesh.nb_edges(); e++ ) {
+            for( index_t i = 0; i < 2; i++ ) {
+                index_t v = mesh.edge_vertex( e, i ) ;
+                edges_around_vertices[v].push_back( e ) ;
             }
         }
+
+        std::stack< OrientedEdge > S ;
+        for( index_t v = 0; v < mesh.nb_vertices(); v++ ) {
+            const std::vector< index_t >& edges = edges_around_vertices[v] ;
+            if( edges.size() == 1 ) {
+                S.push( OrientedEdge( edges.front(), v ) ) ;
+            }
+        }
+        DEBUG( S.size() ) ;
+        DEBUG( mesh.nb_edges() ) ;
+        DEBUG( mesh.nb_vertices() ) ;
 
         bool last_sign = false ;
         LineInstersection start( mesh.vertex( 0 ) ) ;
@@ -434,16 +457,9 @@ namespace RINGMesh {
             Box3d box ;
             box.add_point( v_from ) ;
             box.add_point( v_to ) ;
-            std::vector< index_t > potential_surfaces ;
-            for( index_t s = 0; s < geomodel()->nb_surfaces(); s++ ) {
-                if( box.bboxes_overlap( boxes[s] ) ) {
-                    potential_surfaces.push_back( s ) ;
-                }
-            }
             std::vector< LineInstersection > intersections ;
-            for( index_t s = 0; s < potential_surfaces.size(); s++ ) {
-                index_t s_id = potential_surfaces[s] ;
-                const Surface& surface = geomodel()->surface( s_id ) ;
+            for( index_t s = 0; s < geomodel()->nb_surfaces(); s++ ) {
+                const Surface& surface = geomodel()->surface( s ) ;
                 EdgeConformerAction action( surface, v_from, v_to, intersections ) ;
                 surface.facets_aabb().compute_bbox_element_bbox_intersections( box,
                     action ) ;
@@ -534,16 +550,9 @@ namespace RINGMesh {
             Box3d edge_box ;
             edge_box.add_point( v_from ) ;
             edge_box.add_point( v_to ) ;
-            std::vector< index_t > potential_surfaces ;
-            for( index_t s = 0; s < geomodel()->nb_surfaces(); s++ ) {
-                if( edge_box.bboxes_overlap( boxes[s] ) ) {
-                    potential_surfaces.push_back( s ) ;
-                }
-            }
             std::vector< LineInstersection > intersections ;
-            for( index_t s = 0; s < potential_surfaces.size(); s++ ) {
-                index_t s_id = potential_surfaces[s] ;
-                const Surface& surface = geomodel()->surface( s_id ) ;
+            for( index_t s = 0; s < geomodel()->nb_surfaces(); s++ ) {
+                const Surface& surface = geomodel()->surface( s ) ;
                 EdgeConformerAction action( surface, v_from, v_to, intersections ) ;
                 surface.facets_aabb().compute_bbox_element_bbox_intersections( box,
                     action ) ;
