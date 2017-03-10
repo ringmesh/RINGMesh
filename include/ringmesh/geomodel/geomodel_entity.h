@@ -115,10 +115,6 @@ namespace RINGMesh {
         {
             return geol_feature_ ;
         }
-        /*!
-         * @brief Basic checks on the minimum required information 
-         */
-        virtual bool is_identification_valid() const = 0 ;
 
     protected:
         /*!

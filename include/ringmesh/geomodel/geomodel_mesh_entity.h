@@ -94,8 +94,7 @@ namespace RINGMesh {
          */
         virtual bool is_valid() const
         {
-            return is_identification_valid() && is_connectivity_valid()
-                && is_mesh_valid() && are_geomodel_vertex_indices_valid() ;
+            return  is_mesh_valid() && are_geomodel_vertex_indices_valid() ;
         }
         virtual bool is_connectivity_valid() const ;
 
@@ -281,8 +280,6 @@ namespace RINGMesh {
         {
             return mesh_->vertex_attribute_manager() ;
         }
-
-        virtual bool is_identification_valid() const ;
 
     protected:
         GeoModelMeshEntity(
@@ -1298,6 +1295,11 @@ namespace RINGMesh {
             return gmme_.mesh_ ;
         }
 
+        void copy( const GeoModelMeshEntity& from )
+        {
+            gmme_.copy( from ) ;
+        }
+
         void change_mesh_data_structure( const MeshType type ) ;
 
         template< typename ENTITY >
@@ -1307,11 +1309,6 @@ namespace RINGMesh {
             const MeshType type )
         {
             return new ENTITY( geomodel, id, type ) ;
-        }
-
-        void copy( const GeoModelMeshEntity& from )
-        {
-            gmme_.copy( from ) ;
         }
 
     private:

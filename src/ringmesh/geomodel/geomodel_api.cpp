@@ -292,14 +292,14 @@ namespace RINGMesh {
 
     index_t find_mesh_entity_id_from_name(
         const GeoModel& geomodel,
-        const EntityType& gme_type,
+        const MeshEntityType& gmme_type,
         const std::string& name )
     {
         index_t mesh_entity_id = NO_ID ;
-        for( index_t elt_i = 0; elt_i < geomodel.nb_mesh_entities( gme_type );
+        for( index_t elt_i = 0; elt_i < geomodel.nb_mesh_entities( gmme_type );
             elt_i++ ) {
             const RINGMesh::GeoModelMeshEntity& cur_gme = geomodel.mesh_entity(
-                gme_type, elt_i ) ;
+                gmme_type, elt_i ) ;
             if( cur_gme.name() == name ) {
                 if( mesh_entity_id != NO_ID ) {
                     throw RINGMeshException( "FIND GME",
@@ -317,14 +317,14 @@ namespace RINGMesh {
 
     index_t find_geological_entity_id_from_name(
         const RINGMesh::GeoModel& geomodel,
-        const RINGMesh::EntityType& gme_type,
+        const RINGMesh::GeologicalEntityType& gmge_type,
         const std::string& name )
     {
         index_t geological_entity_id = NO_ID ;
-        for( index_t elt_i = 0; elt_i < geomodel.nb_geological_entities( gme_type );
+        for( index_t elt_i = 0; elt_i < geomodel.nb_geological_entities( gmge_type );
             elt_i++ ) {
             const RINGMesh::GeoModelGeologicalEntity& cur_gme =
-                geomodel.geological_entity( gme_type, elt_i ) ;
+                geomodel.geological_entity( gmge_type, elt_i ) ;
             if( cur_gme.name() == name ) {
                 if( geological_entity_id != NO_ID ) {
                     throw RINGMeshException( "Find GME",

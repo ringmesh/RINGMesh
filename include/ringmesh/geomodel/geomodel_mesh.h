@@ -193,7 +193,7 @@ namespace RINGMesh {
 
         void unbind_geomodel_vertex_map( const gmme_t& mesh_entity_id ) ;
 
-        void bind_geomodel_vertex_map( const gme_t& mesh_entity_id ) ;
+        void bind_geomodel_vertex_map( const gmme_t& mesh_entity_id ) ;
 
         const NNSearch& nn_search() const
         {
@@ -382,7 +382,7 @@ namespace RINGMesh {
             void unbind_vertex_map( const gmme_t& mesh_entity_id ) ;
 
             GEO::Attribute< index_t >& bind_vertex_map(
-                const gme_t& mesh_entity_id ) ;
+                const gmme_t& mesh_entity_id ) ;
 
             /*!
              * @}
