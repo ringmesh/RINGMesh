@@ -391,18 +391,18 @@ namespace RINGMesh {
             const std::string& type = entity_types_[selected_entity_type_casted] ;
 
             if( selected_entity_type_casted
-                < EntityTypeManager::nb_mesh_entity_types() + 1 ) {
+                < MeshEntityTypeManager::nb_mesh_entity_types() + 1 ) {
                 selected_entity_id_ = std::min(
                     static_cast< int >( GM_.nb_mesh_entities( type ) - 1 ),
                     selected_entity_id_ ) ;
-                gme_t entity_id( type,
+                gmme_t entity_id( type,
                     static_cast< index_t >( selected_entity_id_ ) ) ;
                 toggle_mesh_entity_and_boundaries_visibility( entity_id ) ;
             } else {
                 selected_entity_id_ = std::min(
                     static_cast< int >( GM_.nb_geological_entities( type ) - 1 ),
                     selected_entity_id_ ) ;
-                gme_t entity_id( type,
+                gmge_t entity_id( type,
                     static_cast< index_t >( selected_entity_id_ ) ) ;
                 toggle_geological_entity_visibility( entity_id ) ;
             }

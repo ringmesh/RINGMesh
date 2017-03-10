@@ -244,7 +244,7 @@ namespace RINGMesh {
         const gmme_t& mesh_entity_id )
     {
         ringmesh_assert(
-            mesh_entity_id.index < vertex_maps_[mesh_entity_id.type]->size() ) ;
+            mesh_entity_id.index() < vertex_maps_[mesh_entity_id.type()]->size() ) ;
         if( geomodel_vertices_.is_initialized() ) {
             vertex_maps_.at( mesh_entity_id.type() )->bind_one_attribute(
                 mesh_entity_id.index(),
