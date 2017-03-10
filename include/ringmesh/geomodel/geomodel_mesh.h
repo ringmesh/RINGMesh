@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_GEOMODEL_MESH__
-#define __RINGMESH_GEOMODEL_MESH__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -193,19 +192,13 @@ namespace RINGMesh {
 
         void unbind_geomodel_vertex_map( const gme_t& mesh_entity_id ) ;
 
+        void bind_geomodel_vertex_map( const gme_t& mesh_entity_id ) ;
+
         const NNSearch& nn_search() const
         {
             test_and_initialize() ;
             return mesh_->vertices_nn_search() ;
         }
-
-        /*!
-         * @brief Initialize the vertices from the vertices
-         *        of the GeoModel Corners, Lines, and Surfaces
-         * @details Fills the mesh_.vertices, gme_vertices_ and
-         *         delete colocated vertices
-         */
-        void initialize() ;
 
         /*!
          * @brief Remove colocated vertices
@@ -230,6 +223,14 @@ namespace RINGMesh {
             const GeoModel& M,
             const std::string& entity_type,
             index_t& count ) ;
+
+        /*!
+         * @brief Initialize the vertices from the vertices
+         *        of the GeoModel Corners, Lines, Surfaces and Regions
+         * @details Fills the mesh_.vertices, computes the vertex mapping and
+         *         delete colocated vertices
+         */
+        void initialize() ;
 
     private:
         /*!
@@ -379,6 +380,9 @@ namespace RINGMesh {
 
             void unbind_vertex_map( const gme_t& mesh_entity_id ) ;
 
+            GEO::Attribute< index_t >& bind_vertex_map(
+                const gme_t& mesh_entity_id ) ;
+
             /*!
              * @}
              */
@@ -407,8 +411,6 @@ namespace RINGMesh {
             bool is_mesh_entity_vertex_map_initialized(
                 const gme_t& mesh_entity_id ) const ;
 
-            GEO::Attribute< index_t >& bind_mesh_entity_vertex_map(
-                const gme_t& mesh_entity_id ) ;
             /*!
              * @brief Unbinds all the GeoModelMeshEntity vertex maps
              */
@@ -1344,5 +1346,3 @@ namespace RINGMesh {
     } ;
 
 }
-
-#endif

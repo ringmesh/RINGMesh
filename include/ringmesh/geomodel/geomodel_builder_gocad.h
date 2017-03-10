@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_GEOMODEL_BUILDER_GOCAD__
-#define __RINGMESH_GEOMODEL_BUILDER_GOCAD__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -382,5 +381,3 @@ namespace RINGMesh {
     } ;
 
 }
-
-#endif

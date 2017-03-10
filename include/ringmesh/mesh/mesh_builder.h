@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_MESH_BUILDER__
-#define __RINGMESH_MESH_BUILDER__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -58,9 +57,8 @@ namespace RINGMesh {
          * \name general methods
          * @{
          */
-        virtual void copy(
-            const MeshBase& rhs,
-            bool copy_attributes ) = 0 ;
+        virtual void copy( const MeshBase& rhs, bool copy_attributes ) = 0 ;
+
         virtual void load_mesh( const std::string& filename ) = 0 ;
         /*!
          * @brief Removes all the entities and attributes of this mesh.
@@ -95,10 +93,11 @@ namespace RINGMesh {
          * @param[in] coords a pointer to @function dimension() coordinate.
          * @return the index of the created vertex
          */
-        virtual index_t create_vertex(const vec3& vertex) {
-            index_t index = create_vertex();
-            set_vertex(index, vertex);
-            return index;
+        virtual index_t create_vertex( const vec3& vertex )
+        {
+            index_t index = create_vertex() ;
+            set_vertex( index, vertex ) ;
+            return index ;
         }
         /*!
          * @brief Creates a contiguous chunk of vertices.
@@ -111,8 +110,7 @@ namespace RINGMesh {
          * @param[in] to_delete     a vector of size @function nb(). If to_delete[e] is true,
          * then entity e will be destroyed, else it will be kept.
          */
-        virtual void delete_vertices(
-            const std::vector< bool >& to_delete ) = 0 ;
+        virtual void delete_vertices( const std::vector< bool >& to_delete ) = 0 ;
         /*!
          * @brief Removes all the vertices and attributes.
          * @param[in] keep_attributes if true, then all the existing attribute
@@ -121,7 +119,8 @@ namespace RINGMesh {
          * by subsequent mesh entity creations.
          */
         virtual void clear_vertices( bool keep_attributes, bool keep_memory ) = 0 ;
-        virtual void permute_vertices( const std::vector< index_t >& permutation ) = 0 ;
+        virtual void permute_vertices(
+            const std::vector< index_t >& permutation ) = 0 ;
         /*!
          * @brief Deletes the NNSearch on vertices
          */
@@ -141,9 +140,8 @@ namespace RINGMesh {
 #define ringmesh_register_mesh_base_builder(type) \
     geo_register_creator(RINGMesh::MeshBaseBuilderFactory, type ## Builder, type::type_name_static())
 
-
     class RINGMESH_API Mesh0DBuilder: public virtual MeshBaseBuilder {
-    ringmesh_disable_copy(Mesh0DBuilder) ;
+    ringmesh_disable_copy( Mesh0DBuilder ) ;
     public:
         virtual ~Mesh0DBuilder()
         {
@@ -170,7 +168,7 @@ namespace RINGMesh {
     geo_register_creator(RINGMesh::Mesh0DBuilderFactory, type ## Builder, type::type_name_static())
 
     class RINGMESH_API Mesh1DBuilder: public virtual MeshBaseBuilder {
-    ringmesh_disable_copy(Mesh1DBuilder) ;
+    ringmesh_disable_copy( Mesh1DBuilder ) ;
     public:
         virtual ~Mesh1DBuilder()
         {
@@ -179,6 +177,7 @@ namespace RINGMesh {
         virtual void set_mesh( Mesh1D& mesh ) = 0 ;
 
         static Mesh1DBuilder* create_builder( Mesh1D& mesh ) ;
+
         /*!
          * @brief Create a new edge.
          * @param[in] v1_id index of the starting vertex.
@@ -194,8 +193,10 @@ namespace RINGMesh {
         /*!
          * @brief Sets a vertex of a facet by local vertex index.
          * @param[in] edge_id index of the edge, in 0..nb()-1.
-         * @param[in] local_vertex_id index of the vertex in the facet. Local index between 0 and @function nb_vertices(cell_id) - 1.
-         * @param[in] vertex_id specifies the vertex \param local_vertex_id of facet \param of the facet facet_id. Index between 0 and @function nb() - 1.
+         * @param[in] local_vertex_id index of the vertex in the facet.
+         * Local index between 0 and @function nb_vertices(cell_id) - 1.
+         * @param[in] vertex_id specifies the vertex \param local_vertex_id of facet
+         * \param of the facet facet_id. Index between 0 and @function nb() - 1.
          */
         virtual void set_edge_vertex(
             index_t edge_id,
@@ -238,7 +239,7 @@ namespace RINGMesh {
     geo_register_creator(RINGMesh::Mesh1DBuilderFactory, type ## Builder, type::type_name_static())
 
     class RINGMESH_API Mesh2DBuilder: public virtual MeshBaseBuilder {
-    ringmesh_disable_copy(Mesh2DBuilder) ;
+    ringmesh_disable_copy( Mesh2DBuilder ) ;
     public:
         virtual ~Mesh2DBuilder()
         {
@@ -247,6 +248,7 @@ namespace RINGMesh {
         virtual void set_mesh( Mesh2D& mesh ) = 0 ;
 
         static Mesh2DBuilder* create_builder( Mesh2D& mesh ) ;
+
         /*!@}
          * \name Facet related methods
          * @{
@@ -282,18 +284,23 @@ namespace RINGMesh {
         /*!
          * @brief Sets a vertex of a facet by local vertex index.
          * @param[in] facet_id index of the facet, in 0.. @function nb() - 1.
-         * @param[in] local_vertex_id index of the vertex in the facet. Local index between 0 and @function nb_vertices(cell_id) - 1.
-         * @param[in] vertex_id specifies the vertex \param local_vertex_id of the facet \param facet_id. Index between 0 and @function nb() - 1.
+         * @param[in] local_vertex_id index of the vertex in the facet.
+         * Local index between 0 and @function nb_vertices(cell_id) - 1.
+         * @param[in] vertex_id specifies the vertex \param local_vertex_id of the
+         * facet \param facet_id. Index between 0 and @function nb() - 1.
          */
         virtual void set_facet_vertex(
             index_t facet_id,
             index_t local_vertex_id,
             index_t vertex_id ) = 0 ;
         /*!
-         * @brief Sets an adjacent facet by both its facet \param facet_id and its local edge index \param edge_id.
+         * @brief Sets an adjacent facet by both its facet \param facet_id
+         * and its local edge index \param edge_id.
          * @param[in] facet_id the facet index
          * @param[in] edge_id the local index of an edge in facet \p facet_id
-         * @param[in] specifies the facet adjacent to \param facet_id along edge \param edge_id or GEO::NO_FACET if the parameter \param edge_id is on the border.
+         * @param[in] specifies the facet adjacent to \param facet_id along edge
+         * \param edge_id or GEO::NO_FACET if the parameter \param edge_id is
+         * on the border.
          */
         virtual void set_facet_adjacent(
             index_t facet_id,
@@ -323,7 +330,8 @@ namespace RINGMesh {
          * @brief Retrieve the adjacencies of facets
          */
         virtual void connect_facets() = 0 ;
-        virtual void permute_facets( const std::vector< index_t >& permutation ) = 0 ;
+        virtual void permute_facets(
+            const std::vector< index_t >& permutation ) = 0 ;
         /*!
          * @brief Deletes a set of facets.
          * @param[in] to_delete     a vector of size @function nb().
@@ -370,7 +378,7 @@ namespace RINGMesh {
     geo_register_creator(RINGMesh::Mesh2DBuilderFactory, type ## Builder, type::type_name_static())
 
     class RINGMESH_API Mesh3DBuilder: public virtual MeshBaseBuilder {
-    ringmesh_disable_copy(Mesh3DBuilder) ;
+    ringmesh_disable_copy( Mesh3DBuilder ) ;
     public:
         virtual ~Mesh3DBuilder()
         {
@@ -379,6 +387,7 @@ namespace RINGMesh {
         virtual void set_mesh( Mesh3D& mesh ) = 0 ;
 
         static Mesh3DBuilder* create_builder( Mesh3D& mesh ) ;
+
         /*!
          * @brief Creates a contiguous chunk of cells of the same type.
          * @param[in] nb_cells number of cells to create
@@ -404,8 +413,11 @@ namespace RINGMesh {
         /*!
          * @brief Sets a vertex of a cell by local vertex index.
          * @param[in] cell_id index of the cell, in 0.. @function nb() - 1.
-         * @param[in] local_vertex_id index of the vertex in the cell. Local index between 0 and @function nb_vertices(cell_id) - 1.
-         * @param[in] vertex_id specifies the global index of the vertex \param local_vertex_id in the cell \param cell_id. Index between 0 and @function nb() - 1.
+         * @param[in] local_vertex_id index of the vertex in the cell.
+         * Local index between 0 and @function nb_vertices(cell_id) - 1.
+         * @param[in] vertex_id specifies the global index of the vertex \param
+         * local_vertex_id in the cell \param cell_id. Index between 0 and
+         * @function nb() - 1.
          */
         virtual void set_cell_vertex(
             index_t cell_id,
@@ -414,7 +426,8 @@ namespace RINGMesh {
         /*!
          * \brief Sets the vertex that a corner is incident to
          * \param[in] corner_index the corner, in 0.. @function nb() - 1
-         * \param[in] vertex_index specifies the vertex that corner \param corner_index is incident to
+         * \param[in] vertex_index specifies the vertex that corner
+         * \param corner_index is incident to
          */
         virtual void set_cell_corner_vertex_index(
             index_t corner_index,
@@ -448,7 +461,7 @@ namespace RINGMesh {
          * On exit, permutation is modified (used for internal bookkeeping).
          * Applying a permutation permutation is equivalent to:
          * <code>
-         *  for(i=0; i<permutation.size(); i++) {
+         *  for( i = 0 ; i < permutation.size() ; i++) {
          *      data2[i] = data[permutation[i]]
          *       }
          *  data = data2 ;
@@ -486,7 +499,7 @@ namespace RINGMesh {
         public virtual Mesh1DBuilder,
         public virtual Mesh2DBuilder,
         public virtual Mesh3DBuilder {
-    ringmesh_disable_copy(MeshAllDBuilder) ;
+    ringmesh_disable_copy( MeshAllDBuilder ) ;
     public:
         virtual ~MeshAllDBuilder()
         {
@@ -497,6 +510,7 @@ namespace RINGMesh {
         virtual void remove_isolated_vertices() = 0 ;
 
         static MeshAllDBuilder* create_builder( MeshAllD& mesh ) ;
+
     protected:
         MeshAllDBuilder()
             : Mesh0DBuilder(), Mesh1DBuilder(), Mesh2DBuilder(), Mesh3DBuilder()
@@ -508,5 +522,3 @@ namespace RINGMesh {
 #define ringmesh_register_mesh_alld_builder(type) \
     geo_register_creator(RINGMesh::MeshAllDBuilderFactory, type ## Builder, type::type_name_static())
 }
-
-#endif

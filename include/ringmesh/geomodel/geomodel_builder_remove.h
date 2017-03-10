@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_GEOMODEL_BUILDER_REMOVE__
-#define __RINGMESH_GEOMODEL_BUILDER_REMOVE__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -576,5 +575,3 @@ namespace RINGMesh {
     } ;
 
 }
-
-#endif
