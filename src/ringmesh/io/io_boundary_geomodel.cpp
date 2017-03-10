@@ -98,7 +98,8 @@ namespace {
 
     void save_universe( index_t count, const Universe& universe, std::ostream& out )
     {
-        out << "REGION " << count << "  " << universe.type_name() << " " << std::endl ;
+        out << "REGION " << count << "  " << universe.type_name() << " "
+            << std::endl ;
         index_t it = 0 ;
 
         for( index_t i = 0; i < universe.nb_boundaries(); ++i ) {
@@ -169,14 +170,16 @@ namespace {
      */
     bool check_gocad_validity( const GeoModel& M )
     {
-        index_t nb_interfaces = M.nb_geological_entities( Interface::type_name_static() ) ;
+        index_t nb_interfaces = M.nb_geological_entities(
+            Interface::type_name_static() ) ;
         if( nb_interfaces == 0 ) {
-            Logger::err( "" ) << " The GeoModel " << M.name()
-                << " has no Interface" << std::endl ;
+            Logger::err( "" ) << " The GeoModel " << M.name() << " has no Interface"
+                << std::endl ;
             return false ;
         }
         for( index_t i = 0; i < nb_interfaces; ++i ) {
-            const GeoModelGeologicalEntity& E = M.geological_entity( Interface::type_name_static(), i ) ;
+            const GeoModelGeologicalEntity& E = M.geological_entity(
+                Interface::type_name_static(), i ) ;
             if( !E.has_geological_feature() ) {
                 Logger::err( "" ) << E.gmge_id() << " has no geological feature"
                     << std::endl ;
@@ -206,8 +209,10 @@ namespace {
         for( index_t i = 0; i < S.nb_mesh_elements(); ++i ) {
             for( index_t j = 0; j < S.nb_mesh_element_vertices( i ); ++j ) {
                 index_t v0 = S.mesh_element_vertex_index( i, j ) ;
-                index_t v1 = S.mesh_element_vertex_index( i, S.next_facet_vertex_index( i, j ) ) ;
-                if( ( v0 == v0_in && v1 == v1_in ) || ( v0 == v1_in && v1 == v0_in ) ) {
+                index_t v1 = S.mesh_element_vertex_index( i,
+                    S.next_facet_vertex_index( i, j ) ) ;
+                if( ( v0 == v0_in && v1 == v1_in )
+                    || ( v0 == v1_in && v1 == v0_in ) ) {
                     return true ;
                 }
             }
@@ -235,9 +240,12 @@ namespace {
         save_coordinate_system( out ) ;
 
         // Gocad::TSurf = RINGMesh::Interface
-        index_t nb_interfaces = M.nb_geological_entities( Interface::type_name_static() ) ;
+        index_t nb_interfaces = M.nb_geological_entities(
+            Interface::type_name_static() ) ;
         for( index_t i = 0; i < nb_interfaces; ++i ) {
-            out << "TSURF " << M.geological_entity( Interface::type_name_static(), i ).name() << std::endl ;
+            out << "TSURF "
+                << M.geological_entity( Interface::type_name_static(), i ).name()
+                << std::endl ;
         }
 
         index_t count = 1 ;
@@ -247,7 +255,8 @@ namespace {
             const Surface& s = M.surface( i ) ;
             out << "TFACE " << count << "  " ;
             out << GME::geol_name( s.geological_feature() ) ;
-            out << " " << s.parent( Interface::type_name_static() ).name() << std::endl ;
+            out << " " << s.parent( Interface::type_name_static() ).name()
+                << std::endl ;
 
             // Print the key facet which is the first three
             // vertices of the first facet
@@ -267,17 +276,23 @@ namespace {
             ++count ;
         }
         // Layers
-        index_t nb_layers =  M.nb_geological_entities( Layer::type_name_static() ) ;
-        for( index_t i = 0; i < nb_layers; ++i ) {
-            save_layer( count, offset_layer, M.geological_entity( Layer::type_name_static(), i ), out ) ;
-            ++count ;
+        if( M.entity_type_manager().geological_entity_manager.is_valid_type(
+            Layer::type_name_static() ) ) {
+            index_t nb_layers = M.nb_geological_entities(
+                Layer::type_name_static() ) ;
+            for( index_t i = 0; i < nb_layers; ++i ) {
+                save_layer( count, offset_layer,
+                    M.geological_entity( Layer::type_name_static(), i ), out ) ;
+                ++count ;
+            }
         }
         out << "END" << std::endl ;
 
         const GeoModelMeshVertices& geomodel_vertices = M.mesh.vertices ;
         // Save the geometry of the Surfaces, Interface per Interface
         for( index_t i = 0; i < nb_interfaces; ++i ) {
-            const GeoModelGeologicalEntity& tsurf = M.geological_entity( Interface::type_name_static(), i ) ;
+            const GeoModelGeologicalEntity& tsurf = M.geological_entity(
+                Interface::type_name_static(), i ) ;
             // TSurf beginning header
             out << "GOCAD TSurf 1" << std::endl << "HEADER {" << std::endl << "name:"
                 << tsurf.name() << std::endl << "name_in_model_list:" << tsurf.name()
@@ -310,26 +325,29 @@ namespace {
                     vertex_count++ ;
                 }
                 for( index_t k = 0; k < S.nb_mesh_elements(); ++k ) {
-                    out << "TRGL " << S.mesh_element_vertex_index( k, 0 ) + offset << " "
-                        << S.mesh_element_vertex_index( k, 1 ) + offset << " "
-                        << S.mesh_element_vertex_index( k, 2 ) + offset << std::endl ;
+                    out << "TRGL " << S.mesh_element_vertex_index( k, 0 ) + offset
+                        << " " << S.mesh_element_vertex_index( k, 1 ) + offset << " "
+                        << S.mesh_element_vertex_index( k, 2 ) + offset
+                        << std::endl ;
                 }
                 for( index_t k = 0; k < S.nb_boundaries(); ++k ) {
                     const Line& L = dynamic_cast< const Line& >( S.boundary( k ) ) ;
-                    index_t v0_model_id = geomodel_vertices.geomodel_vertex_id( L.gmme_id(), 0 ) ;
-                    index_t v1_model_id = geomodel_vertices.geomodel_vertex_id( L.gmme_id(), 1 ) ;
+                    index_t v0_model_id = geomodel_vertices.geomodel_vertex_id(
+                        L.gmme_id(), 0 ) ;
+                    index_t v1_model_id = geomodel_vertices.geomodel_vertex_id(
+                        L.gmme_id(), 1 ) ;
 
                     std::vector< index_t > v0_surface_ids ;
-                    geomodel_vertices.mesh_entity_vertex_id( S.gmme_id(), v0_model_id,
-                        v0_surface_ids ) ;
+                    geomodel_vertices.mesh_entity_vertex_id( S.gmme_id(),
+                        v0_model_id, v0_surface_ids ) ;
                     std::vector< index_t > v1_surface_ids ;
-                    geomodel_vertices.mesh_entity_vertex_id( S.gmme_id(), v1_model_id,
-                        v1_surface_ids ) ;
+                    geomodel_vertices.mesh_entity_vertex_id( S.gmme_id(),
+                        v1_model_id, v1_surface_ids ) ;
 
                     if( !S.has_inside_border() ) {
                         ringmesh_assert(
                             v0_surface_ids.size() == 1
-                                && v1_surface_ids.size() == 1 ) ;
+                            && v1_surface_ids.size() == 1 ) ;
                         index_t v0 = v0_surface_ids[0] ;
                         index_t v1 = v1_surface_ids[0] ;
                         v0 += offset ;
@@ -372,7 +390,8 @@ namespace {
                     const gmme_t& c1_id = L.boundary_gmme( 1 ) ;
                     std::vector< index_t > gme_vertices ;
                     geomodel_vertices.mesh_entity_vertex_id( S.gmme_id(),
-                        geomodel_vertices.geomodel_vertex_id( c1_id ), gme_vertices ) ;
+                        geomodel_vertices.geomodel_vertex_id( c1_id ),
+                        gme_vertices ) ;
                     corners.insert( gme_vertices.front() + offset ) ;
                 }
             }
@@ -436,8 +455,8 @@ namespace {
                     out << S.nb_mesh_element_vertices( f ) << " " ;
                     for( index_t v = 0; v < S.nb_mesh_element_vertices( f ); v++ ) {
                         out
-                            << geomodel.mesh.vertices.geomodel_vertex_id( S.gmme_id(),
-                                f, v ) << " " ;
+                            << geomodel.mesh.vertices.geomodel_vertex_id(
+                                S.gmme_id(), f, v ) << " " ;
                     }
                     out << std::endl ;
                 }
@@ -483,123 +502,123 @@ namespace {
 
 #ifdef RINGMESH_WITH_GEOLOGYJS
 
-    class HTMLIOHandler: public GeoModelIOHandler {
-    public:
-        virtual bool load( const std::string& filename, GeoModel& geomodel )
-        {
-            throw RINGMeshException( "I/O",
-                "Geological model loading of a from HTML mesh not yet implemented" ) ;
-            return false ;
+class HTMLIOHandler: public GeoModelIOHandler {
+public:
+    virtual bool load( const std::string& filename, GeoModel& geomodel )
+    {
+        throw RINGMeshException( "I/O",
+            "Geological model loading of a from HTML mesh not yet implemented" ) ;
+        return false ;
+    }
+
+    virtual void save( const GeoModel& geomodel, const std::string& filename )
+    {
+        GEOLOGYJS::JSWriter js( filename ) ;
+        js.build_js_gui_ = true ;
+
+        save_all_lines( geomodel, js ) ;
+        save_interfaces( geomodel, js ) ;
+
+        // Check validity and write
+        std::string error_message ;
+        if( js.check_validity( error_message ) ) {
+            js.write() ;
+        } else {
+            throw RINGMeshException( "I/O", error_message ) ;
         }
+    }
 
-        virtual void save( const GeoModel& geomodel, const std::string& filename )
-        {
-            GEOLOGYJS::JSWriter js( filename ) ;
-            js.build_js_gui_ = true ;
-
-            save_all_lines( geomodel, js ) ;
-            save_interfaces( geomodel, js ) ;
-
-            // Check validity and write
-            std::string error_message ;
-            if( js.check_validity( error_message ) ) {
-                js.write() ;
-            } else {
-                throw RINGMeshException( "I/O", error_message ) ;
+private:
+    void save_all_lines( const GeoModel& geomodel, GEOLOGYJS::JSWriter& js ) const
+    {
+        std::vector< std::vector< double > > xyz ;
+        xyz.resize( geomodel.nb_lines() ) ;
+        for( index_t line_itr = 0 ; line_itr < geomodel.nb_lines() ; ++line_itr ) {
+            const Line& cur_line = geomodel.line( line_itr ) ;
+            xyz[line_itr].reserve( 3 * cur_line.nb_vertices() ) ;
+            for( index_t v_itr = 0 ; v_itr < cur_line.nb_vertices() ; ++v_itr ) {
+                xyz[line_itr].push_back( cur_line.vertex( v_itr ).x ) ;
+                xyz[line_itr].push_back( cur_line.vertex( v_itr ).y ) ;
+                xyz[line_itr].push_back( cur_line.vertex( v_itr ).z ) ;
             }
         }
+        js.add_lines( "all_lines", xyz ) ;
 
-    private:
-        void save_all_lines( const GeoModel& geomodel, GEOLOGYJS::JSWriter& js ) const
-        {
-            std::vector< std::vector< double > > xyz ;
-            xyz.resize( geomodel.nb_lines() ) ;
-            for( index_t line_itr = 0; line_itr < geomodel.nb_lines(); ++line_itr ) {
-                const Line& cur_line = geomodel.line( line_itr ) ;
-                xyz[line_itr].reserve( 3 * cur_line.nb_vertices() ) ;
-                for( index_t v_itr = 0; v_itr < cur_line.nb_vertices(); ++v_itr ) {
-                    xyz[line_itr].push_back( cur_line.vertex( v_itr ).x ) ;
-                    xyz[line_itr].push_back( cur_line.vertex( v_itr ).y ) ;
-                    xyz[line_itr].push_back( cur_line.vertex( v_itr ).z ) ;
-                }
-            }
-            js.add_lines( "all_lines", xyz ) ;
+    }
 
-        }
-
-        void save_interfaces( const GeoModel& geomodel, GEOLOGYJS::JSWriter& js ) const
-        {
-            for( index_t interface_itr = 0;
-                interface_itr
-                    < geomodel.nb_geological_entities( Interface::type_name_static() );
-                ++interface_itr ) {
-                const GeoModelGeologicalEntity& cur_interface =
-                    geomodel.geological_entity( Interface::type_name_static(),
-                        interface_itr ) ;
-                if( !GeoModelGeologicalEntity::is_stratigraphic_limit(
+    void save_interfaces( const GeoModel& geomodel, GEOLOGYJS::JSWriter& js ) const
+    {
+        for( index_t interface_itr = 0 ;
+            interface_itr
+            < geomodel.nb_geological_entities( Interface::type_name_static() ) ;
+            ++interface_itr ) {
+            const GeoModelGeologicalEntity& cur_interface =
+            geomodel.geological_entity( Interface::type_name_static(),
+                interface_itr ) ;
+            if( !GeoModelGeologicalEntity::is_stratigraphic_limit(
                     cur_interface.geological_feature() )
-                    && !GeoModelGeologicalEntity::is_fault(
-                        cur_interface.geological_feature() ) ) {
-                    continue ;
-                }
-
-                index_t nb_vertices = 0 ;
-                index_t nb_triangles = 0 ;
-                for( index_t surf_itr = 0; surf_itr < cur_interface.nb_children();
-                    ++surf_itr ) {
-                    const Surface& cur_surface = geomodel.surface(
-                        cur_interface.child( surf_itr ).index() ) ;
-                    nb_vertices += cur_surface.nb_vertices() ;
-                    nb_triangles += cur_surface.nb_mesh_elements() ;
-                }
-
-                std::vector< double > xyz ;
-                xyz.reserve( 3 * nb_vertices ) ;
-                std::vector< index_t > indices ;
-                indices.reserve( 3 * nb_triangles ) ;
-
-                index_t vertex_count = 0 ;
-                for( index_t surf_itr = 0; surf_itr < cur_interface.nb_children();
-                    ++surf_itr ) {
-                    const Surface& cur_surface = geomodel.surface(
-                        cur_interface.child( surf_itr ).index() ) ;
-
-                    for( index_t v_itr = 0; v_itr < cur_surface.nb_vertices(); ++v_itr ) {
-                        xyz.push_back( cur_surface.vertex( v_itr ).x );
-                        xyz.push_back( cur_surface.vertex( v_itr ).y );
-                        xyz.push_back( cur_surface.vertex( v_itr ).z );
-                    }
-
-                    for( index_t f_itr = 0; f_itr < cur_surface.nb_mesh_elements();
-                        ++f_itr ) {
-                        for( index_t v_itr = 0; v_itr < 3; ++v_itr ) {
-                            indices.push_back(
-                                vertex_count
-                                    + cur_surface.mesh_element_vertex_index( f_itr,
-                                        v_itr ) ) ;
-                        }
-                    }
-
-                    vertex_count += cur_surface.nb_vertices() ;
-                }
-                js.add_surface( cur_interface.name(), xyz, indices ) ;
+                && !GeoModelGeologicalEntity::is_fault(
+                    cur_interface.geological_feature() ) ) {
+                continue ;
             }
+
+            index_t nb_vertices = 0 ;
+            index_t nb_triangles = 0 ;
+            for( index_t surf_itr = 0 ; surf_itr < cur_interface.nb_children() ;
+                ++surf_itr ) {
+                const Surface& cur_surface = geomodel.surface(
+                    cur_interface.child( surf_itr ).index() ) ;
+                nb_vertices += cur_surface.nb_vertices() ;
+                nb_triangles += cur_surface.nb_mesh_elements() ;
+            }
+
+            std::vector< double > xyz ;
+            xyz.reserve( 3 * nb_vertices ) ;
+            std::vector< index_t > indices ;
+            indices.reserve( 3 * nb_triangles ) ;
+
+            index_t vertex_count = 0 ;
+            for( index_t surf_itr = 0 ; surf_itr < cur_interface.nb_children() ;
+                ++surf_itr ) {
+                const Surface& cur_surface = geomodel.surface(
+                    cur_interface.child( surf_itr ).index() ) ;
+
+                for( index_t v_itr = 0 ; v_itr < cur_surface.nb_vertices() ; ++v_itr ) {
+                    xyz.push_back( cur_surface.vertex( v_itr ).x ) ;
+                    xyz.push_back( cur_surface.vertex( v_itr ).y ) ;
+                    xyz.push_back( cur_surface.vertex( v_itr ).z ) ;
+                }
+
+                for( index_t f_itr = 0 ; f_itr < cur_surface.nb_mesh_elements() ;
+                    ++f_itr ) {
+                    for( index_t v_itr = 0 ; v_itr < 3 ; ++v_itr ) {
+                        indices.push_back(
+                            vertex_count
+                            + cur_surface.mesh_element_vertex_index( f_itr,
+                                v_itr ) ) ;
+                    }
+                }
+
+                vertex_count += cur_surface.nb_vertices() ;
+            }
+            js.add_surface( cur_interface.name(), xyz, indices ) ;
         }
-    } ;
+    }
+} ;
 #endif
 
 }
 /************************************************************************/
 namespace RINGMesh {
-    /*
-     * Initializes the possible handlers for IO GeoModel files
-     */
-    void GeoModelIOHandler::initialize_boundary_geomodel_output()
-    {
-        ringmesh_register_GeoModelIOHandler_creator( MLIOHandler, "ml" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( SMESHIOHandler, "smesh" );
+/*
+ * Initializes the possible handlers for IO GeoModel files
+ */
+void GeoModelIOHandler::initialize_boundary_geomodel_output()
+{
+    ringmesh_register_GeoModelIOHandler_creator( MLIOHandler, "ml" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( SMESHIOHandler, "smesh" );
 #ifdef RINGMESH_WITH_GEOLOGYJS
-        ringmesh_register_GeoModelIOHandler_creator( HTMLIOHandler, "html" );
+ringmesh_register_GeoModelIOHandler_creator( HTMLIOHandler, "html" ) ;
 #endif
-    }
+}
 }

@@ -49,7 +49,14 @@ namespace RINGMesh {
         &hard_encoded_mesh_entity_types_array[0],
         &hard_encoded_mesh_entity_types_array[4] ) ;
 
-    MeshEntityTypeManager::MeshEntityTypeBoundaryMap::MeshEntityTypeBoundaryMap()
+
+    MeshEntityTypeBoundaryMap MeshEntityTypeManager::boundary_relationships_ ;
+    MeshEntityTypeInBoundaryMap MeshEntityTypeManager ::in_boundary_relationships_ ;
+    MeshEntityTypeManager::MeshEntityTypeManager() {
+
+    }
+
+    MeshEntityTypeBoundaryMap::MeshEntityTypeBoundaryMap()
     {
         register_boundary( Corner::type_name_static(),
             GeoModelMeshEntity::type_name_static() ) ;
@@ -59,7 +66,7 @@ namespace RINGMesh {
             Surface::type_name_static() ) ;
     }
 
-    MeshEntityTypeManager::MeshEntityTypeInBoundaryMap::MeshEntityTypeInBoundaryMap()
+    MeshEntityTypeInBoundaryMap::MeshEntityTypeInBoundaryMap()
 
     {
         register_in_boundary( Corner::type_name_static(),
@@ -139,6 +146,11 @@ namespace RINGMesh {
     {
         return find( geological_entity_types_, type ) ;
     }
+
+    bool GeologicalTypeManager::is_valid_type( const GeologicalEntityType& type ) const{
+        return contains(geological_entity_types_,type ) ;
+    }
+
 
     std::vector< GeologicalEntityType > RelationshipManager::parent_types(
         const MeshEntityType& child_type ) const

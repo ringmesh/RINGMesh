@@ -552,19 +552,6 @@ namespace RINGMesh {
     }
 
     /***************************************************************/
-
-    /*!
-     * @brief Construct a Line
-     *
-     * @param[in] geomodel The parent geomodel
-     * @param[in] id The index of the line in the lines_ vector of the parent geomodel
-     */
-    Line::Line( const GeoModel& geomodel, index_t id, const MeshType type )
-        : GeoModelMeshEntity( geomodel, id )
-    {
-        update_mesh_storage_type( Mesh1D::create_mesh( type ) ) ;
-    }
-
     /*!
      * @brief Check that the mesh of the Line is valid
      * @details Check that 
