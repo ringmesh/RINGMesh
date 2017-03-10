@@ -164,12 +164,12 @@ namespace RINGMesh {
 
         /*!
          * @brief To use when building the geomodel by first adding its vertices
-         * @return the indices of created vertices
+         * @return the first index of created vertices
          * @warning The client is responsible for setting the mapping between the points
          * of the GME and the unique vertex
          */
         index_t add_vertex( const vec3& point ) ;
-        void add_vertices( const std::vector<vec3>& points, std::vector<index_t>& indices ) ;
+        index_t add_vertices( const std::vector<vec3>& points ) ;
 
         /*!
          * @brief Set the point coordinates of all the vertices that
