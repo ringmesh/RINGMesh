@@ -620,12 +620,33 @@ namespace RINGMesh {
          * @return the global facet index.
          */
         virtual index_t cell_facet( index_t cell_id, index_t facet_id ) const = 0 ;
-		//cell_edge?
-		/*double cell_facet_edge_length(index_t cell_id, index_t facet_id, index_t edge_id){}
-		vec3 cell_facet_edge_barycenter(index_t cell_id, index_t facet_id, index_t edge_id){}
-		double cell_edge_length(index_t cell_id, index_t edge_id){}
-		vec3 cell_edge_barycenter(index_t cell_id, index_t edge_id){}
+
+        /*!
+        * Computes the Mesh cell edge length
+        * @param[in] cell_id the facet index
+        * @param[in] edge_id the edge index
+        * @return the cell edge length
         */
+        double cell_edge_length(index_t cell_id, index_t edge_id) const
+        {
+            const vec3& e0 = vertex(cell_edge_vertex(cell_id, edge_id, 0));
+            const vec3& e1 = vertex(cell_edge_vertex(cell_id, edge_id, 1));
+            return (e1 - e0).length();
+        }
+
+        /*!
+        * Computes the Mesh cell edge barycenter
+        * @param[in] cell_id the facet index
+        * @param[in] edge_id the edge index
+        * @return the cell edge center
+        */
+		vec3 cell_edge_barycenter(index_t cell_id, index_t edge_id) const 
+        {
+            const vec3& e0 = vertex(cell_edge_vertex(cell_id, edge_id, 0));
+            const vec3& e1 = vertex(cell_edge_vertex(cell_id, edge_id, 1));
+            return (e1 + e0) / 2.;
+        }
+
         /*!
          * @brief Gets the number of facet in a cell
          * @param[in] cell_id index of the cell
