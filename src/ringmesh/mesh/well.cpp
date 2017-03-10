@@ -85,6 +85,70 @@ namespace {
         }
         return NO_ID ;
     }
+
+    struct LineInstersection {
+        LineInstersection(
+            const vec3& intersection,
+            index_t surface_id = NO_ID,
+            index_t trgl_id = NO_ID )
+            :
+                intersection_( intersection ),
+                surface_id_( surface_id ),
+                trgl_id_( trgl_id )
+        {
+        }
+        vec3 intersection_ ;
+        index_t surface_id_ ;
+        index_t trgl_id_ ;
+    } ;
+
+    index_t find_or_create_corner(
+        Well& well,
+        index_t region,
+        const LineInstersection& corner )
+    {
+        index_t corner_id = well.find_corner( corner.intersection_ ) ;
+        if( corner_id == NO_ID ) {
+            bool is_on_surface = corner.surface_id_ != NO_ID ;
+            index_t id = NO_ID ;
+            if( is_on_surface ) {
+                id = corner.surface_id_ ;
+            } else {
+                id = region ;
+            }
+            corner_id = well.create_corner( corner.intersection_, is_on_surface,
+                id ) ;
+        }
+        return corner_id ;
+    }
+
+    void create_well_part_and_corners(
+        Well& well,
+        index_t region,
+        const std::vector< vec3 > vertices,
+        const LineInstersection& start,
+        const LineInstersection& end )
+    {
+        index_t new_well_part_id = well.create_part( region ) ;
+        WellPart& well_part = well.part( new_well_part_id ) ;
+
+        index_t corner0 = find_or_create_corner( well, region, start ) ;
+        well_part.set_corner( 0, corner0 ) ;
+
+        index_t corner1 = find_or_create_corner( well, region, end ) ;
+        well_part.set_corner( 1, corner1 ) ;
+        well_part.set_points( vertices ) ;
+    }
+
+    bool get_side(
+        const vec3& vertex,
+        const vec3& on_surface,
+        const Surface& surface,
+        index_t triangle )
+    {
+        vec3 direction = vertex - on_surface ;
+        return dot( direction, surface.facet_normal( triangle ) ) > 0 ;
+    }
 }
 
 namespace RINGMesh {
@@ -151,6 +215,7 @@ namespace RINGMesh {
     void WellPart::set_points( const std::vector< vec3 >& points )
     {
         index_t nb_points = static_cast< index_t >( points.size() ) ;
+        DEBUG( nb_points ) ;
         Mesh1DBuilder_var builder = Mesh1DBuilder::create_builder( *mesh_ ) ;
         builder->create_vertices( nb_points ) ;
         for( index_t p = 0; p < nb_points; p++ ) {
@@ -342,22 +407,6 @@ namespace RINGMesh {
         }
     }
 
-    struct LineInstersection {
-        LineInstersection(
-            const vec3& intersection,
-            index_t surface_id = NO_ID,
-            index_t trgl_id = NO_ID )
-            :
-                intersection_( intersection ),
-                surface_id_( surface_id ),
-                trgl_id_( trgl_id )
-        {
-        }
-        vec3 intersection_ ;
-        index_t surface_id_ ;
-        index_t trgl_id_ ;
-    } ;
-
     class EdgeConformerAction {
     public:
         EdgeConformerAction(
@@ -531,99 +580,91 @@ namespace RINGMesh {
                     }
                     for( ; i < intersections.size(); i++ ) {
                         index_t index = indices[i] ;
-                        DEBUG(  intersections[index].intersection_ ) ;
-                        DEBUG( distances[index] ) ;
-                        vec3 direction = v_from
-                            - intersections[index].intersection_ ;
-                        bool sign =
-                            dot( direction,
-                                geomodel()->surface(
-                                    intersections[index].surface_id_ ).facet_normal(
-                                    intersections[index].trgl_id_ ) ) > 0 ;
+                        bool sign = get_side( v_from,
+                            intersections[index].intersection_,
+                            geomodel()->surface( intersections[index].surface_id_ ),
+                            intersections[index].trgl_id_ ) ;
                         index_t region = find_region( *geomodel_,
                             intersections[index].surface_id_, sign ) ;
                         if( region != NO_ID ) {
-                            index_t new_well_part_id = new_well.create_part(
-                                region ) ;
-                            WellPart& well_part = new_well.part( new_well_part_id ) ;
-                            index_t corner0 = new_well.find_corner(
-                                start.intersection_ ) ;
-                            if( corner0 == NO_ID ) {
-                                bool is_on_surface = start.surface_id_ != NO_ID ;
-                                index_t id = NO_ID ;
-                                if( is_on_surface ) {
-                                    id = start.surface_id_ ;
-                                } else {
-                                    id = region ;
-                                }
-                                corner0 = new_well.create_corner(
-                                    start.intersection_, is_on_surface, id ) ;
-                            }
-                            well_part.set_corner( 0, corner0 ) ;
-                            index_t corner1 = new_well.find_corner(
-                                intersections[index].intersection_ ) ;
-                            if( corner1 == NO_ID ) {
-                                bool is_on_surface = intersections[index].surface_id_
-                                    != NO_ID ;
-                                index_t id = NO_ID ;
-                                if( is_on_surface ) {
-                                    id = intersections[index].surface_id_ ;
-                                } else {
-                                    id = region ;
-                                }
-                                corner1 = new_well.create_corner(
-                                    intersections[index].intersection_,
-                                    is_on_surface, id ) ;
-                            }
-                            well_part.set_corner( 1, corner1 ) ;
                             well_part_points.push_back(
                                 intersections[index].intersection_ ) ;
-                            well_part.set_points( well_part_points ) ;
+                            create_well_part_and_corners( new_well, region,
+                                well_part_points, start, intersections[index] ) ;
                         }
                         well_part_points.clear() ;
                         start = intersections[index] ;
                         well_part_points.push_back( start.intersection_ ) ;
                     }
-                    S_part.push( OrientedEdgePart( cur_edge_part, start ) ) ;
-                } else {
-                    const std::vector< index_t >& edges =
-                        edges_around_vertices[v_to_id] ;
-                    DEBUG( edges.size() ) ;
-                    switch( edges.size() ) {
-                        case 1:
-                            break ;
-                        case 2: {
-                            index_t count = 0 ;
-                            for( index_t e = 0; e < edges.size(); e++ ) {
-                                if( !edge_visited[edges[e]] ) {
-                                    S_part.push(
-                                        OrientedEdgePart( mesh, edges[e], v_to_id,
-                                            LineInstersection( v_to ) ) ) ;
-                                    count++ ;
-                                }
-                            }
-                            ringmesh_assert( count == 1 ) ;
-                            break ;
-                        }
-                        default:
-                            for( index_t e = 0; e < edges.size(); e++ ) {
-                                S.push( OrientedEdge( mesh, edges[e], v_to_id ) ) ;
-                            }
-                            break ;
-                    }
+//                    S_part.push( OrientedEdgePart( cur_edge_part, start ) ) ;
                 }
+//                else {
+                const std::vector< index_t >& edges = edges_around_vertices[v_to_id] ;
+                DEBUG( edges.size() ) ;
+                if( edges.size() == 2 ) {
+                    index_t count = 0 ;
+                    for( index_t e = 0; e < edges.size(); e++ ) {
+                        if( !edge_visited[edges[e]] ) {
+                            S_part.push(
+                                OrientedEdgePart( mesh, edges[e], v_to_id,
+                                    LineInstersection( v_to ) ) ) ;
+                            count++ ;
+                        }
+                    }
+                    ringmesh_assert( count == 1 ) ;
+                } else {
+                    double best_distance = max_float64() ;
+                    index_t best_surface = NO_ID ;
+                    vec3 best_nearest ;
+                    index_t best_triangle = NO_ID ;
+                    for( index_t s = 0; s < geomodel()->nb_surfaces(); s++ ) {
+                        const Surface& surface = geomodel()->surface( s ) ;
+                        vec3 nearest ;
+                        double distance ;
+                        index_t triangle = surface.facets_aabb().closest_triangle(
+                            v_to, nearest, distance ) ;
+                        if( distance < best_distance ) {
+                            best_distance = distance ;
+                            best_nearest = nearest ;
+                            best_surface = s ;
+                            best_triangle = triangle ;
+                        }
+                    }
+                    bool sign = get_side( v_to, best_nearest,
+                        geomodel()->surface( best_surface ), best_triangle ) ;
+                    index_t region = find_region( *geomodel_, best_surface, sign ) ;
+                    well_part_points.push_back( v_to ) ;
+                    create_well_part_and_corners( new_well, region, well_part_points,
+                        start, LineInstersection( v_to ) ) ;
+                    for( index_t e = 0; e < edges.size(); e++ ) {
+                        S.push( OrientedEdge( mesh, edges[e], v_to_id ) ) ;
+                    }
+//                    }
+                }
+                DEBUG( S_part.size() ) ;
             } while( !S_part.empty() ) ;
+            DEBUG( S.size() ) ;
         } while( !S.empty() ) ;
 
         DEBUG( nb_wells() ) ;
         DEBUG( well( 0 ).nb_corners() ) ;
         DEBUG( well( 0 ).nb_edges() ) ;
-        index_t nb_edges = 0 ;
-        for( index_t part_id = 0; part_id < well( 0 ).nb_parts(); part_id++ ) {
-            nb_edges += well( 0 ).part( part_id ).nb_edges() ;
-        }
-        DEBUG( nb_edges ) ;
         DEBUG( well( 0 ).nb_parts() ) ;
+        std::vector< vec3 > points ;
+        index_t count = 0 ;
+        for( index_t part_id = 0; part_id < well( 0 ).nb_parts(); part_id++ ) {
+            for( index_t e = 0; e < well( 0 ).part( part_id ).nb_edges(); e++){
+                const vec3& v0 = well( 0 ).part( part_id ).edge_vertex( e, 0 ) ;
+                const vec3& v1 = well( 0 ).part( part_id ).edge_vertex( e, 1 ) ;
+                points.push_back( 0.5*(v0+v1) ) ;
+                if( length( v0 -v1 ) < epsilon ) count++ ;
+            }
+        }
+        NNSearch nn( points, false ) ;
+        std::vector< index_t > tt;
+        DEBUG( nn.get_colocated_index_mapping( epsilon, tt ) ) ;
+        DEBUG( count ) ;
+        DEBUG( epsilon ) ;
     }
 
     /*!

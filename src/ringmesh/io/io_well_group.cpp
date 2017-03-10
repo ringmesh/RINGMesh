@@ -192,6 +192,11 @@ namespace {
                     }
                     merge_colocated_vertices( wells.geomodel()->epsilon(), *mesh ) ;
                     mesh->save_mesh( "test.geogram" ) ;
+                    index_t count = 0 ;
+                    for( index_t e = 0; e < mesh->nb_edges(); e++ ) {
+                        if( mesh->edge_length( e ) < wells.geomodel()->epsilon() ) count++ ;
+                    }
+                    DEBUG(count);
                     wells.add_well( *mesh, name ) ;
                     break ;
                 }
