@@ -304,7 +304,7 @@ namespace RINGMesh {
             if( cur_gme.name() == name ) {
                 if( mesh_entity_id != NO_ID ) {
                     throw RINGMeshException( "FIND GME",
-                        " At least Two GeoModelMeshEntityhave the same name in the GeoModel: " + name ) ;
+                        " At least two GeoModelMeshEntity have the same name in the GeoModel: " + name ) ;
                 }
                 mesh_entity_id = cur_gme.index() ;
             }
@@ -329,7 +329,7 @@ namespace RINGMesh {
             if( cur_gme.name() == name ) {
                 if( geological_entity_id != NO_ID ) {
                     throw RINGMeshException( "Find GME",
-                        "At least Two GeoModelMeshEntityhave the same name in the GeoModel : "+ name) ;
+                        "At least two GeoModelGeologicalEntity have the same name in the GeoModel : "+ name) ;
                 }
                 geological_entity_id = cur_gme.index() ;
             }
