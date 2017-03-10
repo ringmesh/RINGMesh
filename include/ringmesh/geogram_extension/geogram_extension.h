@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_GEOGRAM_EXTENSION__
-#define __RINGMESH_GEOGRAM_EXTENSION__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -217,5 +216,3 @@ namespace RINGMesh {
     void RINGMESH_API print_bounded_attributes( const GEO::Mesh& M ) ;
 
 }
-
-#endif
