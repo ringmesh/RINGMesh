@@ -70,8 +70,7 @@ namespace RINGMesh {
 
         static const MeshEntityType type_name_static()
         {
-            ringmesh_assert_not_reached ;
-            return MeshEntityType( "NO_DEFINED_TYPE" ) ;
+            return DefaultMeshEntityType::default_entity_type() ;
         }
 
         virtual const MeshEntityType type_name() const
@@ -289,19 +288,17 @@ namespace RINGMesh {
     protected:
         GeoModelMeshEntity(
             const GeoModel& geomodel,
-            index_t id,
             const std::string& name = "No_name",
             GEOL_FEATURE geological_feature = NO_GEOL )
             :
                 GeoModelEntity( geomodel, name, geological_feature ),
-                mesh_( NULL ),
-                gmme_id_( type_name(), id )
+                mesh_( NULL )
         {
         }
 
         virtual void copy( const GeoModelMeshEntity& from )
         {
-            GME::copy(from) ;
+            GME::copy( from ) ;
             gmme_id_ = from.gmme_id_ ;
             boundaries_ = from.boundaries_ ;
             in_boundary_ = from.in_boundary_ ;
@@ -421,13 +418,14 @@ namespace RINGMesh {
          *  A point is added to its Mesh.
          */
         Corner( const GeoModel& geomodel, index_t id, const MeshType type )
-            : GeoModelMeshEntity( geomodel, id )
+            : GeoModelMeshEntity( geomodel )
 
         {
             update_mesh_storage_type( Mesh0D::create_mesh( type ) ) ;
             Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder( *mesh0d_ ) ;
             builder->create_vertex() ;
-        }
+            gmme_id_.type() = type_name_static() ;
+            gmme_id_.index() = id ;        }
 
         /*!
          * @brief Get the index of the unique vertex constituting of the Corner.
@@ -570,7 +568,13 @@ namespace RINGMesh {
             return *mesh1d_ ;
         }
     protected:
-        Line( const GeoModel& geomodel, index_t id, const MeshType type ) ;
+        Line( const GeoModel& geomodel, index_t id, const MeshType type )
+            : GeoModelMeshEntity( geomodel)
+        {
+            update_mesh_storage_type( Mesh1D::create_mesh( type ) ) ;
+            gmme_id_.type() = type_name_static() ;
+            gmme_id_.index() = id ;
+        }
 
         virtual bool is_mesh_valid() const ;
 
@@ -849,10 +853,11 @@ namespace RINGMesh {
         }
     protected:
         Surface( const GeoModel& geomodel, index_t id, const MeshType type )
-            : GeoModelMeshEntity( geomodel, id )
+            : GeoModelMeshEntity( geomodel )
         {
             update_mesh_storage_type( Mesh2D::create_mesh( type ) ) ;
-        }
+            gmme_id_.type() = type_name_static() ;
+            gmme_id_.index() = id ;        }
 
         virtual bool is_mesh_valid() const ;
 
@@ -1174,9 +1179,11 @@ namespace RINGMesh {
         }
     protected:
         Region( const GeoModel& geomodel, index_t id, const MeshType type )
-            : GeoModelMeshEntity( geomodel, id )
+            : GeoModelMeshEntity( geomodel )
         {
             update_mesh_storage_type( Mesh3D::create_mesh( type ) ) ;
+            gmme_id_.type() = type_name_static() ;
+            gmme_id_.index() = id ;
         }
 
         void copy( const GeoModelMeshEntity& from )

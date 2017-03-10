@@ -81,8 +81,7 @@ namespace RINGMesh {
         virtual bool is_connectivity_valid() const ;
         static const GeologicalEntityType type_name_static()
         {
-            ringmesh_assert_not_reached ;
-            return GeologicalEntityType( "UNDEFINED_NAME" ) ;
+            return DefaultGeologicalEntityType::default_entity_type() ;
         }
         virtual const GeologicalEntityType type_name() const
         {
@@ -133,6 +132,7 @@ namespace RINGMesh {
         Contact( const GeoModel& geomodel )
             : GeoModelGeologicalEntity( geomodel )
         {
+            gmge_id_.type() = type_name_static() ;
         }
         virtual ~Contact()
         {
@@ -156,6 +156,7 @@ namespace RINGMesh {
         Interface( const GeoModel& geomodel )
             : GeoModelGeologicalEntity( geomodel )
         {
+            gmge_id_.type() = type_name_static() ;
         }
         virtual ~Interface()
         {
@@ -179,6 +180,7 @@ namespace RINGMesh {
         Layer( const GeoModel& geomodel )
             : GeoModelGeologicalEntity( geomodel )
         {
+            gmge_id_.type() = type_name_static() ;
         }
         virtual ~Layer()
         {

@@ -1109,6 +1109,7 @@ namespace RINGMesh {
      */
     void GeoModelBuilderGocad::build_contacts()
     {
+        DEBUG("build contact") ;
         std::vector< std::set< gmge_t > > interfaces ;
         for( index_t i = 0; i < geomodel_.nb_lines(); ++i ) {
             const Line& L = geomodel_.line( i ) ;

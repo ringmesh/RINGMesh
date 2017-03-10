@@ -163,7 +163,7 @@ namespace RINGMesh {
         index_t index_in_geomodel )
     {
         GeoModelGeologicalEntity* GMGE = GeoModelGeologicalEntityFactory::create_object(
-            std::string(type), geomodel ) ;
+            type, geomodel ) ;
         GMGE->gmge_id_.index() = index_in_geomodel ;
         return GMGE ;
     }

@@ -54,6 +54,49 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
+    /*!
+     * @brief struct used to map the type of a Mesh Entity to the type of its boundary
+     * "Corner" is boundary of "Line"
+     * "Line" is boundary of "Surface"
+     * "Surface" is boundary of "Region"
+     */
+    typedef std::map< MeshEntityType, MeshEntityType > MeshEntityTypeMap ;
+    struct MeshEntityTypeBoundaryMap {
+        MeshEntityTypeBoundaryMap() ;
+        void register_boundary(
+            const MeshEntityType& type,
+            const MeshEntityType& boundary )
+        {
+            map.insert(
+                std::pair< MeshEntityType, MeshEntityType >( type, boundary ) ) ;
+        }
+        MeshEntityTypeMap map ;
+    } ;
+
+    /*!
+     * @brief struct used to map the type of a Mesh Entity to the type of its in boundary
+     * "Line" is in boundary of "Corner"
+     * "Surface" is in boundary of "Line"
+     * "Region" is in boundary of "uuuuu
+     */
+    struct MeshEntityTypeInBoundaryMap {
+        MeshEntityTypeInBoundaryMap() ;
+        void register_in_boundary(
+            const MeshEntityType& type,
+            const MeshEntityType& in_boundary )
+        {
+            map.insert(
+                std::pair< MeshEntityType, MeshEntityType >( type,
+                    in_boundary ) ) ;
+        }
+        MeshEntityTypeMap map ;
+    } ;
+
+    /*!
+     * @brief this class contains only static methods to manage the type of the
+     * GeoModelMeshEntity. It give access to the number of meshed entities of each
+     * type and also their (in) boundary
+     */
     class RINGMESH_API MeshEntityTypeManager {
     public:
         MeshEntityTypeManager() ;
@@ -71,37 +114,16 @@ namespace RINGMesh {
         static index_t nb_mesh_entity_types() ;
 
     private:
-        typedef std::map< MeshEntityType, MeshEntityType > MeshEntityTypeMap ;
-        struct MeshEntityTypeBoundaryMap {
-            MeshEntityTypeBoundaryMap() ;
-            void register_boundary(
-                const MeshEntityType& type,
-                const MeshEntityType& boundary )
-            {
-                map.insert(
-                    std::pair< MeshEntityType, MeshEntityType >( type, boundary ) ) ;
-            }
-            MeshEntityTypeMap map ;
-        } ;
-
-        struct MeshEntityTypeInBoundaryMap {
-            MeshEntityTypeInBoundaryMap() ;
-            void register_in_boundary(
-                const MeshEntityType& type,
-                const MeshEntityType& in_boundary )
-            {
-                map.insert(
-                    std::pair< MeshEntityType, MeshEntityType >( type,
-                        in_boundary ) ) ;
-            }
-            MeshEntityTypeMap map ;
-        } ;
-    private:
         static MeshEntityTypeBoundaryMap boundary_relationships_ ;
         static MeshEntityTypeInBoundaryMap in_boundary_relationships_ ;
 
     } ;
 
+    /*!
+     * @brief this class contains methods to manage the type of the
+     * GeoModelGeologicalEntity. It give access to the number of geological entities of each
+     * type and also give the opportunity to create and manage new one.
+     */
     class RINGMESH_API GeologicalTypeManager {
         friend class GeoModelBuilderGeology ;
     public:
@@ -110,6 +132,8 @@ namespace RINGMesh {
         const GeologicalEntityType& geological_entity_type( index_t index ) const ;
         index_t geological_entity_type_index(
             const GeologicalEntityType& type ) const ;
+        bool is_valid_type( const GeologicalEntityType& type ) const ;
+
     private:
         std::vector< GeologicalEntityType > geological_entity_types_ ;
     private:
@@ -121,6 +145,15 @@ namespace RINGMesh {
             }
         }
     } ;
+
+    /*!
+     * @brief this class contains methods to manage relations between Geological and
+     * Mesh entities. For instance:
+     * A "Contact" can be the parent of one or more "Line"
+     * An "Interface" can the parent of one or more "Surface"
+     * A "Layer" can be the parent of one or more "Region"
+     *
+     */
     class RINGMESH_API RelationshipManager {
         friend class GeoModelBuilderGeology ;
     public:
@@ -146,6 +179,10 @@ namespace RINGMesh {
 
     } ;
 
+    /*!
+     * @brief Global entity manager which coulb be associated to a geomodel
+     * to give access to different manager to handle the entity types
+     */
     class RINGMESH_API EntityTypeManager {
     public:
         MeshEntityTypeManager mesh_entity_manager ;

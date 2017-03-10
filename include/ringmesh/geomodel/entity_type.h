@@ -42,6 +42,12 @@
 
 namespace RINGMesh {
 
+    /*
+     * @brief Abstract class defining a Geomodel Entity Type
+     * This class encapsulate a string which contains the name of the entity type
+     * It contains useful operator to compare and display the type
+     * It is possible to do cast of an EntityType -> string
+     */
     class RINGMESH_API EntityType {
     public:
         bool operator==( const EntityType& type2 ) const
@@ -95,7 +101,14 @@ namespace RINGMesh {
     } ;
 
 
-
+    /*!
+     * @brief The MeshEntityType described the type of the meshed entities
+     * There are 4 MeshEntityTypes corresponding to the 4 GeoModelMeshEntities:
+     * Corner,
+     * Line,
+     * Surface,
+     * Region
+     */
     class RINGMESH_API MeshEntityType: public EntityType {
     public:
         MeshEntityType( std::string type )
@@ -108,6 +121,14 @@ namespace RINGMesh {
         }
     } ;
 
+    /*!
+     * @brief The GeologicalEntityType described the type of the Geological entities
+     * User can defined there own GeologicalEntityType even if there are some already
+     * defined (see geomodel_geological_entities.h
+     * Contact,
+     * Interface,
+     * Layer
+     */
     class RINGMESH_API GeologicalEntityType: public EntityType {
     public:
         GeologicalEntityType( std::string type )
@@ -120,6 +141,10 @@ namespace RINGMesh {
         }
     } ;
 
+    /*!
+     * @brief this is the MeshEntityType defined by default.
+     * It is mainly used to test the validity of a created MeshEntityType
+     */
     class RINGMESH_API DefaultMeshEntityType: public MeshEntityType {
     public:
         static DefaultMeshEntityType& default_entity_type()
@@ -128,20 +153,14 @@ namespace RINGMesh {
             return default_entity_type ;
         }
     private:
-        DefaultMeshEntityType() ;
-    } ;
-
-    class RINGMESH_API DefaultEntityType: public EntityType {
-    public:
-        static DefaultEntityType& default_entity_type()
-        {
-            static DefaultEntityType default_entity_type ;
-            return default_entity_type ;
+        DefaultMeshEntityType() {
         }
-    private:
-        DefaultEntityType() ;
     } ;
 
+    /*!
+     * @brief this is the GeologicalEntityType defined by default.
+     * It is mainly used to test the validity of a created GeologicalEntityType
+     */
     class RINGMESH_API DefaultGeologicalEntityType: public GeologicalEntityType {
     public:
         static DefaultGeologicalEntityType& default_entity_type()
@@ -150,9 +169,15 @@ namespace RINGMesh {
             return default_entity_type ;
         }
     private:
-        DefaultGeologicalEntityType() ;
+        DefaultGeologicalEntityType() {
+
+        }
     } ;
 
+    /*!
+      * @brief This entity type stands only for the special case of the
+      * Universe which is not a GeomodelGeologicalEntity nor a GeomodelMeshEntity
+      */
     class RINGMESH_API UniverseType: public EntityType {
     public:
         UniverseType()
@@ -163,6 +188,8 @@ namespace RINGMesh {
 
     /*!
      * @brief Unique identification of a GeoModelEntity in a GeoModel
+     * It contains the EntityType and the index of the entity.
+     * It is widely used in the code to easily access/modify/set a GeoModelEntity
      * @todo Should we change this name? Looks like index_t but does not enforce
      *       the programming guidelines [JP]
      */
@@ -257,7 +284,13 @@ namespace RINGMesh {
         }
     } ;
 
+    /*!
+     * @brief This template is a specialization of a gme_t to the GeoModelGeologicalEntity
+     */
     typedef gme_template< GeologicalEntityType > gmge_t ;
+    /*!
+     * @brief This template is a specialization of a gme_t to the GeoModelMeshEntity
+     */
     typedef gme_template< MeshEntityType > gmme_t ;
 }
 

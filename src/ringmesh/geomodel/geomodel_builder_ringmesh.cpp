@@ -104,7 +104,7 @@ namespace RINGMesh {
     protected:
         void read_first_line( GEO::LineInput& file_line, gmme_t& entity )
         {
-            entity.type() = MeshEntityType(file_line.field( 0 )) ;
+            entity.type() = MeshEntityType( file_line.field( 0 ) ) ;
             entity.index() = file_line.field_as_uint( 1 ) ;
             builder_.info.set_mesh_entity_name( entity, file_line.field( 2 ) ) ;
             builder_.geology.set_mesh_entity_geol_feature( entity,
@@ -207,7 +207,8 @@ namespace RINGMesh {
                         file_line.field_as_uint( 2 ) ) ;
                 }
                 // Mesh entities
-                else if( match_mesh_entity_type( MeshEntityType(file_line.field( 0 ) )) ) {
+                else if( match_mesh_entity_type(
+                    MeshEntityType( file_line.field( 0 ) ) ) ) {
                     version_impl_[file_version_]->read_mesh_entity_line(
                         file_line ) ;
                 }
@@ -276,7 +277,7 @@ namespace RINGMesh {
                         GeologicalEntityType( file_line.field( 1 ) ),
                         file_line.field_as_uint( 2 ) ) ;
                 } else {
-                    const std::string type = file_line.field( 0 ) ;
+                    GeologicalEntityType type(file_line.field( 0 )) ;
                     index_t id = file_line.field_as_uint( 1 ) ;
                     gmge_t entity( type, id ) ;
                     info.set_geological_entity_name( entity, file_line.field( 2 ) ) ;
@@ -599,4 +600,4 @@ namespace RINGMesh {
 //        unzClose( uz ) ;
 //    }
 
-} // namespace
+}// namespace
