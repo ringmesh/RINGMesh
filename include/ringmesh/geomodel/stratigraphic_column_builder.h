@@ -85,11 +85,9 @@ namespace RINGMesh {
         virtual ~StratigraphicColumnBuilderXML()
         {
         }
-
-    private:
         void load_file() ;
-        void read_file() ;
-        virtual void read_line() ;
+    private:
+
     } ;
 }
 
