@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_WELL_
-#define __RINGMESH_WELL_
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -354,4 +353,3 @@ namespace RINGMesh {
         GeoModel* geomodel_ ;
     } ;
 }
-#endif

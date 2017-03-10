@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_GEOMODEL_INDEXING_TYPES__
-#define __RINGMESH_GEOMODEL_INDEXING_TYPES__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -142,5 +141,3 @@ namespace RINGMesh {
         index_t v_id ;
     } ;
 }
-
-#endif 
