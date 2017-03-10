@@ -162,7 +162,7 @@ namespace RINGMesh {
 
         virtual void load(
             const std::string& filename,
-            StratigraphicColumn& column ) = 0 ;
+            StratigraphicColumn& column ,GeoModel& geomodel ) = 0 ;
 
         virtual void save(
             const StratigraphicColumn& column,
