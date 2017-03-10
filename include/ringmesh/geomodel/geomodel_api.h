@@ -79,24 +79,24 @@ namespace RINGMesh {
 
     typedef std::string EntityType ;
     /*!
-     * @return the index of the mesh entity \param gme_type  named as \param name
-     * in the GeoModel \param geo_model.
-     * @note throw exception if no entities have this  \param name or if two entities
+     * @return the index of the mesh entity \param gme_type named as \param name
+     * in the GeoModel \param geomodel.
+     * @note throw exception if no entities have this \param name or if two entities
      * have the same \param name
      */
     index_t RINGMESH_API find_mesh_entity_id_from_name(
-        const GeoModel& geo_model,
+        const GeoModel& geomodel,
         const EntityType& gme_type,
         const std::string& name ) ;
 
     /*!
-     * @return the index of the geological entity \param gme_type  named as \param name
-     * in the GeoModel \param geo_model.
+     * @return the index of the geological entity \param gme_type named as \param name
+     * in the GeoModel \param geomodel.
      * @note throw exception if no entities have this \param name or if two entities
      * have the same \param name
      */
     index_t RINGMESH_API find_geological_entity_id_from_name(
-        const RINGMesh::GeoModel& geo_model,
+        const RINGMesh::GeoModel& geomodel,
         const RINGMesh::EntityType& gme_type,
         const std::string& name ) ;
 
