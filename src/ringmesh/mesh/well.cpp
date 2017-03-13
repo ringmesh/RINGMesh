@@ -327,7 +327,7 @@ namespace RINGMesh {
     }
     const GEO::AttributesManager& WellPart::edge_attribute_manager() const
     {
-        mesh_->edge_attribute_manager() ;
+        return mesh_->edge_attribute_manager() ;
     }
 
 
