@@ -303,7 +303,7 @@ namespace RINGMesh {
             }
         }
         /*!
-        *@brief Get the next edge on the border
+        * @brief Get the next edge on the border
         * @warning the edge index is in fact the index of the vertex where the edge starts.
         * @details The returned border edge is the next in the way of facet edges
         * orientation.
@@ -365,13 +365,13 @@ namespace RINGMesh {
 
         /*!
         * @brief Compute closest vertex in a facet to a point
-        * @param[in] f Facet index
-        * @param[in] v Coordinates of the point to which distance is measured
-        * @return Index of the vertex of @param f closest to @param v
+        * @param[in] facet_index Facet index
+        * @param[in] query_point Coordinates of the point to which distance is measured
+        * @return Index of the vertex of @param facet_index closest to @param query_point
         */
         index_t closest_vertex_in_facet(
             index_t facet_index,
-            const vec3& to_point ) const ;
+            const vec3& query_point ) const;
 
         /*!
         * @brief Get the first facet of the surface that has an edge linking the two vertices (ids in the surface)
@@ -428,7 +428,7 @@ namespace RINGMesh {
         /*!
         * Is the edge starting with the given vertex of the facet on a border of the Surface?
         */
-        bool is_edge_on_border(index_t facet_index, index_t vertex_index) const
+        bool is_edge_on_border( index_t facet_index, index_t vertex_index ) const
         {
             return facet_adjacent( facet_index, vertex_index ) == NO_ID ;
         }
@@ -446,19 +446,19 @@ namespace RINGMesh {
             }
             return false;
         }
-
-		/*!
-		* @brief Gets the length of the edge starting at a given vertex
+        
+        /*!
+        * @brief Gets the length of the edge starting at a given vertex
         * @param[in] facet_id index of the facet
         * @param[in] vertex_id the edge starting vertex index
-		*/
-		double facet_edge_length( index_t facet_id, index_t vertex_id ) const
-		{
+        */
+        double facet_edge_length( index_t facet_id, index_t vertex_id ) const
+        {
             const vec3& e0 = vertex( facet_vertex( facet_id, vertex_id ) ) ;
-			const vec3& e1 = vertex( facet_vertex( facet_id, 
+            const vec3& e1 = vertex( facet_vertex( facet_id,
                 next_facet_vertex( facet_id, vertex_id ) ) ) ;
-			return (e1 - e0).length();
-		}
+            return (e1 - e0).length();
+        }
         /*!
         * @brief Gets the barycenter of the edge starting at a given vertex
         * @param[in] facet_id index of the facet
