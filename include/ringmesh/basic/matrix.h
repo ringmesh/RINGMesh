@@ -297,7 +297,7 @@ namespace RINGMesh {
          * */
         void get_element_in_line( index_t i, index_t e, T& value ) const
         {
-            ringmesh_assert_not_reache ;
+            ringmesh_assert_not_reached ;
         }
 
     protected:
