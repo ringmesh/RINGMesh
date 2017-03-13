@@ -36,6 +36,7 @@
 #pragma once
 
 #include <ringmesh/basic/common.h>
+#include <ringmesh/basic/geometry.h>
 
 #include <geogram/basic/attributes.h>
 
