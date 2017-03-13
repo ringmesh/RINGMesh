@@ -318,7 +318,7 @@ namespace RINGMesh {
             index_t f,
             index_t e,
             index_t& next_f,
-            index_t& next_e) const;
+            index_t& next_e ) const;
 
         /*!
          * @brief Gets the previous vertex index in the facet \param facet_id.
@@ -352,7 +352,7 @@ namespace RINGMesh {
             index_t f,
             index_t e,
             index_t& prev_f,
-            index_t& prev_e) const;
+            index_t& prev_e ) const;
 
         /*!
         * @brief Get the vertex index in a facet @param facet_index from its
@@ -361,7 +361,7 @@ namespace RINGMesh {
         */
         index_t vertex_index_in_facet(
             index_t facet_index,
-            index_t vertex_id) const ; 
+            index_t vertex_id ) const ; 
 
         /*!
         * @brief Compute closest vertex in a facet to a point
@@ -371,7 +371,7 @@ namespace RINGMesh {
         */
         index_t closest_vertex_in_facet(
             index_t facet_index,
-            const vec3& to_point) const ;
+            const vec3& to_point ) const ;
 
         /*!
         * @brief Get the first facet of the surface that has an edge linking the two vertices (ids in the surface)
@@ -380,7 +380,7 @@ namespace RINGMesh {
         * @param[in] in1 Index of the second vertex in the surface
         * @return NO_ID or the index of the facet
         */
-        index_t facet_from_vertex_ids(index_t in0, index_t in1) const ;
+        index_t facet_from_vertex_ids( index_t in0, index_t in1 ) const ;
 
         /*!
         * @brief Determines the facets around a vertex
@@ -398,7 +398,7 @@ namespace RINGMesh {
             index_t vertex_id,
             std::vector< index_t >& result,
             bool border_only,
-            index_t f0) const;
+            index_t f0 ) const ;
 
         /*!
          * @brief Gets an adjacent facet index by facet index and local edge index.
@@ -409,7 +409,7 @@ namespace RINGMesh {
          */
         virtual index_t facet_adjacent(
             index_t facet_id,
-            index_t edge_id) const = 0 ;
+            index_t edge_id ) const = 0 ;
 
         virtual GEO::AttributesManager& facet_attribute_manager() const = 0 ;
         /*!
@@ -430,17 +430,17 @@ namespace RINGMesh {
         */
         bool is_edge_on_border(index_t facet_index, index_t vertex_index) const
         {
-            return facet_adjacent(facet_index, vertex_index) == NO_ID;
+            return facet_adjacent( facet_index, vertex_index ) == NO_ID ;
         }
 
         /*!
         * Is one of the edges of the facet on the border of the surface?
         */
-        bool is_facet_on_border(index_t facet_index) const
+        bool is_facet_on_border( index_t facet_index ) const
         {
-            for (index_t v = 0; v < nb_facet_vertices(facet_index);
+            for (index_t v = 0; v < nb_facet_vertices( facet_index ) ;
                  v++) {
-                if (is_edge_on_border(facet_index, v)) {
+                if( is_edge_on_border( facet_index, v ) ) {
                     return true;
                 }
             }
@@ -452,11 +452,11 @@ namespace RINGMesh {
         * @param[in] facet_id index of the facet
         * @param[in] vertex_id the edge starting vertex index
 		*/
-		double facet_edge_length(index_t facet_id, index_t vertex_id) const
+		double facet_edge_length( index_t facet_id, index_t vertex_id ) const
 		{
-            const vec3& e0 = vertex(facet_vertex(facet_id, vertex_id));
-			const vec3& e1 = vertex(facet_vertex(facet_id, 
-                next_facet_vertex(facet_id, vertex_id)));
+            const vec3& e0 = vertex( facet_vertex( facet_id, vertex_id ) ) ;
+			const vec3& e1 = vertex( facet_vertex( facet_id, 
+                next_facet_vertex( facet_id, vertex_id ) ) ) ;
 			return (e1 - e0).length();
 		}
         /*!
@@ -466,10 +466,10 @@ namespace RINGMesh {
         */
         vec3 facet_edge_barycenter(index_t facet_id, index_t vertex_id) const
 		{	
-            const vec3& e0 = vertex(facet_vertex(facet_id, vertex_id));
-            const vec3& e1 = vertex(facet_vertex(facet_id,
-                next_facet_vertex(facet_id, vertex_id)));
-			return (e1 + e0) / 2.;
+            const vec3& e0 = vertex( facet_vertex( facet_id, vertex_id ) ) ;
+            const vec3& e1 = vertex( facet_vertex( facet_id,
+                next_facet_vertex( facet_id, vertex_id ) ) ) ;
+			return (e1 + e0) / 2. ;
 		}
 
         /*!
@@ -629,8 +629,8 @@ namespace RINGMesh {
         */
         double cell_edge_length(index_t cell_id, index_t edge_id) const
         {
-            const vec3& e0 = vertex(cell_edge_vertex(cell_id, edge_id, 0));
-            const vec3& e1 = vertex(cell_edge_vertex(cell_id, edge_id, 1));
+            const vec3& e0 = vertex( cell_edge_vertex( cell_id, edge_id, 0 ) );
+            const vec3& e1 = vertex( cell_edge_vertex( cell_id, edge_id, 1 ) );
             return (e1 - e0).length();
         }
 
@@ -640,10 +640,10 @@ namespace RINGMesh {
         * @param[in] edge_id the edge index
         * @return the cell edge center
         */
-		vec3 cell_edge_barycenter(index_t cell_id, index_t edge_id) const 
+		vec3 cell_edge_barycenter( index_t cell_id, index_t edge_id ) const 
         {
-            const vec3& e0 = vertex(cell_edge_vertex(cell_id, edge_id, 0));
-            const vec3& e1 = vertex(cell_edge_vertex(cell_id, edge_id, 1));
+            const vec3& e0 = vertex( cell_edge_vertex( cell_id, edge_id, 0 ) ) ;
+            const vec3& e1 = vertex( cell_edge_vertex( cell_id, edge_id, 1 ) ) ;
             return (e1 + e0) / 2.;
         }
 
