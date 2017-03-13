@@ -241,6 +241,11 @@ namespace RINGMesh {
         return mesh_->vertex( 0 ) ;
     }
 
+    const GEO::AttributesManager& WellCorner::vertex_attribute_manager() const
+    {
+        return mesh_->vertex_attribute_manager() ;
+    }
+
 // --------------------------------------------------------------------------
 
     /*!
@@ -314,6 +319,17 @@ namespace RINGMesh {
         }
         return l ;
     }
+
+
+    const GEO::AttributesManager& WellPart::vertex_attribute_manager() const
+    {
+        return mesh_->vertex_attribute_manager() ;
+    }
+    const GEO::AttributesManager& WellPart::edge_attribute_manager() const
+    {
+        mesh_->edge_attribute_manager() ;
+    }
+
 
 // --------------------------------------------------------------------------
 

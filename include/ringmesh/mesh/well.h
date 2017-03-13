@@ -37,6 +37,8 @@
 
 #include <ringmesh/basic/common.h>
 
+#include <geogram/basic/attributes.h>
+
 /*!
  * @file Well related classe declarations 
  * @author Arnaud Botella
@@ -96,6 +98,8 @@ namespace RINGMesh {
             return id_ ;
         }
 
+        const GEO::AttributesManager& vertex_attribute_manager() const ;
+
     private:
         /// True is the corner is on a surface, false if is in a region
         bool is_on_surface_ ;
@@ -153,6 +157,9 @@ namespace RINGMesh {
         }
         const vec3& vertex( index_t v ) const ;
         const vec3& edge_vertex( index_t edge, index_t v ) const ;
+
+        const GEO::AttributesManager& vertex_attribute_manager() const ;
+        const GEO::AttributesManager& edge_attribute_manager() const ;
 
     private:
         /// id of the part corresponding to the position in the parts_ vector of the well
