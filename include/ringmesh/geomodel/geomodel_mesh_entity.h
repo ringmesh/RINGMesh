@@ -572,7 +572,7 @@ namespace RINGMesh {
         }
     protected:
         Line( const GeoModel& geomodel, index_t id, const MeshType type )
-            : GeoModelMeshEntity( geomodel)
+            : GeoModelMeshEntity( geomodel )
         {
             update_mesh_storage_type( Mesh1D::create_mesh( type ) ) ;
             gmme_id_.type() = type_name_static() ;

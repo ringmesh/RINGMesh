@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_ENTITY_TYPE__
-#define __RINGMESH_ENTITY_TYPE__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 #include <ringmesh/basic/algorithm.h>
@@ -293,5 +292,3 @@ namespace RINGMesh {
      */
     typedef gme_template< MeshEntityType > gmme_t ;
 }
-
-#endif
