@@ -2550,9 +2550,9 @@ namespace {
 
     static RINGMesh2Feflow feflow_tet_descriptor = { 6, { 0, 1, 2, 3 } } ;
 
-    static RINGMesh2Feflow feflow_hex_descriptor = { 8, { 0, 4, 5, 1, 2, 6, 7, 3 } } ;
+    static RINGMesh2Feflow feflow_hex_descriptor = { 8, { 2, 6, 7, 3, 0, 4, 5, 1 } } ;
 
-    static RINGMesh2Feflow feflow_prism_descriptor = { 7, { 0, 1, 2, 3, 4, 5 } } ;
+    static RINGMesh2Feflow feflow_prism_descriptor = { 7, { 3, 4, 5, 0, 1, 2 } } ;
 
     static RINGMesh2Feflow feflow_pyramid_descriptor = { 9, { 0, 1, 2, 3, 4 } } ;
 
