@@ -217,7 +217,7 @@ namespace RINGMesh {
         index_t facet_index,
         index_t vertex_id) const
     {
-        ringmesh_assert(facet_index < nb_facet_vertices(facet_index));
+        ringmesh_assert(facet_index < nb_facets());
         for (index_t v = 0; v < nb_facet_vertices(facet_index); v++) {
             if (facet_vertex(facet_index, v)
                 == vertex_id) {
