@@ -77,10 +77,10 @@ namespace {
     {
         ringmesh_assert( surface_part_id < geomodel.nb_surfaces() ) ;
         gme_t cur_surface( Surface::type_name_static(), surface_part_id ) ;
-        /// @todo It would be better to directly check the region
-        /// adjacent to the Surface.
-        for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
-            const Region& cur_region = geomodel.region( r ) ;
+        const Surface& surface = geomodel.surface( surface_part_id ) ;
+        for( index_t r = 0; r < surface.nb_in_boundary(); r++ ) {
+            const Region& cur_region = dynamic_cast< Region >( surface.in_boundary(
+                r ) ) ;
             for( index_t s = 0; s < cur_region.nb_boundaries(); s++ ) {
                 if( cur_region.side( s ) == side
                     && cur_region.boundary_gme( s ) == cur_surface ) {
