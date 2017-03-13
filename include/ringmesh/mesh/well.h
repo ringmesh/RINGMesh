@@ -162,6 +162,8 @@ namespace RINGMesh {
         GEO::AttributesManager& vertex_attribute_manager() const ;
         GEO::AttributesManager& edge_attribute_manager() const ;
 
+        const NNSearch& vertices_nn_search() const ;
+
     private:
         /// id of the part corresponding to the position in the parts_ vector of the well
         index_t id_ ;
