@@ -537,7 +537,7 @@ namespace RINGMesh {
         virtual vec3 mesh_element_barycenter( index_t edge_index ) const
         {
             ringmesh_assert( edge_index < nb_mesh_elements() ) ;
-            return mesh1d_->edge_barycenter(edge_index);
+            return mesh1d_->edge_barycenter( edge_index ) ;
         }
 
         bool is_first_corner_first_vertex() const ;
@@ -709,7 +709,7 @@ namespace RINGMesh {
             index_t& prev_f,
             index_t& prev_e) const
         {
-            return mesh2d_->prev_on_border(f, e, prev_f, prev_e) ;
+            return mesh2d_->prev_on_border( f, e, prev_f, prev_e ) ;
         }
 
         /*!
@@ -730,7 +730,7 @@ namespace RINGMesh {
             index_t& next_f,
             index_t& next_e) const
         {
-            return mesh2d_->next_on_border(f, e, next_f, next_e) ;
+            return mesh2d_->next_on_border( f, e, next_f, next_e ) ;
         }
    
 
@@ -743,7 +743,7 @@ namespace RINGMesh {
             index_t facet_index,
             index_t surface_vertex_index ) const
         {
-            return mesh2d_->vertex_index_in_facet(facet_index, surface_vertex_index) ;
+            return mesh2d_->vertex_index_in_facet( facet_index, surface_vertex_index ) ;
         }
 
         /*!
@@ -755,7 +755,7 @@ namespace RINGMesh {
         */
         index_t facet_from_surface_vertex_ids(index_t in0, index_t in1) const
         {
-            return mesh2d_->facet_from_vertex_ids(in0, in1);
+            return mesh2d_->facet_from_vertex_ids( in0, in1 ) ;
         }
 
         /*!
@@ -775,7 +775,7 @@ namespace RINGMesh {
             bool border_only,
             index_t first_facet = NO_ID) const
         {
-            return mesh2d_->facets_around_vertex(surf_vertex_id, result, border_only, first_facet);
+            return mesh2d_->facets_around_vertex( surf_vertex_id, result, border_only, first_facet ) ;
         }
 
         /*! @}
@@ -821,7 +821,7 @@ namespace RINGMesh {
          */
         bool is_on_border( index_t facet_index, index_t vertex_index ) const
         {
-            return mesh2d_->is_edge_on_border(facet_index, vertex_index);
+            return mesh2d_->is_edge_on_border( facet_index, vertex_index ) ;
         }
 
         /*!
