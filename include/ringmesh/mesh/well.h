@@ -210,7 +210,7 @@ namespace RINGMesh {
             corners_.push_back( new WellCorner( this, vertex, is_on_surface, id ) ) ;
             return corner_id ;
         }
-        index_t find_corner( const vec3& vertex ) const ;
+        index_t find_corner( const vec3& vertex, double epsilon ) const ;
         /*!
          * Gets a corner
          * @param[in] c the id of the corner
@@ -358,6 +358,9 @@ namespace RINGMesh {
         {
             return *wells_[w] ;
         }
+
+    private:
+        void compute_conformal_mesh( const Mesh1D& in, Mesh1D& out ) ;
 
     protected:
         /// Vector of the wells
