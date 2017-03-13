@@ -809,11 +809,17 @@ namespace RINGMesh {
             return mesh2d_->facet_area( facet_index ) ;
         }
 
+        /*!
+        * @brief Compute closest vertex in a facet of a Surface to a point
+        * @param[in] facet_index Facet index
+        * @param[in] query_point Coordinates of the point to which distance is measured
+        * @return Index of the vertex of @param facet_index closest to @param query_point
+        */
         index_t closest_vertex_in_facet(
             index_t facet_index,
-            const vec3& to_point ) const
+            const vec3& query_point ) const
         {
-            return mesh2d_->closest_vertex_in_facet( facet_index, to_point ) ;
+            return mesh2d_->closest_vertex_in_facet ( facet_index, query_point );
         }
 
         /*!
