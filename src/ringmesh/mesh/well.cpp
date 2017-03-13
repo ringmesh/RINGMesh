@@ -299,6 +299,11 @@ namespace RINGMesh {
         return mesh_->nb_edges() ;
     }
 
+    index_t WellPart::nb_vertices() const
+    {
+        return mesh_->nb_vertices() ;
+    }
+
     const vec3& WellPart::vertex( index_t v ) const
     {
         return mesh_->vertex( v ) ;
@@ -320,7 +325,6 @@ namespace RINGMesh {
         return l ;
     }
 
-
     GEO::AttributesManager& WellPart::vertex_attribute_manager() const
     {
         return mesh_->vertex_attribute_manager() ;
@@ -329,7 +333,6 @@ namespace RINGMesh {
     {
         return mesh_->edge_attribute_manager() ;
     }
-
 
 // --------------------------------------------------------------------------
 
