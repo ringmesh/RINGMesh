@@ -179,7 +179,7 @@ namespace RINGMesh {
             index_t nb_additionnal_entities,
             const MeshType type = "" )
         {
-            const MeshEntityType entity_type = ENTITY::type_name_static() ;
+            const MeshEntityType& entity_type = ENTITY::type_name_static() ;
             std::vector< GeoModelMeshEntity* >& store =
                 geomodel_access_.modifiable_mesh_entities( entity_type ) ;
             index_t old_size = static_cast< index_t >( store.size() ) ;

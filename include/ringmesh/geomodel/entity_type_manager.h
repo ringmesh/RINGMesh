@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_ENTITY_TYPE_MANAGER__
-#define __RINGMESH_ENTITY_TYPE_MANAGER__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 #include <ringmesh/basic/algorithm.h>
@@ -190,5 +189,3 @@ namespace RINGMesh {
         RelationshipManager relationship_manager ;
     } ;
 }
-
-#endif

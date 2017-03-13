@@ -94,7 +94,6 @@ namespace RINGMesh {
         virtual ~GeoModelEntity()
         {
         }
-        ;
 
         virtual bool is_on_voi() const = 0 ;
         virtual bool is_valid() const = 0 ;
