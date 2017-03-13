@@ -371,7 +371,7 @@ namespace RINGMesh {
         */
         index_t closest_vertex_in_facet(
             index_t facet_index,
-            const vec3& to_point) const;
+            const vec3& to_point) const ;
 
         /*!
         * @brief Get the first facet of the surface that has an edge linking the two vertices (ids in the surface)
@@ -380,7 +380,7 @@ namespace RINGMesh {
         * @param[in] in1 Index of the second vertex in the surface
         * @return NO_ID or the index of the facet
         */
-        index_t Mesh2D::facet_from_vertex_ids(index_t in0, index_t in1) const ;
+        index_t facet_from_vertex_ids(index_t in0, index_t in1) const ;
 
         /*!
         * @brief Determines the facets around a vertex
@@ -394,7 +394,7 @@ namespace RINGMesh {
         * force algorithm, and then the other by propagation
         * @todo Try to use a AABB tree to remove @param first_facet. [PA]
         */
-        index_t Mesh2D::facets_around_vertex(
+        index_t facets_around_vertex(
             index_t vertex_id,
             std::vector< index_t >& result,
             bool border_only,
