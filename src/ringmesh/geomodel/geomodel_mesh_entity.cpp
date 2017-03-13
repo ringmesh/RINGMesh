@@ -518,6 +518,7 @@ namespace RINGMesh {
             }
         }
         ringmesh_assert_not_reached ;
+        return gmme_t(DefaultMeshEntityType::default_entity_type(),NO_ID) ;
     }
 
     const GeoModelMeshEntity& GeoModelMeshEntity::boundary( index_t x ) const
