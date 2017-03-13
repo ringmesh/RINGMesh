@@ -159,8 +159,7 @@ namespace RINGMesh {
             ringmesh_assert( id < nb_parents() ) ;
             return parents_[id] ;
         }
-        const gmge_t& parent_gmge(
-            const GeologicalEntityType& parent_type_name ) const ;
+
         /*!
          * @brief Returns the gmge_t of the parent of the given type.
          * @note If this entity has no parent of the given type,

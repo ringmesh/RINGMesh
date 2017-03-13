@@ -1116,7 +1116,7 @@ namespace RINGMesh {
             std::set< gmge_t > cur_interfaces ;
             for( index_t j = 0; j < L.nb_in_boundary(); ++j ) {
                 const GeoModelMeshEntity& S = L.in_boundary( j ) ;
-                gmge_t parent_interface = S.parent_gmge(
+                gmge_t parent_interface = S.parent_of_gmme(
                     Interface::type_name_static() ) ;
                 cur_interfaces.insert( parent_interface ) ;
             }

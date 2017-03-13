@@ -89,7 +89,7 @@ namespace RINGMesh {
             const GeologicalEntityType entity_type = type_name() ;
             for( index_t i = 0; i < nb_children(); ++i ) {
                 const GeoModelMeshEntity& one_child = child( i ) ;
-                if( one_child.parent_gmge( entity_type ) != gmge_id() ) {
+                if (one_child.parent_of_gmme(entity_type) != gmge_id()) {
                     Logger::warn( "GeoModelEntity" )
                         << "Inconsistency child-parent between " << gmge_id()
                         << " and " << one_child.gmme_id() << std::endl ;

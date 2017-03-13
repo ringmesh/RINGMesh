@@ -505,11 +505,11 @@ namespace RINGMesh {
     const GeoModelGeologicalEntity& GeoModelMeshEntity::parent(
         const GeologicalEntityType& parent_type_name ) const
     {
-        gmge_t id = parent_gmge( parent_type_name ) ;
+        gmge_t id = parent_of_gmme(parent_type_name);
         ringmesh_assert( id.is_defined() ) ;
         return geomodel().geological_entity( id ) ;
     }
-    const gmge_t& GeoModelMeshEntity::parent_gmge(
+    const gmge_t& GeoModelMeshEntity::parent_of_gmme(
         const GeologicalEntityType& parent_type_name ) const
     {
         for( index_t i = 0; i < nb_parents(); ++i ) {
