@@ -811,9 +811,9 @@ namespace RINGMesh {
 
         index_t closest_vertex_in_facet(
             index_t facet_index,
-            const vec3& to_point) const
+            const vec3& to_point ) const
         {
-            return mesh2d_->closest_vertex_in_facet(facet_index, to_point) ;
+            return mesh2d_->closest_vertex_in_facet( facet_index, to_point ) ;
         }
 
         /*!
