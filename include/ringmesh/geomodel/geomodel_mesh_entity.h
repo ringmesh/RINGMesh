@@ -537,9 +537,7 @@ namespace RINGMesh {
         virtual vec3 mesh_element_barycenter( index_t edge_index ) const
         {
             ringmesh_assert( edge_index < nb_mesh_elements() ) ;
-            return 0.5
-                * ( mesh_element_vertex( edge_index, 0 )
-                    + mesh_element_vertex( edge_index, 1 ) ) ;
+            return mesh1d_->edge_barycenter( edge_index ) ;
         }
 
         bool is_first_corner_first_vertex() const ;
@@ -703,12 +701,16 @@ namespace RINGMesh {
          *
          * @pre the surface must be correctly oriented and
          * the given facet edge must be on border
+         * @warning the edge index is in fact the index of the vertex where the edge starts.
          */
         void prev_on_border(
             index_t f,
             index_t e,
             index_t& prev_f,
-            index_t& prev_e ) const ;
+            index_t& prev_e) const
+        {
+            return mesh2d_->prev_on_border( f, e, prev_f, prev_e ) ;
+        }
 
         /*!
          * @brief Get the next edge on the border
@@ -720,12 +722,17 @@ namespace RINGMesh {
          * @param[out] next_e Next edge index in the facet
          *
          * @pre the given facet edge must be on border
+         * @warning the edge index is in fact the index of the vertex where the edge starts.
          */
         void next_on_border(
             index_t f,
             index_t e,
             index_t& next_f,
-            index_t& next_e ) const ;
+            index_t& next_e) const
+        {
+            return mesh2d_->next_on_border( f, e, next_f, next_e ) ;
+        }
+   
 
         /*!
          * @brief Get the vertex index in a facet @param facet_index from its
@@ -736,16 +743,20 @@ namespace RINGMesh {
             index_t facet_index,
             index_t surface_vertex_index ) const
         {
-            ringmesh_assert( facet_index < nb_mesh_elements() ) ;
-            for( index_t v = 0; v < nb_mesh_element_vertices( facet_index ); v++ ) {
-                if( mesh_element_vertex_index( facet_index, v )
-                    == surface_vertex_index ) {
-                    return v ;
-                }
-            }
-            return NO_ID ;
+            return mesh2d_->vertex_index_in_facet( facet_index, surface_vertex_index ) ;
         }
-        index_t facet_from_surface_vertex_ids( index_t in0, index_t in1 ) const ;
+
+        /*!
+        * @brief Get the first facet of the surface that has an edge linking the two vertices (ids in the surface)
+        *
+        * @param[in] in0 Index of the first vertex in the surface
+        * @param[in] in1 Index of the second vertex in the surface
+        * @return NO_ID or the index of the facet
+        */
+        index_t facet_from_surface_vertex_ids(index_t in0, index_t in1) const
+        {
+            return mesh2d_->facet_from_vertex_ids( in0, in1 ) ;
+        }
 
         /*!
          * @brief Determines the facets around a vertex
@@ -757,13 +768,15 @@ namespace RINGMesh {
          * @note If a facet containing the vertex is given, facets around this
          * vertex is search by propagation. Else, a first facet is found by brute
          * force algorithm, and then the other by propagation
-         * @todo Try to use a AABB tree to remove @param first_facet. [PA]
          */
         index_t facets_around_vertex(
             index_t surf_vertex_id,
             std::vector< index_t >& result,
             bool border_only,
-            index_t first_facet = NO_ID ) const ;
+            index_t first_facet = NO_ID) const
+        {
+            return mesh2d_->facets_around_vertex( surf_vertex_id, result, border_only, first_facet ) ;
+        }
 
         /*! @}
          * \name Geometrical request on facets
@@ -798,14 +811,17 @@ namespace RINGMesh {
 
         index_t closest_vertex_in_facet(
             index_t facet_index,
-            const vec3& to_point ) const ;
+            const vec3& to_point) const
+        {
+            return mesh2d_->closest_vertex_in_facet(facet_index, to_point) ;
+        }
 
         /*!
          * Is the edge starting with the given vertex of the facet on a border of the Surface?
          */
         bool is_on_border( index_t facet_index, index_t vertex_index ) const
         {
-            return facet_adjacent_index( facet_index, vertex_index ) == NO_ID ;
+            return mesh2d_->is_edge_on_border( facet_index, vertex_index ) ;
         }
 
         /*!
@@ -813,13 +829,7 @@ namespace RINGMesh {
          */
         bool is_on_border( index_t facet_index ) const
         {
-            for( index_t v = 0; v < mesh2d_->nb_facet_vertices( facet_index );
-                v++ ) {
-                if( is_on_border( facet_index, v ) ) {
-                    return true ;
-                }
-            }
-            return false ;
+            return mesh2d_->is_facet_on_border( facet_index ) ;
         }
         /*! @}
          */
