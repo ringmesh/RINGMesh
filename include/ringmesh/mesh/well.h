@@ -138,6 +138,7 @@ namespace RINGMesh {
         void set_points( const std::vector< vec3 >& points ) ;
 
         index_t nb_edges() const ;
+        index_t nb_vertices() const ;
         double length() const ;
 
         /*!
