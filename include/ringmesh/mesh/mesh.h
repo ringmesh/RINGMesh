@@ -166,7 +166,6 @@ namespace RINGMesh {
 #define ringmesh_register_mesh_0d(type) \
     geo_register_creator(RINGMesh::Mesh0DFactory, type, type::type_name_static())
 
-
     /*!
      * class for encapsulating 1D mesh component
      */
@@ -213,7 +212,7 @@ namespace RINGMesh {
             const vec3& e1 = vertex( edge_vertex( edge_id, 1 ) ) ;
             return ( e1 + e0 ) / 2. ;
         }
-        
+
         /*!
          * @brief return the NNSearch at edges
          * @warning the NNSearch is destroy when calling the Mesh::facets_aabb() and Mesh::cells_aabb()
@@ -277,7 +276,9 @@ namespace RINGMesh {
          * @param[in] facet_id the facet index.
          * @param[in] vertex_id the local edge index in \param facet_id.
          */
-        virtual index_t facet_vertex( index_t facet_id, index_t vertex_id ) const = 0 ;
+        virtual index_t facet_vertex(
+            index_t facet_id,
+            index_t vertex_id ) const = 0 ;
 
         /*!
          * @brief Gets the number of all facets in the whole Mesh.
@@ -303,22 +304,22 @@ namespace RINGMesh {
             }
         }
         /*!
-        * @brief Get the next edge on the border
-        * @warning the edge index is in fact the index of the vertex where the edge starts.
-        * @details The returned border edge is the next in the way of facet edges
-        * orientation.
-        * @param[in] f Input facet index
-        * @param[in] e Edge index in the facet
-        * @param[out] next_f Next facet index
-        * @param[out] next_e Next edge index in the facet
-        *
-        * @pre the given facet edge must be on border
-        */
+         * @brief Get the next edge on the border
+         * @warning the edge index is in fact the index of the vertex where the edge starts.
+         * @details The returned border edge is the next in the way of facet edges
+         * orientation.
+         * @param[in] f Input facet index
+         * @param[in] e Edge index in the facet
+         * @param[out] next_f Next facet index
+         * @param[out] next_e Next edge index in the facet
+         *
+         * @pre the given facet edge must be on border
+         */
         void next_on_border(
             index_t f,
             index_t e,
             index_t& next_f,
-            index_t& next_e ) const;
+            index_t& next_e ) const ;
 
         /*!
          * @brief Gets the previous vertex index in the facet \param facet_id.
@@ -336,64 +337,64 @@ namespace RINGMesh {
         }
 
         /*!
-        * @brief Get the previous edge on the border
-        * @details The returned border edge is the previous in the way of facet edges
-        * orientation.
-        * @param[in] f Input facet index
-        * @param[in] e Edge index in the facet
-        * @param[out] prev_f Previous facet index
-        * @param[out] prev_e Previous edge index in the facet
-        *
-        * @pre the surface must be correctly oriented and
-        * the given facet edge must be on border
-        * @warning the edge index is in fact the index of the vertex where the edge starts.
-        */
+         * @brief Get the previous edge on the border
+         * @details The returned border edge is the previous in the way of facet edges
+         * orientation.
+         * @param[in] f Input facet index
+         * @param[in] e Edge index in the facet
+         * @param[out] prev_f Previous facet index
+         * @param[out] prev_e Previous edge index in the facet
+         *
+         * @pre the surface must be correctly oriented and
+         * the given facet edge must be on border
+         * @warning the edge index is in fact the index of the vertex where the edge starts.
+         */
         void prev_on_border(
             index_t f,
             index_t e,
             index_t& prev_f,
-            index_t& prev_e ) const;
+            index_t& prev_e ) const ;
 
         /*!
-        * @brief Get the vertex index in a facet @param facet_index from its
-        * global index in the Mesh2D @param vertex_id
-        * @return NO_ID or index of the vertex in the facet
-        */
+         * @brief Get the vertex index in a facet @param facet_index from its
+         * global index in the Mesh2D @param vertex_id
+         * @return NO_ID or index of the vertex in the facet
+         */
         index_t vertex_index_in_facet(
             index_t facet_index,
-            index_t vertex_id ) const ; 
+            index_t vertex_id ) const ;
 
         /*!
-        * @brief Compute closest vertex in a facet to a point
-        * @param[in] facet_index Facet index
-        * @param[in] query_point Coordinates of the point to which distance is measured
-        * @return Index of the vertex of @param facet_index closest to @param query_point
-        */
+         * @brief Compute closest vertex in a facet to a point
+         * @param[in] facet_index Facet index
+         * @param[in] query_point Coordinates of the point to which distance is measured
+         * @return Index of the vertex of @param facet_index closest to @param query_point
+         */
         index_t closest_vertex_in_facet(
             index_t facet_index,
-            const vec3& query_point ) const;
+            const vec3& query_point ) const ;
 
         /*!
-        * @brief Get the first facet of the surface that has an edge linking the two vertices (ids in the surface)
-        *
-        * @param[in] in0 Index of the first vertex in the surface
-        * @param[in] in1 Index of the second vertex in the surface
-        * @return NO_ID or the index of the facet
-        */
+         * @brief Get the first facet of the surface that has an edge linking the two vertices (ids in the surface)
+         *
+         * @param[in] in0 Index of the first vertex in the surface
+         * @param[in] in1 Index of the second vertex in the surface
+         * @return NO_ID or the index of the facet
+         */
         index_t facet_from_vertex_ids( index_t in0, index_t in1 ) const ;
 
         /*!
-        * @brief Determines the facets around a vertex
-        * @param[in] vertex_id Index of the vertex in the surface
-        * @param[in] result Indices of the facets containing @param P
-        * @param[in] border_only If true only facets on the border are considered
-        * @param[in] f0 (Optional) Index of one facet containing the vertex @param P
-        * @return The number of facets found
-        * @note If a facet containing the vertex is given, facets around this
-        * vertex is search by propagation. Else, a first facet is found by brute
-        * force algorithm, and then the other by propagation
-        * @todo Try to use a AABB tree to remove @param first_facet. [PA]
-        */
+         * @brief Determines the facets around a vertex
+         * @param[in] vertex_id Index of the vertex in the surface
+         * @param[in] result Indices of the facets containing @param P
+         * @param[in] border_only If true only facets on the border are considered
+         * @param[in] f0 (Optional) Index of one facet containing the vertex @param P
+         * @return The number of facets found
+         * @note If a facet containing the vertex is given, facets around this
+         * vertex is search by propagation. Else, a first facet is found by brute
+         * force algorithm, and then the other by propagation
+         * @todo Try to use a AABB tree to remove @param first_facet. [PA]
+         */
         index_t facets_around_vertex(
             index_t vertex_id,
             std::vector< index_t >& result,
@@ -426,51 +427,52 @@ namespace RINGMesh {
         }
 
         /*!
-        * Is the edge starting with the given vertex of the facet on a border of the Surface?
-        */
+         * Is the edge starting with the given vertex of the facet on a border of the Surface?
+         */
         bool is_edge_on_border( index_t facet_index, index_t vertex_index ) const
         {
             return facet_adjacent( facet_index, vertex_index ) == NO_ID ;
         }
 
         /*!
-        * Is one of the edges of the facet on the border of the surface?
-        */
+         * Is one of the edges of the facet on the border of the surface?
+         */
         bool is_facet_on_border( index_t facet_index ) const
         {
-            for (index_t v = 0; v < nb_facet_vertices( facet_index ) ;
-                 v++) {
+            for( index_t v = 0; v < nb_facet_vertices( facet_index ); v++ ) {
                 if( is_edge_on_border( facet_index, v ) ) {
-                    return true;
+                    return true ;
                 }
             }
-            return false;
+            return false ;
         }
-        
+
         /*!
-        * @brief Gets the length of the edge starting at a given vertex
-        * @param[in] facet_id index of the facet
-        * @param[in] vertex_id the edge starting vertex index
-        */
+         * @brief Gets the length of the edge starting at a given vertex
+         * @param[in] facet_id index of the facet
+         * @param[in] vertex_id the edge starting vertex index
+         */
         double facet_edge_length( index_t facet_id, index_t vertex_id ) const
         {
             const vec3& e0 = vertex( facet_vertex( facet_id, vertex_id ) ) ;
-            const vec3& e1 = vertex( facet_vertex( facet_id,
-                next_facet_vertex( facet_id, vertex_id ) ) ) ;
-            return (e1 - e0).length();
+            const vec3& e1 = vertex(
+                facet_vertex( facet_id,
+                    next_facet_vertex( facet_id, vertex_id ) ) ) ;
+            return ( e1 - e0 ).length() ;
         }
         /*!
-        * @brief Gets the barycenter of the edge starting at a given vertex
-        * @param[in] facet_id index of the facet
-        * @param[in] vertex_id the edge starting vertex index
-        */
-        vec3 facet_edge_barycenter(index_t facet_id, index_t vertex_id) const
-		{	
+         * @brief Gets the barycenter of the edge starting at a given vertex
+         * @param[in] facet_id index of the facet
+         * @param[in] vertex_id the edge starting vertex index
+         */
+        vec3 facet_edge_barycenter( index_t facet_id, index_t vertex_id ) const
+        {
             const vec3& e0 = vertex( facet_vertex( facet_id, vertex_id ) ) ;
-            const vec3& e1 = vertex( facet_vertex( facet_id,
-                next_facet_vertex( facet_id, vertex_id ) ) ) ;
-			return (e1 + e0) / 2. ;
-		}
+            const vec3& e1 = vertex(
+                facet_vertex( facet_id,
+                    next_facet_vertex( facet_id, vertex_id ) ) ) ;
+            return ( e1 + e0 ) / 2. ;
+        }
 
         /*!
          * Computes the Mesh facet normal
@@ -520,7 +522,6 @@ namespace RINGMesh {
             return result ;
         }
 
-        
         /*!
          * @brief return the NNSearch at facets
          */
@@ -622,29 +623,29 @@ namespace RINGMesh {
         virtual index_t cell_facet( index_t cell_id, index_t facet_id ) const = 0 ;
 
         /*!
-        * Computes the Mesh cell edge length
-        * @param[in] cell_id the facet index
-        * @param[in] edge_id the edge index
-        * @return the cell edge length
-        */
-        double cell_edge_length(index_t cell_id, index_t edge_id) const
-        {
-            const vec3& e0 = vertex( cell_edge_vertex( cell_id, edge_id, 0 ) );
-            const vec3& e1 = vertex( cell_edge_vertex( cell_id, edge_id, 1 ) );
-            return (e1 - e0).length();
-        }
-
-        /*!
-        * Computes the Mesh cell edge barycenter
-        * @param[in] cell_id the facet index
-        * @param[in] edge_id the edge index
-        * @return the cell edge center
-        */
-		vec3 cell_edge_barycenter( index_t cell_id, index_t edge_id ) const 
+         * Computes the Mesh cell edge length
+         * @param[in] cell_id the facet index
+         * @param[in] edge_id the edge index
+         * @return the cell edge length
+         */
+        double cell_edge_length( index_t cell_id, index_t edge_id ) const
         {
             const vec3& e0 = vertex( cell_edge_vertex( cell_id, edge_id, 0 ) ) ;
             const vec3& e1 = vertex( cell_edge_vertex( cell_id, edge_id, 1 ) ) ;
-            return (e1 + e0) / 2.;
+            return ( e1 - e0 ).length() ;
+        }
+
+        /*!
+         * Computes the Mesh cell edge barycenter
+         * @param[in] cell_id the facet index
+         * @param[in] edge_id the edge index
+         * @return the cell edge center
+         */
+        vec3 cell_edge_barycenter( index_t cell_id, index_t edge_id ) const
+        {
+            const vec3& e0 = vertex( cell_edge_vertex( cell_id, edge_id, 0 ) ) ;
+            const vec3& e1 = vertex( cell_edge_vertex( cell_id, edge_id, 1 ) ) ;
+            return ( e1 + e0 ) / 2. ;
         }
 
         /*!

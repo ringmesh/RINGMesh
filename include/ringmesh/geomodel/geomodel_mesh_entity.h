@@ -310,7 +310,6 @@ namespace RINGMesh {
         void unbind_vertex_mapping_attribute() const ;
         void bind_vertex_mapping_attribute() const ;
 
-
         virtual void change_mesh_data_structure( const MeshType type ) = 0 ;
     protected:
 
@@ -707,7 +706,7 @@ namespace RINGMesh {
             index_t f,
             index_t e,
             index_t& prev_f,
-            index_t& prev_e) const
+            index_t& prev_e ) const
         {
             return mesh2d_->prev_on_border( f, e, prev_f, prev_e ) ;
         }
@@ -728,11 +727,10 @@ namespace RINGMesh {
             index_t f,
             index_t e,
             index_t& next_f,
-            index_t& next_e) const
+            index_t& next_e ) const
         {
             return mesh2d_->next_on_border( f, e, next_f, next_e ) ;
         }
-   
 
         /*!
          * @brief Get the vertex index in a facet @param facet_index from its
@@ -743,17 +741,18 @@ namespace RINGMesh {
             index_t facet_index,
             index_t surface_vertex_index ) const
         {
-            return mesh2d_->vertex_index_in_facet( facet_index, surface_vertex_index ) ;
+            return mesh2d_->vertex_index_in_facet( facet_index,
+                surface_vertex_index ) ;
         }
 
         /*!
-        * @brief Get the first facet of the surface that has an edge linking the two vertices (ids in the surface)
-        *
-        * @param[in] in0 Index of the first vertex in the surface
-        * @param[in] in1 Index of the second vertex in the surface
-        * @return NO_ID or the index of the facet
-        */
-        index_t facet_from_surface_vertex_ids(index_t in0, index_t in1) const
+         * @brief Get the first facet of the surface that has an edge linking the two vertices (ids in the surface)
+         *
+         * @param[in] in0 Index of the first vertex in the surface
+         * @param[in] in1 Index of the second vertex in the surface
+         * @return NO_ID or the index of the facet
+         */
+        index_t facet_from_surface_vertex_ids( index_t in0, index_t in1 ) const
         {
             return mesh2d_->facet_from_vertex_ids( in0, in1 ) ;
         }
@@ -773,9 +772,10 @@ namespace RINGMesh {
             index_t surf_vertex_id,
             std::vector< index_t >& result,
             bool border_only,
-            index_t first_facet = NO_ID) const
+            index_t first_facet = NO_ID ) const
         {
-            return mesh2d_->facets_around_vertex( surf_vertex_id, result, border_only, first_facet ) ;
+            return mesh2d_->facets_around_vertex( surf_vertex_id, result,
+                border_only, first_facet ) ;
         }
 
         /*! @}
@@ -810,16 +810,16 @@ namespace RINGMesh {
         }
 
         /*!
-        * @brief Compute closest vertex in a facet of a Surface to a point
-        * @param[in] facet_index Facet index
-        * @param[in] query_point Coordinates of the point to which distance is measured
-        * @return Index of the vertex of @param facet_index closest to @param query_point
-        */
+         * @brief Compute closest vertex in a facet of a Surface to a point
+         * @param[in] facet_index Facet index
+         * @param[in] query_point Coordinates of the point to which distance is measured
+         * @return Index of the vertex of @param facet_index closest to @param query_point
+         */
         index_t closest_vertex_in_facet(
             index_t facet_index,
             const vec3& query_point ) const
         {
-            return mesh2d_->closest_vertex_in_facet ( facet_index, query_point );
+            return mesh2d_->closest_vertex_in_facet( facet_index, query_point ) ;
         }
 
         /*!
