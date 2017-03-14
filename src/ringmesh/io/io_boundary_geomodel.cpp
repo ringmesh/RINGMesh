@@ -603,15 +603,15 @@ private:
 }
 /************************************************************************/
 namespace RINGMesh {
-/*
- * Initializes the possible handlers for IO GeoModel files
- */
-void GeoModelIOHandler::initialize_boundary_geomodel_output()
-{
-    ringmesh_register_GeoModelIOHandler_creator( MLIOHandler, "ml" ) ;
-    ringmesh_register_GeoModelIOHandler_creator( SMESHIOHandler, "smesh" );
-#ifdef RINGMESH_WITH_GEOLOGYJS
-ringmesh_register_GeoModelIOHandler_creator( HTMLIOHandler, "html" ) ;
-#endif
-}
+    /*
+     * Initializes the possible handlers for IO GeoModel files
+     */
+    void GeoModelIOHandler::initialize_boundary_geomodel_output()
+    {
+        ringmesh_register_GeoModelIOHandler_creator( MLIOHandler, "ml" );
+        ringmesh_register_GeoModelIOHandler_creator( SMESHIOHandler, "smesh" ) ;
+        #ifdef RINGMESH_WITH_GEOLOGYJS
+            ringmesh_register_GeoModelIOHandler_creator( HTMLIOHandler, "html" ) ;
+        #endif
+    }
 }
