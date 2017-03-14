@@ -1,4 +1,4 @@
-#### Curent changeset ####
+#### Current changeset ####
 
 New Features:
  *
