@@ -69,8 +69,7 @@ namespace RINGMesh {
     template< typename T, typename container >
     inline index_t find_sorted( const container& in, const T& value )
     {
-        auto low = std::lower_bound( in.begin(),
-            in.end(), value ) ;
+        auto low = std::lower_bound( in.begin(), in.end(), value ) ;
         if( low == in.end() || value < *low ) {
             return NO_ID ;
         } else {
