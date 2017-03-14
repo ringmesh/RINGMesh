@@ -730,12 +730,12 @@ namespace RINGMesh {
                     gme_t( Surface::type_name_static(), s ) ) ) ;
             std::set< index_t > cutting_lines ;
             get_internal_borders( surface, cutting_lines ) ;
-            for( std::set< index_t >::iterator it = cutting_lines.begin();
-                it != cutting_lines.end(); ++it ) {
+            for( auto it = cutting_lines.begin(); it != cutting_lines.end(); ++it ) {
                 cut_surface_by_line( s, *it ) ;
             }
             if( !cutting_lines.empty() ) {
-                Mesh2DBuilder_var surface_mesh_builder = create_surface_builder( s ) ;
+                Mesh2DBuilder_var surface_mesh_builder = create_surface_builder(
+                    s ) ;
                 surface_mesh_builder->remove_isolated_vertices() ;
             }
         }
@@ -750,8 +750,8 @@ namespace RINGMesh {
             if( region.nb_mesh_elements() == 0 ) continue ;
             std::set< index_t > cutting_surfaces ;
             get_internal_borders( region, cutting_surfaces ) ;
-            for( std::set< index_t >::iterator it = cutting_surfaces.begin();
-                it != cutting_surfaces.end(); ++it ) {
+            for( auto it = cutting_surfaces.begin(); it != cutting_surfaces.end();
+                ++it ) {
                 cut_region_by_surface( r, *it ) ;
             }
             if( !cutting_surfaces.empty() ) {
@@ -812,7 +812,8 @@ namespace RINGMesh {
 
         index_t vertex_id = create_mesh_entity_vertices( surface_gme,
             line.nb_vertices() ) ;
-        Mesh2DBuilder_var surface_mesh_builder = create_surface_builder( surface_id ) ;
+        Mesh2DBuilder_var surface_mesh_builder = create_surface_builder(
+            surface_id ) ;
         for( index_t v = 0; v < line.nb_vertices(); v++ ) {
             const vec3& p = line.vertex( v ) ;
             const index_t& facet_vertex = facet_vertices[v].vertex_ ;
