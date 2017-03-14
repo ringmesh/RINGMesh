@@ -1,0 +1,4 @@
+syntax: regexp
+^.settings$
+syntax: regexp
+^build$
