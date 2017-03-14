@@ -651,32 +651,6 @@ namespace RINGMesh {
         return ( 1.0 / count ) * result ;
     }
 
-    /*!
-     * Rotation of all the vertices of a mesh following
-     * a defined rotational matrix.
-     *
-     * @param mesh[in,out] the mesh to rotate.
-     *
-     * @param[in] rot_mat matrix which defines the rotation.
-     */
-    void rotate_mesh( GEO::Mesh& mesh, const GEO::Matrix< 4, double >& rot_mat )
-    {
-        for( index_t v = 0; v < mesh.vertices.nb(); v++ ) {
-            double old_coords[4] ;
-            for( index_t i = 0; i < 3; i++ ) {
-                old_coords[i] = mesh.vertices.point_ptr( v )[i] ;
-            }
-            old_coords[3] = 1. ;
-            double new_coords[4] ;
-            GEO::mult( rot_mat, old_coords, new_coords ) ;
-
-            for( index_t i = 0; i < 3; i++ ) {
-                mesh.vertices.point_ptr( v )[i] = new_coords[i] ;
-            }
-            ringmesh_assert( new_coords[ 3 ] == 1. ) ;
-        }
-    }
-
     void print_bounded_attributes( const GEO::Mesh& M )
     {
         {
