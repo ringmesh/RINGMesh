@@ -279,15 +279,15 @@ namespace RINGMesh {
          */
         bool build_lines_and_corners_from_surfaces() ;
 
-    private:
-        GeoModelBuilderFromSurfaces( GeoModelBuilder& builder, GeoModel& geomodel ) ;
-
         /*!
          * @brief Build the regions of the GeoModel from the Surfaces
          * @pre Function build_lines_and_corners_from_surfaces
          * must have been called before
          */
         bool build_brep_regions_from_surfaces() ;
+
+    private:
+        GeoModelBuilderFromSurfaces( GeoModelBuilder& builder, GeoModel& geomodel ) ;
 
     public:
         /*! Options to toggle the building of entities from the available entities */
