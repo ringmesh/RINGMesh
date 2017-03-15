@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_IO__
-#define __RINGMESH_IO__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -183,4 +182,3 @@ namespace RINGMesh {
 #define ringmesh_register_StratigraphicColumnIOHandler_creator( type, name ) \
 		geo_register_creator( StratigraphicColumnIOHandlerFactory, type, name )
 }
-#endif

@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_GEOMODEL_BUILDER__
-#define __RINGMESH_GEOMODEL_BUILDER__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -280,15 +279,15 @@ namespace RINGMesh {
          */
         bool build_lines_and_corners_from_surfaces() ;
 
-    private:
-        GeoModelBuilderFromSurfaces( GeoModelBuilder& builder, GeoModel& geomodel ) ;
-
         /*!
          * @brief Build the regions of the GeoModel from the Surfaces
          * @pre Function build_lines_and_corners_from_surfaces
          * must have been called before
          */
         bool build_brep_regions_from_surfaces() ;
+
+    private:
+        GeoModelBuilderFromSurfaces( GeoModelBuilder& builder, GeoModel& geomodel ) ;
 
     public:
         /*! Options to toggle the building of entities from the available entities */
@@ -361,5 +360,3 @@ namespace RINGMesh {
         std::string filename_ ;
     } ;
 }
-
-#endif

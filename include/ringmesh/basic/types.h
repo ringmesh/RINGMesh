@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_TYPES__
-#define __RINGMESH_TYPES__
+#pragma once
 
 #include <geogram/basic/geometry.h>
 #include <geogram/basic/logger.h>
@@ -79,5 +78,3 @@ namespace RINGMesh {
     static const index_t NO_ID = index_t( -1 ) ;
 
 }
-
-#endif
