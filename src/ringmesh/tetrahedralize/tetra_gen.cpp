@@ -54,7 +54,7 @@
 namespace RINGMesh {
 
 #ifdef RINGMESH_WITH_TETGEN
-    class RINGMESH_API TetraGen_TetGen: public TetraGen {
+    class RINGMESH_API TetraGen_TetGen final : public TetraGen {
     public:
         TetraGen_TetGen()
             : TetraGen()
@@ -64,7 +64,7 @@ namespace RINGMesh {
         {
         }
 
-        virtual bool tetrahedralize( bool refine )
+        virtual bool tetrahedralize( bool refine ) final
         {
             tetrahedralize_mesh_tetgen( tetmesh_constraint_, refine, 1.0 ) ;
             initialize_storage( tetmesh_constraint_.vertices.nb(),
@@ -74,13 +74,13 @@ namespace RINGMesh {
             return true ;
         }
 
-        virtual void write_vertices_in_ringmesh_data_structure()
+        virtual void write_vertices_in_ringmesh_data_structure() final
         {
             for( index_t v = 0; v < tetmesh_constraint_.vertices.nb(); v++ ) {
                 set_point( v, tetmesh_constraint_.vertices.point_ptr( v ) ) ;
             }
         }
-        virtual void write_tet_in_ringmesh_data_structure()
+        virtual void write_tet_in_ringmesh_data_structure() final
         {
             for( index_t tet = 0; tet < tetmesh_constraint_.cells.nb(); tet++ ) {
                 int vertex_indices[4] ;
@@ -131,7 +131,7 @@ namespace RINGMesh {
 #endif
     }
 
-    class RINGMESH_API TetraGen_MG_Tetra: public TetraGen {
+    class RINGMESH_API TetraGen_MG_Tetra final : public TetraGen {
     public:
         TetraGen_MG_Tetra()
             :
@@ -163,7 +163,7 @@ namespace RINGMesh {
             stop_redirect( pos_err, stderr, fd_err ) ;
         }
 
-        bool tetrahedralize( bool refine )
+        virtual bool tetrahedralize( bool refine ) final
         {
             fpos_t pos ;
             int fd = 0 ;
@@ -370,7 +370,7 @@ namespace RINGMesh {
 
         }
 
-        void write_vertices_in_ringmesh_data_structure()
+        virtual void write_vertices_in_ringmesh_data_structure() final
         {
             RINGMESH_PARALLEL_LOOP
             for( index_t v = 0;
@@ -384,7 +384,7 @@ namespace RINGMesh {
             }
         }
 
-        void write_tet_in_ringmesh_data_structure()
+        virtual void write_tet_in_ringmesh_data_structure() final
         {
             RINGMESH_PARALLEL_LOOP
             for( index_t t = 0;

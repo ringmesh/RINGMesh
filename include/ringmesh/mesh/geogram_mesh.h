@@ -119,7 +119,7 @@ namespace RINGMesh {
             return "geogram" ;
         }
 
-        virtual const std::string default_extension() const
+        virtual const std::string default_extension() const override
         {
             return default_extension_static() ;
         }
@@ -154,7 +154,7 @@ namespace RINGMesh {
             return "GeogramMesh0D" ;
         }
 
-        virtual const MeshType type_name() const
+        virtual const MeshType type_name() const override
         {
             return type_name_static() ;
         }
@@ -183,7 +183,7 @@ namespace RINGMesh {
             return "GeogramMesh1D" ;
         }
 
-        virtual const MeshType type_name() const
+        virtual const MeshType type_name() const override
         {
             return type_name_static() ;
         }
@@ -234,7 +234,7 @@ namespace RINGMesh {
             return "GeogramMesh2D" ;
         }
 
-        virtual const MeshType type_name() const
+        virtual const MeshType type_name() const override
         {
             return type_name_static() ;
         }
@@ -313,7 +313,7 @@ namespace RINGMesh {
             return "GeogramMesh3D" ;
         }
 
-        virtual const MeshType type_name() const
+        virtual const MeshType type_name() const override
         {
             return type_name_static() ;
         }
@@ -497,7 +497,7 @@ namespace RINGMesh {
             return "GeogramMeshAllD" ;
         }
 
-        virtual const MeshType type_name() const
+        virtual const MeshType type_name() const override
         {
             return type_name_static() ;
         }

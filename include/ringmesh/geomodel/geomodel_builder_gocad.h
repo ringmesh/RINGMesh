@@ -277,14 +277,14 @@ namespace RINGMesh {
         }
 
     private:
-        virtual void load_file() ;
+        virtual void load_file() override ;
 
         /*!
          * @brief Reads the first word of the current line (keyword)
          * and executes the good action with the information of the line
          * @details Uses the TsolidLineParser factory
          */
-        virtual void read_line() ;
+        virtual void read_line() override ;
 
         /*!
          * @brief Computes internal borders of a given surface
@@ -374,7 +374,7 @@ namespace RINGMesh {
          * and executes the good action with the information of the line
          * @details Uses the MLLineParser factory
          */
-        virtual void read_line() ;
+        virtual void read_line() override ;
 
     private:
         MLLoadingStorage ml_load_storage_ ;

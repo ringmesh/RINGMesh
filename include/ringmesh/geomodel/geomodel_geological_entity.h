@@ -63,8 +63,8 @@ namespace RINGMesh {
         }
         virtual const std::string child_type_name() const = 0 ;
         virtual const std::string type_name() const = 0 ;
-        virtual bool is_on_voi() const ;
-        virtual bool is_connectivity_valid() const ;
+        virtual bool is_on_voi() const final ;
+        bool is_connectivity_valid() const ;
 
         index_t nb_children() const
         {
@@ -86,7 +86,7 @@ namespace RINGMesh {
             : GeoModelEntity( geomodel, id, name, geological_feature )
         {
         }
-        virtual void copy( const GeoModelGeologicalEntity& from )
+        virtual void copy( const GeoModelGeologicalEntity& from ) final
         {
             GME::copy( from ) ;
             children_ = from.children_ ;
@@ -116,13 +116,13 @@ namespace RINGMesh {
         {
             return "Contact" ;
         }
-        virtual const std::string type_name() const
+        virtual const std::string type_name() const override
         {
             return type_name_static() ;
         }
-        virtual const std::string child_type_name() const ;
+        virtual const std::string child_type_name() const override ;
 
-        virtual bool is_valid() const ;
+        virtual bool is_valid() const final ;
     } ;
 
     class RINGMESH_API Interface: public GeoModelGeologicalEntity {
@@ -140,13 +140,13 @@ namespace RINGMesh {
         {
             return "Interface" ;
         }
-        virtual const std::string type_name() const
+        virtual const std::string type_name() const override
         {
             return type_name_static() ;
         }
-        virtual const std::string child_type_name() const ;
+        virtual const std::string child_type_name() const override ;
 
-        virtual bool is_valid() const ;
+        virtual bool is_valid() const final ;
     } ;
 
     class RINGMESH_API Layer: public GeoModelGeologicalEntity {
@@ -164,13 +164,13 @@ namespace RINGMesh {
         {
             return "Layer" ;
         }
-        virtual const std::string type_name() const
+        virtual const std::string type_name() const override
         {
             return type_name_static() ;
         }
-        virtual const std::string child_type_name() const ;
+        virtual const std::string child_type_name() const override ;
 
-        virtual bool is_valid() const ;
+        virtual bool is_valid() const final ;
     } ;
 
     class GeoModelGeologicalEntityAccess {

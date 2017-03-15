@@ -97,7 +97,7 @@ namespace RINGMesh {
         {
             GEO::MeshGfx::draw_vertices() ;
         }
-        virtual void draw_edges()
+        void draw_edges()
         {
             GEO::MeshGfx::draw_edges() ;
         }
@@ -158,7 +158,7 @@ namespace RINGMesh {
         {
         }
 
-        virtual void draw_surface()
+        void draw_surface()
         {
             GEO::MeshGfx::draw_surface() ;
         }
@@ -940,11 +940,11 @@ namespace RINGMesh {
         {
         }
 
-        virtual std::string location_name() const
+        virtual std::string location_name() const override
         {
             return "cells" ;
         }
-        virtual void bind_attribute()
+        virtual void bind_attribute() override
         {
             std::string attribute_name = get_attribute_name_with_coordinate(
                 manager_.name(), manager_.coordinate() ) ;
@@ -952,11 +952,11 @@ namespace RINGMesh {
                 attribute_name, manager_.minimum(), manager_.maximum(),
                 manager_.colormap() ) ;
         }
-        virtual void unbind_attribute()
+        virtual void unbind_attribute() override
         {
             manager_.gfx().regions.unset_scalar_attribute() ;
         }
-        virtual index_t nb_coordinates()
+        virtual index_t nb_coordinates() override
         {
             const GeoModel* geomodel = manager_.gfx().geomodel() ;
             GEO::AttributeStore* store =
@@ -967,7 +967,7 @@ namespace RINGMesh {
             return store->dimension() ;
         }
     private:
-        virtual void do_compute_range( double& attribute_min, double& attribute_max )
+        virtual void do_compute_range( double& attribute_min, double& attribute_max ) override
         {
             std::string attribute_name = get_attribute_name_with_coordinate(
                 manager_.name(), manager_.coordinate() ) ;
@@ -988,11 +988,11 @@ namespace RINGMesh {
         {
         }
 
-        virtual std::string location_name() const
+        virtual std::string location_name() const override
         {
             return "cell_vertices" ;
         }
-        virtual void bind_attribute()
+        virtual void bind_attribute() override
         {
             std::string attribute_name = get_attribute_name_with_coordinate(
                 manager_.name(), manager_.coordinate() ) ;
@@ -1000,11 +1000,11 @@ namespace RINGMesh {
                 attribute_name, manager_.minimum(), manager_.maximum(),
                 manager_.colormap() ) ;
         }
-        virtual void unbind_attribute()
+        virtual void unbind_attribute() override
         {
             manager_.gfx().regions.unset_scalar_attribute() ;
         }
-        virtual index_t nb_coordinates()
+        virtual index_t nb_coordinates() override
         {
             const GeoModel* geomodel = manager_.gfx().geomodel() ;
             GEO::AttributeStore* store =
@@ -1015,7 +1015,7 @@ namespace RINGMesh {
             return store->dimension() ;
         }
     private:
-        virtual void do_compute_range( double& attribute_min, double& attribute_max )
+        virtual void do_compute_range( double& attribute_min, double& attribute_max ) override
         {
             std::string attribute_name = get_attribute_name_with_coordinate(
                 manager_.name(), manager_.coordinate() ) ;
@@ -1036,11 +1036,11 @@ namespace RINGMesh {
         {
         }
 
-        virtual std::string location_name() const
+        virtual std::string location_name() const override
         {
             return "facet" ;
         }
-        virtual void bind_attribute()
+        virtual void bind_attribute() override
         {
             std::string attribute_name = get_attribute_name_with_coordinate(
                 manager_.name(), manager_.coordinate() ) ;
@@ -1048,11 +1048,11 @@ namespace RINGMesh {
                 attribute_name, manager_.minimum(), manager_.maximum(),
                 manager_.colormap() ) ;
         }
-        virtual void unbind_attribute()
+        virtual void unbind_attribute() override
         {
             manager_.gfx().surfaces.unset_scalar_attribute() ;
         }
-        virtual index_t nb_coordinates()
+        virtual index_t nb_coordinates() override
         {
             const GeoModel* geomodel = manager_.gfx().geomodel() ;
             GEO::AttributeStore* store =
@@ -1063,7 +1063,7 @@ namespace RINGMesh {
             return store->dimension() ;
         }
     private:
-        virtual void do_compute_range( double& attribute_min, double& attribute_max )
+        virtual void do_compute_range( double& attribute_min, double& attribute_max ) override
         {
             std::string attribute_name = get_attribute_name_with_coordinate(
                 manager_.name(), manager_.coordinate() ) ;
@@ -1084,11 +1084,11 @@ namespace RINGMesh {
         {
         }
 
-        virtual std::string location_name() const
+        virtual std::string location_name() const override
         {
             return "facet_vertices" ;
         }
-        virtual void bind_attribute()
+        virtual void bind_attribute() override
         {
             std::string attribute_name = get_attribute_name_with_coordinate(
                 manager_.name(), manager_.coordinate() ) ;
@@ -1096,11 +1096,11 @@ namespace RINGMesh {
                 attribute_name, manager_.minimum(), manager_.maximum(),
                 manager_.colormap() ) ;
         }
-        virtual void unbind_attribute()
+        virtual void unbind_attribute() override
         {
             manager_.gfx().surfaces.unset_scalar_attribute() ;
         }
-        virtual index_t nb_coordinates()
+        virtual index_t nb_coordinates() override
         {
             const GeoModel* geomodel = manager_.gfx().geomodel() ;
             GEO::AttributeStore* store =
@@ -1111,7 +1111,7 @@ namespace RINGMesh {
             return store->dimension() ;
         }
     private:
-        virtual void do_compute_range( double& attribute_min, double& attribute_max )
+        virtual void do_compute_range( double& attribute_min, double& attribute_max ) override
         {
             std::string attribute_name = get_attribute_name_with_coordinate(
                 manager_.name(), manager_.coordinate() ) ;

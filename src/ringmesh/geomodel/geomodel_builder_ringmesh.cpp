@@ -87,7 +87,7 @@ namespace RINGMesh {
         {
         }
 
-        virtual void read_mesh_entity_line( GEO::LineInput& file_line )
+        virtual void read_mesh_entity_line( GEO::LineInput& file_line ) override
         {
             // First line : type - id - name - geol_feature
             if( file_line.nb_fields() < 4 ) {
@@ -146,7 +146,7 @@ namespace RINGMesh {
         {
         }
 
-        virtual void read_mesh_entity_line( GEO::LineInput& file_line )
+        virtual void read_mesh_entity_line( GEO::LineInput& file_line ) override
         {
             // Read this entity
             // First line : type - id - name - geol_feature - mesh type

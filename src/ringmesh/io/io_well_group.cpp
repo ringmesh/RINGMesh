@@ -80,9 +80,9 @@ namespace {
         }
     }
 
-    class WLIOHandler: public WellGroupIOHandler {
+    class WLIOHandler final : public WellGroupIOHandler {
     public:
-        virtual void load( const std::string& filename, WellGroup& wells )
+        virtual void load( const std::string& filename, WellGroup& wells ) final
         {
             GEO::LineInput in( filename ) ;
             if( !in.OK() ) {
@@ -130,7 +130,7 @@ namespace {
             delete mesh ;
             delete builder ;
         }
-        virtual void save( const WellGroup& wells, const std::string& filename )
+        virtual void save( const WellGroup& wells, const std::string& filename ) final
         {
             ringmesh_unused( wells ) ;
             ringmesh_unused( filename ) ;
@@ -139,9 +139,9 @@ namespace {
         }
     } ;
 
-    class SmeshIOHandler: public WellGroupIOHandler {
+    class SmeshIOHandler final : public WellGroupIOHandler {
     public:
-        virtual void load( const std::string& filename, WellGroup& wells )
+        virtual void load( const std::string& filename, WellGroup& wells ) final
         {
             GEO::LineInput in( filename ) ;
             if( !in.OK() ) {
@@ -204,7 +204,7 @@ namespace {
             delete mesh ;
             delete builder ;
         }
-        virtual void save( const WellGroup& wells, const std::string& filename )
+        virtual void save( const WellGroup& wells, const std::string& filename ) final
         {
             ringmesh_unused( wells ) ;
             ringmesh_unused( filename ) ;

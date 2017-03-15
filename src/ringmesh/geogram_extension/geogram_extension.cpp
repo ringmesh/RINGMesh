@@ -70,7 +70,7 @@ namespace RINGMesh {
     /*! 
      * @brief TSurfMeshIOHandler for importing .ts files into a mesh.
      */
-    class TSurfMeshIOHandler: public GEO::MeshIOHandler {
+    class TSurfMeshIOHandler final : public GEO::MeshIOHandler {
     public:
         TSurfMeshIOHandler()
             :
@@ -95,7 +95,7 @@ namespace RINGMesh {
         virtual bool load(
             const std::string& filename,
             GEO::Mesh& mesh,
-            const GEO::MeshIOFlags& flag = GEO::MeshIOFlags() )
+            const GEO::MeshIOFlags& flag = GEO::MeshIOFlags() ) final
         {
             ringmesh_unused( flag ) ;
             filename_ = filename ;
@@ -120,7 +120,7 @@ namespace RINGMesh {
         virtual bool save(
             const GEO::Mesh& mesh,
             const std::string& filename,
-            const GEO::MeshIOFlags& flag = GEO::MeshIOFlags() )
+            const GEO::MeshIOFlags& flag = GEO::MeshIOFlags() ) final
         {
             ringmesh_unused( flag ) ;
             if( !mesh.facets.are_simplices() ) {
@@ -483,12 +483,12 @@ namespace RINGMesh {
         GEO::vector< GEO::vector< GEO::vector< double > > > vertex_attributes_ ;
     } ;
 
-    class LINMeshIOHandler: public GEO::MeshIOHandler {
+    class LINMeshIOHandler final : public GEO::MeshIOHandler {
     public:
         virtual bool load(
             const std::string& filename,
             GEO::Mesh& mesh,
-            const GEO::MeshIOFlags& flag = GEO::MeshIOFlags() )
+            const GEO::MeshIOFlags& flag = GEO::MeshIOFlags() ) final
         {
             ringmesh_unused( flag ) ;
             GEO::LineInput file( filename ) ;
@@ -511,7 +511,7 @@ namespace RINGMesh {
         virtual bool save(
             const GEO::Mesh& M,
             const std::string& filename,
-            const GEO::MeshIOFlags& ioflags = GEO::MeshIOFlags() )
+            const GEO::MeshIOFlags& ioflags = GEO::MeshIOFlags() ) final
         {
             ringmesh_unused( M ) ;
             ringmesh_unused( filename ) ;
