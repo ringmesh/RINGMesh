@@ -55,7 +55,7 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
-    class RINGMESH_API GeoModelBuilderGM: public GeoModelBuilderFile {
+    class RINGMESH_API GeoModelBuilderGM final : public GeoModelBuilderFile {
     public:
         static const index_t NB_VERSION = 2 ;
         GeoModelBuilderGM( GeoModel& geomodel, const std::string& filename ) ;
@@ -70,7 +70,7 @@ namespace RINGMesh {
          */
         void load_meshes( unzFile& uz ) ;
 
-        void load_file() ;
+        virtual void load_file() final ;
 
         void load_mesh_entities( const std::string& mesh_entity_file ) ;
 
@@ -79,7 +79,7 @@ namespace RINGMesh {
         GeoModelBuilderGMImpl* version_impl_[NB_VERSION] ;
     } ;
 
-    class RINGMESH_API OldGeoModelBuilderGM: public GeoModelBuilderFile {
+    class RINGMESH_API OldGeoModelBuilderGM final : public GeoModelBuilderFile {
     public:
         OldGeoModelBuilderGM( GeoModel& geomodel, const std::string& filename )
             : GeoModelBuilderFile( geomodel, filename )
@@ -98,7 +98,7 @@ namespace RINGMesh {
          */
         void load_entities( const std::string& old_type_name, unzFile& uz ) ;
 
-        void load_file() ;
+        virtual void load_file() final ;
         /*!
          * @brief Load the topology. Topology is how corners, lines, surfaces and
          * regions are organized into contacts, interfaces and layers. It also contains

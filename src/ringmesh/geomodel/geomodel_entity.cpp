@@ -141,7 +141,7 @@ namespace RINGMesh {
         return is_valid ;
     }
 
-    const GeoModelEntity::EntityType GeoModelEntity::type_name_static()
+    GeoModelEntity::EntityType GeoModelEntity::type_name_static()
     {
         return EntityTypeManager::default_entity_type() ;
     }

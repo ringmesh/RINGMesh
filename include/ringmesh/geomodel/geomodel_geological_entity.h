@@ -61,8 +61,8 @@ namespace RINGMesh {
         virtual ~GeoModelGeologicalEntity()
         {
         }
-        virtual const std::string child_type_name() const = 0 ;
-        virtual const std::string type_name() const = 0 ;
+        virtual std::string child_type_name() const = 0 ;
+        virtual std::string type_name() const = 0 ;
         virtual bool is_on_voi() const final ;
         bool is_connectivity_valid() const ;
 
@@ -112,15 +112,15 @@ namespace RINGMesh {
         {
         }
 
-        static const std::string type_name_static()
+        static std::string type_name_static()
         {
             return "Contact" ;
         }
-        virtual const std::string type_name() const override
+        virtual std::string type_name() const override
         {
             return type_name_static() ;
         }
-        virtual const std::string child_type_name() const override ;
+        virtual std::string child_type_name() const override ;
 
         virtual bool is_valid() const final ;
     } ;
@@ -136,15 +136,15 @@ namespace RINGMesh {
         {
         }
 
-        static const std::string type_name_static()
+        static std::string type_name_static()
         {
             return "Interface" ;
         }
-        virtual const std::string type_name() const override
+        virtual std::string type_name() const override
         {
             return type_name_static() ;
         }
-        virtual const std::string child_type_name() const override ;
+        virtual std::string child_type_name() const override ;
 
         virtual bool is_valid() const final ;
     } ;
@@ -160,15 +160,15 @@ namespace RINGMesh {
         {
         }
 
-        static const std::string type_name_static()
+        static std::string type_name_static()
         {
             return "Layer" ;
         }
-        virtual const std::string type_name() const override
+        virtual std::string type_name() const override
         {
             return type_name_static() ;
         }
-        virtual const std::string child_type_name() const override ;
+        virtual std::string child_type_name() const override ;
 
         virtual bool is_valid() const final ;
     } ;

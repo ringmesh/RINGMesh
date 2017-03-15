@@ -68,12 +68,12 @@ namespace RINGMesh {
 
         typedef std::string EntityType ;
 
-        static const EntityType default_entity_type_name()
+        static EntityType default_entity_type_name()
         {
             return "No_entity_type" ;
         }
 
-        virtual const EntityType type_name() const override
+        virtual EntityType type_name() const override
         {
             return default_entity_type_name() ;
         }
@@ -340,12 +340,12 @@ namespace RINGMesh {
         {
         }
 
-        static const EntityType type_name_static()
+        static EntityType type_name_static()
         {
             return "Corner" ;
         }
 
-        virtual const EntityType type_name() const override
+        virtual EntityType type_name() const override
         {
             return type_name_static() ;
         }
@@ -453,12 +453,12 @@ namespace RINGMesh {
         {
         }
 
-        static const EntityType type_name_static()
+        static EntityType type_name_static()
         {
             return "Line" ;
         }
 
-        virtual const EntityType type_name() const
+        virtual EntityType type_name() const
         {
             return type_name_static() ;
         }
@@ -582,12 +582,12 @@ namespace RINGMesh {
         {
         }
 
-        virtual const EntityType type_name() const override
+        virtual EntityType type_name() const override
         {
             return type_name_static() ;
         }
 
-        static const EntityType type_name_static()
+        static EntityType type_name_static()
         {
             return "Surface" ;
         }
@@ -887,12 +887,12 @@ namespace RINGMesh {
         {
         }
 
-        static const EntityType type_name_static()
+        static EntityType type_name_static()
         {
             return "Region" ;
         }
 
-        virtual const EntityType type_name() const override
+        virtual EntityType type_name() const override
         {
             return type_name_static() ;
         }

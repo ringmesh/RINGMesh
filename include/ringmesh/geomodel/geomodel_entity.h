@@ -91,13 +91,13 @@ namespace RINGMesh {
             return T == STRATI || T == UNCONFORMITY ;
         }
 
-        static const EntityType type_name_static() ;
+        static EntityType type_name_static() ;
 
         virtual ~GeoModelEntity()
         {
         }
 
-        virtual const EntityType type_name() const
+        virtual EntityType type_name() const
         {
             return type_name_static() ;
         }
@@ -185,7 +185,7 @@ namespace RINGMesh {
 
         Universe( const GeoModel& geomodel ) ;
 
-        static const EntityType universe_type_name()
+        static EntityType universe_type_name()
         {
             return "Universe" ;
         }
@@ -198,7 +198,7 @@ namespace RINGMesh {
         {
             return true ;
         }
-        virtual const EntityType type_name() const override
+        virtual EntityType type_name() const override
         {
             return universe_type_name() ;
         }
