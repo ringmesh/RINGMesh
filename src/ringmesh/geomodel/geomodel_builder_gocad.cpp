@@ -1089,14 +1089,14 @@ namespace {
 
     void ml_import_factory_initialize()
     {
-        ringmesh_register_MLLineParser_creator( LoadTSurf, "TSURF" );
-        ringmesh_register_MLLineParser_creator( LoadMLSurface, "TFACE" );
-        ringmesh_register_MLLineParser_creator( LoadMLRegion, "REGION" );
-        ringmesh_register_MLLineParser_creator( LoadLayer, "LAYER" );
-        ringmesh_register_MLLineParser_creator( MLEndSection, "END" );
-        ringmesh_register_MLLineParser_creator( LoadMLAtom, "ATOM" );
-        ringmesh_register_MLLineParser_creator( LoadMLAtom, "PATOM" );
-}
+        ringmesh_register_MLLineParser_creator( LoadTSurf, "TSURF" ) ;
+        ringmesh_register_MLLineParser_creator( LoadMLSurface, "TFACE" ) ;
+        ringmesh_register_MLLineParser_creator( LoadMLRegion, "REGION" ) ;
+        ringmesh_register_MLLineParser_creator( LoadLayer, "LAYER" ) ;
+        ringmesh_register_MLLineParser_creator( MLEndSection, "END" ) ;
+        ringmesh_register_MLLineParser_creator( LoadMLAtom, "ATOM" ) ;
+        ringmesh_register_MLLineParser_creator( LoadMLAtom, "PATOM" ) ;
+    }
 
 }
 // anonymous namespace
@@ -1347,10 +1347,10 @@ namespace RINGMesh {
     void initialize_gocad_import_factories()
     {
         ringmesh_register_GocadLineParser_creator( LoadZSign, "ZPOSITIVE" ) ;
-        ringmesh_register_GocadLineParser_creator( LoadVertex, "VRTX" );
-        ringmesh_register_GocadLineParser_creator( LoadVertex, "PVRTX" );
-        ringmesh_register_GocadLineParser_creator( LoadName, "name:" );
-        ringmesh_register_GocadLineParser_creator( LoadTriangle, "TRGL" );
+        ringmesh_register_GocadLineParser_creator( LoadVertex, "VRTX" ) ;
+        ringmesh_register_GocadLineParser_creator( LoadVertex, "PVRTX" ) ;
+        ringmesh_register_GocadLineParser_creator( LoadName, "name:" ) ;
+        ringmesh_register_GocadLineParser_creator( LoadTriangle, "TRGL" ) ;
         tsolid_import_factory_initialize() ;
         ml_import_factory_initialize() ;
     }
