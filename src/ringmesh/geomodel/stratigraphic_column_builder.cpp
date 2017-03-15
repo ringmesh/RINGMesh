@@ -34,8 +34,11 @@
  */
 
 #include <ringmesh/geomodel/stratigraphic_column_builder.h>
+
+
 #include <third_party/tinyxml2/tinyxml2.h>
-#include <ringmesh/ringmesh_tests_config.h>
+#include <ringmesh/geomodel/geomodel_api.h>
+//#include <ringmesh/ringmesh_tests_config.h>
 
 namespace RINGMesh {
 
@@ -53,9 +56,7 @@ StratigraphicColumnBuilder::StratigraphicColumnBuilder(
 
 void StratigraphicColumnBuilderXML::load_file() {
 	tinyxml2::XMLDocument column;
-	std::string input_model_file_name(ringmesh_test_data_path);
-	input_model_file_name += filename_;
-	tinyxml2::XMLError Result = column.LoadFile(input_model_file_name.c_str());
+    tinyxml2::XMLError Result = column.LoadFile ( filename_.c_str () );
 	if (Result != tinyxml2::XML_SUCCESS) {
 		throw RINGMeshException("I/O",
 				"Error while loading Stratigraphic Column XML file.");
@@ -105,24 +106,20 @@ void StratigraphicColumnBuilderXML::load_file() {
 	std::vector<const StratigraphicUnit*> units_vec_construction;
 	for (index_t i = 0; i < unitList.size(); i += 3) {
 		std::string name_of_unit = unitList[i];
-		//GeoModelGeologicalEntity* unit = model_.get_entity(name_of_unit, Layer);
-		GeoModelGeologicalEntity* layer = nil;
-		GeoModelGeologicalEntity* top_interface;
-		GeoModelGeologicalEntity* base_interface;
+        index_t layer_id = find_geological_entity_id_from_name ( model_, "Layer", name_of_unit ) ;
+        const GeoModelGeologicalEntity* layer = &(model_.geological_entity ( "Layer", layer_id ) ) ;
+		const GeoModelGeologicalEntity* top_interface = nil;
+		const GeoModelGeologicalEntity* base_interface = nil;
 		RockFeature rock(name_of_unit);
-		if (unitList[i + 1] != "none") {
-			std::string name_of_interface_top = unitList[i + 1];
-			//top_interface = model_.get_entity(name_of_interface_top, Interface);
-			top_interface = nil;
-		} else {
-			top_interface = nil;
-		}
+        if( unitList[i + 1] != "none" ) {
+            std::string name_of_interface_top = unitList[i + 1];
+            index_t top_interface_id = find_geological_entity_id_from_name ( model_, "Interface", name_of_interface_top ) ;
+            top_interface = &( model_.geological_entity ( "Interface", top_interface_id ) ) ;
+        }
 		if (unitList[i + 2] != "none") {
-			std::string name_of_interface_base = unitList[i + 1];
-			//base_interface = model_.get_entity(name_of_interface_base, Interface);
-			base_interface = nil;
-		} else {
-			base_interface = nil;
+            std::string name_of_interface_base = unitList[i + 1];
+            index_t base_interface_id = find_geological_entity_id_from_name ( model_, "Interface", name_of_interface_base ) ;
+            base_interface = &( model_.geological_entity ( "Interface", base_interface_id ) ) ;
 		}
 		StratigraphicUnit unit(name_of_unit, *top_interface, *base_interface,
 				*layer, CONFORMABLE, CONFORMABLE, rock, 0 , std::numeric_limits< double >::max() );
