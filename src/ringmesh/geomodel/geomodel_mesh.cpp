@@ -362,7 +362,7 @@ namespace RINGMesh {
     }
 
     GeoModelMeshVertices::GeoModelMeshVertices( GeoModelMesh& gmm, GeoModel& gm )
-        : gmm_( gmm ), gm_( gm ), mesh_( NULL ), vertex_mapper_( *this, gm )
+        : gmm_( gmm ), gm_( gm ), mesh_( nullptr ), vertex_mapper_( *this, gm )
     {
     }
 
@@ -671,7 +671,7 @@ namespace RINGMesh {
         :
             gmm_( gmm ),
             gm_( gmm.geomodel() ),
-            mesh_( NULL ),
+            mesh_( nullptr ),
             nb_tet_( 0 ),
             nb_hex_( 0 ),
             nb_prism_( 0 ),
@@ -1453,7 +1453,7 @@ namespace RINGMesh {
         :
             gmm_( gmm ),
             gm_( gmm.geomodel() ),
-            mesh_( NULL ),
+            mesh_( nullptr ),
             nb_triangle_( 0 ),
             nb_quad_( 0 ),
             nb_polygon_( 0 )
@@ -1845,7 +1845,7 @@ namespace RINGMesh {
     /*******************************************************************************/
 
     GeoModelMeshEdges::GeoModelMeshEdges( GeoModelMesh& gmm )
-        : gmm_( gmm ), gm_( gmm.geomodel() ), mesh_( NULL )
+        : gmm_( gmm ), gm_( gmm.geomodel() ), mesh_( nullptr )
     {
     }
 
