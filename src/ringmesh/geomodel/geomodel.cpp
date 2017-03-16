@@ -186,7 +186,7 @@ namespace RINGMesh {
     // ------------------------------------------------------------------------//
 
     GeoModel::GeoModel()
-        : mesh( *this ), epsilon_( -1 ), universe_( *this ), wells_( nil )
+        : mesh( *this ), epsilon_( -1 ), universe_( *this ), wells_( nullptr )
     {
     }
 

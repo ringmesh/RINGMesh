@@ -445,7 +445,7 @@ namespace RINGMesh {
 // --------------------------------------------------------------------------
 
     WellGroup::WellGroup()
-        : geomodel_( nil )
+        : geomodel_( nullptr )
     {
     }
 
@@ -530,7 +530,7 @@ namespace RINGMesh {
      */
     void WellGroup::create_wells( index_t nb )
     {
-        wells_.resize( nb, nil ) ;
+        wells_.resize( nb, nullptr ) ;
         for( index_t w = 0; w < nb_wells(); w++ ) {
             wells_[w] = new Well ;
         }

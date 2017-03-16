@@ -1549,7 +1549,7 @@ namespace RINGMesh {
         const GEO::Mesh& mesh,
         const MeshLocation& location,
         bool copy )
-        : nn_points_( nil ), delete_points_( true )
+        : nn_points_( nullptr ), delete_points_( true )
     {
         nn_tree_ = GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
         switch( location ) {

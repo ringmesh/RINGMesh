@@ -346,7 +346,7 @@ namespace RINGMesh {
             const EntityType& cur_type = EntityTypeManager::mesh_entity_types()[t] ;
             vertex_maps_.at( cur_type )->resize(
                 geomodel_.nb_mesh_entities( cur_type ),
-                nil ) ;
+                nullptr ) ;
         }
     }
 
@@ -1949,7 +1949,7 @@ namespace RINGMesh {
     GeoModelMesh::GeoModelMesh( GeoModel& geomodel )
         :
             geomodel_( geomodel ),
-            mesh_( nil ),
+            mesh_( nullptr ),
             mode_( GeoModelMeshCells::NONE ),
             vertices( *this, geomodel ),
             edges( *this ),
