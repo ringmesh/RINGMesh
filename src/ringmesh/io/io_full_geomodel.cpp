@@ -677,7 +677,7 @@ namespace {
             std::sort( filenames.begin(), filenames.end() ) ;
             zip_files( filenames, zf ) ;
 
-            zipClose( zf, NULL ) ;
+            zipClose( zf, nullptr ) ;
             GEO::FileSystem::set_current_working_directory( pwd ) ;
         }
     } ;
