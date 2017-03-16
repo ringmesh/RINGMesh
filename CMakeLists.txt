@@ -200,9 +200,9 @@ elseif(UNIX)
     add_compile_options(-Wall -Wextra -Wno-long-long -Wconversion)
     
     # Determine gcc version and activate additional warnings available in latest versions
-    execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
+    execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE G++_VERSION)
 
-    if(GCC_VERSION VERSION_LESS 4.8 )
+    if(G++_VERSION VERSION_LESS 4.8 )
         message(FATAL_ERROR "RINGMesh require G++ version >= 4.8")
     endif()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
