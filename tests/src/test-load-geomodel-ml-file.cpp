@@ -39,6 +39,9 @@
 #include <ringmesh/geomodel/geomodel_validity.h>
 #include <ringmesh/io/io.h>
 
+const std::string model_to_load_name = "CloudSpinWithoutSaltRegion.ml";
+// "modelA6.ml"
+
 /*! Tests the loading and writing of a Gocad model (.ml) file.
  * Loads a .ml file generated with Gocad, saves it, loads it again, saves it
  * again and compares the two saved versions.
@@ -59,7 +62,7 @@ int main()
         Logger::instance()->register_client( file_logger ) ;
 
         std::string input_model_file_name( ringmesh_test_data_path ) ;
-        input_model_file_name += "modelA6.ml" ;
+        input_model_file_name += model_to_load_name ;
 
         Logger::out( "TEST" ) << "Geomodel input test. Loading file "
             << input_model_file_name << std::endl ;
