@@ -116,9 +116,9 @@ namespace RINGMesh {
             return *vertices_nn_search_ ;
         }
 
-        virtual const MeshType type_name() const = 0 ;
+        virtual MeshType type_name() const = 0 ;
 
-        virtual const std::string default_extension() const = 0 ;
+        virtual std::string default_extension() const = 0 ;
 
         /*!
          * @}
