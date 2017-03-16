@@ -308,12 +308,12 @@ void test_stratigraphic_column_building ( const GeoModel& in )
 void test_load_from_gocad_xml_file () {
 
     std::string input_geomodel_file_name ( ringmesh_test_data_path );
-    input_geomodel_file_name += "corbi_layers.ml";
+    input_geomodel_file_name += "CloudSpinWithoutSaltRegion.ml";
     GeoModel in;
     bool loaded_model_is_valid = geomodel_load ( in, input_geomodel_file_name );
 
     std::string input_column_file_name ( RINGMesh::ringmesh_test_data_path );
-    input_column_file_name += "column_gocad.xml";
+    input_column_file_name += "CloudSpin.xml";
 
     StratigraphicColumn column ( "test" );
     
@@ -321,6 +321,7 @@ void test_load_from_gocad_xml_file () {
     sc_builder.load_file ();
 
 }
+
 int main() {
 	using namespace RINGMesh;
 
@@ -328,7 +329,7 @@ int main() {
 		default_configure();
 
         //build geomodel
-		std::string input_model_file_name(ringmesh_test_data_path);
+		/*std::string input_model_file_name(ringmesh_test_data_path);
 		input_model_file_name += "corbi_layers.ml";
 		GeoModel in;
 		bool loaded_model_is_valid = geomodel_load(in, input_model_file_name);
@@ -344,7 +345,7 @@ int main() {
         test_stratigraphic_unit( in ) ;
 
         //test StratigraphicColumn building
-        test_stratigraphic_column_building( in );
+        test_stratigraphic_column_building( in ); */
         
         //load StratigraphicColumn from gocad XML file
         test_load_from_gocad_xml_file () ;
