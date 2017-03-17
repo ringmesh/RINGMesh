@@ -654,7 +654,7 @@ namespace {
             zipFile zf = zipOpen(
                 GEO::FileSystem::base_name( filename, false ).c_str(),
                 APPEND_STATUS_CREATE ) ;
-            ringmesh_assert( zf != nil ) ;
+            ringmesh_assert( zf != nullptr ) ;
 
             const std::string mesh_entity_file( "mesh_entities.txt" ) ;
             save_mesh_entities( geomodel, mesh_entity_file ) ;
@@ -677,7 +677,7 @@ namespace {
             std::sort( filenames.begin(), filenames.end() ) ;
             zip_files( filenames, zf ) ;
 
-            zipClose( zf, NULL ) ;
+            zipClose( zf, nullptr ) ;
             GEO::FileSystem::set_current_working_directory( pwd ) ;
         }
     } ;
@@ -2173,7 +2173,7 @@ namespace {
 //            index_t offset_region = gm.nb_regions() ;
 //            index_t offset_interface = geomodel.nb_interfaces() * 2 ; // one for each side
 //            index_t nb_facets = 0 ;
-//            std::vector< ColocaterANN* > anns( geomodel.nb_surfaces(), nil ) ;
+//            std::vector< ColocaterANN* > anns( geomodel.nb_surfaces(), nullptr ) ;
 //            for( index_t s = 0; s < geomodel.nb_surfaces(); s++ ) {
 //                if( gm.vertices.is_surface_to_duplicate( s ) )
 //                    nb_facets += 2 * gm.facets.nb_facets( s ) ;

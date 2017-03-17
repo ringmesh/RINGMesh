@@ -88,7 +88,7 @@ namespace RINGMesh {
     ringmesh_disable_copy(GocadBaseParser) ;
     protected:
         GocadBaseParser()
-            : Counted(), builder_( nil ), geomodel_( nil )
+            : Counted(), builder_( nullptr ), geomodel_( nullptr )
         {
         }
         virtual ~GocadBaseParser()
@@ -97,13 +97,13 @@ namespace RINGMesh {
 
         GeoModelBuilderGocad& builder()
         {
-            ringmesh_assert( builder_ != nil ) ;
+            ringmesh_assert( builder_ != nullptr ) ;
             return *builder_ ;
         }
 
         GeoModel& geomodel()
         {
-            ringmesh_assert( geomodel_ != nil ) ;
+            ringmesh_assert( geomodel_ != nullptr ) ;
             return *geomodel_ ;
         }
 

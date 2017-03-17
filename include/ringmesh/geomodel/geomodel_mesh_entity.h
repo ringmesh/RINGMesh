@@ -273,7 +273,7 @@ namespace RINGMesh {
             index_t id,
             const std::string& name = "No_name",
             GEOL_FEATURE geological_feature = NO_GEOL )
-            : GeoModelEntity( geomodel, id, name, geological_feature ), mesh_( NULL )
+            : GeoModelEntity( geomodel, id, name, geological_feature ), mesh_( nullptr )
         {
         }
         virtual void copy( const GeoModelEntity& from )
@@ -288,12 +288,12 @@ namespace RINGMesh {
         virtual bool is_index_valid() const ;
         virtual bool is_mesh_valid() const
         {
-            return mesh_ != NULL ;
+            return mesh_ != nullptr ;
         }
 
         void set_mesh( MeshBase* mesh )
         {
-            ringmesh_assert( mesh != NULL ) ;
+            ringmesh_assert( mesh != nullptr ) ;
             mesh_ = mesh ;
         }
 
