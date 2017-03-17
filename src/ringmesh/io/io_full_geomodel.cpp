@@ -2574,9 +2574,10 @@ namespace {
 
             write_header( out ) ;
             write_dimensions( geomodel, out ) ;
-            write_cells( geomodel, out ) ;
+            write_elements( geomodel, out ) ;
             write_vertices( geomodel, out ) ;
             write_regions( geomodel, out ) ;
+            write_wells( geomodel, out ) ;
 
             out << "END" << std::endl ;
         }
@@ -2597,11 +2598,43 @@ namespace {
                 << " 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0\n" ;
             out << "SCALE\n\n" ;
         }
-        void write_cells( const GeoModel& geomodel, std::ofstream& out ) const
+        void write_elements( const GeoModel& geomodel, std::ofstream& out ) const
         {
             const GeoModelMeshCells& cells = geomodel.mesh.cells ;
+            const GeoModelMeshEdges& edges = geomodel.mesh.edges ;
             out << "VARNODE\n" ;
-            out << SPACE << cells.nb() << " 4 4\n" ;
+            out << SPACE << cells.nb() + edges.nb_edges() ;
+            index_t min_nb_vertices_per_element ;
+            index_t max_nb_vertices_per_element ;
+            if( edges.nb_edges() > 0 ) {
+                min_nb_vertices_per_element = 2 ;
+            } else if( cells.nb_tet() > 0 ) {
+                min_nb_vertices_per_element = 4 ;
+            } else if( cells.nb_pyramid() > 0 ) {
+                min_nb_vertices_per_element = 5 ;
+            } else if( cells.nb_prism() > 0 ) {
+                min_nb_vertices_per_element = 6 ;
+            } else if( cells.nb_hex() > 0 ) {
+                min_nb_vertices_per_element = 8 ;
+            } else {
+                ringmesh_assert_not_reached ;
+            }
+            if( cells.nb_hex() > 0 ) {
+                max_nb_vertices_per_element = 8 ;
+            } else if( cells.nb_prism() > 0 ) {
+                max_nb_vertices_per_element = 6 ;
+            } else if( cells.nb_pyramid() > 0 ) {
+                max_nb_vertices_per_element = 5 ;
+            } else if( cells.nb_tet() > 0 ) {
+                max_nb_vertices_per_element = 4 ;
+            } else if( edges.nb_edges() > 0 ) {
+                max_nb_vertices_per_element = 2 ;
+            } else {
+                ringmesh_assert_not_reached ;
+            }
+            out << SPACE << min_nb_vertices_per_element << SPACE
+                << max_nb_vertices_per_element << "\n" ;
+
             for( index_t c = 0; c < cells.nb(); c++ ) {
                 const RINGMesh2Feflow& descriptor =
                     *cell_type_to_feflow_cell_descriptor[cells.type( c )] ;
@@ -2613,11 +2646,19 @@ namespace {
                 }
                 out << "\n" ;
             }
+
+            for( index_t w = 0; w < edges.nb_wells(); w++ ) {
+                for( index_t e = 0; e < edges.nb_edges( w ); e++ ) {
+                    out << "0 " << edges.vertex( w, e, 0 ) << SPACE
+                        << edges.vertex( w, e, 1 ) << "\n" ;
+                }
+            }
+
         }
         void write_vertices( const GeoModel& geomodel, std::ofstream& out ) const
         {
             const GeoModelMeshVertices& vertices = geomodel.mesh.vertices ;
-            out << "XYZCOOR\n" << std::scientific;
+            out << "XYZCOOR\n" << std::scientific ;
             for( index_t v = 0; v < vertices.nb(); v++ ) {
                 const vec3& point = vertices.vertex( v ) ;
                 std::string sep ;
@@ -2640,7 +2681,23 @@ namespace {
                 out << "-" << offset << "\n" ;
             }
         }
-    } ;
+        void write_wells( const GeoModel& geomodel, std::ofstream& out ) const
+        {
+            const WellGroup* wells = geomodel.wells() ;
+            if( !wells ) {
+                return ;
+            }
+            out << "EDGESETS\n" ;
+            index_t offset = STARTING_OFFSET + geomodel.mesh.cells.nb() ;
+            for( index_t w = 0; w < wells->nb_wells(); w++ ) {
+                const Well& well = wells->well( w ) ;
+                out << SPACE << well.name() << SPACE << offset ;
+                offset += well.nb_edges() ;
+                out << "-" << offset << "\n" ;
+            }
+        }
+    }
+    ;
 }
 
 namespace RINGMesh {
