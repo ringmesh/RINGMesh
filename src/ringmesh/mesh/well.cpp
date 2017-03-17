@@ -276,7 +276,6 @@ namespace RINGMesh {
     void WellPart::set_points( const std::vector< vec3 >& points )
     {
         index_t nb_points = static_cast< index_t >( points.size() ) ;
-        DEBUG( nb_points ) ;
         Mesh1DBuilder_var builder = Mesh1DBuilder::create_builder( *mesh_ ) ;
         builder->create_vertices( nb_points ) ;
         for( index_t p = 0; p < nb_points; p++ ) {
