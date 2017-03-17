@@ -76,9 +76,9 @@
 #endif
 
 #define ringmesh_disable_copy( Class ) \
-    private: \
-    Class( const Class & ) ; \
-    Class& operator=( const Class& )
+    public: \
+    Class( const Class & ) = delete ; \
+    Class& operator=( const Class& ) = delete
 
 // To avoid unused argument warning in function definition
 template< typename T > inline void ringmesh_unused( T const& )

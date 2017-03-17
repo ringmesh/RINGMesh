@@ -213,5 +213,11 @@ Sample code:
     // DO NOT use this
     #include <../../include/ringmesh/geo_model_mesh.h>
 \endcode
+
+Pointers
+-----------------
+- Use nullptr from the standard library to define null pointer.
+- Do not use NULL nor nil to define a null pointer.
+
 */
 
