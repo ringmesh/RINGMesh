@@ -57,10 +57,6 @@
 namespace {
     using namespace RINGMesh ;
 
-    const std::string TAB = "\t" ;
-    const std::string SPACE = " " ;
-    const std::string COMMA = "," ;
-
 #include "full_geomodel/io_abaqus.cpp"
 #include "full_geomodel/io_adeli.cpp"
 #include "full_geomodel/io_aster.cpp"
