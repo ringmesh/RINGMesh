@@ -298,8 +298,8 @@ namespace RINGMesh {
         std::vector< std::string > filenames ;
         do {
             char char_file_name[MAX_FILENAME] ;
-            if( unzGetCurrentFileInfo64( uz, NULL, char_file_name,
-                MAX_FILENAME, NULL, 0, NULL, 0 ) != UNZ_OK ) {
+            if( unzGetCurrentFileInfo64( uz, nullptr, char_file_name,
+                MAX_FILENAME, nullptr, 0, nullptr, 0 ) != UNZ_OK ) {
                 throw RINGMeshException( "I/O", "Unable to get file name" ) ;
             }
             std::string file_name( char_file_name ) ;

@@ -71,16 +71,16 @@ namespace RINGMesh {
     TetgenMesher::~TetgenMesher()
     {
         // Take over facet deletion of tetgen that does not set to 
-        // nil pointers to polygonlist or holelist in facet
+        // nullptr pointers to polygonlist or holelist in facet
         delete[] tetgen_in_.facetlist ;
-        tetgen_in_.facetlist = nil ;
+        tetgen_in_.facetlist = nullptr ;
         tetgen_in_.numberoffacets = 0 ;
 
         delete[] polygon_corners_ ;
-        polygon_corners_ = nil ;
+        polygon_corners_ = nullptr ;
 
         delete[] polygons_ ;
-        polygons_ = nil ;
+        polygons_ = nullptr ;
     }
 
     void TetgenMesher::tetrahedralize(
