@@ -106,7 +106,7 @@ namespace RINGMesh {
          */
         const NNSearch& vertices_nn_search() const
         {
-            if( vertices_nn_search_ == nil ) {
+            if( vertices_nn_search_ == nullptr ) {
                 std::vector< vec3 > vec_vertices( nb_vertices() ) ;
                 for( index_t v = 0; v < nb_vertices(); ++v ) {
                     vec_vertices[v] = vertex( v ) ;
@@ -131,7 +131,7 @@ namespace RINGMesh {
          * else they are stored as double precision (double)..
          */
         MeshBase()
-            : vertices_nn_search_( nil )
+            : vertices_nn_search_( nullptr )
         {
         }
 
@@ -177,8 +177,8 @@ namespace RINGMesh {
     public:
         virtual ~Mesh1D()
         {
-            if( edges_nn_search_ != nil ) delete edges_nn_search_ ;
-            if( edges_aabb_ != nil ) delete edges_aabb_ ;
+            if( edges_nn_search_ != nullptr ) delete edges_nn_search_ ;
+            if( edges_aabb_ != nullptr ) delete edges_aabb_ ;
         }
 
         static Mesh1D* create_mesh( const MeshType type ) ;
@@ -219,7 +219,7 @@ namespace RINGMesh {
          */
         const NNSearch& edges_nn_search() const
         {
-            if( edges_nn_search_ == nil ) {
+            if( edges_nn_search_ == nullptr ) {
                 std::vector< vec3 > edge_centers( nb_edges() ) ;
                 for( index_t e = 0; e < nb_edges(); ++e ) {
                     edge_centers[e] = edge_barycenter( e ) ;
@@ -233,7 +233,7 @@ namespace RINGMesh {
          */
         const AABBTree1D& edges_aabb() const
         {
-            if( edges_aabb_ == nil ) {
+            if( edges_aabb_ == nullptr ) {
                 edges_aabb_ = new AABBTree1D( *this ) ;
             }
             return *edges_aabb_ ;
@@ -242,7 +242,7 @@ namespace RINGMesh {
         virtual GEO::AttributesManager& edge_attribute_manager() const = 0 ;
     protected:
         Mesh1D()
-            : MeshBase(), edges_nn_search_( nil ), edges_aabb_( nil )
+            : MeshBase(), edges_nn_search_( nullptr ), edges_aabb_( nullptr )
         {
         }
 
@@ -265,8 +265,8 @@ namespace RINGMesh {
     public:
         virtual ~Mesh2D()
         {
-            if( nn_search_ != nil ) delete nn_search_ ;
-            if( facets_aabb_ != nil ) delete facets_aabb_ ;
+            if( nn_search_ != nullptr ) delete nn_search_ ;
+            if( facets_aabb_ != nullptr ) delete facets_aabb_ ;
         }
 
         static Mesh2D* create_mesh( const MeshType type ) ;
@@ -527,7 +527,7 @@ namespace RINGMesh {
          */
         const NNSearch& facets_nn_search() const
         {
-            if( nn_search_ == nil ) {
+            if( nn_search_ == nullptr ) {
                 std::vector< vec3 > facet_centers( nb_facets() ) ;
                 for( index_t f = 0; f < nb_facets(); ++f ) {
                     facet_centers[f] = facet_barycenter( f ) ;
@@ -541,14 +541,14 @@ namespace RINGMesh {
          */
         const AABBTree2D& facets_aabb() const
         {
-            if( facets_aabb_ == nil ) {
+            if( facets_aabb_ == nullptr ) {
                 facets_aabb_ = new AABBTree2D( *this ) ;
             }
             return *facets_aabb_ ;
         }
     protected:
         Mesh2D()
-            : MeshBase(), nn_search_( nil ), facets_aabb_( nil )
+            : MeshBase(), nn_search_( nullptr ), facets_aabb_( nullptr )
         {
         }
 
@@ -571,9 +571,9 @@ namespace RINGMesh {
     public:
         virtual ~Mesh3D()
         {
-            if( cell_facets_nn_search_ != nil ) delete cell_facets_nn_search_ ;
-            if( cell_nn_search_ != nil ) delete cell_nn_search_ ;
-            if( cell_aabb_ != nil ) delete cell_aabb_ ;
+            if( cell_facets_nn_search_ != nullptr ) delete cell_facets_nn_search_ ;
+            if( cell_nn_search_ != nullptr ) delete cell_nn_search_ ;
+            if( cell_aabb_ != nullptr ) delete cell_aabb_ ;
         }
 
         static Mesh3D* create_mesh( const MeshType type ) ;
@@ -784,7 +784,7 @@ namespace RINGMesh {
          */
         const NNSearch& cell_facets_nn_search() const
         {
-            if( cell_facets_nn_search_ == nil ) {
+            if( cell_facets_nn_search_ == nullptr ) {
                 std::vector< vec3 > cell_facet_centers( nb_cell_facets() ) ;
                 index_t cf = 0 ;
                 for( index_t c = 0; c < nb_cells(); ++c ) {
@@ -802,7 +802,7 @@ namespace RINGMesh {
          */
         const NNSearch& cells_nn_search() const
         {
-            if( cell_nn_search_ == nil ) {
+            if( cell_nn_search_ == nullptr ) {
                 std::vector< vec3 > cell_centers( nb_cells() ) ;
                 for( index_t c = 0; c < nb_cells(); ++c ) {
                     cell_centers[c] = cell_barycenter( c ) ;
@@ -816,7 +816,7 @@ namespace RINGMesh {
          */
         const AABBTree3D& cells_aabb() const
         {
-            if( cell_aabb_ == nil ) {
+            if( cell_aabb_ == nullptr ) {
                 cell_aabb_ = new AABBTree3D( *this ) ;
             }
             return *cell_aabb_ ;
@@ -825,9 +825,9 @@ namespace RINGMesh {
         Mesh3D()
             :
                 MeshBase(),
-                cell_facets_nn_search_( nil ),
-                cell_nn_search_( nil ),
-                cell_aabb_( nil )
+                cell_facets_nn_search_( nullptr ),
+                cell_nn_search_( nullptr ),
+                cell_aabb_( nullptr )
         {
         }
 

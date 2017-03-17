@@ -461,7 +461,7 @@ namespace {
         GeoModelBuilderTSolid& geomodel_builder,
         const GeoModel& geomodel )
     {
-        std::vector< NNSearch* > reg_nn_searchs( geomodel.nb_regions(), nil ) ;
+        std::vector< NNSearch* > reg_nn_searchs( geomodel.nb_regions(), nullptr ) ;
         compute_cell_facet_centers_region_nn_searchs( geomodel, reg_nn_searchs ) ;
         for( index_t s = 0; s < geomodel.nb_surfaces(); ++s ) {
             add_surface_to_region_boundaries( s, reg_nn_searchs, geomodel,
@@ -1260,7 +1260,7 @@ void GeoModelBuilderTSolid::compute_facet_edge_centers_nn_and_surface_boxes(
 
 void GeoModelBuilderTSolid::compute_surfaces_internal_borders()
 {
-    std::vector< NNSearch* > nn_searchs( geomodel_.nb_surfaces(), nil ) ;
+    std::vector< NNSearch* > nn_searchs( geomodel_.nb_surfaces(), nullptr ) ;
     std::vector< Box3d > boxes( geomodel_.nb_surfaces() ) ;
     compute_facet_edge_centers_nn_and_surface_boxes( nn_searchs, boxes ) ;
     for( index_t s = 0; s < geomodel_.nb_surfaces(); ++s ) {
