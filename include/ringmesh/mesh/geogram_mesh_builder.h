@@ -57,7 +57,7 @@ namespace RINGMesh {
 
     public:
         GeogramMeshBaseBuilder()
-            : MeshBaseBuilder(), mesh_( nil )
+            : MeshBaseBuilder(), mesh_( nullptr )
         {
         }
         virtual ~GeogramMeshBaseBuilder()
@@ -187,9 +187,9 @@ namespace RINGMesh {
 
         void delete_vertex_nn_search()
         {
-            if( mesh_->vertices_nn_search_ != nil ) {
+            if( mesh_->vertices_nn_search_ != nullptr ) {
                 delete mesh_->vertices_nn_search_ ;
-                mesh_->vertices_nn_search_ = nil ;
+                mesh_->vertices_nn_search_ = nullptr ;
             }
         }
 
@@ -208,7 +208,7 @@ namespace RINGMesh {
 
     public:
         GeogramMesh0DBuilder()
-            : GeogramMeshBaseBuilder(), Mesh0DBuilder(), mesh_( nil )
+            : GeogramMeshBaseBuilder(), Mesh0DBuilder(), mesh_( nullptr )
         {
         }
         virtual ~GeogramMesh0DBuilder()
@@ -230,7 +230,7 @@ namespace RINGMesh {
 
     public:
         GeogramMesh1DBuilder()
-            : GeogramMeshBaseBuilder(), Mesh1DBuilder(), mesh_( nil )
+            : GeogramMeshBaseBuilder(), Mesh1DBuilder(), mesh_( nullptr )
         {
         }
         virtual ~GeogramMesh1DBuilder()
@@ -347,9 +347,9 @@ namespace RINGMesh {
          */
         void delete_edge_nn_search()
         {
-            if( mesh_->edges_nn_search_ != nil ) {
+            if( mesh_->edges_nn_search_ != nullptr ) {
                 delete mesh_->edges_nn_search_ ;
-                mesh_->edges_nn_search_ = nil ;
+                mesh_->edges_nn_search_ = nullptr ;
             }
         }
 
@@ -363,7 +363,7 @@ namespace RINGMesh {
 
     public:
         GeogramMesh2DBuilder()
-            : GeogramMeshBaseBuilder(), Mesh2DBuilder(), mesh_( nil )
+            : GeogramMeshBaseBuilder(), Mesh2DBuilder(), mesh_( nullptr )
         {
         }
         virtual ~GeogramMesh2DBuilder()
@@ -577,9 +577,9 @@ namespace RINGMesh {
          */
         void delete_facet_nn_search()
         {
-            if( mesh_->nn_search_ != nil ) {
+            if( mesh_->nn_search_ != nullptr ) {
                 delete mesh_->nn_search_ ;
-                mesh_->nn_search_ = nil ;
+                mesh_->nn_search_ = nullptr ;
             }
         }
         /*!
@@ -587,9 +587,9 @@ namespace RINGMesh {
          */
         void delete_facet_aabb()
         {
-            if( mesh_->facets_aabb_ != nil ) {
+            if( mesh_->facets_aabb_ != nullptr ) {
                 delete mesh_->facets_aabb_ ;
-                mesh_->facets_aabb_ = nil ;
+                mesh_->facets_aabb_ = nullptr ;
             }
         }
 
@@ -774,13 +774,13 @@ namespace RINGMesh {
          */
         void delete_cell_nn_search()
         {
-            if( mesh_->cell_nn_search_ != nil ) {
+            if( mesh_->cell_nn_search_ != nullptr ) {
                 delete mesh_->cell_nn_search_ ;
-                mesh_->cell_nn_search_ = nil ;
+                mesh_->cell_nn_search_ = nullptr ;
             }
-            if( mesh_->cell_facets_nn_search_ != nil ) {
+            if( mesh_->cell_facets_nn_search_ != nullptr ) {
                 delete mesh_->cell_facets_nn_search_ ;
-                mesh_->cell_facets_nn_search_ = nil ;
+                mesh_->cell_facets_nn_search_ = nullptr ;
             }
         }
         /*!
@@ -788,9 +788,9 @@ namespace RINGMesh {
          */
         void delete_cell_aabb()
         {
-            if( mesh_->cell_aabb_ != nil ) {
+            if( mesh_->cell_aabb_ != nullptr ) {
                 delete mesh_->cell_aabb_ ;
-                mesh_->cell_aabb_ = nil ;
+                mesh_->cell_aabb_ = nullptr ;
             }
         }
 
@@ -814,7 +814,7 @@ namespace RINGMesh {
                 GeogramMesh2DBuilder(),
                 GeogramMesh3DBuilder(),
                 MeshAllDBuilder(),
-                mesh_( nil )
+                mesh_( nullptr )
         {
         }
         virtual ~GeogramMeshAllDBuilder()

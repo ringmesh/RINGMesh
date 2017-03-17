@@ -136,10 +136,10 @@ namespace RINGMesh {
         TetraGen_MG_Tetra()
             :
                 TetraGen(),
-                context_( nil ),
-                mesh_input_( nil ),
-                mesh_output_( nil ),
-                tms_( nil ),
+                context_( nullptr ),
+                mesh_input_( nullptr ),
+                mesh_output_( nullptr ),
+                tms_( nullptr ),
                 starting_index_( 1 )
         {
 
@@ -438,7 +438,7 @@ namespace RINGMesh {
     }
 
     TetraGen::TetraGen()
-        : builder_( nil ), output_region_( NO_ID ), region_( nil ), wells_( nil )
+        : builder_( nullptr ), output_region_( NO_ID ), region_( nullptr ), wells_( nullptr )
     {
     }
 

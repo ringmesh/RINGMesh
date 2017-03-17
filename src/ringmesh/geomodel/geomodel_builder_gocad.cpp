@@ -461,7 +461,7 @@ namespace {
         GeoModelBuilderTSolid& geomodel_builder,
         const GeoModel& geomodel )
     {
-        std::vector< NNSearch* > reg_nn_searchs( geomodel.nb_regions(), nil ) ;
+        std::vector< NNSearch* > reg_nn_searchs( geomodel.nb_regions(), nullptr ) ;
         compute_cell_facet_centers_region_nn_searchs( geomodel, reg_nn_searchs ) ;
         for( index_t s = 0; s < geomodel.nb_surfaces(); ++s ) {
             add_surface_to_region_boundaries( s, reg_nn_searchs, geomodel,
@@ -1115,8 +1115,7 @@ namespace RINGMesh {
             std::set< gme_t > cur_interfaces ;
             for( index_t j = 0; j < L.nb_in_boundary(); ++j ) {
                 const GeoModelMeshEntity& S = L.in_boundary( j ) ;
-                gme_t parent_interface = S.parent_gme(
-                    Interface::type_name_static() ) ;
+                gme_t parent_interface = S.parent_gme( Interface::type_name_static() ) ;
                 cur_interfaces.insert( parent_interface ) ;
             }
             gme_t contact_id ;
@@ -1201,13 +1200,13 @@ namespace RINGMesh {
     void GeoModelBuilderTSolid::read_line()
     {
         std::string keyword = file_line_.field( 0 ) ;
-        TSolidLineParser_var tsolid_parser = TSolidLineParser::create( keyword,
-            *this, geomodel_ ) ;
+        TSolidLineParser_var tsolid_parser = TSolidLineParser::create( keyword, *this,
+            geomodel_ ) ;
         if( tsolid_parser ) {
             tsolid_parser->execute( file_line_, tsolid_load_storage_ ) ;
         } else {
-            GocadLineParser_var gocad_parser = GocadLineParser::create( keyword,
-                *this, geomodel_ ) ;
+            GocadLineParser_var gocad_parser = GocadLineParser::create( keyword, *this,
+                geomodel_ ) ;
             if( gocad_parser ) {
                 gocad_parser->execute( file_line_, tsolid_load_storage_ ) ;
             }
@@ -1261,7 +1260,7 @@ namespace RINGMesh {
 
     void GeoModelBuilderTSolid::compute_surfaces_internal_borders()
     {
-        std::vector< NNSearch* > nn_searchs( geomodel_.nb_surfaces(), nil ) ;
+        std::vector< NNSearch* > nn_searchs( geomodel_.nb_surfaces(), nullptr ) ;
         std::vector< Box3d > boxes( geomodel_.nb_surfaces() ) ;
         compute_facet_edge_centers_nn_and_surface_boxes( nn_searchs, boxes ) ;
         for( index_t s = 0; s < geomodel_.nb_surfaces(); ++s ) {
@@ -1277,8 +1276,7 @@ namespace RINGMesh {
         GeoModelBuilderTSolid& gm_builder,
         GeoModel& geomodel )
     {
-        TSolidLineParser* parser = TSolidLineParserFactory::create_object(
-            keyword ) ;
+        TSolidLineParser* parser = TSolidLineParserFactory::create_object( keyword ) ;
         if( parser ) {
             parser->set_builder( gm_builder ) ;
             parser->set_geomodel( geomodel ) ;
@@ -1337,13 +1335,14 @@ namespace RINGMesh {
         if( tsolid_parser ) {
             tsolid_parser->execute( file_line_, ml_load_storage_ ) ;
         } else {
-            GocadLineParser_var gocad_parser = GocadLineParser::create( keyword,
-                *this, geomodel_ ) ;
+            GocadLineParser_var gocad_parser = GocadLineParser::create( keyword, *this,
+                geomodel_ ) ;
             if( gocad_parser ) {
                 gocad_parser->execute( file_line_, ml_load_storage_ ) ;
             }
         }
     }
+
     void initialize_gocad_import_factories()
     {
         ringmesh_register_GocadLineParser_creator( LoadZSign, "ZPOSITIVE" ) ;

@@ -388,7 +388,7 @@ namespace RINGMesh {
     void CornerGfxManager::initialize()
     {
         if( entities_.empty() ) {
-            entities_.resize( gfx_.geomodel()->nb_corners(), nil ) ;
+            entities_.resize( gfx_.geomodel()->nb_corners(), nullptr ) ;
             for( index_t e = 0; e < entities_.size(); e++ ) {
                 entities_[e] = new CornerGfx( gfx_, gfx_.geomodel()->corner( e ) ) ;
             }
@@ -433,7 +433,7 @@ namespace RINGMesh {
     void LineGfxManager::initialize()
     {
         if( entities_.empty() ) {
-            entities_.resize( gfx_.geomodel()->nb_lines(), nil ) ;
+            entities_.resize( gfx_.geomodel()->nb_lines(), nullptr ) ;
             for( index_t e = 0; e < entities_.size(); e++ ) {
                 entities_[e] = new LineGfx( gfx_, gfx_.geomodel()->line( e ) ) ;
             }
@@ -495,7 +495,7 @@ namespace RINGMesh {
     void SurfaceGfxManager::initialize()
     {
         if( entities_.empty() ) {
-            entities_.resize( gfx_.geomodel()->nb_surfaces(), nil ) ;
+            entities_.resize( gfx_.geomodel()->nb_surfaces(), nullptr ) ;
             for( index_t e = 0; e < entities_.size(); e++ ) {
                 entities_[e] = new SurfaceGfx( gfx_,
                     gfx_.geomodel()->surface( e ) ) ;
@@ -637,7 +637,7 @@ namespace RINGMesh {
     void RegionGfxManager::initialize()
     {
         if( entities_.empty() ) {
-            entities_.resize( gfx_.geomodel()->nb_regions(), nil ) ;
+            entities_.resize( gfx_.geomodel()->nb_regions(), nullptr ) ;
             for( index_t e = 0; e < entities_.size(); e++ ) {
                 entities_[e] = new RegionGfx( gfx_, gfx_.geomodel()->region( e ) ) ;
             }
@@ -963,7 +963,7 @@ namespace RINGMesh {
                 geomodel->region( 0 ).cell_attribute_manager().find_attribute_store(
                     manager_.name() ) ;
 
-            if( store == nil ) return 0 ;
+            if( store == nullptr ) return 0 ;
             return store->dimension() ;
         }
     private:
@@ -1011,7 +1011,7 @@ namespace RINGMesh {
                 geomodel->region( 0 ).vertex_attribute_manager().find_attribute_store(
                     manager_.name() ) ;
 
-            if( store == nil ) return 0 ;
+            if( store == nullptr ) return 0 ;
             return store->dimension() ;
         }
     private:
@@ -1059,7 +1059,7 @@ namespace RINGMesh {
                 geomodel->surface( 0 ).facet_attribute_manager().find_attribute_store(
                     manager_.name() ) ;
 
-            if( store == nil ) return 0 ;
+            if( store == nullptr ) return 0 ;
             return store->dimension() ;
         }
     private:
@@ -1107,7 +1107,7 @@ namespace RINGMesh {
                 geomodel->surface( 0 ).vertex_attribute_manager().find_attribute_store(
                     manager_.name() ) ;
 
-            if( store == nil ) return 0 ;
+            if( store == nullptr ) return 0 ;
             return store->dimension() ;
         }
     private:
@@ -1188,7 +1188,7 @@ namespace RINGMesh {
 
     GeoModelGfx::GeoModelGfx()
         :
-            geomodel_( nil ),
+            geomodel_( nullptr ),
             corners( *this ),
             lines( *this ),
             surfaces( *this ),
