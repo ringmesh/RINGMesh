@@ -161,6 +161,10 @@ Writing Classes
 - Define a destructor if a class needs an explicit action at object destruction
 - Be careful, a lot of class have to forbid copy, using
 - Use the macro RINGMESH_API if you want your class to be imported in the windows library
+- For virtual functions in child classes (with the virtual function defined in the mother
+class), add at the end of the function prototype the keyword "override". This prevents
+issues of prototypes in virtual functions. In the case of virtual functions which should
+not be reimplemented in child classes, use the keyword "final" instead.
 
 ### Style ###
 
