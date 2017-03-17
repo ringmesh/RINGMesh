@@ -2649,7 +2649,7 @@ namespace {
 
             for( index_t w = 0; w < edges.nb_wells(); w++ ) {
                 for( index_t e = 0; e < edges.nb_edges( w ); e++ ) {
-                    out << "0 " << edges.vertex( w, e, 0 ) << SPACE
+                    out << " 0 " << edges.vertex( w, e, 0 ) << SPACE
                         << edges.vertex( w, e, 1 ) << "\n" ;
                 }
             }
@@ -2673,10 +2673,10 @@ namespace {
         void write_regions( const GeoModel& geomodel, std::ofstream& out ) const
         {
             out << "ELEMENTALSETS\n" ;
-            index_t offset = STARTING_OFFSET ;
+            index_t offset = 0 ;
             for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
                 const Region& region = geomodel.region( r ) ;
-                out << SPACE << region.name() << SPACE << offset ;
+                out << SPACE << region.name() << SPACE << offset++ ;
                 offset += region.nb_mesh_elements() ;
                 out << "-" << offset << "\n" ;
             }
@@ -2691,7 +2691,7 @@ namespace {
             index_t offset = STARTING_OFFSET + geomodel.mesh.cells.nb() ;
             for( index_t w = 0; w < wells->nb_wells(); w++ ) {
                 const Well& well = wells->well( w ) ;
-                out << SPACE << well.name() << SPACE << offset ;
+                out << SPACE << well.name() << SPACE << offset++ ;
                 offset += well.nb_edges() ;
                 out << "-" << offset << "\n" ;
             }
