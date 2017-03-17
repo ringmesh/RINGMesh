@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_GEOGRAM_EXTENSION__
-#define __RINGMESH_GEOGRAM_EXTENSION__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -95,11 +94,6 @@ namespace RINGMesh {
 
     /******************************************************************/
     /* Operations on a GEO::Mesh                                      */
-
-
-    void RINGMESH_API rotate_mesh(
-        GEO::Mesh& mesh,
-        const GEO::Matrix< 4, double >& rot_mat ) ;
 
     double RINGMESH_API mesh_cell_signed_volume( const GEO::Mesh& M, index_t c ) ;
     double RINGMESH_API mesh_cell_volume( const GEO::Mesh& M, index_t c ) ;
@@ -173,49 +167,6 @@ namespace RINGMesh {
         }
     } ;
 
-    /*!
-     * @brief Typed attribute existence check
-     */
-    template< typename T >
-    bool is_attribute_defined(
-        GEO::AttributesManager& manager,
-        const std::string& attribute_name )
-    {
-        GEO::AttributeStore* store = manager.find_attribute_store( attribute_name ) ;
-        if( store == nil ) {
-            return false ;
-        } else {
-            std::string T_type_name( typeid(T).name() ) ;
-            return store->elements_type_matches( T_type_name ) ;
-        }
-    }
-
-    /*!
-     * @brief Type sensitive check of Attribute existence on a Mesh facets
-     */
-    template< typename T >
-    bool is_facet_attribute_defined(
-        const GEO::Mesh& mesh,
-        const std::string& attribute_name )
-    {
-        GEO::AttributesManager& manager = mesh.facets.attributes() ;
-        return is_attribute_defined< T >( manager, attribute_name ) ;
-    }
-
-    /*!
-     * @brief Type sensitive check of Attribute existence on a Mesh cells
-     */
-    template< typename T >
-    bool is_cell_attribute_defined(
-        const GEO::Mesh& mesh,
-        const std::string& attribute_name )
-    {
-        GEO::AttributesManager& manager = mesh.cells.attributes() ;
-        return is_attribute_defined< T >( manager, attribute_name ) ;
-    }
-
     void RINGMESH_API print_bounded_attributes( const GEO::Mesh& M ) ;
 
 }
-
-#endif

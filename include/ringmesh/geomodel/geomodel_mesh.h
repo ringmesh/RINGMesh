@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_GEOMODEL_MESH__
-#define __RINGMESH_GEOMODEL_MESH__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -164,10 +163,12 @@ namespace RINGMesh {
 
         /*!
          * @brief To use when building the geomodel by first adding its vertices
+         * @return the first index of created vertices
          * @warning The client is responsible for setting the mapping between the points
          * of the GME and the unique vertex
          */
         index_t add_vertex( const vec3& point ) ;
+        index_t add_vertices( const std::vector<vec3>& points ) ;
 
         /*!
          * @brief Set the point coordinates of all the vertices that
@@ -337,13 +338,22 @@ namespace RINGMesh {
              */
 
             /*!
-             * @brief Clears and resizes the GME_Vertex vectors
+             * @brief Resizes the GME_Vertex vectors
              * @param[in] nb Size of the vector
              */
             void resize_geomodel_vertex_gmes( const index_t nb )
             {
-                gme_vertices_.clear() ;
                 gme_vertices_.resize( nb ) ;
+            }
+
+            /*!
+             * @brief Clears and resizes the GME_Vertex vectors
+             * @param[in] nb Size of the vector
+             */
+            void clear_and_resize_geomodel_vertex_gmes( const index_t nb )
+            {
+                gme_vertices_.clear() ;
+                resize_geomodel_vertex_gmes( nb ) ;
             }
 
             void bind_all_mesh_entity_vertex_maps() ;
@@ -1336,5 +1346,3 @@ namespace RINGMesh {
     } ;
 
 }
-
-#endif

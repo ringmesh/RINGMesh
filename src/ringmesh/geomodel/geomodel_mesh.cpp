@@ -437,7 +437,7 @@ namespace RINGMesh {
 
         // Fill the vertices
         builder->create_vertices( nb ) ;
-        vertex_mapper_.resize_geomodel_vertex_gmes( nb ) ;
+        vertex_mapper_.clear_and_resize_geomodel_vertex_gmes( nb ) ;
         vertex_mapper_.bind_all_mesh_entity_vertex_maps() ;
 
         index_t count = 0 ;
@@ -552,7 +552,21 @@ namespace RINGMesh {
     index_t GeoModelMeshVertices::add_vertex( const vec3& point )
     {
         Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder( *mesh_ ) ;
-        return builder->create_vertex( point ) ;
+        const index_t index = builder->create_vertex( point ) ;
+        vertex_mapper_.resize_geomodel_vertex_gmes( nb() );
+        return index;
+    }
+
+    index_t GeoModelMeshVertices::add_vertices( const std::vector<vec3>& points )
+    {
+        ringmesh_assert( !points.empty() );
+        Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder( *mesh_ ) ;
+        const index_t start_index = builder->create_vertex( points[0] ) ;
+        for( size_t i = 1; i < points.size(); ++i ) {
+            builder->create_vertex( points[i] ) ;
+        }
+        vertex_mapper_.resize_geomodel_vertex_gmes( nb() );
+        return start_index;
     }
 
     void GeoModelMeshVertices::update_point( index_t v, const vec3& point )
@@ -1911,14 +1925,11 @@ namespace RINGMesh {
         for( index_t w = 0; w < wells.nb_wells(); w++ ) {
             const Well& well = wells.well( w ) ;
             for( index_t p = 0; p < well.nb_parts(); p++ ) {
-                const GEO::Mesh& part = well.part( p ).mesh() ;
                 for( index_t e = 0; e < well.part( p ).nb_edges(); e++ ) {
-                    const vec3& e0 = GEO::Geom::mesh_vertex( part,
-                        part.edges.vertex( e, 0 ) ) ;
+                    const vec3& e0 = well.part( p ).edge_vertex( e, 0 ) ;
                     mesh_builder->set_edge_vertex( cur_edge, 0,
                         gmm_.vertices.index( e0 ) ) ;
-                    const vec3& e1 = GEO::Geom::mesh_vertex( part,
-                        part.edges.vertex( e, 1 ) ) ;
+                    const vec3& e1 = well.part( p ).edge_vertex( e, 1 ) ;
                     mesh_builder->set_edge_vertex( cur_edge, 1,
                         gmm_.vertices.index( e1 ) ) ;
                     cur_edge++ ;

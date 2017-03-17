@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_GEOGRAM_MESH__
-#define __RINGMESH_GEOGRAM_MESH__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -375,6 +374,7 @@ namespace RINGMesh {
         {
             return mesh_->cells.facet( cell_id, facet_id ) ;
         }
+      
         /*!
          * @brief Gets the number of facet in a cell
          * @param[in] cell_id index of the cell
@@ -510,5 +510,3 @@ namespace RINGMesh {
 
     void register_geogram_mesh() ;
 }
-
-#endif
