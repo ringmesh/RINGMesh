@@ -2577,7 +2577,6 @@ namespace {
             write_elements( geomodel, out ) ;
             write_vertices( geomodel, out ) ;
             write_regions( geomodel, out ) ;
-            write_wells( geomodel, out ) ;
 
             out << "END" << std::endl ;
         }
@@ -2680,15 +2679,12 @@ namespace {
                 offset += region.nb_mesh_elements() ;
                 out << "-" << offset << "\n" ;
             }
-        }
-        void write_wells( const GeoModel& geomodel, std::ofstream& out ) const
-        {
+
             const WellGroup* wells = geomodel.wells() ;
             if( !wells ) {
                 return ;
             }
             out << "EDGESETS\n" ;
-            index_t offset = STARTING_OFFSET + geomodel.mesh.cells.nb() ;
             for( index_t w = 0; w < wells->nb_wells(); w++ ) {
                 const Well& well = wells->well( w ) ;
                 out << SPACE << well.name() << SPACE << offset++ ;
