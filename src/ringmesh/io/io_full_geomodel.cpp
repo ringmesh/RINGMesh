@@ -2540,6 +2540,107 @@ namespace {
         }
     } ;
 
+    struct RINGMesh2Feflow {
+        index_t entity_type ;
+        index_t vertices[8] ;
+    } ;
+
+    static RINGMesh2Feflow feflow_tet_descriptor = { 6, { 0, 1, 2, 3 } } ;
+
+    static RINGMesh2Feflow feflow_hex_descriptor = { 8, { 2, 6, 7, 3, 0, 4, 5, 1 } } ;
+
+    static RINGMesh2Feflow feflow_prism_descriptor = { 7, { 3, 4, 5, 0, 1, 2 } } ;
+
+    static RINGMesh2Feflow feflow_pyramid_descriptor = { 9, { 0, 1, 2, 3, 4 } } ;
+
+    static RINGMesh2Feflow* cell_type_to_feflow_cell_descriptor[4] = {
+        &feflow_tet_descriptor, &feflow_hex_descriptor, &feflow_prism_descriptor,
+        &feflow_pyramid_descriptor } ;
+
+    class FeflowIOHandler: public GeoModelIOHandler {
+    public:
+        static const index_t STARTING_OFFSET = 1 ;
+
+        virtual bool load( const std::string& filename, GeoModel& geomodel )
+        {
+            throw RINGMeshException( "I/O",
+                "Loading of a GeoModel from Feflow not implemented yet" ) ;
+            return false ;
+        }
+        virtual void save( const GeoModel& geomodel, const std::string& filename )
+        {
+            std::ofstream out( filename.c_str() ) ;
+            out.precision( 16 ) ;
+
+            write_header( out ) ;
+            write_dimensions( geomodel, out ) ;
+            write_cells( geomodel, out ) ;
+            write_vertices( geomodel, out ) ;
+            write_regions( geomodel, out ) ;
+
+            out << "END" << std::endl ;
+        }
+
+    private:
+
+        void write_header( std::ofstream& out ) const
+        {
+            out << "PROBLEM:\n" ;
+            out << "CLASS (v.7.006.14742)\n" ;
+            out << "   0    0    0    3    0    0    8    8    0    0\n" ;
+        }
+        void write_dimensions( const GeoModel& geomodel, std::ofstream& out ) const
+        {
+            const GeoModelMesh& mesh = geomodel.mesh ;
+            out << "DIMENS\n" ;
+            out << SPACE << mesh.vertices.nb() << SPACE << mesh.cells.nb()
+                << " 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0\n" ;
+            out << "SCALE\n\n" ;
+        }
+        void write_cells( const GeoModel& geomodel, std::ofstream& out ) const
+        {
+            const GeoModelMeshCells& cells = geomodel.mesh.cells ;
+            out << "VARNODE\n" ;
+            out << SPACE << cells.nb() << " 4 4\n" ;
+            for( index_t c = 0; c < cells.nb(); c++ ) {
+                const RINGMesh2Feflow& descriptor =
+                    *cell_type_to_feflow_cell_descriptor[cells.type( c )] ;
+                out << SPACE << descriptor.entity_type ;
+                for( index_t v = 0; v < cells.nb_vertices( c ); v++ ) {
+                    out << SPACE
+                        << cells.vertex( c, descriptor.vertices[v] )
+                            + STARTING_OFFSET ;
+                }
+                out << "\n" ;
+            }
+        }
+        void write_vertices( const GeoModel& geomodel, std::ofstream& out ) const
+        {
+            const GeoModelMeshVertices& vertices = geomodel.mesh.vertices ;
+            out << "XYZCOOR\n" << std::scientific;
+            for( index_t v = 0; v < vertices.nb(); v++ ) {
+                const vec3& point = vertices.vertex( v ) ;
+                std::string sep ;
+                for( index_t i = 0; i < 3; i++ ) {
+                    out << sep << SPACE << point[i] ;
+                    sep = "," ;
+                }
+                out << "\n" ;
+            }
+            out << std::fixed ;
+        }
+        void write_regions( const GeoModel& geomodel, std::ofstream& out ) const
+        {
+            out << "ELEMENTALSETS\n" ;
+            index_t offset = STARTING_OFFSET ;
+            for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
+                const Region& region = geomodel.region( r ) ;
+                out << SPACE << region.name() << SPACE << offset ;
+                offset += region.nb_mesh_elements() ;
+                out << "-" << offset << "\n" ;
+            }
+        }
+    } ;
 }
 
 namespace RINGMesh {
@@ -2570,20 +2671,20 @@ namespace RINGMesh {
      */
     void GeoModelIOHandler::initialize_full_geomodel_output()
     {
-        ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "meshb" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "mesh" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( TetGenIOHandler, "tetgen" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( TSolidIOHandler, "so" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( CSMPIOHandler, "csmp" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( AsterIOHandler, "mail" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( VTKIOHandler, "vtk" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( GPRSIOHandler, "gprs" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( MSHIOHandler, "msh" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( MFEMIOHandler, "mfem" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( GeoModelHandlerGM, "gm" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( OldGeoModelHandlerGM, "ogm" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( AbaqusIOHandler, "inp" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( AdeliIOHandler, "adeli" ) ;
-    }
+        ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "meshb" );
+    ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "mesh" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( TetGenIOHandler, "tetgen" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( TSolidIOHandler, "so" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( CSMPIOHandler, "csmp" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( AsterIOHandler, "mail" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( VTKIOHandler, "vtk" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( GPRSIOHandler, "gprs" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( MSHIOHandler, "msh" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( MFEMIOHandler, "mfem" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( GeoModelHandlerGM, "gm" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( OldGeoModelHandlerGM, "ogm" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( AbaqusIOHandler, "inp" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( AdeliIOHandler, "adeli" ) ;
+    ringmesh_register_GeoModelIOHandler_creator( FeflowIOHandler, "fem" ) ;}
 
 }
