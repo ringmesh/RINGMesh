@@ -2675,7 +2675,7 @@ namespace {
             index_t offset = 0 ;
             for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
                 const Region& region = geomodel.region( r ) ;
-                out << SPACE << region.name() << SPACE << offset++ ;
+                out << SPACE << region.name() << SPACE << ++offset ;
                 offset += region.nb_mesh_elements() ;
                 out << "-" << offset << "\n" ;
             }
@@ -2687,7 +2687,7 @@ namespace {
             out << "EDGESETS\n" ;
             for( index_t w = 0; w < wells->nb_wells(); w++ ) {
                 const Well& well = wells->well( w ) ;
-                out << SPACE << well.name() << SPACE << offset++ ;
+                out << SPACE << well.name() << SPACE << ++offset ;
                 offset += well.nb_edges() ;
                 out << "-" << offset << "\n" ;
             }
