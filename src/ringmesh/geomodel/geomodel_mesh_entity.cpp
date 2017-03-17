@@ -273,7 +273,7 @@ namespace RINGMesh {
     {
         unbind_vertex_mapping_attribute() ;
 #ifdef RINGMESH_DEBUG
-        ringmesh_assert( mesh_ != NULL ) ;
+        ringmesh_assert( mesh_ != nullptr ) ;
         mesh_->print_mesh_bounded_attributes() ;
 #endif
         delete mesh_ ;

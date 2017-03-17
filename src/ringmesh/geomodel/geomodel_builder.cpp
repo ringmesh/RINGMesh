@@ -1130,9 +1130,9 @@ namespace RINGMesh {
             geomodel_access_.modifiable_geological_entities( type ) ;
         index_t old_size = static_cast< index_t >( store.size() ) ;
         index_t new_size = old_size + nb_additional_entities ;
-        store.resize( new_size, nil ) ;
+        store.resize( new_size, nullptr ) ;
         for( index_t i = old_size; i < new_size; i++ ) {
-            ringmesh_assert( store[i] == nil ) ;
+            ringmesh_assert( store[i] == nullptr ) ;
             store[i] = GeoModelGeologicalEntityAccess::create_geological_entity(
                 type, geomodel_, i ) ;
         }
@@ -1146,7 +1146,7 @@ namespace RINGMesh {
         std::vector< GeoModelGeologicalEntity* >& store =
             geomodel_access_.modifiable_geological_entities( type ) ;
         delete store[index] ;
-        store[index] = nil ;
+        store[index] = nullptr ;
     }
 
     void GeoModelBuilderGeology::fill_mesh_entities_parent( const EntityType& type )
