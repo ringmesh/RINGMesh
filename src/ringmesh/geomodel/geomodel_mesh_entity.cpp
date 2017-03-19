@@ -316,8 +316,8 @@ namespace RINGMesh {
             geomodel_vertices.mesh_entity_vertex_id( gme_id(), geomodel_v,
                 backward_vertices ) ;
             bool found_in_backward = false ;
-            for( index_t bv = 0; bv < backward_vertices.size(); bv++ ) {
-                if( backward_vertices[bv] == v ) {
+            for( index_t bv : backward_vertices ) {
+                if( bv == v ) {
                     found_in_backward = true ;
                 }
             }
@@ -432,8 +432,7 @@ namespace RINGMesh {
 
         const std::vector< EntityType > parent_types = family.parent_types(
             entity_type ) ;
-        for( index_t p_itr = 0; p_itr < parent_types.size(); ++p_itr ) {
-            const EntityType& parent_type = parent_types[p_itr] ;
+        for( const EntityType& parent_type : parent_types ) {
             index_t nb_parent_entities_in_geomodel =
                 geomodel_.nb_geological_entities( parent_type ) ;
             if( nb_parent_entities_in_geomodel == 0 ) {
@@ -633,12 +632,12 @@ namespace RINGMesh {
             index_t nb0 = 0 ;
             index_t nb1 = 0 ;
             index_t nb2 = 0 ;
-            for( index_t i = 0; i < nb.size(); ++i ) {
-                if( nb[i] == 0 )
+            for( index_t i : nb ) {
+                if( i == 0 )
                     ++nb0 ;
-                else if( nb[i] == 1 )
+                else if( i == 1 )
                     ++nb1 ;
-                else if( nb[i] == 2 ) ++nb2 ;
+                else if( i == 2 ) ++nb2 ;
             }
 
             // Vertices at extremitites must be in only one edge

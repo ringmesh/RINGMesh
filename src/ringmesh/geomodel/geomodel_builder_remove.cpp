@@ -77,9 +77,9 @@ namespace RINGMesh {
     {
         check_if_entities_are_not_meshed_entities( entities ) ;
         std::set< gme_t > mesh_entities ;
-        for( auto it = entities.begin(); it != entities.end(); ++it ) {
+        for( const gme_t& it : entities ) {
             const GeoModelGeologicalEntity& cur_gmge = geomodel_.geological_entity(
-                *it ) ;
+                it ) ;
             for( index_t i = 0; i < cur_gmge.nb_children(); i++ ) {
                 mesh_entities.insert( cur_gmge.child( i ).gme_id() ) ;
             }
