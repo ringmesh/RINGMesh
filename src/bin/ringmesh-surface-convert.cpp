@@ -54,7 +54,6 @@ int main( int argc, char** argv )
 {
     using namespace RINGMesh ;
 
-
     try {
         default_configure() ;
 
@@ -66,12 +65,11 @@ int main( int argc, char** argv )
         // help
         if( argc == 1 ) {
             Logger::div( "Help" ) ;
-            Logger::out( "" ) << "usage: "
-                << GEO::FileSystem::base_name( argv[0] ) << " [out_format]"
-                << std::endl
+            Logger::out( "" ) << "usage: " << GEO::FileSystem::base_name( argv[0] )
+                << " [out_format]" << std::endl
                 << "out_format: a non empty list of output format amongst:"
                 << "obj mesh meshb ply off stl " << std::endl
-                << "Should be launched in the directory that contains the .ts " 
+                << "Should be launched in the directory that contains the .ts "
                 << "files to convert" << std::endl
                 << "This will create a directory for each selected output format "
                 << "in the directory one level above the current one,"
@@ -98,9 +96,9 @@ int main( int argc, char** argv )
 
         // filter only the files with .ts extension
         std::vector< std::string > input_ts_names ;
-        for( index_t file_itr = 0; file_itr < input_file_names.size(); ++file_itr ) {
-            if( GEO::FileSystem::extension( input_file_names[file_itr] ) == "ts" ) {
-                input_ts_names.push_back( input_file_names[file_itr] ) ;
+        for( const std::string& file : input_file_names ) {
+            if( GEO::FileSystem::extension( file ) == "ts" ) {
+                input_ts_names.push_back( file ) ;
             }
         }
 
@@ -113,43 +111,38 @@ int main( int argc, char** argv )
         if( !GEO::FileSystem::set_current_working_directory( ".." ) ) {
             throw RINGMeshException( "I/O", "Can't access parent directory." ) ;
         }
-        
+
         std::string saving_directory =
             GEO::FileSystem::get_current_working_directory() ;
-        for( index_t format_itr = 0; format_itr < output_formats.size();
-            ++format_itr ) {
+        for( const std::string& format : output_formats ) {
             if( !GEO::FileSystem::create_directory(
-                saving_directory + "/" + output_formats[format_itr] ) ) {
+                saving_directory + "/" + format ) ) {
                 throw RINGMeshException( "I/O",
-                    "Can't create " + output_formats[format_itr] + " directory." ) ;
+                    "Can't create " + format + " directory." ) ;
             }
         }
 
         // for each .ts file save it in each appropriate format
-        for( index_t ts_itr = 0; ts_itr < input_ts_names.size(); ++ts_itr ) {
-            Logger::out( "" ) << "Processing: " << input_ts_names[ts_itr]
-                << std::endl ;
+        for( const std::string& ts_name : input_ts_names ) {
+            Logger::out( "" ) << "Processing: " << ts_name << std::endl ;
             GEO::FileSystem::set_current_working_directory( starting_directory ) ;
 
             // load the tsurf
             GEO::Mesh mesh_surface_in ;
-            if( !GEO::mesh_load( input_ts_names[ts_itr], mesh_surface_in ) ) {
-                throw RINGMeshException( "I/O", "Can't load: " + input_ts_names[ts_itr] ) ;
+            if( !GEO::mesh_load( ts_name, mesh_surface_in ) ) {
+                throw RINGMeshException( "I/O", "Can't load: " + ts_name ) ;
             }
 
             // get the basename
-            std::string surface_in_basename = GEO::FileSystem::base_name(
-                input_ts_names[ts_itr] ) ;
+            std::string surface_in_basename = GEO::FileSystem::base_name( ts_name ) ;
 
             // for each format save it
-            for( index_t format_itr = 0; format_itr < output_formats.size();
-                ++format_itr ) {
+            for( const std::string& output_format : output_formats ) {
                 GEO::FileSystem::set_current_working_directory( ".." ) ;
-                GEO::FileSystem::set_current_working_directory(
-                    output_formats[format_itr] ) ;
+                GEO::FileSystem::set_current_working_directory( output_format ) ;
 
                 std::string surface_output_name = surface_in_basename + "."
-                    + output_formats[format_itr] ;
+                    + output_format ;
                 if( !GEO::mesh_save( mesh_surface_in, surface_output_name ) ) {
                     throw RINGMeshException( "I/O",
                         "Can't save to: " + surface_output_name ) ;

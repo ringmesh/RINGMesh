@@ -285,10 +285,10 @@ namespace RINGMesh {
             // We assume that the geomodel vertices are not computed
             const NNSearch& nn_search = E.vertex_nn_search() ;
 
-            for( index_t i = 0; i < inside_border.size(); ++i ) {
-                for( index_t v = 0; v < inside_border[i]->nb_vertices(); ++v ) {
+            for( const GeoModelMeshEntity*& entity : inside_border ) {
+                for( index_t v = 0; v < entity->nb_vertices(); ++v ) {
                     std::vector< index_t > colocated_indices ;
-                    nn_search.get_neighbors( inside_border[i]->vertex( v ),
+                    nn_search.get_neighbors( entity->vertex( v ),
                         colocated_indices, geomodel_.epsilon() ) ;
                     if( colocated_indices.size() > 1 ) {
                         std::sort( colocated_indices.begin(),

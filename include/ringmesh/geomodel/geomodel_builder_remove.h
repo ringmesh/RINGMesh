@@ -136,9 +136,8 @@ namespace RINGMesh {
         void check_if_entities_are_meshed(
             const std::set< gme_t >& mesh_entities_to_remove )
         {
-            for( auto it = mesh_entities_to_remove.begin();
-                it != mesh_entities_to_remove.end(); ++it ) {
-                if( !RINGMesh::EntityTypeManager::is_mesh_entity_type( it->type ) ) {
+            for( const gme_t& it : mesh_entities_to_remove ) {
+                if( !RINGMesh::EntityTypeManager::is_mesh_entity_type( it.type ) ) {
                     throw RINGMeshException( "REMOVE",
                         "You try to remove a Geological Entity using mesh removal." ) ;
                 }
@@ -148,9 +147,8 @@ namespace RINGMesh {
         void check_if_entities_are_not_meshed_entities(
             const std::set< gme_t >& mesh_entities_to_remove )
         {
-            for( auto it = mesh_entities_to_remove.begin();
-                it != mesh_entities_to_remove.end(); ++it ) {
-                if( RINGMesh::EntityTypeManager::is_mesh_entity_type( it->type ) ) {
+            for( const gme_t& it : mesh_entities_to_remove ) {
+                if( RINGMesh::EntityTypeManager::is_mesh_entity_type( it.type ) ) {
                     throw RINGMeshException( "REMOVE",
                         "You try to remove a Mesh Entity using geological removal" ) ;
                 }
@@ -312,10 +310,7 @@ namespace RINGMesh {
         void fill_to_erase_vectors(
             const std::set< gme_t >& mesh_entities_to_remove )
         {
-            for( auto it = mesh_entities_to_remove.begin();
-                it != mesh_entities_to_remove.end(); ++it ) {
-                gme_t cur = *it ;
-
+            for( const gme_t& cur : mesh_entities_to_remove ) {
                 index_t type_index = mesh_entity_type_to_index( cur.type ) ;
                 mesh_entity_to_erase_[type_index][cur.index] = true ;
             }
