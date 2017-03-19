@@ -228,15 +228,15 @@ namespace RINGMesh {
 
     GeoModelGfxManager::~GeoModelGfxManager()
     {
-        for( index_t e = 0; e < entities_.size(); e++ ) {
-            delete entities_[e] ;
+        for( MeshEntityGfx*& e : entities_ ) {
+            delete e ;
         }
     }
 
     void GeoModelGfxManager::need_to_update()
     {
-        for( index_t e = 0; e < entities_.size(); e++ ) {
-            entities_[e]->need_to_update() ;
+        for( MeshEntityGfx*& e : entities_ ) {
+            e->need_to_update() ;
         }
     }
 
@@ -247,16 +247,16 @@ namespace RINGMesh {
         double attr_max,
         GLuint colormap_texture )
     {
-        for( index_t e = 0; e < entities_.size(); e++ ) {
-            entities_[e]->set_scalar_attribute( subelements, name, attr_min,
-                attr_max, colormap_texture ) ;
+        for( MeshEntityGfx*& e : entities_ ) {
+            e->set_scalar_attribute( subelements, name, attr_min, attr_max,
+                colormap_texture ) ;
         }
     }
 
     void GeoModelGfxManager::unset_scalar_attribute()
     {
-        for( index_t e = 0; e < entities_.size(); e++ ) {
-            entities_[e]->unset_scalar_attribute() ;
+        for( MeshEntityGfx*& e : entities_ ) {
+            e->unset_scalar_attribute() ;
         }
     }
 
