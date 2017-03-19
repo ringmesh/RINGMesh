@@ -173,9 +173,9 @@ namespace RINGMesh {
     {
         result.clear() ;
         const std::vector< GMEVertex >& all_gmes = mesh_entity_vertex_indices( v ) ;
-        for( index_t i = 0; i < all_gmes.size(); i++ ) {
-            if( all_gmes[i].gme_id.type == mesh_entity_type ) {
-                result.push_back( all_gmes[i] ) ;
+        for( const GMEVertex& vertex : all_gmes ) {
+            if( vertex.gme_id.type == mesh_entity_type ) {
+                result.push_back( vertex ) ;
             }
         }
     }
@@ -187,9 +187,9 @@ namespace RINGMesh {
     {
         result.clear() ;
         std::vector< GMEVertex > all_gmes = mesh_entity_vertex_indices( v ) ;
-        for( index_t i = 0; i < all_gmes.size(); i++ ) {
-            if( all_gmes[i].gme_id == mesh_entity_id ) {
-                result.push_back( all_gmes[i].v_id ) ;
+        for( const GMEVertex& vertex : all_gmes ) {
+            if( vertex.gme_id == mesh_entity_id ) {
+                result.push_back( vertex.v_id ) ;
             }
         }
     }
@@ -228,8 +228,7 @@ namespace RINGMesh {
     {
         const std::vector< EntityType >& all_mesh_entity_types =
             EntityTypeManager::mesh_entity_types() ;
-        for( index_t t = 0; t < all_mesh_entity_types.size(); t++ ) {
-            const EntityType& cur_entity_type = all_mesh_entity_types[t] ;
+        for( const EntityType& cur_entity_type : all_mesh_entity_types ) {
             index_t nb_cur_type_entities = geomodel_.nb_mesh_entities(
                 cur_entity_type ) ;
             vertex_maps_.at( cur_entity_type )->clear() ;
@@ -262,8 +261,7 @@ namespace RINGMesh {
     {
         const std::vector< EntityType >& all_mesh_entity_types =
             EntityTypeManager::mesh_entity_types() ;
-        for( index_t t = 0; t < all_mesh_entity_types.size(); t++ ) {
-            EntityType cur_entity_type = all_mesh_entity_types[t] ;
+        for( const EntityType& cur_entity_type : all_mesh_entity_types ) {
             for( index_t e = 0; e < geomodel_.nb_mesh_entities( cur_entity_type );
                 e++ ) {
                 const GeoModelMeshEntity& E = geomodel_.mesh_entity( cur_entity_type,
@@ -345,8 +343,7 @@ namespace RINGMesh {
         for( index_t t = 0; t < EntityTypeManager::nb_mesh_entity_types(); t++ ) {
             const EntityType& cur_type = EntityTypeManager::mesh_entity_types()[t] ;
             vertex_maps_.at( cur_type )->resize(
-                geomodel_.nb_mesh_entities( cur_type ),
-                nullptr ) ;
+                geomodel_.nb_mesh_entities( cur_type ), nullptr ) ;
         }
     }
 
@@ -553,20 +550,20 @@ namespace RINGMesh {
     {
         Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder( *mesh_ ) ;
         const index_t index = builder->create_vertex( point ) ;
-        vertex_mapper_.resize_geomodel_vertex_gmes( nb() );
-        return index;
+        vertex_mapper_.resize_geomodel_vertex_gmes( nb() ) ;
+        return index ;
     }
 
-    index_t GeoModelMeshVertices::add_vertices( const std::vector<vec3>& points )
+    index_t GeoModelMeshVertices::add_vertices( const std::vector< vec3 >& points )
     {
-        ringmesh_assert( !points.empty() );
+        ringmesh_assert( !points.empty() ) ;
         Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder( *mesh_ ) ;
         const index_t start_index = builder->create_vertex( points[0] ) ;
         for( size_t i = 1; i < points.size(); ++i ) {
             builder->create_vertex( points[i] ) ;
         }
-        vertex_mapper_.resize_geomodel_vertex_gmes( nb() );
-        return start_index;
+        vertex_mapper_.resize_geomodel_vertex_gmes( nb() ) ;
+        return start_index ;
     }
 
     void GeoModelMeshVertices::update_point( index_t v, const vec3& point )
@@ -581,8 +578,7 @@ namespace RINGMesh {
 
         std::vector< GMEVertex > gme_v ;
         gme_vertices( v, gme_v ) ;
-        for( index_t i = 0; i < gme_v.size(); i++ ) {
-            const GMEVertex& info = gme_v[i] ;
+        for( const GMEVertex& info : gme_v ) {
             builder.geometry.set_mesh_entity_vertex( info.gme_id, info.v_id, point,
                 false ) ;
         }
@@ -1145,8 +1141,8 @@ namespace RINGMesh {
                     std::vector< index_t > colocated_corners ;
                     nn_search.get_neighbors( surface.vertex( v ), colocated_corners,
                         gm_.epsilon() ) ;
-                    for( index_t co = 0; co < colocated_corners.size(); co++ ) {
-                        is_vertex_to_duplicate[colocated_corners[co]] = true ;
+                    for( index_t co : colocated_corners ) {
+                        is_vertex_to_duplicate[co] = true ;
                     }
                 }
             }
@@ -1245,10 +1241,9 @@ namespace RINGMesh {
                     // to the new duplicated vertex index
                     Mesh3DBuilder_var mesh_builder = Mesh3DBuilder::create_builder(
                         *mesh_ ) ;
-                    for( index_t cur_co = 0; cur_co < corner_used.size();
-                        cur_co++ ) {
-                        mesh_builder->set_cell_corner_vertex_index(
-                            corner_used[cur_co], duplicated_vertex_id ) ;
+                    for( index_t cur_co : corner_used ) {
+                        mesh_builder->set_cell_corner_vertex_index( cur_co,
+                            duplicated_vertex_id ) ;
                     }
                 }
             }
@@ -1293,8 +1288,8 @@ namespace RINGMesh {
         }
         temp_surfaces.push_back( surfaces.back() ) ;
 
-        for( index_t i = 0; i < temp_surfaces.size(); i++ ) {
-            index_t s = temp_surfaces[i].first ;
+        for( const action_on_surface& action : temp_surfaces ) {
+            index_t s = action.first ;
             switch( info[s] ) {
                 case SKIP:
                     break ;
@@ -1302,12 +1297,12 @@ namespace RINGMesh {
                     // First time we encounter this surface, do not duplicate
                     // this side but wait to see if we encounter the other.
                     // In the case of surfaces in the VOI, it is encountered only once
-                    ringmesh_assert( temp_surfaces[i].second > TO_PROCESS ) ;
-                    info[s] = ActionOnSurface( !temp_surfaces[i].second ) ;
+                    ringmesh_assert( action.second > TO_PROCESS ) ;
+                    info[s] = ActionOnSurface( !action.second ) ;
                     break ;
                 default:
                     // If the side matches -> duplicate
-                    if( info[s] == temp_surfaces[i].second ) {
+                    if( info[s] == action.second ) {
                         return true ;
                     }
             }
@@ -2000,28 +1995,23 @@ namespace RINGMesh {
                         att_v_names[att_v] )->dimension() ) ;
             }
         }
-        for( index_t att_v = 0; att_v < att_v_double_names.size(); att_v++ ) {
-
+        for( const std::string& att_v : att_v_double_names ) {
             GEO::Attribute< double > cur_att_on_geomodelmesh(
-                vertex_attribute_manager(), att_v_double_names[att_v] ) ;
+                vertex_attribute_manager(), att_v ) ;
             index_t att_dim = cur_att_on_geomodelmesh.dimension() ;
 
             AttributeVector< double > att_on_regions( geomodel_.nb_regions() ) ;
 
             for( index_t reg = 0; reg < geomodel_.nb_regions(); reg++ ) {
                 att_on_regions.bind_one_attribute( reg,
-                    geomodel_.region( reg ).vertex_attribute_manager(),
-                    att_v_double_names[att_v] ) ;
+                    geomodel_.region( reg ).vertex_attribute_manager(), att_v ) ;
             }
 
             for( index_t v = 0; v < vertices.nb(); v++ ) {
                 std::vector< GMEVertex > vertices_on_geomodel_region ;
                 vertices.gme_type_vertices( Region::type_name_static(), v,
                     vertices_on_geomodel_region ) ;
-                for( index_t gme_v = 0; gme_v < vertices_on_geomodel_region.size();
-                    gme_v++ ) {
-                    const GMEVertex& cur_vertex_on_geomodel =
-                        vertices_on_geomodel_region[gme_v] ;
+                for( const GMEVertex& cur_vertex_on_geomodel : vertices_on_geomodel_region ) {
                     for( index_t att_e = 0; att_e < att_dim; att_e++ ) {
                         att_on_regions[cur_vertex_on_geomodel.gme_id.index][cur_vertex_on_geomodel.v_id
                             * att_dim + att_e] = cur_att_on_geomodelmesh[v * att_dim
@@ -2041,27 +2031,25 @@ namespace RINGMesh {
 
         const NNSearch& nn_search = mesh_->cells_nn_search() ;
 
-        for( index_t att_c = 0; att_c < att_c_names.size(); att_c++ ) {
-            if( !is_attribute_a_double( cell_attribute_manager(),
-                att_c_names[att_c] ) ) {
+        for( const std::string& att_c : att_c_names ) {
+            if( !is_attribute_a_double( cell_attribute_manager(), att_c ) ) {
                 continue ;
             }
             GEO::Attribute< double > cur_att_on_geomodel_mesh(
-                cell_attribute_manager(), att_c_names[att_c] ) ;
+                cell_attribute_manager(), att_c ) ;
             index_t att_dim = cur_att_on_geomodel_mesh.dimension() ;
 
             for( index_t reg = 0; reg < geomodel_.nb_regions(); reg++ ) {
                 if( geomodel_.region( reg ).cell_attribute_manager().is_defined(
-                    att_c_names[att_c] ) ) {
-                    Logger::warn( "Transfer attribute" ) << "The attribute "
-                        << att_c_names[att_c] << " already exist on the region "
-                        << reg << std::endl ;
+                    att_c ) ) {
+                    Logger::warn( "Transfer attribute" ) << "The attribute " << att_c
+                        << " already exist on the region " << reg << std::endl ;
                     continue ;
                 }
                 GEO::Attribute< double > cur_att_on_geomodel_mesh_entity ;
                 cur_att_on_geomodel_mesh_entity.create_vector_attribute(
-                    geomodel_.region( reg ).cell_attribute_manager(),
-                    att_c_names[att_c], att_dim ) ;
+                    geomodel_.region( reg ).cell_attribute_manager(), att_c,
+                    att_dim ) ;
                 for( index_t c = 0; c < geomodel_.region( reg ).nb_mesh_elements();
                     c++ ) {
                     vec3 center = geomodel_.region( reg ).mesh_element_barycenter(
