@@ -2,16 +2,12 @@
 
 New Features:
  *
- * 
- *
 
 Bug fix:
- *
- *
  *
 
 Improvements:
  * Refactoring of the io to have smaller files
- *
- *
+ * Explicit distinction between the denomination of GeoModelMeshEntity and GeoModelGeologicalEntity
+ * Remove support of .ogm
 

@@ -61,21 +61,40 @@ namespace RINGMesh {
         virtual ~GeoModelGeologicalEntity()
         {
         }
-        virtual std::string child_type_name() const = 0 ;
-        virtual std::string type_name() const = 0 ;
-        virtual bool is_on_voi() const final ;
-        bool is_connectivity_valid() const ;
 
+        const gmge_t gmge_id() const
+        {
+            return gmge_t( type_name(), id_ ) ;
+        }
+
+        const GeologicalEntityType entity_type() const
+        {
+            return gmge_id().type() ;
+        }
+
+        virtual const MeshEntityType child_type_name() const = 0 ;
+        virtual bool is_on_voi() const ;
+        virtual bool is_connectivity_valid() const ;
+        static const GeologicalEntityType type_name_static()
+        {
+            return ForbiddenGeologicalEntityType::type_name_static() ;
+        }
+        virtual const GeologicalEntityType type_name() const
+        {
+            return type_name_static() ;
+        }
         index_t nb_children() const
         {
             return static_cast< index_t >( children_.size() ) ;
         }
-        const gme_t& child_gme( index_t x ) const
+        const gmme_t& child_gmme( index_t x ) const
         {
             ringmesh_assert( x < nb_children() ) ;
             return children_[x] ;
         }
         const GeoModelMeshEntity& child( index_t x ) const ;
+
+        virtual bool is_identification_valid() const ;
 
     protected:
         GeoModelGeologicalEntity(
@@ -96,7 +115,7 @@ namespace RINGMesh {
 
     protected:
         /// Entities constituting this one - see child_type( TYPE )
-        std::vector< gme_t > children_ ;
+        std::vector< gmme_t > children_ ;
     } ;
 
     /// @todo Review: I am still not convinced that we always have to 
@@ -106,21 +125,20 @@ namespace RINGMesh {
         Contact( const GeoModel& geomodel )
             : GeoModelGeologicalEntity( geomodel )
         {
-            id_.type = type_name_static() ;
         }
         virtual ~Contact()
         {
         }
 
-        static std::string type_name_static()
+        static const GeologicalEntityType type_name_static()
         {
-            return "Contact" ;
+            return GeologicalEntityType( "Contact" ) ;
         }
-        virtual std::string type_name() const override
+        virtual const GeologicalEntityType type_name() const override
         {
             return type_name_static() ;
         }
-        virtual std::string child_type_name() const override ;
+        virtual const MeshEntityType child_type_name() const override ;
 
         virtual bool is_valid() const final ;
     } ;
@@ -130,21 +148,20 @@ namespace RINGMesh {
         Interface( const GeoModel& geomodel )
             : GeoModelGeologicalEntity( geomodel )
         {
-            id_.type = type_name_static() ;
         }
         virtual ~Interface()
         {
         }
 
-        static std::string type_name_static()
+        static const GeologicalEntityType type_name_static()
         {
-            return "Interface" ;
+            return GeologicalEntityType( "Interface" ) ;
         }
-        virtual std::string type_name() const override
+        virtual const GeologicalEntityType type_name() const override
         {
             return type_name_static() ;
         }
-        virtual std::string child_type_name() const override ;
+        virtual const MeshEntityType child_type_name() const override ;
 
         virtual bool is_valid() const final ;
     } ;
@@ -154,21 +171,20 @@ namespace RINGMesh {
         Layer( const GeoModel& geomodel )
             : GeoModelGeologicalEntity( geomodel )
         {
-            id_.type = type_name_static() ;
         }
         virtual ~Layer()
         {
         }
 
-        static std::string type_name_static()
+        static const GeologicalEntityType type_name_static()
         {
-            return "Layer" ;
+            return GeologicalEntityType( "Layer" ) ;
         }
-        virtual std::string type_name() const override
+        virtual const GeologicalEntityType type_name() const override
         {
             return type_name_static() ;
         }
-        virtual std::string child_type_name() const override ;
+        virtual const MeshEntityType child_type_name() const override ;
 
         virtual bool is_valid() const final ;
     } ;
@@ -193,7 +209,7 @@ namespace RINGMesh {
 
         index_t& modifiable_index()
         {
-            return gmge_.id_.index ;
+            return gmge_.id_ ;
         }
 
         GME::GEOL_FEATURE& modifiable_geol_feature()
@@ -201,13 +217,13 @@ namespace RINGMesh {
             return gmge_.geol_feature_ ;
         }
 
-        std::vector< gme_t >& modifiable_children()
+        std::vector< gmme_t >& modifiable_children()
         {
             return gmge_.children_ ;
         }
 
         static GeoModelGeologicalEntity* create_geological_entity(
-            const EntityType& type,
+            const GeologicalEntityType& type,
             const GeoModel& geomodel,
             index_t index_in_geomodel ) ;
 
