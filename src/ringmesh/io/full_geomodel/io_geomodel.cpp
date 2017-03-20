@@ -42,12 +42,12 @@ namespace {
         const GeoModelGeologicalEntity& E )
     {
         /// First line:  TYPE - ID - NAME - GEOL
-        out << E.gme_id() << " " << E.name() << " " ;
+        out << E.gmge_id() << " " << E.name() << " " ;
         out << GeoModelEntity::geol_name( E.geological_feature() ) << std::endl ;
 
         /// Second line:  IDS of children
         for( index_t j = 0; j < E.nb_children(); ++j ) {
-            out << E.child_gme( j ).index << " " ;
+            out << E.child_gmme( j ).index() << " " ;
         }
         out << std::endl ;
     }
@@ -98,7 +98,7 @@ namespace {
                 << std::endl ;
             out << "boundary " ;
             for( index_t b = 0; b < cur_mesh_entity.nb_boundaries(); b++ ) {
-                out << cur_mesh_entity.boundary_gme( b ).index << " " ;
+                out << cur_mesh_entity.boundary_gmme( b ).index() << " " ;
             }
             out << std::endl ;
         }
@@ -149,7 +149,7 @@ namespace {
                 } else {
                     out << "-" ;
                 }
-                out << E.boundary_gme( j ).index << " " ;
+                out << E.boundary_gmme( j ).index() << " " ;
             }
             out << std::endl ;
         }
@@ -162,7 +162,7 @@ namespace {
             } else {
                 out << "-" ;
             }
-            out << M.universe().boundary_gme( j ).index << " " ;
+            out << M.universe().boundary_gmme( j ).index() << " " ;
         }
         out << std::endl ;
 
@@ -187,8 +187,9 @@ namespace {
     template< typename ENTITY >
     std::string build_string_for_geomodel_entity_export( const ENTITY& entity )
     {
-        const gme_t& id = entity.gme_id() ;
-        std::string base_name = id.type + "_" + GEO::String::to_string( id.index ) ;
+        const gmme_t& id = entity.gmme_id() ;
+        std::string base_name = static_cast< std::string >( id.type() ) + "_"
+            + GEO::String::to_string( id.index() ) ;
         return base_name + "." + entity.low_level_mesh_storage().default_extension() ;
     }
 
@@ -299,30 +300,4 @@ namespace {
         }
     } ;
 
-    class OldGeoModelHandlerGM final: public GeoModelIOHandler {
-    public:
-        virtual bool load( const std::string& filename, GeoModel& geomodel ) override
-        {
-            std::string pwd = GEO::FileSystem::get_current_working_directory() ;
-            GEO::FileSystem::set_current_working_directory(
-                GEO::FileSystem::dir_name( filename ) ) ;
-            OldGeoModelBuilderGM builder( geomodel,
-                GEO::FileSystem::base_name( filename, false ) ) ;
-            builder.build_geomodel() ;
-            GEO::Logger::out( "I/O" ) << " Loaded geomodel " << geomodel.name()
-                << " from " << filename << std::endl ;
-            print_geomodel( geomodel ) ;
-            bool is_valid = is_geomodel_valid( geomodel ) ;
-            GEO::FileSystem::set_current_working_directory( pwd ) ;
-            return is_valid ;
-
-        }
-        virtual void save( const GeoModel& geomodel, const std::string& filename ) override
-        {
-            std::string message = "Conversion from the new GeoModel format " ;
-            message += "to the old GeoModel format will never be implemented." ;
-            throw RINGMeshException( "I/O", message ) ;
-        }
-
-    } ;
 }
