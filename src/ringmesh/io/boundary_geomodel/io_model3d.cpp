@@ -384,12 +384,12 @@ namespace {
         }
     }
 
-    class MLIOHandler: public GeoModelIOHandler {
+    class MLIOHandler final: public GeoModelIOHandler {
     public:
         /*! Load a .ml (Gocad file)
          * @pre Filename is valid
          */
-        virtual bool load( const std::string& filename, GeoModel& geomodel )
+        virtual bool load( const std::string& filename, GeoModel& geomodel ) override
         {
             std::ifstream input( filename.c_str() ) ;
             if( !input ) {
@@ -407,7 +407,7 @@ namespace {
             return is_valid ;
         }
 
-        virtual void save( const GeoModel& geomodel, const std::string& filename )
+        virtual void save( const GeoModel& geomodel, const std::string& filename ) override
         {
 
             std::ofstream out( filename.c_str() ) ;

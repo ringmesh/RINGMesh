@@ -34,15 +34,15 @@
  */
 
 namespace {
-    class LMIOHandler: public GeoModelIOHandler {
+    class LMIOHandler final: public GeoModelIOHandler {
     public:
-        virtual bool load( const std::string& filename, GeoModel& geomodel )
+        virtual bool load( const std::string& filename, GeoModel& geomodel ) override
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from a mesh not implemented yet" ) ;
             return false ;
         }
-        virtual void save( const GeoModel& geomodel, const std::string& filename )
+        virtual void save( const GeoModel& geomodel, const std::string& filename ) override
         {
             geomodel.mesh.edges.test_and_initialize() ;
             geomodel.mesh.facets.test_and_initialize() ;

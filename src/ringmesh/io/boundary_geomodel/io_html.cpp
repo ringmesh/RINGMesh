@@ -37,16 +37,16 @@
 
 namespace {
 
-    class HTMLIOHandler: public GeoModelIOHandler {
+    class HTMLIOHandler final: public GeoModelIOHandler {
     public:
-        virtual bool load( const std::string& filename, GeoModel& geomodel )
+        virtual bool load( const std::string& filename, GeoModel& geomodel ) override
         {
             throw RINGMeshException( "I/O",
                 "Geological model loading of a from HTML mesh not yet implemented" ) ;
             return false ;
         }
 
-        virtual void save( const GeoModel& geomodel, const std::string& filename )
+        virtual void save( const GeoModel& geomodel, const std::string& filename ) override
         {
             GEOLOGYJS::JSWriter js( filename ) ;
             js.build_js_gui_ = true ;
