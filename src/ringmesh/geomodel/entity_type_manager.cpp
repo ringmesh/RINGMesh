@@ -58,8 +58,6 @@ namespace RINGMesh {
 
     MeshEntityTypeBoundaryMap::MeshEntityTypeBoundaryMap()
     {
-        register_boundary( Corner::type_name_static(),
-            GeoModelMeshEntity::type_name_static() ) ;
         register_boundary( Line::type_name_static(), Corner::type_name_static() ) ;
         register_boundary( Surface::type_name_static(), Line::type_name_static() ) ;
         register_boundary( Region::type_name_static(),
@@ -75,8 +73,6 @@ namespace RINGMesh {
             Surface::type_name_static() ) ;
         register_in_boundary( Surface::type_name_static(),
             Region::type_name_static() ) ;
-        register_in_boundary( Region::type_name_static(),
-            GeoModelMeshEntity::type_name_static() ) ;
     }
 
     bool MeshEntityTypeManager::is_corner( const MeshEntityType& type )
