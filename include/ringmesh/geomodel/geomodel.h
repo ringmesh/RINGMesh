@@ -37,16 +37,17 @@
 
 #include <ringmesh/basic/common.h>
 
+#include <vector>
+
 #include <geogram/basic/factory.h>
 
 #include <ringmesh/basic/algorithm.h>
 
+#include <ringmesh/geomodel/entity_type.h>
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
 #include <ringmesh/geomodel/geomodel_entity.h>
 #include <ringmesh/geomodel/geomodel_mesh.h>
-#include <ringmesh/geomodel/entity_type.h>
 
-#include <vector>
 
 /*!
  * @file ringmesh/geomodel.h

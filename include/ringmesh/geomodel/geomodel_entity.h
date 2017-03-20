@@ -42,8 +42,8 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <ringmesh/geomodel/geomodel_indexing_types.h>
 #include <ringmesh/geomodel/entity_type_manager.h>
+#include <ringmesh/geomodel/geomodel_indexing_types.h>
 
 namespace RINGMesh {
     class GeoModel ;
@@ -129,13 +129,16 @@ namespace RINGMesh {
          * @param[in] name Name of the entity
          * @param[in] geological_feature Geological feature of the entity, none by default.
          */
-        GeoModelEntity( const GeoModel& geomodel, index_t id,const std::string& name =
-            "Unnamed", GEOL_FEATURE geological_feature = NO_GEOL )
+        GeoModelEntity(
+            const GeoModel& geomodel,
+            index_t id,
+            const std::string& name = "Unnamed",
+            GEOL_FEATURE geological_feature = NO_GEOL )
             :
                 geomodel_( geomodel ),
                 name_( name ),
                 geol_feature_( geological_feature ),
-                id_(id)
+                id_( id )
         {
         }
 
@@ -199,16 +202,16 @@ namespace RINGMesh {
             return boundary_surface_sides_[i] ;
         }
 
-        virtual bool is_identification_valid() const {
+        virtual bool is_identification_valid() const
+        {
             return true ;
         }
-
 
     protected:
         //@todo not used if editor is removed -> to delete
         void copy( const Universe& from )
         {
-            GME::copy(from) ;
+            GME::copy( from ) ;
             boundary_surfaces_ = from.boundary_surfaces_ ;
             boundary_surface_sides_ = from.boundary_surface_sides_ ;
         }

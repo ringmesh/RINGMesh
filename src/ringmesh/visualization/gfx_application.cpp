@@ -199,12 +199,13 @@ namespace RINGMesh {
         selected_entity_type_ = 0 ;
         selected_entity_id_ = 0 ;
         entity_types_.push_back( "All" ) ;
-        entity_types_.push_back( std::string(Corner::type_name_static()) ) ;
-        entity_types_.push_back( std::string(Line::type_name_static()) ) ;
-        entity_types_.push_back( std::string(Surface::type_name_static()) ) ;
-        entity_types_.push_back( std::string(Region::type_name_static()) ) ;
+        entity_types_.push_back( std::string( Corner::type_name_static() ) ) ;
+        entity_types_.push_back( std::string( Line::type_name_static() ) ) ;
+        entity_types_.push_back( std::string( Surface::type_name_static() ) ) ;
+        entity_types_.push_back( std::string( Region::type_name_static() ) ) ;
         for( index_t i = 0; i < GM_.nb_geological_entity_types(); i++ ) {
-            entity_types_.push_back( std::string(GM_.geological_entity_type( i )) ) ;
+            entity_types_.push_back(
+                std::string( GM_.geological_entity_type( i ) ) ) ;
         }
         meshed_regions_ = false ;
         if( GM_.nb_regions() > 0 ) {
@@ -245,7 +246,8 @@ namespace RINGMesh {
     void RINGMeshApplication::GeoModelViewer::toggle_colored_layers()
     {
         // To disable the key 'R'.
-        if( GM_.entity_type_manager().geological_entity_manager.is_valid_type(Layer::type_name_static()) ) {
+        if( GM_.entity_type_manager().geological_entity_manager.is_valid_type(
+            Layer::type_name_static() ) ) {
             show_colored_layers_.new_status = false ;
             return ;
         }
@@ -711,7 +713,8 @@ namespace RINGMesh {
                 ImGui::Checkbox( "Col. cells [C]", &colored_cells_.new_status ) ;
                 ImGui::Checkbox( "Col. regions [r]",
                     &show_colored_regions_.new_status ) ;
-                if(GM_.entity_type_manager().geological_entity_manager.is_valid_type(Layer::type_name_static()) ) {
+                if( GM_.entity_type_manager().geological_entity_manager.is_valid_type(
+                    Layer::type_name_static() ) ) {
                     ImGui::Checkbox( "Col. layers [R]",
                         &show_colored_layers_.new_status ) ;
                 }

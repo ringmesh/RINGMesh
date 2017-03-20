@@ -2547,7 +2547,7 @@ namespace RINGMesh {
      */
     void GeoModelIOHandler::initialize_full_geomodel_output()
     {
-        ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "meshb" );
+        ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "meshb" ) ;
         ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "mesh" ) ;
         ringmesh_register_GeoModelIOHandler_creator( TetGenIOHandler, "tetgen" ) ;
         ringmesh_register_GeoModelIOHandler_creator( TSolidIOHandler, "so" ) ;
