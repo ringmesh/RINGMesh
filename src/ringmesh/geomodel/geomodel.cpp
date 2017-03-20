@@ -205,7 +205,7 @@ namespace RINGMesh {
             delete i ;
         }
 
-        for( auto& entities : geological_entities_ ) {
+        for( std::vector< GeoModelGeologicalEntity* >& entities : geological_entities_ ) {
             for( GeoModelGeologicalEntity*& entity : entities ) {
                 delete entity ;
             }
