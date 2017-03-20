@@ -136,9 +136,8 @@ namespace RINGMesh {
         void check_if_entities_are_meshed(
             const std::set< gmme_t >& mesh_entities_to_remove )
         {
-            for( std::set< gmme_t >::const_iterator it =
-                mesh_entities_to_remove.begin(); it != mesh_entities_to_remove.end();
-                ++it ) {
+            for( auto it = mesh_entities_to_remove.begin();
+                it != mesh_entities_to_remove.end(); ++it ) {
                 if( !RINGMesh::MeshEntityTypeManager::is_valid_type( it->type() ) ) {
                     throw RINGMeshException( "REMOVE",
                         "You try to remove a Geological Entity using mesh removal." ) ;
@@ -180,7 +179,7 @@ namespace RINGMesh {
                 geomodel_access_.modifiable_mesh_entities( type_name ) ;
             store.erase(
                 std::remove( store.begin(), store.end(),
-                    static_cast< GeoModelMeshEntity* >( nil ) ), store.end() ) ;
+                    static_cast< GeoModelMeshEntity* >( nullptr ) ), store.end() ) ;
 
             // QC
             ringmesh_assert( geomodel_.nb_mesh_entities( type_name )
@@ -194,7 +193,7 @@ namespace RINGMesh {
                 geomodel_access_.modifiable_geological_entities( type_name ) ;
             store.erase(
                 std::remove( store.begin(), store.end(),
-                    static_cast< GeoModelGeologicalEntity* >( nil ) ),
+                    static_cast< GeoModelGeologicalEntity* >( nullptr ) ),
                 store.end() ) ;
 
             // QC
@@ -303,9 +302,8 @@ namespace RINGMesh {
         void fill_to_erase_vectors(
             const std::set< gmme_t >& mesh_entities_to_remove )
         {
-            for( std::set< gmme_t >::const_iterator it =
-                mesh_entities_to_remove.begin(); it != mesh_entities_to_remove.end();
-                ++it ) {
+            for( auto it = mesh_entities_to_remove.begin();
+                it != mesh_entities_to_remove.end(); ++it ) {
                 gmme_t cur = *it ;
 
                 index_t type_index = mesh_entity_type_to_index( cur.type() ) ;
@@ -459,8 +457,8 @@ namespace RINGMesh {
             std::vector< gmme_t >& vector,
             const gmme_t& invalid_value )
         {
-            std::vector< gmme_t >::iterator new_end = std::remove( vector.begin(),
-                vector.end(), invalid_value ) ;
+            auto new_end = std::remove( vector.begin(), vector.end(),
+                invalid_value ) ;
             if( new_end == vector.begin() ) {
                 // Clear instead of erase, because the behavior would be undefined.
                 vector.clear() ;

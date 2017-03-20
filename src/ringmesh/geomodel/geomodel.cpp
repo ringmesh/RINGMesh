@@ -32,7 +32,7 @@
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
  */
- 
+
 /*!
  * @file Implementation of THE GeoModel
  * @author Jeanne Pellerin and Arnaud Botella 
@@ -76,18 +76,13 @@ namespace {
 
 namespace RINGMesh {
 
-
     GeoModel::GeoModel()
-        :
-            mesh( *this ),
-            epsilon_( -1 ),
-            universe_( *this ),
-            wells_( nil )
+        : mesh( *this ), epsilon_( -1 ), universe_( *this ), wells_( nullptr )
     {
     }
 
     GeoModel::~GeoModel()
-    {        
+    {
         for( index_t i = 0; i < corners_.size(); ++i ) {
             delete corners_[i] ;
         }
@@ -101,23 +96,23 @@ namespace RINGMesh {
             delete regions_[i] ;
         }
 
-        for( index_t i = 0 ; i < geological_entities_.size(); ++i ){
-            for( index_t j = 0 ; j < geological_entities_[i].size(); ++j ) {
+        for( index_t i = 0; i < geological_entities_.size(); ++i ) {
+            for( index_t j = 0; j < geological_entities_[i].size(); ++j ) {
                 delete geological_entities_[i][j] ;
             }
         }
-    } 
+    }
 
    index_t GeoModel::nb_mesh_entities( const MeshEntityType& type ) const
    {
        if( MeshEntityTypeManager::is_corner( type ) ) {
-           return nb_corners();
+           return nb_corners() ;
        } else if( MeshEntityTypeManager::is_line( type ) ) {
-           return nb_lines();
+           return nb_lines() ;
        } else if( MeshEntityTypeManager::is_surface( type ) ) {
-           return nb_surfaces();
+           return nb_surfaces() ;
        } else if( MeshEntityTypeManager::is_region( type ) ) {
-           return nb_regions();
+           return nb_regions() ;
        } else {
            ringmesh_assert_not_reached ;
            return 0 ;

@@ -55,7 +55,7 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
-    class RINGMESH_API GeoModelBuilderGM: public GeoModelBuilderFile {
+    class RINGMESH_API GeoModelBuilderGM final : public GeoModelBuilderFile {
     public:
         static const index_t NB_VERSION = 2 ;
         GeoModelBuilderGM( GeoModel& geomodel, const std::string& filename ) ;
@@ -70,7 +70,7 @@ namespace RINGMesh {
          */
         void load_meshes( unzFile& uz ) ;
 
-        void load_file() ;
+        virtual void load_file() final ;
 
         void load_mesh_entities( const std::string& mesh_entity_file ) ;
 

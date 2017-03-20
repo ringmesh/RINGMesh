@@ -174,8 +174,8 @@ namespace RINGMesh {
         virtual ~Universe()
         {
         }
-        virtual bool is_valid() const ;
-        virtual bool is_on_voi() const
+        virtual bool is_valid() const override ;
+        virtual bool is_on_voi() const override
         {
             return true ;
         }
@@ -213,7 +213,7 @@ namespace RINGMesh {
             boundary_surface_sides_ = from.boundary_surface_sides_ ;
         }
 
-        virtual bool is_index_valid() const
+        virtual bool is_index_valid() const override
         {
             return true ;
         }

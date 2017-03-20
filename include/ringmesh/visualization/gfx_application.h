@@ -60,21 +60,21 @@ namespace RINGMesh {
         } ;
 
         RINGMeshApplication( int argc, char** argv ) ;
-        ~RINGMeshApplication() ;
+        virtual ~RINGMeshApplication() ;
 
         virtual void quit() ;
 
     private:
         static RINGMeshApplication* instance() ;
 
-        virtual std::string supported_read_file_extensions() ;
+        virtual std::string supported_read_file_extensions() override ;
         std::string supported_geogram_read_file_extensions() ;
-        virtual void init_graphics() ;
-        virtual bool load( const std::string& filename ) ;
-        virtual void draw_scene() ;
-        virtual void draw_object_properties() ;
-        virtual void draw_viewer_properties() ;
-        virtual void draw_application_menus() ;
+        virtual void init_graphics() override ;
+        virtual bool load( const std::string& filename ) override ;
+        virtual void draw_scene() override ;
+        virtual void draw_object_properties() override ;
+        virtual void draw_viewer_properties() override ;
+        virtual void draw_application_menus() override ;
 
         bool load_geogram( const std::string& filename ) ;
         bool can_load_geogram( const std::string& filename ) ;

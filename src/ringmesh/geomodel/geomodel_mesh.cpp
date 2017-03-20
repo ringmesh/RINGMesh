@@ -344,7 +344,7 @@ namespace RINGMesh {
             const MeshEntityType& cur_type = MeshEntityTypeManager::mesh_entity_types()[t] ;
             vertex_maps_.at( cur_type )->resize(
                 geomodel_.nb_mesh_entities( cur_type ),
-                nil ) ;
+                nullptr ) ;
         }
     }
 
@@ -357,7 +357,7 @@ namespace RINGMesh {
     }
 
     GeoModelMeshVertices::GeoModelMeshVertices( GeoModelMesh& gmm, GeoModel& gm )
-        : gmm_( gmm ), gm_( gm ), mesh_( NULL ), vertex_mapper_( *this, gm )
+        : gmm_( gmm ), gm_( gm ), mesh_( nullptr ), vertex_mapper_( *this, gm )
     {
     }
 
@@ -665,7 +665,7 @@ namespace RINGMesh {
         :
             gmm_( gmm ),
             gm_( gmm.geomodel() ),
-            mesh_( NULL ),
+            mesh_( nullptr ),
             nb_tet_( 0 ),
             nb_hex_( 0 ),
             nb_prism_( 0 ),
@@ -1447,7 +1447,7 @@ namespace RINGMesh {
         :
             gmm_( gmm ),
             gm_( gmm.geomodel() ),
-            mesh_( NULL ),
+            mesh_( nullptr ),
             nb_triangle_( 0 ),
             nb_quad_( 0 ),
             nb_polygon_( 0 )
@@ -1839,7 +1839,7 @@ namespace RINGMesh {
     /*******************************************************************************/
 
     GeoModelMeshEdges::GeoModelMeshEdges( GeoModelMesh& gmm )
-        : gmm_( gmm ), gm_( gmm.geomodel() ), mesh_( NULL )
+        : gmm_( gmm ), gm_( gmm.geomodel() ), mesh_( nullptr )
     {
     }
 
@@ -1919,14 +1919,11 @@ namespace RINGMesh {
         for( index_t w = 0; w < wells.nb_wells(); w++ ) {
             const Well& well = wells.well( w ) ;
             for( index_t p = 0; p < well.nb_parts(); p++ ) {
-                const GEO::Mesh& part = well.part( p ).mesh() ;
                 for( index_t e = 0; e < well.part( p ).nb_edges(); e++ ) {
-                    const vec3& e0 = GEO::Geom::mesh_vertex( part,
-                        part.edges.vertex( e, 0 ) ) ;
+                    const vec3& e0 = well.part( p ).edge_vertex( e, 0 ) ;
                     mesh_builder->set_edge_vertex( cur_edge, 0,
                         gmm_.vertices.index( e0 ) ) ;
-                    const vec3& e1 = GEO::Geom::mesh_vertex( part,
-                        part.edges.vertex( e, 1 ) ) ;
+                    const vec3& e1 = well.part( p ).edge_vertex( e, 1 ) ;
                     mesh_builder->set_edge_vertex( cur_edge, 1,
                         gmm_.vertices.index( e1 ) ) ;
                     cur_edge++ ;
@@ -1946,7 +1943,7 @@ namespace RINGMesh {
     GeoModelMesh::GeoModelMesh( GeoModel& geomodel )
         :
             geomodel_( geomodel ),
-            mesh_( nil ),
+            mesh_( nullptr ),
             mode_( GeoModelMeshCells::NONE ),
             vertices( *this, geomodel ),
             edges( *this ),

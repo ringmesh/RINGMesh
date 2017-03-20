@@ -143,9 +143,7 @@ namespace RINGMesh {
         std::size_t input_mesh_size = in_mesh_entities.size() ;
 
         // Add children of geological entities
-        for( std::set< gmge_t >::iterator it( in_geological_entities.begin() );
-            it != in_geological_entities.end(); ++it ) {
-            gmge_t cur = *it ;
+        for( gmge_t cur : in_geological_entities ) {
             const GeoModelGeologicalEntity& E = geomodel_.geological_entity( cur ) ;
             for( index_t j = 0; j < E.nb_children(); ++j ) {
                 in_mesh_entities.insert( E.child_gmme( j ) ) ;
@@ -465,7 +463,7 @@ namespace RINGMesh {
         std::vector< GeoModelMeshEntity* >& store =
             geomodel_access_.modifiable_mesh_entities( type ) ;
         delete store[index] ;
-        store[index] = nil ;
+        store[index] = nullptr ;
     }
 
     void GeoModelBuilderTopology::complete_mesh_entity_connectivity(

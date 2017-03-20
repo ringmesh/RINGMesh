@@ -271,7 +271,6 @@ namespace RINGMesh {
 
     GeoModelMeshEntity::~GeoModelMeshEntity()
     {
-        unbind_vertex_mapping_attribute() ;
 #ifdef RINGMESH_DEBUG
         ringmesh_assert( mesh_ != NULL ) ;
         mesh_->print_mesh_bounded_attributes() ;
@@ -509,7 +508,7 @@ namespace RINGMesh {
         ringmesh_assert( id.is_defined() ) ;
         return geomodel().geological_entity( id ) ;
     }
-    const gmge_t& GeoModelMeshEntity::parent_of_gmme(
+    const gmge_t GeoModelMeshEntity::parent_of_gmme(
         const GeologicalEntityType& parent_type_name ) const
     {
         for( index_t i = 0; i < nb_parents(); ++i ) {
@@ -518,6 +517,7 @@ namespace RINGMesh {
             }
         }
         ringmesh_assert_not_reached ;
+        return gmge_t(ForbiddenGeologicalEntityType::type_name_static(),NO_ID) ;
     }
 
     const GeoModelMeshEntity& GeoModelMeshEntity::boundary( index_t x ) const
