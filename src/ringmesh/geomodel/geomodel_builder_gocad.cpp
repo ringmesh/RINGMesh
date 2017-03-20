@@ -688,7 +688,6 @@ namespace {
             }
 
             gmme_t id = builder().topology.create_mesh_entity< Surface >() ;
-            DEBUG("create_surface") ;
             builder().geology.add_mesh_entity_parent( id, parent ) ;
             builder().geology.set_geological_entity_geol_feature( parent,
                 GME::determine_geological_type( type ) ) ;
@@ -1110,7 +1109,6 @@ namespace RINGMesh {
      */
     void GeoModelBuilderGocad::build_contacts()
     {
-        DEBUG("build contact") ;
         std::vector< std::set< gmge_t > > interfaces ;
         for( index_t i = 0; i < geomodel_.nb_lines(); ++i ) {
             const Line& L = geomodel_.line( i ) ;

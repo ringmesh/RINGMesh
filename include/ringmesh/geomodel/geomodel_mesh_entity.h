@@ -73,7 +73,7 @@ namespace RINGMesh {
         {
             return gmme_t( type_name(), id_ ) ;
         }
-        const MeshEntityType& mesh_entity_type() const
+        const MeshEntityType mesh_entity_type() const
         {
             return gmme_id().type() ;
         }
@@ -274,7 +274,9 @@ namespace RINGMesh {
             index_t id,
             const std::string& name = "No_name",
             GEOL_FEATURE geological_feature = NO_GEOL )
-            : GeoModelEntity( geomodel, id, name, geological_feature ), mesh_( nullptr )
+            :
+                GeoModelEntity( geomodel, id, name, geological_feature ),
+                mesh_( nullptr )
         {
         }
 
@@ -365,7 +367,7 @@ namespace RINGMesh {
         /*!
          * @return 1 the number of vertices of the Corner
          */
-        virtual index_t nb_mesh_element_vertices( index_t mesh_element = 0 ) const
+        virtual index_t nb_mesh_element_vertices( index_t mesh_element = 0 ) const override
         {
             ringmesh_unused( mesh_element ) ;
             return 1 ;
