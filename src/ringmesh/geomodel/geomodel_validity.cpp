@@ -178,12 +178,12 @@ namespace {
         }
 
         bool found_line = false ;
-        for( index_t i = 0; i < v0_line_bme.size(); ++i ) {
-            index_t line0_id = v0_line_bme[i].gmme_id.index() ;
-            for( index_t j = 0; j < v1_line_bme.size(); ++j ) {
-                if( line0_id == v1_line_bme[j].gmme_id.index() ) {
-                    if( !is_edge_on_line( geomodel.line( line0_id ),
-                        v0_line_bme[i].v_id, v1_line_bme[j].v_id ) ) {
+        for( const GMEVertex& vertex0 : v0_line_bme ) {
+            index_t line0_id = vertex0.gmme_id.index() ;
+            for( const GMEVertex& vertex1 : v1_line_bme ) {
+                if( line0_id == vertex1.gmme_id.index() ) {
+                    if( !is_edge_on_line( geomodel.line( line0_id ), vertex0.v_id,
+                        vertex1.v_id ) ) {
                         return false ;
                     }
                     found_line = true ;
@@ -406,9 +406,9 @@ namespace {
             std::vector< GMEVertex > bmes ;
             geomodel.mesh.vertices.gme_vertices( i, bmes ) ;
 
-            for( index_t j = 0; j < bmes.size(); ++j ) {
-                const MeshEntityType& T = bmes[j].gmme_id.type() ;
-                index_t id = bmes[j].gmme_id.index() ;
+            for( const GMEVertex& vertex : bmes ) {
+                const MeshEntityType& T = vertex.gmme_id.type() ;
+                index_t id = vertex.gmme_id.index() ;
                 if( T == Region::type_name_static() ) {
                     regions.push_back( id ) ;
                 } else if( T == Surface::type_name_static() ) {
@@ -444,8 +444,8 @@ namespace {
                         {
                             Logger::warn( "GeoModel" ) << " Vertex " << i
                                 << " is in " << regions.size() << " Regions: " ;
-                            for( index_t j = 0; j < surfaces.size(); ++j ) {
-                                Logger::warn( "GeoModel" ) << regions[j] << " ; " ;
+                            for( index_t region : regions ) {
+                                Logger::warn( "GeoModel" ) << region << " ; " ;
                             }
                             Logger::warn( "GeoModel" ) << std::endl ;
                         }
@@ -458,8 +458,8 @@ namespace {
                         {
                             Logger::warn( "GeoModel" ) << " Vertex " << i
                                 << " is in " << surfaces.size() << " Surfaces: " ;
-                            for( index_t j = 0; j < surfaces.size(); ++j ) {
-                                Logger::warn( "GeoModel" ) << surfaces[j] << " ; " ;
+                            for( index_t surface : surfaces ) {
+                                Logger::warn( "GeoModel" ) << surface << " ; " ;
                             }
                             Logger::warn( "GeoModel" ) << std::endl ;
                         }
@@ -472,8 +472,8 @@ namespace {
                         {
                             Logger::warn( "GeoModel" ) << " Vertex " << i
                                 << " is in " << lines.size() << " Lines " ;
-                            for( index_t j = 0; j < lines.size(); ++j ) {
-                                Logger::warn( "GeoModel" ) << lines[j] << " ; " ;
+                            for( index_t line : lines ) {
+                                Logger::warn( "GeoModel" ) << line << " ; " ;
                             }
                             Logger::warn( "GeoModel" ) << std::endl ;
                         }
@@ -490,15 +490,15 @@ namespace {
                             valid_vertex = false ;
                         }
                         // Check that one point is no more than twice in a SURFACE
-                        for( index_t k = 0; k < surfaces.size(); ++k ) {
+                        for( index_t surface : surfaces ) {
                             index_t nb = static_cast< index_t >( std::count(
-                                surfaces.begin(), surfaces.end(), surfaces[k] ) ) ;
+                                surfaces.begin(), surfaces.end(), surface ) ) ;
                             if( nb > 2 ) {
 #pragma omp critical
                                 {
                                     Logger::warn( "GeoModel" ) << " Vertex " << i
                                         << " is " << nb << " times in Surface "
-                                        << geomodel.surface( surfaces[k] ).gmme_id()
+                                        << geomodel.surface( surface ).gmme_id()
                                         << std::endl ;
                                 }
                                 valid_vertex = false ;
@@ -506,9 +506,9 @@ namespace {
                                 // If a point is twice in a SURFACE, it must be
                                 // on an internal boundary Line.
                                 bool internal_boundary = false ;
-                                for( index_t l = 0; l < lines.size(); ++l ) {
-                                    if( geomodel.line( lines[l] ).is_inside_border(
-                                        geomodel.surface( surfaces[k] ) ) ) {
+                                for( index_t line : lines ) {
+                                    if( geomodel.line( line ).is_inside_border(
+                                        geomodel.surface( surface ) ) ) {
                                         internal_boundary = true ;
                                         break ;
                                     }
@@ -519,7 +519,7 @@ namespace {
                                         Logger::warn( "GeoModel" ) << " Vertex " << i
                                             << " appears " << nb
                                             << " times in Surface "
-                                            << geomodel.surface( surfaces[k] ).gmme_id()
+                                            << geomodel.surface( surface ).gmme_id()
                                             << std::endl ;
                                     }
                                     valid_vertex = false ;
@@ -528,11 +528,10 @@ namespace {
                         }
                         // Check that all the surfaces are in in_boundary of all
                         // the lines 
-                        for( index_t k = 0; k < surfaces.size(); ++k ) {
-                            for( index_t l = 0; l < lines.size(); ++l ) {
-                                gmme_t s_id( Surface::type_name_static(),
-                                    surfaces[k] ) ;
-                                gmme_t l_id( Line::type_name_static(), lines[l] ) ;
+                        for( index_t surface : surfaces ) {
+                            for( index_t line : lines ) {
+                                gmme_t s_id( Surface::type_name_static(), surface ) ;
+                                gmme_t l_id( Line::type_name_static(), line ) ;
                                 if( !is_in_in_boundary( geomodel, s_id, l_id ) ) {
 #pragma omp critical
                                     {
@@ -568,16 +567,16 @@ namespace {
                             valid_vertex = false ;
                         }
                         // Check that a point is no more than twice in a LINE
-                        for( index_t k = 0; k < lines.size(); ++k ) {
+                        for( index_t line : lines ) {
                             index_t nb = static_cast< index_t >( std::count(
-                                lines.begin(), lines.end(), lines[k] ) ) ;
+                                lines.begin(), lines.end(), line ) ) ;
                             if( nb == 2 ) {
                                 // The line must be closed
-                                if( !geomodel.line( lines[k] ).is_closed() ) {
+                                if( !geomodel.line( line ).is_closed() ) {
 #pragma omp critical
                                     {
                                         Logger::warn( "GeoModel" ) << " Vertex " << i
-                                            << " is twice in Line " << lines[k]
+                                            << " is twice in Line " << line
                                             << std::endl ;
                                     }
                                     valid_vertex = false ;
@@ -588,15 +587,15 @@ namespace {
                                 {
                                     Logger::warn( "GeoModel" ) << " Vertex " << i
                                         << " appears " << nb << " times in Line "
-                                        << lines[k] << std::endl ;
+                                        << line << std::endl ;
                                 }
                                 valid_vertex = false ;
                                 break ;
                             }
                         }
                         // Check that all the lines are in in_boundary of this corner
-                        for( index_t k = 0; k < lines.size(); ++k ) {
-                            gmme_t l_id( Line::type_name_static(), lines[k] ) ;
+                        for( index_t line : lines ) {
+                            gmme_t l_id( Line::type_name_static(), line ) ;
                             gmme_t c_id( Corner::type_name_static(), corner ) ;
                             if( !is_in_in_boundary( geomodel, l_id, c_id ) ) {
 #pragma omp critical
@@ -672,8 +671,7 @@ namespace {
         const std::vector< index_t >& facets )
     {
         GEO::Mesh mesh ;
-        for( index_t f = 0; f < facets.size(); ++f ) {
-            index_t cur_facet = facets[f] ;
+        for( index_t cur_facet : facets ) {
             index_t nb_vertices_in_facet = surface.nb_mesh_element_vertices(
                 cur_facet ) ;
             GEO::vector< index_t > vertices ;
@@ -850,8 +848,8 @@ namespace {
                 const vec3 query = line.mesh_element_barycenter( e ) ;
                 std::vector< index_t > results ;
                 nn.get_neighbors( query, results, geomodel.epsilon() ) ;
-                for( index_t i = 0; i < results.size(); i++ ) {
-                    edge_on_lines[results[i]] = true ;
+                for( index_t edge : results ) {
+                    edge_on_lines[edge] = true ;
                 }
             }
         }
@@ -1146,8 +1144,7 @@ namespace RINGMesh {
         const std::vector< MeshEntityType >& meshed_types =
             MeshEntityTypeManager::mesh_entity_types() ;
         index_t count_invalid = 0 ;
-        for( index_t i = 0; i < meshed_types.size(); ++i ) {
-            const MeshEntityType& type = meshed_types[i] ;
+        for( const MeshEntityType& type : meshed_types ) {
             index_t nb_entities = geomodel.nb_mesh_entities( type ) ;
             for( index_t i = 0; i < nb_entities; ++i ) {
                 const GeoModelEntity& E = geomodel.mesh_entity( type, i ) ;
@@ -1171,8 +1168,7 @@ namespace RINGMesh {
         const std::vector< GeologicalEntityType >& geological_types =
             geomodel.entity_type_manager().geological_entity_manager.geological_entity_types() ;
         index_t count_invalid = 0 ;
-        for( index_t i = 0; i < geological_types.size(); ++i ) {
-            const GeologicalEntityType& type = geological_types[i] ;
+        for( const EntityType& type : geological_types ) {
             index_t nb_entities = geomodel.nb_geological_entities( type ) ;
             for( index_t i = 0; i < nb_entities; ++i ) {
                 const GeoModelEntity& E = geomodel.geological_entity( type, i ) ;
