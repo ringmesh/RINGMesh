@@ -46,6 +46,8 @@
 
 namespace RINGMesh {
     class GeoModel ;
+    class MeshEntityType ;
+    class GeologicalEntityType ;
 }
 
 namespace RINGMesh {
@@ -77,7 +79,6 @@ namespace RINGMesh {
     bool RINGMESH_API are_geomodel_region_meshes_simplicial(
         const GeoModel& geomodel ) ;
 
-    typedef std::string EntityType ;
     /*!
      * @return the index of the mesh entity \param gme_type named as \param name
      * in the GeoModel \param geomodel.
@@ -86,7 +87,7 @@ namespace RINGMesh {
      */
     index_t RINGMESH_API find_mesh_entity_id_from_name(
         const GeoModel& geomodel,
-        const EntityType& gme_type,
+        const MeshEntityType& gmme_type,
         const std::string& name ) ;
 
     /*!
@@ -97,7 +98,7 @@ namespace RINGMesh {
      */
     index_t RINGMESH_API find_geological_entity_id_from_name(
         const RINGMesh::GeoModel& geomodel,
-        const RINGMesh::EntityType& gme_type,
+        const RINGMesh::GeologicalEntityType& gmge_type,
         const std::string& name ) ;
 
 #ifdef RINGMESH_WITH_TETGEN

@@ -110,7 +110,6 @@ namespace RINGMesh {
         ringmesh_register_GeoModelIOHandler_creator( MSHIOHandler, "msh" ) ;
         ringmesh_register_GeoModelIOHandler_creator( MFEMIOHandler, "mfem" ) ;
         ringmesh_register_GeoModelIOHandler_creator( GeoModelHandlerGM, "gm" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( OldGeoModelHandlerGM, "ogm" ) ;
         ringmesh_register_GeoModelIOHandler_creator( AbaqusIOHandler, "inp" ) ;
         ringmesh_register_GeoModelIOHandler_creator( AdeliIOHandler, "adeli" ) ;
     }

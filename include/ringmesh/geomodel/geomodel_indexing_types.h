@@ -36,6 +36,7 @@
 #pragma once
 
 #include <ringmesh/basic/common.h>
+#include <ringmesh/geomodel/entity_type_manager.h>
 
 /*!
  * @brief Structures and classes used to index elements in a GeoModel,
@@ -46,97 +47,28 @@
 
 namespace RINGMesh {
 
-    typedef std::string EntityType ;
-
-    /*! 
-     * @brief Unique identification of a GeoModelEntity in a GeoModel
-     * @todo Should we change this name? Looks like index_t but does not enforce
-     *       the programming guidelines [JP]
-     */
-    struct gme_t {
-        gme_t()
-            : type( "No_entity_type" ), index( NO_ID )
-        // Still not perfect  "No_entity_type" is also typed in geomodel_entity.cpp
-        {
-        }
-        gme_t( const EntityType& entity_type, index_t id )
-            : type( entity_type ), index( id )
-        {
-        }
-        bool operator!=( const gme_t& rhs ) const
-        {
-            return type != rhs.type || index != rhs.index ;
-        }
-        bool operator==( const gme_t& rhs ) const
-        {
-            return type == rhs.type && index == rhs.index ;
-        }
-        /*!
-         * @details Compare first types, then compare indices,
-         *          beginning with NO_ID indices.
-         * @note In a sorted vector v of gme_t one can find the first surface with
-         *       std::lower_bound( v.begin(), v.end(), gme_t( SURFACE, NO_ID ) ) ;
-         */
-        bool operator<( const gme_t& rhs ) const
-        {
-            if( type != rhs.type ) {
-                /// @warning Is this now enough for EntityType = std::string?  
-                /// Did any code relied on that sorting? Maybe mine ... [JP]
-                return type < rhs.type ;
-            } else {
-                if( index == NO_ID ) return true ;
-                if( rhs.index == NO_ID ) return false ;
-                return index < rhs.index ;
-            }
-        }
-        friend std::ostream& operator<<( std::ostream& os, const gme_t& in )
-        {
-            os << in.type << " " << in.index ;
-            return os ;
-        }
-        bool is_defined() const
-        {
-            /// @todo hard encoded default name to remove 
-            return type != "No_entity_type" && index != NO_ID ;
-        }
-
-        EntityType type ;
-        /*!
-         * Index of the GeoModelEntity in the GeoModel
-         */
-        index_t index ;
-    } ;
-
     /*!
      * @brief Vertex in a GeoModelEntity
      */
     struct GMEVertex {
-        GMEVertex( gme_t t, index_t vertex_id_in )
-            : gme_id( t ), v_id( vertex_id_in )
+        GMEVertex( gmme_t t, index_t vertex_id_in )
+            : gmme_id( t ), v_id( vertex_id_in )
         {
         }
         GMEVertex()
-            : gme_id(), v_id( NO_ID )
+            : gmme_id(), v_id( NO_ID )
         {
-        }
-        bool operator<( const GMEVertex& rhs ) const
-        {
-            if( gme_id != rhs.gme_id ) {
-                return gme_id < rhs.gme_id ;
-            } else {
-                return v_id < rhs.v_id ;
-            }
         }
         bool operator==( const GMEVertex& rhs ) const
         {
-            return gme_id == rhs.gme_id && v_id == rhs.v_id ;
+            return gmme_id == rhs.gmme_id && v_id == rhs.v_id ;
         }
         bool is_defined() const
         {
-            return gme_id.is_defined() && v_id != NO_ID ;
+            return gmme_id.is_defined() && v_id != NO_ID ;
         }
         /// GeoModelEntity index in the GeoModel that owns it
-        gme_t gme_id ;
+        gmme_t gmme_id ;
         /// Index of the vertex in the GeoModelEntity
         index_t v_id ;
     } ;
