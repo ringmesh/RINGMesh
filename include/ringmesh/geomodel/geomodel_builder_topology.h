@@ -184,7 +184,7 @@ namespace RINGMesh {
                 geomodel_access_.modifiable_mesh_entities( entity_type ) ;
             index_t old_size = static_cast< index_t >( store.size() ) ;
             index_t new_size = old_size + nb_additionnal_entities ;
-            store.resize( new_size, nil ) ;
+            store.resize( new_size, nullptr ) ;
             for( index_t i = old_size; i < new_size; i++ ) {
                 store[i] = GeoModelMeshEntityAccess::create_entity< ENTITY >(
                     geomodel_, i, type ) ;

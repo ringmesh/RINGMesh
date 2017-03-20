@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_GFX_APPLICATION__
-#define __RINGMESH_GFX_APPLICATION__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -62,6 +61,8 @@ namespace RINGMesh {
 
         RINGMeshApplication( int argc, char** argv ) ;
         ~RINGMeshApplication() ;
+
+        virtual void quit() ;
 
     private:
         static RINGMeshApplication* instance() ;
@@ -93,6 +94,8 @@ namespace RINGMesh {
         static void show_colored_regions() ;
         static void show_colored_layers() ;
 
+        static void show_color_table_popup( ImColor& color ) ;
+
         void create_point(
             std::string name = "debug",
             double x = 0,
@@ -122,7 +125,10 @@ namespace RINGMesh {
             struct EntityStyle {
                 ImColor color_ ;
                 int size_ ;
-            };
+                bool visible_vertices_ ;
+                ImColor vertex_color_ ;
+                int vertex_size_ ;
+            } ;
 
         public:
             GeoModelViewer( RINGMeshApplication& app, const std::string& filename ) ;
@@ -142,7 +148,9 @@ namespace RINGMesh {
             void draw_entity_style_editor(
                 const std::string& label,
                 EntityStyle& style ) ;
-            void show_color_table_popup( ImColor& color ) ;
+            void draw_entity_vertex_style_editor(
+                const std::string& label,
+                EntityStyle& style ) ;
             void update_entity_visibility() ;
 
             void toggle_corner_visibility( index_t corner_id ) ;
@@ -190,8 +198,6 @@ namespace RINGMesh {
             bool show_attributes_ ;
             float attribute_min_ ;
             float attribute_max_ ;
-
-            static std::vector< std::vector< ImColor > > color_table_ ;
         } ;
 
         class MeshViewer {
@@ -215,6 +221,7 @@ namespace RINGMesh {
 
             bool show_vertices_ ;
             float vertices_size_ ;
+            ImColor vertices_color_ ;
 
             bool show_surface_ ;
             bool show_surface_colors_ ;
@@ -243,9 +250,9 @@ namespace RINGMesh {
         index_t current_viewer_ ;
         ViewerType current_viewer_type_ ;
 
+        static std::vector< std::vector< ImColor > > color_table_ ;
 
     } ;
 }
 
-#endif
 #endif

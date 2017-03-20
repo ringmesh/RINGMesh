@@ -32,7 +32,6 @@
 #     FRANCE
 
 # Root CMakeList of RINGMesh project
-# Author Jeanne Pellerin
 cmake_minimum_required(VERSION 2.8)
 
 #------------------------------------------------------------------------------------------------
@@ -129,7 +128,7 @@ project(RINGMesh)
 
 # Define version number 
 # It is then exported to the configuration file
-set (RINGMesh_VERSION_MAJOR 3)
+set (RINGMesh_VERSION_MAJOR 4)
 set (RINGMesh_VERSION_MINOR 0)
 set (RINGMesh_VERSION_PATCH 0)
 set (RINGMesh_VERSION ${RINGMesh_VERSION_MAJOR}.${RINGMesh_VERSION_MINOR}.${RINGMesh_VERSION_PATCH})
@@ -201,10 +200,10 @@ elseif(UNIX)
     add_compile_options(-Wall -Wextra -Wno-long-long -Wconversion)
     
     # Determine gcc version and activate additional warnings available in latest versions
-    execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
+    execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE G++_VERSION)
 
-    if(GCC_VERSION VERSION_LESS 4.8 )
-        message(FATAL_ERROR "RINGMesh require GCC version >= 4.8")
+    if(G++_VERSION VERSION_LESS 4.8 )
+        message(FATAL_ERROR "RINGMesh require G++ version >= 4.8")
     endif()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
     add_compile_options(-Wsign-conversion)

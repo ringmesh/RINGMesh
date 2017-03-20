@@ -120,7 +120,6 @@ namespace RINGMesh {
         }
     }
 
-
     bool Universe::is_valid() const
     {
         return true ;

@@ -1132,7 +1132,7 @@ namespace RINGMesh {
     {
         RINGMeshApplication* result =
             dynamic_cast< RINGMeshApplication* >( GEO::Application::instance() ) ;
-        ringmesh_assert( result != nil ) ;
+        ringmesh_assert( result != nullptr ) ;
         return result ;
     }
 
@@ -1216,7 +1216,7 @@ namespace RINGMesh {
         double y,
         double z )
     {
-        MeshViewer* viewer = nil ;
+        MeshViewer* viewer = nullptr ;
         for( index_t i = 0; i < meshes_.size(); i++ ) {
             if( meshes_[i]->name_ == name ) {
                 viewer = meshes_[i] ;

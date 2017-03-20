@@ -54,11 +54,11 @@ namespace RINGMesh {
     template< typename T, typename container >
     inline index_t find( const container& in, const T& value )
     {
-        typename container::const_iterator it = std::find( in.begin(), in.end(), value ) ;
+        auto it = std::find( in.begin(), in.end(), value ) ;
         if( it == in.end() ) {
             return NO_ID ;
         } else {
-            return static_cast<index_t>(it - in.begin()) ;
+            return static_cast< index_t >( it - in.begin() ) ;
         }
     }
 
@@ -69,11 +69,11 @@ namespace RINGMesh {
     template< typename T, typename container >
     inline index_t find_sorted( const container& in, const T& value )
     {
-        typename container::const_iterator low = std::lower_bound( in.begin(), in.end(), value ) ;
+        auto low = std::lower_bound( in.begin(), in.end(), value ) ;
         if( low == in.end() || value < *low ) {
             return NO_ID ;
         } else {
-            return static_cast<index_t>(low - in.begin()) ;
+            return static_cast< index_t >( low - in.begin() ) ;
         }
     }
 
@@ -97,7 +97,7 @@ namespace RINGMesh {
         if( input.size() < 2 ) {
             return ;
         }
-        for( index_t it1 = 0; it1+1 < input.size(); it1++ ) {
+        for( index_t it1 = 0; it1 + 1 < input.size(); it1++ ) {
             index_t ref_index = it1 ;
             T1 ref_value = input[it1] ;
             for( index_t it2 = it1 + 1; it2 < input.size(); it2++ ) {
@@ -118,12 +118,12 @@ namespace RINGMesh {
      * @note To be used in unique_values function
      */
     template< typename T >
-    class CompareIndexFromValue
-    {
+    class CompareIndexFromValue {
     public:
-        CompareIndexFromValue( const std::vector<T>& values ) :
-            values_( values )
-        {}
+        CompareIndexFromValue( const std::vector< T >& values )
+            : values_( values )
+        {
+        }
         /*! @brief Compare two indices based on the stored values at these indices
          */
         inline bool operator()( index_t i, index_t j ) const
@@ -141,8 +141,8 @@ namespace RINGMesh {
             return values_[i] == values_[j] ;
         }
     private:
-        const std::vector<T>& values_ ;
-    };
+        const std::vector< T >& values_ ;
+    } ;
 
     /*!
      * @brief Determines unique occurences of values in input vector
@@ -163,7 +163,7 @@ namespace RINGMesh {
         for( index_t i = 0; i < nb_values; ++i ) {
             sorted_indices[i] = i ;
         }
-        CompareIndexFromValue<T> comparator( input_values ) ;
+        CompareIndexFromValue< T > comparator( input_values ) ;
         // Sort the indices according to the values token in the input vector
         std::sort( sorted_indices.begin(), sorted_indices.end(), comparator ) ;
 
@@ -174,9 +174,8 @@ namespace RINGMesh {
             nb_unique_values++ ;
             unique_value_indices[sorted_indices[i]] = sorted_indices[i] ;
             index_t j = i + 1 ;
-            while( j < nb_values &&
-                comparator.equal_values( sorted_indices[i], sorted_indices[j] )
-                ) {
+            while( j < nb_values
+                && comparator.equal_values( sorted_indices[i], sorted_indices[j] ) ) {
                 unique_value_indices[sorted_indices[j]] = sorted_indices[i] ;
                 j++ ;
             }
@@ -199,20 +198,22 @@ namespace RINGMesh {
         std::vector< index_t >& input2unique_values )
     {
         unique_values.resize( 0 ) ;
-        index_t nb_values = static_cast<index_t>(input_values.size()) ;
+        index_t nb_values = static_cast< index_t >( input_values.size() ) ;
         input2unique_values.resize( nb_values, NO_ID ) ;
 
         std::vector< index_t > unique_value_indices ;
-        index_t nb_unique_values = determine_unique_values_indices( input_values, unique_value_indices ) ;
+        index_t nb_unique_values = determine_unique_values_indices( input_values,
+            unique_value_indices ) ;
         unique_values.reserve( nb_unique_values ) ;
 
         for( index_t i = 0; i < nb_values; ++i ) {
             if( unique_value_indices[i] == i ) {
                 input2unique_values[i] =
-                    static_cast<index_t>(unique_values.size()) ;
+                    static_cast< index_t >( unique_values.size() ) ;
                 unique_values.push_back( input_values[i] ) ;
             } else {
-                input2unique_values[i] = input2unique_values[unique_value_indices[i]] ;
+                input2unique_values[i] =
+                    input2unique_values[unique_value_indices[i]] ;
             }
         }
     }
@@ -223,8 +224,7 @@ namespace RINGMesh {
      * @param[in] cmp a comparator function
      */
     template< typename CONTAINER, typename CMP >
-    inline void sort_unique(
-        CONTAINER& container, const CMP& cmp )
+    inline void sort_unique( CONTAINER& container, const CMP& cmp )
     {
         std::sort( container.begin(), container.end(), cmp ) ;
         container.erase( std::unique( container.begin(), container.end(), cmp ),

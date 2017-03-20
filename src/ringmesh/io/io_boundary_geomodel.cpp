@@ -396,12 +396,10 @@ namespace {
                 }
             }
             // Add the remaining bstones that are not already in bstones
-            for( std::set< index_t >::iterator it( corners.begin() );
-                it != corners.end(); ++it ) {
+            for( auto it( corners.begin() ); it != corners.end(); ++it ) {
                 out << "BSTONE " << *it << std::endl ;
             }
-            for( std::set< std::pair< index_t, index_t > >::iterator it(
-                lineindices.begin() ); it != lineindices.end(); ++it ) {
+            for( auto it( lineindices.begin() ); it != lineindices.end(); ++it ) {
                 out << "BORDER " << vertex_count << " " << it->first << " "
                     << it->second << std::endl ;
                 vertex_count++ ;
@@ -414,15 +412,15 @@ namespace {
      * @brief Save the geomodel in smesh format
      * @details No attributes and no boundary marker are transferred
      */
-    class SMESHIOHandler: public GeoModelIOHandler {
+    class SMESHIOHandler final : public GeoModelIOHandler {
     public:
-        virtual bool load( const std::string& filename, GeoModel& geomodel )
+        virtual bool load( const std::string& filename, GeoModel& geomodel ) final
         {
             throw RINGMeshException( "I/O",
                 "Geological model loading of a from UCD mesh not yet implemented" ) ;
         }
 
-        virtual void save( const GeoModel& geomodel, const std::string& filename )
+        virtual void save( const GeoModel& geomodel, const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() ) ;
             if( out.bad() ) {
@@ -469,12 +467,12 @@ namespace {
 
     /************************************************************************/
 
-    class MLIOHandler: public GeoModelIOHandler {
+    class MLIOHandler final : public GeoModelIOHandler {
     public:
         /*! Load a .ml (Gocad file)
          * @pre Filename is valid
          */
-        virtual bool load( const std::string& filename, GeoModel& geomodel )
+        virtual bool load( const std::string& filename, GeoModel& geomodel ) final
         {
             std::ifstream input( filename.c_str() ) ;
             if( !input ) {
@@ -492,7 +490,7 @@ namespace {
             return is_valid ;
         }
 
-        virtual void save( const GeoModel& geomodel, const std::string& filename )
+        virtual void save( const GeoModel& geomodel, const std::string& filename ) final
         {
 
             std::ofstream out( filename.c_str() ) ;
@@ -502,31 +500,31 @@ namespace {
 
 #ifdef RINGMESH_WITH_GEOLOGYJS
 
-    class HTMLIOHandler: public GeoModelIOHandler {
-    public:
-        virtual bool load( const std::string& filename, GeoModel& geomodel )
-        {
-            throw RINGMeshException( "I/O",
-                "Geological model loading of a from HTML mesh not yet implemented" ) ;
-            return false ;
+class HTMLIOHandler final : public GeoModelIOHandler {
+public:
+    virtual bool load( const std::string& filename, GeoModel& geomodel ) final
+    {
+        throw RINGMeshException( "I/O",
+            "Geological model loading of a from HTML mesh not yet implemented" ) ;
+        return false ;
+    }
+
+    virtual void save( const GeoModel& geomodel, const std::string& filename ) final
+    {
+        GEOLOGYJS::JSWriter js( filename ) ;
+        js.build_js_gui_ = true ;
+
+        save_all_lines( geomodel, js ) ;
+        save_interfaces( geomodel, js ) ;
+
+        // Check validity and write
+        std::string error_message ;
+        if( js.check_validity( error_message ) ) {
+            js.write() ;
+        } else {
+            throw RINGMeshException( "I/O", error_message ) ;
         }
-
-        virtual void save( const GeoModel& geomodel, const std::string& filename )
-        {
-            GEOLOGYJS::JSWriter js( filename ) ;
-            js.build_js_gui_ = true ;
-
-            save_all_lines( geomodel, js ) ;
-            save_interfaces( geomodel, js ) ;
-
-            // Check validity and write
-            std::string error_message ;
-            if( js.check_validity( error_message ) ) {
-                js.write() ;
-            } else {
-                throw RINGMeshException( "I/O", error_message ) ;
-            }
-        }
+    }
 
     private:
         void save_all_lines( const GeoModel& geomodel, GEOLOGYJS::JSWriter& js ) const
@@ -542,9 +540,10 @@ namespace {
                     xyz[line_itr].push_back( cur_line.vertex( v_itr ).z ) ;
                 }
             }
-            js.add_lines( "all_lines", xyz ) ;
-
         }
+        js.add_lines( "all_lines", xyz ) ;
+
+    }
 
         void save_interfaces( const GeoModel& geomodel, GEOLOGYJS::JSWriter& js ) const
         {
@@ -572,10 +571,10 @@ namespace {
                     nb_triangles += cur_surface.nb_mesh_elements() ;
                 }
 
-                std::vector< double > xyz ;
-                xyz.reserve( 3 * nb_vertices ) ;
-                std::vector< index_t > indices ;
-                indices.reserve( 3 * nb_triangles ) ;
+            std::vector< double > xyz ;
+            xyz.reserve( 3 * nb_vertices ) ;
+            std::vector< index_t > indices ;
+            indices.reserve( 3 * nb_triangles ) ;
 
                 index_t vertex_count = 0 ;
                 for( index_t surf_itr = 0 ; surf_itr < cur_interface.nb_children() ;
@@ -598,27 +597,28 @@ namespace {
                                     v_itr ) ) ;
                         }
                     }
-
-                    vertex_count += cur_surface.nb_vertices() ;
                 }
-                js.add_surface( cur_interface.name(), xyz, indices ) ;
+
+                vertex_count += cur_surface.nb_vertices() ;
             }
+            js.add_surface( cur_interface.name(), xyz, indices ) ;
         }
-    } ;
+    }
+} ;
 #endif
 
 }
 /************************************************************************/
 namespace RINGMesh {
-/*
- * Initializes the possible handlers for IO GeoModel files
- */
-void GeoModelIOHandler::initialize_boundary_geomodel_output()
-{
-    ringmesh_register_GeoModelIOHandler_creator( MLIOHandler, "ml" ) ;
-    ringmesh_register_GeoModelIOHandler_creator( SMESHIOHandler, "smesh" );
-#ifdef RINGMESH_WITH_GEOLOGYJS
-ringmesh_register_GeoModelIOHandler_creator( HTMLIOHandler, "html" ) ;
-#endif
-}
+    /*
+     * Initializes the possible handlers for IO GeoModel files
+     */
+    void GeoModelIOHandler::initialize_boundary_geomodel_output()
+    {
+        ringmesh_register_GeoModelIOHandler_creator( MLIOHandler, "ml" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( SMESHIOHandler, "smesh" ) ;
+        #ifdef RINGMESH_WITH_GEOLOGYJS
+            ringmesh_register_GeoModelIOHandler_creator( HTMLIOHandler, "html" ) ;
+        #endif
+    }
 }

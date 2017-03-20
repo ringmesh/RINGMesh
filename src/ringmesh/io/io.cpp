@@ -96,8 +96,8 @@ namespace RINGMesh {
         file.seekg( 0, std::ios::beg ) ;
         std::vector< char > buffer( size ) ;
         file.read( &buffer[0], size ) ;
-        zipOpenNewFileInZip( zf, name.c_str(), NULL,
-        NULL, 0, NULL, 0, NULL, Z_DEFLATED, Z_DEFAULT_COMPRESSION ) ;
+        zipOpenNewFileInZip( zf, name.c_str(), nullptr,
+        nullptr, 0, nullptr, 0, nullptr, Z_DEFLATED, Z_DEFAULT_COMPRESSION ) ;
         zipWriteInFileInZip( zf, size == 0 ? "" : &buffer[0], size ) ;
         zipCloseFileInZip( zf ) ;
         file.close() ;
@@ -117,7 +117,7 @@ namespace RINGMesh {
             throw RINGMeshException( "ZLIB", "Could not open file" ) ;
         }
         FILE *out = fopen( filename, "wb" ) ;
-        if( out == NULL ) {
+        if( out == nullptr ) {
             unzCloseCurrentFile( uz ) ;
             unzClose( uz ) ;
             throw RINGMeshException( "ZLIB", "Could not open destination file" ) ;

@@ -106,7 +106,7 @@ namespace RINGMesh {
                 GeoModelEntity( geomodel,id, name, geological_feature )
         {
         }
-        virtual void copy( const GeoModelGeologicalEntity& from )
+        virtual void copy( const GeoModelGeologicalEntity& from ) final
         {
             GME::copy( from ) ;
             children_ = from.children_ ;
@@ -135,13 +135,13 @@ namespace RINGMesh {
         {
             return GeologicalEntityType( "Contact" ) ;
         }
-        virtual const GeologicalEntityType type_name() const
+        virtual const GeologicalEntityType type_name() const override
         {
             return type_name_static() ;
         }
-        virtual const MeshEntityType child_type_name() const ;
+        virtual const MeshEntityType child_type_name() const override ;
 
-        virtual bool is_valid() const ;
+        virtual bool is_valid() const final ;
     } ;
 
     class RINGMESH_API Interface: public GeoModelGeologicalEntity {
@@ -158,13 +158,13 @@ namespace RINGMesh {
         {
             return GeologicalEntityType( "Interface" ) ;
         }
-        virtual const GeologicalEntityType type_name() const
+        virtual const GeologicalEntityType type_name() const override
         {
             return type_name_static() ;
         }
-        virtual const MeshEntityType child_type_name() const ;
+        virtual const MeshEntityType child_type_name() const override ;
 
-        virtual bool is_valid() const ;
+        virtual bool is_valid() const final ;
     } ;
 
     class RINGMESH_API Layer: public GeoModelGeologicalEntity {
@@ -181,13 +181,13 @@ namespace RINGMesh {
         {
             return GeologicalEntityType( "Layer" ) ;
         }
-        virtual const GeologicalEntityType type_name() const
+        virtual const GeologicalEntityType type_name() const override
         {
             return type_name_static() ;
         }
-        virtual const MeshEntityType child_type_name() const ;
+        virtual const MeshEntityType child_type_name() const override ;
 
-        virtual bool is_valid() const ;
+        virtual bool is_valid() const final ;
     } ;
 
     class GeoModelGeologicalEntityAccess {
