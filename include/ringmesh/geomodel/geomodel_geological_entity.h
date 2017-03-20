@@ -102,12 +102,10 @@ namespace RINGMesh {
     protected:
         GeoModelGeologicalEntity(
             const GeoModel& geomodel,
-            index_t id = NO_ID,
             const std::string& name = "unnamed",
             GEOL_FEATURE geological_feature = NO_GEOL )
             :
-                GeoModelEntity( geomodel, name, geological_feature ),
-                gmge_id_( type_name(), id )
+                GeoModelEntity( geomodel, name, geological_feature )
         {
         }
         virtual void copy( const GeoModelGeologicalEntity& from )
@@ -128,10 +126,9 @@ namespace RINGMesh {
     /// derive the base class to define new entities. [JP]
     class RINGMESH_API Contact: public GeoModelGeologicalEntity {
     public:
-        Contact( const GeoModel& geomodel )
-            : GeoModelGeologicalEntity( geomodel )
+        Contact( const GeoModel& geomodel, )
+            : GeoModelGeologicalEntity( geomodel ), gmge_id_( type_name(), id )
         {
-            gmge_id_.type() = type_name_static() ;
         }
         virtual ~Contact()
         {
@@ -153,9 +150,8 @@ namespace RINGMesh {
     class RINGMESH_API Interface: public GeoModelGeologicalEntity {
     public:
         Interface( const GeoModel& geomodel )
-            : GeoModelGeologicalEntity( geomodel )
+            : GeoModelGeologicalEntity( geomodel ), gmge_id_( type_name(), id )
         {
-            gmge_id_.type() = type_name_static() ;
         }
         virtual ~Interface()
         {
@@ -177,9 +173,8 @@ namespace RINGMesh {
     class RINGMESH_API Layer: public GeoModelGeologicalEntity {
     public:
         Layer( const GeoModel& geomodel )
-            : GeoModelGeologicalEntity( geomodel )
+            : GeoModelGeologicalEntity( geomodel ), gmge_id_( type_name(), id )
         {
-            gmge_id_.type() = type_name_static() ;
         }
         virtual ~Layer()
         {
@@ -218,7 +213,7 @@ namespace RINGMesh {
 
         index_t& modifiable_index()
         {
-            return gmge_.gmge_id_.index() ;
+            return gmge_.gmge_id_.index_;
         }
 
         GME::GEOL_FEATURE& modifiable_geol_feature()
