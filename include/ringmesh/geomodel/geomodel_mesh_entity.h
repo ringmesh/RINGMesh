@@ -67,15 +67,8 @@ namespace RINGMesh {
     public:
         virtual ~GeoModelMeshEntity() ;
 
-        static const MeshEntityType type_name_static()
-        {
-            return DefaultMeshEntityType::default_entity_type() ;
-        }
 
-        virtual const MeshEntityType type_name() const
-        {
-            return type_name_static() ;
-        }
+        virtual const MeshEntityType type_name() const = 0 ;
 
         const gmme_t gmme_id() const
         {
