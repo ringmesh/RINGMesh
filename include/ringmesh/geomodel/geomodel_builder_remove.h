@@ -519,12 +519,12 @@ namespace RINGMesh {
         }
         const MeshEntityType& index_to_mesh_entity_type( index_t index ) const
         {
-            return mesh_entity_types_.at( index ) ;
+            return mesh_entity_types_[index] ;
         }
 
         const GeologicalEntityType& index_to_geological_entity_type( index_t index ) const
         {
-            return geological_entity_types_.at( index ) ;
+            return geological_entity_types_[index] ;
         }
 
     private:

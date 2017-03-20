@@ -204,7 +204,7 @@ namespace RINGMesh {
             return index_ ;
         }
 
-        const Entity_type_template& type() const
+        Entity_type_template type() const
         {
             return type_ ;
         }

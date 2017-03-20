@@ -177,8 +177,6 @@ namespace RINGMesh {
             ++i ) {
             const MeshEntityType& type =
                 MeshEntityTypeManager::mesh_entity_types()[i] ;
-            const MeshEntityType& in_boundary_type =
-                MeshEntityTypeManager::in_boundary_type( type ) ;
             for( index_t j = 0; j < geomodel_.nb_mesh_entities( type ); ++j ) {
                 bool no_incident = true ;
                 const GeoModelMeshEntity& E = geomodel_.mesh_entity( type, j ) ;
