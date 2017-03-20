@@ -76,7 +76,7 @@ namespace RINGMesh {
         const std::set< gmge_t >& entities )
     {
         std::set< gmme_t > mesh_entities ;
-        for( const gmme_t& it : entities ) {
+        for( const gmge_t& it : entities ) {
             const GeoModelGeologicalEntity& cur_gmge = geomodel_.geological_entity(
                 it ) ;
             for( index_t i = 0; i < cur_gmge.nb_children(); i++ ) {

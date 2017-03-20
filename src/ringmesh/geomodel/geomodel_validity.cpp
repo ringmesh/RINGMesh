@@ -1168,7 +1168,7 @@ namespace RINGMesh {
         const std::vector< GeologicalEntityType >& geological_types =
             geomodel.entity_type_manager().geological_entity_manager.geological_entity_types() ;
         index_t count_invalid = 0 ;
-        for( const EntityType& type : geological_types ) {
+        for( const GeologicalEntityType& type : geological_types ) {
             index_t nb_entities = geomodel.nb_geological_entities( type ) ;
             for( index_t i = 0; i < nb_entities; ++i ) {
                 const GeoModelEntity& E = geomodel.geological_entity( type, i ) ;

@@ -62,7 +62,7 @@ namespace {
         std::vector< GMEVertex > vertices ;
         geomodel_vertices.gme_vertices( geomodel_point_id, vertices ) ;
         for( const GMEVertex& vertex : vertices ) {
-            if( vertex.gmem_id.type == Corner::type_name_static() ) {
+            if( vertex.gmme_id.type() == Corner::type_name_static() ) {
                 return vertex.gmme_id ;
             }
         }
