@@ -271,7 +271,6 @@ namespace RINGMesh {
 
     GeoModelMeshEntity::~GeoModelMeshEntity()
     {
-        unbind_vertex_mapping_attribute() ;
 #ifdef RINGMESH_DEBUG
         ringmesh_assert( mesh_ != NULL ) ;
         mesh_->print_mesh_bounded_attributes() ;
@@ -518,7 +517,7 @@ namespace RINGMesh {
             }
         }
         ringmesh_assert_not_reached ;
-        return gmge_t(DefaultGeologicalEntityType::default_entity_type(),NO_ID) ;
+        return gmge_t(ForbiddenGeologicalEntityType::type_name_static(),NO_ID) ;
     }
 
     const GeoModelMeshEntity& GeoModelMeshEntity::boundary( index_t x ) const

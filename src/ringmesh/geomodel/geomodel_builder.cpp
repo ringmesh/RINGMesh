@@ -1162,7 +1162,7 @@ namespace RINGMesh {
                 type ) ) ;
         for( index_t i = 0; i < parent_types.size(); ++i ) {
             const GeologicalEntityType& parent_type = parent_types[i] ;
-            if( parent_type != DefaultGeologicalEntityType::default_entity_type() ) {
+            if( parent_type != ForbiddenGeologicalEntityType::type_name_static() ) {
                 for( index_t j = 0;
                     j < geomodel_.nb_geological_entities( parent_type ); ++j ) {
                     const GeoModelGeologicalEntity& parent =
@@ -1184,7 +1184,7 @@ namespace RINGMesh {
         }
         const MeshEntityType& c_type =
             geomodel_.geological_entity( type, 0 ).child_type_name() ;
-        if( c_type != DefaultMeshEntityType::default_entity_type() ) {
+        if( c_type != ForbiddenMeshEntityType::type_name_static() ) {
             for( index_t i = 0; i < geomodel_.nb_mesh_entities( c_type ); ++i ) {
                 const GeoModelMeshEntity& p = geomodel_.mesh_entity( c_type, i ) ;
                 for( index_t j = 0; j < p.nb_parents(); j++ ) {

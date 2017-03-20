@@ -49,15 +49,16 @@ namespace RINGMesh {
         &hard_encoded_mesh_entity_types_array[0],
         &hard_encoded_mesh_entity_types_array[4] ) ;
 
-
     MeshEntityTypeBoundaryMap MeshEntityTypeManager::boundary_relationships_ ;
-    MeshEntityTypeInBoundaryMap MeshEntityTypeManager ::in_boundary_relationships_ ;
-    MeshEntityTypeManager::MeshEntityTypeManager() {
-
+    MeshEntityTypeInBoundaryMap MeshEntityTypeManager::in_boundary_relationships_ ;
+    MeshEntityTypeManager::MeshEntityTypeManager()
+    {
     }
 
     MeshEntityTypeBoundaryMap::MeshEntityTypeBoundaryMap()
     {
+        register_boundary( Corner::type_name_static(),
+            ForbiddenMeshEntityType::type_name_static() ) ;
         register_boundary( Line::type_name_static(), Corner::type_name_static() ) ;
         register_boundary( Surface::type_name_static(), Line::type_name_static() ) ;
         register_boundary( Region::type_name_static(),
@@ -65,7 +66,6 @@ namespace RINGMesh {
     }
 
     MeshEntityTypeInBoundaryMap::MeshEntityTypeInBoundaryMap()
-
     {
         register_in_boundary( Corner::type_name_static(),
             Line::type_name_static() ) ;
@@ -73,6 +73,8 @@ namespace RINGMesh {
             Surface::type_name_static() ) ;
         register_in_boundary( Surface::type_name_static(),
             Region::type_name_static() ) ;
+        register_in_boundary( Region::type_name_static(),
+            ForbiddenMeshEntityType::type_name_static() ) ;
     }
 
     bool MeshEntityTypeManager::is_corner( const MeshEntityType& type )
@@ -143,10 +145,11 @@ namespace RINGMesh {
         return find( geological_entity_types_, type ) ;
     }
 
-    bool GeologicalTypeManager::is_valid_type( const GeologicalEntityType& type ) const{
-        return contains(geological_entity_types_,type ) ;
+    bool GeologicalTypeManager::is_valid_type(
+        const GeologicalEntityType& type ) const
+    {
+        return contains( geological_entity_types_, type ) ;
     }
-
 
     std::vector< GeologicalEntityType > RelationshipManager::parent_types(
         const MeshEntityType& child_type ) const
@@ -170,7 +173,7 @@ namespace RINGMesh {
         GeologicalEntityToChild::const_iterator itr = parent_to_child_.find(
             parent_type ) ;
         if( itr == parent_to_child_.end() ) {
-            return DefaultMeshEntityType::default_entity_type() ;
+            return ForbiddenMeshEntityType::type_name_static() ;
         } else {
             return itr->second ;
         }
