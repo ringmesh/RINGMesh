@@ -1113,7 +1113,7 @@ namespace RINGMesh {
             std::set< gmge_t > cur_interfaces ;
             for( index_t j = 0; j < L.nb_in_boundary(); ++j ) {
                 const GeoModelMeshEntity& S = L.in_boundary( j ) ;
-                gmge_t parent_interface = S.parent_gmme(
+                gmge_t parent_interface = S.parent_of_gmme(
                     Interface::type_name_static() ) ;
                 cur_interfaces.insert( parent_interface ) ;
             }
@@ -1133,7 +1133,7 @@ namespace RINGMesh {
                 interfaces.push_back( cur_interfaces ) ;
                 // Create a name for this contact
                 std::string name = "contact" ;
-                for( const gme_t& it : cur_interfaces ) {
+                for( const gmge_t& it : cur_interfaces ) {
                     name += "_" ;
                     name += geomodel_.geological_entity( it ).name() ;
                 }

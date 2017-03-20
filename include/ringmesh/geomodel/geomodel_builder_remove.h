@@ -137,7 +137,7 @@ namespace RINGMesh {
             const std::set< gmme_t >& mesh_entities_to_remove )
         {
             for( const gmme_t& it : mesh_entities_to_remove ) {
-                if( !RINGMesh::MeshEntityTypeManager::is_valid_type( it.type ) ) {
+                if( !RINGMesh::MeshEntityTypeManager::is_valid_type( it.type() ) ) {
                     throw RINGMeshException( "REMOVE",
                         "You try to remove a Geological Entity using mesh removal." ) ;
                 }
