@@ -1,0 +1,17 @@
+#### Current changeset ####
+
+New Features:
+ *
+ * 
+ *
+
+Bug fix:
+ *
+ *
+ *
+
+Improvements:
+ * Precise distinction between the denomination of GeoModelMeshEntity and GeoModelGeologicalEntity
+ * Remove support of .ogm
+ *
+
