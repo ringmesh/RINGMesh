@@ -204,6 +204,11 @@ namespace RINGMesh {
             return index_ ;
         }
 
+        const Entity_type_template& type() const
+        {
+            return type_ ;
+        }
+
         bool operator!=( const gme_t& rhs ) const
         {
             return type_ != rhs.type_ || index_ != rhs.index_ ;
@@ -249,10 +254,10 @@ namespace RINGMesh {
         {
         }
 
-        const Entity_type_template& type() const
-        {
-            return static_cast< const Entity_type_template& >( type_ ) ;
-        }
+//        const Entity_type_template& type() const
+//        {
+//            return static_cast< const Entity_type_template& >( type_ ) ;
+//        }
 
     protected:
         Entity_type_template type_ ;
