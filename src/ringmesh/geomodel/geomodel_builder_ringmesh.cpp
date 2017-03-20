@@ -96,19 +96,20 @@ namespace RINGMesh {
                         + GEO::String::to_string( file_line.line_number() )
                         + ", 4 fields are expected, the type, id, name, and geological feature" ) ;
             }
-            gmme_t entity ;
-            read_first_line( file_line, entity ) ;
+            gmme_t entity = read_first_line( file_line, entity ) ;
             read_second_line( file_line, entity ) ;
         }
 
     protected:
-        void read_first_line( GEO::LineInput& file_line, gmme_t& entity )
+        gmme_t read_first_line( GEO::LineInput& file_line, gmme_t& entity )
         {
-            entity.type() = MeshEntityType( file_line.field( 0 ) ) ;
-            entity.index() = file_line.field_as_uint( 1 ) ;
+
+            gmme_t cur_gmme( MeshEntityType( file_line.field( 0 ) ),
+                file_line.field_as_uint( 1 ) ) ;
             builder_.info.set_mesh_entity_name( entity, file_line.field( 2 ) ) ;
             builder_.geology.set_mesh_entity_geol_feature( entity,
                 GME::determine_geological_type( file_line.field( 3 ) ) ) ;
+            return cur_gmme ;
         }
         void read_second_line( GEO::LineInput& file_line, const gmme_t& entity )
         {
@@ -277,7 +278,7 @@ namespace RINGMesh {
                         GeologicalEntityType( file_line.field( 1 ) ),
                         file_line.field_as_uint( 2 ) ) ;
                 } else {
-                    GeologicalEntityType type(file_line.field( 0 )) ;
+                    GeologicalEntityType type( file_line.field( 0 ) ) ;
                     index_t id = file_line.field_as_uint( 1 ) ;
                     gmge_t entity( type, id ) ;
                     info.set_geological_entity_name( entity, file_line.field( 2 ) ) ;
@@ -344,4 +345,4 @@ namespace RINGMesh {
         Logger::instance()->set_minimal( false ) ;
     }
 
-}// namespace
+} // namespace

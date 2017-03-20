@@ -77,13 +77,9 @@ namespace RINGMesh {
             return type_name_static() ;
         }
 
-        const gmme_t& gmme_id() const
+        const gmme_t gmme_id() const
         {
-            return gmme_id_ ;
-        }
-        index_t index() const
-        {
-            return gmme_id().index() ;
+            return gmme_t( type_name_static(), id_ ) ;
         }
         const MeshEntityType& mesh_entity_type() const
         {
@@ -167,7 +163,7 @@ namespace RINGMesh {
          * You should check on the returned gmge_t.
          * @param[in] parent_type_name the asking parent type
          */
-        const gmge_t& parent_of_gmme(
+        const gmge_t parent_of_gmme(
             const GeologicalEntityType& parent_type ) const ;
         const GeoModelGeologicalEntity& parent( index_t id ) const ;
         const GeoModelGeologicalEntity& parent(
@@ -281,16 +277,19 @@ namespace RINGMesh {
         }
 
     protected:
-        GeoModelMeshEntity( const GeoModel& geomodel, const std::string& name =
-            "No_name", GEOL_FEATURE geological_feature = NO_GEOL )
-            : GeoModelEntity( geomodel, name, geological_feature ), mesh_( NULL )
+        GeoModelMeshEntity(
+            const GeoModel& geomodel,
+            index_t id,
+            const std::string& name = "No_name",
+            GEOL_FEATURE geological_feature = NO_GEOL )
+            : GeoModelEntity( geomodel, id, name, geological_feature ), mesh_( NULL )
         {
         }
 
         virtual void copy( const GeoModelMeshEntity& from )
         {
             GME::copy( from ) ;
-            gmme_id_ = from.gmme_id_ ;
+            id_ = from.id_ ;
             boundaries_ = from.boundaries_ ;
             in_boundary_ = from.in_boundary_ ;
             parents_ = from.parents_ ;
@@ -333,7 +332,6 @@ namespace RINGMesh {
         /// (groups of GeoModelMeshEntity this entity belongs to)
         std::vector< gmge_t > parents_ ;
 
-        gmme_t gmme_id_ ;
     private:
         /// The RINGMesh::Mesh giving the geometry of this entity
         MeshBase* mesh_ ;
@@ -413,7 +411,7 @@ namespace RINGMesh {
          *  A point is added to its Mesh.
          */
         Corner( const GeoModel& geomodel, index_t id, const MeshType type )
-            : GeoModelMeshEntity( geomodel ), gmme_id_( type_name_static(), id )
+            : GeoModelMeshEntity( geomodel, id )
 
         {
             update_mesh_storage_type( Mesh0D::create_mesh( type ) ) ;
@@ -565,7 +563,7 @@ namespace RINGMesh {
         }
     protected:
         Line( const GeoModel& geomodel, index_t id, const MeshType type )
-            : GeoModelMeshEntity( geomodel ), gmme_id_( type_name_static(), id )
+            : GeoModelMeshEntity( geomodel, id )
         {
             update_mesh_storage_type( Mesh1D::create_mesh( type ) ) ;
         }
@@ -849,7 +847,7 @@ namespace RINGMesh {
         }
     protected:
         Surface( const GeoModel& geomodel, index_t id, const MeshType type )
-            : GeoModelMeshEntity( geomodel ), gmme_id_( type_name_static(), id )
+            : GeoModelMeshEntity( geomodel, id )
         {
             update_mesh_storage_type( Mesh2D::create_mesh( type ) ) ;
         }
@@ -1176,7 +1174,7 @@ namespace RINGMesh {
         }
     protected:
         Region( const GeoModel& geomodel, index_t id, const MeshType type )
-            : GeoModelMeshEntity( geomodel ), gmme_id_( type_name_static(), id )
+            : GeoModelMeshEntity( geomodel, id )
         {
             update_mesh_storage_type( Mesh3D::create_mesh( type ) ) ;
         }
@@ -1249,7 +1247,7 @@ namespace RINGMesh {
 
         index_t& modifiable_index()
         {
-            return gmme_.gmme_id_.index ;
+            return gmme_.id_ ;
         }
 
         GME::GEOL_FEATURE& modifiable_geol_feature()

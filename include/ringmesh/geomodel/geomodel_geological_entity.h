@@ -62,14 +62,11 @@ namespace RINGMesh {
         {
         }
 
-        const gmge_t& gmge_id() const
+        const gmge_t gmge_id() const
         {
-            return gmge_id_ ;
+            return gmge_t(type_name_static(),id_) ;
         }
-        index_t index() const
-        {
-            return gmge_id().index() ;
-        }
+
         const GeologicalEntityType& entity_type() const
         {
             return gmge_id().type() ;
@@ -102,10 +99,11 @@ namespace RINGMesh {
     protected:
         GeoModelGeologicalEntity(
             const GeoModel& geomodel,
+            index_t id = NO_ID,
             const std::string& name = "unnamed",
             GEOL_FEATURE geological_feature = NO_GEOL )
             :
-                GeoModelEntity( geomodel, name, geological_feature )
+                GeoModelEntity( geomodel,id, name, geological_feature )
         {
         }
         virtual void copy( const GeoModelGeologicalEntity& from )
@@ -119,15 +117,14 @@ namespace RINGMesh {
     protected:
         /// Entities constituting this one - see child_type( TYPE )
         std::vector< gmme_t > children_ ;
-        gmge_t gmge_id_ ;
     } ;
 
     /// @todo Review: I am still not convinced that we always have to 
     /// derive the base class to define new entities. [JP]
     class RINGMESH_API Contact: public GeoModelGeologicalEntity {
     public:
-        Contact( const GeoModel& geomodel, )
-            : GeoModelGeologicalEntity( geomodel ), gmge_id_( type_name(), id )
+        Contact( const GeoModel& geomodel)
+            : GeoModelGeologicalEntity( geomodel)
         {
         }
         virtual ~Contact()
@@ -149,8 +146,8 @@ namespace RINGMesh {
 
     class RINGMESH_API Interface: public GeoModelGeologicalEntity {
     public:
-        Interface( const GeoModel& geomodel )
-            : GeoModelGeologicalEntity( geomodel ), gmge_id_( type_name(), id )
+        Interface( const GeoModel& geomodel)
+            : GeoModelGeologicalEntity( geomodel )
         {
         }
         virtual ~Interface()
@@ -172,8 +169,8 @@ namespace RINGMesh {
 
     class RINGMESH_API Layer: public GeoModelGeologicalEntity {
     public:
-        Layer( const GeoModel& geomodel )
-            : GeoModelGeologicalEntity( geomodel ), gmge_id_( type_name(), id )
+        Layer( const GeoModel& geomodel)
+            : GeoModelGeologicalEntity( geomodel )
         {
         }
         virtual ~Layer()
@@ -213,7 +210,7 @@ namespace RINGMesh {
 
         index_t& modifiable_index()
         {
-            return gmge_.gmge_id_.index_;
+            return gmge_.id_ ;
         }
 
         GME::GEOL_FEATURE& modifiable_geol_feature()

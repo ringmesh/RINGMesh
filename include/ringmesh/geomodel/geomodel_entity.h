@@ -106,6 +106,10 @@ namespace RINGMesh {
         {
             return name_ ;
         }
+        index_t index() const
+        {
+            return id_ ;
+        }
         bool has_geological_feature() const
         {
             return geological_feature() != NO_GEOL ;
@@ -125,12 +129,13 @@ namespace RINGMesh {
          * @param[in] name Name of the entity
          * @param[in] geological_feature Geological feature of the entity, none by default.
          */
-        GeoModelEntity( const GeoModel& geomodel, const std::string& name =
+        GeoModelEntity( const GeoModel& geomodel, index_t id,const std::string& name =
             "Unnamed", GEOL_FEATURE geological_feature = NO_GEOL )
             :
                 geomodel_( geomodel ),
                 name_( name ),
-                geol_feature_( geological_feature )
+                geol_feature_( geological_feature ),
+                id_(id)
         {
         }
 
@@ -148,6 +153,8 @@ namespace RINGMesh {
         std::string name_ ;
         /// Geological feature of this object - default is NO_GEOL
         GEOL_FEATURE geol_feature_ ;
+        /// Index of the entity
+        index_t id_ ;
     } ;
 
     typedef GeoModelEntity GME ;
