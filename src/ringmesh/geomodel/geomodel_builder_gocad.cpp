@@ -1073,7 +1073,7 @@ namespace {
 
     void tsolid_import_factory_initialize()
     {
-        ringmesh_register_TSolidLineParser_creator( LoadRegion, "TVOLUME" );
+        ringmesh_register_TSolidLineParser_creator( LoadRegion, "TVOLUME" ) ;
         ringmesh_register_TSolidLineParser_creator( LoadTSolidVertex, "VRTX" ) ;
         ringmesh_register_TSolidLineParser_creator( LoadTSolidVertex, "PVRTX" ) ;
         ringmesh_register_TSolidLineParser_creator( LoadTSAtomic, "ATOM" ) ;
@@ -1088,12 +1088,13 @@ namespace {
     void ml_import_factory_initialize()
     {
         ringmesh_register_MLLineParser_creator( LoadTSurf, "TSURF" ) ;
-        ringmesh_register_MLLineParser_creator( LoadMLSurface, "TFACE" );
-        ringmesh_register_MLLineParser_creator( LoadMLRegion, "REGION" );
-        ringmesh_register_MLLineParser_creator( LoadLayer, "LAYER" );
-        ringmesh_register_MLLineParser_creator( MLEndSection, "END" );
-        ringmesh_register_MLLineParser_creator( LoadMLAtom, "ATOM" );
-        ringmesh_register_MLLineParser_creator( LoadMLAtom, "PATOM" );}
+        ringmesh_register_MLLineParser_creator( LoadMLSurface, "TFACE" ) ;
+        ringmesh_register_MLLineParser_creator( LoadMLRegion, "REGION" ) ;
+        ringmesh_register_MLLineParser_creator( LoadLayer, "LAYER" ) ;
+        ringmesh_register_MLLineParser_creator( MLEndSection, "END" ) ;
+        ringmesh_register_MLLineParser_creator( LoadMLAtom, "ATOM" ) ;
+        ringmesh_register_MLLineParser_creator( LoadMLAtom, "PATOM" ) ;
+    }
 
 }
 // anonymous namespace
