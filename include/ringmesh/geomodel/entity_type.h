@@ -40,6 +40,8 @@
 #include <vector>
 
 namespace RINGMesh {
+    class GeoModelMeshEntityAccess ;
+    class GeoModelGeologicalEntityAccess ;
 
     /*
      * @brief Abstract class defining a Geomodel Entity Type
@@ -192,17 +194,16 @@ namespace RINGMesh {
      * @todo Should we change this name? Looks like index_t but does not enforce
      *       the programming guidelines [JP]
      */
+    template< class Entity_type_template >
     struct gme_t {
+        friend GeoModelMeshEntityAccess ;
+        friend GeoModelGeologicalEntityAccess ;
     public:
         index_t index() const
         {
             return index_ ;
         }
 
-        index_t& index()
-        {
-            return index_ ;
-        }
         bool operator!=( const gme_t& rhs ) const
         {
             return type_ != rhs.type_ || index_ != rhs.index_ ;
@@ -235,12 +236,11 @@ namespace RINGMesh {
             return type_ != DefaultMeshEntityType::default_entity_type()
                 && index_ != NO_ID ;
         }
-    protected:
         gme_t()
             : type_( DefaultMeshEntityType::default_entity_type() ), index_( NO_ID )
         {
         }
-        gme_t( EntityType entity_type, index_t index )
+        gme_t( const Entity_type_template entity_type, index_t index )
             : type_( entity_type ), index_( index )
         {
         }
@@ -249,46 +249,25 @@ namespace RINGMesh {
         {
         }
 
+        const Entity_type_template& type() const
+        {
+            return static_cast< const Entity_type_template& >( type_ ) ;
+        }
+
     protected:
-        EntityType type_ ;
+        Entity_type_template type_ ;
         /*!
          * Index of the GeoModelEntity in the GeoModel
          */
         index_t index_ ;
     } ;
 
-    template< class Entity_type_template > struct gme_template: public gme_t {
-    public:
-        const Entity_type_template& type() const
-        {
-            return static_cast< const Entity_type_template& >( type_ ) ;
-        }
-
-        Entity_type_template& type()
-        {
-            return static_cast< Entity_type_template& >( type_ ) ;
-        }
-
-        gme_template()
-            : gme_t()
-        {
-        }
-        gme_template( const gme_template& from )
-            : gme_t( from )
-        {
-        }
-        gme_template( const Entity_type_template& entity_type, index_t index )
-            : gme_t( entity_type, index )
-        {
-        }
-    } ;
-
     /*!
      * @brief This template is a specialization of a gme_t to the GeoModelGeologicalEntity
      */
-    typedef gme_template< GeologicalEntityType > gmge_t ;
+    typedef gme_t< GeologicalEntityType > gmge_t ;
     /*!
      * @brief This template is a specialization of a gme_t to the GeoModelMeshEntity
      */
-    typedef gme_template< MeshEntityType > gmme_t ;
+    typedef gme_t< MeshEntityType > gmme_t ;
 }
