@@ -261,7 +261,8 @@ namespace RINGMesh {
             triangles_[0].angle_ = 2 * M_PI ;
             triangles_[0].side_ = false ;
 
-            for( TriangleToSort& cur : triangles_ ) {
+            for( index_t i = 1; i < triangles_.size(); ++i ) {
+                TriangleToSort& cur = triangles_[i] ;
                 // Computes the angle RADIANS between the reference and the current
                 // triangle 
                 double cos = dot( B_A_ref, cur.B_A_ ) ;
