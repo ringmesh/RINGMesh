@@ -688,6 +688,7 @@ namespace {
             }
 
             gmme_t id = builder().topology.create_mesh_entity< Surface >() ;
+            DEBUG("create_surface") ;
             builder().geology.add_mesh_entity_parent( id, parent ) ;
             builder().geology.set_geological_entity_geol_feature( parent,
                 GME::determine_geological_type( type ) ) ;

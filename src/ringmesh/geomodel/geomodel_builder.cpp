@@ -1153,6 +1153,7 @@ namespace RINGMesh {
     void GeoModelBuilderGeology::fill_mesh_entities_parent(
         const MeshEntityType& type )
     {
+        DEBUG("fill_mesh_entities_parent") ;
         if( geomodel_.nb_mesh_entities( type ) == 0 ) {
             return ;
         }

@@ -188,6 +188,10 @@ namespace RINGMesh {
             GeoModelMeshEntity& mesh_entity =
                 geomodel_access_.modifiable_mesh_entity( child_gmme ) ;
             GeoModelMeshEntityAccess gmme_access( mesh_entity ) ;
+            DEBUG(child_gmme) ;
+            DEBUG(parent_gmge) ;
+            DEBUG("la") ;
+
             gmme_access.modifiable_parents().push_back( parent_gmge ) ;
         }
 
@@ -202,6 +206,8 @@ namespace RINGMesh {
                 geomodel_access_.modifiable_mesh_entity( child_gmme ) ;
             ringmesh_assert( id < mesh_entity.nb_parents() ) ;
             GeoModelMeshEntityAccess gmme_access( mesh_entity ) ;
+            DEBUG(parent_gmge) ;
+            DEBUG("ici") ;
             gmme_access.modifiable_parents()[id] = parent_gmge ;
         }
 

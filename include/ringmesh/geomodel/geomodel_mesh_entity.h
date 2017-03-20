@@ -79,7 +79,7 @@ namespace RINGMesh {
 
         const gmme_t gmme_id() const
         {
-            return gmme_t( type_name_static(), id_ ) ;
+            return gmme_t( type_name(), id_ ) ;
         }
         const MeshEntityType& mesh_entity_type() const
         {
