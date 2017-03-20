@@ -73,20 +73,20 @@ namespace {
     static RINGMesh2CSMP* cell_type_to_cell_descriptor[4] = {
         &tet_descriptor, &hex_descriptor, &prism_descriptor, &pyramid_descriptor } ;
 
-    class CSMPIOHandler: public GeoModelIOHandler {
+    class CSMPIOHandler final: public GeoModelIOHandler {
     public:
         CSMPIOHandler()
         {
             clear() ;
         }
 
-        virtual bool load( const std::string& filename, GeoModel& geomodel )
+        virtual bool load( const std::string& filename, GeoModel& geomodel ) override
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from CSMP not implemented yet" ) ;
             return false ;
         }
-        virtual void save( const GeoModel& gm, const std::string& filename )
+        virtual void save( const GeoModel& gm, const std::string& filename ) override
         {
             initialize( gm ) ;
 

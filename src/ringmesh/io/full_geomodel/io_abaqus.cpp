@@ -48,17 +48,17 @@ namespace {
         { 0, 4, 5, 1, 2, 6, 7, 3 }     // vertices
     } ;
 
-    class AbaqusIOHandler: public GeoModelIOHandler {
+    class AbaqusIOHandler final: public GeoModelIOHandler {
     public:
         static const index_t NB_ENTRY_PER_LINE = 16 ;
 
-        virtual bool load( const std::string& filename, GeoModel& geomodel )
+        virtual bool load( const std::string& filename, GeoModel& geomodel ) override
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from abaqus not implemented yet" ) ;
             return false ;
         }
-        virtual void save( const GeoModel& geomodel, const std::string& filename )
+        virtual void save( const GeoModel& geomodel, const std::string& filename ) override
         {
             std::ofstream out( filename.c_str() ) ;
             out.precision( 16 ) ;

@@ -34,15 +34,15 @@
  */
 
 namespace {
-    class TetGenIOHandler: public GeoModelIOHandler {
+    class TetGenIOHandler final: public GeoModelIOHandler {
     public:
-        virtual bool load( const std::string& filename, GeoModel& geomodel )
+        virtual bool load( const std::string& filename, GeoModel& geomodel ) override
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from TetGen not implemented yet" ) ;
             return false ;
         }
-        virtual void save( const GeoModel& geomodel, const std::string& filename )
+        virtual void save( const GeoModel& geomodel, const std::string& filename ) override
         {
             std::string directory = GEO::FileSystem::dir_name( filename ) ;
             std::string file = GEO::FileSystem::base_name( filename ) ;

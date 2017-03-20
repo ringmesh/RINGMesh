@@ -34,7 +34,7 @@
  */
 
 namespace {
-    class GPRSIOHandler: public GeoModelIOHandler {
+    class GPRSIOHandler final: public GeoModelIOHandler {
     public:
         struct Pipe {
             Pipe( index_t v0_in, index_t v1_in )
@@ -44,13 +44,13 @@ namespace {
             index_t v0 ;
             index_t v1 ;
         } ;
-        virtual bool load( const std::string& filename, GeoModel& geomodel )
+        virtual bool load( const std::string& filename, GeoModel& geomodel ) override
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from GPRS not implemented yet" ) ;
             return false ;
         }
-        virtual void save( const GeoModel& geomodel, const std::string& filename )
+        virtual void save( const GeoModel& geomodel, const std::string& filename ) override
         {
             std::string path = GEO::FileSystem::dir_name( filename ) ;
             std::string directory = GEO::FileSystem::base_name( filename ) ;

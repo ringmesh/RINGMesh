@@ -34,9 +34,9 @@
  */
 
 namespace {
-    class TSolidIOHandler: public GeoModelIOHandler {
+    class TSolidIOHandler final: public GeoModelIOHandler {
     public:
-        virtual bool load( const std::string& filename, GeoModel& geomodel )
+        virtual bool load( const std::string& filename, GeoModel& geomodel ) override
         {
             std::ifstream input( filename.c_str() ) ;
             if( input ) {
@@ -62,7 +62,7 @@ namespace {
                 return false ;
             }
         }
-        virtual void save( const GeoModel& geomodel, const std::string& filename )
+        virtual void save( const GeoModel& geomodel, const std::string& filename ) override
         {
             std::ofstream out( filename.c_str() ) ;
             out.precision( 16 ) ;

@@ -58,15 +58,15 @@ namespace {
      * Corners are written (with vertex), then Lines (with edges), then Surfaces
      * (with surfaces, then Regions (with tetrahedron)
      */
-    class AdeliIOHandler: public GeoModelIOHandler {
+    class AdeliIOHandler final: public GeoModelIOHandler {
     public:
-        virtual bool load( const std::string& filename, GeoModel& geomodel )
+        virtual bool load( const std::string& filename, GeoModel& geomodel ) override
         {
             throw RINGMeshException( "I/O",
                 "Loading of a GeoModel from Adeli .msh mesh not implemented yet" ) ;
             return false ;
         }
-        virtual void save( const GeoModel& geomodel, const std::string& filename )
+        virtual void save( const GeoModel& geomodel, const std::string& filename ) override
         {
             std::ofstream out( filename.c_str() ) ;
             out.precision( 16 ) ;

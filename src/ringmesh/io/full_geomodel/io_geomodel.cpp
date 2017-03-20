@@ -239,8 +239,9 @@ namespace {
         logger->set_quiet( logger_status ) ;
     }
 
-    class GeoModelHandlerGM: public GeoModelIOHandler {
-        virtual bool load( const std::string& filename, GeoModel& geomodel )
+    class GeoModelHandlerGM final: public GeoModelIOHandler {
+    public:
+        virtual bool load( const std::string& filename, GeoModel& geomodel ) override
         {
             std::string pwd = GEO::FileSystem::get_current_working_directory() ;
             GEO::FileSystem::set_current_working_directory(
@@ -256,7 +257,7 @@ namespace {
             return is_valid ;
 
         }
-        virtual void save( const GeoModel& geomodel, const std::string& filename )
+        virtual void save( const GeoModel& geomodel, const std::string& filename ) override
         {
             const std::string pwd =
                 GEO::FileSystem::get_current_working_directory() ;
@@ -298,8 +299,9 @@ namespace {
         }
     } ;
 
-    class OldGeoModelHandlerGM: public GeoModelIOHandler {
-        virtual bool load( const std::string& filename, GeoModel& geomodel )
+    class OldGeoModelHandlerGM final: public GeoModelIOHandler {
+    public:
+        virtual bool load( const std::string& filename, GeoModel& geomodel ) override
         {
             std::string pwd = GEO::FileSystem::get_current_working_directory() ;
             GEO::FileSystem::set_current_working_directory(
@@ -315,7 +317,7 @@ namespace {
             return is_valid ;
 
         }
-        virtual void save( const GeoModel& geomodel, const std::string& filename )
+        virtual void save( const GeoModel& geomodel, const std::string& filename ) override
         {
             std::string message = "Conversion from the new GeoModel format " ;
             message += "to the old GeoModel format will never be implemented." ;
