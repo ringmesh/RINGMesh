@@ -102,7 +102,7 @@ namespace RINGMesh {
      */
     void WellGroupIOHandler::initialize()
     {
-        ringmesh_register_WellGroupIOHandler_creator( WLIOHandler, "wl" );
+        ringmesh_register_WellGroupIOHandler_creator( WLIOHandler, "wl" ) ;
         ringmesh_register_WellGroupIOHandler_creator( SmeshIOHandler, "smesh" ) ;
     }
 }

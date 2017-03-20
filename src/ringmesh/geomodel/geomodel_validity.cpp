@@ -914,13 +914,13 @@ namespace {
         /*! 
          * @brief Verify the validity of all GeoModelEntities
          */
-        class TestGeomodelEntitiesValidity: public GEO::Thread {
+        class TestGeomodelEntitiesValidity final : public GEO::Thread {
         public:
             TestGeomodelEntitiesValidity( GeoModelValidityCheck& validity )
                 : validity_( validity )
             {
             }
-            virtual void run()
+            virtual void run() final
             {
                 if( !are_geomodel_meshed_entities_valid( validity_.geomodel_ ) ) {
                     validity_.set_invalid_model() ;
@@ -939,13 +939,13 @@ namespace {
          * @details The boundary of the universe region is a one connected component 
          * manifold closed surface.
          */
-        class TestFiniteExtension: public GEO::Thread {
+        class TestFiniteExtension final : public GEO::Thread {
         public:
             TestFiniteExtension( GeoModelValidityCheck& validity )
                 : validity_( validity )
             {
             }
-            virtual void run()
+            virtual void run() final
             {
                 if( !validity_.geomodel_.universe().is_valid() ) {
                     validity_.set_invalid_model() ;
@@ -960,13 +960,13 @@ namespace {
          * @todo Check that all Line segments correspond to a Surface
          *  edge that is on the boundary.
          */
-        class TestGeometryConnectivityConsistency: public GEO::Thread {
+        class TestGeometryConnectivityConsistency final : public GEO::Thread {
         public:
             TestGeometryConnectivityConsistency( GeoModelValidityCheck& validity )
                 : validity_( validity )
             {
             }
-            virtual void run()
+            virtual void run() final
             {
                 // Check relationships between GeoModelEntities
                 // sharing the same point of the geomodel
@@ -985,13 +985,13 @@ namespace {
             GeoModelValidityCheck& validity_ ;
         } ;
 
-        class TestGeometryConnectivityConsistency3D: public GEO::Thread {
+        class TestGeometryConnectivityConsistency3D final : public GEO::Thread {
         public:
             TestGeometryConnectivityConsistency3D( GeoModelValidityCheck& validity )
                 : validity_( validity )
             {
             }
-            virtual void run()
+            virtual void run() final
             {
                 if( validity_.geomodel_.mesh.cells.nb() > 0 ) {
                     // Check the consistency between Surface facets and Region cell facets
@@ -1016,13 +1016,13 @@ namespace {
          * @note Connect the facets of the global mesh
          * @note This is a quite expensive test.
          */
-        class TestNonManifoldEdges: public GEO::Thread {
+        class TestNonManifoldEdges final : public GEO::Thread {
         public:
             TestNonManifoldEdges( GeoModelValidityCheck& validity )
                 : validity_( validity )
             {
             }
-            virtual void run()
+            virtual void run() final
             {
                 std::vector< index_t > edge_indices ;
                 compute_border_edges( validity_.geomodel_, edge_indices ) ;
@@ -1053,13 +1053,13 @@ namespace {
          * @details Operates on the global mesh
          * @note This is a very expensive test.
          */
-        class TestFacetIntersections: public GEO::Thread {
+        class TestFacetIntersections final : public GEO::Thread {
         public:
             TestFacetIntersections( GeoModelValidityCheck& validity )
                 : validity_( validity )
             {
             }
-            virtual void run()
+            virtual void run() final
             {
                 if( validity_.geomodel_.mesh.facets.nb()
                     == validity_.geomodel_.mesh.facets.nb_triangle()

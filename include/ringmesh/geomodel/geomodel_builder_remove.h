@@ -189,7 +189,7 @@ namespace RINGMesh {
                 geomodel_access_.modifiable_mesh_entities( type_name ) ;
             store.erase(
                 std::remove( store.begin(), store.end(),
-                    static_cast< GeoModelMeshEntity* >( nil ) ), store.end() ) ;
+                    static_cast< GeoModelMeshEntity* >( nullptr ) ), store.end() ) ;
 
             // QC
             ringmesh_assert( geomodel_.nb_mesh_entities( type_name )
@@ -203,7 +203,7 @@ namespace RINGMesh {
                 geomodel_access_.modifiable_geological_entities( type_name ) ;
             store.erase(
                 std::remove( store.begin(), store.end(),
-                    static_cast< GeoModelGeologicalEntity* >( nil ) ),
+                    static_cast< GeoModelGeologicalEntity* >( nullptr ) ),
                 store.end() ) ;
 
             // QC

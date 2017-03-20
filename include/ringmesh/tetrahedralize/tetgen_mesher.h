@@ -87,7 +87,7 @@ namespace RINGMesh {
         typedef GEO::Mesh Mesh ;
 
         TetgenMesher()
-            : polygons_( nil ), polygon_corners_( nil )
+            : polygons_( nullptr ), polygon_corners_( nullptr )
         {
             // Quiet (no output)
             tetgen_command_line_ += "Q" ;

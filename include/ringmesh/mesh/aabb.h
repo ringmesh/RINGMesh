@@ -262,7 +262,7 @@ namespace RINGMesh {
          */
         virtual vec3 get_point_hint_from_box(
             const Box3d& box,
-            index_t element_id ) const ;
+            index_t element_id ) const override ;
     } ;
 
     class RINGMESH_API AABBTree1D: public AABBTree {
@@ -290,7 +290,7 @@ namespace RINGMesh {
          */
         virtual vec3 get_point_hint_from_box(
             const Box3d& box,
-            index_t element_id ) const ;
+            index_t element_id ) const override ;
         /*!
          * This class is used as functor in closest_element_box() to compute
          * the distance between a point and an edge
@@ -342,7 +342,7 @@ namespace RINGMesh {
          */
         virtual vec3 get_point_hint_from_box(
             const Box3d& box,
-            index_t element_id ) const ;
+            index_t element_id ) const override ;
         /*!
          * This class is used as functor in closest_element_box() to compute
          * the distance between a point and a triangle
@@ -390,7 +390,7 @@ namespace RINGMesh {
          */
         virtual vec3 get_point_hint_from_box(
             const Box3d& box,
-            index_t element_id ) const ;
+            index_t element_id ) const override ;
         index_t containing_cell_recursive(
             const vec3& query,
             index_t node_index,

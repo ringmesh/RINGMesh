@@ -76,7 +76,7 @@ namespace RINGMesh {
             const std::string& algo_name ) ;
         static void initialize() ;
 
-        void set_boundaries( const Region& region, const WellGroup* wells = nil ) ;
+        void set_boundaries( const Region& region, const WellGroup* wells = nullptr ) ;
         void set_internal_points( const std::vector< vec3 >& points ) ;
 
         /*!
