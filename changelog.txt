@@ -11,7 +11,7 @@ Bug fix:
  *
 
 Improvements:
- *
- *
+ * Explicit distinction between the denomination of GeoModelMeshEntity and GeoModelGeologicalEntity
+ * Remove support of .ogm
  *
 
