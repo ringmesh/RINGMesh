@@ -64,7 +64,7 @@ namespace RINGMesh {
 
         const gmge_t gmge_id() const
         {
-            return gmge_t(type_name(),id_) ;
+            return gmge_t( type_name(), id_ ) ;
         }
 
         const GeologicalEntityType entity_type() const
@@ -102,8 +102,7 @@ namespace RINGMesh {
             index_t id = NO_ID,
             const std::string& name = "unnamed",
             GEOL_FEATURE geological_feature = NO_GEOL )
-            :
-                GeoModelEntity( geomodel,id, name, geological_feature )
+            : GeoModelEntity( geomodel, id, name, geological_feature )
         {
         }
         virtual void copy( const GeoModelGeologicalEntity& from ) final
@@ -123,8 +122,8 @@ namespace RINGMesh {
     /// derive the base class to define new entities. [JP]
     class RINGMESH_API Contact: public GeoModelGeologicalEntity {
     public:
-        Contact( const GeoModel& geomodel)
-            : GeoModelGeologicalEntity( geomodel)
+        Contact( const GeoModel& geomodel )
+            : GeoModelGeologicalEntity( geomodel )
         {
         }
         virtual ~Contact()
@@ -146,7 +145,7 @@ namespace RINGMesh {
 
     class RINGMESH_API Interface: public GeoModelGeologicalEntity {
     public:
-        Interface( const GeoModel& geomodel)
+        Interface( const GeoModel& geomodel )
             : GeoModelGeologicalEntity( geomodel )
         {
         }
@@ -169,7 +168,7 @@ namespace RINGMesh {
 
     class RINGMESH_API Layer: public GeoModelGeologicalEntity {
     public:
-        Layer( const GeoModel& geomodel)
+        Layer( const GeoModel& geomodel )
             : GeoModelGeologicalEntity( geomodel )
         {
         }

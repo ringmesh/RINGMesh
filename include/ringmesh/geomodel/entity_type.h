@@ -36,12 +36,17 @@
 #pragma once
 
 #include <ringmesh/basic/common.h>
-#include <ringmesh/basic/algorithm.h>
+
 #include <vector>
+
+#include <ringmesh/basic/algorithm.h>
 
 namespace RINGMesh {
     class GeoModelMeshEntityAccess ;
     class GeoModelGeologicalEntityAccess ;
+}
+
+namespace RINGMesh {
 
     /*
      * @brief Abstract class defining a Geomodel Entity Type
@@ -101,7 +106,6 @@ namespace RINGMesh {
         }
     } ;
 
-
     /*!
      * @brief The MeshEntityType described the type of the meshed entities
      * There are 4 MeshEntityTypes corresponding to the 4 GeoModelMeshEntities:
@@ -154,7 +158,8 @@ namespace RINGMesh {
             return entity_type ;
         }
     private:
-        ForbiddenMeshEntityType() {
+        ForbiddenMeshEntityType()
+        {
         }
     } ;
 
@@ -170,15 +175,16 @@ namespace RINGMesh {
             return entity_type ;
         }
     private:
-        ForbiddenGeologicalEntityType() {
+        ForbiddenGeologicalEntityType()
+        {
 
         }
     } ;
 
     /*!
-      * @brief This entity type stands only for the special case of the
-      * Universe which is not a GeomodelGeologicalEntity nor a GeomodelMeshEntity
-      */
+     * @brief This entity type stands only for the special case of the
+     * Universe which is not a GeomodelGeologicalEntity nor a GeomodelMeshEntity
+     */
     class RINGMESH_API UniverseType: public EntityType {
     public:
         UniverseType()
@@ -250,14 +256,9 @@ namespace RINGMesh {
         {
         }
         gme_t( const gme_t& from )
-            : type_( from.type_ ), index_( from.index_ )
+            : gme_t( from.type_, from.index_ )
         {
         }
-
-//        const Entity_type_template& type() const
-//        {
-//            return static_cast< const Entity_type_template& >( type_ ) ;
-//        }
 
     protected:
         Entity_type_template type_ ;
