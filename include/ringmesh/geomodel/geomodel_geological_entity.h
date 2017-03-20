@@ -77,7 +77,7 @@ namespace RINGMesh {
         virtual bool is_connectivity_valid() const ;
         static const GeologicalEntityType type_name_static()
         {
-            return DefaultGeologicalEntityType::default_entity_type() ;
+            return ForbiddenGeologicalEntityType::type_name_static() ;
         }
         virtual const GeologicalEntityType type_name() const
         {

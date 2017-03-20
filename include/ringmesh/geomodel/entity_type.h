@@ -146,15 +146,15 @@ namespace RINGMesh {
      * @brief this is the MeshEntityType defined by default.
      * It is mainly used to test the validity of a created MeshEntityType
      */
-    class RINGMESH_API DefaultMeshEntityType: public MeshEntityType {
+    class RINGMESH_API ForbiddenMeshEntityType: public MeshEntityType {
     public:
-        static DefaultMeshEntityType& default_entity_type()
+        static ForbiddenMeshEntityType& type_name_static()
         {
-            static DefaultMeshEntityType default_entity_type ;
-            return default_entity_type ;
+            static ForbiddenMeshEntityType entity_type ;
+            return entity_type ;
         }
     private:
-        DefaultMeshEntityType() {
+        ForbiddenMeshEntityType() {
         }
     } ;
 
@@ -162,15 +162,15 @@ namespace RINGMesh {
      * @brief this is the GeologicalEntityType defined by default.
      * It is mainly used to test the validity of a created GeologicalEntityType
      */
-    class RINGMESH_API DefaultGeologicalEntityType: public GeologicalEntityType {
+    class RINGMESH_API ForbiddenGeologicalEntityType: public GeologicalEntityType {
     public:
-        static DefaultGeologicalEntityType& default_entity_type()
+        static ForbiddenGeologicalEntityType& type_name_static()
         {
-            static DefaultGeologicalEntityType default_entity_type ;
-            return default_entity_type ;
+            static ForbiddenGeologicalEntityType entity_type ;
+            return entity_type ;
         }
     private:
-        DefaultGeologicalEntityType() {
+        ForbiddenGeologicalEntityType() {
 
         }
     } ;
@@ -238,11 +238,11 @@ namespace RINGMesh {
 
         bool is_defined() const
         {
-            return type_ != DefaultMeshEntityType::default_entity_type()
+            return type_ != ForbiddenMeshEntityType::type_name_static()
                 && index_ != NO_ID ;
         }
         gme_t()
-            : type_( DefaultMeshEntityType::default_entity_type() ), index_( NO_ID )
+            : type_( ForbiddenMeshEntityType::type_name_static() ), index_( NO_ID )
         {
         }
         gme_t( const Entity_type_template entity_type, index_t index )

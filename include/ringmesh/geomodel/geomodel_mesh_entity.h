@@ -67,7 +67,6 @@ namespace RINGMesh {
     public:
         virtual ~GeoModelMeshEntity() ;
 
-
         virtual const MeshEntityType type_name() const = 0 ;
 
         const gmme_t gmme_id() const
@@ -341,6 +340,7 @@ namespace RINGMesh {
 
         virtual ~Corner()
         {
+            unbind_vertex_mapping_attribute() ;
         }
 
         static const MeshEntityType type_name_static()
@@ -453,6 +453,7 @@ namespace RINGMesh {
 
         virtual ~Line()
         {
+            unbind_vertex_mapping_attribute() ;
         }
 
         static const MeshEntityType type_name_static()
@@ -588,6 +589,7 @@ namespace RINGMesh {
 
         virtual ~Surface()
         {
+            unbind_vertex_mapping_attribute() ;
         }
 
         virtual const MeshEntityType type_name() const
@@ -873,6 +875,7 @@ namespace RINGMesh {
 
         virtual ~Region()
         {
+            unbind_vertex_mapping_attribute() ;
         }
 
         static const MeshEntityType type_name_static()
