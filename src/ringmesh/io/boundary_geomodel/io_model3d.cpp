@@ -159,7 +159,8 @@ namespace {
             return false ;
         }
         for( index_t i = 0; i < nb_interfaces; ++i ) {
-            const GeoModelGeologicalEntity& E = M.geological_entity( Interface::type_name_static(), i ) ;
+            const GeoModelGeologicalEntity& E = M.geological_entity(
+                Interface::type_name_static(), i ) ;
             if( !E.has_geological_feature() ) {
                 Logger::err( "" ) << E.gmge_id() << " has no geological feature"
                     << std::endl ;
@@ -256,11 +257,15 @@ namespace {
             ++count ;
         }
         // Layers
-        index_t nb_layers = M.nb_geological_entities( Layer::type_name_static() ) ;
-        for( index_t i = 0; i < nb_layers; ++i ) {
-            save_layer( count, offset_layer,
-                M.geological_entity( Layer::type_name_static(), i ), out ) ;
-            ++count ;
+        if( M.entity_type_manager().geological_entity_manager.is_valid_type(
+            Layer::type_name_static() ) ) {
+            index_t nb_layers = M.nb_geological_entities(
+                Layer::type_name_static() ) ;
+            for( index_t i = 0; i < nb_layers; ++i ) {
+                save_layer( count, offset_layer,
+                    M.geological_entity( Layer::type_name_static(), i ), out ) ;
+                ++count ;
+            }
         }
         out << "END" << std::endl ;
 
@@ -314,16 +319,16 @@ namespace {
                         L.gmme_id(), 1 ) ;
 
                     std::vector< index_t > v0_surface_ids ;
-                    geomodel_vertices.mesh_entity_vertex_id( S.gmme_id(), v0_model_id,
-                        v0_surface_ids ) ;
+                    geomodel_vertices.mesh_entity_vertex_id( S.gmme_id(),
+                        v0_model_id, v0_surface_ids ) ;
                     std::vector< index_t > v1_surface_ids ;
-                    geomodel_vertices.mesh_entity_vertex_id( S.gmme_id(), v1_model_id,
-                        v1_surface_ids ) ;
+                    geomodel_vertices.mesh_entity_vertex_id( S.gmme_id(),
+                        v1_model_id, v1_surface_ids ) ;
 
                     if( !S.has_inside_border() ) {
                         ringmesh_assert(
                             v0_surface_ids.size() == 1
-                            && v1_surface_ids.size() == 1 ) ;
+                                && v1_surface_ids.size() == 1 ) ;
                         index_t v0 = v0_surface_ids[0] ;
                         index_t v1 = v1_surface_ids[0] ;
                         v0 += offset ;
