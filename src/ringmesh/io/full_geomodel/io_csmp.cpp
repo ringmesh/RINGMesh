@@ -138,7 +138,7 @@ namespace {
                 const GeoModelGeologicalEntity& interf = gm.geological_entity(
                     Interface::type_name_static(), i ) ;
                 for( index_t s = 0; s < interf.nb_children(); s++ ) {
-                    index_t s_id = interf.child_gme( s ).index ;
+                    index_t s_id = interf.child_gmme( s ).index() ;
                     nb_triangle_interface[i] += mesh.facets.nb_triangle( s_id ) ;
                     nb_quad_interface[i] += mesh.facets.nb_quad( s_id ) ;
                 }
@@ -320,7 +320,7 @@ namespace {
                 const GeoModelGeologicalEntity& interf = gm.geological_entity(
                     Interface::type_name_static(), i ) ;
                 for( index_t s = 0; s < interf.nb_children(); s++ ) {
-                    index_t s_id = interf.child_gme( s ).index ;
+                    index_t s_id = interf.child_gmme( s ).index() ;
                     for( index_t el = 0; el < mesh.facets.nb_triangle( s_id );
                         el++ ) {
                         index_t tri = mesh.facets.triangle( s_id, el ) ;
@@ -382,7 +382,7 @@ namespace {
                 const GeoModelGeologicalEntity& interf = gm.geological_entity(
                     Interface::type_name_static(), i ) ;
                 for( index_t s = 0; s < interf.nb_children(); s++ ) {
-                    index_t s_id = interf.child_gme( s ).index ;
+                    index_t s_id = interf.child_gmme( s ).index() ;
                     for( index_t el = 0; el < mesh.facets.nb_triangle( s_id );
                         el++ ) {
                         index_t tri = mesh.facets.triangle( s_id, el ) ;
@@ -642,7 +642,7 @@ namespace {
 
             point_boundaries_.resize( gm.mesh.vertices.nb() ) ;
             for( index_t s = 0; s < geomodel.nb_surfaces(); s++ ) {
-                index_t interface_id = geomodel.surface( s ).parent_gme( 0 ).index ;
+                index_t interface_id = geomodel.surface( s ).parent_gmge( 0 ).index() ;
                 for( index_t f = 0; f < gm.mesh.facets.nb_facets( s ); f++ ) {
                     index_t f_id = gm.mesh.facets.facet( s, f ) ;
                     for( index_t v = 0; v < gm.mesh.facets.nb_vertices( f_id );

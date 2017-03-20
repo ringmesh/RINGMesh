@@ -92,7 +92,7 @@ namespace {
         }
         void save_facets( const GeoModel& geomodel, std::ofstream& out ) const
         {
-            const EntityType& type = Interface::type_name_static() ;
+            const GeologicalEntityType& type = Interface::type_name_static() ;
             index_t nb_interfaces = geomodel.nb_geological_entities( type ) ;
             for( index_t i = 0; i < nb_interfaces; i++ ) {
                 save_interface( geomodel, i, out ) ;
@@ -112,7 +112,7 @@ namespace {
                 false ) ;
             out << "*NSET, nset=" << entity.name() << std::endl ;
             for( index_t s = 0; s < entity.nb_children(); s++ ) {
-                index_t surface_id = entity.child_gme( s ).index ;
+                index_t surface_id = entity.child_gmme( s ).index() ;
                 for( index_t f = 0; f < facets.nb_facets( surface_id ); f++ ) {
                     index_t facet_id = facets.facet( surface_id, f ) ;
                     for( index_t v = 0; v < facets.nb_vertices( facet_id ); v++ ) {
