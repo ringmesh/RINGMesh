@@ -64,7 +64,7 @@ namespace RINGMesh {
 
         const gmge_t gmge_id() const
         {
-            return gmge_t(type_name_static(),id_) ;
+            return gmge_t(type_name(),id_) ;
         }
 
         const GeologicalEntityType& entity_type() const
