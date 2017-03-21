@@ -103,6 +103,7 @@ int main()
         std::string input_cube_model_file_name( ringmesh_test_data_path ) ;
         input_cube_model_file_name += "not_sealed_cube.ml" ;
         geomodel_load( not_sealed_cube_geomodel, input_cube_model_file_name ) ;
+        system ( "Pause" ) ;
 
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category() ) << e.what() << std::endl ;

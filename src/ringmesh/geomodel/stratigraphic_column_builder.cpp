@@ -51,6 +51,10 @@ StratigraphicColumnBuilderFile::StratigraphicColumnBuilderFile(
 StratigraphicColumnBuilder::StratigraphicColumnBuilder(
 		StratigraphicColumn& column, GeoModel& model) :
 		column_(column), model_(model) {
+    if( model_.nb_geological_entities ( "Layer" ) == 0 ) {
+        throw RINGMeshException ( "I/O",
+            "The GeoModel have to be defined with layer." );
+    }
 }
 
 

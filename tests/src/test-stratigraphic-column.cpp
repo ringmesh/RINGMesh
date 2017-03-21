@@ -154,7 +154,7 @@ void test_stratigraphic_column_building ( const GeoModel& in )
     units.push_back ( &three );
     units.push_back ( &four );
 
-    StratigraphicColumn test1 ( "test", units, CHRONOSTRATIGRAPHIC );
+    StratigraphicColumn test1 ( "test 1", units, CHRONOSTRATIGRAPHIC );
     if( test1.get_unit_above ( two )->get_name () != "one" ) {
         throw RINGMeshException ( "RINGMesh Test",
             "Failed when testing StratigraphicColumn::get_unit_above()" );
@@ -189,7 +189,7 @@ void test_stratigraphic_column_building ( const GeoModel& in )
 
     RINGMesh::Logger::out ( "StratigraphicColumn" ) << "Second building vith a vector of StratigraphicUnit" << std::endl ;
 
-    StratigraphicColumn test2 ( "test" );
+    StratigraphicColumn test2 ( "test 2" );
     test2.set_paradigm ( CHRONOSTRATIGRAPHIC );
     if( test2.get_paradigm () != CHRONOSTRATIGRAPHIC ) {
         throw RINGMeshException ( "RINGMesh Test",
@@ -267,7 +267,7 @@ void test_stratigraphic_column_building ( const GeoModel& in )
     std::cout << "get_unit_below" << std::endl;
 
     mix.remove_unit ( two );
-    if( mix.get_sub_column ( 2 )->get_name () != "test_two" ) {
+    if( mix.get_sub_column ( 2 )->get_name () != "test 1" ) {
         throw RINGMeshException ( "RINGMesh Test",
             "Failed when testing StratigraphicColumn::remove_unit()" );
     }
@@ -298,7 +298,7 @@ void test_stratigraphic_column_building ( const GeoModel& in )
     }
     std::cout << "find_unit" << std::endl;
 
-    if( mix.find_sub_column ( "test_two" )->get_name () != "test_two" ) {
+    if( mix.find_sub_column ( "test 1" )->get_name () != "test 1" ) {
         throw RINGMeshException ( "RINGMesh Test",
             "Failed when testing StratigraphicColumn::find_sub_unit()" );
     }
@@ -329,7 +329,7 @@ int main() {
 		default_configure();
 
         //build geomodel
-		/*std::string input_model_file_name(ringmesh_test_data_path);
+/*		std::string input_model_file_name(ringmesh_test_data_path);
 		input_model_file_name += "corbi_layers.ml";
 		GeoModel in;
 		bool loaded_model_is_valid = geomodel_load(in, input_model_file_name);
@@ -349,6 +349,7 @@ int main() {
         
         //load StratigraphicColumn from gocad XML file
         test_load_from_gocad_xml_file () ;
+        system("Pause") ;
 	} catch (const RINGMeshException& e) {
 		Logger::err(e.category()) << e.what() << std::endl;
 		return 1;
