@@ -2679,6 +2679,8 @@ namespace {
                 << " <?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"no\" ?>\n" ;
             out << " <fractures>\n" ;
             write_well_edges( geomodel, out ) ;
+            out << "<properties>\n" ;
+            out << "</properties>\n" ;
             write_well_groups( geomodel, out ) ;
             out << " </fractures>\n" ;
         }
