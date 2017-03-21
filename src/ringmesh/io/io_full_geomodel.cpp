@@ -2594,8 +2594,7 @@ namespace {
         {
             const GeoModelMesh& mesh = geomodel.mesh ;
             out << "DIMENS\n" ;
-            out << SPACE << mesh.vertices.nb() << SPACE
-                << mesh.cells.nb() + geomodel.mesh.edges.nb_edges()
+            out << SPACE << mesh.vertices.nb() << SPACE << mesh.cells.nb()
                 << " 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0\n" ;
             out << "SCALE\n\n" ;
         }
@@ -2664,7 +2663,7 @@ namespace {
             index_t offset = 0 ;
             for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
                 const Region& region = geomodel.region( r ) ;
-                out << SPACE << region.name() << SPACE << ++offset ;
+                out << SPACE << region.name() << SPACE << offset + STARTING_OFFSET ;
                 offset += region.nb_mesh_elements() ;
                 out << "-" << offset << "\n" ;
             }
@@ -2705,9 +2704,9 @@ namespace {
             out << " <groups count=\"" << edges.nb_wells() << "\">\n" ;
             for( index_t w = 0; w < edges.nb_wells(); w++ ) {
                 out << " <group name=\"" << wells->well( w ).name()
-                    << " mode=\"unstructured\">\n" ;
+                    << "\" mode=\"unstructured\">\n" ;
                 out << " <elements count=\"" << edges.nb_edges( w ) << "\">\n" ;
-                out << " <![CDATA[ " << ++offset ;
+                out << " <![CDATA[ " << offset + STARTING_OFFSET ;
                 offset += edges.nb_edges( w ) ;
                 out << "-" << offset << "]]>\n" ;
                 out << " </elements>\n" ;
@@ -2747,19 +2746,20 @@ namespace RINGMesh {
     void GeoModelIOHandler::initialize_full_geomodel_output()
     {
         ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "meshb" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "mesh" );
-        ringmesh_register_GeoModelIOHandler_creator( TetGenIOHandler, "tetgen" );
-        ringmesh_register_GeoModelIOHandler_creator( TSolidIOHandler, "so" );
-        ringmesh_register_GeoModelIOHandler_creator( CSMPIOHandler, "csmp" );
-        ringmesh_register_GeoModelIOHandler_creator( AsterIOHandler, "mail" );
-        ringmesh_register_GeoModelIOHandler_creator( VTKIOHandler, "vtk" );
-        ringmesh_register_GeoModelIOHandler_creator( GPRSIOHandler, "gprs" );
-        ringmesh_register_GeoModelIOHandler_creator( MSHIOHandler, "msh" );
-        ringmesh_register_GeoModelIOHandler_creator( MFEMIOHandler, "mfem" );
-        ringmesh_register_GeoModelIOHandler_creator( GeoModelHandlerGM, "gm" );
-        ringmesh_register_GeoModelIOHandler_creator( OldGeoModelHandlerGM, "ogm" );
-        ringmesh_register_GeoModelIOHandler_creator( AbaqusIOHandler, "inp" );
-        ringmesh_register_GeoModelIOHandler_creator( AdeliIOHandler, "adeli" );
-        ringmesh_register_GeoModelIOHandler_creator( FeflowIOHandler, "fem" );}
+        ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "mesh" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( TetGenIOHandler, "tetgen" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( TSolidIOHandler, "so" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( CSMPIOHandler, "csmp" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( AsterIOHandler, "mail" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( VTKIOHandler, "vtk" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( GPRSIOHandler, "gprs" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( MSHIOHandler, "msh" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( MFEMIOHandler, "mfem" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( GeoModelHandlerGM, "gm" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( OldGeoModelHandlerGM, "ogm" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( AbaqusIOHandler, "inp" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( AdeliIOHandler, "adeli" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( FeflowIOHandler, "fem" ) ;
+    }
 
 }
