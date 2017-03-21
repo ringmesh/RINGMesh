@@ -2577,6 +2577,7 @@ namespace {
             write_elements( geomodel, out ) ;
             write_vertices( geomodel, out ) ;
             write_regions( geomodel, out ) ;
+            write_wells( geomodel, out ) ;
 
             out << "END" << std::endl ;
         }
@@ -2601,14 +2602,11 @@ namespace {
         void write_elements( const GeoModel& geomodel, std::ofstream& out ) const
         {
             const GeoModelMeshCells& cells = geomodel.mesh.cells ;
-            const GeoModelMeshEdges& edges = geomodel.mesh.edges ;
             out << "VARNODE\n" ;
-            out << SPACE << cells.nb() + edges.nb_edges() ;
+            out << SPACE << cells.nb() ;
             index_t min_nb_vertices_per_element ;
             index_t max_nb_vertices_per_element ;
-            if( edges.nb_edges() > 0 ) {
-                min_nb_vertices_per_element = 2 ;
-            } else if( cells.nb_tet() > 0 ) {
+            if( cells.nb_tet() > 0 ) {
                 min_nb_vertices_per_element = 4 ;
             } else if( cells.nb_pyramid() > 0 ) {
                 min_nb_vertices_per_element = 5 ;
@@ -2627,8 +2625,6 @@ namespace {
                 max_nb_vertices_per_element = 5 ;
             } else if( cells.nb_tet() > 0 ) {
                 max_nb_vertices_per_element = 4 ;
-            } else if( edges.nb_edges() > 0 ) {
-                max_nb_vertices_per_element = 2 ;
             } else {
                 ringmesh_assert_not_reached ;
             }
@@ -2646,14 +2642,6 @@ namespace {
                 }
                 out << "\n" ;
             }
-
-            for( index_t w = 0; w < edges.nb_wells(); w++ ) {
-                for( index_t e = 0; e < edges.nb_edges( w ); e++ ) {
-                    out << " 0 " << edges.vertex( w, e, 0 ) << SPACE
-                        << edges.vertex( w, e, 1 ) << "\n" ;
-                }
-            }
-
         }
         void write_vertices( const GeoModel& geomodel, std::ofstream& out ) const
         {
@@ -2680,21 +2668,54 @@ namespace {
                 offset += region.nb_mesh_elements() ;
                 out << "-" << offset << "\n" ;
             }
-
+        }
+        void write_wells( const GeoModel& geomodel, std::ofstream& out ) const
+        {
             const WellGroup* wells = geomodel.wells() ;
             if( !wells ) {
                 return ;
             }
-            out << "EDGESETS\n" ;
-            for( index_t w = 0; w < wells->nb_wells(); w++ ) {
-                const Well& well = wells->well( w ) ;
-                out << SPACE << well.name() << SPACE << ++offset ;
-                offset += well.nb_edges() ;
-                out << "-" << offset << "\n" ;
-            }
+            out << "DFE\n" ;
+            out
+                << " <?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"no\" ?>\n" ;
+            out << " <fractures>\n" ;
+            write_well_edges( geomodel, out ) ;
+            write_well_groups( geomodel, out ) ;
+            out << " </fractures>\n" ;
         }
-    }
-    ;
+        void write_well_edges( const GeoModel& geomodel, std::ofstream& out ) const
+        {
+            const GeoModelMeshEdges& edges = geomodel.mesh.edges ;
+            out << " <nop count=\"" << edges.nb_edges() << "\">\n" ;
+            out << " <![CDATA[" ;
+            for( index_t w = 0; w < edges.nb_wells(); w++ ) {
+                for( index_t e = 0; e < edges.nb_edges( w ); e++ ) {
+                    out << "\n 0, 2, " << edges.vertex( w, e, 0 ) << ", "
+                        << edges.vertex( w, e, 1 ) ;
+                }
+            }
+            out << "]]>\n" ;
+            out << " </nop>\n" ;
+        }
+        void write_well_groups( const GeoModel& geomodel, std::ofstream& out ) const
+        {
+            const GeoModelMeshEdges& edges = geomodel.mesh.edges ;
+            const WellGroup* wells = geomodel.wells() ;
+            index_t offset = 0 ;
+            out << " <groups count=\"" << edges.nb_wells() << "\">\n" ;
+            for( index_t w = 0; w < edges.nb_wells(); w++ ) {
+                out << " <group name=\"" << wells->well( w ).name()
+                    << " mode=\"unstructured\">\n" ;
+                out << " <elements count=\"" << edges.nb_edges( w ) << "\">\n" ;
+                out << " <![CDATA[ " << ++offset ;
+                offset += edges.nb_edges( w ) ;
+                out << "-" << offset << "]]>\n" ;
+                out << " </elements>\n" ;
+                out << " </group>\n" ;
+            }
+            out << " </groups>\n" ;
+        }
+    } ;
 }
 
 namespace RINGMesh {
@@ -2726,20 +2747,19 @@ namespace RINGMesh {
     void GeoModelIOHandler::initialize_full_geomodel_output()
     {
         ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "meshb" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "mesh" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( TetGenIOHandler, "tetgen" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( TSolidIOHandler, "so" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( CSMPIOHandler, "csmp" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( AsterIOHandler, "mail" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( VTKIOHandler, "vtk" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( GPRSIOHandler, "gprs" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( MSHIOHandler, "msh" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( MFEMIOHandler, "mfem" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( GeoModelHandlerGM, "gm" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( OldGeoModelHandlerGM, "ogm" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( AbaqusIOHandler, "inp" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( AdeliIOHandler, "adeli" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( FeflowIOHandler, "fem" ) ;
-    }
+        ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "mesh" );
+        ringmesh_register_GeoModelIOHandler_creator( TetGenIOHandler, "tetgen" );
+        ringmesh_register_GeoModelIOHandler_creator( TSolidIOHandler, "so" );
+        ringmesh_register_GeoModelIOHandler_creator( CSMPIOHandler, "csmp" );
+        ringmesh_register_GeoModelIOHandler_creator( AsterIOHandler, "mail" );
+        ringmesh_register_GeoModelIOHandler_creator( VTKIOHandler, "vtk" );
+        ringmesh_register_GeoModelIOHandler_creator( GPRSIOHandler, "gprs" );
+        ringmesh_register_GeoModelIOHandler_creator( MSHIOHandler, "msh" );
+        ringmesh_register_GeoModelIOHandler_creator( MFEMIOHandler, "mfem" );
+        ringmesh_register_GeoModelIOHandler_creator( GeoModelHandlerGM, "gm" );
+        ringmesh_register_GeoModelIOHandler_creator( OldGeoModelHandlerGM, "ogm" );
+        ringmesh_register_GeoModelIOHandler_creator( AbaqusIOHandler, "inp" );
+        ringmesh_register_GeoModelIOHandler_creator( AdeliIOHandler, "adeli" );
+        ringmesh_register_GeoModelIOHandler_creator( FeflowIOHandler, "fem" );}
 
 }
