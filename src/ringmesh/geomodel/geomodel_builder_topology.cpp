@@ -136,17 +136,17 @@ namespace RINGMesh {
     }
 
     bool GeoModelBuilderTopology::get_dependent_entities(
-        std::set< gmme_t >& in_mesh_entities,
-        std::set< gmge_t >& in_geological_entities ) const
+        std::set< gmme_t >& mesh_entities,
+        std::set< gmge_t >& geological_entities ) const
     {
-        std::size_t input_geological_size = in_geological_entities.size() ;
-        std::size_t input_mesh_size = in_mesh_entities.size() ;
+        std::size_t input_geological_size = geological_entities.size() ;
+        std::size_t input_mesh_size = mesh_entities.size() ;
 
         // Add children of geological entities
-        for( gmge_t cur : in_geological_entities ) {
+        for( gmge_t cur : geological_entities ) {
             const GeoModelGeologicalEntity& E = geomodel_.geological_entity( cur ) ;
             for( index_t j = 0; j < E.nb_children(); ++j ) {
-                in_mesh_entities.insert( E.child_gmme( j ) ) ;
+                mesh_entities.insert( E.child_gmme( j ) ) ;
             }
         }
         // Add geological entities which have no child
@@ -162,13 +162,13 @@ namespace RINGMesh {
                 const GeoModelGeologicalEntity& E = geomodel_.geological_entity(
                     type, j ) ;
                 for( index_t k = 0; k < E.nb_children(); ++k ) {
-                    if( in_mesh_entities.count( E.child_gmme( k ) ) == 0 ) {
+                    if( mesh_entities.count( E.child_gmme( k ) ) == 0 ) {
                         no_child = false ;
                         break ;
                     }
                 }
                 if( no_child ) {
-                    in_geological_entities.insert( E.gmge_id() ) ;
+                    geological_entities.insert( E.gmge_id() ) ;
                 }
             }
         }
@@ -181,20 +181,20 @@ namespace RINGMesh {
                 bool no_incident = true ;
                 const GeoModelMeshEntity& E = geomodel_.mesh_entity( type, j ) ;
                 for( index_t k = 0; k < E.nb_in_boundary(); ++k ) {
-                    if( in_mesh_entities.count( E.in_boundary_gmme( k ) ) == 0 ) {
+                    if( mesh_entities.count( E.in_boundary_gmme( k ) ) == 0 ) {
                         no_incident = false ;
                         break ;
                     }
                 }
                 if( no_incident ) {
-                    in_mesh_entities.insert( E.gmme_id() ) ;
+                    mesh_entities.insert( E.gmme_id() ) ;
                 }
             }
         }
         // Recursive call till nothing is added
-        if( in_mesh_entities.size() != input_mesh_size
-            || in_geological_entities.size() != input_geological_size ) {
-            return get_dependent_entities( in_mesh_entities, in_geological_entities ) ;
+        if( mesh_entities.size() != input_mesh_size
+            || geological_entities.size() != input_geological_size ) {
+            return get_dependent_entities( mesh_entities, geological_entities ) ;
         } else {
             return false ;
         }
