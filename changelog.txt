@@ -11,7 +11,13 @@ Bug fix:
  *
 
 Improvements:
- * Explicit distinction between the denomination of GeoModelMeshEntity and GeoModelGeologicalEntity
+ * Explicit distinction between the denomination of GeoModelMeshEntity and GeoModelGeologicalEntity:
+      Now, gmme_t are used to identify a GeoModelMeshEntity (with and index and a type)
+           gmge_t are used to identify a GeoModelGeologicalEntity (with an index and a type)
+      User who want to use GeoModelEntity has now to give a particular attention on which kind on GeoModelEntity
+      he is working.
+ * EntityType are not a std::string anymore but an abstract class. GeologicalEntityType and MeshEntityType inherit
+      from EntityType.
  * Remove support of .ogm
  *
 
