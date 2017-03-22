@@ -423,8 +423,8 @@ namespace RINGMesh {
             std::vector< std::string > names ;
             TetraGenFactory::list_creators( names ) ;
             Logger::err( "I/O" ) << "Currently supported mesher are: " ;
-            for( index_t i = 0 ; i < names.size() ; i++ ) {
-                Logger::out( "I/O" ) << " " << names[ i ] ;
+            for( const std::string& name : names ) {
+                Logger::out( "I/O" ) << " " << name ;
             }
             Logger::out( "I/O" ) << std::endl ;
             throw RINGMeshException( "TetraGen", "Could not create TetraGen mesher: "
@@ -438,7 +438,11 @@ namespace RINGMesh {
     }
 
     TetraGen::TetraGen()
-        : builder_( nullptr ), output_region_( NO_ID ), region_( nullptr ), wells_( nullptr )
+        :
+            builder_( nullptr ),
+            output_region_( NO_ID ),
+            region_( nullptr ),
+            wells_( nullptr )
     {
     }
 
@@ -471,18 +475,18 @@ namespace RINGMesh {
         index_t nb_region_vertices = region.nb_vertices() ;
         index_t nb_well_vertices = 0 ;
         if( wells ) {
-            for( index_t w = 0; w < well_edges.size(); w++ ) {
-                nb_well_vertices += 2 * well_edges[w].size() ;
+            for( const auto& edges : well_edges ) {
+                nb_well_vertices += 2 * edges.size() ;
             }
         }
         region_surfaces_and_wells_vertices.reserve(
             nb_surface_vertices + nb_region_vertices + nb_well_vertices ) ;
 
         // Add the surfaces vertices
-        for( index_t s = 0; s < unique_surfaces.size(); s++ ) {
-            for( index_t v = 0; v < unique_surfaces[s]->nb_vertices(); v++ ) {
+        for( const GeoModelMeshEntity*& surface : unique_surfaces ) {
+            for( index_t v = 0; v < surface->nb_vertices(); v++ ) {
                 region_surfaces_and_wells_vertices.push_back(
-                    unique_surfaces[s]->vertex( v ) ) ;
+                    surface->vertex( v ) ) ;
             }
         }
 
@@ -496,15 +500,14 @@ namespace RINGMesh {
             wells->get_region_edges( region.index(), well_edges ) ;
             // Copy result of porting. Stupid, I know, but because of the interface
             // of MakeUnique. This Edge class is a pain [JP]
-            for( index_t w = 0; w < well_edges.size(); w++ ) {
-                std::vector< std::pair< vec3, vec3 > > wells_copy(
-                    well_edges[w].size() ) ;
+            for( const auto& edges : well_edges ) {
+                std::vector< std::pair< vec3, vec3 > > wells_copy( edges.size() ) ;
 
                 for( index_t i = 0; i < wells_copy.size(); ++i ) {
                     region_surfaces_and_wells_vertices.push_back(
-                        well_edges[w][i].vertex( 0 ) ) ;
+                        edges[i].vertex( 0 ) ) ;
                     region_surfaces_and_wells_vertices.push_back(
-                        well_edges[w][i].vertex( 1 ) ) ;
+                        edges[i].vertex( 1 ) ) ;
                 }
             }
         }
@@ -522,8 +525,8 @@ namespace RINGMesh {
             3 * sizeof(double) * unique_points.size() ) ;
         if( !well_edges.empty() ) {
             index_t nb_well_edges = 0 ;
-            for( index_t w = 0; w < well_edges.size(); w++ ) {
-                nb_well_edges += well_edges[w].size() ;
+            for( const auto& edges : well_edges ) {
+                nb_well_edges += edges.size() ;
             }
             tetmesh_constraint_.edges.create_edges( nb_well_edges ) ;
             GEO::Attribute< index_t > edge_region(
@@ -546,22 +549,21 @@ namespace RINGMesh {
         tetmesh_constraint_.facets.create_triangles( nb_facets ) ;
         GEO::Attribute< index_t > surface_region(
             tetmesh_constraint_.facets.attributes(), surface_att_name ) ;
-        for( index_t s = 0; s < unique_surfaces.size(); s++ ) {
-            const GeoModelMeshEntity& surface = *unique_surfaces[s] ;
+        for( const GeoModelMeshEntity*& surface : unique_surfaces ) {
 //            RINGMESH_PARALLEL_LOOP
-            for( index_t t = 0; t < surface.nb_mesh_elements(); t++ ) {
-                ringmesh_assert( surface.nb_mesh_element_vertices( t ) == 3 ) ;
+            for( index_t t = 0; t < surface->nb_mesh_elements(); t++ ) {
+                ringmesh_assert( surface->nb_mesh_element_vertices( t ) == 3 ) ;
                 for( index_t v = 0; v < 3; v++ ) {
                     tetmesh_constraint_.facets.set_vertex( offset_facets + t, v,
                         starting_index
                             + unique_indices[offset_vertices
-                                + surface.mesh_element_vertex_index( t, v )] ) ;
+                                + surface->mesh_element_vertex_index( t, v )] ) ;
                 }
-                surface_region[offset_facets + t] = surface.index() ;
+                surface_region[offset_facets + t] = surface->index() ;
 
             }
-            offset_vertices += surface.nb_vertices() ;
-            offset_facets += surface.nb_mesh_elements() ;
+            offset_vertices += surface->nb_vertices() ;
+            offset_facets += surface->nb_mesh_elements() ;
         }
         tetmesh_constraint_.facets.connect() ;
     }
@@ -609,17 +611,18 @@ namespace RINGMesh {
         gmme_t region_id( Region::type_name_static(), output_region_ ) ;
         builder_->geometry.delete_mesh_entity_mesh( region_id ) ;
         builder_->geometry.create_mesh_entity_vertices( region_id, nb_points ) ;
-        builder_->geometry.create_region_cells( output_region_, GEO::MESH_TET, nb_tets ) ;
+        builder_->geometry.create_region_cells( output_region_, GEO::MESH_TET,
+            nb_tets ) ;
     }
 
     void TetraGen::initialize()
     {
 #ifdef RINGMESH_WITH_TETGEN
-        ringmesh_register_tetragen( TetraGen_TetGen, "TetGen" ) ;
+        ringmesh_register_tetragen( TetraGen_TetGen, "TetGen" );
 #endif
 
 #ifdef USE_MG_TETRA
     ringmesh_register_tetragen( TetraGen_MG_Tetra, "MG_Tetra" ) ;
 #endif
-    }
+}
 }
