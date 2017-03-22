@@ -321,22 +321,4 @@ namespace RINGMesh {
         return mesh ;
     }
 
-    MeshAllD* MeshAllD::create_mesh( const MeshType type )
-    {
-        MeshType new_type = type ;
-        if( new_type.empty() ) {
-            new_type = GeogramMeshAllD::type_name_static() ;
-        }
-        MeshAllD* mesh = MeshAllDFactory::create_object( new_type ) ;
-        if( !mesh ) {
-            Logger::warn( "MeshAllD" ) << "Could not create mesh data structure: "
-                << new_type << std::endl ;
-            Logger::warn( "MeshAllD" )
-                << "Falling back to GeogramMeshAllD data structure" << std::endl ;
-
-            mesh = new GeogramMeshAllD ;
-        }
-        return mesh ;
-    }
-
 } // namespace
