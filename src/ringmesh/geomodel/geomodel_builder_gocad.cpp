@@ -612,10 +612,8 @@ namespace {
         std::vector< vec3 > vertices(
             load_storage.vertices_.begin() + load_storage.tface_vertex_ptr_,
             load_storage.vertices_.end() ) ;
-        for( index_t i = 0; i < load_storage.cur_surf_facet_corners_gocad_id_.size();
-            i++ ) {
-            load_storage.cur_surf_facet_corners_gocad_id_[i] -=
-                load_storage.tface_vertex_ptr_ ;
+        for( index_t& id : load_storage.cur_surf_facet_corners_gocad_id_ ) {
+            id -= load_storage.tface_vertex_ptr_ ;
         }
         builder.geometry.set_surface_geometry( load_storage.cur_surface_, vertices,
             load_storage.cur_surf_facet_corners_gocad_id_,
@@ -769,17 +767,17 @@ namespace {
 
             // Create the entity if it is not the universe
             // Set the region name and boundaries
-            if( name != static_cast<std::string>(Universe::universe_type_name()) ) {
+            if( name != static_cast< std::string >( Universe::universe_type_name() ) ) {
                 gmme_t region_id = builder().topology.create_mesh_entity< Region >() ;
                 builder().info.set_mesh_entity_name( region_id, name ) ;
-                for( index_t i = 0; i < region_boundaries.size(); ++i ) {
+                for( const std::pair< index_t, bool >& info : region_boundaries ) {
                     builder().topology.add_mesh_entity_boundary( region_id,
-                        region_boundaries[i].first, region_boundaries[i].second ) ;
+                        info.first, info.second ) ;
                 }
             } else {
-                for( index_t i = 0; i < region_boundaries.size(); ++i ) {
-                    builder().topology.add_universe_boundary(
-                        region_boundaries[i].first, region_boundaries[i].second ) ;
+                for( const std::pair< index_t, bool >& info : region_boundaries ) {
+                    builder().topology.add_universe_boundary( info.first,
+                        info.second ) ;
                 }
             }
         }
@@ -1075,7 +1073,7 @@ namespace {
 
     void tsolid_import_factory_initialize()
     {
-        ringmesh_register_TSolidLineParser_creator( LoadRegion, "TVOLUME" );
+        ringmesh_register_TSolidLineParser_creator( LoadRegion, "TVOLUME" ) ;
         ringmesh_register_TSolidLineParser_creator( LoadTSolidVertex, "VRTX" ) ;
         ringmesh_register_TSolidLineParser_creator( LoadTSolidVertex, "PVRTX" ) ;
         ringmesh_register_TSolidLineParser_creator( LoadTSAtomic, "ATOM" ) ;
@@ -1135,10 +1133,9 @@ namespace RINGMesh {
                 interfaces.push_back( cur_interfaces ) ;
                 // Create a name for this contact
                 std::string name = "contact" ;
-                for( auto it( cur_interfaces.begin() ); it != cur_interfaces.end();
-                    ++it ) {
+                for( const gmge_t& it : cur_interfaces ) {
                     name += "_" ;
-                    name += geomodel_.geological_entity( *it ).name() ;
+                    name += geomodel_.geological_entity( it ).name() ;
                 }
                 info.set_geological_entity_name( contact_id, name ) ;
             }
@@ -1201,13 +1198,13 @@ namespace RINGMesh {
     void GeoModelBuilderTSolid::read_line()
     {
         std::string keyword = file_line_.field( 0 ) ;
-        TSolidLineParser_var tsolid_parser = TSolidLineParser::create( keyword, *this,
-            geomodel_ ) ;
+        TSolidLineParser_var tsolid_parser = TSolidLineParser::create( keyword,
+            *this, geomodel_ ) ;
         if( tsolid_parser ) {
             tsolid_parser->execute( file_line_, tsolid_load_storage_ ) ;
         } else {
-            GocadLineParser_var gocad_parser = GocadLineParser::create( keyword, *this,
-                geomodel_ ) ;
+            GocadLineParser_var gocad_parser = GocadLineParser::create( keyword,
+                *this, geomodel_ ) ;
             if( gocad_parser ) {
                 gocad_parser->execute( file_line_, tsolid_load_storage_ ) ;
             }
@@ -1277,7 +1274,8 @@ namespace RINGMesh {
         GeoModelBuilderTSolid& gm_builder,
         GeoModel& geomodel )
     {
-        TSolidLineParser* parser = TSolidLineParserFactory::create_object( keyword ) ;
+        TSolidLineParser* parser = TSolidLineParserFactory::create_object(
+            keyword ) ;
         if( parser ) {
             parser->set_builder( gm_builder ) ;
             parser->set_geomodel( geomodel ) ;
@@ -1336,8 +1334,8 @@ namespace RINGMesh {
         if( tsolid_parser ) {
             tsolid_parser->execute( file_line_, ml_load_storage_ ) ;
         } else {
-            GocadLineParser_var gocad_parser = GocadLineParser::create( keyword, *this,
-                geomodel_ ) ;
+            GocadLineParser_var gocad_parser = GocadLineParser::create( keyword,
+                *this, geomodel_ ) ;
             if( gocad_parser ) {
                 gocad_parser->execute( file_line_, ml_load_storage_ ) ;
             }

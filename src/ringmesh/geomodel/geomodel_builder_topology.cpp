@@ -61,9 +61,9 @@ namespace {
         const GeoModelMeshVertices& geomodel_vertices = geomodel.mesh.vertices ;
         std::vector< GMEVertex > vertices ;
         geomodel_vertices.gme_vertices( geomodel_point_id, vertices ) ;
-        for( index_t i = 0; i < vertices.size(); ++i ) {
-            if( vertices[i].gmme_id.type() == Corner::type_name_static() ) {
-                return vertices[i].gmme_id ;
+        for( const GMEVertex& vertex : vertices ) {
+            if( vertex.gmme_id.type() == Corner::type_name_static() ) {
+                return vertex.gmme_id ;
             }
         }
         return gmme_t() ;
@@ -143,7 +143,7 @@ namespace RINGMesh {
         std::size_t input_mesh_size = mesh_entities.size() ;
 
         // Add children of geological entities
-        for( gmge_t cur : geological_entities ) {
+        for( const gmge_t& cur : geological_entities ) {
             const GeoModelGeologicalEntity& E = geomodel_.geological_entity( cur ) ;
             for( index_t j = 0; j < E.nb_children(); ++j ) {
                 mesh_entities.insert( E.child_gmme( j ) ) ;
