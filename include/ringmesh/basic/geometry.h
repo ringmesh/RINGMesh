@@ -337,7 +337,7 @@ namespace RINGMesh {
             const vec3& v,
             index_t nb_neighbors,
             std::vector< index_t >& result,
-            double* dist = nil ) const ;
+            double* dist = nullptr ) const ;
 
         index_t nb_points() const
         {

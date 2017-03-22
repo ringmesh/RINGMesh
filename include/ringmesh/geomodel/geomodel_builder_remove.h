@@ -136,9 +136,8 @@ namespace RINGMesh {
         void check_if_entities_are_meshed(
             const std::set< gme_t >& mesh_entities_to_remove )
         {
-            for( std::set< gme_t >::const_iterator it =
-                mesh_entities_to_remove.begin(); it != mesh_entities_to_remove.end();
-                ++it ) {
+            for( auto it = mesh_entities_to_remove.begin();
+                it != mesh_entities_to_remove.end(); ++it ) {
                 if( !RINGMesh::EntityTypeManager::is_mesh_entity_type( it->type ) ) {
                     throw RINGMeshException( "REMOVE",
                         "You try to remove a Geological Entity using mesh removal." ) ;
@@ -149,9 +148,8 @@ namespace RINGMesh {
         void check_if_entities_are_not_meshed_entities(
             const std::set< gme_t >& mesh_entities_to_remove )
         {
-            for( std::set< gme_t >::const_iterator it =
-                mesh_entities_to_remove.begin(); it != mesh_entities_to_remove.end();
-                ++it ) {
+            for( auto it = mesh_entities_to_remove.begin();
+                it != mesh_entities_to_remove.end(); ++it ) {
                 if( RINGMesh::EntityTypeManager::is_mesh_entity_type( it->type ) ) {
                     throw RINGMeshException( "REMOVE",
                         "You try to remove a Mesh Entity using geological removal" ) ;
@@ -191,7 +189,7 @@ namespace RINGMesh {
                 geomodel_access_.modifiable_mesh_entities( type_name ) ;
             store.erase(
                 std::remove( store.begin(), store.end(),
-                    static_cast< GeoModelMeshEntity* >( nil ) ), store.end() ) ;
+                    static_cast< GeoModelMeshEntity* >( nullptr ) ), store.end() ) ;
 
             // QC
             ringmesh_assert( geomodel_.nb_mesh_entities( type_name )
@@ -205,7 +203,7 @@ namespace RINGMesh {
                 geomodel_access_.modifiable_geological_entities( type_name ) ;
             store.erase(
                 std::remove( store.begin(), store.end(),
-                    static_cast< GeoModelGeologicalEntity* >( nil ) ),
+                    static_cast< GeoModelGeologicalEntity* >( nullptr ) ),
                 store.end() ) ;
 
             // QC
@@ -314,9 +312,8 @@ namespace RINGMesh {
         void fill_to_erase_vectors(
             const std::set< gme_t >& mesh_entities_to_remove )
         {
-            for( std::set< gme_t >::const_iterator it =
-                mesh_entities_to_remove.begin(); it != mesh_entities_to_remove.end();
-                ++it ) {
+            for( auto it = mesh_entities_to_remove.begin();
+                it != mesh_entities_to_remove.end(); ++it ) {
                 gme_t cur = *it ;
 
                 index_t type_index = mesh_entity_type_to_index( cur.type ) ;
@@ -469,8 +466,8 @@ namespace RINGMesh {
             std::vector< gme_t >& vector,
             const gme_t& invalid_value )
         {
-            std::vector< gme_t >::iterator new_end = std::remove( vector.begin(),
-                vector.end(), invalid_value ) ;
+            auto new_end = std::remove( vector.begin(), vector.end(),
+                invalid_value ) ;
             if( new_end == vector.begin() ) {
                 // Clear instead of erase, because the behavior would be undefined.
                 vector.clear() ;

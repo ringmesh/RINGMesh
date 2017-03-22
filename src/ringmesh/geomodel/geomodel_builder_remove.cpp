@@ -72,14 +72,14 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelBuilderRemoval::remove_geological_entities( const std::set< gme_t >& entities )
+    void GeoModelBuilderRemoval::remove_geological_entities(
+        const std::set< gme_t >& entities )
     {
         check_if_entities_are_not_meshed_entities( entities ) ;
         std::set< gme_t > mesh_entities ;
-        for( std::set< gme_t >::const_iterator it = entities.begin();
-            it != entities.end(); ++it ) {
-            const GeoModelGeologicalEntity& cur_gmge =
-                geomodel_.geological_entity( *it ) ;
+        for( auto it = entities.begin(); it != entities.end(); ++it ) {
+            const GeoModelGeologicalEntity& cur_gmge = geomodel_.geological_entity(
+                *it ) ;
             for( index_t i = 0; i < cur_gmge.nb_children(); i++ ) {
                 mesh_entities.insert( cur_gmge.child( i ).gme_id() ) ;
             }
@@ -263,7 +263,8 @@ namespace RINGMesh {
         }
     }
 
-    void GeoModelBuilderRemoval::delete_invalid_children( GeoModelGeologicalEntity& E )
+    void GeoModelBuilderRemoval::delete_invalid_children(
+        GeoModelGeologicalEntity& E )
     {
         if( E.nb_children() == 0 ) {
             return ;
