@@ -182,13 +182,13 @@ namespace RINGMesh {
         const EntityTypeManager& manager = geomodel.entity_type_manager() ;
         const std::vector< MeshEntityType >& mesh_entity_types =
             manager.mesh_entity_manager.mesh_entity_types() ;
-        for( index_t i = 0; i < mesh_entity_types.size(); ++i ) {
-            print_nb_mesh_entities( geomodel, mesh_entity_types[i] ) ;
+        for( const MeshEntityType& type : mesh_entity_types ) {
+            print_nb_mesh_entities( geomodel, type ) ;
         }
         const std::vector< GeologicalEntityType >& geological_entity_types =
             manager.geological_entity_manager.geological_entity_types() ;
-        for( index_t i = 0; i < geological_entity_types.size(); ++i ) {
-            print_nb_geological_entities( geomodel, geological_entity_types[i] ) ;
+        for( const GeologicalEntityType& type : geological_entity_types ) {
+            print_nb_geological_entities( geomodel, type ) ;
         }
     }
 

@@ -730,8 +730,8 @@ namespace RINGMesh {
                     gmme_t( Surface::type_name_static(), s ) ) ) ;
             std::set< index_t > cutting_lines ;
             get_internal_borders( surface, cutting_lines ) ;
-            for( auto it = cutting_lines.begin(); it != cutting_lines.end(); ++it ) {
-                cut_surface_by_line( s, *it ) ;
+            for( index_t line_id : cutting_lines ) {
+                cut_surface_by_line( s, line_id ) ;
             }
             if( !cutting_lines.empty() ) {
                 Mesh2DBuilder_var surface_mesh_builder = create_surface_builder(
@@ -750,9 +750,8 @@ namespace RINGMesh {
             if( region.nb_mesh_elements() == 0 ) continue ;
             std::set< index_t > cutting_surfaces ;
             get_internal_borders( region, cutting_surfaces ) ;
-            for( auto it = cutting_surfaces.begin(); it != cutting_surfaces.end();
-                ++it ) {
-                cut_region_by_surface( r, *it ) ;
+            for( index_t surface_id : cutting_surfaces ) {
+                cut_region_by_surface( r, surface_id ) ;
             }
             if( !cutting_surfaces.empty() ) {
                 Mesh3DBuilder_var region_mesh_builder = create_region_builder( r ) ;
@@ -939,8 +938,7 @@ namespace RINGMesh {
     {
         const Surface& surface = geomodel_.surface( surface_id ) ;
         Mesh2DBuilder_var builder = create_surface_builder( surface_id ) ;
-        for( index_t i = 0; i < facets.size(); ++i ) {
-            index_t cur_f = facets[i] ;
+        for( index_t cur_f : facets ) {
             for( index_t cur_v = 0;
                 cur_v < surface.nb_mesh_element_vertices( cur_f ); cur_v++ ) {
                 if( surface.mesh_element_vertex_index( cur_f, cur_v )
@@ -959,8 +957,7 @@ namespace RINGMesh {
     {
         const Region& region = geomodel_.region( region_id ) ;
         Mesh3DBuilder_var builder = create_region_builder( region_id ) ;
-        for( index_t i = 0; i < cells.size(); ++i ) {
-            index_t cur_c = cells[i] ;
+        for( index_t cur_c : cells ) {
             for( index_t cur_v = 0; cur_v < region.nb_mesh_element_vertices( cur_c );
                 cur_v++ ) {
                 if( region.mesh_element_vertex_index( cur_c, cur_v )

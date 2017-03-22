@@ -83,22 +83,22 @@ namespace RINGMesh {
 
     GeoModel::~GeoModel()
     {
-        for( index_t i = 0; i < corners_.size(); ++i ) {
-            delete corners_[i] ;
+        for( Corner*& i : corners_ ) {
+            delete i ;
         }
-        for( index_t i = 0; i < lines_.size(); ++i ) {
-            delete lines_[i] ;
+        for( Line*& i : lines_ ) {
+            delete i ;
         }
-        for( index_t i = 0; i < surfaces_.size(); ++i ) {
-            delete surfaces_[i] ;
+        for( Surface*& i : surfaces_ ) {
+            delete i ;
         }
-        for( index_t i = 0; i < regions_.size(); ++i ) {
-            delete regions_[i] ;
+        for( Region*& i : regions_ ) {
+            delete i ;
         }
 
-        for( index_t i = 0; i < geological_entities_.size(); ++i ) {
-            for( index_t j = 0; j < geological_entities_[i].size(); ++j ) {
-                delete geological_entities_[i][j] ;
+        for( std::vector< GeoModelGeologicalEntity* >& entities : geological_entities_ ) {
+            for( GeoModelGeologicalEntity*& entity : entities ) {
+                delete entity ;
             }
         }
     }
