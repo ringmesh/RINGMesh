@@ -65,9 +65,12 @@ namespace GEO {
      *   triangulated.
      * \param[in] attribute_name the name of the vertex attribute where 
      *   texture coordinates are stored.
+     * \param[in] verbose if true, messages with statistics are displayed 
+     *   in the logger during computation.
      */
     void GEOGRAM_API mesh_compute_ABF_plus_plus(
-	Mesh& M, const std::string& attribute_name="tex_coord"
+	Mesh& M, const std::string& attribute_name="tex_coord",
+	bool verbose = false
     );    
 }
 

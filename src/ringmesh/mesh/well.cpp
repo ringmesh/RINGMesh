@@ -76,14 +76,14 @@ namespace {
         bool side )
     {
         ringmesh_assert( surface_part_id < geomodel.nb_surfaces() ) ;
-        gme_t cur_surface( Surface::type_name_static(), surface_part_id ) ;
+        gmme_t cur_surface( Surface::type_name_static(), surface_part_id ) ;
         const Surface& surface = geomodel.surface( surface_part_id ) ;
         for( index_t r = 0; r < surface.nb_in_boundary(); r++ ) {
-            const Region& cur_region = dynamic_cast< const Region& >( surface.in_boundary(
-                r ) ) ;
+            const Region& cur_region =
+                dynamic_cast< const Region& >( surface.in_boundary( r ) ) ;
             for( index_t s = 0; s < cur_region.nb_boundaries(); s++ ) {
                 if( cur_region.side( s ) == side
-                    && cur_region.boundary_gme( s ) == cur_surface ) {
+                    && cur_region.boundary_gmme( s ) == cur_surface ) {
                     return r ;
                 }
             }
@@ -444,7 +444,7 @@ namespace RINGMesh {
 // --------------------------------------------------------------------------
 
     WellGroup::WellGroup()
-        : geomodel_( nil )
+        : geomodel_( nullptr )
     {
     }
 
@@ -529,7 +529,7 @@ namespace RINGMesh {
      */
     void WellGroup::create_wells( index_t nb )
     {
-        wells_.resize( nb, nil ) ;
+        wells_.resize( nb, nullptr ) ;
         for( index_t w = 0; w < nb_wells(); w++ ) {
             wells_[w] = new Well ;
         }
@@ -616,10 +616,10 @@ namespace RINGMesh {
                 const std::vector< index_t >& edges = edges_around_vertices[v_to_id] ;
                 if( edges.size() == 2 ) {
                     index_t count = 0 ;
-                    for( index_t e = 0; e < edges.size(); e++ ) {
-                        if( !edge_visited[edges[e]] ) {
+                    for( index_t edge : edges ) {
+                        if( !edge_visited[edge] ) {
                             S_part.push(
-                                OrientedEdge( conformal_mesh, edges[e], v_to_id ) ) ;
+                                OrientedEdge( conformal_mesh, edge, v_to_id ) ) ;
                             count++ ;
                         }
                     }
@@ -629,8 +629,8 @@ namespace RINGMesh {
                     create_well_part_and_corners( *geomodel(), new_well,
                         well_part_points, vertex_info[cur_edge.vertex_from_],
                         vertex_info[v_to_id] ) ;
-                    for( index_t e = 0; e < edges.size(); e++ ) {
-                        S.push( OrientedEdge( conformal_mesh, edges[e], v_to_id ) ) ;
+                    for( index_t edge : edges ) {
+                        S.push( OrientedEdge( conformal_mesh, edge, v_to_id ) ) ;
                     }
                 }
             } while( !S_part.empty() ) ;

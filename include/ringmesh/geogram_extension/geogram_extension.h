@@ -121,7 +121,7 @@ namespace RINGMesh {
         {
         }
         AttributeVector( index_t size )
-            : base_class( size, nil )
+            : base_class( size, nullptr )
         {
         }
 
@@ -146,7 +146,7 @@ namespace RINGMesh {
 
         bool is_attribute_bound( index_t i ) const
         {
-            return base_class::operator[]( i ) != nil ;
+            return base_class::operator[]( i ) != nullptr ;
         }
 
         void unbind( index_t i )
@@ -155,7 +155,7 @@ namespace RINGMesh {
                 // I am not sure, but unbind should do the deallocation [JP]
                 operator[]( i ).unbind() ;
                 delete base_class::operator[]( i ) ;
-                base_class::operator[]( i ) = nil ;
+                base_class::operator[]( i ) = nullptr ;
             }
         }
 

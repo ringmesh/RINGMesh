@@ -100,12 +100,12 @@ namespace RINGMesh {
     public:
         CornerGfxManager( GeoModelGfx& gfx ) ;
 
-        virtual void draw() ;
-        virtual void initialize() ;
+        virtual void draw() override ;
+        virtual void initialize() override ;
 
-        virtual void set_mesh_element_color( index_t e, float r, float g, float b ) ;
-        virtual void set_mesh_element_visibility( index_t e, bool b ) ;
-        virtual void set_mesh_element_size( index_t e, index_t s ) ;
+        virtual void set_mesh_element_color( index_t e, float r, float g, float b ) override ;
+        virtual void set_mesh_element_visibility( index_t e, bool b ) override ;
+        virtual void set_mesh_element_size( index_t e, index_t s ) override ;
 
     } ;
 
@@ -113,12 +113,12 @@ namespace RINGMesh {
     public:
         LineGfxManager( GeoModelGfx& gfx ) ;
 
-        virtual void draw() ;
-        virtual void initialize() ;
+        virtual void draw() override ;
+        virtual void initialize() override ;
 
-        virtual void set_mesh_element_color( index_t e, float r, float g, float b ) ;
-        virtual void set_mesh_element_visibility( index_t e, bool b ) ;
-        virtual void set_mesh_element_size( index_t e, index_t s ) ;
+        virtual void set_mesh_element_color( index_t e, float r, float g, float b ) override ;
+        virtual void set_mesh_element_visibility( index_t e, bool b ) override ;
+        virtual void set_mesh_element_size( index_t e, index_t s ) override ;
 
     } ;
 
@@ -126,11 +126,11 @@ namespace RINGMesh {
     public:
         SurfaceGfxManager( GeoModelGfx& gfx ) ;
 
-        virtual void draw() ;
-        virtual void initialize() ;
+        virtual void draw() override ;
+        virtual void initialize() override ;
 
-        virtual void set_mesh_element_color( index_t e, float r, float g, float b ) ;
-        virtual void set_mesh_element_visibility( index_t e, bool b ) ;
+        virtual void set_mesh_element_color( index_t e, float r, float g, float b ) override ;
+        virtual void set_mesh_element_visibility( index_t e, bool b ) override ;
 
         void set_backface_surfaces_color( float r, float g, float b ) ;
         void set_backface_surface_color( index_t c, float r, float g, float b ) ;
@@ -147,11 +147,11 @@ namespace RINGMesh {
     public:
         RegionGfxManager( GeoModelGfx& gfx ) ;
 
-        virtual void draw() ;
-        virtual void initialize() ;
+        virtual void draw() override ;
+        virtual void initialize() override ;
 
-        virtual void set_mesh_element_color( index_t e, float r, float g, float b ) ;
-        virtual void set_mesh_element_visibility( index_t e, bool b ) ;
+        virtual void set_mesh_element_color( index_t e, float r, float g, float b ) override ;
+        virtual void set_mesh_element_visibility( index_t e, bool b ) override ;
 
         void set_edge_color( float r, float g, float b ) ;
         void set_edge_color( index_t m, float r, float g, float b ) ;

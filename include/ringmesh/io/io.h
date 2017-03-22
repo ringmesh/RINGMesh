@@ -46,6 +46,10 @@
 #define MAX_FILENAME 512
 #define READ_SIZE 8192
 
+const std::string TAB = "\t" ;
+const std::string SPACE = " " ;
+const std::string COMMA = "," ;
+
 /*!
  * @file Global input - output functions of RINGMesh
  * @author Various
@@ -142,6 +146,8 @@ namespace RINGMesh {
 
     void RINGMESH_API unzip_file( unzFile uz, const char filename[MAX_FILENAME] ) ;
 
-    void RINGMESH_API unzip_current_file( unzFile uz, const char filename[MAX_FILENAME] ) ;
+    void RINGMESH_API unzip_current_file(
+        unzFile uz,
+        const char filename[MAX_FILENAME] ) ;
 
 }
