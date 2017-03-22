@@ -44,16 +44,16 @@ namespace {
         }
         virtual void save( const GeoModel& geomodel, const std::string& filename ) override
         {
-            geomodel.mesh.edges.test_and_initialize() ;
-            geomodel.mesh.facets.test_and_initialize() ;
-            geomodel.mesh.cells.test_and_initialize() ;
-
-            GeogramMeshAllD mesh ;
-            geomodel.mesh.copy_mesh( mesh ) ;
-
-            Logger::instance()->set_minimal( true ) ;
-            mesh.save_mesh( filename ) ;
-            Logger::instance()->set_minimal( false ) ;
+//            geomodel.mesh.edges.test_and_initialize() ;
+//            geomodel.mesh.facets.test_and_initialize() ;
+//            geomodel.mesh.cells.test_and_initialize() ;
+//
+//            GeogramMeshAllD mesh ;
+//            geomodel.mesh.copy_mesh( mesh ) ;
+//
+//            Logger::instance()->set_minimal( true ) ;
+//            mesh.save_mesh( filename ) ;
+//            Logger::instance()->set_minimal( false ) ;
         }
     } ;
 

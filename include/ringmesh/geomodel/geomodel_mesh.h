@@ -75,6 +75,9 @@ namespace RINGMesh {
     ringmesh_disable_copy( GeoModelMeshVertices ) ;
     public:
         friend class GeoModelMesh ;
+        friend class GeoModelMeshEdges ;
+        friend class GeoModelMeshFacets ;
+        friend class GeoModelMeshCells ;
 
         GeoModelMeshVertices( GeoModelMesh& gmm, GeoModel& gm ) ;
 
@@ -447,7 +450,7 @@ namespace RINGMesh {
         /// Attached GeoModel
         GeoModel& gm_ ;
         /// Attached Mesh
-        MeshAllD* mesh_ ;
+        Mesh0D_var mesh_ ;
         /// Mapper from/to GeoModelMeshEntity vertices
         GeoModelVertexMapper vertex_mapper_ ;
     } ;
@@ -677,7 +680,7 @@ namespace RINGMesh {
         /// Attached GeoModel
         const GeoModel& gm_ ;
         /// Attached Mesh
-        MeshAllD* mesh_ ;
+        Mesh2D_var mesh_ ;
 
         /// Attribute storing the surface index per facet
         GEO::Attribute< index_t > surface_id_ ;
@@ -763,7 +766,7 @@ namespace RINGMesh {
         /// Attached GeoModel
         const GeoModel& gm_ ;
         /// Attached Mesh
-        MeshAllD* mesh_ ;
+        Mesh1D_var mesh_ ;
 
         /*!
          * Vector storing the index of the starting edge index
@@ -1183,7 +1186,7 @@ namespace RINGMesh {
         /// Attached GeoModel
         const GeoModel& gm_ ;
         /// Attached Mesh
-        MeshAllD* mesh_ ;
+        Mesh3D_var mesh_ ;
 
         /// Attribute storing the region index per cell
         GEO::Attribute< index_t > region_id_ ;
@@ -1238,31 +1241,17 @@ namespace RINGMesh {
             return geomodel_ ;
         }
 
-        /*!
-         * Copy the current GeoModelMesh into a Mesh
-         * @param[out] mesh The mesh to fill        
-         */
-        void copy_mesh( MeshAllD& mesh ) const
-        {
-            MeshAllDBuilder_var builder = MeshAllDBuilder::create_builder( mesh ) ;
-            builder->copy( *mesh_, false ) ;
-        }
-        void save_mesh( const std::string& filename ) const
-        {
-            mesh_->save_mesh( filename ) ;
-        }
-
         GEO::AttributesManager& vertex_attribute_manager() const
         {
-            return mesh_->vertex_attribute_manager() ;
+            return vertices.mesh_->vertex_attribute_manager() ;
         }
         GEO::AttributesManager& facet_attribute_manager() const
         {
-            return mesh_->facet_attribute_manager() ;
+            return facets.mesh_->facet_attribute_manager() ;
         }
         GEO::AttributesManager& cell_attribute_manager() const
         {
-            return mesh_->cell_attribute_manager() ;
+            return cells.mesh_->cell_attribute_manager() ;
         }
 
         /*!
@@ -1328,13 +1317,6 @@ namespace RINGMesh {
     private:
         /*! Attached GeoModel */
         const GeoModel& geomodel_ ;
-        /*!
-         * @brief Mesh owned by the GeoModelMesh, stores unique vertices, edges, 
-         * facets and cells.
-         * @details This means no colocated vertices, no duplicated edges, 
-         * facets or cells.
-         */
-        MeshAllD* mesh_ ;
 
         /// Optional duplication mode to compute the duplication of cells on surfaces
         mutable GeoModelMeshCells::DuplicateMode mode_ ;
