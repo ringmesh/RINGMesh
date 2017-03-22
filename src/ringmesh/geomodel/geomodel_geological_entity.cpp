@@ -109,7 +109,7 @@ namespace RINGMesh {
         ringmesh_register_GeoModelGeologicalEntity_creator( Layer ) ;
     }
 
-    const std::string Contact::child_type_name() const
+    std::string Contact::child_type_name() const
     {
         return Line::type_name_static() ;
     }
@@ -119,7 +119,7 @@ namespace RINGMesh {
         return check_has_children( *this ) ;
     }
 
-    const std::string Interface::child_type_name() const
+    std::string Interface::child_type_name() const
     {
         return Surface::type_name_static() ;
     }
@@ -129,7 +129,7 @@ namespace RINGMesh {
         return check_has_children( *this ) ;
     }
 
-    const std::string Layer::child_type_name() const
+    std::string Layer::child_type_name() const
     {
         return Region::type_name_static() ;
     }

@@ -91,13 +91,13 @@ namespace RINGMesh {
             return T == STRATI || T == UNCONFORMITY ;
         }
 
-        static const EntityType type_name_static() ;
+        static EntityType type_name_static() ;
 
         virtual ~GeoModelEntity()
         {
         }
-        ;
-        virtual const EntityType type_name() const
+
+        virtual EntityType type_name() const
         {
             return type_name_static() ;
         }
@@ -185,7 +185,7 @@ namespace RINGMesh {
 
         Universe( const GeoModel& geomodel ) ;
 
-        static const EntityType universe_type_name()
+        static EntityType universe_type_name()
         {
             return "Universe" ;
         }
@@ -193,12 +193,12 @@ namespace RINGMesh {
         virtual ~Universe()
         {
         }
-        virtual bool is_valid() const ;
-        virtual bool is_on_voi() const
+        virtual bool is_valid() const override ;
+        virtual bool is_on_voi() const override
         {
             return true ;
         }
-        virtual const EntityType type_name() const
+        virtual EntityType type_name() const override
         {
             return universe_type_name() ;
         }
@@ -235,7 +235,7 @@ namespace RINGMesh {
             boundary_surface_sides_ = from.boundary_surface_sides_ ;
         }
 
-        virtual bool is_index_valid() const
+        virtual bool is_index_valid() const override
         {
             return true ;
         }
