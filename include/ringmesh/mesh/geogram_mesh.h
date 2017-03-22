@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_GEOGRAM_MESH__
-#define __RINGMESH_GEOGRAM_MESH__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -72,7 +71,7 @@ namespace RINGMesh {
         {
             delete mesh_ ;
         }
-        void save_mesh( const std::string& filename ) const
+        virtual void save_mesh( const std::string& filename ) const override
         {
             GEO::mesh_save( *mesh_, filename, GEO::MeshIOFlags() ) ;
         }
@@ -115,12 +114,12 @@ namespace RINGMesh {
             return mesh_->vertices.attributes() ;
         }
 
-        static const std::string default_extension_static()
+        static std::string default_extension_static()
         {
             return "geogram" ;
         }
 
-        virtual const std::string default_extension() const
+        virtual std::string default_extension() const override
         {
             return default_extension_static() ;
         }
@@ -150,17 +149,17 @@ namespace RINGMesh {
         {
         }
         GeogramMesh0DBuilder* get_geogram_mesh_builder() ;
-        static const MeshType type_name_static()
+        static MeshType type_name_static()
         {
             return "GeogramMesh0D" ;
         }
 
-        virtual const MeshType type_name() const
+        virtual MeshType type_name() const override
         {
             return type_name_static() ;
         }
 
-        static const std::string default_extension_static()
+        static std::string default_extension_static()
         {
             return "geogram" ;
         }
@@ -179,17 +178,17 @@ namespace RINGMesh {
         virtual ~GeogramMesh1D()
         {
         }
-        static const MeshType type_name_static()
+        static MeshType type_name_static()
         {
             return "GeogramMesh1D" ;
         }
 
-        virtual const MeshType type_name() const
+        virtual MeshType type_name() const override
         {
             return type_name_static() ;
         }
 
-        static const std::string default_extension_static()
+        static std::string default_extension_static()
         {
             return "geogram" ;
         }
@@ -230,17 +229,17 @@ namespace RINGMesh {
         virtual ~GeogramMesh2D()
         {
         }
-        static const MeshType type_name_static()
+        static MeshType type_name_static()
         {
             return "GeogramMesh2D" ;
         }
 
-        virtual const MeshType type_name() const
+        virtual MeshType type_name() const override
         {
             return type_name_static() ;
         }
 
-        static const std::string default_extension_static()
+        static std::string default_extension_static()
         {
             return "geogram" ;
         }
@@ -309,17 +308,17 @@ namespace RINGMesh {
         virtual ~GeogramMesh3D()
         {
         }
-        static const MeshType type_name_static()
+        static MeshType type_name_static()
         {
             return "GeogramMesh3D" ;
         }
 
-        virtual const MeshType type_name() const
+        virtual MeshType type_name() const override
         {
             return type_name_static() ;
         }
 
-        static const std::string default_extension_static()
+        static std::string default_extension_static()
         {
             return "geogram" ;
         }
@@ -375,6 +374,7 @@ namespace RINGMesh {
         {
             return mesh_->cells.facet( cell_id, facet_id ) ;
         }
+      
         /*!
          * @brief Gets the number of facet in a cell
          * @param[in] cell_id index of the cell
@@ -492,17 +492,17 @@ namespace RINGMesh {
         virtual ~GeogramMeshAllD()
         {
         }
-        static const MeshType type_name_static()
+        static MeshType type_name_static()
         {
             return "GeogramMeshAllD" ;
         }
 
-        virtual const MeshType type_name() const
+        virtual MeshType type_name() const override
         {
             return type_name_static() ;
         }
 
-        static const std::string default_extension_static()
+        static std::string default_extension_static()
         {
             return "geogram" ;
         }
@@ -510,5 +510,3 @@ namespace RINGMesh {
 
     void register_geogram_mesh() ;
 }
-
-#endif

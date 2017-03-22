@@ -79,11 +79,6 @@ namespace RINGMesh {
         return u.x == v.x && u.y == v.y && u.z == v.z ;
     }
 
-    bool operator<( const vec3& u, const vec3& v )
-    {
-        return u.x < v.x && u.y < v.y && u.z < v.z ;
-    }
-
     bool operator!=( const vec3& u, const vec3& v )
     {
         return u.x != v.x || u.y != v.y || u.z != v.z ;
@@ -966,8 +961,7 @@ namespace RINGMesh {
         std::vector< vec3 > inter_circle_plane ;
         if( circle_plane_intersection( barycenter, N_triangle, O_circle, N_circle, r,
             inter_circle_plane ) ) {
-            for( index_t i = 0; i < inter_circle_plane.size(); i++ ) {
-                const vec3& p = inter_circle_plane[i] ;
+            for( const vec3& p : inter_circle_plane ) {
                 if( point_inside_triangle( p, p0, p1, p2 ) ) {
                     result.push_back( p ) ;
                 }
@@ -1549,7 +1543,7 @@ namespace RINGMesh {
         const GEO::Mesh& mesh,
         const MeshLocation& location,
         bool copy )
-        : nn_points_( nil ), delete_points_( true )
+        : nn_points_( nullptr ), delete_points_( true )
     {
         nn_tree_ = GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
         switch( location ) {

@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_MESH_QUALITY__
-#define __RINGMESH_MESH_QUALITY__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -82,5 +81,3 @@ namespace RINGMesh {
         MeshQualityMode mesh_qual_mode,
         const GeoModel& geomodel ) ;
 }
-
-#endif

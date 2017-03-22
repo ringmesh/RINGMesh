@@ -188,14 +188,16 @@ static char* u(const char* str) {
     }
 
 NLboolean nlInitExtension_ARPACK(void) {
+    NLenum flags = NL_LINK_NOW | NL_LINK_USE_FALLBACK;
+    if(nlCurrentContext == NULL || !nlCurrentContext->verbose) {
+	flags |= NL_LINK_QUIET;
+    }
+    
     if(ARPACK()->DLL_handle != NULL) {
         return nlExtensionIsInitialized_ARPACK();
     }
-
-    ARPACK()->DLL_handle = nlOpenDLL(
-	ARPACK_LIB_NAME,
-	NL_LINK_NOW | NL_LINK_USE_FALLBACK
-    );
+    
+    ARPACK()->DLL_handle = nlOpenDLL(ARPACK_LIB_NAME, flags);
     if(ARPACK()->DLL_handle == NULL) {
         return NL_FALSE;
     }
@@ -358,7 +360,8 @@ void nlEigenSolve_ARPACK(void) {
 
     iparam[1-1] = 1; /* ARPACK chooses the shifts */
     iparam[3-1] = (int)nlCurrentContext->max_iterations;
-    iparam[7-1] = 1; /* Normal mode, use 3 dor shift-invert */
+    iparam[7-1] = 1; /* Normal mode (we do not use 
+         shift-invert (3) since we do our own shift-invert */
 
     workev = NL_NEW_ARRAY(NLdouble, 3*ncv);
     workd = NL_NEW_ARRAY(NLdouble, 3*n);

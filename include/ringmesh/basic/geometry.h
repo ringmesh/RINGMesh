@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_GEOMETRY__
-#define __RINGMESH_GEOMETRY__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -52,7 +51,6 @@ namespace GEO {
 namespace RINGMesh {
 
     bool RINGMESH_API operator==( const vec3& u, const vec3& v ) ;
-    bool RINGMESH_API operator<( const vec3& u, const vec3& v ) ;
     bool RINGMESH_API operator!=( const vec3& u, const vec3& v ) ;
 
     /* @warning Duplicate from Geogram/basic/numeric.h */
@@ -338,7 +336,7 @@ namespace RINGMesh {
             const vec3& v,
             index_t nb_neighbors,
             std::vector< index_t >& result,
-            double* dist = nil ) const ;
+            double* dist = nullptr ) const ;
 
         index_t nb_points() const
         {
@@ -367,5 +365,3 @@ namespace RINGMesh {
     } ;
 
 }
-
-#endif

@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_GEOMODEL_VALIDITY__
-#define __RINGMESH_GEOMODEL_VALIDITY__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -91,5 +90,3 @@ namespace RINGMesh {
     bool RINGMESH_API are_geomodel_geological_entities_valid(
         const GeoModel& geomodel ) ;
 }
-
-#endif

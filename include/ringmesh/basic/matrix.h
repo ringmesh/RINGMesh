@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_MATRIX__
-#define __RINGMESH_MATRIX__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -192,7 +191,7 @@ namespace RINGMesh {
     public:
         typedef RowImpl< RowType > Row ;
         SparseMatrixImpl( bool is_symmetrical = false )
-            : rows_( NULL ), ni_( 0 ), nj_( 0 ), is_symmetrical_( is_symmetrical )
+            : rows_( nullptr ), ni_( 0 ), nj_( 0 ), is_symmetrical_( is_symmetrical )
         {
         }
 
@@ -298,7 +297,7 @@ namespace RINGMesh {
          * */
         void get_element_in_line( index_t i, index_t e, T& value ) const
         {
-            ringmesh_assert_not_reached;
+            ringmesh_assert_not_reached ;
         }
 
     protected:
@@ -503,4 +502,3 @@ namespace RINGMesh {
     }
 
 }
-#endif

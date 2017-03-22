@@ -38,6 +38,10 @@
 #include <geogram/basic/file_system.h>
 #include <geogram/basic/line_stream.h>
 
+#include <ringmesh/geomodel/geomodel.h>
+
+#include <ringmesh/mesh/geogram_mesh.h>
+#include <ringmesh/mesh/mesh_builder.h>
 #include <ringmesh/mesh/well.h>
 
 /*!
@@ -48,60 +52,8 @@
 namespace {
     using namespace RINGMesh ;
 
-    static std::string TAB = "\t" ;
-    static std::string SPACE = " " ;
-
-    class WLIOHandler: public WellGroupIOHandler {
-    public:
-        virtual void load( const std::string& filename, WellGroup& wells )
-        {
-            GEO::LineInput in( filename ) ;
-            if( !in.OK() ) {
-                throw RINGMeshException( "I/O", "Could not open file" ) ;
-            }
-
-            GEO::Mesh mesh ;
-            std::string name ;
-            double z_sign = 1.0 ;
-            double vertex_ref[3] ;
-
-            while( !in.eof() ) {
-                in.get_line() ;
-                in.get_fields() ;
-                if( in.nb_fields() == 0 ) continue ;
-                if( in.field_matches( 0, "name:" ) ) {
-                    name = in.field( 1 ) ;
-                } else if( in.field_matches( 0, "ZPOSITIVE" ) ) {
-                    if( in.field_matches( 1, "Depth" ) ) {
-                        z_sign = -1.0 ;
-                    }
-                } else if( in.field_matches( 0, "WREF" ) ) {
-                    vertex_ref[0] =in.field_as_double(1) ;
-                    vertex_ref[1] = in.field_as_double(2);
-                    vertex_ref[2] = z_sign *in.field_as_double(3) ;
-                    mesh.vertices.create_vertex( vertex_ref ) ;
-                } else if( in.field_matches( 0, "PATH" ) ) {
-                    if( in.field_as_double(1) == 0. ) continue ;
-                    double vertex[3] ;
-                    vertex[2] = z_sign * in.field_as_double(2);
-                    vertex[0] = in.field_as_double(3) + vertex_ref[0] ;
-                    vertex[1] = in.field_as_double(4) + vertex_ref[1] ;
-                    index_t id = mesh.vertices.create_vertex( vertex ) ;
-                    mesh.edges.create_edge( id - 1, id ) ;
-                } else if( in.field_matches( 0, "END" ) ) {
-                    wells.add_well( mesh, name ) ;
-                    mesh.clear() ;
-                }
-            }
-        }
-        virtual void save( const WellGroup& wells, const std::string& filename )
-        {
-            ringmesh_unused( wells ) ;
-            ringmesh_unused( filename ) ;
-            throw RINGMeshException( "I/O",
-                "Saving of a WellGroup from Gocad not implemented yet" ) ;
-        }
-    } ;
+#include "well_group/io_smesh.cpp"
+#include "well_group/io_wl.cpp"
 
 }
 
@@ -113,8 +65,7 @@ namespace RINGMesh {
      */
     void well_load( const std::string& filename, WellGroup& wells )
     {
-        Logger::out( "I/O" ) << "Loading file " << filename << "..."
-            << std::endl ;
+        Logger::out( "I/O" ) << "Loading file " << filename << "..." << std::endl ;
 
         WellGroupIOHandler_var handler = WellGroupIOHandler::get_handler(
             filename ) ;
@@ -152,5 +103,6 @@ namespace RINGMesh {
     void WellGroupIOHandler::initialize()
     {
         ringmesh_register_WellGroupIOHandler_creator( WLIOHandler, "wl" ) ;
+        ringmesh_register_WellGroupIOHandler_creator( SmeshIOHandler, "smesh" ) ;
     }
 }

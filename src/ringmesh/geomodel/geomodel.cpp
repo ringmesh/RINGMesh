@@ -32,7 +32,7 @@
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
  */
- 
+
 /*!
  * @file Implementation of THE GeoModel
  * @author Jeanne Pellerin and Arnaud Botella 
@@ -62,7 +62,7 @@ namespace {
         if( gm.universe().nb_boundaries() > 0 ) {
             const Universe& universe = gm.universe() ;
             for( index_t s = 0; s < universe.nb_boundaries(); s++ ) {
-                compute_surface_bbox( gm, universe.boundary_gme( s ).index, bbox ) ;
+                compute_surface_bbox( gm, universe.boundary_gmme( s ).index(), bbox ) ;
             }
         } else {
             ringmesh_assert( gm.nb_surfaces() > 0 ) ;
@@ -76,174 +76,60 @@ namespace {
 
 namespace RINGMesh {
 
-    typedef std::map< EntityType, EntityType > EntityTypeMap;
-
-    struct EntityTypeBoundaryMap
-    {
-        EntityTypeBoundaryMap()
-        {
-            register_boundary< Corner, GeoModelEntity >();
-            register_boundary< Line, Corner >();
-            register_boundary< Surface, Line >();
-            register_boundary< Region, Surface >();
-        }
-        template< typename TYPE, typename BOUNDARY >
-        void register_boundary()
-        {
-            map.insert( std::pair<EntityType, EntityType>( 
-                TYPE::type_name_static(), BOUNDARY::type_name_static() ) ) ;
-        }
-        EntityTypeMap map ;
-    };
-
-    struct EntityTypeInBoundaryMap
-    {
-        EntityTypeInBoundaryMap()
-        {
-            register_in_boundary< Corner, Line >();
-            register_in_boundary< Line, Surface >();
-            register_in_boundary< Surface, Region >();
-            register_in_boundary< Region, GeoModelEntity >();
-        }
-        template< typename TYPE, typename IN_BOUNDARY >
-        void register_in_boundary()
-        {
-            map.insert( std::pair<EntityType, EntityType>(
-                TYPE::type_name_static(), IN_BOUNDARY::type_name_static() ) ) ;
-        }
-        EntityTypeMap map ;
-    };
-   
-    // Maybe these should be declared as static in the functions 
-    // that use them.
-    const EntityTypeBoundaryMap boundary_relationships ;
-    const EntityTypeInBoundaryMap in_boundary_relationships ; 
-   
-     // Not the smartest but hopefully compiles in C++98   
-    static const EntityType hard_encoded_mesh_entity_types_array[4] = {
-        Corner::type_name_static(),
-        Line::type_name_static(),
-        Surface::type_name_static(),
-        Region::type_name_static()} ;
-    
-    static const std::vector< EntityType > hard_encoded_mesh_entity_types(
-        &hard_encoded_mesh_entity_types_array[0], &hard_encoded_mesh_entity_types_array[4] ) ;
-
-    index_t EntityTypeManager::nb_mesh_entity_types()
-    {
-        return static_cast< index_t >( hard_encoded_mesh_entity_types.size() ) ;
-    }
-    bool EntityTypeManager::is_corner( const EntityType& type )
-    {
-        return type == hard_encoded_mesh_entity_types[0] ;
-    }
-    bool EntityTypeManager::is_line( const EntityType& type )
-    {
-        return type == hard_encoded_mesh_entity_types[1] ;
-    }
-    bool EntityTypeManager::is_surface( const EntityType& type )
-    {
-        return type == hard_encoded_mesh_entity_types[2] ;
-    }
-    bool EntityTypeManager::is_region( const EntityType& type )
-    {
-        return type == hard_encoded_mesh_entity_types[3] ;
-    }    
-    bool EntityTypeManager::is_mesh_entity_type( const EntityType& type )
-    {
-        return find( hard_encoded_mesh_entity_types, type ) != NO_ID ;
-    }
-    const EntityType EntityTypeManager::default_entity_type()
-    {
-        return "No_entity_type" ;
-    }
-    const std::vector< EntityType >& EntityTypeManager::mesh_entity_types()
-    {
-        return hard_encoded_mesh_entity_types ;
-    }
-    
-    /*! @todo What is the cost of using such maps ?
-     */
-    const EntityType& EntityTypeManager::boundary_type( const EntityType& mesh_entity_type ) 
-    {
-        EntityTypeMap::const_iterator
-            itr = boundary_relationships.map.find( mesh_entity_type );
-        ringmesh_assert( itr != boundary_relationships.map.end() ) ;
-        return itr->second ;
-    }
-    const EntityType& EntityTypeManager::in_boundary_type( const EntityType& mesh_entity_type )
-    {
-       EntityTypeMap::const_iterator
-            itr = in_boundary_relationships.map.find( mesh_entity_type );
-        ringmesh_assert( itr != in_boundary_relationships.map.end() ) ;
-        return itr->second ;
-    }
-    
-    bool EntityTypeManager::is_geological_entity_type( const EntityType& type ) const
-    {
-        return find( geological_entity_types_, type ) != NO_ID ;
-    }
-
-    // ------------------------------------------------------------------------//
-
     GeoModel::GeoModel()
-        :
-            mesh( *this ),
-            epsilon_( -1 ),
-            universe_( *this ),
-            wells_( nil )
+        : mesh( *this ), epsilon_( -1 ), universe_( *this ), wells_( nullptr )
     {
     }
 
     GeoModel::~GeoModel()
-    {        
-        for( index_t i = 0; i < corners_.size(); ++i ) {
-            delete corners_[i] ;
+    {
+        for( Corner*& i : corners_ ) {
+            delete i ;
         }
-        for( index_t i = 0; i < lines_.size(); ++i ) {
-            delete lines_[i] ;
+        for( Line*& i : lines_ ) {
+            delete i ;
         }
-        for( index_t i = 0; i < surfaces_.size(); ++i ) {
-            delete surfaces_[i] ;
+        for( Surface*& i : surfaces_ ) {
+            delete i ;
         }
-        for( index_t i = 0; i < regions_.size(); ++i ) {
-            delete regions_[i] ;
+        for( Region*& i : regions_ ) {
+            delete i ;
         }
 
-        for( index_t i = 0 ; i < geological_entities_.size(); ++i ){
-            for( index_t j = 0 ; j < geological_entities_[i].size(); ++j ) {
-                delete geological_entities_[i][j] ;
+        for( std::vector< GeoModelGeologicalEntity* >& entities : geological_entities_ ) {
+            for( GeoModelGeologicalEntity*& entity : entities ) {
+                delete entity ;
             }
         }
-    } 
+    }
 
-   index_t GeoModel::nb_mesh_entities( const EntityType& type ) const
+   index_t GeoModel::nb_mesh_entities( const MeshEntityType& type ) const
    {
-       if( EntityTypeManager::is_corner( type ) ) {
-           return nb_corners();
-       } else if( EntityTypeManager::is_line( type ) ) {
-           return nb_lines();
-       } else if( EntityTypeManager::is_surface( type ) ) {
-           return nb_surfaces();
-       } else if( EntityTypeManager::is_region( type ) ) {
-           return nb_regions();
+       if( MeshEntityTypeManager::is_corner( type ) ) {
+           return nb_corners() ;
+       } else if( MeshEntityTypeManager::is_line( type ) ) {
+           return nb_lines() ;
+       } else if( MeshEntityTypeManager::is_surface( type ) ) {
+           return nb_surfaces() ;
+       } else if( MeshEntityTypeManager::is_region( type ) ) {
+           return nb_regions() ;
        } else {
            ringmesh_assert_not_reached ;
            return 0 ;
        }
    }
 
-   const GeoModelMeshEntity& GeoModel::mesh_entity( gme_t id ) const
+   const GeoModelMeshEntity& GeoModel::mesh_entity( gmme_t id ) const
    {
-       const EntityType& type = id.type ;
-       index_t index = id.index ;
-       if( EntityTypeManager::is_corner( type ) ) {
+       const MeshEntityType& type = id.type() ;
+       index_t index = id.index() ;
+       if( MeshEntityTypeManager::is_corner( type ) ) {
            return corner( index ) ;
-       } else if( EntityTypeManager::is_line( type ) ) {
+       } else if( MeshEntityTypeManager::is_line( type ) ) {
            return line( index ) ;
-       } else if( EntityTypeManager::is_surface( type ) ) {
+       } else if( MeshEntityTypeManager::is_surface( type ) ) {
            return surface( index ) ;
-       } else if( EntityTypeManager::is_region( type ) ) {
+       } else if( MeshEntityTypeManager::is_region( type ) ) {
            return region( index ) ;
        }
        ringmesh_assert_not_reached ;
@@ -251,15 +137,15 @@ namespace RINGMesh {
    }
 
    const std::vector< GeoModelMeshEntity* >& GeoModel::mesh_entities(
-       const EntityType& type ) const
+       const MeshEntityType& type ) const
    {
-       if( EntityTypeManager::is_corner( type ) ) {
+       if( MeshEntityTypeManager::is_corner( type ) ) {
            return *(std::vector< GeoModelMeshEntity* > *) &corners_ ;
-       } else if( EntityTypeManager::is_line( type ) ) {
+       } else if( MeshEntityTypeManager::is_line( type ) ) {
            return *(std::vector< GeoModelMeshEntity* > *) &lines_ ;
-       } else if( EntityTypeManager::is_surface( type ) ) {
+       } else if( MeshEntityTypeManager::is_surface( type ) ) {
            return *(std::vector< GeoModelMeshEntity* > *) &surfaces_ ;
-       } else if( EntityTypeManager::is_region( type ) ) {
+       } else if( MeshEntityTypeManager::is_region( type ) ) {
            return *(std::vector< GeoModelMeshEntity* > *) &regions_ ;
        } else {
            ringmesh_assert_not_reached ;

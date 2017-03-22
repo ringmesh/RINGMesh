@@ -178,12 +178,12 @@ namespace {
         }
 
         bool found_line = false ;
-        for( index_t i = 0; i < v0_line_bme.size(); ++i ) {
-            index_t line0_id = v0_line_bme[i].gme_id.index ;
-            for( index_t j = 0; j < v1_line_bme.size(); ++j ) {
-                if( line0_id == v1_line_bme[j].gme_id.index ) {
-                    if( !is_edge_on_line( geomodel.line( line0_id ),
-                        v0_line_bme[i].v_id, v1_line_bme[j].v_id ) ) {
+        for( const GMEVertex& vertex0 : v0_line_bme ) {
+            index_t line0_id = vertex0.gmme_id.index() ;
+            for( const GMEVertex& vertex1 : v1_line_bme ) {
+                if( line0_id == vertex1.gmme_id.index() ) {
+                    if( !is_edge_on_line( geomodel.line( line0_id ), vertex0.v_id,
+                        vertex1.v_id ) ) {
                         return false ;
                     }
                     found_line = true ;
@@ -352,12 +352,12 @@ namespace {
      */
     bool is_in_in_boundary(
         const GeoModel& geomodel,
-        const gme_t& is,
-        const gme_t& in )
+        const gmme_t& is,
+        const gmme_t& in )
     {
         const GeoModelMeshEntity& E = geomodel.mesh_entity( in ) ;
         for( index_t i = 0; i < E.nb_in_boundary(); ++i ) {
-            if( E.in_boundary_gme( i ) == is ) {
+            if( E.in_boundary_gmme( i ) == is ) {
                 return true ;
             }
         }
@@ -406,9 +406,9 @@ namespace {
             std::vector< GMEVertex > bmes ;
             geomodel.mesh.vertices.gme_vertices( i, bmes ) ;
 
-            for( index_t j = 0; j < bmes.size(); ++j ) {
-                const std::string& T = bmes[j].gme_id.type ;
-                index_t id = bmes[j].gme_id.index ;
+            for( const GMEVertex& vertex : bmes ) {
+                const MeshEntityType& T = vertex.gmme_id.type() ;
+                index_t id = vertex.gmme_id.index() ;
                 if( T == Region::type_name_static() ) {
                     regions.push_back( id ) ;
                 } else if( T == Surface::type_name_static() ) {
@@ -417,15 +417,21 @@ namespace {
                     lines.push_back( id ) ;
                 } else if( T == Corner::type_name_static() ) {
                     if( corner != NO_ID ) {
-                        Logger::warn( "GeoModel" ) << " Vertex " << i
-                            << " is in at least 2 Corners" << std::endl ;
+#pragma omp critical
+                        {
+                            Logger::warn( "GeoModel" ) << " Vertex " << i
+                                << " is in at least 2 Corners" << std::endl ;
+                        }
                         valid_vertex = false ;
                     } else {
                         corner = id ;
                     }
                 } else {
-                    Logger::warn( "GeoModel" ) << " Vertex " << i
-                        << " is in no Entity of the Model" << std::endl ;
+#pragma omp critical
+                    {
+                        Logger::warn( "GeoModel" ) << " Vertex " << i
+                            << " is in no Entity of the Model" << std::endl ;
+                    }
                     valid_vertex = false ;
                     break ;
                 }
@@ -434,85 +440,107 @@ namespace {
             if( valid_vertex ) {
                 if( surfaces.empty() ) {
                     if( regions.size() != 1 ) {
-                        Logger::warn( "GeoModel" ) << " Vertex " << i << " is in "
-                            << regions.size() << " Regions: " ;
-                        for( index_t j = 0; j < surfaces.size(); ++j ) {
-                            Logger::warn( "GeoModel" ) << regions[j] << " ; " ;
+#pragma omp critical
+                        {
+                            Logger::warn( "GeoModel" ) << " Vertex " << i
+                                << " is in " << regions.size() << " Regions: " ;
+                            for( index_t region : regions ) {
+                                Logger::warn( "GeoModel" ) << region << " ; " ;
+                            }
+                            Logger::warn( "GeoModel" ) << std::endl ;
                         }
-                        Logger::warn( "GeoModel" ) << std::endl ;
                         valid_vertex = false ;
                     } /// @todo Implement the other conditions for Region point validity
                 } else if( corner == NO_ID && lines.empty() ) {
                     // This is a point on one SURFACE and only one
                     if( surfaces.size() != 1 ) {
-                        Logger::warn( "GeoModel" ) << " Vertex " << i << " is in "
-                            << surfaces.size() << " Surfaces: " ;
-                        for( index_t j = 0; j < surfaces.size(); ++j ) {
-                            Logger::warn( "GeoModel" ) << surfaces[j] << " ; " ;
+#pragma omp critical
+                        {
+                            Logger::warn( "GeoModel" ) << " Vertex " << i
+                                << " is in " << surfaces.size() << " Surfaces: " ;
+                            for( index_t surface : surfaces ) {
+                                Logger::warn( "GeoModel" ) << surface << " ; " ;
+                            }
+                            Logger::warn( "GeoModel" ) << std::endl ;
                         }
-                        Logger::warn( "GeoModel" ) << std::endl ;
                         valid_vertex = false ;
                     }
                 } else if( corner == NO_ID && !lines.empty() ) {
                     // This is a point on one LINE 
                     if( lines.size() != 1 ) {
-                        Logger::warn( "GeoModel" ) << " Vertex " << i << " is in "
-                            << lines.size() << " Lines " ;
-                        for( index_t j = 0; j < lines.size(); ++j ) {
-                            Logger::warn( "GeoModel" ) << lines[j] << " ; " ;
+#pragma omp critical
+                        {
+                            Logger::warn( "GeoModel" ) << " Vertex " << i
+                                << " is in " << lines.size() << " Lines " ;
+                            for( index_t line : lines ) {
+                                Logger::warn( "GeoModel" ) << line << " ; " ;
+                            }
+                            Logger::warn( "GeoModel" ) << std::endl ;
                         }
-                        Logger::warn( "GeoModel" ) << std::endl ;
                         valid_vertex = false ;
                     } else {
                         // This point must also be in at least one SURFACE
                         if( surfaces.empty() ) {
-                            Logger::warn( "GeoModel" ) << " Vertex " << i
-                                << " is in a Line but in no Surface " << std::endl ;
+#pragma omp critical
+                            {
+                                Logger::warn( "GeoModel" ) << " Vertex " << i
+                                    << " is in a Line but in no Surface "
+                                    << std::endl ;
+                            }
                             valid_vertex = false ;
                         }
                         // Check that one point is no more than twice in a SURFACE
-                        for( index_t k = 0; k < surfaces.size(); ++k ) {
+                        for( index_t surface : surfaces ) {
                             index_t nb = static_cast< index_t >( std::count(
-                                surfaces.begin(), surfaces.end(), surfaces[k] ) ) ;
+                                surfaces.begin(), surfaces.end(), surface ) ) ;
                             if( nb > 2 ) {
-                                Logger::warn( "GeoModel" ) << " Vertex " << i
-                                    << " is " << nb << " times in Surface "
-                                    << geomodel.surface( surfaces[k] ).gme_id()
-                                    << std::endl ;
+#pragma omp critical
+                                {
+                                    Logger::warn( "GeoModel" ) << " Vertex " << i
+                                        << " is " << nb << " times in Surface "
+                                        << geomodel.surface( surface ).gmme_id()
+                                        << std::endl ;
+                                }
                                 valid_vertex = false ;
                             } else if( nb == 2 ) {
                                 // If a point is twice in a SURFACE, it must be
                                 // on an internal boundary Line.
                                 bool internal_boundary = false ;
-                                for( index_t l = 0; l < lines.size(); ++l ) {
-                                    if( geomodel.line( lines[l] ).is_inside_border(
-                                        geomodel.surface( surfaces[k] ) ) ) {
+                                for( index_t line : lines ) {
+                                    if( geomodel.line( line ).is_inside_border(
+                                        geomodel.surface( surface ) ) ) {
                                         internal_boundary = true ;
                                         break ;
                                     }
                                 }
                                 if( !internal_boundary ) {
-                                    Logger::warn( "GeoModel" ) << " Vertex " << i
-                                        << " appears " << nb << " times in Surface "
-                                        << geomodel.surface( surfaces[k] ).gme_id()
-                                        << std::endl ;
+#pragma omp critical
+                                    {
+                                        Logger::warn( "GeoModel" ) << " Vertex " << i
+                                            << " appears " << nb
+                                            << " times in Surface "
+                                            << geomodel.surface( surface ).gmme_id()
+                                            << std::endl ;
+                                    }
                                     valid_vertex = false ;
                                 }
                             }
                         }
                         // Check that all the surfaces are in in_boundary of all
                         // the lines 
-                        for( index_t k = 0; k < surfaces.size(); ++k ) {
-                            for( index_t l = 0; l < lines.size(); ++l ) {
-                                gme_t s_id( Surface::type_name_static(),
-                                    surfaces[k] ) ;
-                                gme_t l_id( Line::type_name_static(), lines[l] ) ;
+                        for( index_t surface : surfaces ) {
+                            for( index_t line : lines ) {
+                                gmme_t s_id( Surface::type_name_static(), surface ) ;
+                                gmme_t l_id( Line::type_name_static(), line ) ;
                                 if( !is_in_in_boundary( geomodel, s_id, l_id ) ) {
-                                    Logger::warn( "GeoModel" )
-                                        << " Inconsistent Line-Surface connectivity "
-                                        << " Vertex " << i << " shows that " << s_id
-                                        << " must be in the boundary of " << l_id
-                                        << std::endl ;
+#pragma omp critical
+                                    {
+                                        Logger::warn( "GeoModel" )
+                                            << " Inconsistent Line-Surface connectivity "
+                                            << " Vertex " << i << " shows that "
+                                            << s_id << " must be in the boundary of "
+                                            << l_id << std::endl ;
+                                    }
                                     valid_vertex = false ;
                                 }
                             }
@@ -522,55 +550,74 @@ namespace {
                     // This is one point at a CORNER
                     // It must be in at least one LINE
                     if( lines.empty() ) {
-                        Logger::warn( "GeoModel" ) << " Vertex " << i
-                            << " is at a Corner but in no Line " << std::endl ;
+#pragma omp critical
+                        {
+                            Logger::warn( "GeoModel" ) << " Vertex " << i
+                                << " is at a Corner but in no Line " << std::endl ;
+                        }
                         valid_vertex = false ;
                     } else {
                         if( lines.size() < 2 ) {
-                            Logger::warn( "GeoModel" ) << " Vertex " << i
-                                << " is in at a Corner but in one Line only: "
-                                << lines[0] << std::endl ;
+#pragma omp critical
+                            {
+                                Logger::warn( "GeoModel" ) << " Vertex " << i
+                                    << " is in at a Corner but in one Line only: "
+                                    << lines[0] << std::endl ;
+                            }
                             valid_vertex = false ;
                         }
                         // Check that a point is no more than twice in a LINE
-                        for( index_t k = 0; k < lines.size(); ++k ) {
+                        for( index_t line : lines ) {
                             index_t nb = static_cast< index_t >( std::count(
-                                lines.begin(), lines.end(), lines[k] ) ) ;
+                                lines.begin(), lines.end(), line ) ) ;
                             if( nb == 2 ) {
                                 // The line must be closed
-                                if( !geomodel.line( lines[k] ).is_closed() ) {
-                                    Logger::warn( "GeoModel" ) << " Vertex " << i
-                                        << " is twice in Line " << lines[k]
-                                        << std::endl ;
+                                if( !geomodel.line( line ).is_closed() ) {
+#pragma omp critical
+                                    {
+                                        Logger::warn( "GeoModel" ) << " Vertex " << i
+                                            << " is twice in Line " << line
+                                            << std::endl ;
+                                    }
                                     valid_vertex = false ;
                                 }
                             }
                             if( nb > 2 ) {
-                                Logger::warn( "GeoModel" ) << " Vertex " << i
-                                    << " appears " << nb << " times in Line "
-                                    << lines[k] << std::endl ;
+#pragma omp critical
+                                {
+                                    Logger::warn( "GeoModel" ) << " Vertex " << i
+                                        << " appears " << nb << " times in Line "
+                                        << line << std::endl ;
+                                }
                                 valid_vertex = false ;
                                 break ;
                             }
                         }
                         // Check that all the lines are in in_boundary of this corner
-                        for( index_t k = 0; k < lines.size(); ++k ) {
-                            gme_t l_id( Line::type_name_static(), lines[k] ) ;
-                            gme_t c_id( Corner::type_name_static(), corner ) ;
+                        for( index_t line : lines ) {
+                            gmme_t l_id( Line::type_name_static(), line ) ;
+                            gmme_t c_id( Corner::type_name_static(), corner ) ;
                             if( !is_in_in_boundary( geomodel, l_id, c_id ) ) {
-                                Logger::warn( "GeoModel" )
-                                    << " Inconsistent Line-Corner connectivity "
-                                    << " vertex " << i << " shows that " << l_id
-                                    << " must be in the boundary of " << c_id
-                                    << std::endl ;
+#pragma omp critical
+                                {
+                                    Logger::warn( "GeoModel" )
+                                        << " Inconsistent Line-Corner connectivity "
+                                        << " vertex " << i << " shows that " << l_id
+                                        << " must be in the boundary of " << c_id
+                                        << std::endl ;
+                                }
                                 valid_vertex = false ;
                             }
                         }
                     }
                     // It must also be in a least one surface ? perhaps 2
                     if( surfaces.empty() ) {
-                        Logger::warn( "GeoModel" ) << " Vertex " << i
-                            << " is at a Corner but in no Surface " << std::endl ;
+#pragma omp critical
+                        {
+                            Logger::warn( "GeoModel" ) << " Vertex " << i
+                                << " is at a Corner but in no Surface "
+                                << std::endl ;
+                        }
                         valid_vertex = false ;
                     }
                 }
@@ -624,8 +671,7 @@ namespace {
         const std::vector< index_t >& facets )
     {
         GEO::Mesh mesh ;
-        for( index_t f = 0; f < facets.size(); ++f ) {
-            index_t cur_facet = facets[f] ;
+        for( index_t cur_facet : facets ) {
             index_t nb_vertices_in_facet = surface.nb_mesh_element_vertices(
                 cur_facet ) ;
             GEO::vector< index_t > vertices ;
@@ -655,15 +701,15 @@ namespace {
             for( index_t v = 0; v < surface.nb_mesh_element_vertices( f ); ++v ) {
                 if( surface.facet_adjacent_index( f, v ) == NO_ID
                     && !is_edge_on_line( surface.geomodel(),
-                        geomodel_vertices.geomodel_vertex_id( surface.gme_id(), f,
+                        geomodel_vertices.geomodel_vertex_id( surface.gmme_id(), f,
                             v ),
-                        geomodel_vertices.geomodel_vertex_id( surface.gme_id(), f,
+                        geomodel_vertices.geomodel_vertex_id( surface.gmme_id(), f,
                             surface.next_facet_vertex_index( f, v ) ) ) ) {
                     invalid_corners.push_back(
-                        geomodel_vertices.geomodel_vertex_id( surface.gme_id(), f,
+                        geomodel_vertices.geomodel_vertex_id( surface.gmme_id(), f,
                             v ) ) ;
                     invalid_corners.push_back(
-                        geomodel_vertices.geomodel_vertex_id( surface.gme_id(), f,
+                        geomodel_vertices.geomodel_vertex_id( surface.gmme_id(), f,
                             surface.next_facet_vertex_index( f, v ) ) ) ;
                 }
             }
@@ -675,10 +721,14 @@ namespace {
             save_edges( file, surface.geomodel(), invalid_corners ) ;
 
             if( GEO::CmdLine::get_arg_bool( "validity_save" ) ) {
-                Logger::warn( "GeoModel" ) << " Invalid surface boundary: "
-                    << invalid_corners.size() / 2 << " boundary edges of "
-                    << surface.gme_id() << "  are in no line of the geomodel "
-                    << std::endl << " Saved in file: " << file.str() << std::endl ;
+#pragma omp critical
+                {
+                    Logger::warn( "GeoModel" ) << " Invalid surface boundary: "
+                        << invalid_corners.size() / 2 << " boundary edges of "
+                        << surface.gmme_id() << "  are in no line of the geomodel "
+                        << std::endl << " Saved in file: " << file.str()
+                        << std::endl ;
+                }
             }
 
             return false ;
@@ -734,10 +784,14 @@ namespace {
             save_facets( file.str(), surface, unconformal_facets ) ;
 
             if( GEO::CmdLine::get_arg_bool( "validity_save" ) ) {
-                Logger::warn( "GeoModel" ) << " Unconformal surface: "
-                    << unconformal_facets.size() << " facets of " << surface.gme_id()
-                    << " are unconformal with the geomodel cells " << std::endl
-                    << " Saved in file: " << file.str() << std::endl ;
+#pragma omp critical
+                {
+                    Logger::warn( "GeoModel" ) << " Unconformal surface: "
+                        << unconformal_facets.size() << " facets of "
+                        << surface.gmme_id()
+                        << " are unconformal with the geomodel cells " << std::endl
+                        << " Saved in file: " << file.str() << std::endl ;
+                }
             }
 
             return false ;
@@ -794,8 +848,8 @@ namespace {
                 const vec3 query = line.mesh_element_barycenter( e ) ;
                 std::vector< index_t > results ;
                 nn.get_neighbors( query, results, geomodel.epsilon() ) ;
-                for( index_t i = 0; i < results.size(); i++ ) {
-                    edge_on_lines[results[i]] = true ;
+                for( index_t edge : results ) {
+                    edge_on_lines[edge] = true ;
                 }
             }
         }
@@ -858,13 +912,13 @@ namespace {
         /*! 
          * @brief Verify the validity of all GeoModelEntities
          */
-        class TestGeomodelEntitiesValidity: public GEO::Thread {
+        class TestGeomodelEntitiesValidity final : public GEO::Thread {
         public:
             TestGeomodelEntitiesValidity( GeoModelValidityCheck& validity )
                 : validity_( validity )
             {
             }
-            virtual void run()
+            virtual void run() final
             {
                 if( !are_geomodel_meshed_entities_valid( validity_.geomodel_ ) ) {
                     validity_.set_invalid_model() ;
@@ -883,13 +937,13 @@ namespace {
          * @details The boundary of the universe region is a one connected component 
          * manifold closed surface.
          */
-        class TestFiniteExtension: public GEO::Thread {
+        class TestFiniteExtension final : public GEO::Thread {
         public:
             TestFiniteExtension( GeoModelValidityCheck& validity )
                 : validity_( validity )
             {
             }
-            virtual void run()
+            virtual void run() final
             {
                 if( !validity_.geomodel_.universe().is_valid() ) {
                     validity_.set_invalid_model() ;
@@ -904,13 +958,13 @@ namespace {
          * @todo Check that all Line segments correspond to a Surface
          *  edge that is on the boundary.
          */
-        class TestGeometryConnectivityConsistency: public GEO::Thread {
+        class TestGeometryConnectivityConsistency final : public GEO::Thread {
         public:
             TestGeometryConnectivityConsistency( GeoModelValidityCheck& validity )
                 : validity_( validity )
             {
             }
-            virtual void run()
+            virtual void run() final
             {
                 // Check relationships between GeoModelEntities
                 // sharing the same point of the geomodel
@@ -929,13 +983,13 @@ namespace {
             GeoModelValidityCheck& validity_ ;
         } ;
 
-        class TestGeometryConnectivityConsistency3D: public GEO::Thread {
+        class TestGeometryConnectivityConsistency3D final : public GEO::Thread {
         public:
             TestGeometryConnectivityConsistency3D( GeoModelValidityCheck& validity )
                 : validity_( validity )
             {
             }
-            virtual void run()
+            virtual void run() final
             {
                 if( validity_.geomodel_.mesh.cells.nb() > 0 ) {
                     // Check the consistency between Surface facets and Region cell facets
@@ -960,13 +1014,13 @@ namespace {
          * @note Connect the facets of the global mesh
          * @note This is a quite expensive test.
          */
-        class TestNonManifoldEdges: public GEO::Thread {
+        class TestNonManifoldEdges final : public GEO::Thread {
         public:
             TestNonManifoldEdges( GeoModelValidityCheck& validity )
                 : validity_( validity )
             {
             }
-            virtual void run()
+            virtual void run() final
             {
                 std::vector< index_t > edge_indices ;
                 compute_border_edges( validity_.geomodel_, edge_indices ) ;
@@ -981,7 +1035,7 @@ namespace {
 
                 if( !non_manifold_edges.empty() ) {
                     Logger::warn( "GeoModel" ) << non_manifold_edges.size()
-                        << "non-manifold edges " << std::endl ;
+                        << " non-manifold edges " << std::endl ;
                     debug_save_non_manifold_edges( validity_.geomodel_, edge_indices,
                         non_manifold_edges ) ;
 
@@ -997,13 +1051,13 @@ namespace {
          * @details Operates on the global mesh
          * @note This is a very expensive test.
          */
-        class TestFacetIntersections: public GEO::Thread {
+        class TestFacetIntersections final : public GEO::Thread {
         public:
             TestFacetIntersections( GeoModelValidityCheck& validity )
                 : validity_( validity )
             {
             }
-            virtual void run()
+            virtual void run() final
             {
                 if( validity_.geomodel_.mesh.facets.nb()
                     == validity_.geomodel_.mesh.facets.nb_triangle()
@@ -1041,8 +1095,11 @@ namespace {
                         save_mesh_locating_geomodel_inconsistencies( mesh, file ) ;
                         Logger::out( "I/O" ) << std::endl ;
 
-                        Logger::warn( "GeoModel" ) << nb_intersections
-                            << " facet intersections " << std::endl ;
+#pragma omp critical
+                        {
+                            Logger::warn( "GeoModel" ) << nb_intersections
+                                << " facet intersections " << std::endl ;
+                        }
                         validity_.set_invalid_model() ;
                     }
                 } else {
@@ -1084,11 +1141,10 @@ namespace RINGMesh {
 
     bool are_geomodel_meshed_entities_valid( const GeoModel& geomodel )
     {
-        const std::vector< EntityType >& meshed_types =
-            EntityTypeManager::mesh_entity_types() ;
+        const std::vector< MeshEntityType >& meshed_types =
+            MeshEntityTypeManager::mesh_entity_types() ;
         index_t count_invalid = 0 ;
-        for( index_t i = 0; i < meshed_types.size(); ++i ) {
-            const EntityType& type = meshed_types[i] ;
+        for( const MeshEntityType& type : meshed_types ) {
             index_t nb_entities = geomodel.nb_mesh_entities( type ) ;
             for( index_t i = 0; i < nb_entities; ++i ) {
                 const GeoModelEntity& E = geomodel.mesh_entity( type, i ) ;
@@ -1098,19 +1154,21 @@ namespace RINGMesh {
             }
         }
         if( count_invalid != 0 ) {
-            Logger::warn( "GeoModel" ) << count_invalid
-                << " mesh entities of the geomodel are invalid " << std::endl ;
+#pragma omp critical
+            {
+                Logger::warn( "GeoModel" ) << count_invalid
+                    << " mesh entities of the geomodel are invalid " << std::endl ;
+            }
         }
         return count_invalid == 0 ;
     }
 
     bool are_geomodel_geological_entities_valid( const GeoModel& geomodel )
     {
-        const std::vector< EntityType >& geological_types =
-            geomodel.entity_type_manager().geological_entity_types() ;
+        const std::vector< GeologicalEntityType >& geological_types =
+            geomodel.entity_type_manager().geological_entity_manager.geological_entity_types() ;
         index_t count_invalid = 0 ;
-        for( index_t i = 0; i < geological_types.size(); ++i ) {
-            const EntityType& type = geological_types[i] ;
+        for( const GeologicalEntityType& type : geological_types ) {
             index_t nb_entities = geomodel.nb_geological_entities( type ) ;
             for( index_t i = 0; i < nb_entities; ++i ) {
                 const GeoModelEntity& E = geomodel.geological_entity( type, i ) ;
@@ -1120,8 +1178,12 @@ namespace RINGMesh {
             }
         }
         if( count_invalid != 0 ) {
-            Logger::warn( "GeoModel" ) << count_invalid
-                << " geological entities of the geomodel are invalid " << std::endl ;
+#pragma omp critical
+            {
+                Logger::warn( "GeoModel" ) << count_invalid
+                    << " geological entities of the geomodel are invalid "
+                    << std::endl ;
+            }
         }
         return count_invalid == 0 ;
     }

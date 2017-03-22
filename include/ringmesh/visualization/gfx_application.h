@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_GFX_APPLICATION__
-#define __RINGMESH_GFX_APPLICATION__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -61,19 +60,21 @@ namespace RINGMesh {
         } ;
 
         RINGMeshApplication( int argc, char** argv ) ;
-        ~RINGMeshApplication() ;
+        virtual ~RINGMeshApplication() ;
+
+        virtual void quit() ;
 
     private:
         static RINGMeshApplication* instance() ;
 
-        virtual std::string supported_read_file_extensions() ;
+        virtual std::string supported_read_file_extensions() override ;
         std::string supported_geogram_read_file_extensions() ;
-        virtual void init_graphics() ;
-        virtual bool load( const std::string& filename ) ;
-        virtual void draw_scene() ;
-        virtual void draw_object_properties() ;
-        virtual void draw_viewer_properties() ;
-        virtual void draw_application_menus() ;
+        virtual void init_graphics() override ;
+        virtual bool load( const std::string& filename ) override ;
+        virtual void draw_scene() override ;
+        virtual void draw_object_properties() override ;
+        virtual void draw_viewer_properties() override ;
+        virtual void draw_application_menus() override ;
 
         bool load_geogram( const std::string& filename ) ;
         bool can_load_geogram( const std::string& filename ) ;
@@ -92,6 +93,8 @@ namespace RINGMesh {
         static void colored_cells() ;
         static void show_colored_regions() ;
         static void show_colored_layers() ;
+
+        static void show_color_table_popup( ImColor& color ) ;
 
         void create_point(
             std::string name = "debug",
@@ -122,7 +125,10 @@ namespace RINGMesh {
             struct EntityStyle {
                 ImColor color_ ;
                 int size_ ;
-            };
+                bool visible_vertices_ ;
+                ImColor vertex_color_ ;
+                int vertex_size_ ;
+            } ;
 
         public:
             GeoModelViewer( RINGMeshApplication& app, const std::string& filename ) ;
@@ -142,16 +148,18 @@ namespace RINGMesh {
             void draw_entity_style_editor(
                 const std::string& label,
                 EntityStyle& style ) ;
-            void show_color_table_popup( ImColor& color ) ;
+            void draw_entity_vertex_style_editor(
+                const std::string& label,
+                EntityStyle& style ) ;
             void update_entity_visibility() ;
 
             void toggle_corner_visibility( index_t corner_id ) ;
             void toggle_line_and_boundaries_visibility( index_t line_id ) ;
             void toggle_surface_and_boundaries_visibility( index_t surface_id ) ;
             void toggle_region_and_boundaries_visibility( index_t region_id ) ;
-            void toggle_geological_entity_visibility( const gme_t& entity_id ) ;
+            void toggle_geological_entity_visibility( const gmge_t& entity_id ) ;
             void toggle_mesh_entity_and_boundaries_visibility(
-                const gme_t& entity_id ) ;
+                const gmme_t& entity_id ) ;
 
         public:
             RINGMeshApplication& app_ ;
@@ -190,8 +198,6 @@ namespace RINGMesh {
             bool show_attributes_ ;
             float attribute_min_ ;
             float attribute_max_ ;
-
-            static std::vector< std::vector< ImColor > > color_table_ ;
         } ;
 
         class MeshViewer {
@@ -215,6 +221,7 @@ namespace RINGMesh {
 
             bool show_vertices_ ;
             float vertices_size_ ;
+            ImColor vertices_color_ ;
 
             bool show_surface_ ;
             bool show_surface_colors_ ;
@@ -243,9 +250,9 @@ namespace RINGMesh {
         index_t current_viewer_ ;
         ViewerType current_viewer_type_ ;
 
+        static std::vector< std::vector< ImColor > > color_table_ ;
 
     } ;
 }
 
-#endif
 #endif

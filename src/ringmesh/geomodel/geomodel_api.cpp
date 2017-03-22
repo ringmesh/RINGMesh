@@ -144,27 +144,26 @@ namespace {
 }
 
 namespace RINGMesh {
-    typedef std::string EntityType ;
 
     void print_nb_mesh_entities(
         const GeoModel& geomodel,
-        const std::string& entity_type_name )
+        const MeshEntityType& type)
     {
         Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left
-            << geomodel.nb_mesh_entities( entity_type_name ) << " "
-            << entity_type_name << std::endl ;
+            << geomodel.nb_mesh_entities( type ) << " "
+            << type << std::endl ;
     }
 
     void print_nb_geological_entities(
         const GeoModel& geomodel,
-        const std::string& entity_type_name )
+        const GeologicalEntityType& type )
     {
-        if( geomodel.nb_geological_entities( entity_type_name ) == 0 ) {
+        if( geomodel.nb_geological_entities( type ) == 0 ) {
             return ;
         }
         Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left
-            << geomodel.nb_geological_entities( entity_type_name ) << " "
-            << entity_type_name << std::endl ;
+            << geomodel.nb_geological_entities( type ) << " "
+            << type << std::endl ;
     }
 
     void print_geomodel( const GeoModel& geomodel )
@@ -181,15 +180,15 @@ namespace RINGMesh {
         Logger::out( "GeoModel" ) << std::endl ;
 
         const EntityTypeManager& manager = geomodel.entity_type_manager() ;
-        const std::vector< EntityType >& mesh_entity_types =
-            manager.mesh_entity_types() ;
-        for( index_t i = 0; i < mesh_entity_types.size(); ++i ) {
-            print_nb_mesh_entities( geomodel, mesh_entity_types[i] ) ;
+        const std::vector< MeshEntityType >& mesh_entity_types =
+            manager.mesh_entity_manager.mesh_entity_types() ;
+        for( const MeshEntityType& type : mesh_entity_types ) {
+            print_nb_mesh_entities( geomodel, type ) ;
         }
-        const std::vector< EntityType >& geological_entity_types =
-            manager.geological_entity_types() ;
-        for( index_t i = 0; i < geological_entity_types.size(); ++i ) {
-            print_nb_geological_entities( geomodel, geological_entity_types[i] ) ;
+        const std::vector< GeologicalEntityType >& geological_entity_types =
+            manager.geological_entity_manager.geological_entity_types() ;
+        for( const GeologicalEntityType& type : geological_entity_types ) {
+            print_nb_geological_entities( geomodel, type ) ;
         }
     }
 
@@ -289,6 +288,56 @@ namespace RINGMesh {
             }
         }
         return true ;
+    }
+
+    index_t find_mesh_entity_id_from_name(
+        const GeoModel& geomodel,
+        const MeshEntityType& gmme_type,
+        const std::string& name )
+    {
+        index_t mesh_entity_id = NO_ID ;
+        for( index_t elt_i = 0; elt_i < geomodel.nb_mesh_entities( gmme_type );
+            elt_i++ ) {
+            const RINGMesh::GeoModelMeshEntity& cur_gme = geomodel.mesh_entity(
+                gmme_type, elt_i ) ;
+            if( cur_gme.name() == name ) {
+                if( mesh_entity_id != NO_ID ) {
+                    throw RINGMeshException( "FIND GME",
+                        " At least two GeoModelMeshEntity have the same name in the GeoModel: " + name ) ;
+                }
+                mesh_entity_id = cur_gme.index() ;
+            }
+        }
+        if( mesh_entity_id == NO_ID ) {
+            throw RINGMeshException( "FIND GME", name
+                + " does not match with any actual GeoModelEntity name in the GeoModel" ) ;
+        }
+        return mesh_entity_id ;
+    }
+
+    index_t find_geological_entity_id_from_name(
+        const RINGMesh::GeoModel& geomodel,
+        const RINGMesh::GeologicalEntityType& gmge_type,
+        const std::string& name )
+    {
+        index_t geological_entity_id = NO_ID ;
+        for( index_t elt_i = 0; elt_i < geomodel.nb_geological_entities( gmge_type );
+            elt_i++ ) {
+            const RINGMesh::GeoModelGeologicalEntity& cur_gme =
+                geomodel.geological_entity( gmge_type, elt_i ) ;
+            if( cur_gme.name() == name ) {
+                if( geological_entity_id != NO_ID ) {
+                    throw RINGMeshException( "Find GME",
+                        "At least two GeoModelGeologicalEntity have the same name in the GeoModel : " + name ) ;
+                }
+                geological_entity_id = cur_gme.index() ;
+            }
+        }
+        if( geological_entity_id == NO_ID ) {
+            throw RINGMeshException( "Find GME", name
+                + " does not match with any actual GeoModelEntity name in the GeoModel" ) ;
+        }
+        return geological_entity_id ;
     }
 
     /*******************************************************************************/
