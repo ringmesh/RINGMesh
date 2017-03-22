@@ -70,7 +70,7 @@ namespace RINGMesh {
     /*! 
      * @brief TSurfMeshIOHandler for importing .ts files into a mesh.
      */
-    class TSurfMeshIOHandler: public GEO::MeshIOHandler {
+    class TSurfMeshIOHandler final : public GEO::MeshIOHandler {
     public:
         TSurfMeshIOHandler()
             :
@@ -95,7 +95,7 @@ namespace RINGMesh {
         virtual bool load(
             const std::string& filename,
             GEO::Mesh& mesh,
-            const GEO::MeshIOFlags& flag = GEO::MeshIOFlags() )
+            const GEO::MeshIOFlags& flag = GEO::MeshIOFlags() ) final
         {
             ringmesh_unused( flag ) ;
             filename_ = filename ;
@@ -120,7 +120,7 @@ namespace RINGMesh {
         virtual bool save(
             const GEO::Mesh& mesh,
             const std::string& filename,
-            const GEO::MeshIOFlags& flag = GEO::MeshIOFlags() )
+            const GEO::MeshIOFlags& flag = GEO::MeshIOFlags() ) final
         {
             ringmesh_unused( flag ) ;
             if( !mesh.facets.are_simplices() ) {
@@ -483,12 +483,12 @@ namespace RINGMesh {
         GEO::vector< GEO::vector< GEO::vector< double > > > vertex_attributes_ ;
     } ;
 
-    class LINMeshIOHandler: public GEO::MeshIOHandler {
+    class LINMeshIOHandler final : public GEO::MeshIOHandler {
     public:
         virtual bool load(
             const std::string& filename,
             GEO::Mesh& mesh,
-            const GEO::MeshIOFlags& flag = GEO::MeshIOFlags() )
+            const GEO::MeshIOFlags& flag = GEO::MeshIOFlags() ) final
         {
             ringmesh_unused( flag ) ;
             GEO::LineInput file( filename ) ;
@@ -511,7 +511,7 @@ namespace RINGMesh {
         virtual bool save(
             const GEO::Mesh& M,
             const std::string& filename,
-            const GEO::MeshIOFlags& ioflags = GEO::MeshIOFlags() )
+            const GEO::MeshIOFlags& ioflags = GEO::MeshIOFlags() ) final
         {
             ringmesh_unused( M ) ;
             ringmesh_unused( filename ) ;
@@ -649,32 +649,6 @@ namespace RINGMesh {
             count += 1.0 ;
         }
         return ( 1.0 / count ) * result ;
-    }
-
-    /*!
-     * Rotation of all the vertices of a mesh following
-     * a defined rotational matrix.
-     *
-     * @param mesh[in,out] the mesh to rotate.
-     *
-     * @param[in] rot_mat matrix which defines the rotation.
-     */
-    void rotate_mesh( GEO::Mesh& mesh, const GEO::Matrix< 4, double >& rot_mat )
-    {
-        for( index_t v = 0; v < mesh.vertices.nb(); v++ ) {
-            double old_coords[4] ;
-            for( index_t i = 0; i < 3; i++ ) {
-                old_coords[i] = mesh.vertices.point_ptr( v )[i] ;
-            }
-            old_coords[3] = 1. ;
-            double new_coords[4] ;
-            GEO::mult( rot_mat, old_coords, new_coords ) ;
-
-            for( index_t i = 0; i < 3; i++ ) {
-                mesh.vertices.point_ptr( v )[i] = new_coords[i] ;
-            }
-            ringmesh_assert( new_coords[ 3 ] == 1. ) ;
-        }
     }
 
     void print_bounded_attributes( const GEO::Mesh& M )

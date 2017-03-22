@@ -45,9 +45,8 @@
 namespace RINGMesh {
 
     Universe::Universe( const GeoModel& geomodel )
-        : GeoModelEntity( geomodel, NO_ID )
+        : GeoModelEntity( geomodel,NO_ID )
     {
-        id_.type = type_name() ;
         name_ = universe_type_name() ;
     }
 
@@ -119,31 +118,6 @@ namespace RINGMesh {
                 return "no_geological_feature" ;
                 break ;
         }
-    }
-
-    bool GeoModelEntity::is_identification_valid() const
-    {
-        bool is_valid = true ;
-        if( !gme_id().is_defined() ) {
-            Logger::err( "GeoModelEntity" ) << " Entity associated to geomodel "
-                << geomodel().name() << "has no type and/or no index " << std::endl ;
-            is_valid = false ;
-            // No further checks are possible - This really should not happen
-            ringmesh_assert_not_reached;
-        }
-        if( !is_index_valid() ) {
-            Logger::warn( "GeoModelEntity" ) << " Entity index " << gme_id()
-                << " is not valid. " << std::endl ;
-            // This really should not happen
-            is_valid = false ;
-            ringmesh_assert_not_reached;
-        }
-        return is_valid ;
-    }
-
-    const GeoModelEntity::EntityType GeoModelEntity::type_name_static()
-    {
-        return EntityTypeManager::default_entity_type() ;
     }
 
     bool Universe::is_valid() const

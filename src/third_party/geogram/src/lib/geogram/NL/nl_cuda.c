@@ -186,6 +186,22 @@ typedef enum {
     CUBLAS_SIDE_RIGHT=1
 } cublasSideMode_t; 
 
+typedef enum {
+    CUBLAS_FILL_MODE_LOWER=0, 
+    CUBLAS_FILL_MODE_UPPER=1
+} cublasFillMode_t;
+
+typedef enum {
+    CUBLAS_OP_N=0,  
+    CUBLAS_OP_T=1,  
+    CUBLAS_OP_C=2  
+} cublasOperation_t;
+
+typedef enum {
+    CUBLAS_DIAG_NON_UNIT=0, 
+    CUBLAS_DIAG_UNIT=1
+} cublasDiagType_t; 
+
 typedef cublasStatus_t (*FUNPTR_cublasCreate)(cublasHandle_t* handle);
 typedef cublasStatus_t (*FUNPTR_cublasDestroy)(cublasHandle_t handle);
 
@@ -233,6 +249,28 @@ typedef cublasStatus_t (*FUNPTR_cublasDdgmm)(
     double* C, int ldc
 );
 
+typedef cublasStatus_t (*FUNPTR_cublasDgemv)(
+    cublasHandle_t handle, 
+    cublasOperation_t trans, 
+    int m,
+    int n,
+    const double *alpha,
+    const double *A,
+    int lda,
+    const double *x,
+    int incx,
+    const double *beta, 
+    double *y, 
+    int incy    
+);
+
+typedef cublasStatus_t (*FUNPTR_cublasDtpsv)(
+    cublasHandle_t handle, cublasFillMode_t uplo,
+    cublasOperation_t trans, cublasDiagType_t diag,
+    int n, const double *AP,
+    double* x, int incx
+);
+
 
 /**
  * \brief Finds and initializes a function pointer to
@@ -243,7 +281,7 @@ typedef cublasStatus_t (*FUNPTR_cublasDdgmm)(
  *  calling function. Here we use the functions prefixed
  *  by "_v2".
  */
-#define find_cublas_func(name)                                \
+#define find_cublas_func(name)	    		              \
     if(                                                       \
         (                                                     \
             CUDA()->name =                                    \
@@ -420,6 +458,8 @@ typedef struct {
     FUNPTR_cublasDscal cublasDscal;    
     FUNPTR_cublasDnrm2 cublasDnrm2;
     FUNPTR_cublasDdgmm cublasDdgmm;
+    FUNPTR_cublasDgemv cublasDgemv;
+    FUNPTR_cublasDtpsv cublasDtpsv;
     
     NLdll DLL_cusparse;
     cusparseHandle_t HNDL_cusparse;
@@ -650,13 +690,17 @@ NLboolean nlInitExtension_CUDA(void) {
     struct cudaDeviceProp deviceProp;
     int cublas_version;
     int cusparse_version;
+    NLenum flags = NL_LINK_LAZY | NL_LINK_GLOBAL;
+    if(nlCurrentContext == NULL || !nlCurrentContext->verbose) {
+	flags |= NL_LINK_QUIET;
+    }
     
     if(nlExtensionIsInitialized_CUDA()) {
 	return NL_TRUE;
     }
 
     CUDA()->DLL_cudart = nlOpenDLL(
-	LIBPREFIX "cudart" LIBEXTENSION, NL_LINK_LAZY | NL_LINK_GLOBAL
+	LIBPREFIX "cudart" LIBEXTENSION, flags
     );
 
     find_cuda_func(cudaGetDeviceCount);
@@ -691,7 +735,7 @@ NLboolean nlInitExtension_CUDA(void) {
     }
     
     CUDA()->DLL_cublas = nlOpenDLL(
-	LIBPREFIX "cublas" LIBEXTENSION, NL_LINK_LAZY | NL_LINK_GLOBAL
+	LIBPREFIX "cublas" LIBEXTENSION, flags
     );
 
     find_cublas_func(cublasCreate);
@@ -702,7 +746,10 @@ NLboolean nlInitExtension_CUDA(void) {
     find_cublas_func(cublasDcopy);
     find_cublas_func(cublasDscal);
     find_cublas_func(cublasDnrm2);
+    find_cublas_func(cublasDgemv);        
+    find_cublas_func(cublasDtpsv);    
     find_cublas_func_v1(cublasDdgmm);
+
     
     if(CUDA()->cublasCreate(&CUDA()->HNDL_cublas)) {
 	return NL_FALSE;
@@ -714,7 +761,7 @@ NLboolean nlInitExtension_CUDA(void) {
     printf("OpenNL CUDA: cublas version = %d\n", cublas_version);
     
     CUDA()->DLL_cusparse = nlOpenDLL(
-	LIBPREFIX "cusparse" LIBEXTENSION, NL_LINK_LAZY | NL_LINK_GLOBAL
+	LIBPREFIX "cusparse" LIBEXTENSION, flags
     );
     find_cusparse_func(cusparseCreate);
     find_cusparse_func(cusparseDestroy);
@@ -987,7 +1034,7 @@ static void* cuda_blas_malloc(
     NLBlas_t blas, NLmemoryType type, size_t size
 ) {
     void* result = NULL;
-    blas->used_ram[type] += size;
+    blas->used_ram[type] += (NLulong)size;
     blas->max_used_ram[type] = MAX(
 	blas->max_used_ram[type],blas->used_ram[type]
     );
@@ -1002,7 +1049,7 @@ static void* cuda_blas_malloc(
 static void cuda_blas_free(
     NLBlas_t blas, NLmemoryType type, size_t size, void* ptr
 ) {
-    blas->used_ram[type] -= size;
+    blas->used_ram[type] -= (NLulong)size;
     if(type == NL_HOST_MEMORY) {
 	free(ptr);
     } else {
@@ -1075,42 +1122,33 @@ static void cuda_blas_dscal(
 }
 
 
-/* Not implemented yet */
 static void cuda_blas_dgemv(
     NLBlas_t blas, MatrixTranspose trans, int m, int n, double alpha,
     const double *A, int ldA, const double *x, int incx,
     double beta, double *y, int incy 
-) { 
+) {
     nl_arg_used(blas);
-    nl_arg_used(trans);
-    nl_arg_used(m);
-    nl_arg_used(n);
-    nl_arg_used(alpha);
-    nl_arg_used(A);
-    nl_arg_used(ldA);
-    nl_arg_used(x);
-    nl_arg_used(incx);
-    nl_arg_used(beta);
-    nl_arg_used(y);
-    nl_arg_used(incy);
-    nl_assert_not_reached;
+    /* TODO: update FLOPS */
+    CUDA()->cublasDgemv(
+	CUDA()->HNDL_cublas, (cublasOperation_t)trans,
+	m, n, &alpha, A, ldA, x, incx, &beta, y, incy
+    );
 }
 
-/* Not implemented yet */
 static void cuda_blas_dtpsv(
     NLBlas_t blas, MatrixTriangle uplo, MatrixTranspose trans,
     MatrixUnitTriangular diag, int n, const double *AP,
     double *x, int incx 
 ) {
     nl_arg_used(blas);
-    nl_arg_used(uplo);
-    nl_arg_used(trans);
-    nl_arg_used(diag);
-    nl_arg_used(n);
-    nl_arg_used(AP);
-    nl_arg_used(x);
-    nl_arg_used(incx);
-    nl_assert_not_reached;    
+    /* TODO: update FLOPS */
+    CUDA()->cublasDtpsv(
+	CUDA()->HNDL_cublas,
+	(cublasFillMode_t)uplo,
+	(cublasOperation_t)trans,
+	(cublasDiagType_t)diag, n,
+	AP, x, incx	
+    );
 }
 
 

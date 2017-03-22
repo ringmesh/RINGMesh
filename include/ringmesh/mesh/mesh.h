@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_MESH__
-#define __RINGMESH_MESH__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -107,7 +106,7 @@ namespace RINGMesh {
          */
         const NNSearch& vertices_nn_search() const
         {
-            if( vertices_nn_search_ == nil ) {
+            if( vertices_nn_search_ == nullptr ) {
                 std::vector< vec3 > vec_vertices( nb_vertices() ) ;
                 for( index_t v = 0; v < nb_vertices(); ++v ) {
                     vec_vertices[v] = vertex( v ) ;
@@ -117,9 +116,9 @@ namespace RINGMesh {
             return *vertices_nn_search_ ;
         }
 
-        virtual const MeshType type_name() const = 0 ;
+        virtual MeshType type_name() const = 0 ;
 
-        virtual const std::string default_extension() const = 0 ;
+        virtual std::string default_extension() const = 0 ;
 
         /*!
          * @}
@@ -132,7 +131,7 @@ namespace RINGMesh {
          * else they are stored as double precision (double)..
          */
         MeshBase()
-            : vertices_nn_search_( nil )
+            : vertices_nn_search_( nullptr )
         {
         }
 
@@ -167,7 +166,6 @@ namespace RINGMesh {
 #define ringmesh_register_mesh_0d(type) \
     geo_register_creator(RINGMesh::Mesh0DFactory, type, type::type_name_static())
 
-
     /*!
      * class for encapsulating 1D mesh component
      */
@@ -179,8 +177,8 @@ namespace RINGMesh {
     public:
         virtual ~Mesh1D()
         {
-            if( edges_nn_search_ != nil ) delete edges_nn_search_ ;
-            if( edges_aabb_ != nil ) delete edges_aabb_ ;
+            if( edges_nn_search_ != nullptr ) delete edges_nn_search_ ;
+            if( edges_aabb_ != nullptr ) delete edges_aabb_ ;
         }
 
         static Mesh1D* create_mesh( const MeshType type ) ;
@@ -214,14 +212,14 @@ namespace RINGMesh {
             const vec3& e1 = vertex( edge_vertex( edge_id, 1 ) ) ;
             return ( e1 + e0 ) / 2. ;
         }
-        
+
         /*!
          * @brief return the NNSearch at edges
          * @warning the NNSearch is destroy when calling the Mesh::facets_aabb() and Mesh::cells_aabb()
          */
         const NNSearch& edges_nn_search() const
         {
-            if( edges_nn_search_ == nil ) {
+            if( edges_nn_search_ == nullptr ) {
                 std::vector< vec3 > edge_centers( nb_edges() ) ;
                 for( index_t e = 0; e < nb_edges(); ++e ) {
                     edge_centers[e] = edge_barycenter( e ) ;
@@ -235,7 +233,7 @@ namespace RINGMesh {
          */
         const AABBTree1D& edges_aabb() const
         {
-            if( edges_aabb_ == nil ) {
+            if( edges_aabb_ == nullptr ) {
                 edges_aabb_ = new AABBTree1D( *this ) ;
             }
             return *edges_aabb_ ;
@@ -244,7 +242,7 @@ namespace RINGMesh {
         virtual GEO::AttributesManager& edge_attribute_manager() const = 0 ;
     protected:
         Mesh1D()
-            : MeshBase(), edges_nn_search_( nil ), edges_aabb_( nil )
+            : MeshBase(), edges_nn_search_( nullptr ), edges_aabb_( nullptr )
         {
         }
 
@@ -267,8 +265,8 @@ namespace RINGMesh {
     public:
         virtual ~Mesh2D()
         {
-            if( nn_search_ != nil ) delete nn_search_ ;
-            if( facets_aabb_ != nil ) delete facets_aabb_ ;
+            if( nn_search_ != nullptr ) delete nn_search_ ;
+            if( facets_aabb_ != nullptr ) delete facets_aabb_ ;
         }
 
         static Mesh2D* create_mesh( const MeshType type ) ;
@@ -277,10 +275,11 @@ namespace RINGMesh {
          * @brief Gets the vertex index by facet index and local vertex index.
          * @param[in] facet_id the facet index.
          * @param[in] vertex_id the local edge index in \param facet_id.
-         * @return the global facet index adjacent to the \param edge_id of the facet \param facet_id.
-         * @precondition  \param edge_id < number of edge of the facet \param facet_id .
          */
-        virtual index_t facet_vertex( index_t facet_id, index_t vertex_id ) const = 0 ;
+        virtual index_t facet_vertex(
+            index_t facet_id,
+            index_t vertex_id ) const = 0 ;
+
         /*!
          * @brief Gets the number of all facets in the whole Mesh.
          */
@@ -305,6 +304,24 @@ namespace RINGMesh {
             }
         }
         /*!
+         * @brief Get the next edge on the border
+         * @warning the edge index is in fact the index of the vertex where the edge starts.
+         * @details The returned border edge is the next in the way of facet edges
+         * orientation.
+         * @param[in] f Input facet index
+         * @param[in] e Edge index in the facet
+         * @param[out] next_f Next facet index
+         * @param[out] next_e Next edge index in the facet
+         *
+         * @pre the given facet edge must be on border
+         */
+        void next_on_border(
+            index_t f,
+            index_t e,
+            index_t& next_f,
+            index_t& next_e ) const ;
+
+        /*!
          * @brief Gets the previous vertex index in the facet \param facet_id.
          * @param[in] facet_id facet index
          * @param[in] vertex_id current index
@@ -318,6 +335,72 @@ namespace RINGMesh {
                 return nb_facet_vertices( facet_id ) - 1 ;
             }
         }
+
+        /*!
+         * @brief Get the previous edge on the border
+         * @details The returned border edge is the previous in the way of facet edges
+         * orientation.
+         * @param[in] f Input facet index
+         * @param[in] e Edge index in the facet
+         * @param[out] prev_f Previous facet index
+         * @param[out] prev_e Previous edge index in the facet
+         *
+         * @pre the surface must be correctly oriented and
+         * the given facet edge must be on border
+         * @warning the edge index is in fact the index of the vertex where the edge starts.
+         */
+        void prev_on_border(
+            index_t f,
+            index_t e,
+            index_t& prev_f,
+            index_t& prev_e ) const ;
+
+        /*!
+         * @brief Get the vertex index in a facet @param facet_index from its
+         * global index in the Mesh2D @param vertex_id
+         * @return NO_ID or index of the vertex in the facet
+         */
+        index_t vertex_index_in_facet(
+            index_t facet_index,
+            index_t vertex_id ) const ;
+
+        /*!
+         * @brief Compute closest vertex in a facet to a point
+         * @param[in] facet_index Facet index
+         * @param[in] query_point Coordinates of the point to which distance is measured
+         * @return Index of the vertex of @param facet_index closest to @param query_point
+         */
+        index_t closest_vertex_in_facet(
+            index_t facet_index,
+            const vec3& query_point ) const ;
+
+        /*!
+         * @brief Get the first facet of the surface that has an edge linking the two vertices (ids in the surface)
+         *
+         * @param[in] in0 Index of the first vertex in the surface
+         * @param[in] in1 Index of the second vertex in the surface
+         * @return NO_ID or the index of the facet
+         */
+        index_t facet_from_vertex_ids( index_t in0, index_t in1 ) const ;
+
+        /*!
+         * @brief Determines the facets around a vertex
+         * @param[in] vertex_id Index of the vertex in the surface
+         * @param[in] result Indices of the facets containing @param P
+         * @param[in] border_only If true only facets on the border are considered
+         * @param[in] f0 (Optional) Index of one facet containing the vertex @param P
+         * @return The number of facets found
+         * @note If a facet containing the vertex is given, facets around this
+         * vertex is search by propagation. Else, a first facet is found by brute
+         * force algorithm, and then the other by propagation
+         * @todo Try to use a AABB tree to remove @param first_facet. [PA]
+         */
+        index_t facets_around_vertex(
+            index_t vertex_id,
+            std::vector< index_t >& result,
+            bool border_only,
+            index_t f0 ) const ;
+
         /*!
          * @brief Gets an adjacent facet index by facet index and local edge index.
          * @param[in] facet_id the facet index.
@@ -328,6 +411,7 @@ namespace RINGMesh {
         virtual index_t facet_adjacent(
             index_t facet_id,
             index_t edge_id ) const = 0 ;
+
         virtual GEO::AttributesManager& facet_attribute_manager() const = 0 ;
         /*!
          * @brief Tests whether all the facets are triangles. when all the facets are triangles, storage and access is optimized.
@@ -340,6 +424,54 @@ namespace RINGMesh {
         bool is_triangle( index_t facet_id ) const
         {
             return nb_facet_vertices( facet_id ) == 3 ;
+        }
+
+        /*!
+         * Is the edge starting with the given vertex of the facet on a border of the Surface?
+         */
+        bool is_edge_on_border( index_t facet_index, index_t vertex_index ) const
+        {
+            return facet_adjacent( facet_index, vertex_index ) == NO_ID ;
+        }
+
+        /*!
+         * Is one of the edges of the facet on the border of the surface?
+         */
+        bool is_facet_on_border( index_t facet_index ) const
+        {
+            for( index_t v = 0; v < nb_facet_vertices( facet_index ); v++ ) {
+                if( is_edge_on_border( facet_index, v ) ) {
+                    return true ;
+                }
+            }
+            return false ;
+        }
+
+        /*!
+         * @brief Gets the length of the edge starting at a given vertex
+         * @param[in] facet_id index of the facet
+         * @param[in] vertex_id the edge starting vertex index
+         */
+        double facet_edge_length( index_t facet_id, index_t vertex_id ) const
+        {
+            const vec3& e0 = vertex( facet_vertex( facet_id, vertex_id ) ) ;
+            const vec3& e1 = vertex(
+                facet_vertex( facet_id,
+                    next_facet_vertex( facet_id, vertex_id ) ) ) ;
+            return ( e1 - e0 ).length() ;
+        }
+        /*!
+         * @brief Gets the barycenter of the edge starting at a given vertex
+         * @param[in] facet_id index of the facet
+         * @param[in] vertex_id the edge starting vertex index
+         */
+        vec3 facet_edge_barycenter( index_t facet_id, index_t vertex_id ) const
+        {
+            const vec3& e0 = vertex( facet_vertex( facet_id, vertex_id ) ) ;
+            const vec3& e1 = vertex(
+                facet_vertex( facet_id,
+                    next_facet_vertex( facet_id, vertex_id ) ) ) ;
+            return ( e1 + e0 ) / 2. ;
         }
 
         /*!
@@ -390,13 +522,12 @@ namespace RINGMesh {
             return result ;
         }
 
-        
         /*!
          * @brief return the NNSearch at facets
          */
         const NNSearch& facets_nn_search() const
         {
-            if( nn_search_ == nil ) {
+            if( nn_search_ == nullptr ) {
                 std::vector< vec3 > facet_centers( nb_facets() ) ;
                 for( index_t f = 0; f < nb_facets(); ++f ) {
                     facet_centers[f] = facet_barycenter( f ) ;
@@ -410,14 +541,14 @@ namespace RINGMesh {
          */
         const AABBTree2D& facets_aabb() const
         {
-            if( facets_aabb_ == nil ) {
+            if( facets_aabb_ == nullptr ) {
                 facets_aabb_ = new AABBTree2D( *this ) ;
             }
             return *facets_aabb_ ;
         }
     protected:
         Mesh2D()
-            : MeshBase(), nn_search_( nil ), facets_aabb_( nil )
+            : MeshBase(), nn_search_( nullptr ), facets_aabb_( nullptr )
         {
         }
 
@@ -440,9 +571,9 @@ namespace RINGMesh {
     public:
         virtual ~Mesh3D()
         {
-            if( cell_facets_nn_search_ != nil ) delete cell_facets_nn_search_ ;
-            if( cell_nn_search_ != nil ) delete cell_nn_search_ ;
-            if( cell_aabb_ != nil ) delete cell_aabb_ ;
+            if( cell_facets_nn_search_ != nullptr ) delete cell_facets_nn_search_ ;
+            if( cell_nn_search_ != nullptr ) delete cell_nn_search_ ;
+            if( cell_aabb_ != nullptr ) delete cell_aabb_ ;
         }
 
         static Mesh3D* create_mesh( const MeshType type ) ;
@@ -490,6 +621,32 @@ namespace RINGMesh {
          * @return the global facet index.
          */
         virtual index_t cell_facet( index_t cell_id, index_t facet_id ) const = 0 ;
+
+        /*!
+         * Computes the Mesh cell edge length
+         * @param[in] cell_id the facet index
+         * @param[in] edge_id the edge index
+         * @return the cell edge length
+         */
+        double cell_edge_length( index_t cell_id, index_t edge_id ) const
+        {
+            const vec3& e0 = vertex( cell_edge_vertex( cell_id, edge_id, 0 ) ) ;
+            const vec3& e1 = vertex( cell_edge_vertex( cell_id, edge_id, 1 ) ) ;
+            return ( e1 - e0 ).length() ;
+        }
+
+        /*!
+         * Computes the Mesh cell edge barycenter
+         * @param[in] cell_id the facet index
+         * @param[in] edge_id the edge index
+         * @return the cell edge center
+         */
+        vec3 cell_edge_barycenter( index_t cell_id, index_t edge_id ) const
+        {
+            const vec3& e0 = vertex( cell_edge_vertex( cell_id, edge_id, 0 ) ) ;
+            const vec3& e1 = vertex( cell_edge_vertex( cell_id, edge_id, 1 ) ) ;
+            return ( e1 + e0 ) / 2. ;
+        }
 
         /*!
          * @brief Gets the number of facet in a cell
@@ -627,7 +784,7 @@ namespace RINGMesh {
          */
         const NNSearch& cell_facets_nn_search() const
         {
-            if( cell_facets_nn_search_ == nil ) {
+            if( cell_facets_nn_search_ == nullptr ) {
                 std::vector< vec3 > cell_facet_centers( nb_cell_facets() ) ;
                 index_t cf = 0 ;
                 for( index_t c = 0; c < nb_cells(); ++c ) {
@@ -645,7 +802,7 @@ namespace RINGMesh {
          */
         const NNSearch& cells_nn_search() const
         {
-            if( cell_nn_search_ == nil ) {
+            if( cell_nn_search_ == nullptr ) {
                 std::vector< vec3 > cell_centers( nb_cells() ) ;
                 for( index_t c = 0; c < nb_cells(); ++c ) {
                     cell_centers[c] = cell_barycenter( c ) ;
@@ -659,7 +816,7 @@ namespace RINGMesh {
          */
         const AABBTree3D& cells_aabb() const
         {
-            if( cell_aabb_ == nil ) {
+            if( cell_aabb_ == nullptr ) {
                 cell_aabb_ = new AABBTree3D( *this ) ;
             }
             return *cell_aabb_ ;
@@ -668,9 +825,9 @@ namespace RINGMesh {
         Mesh3D()
             :
                 MeshBase(),
-                cell_facets_nn_search_( nil ),
-                cell_nn_search_( nil ),
-                cell_aabb_( nil )
+                cell_facets_nn_search_( nullptr ),
+                cell_nn_search_( nullptr ),
+                cell_aabb_( nullptr )
         {
         }
 
@@ -708,5 +865,3 @@ namespace RINGMesh {
 #define ringmesh_register_mesh_alld(type) \
     geo_register_creator(RINGMesh::MeshAllDFactory, type, type::type_name_static())
 }
-
-#endif
