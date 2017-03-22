@@ -1,7 +1,7 @@
 #### Current changeset ####
 
 New Features:
- *
+ * Add Feflow export using .fem file. Support wells as discrete fractures and mixed element mesh. 
 
 Bug fix:
  *
