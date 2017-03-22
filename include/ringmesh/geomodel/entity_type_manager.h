@@ -76,7 +76,7 @@ namespace RINGMesh {
      * @brief struct used to map the type of a Mesh Entity to the type of its in boundary
      * "Line" is in boundary of "Corner"
      * "Surface" is in boundary of "Line"
-     * "Region" is in boundary of "uuuuu
+     * "Region" is in boundary of "Surface"
      */
     struct MeshEntityTypeInBoundaryMap {
         MeshEntityTypeInBoundaryMap() ;
@@ -93,7 +93,7 @@ namespace RINGMesh {
 
     /*!
      * @brief this class contains only static methods to manage the type of the
-     * GeoModelMeshEntity. It give access to the number of meshed entities of each
+     * GeoModelMeshEntity. It gives access to the number of meshed entities of each
      * type and also their (in) boundary
      */
     class RINGMESH_API MeshEntityTypeManager {
@@ -120,7 +120,7 @@ namespace RINGMesh {
 
     /*!
      * @brief this class contains methods to manage the type of the
-     * GeoModelGeologicalEntity. It give access to the number of geological entities of each
+     * GeoModelGeologicalEntity. It gives access to the number of geological entities of each
      * type and also give the opportunity to create and manage new one.
      */
     class RINGMESH_API GeologicalTypeManager {
