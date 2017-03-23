@@ -491,7 +491,7 @@ namespace RINGMesh {
 
         GEO::AttributesManager& attribute_manager() const
         {
-            return mesh_->vertex_attribute_manager() ;
+            return mesh_->facet_attribute_manager() ;
         }
 
         /*!
@@ -735,7 +735,7 @@ namespace RINGMesh {
 
         GEO::AttributesManager& attribute_manager() const
         {
-            return mesh_->vertex_attribute_manager() ;
+            return mesh_->edge_attribute_manager() ;
         }
 
         /*!
@@ -817,7 +817,7 @@ namespace RINGMesh {
 
         GEO::AttributesManager& attribute_manager() const
         {
-            return mesh_->vertex_attribute_manager() ;
+            return mesh_->cell_attribute_manager() ;
         }
         /*!
          * Test if the mesh cells are initialized
