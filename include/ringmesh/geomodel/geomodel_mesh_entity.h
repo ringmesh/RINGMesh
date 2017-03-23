@@ -1152,6 +1152,7 @@ namespace RINGMesh {
             return vec3() ;
         }
 
+        index_t find_first_cell_owing_vertex( index_t vertex_id_in_region ) const ;
         index_t cells_around_vertex(
             index_t vertex_id,
             std::vector< index_t >& result,

@@ -52,7 +52,7 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
-    class RINGMESH_API DuplicateInterfaceBuilder: public GeoModelBuilder {
+    class RINGMESH_API DuplicateInterfaceBuilder final : public GeoModelBuilder {
     ringmesh_disable_copy(DuplicateInterfaceBuilder) ;
     public:
         DuplicateInterfaceBuilder( GeoModel& model) ;
@@ -119,7 +119,7 @@ namespace RINGMesh {
             index_t vertex_id_in_surface,
             const vec3& vertex_pos ) const ;
         bool is_surface_or_region_on_the_right_side_of_the_fault(
-            const gme_t& cur_gme_t,
+            const gmme_t& cur_gmme_t,
             const vec3& normal_on_vertex_interface,
             index_t vertex_id_in_gmme,
             const vec3& vertex_pos,
@@ -208,12 +208,12 @@ namespace RINGMesh {
         {
             const EntityTypeManager& manager = geomodel_.entity_type_manager() ;
             all_entity_types_.insert( all_entity_types_.end(),
-                manager.mesh_entity_types().begin(),
-                manager.mesh_entity_types().end() ) ;
+                manager.mesh_entity_manager.mesh_entity_types().begin(),
+                manager.mesh_entity_manager.mesh_entity_types().end() ) ;
 
             all_entity_types_.insert( all_entity_types_.end(),
-                manager.geological_entity_types().begin(),
-                manager.geological_entity_types().end() ) ;
+                manager.geological_entity_manager.geological_entity_types().begin(),
+                manager.geological_entity_manager.geological_entity_types().end() ) ;
         }
         /// TODO copy paste from removal of remove entity, and it is in private in GeoModelEditor
         const EntityType& index_to_entity_type( index_t index ) const

@@ -790,7 +790,7 @@ namespace RINGMesh {
         ringmesh_assert( surface_id < geomodel_.nb_surfaces() ) ;
         Surface& surface =
             dynamic_cast< Surface& >( geomodel_access_.modifiable_mesh_entity(
-                gme_t( Surface::type_name_static(), surface_id ) ) ) ;
+                gmme_t( Surface::type_name_static(), surface_id ) ) ) ;
         /// TODO find a way to avoid the const_cast. May create a mesh2d which
         /// is the same as the one of the surface, and then inverse the normals
         /// in this new mesh2d. At the end the new mesh2d is assigned to the
