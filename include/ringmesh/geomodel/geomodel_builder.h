@@ -231,6 +231,7 @@ namespace RINGMesh {
             GeoModelGeologicalEntityAccess gmge_access( geol_entity ) ;
             gmge_access.modifiable_children()[id] = child ;
         }
+        void build_contacts() ;
 
         void delete_geological_entity( const GeologicalEntityType& type, index_t index ) ;
 

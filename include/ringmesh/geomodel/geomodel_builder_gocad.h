@@ -66,8 +66,6 @@ namespace RINGMesh {
             }
         }
 
-        void build_contacts() ;
-
         /*!
          * @brief Parses the file and loads the GeoModel
          * @details The GeoModel loaded by this function is not valid because
