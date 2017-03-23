@@ -730,7 +730,7 @@ namespace RINGMesh {
             }
             ringmesh_assert( nb_vertices > 0 ) ;
 
-            return result / (double) nb_vertices ;
+            return result / static_cast<double>( nb_vertices ) ;
         }
         /*!
          * Compute the non weighted barycenter of the \param cell_id
