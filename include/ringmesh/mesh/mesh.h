@@ -724,7 +724,7 @@ namespace RINGMesh {
         vec3 cell_facet_barycenter( index_t cell_id, index_t facet_id ) const
         {
             vec3 result( 0., 0., 0. ) ;
-            index_t nb_vertices = nb_cell_facet_vertices( cell_id, facet_id ) ;
+            double nb_vertices = nb_cell_facet_vertices( cell_id, facet_id ) ;
             for( index_t v = 0; v < nb_vertices; ++v ) {
                 result += vertex( cell_facet_vertex( cell_id, facet_id, v ) ) ;
             }
