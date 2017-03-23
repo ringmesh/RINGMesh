@@ -724,13 +724,13 @@ namespace RINGMesh {
         vec3 cell_facet_barycenter( index_t cell_id, index_t facet_id ) const
         {
             vec3 result( 0., 0., 0. ) ;
-            double nb_vertices = nb_cell_facet_vertices( cell_id, facet_id ) ;
+            index_t nb_vertices = nb_cell_facet_vertices( cell_id, facet_id ) ;
             for( index_t v = 0; v < nb_vertices; ++v ) {
                 result += vertex( cell_facet_vertex( cell_id, facet_id, v ) ) ;
             }
             ringmesh_assert( nb_vertices > 0 ) ;
 
-            return result / nb_vertices ;
+            return result / (double) nb_vertices ;
         }
         /*!
          * Compute the non weighted barycenter of the \param cell_id
