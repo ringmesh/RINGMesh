@@ -120,7 +120,7 @@ namespace {
                                 attr_dbl_itr < att_v_double_names.size();
                                 ++attr_dbl_itr ) {
                                 GEO::Attribute< double > cur_attr(
-                                    mesh.vertex_attribute_manager(),
+                                    mesh.vertices.attribute_manager(),
                                     att_v_double_names[attr_dbl_itr] ) ;
                                 for( index_t dim_itr = 0;
                                     dim_itr < vertex_attr_dims[attr_dbl_itr];
@@ -179,7 +179,7 @@ namespace {
                     for( index_t attr_dbl_itr = 0;
                         attr_dbl_itr < att_c_double_names.size(); ++attr_dbl_itr ) {
                         GEO::Attribute< double > cur_attr(
-                            mesh.cell_attribute_manager(),
+                            mesh.cells.attribute_manager(),
                             att_c_double_names[attr_dbl_itr] ) ;
                         for( index_t dim_itr = 0;
                             dim_itr < cell_attr_dims[attr_dbl_itr]; ++dim_itr ) {
@@ -260,8 +260,8 @@ namespace {
             std::vector< index_t >& vertex_attr_dims ) const
         {
             GEO::vector< std::string > att_v_names ;
-            mesh.vertex_attribute_manager().list_attribute_names( att_v_names ) ;
-            for( index_t att_v = 0; att_v < mesh.vertex_attribute_manager().nb();
+            mesh.vertices.attribute_manager().list_attribute_names( att_v_names ) ;
+            for( index_t att_v = 0; att_v < mesh.vertices.attribute_manager().nb();
                 att_v++ ) {
 
                 if( att_v_names[att_v] == "point" ) {
@@ -269,12 +269,12 @@ namespace {
                 }
 
                 if( !GEO::Attribute< double >::is_defined(
-                    mesh.vertex_attribute_manager(), att_v_names[att_v] ) ) {
+                    mesh.vertices.attribute_manager(), att_v_names[att_v] ) ) {
                     continue ;
                 }
                 att_v_double_names.push_back( att_v_names[att_v] ) ;
                 index_t cur_dim =
-                    mesh.vertex_attribute_manager().find_attribute_store(
+                    mesh.vertices.attribute_manager().find_attribute_store(
                         att_v_names[att_v] )->dimension() ;
                 vertex_attr_dims.push_back( cur_dim ) ;
             }
@@ -353,16 +353,16 @@ namespace {
             std::vector< index_t >& cell_attr_dims ) const
         {
             GEO::vector< std::string > att_c_names ;
-            mesh.cell_attribute_manager().list_attribute_names( att_c_names ) ;
-            for( index_t att_c = 0; att_c < mesh.cell_attribute_manager().nb();
+            mesh.cells.attribute_manager().list_attribute_names( att_c_names ) ;
+            for( index_t att_c = 0; att_c < mesh.cells.attribute_manager().nb();
                 att_c++ ) {
 
                 if( !GEO::Attribute< double >::is_defined(
-                    mesh.cell_attribute_manager(), att_c_names[att_c] ) ) {
+                    mesh.cells.attribute_manager(), att_c_names[att_c] ) ) {
                     continue ;
                 }
                 att_c_double_names.push_back( att_c_names[att_c] ) ;
-                index_t cur_dim = mesh.cell_attribute_manager().find_attribute_store(
+                index_t cur_dim = mesh.cells.attribute_manager().find_attribute_store(
                     att_c_names[att_c] )->dimension() ;
                 cell_attr_dims.push_back( cur_dim ) ;
             }
