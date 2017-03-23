@@ -63,7 +63,6 @@ namespace {
 #include "full_geomodel/io_csmp.cpp"
 #include "full_geomodel/io_geomodel.cpp"
 #include "full_geomodel/io_gprs.cpp"
-#include "full_geomodel/io_meshb.cpp"
 #include "full_geomodel/io_mfem.cpp"
 #include "full_geomodel/io_msh.cpp"
 #include "full_geomodel/io_tetgen.cpp"
@@ -99,8 +98,6 @@ namespace RINGMesh {
      */
     void GeoModelIOHandler::initialize_full_geomodel_output()
     {
-        ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "meshb" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( LMIOHandler, "mesh" ) ;
         ringmesh_register_GeoModelIOHandler_creator( TetGenIOHandler, "tetgen" ) ;
         ringmesh_register_GeoModelIOHandler_creator( TSolidIOHandler, "so" ) ;
         ringmesh_register_GeoModelIOHandler_creator( CSMPIOHandler, "csmp" ) ;

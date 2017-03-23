@@ -16,4 +16,6 @@ Improvements:
  * EntityType are not a std::string anymore but an abstract class. GeologicalEntityType and MeshEntityType inherit
       from EntityType.
  * Remove support of .ogm
-
+ * Remove support of .mesh and .meshb
+ * Remove MeshAllD and inherited classes, user should only use Mesh0D, Mesh1D, Mesh2D or Mesh3D.
+      The GeoModelMesh has been modified according this modification.

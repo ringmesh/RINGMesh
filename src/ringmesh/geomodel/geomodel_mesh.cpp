@@ -127,16 +127,14 @@ namespace {
             builder->set_vertex( v, mesh.vertex( v ) ) ;
         }
     }
-
-    bool is_attribute_a_double(
-        GEO::AttributesManager& att_manager,
-        const std::string& att_name )
-    {
-        return GEO::Attribute< double >::is_defined( att_manager, att_name ) ;
-    }
 }
 
 namespace RINGMesh {
+
+    GeoModelMeshBase::GeoModelMeshBase( GeoModelMesh& gmm, GeoModel& gm )
+        : gmm_( gmm ), gm_( gm )
+    {
+    }
 
     GeoModelMeshVertices::GeoModelVertexMapper::GeoModelVertexMapper(
         GeoModelMeshVertices& geomodel_vertices,
@@ -368,11 +366,11 @@ namespace RINGMesh {
 
     GeoModelMeshVertices::GeoModelMeshVertices( GeoModelMesh& gmm, GeoModel& gm )
         :
-            gmm_( gmm ),
-            gm_( gm ),
+            GeoModelMeshBase( gmm, gm ),
             mesh_( new GeogramMesh0D ),
-            vertex_mapper_( *this, gm )
+            vertex_mapper_( *this, gmm.geomodel() )
     {
+        set_mesh( mesh_ ) ;
     }
 
     GeoModelMeshVertices::~GeoModelMeshVertices()
@@ -677,10 +675,9 @@ namespace RINGMesh {
 
     /*******************************************************************************/
 
-    GeoModelMeshCells::GeoModelMeshCells( GeoModelMesh& gmm )
+    GeoModelMeshCells::GeoModelMeshCells( GeoModelMesh& gmm, GeoModel& gm )
         :
-            gmm_( gmm ),
-            gm_( gmm.geomodel() ),
+            GeoModelMeshBase( gmm, gm ),
             mesh_( new GeogramMesh3D ),
             nb_tet_( 0 ),
             nb_hex_( 0 ),
@@ -689,6 +686,7 @@ namespace RINGMesh {
             nb_connector_( 0 ),
             mode_( NONE )
     {
+        set_mesh( mesh_ ) ;
     }
 
     bool GeoModelMeshCells::is_initialized() const
@@ -825,10 +823,10 @@ namespace RINGMesh {
     void GeoModelMeshCells::bind_attribute()
     {
         if( !region_id_.is_bound() ) {
-            region_id_.bind( gmm_.cell_attribute_manager(), region_att_name ) ;
+            region_id_.bind( attribute_manager(), region_att_name ) ;
         }
         if( !cell_id_.is_bound() ) {
-            cell_id_.bind( gmm_.cell_attribute_manager(), cell_region_att_name ) ;
+            cell_id_.bind( attribute_manager(), cell_region_att_name ) ;
         }
     }
 
@@ -1460,15 +1458,15 @@ namespace RINGMesh {
 
     /*******************************************************************************/
 
-    GeoModelMeshFacets::GeoModelMeshFacets( GeoModelMesh& gmm )
+    GeoModelMeshFacets::GeoModelMeshFacets( GeoModelMesh& gmm, GeoModel& gm )
         :
-            gmm_( gmm ),
-            gm_( gmm.geomodel() ),
+            GeoModelMeshBase( gmm, gm ),
             mesh_( new GeogramMesh2D ),
             nb_triangle_( 0 ),
             nb_quad_( 0 ),
             nb_polygon_( 0 )
     {
+        set_mesh( mesh_ ) ;
     }
 
     GeoModelMeshFacets::~GeoModelMeshFacets()
@@ -1479,11 +1477,10 @@ namespace RINGMesh {
     void GeoModelMeshFacets::bind_attribute()
     {
         if( !surface_id_.is_bound() ) {
-            surface_id_.bind( gmm_.facet_attribute_manager(), surface_att_name ) ;
+            surface_id_.bind( attribute_manager(), surface_att_name ) ;
         }
         if( !facet_id_.is_bound() ) {
-            facet_id_.bind( gmm_.facet_attribute_manager(),
-                facet_surface_att_name ) ;
+            facet_id_.bind( attribute_manager(), facet_surface_att_name ) ;
         }
 
     }
@@ -1856,9 +1853,10 @@ namespace RINGMesh {
     }
     /*******************************************************************************/
 
-    GeoModelMeshEdges::GeoModelMeshEdges( GeoModelMesh& gmm )
-        : gmm_( gmm ), gm_( gmm.geomodel() ), mesh_( new GeogramMesh1D )
+    GeoModelMeshEdges::GeoModelMeshEdges( GeoModelMesh& gmm, GeoModel& gm )
+        : GeoModelMeshBase( gmm, gm ), mesh_( new GeogramMesh1D )
     {
+        set_mesh( mesh_ ) ;
     }
 
     GeoModelMeshEdges::~GeoModelMeshEdges()
@@ -1964,9 +1962,9 @@ namespace RINGMesh {
             geomodel_( geomodel ),
             mode_( GeoModelMeshCells::NONE ),
             vertices( *this, geomodel ),
-            edges( *this ),
-            facets( *this ),
-            cells( *this )
+            edges( *this, geomodel ),
+            facets( *this, geomodel ),
+            cells( *this, geomodel )
     {
     }
 
@@ -1980,10 +1978,11 @@ namespace RINGMesh {
     {
         GEO::vector< std::string > att_v_names ;
         std::vector< std::string > att_v_double_names ;
-        vertex_attribute_manager().list_attribute_names( att_v_names ) ;
-        for( index_t att_v = 0; att_v < vertex_attribute_manager().nb(); att_v++ ) {
+        vertices.attribute_manager().list_attribute_names( att_v_names ) ;
+        for( index_t att_v = 0; att_v < vertices.attribute_manager().nb();
+            att_v++ ) {
 
-            if( !is_attribute_a_double( vertex_attribute_manager(),
+            if( !GEO::Attribute< double >::is_defined( vertices.attribute_manager(),
                 att_v_names[att_v] ) ) {
                 continue ;
             }
@@ -2001,13 +2000,13 @@ namespace RINGMesh {
                 cur_v_att.create_vector_attribute(
                     geomodel_.region( reg ).vertex_attribute_manager(),
                     att_v_names[att_v],
-                    vertex_attribute_manager().find_attribute_store(
+                    vertices.attribute_manager().find_attribute_store(
                         att_v_names[att_v] )->dimension() ) ;
             }
         }
         for( const std::string& att_v : att_v_double_names ) {
             GEO::Attribute< double > cur_att_on_geomodelmesh(
-                vertex_attribute_manager(), att_v ) ;
+                vertices.attribute_manager(), att_v ) ;
             index_t att_dim = cur_att_on_geomodelmesh.dimension() ;
 
             AttributeVector< double > att_on_regions( geomodel_.nb_regions() ) ;
@@ -2037,16 +2036,17 @@ namespace RINGMesh {
     {
 
         GEO::vector< std::string > att_c_names ;
-        cell_attribute_manager().list_attribute_names( att_c_names ) ;
+        cells.attribute_manager().list_attribute_names( att_c_names ) ;
 
         const NNSearch& nn_search = cells.cell_nn_search() ;
 
         for( const std::string& att_c : att_c_names ) {
-            if( !is_attribute_a_double( cell_attribute_manager(), att_c ) ) {
+            if( !GEO::Attribute< double >::is_defined( cells.attribute_manager(),
+                att_c ) ) {
                 continue ;
             }
             GEO::Attribute< double > cur_att_on_geomodel_mesh(
-                cell_attribute_manager(), att_c ) ;
+                cells.attribute_manager(), att_c ) ;
             index_t att_dim = cur_att_on_geomodel_mesh.dimension() ;
 
             for( index_t reg = 0; reg < geomodel_.nb_regions(); reg++ ) {
