@@ -94,7 +94,7 @@ int main()
 
         // Save and reload the model
         std::string output_file( ringmesh_test_output_path ) ;
-        output_file += "saved_modelA6.mesh" ;
+        output_file += "saved_modelA6.gm" ;
         geomodel_save( model, output_file ) ;
 
         // Compute mesh with duplicated points to compares number

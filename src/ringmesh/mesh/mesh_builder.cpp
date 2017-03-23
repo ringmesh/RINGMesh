@@ -81,16 +81,6 @@ namespace {
         }
         return builder ;
     }
-
-    MeshAllDBuilder* create_builder_alld( MeshBase& mesh )
-    {
-        MeshAllDBuilder* builder = MeshAllDBuilderFactory::create_object(
-            mesh.type_name() ) ;
-        if( builder ) {
-            builder->set_mesh( dynamic_cast< MeshAllD& >( mesh ) ) ;
-        }
-        return builder ;
-    }
 }
 
 namespace RINGMesh {
@@ -100,16 +90,13 @@ namespace RINGMesh {
         MeshBaseBuilder* builder = MeshBaseBuilderFactory::create_object(
             mesh.type_name() ) ;
         if( !builder ) {
-            builder = create_builder_alld( mesh ) ;
+            builder = create_builder_0d( mesh ) ;
             if( !builder ) {
-                builder = create_builder_0d( mesh ) ;
+                builder = create_builder_1d( mesh ) ;
                 if( !builder ) {
-                    builder = create_builder_1d( mesh ) ;
+                    builder = create_builder_2d( mesh ) ;
                     if( !builder ) {
-                        builder = create_builder_2d( mesh ) ;
-                        if( !builder ) {
-                            builder = create_builder_3d( mesh ) ;
-                        }
+                        builder = create_builder_3d( mesh ) ;
                     }
                 }
             }
@@ -133,7 +120,7 @@ namespace RINGMesh {
         Mesh0DBuilder* builder = Mesh0DBuilderFactory::create_object(
             mesh.type_name() ) ;
         if( !builder ) {
-            builder = create_builder_alld( mesh ) ;
+            builder = create_builder_0d( mesh ) ;
         }
         if( !builder ) {
             Logger::warn( "Mesh0DBuilder" )
@@ -154,7 +141,7 @@ namespace RINGMesh {
         Mesh1DBuilder* builder = Mesh1DBuilderFactory::create_object(
             mesh.type_name() ) ;
         if( !builder ) {
-            builder = create_builder_alld( mesh ) ;
+            builder = create_builder_1d( mesh ) ;
         }
         if( !builder ) {
             Logger::warn( "Mesh1DBuilder" )
@@ -175,7 +162,7 @@ namespace RINGMesh {
         Mesh2DBuilder* builder = Mesh2DBuilderFactory::create_object(
             mesh.type_name() ) ;
         if( !builder ) {
-            builder = create_builder_alld( mesh ) ;
+            builder = create_builder_2d( mesh ) ;
         }
         if( !builder ) {
             Logger::warn( "Mesh2DBuilder" )
@@ -196,7 +183,7 @@ namespace RINGMesh {
         Mesh3DBuilder* builder = Mesh3DBuilderFactory::create_object(
             mesh.type_name() ) ;
         if( !builder ) {
-            builder = create_builder_alld( mesh ) ;
+            builder = create_builder_3d( mesh ) ;
         }
         if( !builder ) {
             Logger::warn( "Mesh3DBuilder" )
@@ -207,24 +194,6 @@ namespace RINGMesh {
                 << std::endl ;
 
             builder = new GeogramMesh3DBuilder ;
-        }
-        builder->set_mesh( mesh ) ;
-        return builder ;
-    }
-
-    MeshAllDBuilder* MeshAllDBuilder::create_builder( MeshAllD& mesh )
-    {
-        MeshAllDBuilder* builder = MeshAllDBuilderFactory::create_object(
-            mesh.type_name() ) ;
-        if( !builder ) {
-            Logger::warn( "MeshAllDBuilder" )
-                << "Could not create mesh data structure: " << mesh.type_name()
-                << std::endl ;
-            Logger::warn( "MeshAllDBuilder" )
-                << "Falling back to GeogramMeshAllDBuilder data structure"
-                << std::endl ;
-
-            builder = new GeogramMeshAllDBuilder ;
         }
         builder->set_mesh( mesh ) ;
         return builder ;
