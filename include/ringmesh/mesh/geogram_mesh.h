@@ -50,7 +50,6 @@ namespace RINGMesh {
     class GeogramMesh1DBuilder ;
     class GeogramMesh2DBuilder ;
     class GeogramMesh3DBuilder ;
-    class GeogramMeshAllDBuilder ;
 }
 
 namespace RINGMesh {
@@ -473,38 +472,6 @@ namespace RINGMesh {
         double cell_volume( index_t cell_id ) const
         {
             return RINGMesh::mesh_cell_volume( *mesh_, cell_id ) ;
-        }
-    } ;
-
-    class RINGMESH_API GeogramMeshAllD: public GeogramMesh0D,
-        public GeogramMesh1D,
-        public GeogramMesh2D,
-        public GeogramMesh3D,
-        public MeshAllD {
-    ringmesh_disable_copy( GeogramMeshAllD ) ;
-        friend class GeogramMeshAllDBuilder ;
-
-    public:
-        GeogramMeshAllD()
-            : GeogramMeshBase(), MeshAllD()
-        {
-        }
-        virtual ~GeogramMeshAllD()
-        {
-        }
-        static MeshType type_name_static()
-        {
-            return "GeogramMeshAllD" ;
-        }
-
-        virtual MeshType type_name() const override
-        {
-            return type_name_static() ;
-        }
-
-        static std::string default_extension_static()
-        {
-            return "geogram" ;
         }
     } ;
 
