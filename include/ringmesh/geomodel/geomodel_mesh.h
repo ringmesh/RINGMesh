@@ -71,10 +71,31 @@ namespace RINGMesh {
     const std::string cell_region_att_name = "cell_region" ;
     const std::string facet_surface_att_name = "facet_surface" ;
 
-    class RINGMESH_API GeoModelMeshVertices {
+    class RINGMESH_API GeoModelMeshBase {
+    protected:
+        GeoModelMeshBase( GeoModelMesh& gmm, GeoModel& gm ) ;
+
+        void set_mesh( MeshBase* mesh )
+        {
+            mesh_base_ = mesh ;
+        }
+
+        void save_mesh( const std::string& filename ) const
+        {
+            mesh_base_->save_mesh( filename ) ;
+        }
+    protected:
+        /// Attached GeoModelMesh
+        GeoModelMesh& gmm_ ;
+        /// Attached GeoModel
+        GeoModel& gm_ ;
+        /// Attached MeshBase
+        MeshBase* mesh_base_ ;
+    } ;
+
+    class RINGMESH_API GeoModelMeshVertices: public GeoModelMeshBase {
     ringmesh_disable_copy( GeoModelMeshVertices ) ;
     public:
-        friend class GeoModelMesh ;
         friend class GeoModelMeshEdges ;
         friend class GeoModelMeshFacets ;
         friend class GeoModelMeshCells ;
@@ -82,6 +103,11 @@ namespace RINGMesh {
         GeoModelMeshVertices( GeoModelMesh& gmm, GeoModel& gm ) ;
 
         ~GeoModelMeshVertices() ;
+
+        GEO::AttributesManager& attribute_manager() const
+        {
+            return mesh_->vertex_attribute_manager() ;
+        }
 
         /*!
          * Tests if the mesh vertices are initialized
@@ -172,7 +198,7 @@ namespace RINGMesh {
          * of the GME and the unique vertex
          */
         index_t add_vertex( const vec3& point ) ;
-        index_t add_vertices( const std::vector<vec3>& points ) ;
+        index_t add_vertices( const std::vector< vec3 >& points ) ;
 
         /*!
          * @brief Set the point coordinates of all the vertices that
@@ -445,17 +471,13 @@ namespace RINGMesh {
         } ;
 
     private:
-        /// Attached GeoModelMesh owning the vertices
-        GeoModelMesh& gmm_ ;
-        /// Attached GeoModel
-        GeoModel& gm_ ;
         /// Attached Mesh
         Mesh0D_var mesh_ ;
         /// Mapper from/to GeoModelMeshEntity vertices
         GeoModelVertexMapper vertex_mapper_ ;
     } ;
 
-    class RINGMESH_API GeoModelMeshFacets {
+    class RINGMESH_API GeoModelMeshFacets: public GeoModelMeshBase {
     ringmesh_disable_copy( GeoModelMeshFacets ) ;
     public:
         friend class GeoModelMesh ;
@@ -464,8 +486,13 @@ namespace RINGMesh {
             TRIANGLE, QUAD, POLYGON, ALL, NO_FACET
         } ;
 
-        GeoModelMeshFacets( GeoModelMesh& gmm ) ;
+        GeoModelMeshFacets( GeoModelMesh& gmm, GeoModel& gm ) ;
         ~GeoModelMeshFacets() ;
+
+        GEO::AttributesManager& attribute_manager() const
+        {
+            return mesh_->vertex_attribute_manager() ;
+        }
 
         /*!
          * Test if the mesh facets are initialized
@@ -675,10 +702,6 @@ namespace RINGMesh {
         void disconnect_along_lines() ;
 
     private:
-        /// Attached GeoModelMesh owning the vertices
-        GeoModelMesh& gmm_ ;
-        /// Attached GeoModel
-        const GeoModel& gm_ ;
         /// Attached Mesh
         Mesh2D_var mesh_ ;
 
@@ -704,13 +727,16 @@ namespace RINGMesh {
         index_t nb_polygon_ ;
     } ;
 
-    class RINGMESH_API GeoModelMeshEdges {
+    class RINGMESH_API GeoModelMeshEdges: public GeoModelMeshBase {
     ringmesh_disable_copy( GeoModelMeshEdges ) ;
     public:
-        friend class GeoModelMesh ;
-
-        GeoModelMeshEdges( GeoModelMesh& gmm ) ;
+        GeoModelMeshEdges( GeoModelMesh& gmm, GeoModel& gm ) ;
         ~GeoModelMeshEdges() ;
+
+        GEO::AttributesManager& attribute_manager() const
+        {
+            return mesh_->vertex_attribute_manager() ;
+        }
 
         /*!
          * Test if the mesh edges are initialized
@@ -761,10 +787,6 @@ namespace RINGMesh {
         const AABBTree1D& aabb() const ;
 
     private:
-        /// Attached GeoModelMesh owning the vertices
-        GeoModelMesh& gmm_ ;
-        /// Attached GeoModel
-        const GeoModel& gm_ ;
         /// Attached Mesh
         Mesh1D_var mesh_ ;
 
@@ -775,7 +797,7 @@ namespace RINGMesh {
         std::vector< index_t > well_ptr_ ;
     } ;
 
-    class RINGMESH_API GeoModelMeshCells {
+    class RINGMESH_API GeoModelMeshCells: public GeoModelMeshBase {
     ringmesh_disable_copy( GeoModelMeshCells ) ;
     public:
         friend class GeoModelMesh ;
@@ -791,7 +813,12 @@ namespace RINGMesh {
             NONE, FAULT, HORIZON, ALL
         } ;
 
-        GeoModelMeshCells( GeoModelMesh& gmm ) ;
+        GeoModelMeshCells( GeoModelMesh& gmm, GeoModel& gm ) ;
+
+        GEO::AttributesManager& attribute_manager() const
+        {
+            return mesh_->vertex_attribute_manager() ;
+        }
         /*!
          * Test if the mesh cells are initialized
          */
@@ -1181,10 +1208,6 @@ namespace RINGMesh {
         void initialize_cell_facet() ;
 
     private:
-        /// Attached GeoModelMesh owning the vertices
-        GeoModelMesh& gmm_ ;
-        /// Attached GeoModel
-        const GeoModel& gm_ ;
         /// Attached Mesh
         Mesh3D_var mesh_ ;
 
@@ -1239,19 +1262,6 @@ namespace RINGMesh {
         const GeoModel& geomodel() const
         {
             return geomodel_ ;
-        }
-
-        GEO::AttributesManager& vertex_attribute_manager() const
-        {
-            return vertices.mesh_->vertex_attribute_manager() ;
-        }
-        GEO::AttributesManager& facet_attribute_manager() const
-        {
-            return facets.mesh_->facet_attribute_manager() ;
-        }
-        GEO::AttributesManager& cell_attribute_manager() const
-        {
-            return cells.mesh_->cell_attribute_manager() ;
         }
 
         /*!
