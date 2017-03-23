@@ -181,15 +181,12 @@ namespace RINGMesh {
 
     DuplicateInterfaceBuilder::~DuplicateInterfaceBuilder()
     {
-        for( index_t gme_vertices_links_itr = 0;
-            gme_vertices_links_itr < gme_vertices_links_.size();
-            ++gme_vertices_links_itr ) {
-            ringmesh_assert( gme_vertices_links_[gme_vertices_links_itr] ) ;
-            delete gme_vertices_links_[gme_vertices_links_itr] ;
+        for( GMEVertexLink*& gme_vertices_links_itr : gme_vertices_links_ ) {
+            ringmesh_assert( gme_vertices_links_itr ) ;
+            delete gme_vertices_links_itr ;
         }
-        for( index_t reg_nn_searches_itr = 0;
-            reg_nn_searches_itr < reg_nn_searches_.size(); ++reg_nn_searches_itr ) {
-            delete reg_nn_searches_[reg_nn_searches_itr] ;
+        for( const NNSearch*& reg_nn_searches_itr : reg_nn_searches_ ) {
+            delete reg_nn_searches_itr ;
         }
 
         /*for( index_t surface_itr = 0; surface_itr < geomodel_.nb_surfaces();
@@ -469,17 +466,15 @@ namespace RINGMesh {
                 gmmv.gme_vertices( first_line_vertex_id_in_gmm, gme_vertices ) ;
                 index_t v_id_in_first_surf = NO_ID ;
                 bool v_id_in_second_surf = NO_ID ;
-                for( index_t gme_vertex_itr = 0;
-                    gme_vertex_itr < gme_vertices.size(); ++gme_vertex_itr ) {
-                    const GMEVertex& cur_gme_vertex = gme_vertices[gme_vertex_itr] ;
-                    if( cur_gme_vertex.gmme_id.type() != Surface::type_name_static() ) {
+                for( const GMEVertex& gme_vertex_itr : gme_vertices ) {
+                    if( gme_vertex_itr.gmme_id.type() != Surface::type_name_static() ) {
                         continue ;
                     }
-                    if( cur_gme_vertex.gmme_id.index() == first_child.index() ) {
-                        v_id_in_first_surf = cur_gme_vertex.v_id ;
-                    } else if( cur_gme_vertex.gmme_id.index()
+                    if( gme_vertex_itr.gmme_id.index() == first_child.index() ) {
+                        v_id_in_first_surf = gme_vertex_itr.v_id ;
+                    } else if( gme_vertex_itr.gmme_id.index()
                         == cur_surf_in_boun.index() ) {
-                        v_id_in_second_surf = cur_gme_vertex.v_id ;
+                        v_id_in_second_surf = gme_vertex_itr.v_id ;
                     } else {
                         continue ;
                     }
