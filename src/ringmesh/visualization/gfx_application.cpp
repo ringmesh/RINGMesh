@@ -199,12 +199,13 @@ namespace RINGMesh {
         selected_entity_type_ = 0 ;
         selected_entity_id_ = 0 ;
         entity_types_.push_back( "All" ) ;
-        entity_types_.push_back( Corner::type_name_static() ) ;
-        entity_types_.push_back( Line::type_name_static() ) ;
-        entity_types_.push_back( Surface::type_name_static() ) ;
-        entity_types_.push_back( Region::type_name_static() ) ;
+        entity_types_.push_back( std::string( Corner::type_name_static() ) ) ;
+        entity_types_.push_back( std::string( Line::type_name_static() ) ) ;
+        entity_types_.push_back( std::string( Surface::type_name_static() ) ) ;
+        entity_types_.push_back( std::string( Region::type_name_static() ) ) ;
         for( index_t i = 0; i < GM_.nb_geological_entity_types(); i++ ) {
-            entity_types_.push_back( GM_.geological_entity_type( i ) ) ;
+            entity_types_.push_back(
+                std::string( GM_.geological_entity_type( i ) ) ) ;
         }
         meshed_regions_ = false ;
         if( GM_.nb_regions() > 0 ) {
@@ -245,7 +246,8 @@ namespace RINGMesh {
     void RINGMeshApplication::GeoModelViewer::toggle_colored_layers()
     {
         // To disable the key 'R'.
-        if( GM_.nb_geological_entities( Layer::type_name_static() ) == 0 ) {
+        if( GM_.entity_type_manager().geological_entity_manager.is_valid_type(
+            Layer::type_name_static() ) ) {
             show_colored_layers_.new_status = false ;
             return ;
         }
@@ -391,18 +393,18 @@ namespace RINGMesh {
             const std::string& type = entity_types_[selected_entity_type_casted] ;
 
             if( selected_entity_type_casted
-                < EntityTypeManager::nb_mesh_entity_types() + 1 ) {
+                < MeshEntityTypeManager::nb_mesh_entity_types() + 1 ) {
                 selected_entity_id_ = std::min(
                     static_cast< int >( GM_.nb_mesh_entities( type ) - 1 ),
                     selected_entity_id_ ) ;
-                gme_t entity_id( type,
+                gmme_t entity_id( type,
                     static_cast< index_t >( selected_entity_id_ ) ) ;
                 toggle_mesh_entity_and_boundaries_visibility( entity_id ) ;
             } else {
                 selected_entity_id_ = std::min(
                     static_cast< int >( GM_.nb_geological_entities( type ) - 1 ),
                     selected_entity_id_ ) ;
-                gme_t entity_id( type,
+                gmge_t entity_id( type,
                     static_cast< index_t >( selected_entity_id_ ) ) ;
                 toggle_geological_entity_visibility( entity_id ) ;
             }
@@ -414,12 +416,12 @@ namespace RINGMesh {
     {
         GEO::vector< std::string > attribute_names ;
         attributes.list_attribute_names( attribute_names ) ;
-        for( index_t i = 0; i < attribute_names.size(); ++i ) {
+        for( const std::string& name : attribute_names ) {
             const GEO::AttributeStore* store = attributes.find_attribute_store(
-                attribute_names[i] ) ;
+                name ) ;
             if( GEO::ReadOnlyScalarAttributeAdapter::can_be_bound_to( store ) ) {
-                if( ImGui::Button( attribute_names[i].c_str() ) ) {
-                    GM_gfx_.attribute.set_name( attribute_names[i] ) ;
+                if( ImGui::Button( name.c_str() ) ) {
+                    GM_gfx_.attribute.set_name( name ) ;
                     GM_gfx_.attribute.set_coordinate( 0 ) ;
                     autorange() ;
                     ImGui::CloseCurrentPopup() ;
@@ -467,18 +469,18 @@ namespace RINGMesh {
             GM_gfx_.surfaces.GeoModelGfxManager::set_vertex_visibility( false ) ;
             GM_gfx_.regions.GeoModelGfxManager::set_vertex_visibility( false ) ;
             if( selected_entity_type_casted
-                < EntityTypeManager::nb_mesh_entity_types() + 1 ) {
+                < MeshEntityTypeManager::nb_mesh_entity_types() + 1 ) {
                 selected_entity_id_ = std::min(
                     static_cast< int >( GM_.nb_mesh_entities( type ) - 1 ),
                     selected_entity_id_ ) ;
-                gme_t entity_id( type,
+                gmme_t entity_id( type,
                     static_cast< index_t >( selected_entity_id_ ) ) ;
                 toggle_mesh_entity_and_boundaries_visibility( entity_id ) ;
             } else {
                 selected_entity_id_ = std::min(
                     static_cast< int >( GM_.nb_geological_entities( type ) - 1 ),
                     selected_entity_id_ ) ;
-                gme_t entity_id( type,
+                gmge_t entity_id( type,
                     static_cast< index_t >( selected_entity_id_ ) ) ;
                 toggle_geological_entity_visibility( entity_id ) ;
             }
@@ -486,16 +488,16 @@ namespace RINGMesh {
     }
 
     void RINGMeshApplication::GeoModelViewer::toggle_mesh_entity_and_boundaries_visibility(
-        const gme_t& entity_id )
+        const gmme_t& entity_id )
     {
-        if( EntityTypeManager::is_corner( entity_id.type ) ) {
-            toggle_corner_visibility( entity_id.index ) ;
-        } else if( EntityTypeManager::is_line( entity_id.type ) ) {
-            toggle_line_and_boundaries_visibility( entity_id.index ) ;
-        } else if( EntityTypeManager::is_surface( entity_id.type ) ) {
-            toggle_surface_and_boundaries_visibility( entity_id.index ) ;
-        } else if( EntityTypeManager::is_region( entity_id.type ) ) {
-            toggle_region_and_boundaries_visibility( entity_id.index ) ;
+        if( MeshEntityTypeManager::is_corner( entity_id.type() ) ) {
+            toggle_corner_visibility( entity_id.index() ) ;
+        } else if( MeshEntityTypeManager::is_line( entity_id.type() ) ) {
+            toggle_line_and_boundaries_visibility( entity_id.index() ) ;
+        } else if( MeshEntityTypeManager::is_surface( entity_id.type() ) ) {
+            toggle_surface_and_boundaries_visibility( entity_id.index() ) ;
+        } else if( MeshEntityTypeManager::is_region( entity_id.type() ) ) {
+            toggle_region_and_boundaries_visibility( entity_id.index() ) ;
         } else {
             ringmesh_assert_not_reached ;
         }
@@ -514,8 +516,8 @@ namespace RINGMesh {
         GM_gfx_.lines.set_vertex_visibility( line_id,
             line_style_.visible_vertices_ ) ;
         const Line& line = GM_.line( line_id ) ;
-        toggle_corner_visibility( line.boundary_gme( 0 ).index ) ;
-        toggle_corner_visibility( line.boundary_gme( 1 ).index ) ;
+        toggle_corner_visibility( line.boundary_gmme( 0 ).index() ) ;
+        toggle_corner_visibility( line.boundary_gmme( 1 ).index() ) ;
     }
 
     void RINGMeshApplication::GeoModelViewer::toggle_surface_and_boundaries_visibility(
@@ -527,7 +529,7 @@ namespace RINGMesh {
         const Surface& surface = GM_.surface( surface_id ) ;
         for( index_t i = 0; i < surface.nb_boundaries(); i++ ) {
             toggle_line_and_boundaries_visibility(
-                surface.boundary_gme( i ).index ) ;
+                surface.boundary_gmme( i ).index() ) ;
         }
     }
 
@@ -540,16 +542,16 @@ namespace RINGMesh {
         const Region& region = GM_.region( region_id ) ;
         for( index_t i = 0; i < region.nb_boundaries(); i++ ) {
             toggle_surface_and_boundaries_visibility(
-                region.boundary_gme( i ).index ) ;
+                region.boundary_gmme( i ).index() ) ;
         }
     }
 
     void RINGMeshApplication::GeoModelViewer::toggle_geological_entity_visibility(
-        const gme_t& entity_id )
+        const gmge_t& entity_id )
     {
         const GeoModelGeologicalEntity& entity = GM_.geological_entity( entity_id ) ;
         for( index_t i = 0; i < entity.nb_children(); i++ ) {
-            const gme_t& child_id = entity.child_gme( i ) ;
+            const gmme_t& child_id = entity.child_gmme( i ) ;
             toggle_mesh_entity_and_boundaries_visibility( child_id ) ;
         }
     }
@@ -650,12 +652,11 @@ namespace RINGMesh {
                 ImGui::OpenPopup( "##Colormap" ) ;
             }
             if( ImGui::BeginPopup( "##Colormap" ) ) {
-                for( index_t i = 0; i < app_.colormaps_.size(); ++i ) {
+                for( const auto& colormap : app_.colormaps_ ) {
                     if( ImGui::ImageButton(
-                        app_.convert_to_ImTextureID( app_.colormaps_[i].texture ),
+                        app_.convert_to_ImTextureID( colormap.texture ),
                         ImVec2( 100, 8 ) ) ) {
-                        GM_gfx_.attribute.set_colormap(
-                            app_.colormaps_[i].texture ) ;
+                        GM_gfx_.attribute.set_colormap( colormap.texture ) ;
                         ImGui::CloseCurrentPopup() ;
                     }
                 }
@@ -711,7 +712,8 @@ namespace RINGMesh {
                 ImGui::Checkbox( "Col. cells [C]", &colored_cells_.new_status ) ;
                 ImGui::Checkbox( "Col. regions [r]",
                     &show_colored_regions_.new_status ) ;
-                if( GM_.nb_geological_entities( Layer::type_name_static() ) != 0 ) {
+                if( GM_.entity_type_manager().geological_entity_manager.is_valid_type(
+                    Layer::type_name_static() ) ) {
                     ImGui::Checkbox( "Col. layers [R]",
                         &show_colored_layers_.new_status ) ;
                 }
@@ -900,9 +902,9 @@ namespace RINGMesh {
             if( ImGui::BeginPopup( "##Attributes" ) ) {
                 std::vector< std::string > attributes ;
                 GEO::String::split_string( attribute_names(), ';', attributes ) ;
-                for( index_t i = 0; i < attributes.size(); ++i ) {
-                    if( ImGui::Button( attributes[i].c_str() ) ) {
-                        set_attribute( attributes[i] ) ;
+                for( const std::string& att : attributes ) {
+                    if( ImGui::Button( att.c_str() ) ) {
+                        set_attribute( att ) ;
                         ImGui::CloseCurrentPopup() ;
                     }
                 }
@@ -919,11 +921,11 @@ namespace RINGMesh {
                 ImGui::OpenPopup( "##Colormap" ) ;
             }
             if( ImGui::BeginPopup( "##Colormap" ) ) {
-                for( index_t i = 0; i < app_.colormaps_.size(); ++i ) {
+                for( const auto& colormap : app_.colormaps_ ) {
                     if( ImGui::ImageButton(
-                        app_.convert_to_ImTextureID( app_.colormaps_[i].texture ),
+                        app_.convert_to_ImTextureID( colormap.texture ),
                         ImVec2( 100, 8 ) ) ) {
-                        current_colormap_texture_ = app_.colormaps_[i].texture ;
+                        current_colormap_texture_ = colormap.texture ;
                         ImGui::CloseCurrentPopup() ;
                     }
                 }
@@ -1115,11 +1117,11 @@ namespace RINGMesh {
 
     RINGMeshApplication::~RINGMeshApplication()
     {
-        for( index_t i = 0; i < geomodels_.size(); i++ ) {
-            delete geomodels_[i] ;
+        for( GeoModelViewer*& i : geomodels_ ) {
+            delete i ;
         }
-        for( index_t i = 0; i < meshes_.size(); i++ ) {
-            delete meshes_[i] ;
+        for( MeshViewer*& i : meshes_ ) {
+            delete i ;
         }
     }
 
@@ -1141,17 +1143,17 @@ namespace RINGMesh {
         std::vector< std::string > files ;
         GEO::FileSystem::get_directory_entries( path, files ) ;
         std::sort( files.begin(), files.end() ) ;
-        for( GEO::index_t i = 0; i < files.size(); ++i ) {
-            if( GEO::FileSystem::is_directory( files[i] ) ) {
-                if( ImGui::BeginMenu( path_to_label( path_, files[i] ).c_str() ) ) {
-                    browse_geogram( files[i] ) ;
+        for( const std::string& file : files ) {
+            if( GEO::FileSystem::is_directory( file ) ) {
+                if( ImGui::BeginMenu( path_to_label( path_, file ).c_str() ) ) {
+                    browse_geogram( file ) ;
                     ImGui::EndMenu() ;
                 }
             } else {
-                if( can_load_geogram( files[i] ) ) {
+                if( can_load_geogram( file ) ) {
                     if( ImGui::MenuItem(
-                        path_to_label( path_, files[i] ).c_str() ) ) {
-                        load_geogram( files[i] ) ;
+                        path_to_label( path_, file ).c_str() ) ) {
+                        load_geogram( file ) ;
                     }
                 }
             }
@@ -1170,8 +1172,8 @@ namespace RINGMesh {
         std::string extension = GEO::FileSystem::extension( filename ) ;
         std::vector< std::string > extensions ;
         GEO::String::split_string( extensions_str, ';', extensions ) ;
-        for( index_t i = 0; i < extensions.size(); ++i ) {
-            if( extensions[i] == extension ) {
+        for( const std::string& ext : extensions ) {
+            if( ext == extension ) {
                 return true ;
             }
         }
@@ -1217,9 +1219,9 @@ namespace RINGMesh {
         double z )
     {
         MeshViewer* viewer = nullptr ;
-        for( index_t i = 0; i < meshes_.size(); i++ ) {
-            if( meshes_[i]->name_ == name ) {
-                viewer = meshes_[i] ;
+        for( MeshViewer*& i : meshes_ ) {
+            if( i->name_ == name ) {
+                viewer = i ;
                 break ;
             }
         }
@@ -1257,8 +1259,8 @@ namespace RINGMesh {
             "toggle colored layers" ) ;
 
         init_colormaps() ;
-        for( index_t i = 0; i < geomodels_.size(); i++ ) {
-            geomodels_[i]->GM_gfx_.attribute.set_colormap( colormaps_[0].texture ) ;
+        for( GeoModelViewer*& i : geomodels_ ) {
+            i->GM_gfx_.attribute.set_colormap( colormaps_[0].texture ) ;
         }
         glup_viewer_disable( GLUP_VIEWER_BACKGROUND ) ;
     }
@@ -1341,15 +1343,15 @@ namespace RINGMesh {
     void RINGMeshApplication::show_color_table_popup( ImColor& color )
     {
         int id = 0 ;
-        for( index_t i = 0; i < color_table_.size(); i++ ) {
-            for( index_t j = 0; j < color_table_[i].size(); j++ ) {
+        for( const auto& colors : color_table_ ) {
+            for( index_t j = 0; j < colors.size(); j++ ) {
                 if( j > 0 ) {
                     ImGui::SameLine() ;
                 }
                 ImGui::PushID( id++ ) ;
-                ImGui::PushStyleColor( ImGuiCol_Button, color_table_[i][j] ) ;
+                ImGui::PushStyleColor( ImGuiCol_Button, colors[j] ) ;
                 if( ImGui::Button( "  " ) ) {
-                    color = color_table_[i][j] ;
+                    color = colors[j] ;
                     ImGui::CloseCurrentPopup() ;
                 }
                 ImGui::PopStyleColor() ;
@@ -1375,14 +1377,14 @@ namespace RINGMesh {
     {
         Box3d bbox ;
 
-        for( index_t i = 0; i < geomodels_.size(); i++ ) {
-            if( geomodels_[i]->is_visible_ ) {
-                bbox.add_box( geomodels_[i]->bbox_ ) ;
+        for( GeoModelViewer*& geomodel : geomodels_ ) {
+            if( geomodel->is_visible_ ) {
+                bbox.add_box( geomodel->bbox_ ) ;
             }
         }
-        for( index_t i = 0; i < meshes_.size(); i++ ) {
-            if( meshes_[i]->is_visible_ ) {
-                bbox.add_box( meshes_[i]->bbox_ ) ;
+        for( MeshViewer*& mesh : meshes_ ) {
+            if( mesh->is_visible_ ) {
+                bbox.add_box( mesh->bbox_ ) ;
             }
         }
 
@@ -1395,11 +1397,15 @@ namespace RINGMesh {
     {
         if( current_viewer_ == NO_ID ) return ;
 
-        for( index_t i = 0; i < meshes_.size(); i++ ) {
-            if( meshes_[i]->is_visible_ ) meshes_[i]->draw_scene() ;
+        for( MeshViewer*& mesh : meshes_ ) {
+            if( mesh->is_visible_ ) {
+                mesh->draw_scene() ;
+            }
         }
-        for( index_t i = 0; i < geomodels_.size(); i++ ) {
-            if( geomodels_[i]->is_visible_ ) geomodels_[i]->draw_scene() ;
+        for( GeoModelViewer*& geomodel : geomodels_ ) {
+            if( geomodel->is_visible_ ) {
+                geomodel->draw_scene() ;
+            }
         }
 
         if( current_viewer_type_ == GEOMODEL ) {
