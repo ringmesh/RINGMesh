@@ -308,7 +308,7 @@ void test_stratigraphic_column_building ( const GeoModel& in )
 void test_load_from_gocad_xml_file () {
 
     std::string input_geomodel_file_name ( ringmesh_test_data_path );
-    input_geomodel_file_name += "CloudSpinWithoutSaltRegion.ml";
+    input_geomodel_file_name += "CloudSpin.ml";
     GeoModel in;
     bool loaded_model_is_valid = geomodel_load ( in, input_geomodel_file_name );
 
