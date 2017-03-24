@@ -59,7 +59,7 @@ int main()
         Logger::instance()->register_client( file_logger ) ;
 
         std::string input_model_file_name( ringmesh_test_data_path ) ;
-        input_model_file_name += "modelA6.ml" ;
+        input_model_file_name += "CloudSpin.ml" ;//"modelA6.ml" ;
 
         Logger::out( "TEST" ) << "Geomodel input test. Loading file "
             << input_model_file_name << std::endl ;
