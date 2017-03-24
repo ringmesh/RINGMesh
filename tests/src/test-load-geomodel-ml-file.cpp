@@ -52,7 +52,7 @@ int main()
     try {
         default_configure() ;
         //model filename to test
-        std::vector<std::string> input_model_file_name_list = {
+        std::vector< std::string > input_model_file_name_list = {
             "CloudSpin.ml",
             "modelA6.ml"
         } ;
@@ -63,9 +63,8 @@ int main()
         GEO::FileLogger* file_logger = new GEO::FileLogger( log_file ) ;
         Logger::instance()->register_client( file_logger ) ;
 
-        for( index_t model_id = 0; model_id < input_model_file_name_list.size (); ++model_id ) {
-            std::string input_model_file_name ( ringmesh_test_data_path ) ;
-            input_model_file_name += input_model_file_name_list[model_id] ;
+        for( const std::string& input_model_name : input_model_file_name_list ) {
+            std::string input_model_file_name = ringmesh_test_data_path + input_model_name ;
 
             Logger::out ( "TEST" ) << "Geomodel input test. Loading file "
                 << input_model_file_name << std::endl ;
