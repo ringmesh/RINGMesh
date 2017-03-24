@@ -43,6 +43,7 @@
 #include <ringmesh/basic/common.h>
 
 #include <ringmesh/geomodel/geomodel_entity.h>
+#include <ringmesh/geomodel/entity_type.h>
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
 
 #include <ringmesh/mesh/mesh.h>
@@ -66,24 +67,22 @@ namespace RINGMesh {
     public:
         virtual ~GeoModelMeshEntity() ;
 
-        typedef std::string EntityType ;
+        virtual const MeshEntityType type_name() const = 0 ;
 
-        static EntityType default_entity_type_name()
+        const gmme_t gmme_id() const
         {
-            return "No_entity_type" ;
+            return gmme_t( type_name(), id_ ) ;
         }
-
-        virtual EntityType type_name() const override
+        const MeshEntityType mesh_entity_type() const
         {
-            return default_entity_type_name() ;
+            return gmme_id().type() ;
         }
         /*!
          * @brief Global validity of the entity
          */
         virtual bool is_valid() const final
         {
-            return is_identification_valid() && is_connectivity_valid()
-                && is_mesh_valid() && are_geomodel_vertex_indices_valid() ;
+            return is_mesh_valid() && are_geomodel_vertex_indices_valid() ;
         }
         virtual bool is_connectivity_valid() const ;
 
@@ -95,7 +94,7 @@ namespace RINGMesh {
         {
             return static_cast< index_t >( boundaries_.size() ) ;
         }
-        const gme_t& boundary_gme( index_t x ) const
+        const gmme_t& boundary_gmme( index_t x ) const
         {
             ringmesh_assert( x < nb_boundaries() ) ;
             return boundaries_[x] ;
@@ -106,7 +105,7 @@ namespace RINGMesh {
         {
             return static_cast< index_t >( in_boundary_.size() ) ;
         }
-        const gme_t& in_boundary_gme( index_t x ) const
+        const gmme_t& in_boundary_gmme( index_t x ) const
         {
             ringmesh_assert( x < nb_in_boundary() ) ;
             return in_boundary_[x] ;
@@ -135,30 +134,32 @@ namespace RINGMesh {
         /*!
          * @brief Check if the entity has a parent of the given type
          */
-        bool has_parent( const EntityType& parent_type_name ) const
+        bool has_parent( const GeologicalEntityType& parent_type ) const
         {
-            return parent_gme( parent_type_name ).is_defined() ;
+            return parent_of_gmme( parent_type ).is_defined() ;
         }
         index_t nb_parents() const
         {
             return static_cast< index_t >( parents_.size() ) ;
         }
-        const gme_t& parent_gme( index_t id ) const
+        const gmge_t& parent_gmge( index_t id ) const
         {
             ringmesh_assert( id < nb_parents() ) ;
             return parents_[id] ;
         }
+
         /*!
-         * @brief Returns the gme_t of the parent of the given type.
+         * @brief Returns the gmge_t of the parent of the given type.
          * @note If this entity has no parent of the given type,
-         * it will return an undefined gme_t (with no type and no id).
-         * You should check on the returned gme_t.
+         * it will return an undefined gmge_t (with no type and no id).
+         * You should check on the returned gmge_t.
          * @param[in] parent_type_name the asking parent type
          */
-        const gme_t& parent_gme( const EntityType& parent_type_name ) const ;
+        const gmge_t parent_of_gmme(
+            const GeologicalEntityType& parent_type ) const ;
         const GeoModelGeologicalEntity& parent( index_t id ) const ;
         const GeoModelGeologicalEntity& parent(
-            const EntityType& parent_type_name ) const ;
+            const GeologicalEntityType& parent_type ) const ;
 
         /*!
          * @}
@@ -273,17 +274,19 @@ namespace RINGMesh {
             index_t id,
             const std::string& name = "No_name",
             GEOL_FEATURE geological_feature = NO_GEOL )
-            : GeoModelEntity( geomodel, id, name, geological_feature ), mesh_( nullptr )
+            :
+                GeoModelEntity( geomodel, id, name, geological_feature ),
+                mesh_( nullptr )
         {
         }
-        virtual void copy( const GeoModelEntity& from ) override
+
+        virtual void copy( const GeoModelMeshEntity& from )
         {
             GME::copy( from ) ;
-            const GeoModelMeshEntity& mesh_entity_from =
-                dynamic_cast< const GeoModelMeshEntity& >( from ) ;
-            boundaries_ = mesh_entity_from.boundaries_ ;
-            in_boundary_ = mesh_entity_from.in_boundary_ ;
-            parents_ = mesh_entity_from.parents_ ;
+            id_ = from.id_ ;
+            boundaries_ = from.boundaries_ ;
+            in_boundary_ = from.in_boundary_ ;
+            parents_ = from.parents_ ;
         }
         virtual bool is_index_valid() const final ;
         virtual bool is_mesh_valid() const
@@ -314,14 +317,15 @@ namespace RINGMesh {
     protected:
 
         /// Entities on the boundary of this entity
-        std::vector< gme_t > boundaries_ ;
+        std::vector< gmme_t > boundaries_ ;
 
         /// Entities in which boundary this entity is
-        std::vector< gme_t > in_boundary_ ;
+        std::vector< gmme_t > in_boundary_ ;
 
         /// The optional GeoModelGeologicalEntities 
         /// (groups of GeoModelMeshEntity this entity belongs to)
-        std::vector< gme_t > parents_ ;
+        std::vector< gmge_t > parents_ ;
+
     private:
         /// The RINGMesh::Mesh giving the geometry of this entity
         MeshBase* mesh_ ;
@@ -338,14 +342,15 @@ namespace RINGMesh {
 
         virtual ~Corner()
         {
+            unbind_vertex_mapping_attribute() ;
         }
 
-        static EntityType type_name_static()
+        static const MeshEntityType type_name_static()
         {
-            return "Corner" ;
+            return MeshEntityType( "Corner" ) ;
         }
 
-        virtual EntityType type_name() const override
+        virtual const MeshEntityType type_name() const override
         {
             return type_name_static() ;
         }
@@ -362,7 +367,7 @@ namespace RINGMesh {
         /*!
          * @return 1 the number of vertices of the Corner
          */
-        virtual index_t nb_mesh_element_vertices( index_t mesh_element = 0 ) const
+        virtual index_t nb_mesh_element_vertices( index_t mesh_element = 0 ) const override
         {
             ringmesh_unused( mesh_element ) ;
             return 1 ;
@@ -402,12 +407,11 @@ namespace RINGMesh {
          */
         Corner( const GeoModel& geomodel, index_t id, const MeshType type )
             : GeoModelMeshEntity( geomodel, id )
+
         {
             update_mesh_storage_type( Mesh0D::create_mesh( type ) ) ;
             Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder( *mesh0d_ ) ;
             builder->create_vertex() ;
-
-            id_.type = type_name_static() ;
         }
 
         /*!
@@ -451,14 +455,15 @@ namespace RINGMesh {
 
         virtual ~Line()
         {
+            unbind_vertex_mapping_attribute() ;
         }
 
-        static EntityType type_name_static()
+        static const MeshEntityType type_name_static()
         {
-            return "Line" ;
+            return MeshEntityType( "Line" ) ;
         }
 
-        virtual EntityType type_name() const
+        virtual const MeshEntityType type_name() const override
         {
             return type_name_static() ;
         }
@@ -551,7 +556,11 @@ namespace RINGMesh {
             return *mesh1d_ ;
         }
     protected:
-        Line( const GeoModel& geomodel, index_t id, const MeshType type ) ;
+        Line( const GeoModel& geomodel, index_t id, const MeshType type )
+            : GeoModelMeshEntity( geomodel, id )
+        {
+            update_mesh_storage_type( Mesh1D::create_mesh( type ) ) ;
+        }
 
         virtual bool is_mesh_valid() const final ;
 
@@ -580,16 +589,17 @@ namespace RINGMesh {
 
         virtual ~Surface()
         {
+            unbind_vertex_mapping_attribute() ;
         }
 
-        virtual EntityType type_name() const override
+        virtual const MeshEntityType type_name() const override
         {
             return type_name_static() ;
         }
 
-        static EntityType type_name_static()
+        static const MeshEntityType type_name_static()
         {
-            return "Surface" ;
+            return MeshEntityType( "Surface" ) ;
         }
 
         virtual bool is_on_voi() const final ;
@@ -854,7 +864,6 @@ namespace RINGMesh {
             : GeoModelMeshEntity( geomodel, id )
         {
             update_mesh_storage_type( Mesh2D::create_mesh( type ) ) ;
-            id_.type = type_name_static() ;
         }
 
         virtual bool is_mesh_valid() const final ;
@@ -885,14 +894,15 @@ namespace RINGMesh {
 
         virtual ~Region()
         {
+            unbind_vertex_mapping_attribute() ;
         }
 
-        static EntityType type_name_static()
+        static const MeshEntityType type_name_static()
         {
-            return "Region" ;
+            return MeshEntityType( "Region" ) ;
         }
 
-        virtual EntityType type_name() const override
+        virtual const MeshEntityType type_name() const override
         {
             return type_name_static() ;
         }
@@ -1182,10 +1192,9 @@ namespace RINGMesh {
             : GeoModelMeshEntity( geomodel, id )
         {
             update_mesh_storage_type( Mesh3D::create_mesh( type ) ) ;
-            id_.type = type_name_static() ;
         }
 
-        void copy( const GeoModelEntity& from )
+        void copy( const GeoModelMeshEntity& from )
         {
             const Region& region_from = dynamic_cast< const Region& >( from ) ;
             GeoModelMeshEntity::copy( from ) ;
@@ -1253,7 +1262,7 @@ namespace RINGMesh {
 
         index_t& modifiable_index()
         {
-            return gmme_.id_.index ;
+            return gmme_.id_ ;
         }
 
         GME::GEOL_FEATURE& modifiable_geol_feature()
@@ -1261,12 +1270,12 @@ namespace RINGMesh {
             return gmme_.geol_feature_ ;
         }
 
-        std::vector< gme_t >& modifiable_boundaries()
+        std::vector< gmme_t >& modifiable_boundaries()
         {
             return gmme_.boundaries_ ;
         }
 
-        std::vector< gme_t >& modifiable_in_boundaries()
+        std::vector< gmme_t >& modifiable_in_boundaries()
         {
             return gmme_.in_boundary_ ;
         }
@@ -1277,7 +1286,7 @@ namespace RINGMesh {
             return dynamic_cast< Region& >( gmme_ ).sides_ ;
         }
 
-        std::vector< gme_t >& modifiable_parents()
+        std::vector< gmge_t >& modifiable_parents()
         {
             return gmme_.parents_ ;
         }
@@ -1285,6 +1294,11 @@ namespace RINGMesh {
         MeshBase* modifiable_mesh()
         {
             return gmme_.mesh_ ;
+        }
+
+        void copy( const GeoModelMeshEntity& from )
+        {
+            gmme_.copy( from ) ;
         }
 
         void change_mesh_data_structure( const MeshType type ) ;
@@ -1296,11 +1310,6 @@ namespace RINGMesh {
             const MeshType type )
         {
             return new ENTITY( geomodel, id, type ) ;
-        }
-
-        void copy( const GeoModelMeshEntity& from )
-        {
-            gmme_.copy( from ) ;
         }
 
     private:

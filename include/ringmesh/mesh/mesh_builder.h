@@ -495,30 +495,4 @@ namespace RINGMesh {
 #define ringmesh_register_mesh_3d_builder(type) \
     geo_register_creator(RINGMesh::Mesh3DBuilderFactory, type ## Builder, type::type_name_static())
 
-    class RINGMESH_API MeshAllDBuilder: public virtual Mesh0DBuilder,
-        public virtual Mesh1DBuilder,
-        public virtual Mesh2DBuilder,
-        public virtual Mesh3DBuilder {
-    ringmesh_disable_copy( MeshAllDBuilder ) ;
-    public:
-        virtual ~MeshAllDBuilder()
-        {
-        }
-
-        virtual void set_mesh( MeshAllD& mesh ) = 0 ;
-
-        virtual void remove_isolated_vertices() = 0 ;
-
-        static MeshAllDBuilder* create_builder( MeshAllD& mesh ) ;
-
-    protected:
-        MeshAllDBuilder()
-            : Mesh0DBuilder(), Mesh1DBuilder(), Mesh2DBuilder(), Mesh3DBuilder()
-        {
-        }
-    } ;
-    typedef GEO::SmartPointer< MeshAllDBuilder > MeshAllDBuilder_var ;
-    typedef GEO::Factory0< MeshAllDBuilder > MeshAllDBuilderFactory ;
-#define ringmesh_register_mesh_alld_builder(type) \
-    geo_register_creator(RINGMesh::MeshAllDBuilderFactory, type ## Builder, type::type_name_static())
 }

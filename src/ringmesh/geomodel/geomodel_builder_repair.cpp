@@ -95,22 +95,24 @@ namespace RINGMesh {
 
     void GeoModelBuilderRepair::remove_colocated_entity_vertices_and_update_gm()
     {
-        std::set< gme_t > empty_entities ;
-        remove_colocated_entity_vertices( empty_entities ) ;
-        if( !empty_entities.empty() ) {
-            builder_.topology.get_dependent_entities( empty_entities ) ;
-            builder_.removal.remove_mesh_entities( empty_entities ) ;
+        std::set< gmme_t > empty_mesh_entities ;
+        std::set< gmge_t > empty_geological_entities ;
+
+        remove_colocated_entity_vertices( empty_mesh_entities ) ;
+        if( !empty_mesh_entities.empty() ) {
+            builder_.topology.get_dependent_entities( empty_mesh_entities, empty_geological_entities ) ;
+            builder_.removal.remove_mesh_entities( empty_mesh_entities ) ;
         }
     }
 
     void GeoModelBuilderRepair::remove_degenerate_facets_and_edges_and_update_gm()
     {
-        std::set< gme_t > empty_entities ;
-        remove_degenerate_facets_and_edges( empty_entities ) ;
+        std::set< gmme_t > empty_mesh_entities ;
+        remove_degenerate_facets_and_edges( empty_mesh_entities ) ;
         /// TODO when it will works,
         /// use GeoModelBuilderRemoval::remove_entities_and_dependencies
-        if( !empty_entities.empty() ) {
-            builder_.removal.remove_mesh_entities( empty_entities ) ;
+        if( !empty_mesh_entities.empty() ) {
+            builder_.removal.remove_mesh_entities( empty_mesh_entities ) ;
         }
 
         // This is basic requirement ! no_colocated geomodel vertices !
@@ -126,9 +128,9 @@ namespace RINGMesh {
             const Line& cur_line = geomodel_.line( line_itr ) ;
             if( !cur_line.is_first_corner_first_vertex() ) {
                 const index_t first_boundary_index = cur_line.boundary( 0 ).index() ;
-                builder_.topology.set_mesh_entity_boundary( cur_line.gme_id(), 0,
-                    cur_line.boundary_gme( 1 ).index ) ;
-                builder_.topology.set_mesh_entity_boundary( cur_line.gme_id(), 1,
+                builder_.topology.set_mesh_entity_boundary( cur_line.gmme_id(), 0,
+                    cur_line.boundary_gmme( 1 ).index() ) ;
+                builder_.topology.set_mesh_entity_boundary( cur_line.gmme_id(), 1,
                     first_boundary_index ) ;
             }
         }
@@ -207,7 +209,7 @@ namespace RINGMesh {
     }
 
     void GeoModelBuilderRepair::remove_degenerate_facets_and_edges(
-        std::set< gme_t >& to_remove )
+        std::set< gmme_t >& to_remove )
     {
         to_remove.clear() ;
         for( index_t i = 0; i < geomodel_.nb_lines(); ++i ) {
@@ -218,7 +220,7 @@ namespace RINGMesh {
                     << " degenerated edges removed in LINE " << i << std::endl ;
                 // If the Line is set it to remove
                 if( geomodel_.line( i ).nb_mesh_elements() == 0 ) {
-                    to_remove.insert( geomodel_.line( i ).gme_id() ) ;
+                    to_remove.insert( geomodel_.line( i ).gmme_id() ) ;
                 }
             }
         }
@@ -251,22 +253,22 @@ namespace RINGMesh {
                     }
                 }
                 if( surface.nb_vertices() == 0 || surface.nb_mesh_elements() == 0 ) {
-                    to_remove.insert( geomodel_.surface( i ).gme_id() ) ;
+                    to_remove.insert( geomodel_.surface( i ).gmme_id() ) ;
                 }
             }
         }
     }
 
     void GeoModelBuilderRepair::vertices_on_inside_boundary(
-        const gme_t& E_id,
+        const gmme_t& E_id,
         std::set< index_t >& vertices )
     {
         vertices.clear() ;
-        if( E_id.type == Corner::type_name_static() ) {
+        if( E_id.type() == Corner::type_name_static() ) {
             return ;
         }
         const GeoModelMeshEntity& E = geomodel_.mesh_entity( E_id ) ;
-        if( E_id.type == Line::type_name_static() ) {
+        if( E_id.type() == Line::type_name_static() ) {
             if( E.boundary( 0 ).is_inside_border( E ) ) {
                 vertices.insert( E.nb_vertices() - 1 ) ;
             }
@@ -285,10 +287,10 @@ namespace RINGMesh {
             // We assume that the geomodel vertices are not computed
             const NNSearch& nn_search = E.vertex_nn_search() ;
 
-            for( index_t i = 0; i < inside_border.size(); ++i ) {
-                for( index_t v = 0; v < inside_border[i]->nb_vertices(); ++v ) {
+            for( const GeoModelMeshEntity*& entity : inside_border ) {
+                for( index_t v = 0; v < entity->nb_vertices(); ++v ) {
                     std::vector< index_t > colocated_indices ;
-                    nn_search.get_neighbors( inside_border[i]->vertex( v ),
+                    nn_search.get_neighbors( entity->vertex( v ),
                         colocated_indices, geomodel_.epsilon() ) ;
                     if( colocated_indices.size() > 1 ) {
                         std::sort( colocated_indices.begin(),
@@ -303,17 +305,17 @@ namespace RINGMesh {
     }
 
     void GeoModelBuilderRepair::remove_colocated_entity_vertices(
-        std::set< gme_t >& to_remove )
+        std::set< gmme_t >& to_remove )
     {
         to_remove.clear() ;
         // For all Lines and Surfaces
-        const std::string types[2] = {
+        const MeshEntityType types[2] = {
             Line::type_name_static(), Surface::type_name_static() } ;
         for( index_t t = 0; t < 2; ++t ) {
-            const std::string& T = types[t] ;
+            const MeshEntityType& T = types[t] ;
 
             for( index_t e = 0; e < geomodel_.nb_mesh_entities( T ); ++e ) {
-                gme_t entity_id( T, e ) ;
+                gmme_t entity_id( T, e ) ;
                 const GeoModelMeshEntity& E = geomodel_.mesh_entity( entity_id ) ;
 
                 const NNSearch& kdtree = E.vertex_nn_search() ;
@@ -344,7 +346,7 @@ namespace RINGMesh {
                     continue ;
                 } else if( nb_todelete == E.nb_vertices() ) {
                     // The complete entity should be removed
-                    to_remove.insert( E.gme_id() ) ;
+                    to_remove.insert( E.gmme_id() ) ;
                     continue ;
                 } else {
                     if( t == 1 ) {

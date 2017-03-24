@@ -64,7 +64,7 @@ namespace RINGMesh {
          * @param[in] id the GeoModelMeshEntity id to operate on
          * @param[in] type the new mesh data structure type
          */
-        void change_mesh_data_structure( const gme_t& id, const MeshType type )
+        void change_mesh_data_structure( const gmme_t& id, const MeshType type )
         {
             GeoModelMeshEntityAccess gmme_access(
                 geomodel_access_.modifiable_mesh_entity( id ) ) ;
@@ -80,7 +80,7 @@ namespace RINGMesh {
          */
         Mesh0DBuilder* create_corner_builder( index_t corner_id )
         {
-            gme_t id( Corner::type_name_static(), corner_id ) ;
+            gmme_t id( Corner::type_name_static(), corner_id ) ;
             GeoModelMeshEntity& corner = geomodel_access_.modifiable_mesh_entity(
                 id ) ;
             GeoModelMeshEntityAccess corner_access( corner ) ;
@@ -98,7 +98,7 @@ namespace RINGMesh {
          */
         Mesh1DBuilder* create_line_builder( index_t line_id )
         {
-            gme_t id( Line::type_name_static(), line_id ) ;
+            gmme_t id( Line::type_name_static(), line_id ) ;
             GeoModelMeshEntity& line = geomodel_access_.modifiable_mesh_entity(
                 id ) ;
             GeoModelMeshEntityAccess line_access( line ) ;
@@ -116,7 +116,7 @@ namespace RINGMesh {
          */
         Mesh2DBuilder* create_surface_builder( index_t surface_id )
         {
-            gme_t id( Surface::type_name_static(), surface_id ) ;
+            gmme_t id( Surface::type_name_static(), surface_id ) ;
             GeoModelMeshEntity& surface = geomodel_access_.modifiable_mesh_entity(
                 id ) ;
             GeoModelMeshEntityAccess surface_access( surface ) ;
@@ -134,7 +134,7 @@ namespace RINGMesh {
          */
         Mesh3DBuilder* create_region_builder( index_t region_id )
         {
-            gme_t id( Region::type_name_static(), region_id ) ;
+            gmme_t id( Region::type_name_static(), region_id ) ;
             GeoModelMeshEntity& region = geomodel_access_.modifiable_mesh_entity(
                 id ) ;
             GeoModelMeshEntityAccess region_access( region ) ;
@@ -149,10 +149,10 @@ namespace RINGMesh {
          * than the input geomodel.
          */
         void copy_meshes( const GeoModel& from ) ;
-        void copy_meshes( const GeoModel& from, const std::string& entity_type ) ;
-        void copy_mesh( const GeoModel& from, const gme_t& mesh_entity ) ;
+        void copy_meshes( const GeoModel& from, const MeshEntityType& entity_type) ;
+        void copy_mesh( const GeoModel& from, const gmme_t& mesh_entity ) ;
 
-        void assign_mesh_to_entity( const MeshBase& mesh, const gme_t& to ) ;
+        void assign_mesh_to_entity( const MeshBase& mesh, const gmme_t& to ) ;
 
         /*!
          * \name Set entity geometry from geometrical positions
@@ -168,7 +168,7 @@ namespace RINGMesh {
          * its Lines, Surfaces...)
          */
         void set_mesh_entity_vertex(
-            const gme_t& entity_id,
+            const gmme_t& entity_id,
             index_t v,
             const vec3& point,
             bool update ) ;
@@ -181,7 +181,7 @@ namespace RINGMesh {
          * @param[in] clear If true the mesh is cleared, keeping its attributes
          */
         void set_mesh_entity_vertices(
-            const gme_t& entity_id,
+            const gmme_t& entity_id,
             const std::vector< vec3 >& points,
             bool clear ) ;
 
@@ -238,7 +238,7 @@ namespace RINGMesh {
          *                     the new position
          */
         void set_mesh_entity_vertex(
-            const gme_t& entity_id,
+            const gmme_t& entity_id,
             index_t v,
             index_t geomodel_vertex ) ;
 
@@ -250,7 +250,7 @@ namespace RINGMesh {
          * @param[in] clear If true the mesh if cleared, keeping its attributes
          */
         void set_mesh_entity_vertices(
-            const gme_t& entity_id,
+            const gmme_t& entity_id,
             const std::vector< index_t >& geomodel_vertices,
             bool clear ) ;
 
@@ -337,7 +337,7 @@ namespace RINGMesh {
          * @return the first vertex index created
          */
         index_t create_mesh_entity_vertices(
-            const gme_t& entity_id,
+            const gmme_t& entity_id,
             index_t nb_vertices ) ;
 
         index_t create_surface_facet(
@@ -366,10 +366,10 @@ namespace RINGMesh {
          * @{
          */
 
-        void delete_mesh_entity_mesh( const gme_t& E_id ) ;
-        void delete_mesh_entity_isolated_vertices( const gme_t& E_id ) ;
+        void delete_mesh_entity_mesh( const gmme_t& E_id ) ;
+        void delete_mesh_entity_isolated_vertices( const gmme_t& E_id ) ;
         void delete_mesh_entity_vertices(
-            const gme_t& E_id,
+            const gmme_t& E_id,
             const std::vector< bool >& to_delete ) ;
         void delete_corner_vertex( index_t corner_id ) ;
         void delete_line_edges(

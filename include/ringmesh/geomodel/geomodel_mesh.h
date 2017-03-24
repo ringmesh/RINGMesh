@@ -38,6 +38,7 @@
 #include <ringmesh/basic/common.h>
 
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
+#include <ringmesh/geomodel/entity_type_manager.h>
 
 #include <ringmesh/geogram_extension/geogram_extension.h>
 
@@ -70,14 +71,43 @@ namespace RINGMesh {
     const std::string cell_region_att_name = "cell_region" ;
     const std::string facet_surface_att_name = "facet_surface" ;
 
-    class RINGMESH_API GeoModelMeshVertices {
+    class RINGMESH_API GeoModelMeshBase {
+    protected:
+        GeoModelMeshBase( GeoModelMesh& gmm, GeoModel& gm ) ;
+
+        void set_mesh( MeshBase* mesh )
+        {
+            mesh_base_ = mesh ;
+        }
+
+        void save_mesh( const std::string& filename ) const
+        {
+            mesh_base_->save_mesh( filename ) ;
+        }
+    protected:
+        /// Attached GeoModelMesh
+        GeoModelMesh& gmm_ ;
+        /// Attached GeoModel
+        GeoModel& gm_ ;
+        /// Attached MeshBase
+        MeshBase* mesh_base_ ;
+    } ;
+
+    class RINGMESH_API GeoModelMeshVertices: public GeoModelMeshBase {
     ringmesh_disable_copy( GeoModelMeshVertices ) ;
     public:
-        friend class GeoModelMesh ;
+        friend class GeoModelMeshEdges ;
+        friend class GeoModelMeshFacets ;
+        friend class GeoModelMeshCells ;
 
         GeoModelMeshVertices( GeoModelMesh& gmm, GeoModel& gm ) ;
 
         ~GeoModelMeshVertices() ;
+
+        GEO::AttributesManager& attribute_manager() const
+        {
+            return mesh_->vertex_attribute_manager() ;
+        }
 
         /*!
          * Tests if the mesh vertices are initialized
@@ -116,7 +146,7 @@ namespace RINGMesh {
          * @return if found the vertex index in the geomodel, else NO_ID.
          */
         index_t geomodel_vertex_id(
-            const gme_t& mesh_entity,
+            const gmme_t& mesh_entity,
             index_t entity_vertex_index = 0 ) const ;
 
         /*!
@@ -128,7 +158,7 @@ namespace RINGMesh {
          * @return if found the vertex index in the geomodel, else NO_ID.
          */
         index_t geomodel_vertex_id(
-            const gme_t& mesh_entity,
+            const gmme_t& mesh_entity,
             index_t entity_mesh_element_index,
             index_t vertex_local_index ) const ;
 
@@ -139,7 +169,7 @@ namespace RINGMesh {
          * @param[out] mesh_entity_vertex_ids Corresponding GeoModelMeshEntity vertices
          */
         void mesh_entity_vertex_id(
-            const gme_t& mesh_entity,
+            const gmme_t& mesh_entity,
             index_t geomodel_vertex_id,
             std::vector< index_t >& mesh_entity_vertex_ids ) const ;
 
@@ -157,7 +187,7 @@ namespace RINGMesh {
          * corresponding to the given unique vertex
          */
         void gme_type_vertices(
-            const EntityType& entity_type,
+            const MeshEntityType& entity_type,
             index_t v,
             std::vector< GMEVertex >& gme_vertices ) const ;
 
@@ -168,7 +198,7 @@ namespace RINGMesh {
          * of the GME and the unique vertex
          */
         index_t add_vertex( const vec3& point ) ;
-        index_t add_vertices( const std::vector<vec3>& points ) ;
+        index_t add_vertices( const std::vector< vec3 >& points ) ;
 
         /*!
          * @brief Set the point coordinates of all the vertices that
@@ -179,7 +209,7 @@ namespace RINGMesh {
         void update_point( index_t v, const vec3& point ) ;
 
         void update_vertex_mapping(
-            const gme_t& entity_id,
+            const gmme_t& entity_id,
             index_t entity_vertex_index,
             index_t geomodel_vertex_index ) ;
 
@@ -190,9 +220,9 @@ namespace RINGMesh {
          */
         void clear() ;
 
-        void unbind_geomodel_vertex_map( const gme_t& mesh_entity_id ) ;
+        void unbind_geomodel_vertex_map( const gmme_t& mesh_entity_id ) ;
 
-        void bind_geomodel_vertex_map( const gme_t& mesh_entity_id ) ;
+        void bind_geomodel_vertex_map( const gmme_t& mesh_entity_id ) ;
 
         const NNSearch& nn_search() const
         {
@@ -221,7 +251,7 @@ namespace RINGMesh {
     private:
         void fill_vertices(
             const GeoModel& M,
-            const std::string& entity_type,
+            const MeshEntityType& entity_type,
             index_t& count ) ;
 
         /*!
@@ -258,7 +288,7 @@ namespace RINGMesh {
              * @returns Model index of the GeoModelMeshEntity vertex
              */
             index_t geomodel_vertex_index(
-                const gme_t& mesh_entity_id,
+                const gmme_t& mesh_entity_id,
                 index_t mesh_entity_vertex_index ) const ;
 
             /*!
@@ -280,7 +310,7 @@ namespace RINGMesh {
              */
             void mesh_entity_vertex_indices(
                 index_t v,
-                const EntityType& mesh_entity_type,
+                const MeshEntityType& mesh_entity_type,
                 std::vector< GMEVertex >& result ) const ;
 
             /*!
@@ -293,13 +323,13 @@ namespace RINGMesh {
              */
             void mesh_entity_vertex_indices(
                 index_t v,
-                const gme_t& mesh_entity_id,
+                const gmme_t& mesh_entity_id,
                 std::vector< index_t >& result ) const ;
 
             const GEO::Attribute< index_t >& vertex_map(
-                const gme_t& mesh_entity_id ) const ;
+                const gmme_t& mesh_entity_id ) const ;
 
-            GEO::Attribute< index_t >& vertex_map( const gme_t& mesh_entity_id ) ;
+            GEO::Attribute< index_t >& vertex_map( const gmme_t& mesh_entity_id ) ;
 
             /*! @}
              * \name Updating
@@ -315,7 +345,7 @@ namespace RINGMesh {
              * @param[in] geomodel_entity_vertex_index Model vertex index to map with
              */
             void set_vertex_map_value(
-                const gme_t& mesh_entity_id,
+                const gmme_t& mesh_entity_id,
                 index_t mesh_entity_vertex_index,
                 index_t geomodel_entity_vertex_index ) ;
 
@@ -378,10 +408,10 @@ namespace RINGMesh {
                 gme_vertices_[v].clear() ;
             }
 
-            void unbind_vertex_map( const gme_t& mesh_entity_id ) ;
+            void unbind_vertex_map( const gmme_t& mesh_entity_id ) ;
 
             GEO::Attribute< index_t >& bind_vertex_map(
-                const gme_t& mesh_entity_id ) ;
+                const gmme_t& mesh_entity_id ) ;
 
             /*!
              * @}
@@ -392,7 +422,7 @@ namespace RINGMesh {
              * @brief Initializes the given GeoModelMeshEntity vertex map
              * @param[in] mesh_entity_id Unique id to a GeoModelMeshEntity
              */
-            void initialize_mesh_entity_vertex_map( const gme_t& mesh_entity_id ) ;
+            void initialize_mesh_entity_vertex_map( const gmme_t& mesh_entity_id ) ;
 
             /*!
              * @brief Tests if the given GeoModelMeshEntity vertex map is initialized.
@@ -401,7 +431,7 @@ namespace RINGMesh {
              * @return True is the map was initialized, false if not.
              */
             bool test_and_initialize_mesh_entity_vertex_map(
-                const gme_t& mesh_entity_id ) ;
+                const gmme_t& mesh_entity_id ) ;
 
             /*!
              * @brief Tests if the given GeoModelMeshEntity vertex map exists.
@@ -409,7 +439,7 @@ namespace RINGMesh {
              * @return True is the map exists, false if not.
              */
             bool is_mesh_entity_vertex_map_initialized(
-                const gme_t& mesh_entity_id ) const ;
+                const gmme_t& mesh_entity_id ) const ;
 
             /*!
              * @brief Unbinds all the GeoModelMeshEntity vertex maps
@@ -423,7 +453,7 @@ namespace RINGMesh {
              * @param[in] mesh_entity_id Unique id to a GeoModelMeshEntity
              */
             GEO::AttributesManager& mesh_entity_vertex_attribute_manager(
-                const gme_t& mesh_entity_id ) const ;
+                const gmme_t& mesh_entity_id ) const ;
 
         private:
             GeoModelMeshVertices& geomodel_vertices_ ;
@@ -434,24 +464,20 @@ namespace RINGMesh {
             AttributeVector< index_t > line_vertex_maps_ ;
             AttributeVector< index_t > surface_vertex_maps_ ;
             AttributeVector< index_t > region_vertex_maps_ ;
-            std::map< EntityType, AttributeVector< index_t >* > vertex_maps_ ;
+            std::map< MeshEntityType, AttributeVector< index_t >* > vertex_maps_ ;
 
             /// GME Vertices for each geomodel vertex
             std::vector< std::vector< GMEVertex > > gme_vertices_ ;
         } ;
 
     private:
-        /// Attached GeoModelMesh owning the vertices
-        GeoModelMesh& gmm_ ;
-        /// Attached GeoModel
-        GeoModel& gm_ ;
         /// Attached Mesh
-        MeshAllD* mesh_ ;
+        Mesh0D_var mesh_ ;
         /// Mapper from/to GeoModelMeshEntity vertices
         GeoModelVertexMapper vertex_mapper_ ;
     } ;
 
-    class RINGMESH_API GeoModelMeshFacets {
+    class RINGMESH_API GeoModelMeshFacets: public GeoModelMeshBase {
     ringmesh_disable_copy( GeoModelMeshFacets ) ;
     public:
         friend class GeoModelMesh ;
@@ -460,8 +486,13 @@ namespace RINGMesh {
             TRIANGLE, QUAD, POLYGON, ALL, NO_FACET
         } ;
 
-        GeoModelMeshFacets( GeoModelMesh& gmm ) ;
+        GeoModelMeshFacets( GeoModelMesh& gmm, GeoModel& gm ) ;
         ~GeoModelMeshFacets() ;
+
+        GEO::AttributesManager& attribute_manager() const
+        {
+            return mesh_->facet_attribute_manager() ;
+        }
 
         /*!
          * Test if the mesh facets are initialized
@@ -671,12 +702,8 @@ namespace RINGMesh {
         void disconnect_along_lines() ;
 
     private:
-        /// Attached GeoModelMesh owning the vertices
-        GeoModelMesh& gmm_ ;
-        /// Attached GeoModel
-        const GeoModel& gm_ ;
         /// Attached Mesh
-        MeshAllD* mesh_ ;
+        Mesh2D_var mesh_ ;
 
         /// Attribute storing the surface index per facet
         GEO::Attribute< index_t > surface_id_ ;
@@ -700,13 +727,16 @@ namespace RINGMesh {
         index_t nb_polygon_ ;
     } ;
 
-    class RINGMESH_API GeoModelMeshEdges {
+    class RINGMESH_API GeoModelMeshEdges: public GeoModelMeshBase {
     ringmesh_disable_copy( GeoModelMeshEdges ) ;
     public:
-        friend class GeoModelMesh ;
-
-        GeoModelMeshEdges( GeoModelMesh& gmm ) ;
+        GeoModelMeshEdges( GeoModelMesh& gmm, GeoModel& gm ) ;
         ~GeoModelMeshEdges() ;
+
+        GEO::AttributesManager& attribute_manager() const
+        {
+            return mesh_->edge_attribute_manager() ;
+        }
 
         /*!
          * Test if the mesh edges are initialized
@@ -757,12 +787,8 @@ namespace RINGMesh {
         const AABBTree1D& aabb() const ;
 
     private:
-        /// Attached GeoModelMesh owning the vertices
-        GeoModelMesh& gmm_ ;
-        /// Attached GeoModel
-        const GeoModel& gm_ ;
         /// Attached Mesh
-        MeshAllD* mesh_ ;
+        Mesh1D_var mesh_ ;
 
         /*!
          * Vector storing the index of the starting edge index
@@ -771,7 +797,7 @@ namespace RINGMesh {
         std::vector< index_t > well_ptr_ ;
     } ;
 
-    class RINGMESH_API GeoModelMeshCells {
+    class RINGMESH_API GeoModelMeshCells: public GeoModelMeshBase {
     ringmesh_disable_copy( GeoModelMeshCells ) ;
     public:
         friend class GeoModelMesh ;
@@ -787,7 +813,12 @@ namespace RINGMesh {
             NONE, FAULT, HORIZON, ALL
         } ;
 
-        GeoModelMeshCells( GeoModelMesh& gmm ) ;
+        GeoModelMeshCells( GeoModelMesh& gmm, GeoModel& gm ) ;
+
+        GEO::AttributesManager& attribute_manager() const
+        {
+            return mesh_->cell_attribute_manager() ;
+        }
         /*!
          * Test if the mesh cells are initialized
          */
@@ -1177,12 +1208,8 @@ namespace RINGMesh {
         void initialize_cell_facet() ;
 
     private:
-        /// Attached GeoModelMesh owning the vertices
-        GeoModelMesh& gmm_ ;
-        /// Attached GeoModel
-        const GeoModel& gm_ ;
         /// Attached Mesh
-        MeshAllD* mesh_ ;
+        Mesh3D_var mesh_ ;
 
         /// Attribute storing the region index per cell
         GEO::Attribute< index_t > region_id_ ;
@@ -1235,33 +1262,6 @@ namespace RINGMesh {
         const GeoModel& geomodel() const
         {
             return geomodel_ ;
-        }
-
-        /*!
-         * Copy the current GeoModelMesh into a Mesh
-         * @param[out] mesh The mesh to fill        
-         */
-        void copy_mesh( MeshAllD& mesh ) const
-        {
-            MeshAllDBuilder_var builder = MeshAllDBuilder::create_builder( mesh ) ;
-            builder->copy( *mesh_, false ) ;
-        }
-        void save_mesh( const std::string& filename ) const
-        {
-            mesh_->save_mesh( filename ) ;
-        }
-
-        GEO::AttributesManager& vertex_attribute_manager() const
-        {
-            return mesh_->vertex_attribute_manager() ;
-        }
-        GEO::AttributesManager& facet_attribute_manager() const
-        {
-            return mesh_->facet_attribute_manager() ;
-        }
-        GEO::AttributesManager& cell_attribute_manager() const
-        {
-            return mesh_->cell_attribute_manager() ;
         }
 
         /*!
@@ -1327,13 +1327,6 @@ namespace RINGMesh {
     private:
         /*! Attached GeoModel */
         const GeoModel& geomodel_ ;
-        /*!
-         * @brief Mesh owned by the GeoModelMesh, stores unique vertices, edges, 
-         * facets and cells.
-         * @details This means no colocated vertices, no duplicated edges, 
-         * facets or cells.
-         */
-        MeshAllD* mesh_ ;
 
         /// Optional duplication mode to compute the duplication of cells on surfaces
         mutable GeoModelMeshCells::DuplicateMode mode_ ;
