@@ -326,9 +326,6 @@ namespace {
                         v1_model_id, v1_surface_ids ) ;
 
                     if( !S.has_inside_border() ) {
-                        ringmesh_assert(
-                            v0_surface_ids.size() == 1
-                                && v1_surface_ids.size() == 1 ) ;
                         index_t v0 = v0_surface_ids[0] ;
                         index_t v1 = v1_surface_ids[0] ;
                         v0 += offset ;

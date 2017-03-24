@@ -51,6 +51,11 @@ int main()
 
     try {
         default_configure() ;
+        //model filename to test
+        std::vector< std::string > input_model_file_name_list = {
+            "CloudSpin.ml",
+            "modelA6.ml"
+        } ;
 
         // Set an output log file
         std::string log_file( ringmesh_test_output_path ) ;
@@ -58,40 +63,41 @@ int main()
         GEO::FileLogger* file_logger = new GEO::FileLogger( log_file ) ;
         Logger::instance()->register_client( file_logger ) ;
 
-        std::string input_model_file_name( ringmesh_test_data_path ) ;
-        input_model_file_name += "modelA6.ml" ;
+        for( const std::string& input_model_name : input_model_file_name_list ) {
+            std::string input_model_file_name = ringmesh_test_data_path + input_model_name ;
 
-        Logger::out( "TEST" ) << "Geomodel input test. Loading file "
-            << input_model_file_name << std::endl ;
+            Logger::out ( "TEST" ) << "Geomodel input test. Loading file "
+                << input_model_file_name << std::endl ;
 
-        GeoModel in ;
-        bool loaded_model_is_valid = geomodel_load( in, input_model_file_name ) ;
+            GeoModel in ;
+            bool loaded_model_is_valid = geomodel_load ( in, input_model_file_name ) ;
 
-        if( !loaded_model_is_valid ) {
-            throw RINGMeshException( "RINGMesh Test",
-                "Failed when loading model " + in.name()
+            if( !loaded_model_is_valid ) {
+                throw RINGMeshException ( "RINGMesh Test",
+                    "Failed when loading model " + in.name ()
                     + ": the loaded model is not valid." ) ;
-        }
+            }
 
-        std::string output_model_file_name( ringmesh_test_output_path ) ;
-        output_model_file_name += in.name() + "_saved_out.ml" ;
-        geomodel_save( in, output_model_file_name ) ;
+            std::string output_model_file_name ( ringmesh_test_output_path ) ;
+            output_model_file_name += in.name () + "_saved_out.ml" ;
+            geomodel_save ( in, output_model_file_name ) ;
 
-        GeoModel in2 ;
-        bool reloaded_model_is_valid = geomodel_load( in2, output_model_file_name ) ;
+            GeoModel in2 ;
+            bool reloaded_model_is_valid = geomodel_load ( in2, output_model_file_name ) ;
 
-        if( !reloaded_model_is_valid ) {
-            throw RINGMeshException( "RINGMesh Test",
-                "Failed when reloading model " + in2.name()
+            if( !reloaded_model_is_valid ) {
+                throw RINGMeshException ( "RINGMesh Test",
+                    "Failed when reloading model " + in2.name ()
                     + ": the reloaded model is not valid." ) ;
-        }
+            }
 
-        std::string output_model_file_name_bis( ringmesh_test_output_path ) ;
-        output_model_file_name_bis += in.name() + "_saved_out_bis.ml" ;
-        geomodel_save( in2, output_model_file_name_bis ) ;
+            std::string output_model_file_name_bis ( ringmesh_test_output_path ) ;
+            output_model_file_name_bis += in.name () + "_saved_out_bis.ml" ;
+            geomodel_save ( in2, output_model_file_name_bis ) ;
 
-        if( !compare_files( output_model_file_name, output_model_file_name_bis ) ) {
-            throw RINGMeshException( "TEST", "FAILED" ) ;
+            if( !compare_files ( output_model_file_name, output_model_file_name_bis ) ) {
+                throw RINGMeshException ( "TEST", "FAILED" ) ;
+            }
         }
 
         // Load a model without region : 6 surfaces defining a cube with holes
