@@ -587,7 +587,7 @@ namespace GEO {
         Attribute<float> point_fp32_;
 
         friend class Mesh;
-        friend class GeogramIOHandler;        
+        friend class GeogramIOHandler;
     };
     
     /*************************************************************************/
@@ -1014,6 +1014,22 @@ namespace GEO {
             return facet_corners_.adjacent_facet(corner(f,le));
         }
 
+	/**
+	 * \brief Gets the local index of a facet adjacent to another one.
+	 * \param[in] f a facet
+	 * \param[in] f2 another facet
+	 * \return le such that adjacent(f,le) == f2 or NO_FACET if f and f2
+	 *  are not adjacent.
+	 */
+	index_t find_adjacent(index_t f, index_t f2) const {
+	    for(index_t le=0; le<nb_vertices(f); ++le) {
+		if(adjacent(f,le) == f2) {
+		    return le;
+		}
+	    }
+	    return NO_FACET;
+	}
+	
         /**
          * \brief Sets an adjacent facet by facet and local edge index
          * \param[in] f the facet
@@ -2127,7 +2143,19 @@ namespace GEO {
             return result;
         }
 
-        void connect();
+        /**
+         * \brief Connects the cells.
+         * \details This creates as needed the connectors that represent 
+         *  non-conformal connections between a quadrilateral facet and 
+         *  two triangular facets.
+         * \param[in] remove_trivial_slivers if set, this removes the 
+         *  slivers that are adjacent to a quadrilateral facet.
+	 * \param[in] verbose_if_OK if set, says OK if no bad connector
+	 *  configuration was detected.
+         */
+        void connect(
+	    bool remove_trivial_slivers = true, bool verbose_if_OK=false
+	);
 
         /**
          * \brief Replaces the surfacic part of this mesh
@@ -2471,6 +2499,11 @@ namespace GEO {
          */
         Mesh(index_t dimension=3, bool single_precision=false);
 
+	/**
+	 * \brief Mesh destructor.
+	 */
+	virtual ~Mesh();
+	
         /**
          * \brief Removes all the elements and attributes of
          *  this mesh.
@@ -2517,10 +2550,19 @@ namespace GEO {
 
         /**
          * \brief Gets the list of all scalar attributes.
-         * \return a ';'-separated list of all scalar attributes.
+         * \return a ';'-separated list of all scalar attributes. 
          */
         std::string get_scalar_attributes() const;
 
+
+	/**
+	 * \brief Gets the list of all vector attributes.
+	 * \param[in] max_dim if non-zero, only vector attributes of
+	 *  dimension lower than \p max_dim are returned.
+	 * \return a ';'-separated list of all vector attributes.
+	 */
+	std::string get_vector_attributes(index_t max_dim = 0) const;
+	
         /**
          * \brief Gets the number of subelements types.
          * \return the number of subelements types.

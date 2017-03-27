@@ -74,7 +74,7 @@ namespace GEO {
     /**
      * \brief Computes the normals to a point set. The normal
      *  is obtained from the nearest neighbors best approximating
-     *  plane. Normals are stored in coordinates 3,4 and 5.
+     *  plane. Normals are stored in the "normal" vertex attribute.
      * \param[in] M the pointset (facets and tets are ignored if present)
      * \param[in] nb_neighbors number of neighbors used to compute the
      *  best approximating tangent planes
@@ -84,15 +84,13 @@ namespace GEO {
     );
 
     /**
-     * \brief Given a pointset with normals (M.dimension() == 6),
-     *  reconstructs the triangles.
+     * \brief Given a pointset with normals stored in the "normal" vertex
+     *  attribute, reconstruct the triangles.
      * \param[in,out] M input pointset and output mesh
      * \param[in] radius maximum distance used to connect neighbors with
      *  triangles
      */
-    void GEOGRAM_API Co3Ne_reconstruct(
-        Mesh& M, double radius
-    );
+    void GEOGRAM_API Co3Ne_reconstruct(Mesh& M, double radius);
 
     /**
      * \brief Computes the normals and reconstructs the triangles

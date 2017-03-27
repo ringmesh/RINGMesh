@@ -28,11 +28,23 @@ endif()
 # Determine whether Geogram is built with Vorpaline
 if(IS_DIRECTORY ${GEOGRAM_SOURCE_DIR}/src/lib/vorpalib)
    message(STATUS "Configuring build for Geogram + Vorpaline")
-   set(GEOGRAM_WITH_VORPALINE TRUE)
+   set(GEOGRAM_WITH_VORPALINE ON)
    add_definitions(-DGEOGRAM_WITH_VORPALINE)  
 else()
    message(STATUS "Configuring build for standalone Geogram (without Vorpaline)")
-   set(GEOGRAM_WITH_VORPALINE FALSE)   
+   set(GEOGRAM_WITH_VORPALINE OFF)   
+endif()
+
+if(GEOGRAM_WITH_HLBFGS)
+   add_definitions(-DGEOGRAM_WITH_HLBFGS)
+endif()
+
+if(GEOGRAM_WITH_TETGEN)
+   add_definitions(-DGEOGRAM_WITH_TETGEN)
+endif()
+
+if(GEOGRAM_WITH_TRIANGLE)
+   add_definitions(-DGEOGRAM_WITH_TRIANGLE)
 endif()
 
 # This test is there to keep CMake happy about unused variable CMAKE_BUILD_TYPE

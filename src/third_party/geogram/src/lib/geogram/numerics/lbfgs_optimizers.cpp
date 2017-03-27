@@ -43,6 +43,8 @@
  *
  */
 
+#ifdef GEOGRAM_WITH_HLBFGS
+
 #include <geogram/numerics/lbfgs_optimizers.h>
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/argused.h>
@@ -246,7 +248,7 @@ namespace GEO {
         hlbfgs_info[4] = (int) max_iter_;  // max iterations
         hlbfgs_info[6] = (int) T_;  // update interval of hessian
         hlbfgs_info[7] = 1;   // 0: without hessian, 1: with accurate hessian
-
+        
         HLBFGS(
             (int) n_,
             (int) m_,
@@ -261,3 +263,4 @@ namespace GEO {
     }
 }
 
+#endif

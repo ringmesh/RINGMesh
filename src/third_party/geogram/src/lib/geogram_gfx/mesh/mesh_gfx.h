@@ -289,26 +289,28 @@ namespace GEO {
         /**
          * \brief Sets the points color
          * \details Specifies the color used to display points
-         * \param[in] r , g , b the components of the points color,
+         * \param[in] r , g , b , a the components of the points color,
          *  in (0.0 .. 1.0)
          * \see draw_points()
          */
-        void set_points_color(float r, float g, float b) {
+        void set_points_color(float r, float g, float b, float a=1.0f) {
             points_color_[0] = r;
             points_color_[1] = g;
             points_color_[2] = b;
+	    points_color_[3] = a;
         }
 
         /**
          * \brief Gets the points color
-         * \param[out] r , g , b the components of the points color,
+         * \param[out] r , g , b , a the components of the points color,
          *  in (0.0 .. 1.0)
          * \see draw_points()
          */
-        void get_points_color(float& r, float& g, float& b) const {
+        void get_points_color(float& r, float& g, float& b, float& a) const {
             r = points_color_[0];
             g = points_color_[1];
             b = points_color_[2];
+	    a = points_color_[3];
         }
 
         /**
@@ -333,26 +335,28 @@ namespace GEO {
          * \brief Sets the mesh color
          * \details Specifies the mesh color to be used if 
          *  mesh edges should be displayed.
-         * \param[in] r , g , b the components of the mesh color,
+         * \param[in] r , g , b , a the components of the mesh color,
          *  in (0.0 .. 1.0)
          * \see set_show_mesh(), draw_surface(), draw_volume()
          */
-        void set_mesh_color(float r, float g, float b) {
+        void set_mesh_color(float r, float g, float b, float a=1.0f) {
             mesh_color_[0] = r;
             mesh_color_[1] = g;
             mesh_color_[2] = b;
+	    mesh_color_[3] = a;
         }
 
         /**
          * \brief Gets the mesh color
-         * \param[out] r , g , b the components of the mesh color,
+         * \param[out] r , g , b , a the components of the mesh color,
          *  in (0.0 .. 1.0)
          * \see set_show_mesh(), draw_surface(), draw_volume()
          */
-        void get_mesh_color(float& r, float& g, float& b) const {
+        void get_mesh_color(float& r, float& g, float& b, float& a) const {
             r = mesh_color_[0];
             g = mesh_color_[1];
             b = mesh_color_[2];
+	    a = mesh_color_[3];
         }
         
         /**
@@ -360,69 +364,75 @@ namespace GEO {
          * \details Specifies the color used to display the
          *  surfacic part of the mesh. It specifies the color 
          *  of both frontfacing and backfacing faces.
-         * \param[in] r , g , b the components of the surface color,
+         * \param[in] r , g , b , a the components of the surface color,
          *  in (0.0 .. 1.0)
          * \see draw_surface(), set_backface_surface_color()
          */
-        void set_surface_color(float r, float g, float b) {
+        void set_surface_color(float r, float g, float b, float a=1.0f) {
             surface_color_[0] = r;
             surface_color_[1] = g;
             surface_color_[2] = b;
+	    surface_color_[3] = a;
             backface_surface_color_[0] = r;
             backface_surface_color_[1] = g;
             backface_surface_color_[2] = b;
+            backface_surface_color_[3] = a;	    
         }
 
         /**
          * \brief Gets the surface color
-         * \param[out] r , g , b the components of the surface color,
+         * \param[out] r , g , b , a the components of the surface color,
          *  in (0.0 .. 1.0)
          * \see draw_surface()
          */
-        void get_surface_color(float& r, float& g, float& b) const {
+        void get_surface_color(float& r, float& g, float& b, float& a) const {
             r = surface_color_[0];
             g = surface_color_[1];
             b = surface_color_[2];
+	    a = surface_color_[3];
         }
         
         /**
          * \brief Sets the surface color for backfacing faces.
          * \details Specifies the color used to display the
          *  backfaces of the surfacic part of the mesh. 
-         * \param[in] r , g , b the components of the surface color,
+         * \param[in] r , g , b , a the components of the surface color,
          *  in (0.0 .. 1.0)
          * \see set_show_mesh(), draw_surface(), draw_volume()
          */
-        void set_backface_surface_color(float r, float g, float b) {
+        void set_backface_surface_color(float r, float g, float b, float a=1.0f) {
             backface_surface_color_[0] = r;
             backface_surface_color_[1] = g;
             backface_surface_color_[2] = b;
+	    backface_surface_color_[3] = a;
         }
 
         /**
          * \brief Sets the color used to display mesh cells.
-         * \param[in] r , g , b the components of the cells color,
+         * \param[in] r , g , b , a the components of the cells color,
          *  in (0.0 .. 1.0)
          * \see set_cells_colors_by_type(), draw_volume()
          */
-        void set_cells_color(float r, float g, float b) {
+        void set_cells_color(float r, float g, float b, float a=1.0f) {
             for(index_t i=0; i<MESH_NB_CELL_TYPES; ++i) {
                 cells_color_[i][0] = r;
                 cells_color_[i][1] = g;
                 cells_color_[i][2] = b;
+		cells_color_[i][3] = a;
             }
         }
 
         /**
          * \brief Gets the cells color
-         * \param[out] r , g , b the components of the cells color,
+         * \param[out] r , g , b , a the components of the cells color,
          *  in (0.0 .. 1.0)
          * \see set_cells_colors_by_type(), draw_volume()
          */
-        void get_cells_color(float& r, float& g, float& b) const {
+        void get_cells_color(float& r, float& g, float& b, float& a) const {
             r = cells_color_[0][0];
             g = cells_color_[0][1];
             b = cells_color_[0][2];
+	    a = cells_color_[0][3];
         }
 
         /**
@@ -561,6 +571,8 @@ namespace GEO {
          *   the rightmost color in the colormap
          * \param[in] colormap_texture the texture to be used to display
          *   the attribute colors
+	 * \param[in] repeat the number of times the colorramp should be
+	 *   repeated within the specified range.
          */
         void set_scalar_attribute(
             MeshElementsFlags subelements,
@@ -570,6 +582,25 @@ namespace GEO {
             index_t repeat = 1
         );
 
+	/**
+	 * \brief Sets the parameters for texture mapping.
+	 * \param[in] subelements the subelements that have texture
+	 *  coordinates.
+	 * \param[in] attribute_name the name of the attribute that has the texture
+	 *  coordinates. Can be a 2d or 3d vector attribute.
+	 * \param[in] texture the texture.
+	 * \param[in] repeat the number of times the texture should be repeated
+	 *  in the unit square in texture space.
+	 */
+	void set_texturing(
+	    MeshElementsFlags subelements,
+	    const std::string& attribute_name,
+	    GLuint texture,
+	    index_t texture_dim,
+	    index_t repeat = 1
+	);
+
+	
         /**
          * \brief Unsets scalar attribute display.
          */
@@ -577,10 +608,11 @@ namespace GEO {
             attribute_subelements_ = MESH_NONE;
             attribute_min_ = 0.0;
             attribute_max_ = 0.0;
-            attribute_colormap_texture_ = 0;
+            attribute_texture_ = 0;
             attribute_repeat_ = 1;
+	    attribute_dim_ = 0;
         }
-        
+
     protected:
         
         void draw_vertices_array();
@@ -627,12 +659,25 @@ namespace GEO {
             cells_color_[type][2] = b;            
         }
 
+	void draw_attribute_as_tex_coord(index_t element) {
+	    if(picking_mode_ == MESH_NONE) {
+		switch(attribute_dim_) {
+		    case 1:
+			glupTexCoord1d(scalar_attribute_[element]);
+			break;
+		    case 2:
+			glupTexCoord2dv(&tex_coord_attribute_[2*element]);
+			break;
+		    case 3:
+			glupTexCoord3dv(&tex_coord_attribute_[3*element]);
+			break;
+		}
+	    }
+	}
+	
         void draw_vertex_with_attribute(index_t vertex) {
-            if(
-                picking_mode_ == MESH_NONE &&
-                attribute_subelements_ == MESH_VERTICES
-            ) {
-                glupTexCoord1d(attribute_[vertex]);
+            if(attribute_subelements_ == MESH_VERTICES) {
+		draw_attribute_as_tex_coord(vertex);
             }
             draw_vertex(vertex);
         }
@@ -640,30 +685,26 @@ namespace GEO {
         void draw_surface_vertex_with_attribute(
             index_t vertex, index_t facet, index_t corner
         ) {
-            if(picking_mode_ == MESH_NONE) {
-                if(attribute_subelements_ == MESH_VERTICES) {
-                    glupTexCoord1d(attribute_[vertex]);
-                } else if(attribute_subelements_ == MESH_FACETS) {
-                    glupTexCoord1d(attribute_[facet]);
-                } else if(attribute_subelements_ == MESH_FACET_CORNERS) {
-                    glupTexCoord1d(attribute_[corner]);                
-                }
-            }
+	    if(attribute_subelements_ == MESH_VERTICES) {
+		draw_attribute_as_tex_coord(vertex);
+	    } else if(attribute_subelements_ == MESH_FACETS) {
+		draw_attribute_as_tex_coord(facet);
+	    } else if(attribute_subelements_ == MESH_FACET_CORNERS) {
+		draw_attribute_as_tex_coord(corner);
+	    }
             draw_vertex(vertex);
         }
 
         void draw_volume_vertex_with_attribute(
             index_t vertex, index_t cell, index_t cell_corner
         ) {
-            if(picking_mode_ == MESH_NONE) {
-                if(attribute_subelements_ == MESH_VERTICES) {                
-                    glupTexCoord1d(attribute_[vertex]);
-                } else if(attribute_subelements_ == MESH_CELLS) {
-                    glupTexCoord1d(attribute_[cell]);
-                } else if(attribute_subelements_ == MESH_CELL_CORNERS) {
-                    glupTexCoord1d(attribute_[cell_corner]);
-                }
-            }
+	    if(attribute_subelements_ == MESH_VERTICES) {
+		draw_attribute_as_tex_coord(vertex);
+	    } else if(attribute_subelements_ == MESH_CELLS) {
+		draw_attribute_as_tex_coord(cell);
+	    } else if(attribute_subelements_ == MESH_CELL_CORNERS) {
+		draw_attribute_as_tex_coord(cell_corner);
+	    }
             draw_vertex(vertex);
         }
 
@@ -814,11 +855,11 @@ namespace GEO {
         bool draw_cells_[MESH_NB_CELL_TYPES];
         float points_size_;
         
-        float points_color_[3];
-        float mesh_color_[3];
-        float surface_color_[3];
-        float backface_surface_color_[3];
-        float cells_color_[MESH_NB_CELL_TYPES][3];
+        float points_color_[4];
+        float mesh_color_[4];
+        float surface_color_[4];
+        float backface_surface_color_[4];
+        float cells_color_[MESH_NB_CELL_TYPES][4];
         bool cells_colors_by_type_;
 
         bool lighting_;
@@ -836,6 +877,7 @@ namespace GEO {
 
         bool buffer_objects_dirty_;
         bool attributes_buffer_objects_dirty_;
+	bool long_vector_attribute_;
 
         GLuint vertices_VAO_;
         GLuint edges_VAO_;
@@ -850,11 +892,14 @@ namespace GEO {
         
         MeshElementsFlags attribute_subelements_;
         std::string attribute_name_;
+	index_t attribute_dim_;
         double attribute_min_;
         double attribute_max_;
-        GLuint attribute_colormap_texture_;
+        GLuint attribute_texture_;
+	index_t attribute_texture_dim_;
         index_t attribute_repeat_;
-        ReadOnlyScalarAttributeAdapter attribute_;
+        ReadOnlyScalarAttributeAdapter scalar_attribute_;
+	Attribute<double> tex_coord_attribute_;
 
         //   If true, copies OpenGL state automatically
         // at each rendering operation.

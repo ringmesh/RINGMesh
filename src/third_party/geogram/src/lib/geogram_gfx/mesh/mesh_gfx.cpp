@@ -86,6 +86,7 @@ namespace GEO {
 
         buffer_objects_dirty_ = false;
         attributes_buffer_objects_dirty_ = false;
+	long_vector_attribute_ = false;
         
         vertices_VAO_ = 0;
         edges_VAO_ = 0;
@@ -103,9 +104,10 @@ namespace GEO {
         attribute_subelements_ = MESH_NONE;
         attribute_min_ = 0.0;
         attribute_max_ = 0.0;
-        attribute_colormap_texture_ = 0;
+        attribute_texture_ = 0;
         attribute_repeat_ = 1;
-
+	attribute_dim_ = 1;
+	
         auto_GL_interop_ = false;
         ES_profile_ = false;
     }
@@ -177,10 +179,21 @@ namespace GEO {
         }
         if(
             attribute_subelements_ != MESH_NONE &&
-            attribute_subelements_ != MESH_VERTICES
+            attribute_subelements_ != MESH_VERTICES 
         ) {
             return false;
         }
+	if(long_vector_attribute_) {
+	    return false;
+	}
+
+	// For now, texturing is only implemented in
+	// immediate mode (TODO: implement tex coords
+	// in vertex array objects).
+	if(attribute_dim_ > 1) {
+	    return false;
+	}
+	
         return true;
     }
 
@@ -247,11 +260,13 @@ namespace GEO {
         update_buffer_objects_if_needed();
         
         glupEnable(GLUP_LIGHTING);
-        glupSetColor3fv(GLUP_FRONT_COLOR, points_color_);
+        glupSetColor4fv(GLUP_FRONT_COLOR, points_color_);
         glupSetPointSize(points_size_ * 5.0f);
 
         if(vertices_selection_ == "") {
-            if(can_use_array_mode(GLUP_POINTS) && vertices_VAO_ != 0) {
+            if(
+		can_use_array_mode(GLUP_POINTS) && vertices_VAO_ != 0
+	    ) {
                 draw_vertices_array();
             } else {
                 if(attribute_subelements_ == MESH_VERTICES) {
@@ -313,9 +328,7 @@ namespace GEO {
             for(index_t e=0; e<mesh_->edges.nb(); ++e) {
                 index_t v1 = mesh_->edges.vertex(e,0);
                 index_t v2 = mesh_->edges.vertex(e,1);
-                if(picking_mode_ == MESH_NONE) {
-                    glupTexCoord1d(attribute_[e]);
-                }
+		draw_attribute_as_tex_coord(e);
                 draw_vertex(v1);
                 draw_vertex(v2);
             }
@@ -333,7 +346,7 @@ namespace GEO {
         set_GLUP_picking(MESH_EDGES);
         update_buffer_objects_if_needed();
         
-        glupSetColor3fv(GLUP_FRONT_COLOR, mesh_color_);
+        glupSetColor4fv(GLUP_FRONT_COLOR, mesh_color_);
         glupSetMeshWidth(GLUPint(mesh_width_));
         if(can_use_array_mode(GLUP_LINES) && edges_VAO_ != 0) {
             draw_edges_array();
@@ -700,8 +713,8 @@ namespace GEO {
         if(attribute_subelements_ != MESH_NONE) {
             glupSetColor3f(GLUP_FRONT_AND_BACK_COLOR, 1.0f, 1.0f, 1.0f);
         } else {
-            glupSetColor3fv(GLUP_FRONT_COLOR, surface_color_);
-            glupSetColor3fv(GLUP_BACK_COLOR, backface_surface_color_);
+            glupSetColor4fv(GLUP_FRONT_COLOR, surface_color_);
+            glupSetColor4fv(GLUP_BACK_COLOR, backface_surface_color_);
         }
 
         if(mesh_->facets.are_simplices()) {
@@ -717,7 +730,7 @@ namespace GEO {
 
     void MeshGfx::draw_surface_mesh_with_lines() {
         glupSetMeshWidth(GLUPint(mesh_width_));        
-        glupSetColor3fv(GLUP_FRONT_AND_BACK_COLOR, mesh_color_);
+        glupSetColor4fv(GLUP_FRONT_AND_BACK_COLOR, mesh_color_);
         glupBegin(GLUP_LINES);
         for(index_t f=0; f<mesh_->facets.nb(); ++f) {
             for(index_t c1=mesh_->facets.corners_begin(f);
@@ -739,7 +752,7 @@ namespace GEO {
             return;
         }
         set_GLUP_parameters();
-        glupSetColor3fv(GLUP_FRONT_COLOR, mesh_color_);
+        glupSetColor4fv(GLUP_FRONT_COLOR, mesh_color_);
         glupSetMeshWidth(GLUPint(mesh_border_width_));
         glupBegin(GLUP_LINES);
         for(index_t f=0; f<mesh_->facets.nb(); ++f) {
@@ -765,7 +778,7 @@ namespace GEO {
         if(!draw_cells_[MESH_TET]) {
             return;
         }
-        glupSetColor3fv(GLUP_FRONT_AND_BACK_COLOR, cells_color_[MESH_TET]);
+        glupSetColor4fv(GLUP_FRONT_AND_BACK_COLOR, cells_color_[MESH_TET]);
         if(can_use_array_mode(GLUP_TETRAHEDRA) && cells_VAO_ != 0) {
             draw_tets_array();
         } else {
@@ -885,7 +898,7 @@ namespace GEO {
                 continue;
             }
             if(attribute_subelements_ != MESH_VERTICES) {            
-                glupSetColor3fv(GLUP_FRONT_AND_BACK_COLOR, cells_color_[type]);
+                glupSetColor4fv(GLUP_FRONT_AND_BACK_COLOR, cells_color_[type]);
             }
 
             GLUPprimitive glup_prim = geogram_cell_to_glup[type];
@@ -943,7 +956,7 @@ namespace GEO {
             if(!draw_cells_[type] || !has_cells[type]) {
                 continue;
             }
-            glupSetColor3fv(GLUP_FRONT_AND_BACK_COLOR, cells_color_[type]);
+            glupSetColor4fv(GLUP_FRONT_AND_BACK_COLOR, cells_color_[type]);
             glupBegin(geogram_cell_to_glup[type]);
             for(index_t cell=0; cell<mesh_->cells.nb(); ++cell) {
                 index_t this_cell_type = index_t(mesh_->cells.type(cell));
@@ -1010,6 +1023,7 @@ namespace GEO {
         } else {
             draw_hybrid();
         }
+	glupSetCellsShrink(0.0f);
     }
 
     void MeshGfx::set_mesh(const Mesh* mesh) {
@@ -1056,7 +1070,7 @@ namespace GEO {
         } else {
             glupDisable(GLUP_DRAW_MESH);
         }
-        glupSetColor3fv(GLUP_MESH_COLOR, mesh_color_);
+        glupSetColor4fv(GLUP_MESH_COLOR, mesh_color_);
         glupSetMeshWidth(GLUPint(mesh_width_));
         glupSetPointSize(points_size_);
         if(lighting_) {
@@ -1254,8 +1268,10 @@ namespace GEO {
         attribute_min_ = attr_min;
         attribute_max_ = attr_max;
         attribute_repeat_ = repeat;
-        attribute_colormap_texture_ = colormap_texture;
-
+        attribute_texture_ = colormap_texture;
+	attribute_dim_ = 1;
+	attribute_texture_dim_ = 1;
+	
         const MeshSubElementsStore& mesh_subelements =
             mesh_->get_subelements_by_type(attribute_subelements_);
 
@@ -1266,6 +1282,42 @@ namespace GEO {
             attribute_subelements_ = MESH_NONE;
         }
         
+    }
+
+    void MeshGfx::set_texturing(
+	MeshElementsFlags subelements,
+	const std::string& name,
+	GLuint texture,
+	index_t texture_dim,
+	index_t repeat
+    ) {
+        if(
+            subelements != attribute_subelements_ ||
+            attribute_name_ != name
+        ) {
+            attributes_buffer_objects_dirty_ = true;
+        }
+        attribute_subelements_ = subelements;
+        attribute_name_ = name;
+        attribute_min_ = 0.0;
+        attribute_max_ = 1.0;
+        attribute_repeat_ = repeat;
+        attribute_texture_ = texture;
+	attribute_texture_dim_ = texture_dim;
+	
+        const MeshSubElementsStore& mesh_subelements =
+            mesh_->get_subelements_by_type(attribute_subelements_);
+
+	tex_coord_attribute_.bind_if_is_defined(
+	    mesh_subelements.attributes(), attribute_name_
+	);
+	
+        if(!tex_coord_attribute_.is_bound()) {
+            attribute_subelements_ = MESH_NONE;
+        } else {
+	    attribute_dim_ = tex_coord_attribute_.dimension();
+	    tex_coord_attribute_.unbind();
+	}
     }
     
     void MeshGfx::update_attribute_buffer_objects_if_needed() {
@@ -1281,20 +1333,23 @@ namespace GEO {
             return;
         }
 
+	long_vector_attribute_ = false;
+
         if(attribute_subelements_ == MESH_VERTICES) {
-            attribute_.bind_if_is_defined(
+            scalar_attribute_.bind_if_is_defined(
                 mesh_->vertices.attributes(), attribute_name_
             );
-            if(attribute_.attribute_store()->dimension() > 4) {
-                attribute_.unbind();
+            if(scalar_attribute_.attribute_store()->dimension() > 4) {
+                scalar_attribute_.unbind();
+		long_vector_attribute_ = true;
             }
         }
         
-        if(attribute_.is_bound()) {
-            size_t element_size = attribute_.attribute_store()->element_size();
-            GLint dimension = GLint(attribute_.attribute_store()->dimension());
-            index_t nb_items = attribute_.size();
-            const void* data = attribute_.attribute_store()->data();
+        if(scalar_attribute_.is_bound()) {
+            size_t element_size = scalar_attribute_.attribute_store()->element_size();
+            GLint dimension = GLint(scalar_attribute_.attribute_store()->dimension());
+            index_t nb_items = scalar_attribute_.size();
+            const void* data = scalar_attribute_.attribute_store()->data();
 
             update_or_check_buffer_object(
                 vertices_attribute_VBO_, GL_ARRAY_BUFFER,
@@ -1308,14 +1363,14 @@ namespace GEO {
             bind_attribute_buffer_object(facets_VAO_);
             bind_attribute_buffer_object(cells_VAO_);
             
-            attribute_.unbind();            
+            scalar_attribute_.unbind();            
         } else {
             unbind_attribute_buffer_object(vertices_VAO_);
             unbind_attribute_buffer_object(edges_VAO_);
             unbind_attribute_buffer_object(facets_VAO_);
             unbind_attribute_buffer_object(cells_VAO_);
         }
-        
+	
         attributes_buffer_objects_dirty_ = false;
     }
 
@@ -1323,15 +1378,15 @@ namespace GEO {
         if(VAO == 0) {
             return;
         }
-        size_t element_size = attribute_.attribute_store()->element_size();
-        GLint dimension = GLint(attribute_.attribute_store()->dimension());
+        size_t element_size = scalar_attribute_.attribute_store()->element_size();
+        GLint dimension = GLint(scalar_attribute_.attribute_store()->dimension());
 
         if(
-            attribute_.element_type() ==
+            scalar_attribute_.element_type() ==
             ReadOnlyScalarAttributeAdapter::ET_VEC2) {
             dimension *= 2;
             element_size /= 2;
-        } else if(attribute_.element_type() ==
+        } else if(scalar_attribute_.element_type() ==
             ReadOnlyScalarAttributeAdapter::ET_VEC3) {
             dimension *= 3;
             element_size /= 3;
@@ -1340,14 +1395,14 @@ namespace GEO {
         GLsizei stride = GLsizei(element_size) * dimension;
 
         const GLvoid* offset = (const GLvoid*)(
-            element_size * index_t(attribute_.element_index())
+            element_size * index_t(scalar_attribute_.element_index())
         );
         
         glupBindVertexArray(VAO);
         glBindBuffer(GL_ARRAY_BUFFER, vertices_attribute_VBO_);
         glEnableVertexAttribArray(2); // 2 = tex coords
 
-        switch(attribute_.element_type()) {
+        switch(scalar_attribute_.element_type()) {
         case ReadOnlyScalarAttributeAdapter::ET_UINT8:
             glVertexAttribPointer(
                 2, dimension, GL_UNSIGNED_BYTE, GL_FALSE, stride, offset
@@ -1412,36 +1467,86 @@ namespace GEO {
         }
         const MeshSubElementsStore& subelements =
             mesh_->get_subelements_by_type(attribute_subelements_);
-        attribute_.bind_if_is_defined(
-            subelements.attributes(), attribute_name_
-        );
-        if(!attribute_.is_bound()) {
-            return;
-        }
+
+	if(attribute_dim_ == 1) {
+	    scalar_attribute_.bind_if_is_defined(
+		subelements.attributes(), attribute_name_
+	    );
+	    if(!scalar_attribute_.is_bound()) {
+		return;
+	    }
+	} else {
+	    tex_coord_attribute_.bind_if_is_defined(
+		subelements.attributes(), attribute_name_		
+	    );
+	    if(!tex_coord_attribute_.is_bound()) {
+		return;
+	    }
+	}
 
         glupEnable(GLUP_TEXTURING);
-        glupTextureType(GLUP_TEXTURE_1D);
         glupTextureMode(GLUP_TEXTURE_REPLACE);
-        
-        glActiveTexture(GL_TEXTURE0 + GLUP_TEXTURE_1D_UNIT);
-        glBindTexture(
-            GLUP_TEXTURE_1D_TARGET, attribute_colormap_texture_
-        );
 
-        // Setup a texture matrix that rescales attribute range
-        // from [attribute_min_,attribute_max_] to [0,1]
-        glupMapTexCoords1d(
-            attribute_min_, attribute_max_, attribute_repeat_
-        );
+	switch(attribute_texture_dim_) {
+	    case 1:
+		glupTextureType(GLUP_TEXTURE_1D);		
+		glActiveTexture(GL_TEXTURE0 + GLUP_TEXTURE_1D_UNIT);
+		glBindTexture(
+		    GLUP_TEXTURE_1D_TARGET, attribute_texture_
+		);
+		break;
+	    case 2:
+		glupTextureType(GLUP_TEXTURE_2D);				
+		glActiveTexture(GL_TEXTURE0 + GLUP_TEXTURE_2D_UNIT);
+		glBindTexture(
+		    GLUP_TEXTURE_2D_TARGET, attribute_texture_
+		);
+		break;
+	    case 3:
+		glupTextureType(GLUP_TEXTURE_3D);						
+		glActiveTexture(GL_TEXTURE0 + GLUP_TEXTURE_3D_UNIT);
+		glBindTexture(
+		    GLUP_TEXTURE_3D_TARGET, attribute_texture_
+		);
+		break;
+	}
+
+	if(attribute_dim_ == 1) {
+	    // Setup a texture matrix that rescales attribute range
+	    // from [attribute_min_,attribute_max_] to [0,1]
+	    glupMapTexCoords1d(
+		attribute_min_, attribute_max_, attribute_repeat_
+	    );
+	} else {
+	    glupMatrixMode(GLUP_TEXTURE_MATRIX);
+	    glupLoadIdentity();
+	    if(attribute_repeat_ != 0) {
+		glupScalef(
+		    float(attribute_repeat_),
+		    float(attribute_repeat_),
+		    float(attribute_repeat_)
+		);
+	    }
+	    glupMatrixMode(GLUP_MODELVIEW_MATRIX);
+	}
         
         glupSetColor3f(GLUP_FRONT_AND_BACK_COLOR, 1.0f, 1.0f, 1.0f);
     }
 
     void MeshGfx::end_attributes() {
-        if(attribute_.is_bound()) {
+        if(scalar_attribute_.is_bound()) {
             glupDisable(GLUP_TEXTURING);
-            attribute_.unbind();
+            scalar_attribute_.unbind();
         }
+	if(tex_coord_attribute_.is_bound()) {
+	    glupDisable(GLUP_TEXTURING);
+	    tex_coord_attribute_.unbind();
+	}
+	glupMatrixMode(GLUP_TEXTURE_MATRIX);
+	glupLoadIdentity();
+	glupMatrixMode(GLUP_MODELVIEW_MATRIX);
     }
+
+    
 }
 

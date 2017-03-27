@@ -89,6 +89,9 @@ void GLUP_API glupBindUniformState(GLUPuint program) {
 }
 
 
+#if defined(GEO_OS_EMSCRIPTEN) || defined(GEO_OS_APPLE)
+#else
+
 /**
  * \brief Tests whether tessellation shaders are supported by OpenGL.
  * \details Some drivers may declare to be OpenGL 4.5 compliant whereas
@@ -128,8 +131,10 @@ static bool supports_tessellation_shader() {
 #endif    
 }
 
-GLUPcontext glupCreateContext() {
+#endif
 
+GLUPcontext glupCreateContext() {
+  
     if(!GLUP::initialized_) {
         GLUP::initialized_ = true;
         atexit(GLUP::cleanup);
@@ -141,65 +146,34 @@ GLUPcontext glupCreateContext() {
     GLUP::Context* result = nil;
 
     if(GLUP_profile == "auto") {
-        double GLSL_version = GEO::GLSL::supported_language_version();
-#ifndef GEO_OS_APPLE                
-        const GLubyte* vendor = glGetString(GL_VENDOR);
-        if(!GEO::String::string_starts_with(
-               std::string((const char*)vendor), "NVIDIA")
-        ) {
-#ifndef GEO_OS_EMSCRIPTEN            
-            GEO::Logger::out("GLUP") << "Non-NVIDIA GPU" << std::endl;
-#endif            
-            if(GEO::CmdLine::get_arg("gfx:GL_profile") == "compatibility") {
-#ifdef GEO_OS_EMSCRIPTEN
-                GEO::Logger::out("GLUP") << "Running in a browser."
-                                         << std::endl;
-#else                
-                GEO::Logger::out("GLUP")
-                    << "Trying VanillaGL and GLUPES2" << std::endl;
-                GEO::Logger::out("GLUP")
-                    << "Use gfx:GLUP_profile to override"
-                    << std::endl;
-#endif                
-                GLSL_version = 0.0;
-            } else {
-                GEO::Logger::warn("GLUP")
-                    << "Cannot switch to VanillaGL" << std::endl;
-                GEO::Logger::warn("GLUP")
-                    << "Needs gfx:GL_profile=compatibility" << std::endl;
-                GEO::Logger::warn("GLUP")
-                    << "(trying anyway with GLUP150/GLUP440)" << std::endl;
-            }
-        }
-#endif
-        
-        if (GLSL_version >= 4.4) {
-            if (!supports_tessellation_shader()) {
-                GEO::Logger::out("GLUP")
-                    << "GLSL version >= 4.4 but tessellation unsupported"
-                    << std::endl;
-                GEO::Logger::out("GLUP") << "Downgrading to GLUP 150..."
-                                         << std::endl;
-                GLSL_version = 1.5;
-            }
-        }
-        if(GLSL_version < 1.5) {
-#ifdef GEO_GL_LEGACY            
-            GLUP_profile = "VanillaGL";
+      
+#if defined(GEO_OS_EMSCRIPTEN) || defined(GEO_OS_APPLE)
+      GLUP_profile = "GLUPES2";
 #else
-            GLUP_profile = "GLUPES2";
-#endif            
-        }
-#ifdef GEO_OS_APPLE
-        else {
-            GLUP_profile = "GLUPES2";
-        }
-#else        
-        else if(GLSL_version < 4.4) {
-            GLUP_profile = "GLUP150";
-        } else {
-            GLUP_profile = "GLUP440";
-        }
+      GEO_CHECK_GLUP();      
+      double GLSL_version = GEO::GLSL::supported_language_version();
+      GEO_CHECK_GLUP();            
+      if (GLSL_version >= 4.4) {
+	  GEO_CHECK_GLUP();      	  
+	  if (!supports_tessellation_shader()) {
+	      GEO::Logger::out("GLUP")
+		<< "GLSL version >= 4.4 but tessellation unsupported"
+		<< std::endl;
+	      GEO::Logger::out("GLUP") << "Downgrading to GLUP 150..."
+				       << std::endl;
+	      GLSL_version = 1.5;
+	  }
+	  GEO_CHECK_GLUP();      	  
+      }
+      
+      if(GLSL_version >= 4.4) {
+	  GLUP_profile = "GLUP440";	
+      } else if(GLSL_version >= 1.5) {
+	  GLUP_profile = "GLUP150";	
+      } else {
+	  GLUP_profile = "GLUPES2";	
+      }
+      
 #endif        
     }
 
@@ -207,82 +181,82 @@ GLUPcontext glupCreateContext() {
     GEO::Logger::out("GLUP") << "Using " << GLUP_profile << " profile"
                         << std::endl;
 
-#ifdef GEO_GL_ES2    
-    if(GLUP_profile == "GLUPES2") {
-        result = new GLUP::Context_ES2;        
-    }
-#endif
-    
-#ifdef GEO_GL_150    
-    if(GLUP_profile == "GLUP150") {
-        result = new GLUP::Context_GLSL150;        
+#ifdef GEO_GL_440    
+    if(GLUP_profile == "GLUP440") {
+        try {
+	    result = new GLUP::Context_GLSL440;
+	    result->setup();	    
+	} catch(...) {
+	    GEO::Logger::warn("GLUP")
+	        << "Caught an exception in GLUP440, downgrading to GLUP150"
+	        << std::endl;
+	    GLUP_profile = "GLUP150";
+	    delete result;
+	    result = nil;
+	}
     }
 #endif
 
-#ifdef GEO_GL_440    
-    if(GLUP_profile == "GLUP440") {
-        result = new GLUP::Context_GLSL440;
+#ifdef GEO_GL_150    
+    if(GLUP_profile == "GLUP150") {
+        try {
+            result = new GLUP::Context_GLSL150;
+	    result->setup();	    	    
+        } catch(...) {
+	    GEO::Logger::warn("GLUP")
+	        << "Caught an exception in GLUP150, downgrading to GLUPES2"
+	        << std::endl;
+	    GLUP_profile = "GLUPES2";
+	    delete result;
+	    result = nil;
+	}
+    }
+#endif
+    
+#ifdef GEO_GL_ES2    
+    if(GLUP_profile == "GLUPES2") {
+        try {      
+	    result = new GLUP::Context_ES2;
+	    result->setup();	    	    
+        } catch(...) {
+	    GEO::Logger::warn("GLUP")
+	        << "Caught an exception in GLUPES2, downgrading to VanillaGL"
+	        << std::endl;
+	    GLUP_profile = "VanillaGL";
+	    delete result;
+	    result = nil;
+	}
     }
 #endif
 
 #ifdef GEO_GL_LEGACY    
     if(GLUP_profile == "VanillaGL") {
-        result = new GLUP::Context_VanillaGL;
+        if(GEO::CmdLine::get_arg("gfx:GL_profile") != "compatibility") {    
+	    GEO::Logger::warn("GLUP")
+	      << "Cannot switch to VanillaGL" << std::endl;
+	    GEO::Logger::warn("GLUP")
+	      << "Needs gfx:GL_profile=compatibility" << std::endl;
+	} else {
+	    try {            
+	        result = new GLUP::Context_VanillaGL;
+		result->setup();	    	    
+	    } catch(...) {
+	        GEO::Logger::warn("GLUP")
+		  << "Caught an exception in VanillaGL"
+		  << std::endl;
+		delete result;
+		result = nil;
+	    }
+	}
     }
 #endif
 
-#ifdef GEO_GL_ES2    
     if(result == nil) {
-        GEO::Logger::warn("GLUP")
-            << GLUP_profile << " unknown profile, falling back to GLUPES2"
-            << std::endl;
-        result = new GLUP::Context_ES2;        
+        GEO::Logger::err("GLUP") << "Could not create context"
+			    << std::endl;
+    } else {
+        GLUP::all_contexts_.insert(result);
     }
-#endif    
-    
-#ifdef GEO_GL_LEGACY    
-    if(result == nil) {
-        GEO::Logger::warn("GLUP")
-            << GLUP_profile << " unknown profile, falling back to VanillaGL"
-            << std::endl;
-        result = new GLUP::Context_VanillaGL;        
-    }
-#endif    
-
-    if(result == nil) {
-        GEO::Logger::err("GLUP")
-            << "Could not create a context"
-            << std::endl;
-        return nil;
-    }
-    
-    try {
-        result->setup();
-    } catch(...) {
-#ifndef GEO_GL_LEGACY
-        GEO::Logger::err("GLUP")
-            << "Could not create a context"
-            << std::endl;
-#else        
-#if defined(GEO_OS_APPLE)
-        GEO::Logger::warn("GLUP")
-            << "Caught an exception, downgrading to GLUPES2"
-            << std::endl;
-        delete result;
-        result = new GLUP::Context_ES2;
-        result->setup();
-#else        
-        GEO::Logger::warn("GLUP")
-            << "Caught an exception, downgrading to VanillaGL"
-            << std::endl;
-        delete result;
-        result = new GLUP::Context_VanillaGL;
-        result->setup();
-#endif
-#endif        
-    }
-
-    GLUP::all_contexts_.insert(result);
     
     return result;
 }
@@ -373,7 +347,7 @@ GLUPtextureType glupGetTextureType() {
 }
 
 void GLUP_API glupTextureMode(GLUPtextureMode mode) {
-    GEO_CHECK_GLUP();                
+    GEO_CHECK_GLUP();
     GLUP::current_context_->uniform_state().texture_mode.set(mode);    
 }
 
@@ -525,6 +499,17 @@ GLUPfloat glupGetCellsShrink() {
     return GLUP::current_context_->uniform_state().cells_shrink.get();    
 }
 
+void glupSetAlphaThreshold(GLUPfloat x) {
+    GEO_CHECK_GLUP();
+    GLUP::current_context_->uniform_state().alpha_threshold.set(x);    
+}
+
+GLUPfloat glupGetAlphaThreshold() {
+    GEO_CHECK_GLUP();
+    return GLUP::current_context_->uniform_state().alpha_threshold.get();        
+}
+
+
 /****************** Picking ******************************/
 
 void glupPickingMode(GLUPpickingMode mode) {
@@ -602,6 +587,7 @@ void glupClipPlane(const GLUPdouble* eqn_in) {
     GLUP::mult_matrix_vector(
         state_clip_plane,modelview_invert,state_world_clip_plane
     );
+    // TODO? clip_clip_plane update ?
 }
 
 void glupGetClipPlane(GLUPdouble* eqn) {
@@ -1311,10 +1297,45 @@ void glupTexCoord4d(GLUPdouble s, GLUPdouble t, GLUPdouble u, GLUPdouble v) {
     );        
 }
 
+
+void glupNormal3fv(GLUPfloat* xyz) {
+    GEO_CHECK_GLUP();        
+    GLUP::current_context_->immediate_normal(
+        xyz[0],xyz[1],xyz[2]
+    );
+}
+
+void glupNormal3f(GLUPfloat x, GLUPfloat y, GLUPfloat z) {
+    GEO_CHECK_GLUP();        
+    GLUP::current_context_->immediate_normal(
+        x,y,z
+    );
+}    
+
+void glupNormal3dv(GLUPdouble* xyz) {
+    GEO_CHECK_GLUP();            
+    GLUP::current_context_->immediate_normal(
+        GLfloat(xyz[0]),
+	GLfloat(xyz[1]),
+	GLfloat(xyz[2])
+    );
+}
+
+void glupNormal3d(GLUPdouble x, GLUPdouble y, GLUPdouble z) {
+    GEO_CHECK_GLUP();        
+    GLUP::current_context_->immediate_normal(
+        GLfloat(x),
+        GLfloat(y),
+        GLfloat(z)
+    );
+}    
+
 void glupUseProgram(GLUPuint program) {
     GEO_CHECK_GLUP();    
     GLUP::current_context_->set_user_program(program);
 }
+
+
 
 /****************************************************************************/
 
@@ -1333,6 +1354,12 @@ void glupUseProgram(GLUPuint program) {
 // (.name) that is inserted in the generated VertexBuffer
 // objects, thus avoiding the need to call
 // GL.buffers.indexOf(buffer) (replaced with buffer.name).
+//
+// Note: I filed a bug report with the fix, was taken into
+// account by Emscripten devs, normally this workaround is
+// no longer needed with the latest version.
+//   Fri Sep 23 13:33:53 CEST 2016: bug seems to be still there
+// in emscripten -> I keep this code for now.
 
 static void my_glGetVertexAttribiv(GLuint index, GLenum pname, GLint* params) {
     *params = EM_ASM_INT( {
@@ -1367,7 +1394,7 @@ namespace GLUP {
      *  Context_GLES.cpp)
      */
     bool vertex_array_emulate = false;
-
+    
     /**
      * \brief Stores the state of a vertex attribute
      *  binding.
@@ -1409,6 +1436,13 @@ namespace GLUP {
                 index, GL_VERTEX_ATTRIB_ARRAY_ENABLED, buff
             );
             enabled = buff[0];
+
+            //   With some webbrowsers, querying a vertex attrib array
+            // that is not enabled returns the default values instead
+            // of the actual values.
+            if(!enabled) {
+                glEnableVertexAttribArray(index);
+            }
             
             glGetVertexAttribiv(
                 index, GL_VERTEX_ATTRIB_ARRAY_SIZE, buff
@@ -1438,6 +1472,10 @@ namespace GLUP {
                 index, GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING, buff
             );
             buffer_binding = buff[0];
+
+            if(!enabled) {
+                glDisableVertexAttribArray(index);
+            }
         }
 
         /**
@@ -1664,6 +1702,9 @@ namespace GLUP {
 
 }
 
+// TODO1: ArraysOES()/Arrays() switch based on OpenGL profile
+// (runtime) rather than GEO_OS_EMSCRIPTEN macro (compile-time)
+
 void glupGenVertexArrays(GLUPsizei n, GLUPuint* arrays) {
     if(GLUP::vertex_array_emulate) {
         for(GLUPsizei i=0; i<n; ++i) {
@@ -1673,7 +1714,12 @@ void glupGenVertexArrays(GLUPsizei n, GLUPuint* arrays) {
     } else {
 #ifdef GEO_OS_EMSCRIPTEN
         glGenVertexArraysOES(n, arrays);
-#else        
+#else
+	if(glGenVertexArrays == nil) {
+	    GLUP::vertex_array_emulate = true;
+	    glupGenVertexArrays(n,arrays);
+	    return;
+	}
         glGenVertexArrays(n, arrays);
 #endif        
     }
@@ -1687,7 +1733,12 @@ void glupDeleteVertexArrays(GLUPsizei n, const GLUPuint *arrays) {
     } else {
 #ifdef GEO_OS_EMSCRIPTEN
         glDeleteVertexArraysOES(n, arrays);        
-#else        
+#else
+	if(glDeleteVertexArrays == nil) {
+	    GLUP::vertex_array_emulate = true;
+	    glupDeleteVertexArrays(n,arrays);
+	    return;
+	}
         glDeleteVertexArrays(n, arrays);
 #endif        
     }
@@ -1711,7 +1762,12 @@ void glupBindVertexArray(GLUPuint array) {
     } else {
 #ifdef GEO_OS_EMSCRIPTEN
         glBindVertexArrayOES(array);        
-#else        
+#else
+	if(glBindVertexArray == nil) {
+	    GLUP::vertex_array_emulate = true;
+	    glupBindVertexArray(array);
+	    return;
+	}
         glBindVertexArray(array);
 #endif
         GLUP::vertex_array_binding = array;        
@@ -1721,6 +1777,5 @@ void glupBindVertexArray(GLUPuint array) {
 GLUPuint glupGetVertexArrayBinding() {
     return GLUP::vertex_array_binding;
 }
-
 
 /****************************************************************************/

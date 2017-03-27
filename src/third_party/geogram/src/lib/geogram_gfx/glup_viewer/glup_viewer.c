@@ -25,6 +25,14 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
+/* 
+ *Lots of documentation tags in GLFW that are
+ * not understood by CLANG.
+ */
+#ifdef __clang__
+#pragma GCC diagnostic ignored "-Wdocumentation"
+#endif
+
 #ifdef GEO_USE_BUILTIN_GLFW3
 #include <third_party/glfw/include/GLFW/glfw3.h>
 #else
@@ -118,6 +126,7 @@ void glup_viewer_post_redisplay() {
 static GlupViewerDisplayFunc display_func = NULL;
 static GlupViewerDisplayFunc overlay_func = NULL;
 static GlupViewerKeyboardFunc keyboard_func = NULL;
+static GlupViewerKeyboardFuncExt keyboard_func_ext = NULL;
 static GlupViewerMouseFunc mouse_func = NULL;
 static GlupViewerInitFunc init_func = NULL;
 static GlupViewerDragDropFunc drag_drop_func = NULL;
@@ -1106,7 +1115,9 @@ static void display() {
 
 static void copy_image_to_clipboard();
 
-static void glup_viewer_char_callback(GLFWwindow* w, unsigned int c) {
+void glup_viewer_char_callback(GLFWwindow* w, unsigned int c);
+
+void glup_viewer_char_callback(GLFWwindow* w, unsigned int c) {
     if(glup_viewer_gui_takes_input()) {
         glup_viewer_gui_char_callback(w,c);
         return;
@@ -1155,10 +1166,100 @@ static void toggle_fixed_clip() {
 static void glup_viewer_key_callback(
     GLFWwindow* w, int key, int scancode, int action, int mods
 ) {
+    GLboolean handled = GL_FALSE;
+    enum GlupViewerEvent ev;
+    const char* keyname = NULL;
+
+#ifdef __EMSCRIPTEN__    
+    static char buffer[2];
+#endif
     
     if(glup_viewer_gui_takes_input()) {
         glup_viewer_gui_key_callback(w, key, scancode, action, mods);
-        return;
+	/* 
+	 * We continue capturing keypresses on function keys even if
+	 * ImGUI window is active, else we cannot "run program" with
+	 * F5 / "save file" with F2 in geocod !
+	 */
+	if(key < GLFW_KEY_F1 || key > GLFW_KEY_F12) {
+	    return;
+	}
+    }
+
+    if(keyboard_func_ext != NULL && action != GLFW_REPEAT) {
+	ev = (action == GLFW_PRESS) ? GLUP_VIEWER_DOWN : GLUP_VIEWER_UP;
+
+#ifdef __EMSCRIPTEN__
+	/* Argh, glfwGetKeyName is not implemented in Emscripten */
+	if(key < 128) {
+	    buffer[1] = '\0';
+	    buffer[0] = (char)(key);
+	    keyname = buffer;
+	}
+#else	
+	keyname = glfwGetKeyName(key,0);
+#endif	
+	if(keyname != NULL) {
+	    handled = keyboard_func_ext(keyname,ev);	    
+	} else {
+	    if(key == GLFW_KEY_LEFT) {
+		handled = keyboard_func_ext("left",ev);		
+	    } else if(key == GLFW_KEY_RIGHT) {
+		handled = keyboard_func_ext("right",ev);
+	    } else if(key == GLFW_KEY_UP) {
+		handled = keyboard_func_ext("up",ev);
+	    } else if(key == GLFW_KEY_DOWN) {
+		handled = keyboard_func_ext("down",ev);
+	    } else if(key == GLFW_KEY_SPACE) {
+		handled = keyboard_func_ext(" ",ev);		
+	    } else if(key == GLFW_KEY_F1) {
+		handled = keyboard_func_ext("F1",ev);				
+	    } else if(key == GLFW_KEY_F2) {
+		handled = keyboard_func_ext("F2",ev);				
+	    } else if(key == GLFW_KEY_F3) {
+		handled = keyboard_func_ext("F3",ev);				
+	    } else if(key == GLFW_KEY_F4) {
+		handled = keyboard_func_ext("F4",ev);				
+	    } else if(key == GLFW_KEY_F5) {
+		handled = keyboard_func_ext("F5",ev);				
+	    } else if(key == GLFW_KEY_F6) {
+		handled = keyboard_func_ext("F6",ev);				
+	    } else if(key == GLFW_KEY_F7) {
+		handled = keyboard_func_ext("F7",ev);				
+	    } else if(key == GLFW_KEY_F18) {
+		handled = keyboard_func_ext("F8",ev);				
+	    } else if(key == GLFW_KEY_F9) {
+		handled = keyboard_func_ext("F9",ev);				
+	    } else if(key == GLFW_KEY_F10) {
+		handled = keyboard_func_ext("F10",ev);				
+	    } else if(key == GLFW_KEY_F11) {
+		handled = keyboard_func_ext("F11",ev);				
+	    } else if(key == GLFW_KEY_F12) {
+		handled = keyboard_func_ext("F12",ev);				
+	    } else if(key == GLFW_KEY_LEFT_CONTROL) {
+		handled = keyboard_func_ext("left_control",ev);						
+	    } else if(key == GLFW_KEY_RIGHT_CONTROL) {
+		handled = keyboard_func_ext("right_control",ev);						
+	    } else if(key == GLFW_KEY_LEFT_ALT) {
+		handled = keyboard_func_ext("left_alt",ev);						
+	    } else if(key == GLFW_KEY_RIGHT_ALT) {
+		handled = keyboard_func_ext("right_alt",ev);						
+	    } else if(key == GLFW_KEY_LEFT_SHIFT) {
+		handled = keyboard_func_ext("left_shift",ev);						
+	    } else if(key == GLFW_KEY_RIGHT_SHIFT) {
+		handled = keyboard_func_ext("right_shift",ev);						
+	    } else if(key == GLFW_KEY_ESCAPE) {
+		handled = keyboard_func_ext("escape",ev);		
+	    } else if(key == GLFW_KEY_TAB) {
+		handled = keyboard_func_ext("tab",ev);		
+	    } else if(key == GLFW_KEY_BACKSPACE) {
+		handled = keyboard_func_ext("backspace",ev);		
+	    }
+	}
+	if(handled) {
+	    glup_viewer_post_redisplay();
+	    return;
+	}
     }
     
     if(action != GLFW_PRESS) {
@@ -1204,11 +1305,14 @@ static void init() {
         glupMakeCurrent(glupCreateContext());
     }
 
+    if(glupCurrentContext() == NULL) {
+	exit(-1);
+    }
+    
     glup_viewer_gui_init(glup_viewer_window);
     
     glup_viewer_disable(GLUP_VIEWER_IDLE_REDRAW);
     glup_viewer_enable(GLUP_VIEWER_DRAW_SCENE);
-    glup_viewer_enable(GLUP_VIEWER_BACKGROUND);
 
 #ifndef __EMSCRIPTEN__    
     glup_viewer_add_key_func('q', glup_viewer_exit_main_loop, "quit");
@@ -1247,6 +1351,10 @@ void glup_viewer_set_overlay_func(GlupViewerDisplayFunc f) {
 
 void glup_viewer_set_keyboard_func(GlupViewerKeyboardFunc f) {
     keyboard_func = f;
+}
+
+void glup_viewer_set_keyboard_func_ext(GlupViewerKeyboardFuncExt f) {
+    keyboard_func_ext = f;
 }
 
 void glup_viewer_set_mouse_func(GlupViewerMouseFunc f) {
@@ -1361,11 +1469,15 @@ void glup_viewer_one_frame(void);
 void glup_viewer_one_frame() {
     int cur_width;
     int cur_height;
-
-    if(init_func != NULL) {
-        init_func();
-        init_func = NULL;
+    double start;
+    GlupViewerInitFunc init = init_func;
+    
+    if(init != NULL) {
+	init_func = NULL;
+        init();
     }
+
+    start = now();
     
     if(!glfwWindowShouldClose(glup_viewer_window) && in_main_loop_) {
         glfwGetFramebufferSize(glup_viewer_window, &cur_width, &cur_height);
@@ -1375,7 +1487,8 @@ void glup_viewer_one_frame() {
         glfwPollEvents();
         if(
             glup_viewer_is_enabled(GLUP_VIEWER_IDLE_REDRAW) ||
-            glup_viewer_needs_redraw > 0
+            glup_viewer_needs_redraw > 0 ||
+            (now()-start) < 1.0 /* overcomes missing update at startup */
         ) {
             if(glup_viewer_is_enabled(GLUP_VIEWER_TWEAKBARS)) {
                 glup_viewer_gui_begin_frame();
@@ -1391,7 +1504,7 @@ void glup_viewer_one_frame() {
             glup_viewer_pause();
         }
         glfwSwapBuffers(glup_viewer_window);
-    }
+    } 
 }
 
 void glup_viewer_main_loop(int argc, char** argv) {
@@ -1412,16 +1525,33 @@ void glup_viewer_main_loop(int argc, char** argv) {
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     }
 
+    
     if(glup_viewer_get_arg_bool("gfx:GL_debug")) {
         glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);            
     }
 
-    if(
+    if(glup_viewer_is_high_dpi()) {
+        glup_viewer_W *= 2;
+        glup_viewer_H *= 2;
+    }
+
+    glup_viewer_set_screen_size_from_args();
+    
+    if( 
         glup_viewer_get_arg_bool("gfx:fullscreen") ||
-        glup_viewer_is_enabled(GLUP_VIEWER_FULL_SCREEN)
+        glup_viewer_is_enabled(GLUP_VIEWER_FULL_SCREEN) 
     ) {
+        GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+        const GLFWvidmode* vidmode = glfwGetVideoMode(monitor);
+        glup_viewer_W = vidmode->width;
+        glup_viewer_H = vidmode->height;
+        /* 
+         * Note: I'd rather not use a fullscreen window because it may change the resolution,
+         * this can be very annoying when doing a presentation, since the beamer may have
+         * difficulties to quickly react to resolution changes.
+         */
         glup_viewer_window = glfwCreateWindow(
-            glup_viewer_W, glup_viewer_H, title, glfwGetPrimaryMonitor(), NULL
+            glup_viewer_W, glup_viewer_H, title, NULL /* glfwGetPrimaryMonitor() */, NULL
         );
     } else {
         glup_viewer_window = glfwCreateWindow(
@@ -1457,7 +1587,7 @@ void glup_viewer_main_loop(int argc, char** argv) {
 
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(glup_viewer_one_frame, 0, 1);
-#else    
+#else
     while (!glfwWindowShouldClose(glup_viewer_window) && in_main_loop_) {
         glup_viewer_one_frame();
     }
@@ -1484,6 +1614,17 @@ void glup_viewer_set_region_of_interest(
         0.25f * (ymax - ymin) * (ymax - ymin) +
         0.25f * (zmax - zmin) * (zmax - zmin)
     ));
+}
+
+void glup_viewer_get_region_of_interest(
+    float* xm, float* ym, float* zm, float* xM, float* yM, float* zM
+) {
+    *xm = xmin;
+    *ym = ymin;
+    *zm = zmin;
+    *xM = xmax;
+    *yM = ymax;
+    *zM = zmax;
 }
 
 void glup_viewer_set_background(int tex) {
@@ -1687,6 +1828,12 @@ void axis_to_quat(float a[3], float phi, float q[4])
     vcopy(a, q);
     vscale(q, (float) sin(((double)phi) / 2.0));
     q[3] = (float) cos(((double)phi) / 2.0);
+}
+
+void glup_viewer_set_scene_rotation(
+    float xyz[3], float angle
+) {
+    axis_to_quat(xyz, (float)((double)angle * M_PI / 180.0), cur_rot);
 }
 
 /*
@@ -1905,7 +2052,7 @@ void glTexImage2DXPM(const char** xpm_data) {
         return;
     }
     for(color = 0; color < nb_colors; color++) {
-        int r, g, b;
+        int r, g, b, a;
         int none ;
         
         key1 = xpm_data[line][0];
@@ -1931,7 +2078,14 @@ void glTexImage2DXPM(const char** xpm_data) {
         i2r[color] = (unsigned char) r;
         i2g[color] = (unsigned char) g;
         i2b[color] = (unsigned char) b;
-        i2a[color] = none ? 0 : 255;
+	if(none) {
+	    i2a[color] = 0;
+	} else if(colorcode[6] != '\0' && colorcode[7] != '\0') {
+	    a = 16 * htoi(colorcode[6]) + htoi(colorcode[7]);	    
+	    i2a[color] = (unsigned char) a;
+	} else {
+	    i2a[color] = 255;
+	}
         char_to_index[key1][key2] = color;
         line++;
     }
@@ -2313,3 +2467,54 @@ void glup_viewer_random_color_from_index(int index) {
         glupColor4fv(white) ;
     }
 }
+
+GLboolean glup_viewer_is_high_dpi(void) {
+#ifdef __EMSCRIPTEN__
+    return GL_FALSE;
+#else    
+    GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+    const GLFWvidmode* vidmode = glfwGetVideoMode(monitor);
+    return (vidmode->width > 1920);
+#endif    
+}
+
+void glup_viewer_snapshot(const char* filename) {
+    FILE* f = fopen(filename, "wb");
+    int line_size = glup_viewer_W*3;
+    void* data = NULL;
+    char* line1;
+    char* line2;
+    int y;
+    int xx;
+    char tmp;
+    
+    if(f == NULL) {
+	return;
+    }
+
+    /* Read OpenGL frame buffer */
+    data = malloc((size_t)(glup_viewer_W*glup_viewer_H*3));
+    glReadPixels(
+	0, 0, glup_viewer_W, glup_viewer_H,
+	GL_RGB, GL_UNSIGNED_BYTE, data
+    );
+
+    /* Flip image along vertical axis */
+    for(y=0; y<glup_viewer_W/2; ++y) {
+	line1 = (char*)data + line_size*y;
+	line2 = (char*)data + line_size*(glup_viewer_H-1-y);
+	for(xx=0; xx<line_size; ++xx) {
+	    tmp = line1[xx];
+	    line1[xx] = line2[xx];
+	    line2[xx] = tmp;
+	}
+    }
+
+    /* Save as PPM */
+    fprintf(f,"P6\n%d %d\n255\n",glup_viewer_W,glup_viewer_H);
+    fwrite(data,1,(size_t)(glup_viewer_W*glup_viewer_H*3),f);
+    
+    free(data);
+    fclose(f);
+}
+

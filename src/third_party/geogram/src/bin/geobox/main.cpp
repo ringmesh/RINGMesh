@@ -55,6 +55,9 @@
 #include <geogram/mesh/mesh_decimate.h>
 #include <geogram/mesh/mesh_tetrahedralize.h>
 #include <geogram/mesh/mesh_topology.h>
+#include <geogram/mesh/mesh_AABB.h>
+
+#include <geogram/delaunay/LFS.h>
 
 #include <geogram/points/co3ne.h>
 
@@ -99,7 +102,7 @@ namespace {
                     );
                 ImGui::Image(
                     convert_to_ImTextureID(geogram_logo_texture_),
-                    ImVec2(256, 256)
+                    ImVec2(256.0f * scaling(), 256.0f * scaling())
                 );
                 ImGui::Text(
                     "\n"
@@ -125,6 +128,15 @@ namespace {
                     "\n"
                     "       (C)opyright 2006-2016\n"
                     "      The ALICE project, Inria\n"
+                );
+                ImGui::Text("\n");
+                ImGui::Separator();
+                ImGui::Text(
+                    "%s",
+                    (
+                        "GEOGRAM version:" +
+                        Environment::instance()->get_value("version")
+                    ).c_str()
                 );
                 ImGui::EndMenu();
             }
@@ -301,7 +313,49 @@ namespace {
                 "[removes vertices that are not connected to any element]",
                         this, &GeoBoxApplication::remove_isolated_vertices
                     );
+                }
+
+                if(ImGui::BeginMenu("Selection")) {
+                    if(ImGui::BeginMenu("vertices")) {
+                        if(ImGui::MenuItem("select all vertices")) {
+                            select_all_vertices();
+                        }
+                        if(ImGui::MenuItem("unselect all vertices")) {
+                            unselect_all_vertices();
+                        }
+                        if(ImGui::MenuItem("invert vertices selection")) {
+                            invert_vertices_selection();
+                        }
+                        if(ImGui::MenuItem("select vertices on surface border")) {
+                            select_vertices_on_surface_border();
+                        }
+                        if(ImGui::MenuItem("unselect vertices on surface border")) {
+                            unselect_vertices_on_surface_border();
+                        }
+                        if(ImGui::MenuItem("delete selected vertices")) {
+                            delete_selected_vertices();
+                        }
+                        ImGui::EndMenu();
+                    }
+                    ImGui::EndMenu();
+                }
+                
+                ImGui::EndMenu();
             }
+
+            if(ImGui::BeginMenu("Attributes")) {
+                if(ImGui::MenuItem("compute local feature size")) {
+                    Command::set_current(
+                        "compute_local_feature_size(std::string attribute_name=\"LFS\")",
+                        this, &GeoBoxApplication::compute_local_feature_size
+                    );
+                }
+                if(ImGui::MenuItem("compute distance to border")) {
+                    Command::set_current(
+                        "compute_distance_to_border(std::string attribute_name=\"distance\")",
+                        this, &GeoBoxApplication::compute_distance_to_border
+                    );
+                }
                 ImGui::EndMenu();
             }
         }
@@ -665,6 +719,165 @@ namespace {
             }
             end();
             show_volume();
+        }
+
+        void select_all_vertices() {
+            Attribute<bool> v_selection(
+                mesh()->vertices.attributes(), "selection"
+            );
+            for(index_t v=0; v<mesh()->vertices.nb(); ++v) {
+                v_selection[v] = true;
+            }
+        }
+
+        void unselect_all_vertices() {
+            if(mesh()->vertices.attributes().is_defined("selection")) {
+                mesh()->vertices.attributes().delete_attribute_store(
+                    "selection"
+                );
+            }
+        }
+
+        void invert_vertices_selection() {
+            Attribute<bool> v_selection(
+                mesh()->vertices.attributes(), "selection"
+            );
+            for(index_t v=0; v<mesh()->vertices.nb(); ++v) {
+                v_selection[v] = !v_selection[v];
+            }
+        }
+
+        void select_vertices_on_surface_border() {
+            Attribute<bool> v_selection(
+                mesh()->vertices.attributes(), "selection"
+            );
+            for(index_t f=0; f<mesh()->facets.nb(); ++f) {
+                for(
+                    index_t c=mesh()->facets.corners_begin(f);
+                    c < mesh()->facets.corners_end(f); ++c
+                ) {
+                    if(mesh()->facet_corners.adjacent_facet(c) == NO_FACET) {
+                        v_selection[mesh()->facet_corners.vertex(c)] = true;
+                    }
+                }
+            }
+        }
+
+        void unselect_vertices_on_surface_border() {
+            Attribute<bool> v_selection(
+                mesh()->vertices.attributes(), "selection"
+            );
+            for(index_t f=0; f<mesh()->facets.nb(); ++f) {
+                for(
+                    index_t c=mesh()->facets.corners_begin(f);
+                    c < mesh()->facets.corners_end(f); ++c
+                ) {
+                    if(mesh()->facet_corners.adjacent_facet(c) == NO_FACET) {
+                        v_selection[mesh()->facet_corners.vertex(c)] = false;
+                    }
+                }
+            }
+        }
+
+        void delete_selected_vertices() {
+            if(!mesh()->vertices.attributes().is_defined("selection")) {
+                return;
+            }
+
+            Attribute<bool> v_selection(
+                mesh()->vertices.attributes(), "selection"
+            );
+
+
+            {
+                vector<index_t> delete_e(mesh()->edges.nb(),0);
+                for(index_t e=0; e<mesh()->edges.nb(); ++e) {
+                    if(
+                        v_selection[mesh()->edges.vertex(e,0)] ||
+                        v_selection[mesh()->edges.vertex(e,0)]
+                    ) {
+                        delete_e[e] = 1;
+                    }
+                }
+                mesh()->edges.delete_elements(delete_e);
+            }
+
+            {
+                vector<index_t> delete_f(mesh()->facets.nb(),0);
+                for(index_t f=0; f<mesh()->facets.nb(); ++f) {
+                    for(index_t lv=0; lv<mesh()->facets.nb_vertices(f); ++lv) {
+                        if(v_selection[mesh()->facets.vertex(f,lv)]) {
+                            delete_f[f] = 1;
+                            break;
+                        }
+                    }
+                }
+                mesh()->facets.delete_elements(delete_f);
+            }
+
+            {
+                vector<index_t> delete_c(mesh()->cells.nb(),0);
+                for(index_t c=0; c<mesh()->cells.nb(); ++c) {
+                    for(index_t lv=0; lv<mesh()->cells.nb_vertices(c); ++lv) {
+                        if(v_selection[mesh()->cells.vertex(c,lv)]) {
+                            delete_c[c] = 1;
+                            break;
+                        }
+                    }
+                }
+                mesh()->cells.delete_elements(delete_c);
+            }
+
+            {
+                vector<index_t> delete_v(mesh()->vertices.nb(),0);
+                for(index_t v=0; v<mesh()->vertices.nb(); ++v) {
+                    if(v_selection[v]) {
+                        delete_v[v] = 1;
+                    }
+                }
+                mesh()->vertices.delete_elements(delete_v);
+            }
+        }
+
+        void compute_local_feature_size(std::string attribute_name) {
+            begin();
+            LocalFeatureSize LFS(
+                mesh()->vertices.nb(), mesh()->vertices.point_ptr(0)
+            );
+
+            Attribute<double> lfs(
+                mesh()->vertices.attributes(), attribute_name
+            );
+
+            for(index_t v=0; v<mesh()->vertices.nb(); ++v) {
+                lfs[v] = ::sqrt(
+                    LFS.squared_lfs(mesh()->vertices.point_ptr(v))
+                );
+            }
+            end();
+            set_attribute("vertices." + attribute_name);
+            show_attributes();
+        }
+
+        void compute_distance_to_border(std::string attribute_name) {
+            if(mesh()->cells.nb() == 0) {
+                Logger::err("Distance") << "Mesh has no cell"
+                                        << std::endl;
+                return;
+            }
+            begin();
+            Attribute<double> distance(
+                mesh()->vertices.attributes(), attribute_name
+            );
+            MeshFacetsAABB AABB(*mesh());
+            for(index_t v=0; v<mesh()->vertices.nb(); ++v) {
+                distance[v] = ::sqrt(
+                    AABB.squared_distance(vec3(mesh()->vertices.point_ptr(v)))
+                );
+            }
+            end();
+            set_attribute("vertices." + attribute_name);
+            show_attributes();
         }
         
     protected:

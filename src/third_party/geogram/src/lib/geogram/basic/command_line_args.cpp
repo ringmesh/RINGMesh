@@ -48,6 +48,8 @@
 #include <geogram/basic/process.h>
 #include <geogram/basic/logger.h>
 
+#include <set>
+
 namespace {
 
     using namespace GEO;
@@ -59,7 +61,7 @@ namespace {
     void import_arg_group_global() {
         declare_arg(
             "profile", "scan",
-            "Vorpaline mode (scan, convert, repair, heal, cad)"
+            "Vorpaline mode (scan, convert, repair, heal, cad, tet, poly)"
         );
         declare_arg(
             "debug", false,
@@ -94,7 +96,7 @@ namespace {
             "pre:epsilon", 0,
             "Colocate tolerance (in % of bounding box diagonal)",
             ARG_ADVANCED
-        );  // 1e-4
+        );  
         declare_arg_percent(
             "pre:max_hole_area", 0,
             "Fill holes smaller than (in % total area)"
@@ -147,14 +149,19 @@ namespace {
             "Number of samples for lfs (gradation)",
             ARG_ADVANCED
         );
+
+#ifdef GEOGRAM_WITH_VORPALINE	
         declare_arg(
             "remesh:sharp_edges", false,
             "Reconstruct sharp edges", ARG_ADVANCED
         );
+	
         declare_arg(
             "remesh:Nfactor", 5.0,
             "For sharp_edges", ARG_ADVANCED
         );
+#endif
+	
         declare_arg(
             "remesh:multi_nerve", true,
             "Insert new vertices to preserve topology",
@@ -195,6 +202,10 @@ namespace {
         declare_arg(
             "algo:predicates", "fast",
             "Geometric predicates (fast, exact)"
+        );
+        declare_arg(
+            "algo:reconstruct", "Co3Ne",
+            "reconstruction algorithm (Co3Ne, Poisson)"
         );
 #ifdef GEO_OS_ANDROID
         // NDK's default multithreading seems to be not SMP-compliant
@@ -253,6 +264,7 @@ namespace {
      */
     void import_arg_group_opt() {
         declare_arg_group("opt", "Optimizer fine tuning", ARG_ADVANCED);
+#ifdef GEOGRAM_WITH_HLBFGS
         declare_arg(
             "opt:nb_Lloyd_iter", 5,
             "Number of iterations for Lloyd pre-smoothing"
@@ -269,6 +281,24 @@ namespace {
             "opt:Newton_m", 7,
             "Number of evaluations for Hessian approximation"
         );
+#else
+        declare_arg(
+            "opt:nb_Lloyd_iter", 40,
+            "Number of iterations for Lloyd pre-smoothing"
+        );
+        declare_arg(
+            "opt:nb_Newton_iter", 0,
+            "Number of iterations for Newton-CVT"
+        );
+        declare_arg(
+            "opt:nb_LpCVT_iter", 0,
+            "Number of iterations for LpCVT"
+        );
+        declare_arg(
+            "opt:Newton_m", 0,
+            "Number of evaluations for Hessian approximation"
+        );
+#endif	
     }
 
     /**
@@ -276,10 +306,19 @@ namespace {
      */
     void import_arg_group_sys() {
         declare_arg_group("sys", "System fine tuning", ARG_ADVANCED);
+
+#ifdef GEO_DEBUG
+        declare_arg(
+            "sys:assert", "abort",
+            "Assertion behavior (abort, throw, breakpoint)"
+        );
+#else        
         declare_arg(
             "sys:assert", "throw",
-            "Assertion behavior (abort, throw)"
+            "Assertion behavior (abort, throw, breakpoint)"
         );
+#endif
+        
         declare_arg(
             "sys:multithread", Process::multithreading_enabled(),
             "Enables multi-threaded computations"
@@ -314,6 +353,21 @@ namespace {
         );
     }
 
+    /**
+     * \brief Imports the NL (Numerical Library) option group
+     */
+    void import_arg_group_nl() {
+	declare_arg_group("nl", "OpenNL (numerical library)", ARG_ADVANCED);
+	declare_arg(
+	    "nl:MKL", false,
+	    "Use Intel Math Kernel Library (if available in the system)"
+	);
+	declare_arg(
+	    "nl:CUDA", false,
+	    "Use NVidia CUDA (if available in the system)"
+	);
+    }
+    
     /**
      * \brief Imports the Logger option group
      */
@@ -397,6 +451,13 @@ namespace {
             "co3ne:use_normals", true,
             "Use existing normal attached to data if available"
         );
+
+        // For now, in co3ne import arg group -> todo: create new import func
+        declare_arg_group("poisson", "Reconstruction", ARG_ADVANCED);
+        declare_arg(
+            "poisson:octree_depth", 8,
+            "Octree depth for Poisson reconstruction if used"
+        );
     }
 
     /**
@@ -410,6 +471,44 @@ namespace {
         );
     }
 
+    /**
+     * \brief Imports the polyhedral meshing option group
+     */
+    void import_arg_group_poly() {
+        declare_arg_group("poly", "Polyhedral meshing", ARG_ADVANCED);
+        declare_arg(
+            "poly", false,
+            "Toggles polyhedral meshing"
+        );
+	declare_arg(
+	    "poly:simplify", "tets_voronoi",
+	    "one of none (generate all intersections), "
+	    "tets (regroup Vornoi cells), "
+	    "tets_voronoi (one polygon per Voronoi facet), "
+	    "tets_voronoi_boundary (simplify boundary)"
+	);
+	declare_arg(
+	    "poly:normal_angle_threshold", 1e-3,
+	    "maximum normal angle deviation (in degrees) for merging boundary facets"
+	    " (used if poly:simplify=tets_voronoi_boundary)"
+	);
+	declare_arg(
+	    "poly:cells_shrink", 0.0,
+	    "Voronoi cells shrink factor (for visualization purposes), between 0.0 and 1.0"
+	);
+	declare_arg(
+	    "poly:points_file", "",
+	    "optional points file name (if left blank, generates and optimizes remesh:nb_pts points)"
+	);
+	declare_arg(
+	    "poly:generate_ids", false,
+	    "generate unique ids for vertices and cells (saved in geogram and geogram_ascii file formats only)"
+	);
+	declare_arg(
+	    "poly:embedding_dim", 0,
+	    "force embedding dimension (0 = use input dim.)"
+	);
+    }    
 
     /**
      * \brief Imports the hex-dominant meshing option group
@@ -525,20 +624,23 @@ namespace {
      */
     void import_arg_group_gfx() {
         declare_arg_group("gfx", "OpenGL graphics options", ARG_ADVANCED);
-#ifdef GEO_OS_APPLE
+
+
+// Default profile will be "core" in a short future for all architectures,
+// but some users reported problems with it, so I keep for now
+// "compatibility" as the default (except on Mac/OS that prefers "core")	
         declare_arg(
-            "gfx:GL_profile", "core",
+            "gfx:GL_profile",
+#ifdef GEO_OS_APPLE	    
+	    "core",
+#else
+	    "compatibility",	    
+#endif	    
             "one of core,compatibility,ES"
         );
-#else        
-        declare_arg(
-            "gfx:GL_profile", "compatibility",
-            "one of core,compatibility,ES"
-        );
-#endif        
         declare_arg(
             "gfx:GL_version", 0.0,
-            "If non-zero, force GL version detection"
+            "If non-zero, override GL version detection"
         );
         declare_arg(
             "gfx:GL_debug", false,
@@ -550,18 +652,17 @@ namespace {
         );
         declare_arg(
             "gfx:GLSL_version", 0.0,
-            "If non-zero, force GLSL version detection"
+            "If non-zero, overrides GLSL version detection"
         );
         declare_arg(
             "gfx:GLUP_profile", "auto",
             "one of auto, GLUP150, GLUP440, VanillaGL"
         );
-        declare_arg(
-            "gfx:full_screen", false, "full screen mode"
-        );
+        declare_arg("gfx:full_screen", false, "full screen mode");
         declare_arg(
             "gfx:GLSL_tesselation", true, "use tesselation shaders if available"
         );
+	declare_arg("gfx:geometry", "800x800", "resolution");
     }
     
     
@@ -643,6 +744,13 @@ namespace {
     void set_profile_tet() {
         set_arg("tet", true);
     }
+
+    /**
+     * \brief Sets the polyhedral meshing profile
+     */
+    void set_profile_poly() {
+        set_arg("poly", true);
+    }
 }
 
 namespace GEO {
@@ -652,13 +760,22 @@ namespace GEO {
         bool import_arg_group(
             const std::string& name
         ) {
+	    static std::set<std::string> imported;
+	    if(imported.find(name) != imported.end()) {
+		return true;
+	    }
+	    imported.insert(name);
+	    
             if(name == "standard") {
                 import_arg_group_global();
                 import_arg_group_sys();
+		import_arg_group_nl();		
                 import_arg_group_log();
             } else if(name == "global") {
                 import_arg_group_global();
-            } else if(name == "sys") {
+            } else if(name == "nl") {
+	        import_arg_group_nl();
+	    } else if(name == "sys") {
                 import_arg_group_sys();
             } else if(name == "log") {
                 import_arg_group_log();
@@ -680,6 +797,8 @@ namespace GEO {
                 import_arg_group_hex();
             } else if(name == "tet") {
                 import_arg_group_tet();
+            } else if(name == "poly") {
+                import_arg_group_poly();
             } else if(name == "gfx") {
                 import_arg_group_gfx();
             } else {
@@ -711,6 +830,8 @@ namespace GEO {
                 set_profile_tet();
             } else if(name == "hex") {
                 set_profile_hex();
+            } else if(name == "poly") {
+                set_profile_poly();
             } else {
                 Logger::instance()->set_quiet(false);
                 Logger::err("CmdLine")

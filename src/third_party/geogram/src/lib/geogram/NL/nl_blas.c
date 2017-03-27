@@ -54,6 +54,9 @@
 #pragma GCC diagnostic ignored "-Wcast-qual"
 #endif
 
+#ifndef NL_FORTRAN_WRAP
+#define NL_FORTRAN_WRAP(x) x##_
+#endif
 
 #ifdef NL_USE_ATLAS
 int NL_FORTRAN_WRAP(xerbla)(char *srname, int *info) {
@@ -113,7 +116,7 @@ typedef NLint     ftnlen ;
 
 #ifndef NL_USE_BLAS
 
-static int NL_FORTRAN_WRAP(lsame)(char *ca, char *cb)
+static int NL_FORTRAN_WRAP(lsame)(const char *ca, const char *cb)
 {
 /*  -- LAPACK auxiliary routine (version 2.0) --   
        Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,   
@@ -189,7 +192,7 @@ static int NL_FORTRAN_WRAP(lsame)(char *ca, char *cb)
     
 } /* lsame_ */
 
-/* Subroutine */ static int NL_FORTRAN_WRAP(xerbla)(char *srname, int *info)
+/* Subroutine */ static int NL_FORTRAN_WRAP(xerbla)(const char *srname, int *info)
 {
 /*  -- LAPACK auxiliary routine (version 2.0) --   
        Univ. of Tennessee, Univ. of California Berkeley, NAG Ltd.,   
@@ -665,7 +668,7 @@ L40:
 #undef DX
 #undef DY
 
-/* Subroutine */ static int NL_FORTRAN_WRAP(dgemv)(char *trans, integer *m, integer *n, doublereal *
+/* Subroutine */ static int NL_FORTRAN_WRAP(dgemv)(const char *trans, integer *m, integer *n, doublereal *
         alpha, doublereal *a, integer *lda, doublereal *x, integer *incx, 
         doublereal *beta, doublereal *y, integer *incy)
 {
@@ -973,10 +976,6 @@ extern void NL_FORTRAN_WRAP(daxpy)(
     int *incx, double *y, int *incy 
 ) ;
 
-extern double NL_FORTRAN_WRAP(ddot)( 
-    int *n, double *x, int *incx, double *y,
-    int *incy 
-) ;
 
 extern double NL_FORTRAN_WRAP(dnrm2)( int *n, double *x, int *incx ) ;
 
@@ -1005,9 +1004,9 @@ extern void NL_FORTRAN_WRAP(dgemv)(
 /* DECK DTPSV */
 /* Subroutine */ 
 static int NL_FORTRAN_WRAP(dtpsv)(
-   char* uplo, 
-   char* trans, 
-   char* diag, 
+   const char* uplo, 
+   const char* trans, 
+   const char* diag, 
    integer* n, 
    doublereal* ap, 
    doublereal* x, 
@@ -1370,70 +1369,157 @@ static int NL_FORTRAN_WRAP(dtpsv)(
 
 #endif 
 
-
-/***********************************************************************************/
-/* C wrappers for BLAS routines */
-
-/* x <- a*x */
-void dscal( int n, double alpha, double *x, int incx ) {
-    NL_FORTRAN_WRAP(dscal)(&n,&alpha,x,&incx);
-    nlCurrentContext->flops += (NLulong)(n);
-}
-
-/* y <- x */
-void dcopy( 
-    int n, const double *x, int incx, double *y, int incy 
-) {
-    NL_FORTRAN_WRAP(dcopy)(&n,(double*)x,&incx,y,&incy);
-}
-
-/* y <- a*x+y */
-void daxpy( 
-    int n, double alpha, const double *x, int incx, double *y,
-    int incy 
-) {
-    NL_FORTRAN_WRAP(daxpy)(&n,&alpha,(double*)x,&incx,y,&incy);
-    nlCurrentContext->flops += (NLulong)(2*n);    
-}
-
-/* returns x^T*y */
-double ddot( 
-    int n, const double *x, int incx, const double *y, int incy 
-) {
-    nlCurrentContext->flops += (NLulong)(2*n);        
-    return NL_FORTRAN_WRAP(ddot)(&n,(double*)x,&incx,(double*)y,&incy);
-}
-
-/* returns |x|_2 */
-double dnrm2( int n, const double *x, int incx ) {
-    nlCurrentContext->flops += (NLulong)(2*n);        
-    return NL_FORTRAN_WRAP(dnrm2)(&n,(double*)x,&incx);
-}
-
-/* x <- A^{-1}*x,  x <- A^{-T}*x */
-void dtpsv( 
-    MatrixTriangle uplo, MatrixTranspose trans,
-    MatrixUnitTriangular diag, int n, const double *AP,
-    double *x, int incx 
-) {
-    static char *UL[2] = { "U", "L" };
-    static char *T[3]  = { "N", "T", 0 };
-    static char *D[2]  = { "U", "N" };
-    /* TODO: update flops */
-    NL_FORTRAN_WRAP(dtpsv)(UL[(int)uplo],T[(int)trans],D[(int)diag],&n,(double*)AP,x,&incx); 
-}
-
-/* y <- alpha*A*x + beta*y,  y <- alpha*A^T*x + beta*y,   A-(m,n) */
-void dgemv( 
-    MatrixTranspose trans, int m, int n, double alpha,
-    const double *A, int ldA, const double *x, int incx,
-    double beta, double *y, int incy 
-) {
-    static char *T[3] = { "N", "T", 0 };
-    /* TODO: update flops */    
-    NL_FORTRAN_WRAP(dgemv)(T[(int)trans],&m,&n,&alpha,(double*)A,&ldA,(double*)x,&incx,&beta,y,&incy);
-}
-
 /************************************************************************/
 /* End of BLAS routines */
 /************************************************************************/
+
+/************************************************************************/
+/* Abstract BLAS interface                                              */
+/************************************************************************/
+
+void nlBlasResetStats(NLBlas_t blas) {
+    blas->start_time = nlCurrentTime();
+    blas->flops = 0;
+    blas->used_ram[0] = 0;
+    blas->used_ram[1] = 0;
+    blas->max_used_ram[0] = 0;
+    blas->max_used_ram[1] = 0;
+    blas->sq_rnorm = 0.0;
+    blas->sq_bnorm = 0.0;
+}
+
+double nlBlasGFlops(NLBlas_t blas) {
+    double now = nlCurrentTime();
+    double elapsed_time = now - blas->start_time;
+    return (NLdouble)(blas->flops) / (elapsed_time * 1e9);
+}
+
+NLulong nlBlasUsedRam(NLBlas_t blas, NLmemoryType type) {
+    return blas->used_ram[type];
+}
+
+NLulong nlBlasMaxUsedRam(NLBlas_t blas, NLmemoryType type) {
+    return blas->max_used_ram[type];
+}
+
+NLboolean nlBlasHasUnifiedMemory(NLBlas_t blas) {
+    return blas->has_unified_memory;
+}
+
+static void* host_blas_malloc(
+    NLBlas_t blas, NLmemoryType type, size_t size
+) {
+    nl_arg_used(type);
+    blas->used_ram[type] += (NLulong)size;
+    blas->max_used_ram[type] = MAX(
+	blas->max_used_ram[type],blas->used_ram[type]
+    );
+    return malloc(size);
+}
+
+static void host_blas_free(
+    NLBlas_t blas, NLmemoryType type, size_t size, void* ptr
+) {
+    nl_arg_used(type);
+    blas->used_ram[type] -= (NLulong)size;
+    free(ptr);
+}
+
+static void host_blas_memcpy(
+    NLBlas_t blas,
+    void* to, NLmemoryType to_type,
+    void* from, NLmemoryType from_type,
+    size_t size
+) {
+    nl_arg_used(blas);
+    nl_arg_used(to_type);
+    nl_arg_used(from_type);
+    memcpy(to,from,size);
+}
+
+static void host_blas_dcopy(
+    NLBlas_t blas, int n, const double *x, int incx, double *y, int incy    
+) {
+    nl_arg_used(blas);
+    NL_FORTRAN_WRAP(dcopy)(&n,(double*)x,&incx,y,&incy);    
+}
+
+static double host_blas_ddot(
+    NLBlas_t blas, int n, const double *x, int incx, const double *y, int incy    
+) {
+    blas->flops += (NLulong)(2*n);
+    return NL_FORTRAN_WRAP(ddot)(&n,(double*)x,&incx,(double*)y,&incy);
+}
+
+static double host_blas_dnrm2(
+    NLBlas_t blas, int n, const double *x, int incx
+) {
+    blas->flops += (NLulong)(2*n);
+    return NL_FORTRAN_WRAP(dnrm2)(&n,(double*)x,&incx);
+}
+
+static void host_blas_daxpy(
+    NLBlas_t blas, int n, double a, const double *x, int incx, double *y, int incy
+) {
+    blas->flops += (NLulong)(2*n);
+    NL_FORTRAN_WRAP(daxpy)(&n,&a,(double*)x,&incx,y,&incy);
+}
+
+static void host_blas_dscal(
+    NLBlas_t blas, int n, double a, double *x, int incx    
+) {
+    blas->flops += (NLulong)n;
+    NL_FORTRAN_WRAP(dscal)(&n,&a,x,&incx);    
+}
+
+static void host_blas_dgemv(
+    NLBlas_t blas, MatrixTranspose trans, int m, int n, double alpha,
+    const double *A, int ldA, const double *x, int incx,
+    double beta, double *y, int incy 
+) {
+    static const char *T[3] = { "N", "T", 0 };
+    nl_arg_used(blas);
+    NL_FORTRAN_WRAP(dgemv)(
+	T[(int)trans],&m,&n,&alpha,(double*)A,&ldA,
+	(double*)x,&incx,&beta,y,&incy
+    );
+    /* TODO: update flops */    
+}
+
+static void host_blas_dtpsv(
+    NLBlas_t blas, MatrixTriangle uplo, MatrixTranspose trans,
+    MatrixUnitTriangular diag, int n, const double *AP,
+    double *x, int incx 
+) {
+    static const char *UL[2] = { "U", "L" };
+    static const char *T[3]  = { "N", "T", 0 };
+    static const char *D[2]  = { "U", "N" };
+    nl_arg_used(blas);    
+    NL_FORTRAN_WRAP(dtpsv)(
+	UL[(int)uplo],T[(int)trans],D[(int)diag],&n,(double*)AP,x,&incx
+    );
+    /* TODO: update flops */
+}
+
+NLBlas_t nlHostBlas() {
+    static NLboolean initialized = NL_FALSE;
+    static struct NLBlas blas;
+    if(!initialized) {
+	memset(&blas, 0, sizeof(blas));
+	blas.has_unified_memory = NL_TRUE;
+	blas.Malloc = host_blas_malloc;
+	blas.Free = host_blas_free;
+	blas.Memcpy = host_blas_memcpy;
+	blas.Dcopy = host_blas_dcopy;
+	blas.Ddot = host_blas_ddot;
+	blas.Dnrm2 = host_blas_dnrm2;
+	blas.Daxpy = host_blas_daxpy;
+	blas.Dscal = host_blas_dscal;
+	blas.Dgemv = host_blas_dgemv;
+	blas.Dtpsv = host_blas_dtpsv;
+	nlBlasResetStats(&blas);
+	initialized = NL_TRUE;
+    }
+    return &blas;
+}
+

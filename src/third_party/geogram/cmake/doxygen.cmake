@@ -9,7 +9,7 @@ set(DOXYGEN_MINIMUM_VERSION 1.7.0)
 
 find_package(Doxygen ${DOXYGEN_MINIMUM_VERSION} QUIET)
 if(NOT DOXYGEN_FOUND)
-    message(WARNING "Doxygen >= ${DOXYGEN_MINIMUM_VERSION} not found, cannot generate documentation")
+    message(STATUS "Doxygen >= ${DOXYGEN_MINIMUM_VERSION} not found, cannot generate documentation")
     unset(DOXYGEN_EXECUTABLE CACHE)
     return()
 endif()
@@ -48,6 +48,11 @@ if(DOXYGEN_FOUND)
     set_property(
         DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES ${doc_output_dir}/${doc_type}
+    )
+
+    set_target_properties(
+        ${doc_target} PROPERTIES
+	FOLDER "DOC"
     )
 
   endfunction()

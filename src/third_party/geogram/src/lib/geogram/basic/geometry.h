@@ -47,9 +47,7 @@
 #define GEOGRAM_BASIC_GEOMETRY
 
 #include <geogram/basic/common.h>
-#include <geogram/basic/vecg.h>
 #include <geogram/basic/matrix.h>
-#include <geogram/basic/numeric.h>
 
 /**
  * \file geogram/basic/geometry.h
@@ -105,19 +103,19 @@ namespace GEO {
      * \brief Represents a 2x2 matrix.
      * \details Syntax is (mostly) compatible with GLSL.
      */
-    typedef Matrix<Numeric::float64, 2> mat2;
+    typedef Matrix<2, Numeric::float64> mat2;
 
     /**
      * \brief Represents a 3x3 matrix.
      * \details Syntax is (mostly) compatible with GLSL.
      */
-    typedef Matrix<Numeric::float64, 3> mat3;
+    typedef Matrix<3, Numeric::float64> mat3;
 
     /**
      * \brief Represents a 4x4 matrix.
      * \details Syntax is (mostly) compatible with GLSL.
      */
-    typedef Matrix<Numeric::float64, 4> mat4;
+    typedef Matrix<4, Numeric::float64> mat4;
 
     /************************************************************************/
 
@@ -193,9 +191,13 @@ namespace GEO {
          * \return the cosine of the angle between \p a and \p b
          */
         inline double cos_angle(const vec3& a, const vec3& b) {
-            double na2 = length2(a);
-            double nb2 = length2(b);
-            return dot(a, b) / ::sqrt(na2 * nb2);
+	    double lab = ::sqrt(length2(a)*length2(b));
+            double result = (lab > 1e-20) ? (dot(a, b) / lab) : 1.0;
+            // Numerical precision problem may occur, and generate
+            // normalized dot products that are outside the valid
+            // range of acos.
+	    geo_clamp(result, -1.0, 1.0);
+	    return result;
         }
 
         /**
@@ -216,9 +218,13 @@ namespace GEO {
          * \return the cosine of the angle between \p a and \p b
          */
         inline double cos_angle(const vec2& a, const vec2& b) {
-            double na2 = length2(a);
-            double nb2 = length2(b);
-            return dot(a, b) / ::sqrt(na2 * nb2);
+	    double lab = ::sqrt(length2(a)*length2(b));
+            double result = (lab > 1e-20) ? (dot(a, b) / lab) : 1.0;
+            // Numerical precision problem may occur, and generate
+            // normalized dot products that are outside the valid
+            // range of acos.
+	    geo_clamp(result, -1.0, 1.0);
+	    return result;
         }
 
         /**
@@ -326,7 +332,7 @@ namespace GEO {
          * \param[in] v a 2d vector
          * \return true if one of the coordinates is a NaN, false otherwise
          */
-        inline bool is_nan(const vec2& v) {
+        inline bool has_nan(const vec2& v) {
             return
                 Numeric::is_nan(v.x) ||
                 Numeric::is_nan(v.y);

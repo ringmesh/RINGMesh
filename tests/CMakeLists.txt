@@ -1,4 +1,4 @@
-# Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
+# Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,6 @@
 #     2 Rue du Doyen Marcel Roubault - TSA 70605
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
-
 
 # CMakeLists for RINGMesh tests
 # This file is included by the root CMakeList of the RINGMesh project 

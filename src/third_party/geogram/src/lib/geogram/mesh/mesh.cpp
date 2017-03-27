@@ -1404,6 +1404,11 @@ namespace GEO {
             GEO::Logger::warn("Mesh")
                 << "Found only one triangular facet adjacent to a quad facet"
                 << std::endl;
+            Attribute<bool> weird(attributes(),"weird");
+            weird[c1] = true;
+            for(index_t i=0; i<matches.size(); ++i) {
+                weird[matches[i].first] = true;
+            }
             return false;
         }
 
@@ -1441,10 +1446,10 @@ namespace GEO {
 
         // Sanity check: make sure that we only found a single pair
         // of triangular facets with a common edge that matches the quad.
-        if(nb_found > 1) {
+        if(nb_found > 2) {
             GEO::Logger::warn("Mesh")
                 << "Found more than two triangular facets adjacent to a quad"
-                << " (" << nb_found << ")"
+                << " ( got " << nb_found << ")"
                 << std::endl;
             Attribute<bool> weird(attributes(),"weird");
             weird[c1] = true;
@@ -1468,9 +1473,11 @@ namespace GEO {
             adjacent(adj_c1, adj_lf1) != NO_CELL ||
             adjacent(adj_c2, adj_lf2) != NO_CELL
         ) {
+	    /*
             GEO::Logger::warn("Mesh")
-                << "Matching tet facets are not on border"
+                << "Matching tet facets are not on border (\"thick sliver\")"
                 << std::endl;
+	    */
             return false;
         }
 
@@ -1501,7 +1508,7 @@ namespace GEO {
         return true;
     }
     
-    void MeshCells::connect() {
+    void MeshCells::connect(bool remove_trivial_slivers, bool verbose_if_OK) {
         // "Fast track" for simplicial mesh
         if(is_simplicial_) {
             connect_tets();
@@ -1577,7 +1584,12 @@ namespace GEO {
         // triangular faces to be connected with it (a vector of
         // (cell index, facet index) pairs).
         std::vector< std::pair<index_t, index_t> > matches;
-                
+
+        // If remove_trivial_slivers is set, we also detect the trivial
+        // slivers, i.e. the slivers that are glued on a quadrilateral facet.
+        
+        std::vector<index_t> trivial_slivers;
+        
         // (c1,f1) traverse all quadrangular cell facets on the border
         for(index_t c1=0; c1 < nb_cells0; ++c1) {
             if(type(c1) == MESH_TET) {
@@ -1635,6 +1647,19 @@ namespace GEO {
                 ) {
                     ++weird;
                 }
+
+                if(remove_trivial_slivers) {
+                    for(index_t i=0; i<matches.size(); ++i) {
+                        if(type(matches[i].first) != MESH_TET) {
+                            continue;
+                        }
+                        for(index_t j=i+1; j<matches.size(); ++j) {
+                            if(matches[j].first == matches[i].first) {
+                                trivial_slivers.push_back(matches[i].first);
+                            }
+                        }
+                    }
+                }
             }
         }
         if(weird != 0) {
@@ -1642,6 +1667,36 @@ namespace GEO {
                                       << weird
                                       << " invalid connector configurations"
                                       << std::endl;
+        } else {
+	    if(verbose_if_OK) {
+		GEO::Logger::out("Mesh") << "All connectors are OK"
+					 << std::endl;
+	    }
+	}
+        if(remove_trivial_slivers && trivial_slivers.size() != 0) {
+            GEO::Logger::warn("Mesh") << "Removing "
+                                      << trivial_slivers.size()
+                                      << " trivial sliver(s)" << std::endl;
+
+            next_cell_around_vertex.clear();
+            v2cell.clear();
+            
+            vector<index_t> delete_c(nb(),0);
+            for(index_t i=0; i<trivial_slivers.size(); ++i) {
+                delete_c[trivial_slivers[i]] = 1;
+            }
+	    // We need to remove the previously generated connectors,
+	    // some of them may be wrong if adjacent to a sliver that
+	    // was removed.
+	    for(index_t c=0; c<nb(); ++c) {
+		if(type(c) == MESH_CONNECTOR) {
+		    delete_c[c] = 1;
+		}
+	    }
+            delete_elements(delete_c);
+
+            GEO::Logger::warn("Mesh") << "Re-trying to connect cells" << std::endl;
+            connect(false,true);
         }
     }
 
@@ -1745,6 +1800,9 @@ namespace GEO {
         vertices.bind_point_attribute(dimension, single_precision);
     }
 
+    Mesh::~Mesh() {
+    }
+    
     void Mesh::clear(bool keep_attributes, bool keep_memory) {
         vertices.clear(keep_attributes, keep_memory);
         edges.clear(keep_attributes, keep_memory);
@@ -2058,6 +2116,7 @@ namespace {
         std::string result;
         vector<std::string> attribute_names;
         attributes.list_attribute_names(attribute_names);
+
         for(index_t i=0; i<attribute_names.size(); ++i) {
             const AttributeStore* store = attributes.
                 find_attribute_store(attribute_names[i]);
@@ -2086,6 +2145,39 @@ namespace {
         return result;
     }
 
+
+    /**
+     * \brief Gets the names of all vector attributes from an AttributeManager
+     * \param[in] attributes a const reference to the attribute manager
+     * \param[in] prefix a const rerefenre to a string to be prepended to
+     *  all attribute names
+     * \param[in] max_dim if non-zero, only return vector attributes with 
+     *  dimension lower than max_dim
+     * \return a ';'-separated list of all the vector attributes
+     */
+    std::string get_vector_attributes_impl(
+        const AttributesManager& attributes,
+        const std::string& prefix,
+	index_t max_dim = 0
+    ) {
+        std::string result;
+        vector<std::string> attribute_names;
+        attributes.list_attribute_names(attribute_names);
+
+        for(index_t i=0; i<attribute_names.size(); ++i) {
+            const AttributeStore* store = attributes.
+                find_attribute_store(attribute_names[i]);
+	    if(store->dimension() >= 2 && (max_dim == 0 || store->dimension() <= max_dim)) {
+		if(result != "") {
+		    result += ";";
+		}
+		result += prefix + "." + attribute_names[i];
+	    }
+        }
+        return result;
+    }
+
+    
     /**
      * \brief Appends a string to another one, with ';' delimiters.
      * \details If a is non-empty, a ';' delimiter is inserted.
@@ -2129,6 +2221,36 @@ namespace GEO {
         );
         strappend(result,get_scalar_attributes_impl(
             cell_facets.attributes(),"cell_facets")
+        );        
+        return result;
+    }
+
+
+    std::string Mesh::get_vector_attributes(index_t max_dim) const {
+        std::string result;
+        strappend(
+            result,get_vector_attributes_impl(vertices.attributes(),"vertices",max_dim)
+        );
+        strappend(
+            result,get_vector_attributes_impl(edges.attributes(),"edges",max_dim)
+        );
+        strappend(
+            result,get_vector_attributes_impl(facets.attributes(),"facets",max_dim)
+        );
+        strappend(result,get_vector_attributes_impl(
+                      facet_corners.attributes(),"facet_corners",max_dim
+                  )
+        );
+        strappend(
+            result,get_vector_attributes_impl(cells.attributes(),"cells",max_dim)
+        );
+        strappend(
+            result,get_vector_attributes_impl(
+                cell_corners.attributes(),"cell_corners",max_dim
+            )
+        );
+        strappend(result,get_vector_attributes_impl(
+	      cell_facets.attributes(),"cell_facets",max_dim)
         );        
         return result;
     }

@@ -371,6 +371,7 @@ namespace GEO {
             const std::string& path,
             std::vector<std::string>& result, bool recursive
         ) {
+	    // TODO: seems to be bugged, enters infinite recursion...
             get_directory_entries(path, result);
             if(recursive) {
                 for(size_t i = 0; i < result.size(); i++) {
@@ -568,21 +569,25 @@ namespace GEO {
 
 
         std::string home_directory() {
+            std::string home;
 #if defined GEO_OS_WINDOWS
             wchar_t folder[MAX_PATH+1];
             HRESULT hr = SHGetFolderPathW(0, CSIDL_MYDOCUMENTS, 0, 0, folder);
             if (SUCCEEDED(hr)) {
                 char result[MAX_PATH+1];
                 wcstombs(result, folder, MAX_PATH);
-                return std::string(result);
+                home=std::string(result);
+                flip_slashes(home);
             }
-#else   
+#elif defined GEO_OS_EMSCRIPTEN
+            home="/";
+#else            
             char* result = getenv("HOME");
             if(result != nil) {
-                return std::string(result);
+                home=result;
             }
 #endif
-            return std::string("");
+            return home;
         }
 
         
