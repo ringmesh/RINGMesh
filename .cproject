@@ -24,7 +24,7 @@
 								<option id="gnu.cpp.compiler.exe.release.option.optimization.level.1174806947" name="Optimization Level" superClass="gnu.cpp.compiler.exe.release.option.optimization.level" value="gnu.cpp.compiler.optimization.level.most" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.exe.release.option.debugging.level.951223345" name="Debug Level" superClass="gnu.cpp.compiler.exe.release.option.debugging.level" value="gnu.cpp.compiler.debugging.level.none" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.include.paths.791559926" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${APPLICATIONS}/DISTENE/MeshGems-1.1/Products/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${APPLICATIONS}/DISTENE/MeshGems-2.4/Products/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/src/third_party/geogram/src/lib&quot;"/>
 								</option>
@@ -82,7 +82,7 @@
 								<option id="gnu.cpp.compiler.exe.release.option.optimization.level.649617816" name="Optimization Level" superClass="gnu.cpp.compiler.exe.release.option.optimization.level" value="gnu.cpp.compiler.optimization.level.most" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.exe.release.option.debugging.level.538453860" name="Debug Level" superClass="gnu.cpp.compiler.exe.release.option.debugging.level" value="gnu.cpp.compiler.debugging.level.none" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.include.paths.532620665" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${APPLICATIONS}/DISTENE/MeshGems-1.1/Products/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${APPLICATIONS}/DISTENE/MeshGems-2.4/Products/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/src/third_party/geogram/src/lib&quot;"/>
 								</option>
@@ -140,7 +140,7 @@
 								<option id="gnu.cpp.compiler.exe.release.option.optimization.level.1330949594" name="Optimization Level" superClass="gnu.cpp.compiler.exe.release.option.optimization.level" value="gnu.cpp.compiler.optimization.level.most" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.exe.release.option.debugging.level.1429852125" name="Debug Level" superClass="gnu.cpp.compiler.exe.release.option.debugging.level" value="gnu.cpp.compiler.debugging.level.none" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.include.paths.504081774" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${APPLICATIONS}/DISTENE/MeshGems-1.1/Products/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${APPLICATIONS}/DISTENE/MeshGems-2.4/Products/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/src/third_party/geogram/src/lib&quot;"/>
 								</option>
@@ -198,7 +198,7 @@
 								<option id="gnu.cpp.compiler.exe.release.option.optimization.level.1820065258" name="Optimization Level" superClass="gnu.cpp.compiler.exe.release.option.optimization.level" value="gnu.cpp.compiler.optimization.level.most" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.exe.release.option.debugging.level.1560352175" name="Debug Level" superClass="gnu.cpp.compiler.exe.release.option.debugging.level" value="gnu.cpp.compiler.debugging.level.none" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.include.paths.1461819897" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${APPLICATIONS}/DISTENE/MeshGems-1.1/Products/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${APPLICATIONS}/DISTENE/MeshGems-2.4/Products/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/src/third_party/geogram/src/lib&quot;"/>
 								</option>
@@ -330,3 +330,4 @@
 		</buildTargets>
 	</storageModule>
 </cproject>
+

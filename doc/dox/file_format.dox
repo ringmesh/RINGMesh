@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2016, Association Scientifique pour la Geologie et ses Applications (ASGA)
+ * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses Applications (ASGA)
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,102 +44,142 @@ In RINGMesh you can import and export \link ringmesh_geo_model GeoModel \endlink
 
  ### Import File Formats ###
  
-- .ml: Model3D format from Gocad/Skua
-- .so: TSolid volumetric mesh (tetrahedra) format from Gocad/Skua
+- .ml: Model3D format from [SKUA-GOCAD](http://www.pdgm.com/products/skua-gocad/).
+- .so: TSolid volumetric mesh (tetrahedra) format from [SKUA-GOCAD](http://www.pdgm.com/products/skua-gocad/).
+Gocad/Skua Model3D information must be inside the .so file.
+- .gm: RINGMesh internal format (boundary representation or volumetric model).
 
  ### Export File Formats ###
  
-- .obj: surface mesh format
-- .csmp: CSMP++ format (export 3 files: .asc, .dat, -regions.txt)
-- .gmsh: Gmsh format (can also export additional information for Kine3D)
-- .gprs: GPRS format
-- .mail: ASTER format 
-- .meshb: LibMesh format
-- .gm: homemade format
-- .so: Tsolid format for Gocad/Skua
-- .tetgen: TetGen format (export 3 files: .node, .ele, .neigh)
-- .vtk: VTK format for ParaView
+- .obj: surface mesh format.
+- .csmp: [CSMP++](http://www.orefluids.ethz.ch/software/csmp.html) format (export 3 files: .asc, .dat, -regions.txt).
+- .gmsh: [Gmsh](http://gmsh.info/) format (can also export additional information for [Kine3D](http://www.pdgm.com/products/kine3d/)).
+- .gprs: [GPRS](https://supri-b.stanford.edu/research-areas/ad-gprs) format.
+- .mail: [ASTER](http://www.code-aster.org) format.
+- .meshb: [LibMesh](http://libmesh.github.io/) format.
+- .gm: homemade format.
+- .so: TSolid format for [SKUA-GOCAD](http://www.pdgm.com/products/skua-gocad/).
+- .tetgen: [TetGen](http://wias-berlin.de/software/tetgen/) format (export 3 files: .node, .ele, .neigh).
+- .vtk: [VTK](http://www.vtk.org/) format for ParaView.
 
- @todo Add references to software, web pages, whatever [JP]
- 
- RINGMesh can then be used as a file converter to ease connection with different software see RINGMesh \link ringmesh_features Functionalities \endlink
+RINGMesh can then be used as a file converter to ease connection with different software see RINGMesh \link ringmesh_features Functionalities \endlink
 
 RINGMesh file format .gm 
 ----------------------------
 
 RINGMesh uses a homemade file format associated to the .gm extension.
 
-A .gm file is an archive that contains:
-- .geogram files storing the meshed entities of the GeoModel
-- two files: connectivity.txt and topology.txt
-  @todo Merge these two files, topology <=> connectivity [JP]
+A .gm file is an archive (zip) that contains:
+- .geogram files (binaries) storing the meshed entities of the GeoModel (RINGMesh::GeoModelMeshEntity).
+For more details about .geogram file, see Geogram documentation.
+- mesh_entities.txt storing of each RINGMesh::GeoModelMeshEntity its name, its geological feature
+and the indexes of its boundaries. Universe information is also stored.
+- geological_entities.txt storing the definition of each built-in RINGMesh::GeoModelGeologicalEntity
+(type, name, geological feature, child indexes). It does not contain the definition of the
+RINGMesh::Universe.
 
-### Geometry and Attribute of GeoModel Entities ### 
+To extract the files contained in the .gm file, change the extension from .gm to .zip and
+then unzip.
 
- The GeoModel CORNERS, LINES, SURFACES, and meshed REGIONS are saved in .geogram files. \n
- Non-meshed REGIONS are saved in the topology.txt file. \n
- There is one file for each of the entities. The name of the file is ENTITY-TYPE_ENTITY-ID.geogram
+### Geometry and Attribute of GeoModel Mesh Entities ### 
+
+ The GeoModel mesh entities (RINGMesh::Corner, RINGMesh::Line, RINGMesh::Surface and meshed RINGMesh::Region)
+ are saved in .geogram files. \n
+ Non-meshed RINGMesh::Region are thus not saved as .geogram file. Their information are still in mesh_entities.txt. \n
+ There is one file for each of the mesh entities. The name of the file is ENTITY-TYPE_ENTITY-ID.geogram. For instance:
+ - Corner_0.geogram is the .geogram file of the RINGMesh::Corner with id 0 in the RINGMesh::GeoModel.
+ - Line_5.geogram is the .geogram file of the RINGMesh::Line with id 5 in the RINGMesh::GeoModel.
+ - Surface_10.geogram is the .geogram file of the RINGMesh::Surface with id 10 in the RINGMesh::GeoModel.
+ - Region_3.geogram is the .geogram file of the RINGMesh::Region with id 3 in the RINGMesh::GeoModel.
   
- ### Connectivity of Meshed Entities ###
- The text file connectivity.txt stores for each entity saved in a .geogram file the incident entities.
- An incident entity B to the entity A, is such that A is in the boundary of B.
+ ### Connectivity of GeoModel Meshed Entities ###
+ The text file mesh_entities.txt stores information relative to the
+ RINGMesh::GeoModelMeshEntity.
+ The header gives the geomodel name and the numbers of each type of mesh entities constituting the GeoModel.
+ The number of regions must be written even if there are not meshed.
+ In the example below, the geomodel name is model_default_name, and there are 16 corners,
+ 28 lines, 16 surfaces and 3 regions.
+
+    GeoModel name model_default_name
+    Nb Corner 16
+    Nb Line 28
+    Nb Surface 16
+    Nb Region 3
+
+ The text file mesh_entities.txt stores for each mesh entity:
+ its id, its name, its geological features and the indexes of its boundary mesh entities.
  
-- For each Corner are stored the incident LINE indexes, i.e. the LINES which have
-  this CORNER as an extremity.
+- For each RINGMesh::Corner there is no boundary. Boundary id list is kept empty.
+In the example below the corner has the id 10 in the GeoModel, does not have a name
+nor a geological feature.
 
-        GME CORNER 10
-        9 10 20 
+        Corner 10 No_name no_geological_feature
+        boundary
 
-- For each LINE are stored the indexes of the incident SURFACES. 
+- For each RINGMesh::Line are stored the indexes of its boundaries (RINGMesh::Corner).
+In the example below the line has the id 22 in the GeoModel, does not have a name
+nor a geological feature. Its boundaries are the corner 8 and the corner 10 in the
+GeoModel.
 
-        GME LINE 22
-        8 10 
+        Line 22 No_name no_geological_feature
+        boundary 8 10 
 
-- For each SURFACE are stored the indexes of the incident REGIONS. 
+- For each RINGMesh::Surface are stored the indexes of its boundaries (RINGMesh::Line). 
+In the example below the surface has the id 1 in the GeoModel, does not have a name.
+Its geological feature is top. Its boundaries are the line 1, the line 4, the line 7
+and the line 21 in the GeoModel.
 
-        GME SURFACE 1
-        1 2 
+        Surface 1 No_name top
+        boundary 1 4 7 21
 
+- For each RINGMesh::Region are stored the indexes of its boundary (RINGMesh::Surface).
+The keyword boundary is omitted.
+For RINGMesh::Region only, the boundary indexes are signed: + if the surface normals
+are oriented toward region volume, else -.
+This information must be written even if the region is not meshed.
+In the example below the region has the id 3 in the GeoModel. Its name is r3.
+It does not have any geological feature. Its boundaries are the surface 7, the surface 14,
+the surface 25 and the surface 29 in the GeoModel. Normals of surfaces 7 and 14 are oriented
+toward the region volume. Normals of surfaces 25 and 29 are oriented toward outside the region
+volume.
+        
+        Region 3 r3 no_geological_feature
+        +7 +14 -25 -29
+
+- The RINGMesh::Universe must be written. No name nor geological feature are written.
+The syntax for its boundaries (RINGMesh::Surface) is the same as for the regions.
+
+        Universe
+        +5 -7 -0 +9 +3 -12
   
-### Topology of the GeoModel ### 
+### Topology of the GeoModel Geological Entities ###
 
-The file topology.txt describes the topology of the GeoModel.
-The header gives the numbers of each type of entities constituting the GeoModel:
+The file geological_entities.txt links the RINGMesh::GeoModelGeologicalEntity to the
+RINGMesh::GeoModelMeshEntity.
+The header gives the numbers of each type of geological entities constituting the GeoModel.
+In the example below the GeoModel has 20 contacts, 8 interfaces and 0 layer.
 
-    RINGMESH BOUNDARY MODEL
-    NAME the_name_of_the_model
-    NB_CORNER 16
-    NB_LINE 28
-    NB_SURFACE 16
-    NB_REGION 3
-    NB_CONTACT 20
-    NB_INTERFACE 8
-    NB_LAYER 0
+    Nb Contact 20
+    Nb Interface 8
+    Nb Layer 0
 
-Then information identifying the CONTACTS, INTERFACES and REGIONS is entered:
-- Each CONTACT is identified by its name, its geological feature, and the indexes of the LINES that constitute this CONTACT. 
+Then information identifying the CONTACTS, INTERFACES and LAYERS (if any) is entered:
+- Each Contact is identified by its id, its name, its geological feature, and the indexes of the Lines that constitute this Contact.
 
-        CONTACT 13 the_name_of_the_contact geological_feature
+        Contact 13 the_name_of_the_contact geological_feature
         13 14 16 
   
-- Each INTERFACE is identified by its name, its geological feature, and the indexes of the SURFACES that constitute this INTERFACE. 
+- Each Interface is identified by its id, its name, its geological feature, and the indexes of the Surfaces that constitute this Interface.
   The geological feature gives information on the interface type from a geological point of view. 
   @todo Give the possible for geological features: no_geological_feature, boundary, fault, ......
  
-        INTERFACE 4 the_name_of_the_interface geological_feature
+        Interface 4 the_name_of_the_interface geological_feature
         6 7 8
 
-- Each REGION is identified by its name and the signed indexes of the SURFACES bounding it. 
- The sign gives the side of the SURFACE on which is the REGION. 
+- Each Layer is identified by its id, its name and the indexes of the Regions that constitute this Layer.
  
-        REGION 2 the_name_of_this_region
-        -1 +10 -9 +8 -5 -14
+        Layer 2 the_name_of_this_layer
+        1 10 9 8 5 14
  
-- The REGION named UNIVERSE is mandatory. It defines the extension of the GeoModel, also called volume of interest.
-
-        UNIVERSE 
-        -2 -7 -6 -8 +9 +14 +15 -10 +5 +3 -11 +4 +13 -12 
-
-    
 */
 

@@ -1,10 +1,7 @@
 # Tetgen (by Hang Si) is currently included by default.
 # Triangle (by Jonathan Shewchuk) is currently included by default.
 
-set(GEOGRAM_WITH_TETGEN TRUE)
-set(GEOGRAM_WITH_TRIANGLE TRUE)
-
-configure_file(geogram.pc.in ${PROJECT_BINARY_DIR}/geogram.pc @ONLY)
+configure_file(geogram.pc.in ${PROJECT_BINARY_DIR}/geogram${VORPALINE_VERSION_MAJOR}.pc @ONLY)
 
 add_subdirectory(third_party)
 
@@ -17,14 +14,8 @@ aux_source_directories(SOURCES "Source Files\\voronoi"   voronoi)
 aux_source_directories(SOURCES "Source Files\\points"    points)
 aux_source_directories(SOURCES "Source Files\\api"       api)
 aux_source_directories(SOURCES "Source Files\\NL"        NL)
-
-if(GEOGRAM_WITH_TETGEN)
-   add_definitions(-DGEOGRAM_WITH_TETGEN)
-endif()
-
-if(GEOGRAM_WITH_TRIANGLE)
-   add_definitions(-DGEOGRAM_WITH_TRIANGLE)
-endif()
+aux_source_directories(SOURCES "Source Files\\lua"      lua)
+aux_source_directories(SOURCES "Source Files\\parameterization" parameterization)
 
 # Parallel Delaunay now works on both Windows and Unix !
 add_definitions(-DGEOGRAM_WITH_PDEL)
@@ -40,7 +31,8 @@ add_library(geogram ${SOURCES} $<TARGET_OBJECTS:geogram_third_party>)
 
 set_target_properties(geogram PROPERTIES
                       VERSION ${VORPALINE_VERSION}
-                      SOVERSION ${VORPALINE_VERSION_MAJOR})
+                      SOVERSION ${VORPALINE_VERSION_MAJOR}
+		      FOLDER "GEOGRAM")
 
 if(UNIX AND VORPALINE_BUILD_DYNAMIC)
     target_link_libraries(geogram pthread dl)
@@ -56,7 +48,7 @@ install_devkit_targets(geogram)
 # Install include files for the standard devkit
 install(
     DIRECTORY api
-    DESTINATION include/geogram
+    DESTINATION include/${VORPALINE_INCLUDE_SUBPATH}/geogram
     COMPONENT devkit
     FILES_MATCHING PATTERN *.h
 )
@@ -64,7 +56,7 @@ install(
 # Install include files for the full devkit
 install(
     DIRECTORY .
-    DESTINATION include/geogram
+    DESTINATION include/${VORPALINE_INCLUDE_SUBPATH}/geogram
     COMPONENT devkit-full
     FILES_MATCHING PATTERN *.h
     # Exclude all files related to licensing
@@ -72,7 +64,7 @@ install(
 )
 
 install(
-        FILES "${PROJECT_BINARY_DIR}/geogram.pc"
+        FILES "${PROJECT_BINARY_DIR}/geogram${VORPALINE_VERSION_MAJOR}.pc"
         DESTINATION lib${LIB_SUFFIX}/pkgconfig
 )
       

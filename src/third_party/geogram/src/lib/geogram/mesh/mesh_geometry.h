@@ -174,19 +174,10 @@ namespace GEO {
          * \pre dimension >= 3
          * \note the computed vector is not normalized.
          */
-        inline vec3 mesh_facet_normal(const Mesh& M, index_t f) {
-            index_t v1 = M.facet_corners.vertex(M.facets.corners_begin(f));
-            index_t v2 = M.facet_corners.vertex(M.facets.corners_begin(f) + 1);
-            index_t v3 = M.facet_corners.vertex(M.facets.corners_begin(f) + 2);
-            const vec3& p1 = mesh_vertex(M, v1);
-            const vec3& p2 = mesh_vertex(M, v2);
-            const vec3& p3 = mesh_vertex(M, v3);
-            return cross(p2 - p1, p3 - p1);
-        }
-
+        vec3 GEOGRAM_API  mesh_facet_normal(const Mesh& M, index_t f);
 
         /**
-         * \brief Gets the centroid of a facet in a mesh.
+         * \brief Gets the centroid of the vertices of a facet in a mesh.
          * \param[in] M the mesh
          * \param[in] f the index of the facet
          * \return the 3d centroid of facet \p f in \p M
@@ -239,16 +230,26 @@ namespace GEO {
         }
 
         /**
-         * \brief Computes the dihedral angle between two
-         *  mesh facets sharing an edge.
+         * \brief Computes the angle between the normal vectors
+	 *  of two mesh facets sharing an edge.
          * \param[in] M a const reference to the mesh
          * \param[in] c a corner index in \p M
          * \return the angle between the facet that contains c and
          *  the facet adjacent to c
          * \pre M.facets.are_simplices() && M.corner_adjacent_facet(c) != -1
          */
-        double GEOGRAM_API mesh_dihedral_angle(const Mesh& M, index_t c);
+        double GEOGRAM_API mesh_normal_angle(const Mesh& M, index_t c);
 
+        /**
+         * \brief Computes the angle between the normal vectors
+	 *  of two mesh facets sharing an edge.
+         * \param[in] M a const reference to the mesh
+         * \param[in] f1 , f2 two facets of the mesh
+         * \return the angle between \p f1 and \p f2
+         */
+	double GEOGRAM_API mesh_unsigned_normal_angle(
+	    const Mesh& M, index_t f1, index_t f2
+	);
 
         /**
          * \brief Computes the total surface area of a mesh in arbitrary
@@ -346,7 +347,6 @@ namespace GEO {
 
     /**
      * \brief Computes the volume of a cell in a mesh.
-     * \note only implemented for tetrahedra for now
      * \param[in] M a const reference to the mesh
      * \param[in] c the index of the cell
      * \return the volume of the cell 

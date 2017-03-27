@@ -14,17 +14,25 @@ if(GEOGRAM_WITH_GRAPHICS)
   if(GEOGRAM_WITH_EMSCRIPTEN)
     set(GEOGRAM_USE_BUILTIN_GLFW3 FALSE)
   else()
-    find_package(glfw3 QUIET)
+    if(GEOGRAM_USE_SYSTEM_GLFW3)
+        find_package(glfw3 QUIET)
+    endif()
     if(glfw3_FOUND)
       message(STATUS "Found GLFW3 installed in the system, using it.")
       set(GEOGRAM_USE_BUILTIN_GLFW3 FALSE PARENT_SCOPE)
     else()
       message(STATUS "Did not find GLFW3 in the system, using built-in GLFW3.")
       set(GEOGRAM_USE_BUILTIN_GLFW3 TRUE PARENT_SCOPE)
-      set(GLFW_INSTALL true)
+      set(GLFW_INSTALL TRUE CACHE BOOL "Generate GLFW installation target")
       add_subdirectory(glfw)
     endif()
   endif()
   
 endif()
 
+# BLAS,LAPACK,CHOLDMOD,SUPERLU and ARPACK
+# used as plug-ins by OpenNL
+
+if(GEOGRAM_WITH_LEGACY_NUMERICS)
+   add_subdirectory(numerics)
+endif()

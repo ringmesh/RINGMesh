@@ -56,6 +56,27 @@
  * \brief Some macros and functions used internally by OpenNL.
  */
 
+#if defined(__APPLE__) && defined(__MACH__)
+/**
+ * \brief Defined if compiled on a Mac OS/X platform.
+ */
+#define NL_OS_APPLE
+#endif
+
+#if defined(__linux__) || defined(__ANDROID__) || defined(NL_OS_APPLE)
+/**
+ * \brief Defined if compiled on a Unix-like platform.
+ */
+#define NL_OS_UNIX
+#endif
+
+
+#if defined(WIN32) || defined(_WIN64)
+/**
+ * \brief Defined if compiled on a Windows platform.
+ */
+#define NL_OS_WINDOWS
+#endif
 
 /**
  * \brief Suppresses unsused argument warnings
@@ -64,16 +85,6 @@
  * \param[in] x the argument to be tagged as used
  */
 #define nl_arg_used(x) (void)x
-
-/**
- * \brief A "brute force" cast operator
- * \note Use only if you know exactly what you are doing
- * \param[in] T the new type 
- * \param[in] x the variable to be casted
- */
-#define nl_cast(T,x)   (*(T*)&(x))
-
-
 
 /**
  * \name Assertion checks
@@ -211,6 +222,66 @@ void nlWarning(const char* function, const char* message) ;
  * \return the current time in seconds (starting from a given reference time)
  */
 NLdouble nlCurrentTime(void);
+
+/**
+ * \brief Type for manipulating DLL/shared object/dylib handles.
+ */
+typedef void* NLdll;
+
+
+/**
+ * \brief Flag for nlOpenDLL(), resolve all symbols when opening the DLL.
+ * \see nlOpenDLL()
+ */
+#define NL_LINK_NOW    1
+
+/**
+ * \brief Flag for nlOpenDLL(), resolve symbols only when they are called.
+ * \see nlOpenDLL()
+ */
+#define NL_LINK_LAZY   2
+
+/**
+ * \brief Flag for nlOpenDLL(), add all loaded symbols to global namespace.
+ */
+#define NL_LINK_GLOBAL 4
+
+/**
+ * \brief Flag for nlOpenDLL(), do not display messages.
+ */
+#define NL_LINK_QUIET  8
+
+/**
+ * \brief Flag for nlOpenDLL(), use fallback geogram numerical library if
+ *  library is not found in the system.
+ */
+#define NL_LINK_USE_FALLBACK 16
+
+/**
+ * \brief Dynamically links a DLL/shared object/dylib to the current process.
+ * \param[in] filename the file name fo the DLL/shared object/dylib.
+ * \param[in] flags an or-combination of NL_LINK_NOW, NL_LINK_LAZY, NL_LINK_GLOBAL,
+ *  NL_LINK_QUIET.
+ * \return a handle to the DLL/shared object/dylib or NULL if it could not
+ *  be found.
+ */
+NLdll nlOpenDLL(const char* filename, NLenum flags);
+
+/**
+ * \brief Closes a DLL/shared object/dylib.
+ * \param[in] handle a handle to a DLL/shared object/dylib that was previously
+ *  obtained by nlOpenDLL()
+ */
+void nlCloseDLL(NLdll handle);
+
+/**
+ * \brief Finds a function in a DLL/shared object/dylib.
+ * \param[in] handle a handle to a DLL/shared object/dylib that was previously
+ *  obtained by nlOpenDLL()
+ * \param[in] funcname the name of the function
+ * \return a pointer to the function or NULL if no such function was found
+ */
+NLfunc nlFindFunction(NLdll handle, const char* funcname);
 
 /******************************************************************************/
 /* classic macros */

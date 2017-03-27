@@ -64,7 +64,8 @@ namespace GLUP {
 
     /**
      * \brief Implementation of GLUP using OpenGL ES 2.0.
-     * \details Can be also used with OpenGL 3.30 
+     * \details Can be also used with OpenGL 3.30. This is the default
+     *  GLUP profile used on MacOS/X.
      * \note the following functionalities are not implemented (yet) in
      *   this profile:
      *  - picking is not implemented
@@ -98,9 +99,38 @@ namespace GLUP {
          * \copydoc Context::primitive_supports_array_mode()
          */
         virtual bool primitive_supports_array_mode(GLUPprimitive prim) const;
-        
-    protected:
 
+
+        /**
+         * \copydoc Context::get_primitive_pseudo_file()
+         */
+        virtual void get_primitive_pseudo_file(
+            std::vector<GLSL::Source>& sources
+        );
+        
+        /**
+         * \copydoc Context::get_vertex_shader_preamble_pseudo_file()
+         */
+        virtual void get_vertex_shader_preamble_pseudo_file(
+            std::vector<GLSL::Source>& sources
+        );
+
+        /**
+         * \copydoc Context::get_fragment_shader_preamble_pseudo_file()
+         */
+        virtual void get_fragment_shader_preamble_pseudo_file(
+            std::vector<GLSL::Source>& sources
+        );
+
+        /**
+         * \copydoc Context::get_toggles_pseudo_file()
+         */
+        virtual void get_toggles_pseudo_file(
+            std::vector<GLSL::Source>& sources            
+        );
+
+    protected:
+        
         /**
          * \copydoc Context::prepare_to_draw()
          */
@@ -125,6 +155,11 @@ namespace GLUP {
          * \copydoc Context::copy_uniform_state_to_current_program()
          */
         virtual void copy_uniform_state_to_current_program();
+
+        /**
+         * \copydoc Context::update_base_picking_id()
+         */
+        virtual void update_base_picking_id(GLint new_value);
         
         /**
          * \copydoc Context::setup_GLUP_POINTS()
@@ -136,6 +171,27 @@ namespace GLUP {
          */
         virtual void setup_GLUP_LINES();
 
+
+        /**
+         * \brief The generic primitive setup fonction used by all surfacic
+         *  and volumetric primitives in this profile.
+         * \details Current GLUP primitive type is deduced from 
+         *  current value of Context::primitive_source_, set by 
+         *  Context::setup_shader_source_for_primitive().
+         * \param[in] nb_elements_per_glup_primitive the number of element
+         *  indices for each glup primitive. For instance, when drawing
+         *  GLUP tetrahedra using OpenGL triangles, there are 4*3 = 12
+         *  elements per primitive.
+         * \param[in] element_indices a pointer to an array of 
+         *  nb_elements_per_glup_primitive integers that encode the
+         *  indexing of one element. This array is replicated and shifted
+         *  to generate the element index buffer. 
+         */
+        void setup_primitive_generic(
+            index_t nb_elements_per_glup_primitive,
+            index_t* element_indices
+        );
+        
         /**
          * \copydoc Context::setup_GLUP_TRIANGLES()
          */
@@ -171,6 +227,11 @@ namespace GLUP {
          */
         virtual void setup_GLUP_CONNECTORS();
 
+        /**
+         * \copydoc Context::setup_GLUP_CONNECTORS()
+         */
+        virtual void setup_GLUP_SPHERES();
+	
         /**
          * \copydoc Context::flush_immediate_buffers()
          */
@@ -221,15 +282,12 @@ namespace GLUP {
         GLuint clip_cells_VAO_;
 
         GLuint sliced_cells_elements_VBO_;
-        GLuint sliced_cells_vertex_attrib_VBO_[3];
+        GLuint sliced_cells_vertex_attrib_VBO_[4];
         GLuint sliced_cells_VAO_;
-        
-        bool GL_OES_standard_derivatives_;        
-        bool GL_OES_vertex_array_object_;
-        bool GL_EXT_frag_depth_;
     };
 
     /*********************************************************************/
+    
 }
 
 #endif

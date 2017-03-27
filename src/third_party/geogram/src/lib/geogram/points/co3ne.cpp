@@ -1123,7 +1123,8 @@ namespace {
     public:
         /**
          * \brief Constructs a new CompareFacets.
-         * \param[in] triangles a const reference to a vector of indices triplets
+         * \param[in] triangles a const reference to a vector 
+         *  of indices triplets
          */
         explicit CompareTriangles(const vector<index_t>& triangles) :
             triangles_(triangles) {
@@ -1427,6 +1428,7 @@ namespace {
             clear();
         }
 
+	
         /**
          * \brief Sets or resets exact mode for nearest neighbor search
          * (default is exact).
@@ -1461,32 +1463,29 @@ namespace {
          * \param[in] M the pointset
          */
         void init(Mesh& M) {
-            // Note/TODO: this version stores the vertices and normals in a
-            // single "vertices" array (and stores nx, ny, nz in coords
-            // 3,4,5 of the vertices). New GEOGRAM has dynamic vertex
-            // attributes (and if the file had normals, they are read
-            // in a vertex attribute). This code will be updated to
-            // use the vertex attribute instead of artificial 6d points,
-            // will be cleaner (note that with the n_ pointer and n_stride_
-            // parameter, this can be done without changing the code too
-            // much).
-            
+            geo_assert(M.vertices.dimension() >= 3);
             geo_assert(M.vertices.dimension() == 3 || NN_->stride_supported());
-            switch(M.vertices.dimension()) {
-                case 3:
-                {
-                    init(M.vertices.nb(), M.vertices.point_ptr(0), 3, nil, 0);
-                } break;
-                case 6:
-                {
-                    init(
-                        M.vertices.nb(),
-                        M.vertices.point_ptr(0), 6,
-                        M.vertices.point_ptr(0) + 3, 6
-                    );
-                } break;
-                default:
-                    geo_assert_not_reached;
+            double* normals_pointer = nil;
+            {
+                Attribute<double> normal;
+                normal.bind_if_is_defined(M.vertices.attributes(), "normal");
+                if(normal.is_bound() && normal.dimension() == 3) {
+                    normals_pointer = &normal[0];
+                }
+            }
+
+            if(normals_pointer == nil) {
+                init(
+                    M.vertices.nb(),
+                    M.vertices.point_ptr(0), M.vertices.dimension(),
+                    nil, 0
+                );
+            } else {
+                init(
+                    M.vertices.nb(),
+                    M.vertices.point_ptr(0), M.vertices.dimension(),
+                    normals_pointer, 3
+                );
             }
         }
 
@@ -2169,23 +2168,33 @@ namespace {
             set_max_angle(alpha);
         }
 
+	/**
+	 * \brief Runs the threads.
+	 */
+	void run_threads() {
+	    Process::run_threads(thread_);
+	}
+	
         /**
          * \brief Estimates the normals of the point set.
-         * \details They are stored in coordinates 3,4,5.
-         *   On exit, mesh.vertices.dimension() == 6.
+         * \details They are stored in the "normal" vertex attribute.
          * \param[in] nb_neighbors number of neighbors to be
          *  used for normal estimation
          */
         void compute_normals(index_t nb_neighbors) {
-            if(mesh_.vertices.dimension() != 6) {
-                mesh_.vertices.set_dimension(6);
-                RVD_.init(mesh_);
+            Attribute<double> normals;
+            normals.bind_if_is_defined(mesh_.vertices.attributes(), "normal");
+            if(!normals.is_bound()) {
+                normals.create_vector_attribute(
+                    mesh_.vertices.attributes(), "normal", 3
+                );
             }
+            RVD_.init(mesh_);
             RVD_.set_nb_neighbors(nb_neighbors);
             for(index_t t = 0; t < thread_.size(); t++) {
                 thread_[t]->set_mode(CO3NE_NORMALS);
             }
-            Process::run_threads(thread_);
+            run_threads();
         }
 
         /**
@@ -2201,7 +2210,7 @@ namespace {
             for(index_t t = 0; t < thread_.size(); t++) {
                 thread_[t]->set_mode(CO3NE_SMOOTH);
             }
-            Process::run_threads(thread_);
+            run_threads();
             /*
               // TODO: once 'steal-arg' mode works for vertices,
               // we can use this one.
@@ -2231,20 +2240,33 @@ namespace {
 
         /**
          * \brief Reconstructs a mesh from a point set.
-         * \details If mesh.vertices.dimension() == 6, then the stored
-         * normals are used, else normals are estimated.
+         * \details If the mesh has a "normal" vertex attribute,
+         *  then the existing normals are used, else normals are estimated.
          * \param[in] r maximum distance used to determine
          *  points adjacencies.
          */
         void reconstruct(double r) {
-            if(mesh_.vertices.dimension() == 6) {
+            bool has_normals = false;
+            {
+                Attribute<double> normal;
+                normal.bind_if_is_defined(mesh_.vertices.attributes(),"normal");
+                has_normals = (
+                    normal.is_bound() && normal.dimension() == 3
+                );
+            }
+
+	    ProgressTask progress("reconstruct",100);
+
+            if(has_normals) {
                 Stopwatch W("Co3Ne recons");
                 RVD_.set_circles_radius(r);
                 for(index_t t = 0; t < thread_.size(); t++) {
                     thread_[t]->set_mode(CO3NE_RECONSTRUCT);
                     thread_[t]->triangles().clear();
                 }
-                Process::run_threads(thread_);
+		progress.progress(1);
+                run_threads();
+		progress.progress(50);
             } else {
                 Stopwatch W("Co3Ne recons");                
                 Logger::out("Co3Ne")
@@ -2258,7 +2280,9 @@ namespace {
                     thread_[t]->set_mode(CO3NE_NORMALS_AND_RECONSTRUCT);
                     thread_[t]->triangles().clear();
                 }
-                Process::run_threads(thread_);
+		progress.progress(1);		
+                run_threads();
+		progress.progress(50);		
             }
 
             {
@@ -2334,16 +2358,23 @@ namespace {
                     mesh_save(M, "co3ne_T12.geogram");
                 }
 
+		progress.progress(53);		
                 
                 Co3NeManifoldExtraction manifold_extraction(
                     mesh_, good_triangles
                 );
 
+		progress.progress(55);				
+
                 if(CmdLine::get_arg_bool("co3ne:T12")) {
                     manifold_extraction.add_triangles(not_so_good_triangles);
                 }
 
+		progress.progress(57);
+
                 mesh_reorient(mesh_);
+
+		progress.progress(60);		
 
                 if(CmdLine::get_arg_bool("dbg:co3ne")) {
                     Logger::out("Co3Ne") << ">> co3ne_manif.geogram"
@@ -2366,6 +2397,8 @@ namespace {
                 }                
             }
 
+	    progress.progress(100);		
+	    
             Logger::out("Topology") 
                 << "nb components=" << mesh_nb_connected_components(mesh_)
                 << " nb borders=" <<  mesh_nb_borders(mesh_)
@@ -2433,6 +2466,7 @@ namespace {
         index_t nb_neigh = RVD.nb_neighbors();
         vector<index_t> neigh(nb_neigh);
         vector<double> sq_dist(nb_neigh);
+
         for(index_t i = from_; i < to_; i++) {
             RVD.get_neighbors(
                 i, neigh, sq_dist, nb_neigh
@@ -2451,6 +2485,7 @@ namespace {
         index_t nb_neigh = RVD.nb_neighbors();
         vector<index_t> neigh(nb_neigh);
         vector<double> sq_dist(nb_neigh);
+
         for(index_t i = from_; i < to_; i++) {
             RVD.get_neighbors(
                 i, neigh, sq_dist, nb_neigh
@@ -2469,12 +2504,12 @@ namespace {
     }
 
     void Co3NeThread::run_reconstruct() {
-        std::cerr << "R" << std::endl;
         Co3NeRestrictedVoronoiDiagram& RVD = master_->RVD();
         vector<index_t> neigh(100);
         vector<double> sq_dist(100);
         Co3NeRestrictedVoronoiDiagram::Polygon P(100);
         Co3NeRestrictedVoronoiDiagram::Polygon Q(100);
+
         for(index_t i = from_; i < to_; i++) {
             RVD.get_RVC(i, P, Q, neigh, sq_dist);
             for(index_t v1 = 0; v1 < P.nb_vertices(); v1++) {
@@ -2531,6 +2566,7 @@ namespace {
         vector<double> sq_dist(100);
         Co3NeRestrictedVoronoiDiagram::Polygon P(100);
         Co3NeRestrictedVoronoiDiagram::Polygon Q(100);
+
         for(index_t i = from_; i < to_; i++) {
 
             vec3 N;
@@ -2620,14 +2656,22 @@ namespace GEO {
     }
 
     void Co3Ne_compute_normals(Mesh& M, index_t nb_neighbors) {
-        M.vertices.set_dimension(6);
+        {
+            Attribute<double> normal;
+            normal.bind_if_is_defined(M.vertices.attributes(), "normal");
+            if(!normal.is_bound()) {
+               normal.create_vector_attribute(
+                  M.vertices.attributes(), "normal", 3
+               );
+            }
+        }
         Co3Ne co3ne(M);
         co3ne.compute_normals(nb_neighbors);
     }
 
     void Co3Ne_reconstruct(Mesh& M, double radius) {
         Co3Ne co3ne(M);
-        co3ne.reconstruct(radius);
+	co3ne.reconstruct(radius);
     }
 
     void Co3Ne_smooth_and_reconstruct(

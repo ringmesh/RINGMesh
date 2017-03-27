@@ -34,6 +34,14 @@
 #include <geogram/basic/progress.h>
 #include <geogram/basic/command_line.h>
 
+/* 
+ *Lots of documentation tags in GLFW that are
+ * not understood by CLANG.
+ */
+#ifdef __clang__
+#pragma GCC diagnostic ignored "-Wdocumentation"
+#endif
+
 #ifdef GEO_OS_EMSCRIPTEN
 #include <GLFW/glfw3.h>
 #include <emscripten.h>
@@ -96,9 +104,11 @@ void glup_viewer_gui_init(GLFWwindow* w) {
     }
 
     ImGuiStyle& style = ImGui::GetStyle();
-    style.WindowRounding = 0.0f;
+    style.WindowRounding = 10.0f;
     style.FrameRounding = 10.0f;
     style.GrabRounding = 10.0f;
+    ImGuiIO& io = ImGui::GetIO();
+    io.IniFilename = NULL;
 }
 
 void glup_viewer_gui_cleanup() {
@@ -218,6 +228,13 @@ GLboolean glup_viewer_get_arg_bool(const char* param) {
 
 GLboolean glup_viewer_test_arg_string(const char* param, const char* arg) {
     return (GEO::CmdLine::get_arg(param) == arg) ? GL_TRUE : GL_FALSE;
+}
+
+void glup_viewer_set_screen_size_from_args() {
+    std::string geometry = GEO::CmdLine::get_arg("gfx:geometry");
+    int w,h;
+    sscanf(geometry.c_str(),"%dx%d",&w,&h);
+    glup_viewer_set_screen_size(w,h);
 }
 
 

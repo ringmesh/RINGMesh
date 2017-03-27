@@ -22,17 +22,26 @@ endif()
 # Optional modules
 # (can be overriden in CMakeOptions.txt)
 
-if(NOT DEFINED GEOGRAM_WITH_GRAPHICS) 
-    set(GEOGRAM_WITH_GRAPHICS TRUE)
-endif()    
+option(GEOGRAM_WITH_GRAPHICS "Viewers and geogram_gfx library" ON)
+option(GEOGRAM_WITH_LEGACY_NUMERICS "Legacy numerical libraries" ON)
+option(GEOGRAM_WITH_HLBFGS "Non-linear solver (Yang Liu's HLBFGS)" ON)
+option(GEOGRAM_WITH_TETGEN "Tetrahedral mesher (Hang Si's TetGen)" ON)
+option(GEOGRAM_WITH_TRIANGLE "Triangle mesher (Jonathan Shewchuk's triangle)" ON)
+option(GEOGRAM_WITH_EXPLORAGRAM "Experimental code (hexahedral meshing vpipeline and optimal transport)" ON)
+option(GEOGRAM_LIB_ONLY "Libraries only (no example programs/no viewer)" OFF)
+option(GEOGRAM_WITH_FPG "Predicate generator (Sylvain Pion's FPG)" OFF)
+option(GEOGRAM_USE_SYSTEM_GLFW3 "Use the version of GLFW3 installed in the system if found" OFF)
+
+set(VORPALINE_PLATFORM "" CACHE STRING "")
 
 include(cmake/geogram.cmake)
 
 set(VORPALINE_VERSION_MAJOR 1)
-set(VORPALINE_VERSION_MINOR 3)
-set(VORPALINE_VERSION_PATCH 4)
+set(VORPALINE_VERSION_MINOR 4)
+set(VORPALINE_VERSION_PATCH 3)
 set(VORPALINE_VERSION ${VORPALINE_VERSION_MAJOR}.${VORPALINE_VERSION_MINOR}.${VORPALINE_VERSION_PATCH})
 
+set(VORPALINE_INCLUDE_SUBPATH geogram${VORPALINE_VERSION_MAJOR})
 
 # Determine the current Build-OS (Build-platform without the compiler info)
 string(REGEX REPLACE "-[^-]+$" "" VORPALINE_OS ${VORPALINE_PLATFORM})
@@ -66,10 +75,12 @@ endif()
 # - Makes RPATH of dynamic libraries and executable point to the directory
 #   where libraries are installed.
 
-set(CMAKE_MACOSX_RPATH 1)
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-set(CMAKE_INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib")
+if(VORPALINE_BUILD_DYNAMIC)
+   set(CMAKE_MACOSX_RPATH 1)
+   set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+endif()
 
+set(CMAKE_INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib")
 
 # uninstall target
 # Needs to be created before add_subdirectory() because GLFw has
@@ -90,38 +101,30 @@ add_custom_target(uninstall
 # Geogram/Vorpaline sources
 
 add_subdirectory(src/lib/geogram)
-add_subdirectory(src/bin/vorpastat)
-add_subdirectory(src/bin/vorpacomp)
-add_subdirectory(src/bin/geodump)
-
-if(GEOGRAM_WITH_FPG)
-   add_subdirectory(src/bin/fpg)
-endif()
-
 if(GEOGRAM_WITH_VORPALINE)
    add_subdirectory(src/lib/vorpalib)
-   add_subdirectory(src/bin/vorpaline)
-else()
-   add_subdirectory(src/bin/vorpalite)
 endif()
 
 add_subdirectory(src/lib/third_party)
 
 if(GEOGRAM_WITH_GRAPHICS)
-   add_subdirectory(src/lib/geogram_gfx)
-   add_subdirectory(src/bin/vorpaview)
-   add_subdirectory(src/bin/geobox)   
+  add_subdirectory(src/lib/geogram_gfx)
 endif()
 
-add_subdirectory(src/test)
+if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/lib/exploragram)
+  if(GEOGRAM_WITH_EXPLORAGRAM)
+     add_subdirectory(src/lib/exploragram)
+  endif()
+endif()
 
-if(GEOGRAM_WITH_GRAPHICS)
-   add_subdirectory(src/demos)
+if(NOT GEOGRAM_LIB_ONLY)
+  add_subdirectory(src/bin)
+  add_subdirectory(src/tests)
+  add_subdirectory(src/examples)
 endif()
 
 add_subdirectory(doc)
 add_subdirectory(tests)
-
 
 ##############################################################################
 # Cleanup from previous builds
@@ -135,7 +138,7 @@ file(REMOVE ${CMAKE_BINARY_DIR}/doc/LICENSE.txt)
 
 # FindGeogram.cmake
 
-install(FILES cmake/FindGeogram.cmake DESTINATION lib/cmake COMPONENT devkit)
+install(FILES cmake/FindGeogram.cmake DESTINATION lib/cmake/modules COMPONENT devkit)
 
 # Configure CPack
 
@@ -160,7 +163,7 @@ set(CPACK_COMPONENT_INCLUDE_TOPLEVEL_DIRECTORY true)
 if(CPACK_GENERATOR STREQUAL "DEB")
   set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
   set(CPACK_PACKAGE_CONTACT Bruno.Levy@inria.fr)
-# set(CPACK_PACKAGE_DEPENDS )
+# set(CPACK_PACKAGE_DEPENDS "libglfw3 (>= 3.2-1), libc6 (>= 2.22-11), libstdc++ (>= 6.1.1-4)")
 #   TODO: use objdump -p | grep NEEDED to automate...
 #   or GET_PROPERTY(result GLOBAL ENABLED_FEATURES)  (successful FIND_PACKAGE())
 endif()

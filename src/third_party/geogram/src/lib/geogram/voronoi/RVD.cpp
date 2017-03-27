@@ -47,6 +47,7 @@
 #include <geogram/voronoi/generic_RVD.h>
 #include <geogram/voronoi/RVD_mesh_builder.h>
 #include <geogram/voronoi/integration_simplex.h>
+#include <geogram/voronoi/RVD_polyhedron_callback.h>
 #include <geogram/mesh/mesh_partition.h>
 #include <geogram/mesh/mesh_sampling.h>
 #include <geogram/mesh/mesh_repair.h>
@@ -118,24 +119,6 @@ namespace {
             return *(const Point*) mesh_->vertices.point_ptr(v);
         }
 
-        /**
-         * \brief Gets a mesh vertex from a corner index.
-         * \param[in] c index of the corner
-         * \return a const reference to a Point
-         */
-        const Point& mesh_corner_vertex(index_t c) {
-            index_t v = mesh_->facet_corners.vertex(c);
-            return mesh_vertex(v);
-        }
-
-        /**
-         * \brief Gets a Delaunay vertex from its index.
-         * \param[in] v index of the Delaunay vertex
-         * \return a const reference to a Point
-         */
-        const Point& seed(index_t v) {
-            return *(const Point*) delaunay_->vertex_ptr(v);
-        }
 
         /**
          * \brief Creates a RVD_Nd_Impl.
@@ -994,7 +977,7 @@ namespace {
                 geo_argused(v_adj);
                 geo_argused(t_adj);
                 f_ += simplex_func_->eval(
-                    v,v1,v2,v3,t
+                    v,v1,v2,v3,t,index_t(t_adj),index_t(v_adj)
                 );
             }
 
@@ -1485,6 +1468,22 @@ namespace {
         }
 
         /********************************************************************/
+
+	void for_each_polyhedron(
+	    GEO::RVDPolyhedronCallback& callback
+	) {
+	    bool sym_backup = RVD_.symbolic();
+	    RVD_.set_symbolic(true);
+	    RVD_.set_connected_components_priority(true);
+	    callback.set_dimension(RVD_.mesh()->vertices.dimension());
+	    callback.begin();
+	    RVD_.for_each_polyhedron(callback);
+	    callback.end();
+	    RVD_.set_symbolic(sym_backup);
+	    RVD_.set_connected_components_priority(false);
+	}
+	
+        /********************************************************************/
         
         /**
          * \brief Does the actual computation for a specific part
@@ -1616,6 +1615,9 @@ namespace {
             // Step 3: create search structure
             mesh_vertices_ = Delaunay::create(dimension_, "NN");
             index_t nb_vertices = mesh_->vertices.nb();
+
+            // TODO: BUG !! mesh_vertices_ keeps a ref. to mesh_vertices
+            // that is destroyed when leaving this function.
             vector<double> mesh_vertices(nb_vertices * dimension_);
             for(index_t i = 0; i < nb_vertices; i++) {
                 for(index_t coord = 0; coord < dimension_; coord++) {
@@ -1623,9 +1625,7 @@ namespace {
                         mesh_->vertices.point_ptr(i)[coord];
                 }
             }
-            mesh_vertices_->set_vertices(
-                nb_vertices, mesh_vertices.data()
-            );
+            mesh_vertices_->set_vertices(nb_vertices, mesh_vertices.data());
         }
 
         virtual void project_points_on_surface(
@@ -2398,6 +2398,11 @@ namespace GEO {
                 break;
             case 6:
                 result = new RVD_Nd_Impl<6>(
+                    delaunay, mesh, R3_embedding, R3_embedding_stride
+                );
+                break;
+            case 8:
+                result = new RVD_Nd_Impl<8>(
                     delaunay, mesh, R3_embedding, R3_embedding_stride
                 );
                 break;

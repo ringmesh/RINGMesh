@@ -47,6 +47,25 @@
 #include <geogram_gfx/basic/GLSL.h>
 #include <geogram/basic/string.h>
 
+namespace {
+    using namespace GLUP;
+
+    /**
+     * \brief Sets an entry in an array with specified stride.
+     * \param[in] array the address of the first element of the array
+     * \param[in] stride number of bytes between two consecutive elements
+     *  of the array
+     * \param[in] i index of the element to be set
+     * \param[in] value value of the element ot be set
+     */
+    template <class T> inline void set_array_item(
+	void* array, size_t stride, index_t i, T value
+    ) {
+	*reinterpret_cast<T*>(Memory::pointer(array) + (i * stride)) = value;
+    }
+    
+}
+
 namespace GLUP {
     using namespace GEO;
 
@@ -86,6 +105,7 @@ namespace GLUP {
         case GLUP_LINES:
         case GLUP_TRIANGLES:
         case GLUP_QUADS:
+        case GLUP_SPHERES:	    
         case GLUP_NB_PRIMITIVES:
             geo_assert_not_reached;
         }
@@ -139,32 +159,31 @@ namespace GLUP {
         "     int config_size[cell_nb_configs];                    \n" 
         "     int config[cell_nb_configs*cell_max_config_size];    \n"  
         "  } MarchingCell;                                         \n"
-        "  int config_size(int i) {                                \n"
+        "  int config_size(in int i) {                             \n"
         "    return MarchingCell.config_size[i];                   \n"
         "  }                                                       \n"
-        "  int config_edge(int i, int j) {                         \n"
+        "  int config_edge(in int i, in int j) {                   \n"
         "    return MarchingCell.config[i*cell_max_config_size+j]; \n"
         "  }                                                       \n"
         ;
 
         GLSL_compute_intersections_ = std::string() +
-        "  vec4 isect_point[cell_nb_edges];                   \n"
+        "  vec4 isect_point_clip_space[cell_nb_edges];        \n"
         "  vec4 isect_color[cell_nb_edges];                   \n"
         "  vec4 isect_tex_coord[cell_nb_edges];               \n"
-        "  void compute_intersection(int i, int v1, int v2) { \n"
-        "      vec4 p1 = vertex_in(v1);                       \n"
-        "      vec4 p2 = vertex_in(v2);                       \n"
-        "      float t = -dot(p1, GLUP.world_clip_plane);     \n"
-        "      float d = dot(p2-p1, GLUP.world_clip_plane);   \n"
+        "  void compute_intersection(in int i, in int v1, in int v2) { \n"
+        "      vec4 p1 = vertex_clip_space_in(v1);            \n"
+        "      vec4 p2 = vertex_clip_space_in(v2);            \n"
+        "      float t = -dot(p1, GLUP.clip_clip_plane);      \n"
+        "      float d = dot(p2-p1, GLUP.clip_clip_plane);    \n"
         "      if(abs(d) < 1e-6) { t = 0.5; } else { t /= d; }\n"
-        "      isect_point[i] =                               \n"
-        "        GLUP.modelviewprojection_matrix*mix(p1,p2,t);\n"
-        "      if(vertex_colors_enabled()) {                  \n"
+        "      isect_point_clip_space[i] = mix(p1,p2,t);      \n"
+        "      if(glupIsEnabled(GLUP_VERTEX_COLORS)) {        \n"
         "         isect_color[i] = mix(                       \n"
         "             color_in(v1), color_in(v2), t           \n"
         "         );                                          \n"    
         "      }                                              \n"
-        "      if(texturing_enabled()) {                      \n"
+        "      if(glupIsEnabled(GLUP_TEXTURING)) {            \n"
         "         isect_tex_coord[i] = mix(                   \n"
         "             tex_coord_in(v1), tex_coord_in(v2), t   \n"
         "         );                                          \n"    
@@ -173,6 +192,7 @@ namespace GLUP {
         "  void compute_intersections() {                     \n"
         ;
 
+            
         for(index_t e=0; e<nb_edges(); ++e) {
             GLSL_compute_intersections_ +=
                 "   compute_intersection(" +
@@ -270,15 +290,23 @@ namespace GLUP {
         return false;
     }
 
+
+
+    
     GLuint MarchingCell::create_UBO() {
 
 #ifdef GEO_GL_150
         
         // Create a program that uses the UBO
 
+#ifdef GEO_OS_APPLE	
         static const char* shader_source_header_ =
-            "#version 150 core \n" ;
-
+            "#version 150 \n";
+#else
+        static const char* shader_source_header_ =
+            "#version 150 core \n";
+#endif
+	
         // This program is stupid, it is only meant to make sure
         // that all variables in the UBO are used (else some
         // GLSL compilers optimize-it out and we can no-longer
@@ -345,6 +373,7 @@ namespace GLUP {
             &uniform_buffer_size
         );
 
+	
         // Create UBO
         
         Memory::byte* UBO_data = new Memory::byte[uniform_buffer_size];
@@ -360,25 +389,37 @@ namespace GLUP {
         );
         
         
-        // Get variable offsets
+        // Get variable offsets and array strides
         
         GLint config_size_offset = GLSL::get_uniform_variable_offset(
             program, "MarchingCellStateBlock.config_size[0]"
-        );
+	);
 
         GLint config_offset = GLSL::get_uniform_variable_offset(
             program, "MarchingCellStateBlock.config[0]"
         );
-        
-        index_t*
-            config_size_ptr = (index_t*)(void*)(UBO_data + config_size_offset);
-        index_t*
-            config_ptr = (index_t*)(void*)(UBO_data + config_offset);
+
+	// Note: array strides may differ from one OpenGL vendor to another,
+	// for instance, for an array of ints,
+	//   with NVidia, stride = 4
+	//   with Intel,  stride = 16
+	// (by quiering, the following code works on both).
+	
+	size_t config_size_stride = GLSL::get_uniform_variable_array_stride(
+	    program, "MarchingCellStateBlock.config_size[0]"
+	);
+
+	size_t config_stride = GLSL::get_uniform_variable_array_stride(
+	    program, "MarchingCellStateBlock.config[0]"
+	);
+
+	void* config_size_ptr = (UBO_data + config_size_offset);
+	void* config_ptr = (UBO_data + config_offset);
 
         for(index_t i=0; i<nb_configs(); ++i) {
-            config_size_ptr[i] = config_size(i);
+	    set_array_item(config_size_ptr, config_size_stride, i, config_size(i));
             for(index_t j=0; j<config_size(i); ++j) {
-                config_ptr[i*max_config_size()+j] = config_edges(i)[j];
+		set_array_item(config_ptr, config_stride, i*max_config_size()+j, config_edges(i)[j]);
             }
         }
 
