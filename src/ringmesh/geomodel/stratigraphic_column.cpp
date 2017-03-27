@@ -63,7 +63,6 @@ namespace RINGMesh {
         type_ = type ;
     }
 
-
     StratigraphicUnit::StratigraphicUnit()
         :
             name_( "none" ),
@@ -193,9 +192,7 @@ namespace RINGMesh {
     }
 
     StratigraphicColumn::StratigraphicColumn( const std::string& name )
-        : name_( name ),
-          layers_(),
-          type_(CHRONOSTRATIGRAPHIC)
+        : name_( name ), layers_(), type_( CHRONOSTRATIGRAPHIC )
     {
 
     }
@@ -227,11 +224,11 @@ namespace RINGMesh {
     {
         for( index_t i = 0; i < layers_.size(); ++i ) {
             if( layers_[i]->get_name() == name ) {
-                return i;
+                return i ;
             }
         }
-        ringmesh_assert_not_reached;
-        return NO_ID;
+        ringmesh_assert_not_reached ;
+        return NO_ID ;
     }
 
     const StratigraphicUnit* StratigraphicColumn::get_unit_above(
@@ -389,7 +386,7 @@ namespace RINGMesh {
             }
         }
         ringmesh_assert_not_reached ;
-        return nil;
+        return nil ;
     }
 
     const StratigraphicUnit* StratigraphicColumn::find_unit_from_rock_feature_name(

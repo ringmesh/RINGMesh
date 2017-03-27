@@ -33,60 +33,45 @@
  *     FRANCE
  */
 
-#pragma once
+#include <ringmesh/io/io.h>
 
-#include <ringmesh/basic/common.h>
+#include <geogram/basic/file_system.h>
 
 #include <ringmesh/geomodel/stratigraphic_column.h>
-#include <ringmesh/geomodel/geomodel.h>
+#include <ringmesh/geomodel/stratigraphic_column_builder.h>
+
+namespace {
+    using namespace RINGMesh ;
+
+#include "stratigraphic_column/io_xml.cpp"
+}
 
 namespace RINGMesh {
-    class RINGMESH_API StratigraphicColumnBuilder {
-    ringmesh_disable_copy(StratigraphicColumnBuilder) ;
-    public:
-        StratigraphicColumnBuilder( StratigraphicColumn& column, GeoModel& model ) ;
-        virtual ~StratigraphicColumnBuilder()
-        {
-        }
-    protected:
-        StratigraphicColumn& column_ ;
-        GeoModel& model_ ;
-    } ;
 
-    class RINGMESH_API StratigraphicColumnBuilderFile: public StratigraphicColumnBuilder {
-    public:
-        StratigraphicColumnBuilderFile(
-            StratigraphicColumn& column,
-            GeoModel& model,
-            const std::string& filename ) ;
-        virtual ~StratigraphicColumnBuilderFile()
-        {
+    StratigraphicColumnIOHandler* StratigraphicColumnIOHandler::create(
+        const std::string& format )
+    {
+        StratigraphicColumnIOHandler* handler =
+            StratigraphicColumnIOHandlerFactory::create_object( format ) ;
+        if( !handler ) {
+            throw RINGMeshException( "I/O", "Unsupported file format: " + format ) ;
         }
-        void build_column()
-        {
-            load_file() ;
-        }
-    private:
-        virtual void load_file() = 0 ;
+        return handler ;
+    }
 
-    protected:
-        std::string filename_ ;
-    } ;
+    StratigraphicColumnIOHandler* StratigraphicColumnIOHandler::get_handler(
+        const std::string& filename )
+    {
+        std::string ext = GEO::FileSystem::extension( filename ) ;
+        return create( ext ) ;
+    }
 
-    class RINGMESH_API StratigraphicColumnBuilderXML: public StratigraphicColumnBuilderFile {
-    public:
-        StratigraphicColumnBuilderXML(
-            StratigraphicColumn& column,
-            GeoModel& model,
-            const std::string& filename )
-            : StratigraphicColumnBuilderFile( column, model, filename )
-        {
-        }
-        virtual ~StratigraphicColumnBuilderXML()
-        {
-        }
-        void load_file() ;
-    private:
-
-    } ;
+    /*
+     * Initializes the possible handler for IO files
+     */
+    void StratigraphicColumnIOHandler::initialize()
+    {
+        ringmesh_register_StratigraphicColumnIOHandler_creator(
+            XMLStratigraphicColumnIOHandler, "xml" ) ;
+    }
 }

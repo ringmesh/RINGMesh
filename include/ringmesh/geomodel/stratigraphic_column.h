@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef INCLUDE_RINGMESH_GEOMODEL_STRATIGRAPHIC_COLUMN_H_
-#define INCLUDE_RINGMESH_GEOMODEL_STRATIGRAPHIC_COLUMN_H_
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -349,12 +348,12 @@ namespace RINGMesh {
         /*!
          * @return the position of a unit in the stratigraphic column
          */
-        index_t get_index( const StratigraphicUnit& unit ) const;
+        index_t get_index( const StratigraphicUnit& unit ) const ;
         /*!
          *@param[in] name of the unit to find
          * @return the position of a unit in the stratigraphic column
          */
-        index_t get_index( const std::string& name ) const;
+        index_t get_index( const std::string& name ) const ;
 
         /*!
          * @param[in] feature RockFeature used to find the corresponding unit in the column
@@ -380,5 +379,3 @@ namespace RINGMesh {
 
     } ;
 }
-
-#endif /* INCLUDE_RINGMESH_GEOMODEL_STRATIGRAPHIC_COLUMN_H_ */

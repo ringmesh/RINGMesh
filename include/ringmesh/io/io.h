@@ -151,9 +151,7 @@ namespace RINGMesh {
         unzFile uz,
         const char filename[MAX_FILENAME] ) ;
 
-}
-/*********************************************************************************************/
-namespace RINGMesh {
+    /*********************************************************************************************/
     class RINGMESH_API StratigraphicColumnIOHandler: public GEO::Counted {
     public:
         static void initialize() ;
@@ -165,7 +163,8 @@ namespace RINGMesh {
 
         virtual void load(
             const std::string& filename,
-            StratigraphicColumn& column ,GeoModel& geomodel ) = 0 ;
+            StratigraphicColumn& column,
+            GeoModel& geomodel ) = 0 ;
 
         virtual void save(
             const StratigraphicColumn& column,

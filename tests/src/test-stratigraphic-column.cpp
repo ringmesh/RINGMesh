@@ -310,7 +310,7 @@ void test_load_from_gocad_xml_file () {
     std::string input_geomodel_file_name ( ringmesh_test_data_path );
     input_geomodel_file_name += "CloudSpin.ml";
     GeoModel in;
-    bool loaded_model_is_valid = geomodel_load ( in, input_geomodel_file_name );
+    geomodel_load ( in, input_geomodel_file_name );
 
     std::string input_column_file_name ( RINGMesh::ringmesh_test_data_path );
     input_column_file_name += "CloudSpin.xml";
@@ -338,7 +338,7 @@ int main() {
 		std::string input_model_file_name(ringmesh_test_data_path);
 		input_model_file_name += "corbi_layers.ml";
 		GeoModel in;
-		bool loaded_model_is_valid = geomodel_load(in, input_model_file_name);
+		geomodel_load(in, input_model_file_name);
 
 		index_t nb_interface = in.nb_geological_entities(
 				Interface::type_name_static());

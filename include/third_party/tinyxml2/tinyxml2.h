@@ -577,7 +577,7 @@ public:
         TIXMLASSERT( p );
         TIXMLASSERT( q );
         TIXMLASSERT( nChar >= 0 );
-        return strncmp( p, q, nChar ) == 0;
+        return strncmp( p, q, nChar ) == 0 ;
     }
     
     inline static bool IsUTF8Continuation( char p ) {
