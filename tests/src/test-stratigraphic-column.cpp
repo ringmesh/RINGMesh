@@ -328,8 +328,14 @@ int main() {
 	try {
 		default_configure();
 
+        // Set an output log file
+        std::string log_file ( ringmesh_test_output_path ) ;
+        log_file += "log.txt" ;
+        GEO::FileLogger* file_logger = new GEO::FileLogger ( log_file ) ;
+        Logger::instance ()->register_client ( file_logger ) ;
+
         //build geomodel
-/*		std::string input_model_file_name(ringmesh_test_data_path);
+		std::string input_model_file_name(ringmesh_test_data_path);
 		input_model_file_name += "corbi_layers.ml";
 		GeoModel in;
 		bool loaded_model_is_valid = geomodel_load(in, input_model_file_name);
@@ -345,7 +351,7 @@ int main() {
         test_stratigraphic_unit( in ) ;
 
         //test StratigraphicColumn building
-        test_stratigraphic_column_building( in ); */
+        test_stratigraphic_column_building( in ); 
         
         //load StratigraphicColumn from gocad XML file
         test_load_from_gocad_xml_file () ;

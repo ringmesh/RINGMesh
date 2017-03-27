@@ -83,18 +83,18 @@ void StratigraphicColumnBuilderXML::load_file() {
 	tinyxml2::XMLElement* unit = units->FirstChildElement("unit");
 
 	std::vector<std::string> unitList;
-	while (unit != nil) {
+	while (unit != 0) {
 		tinyxml2::XMLElement* name = unit->FirstChildElement("name");
 		unitList.push_back(name->GetText());
 		tinyxml2::XMLElement* top = unit->FirstChildElement("top");
-		if (top != nil) {
+		if (top != 0) {
 			tinyxml2::XMLElement* name_top = top->FirstChildElement("name");
 			unitList.push_back(name_top->GetText());
 		} else {
 			unitList.push_back("none");
 		}
 		tinyxml2::XMLElement* base = unit->FirstChildElement("base");
-		if (base != nil) {
+		if (base != 0) {
 			tinyxml2::XMLElement* name_base = base->FirstChildElement("name");
 			unitList.push_back(name_base->GetText());
 		} else {
@@ -110,24 +110,26 @@ void StratigraphicColumnBuilderXML::load_file() {
 	std::vector<const StratigraphicUnit*> units_vec_construction;
 	for (index_t i = 0; i < unitList.size(); i += 3) {
 		std::string name_of_unit = unitList[i];
-        index_t layer_id = find_geological_entity_id_from_name ( model_, GeologicalEntityType( "Layer" ), name_of_unit ) ;
-        const GeoModelGeologicalEntity* layer = &( model_.geological_entity ( GeologicalEntityType( "Layer" ), layer_id ) ) ;
-		const GeoModelGeologicalEntity* top_interface = nil;
-		const GeoModelGeologicalEntity* base_interface = nil;
-		RockFeature rock(name_of_unit);
-        if( unitList[i + 1] != "none" ) {
-            std::string name_of_interface_top = unitList[i + 1];
-            index_t top_interface_id = find_geological_entity_id_from_name ( model_, GeologicalEntityType( "Interface" ), name_of_interface_top ) ;
-            top_interface = &( model_.geological_entity ( GeologicalEntityType("Interface"), top_interface_id ) ) ;
+        if( name_of_unit != "none" ) {
+            index_t layer_id = find_geological_entity_id_from_name ( model_, GeologicalEntityType ( "Layer" ), name_of_unit ) ;
+            const GeoModelGeologicalEntity* layer = &( model_.geological_entity ( GeologicalEntityType ( "Layer" ), layer_id ) ) ;
+            const GeoModelGeologicalEntity* top_interface = nil;
+            const GeoModelGeologicalEntity* base_interface = nil;
+            RockFeature rock ( name_of_unit );
+            if( unitList[i + 1] != "none" ) {
+                std::string name_of_interface_top = unitList[i + 1];
+                index_t top_interface_id = find_geological_entity_id_from_name ( model_, GeologicalEntityType ( "Interface" ), name_of_interface_top ) ;
+                top_interface = &( model_.geological_entity ( GeologicalEntityType ( "Interface" ), top_interface_id ) ) ;
+            }
+            if( unitList[i + 2] != "none" ) {
+                std::string name_of_interface_base = unitList[i + 2];
+                index_t base_interface_id = find_geological_entity_id_from_name ( model_, GeologicalEntityType ( "Interface" ), name_of_interface_base ) ;
+                base_interface = &( model_.geological_entity ( GeologicalEntityType ( "Interface" ), base_interface_id ) ) ;
+            }
+            StratigraphicUnit unit ( name_of_unit, *top_interface, *base_interface,
+                *layer, CONFORMABLE, CONFORMABLE, rock, 0, std::numeric_limits< double >::max () );
+            units_vec_construction.push_back ( &unit );
         }
-		if (unitList[i + 2] != "none") {
-            std::string name_of_interface_base = unitList[i + 1];
-            index_t base_interface_id = find_geological_entity_id_from_name ( model_, GeologicalEntityType( "Interface" ), name_of_interface_base ) ;
-            base_interface = &( model_.geological_entity ( GeologicalEntityType( "Interface" ), base_interface_id ) ) ;
-		}
-		StratigraphicUnit unit(name_of_unit, *top_interface, *base_interface,
-				*layer, CONFORMABLE, CONFORMABLE, rock, 0 , std::numeric_limits< double >::max() );
-		units_vec_construction.push_back(&unit);
 	}
 	const std::vector<const StratigraphicUnit*> units_vec = units_vec_construction;
 	STRATIGRAPHIC_PARADIGM paradigm_upper;
