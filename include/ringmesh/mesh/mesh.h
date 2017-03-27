@@ -453,10 +453,8 @@ namespace RINGMesh {
          */
         double facet_edge_length( index_t facet_id, index_t vertex_id ) const
         {
-            const vec3& e0 = vertex( facet_vertex( facet_id, vertex_id ) ) ;
-            const vec3& e1 = vertex(
-                facet_vertex( facet_id,
-                    next_facet_vertex( facet_id, vertex_id ) ) ) ;
+            const vec3& e0 = vertex( facet_edge_vertex( facet_id, vertex_id, 0 ) ) ;
+            const vec3& e1 = vertex( facet_edge_vertex( facet_id, vertex_id, 1 ) ) ;
             return ( e1 - e0 ).length() ;
         }
         /*!
@@ -466,11 +464,28 @@ namespace RINGMesh {
          */
         vec3 facet_edge_barycenter( index_t facet_id, index_t vertex_id ) const
         {
-            const vec3& e0 = vertex( facet_vertex( facet_id, vertex_id ) ) ;
-            const vec3& e1 = vertex(
-                facet_vertex( facet_id,
-                    next_facet_vertex( facet_id, vertex_id ) ) ) ;
+            const vec3& e0 = vertex( facet_edge_vertex( facet_id, vertex_id, 0 ) ) ;
+            const vec3& e1 = vertex( facet_edge_vertex( facet_id, vertex_id, 1 ) ) ;
             return ( e1 + e0 ) / 2. ;
+        }
+        /*!
+         * @brief Gets the vertex index on the facet edge
+         * @param[in] facet_id index of the facet
+         * @param[in] edge_id index of the edge in the facet \param facet_id
+         * @param[in] vertex_id index of the local vertex in the edge \param edge_id (0 or 1)
+         * @return the vertex index
+         */
+        index_t facet_edge_vertex(
+            index_t facet_id,
+            index_t edge_id,
+            index_t vertex_id ) const
+        {
+            if( vertex_id == 0 ) {
+                return facet_vertex( facet_id, edge_id ) ;
+            } else {
+                return facet_vertex( facet_id,
+                    ( edge_id + vertex_id ) % nb_facet_vertices( facet_id ) ) ;
+            }
         }
 
         /*!
@@ -729,7 +744,7 @@ namespace RINGMesh {
             }
             ringmesh_assert( nb_vertices > 0 ) ;
 
-            return result / static_cast<double>( nb_vertices ) ;
+            return result / static_cast< double >( nb_vertices ) ;
         }
         /*!
          * Compute the non weighted barycenter of the \param cell_id
