@@ -809,14 +809,14 @@ namespace RINGMesh {
     }
 
     /*!
-      * Computes barycentric coordinates of \p p
-      * @param[in] p the query point
-      * @param[in] p0 the first triangle vertex
-      * @param[in] p1 the second triangle vertex
-      * @param[in] p2 the third triangle vertex
-      * @param[out] lambda the parametric coordinates corresponding to points
-      * @return false if the computation failed because of too small triangle area
-      */
+     * Computes barycentric coordinates of \p p
+     * @param[in] p the query point
+     * @param[in] p0 the first triangle vertex
+     * @param[in] p1 the second triangle vertex
+     * @param[in] p2 the third triangle vertex
+     * @param[out] lambda the parametric coordinates corresponding to points
+     * @return false if the computation failed because of too small triangle area
+     */
     bool triangle_barycentric_coordinates(
         const vec3& p,
         const vec3& p0,
@@ -1597,8 +1597,8 @@ namespace RINGMesh {
         for( index_t i = 0; i < index_map.size(); i++ ) {
             index_map[i] = i ;
         }
-        std::vector< index_t > nb_colocalised_per_thread( omp_get_max_threads(),
-            0 ) ;
+        index_t nb_threads = static_cast< index_t >( omp_get_max_threads() ) ;
+        std::vector< index_t > nb_colocalised_per_thread( nb_threads, 0 ) ;
         RINGMESH_PARALLEL_LOOP
         for( index_t i = 0; i < index_map.size(); i++ ) {
             std::vector< index_t > results ;
@@ -1614,8 +1614,8 @@ namespace RINGMesh {
         }
 
         index_t nb_colocalised_vertices = 0 ;
-        for( index_t i = 0; i < nb_colocalised_per_thread.size(); i++ ) {
-            nb_colocalised_vertices += nb_colocalised_per_thread[i] ;
+        for( index_t nb_colocalised : nb_colocalised_per_thread ) {
+            nb_colocalised_vertices += nb_colocalised ;
         }
         return nb_colocalised_vertices ;
     }
@@ -1708,8 +1708,7 @@ namespace RINGMesh {
         }
         nb_neighbors = std::min( nb_neighbors, nn_tree_->nb_points() ) ;
         result.resize( nb_neighbors ) ;
-        nn_tree_->get_nearest_neighbors( nb_neighbors, v.data(), &result[0],
-            dist ) ;
+        nn_tree_->get_nearest_neighbors( nb_neighbors, v.data(), &result[0], dist ) ;
         return nb_neighbors ;
     }
 
@@ -1797,7 +1796,9 @@ namespace RINGMesh {
         nn_tree_->set_points( nb_cells, nn_points_ ) ;
     }
 
-    void NNSearch::fill_nn_search_points( index_t index_in_nn_search, const vec3& center )
+    void NNSearch::fill_nn_search_points(
+        index_t index_in_nn_search,
+        const vec3& center )
     {
         nn_points_[index_in_nn_search] = center.x ;
         nn_points_[index_in_nn_search + 1] = center.y ;
