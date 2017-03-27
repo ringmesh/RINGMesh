@@ -52,7 +52,6 @@ namespace RINGMesh {
     class Mesh1DBuilder ;
     class Mesh2DBuilder ;
     class Mesh3DBuilder ;
-    class MeshAllDBuilder ;
 }
 
 namespace RINGMesh {
@@ -841,27 +840,4 @@ namespace RINGMesh {
 #define ringmesh_register_mesh_3d(type) \
     geo_register_creator(RINGMesh::Mesh3DFactory, type, type::type_name_static())
 
-    class RINGMESH_API MeshAllD: public virtual Mesh0D,
-        public virtual Mesh1D,
-        public virtual Mesh2D,
-        public virtual Mesh3D {
-    ringmesh_disable_copy( MeshAllD ) ;
-        friend class MeshAllDBuilder ;
-
-    public:
-        virtual ~MeshAllD()
-        {
-        }
-
-        static MeshAllD* create_mesh( const MeshType type ) ;
-    protected:
-        MeshAllD()
-            : Mesh0D(), Mesh1D(), Mesh2D(), Mesh3D()
-        {
-        }
-    } ;
-    typedef GEO::SmartPointer< MeshAllD > MeshAllD_var ;
-    typedef GEO::Factory0< MeshAllD > MeshAllDFactory ;
-#define ringmesh_register_mesh_alld(type) \
-    geo_register_creator(RINGMesh::MeshAllDFactory, type, type::type_name_static())
 }
