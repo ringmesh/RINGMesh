@@ -480,6 +480,7 @@ namespace RINGMesh {
             index_t edge_id,
             index_t vertex_id ) const
         {
+            ringmesh_assert( vertex_id < 2 ) ;
             if( vertex_id == 0 ) {
                 return facet_vertex( facet_id, edge_id ) ;
             } else {
