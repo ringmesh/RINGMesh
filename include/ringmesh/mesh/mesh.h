@@ -52,7 +52,6 @@ namespace RINGMesh {
     class Mesh1DBuilder ;
     class Mesh2DBuilder ;
     class Mesh3DBuilder ;
-    class MeshAllDBuilder ;
 }
 
 namespace RINGMesh {
@@ -456,10 +455,8 @@ namespace RINGMesh {
          */
         double facet_edge_length( index_t facet_id, index_t vertex_id ) const
         {
-            const vec3& e0 = vertex( facet_vertex( facet_id, vertex_id ) ) ;
-            const vec3& e1 = vertex(
-                facet_vertex( facet_id,
-                    next_facet_vertex( facet_id, vertex_id ) ) ) ;
+            const vec3& e0 = vertex( facet_edge_vertex( facet_id, vertex_id, 0 ) ) ;
+            const vec3& e1 = vertex( facet_edge_vertex( facet_id, vertex_id, 1 ) ) ;
             return ( e1 - e0 ).length() ;
         }
         /*!
@@ -469,11 +466,29 @@ namespace RINGMesh {
          */
         vec3 facet_edge_barycenter( index_t facet_id, index_t vertex_id ) const
         {
-            const vec3& e0 = vertex( facet_vertex( facet_id, vertex_id ) ) ;
-            const vec3& e1 = vertex(
-                facet_vertex( facet_id,
-                    next_facet_vertex( facet_id, vertex_id ) ) ) ;
+            const vec3& e0 = vertex( facet_edge_vertex( facet_id, vertex_id, 0 ) ) ;
+            const vec3& e1 = vertex( facet_edge_vertex( facet_id, vertex_id, 1 ) ) ;
             return ( e1 + e0 ) / 2. ;
+        }
+        /*!
+         * @brief Gets the vertex index on the facet edge
+         * @param[in] facet_id index of the facet
+         * @param[in] edge_id index of the edge in the facet \param facet_id
+         * @param[in] vertex_id index of the local vertex in the edge \param edge_id (0 or 1)
+         * @return the vertex index
+         */
+        index_t facet_edge_vertex(
+            index_t facet_id,
+            index_t edge_id,
+            index_t vertex_id ) const
+        {
+            ringmesh_assert( vertex_id < 2 ) ;
+            if( vertex_id == 0 ) {
+                return facet_vertex( facet_id, edge_id ) ;
+            } else {
+                return facet_vertex( facet_id,
+                    ( edge_id + vertex_id ) % nb_facet_vertices( facet_id ) ) ;
+            }
         }
 
         /*!
@@ -731,7 +746,7 @@ namespace RINGMesh {
             }
             ringmesh_assert( nb_vertices > 0 ) ;
 
-            return result / static_cast<double>( nb_vertices ) ;
+            return result / static_cast< double >( nb_vertices ) ;
         }
         /*!
          * Compute the non weighted barycenter of the \param cell_id
@@ -842,27 +857,4 @@ namespace RINGMesh {
 #define ringmesh_register_mesh_3d(type) \
     geo_register_creator(RINGMesh::Mesh3DFactory, type, type::type_name_static())
 
-    class RINGMESH_API MeshAllD: public virtual Mesh0D,
-        public virtual Mesh1D,
-        public virtual Mesh2D,
-        public virtual Mesh3D {
-    ringmesh_disable_copy( MeshAllD ) ;
-        friend class MeshAllDBuilder ;
-
-    public:
-        virtual ~MeshAllD()
-        {
-        }
-
-        static MeshAllD* create_mesh( const MeshType type ) ;
-    protected:
-        MeshAllD()
-            : Mesh0D(), Mesh1D(), Mesh2D(), Mesh3D()
-        {
-        }
-    } ;
-    typedef GEO::SmartPointer< MeshAllD > MeshAllD_var ;
-    typedef GEO::Factory0< MeshAllD > MeshAllDFactory ;
-#define ringmesh_register_mesh_alld(type) \
-    geo_register_creator(RINGMesh::MeshAllDFactory, type, type::type_name_static())
 }
