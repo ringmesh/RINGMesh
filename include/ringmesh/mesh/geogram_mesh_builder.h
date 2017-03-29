@@ -149,8 +149,8 @@ namespace RINGMesh {
          */
         virtual void delete_vertices( const std::vector< bool >& to_delete ) override
         {
-            GEO::vector< index_t > vertices_to_delete ;
-            copy_std_vector_to_geo_vector( to_delete, vertices_to_delete ) ;
+            GEO::vector< index_t > vertices_to_delete =
+                copy_std_vector_to_geo_vector< bool, index_t >( to_delete ) ;
             mesh_->mesh_->vertices.delete_elements( vertices_to_delete, false ) ;
             clear_vertex_linked_objects() ;
         }
@@ -169,8 +169,8 @@ namespace RINGMesh {
 
         virtual void permute_vertices( const std::vector< index_t >& permutation ) override
         {
-            GEO::vector< index_t > geo_vector_permutation ;
-            copy_std_vector_to_geo_vector( permutation, geo_vector_permutation ) ;
+            GEO::vector< index_t > geo_vector_permutation =
+                copy_std_vector_to_geo_vector( permutation ) ;
             mesh_->mesh_->vertices.permute_elements( geo_vector_permutation ) ;
         }
 
@@ -286,8 +286,8 @@ namespace RINGMesh {
             const std::vector< bool >& to_delete,
             bool remove_isolated_vertices ) override
         {
-            GEO::vector< index_t > edges_to_delete ;
-            copy_std_vector_to_geo_vector( to_delete, edges_to_delete ) ;
+            GEO::vector< index_t > edges_to_delete = copy_std_vector_to_geo_vector<
+                bool, index_t >( to_delete ) ;
             mesh_->mesh_->edges.delete_elements( edges_to_delete, false ) ;
             if( remove_isolated_vertices ) {
                 this->remove_isolated_vertices() ;
@@ -326,8 +326,8 @@ namespace RINGMesh {
 
         virtual void permute_edges( const std::vector< index_t >& permutation ) override
         {
-            GEO::vector< index_t > geo_vector_permutation ;
-            copy_std_vector_to_geo_vector( permutation, geo_vector_permutation ) ;
+            GEO::vector< index_t > geo_vector_permutation =
+                copy_std_vector_to_geo_vector( permutation ) ;
             mesh_->mesh_->edges.permute_elements( geo_vector_permutation ) ;
         }
 
@@ -415,9 +415,8 @@ namespace RINGMesh {
             for( index_t f = 0; f + 1 < facet_ptr.size(); f++ ) {
                 index_t start = facet_ptr[f] ;
                 index_t end = facet_ptr[f + 1] ;
-                GEO::vector< index_t > facet_vertices ;
-                copy_std_vector_to_geo_vector( facets, start, end, facet_vertices ) ;
-
+                GEO::vector< index_t > facet_vertices =
+                    copy_std_vector_to_geo_vector( facets, start, end ) ;
                 mesh_->mesh_->facets.create_polygon( facet_vertices ) ;
             }
             clear_facet_linked_objects() ;
@@ -431,8 +430,8 @@ namespace RINGMesh {
         virtual index_t create_facet_polygon(
             const std::vector< index_t >& vertices ) override
         {
-            GEO::vector< index_t > facet_vertices ;
-            copy_std_vector_to_geo_vector( vertices, facet_vertices ) ;
+            GEO::vector< index_t > facet_vertices = copy_std_vector_to_geo_vector(
+                vertices ) ;
             index_t index = mesh_->mesh_->facets.create_polygon( facet_vertices ) ;
             clear_facet_linked_objects() ;
             return index ;
@@ -497,9 +496,9 @@ namespace RINGMesh {
             const std::vector< index_t >& triangles,
             bool steal_args ) override
         {
-            GEO::vector< index_t > copy ;
-            copy_std_vector_to_geo_vector( triangles, copy ) ;
-            mesh_->mesh_->facets.assign_triangle_mesh( copy, steal_args ) ;
+            GEO::vector< index_t > geo_triangles = copy_std_vector_to_geo_vector(
+                triangles ) ;
+            mesh_->mesh_->facets.assign_triangle_mesh( geo_triangles, steal_args ) ;
             clear_facet_linked_objects() ;
         }
         /*!
@@ -522,8 +521,8 @@ namespace RINGMesh {
         }
         virtual void permute_facets( const std::vector< index_t >& permutation ) override
         {
-            GEO::vector< index_t > geo_vector_permutation ;
-            copy_std_vector_to_geo_vector( permutation, geo_vector_permutation ) ;
+            GEO::vector< index_t > geo_vector_permutation =
+                copy_std_vector_to_geo_vector( permutation ) ;
             mesh_->mesh_->facets.permute_elements( geo_vector_permutation ) ;
         }
         /*!
@@ -537,8 +536,8 @@ namespace RINGMesh {
             const std::vector< bool >& to_delete,
             bool remove_isolated_vertices ) override
         {
-            GEO::vector< index_t > facets_to_delete ;
-            copy_std_vector_to_geo_vector( to_delete, facets_to_delete ) ;
+            GEO::vector< index_t > facets_to_delete = copy_std_vector_to_geo_vector<
+                bool, index_t >( to_delete ) ;
             mesh_->mesh_->facets.delete_elements( facets_to_delete, false ) ;
             if( remove_isolated_vertices ) {
                 this->remove_isolated_vertices() ;
@@ -638,8 +637,7 @@ namespace RINGMesh {
             const std::vector< index_t >& tets,
             bool steal_args ) override
         {
-            GEO::vector< index_t > copy ;
-            copy_std_vector_to_geo_vector( tets, copy ) ;
+            GEO::vector< index_t > copy = copy_std_vector_to_geo_vector( tets ) ;
             mesh_->mesh_->cells.assign_tet_mesh( copy, steal_args ) ;
             clear_cell_linked_objects() ;
         }
@@ -716,8 +714,8 @@ namespace RINGMesh {
          */
         virtual void permute_cells( const std::vector< index_t >& permutation ) override
         {
-            GEO::vector< index_t > geo_vector_permutation ;
-            copy_std_vector_to_geo_vector( permutation, geo_vector_permutation ) ;
+            GEO::vector< index_t > geo_vector_permutation =
+                copy_std_vector_to_geo_vector( permutation ) ;
             mesh_->mesh_->cells.permute_elements( geo_vector_permutation ) ;
         }
         /*!
@@ -731,9 +729,9 @@ namespace RINGMesh {
             const std::vector< bool >& to_delete,
             bool remove_isolated_vertices ) override
         {
-            GEO::vector< index_t > cells_to_delete ;
-            copy_std_vector_to_geo_vector( to_delete, cells_to_delete ) ;
-            mesh_->mesh_->cells.delete_elements( cells_to_delete, false ) ;
+            GEO::vector< index_t > geo_to_delete = copy_std_vector_to_geo_vector<
+                bool, index_t >( to_delete ) ;
+            mesh_->mesh_->cells.delete_elements( geo_to_delete, false ) ;
             if( remove_isolated_vertices ) {
                 this->remove_isolated_vertices() ;
             }

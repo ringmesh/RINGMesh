@@ -1601,10 +1601,9 @@ namespace RINGMesh {
         std::vector< index_t > nb_colocalised_per_thread( nb_threads, 0 ) ;
         RINGMESH_PARALLEL_LOOP
         for( index_t i = 0; i < index_map.size(); i++ ) {
-            std::vector< index_t > results ;
             vec3 query( nn_points_[3 * i], nn_points_[3 * i + 1],
                 nn_points_[3 * i + 2] ) ;
-            get_neighbors( query, results, epsilon ) ;
+            std::vector< index_t > results = get_neighbors( query, epsilon ) ;
             index_t id = *std::min_element( results.begin(), results.end() ) ;
             if( id < i ) {
                 index_map[i] = id ;
@@ -1647,41 +1646,35 @@ namespace RINGMesh {
     /*!
      * Compute the neighbors of a given point, point closer than \param threshold_distance
      * @param[in] v the point to test
-     * @param[out] result the neighbor point indices.
      * @param[in] threshold_distance distance defining the neighborhood
-     * @return return true if there is at least one neighbor
+     * @return the neighbor point indices
      */
-    bool NNSearch::get_neighbors(
+    std::vector< index_t > NNSearch::get_neighbors(
         const vec3& v,
-        std::vector< index_t >& result,
         double threshold_distance ) const
     {
-
+        std::vector< index_t > result ;
         index_t nb_points = nn_tree_->nb_points() ;
-        result.clear() ;
-        if( nb_points == 0 ) {
-            return false ;
-        }
-        double threshold_distance_sq = threshold_distance * threshold_distance ;
-        index_t nb_neighbors = std::min( index_t( 5 ), nb_points ) ;
-        std::vector< index_t > neighbors ;
-        index_t cur_neighbor = 0 ;
-        index_t prev_neighbor = 0 ;
-        do {
-            prev_neighbor = cur_neighbor ;
-            cur_neighbor += nb_neighbors ;
-            neighbors.resize( cur_neighbor ) ;
-            double* distance_sq = (double*) alloca( sizeof(double) * cur_neighbor ) ;
-            nb_neighbors = get_neighbors( v, cur_neighbor, neighbors, distance_sq ) ;
-            for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
-                if( distance_sq[i] > threshold_distance_sq ) {
-                    break ;
+        if( nb_points != 0 ) {
+            double threshold_distance_sq = threshold_distance * threshold_distance ;
+            index_t nb_neighbors = std::min( index_t( 5 ), nb_points ) ;
+            index_t cur_neighbor = 0 ;
+            index_t prev_neighbor = 0 ;
+            do {
+                prev_neighbor = cur_neighbor ;
+                cur_neighbor += nb_neighbors ;
+                std::vector< index_t > neighbors = get_neighbors( v, cur_neighbor ) ;
+                nb_neighbors = static_cast< index_t >( neighbors.size() ) ;
+                for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
+                    if( length2( v - point( neighbors[i] ) )
+                        > threshold_distance_sq ) {
+                        break ;
+                    }
+                    result.push_back( neighbors[i] ) ;
                 }
-                result.push_back( neighbors[i] ) ;
-            }
-        } while( result.size() == cur_neighbor && result.size() < nb_points ) ;
-
-        return !result.empty() ;
+            } while( result.size() == cur_neighbor && result.size() < nb_points ) ;
+        }
+        return result ;
 
     }
 
@@ -1689,27 +1682,22 @@ namespace RINGMesh {
      * Gets the neighboring points of a given one sorted by increasing distance
      * @param[in] v the point to test
      * @param[in] nb_neighbors the number of neighbors to return
-     * @param[out] result the neighboring points
-     * @param[out] dist the square distance between each neigbhor and the point \p v
-     * @return the number of neighbors returned (can be less than \p nb_neighbors
+     * @return the neighboring points (can be less than \p nb_neighbors
      * if there is not enough points)
      */
-    index_t NNSearch::get_neighbors(
+    std::vector< index_t > NNSearch::get_neighbors(
         const vec3& v,
-        index_t nb_neighbors,
-        std::vector< index_t >& result,
-        double* dist ) const
+        index_t nb_neighbors ) const
     {
-        if( nn_tree_->nb_points() == 0 ) {
-            return 0 ;
+        std::vector< index_t > result ;
+        if( nn_tree_->nb_points() != 0 ) {
+            nb_neighbors = std::min( nb_neighbors, nn_tree_->nb_points() ) ;
+            std::vector< double > distances( nb_neighbors ) ;
+            result.resize( nb_neighbors ) ;
+            nn_tree_->get_nearest_neighbors( nb_neighbors, v.data(), &result[0],
+                &distances[0] ) ;
         }
-        if( !dist ) {
-            dist = (double*) alloca( sizeof(double) * nb_neighbors ) ;
-        }
-        nb_neighbors = std::min( nb_neighbors, nn_tree_->nb_points() ) ;
-        result.resize( nb_neighbors ) ;
-        nn_tree_->get_nearest_neighbors( nb_neighbors, v.data(), &result[0], dist ) ;
-        return nb_neighbors ;
+        return result ;
     }
 
     void NNSearch::build_nn_search_vertices( const GEO::Mesh& mesh, bool copy )

@@ -87,17 +87,15 @@ namespace {
     {
         vec3 v_bary = 0.5 * ( v0 + v1 ) ;
         index_t nb_neighbors = std::min( index_t( 5 ), surface.nb_mesh_elements() ) ;
-        std::vector< index_t > neighbors ;
         index_t cur_neighbor = 0 ;
         index_t prev_neighbor = 0 ;
         do {
             prev_neighbor = cur_neighbor ;
             cur_neighbor += nb_neighbors ;
             cur_neighbor = std::min( cur_neighbor, surface.nb_mesh_elements() ) ;
-            neighbors.resize( cur_neighbor ) ;
-            double* dist = (double*) alloca( sizeof(double) * cur_neighbor ) ;
-            nb_neighbors = surface.facet_nn_search().get_neighbors( v_bary,
-                cur_neighbor, neighbors, dist ) ;
+            std::vector< index_t > neighbors =
+                surface.facet_nn_search().get_neighbors( v_bary, cur_neighbor ) ;
+            nb_neighbors = static_cast< index_t >( neighbors.size() ) ;
             for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
                 f = neighbors[i] ;
                 for( index_t j = 0; j < surface.nb_mesh_element_vertices( f );
@@ -149,17 +147,15 @@ namespace {
     {
         vec3 v_bary = surface.mesh_element_barycenter( facet ) ;
         index_t nb_neighbors = std::min( index_t( 5 ), region.nb_mesh_elements() ) ;
-        std::vector< index_t > neighbors ;
         index_t cur_neighbor = 0 ;
         index_t prev_neighbor = 0 ;
         do {
             prev_neighbor = cur_neighbor ;
             cur_neighbor += nb_neighbors ;
             cur_neighbor = std::min( cur_neighbor, region.nb_mesh_elements() ) ;
-            neighbors.resize( cur_neighbor ) ;
-            double* dist = (double*) alloca( sizeof(double) * cur_neighbor ) ;
-            nb_neighbors = region.cell_nn_search().get_neighbors( v_bary,
-                cur_neighbor, neighbors, dist ) ;
+            std::vector< index_t > neighbors = region.cell_nn_search().get_neighbors(
+                v_bary, cur_neighbor ) ;
+            nb_neighbors = static_cast< index_t >( neighbors.size() ) ;
             for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
                 cell = neighbors[i] ;
                 for( cell_facet = 0 ; cell_facet < region.nb_cell_facets( cell );
@@ -184,17 +180,15 @@ namespace {
         index_t& vertex_id )
     {
         index_t nb_neighbors = std::min( index_t( 5 ), surface.nb_mesh_elements() ) ;
-        std::vector< index_t > neighbors ;
         index_t cur_neighbor = 0 ;
         index_t prev_neighbor = 0 ;
         do {
             prev_neighbor = cur_neighbor ;
             cur_neighbor += nb_neighbors ;
             cur_neighbor = std::min( cur_neighbor, surface.nb_mesh_elements() ) ;
-            neighbors.resize( cur_neighbor ) ;
-            double* dist = (double*) alloca( sizeof(double) * cur_neighbor ) ;
-            nb_neighbors = surface.facet_nn_search().get_neighbors( v, cur_neighbor,
-                neighbors, dist ) ;
+            std::vector< index_t > neighbors =
+                surface.facet_nn_search().get_neighbors( v, cur_neighbor ) ;
+            nb_neighbors = static_cast< index_t >( neighbors.size() ) ;
             for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
                 element_id = neighbors[i] ;
                 for( index_t j = 0;
@@ -221,17 +215,15 @@ namespace {
         index_t& vertex_id )
     {
         index_t nb_neighbors = std::min( index_t( 5 ), entity.nb_mesh_elements() ) ;
-        std::vector< index_t > neighbors ;
         index_t cur_neighbor = 0 ;
         index_t prev_neighbor = 0 ;
         do {
             prev_neighbor = cur_neighbor ;
             cur_neighbor += nb_neighbors ;
             cur_neighbor = std::min( cur_neighbor, entity.nb_mesh_elements() ) ;
-            neighbors.resize( cur_neighbor ) ;
-            double* dist = (double*) alloca( sizeof(double) * cur_neighbor ) ;
-            nb_neighbors = entity.cell_nn_search().get_neighbors( v, cur_neighbor,
-                neighbors, dist ) ;
+            std::vector< index_t > neighbors = entity.cell_nn_search().get_neighbors(
+                v, cur_neighbor ) ;
+            nb_neighbors = static_cast< index_t >( neighbors.size() ) ;
             for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
                 element_id = neighbors[i] ;
                 for( index_t j = 0;
@@ -612,16 +604,20 @@ namespace RINGMesh {
     void GeoModelBuilderGeometry::delete_mesh_entity_isolated_vertices(
         const gmme_t& E_id )
     {
-        if( geomodel_.entity_type_manager().mesh_entity_manager.is_line( E_id.type() ) ) {
+        if( geomodel_.entity_type_manager().mesh_entity_manager.is_line(
+            E_id.type() ) ) {
             Mesh1DBuilder_var builder = create_line_builder( E_id.index() ) ;
             builder->remove_isolated_vertices() ;
-        } else if( geomodel_.entity_type_manager().mesh_entity_manager.is_surface( E_id.type() ) ) {
+        } else if( geomodel_.entity_type_manager().mesh_entity_manager.is_surface(
+            E_id.type() ) ) {
             Mesh2DBuilder_var builder = create_surface_builder( E_id.index() ) ;
             builder->remove_isolated_vertices() ;
-        } else if( geomodel_.entity_type_manager().mesh_entity_manager.is_region( E_id.type() ) ) {
+        } else if( geomodel_.entity_type_manager().mesh_entity_manager.is_region(
+            E_id.type() ) ) {
             Mesh3DBuilder_var builder = create_region_builder( E_id.index() ) ;
             builder->remove_isolated_vertices() ;
-        } else if( geomodel_.entity_type_manager().mesh_entity_manager.is_corner( E_id.type() ) ) {
+        } else if( geomodel_.entity_type_manager().mesh_entity_manager.is_corner(
+            E_id.type() ) ) {
             Mesh0DBuilder_var builder = create_corner_builder( E_id.index() ) ;
             builder->remove_isolated_vertices() ;
         } else {
