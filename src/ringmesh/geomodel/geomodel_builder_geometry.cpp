@@ -814,8 +814,8 @@ namespace RINGMesh {
             const index_t& facet_vertex = facet_vertices[v].vertex_ ;
             const index_t& facet = facet_vertices[v].element_ ;
 
-            std::vector< index_t > facets ;
-            surface.facets_around_vertex( facet_vertex, facets, false, facet ) ;
+            std::vector< index_t > facets = surface.facets_around_vertex(
+                facet_vertex, false, facet ) ;
             update_facet_vertex( surface_id, facets, facet_vertex, vertex_id ) ;
             surface_mesh_builder->set_vertex( vertex_id, p ) ;
             vertex_id++ ;

@@ -770,22 +770,20 @@ namespace RINGMesh {
         /*!
          * @brief Determines the facets around a vertex
          * @param[in] surf_vertex_id Index of the vertex in the surface
-         * @param[in] result Indices of the facets containing @param P
          * @param[in] border_only If true only facets on the border are considered
          * @param[in] f0 (Optional) Index of one facet containing the vertex @param P
-         * @return The number of facets found
+         * @return Indices of the facets containing @param P
          * @note If a facet containing the vertex is given, facets around this
          * vertex is search by propagation. Else, a first facet is found by brute
          * force algorithm, and then the other by propagation
          */
-        index_t facets_around_vertex(
+        std::vector< index_t > facets_around_vertex(
             index_t surf_vertex_id,
-            std::vector< index_t >& result,
             bool border_only,
             index_t first_facet = NO_ID ) const
         {
-            return mesh2d_->facets_around_vertex( surf_vertex_id, result,
-                border_only, first_facet ) ;
+            return mesh2d_->facets_around_vertex( surf_vertex_id, border_only,
+                first_facet ) ;
         }
 
         /*! @}
