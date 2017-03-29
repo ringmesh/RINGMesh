@@ -320,23 +320,26 @@ namespace RINGMesh {
          * @param[out] distance_sq the square distance to the closest point
          * return returns the index of the closest point
          */
-        index_t get_closest_neighbor( const vec3& v, double& distance_sq ) const
+        index_t get_closest_neighbor( const vec3& v ) const
         {
-            std::vector< index_t > result ;
-            get_neighbors( v, 1, result, &distance_sq ) ;
-            return result[0] ;
+            index_t nb_neighbors = 1 ;
+            index_t result = get_neighbors( v, nb_neighbors ).front() ;
+            return result ;
         }
 
-        bool get_neighbors(
+        std::vector< index_t > get_neighbors(
             const vec3& v,
-            std::vector< index_t >& result,
             double threshold_distance ) const ;
 
-        index_t get_neighbors(
+        std::vector< index_t > get_neighbors(
             const vec3& v,
-            index_t nb_neighbors,
-            std::vector< index_t >& result,
-            double* dist = nullptr ) const ;
+            index_t nb_neighbors ) const ;
+
+        vec3 point( index_t v ) const
+        {
+            return vec3( nn_points_[3 * v], nn_points_[3 * v + 1],
+                nn_points_[3 * v + 2] ) ;
+        }
 
         index_t nb_points() const
         {
