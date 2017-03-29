@@ -156,22 +156,22 @@ namespace RINGMesh {
    const Corner& GeoModel::corner( index_t index ) const
    {
        ringmesh_assert( index < corners_.size() ) ;
-       return *dynamic_cast< const Corner* >( corners_[index] ) ;
+       return *static_cast< const Corner* >( corners_[index] ) ;
    }
    const Line& GeoModel::line( index_t index ) const
    {
        ringmesh_assert( index < lines_.size() ) ;
-       return *dynamic_cast< const Line* >( lines_[index] ) ;
+       return *static_cast< const Line* >( lines_[index] ) ;
    }
    const Surface& GeoModel::surface( index_t index ) const
    {
        ringmesh_assert( index < surfaces_.size() ) ;
-       return *dynamic_cast< const Surface* >( surfaces_[index] ) ;
+       return *static_cast< const Surface* >( surfaces_[index] ) ;
    }
    const Region& GeoModel::region( index_t index ) const
    {
        ringmesh_assert( index < regions_.size() ) ;
-       return *dynamic_cast< const Region* >( regions_[index] ) ;
+       return *static_cast< const Region* >( regions_[index] ) ;
    }
 
     /*!
