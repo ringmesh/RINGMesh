@@ -221,11 +221,6 @@ namespace RINGMesh {
         return result ;
     }
 
-    /*!
-     * @brief Finds or creates a line
-     * @param[in] vertices Coordinates of the vertices of the line
-     * @return Index of the Line
-     */
     gmme_t GeoModelBuilderTopology::find_or_create_line(
         const std::vector< vec3 >& vertices )
     {
@@ -249,9 +244,6 @@ namespace RINGMesh {
         return result ;
     }
 
-    /*!
-     * @brief Finds or creates a line knowing its topological adjacencies
-     */
     gmme_t GeoModelBuilderTopology::find_or_create_line(
         const std::vector< index_t >& sorted_adjacent_surfaces,
         const gmme_t& first_corner,

@@ -261,16 +261,6 @@ namespace RINGMesh {
         return sqrt( sqrDistance ) ;
     }
 
-    /*!
-     * Computes the distance between a point and a tetrahedron
-     * @param[in] p the point
-     * @param[in] p0 the first vertex of the tetrahedron
-     * @param[in] p1 the second vertex of the tetrahedron
-     * @param[in] p2 the third vertex of the tetrahedron
-     * @param[in] p3 the fourth vertex of the tetrahedron
-     * @param[out] nearest_p the nearest point on the tetrahedron
-     * @return the distance between the point and the tetrahedron facets
-     */
     double point_tetra_distance(
         const vec3& p,
         const vec3& p0,
@@ -299,17 +289,6 @@ namespace RINGMesh {
         return dist ;
     }
 
-    /*!
-     * Computes the distance between a point and a pyramid
-     * @param[in] p the point
-     * @param[in] p0 the first vertex of the pyramid
-     * @param[in] p1 the second vertex of the pyramid
-     * @param[in] p2 the third vertex of the pyramid
-     * @param[in] p3 the fourth vertex of the pyramid
-     * @param[in] p4 the fifth vertex of the pyramid
-     * @param[out] nearest_p the nearest point on the pyramid
-     * @return the distance between the point and the pyramid facets
-     */
     double point_pyramid_distance(
         const vec3& p,
         const vec3& p0,
@@ -354,18 +333,6 @@ namespace RINGMesh {
         return dist ;
     }
 
-    /*!
-     * Computes the distance between a point and a prism
-     * @param[in] p the point
-     * @param[in] p0 the first vertex of the prism
-     * @param[in] p1 the second vertex of the prism
-     * @param[in] p2 the third vertex of the prism
-     * @param[in] p3 the fourth vertex of the prism
-     * @param[in] p4 the fifth vertex of the prism
-     * @param[in] p5 the sixth vertex of the prism
-     * @param[out] nearest_p the nearest point on the prism
-     * @return the distance between the point and the prism facets
-     */
     double point_prism_distance(
         const vec3& p,
         const vec3& p0,
@@ -411,20 +378,7 @@ namespace RINGMesh {
         }
         return dist ;
     }
-    /*!
-     * Computes the distance between a point and a hexahedron
-     * @param[in] p the point
-     * @param[in] p0 the first vertex of the hexahedron
-     * @param[in] p1 the second vertex of the hexahedron
-     * @param[in] p2 the third vertex of the hexahedron
-     * @param[in] p3 the fourth vertex of the hexahedron
-     * @param[in] p4 the fifth vertex of the hexahedron
-     * @param[in] p5 the sixth vertex of the hexahedron
-     * @param[in] p6 the seventh vertex of the hexahedron
-     * @param[in] p7 the heith vertex of the hexahedron
-     * @param[out] nearest_p the nearest point on the hexahedron
-     * @return the distance between the point and the hexahedron facets
-     */
+
     double point_hexa_distance(
         const vec3& p,
         const vec3& p0,
@@ -458,16 +412,6 @@ namespace RINGMesh {
         return dist ;
     }
 
-    /*!
-     * Tests if a point is inside a tetrahedron
-     * @param[in] p the point to test
-     * @param[in] p0 the first vertex of the tetrahedron
-     * @param[in] p1 the second vertex of the tetrahedron
-     * @param[in] p2 the third vertex of the tetrahedron
-     * @param[in] p3 the fourth vertex of the tetrahedron
-     * @param[in] exact_predicates if true, the algorithm uses exact predicates
-     * @return returns true if the point is inside the tetrahedron
-     */
     bool point_inside_tetra(
         const vec3& p,
         const vec3& p0,
@@ -506,17 +450,6 @@ namespace RINGMesh {
             || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0 ) ;
     }
 
-    /*!
-     * Tests if a point is inside a pyramid
-     * @param[in] p the point to test
-     * @param[in] p0 the first vertex of the pyramid
-     * @param[in] p1 the second vertex of the pyramid
-     * @param[in] p2 the third vertex of the pyramid
-     * @param[in] p3 the fourth vertex of the pyramid
-     * @param[in] p4 the fifth vertex of the pyramid
-     * @param[in] exact_predicates if true, the algorithm uses exact predicates
-     * @return returns true if the point is inside the pyramid
-     */
     bool point_inside_pyramid(
         const vec3& p,
         const vec3& p0,
@@ -558,18 +491,6 @@ namespace RINGMesh {
                 && signs[4] <= 0 ) ;
     }
 
-    /*!
-     * Tests if a point is inside a prism
-     * @param[in] p the point to test
-     * @param[in] p0 the first vertex of the prism
-     * @param[in] p1 the second vertex of the prism
-     * @param[in] p2 the third vertex of the prism
-     * @param[in] p3 the fourth vertex of the prism
-     * @param[in] p4 the fifth vertex of the prism
-     * @param[in] p5 the sixth vertex of the prism
-     * @param[in] exact_predicates if true, the algorithm uses exact predicates
-     * @return returns true if the point is inside the prism
-     */
     bool point_inside_prism(
         const vec3& p,
         const vec3& p0,
@@ -611,20 +532,7 @@ namespace RINGMesh {
             || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0
                 && signs[4] <= 0 ) ;
     }
-    /*!
-     * Tests if a point is inside a hexahedron
-     * @param[in] p the point to test
-     * @param[in] p0 the first vertex of the hexahedron
-     * @param[in] p1 the second vertex of the hexahedron
-     * @param[in] p2 the third vertex of the hexahedron
-     * @param[in] p3 the fourth vertex of the hexahedron
-     * @param[in] p4 the fifth vertex of the hexahedron
-     * @param[in] p5 the sixth vertex of the hexahedron
-     * @param[in] p6 the seventh vertex of the hexahedron
-     * @param[in] p7 the heigth vertex of the hexahedron
-     * @param[in] exact_predicates if true, the algorithm uses exact predicates
-     * @return returns true if the point is inside the hexahedron
-     */
+
     bool point_inside_hexa(
         const vec3& p,
         const vec3& p0,
@@ -670,16 +578,6 @@ namespace RINGMesh {
                 && signs[4] <= 0 && signs[5] <= 0 ) ;
     }
 
-    /*!
-     * Computes the intersection(s) between a circle and a plane
-     * @param[in] O_plane a point on the plane
-     * @param[in] N_plane the normal of the plane
-     * @param[in] O_circle the center of the circle
-     * @param[in] N_circle the normal of the plane supporting the circle
-     * @param[in] r the radius of the circle
-     * @param[out] result the intersected points
-     * @return returns true if there is at least one intersection
-     */
     bool circle_plane_intersection(
         const vec3& O_plane,
         const vec3& N_plane,
@@ -725,16 +623,6 @@ namespace RINGMesh {
         return true ;
     }
 
-    /*!
-     * Computes the intersection between two planes
-     * @param[in] O_P0 a point on the first plane
-     * @param[in] N_P0 the normal of the frst plane
-     * @param[in] O_P1 a point on the second plane
-     * @param[in] N_P1 the normal of the second plane
-     * @param[out] O_inter a point on the intersected line
-     * @param[out] D_inter the direction of the intersected line
-     * @return true is there is an intersection between the planes
-     */
     bool plane_plane_intersection(
         const vec3& O_P0,
         const vec3& N_P0,
@@ -771,16 +659,6 @@ namespace RINGMesh {
         return true ;
     }
 
-    /*!
-     * Computes barycentric coordinates of \p p
-     * @param[in] p the query point
-     * @param[in] p0 the first tetra vertex
-     * @param[in] p1 the second tetra vertex
-     * @param[in] p2 the third tetra vertex
-     * @param[in] p3 the fourth tetra vertex
-     * @param[out] lambda the parametric coordinates corresponding to points
-     * @return false if the computation failed because of too small tetrahedron volume
-     */
     bool tetra_barycentric_coordinates(
         const vec3& p,
         const vec3& p0,
@@ -808,15 +686,6 @@ namespace RINGMesh {
         return true ;
     }
 
-    /*!
-     * Computes barycentric coordinates of \p p
-     * @param[in] p the query point
-     * @param[in] p0 the first triangle vertex
-     * @param[in] p1 the second triangle vertex
-     * @param[in] p2 the third triangle vertex
-     * @param[out] lambda the parametric coordinates corresponding to points
-     * @return false if the computation failed because of too small triangle area
-     */
     bool triangle_barycentric_coordinates(
         const vec3& p,
         const vec3& p0,
@@ -842,15 +711,6 @@ namespace RINGMesh {
         return true ;
     }
 
-    /*!
-     * Computes the intersection between a plane and a line
-     * @param[in] O_line a point on the line
-     * @param[in] D_line the direction of the plane
-     * @param[in] O_plane a point on the plane
-     * @param[in] N_plane the normal of the plane
-     * @param[out] result the intersected point
-     * @return returns true if there is an intersection
-     */
     bool line_plane_intersection(
         const vec3& O_line,
         const vec3& D_line,
@@ -873,15 +733,6 @@ namespace RINGMesh {
         }
     }
 
-    /*!
-     * Computes the intersection between a plane and a segment
-     * @param[in] p0 the first vertex of the segment
-     * @param[in] p1 the second vertex of the segment
-     * @param[in] O_plane a point on the plane
-     * @param[in] N_plane the normal of the plane
-     * @param[out] result the intersected point
-     * @return returns true if there is an intersection
-     */
     bool segment_plane_intersection(
         const vec3& seg0,
         const vec3& seg1,
@@ -907,16 +758,6 @@ namespace RINGMesh {
         }
     }
 
-    /*!
-     * Computes the intersection between a disk and a segment
-     * @param[in] p0 the first vertex of the segment
-     * @param[in] p1 the second vertex of the segment
-     * @param[in] O_circle the center of the disk
-     * @param[in] N_circle the normal of the plane supporting the disk
-     * @param[in] r the radius of the disk
-     * @param[out] result the intersected point
-     * @return returns true if there is an intersection
-     */
     bool disk_segment_intersection(
         const vec3& p0,
         const vec3& p1,
@@ -936,17 +777,6 @@ namespace RINGMesh {
         return false ;
     }
 
-    /*!
-     * Computes the intersection(s) between a circle and a triangle
-     * @param[in] p0 the first vertex of the triangle
-     * @param[in] p1 the second vertex of the triangle
-     * @param[in] p2 the third vertex of the triangle
-     * @param[in] O_circle the center of the circle
-     * @param[in] N_circle the normal of the plane supporting the circle
-     * @param[in] r the radius of the circle
-     * @param[out] result the intersected points
-     * @return returns true if there is at least one intersection
-     */
     bool circle_triangle_intersection(
         const vec3& p0,
         const vec3& p1,
@@ -970,14 +800,6 @@ namespace RINGMesh {
         return !result.empty() ;
     }
 
-    /*!
-     * Computes the orthogonal projection of a point on a segment
-     * @param[in] p the point to project
-     * @param[in] p0 the first vertex of the segment
-     * @param[in] p1 the second vertex of the segment
-     * @param[out] new_p the projected point
-     * @return returns true if the projection is possible
-     */
     bool point_segment_projection(
         const vec3& p,
         const vec3& p0,
@@ -998,13 +820,6 @@ namespace RINGMesh {
         return false ;
     }
 
-    /*!
-     * Computes the orthogonal projection of a point on a plane
-     * @param[in] p the point to project
-     * @param[in] N_plane the normal of the plane
-     * @param[in] O_plane a point of the plane
-     * @param[out] projected_p the projected point
-     */
     void point_plane_projection(
         const vec3& p,
         const vec3& N_plane,
@@ -1038,16 +853,6 @@ namespace RINGMesh {
         }
     }
 
-    /*!
-     * Computes the smallest distance between a point and a quad
-     * @param[in] p the point to test
-     * @param[in] p0 the first vertex of the quad
-     * @param[in] p1 the second vertex of the quad
-     * @param[in] p2 the third vertex of the quad
-     * @param[in] p3 the fourth vertex of the quad
-     * @param[out] nearest_p the closest point on the quad
-     * @return the smallest distance
-     */
     double point_quad_distance(
         const vec3& p,
         const vec3& p0,
@@ -1096,16 +901,6 @@ namespace RINGMesh {
         return distance ;
     }
 
-    /*!
-     * Computes the intersection of a segment and a triangle
-     * @param[in] seg0 the first vertex of the segment
-     * @param[in] seg1 the second vertex of the segment
-     * @param[in] trgl0 the first vertex of the triangle
-     * @param[in] trgl1 the second vertex of the triangle
-     * @param[in] trgl2 the third vertex of the triangle
-     * @param[out] result the intersected point
-     * @return true is there is an intersection
-     */
     bool segment_triangle_intersection(
         const vec3& seg0,
         const vec3& seg1,
@@ -1167,26 +962,6 @@ namespace RINGMesh {
         return false ;
     }
 
-    /*!
-     * @brief Builds a rotational matrix about an arbitrary axis.
-     *
-     * Mathematical development: http://paulbourke.net/geometry/rotate/.
-     *
-     * @param[in] origin point in which passes the rotation axis.
-     *
-     * @param[in] axis vector which defines the rotation axis.
-     *
-     * @param[in] theta rotation angle (in radians or degrees).
-     *
-     * @param[in] degrees true is \p theta is in degrees, false
-     * if in radians.
-     *
-     * @param[out] rot_mat the matrix which defines the rotation
-     * of a point around the axis defined by point \p origin
-     * and vector \p axis by an angle \p theta.
-     * New coordinates of a point (x,y,z) are:
-     * (x',y',z') = rot_mat*(x,y,z)
-     */
     void rotation_matrix_about_arbitrary_axis(
         const vec3& origin,
         const vec3& axis,
@@ -1418,16 +1193,6 @@ namespace RINGMesh {
         rot_mat = inv_T * inv_Rx * inv_Ry * Rz * Ry * Rx * T ;
     }
 
-    /*!
-     * Tests if a point is inside a triangle, more precisely if it is inside
-     * a prism based on the triangle and its normal
-     * @param[in] p the point to test
-     * @param[in] p0 the first vertex of the triangle
-     * @param[in] p1 the second vertex of the triangle
-     * @param[in] p2 the third vertex of the triangle
-     * @param[in] exact_predicates if true, the algorithm uses exact predicates
-     * @return returns true if the point is inside
-     */
     bool point_inside_triangle(
         const vec3& p,
         const vec3& p0,
@@ -1474,17 +1239,6 @@ namespace RINGMesh {
         return s1 == s2 && s2 == s3 ;
     }
 
-    /*!
-     * Tests if a point is inside a quad, more precisely if it is inside the box
-     * based on the quad and its normal
-     * @param[in] p the point to test
-     * @param[in] p0 the first vertex of the quad
-     * @param[in] p1 the second vertex of the quad
-     * @param[in] p2 the third vertex of the quad
-     * @param[in] p3 the fourth vertex of the quad
-     * @param[in] exact_predicates if true, the algorithm uses exact predicates
-     * @return returns true if the point is inside
-     */
     bool point_inside_quad(
         const vec3& p,
         const vec3& p0,
@@ -1601,9 +1355,7 @@ namespace RINGMesh {
         std::vector< index_t > nb_colocalised_per_thread( nb_threads, 0 ) ;
         RINGMESH_PARALLEL_LOOP
         for( index_t i = 0; i < index_map.size(); i++ ) {
-            vec3 query( nn_points_[3 * i], nn_points_[3 * i + 1],
-                nn_points_[3 * i + 2] ) ;
-            std::vector< index_t > results = get_neighbors( query, epsilon ) ;
+            std::vector< index_t > results = get_neighbors( point( i ), epsilon ) ;
             index_t id = *std::min_element( results.begin(), results.end() ) ;
             if( id < i ) {
                 index_map[i] = id ;
@@ -1630,9 +1382,7 @@ namespace RINGMesh {
         index_t offset = 0 ;
         for( index_t p = 0; p < index_map.size(); p++ ) {
             if( index_map[p] == p ) {
-                vec3 new_point( nn_points_[3 * p], nn_points_[3 * p + 1],
-                    nn_points_[3 * p + 2] ) ;
-                unique_points.push_back( new_point ) ;
+                unique_points.push_back( point( p ) ) ;
                 index_map[p] = p - offset ;
             } else {
                 offset++ ;
@@ -1642,13 +1392,7 @@ namespace RINGMesh {
         ringmesh_assert( offset == nb_colocalised_vertices ) ;
         return offset ;
     }
-
-    /*!
-     * Compute the neighbors of a given point, point closer than \param threshold_distance
-     * @param[in] v the point to test
-     * @param[in] threshold_distance distance defining the neighborhood
-     * @return the neighbor point indices
-     */
+    
     std::vector< index_t > NNSearch::get_neighbors(
         const vec3& v,
         double threshold_distance ) const
@@ -1678,13 +1422,6 @@ namespace RINGMesh {
 
     }
 
-    /*!
-     * Gets the neighboring points of a given one sorted by increasing distance
-     * @param[in] v the point to test
-     * @param[in] nb_neighbors the number of neighbors to return
-     * @return the neighboring points (can be less than \p nb_neighbors
-     * if there is not enough points)
-     */
     std::vector< index_t > NNSearch::get_neighbors(
         const vec3& v,
         index_t nb_neighbors ) const
