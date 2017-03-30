@@ -376,8 +376,7 @@ namespace RINGMesh {
             RINGMESH_PARALLEL_LOOP
             for( index_t v = 0;
                 v
-                    < builder_->mesh_entity( Region::type_name_static(),
-                        output_region_ ).nb_vertices(); v++ ) {
+                    < region_->nb_vertices(); v++ ) {
                 double point[3] ;
                 mesh_get_vertex_coordinates( mesh_output_, v + starting_index_,
                     point ) ;
@@ -390,8 +389,7 @@ namespace RINGMesh {
             RINGMESH_PARALLEL_LOOP
             for( index_t t = 0;
                 t
-                    < builder_->mesh_entity( Region::type_name_static(),
-                        output_region_ ).nb_mesh_elements(); t++ ) {
+                    < region_->nb_mesh_elements(); t++ ) {
                 signed_index_t tet[4] ;
                 mesh_get_tetrahedron_vertices( mesh_output_, t + starting_index_,
                     tet ) ;
@@ -401,7 +399,35 @@ namespace RINGMesh {
                 }
                 set_tetra( t, tet ) ;
             }
-            builder_->compute_region_adjacencies( output_region_ ) ;
+            builder_->geometry.compute_region_adjacencies( output_region_ ) ;
+        }
+        void set_point ( index_t index, const double* point )
+        {
+            bool update = false ;
+            vec3 vertex ( point ) ;
+            builder_->geometry.set_mesh_entity_vertex (
+                gmme_t ( Region::type_name_static (), output_region_ ), index, vertex,
+                update ) ;
+        }
+
+        void set_tetra ( index_t tetra_index, int* vertex_indices )
+        {
+            std::vector< index_t > corners ( 4 ) ;
+            for( index_t v = 0; v < 4; v++ ) {
+                index_t vertex_id = static_cast< index_t >( vertex_indices[v] ) ;
+                corners[v] = vertex_id ;
+            }
+            builder_->geometry.set_region_element_geometry ( output_region_, tetra_index,
+                corners ) ;
+        }
+
+        void initialize_storage ( index_t nb_points, index_t nb_tets )
+        {
+            gmme_t region_id ( Region::type_name_static (), output_region_ ) ;
+            builder_->geometry.delete_mesh_entity_mesh ( region_id ) ;
+            builder_->geometry.create_mesh_entity_vertices ( region_id, nb_points ) ;
+            builder_->geometry.create_region_cells ( output_region_, GEO::MESH_TET,
+                nb_tets ) ;
         }
 
     } ;
@@ -586,35 +612,6 @@ namespace RINGMesh {
     {
         if( builder_ ) delete builder_ ;
     }
-
- /*   void TetraGen::set_point( index_t index, const double* point )
-    {
-        bool update = false ;
-        vec3 vertex( point ) ;
-        builder_->geometry.set_mesh_entity_vertex(
-            gmme_t( Region::type_name_static(), output_region_ ), index, vertex,
-            update ) ;
-    }
-
-    void TetraGen::set_tetra( index_t tetra_index, int* vertex_indices )
-    {
-        std::vector< index_t > corners( 4 ) ;
-        for( index_t v = 0; v < 4; v++ ) {
-            index_t vertex_id = static_cast< index_t >( vertex_indices[v] ) ;
-            corners[v] = vertex_id ;
-        }
-        builder_->geometry.set_region_element_geometry( output_region_, tetra_index,
-            corners ) ;
-    }
-
-    void TetraGen::initialize_storage( index_t nb_points, index_t nb_tets )
-    {
-        gmme_t region_id( Region::type_name_static(), output_region_ ) ;
-        builder_->geometry.delete_mesh_entity_mesh( region_id ) ;
-        builder_->geometry.create_mesh_entity_vertices( region_id, nb_points ) ;
-        builder_->geometry.create_region_cells( output_region_, GEO::MESH_TET,
-            nb_tets ) ;
-    }*/
 
     void TetraGen::initialize()
     {
