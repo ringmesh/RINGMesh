@@ -58,11 +58,7 @@ namespace {
 }
 
 namespace RINGMesh {
-    /*!
-     * Loads a WellGroup from a file
-     * @param[in] filename the file to load
-     * @param][out] wells the wells to fill
-     */
+
     void well_load( const std::string& filename, WellGroup& wells )
     {
         Logger::out( "I/O" ) << "Loading file " << filename << "..." << std::endl ;

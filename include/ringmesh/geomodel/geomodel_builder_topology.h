@@ -159,6 +159,12 @@ namespace RINGMesh {
          */
         gmme_t find_or_create_corner( const vec3& point ) ;
         gmme_t find_or_create_corner( index_t geomodel_point_id ) ;
+
+        /*!
+         * @brief Finds or creates a line
+         * @param[in] vertices Coordinates of the vertices of the line
+         * @return Index of the Line
+         */
         gmme_t find_or_create_line( const std::vector< vec3 >& vertices ) ;
 
         /*!

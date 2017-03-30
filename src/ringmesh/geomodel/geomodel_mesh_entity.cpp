@@ -339,10 +339,6 @@ namespace RINGMesh {
         return index() < geomodel().nb_mesh_entities( type_name() ) ;
     }
 
-    /*!
-     * All entities in the boundary must have this in their
-     *  in_boundary vector
-     */
     bool GeoModelMeshEntity::is_boundary_connectivity_valid() const
     {
         const MeshEntityTypeManager& family = geomodel().entity_type_manager().mesh_entity_manager ;
@@ -374,10 +370,7 @@ namespace RINGMesh {
         }
         return valid ;
     }
-    /*! All entities must be at least in the boundary of another entity
-     * and all entities in the in_boundary must have this entity in their
-     * boundary vector
-     */
+
     bool GeoModelMeshEntity::is_in_boundary_connectivity_valid() const
     {
         const MeshEntityTypeManager& family = geomodel().entity_type_manager().mesh_entity_manager ;
@@ -417,11 +410,7 @@ namespace RINGMesh {
         }
         return valid ;
     }
-    /*!
-     *  If the parent type is defined for this EntityType, 
-     *  and if the geomodel has entities of that type, the entity must have a parent.
-     * @todo Remove the second if condition ?
-     */
+
     bool GeoModelMeshEntity::is_parent_connectivity_valid() const
     {
         bool valid = true ;
@@ -480,19 +469,13 @@ namespace RINGMesh {
         }
         return valid ;
     }
-    /*!  Check that required information for the TYPE is defined
-     *    and that reverse information is stored by the corresponding
-     *    entities
-     */
+
     bool GeoModelMeshEntity::is_connectivity_valid() const
     {
         return is_boundary_connectivity_valid()
             && is_in_boundary_connectivity_valid() && is_parent_connectivity_valid() ;
     }
 
-    /*!
-     * @return Assert that the parent exists and returns it.
-     */
     const GeoModelGeologicalEntity& GeoModelMeshEntity::parent(
         index_t parent_index ) const
     {
@@ -530,10 +513,7 @@ namespace RINGMesh {
     }
 
     /**************************************************************/
-    /*!
-     * @brief Checks if this entity define the geomodel external boundary
-     * @details Test if the entity is in the Surfaces defining the universe
-     */
+
     bool Corner::is_on_voi() const
     {
         // True if one of the incident surface define the universe
@@ -545,9 +525,7 @@ namespace RINGMesh {
         return false ;
 
     }
-    /*!
-     * @brief Check that the Corner mesh is a unique point
-     */
+
     bool Corner::is_mesh_valid() const
     {
         bool valid = true ;
@@ -574,18 +552,6 @@ namespace RINGMesh {
 
     /***************************************************************/
 
-    /*!
-     * @brief Check that the mesh of the Line is valid
-     * @details Check that 
-     *  - the GEO::Mesh has more than 1 vertex - more than 1 edge - no facets - no cells.
-     *  - global indices of vertices in the geomodel are in a valid range 
-     *  - each vertex is in 2 edges except extremities that are in 1 edge
-     * 
-     * Does not check:
-     *  - Self-intersection - I suppose there are no segment - segment intersection (JP)
-     *  - Duplicated edge - most probably ruled out with the duplicated vertex test (JP)
-     *  - Duplicated vertex (verified at GeoModel level)
-     */
     bool Line::is_mesh_valid() const
     {
         bool valid = true ;
@@ -735,27 +701,6 @@ namespace RINGMesh {
 
     /********************************************************************/
 
-    /*!
-     * @brief Check that the mesh of the Surface is valid
-     * @details Check that
-     *  - the GEO::Mesh has more than 2 vertices, at least 1 facet, no cells.
-     *  - global indices of vertices in the geomodel are in a valid range
-     *  - no degenerate facet 
-     *  - one connected component 
-     *
-     *  Some tests are not performed here but globally on the GeoModel
-     *  - intersection of facets 
-     *  - non-manifold edges 
-     *  - duplicated vertices are on a boundary Line ending in the Surface 
-     * 
-     *
-     *  Some tests are not performed     
-     *  - non-manifold points
-     *  - surface orientability
-     *  - planarity of polygonal facets 
-     *
-     * @todo Check that there is no duplicated facet 
-     */
     bool Surface::is_mesh_valid() const
     {
         bool valid = true ;
@@ -846,22 +791,6 @@ namespace RINGMesh {
         }
         return false ;
     }
-
-    /*!
-     * @brief Comparator of two vec3
-     */
-    struct comp_vec3bis {
-        bool operator()( const vec3& l, const vec3& r ) const
-        {
-            if( l.x != r.x ) {
-                return l.x < r.x ;
-            }
-            if( l.y != r.y ) {
-                return l.y < r.y ;
-            }
-            return l.z < r.z ;
-        }
-    } ;
 
     /********************************************************************/
 
@@ -1066,7 +995,6 @@ namespace RINGMesh {
         delete mesh1d_ ;
         update_mesh_storage_type( new_mesh ) ;
     }
-
 
     void Surface::change_mesh_data_structure( const MeshType type )
     {
