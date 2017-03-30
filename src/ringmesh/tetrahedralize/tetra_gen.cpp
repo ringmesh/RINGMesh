@@ -66,7 +66,8 @@ namespace RINGMesh {
 
         virtual bool tetrahedralize( bool refine ) final
         {
-            tetrahedralize_mesh_tetgen( tetmesh_constraint_, refine, 1.0 ) ;
+            Mesh3DBuilder * mesh3D_builder = builder_->geometry.create_region_builder ( output_region_ );
+            tetrahedralize_mesh_tetgen ( mesh3D_builder, tetmesh_constraint_, refine, 1.0 ) ;
             initialize_storage( tetmesh_constraint_.vertices.nb(),
                 tetmesh_constraint_.cells.nb() ) ;
             write_vertices_in_ringmesh_data_structure() ;

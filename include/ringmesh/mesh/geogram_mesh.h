@@ -123,6 +123,14 @@ namespace RINGMesh {
             return default_extension_static() ;
         }
 
+        virtual std::vector<double> copy_vertices ( ) const
+        {
+            std::vector<double> copy_of_vertices ( 3 * nb_vertices () ) ;
+            GEO::Memory::copy ( copy_of_vertices.data(), mesh_->vertices.point_ptr ( 0 ),
+                nb_vertices () * 3 * sizeof ( double ) ) ;
+            return copy_of_vertices ;
+        }
+
     protected:
         GeogramMeshBase()
             : MeshBase()
