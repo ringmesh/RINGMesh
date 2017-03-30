@@ -522,7 +522,7 @@ namespace RINGMesh {
         for( index_t v = 0; v < conformal_mesh.nb_vertices(); v++ ) {
             const std::vector< index_t >& edges = edges_around_vertices[v] ;
             if( edges.size() == 1 ) {
-                S.push( OrientedEdge( conformal_mesh, edges.front(), v ) ) ;
+                S.emplace( conformal_mesh, edges.front(), v ) ;
             }
         }
         if( S.empty() ) {
@@ -560,8 +560,7 @@ namespace RINGMesh {
                     index_t count = 0 ;
                     for( index_t edge : edges ) {
                         if( !edge_visited[edge] ) {
-                            S_part.push(
-                                OrientedEdge( conformal_mesh, edge, v_to_id ) ) ;
+                            S_part.emplace( conformal_mesh, edge, v_to_id ) ;
                             count++ ;
                         }
                     }
@@ -572,7 +571,7 @@ namespace RINGMesh {
                         well_part_points, vertex_info[cur_edge.vertex_from_],
                         vertex_info[v_to_id] ) ;
                     for( index_t edge : edges ) {
-                        S.push( OrientedEdge( conformal_mesh, edge, v_to_id ) ) ;
+                        S.emplace( conformal_mesh, edge, v_to_id ) ;
                     }
                 }
             } while( !S_part.empty() ) ;
