@@ -95,22 +95,25 @@ namespace RINGMesh {
 
     void GeoModelBuilderRepair::remove_colocated_entity_vertices_and_update_gm()
     {
-        std::set< gme_t > empty_entities ;
-        remove_colocated_entity_vertices( empty_entities ) ;
-        if( !empty_entities.empty() ) {
-            builder_.topology.get_dependent_entities( empty_entities ) ;
-            builder_.removal.remove_mesh_entities( empty_entities ) ;
+        std::set< gmme_t > empty_mesh_entities ;
+        std::set< gmge_t > empty_geological_entities ;
+
+        remove_colocated_entity_vertices( empty_mesh_entities ) ;
+        if( !empty_mesh_entities.empty() ) {
+            builder_.topology.get_dependent_entities( empty_mesh_entities,
+                empty_geological_entities ) ;
+            builder_.removal.remove_mesh_entities( empty_mesh_entities ) ;
         }
     }
 
     void GeoModelBuilderRepair::remove_degenerate_facets_and_edges_and_update_gm()
     {
-        std::set< gme_t > empty_entities ;
-        remove_degenerate_facets_and_edges( empty_entities ) ;
+        std::set< gmme_t > empty_mesh_entities ;
+        remove_degenerate_facets_and_edges( empty_mesh_entities ) ;
         /// TODO when it will works,
         /// use GeoModelBuilderRemoval::remove_entities_and_dependencies
-        if( !empty_entities.empty() ) {
-            builder_.removal.remove_mesh_entities( empty_entities ) ;
+        if( !empty_mesh_entities.empty() ) {
+            builder_.removal.remove_mesh_entities( empty_mesh_entities ) ;
         }
 
         // This is basic requirement ! no_colocated geomodel vertices !
@@ -126,9 +129,9 @@ namespace RINGMesh {
             const Line& cur_line = geomodel_.line( line_itr ) ;
             if( !cur_line.is_first_corner_first_vertex() ) {
                 const index_t first_boundary_index = cur_line.boundary( 0 ).index() ;
-                builder_.topology.set_mesh_entity_boundary( cur_line.gme_id(), 0,
-                    cur_line.boundary_gme( 1 ).index ) ;
-                builder_.topology.set_mesh_entity_boundary( cur_line.gme_id(), 1,
+                builder_.topology.set_mesh_entity_boundary( cur_line.gmme_id(), 0,
+                    cur_line.boundary_gmme( 1 ).index() ) ;
+                builder_.topology.set_mesh_entity_boundary( cur_line.gmme_id(), 1,
                     first_boundary_index ) ;
             }
         }
@@ -167,7 +170,7 @@ namespace RINGMesh {
         }
     }
 
-    index_t GeoModelBuilderRepair::detect_degenerate_facets( Surface& S )
+    index_t GeoModelBuilderRepair::detect_degenerate_facets( const Surface& S )
     {
         std::vector< index_t > colocated ;
         const NNSearch& nn_search = S.vertex_nn_search() ;
@@ -190,7 +193,7 @@ namespace RINGMesh {
         }
     }
 
-    index_t GeoModelBuilderRepair::repair_line_mesh( Line& line )
+    index_t GeoModelBuilderRepair::repair_line_mesh( const Line& line )
     {
         std::vector< index_t > colocated ;
         const NNSearch& nn_search = line.vertex_nn_search() ;
@@ -207,20 +210,18 @@ namespace RINGMesh {
     }
 
     void GeoModelBuilderRepair::remove_degenerate_facets_and_edges(
-        std::set< gme_t >& to_remove )
+        std::set< gmme_t >& to_remove )
     {
         to_remove.clear() ;
         for( index_t i = 0; i < geomodel_.nb_lines(); ++i ) {
-            Line& line =
-                dynamic_cast< Line& >( geomodel_access_.modifiable_mesh_entity(
-                    gme_t( Line::type_name_static(), i ) ) ) ;
+            const Line& line = geomodel_.line( i ) ;
             index_t nb = repair_line_mesh( line ) ;
             if( nb > 0 ) {
                 Logger::out( "GeoModel" ) << nb
                     << " degenerated edges removed in LINE " << i << std::endl ;
                 // If the Line is set it to remove
                 if( geomodel_.line( i ).nb_mesh_elements() == 0 ) {
-                    to_remove.insert( geomodel_.line( i ).gme_id() ) ;
+                    to_remove.insert( geomodel_.line( i ).gmme_id() ) ;
                 }
             }
         }
@@ -228,9 +229,7 @@ namespace RINGMesh {
 
         double epsilon_sq = geomodel_.epsilon() * geomodel_.epsilon() ;
         for( index_t i = 0; i < geomodel_.nb_surfaces(); ++i ) {
-            Surface& surface =
-                dynamic_cast< Surface& >( geomodel_access_.modifiable_mesh_entity(
-                    gme_t( Surface::type_name_static(), i ) ) ) ;
+            const Surface& surface = geomodel_.surface( i ) ;
             index_t nb = detect_degenerate_facets( surface ) ;
             /// @todo Check if that cannot be simplified
             if( nb > 0 ) {
@@ -242,12 +241,11 @@ namespace RINGMesh {
                     // MESH_REPAIR_DUP_F 2 ;
                     GEO::MeshRepairMode mode =
                         static_cast< GEO::MeshRepairMode >( 2 ) ;
-                    Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder(
-                        surface.low_level_mesh_storage() ) ;
+                    Mesh2DBuilder_var builder =
+                        builder_.geometry.create_surface_builder( i ) ;
                     builder->mesh_repair( mode, 0.0 ) ;
 
                     // This might create some small components - remove them
-                    /// @todo How to choose the epsilon ? and the maximum number of facets ?
                     builder->remove_small_connected_components( epsilon_sq, 3 ) ;
 
                     // Alright, this is a bit of an overkill [JP]
@@ -256,22 +254,22 @@ namespace RINGMesh {
                     }
                 }
                 if( surface.nb_vertices() == 0 || surface.nb_mesh_elements() == 0 ) {
-                    to_remove.insert( geomodel_.surface( i ).gme_id() ) ;
+                    to_remove.insert( geomodel_.surface( i ).gmme_id() ) ;
                 }
             }
         }
     }
 
     void GeoModelBuilderRepair::vertices_on_inside_boundary(
-        const gme_t& E_id,
+        const gmme_t& E_id,
         std::set< index_t >& vertices )
     {
         vertices.clear() ;
-        if( E_id.type == Corner::type_name_static() ) {
+        if( E_id.type() == Corner::type_name_static() ) {
             return ;
         }
         const GeoModelMeshEntity& E = geomodel_.mesh_entity( E_id ) ;
-        if( E_id.type == Line::type_name_static() ) {
+        if( E_id.type() == Line::type_name_static() ) {
             if( E.boundary( 0 ).is_inside_border( E ) ) {
                 vertices.insert( E.nb_vertices() - 1 ) ;
             }
@@ -290,11 +288,11 @@ namespace RINGMesh {
             // We assume that the geomodel vertices are not computed
             const NNSearch& nn_search = E.vertex_nn_search() ;
 
-            for( index_t i = 0; i < inside_border.size(); ++i ) {
-                for( index_t v = 0; v < inside_border[i]->nb_vertices(); ++v ) {
-                    std::vector< index_t > colocated_indices ;
-                    nn_search.get_neighbors( inside_border[i]->vertex( v ),
-                        colocated_indices, geomodel_.epsilon() ) ;
+            for( const GeoModelMeshEntity*& entity : inside_border ) {
+                for( index_t v = 0; v < entity->nb_vertices(); ++v ) {
+                    std::vector< index_t > colocated_indices =
+                        nn_search.get_neighbors( entity->vertex( v ),
+                            geomodel_.epsilon() ) ;
                     if( colocated_indices.size() > 1 ) {
                         std::sort( colocated_indices.begin(),
                             colocated_indices.end() ) ;
@@ -308,17 +306,17 @@ namespace RINGMesh {
     }
 
     void GeoModelBuilderRepair::remove_colocated_entity_vertices(
-        std::set< gme_t >& to_remove )
+        std::set< gmme_t >& to_remove )
     {
         to_remove.clear() ;
         // For all Lines and Surfaces
-        const std::string types[2] = {
+        const MeshEntityType types[2] = {
             Line::type_name_static(), Surface::type_name_static() } ;
         for( index_t t = 0; t < 2; ++t ) {
-            const std::string& T = types[t] ;
+            const MeshEntityType& T = types[t] ;
 
             for( index_t e = 0; e < geomodel_.nb_mesh_entities( T ); ++e ) {
-                gme_t entity_id( T, e ) ;
+                gmme_t entity_id( T, e ) ;
                 const GeoModelMeshEntity& E = geomodel_.mesh_entity( entity_id ) ;
 
                 const NNSearch& kdtree = E.vertex_nn_search() ;
@@ -349,15 +347,12 @@ namespace RINGMesh {
                     continue ;
                 } else if( nb_todelete == E.nb_vertices() ) {
                     // The complete entity should be removed
-                    to_remove.insert( E.gme_id() ) ;
+                    to_remove.insert( E.gmme_id() ) ;
                     continue ;
                 } else {
                     if( t == 1 ) {
-                        Surface& ME =
-                            dynamic_cast< Surface& >( geomodel_access_.modifiable_mesh_entity(
-                                entity_id ) ) ;
-                        Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder(
-                            ME.low_level_mesh_storage() ) ;
+                        Mesh2DBuilder_var builder =
+                            builder_.geometry.create_surface_builder( e ) ;
                         for( index_t f_itr = 0; f_itr < E.nb_mesh_elements();
                             f_itr++ ) {
                             for( index_t fv_itr = 0;
@@ -374,11 +369,8 @@ namespace RINGMesh {
                             << std::endl ;
 
                     } else if( t == 0 ) {
-                        Line& ME =
-                            dynamic_cast< Line& >( geomodel_access_.modifiable_mesh_entity(
-                                entity_id ) ) ;
-                        Mesh1DBuilder_var builder = Mesh1DBuilder::create_builder(
-                            ME.low_level_mesh_storage() ) ;
+                        Mesh1DBuilder_var builder =
+                            builder_.geometry.create_line_builder( e ) ;
                         for( index_t e_itr = 0; e_itr < E.nb_mesh_elements();
                             e_itr++ ) {
                             builder->set_edge_vertex( e_itr, 0,

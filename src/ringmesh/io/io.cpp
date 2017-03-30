@@ -48,11 +48,11 @@
 namespace RINGMesh {
 
     /*!
-    * Compares the contains of two files
-    * @param[in] f1 the first filename
-    * @param[in] f2 the second filename
-    * @return return True if the files are identical
-    */
+     * Compares the contains of two files
+     * @param[in] f1 the first filename
+     * @param[in] f2 the second filename
+     * @return return True if the files are identical
+     */
     bool compare_files( const std::string& f1, const std::string& f2 )
     {
         const unsigned int MAX_LINE_LEN = 65535 ;
@@ -60,8 +60,8 @@ namespace RINGMesh {
         std::ifstream lFile( f1.c_str() ) ;
         std::ifstream rFile( f2.c_str() ) ;
 
-        char* lBuffer = new char[ MAX_LINE_LEN ]() ;
-        char* rBuffer = new char[ MAX_LINE_LEN ]() ;
+        char* lBuffer = new char[MAX_LINE_LEN]() ;
+        char* rBuffer = new char[MAX_LINE_LEN]() ;
 
         do {
             lFile.read( lBuffer, MAX_LINE_LEN ) ;
@@ -96,8 +96,8 @@ namespace RINGMesh {
         file.seekg( 0, std::ios::beg ) ;
         std::vector< char > buffer( size ) ;
         file.read( &buffer[0], size ) ;
-        zipOpenNewFileInZip( zf, name.c_str(), NULL,
-        NULL, 0, NULL, 0, NULL, Z_DEFLATED, Z_DEFAULT_COMPRESSION ) ;
+        zipOpenNewFileInZip( zf, name.c_str(), nullptr, nullptr, 0, nullptr, 0,
+            nullptr, Z_DEFLATED, Z_DEFAULT_COMPRESSION ) ;
         zipWriteInFileInZip( zf, size == 0 ? "" : &buffer[0], size ) ;
         zipCloseFileInZip( zf ) ;
         file.close() ;
@@ -117,7 +117,7 @@ namespace RINGMesh {
             throw RINGMeshException( "ZLIB", "Could not open file" ) ;
         }
         FILE *out = fopen( filename, "wb" ) ;
-        if( out == NULL ) {
+        if( out == nullptr ) {
             unzCloseCurrentFile( uz ) ;
             unzClose( uz ) ;
             throw RINGMeshException( "ZLIB", "Could not open destination file" ) ;
@@ -142,8 +142,6 @@ namespace RINGMesh {
 
     /***************************************************************************/
 
-
-
     GeoModelIOHandler* GeoModelIOHandler::create( const std::string& format )
     {
         GeoModelIOHandler* handler = GeoModelIOHandlerFactory::create_object(
@@ -162,8 +160,7 @@ namespace RINGMesh {
         return handler ;
     }
 
-    GeoModelIOHandler* GeoModelIOHandler::get_handler(
-        const std::string& filename )
+    GeoModelIOHandler* GeoModelIOHandler::get_handler( const std::string& filename )
     {
         std::string ext = GEO::FileSystem::extension( filename ) ;
         return create( ext ) ;

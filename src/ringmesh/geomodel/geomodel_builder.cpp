@@ -48,17 +48,17 @@
 namespace {
     using namespace RINGMesh ;
 
-    gme_t find_corner( const GeoModel& geomodel, index_t geomodel_point_id )
+    gmme_t find_corner( const GeoModel& geomodel, index_t geomodel_point_id )
     {
         const GeoModelMeshVertices& geomodel_vertices = geomodel.mesh.vertices ;
         std::vector< GMEVertex > vertices ;
         geomodel_vertices.gme_vertices( geomodel_point_id, vertices ) ;
-        for( index_t i = 0; i < vertices.size(); ++i ) {
-            if( vertices[i].gme_id.type == Corner::type_name_static() ) {
-                return vertices[i].gme_id ;
+        for( const GMEVertex& vertex : vertices ) {
+            if( vertex.gmme_id.type() == Corner::type_name_static() ) {
+                return vertex.gmme_id ;
             }
         }
-        return gme_t() ;
+        return gmme_t() ;
     }
 
     /*!
@@ -74,7 +74,7 @@ namespace {
         bool equal = true ;
         for( index_t i = 0; i < L.nb_vertices(); i++ ) {
             if( rhs_vertices[i]
-                != geomodel_vertices.geomodel_vertex_id( L.gme_id(), i ) ) {
+                != geomodel_vertices.geomodel_vertex_id( L.gmme_id(), i ) ) {
                 equal = false ;
                 break ;
             }
@@ -86,7 +86,7 @@ namespace {
         equal = true ;
         for( index_t i = 0; i < L.nb_vertices(); i++ ) {
             if( rhs_vertices[i]
-                != geomodel_vertices.geomodel_vertex_id( L.gme_id(),
+                != geomodel_vertices.geomodel_vertex_id( L.gmme_id(),
                     L.nb_vertices() - i - 1 ) ) {
                 equal = false ;
                 break ;
@@ -94,6 +94,35 @@ namespace {
         }
         return equal ;
     }
+
+    /*!
+     * @brief Reorders the line so that front() is a corner.
+     * @note Closed line has front()==back().
+     */
+    void reorder_closed_line_vertices_to_start_at_corner(
+        const GeoModel& geomodel,
+        std::vector< index_t >& line_vertices )
+    {
+        if( geomodel.nb_corners() == 0 ) {
+            // Maybe should throw an assertion, but I am not sure [JP]
+            // this really may happen for sure, so no throw [RM]
+            return ;
+        }
+        if( line_vertices.empty() ) {
+            return ;
+        }
+        for( index_t i = 1; i + 1 < line_vertices.size(); ++i ) {
+            gmme_t corner = find_corner( geomodel, line_vertices[i] ) ;
+            if( corner.is_defined() ) {
+                line_vertices.pop_back() ;
+                std::rotate( line_vertices.begin(), line_vertices.begin() + i,
+                    line_vertices.end() ) ;
+                line_vertices.push_back( line_vertices.front() ) ;
+                break ;
+            }
+        }
+    }
+
 } // anonymous namespace
 
 namespace RINGMesh {
@@ -248,7 +277,7 @@ namespace RINGMesh {
             }
 
             // Initialization
-            // We start on the plus (true) side of the first Triangle            
+            // We start on the plus (true) side of the first Triangle
             sorted_triangles_[0] = std::pair< index_t, bool >(
                 triangles_[0].surface_index_, true ) ;
 
@@ -264,7 +293,7 @@ namespace RINGMesh {
             for( index_t i = 1; i < triangles_.size(); ++i ) {
                 TriangleToSort& cur = triangles_[i] ;
                 // Computes the angle RADIANS between the reference and the current
-                // triangle 
+                // triangle
                 double cos = dot( B_A_ref, cur.B_A_ ) ;
                 // Remove invalid values
                 if( cos < -1 )
@@ -287,10 +316,8 @@ namespace RINGMesh {
 
             // Fills the sorted surfaces adding the side
             index_t it = 1 ;
-            for( index_t i = 0; i < triangles_.size(); ++i ) {
-                TriangleToSort& cur = triangles_[i] ;
-                if( triangles_[i].index_ == 0 ) { // The last to add
-                    ringmesh_assert( i == triangles_.size() - 1 ) ;
+            for( TriangleToSort& cur : triangles_ ) {
+                if( cur.index_ == 0 ) { // The last to add
                     sorted_triangles_[it].first = cur.surface_index_ ;
                     sorted_triangles_[it].second = cur.side_ ;
                 } else {
@@ -639,12 +666,12 @@ namespace RINGMesh {
                     for( index_t v = 0; v < S.nb_mesh_element_vertices( f ); ++v ) {
                         if( S.is_on_border( f, v ) ) {
                             index_t vertex = geomodel_vertices.geomodel_vertex_id(
-                                S.gme_id(), f, v ) ;
+                                S.gmme_id(), f, v ) ;
                             index_t next_vertex =
-                                geomodel_vertices.geomodel_vertex_id( S.gme_id(), f,
+                                geomodel_vertices.geomodel_vertex_id( S.gmme_id(), f,
                                     S.next_facet_vertex_index( f, v ) ) ;
                             index_t previous_vertex =
-                                geomodel_vertices.geomodel_vertex_id( S.gme_id(), f,
+                                geomodel_vertices.geomodel_vertex_id( S.gmme_id(), f,
                                     S.prev_facet_vertex_index( f, v ) ) ;
                             border_triangles_.push_back(
                                 BorderTriangle( s, f, vertex, next_vertex,
@@ -669,13 +696,13 @@ namespace RINGMesh {
             // Gets the next edge on border in the Surface
             index_t f = border_triangle.facet_ ;
             std::vector< index_t > possible_v0_id ;
-            geomodel_vertices.mesh_entity_vertex_id( S.gme_id(), border_triangle.v0_,
-                possible_v0_id ) ;
+            geomodel_vertices.mesh_entity_vertex_id( S.gmme_id(),
+                border_triangle.v0_, possible_v0_id ) ;
             ringmesh_assert( !possible_v0_id.empty() ) ;
             index_t v0_id = NO_ID ;
-            for( index_t i = 0; i < possible_v0_id.size(); i++ ) {
-                if( S.vertex_index_in_facet( f, possible_v0_id[i] ) != NO_ID ) {
-                    v0_id = possible_v0_id[i] ;
+            for( index_t id : possible_v0_id ) {
+                if( S.vertex_index_in_facet( f, id ) != NO_ID ) {
+                    v0_id = id ;
                 }
             }
             ringmesh_assert( v0_id != NO_ID ) ;
@@ -699,9 +726,9 @@ namespace RINGMesh {
             // Finds the BorderTriangle that is corresponding to this
             // It must exist and there is only one
             BorderTriangle bait( border_triangle.surface_, next_f,
-                geomodel_vertices.geomodel_vertex_id( S.gme_id(), next_f,
+                geomodel_vertices.geomodel_vertex_id( S.gmme_id(), next_f,
                     next_f_v0 ),
-                geomodel_vertices.geomodel_vertex_id( S.gme_id(), next_f,
+                geomodel_vertices.geomodel_vertex_id( S.gmme_id(), next_f,
                     next_f_v1 ), NO_ID ) ;
             index_t result = static_cast< index_t >( std::lower_bound(
                 border_triangles_.begin(), border_triangles_.end(), bait )
@@ -771,30 +798,6 @@ namespace RINGMesh {
         RINGMesh::GeoModelRegionFromSurfaces cur_line_region_information_ ;
     } ;
 
-    void reorder_line_vertices_to_start_at_corner(
-        const GeoModel& geomodel,
-        std::vector< index_t >& line_vertices )
-    {
-        if( geomodel.nb_corners() == 0 ) {
-            // Maybe should throw an assertion, but I am not sure [JP]
-            return ;
-        }
-        for( index_t i = 1; i + 1 < line_vertices.size(); ++i ) {
-            gme_t corner = find_corner( geomodel, line_vertices[i] ) ;
-            if( corner.is_defined() ) {
-                std::vector< index_t > shuffled_vertices( line_vertices.size() ) ;
-                std::copy( line_vertices.begin() + i, line_vertices.end(),
-                    shuffled_vertices.begin() ) ;
-                index_t nb_copied = static_cast< index_t >( line_vertices.end()
-                    - line_vertices.begin() - i ) ;
-                std::copy( line_vertices.begin() + 1, line_vertices.begin() + i + 1,
-                    shuffled_vertices.begin() + nb_copied ) ;
-                line_vertices = shuffled_vertices ;
-                break ;
-            }
-        }
-    }
-
     /*************************************************************************/
     GeoModelBuilderFile::GeoModelBuilderFile(
         GeoModel& geomodel,
@@ -815,12 +818,10 @@ namespace RINGMesh {
     {
     }
 
-    /*! Delete all GeoModelRegionFromSurfaces owned by the builder
-     */
     GeoModelBuilderFromSurfaces::~GeoModelBuilderFromSurfaces()
     {
-        for( index_t i = 0; i < regions_info_.size(); ++i ) {
-            delete regions_info_[i] ;
+        for( GeoModelRegionFromSurfaces*& info : regions_info_ ) {
+            delete info ;
         }
     }
 
@@ -839,32 +840,32 @@ namespace RINGMesh {
             bool is_line_closed = vertices.front() == vertices.back() ;
             if( is_line_closed ) {
                 // Vertices can begin and end at any vertex
-                reorder_line_vertices_to_start_at_corner( geomodel_, vertices ) ;
+                reorder_closed_line_vertices_to_start_at_corner( geomodel_,
+                    vertices ) ;
             }
 
-            gme_t first_corner = builder_.topology.find_or_create_corner(
+            gmme_t first_corner = builder_.topology.find_or_create_corner(
                 vertices.front() ) ;
-            gme_t second_corner = builder_.topology.find_or_create_corner(
+            gmme_t second_corner = builder_.topology.find_or_create_corner(
                 vertices.back() ) ;
             const std::vector< index_t >& adjacent_surfaces =
                 line_computer.adjacent_surfaces() ;
 
             index_t backup_nb_lines = geomodel_.nb_lines() ;
-            gme_t line_index = builder_.topology.find_or_create_line(
+            gmme_t line_index = builder_.topology.find_or_create_line(
                 adjacent_surfaces, first_corner, second_corner ) ;
 
             bool created_line = geomodel_.nb_lines() != backup_nb_lines ;
             if( created_line ) {
-                builder_.geometry.set_line( line_index.index, vertices ) ;
+                builder_.geometry.set_line( line_index.index(), vertices ) ;
 
-                for( index_t j = 0; j < adjacent_surfaces.size(); ++j ) {
-                    builder_.topology.add_mesh_entity_in_boundary( line_index,
-                        adjacent_surfaces[j] ) ;
+                for( index_t j : adjacent_surfaces ) {
+                    builder_.topology.add_mesh_entity_in_boundary( line_index, j ) ;
                 }
                 builder_.topology.add_mesh_entity_boundary( line_index,
-                    first_corner.index ) ;
+                    first_corner.index() ) ;
                 builder_.topology.add_mesh_entity_boundary( line_index,
-                    second_corner.index ) ;
+                    second_corner.index() ) ;
 
                 // If the plan is to then build_regions, get the information
                 if( options_.compute_regions_brep ) {
@@ -873,10 +874,10 @@ namespace RINGMesh {
                             line_computer.region_information() ) ) ;
                 }
             } else {
-                bool same_geometry = line_equal( geomodel_.line( line_index.index ),
-                    vertices ) ;
+                bool same_geometry = line_equal(
+                    geomodel_.line( line_index.index() ), vertices ) ;
                 if( !same_geometry ) {
-                    builder_.geometry.set_line( line_index.index, vertices ) ;
+                    builder_.geometry.set_line( line_index.index(), vertices ) ;
                 }
             }
         }
@@ -893,8 +894,8 @@ namespace RINGMesh {
             Surface::type_name_static() ) ;
 
         // Sort surfaces around the contacts
-        for( index_t i = 0; i < regions_info_.size(); ++i ) {
-            regions_info_[i]->sort() ;
+        for( GeoModelRegionFromSurfaces*& info : regions_info_ ) {
+            info->sort() ;
         }
 
         if( geomodel_.nb_surfaces() == 1 ) {
@@ -908,7 +909,7 @@ namespace RINGMesh {
                 /// the + side. No further check.
                 bool inside = true ;
                 // Create the region - set the surface on its boundaries
-                gme_t region_id = builder_.topology.create_mesh_entity< Region >() ;
+                gmme_t region_id = builder_.topology.create_mesh_entity< Region >() ;
                 builder_.topology.add_mesh_entity_boundary( region_id, 0, inside ) ;
 
                 // Set universe boundary
@@ -933,7 +934,7 @@ namespace RINGMesh {
                     continue ;
                 }
                 // Create a new region
-                gme_t cur_region_id =
+                gmme_t cur_region_id =
                     builder_.topology.create_mesh_entity< Region >() ;
                 // Get all oriented surfaces defining this region
                 std::stack< std::pair< index_t, bool > > SR ;
@@ -949,7 +950,7 @@ namespace RINGMesh {
                     // Add the surface to the current region
                     builder_.topology.add_mesh_entity_boundary( cur_region_id,
                         s.first, s.second ) ;
-                    surf_2_region[s_id] = cur_region_id.index ;
+                    surf_2_region[s_id] = cur_region_id.index() ;
 
                     // Check the other side of the surface and push it in S
                     index_t s_id_opp =
@@ -961,7 +962,7 @@ namespace RINGMesh {
                     const Surface& surface = geomodel_.surface( s.first ) ;
                     for( index_t i = 0; i < surface.nb_boundaries(); ++i ) {
                         const std::pair< index_t, bool >& n =
-                            regions_info_[surface.boundary_gme( i ).index]->next(
+                            regions_info_[surface.boundary_gmme( i ).index()]->next(
                                 s ) ;
                         index_t n_id =
                             n.second == true ? 2 * n.first : 2 * n.first + 1 ;
@@ -1003,8 +1004,8 @@ namespace RINGMesh {
                 builder_.topology.add_universe_boundary(
                     cur_region.boundary( i ).index(), cur_region.side( i ) ) ;
             }
-            std::set< gme_t > to_erase ;
-            to_erase.insert( cur_region.gme_id() ) ;
+            std::set< gmme_t > to_erase ;
+            to_erase.insert( cur_region.gmme_id() ) ;
             builder_.removal.remove_mesh_entities( to_erase ) ;
         }
         return true ;
@@ -1030,8 +1031,6 @@ namespace RINGMesh {
         builder_.end_geomodel() ;
     }
 
-
-
     GeoModelBuilderCopy::GeoModelBuilderCopy(
         GeoModelBuilder& builder,
         GeoModel& geomodel )
@@ -1043,6 +1042,7 @@ namespace RINGMesh {
     {
         builder_.topology.copy_topology( from ) ;
         builder_.geometry.copy_meshes( from ) ;
+        builder_.geology.copy_geology( from ) ;
     }
 
     GeoModelBuilderInfo::GeoModelBuilderInfo(
@@ -1091,7 +1091,8 @@ namespace RINGMesh {
             Region::type_name_static() ) ;
 
         for( index_t i = 0; i < geomodel_.nb_geological_entity_types(); i++ ) {
-            const std::string& type = geomodel_.geological_entity_type( i ) ;
+            const GeologicalEntityType type = GeologicalEntityType(
+                geomodel_.geological_entity_type( i ) ) ;
             geology.complete_geological_entities_geol_feature_from_first_child(
                 type ) ;
         }
@@ -1102,6 +1103,205 @@ namespace RINGMesh {
 
         // Deliberate clear of the geomodel vertices used for geomodel building
         geomodel_.mesh.vertices.clear() ;
+    }
+
+    GeoModelBuilderGeology::GeoModelBuilderGeology(
+        GeoModelBuilder& builder,
+        GeoModel& geomodel )
+        : builder_( builder ), geomodel_( geomodel ), geomodel_access_( geomodel )
+    {
+    }
+
+    void GeoModelBuilderGeology::copy_geology( const GeoModel& from )
+    {
+        for( index_t t = 0; t < from.nb_geological_entity_types(); t++ ) {
+            builder_.geology.copy_geological_entity_topology( from,
+                from.geological_entity_type( t ) ) ;
+        }
+    }
+
+    bool GeoModelBuilderGeology::create_geological_entities(
+        const GeologicalEntityType& type,
+        index_t nb_additional_entities )
+    {
+        find_or_create_geological_entity_type( type ) ;
+        std::vector< GeoModelGeologicalEntity* >& store =
+            geomodel_access_.modifiable_geological_entities( type ) ;
+        index_t old_size = static_cast< index_t >( store.size() ) ;
+        index_t new_size = old_size + nb_additional_entities ;
+        store.resize( new_size, nullptr ) ;
+        for( index_t i = old_size; i < new_size; i++ ) {
+            ringmesh_assert( store[i] == nullptr ) ;
+            store[i] = GeoModelGeologicalEntityAccess::create_geological_entity(
+                type, geomodel_, i ) ;
+        }
+        return true ;
+    }
+
+    void GeoModelBuilderGeology::delete_geological_entity(
+        const GeologicalEntityType& type,
+        index_t index )
+    {
+        std::vector< GeoModelGeologicalEntity* >& store =
+            geomodel_access_.modifiable_geological_entities( type ) ;
+        delete store[index] ;
+        store[index] = nullptr ;
+    }
+
+    void GeoModelBuilderGeology::fill_mesh_entities_parent(
+        const MeshEntityType& type )
+    {
+        if( geomodel_.nb_mesh_entities( type ) == 0 ) {
+            return ;
+        }
+        const std::vector< GeologicalEntityType > parent_types(
+            geomodel_.entity_type_manager().relationship_manager.parent_types(
+                type ) ) ;
+        for(  const GeologicalEntityType& parent_type : parent_types ) {
+            if( parent_type != ForbiddenGeologicalEntityType::type_name_static() ) {
+                for( index_t j = 0;
+                    j < geomodel_.nb_geological_entities( parent_type ); ++j ) {
+                    const GeoModelGeologicalEntity& parent =
+                        geomodel_.geological_entity( parent_type, j ) ;
+                    for( index_t k = 0; k < parent.nb_children(); ++k ) {
+                        add_mesh_entity_parent( parent.child_gmme( k ),
+                            parent.gmge_id() ) ;
+                    }
+                }
+            }
+        }
+    }
+
+    void GeoModelBuilderGeology::fill_geological_entities_children(
+        const GeologicalEntityType& type )
+    {
+        if( geomodel_.nb_geological_entities( type ) == 0 ) {
+            return ;
+        }
+        const MeshEntityType& c_type =
+            geomodel_.geological_entity( type, 0 ).child_type_name() ;
+        if( c_type != ForbiddenMeshEntityType::type_name_static() ) {
+            for( index_t i = 0; i < geomodel_.nb_mesh_entities( c_type ); ++i ) {
+                const GeoModelMeshEntity& p = geomodel_.mesh_entity( c_type, i ) ;
+                for( index_t j = 0; j < p.nb_parents(); j++ ) {
+                    add_geological_entity_child( p.parent_gmge( j ), i ) ;
+                }
+            }
+        }
+    }
+
+    void GeoModelBuilderGeology::complete_mesh_entities_geol_feature_from_first_parent(
+        const MeshEntityType& type )
+    {
+        if( geomodel_.nb_mesh_entities( type ) == 0 ) {
+            return ;
+        }
+        const std::vector< GeologicalEntityType > parents =
+            geomodel_.entity_type_manager().relationship_manager.parent_types(
+                type ) ;
+        if( parents.size() == 0 ) {
+            return ;
+        } else {
+            for( index_t i = 0; i < geomodel_.nb_mesh_entities( type ); ++i ) {
+                GeoModelMeshEntity& E = geomodel_access_.modifiable_mesh_entity(
+                    gmme_t( type, i ) ) ;
+                if( !E.has_geological_feature() ) {
+                    if( E.nb_parents() > 0
+                        && E.parent( 0 ).has_geological_feature() ) {
+                        GeoModelMeshEntityAccess gmme_access( E ) ;
+                        gmme_access.modifiable_geol_feature() =
+                            E.parent( 0 ).geological_feature() ;
+                    }
+                }
+            }
+        }
+    }
+
+    void GeoModelBuilderGeology::complete_geological_entities_geol_feature_from_first_child(
+        const GeologicalEntityType& type )
+    {
+        if( geomodel_.nb_geological_entities( type ) == 0 ) {
+            return ;
+        }
+        const MeshEntityType& child_type =
+            geomodel_.entity_type_manager().relationship_manager.child_type( type ) ;
+        if( MeshEntityTypeManager::is_valid_type( child_type ) ) {
+            for( index_t i = 0; i < geomodel_.nb_geological_entities( type ); ++i ) {
+                GeoModelGeologicalEntity& parent =
+                    geomodel_access_.modifiable_geological_entity(
+                        gmge_t( type, i ) ) ;
+                if( !parent.has_geological_feature() ) {
+                    if( parent.nb_children() > 0
+                        && parent.child( 0 ).has_geological_feature() ) {
+                        GeoModelGeologicalEntityAccess gmge_access( parent ) ;
+                        gmge_access.modifiable_geol_feature() =
+                            parent.child( 0 ).geological_feature() ;
+                    }
+                }
+            }
+        }
+    }
+
+    gmge_t GeoModelBuilderGeology::create_geological_entity(
+        const GeologicalEntityType& type )
+    {
+        index_t index = find_or_create_geological_entity_type( type ) ;
+        index_t id =
+            static_cast< index_t >( geomodel_.nb_geological_entities( type ) ) ;
+        GeoModelGeologicalEntity* E =
+            GeoModelGeologicalEntityAccess::create_geological_entity( type,
+                geomodel_, id ) ;
+        geomodel_access_.modifiable_geological_entities()[index].push_back( E ) ;
+        return E->gmge_id() ;
+    }
+
+    index_t GeoModelBuilderGeology::find_or_create_geological_entity_type(
+        const GeologicalEntityType& type )
+    {
+        index_t type_index =
+            geomodel_.entity_type_manager().geological_entity_manager.geological_entity_type_index(
+                type ) ;
+        if( type_index == NO_ID ) {
+            type_index = create_geological_entity_type( type ) ;
+        }
+        return type_index ;
+    }
+
+    index_t GeoModelBuilderGeology::create_geological_entity_type(
+        const GeologicalEntityType& type )
+    {
+        ringmesh_assert( GeoModelGeologicalEntityFactory::has_creator(type ) ) ;
+
+        geomodel_access_.modifiable_entity_type_manager().geological_entity_manager.geological_entity_types_.push_back(
+            type ) ;
+        geomodel_access_.modifiable_geological_entities().push_back(
+            std::vector< GeoModelGeologicalEntity* >() ) ;
+        GeoModelGeologicalEntity* E = GeoModelGeologicalEntityFactory::create_object(
+            type, geomodel_ ) ;
+
+        const MeshEntityType child_type = E->child_type_name() ;
+        delete E ;
+        RelationshipManager& parentage =
+            geomodel_access_.modifiable_entity_type_manager().relationship_manager ;
+        parentage.register_relationship( type, child_type ) ;
+
+        return geomodel_.entity_type_manager().geological_entity_manager.nb_geological_entity_types()
+            - 1 ;
+    }
+
+    void GeoModelBuilderGeology::copy_geological_entity_topology(
+        const GeoModel& from,
+        const GeologicalEntityType& type )
+    {
+        create_geological_entities( type, from.nb_geological_entities( type ) ) ;
+
+        RINGMESH_PARALLEL_LOOP
+        for( index_t e = 0; e < geomodel_.nb_geological_entities( type ); ++e ) {
+            gmge_t id( type, e ) ;
+            GeoModelGeologicalEntityAccess gmge_access(
+                geomodel_access_.modifiable_geological_entity( id ) ) ;
+            gmge_access.copy( from.geological_entity( id ) ) ;
+        }
     }
 
 } // namespace

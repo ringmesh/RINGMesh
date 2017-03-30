@@ -14,7 +14,7 @@ aux_source_directories(SOURCES "Source Files\\voronoi"   voronoi)
 aux_source_directories(SOURCES "Source Files\\points"    points)
 aux_source_directories(SOURCES "Source Files\\api"       api)
 aux_source_directories(SOURCES "Source Files\\NL"        NL)
-#aux_source_directories(SOURCES "Source Files\\lua"      lua)
+aux_source_directories(SOURCES "Source Files\\lua"      lua)
 aux_source_directories(SOURCES "Source Files\\parameterization" parameterization)
 
 # Parallel Delaunay now works on both Windows and Unix !
@@ -31,7 +31,8 @@ add_library(geogram ${SOURCES} $<TARGET_OBJECTS:geogram_third_party>)
 
 set_target_properties(geogram PROPERTIES
                       VERSION ${VORPALINE_VERSION}
-                      SOVERSION ${VORPALINE_VERSION_MAJOR})
+                      SOVERSION ${VORPALINE_VERSION_MAJOR}
+		      FOLDER "GEOGRAM")
 
 if(UNIX AND VORPALINE_BUILD_DYNAMIC)
     target_link_libraries(geogram pthread dl)

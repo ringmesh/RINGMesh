@@ -45,28 +45,11 @@
 namespace RINGMesh {
 
     Universe::Universe( const GeoModel& geomodel )
-        : GeoModelEntity( geomodel, NO_ID )
+        : GeoModelEntity( geomodel,NO_ID )
     {
-        id_.type = type_name() ;
         name_ = universe_type_name() ;
     }
 
-    /*!
-     * @brief Map the name of a geological type with a value of GEOL_FEATURE
-     *
-     * @param[in] in Name of the feature. Can be
-     * \li "reverse_fault"
-     * \li "normal_fault"
-     * \li "fault"
-     * \li "top"
-     * \li "none"
-     * \li "topographic"
-     * \li "unconformity"
-     * \li "boundary"
-     * Other strings will end up in \p NO_GEOL
-     * @return The geological feature index
-     * @todo Add other types of unconformity, see RINGMesh::GeoModelEntity::TYPE. --GC
-     */
     GeoModelEntity::GEOL_FEATURE GeoModelEntity::determine_geological_type(
         const std::string& in )
     {
@@ -94,10 +77,6 @@ namespace RINGMesh {
         }
     }
 
-    /*!
-     * \return the (lowercase) string associated to a
-     * GeoModelELement::GEOL_FEATURE
-     */
     std::string GeoModelEntity::geol_name( GME::GEOL_FEATURE t )
     {
         switch( t ) {
@@ -119,31 +98,6 @@ namespace RINGMesh {
                 return "no_geological_feature" ;
                 break ;
         }
-    }
-
-    bool GeoModelEntity::is_identification_valid() const
-    {
-        bool is_valid = true ;
-        if( !gme_id().is_defined() ) {
-            Logger::err( "GeoModelEntity" ) << " Entity associated to geomodel "
-                << geomodel().name() << "has no type and/or no index " << std::endl ;
-            is_valid = false ;
-            // No further checks are possible - This really should not happen
-            ringmesh_assert_not_reached;
-        }
-        if( !is_index_valid() ) {
-            Logger::warn( "GeoModelEntity" ) << " Entity index " << gme_id()
-                << " is not valid. " << std::endl ;
-            // This really should not happen
-            is_valid = false ;
-            ringmesh_assert_not_reached;
-        }
-        return is_valid ;
-    }
-
-    const GeoModelEntity::EntityType GeoModelEntity::type_name_static()
-    {
-        return EntityTypeManager::default_entity_type() ;
     }
 
     bool Universe::is_valid() const

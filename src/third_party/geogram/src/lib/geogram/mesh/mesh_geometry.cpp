@@ -95,8 +95,20 @@ namespace GEO {
 	    }
 	    return result;
 	}
+
+	double mesh_unsigned_normal_angle(const Mesh& M, index_t f1, index_t f2) {
+            vec3 n1 = mesh_facet_normal(M,f1);
+            vec3 n2 = mesh_facet_normal(M,f2);
+	    double l = length(n1)*length(n2);
+            double cos_angle = (l > 1e-30) ? dot(n1, n2)/l : 1.0;
+            // Numerical precision problem may occur, and generate
+            // normalized dot products that are outside the valid
+            // range of acos.
+            geo_clamp(cos_angle, -1.0, 1.0);
+            return acos(cos_angle);
+	}
 	
-        double mesh_dihedral_angle(const Mesh& M, index_t c) {
+        double mesh_normal_angle(const Mesh& M, index_t c) {
             geo_debug_assert(M.facets.are_simplices());
             index_t f1 = c/3;
             index_t f2 = M.facet_corners.adjacent_facet(c);
@@ -108,7 +120,7 @@ namespace GEO {
             if(dot(cross(n1,n2),mesh_corner_vector(M,c)) > 0.0) {
                 sign = -1.0;
             }
-            double cos_angle = (l > 1e-20) ? dot(n1, n2) : 1.0;
+            double cos_angle = (l > 1e-30) ? dot(n1, n2)/l : 1.0;
             // Numerical precision problem may occur, and generate
             // normalized dot products that are outside the valid
             // range of acos.

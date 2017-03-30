@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_GEOMODEL_BUILDER_FROM_MESH__
-#define __RINGMESH_GEOMODEL_BUILDER_FROM_MESH__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -62,11 +61,23 @@ namespace RINGMesh {
             from_surfaces.options_.compute_corners = true ;
             from_surfaces.options_.compute_regions_brep = true ;
         }
+
+        /*!
+         * @details Adds separately each connected component of the mesh
+         *          as a Surface of the geomodel under construction.
+         *          All the facets of the input mesh are visited and added to a
+         *          Surface of the GeoModel.
+         *          Connected components of the mesh are determined with a
+         *          propagation (or "coloriage" algorithm) using the adjacent_facet
+         *          information provided on the input GEO::Mesh.
+         *
+         * @todo Old code - old building - to delimit connected components
+         * vertices are duplicated in the input mesh
+         *
+         */
         void build_polygonal_surfaces_from_connected_components() ;
 
     private:
         const GEO::Mesh& mesh_ ;
     } ;
 }
-
-#endif

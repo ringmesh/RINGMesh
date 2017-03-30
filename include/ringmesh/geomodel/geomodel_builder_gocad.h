@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_GEOMODEL_BUILDER_GOCAD__
-#define __RINGMESH_GEOMODEL_BUILDER_GOCAD__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -67,6 +66,10 @@ namespace RINGMesh {
             }
         }
 
+        /*!
+         * @brief Build the Contacts
+         * @details One contact is a group of lines shared by the same Interfaces
+         */
         void build_contacts() ;
 
         /*!
@@ -89,7 +92,7 @@ namespace RINGMesh {
     ringmesh_disable_copy(GocadBaseParser) ;
     protected:
         GocadBaseParser()
-            : Counted(), builder_( nil ), geomodel_( nil )
+            : Counted(), builder_( nullptr ), geomodel_( nullptr )
         {
         }
         virtual ~GocadBaseParser()
@@ -98,22 +101,22 @@ namespace RINGMesh {
 
         GeoModelBuilderGocad& builder()
         {
-            ringmesh_assert( builder_ != nil ) ;
+            ringmesh_assert( builder_ != nullptr ) ;
             return *builder_ ;
         }
 
         GeoModel& geomodel()
         {
-            ringmesh_assert( geomodel_ != nil ) ;
+            ringmesh_assert( geomodel_ != nullptr ) ;
             return *geomodel_ ;
         }
 
-        virtual void set_builder( GeoModelBuilderGocad& builder )
+        void set_builder( GeoModelBuilderGocad& builder )
         {
             builder_ = &builder ;
         }
 
-        virtual void set_geomodel( GeoModel& geomodel )
+        void set_geomodel( GeoModel& geomodel )
         {
             geomodel_ = &geomodel ;
         }
@@ -267,7 +270,7 @@ namespace RINGMesh {
     /*!
      * @brief Builds a meshed GeoModel from a Gocad TSolid (file.so)
      */
-    class RINGMESH_API GeoModelBuilderTSolid: public GeoModelBuilderGocad {
+    class RINGMESH_API GeoModelBuilderTSolid final : public GeoModelBuilderGocad {
     public:
         GeoModelBuilderTSolid( GeoModel& geomodel, const std::string& filename )
             : GeoModelBuilderGocad( geomodel, filename )
@@ -278,14 +281,14 @@ namespace RINGMesh {
         }
 
     private:
-        virtual void load_file() ;
+        virtual void load_file() final ;
 
         /*!
          * @brief Reads the first word of the current line (keyword)
          * and executes the good action with the information of the line
          * @details Uses the TsolidLineParser factory
          */
-        virtual void read_line() ;
+        virtual void read_line() final ;
 
         /*!
          * @brief Computes internal borders of a given surface
@@ -357,7 +360,7 @@ namespace RINGMesh {
     /*!
      * @brief Build a GeoModel from a Gocad Model3D (file_model.ml)
      */
-    class RINGMESH_API GeoModelBuilderML: public GeoModelBuilderGocad {
+    class RINGMESH_API GeoModelBuilderML final : public GeoModelBuilderGocad {
     public:
         GeoModelBuilderML( GeoModel& geomodel, const std::string& filename )
             : GeoModelBuilderGocad( geomodel, filename )
@@ -368,19 +371,31 @@ namespace RINGMesh {
         }
 
     private:
-        void load_file() ;
+        /*!
+         * @brief Loads and builds a GeoModel from a Gocad .ml file
+         * @warning Pretty unstable. Crashes if the file is not exactly what is expected.
+         * @details Correspondance between Gocad::Model3D entities
+         * and GeoModel entities is :
+         *  - Gocad TSurf  <-> GeoModel Interface
+         *  - Gocad TFace  <-> GeoModel Surface
+         *  - Gocad Region <-> GeoModel Region
+         *  - Gocad Layer  <-> GeoModel Layer
+         * @param[in] ml_file_name Input .ml file stream
+         * @param[in] ignore_file_borders If true, BORDER and BSTONE entries in the files
+         * are ignored and the Lines and Corners of the GeoModel are deduced from the
+         * connectivity of its Surfaces. By default set to false.
+         */
+        virtual void load_file() final ;
 
         /*!
          * @brief Reads the first word of the current line (keyword)
          * and executes the good action with the information of the line
          * @details Uses the MLLineParser factory
          */
-        virtual void read_line() ;
+        virtual void read_line() final ;
 
     private:
         MLLoadingStorage ml_load_storage_ ;
     } ;
 
 }
-
-#endif

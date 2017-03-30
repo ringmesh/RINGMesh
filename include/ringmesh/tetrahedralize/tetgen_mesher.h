@@ -33,9 +33,7 @@
 *     FRANCE
 */
 
-
-#ifndef __RINGMESH_TETGEN_MESHER__
-#define __RINGMESH_TETGEN_MESHER__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -89,7 +87,7 @@ namespace RINGMesh {
         typedef GEO::Mesh Mesh ;
 
         TetgenMesher()
-            : polygons_( nil ), polygon_corners_( nil )
+            : polygons_( nullptr ), polygon_corners_( nullptr )
         {
             // Quiet (no output)
             tetgen_command_line_ += "Q" ;
@@ -147,5 +145,4 @@ namespace RINGMesh {
     void RINGMESH_API tetrahedralize_mesh_tetgen( GEO::Mesh& M, bool refine, double quality ) ;
 
 }
-#endif
 #endif

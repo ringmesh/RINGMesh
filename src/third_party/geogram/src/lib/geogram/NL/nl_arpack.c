@@ -138,17 +138,7 @@ static ARPACKContext* ARPACK() {
     return &context;
 }
 
-/**
- * \brief Tests whether ARPACK extension is
- *  initialized.
- * \details Tests whether ARPACK shared object
- *  was successfuly loaded and whether all the
- *  function pointers where found.
- * \retval NL_TRUE if ARPACK was successfully
- *  loaded and initialized
- * \retval NL_FALSE otherwise
- */
-static NLboolean ARPACK_is_initialized() {
+NLboolean nlExtensionIsInitialized_ARPACK() {
     return
         ARPACK()->DLL_handle != NULL &&
         ARPACK()->dsaupd != NULL &&
@@ -181,7 +171,7 @@ static char* u(const char* str) {
  * \brief Finds and initializes a function pointer to
  *  one of the functions in ARPACK.
  * \details Function pointers are stored into the 
- *  SuperLUContext returned by the function ARPACK().
+ *  ARPACKContext returned by the function ARPACK().
  *  If a symbol is not found, returns NL_FALSE from the
  *  calling function.
  */
@@ -198,11 +188,16 @@ static char* u(const char* str) {
     }
 
 NLboolean nlInitExtension_ARPACK(void) {
-    if(ARPACK()->DLL_handle != NULL) {
-        return ARPACK_is_initialized();
+    NLenum flags = NL_LINK_NOW | NL_LINK_USE_FALLBACK;
+    if(nlCurrentContext == NULL || !nlCurrentContext->verbose) {
+	flags |= NL_LINK_QUIET;
     }
-
-    ARPACK()->DLL_handle = nlOpenDLL(ARPACK_LIB_NAME);
+    
+    if(ARPACK()->DLL_handle != NULL) {
+        return nlExtensionIsInitialized_ARPACK();
+    }
+    
+    ARPACK()->DLL_handle = nlOpenDLL(ARPACK_LIB_NAME, flags);
     if(ARPACK()->DLL_handle == NULL) {
         return NL_FALSE;
     }
@@ -365,7 +360,8 @@ void nlEigenSolve_ARPACK(void) {
 
     iparam[1-1] = 1; /* ARPACK chooses the shifts */
     iparam[3-1] = (int)nlCurrentContext->max_iterations;
-    iparam[7-1] = 1; /* Normal mode, use 3 dor shift-invert */
+    iparam[7-1] = 1; /* Normal mode (we do not use 
+         shift-invert (3) since we do our own shift-invert */
 
     workev = NL_NEW_ARRAY(NLdouble, 3*ncv);
     workd = NL_NEW_ARRAY(NLdouble, 3*n);

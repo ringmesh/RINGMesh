@@ -33,8 +33,7 @@
  *     FRANCE
  */
 
-#ifndef __RINGMESH_GEOMODEL_BUILDER_REPAIR__
-#define __RINGMESH_GEOMODEL_BUILDER_REPAIR__
+#pragma once
 
 #include <ringmesh/basic/common.h>
 
@@ -110,7 +109,7 @@ namespace RINGMesh {
          * @brief Detect and remove degenerate edges in a \param line.
          * @return the number of degenerate edges that have been removed from the line.
          */
-        index_t repair_line_mesh( Line& line ) ;
+        index_t repair_line_mesh( const Line& line ) ;
         void line_detect_degenerate_edges(
             const Line& L,
             std::vector< bool >& e_is_degenerate,
@@ -143,23 +142,23 @@ namespace RINGMesh {
          * @param[in,out] S Surface to check for potential degenerate facets.
          * @return the number of degenerate facets in \p S.
          */
-        index_t detect_degenerate_facets( Surface& S ) ;
+        index_t detect_degenerate_facets( const Surface& S ) ;
 
         /*!
          * @brief Remove degenerate facets and edges from the Surface
          *        and Line of the geomodel.
-         * @param[out] to_remove gme_t of the entities (Surface and Line)
+         * @param[out] to_remove gmme_t of the entities (Surface and Line)
          * of the geomodel that are empty once degenerate entities are removed
          * @pre Colocated vertices have already been removed
          */
-        void remove_degenerate_facets_and_edges( std::set< gme_t >& to_remove ) ;
+        void remove_degenerate_facets_and_edges( std::set< gmme_t >& to_remove ) ;
 
         /*!
          * @brief Remove colocated vertices of the geomodel.
-         * @param[out] to_remove gme_t of the entities of the geomodel that
+         * @param[out] to_remove gmme_t of the entities of the geomodel that
          *  are empty once degenerate entities are removed
          */
-        void remove_colocated_entity_vertices( std::set< gme_t >& to_remove ) ;
+        void remove_colocated_entity_vertices( std::set< gmme_t >& to_remove ) ;
         /*!
          * Get the indices of the duplicated vertices that are on an inside border.
          * Only the vertex with the biggest index are added.
@@ -167,7 +166,7 @@ namespace RINGMesh {
          * @param[out] vertices vector of the vertex indexes on an inside boundary.
          */
         void vertices_on_inside_boundary(
-            const gme_t& E_id,
+            const gmme_t& E_id,
             std::set< index_t >& vertices ) ;
 
         /*!
@@ -192,5 +191,3 @@ namespace RINGMesh {
     } ;
 
 } //namespace RINGMesh
-
-#endif 
