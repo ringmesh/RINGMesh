@@ -92,11 +92,11 @@ namespace RINGMesh {
     protected:
         TetraGen() ;
 
-        virtual void write_vertices_in_ringmesh_data_structure() = 0 ;
+ /*       virtual void write_vertices_in_ringmesh_data_structure() = 0 ;
         virtual void write_tet_in_ringmesh_data_structure() = 0 ;
         void initialize_storage( index_t nb_points, index_t nb_tets ) ;
         void set_point( index_t index, const double* point ) ;
-        void set_tetra( index_t index, int* tet ) ;
+        void set_tetra( index_t index, int* tet ) ;*/
 
     protected:
         GeoModelBuilder* builder_ ;
