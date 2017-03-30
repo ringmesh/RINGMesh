@@ -614,11 +614,11 @@ namespace RINGMesh {
         }
         double inv = 1.0 / a2 ;
         if( discr < global_epsilon ) {
-            result.push_back( vec3( O_inter - ( a1 * inv ) * D_inter ) ) ;
+            result.emplace_back( O_inter - ( a1 * inv ) * D_inter ) ;
         } else {
             double root = sqrt( discr ) ;
-            result.push_back( vec3( O_inter - ( ( a1 + root ) * inv ) * D_inter ) ) ;
-            result.push_back( vec3( O_inter - ( ( a1 - root ) * inv ) * D_inter ) ) ;
+            result.emplace_back( O_inter - ( ( a1 + root ) * inv ) * D_inter ) ;
+            result.emplace_back( O_inter - ( ( a1 - root ) * inv ) * D_inter ) ;
         }
         return true ;
     }

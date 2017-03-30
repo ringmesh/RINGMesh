@@ -85,11 +85,11 @@ namespace {
                     bool not_used ;
                     if( mesh.cells.is_cell_facet_on_surface( c, f, facet,
                         not_used ) ) {
-                        pipes.push_back( Pipe( c, facet + cell_offset ) ) ;
+                        pipes.emplace_back( c, facet + cell_offset ) ;
                     } else {
                         index_t adj = mesh.cells.adjacent( c, f ) ;
                         if( adj != GEO::NO_CELL && adj < c ) {
-                            pipes.push_back( Pipe( c, adj ) ) ;
+                            pipes.emplace_back( c, adj ) ;
                         }
                     }
                 }
@@ -117,8 +117,7 @@ namespace {
                 for( index_t e = 0; e < mesh.facets.nb_vertices( f ); e++ ) {
                     index_t adj = mesh.facets.adjacent( f, e ) ;
                     if( adj != GEO::NO_CELL && adj < f ) {
-                        pipes.push_back(
-                            Pipe( f + cell_offset, adj + cell_offset ) ) ;
+                        pipes.emplace_back( f + cell_offset, adj + cell_offset ) ;
                     } else {
                         const vec3& e0 = mesh.vertices.vertex(
                             mesh.facets.vertex( f, e ) ) ;

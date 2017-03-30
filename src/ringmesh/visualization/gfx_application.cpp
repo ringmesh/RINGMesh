@@ -198,14 +198,13 @@ namespace RINGMesh {
         }
         selected_entity_type_ = 0 ;
         selected_entity_id_ = 0 ;
-        entity_types_.push_back( "All" ) ;
-        entity_types_.push_back( std::string( Corner::type_name_static() ) ) ;
-        entity_types_.push_back( std::string( Line::type_name_static() ) ) ;
-        entity_types_.push_back( std::string( Surface::type_name_static() ) ) ;
-        entity_types_.push_back( std::string( Region::type_name_static() ) ) ;
+        entity_types_.emplace_back( "All" ) ;
+        entity_types_.emplace_back( Corner::type_name_static() ) ;
+        entity_types_.emplace_back( Line::type_name_static() ) ;
+        entity_types_.emplace_back( Surface::type_name_static() ) ;
+        entity_types_.emplace_back( Region::type_name_static() ) ;
         for( index_t i = 0; i < GM_.nb_geological_entity_types(); i++ ) {
-            entity_types_.push_back(
-                std::string( GM_.geological_entity_type( i ) ) ) ;
+            entity_types_.emplace_back( GM_.geological_entity_type( i ) ) ;
         }
         meshed_regions_ = false ;
         if( GM_.nb_regions() > 0 ) {
@@ -1151,8 +1150,7 @@ namespace RINGMesh {
                 }
             } else {
                 if( can_load_geogram( file ) ) {
-                    if( ImGui::MenuItem(
-                        path_to_label( path_, file ).c_str() ) ) {
+                    if( ImGui::MenuItem( path_to_label( path_, file ).c_str() ) ) {
                         load_geogram( file ) ;
                     }
                 }
