@@ -317,7 +317,6 @@ namespace RINGMesh {
         /*!
          * Gets the closest neighbor point
          * @param[in] v the point to test
-         * @param[out] distance_sq the square distance to the closest point
          * return returns the index of the closest point
          */
         index_t get_closest_neighbor( const vec3& v ) const
