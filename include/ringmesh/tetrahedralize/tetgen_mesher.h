@@ -48,6 +48,9 @@
 namespace GEO {
     class Mesh ;
 }
+namespace RINGMesh {
+    class Mesh3D ;
+}
 
 namespace RINGMesh {
 
@@ -142,7 +145,7 @@ namespace RINGMesh {
     * @details Does not require this mesh to be a closed manifold
     * as the equivalent in Geogram function does.
     */
-    void RINGMESH_API tetrahedralize_mesh_tetgen( GEO::Mesh& M, bool refine, double quality ) ;
+    void RINGMESH_API tetrahedralize_mesh_tetgen( Mesh3D& M, bool refine, double quality ) ;
 
 }
 #endif

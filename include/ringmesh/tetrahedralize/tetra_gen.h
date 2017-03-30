@@ -36,6 +36,7 @@
 #pragma once
 
 #include <ringmesh/basic/common.h>
+#include <ringmesh/mesh/mesh.h>
 
 #include <geogram/basic/counted.h>
 #include <geogram/basic/smart_pointer.h>
@@ -100,7 +101,7 @@ namespace RINGMesh {
     protected:
         GeoModelBuilder* builder_ ;
         index_t output_region_ ;
-        GEO::Mesh tetmesh_constraint_ ;
+        Mesh3D tetmesh_constraint_ ;
         const Region* region_ ;
         const WellGroup* wells_ ;
     } ;
