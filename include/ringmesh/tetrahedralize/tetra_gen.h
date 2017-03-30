@@ -76,7 +76,17 @@ namespace RINGMesh {
             const std::string& algo_name ) ;
         static void initialize() ;
 
+        /*!
+         * Sets the boundaries of the domain
+         * @param[in] region The Region of the GeoModel to mesh
+         * @param[in] wells the wells to be conformal to
+         */
         void set_boundaries( const Region& region, const WellGroup* wells = nullptr ) ;
+
+        /*!
+         * Set additional points to be in the output tetrahedral mesh
+         * @param[in] points the points to add
+         */
         void set_internal_points( const std::vector< vec3 >& points ) ;
 
         /*!
