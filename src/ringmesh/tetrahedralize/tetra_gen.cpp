@@ -446,11 +446,6 @@ namespace RINGMesh {
     {
     }
 
-    /*!
-     * Sets the boundaries of the domain
-     * @param[in] region The Region of the GeoModel to mesh
-     * @param[in] wells the wells to be conformal to
-     */
     void TetraGen::set_boundaries( const Region& region, const WellGroup* wells )
     {
         region_ = &region ;
@@ -568,10 +563,6 @@ namespace RINGMesh {
         tetmesh_constraint_.facets.connect() ;
     }
 
-    /*!
-     * Set additional points to be in the output tetrahedral mesh
-     * @param[in] points the points to add
-     */
     void TetraGen::set_internal_points( const std::vector< vec3 >& points )
     {
         if( points.empty() ) return ;

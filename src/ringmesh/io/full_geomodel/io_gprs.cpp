@@ -126,9 +126,9 @@ namespace {
                             mesh.facets.vertex( f,
                                 ( e + 1 ) % mesh.facets.nb_vertices( f ) ) ) ;
                         vec3 query = 0.5 * ( e0 + e1 ) ;
-                        std::vector< index_t > results ;
-                        if( nn_search.get_neighbors( query, results,
-                            geomodel.epsilon() ) ) {
+                        std::vector< index_t > results = nn_search.get_neighbors(
+                            query, geomodel.epsilon() ) ;
+                        if( !results.empty() ) {
                             edges[results[0]].push_back( cell_offset + f ) ;
                         } else {
                             ringmesh_assert_not_reached ;
