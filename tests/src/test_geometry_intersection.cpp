@@ -324,47 +324,84 @@ void test_circle_plane_intersection()
     }
 
     // Circle crossing the plane
-
-    Logger::out( "TEST" ) << " " << std::endl ;
-    vec3 O_circle3( 2., 3., 4. ) ;
-    vec3 N_circle3( -1., 2., 0. ) ;
-    double r3 = 6. ;
+    vec3 O_circle3( 2., 3., 0. ) ;
+    vec3 N_circle3( 1., -1., 0. ) ;
+    double r3 = 2. ;
     std::vector< vec3 > results3 ;
-    vec3 answer31( -0.966479, 1.51676, -1. ) ;
-    vec3 answer32( 4.96648, 4.48324, -1. ) ;
+    vec3 answer31 = O_circle3
+        + vec3( sqrt( 2 ) * cos( M_PI / 6 ), sqrt( 2 ) * cos( M_PI / 6 ), -1. ) ;
+    vec3 answer32 = O_circle3
+        + vec3( -sqrt( 2 ) * cos( M_PI / 6 ), -sqrt( 2 ) * cos( M_PI / 6 ), -1. ) ;
     bool intersect3 = circle_plane_intersection( O_plane, N_plane, O_circle3,
         N_circle3, r3, results3 ) ;
     if( !intersect3 || results3.size() != 2 ) {
         throw RINGMeshException( "TEST",
-            "Test circle adjacent to the plane: KO (wrong number of points)" ) ;
+            "Test circle crossing the plane: KO (wrong number of points)" ) ;
     } else {
         if( !( are_almost_equal( results3[0], answer31 )
             || ( are_almost_equal( results3[0], answer32 ) ) )
             || !( are_almost_equal( results3[1], answer31 )
                 || ( are_almost_equal( results3[1], answer32 ) ) ) ) {
-            DEBUG( results3[0] ) ;
-            DEBUG( results3[1] ) ;
-            DEBUG(are_almost_equal( results3[0], answer31 )) ;
-            DEBUG(are_almost_equal( results3[0], answer32 )) ;
-            DEBUG(are_almost_equal( results3[1], answer31 )) ;
-            DEBUG(are_almost_equal( results3[1], answer32 )) ;
 
+            throw RINGMeshException( "TEST",
+                "Test circle crossing the plane: KO (wrong point coordinates)" ) ;
+        }
+        Logger::out( "TEST" ) << "Test circle crossing the plane: OK" << std::endl ;
+    }
+
+    Logger::out( "TEST" ) << " " << std::endl ;
+}
+
+void test_disk_segment_intersection()
+{
+    Logger::out( "TEST" ) << "Test Disk-Segment intersections" << std::endl ;
+    vec3 O_disk( 2., 2., 2. ) ;
+    vec3 N_disk( 0., 4., 0. ) ;
+    double disk_radius = 4. ;
+
+    // Segment in the disk plane
+    vec3 seg_10( 1., 2., 3. ) ;
+    vec3 seg_11( 3., 2., 1. ) ;
+    vec3 result1 ;
+    bool intersect1 = disk_segment_intersection( seg_10, seg_11, O_disk, N_disk,
+        disk_radius, result1 ) ;
+    if( intersect1 ) {
+        throw RINGMeshException( "TEST", "Test segment inside disk: KO" ) ;
+    } else {
+        Logger::out( "TEST" ) << "Test segment inside disk: OK" << std::endl ;
+    }
+
+    // Segment adjacent to the disk
+    vec3 seg_20( -2., 0., -2. ) ;
+    vec3 seg_21( -2., 4., 4. ) ;
+    vec3 result2 ;
+    bool intersect2 = disk_segment_intersection( seg_20, seg_21, O_disk, N_disk,
+        disk_radius, result2 ) ;
+    if( intersect2 ) {
+        throw RINGMeshException( "TEST", "Test segment tangent to the disk: KO" ) ;
+    } else {
+        Logger::out( "TEST" ) << "Test segment tangent to the disk: OK"
+            << std::endl ;
+    }
+
+    // Circle crossing the disk
+    vec3 seg_30( 1., 1., 3. ) ;
+    vec3 seg_31( 3., 3., 1. ) ;
+    vec3 answer3( 2., 2., 2. ) ;
+    vec3 result3 ;
+    bool intersect3 = disk_segment_intersection( seg_30, seg_31, O_disk, N_disk,
+        disk_radius, result3 ) ;
+    if( !intersect3 ) {
+        throw RINGMeshException( "TEST",
+            "Test circle adjacent to the plane: KO (wrong number of points)" ) ;
+    } else {
+        if( !are_almost_equal( result3, answer3 ) ) {
             throw RINGMeshException( "TEST",
                 "Test circle adjacent to the plane: KO (wrong point coordinates)" ) ;
         }
         Logger::out( "TEST" ) << "Test circle adjacent to the plane: OK"
             << std::endl ;
     }
-}
-
-void test_disk_segment_intersection()
-{
-    Logger::out( "TEST" ) << "Test Disk-Segment intersections" << std::endl ;
-    // Segment in the disk plane
-
-    // Segment adjacent to the disk
-
-    // Circle crossing the disk
 
     Logger::out( "TEST" ) << " " << std::endl ;
 }
@@ -482,7 +519,7 @@ int main()
         test_segment_triangle_intersection() ;
         test_circle_plane_intersection() ;
         test_disk_segment_intersection() ;
-//        test_circle_triangle_intersection() ;
+        test_circle_triangle_intersection() ;
         test_plane_plane_intersection() ;
 
     } catch( const RINGMeshException& e ) {
