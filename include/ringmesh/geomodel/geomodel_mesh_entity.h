@@ -136,7 +136,7 @@ namespace RINGMesh {
          */
         bool has_parent( const GeologicalEntityType& parent_type ) const
         {
-            return parent_of_gmme( parent_type ).is_defined() ;
+            return parent_gmge( parent_type ).is_defined() ;
         }
         index_t nb_parents() const
         {
@@ -155,7 +155,7 @@ namespace RINGMesh {
          * You should check on the returned gmge_t.
          * @param[in] parent_type_name the asking parent type
          */
-        const gmge_t parent_of_gmme(
+        const gmge_t parent_gmge(
             const GeologicalEntityType& parent_type ) const ;
         const GeoModelGeologicalEntity& parent( index_t id ) const ;
         const GeoModelGeologicalEntity& parent(
