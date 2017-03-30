@@ -38,6 +38,9 @@
 #include <cstring>
 
 #include <geogram/mesh/mesh.h>
+#include <ringmesh/mesh/mesh.h>
+#include <ringmesh/mesh/mesh_builder.h>
+
 
 #ifdef RINGMESH_WITH_TETGEN
 /*!
@@ -85,87 +88,105 @@ namespace RINGMesh {
 
     void TetgenMesher::tetrahedralize(
         const Mesh& input_mesh,
-        Mesh& output_mesh )
+        Mesh3DBuilder* output_mesh_builder )
     {
-        initialize() ;
-        copy_mesh_to_tetgen_input( input_mesh ) ;
-        tetrahedralize() ;
-        assign_result_tetmesh_to_mesh( output_mesh ) ;
+        initialize () ;
+        copy_mesh_to_tetgen_input ( input_mesh ) ;
+        tetrahedralize () ;
+        assign_result_tetmesh_to_mesh ( output_mesh_builder ) ;
     }
 
-
-    void TetgenMesher::initialize()
+    void TetgenMesher::tetrahedralize (
+        const Mesh0D& input_mesh,
+        Mesh3DBuilder* output_mesh_builder )
     {
-        initialize_tetgen_args() ;
-        tetgen_in_.initialize() ;
-        tetgen_out_.initialize() ;
+        initialize () ;
+        copy_vertices_to_tetgen_input ( input_mesh ) ;
+        tetrahedralize () ;
+        assign_result_tetmesh_to_mesh ( output_mesh_builder ) ;
     }
 
-    void TetgenMesher::tetrahedralize()
+    void TetgenMesher::initialize ()
+    {
+        initialize_tetgen_args () ;
+        tetgen_in_.initialize () ;
+        tetgen_out_.initialize () ;
+    }
+
+    void TetgenMesher::tetrahedralize ()
     {
         try {
-            GEO_3rdParty::tetrahedralize( &tetgen_args_, &tetgen_in_,
+            GEO_3rdParty::tetrahedralize ( &tetgen_args_, &tetgen_in_,
                 &tetgen_out_ ) ;
-        } catch( int code ) {
-            Logger::err( "Tetgen" ) << "Encountered a problem: " ;
+        }
+        catch( int code ) {
+            Logger::err ( "Tetgen" ) << "Encountered a problem: " ;
             switch( code ) {
                 case 1:
-                    Logger::err( "Tetgen" ) << "Out of memory" ;
+                    Logger::err ( "Tetgen" ) << "Out of memory" ;
                     break ;
                 case 2:
-                    Logger::err( "Tetgen" )
+                    Logger::err ( "Tetgen" )
                         << "Please report this bug to Hang.Si@wias-berlin.de. Include\n" ;
-                    Logger::err( "Tetgen" )
+                    Logger::err ( "Tetgen" )
                         << "  the message above, your input data set, and the exact\n" ;
-                    Logger::err( "Tetgen" )
+                    Logger::err ( "Tetgen" )
                         << "  command line you used to run this program, thank you" ;
                     break ;
                 case 3:
-                    Logger::err( "Tetgen" )
+                    Logger::err ( "Tetgen" )
                         << "A self-intersection was detected. Program stopped\n" ;
-                    Logger::err( "Tetgen" )
+                    Logger::err ( "Tetgen" )
                         << "Hint: use -d option to detect all self-intersections" ;
                     break ;
                 case 4:
-                    Logger::err( "Tetgen" )
+                    Logger::err ( "Tetgen" )
                         << "A very small input feature size was detected. Program stopped.\n" ;
-                    Logger::err( "Tetgen" )
+                    Logger::err ( "Tetgen" )
                         << "Hint: use -T option to set a smaller tolerance." ;
                     break ;
                 case 5:
-                    Logger::err( "Tetgen" )
+                    Logger::err ( "Tetgen" )
                         << "Two very close input facets were detected. Program stopped.\n" ;
-                    Logger::err( "Tetgen" )
+                    Logger::err ( "Tetgen" )
                         << "Hint: use -Y option to avoid adding Steiner points in boundary." ;
                     break ;
                 case 10:
-                    Logger::err( "Tetgen" )
+                    Logger::err ( "Tetgen" )
                         << "An input error was detected. Program stopped." ;
                     break ;
             }
-            Logger::err( "Tetgen" ) << std::endl ;
+            Logger::err ( "Tetgen" ) << std::endl ;
         }
     }
 
-    void TetgenMesher::copy_mesh_to_tetgen_input( const Mesh& M )
+    void TetgenMesher::copy_mesh_to_tetgen_input ( const Mesh& M )
     {
-        if( M.vertices.nb() != 0 ) {
-            copy_vertices_to_tetgen_input( M ) ;
+        if( M.vertices.nb () != 0 ) {
+            copy_vertices_to_tetgen_input ( M ) ;
         }
-        if( M.edges.nb() != 0 ) {
-            copy_edges_to_tetgen_input( M ) ;
+        if( M.edges.nb () != 0 ) {
+            copy_edges_to_tetgen_input ( M ) ;
         }
-        if( M.facets.nb() != 0 ) {
-            copy_facets_to_tetgen_input( M ) ;
+        if( M.facets.nb () != 0 ) {
+            copy_facets_to_tetgen_input ( M ) ;
         }
     }
 
-    void TetgenMesher::copy_vertices_to_tetgen_input( const Mesh& M )
+    void TetgenMesher::copy_vertices_to_tetgen_input ( const Mesh& M )
     {
-        tetgen_in_.numberofpoints = static_cast< int >( M.vertices.nb() ) ;
+        tetgen_in_.numberofpoints = static_cast<int>( M.vertices.nb () ) ;
         tetgen_in_.pointlist = new double[3 * tetgen_in_.numberofpoints] ;
-        GEO::Memory::copy( tetgen_in_.pointlist, M.vertices.point_ptr( 0 ),
-            M.vertices.nb() * 3 * sizeof(double) ) ;
+        GEO::Memory::copy ( tetgen_in_.pointlist, M.vertices.point_ptr ( 0 ),
+            M.vertices.nb () * 3 * sizeof ( double ) ) ;
+    }
+
+    void TetgenMesher::copy_vertices_to_tetgen_input ( const Mesh0D& M )
+    {
+        if(M.nb_vertices () != 0 ) {
+            tetgen_in_.numberofpoints = static_cast< int >( M.nb_vertices () ) ;
+            tetgen_in_.pointlist = M.copy_vertices().data () ;
+        }
     }
 
     void TetgenMesher::copy_edges_to_tetgen_input( const Mesh& M )
@@ -224,22 +245,23 @@ namespace RINGMesh {
         tetgen_args_.parse_commandline( copy ) ;
         delete[] copy ;
     }
-
-    void TetgenMesher::assign_result_tetmesh_to_mesh( Mesh& M ) const
+  
+    void TetgenMesher::assign_result_tetmesh_to_mesh ( Mesh3DBuilder* output_mesh_builder ) const
     {
-        GEO::vector< double > points ;
-        get_result_tetmesh_points( points ) ;
+        std::vector< double > points ;
+        get_result_tetmesh_points ( points ) ;
 
-        GEO::vector< index_t > tets ;
-        get_result_tetmesh_tets( tets ) ;
+        std::vector< index_t > tets ;
+        get_result_tetmesh_tets ( tets ) ;
 
-        M.cells.assign_tet_mesh( 3, points, tets, true ) ;
-        M.vertices.remove_isolated() ;
-        M.cells.connect() ;
+        output_mesh_builder->assign_vertices ( points, true ) ;
+        output_mesh_builder->assign_cell_tet_mesh ( tets, true ) ;
+        output_mesh_builder->remove_isolated_vertices () ;
+        output_mesh_builder->connect_cells () ;
     }
 
     void TetgenMesher::get_result_tetmesh_points(
-        GEO::vector< double >& points ) const
+        std::vector< double >& points ) const
     {
         index_t nb_points = static_cast< index_t >( tetgen_out_.numberofpoints ) ;
         points.resize( 3 * nb_points ) ;
@@ -250,7 +272,7 @@ namespace RINGMesh {
         }
     }
 
-    void TetgenMesher::get_result_tetmesh_tets( GEO::vector< index_t >& tets ) const
+    void TetgenMesher::get_result_tetmesh_tets( std::vector< index_t >& tets ) const
     {
         std::vector< index_t > tets_to_keep ;
         determine_tets_to_keep( tets_to_keep ) ;
@@ -303,16 +325,26 @@ namespace RINGMesh {
         }
     }
 
-    void tetrahedralize_mesh_tetgen( Mesh& M, bool refine, double quality )
+    void tetrahedralize_mesh_tetgen ( Mesh3DBuilder* out_tet_mesh,const Mesh& in_mesh, bool refine, double quality )
     {
-        if( !is_mesh_tetrahedralizable( M ) ) {
+        if( !is_mesh_tetrahedralizable ( in_mesh ) ) {
             throw RINGMeshException( "TetGen", "Mesh cannot be tetrahedralized" ) ;
         }
         TetgenMesher mesher ;
         if( refine ) {
             mesher.add_points_to_match_quality( quality ) ;
         }
-        mesher.tetrahedralize( M, M ) ;
+        mesher.tetrahedralize ( in_mesh, out_tet_mesh ) ;
+    }
+
+    void tetrahedralize_mesh_tetgen ( Mesh3DBuilder* out_tet_mesh, const Mesh0D& in_point_cloud, bool refine, double quality )
+    {
+        TetgenMesher mesher ;
+        if( refine ) {
+            mesher.add_points_to_match_quality ( quality ) ;
+        }
+        mesher.tetrahedralize ( in_point_cloud, out_tet_mesh ) ;
+
     }
 
     void TetgenMesher::add_points_to_match_quality( double quality ) {

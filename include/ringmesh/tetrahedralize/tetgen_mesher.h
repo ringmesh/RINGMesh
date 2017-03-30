@@ -49,7 +49,9 @@ namespace GEO {
     class Mesh ;
 }
 namespace RINGMesh {
-    class Mesh3D ;
+    class Mesh0D ;
+    class Mesh2D ;
+    class Mesh3DBuilder ;
 }
 
 namespace RINGMesh {
@@ -84,7 +86,8 @@ namespace RINGMesh {
     * @brief Tetgen wrapper
     * @author Jeanne Pellerin
     */
-    class TetgenMesher {
+    class TetgenMesher
+    {
     ringmesh_disable_copy( TetgenMesher ) ;
     public:
         typedef GEO::Mesh Mesh ;
@@ -107,7 +110,10 @@ namespace RINGMesh {
 
         void tetrahedralize(
             const Mesh& input_mesh,
-            Mesh& output_mesh ) ;
+            Mesh3DBuilder* output_mesh_builder ) ;
+        void tetrahedralize (
+            const Mesh0D& input_mesh,
+            Mesh3DBuilder* output_mesh_builder ) ;
 
         void add_points_to_match_quality( double quality ) ;
 
@@ -118,13 +124,15 @@ namespace RINGMesh {
 
         void copy_mesh_to_tetgen_input( const Mesh& M ) ;
         void copy_vertices_to_tetgen_input( const Mesh& M ) ;
-        void copy_edges_to_tetgen_input( const Mesh& M ) ;
-        void copy_facets_to_tetgen_input( const Mesh& M ) ;
+        void copy_edges_to_tetgen_input ( const Mesh& M ) ;
+        void copy_facets_to_tetgen_input ( const Mesh& M ) ;
+        void copy_vertices_to_tetgen_input ( const Mesh0D& M ) ;
+
         void set_regions( const std::vector< vec3 >& one_point_per_region ) ;
 
-        void assign_result_tetmesh_to_mesh( Mesh& M ) const ;
-        void get_result_tetmesh_points( GEO::vector< double >& points ) const ;
-        void get_result_tetmesh_tets( GEO::vector< index_t >& tets ) const ;
+        void assign_result_tetmesh_to_mesh ( Mesh3DBuilder* output_mesh_builder ) const ;
+        void get_result_tetmesh_points( std::vector< double >& points ) const ;
+        void get_result_tetmesh_tets( std::vector< index_t >& tets ) const ;
         void determine_tet_regions_to_keep(
             std::set< double >& regions_to_keep ) const ;
         void determine_tets_to_keep(
@@ -145,7 +153,10 @@ namespace RINGMesh {
     * @details Does not require this mesh to be a closed manifold
     * as the equivalent in Geogram function does.
     */
-    void RINGMESH_API tetrahedralize_mesh_tetgen( Mesh3D& M, bool refine, double quality ) ;
+    void RINGMESH_API tetrahedralize_mesh_tetgen ( Mesh3DBuilder* out_mesh_builder, const GEO::Mesh& in_mesh, bool refine, double quality ) ;
+    void RINGMESH_API tetrahedralize_mesh_tetgen ( Mesh3DBuilder* out_mesh_builder, const Mesh0D& in_point_cloud, bool refine, double quality ) ;
+
+
 
 }
 #endif
