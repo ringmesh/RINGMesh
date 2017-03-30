@@ -80,7 +80,27 @@ namespace RINGMesh {
             VOI
         } ;
 
+        /*!
+         * @brief Map the name of a geological type with a value of GEOL_FEATURE
+         *
+         * @param[in] in Name of the feature. Can be
+         * \li "reverse_fault"
+         * \li "normal_fault"
+         * \li "fault"
+         * \li "top"
+         * \li "none"
+         * \li "topographic"
+         * \li "unconformity"
+         * \li "boundary"
+         * Other strings will end up in \p NO_GEOL
+         * @return The geological feature index
+         * @todo Add other types of unconformity, see RINGMesh::GeoModelEntity::TYPE. --GC
+         */
         static GEOL_FEATURE determine_geological_type( const std::string& in ) ;
+        /*!
+         * \return the (lowercase) string associated to a
+         * GeoModelELement::GEOL_FEATURE
+         */
         static std::string geol_name( GEOL_FEATURE ) ;
         static bool is_fault( GEOL_FEATURE T )
         {

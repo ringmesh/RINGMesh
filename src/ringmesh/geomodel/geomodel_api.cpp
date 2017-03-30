@@ -50,9 +50,7 @@
 #include <ringmesh/tetrahedralize/tetra_gen.h>
 
 /*!
- * @file Bunch of functions that shouldn't be there
- * @todo This is not really an API. It is more a set of helper function that should be next to the class
- *            they are written for.
+ * @file Set of high level API functions
  */
 
 namespace {

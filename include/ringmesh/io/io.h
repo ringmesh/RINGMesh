@@ -66,16 +66,34 @@ namespace GEO {
 
 namespace RINGMesh {
 
+    /*!
+    * Compares the contains of two files
+    * @param[in] f1 the first filename
+    * @param[in] f2 the second filename
+    * @return return True if the files are identical
+    */
     bool RINGMESH_API compare_files( const std::string& f1, const std::string& f2 ) ;
-
+    /*!
+     * Loads a GeoModel from a file
+     * @param[out] geomodel the geomodel to fill
+     * @param[in] filename the file to load
+     */
     bool RINGMESH_API geomodel_load(
         GeoModel& geomodel,
         const std::string& filename ) ;
-
+    /*!
+     * Saves a GeoModel to a file
+     * @param[in] geomodel the geomodel to save
+     * @param[in] filename the file to save
+     */
     void RINGMESH_API geomodel_save(
         const GeoModel& geomodel,
         const std::string& filename ) ;
-
+    /*!
+     * Loads a WellGroup from a file
+     * @param[in] filename the file to load
+     * @param][out] wells the wells to fill
+     */
     void RINGMESH_API well_load( const std::string& filename, WellGroup& wells ) ;
 
     class RINGMESH_API GeoModelIOHandler: public GEO::Counted {

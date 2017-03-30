@@ -92,13 +92,6 @@ namespace {
         print_bounded_attributes( names, output_location ) ;
     }
 
-}
-
-namespace RINGMesh {
-
-    /***********************************************************************/
-    /* Loading and saving a GEO::Mesh                                      */
-
     /*! 
      * @brief TSurfMeshIOHandler for importing .ts files into a mesh.
      */
@@ -559,18 +552,19 @@ namespace RINGMesh {
         }
     } ;
 
+}
+
+namespace RINGMesh {
+
+    /***********************************************************************/
+    /* Loading and saving a GEO::Mesh                                      */
+
     void ringmesh_mesh_io_initialize()
     {
         geo_register_MeshIOHandler_creator( TSurfMeshIOHandler, "ts" ) ;
         geo_register_MeshIOHandler_creator( LINMeshIOHandler, "lin" ) ;
     }
 
-    /*!
-     * Computes the volume of a Mesh cell
-     * @param[in] M the mesh
-     * @param[in] c the cell index
-     * @return the volume of the cell
-     */
     double mesh_cell_signed_volume( const GEO::Mesh& M, index_t c )
     {
         double volume = 0 ;
@@ -641,13 +635,7 @@ namespace RINGMesh {
     {
         return std::fabs( mesh_cell_signed_volume( M, c ) ) ;
     }
-    /*!
-     * Computes the Mesh cell facet barycenter
-     * @param[in] M the mesh
-     * @param[in] cell the cell index
-     * @param[in] f the facet index in the cell
-     * @return the cell facet center
-     */
+
     vec3 mesh_cell_facet_barycenter( const GEO::Mesh& M, index_t cell, index_t f )
     {
         vec3 result( 0., 0., 0. ) ;
@@ -661,13 +649,6 @@ namespace RINGMesh {
         return result / static_cast< double >( nb_vertices ) ;
     }
 
-    /*!
-     * Computes the non weighted barycenter of a volumetric
-     * cell of a Mesh
-     * @param[in] M the mesh
-     * @param[in] cell the cell index
-     * @return the cell center
-     */
     vec3 mesh_cell_barycenter( const GEO::Mesh& M, index_t cell )
     {
         vec3 result( 0.0, 0.0, 0.0 ) ;
