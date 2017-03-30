@@ -185,22 +185,10 @@ namespace RINGMesh {
             return static_cast< index_t >( regions_.size() ) ;
         }
 
-        const Corner& corner( index_t index ) const
-        {
-            return *corners_.at( index ) ;
-        }
-        const Line& line( index_t index ) const
-        {
-            return *lines_.at( index ) ;
-        }
-        const Surface& surface( index_t index ) const
-        {
-            return *surfaces_.at( index ) ;
-        }
-        const Region& region( index_t index ) const
-        {
-            return *regions_.at( index ) ;
-        }
+        const Corner& corner( index_t index ) const ;
+        const Line& line( index_t index ) const ;
+        const Surface& surface( index_t index ) const ;
+        const Region& region( index_t index ) const ;
         const Universe& universe() const
         {
             return universe_ ;
@@ -272,10 +260,10 @@ namespace RINGMesh {
          * \name Mandatory entities of the geomodel
          * @{
          */
-        std::vector< Corner* > corners_ ;
-        std::vector< Line* > lines_ ;
-        std::vector< Surface* > surfaces_ ;
-        std::vector< Region* > regions_ ;
+        std::vector< GeoModelMeshEntity* > corners_ ;
+        std::vector< GeoModelMeshEntity* > lines_ ;
+        std::vector< GeoModelMeshEntity* > surfaces_ ;
+        std::vector< GeoModelMeshEntity* > regions_ ;
 
         /*!
          * The Universe defines the extension of the GeoModel
