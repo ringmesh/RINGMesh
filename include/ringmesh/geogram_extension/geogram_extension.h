@@ -95,14 +95,40 @@ namespace RINGMesh {
     /******************************************************************/
     /* Operations on a GEO::Mesh                                      */
 
+    /*!
+     * Computes the signed volume of a Mesh cell
+     * @param[in] M the mesh
+     * @param[in] c the cell index
+     * @return the signed volume of the cell
+     */
     double RINGMESH_API mesh_cell_signed_volume( const GEO::Mesh& M, index_t c ) ;
+    /*!
+     * Computes the volume of a Mesh cell
+     * @param[in] M the mesh
+     * @param[in] c the cell index
+     * @return the volume of the cell
+     */
     double RINGMESH_API mesh_cell_volume( const GEO::Mesh& M, index_t c ) ;
 
+    /*!
+     * Computes the Mesh cell facet barycenter
+     * @param[in] M the mesh
+     * @param[in] cell the cell index
+     * @param[in] f the facet index in the cell
+     * @return the cell facet center
+     */
     vec3 RINGMESH_API mesh_cell_facet_barycenter(
         const GEO::Mesh& M,
         index_t cell,
         index_t f ) ;
 
+    /*!
+     * Computes the non weighted barycenter of a volumetric
+     * cell of a Mesh
+     * @param[in] M the mesh
+     * @param[in] cell the cell index
+     * @return the cell center
+     */
     vec3 RINGMESH_API mesh_cell_barycenter( const GEO::Mesh& M, index_t cell ) ;
 
     /*!

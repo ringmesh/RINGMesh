@@ -174,12 +174,6 @@ namespace RINGMesh {
        return *static_cast< const Region* >( regions_[index] ) ;
    }
 
-    /*!
-     * Associates a WellGroup to the GeoModel
-     * @param[in] wells the WellGroup
-     * @todo Review : What is this for ?
-     * @todo Extend to other object types.
-     */
     void GeoModel::set_wells( const WellGroup* wells )
     {
         wells_ = wells ;

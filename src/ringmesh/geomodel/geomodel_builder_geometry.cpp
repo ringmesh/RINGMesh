@@ -76,7 +76,6 @@ namespace {
      * @param[out] f the found facet index
      * @param[out] e the found edge index
      * @return True if the facet and the edge indices are found
-     * @todo RENAME these parameters and split in smaller functions !! [JP]
      */
     bool find_facet_from_edge_vertices(
         const Surface& surface,

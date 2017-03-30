@@ -47,12 +47,6 @@
 
 namespace RINGMesh {
 
-    /*!
-    * Compares the contains of two files
-    * @param[in] f1 the first filename
-    * @param[in] f2 the second filename
-    * @return return True if the files are identical
-    */
     bool compare_files( const std::string& f1, const std::string& f2 )
     {
         const unsigned int MAX_LINE_LEN = 65535 ;

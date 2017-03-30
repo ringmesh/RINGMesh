@@ -209,7 +209,12 @@ namespace RINGMesh {
         /*!
          * @}
          */
-        /* @todo Wells have nothing at all to do here [JP] */
+        /*!
+         * Associates a WellGroup to the GeoModel
+         * @param[in] wells the WellGroup
+         * @todo Review : What is this for ?
+         * @todo Extend to other object types.
+         */
         void set_wells( const WellGroup* wells ) ;
         const WellGroup* wells() const
         {
