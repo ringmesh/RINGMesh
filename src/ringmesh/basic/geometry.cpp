@@ -646,16 +646,23 @@ namespace RINGMesh {
         //   c1 = (d1 - d*d0)/det
         // where det = 1 - d^2.
 
-        double d = dot( N_P0, N_P1 ) ;
-        if( std::fabs( d - 1 ) < global_epsilon ) return false ;
+        vec3 norm_N_P0 = normalize( N_P0 ) ;
+        vec3 norm_N_P1 = normalize( N_P1 ) ;
+        double norm_d = dot( norm_N_P0, norm_N_P1 ) ;
+        // Planes are parallel
+        if( std::fabs( norm_d ) - 1 < global_epsilon
+            && std::fabs( norm_d ) - 1 > -global_epsilon ) {
+            return false ;
+        }
 
-        double invDet = 1.0 / ( 1.0 - d * d ) ;
-        double const_P0 = dot( N_P0, O_P0 ) ;
-        double const_P1 = dot( N_P1, O_P1 ) ;
-        double c0 = ( const_P0 - d * const_P1 ) * invDet ;
-        double c1 = ( const_P1 - d * const_P0 ) * invDet ;
-        O_inter = c0 * N_P0 + c1 * N_P1 ;
-        D_inter = cross( N_P0, N_P1 ) ;
+//        double d = dot( N_P0, N_P1 ) ;
+        double invDet = 1.0 / ( 1.0 - norm_d * norm_d ) ;
+        double const_P0 = dot( norm_N_P0, O_P0 ) ;
+        double const_P1 = dot( norm_N_P1, O_P1 ) ;
+        double c0 = ( const_P0 - norm_d * const_P1 ) * invDet ;
+        double c1 = ( const_P1 - norm_d * const_P0 ) * invDet ;
+        O_inter = c0 * norm_N_P0 + c1 * norm_N_P1 ;
+        D_inter = cross( norm_N_P0, norm_N_P1 ) ;
         return true ;
     }
 
