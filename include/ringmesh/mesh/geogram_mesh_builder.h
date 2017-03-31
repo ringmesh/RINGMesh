@@ -645,7 +645,6 @@ namespace RINGMesh {
          * \details Cells adjacence are not computed.
          *   cell and corner attributes are zeroed.
          * \param[in] tets cells to vertex links
-         * (using vector::swap).
          */
         virtual void assign_cell_tet_mesh( const std::vector< index_t >& tets ) override
         {
