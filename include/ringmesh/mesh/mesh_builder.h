@@ -107,11 +107,13 @@ namespace RINGMesh {
         virtual index_t create_vertices( index_t nb ) = 0 ;
 
         /*!
-        * @brief set vertex coordinantes from a std::vector of coordinates
-        * @param[in] points_xyz_coordinates std::vector with a set of x, y, z coordinates
-        * @param[in] steal_arg	if true, memory is stolen from /param points_xyz_coordinates, using std::vector::swap (no memory copy)
-        */
-        virtual void assign_vertices ( std::vector<double>& points_xyz_coordinates, bool steal_arg ) = 0 ;
+         * @brief set vertex coordinantes from a std::vector of coordinates
+         * @param[in] points_xyz_coordinates std::vector with a set of x, y, z coordinates
+         * @param[in] steal_arg	if true, memory is stolen from /param points_xyz_coordinates, using std::vector::swap (no memory copy)
+         */
+        virtual void assign_vertices(
+            const std::vector< double >& points_xyz_coordinates,
+            bool steal_arg ) = 0 ;
 
         /*!
          * @brief Deletes a set of vertices.
