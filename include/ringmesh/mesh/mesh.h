@@ -120,13 +120,6 @@ namespace RINGMesh {
         virtual std::string default_extension() const = 0 ;
 
         /*!
-         * @brief create a copy of the vertices table
-         * @return the copy of the x, y, z coordinate of vertices.
-         */
-        virtual std::vector<double> copy_vertices ( ) const = 0 ;
-
-
-        /*!
          * @}
          */
     protected:
