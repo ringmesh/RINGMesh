@@ -148,16 +148,14 @@ namespace RINGMesh {
         /*!
          * @brief set vertex coordinantes from a std::vector of coordinates
          * @param[in] points_xyz_coordinates std::vector with a set of x, y, z coordinates
-         * @param[in] steal_arg	if true, memory is stolen from /param points_xyz_coordinates, using std::vector::swap (no memory copy)
          */
         virtual void assign_vertices(
-            const std::vector< double >& points_xyz_coordinates,
-            bool steal_arg ) override
+            const std::vector< double >& points_xyz_coordinates ) override
         {
             GEO::vector< double > points_xyz_coordinates_cp =
                 copy_std_vector_to_geo_vector( points_xyz_coordinates ) ;
             mesh_->mesh_->vertices.assign_points( points_xyz_coordinates_cp, 3,
-                steal_arg ) ;
+                false ) ;
             clear_vertex_linked_objects() ;
         }
 
@@ -508,17 +506,14 @@ namespace RINGMesh {
          * \details Facet adjacence are not computed.
          *   Facet and corner attributes are zeroed.
          * \param[in] triangles facet to vertex links
-         * \param[in] steal_args if set, vertices and triangles
-         * are 'stolen' from the arguments
          * (using vector::swap).
          */
         virtual void assign_facet_triangle_mesh(
-            const std::vector< index_t >& triangles,
-            bool steal_args ) override
+            const std::vector< index_t >& triangles ) override
         {
             GEO::vector< index_t > geo_triangles = copy_std_vector_to_geo_vector(
                 triangles ) ;
-            mesh_->mesh_->facets.assign_triangle_mesh( geo_triangles, steal_args ) ;
+            mesh_->mesh_->facets.assign_triangle_mesh( geo_triangles, false ) ;
             clear_facet_linked_objects() ;
         }
         /*!
@@ -650,16 +645,12 @@ namespace RINGMesh {
          * \details Cells adjacence are not computed.
          *   cell and corner attributes are zeroed.
          * \param[in] tets cells to vertex links
-         * \param[in] steal_args if set, vertices and tets
-         * are 'stolen' from the arguments
          * (using vector::swap).
          */
-        virtual void assign_cell_tet_mesh(
-            const std::vector< index_t >& tets,
-            bool steal_args ) override
+        virtual void assign_cell_tet_mesh( const std::vector< index_t >& tets ) override
         {
             GEO::vector< index_t > copy = copy_std_vector_to_geo_vector( tets ) ;
-            mesh_->mesh_->cells.assign_tet_mesh( copy, steal_args ) ;
+            mesh_->mesh_->cells.assign_tet_mesh( copy, false ) ;
             clear_cell_linked_objects() ;
         }
 

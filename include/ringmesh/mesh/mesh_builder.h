@@ -109,11 +109,9 @@ namespace RINGMesh {
         /*!
          * @brief set vertex coordinantes from a std::vector of coordinates
          * @param[in] points_xyz_coordinates std::vector with a set of x, y, z coordinates
-         * @param[in] steal_arg	if true, memory is stolen from /param points_xyz_coordinates, using std::vector::swap (no memory copy)
          */
         virtual void assign_vertices(
-            const std::vector< double >& points_xyz_coordinates,
-            bool steal_arg ) = 0 ;
+            const std::vector< double >& points_xyz_coordinates ) = 0 ;
 
         /*!
          * @brief Deletes a set of vertices.
@@ -321,13 +319,10 @@ namespace RINGMesh {
          * \details Facet adjacence are not computed.
          *   Facet and corner attributes are zeroed.
          * \param[in] triangles facet to vertex links
-         * \param[in] steal_args if set, vertices and triangles
-         * are 'stolen' from the arguments
          * (using vector::swap).
          */
         virtual void assign_facet_triangle_mesh(
-            const std::vector< index_t >& triangles,
-            bool steal_args ) = 0 ;
+            const std::vector< index_t >& triangles ) = 0 ;
         /*!
          * @brief Removes all the facets and attributes.
          * @param[in] keep_attributes if true, then all the existing attribute
@@ -413,13 +408,9 @@ namespace RINGMesh {
          * \details Cells adjacence are not computed.
          *   cell and corner attributes are zeroed.
          * \param[in] tets cells to vertex links
-         * \param[in] steal_args if set, vertices and tets
-         * are 'stolen' from the arguments
          * (using vector::swap).
          */
-        virtual void assign_cell_tet_mesh(
-            const std::vector< index_t >& tets,
-            bool steal_args ) = 0 ;
+        virtual void assign_cell_tet_mesh( const std::vector< index_t >& tets ) = 0 ;
         /*!
          * @brief Sets a vertex of a cell by local vertex index.
          * @param[in] cell_id index of the cell, in 0.. @function nb() - 1.

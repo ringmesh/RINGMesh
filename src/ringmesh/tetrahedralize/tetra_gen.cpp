@@ -67,33 +67,9 @@ namespace RINGMesh {
         virtual bool tetrahedralize( bool refine ) final
         {
             Mesh3DBuilder * mesh3D_builder = builder_->geometry.create_region_builder ( output_region_ );
-            tetrahedralize_mesh_tetgen ( mesh3D_builder, tetmesh_constraint_, refine, 1.0 ) ;
-           /* initialize_storage( tetmesh_constraint_.vertices.nb(),
-                tetmesh_constraint_.cells.nb() ) ;
-            write_vertices_in_ringmesh_data_structure() ;
-            write_tet_in_ringmesh_data_structure() ;*/
+            tetrahedralize_mesh_tetgen ( *mesh3D_builder, tetmesh_constraint_, refine, 1.0 ) ;
             return true ;
         }
-
- /*       virtual void write_vertices_in_ringmesh_data_structure() final
-        {
-            for( index_t v = 0; v < tetmesh_constraint_.vertices.nb(); v++ ) {
-                set_point( v, tetmesh_constraint_.vertices.point_ptr( v ) ) ;
-            }
-        }
-        virtual void write_tet_in_ringmesh_data_structure() final
-        {
-            for( index_t tet = 0; tet < tetmesh_constraint_.cells.nb(); tet++ ) {
-                int vertex_indices[4] ;
-                for( index_t v = 0; v < 4; v++ ) {
-                    vertex_indices[v] =
-                        static_cast< int >( tetmesh_constraint_.cells.vertex( tet,
-                            v ) ) ;
-                }
-                set_tetra( tet, vertex_indices ) ;
-            }
-            builder_->geometry.compute_region_adjacencies( output_region_ ) ;
-        }*/
     } ;
 #endif
 
@@ -401,7 +377,7 @@ namespace RINGMesh {
             }
             builder_->geometry.compute_region_adjacencies( output_region_ ) ;
         }
-        void set_point ( index_t index, const double* point )
+        void set_point( index_t index, const double* point )
         {
             bool update = false ;
             vec3 vertex ( point ) ;
@@ -410,7 +386,7 @@ namespace RINGMesh {
                 update ) ;
         }
 
-        void set_tetra ( index_t tetra_index, int* vertex_indices )
+        void set_tetra( index_t tetra_index, int* vertex_indices )
         {
             std::vector< index_t > corners ( 4 ) ;
             for( index_t v = 0; v < 4; v++ ) {

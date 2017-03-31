@@ -89,7 +89,7 @@ namespace RINGMesh {
 
     void TetgenMesher::tetrahedralize(
         const GEO::Mesh& input_mesh,
-        Mesh3DBuilder* output_mesh_builder )
+        Mesh3DBuilder& output_mesh_builder )
     {
         initialize() ;
         copy_mesh_to_tetgen_input( input_mesh ) ;
@@ -99,7 +99,7 @@ namespace RINGMesh {
 
     void TetgenMesher::tetrahedralize(
         const Mesh0D& input_mesh,
-        Mesh3DBuilder* output_mesh_builder )
+        Mesh3DBuilder& output_mesh_builder )
     {
         initialize() ;
         copy_vertices_to_tetgen_input( input_mesh ) ;
@@ -247,39 +247,35 @@ namespace RINGMesh {
     }
 
     void TetgenMesher::assign_result_tetmesh_to_mesh(
-        Mesh3DBuilder* output_mesh_builder ) const
+        Mesh3DBuilder& output_mesh_builder ) const
     {
-        std::vector< double > points ;
-        get_result_tetmesh_points( points ) ;
+        std::vector< double > points = get_result_tetmesh_points() ;
+        std::vector< index_t > tets = get_result_tetmesh_tets() ;
 
-        std::vector< index_t > tets ;
-        get_result_tetmesh_tets( tets ) ;
-
-        output_mesh_builder->assign_vertices( points, true ) ;
-        output_mesh_builder->assign_cell_tet_mesh( tets, true ) ;
-        output_mesh_builder->remove_isolated_vertices() ;
-        output_mesh_builder->connect_cells() ;
+        output_mesh_builder.assign_vertices( points ) ;
+        output_mesh_builder.assign_cell_tet_mesh( tets ) ;
+        output_mesh_builder.remove_isolated_vertices() ;
+        output_mesh_builder.connect_cells() ;
     }
 
-    void TetgenMesher::get_result_tetmesh_points(
-        std::vector< double >& points ) const
+    std::vector< double > TetgenMesher::get_result_tetmesh_points() const
     {
         index_t nb_points = static_cast< index_t >( tetgen_out_.numberofpoints ) ;
-        points.resize( 3 * nb_points ) ;
+        std::vector< double > points( 3 * nb_points ) ;
         double* points_ptr = tetgen_out_.pointlist ;
         RINGMESH_PARALLEL_LOOP
         for( index_t i = 0; i < 3 * nb_points; ++i ) {
             points[i] = points_ptr[i] ;
         }
+        return points ;
     }
 
-    void TetgenMesher::get_result_tetmesh_tets( std::vector< index_t >& tets ) const
+    std::vector< index_t > TetgenMesher::get_result_tetmesh_tets() const
     {
-        std::vector< index_t > tets_to_keep ;
-        determine_tets_to_keep( tets_to_keep ) ;
+        std::vector< index_t > tets_to_keep = determine_tets_to_keep() ;
 
         index_t nb_tets = static_cast< index_t >( tets_to_keep.size() ) ;
-        tets.resize( 4 * nb_tets ) ;
+        std::vector< index_t > tets( 4 * nb_tets ) ;
         int* tets_ptr = tetgen_out_.tetrahedronlist ;
         RINGMESH_PARALLEL_LOOP
         for( index_t i = 0; i < nb_tets; ++i ) {
@@ -288,16 +284,16 @@ namespace RINGMesh {
                 tets[4 * i + v] = static_cast< index_t >( tets_ptr[4 * tetra + v] ) ;
             }
         }
+        return tets ;
     }
 
-    void TetgenMesher::determine_tet_regions_to_keep(
-        std::set< double >& regions_to_keep ) const
+    std::set< double > TetgenMesher::determine_tet_regions_to_keep() const
     {
         // Determine which regions are incident to
         // the 'exterior' (neighbor = -1).
         // The region Id of tet t is determined by:
         //  tetgen_out_.tetrahedronattributelist[t]
-
+        std::set< double > regions_to_keep ;
         index_t nb_tets = static_cast< index_t >( tetgen_out_.numberoftetrahedra ) ;
         for( index_t t = 0; t < nb_tets; ++t ) {
             for( index_t f = 0; f < 4; ++f ) {
@@ -309,13 +305,13 @@ namespace RINGMesh {
                 }
             }
         }
+        return regions_to_keep ;
     }
 
-    void TetgenMesher::determine_tets_to_keep(
-        std::vector< index_t >& tets_to_keep ) const
+    std::vector< index_t > TetgenMesher::determine_tets_to_keep() const
     {
-        std::set< double > regions_to_keep ;
-        determine_tet_regions_to_keep( regions_to_keep ) ;
+        std::vector< index_t > tets_to_keep ;
+        std::set< double > regions_to_keep = determine_tet_regions_to_keep() ;
 
         index_t nb_tets = static_cast< index_t >( tetgen_out_.numberoftetrahedra ) ;
         tets_to_keep.reserve( nb_tets ) ;
@@ -325,10 +321,11 @@ namespace RINGMesh {
                 tets_to_keep.push_back( t ) ;
             }
         }
+        return tets_to_keep ;
     }
 
     void tetrahedralize_mesh_tetgen(
-        Mesh3DBuilder* out_tet_mesh,
+        Mesh3DBuilder& out_tet_mesh,
         const GEO::Mesh& in_mesh,
         bool refine,
         double quality )
@@ -344,7 +341,7 @@ namespace RINGMesh {
     }
 
     void tetrahedralize_mesh_tetgen(
-        Mesh3DBuilder* out_tet_mesh,
+        Mesh3DBuilder& out_tet_mesh,
         const Mesh0D& in_point_cloud,
         bool refine,
         double quality )
