@@ -49,41 +49,39 @@
 namespace RINGMesh {
 
     /*!
-     * Copy the content of a standard library vector to the memory aligned GEO::Vector. 
-     * A lot of copies, when we need to call Geogram functions. 
-     * @todo Could we set Geogram vector to be a std::vector ?? 
-     */
-    template< typename T, typename U >
-    void copy_std_vector_to_geo_vector(
-        const std::vector< T >& in,
-        GEO::vector< U >& out )
-    {
-        out.resize( in.size() ) ;
-        for( index_t i = 0; i < in.size(); ++i ) {
-            out[i] = in[i] ;
-        }
-    }
-
-    /*!
      * Partial copy the content of a standrad library vector to a GEO::Vector.
      * A lot of copies, when we need to call Geogram functions.
      * @todo Could we set Geogram vector to be a std::vector ??
      */
-    template< typename T, typename U >
-    void copy_std_vector_to_geo_vector(
+    template< typename T, typename U = T >
+    GEO::vector< U > copy_std_vector_to_geo_vector(
         const std::vector< T >& in,
         index_t from,
-        index_t to,
-        GEO::vector< U >& out )
+        index_t to )
     {
         ringmesh_assert( to < in.size() + 1 ) ;
         ringmesh_assert( from < to ) ;
         index_t nb_to_copy( to - from ) ;
-        out.resize( nb_to_copy ) ;
-        for( index_t i = 0; i != nb_to_copy; ++i ) {
+        GEO::vector< U > out( nb_to_copy ) ;
+        for( index_t i = 0; i < nb_to_copy; i++ ) {
             out[i] = in[from + i] ;
         }
+        return out ;
     }
+
+    /*!
+     * Copy the content of a standard library vector to the memory aligned GEO::Vector.
+     * A lot of copies, when we need to call Geogram functions.
+     * @todo Could we set Geogram vector to be a std::vector ??
+     */
+    template< typename T, typename U = T >
+    GEO::vector< U > copy_std_vector_to_geo_vector(
+        const std::vector< T >& in )
+    {
+        index_t size = static_cast< index_t >( in.size() ) ;
+        return copy_std_vector_to_geo_vector< T, U >( in, 0, size ) ;
+    }
+
 
     /***********************************************************************/
     /* Loading and saving a GEO::Mesh                                      */
@@ -95,14 +93,40 @@ namespace RINGMesh {
     /******************************************************************/
     /* Operations on a GEO::Mesh                                      */
 
+    /*!
+     * Computes the signed volume of a Mesh cell
+     * @param[in] M the mesh
+     * @param[in] c the cell index
+     * @return the signed volume of the cell
+     */
     double RINGMESH_API mesh_cell_signed_volume( const GEO::Mesh& M, index_t c ) ;
+    /*!
+     * Computes the volume of a Mesh cell
+     * @param[in] M the mesh
+     * @param[in] c the cell index
+     * @return the volume of the cell
+     */
     double RINGMESH_API mesh_cell_volume( const GEO::Mesh& M, index_t c ) ;
 
+    /*!
+     * Computes the Mesh cell facet barycenter
+     * @param[in] M the mesh
+     * @param[in] cell the cell index
+     * @param[in] f the facet index in the cell
+     * @return the cell facet center
+     */
     vec3 RINGMESH_API mesh_cell_facet_barycenter(
         const GEO::Mesh& M,
         index_t cell,
         index_t f ) ;
 
+    /*!
+     * Computes the non weighted barycenter of a volumetric
+     * cell of a Mesh
+     * @param[in] M the mesh
+     * @param[in] cell the cell index
+     * @return the cell center
+     */
     vec3 RINGMESH_API mesh_cell_barycenter( const GEO::Mesh& M, index_t cell ) ;
 
     /*!

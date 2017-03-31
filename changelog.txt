@@ -19,3 +19,4 @@ Improvements:
  * Remove support of .mesh and .meshb
  * Remove MeshAllD and inherited classes, user should only use Mesh0D, Mesh1D, Mesh2D or Mesh3D.
       The GeoModelMesh has been modified according this modification.
+ * Improve some designs by using the NRVO/RVO (Named Return Value Optimization)
