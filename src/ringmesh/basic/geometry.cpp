@@ -651,8 +651,7 @@ namespace RINGMesh {
         double norm_d = dot( norm_N_P0, norm_N_P1 ) ;
 
         // Planes are parallel
-        if( std::fabs( norm_d ) - 1 < global_epsilon
-            && std::fabs( norm_d ) - 1 > -global_epsilon ) {
+        if( std::fabs( std::fabs( norm_d ) - 1 ) < global_epsilon ) {
             return false ;
         }
 
