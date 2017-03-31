@@ -72,9 +72,8 @@ void test_line_plane_intersection()
     vec3 D_line1( -2., 4., 1. ) ;
     vec3 result1 ;
     vec3 answer1 = O_line1 ;
-    bool intersect1 = line_plane_intersection( O_line1, D_line1, O_plane, N_plane,
-        result1 ) ;
-    verdict( intersect1 && result1 == answer1, "True intersection1" ) ;
+    verdict( line_plane_intersection( O_line1, D_line1, O_plane, N_plane,
+        result1 ) && result1 == answer1, "True intersection1" ) ;
 
     // Intersection is a point
     vec3 O_line2( -41., 7., -28. ) ;
