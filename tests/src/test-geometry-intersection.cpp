@@ -313,13 +313,19 @@ void test_circle_triangle_intersection()
 {
     Logger::out( "TEST" ) << "Test Circle-Triangle intersections" << std::endl ;
     vec3 trgl0( 1., 1., 0. ) ;
-    vec3 trgl1( 2., 3., 0. ) ;
+    vec3 trgl1( 3., 4., 0. ) ;
     vec3 trgl2( 4., -1., 0. ) ;
 
     // The circle is adjacent to the triangle plane exactly at a triangle vertex
     vec3 O_circle1( 2., 3., 4. ) ;
     vec3 N_circle1( 1., 1., 0. ) ;
     double r1 = 4. ;
+    double d0, d1, d2 ; vec3 tott ;
+    DEBUG( point_triangle_distance( O_circle1, trgl0, trgl1, trgl2, tott, d0, d1, d2 ) ) ;
+    DEBUG( tott ) ;
+    DEBUG( d0 ) ;
+    DEBUG( d1 ) ;
+    DEBUG( d2 ) ;
     std::vector< vec3 > results1 ;
     vec3 answer1 = trgl1 ;
     verdict(
