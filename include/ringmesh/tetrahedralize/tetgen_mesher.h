@@ -43,7 +43,6 @@
 
 /*!
  * @file Interface GEO::Mesh with Tetgen 
- * @author Jeanne Pellerin
  */
 namespace GEO {
     class Mesh ;
@@ -107,10 +106,10 @@ namespace RINGMesh {
 
         void tetrahedralize(
             const GEO::Mesh& input_mesh,
-            Mesh3DBuilder* output_mesh_builder ) ;
+            Mesh3DBuilder& output_mesh_builder ) ;
         void tetrahedralize(
             const Mesh0D& input_mesh,
-            Mesh3DBuilder* output_mesh_builder ) ;
+            Mesh3DBuilder& output_mesh_builder ) ;
 
         void add_points_to_match_quality( double quality ) ;
 
@@ -128,12 +127,11 @@ namespace RINGMesh {
         void set_regions( const std::vector< vec3 >& one_point_per_region ) ;
 
         void assign_result_tetmesh_to_mesh(
-            Mesh3DBuilder* output_mesh_builder ) const ;
-        void get_result_tetmesh_points( std::vector< double >& points ) const ;
-        void get_result_tetmesh_tets( std::vector< index_t >& tets ) const ;
-        void determine_tet_regions_to_keep(
-            std::set< double >& regions_to_keep ) const ;
-        void determine_tets_to_keep( std::vector< index_t >& tets_to_keep ) const ;
+            Mesh3DBuilder& output_mesh_builder ) const ;
+        std::vector< double > get_result_tetmesh_points() const ;
+        std::vector< index_t > get_result_tetmesh_tets() const ;
+        std::set< double > determine_tet_regions_to_keep() const ;
+        std::vector< index_t > determine_tets_to_keep() const ;
 
     private:
         GEO_3rdParty::tetgenio tetgen_in_ ;
@@ -151,12 +149,12 @@ namespace RINGMesh {
      * as the equivalent in Geogram function does.
      */
     void RINGMESH_API tetrahedralize_mesh_tetgen(
-        Mesh3DBuilder* out_mesh_builder,
+        Mesh3DBuilder& out_mesh_builder,
         const GEO::Mesh& in_mesh,
         bool refine,
         double quality ) ;
     void RINGMESH_API tetrahedralize_mesh_tetgen(
-        Mesh3DBuilder* out_mesh_builder,
+        Mesh3DBuilder& out_mesh_builder,
         const Mesh0D& in_point_cloud,
         bool refine,
         double quality ) ;
