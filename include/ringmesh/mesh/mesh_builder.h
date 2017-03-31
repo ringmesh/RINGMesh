@@ -107,8 +107,8 @@ namespace RINGMesh {
         virtual index_t create_vertices( index_t nb ) = 0 ;
 
         /*!
-         * @brief set vertex coordinantes from a std::vector of coordinates
-         * @param[in] points_xyz_coordinates std::vector with a set of x, y, z coordinates
+         * @brief set vertex coordinates from a std::vector of coordinates
+         * @param[in] points_xyz_coordinates a set of x, y, z coordinates
          */
         virtual void assign_vertices(
             const std::vector< double >& points_xyz_coordinates ) = 0 ;
