@@ -66,8 +66,7 @@ namespace RINGMesh {
             const MeshEntityType& type,
             const MeshEntityType& boundary )
         {
-            map.insert(
-                std::pair< MeshEntityType, MeshEntityType >( type, boundary ) ) ;
+            map.emplace( type, boundary ) ;
         }
         MeshEntityTypeMap map ;
     } ;
@@ -84,9 +83,7 @@ namespace RINGMesh {
             const MeshEntityType& type,
             const MeshEntityType& in_boundary )
         {
-            map.insert(
-                std::pair< MeshEntityType, MeshEntityType >( type,
-                    in_boundary ) ) ;
+            map.emplace( type, in_boundary ) ;
         }
         MeshEntityTypeMap map ;
     } ;

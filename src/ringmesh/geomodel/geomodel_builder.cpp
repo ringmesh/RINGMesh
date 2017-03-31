@@ -922,7 +922,7 @@ namespace RINGMesh {
 
             // Start with the first Surface on its + side
             std::stack< std::pair< index_t, bool > > S ;
-            S.push( std::pair< index_t, bool >( 0, true ) ) ;
+            S.emplace( 0, true ) ;
 
             while( !S.empty() ) {
                 std::pair< index_t, bool > cur = S.top() ;
@@ -956,7 +956,7 @@ namespace RINGMesh {
                     index_t s_id_opp =
                         !s.second == true ? 2 * s.first : 2 * s.first + 1 ;
                     if( surf_2_region[s_id_opp] == NO_ID ) {
-                        S.push( std::pair< index_t, bool >( s.first, !s.second ) ) ;
+                        S.emplace( s.first, !s.second ) ;
                     }
                     // For each contact, push the next oriented surface that is in the same region
                     const Surface& surface = geomodel_.surface( s.first ) ;
