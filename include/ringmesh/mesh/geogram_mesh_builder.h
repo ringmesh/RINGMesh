@@ -110,7 +110,7 @@ namespace RINGMesh {
         virtual void mesh_repair( GEO::MeshRepairMode mode, double colocate_epsilon ) override
         {
             GEO::mesh_repair( *mesh_->mesh_, mode, colocate_epsilon ) ;
-
+            clear_vertex_linked_objects() ;
         }
 
         /*!
@@ -130,6 +130,7 @@ namespace RINGMesh {
          */
         virtual index_t create_vertex() override
         {
+            clear_vertex_linked_objects() ;
             return mesh_->mesh_->vertices.create_vertex() ;
         }
 
@@ -140,8 +141,24 @@ namespace RINGMesh {
          */
         virtual index_t create_vertices( index_t nb ) override
         {
+            clear_vertex_linked_objects() ;
             return mesh_->mesh_->vertices.create_vertices( nb ) ;
         }
+
+        /*!
+         * @brief set vertex coordinates from a std::vector of coordinates
+         * @param[in] points_xyz_coordinates a set of x, y, z coordinates
+         */
+        virtual void assign_vertices(
+            const std::vector< double >& points_xyz_coordinates ) override
+        {
+            GEO::vector< double > points_xyz_coordinates_cp =
+                copy_std_vector_to_geo_vector( points_xyz_coordinates ) ;
+            mesh_->mesh_->vertices.assign_points( points_xyz_coordinates_cp, 3,
+                false ) ;
+            clear_vertex_linked_objects() ;
+        }
+
         /*!
          * @brief Deletes a set of vertices.
          * @param[in] to_delete     a vector of size @function nb().
@@ -172,6 +189,7 @@ namespace RINGMesh {
             GEO::vector< index_t > geo_vector_permutation =
                 copy_std_vector_to_geo_vector( permutation ) ;
             mesh_->mesh_->vertices.permute_elements( geo_vector_permutation ) ;
+            clear_vertex_linked_objects() ;
         }
 
         virtual void clear_vertex_linked_objects() override
@@ -488,17 +506,14 @@ namespace RINGMesh {
          * \details Facet adjacence are not computed.
          *   Facet and corner attributes are zeroed.
          * \param[in] triangles facet to vertex links
-         * \param[in] steal_args if set, vertices and triangles
-         * are 'stolen' from the arguments
          * (using vector::swap).
          */
         virtual void assign_facet_triangle_mesh(
-            const std::vector< index_t >& triangles,
-            bool steal_args ) override
+            const std::vector< index_t >& triangles ) override
         {
             GEO::vector< index_t > geo_triangles = copy_std_vector_to_geo_vector(
                 triangles ) ;
-            mesh_->mesh_->facets.assign_triangle_mesh( geo_triangles, steal_args ) ;
+            mesh_->mesh_->facets.assign_triangle_mesh( geo_triangles, false ) ;
             clear_facet_linked_objects() ;
         }
         /*!
@@ -624,21 +639,17 @@ namespace RINGMesh {
         {
             return mesh_->mesh_->cells.create_cells( nb_cells, type ) ;
         }
+
         /*
          * \brief Copies a tets mesh into this Mesh.
          * \details Cells adjacence are not computed.
          *   cell and corner attributes are zeroed.
          * \param[in] tets cells to vertex links
-         * \param[in] steal_args if set, vertices and tets
-         * are 'stolen' from the arguments
-         * (using vector::swap).
          */
-        virtual void assign_cell_tet_mesh(
-            const std::vector< index_t >& tets,
-            bool steal_args ) override
+        virtual void assign_cell_tet_mesh( const std::vector< index_t >& tets ) override
         {
             GEO::vector< index_t > copy = copy_std_vector_to_geo_vector( tets ) ;
-            mesh_->mesh_->cells.assign_tet_mesh( copy, steal_args ) ;
+            mesh_->mesh_->cells.assign_tet_mesh( copy, false ) ;
             clear_cell_linked_objects() ;
         }
 
