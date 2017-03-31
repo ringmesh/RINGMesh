@@ -185,7 +185,12 @@ namespace RINGMesh {
     {
         if( M.nb_vertices() != 0 ) {
             tetgen_in_.numberofpoints = static_cast< int >( M.nb_vertices() ) ;
-            tetgen_in_.pointlist = M.copy_vertices().data() ;
+            tetgen_in_.pointlist = new double[M.nb_vertices() * 3] ;
+            for( index_t v = 0; v < M.nb_vertices(); v++ ) {
+                for( index_t i = 0; i < 3; i++ ) {
+                    tetgen_in_.pointlist[3 * v + 1] = M.vertex( v )[i] ;
+                }
+            }
         }
     }
 
@@ -249,11 +254,8 @@ namespace RINGMesh {
     void TetgenMesher::assign_result_tetmesh_to_mesh(
         Mesh3DBuilder& output_mesh_builder ) const
     {
-        std::vector< double > points = get_result_tetmesh_points() ;
-        std::vector< index_t > tets = get_result_tetmesh_tets() ;
-
-        output_mesh_builder.assign_vertices( points ) ;
-        output_mesh_builder.assign_cell_tet_mesh( tets ) ;
+        output_mesh_builder.assign_vertices( get_result_tetmesh_points() ) ;
+        output_mesh_builder.assign_cell_tet_mesh( get_result_tetmesh_tets() ) ;
         output_mesh_builder.remove_isolated_vertices() ;
         output_mesh_builder.connect_cells() ;
     }
