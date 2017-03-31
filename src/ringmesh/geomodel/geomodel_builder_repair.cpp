@@ -100,7 +100,8 @@ namespace RINGMesh {
 
         remove_colocated_entity_vertices( empty_mesh_entities ) ;
         if( !empty_mesh_entities.empty() ) {
-            builder_.topology.get_dependent_entities( empty_mesh_entities, empty_geological_entities ) ;
+            builder_.topology.get_dependent_entities( empty_mesh_entities,
+                empty_geological_entities ) ;
             builder_.removal.remove_mesh_entities( empty_mesh_entities ) ;
         }
     }
@@ -289,9 +290,9 @@ namespace RINGMesh {
 
             for( const GeoModelMeshEntity*& entity : inside_border ) {
                 for( index_t v = 0; v < entity->nb_vertices(); ++v ) {
-                    std::vector< index_t > colocated_indices ;
-                    nn_search.get_neighbors( entity->vertex( v ),
-                        colocated_indices, geomodel_.epsilon() ) ;
+                    std::vector< index_t > colocated_indices =
+                        nn_search.get_neighbors( entity->vertex( v ),
+                            geomodel_.epsilon() ) ;
                     if( colocated_indices.size() > 1 ) {
                         std::sort( colocated_indices.begin(),
                             colocated_indices.end() ) ;
