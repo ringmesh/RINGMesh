@@ -94,6 +94,35 @@ namespace {
         }
         return equal ;
     }
+
+    /*!
+     * @brief Reorders the line so that front() is a corner.
+     * @note Closed line has front()==back().
+     */
+    void reorder_closed_line_vertices_to_start_at_corner(
+        const GeoModel& geomodel,
+        std::vector< index_t >& line_vertices )
+    {
+        if( geomodel.nb_corners() == 0 ) {
+            // Maybe should throw an assertion, but I am not sure [JP]
+            // this really may happen for sure, so no throw [RM]
+            return ;
+        }
+        if( line_vertices.empty() ) {
+            return ;
+        }
+        for( index_t i = 1; i + 1 < line_vertices.size(); ++i ) {
+            gmme_t corner = find_corner( geomodel, line_vertices[i] ) ;
+            if( corner.is_defined() ) {
+                line_vertices.pop_back() ;
+                std::rotate( line_vertices.begin(), line_vertices.begin() + i,
+                    line_vertices.end() ) ;
+                line_vertices.push_back( line_vertices.front() ) ;
+                break ;
+            }
+        }
+    }
+
 } // anonymous namespace
 
 namespace RINGMesh {
@@ -248,7 +277,7 @@ namespace RINGMesh {
             }
 
             // Initialization
-            // We start on the plus (true) side of the first Triangle            
+            // We start on the plus (true) side of the first Triangle
             sorted_triangles_[0] = std::pair< index_t, bool >(
                 triangles_[0].surface_index_, true ) ;
 
@@ -264,7 +293,7 @@ namespace RINGMesh {
             for( index_t i = 1; i < triangles_.size(); ++i ) {
                 TriangleToSort& cur = triangles_[i] ;
                 // Computes the angle RADIANS between the reference and the current
-                // triangle 
+                // triangle
                 double cos = dot( B_A_ref, cur.B_A_ ) ;
                 // Remove invalid values
                 if( cos < -1 )
@@ -769,34 +798,6 @@ namespace RINGMesh {
         RINGMesh::GeoModelRegionFromSurfaces cur_line_region_information_ ;
     } ;
 
-    /*!
-     * @brief Reorders the line so that front() is a corner.
-     * @note Closed line has front()==back().
-     */
-    void reorder_closed_line_vertices_to_start_at_corner(
-        const GeoModel& geomodel,
-        std::vector< index_t >& line_vertices )
-    {
-        if( geomodel.nb_corners() == 0 ) {
-            // Maybe should throw an assertion, but I am not sure [JP]
-            // this really may happen for sure, so no throw [RM]
-            return ;
-        }
-        if( line_vertices.empty() ) {
-            return ;
-        }
-        for( index_t i = 1; i + 1 < line_vertices.size(); ++i ) {
-            gmme_t corner = find_corner( geomodel, line_vertices[i] ) ;
-            if( corner.is_defined() ) {
-                line_vertices.pop_back() ;
-                std::rotate( line_vertices.begin(), line_vertices.begin() + i,
-                    line_vertices.end() ) ;
-                line_vertices.push_back( line_vertices.front() ) ;
-                break ;
-            }
-        }
-    }
-
     /*************************************************************************/
     GeoModelBuilderFile::GeoModelBuilderFile(
         GeoModel& geomodel,
@@ -817,8 +818,6 @@ namespace RINGMesh {
     {
     }
 
-    /*! Delete all GeoModelRegionFromSurfaces owned by the builder
-     */
     GeoModelBuilderFromSurfaces::~GeoModelBuilderFromSurfaces()
     {
         for( GeoModelRegionFromSurfaces*& info : regions_info_ ) {
@@ -923,7 +922,7 @@ namespace RINGMesh {
 
             // Start with the first Surface on its + side
             std::stack< std::pair< index_t, bool > > S ;
-            S.push( std::pair< index_t, bool >( 0, true ) ) ;
+            S.emplace( 0, true ) ;
 
             while( !S.empty() ) {
                 std::pair< index_t, bool > cur = S.top() ;
@@ -957,7 +956,7 @@ namespace RINGMesh {
                     index_t s_id_opp =
                         !s.second == true ? 2 * s.first : 2 * s.first + 1 ;
                     if( surf_2_region[s_id_opp] == NO_ID ) {
-                        S.push( std::pair< index_t, bool >( s.first, !s.second ) ) ;
+                        S.emplace( s.first, !s.second ) ;
                     }
                     // For each contact, push the next oriented surface that is in the same region
                     const Surface& surface = geomodel_.surface( s.first ) ;
@@ -1255,6 +1254,7 @@ namespace RINGMesh {
         geomodel_access_.modifiable_geological_entities()[index].push_back( E ) ;
         return E->gmge_id() ;
     }
+
     index_t GeoModelBuilderGeology::find_or_create_geological_entity_type(
         const GeologicalEntityType& type )
     {

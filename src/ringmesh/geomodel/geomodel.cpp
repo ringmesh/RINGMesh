@@ -83,16 +83,16 @@ namespace RINGMesh {
 
     GeoModel::~GeoModel()
     {
-        for( Corner*& i : corners_ ) {
+        for( GeoModelMeshEntity* i : corners_ ) {
             delete i ;
         }
-        for( Line*& i : lines_ ) {
+        for( GeoModelMeshEntity* i : lines_ ) {
             delete i ;
         }
-        for( Surface*& i : surfaces_ ) {
+        for( GeoModelMeshEntity* i : surfaces_ ) {
             delete i ;
         }
-        for( Region*& i : regions_ ) {
+        for( GeoModelMeshEntity* i : regions_ ) {
             delete i ;
         }
 
@@ -140,25 +140,40 @@ namespace RINGMesh {
        const MeshEntityType& type ) const
    {
        if( MeshEntityTypeManager::is_corner( type ) ) {
-           return *(std::vector< GeoModelMeshEntity* > *) &corners_ ;
+           return corners_ ;
        } else if( MeshEntityTypeManager::is_line( type ) ) {
-           return *(std::vector< GeoModelMeshEntity* > *) &lines_ ;
+           return lines_ ;
        } else if( MeshEntityTypeManager::is_surface( type ) ) {
-           return *(std::vector< GeoModelMeshEntity* > *) &surfaces_ ;
+           return surfaces_ ;
        } else if( MeshEntityTypeManager::is_region( type ) ) {
-           return *(std::vector< GeoModelMeshEntity* > *) &regions_ ;
+           return regions_ ;
        } else {
            ringmesh_assert_not_reached ;
-           return *(std::vector< GeoModelMeshEntity* > *) &surfaces_ ;
+           return surfaces_ ;
        }
    }
 
-    /*!
-     * Associates a WellGroup to the GeoModel
-     * @param[in] wells the WellGroup
-     * @todo Review : What is this for ?
-     * @todo Extend to other object types.
-     */
+   const Corner& GeoModel::corner( index_t index ) const
+   {
+       ringmesh_assert( index < corners_.size() ) ;
+       return *static_cast< const Corner* >( corners_[index] ) ;
+   }
+   const Line& GeoModel::line( index_t index ) const
+   {
+       ringmesh_assert( index < lines_.size() ) ;
+       return *static_cast< const Line* >( lines_[index] ) ;
+   }
+   const Surface& GeoModel::surface( index_t index ) const
+   {
+       ringmesh_assert( index < surfaces_.size() ) ;
+       return *static_cast< const Surface* >( surfaces_[index] ) ;
+   }
+   const Region& GeoModel::region( index_t index ) const
+   {
+       ringmesh_assert( index < regions_.size() ) ;
+       return *static_cast< const Region* >( regions_[index] ) ;
+   }
+
     void GeoModel::set_wells( const WellGroup* wells )
     {
         wells_ = wells ;

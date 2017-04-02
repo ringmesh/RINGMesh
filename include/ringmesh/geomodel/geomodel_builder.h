@@ -272,6 +272,9 @@ namespace RINGMesh {
         friend class GeoModelBuilder ;
 
     public:
+        /*!
+         * Delete all GeoModelRegionFromSurfaces owned by the builder
+         */
         virtual ~GeoModelBuilderFromSurfaces() ;
         /*
          * @brief From a GeoModel in which only Surfaces are defined,

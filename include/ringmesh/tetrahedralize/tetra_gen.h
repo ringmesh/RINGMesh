@@ -36,6 +36,7 @@
 #pragma once
 
 #include <ringmesh/basic/common.h>
+#include <ringmesh/mesh/mesh.h>
 
 #include <geogram/basic/counted.h>
 #include <geogram/basic/smart_pointer.h>
@@ -76,7 +77,17 @@ namespace RINGMesh {
             const std::string& algo_name ) ;
         static void initialize() ;
 
+        /*!
+         * Sets the boundaries of the domain
+         * @param[in] region The Region of the GeoModel to mesh
+         * @param[in] wells the wells to be conformal to
+         */
         void set_boundaries( const Region& region, const WellGroup* wells = nullptr ) ;
+
+        /*!
+         * Set additional points to be in the output tetrahedral mesh
+         * @param[in] points the points to add
+         */
         void set_internal_points( const std::vector< vec3 >& points ) ;
 
         /*!
@@ -90,12 +101,6 @@ namespace RINGMesh {
 
     protected:
         TetraGen() ;
-
-        virtual void write_vertices_in_ringmesh_data_structure() = 0 ;
-        virtual void write_tet_in_ringmesh_data_structure() = 0 ;
-        void initialize_storage( index_t nb_points, index_t nb_tets ) ;
-        void set_point( index_t index, const double* point ) ;
-        void set_tetra( index_t index, int* tet ) ;
 
     protected:
         GeoModelBuilder* builder_ ;
