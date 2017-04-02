@@ -66,6 +66,10 @@ namespace RINGMesh {
             }
         }
 
+        /*!
+         * @brief Build the Contacts
+         * @details One contact is a group of lines shared by the same Interfaces
+         */
         void build_contacts() ;
 
         /*!
@@ -367,6 +371,20 @@ namespace RINGMesh {
         }
 
     private:
+        /*!
+         * @brief Loads and builds a GeoModel from a Gocad .ml file
+         * @warning Pretty unstable. Crashes if the file is not exactly what is expected.
+         * @details Correspondance between Gocad::Model3D entities
+         * and GeoModel entities is :
+         *  - Gocad TSurf  <-> GeoModel Interface
+         *  - Gocad TFace  <-> GeoModel Surface
+         *  - Gocad Region <-> GeoModel Region
+         *  - Gocad Layer  <-> GeoModel Layer
+         * @param[in] ml_file_name Input .ml file stream
+         * @param[in] ignore_file_borders If true, BORDER and BSTONE entries in the files
+         * are ignored and the Lines and Corners of the GeoModel are deduced from the
+         * connectivity of its Surfaces. By default set to false.
+         */
         virtual void load_file() final ;
 
         /*!

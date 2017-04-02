@@ -115,9 +115,9 @@ namespace RINGMesh {
 
         // Get the facets around the shared vertex (next_v_id) that are on the boundary
         // There must be one (the current one) or two (the next one on boundary)
-        std::vector< index_t > facets_around_next_v_id ;
-        index_t nb_around = facets_around_vertex( next_v_id, facets_around_next_v_id,
-            true, f ) ;
+        std::vector< index_t > facets_around_next_v_id = facets_around_vertex(
+            next_v_id, true, f ) ;
+        index_t nb_around = static_cast< index_t >( facets_around_next_v_id.size() ) ;
         ringmesh_assert( nb_around == 1 || nb_around == 2 ) ;
 
         next_f = facets_around_next_v_id[0] ;
@@ -153,9 +153,9 @@ namespace RINGMesh {
 
         // Get the facets around the shared vertex (v_id) that are on the boundary
         // There must be one (the current one) or two (the next one on boundary)
-        std::vector< index_t > facets_around_v_id ;
-        index_t nb_around = facets_around_vertex( v_id, facets_around_v_id, true,
-            f ) ;
+        std::vector< index_t > facets_around_v_id = facets_around_vertex(
+            v_id, true, f ) ;
+        index_t nb_around = static_cast< index_t >( facets_around_v_id.size() ) ;
         ringmesh_assert( nb_around == 1 || nb_around == 2 ) ;
 
         prev_f = facets_around_v_id[0] ;
@@ -232,13 +232,13 @@ namespace RINGMesh {
         }
         return result ;
     }
-    index_t Mesh2D::facets_around_vertex(
+
+    std::vector< index_t > Mesh2D::facets_around_vertex(
         index_t surf_vertex_id,
-        std::vector< index_t >& result,
         bool border_only,
         index_t f0 ) const
     {
-        result.clear() ;
+        std::vector< index_t > result ;
 
         index_t f = 0 ;
         while( f0 == NO_ID && f < nb_facets() ) {
@@ -301,7 +301,7 @@ namespace RINGMesh {
             }
         } while( !S.empty() ) ;
 
-        return static_cast< index_t >( result.size() ) ;
+        return result ;
     }
     Mesh3D* Mesh3D::create_mesh( const MeshType type )
     {

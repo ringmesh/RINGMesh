@@ -292,8 +292,8 @@ namespace {
         std::vector< index_t >& colocated_cell_facet_centers )
     {
         vec3 first_facet_center = surface.mesh_element_barycenter( 0 ) ;
-        region_nn_search.get_neighbors( first_facet_center,
-            colocated_cell_facet_centers, surface.geomodel().epsilon() ) ;
+        colocated_cell_facet_centers = region_nn_search.get_neighbors(
+            first_facet_center, surface.geomodel().epsilon() ) ;
         return static_cast< index_t >( colocated_cell_facet_centers.size() ) ;
     }
 
@@ -338,7 +338,8 @@ namespace {
         GeoModelBuilderTSolid& geomodel_builder )
     {
         geomodel_builder.topology.add_mesh_entity_boundary(
-            gmme_t( Region::type_name_static(), region_id ), surface_id, surf_side ) ;
+            gmme_t( Region::type_name_static(), region_id ), surface_id,
+            surf_side ) ;
         geomodel_builder.topology.add_mesh_entity_in_boundary(
             gmme_t( Surface::type_name_static(), surface_id ), region_id ) ;
     }
@@ -572,7 +573,7 @@ namespace {
         index_t tested_surf = 0 ;
         while( result.empty() && tested_surf < surface_nns.size() ) {
             if( surface_boxes[tested_surf].contains( barycenter ) ) {
-                surface_nns[tested_surf]->get_neighbors( barycenter, result,
+                result = surface_nns[tested_surf]->get_neighbors( barycenter,
                     geomodel.epsilon() ) ;
             }
             ++tested_surf ;
@@ -652,7 +653,8 @@ namespace {
             // Create an interface and set its name
             gmge_t interface_id = builder().geology.create_geological_entity(
                 Interface::type_name_static() ) ;
-            builder().info.set_geological_entity_name( interface_id, interface_name ) ;
+            builder().info.set_geological_entity_name( interface_id,
+                interface_name ) ;
         }
     } ;
 
@@ -767,8 +769,10 @@ namespace {
 
             // Create the entity if it is not the universe
             // Set the region name and boundaries
-            if( name != static_cast< std::string >( Universe::universe_type_name() ) ) {
-                gmme_t region_id = builder().topology.create_mesh_entity< Region >() ;
+            if( name
+                != static_cast< std::string >( Universe::universe_type_name() ) ) {
+                gmme_t region_id =
+                    builder().topology.create_mesh_entity< Region >() ;
                 builder().info.set_mesh_entity_name( region_id, name ) ;
                 for( const std::pair< index_t, bool >& info : region_boundaries ) {
                     builder().topology.add_mesh_entity_boundary( region_id,
@@ -1002,7 +1006,8 @@ namespace {
             gmge_t created_interface = builder().geology.create_geological_entity(
                 Interface::type_name_static() ) ;
             load_storage.cur_interface_ = created_interface.index() ;
-            builder().info.set_geological_entity_name( created_interface, line.field( 1 ) ) ;
+            builder().info.set_geological_entity_name( created_interface,
+                line.field( 1 ) ) ;
         }
     } ;
 
@@ -1101,10 +1106,6 @@ namespace {
 
 namespace RINGMesh {
 
-    /*!
-     * @brief Build the Contacts
-     * @details One contact is a group of lines shared by the same Interfaces
-     */
     void GeoModelBuilderGocad::build_contacts()
     {
         std::vector< std::set< gmge_t > > interfaces ;
@@ -1113,7 +1114,7 @@ namespace RINGMesh {
             std::set< gmge_t > cur_interfaces ;
             for( index_t j = 0; j < L.nb_in_boundary(); ++j ) {
                 const GeoModelMeshEntity& S = L.in_boundary( j ) ;
-                gmge_t parent_interface = S.parent_of_gmme(
+                gmge_t parent_interface = S.parent_gmge(
                     Interface::type_name_static() ) ;
                 cur_interfaces.insert( parent_interface ) ;
             }
@@ -1304,20 +1305,6 @@ namespace RINGMesh {
         cur_surface_ = 0 ;
     }
 
-    /*!
-     * @brief Loads and builds a GeoModel from a Gocad .ml file
-     * @warning Pretty unstable. Crashes if the file is not exactly what is expected.
-     * @details Correspondance between Gocad::Model3D entities
-     * and GeoModel entities is :
-     *  - Gocad TSurf  <-> GeoModel Interface
-     *  - Gocad TFace  <-> GeoModel Surface
-     *  - Gocad Region <-> GeoModel Region
-     *  - Gocad Layer  <-> GeoModel Layer
-     * @param[in] ml_file_name Input .ml file stream
-     * @param[in] ignore_file_borders If true, BORDER and BSTONE entries in the files
-     * are ignored and the Lines and Corners of the GeoModel are deduced from the
-     * connectivity of its Surfaces. By default set to false.
-     */
     void GeoModelBuilderML::load_file()
     {
         read_file() ;

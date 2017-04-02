@@ -38,6 +38,8 @@
 #include <cstring>
 
 #include <geogram/mesh/mesh.h>
+#include <ringmesh/mesh/mesh.h>
+#include <ringmesh/mesh/mesh_builder.h>
 
 #ifdef RINGMESH_WITH_TETGEN
 /*!
@@ -45,11 +47,10 @@
  * @author Jeanne Pellerin
  */
 
-namespace RINGMesh {
+namespace {
+    using namespace RINGMesh ;
 
-    using GEO::Mesh ;
-
-    bool is_mesh_tetrahedralizable( const Mesh& M )
+    bool is_mesh_tetrahedralizable( const GEO::Mesh& M )
     {
         if( M.facets.nb() == 0 ) {
             Logger::err( "RING" ) << "Mesh to tetrahedralize has no facets "
@@ -67,6 +68,9 @@ namespace RINGMesh {
         }
         return true ;
     }
+}
+
+namespace RINGMesh {
 
     TetgenMesher::~TetgenMesher()
     {
@@ -84,15 +88,24 @@ namespace RINGMesh {
     }
 
     void TetgenMesher::tetrahedralize(
-        const Mesh& input_mesh,
-        Mesh& output_mesh )
+        const GEO::Mesh& input_mesh,
+        Mesh3DBuilder& output_mesh_builder )
     {
         initialize() ;
         copy_mesh_to_tetgen_input( input_mesh ) ;
         tetrahedralize() ;
-        assign_result_tetmesh_to_mesh( output_mesh ) ;
+        assign_result_tetmesh_to_mesh( output_mesh_builder ) ;
     }
 
+    void TetgenMesher::tetrahedralize(
+        const Mesh0D& input_mesh,
+        Mesh3DBuilder& output_mesh_builder )
+    {
+        initialize() ;
+        copy_vertices_to_tetgen_input( input_mesh ) ;
+        tetrahedralize() ;
+        assign_result_tetmesh_to_mesh( output_mesh_builder ) ;
+    }
 
     void TetgenMesher::initialize()
     {
@@ -147,7 +160,7 @@ namespace RINGMesh {
         }
     }
 
-    void TetgenMesher::copy_mesh_to_tetgen_input( const Mesh& M )
+    void TetgenMesher::copy_mesh_to_tetgen_input( const GEO::Mesh& M )
     {
         if( M.vertices.nb() != 0 ) {
             copy_vertices_to_tetgen_input( M ) ;
@@ -160,7 +173,7 @@ namespace RINGMesh {
         }
     }
 
-    void TetgenMesher::copy_vertices_to_tetgen_input( const Mesh& M )
+    void TetgenMesher::copy_vertices_to_tetgen_input( const GEO::Mesh& M )
     {
         tetgen_in_.numberofpoints = static_cast< int >( M.vertices.nb() ) ;
         tetgen_in_.pointlist = new double[3 * tetgen_in_.numberofpoints] ;
@@ -168,7 +181,20 @@ namespace RINGMesh {
             M.vertices.nb() * 3 * sizeof(double) ) ;
     }
 
-    void TetgenMesher::copy_edges_to_tetgen_input( const Mesh& M )
+    void TetgenMesher::copy_vertices_to_tetgen_input( const Mesh0D& M )
+    {
+        if( M.nb_vertices() != 0 ) {
+            tetgen_in_.numberofpoints = static_cast< int >( M.nb_vertices() ) ;
+            tetgen_in_.pointlist = new double[M.nb_vertices() * 3] ;
+            for( index_t v = 0; v < M.nb_vertices(); v++ ) {
+                for( index_t i = 0; i < 3; i++ ) {
+                    tetgen_in_.pointlist[3 * v + 1] = M.vertex( v )[i] ;
+                }
+            }
+        }
+    }
+
+    void TetgenMesher::copy_edges_to_tetgen_input( const GEO::Mesh& M )
     {
         tetgen_in_.numberofedges = static_cast< int >( M.edges.nb() ) ;
         tetgen_in_.edgelist = new int[2 * tetgen_in_.numberofedges] ;
@@ -176,7 +202,7 @@ namespace RINGMesh {
             M.edges.nb() * 2 * sizeof(int) ) ;
     }
 
-    void TetgenMesher::copy_facets_to_tetgen_input( const Mesh& M )
+    void TetgenMesher::copy_facets_to_tetgen_input( const GEO::Mesh& M )
     {
         polygons_ = new GEO_3rdParty::tetgenio::polygon[M.facets.nb()] ;
 
@@ -225,38 +251,33 @@ namespace RINGMesh {
         delete[] copy ;
     }
 
-    void TetgenMesher::assign_result_tetmesh_to_mesh( Mesh& M ) const
+    void TetgenMesher::assign_result_tetmesh_to_mesh(
+        Mesh3DBuilder& output_mesh_builder ) const
     {
-        GEO::vector< double > points ;
-        get_result_tetmesh_points( points ) ;
-
-        GEO::vector< index_t > tets ;
-        get_result_tetmesh_tets( tets ) ;
-
-        M.cells.assign_tet_mesh( 3, points, tets, true ) ;
-        M.vertices.remove_isolated() ;
-        M.cells.connect() ;
+        output_mesh_builder.assign_vertices( get_result_tetmesh_points() ) ;
+        output_mesh_builder.assign_cell_tet_mesh( get_result_tetmesh_tets() ) ;
+        output_mesh_builder.remove_isolated_vertices() ;
+        output_mesh_builder.connect_cells() ;
     }
 
-    void TetgenMesher::get_result_tetmesh_points(
-        GEO::vector< double >& points ) const
+    std::vector< double > TetgenMesher::get_result_tetmesh_points() const
     {
         index_t nb_points = static_cast< index_t >( tetgen_out_.numberofpoints ) ;
-        points.resize( 3 * nb_points ) ;
+        std::vector< double > points( 3 * nb_points ) ;
         double* points_ptr = tetgen_out_.pointlist ;
         RINGMESH_PARALLEL_LOOP
         for( index_t i = 0; i < 3 * nb_points; ++i ) {
             points[i] = points_ptr[i] ;
         }
+        return points ;
     }
 
-    void TetgenMesher::get_result_tetmesh_tets( GEO::vector< index_t >& tets ) const
+    std::vector< index_t > TetgenMesher::get_result_tetmesh_tets() const
     {
-        std::vector< index_t > tets_to_keep ;
-        determine_tets_to_keep( tets_to_keep ) ;
+        std::vector< index_t > tets_to_keep = determine_tets_to_keep() ;
 
         index_t nb_tets = static_cast< index_t >( tets_to_keep.size() ) ;
-        tets.resize( 4 * nb_tets ) ;
+        std::vector< index_t > tets( 4 * nb_tets ) ;
         int* tets_ptr = tetgen_out_.tetrahedronlist ;
         RINGMESH_PARALLEL_LOOP
         for( index_t i = 0; i < nb_tets; ++i ) {
@@ -265,33 +286,34 @@ namespace RINGMesh {
                 tets[4 * i + v] = static_cast< index_t >( tets_ptr[4 * tetra + v] ) ;
             }
         }
+        return tets ;
     }
 
-    void TetgenMesher::determine_tet_regions_to_keep(
-        std::set< double >& regions_to_keep ) const
+    std::set< double > TetgenMesher::determine_tet_regions_to_keep() const
     {
         // Determine which regions are incident to
         // the 'exterior' (neighbor = -1).
         // The region Id of tet t is determined by:
         //  tetgen_out_.tetrahedronattributelist[t]
-
+        std::set< double > regions_to_keep ;
         index_t nb_tets = static_cast< index_t >( tetgen_out_.numberoftetrahedra ) ;
         for( index_t t = 0; t < nb_tets; ++t ) {
             for( index_t f = 0; f < 4; ++f ) {
                 signed_index_t n = tetgen_out_.neighborlist[t * 4 + f] ;
                 if( n == -1 ) {
-                    regions_to_keep.insert( tetgen_out_.tetrahedronattributelist[t] ) ;
+                    regions_to_keep.insert(
+                        tetgen_out_.tetrahedronattributelist[t] ) ;
                     break ;
                 }
             }
         }
+        return regions_to_keep ;
     }
 
-    void TetgenMesher::determine_tets_to_keep(
-        std::vector< index_t >& tets_to_keep ) const
+    std::vector< index_t > TetgenMesher::determine_tets_to_keep() const
     {
-        std::set< double > regions_to_keep ;
-        determine_tet_regions_to_keep( regions_to_keep ) ;
+        std::vector< index_t > tets_to_keep ;
+        std::set< double > regions_to_keep = determine_tet_regions_to_keep() ;
 
         index_t nb_tets = static_cast< index_t >( tetgen_out_.numberoftetrahedra ) ;
         tets_to_keep.reserve( nb_tets ) ;
@@ -301,21 +323,41 @@ namespace RINGMesh {
                 tets_to_keep.push_back( t ) ;
             }
         }
+        return tets_to_keep ;
     }
 
-    void tetrahedralize_mesh_tetgen( Mesh& M, bool refine, double quality )
+    void tetrahedralize_mesh_tetgen(
+        Mesh3DBuilder& out_tet_mesh,
+        const GEO::Mesh& in_mesh,
+        bool refine,
+        double quality )
     {
-        if( !is_mesh_tetrahedralizable( M ) ) {
+        if( !is_mesh_tetrahedralizable( in_mesh ) ) {
             throw RINGMeshException( "TetGen", "Mesh cannot be tetrahedralized" ) ;
         }
         TetgenMesher mesher ;
         if( refine ) {
             mesher.add_points_to_match_quality( quality ) ;
         }
-        mesher.tetrahedralize( M, M ) ;
+        mesher.tetrahedralize( in_mesh, out_tet_mesh ) ;
     }
 
-    void TetgenMesher::add_points_to_match_quality( double quality ) {
+    void tetrahedralize_mesh_tetgen(
+        Mesh3DBuilder& out_tet_mesh,
+        const Mesh0D& in_point_cloud,
+        bool refine,
+        double quality )
+    {
+        TetgenMesher mesher ;
+        if( refine ) {
+            mesher.add_points_to_match_quality( quality ) ;
+        }
+        mesher.tetrahedralize( in_point_cloud, out_tet_mesh ) ;
+
+    }
+
+    void TetgenMesher::add_points_to_match_quality( double quality )
+    {
         tetgen_command_line_ += "q" + GEO::String::to_string( quality ) ;
     }
 }
