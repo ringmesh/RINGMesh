@@ -90,9 +90,9 @@ namespace {
             cur_neighbor += nb_neighbors ;
             cur_neighbor = std::min( cur_neighbor, surface.nb_mesh_elements() ) ;
             neighbors.resize( cur_neighbor ) ;
-            double* dist = (double*) alloca( sizeof(double) * cur_neighbor ) ;
-            nb_neighbors = nn_search.get_neighbors( v_bary, cur_neighbor, neighbors,
-                dist ) ;
+            neighbors = nn_search.get_neighbors( v_bary, cur_neighbor ) ;
+            // nb_neighbors can be less than cur_neighbor.
+            nb_neighbors = static_cast< index_t > ( neighbors.size() ) ;
             for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
                 f = neighbors[i] ;
                 for( index_t j = 0; j < surface.nb_mesh_element_vertices( f );
@@ -214,12 +214,15 @@ namespace RINGMesh {
         to_erase_by_type.reserve( all_entity_types_.size() ) ;
         for( index_t i = 0; i < all_entity_types_.size(); ++i ) {
             index_t nb_entities = NO_ID ;
-            if( i < geomodel_.entity_type_manager().mesh_entity_manager.nb_mesh_entity_types() ) {
+            if( i
+                < geomodel_.entity_type_manager().mesh_entity_manager.nb_mesh_entity_types() ) {
                 nb_entities = geomodel_.nb_mesh_entities(
-                    static_cast<MeshEntityType> (index_to_entity_type( i )) ) ;
+                    static_cast< MeshEntityType >( index_to_entity_type( i ) ) ) ;
             } else {
-                nb_entities = geomodel_.nb_geological_entities(
-                    static_cast<GeologicalEntityType> (index_to_entity_type( i )) ) ;
+                nb_entities =
+                    geomodel_.nb_geological_entities(
+                        static_cast< GeologicalEntityType >( index_to_entity_type(
+                            i ) ) ) ;
             }
             ringmesh_assert( nb_entities != NO_ID ) ;
             to_erase_by_type.push_back( std::vector< index_t >( nb_entities, 0 ) ) ;
@@ -231,94 +234,6 @@ namespace RINGMesh {
         build_new_fault_surfaces( to_erase_by_type ) ;
 
         add_hole_between_faults( to_erase_by_type, nb_initial_interfaces ) ;
-
-        //// tmp debug
-        double dist = 5 ;
-        index_t count_surf = 0 ;
-        vec3 studied_point( 28463.5, 16992, -7114.35 ) ;
-        for( index_t i = 0; i < geomodel_.nb_surfaces(); ++i ) {
-            if( to_erase_by_type[entity_type_to_index( Surface::type_name_static() )][i]
-                != NO_ID ) {
-                const Surface& cur_surf = geomodel_.surface( i ) ;
-                const NNSearch& v_nn_search = cur_surf.vertex_nn_search() ;
-                std::vector< index_t > colocated ;
-                bool found = v_nn_search.get_neighbors( studied_point, colocated,
-                    dist ) ;
-                if( !found ) {
-                    continue ;
-                }
-                count_surf++ ;
-                DEBUG( "=========== New surf =============" ) ;
-
-                GEO::mesh_save( cur_surf.gfx_mesh(),
-                    "surface_" + GEO::String::to_string( i ) + ".meshb" ) ;
-
-                for( index_t k = 0; k < colocated.size(); ++k ) {
-                    DEBUG("----------new colocated vertex----------") ;
-
-                    GEO::AttributesManager& att_mgr =
-                        cur_surf.vertex_attribute_manager() ;
-                    GEO::Attribute< double > translation_att_x( att_mgr,
-                        "translation_attr_x" ) ;
-                    GEO::Attribute< double > translation_att_y( att_mgr,
-                        "translation_attr_y" ) ;
-                    GEO::Attribute< double > translation_att_z( att_mgr,
-                        "translation_attr_z" ) ;
-                    DEBUG(translation_att_x[colocated[k]]) ;
-                    DEBUG(translation_att_y[colocated[k]]) ;
-                    DEBUG(translation_att_z[colocated[k]]) ;
-                    vec3 difff = cur_surf.vertex( colocated[k] )
-                        - vec3( translation_att_x[colocated[k]],
-                            translation_att_y[colocated[k]],
-                            translation_att_z[colocated[k]] ) ;
-                    DEBUG( difff ) ;
-                }
-            }
-        }
-        DEBUG( count_surf ) ;
-
-        index_t count_reg = 0 ;
-        for( index_t i = 0; i < geomodel_.nb_regions(); ++i ) {
-            if( to_erase_by_type[entity_type_to_index( Region::type_name_static() )][i]
-                != NO_ID ) {
-                const Region& cur_reg = geomodel_.region( i ) ;
-                const NNSearch& v_nn_search = cur_reg.vertex_nn_search() ;
-                std::vector< index_t > colocated ;
-                bool found = v_nn_search.get_neighbors( studied_point, colocated,
-                    dist ) ;
-                if( !found ) {
-                    continue ;
-                }
-                count_reg++ ;
-                DEBUG( "=========== New reg =============" ) ;
-
-                GEO::mesh_save( cur_reg.gfx_mesh(),
-                    "region_" + GEO::String::to_string( i ) + ".meshb" ) ;
-
-                for( index_t k = 0; k < colocated.size(); ++k ) {
-                    DEBUG("----------new colocated vertex----------") ;
-
-                    GEO::AttributesManager& att_mgr =
-                        cur_reg.vertex_attribute_manager() ;
-                    GEO::Attribute< double > translation_att_x( att_mgr,
-                        "translation_attr_x" ) ;
-                    GEO::Attribute< double > translation_att_y( att_mgr,
-                        "translation_attr_y" ) ;
-                    GEO::Attribute< double > translation_att_z( att_mgr,
-                        "translation_attr_z" ) ;
-                    DEBUG(translation_att_x[colocated[k]]) ;
-                    DEBUG(translation_att_y[colocated[k]]) ;
-                    DEBUG(translation_att_z[colocated[k]]) ;
-                    vec3 difff = cur_reg.vertex( colocated[k] )
-                        - vec3( translation_att_x[colocated[k]],
-                            translation_att_y[colocated[k]],
-                            translation_att_z[colocated[k]] ) ;
-                    DEBUG( difff ) ;
-                }
-            }
-        }
-        DEBUG( count_reg ) ;
-        //// tmp debug
 
         // Put here for new.
         /// @todo if all the lines are removed, is it still necessary to fill the new
@@ -467,7 +382,8 @@ namespace RINGMesh {
                 index_t v_id_in_first_surf = NO_ID ;
                 bool v_id_in_second_surf = NO_ID ;
                 for( const GMEVertex& gme_vertex_itr : gme_vertices ) {
-                    if( gme_vertex_itr.gmme_id.type() != Surface::type_name_static() ) {
+                    if( gme_vertex_itr.gmme_id.type()
+                        != Surface::type_name_static() ) {
                         continue ;
                     }
                     if( gme_vertex_itr.gmme_id.index() == first_child.index() ) {
@@ -745,10 +661,14 @@ namespace RINGMesh {
                     if( i
                         < geomodel_.entity_type_manager().mesh_entity_manager.nb_mesh_entity_types() ) {
                         to_delete_mesh_entities.insert(
-                            gmme_t( static_cast<MeshEntityType> (index_to_entity_type( i )), j ) ) ;
+                            gmme_t(
+                                static_cast< MeshEntityType >( index_to_entity_type(
+                                    i ) ), j ) ) ;
                     } else {
                         to_delete_geological_entities.insert(
-                            gmge_t( static_cast<GeologicalEntityType> (index_to_entity_type( i )), j ) ) ;
+                            gmge_t(
+                                static_cast< GeologicalEntityType >( index_to_entity_type(
+                                    i ) ), j ) ) ;
                     }
                 }
             }
@@ -870,10 +790,9 @@ namespace RINGMesh {
             // No choice. Test of the facet colocated. More time consuming.
             const vec3 facet_bary = cur_surface.mesh_element_barycenter(
                 surf_facet_itr ) ;
-            std::vector< index_t > colocated_facets_reg ;
-            colocated_facets_reg.reserve( 1 ) ;
-            reg_nn_searches_[reg.index()]->get_neighbors( facet_bary,
-                colocated_facets_reg, geomodel_.epsilon() ) ;
+            std::vector< index_t > colocated_facets_reg =
+                reg_nn_searches_[reg.index()]->get_neighbors( facet_bary,
+                    geomodel_.epsilon() ) ;
             ringmesh_assert( colocated_facets_reg.size() == 1 ) ;
             return find_reg_vertex_id_in_facet_reg_matching_surf_vertex_id_in_gmm(
                 reg, colocated_facets_reg[0], surf_v_id_in_gmm ) ;
@@ -919,10 +838,9 @@ namespace RINGMesh {
             // consuming).
             const vec3 facet_bary = cur_surface.mesh_element_barycenter(
                 surf_facet_itr ) ;
-            std::vector< index_t > colocated_facets_reg1 ;
-            colocated_facets_reg1.reserve( 2 ) ;
-            reg_nn_searches_[reg1.index()]->get_neighbors( facet_bary,
-                colocated_facets_reg1, geomodel_.epsilon() ) ;
+            std::vector< index_t > colocated_facets_reg1 =
+                reg_nn_searches_[reg1.index()]->get_neighbors( facet_bary,
+                    geomodel_.epsilon() ) ;
             if( colocated_facets_reg1.size() == 1 ) {
                 // Case of a voi horizon or voi boundary
                 v_id_in_reg1 =
@@ -1181,8 +1099,8 @@ namespace RINGMesh {
         }
         has_moved_ = true ;
 
-        GEO::AttributesManager& att_mgr =
-            geomodel_.mesh_entity( gme_vertex_.gmme_id ).vertex_attribute_manager() ;
+        GEO::AttributesManager& att_mgr = geomodel_.mesh_entity(
+            gme_vertex_.gmme_id ).vertex_attribute_manager() ;
         GEO::Attribute< double > translation_att_x( att_mgr, "translation_attr_x" ) ;
         translation_att_x[gme_vertex_.v_id] += displacement_vector.x ;
         GEO::Attribute< double > translation_att_y( att_mgr, "translation_attr_y" ) ;
@@ -1529,7 +1447,8 @@ namespace RINGMesh {
                 for( index_t gme_vertices_itr = 0;
                     gme_vertices_itr < gme_vertices.size(); ++gme_vertices_itr ) {
                     const GMEVertex& cur_gme_vertex = gme_vertices[gme_vertices_itr] ;
-                    if( cur_gme_vertex.gmme_id.type() != Surface::type_name_static() ) {
+                    if( cur_gme_vertex.gmme_id.type()
+                        != Surface::type_name_static() ) {
                         continue ;
                     }
                     if( cur_gme_vertex.gmme_id.index() == new_surface_id ) {
@@ -1595,7 +1514,8 @@ namespace RINGMesh {
         // ========= bad copy paste from geo geomodel repair
         std::set< index_t > cutting_lines ;
         for( index_t l = 0; l < cur_surface.nb_boundaries(); ++l ) {
-            const Line& L = geomodel_.line( cur_surface.boundary_gmme( l ).index() ) ;
+            const Line& L = geomodel_.line(
+                cur_surface.boundary_gmme( l ).index() ) ;
             if( /*to_remove.count( L.gme_id() ) == 0 &&*/L.is_inside_border(
                 cur_surface ) ) {
                 cutting_lines.insert( L.index() ) ;
@@ -1721,8 +1641,8 @@ namespace RINGMesh {
             gmme_t new_new_surface_gme_t = topology.create_mesh_entity< Surface >() ;
             /// TODO weird that the GEO::vector cannot be put as parameter
             /// of set_surface_geometry since it is a std::vector... to see.
-            geometry.set_surface_geometry( new_new_surface_gme_t.index(), facet_points,
-                facet_indices, facet_ptr ) ;
+            geometry.set_surface_geometry( new_new_surface_gme_t.index(),
+                facet_points, facet_indices, facet_ptr ) ;
 
             // THE LINE BELOW IS REPLACED BY THE NEXT 2 LINES.
             //set_entity_parent( new_new_surface_gme_t, sided_interface_gme_t ) ;
@@ -1955,7 +1875,8 @@ namespace RINGMesh {
 
             for( index_t child_itr = 0; child_itr < interface_gme.nb_children();
                 ++child_itr ) {
-                const GeoModelMeshEntity& cur_child = interface_gme.child( child_itr ) ;
+                const GeoModelMeshEntity& cur_child = interface_gme.child(
+                    child_itr ) ;
                 ringmesh_assert(cur_child.mesh_entity_type() == Surface::type_name_static()) ;
                 ringmesh_assert(to_erase_by_type[entity_type_to_index( Surface::type_name_static() )][cur_child.index()] != NO_ID) ;
                 const Surface& cur_surface = geomodel_.surface( cur_child.index() ) ; // avoid dynamic_cast of cur_child
@@ -2023,7 +1944,8 @@ namespace RINGMesh {
 
             for( index_t child_itr = 0; child_itr < interface_gme.nb_children();
                 ++child_itr ) {
-                const GeoModelMeshEntity& cur_child = interface_gme.child( child_itr ) ;
+                const GeoModelMeshEntity& cur_child = interface_gme.child(
+                    child_itr ) ;
                 ringmesh_assert(cur_child.mesh_entity_type() == Surface::type_name_static()) ;
                 ringmesh_assert(to_erase_by_type[entity_type_to_index( Surface::type_name_static() )][cur_child.index()] != NO_ID) ;
                 const Surface& cur_surface = geomodel_.surface( cur_child.index() ) ; // avoid dynamic_cast of cur_child
@@ -2055,7 +1977,8 @@ namespace RINGMesh {
 
                     for( index_t gme_vertex_itr = 0;
                         gme_vertex_itr < gme_vertices.size(); ++gme_vertex_itr ) {
-                        const gmme_t& cur_gme_t = gme_vertices[gme_vertex_itr].gmme_id ;
+                        const gmme_t& cur_gme_t =
+                            gme_vertices[gme_vertex_itr].gmme_id ;
                         if( to_erase_by_type[entity_type_to_index( cur_gme_t.type() )][cur_gme_t.index()]
                             == NO_ID ) {
                             continue ; // It is an old entity to remove.
@@ -2150,7 +2073,8 @@ namespace RINGMesh {
         const Region& region_to_check = geomodel_.region( region_to_check_id ) ;
         std::vector< index_t > cells_around ;
         cells_around.reserve( 10 ) ;
-        region_to_check.cells_around_vertex( vertex_id_in_region, cells_around, NO_ID ) ;
+        region_to_check.cells_around_vertex( vertex_id_in_region, cells_around,
+            NO_ID ) ;
 //            false ) ;
         ringmesh_assert( !cells_around.empty() ) ;
 
@@ -2187,10 +2111,8 @@ namespace RINGMesh {
         const Surface& surface_to_check = geomodel_.surface( surface_to_check_id ) ;
         ringmesh_assert(surface_to_check.nb_in_boundary()==1 || surface_to_check.nb_in_boundary()==2) ;
 
-        std::vector< index_t > facets_around ;
-        facets_around.reserve( 10 ) ;
-        surface_to_check.facets_around_vertex( vertex_id_in_surface, facets_around,
-            false ) ;
+        std::vector< index_t > facets_around = surface_to_check.facets_around_vertex(
+            vertex_id_in_surface, false ) ;
         ringmesh_assert( !facets_around.empty() ) ;
 
         vec3 surf_to_check_mean_normal_on_vertex( 0., 0., 0. ) ;
@@ -2383,7 +2305,8 @@ namespace RINGMesh {
                 && cur_gme_vertex.gmme_id.type() != Region::type_name_static() ) {
                 continue ;
             }
-            if( to_erase_by_type[entity_type_to_index( cur_gme_vertex.gmme_id.type() )][cur_gme_vertex.gmme_id.index()]
+            if( to_erase_by_type[entity_type_to_index(
+                cur_gme_vertex.gmme_id.type() )][cur_gme_vertex.gmme_id.index()]
                 == NO_ID ) {
                 continue ;
             }

@@ -771,9 +771,10 @@ namespace {
         std::vector< index_t > unconformal_facets ;
         for( index_t f = 0; f < surface.nb_mesh_elements(); f++ ) {
             vec3 center = surface.mesh_element_barycenter( f ) ;
-            std::vector< index_t > result ;
-            if( !cell_facet_barycenter_nn_search.get_neighbors( center, result,
-                surface.geomodel().epsilon() ) ) {
+            std::vector< index_t > result =
+                cell_facet_barycenter_nn_search.get_neighbors( center,
+                    surface.geomodel().epsilon() ) ;
+            if( result.empty() ) {
                 unconformal_facets.push_back( f ) ;
             }
         }
@@ -846,8 +847,8 @@ namespace {
             const Line& line = geomodel.line( l ) ;
             for( index_t e = 0; e < line.nb_mesh_elements(); e++ ) {
                 const vec3 query = line.mesh_element_barycenter( e ) ;
-                std::vector< index_t > results ;
-                nn.get_neighbors( query, results, geomodel.epsilon() ) ;
+                std::vector< index_t > results = nn.get_neighbors( query,
+                    geomodel.epsilon() ) ;
                 for( index_t edge : results ) {
                     edge_on_lines[edge] = true ;
                 }

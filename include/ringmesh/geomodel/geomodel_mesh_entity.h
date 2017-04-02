@@ -85,6 +85,11 @@ namespace RINGMesh {
         {
             return is_mesh_valid() && are_geomodel_vertex_indices_valid() ;
         }
+        /*!
+         * Check that required information for the TYPE is defined
+         *    and that reverse information is stored by the corresponding
+         *    entities
+         */
         virtual bool is_connectivity_valid() const ;
 
         /*!
@@ -137,7 +142,7 @@ namespace RINGMesh {
          */
         bool has_parent( const GeologicalEntityType& parent_type ) const
         {
-            return parent_of_gmme( parent_type ).is_defined() ;
+            return parent_gmge( parent_type ).is_defined() ;
         }
         index_t nb_parents() const
         {
@@ -154,8 +159,9 @@ namespace RINGMesh {
          * it will return an undefined gmge_t (with no type and no id).
          * You should check on the returned gmge_t.
          * @param[in] parent_type_name the asking parent type
+         *
          */
-        const gmge_t parent_of_gmme(
+        const gmge_t parent_gmge(
             const GeologicalEntityType& parent_type ) const ;
         const GeoModelGeologicalEntity& parent( index_t id ) const ;
         const GeoModelGeologicalEntity& parent(
@@ -299,8 +305,22 @@ namespace RINGMesh {
             mesh_ = mesh ;
         }
 
+        /*!
+         * All entities in the boundary must have this in their
+         *  in_boundary vector
+         */
         bool is_boundary_connectivity_valid() const ;
+        /*!
+         * All entities must be at least in the boundary of another entity
+         * and all entities in the in_boundary must have this entity in their
+         * boundary vector
+         */
         bool is_in_boundary_connectivity_valid() const ;
+        /*!
+         *  If the parent type is defined for this EntityType,
+         *  and if the geomodel has entities of that type, the entity must have a parent.
+         * @todo Remove the second if condition ?
+         */
         bool is_parent_connectivity_valid() const ;
         /*!
          * @brief Check that geomodel vertex indices are consistent
@@ -353,6 +373,10 @@ namespace RINGMesh {
             return type_name_static() ;
         }
 
+        /*!
+         * @brief Checks if this entity define the geomodel external boundary
+         * @details Test if the entity is in the Surfaces defining the universe
+         */
         virtual bool is_on_voi() const final ;
 
         /*!
@@ -424,6 +448,9 @@ namespace RINGMesh {
             return 0 ;
         }
 
+        /*!
+         * @brief Check that the Corner mesh is a unique point
+         */
         virtual bool is_mesh_valid() const final ;
 
     private:
@@ -558,6 +585,18 @@ namespace RINGMesh {
             update_mesh_storage_type( Mesh1D::create_mesh( type ) ) ;
         }
 
+        /*!
+         * @brief Check that the mesh of the Line is valid
+         * @details Check that
+         *  - the GEO::Mesh has more than 1 vertex - more than 1 edge - no facets - no cells.
+         *  - global indices of vertices in the geomodel are in a valid range
+         *  - each vertex is in 2 edges except extremities that are in 1 edge
+         *
+         * Does not check:
+         *  - Self-intersection - I suppose there are no segment - segment intersection (JP)
+         *  - Duplicated edge - most probably ruled out with the duplicated vertex test (JP)
+         *  - Duplicated vertex (verified at GeoModel level)
+         */
         virtual bool is_mesh_valid() const final ;
 
     private:
@@ -764,21 +803,19 @@ namespace RINGMesh {
         /*!
          * @brief Determines the facets around a vertex
          * @param[in] surf_vertex_id Index of the vertex in the surface
-         * @param[in] result Indices of the facets containing @param P
          * @param[in] border_only If true only facets on the border are considered
          * @param[in] f0 (Optional) Index of one facet containing the vertex @p surf_vertex_id
-         * @return The number of facets found
+         * @return Indices of the facets containing @param surf_vertex_id
          * @note If a facet containing the vertex is given, facets around this
          * vertex is search by propagation. Else, a first facet is found by brute
          * force algorithm, and then the other by propagation
          */
-        index_t facets_around_vertex(
+        std::vector< index_t > facets_around_vertex(
             index_t surf_vertex_id,
-            std::vector< index_t >& result,
             bool border_only,
             index_t first_facet = NO_ID ) const
         {
-            return mesh2d_->facets_around_vertex( surf_vertex_id, result,
+            return mesh2d_->facets_around_vertex( surf_vertex_id,
                 border_only, first_facet ) ;
         }
 
@@ -860,6 +897,27 @@ namespace RINGMesh {
             update_mesh_storage_type( Mesh2D::create_mesh( type ) ) ;
         }
 
+        /*!
+         * @brief Check that the mesh of the Surface is valid
+         * @details Check that
+         *  - the GEO::Mesh has more than 2 vertices, at least 1 facet, no cells.
+         *  - global indices of vertices in the geomodel are in a valid range
+         *  - no degenerate facet
+         *  - one connected component
+         *
+         *  Some tests are not performed here but globally on the GeoModel
+         *  - intersection of facets
+         *  - non-manifold edges
+         *  - duplicated vertices are on a boundary Line ending in the Surface
+         *
+         *
+         *  Some tests are not performed
+         *  - non-manifold points
+         *  - surface orientability
+         *  - planarity of polygonal facets
+         *
+         * @todo Check that there is no duplicated facet
+         */
         virtual bool is_mesh_valid() const final ;
 
     private:
