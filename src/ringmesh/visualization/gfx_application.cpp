@@ -1446,6 +1446,9 @@ namespace RINGMesh {
                     if( current_viewer_type_ == GEOMODEL && current_viewer_ >= i ) {
                         current_viewer_-- ;
                     }
+                    if( geomodels_.empty() ) {
+                        current_viewer_type_ = NONE ;
+                    }
                 }
                 ImGui::PopID() ;
             }
@@ -1468,6 +1471,9 @@ namespace RINGMesh {
                     meshes_.erase( meshes_.begin() + i ) ;
                     if( current_viewer_type_ == MESH && current_viewer_ >= i ) {
                         current_viewer_-- ;
+                    }
+                    if( meshes_.empty() ) {
+                        current_viewer_type_ = NONE ;
                     }
                 }
                 ImGui::PopID() ;
