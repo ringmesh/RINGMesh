@@ -1443,6 +1443,9 @@ namespace RINGMesh {
                 if( ImGui::Button( "X" ) ) {
                     delete geomodels_[i] ;
                     geomodels_.erase( geomodels_.begin() + i ) ;
+                    if( current_viewer_type_ == GEOMODEL && current_viewer_ >= i ) {
+                        current_viewer_-- ;
+                    }
                 }
                 ImGui::PopID() ;
             }
@@ -1463,6 +1466,9 @@ namespace RINGMesh {
                 if( ImGui::Button( "X" ) ) {
                     delete meshes_[i] ;
                     meshes_.erase( meshes_.begin() + i ) ;
+                    if( current_viewer_type_ == MESH && current_viewer_ >= i ) {
+                        current_viewer_-- ;
+                    }
                 }
                 ImGui::PopID() ;
             }
