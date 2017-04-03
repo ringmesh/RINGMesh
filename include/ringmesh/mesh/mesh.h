@@ -500,6 +500,34 @@ namespace RINGMesh {
             vec3 norm = cross( p2 - p1, p3 - p1 ) ;
             return normalize( norm ) ;
         }
+
+        /*!
+         * Computes the Mesh vertex normal, average facet normal around the vertex
+         * @param[in] vertex_id the vertex index
+         * @return the vertex normal
+         */
+        vec3 normal_at_vertex( index_t vertex_id) const
+        {
+        	index_t f = 0 ;
+        	index_t f0 = 0 ;
+        	while( f0 == NO_ID && f < nb_facets() ) {
+        		for( index_t lv = 0; lv < nb_facet_vertices( f ); lv++ ) {
+        			if( facet_vertex( f, lv ) == vertex_id ) {
+        				f0 = f ;
+        				break ;
+        			}
+        		}
+        		f++ ;
+        	}
+
+        	std::vector< index_t > facet_ids = facets_around_vertex( vertex_id, false , f0 ) ;
+        	vec3 norm ;
+        	for (index_t facet_id = 0; facet_id < facet_ids.size(); ++facet_id){
+        		norm += facet_normal( facet_id ) ;
+        	}
+        	return norm/facet_ids.size() ;
+        }
+
         /*!
          * Computes the Mesh facet barycenter
          * @param[in] facet_id the facet index
