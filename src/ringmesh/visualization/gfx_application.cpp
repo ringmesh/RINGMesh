@@ -1439,6 +1439,11 @@ namespace RINGMesh {
                     current_viewer_type_ = GEOMODEL ;
                     update_region_of_interest() ;
                 }
+                ImGui::SameLine( ImGui::GetWindowWidth() - 30 ) ;
+                if( ImGui::Button( "X" ) ) {
+                    delete geomodels_[i] ;
+                    geomodels_.erase( geomodels_.begin() + i ) ;
+                }
                 ImGui::PopID() ;
             }
         }
@@ -1453,6 +1458,11 @@ namespace RINGMesh {
                     current_viewer_ = i ;
                     current_viewer_type_ = MESH ;
                     update_region_of_interest() ;
+                }
+                ImGui::SameLine( ImGui::GetWindowWidth() - 30 ) ;
+                if( ImGui::Button( "X" ) ) {
+                    delete meshes_[i] ;
+                    meshes_.erase( meshes_.begin() + i ) ;
                 }
                 ImGui::PopID() ;
             }
