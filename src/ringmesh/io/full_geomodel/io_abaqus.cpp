@@ -50,7 +50,7 @@ namespace {
 
     class AbaqusIOHandler final: public GeoModelIOHandler {
     public:
-        static const index_t NB_ENTRY_PER_LINE = 16 ;
+        static constexpr index_t NB_ENTRY_PER_LINE = 16 ;
 
         virtual bool load( const std::string& filename, GeoModel& geomodel ) override
         {
