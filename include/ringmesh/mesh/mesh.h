@@ -502,14 +502,16 @@ namespace RINGMesh {
         }
 
         /*!
-         * Computes the Mesh vertex normal, average facet normal around the vertex
+         * @brief Computes the normal of the Mesh2D at the vertex location
+         * it computes the average value of facet normal neighbors
          * @param[in] vertex_id the vertex index
-         * @return the vertex normal
+         * @param[in] f0 index of a facet that contain the vertex \param vertex_id
+         * @return the normal at the given vertex
          */
-        vec3 normal_at_vertex( index_t vertex_id ) const
+        vec3 normal_at_vertex( index_t vertex_id, index_t f0 = NO_ID ) const
         {
+            ringmesh_assert( vertex_id < nb_vertices() ) ;
             index_t f = 0 ;
-            index_t f0 = NO_ID ;
             while( f0 == NO_ID && f < nb_facets() ) {
                 for( index_t lv = 0; lv < nb_facet_vertices( f ); lv++ ) {
                     if( facet_vertex( f, lv ) == vertex_id ) {
@@ -526,7 +528,7 @@ namespace RINGMesh {
             for( index_t facet_id = 0; facet_id < facet_ids.size(); ++facet_id ) {
                 norm += facet_normal( facet_id ) ;
             }
-            return norm / facet_ids.size() ;
+            return normalize( norm ) ;
         }
 
         /*!
