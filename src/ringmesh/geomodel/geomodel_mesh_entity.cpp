@@ -554,6 +554,11 @@ namespace RINGMesh {
         return valid ;
     }
 
+    const Line& Corner::in_boundary( index_t x ) const
+    {
+        return static_cast< const Line& >( GeoModelMeshEntity::in_boundary( x ) ) ;
+    }
+
     /***************************************************************/
 
     bool Line::is_mesh_valid() const
@@ -701,6 +706,12 @@ namespace RINGMesh {
             }
         }
         return false ;
+    }
+
+    virtual const Surface& Line::in_boundary( index_t x ) const
+    {
+        return static_cast< const Surface& >( GeoModelMeshEntity::in_boundary(
+            x ) ) ;
     }
 
     /********************************************************************/
