@@ -1,7 +1,6 @@
 version: 1.0.{build}
 
 environment:
-  image: Visual Studio 2013
   password:
     secure: 61164urZVvsMrnw+6P+GBQ==
     
