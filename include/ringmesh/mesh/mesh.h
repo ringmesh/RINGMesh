@@ -506,26 +506,27 @@ namespace RINGMesh {
          * @param[in] vertex_id the vertex index
          * @return the vertex normal
          */
-        vec3 normal_at_vertex( index_t vertex_id) const
+        vec3 normal_at_vertex( index_t vertex_id ) const
         {
-        	index_t f = 0 ;
-        	index_t f0 = 0 ;
-        	while( f0 == NO_ID && f < nb_facets() ) {
-        		for( index_t lv = 0; lv < nb_facet_vertices( f ); lv++ ) {
-        			if( facet_vertex( f, lv ) == vertex_id ) {
-        				f0 = f ;
-        				break ;
-        			}
-        		}
-        		f++ ;
-        	}
+            index_t f = 0 ;
+            index_t f0 = NO_ID ;
+            while( f0 == NO_ID && f < nb_facets() ) {
+                for( index_t lv = 0; lv < nb_facet_vertices( f ); lv++ ) {
+                    if( facet_vertex( f, lv ) == vertex_id ) {
+                        f0 = f ;
+                        break ;
+                    }
+                }
+                f++ ;
+            }
 
-        	std::vector< index_t > facet_ids = facets_around_vertex( vertex_id, false , f0 ) ;
-        	vec3 norm ;
-        	for (index_t facet_id = 0; facet_id < facet_ids.size(); ++facet_id){
-        		norm += facet_normal( facet_id ) ;
-        	}
-        	return norm/facet_ids.size() ;
+            std::vector< index_t > facet_ids = facets_around_vertex( vertex_id,
+                false, f0 ) ;
+            vec3 norm ;
+            for( index_t facet_id = 0; facet_id < facet_ids.size(); ++facet_id ) {
+                norm += facet_normal( facet_id ) ;
+            }
+            return norm / facet_ids.size() ;
         }
 
         /*!
