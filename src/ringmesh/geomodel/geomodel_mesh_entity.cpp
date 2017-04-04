@@ -341,7 +341,8 @@ namespace RINGMesh {
 
     bool GeoModelMeshEntity::is_boundary_connectivity_valid() const
     {
-        const MeshEntityTypeManager& family = geomodel().entity_type_manager().mesh_entity_manager ;
+        const MeshEntityTypeManager& family =
+            geomodel().entity_type_manager().mesh_entity_manager ;
         const MeshEntityType entity_type = type_name() ;
         const MeshEntityType& boundary_type = family.boundary_type( entity_type ) ;
 
@@ -373,9 +374,11 @@ namespace RINGMesh {
 
     bool GeoModelMeshEntity::is_in_boundary_connectivity_valid() const
     {
-        const MeshEntityTypeManager& family = geomodel().entity_type_manager().mesh_entity_manager ;
+        const MeshEntityTypeManager& family =
+            geomodel().entity_type_manager().mesh_entity_manager ;
         const MeshEntityType entity_type = type_name() ;
-        const MeshEntityType& in_boundary_type = family.in_boundary_type( entity_type ) ;
+        const MeshEntityType& in_boundary_type = family.in_boundary_type(
+            entity_type ) ;
 
         bool valid = true ;
         if( family.is_valid_type( in_boundary_type ) ) {
@@ -415,7 +418,8 @@ namespace RINGMesh {
     {
         bool valid = true ;
 
-        const RelationshipManager& family = geomodel().entity_type_manager().relationship_manager ;
+        const RelationshipManager& family =
+            geomodel().entity_type_manager().relationship_manager ;
         const MeshEntityType entity_type = type_name() ;
 
         const std::vector< GeologicalEntityType > parent_types = family.parent_types(
@@ -486,7 +490,7 @@ namespace RINGMesh {
     const GeoModelGeologicalEntity& GeoModelMeshEntity::parent(
         const GeologicalEntityType& parent_type_name ) const
     {
-        gmge_t id = parent_gmge(parent_type_name);
+        gmge_t id = parent_gmge( parent_type_name ) ;
         ringmesh_assert( id.is_defined() ) ;
         return geomodel().geological_entity( id ) ;
     }
@@ -499,7 +503,7 @@ namespace RINGMesh {
             }
         }
         ringmesh_assert_not_reached ;
-        return gmge_t(ForbiddenGeologicalEntityType::type_name_static(),NO_ID) ;
+        return gmge_t( ForbiddenGeologicalEntityType::type_name_static(), NO_ID ) ;
     }
 
     const GeoModelMeshEntity& GeoModelMeshEntity::boundary( index_t x ) const
@@ -814,8 +818,8 @@ namespace RINGMesh {
         if( nb_boundaries() == 0 ) {
 #pragma omp critical
             {
-                Logger::warn( "GeoModelEntity" ) << gmme_id() << " has no boundaries "
-                    << std::endl ;
+                Logger::warn( "GeoModelEntity" ) << gmme_id()
+                    << " has no boundaries " << std::endl ;
             }
             region_valid = false ;
         }
