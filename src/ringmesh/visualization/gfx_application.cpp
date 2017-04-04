@@ -777,11 +777,11 @@ namespace RINGMesh {
         glupPushMatrix() ;
         glupLoadIdentity() ;
 
-        constexpr float z = -1.0f ;
-        constexpr float w = 0.3f ;
-        constexpr float h = 0.1f ;
-        constexpr float x1 = 0.f ;
-        constexpr float y1 = -0.9f ;
+        const float z = -1.0f ;
+        const float w = 0.3f ;
+        const float h = 0.1f ;
+        const float x1 = 0.f ;
+        const float y1 = -0.9f ;
         const float tmin = float( GM_gfx_.attribute.minimum() ) ;
         const float tmax = float( GM_gfx_.attribute.maximum() ) ;
         GEO::glupMapTexCoords1d( tmin, tmax, 1. ) ;
