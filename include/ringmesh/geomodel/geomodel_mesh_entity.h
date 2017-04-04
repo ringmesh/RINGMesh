@@ -105,7 +105,7 @@ namespace RINGMesh {
             ringmesh_assert( x < nb_boundaries() ) ;
             return boundaries_[x] ;
         }
-        virtual const GeoModelMeshEntity& boundary( index_t x ) const ;
+        const GeoModelMeshEntity& boundary( index_t x ) const ;
 
         index_t nb_in_boundary() const
         {
@@ -975,10 +975,7 @@ namespace RINGMesh {
 
         virtual bool is_on_voi() const final ;
 
-        virtual const Surface& boundary( index_t x ) const
-        {
-            return static_cast< const Surface& >( GeoModelMeshEntity::boundary( x ) ) ;
-        }
+        const Surface& boundary( index_t x ) const ;
 
         virtual bool is_connectivity_valid() const final ;
 
