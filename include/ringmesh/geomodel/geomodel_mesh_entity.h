@@ -116,7 +116,7 @@ namespace RINGMesh {
             ringmesh_assert( x < nb_in_boundary() ) ;
             return in_boundary_[x] ;
         }
-        virtual const GeoModelMeshEntity& in_boundary( index_t x ) const ;
+        const GeoModelMeshEntity& in_boundary( index_t x ) const ;
 
         /*!
          * @brief Check if one entity is twice in the boundary
@@ -396,7 +396,7 @@ namespace RINGMesh {
             return 1 ;
         }
 
-        virtual const Line& in_boundary( index_t x ) const override ;
+        const Line& in_boundary( index_t x ) const ;
 
         /*! @}
          * \name Geometrical request on Corner
@@ -497,12 +497,9 @@ namespace RINGMesh {
 
         virtual bool is_on_voi() const final ;
 
-        virtual const Corner& boundary( index_t x ) const override
-        {
-            return static_cast< const Corner& >( GeoModelMeshEntity::boundary( x ) ) ;
-        }
+        const Corner& boundary( index_t x ) const ;
 
-        virtual const Surface& in_boundary( index_t x ) const ;
+        const Surface& in_boundary( index_t x ) const ;
 
         virtual bool is_connectivity_valid() const final ;
 
@@ -650,15 +647,9 @@ namespace RINGMesh {
 
         virtual bool is_on_voi() const final ;
 
-        virtual const Line& boundary( index_t x ) const override
-        {
-            return static_cast< const Line& >( GeoModelMeshEntity::boundary( x ) ) ;
-        }
+        const Line& boundary( index_t x ) const ;
 
- /*       virtual const Region& in_boundary( index_t x ) const
-        {
-            return static_cast< const Region& >( GeoModelMeshEntity::in_boundary( x ) ) ;
-        }*/
+        const Region& in_boundary( index_t x ) const ;
 
         bool is_simplicial() const
         {
