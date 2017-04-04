@@ -37,8 +37,8 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <third_party/zlib/zip.h>
-#include <third_party/zlib/unzip.h>
+#include <zlib/zip.h>
+#include <zlib/unzip.h>
 
 #include <geogram/basic/factory.h>
 #include <geogram/basic/string.h>

@@ -3,7 +3,7 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#include <third_party/zlib/gzguts.h>
+#include <zlib/gzguts.h>
 
 /* Local functions */
 local int gz_init OF((gz_statep));
