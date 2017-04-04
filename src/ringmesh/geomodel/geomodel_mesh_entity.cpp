@@ -713,6 +713,7 @@ namespace RINGMesh {
         return static_cast< const Surface& >( GeoModelMeshEntity::in_boundary(
             x ) ) ;
     }
+
     const Corner& Line::boundary( index_t x ) const
     {
         return static_cast< const Corner& >( GeoModelMeshEntity::boundary( x ) ) ;
@@ -822,6 +823,11 @@ namespace RINGMesh {
     }
 
     /********************************************************************/
+
+    const Surface& Region::boundary( index_t x ) const
+    {
+        return static_cast< const Surface& >( GeoModelMeshEntity::boundary( x ) ) ;
+    }
 
     bool Region::is_on_voi() const
     {
