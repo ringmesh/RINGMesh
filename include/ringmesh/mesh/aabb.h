@@ -62,7 +62,7 @@ namespace RINGMesh {
     class RINGMESH_API AABBTree {
     public:
         /// The index where to store the root. It starts to one for algorithm trick.
-        static const index_t ROOT_INDEX = 1 ;
+        static constexpr index_t ROOT_INDEX = 1 ;
 
         /*!
          * @brief Saves the tree in a set of files
