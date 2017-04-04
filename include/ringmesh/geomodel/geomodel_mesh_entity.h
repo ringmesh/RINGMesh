@@ -161,8 +161,7 @@ namespace RINGMesh {
          * @param[in] parent_type_name the asking parent type
          *
          */
-        const gmge_t parent_gmge(
-            const GeologicalEntityType& parent_type ) const ;
+        const gmge_t parent_gmge( const GeologicalEntityType& parent_type ) const ;
         const GeoModelGeologicalEntity& parent( index_t id ) const ;
         const GeoModelGeologicalEntity& parent(
             const GeologicalEntityType& parent_type ) const ;
@@ -835,7 +834,18 @@ namespace RINGMesh {
             ringmesh_assert( facet_index < nb_mesh_elements() ) ;
             return mesh2d_->facet_normal( facet_index ) ;
         }
-
+        /*!
+         * @brief Computes the normal of the surface at the vertex location
+         * it computes the average value of facet normal neighbors
+         * @param[in] vertex_id the vertex index
+         * @param[in] f0 index of a facet that contain the vertex \param vertex_id
+         * @return the normal of the surface at the given vertex
+         */
+        vec3 normal_at_vertex( index_t vertex_id, index_t f0 = NO_ID ) const
+        {
+            ringmesh_assert( vertex_id < nb_vertices() ) ;
+            return mesh2d_->normal_at_vertex( vertex_id, f0 ) ;
+        }
         /*!
          * @return Facet barycenter.
          */
