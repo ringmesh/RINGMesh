@@ -395,10 +395,10 @@ namespace RINGMesh {
             return 1 ;
         }
 
-        virtual const Line& in_boundary( index_t x ) const
+        /*virtual const Line& in_boundary( index_t x ) const
         {
             return static_cast< const Line& >( GeoModelMeshEntity::in_boundary( x ) ) ;
-        }
+        }*/
 
         /*! @}
          * \name Geometrical request on Corner
@@ -504,11 +504,11 @@ namespace RINGMesh {
             return static_cast< const Corner& >( GeoModelMeshEntity::boundary( x ) ) ;
         }
 
-        virtual const Surface& in_boundary( index_t x ) const
+        /*virtual const Surface& in_boundary( index_t x ) const
         {
             return static_cast< const Surface& >( GeoModelMeshEntity::in_boundary(
                 x ) ) ;
-        }
+        }*/
 
         virtual bool is_connectivity_valid() const final ;
 
@@ -661,10 +661,10 @@ namespace RINGMesh {
             return static_cast< const Line& >( GeoModelMeshEntity::boundary( x ) ) ;
         }
 
-        virtual const Region& in_boundary( index_t x ) const
+        /*virtual const Region& in_boundary( index_t x ) const
         {
             return static_cast< const Region& >( GeoModelMeshEntity::in_boundary( x ) ) ;
-        }
+        }*/
 
         bool is_simplicial() const
         {
