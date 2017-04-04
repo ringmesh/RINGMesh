@@ -708,10 +708,14 @@ namespace RINGMesh {
         return false ;
     }
 
-    virtual const Surface& Line::in_boundary( index_t x ) const
+    const Surface& Line::in_boundary( index_t x ) const
     {
         return static_cast< const Surface& >( GeoModelMeshEntity::in_boundary(
             x ) ) ;
+    }
+    const Corner& Line::boundary( index_t x ) const
+    {
+        return static_cast< const Corner& >( GeoModelMeshEntity::boundary( x ) ) ;
     }
 
     /********************************************************************/
@@ -805,6 +809,16 @@ namespace RINGMesh {
             }
         }
         return false ;
+    }
+
+    const Line& Surface::boundary( index_t x ) const
+    {
+        return static_cast< const Line& >( GeoModelMeshEntity::boundary( x ) ) ;
+    }
+
+    const Region& Surface::in_boundary( index_t x ) const
+    {
+        return static_cast< const Region& >( GeoModelMeshEntity::in_boundary( x ) ) ;
     }
 
     /********************************************************************/
