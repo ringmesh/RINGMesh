@@ -62,7 +62,8 @@ namespace {
         if( gm.universe().nb_boundaries() > 0 ) {
             const Universe& universe = gm.universe() ;
             for( index_t s = 0; s < universe.nb_boundaries(); s++ ) {
-                compute_surface_bbox( gm, universe.boundary_gmme( s ).index(), bbox ) ;
+                compute_surface_bbox( gm, universe.boundary_gmme( s ).index(),
+                    bbox ) ;
             }
         } else {
             ringmesh_assert( gm.nb_surfaces() > 0 ) ;
@@ -103,76 +104,76 @@ namespace RINGMesh {
         }
     }
 
-   index_t GeoModel::nb_mesh_entities( const MeshEntityType& type ) const
-   {
-       if( MeshEntityTypeManager::is_corner( type ) ) {
-           return nb_corners() ;
-       } else if( MeshEntityTypeManager::is_line( type ) ) {
-           return nb_lines() ;
-       } else if( MeshEntityTypeManager::is_surface( type ) ) {
-           return nb_surfaces() ;
-       } else if( MeshEntityTypeManager::is_region( type ) ) {
-           return nb_regions() ;
-       } else {
-           ringmesh_assert_not_reached ;
-           return 0 ;
-       }
-   }
+    index_t GeoModel::nb_mesh_entities( const MeshEntityType& type ) const
+    {
+        if( MeshEntityTypeManager::is_corner( type ) ) {
+            return nb_corners() ;
+        } else if( MeshEntityTypeManager::is_line( type ) ) {
+            return nb_lines() ;
+        } else if( MeshEntityTypeManager::is_surface( type ) ) {
+            return nb_surfaces() ;
+        } else if( MeshEntityTypeManager::is_region( type ) ) {
+            return nb_regions() ;
+        } else {
+            ringmesh_assert_not_reached ;
+            return 0 ;
+        }
+    }
 
-   const GeoModelMeshEntity& GeoModel::mesh_entity( gmme_t id ) const
-   {
-       const MeshEntityType& type = id.type() ;
-       index_t index = id.index() ;
-       if( MeshEntityTypeManager::is_corner( type ) ) {
-           return corner( index ) ;
-       } else if( MeshEntityTypeManager::is_line( type ) ) {
-           return line( index ) ;
-       } else if( MeshEntityTypeManager::is_surface( type ) ) {
-           return surface( index ) ;
-       } else if( MeshEntityTypeManager::is_region( type ) ) {
-           return region( index ) ;
-       }
-       ringmesh_assert_not_reached ;
-       return surface( 0 );
-   }
+    const GeoModelMeshEntity& GeoModel::mesh_entity( gmme_t id ) const
+    {
+        const MeshEntityType& type = id.type() ;
+        index_t index = id.index() ;
+        if( MeshEntityTypeManager::is_corner( type ) ) {
+            return corner( index ) ;
+        } else if( MeshEntityTypeManager::is_line( type ) ) {
+            return line( index ) ;
+        } else if( MeshEntityTypeManager::is_surface( type ) ) {
+            return surface( index ) ;
+        } else if( MeshEntityTypeManager::is_region( type ) ) {
+            return region( index ) ;
+        }
+        ringmesh_assert_not_reached ;
+        return surface( 0 ) ;
+    }
 
-   const std::vector< GeoModelMeshEntity* >& GeoModel::mesh_entities(
-       const MeshEntityType& type ) const
-   {
-       if( MeshEntityTypeManager::is_corner( type ) ) {
-           return corners_ ;
-       } else if( MeshEntityTypeManager::is_line( type ) ) {
-           return lines_ ;
-       } else if( MeshEntityTypeManager::is_surface( type ) ) {
-           return surfaces_ ;
-       } else if( MeshEntityTypeManager::is_region( type ) ) {
-           return regions_ ;
-       } else {
-           ringmesh_assert_not_reached ;
-           return surfaces_ ;
-       }
-   }
+    const std::vector< GeoModelMeshEntity* >& GeoModel::mesh_entities(
+        const MeshEntityType& type ) const
+    {
+        if( MeshEntityTypeManager::is_corner( type ) ) {
+            return corners_ ;
+        } else if( MeshEntityTypeManager::is_line( type ) ) {
+            return lines_ ;
+        } else if( MeshEntityTypeManager::is_surface( type ) ) {
+            return surfaces_ ;
+        } else if( MeshEntityTypeManager::is_region( type ) ) {
+            return regions_ ;
+        } else {
+            ringmesh_assert_not_reached ;
+            return surfaces_ ;
+        }
+    }
 
-   const Corner& GeoModel::corner( index_t index ) const
-   {
-       ringmesh_assert( index < corners_.size() ) ;
-       return *static_cast< const Corner* >( corners_[index] ) ;
-   }
-   const Line& GeoModel::line( index_t index ) const
-   {
-       ringmesh_assert( index < lines_.size() ) ;
-       return *static_cast< const Line* >( lines_[index] ) ;
-   }
-   const Surface& GeoModel::surface( index_t index ) const
-   {
-       ringmesh_assert( index < surfaces_.size() ) ;
-       return *static_cast< const Surface* >( surfaces_[index] ) ;
-   }
-   const Region& GeoModel::region( index_t index ) const
-   {
-       ringmesh_assert( index < regions_.size() ) ;
-       return *static_cast< const Region* >( regions_[index] ) ;
-   }
+    const Corner& GeoModel::corner( index_t index ) const
+    {
+        ringmesh_assert( index < corners_.size() ) ;
+        return *static_cast< const Corner* >( corners_[index] ) ;
+    }
+    const Line& GeoModel::line( index_t index ) const
+    {
+        ringmesh_assert( index < lines_.size() ) ;
+        return *static_cast< const Line* >( lines_[index] ) ;
+    }
+    const Surface& GeoModel::surface( index_t index ) const
+    {
+        ringmesh_assert( index < surfaces_.size() ) ;
+        return *static_cast< const Surface* >( surfaces_[index] ) ;
+    }
+    const Region& GeoModel::region( index_t index ) const
+    {
+        ringmesh_assert( index < regions_.size() ) ;
+        return *static_cast< const Region* >( regions_[index] ) ;
+    }
 
     void GeoModel::set_wells( const WellGroup* wells )
     {

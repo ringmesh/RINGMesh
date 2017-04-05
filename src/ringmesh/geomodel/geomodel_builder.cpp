@@ -900,9 +900,8 @@ namespace RINGMesh {
 
         if( geomodel_.nb_surfaces() == 1 ) {
             if( geomodel_.nb_lines() != 0 ) {
-                Logger::err( "GeoModel" )
-                    << "The unique surface provided to build the geomodel has boundaries "
-                    << std::endl ;
+                Logger::err( "GeoModel",
+                    "The unique surface provided to build the geomodel has boundaries " ) ;
                 return false ;
             } else {
                 /// If there is only one surface, its inside is set to be
@@ -978,9 +977,8 @@ namespace RINGMesh {
             // If not, this means that there are additionnal regions included in those built
             if( std::count( surf_2_region.begin(), surf_2_region.end(), NO_ID )
                 != 0 ) {
-                Logger::err( "GeoModel" )
-                    << "Small bubble regions were skipped at geomodel building "
-                    << std::endl ;
+                Logger::err( "GeoModel",
+                    "Small bubble regions were skipped at geomodel building " ) ;
                 // Or, most probably, we have a problem before
                 ringmesh_assert( false ) ;
             }
@@ -1157,7 +1155,7 @@ namespace RINGMesh {
         const std::vector< GeologicalEntityType > parent_types(
             geomodel_.entity_type_manager().relationship_manager.parent_types(
                 type ) ) ;
-        for(  const GeologicalEntityType& parent_type : parent_types ) {
+        for( const GeologicalEntityType& parent_type : parent_types ) {
             if( parent_type != ForbiddenGeologicalEntityType::type_name_static() ) {
                 for( index_t j = 0;
                     j < geomodel_.nb_geological_entities( parent_type ); ++j ) {

@@ -42,7 +42,7 @@
 
 namespace RINGMesh {
 
-    std::mutex Logger2::lock_ ;
+    std::mutex Logger::lock_ ;
 
 }
 

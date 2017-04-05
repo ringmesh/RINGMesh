@@ -66,8 +66,10 @@ namespace RINGMesh {
 
         virtual bool tetrahedralize( bool refine ) final
         {
-            Mesh3DBuilder * mesh3D_builder = builder_->geometry.create_region_builder ( output_region_ );
-            tetrahedralize_mesh_tetgen ( *mesh3D_builder, tetmesh_constraint_, refine, 1.0 ) ;
+            Mesh3DBuilder * mesh3D_builder =
+                builder_->geometry.create_region_builder( output_region_ ) ;
+            tetrahedralize_mesh_tetgen( *mesh3D_builder, tetmesh_constraint_, refine,
+                1.0 ) ;
             return true ;
         }
     } ;
@@ -350,9 +352,7 @@ namespace RINGMesh {
         virtual void write_vertices_in_ringmesh_data_structure() final
         {
             RINGMESH_PARALLEL_LOOP
-            for( index_t v = 0;
-                v
-                    < region_->nb_vertices(); v++ ) {
+            for( index_t v = 0; v < region_->nb_vertices(); v++ ) {
                 double point[3] ;
                 mesh_get_vertex_coordinates( mesh_output_, v + starting_index_,
                     point ) ;
@@ -363,9 +363,7 @@ namespace RINGMesh {
         virtual void write_tet_in_ringmesh_data_structure() final
         {
             RINGMESH_PARALLEL_LOOP
-            for( index_t t = 0;
-                t
-                    < region_->nb_mesh_elements(); t++ ) {
+            for( index_t t = 0; t < region_->nb_mesh_elements(); t++ ) {
                 signed_index_t tet[4] ;
                 mesh_get_tetrahedron_vertices( mesh_output_, t + starting_index_,
                     tet ) ;
@@ -380,29 +378,29 @@ namespace RINGMesh {
         void set_point( index_t index, const double* point )
         {
             bool update = false ;
-            vec3 vertex ( point ) ;
-            builder_->geometry.set_mesh_entity_vertex (
-                gmme_t ( Region::type_name_static (), output_region_ ), index, vertex,
+            vec3 vertex( point ) ;
+            builder_->geometry.set_mesh_entity_vertex(
+                gmme_t( Region::type_name_static(), output_region_ ), index, vertex,
                 update ) ;
         }
 
         void set_tetra( index_t tetra_index, int* vertex_indices )
         {
-            std::vector< index_t > corners ( 4 ) ;
+            std::vector< index_t > corners( 4 ) ;
             for( index_t v = 0; v < 4; v++ ) {
                 index_t vertex_id = static_cast< index_t >( vertex_indices[v] ) ;
                 corners[v] = vertex_id ;
             }
-            builder_->geometry.set_region_element_geometry ( output_region_, tetra_index,
-                corners ) ;
+            builder_->geometry.set_region_element_geometry( output_region_,
+                tetra_index, corners ) ;
         }
 
-        void initialize_storage ( index_t nb_points, index_t nb_tets )
+        void initialize_storage( index_t nb_points, index_t nb_tets )
         {
-            gmme_t region_id ( Region::type_name_static (), output_region_ ) ;
-            builder_->geometry.delete_mesh_entity_mesh ( region_id ) ;
-            builder_->geometry.create_mesh_entity_vertices ( region_id, nb_points ) ;
-            builder_->geometry.create_region_cells ( output_region_, GEO::MESH_TET,
+            gmme_t region_id( Region::type_name_static(), output_region_ ) ;
+            builder_->geometry.delete_mesh_entity_mesh( region_id ) ;
+            builder_->geometry.create_mesh_entity_vertices( region_id, nb_points ) ;
+            builder_->geometry.create_region_cells( output_region_, GEO::MESH_TET,
                 nb_tets ) ;
         }
 
@@ -417,17 +415,16 @@ namespace RINGMesh {
         TetraGen* mesher = TetraGenFactory::create_object( algo_name ) ;
         if( !mesher ) {
 #ifdef RINGMESH_WITH_TETGEN
-            Logger::warn( "TetraGen" ) << "Could not create TetraGen mesher: "
-                << algo_name << std::endl ;
-            Logger::warn( "TetraGen" ) << "Falling back to TetGen mode"
-                << std::endl ;
+            Logger::warn( "TetraGen", "Could not create TetraGen mesher: ",
+                algo_name ) ;
+            Logger::warn( "TetraGen", "Falling back to TetGen mode" ) ;
             mesher = new TetraGen_TetGen() ;
 #else
             std::vector< std::string > names ;
             TetraGenFactory::list_creators( names ) ;
-            Logger::err( "I/O" ) << "Currently supported mesher are: " ;
+            Logger::err( "I/O", "Currently supported mesher are: " ) ;
             for( const std::string& name : names ) {
-                Logger::out( "I/O" ) << " " << name ;
+                Logger::out( "I/O", " ",< name ;
             }
             Logger::out( "I/O" ) << std::endl ;
             throw RINGMeshException( "TetraGen", "Could not create TetraGen mesher: "
@@ -582,11 +579,11 @@ namespace RINGMesh {
     void TetraGen::initialize()
     {
 #ifdef RINGMESH_WITH_TETGEN
-        ringmesh_register_tetragen( TetraGen_TetGen, "TetGen" );
+        ringmesh_register_tetragen( TetraGen_TetGen, "TetGen" ) ;
 #endif
 
 #ifdef USE_MG_TETRA
-    ringmesh_register_tetragen( TetraGen_MG_Tetra, "MG_Tetra" ) ;
+        ringmesh_register_tetragen( TetraGen_MG_Tetra, "MG_Tetra" ) ;
 #endif
-}
+    }
 }

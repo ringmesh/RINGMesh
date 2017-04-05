@@ -45,10 +45,10 @@
 #include <geogram/mesh/mesh.h>
 
 /*!
-* @file ringmesh/tetragen.h
-* @brief API class interfacing GeoModel with external tetrahedral meshers 
-* @author Arnaud Botella
-*/
+ * @file ringmesh/tetragen.h
+ * @brief API class interfacing GeoModel with external tetrahedral meshers 
+ * @author Arnaud Botella
+ */
 
 #ifdef USE_MG_TETRA
 extern "C" {
@@ -82,7 +82,9 @@ namespace RINGMesh {
          * @param[in] region The Region of the GeoModel to mesh
          * @param[in] wells the wells to be conformal to
          */
-        void set_boundaries( const Region& region, const WellGroup* wells = nullptr ) ;
+        void set_boundaries(
+            const Region& region,
+            const WellGroup* wells = nullptr ) ;
 
         /*!
          * Set additional points to be in the output tetrahedral mesh
@@ -111,7 +113,7 @@ namespace RINGMesh {
     } ;
 
     typedef GEO::SmartPointer< TetraGen > TetraGen_var ;
-    typedef GEO::Factory0< TetraGen > TetraGenFactory;
+    typedef GEO::Factory0< TetraGen > TetraGenFactory ;
 
 #define ringmesh_register_tetragen(type, name) \
     geo_register_creator(TetraGenFactory, type, name)

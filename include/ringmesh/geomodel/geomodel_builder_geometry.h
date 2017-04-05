@@ -149,7 +149,7 @@ namespace RINGMesh {
          * than the input geomodel.
          */
         void copy_meshes( const GeoModel& from ) ;
-        void copy_meshes( const GeoModel& from, const MeshEntityType& entity_type) ;
+        void copy_meshes( const GeoModel& from, const MeshEntityType& entity_type ) ;
         void copy_mesh( const GeoModel& from, const gmme_t& mesh_entity ) ;
 
         void assign_mesh_to_entity( const MeshBase& mesh, const gmme_t& to ) ;

@@ -46,7 +46,7 @@
 
 namespace RINGMesh {
 
-    class RINGMESH_API Logger2 {
+    class RINGMESH_API Logger {
     public:
         static void div( const std::string& title )
         {
@@ -73,6 +73,11 @@ namespace RINGMesh {
         {
             std::lock_guard< std::mutex > lock( lock_ ) ;
             log( GEO::Logger::warn( feature ), args... ) ;
+        }
+
+        static GEO::Logger* instance()
+        {
+            return GEO::Logger::instance() ;
         }
 
     private:
