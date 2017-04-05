@@ -1210,7 +1210,7 @@ namespace RINGMesh {
         ringmesh_assert( offset == nb_colocalised_vertices ) ;
         return offset ;
     }
-    
+
     std::vector< index_t > NNSearch::get_neighbors(
         const vec3& v,
         double threshold_distance ) const

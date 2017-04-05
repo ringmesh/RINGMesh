@@ -1111,7 +1111,7 @@ namespace RINGMesh {
         print_header_information() ;
 
         Logger::div( "RINGMesh-View" ) ;
-        Logger::out( "" ) << "Welcome to RINGMesh-View !" << std::endl ;
+        Logger::out( "", "Welcome to RINGMesh-View !" ) ;
     }
 
     RINGMeshApplication::~RINGMeshApplication()

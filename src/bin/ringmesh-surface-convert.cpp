@@ -60,21 +60,24 @@ int main( int argc, char** argv )
         // welcome
         print_header_information() ;
         Logger::div( "RINGMesh-Surface-Convert" ) ;
-        Logger::out( "" ) << "Welcome to RINGMesh-Surface-Convert !" << std::endl ;
+        Logger::out( "", "Welcome to RINGMesh-Surface-Convert !" ) ;
 
         // help
         if( argc == 1 ) {
             Logger::div( "Help" ) ;
-            Logger::out( "" ) << "usage: " << GEO::FileSystem::base_name( argv[0] )
-                << " [out_format]" << std::endl
-                << "out_format: a non empty list of output format amongst:"
-                << "obj mesh meshb ply off stl " << std::endl
-                << "Should be launched in the directory that contains the .ts "
-                << "files to convert" << std::endl
-                << "This will create a directory for each selected output format "
-                << "in the directory one level above the current one,"
-                << " and create a new file with the corresponding format for "
-                << "each .ts in the current directory" << std::endl ;
+            Logger::out( "", "usage: ", GEO::FileSystem::base_name( argv[0] ),
+                " [out_format]" ) ;
+            Logger::out( "",
+                "out_format: a non empty list of output format amongst:",
+                "obj mesh meshb ply off stl " ) ;
+            Logger::out( "",
+                "Should be launched in the directory that contains the .ts ",
+                "files to convert" ) ;
+            Logger::out( "",
+                "This will create a directory for each selected output format ",
+                "in the directory one level above the current one,",
+                " and create a new file with the corresponding format for ",
+                "each .ts in the current directory" ) ;
             return 0 ;
         }
 
@@ -124,7 +127,7 @@ int main( int argc, char** argv )
 
         // for each .ts file save it in each appropriate format
         for( const std::string& ts_name : input_ts_names ) {
-            Logger::out( "" ) << "Processing: " << ts_name << std::endl ;
+            Logger::out( "", "Processing: ", ts_name ) ;
             GEO::FileSystem::set_current_working_directory( starting_directory ) ;
 
             // load the tsurf
@@ -151,10 +154,10 @@ int main( int argc, char** argv )
 
         }
     } catch( const RINGMeshException& e ) {
-        Logger::err( e.category() ) << e.what() << std::endl ;
+        Logger::err( e.category(), e.what() ) ;
         return 1 ;
     } catch( const std::exception& e ) {
-        Logger::err( "Exception" ) << e.what() << std::endl ;
+        Logger::err( "Exception", e.what() ) ;
         return 1 ;
     }
     return 0 ;

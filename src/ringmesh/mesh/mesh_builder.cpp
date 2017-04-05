@@ -102,12 +102,10 @@ namespace RINGMesh {
             }
         }
         if( !builder ) {
-            Logger::warn( "MeshBaseBuilder" )
-                << "Could not create mesh data structure: " << mesh.type_name()
-                << std::endl ;
-            Logger::warn( "MeshBaseBuilder" )
-                << "Falling back to GeogramMesh0DBuilder data structure"
-                << std::endl ;
+            Logger::warn( "MeshBaseBuilder",
+                "Could not create mesh data structure: ", mesh.type_name() ) ;
+            Logger::warn( "MeshBaseBuilder",
+                "Falling back to GeogramMesh0DBuilder data structure" ) ;
 
             builder = new GeogramMeshBaseBuilder ;
         }
@@ -123,12 +121,10 @@ namespace RINGMesh {
             builder = create_builder_0d( mesh ) ;
         }
         if( !builder ) {
-            Logger::warn( "Mesh0DBuilder" )
-                << "Could not create mesh data structure: " << mesh.type_name()
-                << std::endl ;
-            Logger::warn( "Mesh0DBuilder" )
-                << "Falling back to GeogramMesh0DBuilder data structure"
-                << std::endl ;
+            Logger::warn( "Mesh0DBuilder", "Could not create mesh data structure: ",
+                mesh.type_name() ) ;
+            Logger::warn( "Mesh0DBuilder",
+                "Falling back to GeogramMesh0DBuilder data structure" ) ;
 
             builder = new GeogramMesh0DBuilder ;
         }
@@ -144,12 +140,10 @@ namespace RINGMesh {
             builder = create_builder_1d( mesh ) ;
         }
         if( !builder ) {
-            Logger::warn( "Mesh1DBuilder" )
-                << "Could not create mesh data structure: " << mesh.type_name()
-                << std::endl ;
-            Logger::warn( "Mesh1DBuilder" )
-                << "Falling back to GeogramMesh1DBuilder data structure"
-                << std::endl ;
+            Logger::warn( "Mesh1DBuilder", "Could not create mesh data structure: ",
+                mesh.type_name() ) ;
+            Logger::warn( "Mesh1DBuilder",
+                "Falling back to GeogramMesh1DBuilder data structure" ) ;
 
             builder = new GeogramMesh1DBuilder ;
         }
@@ -165,12 +159,10 @@ namespace RINGMesh {
             builder = create_builder_2d( mesh ) ;
         }
         if( !builder ) {
-            Logger::warn( "Mesh2DBuilder" )
-                << "Could not create mesh data structure: " << mesh.type_name()
-                << std::endl ;
-            Logger::warn( "Mesh2DBuilder" )
-                << "Falling back to GeogramMesh2DBuilder data structure"
-                << std::endl ;
+            Logger::warn( "Mesh2DBuilder", "Could not create mesh data structure: ",
+                mesh.type_name() ) ;
+            Logger::warn( "Mesh2DBuilder",
+                "Falling back to GeogramMesh2DBuilder data structure" ) ;
 
             builder = new GeogramMesh2DBuilder ;
         }
@@ -186,12 +178,10 @@ namespace RINGMesh {
             builder = create_builder_3d( mesh ) ;
         }
         if( !builder ) {
-            Logger::warn( "Mesh3DBuilder" )
-                << "Could not create mesh data structure: " << mesh.type_name()
-                << std::endl ;
-            Logger::warn( "Mesh3DBuilder" )
-                << "Falling back to GeogramMesh3DBuilder data structure"
-                << std::endl ;
+            Logger::warn( "Mesh3DBuilder", "Could not create mesh data structure: ",
+                mesh.type_name() ) ;
+            Logger::warn( "Mesh3DBuilder",
+                "Falling back to GeogramMesh3DBuilder data structure" ) ;
 
             builder = new GeogramMesh3DBuilder ;
         }

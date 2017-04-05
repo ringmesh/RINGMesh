@@ -54,7 +54,7 @@ namespace {
     {
         print_header_information() ;
         Logger::div( "RINGMesh-Rotate" ) ;
-        Logger::out( "" ) << "Welcome to RINGMesh-Rotate !" << std::endl ;
+        Logger::out( "", "Welcome to RINGMesh-Rotate !" ) ;
     }
 
     void import_arg_group_rotation()
@@ -159,10 +159,10 @@ int main( int argc, char** argv )
         run() ;
 
     } catch( const RINGMeshException& e ) {
-        GEO::Logger::err( e.category() ) << e.what() << std::endl ;
+        Logger::err( e.category(), e.what() ) ;
         return 1 ;
     } catch( const std::exception& e ) {
-        GEO::Logger::err( "Exception" ) << e.what() << std::endl ;
+        Logger::err( "Exception", e.what() ) ;
         return 1 ;
     }
     return 0 ;
