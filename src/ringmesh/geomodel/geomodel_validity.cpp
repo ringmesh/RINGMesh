@@ -417,15 +417,15 @@ namespace {
                     lines.push_back( id ) ;
                 } else if( T == Corner::type_name_static() ) {
                     if( corner != NO_ID ) {
-                        Logger::warn( "GeoModel" ) << " Vertex " << i
-                            << " is in at least 2 Corners" << std::endl ;
+                        Logger2::warn( "GeoModel", " Vertex ", i,
+                            " is in at least 2 Corners" ) ;
                         valid_vertex = false ;
                     } else {
                         corner = id ;
                     }
                 } else {
-                    Logger::warn( "GeoModel" ) << " Vertex " << i
-                        << " is in no Entity of the Model" << std::endl ;
+                    Logger2::warn( "GeoModel", " Vertex ", i,
+                        " is in no Entity of the Model" ) ;
                     valid_vertex = false ;
                     break ;
                 }
@@ -440,7 +440,7 @@ namespace {
                         for( index_t region : regions ) {
                             oss << region << " ; " ;
                         }
-                        Logger::warn( "GeoModel" ) << oss.str() << std::endl ;
+                        Logger2::warn( "GeoModel", oss.str() ) ;
                         valid_vertex = false ;
                     } /// @todo Implement the other conditions for Region point validity
                 } else if( corner == NO_ID && lines.empty() ) {
@@ -452,7 +452,7 @@ namespace {
                         for( index_t surface : surfaces ) {
                             oss << surface << " ; " ;
                         }
-                        Logger::warn( "GeoModel" ) << oss.str() << std::endl ;
+                        Logger2::warn( "GeoModel", oss.str() ) ;
                         valid_vertex = false ;
                     }
                 } else if( corner == NO_ID && !lines.empty() ) {
@@ -464,13 +464,13 @@ namespace {
                         for( index_t line : lines ) {
                             oss << line << " ; " ;
                         }
-                        Logger::warn( "GeoModel" ) << oss.str() << std::endl ;
+                        Logger2::warn( "GeoModel", oss.str() ) ;
                         valid_vertex = false ;
                     } else {
                         // This point must also be in at least one SURFACE
                         if( surfaces.empty() ) {
-                            Logger::warn( "GeoModel" ) << " Vertex " << i
-                                << " is in a Line but in no Surface " << std::endl ;
+                            Logger2::warn( "GeoModel", " Vertex ", i,
+                                " is in a Line but in no Surface " ) ;
                             valid_vertex = false ;
                         }
                         // Check that one point is no more than twice in a SURFACE
@@ -478,10 +478,9 @@ namespace {
                             index_t nb = static_cast< index_t >( std::count(
                                 surfaces.begin(), surfaces.end(), surface ) ) ;
                             if( nb > 2 ) {
-                                Logger::warn( "GeoModel" ) << " Vertex " << i
-                                    << " is " << nb << " times in Surface "
-                                    << geomodel.surface( surface ).gmme_id()
-                                    << std::endl ;
+                                Logger2::warn( "GeoModel", " Vertex ", i, " is ", nb,
+                                    " times in Surface ",
+                                    geomodel.surface( surface ).gmme_id() ) ;
                                 valid_vertex = false ;
                             } else if( nb == 2 ) {
                                 // If a point is twice in a SURFACE, it must be
@@ -495,10 +494,9 @@ namespace {
                                     }
                                 }
                                 if( !internal_boundary ) {
-                                    Logger::warn( "GeoModel" ) << " Vertex " << i
-                                        << " appears " << nb << " times in Surface "
-                                        << geomodel.surface( surface ).gmme_id()
-                                        << std::endl ;
+                                    Logger2::warn( "GeoModel", " Vertex ", i,
+                                        " appears ", nb, " times in Surface ",
+                                        geomodel.surface( surface ).gmme_id() ) ;
                                     valid_vertex = false ;
                                 }
                             }
@@ -510,11 +508,10 @@ namespace {
                                 gmme_t s_id( Surface::type_name_static(), surface ) ;
                                 gmme_t l_id( Line::type_name_static(), line ) ;
                                 if( !is_in_in_boundary( geomodel, s_id, l_id ) ) {
-                                    Logger::warn( "GeoModel" )
-                                        << " Inconsistent Line-Surface connectivity "
-                                        << " Vertex " << i << " shows that " << s_id
-                                        << " must be in the boundary of " << l_id
-                                        << std::endl ;
+                                    Logger2::warn( "GeoModel",
+                                        " Inconsistent Line-Surface connectivity ",
+                                        " Vertex ", i, " shows that ", s_id,
+                                        " must be in the boundary of ", l_id ) ;
                                     valid_vertex = false ;
                                 }
                             }
@@ -524,14 +521,14 @@ namespace {
                     // This is one point at a CORNER
                     // It must be in at least one LINE
                     if( lines.empty() ) {
-                        Logger::warn( "GeoModel" ) << " Vertex " << i
-                            << " is at a Corner but in no Line " << std::endl ;
+                        Logger2::warn( "GeoModel", " Vertex ", i,
+                            " is at a Corner but in no Line " ) ;
                         valid_vertex = false ;
                     } else {
                         if( lines.size() < 2 ) {
-                            Logger::warn( "GeoModel" ) << " Vertex " << i
-                                << " is in at a Corner but in one Line only: "
-                                << lines[0] << std::endl ;
+                            Logger2::warn( "GeoModel", " Vertex ", i,
+                                " is in at a Corner but in one Line only: ",
+                                lines.front() ) ;
                             valid_vertex = false ;
                         }
                         // Check that a point is no more than twice in a LINE
@@ -541,16 +538,14 @@ namespace {
                             if( nb == 2 ) {
                                 // The line must be closed
                                 if( !geomodel.line( line ).is_closed() ) {
-                                    Logger::warn( "GeoModel" ) << " Vertex " << i
-                                        << " is twice in Line " << line
-                                        << std::endl ;
+                                    Logger2::warn( "GeoModel", " Vertex ", i,
+                                        " is twice in Line ", line ) ;
                                     valid_vertex = false ;
                                 }
                             }
                             if( nb > 2 ) {
-                                Logger::warn( "GeoModel" ) << " Vertex " << i
-                                    << " appears " << nb << " times in Line " << line
-                                    << std::endl ;
+                                Logger2::warn( "GeoModel", " Vertex ", i,
+                                    " appears ", nb, " times in Line ", line ) ;
                                 valid_vertex = false ;
                                 break ;
                             }
@@ -560,19 +555,18 @@ namespace {
                             gmme_t l_id( Line::type_name_static(), line ) ;
                             gmme_t c_id( Corner::type_name_static(), corner ) ;
                             if( !is_in_in_boundary( geomodel, l_id, c_id ) ) {
-                                Logger::warn( "GeoModel" )
-                                    << " Inconsistent Line-Corner connectivity "
-                                    << " vertex " << i << " shows that " << l_id
-                                    << " must be in the boundary of " << c_id
-                                    << std::endl ;
+                                Logger2::warn( "GeoModel",
+                                    " Inconsistent Line-Corner connectivity ",
+                                    " vertex ", i, " shows that ", l_id,
+                                    " must be in the boundary of ", c_id ) ;
                                 valid_vertex = false ;
                             }
                         }
                     }
                     // It must also be in a least one surface ? perhaps 2
                     if( surfaces.empty() ) {
-                        Logger::warn( "GeoModel" ) << " Vertex " << i
-                            << " is at a Corner but in no Surface " << std::endl ;
+                        Logger2::warn( "GeoModel", " Vertex ", i,
+                            " is at a Corner but in no Surface " ) ;
                         valid_vertex = false ;
                     }
                 }
@@ -588,8 +582,8 @@ namespace {
             save_invalid_points( file, geomodel, valid ) ;
 
             if( GEO::CmdLine::get_arg_bool( "validity_save" ) ) {
-                Logger::warn( "GeoModel" ) << nb_invalid << " invalid vertices "
-                    << std::endl << "Saved in file: " << file.str() << std::endl ;
+                Logger2::warn( "GeoModel", nb_invalid, " invalid vertices" ) ;
+                Logger2::warn( "GeoModel", "Saved in file: ", file.str() ) ;
             }
 
             return false ;
@@ -676,10 +670,10 @@ namespace {
             save_edges( file, surface.geomodel(), invalid_corners ) ;
 
             if( GEO::CmdLine::get_arg_bool( "validity_save" ) ) {
-                Logger::warn( "GeoModel" ) << " Invalid surface boundary: "
-                    << invalid_corners.size() / 2 << " boundary edges of "
-                    << surface.gmme_id() << "  are in no line of the geomodel "
-                    << std::endl << " Saved in file: " << file.str() << std::endl ;
+                Logger2::warn( "GeoModel", " Invalid surface boundary: ",
+                    invalid_corners.size() / 2, " boundary edges of ",
+                    surface.gmme_id(), "  are in no line of the geomodel " ) ;
+                Logger2::warn( "GeoModel", " Saved in file: ", file.str() ) ;
             }
 
             return false ;
@@ -736,11 +730,10 @@ namespace {
             save_facets( file.str(), surface, unconformal_facets ) ;
 
             if( GEO::CmdLine::get_arg_bool( "validity_save" ) ) {
-                Logger::warn( "GeoModel" ) << " Unconformal surface: "
-                    << unconformal_facets.size() << " facets of "
-                    << surface.gmme_id()
-                    << " are unconformal with the geomodel cells " << std::endl
-                    << " Saved in file: " << file.str() << std::endl ;
+                Logger2::warn( "GeoModel", " Unconformal surface: ",
+                    unconformal_facets.size(), " facets of ", surface.gmme_id(),
+                    " are unconformal with the geomodel cells " ) ;
+                Logger2::warn( "GeoModel", " Saved in file: ", file.str() ) ;
             }
 
             return false ;
@@ -983,8 +976,8 @@ namespace {
                 compute_non_manifold_edges( edge_on_lines, non_manifold_edges ) ;
 
                 if( !non_manifold_edges.empty() ) {
-                    Logger::warn( "GeoModel" ) << non_manifold_edges.size()
-                        << " non-manifold edges " << std::endl ;
+                    Logger2::warn( "GeoModel", non_manifold_edges.size(),
+                        " non-manifold edges " ) ;
                     debug_save_non_manifold_edges( validity_.geomodel_, edge_indices,
                         non_manifold_edges ) ;
 
@@ -1042,15 +1035,14 @@ namespace {
                         file << validity_errors_directory
                             << "/intersected_facets.geogram" ;
                         save_mesh_locating_geomodel_inconsistencies( mesh, file ) ;
-                        Logger::out( "I/O" ) << std::endl ;
-                        Logger::warn( "GeoModel" ) << nb_intersections
-                            << " facet intersections " << std::endl ;
+                        Logger2::out( "I/O" ) ;
+                        Logger2::warn( "GeoModel", nb_intersections,
+                            " facet intersections " ) ;
                         validity_.set_invalid_model() ;
                     }
                 } else {
-                    Logger::warn( "GeoModel" )
-                        << "Polygonal intersection check not implemented yet"
-                        << std::endl ;
+                    Logger2::warn( "GeoModel",
+                        "Polygonal intersection check not implemented yet" ) ;
                 }
             }
         private:
@@ -1099,8 +1091,8 @@ namespace RINGMesh {
             }
         }
         if( count_invalid != 0 ) {
-            Logger::warn( "GeoModel" ) << count_invalid
-                << " mesh entities of the geomodel are invalid " << std::endl ;
+            Logger2::warn( "GeoModel", count_invalid,
+                " mesh entities of the geomodel are invalid " ) ;
         }
         return count_invalid == 0 ;
     }
@@ -1120,8 +1112,8 @@ namespace RINGMesh {
             }
         }
         if( count_invalid != 0 ) {
-            Logger::warn( "GeoModel" ) << count_invalid
-                << " geological entities of the geomodel are invalid " << std::endl ;
+            Logger2::warn( "GeoModel", count_invalid,
+                " geological entities of the geomodel are invalid " ) ;
         }
         return count_invalid == 0 ;
     }
@@ -1134,15 +1126,12 @@ namespace RINGMesh {
         bool valid = validity_checker.is_geomodel_valid() ;
 
         if( valid ) {
-            Logger::out( "GeoModel" ) << "Model " << geomodel.name() << " is valid "
-                << std::endl ;
+            Logger2::out( "GeoModel", "Model ", geomodel.name(), " is valid " ) ;
         } else {
-            Logger::warn( "GeoModel" ) << "Model " << geomodel.name()
-                << " is invalid " << std::endl ;
+            Logger2::warn( "GeoModel", "Model ", geomodel.name(), " is invalid " ) ;
             if( !GEO::CmdLine::get_arg_bool( "validity_save" ) ) {
-                Logger::out( "Info" ) << "To save geomodel invalidities in files "
-                    "(.geogram) set \"validity_save\" to true in the command line."
-                    << std::endl ;
+                Logger2::out( "Info", "To save geomodel invalidities in files ",
+                    "(.geogram) set \"validity_save\" to true in the command line." ) ;
             }
         }
         return valid ;
