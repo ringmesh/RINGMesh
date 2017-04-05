@@ -1736,6 +1736,15 @@ namespace RINGMesh {
             }
         }
 
+        // Get out if no facets
+        index_t nb_total_facets = 0 ;
+        for( index_t nb_facet : nb_facet_per_type ) {
+            nb_total_facets += nb_facet ;
+        }
+        if( nb_total_facets == 0 ) {
+            return ;
+        }
+
         // Create triangles and quads, the polygons will be handle later
         if( nb_facet_per_type[TRIANGLE] ) {
             mesh_builder->create_facet_triangles( nb_facet_per_type[TRIANGLE] ) ;
