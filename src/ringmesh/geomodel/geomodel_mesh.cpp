@@ -1738,7 +1738,7 @@ namespace RINGMesh {
 
         // Get out if no facets
         index_t nb_total_facets = 0 ;
-        for( auto& nb_facet : nb_facet_per_type ) {
+        for( index_t& nb_facet : nb_facet_per_type ) {
             nb_total_facets += nb_facet ;
         }
         if( nb_total_facets == 0 ) {
