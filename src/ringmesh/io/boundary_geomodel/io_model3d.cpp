@@ -162,7 +162,7 @@ namespace {
             const GeoModelGeologicalEntity& E = M.geological_entity(
                 Interface::type_name_static(), i ) ;
             if( !E.has_geological_feature() ) {
-                Logger::err( "" ) << E.gmge_index() << " has no geological feature"
+                Logger::err( "" ) << E.gmge() << " has no geological feature"
                     << std::endl ;
                 return false ;
             }
@@ -170,13 +170,13 @@ namespace {
         for( index_t s = 0; s < M.nb_surfaces(); ++s ) {
             const Surface& S = M.surface( s ) ;
             if( !S.has_parent() ) {
-                Logger::err( "" ) << S.gmme_index()
+                Logger::err( "" ) << S.gmme()
                     << " does not belong to any Interface of the geomodel"
                     << std::endl ;
                 return false ;
             }
             if( !S.is_simplicial() ) {
-                Logger::err( "" ) << S.gmme_index() << " is not triangulated "
+                Logger::err( "" ) << S.gmme() << " is not triangulated "
                     << std::endl ;
                 return false ;
             }
@@ -314,15 +314,15 @@ namespace {
                 for( index_t k = 0; k < S.nb_boundaries(); ++k ) {
                     const Line& L = S.boundary( k ) ;
                     index_t v0_model_id = geomodel_vertices.geomodel_vertex_id(
-                        L.gmme_index(), 0 ) ;
+                        L.gmme(), 0 ) ;
                     index_t v1_model_id = geomodel_vertices.geomodel_vertex_id(
-                        L.gmme_index(), 1 ) ;
+                        L.gmme(), 1 ) ;
 
                     std::vector< index_t > v0_surface_ids ;
-                    geomodel_vertices.mesh_entity_vertex_id( S.gmme_index(),
+                    geomodel_vertices.mesh_entity_vertex_id( S.gmme(),
                         v0_model_id, v0_surface_ids ) ;
                     std::vector< index_t > v1_surface_ids ;
-                    geomodel_vertices.mesh_entity_vertex_id( S.gmme_index(),
+                    geomodel_vertices.mesh_entity_vertex_id( S.gmme(),
                         v1_model_id, v1_surface_ids ) ;
 
                     if( !S.has_inside_border() ) {
@@ -367,7 +367,7 @@ namespace {
                     // Set a BSTONE at the line other extremity
                     const gmme_id& c1_id = L.boundary_gmme( 1 ) ;
                     std::vector< index_t > gme_vertices ;
-                    geomodel_vertices.mesh_entity_vertex_id( S.gmme_index(),
+                    geomodel_vertices.mesh_entity_vertex_id( S.gmme(),
                         geomodel_vertices.geomodel_vertex_id( c1_id ),
                         gme_vertices ) ;
                     corners.insert( gme_vertices.front() + offset ) ;

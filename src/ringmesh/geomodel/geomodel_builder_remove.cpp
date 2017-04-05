@@ -80,7 +80,7 @@ namespace RINGMesh {
             const GeoModelGeologicalEntity& cur_gmge = geomodel_.geological_entity(
                 it ) ;
             for( index_t i = 0; i < cur_gmge.nb_children(); i++ ) {
-                mesh_entities.insert( cur_gmge.child( i ).gmme_index() ) ;
+                mesh_entities.insert( cur_gmge.child( i ).gmme() ) ;
             }
         }
         remove_mesh_entities( mesh_entities ) ;
@@ -163,7 +163,7 @@ namespace RINGMesh {
         for( index_t i = 0; i < ME.nb_boundaries(); ++i ) {
             index_t old_boundary = ME.boundary_gmme( i ).index() ;
             index_t new_boundary = old_2_new_mesh_entity_[type_index][old_boundary] ;
-            builder_.topology.set_mesh_entity_boundary( ME.gmme_index(), i,
+            builder_.topology.set_mesh_entity_boundary( ME.gmme(), i,
                 new_boundary ) ;
         }
     }
@@ -182,7 +182,7 @@ namespace RINGMesh {
         for( index_t i = 0; i < E.nb_in_boundary(); ++i ) {
             index_t old_id = E.in_boundary_gmme( i ).index() ;
             index_t new_id = old_2_new_mesh_entity_[in_boundary_type_index][old_id] ;
-            builder_.topology.set_mesh_entity_in_boundary( E.gmme_index(), i,
+            builder_.topology.set_mesh_entity_in_boundary( E.gmme(), i,
                 new_id ) ;
         }
     }
@@ -195,7 +195,7 @@ namespace RINGMesh {
 
             index_t old_id = E.parent_gmge( p ).index() ;
             index_t new_id = old_2_new_geological_entity_[parent_type_index][old_id] ;
-            builder_.geology.set_mesh_entity_parent( E.gmme_index(), p,
+            builder_.geology.set_mesh_entity_parent( E.gmme(), p,
                 gmge_id( parent_type, new_id ) ) ;
         }
     }
@@ -207,7 +207,7 @@ namespace RINGMesh {
             for( index_t i = 0; i < E.nb_children(); ++i ) {
                 index_t old_id = E.child_gmme( i ).index() ;
                 index_t new_id = old_2_new_mesh_entity_[child_type][old_id] ;
-                builder_.geology.set_geological_entity_child( E.gmge_index(), i,
+                builder_.geology.set_geological_entity_child( E.gmge(), i,
                     new_id ) ;
             }
         }
@@ -244,7 +244,7 @@ namespace RINGMesh {
                 offset++ ;
             } else {
                 gmge_id new_id = E.parent_gmge( i + offset ) ;
-                builder_.geology.set_mesh_entity_parent( E.gmme_index(), i,
+                builder_.geology.set_mesh_entity_parent( E.gmme(), i,
                     new_id ) ;
             }
             new_size = i + 1 ; /// @todo Check that this is the correct size

@@ -62,14 +62,14 @@ namespace RINGMesh {
         {
         }
 
-        const gmge_id gmge_index() const
+        const gmge_id gmge() const
         {
             return gmge_id( type_name(), id_ ) ;
         }
 
         const GeologicalEntityType entity_type() const
         {
-            return gmge_index().type() ;
+            return gmge().type() ;
         }
 
         virtual const MeshEntityType child_type_name() const = 0 ;

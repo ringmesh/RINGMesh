@@ -110,7 +110,7 @@ namespace {
                     << cur_corner.index() + id_offset_adeli << " "
                     << cur_corner.nb_vertices() << " "
                     << geomodel.mesh.vertices.geomodel_vertex_id(
-                        cur_corner.gmme_index(), 0 ) + id_offset_adeli << std::endl ;
+                        cur_corner.gmme(), 0 ) + id_offset_adeli << std::endl ;
             }
         }
 
@@ -178,7 +178,7 @@ namespace {
                     v < geomodel_mesh_entity.nb_mesh_element_vertices( elt ); v++ ) {
                     out
                         << geomodel_mesh_entity.geomodel().mesh.vertices.geomodel_vertex_id(
-                            geomodel_mesh_entity.gmme_index(), elt, v )
+                            geomodel_mesh_entity.gmme(), elt, v )
                             + id_offset_adeli << " " ;
                 }
                 out << std::endl ;

@@ -81,7 +81,7 @@ namespace {
                     for( index_t v = 0; v < S.nb_mesh_element_vertices( f ); v++ ) {
                         out
                             << geomodel.mesh.vertices.geomodel_vertex_id(
-                                S.gmme_index(), f, v ) << " " ;
+                                S.gmme(), f, v ) << " " ;
                     }
                     out << std::endl ;
                 }

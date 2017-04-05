@@ -71,13 +71,13 @@ namespace RINGMesh {
 
         virtual const MeshEntityType type_name() const = 0 ;
 
-        const gmme_id gmme_index() const
+        const gmme_id gmme() const
         {
             return gmme_id( type_name(), id_ ) ;
         }
         const MeshEntityType mesh_entity_type() const
         {
-            return gmme_index().type() ;
+            return gmme().type() ;
         }
         /*!
          * @brief Global validity of the entity

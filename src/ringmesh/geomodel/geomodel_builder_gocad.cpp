@@ -97,7 +97,7 @@ namespace {
             ++i ) {
             if( geomodel.geological_entity( Interface::type_name_static(), i ).name()
                 == interface_name ) {
-                return geomodel.geological_entity( Interface::type_name_static(), i ).gmge_index() ;
+                return geomodel.geological_entity( Interface::type_name_static(), i ).gmge() ;
             }
         }
         return gmge_id() ;

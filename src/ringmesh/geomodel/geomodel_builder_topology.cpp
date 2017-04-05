@@ -62,8 +62,8 @@ namespace {
         std::vector< GMEVertex > vertices ;
         geomodel_vertices.gme_vertices( geomodel_point_id, vertices ) ;
         for( const GMEVertex& vertex : vertices ) {
-            if( vertex.gmme_index.type() == Corner::type_name_static() ) {
-                return vertex.gmme_index ;
+            if( vertex.gmme.type() == Corner::type_name_static() ) {
+                return vertex.gmme ;
             }
         }
         return gmme_id() ;
@@ -168,7 +168,7 @@ namespace RINGMesh {
                     }
                 }
                 if( no_child ) {
-                    geological_entities.insert( E.gmge_index() ) ;
+                    geological_entities.insert( E.gmge() ) ;
                 }
             }
         }
@@ -187,7 +187,7 @@ namespace RINGMesh {
                     }
                 }
                 if( no_incident ) {
-                    mesh_entities.insert( E.gmme_index() ) ;
+                    mesh_entities.insert( E.gmme() ) ;
                 }
             }
         }
@@ -227,7 +227,7 @@ namespace RINGMesh {
         gmme_id result ;
         for( index_t i = 0; i < geomodel_.nb_lines(); ++i ) {
             if( line_equal( geomodel_.line( i ), vertices ) ) {
-                result = geomodel_.line( i ).gmme_index() ;
+                result = geomodel_.line( i ).gmme() ;
             }
         }
         if( !result.is_defined() ) {
@@ -262,7 +262,7 @@ namespace RINGMesh {
                     && std::equal( cur_adjacent_surfaces.begin(),
                         cur_adjacent_surfaces.end(),
                         sorted_adjacent_surfaces.begin() ) ) {
-                    return line.gmme_index() ;
+                    return line.gmme() ;
                 }
             }
         }
