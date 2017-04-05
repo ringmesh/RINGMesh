@@ -80,9 +80,8 @@ namespace {
     void show_usage_example()
     {
         Logger::div( "Example" ) ;
-        Logger::out( "" )
-            << "ringmeshconvert in:geomodel=path/to/input/geomodel.ext "
-            << "out:geomodel=path/to/output/geomodel.ext" << std::endl ;
+        Logger::out( "", "ringmeshconvert in:geomodel=path/to/input/geomodel.ext ",
+            "out:geomodel=path/to/output/geomodel.ext" ) ;
     }
 }
 
@@ -107,7 +106,7 @@ int main( int argc, char** argv )
 
         print_header_information() ;
         Logger::div( "RINGMesh-Convert" ) ;
-        Logger::out( "" ) << "Welcome to RINGMesh-Convert !" << std::endl ;
+        Logger::out( "", "Welcome to RINGMesh-Convert !" ) ;
 
         CmdLine::import_arg_group( "in" ) ;
         CmdLine::import_arg_group( "out" ) ;
@@ -140,10 +139,10 @@ int main( int argc, char** argv )
         }
 
     } catch( const RINGMeshException& e ) {
-        Logger::err( e.category() ) << e.what() << std::endl ;
+        Logger::err( e.category(), e.what() ) ;
         return 1 ;
     } catch( const std::exception& e ) {
-        Logger::err( "Exception" ) << e.what() << std::endl ;
+        Logger::err( "Exception", e.what() ) ;
         return 1 ;
     }
     return 0 ;

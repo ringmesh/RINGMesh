@@ -158,7 +158,7 @@ namespace RINGMesh {
                         + ", 5 fields are expected, the type, id, name, "
                         + "geological feature, and mesh type" ) ;
             }
-            gmme_t entity = read_first_line( file_line  ) ;
+            gmme_t entity = read_first_line( file_line ) ;
 
             const std::string mesh_type = file_line.field( 4 ) ;
             builder_.geometry.change_mesh_data_structure( entity, mesh_type ) ;
@@ -303,7 +303,7 @@ namespace RINGMesh {
         do {
             char char_file_name[MAX_FILENAME] ;
             if( unzGetCurrentFileInfo64( uz, nullptr, char_file_name,
-                MAX_FILENAME, nullptr, 0, nullptr, 0 ) != UNZ_OK ) {
+            MAX_FILENAME, nullptr, 0, nullptr, 0 ) != UNZ_OK ) {
                 throw RINGMeshException( "I/O", "Unable to get file name" ) ;
             }
             std::string file_name( char_file_name ) ;

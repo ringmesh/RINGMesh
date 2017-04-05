@@ -217,8 +217,8 @@ namespace RINGMesh {
             const Line& line = geomodel_.line( i ) ;
             index_t nb = repair_line_mesh( line ) ;
             if( nb > 0 ) {
-                Logger::out( "GeoModel" ) << nb
-                    << " degenerated edges removed in LINE " << i << std::endl ;
+                Logger::out( "GeoModel", nb, " degenerated edges removed in LINE ",
+                    i ) ;
                 // If the Line is set it to remove
                 if( geomodel_.line( i ).nb_mesh_elements() == 0 ) {
                     to_remove.insert( geomodel_.line( i ).gmme_id() ) ;
@@ -364,9 +364,8 @@ namespace RINGMesh {
                             }
                         }
                         builder->delete_vertices( to_delete ) ;
-                        Logger::out( "Repair" ) << nb_todelete
-                            << " colocated vertices deleted in " << entity_id
-                            << std::endl ;
+                        Logger::out( "Repair", nb_todelete,
+                            " colocated vertices deleted in ", entity_id ) ;
 
                     } else if( t == 0 ) {
                         Mesh1DBuilder_var builder =
@@ -379,9 +378,8 @@ namespace RINGMesh {
                                 colocated[E.mesh_element_vertex_index( e_itr, 1 )] ) ;
                         }
                         builder->delete_vertices( to_delete ) ;
-                        Logger::out( "Repair" ) << nb_todelete
-                            << " colocated vertices deleted in " << entity_id
-                            << std::endl ;
+                        Logger::out( "Repair", nb_todelete,
+                            " colocated vertices deleted in ", entity_id ) ;
                     } else {
                         ringmesh_assert_not_reached ;
                     }

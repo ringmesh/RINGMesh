@@ -48,7 +48,6 @@
 #include <ringmesh/geomodel/geomodel_entity.h>
 #include <ringmesh/geomodel/geomodel_mesh.h>
 
-
 /*!
  * @file ringmesh/geomodel.h
  * @brief Class representing a geological structural geomodel: GeoModel
@@ -115,7 +114,7 @@ namespace RINGMesh {
          */
         index_t nb_geological_entities( const GeologicalEntityType& type ) const
         {
-                return static_cast< index_t >( geological_entities( type ).size() ) ;
+            return static_cast< index_t >( geological_entities( type ).size() ) ;
         }
         /*!
          * @brief Returns the index of the geological entity type storage
@@ -129,7 +128,8 @@ namespace RINGMesh {
 
         const GeologicalEntityType& geological_entity_type( index_t index ) const
         {
-            return entity_type_manager_.geological_entity_manager.geological_entity_type( index ) ;
+            return entity_type_manager_.geological_entity_manager.geological_entity_type(
+                index ) ;
         }
         /*!
          * @brief Returns a const reference the identified GeoModelGeologicalEntity
@@ -228,9 +228,11 @@ namespace RINGMesh {
         /*!
          * Access to the position of the entity of that type in storage.
          */
-        index_t geological_entity_type_index( const GeologicalEntityType& type ) const
+        index_t geological_entity_type_index(
+            const GeologicalEntityType& type ) const
         {
-            return entity_type_manager_.geological_entity_manager.geological_entity_type_index( type ) ;
+            return entity_type_manager_.geological_entity_manager.geological_entity_type_index(
+                type ) ;
         }
         /*!
          * @brief Generic accessor to the storage of mesh entities of the given type

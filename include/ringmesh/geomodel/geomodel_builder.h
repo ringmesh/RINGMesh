@@ -114,7 +114,9 @@ namespace RINGMesh {
         /*!
          *@brief Set the name of a geomodel geological entity
          */
-        void set_geological_entity_name( const gmge_t& gmge_id, const std::string& name )
+        void set_geological_entity_name(
+            const gmge_t& gmge_id,
+            const std::string& name )
         {
             GeoModelGeologicalEntityAccess gmge_access(
                 geomodel_access_.modifiable_geological_entity( gmge_id ) ) ;
@@ -144,7 +146,9 @@ namespace RINGMesh {
          */
         gmge_t create_geological_entity( const GeologicalEntityType& type ) ;
 
-        bool create_geological_entities( const GeologicalEntityType& type, index_t nb ) ;
+        bool create_geological_entities(
+            const GeologicalEntityType& type,
+            index_t nb ) ;
 
         /*!
          * @brief Fill the parent of all entities of the given type
@@ -183,7 +187,9 @@ namespace RINGMesh {
             gmge_access.modifiable_geol_feature() = geol_feature ;
         }
 
-        void add_mesh_entity_parent( const gmme_t& child_gmme, const gmge_t& parent_gmge )
+        void add_mesh_entity_parent(
+            const gmme_t& child_gmme,
+            const gmge_t& parent_gmge )
         {
             GeoModelMeshEntity& mesh_entity =
                 geomodel_access_.modifiable_mesh_entity( child_gmme ) ;
@@ -205,12 +211,15 @@ namespace RINGMesh {
             gmme_access.modifiable_parents()[id] = parent_gmge ;
         }
 
-        void add_geological_entity_child( const gmge_t& parent_gmge, index_t child_id )
+        void add_geological_entity_child(
+            const gmge_t& parent_gmge,
+            index_t child_id )
         {
             GeoModelGeologicalEntity& geol_entity =
                 geomodel_access_.modifiable_geological_entity( parent_gmge ) ;
             const MeshEntityType& child_type =
-                geomodel_.entity_type_manager().relationship_manager.child_type( parent_gmge.type() ) ;
+                geomodel_.entity_type_manager().relationship_manager.child_type(
+                    parent_gmge.type() ) ;
             gmme_t child( child_type, child_id ) ;
             GeoModelGeologicalEntityAccess gmge_access( geol_entity ) ;
             gmge_access.modifiable_children().push_back( child ) ;
@@ -226,13 +235,16 @@ namespace RINGMesh {
             GeoModelGeologicalEntity& geol_entity =
                 geomodel_access_.modifiable_geological_entity( parent_gmge ) ;
             const MeshEntityType& child_type =
-                geomodel_.entity_type_manager().relationship_manager.child_type( parent_gmge.type() ) ;
+                geomodel_.entity_type_manager().relationship_manager.child_type(
+                    parent_gmge.type() ) ;
             gmme_t child( child_type, child_id ) ;
             GeoModelGeologicalEntityAccess gmge_access( geol_entity ) ;
             gmge_access.modifiable_children()[id] = child ;
         }
 
-        void delete_geological_entity( const GeologicalEntityType& type, index_t index ) ;
+        void delete_geological_entity(
+            const GeologicalEntityType& type,
+            index_t index ) ;
 
     protected:
         GeoModelBuilderGeology( GeoModelBuilder& builder, GeoModel& geomodel ) ;
@@ -240,7 +252,8 @@ namespace RINGMesh {
     private:
         index_t create_geological_entity_type( const GeologicalEntityType& type ) ;
 
-        index_t find_or_create_geological_entity_type( const GeologicalEntityType& type ) ;
+        index_t find_or_create_geological_entity_type(
+            const GeologicalEntityType& type ) ;
 
         void copy_geological_entity_topology(
             const GeoModel& from,

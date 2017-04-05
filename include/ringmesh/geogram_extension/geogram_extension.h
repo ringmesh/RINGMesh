@@ -77,13 +77,11 @@ namespace RINGMesh {
      * @todo Could we set Geogram vector to be a std::vector ??
      */
     template< typename T, typename U = T >
-    GEO::vector< U > copy_std_vector_to_geo_vector(
-        const std::vector< T >& in )
+    GEO::vector< U > copy_std_vector_to_geo_vector( const std::vector< T >& in )
     {
         index_t size = static_cast< index_t >( in.size() ) ;
         return copy_std_vector_to_geo_vector< T, U >( in, 0, size ) ;
     }
-
 
     /***********************************************************************/
     /* Loading and saving a GEO::Mesh                                      */

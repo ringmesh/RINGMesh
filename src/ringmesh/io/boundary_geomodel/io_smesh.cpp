@@ -51,8 +51,8 @@ namespace {
         {
             std::ofstream out( filename.c_str() ) ;
             if( out.bad() ) {
-                Logger::err( "I/O" ) << "Error when opening the file: "
-                    << filename.c_str() << std::endl ;
+                Logger::err( "I/O", "Error when opening the file: ",
+                    filename.c_str() ) ;
                 return ;
             }
             out.precision( 16 ) ;
@@ -80,8 +80,8 @@ namespace {
                     out << S.nb_mesh_element_vertices( f ) << " " ;
                     for( index_t v = 0; v < S.nb_mesh_element_vertices( f ); v++ ) {
                         out
-                            << geomodel.mesh.vertices.geomodel_vertex_id( S.gmme_id(),
-                                f, v ) << " " ;
+                            << geomodel.mesh.vertices.geomodel_vertex_id(
+                                S.gmme_id(), f, v ) << " " ;
                     }
                     out << std::endl ;
                 }

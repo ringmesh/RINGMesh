@@ -171,8 +171,8 @@ namespace RINGMesh {
     void GeoModelBuilderRemoval::update_mesh_entity_in_boundary(
         GeoModelMeshEntity& E )
     {
-        const MeshEntityType& in_boundary_type = MeshEntityTypeManager::in_boundary_type(
-            E.mesh_entity_type() ) ;
+        const MeshEntityType& in_boundary_type =
+            MeshEntityTypeManager::in_boundary_type( E.mesh_entity_type() ) ;
         bool valid_type = MeshEntityTypeManager::is_valid_type( in_boundary_type ) ;
         if( !valid_type ) {
             return ;

@@ -70,8 +70,9 @@ namespace RINGMesh {
          *        an entity in the set does not exist.
          * @return True if at least one entity was added.
          */
-        bool get_dependent_entities( std::set< gmme_t >& in_mesh_entities, std::set< gmge_t >& in_geological_entities ) const ;
-
+        bool get_dependent_entities(
+            std::set< gmme_t >& in_mesh_entities,
+            std::set< gmge_t >& in_geological_entities ) const ;
 
         template< typename ENTITY >
         gmme_t create_mesh_entity( const MeshType mesh_type = "" )
