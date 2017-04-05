@@ -67,8 +67,7 @@ int main()
         GEO::FileLogger* file_logger = new GEO::FileLogger( log_file ) ;
         Logger::instance()->register_client( file_logger ) ;
 
-        Logger::out( "TEST" ) << "Test GeoModel building from Surface"
-            << std::endl ;
+        Logger::out( "TEST", "Test GeoModel building from Surface" ) ;
 
         GEO::Mesh in ;
         GEO::mesh_load( file_name, in ) ;
@@ -179,13 +178,13 @@ int main()
         }
 
     } catch( const RINGMeshException& e ) {
-        Logger::err( e.category() ) << e.what() << std::endl ;
+        Logger::err( e.category(), e.what() ) ;
         return 1 ;
     } catch( const std::exception& e ) {
-        Logger::err( "Exception" ) << e.what() << std::endl ;
+        Logger::err( "Exception", e.what() ) ;
         return 1 ;
     }
-    Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
+    Logger::out( "TEST", "SUCCESS" ) ;
     return 0 ;
 
 }

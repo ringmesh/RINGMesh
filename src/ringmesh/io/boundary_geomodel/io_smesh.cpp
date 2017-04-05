@@ -51,8 +51,8 @@ namespace {
         {
             std::ofstream out( filename.c_str() ) ;
             if( out.bad() ) {
-                Logger::err( "I/O" ) << "Error when opening the file: "
-                    << filename.c_str() << std::endl ;
+                Logger::err( "I/O", "Error when opening the file: ",
+                    filename.c_str() ) ;
                 return ;
             }
             out.precision( 16 ) ;

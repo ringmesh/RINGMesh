@@ -55,7 +55,7 @@ namespace {
     {
         print_header_information() ;
         Logger::div( "RINGMesh-Mesh-Quality" ) ;
-        Logger::out( "" ) << "Welcome to RINGMesh-Mesh-Quality !" << std::endl ;
+        Logger::out( "", "Welcome to RINGMesh-Mesh-Quality !" ) ;
     }
 
     void import_arg_group_quality()
@@ -139,10 +139,10 @@ int main( int argc, char** argv )
         run() ;
 
     } catch( const RINGMeshException& e ) {
-        Logger::err( e.category() ) << e.what() << std::endl ;
+        Logger::err( e.category(), e.what() ) ;
         return 1 ;
     } catch( const std::exception& e ) {
-        Logger::err( "Exception" ) << e.what() << std::endl ;
+        Logger::err( "Exception", e.what() ) ;
         return 1 ;
     }
     return 0 ;
