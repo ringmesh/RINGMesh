@@ -437,7 +437,6 @@ namespace RINGMesh {
         {
             update_mesh_storage_type( Mesh0D::create_mesh( type ) ) ;
             Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder( *mesh0d_ ) ;
-//            builder->create_vertex() ;
         }
 
         /*!

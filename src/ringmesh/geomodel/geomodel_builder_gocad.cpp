@@ -1309,7 +1309,6 @@ namespace RINGMesh {
     {
         read_file() ;
         geomodel_.mesh.vertices.test_and_initialize() ;
-        DEBUG( "load file ") ;
         from_surfaces.build_lines_and_corners_from_surfaces() ;
         build_contacts() ;
     }

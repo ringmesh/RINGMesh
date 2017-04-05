@@ -4,7 +4,7 @@ New Features:
  *
 
 Bug fix:
- *
+ * Crash fix: when calling GeoModelMeshVertices.nb() when Corner was not set.
 
 Improvements:
  * Refactoring of the io to have smaller files
