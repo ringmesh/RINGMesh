@@ -389,12 +389,12 @@ namespace RINGMesh {
             return 0 ;
         }
         /*!
-         * @return 1 the number of vertices of the Corner
+         * @return the number of vertices of the Corner
          */
         virtual index_t nb_mesh_element_vertices( index_t mesh_element = 0 ) const override
         {
             ringmesh_unused( mesh_element ) ;
-            return 1 ;
+            return mesh0d_->nb_vertices() ;
         }
 
         const Line& in_boundary( index_t x ) const ;
@@ -437,7 +437,7 @@ namespace RINGMesh {
         {
             update_mesh_storage_type( Mesh0D::create_mesh( type ) ) ;
             Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder( *mesh0d_ ) ;
-            builder->create_vertex() ;
+//            builder->create_vertex() ;
         }
 
         /*!
