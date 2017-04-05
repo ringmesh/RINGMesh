@@ -385,7 +385,7 @@ namespace RINGMesh {
         {
             return mesh_->cells.facet( cell_id, facet_id ) ;
         }
-      
+
         /*!
          * @brief Gets the number of facet in a cell
          * @param[in] cell_id index of the cell

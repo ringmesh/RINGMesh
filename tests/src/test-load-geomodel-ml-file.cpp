@@ -65,8 +65,8 @@ int main()
             std::string input_model_file_name = ringmesh_test_data_path
                 + input_model_name ;
 
-            Logger::out( "TEST" ) << "Geomodel input test. Loading file "
-                << input_model_file_name << std::endl ;
+            Logger::out( "TEST", "Geomodel input test. Loading file ",
+                input_model_file_name ) ;
 
             GeoModel in ;
             bool loaded_model_is_valid = geomodel_load( in, input_model_file_name ) ;
@@ -109,13 +109,13 @@ int main()
         geomodel_load( not_sealed_cube_geomodel, input_cube_model_file_name ) ;
 
     } catch( const RINGMeshException& e ) {
-        Logger::err( e.category() ) << e.what() << std::endl ;
+        Logger::err( e.category(), e.what() ) ;
         return 1 ;
     } catch( const std::exception& e ) {
-        Logger::err( "Exception" ) << e.what() << std::endl ;
+        Logger::err( "Exception", e.what() ) ;
         return 1 ;
     }
-    Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
+    Logger::out( "TEST", "SUCCESS" ) ;
     return 0 ;
 
 }
