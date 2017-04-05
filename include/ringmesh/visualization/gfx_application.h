@@ -157,9 +157,9 @@ namespace RINGMesh {
             void toggle_line_and_boundaries_visibility( index_t line_id ) ;
             void toggle_surface_and_boundaries_visibility( index_t surface_id ) ;
             void toggle_region_and_boundaries_visibility( index_t region_id ) ;
-            void toggle_geological_entity_visibility( const gmge_t& entity_id ) ;
+            void toggle_geological_entity_visibility( const gmge_id& entity_id ) ;
             void toggle_mesh_entity_and_boundaries_visibility(
-                const gmme_t& entity_id ) ;
+                const gmme_id& entity_id ) ;
 
         public:
             RINGMeshApplication& app_ ;
