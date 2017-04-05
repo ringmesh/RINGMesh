@@ -52,7 +52,9 @@
 namespace RINGMesh {
     class GeoModel ;
     class GeoModelGeologicalEntity ;
+}
 
+namespace RINGMesh {
     /*!
      * @brief Abstract base class for GeoModelMeshEntity.
      * @details The GeoModelMeshEntity geometrical representation
@@ -395,6 +397,8 @@ namespace RINGMesh {
             return 1 ;
         }
 
+        const Line& in_boundary( index_t x ) const ;
+
         /*! @}
          * \name Geometrical request on Corner
          * @{
@@ -493,6 +497,10 @@ namespace RINGMesh {
         }
 
         virtual bool is_on_voi() const final ;
+
+        const Corner& boundary( index_t x ) const ;
+
+        const Surface& in_boundary( index_t x ) const ;
 
         virtual bool is_connectivity_valid() const final ;
 
@@ -639,6 +647,10 @@ namespace RINGMesh {
         }
 
         virtual bool is_on_voi() const final ;
+
+        const Line& boundary( index_t x ) const ;
+
+        const Region& in_boundary( index_t x ) const ;
 
         bool is_simplicial() const
         {
@@ -974,6 +986,8 @@ namespace RINGMesh {
         }
 
         virtual bool is_on_voi() const final ;
+
+        const Surface& boundary( index_t x ) const ;
 
         virtual bool is_connectivity_valid() const final ;
 
