@@ -229,7 +229,7 @@ void decompose_in_tet(
 
 void test_AABB2D()
 {
-    Logger::out( "TEST" ) << "Test AABB 2D" << std::endl ;
+    Logger::out( "TEST" , "Test AABB 2D" ) ;
     GeogramMesh2D geogram_mesh ;
     Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder( geogram_mesh ) ;
 
@@ -257,7 +257,7 @@ void test_locate_cell_on_3D_mesh( const GeogramMesh3D& mesh )
 
 void test_AABB3D()
 {
-    Logger::out( "TEST" ) << "Test AABB 3D" << std::endl ;
+    Logger::out( "TEST" , "Test AABB 3D" ) ;
     GeogramMesh3D geogram_mesh_hex ;
     Mesh3DBuilder_var builder = Mesh3DBuilder::create_builder( geogram_mesh_hex ) ;
 
@@ -287,7 +287,7 @@ void test_locate_edge_on_1D_mesh( const GeogramMesh1D& mesh )
 
 void test_AABB1D()
 {
-    Logger::out( "TEST" ) << "Test AABB 1D" << std::endl ;
+    Logger::out( "TEST" , "Test AABB 1D" ) ;
     GeogramMesh1D geogram_mesh ;
     Mesh1DBuilder_var builder = Mesh1DBuilder::create_builder( geogram_mesh ) ;
 
@@ -304,18 +304,18 @@ int main()
     try {
         default_configure() ;
 
-        Logger::out( "TEST" ) << "Test AABB" << std::endl ;
+        Logger::out( "TEST" , "Test AABB" ) ;
         test_AABB1D() ;
         test_AABB2D() ;
         test_AABB3D() ;
 
     } catch( const RINGMeshException& e ) {
-        Logger::err( e.category() ) << e.what() << std::endl ;
+        Logger::err( e.category() , e.what() ) ;
         return 1 ;
     } catch( const std::exception& e ) {
-        Logger::err( "Exception" ) << e.what() << std::endl ;
+        Logger::err( "Exception" , e.what() ) ;
         return 1 ;
     }
-    Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
+    Logger::out( "TEST" , "SUCCESS" ) ;
     return 0 ;
 }

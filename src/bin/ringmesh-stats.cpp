@@ -71,7 +71,7 @@ int main( int argc, char** argv )
 
         print_header_information() ;
         Logger::div( "RINGMesh-Stats" ) ;
-        Logger::out( "" ) << "Welcome to RINGMesh-Stats !" << std::endl ;
+        Logger::out( "", "Welcome to RINGMesh-Stats !" ) ;
 
         CmdLine::import_arg_group( "in" ) ;
         import_arg_group_stats() ;
@@ -105,10 +105,10 @@ int main( int argc, char** argv )
         }
 
     } catch( const RINGMeshException& e ) {
-        Logger::err( e.category() ) << e.what() << std::endl ;
+        Logger::err( e.category(), e.what() ) ;
         return 1 ;
     } catch( const std::exception& e ) {
-        Logger::err( "Exception" ) << e.what() << std::endl ;
+        Logger::err( "Exception", e.what() ) ;
         return 1 ;
     }
     return 0 ;

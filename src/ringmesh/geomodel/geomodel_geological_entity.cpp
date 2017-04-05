@@ -49,8 +49,8 @@ namespace {
     bool check_has_children( const GeoModelGeologicalEntity& E )
     {
         if( E.nb_children() == 0 ) {
-            Logger::warn( "GeoModel" ) << E.type_name() << " " << E.index()
-                << " has no children" << std::endl ;
+            Logger::warn( "GeoModel", E.type_name(), " ", E.index(),
+                " has no children" ) ;
             return false ;
         }
         return true ;
@@ -81,18 +81,18 @@ namespace RINGMesh {
     {
         bool valid = true ;
         if( nb_children() == 0 ) {
-            Logger::warn( "GeologicalEntity" ) << gmge()
-                << " is undefined. No child. " << std::endl ;
+            Logger::warn( "GeologicalEntity", gmge(),
+                " is undefined. No child. " ) ;
             valid = false ;
         } else {
             // All children must have this entity as a parent
             const GeologicalEntityType entity_type = type_name() ;
             for( index_t i = 0; i < nb_children(); ++i ) {
                 const GeoModelMeshEntity& one_child = child( i ) ;
-                if (one_child.parent_gmge(entity_type) != gmge()) {
-                    Logger::warn( "GeoModelEntity" )
-                        << "Inconsistency child-parent between " << gmge()
-                        << " and " << one_child.gmme() << std::endl ;
+                if( one_child.parent_gmge( entity_type ) != gmge() ) {
+                    Logger::warn( "GeoModelEntity",
+                        "Inconsistency child-parent between ", gmge(), " and ",
+                        one_child.gmme() ) ;
                     valid = false ;
                 }
             }
@@ -104,18 +104,19 @@ namespace RINGMesh {
     {
         bool is_valid = true ;
         if( !gmge().is_defined() ) {
-            Logger::err( "GeoModelGeologicalEntity" ) << " Entity associated to geomodel "
-                << geomodel().name() << "has no type and/or no index " << std::endl ;
+            Logger::err( "GeoModelGeologicalEntity",
+                " Entity associated to geomodel ", geomodel().name(),
+                "has no type and/or no index " ) ;
             is_valid = false ;
             // No further checks are possible - This really should not happen
-            ringmesh_assert_not_reached;
+            ringmesh_assert_not_reached ;
         }
         if( !is_index_valid() ) {
-            Logger::warn( "GeoModelGeologicalEntity" ) << " Entity index " << gmge()
-                << " is not valid. " << std::endl ;
+            Logger::warn( "GeoModelGeologicalEntity", " Entity index ", gmge(),
+                " is not valid. " ) ;
             // This really should not happen
             is_valid = false ;
-            ringmesh_assert_not_reached;
+            ringmesh_assert_not_reached ;
         }
         return is_valid ;
     }

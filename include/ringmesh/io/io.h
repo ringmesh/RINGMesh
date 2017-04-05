@@ -67,11 +67,11 @@ namespace GEO {
 namespace RINGMesh {
 
     /*!
-    * Compares the contains of two files
-    * @param[in] f1 the first filename
-    * @param[in] f2 the second filename
-    * @return return True if the files are identical
-    */
+     * Compares the contains of two files
+     * @param[in] f1 the first filename
+     * @param[in] f2 the second filename
+     * @return return True if the files are identical
+     */
     bool RINGMESH_API compare_files( const std::string& f1, const std::string& f2 ) ;
     /*!
      * Loads a GeoModel from a file

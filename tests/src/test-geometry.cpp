@@ -45,7 +45,7 @@ using namespace RINGMesh ;
 
 void test_triangle_barycentric_coordinates()
 {
-    Logger::out( "TEST" ) << "Test triangle barycentric coordinates" << std::endl ;
+    Logger::out( "TEST", "Test triangle barycentric coordinates" ) ;
     vec3 p0( 0, 0, 0 ) ;
     vec3 p1( 1, 0, 0 ) ;
     vec3 p2( 0, 1, 0 ) ;
@@ -70,7 +70,7 @@ void test_triangle_barycentric_coordinates()
 
 void test_point_plane_projection()
 {
-    Logger::out( "TEST" ) << "Test point plane projection" << std::endl ;
+    Logger::out( "TEST", "Test point plane projection" ) ;
 
     vec3 test0( 1, 1, 1 ) ;
     vec3 N0( 0, 0, 2 ) ;
@@ -98,18 +98,18 @@ int main()
     try {
         default_configure() ;
 
-        Logger::out( "TEST" ) << "Test geometric tools" << std::endl ;
+        Logger::out( "TEST", "Test geometric tools" ) ;
 
         test_triangle_barycentric_coordinates() ;
         test_point_plane_projection() ;
 
     } catch( const RINGMeshException& e ) {
-        Logger::err( e.category() ) << e.what() << std::endl ;
+        Logger::err( e.category(), e.what() ) ;
         return 1 ;
     } catch( const std::exception& e ) {
-        Logger::err( "Exception" ) << e.what() << std::endl ;
+        Logger::err( "Exception", e.what() ) ;
         return 1 ;
     }
-    Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
+    Logger::out( "TEST", "SUCCESS" ) ;
     return 0 ;
 }
