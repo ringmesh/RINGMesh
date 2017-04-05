@@ -396,14 +396,14 @@ namespace RINGMesh {
                 selected_entity_id_ = std::min(
                     static_cast< int >( GM_.nb_mesh_entities( type ) - 1 ),
                     selected_entity_id_ ) ;
-                gmme_t entity_id( type,
+                gmme_id entity_id( type,
                     static_cast< index_t >( selected_entity_id_ ) ) ;
                 toggle_mesh_entity_and_boundaries_visibility( entity_id ) ;
             } else {
                 selected_entity_id_ = std::min(
                     static_cast< int >( GM_.nb_geological_entities( type ) - 1 ),
                     selected_entity_id_ ) ;
-                gmge_t entity_id( type,
+                gmge_id entity_id( type,
                     static_cast< index_t >( selected_entity_id_ ) ) ;
                 toggle_geological_entity_visibility( entity_id ) ;
             }
@@ -472,14 +472,14 @@ namespace RINGMesh {
                 selected_entity_id_ = std::min(
                     static_cast< int >( GM_.nb_mesh_entities( type ) - 1 ),
                     selected_entity_id_ ) ;
-                gmme_t entity_id( type,
+                gmme_id entity_id( type,
                     static_cast< index_t >( selected_entity_id_ ) ) ;
                 toggle_mesh_entity_and_boundaries_visibility( entity_id ) ;
             } else {
                 selected_entity_id_ = std::min(
                     static_cast< int >( GM_.nb_geological_entities( type ) - 1 ),
                     selected_entity_id_ ) ;
-                gmge_t entity_id( type,
+                gmge_id entity_id( type,
                     static_cast< index_t >( selected_entity_id_ ) ) ;
                 toggle_geological_entity_visibility( entity_id ) ;
             }
@@ -487,7 +487,7 @@ namespace RINGMesh {
     }
 
     void RINGMeshApplication::GeoModelViewer::toggle_mesh_entity_and_boundaries_visibility(
-        const gmme_t& entity_id )
+        const gmme_id& entity_id )
     {
         if( MeshEntityTypeManager::is_corner( entity_id.type() ) ) {
             toggle_corner_visibility( entity_id.index() ) ;
@@ -546,11 +546,11 @@ namespace RINGMesh {
     }
 
     void RINGMeshApplication::GeoModelViewer::toggle_geological_entity_visibility(
-        const gmge_t& entity_id )
+        const gmge_id& entity_id )
     {
         const GeoModelGeologicalEntity& entity = GM_.geological_entity( entity_id ) ;
         for( index_t i = 0; i < entity.nb_children(); i++ ) {
-            const gmme_t& child_id = entity.child_gmme( i ) ;
+            const gmme_id& child_id = entity.child_gmme( i ) ;
             toggle_mesh_entity_and_boundaries_visibility( child_id ) ;
         }
     }
