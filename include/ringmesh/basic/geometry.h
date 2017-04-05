@@ -341,25 +341,6 @@ namespace RINGMesh {
         bool exact_predicates = false ) ;
 
     /*!
-     * Tests if a point is inside a quad, more precisely if it is inside the box
-     * based on the quad and its normal
-     * @param[in] p the point to test
-     * @param[in] p0 the first vertex of the quad
-     * @param[in] p1 the second vertex of the quad
-     * @param[in] p2 the third vertex of the quad
-     * @param[in] p3 the fourth vertex of the quad
-     * @param[in] exact_predicates if true, the algorithm uses exact predicates
-     * @return returns true if the point is inside
-     */
-    bool RINGMESH_API point_inside_quad(
-        const vec3& p,
-        const vec3& p0,
-        const vec3& p1,
-        const vec3& p2,
-        const vec3& p3,
-        bool exact_predicates = false ) ;
-
-    /*!
      * Tests if a point is inside a tetrahedron
      * @param[in] p the point to test
      * @param[in] p0 the first vertex of the tetrahedron
@@ -375,74 +356,6 @@ namespace RINGMesh {
         const vec3& p1,
         const vec3& p2,
         const vec3& p3,
-        bool exact_predicates = false ) ;
-
-    /*!
-     * Tests if a point is inside a pyramid
-     * @param[in] p the point to test
-     * @param[in] p0 the first vertex of the pyramid
-     * @param[in] p1 the second vertex of the pyramid
-     * @param[in] p2 the third vertex of the pyramid
-     * @param[in] p3 the fourth vertex of the pyramid
-     * @param[in] p4 the fifth vertex of the pyramid
-     * @param[in] exact_predicates if true, the algorithm uses exact predicates
-     * @return returns true if the point is inside the pyramid
-     */
-    bool RINGMESH_API point_inside_pyramid(
-        const vec3& p,
-        const vec3& p0,
-        const vec3& p1,
-        const vec3& p2,
-        const vec3& p3,
-        const vec3& p4,
-        bool exact_predicates = false ) ;
-
-    /*!
-     * Tests if a point is inside a prism
-     * @param[in] p the point to test
-     * @param[in] p0 the first vertex of the prism
-     * @param[in] p1 the second vertex of the prism
-     * @param[in] p2 the third vertex of the prism
-     * @param[in] p3 the fourth vertex of the prism
-     * @param[in] p4 the fifth vertex of the prism
-     * @param[in] p5 the sixth vertex of the prism
-     * @param[in] exact_predicates if true, the algorithm uses exact predicates
-     * @return returns true if the point is inside the prism
-     */
-    bool RINGMESH_API point_inside_prism(
-        const vec3& p,
-        const vec3& p0,
-        const vec3& p1,
-        const vec3& p2,
-        const vec3& p3,
-        const vec3& p4,
-        const vec3& p5,
-        bool exact_predicates = false ) ;
-
-    /*!
-     * Tests if a point is inside a hexahedron
-     * @param[in] p the point to test
-     * @param[in] p0 the first vertex of the hexahedron
-     * @param[in] p1 the second vertex of the hexahedron
-     * @param[in] p2 the third vertex of the hexahedron
-     * @param[in] p3 the fourth vertex of the hexahedron
-     * @param[in] p4 the fifth vertex of the hexahedron
-     * @param[in] p5 the sixth vertex of the hexahedron
-     * @param[in] p6 the seventh vertex of the hexahedron
-     * @param[in] p7 the heigth vertex of the hexahedron
-     * @param[in] exact_predicates if true, the algorithm uses exact predicates
-     * @return returns true if the point is inside the hexahedron
-     */
-    bool RINGMESH_API point_inside_hexa(
-        const vec3& p,
-        const vec3& p0,
-        const vec3& p1,
-        const vec3& p2,
-        const vec3& p3,
-        const vec3& p4,
-        const vec3& p5,
-        const vec3& p6,
-        const vec3& p7,
         bool exact_predicates = false ) ;
 
     /*!
