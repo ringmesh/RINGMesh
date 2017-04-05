@@ -119,7 +119,7 @@ namespace RINGMesh {
        }
    }
 
-   const GeoModelMeshEntity& GeoModel::mesh_entity( gmme_t id ) const
+   const GeoModelMeshEntity& GeoModel::mesh_entity( gmme_id id ) const
    {
        const MeshEntityType& type = id.type() ;
        index_t index = id.index() ;

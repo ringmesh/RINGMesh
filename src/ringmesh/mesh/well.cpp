@@ -76,7 +76,7 @@ namespace {
         bool side )
     {
         ringmesh_assert( surface_part_id < geomodel.nb_surfaces() ) ;
-        gmme_t cur_surface( Surface::type_name_static(), surface_part_id ) ;
+        gmme_id cur_surface( Surface::type_name_static(), surface_part_id ) ;
         const Surface& surface = geomodel.surface( surface_part_id ) ;
         for( index_t r = 0; r < surface.nb_in_boundary(); r++ ) {
             const Region& cur_region =

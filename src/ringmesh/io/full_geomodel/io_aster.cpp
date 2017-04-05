@@ -34,19 +34,19 @@
  */
 
 namespace {
-    const static std::string tet_name_in_aster_mail_file = "TETRA4" ;
-    const static std::string hex_name_in_aster_mail_file = "HEXA10" ;
-    const static std::string prism_name_in_aster_mail_file = "PENTA6" ;
-    const static std::string pyr_name_in_aster_mail_file = "PYRAM5" ;
+    static const std::string tet_name_in_aster_mail_file = "TETRA4" ;
+    static const std::string hex_name_in_aster_mail_file = "HEXA10" ;
+    static const std::string prism_name_in_aster_mail_file = "PENTA6" ;
+    static const std::string pyr_name_in_aster_mail_file = "PYRAM5" ;
 
-    const static std::string* cell_name_in_aster_mail_file[4] = {
+    static const std::string* cell_name_in_aster_mail_file[4] = {
         &tet_name_in_aster_mail_file, &hex_name_in_aster_mail_file,
         &prism_name_in_aster_mail_file, &pyr_name_in_aster_mail_file } ;
 
-    const static std::string triangle_name_in_aster_mail_file = "TRIA3" ;
-    const static std::string quad_name_in_aster_mail_file = "QUAD4" ;
+    static const std::string triangle_name_in_aster_mail_file = "TRIA3" ;
+    static const std::string quad_name_in_aster_mail_file = "QUAD4" ;
 
-    const static std::string* facet_name_in_aster_mail_file[2] = {
+    static const std::string* facet_name_in_aster_mail_file[2] = {
         &triangle_name_in_aster_mail_file, &quad_name_in_aster_mail_file } ;
     /*!
      * @brief Export to the .mail mesh format of code aster

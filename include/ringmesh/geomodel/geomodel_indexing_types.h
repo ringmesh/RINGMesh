@@ -41,7 +41,7 @@
 /*!
  * @brief Structures and classes used to index elements in a GeoModel,
  * in the meshes of its entities etc.
- * @note Goal: decrease dependancies between header files. 
+ * @note Goal: decrease dependencies between header files.
  * @author Jeanne Pellerin
  */
 
@@ -51,25 +51,25 @@ namespace RINGMesh {
      * @brief Vertex in a GeoModelEntity
      */
     struct GMEVertex {
-        GMEVertex( gmme_t t, index_t vertex_id_in )
-            : gmme_id( t ), v_id( vertex_id_in )
+        GMEVertex( gmme_id t, index_t vertex_id_in )
+            : gmme( t ), v_index( vertex_id_in )
         {
         }
         GMEVertex()
-            : gmme_id(), v_id( NO_ID )
+            : gmme(), v_index( NO_ID )
         {
         }
         bool operator==( const GMEVertex& rhs ) const
         {
-            return gmme_id == rhs.gmme_id && v_id == rhs.v_id ;
+            return gmme == rhs.gmme && v_index == rhs.v_index ;
         }
         bool is_defined() const
         {
-            return gmme_id.is_defined() && v_id != NO_ID ;
+            return gmme.is_defined() && v_index != NO_ID ;
         }
         /// GeoModelEntity index in the GeoModel that owns it
-        gmme_t gmme_id ;
+        gmme_id gmme ;
         /// Index of the vertex in the GeoModelEntity
-        index_t v_id ;
+        index_t v_index ;
     } ;
 }

@@ -119,7 +119,7 @@ namespace RINGMesh {
             index_t vertex_id_in_surface,
             const vec3& vertex_pos ) const ;
         bool is_surface_or_region_on_the_right_side_of_the_fault(
-            const gmme_t& cur_gmme_t,
+            const gmme_id& cur_gmme_t,
             const vec3& normal_on_vertex_interface,
             index_t vertex_id_in_gmme,
             const vec3& vertex_pos,
