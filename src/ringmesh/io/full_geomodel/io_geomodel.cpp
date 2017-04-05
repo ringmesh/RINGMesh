@@ -187,7 +187,7 @@ namespace {
     template< typename ENTITY >
     std::string build_string_for_geomodel_entity_export( const ENTITY& entity )
     {
-        const gmme_t& id = entity.gmme_id() ;
+        const gmme_id& id = entity.gmme_id() ;
         std::string base_name = static_cast< std::string >( id.type() ) + "_"
             + GEO::String::to_string( id.index() ) ;
         return base_name + "." + entity.low_level_mesh_storage().default_extension() ;

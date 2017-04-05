@@ -352,8 +352,8 @@ namespace {
      */
     bool is_in_in_boundary(
         const GeoModel& geomodel,
-        const gmme_t& is,
-        const gmme_t& in )
+        const gmme_id& is,
+        const gmme_id& in )
     {
         const GeoModelMeshEntity& E = geomodel.mesh_entity( in ) ;
         for( index_t i = 0; i < E.nb_in_boundary(); ++i ) {
@@ -507,8 +507,8 @@ namespace {
                         // the lines 
                         for( index_t surface : surfaces ) {
                             for( index_t line : lines ) {
-                                gmme_t s_id( Surface::type_name_static(), surface ) ;
-                                gmme_t l_id( Line::type_name_static(), line ) ;
+                                gmme_id s_id( Surface::type_name_static(), surface ) ;
+                                gmme_id l_id( Line::type_name_static(), line ) ;
                                 if( !is_in_in_boundary( geomodel, s_id, l_id ) ) {
                                     Logger::warn( "GeoModel" )
                                         << " Inconsistent Line-Surface connectivity "
@@ -557,8 +557,8 @@ namespace {
                         }
                         // Check that all the lines are in in_boundary of this corner
                         for( index_t line : lines ) {
-                            gmme_t l_id( Line::type_name_static(), line ) ;
-                            gmme_t c_id( Corner::type_name_static(), corner ) ;
+                            gmme_id l_id( Line::type_name_static(), line ) ;
+                            gmme_id c_id( Corner::type_name_static(), corner ) ;
                             if( !is_in_in_boundary( geomodel, l_id, c_id ) ) {
                                 Logger::warn( "GeoModel" )
                                     << " Inconsistent Line-Corner connectivity "

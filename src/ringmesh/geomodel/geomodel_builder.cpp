@@ -48,7 +48,7 @@
 namespace {
     using namespace RINGMesh ;
 
-    gmme_t find_corner( const GeoModel& geomodel, index_t geomodel_point_id )
+    gmme_id find_corner( const GeoModel& geomodel, index_t geomodel_point_id )
     {
         const GeoModelMeshVertices& geomodel_vertices = geomodel.mesh.vertices ;
         std::vector< GMEVertex > vertices ;
@@ -58,7 +58,7 @@ namespace {
                 return vertex.gmme_id ;
             }
         }
-        return gmme_t() ;
+        return gmme_id() ;
     }
 
     /*!
@@ -112,7 +112,7 @@ namespace {
             return ;
         }
         for( index_t i = 1; i + 1 < line_vertices.size(); ++i ) {
-            gmme_t corner = find_corner( geomodel, line_vertices[i] ) ;
+            gmme_id corner = find_corner( geomodel, line_vertices[i] ) ;
             if( corner.is_defined() ) {
                 line_vertices.pop_back() ;
                 std::rotate( line_vertices.begin(), line_vertices.begin() + i,
@@ -844,15 +844,15 @@ namespace RINGMesh {
                     vertices ) ;
             }
 
-            gmme_t first_corner = builder_.topology.find_or_create_corner(
+            gmme_id first_corner = builder_.topology.find_or_create_corner(
                 vertices.front() ) ;
-            gmme_t second_corner = builder_.topology.find_or_create_corner(
+            gmme_id second_corner = builder_.topology.find_or_create_corner(
                 vertices.back() ) ;
             const std::vector< index_t >& adjacent_surfaces =
                 line_computer.adjacent_surfaces() ;
 
             index_t backup_nb_lines = geomodel_.nb_lines() ;
-            gmme_t line_index = builder_.topology.find_or_create_line(
+            gmme_id line_index = builder_.topology.find_or_create_line(
                 adjacent_surfaces, first_corner, second_corner ) ;
 
             bool created_line = geomodel_.nb_lines() != backup_nb_lines ;
@@ -909,7 +909,7 @@ namespace RINGMesh {
                 /// the + side. No further check.
                 bool inside = true ;
                 // Create the region - set the surface on its boundaries
-                gmme_t region_id = builder_.topology.create_mesh_entity< Region >() ;
+                gmme_id region_id = builder_.topology.create_mesh_entity< Region >() ;
                 builder_.topology.add_mesh_entity_boundary( region_id, 0, inside ) ;
 
                 // Set universe boundary
@@ -934,7 +934,7 @@ namespace RINGMesh {
                     continue ;
                 }
                 // Create a new region
-                gmme_t cur_region_id =
+                gmme_id cur_region_id =
                     builder_.topology.create_mesh_entity< Region >() ;
                 // Get all oriented surfaces defining this region
                 std::stack< std::pair< index_t, bool > > SR ;
@@ -1004,7 +1004,7 @@ namespace RINGMesh {
                 builder_.topology.add_universe_boundary(
                     cur_region.boundary( i ).index(), cur_region.side( i ) ) ;
             }
-            std::set< gmme_t > to_erase ;
+            std::set< gmme_id > to_erase ;
             to_erase.insert( cur_region.gmme_id() ) ;
             builder_.removal.remove_mesh_entities( to_erase ) ;
         }
@@ -1204,7 +1204,7 @@ namespace RINGMesh {
         } else {
             for( index_t i = 0; i < geomodel_.nb_mesh_entities( type ); ++i ) {
                 GeoModelMeshEntity& E = geomodel_access_.modifiable_mesh_entity(
-                    gmme_t( type, i ) ) ;
+                    gmme_id( type, i ) ) ;
                 if( !E.has_geological_feature() ) {
                     if( E.nb_parents() > 0
                         && E.parent( 0 ).has_geological_feature() ) {
@@ -1229,7 +1229,7 @@ namespace RINGMesh {
             for( index_t i = 0; i < geomodel_.nb_geological_entities( type ); ++i ) {
                 GeoModelGeologicalEntity& parent =
                     geomodel_access_.modifiable_geological_entity(
-                        gmge_t( type, i ) ) ;
+                        gmge_id( type, i ) ) ;
                 if( !parent.has_geological_feature() ) {
                     if( parent.nb_children() > 0
                         && parent.child( 0 ).has_geological_feature() ) {
@@ -1242,7 +1242,7 @@ namespace RINGMesh {
         }
     }
 
-    gmge_t GeoModelBuilderGeology::create_geological_entity(
+    gmge_id GeoModelBuilderGeology::create_geological_entity(
         const GeologicalEntityType& type )
     {
         index_t index = find_or_create_geological_entity_type( type ) ;
@@ -1297,7 +1297,7 @@ namespace RINGMesh {
 
         RINGMESH_PARALLEL_LOOP
         for( index_t e = 0; e < geomodel_.nb_geological_entities( type ); ++e ) {
-            gmge_t id( type, e ) ;
+            gmge_id id( type, e ) ;
             GeoModelGeologicalEntityAccess gmge_access(
                 geomodel_access_.modifiable_geological_entity( id ) ) ;
             gmge_access.copy( from.geological_entity( id ) ) ;

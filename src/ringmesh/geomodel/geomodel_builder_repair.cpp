@@ -95,8 +95,8 @@ namespace RINGMesh {
 
     void GeoModelBuilderRepair::remove_colocated_entity_vertices_and_update_gm()
     {
-        std::set< gmme_t > empty_mesh_entities ;
-        std::set< gmge_t > empty_geological_entities ;
+        std::set< gmme_id > empty_mesh_entities ;
+        std::set< gmge_id > empty_geological_entities ;
 
         remove_colocated_entity_vertices( empty_mesh_entities ) ;
         if( !empty_mesh_entities.empty() ) {
@@ -108,7 +108,7 @@ namespace RINGMesh {
 
     void GeoModelBuilderRepair::remove_degenerate_facets_and_edges_and_update_gm()
     {
-        std::set< gmme_t > empty_mesh_entities ;
+        std::set< gmme_id > empty_mesh_entities ;
         remove_degenerate_facets_and_edges( empty_mesh_entities ) ;
         /// TODO when it will works,
         /// use GeoModelBuilderRemoval::remove_entities_and_dependencies
@@ -210,7 +210,7 @@ namespace RINGMesh {
     }
 
     void GeoModelBuilderRepair::remove_degenerate_facets_and_edges(
-        std::set< gmme_t >& to_remove )
+        std::set< gmme_id >& to_remove )
     {
         to_remove.clear() ;
         for( index_t i = 0; i < geomodel_.nb_lines(); ++i ) {
@@ -261,7 +261,7 @@ namespace RINGMesh {
     }
 
     void GeoModelBuilderRepair::vertices_on_inside_boundary(
-        const gmme_t& E_id,
+        const gmme_id& E_id,
         std::set< index_t >& vertices )
     {
         vertices.clear() ;
@@ -306,7 +306,7 @@ namespace RINGMesh {
     }
 
     void GeoModelBuilderRepair::remove_colocated_entity_vertices(
-        std::set< gmme_t >& to_remove )
+        std::set< gmme_id >& to_remove )
     {
         to_remove.clear() ;
         // For all Lines and Surfaces
@@ -316,7 +316,7 @@ namespace RINGMesh {
             const MeshEntityType& T = types[t] ;
 
             for( index_t e = 0; e < geomodel_.nb_mesh_entities( T ); ++e ) {
-                gmme_t entity_id( T, e ) ;
+                gmme_id entity_id( T, e ) ;
                 const GeoModelMeshEntity& E = geomodel_.mesh_entity( entity_id ) ;
 
                 const NNSearch& kdtree = E.vertex_nn_search() ;

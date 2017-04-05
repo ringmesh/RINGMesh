@@ -365,7 +365,7 @@ namespace {
                         }
                     }
                     // Set a BSTONE at the line other extremity
-                    const gmme_t& c1_id = L.boundary_gmme( 1 ) ;
+                    const gmme_id& c1_id = L.boundary_gmme( 1 ) ;
                     std::vector< index_t > gme_vertices ;
                     geomodel_vertices.mesh_entity_vertex_id( S.gmme_id(),
                         geomodel_vertices.geomodel_vertex_id( c1_id ),

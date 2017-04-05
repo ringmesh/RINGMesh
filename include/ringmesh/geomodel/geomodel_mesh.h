@@ -146,7 +146,7 @@ namespace RINGMesh {
          * @return if found the vertex index in the geomodel, else NO_ID.
          */
         index_t geomodel_vertex_id(
-            const gmme_t& mesh_entity,
+            const gmme_id& mesh_entity,
             index_t entity_vertex_index = 0 ) const ;
 
         /*!
@@ -158,7 +158,7 @@ namespace RINGMesh {
          * @return if found the vertex index in the geomodel, else NO_ID.
          */
         index_t geomodel_vertex_id(
-            const gmme_t& mesh_entity,
+            const gmme_id& mesh_entity,
             index_t entity_mesh_element_index,
             index_t vertex_local_index ) const ;
 
@@ -169,7 +169,7 @@ namespace RINGMesh {
          * @param[out] mesh_entity_vertex_ids Corresponding GeoModelMeshEntity vertices
          */
         void mesh_entity_vertex_id(
-            const gmme_t& mesh_entity,
+            const gmme_id& mesh_entity,
             index_t geomodel_vertex_id,
             std::vector< index_t >& mesh_entity_vertex_ids ) const ;
 
@@ -209,7 +209,7 @@ namespace RINGMesh {
         void update_point( index_t v, const vec3& point ) ;
 
         void update_vertex_mapping(
-            const gmme_t& entity_id,
+            const gmme_id& entity_id,
             index_t entity_vertex_index,
             index_t geomodel_vertex_index ) ;
 
@@ -220,9 +220,9 @@ namespace RINGMesh {
          */
         void clear() ;
 
-        void unbind_geomodel_vertex_map( const gmme_t& mesh_entity_id ) ;
+        void unbind_geomodel_vertex_map( const gmme_id& mesh_entity_id ) ;
 
-        void bind_geomodel_vertex_map( const gmme_t& mesh_entity_id ) ;
+        void bind_geomodel_vertex_map( const gmme_id& mesh_entity_id ) ;
 
         const NNSearch& nn_search() const
         {
@@ -288,7 +288,7 @@ namespace RINGMesh {
              * @returns Model index of the GeoModelMeshEntity vertex
              */
             index_t geomodel_vertex_index(
-                const gmme_t& mesh_entity_id,
+                const gmme_id& mesh_entity_id,
                 index_t mesh_entity_vertex_index ) const ;
 
             /*!
@@ -323,13 +323,13 @@ namespace RINGMesh {
              */
             void mesh_entity_vertex_indices(
                 index_t v,
-                const gmme_t& mesh_entity_id,
+                const gmme_id& mesh_entity_id,
                 std::vector< index_t >& result ) const ;
 
             const GEO::Attribute< index_t >& vertex_map(
-                const gmme_t& mesh_entity_id ) const ;
+                const gmme_id& mesh_entity_id ) const ;
 
-            GEO::Attribute< index_t >& vertex_map( const gmme_t& mesh_entity_id ) ;
+            GEO::Attribute< index_t >& vertex_map( const gmme_id& mesh_entity_id ) ;
 
             /*! @}
              * \name Updating
@@ -345,7 +345,7 @@ namespace RINGMesh {
              * @param[in] geomodel_entity_vertex_index Model vertex index to map with
              */
             void set_vertex_map_value(
-                const gmme_t& mesh_entity_id,
+                const gmme_id& mesh_entity_id,
                 index_t mesh_entity_vertex_index,
                 index_t geomodel_entity_vertex_index ) ;
 
@@ -408,10 +408,10 @@ namespace RINGMesh {
                 gme_vertices_[v].clear() ;
             }
 
-            void unbind_vertex_map( const gmme_t& mesh_entity_id ) ;
+            void unbind_vertex_map( const gmme_id& mesh_entity_id ) ;
 
             GEO::Attribute< index_t >& bind_vertex_map(
-                const gmme_t& mesh_entity_id ) ;
+                const gmme_id& mesh_entity_id ) ;
 
             /*!
              * @}
@@ -422,7 +422,7 @@ namespace RINGMesh {
              * @brief Initializes the given GeoModelMeshEntity vertex map
              * @param[in] mesh_entity_id Unique id to a GeoModelMeshEntity
              */
-            void initialize_mesh_entity_vertex_map( const gmme_t& mesh_entity_id ) ;
+            void initialize_mesh_entity_vertex_map( const gmme_id& mesh_entity_id ) ;
 
             /*!
              * @brief Tests if the given GeoModelMeshEntity vertex map is initialized.
@@ -431,7 +431,7 @@ namespace RINGMesh {
              * @return True is the map was initialized, false if not.
              */
             bool test_and_initialize_mesh_entity_vertex_map(
-                const gmme_t& mesh_entity_id ) ;
+                const gmme_id& mesh_entity_id ) ;
 
             /*!
              * @brief Tests if the given GeoModelMeshEntity vertex map exists.
@@ -439,7 +439,7 @@ namespace RINGMesh {
              * @return True is the map exists, false if not.
              */
             bool is_mesh_entity_vertex_map_initialized(
-                const gmme_t& mesh_entity_id ) const ;
+                const gmme_id& mesh_entity_id ) const ;
 
             /*!
              * @brief Unbinds all the GeoModelMeshEntity vertex maps
@@ -453,7 +453,7 @@ namespace RINGMesh {
              * @param[in] mesh_entity_id Unique id to a GeoModelMeshEntity
              */
             GEO::AttributesManager& mesh_entity_vertex_attribute_manager(
-                const gmme_t& mesh_entity_id ) const ;
+                const gmme_id& mesh_entity_id ) const ;
 
         private:
             GeoModelMeshVertices& geomodel_vertices_ ;

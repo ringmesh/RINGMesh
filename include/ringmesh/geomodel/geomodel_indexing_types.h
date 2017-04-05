@@ -51,7 +51,7 @@ namespace RINGMesh {
      * @brief Vertex in a GeoModelEntity
      */
     struct GMEVertex {
-        GMEVertex( gmme_t t, index_t vertex_id_in )
+        GMEVertex( gmme_id t, index_t vertex_id_in )
             : gmme_id( t ), v_id( vertex_id_in )
         {
         }
@@ -68,7 +68,7 @@ namespace RINGMesh {
             return gmme_id.is_defined() && v_id != NO_ID ;
         }
         /// GeoModelEntity index in the GeoModel that owns it
-        gmme_t gmme_id ;
+        gmme_id gmme_id ;
         /// Index of the vertex in the GeoModelEntity
         index_t v_id ;
     } ;

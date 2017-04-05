@@ -211,7 +211,7 @@ namespace RINGMesh {
         {
             return static_cast< index_t >( boundary_surfaces_.size() ) ;
         }
-        gmme_t boundary_gmme( index_t i ) const
+        gmme_id boundary_gmme( index_t i ) const
         {
             ringmesh_assert( i < nb_boundaries() ) ;
             return boundary_surfaces_[i] ;
@@ -242,7 +242,7 @@ namespace RINGMesh {
         }
 
     private:
-        std::vector< gmme_t > boundary_surfaces_ ;
+        std::vector< gmme_id > boundary_surfaces_ ;
         std::vector< bool > boundary_surface_sides_ ;
 
     } ;
@@ -258,7 +258,7 @@ namespace RINGMesh {
         {
         }
 
-        std::vector< gmme_t >& modifiable_boundaries()
+        std::vector< gmme_id >& modifiable_boundaries()
         {
             return universe_.boundary_surfaces_ ;
         }

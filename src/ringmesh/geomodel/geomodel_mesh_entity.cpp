@@ -457,18 +457,18 @@ namespace RINGMesh {
     const GeoModelGeologicalEntity& GeoModelMeshEntity::parent(
         index_t parent_index ) const
     {
-        gmge_t parent = parent_gmge( parent_index ) ;
+        gmge_id parent = parent_gmge( parent_index ) ;
         ringmesh_assert( parent.is_defined() ) ;
         return geomodel().geological_entity( parent ) ;
     }
     const GeoModelGeologicalEntity& GeoModelMeshEntity::parent(
         const GeologicalEntityType& parent_type_name ) const
     {
-        gmge_t id = parent_gmge( parent_type_name ) ;
+        gmge_id id = parent_gmge( parent_type_name ) ;
         ringmesh_assert( id.is_defined() ) ;
         return geomodel().geological_entity( id ) ;
     }
-    const gmge_t GeoModelMeshEntity::parent_gmge(
+    const gmge_id GeoModelMeshEntity::parent_gmge(
         const GeologicalEntityType& parent_type_name ) const
     {
         for( index_t i = 0; i < nb_parents(); ++i ) {
@@ -477,7 +477,7 @@ namespace RINGMesh {
             }
         }
         ringmesh_assert_not_reached ;
-        return gmge_t( ForbiddenGeologicalEntityType::type_name_static(), NO_ID ) ;
+        return gmge_id( ForbiddenGeologicalEntityType::type_name_static(), NO_ID ) ;
     }
 
     const GeoModelMeshEntity& GeoModelMeshEntity::boundary( index_t x ) const
