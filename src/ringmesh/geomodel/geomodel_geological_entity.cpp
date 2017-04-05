@@ -81,7 +81,7 @@ namespace RINGMesh {
     {
         bool valid = true ;
         if( nb_children() == 0 ) {
-            Logger::warn( "GeologicalEntity" ) << gmge_id()
+            Logger::warn( "GeologicalEntity" ) << gmge()
                 << " is undefined. No child. " << std::endl ;
             valid = false ;
         } else {
@@ -89,9 +89,9 @@ namespace RINGMesh {
             const GeologicalEntityType entity_type = type_name() ;
             for( index_t i = 0; i < nb_children(); ++i ) {
                 const GeoModelMeshEntity& one_child = child( i ) ;
-                if (one_child.parent_gmge(entity_type) != gmge_id()) {
+                if (one_child.parent_gmge(entity_type) != gmge()) {
                     Logger::warn( "GeoModelEntity" )
-                        << "Inconsistency child-parent between " << gmge_id()
+                        << "Inconsistency child-parent between " << gmge()
                         << " and " << one_child.gmme() << std::endl ;
                     valid = false ;
                 }
@@ -103,7 +103,7 @@ namespace RINGMesh {
     bool GeoModelGeologicalEntity::is_identification_valid() const
     {
         bool is_valid = true ;
-        if( !gmge_id().is_defined() ) {
+        if( !gmge().is_defined() ) {
             Logger::err( "GeoModelGeologicalEntity" ) << " Entity associated to geomodel "
                 << geomodel().name() << "has no type and/or no index " << std::endl ;
             is_valid = false ;
@@ -111,7 +111,7 @@ namespace RINGMesh {
             ringmesh_assert_not_reached;
         }
         if( !is_index_valid() ) {
-            Logger::warn( "GeoModelGeologicalEntity" ) << " Entity index " << gmge_id()
+            Logger::warn( "GeoModelGeologicalEntity" ) << " Entity index " << gmge()
                 << " is not valid. " << std::endl ;
             // This really should not happen
             is_valid = false ;
