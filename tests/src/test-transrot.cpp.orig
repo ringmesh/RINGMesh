@@ -71,7 +71,7 @@ void build_geomodel( GeoModel& geomodel )
     surface_facet_ptr.push_back( 6 ) ;
 
     std::vector< vec3 > vertices( 4 ) ;
-    gmme_id id ;
+    gmme_t id ;
 
     id = builder.topology.create_mesh_entity< Surface >() ;
     vertices[0] = v0 ;

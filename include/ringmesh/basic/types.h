@@ -72,8 +72,6 @@ namespace RINGMesh {
     // This is an int
     using GEO::signed_index_t ;
 
-    using GEO::Logger ;
-
     // This is the value used in RINGMesh for a invalid index
     static const index_t NO_ID = index_t( -1 ) ;
 

@@ -460,20 +460,21 @@ namespace RINGMesh {
 
         void print_matrix( void )
         {
-            std::cout << "deque size = " << values_.size() << std::endl ;
-        }
+            std::cout, "deque size = ", values_.size()
+        ) ;
+    }
 
-    private:
-        index_t get_value_id( index_t i, index_t j )
-        {
-            return this->rows_[i].find( j ) ;
-        }
+private:
+    index_t get_value_id( index_t i, index_t j )
+    {
+        return this->rows_[i].find( j ) ;
+    }
 
-        SparseMatrix( const thisclass& rhs ) ;
-        thisclass& operator=( const thisclass& rhs ) ;
+    SparseMatrix( const thisclass& rhs ) ;
+    thisclass& operator=( const thisclass& rhs ) ;
 
-    private:
-        std::deque< T > values_ ;
+private:
+    std::deque< T > values_ ;
     } ;
 
     // Note: without light or heavy, it does not compile on Windows.
