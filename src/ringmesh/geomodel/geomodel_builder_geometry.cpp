@@ -280,6 +280,15 @@ namespace {
         }
         return NO_ID ;
     }
+
+    void check_and_initialize_corner_vertex( GeoModel& geomodel, index_t corner_id )
+    {
+        if( geomodel.corner( corner_id ).nb_vertices() == 0 ) {
+            GeoModelBuilder builder( geomodel ) ;
+            builder.geometry.create_mesh_entity_vertices(
+                gmme_t( Corner::type_name_static(), corner_id ), 1 ) ;
+        }
+    }
 }
 
 namespace RINGMesh {
@@ -395,10 +404,7 @@ namespace RINGMesh {
 
     void GeoModelBuilderGeometry::set_corner( index_t corner_id, const vec3& point )
     {
-        if( geomodel_.corner( corner_id ).nb_vertices() == 0 ) {
-            create_mesh_entity_vertices(
-                gmme_t( Corner::type_name_static(), corner_id ), 1 ) ;
-        }
+        check_and_initialize_corner_vertex( geomodel_, corner_id ) ;
         set_mesh_entity_vertex( gmme_t( Corner::type_name_static(), corner_id ), 0,
             point, false ) ;
     }
@@ -443,6 +449,7 @@ namespace RINGMesh {
         index_t corner_id,
         index_t geomodel_vertex_id )
     {
+        check_and_initialize_corner_vertex( geomodel_, corner_id ) ;
         set_mesh_entity_vertex( gmme_t( Corner::type_name_static(), corner_id ), 0,
             geomodel_vertex_id ) ;
     }
