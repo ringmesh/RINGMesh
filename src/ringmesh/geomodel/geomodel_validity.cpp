@@ -434,34 +434,37 @@ namespace {
             if( valid_vertex ) {
                 if( surfaces.empty() ) {
                     if( regions.size() != 1 ) {
-                        Logger::warn( "GeoModel" ) << " Vertex " << i << " is in "
-                            << regions.size() << " Regions: " ;
+                        std::ostringstream oss ;
+                        oss << " Vertex " << i << " is in " << regions.size()
+                            << " Regions: " ;
                         for( index_t region : regions ) {
-                            Logger::warn( "GeoModel" ) << region << " ; " ;
+                            oss << region << " ; " ;
                         }
-                        Logger::warn( "GeoModel" ) << std::endl ;
+                        Logger::warn( "GeoModel" ) << oss.str() << std::endl ;
                         valid_vertex = false ;
                     } /// @todo Implement the other conditions for Region point validity
                 } else if( corner == NO_ID && lines.empty() ) {
                     // This is a point on one SURFACE and only one
                     if( surfaces.size() != 1 ) {
-                        Logger::warn( "GeoModel" ) << " Vertex " << i << " is in "
-                            << surfaces.size() << " Surfaces: " ;
+                        std::ostringstream oss ;
+                        oss << " Vertex " << i << " is in " << surfaces.size()
+                            << " Surfaces: " ;
                         for( index_t surface : surfaces ) {
-                            Logger::warn( "GeoModel" ) << surface << " ; " ;
+                            oss << surface << " ; " ;
                         }
-                        Logger::warn( "GeoModel" ) << std::endl ;
+                        Logger::warn( "GeoModel" ) << oss.str() << std::endl ;
                         valid_vertex = false ;
                     }
                 } else if( corner == NO_ID && !lines.empty() ) {
                     // This is a point on one LINE 
                     if( lines.size() != 1 ) {
-                        Logger::warn( "GeoModel" ) << " Vertex " << i << " is in "
-                            << lines.size() << " Lines " ;
+                        std::ostringstream oss ;
+                        oss << " Vertex " << i << " is in " << lines.size()
+                            << " Lines " ;
                         for( index_t line : lines ) {
-                            Logger::warn( "GeoModel" ) << line << " ; " ;
+                            oss << line << " ; " ;
                         }
-                        Logger::warn( "GeoModel" ) << std::endl ;
+                        Logger::warn( "GeoModel" ) << oss.str() << std::endl ;
                         valid_vertex = false ;
                     } else {
                         // This point must also be in at least one SURFACE
