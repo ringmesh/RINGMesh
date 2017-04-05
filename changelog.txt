@@ -23,5 +23,5 @@ Improvements:
  * Improve some designs by using the NRVO/RVO (Named Return Value Optimization)
  
 Architecture:
- * All third pary files (zlib, geogram) are now in a "third_party" directory at the RINGMesh root.
+ * All third party files (zlib, geogram) are now in a "third_party" directory at the RINGMesh root.
  * Removal of ThreeJS third party.
