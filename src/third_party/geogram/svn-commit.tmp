@@ -1,0 +1,6 @@
+Added missing operator= for Chart (cannot synthetize it since it has a
+reference).
+
+--This line, and those below, will be ignored--
+
+M    src/lib/geogram/parameterization/mesh_segmentation.h
