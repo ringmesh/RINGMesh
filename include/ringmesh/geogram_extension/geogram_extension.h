@@ -37,6 +37,8 @@
 
 #include <ringmesh/basic/common.h>
 
+#include <mutex>
+
 #include <geogram/basic/memory.h>
 #include <geogram/basic/attributes.h>
 #include <geogram/mesh/mesh.h>
@@ -193,4 +195,40 @@ namespace RINGMesh {
 
     void RINGMESH_API print_bounded_attributes( const GEO::Mesh& M ) ;
 
+    class RINGMESH_API ThreadSafeConsoleLogger: public GEO::ConsoleLogger {
+        using base_class = GEO::ConsoleLogger ;
+    public:
+        void div( const std::string& title )
+        {
+            std::lock_guard< std::mutex > lock( lock_ ) ;
+            base_class::div( title ) ;
+        }
+
+        void out( const std::string& str )
+        {
+            std::lock_guard< std::mutex > lock( lock_ ) ;
+            base_class::out( str ) ;
+        }
+
+        void warn( const std::string& str )
+        {
+            std::lock_guard< std::mutex > lock( lock_ ) ;
+            base_class::warn( str ) ;
+        }
+
+        void err( const std::string& str )
+        {
+            std::lock_guard< std::mutex > lock( lock_ ) ;
+            base_class::err( str ) ;
+        }
+
+        void status( const std::string& str )
+        {
+            std::lock_guard< std::mutex > lock( lock_ ) ;
+            base_class::status( str ) ;
+        }
+
+    private:
+        std::mutex lock_ ;
+    } ;
 }

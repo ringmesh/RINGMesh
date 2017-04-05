@@ -312,7 +312,7 @@ namespace {
                         << std::endl ;
                 }
                 for( index_t k = 0; k < S.nb_boundaries(); ++k ) {
-                    const Line& L = dynamic_cast< const Line& >( S.boundary( k ) ) ;
+                    const Line& L = S.boundary( k ) ;
                     index_t v0_model_id = geomodel_vertices.geomodel_vertex_id(
                         L.gmme_id(), 0 ) ;
                     index_t v1_model_id = geomodel_vertices.geomodel_vertex_id(
