@@ -524,6 +524,11 @@ namespace RINGMesh {
         return valid ;
     }
 
+    const Line& Corner::in_boundary( index_t x ) const
+    {
+        return static_cast< const Line& >( GeoModelMeshEntity::in_boundary( x ) ) ;
+    }
+
     /***************************************************************/
 
     bool Line::is_mesh_valid() const
@@ -648,6 +653,17 @@ namespace RINGMesh {
         return false ;
     }
 
+    const Surface& Line::in_boundary( index_t x ) const
+    {
+        return static_cast< const Surface& >( GeoModelMeshEntity::in_boundary(
+            x ) ) ;
+    }
+
+    const Corner& Line::boundary( index_t x ) const
+    {
+        return static_cast< const Corner& >( GeoModelMeshEntity::boundary( x ) ) ;
+    }
+
     /********************************************************************/
 
     bool Surface::is_mesh_valid() const
@@ -723,7 +739,22 @@ namespace RINGMesh {
         return false ;
     }
 
+    const Line& Surface::boundary( index_t x ) const
+    {
+        return static_cast< const Line& >( GeoModelMeshEntity::boundary( x ) ) ;
+    }
+
+    const Region& Surface::in_boundary( index_t x ) const
+    {
+        return static_cast< const Region& >( GeoModelMeshEntity::in_boundary( x ) ) ;
+    }
+
     /********************************************************************/
+
+    const Surface& Region::boundary( index_t x ) const
+    {
+        return static_cast< const Surface& >( GeoModelMeshEntity::boundary( x ) ) ;
+    }
 
     bool Region::is_on_voi() const
     {
