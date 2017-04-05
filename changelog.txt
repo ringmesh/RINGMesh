@@ -5,7 +5,7 @@ New Features:
       Each call to Logger::XXX will output consistently in the console in multithreading environment
 
 Bug fix:
- * Crash when calling GeoModelMeshVertices.nb() when Corner geometry was not set.
+ * Crash when GeoModelMesh is initialized before the GeoModelMeshEntity geometries were set.
 
 Improvements:
  * Refactoring of the io to have smaller files
