@@ -1,0 +1,23 @@
+#### Current changeset ####
+
+New Features:
+ * New console thread safe logger client
+      Each call to Logger::XXX will output consistently in the console in multithreading environment
+
+Bug fix:
+ * Crash when calling GeoModelMeshVertices.nb() when Corner geometry was not set.
+
+Improvements:
+ * Refactoring of the io to have smaller files
+ * Explicit distinction between the denomination of GeoModelMeshEntity and GeoModelGeologicalEntity:
+      Now, gmme_t are used to identify a GeoModelMeshEntity (with and index and a type)
+           gmge_t are used to identify a GeoModelGeologicalEntity (with an index and a type)
+      User who want to use GeoModelEntity has now to give a particular attention on which kind on GeoModelEntity
+      he is working.
+ * EntityType are not a std::string anymore but an abstract class. GeologicalEntityType and MeshEntityType inherit
+      from EntityType.
+ * Remove support of .ogm
+ * Remove support of .mesh and .meshb
+ * Remove MeshAllD and inherited classes, user should only use Mesh0D, Mesh1D, Mesh2D or Mesh3D.
+      The GeoModelMesh has been modified according this modification.
+ * Improve some designs by using the NRVO/RVO (Named Return Value Optimization)
