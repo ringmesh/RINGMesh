@@ -176,10 +176,9 @@ int main() {
     using namespace RINGMesh ;
 
     default_configure() ;
-    Logger::out("RINGMeshView")
-    << "To test RINGMesh viewer you need to configure "
-    << "the project with the RINGMESH_TEST_GRAPHICS option ON"
-    << std::endl ;
+    Logger::out( "RINGMeshView",
+        "To test RINGMesh viewer you need to configure ",
+        "the project with the RINGMESH_TEST_GRAPHICS option ON" ) ;
     return 0 ;
 }
 #endif
