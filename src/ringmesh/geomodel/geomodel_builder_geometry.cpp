@@ -286,7 +286,7 @@ namespace {
         if( geomodel.corner( corner_id ).nb_vertices() == 0 ) {
             GeoModelBuilder builder( geomodel ) ;
             builder.geometry.create_mesh_entity_vertices(
-                gmme_t( Corner::type_name_static(), corner_id ), 1 ) ;
+                gmme_id( Corner::type_name_static(), corner_id ), 1 ) ;
         }
     }
 }
