@@ -52,7 +52,9 @@
 namespace RINGMesh {
     class GeoModel ;
     class GeoModelGeologicalEntity ;
+}
 
+namespace RINGMesh {
     /*!
      * @brief Abstract base class for GeoModelMeshEntity.
      * @details The GeoModelMeshEntity geometrical representation
@@ -69,13 +71,13 @@ namespace RINGMesh {
 
         virtual const MeshEntityType type_name() const = 0 ;
 
-        const gmme_t gmme_id() const
+        const gmme_id gmme() const
         {
-            return gmme_t( type_name(), id_ ) ;
+            return gmme_id( type_name(), id_ ) ;
         }
         const MeshEntityType mesh_entity_type() const
         {
-            return gmme_id().type() ;
+            return gmme().type() ;
         }
         /*!
          * @brief Global validity of the entity
@@ -99,7 +101,7 @@ namespace RINGMesh {
         {
             return static_cast< index_t >( boundaries_.size() ) ;
         }
-        const gmme_t& boundary_gmme( index_t x ) const
+        const gmme_id& boundary_gmme( index_t x ) const
         {
             ringmesh_assert( x < nb_boundaries() ) ;
             return boundaries_[x] ;
@@ -110,7 +112,7 @@ namespace RINGMesh {
         {
             return static_cast< index_t >( in_boundary_.size() ) ;
         }
-        const gmme_t& in_boundary_gmme( index_t x ) const
+        const gmme_id& in_boundary_gmme( index_t x ) const
         {
             ringmesh_assert( x < nb_in_boundary() ) ;
             return in_boundary_[x] ;
@@ -147,22 +149,21 @@ namespace RINGMesh {
         {
             return static_cast< index_t >( parents_.size() ) ;
         }
-        const gmge_t& parent_gmge( index_t id ) const
+        const gmge_id& parent_gmge( index_t id ) const
         {
             ringmesh_assert( id < nb_parents() ) ;
             return parents_[id] ;
         }
 
         /*!
-         * @brief Returns the gmge_t of the parent of the given type.
+         * @brief Returns the gmge_id of the parent of the given type.
          * @note If this entity has no parent of the given type,
-         * it will return an undefined gmge_t (with no type and no id).
-         * You should check on the returned gmge_t.
+         * it will return an undefined gmge_id (with no type and no id).
+         * You should check on the returned gmge_id.
          * @param[in] parent_type_name the asking parent type
          *
          */
-        const gmge_t parent_gmge(
-            const GeologicalEntityType& parent_type ) const ;
+        const gmge_id parent_gmge( const GeologicalEntityType& parent_type ) const ;
         const GeoModelGeologicalEntity& parent( index_t id ) const ;
         const GeoModelGeologicalEntity& parent(
             const GeologicalEntityType& parent_type ) const ;
@@ -337,14 +338,14 @@ namespace RINGMesh {
     protected:
 
         /// Entities on the boundary of this entity
-        std::vector< gmme_t > boundaries_ ;
+        std::vector< gmme_id > boundaries_ ;
 
         /// Entities in which boundary this entity is
-        std::vector< gmme_t > in_boundary_ ;
+        std::vector< gmme_id > in_boundary_ ;
 
         /// The optional GeoModelGeologicalEntities 
         /// (groups of GeoModelMeshEntity this entity belongs to)
-        std::vector< gmge_t > parents_ ;
+        std::vector< gmge_id > parents_ ;
 
     private:
         /// The RINGMesh::Mesh giving the geometry of this entity
@@ -388,13 +389,17 @@ namespace RINGMesh {
             return 0 ;
         }
         /*!
-         * @return 1 the number of vertices of the Corner
+         * @return the number of vertices of the Corner
          */
         virtual index_t nb_mesh_element_vertices( index_t mesh_element = 0 ) const override
         {
             ringmesh_unused( mesh_element ) ;
-            return 1 ;
+            index_t nb_vertices = mesh0d_->nb_vertices() ;
+            ringmesh_assert( nb_vertices < 2 ) ;
+            return nb_vertices ;
         }
+
+        const Line& in_boundary( index_t x ) const ;
 
         /*! @}
          * \name Geometrical request on Corner
@@ -434,7 +439,6 @@ namespace RINGMesh {
         {
             update_mesh_storage_type( Mesh0D::create_mesh( type ) ) ;
             Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder( *mesh0d_ ) ;
-            builder->create_vertex() ;
         }
 
         /*!
@@ -494,6 +498,10 @@ namespace RINGMesh {
         }
 
         virtual bool is_on_voi() const final ;
+
+        const Corner& boundary( index_t x ) const ;
+
+        const Surface& in_boundary( index_t x ) const ;
 
         virtual bool is_connectivity_valid() const final ;
 
@@ -640,6 +648,10 @@ namespace RINGMesh {
         }
 
         virtual bool is_on_voi() const final ;
+
+        const Line& boundary( index_t x ) const ;
+
+        const Region& in_boundary( index_t x ) const ;
 
         bool is_simplicial() const
         {
@@ -835,7 +847,18 @@ namespace RINGMesh {
             ringmesh_assert( facet_index < nb_mesh_elements() ) ;
             return mesh2d_->facet_normal( facet_index ) ;
         }
-
+        /*!
+         * @brief Computes the normal of the surface at the vertex location
+         * it computes the average value of facet normal neighbors
+         * @param[in] vertex_id the vertex index
+         * @param[in] f0 index of a facet that contain the vertex \param vertex_id
+         * @return the normal of the surface at the given vertex
+         */
+        vec3 normal_at_vertex( index_t vertex_id, index_t f0 = NO_ID ) const
+        {
+            ringmesh_assert( vertex_id < nb_vertices() ) ;
+            return mesh2d_->normal_at_vertex( vertex_id, f0 ) ;
+        }
         /*!
          * @return Facet barycenter.
          */
@@ -964,6 +987,8 @@ namespace RINGMesh {
         }
 
         virtual bool is_on_voi() const final ;
+
+        const Surface& boundary( index_t x ) const ;
 
         virtual bool is_connectivity_valid() const final ;
 
@@ -1326,12 +1351,12 @@ namespace RINGMesh {
             return gmme_.geol_feature_ ;
         }
 
-        std::vector< gmme_t >& modifiable_boundaries()
+        std::vector< gmme_id >& modifiable_boundaries()
         {
             return gmme_.boundaries_ ;
         }
 
-        std::vector< gmme_t >& modifiable_in_boundaries()
+        std::vector< gmme_id >& modifiable_in_boundaries()
         {
             return gmme_.in_boundary_ ;
         }
@@ -1342,7 +1367,7 @@ namespace RINGMesh {
             return dynamic_cast< Region& >( gmme_ ).sides_ ;
         }
 
-        std::vector< gmge_t >& modifiable_parents()
+        std::vector< gmge_id >& modifiable_parents()
         {
             return gmme_.parents_ ;
         }

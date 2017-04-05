@@ -194,34 +194,6 @@ namespace {
                 const vec3& p3 = M.vertex( M.cell_vertex( cell, 3 ) ) ;
                 return point_inside_tetra( p, p0, p1, p2, p3 ) ;
             }
-            case GEO::MESH_PYRAMID: {
-                const vec3& p0 = M.vertex( M.cell_vertex( cell, 0 ) ) ;
-                const vec3& p1 = M.vertex( M.cell_vertex( cell, 1 ) ) ;
-                const vec3& p2 = M.vertex( M.cell_vertex( cell, 2 ) ) ;
-                const vec3& p3 = M.vertex( M.cell_vertex( cell, 3 ) ) ;
-                const vec3& p4 = M.vertex( M.cell_vertex( cell, 4 ) ) ;
-                return point_inside_pyramid( p, p0, p1, p2, p3, p4 ) ;
-            }
-            case GEO::MESH_PRISM: {
-                const vec3& p0 = M.vertex( M.cell_vertex( cell, 0 ) ) ;
-                const vec3& p1 = M.vertex( M.cell_vertex( cell, 1 ) ) ;
-                const vec3& p2 = M.vertex( M.cell_vertex( cell, 2 ) ) ;
-                const vec3& p3 = M.vertex( M.cell_vertex( cell, 3 ) ) ;
-                const vec3& p4 = M.vertex( M.cell_vertex( cell, 4 ) ) ;
-                const vec3& p5 = M.vertex( M.cell_vertex( cell, 5 ) ) ;
-                return point_inside_prism( p, p0, p1, p2, p3, p4, p5 ) ;
-            }
-            case GEO::MESH_HEX: {
-                const vec3& p0 = M.vertex( M.cell_vertex( cell, 0 ) ) ;
-                const vec3& p1 = M.vertex( M.cell_vertex( cell, 1 ) ) ;
-                const vec3& p2 = M.vertex( M.cell_vertex( cell, 2 ) ) ;
-                const vec3& p3 = M.vertex( M.cell_vertex( cell, 3 ) ) ;
-                const vec3& p4 = M.vertex( M.cell_vertex( cell, 4 ) ) ;
-                const vec3& p5 = M.vertex( M.cell_vertex( cell, 5 ) ) ;
-                const vec3& p6 = M.vertex( M.cell_vertex( cell, 6 ) ) ;
-                const vec3& p7 = M.vertex( M.cell_vertex( cell, 7 ) ) ;
-                return point_inside_hexa( p, p0, p1, p2, p3, p4, p5, p6, p7 ) ;
-            }
             default:
                 ringmesh_assert_not_reached ;
                 return false ;

@@ -133,11 +133,10 @@ Function definition:
 F.1: "Package" meaningful operations as carefully named functions
 F.2: A function should perform a single logical operation
 F.3: Keep functions short and simple
-F.4: If a function may have to be evaluated at compile time, declare it constexpr
-F.5: If a function is very small and time critical, declare it inline
-F.6: If your function may not throw, declare it noexcept
-F.7: For general use, take T* arguments rather than smart pointers
-F.8: Prefer pure functions i.e. functions that does not depend on anything else and have no side-effects
+F.4: If a function is very small and time critical, declare it inline
+F.5: If your function may not throw, declare it noexcept
+F.6: For general use, take T* arguments rather than smart pointers
+F.7: Prefer pure functions i.e. functions that does not depend on anything else and have no side-effects
 
 Parameters:
 ------------------------------------------------------------------------------------------------------------------
@@ -351,7 +350,7 @@ ES.21: Don't introduce a variable (or constant) before you need to use it
 ES.22: Don't declare a variable until you have a value to initialize it with
 ES.23: Prefer the {}-initializer syntax
 ES.24: Use a unique_ptr<T> to hold pointers in code that may throw
-ES.25: Declare an object const or constexpr unless you want to modify its value later on
+ES.25: Declare an object const unless you want to modify its value later on
 ES.26: Don't use a variable for two unrelated purposes
 ES.27: Use std::array or stack_array for arrays on the stack
 ES.28: Use lambdas for complex initialization, especially of const variables
@@ -453,7 +452,6 @@ Con.1: By default, make objects immutable
 Con.2: By default, make member functions const
 Con.3: By default, pass pointers and references to consts
 Con.4: Use const to define objects with values that do not change after construction
-Con.5: Use constexpr for values that can be computed at compile time
 
 
 ------------------------------------------------------------------------------------------------------------------
@@ -527,9 +525,8 @@ Metaprogramming:
 T.120: Use template metaprogramming only when you really need to
 T.121: Use template metaprogramming primarily to emulate concepts
 T.122: Use templates (usually template aliases) to compute types at compile time
-T.123: Use constexpr functions to compute values at compile time
-T.124: Prefer to use standard-library TMP facilities
-T.125: If you need to go beyond the standard-library TMP facilities, use an existing library
+T.123: Prefer to use standard-library TMP facilities
+T.124: If you need to go beyond the standard-library TMP facilities, use an existing library
 
 Other:
 ------------------------------------------------------------------------------------------------------------------

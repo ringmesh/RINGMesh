@@ -137,32 +137,32 @@ namespace RINGMesh {
          * pair (Region, NO_ID) universe region is returned.
          * @pre Entity identification is valid.
          */
-        const GeoModelGeologicalEntity& geological_entity( gmge_t id ) const
+        const GeoModelGeologicalEntity& geological_entity( gmge_id id ) const
         {
             return *geological_entities( id.type() )[id.index()] ;
         }
         /*!
-         * Convenient overload of entity( gmge_t id )
+         * Convenient overload of entity( gmge_id id )
          */
         const GeoModelGeologicalEntity& geological_entity(
             const GeologicalEntityType& entity_type,
             index_t entity_index ) const
         {
-            return geological_entity( gmge_t( entity_type, entity_index ) ) ;
+            return geological_entity( gmge_id( entity_type, entity_index ) ) ;
         }
         /*!
          * @brief Generic access to a meshed entity
          * @pre Type of the entity is CORNER, LINE, SURFACE, or REGION
          */
-        const GeoModelMeshEntity& mesh_entity( gmme_t id ) const ;
+        const GeoModelMeshEntity& mesh_entity( gmme_id id ) const ;
         /*!
-         * Convenient overload of mesh_entity( gmme_t id )
+         * Convenient overload of mesh_entity( gmme_id id )
          */
         const GeoModelMeshEntity& mesh_entity(
             const MeshEntityType& entity_type,
             index_t entity_index ) const
         {
-            return mesh_entity( gmme_t( entity_type, entity_index ) ) ;
+            return mesh_entity( gmme_id( entity_type, entity_index ) ) ;
         }
         /*! @}
          * \name Specialized accessors.
@@ -327,7 +327,7 @@ namespace RINGMesh {
                 type ) ) ;
         }
 
-        GeoModelMeshEntity& modifiable_mesh_entity( const gmme_t& id )
+        GeoModelMeshEntity& modifiable_mesh_entity( const gmme_id& id )
         {
             return *modifiable_mesh_entities( id.type() )[id.index()] ;
         }
@@ -344,7 +344,7 @@ namespace RINGMesh {
                 type ) ) ;
         }
 
-        GeoModelGeologicalEntity& modifiable_geological_entity( const gmge_t& id )
+        GeoModelGeologicalEntity& modifiable_geological_entity( const gmge_id& id )
         {
             return *modifiable_geological_entities( id.type() )[id.index()] ;
         }

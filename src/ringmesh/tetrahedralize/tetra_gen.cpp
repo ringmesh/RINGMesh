@@ -382,7 +382,7 @@ namespace RINGMesh {
             bool update = false ;
             vec3 vertex ( point ) ;
             builder_->geometry.set_mesh_entity_vertex (
-                gmme_t ( Region::type_name_static (), output_region_ ), index, vertex,
+                gmme_id ( Region::type_name_static (), output_region_ ), index, vertex,
                 update ) ;
         }
 
@@ -399,7 +399,7 @@ namespace RINGMesh {
 
         void initialize_storage ( index_t nb_points, index_t nb_tets )
         {
-            gmme_t region_id ( Region::type_name_static (), output_region_ ) ;
+            gmme_id region_id ( Region::type_name_static (), output_region_ ) ;
             builder_->geometry.delete_mesh_entity_mesh ( region_id ) ;
             builder_->geometry.create_mesh_entity_vertices ( region_id, nb_points ) ;
             builder_->geometry.create_region_cells ( output_region_, GEO::MESH_TET,
@@ -459,8 +459,7 @@ namespace RINGMesh {
         surface_id.reserve( nb_surfaces ) ;
         index_t nb_surface_vertices = 0, nb_facets = 0 ;
         for( index_t s = 0; s < nb_surfaces; s++ ) {
-            const Surface& surface =
-                dynamic_cast< const Surface& >( region_->boundary( s ) ) ;
+            const Surface& surface = region_->boundary( s ) ;
             if( contains( surface_id, surface.index() ) ) continue ;
             nb_surface_vertices += surface.nb_vertices() ;
             nb_facets += surface.nb_mesh_elements() ;

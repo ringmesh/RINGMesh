@@ -1,10 +1,11 @@
 #### Current changeset ####
 
 New Features:
- *
+ * New console thread safe logger client
+      Each call to Logger::XXX will output consistently in the console in multithreading environment
 
 Bug fix:
- *
+ * Crash when GeoModelMesh was initialized before the GeoModelMeshEntity geometries were set.
 
 Improvements:
  * Refactoring of the io to have smaller files
