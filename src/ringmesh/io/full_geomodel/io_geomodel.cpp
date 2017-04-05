@@ -228,7 +228,7 @@ namespace {
         std::vector< std::string >& filenames )
     {
         const std::string& type = ENTITY::type_name_static() ;
-        Logger* logger = Logger::instance() ;
+        GEO::Logger* logger = Logger::instance() ;
         bool logger_status = logger->is_quiet() ;
         logger->set_quiet( true ) ;
         RINGMESH_PARALLEL_LOOP_DYNAMIC
@@ -250,8 +250,8 @@ namespace {
             GeoModelBuilderGM builder( geomodel,
                 GEO::FileSystem::base_name( filename, false ) ) ;
             builder.build_geomodel() ;
-            Logger::out( "I/O" ) << " Loaded geomodel " << geomodel.name()
-                << " from " << filename << std::endl ;
+            Logger::out( "I/O", " Loaded geomodel ", geomodel.name(), " from ",
+                filename ) ;
             print_geomodel( geomodel ) ;
             bool is_valid = is_geomodel_valid( geomodel ) ;
             GEO::FileSystem::set_current_working_directory( pwd ) ;

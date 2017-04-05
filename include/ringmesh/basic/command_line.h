@@ -32,7 +32,7 @@
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
  */
- 
+
 #pragma once
 
 #include <ringmesh/basic/common.h>

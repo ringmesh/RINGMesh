@@ -47,7 +47,7 @@ using namespace RINGMesh ;
 
 void test_nn_search_ringmesh()
 {
-    Logger::out( "TEST" ) << "Test MakeUnique RINGMesh" << std::endl ;
+    Logger::out( "TEST", "Test MakeUnique RINGMesh" ) ;
     vec3 p1( 0, 0, 0 ) ;
     vec3 p2( 1, 1, 1 ) ;
     vec3 p3( 2, 2, 2 ) ;
@@ -94,6 +94,7 @@ void test_nn_search_ringmesh()
         }
     }
 }
+
 int main()
 {
     try {
@@ -102,12 +103,12 @@ int main()
         test_nn_search_ringmesh() ;
 
     } catch( const RINGMeshException& e ) {
-        Logger::err( e.category() ) << e.what() << std::endl ;
+        Logger::err( e.category(), e.what() ) ;
         return 1 ;
     } catch( const std::exception& e ) {
-        Logger::err( "Exception" ) << e.what() << std::endl ;
+        Logger::err( "Exception", e.what() ) ;
         return 1 ;
     }
-    Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
+    Logger::out( "TEST", "SUCCESS" ) ;
     return 0 ;
 }

@@ -33,71 +33,16 @@
  *     FRANCE
  */
 
-#include <ringmesh/io/io.h>
-
-#include <geogram/basic/file_system.h>
-#include <geogram/basic/line_stream.h>
-
-#include <ringmesh/geomodel/geomodel.h>
-
-#include <ringmesh/mesh/geogram_mesh.h>
-#include <ringmesh/mesh/mesh_builder.h>
-#include <ringmesh/mesh/well.h>
+#include <ringmesh/basic/logger.h>
 
 /*!
- * @file Implements the input - output of WellGroup
+ * @file Implementation of Logger class
  * @author Arnaud Botella
  */
 
-namespace {
-    using namespace RINGMesh ;
-
-#include "well_group/io_smesh.cpp"
-#include "well_group/io_wl.cpp"
-
-}
-
 namespace RINGMesh {
 
-    void well_load( const std::string& filename, WellGroup& wells )
-    {
-        Logger::out( "I/O", "Loading file ", filename, "..." ) ;
+    std::mutex Logger::lock_ ;
 
-        WellGroupIOHandler_var handler = WellGroupIOHandler::get_handler(
-            filename ) ;
-        handler->load( filename, wells ) ;
-    }
-
-    WellGroupIOHandler* WellGroupIOHandler::create( const std::string& format )
-    {
-        WellGroupIOHandler* handler = WellGroupIOHandlerFactory::create_object(
-            format ) ;
-        if( !handler ) {
-            std::vector< std::string > names ;
-            WellGroupIOHandlerFactory::list_creators( names ) ;
-            Logger::err( "I/O", "Currently supported file formats are: " ) ;
-            for( index_t i = 0; i < names.size(); i++ ) {
-                Logger::err( "I/O", " ", names[i] ) ;
-            }
-
-            throw RINGMeshException( "I/O", "Unsupported file format: " + format ) ;
-        }
-        return handler ;
-    }
-
-    WellGroupIOHandler* WellGroupIOHandler::get_handler(
-        const std::string& filename )
-    {
-        std::string ext = GEO::FileSystem::extension( filename ) ;
-        return create( ext ) ;
-    }
-
-    /*
-     * Initializes the possible handler for IO files
-     */
-    void WellGroupIOHandler::initialize()
-    {
-        ringmesh_register_WellGroupIOHandler_creator( WLIOHandler, "wl" ) ;
-        ringmesh_register_WellGroupIOHandler_creator( SmeshIOHandler, "smesh" ) ;
-    }
 }
+

@@ -39,7 +39,6 @@
 
 #include <geogram/basic/file_system.h>
 #include <geogram/basic/line_stream.h>
-#include <geogram/basic/logger.h>
 
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_geometry.h>
@@ -75,12 +74,11 @@ namespace {
         const std::string& output_location )
     {
         if( !names.empty() ) {
-            Logger::err( "Attributes" ) << "Attributes still bounded on "
-                << output_location << ":" ;
+            Logger::err( "Attributes", "Attributes still bounded on ",
+                output_location, ":" ) ;
             for( std::string name : names ) {
-                Logger::err( "Attributes" ) << " " << name ;
+                Logger::err( "Attributes", " ", name ) ;
             }
-            Logger::err( "Attributes" ) << std::endl ;
         }
     }
 
@@ -92,7 +90,7 @@ namespace {
         print_bounded_attributes( names, output_location ) ;
     }
 
-    /*! 
+    /*!
      * @brief TSurfMeshIOHandler for importing .ts files into a mesh.
      */
     class TSurfMeshIOHandler final : public GEO::MeshIOHandler {
@@ -673,6 +671,5 @@ namespace RINGMesh {
         ::print_bounded_attributes( M.cell_corners.attributes(), "cell_corners" ) ;
         ::print_bounded_attributes( M.cell_facets.attributes(), "cell_facets" ) ;
     }
-
 
 }

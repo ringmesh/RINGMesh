@@ -53,9 +53,10 @@ namespace {
 
                 time( &end_load ) ;
 
-                Logger::out( "I/O" ) << " Loaded geomodel " << geomodel.name()
-                    << " from " << std::endl << filename << " timing: "
-                    << difftime( end_load, start_load ) << "sec" << std::endl ;
+                Logger::out( "I/O", " Loaded geomodel ", geomodel.name(),
+                    " from " ) ;
+                Logger::out( "I/O", filename, " timing: ",
+                    difftime( end_load, start_load ), "sec" ) ;
                 return is_valid ;
             } else {
                 throw RINGMeshException( "I/O",
