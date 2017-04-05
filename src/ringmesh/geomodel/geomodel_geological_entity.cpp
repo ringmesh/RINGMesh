@@ -92,7 +92,7 @@ namespace RINGMesh {
                 if (one_child.parent_gmge(entity_type) != gmge_id()) {
                     Logger::warn( "GeoModelEntity" )
                         << "Inconsistency child-parent between " << gmge_id()
-                        << " and " << one_child.gmme_index() << std::endl ;
+                        << " and " << one_child.gmme() << std::endl ;
                     valid = false ;
                 }
             }

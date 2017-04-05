@@ -54,8 +54,8 @@ namespace {
         std::vector< GMEVertex > vertices ;
         geomodel_vertices.gme_vertices( geomodel_point_id, vertices ) ;
         for( const GMEVertex& vertex : vertices ) {
-            if( vertex.gmme_index.type() == Corner::type_name_static() ) {
-                return vertex.gmme_index ;
+            if( vertex.gmme.type() == Corner::type_name_static() ) {
+                return vertex.gmme ;
             }
         }
         return gmme_id() ;
@@ -74,7 +74,7 @@ namespace {
         bool equal = true ;
         for( index_t i = 0; i < L.nb_vertices(); i++ ) {
             if( rhs_vertices[i]
-                != geomodel_vertices.geomodel_vertex_id( L.gmme_index(), i ) ) {
+                != geomodel_vertices.geomodel_vertex_id( L.gmme(), i ) ) {
                 equal = false ;
                 break ;
             }
@@ -86,7 +86,7 @@ namespace {
         equal = true ;
         for( index_t i = 0; i < L.nb_vertices(); i++ ) {
             if( rhs_vertices[i]
-                != geomodel_vertices.geomodel_vertex_id( L.gmme_index(),
+                != geomodel_vertices.geomodel_vertex_id( L.gmme(),
                     L.nb_vertices() - i - 1 ) ) {
                 equal = false ;
                 break ;
@@ -666,12 +666,12 @@ namespace RINGMesh {
                     for( index_t v = 0; v < S.nb_mesh_element_vertices( f ); ++v ) {
                         if( S.is_on_border( f, v ) ) {
                             index_t vertex = geomodel_vertices.geomodel_vertex_id(
-                                S.gmme_index(), f, v ) ;
+                                S.gmme(), f, v ) ;
                             index_t next_vertex =
-                                geomodel_vertices.geomodel_vertex_id( S.gmme_index(),
+                                geomodel_vertices.geomodel_vertex_id( S.gmme(),
                                     f, S.next_facet_vertex_index( f, v ) ) ;
                             index_t previous_vertex =
-                                geomodel_vertices.geomodel_vertex_id( S.gmme_index(),
+                                geomodel_vertices.geomodel_vertex_id( S.gmme(),
                                     f, S.prev_facet_vertex_index( f, v ) ) ;
                             border_triangles_.push_back(
                                 BorderTriangle( s, f, vertex, next_vertex,
@@ -696,7 +696,7 @@ namespace RINGMesh {
             // Gets the next edge on border in the Surface
             index_t f = border_triangle.facet_ ;
             std::vector< index_t > possible_v0_id ;
-            geomodel_vertices.mesh_entity_vertex_id( S.gmme_index(),
+            geomodel_vertices.mesh_entity_vertex_id( S.gmme(),
                 border_triangle.v0_, possible_v0_id ) ;
             ringmesh_assert( !possible_v0_id.empty() ) ;
             index_t v0_id = NO_ID ;
@@ -726,9 +726,9 @@ namespace RINGMesh {
             // Finds the BorderTriangle that is corresponding to this
             // It must exist and there is only one
             BorderTriangle bait( border_triangle.surface_, next_f,
-                geomodel_vertices.geomodel_vertex_id( S.gmme_index(), next_f,
+                geomodel_vertices.geomodel_vertex_id( S.gmme(), next_f,
                     next_f_v0 ),
-                geomodel_vertices.geomodel_vertex_id( S.gmme_index(), next_f,
+                geomodel_vertices.geomodel_vertex_id( S.gmme(), next_f,
                     next_f_v1 ), NO_ID ) ;
             index_t result = static_cast< index_t >( std::lower_bound(
                 border_triangles_.begin(), border_triangles_.end(), bait )
@@ -1006,7 +1006,7 @@ namespace RINGMesh {
                     cur_region.boundary( i ).index(), cur_region.side( i ) ) ;
             }
             std::set< gmme_id > to_erase ;
-            to_erase.insert( cur_region.gmme_index() ) ;
+            to_erase.insert( cur_region.gmme() ) ;
             builder_.removal.remove_mesh_entities( to_erase ) ;
         }
         return true ;
@@ -1166,7 +1166,7 @@ namespace RINGMesh {
                         geomodel_.geological_entity( parent_type, j ) ;
                     for( index_t k = 0; k < parent.nb_children(); ++k ) {
                         add_mesh_entity_parent( parent.child_gmme( k ),
-                            parent.gmge_index() ) ;
+                            parent.gmge() ) ;
                     }
                 }
             }
@@ -1253,7 +1253,7 @@ namespace RINGMesh {
             GeoModelGeologicalEntityAccess::create_geological_entity( type,
                 geomodel_, id ) ;
         geomodel_access_.modifiable_geological_entities()[index].push_back( E ) ;
-        return E->gmge_index() ;
+        return E->gmge() ;
     }
 
     index_t GeoModelBuilderGeology::find_or_create_geological_entity_type(

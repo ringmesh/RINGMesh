@@ -52,23 +52,23 @@ namespace RINGMesh {
      */
     struct GMEVertex {
         GMEVertex( gmme_id t, index_t vertex_id_in )
-            : gmme_index( t ), v_index( vertex_id_in )
+            : gmme( t ), v_index( vertex_id_in )
         {
         }
         GMEVertex()
-            : gmme_index(), v_index( NO_ID )
+            : gmme(), v_index( NO_ID )
         {
         }
         bool operator==( const GMEVertex& rhs ) const
         {
-            return gmme_index == rhs.gmme_index && v_index == rhs.v_index ;
+            return gmme == rhs.gmme && v_index == rhs.v_index ;
         }
         bool is_defined() const
         {
-            return gmme_index.is_defined() && v_index != NO_ID ;
+            return gmme.is_defined() && v_index != NO_ID ;
         }
         /// GeoModelEntity index in the GeoModel that owns it
-        gmme_id gmme_index ;
+        gmme_id gmme ;
         /// Index of the vertex in the GeoModelEntity
         index_t v_index ;
     } ;

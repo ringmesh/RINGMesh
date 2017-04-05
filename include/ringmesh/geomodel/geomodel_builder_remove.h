@@ -210,7 +210,7 @@ namespace RINGMesh {
                     GeoModelMeshEntity& ME = geomodel_access_.modifiable_mesh_entity(
                         new_id ) ;
                     update_mesh_entity_index( ME ) ;
-                    ringmesh_assert( new_id == ME.gmme_index() ) ;
+                    ringmesh_assert( new_id == ME.gmme() ) ;
                     update_mesh_entity_boundaries( ME ) ;
                     delete_invalid_boundaries( ME ) ;
 
@@ -424,7 +424,7 @@ namespace RINGMesh {
         {
             ringmesh_assert( boundary_index < R.nb_boundaries() ) ;
             GeoModelMeshEntityAccess region_access(
-                geomodel_access_.modifiable_mesh_entity( R.gmme_index() ) ) ;
+                geomodel_access_.modifiable_mesh_entity( R.gmme() ) ) ;
             region_access.modifiable_sides()[boundary_index] = new_side ;
         }
 
@@ -491,7 +491,7 @@ namespace RINGMesh {
         void delete_invalid_signs( Region& R )
         {
             GeoModelMeshEntityAccess region_access(
-                geomodel_access_.modifiable_mesh_entity( R.gmme_index() ) ) ;
+                geomodel_access_.modifiable_mesh_entity( R.gmme() ) ) ;
             region_access.modifiable_sides().resize( R.nb_boundaries() ) ;
         }
         void delete_invalid_universe_sided_boundaries( Universe& U )
