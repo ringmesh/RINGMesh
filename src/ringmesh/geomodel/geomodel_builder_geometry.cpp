@@ -315,7 +315,7 @@ namespace RINGMesh {
         ringmesh_assert( v < E.nb_vertices() ) ;
         if( update ) {
             geomodel_vertices.update_point(
-                geomodel_vertices.geomodel_vertex_id( E.gmme_id(), v ), point ) ;
+                geomodel_vertices.geomodel_vertex_id( E.gmme_index(), v ), point ) ;
         } else {
             GeoModelMeshEntityAccess gmme_access( E ) ;
             MeshBaseBuilder_var builder = MeshBaseBuilder::create_builder(
@@ -455,7 +455,7 @@ namespace RINGMesh {
         // If there are already some vertices
         // we are doomed because they are not removed
         /// @todo Do this test for all others set_something
-        set_mesh_entity_vertices( E.gmme_id(), unique_vertices, clear_vertices ) ;
+        set_mesh_entity_vertices( E.gmme_index(), unique_vertices, clear_vertices ) ;
 
         Mesh1DBuilder_var builder = create_line_builder( line_id ) ;
         for( index_t e = 1; e < E.nb_vertices(); e++ ) {

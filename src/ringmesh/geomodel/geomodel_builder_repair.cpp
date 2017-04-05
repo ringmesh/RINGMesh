@@ -129,9 +129,9 @@ namespace RINGMesh {
             const Line& cur_line = geomodel_.line( line_itr ) ;
             if( !cur_line.is_first_corner_first_vertex() ) {
                 const index_t first_boundary_index = cur_line.boundary( 0 ).index() ;
-                builder_.topology.set_mesh_entity_boundary( cur_line.gmme_id(), 0,
+                builder_.topology.set_mesh_entity_boundary( cur_line.gmme_index(), 0,
                     cur_line.boundary_gmme( 1 ).index() ) ;
-                builder_.topology.set_mesh_entity_boundary( cur_line.gmme_id(), 1,
+                builder_.topology.set_mesh_entity_boundary( cur_line.gmme_index(), 1,
                     first_boundary_index ) ;
             }
         }
@@ -221,7 +221,7 @@ namespace RINGMesh {
                     << " degenerated edges removed in LINE " << i << std::endl ;
                 // If the Line is set it to remove
                 if( geomodel_.line( i ).nb_mesh_elements() == 0 ) {
-                    to_remove.insert( geomodel_.line( i ).gmme_id() ) ;
+                    to_remove.insert( geomodel_.line( i ).gmme_index() ) ;
                 }
             }
         }
@@ -254,7 +254,7 @@ namespace RINGMesh {
                     }
                 }
                 if( surface.nb_vertices() == 0 || surface.nb_mesh_elements() == 0 ) {
-                    to_remove.insert( geomodel_.surface( i ).gmme_id() ) ;
+                    to_remove.insert( geomodel_.surface( i ).gmme_index() ) ;
                 }
             }
         }
@@ -347,7 +347,7 @@ namespace RINGMesh {
                     continue ;
                 } else if( nb_todelete == E.nb_vertices() ) {
                     // The complete entity should be removed
-                    to_remove.insert( E.gmme_id() ) ;
+                    to_remove.insert( E.gmme_index() ) ;
                     continue ;
                 } else {
                     if( t == 1 ) {

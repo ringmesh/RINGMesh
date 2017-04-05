@@ -71,13 +71,13 @@ namespace RINGMesh {
 
         virtual const MeshEntityType type_name() const = 0 ;
 
-        const gmme_id gmme_id() const
+        const gmme_id gmme_index() const
         {
             return gmme_id( type_name(), id_ ) ;
         }
         const MeshEntityType mesh_entity_type() const
         {
-            return gmme_id().type() ;
+            return gmme_index().type() ;
         }
         /*!
          * @brief Global validity of the entity
@@ -156,10 +156,10 @@ namespace RINGMesh {
         }
 
         /*!
-         * @brief Returns the gmge_t of the parent of the given type.
+         * @brief Returns the gmge_id of the parent of the given type.
          * @note If this entity has no parent of the given type,
-         * it will return an undefined gmge_t (with no type and no id).
-         * You should check on the returned gmge_t.
+         * it will return an undefined gmge_id (with no type and no id).
+         * You should check on the returned gmge_id.
          * @param[in] parent_type_name the asking parent type
          *
          */

@@ -61,11 +61,11 @@ namespace {
         const GeoModelMeshVertices& geomodel_vertices = E.geomodel().mesh.vertices ;
         /// Check that the stored geomodel vertex indices are in a valid range
         for( index_t i = 0; i < E.nb_vertices(); ++i ) {
-            if( geomodel_vertices.geomodel_vertex_id( E.gmme_id(), i ) == NO_ID
-                && geomodel_vertices.geomodel_vertex_id( E.gmme_id(), i )
+            if( geomodel_vertices.geomodel_vertex_id( E.gmme_index(), i ) == NO_ID
+                && geomodel_vertices.geomodel_vertex_id( E.gmme_index(), i )
                     >= E.geomodel().mesh.vertices.nb() ) {
                 Logger::warn( "GeoModelEntity" )
-                    << "Invalid geomodel vertex index in " << E.gmme_id()
+                    << "Invalid geomodel vertex index in " << E.gmme_index()
                     << std::endl ;
                 return false ;
             }
@@ -217,8 +217,8 @@ namespace {
         for( index_t c = 0; c < S.nb_mesh_element_vertices( f ); ++c ) {
             index_t facet_vertex_index = S.mesh_element_vertex_index( f, c ) ;
             corners[v] = facet_vertex_index ;
-            corners_global[v] = geomodel_vertices.geomodel_vertex_id( S.gmme_id(), f,
-                v ) ;
+            corners_global[v] = geomodel_vertices.geomodel_vertex_id( S.gmme_index(),
+                f, v ) ;
             v++ ;
         }
         double area = S.mesh_element_size( f ) ;
@@ -240,7 +240,7 @@ namespace {
         for( index_t v = 0; v < nb_vertices_in_cell; v++ ) {
             vertices[v] = region.mesh_element_vertex_index( cell_index, v ) ;
             vertices_global[v] = geomodel_vertices.geomodel_vertex_id(
-                region.gmme_id(), cell_index, v ) ;
+                region.gmme_index(), cell_index, v ) ;
         }
         double volume = region.mesh_element_size( cell_index ) ;
         return check_mesh_entity_vertices_are_different( vertices, vertices_global )
@@ -252,8 +252,8 @@ namespace RINGMesh {
     bool GeoModelMeshEntity::is_inside_border( const GeoModelMeshEntity& rhs ) const
     {
         // Find out if this surface is twice in the in_boundary vector
-        return std::count( in_boundary_.begin(), in_boundary_.end(), rhs.gmme_id() )
-            > 1 ;
+        return std::count( in_boundary_.begin(), in_boundary_.end(),
+            rhs.gmme_index() ) > 1 ;
     }
 
     bool GeoModelMeshEntity::has_inside_border() const
@@ -352,7 +352,7 @@ namespace RINGMesh {
                 if( !found ) {
                     Logger::warn( "GeoModelEntity" )
                         << "Inconsistency boundary-in_boundary between " << gmme_id()
-                        << " and " << E.gmme_id() << std::endl ;
+                        << " and " << E.gmme_index() << std::endl ;
                     valid = false ;
                 }
             }
@@ -388,7 +388,7 @@ namespace RINGMesh {
                 if( !found ) {
                     Logger::warn( "GeoModelEntity" )
                         << "Inconsistency in_boundary-boundary between " << gmme_id()
-                        << " and " << E.gmme_id() << std::endl ;
+                        << " and " << E.gmme_index() << std::endl ;
                     valid = false ;
                 }
             }
@@ -432,7 +432,7 @@ namespace RINGMesh {
                         if( !found ) {
                             Logger::warn( "GeoModelEntity" )
                                 << "Inconsistency parent-child between " << gmme_id()
-                                << " and " << E.gmge_id() << std::endl ;
+                                << " and " << E.gmge_index() << std::endl ;
                             valid = false ;
                         }
                     }
@@ -655,8 +655,7 @@ namespace RINGMesh {
 
     const Surface& Line::in_boundary( index_t x ) const
     {
-        return static_cast< const Surface& >( GeoModelMeshEntity::in_boundary(
-            x ) ) ;
+        return static_cast< const Surface& >( GeoModelMeshEntity::in_boundary( x ) ) ;
     }
 
     const Corner& Line::boundary( index_t x ) const

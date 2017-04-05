@@ -97,7 +97,7 @@ namespace {
             ++i ) {
             if( geomodel.geological_entity( Interface::type_name_static(), i ).name()
                 == interface_name ) {
-                return geomodel.geological_entity( Interface::type_name_static(), i ).gmge_id() ;
+                return geomodel.geological_entity( Interface::type_name_static(), i ).gmge_index() ;
             }
         }
         return gmge_id() ;
@@ -1023,14 +1023,15 @@ namespace {
                 build_surface( builder(), geomodel(), load_storage ) ;
             }
             // Create a new surface
-            gmme_id new_surface = builder().topology.create_mesh_entity< Surface >() ;
+            gmme_id new_surface =
+                builder().topology.create_mesh_entity< Surface >() ;
             load_storage.cur_surface_ = new_surface.index() ;
             builder().geology.add_mesh_entity_parent( new_surface,
                 gmge_id( Interface::type_name_static(),
                     load_storage.cur_interface_ ) ) ;
             builder().geology.add_geological_entity_child(
-                gmge_id( Interface::type_name_static(), load_storage.cur_interface_ ),
-                new_surface.index() ) ;
+                gmge_id( Interface::type_name_static(),
+                    load_storage.cur_interface_ ), new_surface.index() ) ;
         }
     } ;
 
