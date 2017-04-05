@@ -101,18 +101,18 @@ int main()
     try {
         default_configure() ;
 
-        Logger::out( "TEST" ) << "Test IO for a GeoModel in .gm" << std::endl ;
+        Logger::out( "TEST", "Test IO for a GeoModel in .gm" ) ;
 
         test_file( "modelA1_version0.gm" ) ;
         test_file( "modelA1_version1.gm" ) ;
 
     } catch( const RINGMeshException& e ) {
-        Logger::err( e.category() ) << e.what() << std::endl ;
+        Logger::err( e.category(), e.what() ) ;
         return 1 ;
     } catch( const std::exception& e ) {
-        Logger::err( "Exception" ) << e.what() << std::endl ;
+        Logger::err( "Exception", e.what() ) ;
         return 1 ;
     }
-    Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
+    Logger::out( "TEST", "SUCCESS" ) ;
     return 0 ;
 }

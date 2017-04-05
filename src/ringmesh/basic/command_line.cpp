@@ -32,8 +32,8 @@
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
  */
- 
- /*!
+
+/*!
  * @file Defintion of command line functions 
  * @author Arnaud Botella
  */
@@ -52,8 +52,7 @@ namespace RINGMesh {
             GEO::CmdLine::declare_arg( "epsilon", 1e-7,
                 "Threshold for numerical precision (ratio of the bbox diagonal)",
                 GEO::CmdLine::ARG_ADVANCED ) ;
-            GEO::CmdLine::declare_arg(
-                "validity_save", false,
+            GEO::CmdLine::declare_arg( "validity_save", false,
                 "Saves meshes representing geomodel inconsistencies",
                 GEO::CmdLine::ARG_ADVANCED ) ;
         }
@@ -61,23 +60,19 @@ namespace RINGMesh {
         void import_arg_group_in()
         {
             GEO::CmdLine::declare_arg_group( "in", "Input data" ) ;
-            GEO::CmdLine::declare_arg(
-                "in:geomodel", "",
+            GEO::CmdLine::declare_arg( "in:geomodel", "",
                 "Filename of the input geological model" ) ;
-            GEO::CmdLine::declare_arg(
-                "in:intersection_check", true,
+            GEO::CmdLine::declare_arg( "in:intersection_check", true,
                 "Toggle the surface intersection check at loading",
                 GEO::CmdLine::ARG_ADVANCED ) ;
-            GEO::CmdLine::declare_arg(
-                "in:wells", "",
+            GEO::CmdLine::declare_arg( "in:wells", "",
                 "Filename of the input wells" ) ;
         }
 
         void import_arg_group_out()
         {
             GEO::CmdLine::declare_arg_group( "out", "Output data" ) ;
-            GEO::CmdLine::declare_arg(
-                "out:geomodel", "",
+            GEO::CmdLine::declare_arg( "out:geomodel", "",
                 "Saves the geological model" ) ;
         }
 
@@ -98,5 +93,4 @@ namespace RINGMesh {
     }
 
 }
-
 

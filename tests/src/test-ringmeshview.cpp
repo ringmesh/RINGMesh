@@ -160,13 +160,13 @@ int main()
         }
 
     } catch( const RINGMeshException& e ) {
-        Logger::err( e.category() ) << e.what() << std::endl ;
+        Logger::err( e.category(), e.what() ) ;
         return 1 ;
     } catch( const std::exception& e ) {
-        Logger::err( "Exception" ) << e.what() << std::endl ;
+        Logger::err( "Exception", e.what() ) ;
         return 1 ;
     }
-    Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
+    Logger::out( "TEST", "SUCCESS" ) ;
     return 0 ;
 }
 
@@ -176,10 +176,9 @@ int main() {
     using namespace RINGMesh ;
 
     default_configure() ;
-    Logger::out("RINGMeshView")
-    << "To test RINGMesh viewer you need to configure "
-    << "the project with the RINGMESH_TEST_GRAPHICS option ON"
-    << std::endl ;
+    Logger::out( "RINGMeshView",
+        "To test RINGMesh viewer you need to configure ",
+        "the project with the RINGMESH_TEST_GRAPHICS option ON" ) ;
     return 0 ;
 }
 #endif
