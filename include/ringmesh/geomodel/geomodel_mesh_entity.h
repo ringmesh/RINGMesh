@@ -52,8 +52,9 @@
 namespace RINGMesh {
     class GeoModel ;
     class GeoModelGeologicalEntity ;
-    class Line ;
+}
 
+namespace RINGMesh {
     /*!
      * @brief Abstract base class for GeoModelMeshEntity.
      * @details The GeoModelMeshEntity geometrical representation
