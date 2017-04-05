@@ -507,15 +507,6 @@ namespace RINGMesh {
                 mesh0d_->nb_vertices(), " vertices " ) ;
             valid = false ;
         }
-
-        // The default point is (0., 0., 0.) and there might be a valid
-        // Corner at this position.
-        /*if( mesh_.vertices.point( 0 ) == vec3() ) {
-         Logger::warn( "GeoModelEntity" )
-         ,"Corner " ,index()
-         ," point is default " ) ;
-         valid = false ;
-         }*/
         return valid ;
     }
 
