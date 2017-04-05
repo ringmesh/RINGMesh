@@ -54,8 +54,8 @@ namespace {
         std::vector< GMEVertex > vertices ;
         geomodel_vertices.gme_vertices( geomodel_point_id, vertices ) ;
         for( const GMEVertex& vertex : vertices ) {
-            if( vertex.gmme_id.type() == Corner::type_name_static() ) {
-                return vertex.gmme_id ;
+            if( vertex.gmme_index.type() == Corner::type_name_static() ) {
+                return vertex.gmme_index ;
             }
         }
         return gmme_id() ;
@@ -74,7 +74,7 @@ namespace {
         bool equal = true ;
         for( index_t i = 0; i < L.nb_vertices(); i++ ) {
             if( rhs_vertices[i]
-                != geomodel_vertices.geomodel_vertex_id( L.gmme_id(), i ) ) {
+                != geomodel_vertices.geomodel_vertex_id( L.gmme_index(), i ) ) {
                 equal = false ;
                 break ;
             }
@@ -86,7 +86,7 @@ namespace {
         equal = true ;
         for( index_t i = 0; i < L.nb_vertices(); i++ ) {
             if( rhs_vertices[i]
-                != geomodel_vertices.geomodel_vertex_id( L.gmme_id(),
+                != geomodel_vertices.geomodel_vertex_id( L.gmme_index(),
                     L.nb_vertices() - i - 1 ) ) {
                 equal = false ;
                 break ;
@@ -666,13 +666,13 @@ namespace RINGMesh {
                     for( index_t v = 0; v < S.nb_mesh_element_vertices( f ); ++v ) {
                         if( S.is_on_border( f, v ) ) {
                             index_t vertex = geomodel_vertices.geomodel_vertex_id(
-                                S.gmme_id(), f, v ) ;
+                                S.gmme_index(), f, v ) ;
                             index_t next_vertex =
-                                geomodel_vertices.geomodel_vertex_id( S.gmme_id(), f,
-                                    S.next_facet_vertex_index( f, v ) ) ;
+                                geomodel_vertices.geomodel_vertex_id( S.gmme_index(),
+                                    f, S.next_facet_vertex_index( f, v ) ) ;
                             index_t previous_vertex =
-                                geomodel_vertices.geomodel_vertex_id( S.gmme_id(), f,
-                                    S.prev_facet_vertex_index( f, v ) ) ;
+                                geomodel_vertices.geomodel_vertex_id( S.gmme_index(),
+                                    f, S.prev_facet_vertex_index( f, v ) ) ;
                             border_triangles_.push_back(
                                 BorderTriangle( s, f, vertex, next_vertex,
                                     previous_vertex ) ) ;
@@ -696,7 +696,7 @@ namespace RINGMesh {
             // Gets the next edge on border in the Surface
             index_t f = border_triangle.facet_ ;
             std::vector< index_t > possible_v0_id ;
-            geomodel_vertices.mesh_entity_vertex_id( S.gmme_id(),
+            geomodel_vertices.mesh_entity_vertex_id( S.gmme_index(),
                 border_triangle.v0_, possible_v0_id ) ;
             ringmesh_assert( !possible_v0_id.empty() ) ;
             index_t v0_id = NO_ID ;
@@ -726,9 +726,9 @@ namespace RINGMesh {
             // Finds the BorderTriangle that is corresponding to this
             // It must exist and there is only one
             BorderTriangle bait( border_triangle.surface_, next_f,
-                geomodel_vertices.geomodel_vertex_id( S.gmme_id(), next_f,
+                geomodel_vertices.geomodel_vertex_id( S.gmme_index(), next_f,
                     next_f_v0 ),
-                geomodel_vertices.geomodel_vertex_id( S.gmme_id(), next_f,
+                geomodel_vertices.geomodel_vertex_id( S.gmme_index(), next_f,
                     next_f_v1 ), NO_ID ) ;
             index_t result = static_cast< index_t >( std::lower_bound(
                 border_triangles_.begin(), border_triangles_.end(), bait )
@@ -909,7 +909,8 @@ namespace RINGMesh {
                 /// the + side. No further check.
                 bool inside = true ;
                 // Create the region - set the surface on its boundaries
-                gmme_id region_id = builder_.topology.create_mesh_entity< Region >() ;
+                gmme_id region_id =
+                    builder_.topology.create_mesh_entity< Region >() ;
                 builder_.topology.add_mesh_entity_boundary( region_id, 0, inside ) ;
 
                 // Set universe boundary
@@ -1005,7 +1006,7 @@ namespace RINGMesh {
                     cur_region.boundary( i ).index(), cur_region.side( i ) ) ;
             }
             std::set< gmme_id > to_erase ;
-            to_erase.insert( cur_region.gmme_id() ) ;
+            to_erase.insert( cur_region.gmme_index() ) ;
             builder_.removal.remove_mesh_entities( to_erase ) ;
         }
         return true ;
@@ -1157,7 +1158,7 @@ namespace RINGMesh {
         const std::vector< GeologicalEntityType > parent_types(
             geomodel_.entity_type_manager().relationship_manager.parent_types(
                 type ) ) ;
-        for(  const GeologicalEntityType& parent_type : parent_types ) {
+        for( const GeologicalEntityType& parent_type : parent_types ) {
             if( parent_type != ForbiddenGeologicalEntityType::type_name_static() ) {
                 for( index_t j = 0;
                     j < geomodel_.nb_geological_entities( parent_type ); ++j ) {
@@ -1165,7 +1166,7 @@ namespace RINGMesh {
                         geomodel_.geological_entity( parent_type, j ) ;
                     for( index_t k = 0; k < parent.nb_children(); ++k ) {
                         add_mesh_entity_parent( parent.child_gmme( k ),
-                            parent.gmge_id() ) ;
+                            parent.gmge_index() ) ;
                     }
                 }
             }
@@ -1252,7 +1253,7 @@ namespace RINGMesh {
             GeoModelGeologicalEntityAccess::create_geological_entity( type,
                 geomodel_, id ) ;
         geomodel_access_.modifiable_geological_entities()[index].push_back( E ) ;
-        return E->gmge_id() ;
+        return E->gmge_index() ;
     }
 
     index_t GeoModelBuilderGeology::find_or_create_geological_entity_type(

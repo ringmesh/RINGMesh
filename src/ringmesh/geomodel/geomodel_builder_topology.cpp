@@ -62,8 +62,8 @@ namespace {
         std::vector< GMEVertex > vertices ;
         geomodel_vertices.gme_vertices( geomodel_point_id, vertices ) ;
         for( const GMEVertex& vertex : vertices ) {
-            if( vertex.gmme_id.type() == Corner::type_name_static() ) {
-                return vertex.gmme_id ;
+            if( vertex.gmme_index.type() == Corner::type_name_static() ) {
+                return vertex.gmme_index ;
             }
         }
         return gmme_id() ;
@@ -168,7 +168,7 @@ namespace RINGMesh {
                     }
                 }
                 if( no_child ) {
-                    geological_entities.insert( E.gmge_id() ) ;
+                    geological_entities.insert( E.gmge_index() ) ;
                 }
             }
         }
@@ -187,7 +187,7 @@ namespace RINGMesh {
                     }
                 }
                 if( no_incident ) {
-                    mesh_entities.insert( E.gmme_id() ) ;
+                    mesh_entities.insert( E.gmme_index() ) ;
                 }
             }
         }
@@ -227,7 +227,7 @@ namespace RINGMesh {
         gmme_id result ;
         for( index_t i = 0; i < geomodel_.nb_lines(); ++i ) {
             if( line_equal( geomodel_.line( i ), vertices ) ) {
-                result = geomodel_.line( i ).gmme_id() ;
+                result = geomodel_.line( i ).gmme_index() ;
             }
         }
         if( !result.is_defined() ) {
@@ -262,7 +262,7 @@ namespace RINGMesh {
                     && std::equal( cur_adjacent_surfaces.begin(),
                         cur_adjacent_surfaces.end(),
                         sorted_adjacent_surfaces.begin() ) ) {
-                    return line.gmme_id() ;
+                    return line.gmme_index() ;
                 }
             }
         }
@@ -353,41 +353,41 @@ namespace RINGMesh {
     }
 
     void GeoModelBuilderTopology::add_mesh_entity_boundary(
-        const gmme_id& gmme_id,
+        const gmme_id& gmme,
         index_t boundary_id,
         bool side )
     {
         GeoModelMeshEntity& mesh_entity = geomodel_access_.modifiable_mesh_entity(
-            gmme_id ) ;
+            gmme ) ;
         const MeshEntityType& b_type =
             geomodel_.entity_type_manager().mesh_entity_manager.boundary_type(
-                gmme_id.type() ) ;
+                gmme.type() ) ;
         gmme_id boundary( b_type, boundary_id ) ;
         GeoModelMeshEntityAccess gme_access( mesh_entity ) ;
         gme_access.modifiable_boundaries().push_back( boundary ) ;
 
-        if( gmme_id.type() == Region::type_name_static() ) {
+        if( gmme.type() == Region::type_name_static() ) {
             gme_access.modifiable_sides().push_back( side ) ;
         }
     }
 
     void GeoModelBuilderTopology::set_mesh_entity_boundary(
-        const gmme_id& gmme_id,
+        const gmme_id& gmme,
         index_t id,
         index_t boundary_id,
         bool side )
     {
-        ringmesh_assert( id < geomodel_.mesh_entity( gmme_id ).nb_boundaries() ) ;
+        ringmesh_assert( id < geomodel_.mesh_entity( gmme ).nb_boundaries() ) ;
         GeoModelMeshEntity& mesh_entity = geomodel_access_.modifiable_mesh_entity(
-            gmme_id ) ;
+            gmme ) ;
         const MeshEntityType& b_type =
             geomodel_.entity_type_manager().mesh_entity_manager.boundary_type(
-                gmme_id.type() ) ;
+                gmme.type() ) ;
         gmme_id boundary( b_type, boundary_id ) ;
         GeoModelMeshEntityAccess gme_access( mesh_entity ) ;
         gme_access.modifiable_boundaries()[id] = boundary ;
 
-        if( gmme_id.type() == Region::type_name_static() ) {
+        if( gmme.type() == Region::type_name_static() ) {
             gme_access.modifiable_sides()[id] = side ;
         }
     }
@@ -429,18 +429,18 @@ namespace RINGMesh {
     }
 
     void GeoModelBuilderTopology::set_mesh_entity_in_boundary(
-        const gmme_id& gmme_id,
+        const gmme_id& gmme,
         index_t id,
         index_t in_boundary_id )
     {
         /// No check on the validity of the index of the entity in_boundary
         /// NO_ID is used to flag entities to delete
         GeoModelMeshEntity& mesh_entity = geomodel_access_.modifiable_mesh_entity(
-            gmme_id ) ;
+            gmme ) ;
         ringmesh_assert( id < mesh_entity.nb_in_boundary() ) ;
         const MeshEntityType& in_b_type =
             geomodel_.entity_type_manager().mesh_entity_manager.in_boundary_type(
-                gmme_id.type() ) ;
+                gmme.type() ) ;
         gmme_id in_boundary( in_b_type, in_boundary_id ) ;
         GeoModelMeshEntityAccess gme_access( mesh_entity ) ;
         gme_access.modifiable_in_boundaries()[id] = in_boundary ;

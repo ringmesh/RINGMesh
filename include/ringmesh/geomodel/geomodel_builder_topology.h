@@ -83,7 +83,7 @@ namespace RINGMesh {
                 geomodel_, new_id, mesh_type ) ;
             geomodel_access_.modifiable_mesh_entities( entity_type ).push_back(
                 new_entity ) ;
-            return new_entity->gmme_id() ;
+            return new_entity->gmme_index() ;
         }
 
         bool create_mesh_entities(

@@ -142,7 +142,7 @@ namespace RINGMesh {
             return *geological_entities( id.type() )[id.index()] ;
         }
         /*!
-         * Convenient overload of entity( gmge_t id )
+         * Convenient overload of entity( gmge_id id )
          */
         const GeoModelGeologicalEntity& geological_entity(
             const GeologicalEntityType& entity_type,
@@ -156,7 +156,7 @@ namespace RINGMesh {
          */
         const GeoModelMeshEntity& mesh_entity( gmme_id id ) const ;
         /*!
-         * Convenient overload of mesh_entity( gmme_t id )
+         * Convenient overload of mesh_entity( gmme_id id )
          */
         const GeoModelMeshEntity& mesh_entity(
             const MeshEntityType& entity_type,
