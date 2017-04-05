@@ -96,22 +96,22 @@ namespace RINGMesh {
                         + GEO::String::to_string( file_line.line_number() )
                         + ", 4 fields are expected, the type, id, name, and geological feature" ) ;
             }
-            gmme_t entity = read_first_line( file_line ) ;
+            gmme_id entity = read_first_line( file_line ) ;
             read_second_line( file_line, entity ) ;
         }
 
     protected:
-        gmme_t read_first_line( GEO::LineInput& file_line )
+        gmme_id read_first_line( GEO::LineInput& file_line )
         {
 
-            gmme_t cur_gmme( MeshEntityType( file_line.field( 0 ) ),
+            gmme_id cur_gmme( MeshEntityType( file_line.field( 0 ) ),
                 file_line.field_as_uint( 1 ) ) ;
             builder_.info.set_mesh_entity_name( cur_gmme, file_line.field( 2 ) ) ;
             builder_.geology.set_mesh_entity_geol_feature( cur_gmme,
                 GME::determine_geological_type( file_line.field( 3 ) ) ) ;
             return cur_gmme ;
         }
-        void read_second_line( GEO::LineInput& file_line, const gmme_t& entity )
+        void read_second_line( GEO::LineInput& file_line, const gmme_id& entity )
         {
             file_line.get_line() ;
             file_line.get_fields() ;
@@ -158,7 +158,7 @@ namespace RINGMesh {
                         + ", 5 fields are expected, the type, id, name, "
                         + "geological feature, and mesh type" ) ;
             }
-            gmme_t entity = read_first_line( file_line  ) ;
+            gmme_id entity = read_first_line( file_line  ) ;
 
             const std::string mesh_type = file_line.field( 4 ) ;
             builder_.geometry.change_mesh_data_structure( entity, mesh_type ) ;
@@ -279,7 +279,7 @@ namespace RINGMesh {
                 } else {
                     GeologicalEntityType type( file_line.field( 0 ) ) ;
                     index_t id = file_line.field_as_uint( 1 ) ;
-                    gmge_t entity( type, id ) ;
+                    gmge_id entity( type, id ) ;
                     info.set_geological_entity_name( entity, file_line.field( 2 ) ) ;
                     geology.set_geological_entity_geol_feature( entity,
                         GME::determine_geological_type( file_line.field( 3 ) ) ) ;

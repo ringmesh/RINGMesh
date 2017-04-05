@@ -179,11 +179,11 @@ namespace {
 
         bool found_line = false ;
         for( const GMEVertex& vertex0 : v0_line_bme ) {
-            index_t line0_id = vertex0.gmme_id.index() ;
+            index_t line0_id = vertex0.gmme.index() ;
             for( const GMEVertex& vertex1 : v1_line_bme ) {
-                if( line0_id == vertex1.gmme_id.index() ) {
-                    if( !is_edge_on_line( geomodel.line( line0_id ), vertex0.v_id,
-                        vertex1.v_id ) ) {
+                if( line0_id == vertex1.gmme.index() ) {
+                    if( !is_edge_on_line( geomodel.line( line0_id ), vertex0.v_index,
+                        vertex1.v_index ) ) {
                         return false ;
                     }
                     found_line = true ;
@@ -352,8 +352,8 @@ namespace {
      */
     bool is_in_in_boundary(
         const GeoModel& geomodel,
-        const gmme_t& is,
-        const gmme_t& in )
+        const gmme_id& is,
+        const gmme_id& in )
     {
         const GeoModelMeshEntity& E = geomodel.mesh_entity( in ) ;
         for( index_t i = 0; i < E.nb_in_boundary(); ++i ) {
@@ -407,8 +407,8 @@ namespace {
             geomodel.mesh.vertices.gme_vertices( i, bmes ) ;
 
             for( const GMEVertex& vertex : bmes ) {
-                const MeshEntityType& T = vertex.gmme_id.type() ;
-                index_t id = vertex.gmme_id.index() ;
+                const MeshEntityType& T = vertex.gmme.type() ;
+                index_t id = vertex.gmme.index() ;
                 if( T == Region::type_name_static() ) {
                     regions.push_back( id ) ;
                 } else if( T == Surface::type_name_static() ) {
@@ -480,7 +480,7 @@ namespace {
                             if( nb > 2 ) {
                                 Logger::warn( "GeoModel" ) << " Vertex " << i
                                     << " is " << nb << " times in Surface "
-                                    << geomodel.surface( surface ).gmme_id()
+                                    << geomodel.surface( surface ).gmme()
                                     << std::endl ;
                                 valid_vertex = false ;
                             } else if( nb == 2 ) {
@@ -497,7 +497,7 @@ namespace {
                                 if( !internal_boundary ) {
                                     Logger::warn( "GeoModel" ) << " Vertex " << i
                                         << " appears " << nb << " times in Surface "
-                                        << geomodel.surface( surface ).gmme_id()
+                                        << geomodel.surface( surface ).gmme()
                                         << std::endl ;
                                     valid_vertex = false ;
                                 }
@@ -507,8 +507,8 @@ namespace {
                         // the lines 
                         for( index_t surface : surfaces ) {
                             for( index_t line : lines ) {
-                                gmme_t s_id( Surface::type_name_static(), surface ) ;
-                                gmme_t l_id( Line::type_name_static(), line ) ;
+                                gmme_id s_id( Surface::type_name_static(), surface ) ;
+                                gmme_id l_id( Line::type_name_static(), line ) ;
                                 if( !is_in_in_boundary( geomodel, s_id, l_id ) ) {
                                     Logger::warn( "GeoModel" )
                                         << " Inconsistent Line-Surface connectivity "
@@ -557,8 +557,8 @@ namespace {
                         }
                         // Check that all the lines are in in_boundary of this corner
                         for( index_t line : lines ) {
-                            gmme_t l_id( Line::type_name_static(), line ) ;
-                            gmme_t c_id( Corner::type_name_static(), corner ) ;
+                            gmme_id l_id( Line::type_name_static(), line ) ;
+                            gmme_id c_id( Corner::type_name_static(), corner ) ;
                             if( !is_in_in_boundary( geomodel, l_id, c_id ) ) {
                                 Logger::warn( "GeoModel" )
                                     << " Inconsistent Line-Corner connectivity "
@@ -656,15 +656,15 @@ namespace {
             for( index_t v = 0; v < surface.nb_mesh_element_vertices( f ); ++v ) {
                 if( surface.facet_adjacent_index( f, v ) == NO_ID
                     && !is_edge_on_line( surface.geomodel(),
-                        geomodel_vertices.geomodel_vertex_id( surface.gmme_id(), f,
+                        geomodel_vertices.geomodel_vertex_id( surface.gmme(), f,
                             v ),
-                        geomodel_vertices.geomodel_vertex_id( surface.gmme_id(), f,
+                        geomodel_vertices.geomodel_vertex_id( surface.gmme(), f,
                             surface.next_facet_vertex_index( f, v ) ) ) ) {
                     invalid_corners.push_back(
-                        geomodel_vertices.geomodel_vertex_id( surface.gmme_id(), f,
+                        geomodel_vertices.geomodel_vertex_id( surface.gmme(), f,
                             v ) ) ;
                     invalid_corners.push_back(
-                        geomodel_vertices.geomodel_vertex_id( surface.gmme_id(), f,
+                        geomodel_vertices.geomodel_vertex_id( surface.gmme(), f,
                             surface.next_facet_vertex_index( f, v ) ) ) ;
                 }
             }
@@ -678,7 +678,7 @@ namespace {
             if( GEO::CmdLine::get_arg_bool( "validity_save" ) ) {
                 Logger::warn( "GeoModel" ) << " Invalid surface boundary: "
                     << invalid_corners.size() / 2 << " boundary edges of "
-                    << surface.gmme_id() << "  are in no line of the geomodel "
+                    << surface.gmme() << "  are in no line of the geomodel "
                     << std::endl << " Saved in file: " << file.str() << std::endl ;
             }
 
@@ -738,7 +738,7 @@ namespace {
             if( GEO::CmdLine::get_arg_bool( "validity_save" ) ) {
                 Logger::warn( "GeoModel" ) << " Unconformal surface: "
                     << unconformal_facets.size() << " facets of "
-                    << surface.gmme_id()
+                    << surface.gmme()
                     << " are unconformal with the geomodel cells " << std::endl
                     << " Saved in file: " << file.str() << std::endl ;
             }
