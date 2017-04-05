@@ -39,6 +39,8 @@
 
 #include <mutex>
 
+#include <geogram/basic/logger.h>
+
 /*!
  * @file Logger class declaration
  * @author Arnaud Botella

@@ -36,7 +36,6 @@
 #pragma once
 
 #include <geogram/basic/geometry.h>
-#include <geogram/basic/logger.h>
 #include <geogram/basic/numeric.h>
 
 /*!

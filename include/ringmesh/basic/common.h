@@ -90,11 +90,10 @@ template< typename T > inline void ringmesh_unused( T const& )
 #include <ringmesh/basic/types.h>
 #include <ringmesh/basic/ringmesh_assert.h>
 
-#include <geogram/basic/logger.h>
 #include <ringmesh/basic/logger.h>
 
 #define DEBUG( a ) \
-    Logger::out( "Debug", #a ," = " ,a )
+    Logger::out( "Debug", #a, " = ", a )
 
 #include <stdexcept>
 
