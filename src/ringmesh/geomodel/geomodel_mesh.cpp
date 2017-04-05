@@ -396,7 +396,6 @@ namespace RINGMesh {
         for( index_t i = 0; i < M.nb_mesh_entities( entity_type ); ++i ) {
             count += M.mesh_entity( entity_type, i ).nb_vertices() ;
         }
-        DEBUG(count) ;
         return count ;
     }
 
@@ -440,9 +439,7 @@ namespace RINGMesh {
         nb += nb_entity_vertices( gm_, Region::type_name_static() ) ;
 
         // Get out if no vertices
-        DEBUG( nb) ;
         if( nb == 0 ) {
-            DEBUG( nb ) ;
             return ;
         }
 
