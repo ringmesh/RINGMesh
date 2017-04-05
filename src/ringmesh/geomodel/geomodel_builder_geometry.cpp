@@ -280,6 +280,15 @@ namespace {
         }
         return NO_ID ;
     }
+
+    void check_and_initialize_corner_vertex( GeoModel& geomodel, index_t corner_id )
+    {
+        if( geomodel.corner( corner_id ).nb_vertices() == 0 ) {
+            GeoModelBuilder builder( geomodel ) ;
+            builder.geometry.create_mesh_entity_vertices(
+                gmme_t( Corner::type_name_static(), corner_id ), 1 ) ;
+        }
+    }
 }
 
 namespace RINGMesh {
@@ -395,6 +404,7 @@ namespace RINGMesh {
 
     void GeoModelBuilderGeometry::set_corner( index_t corner_id, const vec3& point )
     {
+        check_and_initialize_corner_vertex( geomodel_, corner_id ) ;
         set_mesh_entity_vertex( gmme_t( Corner::type_name_static(), corner_id ), 0,
             point, false ) ;
     }
@@ -439,6 +449,7 @@ namespace RINGMesh {
         index_t corner_id,
         index_t geomodel_vertex_id )
     {
+        check_and_initialize_corner_vertex( geomodel_, corner_id ) ;
         set_mesh_entity_vertex( gmme_t( Corner::type_name_static(), corner_id ), 0,
             geomodel_vertex_id ) ;
     }
@@ -997,7 +1008,7 @@ namespace RINGMesh {
         const std::vector< index_t >& triangle_vertices )
     {
         Mesh2DBuilder_var builder = create_surface_builder( surface_id ) ;
-        builder->assign_facet_triangle_mesh( triangle_vertices  ) ;
+        builder->assign_facet_triangle_mesh( triangle_vertices ) ;
         compute_surface_adjacencies( surface_id ) ;
     }
 
@@ -1010,7 +1021,7 @@ namespace RINGMesh {
         ringmesh_assert( surface.nb_vertices() > 0 ) ;
 
         Mesh2DBuilder_var builder = create_surface_builder( surface_id ) ;
-        builder->assign_facet_triangle_mesh( triangle_vertices  ) ;
+        builder->assign_facet_triangle_mesh( triangle_vertices ) ;
 
         ringmesh_assert( adjacent_triangles.size() == surface.nb_mesh_elements() * 3 ) ;
         for( index_t f = 0; f < surface.nb_mesh_elements(); f++ ) {
