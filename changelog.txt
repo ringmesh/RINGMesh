@@ -1,7 +1,7 @@
 #### Current changeset ####
 
 New Features:
- * Add a console thread safe logger client
+ * New console thread safe logger client
       Each call to Logger::XXX will output consistently in the console in multithreading environment
 
 Bug fix:
