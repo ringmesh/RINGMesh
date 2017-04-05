@@ -154,30 +154,26 @@ namespace {
         index_t nb_interfaces = M.nb_geological_entities(
             Interface::type_name_static() ) ;
         if( nb_interfaces == 0 ) {
-            Logger::err( "" ) << " The GeoModel " << M.name() << " has no Interface"
-                << std::endl ;
+            Logger::err( "", " The GeoModel ", M.name(), " has no Interface" ) ;
             return false ;
         }
         for( index_t i = 0; i < nb_interfaces; ++i ) {
             const GeoModelGeologicalEntity& E = M.geological_entity(
                 Interface::type_name_static(), i ) ;
             if( !E.has_geological_feature() ) {
-                Logger::err( "" ) << E.gmge() << " has no geological feature"
-                    << std::endl ;
+                Logger::err( "", E.gmge(), " has no geological feature" ) ;
                 return false ;
             }
         }
         for( index_t s = 0; s < M.nb_surfaces(); ++s ) {
             const Surface& S = M.surface( s ) ;
             if( !S.has_parent() ) {
-                Logger::err( "" ) << S.gmme()
-                    << " does not belong to any Interface of the geomodel"
-                    << std::endl ;
+                Logger::err( "", S.gmme(),
+                    " does not belong to any Interface of the geomodel" ) ;
                 return false ;
             }
             if( !S.is_simplicial() ) {
-                Logger::err( "" ) << S.gmme() << " is not triangulated "
-                    << std::endl ;
+                Logger::err( "", S.gmme(), " is not triangulated " ) ;
                 return false ;
             }
         }
@@ -404,8 +400,8 @@ namespace {
             // Check validity
             bool is_valid = is_geomodel_valid( geomodel ) ;
 
-            Logger::out( "I/O" ) << " Loaded geomodel " << geomodel.name()
-                << " from " << filename << std::endl ;
+            Logger::out( "I/O", " Loaded geomodel ", geomodel.name(), " from ",
+                filename ) ;
             return is_valid ;
         }
 

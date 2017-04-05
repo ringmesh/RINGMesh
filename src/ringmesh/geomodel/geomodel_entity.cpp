@@ -45,7 +45,7 @@
 namespace RINGMesh {
 
     Universe::Universe( const GeoModel& geomodel )
-        : GeoModelEntity( geomodel,NO_ID )
+        : GeoModelEntity( geomodel, NO_ID )
     {
         name_ = universe_type_name() ;
     }

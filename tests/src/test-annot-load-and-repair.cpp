@@ -59,9 +59,9 @@ int main()
         GeoModel M ;
         std::string file_name( ringmesh_test_data_path ) ;
         file_name += "annot.ml" ;
-        
-        Logger::out( "RINGMesh Test" ) << "Loading and fixing structural model:"
-            << file_name << std::endl ;
+
+        Logger::out( "RINGMesh Test", "Loading and fixing structural model:",
+            file_name ) ;
 
         // Set the debug directory for the validity checks
         set_validity_errors_directory( ringmesh_test_output_path ) ;
@@ -74,8 +74,7 @@ int main()
                     + " must be invalid to check the repair functionalities." ) ;
         }
 
-        Logger::out( "RINGMesh Test" ) << "Repairing "
-            << std::endl << std::endl << std::endl ;
+        Logger::out( "RINGMesh Test", "Repairing" ) ;
         // Repair the model
 
         GeoModelBuilder model_builder( M ) ;
@@ -86,23 +85,21 @@ int main()
             std::string fixed_file_name( ringmesh_test_output_path ) ;
             fixed_file_name += M.name() + "_repaired.ml" ;
             geomodel_save( M, fixed_file_name ) ;
-            Logger::out( "RINGMesh Test" ) << "Invalid geological model "
-                << M.name()
-                << " has been successfully fixed and is saved under: "
-                << fixed_file_name << std::endl ;
-            Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
+            Logger::out( "RINGMesh Test", "Invalid geological model ", M.name(),
+                " has been successfully fixed and is saved under: ",
+                fixed_file_name ) ;
+            Logger::out( "TEST", "SUCCESS" ) ;
             return 0 ;
         } else {
             throw RINGMeshException( "RINGMesh Test",
-                "Fixing the invalid geological model " + M.name()
-                    + " failed." ) ;
+                "Fixing the invalid geological model " + M.name() + " failed." ) ;
         }
 
     } catch( const RINGMeshException& e ) {
-        Logger::err( e.category() ) << e.what() << std::endl ;
+        Logger::err( e.category(), e.what() ) ;
         return 1 ;
     } catch( const std::exception& e ) {
-        Logger::err( "Exception" ) << e.what() << std::endl ;
+        Logger::err( "Exception", e.what() ) ;
         return 1 ;
     }
 }

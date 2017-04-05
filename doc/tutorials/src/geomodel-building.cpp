@@ -110,7 +110,7 @@ int main()
         // Say Hello
         print_header_information() ;
         Logger::div( "RINGMesh Training" ) ;
-        Logger::out( "" ) << "Welcome to the training of RINGMesh !" << std::endl ;
+        Logger::out( "", "Welcome to the training of RINGMesh !" ) ;
 
         // Measure the time between the GEO::Stopwatch creation and its destruction.
         GEO::Stopwatch total( "Total time" ) ;
@@ -844,10 +844,10 @@ int main()
         geomodel_save( geomodel, "builded_model.gm" ) ;
 
     } catch( const RINGMeshException& e ) {
-        Logger::err( e.category() ) << e.what() << std::endl ;
+        Logger::err( e.category(), e.what() ) ;
         return 1 ;
     } catch( const std::exception& e ) {
-        Logger::err( "Exception" ) << e.what() << std::endl ;
+        Logger::err( "Exception", e.what() ) ;
         return 1 ;
     }
     return 0 ;

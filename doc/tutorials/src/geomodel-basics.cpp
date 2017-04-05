@@ -70,7 +70,8 @@ int main()
         // Say Hello
         print_header_information() ;
         Logger::div( "RINGMesh Training" ) ;
-        Logger::out( "" ) << "Welcome to the RINGMesh training for basics functionalities on GeoModel !" << std::endl ;
+        Logger::out( "",
+            "Welcome to the RINGMesh training for basics functionalities on GeoModel !" ) ;
 
         // Next line is a feature of geogram which measure
         // the time of execution.
@@ -81,9 +82,8 @@ int main()
 
         //load GeoModel
         //here you can load whatever the model you want in the ringmesh_home/test/data directory
-		std::string input_file_name(ringmesh_tutorials_data_path);
-		input_file_name += "modelA1.ml";
-        //std::string input_file_name = "../../../../tests/data/modelA1.ml";
+        std::string input_file_name( ringmesh_tutorials_data_path ) ;
+        input_file_name += "modelA1.ml" ;
 
         //function to load a geomodel
         geomodel_load( geomodel, input_file_name ) ;
@@ -99,14 +99,14 @@ int main()
 
         //set the name of the geomodel to output
         //you can customize the path
-        std::string output_file_name = "modelA1.gm";
-        geomodel_save(geomodel, output_file_name);
+        std::string output_file_name = "modelA1.gm" ;
+        geomodel_save( geomodel, output_file_name ) ;
 
     } catch( const RINGMeshException& e ) {
-        Logger::err( e.category() ) << e.what() << std::endl ;
+        Logger::err( e.category(), e.what() ) ;
         return 1 ;
     } catch( const std::exception& e ) {
-        Logger::err( "Exception" ) << e.what() << std::endl ;
+        Logger::err( "Exception", e.what() ) ;
         return 1 ;
     }
     return 0 ;

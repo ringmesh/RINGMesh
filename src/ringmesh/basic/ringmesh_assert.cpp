@@ -53,9 +53,7 @@ namespace RINGMesh {
         GEO::geo_assertion_failed( condition_string, file, line ) ;
     }
 
-    void ringmesh_should_not_have_reached(
-        const std::string& file,
-        int line )
+    void ringmesh_should_not_have_reached( const std::string& file, int line )
     {
 #ifdef WIN32
         DebugBreak() ;

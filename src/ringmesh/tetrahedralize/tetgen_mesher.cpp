@@ -53,18 +53,15 @@ namespace {
     bool is_mesh_tetrahedralizable( const GEO::Mesh& M )
     {
         if( M.facets.nb() == 0 ) {
-            Logger::err( "RING" ) << "Mesh to tetrahedralize has no facets "
-                << std::endl ;
+            Logger::err( "RING", "Mesh to tetrahedralize has no facets " ) ;
             return false ;
         }
         if( !M.facets.are_simplices() ) {
-            Logger::err( "RING" ) << "Mesh to tetrahedralize is not triangulated"
-                << std::endl ;
+            Logger::err( "RING", "Mesh to tetrahedralize is not triangulated" ) ;
             return false ;
         }
         if( M.cells.nb() != 0 ) {
-            Logger::warn( "RING" ) << "Mesh to tetrahedralize already have cells"
-                << std::endl ;
+            Logger::warn( "RING", "Mesh to tetrahedralize already have cells" ) ;
         }
         return true ;
     }
@@ -120,43 +117,43 @@ namespace RINGMesh {
             GEO_3rdParty::tetrahedralize( &tetgen_args_, &tetgen_in_,
                 &tetgen_out_ ) ;
         } catch( int code ) {
-            Logger::err( "Tetgen" ) << "Encountered a problem: " ;
+            Logger::err( "Tetgen", "Encountered a problem: " ) ;
             switch( code ) {
                 case 1:
-                    Logger::err( "Tetgen" ) << "Out of memory" ;
+                    Logger::err( "Tetgen", "Out of memory" ) ;
                     break ;
                 case 2:
-                    Logger::err( "Tetgen" )
-                        << "Please report this bug to Hang.Si@wias-berlin.de. Include\n" ;
-                    Logger::err( "Tetgen" )
-                        << "  the message above, your input data set, and the exact\n" ;
-                    Logger::err( "Tetgen" )
-                        << "  command line you used to run this program, thank you" ;
+                    Logger::err( "Tetgen",
+                        "Please report this bug to Hang.Si@wias-berlin.de. Include" ) ;
+                    Logger::err( "Tetgen",
+                        "  the message above, your input data set, and the exact" ) ;
+                    Logger::err( "Tetgen",
+                        "  command line you used to run this program, thank you" ) ;
+                    ;
                     break ;
                 case 3:
-                    Logger::err( "Tetgen" )
-                        << "A self-intersection was detected. Program stopped\n" ;
-                    Logger::err( "Tetgen" )
-                        << "Hint: use -d option to detect all self-intersections" ;
+                    Logger::err( "Tetgen",
+                        "A self-intersection was detected. Program stopped" ) ;
+                    Logger::err( "Tetgen",
+                        "Hint: use -d option to detect all self-intersections" ) ;
                     break ;
                 case 4:
-                    Logger::err( "Tetgen" )
-                        << "A very small input feature size was detected. Program stopped.\n" ;
-                    Logger::err( "Tetgen" )
-                        << "Hint: use -T option to set a smaller tolerance." ;
+                    Logger::err( "Tetgen",
+                        "A very small input feature size was detected. Program stopped." ) ;
+                    Logger::err( "Tetgen",
+                        "Hint: use -T option to set a smaller tolerance." ) ;
                     break ;
                 case 5:
-                    Logger::err( "Tetgen" )
-                        << "Two very close input facets were detected. Program stopped.\n" ;
-                    Logger::err( "Tetgen" )
-                        << "Hint: use -Y option to avoid adding Steiner points in boundary." ;
+                    Logger::err( "Tetgen",
+                        "Two very close input facets were detected. Program stopped." ) ;
+                    Logger::err( "Tetgen",
+                        "Hint: use -Y option to avoid adding Steiner points in boundary." ) ;
                     break ;
                 case 10:
-                    Logger::err( "Tetgen" )
-                        << "An input error was detected. Program stopped." ;
+                    Logger::err( "Tetgen",
+                        "An input error was detected. Program stopped." ) ;
                     break ;
             }
-            Logger::err( "Tetgen" ) << std::endl ;
         }
     }
 
