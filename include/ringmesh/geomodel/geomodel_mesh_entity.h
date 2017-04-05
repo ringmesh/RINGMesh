@@ -394,7 +394,9 @@ namespace RINGMesh {
         virtual index_t nb_mesh_element_vertices( index_t mesh_element = 0 ) const override
         {
             ringmesh_unused( mesh_element ) ;
-            return mesh0d_->nb_vertices() ;
+            index_t nb_vertices = mesh0d_->nb_vertices() ;
+            ringmesh_assert( nb_vertices < 2 ) ;
+            return nb_vertices ;
         }
 
         const Line& in_boundary( index_t x ) const ;
