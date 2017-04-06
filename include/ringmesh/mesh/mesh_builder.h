@@ -143,8 +143,8 @@ namespace RINGMesh {
         }
         virtual void set_mesh( MeshBase& mesh ) = 0 ;
     } ;
-    typedef GEO::SmartPointer< MeshBaseBuilder > MeshBaseBuilder_var ;
-    typedef GEO::Factory0< MeshBaseBuilder > MeshBaseBuilderFactory ;
+    using MeshBaseBuilder_var = GEO::SmartPointer< MeshBaseBuilder > ;
+    using MeshBaseBuilderFactory = GEO::Factory0< MeshBaseBuilder > ;
 #define ringmesh_register_mesh_base_builder(type) \
     geo_register_creator(RINGMesh::MeshBaseBuilderFactory, type ## Builder, type::type_name_static())
 
@@ -170,8 +170,8 @@ namespace RINGMesh {
         {
         }
     } ;
-    typedef GEO::SmartPointer< Mesh0DBuilder > Mesh0DBuilder_var ;
-    typedef GEO::Factory0< Mesh0DBuilder > Mesh0DBuilderFactory ;
+    using Mesh0DBuilder_var = GEO::SmartPointer< Mesh0DBuilder > ;
+    using Mesh0DBuilderFactory = GEO::Factory0< Mesh0DBuilder > ;
 #define ringmesh_register_mesh_0d_builder(type) \
     geo_register_creator(RINGMesh::Mesh0DBuilderFactory, type ## Builder, type::type_name_static())
 
@@ -241,8 +241,8 @@ namespace RINGMesh {
         {
         }
     } ;
-    typedef GEO::SmartPointer< Mesh1DBuilder > Mesh1DBuilder_var ;
-    typedef GEO::Factory0< Mesh1DBuilder > Mesh1DBuilderFactory ;
+    using Mesh1DBuilder_var = GEO::SmartPointer< Mesh1DBuilder > ;
+    using Mesh1DBuilderFactory = GEO::Factory0< Mesh1DBuilder > ;
 #define ringmesh_register_mesh_1d_builder(type) \
     geo_register_creator(RINGMesh::Mesh1DBuilderFactory, type ## Builder, type::type_name_static())
 
@@ -377,8 +377,8 @@ namespace RINGMesh {
         {
         }
     } ;
-    typedef GEO::SmartPointer< Mesh2DBuilder > Mesh2DBuilder_var ;
-    typedef GEO::Factory0< Mesh2DBuilder > Mesh2DBuilderFactory ;
+    using Mesh2DBuilder_var = GEO::SmartPointer< Mesh2DBuilder > ;
+    using Mesh2DBuilderFactory = GEO::Factory0< Mesh2DBuilder > ;
 #define ringmesh_register_mesh_2d_builder(type) \
     geo_register_creator(RINGMesh::Mesh2DBuilderFactory, type ## Builder, type::type_name_static())
 
@@ -491,8 +491,8 @@ namespace RINGMesh {
         {
         }
     } ;
-    typedef GEO::SmartPointer< Mesh3DBuilder > Mesh3DBuilder_var ;
-    typedef GEO::Factory0< Mesh3DBuilder > Mesh3DBuilderFactory ;
+    using Mesh3DBuilder_var = GEO::SmartPointer< Mesh3DBuilder > ;
+    using Mesh3DBuilderFactory = GEO::Factory0< Mesh3DBuilder > ;
 #define ringmesh_register_mesh_3d_builder(type) \
     geo_register_creator(RINGMesh::Mesh3DBuilderFactory, type ## Builder, type::type_name_static())
 

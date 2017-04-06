@@ -107,7 +107,7 @@ namespace RINGMesh {
         }
         virtual void copy( const GeoModelGeologicalEntity& from ) final
         {
-            GME::copy( from ) ;
+            GeoModelEntity::copy( from ) ;
             children_ = from.children_ ;
         }
 
@@ -212,7 +212,7 @@ namespace RINGMesh {
             return gmge_.id_ ;
         }
 
-        GME::GEOL_FEATURE& modifiable_geol_feature()
+        GeoModelEntity::GEOL_FEATURE& modifiable_geol_feature()
         {
             return gmge_.geol_feature_ ;
         }

@@ -271,9 +271,9 @@ namespace RINGMesh {
     /*!
      * @brief This template is a specialization of a gme_id to the GeoModelGeologicalEntity
      */
-    typedef gme_id< GeologicalEntityType > gmge_id ;
+    using gmge_id = gme_id< GeologicalEntityType > ;
     /*!
      * @brief This template is a specialization of a gme_id to the GeoModelMeshEntity
      */
-    typedef gme_id< MeshEntityType > gmme_id ;
+    using gmme_id = gme_id< MeshEntityType > ;
 }

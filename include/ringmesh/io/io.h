@@ -122,8 +122,8 @@ namespace RINGMesh {
         }
     } ;
 
-    typedef GEO::SmartPointer< GeoModelIOHandler > GeoModelIOHandler_var ;
-    typedef GEO::Factory0< GeoModelIOHandler > GeoModelIOHandlerFactory ;
+    using GeoModelIOHandler_var = GEO::SmartPointer< GeoModelIOHandler > ;
+    using GeoModelIOHandlerFactory = GEO::Factory0< GeoModelIOHandler > ;
 
 #define ringmesh_register_GeoModelIOHandler_creator( type, name ) \
     geo_register_creator( GeoModelIOHandlerFactory, type, name )
@@ -150,8 +150,8 @@ namespace RINGMesh {
         {
         }
     } ;
-    typedef GEO::SmartPointer< WellGroupIOHandler > WellGroupIOHandler_var ;
-    typedef GEO::Factory0< WellGroupIOHandler > WellGroupIOHandlerFactory ;
+    using WellGroupIOHandler_var = GEO::SmartPointer< WellGroupIOHandler > ;
+    using WellGroupIOHandlerFactory = GEO::Factory0< WellGroupIOHandler > ;
 
 #define ringmesh_register_WellGroupIOHandler_creator( type, name ) \
     geo_register_creator( WellGroupIOHandlerFactory, type, name )
