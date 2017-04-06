@@ -5,9 +5,9 @@
 
 /* @(#) $Id$ */
 
-#include <third_party/zlib/zutil.h>
+#include <zlib/zutil.h>
 #ifndef Z_SOLO
-#  include <third_party/zlib/gzguts.h>
+#  include <zlib/gzguts.h>
 #endif
 
 #ifndef NO_DUMMY_DECL
