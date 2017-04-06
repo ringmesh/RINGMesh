@@ -158,7 +158,7 @@ namespace RINGMesh {
                         + ", 5 fields are expected, the type, id, name, "
                         + "geological feature, and mesh type" ) ;
             }
-            gmme_id entity = read_first_line( file_line  ) ;
+            gmme_id entity = read_first_line( file_line ) ;
 
             const std::string mesh_type = file_line.field( 4 ) ;
             builder_.geometry.change_mesh_data_structure( entity, mesh_type ) ;
@@ -282,7 +282,8 @@ namespace RINGMesh {
                     gmge_id entity( type, id ) ;
                     info.set_geological_entity_name( entity, file_line.field( 2 ) ) ;
                     geology.set_geological_entity_geol_feature( entity,
-                        GeoModelEntity::determine_geological_type( file_line.field( 3 ) ) ) ;
+                        GeoModelEntity::determine_geological_type(
+                            file_line.field( 3 ) ) ) ;
                     file_line.get_line() ;
                     file_line.get_fields() ;
                     for( index_t in_b = 0; in_b < file_line.nb_fields(); in_b++ ) {
@@ -303,7 +304,7 @@ namespace RINGMesh {
         do {
             char char_file_name[MAX_FILENAME] ;
             if( unzGetCurrentFileInfo64( uz, nullptr, char_file_name,
-                MAX_FILENAME, nullptr, 0, nullptr, 0 ) != UNZ_OK ) {
+            MAX_FILENAME, nullptr, 0, nullptr, 0 ) != UNZ_OK ) {
                 throw RINGMeshException( "I/O", "Unable to get file name" ) ;
             }
             std::string file_name( char_file_name ) ;
@@ -327,16 +328,20 @@ namespace RINGMesh {
             index_t id = NO_ID ;
             GEO::String::from_string( entity_id, id ) ;
             if( MeshEntityTypeManager::is_corner( entity_type ) ) {
-                Mesh0DBuilder_var builder = geometry.create_corner_builder( id ) ;
+                std::unique_ptr< Mesh0DBuilder > builder =
+                    geometry.create_corner_builder( id ) ;
                 builder->load_mesh( file_name ) ;
             } else if( MeshEntityTypeManager::is_line( entity_type ) ) {
-                Mesh1DBuilder_var builder = geometry.create_line_builder( id ) ;
+                std::unique_ptr< Mesh1DBuilder > builder =
+                    geometry.create_line_builder( id ) ;
                 builder->load_mesh( file_name ) ;
             } else if( MeshEntityTypeManager::is_surface( entity_type ) ) {
-                Mesh2DBuilder_var builder = geometry.create_surface_builder( id ) ;
+                std::unique_ptr< Mesh2DBuilder > builder =
+                    geometry.create_surface_builder( id ) ;
                 builder->load_mesh( file_name ) ;
             } else if( MeshEntityTypeManager::is_region( entity_type ) ) {
-                Mesh3DBuilder_var builder = geometry.create_region_builder( id ) ;
+                std::unique_ptr< Mesh3DBuilder > builder =
+                    geometry.create_region_builder( id ) ;
                 builder->load_mesh( file_name ) ;
             }
             GEO::FileSystem::delete_file( file_name ) ;

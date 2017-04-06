@@ -901,7 +901,8 @@ namespace RINGMesh {
     void Corner::change_mesh_data_structure( const MeshType type )
     {
         Mesh0D* new_mesh = Mesh0D::create_mesh( type ) ;
-        Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder( *new_mesh ) ;
+        std::unique_ptr< Mesh0DBuilder > builder = Mesh0DBuilder::create_builder(
+            *new_mesh ) ;
         builder->copy( *mesh0d_, true ) ;
         delete mesh0d_ ;
         update_mesh_storage_type( new_mesh ) ;
@@ -910,7 +911,8 @@ namespace RINGMesh {
     void Line::change_mesh_data_structure( const MeshType type )
     {
         Mesh1D* new_mesh = Mesh1D::create_mesh( type ) ;
-        Mesh1DBuilder_var builder = Mesh1DBuilder::create_builder( *new_mesh ) ;
+        std::unique_ptr< Mesh1DBuilder > builder = Mesh1DBuilder::create_builder(
+            *new_mesh ) ;
         builder->copy( *mesh1d_, true ) ;
         delete mesh1d_ ;
         update_mesh_storage_type( new_mesh ) ;
@@ -919,7 +921,8 @@ namespace RINGMesh {
     void Surface::change_mesh_data_structure( const MeshType type )
     {
         Mesh2D* new_mesh = Mesh2D::create_mesh( type ) ;
-        Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder( *new_mesh ) ;
+        std::unique_ptr< Mesh2DBuilder > builder = Mesh2DBuilder::create_builder(
+            *new_mesh ) ;
         builder->copy( *mesh2d_, true ) ;
         delete mesh2d_ ;
         update_mesh_storage_type( new_mesh ) ;
@@ -928,7 +931,8 @@ namespace RINGMesh {
     void Region::change_mesh_data_structure( const MeshType type )
     {
         Mesh3D* new_mesh = Mesh3D::create_mesh( type ) ;
-        Mesh3DBuilder_var builder = Mesh3DBuilder::create_builder( *new_mesh ) ;
+        std::unique_ptr< Mesh3DBuilder > builder = Mesh3DBuilder::create_builder(
+            *new_mesh ) ;
         builder->copy( *mesh3d_, true ) ;
         delete mesh3d_ ;
         update_mesh_storage_type( new_mesh ) ;

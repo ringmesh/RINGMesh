@@ -37,6 +37,8 @@
 
 #include <ringmesh/basic/common.h>
 
+#include <memory>
+
 #include <geogram/basic/factory.h>
 #include <geogram/basic/line_stream.h>
 
@@ -165,7 +167,7 @@ namespace RINGMesh {
         GocadLineParser()
         {
         }
-        static GocadLineParser* create(
+        static std::unique_ptr< GocadLineParser > create(
             const std::string& keyword,
             GeoModelBuilderGocad& gm_builder,
             GeoModel& geomodel ) ;
@@ -174,7 +176,6 @@ namespace RINGMesh {
             GocadLoadingStorage& load_storage ) = 0 ;
     } ;
 
-    using GocadLineParser_var = GEO::SmartPointer< GocadLineParser > ;
     using GocadLineParserFactory = GEO::Factory0< GocadLineParser > ;
 #define ringmesh_register_GocadLineParser_creator(type, name) \
      geo_register_creator(GocadLineParserFactory, type, name)
@@ -253,7 +254,7 @@ namespace RINGMesh {
         TSolidLineParser()
         {
         }
-        static TSolidLineParser* create(
+        static std::unique_ptr< TSolidLineParser > create(
             const std::string& keyword,
             GeoModelBuilderTSolid& gm_builder,
             GeoModel& geomodel ) ;
@@ -262,7 +263,6 @@ namespace RINGMesh {
             TSolidLoadingStorage& load_storage ) = 0 ;
     } ;
 
-    using TSolidLineParser_var = GEO::SmartPointer< TSolidLineParser > ;
     using TSolidLineParserFactory = GEO::Factory0< TSolidLineParser > ;
 #define ringmesh_register_TSolidLineParser_creator(type, name) \
      geo_register_creator(TSolidLineParserFactory, type, name)
@@ -343,7 +343,7 @@ namespace RINGMesh {
         MLLineParser()
         {
         }
-        static MLLineParser* create(
+        static std::unique_ptr< MLLineParser > create(
             const std::string& keyword,
             GeoModelBuilderML& gm_builder,
             GeoModel& geomodel ) ;
@@ -352,7 +352,6 @@ namespace RINGMesh {
             MLLoadingStorage& load_storage ) = 0 ;
     } ;
 
-    using MLLineParser_var = GEO::SmartPointer< MLLineParser > ;
     using MLLineParserFactory = GEO::Factory0< MLLineParser > ;
 #define ringmesh_register_MLLineParser_creator(type, name) \
      geo_register_creator(MLLineParserFactory, type, name)

@@ -218,9 +218,10 @@ void decompose_in_tet(
     GeogramMesh3D& tet_mesh,
     index_t size )
 {
-    Mesh3DBuilder_var builder = Mesh3DBuilder::create_builder( tet_mesh ) ;
+    std::unique_ptr< Mesh3DBuilder > builder = Mesh3DBuilder::create_builder(
+        tet_mesh ) ;
     builder->create_cells( hex_mesh.nb_cells() * 5, GEO::MESH_TET ) ;
-    add_vertices( builder, size ) ;
+    add_vertices( builder.get(), size ) ;
     for( index_t hex = 0; hex < hex_mesh.nb_cells(); hex++ ) {
         create_5_tets_from_hex( *builder, hex_mesh, hex ) ;
     }
@@ -229,13 +230,14 @@ void decompose_in_tet(
 
 void test_AABB2D()
 {
-    Logger::out( "TEST" , "Test AABB 2D" ) ;
+    Logger::out( "TEST", "Test AABB 2D" ) ;
     GeogramMesh2D geogram_mesh ;
-    Mesh2DBuilder_var builder = Mesh2DBuilder::create_builder( geogram_mesh ) ;
+    std::unique_ptr< Mesh2DBuilder > builder = Mesh2DBuilder::create_builder(
+        geogram_mesh ) ;
 
     index_t size = 10 ;
-    add_vertices( builder, size ) ;
-    add_triangles( builder, size ) ;
+    add_vertices( builder.get(), size ) ;
+    add_triangles( builder.get(), size ) ;
 
     AABBTree2D tree( geogram_mesh ) ;
     tree.save_tree( "tree" ) ;
@@ -257,13 +259,14 @@ void test_locate_cell_on_3D_mesh( const GeogramMesh3D& mesh )
 
 void test_AABB3D()
 {
-    Logger::out( "TEST" , "Test AABB 3D" ) ;
+    Logger::out( "TEST", "Test AABB 3D" ) ;
     GeogramMesh3D geogram_mesh_hex ;
-    Mesh3DBuilder_var builder = Mesh3DBuilder::create_builder( geogram_mesh_hex ) ;
+    std::unique_ptr< Mesh3DBuilder > builder = Mesh3DBuilder::create_builder(
+        geogram_mesh_hex ) ;
 
     index_t size = 10 ;
-    add_vertices( builder, size ) ;
-    add_hexs( builder, size ) ;
+    add_vertices( builder.get(), size ) ;
+    add_hexs( builder.get(), size ) ;
 
     GeogramMesh3D geogram_mesh_tet ;
     decompose_in_tet( geogram_mesh_hex, geogram_mesh_tet, size ) ;
@@ -287,13 +290,14 @@ void test_locate_edge_on_1D_mesh( const GeogramMesh1D& mesh )
 
 void test_AABB1D()
 {
-    Logger::out( "TEST" , "Test AABB 1D" ) ;
+    Logger::out( "TEST", "Test AABB 1D" ) ;
     GeogramMesh1D geogram_mesh ;
-    Mesh1DBuilder_var builder = Mesh1DBuilder::create_builder( geogram_mesh ) ;
+    std::unique_ptr< Mesh1DBuilder > builder = Mesh1DBuilder::create_builder(
+        geogram_mesh ) ;
 
     index_t size = 10 ;
-    add_vertices( builder, size ) ;
-    add_edges( builder, size ) ;
+    add_vertices( builder.get(), size ) ;
+    add_edges( builder.get(), size ) ;
     test_locate_edge_on_1D_mesh( geogram_mesh ) ;
 }
 
@@ -304,18 +308,18 @@ int main()
     try {
         default_configure() ;
 
-        Logger::out( "TEST" , "Test AABB" ) ;
+        Logger::out( "TEST", "Test AABB" ) ;
         test_AABB1D() ;
         test_AABB2D() ;
         test_AABB3D() ;
 
     } catch( const RINGMeshException& e ) {
-        Logger::err( e.category() , e.what() ) ;
+        Logger::err( e.category(), e.what() ) ;
         return 1 ;
     } catch( const std::exception& e ) {
-        Logger::err( "Exception" , e.what() ) ;
+        Logger::err( "Exception", e.what() ) ;
         return 1 ;
     }
-    Logger::out( "TEST" , "SUCCESS" ) ;
+    Logger::out( "TEST", "SUCCESS" ) ;
     return 0 ;
 }

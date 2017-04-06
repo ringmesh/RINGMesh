@@ -1161,12 +1161,13 @@ namespace RINGMesh {
         cur_surf_facet_ptr_.push_back( 0 ) ;
     }
 
-    GocadLineParser* GocadLineParser::create(
+    std::unique_ptr< GocadLineParser > GocadLineParser::create(
         const std::string& keyword,
         GeoModelBuilderGocad& gm_builder,
         GeoModel& geomodel )
     {
-        GocadLineParser* parser = GocadLineParserFactory::create_object( keyword ) ;
+        std::unique_ptr< GocadLineParser > parser(
+            GocadLineParserFactory::create_object( keyword ) ) ;
         if( parser ) {
             parser->set_builder( gm_builder ) ;
             parser->set_geomodel( geomodel ) ;
@@ -1200,13 +1201,13 @@ namespace RINGMesh {
     void GeoModelBuilderTSolid::read_line()
     {
         std::string keyword = file_line_.field( 0 ) ;
-        TSolidLineParser_var tsolid_parser = TSolidLineParser::create( keyword,
-            *this, geomodel_ ) ;
+        std::unique_ptr< TSolidLineParser > tsolid_parser = TSolidLineParser::create(
+            keyword, *this, geomodel_ ) ;
         if( tsolid_parser ) {
             tsolid_parser->execute( file_line_, tsolid_load_storage_ ) ;
         } else {
-            GocadLineParser_var gocad_parser = GocadLineParser::create( keyword,
-                *this, geomodel_ ) ;
+            std::unique_ptr< GocadLineParser > gocad_parser =
+                GocadLineParser::create( keyword, *this, geomodel_ ) ;
             if( gocad_parser ) {
                 gocad_parser->execute( file_line_, tsolid_load_storage_ ) ;
             }
@@ -1271,13 +1272,13 @@ namespace RINGMesh {
         }
     }
 
-    TSolidLineParser* TSolidLineParser::create(
+    std::unique_ptr< TSolidLineParser > TSolidLineParser::create(
         const std::string& keyword,
         GeoModelBuilderTSolid& gm_builder,
         GeoModel& geomodel )
     {
-        TSolidLineParser* parser = TSolidLineParserFactory::create_object(
-            keyword ) ;
+        std::unique_ptr< TSolidLineParser > parser(
+            TSolidLineParserFactory::create_object( keyword ) ) ;
         if( parser ) {
             parser->set_builder( gm_builder ) ;
             parser->set_geomodel( geomodel ) ;
@@ -1287,12 +1288,13 @@ namespace RINGMesh {
 
     /*************************************************************************/
 
-    MLLineParser* MLLineParser::create(
+    std::unique_ptr< MLLineParser > MLLineParser::create(
         const std::string& keyword,
         GeoModelBuilderML& gm_builder,
         GeoModel& geomodel )
     {
-        MLLineParser* parser = MLLineParserFactory::create_object( keyword ) ;
+        std::unique_ptr< MLLineParser > parser(
+            MLLineParserFactory::create_object( keyword ) ) ;
         if( parser ) {
             parser->set_builder( gm_builder ) ;
             parser->set_geomodel( geomodel ) ;
@@ -1317,13 +1319,13 @@ namespace RINGMesh {
     void GeoModelBuilderML::read_line()
     {
         std::string keyword = file_line_.field( 0 ) ;
-        MLLineParser_var tsolid_parser = MLLineParser::create( keyword, *this,
-            geomodel_ ) ;
+        std::unique_ptr< MLLineParser > tsolid_parser(
+            MLLineParser::create( keyword, *this, geomodel_ ) ) ;
         if( tsolid_parser ) {
             tsolid_parser->execute( file_line_, ml_load_storage_ ) ;
         } else {
-            GocadLineParser_var gocad_parser = GocadLineParser::create( keyword,
-                *this, geomodel_ ) ;
+            std::unique_ptr< GocadLineParser > gocad_parser =
+                GocadLineParser::create( keyword, *this, geomodel_ ) ;
             if( gocad_parser ) {
                 gocad_parser->execute( file_line_, ml_load_storage_ ) ;
             }

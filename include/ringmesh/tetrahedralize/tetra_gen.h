@@ -36,13 +36,14 @@
 #pragma once
 
 #include <ringmesh/basic/common.h>
-#include <ringmesh/mesh/mesh.h>
 
-#include <geogram/basic/counted.h>
-#include <geogram/basic/smart_pointer.h>
+#include <memory>
+
 #include <geogram/basic/factory.h>
 
 #include <geogram/mesh/mesh.h>
+
+#include <ringmesh/mesh/mesh.h>
 
 /*!
  * @file ringmesh/tetragen.h
@@ -71,7 +72,7 @@ namespace RINGMesh {
     ringmesh_disable_copy( TetraGen ) ;
     public:
         virtual ~TetraGen() ;
-        static TetraGen* create(
+        static std::unique_ptr< TetraGen > create(
             GeoModel& M,
             index_t region_id,
             const std::string& algo_name ) ;
@@ -112,7 +113,6 @@ namespace RINGMesh {
         const WellGroup* wells_ ;
     } ;
 
-    typedef GEO::SmartPointer< TetraGen > TetraGen_var ;
     typedef GEO::Factory0< TetraGen > TetraGenFactory ;
 
 #define ringmesh_register_tetragen(type, name) \
