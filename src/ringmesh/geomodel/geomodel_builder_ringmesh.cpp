@@ -108,7 +108,7 @@ namespace RINGMesh {
                 file_line.field_as_uint( 1 ) ) ;
             builder_.info.set_mesh_entity_name( cur_gmme, file_line.field( 2 ) ) ;
             builder_.geology.set_mesh_entity_geol_feature( cur_gmme,
-                GME::determine_geological_type( file_line.field( 3 ) ) ) ;
+                GeoModelEntity::determine_geological_type( file_line.field( 3 ) ) ) ;
             return cur_gmme ;
         }
         void read_second_line( GEO::LineInput& file_line, const gmme_id& entity )
@@ -282,7 +282,7 @@ namespace RINGMesh {
                     gmge_id entity( type, id ) ;
                     info.set_geological_entity_name( entity, file_line.field( 2 ) ) ;
                     geology.set_geological_entity_geol_feature( entity,
-                        GME::determine_geological_type( file_line.field( 3 ) ) ) ;
+                        GeoModelEntity::determine_geological_type( file_line.field( 3 ) ) ) ;
                     file_line.get_line() ;
                     file_line.get_fields() ;
                     for( index_t in_b = 0; in_b < file_line.nb_fields(); in_b++ ) {

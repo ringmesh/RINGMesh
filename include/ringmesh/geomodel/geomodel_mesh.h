@@ -174,7 +174,7 @@ namespace RINGMesh {
             std::vector< index_t >& mesh_entity_vertex_ids ) const ;
 
         /*!
-         * @brief Get the vertices in GME corresponding to the given unique vertex
+         * @brief Get the vertices in GeoModelEntity corresponding to the given unique vertex
          * @param[in] v Vertex index in the geomodel
          * @param[out] gme_vertices Result
          */
@@ -195,7 +195,7 @@ namespace RINGMesh {
          * @brief To use when building the geomodel by first adding its vertices
          * @return the first index of created vertices
          * @warning The client is responsible for setting the mapping between the points
-         * of the GME and the unique vertex
+         * of the GeoModelEntity and the unique vertex
          */
         index_t add_vertex( const vec3& point ) ;
         index_t add_vertices( const std::vector< vec3 >& points ) ;
@@ -466,7 +466,7 @@ namespace RINGMesh {
             AttributeVector< index_t > region_vertex_maps_ ;
             std::map< MeshEntityType, AttributeVector< index_t >* > vertex_maps_ ;
 
-            /// GME Vertices for each geomodel vertex
+            /// GeoModelEntity Vertices for each geomodel vertex
             std::vector< std::vector< GMEVertex > > gme_vertices_ ;
         } ;
 
@@ -1151,7 +1151,7 @@ namespace RINGMesh {
             POS_SIDE = 1
         } ;
         /// Action to do according a surface index
-        typedef std::pair< index_t, ActionOnSurface > action_on_surface ;
+        using action_on_surface = std::pair< index_t, ActionOnSurface > ;
 
         /*!
          * @brief Initialize the  cells from the cells

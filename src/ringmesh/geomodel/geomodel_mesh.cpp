@@ -1341,7 +1341,7 @@ namespace RINGMesh {
             case FAULT: {
                 GeoModelEntity::GEOL_FEATURE feature =
                     gm_.surface( surface_id ).geological_feature() ;
-                return GME::is_fault( feature ) ;
+                return GeoModelEntity::is_fault( feature ) ;
             }
             default:
                 return false ;

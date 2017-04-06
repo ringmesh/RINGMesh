@@ -289,7 +289,7 @@ namespace RINGMesh {
 
         virtual void copy( const GeoModelMeshEntity& from )
         {
-            GME::copy( from ) ;
+            GeoModelEntity::copy( from ) ;
             id_ = from.id_ ;
             boundaries_ = from.boundaries_ ;
             in_boundary_ = from.in_boundary_ ;
@@ -1346,7 +1346,7 @@ namespace RINGMesh {
             return gmme_.id_ ;
         }
 
-        GME::GEOL_FEATURE& modifiable_geol_feature()
+        GeoModelEntity::GEOL_FEATURE& modifiable_geol_feature()
         {
             return gmme_.geol_feature_ ;
         }

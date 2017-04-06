@@ -180,8 +180,6 @@ namespace RINGMesh {
         index_t id_ ;
     } ;
 
-    typedef GeoModelEntity GME ;
-
     class RINGMESH_API Universe: public GeoModelEntity {
     ringmesh_disable_copy( Universe ) ;
     public:
@@ -231,7 +229,7 @@ namespace RINGMesh {
         //@todo not used if editor is removed -> to delete
         void copy( const Universe& from )
         {
-            GME::copy( from ) ;
+            GeoModelEntity::copy( from ) ;
             boundary_surfaces_ = from.boundary_surfaces_ ;
             boundary_surface_sides_ = from.boundary_surface_sides_ ;
         }

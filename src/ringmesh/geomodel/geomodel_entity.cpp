@@ -77,7 +77,7 @@ namespace RINGMesh {
         }
     }
 
-    std::string GeoModelEntity::geol_name( GME::GEOL_FEATURE t )
+    std::string GeoModelEntity::geol_name( GeoModelEntity::GEOL_FEATURE t )
     {
         switch( t ) {
             case STRATI:
