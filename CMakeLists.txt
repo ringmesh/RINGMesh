@@ -239,7 +239,7 @@ include_directories(${PROJECT_BINARY_DIR})
 #------------------------------------------------------------------------------------------------
 # GEOGRAM 
 # Set the path to Geogram code
-set(GEOGRAM_PATH ${PROJECT_SOURCE_DIR}/src/third_party/geogram)
+set(GEOGRAM_PATH ${PROJECT_SOURCE_DIR}/third_party/geogram)
 
 # Geogram platform dependent settings
 if(WIN32)
@@ -290,7 +290,7 @@ ExternalProject_Add_Step(geogram_ext forcebuild
   )
 
 # Add geogram include directories to the current ones
-include_directories( SYSTEM ${GEOGRAM_PATH}/src/lib)
+include_directories(SYSTEM ${GEOGRAM_PATH}/src/lib)
 
 # Add geogram project libs to the libs with which RINGMesh will link
 set(EXTRA_LIBS ${EXTRA_LIBS} geogram)
@@ -360,8 +360,8 @@ FOREACH(directory ${directories})
     ENDIF()
 ENDFOREACH()
 
-file(GLOB zlib_src "${PROJECT_SOURCE_DIR}/src/third_party/zlib/*.c")
-file(GLOB zlib_include "${PROJECT_SOURCE_DIR}/include/third_party/zlib/*.h")
+file(GLOB zlib_src "${PROJECT_SOURCE_DIR}/third_party/zlib/*.c")
+file(GLOB zlib_include "${PROJECT_SOURCE_DIR}/third_party/zlib/*.h")
 # Add configure file to ringmesh includes
 set(ringmesh_include ${ringmesh_include} ${generated_configure_file})
 
@@ -378,6 +378,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 
 # Add include directories of RINGMesh
 include_directories(${PROJECT_SOURCE_DIR}/include)
+include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/third_party)
 
 #add generated export file to include directories
 set(generated_export_file ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_export.h)
@@ -406,7 +407,7 @@ if(BUILD_RINGMESH_VIEW)
     message(STATUS "Configure ringmesh-view")
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
     message(STATUS "ringmesh-view directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
-    include(${CMAKE_SOURCE_DIR}/src/third_party/geogram/cmake/opengl.cmake)
+    include(${CMAKE_SOURCE_DIR}/third_party/geogram/cmake/opengl.cmake)
     add_ringmesh_binary(ringmesh-view geogram_gfx ${OPENGL_LIBRARIES})
     copy_for_windows()
 endif(BUILD_RINGMESH_VIEW)

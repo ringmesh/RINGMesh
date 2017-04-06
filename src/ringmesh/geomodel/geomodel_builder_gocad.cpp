@@ -689,7 +689,7 @@ namespace {
             gmme_id id = builder().topology.create_mesh_entity< Surface >() ;
             builder().geology.add_mesh_entity_parent( id, parent ) ;
             builder().geology.set_geological_entity_geol_feature( parent,
-                GME::determine_geological_type( type ) ) ;
+                GeoModelEntity::determine_geological_type( type ) ) ;
         }
     } ;
 
@@ -826,7 +826,7 @@ namespace {
         }
 
         /*!
-         * @brief Creates an empty entity of type GME::REGION and sets
+         * @brief Creates an empty entity of type GeoModelEntity::REGION and sets
          * its name from .so file
          * @param[in] region_name Name of the new region
          * @param[in] geomodel_builder Builder of the geomodel

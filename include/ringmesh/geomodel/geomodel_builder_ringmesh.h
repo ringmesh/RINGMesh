@@ -39,7 +39,7 @@
 
 #include <geogram/basic/line_stream.h>
 
-#include <third_party/zlib/unzip.h>
+#include <zlib/unzip.h>
 
 #include <ringmesh/geomodel/geomodel_builder.h>
 

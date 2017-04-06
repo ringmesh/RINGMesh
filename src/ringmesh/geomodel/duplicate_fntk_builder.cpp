@@ -850,7 +850,7 @@ namespace RINGMesh {
                 // Case of a fault ending inside the geomodel
                 ringmesh_assert( colocated_facets_reg1.size() == 2 ) ;
                 // It is a fault with the region on the other side.
-                ringmesh_assert( GME::is_fault(
+                ringmesh_assert( GeoModelEntity::is_fault(
                         cur_surface.parent(Interface::type_name_static()).geological_feature()) ) ;
 
                 // Try to find which region facet is really on the surface.
@@ -932,7 +932,7 @@ namespace RINGMesh {
             const index_t nb_in_boundaries = cur_surface.nb_in_boundary() ;
 
             bool is_horizon_not_voi =
-                GME::is_stratigraphic_limit(
+                GeoModelEntity::is_stratigraphic_limit(
                     cur_surface.parent( Interface::type_name_static() ).geological_feature() )
                     && !cur_surface.is_on_voi() ;
 
@@ -1429,9 +1429,9 @@ namespace RINGMesh {
                     continue ;
                 }
 
-                GME::GEOL_FEATURE parent_geol_feature = cur_in_boun_gme.parent(
+                GeoModelEntity::GEOL_FEATURE parent_geol_feature = cur_in_boun_gme.parent(
                     Interface::type_name_static() ).geological_feature() ;
-                if( !GME::is_fault( parent_geol_feature ) ) {
+                if( !GeoModelEntity::is_fault( parent_geol_feature ) ) {
                     continue ;
                 }
 
@@ -2218,7 +2218,7 @@ namespace RINGMesh {
             }
             // cur_line.nb_in_boundary() == 1 means fault extension
             ringmesh_assert( cur_line.in_boundary( 0 ).type_name() == Surface::type_name_static() ) ;
-            ringmesh_assert( GME::is_fault( cur_line.in_boundary( 0 ).parent(Interface::type_name_static()).geological_feature() ) ) ;
+            ringmesh_assert( GeoModelEntity::is_fault( cur_line.in_boundary( 0 ).parent(Interface::type_name_static()).geological_feature() ) ) ;
 
             ringmesh_assert( cur_line.nb_vertices() >= 2 ) ;
             // Vertices not corner

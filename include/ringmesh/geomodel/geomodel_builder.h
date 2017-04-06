@@ -166,7 +166,7 @@ namespace RINGMesh {
 
         void set_mesh_entity_geol_feature(
             const gmme_id& gmme_id,
-            GME::GEOL_FEATURE geol_feature )
+            GeoModelEntity::GEOL_FEATURE geol_feature )
         {
             GeoModelMeshEntityAccess gmme_access(
                 geomodel_access_.modifiable_mesh_entity( gmme_id ) ) ;
@@ -176,7 +176,7 @@ namespace RINGMesh {
 
         void set_geological_entity_geol_feature(
             const gmge_id& gmge_id,
-            GME::GEOL_FEATURE geol_feature )
+            GeoModelEntity::GEOL_FEATURE geol_feature )
         {
             GeoModelGeologicalEntityAccess gmge_access(
                 geomodel_access_.modifiable_geological_entity( gmge_id ) ) ;
