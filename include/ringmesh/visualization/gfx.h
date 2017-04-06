@@ -39,6 +39,8 @@
 
 #ifdef RINGMESH_WITH_GRAPHICS
 
+#include <memory>
+
 #include <geogram_gfx/glup_viewer/glup_viewer_gui.h>
 
 /*!
@@ -63,7 +65,7 @@ namespace RINGMesh {
     ringmesh_disable_copy( GeoModelGfxManager ) ;
     public:
         GeoModelGfxManager( GeoModelGfx& gfx ) ;
-        virtual ~GeoModelGfxManager() ;
+        virtual ~GeoModelGfxManager() = default ;
 
         virtual void draw() = 0 ;
         virtual void initialize() = 0 ;
@@ -136,7 +138,7 @@ namespace RINGMesh {
 
     protected:
         GeoModelGfx& gfx_ ;
-        std::vector< MeshEntityGfx* > entities_ ;
+        std::vector< std::unique_ptr< MeshEntityGfx > > entities_ ;
 
     } ;
 

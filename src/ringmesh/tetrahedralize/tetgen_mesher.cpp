@@ -76,12 +76,6 @@ namespace RINGMesh {
         delete[] tetgen_in_.facetlist ;
         tetgen_in_.facetlist = nullptr ;
         tetgen_in_.numberoffacets = 0 ;
-
-        delete[] polygon_corners_ ;
-        polygon_corners_ = nullptr ;
-
-        delete[] polygons_ ;
-        polygons_ = nullptr ;
     }
 
     void TetgenMesher::tetrahedralize(
@@ -201,14 +195,15 @@ namespace RINGMesh {
 
     void TetgenMesher::copy_facets_to_tetgen_input( const GEO::Mesh& M )
     {
-        polygons_ = new GEO_3rdParty::tetgenio::polygon[M.facets.nb()] ;
+        polygons_.reset( new GEO_3rdParty::tetgenio::polygon[M.facets.nb()] ) ;
 
         tetgen_in_.numberoffacets = static_cast< int >( M.facets.nb() ) ;
         tetgen_in_.facetlist =
             new GEO_3rdParty::tetgenio::facet[tetgen_in_.numberoffacets] ;
 
-        polygon_corners_ = new int[M.facet_corners.nb()] ;
-        GEO::Memory::copy( polygon_corners_, M.facet_corners.vertex_index_ptr( 0 ),
+        polygon_corners_.reset( new int[M.facet_corners.nb()] ) ;
+        GEO::Memory::copy( polygon_corners_.get(),
+            M.facet_corners.vertex_index_ptr( 0 ),
             M.facet_corners.nb() * sizeof(int) ) ;
 
         for( index_t f = 0; f < M.facets.nb(); ++f ) {
@@ -242,10 +237,10 @@ namespace RINGMesh {
 
     void TetgenMesher::initialize_tetgen_args()
     {
-        char* copy = new char[tetgen_command_line_.length() + 1] ;
-        std::strcpy( copy, tetgen_command_line_.c_str() ) ;
-        tetgen_args_.parse_commandline( copy ) ;
-        delete[] copy ;
+        std::unique_ptr< char[] > copy(
+            new char[tetgen_command_line_.length() + 1] ) ;
+        std::strcpy( copy.get(), tetgen_command_line_.c_str() ) ;
+        tetgen_args_.parse_commandline( copy.get() ) ;
     }
 
     void TetgenMesher::assign_result_tetmesh_to_mesh(
