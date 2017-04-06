@@ -226,16 +226,9 @@ namespace RINGMesh {
     {
     }
 
-    GeoModelGfxManager::~GeoModelGfxManager()
-    {
-        for( MeshEntityGfx*& e : entities_ ) {
-            delete e ;
-        }
-    }
-
     void GeoModelGfxManager::need_to_update()
     {
-        for( MeshEntityGfx*& e : entities_ ) {
+        for( std::unique_ptr< MeshEntityGfx >& e : entities_ ) {
             e->need_to_update() ;
         }
     }
@@ -247,7 +240,7 @@ namespace RINGMesh {
         double attr_max,
         GLuint colormap_texture )
     {
-        for( MeshEntityGfx*& e : entities_ ) {
+        for( std::unique_ptr< MeshEntityGfx >& e : entities_ ) {
             e->set_scalar_attribute( subelements, name, attr_min, attr_max,
                 colormap_texture ) ;
         }
@@ -255,7 +248,7 @@ namespace RINGMesh {
 
     void GeoModelGfxManager::unset_scalar_attribute()
     {
-        for( MeshEntityGfx*& e : entities_ ) {
+        for( std::unique_ptr< MeshEntityGfx >& e : entities_ ) {
             e->unset_scalar_attribute() ;
         }
     }
@@ -349,9 +342,10 @@ namespace RINGMesh {
     void CornerGfxManager::initialize()
     {
         if( entities_.empty() ) {
-            entities_.resize( gfx_.geomodel()->nb_corners(), nullptr ) ;
-            for( index_t e = 0; e < entities_.size(); e++ ) {
-                entities_[e] = new CornerGfx( gfx_, gfx_.geomodel()->corner( e ) ) ;
+            entities_.reserve( gfx_.geomodel()->nb_corners() ) ;
+            for( index_t e = 0; e < gfx_.geomodel()->nb_corners(); e++ ) {
+                entities_.emplace_back(
+                    new CornerGfx( gfx_, gfx_.geomodel()->corner( e ) ) ) ;
             }
         }
     }
@@ -391,9 +385,10 @@ namespace RINGMesh {
     void LineGfxManager::initialize()
     {
         if( entities_.empty() ) {
-            entities_.resize( gfx_.geomodel()->nb_lines(), nullptr ) ;
-            for( index_t e = 0; e < entities_.size(); e++ ) {
-                entities_[e] = new LineGfx( gfx_, gfx_.geomodel()->line( e ) ) ;
+            entities_.reserve( gfx_.geomodel()->nb_lines() ) ;
+            for( index_t e = 0; e < gfx_.geomodel()->nb_lines(); e++ ) {
+                entities_.emplace_back(
+                    new LineGfx( gfx_, gfx_.geomodel()->line( e ) ) ) ;
             }
         }
     }
@@ -401,7 +396,7 @@ namespace RINGMesh {
     void LineGfxManager::draw()
     {
         for( index_t l = 0; l < entities_.size(); l++ ) {
-            LineGfx* line = dynamic_cast< LineGfx* >( entities_[l] ) ;
+            LineGfx* line = dynamic_cast< LineGfx* >( entities_[l].get() ) ;
             if( line->get_vertices_visible() ) line->draw_vertices() ;
             if( line->get_edges_visible() ) line->draw_edges() ;
         }
@@ -418,7 +413,7 @@ namespace RINGMesh {
 
     void LineGfxManager::set_mesh_element_visibility( index_t l, bool b )
     {
-        dynamic_cast< LineGfx* >( entities_[l] )->set_edges_visible( b ) ;
+        dynamic_cast< LineGfx* >( entities_[l].get() )->set_edges_visible( b ) ;
     }
 
     void LineGfxManager::set_mesh_element_size( index_t l, index_t s )
@@ -436,10 +431,10 @@ namespace RINGMesh {
     void SurfaceGfxManager::initialize()
     {
         if( entities_.empty() ) {
-            entities_.resize( gfx_.geomodel()->nb_surfaces(), nullptr ) ;
+            entities_.reserve( gfx_.geomodel()->nb_surfaces() ) ;
             for( index_t e = 0; e < entities_.size(); e++ ) {
-                entities_[e] = new SurfaceGfx( gfx_,
-                    gfx_.geomodel()->surface( e ) ) ;
+                entities_.emplace_back(
+                    new SurfaceGfx( gfx_, gfx_.geomodel()->surface( e ) ) ) ;
             }
         }
     }
@@ -447,7 +442,7 @@ namespace RINGMesh {
     void SurfaceGfxManager::draw()
     {
         for( index_t s = 0; s < entities_.size(); s++ ) {
-            SurfaceGfx* surface = dynamic_cast< SurfaceGfx* >( entities_[s] ) ;
+            SurfaceGfx* surface = dynamic_cast< SurfaceGfx* >( entities_[s].get() ) ;
             if( surface->get_vertices_visible() ) surface->draw_vertices() ;
             if( surface->get_surface_visible() ) surface->draw_surface() ;
         }
@@ -480,7 +475,7 @@ namespace RINGMesh {
 
     void SurfaceGfxManager::set_mesh_element_visibility( index_t s, bool b )
     {
-        dynamic_cast< SurfaceGfx* >( entities_[s] )->set_surface_visible( b ) ;
+        dynamic_cast< SurfaceGfx* >( entities_[s].get() )->set_surface_visible( b ) ;
     }
 
     void SurfaceGfxManager::set_mesh_color( float r, float g, float b )
@@ -529,9 +524,10 @@ namespace RINGMesh {
     void RegionGfxManager::initialize()
     {
         if( entities_.empty() ) {
-            entities_.resize( gfx_.geomodel()->nb_regions(), nullptr ) ;
-            for( index_t e = 0; e < entities_.size(); e++ ) {
-                entities_[e] = new RegionGfx( gfx_, gfx_.geomodel()->region( e ) ) ;
+            entities_.reserve( gfx_.geomodel()->nb_regions() ) ;
+            for( index_t e = 0; e < gfx_.geomodel()->nb_regions(); e++ ) {
+                entities_.emplace_back(
+                    new RegionGfx( gfx_, gfx_.geomodel()->region( e ) ) ) ;
             }
         }
     }
@@ -539,7 +535,7 @@ namespace RINGMesh {
     void RegionGfxManager::draw()
     {
         for( index_t m = 0; m < entities_.size(); m++ ) {
-            RegionGfx* region = dynamic_cast< RegionGfx* >( entities_[m] ) ;
+            RegionGfx* region = dynamic_cast< RegionGfx* >( entities_[m].get() ) ;
             if( region->get_vertices_visible() ) region->draw_vertices() ;
             if( region->get_edges_visible() ) region->draw_edges() ;
             if( region->get_surface_visible() ) region->draw_surface() ;
@@ -570,7 +566,7 @@ namespace RINGMesh {
     void RegionGfxManager::set_edge_visibility( index_t m, bool b )
     {
         ringmesh_assert( m < entities_.size() ) ;
-        dynamic_cast< RegionGfx* >( entities_[m] )->set_edges_visible( b ) ;
+        dynamic_cast< RegionGfx* >( entities_[m].get() )->set_edges_visible( b ) ;
     }
 
     void RegionGfxManager::set_edge_size( index_t s )
@@ -667,7 +663,7 @@ namespace RINGMesh {
     void RegionGfxManager::set_mesh_element_visibility( index_t m, bool b )
     {
         ringmesh_assert( m < entities_.size() ) ;
-        dynamic_cast< RegionGfx* >( entities_[m] )->set_region_visible( b ) ;
+        dynamic_cast< RegionGfx* >( entities_[m].get() )->set_region_visible( b ) ;
     }
     void RegionGfxManager::set_cell_type_visibility( GEO::MeshCellType t, bool b )
     {

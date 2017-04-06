@@ -60,7 +60,7 @@ namespace RINGMesh {
         } ;
 
         RINGMeshApplication( int argc, char** argv ) ;
-        virtual ~RINGMeshApplication() ;
+        virtual ~RINGMeshApplication() = default ;
 
         virtual void quit() ;
 
@@ -243,8 +243,8 @@ namespace RINGMesh {
         } ;
 
     private:
-        std::vector< GeoModelViewer* > geomodels_ ;
-        std::vector< MeshViewer* > meshes_ ;
+        std::vector< std::unique_ptr< GeoModelViewer > > geomodels_ ;
+        std::vector< std::unique_ptr< MeshViewer > > meshes_ ;
         std::string ringmesh_file_extensions_ ;
         std::string geogram_file_extensions_ ;
         index_t current_viewer_ ;

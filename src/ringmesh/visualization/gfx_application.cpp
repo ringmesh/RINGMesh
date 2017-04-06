@@ -1114,16 +1114,6 @@ namespace RINGMesh {
         Logger::out( "", "Welcome to RINGMesh-View !" ) ;
     }
 
-    RINGMeshApplication::~RINGMeshApplication()
-    {
-        for( GeoModelViewer*& i : geomodels_ ) {
-            delete i ;
-        }
-        for( MeshViewer*& i : meshes_ ) {
-            delete i ;
-        }
-    }
-
     void RINGMeshApplication::quit()
     {
         glup_viewer_exit_main_loop() ;
@@ -1181,7 +1171,7 @@ namespace RINGMesh {
     bool RINGMeshApplication::load_geogram( const std::string& filename )
     {
         if( !filename.empty() ) {
-            meshes_.push_back( new MeshViewer( *this, filename ) ) ;
+            meshes_.emplace_back( new MeshViewer( *this, filename ) ) ;
             current_viewer_ = static_cast< index_t >( meshes_.size() - 1 ) ;
             current_viewer_type_ = MESH ;
         }
@@ -1217,15 +1207,15 @@ namespace RINGMesh {
         double z )
     {
         MeshViewer* viewer = nullptr ;
-        for( MeshViewer*& i : meshes_ ) {
+        for( std::unique_ptr< MeshViewer >& i : meshes_ ) {
             if( i->name_ == name ) {
-                viewer = i ;
+                viewer = i.get() ;
                 break ;
             }
         }
         if( !viewer ) {
-            meshes_.push_back( new MeshViewer( *this, "" ) ) ;
-            viewer = meshes_.back() ;
+            meshes_.emplace_back( new MeshViewer( *this, "" ) ) ;
+            viewer = meshes_.back().get() ;
         }
         vec3 point( x, y, z ) ;
         viewer->mesh_.vertices.create_vertex( point.data() ) ;
@@ -1257,7 +1247,7 @@ namespace RINGMesh {
             "toggle colored layers" ) ;
 
         init_colormaps() ;
-        for( GeoModelViewer*& i : geomodels_ ) {
+        for( std::unique_ptr< GeoModelViewer >& i : geomodels_ ) {
             i->GM_gfx_.attribute.set_colormap( colormaps_[0].texture ) ;
         }
         glup_viewer_disable( GLUP_VIEWER_BACKGROUND ) ;
@@ -1362,7 +1352,7 @@ namespace RINGMesh {
     bool RINGMeshApplication::load( const std::string& filename )
     {
         if( !filename.empty() ) {
-            geomodels_.push_back( new GeoModelViewer( *this, filename ) ) ;
+            geomodels_.emplace_back( new GeoModelViewer( *this, filename ) ) ;
             current_viewer_ = static_cast< index_t >( geomodels_.size() - 1 ) ;
             current_viewer_type_ = GEOMODEL ;
         }
@@ -1375,12 +1365,12 @@ namespace RINGMesh {
     {
         Box3d bbox ;
 
-        for( GeoModelViewer*& geomodel : geomodels_ ) {
+        for( std::unique_ptr< GeoModelViewer >& geomodel : geomodels_ ) {
             if( geomodel->is_visible_ ) {
                 bbox.add_box( geomodel->bbox_ ) ;
             }
         }
-        for( MeshViewer*& mesh : meshes_ ) {
+        for( std::unique_ptr< MeshViewer >& mesh : meshes_ ) {
             if( mesh->is_visible_ ) {
                 bbox.add_box( mesh->bbox_ ) ;
             }
@@ -1395,12 +1385,12 @@ namespace RINGMesh {
     {
         if( current_viewer_ == NO_ID ) return ;
 
-        for( MeshViewer*& mesh : meshes_ ) {
+        for( std::unique_ptr< MeshViewer >& mesh : meshes_ ) {
             if( mesh->is_visible_ ) {
                 mesh->draw_scene() ;
             }
         }
-        for( GeoModelViewer*& geomodel : geomodels_ ) {
+        for( std::unique_ptr< GeoModelViewer >& geomodel : geomodels_ ) {
             if( geomodel->is_visible_ ) {
                 geomodel->draw_scene() ;
             }
@@ -1441,7 +1431,6 @@ namespace RINGMesh {
                 }
                 ImGui::SameLine( ImGui::GetWindowWidth() - 30 ) ;
                 if( ImGui::Button( "X" ) ) {
-                    delete geomodels_[i] ;
                     geomodels_.erase( geomodels_.begin() + i ) ;
                     if( current_viewer_type_ == GEOMODEL && current_viewer_ >= i ) {
                         current_viewer_-- ;
@@ -1467,7 +1456,6 @@ namespace RINGMesh {
                 }
                 ImGui::SameLine( ImGui::GetWindowWidth() - 30 ) ;
                 if( ImGui::Button( "X" ) ) {
-                    delete meshes_[i] ;
                     meshes_.erase( meshes_.begin() + i ) ;
                     if( current_viewer_type_ == MESH && current_viewer_ >= i ) {
                         current_viewer_-- ;

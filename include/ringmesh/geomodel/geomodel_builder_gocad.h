@@ -297,22 +297,22 @@ namespace RINGMesh {
          * GEO::NO_FACET.
          * @param[in] geomodel GeoModel to consider
          * @param[in] surface_id Index of the surface
-         * @param[in] surface_nns Pointers to the NNSearchs of surfaces
+         * @param[in] surface_nnsUnique pointers to the NNSearchs of surfaces
          */
         void compute_surface_internal_borders(
             index_t surface_id,
-            const std::vector< NNSearch* >& surface_nns,
+            const std::vector< std::unique_ptr< NNSearch > >& surface_nns,
             const std::vector< Box3d >& surface_boxes ) ;
 
         /*!
          * @brief Computes the NNSearchs of the centers of facet edges for
          * each surface and their Box3d
          * @param[in] geomodel GeoModel to consider
-         * @param[out] surface_nns Pointers to the NNSearchs of surfaces
+         * @param[out] surface_nns Unique pointers to the NNSearchs of surfaces
          * @param[out] surface_boxes Bounding Box of surfaces
          */
         void compute_facet_edge_centers_nn_and_surface_boxes(
-            std::vector< NNSearch* >& surface_nns,
+            std::vector< std::unique_ptr< NNSearch > >& surface_nns,
             std::vector< Box3d >& surface_boxes ) ;
 
         /*!

@@ -205,10 +205,7 @@ namespace RINGMesh {
 
         void delete_vertex_nn_search()
         {
-            if( mesh_->vertices_nn_search_ != nullptr ) {
-                delete mesh_->vertices_nn_search_ ;
-                mesh_->vertices_nn_search_ = nullptr ;
-            }
+            mesh_->vertices_nn_search_.reset() ;
         }
 
         void set_geogram_base_mesh( MeshBase& mesh )
@@ -365,10 +362,7 @@ namespace RINGMesh {
          */
         void delete_edge_nn_search()
         {
-            if( mesh_->edges_nn_search_ != nullptr ) {
-                delete mesh_->edges_nn_search_ ;
-                mesh_->edges_nn_search_ = nullptr ;
-            }
+            mesh_->edges_nn_search_.reset() ;
         }
 
     private:
@@ -414,11 +408,11 @@ namespace RINGMesh {
             Logger::instance()->set_minimal( true ) ;
             const GeogramMesh2D& geogram_surf_in =
                 dynamic_cast< const GeogramMesh2D& >( surface_in ) ;
-            GEO::CentroidalVoronoiTesselation CVT( geogram_surf_in.mesh_, 3,
+            GEO::CentroidalVoronoiTesselation CVT( geogram_surf_in.mesh_.get(), 3,
                 GEO::CmdLine::get_arg( "algo:delaunay" ) ) ;
             CVT.set_points( mesh_->nb_vertices(),
                 mesh_->mesh_->vertices.point_ptr( 0 ) ) ;
-            CVT.compute_surface( mesh_->mesh_, false ) ;
+            CVT.compute_surface( mesh_->mesh_.get(), false ) ;
             Logger::instance()->set_minimal( false ) ;
         }
         /*!
@@ -591,20 +585,14 @@ namespace RINGMesh {
          */
         void delete_facet_nn_search()
         {
-            if( mesh_->nn_search_ != nullptr ) {
-                delete mesh_->nn_search_ ;
-                mesh_->nn_search_ = nullptr ;
-            }
+            mesh_->nn_search_.reset() ;
         }
         /*!
          * @brief Deletes the AABB on facets
          */
         void delete_facet_aabb()
         {
-            if( mesh_->facets_aabb_ != nullptr ) {
-                delete mesh_->facets_aabb_ ;
-                mesh_->facets_aabb_ = nullptr ;
-            }
+            mesh_->facets_aabb_.reset() ;
         }
 
     private:
@@ -783,24 +771,15 @@ namespace RINGMesh {
          */
         void delete_cell_nn_search()
         {
-            if( mesh_->cell_nn_search_ != nullptr ) {
-                delete mesh_->cell_nn_search_ ;
-                mesh_->cell_nn_search_ = nullptr ;
-            }
-            if( mesh_->cell_facets_nn_search_ != nullptr ) {
-                delete mesh_->cell_facets_nn_search_ ;
-                mesh_->cell_facets_nn_search_ = nullptr ;
-            }
+            mesh_->cell_nn_search_.reset() ;
+            mesh_->cell_facets_nn_search_.reset() ;
         }
         /*!
          * @brief Deletes the AABB on cells
          */
         void delete_cell_aabb()
         {
-            if( mesh_->cell_aabb_ != nullptr ) {
-                delete mesh_->cell_aabb_ ;
-                mesh_->cell_aabb_ = nullptr ;
-            }
+            mesh_->cell_aabb_.reset() ;
         }
 
     private:
