@@ -73,7 +73,7 @@ namespace RINGMesh {
     template< typename T >
     class RowImpl {
     public:
-        typedef ElementImpl< T > Element ;
+        using Element = ElementImpl< T > ;
 
         RowImpl()
             : nb_elements_( 0 ), capacity_( 4 )
@@ -189,7 +189,7 @@ namespace RINGMesh {
     template< typename T, typename RowType >
     class SparseMatrixImpl {
     public:
-        typedef RowImpl< RowType > Row ;
+        using Row = RowImpl< RowType > ;
         SparseMatrixImpl( bool is_symmetrical = false )
             : rows_( nullptr ), ni_( 0 ), nj_( 0 ), is_symmetrical_( is_symmetrical )
         {
@@ -321,7 +321,7 @@ namespace RINGMesh {
     template< typename T >
     class SparseMatrix< T, light > : public SparseMatrixImpl< T, T > {
     public:
-        typedef SparseMatrix< T, light > thisclass ;
+        using thisclass = SparseMatrix< T, light > ;
         SparseMatrix( bool is_symetrical = false )
             : SparseMatrixImpl< T, T >( is_symetrical )
         {
@@ -398,7 +398,7 @@ namespace RINGMesh {
     template< typename T >
     class SparseMatrix< T, heavy > : public SparseMatrixImpl< T, index_t > {
     public:
-        typedef SparseMatrix< T, heavy > thisclass ;
+        using thisclass = SparseMatrix< T, heavy > ;
         SparseMatrix( bool is_symetrical = false )
             : SparseMatrixImpl< T, index_t >( is_symetrical )
         {

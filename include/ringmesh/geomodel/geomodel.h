@@ -365,7 +365,7 @@ namespace RINGMesh {
         GeoModel& geomodel_ ;
     } ;
 
-    typedef GEO::Factory1< GeoModelGeologicalEntity, GeoModel > GeoModelGeologicalEntityFactory ;
+    using GeoModelGeologicalEntityFactory = GEO::Factory1< GeoModelGeologicalEntity, GeoModel > ;
 
 #define ringmesh_register_GeoModelGeologicalEntity_creator( type ) \
     geo_register_creator( GeoModelGeologicalEntityFactory, type, type::type_name_static() )

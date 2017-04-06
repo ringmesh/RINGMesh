@@ -174,8 +174,8 @@ namespace RINGMesh {
             GocadLoadingStorage& load_storage ) = 0 ;
     } ;
 
-    typedef GEO::SmartPointer< GocadLineParser > GocadLineParser_var ;
-    typedef GEO::Factory0< GocadLineParser > GocadLineParserFactory ;
+    using GocadLineParser_var = GEO::SmartPointer< GocadLineParser > ;
+    using GocadLineParserFactory = GEO::Factory0< GocadLineParser > ;
 #define ringmesh_register_GocadLineParser_creator(type, name) \
      geo_register_creator(GocadLineParserFactory, type, name)
 
@@ -262,8 +262,8 @@ namespace RINGMesh {
             TSolidLoadingStorage& load_storage ) = 0 ;
     } ;
 
-    typedef GEO::SmartPointer< TSolidLineParser > TSolidLineParser_var ;
-    typedef GEO::Factory0< TSolidLineParser > TSolidLineParserFactory ;
+    using TSolidLineParser_var = GEO::SmartPointer< TSolidLineParser > ;
+    using TSolidLineParserFactory = GEO::Factory0< TSolidLineParser > ;
 #define ringmesh_register_TSolidLineParser_creator(type, name) \
      geo_register_creator(TSolidLineParserFactory, type, name)
 
@@ -352,8 +352,8 @@ namespace RINGMesh {
             MLLoadingStorage& load_storage ) = 0 ;
     } ;
 
-    typedef GEO::SmartPointer< MLLineParser > MLLineParser_var ;
-    typedef GEO::Factory0< MLLineParser > MLLineParserFactory ;
+    using MLLineParser_var = GEO::SmartPointer< MLLineParser > ;
+    using MLLineParserFactory = GEO::Factory0< MLLineParser > ;
 #define ringmesh_register_MLLineParser_creator(type, name) \
      geo_register_creator(MLLineParserFactory, type, name)
 

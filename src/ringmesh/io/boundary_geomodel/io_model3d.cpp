@@ -231,7 +231,7 @@ namespace {
         for( index_t i = 0; i < M.nb_surfaces(); ++i ) {
             const Surface& s = M.surface( i ) ;
             out << "TFACE " << count << "  " ;
-            out << GME::geol_name( s.geological_feature() ) ;
+            out << GeoModelEntity::geol_name( s.geological_feature() ) ;
             out << " " << s.parent( Interface::type_name_static() ).name()
                 << std::endl ;
 
@@ -278,7 +278,7 @@ namespace {
 
             out << "GEOLOGICAL_FEATURE " << tsurf.name() << std::endl
                 << "GEOLOGICAL_TYPE " ;
-            out << GME::geol_name( tsurf.geological_feature() ) ;
+            out << GeoModelEntity::geol_name( tsurf.geological_feature() ) ;
             out << std::endl ;
             out << "PROPERTY_CLASS_HEADER Z {" << std::endl << "is_z:on" << std::endl
                 << "}" << std::endl ;
