@@ -41,7 +41,8 @@ namespace {
             epsilon, old2new ) ;
         DEBUG( nb_colocated ) ;
         if( nb_colocated > 0 ) {
-            Mesh1DBuilder_var builder = Mesh1DBuilder::create_builder( mesh ) ;
+            std::unique_ptr< Mesh1DBuilder > builder = Mesh1DBuilder::create_builder(
+                mesh ) ;
             for( index_t e = 0; e < mesh.nb_edges(); e++ ) {
                 for( index_t i = 0; i < 2; i++ ) {
                     index_t v = mesh.edge_vertex( e, i ) ;
@@ -68,7 +69,8 @@ namespace {
             }
 
             Mesh1D* mesh = Mesh1D::create_mesh( GeogramMesh1D::type_name_static() ) ;
-            Mesh1DBuilder* builder = Mesh1DBuilder::create_builder( *mesh ) ;
+            std::unique_ptr< Mesh1DBuilder > builder = Mesh1DBuilder::create_builder(
+                *mesh ) ;
             std::string name = GEO::FileSystem::base_name( filename ) ;
 
             bool is_first_part = true ;
@@ -113,15 +115,15 @@ namespace {
                     mesh->save_mesh( "test.geogram" ) ;
                     index_t count = 0 ;
                     for( index_t e = 0; e < mesh->nb_edges(); e++ ) {
-                        if( mesh->edge_length( e ) < wells.geomodel()->epsilon() ) count++ ;
+                        if( mesh->edge_length( e ) < wells.geomodel()->epsilon() )
+                            count++ ;
                     }
-                    DEBUG(count);
+                    DEBUG( count ) ;
                     wells.add_well( *mesh, name ) ;
                     break ;
                 }
             }
             delete mesh ;
-            delete builder ;
         }
         virtual void save( const WellGroup& wells, const std::string& filename ) override
         {

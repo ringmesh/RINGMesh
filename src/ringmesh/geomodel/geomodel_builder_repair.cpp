@@ -241,7 +241,7 @@ namespace RINGMesh {
                     // MESH_REPAIR_DUP_F 2 ;
                     GEO::MeshRepairMode mode =
                         static_cast< GEO::MeshRepairMode >( 2 ) ;
-                    Mesh2DBuilder_var builder =
+                    std::unique_ptr< Mesh2DBuilder > builder =
                         builder_.geometry.create_surface_builder( i ) ;
                     builder->mesh_repair( mode, 0.0 ) ;
 
@@ -351,7 +351,7 @@ namespace RINGMesh {
                     continue ;
                 } else {
                     if( t == 1 ) {
-                        Mesh2DBuilder_var builder =
+                        std::unique_ptr< Mesh2DBuilder > builder =
                             builder_.geometry.create_surface_builder( e ) ;
                         for( index_t f_itr = 0; f_itr < E.nb_mesh_elements();
                             f_itr++ ) {
@@ -368,7 +368,7 @@ namespace RINGMesh {
                             " colocated vertices deleted in ", entity_id ) ;
 
                     } else if( t == 0 ) {
-                        Mesh1DBuilder_var builder =
+                        std::unique_ptr< Mesh1DBuilder > builder =
                             builder_.geometry.create_line_builder( e ) ;
                         for( index_t e_itr = 0; e_itr < E.nb_mesh_elements();
                             e_itr++ ) {

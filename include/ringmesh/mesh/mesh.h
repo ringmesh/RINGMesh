@@ -56,7 +56,7 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
-    typedef std::string MeshType ;
+    using MeshType = std::string ;
 
     /*!
      * class base class for encapsulating Mesh structure
@@ -160,8 +160,7 @@ namespace RINGMesh {
         {
         }
     } ;
-    typedef GEO::SmartPointer< Mesh0D > Mesh0D_var ;
-    typedef GEO::Factory0< Mesh0D > Mesh0DFactory ;
+    using Mesh0DFactory = GEO::Factory0< Mesh0D > ;
 #define ringmesh_register_mesh_0d(type) \
     geo_register_creator(RINGMesh::Mesh0DFactory, type, type::type_name_static())
 
@@ -249,8 +248,7 @@ namespace RINGMesh {
         mutable NNSearch* edges_nn_search_ ;
         mutable AABBTree1D* edges_aabb_ ;
     } ;
-    typedef GEO::SmartPointer< Mesh1D > Mesh1D_var ;
-    typedef GEO::Factory0< Mesh1D > Mesh1DFactory ;
+    using Mesh1DFactory = GEO::Factory0< Mesh1D > ;
 #define ringmesh_register_mesh_1d(type) \
     geo_register_creator(RINGMesh::Mesh1DFactory, type, type::type_name_static())
 
@@ -600,8 +598,7 @@ namespace RINGMesh {
         mutable NNSearch* nn_search_ ;
         mutable AABBTree2D* facets_aabb_ ;
     } ;
-    typedef GEO::SmartPointer< Mesh2D > Mesh2D_var ;
-    typedef GEO::Factory0< Mesh2D > Mesh2DFactory ;
+    using Mesh2DFactory = GEO::Factory0< Mesh2D > ;
 #define ringmesh_register_mesh_2d(type) \
     geo_register_creator(RINGMesh::Mesh2DFactory, type, type::type_name_static())
 
@@ -880,8 +877,7 @@ namespace RINGMesh {
         mutable NNSearch* cell_nn_search_ ;
         mutable AABBTree3D* cell_aabb_ ;
     } ;
-    typedef GEO::SmartPointer< Mesh3D > Mesh3D_var ;
-    typedef GEO::Factory0< Mesh3D > Mesh3DFactory ;
+    using Mesh3DFactory = GEO::Factory0< Mesh3D > ;
 #define ringmesh_register_mesh_3d(type) \
     geo_register_creator(RINGMesh::Mesh3DFactory, type, type::type_name_static())
 

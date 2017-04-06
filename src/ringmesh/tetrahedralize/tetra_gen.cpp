@@ -66,9 +66,9 @@ namespace RINGMesh {
 
         virtual bool tetrahedralize( bool refine ) final
         {
-            Mesh3DBuilder * mesh3D_builder =
+            std::unique_ptr< Mesh3DBuilder > mesh3D_builder =
                 builder_->geometry.create_region_builder( output_region_ ) ;
-            tetrahedralize_mesh_tetgen( *mesh3D_builder, tetmesh_constraint_, refine,
+            tetrahedralize_mesh_tetgen( *mesh3D_builder.get(), tetmesh_constraint_, refine,
                 1.0 ) ;
             return true ;
         }
@@ -407,7 +407,7 @@ namespace RINGMesh {
     } ;
 #endif
 
-    TetraGen* TetraGen::create(
+    std::unique_ptr< TetraGen > TetraGen::create(
         GeoModel& M,
         index_t region_id,
         const std::string& algo_name )
@@ -434,7 +434,7 @@ namespace RINGMesh {
 
         mesher->builder_ = new GeoModelBuilder( M ) ;
         mesher->output_region_ = region_id ;
-        return mesher ;
+        return std::unique_ptr< TetraGen >( mesher ) ;
     }
 
     TetraGen::TetraGen()

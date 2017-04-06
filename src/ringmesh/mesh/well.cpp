@@ -278,8 +278,7 @@ namespace RINGMesh {
             id_( id ),
             mesh_( Mesh0D::create_mesh( GeogramMesh0D::type_name_static() ) )
     {
-        Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder( *mesh_ ) ;
-        builder->create_vertex( point ) ;
+        Mesh0DBuilder::create_builder( *mesh_ )->create_vertex( point ) ;
     }
 
     WellCorner::~WellCorner()
@@ -317,7 +316,8 @@ namespace RINGMesh {
     void WellPart::set_points( const std::vector< vec3 >& points )
     {
         index_t nb_points = static_cast< index_t >( points.size() ) ;
-        Mesh1DBuilder_var builder = Mesh1DBuilder::create_builder( *mesh_ ) ;
+        std::unique_ptr< Mesh1DBuilder > builder = Mesh1DBuilder::create_builder(
+            *mesh_ ) ;
         builder->create_vertices( nb_points ) ;
         for( index_t p = 0; p < nb_points; p++ ) {
             builder->set_vertex( p, points[p] ) ;
@@ -581,7 +581,8 @@ namespace RINGMesh {
     void WellGroup::compute_conformal_mesh( const Mesh1D& in, Mesh1D& out )
     {
         double epsilon = geomodel_->epsilon() ;
-        Mesh1DBuilder_var builder = Mesh1DBuilder::create_builder( out ) ;
+        std::unique_ptr< Mesh1DBuilder > builder = Mesh1DBuilder::create_builder(
+            out ) ;
         builder->clear( false, false ) ;
 
         GEO::Attribute< LineInstersection > vertex_info(
