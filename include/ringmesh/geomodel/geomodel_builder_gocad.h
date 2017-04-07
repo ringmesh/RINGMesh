@@ -97,9 +97,7 @@ namespace RINGMesh {
             : Counted(), builder_( nullptr ), geomodel_( nullptr )
         {
         }
-        virtual ~GocadBaseParser()
-        {
-        }
+        virtual ~GocadBaseParser() = default ;
 
         GeoModelBuilderGocad& builder()
         {
@@ -164,9 +162,7 @@ namespace RINGMesh {
     class GocadLineParser: public GocadBaseParser {
     ringmesh_disable_copy(GocadLineParser) ;
     public:
-        GocadLineParser()
-        {
-        }
+        GocadLineParser() = default ;
         static std::unique_ptr< GocadLineParser > create(
             const std::string& keyword,
             GeoModelBuilderGocad& gm_builder,
@@ -185,9 +181,7 @@ namespace RINGMesh {
      * pair (region, index in region) in the RINGMesh::GeoModel
      */
     struct VertexMap {
-        VertexMap()
-        {
-        }
+        VertexMap() = default ;
 
         index_t local_id( index_t gocad_vertex_id ) const
         {
@@ -251,9 +245,8 @@ namespace RINGMesh {
     class TSolidLineParser: public GocadBaseParser {
     ringmesh_disable_copy(TSolidLineParser) ;
     public:
-        TSolidLineParser()
-        {
-        }
+        TSolidLineParser() = default ;
+
         static std::unique_ptr< TSolidLineParser > create(
             const std::string& keyword,
             GeoModelBuilderTSolid& gm_builder,
@@ -276,9 +269,7 @@ namespace RINGMesh {
             : GeoModelBuilderGocad( geomodel, filename )
         {
         }
-        virtual ~GeoModelBuilderTSolid()
-        {
-        }
+        virtual ~GeoModelBuilderTSolid() = default ;
 
     private:
         virtual void load_file() final ;
@@ -340,9 +331,8 @@ namespace RINGMesh {
     class MLLineParser: public GocadBaseParser {
     ringmesh_disable_copy(MLLineParser) ;
     public:
-        MLLineParser()
-        {
-        }
+        MLLineParser() = default ;
+
         static std::unique_ptr< MLLineParser > create(
             const std::string& keyword,
             GeoModelBuilderML& gm_builder,
@@ -365,9 +355,7 @@ namespace RINGMesh {
             : GeoModelBuilderGocad( geomodel, filename )
         {
         }
-        virtual ~GeoModelBuilderML()
-        {
-        }
+        virtual ~GeoModelBuilderML() = default ;
 
     private:
         /*!

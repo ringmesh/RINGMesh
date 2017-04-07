@@ -153,9 +153,8 @@ namespace RINGMesh {
         {
             set_mesh( &mesh ) ;
         }
-        virtual ~MeshEntityGfx()
-        {
-        }
+        virtual ~MeshEntityGfx() = default ;
+
         void need_to_update()
         {
             buffer_objects_dirty_ = true ;

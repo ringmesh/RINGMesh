@@ -58,9 +58,7 @@ namespace RINGMesh {
     ringmesh_disable_copy( WellEntity ) ;
     protected:
         WellEntity( const Well* well ) ;
-        virtual ~WellEntity()
-        {
-        }
+        virtual ~WellEntity() = default ;
 
     public:
         /*!

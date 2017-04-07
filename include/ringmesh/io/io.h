@@ -114,9 +114,7 @@ namespace RINGMesh {
             const std::string& filename ) = 0 ;
 
     protected:
-        GeoModelIOHandler()
-        {
-        }
+        GeoModelIOHandler() = default ;
 
     private:
         static GeoModelIOHandler* create( const std::string& format ) ;
@@ -140,9 +138,7 @@ namespace RINGMesh {
         virtual void save( const WellGroup& mesh, const std::string& filename ) = 0 ;
 
     protected:
-        WellGroupIOHandler()
-        {
-        }
+        WellGroupIOHandler() = default ;
 
     private:
         static WellGroupIOHandler* create( const std::string& format ) ;

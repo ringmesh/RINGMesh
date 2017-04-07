@@ -656,9 +656,7 @@ namespace RINGMesh {
             : manager_( manager )
         {
         }
-        virtual ~AttributeGfx()
-        {
-        }
+        virtual ~AttributeGfx() = default ;
 
         virtual std::string location_name() const = 0 ;
         void compute_range()
