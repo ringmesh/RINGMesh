@@ -618,7 +618,7 @@ namespace RINGMesh {
         if( line_plane_intersection( segment_barycenter, segment_direction, O_plane,
             N_plane, line_plane_result ) ) {
             if( ( line_plane_result - segment_barycenter ).length2()
-                > ( seg0 - segment_barycenter ).length2() ) {
+                > ( seg0 - segment_barycenter ).length2() + global_epsilon ) {
                 // result outside the segment
                 return false ;
             } else {
