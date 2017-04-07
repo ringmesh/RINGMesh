@@ -142,7 +142,6 @@ namespace RINGMesh {
 
     } ;
 
-
     class MeshEntityGfx: public GEO::MeshGfx {
     ringmesh_disable_copy( MeshEntityGfx ) ;
     public:

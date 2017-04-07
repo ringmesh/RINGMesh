@@ -73,7 +73,6 @@ namespace {
 }
 namespace RINGMesh {
 
-
     class CornerGfx: public MeshEntityGfx {
     public:
         CornerGfx( const GeoModelGfx& gfx, const Corner& corner )
@@ -388,7 +387,7 @@ namespace RINGMesh {
     {
         if( entities_.empty() ) {
             entities_.reserve( gfx_.geomodel()->nb_surfaces() ) ;
-            for( index_t e = 0; e < entities_.size(); e++ ) {
+            for( index_t e = 0; e < gfx_.geomodel()->nb_surfaces(); e++ ) {
                 entities_.emplace_back(
                     new SurfaceGfx( gfx_, gfx_.geomodel()->surface( e ) ) ) ;
             }

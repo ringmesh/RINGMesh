@@ -246,7 +246,7 @@ namespace RINGMesh {
         } ;
 
     private:
-//        std::vector< std::unique_ptr< GeoModelViewer > > geomodels_ ;
+        std::vector< std::unique_ptr< GeoModelViewer > > geomodels_ ;
         std::vector< std::unique_ptr< MeshViewer > > meshes_ ;
         std::string ringmesh_file_extensions_ ;
         std::string geogram_file_extensions_ ;
