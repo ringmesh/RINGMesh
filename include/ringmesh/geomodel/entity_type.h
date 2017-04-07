@@ -120,10 +120,7 @@ namespace RINGMesh {
             : EntityType( type )
         {
         }
-        MeshEntityType()
-            : EntityType()
-        {
-        }
+        MeshEntityType() = default ;
     } ;
 
     /*!
@@ -140,10 +137,7 @@ namespace RINGMesh {
             : EntityType( type )
         {
         }
-        GeologicalEntityType()
-            : EntityType()
-        {
-        }
+        GeologicalEntityType() = default ;
     } ;
 
     /*!
@@ -158,9 +152,7 @@ namespace RINGMesh {
             return entity_type ;
         }
     private:
-        ForbiddenMeshEntityType()
-        {
-        }
+        ForbiddenMeshEntityType() = default ;
     } ;
 
     /*!
@@ -175,10 +167,7 @@ namespace RINGMesh {
             return entity_type ;
         }
     private:
-        ForbiddenGeologicalEntityType()
-        {
-
-        }
+        ForbiddenGeologicalEntityType() = default ;
     } ;
 
     /*!

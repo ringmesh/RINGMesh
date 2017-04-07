@@ -134,9 +134,7 @@ namespace RINGMesh {
             : std::runtime_error( message ), category_( category )
         {
         }
-        virtual ~RINGMeshException() throw()
-        {
-        }
+        virtual ~RINGMeshException() throw() = default ;
 
         const std::string& category() const
         {

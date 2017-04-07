@@ -60,9 +60,7 @@ namespace RINGMesh {
             : TetraGen()
         {
         }
-        virtual ~TetraGen_TetGen()
-        {
-        }
+        virtual ~TetraGen_TetGen() = default ;
 
         virtual bool tetrahedralize( bool refine ) final
         {
@@ -121,7 +119,6 @@ namespace RINGMesh {
                 tms_( nullptr ),
                 starting_index_( 1 )
         {
-
         }
 
         virtual ~TetraGen_MG_Tetra()

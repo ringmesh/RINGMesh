@@ -67,9 +67,7 @@ namespace RINGMesh {
             : builder_( builder )
         {
         }
-        virtual ~GeoModelBuilderGMImpl()
-        {
-        }
+        virtual ~GeoModelBuilderGMImpl() = default ;
 
         virtual void read_mesh_entity_line( GEO::LineInput& file_line ) = 0 ;
 
@@ -83,9 +81,7 @@ namespace RINGMesh {
             : GeoModelBuilderGMImpl( builder )
         {
         }
-        virtual ~GeoModelBuilderGMImpl_0()
-        {
-        }
+        virtual ~GeoModelBuilderGMImpl_0() = default ;
 
         virtual void read_mesh_entity_line( GEO::LineInput& file_line ) override
         {
@@ -143,9 +139,7 @@ namespace RINGMesh {
             : GeoModelBuilderGMImpl_0( builder )
         {
         }
-        virtual ~GeoModelBuilderGMImpl_1()
-        {
-        }
+        virtual ~GeoModelBuilderGMImpl_1() = default ;
 
         virtual void read_mesh_entity_line( GEO::LineInput& file_line ) override
         {

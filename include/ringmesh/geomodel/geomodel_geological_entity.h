@@ -58,9 +58,7 @@ namespace RINGMesh {
 
         static void initialize() ;
 
-        virtual ~GeoModelGeologicalEntity()
-        {
-        }
+        virtual ~GeoModelGeologicalEntity() = default ;
 
         const gmge_id gmge() const
         {
@@ -126,9 +124,7 @@ namespace RINGMesh {
             : GeoModelGeologicalEntity( geomodel )
         {
         }
-        virtual ~Contact()
-        {
-        }
+        virtual ~Contact() = default ;
 
         static const GeologicalEntityType type_name_static()
         {
@@ -149,9 +145,7 @@ namespace RINGMesh {
             : GeoModelGeologicalEntity( geomodel )
         {
         }
-        virtual ~Interface()
-        {
-        }
+        virtual ~Interface() = default ;
 
         static const GeologicalEntityType type_name_static()
         {
@@ -172,9 +166,7 @@ namespace RINGMesh {
             : GeoModelGeologicalEntity( geomodel )
         {
         }
-        virtual ~Layer()
-        {
-        }
+        virtual ~Layer() = default ;
 
         static const GeologicalEntityType type_name_static()
         {
