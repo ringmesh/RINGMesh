@@ -1,0 +1,28 @@
+#### Current changeset ####
+
+New Features:
+ * New thread safe logger
+      Each call to Logger::XXX will output consistently in the console in multithreading environment
+      The Logger uses variadic templates, you can use as many parameters as you want in the function.
+
+Bug fix:
+ * Crash when GeoModelMesh was initialized before the GeoModelMeshEntity geometries were set.
+
+Improvements:
+ * Refactoring of the io to have smaller files
+ * Explicit distinction between the denomination of GeoModelMeshEntity and GeoModelGeologicalEntity:
+      Now, gmme_t are used to identify a GeoModelMeshEntity (with and index and a type)
+           gmge_t are used to identify a GeoModelGeologicalEntity (with an index and a type)
+      User who want to use GeoModelEntity has now to give a particular attention on which kind on GeoModelEntity
+      he is working.
+ * EntityType are not a std::string anymore but an abstract class. GeologicalEntityType and MeshEntityType inherit
+      from EntityType.
+ * Remove support of .ogm
+ * Remove support of .mesh and .meshb
+ * Remove MeshAllD and inherited classes, user should only use Mesh0D, Mesh1D, Mesh2D or Mesh3D.
+      The GeoModelMesh has been modified according this modification.
+ * Improve some designs by using the NRVO/RVO (Named Return Value Optimization)
+ 
+Architecture:
+ * All third party files (zlib, geogram) are now in a "third_party" directory at the RINGMesh root.
+ * Removal of ThreeJS third party.
