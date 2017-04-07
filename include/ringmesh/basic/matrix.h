@@ -288,7 +288,7 @@ namespace RINGMesh {
         }
 
     protected:
-        std::unique_ptr< Row > rows_ ;
+        std::unique_ptr< Row[] > rows_ ;
         index_t ni_, nj_ ; // matrix dimensions
         bool is_symmetrical_ ;
     } ;

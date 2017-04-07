@@ -1352,7 +1352,7 @@ namespace RINGMesh {
     bool RINGMeshApplication::load( const std::string& filename )
     {
         if( !filename.empty() ) {
-            geomodels_.emplace_back( new GeoModelViewer( *this, filename ) ) ;
+//            geomodels_.emplace_back( new GeoModelViewer( *this, filename ) ) ;
             current_viewer_ = static_cast< index_t >( geomodels_.size() - 1 ) ;
             current_viewer_type_ = GEOMODEL ;
         }
@@ -1431,7 +1431,7 @@ namespace RINGMesh {
                 }
                 ImGui::SameLine( ImGui::GetWindowWidth() - 30 ) ;
                 if( ImGui::Button( "X" ) ) {
-                    geomodels_.erase( geomodels_.begin() + i ) ;
+//                    geomodels_.erase( geomodels_.begin() + i ) ;
                     if( current_viewer_type_ == GEOMODEL && current_viewer_ >= i ) {
                         current_viewer_-- ;
                     }
