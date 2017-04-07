@@ -142,6 +142,52 @@ namespace RINGMesh {
 
     } ;
 
+
+    class MeshEntityGfx: public GEO::MeshGfx {
+    ringmesh_disable_copy( MeshEntityGfx ) ;
+    public:
+        MeshEntityGfx(
+            const GeoModelGfx& gfx,
+            const GEO::Mesh& mesh,
+            bool vertice_visible )
+            : vertices_visible_( vertice_visible ), gfx_( gfx )
+        {
+            set_mesh( &mesh ) ;
+        }
+        virtual ~MeshEntityGfx()
+        {
+        }
+        void need_to_update()
+        {
+            buffer_objects_dirty_ = true ;
+            attributes_buffer_objects_dirty_ = true ;
+        }
+
+        void draw_vertices()
+        {
+            GEO::MeshGfx::draw_vertices() ;
+        }
+        void draw_edges()
+        {
+            GEO::MeshGfx::draw_edges() ;
+        }
+
+        void set_vertices_visible( bool b )
+        {
+            vertices_visible_ = b ;
+        }
+        bool get_vertices_visible() const
+        {
+            return vertices_visible_ ;
+        }
+
+    protected:
+        bool vertices_visible_ ;
+
+        const GeoModelGfx& gfx_ ;
+
+    } ;
+
     class RINGMESH_API CornerGfxManager: public GeoModelGfxManager {
     public:
         CornerGfxManager( GeoModelGfx& gfx ) ;
