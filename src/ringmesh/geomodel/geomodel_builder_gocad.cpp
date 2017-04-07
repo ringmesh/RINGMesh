@@ -627,7 +627,6 @@ namespace {
 
     // Indices begin to 1 in Gocad
     index_t GOCAD_OFFSET = 1 ;
-
     class LoadZSign final : public GocadLineParser {
     private:
         virtual void execute(
@@ -1107,44 +1106,6 @@ namespace {
 
 namespace RINGMesh {
 
-    void GeoModelBuilderGocad::build_contacts()
-    {
-        std::vector< std::set< gmge_id > > interfaces ;
-        for( index_t i = 0; i < geomodel_.nb_lines(); ++i ) {
-            const Line& L = geomodel_.line( i ) ;
-            std::set< gmge_id > cur_interfaces ;
-            for( index_t j = 0; j < L.nb_in_boundary(); ++j ) {
-                const GeoModelMeshEntity& S = L.in_boundary( j ) ;
-                gmge_id parent_interface = S.parent_gmge(
-                    Interface::type_name_static() ) ;
-                cur_interfaces.insert( parent_interface ) ;
-            }
-            gmge_id contact_id ;
-            for( index_t j = 0; j < interfaces.size(); ++j ) {
-                if( cur_interfaces.size() == interfaces[j].size()
-                    && std::equal( cur_interfaces.begin(), cur_interfaces.end(),
-                        interfaces[j].begin() ) ) {
-                    contact_id = gmge_id( Contact::type_name_static(), j ) ;
-                    break ;
-                }
-            }
-            if( !contact_id.is_defined() ) {
-                contact_id = geology.create_geological_entity(
-                    Contact::type_name_static() ) ;
-                ringmesh_assert( contact_id.index() == interfaces.size() ) ;
-                interfaces.push_back( cur_interfaces ) ;
-                // Create a name for this contact
-                std::string name = "contact" ;
-                for( const gmge_id& it : cur_interfaces ) {
-                    name += "_" ;
-                    name += geomodel_.geological_entity( it ).name() ;
-                }
-                info.set_geological_entity_name( contact_id, name ) ;
-            }
-            geology.add_geological_entity_child( contact_id, i ) ;
-        }
-    }
-
     void GeoModelBuilderGocad::read_file()
     {
         while( !file_line_.eof() && file_line_.get_line() ) {
@@ -1194,7 +1155,7 @@ namespace RINGMesh {
 
         compute_universe_boundaries( ( *this ).geomodel_, *this ) ;
 
-        build_contacts() ;
+        geology.build_contacts() ;
     }
 
     void GeoModelBuilderTSolid::read_line()
@@ -1311,7 +1272,7 @@ namespace RINGMesh {
         read_file() ;
         geomodel_.mesh.vertices.test_and_initialize() ;
         from_surfaces.build_lines_and_corners_from_surfaces() ;
-        build_contacts() ;
+        geology.build_contacts() ;
     }
 
     void GeoModelBuilderML::read_line()
@@ -1329,7 +1290,6 @@ namespace RINGMesh {
             }
         }
     }
-
     void initialize_gocad_import_factories()
     {
         ringmesh_register_GocadLineParser_creator( LoadZSign, "ZPOSITIVE" ) ;
@@ -1340,5 +1300,6 @@ namespace RINGMesh {
         tsolid_import_factory_initialize() ;
         ml_import_factory_initialize() ;
     }
+
 }
 // RINGMesh namespace

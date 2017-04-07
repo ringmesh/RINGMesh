@@ -80,6 +80,10 @@ namespace RINGMesh {
          */
         virtual const GEO::Mesh& gfx_mesh() const = 0 ;
 
+        virtual index_t nb_connected_components() const = 0 ;
+        virtual index_t get_connected_components(
+            GEO::vector<index_t>& component ) const = 0 ;
+
         //TODO maybe reimplement the function with a RINGMesh::Mesh??
         virtual void print_mesh_bounded_attributes() const = 0 ;
         /*!
@@ -164,6 +168,7 @@ namespace RINGMesh {
     typedef GEO::Factory0< Mesh0D > Mesh0DFactory ;
 #define ringmesh_register_mesh_0d(type) \
     geo_register_creator(RINGMesh::Mesh0DFactory, type, type::type_name_static())
+
 
     /*!
      * class for encapsulating 1D mesh component
@@ -278,7 +283,6 @@ namespace RINGMesh {
         virtual index_t facet_vertex(
             index_t facet_id,
             index_t vertex_id ) const = 0 ;
-
         /*!
          * @brief Gets the number of all facets in the whole Mesh.
          */
@@ -334,7 +338,6 @@ namespace RINGMesh {
                 return nb_facet_vertices( facet_id ) - 1 ;
             }
         }
-
         /*!
          * @brief Get the previous edge on the border
          * @details The returned border edge is the previous in the way of facet edges
@@ -408,7 +411,6 @@ namespace RINGMesh {
         virtual index_t facet_adjacent(
             index_t facet_id,
             index_t edge_id ) const = 0 ;
-
         virtual GEO::AttributesManager& facet_attribute_manager() const = 0 ;
         /*!
          * @brief Tests whether all the facets are triangles. when all the facets are triangles, storage and access is optimized.
@@ -665,7 +667,6 @@ namespace RINGMesh {
          * @return the global facet index.
          */
         virtual index_t cell_facet( index_t cell_id, index_t facet_id ) const = 0 ;
-
         /*!
          * Computes the Mesh cell edge length
          * @param[in] cell_id the facet index

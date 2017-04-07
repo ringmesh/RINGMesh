@@ -69,13 +69,14 @@ namespace RINGMesh {
     public:
         virtual ~GeoModelMeshEntity() ;
 
-        virtual const MeshEntityType type_name() const = 0 ;
+        virtual MeshEntityType type_name() const = 0 ;
 
-        const gmme_id gmme() const
+        gmme_id gmme() const
         {
             return gmme_id( type_name(), id_ ) ;
         }
-        const MeshEntityType mesh_entity_type() const
+
+        MeshEntityType mesh_entity_type() const
         {
             return gmme().type() ;
         }
@@ -154,7 +155,6 @@ namespace RINGMesh {
             ringmesh_assert( id < nb_parents() ) ;
             return parents_[id] ;
         }
-
         /*!
          * @brief Returns the gmge_id of the parent of the given type.
          * @note If this entity has no parent of the given type,
@@ -286,7 +286,6 @@ namespace RINGMesh {
                 mesh_( nullptr )
         {
         }
-
         virtual void copy( const GeoModelMeshEntity& from )
         {
             GeoModelEntity::copy( from ) ;
@@ -346,7 +345,6 @@ namespace RINGMesh {
         /// The optional GeoModelGeologicalEntities 
         /// (groups of GeoModelMeshEntity this entity belongs to)
         std::vector< gmge_id > parents_ ;
-
     private:
         /// The RINGMesh::Mesh giving the geometry of this entity
         MeshBase* mesh_ ;
@@ -366,15 +364,16 @@ namespace RINGMesh {
             unbind_vertex_mapping_attribute() ;
         }
 
-        static const MeshEntityType type_name_static()
+        static MeshEntityType type_name_static()
         {
             return MeshEntityType( "Corner" ) ;
         }
 
-        virtual const MeshEntityType type_name() const override
+        virtual MeshEntityType type_name() const override
         {
             return type_name_static() ;
         }
+
         /*!
          * @brief Checks if this entity define the geomodel external boundary
          * @details Test if the entity is in the Surfaces defining the universe
@@ -398,7 +397,6 @@ namespace RINGMesh {
             ringmesh_assert( nb_vertices < 2 ) ;
             return nb_vertices ;
         }
-
         const Line& in_boundary( index_t x ) const ;
 
         /*! @}
@@ -435,7 +433,6 @@ namespace RINGMesh {
          */
         Corner( const GeoModel& geomodel, index_t id, const MeshType type )
             : GeoModelMeshEntity( geomodel, id )
-
         {
             update_mesh_storage_type( Mesh0D::create_mesh( type ) ) ;
             Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder( *mesh0d_ ) ;
@@ -453,6 +450,7 @@ namespace RINGMesh {
             ringmesh_unused( vertex_index ) ;
             return 0 ;
         }
+
         /*!
          * @brief Check that the Corner mesh is a unique point
          */
@@ -465,7 +463,6 @@ namespace RINGMesh {
             mesh0d_ = mesh ;
             GeoModelMeshEntity::set_mesh( mesh0d_ ) ;
         }
-
         virtual void change_mesh_data_structure( const MeshType type ) override ;
 
     private:
@@ -487,12 +484,12 @@ namespace RINGMesh {
             unbind_vertex_mapping_attribute() ;
         }
 
-        static const MeshEntityType type_name_static()
+        static MeshEntityType type_name_static()
         {
             return MeshEntityType( "Line" ) ;
         }
 
-        virtual const MeshEntityType type_name() const override
+        virtual MeshEntityType type_name() const override
         {
             return type_name_static() ;
         }
@@ -502,7 +499,6 @@ namespace RINGMesh {
         const Corner& boundary( index_t x ) const ;
 
         const Surface& in_boundary( index_t x ) const ;
-
         virtual bool is_connectivity_valid() const final ;
 
         const AABBTree1D& edges_aabb() const
@@ -615,7 +611,6 @@ namespace RINGMesh {
             mesh1d_ = mesh ;
             GeoModelMeshEntity::set_mesh( mesh1d_ ) ;
         }
-
         virtual void change_mesh_data_structure( const MeshType type ) override ;
 
     private:
@@ -637,18 +632,17 @@ namespace RINGMesh {
             unbind_vertex_mapping_attribute() ;
         }
 
-        virtual const MeshEntityType type_name() const override
+        virtual MeshEntityType type_name() const override
         {
             return type_name_static() ;
         }
 
-        static const MeshEntityType type_name_static()
+        static MeshEntityType type_name_static()
         {
             return MeshEntityType( "Surface" ) ;
         }
 
         virtual bool is_on_voi() const final ;
-
         const Line& boundary( index_t x ) const ;
 
         const Region& in_boundary( index_t x ) const ;
@@ -803,7 +797,6 @@ namespace RINGMesh {
             return mesh2d_->vertex_index_in_facet( facet_index,
                 surface_vertex_index ) ;
         }
-
         /*!
          * @brief Get the first facet of the surface that has an edge linking the two vertices (ids in the surface)
          *
@@ -820,8 +813,8 @@ namespace RINGMesh {
          * @brief Determines the facets around a vertex
          * @param[in] surf_vertex_id Index of the vertex in the surface
          * @param[in] border_only If true only facets on the border are considered
-         * @param[in] f0 (Optional) Index of one facet containing the vertex @param P
-         * @return Indices of the facets containing @param P
+         * @param[in] f0 (Optional) Index of one facet containing the vertex @p surf_vertex_id
+         * @return Indices of the facets containing @param surf_vertex_id
          * @note If a facet containing the vertex is given, facets around this
          * vertex is search by propagation. Else, a first facet is found by brute
          * force algorithm, and then the other by propagation
@@ -831,8 +824,8 @@ namespace RINGMesh {
             bool border_only,
             index_t first_facet = NO_ID ) const
         {
-            return mesh2d_->facets_around_vertex( surf_vertex_id, border_only,
-                first_facet ) ;
+            return mesh2d_->facets_around_vertex( surf_vertex_id,
+                border_only, first_facet ) ;
         }
 
         /*! @}
@@ -847,6 +840,7 @@ namespace RINGMesh {
             ringmesh_assert( facet_index < nb_mesh_elements() ) ;
             return mesh2d_->facet_normal( facet_index ) ;
         }
+
         /*!
          * @brief Computes the normal of the surface at the vertex location
          * it computes the average value of facet normal neighbors
@@ -953,7 +947,6 @@ namespace RINGMesh {
             mesh2d_ = mesh ;
             GeoModelMeshEntity::set_mesh( mesh2d_ ) ;
         }
-
         virtual void change_mesh_data_structure( const MeshType type ) override ;
     private:
         Mesh2D* mesh2d_ ;
@@ -976,18 +969,17 @@ namespace RINGMesh {
             unbind_vertex_mapping_attribute() ;
         }
 
-        static const MeshEntityType type_name_static()
+        static MeshEntityType type_name_static()
         {
             return MeshEntityType( "Region" ) ;
         }
 
-        virtual const MeshEntityType type_name() const override
+        virtual MeshEntityType type_name() const override
         {
             return type_name_static() ;
         }
 
         virtual bool is_on_voi() const final ;
-
         const Surface& boundary( index_t x ) const ;
 
         virtual bool is_connectivity_valid() const final ;
@@ -1240,6 +1232,7 @@ namespace RINGMesh {
             return vec3() ;
         }
 
+        index_t find_first_cell_owing_vertex( index_t vertex_id_in_region ) const ;
         index_t cells_around_vertex(
             index_t vertex_id,
             std::vector< index_t >& result,
@@ -1290,7 +1283,6 @@ namespace RINGMesh {
             mesh3d_ = mesh ;
             GeoModelMeshEntity::set_mesh( mesh3d_ ) ;
         }
-
         virtual void change_mesh_data_structure( const MeshType type ) override ;
 
     protected:
@@ -1381,7 +1373,6 @@ namespace RINGMesh {
         {
             gmme_.copy( from ) ;
         }
-
         void change_mesh_data_structure( const MeshType type ) ;
 
         template< typename ENTITY >
