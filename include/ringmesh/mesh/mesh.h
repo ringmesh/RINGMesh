@@ -71,6 +71,8 @@ namespace RINGMesh {
         friend class MeshBaseBuilder ;
 
     public:
+        virtual ~MeshBase() = default ;
+
         virtual void save_mesh( const std::string& filename ) const = 0 ;
 
         /*!
@@ -142,19 +144,14 @@ namespace RINGMesh {
         friend class Mesh0DBuilder ;
 
     public:
-        virtual ~Mesh0D()
-        {
-        }
+        virtual ~Mesh0D() = default ;
 
         static Mesh0D* create_mesh( const MeshType type ) ;
     protected:
         /*!
          * @brief Mesh0D constructor.
          */
-        Mesh0D()
-            : MeshBase()
-        {
-        }
+        Mesh0D() = default ;
     } ;
     using Mesh0DFactory = GEO::Factory0< Mesh0D > ;
 #define ringmesh_register_mesh_0d(type) \
@@ -169,6 +166,8 @@ namespace RINGMesh {
         friend class GeogramMeshBuilder ;
 
     public:
+        virtual ~Mesh1D() = default ;
+
         static Mesh1D* create_mesh( const MeshType type ) ;
 
         /*
@@ -247,6 +246,8 @@ namespace RINGMesh {
         friend class Mesh2DBuilder ;
 
     public:
+        virtual ~Mesh2D() = default ;
+
         static Mesh2D* create_mesh( const MeshType type ) ;
 
         /*!
@@ -588,6 +589,8 @@ namespace RINGMesh {
         friend class Mesh3DBuilder ;
 
     public:
+        virtual ~Mesh3D() = default ;
+
         static Mesh3D* create_mesh( const MeshType type ) ;
 
         /*!
