@@ -57,21 +57,21 @@ namespace RINGMesh {
         }
 
         template< typename ...Args >
-        static void out( const std::string& feature, Args ... args )
+        static void out( const std::string& feature, const Args& ... args )
         {
             std::lock_guard< std::mutex > lock( lock_ ) ;
             log( GEO::Logger::out( feature ), args... ) ;
         }
 
         template< typename ...Args >
-        static void err( const std::string& feature, Args ... args )
+        static void err( const std::string& feature, const Args& ... args )
         {
             std::lock_guard< std::mutex > lock( lock_ ) ;
             log( GEO::Logger::err( feature ), args... ) ;
         }
 
         template< typename ...Args >
-        static void warn( const std::string& feature, Args ... args )
+        static void warn( const std::string& feature, const Args& ... args )
         {
             std::lock_guard< std::mutex > lock( lock_ ) ;
             log( GEO::Logger::warn( feature ), args... ) ;
