@@ -650,36 +650,6 @@ namespace RINGMesh {
 
     /*****************************************************************/
 
-    class AttributeGfx {
-    public:
-        AttributeGfx( AttributeGfxManager& manager )
-            : manager_( manager )
-        {
-        }
-        virtual ~AttributeGfx() = default ;
-
-        virtual std::string location_name() const = 0 ;
-        void compute_range()
-        {
-            double attribute_min = max_float64() ;
-            double attribute_max = min_float64() ;
-            do_compute_range( attribute_min, attribute_max ) ;
-            manager_.set_minimum( attribute_min ) ;
-            manager_.set_maximum( attribute_max ) ;
-        }
-        virtual void bind_attribute() = 0 ;
-        virtual void unbind_attribute() = 0 ;
-        virtual index_t nb_coordinates() = 0 ;
-
-    private:
-        virtual void do_compute_range(
-            double& attribute_min,
-            double& attribute_max ) = 0 ;
-
-    protected:
-        AttributeGfxManager& manager_ ;
-    } ;
-
     class CellAttributeGfx: public AttributeGfx {
     public:
         CellAttributeGfx( AttributeGfxManager& manager )
