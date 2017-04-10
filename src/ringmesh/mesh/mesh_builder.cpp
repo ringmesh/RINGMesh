@@ -109,7 +109,7 @@ namespace RINGMesh {
 
             builder = new GeogramMeshBaseBuilder ;
         }
-        builder->set_mesh( mesh ) ;
+        builder->set_mesh_base( mesh ) ;
         return builder ;
     }
 
