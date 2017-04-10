@@ -197,7 +197,7 @@ namespace RINGMesh {
             delete_vertex_nn_search() ;
         }
 
-        virtual void set_mesh( MeshBase& mesh ) override
+        virtual void set_mesh_base( MeshBase& mesh ) override
         {
             mesh_ = &dynamic_cast< GeogramMeshBase& >( mesh ) ;
         }
@@ -236,7 +236,7 @@ namespace RINGMesh {
         virtual void set_mesh( Mesh0D& mesh ) override
         {
             mesh_ = &dynamic_cast< GeogramMesh0D& >( mesh ) ;
-            GeogramMeshBaseBuilder::set_mesh( *mesh_ ) ;
+            GeogramMeshBaseBuilder::set_mesh_base( *mesh_ ) ;
         }
     private:
         GeogramMesh0D* mesh_ ;
@@ -258,7 +258,7 @@ namespace RINGMesh {
         virtual void set_mesh( Mesh1D& mesh ) override
         {
             mesh_ = &dynamic_cast< GeogramMesh1D& >( mesh ) ;
-            GeogramMeshBaseBuilder::set_mesh( *mesh_ ) ;
+            GeogramMeshBaseBuilder::set_mesh_base( *mesh_ ) ;
         }
         /*!
          * @brief Create a new edge.
@@ -391,7 +391,7 @@ namespace RINGMesh {
         virtual void set_mesh( Mesh2D& mesh ) override
         {
             mesh_ = &dynamic_cast< GeogramMesh2D& >( mesh ) ;
-            GeogramMeshBaseBuilder::set_mesh( *mesh_ ) ;
+            GeogramMeshBaseBuilder::set_mesh_base( *mesh_ ) ;
         }
         /**
          * \brief Removes the connected components that have an area
@@ -623,7 +623,7 @@ namespace RINGMesh {
         virtual void set_mesh( Mesh3D& mesh ) override
         {
             mesh_ = &dynamic_cast< GeogramMesh3D& >( mesh ) ;
-            GeogramMeshBaseBuilder::set_mesh( *mesh_ ) ;
+            GeogramMeshBaseBuilder::set_mesh_base( *mesh_ ) ;
         }
         virtual ~GeogramMesh3DBuilder()
         {

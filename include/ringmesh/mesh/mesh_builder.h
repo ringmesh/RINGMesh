@@ -141,7 +141,7 @@ namespace RINGMesh {
         MeshBaseBuilder()
         {
         }
-        virtual void set_mesh( MeshBase& mesh ) = 0 ;
+        virtual void set_mesh_base( MeshBase& mesh ) = 0 ;
     } ;
     using MeshBaseBuilder_var = GEO::SmartPointer< MeshBaseBuilder > ;
     using MeshBaseBuilderFactory = GEO::Factory0< MeshBaseBuilder > ;
