@@ -42,6 +42,8 @@
 
 #include <ringmesh/basic/common.h>
 
+#include <memory>
+
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
 #include <ringmesh/geomodel/geomodel_entity.h>
 
@@ -214,7 +216,7 @@ namespace RINGMesh {
             return gmge_.children_ ;
         }
 
-        static GeoModelGeologicalEntity* create_geological_entity(
+        static std::unique_ptr< GeoModelGeologicalEntity > create_geological_entity(
             const GeologicalEntityType& type,
             const GeoModel& geomodel,
             index_t index_in_geomodel ) ;

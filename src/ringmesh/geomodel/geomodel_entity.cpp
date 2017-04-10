@@ -44,6 +44,10 @@
 
 namespace RINGMesh {
 
+    GeoModelEntity::~GeoModelEntity()
+    {
+    }
+
     Universe::Universe( const GeoModel& geomodel )
         : GeoModelEntity( geomodel, NO_ID )
     {

@@ -70,8 +70,9 @@ namespace RINGMesh {
          *        an entity in the set does not exist.
          * @return True if at least one entity was added.
          */
-        bool get_dependent_entities( std::set< gmme_id >& in_mesh_entities, std::set< gmge_id >& in_geological_entities ) const ;
-
+        bool get_dependent_entities(
+            std::set< gmme_id >& in_mesh_entities,
+            std::set< gmge_id >& in_geological_entities ) const ;
 
         template< typename ENTITY >
         gmme_id create_mesh_entity( const MeshType mesh_type = "" )
@@ -79,11 +80,10 @@ namespace RINGMesh {
             const MeshEntityType entity_type = ENTITY::type_name_static() ;
             index_t nb_entities( geomodel_.nb_mesh_entities( entity_type ) ) ;
             index_t new_id( nb_entities ) ;
-            ENTITY* new_entity = GeoModelMeshEntityAccess::create_entity< ENTITY >(
-                geomodel_, new_id, mesh_type ) ;
-            geomodel_access_.modifiable_mesh_entities( entity_type ).push_back(
-                new_entity ) ;
-            return new_entity->gmme() ;
+            geomodel_access_.modifiable_mesh_entities( entity_type ).emplace_back(
+                GeoModelMeshEntityAccess::create_entity< ENTITY >( geomodel_, new_id,
+                    mesh_type ) ) ;
+            return geomodel_access_.modifiable_mesh_entities( entity_type ).back()->gmme() ;
         }
 
         bool create_mesh_entities(
@@ -143,7 +143,9 @@ namespace RINGMesh {
 
         void set_universe_boundary( index_t id, index_t boundary_id, bool side ) ;
 
-        void add_mesh_entity_in_boundary( const gmme_id& t, index_t in_boundary_id ) ;
+        void add_mesh_entity_in_boundary(
+            const gmme_id& t,
+            index_t in_boundary_id ) ;
 
         void set_mesh_entity_in_boundary(
             const gmme_id& gme_id,
@@ -186,14 +188,15 @@ namespace RINGMesh {
             const MeshType type = "" )
         {
             const MeshEntityType& entity_type = ENTITY::type_name_static() ;
-            std::vector< GeoModelMeshEntity* >& store =
+            std::vector< std::unique_ptr< GeoModelMeshEntity > >& store =
                 geomodel_access_.modifiable_mesh_entities( entity_type ) ;
             index_t old_size = static_cast< index_t >( store.size() ) ;
             index_t new_size = old_size + nb_additionnal_entities ;
-            store.resize( new_size, nullptr ) ;
+            store.reserve( new_size ) ;
             for( index_t i = old_size; i < new_size; i++ ) {
-                store[i] = GeoModelMeshEntityAccess::create_entity< ENTITY >(
-                    geomodel_, i, type ) ;
+                store.emplace_back(
+                    GeoModelMeshEntityAccess::create_entity< ENTITY >( geomodel_, i,
+                        type ) ) ;
             }
             return true ;
         }
