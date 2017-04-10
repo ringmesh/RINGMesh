@@ -166,15 +166,12 @@ namespace RINGMesh {
         const std::string& filename )
         : GeoModelBuilderFile( geomodel, filename ), file_version_( 0 )
     {
-        version_impl_[0] = new GeoModelBuilderGMImpl_0( *this ) ;
-        version_impl_[1] = new GeoModelBuilderGMImpl_1( *this ) ;
+        version_impl_[0].reset( new GeoModelBuilderGMImpl_0( *this ) ) ;
+        version_impl_[1].reset( new GeoModelBuilderGMImpl_1( *this ) ) ;
     }
 
     GeoModelBuilderGM::~GeoModelBuilderGM()
     {
-        for( index_t i = 0; i < NB_VERSION; i++ ) {
-            delete version_impl_[i] ;
-        }
     }
 
     void GeoModelBuilderGM::load_mesh_entities( const std::string& mesh_entity_file )
