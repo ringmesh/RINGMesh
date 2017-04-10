@@ -44,7 +44,7 @@ namespace {
                 throw RINGMeshException( "I/O", "Could not open file" ) ;
             }
 
-            Mesh1D* mesh = Mesh1D::create_mesh( GeogramMesh1D::type_name_static() ) ;
+            std::unique_ptr< Mesh1D > mesh = Mesh1D::create_mesh( GeogramMesh1D::type_name_static() ) ;
             std::unique_ptr< Mesh1DBuilder > builder = Mesh1DBuilder::create_builder(
                 *mesh ) ;
             std::string name ;
@@ -76,13 +76,10 @@ namespace {
                     builder->create_edge( id - 1, id ) ;
                 } else if( in.field_matches( 0, "END" ) ) {
                     wells.add_well( *mesh, name ) ;
-                    delete mesh ;
                     mesh = Mesh1D::create_mesh( GeogramMesh1D::type_name_static() ) ;
                     builder = Mesh1DBuilder::create_builder( *mesh ) ;
                 }
             }
-
-            delete mesh ;
         }
         virtual void save( const WellGroup& wells, const std::string& filename ) override
         {

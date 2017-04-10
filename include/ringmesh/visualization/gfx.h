@@ -456,7 +456,6 @@ namespace RINGMesh {
             facets, facet_vertices, cells, cell_vertices, nb_locations
         } ;
         AttributeGfxManager( GeoModelGfx& gfx ) ;
-        ~AttributeGfxManager() ;
 
         GeoModelGfx& gfx()
         {
@@ -530,7 +529,7 @@ namespace RINGMesh {
         double minimum_ ;
         double maximum_ ;
 
-        AttributeGfx* attributes_[nb_locations] ;
+        std::unique_ptr< AttributeGfx > attributes_[nb_locations] ;
 
     } ;
 

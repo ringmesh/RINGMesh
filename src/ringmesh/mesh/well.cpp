@@ -281,11 +281,6 @@ namespace RINGMesh {
         Mesh0DBuilder::create_builder( *mesh_ )->create_vertex( point ) ;
     }
 
-    WellCorner::~WellCorner()
-    {
-        delete mesh_ ;
-    }
-
     const vec3& WellCorner::point() const
     {
         return mesh_->vertex( 0 ) ;
@@ -306,11 +301,6 @@ namespace RINGMesh {
     {
         corners_[0] = NO_ID ;
         corners_[1] = NO_ID ;
-    }
-
-    WellPart::~WellPart()
-    {
-        delete mesh_ ;
     }
 
     void WellPart::set_points( const std::vector< vec3 >& points )
@@ -379,16 +369,6 @@ namespace RINGMesh {
     Well::Well()
         : nb_edges_( NO_ID )
     {
-    }
-
-    Well::~Well()
-    {
-        for( index_t c = 0; c < nb_corners(); c++ ) {
-            if( corners_[c] ) delete corners_[c] ;
-        }
-        for( index_t part = 0; part < nb_parts(); part++ ) {
-            if( parts_[part] ) delete parts_[part] ;
-        }
     }
 
     index_t Well::find_corner( const vec3& vertex, double epsilon ) const

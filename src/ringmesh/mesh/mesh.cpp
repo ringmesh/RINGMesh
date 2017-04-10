@@ -43,7 +43,7 @@
 
 namespace RINGMesh {
 
-    Mesh0D* Mesh0D::create_mesh( const MeshType type )
+    std::unique_ptr< Mesh0D > Mesh0D::create_mesh( const MeshType type )
     {
         MeshType new_type = type ;
         if( new_type.empty() ) {
@@ -58,10 +58,10 @@ namespace RINGMesh {
 
             mesh = new GeogramMesh0D ;
         }
-        return mesh ;
+        return std::unique_ptr< Mesh0D >( mesh ) ;
     }
 
-    Mesh1D* Mesh1D::create_mesh( const MeshType type )
+    std::unique_ptr< Mesh1D > Mesh1D::create_mesh( const MeshType type )
     {
         MeshType new_type = type ;
         if( new_type.empty() ) {
@@ -76,10 +76,10 @@ namespace RINGMesh {
 
             mesh = new GeogramMesh1D ;
         }
-        return mesh ;
+        return std::unique_ptr< Mesh1D >( mesh ) ;
     }
 
-    Mesh2D* Mesh2D::create_mesh( const MeshType type )
+    std::unique_ptr< Mesh2D > Mesh2D::create_mesh( const MeshType type )
     {
         MeshType new_type = type ;
         if( new_type.empty() ) {
@@ -94,7 +94,7 @@ namespace RINGMesh {
 
             mesh = new GeogramMesh2D ;
         }
-        return mesh ;
+        return std::unique_ptr< Mesh2D >( mesh ) ;
     }
 
     void Mesh2D::next_on_border(
@@ -299,7 +299,8 @@ namespace RINGMesh {
 
         return result ;
     }
-    Mesh3D* Mesh3D::create_mesh( const MeshType type )
+
+    std::unique_ptr< Mesh3D > Mesh3D::create_mesh( const MeshType type )
     {
         MeshType new_type = type ;
         if( new_type.empty() ) {
@@ -314,7 +315,7 @@ namespace RINGMesh {
 
             mesh = new GeogramMesh3D ;
         }
-        return mesh ;
+        return std::unique_ptr< Mesh3D >( mesh ) ;
     }
 
 } // namespace

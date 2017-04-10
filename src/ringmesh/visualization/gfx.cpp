@@ -881,17 +881,10 @@ namespace RINGMesh {
             minimum_( 0.0 ),
             maximum_( 0.0 )
     {
-        attributes_[facets] = new FacetAttributeGfx( *this ) ;
-        attributes_[facet_vertices] = new FacetVertexAttributeGfx( *this ) ;
-        attributes_[cells] = new CellAttributeGfx( *this ) ;
-        attributes_[cell_vertices] = new CellVertexAttributeGfx( *this ) ;
-    }
-
-    AttributeGfxManager::~AttributeGfxManager()
-    {
-        for( index_t i = 0; i < nb_locations; i++ ) {
-            delete attributes_[i] ;
-        }
+        attributes_[facets].reset( new FacetAttributeGfx( *this ) ) ;
+        attributes_[facet_vertices].reset( new FacetVertexAttributeGfx( *this ) ) ;
+        attributes_[cells].reset( new CellAttributeGfx( *this ) ) ;
+        attributes_[cell_vertices].reset( new CellVertexAttributeGfx( *this ) ) ;
     }
 
     std::string AttributeGfxManager::location_name( Attribute_location location )
