@@ -429,7 +429,7 @@ namespace RINGMesh {
 #endif
         }
 
-        mesher->builder_ = new GeoModelBuilder( M ) ;
+        mesher->builder_.reset( new GeoModelBuilder( M ) ) ;
         mesher->output_region_ = region_id ;
         return std::unique_ptr< TetraGen >( mesher ) ;
     }
@@ -566,11 +566,6 @@ namespace RINGMesh {
             points.size() ) ;
         GEO::Memory::copy( tetmesh_constraint_.vertices.point_ptr( start ),
             points.front().data(), points.size() * 3 * sizeof(double) ) ;
-    }
-
-    TetraGen::~TetraGen()
-    {
-        if( builder_ ) delete builder_ ;
     }
 
     void TetraGen::initialize()

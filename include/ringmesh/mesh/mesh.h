@@ -146,7 +146,7 @@ namespace RINGMesh {
     public:
         virtual ~Mesh0D() = default ;
 
-        static Mesh0D* create_mesh( const MeshType type ) ;
+        static std::unique_ptr< Mesh0D > create_mesh( const MeshType type ) ;
     protected:
         /*!
          * @brief Mesh0D constructor.
@@ -168,7 +168,7 @@ namespace RINGMesh {
     public:
         virtual ~Mesh1D() = default ;
 
-        static Mesh1D* create_mesh( const MeshType type ) ;
+        static std::unique_ptr< Mesh1D > create_mesh( const MeshType type ) ;
 
         /*
          * @brief Gets the index of an edge vertex.
@@ -248,7 +248,7 @@ namespace RINGMesh {
     public:
         virtual ~Mesh2D() = default ;
 
-        static Mesh2D* create_mesh( const MeshType type ) ;
+        static std::unique_ptr< Mesh2D > create_mesh( const MeshType type ) ;
 
         /*!
          * @brief Gets the vertex index by facet index and local vertex index.
@@ -591,7 +591,7 @@ namespace RINGMesh {
     public:
         virtual ~Mesh3D() = default ;
 
-        static Mesh3D* create_mesh( const MeshType type ) ;
+        static std::unique_ptr< Mesh3D > create_mesh( const MeshType type ) ;
 
         /*!
          * @brief Gets a vertex index by cell and local vertex index.
