@@ -345,7 +345,7 @@ namespace RINGMesh {
         bool refine,
         double quality )
     {
-        TetgenMesher mesher ( in_point_cloud ) ;
+        TetgenMesher mesher ( ) ;
         if( refine ) {
             mesher.add_points_to_match_quality( quality ) ;
         }
