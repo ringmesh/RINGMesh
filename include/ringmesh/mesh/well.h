@@ -42,6 +42,7 @@
 #include <geogram/basic/attributes.h>
 
 #include <ringmesh/basic/geometry.h>
+#include <ringmesh/mesh/mesh.h>
 
 /*!
  * @file Well related classe declarations 

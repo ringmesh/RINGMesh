@@ -87,7 +87,7 @@ namespace RINGMesh {
             if( !find( j, index ) ) {
                 push_element( j, value ) ;
             } else {
-                elements_[index].value = value ;
+                elements_.get()[index].value = value ;
             }
         }
 
@@ -96,7 +96,7 @@ namespace RINGMesh {
             if( nb_elements_ == capacity_ ) {
                 grow() ;
             }
-            Element& elt = elements_[nb_elements_++ ] ;
+            Element& elt = elements_.get()[nb_elements_++ ] ;
             elt.index = j ;
             elt.value = value ;
         }
@@ -104,7 +104,7 @@ namespace RINGMesh {
         bool find( index_t j, index_t& index ) const
         {
             for( index_t e = 0; e < nb_elements_; e++ ) {
-                if( elements_[e].index == j ) {
+                if( elements_.get()[e].index == j ) {
                     index = e ;
                     return true ;
                 }
@@ -115,7 +115,7 @@ namespace RINGMesh {
         bool exist( index_t j )
         {
             for( index_t e = 0; e < nb_elements_; e++ ) {
-                if( elements_[e].index == j ) {
+                if( elements_.get()[e].index == j ) {
                     return true ;
                 }
             }
@@ -141,7 +141,7 @@ namespace RINGMesh {
         index_t index( index_t e ) const
         {
             ringmesh_assert( e < nb_elements_ ) ;
-            return elements_[e].index ;
+            return elements_.get()[e].index ;
         }
 
         T& operator[]( index_t i ) const
@@ -159,7 +159,7 @@ namespace RINGMesh {
         void reallocate( index_t new_capacity )
         {
             Element* new_elements = new Element[new_capacity] ;
-            std::copy( elements_, elements_ + nb_elements_, new_elements ) ;
+            std::copy( elements_.get(), elements_.get() + nb_elements_, new_elements ) ;
             elements_.reset( new_elements ) ;
         }
 
