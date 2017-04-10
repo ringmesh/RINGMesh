@@ -102,6 +102,18 @@ namespace RINGMesh {
             // Save tetrahedron regions
             tetgen_command_line_ += "AA" ;
         }
+        TetgenMesher ( const Mesh0D& input_mesh )
+            : polygons_ ( nullptr ), polygon_corners_ ( nullptr )
+        {
+            // Quiet (no output)
+            tetgen_command_line_ += "Q" ;
+            // Save tetrahedron neighbors
+            tetgen_command_line_ += "n" ;
+            // Do not add points on boundaries
+            tetgen_command_line_ += "Y" ;
+            // Save tetrahedron regions
+            tetgen_command_line_ += "AA" ;
+        }
         ~TetgenMesher() ;
 
         void tetrahedralize(
