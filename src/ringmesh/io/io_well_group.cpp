@@ -63,8 +63,8 @@ namespace RINGMesh {
     {
         Logger::out( "I/O", "Loading file ", filename, "..." ) ;
 
-        WellGroupIOHandler_var handler = WellGroupIOHandler::get_handler(
-            filename ) ;
+        std::unique_ptr< WellGroupIOHandler > handler =
+            WellGroupIOHandler::get_handler( filename ) ;
         handler->load( filename, wells ) ;
     }
 
@@ -85,11 +85,11 @@ namespace RINGMesh {
         return handler ;
     }
 
-    WellGroupIOHandler* WellGroupIOHandler::get_handler(
+    std::unique_ptr< WellGroupIOHandler > WellGroupIOHandler::get_handler(
         const std::string& filename )
     {
         std::string ext = GEO::FileSystem::extension( filename ) ;
-        return create( ext ) ;
+        return std::unique_ptr< WellGroupIOHandler >( create( ext ) ) ;
     }
 
     /*

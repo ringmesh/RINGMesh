@@ -137,7 +137,6 @@ namespace RINGMesh {
         virtual ~RINGMeshException() throw()
         {
         }
-
         const std::string& category() const
         {
             return category_ ;

@@ -39,6 +39,8 @@
 
 #ifdef RINGMESH_WITH_TETGEN
 
+#include <memory>
+
 #include <geogram/third_party/tetgen/tetgen.h>
 
 /*!
@@ -89,7 +91,6 @@ namespace RINGMesh {
     ringmesh_disable_copy( TetgenMesher ) ;
     public:
         TetgenMesher()
-            : polygons_( nullptr ), polygon_corners_( nullptr )
         {
             // Quiet (no output)
             tetgen_command_line_ += "Q" ;
@@ -139,8 +140,8 @@ namespace RINGMesh {
         std::string tetgen_command_line_ ;
         GEO_3rdParty::tetgenbehavior tetgen_args_ ;
 
-        GEO_3rdParty::tetgenio::polygon* polygons_ ;
-        int* polygon_corners_ ;
+        std::unique_ptr< GEO_3rdParty::tetgenio::polygon[] > polygons_ ;
+        std::unique_ptr< int[] > polygon_corners_ ;
     } ;
 
     /*!

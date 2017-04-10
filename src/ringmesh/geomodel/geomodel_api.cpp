@@ -409,7 +409,8 @@ namespace RINGMesh {
                 progress.next() ;
             }
         } else {
-            TetraGen_var tetragen = TetraGen::create( M, region_id, method ) ;
+            std::unique_ptr< TetraGen > tetragen = TetraGen::create( M, region_id,
+                method ) ;
             tetragen->set_boundaries( M.region( region_id ), M.wells() ) ;
             tetragen->set_internal_points( internal_vertices[region_id] ) ;
             bool status = Logger::instance()->is_quiet() ;

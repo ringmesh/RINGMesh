@@ -37,6 +37,8 @@
 
 #include <ringmesh/basic/common.h>
 
+#include <memory>
+
 #include <geogram/basic/line_stream.h>
 
 #include <zlib/unzip.h>
@@ -76,6 +78,6 @@ namespace RINGMesh {
 
     private:
         index_t file_version_ ;
-        GeoModelBuilderGMImpl* version_impl_[NB_VERSION] ;
+        std::unique_ptr< GeoModelBuilderGMImpl > version_impl_[NB_VERSION] ;
     } ;
 }

@@ -38,6 +38,7 @@
 #include <ringmesh/basic/common.h>
 
 #include <deque>
+#include <memory>
 
 /*!
  * @file Template matix declarations and definitions 
@@ -76,14 +77,8 @@ namespace RINGMesh {
         using Element = ElementImpl< T > ;
 
         RowImpl()
-            : nb_elements_( 0 ), capacity_( 4 )
+            : elements_( new Element[capacity_] ), nb_elements_( 0 ), capacity_( 4 )
         {
-            elements_ = new Element[capacity_] ;
-        }
-
-        ~RowImpl()
-        {
-            delete[] elements_ ;
         }
 
         void set_element( index_t j, const T& value )
@@ -164,9 +159,8 @@ namespace RINGMesh {
         void reallocate( index_t new_capacity )
         {
             Element* new_elements = new Element[new_capacity] ;
-            std::copy( elements_, elements_ + nb_elements_, new_elements ) ;
-            delete[] elements_ ;
-            elements_ = new_elements ;
+            std::copy( elements_.get(), elements_.get() + nb_elements_, new_elements ) ;
+            elements_.reset( new_elements ) ;
         }
 
         void grow()
@@ -177,7 +171,7 @@ namespace RINGMesh {
         }
 
     private:
-        Element* elements_ ;
+        std::unique_ptr< Element[] > elements_ ;
         index_t nb_elements_ ;
         index_t capacity_ ;
     } ;
@@ -191,15 +185,8 @@ namespace RINGMesh {
     public:
         using Row = RowImpl< RowType > ;
         SparseMatrixImpl( bool is_symmetrical = false )
-            : rows_( nullptr ), ni_( 0 ), nj_( 0 ), is_symmetrical_( is_symmetrical )
+            : ni_( 0 ), nj_( 0 ), is_symmetrical_( is_symmetrical )
         {
-        }
-
-        ~SparseMatrixImpl()
-        {
-            if( rows_ ) {
-                delete[] rows_ ;
-            }
         }
 
         /*!
@@ -285,7 +272,7 @@ namespace RINGMesh {
         {
             ni_ = ni ;
             nj_ = nj ;
-            rows_ = new Row[ni] ;
+            rows_.reset( new Row[ni] ) ;
         }
 
         /*!
@@ -301,7 +288,7 @@ namespace RINGMesh {
         }
 
     protected:
-        Row* rows_ ;
+        std::unique_ptr< Row[] > rows_ ;
         index_t ni_, nj_ ; // matrix dimensions
         bool is_symmetrical_ ;
     } ;
