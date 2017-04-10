@@ -111,7 +111,7 @@ namespace RINGMesh {
             return T == STRATI || T == UNCONFORMITY ;
         }
 
-        virtual ~GeoModelEntity() = default ;
+        virtual ~GeoModelEntity() ;
 
         virtual bool is_on_voi() const = 0 ;
         virtual bool is_valid() const = 0 ;

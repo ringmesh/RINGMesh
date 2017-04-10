@@ -1384,12 +1384,12 @@ namespace RINGMesh {
         void change_mesh_data_structure( const MeshType type ) ;
 
         template< typename ENTITY >
-        static ENTITY* create_entity(
+        static std::unique_ptr< ENTITY > create_entity(
             const GeoModel& geomodel,
             index_t id,
             const MeshType type )
         {
-            return new ENTITY( geomodel, id, type ) ;
+            return std::unique_ptr< ENTITY >( new ENTITY( geomodel, id, type ) ) ;
         }
 
     private:
