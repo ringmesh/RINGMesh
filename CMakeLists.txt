@@ -52,7 +52,6 @@ set(EMSCRIPTEN "" CACHE PATH "Path to Emscripten")
 if(EMSCRIPTEN)
     set(USE_EMSCRIPTEN ON)
     message(STATUS "Using Emscripten directory = ${EMSCRIPTEN}")
-    list(APPEND CMAKE_CONFIGURATION_TYPES Emscripten)
 endif(EMSCRIPTEN)
   
 
@@ -188,6 +187,8 @@ if(UNIX)
       # Get out when all configurations have been run
       # We do not want to execute the rest of the file in that case
       return()
+    elseif(CMAKE_BUILD_TYPE STREQUAL "Emscripten")
+        set(GLOBAL_BINARY_DIR  ${PROJECT_BINARY_DIR}/..)
     endif()
 else(UNIX)
     set(GLOBAL_BINARY_DIR  ${PROJECT_BINARY_DIR}/..)
@@ -208,11 +209,10 @@ elseif(UNIX)
     add_compile_options(-Wall -Wextra -Wno-long-long -Wconversion)
     
     if(CMAKE_BUILD_TYPE STREQUAL "Emscripten")
+        message("We choose the Emsripten compile")
         set(CMAKE_C_COMPILER "emcc")
         set(CMAKE_CXX_COMPILER "em++")
         set(CMAKE_LINKER "emld")
-
-        include(${EMSCRIPTEN}/cmake/Modules/Platform/Emscripten.cmake)
                 
     else()    
         # Determine gcc version and activate additional warnings available in latest versions
@@ -270,6 +270,8 @@ if(WIN32)
     # TODO check that it is really necessary [JP]
     add_compile_options(-DGEO_DYNAMIC_LIBS) 
 else(WIN32)
+    message("COUCOU")
+    message("${GLOBAL_BINARY_DIR}") 
     set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/geogram/${CMAKE_BUILD_TYPE})
     if(CMAKE_BUILD_TYPE STREQUAL "Emscripten")
         set(geoplatform Emscripten-clang)
