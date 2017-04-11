@@ -288,7 +288,7 @@ namespace RINGMesh {
          * GEO::NO_FACET.
          * @param[in] geomodel GeoModel to consider
          * @param[in] surface_id Index of the surface
-         * @param[in] surface_nnsUnique pointers to the NNSearchs of surfaces
+         * @param[in] surface_nns Unique pointers to the NNSearchs of surfaces
          */
         void compute_surface_internal_borders(
             index_t surface_id,
