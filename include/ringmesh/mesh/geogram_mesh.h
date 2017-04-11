@@ -37,6 +37,8 @@
 
 #include <ringmesh/basic/common.h>
 
+#include <memory>
+
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_io.h>
 #include <geogram/mesh/mesh_topology.h>
@@ -67,10 +69,6 @@ namespace RINGMesh {
         friend class GeogramMeshBaseBuilder ;
 
     public:
-        virtual ~GeogramMeshBase()
-        {
-            delete mesh_ ;
-        }
         virtual void save_mesh( const std::string& filename ) const override
         {
             GEO::mesh_save( *mesh_, filename, GEO::MeshIOFlags() ) ;
@@ -137,13 +135,12 @@ namespace RINGMesh {
 
     protected:
         GeogramMeshBase()
-            : MeshBase()
+            : MeshBase(), mesh_( new GEO::Mesh( 3, false ) )
         {
-            mesh_ = new GEO::Mesh( 3, false ) ;
         }
 
     protected:
-        mutable GEO::Mesh* mesh_ ;
+        mutable std::unique_ptr< GEO::Mesh > mesh_ ;
     } ;
 
     class RINGMESH_API GeogramMesh0D: public virtual GeogramMeshBase,

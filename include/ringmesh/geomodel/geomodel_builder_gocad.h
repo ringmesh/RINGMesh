@@ -37,6 +37,8 @@
 
 #include <ringmesh/basic/common.h>
 
+#include <memory>
+
 #include <geogram/basic/factory.h>
 #include <geogram/basic/line_stream.h>
 
@@ -89,9 +91,7 @@ namespace RINGMesh {
             : Counted(), builder_( nullptr ), geomodel_( nullptr )
         {
         }
-        virtual ~GocadBaseParser()
-        {
-        }
+        virtual ~GocadBaseParser() = default ;
 
         GeoModelBuilderGocad& builder()
         {
@@ -156,10 +156,8 @@ namespace RINGMesh {
     class GocadLineParser: public GocadBaseParser {
     ringmesh_disable_copy(GocadLineParser) ;
     public:
-        GocadLineParser()
-        {
-        }
-        static GocadLineParser* create(
+        GocadLineParser() = default ;
+        static std::unique_ptr< GocadLineParser > create(
             const std::string& keyword,
             GeoModelBuilderGocad& gm_builder,
             GeoModel& geomodel ) ;
@@ -168,7 +166,6 @@ namespace RINGMesh {
             GocadLoadingStorage& load_storage ) = 0 ;
     } ;
 
-    using GocadLineParser_var = GEO::SmartPointer< GocadLineParser > ;
     using GocadLineParserFactory = GEO::Factory0< GocadLineParser > ;
 #define ringmesh_register_GocadLineParser_creator(type, name) \
      geo_register_creator(GocadLineParserFactory, type, name)
@@ -178,9 +175,7 @@ namespace RINGMesh {
      * pair (region, index in region) in the RINGMesh::GeoModel
      */
     struct VertexMap {
-        VertexMap()
-        {
-        }
+        VertexMap() = default ;
 
         index_t local_id( index_t gocad_vertex_id ) const
         {
@@ -244,10 +239,9 @@ namespace RINGMesh {
     class TSolidLineParser: public GocadBaseParser {
     ringmesh_disable_copy(TSolidLineParser) ;
     public:
-        TSolidLineParser()
-        {
-        }
-        static TSolidLineParser* create(
+        TSolidLineParser() = default ;
+
+        static std::unique_ptr< TSolidLineParser > create(
             const std::string& keyword,
             GeoModelBuilderTSolid& gm_builder,
             GeoModel& geomodel ) ;
@@ -256,7 +250,6 @@ namespace RINGMesh {
             TSolidLoadingStorage& load_storage ) = 0 ;
     } ;
 
-    using TSolidLineParser_var = GEO::SmartPointer< TSolidLineParser > ;
     using TSolidLineParserFactory = GEO::Factory0< TSolidLineParser > ;
 #define ringmesh_register_TSolidLineParser_creator(type, name) \
      geo_register_creator(TSolidLineParserFactory, type, name)
@@ -270,9 +263,7 @@ namespace RINGMesh {
             : GeoModelBuilderGocad( geomodel, filename )
         {
         }
-        virtual ~GeoModelBuilderTSolid()
-        {
-        }
+        virtual ~GeoModelBuilderTSolid() = default ;
 
     private:
         virtual void load_file() final ;
@@ -291,22 +282,22 @@ namespace RINGMesh {
          * GEO::NO_FACET.
          * @param[in] geomodel GeoModel to consider
          * @param[in] surface_id Index of the surface
-         * @param[in] surface_nns Pointers to the NNSearchs of surfaces
+         * @param[in] surface_nns Unique pointers to the NNSearchs of surfaces
          */
         void compute_surface_internal_borders(
             index_t surface_id,
-            const std::vector< NNSearch* >& surface_nns,
+            const std::vector< std::unique_ptr< NNSearch > >& surface_nns,
             const std::vector< Box3d >& surface_boxes ) ;
 
         /*!
          * @brief Computes the NNSearchs of the centers of facet edges for
          * each surface and their Box3d
          * @param[in] geomodel GeoModel to consider
-         * @param[out] surface_nns Pointers to the NNSearchs of surfaces
+         * @param[out] surface_nns Unique pointers to the NNSearchs of surfaces
          * @param[out] surface_boxes Bounding Box of surfaces
          */
         void compute_facet_edge_centers_nn_and_surface_boxes(
-            std::vector< NNSearch* >& surface_nns,
+            std::vector< std::unique_ptr< NNSearch > >& surface_nns,
             std::vector< Box3d >& surface_boxes ) ;
 
         /*!
@@ -334,10 +325,9 @@ namespace RINGMesh {
     class MLLineParser: public GocadBaseParser {
     ringmesh_disable_copy(MLLineParser) ;
     public:
-        MLLineParser()
-        {
-        }
-        static MLLineParser* create(
+        MLLineParser() = default ;
+
+        static std::unique_ptr< MLLineParser > create(
             const std::string& keyword,
             GeoModelBuilderML& gm_builder,
             GeoModel& geomodel ) ;
@@ -346,7 +336,6 @@ namespace RINGMesh {
             MLLoadingStorage& load_storage ) = 0 ;
     } ;
 
-    using MLLineParser_var = GEO::SmartPointer< MLLineParser > ;
     using MLLineParserFactory = GEO::Factory0< MLLineParser > ;
 #define ringmesh_register_MLLineParser_creator(type, name) \
      geo_register_creator(MLLineParserFactory, type, name)
@@ -360,9 +349,7 @@ namespace RINGMesh {
             : GeoModelBuilderGocad( geomodel, filename )
         {
         }
-        virtual ~GeoModelBuilderML()
-        {
-        }
+        virtual ~GeoModelBuilderML() = default ;
 
     private:
         /*!

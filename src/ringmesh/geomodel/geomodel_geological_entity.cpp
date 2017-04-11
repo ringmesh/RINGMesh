@@ -81,8 +81,7 @@ namespace RINGMesh {
     {
         bool valid = true ;
         if( nb_children() == 0 ) {
-            Logger::warn( "GeologicalEntity", gmge(),
-                " is undefined. No child. " ) ;
+            Logger::warn( "GeologicalEntity", gmge(), " is undefined. No child. " ) ;
             valid = false ;
         } else {
             // All children must have this entity as a parent
@@ -158,15 +157,15 @@ namespace RINGMesh {
         return check_has_children( *this ) ;
     }
 
-    GeoModelGeologicalEntity* GeoModelGeologicalEntityAccess::create_geological_entity(
+    std::unique_ptr< GeoModelGeologicalEntity > GeoModelGeologicalEntityAccess::create_geological_entity(
         const GeologicalEntityType& type,
         const GeoModel& geomodel,
         index_t index_in_geomodel )
     {
-        GeoModelGeologicalEntity* GMGE = GeoModelGeologicalEntityFactory::create_object(
-            type, geomodel ) ;
+        GeoModelGeologicalEntity* GMGE =
+            GeoModelGeologicalEntityFactory::create_object( type, geomodel ) ;
         GMGE->id_ = index_in_geomodel ;
-        return GMGE ;
+        return std::unique_ptr< GeoModelGeologicalEntity >( GMGE ) ;
     }
 
 }

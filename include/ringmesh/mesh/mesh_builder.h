@@ -37,6 +37,8 @@
 
 #include <ringmesh/basic/common.h>
 
+#include <memory>
+
 #include <geogram/mesh/mesh_repair.h>
 
 #include <ringmesh/mesh/mesh.h>
@@ -136,14 +138,13 @@ namespace RINGMesh {
         /*!@}
          */
 
-        static MeshBaseBuilder* create_builder( MeshBase& mesh ) ;
+        static std::unique_ptr< MeshBaseBuilder > create_builder( MeshBase& mesh ) ;
     protected:
         MeshBaseBuilder()
         {
         }
         virtual void set_mesh( MeshBase& mesh ) = 0 ;
     } ;
-    using MeshBaseBuilder_var = GEO::SmartPointer< MeshBaseBuilder > ;
     using MeshBaseBuilderFactory = GEO::Factory0< MeshBaseBuilder > ;
 #define ringmesh_register_mesh_base_builder(type) \
     geo_register_creator(RINGMesh::MeshBaseBuilderFactory, type ## Builder, type::type_name_static())
@@ -155,9 +156,10 @@ namespace RINGMesh {
         {
         }
 
+        using MeshBaseBuilder::set_mesh ;
         virtual void set_mesh( Mesh0D& mesh ) = 0 ;
 
-        static Mesh0DBuilder* create_builder( Mesh0D& mesh ) ;
+        static std::unique_ptr< Mesh0DBuilder > create_builder( Mesh0D& mesh ) ;
 
         virtual void remove_isolated_vertices()
         {
@@ -170,7 +172,6 @@ namespace RINGMesh {
         {
         }
     } ;
-    using Mesh0DBuilder_var = GEO::SmartPointer< Mesh0DBuilder > ;
     using Mesh0DBuilderFactory = GEO::Factory0< Mesh0DBuilder > ;
 #define ringmesh_register_mesh_0d_builder(type) \
     geo_register_creator(RINGMesh::Mesh0DBuilderFactory, type ## Builder, type::type_name_static())
@@ -182,9 +183,10 @@ namespace RINGMesh {
         {
         }
 
+        using MeshBaseBuilder::set_mesh;
         virtual void set_mesh( Mesh1D& mesh ) = 0 ;
 
-        static Mesh1DBuilder* create_builder( Mesh1D& mesh ) ;
+        static std::unique_ptr< Mesh1DBuilder > create_builder( Mesh1D& mesh ) ;
 
         /*!
          * @brief Create a new edge.
@@ -241,7 +243,6 @@ namespace RINGMesh {
         {
         }
     } ;
-    using Mesh1DBuilder_var = GEO::SmartPointer< Mesh1DBuilder > ;
     using Mesh1DBuilderFactory = GEO::Factory0< Mesh1DBuilder > ;
 #define ringmesh_register_mesh_1d_builder(type) \
     geo_register_creator(RINGMesh::Mesh1DBuilderFactory, type ## Builder, type::type_name_static())
@@ -253,9 +254,10 @@ namespace RINGMesh {
         {
         }
 
+        using MeshBaseBuilder::set_mesh;
         virtual void set_mesh( Mesh2D& mesh ) = 0 ;
 
-        static Mesh2DBuilder* create_builder( Mesh2D& mesh ) ;
+        static std::unique_ptr< Mesh2DBuilder > create_builder( Mesh2D& mesh ) ;
 
         /*!@}
          * \name Facet related methods
@@ -378,7 +380,6 @@ namespace RINGMesh {
         {
         }
     } ;
-    using Mesh2DBuilder_var = GEO::SmartPointer< Mesh2DBuilder > ;
     using Mesh2DBuilderFactory = GEO::Factory0< Mesh2DBuilder > ;
 #define ringmesh_register_mesh_2d_builder(type) \
     geo_register_creator(RINGMesh::Mesh2DBuilderFactory, type ## Builder, type::type_name_static())
@@ -390,9 +391,10 @@ namespace RINGMesh {
         {
         }
 
+        using MeshBaseBuilder::set_mesh;
         virtual void set_mesh( Mesh3D& mesh ) = 0 ;
 
-        static Mesh3DBuilder* create_builder( Mesh3D& mesh ) ;
+        static std::unique_ptr< Mesh3DBuilder > create_builder( Mesh3D& mesh ) ;
 
         /*!
          * @brief Creates a contiguous chunk of cells of the same type.
@@ -492,7 +494,6 @@ namespace RINGMesh {
         {
         }
     } ;
-    using Mesh3DBuilder_var = GEO::SmartPointer< Mesh3DBuilder > ;
     using Mesh3DBuilderFactory = GEO::Factory0< Mesh3DBuilder > ;
 #define ringmesh_register_mesh_3d_builder(type) \
     geo_register_creator(RINGMesh::Mesh3DBuilderFactory, type ## Builder, type::type_name_static())
