@@ -433,7 +433,7 @@ namespace RINGMesh {
                 if( nb_found_parents != 1 ) {
                     Logger::warn( "GeoModelEntity", gmme(), " has ",
                         nb_found_parents, " geological parent entity of type ",
-                        parent_type, "(expected one)" ) ;
+                        parent_type, " (expected one)" ) ;
                     valid = false ;
                 }
             }
@@ -444,7 +444,7 @@ namespace RINGMesh {
     bool GeoModelMeshEntity::is_connectivity_valid() const
     {
         return is_boundary_connectivity_valid()
-            && is_in_boundary_connectivity_valid() && is_parent_connectivity_valid() ;
+            && is_in_boundary_connectivity_valid() ;
     }
 
     const GeoModelGeologicalEntity& GeoModelMeshEntity::parent(

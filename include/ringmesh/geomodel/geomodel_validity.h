@@ -99,7 +99,10 @@ namespace RINGMesh {
      * @brief Check the connectivity of mesh entities
      */
     bool RINGMESH_API are_geomodel_mesh_entities_connectivity_valid(
-            const GeoModel& geomodel ) ;
+        const GeoModel& geomodel ) ;
+
+    bool RINGMESH_API are_geomodel_mesh_entities_parent_valid(
+        const GeoModel& geomodel ) ;
 
     bool RINGMESH_API are_geomodel_geological_entities_valid(
         const GeoModel& geomodel ) ;

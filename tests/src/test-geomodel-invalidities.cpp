@@ -53,16 +53,7 @@ int main()
     try {
         default_configure() ;
 
-        // Set an output log file
-        std::string log_file( ringmesh_test_output_path ) ;
-        log_file += "log.txt" ;
-        GEO::FileLogger* file_logger = new GEO::FileLogger( log_file ) ;
-        Logger::instance()->register_client( file_logger ) ;
-
         std::string input_model_file_name = ringmesh_test_data_path + "modelA6.ml" ;
-
-        Logger::out( "TEST", "Geomodel input. Loading file ",
-            input_model_file_name ) ;
 
         GeoModel in ;
         bool loaded_model_is_valid = geomodel_load( in, input_model_file_name ) ;
@@ -73,17 +64,36 @@ int main()
                     + ": the loaded model is not valid." ) ;
         }
 
+        Logger::out( "TEST", "Break geomodels:" ) ;
 
-        GeoModel invalid_model ;
-        GeoModelBuilder geomodel_copier( invalid_model ) ;
-        geomodel_copier.copy.copy_geomodel( in ) ;
-        geomodel_copier.info.set_geomodel_name( "broken model 1" ) ;
+        GeoModel invalid_model1 ;
+        GeoModelBuilder geomodel_breaker1( invalid_model1 ) ;
+        geomodel_breaker1.copy.copy_geomodel( in ) ;
+        geomodel_breaker1.info.set_geomodel_name( "broken model 1" ) ;
+        geomodel_breaker1.topology.add_mesh_entity_boundary(
+            invalid_model1.surface( 0 ).gmme(), 4 ) ;
+        bool broken_model1_is_valid = is_geomodel_valid( invalid_model1 ) ;
+        if( broken_model1_is_valid ) {
+            throw RINGMeshException( "RINGMesh Test",
+                "Failed to detect artificial added surface boundary" ) ;
+        } else {
+            Logger::out( "TEST", "Test 1: OK " ) ;
+        }
 
-        GeoModelBuilder geomodel_breaker( invalid_model ) ;
-        geomodel_breaker.topology.add_mesh_entity_boundary(
-            invalid_model.surface( 0 ).gmme(), 4 ) ;
-        bool broken_model_is_valid = is_geomodel_valid(invalid_model) ;
-        DEBUG(broken_model_is_valid) ;
+        GeoModel invalid_model2 ;
+        GeoModelBuilder geomodel_breaker2( invalid_model2 ) ;
+        geomodel_breaker2.copy.copy_geomodel( in ) ;
+        geomodel_breaker2.info.set_geomodel_name( "broken model 2" ) ;
+        geomodel_breaker2.geology.add_mesh_entity_parent(
+            invalid_model2.surface( 0 ).gmme(),
+            gmge_id( Interface::type_name_static(), 0 ) ) ;
+        bool broken_model2_is_valid = is_geomodel_valid( invalid_model2 ) ;
+        if( broken_model2_is_valid ) {
+            throw RINGMeshException( "RINGMesh Test",
+                "Failed to detect addition of incoherent parent" ) ;
+        } else {
+            Logger::out( "TEST", "Test 2: OK " ) ;
+        }
 
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category(), e.what() ) ;
