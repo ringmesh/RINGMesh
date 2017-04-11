@@ -288,6 +288,11 @@ namespace RINGMesh {
             const std::vector< index_t >& facets,
             const std::vector< index_t >& facet_ptr ) ;
 
+        void set_surface_element_geometry(
+            index_t surface_id,
+            index_t facet_id,
+            const std::vector< index_t >& corners ) ;
+
         void set_region_element_geometry(
             index_t region_id,
             index_t cell_id,
