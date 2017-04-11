@@ -146,9 +146,8 @@ namespace RINGMesh {
                 ROOT_INDEX, 0, nb_bboxes(), action ) ;
         }
     protected:
-        virtual ~AABBTree()
-        {
-        }
+        virtual ~AABBTree() = default ;
+
         /*!
          * @brief Builds the tree
          * @details Comptes the morton order and build the tree
@@ -251,9 +250,7 @@ namespace RINGMesh {
     class RINGMESH_API AABBTreeBox: public AABBTree {
     public:
         AABBTreeBox( const std::vector< Box3d >& boxes ) ;
-        virtual ~AABBTreeBox()
-        {
-        }
+        virtual ~AABBTreeBox() = default ;
 
     private:
         /*!
@@ -268,9 +265,7 @@ namespace RINGMesh {
     class RINGMESH_API AABBTree1D: public AABBTree {
     public:
         AABBTree1D( const Mesh1D& mesh ) ;
-        virtual ~AABBTree1D()
-        {
-        }
+        virtual ~AABBTree1D() = default ;
 
         /*!
          * @brief Gets the closest edge to a given point
@@ -319,9 +314,7 @@ namespace RINGMesh {
     class RINGMESH_API AABBTree2D: public AABBTree {
     public:
         AABBTree2D( const Mesh2D& mesh ) ;
-        virtual ~AABBTree2D()
-        {
-        }
+        virtual ~AABBTree2D() = default ;
 
         /*!
          * @brief Gets the closest triangle to a given point
@@ -371,9 +364,7 @@ namespace RINGMesh {
     class RINGMESH_API AABBTree3D: public AABBTree {
     public:
         AABBTree3D( const Mesh3D& mesh ) ;
-        virtual ~AABBTree3D()
-        {
-        }
+        virtual ~AABBTree3D() = default ;
 
         /*!
          * @brief Gets the cell contining a point

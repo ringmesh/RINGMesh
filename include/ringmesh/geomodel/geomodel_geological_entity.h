@@ -42,6 +42,8 @@
 
 #include <ringmesh/basic/common.h>
 
+#include <memory>
+
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
 #include <ringmesh/geomodel/geomodel_entity.h>
 
@@ -58,9 +60,7 @@ namespace RINGMesh {
 
         static void initialize() ;
 
-        virtual ~GeoModelGeologicalEntity()
-        {
-        }
+        virtual ~GeoModelGeologicalEntity() = default ;
 
         const gmge_id gmge() const
         {
@@ -126,9 +126,7 @@ namespace RINGMesh {
             : GeoModelGeologicalEntity( geomodel )
         {
         }
-        virtual ~Contact()
-        {
-        }
+        virtual ~Contact() = default ;
 
         static const GeologicalEntityType type_name_static()
         {
@@ -149,9 +147,7 @@ namespace RINGMesh {
             : GeoModelGeologicalEntity( geomodel )
         {
         }
-        virtual ~Interface()
-        {
-        }
+        virtual ~Interface() = default ;
 
         static const GeologicalEntityType type_name_static()
         {
@@ -172,9 +168,7 @@ namespace RINGMesh {
             : GeoModelGeologicalEntity( geomodel )
         {
         }
-        virtual ~Layer()
-        {
-        }
+        virtual ~Layer() = default ;
 
         static const GeologicalEntityType type_name_static()
         {
@@ -222,7 +216,7 @@ namespace RINGMesh {
             return gmge_.children_ ;
         }
 
-        static GeoModelGeologicalEntity* create_geological_entity(
+        static std::unique_ptr< GeoModelGeologicalEntity > create_geological_entity(
             const GeologicalEntityType& type,
             const GeoModel& geomodel,
             index_t index_in_geomodel ) ;

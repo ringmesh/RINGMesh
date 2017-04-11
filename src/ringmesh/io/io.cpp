@@ -60,22 +60,18 @@ namespace RINGMesh {
         std::ifstream lFile( f1.c_str() ) ;
         std::ifstream rFile( f2.c_str() ) ;
 
-        char* lBuffer = new char[MAX_LINE_LEN]() ;
-        char* rBuffer = new char[MAX_LINE_LEN]() ;
+        std::unique_ptr< char[] > lBuffer( new char[MAX_LINE_LEN]() ) ;
+        std::unique_ptr< char[] > rBuffer( new char[MAX_LINE_LEN]() ) ;
 
         do {
-            lFile.read( lBuffer, MAX_LINE_LEN ) ;
-            rFile.read( rBuffer, MAX_LINE_LEN ) ;
+            lFile.read( lBuffer.get(), MAX_LINE_LEN ) ;
+            rFile.read( rBuffer.get(), MAX_LINE_LEN ) ;
             size_t numberOfRead = static_cast< size_t >( lFile.gcount() ) ;
 
-            if( std::memcmp( lBuffer, rBuffer, numberOfRead ) != 0 ) {
-                delete[] lBuffer ;
-                delete[] rBuffer ;
+            if( std::memcmp( lBuffer.get(), rBuffer.get(), numberOfRead ) != 0 ) {
                 return false ;
             }
         } while( lFile.good() || rFile.good() ) ;
-        delete[] lBuffer ;
-        delete[] rBuffer ;
         return true ;
     }
 
@@ -159,10 +155,10 @@ namespace RINGMesh {
         return handler ;
     }
 
-    GeoModelIOHandler* GeoModelIOHandler::get_handler( const std::string& filename )
+    std::unique_ptr< GeoModelIOHandler > GeoModelIOHandler::get_handler( const std::string& filename )
     {
         std::string ext = GEO::FileSystem::extension( filename ) ;
-        return create( ext ) ;
+        return std::unique_ptr< GeoModelIOHandler >( create( ext ) ) ;
     }
 
 }

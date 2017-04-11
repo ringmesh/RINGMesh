@@ -301,10 +301,10 @@ namespace RINGMesh {
             return mesh_ != nullptr ;
         }
 
-        void set_mesh( MeshBase* mesh )
+        void set_mesh( std::shared_ptr< MeshBase > mesh )
         {
             ringmesh_assert( mesh != nullptr ) ;
-            mesh_ = mesh ;
+            mesh_ = std::move( mesh ) ;
         }
 
         /*!
@@ -349,7 +349,7 @@ namespace RINGMesh {
 
     private:
         /// The RINGMesh::Mesh giving the geometry of this entity
-        MeshBase* mesh_ ;
+        std::shared_ptr< MeshBase > mesh_ ;
     } ;
 
     /*!
@@ -438,7 +438,6 @@ namespace RINGMesh {
 
         {
             update_mesh_storage_type( Mesh0D::create_mesh( type ) ) ;
-            Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder( *mesh0d_ ) ;
         }
 
         /*!
@@ -460,16 +459,16 @@ namespace RINGMesh {
 
     private:
 
-        void update_mesh_storage_type( Mesh0D* mesh )
+        void update_mesh_storage_type( std::unique_ptr< Mesh0D > mesh )
         {
-            mesh0d_ = mesh ;
+            mesh0d_ = std::move( mesh ) ;
             GeoModelMeshEntity::set_mesh( mesh0d_ ) ;
         }
 
         virtual void change_mesh_data_structure( const MeshType type ) override ;
 
     private:
-        Mesh0D* mesh0d_ ;
+        std::shared_ptr< Mesh0D > mesh0d_ ;
     } ;
 
     /*!
@@ -610,16 +609,16 @@ namespace RINGMesh {
         virtual bool is_mesh_valid() const final ;
 
     private:
-        void update_mesh_storage_type( Mesh1D* mesh )
+        void update_mesh_storage_type( std::unique_ptr< Mesh1D > mesh )
         {
-            mesh1d_ = mesh ;
+            mesh1d_ = std::move( mesh ) ;
             GeoModelMeshEntity::set_mesh( mesh1d_ ) ;
         }
 
         virtual void change_mesh_data_structure( const MeshType type ) override ;
 
     private:
-        Mesh1D* mesh1d_ ;
+        std::shared_ptr< Mesh1D > mesh1d_ ;
     } ;
 
     /*!
@@ -948,15 +947,15 @@ namespace RINGMesh {
         virtual bool is_mesh_valid() const final ;
 
     private:
-        void update_mesh_storage_type( Mesh2D* mesh )
+        void update_mesh_storage_type( std::unique_ptr< Mesh2D > mesh )
         {
-            mesh2d_ = mesh ;
+            mesh2d_ = std::move( mesh ) ;
             GeoModelMeshEntity::set_mesh( mesh2d_ ) ;
         }
 
         virtual void change_mesh_data_structure( const MeshType type ) override ;
     private:
-        Mesh2D* mesh2d_ ;
+        std::shared_ptr< Mesh2D > mesh2d_ ;
     } ;
 
     /*!
@@ -1285,9 +1284,9 @@ namespace RINGMesh {
         virtual bool is_mesh_valid() const final ;
 
     private:
-        void update_mesh_storage_type( Mesh3D* mesh )
+        void update_mesh_storage_type( std::unique_ptr< Mesh3D > mesh )
         {
-            mesh3d_ = mesh ;
+            mesh3d_ = std::move( mesh ) ;
             GeoModelMeshEntity::set_mesh( mesh3d_ ) ;
         }
 
@@ -1300,7 +1299,7 @@ namespace RINGMesh {
          */
         std::vector< bool > sides_ ;
     private:
-        Mesh3D* mesh3d_ ;
+        std::shared_ptr< Mesh3D > mesh3d_ ;
     } ;
 
     class GeoModelMeshEntityConstAccess {
@@ -1313,7 +1312,7 @@ namespace RINGMesh {
         {
         }
 
-        const MeshBase* mesh() const
+        const std::shared_ptr< MeshBase >& mesh() const
         {
             return gmme_.mesh_ ;
         }
@@ -1372,7 +1371,7 @@ namespace RINGMesh {
             return gmme_.parents_ ;
         }
 
-        MeshBase* modifiable_mesh()
+        std::shared_ptr< MeshBase >& modifiable_mesh()
         {
             return gmme_.mesh_ ;
         }
@@ -1385,12 +1384,12 @@ namespace RINGMesh {
         void change_mesh_data_structure( const MeshType type ) ;
 
         template< typename ENTITY >
-        static ENTITY* create_entity(
+        static std::unique_ptr< ENTITY > create_entity(
             const GeoModel& geomodel,
             index_t id,
             const MeshType type )
         {
-            return new ENTITY( geomodel, id, type ) ;
+            return std::unique_ptr< ENTITY >( new ENTITY( geomodel, id, type ) ) ;
         }
 
     private:

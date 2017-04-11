@@ -284,8 +284,7 @@ namespace RINGMesh {
 
                     // Merge gme_vertices information
                     if( std::find( gme_vertices_[new_m_id].begin(),
-                        gme_vertices_[new_m_id].end(),
-                        GMEVertex( E.gmme(), v ) )
+                        gme_vertices_[new_m_id].end(), GMEVertex( E.gmme(), v ) )
                         == gme_vertices_[new_m_id].end() ) {
                         gme_vertices_[new_m_id].push_back(
                             GMEVertex( E.gmme(), v ) ) ;
@@ -377,7 +376,7 @@ namespace RINGMesh {
             mesh_( new GeogramMesh0D ),
             vertex_mapper_( *this, gmm.geomodel() )
     {
-        set_mesh( mesh_ ) ;
+        set_mesh( mesh_.get() ) ;
     }
 
     GeoModelMeshVertices::~GeoModelMeshVertices()
@@ -412,7 +411,8 @@ namespace RINGMesh {
         const MeshEntityType& entity_type,
         index_t& count )
     {
-        Mesh0DBuilder_var mesh_builder = Mesh0DBuilder::create_builder( *mesh_ ) ;
+        std::unique_ptr< Mesh0DBuilder > mesh_builder =
+            Mesh0DBuilder::create_builder( *mesh_ ) ;
         for( index_t i = 0; i < M.nb_mesh_entities( entity_type ); ++i ) {
             GeoModelMeshEntity& E = const_cast< GeoModelMeshEntity& >( M.mesh_entity(
                 entity_type, i ) ) ;
@@ -435,7 +435,8 @@ namespace RINGMesh {
 
     void GeoModelMeshVertices::initialize()
     {
-        Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder( *mesh_ ) ;
+        std::unique_ptr< Mesh0DBuilder > builder = Mesh0DBuilder::create_builder(
+            *mesh_ ) ;
         builder->clear( true, false ) ;
 
         // Total number of vertices in the
@@ -473,7 +474,8 @@ namespace RINGMesh {
         gmm_.edges.clear() ;
         vertex_mapper_.clear() ;
 
-        Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder( *mesh_ ) ;
+        std::unique_ptr< Mesh0DBuilder > builder = Mesh0DBuilder::create_builder(
+            *mesh_ ) ;
         builder->clear_vertices( true, false ) ;
     }
 
@@ -567,7 +569,8 @@ namespace RINGMesh {
 
     index_t GeoModelMeshVertices::add_vertex( const vec3& point )
     {
-        Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder( *mesh_ ) ;
+        std::unique_ptr< Mesh0DBuilder > builder = Mesh0DBuilder::create_builder(
+            *mesh_ ) ;
         const index_t index = builder->create_vertex( point ) ;
         vertex_mapper_.resize_geomodel_vertex_gmes( nb() ) ;
         return index ;
@@ -576,7 +579,8 @@ namespace RINGMesh {
     index_t GeoModelMeshVertices::add_vertices( const std::vector< vec3 >& points )
     {
         ringmesh_assert( !points.empty() ) ;
-        Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder( *mesh_ ) ;
+        std::unique_ptr< Mesh0DBuilder > builder = Mesh0DBuilder::create_builder(
+            *mesh_ ) ;
         const index_t start_index = builder->create_vertex( points[0] ) ;
         for( size_t i = 1; i < points.size(); ++i ) {
             builder->create_vertex( points[i] ) ;
@@ -590,7 +594,8 @@ namespace RINGMesh {
         test_and_initialize() ;
         ringmesh_assert( v < nb() ) ;
         // Change the position of the unique_vertex
-        Mesh0DBuilder_var mesh_builder = Mesh0DBuilder::create_builder( *mesh_ ) ;
+        std::unique_ptr< Mesh0DBuilder > mesh_builder =
+            Mesh0DBuilder::create_builder( *mesh_ ) ;
         mesh_builder->set_vertex( v, point ) ;
 
         GeoModelBuilder builder( gm_ ) ;
@@ -598,8 +603,8 @@ namespace RINGMesh {
         std::vector< GMEVertex > gme_v ;
         gme_vertices( v, gme_v ) ;
         for( const GMEVertex& info : gme_v ) {
-            builder.geometry.set_mesh_entity_vertex( info.gmme, info.v_index,
-                point, false ) ;
+            builder.geometry.set_mesh_entity_vertex( info.gmme, info.v_index, point,
+                false ) ;
         }
     }
 
@@ -674,7 +679,8 @@ namespace RINGMesh {
 
         // Delete the vertices - false is to not remove
         // isolated vertices (here all the vertices)
-        Mesh0DBuilder_var builder = Mesh0DBuilder::create_builder( *mesh_ ) ;
+        std::unique_ptr< Mesh0DBuilder > builder = Mesh0DBuilder::create_builder(
+            *mesh_ ) ;
         builder->delete_vertices( to_delete_bool ) ;
 
         vertex_mapper_.update_mesh_entity_maps_and_gmes( to_delete ) ;
@@ -693,7 +699,7 @@ namespace RINGMesh {
             nb_connector_( 0 ),
             mode_( NONE )
     {
-        set_mesh( mesh_ ) ;
+        set_mesh( mesh_.get() ) ;
     }
 
     bool GeoModelMeshCells::is_initialized() const
@@ -711,8 +717,9 @@ namespace RINGMesh {
     void GeoModelMeshCells::initialize()
     {
         gmm_.vertices.test_and_initialize() ;
-        Mesh3DBuilder_var mesh_builder = Mesh3DBuilder::create_builder( *mesh_ ) ;
-        copy_vertices( mesh_builder, *gmm_.vertices.mesh_ ) ;
+        std::unique_ptr< Mesh3DBuilder > mesh_builder =
+            Mesh3DBuilder::create_builder( *mesh_ ) ;
+        copy_vertices( mesh_builder.get(), *gmm_.vertices.mesh_ ) ;
 
         region_cell_ptr_.resize( gm_.nb_regions() * GEO::MESH_NB_CELL_TYPES + 1,
             0 ) ;
@@ -1260,8 +1267,8 @@ namespace RINGMesh {
 
                     // Update all the cell corners on this side of the surface
                     // to the new duplicated vertex index
-                    Mesh3DBuilder_var mesh_builder = Mesh3DBuilder::create_builder(
-                        *mesh_ ) ;
+                    std::unique_ptr< Mesh3DBuilder > mesh_builder =
+                        Mesh3DBuilder::create_builder( *mesh_ ) ;
                     for( index_t cur_co : corner_used ) {
                         mesh_builder->set_cell_corner_vertex_index( cur_co,
                             duplicated_vertex_id ) ;
@@ -1387,7 +1394,8 @@ namespace RINGMesh {
 
     void GeoModelMeshCells::clear()
     {
-        Mesh3DBuilder_var mesh_builder = Mesh3DBuilder::create_builder( *mesh_ ) ;
+        std::unique_ptr< Mesh3DBuilder > mesh_builder =
+            Mesh3DBuilder::create_builder( *mesh_ ) ;
         mesh_builder->clear_cells( true, false ) ;
         region_cell_ptr_.clear() ;
         nb_tet_ = 0 ;
@@ -1402,7 +1410,8 @@ namespace RINGMesh {
 
     void GeoModelMeshCells::clear_duplication()
     {
-        Mesh3DBuilder_var mesh_builder = Mesh3DBuilder::create_builder( *mesh_ ) ;
+        std::unique_ptr< Mesh3DBuilder > mesh_builder =
+            Mesh3DBuilder::create_builder( *mesh_ ) ;
         for( index_t c = 0; c < mesh_->nb_cells(); c++ ) {
             for( index_t v = 0; v < mesh_->nb_cell_vertices( c ); v++ ) {
                 index_t index = NO_ID ;
@@ -1473,7 +1482,7 @@ namespace RINGMesh {
             nb_quad_( 0 ),
             nb_polygon_( 0 )
     {
-        set_mesh( mesh_ ) ;
+        set_mesh( mesh_.get() ) ;
     }
 
     GeoModelMeshFacets::~GeoModelMeshFacets()
@@ -1697,7 +1706,8 @@ namespace RINGMesh {
         surface_facet_ptr_.clear() ;
         nb_triangle_ = 0 ;
         nb_quad_ = 0 ;
-        Mesh2DBuilder_var mesh_builder = Mesh2DBuilder::create_builder( *mesh_ ) ;
+        std::unique_ptr< Mesh2DBuilder > mesh_builder =
+            Mesh2DBuilder::create_builder( *mesh_ ) ;
         mesh_builder->clear_facets( true, false ) ;
     }
 
@@ -1713,8 +1723,9 @@ namespace RINGMesh {
         gmm_.vertices.test_and_initialize() ;
         clear() ;
         surface_facet_ptr_.resize( gm_.nb_surfaces() * ALL + 1, 0 ) ;
-        Mesh2DBuilder_var mesh_builder = Mesh2DBuilder::create_builder( *mesh_ ) ;
-        copy_vertices( mesh_builder, *gmm_.vertices.mesh_ ) ;
+        std::unique_ptr< Mesh2DBuilder > mesh_builder =
+            Mesh2DBuilder::create_builder( *mesh_ ) ;
+        copy_vertices( mesh_builder.get(), *gmm_.vertices.mesh_ ) ;
 
         // Compute the total number of facets per type and per surface
         std::vector< index_t > nb_facet_per_type( ALL, 0 ) ;
@@ -1827,7 +1838,8 @@ namespace RINGMesh {
 
     void GeoModelMeshFacets::disconnect_along_lines()
     {
-        Mesh2DBuilder_var mesh_builder = Mesh2DBuilder::create_builder( *mesh_ ) ;
+        std::unique_ptr< Mesh2DBuilder > mesh_builder =
+            Mesh2DBuilder::create_builder( *mesh_ ) ;
         for( index_t s = 0; s < gm_.nb_surfaces(); s++ ) {
             const Surface& surface = gm_.surface( s ) ;
             for( index_t f = 0; f < nb_facets( s ); f++ ) {
@@ -1872,7 +1884,7 @@ namespace RINGMesh {
     GeoModelMeshEdges::GeoModelMeshEdges( GeoModelMesh& gmm, GeoModel& gm )
         : GeoModelMeshBase( gmm, gm ), mesh_( new GeogramMesh1D )
     {
-        set_mesh( mesh_ ) ;
+        set_mesh( mesh_.get() ) ;
     }
 
     GeoModelMeshEdges::~GeoModelMeshEdges()
@@ -1905,7 +1917,8 @@ namespace RINGMesh {
 
     void GeoModelMeshEdges::clear()
     {
-        Mesh1DBuilder_var mesh_builder = Mesh1DBuilder::create_builder( *mesh_ ) ;
+        std::unique_ptr< Mesh1DBuilder > mesh_builder =
+            Mesh1DBuilder::create_builder( *mesh_ ) ;
         mesh_builder->clear_edges( true, false ) ;
         well_ptr_.clear() ;
     }
@@ -1927,8 +1940,9 @@ namespace RINGMesh {
         if( !gm_.wells() ) return ;
         gmm_.vertices.test_and_initialize() ;
         clear() ;
-        Mesh1DBuilder_var mesh_builder = Mesh1DBuilder::create_builder( *mesh_ ) ;
-        copy_vertices( mesh_builder, *gmm_.vertices.mesh_ ) ;
+        std::unique_ptr< Mesh1DBuilder > mesh_builder =
+            Mesh1DBuilder::create_builder( *mesh_ ) ;
+        copy_vertices( mesh_builder.get(), *gmm_.vertices.mesh_ ) ;
 
         // Compute the total number of edge per well
         const WellGroup& wells = *gm_.wells() ;

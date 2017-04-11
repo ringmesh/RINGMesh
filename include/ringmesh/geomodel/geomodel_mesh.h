@@ -37,6 +37,8 @@
 
 #include <ringmesh/basic/common.h>
 
+#include <memory>
+
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
 #include <ringmesh/geomodel/entity_type_manager.h>
 
@@ -472,7 +474,7 @@ namespace RINGMesh {
 
     private:
         /// Attached Mesh
-        Mesh0D_var mesh_ ;
+        std::unique_ptr< Mesh0D > mesh_ ;
         /// Mapper from/to GeoModelMeshEntity vertices
         GeoModelVertexMapper vertex_mapper_ ;
     } ;
@@ -703,7 +705,7 @@ namespace RINGMesh {
 
     private:
         /// Attached Mesh
-        Mesh2D_var mesh_ ;
+        std::unique_ptr< Mesh2D > mesh_ ;
 
         /// Attribute storing the surface index per facet
         GEO::Attribute< index_t > surface_id_ ;
@@ -788,7 +790,7 @@ namespace RINGMesh {
 
     private:
         /// Attached Mesh
-        Mesh1D_var mesh_ ;
+        std::unique_ptr< Mesh1D > mesh_ ;
 
         /*!
          * Vector storing the index of the starting edge index
@@ -1209,7 +1211,7 @@ namespace RINGMesh {
 
     private:
         /// Attached Mesh
-        Mesh3D_var mesh_ ;
+        std::unique_ptr< Mesh3D > mesh_ ;
 
         /// Attribute storing the region index per cell
         GEO::Attribute< index_t > region_id_ ;

@@ -37,6 +37,8 @@
 
 #include <ringmesh/basic/common.h>
 
+#include <memory>
+
 #include <geogram/basic/attributes.h>
 
 #include <geogram/mesh/mesh.h>
@@ -56,7 +58,7 @@ namespace RINGMesh {
 
 namespace RINGMesh {
 
-    typedef std::string MeshType ;
+    using MeshType = std::string ;
 
     /*!
      * class base class for encapsulating Mesh structure
@@ -69,8 +71,7 @@ namespace RINGMesh {
         friend class MeshBaseBuilder ;
 
     public:
-
-        virtual ~MeshBase() ;
+        virtual ~MeshBase() = default ;
 
         virtual void save_mesh( const std::string& filename ) const = 0 ;
 
@@ -105,14 +106,14 @@ namespace RINGMesh {
          */
         const NNSearch& vertices_nn_search() const
         {
-            if( vertices_nn_search_ == nullptr ) {
+            if( !vertices_nn_search_ ) {
                 std::vector< vec3 > vec_vertices( nb_vertices() ) ;
                 for( index_t v = 0; v < nb_vertices(); ++v ) {
                     vec_vertices[v] = vertex( v ) ;
                 }
-                vertices_nn_search_ = new NNSearch( vec_vertices, true ) ;
+                vertices_nn_search_.reset( new NNSearch( vec_vertices, true ) ) ;
             }
-            return *vertices_nn_search_ ;
+            return *vertices_nn_search_.get() ;
         }
 
         virtual MeshType type_name() const = 0 ;
@@ -129,13 +130,10 @@ namespace RINGMesh {
          * @param[in] single_precision if true, vertices are stored in single precision (float),
          * else they are stored as double precision (double)..
          */
-        MeshBase()
-            : vertices_nn_search_( nullptr )
-        {
-        }
+        MeshBase() = default ;
 
     protected:
-        mutable NNSearch* vertices_nn_search_ ;
+        mutable std::unique_ptr< NNSearch > vertices_nn_search_ ;
     } ;
 
     /*!
@@ -146,22 +144,16 @@ namespace RINGMesh {
         friend class Mesh0DBuilder ;
 
     public:
-        virtual ~Mesh0D()
-        {
-        }
+        virtual ~Mesh0D() = default ;
 
-        static Mesh0D* create_mesh( const MeshType type ) ;
+        static std::unique_ptr< Mesh0D > create_mesh( const MeshType type ) ;
     protected:
         /*!
          * @brief Mesh0D constructor.
          */
-        Mesh0D()
-            : MeshBase()
-        {
-        }
+        Mesh0D() = default ;
     } ;
-    typedef GEO::SmartPointer< Mesh0D > Mesh0D_var ;
-    typedef GEO::Factory0< Mesh0D > Mesh0DFactory ;
+    using Mesh0DFactory = GEO::Factory0< Mesh0D > ;
 #define ringmesh_register_mesh_0d(type) \
     geo_register_creator(RINGMesh::Mesh0DFactory, type, type::type_name_static())
 
@@ -174,13 +166,9 @@ namespace RINGMesh {
         friend class GeogramMeshBuilder ;
 
     public:
-        virtual ~Mesh1D()
-        {
-            if( edges_nn_search_ != nullptr ) delete edges_nn_search_ ;
-            if( edges_aabb_ != nullptr ) delete edges_aabb_ ;
-        }
+        virtual ~Mesh1D() = default ;
 
-        static Mesh1D* create_mesh( const MeshType type ) ;
+        static std::unique_ptr< Mesh1D > create_mesh( const MeshType type ) ;
 
         /*
          * @brief Gets the index of an edge vertex.
@@ -218,39 +206,35 @@ namespace RINGMesh {
          */
         const NNSearch& edges_nn_search() const
         {
-            if( edges_nn_search_ == nullptr ) {
+            if( !edges_nn_search_ ) {
                 std::vector< vec3 > edge_centers( nb_edges() ) ;
                 for( index_t e = 0; e < nb_edges(); ++e ) {
                     edge_centers[e] = edge_barycenter( e ) ;
                 }
-                edges_nn_search_ = new NNSearch( edge_centers, true ) ;
+                edges_nn_search_.reset( new NNSearch( edge_centers, true ) ) ;
             }
-            return *edges_nn_search_ ;
+            return *edges_nn_search_.get() ;
         }
         /*!
          * @brief Creates an AABB tree for a Mesh edges
          */
         const AABBTree1D& edges_aabb() const
         {
-            if( edges_aabb_ == nullptr ) {
-                edges_aabb_ = new AABBTree1D( *this ) ;
+            if( !edges_aabb_ ) {
+                edges_aabb_.reset( new AABBTree1D( *this ) ) ;
             }
-            return *edges_aabb_ ;
+            return *edges_aabb_.get() ;
         }
 
         virtual GEO::AttributesManager& edge_attribute_manager() const = 0 ;
     protected:
-        Mesh1D()
-            : MeshBase(), edges_nn_search_( nullptr ), edges_aabb_( nullptr )
-        {
-        }
+        Mesh1D() = default ;
 
     protected:
-        mutable NNSearch* edges_nn_search_ ;
-        mutable AABBTree1D* edges_aabb_ ;
+        mutable std::unique_ptr< NNSearch > edges_nn_search_ ;
+        mutable std::unique_ptr< AABBTree1D > edges_aabb_ ;
     } ;
-    typedef GEO::SmartPointer< Mesh1D > Mesh1D_var ;
-    typedef GEO::Factory0< Mesh1D > Mesh1DFactory ;
+    using Mesh1DFactory = GEO::Factory0< Mesh1D > ;
 #define ringmesh_register_mesh_1d(type) \
     geo_register_creator(RINGMesh::Mesh1DFactory, type, type::type_name_static())
 
@@ -262,13 +246,9 @@ namespace RINGMesh {
         friend class Mesh2DBuilder ;
 
     public:
-        virtual ~Mesh2D()
-        {
-            if( nn_search_ != nullptr ) delete nn_search_ ;
-            if( facets_aabb_ != nullptr ) delete facets_aabb_ ;
-        }
+        virtual ~Mesh2D() = default ;
 
-        static Mesh2D* create_mesh( const MeshType type ) ;
+        static std::unique_ptr< Mesh2D > create_mesh( const MeshType type ) ;
 
         /*!
          * @brief Gets the vertex index by facet index and local vertex index.
@@ -571,37 +551,33 @@ namespace RINGMesh {
          */
         const NNSearch& facets_nn_search() const
         {
-            if( nn_search_ == nullptr ) {
+            if( !nn_search_ ) {
                 std::vector< vec3 > facet_centers( nb_facets() ) ;
                 for( index_t f = 0; f < nb_facets(); ++f ) {
                     facet_centers[f] = facet_barycenter( f ) ;
                 }
-                nn_search_ = new NNSearch( facet_centers, true ) ;
+                nn_search_.reset( new NNSearch( facet_centers, true ) ) ;
             }
-            return *nn_search_ ;
+            return *nn_search_.get() ;
         }
         /*!
          * @brief Creates an AABB tree for a Mesh facets
          */
         const AABBTree2D& facets_aabb() const
         {
-            if( facets_aabb_ == nullptr ) {
-                facets_aabb_ = new AABBTree2D( *this ) ;
+            if( !facets_aabb_ ) {
+                facets_aabb_.reset( new AABBTree2D( *this ) ) ;
             }
             return *facets_aabb_ ;
         }
     protected:
-        Mesh2D()
-            : MeshBase(), nn_search_( nullptr ), facets_aabb_( nullptr )
-        {
-        }
+        Mesh2D() = default ;
 
     protected:
-        mutable NNSearch* nn_search_ ;
-        mutable AABBTree2D* facets_aabb_ ;
+        mutable std::unique_ptr< NNSearch > nn_search_ ;
+        mutable std::unique_ptr< AABBTree2D > facets_aabb_ ;
     } ;
-    typedef GEO::SmartPointer< Mesh2D > Mesh2D_var ;
-    typedef GEO::Factory0< Mesh2D > Mesh2DFactory ;
+    using Mesh2DFactory = GEO::Factory0< Mesh2D > ;
 #define ringmesh_register_mesh_2d(type) \
     geo_register_creator(RINGMesh::Mesh2DFactory, type, type::type_name_static())
 
@@ -613,14 +589,9 @@ namespace RINGMesh {
         friend class Mesh3DBuilder ;
 
     public:
-        virtual ~Mesh3D()
-        {
-            if( cell_facets_nn_search_ != nullptr ) delete cell_facets_nn_search_ ;
-            if( cell_nn_search_ != nullptr ) delete cell_nn_search_ ;
-            if( cell_aabb_ != nullptr ) delete cell_aabb_ ;
-        }
+        virtual ~Mesh3D() = default ;
 
-        static Mesh3D* create_mesh( const MeshType type ) ;
+        static std::unique_ptr< Mesh3D > create_mesh( const MeshType type ) ;
 
         /*!
          * @brief Gets a vertex index by cell and local vertex index.
@@ -828,7 +799,7 @@ namespace RINGMesh {
          */
         const NNSearch& cell_facets_nn_search() const
         {
-            if( cell_facets_nn_search_ == nullptr ) {
+            if( !cell_facets_nn_search_ ) {
                 std::vector< vec3 > cell_facet_centers( nb_cell_facets() ) ;
                 index_t cf = 0 ;
                 for( index_t c = 0; c < nb_cells(); ++c ) {
@@ -837,51 +808,44 @@ namespace RINGMesh {
                         ++cf ;
                     }
                 }
-                cell_facets_nn_search_ = new NNSearch( cell_facet_centers, true ) ;
+                cell_facets_nn_search_.reset(
+                    new NNSearch( cell_facet_centers, true ) ) ;
             }
-            return *cell_facets_nn_search_ ;
+            return *cell_facets_nn_search_.get() ;
         }
         /*!
          * @brief return the NNSearch at cells
          */
         const NNSearch& cells_nn_search() const
         {
-            if( cell_nn_search_ == nullptr ) {
+            if( !cell_nn_search_ ) {
                 std::vector< vec3 > cell_centers( nb_cells() ) ;
                 for( index_t c = 0; c < nb_cells(); ++c ) {
                     cell_centers[c] = cell_barycenter( c ) ;
                 }
-                cell_nn_search_ = new NNSearch( cell_centers, true ) ;
+                cell_nn_search_.reset( new NNSearch( cell_centers, true ) ) ;
             }
-            return *cell_nn_search_ ;
+            return *cell_nn_search_.get() ;
         }
         /*!
          * @brief Creates an AABB tree for a Mesh cells
          */
         const AABBTree3D& cells_aabb() const
         {
-            if( cell_aabb_ == nullptr ) {
-                cell_aabb_ = new AABBTree3D( *this ) ;
+            if( !cell_aabb_ ) {
+                cell_aabb_.reset( new AABBTree3D( *this ) ) ;
             }
-            return *cell_aabb_ ;
+            return *cell_aabb_.get() ;
         }
     protected:
-        Mesh3D()
-            :
-                MeshBase(),
-                cell_facets_nn_search_( nullptr ),
-                cell_nn_search_( nullptr ),
-                cell_aabb_( nullptr )
-        {
-        }
+        Mesh3D() = default ;
 
     protected:
-        mutable NNSearch* cell_facets_nn_search_ ;
-        mutable NNSearch* cell_nn_search_ ;
-        mutable AABBTree3D* cell_aabb_ ;
+        mutable std::unique_ptr< NNSearch > cell_facets_nn_search_ ;
+        mutable std::unique_ptr< NNSearch > cell_nn_search_ ;
+        mutable std::unique_ptr< AABBTree3D > cell_aabb_ ;
     } ;
-    typedef GEO::SmartPointer< Mesh3D > Mesh3D_var ;
-    typedef GEO::Factory0< Mesh3D > Mesh3DFactory ;
+    using Mesh3DFactory = GEO::Factory0< Mesh3D > ;
 #define ringmesh_register_mesh_3d(type) \
     geo_register_creator(RINGMesh::Mesh3DFactory, type, type::type_name_static())
 

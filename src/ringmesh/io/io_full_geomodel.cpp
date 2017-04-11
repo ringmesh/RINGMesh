@@ -80,7 +80,8 @@ namespace RINGMesh {
         }
         Logger::out( "I/O", "Loading file ", filename, "..." ) ;
 
-        GeoModelIOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
+        std::unique_ptr< GeoModelIOHandler > handler(
+            GeoModelIOHandler::get_handler( filename ) ) ;
         return handler->load( filename, geomodel ) ;
     }
 
@@ -88,7 +89,8 @@ namespace RINGMesh {
     {
         Logger::out( "I/O", "Saving file ", filename, "..." ) ;
 
-        GeoModelIOHandler_var handler = GeoModelIOHandler::get_handler( filename ) ;
+        std::unique_ptr< GeoModelIOHandler > handler(
+            GeoModelIOHandler::get_handler( filename ) ) ;
         handler->save( geomodel, filename ) ;
     }
 
