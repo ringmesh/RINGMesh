@@ -881,7 +881,7 @@ namespace {
             }
             virtual void run() final
             {
-                if( !are_geomodel_mesh_entities_valid( validity_.geomodel_ ) ) {
+                if( !are_geomodel_mesh_entities_mesh_valid( validity_.geomodel_ ) ) {
                     validity_.set_invalid_model() ;
                 }
             }
@@ -1133,7 +1133,7 @@ namespace RINGMesh {
         }
     }
 
-    bool are_geomodel_mesh_entities_valid( const GeoModel& geomodel )
+    bool are_geomodel_mesh_entities_mesh_valid( const GeoModel& geomodel )
     {
         const std::vector< MeshEntityType >& meshed_types =
             MeshEntityTypeManager::mesh_entity_types() ;
