@@ -392,12 +392,11 @@ namespace RINGMesh {
 
     bool GeoModelMeshEntity::is_parent_connectivity_valid() const
     {
-        bool valid = true ;
-
         const RelationshipManager& family =
             geomodel().entity_type_manager().relationship_manager ;
         const MeshEntityType entity_type = type_name() ;
 
+        bool valid = true ;
         const std::vector< GeologicalEntityType > parent_types = family.parent_types(
             entity_type ) ;
         for( const GeologicalEntityType& parent_type : parent_types ) {

@@ -818,9 +818,9 @@ namespace {
             const ValidityCheckMode validity_check_mode )
             : geomodel_( geomodel ), valid_( true ), mode_( validity_check_mode )
         {
-            if( mode_ == UNDEFINED ) {
+            if( mode_ == ValidityCheckMode::UNDEFINED ) {
                 // If not defined, reset the check mode to the largest possible
-                mode_ = ALL ;
+                mode_ = ValidityCheckMode::ALL ;
             }
             // Ensure that the geomodel vertices are computed and up-to-date
             // Without that we cannot do anything        
@@ -829,16 +829,11 @@ namespace {
         }
 
         /*!
-         * @brief Run the geomodel validity check with the specified mode. If no mode
-         * is given, the object mode is used by default.
+         * @brief Run the geomodel validity check in accordance to the defined mode.
          */
-        bool is_geomodel_valid( const ValidityCheckMode specified_mode = UNDEFINED )
+        bool is_geomodel_valid()
         {
-            if( specified_mode != UNDEFINED ) {
-                do_check_validity( specified_mode ) ;
-            } else {
-                do_check_validity( mode_ ) ;
-            }
+            do_check_validity( mode_ ) ;
             return valid_ ;
         }
 
@@ -846,10 +841,11 @@ namespace {
         void do_check_validity( ValidityCheckMode mode )
         {
             GEO::ThreadGroup threads ;
-            if( mode == GEOMETRY || mode == ALL ) {
+            if( mode == ValidityCheckMode::GEOMETRY
+                || mode == ValidityCheckMode::ALL ) {
                 threads.push_back( new TestFacetIntersections( *this ) ) ;
             }
-            if( mode != TOPOLOGY ) {
+            if( mode != ValidityCheckMode::TOPOLOGY ) {
                 // Add geometrical validity check
                 threads.push_back( new TestGeomodelMeshEntitiesValidity( *this ) ) ;
                 threads.push_back(
@@ -857,7 +853,7 @@ namespace {
                 threads.push_back( new TestNonManifoldEdges( *this ) ) ;
 
             }
-            if( mode != GEOMETRY ) {
+            if( mode != ValidityCheckMode::GEOMETRY ) {
                 // Add topological validity check
                 threads.push_back( new TestGeomodelConnectivityValidity( *this ) ) ;
                 threads.push_back( new TestFiniteExtension( *this ) ) ;
@@ -1205,12 +1201,13 @@ namespace RINGMesh {
         const GeoModel& geomodel,
         ValidityCheckMode validity_check_mode )
     {
-        if( validity_check_mode == GEOMETRY
+        if( validity_check_mode == ValidityCheckMode::GEOMETRY
             && !GEO::CmdLine::get_arg_bool( "in:intersection_check" ) ) {
-            validity_check_mode = GEOMETRY_EXCEPT_FACET_INTERSECTION ;
-        } else if( validity_check_mode == ALL
+            validity_check_mode =
+                ValidityCheckMode::GEOMETRY_EXCEPT_FACET_INTERSECTION ;
+        } else if( validity_check_mode == ValidityCheckMode::ALL
             && !GEO::CmdLine::get_arg_bool( "in:intersection_check" ) ) {
-            validity_check_mode = ALL_EXCEPT_FACET_INTERSECTION ;
+            validity_check_mode = ValidityCheckMode::ALL_EXCEPT_FACET_INTERSECTION ;
         }
 
         GeoModelValidityCheck validity_checker( geomodel, validity_check_mode ) ;
