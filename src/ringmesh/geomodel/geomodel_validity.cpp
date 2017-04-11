@@ -924,6 +924,10 @@ namespace {
                     validity_.geomodel_ ) ) {
                     validity_.set_invalid_model() ;
                 }
+                if( !are_geomodel_mesh_entities_parent_valid(
+                    validity_.geomodel_ ) ) {
+                    validity_.set_invalid_model() ;
+                }
             }
         private:
             GeoModelValidityCheck& validity_ ;
@@ -1193,6 +1197,28 @@ namespace RINGMesh {
         if( count_invalid != 0 ) {
             Logger::warn( "GeoModel", count_invalid,
                 " geological entities of the geomodel are invalid " ) ;
+        }
+        return count_invalid == 0 ;
+    }
+
+    bool are_geomodel_mesh_entities_parent_valid( const GeoModel& geomodel )
+    {
+        const std::vector< MeshEntityType >& meshed_types =
+            MeshEntityTypeManager::mesh_entity_types() ;
+        index_t count_invalid = 0 ;
+        for( const MeshEntityType& type : meshed_types ) {
+            index_t nb_entities = geomodel.nb_mesh_entities( type ) ;
+            for( index_t i = 0; i < nb_entities; ++i ) {
+                const GeoModelMeshEntity& E = geomodel.mesh_entity( type, i ) ;
+                if( !E.is_parent_connectivity_valid() ) {
+                    count_invalid++ ;
+                }
+            }
+        }
+        if( count_invalid != 0 ) {
+            Logger::warn( "GeoModel", count_invalid,
+                " mesh entities of the geomodel have an invalid ",
+                "parent connectivity (geological relationships)." ) ;
         }
         return count_invalid == 0 ;
     }
