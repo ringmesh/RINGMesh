@@ -40,16 +40,6 @@
 namespace {
     using namespace RINGMesh ;
 
-    void get_entity_vertices_and_update_corners(
-        std::vector< index_t >& corners,
-        std::vector< index_t >& vertices )
-    {
-        std::vector< index_t > corners_to_vertices ;
-        get_unique_input_values_and_mapping< index_t >( corners, vertices,
-            corners_to_vertices ) ;
-        corners = corners_to_vertices ;
-    }
-
     void get_internal_borders(
         const GeoModelMeshEntity& entity,
         std::set< index_t >& internal_borders )
@@ -476,92 +466,11 @@ namespace RINGMesh {
 
     void GeoModelBuilderGeometry::set_surface_geometry(
         index_t surface_id,
-        const std::vector< index_t >& geomodel_vertex_ids,
         const std::vector< index_t >& facets,
         const std::vector< index_t >& facet_ptr )
     {
-        set_mesh_entity_vertices( gmme_id( Surface::type_name_static(), surface_id ),
-            geomodel_vertex_ids, false ) ;
-        assign_surface_mesh_facets( surface_id, facets, facet_ptr ) ;
-    }
-
-    void GeoModelBuilderGeometry::set_surface_geometry(
-        index_t surface_id,
-        const std::vector< index_t >& facets,
-        const std::vector< index_t >& facet_ptr )
-    {
-        std::vector< index_t > vertices ;
-        std::vector< index_t > new_facets( facets ) ;
-        get_entity_vertices_and_update_corners( new_facets, vertices ) ;
-        set_surface_geometry( surface_id, vertices, new_facets, facet_ptr ) ;
-    }
-
-    void GeoModelBuilderGeometry::set_surface_geometry(
-        index_t surface_id,
-        const std::vector< index_t >& triangle_corners )
-    {
-        std::vector< index_t > vertices ;
-        std::vector< index_t > new_triangle_corners( triangle_corners ) ;
-        get_entity_vertices_and_update_corners( new_triangle_corners, vertices ) ;
-
-        set_mesh_entity_vertices( gmme_id( Surface::type_name_static(), surface_id ),
-            vertices, false ) ;
-        assign_surface_triangle_mesh( surface_id, new_triangle_corners ) ;
-    }
-
-    void GeoModelBuilderGeometry::set_surface_geometry_with_adjacencies(
-        index_t surface_id,
-        const std::vector< index_t >& triangle_corners,
-        const std::vector< index_t >& adjacent_triangles )
-    {
-        /// @todo Reorganize to remove duplicated code in the class
-        std::vector< index_t > vertices ;
-        std::vector< index_t > new_triangle_corners( triangle_corners ) ;
-        get_entity_vertices_and_update_corners( new_triangle_corners, vertices ) ;
-
-        set_mesh_entity_vertices( gmme_id( Surface::type_name_static(), surface_id ),
-            vertices, false ) ;
-
-        assign_surface_triangle_mesh( surface_id, new_triangle_corners,
-            adjacent_triangles ) ;
-    }
-
-    void GeoModelBuilderGeometry::set_surface_element_geometry(
-        index_t surface_id,
-        index_t facet_id,
-        const std::vector< index_t >& corners )
-    {
-        Mesh2DBuilder_var builder = create_surface_builder( surface_id ) ;
-        for( index_t facet_vertex = 0; facet_vertex < corners.size();
-            facet_vertex++ ) {
-            builder->set_facet_vertex( facet_id, facet_vertex,
-                corners[facet_vertex] ) ;
-        }
-    }
-
-    void GeoModelBuilderGeometry::set_surface_element_adjacency(
-        index_t surface_id,
-        index_t facet_id,
-        const std::vector< index_t >& adjacents )
-    {
-        Mesh2DBuilder_var builder = create_surface_builder( surface_id ) ;
-        for( index_t facet_edge = 0; facet_edge < adjacents.size(); facet_edge++ ) {
-            builder->set_facet_adjacent( facet_id, facet_edge,
-                adjacents[facet_edge] ) ;
-        }
-    }
-
-    void GeoModelBuilderGeometry::set_region_geometry(
-        index_t region_id,
-        const std::vector< index_t >& tet_corners )
-    {
-        std::vector< index_t > vertices ;
-        std::vector< index_t > new_tet_corners( tet_corners ) ;
-        get_entity_vertices_and_update_corners( new_tet_corners, vertices ) ;
-
-        set_mesh_entity_vertices( gmme_id( Region::type_name_static(), region_id ),
-            vertices, false ) ;
-        assign_region_tet_mesh( region_id, new_tet_corners ) ;
+        create_surface_builder( surface_id )->create_facet_polygons( facets,
+            facet_ptr ) ;
     }
 
     void GeoModelBuilderGeometry::set_region_element_geometry(
