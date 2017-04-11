@@ -60,15 +60,13 @@ namespace RINGMesh {
             : TetraGen()
         {
         }
-        virtual ~TetraGen_TetGen()
-        {
-        }
+        virtual ~TetraGen_TetGen() = default ;
 
         virtual bool tetrahedralize( bool refine ) final
         {
-            Mesh3DBuilder * mesh3D_builder =
+            std::unique_ptr< Mesh3DBuilder > mesh3D_builder =
                 builder_->geometry.create_region_builder( output_region_ ) ;
-            tetrahedralize_mesh_tetgen( *mesh3D_builder, tetmesh_constraint_, refine,
+            tetrahedralize_mesh_tetgen( *mesh3D_builder.get(), tetmesh_constraint_, refine,
                 1.0 ) ;
             return true ;
         }
@@ -121,7 +119,6 @@ namespace RINGMesh {
                 tms_( nullptr ),
                 starting_index_( 1 )
         {
-
         }
 
         virtual ~TetraGen_MG_Tetra()
@@ -407,7 +404,7 @@ namespace RINGMesh {
     } ;
 #endif
 
-    TetraGen* TetraGen::create(
+    std::unique_ptr< TetraGen > TetraGen::create(
         GeoModel& M,
         index_t region_id,
         const std::string& algo_name )
@@ -432,9 +429,9 @@ namespace RINGMesh {
 #endif
         }
 
-        mesher->builder_ = new GeoModelBuilder( M ) ;
+        mesher->builder_.reset( new GeoModelBuilder( M ) ) ;
         mesher->output_region_ = region_id ;
-        return mesher ;
+        return std::unique_ptr< TetraGen >( mesher ) ;
     }
 
     TetraGen::TetraGen()
@@ -569,11 +566,6 @@ namespace RINGMesh {
             points.size() ) ;
         GEO::Memory::copy( tetmesh_constraint_.vertices.point_ptr( start ),
             points.front().data(), points.size() * 3 * sizeof(double) ) ;
-    }
-
-    TetraGen::~TetraGen()
-    {
-        if( builder_ ) delete builder_ ;
     }
 
     void TetraGen::initialize()

@@ -36,9 +36,13 @@
 #pragma once
 
 #include <ringmesh/basic/common.h>
-#include <ringmesh/basic/geometry.h>
+
+#include <memory>
 
 #include <geogram/basic/attributes.h>
+
+#include <ringmesh/basic/geometry.h>
+#include <ringmesh/mesh/mesh.h>
 
 /*!
  * @file Well related classe declarations 
@@ -58,9 +62,7 @@ namespace RINGMesh {
     ringmesh_disable_copy( WellEntity ) ;
     protected:
         WellEntity( const Well* well ) ;
-        virtual ~WellEntity()
-        {
-        }
+        virtual ~WellEntity() = default ;
 
     public:
         /*!
@@ -85,7 +87,7 @@ namespace RINGMesh {
             const vec3& point,
             bool is_on_surface,
             index_t id ) ;
-        virtual ~WellCorner() ;
+        virtual ~WellCorner() = default ;
 
         const vec3& point() const ;
 
@@ -106,7 +108,7 @@ namespace RINGMesh {
         bool is_on_surface_ ;
         /// The id of the corresponding surface or region
         index_t id_ ;
-        Mesh0D* mesh_ ;
+        std::unique_ptr< Mesh0D > mesh_ ;
     } ;
 
 // --------------------------------------------------------------------------
@@ -120,7 +122,7 @@ namespace RINGMesh {
          * @param[in] id the position in the parts_ vector of the associated well
          */
         WellPart( const Well* well, index_t id ) ;
-        ~WellPart() ;
+        ~WellPart() = default ;
 
         /*!
          * Sets the corber id
@@ -188,7 +190,7 @@ namespace RINGMesh {
         index_t id_ ;
         /// id in the corners_ vector the the well
         index_t corners_[2] ;
-        Mesh1D* mesh_ ;
+        std::unique_ptr< Mesh1D > mesh_ ;
     } ;
 
 // --------------------------------------------------------------------------
@@ -220,7 +222,6 @@ namespace RINGMesh {
     ringmesh_disable_copy( Well ) ;
     public:
         Well() ;
-        ~Well() ;
 
         /*!
          * Copies information and resize the number of parts and corners
@@ -250,7 +251,7 @@ namespace RINGMesh {
         index_t create_corner( const vec3& vertex, bool is_on_surface, index_t id )
         {
             index_t corner_id = static_cast< index_t >( corners_.size() ) ;
-            corners_.push_back( new WellCorner( this, vertex, is_on_surface, id ) ) ;
+            corners_.emplace_back( new WellCorner( this, vertex, is_on_surface, id ) ) ;
             return corner_id ;
         }
         /*!
@@ -278,7 +279,7 @@ namespace RINGMesh {
         index_t create_part( index_t region )
         {
             index_t part_id = static_cast< index_t >( parts_.size() ) ;
-            parts_.push_back( new WellPart( this, part_id ) ) ;
+            parts_.emplace_back( new WellPart( this, part_id ) ) ;
             part_region_id_.push_back( region ) ;
             return part_id ;
         }
@@ -347,9 +348,9 @@ namespace RINGMesh {
 
     private:
         /// Vector of the corners of the well
-        std::vector< WellCorner* > corners_ ;
+        std::vector< std::unique_ptr< WellCorner > > corners_ ;
         /// Vector of the parts of the well
-        std::vector< WellPart* > parts_ ;
+        std::vector< std::unique_ptr< WellPart > > parts_ ;
         /// Vector of the region id of the parts
         std::vector< index_t > part_region_id_ ;
         /// Name of the well

@@ -122,7 +122,8 @@ namespace RINGMesh {
                             gmge_id parent =
                                 geomodel_.mesh_entity( type_name, j ).parent_gmge(
                                     p ) ;
-                            nb_childs_[geological_entity_type_to_index( parent.type() )][parent.index()]-- ;
+                            nb_childs_[geological_entity_type_to_index(
+                                parent.type() )][parent.index()]-- ;
                         }
 
                         delete_mesh_entity( i, j ) ;
@@ -174,11 +175,12 @@ namespace RINGMesh {
         void clear_null_mesh_entities( index_t type )
         {
             const MeshEntityType& type_name = index_to_mesh_entity_type( type ) ;
-            std::vector< GeoModelMeshEntity* >& store =
+            std::vector< std::unique_ptr< GeoModelMeshEntity > >& store =
                 geomodel_access_.modifiable_mesh_entities( type_name ) ;
             store.erase(
                 std::remove( store.begin(), store.end(),
-                    static_cast< GeoModelMeshEntity* >( nullptr ) ), store.end() ) ;
+                    static_cast< std::unique_ptr< GeoModelMeshEntity > >( nullptr ) ),
+                store.end() ) ;
 
             // QC
             ringmesh_assert( geomodel_.nb_mesh_entities( type_name )
@@ -187,12 +189,13 @@ namespace RINGMesh {
 
         void clear_null_geological_entities( index_t type )
         {
-            const GeologicalEntityType& type_name = index_to_geological_entity_type( type ) ;
-            std::vector< GeoModelGeologicalEntity* >& store =
+            const GeologicalEntityType& type_name = index_to_geological_entity_type(
+                type ) ;
+            std::vector< std::unique_ptr< GeoModelGeologicalEntity > >& store =
                 geomodel_access_.modifiable_geological_entities( type_name ) ;
             store.erase(
                 std::remove( store.begin(), store.end(),
-                    static_cast< GeoModelGeologicalEntity* >( nullptr ) ),
+                    static_cast< std::unique_ptr< GeoModelGeologicalEntity > >( nullptr ) ),
                 store.end() ) ;
 
             // QC
@@ -230,8 +233,8 @@ namespace RINGMesh {
         {
 
             for( index_t i = 0; i < nb_geological_entity_types_; ++i ) {
-                const GeologicalEntityType& entity_type = index_to_geological_entity_type(
-                    i ) ;
+                const GeologicalEntityType& entity_type =
+                    index_to_geological_entity_type( i ) ;
                 for( index_t j = 0;
                     j < geomodel_.nb_geological_entities( entity_type ); ++j ) {
                     gmge_id new_id( entity_type, j ) ;
@@ -320,7 +323,8 @@ namespace RINGMesh {
             nb_initial_geological_entities_.resize( nb_geological_entity_types_,
                 0 ) ;
             for( index_t i = 0; i < nb_geological_entity_types_; ++i ) {
-                const GeologicalEntityType& type = index_to_geological_entity_type( i ) ;
+                const GeologicalEntityType& type = index_to_geological_entity_type(
+                    i ) ;
                 nb_initial_geological_entities_[i] =
                     geomodel_.nb_geological_entities( type ) ;
             }
@@ -355,7 +359,8 @@ namespace RINGMesh {
         }
         const MeshEntityType children_type( const GeologicalEntityType& type ) const
         {
-            const RelationshipManager& family = geomodel_.entity_type_manager().relationship_manager ;
+            const RelationshipManager& family =
+                geomodel_.entity_type_manager().relationship_manager ;
             return family.child_type( type ) ;
         }
         index_t boundary_type_index( const MeshEntityType& type ) const
@@ -369,7 +374,8 @@ namespace RINGMesh {
         }
         const MeshEntityType& boundary_type( const MeshEntityType& type ) const
         {
-            const MeshEntityTypeManager& family = geomodel_.entity_type_manager().mesh_entity_manager ;
+            const MeshEntityTypeManager& family =
+                geomodel_.entity_type_manager().mesh_entity_manager ;
             return family.boundary_type( type ) ;
         }
         index_t in_boundary_type_index( const MeshEntityType& type ) const
@@ -383,7 +389,8 @@ namespace RINGMesh {
         }
         const MeshEntityType& in_boundary_type( const MeshEntityType& type ) const
         {
-            const MeshEntityTypeManager& family = geomodel_.entity_type_manager().mesh_entity_manager ;
+            const MeshEntityTypeManager& family =
+                geomodel_.entity_type_manager().mesh_entity_manager ;
             return family.in_boundary_type( type ) ;
         }
         bool is_mesh_entity( index_t i ) const
@@ -413,8 +420,12 @@ namespace RINGMesh {
             }
         }
 
-        void set_mesh_entity_index( GeoModelMeshEntity& E, index_t new_index_in_geomodel ) ;
-        void set_geological_entity_index( GeoModelGeologicalEntity& E, index_t new_index_in_geomodel ) ;
+        void set_mesh_entity_index(
+            GeoModelMeshEntity& E,
+            index_t new_index_in_geomodel ) ;
+        void set_geological_entity_index(
+            GeoModelGeologicalEntity& E,
+            index_t new_index_in_geomodel ) ;
 
         void update_mesh_entity_index( GeoModelMeshEntity& ME ) ;
         void update_geological_entity_index( GeoModelGeologicalEntity& GE ) ;
@@ -430,7 +441,8 @@ namespace RINGMesh {
 
         void update_region_boundary_signs( Region& R )
         {
-            const MeshEntityType& surface_type = boundary_type( R.mesh_entity_type() ) ;
+            const MeshEntityType& surface_type = boundary_type(
+                R.mesh_entity_type() ) ;
             gmme_id invalid_value( surface_type, NO_ID ) ;
 
             index_t offset = 0 ;
@@ -477,7 +489,8 @@ namespace RINGMesh {
         }
         void delete_invalid_in_boundary( GeoModelMeshEntity& E )
         {
-            const MeshEntityType& in_b_type = in_boundary_type( E.mesh_entity_type() ) ;
+            const MeshEntityType& in_b_type = in_boundary_type(
+                E.mesh_entity_type() ) ;
             gmme_id invalid( in_b_type, NO_ID ) ;
             if( !MeshEntityTypeManager::is_valid_type( in_b_type ) ) {
                 return ;
@@ -509,7 +522,8 @@ namespace RINGMesh {
             return find( mesh_entity_types_, type ) ;
         }
 
-        index_t geological_entity_type_to_index( const GeologicalEntityType& type ) const
+        index_t geological_entity_type_to_index(
+            const GeologicalEntityType& type ) const
         {
             return find( geological_entity_types_, type ) ;
         }
@@ -518,7 +532,8 @@ namespace RINGMesh {
             return mesh_entity_types_[index] ;
         }
 
-        const GeologicalEntityType& index_to_geological_entity_type( index_t index ) const
+        const GeologicalEntityType& index_to_geological_entity_type(
+            index_t index ) const
         {
             return geological_entity_types_[index] ;
         }
