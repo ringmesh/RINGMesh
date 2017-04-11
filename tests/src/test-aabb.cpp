@@ -56,10 +56,6 @@ void add_vertices( Mesh1DBuilder* builder, index_t size )
     for( index_t i = 0; i < size; i++ ) {
         builder->set_vertex( i, vec3( i, i + 1, 0 ) ) ;
     }
-
-    SparseMatrix<int, heavy> T ;
-    T.print_matrix();
-
 }
 
 void add_vertices( Mesh2DBuilder* builder, index_t size )
