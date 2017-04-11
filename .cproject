@@ -26,7 +26,8 @@
 								<option id="gnu.cpp.compiler.option.include.paths.791559926" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${APPLICATIONS}/DISTENE/MeshGems-2.4/Products/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/src/third_party/geogram/src/lib&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/RINGMesh/third_party}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/RINGMesh/third_party/geogram/src/lib}&quot;"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.1044941177" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="USE_MG_TETRA=TRUE"/>
@@ -85,7 +86,8 @@
 								<option id="gnu.cpp.compiler.option.include.paths.532620665" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${APPLICATIONS}/DISTENE/MeshGems-2.4/Products/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/src/third_party/geogram/src/lib&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/RINGMesh/third_party}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/RINGMesh/third_party/geogram/src/lib}&quot;"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.564840405" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="USE_MG_TETRA=TRUE"/>
@@ -144,7 +146,8 @@
 								<option id="gnu.cpp.compiler.option.include.paths.504081774" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${APPLICATIONS}/DISTENE/MeshGems-2.4/Products/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/src/third_party/geogram/src/lib&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/RINGMesh/third_party}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/RINGMesh/third_party/geogram/src/lib}&quot;"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.139410484" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="USE_MG_TETRA=TRUE"/>
@@ -203,7 +206,8 @@
 								<option id="gnu.cpp.compiler.option.include.paths.1461819897" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${APPLICATIONS}/DISTENE/MeshGems-2.4/Products/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/src/third_party/geogram/src/lib&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/RINGMesh/third_party}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/RINGMesh/third_party/geogram/src/lib}&quot;"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.344760759" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="USE_MG_TETRA=TRUE"/>
