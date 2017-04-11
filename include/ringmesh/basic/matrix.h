@@ -77,7 +77,7 @@ namespace RINGMesh {
         using Element = ElementImpl< T > ;
 
         RowImpl()
-            : elements_( new Element[capacity_] ), nb_elements_( 0 ), capacity_( 4 )
+            : elements_( new Element[4] ), nb_elements_( 0 ), capacity_( 4 )
         {
         }
 
