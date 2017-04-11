@@ -878,6 +878,7 @@ namespace {
          * @brief Check that the geomodel has a finite extension 
          * @details The boundary of the universe region is a one connected component 
          * manifold closed surface.
+         * @todo Implement this check
          */
         class TestFiniteExtension final : public GEO::Thread {
         public:
@@ -1084,7 +1085,7 @@ namespace RINGMesh {
         for( const MeshEntityType& type : meshed_types ) {
             index_t nb_entities = geomodel.nb_mesh_entities( type ) ;
             for( index_t i = 0; i < nb_entities; ++i ) {
-                const GeoModelEntity& E = geomodel.mesh_entity( type, i ) ;
+                const GeoModelMeshEntity& E = geomodel.mesh_entity( type, i ) ;
                 if( !E.is_valid() ) {
                     count_invalid++ ;
                 }
@@ -1105,7 +1106,7 @@ namespace RINGMesh {
         for( const GeologicalEntityType& type : geological_types ) {
             index_t nb_entities = geomodel.nb_geological_entities( type ) ;
             for( index_t i = 0; i < nb_entities; ++i ) {
-                const GeoModelEntity& E = geomodel.geological_entity( type, i ) ;
+                const GeoModelGeologicalEntity& E = geomodel.geological_entity( type, i ) ;
                 if( !E.is_valid() ) {
                     count_invalid++ ;
                 }
