@@ -606,11 +606,10 @@ namespace RINGMesh {
 
         // A Line must have 2 corners - they are identical if the Line is closed
         if( nb_boundaries() != 2 ) {
-            Logger::warn( "GeoModelEntity", gmme(), " does not have 2 corners" ) ;
+            Logger::warn( "Connectivity", gmme(), " does not have 2 corners" ) ;
             line_valid = false ;
         }
         return line_valid ;
-
     }
 
     bool Line::is_first_corner_first_vertex() const
@@ -744,12 +743,11 @@ namespace RINGMesh {
     {
         if( nb_boundaries() != sides_.size() ) {
             Logger::err( "GeoModelEntity", gmme(), " boundary sides are invalid " ) ;
-            ringmesh_assert_not_reached ;
             return false ;
         }
         bool region_valid = GeoModelMeshEntity::is_connectivity_valid() ;
         if( nb_boundaries() == 0 ) {
-            Logger::warn( "GeoModelEntity", gmme(), " has no boundaries " ) ;
+            Logger::warn( "Connectivity", gmme(), " has no boundaries " ) ;
             region_valid = false ;
         }
         return region_valid ;
