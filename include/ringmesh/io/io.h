@@ -37,6 +37,8 @@
 
 #include <ringmesh/basic/common.h>
 
+#include <memory>
+
 #include <zlib/zip.h>
 #include <zlib/unzip.h>
 
@@ -102,9 +104,8 @@ namespace RINGMesh {
 
         static void initialize_boundary_geomodel_output() ;
 
-        static GeoModelIOHandler* create( const std::string& format ) ;
-
-        static GeoModelIOHandler* get_handler( const std::string& filename ) ;
+        static std::unique_ptr< GeoModelIOHandler > get_handler(
+            const std::string& filename ) ;
 
         virtual bool load( const std::string& filename, GeoModel& geomodel ) = 0 ;
 
@@ -113,16 +114,12 @@ namespace RINGMesh {
             const std::string& filename ) = 0 ;
 
     protected:
-        GeoModelIOHandler()
-        {
-        }
+        GeoModelIOHandler() = default ;
 
-        virtual ~GeoModelIOHandler()
-        {
-        }
+    private:
+        static GeoModelIOHandler* create( const std::string& format ) ;
     } ;
 
-    using GeoModelIOHandler_var = GEO::SmartPointer< GeoModelIOHandler > ;
     using GeoModelIOHandlerFactory = GEO::Factory0< GeoModelIOHandler > ;
 
 #define ringmesh_register_GeoModelIOHandler_creator( type, name ) \
@@ -133,24 +130,19 @@ namespace RINGMesh {
     public:
         static void initialize() ;
 
-        static WellGroupIOHandler* create( const std::string& format ) ;
-
-        static WellGroupIOHandler* get_handler( const std::string& filename ) ;
+        static std::unique_ptr< WellGroupIOHandler > get_handler(
+            const std::string& filename ) ;
 
         virtual void load( const std::string& filename, WellGroup& mesh ) = 0 ;
 
         virtual void save( const WellGroup& mesh, const std::string& filename ) = 0 ;
 
     protected:
-        WellGroupIOHandler()
-        {
-        }
+        WellGroupIOHandler() = default ;
 
-        virtual ~WellGroupIOHandler()
-        {
-        }
+    private:
+        static WellGroupIOHandler* create( const std::string& format ) ;
     } ;
-    using WellGroupIOHandler_var = GEO::SmartPointer< WellGroupIOHandler > ;
     using WellGroupIOHandlerFactory = GEO::Factory0< WellGroupIOHandler > ;
 
 #define ringmesh_register_WellGroupIOHandler_creator( type, name ) \

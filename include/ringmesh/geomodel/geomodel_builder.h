@@ -322,9 +322,7 @@ namespace RINGMesh {
 
     public:
         GeoModelBuilder( GeoModel& geomodel ) ;
-        virtual ~GeoModelBuilder()
-        {
-        }
+        virtual ~GeoModelBuilder() = default ;
 
         /*!
          * @brief Finish up geomodel building and complete missing information.
@@ -353,9 +351,8 @@ namespace RINGMesh {
     public:
         GeoModelBuilderFile( GeoModel& geomodel, const std::string& filename ) ;
 
-        virtual ~GeoModelBuilderFile()
-        {
-        }
+        virtual ~GeoModelBuilderFile() = default ;
+
         void build_geomodel()
         {
             load_file() ;

@@ -267,12 +267,12 @@ namespace {
      */
     void compute_cell_facet_centers_region_nn_searchs(
         const GeoModel& geomodel,
-        std::vector< NNSearch* >& region_nn_searchs )
+        std::vector< std::unique_ptr< NNSearch > >& region_nn_searchs )
     {
         for( index_t r = 0; r < geomodel.nb_regions(); ++r ) {
             std::vector< vec3 > cell_facet_centers ;
             compute_region_cell_facet_centers( geomodel, r, cell_facet_centers ) ;
-            region_nn_searchs[r] = new NNSearch( cell_facet_centers, true ) ;
+            region_nn_searchs[r].reset( new NNSearch( cell_facet_centers, true ) ) ;
         }
     }
 
@@ -430,7 +430,7 @@ namespace {
      */
     void add_surface_to_region_boundaries(
         index_t surface_id,
-        const std::vector< NNSearch* >& region_nn_searchs,
+        const std::vector< std::unique_ptr< NNSearch > >& region_nn_searchs,
         const GeoModel& geomodel,
         GeoModelBuilderTSolid& geomodel_builder )
     {
@@ -462,14 +462,12 @@ namespace {
         GeoModelBuilderTSolid& geomodel_builder,
         const GeoModel& geomodel )
     {
-        std::vector< NNSearch* > reg_nn_searchs( geomodel.nb_regions(), nullptr ) ;
+        std::vector< std::unique_ptr< NNSearch > > reg_nn_searchs(
+            geomodel.nb_regions() ) ;
         compute_cell_facet_centers_region_nn_searchs( geomodel, reg_nn_searchs ) ;
         for( index_t s = 0; s < geomodel.nb_surfaces(); ++s ) {
             add_surface_to_region_boundaries( s, reg_nn_searchs, geomodel,
                 geomodel_builder ) ;
-        }
-        for( index_t r = 0; r < geomodel.nb_regions(); ++r ) {
-            delete reg_nn_searchs[r] ;
         }
     }
 
@@ -553,7 +551,7 @@ namespace {
      * @param[in] surface_id Index of the surface
      * @param[in] facet Index of the facet in the surface
      * @param[in] edge Index of the edge in the facet
-     * @param[in] surface_nns Pointers to the NNSearchs of surfaces
+     * @param[in] surface_nns Unique pointers to the NNSearchs of surfaces
      * @param[in] surface_boxes Bounding Box of surfaces
      * @return True is the edge is found in at least another surface
      */
@@ -562,7 +560,7 @@ namespace {
         index_t surface_id,
         index_t facet,
         index_t edge,
-        const std::vector< NNSearch* >& surface_nns,
+        const std::vector< std::unique_ptr< NNSearch > >& surface_nns,
         const std::vector< Box3d >& surface_boxes )
     {
         const Surface& S = geomodel.surface( surface_id ) ;
@@ -1161,12 +1159,13 @@ namespace RINGMesh {
         cur_surf_facet_ptr_.push_back( 0 ) ;
     }
 
-    GocadLineParser* GocadLineParser::create(
+    std::unique_ptr< GocadLineParser > GocadLineParser::create(
         const std::string& keyword,
         GeoModelBuilderGocad& gm_builder,
         GeoModel& geomodel )
     {
-        GocadLineParser* parser = GocadLineParserFactory::create_object( keyword ) ;
+        std::unique_ptr< GocadLineParser > parser(
+            GocadLineParserFactory::create_object( keyword ) ) ;
         if( parser ) {
             parser->set_builder( gm_builder ) ;
             parser->set_geomodel( geomodel ) ;
@@ -1200,13 +1199,13 @@ namespace RINGMesh {
     void GeoModelBuilderTSolid::read_line()
     {
         std::string keyword = file_line_.field( 0 ) ;
-        TSolidLineParser_var tsolid_parser = TSolidLineParser::create( keyword,
-            *this, geomodel_ ) ;
+        std::unique_ptr< TSolidLineParser > tsolid_parser = TSolidLineParser::create(
+            keyword, *this, geomodel_ ) ;
         if( tsolid_parser ) {
             tsolid_parser->execute( file_line_, tsolid_load_storage_ ) ;
         } else {
-            GocadLineParser_var gocad_parser = GocadLineParser::create( keyword,
-                *this, geomodel_ ) ;
+            std::unique_ptr< GocadLineParser > gocad_parser =
+                GocadLineParser::create( keyword, *this, geomodel_ ) ;
             if( gocad_parser ) {
                 gocad_parser->execute( file_line_, tsolid_load_storage_ ) ;
             }
@@ -1215,7 +1214,7 @@ namespace RINGMesh {
 
     void GeoModelBuilderTSolid::compute_surface_internal_borders(
         index_t surface_id,
-        const std::vector< NNSearch* >& surface_nns,
+        const std::vector< std::unique_ptr< NNSearch > >& surface_nns,
         const std::vector< Box3d >& surface_boxes )
     {
         const Surface& S = geomodel_.surface( surface_id ) ;
@@ -1243,7 +1242,7 @@ namespace RINGMesh {
     }
 
     void GeoModelBuilderTSolid::compute_facet_edge_centers_nn_and_surface_boxes(
-        std::vector< NNSearch* >& surface_nns,
+        std::vector< std::unique_ptr< NNSearch > >& surface_nns,
         std::vector< Box3d >& surface_boxes )
     {
         for( index_t s = 0; s < geomodel_.nb_surfaces(); ++s ) {
@@ -1254,30 +1253,28 @@ namespace RINGMesh {
             std::vector< vec3 > border_edge_barycenters ;
             get_surface_border_edge_barycenters( geomodel_, s,
                 border_edge_barycenters ) ;
-            surface_nns[s] = new NNSearch( border_edge_barycenters, true ) ;
+            surface_nns[s].reset( new NNSearch( border_edge_barycenters, true ) ) ;
         }
     }
 
     void GeoModelBuilderTSolid::compute_surfaces_internal_borders()
     {
-        std::vector< NNSearch* > nn_searchs( geomodel_.nb_surfaces(), nullptr ) ;
+        std::vector< std::unique_ptr< NNSearch > > nn_searchs(
+            geomodel_.nb_surfaces() ) ;
         std::vector< Box3d > boxes( geomodel_.nb_surfaces() ) ;
         compute_facet_edge_centers_nn_and_surface_boxes( nn_searchs, boxes ) ;
         for( index_t s = 0; s < geomodel_.nb_surfaces(); ++s ) {
             compute_surface_internal_borders( s, nn_searchs, boxes ) ;
         }
-        for( index_t s = 0; s < geomodel_.nb_surfaces(); ++s ) {
-            delete nn_searchs[s] ;
-        }
     }
 
-    TSolidLineParser* TSolidLineParser::create(
+    std::unique_ptr< TSolidLineParser > TSolidLineParser::create(
         const std::string& keyword,
         GeoModelBuilderTSolid& gm_builder,
         GeoModel& geomodel )
     {
-        TSolidLineParser* parser = TSolidLineParserFactory::create_object(
-            keyword ) ;
+        std::unique_ptr< TSolidLineParser > parser(
+            TSolidLineParserFactory::create_object( keyword ) ) ;
         if( parser ) {
             parser->set_builder( gm_builder ) ;
             parser->set_geomodel( geomodel ) ;
@@ -1287,12 +1284,13 @@ namespace RINGMesh {
 
     /*************************************************************************/
 
-    MLLineParser* MLLineParser::create(
+    std::unique_ptr< MLLineParser > MLLineParser::create(
         const std::string& keyword,
         GeoModelBuilderML& gm_builder,
         GeoModel& geomodel )
     {
-        MLLineParser* parser = MLLineParserFactory::create_object( keyword ) ;
+        std::unique_ptr< MLLineParser > parser(
+            MLLineParserFactory::create_object( keyword ) ) ;
         if( parser ) {
             parser->set_builder( gm_builder ) ;
             parser->set_geomodel( geomodel ) ;
@@ -1317,13 +1315,13 @@ namespace RINGMesh {
     void GeoModelBuilderML::read_line()
     {
         std::string keyword = file_line_.field( 0 ) ;
-        MLLineParser_var tsolid_parser = MLLineParser::create( keyword, *this,
-            geomodel_ ) ;
+        std::unique_ptr< MLLineParser > tsolid_parser(
+            MLLineParser::create( keyword, *this, geomodel_ ) ) ;
         if( tsolid_parser ) {
             tsolid_parser->execute( file_line_, ml_load_storage_ ) ;
         } else {
-            GocadLineParser_var gocad_parser = GocadLineParser::create( keyword,
-                *this, geomodel_ ) ;
+            std::unique_ptr< GocadLineParser > gocad_parser =
+                GocadLineParser::create( keyword, *this, geomodel_ ) ;
             if( gocad_parser ) {
                 gocad_parser->execute( file_line_, ml_load_storage_ ) ;
             }
