@@ -46,10 +46,29 @@
  * @returns 0 if success or an error code if not.
  * @author Pierre Anquez
  */
+
+using namespace RINGMesh ;
+
+void make_geomodel_copy( const GeoModel& from, const std::string& name, GeoModel& to )
+{
+
+    GeoModelBuilder geomodel_breaker2( to ) ;
+    geomodel_breaker2.copy.copy_geomodel( from ) ;
+    geomodel_breaker2.info.set_geomodel_name( name ) ;
+}
+
+void verdict( const GeoModel& invalid_model, const std::string& feature )
+{
+    if( is_geomodel_valid( invalid_model ) ) {
+        throw RINGMeshException( "RINGMesh Test",
+            "Fail to " + feature ) ;
+    } else {
+        Logger::out( "TEST", "Succeed to ", feature ) ;
+    }
+}
+
 int main()
 {
-    using namespace RINGMesh ;
-
     try {
         default_configure() ;
 
@@ -67,33 +86,20 @@ int main()
         Logger::out( "TEST", "Break geomodels:" ) ;
 
         GeoModel invalid_model1 ;
+        make_geomodel_copy( in, "broken model 1", invalid_model1 ) ;
         GeoModelBuilder geomodel_breaker1( invalid_model1 ) ;
-        geomodel_breaker1.copy.copy_geomodel( in ) ;
-        geomodel_breaker1.info.set_geomodel_name( "broken model 1" ) ;
         geomodel_breaker1.topology.add_mesh_entity_boundary(
             invalid_model1.surface( 0 ).gmme(), 4 ) ;
-        bool broken_model1_is_valid = is_geomodel_valid( invalid_model1 ) ;
-        if( broken_model1_is_valid ) {
-            throw RINGMeshException( "RINGMesh Test",
-                "Failed to detect artificial added surface boundary" ) ;
-        } else {
-            Logger::out( "TEST", "Test 1: OK " ) ;
-        }
+        verdict( invalid_model1, "detect artificial added surface boundary" ) ;
+
 
         GeoModel invalid_model2 ;
+        make_geomodel_copy( in, "broken model 2", invalid_model2 ) ;
         GeoModelBuilder geomodel_breaker2( invalid_model2 ) ;
-        geomodel_breaker2.copy.copy_geomodel( in ) ;
-        geomodel_breaker2.info.set_geomodel_name( "broken model 2" ) ;
         geomodel_breaker2.geology.add_mesh_entity_parent(
             invalid_model2.surface( 0 ).gmme(),
             gmge_id( Interface::type_name_static(), 0 ) ) ;
-        bool broken_model2_is_valid = is_geomodel_valid( invalid_model2 ) ;
-        if( broken_model2_is_valid ) {
-            throw RINGMeshException( "RINGMesh Test",
-                "Failed to detect addition of incoherent parent" ) ;
-        } else {
-            Logger::out( "TEST", "Test 2: OK " ) ;
-        }
+        verdict( invalid_model2, "detect addition of incoherent parent" ) ;
 
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category(), e.what() ) ;
