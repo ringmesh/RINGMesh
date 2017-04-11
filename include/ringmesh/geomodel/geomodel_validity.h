@@ -54,7 +54,7 @@ namespace RINGMesh {
 
 namespace RINGMesh {
     /// Option to select what are checked.
-    enum ValidityCheckMode {
+    enum struct ValidityCheckMode {
         TOPOLOGY,
         GEOMETRY,
         GEOMETRY_EXCEPT_FACET_INTERSECTION,
@@ -85,7 +85,7 @@ namespace RINGMesh {
      */
     bool RINGMESH_API is_geomodel_valid(
         const GeoModel& geomodel,
-        ValidityCheckMode validity_check_mode = ALL ) ;
+        ValidityCheckMode validity_check_mode = ValidityCheckMode::ALL ) ;
 
     /*!
      * @brief Check the validity of all individual entity meshes
