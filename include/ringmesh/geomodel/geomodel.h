@@ -46,7 +46,9 @@
 #include <ringmesh/geomodel/entity_type.h>
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
 #include <ringmesh/geomodel/geomodel_entity.h>
+#include <ringmesh/geomodel/geomodel_geological_entity.h>
 #include <ringmesh/geomodel/geomodel_mesh.h>
+#include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
 /*!
  * @file ringmesh/geomodel.h
@@ -79,10 +81,6 @@ namespace RINGMesh {
          * @brief Constructs an empty GeoModel
          */
         GeoModel() ;
-        /*!
-         * @brief Deletes all the GeoModelEntities of the GeoModel
-         */
-        virtual ~GeoModel() ;
 
         /*!
          * @brief Gets the name of the GeoModel
@@ -237,20 +235,20 @@ namespace RINGMesh {
         /*!
          * @brief Generic accessor to the storage of mesh entities of the given type
          */
-        const std::vector< GeoModelMeshEntity* >& mesh_entities(
+        const std::vector< std::unique_ptr< GeoModelMeshEntity > >& mesh_entities(
             const MeshEntityType& type ) const ;
 
         /*!
          * @brief Generic accessor to the storage of geological entities of the given type
          */
-        const std::vector< GeoModelGeologicalEntity* >& geological_entities(
+        const std::vector< std::unique_ptr< GeoModelGeologicalEntity > >& geological_entities(
             const GeologicalEntityType& type ) const
         {
             index_t entity_index = geological_entity_type_index( type ) ;
             return geological_entities( entity_index ) ;
         }
 
-        const std::vector< GeoModelGeologicalEntity* >& geological_entities(
+        const std::vector< std::unique_ptr< GeoModelGeologicalEntity > >& geological_entities(
             index_t geological_entity_type_index ) const
         {
             ringmesh_assert( geological_entity_type_index != NO_ID ) ;
@@ -267,10 +265,10 @@ namespace RINGMesh {
          * \name Mandatory entities of the geomodel
          * @{
          */
-        std::vector< GeoModelMeshEntity* > corners_ ;
-        std::vector< GeoModelMeshEntity* > lines_ ;
-        std::vector< GeoModelMeshEntity* > surfaces_ ;
-        std::vector< GeoModelMeshEntity* > regions_ ;
+        std::vector< std::unique_ptr< GeoModelMeshEntity > > corners_ ;
+        std::vector< std::unique_ptr< GeoModelMeshEntity > > lines_ ;
+        std::vector< std::unique_ptr< GeoModelMeshEntity > > surfaces_ ;
+        std::vector< std::unique_ptr< GeoModelMeshEntity > > regions_ ;
 
         /*!
          * The Universe defines the extension of the GeoModel
@@ -281,7 +279,7 @@ namespace RINGMesh {
          * @brief Geological entities. They are optional.
          * The EntityTypes are managed by the EntityTypeManager of the class.
          */
-        std::vector< std::vector< GeoModelGeologicalEntity* > > geological_entities_ ;
+        std::vector< std::vector< std::unique_ptr< GeoModelGeologicalEntity > > > geological_entities_ ;
 
         /*!
          * @}
@@ -322,10 +320,10 @@ namespace RINGMesh {
             return geomodel_.entity_type_manager_ ;
         }
 
-        std::vector< GeoModelMeshEntity* >& modifiable_mesh_entities(
+        std::vector< std::unique_ptr< GeoModelMeshEntity > >& modifiable_mesh_entities(
             const MeshEntityType& type )
         {
-            return const_cast< std::vector< GeoModelMeshEntity* >& >( geomodel_.mesh_entities(
+            return const_cast< std::vector< std::unique_ptr< GeoModelMeshEntity > >& >( geomodel_.mesh_entities(
                 type ) ) ;
         }
 
@@ -334,15 +332,16 @@ namespace RINGMesh {
             return *modifiable_mesh_entities( id.type() )[id.index()] ;
         }
 
-        std::vector< std::vector< GeoModelGeologicalEntity* > >& modifiable_geological_entities()
+        std::vector< std::vector< std::unique_ptr< GeoModelGeologicalEntity > > >& modifiable_geological_entities()
         {
             return geomodel_.geological_entities_ ;
         }
 
-        std::vector< GeoModelGeologicalEntity* >& modifiable_geological_entities(
+        std::vector< std::unique_ptr< GeoModelGeologicalEntity > >& modifiable_geological_entities(
             const GeologicalEntityType& type )
         {
-            return const_cast< std::vector< GeoModelGeologicalEntity* >& >( geomodel_.geological_entities(
+            return const_cast< std::vector<
+                std::unique_ptr< GeoModelGeologicalEntity > >& >( geomodel_.geological_entities(
                 type ) ) ;
         }
 

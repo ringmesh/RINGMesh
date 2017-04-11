@@ -140,10 +140,7 @@ namespace RINGMesh {
     ringmesh_disable_copy( AttributeVector ) ;
     public:
         using base_class = std::vector< GEO::Attribute< T >* > ;
-        AttributeVector()
-            : base_class()
-        {
-        }
+        AttributeVector() = default ;
         AttributeVector( index_t size )
             : base_class( size, nullptr )
         {

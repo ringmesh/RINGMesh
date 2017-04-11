@@ -450,10 +450,7 @@ namespace RINGMesh {
         const MeshEntityType& type,
         index_t index )
     {
-        std::vector< GeoModelMeshEntity* >& store =
-            geomodel_access_.modifiable_mesh_entities( type ) ;
-        delete store[index] ;
-        store[index] = nullptr ;
+        geomodel_access_.modifiable_mesh_entities( type )[index].reset() ;
     }
 
     void GeoModelBuilderTopology::complete_mesh_entity_connectivity(
