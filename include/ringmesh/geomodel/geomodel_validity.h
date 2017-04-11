@@ -88,12 +88,18 @@ namespace RINGMesh {
         ValidityCheckMode validity_check_mode = ALL ) ;
 
     /*!
-     * @brief Check the validity of all individual entities
+     * @brief Check the validity of all individual entity meshes
      * @details Check that the entities belong to this geomodel,
      *          call the check validity for each entity
      */
-    bool RINGMESH_API are_geomodel_meshed_entities_valid(
+    bool RINGMESH_API are_geomodel_mesh_entities_valid(
         const GeoModel& geomodel ) ;
+
+    /*!
+     * @brief Check the connectivity of mesh entities
+     */
+    bool RINGMESH_API are_geomodel_mesh_entities_connectivity_valid(
+            const GeoModel& geomodel ) ;
 
     bool RINGMESH_API are_geomodel_geological_entities_valid(
         const GeoModel& geomodel ) ;
