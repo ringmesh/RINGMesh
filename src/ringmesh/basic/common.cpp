@@ -32,8 +32,8 @@
  *     54518 VANDOEUVRE-LES-NANCY
  *     FRANCE
  */
- 
- /*!
+
+/*!
  * @file Initialization of the RINGMesh and geogram library on loading
  * @author Arnaud Botella
  */
@@ -58,12 +58,10 @@
 
 namespace RINGMesh {
 
-    /*!
-     * This function configures geogram by setting some geogram options.
-     * \pre This function should be call after GEO::initialize().
-     */
     void configure_geogram()
     {
+        Logger::instance()->unregister_all_clients() ;
+        Logger::instance()->register_client( new ThreadSafeConsoleLogger ) ;
         GEO::CmdLine::import_arg_group( "sys" ) ;
 #ifdef RINGMESH_DEBUG
         GEO::CmdLine::set_arg( "sys:assert", "abort" ) ;
@@ -78,9 +76,6 @@ namespace RINGMesh {
 #endif
     }
 
-    /*!
-     * This function configures RINGMesh by initializing its factories.
-     */
     void configure_ringmesh()
     {
         CmdLine::import_arg_group( "global" ) ;
@@ -98,20 +93,19 @@ namespace RINGMesh {
         configure_geogram() ;
         configure_ringmesh() ;
     }
-    
+
     void print_header_information()
     {
         Logger::div( "RINGMesh" ) ;
-        Logger::out( "" ) << "This project is developed by the RINGMesh"
-            << " developers team:" << std::endl ;
-        Logger::out( "" ) << "RINGMesh-dev <georessources-ringmesh-dev@univ-lorraine.fr> "
-            << std::endl ;
-        Logger::out( "" ) << "You can have access to the full open-source " 
-            << "code through its Bitbucket repository: " << std::endl ;
-        Logger::out( "" ) << "https://bitbucket.org/ring_team/ringmesh" 
-            << std::endl ; 
-        Logger::out( "" ) << "More information on this project and other " 
-            << "projects of the team: " << std::endl ;
-        Logger::out( "" ) << "http://www.ring-team.org" << std::endl ; 
+        Logger::out( "", "This project is developed by the RINGMesh",
+            " developers team:" ) ;
+        Logger::out( "",
+            "RINGMesh-dev <georessources-ringmesh-dev@univ-lorraine.fr> " ) ;
+        Logger::out( "", "You can have access to the full open-source ",
+            "code through its Bitbucket repository: " ) ;
+        Logger::out( "", "https://bitbucket.org/ring_team/ringmesh" ) ;
+        Logger::out( "", "More information on this project and other ",
+            "projects of the team: " ) ;
+        Logger::out( "", "http://www.ring-team.org" ) ;
     }
 }

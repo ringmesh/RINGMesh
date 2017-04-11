@@ -37,8 +37,8 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <third_party/zlib/zip.h>
-#include <third_party/zlib/unzip.h>
+#include <zlib/zip.h>
+#include <zlib/unzip.h>
 
 #include <geogram/basic/factory.h>
 #include <geogram/basic/string.h>
@@ -66,16 +66,34 @@ namespace GEO {
 
 namespace RINGMesh {
 
+    /*!
+     * Compares the contains of two files
+     * @param[in] f1 the first filename
+     * @param[in] f2 the second filename
+     * @return return True if the files are identical
+     */
     bool RINGMESH_API compare_files( const std::string& f1, const std::string& f2 ) ;
-
+    /*!
+     * Loads a GeoModel from a file
+     * @param[out] geomodel the geomodel to fill
+     * @param[in] filename the file to load
+     */
     bool RINGMESH_API geomodel_load(
         GeoModel& geomodel,
         const std::string& filename ) ;
-
+    /*!
+     * Saves a GeoModel to a file
+     * @param[in] geomodel the geomodel to save
+     * @param[in] filename the file to save
+     */
     void RINGMESH_API geomodel_save(
         const GeoModel& geomodel,
         const std::string& filename ) ;
-
+    /*!
+     * Loads a WellGroup from a file
+     * @param[in] filename the file to load
+     * @param][out] wells the wells to fill
+     */
     void RINGMESH_API well_load( const std::string& filename, WellGroup& wells ) ;
 
     class RINGMESH_API GeoModelIOHandler: public GEO::Counted {
@@ -104,8 +122,8 @@ namespace RINGMesh {
         }
     } ;
 
-    typedef GEO::SmartPointer< GeoModelIOHandler > GeoModelIOHandler_var ;
-    typedef GEO::Factory0< GeoModelIOHandler > GeoModelIOHandlerFactory ;
+    using GeoModelIOHandler_var = GEO::SmartPointer< GeoModelIOHandler > ;
+    using GeoModelIOHandlerFactory = GEO::Factory0< GeoModelIOHandler > ;
 
 #define ringmesh_register_GeoModelIOHandler_creator( type, name ) \
     geo_register_creator( GeoModelIOHandlerFactory, type, name )
@@ -132,8 +150,8 @@ namespace RINGMesh {
         {
         }
     } ;
-    typedef GEO::SmartPointer< WellGroupIOHandler > WellGroupIOHandler_var ;
-    typedef GEO::Factory0< WellGroupIOHandler > WellGroupIOHandlerFactory ;
+    using WellGroupIOHandler_var = GEO::SmartPointer< WellGroupIOHandler > ;
+    using WellGroupIOHandlerFactory = GEO::Factory0< WellGroupIOHandler > ;
 
 #define ringmesh_register_WellGroupIOHandler_creator( type, name ) \
     geo_register_creator( WellGroupIOHandlerFactory, type, name )

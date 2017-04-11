@@ -35,17 +35,17 @@
 
 namespace {
     // The reg phys field in the GMSH format is set to 0 for each element
-    const static index_t reg_phys = 0 ;
+    static const index_t reg_phys = 0 ;
 
-    const static index_t adeli_point_type = 15 ;
-    const static index_t adeli_line_type = 1 ;
-    const static index_t adeli_triangle_type = 2 ;
-    const static index_t adeli_tet_type = 4 ;
-    const static index_t adeli_cell_types[4] = {
+    static const index_t adeli_point_type = 15 ;
+    static const index_t adeli_line_type = 1 ;
+    static const index_t adeli_triangle_type = 2 ;
+    static const index_t adeli_tet_type = 4 ;
+    static const index_t adeli_cell_types[4] = {
         adeli_point_type, adeli_line_type, adeli_triangle_type, adeli_tet_type } ;
 
     // The index begins at 1.
-    const static index_t id_offset_adeli = 1 ;
+    static const index_t id_offset_adeli = 1 ;
 
     /*!
      * @brief export for ADELI
@@ -110,7 +110,7 @@ namespace {
                     << cur_corner.index() + id_offset_adeli << " "
                     << cur_corner.nb_vertices() << " "
                     << geomodel.mesh.vertices.geomodel_vertex_id(
-                        cur_corner.gmme_id(), 0 ) + id_offset_adeli << std::endl ;
+                        cur_corner.gmme(), 0 ) + id_offset_adeli << std::endl ;
             }
         }
 
@@ -121,7 +121,8 @@ namespace {
         {
             // Corners are already written so we start this loop at 1
             for( index_t geomodel_mesh_entities = 1;
-                geomodel_mesh_entities < MeshEntityTypeManager::nb_mesh_entity_types();
+                geomodel_mesh_entities
+                    < MeshEntityTypeManager::nb_mesh_entity_types();
                 geomodel_mesh_entities++ ) {
                 for( index_t entity = 0;
                     entity
@@ -145,7 +146,8 @@ namespace {
             // way
             index_t nb_mesh_entities = geomodel.nb_corners() ;
             for( index_t geomodel_mesh_entities = 1;
-                geomodel_mesh_entities < MeshEntityTypeManager::nb_mesh_entity_types();
+                geomodel_mesh_entities
+                    < MeshEntityTypeManager::nb_mesh_entity_types();
                 geomodel_mesh_entities++ ) {
                 for( index_t entity = 0;
                     entity
@@ -176,8 +178,8 @@ namespace {
                     v < geomodel_mesh_entity.nb_mesh_element_vertices( elt ); v++ ) {
                     out
                         << geomodel_mesh_entity.geomodel().mesh.vertices.geomodel_vertex_id(
-                            geomodel_mesh_entity.gmme_id(), elt, v ) + id_offset_adeli
-                        << " " ;
+                            geomodel_mesh_entity.gmme(), elt, v )
+                            + id_offset_adeli << " " ;
                 }
                 out << std::endl ;
             }

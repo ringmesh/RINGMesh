@@ -90,16 +90,23 @@ template< typename T > inline void ringmesh_unused( T const& )
 #include <ringmesh/basic/types.h>
 #include <ringmesh/basic/ringmesh_assert.h>
 
-#include <geogram/basic/logger.h>
+#include <ringmesh/basic/logger.h>
 
 #define DEBUG( a ) \
-    Logger::out( "Debug" ) << #a << " = " << a << std::endl
+    Logger::out( "Debug", #a, " = ", a )
 
 #include <stdexcept>
 
 namespace RINGMesh {
 
+    /*!
+     * This function configures geogram by setting some geogram options.
+     * \pre This function should be call after GEO::initialize().
+     */
     void RINGMESH_API configure_geogram() ;
+    /*!
+     * This function configures RINGMesh by initializing its factories.
+     */
     void RINGMESH_API configure_ringmesh() ;
     void RINGMESH_API default_configure() ;
 
@@ -113,10 +120,10 @@ namespace RINGMesh {
      *       try {
      *          ...
      *       } catch( const RINGMeshException& e ) {
-     *          Logger::err( e.category() ) << e.what() << std::endl ;
+     *          Logger::err( e.category(), e.what() ) ;
      *       } catch( const std::exception& e ) {
      *          // Catch all others STL exceptions
-     *          Logger::err( "Exception" ) << e.what() << std::endl;
+     *          Logger::err( "Exception", e.what() );
      *       }
      */
     class RINGMESH_API RINGMeshException: public std::runtime_error {

@@ -50,9 +50,7 @@
 #include <ringmesh/tetrahedralize/tetra_gen.h>
 
 /*!
- * @file Bunch of functions that shouldn't be there
- * @todo This is not really an API. It is more a set of helper function that should be next to the class
- *            they are written for.
+ * @file Set of high level API functions
  */
 
 namespace {
@@ -127,8 +125,8 @@ namespace {
         const index_t& nb_cell_total,
         const std::string& cell_type )
     {
-        Logger::out( "GeoModel" ) << "* " << nb_cell << " " << cell_type << " ("
-            << nb_cell * 100 / nb_cell_total << "%)\n" ;
+        Logger::out( "GeoModel", "* ", nb_cell, " ", cell_type, " (",
+            nb_cell * 100 / nb_cell_total, "%)" ) ;
     }
 
     void print_one_cell_volume_stat(
@@ -136,10 +134,9 @@ namespace {
         const double& cell_volume_total,
         const std::string& cell_type )
     {
-        Logger::out( "GeoModel" ) << "* " << cell_type << " volume " << cell_volume
-            << " ("
-            << static_cast< index_t >( cell_volume * 100 / cell_volume_total + 0.5 )
-            << "%)\n" ;
+        Logger::out( "GeoModel", "* ", cell_type, " volume ", cell_volume, " (",
+            static_cast< index_t >( cell_volume * 100 / cell_volume_total + 0.5 ),
+            "%)" ) ;
     }
 }
 
@@ -147,11 +144,10 @@ namespace RINGMesh {
 
     void print_nb_mesh_entities(
         const GeoModel& geomodel,
-        const MeshEntityType& type)
+        const MeshEntityType& type )
     {
-        Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left
-            << geomodel.nb_mesh_entities( type ) << " "
-            << type << std::endl ;
+        Logger::out( "GeoModel", std::setw( 10 ), std::left,
+            geomodel.nb_mesh_entities( type ), " ", type ) ;
     }
 
     void print_nb_geological_entities(
@@ -161,23 +157,22 @@ namespace RINGMesh {
         if( geomodel.nb_geological_entities( type ) == 0 ) {
             return ;
         }
-        Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left
-            << geomodel.nb_geological_entities( type ) << " "
-            << type << std::endl ;
+        Logger::out( "GeoModel", std::setw( 10 ), std::left,
+            geomodel.nb_geological_entities( type ), " ", type ) ;
     }
 
     void print_geomodel( const GeoModel& geomodel )
     {
-        Logger::out( "GeoModel" ) << "Model " << geomodel.name() << " has\n"
-            << std::setw( 10 ) << std::left << geomodel.mesh.vertices.nb()
-            << " vertices\n" << std::setw( 10 ) << std::left
-            << count_geomodel_facets( geomodel ) << " facets\n" ;
+        Logger::out( "GeoModel", "Model ", geomodel.name(), " has\n",
+            std::setw( 10 ), std::left, geomodel.mesh.vertices.nb(), " vertices\n",
+            std::setw( 10 ), std::left, count_geomodel_facets( geomodel ),
+            " facets" ) ;
         index_t nb_cells = count_geomodel_cells( geomodel ) ;
         if( nb_cells != 0 ) {
-            Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left << nb_cells
-                << " cells\n" ;
+            Logger::out( "GeoModel", std::setw( 10 ), std::left, nb_cells,
+                " cells" ) ;
         }
-        Logger::out( "GeoModel" ) << std::endl ;
+        Logger::out( "GeoModel" ) ;
 
         const EntityTypeManager& manager = geomodel.entity_type_manager() ;
         const std::vector< MeshEntityType >& mesh_entity_types =
@@ -194,17 +189,16 @@ namespace RINGMesh {
 
     void print_geomodel_mesh_stats( const GeoModel& geomodel )
     {
-        Logger::out( "GeoModel" ) << "Model " << geomodel.name() << " is made of\n"
-            << std::setw( 10 ) << std::left << geomodel.mesh.vertices.nb()
-            << " vertices\n" << std::setw( 10 ) << std::left
-            << count_geomodel_edges( geomodel ) << " edges\n" ;
+        Logger::out( "GeoModel", "Model ", geomodel.name(), " is made of\n",
+            std::setw( 10 ), std::left, geomodel.mesh.vertices.nb(), " vertices\n",
+            std::setw( 10 ), std::left, count_geomodel_edges( geomodel ),
+            " edges" ) ;
 
         index_t nb_triangles = geomodel.mesh.facets.nb_triangle() ;
         index_t nb_quads = geomodel.mesh.facets.nb_quad() ;
         index_t nb_polygons = geomodel.mesh.facets.nb_polygon() ;
         index_t nb_facets = geomodel.mesh.facets.nb_facets() ;
-        Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left << nb_facets
-            << " facets\n" ;
+        Logger::out( "GeoModel", std::setw( 10 ), std::left, nb_facets, " facets" ) ;
         if( nb_triangles > 0 ) {
             print_one_cell_stat( nb_triangles, nb_facets, "triangles" ) ;
         }
@@ -221,8 +215,7 @@ namespace RINGMesh {
         index_t nb_hex = geomodel.mesh.cells.nb_hex() ;
         index_t nb_poly = geomodel.mesh.cells.nb_connector() ;
         index_t nb_cells = geomodel.mesh.cells.nb_cells() ;
-        Logger::out( "GeoModel" ) << std::setw( 10 ) << std::left << nb_cells
-            << " cells\n" ;
+        Logger::out( "GeoModel", std::setw( 10 ), std::left, nb_cells, " cells" ) ;
         if( nb_tet > 0 ) {
             print_one_cell_stat( nb_tet, nb_cells, "tet" ) ;
         }
@@ -238,7 +231,7 @@ namespace RINGMesh {
         if( nb_poly > 0 ) {
             print_one_cell_stat( nb_poly, nb_cells, "polyhedra" ) ;
         }
-        Logger::out( "GeoModel" ) << std::endl ;
+        Logger::out( "GeoModel" ) ;
     }
 
     void print_geomodel_mesh_cell_volumes( const GeoModel& geomodel )
@@ -250,8 +243,8 @@ namespace RINGMesh {
         double poly_volume = 0 ;
         double volume = compute_geomodel_volumes_per_cell_type( geomodel, tet_volume,
             pyramid_volume, prism_volume, hex_volume, poly_volume ) ;
-        Logger::out( "GeoModel" ) << "Model " << geomodel.name()
-            << " has a volume of " << volume << "\n" ;
+        Logger::out( "GeoModel", "Model ", geomodel.name(), " has a volume of ",
+            volume ) ;
         if( tet_volume > 0 ) {
             print_one_cell_volume_stat( tet_volume, volume, "tet" ) ;
         }
@@ -267,7 +260,7 @@ namespace RINGMesh {
         if( poly_volume > 0 ) {
             print_one_cell_volume_stat( poly_volume, volume, "polyhedron" ) ;
         }
-        Logger::out( "GeoModel" ) << std::endl ;
+        Logger::out( "GeoModel" ) ;
     }
 
     bool are_geomodel_surface_meshes_simplicial( const GeoModel& geomodel )
@@ -302,15 +295,17 @@ namespace RINGMesh {
                 gmme_type, elt_i ) ;
             if( cur_gme.name() == name ) {
                 if( mesh_entity_id != NO_ID ) {
-                    throw RINGMeshException( "FIND GME",
-                        " At least two GeoModelMeshEntity have the same name in the GeoModel: " + name ) ;
+                    throw RINGMeshException( "GeoModel",
+                        " At least two GeoModelMeshEntity have the same name in the GeoModel: "
+                            + name ) ;
                 }
                 mesh_entity_id = cur_gme.index() ;
             }
         }
         if( mesh_entity_id == NO_ID ) {
-            throw RINGMeshException( "FIND GME", name
-                + " does not match with any actual GeoModelEntity name in the GeoModel" ) ;
+            throw RINGMeshException( "GeoModel",
+                name
+                    + " does not match with any actual GeoModelEntity name in the GeoModel" ) ;
         }
         return mesh_entity_id ;
     }
@@ -327,15 +322,17 @@ namespace RINGMesh {
                 geomodel.geological_entity( gmge_type, elt_i ) ;
             if( cur_gme.name() == name ) {
                 if( geological_entity_id != NO_ID ) {
-                    throw RINGMeshException( "Find GME",
-                        "At least two GeoModelGeologicalEntity have the same name in the GeoModel : " + name ) ;
+                    throw RINGMeshException( "GeoModel",
+                        "At least two GeoModelGeologicalEntity have the same name in the GeoModel : "
+                            + name ) ;
                 }
                 geological_entity_id = cur_gme.index() ;
             }
         }
         if( geological_entity_id == NO_ID ) {
-            throw RINGMeshException( "Find GME", name
-                + " does not match with any actual GeoModelEntity name in the GeoModel" ) ;
+            throw RINGMeshException( "GeoModel",
+                name
+                    + " does not match with any actual GeoModelEntity name in the GeoModel" ) ;
         }
         return geological_entity_id ;
     }
@@ -360,9 +357,8 @@ namespace RINGMesh {
         bool degrees )
     {
         if( length( axis ) < M.epsilon() ) {
-            Logger::err( "GeoModel" )
-                << "Rotation around an epsilon length axis is impossible"
-                << std::endl ;
+            Logger::err( "GeoModel",
+                "Rotation around an epsilon length axis is impossible" ) ;
             return ;
         }
         GEO::Matrix< 4, double > rot_mat ;
@@ -405,7 +401,7 @@ namespace RINGMesh {
         const std::vector< std::vector< vec3 > >& internal_vertices )
     {
         if( region_id == NO_ID ) {
-            Logger::out( "Info" ) << "Using " << method << std::endl ;
+            Logger::out( "Info", "Using ", method ) ;
             GEO::ProgressTask progress( "Compute", M.nb_regions() ) ;
             for( index_t i = 0; i < M.nb_regions(); i++ ) {
                 tetrahedralize( M, method, i, add_steiner_points,

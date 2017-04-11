@@ -113,6 +113,12 @@ namespace RINGMesh {
 
     class RINGMESH_API WellPart: public WellEntity {
     public:
+
+        /*!
+         * Create a WellPart
+         * @param[in] well the associated well
+         * @param[in] id the position in the parts_ vector of the associated well
+         */
         WellPart( const Well* well, index_t id ) ;
         ~WellPart() ;
 
@@ -136,10 +142,22 @@ namespace RINGMesh {
             return corners_[c] ;
         }
 
+        /*!
+         * Create the associated Mesh of the part
+         * @param[in] points the points of the mesh
+         * @pre the points should be oriented in the order of the well path
+         */
         void set_points( const std::vector< vec3 >& points ) ;
 
+        /*!
+         * Gets the number of edges
+         */
         index_t nb_edges() const ;
         index_t nb_vertices() const ;
+
+        /*!
+         * Gets the length of the part
+         */
         double length() const ;
 
         /*!
@@ -204,9 +222,23 @@ namespace RINGMesh {
         Well() ;
         ~Well() ;
 
+        /*!
+         * Copies information and resize the number of parts and corners
+         * @param[in,out] well the current well information will be copied into this one
+         */
         void copy_corners_and_informations( Well& well ) const ;
 
+        /*!
+         * Gets the edges of a part
+         * @param[in] part_id the part id
+         * @param[out] edges the edges of the part
+         */
         void get_part_edges( index_t part_id, std::vector< Edge >& edges ) const ;
+        /*!
+         * Gets all the edges of a corresponding region
+         * @param[in] region the region id
+         * @param[out] edges the corresponding edges
+         */
         void get_region_edges( index_t part_id, std::vector< Edge >& edges ) const ;
 
         /*!
@@ -221,6 +253,12 @@ namespace RINGMesh {
             corners_.push_back( new WellCorner( this, vertex, is_on_surface, id ) ) ;
             return corner_id ;
         }
+        /*!
+         * Finds if a corner at a given geometric position exist
+         * @param[in] vertex the geometric position to test
+         * @param[in] epsilon the numerical précision used to compare the vertices
+         * @return the id of the corner or NO_ID if not found any corresponding to \p p
+         */
         index_t find_corner( const vec3& vertex, double epsilon ) const ;
         /*!
          * Gets a corner
@@ -287,6 +325,9 @@ namespace RINGMesh {
         {
             return static_cast< index_t >( parts_.size() ) ;
         }
+        /*!
+         * Gets the number of edges of the well
+         */
         index_t nb_edges() const ;
         /*!
          * Sets the well name
@@ -328,8 +369,18 @@ namespace RINGMesh {
         WellGroup() ;
         virtual ~WellGroup() ;
 
+        /*!
+         * Gets all the edges contained in a region
+         * @param[in] region the region id
+         * @param[out] edges the edges of the region
+         */
         void get_region_edges( index_t region, std::vector< Edge >& edges ) const ;
 
+        /*!
+         * Gets all the edges contained in a region
+         * @param[in] region the region id
+         * @param[out] edges the edges of the region, one vector per well
+         */
         void get_region_edges(
             index_t region,
             std::vector< std::vector< Edge > >& edges ) const ;
@@ -348,9 +399,25 @@ namespace RINGMesh {
         {
             geomodel_ = geomodel ;
         }
+
+        /*!
+         * Finds if a well with the same name already exist
+         * @param[in] name the name to test
+         * @return the id of the well or NO_ID
+         */
         index_t find_well( const std::string& name ) const ;
 
+        /*!
+         * Creates new wells
+         * @param[in] nb the number of wells to create
+         */
         void create_wells( index_t nb_wells ) ;
+
+        /*!
+         * Add a well from its mesh and makes it conformal to the associated GeoModel
+         * @param[in] mesh the mesh of the well
+         * @param[in] name the name of the well
+         */
         void add_well( const Mesh1D& mesh, const std::string& name ) ;
 
         /*!

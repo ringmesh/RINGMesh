@@ -45,27 +45,11 @@
 namespace RINGMesh {
 
     Universe::Universe( const GeoModel& geomodel )
-        : GeoModelEntity( geomodel,NO_ID )
+        : GeoModelEntity( geomodel, NO_ID )
     {
         name_ = universe_type_name() ;
     }
 
-    /*!
-     * @brief Map the name of a geological type with a value of GEOL_FEATURE
-     *
-     * @param[in] in Name of the feature. Can be
-     * \li "reverse_fault"
-     * \li "normal_fault"
-     * \li "fault"
-     * \li "top"
-     * \li "none"
-     * \li "topographic"
-     * \li "unconformity"
-     * \li "boundary"
-     * Other strings will end up in \p NO_GEOL
-     * @return The geological feature index
-     * @todo Add other types of unconformity, see RINGMesh::GeoModelEntity::TYPE. --GC
-     */
     GeoModelEntity::GEOL_FEATURE GeoModelEntity::determine_geological_type(
         const std::string& in )
     {
@@ -93,11 +77,7 @@ namespace RINGMesh {
         }
     }
 
-    /*!
-     * \return the (lowercase) string associated to a
-     * GeoModelELement::GEOL_FEATURE
-     */
-    std::string GeoModelEntity::geol_name( GME::GEOL_FEATURE t )
+    std::string GeoModelEntity::geol_name( GeoModelEntity::GEOL_FEATURE t )
     {
         switch( t ) {
             case STRATI:

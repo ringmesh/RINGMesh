@@ -36,20 +36,20 @@
 namespace {
     /// Convert the cell type of RINGMesh to the MFEM one
     /// NO_ID for pyramids and prims because there are not supported by MFEM
-    static index_t cell_type_mfem[4] = { 4, 5, NO_ID, NO_ID } ;
+    static const index_t cell_type_mfem[4] = { 4, 5, NO_ID, NO_ID } ;
 
     /// Convert the facet type of RINGMesh to the MFEM one
     /// NO_ID for polygons there are not supported by MFEM
-    static index_t facet_type_mfem[3] = { 2, 3, NO_ID } ;
+    static const index_t facet_type_mfem[3] = { 2, 3, NO_ID } ;
 
     /// Convert the numerotation from RINGMesh to MFEM
     /// It works for Hexaedron and also for Tetrahedron (in this
     /// case, only the first four values of this table
     /// are used while iterating on vertices)
-    static index_t cell2mfem[8] = { 0, 1, 3, 2, 4, 5, 7, 6 } ;
+    static const index_t cell2mfem[8] = { 0, 1, 3, 2, 4, 5, 7, 6 } ;
 
     /// MFEM works with Surface and Region index begin with 1
-    static index_t mfem_offset = 1 ;
+    static const index_t mfem_offset = 1 ;
 
     /*!
      * Export for the MFEM format http://mfem.org/

@@ -55,10 +55,10 @@ namespace RINGMesh {
         }
         Mesh0D* mesh = Mesh0DFactory::create_object( new_type ) ;
         if( !mesh ) {
-            Logger::warn( "Mesh0D" ) << "Could not create mesh data structure: "
-                << new_type << std::endl ;
-            Logger::warn( "Mesh0D" )
-                << "Falling back to GeogramMesh0D data structure" << std::endl ;
+            Logger::warn( "Mesh0D", "Could not create mesh data structure: ",
+                new_type ) ;
+            Logger::warn( "Mesh0D",
+                "Falling back to GeogramMesh0D data structure" ) ;
 
             mesh = new GeogramMesh0D ;
         }
@@ -73,10 +73,10 @@ namespace RINGMesh {
         }
         Mesh1D* mesh = Mesh1DFactory::create_object( new_type ) ;
         if( !mesh ) {
-            Logger::warn( "Mesh1D" ) << "Could not create mesh data structure: "
-                << new_type << std::endl ;
-            Logger::warn( "Mesh1D" )
-                << "Falling back to GeogramMesh1D data structure" << std::endl ;
+            Logger::warn( "Mesh1D", "Could not create mesh data structure: ",
+                new_type ) ;
+            Logger::warn( "Mesh1D",
+                "Falling back to GeogramMesh1D data structure" ) ;
 
             mesh = new GeogramMesh1D ;
         }
@@ -91,10 +91,10 @@ namespace RINGMesh {
         }
         Mesh2D* mesh = Mesh2DFactory::create_object( new_type ) ;
         if( !mesh ) {
-            Logger::warn( "Mesh2D" ) << "Could not create mesh data structure: "
-                << new_type << std::endl ;
-            Logger::warn( "Mesh2D" )
-                << "Falling back to GeogramMesh2D data structure" << std::endl ;
+            Logger::warn( "Mesh2D", "Could not create mesh data structure: ",
+                new_type ) ;
+            Logger::warn( "Mesh2D",
+                "Falling back to GeogramMesh2D data structure" ) ;
 
             mesh = new GeogramMesh2D ;
         }
@@ -115,9 +115,9 @@ namespace RINGMesh {
 
         // Get the facets around the shared vertex (next_v_id) that are on the boundary
         // There must be one (the current one) or two (the next one on boundary)
-        std::vector< index_t > facets_around_next_v_id ;
-        index_t nb_around = facets_around_vertex( next_v_id, facets_around_next_v_id,
-            true, f ) ;
+        std::vector< index_t > facets_around_next_v_id = facets_around_vertex(
+            next_v_id, true, f ) ;
+        index_t nb_around = static_cast< index_t >( facets_around_next_v_id.size() ) ;
         ringmesh_assert( nb_around == 1 || nb_around == 2 ) ;
 
         next_f = facets_around_next_v_id[0] ;
@@ -153,9 +153,9 @@ namespace RINGMesh {
 
         // Get the facets around the shared vertex (v_id) that are on the boundary
         // There must be one (the current one) or two (the next one on boundary)
-        std::vector< index_t > facets_around_v_id ;
-        index_t nb_around = facets_around_vertex( v_id, facets_around_v_id, true,
+        std::vector< index_t > facets_around_v_id = facets_around_vertex( v_id, true,
             f ) ;
+        index_t nb_around = static_cast< index_t >( facets_around_v_id.size() ) ;
         ringmesh_assert( nb_around == 1 || nb_around == 2 ) ;
 
         prev_f = facets_around_v_id[0] ;
@@ -232,13 +232,13 @@ namespace RINGMesh {
         }
         return result ;
     }
-    index_t Mesh2D::facets_around_vertex(
+
+    std::vector< index_t > Mesh2D::facets_around_vertex(
         index_t surf_vertex_id,
-        std::vector< index_t >& result,
         bool border_only,
         index_t f0 ) const
     {
-        result.clear() ;
+        std::vector< index_t > result ;
 
         index_t f = 0 ;
         while( f0 == NO_ID && f < nb_facets() ) {
@@ -301,7 +301,7 @@ namespace RINGMesh {
             }
         } while( !S.empty() ) ;
 
-        return static_cast< index_t >( result.size() ) ;
+        return result ;
     }
     Mesh3D* Mesh3D::create_mesh( const MeshType type )
     {
@@ -311,10 +311,10 @@ namespace RINGMesh {
         }
         Mesh3D* mesh = Mesh3DFactory::create_object( new_type ) ;
         if( !mesh ) {
-            Logger::warn( "Mesh3D" ) << "Could not create mesh data structure: "
-                << new_type << std::endl ;
-            Logger::warn( "Mesh3D" )
-                << "Falling back to GeogramMesh3D data structure" << std::endl ;
+            Logger::warn( "Mesh3D", "Could not create mesh data structure: ",
+                new_type ) ;
+            Logger::warn( "Mesh3D",
+                "Falling back to GeogramMesh3D data structure" ) ;
 
             mesh = new GeogramMesh3D ;
         }
