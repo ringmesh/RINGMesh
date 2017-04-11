@@ -211,11 +211,6 @@ namespace RINGMesh {
             }
         }
 
-        void set_geogram_base_mesh( MeshBase& mesh )
-        {
-            mesh_ = &dynamic_cast< GeogramMeshBase& >( mesh ) ;
-        }
-
     private:
         GeogramMeshBase* mesh_ ;
     } ;
