@@ -155,6 +155,7 @@ namespace RINGMesh {
         {
         }
 
+        using MeshBaseBuilder::set_mesh ;
         virtual void set_mesh( Mesh0D& mesh ) = 0 ;
 
         static Mesh0DBuilder* create_builder( Mesh0D& mesh ) ;
@@ -182,6 +183,7 @@ namespace RINGMesh {
         {
         }
 
+        using MeshBaseBuilder::set_mesh;
         virtual void set_mesh( Mesh1D& mesh ) = 0 ;
 
         static Mesh1DBuilder* create_builder( Mesh1D& mesh ) ;
@@ -253,6 +255,7 @@ namespace RINGMesh {
         {
         }
 
+        using MeshBaseBuilder::set_mesh;
         virtual void set_mesh( Mesh2D& mesh ) = 0 ;
 
         static Mesh2DBuilder* create_builder( Mesh2D& mesh ) ;
@@ -389,6 +392,7 @@ namespace RINGMesh {
         {
         }
 
+        using MeshBaseBuilder::set_mesh;
         virtual void set_mesh( Mesh3D& mesh ) = 0 ;
 
         static Mesh3DBuilder* create_builder( Mesh3D& mesh ) ;
