@@ -406,7 +406,7 @@ namespace RINGMesh {
                 continue ;
             } else {
                 // There must be one and only one parent of that type in this entity
-                // And this parent msut have this entity in its children
+                // And this parent must have this entity in its children
                 index_t nb_found_parents = 0 ;
                 for( index_t i = 0; i < nb_parents(); ++i ) {
                     const GeoModelGeologicalEntity& E = parent( i ) ;
@@ -433,7 +433,7 @@ namespace RINGMesh {
                 if( nb_found_parents != 1 ) {
                     Logger::warn( "GeoModelEntity", gmme(), " has ",
                         nb_found_parents, " geological parent entity of type ",
-                        parent_type ) ;
+                        parent_type, "(expected one)" ) ;
                     valid = false ;
                 }
             }

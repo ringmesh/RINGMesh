@@ -92,7 +92,7 @@ namespace RINGMesh {
      * @details Check that the entities belong to this geomodel,
      *          call the check validity for each entity
      */
-    bool RINGMESH_API are_geomodel_mesh_entities_valid(
+    bool RINGMESH_API are_geomodel_mesh_entities_mesh_valid(
         const GeoModel& geomodel ) ;
 
     /*!
