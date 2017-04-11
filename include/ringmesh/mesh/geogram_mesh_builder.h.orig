@@ -208,6 +208,11 @@ namespace RINGMesh {
             mesh_->vertices_nn_search_.reset() ;
         }
 
+        void set_geogram_base_mesh( MeshBase& mesh )
+        {
+            mesh_ = &dynamic_cast< GeogramMeshBase& >( mesh ) ;
+        }
+
     private:
         GeogramMeshBase* mesh_ ;
     } ;

@@ -40,16 +40,6 @@
 namespace {
     using namespace RINGMesh ;
 
-    void get_entity_vertices_and_update_corners(
-        std::vector< index_t >& corners,
-        std::vector< index_t >& vertices )
-    {
-        std::vector< index_t > corners_to_vertices ;
-        get_unique_input_values_and_mapping< index_t >( corners, vertices,
-            corners_to_vertices ) ;
-        corners = corners_to_vertices ;
-    }
-
     void get_internal_borders(
         const GeoModelMeshEntity& entity,
         std::set< index_t >& internal_borders )
@@ -476,7 +466,6 @@ namespace RINGMesh {
 
     void GeoModelBuilderGeometry::set_surface_geometry(
         index_t surface_id,
-        const std::vector< index_t >& geomodel_vertex_ids,
         const std::vector< index_t >& facets,
         const std::vector< index_t >& facet_ptr )
     {

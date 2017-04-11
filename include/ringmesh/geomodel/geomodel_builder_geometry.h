@@ -272,53 +272,21 @@ namespace RINGMesh {
             index_t line_id,
             const std::vector< index_t >& unique_vertices ) ;
 
-        /*!
-         * @brief Sets the vertices and facets for a surface
-         *
-         * @param[in] surface_id Index of the surface
-         * @param[in] geomodel_vertex_ids Indices of unique vertices in the GeoModel
-         * @param[in] facets Indices in the vertices vector to build facets
-         * @param[in] facet_ptr Pointer to the beginning of a facet in facets
+        /*! @}
+         * \name Set entity geometry using GeoModelMeshEntity vertices
+         * @{
          */
-        void set_surface_geometry(
-            index_t surface_id,
-            const std::vector< index_t >& geomodel_vertex_ids,
-            const std::vector< index_t >& surface_facets,
-            const std::vector< index_t >& surface_facet_ptr ) ;
 
         /*!
          * @brief Sets the facets of a surface
          * @param[in] surface_id Index of the surface
-         * @param[in] facets Indices of the geomodel vertices defining the facets
+         * @param[in] facets Indices of the mesh vertices defining the facets
          * @param[in] facet_ptr Pointer to the beginning of a facet in facets
          */
         void set_surface_geometry(
             index_t surface_id,
             const std::vector< index_t >& facets,
             const std::vector< index_t >& facet_ptr ) ;
-
-        void set_surface_geometry(
-            index_t surface_id,
-            const std::vector< index_t >& triangle_corners ) ;
-
-        void set_surface_geometry_with_adjacencies(
-            index_t surface_id,
-            const std::vector< index_t >& triangle_corners,
-            const std::vector< index_t >& adjacent_triangles ) ;
-
-        void set_surface_element_geometry(
-            index_t surface_id,
-            index_t facet_id,
-            const std::vector< index_t >& corners ) ;
-
-        void set_surface_element_adjacency(
-            index_t surface_id,
-            index_t facet_id,
-            const std::vector< index_t >& adjacents ) ;
-
-        void set_region_geometry(
-            index_t region_id,
-            const std::vector< index_t >& tet_corners ) ;
 
         void set_region_element_geometry(
             index_t region_id,
