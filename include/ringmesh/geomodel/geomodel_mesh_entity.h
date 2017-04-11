@@ -382,11 +382,11 @@ namespace RINGMesh {
         virtual bool is_on_voi() const final ;
 
         /*!
-         * @return 0, no mesh_element are defined for corners.
+         * @return 1, (one element here is one vertex)
          */
         virtual index_t nb_mesh_elements() const final
         {
-            return 0 ;
+            return mesh0d_->nb_vertices() ;
         }
         /*!
          * @return the number of vertices of the Corner
