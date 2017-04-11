@@ -28,7 +28,7 @@
 #  endif /* !DYNAMIC_CRC_TABLE */
 #endif /* MAKECRCH */
 
-#include <third_party/zlib/zutil.h>      /* for STDC and FAR definitions */
+#include <zlib/zutil.h>      /* for STDC and FAR definitions */
 
 #define local static
 
@@ -181,7 +181,7 @@ local void write_table(out, table)
 /* ========================================================================
  * Tables of CRC-32s of all single-byte values, made by make_crc_table().
  */
-#include <third_party/zlib/crc32.h>
+#include <zlib/crc32.h>
 #endif /* DYNAMIC_CRC_TABLE */
 
 /* =========================================================================

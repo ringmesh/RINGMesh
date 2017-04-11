@@ -36,7 +36,6 @@
 #pragma once
 
 #include <geogram/basic/geometry.h>
-#include <geogram/basic/logger.h>
 #include <geogram/basic/numeric.h>
 
 /*!
@@ -71,8 +70,6 @@ namespace RINGMesh {
     using GEO::index_t ;
     // This is an int
     using GEO::signed_index_t ;
-
-    using GEO::Logger ;
 
     // This is the value used in RINGMesh for a invalid index
     static const index_t NO_ID = index_t( -1 ) ;

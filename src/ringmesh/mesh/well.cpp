@@ -76,7 +76,7 @@ namespace {
         bool side )
     {
         ringmesh_assert( surface_part_id < geomodel.nb_surfaces() ) ;
-        gmme_t cur_surface( Surface::type_name_static(), surface_part_id ) ;
+        gmme_id cur_surface( Surface::type_name_static(), surface_part_id ) ;
         const Surface& surface = geomodel.surface( surface_part_id ) ;
         for( index_t r = 0; r < surface.nb_in_boundary(); r++ ) {
             const Region& cur_region =
@@ -205,6 +205,57 @@ namespace {
         well_part.set_points( vertices ) ;
     }
 
+    class EdgeConformerAction {
+    public:
+        EdgeConformerAction(
+            const Surface& surface,
+            const vec3& v_from,
+            const vec3& v_to,
+            std::vector< LineInstersection >& intersections )
+            :
+                surface_( surface ),
+                v_from_( v_from ),
+                v_to_( v_to ),
+                intersections_( intersections )
+        {
+        }
+
+        void operator()( index_t trgl )
+        {
+            vec3 result ;
+            if( segment_triangle_intersection( v_from_, v_to_,
+                surface_.mesh_element_vertex( trgl, 0 ),
+                surface_.mesh_element_vertex( trgl, 1 ),
+                surface_.mesh_element_vertex( trgl, 2 ), result ) ) {
+                intersections_.push_back(
+                    LineInstersection( result, surface_.index(), trgl ) ) ;
+            }
+        }
+
+    private:
+        const Surface& surface_ ;
+        const vec3& v_from_ ;
+        const vec3& v_to_ ;
+
+        std::vector< LineInstersection >& intersections_ ;
+    } ;
+
+    struct OrientedEdge {
+        OrientedEdge( const Mesh1D& mesh, index_t edge, index_t vertex_from )
+            : edge_( edge ), vertex_from_( vertex_from )
+        {
+            if( mesh.edge_vertex( edge, 0 ) == vertex_from ) {
+                edge_vertex_ = 0 ;
+            } else {
+                ringmesh_assert( mesh.edge_vertex( edge, 1 ) == vertex_from ) ;
+                edge_vertex_ = 1 ;
+            }
+        }
+        index_t edge_ ;
+        index_t edge_vertex_ ;
+        index_t vertex_from_ ;
+    } ;
+
 }
 
 namespace RINGMesh {
@@ -248,11 +299,6 @@ namespace RINGMesh {
 
 // --------------------------------------------------------------------------
 
-    /*!
-     * Create a WellPart
-     * @param[in] well the associated well
-     * @param[in] id the position in the parts_ vector of the associated well
-     */
     WellPart::WellPart( const Well* well, index_t id )
         :
             WellEntity( well ),
@@ -268,11 +314,6 @@ namespace RINGMesh {
         delete mesh_ ;
     }
 
-    /*!
-     * Create the associated Mesh of the part
-     * @param[in] points the points of the mesh
-     * @pre the points should be oriented in the order of the well path
-     */
     void WellPart::set_points( const std::vector< vec3 >& points )
     {
         index_t nb_points = static_cast< index_t >( points.size() ) ;
@@ -290,9 +331,6 @@ namespace RINGMesh {
         }
     }
 
-    /*!
-     * Gets the number of edges
-     */
     index_t WellPart::nb_edges() const
     {
         return mesh_->nb_edges() ;
@@ -318,9 +356,6 @@ namespace RINGMesh {
         return mesh_->vertices_nn_search() ;
     }
 
-    /*!
-     * Gets the length of the part
-     */
     double WellPart::length() const
     {
         double l = 0.0 ;
@@ -356,12 +391,6 @@ namespace RINGMesh {
         }
     }
 
-    /*!
-     * Finds if a corner at a given geometric position exist
-     * @param[in] vertex the geometric position to test
-     * @param[in] epsilon the numerical précision used to compare the vertices
-     * @return the id of the corner or NO_ID if not found any corresponding to \p p
-     */
     index_t Well::find_corner( const vec3& vertex, double epsilon ) const
     {
         for( index_t c = 0; c < nb_corners(); c++ ) {
@@ -372,10 +401,6 @@ namespace RINGMesh {
         return NO_ID ;
     }
 
-    /*!
-     * Copies information and resize the number of parts and corners
-     * @param[in,out] well the current well information will be copied into this one
-     */
     void Well::copy_corners_and_informations( Well& well ) const
     {
         well.name_ = name_ ;
@@ -398,9 +423,6 @@ namespace RINGMesh {
         }
     }
 
-    /*!
-     * Gets the number of edges of the well
-     */
     index_t Well::nb_edges() const
     {
         if( nb_edges_ == NO_ID ) {
@@ -413,11 +435,6 @@ namespace RINGMesh {
         return nb_edges_ ;
     }
 
-    /*!
-     * Gets the edges of a part
-     * @param[in] part_id the part id
-     * @param[out] edges the edges of the part
-     */
     void Well::get_part_edges( index_t part_id, std::vector< Edge >& edges ) const
     {
         const WellPart& well_part = part( part_id ) ;
@@ -427,11 +444,6 @@ namespace RINGMesh {
         }
     }
 
-    /*!
-     * Gets all the edges of a corresponding region
-     * @param[in] region the region id
-     * @param[out] edges the corresponding edges
-     */
     void Well::get_region_edges( index_t region, std::vector< Edge >& edges ) const
     {
         for( index_t part_id = 0; part_id < nb_parts(); part_id++ ) {
@@ -452,11 +464,6 @@ namespace RINGMesh {
     {
     }
 
-    /*!
-     * Gets all the edges contained in a region
-     * @param[in] region the region id
-     * @param[out] edges the edges of the region
-     */
     void WellGroup::get_region_edges(
         index_t region,
         std::vector< Edge >& edges ) const
@@ -471,11 +478,6 @@ namespace RINGMesh {
         }
     }
 
-    /*!
-     * Gets all the edges contained in a region
-     * @param[in] region the region id
-     * @param[out] edges the edges of the region, one vector per well
-     */
     void WellGroup::get_region_edges(
         index_t region,
         std::vector< std::vector< Edge > >& edges ) const
@@ -488,45 +490,6 @@ namespace RINGMesh {
         }
     }
 
-    class EdgeConformerAction {
-    public:
-        EdgeConformerAction(
-            const Surface& surface,
-            const vec3& v_from,
-            const vec3& v_to,
-            std::vector< LineInstersection >& intersections )
-            :
-                surface_( surface ),
-                v_from_( v_from ),
-                v_to_( v_to ),
-                intersections_( intersections )
-        {
-        }
-
-        void operator()( index_t trgl )
-        {
-            vec3 result ;
-            if( segment_triangle_intersection( v_from_, v_to_,
-                surface_.mesh_element_vertex( trgl, 0 ),
-                surface_.mesh_element_vertex( trgl, 1 ),
-                surface_.mesh_element_vertex( trgl, 2 ), result ) ) {
-                intersections_.push_back(
-                    LineInstersection( result, surface_.index(), trgl ) ) ;
-            }
-        }
-
-    private:
-        const Surface& surface_ ;
-        const vec3& v_from_ ;
-        const vec3& v_to_ ;
-
-        std::vector< LineInstersection >& intersections_ ;
-    } ;
-
-    /*!
-     * Creates new wells
-     * @param[in] nb the number of wells to create
-     */
     void WellGroup::create_wells( index_t nb )
     {
         wells_.resize( nb, nullptr ) ;
@@ -535,27 +498,6 @@ namespace RINGMesh {
         }
     }
 
-    struct OrientedEdge {
-        OrientedEdge( const Mesh1D& mesh, index_t edge, index_t vertex_from )
-            : edge_( edge ), vertex_from_( vertex_from )
-        {
-            if( mesh.edge_vertex( edge, 0 ) == vertex_from ) {
-                edge_vertex_ = 0 ;
-            } else {
-                ringmesh_assert( mesh.edge_vertex( edge, 1 ) == vertex_from ) ;
-                edge_vertex_ = 1 ;
-            }
-        }
-        index_t edge_ ;
-        index_t edge_vertex_ ;
-        index_t vertex_from_ ;
-    } ;
-
-    /*!
-     * Add a well from its mesh and makes it conformal to the associated GeoModel
-     * @param[in] mesh the mesh of the well
-     * @param[in] name the name of the well
-     */
     void WellGroup::add_well( const Mesh1D& mesh, const std::string& name )
     {
         ringmesh_assert( geomodel() ) ;
@@ -580,7 +522,7 @@ namespace RINGMesh {
         for( index_t v = 0; v < conformal_mesh.nb_vertices(); v++ ) {
             const std::vector< index_t >& edges = edges_around_vertices[v] ;
             if( edges.size() == 1 ) {
-                S.push( OrientedEdge( conformal_mesh, edges.front(), v ) ) ;
+                S.emplace( conformal_mesh, edges.front(), v ) ;
             }
         }
         if( S.empty() ) {
@@ -618,8 +560,7 @@ namespace RINGMesh {
                     index_t count = 0 ;
                     for( index_t edge : edges ) {
                         if( !edge_visited[edge] ) {
-                            S_part.push(
-                                OrientedEdge( conformal_mesh, edge, v_to_id ) ) ;
+                            S_part.emplace( conformal_mesh, edge, v_to_id ) ;
                             count++ ;
                         }
                     }
@@ -630,7 +571,7 @@ namespace RINGMesh {
                         well_part_points, vertex_info[cur_edge.vertex_from_],
                         vertex_info[v_to_id] ) ;
                     for( index_t edge : edges ) {
-                        S.push( OrientedEdge( conformal_mesh, edge, v_to_id ) ) ;
+                        S.emplace( conformal_mesh, edge, v_to_id ) ;
                     }
                 }
             } while( !S_part.empty() ) ;
@@ -698,11 +639,6 @@ namespace RINGMesh {
         }
     }
 
-    /*!
-     * Finds if a well with the same name already exist
-     * @param[in] name the name to test
-     * @return the id of the well or NO_ID
-     */
     index_t WellGroup::find_well( const std::string& name ) const
     {
         for( index_t w = 0; w < nb_wells(); w++ ) {

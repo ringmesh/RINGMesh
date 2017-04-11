@@ -59,15 +59,14 @@ namespace RINGMesh {
      * "Line" is boundary of "Surface"
      * "Surface" is boundary of "Region"
      */
-    typedef std::map< MeshEntityType, MeshEntityType > MeshEntityTypeMap ;
+    using MeshEntityTypeMap = std::map< MeshEntityType, MeshEntityType > ;
     struct MeshEntityTypeBoundaryMap {
         MeshEntityTypeBoundaryMap() ;
         void register_boundary(
             const MeshEntityType& type,
             const MeshEntityType& boundary )
         {
-            map.insert(
-                std::pair< MeshEntityType, MeshEntityType >( type, boundary ) ) ;
+            map.emplace( type, boundary ) ;
         }
         MeshEntityTypeMap map ;
     } ;
@@ -84,9 +83,7 @@ namespace RINGMesh {
             const MeshEntityType& type,
             const MeshEntityType& in_boundary )
         {
-            map.insert(
-                std::pair< MeshEntityType, MeshEntityType >( type,
-                    in_boundary ) ) ;
+            map.emplace( type, in_boundary ) ;
         }
         MeshEntityTypeMap map ;
     } ;
@@ -156,8 +153,8 @@ namespace RINGMesh {
     class RINGMESH_API RelationshipManager {
         friend class GeoModelBuilderGeology ;
     public:
-        typedef std::map< GeologicalEntityType, MeshEntityType > GeologicalEntityToChild ;
-        typedef std::map< MeshEntityType, std::set< GeologicalEntityType > > MeshEntityToParents ;
+        using GeologicalEntityToChild = std::map< GeologicalEntityType, MeshEntityType > ;
+        using MeshEntityToParents = std::map< MeshEntityType, std::set< GeologicalEntityType > > ;
 
         std::vector< GeologicalEntityType > parent_types(
             const MeshEntityType& child_type ) const ;

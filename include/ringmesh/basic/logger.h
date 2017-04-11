@@ -33,71 +33,70 @@
  *     FRANCE
  */
 
-#include <ringmesh/io/io.h>
+#pragma once
 
-#include <geogram/basic/file_system.h>
-#include <geogram/basic/line_stream.h>
+#include <ringmesh/basic/common.h>
 
-#include <ringmesh/geomodel/geomodel.h>
+#include <mutex>
 
-#include <ringmesh/mesh/geogram_mesh.h>
-#include <ringmesh/mesh/mesh_builder.h>
-#include <ringmesh/mesh/well.h>
+#include <geogram/basic/logger.h>
 
 /*!
- * @file Implements the input - output of WellGroup
+ * @file Logger class declaration
  * @author Arnaud Botella
  */
 
-namespace {
-    using namespace RINGMesh ;
-
-#include "well_group/io_smesh.cpp"
-#include "well_group/io_wl.cpp"
-
-}
-
 namespace RINGMesh {
 
-    void well_load( const std::string& filename, WellGroup& wells )
-    {
-        Logger::out( "I/O", "Loading file ", filename, "..." ) ;
-
-        WellGroupIOHandler_var handler = WellGroupIOHandler::get_handler(
-            filename ) ;
-        handler->load( filename, wells ) ;
-    }
-
-    WellGroupIOHandler* WellGroupIOHandler::create( const std::string& format )
-    {
-        WellGroupIOHandler* handler = WellGroupIOHandlerFactory::create_object(
-            format ) ;
-        if( !handler ) {
-            std::vector< std::string > names ;
-            WellGroupIOHandlerFactory::list_creators( names ) ;
-            Logger::err( "I/O", "Currently supported file formats are: " ) ;
-            for( index_t i = 0; i < names.size(); i++ ) {
-                Logger::err( "I/O", " ", names[i] ) ;
-            }
-
-            throw RINGMeshException( "I/O", "Unsupported file format: " + format ) ;
+    class RINGMESH_API Logger {
+    public:
+        static void div( const std::string& title )
+        {
+            std::lock_guard< std::mutex > lock( lock_ ) ;
+            GEO::Logger::div( title ) ;
         }
-        return handler ;
-    }
 
-    WellGroupIOHandler* WellGroupIOHandler::get_handler(
-        const std::string& filename )
-    {
-        std::string ext = GEO::FileSystem::extension( filename ) ;
-        return create( ext ) ;
-    }
+        template< typename ...Args >
+        static void out( const std::string& feature, const Args& ... args )
+        {
+            std::lock_guard< std::mutex > lock( lock_ ) ;
+            log( GEO::Logger::out( feature ), args... ) ;
+        }
 
-    /*
-     * Initializes the possible handler for IO files
-     */
-    void WellGroupIOHandler::initialize()
-    {
-        ringmesh_register_WellGroupIOHandler_creator( WLIOHandler, "wl" ) ;
-        ringmesh_register_WellGroupIOHandler_creator( SmeshIOHandler, "smesh" ) ;
-    }
+        template< typename ...Args >
+        static void err( const std::string& feature, const Args& ... args )
+        {
+            std::lock_guard< std::mutex > lock( lock_ ) ;
+            log( GEO::Logger::err( feature ), args... ) ;
+        }
+
+        template< typename ...Args >
+        static void warn( const std::string& feature, const Args& ... args )
+        {
+            std::lock_guard< std::mutex > lock( lock_ ) ;
+            log( GEO::Logger::warn( feature ), args... ) ;
+        }
+
+        static GEO::Logger* instance()
+        {
+            return GEO::Logger::instance() ;
+        }
+
+    private:
+        static void log( std::ostream& os )
+        {
+            os << std::endl ;
+        }
+
+        template< class A0, class ...Args >
+        static void log( std::ostream& os, const A0& a0, const Args& ...args )
+        {
+            os << a0 ;
+            log( os, args... ) ;
+        }
+
+    private:
+        static std::mutex lock_ ;
+    } ;
+
 }

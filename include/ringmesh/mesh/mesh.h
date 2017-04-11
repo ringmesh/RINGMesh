@@ -385,18 +385,16 @@ namespace RINGMesh {
         /*!
          * @brief Determines the facets around a vertex
          * @param[in] vertex_id Index of the vertex in the surface
-         * @param[in] result Indices of the facets containing @param P
          * @param[in] border_only If true only facets on the border are considered
          * @param[in] f0 (Optional) Index of one facet containing the vertex @param P
-         * @return The number of facets found
+         * @return Indices of the facets containing @param P
          * @note If a facet containing the vertex is given, facets around this
          * vertex is search by propagation. Else, a first facet is found by brute
          * force algorithm, and then the other by propagation
          * @todo Try to use a AABB tree to remove @param first_facet. [PA]
          */
-        index_t facets_around_vertex(
+        std::vector< index_t > facets_around_vertex(
             index_t vertex_id,
-            std::vector< index_t >& result,
             bool border_only,
             index_t f0 ) const ;
 
@@ -502,6 +500,37 @@ namespace RINGMesh {
             vec3 norm = cross( p2 - p1, p3 - p1 ) ;
             return normalize( norm ) ;
         }
+
+        /*!
+         * @brief Computes the normal of the Mesh2D at the vertex location
+         * it computes the average value of facet normal neighbors
+         * @param[in] vertex_id the vertex index
+         * @param[in] f0 index of a facet that contain the vertex \param vertex_id
+         * @return the normal at the given vertex
+         */
+        vec3 normal_at_vertex( index_t vertex_id, index_t f0 = NO_ID ) const
+        {
+            ringmesh_assert( vertex_id < nb_vertices() ) ;
+            index_t f = 0 ;
+            while( f0 == NO_ID && f < nb_facets() ) {
+                for( index_t lv = 0; lv < nb_facet_vertices( f ); lv++ ) {
+                    if( facet_vertex( f, lv ) == vertex_id ) {
+                        f0 = f ;
+                        break ;
+                    }
+                }
+                f++ ;
+            }
+
+            std::vector< index_t > facet_ids = facets_around_vertex( vertex_id,
+                false, f0 ) ;
+            vec3 norm ;
+            for( index_t facet_id = 0; facet_id < facet_ids.size(); ++facet_id ) {
+                norm += facet_normal( facet_id ) ;
+            }
+            return normalize( norm ) ;
+        }
+
         /*!
          * Computes the Mesh facet barycenter
          * @param[in] facet_id the facet index

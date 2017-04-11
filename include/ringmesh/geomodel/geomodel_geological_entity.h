@@ -62,14 +62,14 @@ namespace RINGMesh {
         {
         }
 
-        const gmge_t gmge_id() const
+        const gmge_id gmge() const
         {
-            return gmge_t( type_name(), id_ ) ;
+            return gmge_id( type_name(), id_ ) ;
         }
 
         const GeologicalEntityType entity_type() const
         {
-            return gmge_id().type() ;
+            return gmge().type() ;
         }
 
         virtual const MeshEntityType child_type_name() const = 0 ;
@@ -87,7 +87,7 @@ namespace RINGMesh {
         {
             return static_cast< index_t >( children_.size() ) ;
         }
-        const gmme_t& child_gmme( index_t x ) const
+        const gmme_id& child_gmme( index_t x ) const
         {
             ringmesh_assert( x < nb_children() ) ;
             return children_[x] ;
@@ -107,7 +107,7 @@ namespace RINGMesh {
         }
         virtual void copy( const GeoModelGeologicalEntity& from ) final
         {
-            GME::copy( from ) ;
+            GeoModelEntity::copy( from ) ;
             children_ = from.children_ ;
         }
 
@@ -115,7 +115,7 @@ namespace RINGMesh {
 
     protected:
         /// Entities constituting this one - see child_type( TYPE )
-        std::vector< gmme_t > children_ ;
+        std::vector< gmme_id > children_ ;
     } ;
 
     /// @todo Review: I am still not convinced that we always have to 
@@ -212,12 +212,12 @@ namespace RINGMesh {
             return gmge_.id_ ;
         }
 
-        GME::GEOL_FEATURE& modifiable_geol_feature()
+        GeoModelEntity::GEOL_FEATURE& modifiable_geol_feature()
         {
             return gmge_.geol_feature_ ;
         }
 
-        std::vector< gmme_t >& modifiable_children()
+        std::vector< gmme_id >& modifiable_children()
         {
             return gmge_.children_ ;
         }

@@ -261,16 +261,6 @@ namespace RINGMesh {
         return sqrt( sqrDistance ) ;
     }
 
-    /*!
-     * Computes the distance between a point and a tetrahedron
-     * @param[in] p the point
-     * @param[in] p0 the first vertex of the tetrahedron
-     * @param[in] p1 the second vertex of the tetrahedron
-     * @param[in] p2 the third vertex of the tetrahedron
-     * @param[in] p3 the fourth vertex of the tetrahedron
-     * @param[out] nearest_p the nearest point on the tetrahedron
-     * @return the distance between the point and the tetrahedron facets
-     */
     double point_tetra_distance(
         const vec3& p,
         const vec3& p0,
@@ -299,17 +289,6 @@ namespace RINGMesh {
         return dist ;
     }
 
-    /*!
-     * Computes the distance between a point and a pyramid
-     * @param[in] p the point
-     * @param[in] p0 the first vertex of the pyramid
-     * @param[in] p1 the second vertex of the pyramid
-     * @param[in] p2 the third vertex of the pyramid
-     * @param[in] p3 the fourth vertex of the pyramid
-     * @param[in] p4 the fifth vertex of the pyramid
-     * @param[out] nearest_p the nearest point on the pyramid
-     * @return the distance between the point and the pyramid facets
-     */
     double point_pyramid_distance(
         const vec3& p,
         const vec3& p0,
@@ -354,18 +333,6 @@ namespace RINGMesh {
         return dist ;
     }
 
-    /*!
-     * Computes the distance between a point and a prism
-     * @param[in] p the point
-     * @param[in] p0 the first vertex of the prism
-     * @param[in] p1 the second vertex of the prism
-     * @param[in] p2 the third vertex of the prism
-     * @param[in] p3 the fourth vertex of the prism
-     * @param[in] p4 the fifth vertex of the prism
-     * @param[in] p5 the sixth vertex of the prism
-     * @param[out] nearest_p the nearest point on the prism
-     * @return the distance between the point and the prism facets
-     */
     double point_prism_distance(
         const vec3& p,
         const vec3& p0,
@@ -411,20 +378,7 @@ namespace RINGMesh {
         }
         return dist ;
     }
-    /*!
-     * Computes the distance between a point and a hexahedron
-     * @param[in] p the point
-     * @param[in] p0 the first vertex of the hexahedron
-     * @param[in] p1 the second vertex of the hexahedron
-     * @param[in] p2 the third vertex of the hexahedron
-     * @param[in] p3 the fourth vertex of the hexahedron
-     * @param[in] p4 the fifth vertex of the hexahedron
-     * @param[in] p5 the sixth vertex of the hexahedron
-     * @param[in] p6 the seventh vertex of the hexahedron
-     * @param[in] p7 the heith vertex of the hexahedron
-     * @param[out] nearest_p the nearest point on the hexahedron
-     * @return the distance between the point and the hexahedron facets
-     */
+
     double point_hexa_distance(
         const vec3& p,
         const vec3& p0,
@@ -458,16 +412,6 @@ namespace RINGMesh {
         return dist ;
     }
 
-    /*!
-     * Tests if a point is inside a tetrahedron
-     * @param[in] p the point to test
-     * @param[in] p0 the first vertex of the tetrahedron
-     * @param[in] p1 the second vertex of the tetrahedron
-     * @param[in] p2 the third vertex of the tetrahedron
-     * @param[in] p3 the fourth vertex of the tetrahedron
-     * @param[in] exact_predicates if true, the algorithm uses exact predicates
-     * @return returns true if the point is inside the tetrahedron
-     */
     bool point_inside_tetra(
         const vec3& p,
         const vec3& p0,
@@ -506,180 +450,6 @@ namespace RINGMesh {
             || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0 ) ;
     }
 
-    /*!
-     * Tests if a point is inside a pyramid
-     * @param[in] p the point to test
-     * @param[in] p0 the first vertex of the pyramid
-     * @param[in] p1 the second vertex of the pyramid
-     * @param[in] p2 the third vertex of the pyramid
-     * @param[in] p3 the fourth vertex of the pyramid
-     * @param[in] p4 the fifth vertex of the pyramid
-     * @param[in] exact_predicates if true, the algorithm uses exact predicates
-     * @return returns true if the point is inside the pyramid
-     */
-    bool point_inside_pyramid(
-        const vec3& p,
-        const vec3& p0,
-        const vec3& p1,
-        const vec3& p2,
-        const vec3& p3,
-        const vec3& p4,
-        bool exact_predicates )
-    {
-        vec3 vertices[5] = { p0, p1, p2, p3, p4 } ;
-        Sign signs[5] ;
-        if( !exact_predicates ) {
-            for( index_t f = 0;
-                f < GEO::MeshCellDescriptors::pyramid_descriptor.nb_facets; f++ ) {
-                double volume =
-                    GEO::Geom::tetra_signed_volume( p,
-                        vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][0]],
-                        vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][1]],
-                        vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][2]] ) ;
-                if( is_almost_zero( volume ) ) {
-                    return point_inside_pyramid( p, p0, p1, p2, p3, p4, true ) ;
-                }
-                signs[f] = sign( volume ) ;
-            }
-        } else {
-            for( index_t f = 0;
-                f < GEO::MeshCellDescriptors::pyramid_descriptor.nb_facets; f++ ) {
-                signs[f] =
-                    sign(
-                        GEO::PCK::orient_3d( p.data(),
-                            vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][0]].data(),
-                            vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][1]].data(),
-                            vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][2]].data() ) ) ;
-            }
-        }
-        return ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0 && signs[3] >= 0
-            && signs[4] >= 0 )
-            || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0
-                && signs[4] <= 0 ) ;
-    }
-
-    /*!
-     * Tests if a point is inside a prism
-     * @param[in] p the point to test
-     * @param[in] p0 the first vertex of the prism
-     * @param[in] p1 the second vertex of the prism
-     * @param[in] p2 the third vertex of the prism
-     * @param[in] p3 the fourth vertex of the prism
-     * @param[in] p4 the fifth vertex of the prism
-     * @param[in] p5 the sixth vertex of the prism
-     * @param[in] exact_predicates if true, the algorithm uses exact predicates
-     * @return returns true if the point is inside the prism
-     */
-    bool point_inside_prism(
-        const vec3& p,
-        const vec3& p0,
-        const vec3& p1,
-        const vec3& p2,
-        const vec3& p3,
-        const vec3& p4,
-        const vec3& p5,
-        bool exact_predicates )
-    {
-        vec3 vertices[6] = { p0, p1, p2, p3, p4, p5 } ;
-        Sign signs[5] ;
-        if( !exact_predicates ) {
-            for( index_t f = 0;
-                f < GEO::MeshCellDescriptors::prism_descriptor.nb_facets; f++ ) {
-                double volume =
-                    GEO::Geom::tetra_signed_volume( p,
-                        vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][0]],
-                        vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][1]],
-                        vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][2]] ) ;
-                if( is_almost_zero( volume ) ) {
-                    return point_inside_prism( p, p0, p1, p2, p3, p4, p5, true ) ;
-                }
-                signs[f] = sign( volume ) ;
-            }
-        } else {
-            for( index_t f = 0;
-                f < GEO::MeshCellDescriptors::prism_descriptor.nb_facets; f++ ) {
-                signs[f] =
-                    sign(
-                        GEO::PCK::orient_3d( p.data(),
-                            vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][0]].data(),
-                            vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][1]].data(),
-                            vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][2]].data() ) ) ;
-            }
-        }
-        return ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0 && signs[3] >= 0
-            && signs[4] >= 0 )
-            || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0
-                && signs[4] <= 0 ) ;
-    }
-    /*!
-     * Tests if a point is inside a hexahedron
-     * @param[in] p the point to test
-     * @param[in] p0 the first vertex of the hexahedron
-     * @param[in] p1 the second vertex of the hexahedron
-     * @param[in] p2 the third vertex of the hexahedron
-     * @param[in] p3 the fourth vertex of the hexahedron
-     * @param[in] p4 the fifth vertex of the hexahedron
-     * @param[in] p5 the sixth vertex of the hexahedron
-     * @param[in] p6 the seventh vertex of the hexahedron
-     * @param[in] p7 the heigth vertex of the hexahedron
-     * @param[in] exact_predicates if true, the algorithm uses exact predicates
-     * @return returns true if the point is inside the hexahedron
-     */
-    bool point_inside_hexa(
-        const vec3& p,
-        const vec3& p0,
-        const vec3& p1,
-        const vec3& p2,
-        const vec3& p3,
-        const vec3& p4,
-        const vec3& p5,
-        const vec3& p6,
-        const vec3& p7,
-        bool exact_predicates )
-    {
-        vec3 vertices[8] = { p0, p1, p2, p3, p4, p5, p6, p7 } ;
-        Sign signs[6] ;
-        if( !exact_predicates ) {
-            for( index_t f = 0;
-                f < GEO::MeshCellDescriptors::hex_descriptor.nb_facets; f++ ) {
-                double volume =
-                    GEO::Geom::tetra_signed_volume( p,
-                        vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][0]],
-                        vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][1]],
-                        vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][2]] ) ;
-                if( is_almost_zero( volume ) ) {
-                    return point_inside_hexa( p, p0, p1, p2, p3, p4, p5, p6, p7,
-                        true ) ;
-                }
-                signs[f] = sign( volume ) ;
-            }
-        } else {
-            for( index_t f = 0;
-                f < GEO::MeshCellDescriptors::hex_descriptor.nb_facets; f++ ) {
-                signs[f] =
-                    sign(
-                        GEO::PCK::orient_3d( p.data(),
-                            vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][0]].data(),
-                            vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][1]].data(),
-                            vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][2]].data() ) ) ;
-            }
-        }
-        return ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0 && signs[3] >= 0
-            && signs[4] >= 0 && signs[5] >= 0 )
-            || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0
-                && signs[4] <= 0 && signs[5] <= 0 ) ;
-    }
-
-    /*!
-     * Computes the intersection(s) between a circle and a plane
-     * @param[in] O_plane a point on the plane
-     * @param[in] N_plane the normal of the plane
-     * @param[in] O_circle the center of the circle
-     * @param[in] N_circle the normal of the plane supporting the circle
-     * @param[in] r the radius of the circle
-     * @param[out] result the intersected points
-     * @return returns true if there is at least one intersection
-     */
     bool circle_plane_intersection(
         const vec3& O_plane,
         const vec3& N_plane,
@@ -716,25 +486,15 @@ namespace RINGMesh {
         }
         double inv = 1.0 / a2 ;
         if( discr < global_epsilon ) {
-            result.push_back( vec3( O_inter - ( a1 * inv ) * D_inter ) ) ;
+            result.emplace_back( O_inter - ( a1 * inv ) * D_inter ) ;
         } else {
             double root = sqrt( discr ) ;
-            result.push_back( vec3( O_inter - ( ( a1 + root ) * inv ) * D_inter ) ) ;
-            result.push_back( vec3( O_inter - ( ( a1 - root ) * inv ) * D_inter ) ) ;
+            result.emplace_back( O_inter - ( ( a1 + root ) * inv ) * D_inter ) ;
+            result.emplace_back( O_inter - ( ( a1 - root ) * inv ) * D_inter ) ;
         }
         return true ;
     }
 
-    /*!
-     * Computes the intersection between two planes
-     * @param[in] O_P0 a point on the first plane
-     * @param[in] N_P0 the normal of the frst plane
-     * @param[in] O_P1 a point on the second plane
-     * @param[in] N_P1 the normal of the second plane
-     * @param[out] O_inter a point on the intersected line
-     * @param[out] D_inter the direction of the intersected line
-     * @return true is there is an intersection between the planes
-     */
     bool plane_plane_intersection(
         const vec3& O_P0,
         const vec3& N_P0,
@@ -771,16 +531,6 @@ namespace RINGMesh {
         return true ;
     }
 
-    /*!
-     * Computes barycentric coordinates of \p p
-     * @param[in] p the query point
-     * @param[in] p0 the first tetra vertex
-     * @param[in] p1 the second tetra vertex
-     * @param[in] p2 the third tetra vertex
-     * @param[in] p3 the fourth tetra vertex
-     * @param[out] lambda the parametric coordinates corresponding to points
-     * @return false if the computation failed because of too small tetrahedron volume
-     */
     bool tetra_barycentric_coordinates(
         const vec3& p,
         const vec3& p0,
@@ -808,15 +558,6 @@ namespace RINGMesh {
         return true ;
     }
 
-    /*!
-      * Computes barycentric coordinates of \p p
-      * @param[in] p the query point
-      * @param[in] p0 the first triangle vertex
-      * @param[in] p1 the second triangle vertex
-      * @param[in] p2 the third triangle vertex
-      * @param[out] lambda the parametric coordinates corresponding to points
-      * @return false if the computation failed because of too small triangle area
-      */
     bool triangle_barycentric_coordinates(
         const vec3& p,
         const vec3& p0,
@@ -842,15 +583,6 @@ namespace RINGMesh {
         return true ;
     }
 
-    /*!
-     * Computes the intersection between a plane and a line
-     * @param[in] O_line a point on the line
-     * @param[in] D_line the direction of the plane
-     * @param[in] O_plane a point on the plane
-     * @param[in] N_plane the normal of the plane
-     * @param[out] result the intersected point
-     * @return returns true if there is an intersection
-     */
     bool line_plane_intersection(
         const vec3& O_line,
         const vec3& D_line,
@@ -873,15 +605,6 @@ namespace RINGMesh {
         }
     }
 
-    /*!
-     * Computes the intersection between a plane and a segment
-     * @param[in] p0 the first vertex of the segment
-     * @param[in] p1 the second vertex of the segment
-     * @param[in] O_plane a point on the plane
-     * @param[in] N_plane the normal of the plane
-     * @param[out] result the intersected point
-     * @return returns true if there is an intersection
-     */
     bool segment_plane_intersection(
         const vec3& seg0,
         const vec3& seg1,
@@ -895,7 +618,7 @@ namespace RINGMesh {
         if( line_plane_intersection( segment_barycenter, segment_direction, O_plane,
             N_plane, line_plane_result ) ) {
             if( ( line_plane_result - segment_barycenter ).length2()
-                > ( seg0 - segment_barycenter ).length2() ) {
+                > ( seg0 - segment_barycenter ).length2() + global_epsilon ) {
                 // result outside the segment
                 return false ;
             } else {
@@ -907,16 +630,6 @@ namespace RINGMesh {
         }
     }
 
-    /*!
-     * Computes the intersection between a disk and a segment
-     * @param[in] p0 the first vertex of the segment
-     * @param[in] p1 the second vertex of the segment
-     * @param[in] O_circle the center of the disk
-     * @param[in] N_circle the normal of the plane supporting the disk
-     * @param[in] r the radius of the disk
-     * @param[out] result the intersected point
-     * @return returns true if there is an intersection
-     */
     bool disk_segment_intersection(
         const vec3& p0,
         const vec3& p1,
@@ -936,17 +649,6 @@ namespace RINGMesh {
         return false ;
     }
 
-    /*!
-     * Computes the intersection(s) between a circle and a triangle
-     * @param[in] p0 the first vertex of the triangle
-     * @param[in] p1 the second vertex of the triangle
-     * @param[in] p2 the third vertex of the triangle
-     * @param[in] O_circle the center of the circle
-     * @param[in] N_circle the normal of the plane supporting the circle
-     * @param[in] r the radius of the circle
-     * @param[out] result the intersected points
-     * @return returns true if there is at least one intersection
-     */
     bool circle_triangle_intersection(
         const vec3& p0,
         const vec3& p1,
@@ -970,14 +672,6 @@ namespace RINGMesh {
         return !result.empty() ;
     }
 
-    /*!
-     * Computes the orthogonal projection of a point on a segment
-     * @param[in] p the point to project
-     * @param[in] p0 the first vertex of the segment
-     * @param[in] p1 the second vertex of the segment
-     * @param[out] new_p the projected point
-     * @return returns true if the projection is possible
-     */
     bool point_segment_projection(
         const vec3& p,
         const vec3& p0,
@@ -998,13 +692,6 @@ namespace RINGMesh {
         return false ;
     }
 
-    /*!
-     * Computes the orthogonal projection of a point on a plane
-     * @param[in] p the point to project
-     * @param[in] N_plane the normal of the plane
-     * @param[in] O_plane a point of the plane
-     * @param[out] projected_p the projected point
-     */
     void point_plane_projection(
         const vec3& p,
         const vec3& N_plane,
@@ -1038,16 +725,6 @@ namespace RINGMesh {
         }
     }
 
-    /*!
-     * Computes the smallest distance between a point and a quad
-     * @param[in] p the point to test
-     * @param[in] p0 the first vertex of the quad
-     * @param[in] p1 the second vertex of the quad
-     * @param[in] p2 the third vertex of the quad
-     * @param[in] p3 the fourth vertex of the quad
-     * @param[out] nearest_p the closest point on the quad
-     * @return the smallest distance
-     */
     double point_quad_distance(
         const vec3& p,
         const vec3& p0,
@@ -1096,16 +773,6 @@ namespace RINGMesh {
         return distance ;
     }
 
-    /*!
-     * Computes the intersection of a segment and a triangle
-     * @param[in] seg0 the first vertex of the segment
-     * @param[in] seg1 the second vertex of the segment
-     * @param[in] trgl0 the first vertex of the triangle
-     * @param[in] trgl1 the second vertex of the triangle
-     * @param[in] trgl2 the third vertex of the triangle
-     * @param[out] result the intersected point
-     * @return true is there is an intersection
-     */
     bool segment_triangle_intersection(
         const vec3& seg0,
         const vec3& seg1,
@@ -1167,26 +834,6 @@ namespace RINGMesh {
         return false ;
     }
 
-    /*!
-     * @brief Builds a rotational matrix about an arbitrary axis.
-     *
-     * Mathematical development: http://paulbourke.net/geometry/rotate/.
-     *
-     * @param[in] origin point in which passes the rotation axis.
-     *
-     * @param[in] axis vector which defines the rotation axis.
-     *
-     * @param[in] theta rotation angle (in radians or degrees).
-     *
-     * @param[in] degrees true is \p theta is in degrees, false
-     * if in radians.
-     *
-     * @param[out] rot_mat the matrix which defines the rotation
-     * of a point around the axis defined by point \p origin
-     * and vector \p axis by an angle \p theta.
-     * New coordinates of a point (x,y,z) are:
-     * (x',y',z') = rot_mat*(x,y,z)
-     */
     void rotation_matrix_about_arbitrary_axis(
         const vec3& origin,
         const vec3& axis,
@@ -1418,16 +1065,6 @@ namespace RINGMesh {
         rot_mat = inv_T * inv_Rx * inv_Ry * Rz * Ry * Rx * T ;
     }
 
-    /*!
-     * Tests if a point is inside a triangle, more precisely if it is inside
-     * a prism based on the triangle and its normal
-     * @param[in] p the point to test
-     * @param[in] p0 the first vertex of the triangle
-     * @param[in] p1 the second vertex of the triangle
-     * @param[in] p2 the third vertex of the triangle
-     * @param[in] exact_predicates if true, the algorithm uses exact predicates
-     * @return returns true if the point is inside
-     */
     bool point_inside_triangle(
         const vec3& p,
         const vec3& p0,
@@ -1472,71 +1109,6 @@ namespace RINGMesh {
         }
 
         return s1 == s2 && s2 == s3 ;
-    }
-
-    /*!
-     * Tests if a point is inside a quad, more precisely if it is inside the box
-     * based on the quad and its normal
-     * @param[in] p the point to test
-     * @param[in] p0 the first vertex of the quad
-     * @param[in] p1 the second vertex of the quad
-     * @param[in] p2 the third vertex of the quad
-     * @param[in] p3 the fourth vertex of the quad
-     * @param[in] exact_predicates if true, the algorithm uses exact predicates
-     * @return returns true if the point is inside
-     */
-    bool point_inside_quad(
-        const vec3& p,
-        const vec3& p0,
-        const vec3& p1,
-        const vec3& p2,
-        const vec3& p3,
-        bool exact_predicates )
-    {
-        vec3 n = cross( p2 - p0, p1 - p0 ) ;
-        vec3 q = p + n ;
-        Sign s1, s2, s3, s4 ;
-        if( !exact_predicates ) {
-            double vol1 = GEO::Geom::tetra_signed_volume( p, q, p0, p1 ) ;
-            if( is_almost_zero( vol1 ) ) {
-                return point_inside_quad( p, p0, p1, p2, p3, true ) ;
-            }
-            s1 = sign( vol1 ) ;
-            double vol2 = GEO::Geom::tetra_signed_volume( p, q, p1, p2 ) ;
-            if( is_almost_zero( vol2 ) ) {
-                return point_inside_quad( p, p0, p1, p2, p3, true ) ;
-            }
-            s2 = sign( vol2 ) ;
-            double vol3 = GEO::Geom::tetra_signed_volume( p, q, p2, p3 ) ;
-            if( is_almost_zero( vol3 ) ) {
-                return point_inside_quad( p, p0, p1, p2, p3, true ) ;
-            }
-            s3 = sign( vol3 ) ;
-            double vol4 = GEO::Geom::tetra_signed_volume( p, q, p3, p0 ) ;
-            if( is_almost_zero( vol4 ) ) {
-                return point_inside_quad( p, p0, p1, p2, p3, true ) ;
-            }
-            s4 = sign( vol4 ) ;
-        } else {
-            s1 = sign(
-                GEO::PCK::orient_3d( p.data(), q.data(), p0.data(), p1.data() ) ) ;
-            s2 = sign(
-                GEO::PCK::orient_3d( p.data(), q.data(), p1.data(), p2.data() ) ) ;
-            s3 = sign(
-                GEO::PCK::orient_3d( p.data(), q.data(), p2.data(), p3.data() ) ) ;
-            s4 = sign(
-                GEO::PCK::orient_3d( p.data(), q.data(), p3.data(), p0.data() ) ) ;
-            if( s1 == ZERO ) {
-                return s2 == s3 && s3 == s4 ;
-            } else if( s2 == ZERO ) {
-                return s1 == s3 && s3 == s4 ;
-            } else if( s3 == ZERO ) {
-                return s1 == s2 && s2 == s4 ;
-            } else if( s4 == ZERO ) {
-                return s1 == s2 && s2 == s3 ;
-            }
-        }
-        return s1 == s2 && s2 == s3 && s3 == s4 ;
     }
 
     NNSearch::NNSearch(
@@ -1597,14 +1169,11 @@ namespace RINGMesh {
         for( index_t i = 0; i < index_map.size(); i++ ) {
             index_map[i] = i ;
         }
-        std::vector< index_t > nb_colocalised_per_thread( omp_get_max_threads(),
-            0 ) ;
+        index_t nb_threads = static_cast< index_t >( omp_get_max_threads() ) ;
+        std::vector< index_t > nb_colocalised_per_thread( nb_threads, 0 ) ;
         RINGMESH_PARALLEL_LOOP
         for( index_t i = 0; i < index_map.size(); i++ ) {
-            std::vector< index_t > results ;
-            vec3 query( nn_points_[3 * i], nn_points_[3 * i + 1],
-                nn_points_[3 * i + 2] ) ;
-            get_neighbors( query, results, epsilon ) ;
+            std::vector< index_t > results = get_neighbors( point( i ), epsilon ) ;
             index_t id = *std::min_element( results.begin(), results.end() ) ;
             if( id < i ) {
                 index_map[i] = id ;
@@ -1614,8 +1183,8 @@ namespace RINGMesh {
         }
 
         index_t nb_colocalised_vertices = 0 ;
-        for( index_t i = 0; i < nb_colocalised_per_thread.size(); i++ ) {
-            nb_colocalised_vertices += nb_colocalised_per_thread[i] ;
+        for( index_t nb_colocalised : nb_colocalised_per_thread ) {
+            nb_colocalised_vertices += nb_colocalised ;
         }
         return nb_colocalised_vertices ;
     }
@@ -1631,9 +1200,7 @@ namespace RINGMesh {
         index_t offset = 0 ;
         for( index_t p = 0; p < index_map.size(); p++ ) {
             if( index_map[p] == p ) {
-                vec3 new_point( nn_points_[3 * p], nn_points_[3 * p + 1],
-                    nn_points_[3 * p + 2] ) ;
-                unique_points.push_back( new_point ) ;
+                unique_points.push_back( point( p ) ) ;
                 index_map[p] = p - offset ;
             } else {
                 offset++ ;
@@ -1644,73 +1211,48 @@ namespace RINGMesh {
         return offset ;
     }
 
-    /*!
-     * Compute the neighbors of a given point, point closer than \param threshold_distance
-     * @param[in] v the point to test
-     * @param[out] result the neighbor point indices.
-     * @param[in] threshold_distance distance defining the neighborhood
-     * @return return true if there is at least one neighbor
-     */
-    bool NNSearch::get_neighbors(
+    std::vector< index_t > NNSearch::get_neighbors(
         const vec3& v,
-        std::vector< index_t >& result,
         double threshold_distance ) const
     {
-
+        std::vector< index_t > result ;
         index_t nb_points = nn_tree_->nb_points() ;
-        result.clear() ;
-        if( nb_points == 0 ) {
-            return false ;
-        }
-        double threshold_distance_sq = threshold_distance * threshold_distance ;
-        index_t nb_neighbors = std::min( index_t( 5 ), nb_points ) ;
-        std::vector< index_t > neighbors ;
-        index_t cur_neighbor = 0 ;
-        index_t prev_neighbor = 0 ;
-        do {
-            prev_neighbor = cur_neighbor ;
-            cur_neighbor += nb_neighbors ;
-            neighbors.resize( cur_neighbor ) ;
-            double* distance_sq = (double*) alloca( sizeof(double) * cur_neighbor ) ;
-            nb_neighbors = get_neighbors( v, cur_neighbor, neighbors, distance_sq ) ;
-            for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
-                if( distance_sq[i] > threshold_distance_sq ) {
-                    break ;
+        if( nb_points != 0 ) {
+            double threshold_distance_sq = threshold_distance * threshold_distance ;
+            index_t nb_neighbors = std::min( index_t( 5 ), nb_points ) ;
+            index_t cur_neighbor = 0 ;
+            index_t prev_neighbor = 0 ;
+            do {
+                prev_neighbor = cur_neighbor ;
+                cur_neighbor += nb_neighbors ;
+                std::vector< index_t > neighbors = get_neighbors( v, cur_neighbor ) ;
+                nb_neighbors = static_cast< index_t >( neighbors.size() ) ;
+                for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
+                    if( length2( v - point( neighbors[i] ) )
+                        > threshold_distance_sq ) {
+                        break ;
+                    }
+                    result.push_back( neighbors[i] ) ;
                 }
-                result.push_back( neighbors[i] ) ;
-            }
-        } while( result.size() == cur_neighbor && result.size() < nb_points ) ;
-
-        return !result.empty() ;
+            } while( result.size() == cur_neighbor && result.size() < nb_points ) ;
+        }
+        return result ;
 
     }
 
-    /*!
-     * Gets the neighboring points of a given one sorted by increasing distance
-     * @param[in] v the point to test
-     * @param[in] nb_neighbors the number of neighbors to return
-     * @param[out] result the neighboring points
-     * @param[out] dist the square distance between each neigbhor and the point \p v
-     * @return the number of neighbors returned (can be less than \p nb_neighbors
-     * if there is not enough points)
-     */
-    index_t NNSearch::get_neighbors(
+    std::vector< index_t > NNSearch::get_neighbors(
         const vec3& v,
-        index_t nb_neighbors,
-        std::vector< index_t >& result,
-        double* dist ) const
+        index_t nb_neighbors ) const
     {
-        if( nn_tree_->nb_points() == 0 ) {
-            return 0 ;
+        std::vector< index_t > result ;
+        if( nn_tree_->nb_points() != 0 ) {
+            nb_neighbors = std::min( nb_neighbors, nn_tree_->nb_points() ) ;
+            std::vector< double > distances( nb_neighbors ) ;
+            result.resize( nb_neighbors ) ;
+            nn_tree_->get_nearest_neighbors( nb_neighbors, v.data(), &result[0],
+                &distances[0] ) ;
         }
-        if( !dist ) {
-            dist = (double*) alloca( sizeof(double) * nb_neighbors ) ;
-        }
-        nb_neighbors = std::min( nb_neighbors, nn_tree_->nb_points() ) ;
-        result.resize( nb_neighbors ) ;
-        nn_tree_->get_nearest_neighbors( nb_neighbors, v.data(), &result[0],
-            dist ) ;
-        return nb_neighbors ;
+        return result ;
     }
 
     void NNSearch::build_nn_search_vertices( const GEO::Mesh& mesh, bool copy )
@@ -1797,7 +1339,9 @@ namespace RINGMesh {
         nn_tree_->set_points( nb_cells, nn_points_ ) ;
     }
 
-    void NNSearch::fill_nn_search_points( index_t index_in_nn_search, const vec3& center )
+    void NNSearch::fill_nn_search_points(
+        index_t index_in_nn_search,
+        const vec3& center )
     {
         nn_points_[index_in_nn_search] = center.x ;
         nn_points_[index_in_nn_search + 1] = center.y ;

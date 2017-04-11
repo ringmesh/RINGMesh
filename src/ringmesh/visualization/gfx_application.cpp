@@ -198,14 +198,13 @@ namespace RINGMesh {
         }
         selected_entity_type_ = 0 ;
         selected_entity_id_ = 0 ;
-        entity_types_.push_back( "All" ) ;
-        entity_types_.push_back( std::string( Corner::type_name_static() ) ) ;
-        entity_types_.push_back( std::string( Line::type_name_static() ) ) ;
-        entity_types_.push_back( std::string( Surface::type_name_static() ) ) ;
-        entity_types_.push_back( std::string( Region::type_name_static() ) ) ;
+        entity_types_.emplace_back( "All" ) ;
+        entity_types_.emplace_back( Corner::type_name_static() ) ;
+        entity_types_.emplace_back( Line::type_name_static() ) ;
+        entity_types_.emplace_back( Surface::type_name_static() ) ;
+        entity_types_.emplace_back( Region::type_name_static() ) ;
         for( index_t i = 0; i < GM_.nb_geological_entity_types(); i++ ) {
-            entity_types_.push_back(
-                std::string( GM_.geological_entity_type( i ) ) ) ;
+            entity_types_.emplace_back( GM_.geological_entity_type( i ) ) ;
         }
         meshed_regions_ = false ;
         if( GM_.nb_regions() > 0 ) {
@@ -397,14 +396,14 @@ namespace RINGMesh {
                 selected_entity_id_ = std::min(
                     static_cast< int >( GM_.nb_mesh_entities( type ) - 1 ),
                     selected_entity_id_ ) ;
-                gmme_t entity_id( type,
+                gmme_id entity_id( type,
                     static_cast< index_t >( selected_entity_id_ ) ) ;
                 toggle_mesh_entity_and_boundaries_visibility( entity_id ) ;
             } else {
                 selected_entity_id_ = std::min(
                     static_cast< int >( GM_.nb_geological_entities( type ) - 1 ),
                     selected_entity_id_ ) ;
-                gmge_t entity_id( type,
+                gmge_id entity_id( type,
                     static_cast< index_t >( selected_entity_id_ ) ) ;
                 toggle_geological_entity_visibility( entity_id ) ;
             }
@@ -473,14 +472,14 @@ namespace RINGMesh {
                 selected_entity_id_ = std::min(
                     static_cast< int >( GM_.nb_mesh_entities( type ) - 1 ),
                     selected_entity_id_ ) ;
-                gmme_t entity_id( type,
+                gmme_id entity_id( type,
                     static_cast< index_t >( selected_entity_id_ ) ) ;
                 toggle_mesh_entity_and_boundaries_visibility( entity_id ) ;
             } else {
                 selected_entity_id_ = std::min(
                     static_cast< int >( GM_.nb_geological_entities( type ) - 1 ),
                     selected_entity_id_ ) ;
-                gmge_t entity_id( type,
+                gmge_id entity_id( type,
                     static_cast< index_t >( selected_entity_id_ ) ) ;
                 toggle_geological_entity_visibility( entity_id ) ;
             }
@@ -488,7 +487,7 @@ namespace RINGMesh {
     }
 
     void RINGMeshApplication::GeoModelViewer::toggle_mesh_entity_and_boundaries_visibility(
-        const gmme_t& entity_id )
+        const gmme_id& entity_id )
     {
         if( MeshEntityTypeManager::is_corner( entity_id.type() ) ) {
             toggle_corner_visibility( entity_id.index() ) ;
@@ -547,11 +546,11 @@ namespace RINGMesh {
     }
 
     void RINGMeshApplication::GeoModelViewer::toggle_geological_entity_visibility(
-        const gmge_t& entity_id )
+        const gmge_id& entity_id )
     {
         const GeoModelGeologicalEntity& entity = GM_.geological_entity( entity_id ) ;
         for( index_t i = 0; i < entity.nb_children(); i++ ) {
-            const gmme_t& child_id = entity.child_gmme( i ) ;
+            const gmme_id& child_id = entity.child_gmme( i ) ;
             toggle_mesh_entity_and_boundaries_visibility( child_id ) ;
         }
     }
@@ -1112,7 +1111,7 @@ namespace RINGMesh {
         print_header_information() ;
 
         Logger::div( "RINGMesh-View" ) ;
-        Logger::out( "" ) << "Welcome to RINGMesh-View !" << std::endl ;
+        Logger::out( "", "Welcome to RINGMesh-View !" ) ;
     }
 
     RINGMeshApplication::~RINGMeshApplication()
@@ -1151,8 +1150,7 @@ namespace RINGMesh {
                 }
             } else {
                 if( can_load_geogram( file ) ) {
-                    if( ImGui::MenuItem(
-                        path_to_label( path_, file ).c_str() ) ) {
+                    if( ImGui::MenuItem( path_to_label( path_, file ).c_str() ) ) {
                         load_geogram( file ) ;
                     }
                 }
@@ -1441,6 +1439,17 @@ namespace RINGMesh {
                     current_viewer_type_ = GEOMODEL ;
                     update_region_of_interest() ;
                 }
+                ImGui::SameLine( ImGui::GetWindowWidth() - 30 ) ;
+                if( ImGui::Button( "X" ) ) {
+                    delete geomodels_[i] ;
+                    geomodels_.erase( geomodels_.begin() + i ) ;
+                    if( current_viewer_type_ == GEOMODEL && current_viewer_ >= i ) {
+                        current_viewer_-- ;
+                    }
+                    if( geomodels_.empty() ) {
+                        current_viewer_type_ = NONE ;
+                    }
+                }
                 ImGui::PopID() ;
             }
         }
@@ -1455,6 +1464,17 @@ namespace RINGMesh {
                     current_viewer_ = i ;
                     current_viewer_type_ = MESH ;
                     update_region_of_interest() ;
+                }
+                ImGui::SameLine( ImGui::GetWindowWidth() - 30 ) ;
+                if( ImGui::Button( "X" ) ) {
+                    delete meshes_[i] ;
+                    meshes_.erase( meshes_.begin() + i ) ;
+                    if( current_viewer_type_ == MESH && current_viewer_ >= i ) {
+                        current_viewer_-- ;
+                    }
+                    if( meshes_.empty() ) {
+                        current_viewer_type_ = NONE ;
+                    }
                 }
                 ImGui::PopID() ;
             }

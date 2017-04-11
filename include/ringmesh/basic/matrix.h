@@ -73,7 +73,7 @@ namespace RINGMesh {
     template< typename T >
     class RowImpl {
     public:
-        typedef ElementImpl< T > Element ;
+        using Element = ElementImpl< T > ;
 
         RowImpl()
             : nb_elements_( 0 ), capacity_( 4 )
@@ -189,7 +189,7 @@ namespace RINGMesh {
     template< typename T, typename RowType >
     class SparseMatrixImpl {
     public:
-        typedef RowImpl< RowType > Row ;
+        using Row = RowImpl< RowType > ;
         SparseMatrixImpl( bool is_symmetrical = false )
             : rows_( nullptr ), ni_( 0 ), nj_( 0 ), is_symmetrical_( is_symmetrical )
         {
@@ -302,7 +302,7 @@ namespace RINGMesh {
 
     protected:
         Row* rows_ ;
-        index_t ni_, nj_ ;// matrix dimensions
+        index_t ni_, nj_ ; // matrix dimensions
         bool is_symmetrical_ ;
     } ;
 
@@ -321,7 +321,7 @@ namespace RINGMesh {
     template< typename T >
     class SparseMatrix< T, light > : public SparseMatrixImpl< T, T > {
     public:
-        typedef SparseMatrix< T, light > thisclass ;
+        using thisclass = SparseMatrix< T, light > ;
         SparseMatrix( bool is_symetrical = false )
             : SparseMatrixImpl< T, T >( is_symetrical )
         {
@@ -342,7 +342,6 @@ namespace RINGMesh {
             }
             return true ;
         }
-
 
         /*!
          * set the value of element i-j in the matrix without verifying
@@ -399,7 +398,7 @@ namespace RINGMesh {
     template< typename T >
     class SparseMatrix< T, heavy > : public SparseMatrixImpl< T, index_t > {
     public:
-        typedef SparseMatrix< T, heavy > thisclass ;
+        using thisclass = SparseMatrix< T, heavy > ;
         SparseMatrix( bool is_symetrical = false )
             : SparseMatrixImpl< T, index_t >( is_symetrical )
         {
@@ -480,17 +479,14 @@ namespace RINGMesh {
     // Note: without light or heavy, it does not compile on Windows.
     // Error C2770. BC
     template< typename T >
-    void product_matrix_by_vector(
+    std::vector< T > product_matrix_by_vector(
         const SparseMatrix< T, light >& mat1,
-        const std::vector< T >& mat2,
-        std::vector< T >& result )
+        const std::vector< T >& mat2 )
     {
         ringmesh_assert( mat1.nj() == mat2.size() ) ;
-
+        std::vector< T > result( mat1.ni(), 0 ) ;
         RINGMESH_PARALLEL_LOOP
         for( index_t i = 0; i < mat1.ni(); ++i ) {
-            ringmesh_assert( i >= 0 && i < result.size() ) ;
-            result[i] = 0. ;
             for( index_t e = 0; e < mat1.get_nb_elements_in_line( i ); ++e ) {
                 index_t j = mat1.get_column_in_line( i, e ) ;
                 T i_j_result ;
@@ -499,6 +495,7 @@ namespace RINGMesh {
                 result[i] += i_j_result ;
             }
         }
+        return result ;
     }
 
 }

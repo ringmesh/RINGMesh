@@ -151,14 +151,14 @@ namespace RINGMesh {
          * of the geomodel that are empty once degenerate entities are removed
          * @pre Colocated vertices have already been removed
          */
-        void remove_degenerate_facets_and_edges( std::set< gmme_t >& to_remove ) ;
+        void remove_degenerate_facets_and_edges( std::set< gmme_id >& to_remove ) ;
 
         /*!
          * @brief Remove colocated vertices of the geomodel.
          * @param[out] to_remove gmme_t of the entities of the geomodel that
          *  are empty once degenerate entities are removed
          */
-        void remove_colocated_entity_vertices( std::set< gmme_t >& to_remove ) ;
+        void remove_colocated_entity_vertices( std::set< gmme_id >& to_remove ) ;
         /*!
          * Get the indices of the duplicated vertices that are on an inside border.
          * Only the vertex with the biggest index are added.
@@ -166,7 +166,7 @@ namespace RINGMesh {
          * @param[out] vertices vector of the vertex indexes on an inside boundary.
          */
         void vertices_on_inside_boundary(
-            const gmme_t& E_id,
+            const gmme_id& E_id,
             std::set< index_t >& vertices ) ;
 
         /*!
