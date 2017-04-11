@@ -39,6 +39,8 @@
 
 #ifdef RINGMESH_WITH_GRAPHICS
 
+#include <memory>
+
 #include <geogram_gfx/glup_viewer/glup_viewer_gui.h>
 
 /*!
@@ -63,7 +65,7 @@ namespace RINGMesh {
     ringmesh_disable_copy( GeoModelGfxManager ) ;
     public:
         GeoModelGfxManager( GeoModelGfx& gfx ) ;
-        virtual ~GeoModelGfxManager() ;
+        virtual ~GeoModelGfxManager() = default ;
 
         virtual void draw() = 0 ;
         virtual void initialize() = 0 ;
@@ -136,7 +138,51 @@ namespace RINGMesh {
 
     protected:
         GeoModelGfx& gfx_ ;
-        std::vector< MeshEntityGfx* > entities_ ;
+        std::vector< std::unique_ptr< MeshEntityGfx > > entities_ ;
+
+    } ;
+
+    class MeshEntityGfx: public GEO::MeshGfx {
+    ringmesh_disable_copy( MeshEntityGfx ) ;
+    public:
+        MeshEntityGfx(
+            const GeoModelGfx& gfx,
+            const GEO::Mesh& mesh,
+            bool vertice_visible )
+            : vertices_visible_( vertice_visible ), gfx_( gfx )
+        {
+            set_mesh( &mesh ) ;
+        }
+        virtual ~MeshEntityGfx() = default ;
+
+        void need_to_update()
+        {
+            buffer_objects_dirty_ = true ;
+            attributes_buffer_objects_dirty_ = true ;
+        }
+
+        void draw_vertices()
+        {
+            GEO::MeshGfx::draw_vertices() ;
+        }
+        void draw_edges()
+        {
+            GEO::MeshGfx::draw_edges() ;
+        }
+
+        void set_vertices_visible( bool b )
+        {
+            vertices_visible_ = b ;
+        }
+        bool get_vertices_visible() const
+        {
+            return vertices_visible_ ;
+        }
+
+    protected:
+        bool vertices_visible_ ;
+
+        const GeoModelGfx& gfx_ ;
 
     } ;
 
@@ -410,7 +456,6 @@ namespace RINGMesh {
             facets, facet_vertices, cells, cell_vertices, nb_locations
         } ;
         AttributeGfxManager( GeoModelGfx& gfx ) ;
-        ~AttributeGfxManager() ;
 
         GeoModelGfx& gfx()
         {
@@ -484,8 +529,38 @@ namespace RINGMesh {
         double minimum_ ;
         double maximum_ ;
 
-        AttributeGfx* attributes_[nb_locations] ;
+        std::unique_ptr< AttributeGfx > attributes_[nb_locations] ;
 
+    } ;
+
+    class AttributeGfx {
+    public:
+        AttributeGfx( AttributeGfxManager& manager )
+            : manager_( manager )
+        {
+        }
+        virtual ~AttributeGfx() = default ;
+
+        virtual std::string location_name() const = 0 ;
+        void compute_range()
+        {
+            double attribute_min = max_float64() ;
+            double attribute_max = min_float64() ;
+            do_compute_range( attribute_min, attribute_max ) ;
+            manager_.set_minimum( attribute_min ) ;
+            manager_.set_maximum( attribute_max ) ;
+        }
+        virtual void bind_attribute() = 0 ;
+        virtual void unbind_attribute() = 0 ;
+        virtual index_t nb_coordinates() = 0 ;
+
+    private:
+        virtual void do_compute_range(
+            double& attribute_min,
+            double& attribute_max ) = 0 ;
+
+    protected:
+        AttributeGfxManager& manager_ ;
     } ;
 
     class RINGMESH_API GeoModelGfx {
