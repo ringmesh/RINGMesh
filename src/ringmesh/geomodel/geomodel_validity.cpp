@@ -505,7 +505,8 @@ namespace {
                         // the lines 
                         for( index_t surface : surfaces ) {
                             for( index_t line : lines ) {
-                                gmme_id s_id( Surface::type_name_static(), surface ) ;
+                                gmme_id s_id( Surface::type_name_static(),
+                                    surface ) ;
                                 gmme_id l_id( Line::type_name_static(), line ) ;
                                 if( !is_in_in_boundary( geomodel, s_id, l_id ) ) {
                                     Logger::warn( "GeoModel",
@@ -544,8 +545,8 @@ namespace {
                                 }
                             }
                             if( nb > 2 ) {
-                                Logger::warn( "GeoModel", " Vertex ", i,
-                                    " appears ", nb, " times in Line ", line ) ;
+                                Logger::warn( "GeoModel", " Vertex ", i, " appears ",
+                                    nb, " times in Line ", line ) ;
                                 valid_vertex = false ;
                                 break ;
                             }
@@ -650,8 +651,7 @@ namespace {
             for( index_t v = 0; v < surface.nb_mesh_element_vertices( f ); ++v ) {
                 if( surface.facet_adjacent_index( f, v ) == NO_ID
                     && !is_edge_on_line( surface.geomodel(),
-                        geomodel_vertices.geomodel_vertex_id( surface.gmme(), f,
-                            v ),
+                        geomodel_vertices.geomodel_vertex_id( surface.gmme(), f, v ),
                         geomodel_vertices.geomodel_vertex_id( surface.gmme(), f,
                             surface.next_facet_vertex_index( f, v ) ) ) ) {
                     invalid_corners.push_back(
@@ -808,6 +808,16 @@ namespace {
         }
     }
 
+    /// enum to characterize what are checked
+    enum ValidityCheckMode {
+        TOPOLOGY,
+        GEOMETRY,
+        GEOMETRY_EXCEPT_FACET_INTERSECTION,
+        ALL,
+        ALL_EXCEPT_FACET_INTERSECTION,
+        UNDEFINED
+    } ;
+
     /*!
      * @brief Implementation class for validity checks on a GeoModel
      */
@@ -815,36 +825,56 @@ namespace {
     public:
         GeoModelValidityCheck(
             const GeoModel& geomodel,
-            bool check_surface_intersections )
-            :
-                geomodel_( geomodel ),
-                valid_( true ),
-                check_surface_intersections_( check_surface_intersections )
+            const ValidityCheckMode validity_check_mode )
+        :
+        geomodel_( geomodel ),
+        valid_( true ),
+        mode_( validity_check_mode )
         {
+            if( mode_ == UNDEFINED ) {
+                // If not defined, reset the check mode to the largest possible
+                mode_ = ALL ;
+            }
             // Ensure that the geomodel vertices are computed and up-to-date
             // Without that we cannot do anything        
             geomodel_.mesh.vertices.test_and_initialize() ;
             geomodel_.mesh.facets.test_and_initialize() ;
         }
 
-        bool is_geomodel_valid()
+        /*!
+         * @brief Run the geomodel validity check with the specified mode. If no mode
+         * is given, the object mode is used by default.
+         */
+        bool is_geomodel_valid( const ValidityCheckMode specified_mode = UNDEFINED )
         {
-            do_check_validity() ;
+            if( specified_mode != UNDEFINED ) {
+                do_check_validity( specified_mode ) ;
+            } else {
+                do_check_validity( mode_ ) ;
+            }
             return valid_ ;
         }
 
     private:
-        void do_check_validity()
+        void do_check_validity( ValidityCheckMode mode )
         {
             GEO::ThreadGroup threads ;
-            if( check_surface_intersections_ ) {
+            if( mode == GEOMETRY || mode == ALL ) {
                 threads.push_back( new TestFacetIntersections( *this ) ) ;
             }
-            threads.push_back( new TestGeometryConnectivityConsistency3D( *this ) ) ;
-            threads.push_back( new TestGeomodelEntitiesValidity( *this ) ) ;
-            threads.push_back( new TestFiniteExtension( *this ) ) ;
-            threads.push_back( new TestGeometryConnectivityConsistency( *this ) ) ;
-            threads.push_back( new TestNonManifoldEdges( *this ) ) ;
+            if( mode != TOPOLOGY ) {
+                // Add geometrical validity check
+                threads.push_back( new TestGeometryConnectivityConsistency3D( *this ) ) ;
+                threads.push_back( new TestNonManifoldEdges( *this ) ) ;
+
+            }
+            if( mode != GEOMETRY ) {
+                // Add topological validity check
+                threads.push_back( new TestGeomodelEntitiesValidity( *this ) ) ;
+                threads.push_back( new TestFiniteExtension( *this ) ) ;
+                threads.push_back( new TestGeometryConnectivityConsistency( *this ) ) ;
+            }
+
             RINGMESH_PARALLEL_LOOP_DYNAMIC
             for( index_t i = 0; i < threads.size(); i++ ) {
                 threads[i]->run() ;
@@ -1058,7 +1088,8 @@ namespace {
     private:
         const GeoModel& geomodel_ ;
         bool valid_ ;
-        bool check_surface_intersections_ ;
+//        bool check_surface_intersections_ ;
+        ValidityCheckMode mode_ ;
     } ;
 
 } // anonymous namespace
@@ -1106,7 +1137,8 @@ namespace RINGMesh {
         for( const GeologicalEntityType& type : geological_types ) {
             index_t nb_entities = geomodel.nb_geological_entities( type ) ;
             for( index_t i = 0; i < nb_entities; ++i ) {
-                const GeoModelGeologicalEntity& E = geomodel.geological_entity( type, i ) ;
+                const GeoModelGeologicalEntity& E = geomodel.geological_entity( type,
+                    i ) ;
                 if( !E.is_valid() ) {
                     count_invalid++ ;
                 }
@@ -1121,8 +1153,13 @@ namespace RINGMesh {
 
     bool is_geomodel_valid( const GeoModel& geomodel )
     {
-        GeoModelValidityCheck validity_checker( geomodel,
-            GEO::CmdLine::get_arg_bool( "in:intersection_check" ) ) ;
+        ValidityCheckMode validity_check_mode = ALL ;
+        if( !GEO::CmdLine::get_arg_bool( "in:intersection_check" ) ) {
+            validity_check_mode = ALL_EXCEPT_FACET_INTERSECTION ;
+        }
+
+        GeoModelValidityCheck validity_checker( geomodel, validity_check_mode ) ;
+
 
         bool valid = validity_checker.is_geomodel_valid() ;
 
