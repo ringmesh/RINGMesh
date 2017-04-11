@@ -51,7 +51,6 @@ using namespace RINGMesh ;
 
 void make_geomodel_copy( const GeoModel& from, const std::string& name, GeoModel& to )
 {
-
     GeoModelBuilder geomodel_breaker2( to ) ;
     geomodel_breaker2.copy.copy_geomodel( from ) ;
     geomodel_breaker2.info.set_geomodel_name( name ) ;
@@ -85,21 +84,24 @@ int main()
 
         Logger::out( "TEST", "Break geomodels:" ) ;
 
-        GeoModel invalid_model1 ;
-        make_geomodel_copy( in, "broken model 1", invalid_model1 ) ;
-        GeoModelBuilder geomodel_breaker1( invalid_model1 ) ;
-        geomodel_breaker1.topology.add_mesh_entity_boundary(
-            invalid_model1.surface( 0 ).gmme(), 4 ) ;
-        verdict( invalid_model1, "detect artificial added surface boundary" ) ;
+        {
+            GeoModel invalid_model ;
+            make_geomodel_copy( in, "broken model 1", invalid_model ) ;
+            GeoModelBuilder geomodel_breaker( invalid_model ) ;
+            geomodel_breaker.topology.add_mesh_entity_boundary(
+                invalid_model.surface( 0 ).gmme(), 4 ) ;
+            verdict( invalid_model, "detect artificial added surface boundary" ) ;
+        }
 
-
-        GeoModel invalid_model2 ;
-        make_geomodel_copy( in, "broken model 2", invalid_model2 ) ;
-        GeoModelBuilder geomodel_breaker2( invalid_model2 ) ;
-        geomodel_breaker2.geology.add_mesh_entity_parent(
-            invalid_model2.surface( 0 ).gmme(),
-            gmge_id( Interface::type_name_static(), 0 ) ) ;
-        verdict( invalid_model2, "detect addition of incoherent parent" ) ;
+        {
+            GeoModel invalid_model ;
+            make_geomodel_copy( in, "broken model 2", invalid_model ) ;
+            GeoModelBuilder geomodel_breaker( invalid_model ) ;
+            geomodel_breaker.geology.add_mesh_entity_parent(
+                invalid_model.surface( 0 ).gmme(),
+                gmge_id( Interface::type_name_static(), 0 ) ) ;
+            verdict( invalid_model, "detect addition of incoherent parent" ) ;
+        }
 
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category(), e.what() ) ;
