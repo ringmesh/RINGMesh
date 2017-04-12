@@ -120,6 +120,11 @@ namespace RINGMesh {
         return is_valid ;
     }
 
+    bool GeoModelGeologicalEntity::is_valid() const
+    {
+        return check_has_children( *this ) ;
+    }
+
     void GeoModelGeologicalEntity::initialize()
     {
         ringmesh_register_GeoModelGeologicalEntity_creator( Contact ) ;
@@ -132,29 +137,14 @@ namespace RINGMesh {
         return Line::type_name_static() ;
     }
 
-    bool Contact::is_valid() const
-    {
-        return check_has_children( *this ) ;
-    }
-
     const MeshEntityType Interface::child_type_name() const
     {
         return Surface::type_name_static() ;
     }
 
-    bool Interface::is_valid() const
-    {
-        return check_has_children( *this ) ;
-    }
-
     const MeshEntityType Layer::child_type_name() const
     {
         return Region::type_name_static() ;
-    }
-
-    bool Layer::is_valid() const
-    {
-        return check_has_children( *this ) ;
     }
 
     std::unique_ptr< GeoModelGeologicalEntity > GeoModelGeologicalEntityAccess::create_geological_entity(

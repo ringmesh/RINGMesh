@@ -75,6 +75,7 @@ namespace RINGMesh {
         virtual const MeshEntityType child_type_name() const = 0 ;
         virtual bool is_on_voi() const ;
         virtual bool is_connectivity_valid() const ;
+        virtual bool is_valid() const ;
         static const GeologicalEntityType type_name_static()
         {
             return ForbiddenGeologicalEntityType::type_name_static() ;
@@ -137,8 +138,6 @@ namespace RINGMesh {
             return type_name_static() ;
         }
         virtual const MeshEntityType child_type_name() const override ;
-
-        virtual bool is_valid() const final ;
     } ;
 
     class RINGMESH_API Interface: public GeoModelGeologicalEntity {
@@ -158,8 +157,6 @@ namespace RINGMesh {
             return type_name_static() ;
         }
         virtual const MeshEntityType child_type_name() const override ;
-
-        virtual bool is_valid() const final ;
     } ;
 
     class RINGMESH_API Layer: public GeoModelGeologicalEntity {
@@ -179,8 +176,6 @@ namespace RINGMesh {
             return type_name_static() ;
         }
         virtual const MeshEntityType child_type_name() const override ;
-
-        virtual bool is_valid() const final ;
     } ;
 
     class GeoModelGeologicalEntityAccess {
