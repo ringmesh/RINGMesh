@@ -88,16 +88,6 @@ namespace RINGMesh {
         assign_result_tetmesh_to_mesh( output_mesh_builder ) ;
     }
 
-    void TetgenMesher::tetrahedralize(
-        const Mesh0D& input_mesh,
-        Mesh3DBuilder& output_mesh_builder )
-    {
-        initialize() ;
-        copy_vertices_to_tetgen_input( input_mesh ) ;
-        tetrahedralize() ;
-        assign_result_tetmesh_to_mesh( output_mesh_builder ) ;
-    }
-
     void TetgenMesher::initialize()
     {
         initialize_tetgen_args() ;
@@ -170,19 +160,6 @@ namespace RINGMesh {
         tetgen_in_.pointlist = new double[3 * tetgen_in_.numberofpoints] ;
         GEO::Memory::copy( tetgen_in_.pointlist, M.vertices.point_ptr( 0 ),
             M.vertices.nb() * 3 * sizeof(double) ) ;
-    }
-
-    void TetgenMesher::copy_vertices_to_tetgen_input( const Mesh0D& M )
-    {
-        if( M.nb_vertices() != 0 ) {
-            tetgen_in_.numberofpoints = static_cast< int >( M.nb_vertices() ) ;
-            tetgen_in_.pointlist = new double[M.nb_vertices() * 3] ;
-            for( index_t v = 0; v < M.nb_vertices(); v++ ) {
-                for( index_t i = 0; i < 3; i++ ) {
-                    tetgen_in_.pointlist[3 * v + 1] = M.vertex( v )[i] ;
-                }
-            }
-        }
     }
 
     void TetgenMesher::copy_edges_to_tetgen_input( const GEO::Mesh& M )
@@ -332,20 +309,6 @@ namespace RINGMesh {
             mesher.add_points_to_match_quality( quality ) ;
         }
         mesher.tetrahedralize( in_mesh, out_tet_mesh ) ;
-    }
-
-    void tetrahedralize_mesh_tetgen(
-        Mesh3DBuilder& out_tet_mesh,
-        const Mesh0D& in_point_cloud,
-        bool refine,
-        double quality )
-    {
-        TetgenMesher mesher ;
-        if( refine ) {
-            mesher.add_points_to_match_quality( quality ) ;
-        }
-        mesher.tetrahedralize( in_point_cloud, out_tet_mesh ) ;
-
     }
 
     void TetgenMesher::add_points_to_match_quality( double quality )
