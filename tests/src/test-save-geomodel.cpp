@@ -68,11 +68,11 @@ void get_line( GEO::LineInput& in )
 
 void check_output( GEO::LineInput& in )
 {
-    std::string data_path = ringmesh_test_data_path + "/save/" ;
+    std::string data_path = ringmesh_test_data_path + "save/" ;
     while( !in.eof() && in.get_line() ) {
         in.get_fields() ;
         std::string template_output = data_path + in.field( 0 ) ;
-        std::string new_output = ringmesh_test_output_path + "/" + in.field( 0 ) ;
+        std::string new_output = ringmesh_test_output_path + in.field( 0 ) ;
         if( !compare_files( new_output, template_output ) ) {
             throw RINGMeshException( "TEST",
                 "Output file " + new_output + " does not match template file "
@@ -85,12 +85,12 @@ void io_geomodel( const std::string& geomodel_file, const std::string& extension
 {
     GeoModel geomodel ;
     load_geomodel( geomodel, geomodel_file ) ;
-    geomodel_save( geomodel, ringmesh_test_output_path + "/geomodel." + extension ) ;
+    geomodel_save( geomodel, ringmesh_test_output_path + "geomodel." + extension ) ;
 }
 
 void process_extension( const std::string& extension )
 {
-    GEO::LineInput in( ringmesh_test_data_path + "/save/" + extension + ".txt" ) ;
+    GEO::LineInput in( ringmesh_test_data_path + "save/" + extension + ".txt" ) ;
     get_line( in ) ;
     io_geomodel( ringmesh_test_data_path + in.field( 0 ), extension ) ;
     check_output( in ) ;
