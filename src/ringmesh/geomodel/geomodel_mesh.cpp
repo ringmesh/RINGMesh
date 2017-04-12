@@ -1242,7 +1242,7 @@ namespace RINGMesh {
                 } while( !S.empty() ) ;
 
                 // Remove redundant occurrences and sort the remaining ones
-                GEO::sort_unique( surfaces ) ;
+                sort_unique( surfaces ) ;
 
                 // Determine if the corners should be duplicated or not because
                 // we need to duplicate only one side of the surface
