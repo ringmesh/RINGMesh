@@ -122,7 +122,6 @@ namespace {
                     < geomodel.entity_type_manager().mesh_entity_manager.nb_mesh_entity_types();
                 gmme_type_index++ ) {
                 MeshEntityType cur_mesh_entity_type = gmme_types[gmme_type_index] ;
-//                out << "// " << cur_mesh_entity_type << std::endl ;
                 for( index_t index_of_gmme_of_the_current_type = 0;
                     index_of_gmme_of_the_current_type
                         < geomodel.nb_mesh_entities( cur_mesh_entity_type );
@@ -207,11 +206,7 @@ namespace {
             index_t nb_elements = 0 ;
             const std::vector< MeshEntityType >& gmme_types =
                 geomodel.entity_type_manager().mesh_entity_manager.mesh_entity_types() ;
-            for( index_t gmme_type_index = 0;
-                gmme_type_index
-                    < geomodel.entity_type_manager().mesh_entity_manager.nb_mesh_entity_types();
-                gmme_type_index++ ) {
-                MeshEntityType cur_mesh_entity_type = gmme_types[gmme_type_index] ;
+            for( MeshEntityType cur_mesh_entity_type : gmme_types ) {
                 for( index_t index_of_gmme_of_the_current_type = 0;
                     index_of_gmme_of_the_current_type
                         < geomodel.nb_mesh_entities( cur_mesh_entity_type );
@@ -225,7 +220,5 @@ namespace {
             }
             return nb_elements ;
         }
-    }
-    ;
-
+    } ;
 }

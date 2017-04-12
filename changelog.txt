@@ -4,6 +4,7 @@ New Features:
  * New thread safe logger
       Each call to Logger::XXX will output consistently in the console in multithreading environment
       The Logger uses variadic templates, you can use as many parameters as you want in the function.
+ * New automatic non-regression output file testing
 
 Bug fix:
  * Crash when GeoModelMesh was initialized before the GeoModelMeshEntity geometries were set.

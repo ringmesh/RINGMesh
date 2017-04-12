@@ -106,7 +106,7 @@ namespace RINGMesh {
         ringmesh_register_GeoModelIOHandler_creator( AsterIOHandler, "mail" ) ;
         ringmesh_register_GeoModelIOHandler_creator( VTKIOHandler, "vtk" ) ;
         ringmesh_register_GeoModelIOHandler_creator( GPRSIOHandler, "gprs" ) ;
-//        ringmesh_register_GeoModelIOHandler_creator( MSHIOHandler, "msh" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( MSHIOHandler, "msh" ) ;
         ringmesh_register_GeoModelIOHandler_creator( MFEMIOHandler, "mfem" ) ;
         ringmesh_register_GeoModelIOHandler_creator( GeoModelHandlerGM, "gm" ) ;
         ringmesh_register_GeoModelIOHandler_creator( AbaqusIOHandler, "inp" ) ;
