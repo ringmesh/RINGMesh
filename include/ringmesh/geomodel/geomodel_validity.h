@@ -53,6 +53,16 @@ namespace RINGMesh {
 }
 
 namespace RINGMesh {
+    /// Option to select what are checked.
+    enum struct ValidityCheckMode {
+        TOPOLOGY,
+        GEOMETRY,
+        GEOMETRY_EXCEPT_FACET_INTERSECTION,
+        ALL,
+        ALL_EXCEPT_FACET_INTERSECTION,
+        UNDEFINED
+    } ;
+
     /*! 
      * @brief Set the global default directory to store invalid entities of 
      *  geomodels to be the current working directory
@@ -69,22 +79,29 @@ namespace RINGMesh {
 
     /*!
      * @brief Check global geomodel validity
-     * @details In debug mode problematic vertices, edges, entities are
-     *          saved in the validity_errors_directory
-     *          An optional expensive check of the intersections between
-     *          the geomodel surfaces can be disabled using command line
-     *          argument "in:intersection_check"
-     * @todo Check the consistency of gme_vertices vs. geomodel_vertex_id
-     * @todo Add options to expensive tests
+     * @param[in] geomodel GeoModel to check
+     * @param[in] validity_check_mode Mode to select what model feature should
+     * be checked. Set by default to the most complete check option.
      */
-    bool RINGMESH_API is_geomodel_valid( const GeoModel& geomodel ) ;
+    bool RINGMESH_API is_geomodel_valid(
+        const GeoModel& geomodel,
+        ValidityCheckMode validity_check_mode = ValidityCheckMode::ALL ) ;
 
     /*!
-     * @brief Check the validity of all individual entities
+     * @brief Check the validity of all individual entity meshes
      * @details Check that the entities belong to this geomodel,
      *          call the check validity for each entity
      */
-    bool RINGMESH_API are_geomodel_meshed_entities_valid(
+    bool RINGMESH_API are_geomodel_mesh_entities_mesh_valid(
+        const GeoModel& geomodel ) ;
+
+    /*!
+     * @brief Check the connectivity of mesh entities
+     */
+    bool RINGMESH_API are_geomodel_mesh_entities_connectivity_valid(
+        const GeoModel& geomodel ) ;
+
+    bool RINGMESH_API are_geomodel_mesh_entities_parent_valid(
         const GeoModel& geomodel ) ;
 
     bool RINGMESH_API are_geomodel_geological_entities_valid(
