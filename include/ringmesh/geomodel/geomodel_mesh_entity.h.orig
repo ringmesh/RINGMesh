@@ -94,12 +94,6 @@ namespace RINGMesh {
         virtual bool is_connectivity_valid() const ;
 
         /*!
-         *  Check that for each parent type, this entity has one and only
-         *  one parent of that type.
-         */
-        bool is_parent_connectivity_valid() const ;
-
-        /*!
          * \name Boundary relationship functions
          * @{
          */
@@ -324,6 +318,12 @@ namespace RINGMesh {
          * boundary vector
          */
         bool is_in_boundary_connectivity_valid() const ;
+        /*!
+         *  If the parent type is defined for this EntityType,
+         *  and if the geomodel has entities of that type, the entity must have a parent.
+         * @todo Remove the second if condition ?
+         */
+        bool is_parent_connectivity_valid() const ;
         /*!
          * @brief Check that geomodel vertex indices are consistent
          * with what is stored at the GeoModel level.
