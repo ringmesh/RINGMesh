@@ -1,9 +1,0 @@
-Corner 6
-Line 6
-Surface 6
-Region 0
-Vertex 24
-Facet 12
-Cell 0
-Interface 6
-Contact 6
