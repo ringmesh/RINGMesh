@@ -48,8 +48,6 @@ namespace GEO {
     class Mesh ;
 }
 namespace RINGMesh {
-    class Mesh0D ;
-    class Mesh2D ;
     class Mesh3DBuilder ;
 }
 
@@ -107,9 +105,6 @@ namespace RINGMesh {
         void tetrahedralize(
             const GEO::Mesh& input_mesh,
             Mesh3DBuilder& output_mesh_builder ) ;
-        void tetrahedralize(
-            const Mesh0D& input_mesh,
-            Mesh3DBuilder& output_mesh_builder ) ;
 
         void add_points_to_match_quality( double quality ) ;
 
@@ -122,7 +117,6 @@ namespace RINGMesh {
         void copy_vertices_to_tetgen_input( const GEO::Mesh& M ) ;
         void copy_edges_to_tetgen_input( const GEO::Mesh& M ) ;
         void copy_facets_to_tetgen_input( const GEO::Mesh& M ) ;
-        void copy_vertices_to_tetgen_input( const Mesh0D& M ) ;
 
         void set_regions( const std::vector< vec3 >& one_point_per_region ) ;
 
@@ -151,11 +145,6 @@ namespace RINGMesh {
     void RINGMESH_API tetrahedralize_mesh_tetgen(
         Mesh3DBuilder& out_mesh_builder,
         const GEO::Mesh& in_mesh,
-        bool refine,
-        double quality ) ;
-    void RINGMESH_API tetrahedralize_mesh_tetgen(
-        Mesh3DBuilder& out_mesh_builder,
-        const Mesh0D& in_point_cloud,
         bool refine,
         double quality ) ;
 
