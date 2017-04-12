@@ -69,12 +69,6 @@ namespace RINGMesh {
         }
 
         /*!
-         * @brief Build the Contacts
-         * @details One contact is a group of lines shared by the same Interfaces
-         */
-        void build_contacts() ;
-
-        /*!
          * @brief Parses the file and loads the GeoModel
          * @details The GeoModel loaded by this function is not valid because
          * some computation are still not done (i.e., surface internal borders,
