@@ -47,116 +47,116 @@
  * @author Arnaud Botella
  */
 
-using namespace RINGMesh ;
+using namespace RINGMesh;
 
 void load_geomodel( GeoModel& geomodel, const std::string& file )
 {
-    bool loaded_model_is_valid = geomodel_load( geomodel, file ) ;
+    bool loaded_model_is_valid = geomodel_load( geomodel, file );
     if( !loaded_model_is_valid ) {
         throw RINGMeshException( "RINGMesh Test",
             "Failed when loading model " + geomodel.name()
-                + ": the loaded model is not valid." ) ;
+                + ": the loaded model is not valid." );
     }
 }
 
 void get_line( GEO::LineInput& in )
 {
-    in.get_line() ;
-    in.get_fields() ;
+    in.get_line();
+    in.get_fields();
 }
 
 void throw_error( const GeoModel& geomodel, const std::string& entity )
 {
     throw RINGMeshException( "RINGMesh Test",
         "Failed when loading model " + geomodel.name()
-            + ": the loaded model as the correct number of " + entity ) ;
+            + ": the loaded model as the correct number of " + entity );
 }
 
 void check_geomodel( const GeoModel& geomodel, const std::string& result )
 {
-    GEO::LineInput in( result ) ;
-    get_line( in ) ;
-    index_t nb_corners = in.field_as_uint( 1 ) ;
+    GEO::LineInput in( result );
+    get_line( in );
+    index_t nb_corners = in.field_as_uint( 1 );
     if( geomodel.nb_corners() != nb_corners ) {
-        throw_error( geomodel, "corners" ) ;
+        throw_error( geomodel, "corners" );
     }
-    get_line( in ) ;
-    index_t nb_lines = in.field_as_uint( 1 ) ;
+    get_line( in );
+    index_t nb_lines = in.field_as_uint( 1 );
     if( geomodel.nb_lines() != nb_lines ) {
-        throw_error( geomodel, "lines" ) ;
+        throw_error( geomodel, "lines" );
     }
-    get_line( in ) ;
-    index_t nb_surfaces = in.field_as_uint( 1 ) ;
+    get_line( in );
+    index_t nb_surfaces = in.field_as_uint( 1 );
     if( geomodel.nb_surfaces() != nb_surfaces ) {
-        throw_error( geomodel, "surfaces" ) ;
+        throw_error( geomodel, "surfaces" );
     }
-    get_line( in ) ;
-    index_t nb_regions = in.field_as_uint( 1 ) ;
+    get_line( in );
+    index_t nb_regions = in.field_as_uint( 1 );
     if( geomodel.nb_regions() != nb_regions ) {
-        throw_error( geomodel, "regions" ) ;
+        throw_error( geomodel, "regions" );
     }
-    get_line( in ) ;
-    index_t nb_vertices = in.field_as_uint( 1 ) ;
+    get_line( in );
+    index_t nb_vertices = in.field_as_uint( 1 );
     if( geomodel.mesh.vertices.nb() != nb_vertices ) {
-        throw_error( geomodel, "vertices" ) ;
+        throw_error( geomodel, "vertices" );
     }
-    get_line( in ) ;
-    index_t nb_facets = in.field_as_uint( 1 ) ;
+    get_line( in );
+    index_t nb_facets = in.field_as_uint( 1 );
     if( geomodel.mesh.facets.nb() != nb_facets ) {
-        throw_error( geomodel, "facets" ) ;
+        throw_error( geomodel, "facets" );
     }
-    get_line( in ) ;
-    index_t nb_cells = in.field_as_uint( 1 ) ;
+    get_line( in );
+    index_t nb_cells = in.field_as_uint( 1 );
     if( geomodel.mesh.cells.nb() != nb_cells ) {
-        throw_error( geomodel, "cells" ) ;
+        throw_error( geomodel, "cells" );
     }
     while( !in.eof() && in.get_line() ) {
-        in.get_fields() ;
-        std::string geol_type = in.field( 0 ) ;
-        index_t nb_geol_entities = in.field_as_uint( 1 ) ;
+        in.get_fields();
+        std::string geol_type = in.field( 0 );
+        index_t nb_geol_entities = in.field_as_uint( 1 );
         if( geomodel.nb_geological_entities( geol_type ) != nb_geol_entities ) {
-            throw_error( geomodel, geol_type ) ;
+            throw_error( geomodel, geol_type );
         }
     }
 }
 
 void process_file( const std::string& file )
 {
-    Logger::out( "TEST", "Import GeoModel from ", file ) ;
-    GeoModel geomodel ;
-    load_geomodel( geomodel, file ) ;
+    Logger::out( "TEST", "Import GeoModel from ", file );
+    GeoModel geomodel;
+    load_geomodel( geomodel, file );
 
-    std::string result = file + ".txt" ;
-    check_geomodel( geomodel, result ) ;
-    Logger::out( "TEST", "Import GeoModel from ", file, " OK" ) ;
+    std::string result = file + ".txt";
+    check_geomodel( geomodel, result );
+    Logger::out( "TEST", "Import GeoModel from ", file, " OK" );
 }
 
 int main()
 {
-    using namespace RINGMesh ;
+    using namespace RINGMesh;
 
     try {
-        default_configure() ;
+        default_configure();
 
-        Logger::out( "TEST", "Import GeoModel files" ) ;
-        std::vector< std::string > files ;
-        std::string data_path = ringmesh_test_data_path + "/load" ;
-        GEO::FileSystem::get_files( data_path, files ) ;
+        Logger::out( "TEST", "Import GeoModel files" );
+        std::vector< std::string > files;
+        std::string data_path = ringmesh_test_data_path + "/load";
+        GEO::FileSystem::get_files( data_path, files );
 
         for( const std::string& file : files ) {
             if( GEO::FileSystem::extension( file ) == "txt" ) {
-                continue ;
+                continue;
             }
-            process_file( file ) ;
+            process_file( file );
         }
 
     } catch( const RINGMeshException& e ) {
-        Logger::err( e.category(), e.what() ) ;
-        return 1 ;
+        Logger::err( e.category(), e.what() );
+        return 1;
     } catch( const std::exception& e ) {
-        Logger::err( "Exception", e.what() ) ;
-        return 1 ;
+        Logger::err( "Exception", e.what() );
+        return 1;
     }
-    Logger::out( "TEST", "SUCCESS" ) ;
-    return 0 ;
+    Logger::out( "TEST", "SUCCESS" );
+    return 0;
 }

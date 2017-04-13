@@ -41,7 +41,7 @@ namespace RINGMesh {
 
     namespace CmdLine {
 
-        bool RINGMESH_API import_arg_group( const std::string& name ) ;
+        bool RINGMESH_API import_arg_group( const std::string& name );
 
     }
 }

@@ -35,309 +35,311 @@
 
 namespace {
     struct RINGMesh2CSMP {
-        index_t entity_type ;
-        index_t nb_vertices ;
-        index_t vertices[8] ;
-        index_t nb_facets ;
-        index_t facet[6] ;
-    } ;
+        index_t entity_type;
+        index_t nb_vertices;
+        index_t vertices[8];
+        index_t nb_facets;
+        index_t facet[6];
+    };
 
     static RINGMesh2CSMP tet_descriptor = { 4,                  // type
         4,                  // nb vertices
         { 0, 1, 2, 3 },     // vertices
         4,                  // nb facets
         { 0, 1, 2, 3 }      // facets
-    } ;
+    };
 
     static RINGMesh2CSMP hex_descriptor = { 6,                         // type
         8,                              // nb vertices
         { 0, 4, 5, 1, 2, 6, 7, 3 },     // vertices
         6,                              // nb facets
         { 2, 0, 5, 1, 4, 3 }            // facets
-    } ;
+    };
 
     static RINGMesh2CSMP prism_descriptor = { 12,                     // type
         6,                      // nb vertices
         { 0, 1, 2, 3, 4, 5 },   // vertices
         5,                      // nb facets
         { 0, 2, 4, 3, 1 }       // facets
-    } ;
+    };
 
     static RINGMesh2CSMP pyramid_descriptor = { 18,                 // type
         5,                  // nb vertices
         { 0, 1, 2, 3, 4 },  // vertices
         5,                  // nb facets
         { 1, 4, 3, 2, 0 }   // facets
-    } ;
+    };
 
-    static RINGMesh2CSMP* cell_type_to_cell_descriptor[4] = {
-        &tet_descriptor, &hex_descriptor, &prism_descriptor, &pyramid_descriptor } ;
+    static RINGMesh2CSMP* cell_type_to_cell_descriptor[4] = { &tet_descriptor,
+                                                              &hex_descriptor,
+                                                              &prism_descriptor,
+                                                              &pyramid_descriptor };
 
     class CSMPIOHandler final: public GeoModelIOHandler {
     public:
         CSMPIOHandler()
         {
-            clear() ;
+            clear();
         }
 
         virtual bool load( const std::string& filename, GeoModel& geomodel ) override
         {
             throw RINGMeshException( "I/O",
-                "Loading of a GeoModel from CSMP not implemented yet" ) ;
-            return false ;
+                "Loading of a GeoModel from CSMP not implemented yet" );
+            return false;
         }
         virtual void save( const GeoModel& gm, const std::string& filename ) override
         {
-            initialize( gm ) ;
+            initialize( gm );
 
-            std::string directory = GEO::FileSystem::dir_name( filename ) ;
-            std::string file = GEO::FileSystem::base_name( filename ) ;
+            std::string directory = GEO::FileSystem::dir_name( filename );
+            std::string file = GEO::FileSystem::base_name( filename );
 
-            std::ostringstream oss_ascii ;
-            oss_ascii << directory << "/" << file << ".asc" ;
-            std::ofstream ascii( oss_ascii.str().c_str() ) ;
-            ascii.precision( 16 ) ;
+            std::ostringstream oss_ascii;
+            oss_ascii << directory << "/" << file << ".asc";
+            std::ofstream ascii( oss_ascii.str().c_str() );
+            ascii.precision( 16 );
 
-            ascii << gm.name() << std::endl ;
-            ascii << "Model generated from RINGMesh" << std::endl ;
+            ascii << gm.name() << std::endl;
+            ascii << "Model generated from RINGMesh" << std::endl;
 
-            std::ostringstream oss_data ;
-            oss_data << directory << "/" << file << ".dat" ;
-            std::ofstream data( oss_data.str().c_str() ) ;
-            data.precision( 16 ) ;
+            std::ostringstream oss_data;
+            oss_data << directory << "/" << file << ".dat";
+            std::ofstream data( oss_data.str().c_str() );
+            data.precision( 16 );
 
-            std::ostringstream oss_regions ;
-            oss_regions << directory << "/" << file << "-regions.txt" ;
-            std::ofstream regions( oss_regions.str().c_str() ) ;
-            regions << "'" << oss_regions.str() << std::endl ;
-            regions << "no properties" << std::endl ;
+            std::ostringstream oss_regions;
+            oss_regions << directory << "/" << file << "-regions.txt";
+            std::ofstream regions( oss_regions.str().c_str() );
+            regions << "'" << oss_regions.str() << std::endl;
+            regions << "no properties" << std::endl;
 
-            const GeoModelMesh& mesh = gm.mesh ;
-            index_t count = 0 ;
+            const GeoModelMesh& mesh = gm.mesh;
+            index_t count = 0;
             // Conversion from (X,Y,Z) to (X,Z,-Y)
-            signed_index_t conversion_sign[3] = { 1, 1, -1 } ;
-            index_t conversion_axis[3] = { 0, 2, 1 } ;
-            data << mesh.vertices.nb() << " # PX, PY, PZ" << std::endl ;
+            signed_index_t conversion_sign[3] = { 1, 1, -1 };
+            index_t conversion_axis[3] = { 0, 2, 1 };
+            data << mesh.vertices.nb() << " # PX, PY, PZ" << std::endl;
             for( index_t dim = 0; dim < 3; dim++ ) {
                 for( index_t v = 0; v < mesh.vertices.nb(); v++ ) {
                     data << " "
                         << conversion_sign[dim]
-                            * mesh.vertices.vertex( v )[conversion_axis[dim]] ;
-                    new_line( count, 5, data ) ;
+                            * mesh.vertices.vertex( v )[conversion_axis[dim]];
+                    new_line( count, 5, data );
                 }
-                reset_line( count, data ) ;
+                reset_line( count, data );
             }
-            reset_line( count, data ) ;
+            reset_line( count, data );
 
-            index_t nb_families = 0 ;
+            index_t nb_families = 0;
             index_t nb_interfaces = gm.nb_geological_entities(
-                Interface::type_name_static() ) ;
-            std::vector< index_t > nb_triangle_interface( nb_interfaces, 0 ) ;
-            std::vector< index_t > nb_quad_interface( nb_interfaces, 0 ) ;
+                Interface::type_name_static() );
+            std::vector< index_t > nb_triangle_interface( nb_interfaces, 0 );
+            std::vector< index_t > nb_quad_interface( nb_interfaces, 0 );
             for( index_t i = 0; i < nb_interfaces; i++ ) {
                 const GeoModelGeologicalEntity& interf = gm.geological_entity(
-                    Interface::type_name_static(), i ) ;
+                    Interface::type_name_static(), i );
                 for( index_t s = 0; s < interf.nb_children(); s++ ) {
-                    index_t s_id = interf.child_gmme( s ).index() ;
-                    nb_triangle_interface[i] += mesh.facets.nb_triangle( s_id ) ;
-                    nb_quad_interface[i] += mesh.facets.nb_quad( s_id ) ;
+                    index_t s_id = interf.child_gmme( s ).index();
+                    nb_triangle_interface[i] += mesh.facets.nb_triangle( s_id );
+                    nb_quad_interface[i] += mesh.facets.nb_quad( s_id );
                 }
-                if( nb_triangle_interface[i] > 0 ) nb_families++ ;
-                if( nb_quad_interface[i] > 0 ) nb_families++ ;
+                if( nb_triangle_interface[i] > 0 ) nb_families++;
+                if( nb_quad_interface[i] > 0 ) nb_families++;
             }
             for( index_t r = 0; r < gm.nb_regions(); r++ ) {
-                if( mesh.cells.nb_tet( r ) > 0 ) nb_families++ ;
-                if( mesh.cells.nb_pyramid( r ) > 0 ) nb_families++ ;
-                if( mesh.cells.nb_prism( r ) > 0 ) nb_families++ ;
-                if( mesh.cells.nb_hex( r ) > 0 ) nb_families++ ;
+                if( mesh.cells.nb_tet( r ) > 0 ) nb_families++;
+                if( mesh.cells.nb_pyramid( r ) > 0 ) nb_families++;
+                if( mesh.cells.nb_prism( r ) > 0 ) nb_families++;
+                if( mesh.cells.nb_hex( r ) > 0 ) nb_families++;
             }
-            if( gm.wells() ) nb_families += gm.wells()->nb_wells() ;
+            if( gm.wells() ) nb_families += gm.wells()->nb_wells();
 
-            ascii << nb_families << " # Number of families" << std::endl ;
+            ascii << nb_families << " # Number of families" << std::endl;
             ascii << "# Object name" << TAB << "Entity type" << TAB << "Material-ID"
-                << TAB << "Number of entities" << std::endl ;
+                << TAB << "Number of entities" << std::endl;
             for( index_t r = 0; r < gm.nb_regions(); r++ ) {
-                const RINGMesh::GeoModelEntity& region = gm.region( r ) ;
-                regions << region.name() << std::endl ;
-                std::string entity_type[4] = {
-                    "TETRA_4", "HEXA_8", "PENTA_6", "PYRA_5" } ;
+                const RINGMesh::GeoModelEntity& region = gm.region( r );
+                regions << region.name() << std::endl;
+                std::string entity_type[4] = { "TETRA_4", "HEXA_8", "PENTA_6",
+                                               "PYRA_5" };
                 for( index_t type = GEO::MESH_TET; type < GEO::MESH_CONNECTOR;
                     type++ ) {
-                    GEO::MeshCellType T = static_cast< GEO::MeshCellType >( type ) ;
+                    GEO::MeshCellType T = static_cast< GEO::MeshCellType >( type );
                     if( mesh.cells.nb_cells( r, T ) > 0 ) {
                         ascii << region.name() << TAB << entity_type[type] << TAB
-                            << 0 << TAB << mesh.cells.nb_cells( r, T ) << std::endl ;
+                            << 0 << TAB << mesh.cells.nb_cells( r, T ) << std::endl;
                     }
                 }
             }
             for( index_t i = 0; i < nb_interfaces; i++ ) {
-                regions << interface_csmp_name( i, gm ) << std::endl ;
+                regions << interface_csmp_name( i, gm ) << std::endl;
                 if( nb_triangle_interface[i] > 0 ) {
                     ascii << interface_csmp_name( i, gm ) << TAB << "TRI_3" << TAB
-                        << 0 << TAB << nb_triangle_interface[i] << std::endl ;
+                        << 0 << TAB << nb_triangle_interface[i] << std::endl;
                 }
                 if( nb_quad_interface[i] > 0 ) {
                     ascii << interface_csmp_name( i, gm ) << TAB << "QUAD_4" << TAB
-                        << 0 << TAB << nb_quad_interface[i] << std::endl ;
+                        << 0 << TAB << nb_quad_interface[i] << std::endl;
                 }
             }
             if( gm.wells() ) {
                 for( index_t w = 0; w < gm.wells()->nb_wells(); w++ ) {
-                    const Well& well = gm.wells()->well( w ) ;
-                    regions << well.name() << std::endl ;
+                    const Well& well = gm.wells()->well( w );
+                    regions << well.name() << std::endl;
                     ascii << well.name() << TAB << "BAR_2" << TAB << 0 << TAB
-                        << well.nb_edges() << std::endl ;
+                        << well.nb_edges() << std::endl;
                 }
             }
 
-            data << "# PBFLAGS" << std::endl ;
+            data << "# PBFLAGS" << std::endl;
             for( index_t p = 0; p < mesh.vertices.nb(); p++ ) {
-                data << " " << std::setw( 3 ) << point_boundary( p ) ;
-                new_line( count, 20, data ) ;
+                data << " " << std::setw( 3 ) << point_boundary( p );
+                new_line( count, 20, data );
             }
-            reset_line( count, data ) ;
+            reset_line( count, data );
 
-            data << "# PBVALS" << std::endl ;
+            data << "# PBVALS" << std::endl;
             for( index_t p = 0; p < mesh.vertices.nb(); p++ ) {
-                data << " " << std::setw( 3 ) << 0 ;
-                new_line( count, 20, data ) ;
+                data << " " << std::setw( 3 ) << 0;
+                new_line( count, 20, data );
             }
-            reset_line( count, data ) ;
+            reset_line( count, data );
 
             index_t nb_total_entities = mesh.cells.nb_cells()
-                + mesh.facets.nb_facets() + mesh.edges.nb_edges() ;
-            data << nb_total_entities << " # PELEMENT" << std::endl ;
+                + mesh.facets.nb_facets() + mesh.edges.nb_edges();
+            data << nb_total_entities << " # PELEMENT" << std::endl;
             for( index_t r = 0; r < gm.nb_regions(); r++ ) {
-                index_t entity_type[4] = { 4, 6, 12, 18 } ;
+                index_t entity_type[4] = { 4, 6, 12, 18 };
                 for( index_t type = GEO::MESH_TET; type < GEO::MESH_CONNECTOR;
                     type++ ) {
-                    GEO::MeshCellType T = static_cast< GEO::MeshCellType >( type ) ;
+                    GEO::MeshCellType T = static_cast< GEO::MeshCellType >( type );
                     for( index_t el = 0; el < mesh.cells.nb_cells( r, T ); el++ ) {
-                        data << " " << std::setw( 3 ) << entity_type[type] ;
-                        new_line( count, 20, data ) ;
+                        data << " " << std::setw( 3 ) << entity_type[type];
+                        new_line( count, 20, data );
                     }
                 }
             }
             for( index_t i = 0; i < nb_interfaces; i++ ) {
                 for( index_t el = 0; el < nb_triangle_interface[i]; el++ ) {
-                    data << " " << std::setw( 3 ) << 8 ;
-                    new_line( count, 20, data ) ;
+                    data << " " << std::setw( 3 ) << 8;
+                    new_line( count, 20, data );
                 }
                 for( index_t el = 0; el < nb_quad_interface[i]; el++ ) {
-                    data << " " << std::setw( 3 ) << 14 ;
-                    new_line( count, 20, data ) ;
+                    data << " " << std::setw( 3 ) << 14;
+                    new_line( count, 20, data );
                 }
             }
             if( gm.wells() ) {
                 for( index_t w = 0; w < gm.wells()->nb_wells(); w++ ) {
-                    const Well& well = gm.wells()->well( w ) ;
+                    const Well& well = gm.wells()->well( w );
                     for( index_t e = 0; e < well.nb_edges(); e++ ) {
-                        data << " " << std::setw( 3 ) << 2 ;
-                        new_line( count, 20, data ) ;
+                        data << " " << std::setw( 3 ) << 2;
+                        new_line( count, 20, data );
                     }
                 }
             }
-            reset_line( count, data ) ;
+            reset_line( count, data );
 
             ascii
                 << "# now the entities which make up each object are listed in sequence"
-                << std::endl ;
-            index_t cur_cell = 0 ;
+                << std::endl;
+            index_t cur_cell = 0;
             for( index_t r = 0; r < gm.nb_regions(); r++ ) {
-                const RINGMesh::GeoModelEntity& region = gm.region( r ) ;
-                std::string entity_type[4] = {
-                    "TETRA_4", "HEXA_8", "PENTA_6", "PYRA_5" } ;
+                const RINGMesh::GeoModelEntity& region = gm.region( r );
+                std::string entity_type[4] = { "TETRA_4", "HEXA_8", "PENTA_6",
+                                               "PYRA_5" };
                 for( index_t type = GEO::MESH_TET; type < GEO::MESH_CONNECTOR;
                     type++ ) {
-                    GEO::MeshCellType T = static_cast< GEO::MeshCellType >( type ) ;
+                    GEO::MeshCellType T = static_cast< GEO::MeshCellType >( type );
                     if( mesh.cells.nb_cells( r, T ) > 0 ) {
                         ascii << region.name() << " " << entity_type[type] << " "
-                            << mesh.cells.nb_cells( r, T ) << std::endl ;
+                            << mesh.cells.nb_cells( r, T ) << std::endl;
                         for( index_t el = 0; el < mesh.cells.nb_cells( r, T );
                             el++ ) {
-                            ascii << cur_cell++ << " " ;
-                            new_line( count, 10, ascii ) ;
+                            ascii << cur_cell++ << " ";
+                            new_line( count, 10, ascii );
                         }
-                        reset_line( count, ascii ) ;
+                        reset_line( count, ascii );
                     }
                 }
             }
             for( index_t i = 0; i < nb_interfaces; i++ ) {
                 if( nb_triangle_interface[i] > 0 ) {
                     ascii << interface_csmp_name( i, gm ) << " " << "TRI_3" << " "
-                        << nb_triangle_interface[i] << std::endl ;
+                        << nb_triangle_interface[i] << std::endl;
                     for( index_t el = 0; el < nb_triangle_interface[i]; el++ ) {
-                        ascii << cur_cell++ << " " ;
-                        new_line( count, 10, ascii ) ;
+                        ascii << cur_cell++ << " ";
+                        new_line( count, 10, ascii );
                     }
-                    reset_line( count, ascii ) ;
+                    reset_line( count, ascii );
                 }
                 if( nb_quad_interface[i] > 0 ) {
                     ascii << interface_csmp_name( i, gm ) << " " << "QUAD_4" << " "
-                        << nb_quad_interface[i] << std::endl ;
+                        << nb_quad_interface[i] << std::endl;
                     for( index_t el = 0; el < nb_quad_interface[i]; el++ ) {
-                        ascii << cur_cell++ << " " ;
-                        new_line( count, 10, ascii ) ;
+                        ascii << cur_cell++ << " ";
+                        new_line( count, 10, ascii );
                     }
-                    reset_line( count, ascii ) ;
+                    reset_line( count, ascii );
                 }
             }
             if( gm.wells() ) {
                 for( index_t w = 0; w < gm.wells()->nb_wells(); w++ ) {
-                    const Well& well = gm.wells()->well( w ) ;
+                    const Well& well = gm.wells()->well( w );
                     ascii << well.name() << " " << "BAR_2" << " " << well.nb_edges()
-                        << std::endl ;
+                        << std::endl;
                     for( index_t e = 0; e < well.nb_edges(); e++ ) {
-                        ascii << cur_cell++ << " " ;
-                        new_line( count, 10, ascii ) ;
+                        ascii << cur_cell++ << " ";
+                        new_line( count, 10, ascii );
                     }
-                    reset_line( count, ascii ) ;
+                    reset_line( count, ascii );
                 }
             }
 
             index_t nb_plist = 3 * mesh.facets.nb_triangle()
                 + 4 * mesh.facets.nb_quad() + 4 * mesh.cells.nb_tet()
                 + 5 * mesh.cells.nb_pyramid() + 6 * mesh.cells.nb_prism()
-                + 8 * mesh.cells.nb_hex() + 2 * mesh.edges.nb_edges() ;
-            data << nb_plist << " # PLIST" << std::endl ;
+                + 8 * mesh.cells.nb_hex() + 2 * mesh.edges.nb_edges();
+            data << nb_plist << " # PLIST" << std::endl;
             for( index_t r = 0; r < gm.nb_regions(); r++ ) {
                 for( index_t type = GEO::MESH_TET; type < GEO::MESH_CONNECTOR;
                     type++ ) {
-                    GEO::MeshCellType T = static_cast< GEO::MeshCellType >( type ) ;
-                    RINGMesh2CSMP& descriptor = *cell_type_to_cell_descriptor[T] ;
+                    GEO::MeshCellType T = static_cast< GEO::MeshCellType >( type );
+                    RINGMesh2CSMP& descriptor = *cell_type_to_cell_descriptor[T];
                     for( index_t el = 0; el < mesh.cells.nb_cells( r, T ); el++ ) {
-                        index_t cell = mesh.cells.cell( r, el, T ) ;
+                        index_t cell = mesh.cells.cell( r, el, T );
                         for( index_t p = 0; p < descriptor.nb_vertices; p++ ) {
-                            index_t csmp_p = descriptor.vertices[p] ;
-                            index_t vertex_id = mesh.cells.vertex( cell, csmp_p ) ;
-                            data << " " << std::setw( 7 ) << vertex_id ;
-                            new_line( count, 10, data ) ;
+                            index_t csmp_p = descriptor.vertices[p];
+                            index_t vertex_id = mesh.cells.vertex( cell, csmp_p );
+                            data << " " << std::setw( 7 ) << vertex_id;
+                            new_line( count, 10, data );
                         }
                     }
                 }
             }
             for( index_t i = 0; i < nb_interfaces; i++ ) {
                 const GeoModelGeologicalEntity& interf = gm.geological_entity(
-                    Interface::type_name_static(), i ) ;
+                    Interface::type_name_static(), i );
                 for( index_t s = 0; s < interf.nb_children(); s++ ) {
-                    index_t s_id = interf.child_gmme( s ).index() ;
+                    index_t s_id = interf.child_gmme( s ).index();
                     for( index_t el = 0; el < mesh.facets.nb_triangle( s_id );
                         el++ ) {
-                        index_t tri = mesh.facets.triangle( s_id, el ) ;
+                        index_t tri = mesh.facets.triangle( s_id, el );
                         for( index_t p = 0; p < mesh.facets.nb_vertices( tri );
                             p++ ) {
-                            index_t vertex_id = mesh.facets.vertex( tri, p ) ;
-                            data << " " << std::setw( 7 ) << vertex_id ;
-                            new_line( count, 10, data ) ;
+                            index_t vertex_id = mesh.facets.vertex( tri, p );
+                            data << " " << std::setw( 7 ) << vertex_id;
+                            new_line( count, 10, data );
                         }
                     }
                     for( index_t el = 0; el < mesh.facets.nb_quad( s_id ); el++ ) {
-                        index_t quad = mesh.facets.quad( s_id, el ) ;
+                        index_t quad = mesh.facets.quad( s_id, el );
                         for( index_t p = 0; p < mesh.facets.nb_vertices( quad );
                             p++ ) {
-                            index_t vertex_id = mesh.facets.vertex( quad, p ) ;
-                            data << " " << std::setw( 7 ) << vertex_id ;
-                            new_line( count, 10, data ) ;
+                            index_t vertex_id = mesh.facets.vertex( quad, p );
+                            data << " " << std::setw( 7 ) << vertex_id;
+                            new_line( count, 10, data );
                         }
                     }
                 }
@@ -345,102 +347,102 @@ namespace {
             for( index_t w = 0; w < mesh.edges.nb_wells(); w++ ) {
                 for( index_t e = 0; e < mesh.edges.nb_edges( w ); e++ ) {
                     for( index_t v = 0; v < 2; v++ ) {
-                        index_t vertex_id = mesh.edges.vertex( w, e, v ) ;
-                        data << " " << std::setw( 7 ) << vertex_id ;
-                        new_line( count, 10, data ) ;
+                        index_t vertex_id = mesh.edges.vertex( w, e, v );
+                        data << " " << std::setw( 7 ) << vertex_id;
+                        new_line( count, 10, data );
                     }
                 }
             }
-            reset_line( count, data ) ;
+            reset_line( count, data );
 
             index_t nb_facets = 3 * mesh.facets.nb_triangle()
                 + 4 * mesh.facets.nb_quad() + 4 * mesh.cells.nb_tet()
                 + 5 * mesh.cells.nb_pyramid() + 5 * mesh.cells.nb_prism()
-                + 6 * mesh.cells.nb_hex() + 2 * mesh.edges.nb_edges() ;
-            data << nb_facets << " # PFVERTS" << std::endl ;
+                + 6 * mesh.cells.nb_hex() + 2 * mesh.edges.nb_edges();
+            data << nb_facets << " # PFVERTS" << std::endl;
             for( index_t r = 0; r < gm.nb_regions(); r++ ) {
                 for( index_t type = GEO::MESH_TET; type < GEO::MESH_CONNECTOR;
                     type++ ) {
-                    GEO::MeshCellType T = static_cast< GEO::MeshCellType >( type ) ;
-                    RINGMesh2CSMP& descriptor = *cell_type_to_cell_descriptor[T] ;
+                    GEO::MeshCellType T = static_cast< GEO::MeshCellType >( type );
+                    RINGMesh2CSMP& descriptor = *cell_type_to_cell_descriptor[T];
                     for( index_t el = 0; el < mesh.cells.nb_cells( r, T ); el++ ) {
-                        index_t cell = mesh.cells.cell( r, el ) ;
+                        index_t cell = mesh.cells.cell( r, el );
                         for( index_t f = 0; f < descriptor.nb_facets; f++ ) {
-                            index_t csmp_f = descriptor.facet[f] ;
-                            index_t adj = mesh.cells.adjacent( cell, csmp_f ) ;
+                            index_t csmp_f = descriptor.facet[f];
+                            index_t adj = mesh.cells.adjacent( cell, csmp_f );
                             if( adj == GEO::NO_CELL ) {
-                                data << " " << std::setw( 7 ) << -28 ;
+                                data << " " << std::setw( 7 ) << -28;
                             } else {
-                                data << " " << std::setw( 7 ) << adj ;
+                                data << " " << std::setw( 7 ) << adj;
                             }
-                            new_line( count, 10, data ) ;
+                            new_line( count, 10, data );
                         }
                     }
                 }
             }
             for( index_t i = 0; i < nb_interfaces; i++ ) {
                 const GeoModelGeologicalEntity& interf = gm.geological_entity(
-                    Interface::type_name_static(), i ) ;
+                    Interface::type_name_static(), i );
                 for( index_t s = 0; s < interf.nb_children(); s++ ) {
-                    index_t s_id = interf.child_gmme( s ).index() ;
+                    index_t s_id = interf.child_gmme( s ).index();
                     for( index_t el = 0; el < mesh.facets.nb_triangle( s_id );
                         el++ ) {
-                        index_t tri = mesh.facets.triangle( s_id, el ) ;
+                        index_t tri = mesh.facets.triangle( s_id, el );
                         for( index_t e = 0; e < mesh.facets.nb_vertices( tri );
                             e++ ) {
-                            index_t adj = mesh.facets.adjacent( tri, e ) ;
+                            index_t adj = mesh.facets.adjacent( tri, e );
                             if( adj == GEO::NO_FACET ) {
-                                data << " " << std::setw( 7 ) << -28 ;
+                                data << " " << std::setw( 7 ) << -28;
                             } else {
-                                data << " " << std::setw( 7 ) << adj ;
+                                data << " " << std::setw( 7 ) << adj;
                             }
-                            new_line( count, 10, data ) ;
+                            new_line( count, 10, data );
                         }
                     }
                     for( index_t el = 0; el < mesh.facets.nb_quad( s_id ); el++ ) {
-                        index_t quad = mesh.facets.quad( s_id, el ) ;
+                        index_t quad = mesh.facets.quad( s_id, el );
                         for( index_t e = 0; e < mesh.facets.nb_vertices( quad );
                             e++ ) {
-                            index_t adj = mesh.facets.adjacent( quad, e ) ;
+                            index_t adj = mesh.facets.adjacent( quad, e );
                             if( adj == GEO::NO_FACET ) {
-                                data << " " << std::setw( 7 ) << -28 ;
+                                data << " " << std::setw( 7 ) << -28;
                             } else {
-                                data << " " << std::setw( 7 ) << adj ;
+                                data << " " << std::setw( 7 ) << adj;
                             }
-                            new_line( count, 10, data ) ;
+                            new_line( count, 10, data );
                         }
                     }
                 }
             }
-            index_t edge_offset = mesh.facets.nb() + mesh.cells.nb() ;
-            index_t cur_edge = 0 ;
+            index_t edge_offset = mesh.facets.nb() + mesh.cells.nb();
+            index_t cur_edge = 0;
             for( index_t w = 0; w < mesh.edges.nb_wells(); w++ ) {
-                data << " " << std::setw( 7 ) << -28 ;
-                new_line( count, 10, data ) ;
+                data << " " << std::setw( 7 ) << -28;
+                new_line( count, 10, data );
                 if( mesh.edges.nb_edges( w ) > 1 ) {
-                    data << " " << std::setw( 7 ) << edge_offset + cur_edge + 1 ;
-                    cur_edge++ ;
-                    new_line( count, 10, data ) ;
+                    data << " " << std::setw( 7 ) << edge_offset + cur_edge + 1;
+                    cur_edge++;
+                    new_line( count, 10, data );
                     for( index_t e = 1; e < mesh.edges.nb_edges( w ) - 1;
                         e++, cur_edge++ ) {
-                        data << " " << std::setw( 7 ) << edge_offset + cur_edge - 1 ;
-                        new_line( count, 10, data ) ;
-                        data << " " << std::setw( 7 ) << edge_offset + cur_edge + 1 ;
-                        new_line( count, 10, data ) ;
+                        data << " " << std::setw( 7 ) << edge_offset + cur_edge - 1;
+                        new_line( count, 10, data );
+                        data << " " << std::setw( 7 ) << edge_offset + cur_edge + 1;
+                        new_line( count, 10, data );
                     }
-                    data << " " << std::setw( 7 ) << edge_offset + cur_edge - 1 ;
-                    new_line( count, 10, data ) ;
+                    data << " " << std::setw( 7 ) << edge_offset + cur_edge - 1;
+                    new_line( count, 10, data );
                 }
-                data << " " << std::setw( 7 ) << -28 ;
-                cur_edge++ ;
-                new_line( count, 10, data ) ;
+                data << " " << std::setw( 7 ) << -28;
+                cur_edge++;
+                new_line( count, 10, data );
             }
-            reset_line( count, data ) ;
+            reset_line( count, data );
 
-            data << nb_total_entities << " # PMATERIAL" << std::endl ;
+            data << nb_total_entities << " # PMATERIAL" << std::endl;
             for( index_t i = 0; i < nb_total_entities; i++ ) {
-                data << " " << std::setw( 3 ) << 0 ;
-                new_line( count, 20, data ) ;
+                data << " " << std::setw( 3 ) << 0;
+                new_line( count, 20, data );
             }
         }
 
@@ -450,205 +452,206 @@ namespace {
             index_t number_of_counts,
             std::ofstream& out ) const
         {
-            count++ ;
+            count++;
             if( count == number_of_counts ) {
-                count = 0 ;
-                out << std::endl ;
+                count = 0;
+                out << std::endl;
             }
         }
         void reset_line( index_t& count, std::ofstream& out ) const
         {
             if( count != 0 ) {
-                count = 0 ;
-                out << std::endl ;
+                count = 0;
+                out << std::endl;
             }
         }
         void clear()
         {
-            point_boundaries_.clear() ;
-            box_model_ = false ;
-            back_ = NO_ID ;
-            top_ = NO_ID ;
-            front_ = NO_ID ;
-            bottom_ = NO_ID ;
-            left_ = NO_ID ;
-            right_ = NO_ID ;
-            corner_boundary_flags_.clear() ;
-            edge_boundary_flags_.clear() ;
-            surface_boundary_flags_.clear() ;
+            point_boundaries_.clear();
+            box_model_ = false;
+            back_ = NO_ID;
+            top_ = NO_ID;
+            front_ = NO_ID;
+            bottom_ = NO_ID;
+            left_ = NO_ID;
+            right_ = NO_ID;
+            corner_boundary_flags_.clear();
+            edge_boundary_flags_.clear();
+            surface_boundary_flags_.clear();
         }
         void initialize( const GeoModel& gm )
         {
-            clear() ;
+            clear();
 
-            const GeoModel& geomodel = gm ;
-            std::string cmsp_filename = GEO::CmdLine::get_arg( "out:csmp" ) ;
-            box_model_ = cmsp_filename != "" ;
+            const GeoModel& geomodel = gm;
+            std::string cmsp_filename = GEO::CmdLine::get_arg( "out:csmp" );
+            box_model_ = cmsp_filename != "";
             if( box_model_ ) {
-                GEO::LineInput parser( cmsp_filename ) ;
+                GEO::LineInput parser( cmsp_filename );
                 if( !parser.OK() ) {
                     throw RINGMeshException( "I/O",
-                        "Cannot open file: " + cmsp_filename ) ;
+                        "Cannot open file: " + cmsp_filename );
                 }
-                parser.get_line() ;
-                parser.get_fields() ;
+                parser.get_line();
+                parser.get_fields();
                 while( !parser.eof() ) {
-                    if( parser.nb_fields() == 0 ) continue ;
-                    if( parser.nb_fields() != 3 ) return ;
-                    std::string type = parser.field( 1 ) ;
-                    index_t interface_id = NO_ID ;
+                    if( parser.nb_fields() == 0 ) continue;
+                    if( parser.nb_fields() != 3 ) return;
+                    std::string type = parser.field( 1 );
+                    index_t interface_id = NO_ID;
                     if( type == "NAME" ) {
-                        std::string name = parser.field( 2 ) ;
+                        std::string name = parser.field( 2 );
                         for( index_t i = 0;
                             i
                                 < geomodel.nb_geological_entities(
                                     Interface::type_name_static() ); i++ ) {
                             if( geomodel.geological_entity(
                                 Interface::type_name_static(), i ).name() == name ) {
-                                interface_id = i ;
-                                break ;
+                                interface_id = i;
+                                break;
                             }
                         }
                     } else if( type == "ID" ) {
-                        interface_id = parser.field_as_uint( 2 ) ;
+                        interface_id = parser.field_as_uint( 2 );
                     } else {
-                        throw RINGMeshException( "I/O", "Unknown type: " + type ) ;
+                        throw RINGMeshException( "I/O", "Unknown type: " + type );
                     }
 
-                    std::string keyword = parser.field( 0 ) ;
+                    std::string keyword = parser.field( 0 );
                     if( keyword == "BACK" ) {
-                        back_ = interface_id ;
+                        back_ = interface_id;
                     } else if( keyword == "TOP" ) {
-                        top_ = interface_id ;
+                        top_ = interface_id;
                     } else if( keyword == "FRONT" ) {
-                        front_ = interface_id ;
+                        front_ = interface_id;
                     } else if( keyword == "BOTTOM" ) {
-                        bottom_ = interface_id ;
+                        bottom_ = interface_id;
                     } else if( keyword == "LEFT" ) {
-                        left_ = interface_id ;
+                        left_ = interface_id;
                     } else if( keyword == "RIGHT" ) {
-                        right_ = interface_id ;
+                        right_ = interface_id;
                     } else {
                         throw RINGMeshException( "I/O",
-                            "Unknown keyword: " + keyword ) ;
+                            "Unknown keyword: " + keyword );
                     }
-                    parser.get_line() ;
-                    parser.get_fields() ;
+                    parser.get_line();
+                    parser.get_fields();
                 }
 
                 if( back_ == NO_ID || top_ == NO_ID || front_ == NO_ID
                     || bottom_ == NO_ID || left_ == NO_ID || right_ == NO_ID ) {
                     throw RINGMeshException( "I/O",
-                        "Missing box shape information" ) ;
+                        "Missing box shape information" );
                 }
 
-                surface_boundary_flags_[back_] = -7 ;
-                surface_boundary_flags_[top_] = -5 ;
-                surface_boundary_flags_[front_] = -6 ;
-                surface_boundary_flags_[bottom_] = -4 ;
-                surface_boundary_flags_[left_] = -2 ;
-                surface_boundary_flags_[right_] = -3 ;
+                surface_boundary_flags_[back_] = -7;
+                surface_boundary_flags_[top_] = -5;
+                surface_boundary_flags_[front_] = -6;
+                surface_boundary_flags_[bottom_] = -4;
+                surface_boundary_flags_[left_] = -2;
+                surface_boundary_flags_[right_] = -3;
 
-                std::set< index_t > back_bottom ;
-                back_bottom.insert( back_ ) ;
-                back_bottom.insert( bottom_ ) ;
-                edge_boundary_flags_[back_bottom] = -16 ;
-                std::set< index_t > back_right ;
-                back_right.insert( back_ ) ;
-                back_right.insert( right_ ) ;
-                edge_boundary_flags_[back_right] = -17 ;
-                std::set< index_t > back_top ;
-                back_top.insert( back_ ) ;
-                back_top.insert( top_ ) ;
-                edge_boundary_flags_[back_top] = -18 ;
-                std::set< index_t > back_left ;
-                back_left.insert( back_ ) ;
-                back_left.insert( left_ ) ;
-                edge_boundary_flags_[back_left] = -19 ;
-                std::set< index_t > right_bottom ;
-                right_bottom.insert( right_ ) ;
-                right_bottom.insert( bottom_ ) ;
-                edge_boundary_flags_[right_bottom] = -20 ;
-                std::set< index_t > right_top ;
-                right_top.insert( right_ ) ;
-                right_top.insert( top_ ) ;
-                edge_boundary_flags_[right_top] = -21 ;
-                std::set< index_t > left_top ;
-                left_top.insert( left_ ) ;
-                left_top.insert( top_ ) ;
-                edge_boundary_flags_[left_top] = -22 ;
-                std::set< index_t > left_bottom ;
-                left_bottom.insert( left_ ) ;
-                left_bottom.insert( bottom_ ) ;
-                edge_boundary_flags_[left_bottom] = -23 ;
-                std::set< index_t > front_bottom ;
-                front_bottom.insert( front_ ) ;
-                front_bottom.insert( bottom_ ) ;
-                edge_boundary_flags_[front_bottom] = -24 ;
-                std::set< index_t > front_right ;
-                front_right.insert( front_ ) ;
-                front_right.insert( right_ ) ;
-                edge_boundary_flags_[front_right] = -25 ;
-                std::set< index_t > front_top ;
-                front_top.insert( front_ ) ;
-                front_top.insert( top_ ) ;
-                edge_boundary_flags_[front_top] = -26 ;
-                std::set< index_t > front_left ;
-                front_left.insert( front_ ) ;
-                front_left.insert( left_ ) ;
-                edge_boundary_flags_[front_left] = -27 ;
+                std::set< index_t > back_bottom;
+                back_bottom.insert( back_ );
+                back_bottom.insert( bottom_ );
+                edge_boundary_flags_[back_bottom] = -16;
+                std::set< index_t > back_right;
+                back_right.insert( back_ );
+                back_right.insert( right_ );
+                edge_boundary_flags_[back_right] = -17;
+                std::set< index_t > back_top;
+                back_top.insert( back_ );
+                back_top.insert( top_ );
+                edge_boundary_flags_[back_top] = -18;
+                std::set< index_t > back_left;
+                back_left.insert( back_ );
+                back_left.insert( left_ );
+                edge_boundary_flags_[back_left] = -19;
+                std::set< index_t > right_bottom;
+                right_bottom.insert( right_ );
+                right_bottom.insert( bottom_ );
+                edge_boundary_flags_[right_bottom] = -20;
+                std::set< index_t > right_top;
+                right_top.insert( right_ );
+                right_top.insert( top_ );
+                edge_boundary_flags_[right_top] = -21;
+                std::set< index_t > left_top;
+                left_top.insert( left_ );
+                left_top.insert( top_ );
+                edge_boundary_flags_[left_top] = -22;
+                std::set< index_t > left_bottom;
+                left_bottom.insert( left_ );
+                left_bottom.insert( bottom_ );
+                edge_boundary_flags_[left_bottom] = -23;
+                std::set< index_t > front_bottom;
+                front_bottom.insert( front_ );
+                front_bottom.insert( bottom_ );
+                edge_boundary_flags_[front_bottom] = -24;
+                std::set< index_t > front_right;
+                front_right.insert( front_ );
+                front_right.insert( right_ );
+                edge_boundary_flags_[front_right] = -25;
+                std::set< index_t > front_top;
+                front_top.insert( front_ );
+                front_top.insert( top_ );
+                edge_boundary_flags_[front_top] = -26;
+                std::set< index_t > front_left;
+                front_left.insert( front_ );
+                front_left.insert( left_ );
+                edge_boundary_flags_[front_left] = -27;
 
-                std::set< index_t > back_top_left ;
-                back_top_left.insert( back_ ) ;
-                back_top_left.insert( top_ ) ;
-                back_top_left.insert( left_ ) ;
-                corner_boundary_flags_[back_top_left] = -13 ;
-                std::set< index_t > back_top_right ;
-                back_top_right.insert( back_ ) ;
-                back_top_right.insert( top_ ) ;
-                back_top_right.insert( right_ ) ;
-                corner_boundary_flags_[back_top_right] = -14 ;
-                std::set< index_t > back_bottom_left ;
-                back_bottom_left.insert( back_ ) ;
-                back_bottom_left.insert( bottom_ ) ;
-                back_bottom_left.insert( left_ ) ;
-                corner_boundary_flags_[back_bottom_left] = -8 ;
-                std::set< index_t > back_bottom_right ;
-                back_bottom_right.insert( back_ ) ;
-                back_bottom_right.insert( bottom_ ) ;
-                back_bottom_right.insert( right_ ) ;
-                corner_boundary_flags_[back_bottom_right] = -10 ;
-                std::set< index_t > front_top_left ;
-                front_top_left.insert( front_ ) ;
-                front_top_left.insert( top_ ) ;
-                front_top_left.insert( left_ ) ;
-                corner_boundary_flags_[front_top_left] = -15 ;
-                std::set< index_t > front_top_right ;
-                front_top_right.insert( front_ ) ;
-                front_top_right.insert( top_ ) ;
-                front_top_right.insert( right_ ) ;
-                corner_boundary_flags_[front_top_right] = -9 ;
-                std::set< index_t > front_bottom_left ;
-                front_bottom_left.insert( front_ ) ;
-                front_bottom_left.insert( bottom_ ) ;
-                front_bottom_left.insert( left_ ) ;
-                corner_boundary_flags_[front_bottom_left] = -12 ;
-                std::set< index_t > front_bottom_right ;
-                front_bottom_right.insert( front_ ) ;
-                front_bottom_right.insert( bottom_ ) ;
-                front_bottom_right.insert( right_ ) ;
-                corner_boundary_flags_[front_bottom_right] = -11 ;
+                std::set< index_t > back_top_left;
+                back_top_left.insert( back_ );
+                back_top_left.insert( top_ );
+                back_top_left.insert( left_ );
+                corner_boundary_flags_[back_top_left] = -13;
+                std::set< index_t > back_top_right;
+                back_top_right.insert( back_ );
+                back_top_right.insert( top_ );
+                back_top_right.insert( right_ );
+                corner_boundary_flags_[back_top_right] = -14;
+                std::set< index_t > back_bottom_left;
+                back_bottom_left.insert( back_ );
+                back_bottom_left.insert( bottom_ );
+                back_bottom_left.insert( left_ );
+                corner_boundary_flags_[back_bottom_left] = -8;
+                std::set< index_t > back_bottom_right;
+                back_bottom_right.insert( back_ );
+                back_bottom_right.insert( bottom_ );
+                back_bottom_right.insert( right_ );
+                corner_boundary_flags_[back_bottom_right] = -10;
+                std::set< index_t > front_top_left;
+                front_top_left.insert( front_ );
+                front_top_left.insert( top_ );
+                front_top_left.insert( left_ );
+                corner_boundary_flags_[front_top_left] = -15;
+                std::set< index_t > front_top_right;
+                front_top_right.insert( front_ );
+                front_top_right.insert( top_ );
+                front_top_right.insert( right_ );
+                corner_boundary_flags_[front_top_right] = -9;
+                std::set< index_t > front_bottom_left;
+                front_bottom_left.insert( front_ );
+                front_bottom_left.insert( bottom_ );
+                front_bottom_left.insert( left_ );
+                corner_boundary_flags_[front_bottom_left] = -12;
+                std::set< index_t > front_bottom_right;
+                front_bottom_right.insert( front_ );
+                front_bottom_right.insert( bottom_ );
+                front_bottom_right.insert( right_ );
+                corner_boundary_flags_[front_bottom_right] = -11;
             }
 
-            point_boundaries_.resize( gm.mesh.vertices.nb() ) ;
+            point_boundaries_.resize( gm.mesh.vertices.nb() );
             for( index_t s = 0; s < geomodel.nb_surfaces(); s++ ) {
-                index_t interface_id = geomodel.surface( s ).parent_gmge( 0 ).index() ;
+                index_t interface_id =
+                    geomodel.surface( s ).parent_gmge( 0 ).index();
                 for( index_t f = 0; f < gm.mesh.facets.nb_facets( s ); f++ ) {
-                    index_t f_id = gm.mesh.facets.facet( s, f ) ;
+                    index_t f_id = gm.mesh.facets.facet( s, f );
                     for( index_t v = 0; v < gm.mesh.facets.nb_vertices( f_id );
                         v++ ) {
-                        index_t vertex_id = gm.mesh.facets.vertex( f_id, v ) ;
-                        point_boundaries_[vertex_id].insert( interface_id ) ;
+                        index_t vertex_id = gm.mesh.facets.vertex( f_id, v );
+                        point_boundaries_[vertex_id].insert( interface_id );
                     }
                 }
             }
@@ -657,62 +660,62 @@ namespace {
         {
             if( box_model_ ) {
                 if( i == back_ ) {
-                    return "BACK" ;
+                    return "BACK";
                 } else if( i == top_ ) {
-                    return "TOP" ;
+                    return "TOP";
                 } else if( i == front_ ) {
-                    return "FRONT" ;
+                    return "FRONT";
                 } else if( i == bottom_ ) {
-                    return "BOTTOM" ;
+                    return "BOTTOM";
                 } else if( i == left_ ) {
-                    return "LEFT" ;
+                    return "LEFT";
                 } else if( i == right_ ) {
-                    return "RIGHT" ;
+                    return "RIGHT";
                 }
             }
-            return geomodel.geological_entity( Interface::type_name_static(), i ).name() ;
+            return geomodel.geological_entity( Interface::type_name_static(), i ).name();
         }
         signed_index_t point_boundary( index_t p )
         {
-            ringmesh_assert( p < point_boundaries_.size() ) ;
-            const std::set< unsigned int >& boundaries = point_boundaries_[p] ;
+            ringmesh_assert( p < point_boundaries_.size() );
+            const std::set< unsigned int >& boundaries = point_boundaries_[p];
             if( box_model_ ) {
                 if( boundaries.size() == 1 ) {
-                    auto it = surface_boundary_flags_.find( *boundaries.begin() ) ;
-                    ringmesh_assert( it != surface_boundary_flags_.end() ) ;
-                    return it->second ;
+                    auto it = surface_boundary_flags_.find( *boundaries.begin() );
+                    ringmesh_assert( it != surface_boundary_flags_.end() );
+                    return it->second;
                 } else if( boundaries.size() == 2 ) {
-                    auto it = edge_boundary_flags_.find( boundaries ) ;
-                    ringmesh_assert( it != edge_boundary_flags_.end() ) ;
-                    return it->second ;
+                    auto it = edge_boundary_flags_.find( boundaries );
+                    ringmesh_assert( it != edge_boundary_flags_.end() );
+                    return it->second;
                 } else if( boundaries.size() == 3 ) {
-                    auto it = corner_boundary_flags_.find( boundaries ) ;
-                    ringmesh_assert( it != corner_boundary_flags_.end() ) ;
-                    return it->second ;
+                    auto it = corner_boundary_flags_.find( boundaries );
+                    ringmesh_assert( it != corner_boundary_flags_.end() );
+                    return it->second;
                 } else {
-                    return 0 ;
+                    return 0;
                 }
             } else {
                 if( boundaries.empty() )
-                    return 0 ;
+                    return 0;
                 else
-                    return -28 ;
+                    return -28;
             }
         }
     private:
-        std::vector< std::set< index_t > > point_boundaries_ ;
+        std::vector< std::set< index_t > > point_boundaries_;
 
-        bool box_model_ ;
-        index_t back_ ;
-        index_t top_ ;
-        index_t front_ ;
-        index_t bottom_ ;
-        index_t left_ ;
-        index_t right_ ;
+        bool box_model_;
+        index_t back_;
+        index_t top_;
+        index_t front_;
+        index_t bottom_;
+        index_t left_;
+        index_t right_;
 
-        std::map< std::set< index_t >, signed_index_t > corner_boundary_flags_ ;
-        std::map< std::set< index_t >, signed_index_t > edge_boundary_flags_ ;
-        std::map< index_t, signed_index_t > surface_boundary_flags_ ;
-    } ;
+        std::map< std::set< index_t >, signed_index_t > corner_boundary_flags_;
+        std::map< std::set< index_t >, signed_index_t > edge_boundary_flags_;
+        std::map< index_t, signed_index_t > surface_boundary_flags_;
+    };
 
 }

@@ -34,20 +34,20 @@
  */
 
 namespace {
-    static const std::string tet_name_in_aster_mail_file = "TETRA4" ;
-    static const std::string hex_name_in_aster_mail_file = "HEXA10" ;
-    static const std::string prism_name_in_aster_mail_file = "PENTA6" ;
-    static const std::string pyr_name_in_aster_mail_file = "PYRAM5" ;
+    static const std::string tet_name_in_aster_mail_file = "TETRA4";
+    static const std::string hex_name_in_aster_mail_file = "HEXA10";
+    static const std::string prism_name_in_aster_mail_file = "PENTA6";
+    static const std::string pyr_name_in_aster_mail_file = "PYRAM5";
 
     static const std::string* cell_name_in_aster_mail_file[4] = {
         &tet_name_in_aster_mail_file, &hex_name_in_aster_mail_file,
-        &prism_name_in_aster_mail_file, &pyr_name_in_aster_mail_file } ;
+        &prism_name_in_aster_mail_file, &pyr_name_in_aster_mail_file };
 
-    static const std::string triangle_name_in_aster_mail_file = "TRIA3" ;
-    static const std::string quad_name_in_aster_mail_file = "QUAD4" ;
+    static const std::string triangle_name_in_aster_mail_file = "TRIA3";
+    static const std::string quad_name_in_aster_mail_file = "QUAD4";
 
     static const std::string* facet_name_in_aster_mail_file[2] = {
-        &triangle_name_in_aster_mail_file, &quad_name_in_aster_mail_file } ;
+        &triangle_name_in_aster_mail_file, &quad_name_in_aster_mail_file };
     /*!
      * @brief Export to the .mail mesh format of code aster
      * @details The descriptor of the .mail is available here:
@@ -69,62 +69,62 @@ namespace {
         virtual bool load( const std::string& filename, GeoModel& geomodel ) override
         {
             throw RINGMeshException( "I/O",
-                "Loading of a GeoModel from Code_Aster mesh not implemented yet" ) ;
-            return false ;
+                "Loading of a GeoModel from Code_Aster mesh not implemented yet" );
+            return false;
         }
         virtual void save( const GeoModel& geomodel, const std::string& filename ) override
         {
-            std::ofstream out( filename.c_str() ) ;
-            out.precision( 16 ) ;
-            const RINGMesh::GeoModelMesh& geomodel_mesh = geomodel.mesh ;
+            std::ofstream out( filename.c_str() );
+            out.precision( 16 );
+            const RINGMesh::GeoModelMesh& geomodel_mesh = geomodel.mesh;
 
-            write_title( out, geomodel ) ;
+            write_title( out, geomodel );
 
-            write_vertices( out, geomodel_mesh ) ;
+            write_vertices( out, geomodel_mesh );
 
-            write_cells( geomodel, out ) ;
+            write_cells( geomodel, out );
 
-            write_facets( geomodel, out ) ;
+            write_facets( geomodel, out );
 
-            write_regions( geomodel, out ) ;
+            write_regions( geomodel, out );
 
-            write_interfaces( geomodel, out ) ;
+            write_interfaces( geomodel, out );
 
-            out << "FIN" << std::endl ;
+            out << "FIN" << std::endl;
 
-            out.close() ;
+            out.close();
         }
 
     private:
 
         void write_title( std::ofstream& out, const RINGMesh::GeoModel& geomodel )
         {
-            out << "TITRE" << std::endl ;
-            out << geomodel.name() << std::endl ;
-            out << "FINSF" << std::endl ;
+            out << "TITRE" << std::endl;
+            out << geomodel.name() << std::endl;
+            out << "FINSF" << std::endl;
         }
         void write_vertices(
             std::ofstream& out,
             const RINGMesh::GeoModelMesh& geomodel_mesh )
         {
-            out << "COOR_3D" << std::endl ;
+            out << "COOR_3D" << std::endl;
             for( index_t v = 0; v < geomodel_mesh.vertices.nb(); v++ ) {
                 out << "V" << v << " " << geomodel_mesh.vertices.vertex( v )
-                    << std::endl ;
+                    << std::endl;
             }
-            out << "FINSF" << std::endl ;
+            out << "FINSF" << std::endl;
         }
 
         void write_cells( const RINGMesh::GeoModel& geomodel, std::ofstream& out )
         {
-            const RINGMesh::GeoModelMesh& geomodel_mesh = geomodel.mesh ;
+            const RINGMesh::GeoModelMesh& geomodel_mesh = geomodel.mesh;
             for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
                 // -1 Because connectors doesn't exist in aster
                 for( index_t ct = 0; ct < GEO::MESH_NB_CELL_TYPES - 1; ct++ ) {
                     if( geomodel_mesh.cells.nb_cells( r, GEO::MeshCellType( ct ) )
                         > 0 ) {
                         write_cells_in_region( GEO::MeshCellType( ct ), r,
-                            geomodel_mesh, out ) ;
+                            geomodel_mesh, out );
                     }
                 }
             }
@@ -132,7 +132,7 @@ namespace {
 
         void write_facets( const RINGMesh::GeoModel& geomodel, std::ofstream& out )
         {
-            const RINGMesh::GeoModelMesh& geomodel_mesh = geomodel.mesh ;
+            const RINGMesh::GeoModelMesh& geomodel_mesh = geomodel.mesh;
             for( index_t s = 0; s < geomodel.nb_surfaces(); s++ ) {
                 // -1 because polygons doesn' t exist in aster
                 for( index_t ft = 0; ft < GeoModelMeshFacets::ALL - 1; ft++ ) {
@@ -140,7 +140,7 @@ namespace {
                         GeoModelMeshFacets::FacetType( ft ) ) > 0 ) {
                         write_facets_in_interface(
                             GeoModelMeshFacets::FacetType( ft ), s, geomodel_mesh,
-                            out ) ;
+                            out );
                     }
                 }
             }
@@ -151,18 +151,17 @@ namespace {
             const RINGMesh::GeoModelMesh& geomodel_mesh,
             std::ofstream& out )
         {
-            out << *cell_name_in_aster_mail_file[cell_type] << std::endl ;
+            out << *cell_name_in_aster_mail_file[cell_type] << std::endl;
             for( index_t c = 0;
                 c < geomodel_mesh.cells.nb_cells( region, cell_type ); c++ ) {
-                index_t global_id = geomodel_mesh.cells.cell( region, c,
-                    cell_type ) ;
-                out << "C" << global_id << " " ;
+                index_t global_id = geomodel_mesh.cells.cell( region, c, cell_type );
+                out << "C" << global_id << " ";
                 for( index_t v = 0; v < geomodel_mesh.cells.nb_vertices( c ); v++ ) {
-                    out << "V" << geomodel_mesh.cells.vertex( global_id, v ) << " " ;
+                    out << "V" << geomodel_mesh.cells.vertex( global_id, v ) << " ";
                 }
-                out << std::endl ;
+                out << std::endl;
             }
-            out << "FINSF" << std::endl ;
+            out << "FINSF" << std::endl;
         }
 
         void write_facets_in_interface(
@@ -171,30 +170,30 @@ namespace {
             const RINGMesh::GeoModelMesh& mesh,
             std::ofstream& out )
         {
-            out << *facet_name_in_aster_mail_file[facet_type] << std::endl ;
+            out << *facet_name_in_aster_mail_file[facet_type] << std::endl;
             for( index_t f = 0; f < mesh.facets.nb_facets( surface, facet_type );
                 f++ ) {
-                index_t global_id = mesh.facets.facet( surface, f, facet_type ) ;
-                out << "F" << global_id << " " ;
+                index_t global_id = mesh.facets.facet( surface, f, facet_type );
+                out << "F" << global_id << " ";
                 for( index_t v = 0; v < mesh.facets.nb_vertices( f ); v++ ) {
-                    out << "V" << mesh.facets.vertex( global_id, v ) << " " ;
+                    out << "V" << mesh.facets.vertex( global_id, v ) << " ";
                 }
-                out << std::endl ;
+                out << std::endl;
             }
-            out << "FINSF" << std::endl ;
+            out << "FINSF" << std::endl;
         }
 
         void write_regions( const GeoModel& geomodel, std::ofstream& out )
         {
             for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
                 if( geomodel.region( r ).is_meshed() ) {
-                    out << "GROUP_MA" << std::endl ;
-                    out << geomodel.region( r ).name() << std::endl ;
+                    out << "GROUP_MA" << std::endl;
+                    out << geomodel.region( r ).name() << std::endl;
                     for( index_t c = 0; c < geomodel.mesh.cells.nb_cells( r );
                         c++ ) {
-                        out << "C" << geomodel.mesh.cells.cell( r, c ) << std::endl ;
+                        out << "C" << geomodel.mesh.cells.cell( r, c ) << std::endl;
                     }
-                    out << "FINSF" << std::endl ;
+                    out << "FINSF" << std::endl;
                 }
             }
         }
@@ -207,32 +206,32 @@ namespace {
                         Interface::type_name_static() ); inter++ ) {
                 const GeoModelGeologicalEntity& cur_interface =
                     geomodel.geological_entity( Interface::type_name_static(),
-                        inter ) ;
+                        inter );
                 for( index_t s = 0; s < cur_interface.nb_children(); s++ ) {
-                    index_t surface_id = cur_interface.child( s ).index() ;
-                    out << "GROUP_MA" << std::endl ;
-                    out << cur_interface.name() << "_" << s << std::endl ;
+                    index_t surface_id = cur_interface.child( s ).index();
+                    out << "GROUP_MA" << std::endl;
+                    out << cur_interface.name() << "_" << s << std::endl;
                     for( index_t f = 0;
                         f < geomodel.mesh.facets.nb_facets( surface_id ); f++ ) {
                         out << "F" << geomodel.mesh.facets.facet( surface_id, f )
-                            << std::endl ;
+                            << std::endl;
                     }
-                    out << "FINSF" << std::endl ;
+                    out << "FINSF" << std::endl;
                 }
 
-                out << "GROUP_MA" << std::endl ;
-                out << cur_interface.name() << std::endl ;
+                out << "GROUP_MA" << std::endl;
+                out << cur_interface.name() << std::endl;
                 for( index_t s = 0; s < cur_interface.nb_children(); s++ ) {
-                    index_t surface_id = cur_interface.child( s ).index() ;
+                    index_t surface_id = cur_interface.child( s ).index();
                     for( index_t f = 0;
                         f < geomodel.mesh.facets.nb_facets( surface_id ); f++ ) {
                         out << "F" << geomodel.mesh.facets.facet( surface_id, f )
-                            << std::endl ;
+                            << std::endl;
                     }
                 }
-                out << "FINSF" << std::endl ;
+                out << "FINSF" << std::endl;
             }
         }
-    } ;
+    };
 
 }

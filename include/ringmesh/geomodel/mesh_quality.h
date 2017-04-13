@@ -44,7 +44,7 @@
  */
 
 namespace RINGMesh {
-    class GeoModel ;
+    class GeoModel;
 }
 
 namespace RINGMesh {
@@ -54,7 +54,7 @@ namespace RINGMesh {
         INSPHERE_RADIUS_BY_MAX_EDGE_LENGTH,
         VOLUME_BY_SUM_SQUARE_EDGE,
         MIN_SOLID_ANGLE
-    } ;
+    };
 
     /*!
      * @brief Computes and stores mesh quality in the GeoModel.
@@ -79,5 +79,5 @@ namespace RINGMesh {
      */
     void RINGMESH_API compute_prop_tet_mesh_quality(
         MeshQualityMode mesh_qual_mode,
-        const GeoModel& geomodel ) ;
+        const GeoModel& geomodel );
 }

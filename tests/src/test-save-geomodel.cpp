@@ -48,84 +48,84 @@
  * @author Arnaud Botella
  */
 
-using namespace RINGMesh ;
+using namespace RINGMesh;
 
 void load_geomodel( GeoModel& geomodel, const std::string& file )
 {
-    bool loaded_model_is_valid = geomodel_load( geomodel, file ) ;
+    bool loaded_model_is_valid = geomodel_load( geomodel, file );
     if( !loaded_model_is_valid ) {
         throw RINGMeshException( "TEST",
             "Failed when loading model " + geomodel.name()
-                + ": the loaded model is not valid." ) ;
+                + ": the loaded model is not valid." );
     }
 }
 
 void get_line( GEO::LineInput& in )
 {
-    in.get_line() ;
-    in.get_fields() ;
+    in.get_line();
+    in.get_fields();
 }
 
 void check_files( const std::string& file1, const std::string& file2 )
 {
     if( !compare_files( file1, file2 ) ) {
         throw RINGMeshException( "TEST",
-            "Output file " + file1 + " does not match template file " + file2 ) ;
+            "Output file " + file1 + " does not match template file " + file2 );
     }
 }
 
 void check_output( GEO::LineInput& in )
 {
-    std::string data_path = ringmesh_test_data_path + "save/" ;
+    std::string data_path = ringmesh_test_data_path + "save/";
     while( !in.eof() && in.get_line() ) {
-        in.get_fields() ;
-        std::string template_output = data_path + in.field( 0 ) ;
-        std::string new_output = ringmesh_test_output_path + in.field( 0 ) ;
-        check_files( new_output, template_output ) ;
+        in.get_fields();
+        std::string template_output = data_path + in.field( 0 );
+        std::string new_output = ringmesh_test_output_path + in.field( 0 );
+        check_files( new_output, template_output );
     }
 }
 
 void io_geomodel( const std::string& geomodel_file, const std::string& extension )
 {
-    GeoModel geomodel ;
-    load_geomodel( geomodel, geomodel_file ) ;
-    geomodel_save( geomodel, ringmesh_test_output_path + "geomodel." + extension ) ;
+    GeoModel geomodel;
+    load_geomodel( geomodel, geomodel_file );
+    geomodel_save( geomodel, ringmesh_test_output_path + "geomodel." + extension );
 }
 
 void process_extension( const std::string& extension )
 {
-    GEO::LineInput in( ringmesh_test_data_path + "save/" + extension + ".txt" ) ;
-    get_line( in ) ;
-    io_geomodel( ringmesh_test_data_path + in.field( 0 ), extension ) ;
+    GEO::LineInput in( ringmesh_test_data_path + "save/" + extension + ".txt" );
+    get_line( in );
+    io_geomodel( ringmesh_test_data_path + in.field( 0 ), extension );
     if( extension != "gm" ) {
-        check_output( in ) ;
+        check_output( in );
     }
-    Logger::out( "TEST", "Format ", extension, " OK" ) ;
+    Logger::out( "TEST", "Format ", extension, " OK" );
 }
 
 int main()
 {
-    using namespace RINGMesh ;
+    using namespace RINGMesh;
 
     try {
-        default_configure() ;
+        default_configure();
 
-        CmdLine::import_arg_group( "out" ) ;
+        CmdLine::import_arg_group( "out" );
 
-        Logger::out( "TEST", "Save GeoModel files" ) ;
-        std::vector< std::string > extensions ;
-        GeoModelIOHandlerFactory::list_creators( extensions ) ;
+        Logger::out( "TEST", "Save GeoModel files" );
+        std::vector< std::string > extensions;
+        GeoModelIOHandlerFactory::list_creators( extensions );
         for( const std::string& extension : extensions ) {
-            process_extension( extension ) ;
+            process_extension( extension );
         }
 
     } catch( const RINGMeshException& e ) {
-        Logger::err( e.category(), e.what() ) ;
-        return 1 ;
+        Logger::err( e.category(), e.what() );
+        return 1;
     } catch( const std::exception& e ) {
-        Logger::err( "Exception", e.what() ) ;
-        return 1 ;
+        Logger::err( "Exception", e.what() );
+        return 1;
     }
-    Logger::out( "TEST", "SUCCESS" ) ;
-    return 0 ;
+    Logger::out( "TEST", "SUCCESS" );
+    return 0;
 }

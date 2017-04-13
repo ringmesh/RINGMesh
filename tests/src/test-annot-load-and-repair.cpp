@@ -45,55 +45,55 @@
  */
 int main()
 {
-    using namespace RINGMesh ;
+    using namespace RINGMesh;
 
     try {
-        default_configure() ;
+        default_configure();
 
-        GeoModel M ;
-        std::string file_name( ringmesh_test_data_path ) ;
-        file_name += "annot.ml" ;
+        GeoModel M;
+        std::string file_name( ringmesh_test_data_path );
+        file_name += "annot.ml";
 
         Logger::out( "RINGMesh Test", "Loading and fixing structural model:",
-            file_name ) ;
+            file_name );
 
         // Set the debug directory for the validity checks
-        set_validity_errors_directory( ringmesh_test_output_path ) ;
+        set_validity_errors_directory( ringmesh_test_output_path );
 
         // Load the model
-        bool init_model_is_valid = geomodel_load( M, file_name ) ;
+        bool init_model_is_valid = geomodel_load( M, file_name );
         if( init_model_is_valid ) {
             throw RINGMeshException( "RINGMesh Test",
                 "Input test model " + M.name()
-                    + " must be invalid to check the repair functionalities." ) ;
+                    + " must be invalid to check the repair functionalities." );
         }
 
-        Logger::out( "RINGMesh Test", "Repairing" ) ;
+        Logger::out( "RINGMesh Test", "Repairing" );
         // Repair the model
 
-        GeoModelBuilder model_builder( M ) ;
-        model_builder.repair.repair( GeoModelBuilderRepair::ALL ) ;
+        GeoModelBuilder model_builder( M );
+        model_builder.repair.repair( GeoModelBuilderRepair::ALL );
 
         // Test the validity again
         if( is_geomodel_valid( M ) ) {
-            std::string fixed_file_name( ringmesh_test_output_path ) ;
-            fixed_file_name += M.name() + "_repaired.ml" ;
-            geomodel_save( M, fixed_file_name ) ;
+            std::string fixed_file_name( ringmesh_test_output_path );
+            fixed_file_name += M.name() + "_repaired.ml";
+            geomodel_save( M, fixed_file_name );
             Logger::out( "RINGMesh Test", "Invalid geological model ", M.name(),
                 " has been successfully fixed and is saved under: ",
-                fixed_file_name ) ;
-            Logger::out( "TEST", "SUCCESS" ) ;
-            return 0 ;
+                fixed_file_name );
+            Logger::out( "TEST", "SUCCESS" );
+            return 0;
         } else {
             throw RINGMeshException( "RINGMesh Test",
-                "Fixing the invalid geological model " + M.name() + " failed." ) ;
+                "Fixing the invalid geological model " + M.name() + " failed." );
         }
 
     } catch( const RINGMeshException& e ) {
-        Logger::err( e.category(), e.what() ) ;
-        return 1 ;
+        Logger::err( e.category(), e.what() );
+        return 1;
     } catch( const std::exception& e ) {
-        Logger::err( "Exception", e.what() ) ;
-        return 1 ;
+        Logger::err( "Exception", e.what() );
+        return 1;
     }
 }
