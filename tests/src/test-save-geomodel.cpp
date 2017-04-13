@@ -161,7 +161,7 @@ void process_extension( const std::string& extension )
     get_line( in ) ;
     io_geomodel( ringmesh_test_data_path + in.field( 0 ), extension ) ;
     if( extension == "gm" ) {
-        check_gm() ;
+//        check_gm() ;
     } else {
         check_output( in ) ;
     }
