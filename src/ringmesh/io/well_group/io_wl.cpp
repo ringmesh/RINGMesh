@@ -39,55 +39,56 @@ namespace {
     public:
         virtual void load( const std::string& filename, WellGroup& wells ) override
         {
-            GEO::LineInput in( filename ) ;
+            GEO::LineInput in( filename );
             if( !in.OK() ) {
-                throw RINGMeshException( "I/O", "Could not open file" ) ;
+                throw RINGMeshException( "I/O", "Could not open file" );
             }
 
-            std::unique_ptr< Mesh1D > mesh = Mesh1D::create_mesh( GeogramMesh1D::type_name_static() ) ;
+            std::unique_ptr< Mesh1D > mesh = Mesh1D::create_mesh(
+                GeogramMesh1D::type_name_static() );
             std::unique_ptr< Mesh1DBuilder > builder = Mesh1DBuilder::create_builder(
-                *mesh ) ;
-            std::string name ;
-            double z_sign = 1.0 ;
-            vec3 vertex_ref ;
+                *mesh );
+            std::string name;
+            double z_sign = 1.0;
+            vec3 vertex_ref;
 
             while( !in.eof() ) {
-                in.get_line() ;
-                in.get_fields() ;
-                if( in.nb_fields() == 0 ) continue ;
+                in.get_line();
+                in.get_fields();
+                if( in.nb_fields() == 0 ) continue;
                 if( in.field_matches( 0, "name:" ) ) {
-                    name = in.field( 1 ) ;
+                    name = in.field( 1 );
                 } else if( in.field_matches( 0, "ZPOSITIVE" ) ) {
                     if( in.field_matches( 1, "Depth" ) ) {
-                        z_sign = -1.0 ;
+                        z_sign = -1.0;
                     }
                 } else if( in.field_matches( 0, "WREF" ) ) {
-                    vertex_ref[0] = in.field_as_double( 1 ) ;
-                    vertex_ref[1] = in.field_as_double( 2 ) ;
-                    vertex_ref[2] = z_sign * in.field_as_double( 3 ) ;
-                    builder->create_vertex( vertex_ref ) ;
+                    vertex_ref[0] = in.field_as_double( 1 );
+                    vertex_ref[1] = in.field_as_double( 2 );
+                    vertex_ref[2] = z_sign * in.field_as_double( 3 );
+                    builder->create_vertex( vertex_ref );
                 } else if( in.field_matches( 0, "PATH" ) ) {
-                    if( in.field_as_double( 1 ) == 0. ) continue ;
-                    vec3 vertex ;
-                    vertex[2] = z_sign * in.field_as_double( 2 ) ;
-                    vertex[0] = in.field_as_double( 3 ) + vertex_ref[0] ;
-                    vertex[1] = in.field_as_double( 4 ) + vertex_ref[1] ;
-                    index_t id = builder->create_vertex( vertex ) ;
-                    builder->create_edge( id - 1, id ) ;
+                    if( in.field_as_double( 1 ) == 0. ) continue;
+                    vec3 vertex;
+                    vertex[2] = z_sign * in.field_as_double( 2 );
+                    vertex[0] = in.field_as_double( 3 ) + vertex_ref[0];
+                    vertex[1] = in.field_as_double( 4 ) + vertex_ref[1];
+                    index_t id = builder->create_vertex( vertex );
+                    builder->create_edge( id - 1, id );
                 } else if( in.field_matches( 0, "END" ) ) {
-                    wells.add_well( *mesh, name ) ;
-                    mesh = Mesh1D::create_mesh( GeogramMesh1D::type_name_static() ) ;
-                    builder = Mesh1DBuilder::create_builder( *mesh ) ;
+                    wells.add_well( *mesh, name );
+                    mesh = Mesh1D::create_mesh( GeogramMesh1D::type_name_static() );
+                    builder = Mesh1DBuilder::create_builder( *mesh );
                 }
             }
         }
         virtual void save( const WellGroup& wells, const std::string& filename ) override
         {
-            ringmesh_unused( wells ) ;
-            ringmesh_unused( filename ) ;
+            ringmesh_unused( wells );
+            ringmesh_unused( filename );
             throw RINGMeshException( "I/O",
-                "Saving of a WellGroup from Gocad not implemented yet" ) ;
+                "Saving of a WellGroup from Gocad not implemented yet" );
         }
-    } ;
+    };
 
 }

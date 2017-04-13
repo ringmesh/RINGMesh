@@ -68,28 +68,28 @@ namespace RINGMesh {
     public:
         GeoModelBuildingFlags()
         {
-            compute_corners = false ;
-            compute_lines = false ;
-            compute_surfaces = false ;
-            compute_regions_brep = false ;
-            compute_regions_mesh = false ;
+            compute_corners = false;
+            compute_lines = false;
+            compute_surfaces = false;
+            compute_regions_brep = false;
+            compute_regions_mesh = false;
         }
-        bool compute_corners ;
-        bool compute_lines ;
-        bool compute_surfaces ;
-        bool compute_regions_brep ;
-        bool compute_regions_mesh ;
-    } ;
+        bool compute_corners;
+        bool compute_lines;
+        bool compute_surfaces;
+        bool compute_regions_brep;
+        bool compute_regions_mesh;
+    };
 
     // Implementation details
-    class GeoModelRegionFromSurfaces ;
+    class GeoModelRegionFromSurfaces;
 }
 
 namespace RINGMesh {
 
     class RINGMESH_API GeoModelBuilderInfo {
-    ringmesh_disable_copy( GeoModelBuilderInfo ) ;
-        friend class GeoModelBuilder ;
+    ringmesh_disable_copy( GeoModelBuilderInfo );
+        friend class GeoModelBuilder;
 
     public:
         /*!
@@ -97,7 +97,7 @@ namespace RINGMesh {
          */
         void set_geomodel_name( const std::string& name )
         {
-            geomodel_access_.modifiable_name() = name ;
+            geomodel_access_.modifiable_name() = name;
         }
 
         /*!
@@ -106,71 +106,75 @@ namespace RINGMesh {
         void set_mesh_entity_name( const gmme_id& gmme_id, const std::string& name )
         {
             GeoModelMeshEntityAccess gmme_access(
-                geomodel_access_.modifiable_mesh_entity( gmme_id ) ) ;
-            gmme_access.modifiable_name() = name ;
+                geomodel_access_.modifiable_mesh_entity( gmme_id ) );
+            gmme_access.modifiable_name() = name;
 
         }
 
         /*!
          *@brief Set the name of a geomodel geological entity
          */
-        void set_geological_entity_name( const gmge_id& gmge_id, const std::string& name )
+        void set_geological_entity_name(
+            const gmge_id& gmge_id,
+            const std::string& name )
         {
             GeoModelGeologicalEntityAccess gmge_access(
-                geomodel_access_.modifiable_geological_entity( gmge_id ) ) ;
-            gmge_access.modifiable_name() = name ;
+                geomodel_access_.modifiable_geological_entity( gmge_id ) );
+            gmge_access.modifiable_name() = name;
         }
 
     protected:
-        GeoModelBuilderInfo( GeoModelBuilder& builder, GeoModel& geomodel ) ;
+        GeoModelBuilderInfo( GeoModelBuilder& builder, GeoModel& geomodel );
 
     private:
-        GeoModelBuilder& builder_ ;
-        GeoModel& geomodel_ ;
-        GeoModelAccess geomodel_access_ ;
+        GeoModelBuilder& builder_;
+        GeoModel& geomodel_;
+        GeoModelAccess geomodel_access_;
 
-    } ;
+    };
 
     class RINGMESH_API GeoModelBuilderGeology {
-    ringmesh_disable_copy( GeoModelBuilderGeology ) ;
-        friend class GeoModelBuilder ;
+    ringmesh_disable_copy( GeoModelBuilderGeology );
+        friend class GeoModelBuilder;
 
     public:
-        void copy_geology( const GeoModel& from ) ;
+        void copy_geology( const GeoModel& from );
 
         /*!
          * @brief Create and store a geological entity of the given type
          * @return The index of the created geological entity
          */
-        gmge_id create_geological_entity( const GeologicalEntityType& type ) ;
+        gmge_id create_geological_entity( const GeologicalEntityType& type );
 
-        bool create_geological_entities( const GeologicalEntityType& type, index_t nb ) ;
+        bool create_geological_entities(
+            const GeologicalEntityType& type,
+            index_t nb );
 
         /*!
          * @brief Fill the parent of all entities of the given type
          * @details If the parents do not have any child nothing is done.
          */
-        void fill_mesh_entities_parent( const MeshEntityType& type ) ;
+        void fill_mesh_entities_parent( const MeshEntityType& type );
 
         /*!
          * @brief Fill the children of all entities of the given type
          * @details If the children entities do not have any parent information
          * nothing is done.
          */
-        void fill_geological_entities_children( const GeologicalEntityType& type ) ;
+        void fill_geological_entities_children( const GeologicalEntityType& type );
 
         void complete_mesh_entities_geol_feature_from_first_parent(
-            const MeshEntityType& type ) ;
+            const MeshEntityType& type );
         void complete_geological_entities_geol_feature_from_first_child(
-            const GeologicalEntityType& type ) ;
+            const GeologicalEntityType& type );
 
         void set_mesh_entity_geol_feature(
             const gmme_id& gmme_id,
             GeoModelEntity::GEOL_FEATURE geol_feature )
         {
             GeoModelMeshEntityAccess gmme_access(
-                geomodel_access_.modifiable_mesh_entity( gmme_id ) ) ;
-            gmme_access.modifiable_geol_feature() = geol_feature ;
+                geomodel_access_.modifiable_mesh_entity( gmme_id ) );
+            gmme_access.modifiable_geol_feature() = geol_feature;
 
         }
 
@@ -179,16 +183,18 @@ namespace RINGMesh {
             GeoModelEntity::GEOL_FEATURE geol_feature )
         {
             GeoModelGeologicalEntityAccess gmge_access(
-                geomodel_access_.modifiable_geological_entity( gmge_id ) ) ;
-            gmge_access.modifiable_geol_feature() = geol_feature ;
+                geomodel_access_.modifiable_geological_entity( gmge_id ) );
+            gmge_access.modifiable_geol_feature() = geol_feature;
         }
 
-        void add_mesh_entity_parent( const gmme_id& child_gmme, const gmge_id& parent_gmge )
+        void add_mesh_entity_parent(
+            const gmme_id& child_gmme,
+            const gmge_id& parent_gmge )
         {
             GeoModelMeshEntity& mesh_entity =
-                geomodel_access_.modifiable_mesh_entity( child_gmme ) ;
-            GeoModelMeshEntityAccess gmme_access( mesh_entity ) ;
-            gmme_access.modifiable_parents().push_back( parent_gmge ) ;
+                geomodel_access_.modifiable_mesh_entity( child_gmme );
+            GeoModelMeshEntityAccess gmme_access( mesh_entity );
+            gmme_access.modifiable_parents().push_back( parent_gmge );
         }
 
         void set_mesh_entity_parent(
@@ -199,21 +205,24 @@ namespace RINGMesh {
             /// No check on the validity of the index of the entity parents_
             /// NO_ID is used to flag entities to delete
             GeoModelMeshEntity& mesh_entity =
-                geomodel_access_.modifiable_mesh_entity( child_gmme ) ;
-            ringmesh_assert( id < mesh_entity.nb_parents() ) ;
-            GeoModelMeshEntityAccess gmme_access( mesh_entity ) ;
-            gmme_access.modifiable_parents()[id] = parent_gmge ;
+                geomodel_access_.modifiable_mesh_entity( child_gmme );
+            ringmesh_assert( id < mesh_entity.nb_parents() );
+            GeoModelMeshEntityAccess gmme_access( mesh_entity );
+            gmme_access.modifiable_parents()[id] = parent_gmge;
         }
 
-        void add_geological_entity_child( const gmge_id& parent_gmge, index_t child_id )
+        void add_geological_entity_child(
+            const gmge_id& parent_gmge,
+            index_t child_id )
         {
             GeoModelGeologicalEntity& geol_entity =
-                geomodel_access_.modifiable_geological_entity( parent_gmge ) ;
+                geomodel_access_.modifiable_geological_entity( parent_gmge );
             const MeshEntityType& child_type =
-                geomodel_.entity_type_manager().relationship_manager.child_type( parent_gmge.type() ) ;
-            gmme_id child( child_type, child_id ) ;
-            GeoModelGeologicalEntityAccess gmge_access( geol_entity ) ;
-            gmge_access.modifiable_children().push_back( child ) ;
+                geomodel_.entity_type_manager().relationship_manager.child_type(
+                    parent_gmge.type() );
+            gmme_id child( child_type, child_id );
+            GeoModelGeologicalEntityAccess gmge_access( geol_entity );
+            gmge_access.modifiable_children().push_back( child );
         }
 
         void set_geological_entity_child(
@@ -224,12 +233,13 @@ namespace RINGMesh {
             /// No check on the validity of the index of the entity child_index
             /// NO_ID is used to flag entities to delete
             GeoModelGeologicalEntity& geol_entity =
-                geomodel_access_.modifiable_geological_entity( parent_gmge ) ;
+                geomodel_access_.modifiable_geological_entity( parent_gmge );
             const MeshEntityType& child_type =
-                geomodel_.entity_type_manager().relationship_manager.child_type( parent_gmge.type() ) ;
-            gmme_id child( child_type, child_id ) ;
-            GeoModelGeologicalEntityAccess gmge_access( geol_entity ) ;
-            gmge_access.modifiable_children()[id] = child ;
+                geomodel_.entity_type_manager().relationship_manager.child_type(
+                    parent_gmge.type() );
+            gmme_id child( child_type, child_id );
+            GeoModelGeologicalEntityAccess gmge_access( geol_entity );
+            gmge_access.modifiable_children()[id] = child;
         }
         /*!
          * @brief Build the Contacts
@@ -237,84 +247,87 @@ namespace RINGMesh {
          */
         void build_contacts() ;
 
-        void delete_geological_entity( const GeologicalEntityType& type, index_t index ) ;
+        void delete_geological_entity(
+            const GeologicalEntityType& type,
+            index_t index );
 
     protected:
-        GeoModelBuilderGeology( GeoModelBuilder& builder, GeoModel& geomodel ) ;
+        GeoModelBuilderGeology( GeoModelBuilder& builder, GeoModel& geomodel );
 
     private:
-        index_t create_geological_entity_type( const GeologicalEntityType& type ) ;
+        index_t create_geological_entity_type( const GeologicalEntityType& type );
 
-        index_t find_or_create_geological_entity_type( const GeologicalEntityType& type ) ;
+        index_t find_or_create_geological_entity_type(
+            const GeologicalEntityType& type );
 
         void copy_geological_entity_topology(
             const GeoModel& from,
-            const GeologicalEntityType& type ) ;
+            const GeologicalEntityType& type );
 
     private:
-        GeoModelBuilder& builder_ ;
-        GeoModel& geomodel_ ;
-        GeoModelAccess geomodel_access_ ;
-    } ;
+        GeoModelBuilder& builder_;
+        GeoModel& geomodel_;
+        GeoModelAccess geomodel_access_;
+    };
 
     class RINGMESH_API GeoModelBuilderCopy {
-    ringmesh_disable_copy( GeoModelBuilderCopy ) ;
-        friend class GeoModelBuilder ;
+    ringmesh_disable_copy( GeoModelBuilderCopy );
+        friend class GeoModelBuilder;
     public:
-        void copy_geomodel( const GeoModel& from ) ;
+        void copy_geomodel( const GeoModel& from );
 
     private:
-        GeoModelBuilderCopy( GeoModelBuilder& builder, GeoModel& geomodel ) ;
+        GeoModelBuilderCopy( GeoModelBuilder& builder, GeoModel& geomodel );
 
     private:
-        GeoModelBuilder& builder_ ;
-        GeoModel& geomodel_ ;
-        GeoModelAccess geomodel_access_ ;
-    } ;
+        GeoModelBuilder& builder_;
+        GeoModel& geomodel_;
+        GeoModelAccess geomodel_access_;
+    };
 
     class RINGMESH_API GeoModelBuilderFromSurfaces {
-    ringmesh_disable_copy( GeoModelBuilderFromSurfaces ) ;
-        friend class GeoModelBuilder ;
+    ringmesh_disable_copy( GeoModelBuilderFromSurfaces );
+        friend class GeoModelBuilder;
 
     public:
         /*!
          * Delete all GeoModelRegionFromSurfaces owned by the builder
          */
-        virtual ~GeoModelBuilderFromSurfaces() ;
+        virtual ~GeoModelBuilderFromSurfaces();
         /*
          * @brief From a GeoModel in which only Surfaces are defined,
          * create Corners, Lines and Regions depending on the building flags
          * @note Validity is not checked
          */
-        void build() ;
+        void build();
 
         /*!
          * @brief From the Surfaces of the GeoModel, build its Lines and Corners
          */
-        bool build_lines_and_corners_from_surfaces() ;
+        bool build_lines_and_corners_from_surfaces();
 
         /*!
          * @brief Build the regions of the GeoModel from the Surfaces
          * @pre Function build_lines_and_corners_from_surfaces
          * must have been called before
          */
-        bool build_brep_regions_from_surfaces() ;
+        bool build_brep_regions_from_surfaces();
 
     private:
-        GeoModelBuilderFromSurfaces( GeoModelBuilder& builder, GeoModel& geomodel ) ;
+        GeoModelBuilderFromSurfaces( GeoModelBuilder& builder, GeoModel& geomodel );
 
     public:
         /*! Options to toggle the building of entities from the available entities */
-        GeoModelBuildingFlags options_ ;
+        GeoModelBuildingFlags options_;
 
     private:
-        GeoModelBuilder& builder_ ;
-        GeoModel& geomodel_ ;
-        GeoModelAccess geomodel_access_ ;
+        GeoModelBuilder& builder_;
+        GeoModel& geomodel_;
+        GeoModelAccess geomodel_access_;
 
         /*! Internal information */
-        std::vector< GeoModelRegionFromSurfaces* > regions_info_ ;
-    } ;
+        std::vector< GeoModelRegionFromSurfaces* > regions_info_;
+    };
 
     /*!
      * @brief Base class to build or edit a GeoModel
@@ -323,51 +336,51 @@ namespace RINGMesh {
      * with the GeoModel part which is edited (topology, geometry, geology, info)
      */
     class RINGMESH_API GeoModelBuilder {
-    ringmesh_disable_copy( GeoModelBuilder ) ;
+    ringmesh_disable_copy( GeoModelBuilder );
 
     public:
-        GeoModelBuilder( GeoModel& geomodel ) ;
-        virtual ~GeoModelBuilder() = default ;
+        GeoModelBuilder( GeoModel& geomodel );
+        virtual ~GeoModelBuilder() = default;
 
         /*!
          * @brief Finish up geomodel building and complete missing information.
          */
-        void end_geomodel() ;
+        void end_geomodel();
 
     public:
-        GeoModelBuilderTopology topology ;
-        GeoModelBuilderGeometry geometry ;
-        GeoModelBuilderGeology geology ;
-        GeoModelBuilderRemoval removal ;
-        GeoModelBuilderRepair repair ;
-        GeoModelBuilderCopy copy ;
-        GeoModelBuilderInfo info ;
-        GeoModelBuilderFromSurfaces from_surfaces ;
+        GeoModelBuilderTopology topology;
+        GeoModelBuilderGeometry geometry;
+        GeoModelBuilderGeology geology;
+        GeoModelBuilderRemoval removal;
+        GeoModelBuilderRepair repair;
+        GeoModelBuilderCopy copy;
+        GeoModelBuilderInfo info;
+        GeoModelBuilderFromSurfaces from_surfaces;
 
     protected:
-        GeoModel& geomodel_ ;
-        GeoModelAccess geomodel_access_ ;
-    } ;
+        GeoModel& geomodel_;
+        GeoModelAccess geomodel_access_;
+    };
 
     /*!
      * @brief Abstract interface class to load and build GeoModels from files
      */
     class RINGMESH_API GeoModelBuilderFile: public GeoModelBuilder {
     public:
-        GeoModelBuilderFile( GeoModel& geomodel, const std::string& filename ) ;
+        GeoModelBuilderFile( GeoModel& geomodel, const std::string& filename );
 
-        virtual ~GeoModelBuilderFile() = default ;
+        virtual ~GeoModelBuilderFile() = default;
 
         void build_geomodel()
         {
-            load_file() ;
-            end_geomodel() ;
+            load_file();
+            end_geomodel();
         }
 
     private:
-        virtual void load_file() = 0 ;
+        virtual void load_file() = 0;
 
     protected:
-        std::string filename_ ;
-    } ;
+        std::string filename_;
+    };
 }

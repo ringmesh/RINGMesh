@@ -83,24 +83,24 @@ namespace {
         virtual bool load( const std::string& filename, GeoModel& geomodel ) override
         {
             throw RINGMeshException( "I/O",
-                "Loading of a GeoModel from GMSH not implemented yet" ) ;
-            return false ;
+                "Loading of a GeoModel from GMSH not implemented yet" );
+            return false;
         }
         virtual void save( const GeoModel& geomodel, const std::string& filename ) override
         {
             /// @todo after implementing GMMOrder
             throw RINGMeshException( "I/O",
-                "Saving of a GeoModel from GMSH not implemented yet" ) ;
+                "Saving of a GeoModel from GMSH not implemented yet" );
 //                geomodel.set_duplicate_mode( FAULT ) ;
 
-            std::ofstream out( filename.c_str() ) ;
-            out.precision( 16 ) ;
+            std::ofstream out( filename.c_str() );
+            out.precision( 16 );
 
-            out << "$MeshFormat" << std::endl ;
-            out << "2.2 0 8" << std::endl ;
-            out << "$EndMeshFormat" << std::endl ;
+            out << "$MeshFormat" << std::endl;
+            out << "2.2 0 8" << std::endl;
+            out << "$EndMeshFormat" << std::endl;
 
-            out << "$Nodes" << std::endl ;
+            out << "$Nodes" << std::endl;
 //            out << gm.order.nb_total_vertices() << std::endl ;
 //            for( index_t p = 0; p < gm.vertices.nb(); p++ ) {
 //
@@ -326,6 +326,6 @@ namespace {
 //                }
 //            }
         }
-    } ;
+    };
 
 }

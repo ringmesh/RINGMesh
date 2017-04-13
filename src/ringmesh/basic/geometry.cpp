@@ -50,11 +50,11 @@
  */
 
 namespace {
-    using namespace RINGMesh ;
+    using namespace RINGMesh;
 
     bool is_almost_zero( const double& value )
     {
-        return value < global_epsilon && value > -global_epsilon ;
+        return value < global_epsilon && value > -global_epsilon;
     }
 
     double triangle_signed_area(
@@ -63,12 +63,12 @@ namespace {
         const vec3& p2,
         const vec3& triangle_normal )
     {
-        double area = GEO::Geom::triangle_area( p0, p1, p2 ) ;
-        vec3 area_normal = cross( p0 - p2, p1 - p2 ) ;
+        double area = GEO::Geom::triangle_area( p0, p1, p2 );
+        vec3 area_normal = cross( p0 - p2, p1 - p2 );
         if( dot( triangle_normal, area_normal ) < 0 ) {
-            area = -area ;
+            area = -area;
         }
-        return area ;
+        return area;
     }
 }
 
@@ -76,12 +76,12 @@ namespace RINGMesh {
 
     bool operator==( const vec3& u, const vec3& v )
     {
-        return u.x == v.x && u.y == v.y && u.z == v.z ;
+        return u.x == v.x && u.y == v.y && u.z == v.z;
     }
 
     bool operator!=( const vec3& u, const vec3& v )
     {
-        return u.x != v.x || u.y != v.y || u.z != v.z ;
+        return u.x != v.x || u.y != v.y || u.z != v.z;
     }
 
     double point_triangle_distance(
@@ -94,156 +94,156 @@ namespace RINGMesh {
         double& lambda1,
         double& lambda2 )
     {
-        vec3 diff = V0 - point ;
-        vec3 edge0 = V1 - V0 ;
-        vec3 edge1 = V2 - V0 ;
-        double a00 = length2( edge0 ) ;
-        double a01 = dot( edge0, edge1 ) ;
-        double a11 = length2( edge1 ) ;
-        double b0 = dot( diff, edge0 ) ;
-        double b1 = dot( diff, edge1 ) ;
-        double c = length2( diff ) ;
-        double det = std::fabs( a00 * a11 - a01 * a01 ) ;
-        double s = a01 * b1 - a11 * b0 ;
-        double t = a01 * b0 - a00 * b1 ;
-        double sqrDistance ;
+        vec3 diff = V0 - point;
+        vec3 edge0 = V1 - V0;
+        vec3 edge1 = V2 - V0;
+        double a00 = length2( edge0 );
+        double a01 = dot( edge0, edge1 );
+        double a11 = length2( edge1 );
+        double b0 = dot( diff, edge0 );
+        double b1 = dot( diff, edge1 );
+        double c = length2( diff );
+        double det = std::fabs( a00 * a11 - a01 * a01 );
+        double s = a01 * b1 - a11 * b0;
+        double t = a01 * b0 - a00 * b1;
+        double sqrDistance;
 
         if( s + t <= det ) {
             if( s < 0.0 ) {
                 if( t < 0.0 ) { // region 4
                     if( b0 < 0.0 ) {
-                        t = 0.0 ;
+                        t = 0.0;
                         if( -b0 >= a00 ) {
-                            s = 1.0 ;
-                            sqrDistance = a00 + 2.0 * b0 + c ;
+                            s = 1.0;
+                            sqrDistance = a00 + 2.0 * b0 + c;
                         } else {
-                            s = -b0 / a00 ;
-                            sqrDistance = b0 * s + c ;
+                            s = -b0 / a00;
+                            sqrDistance = b0 * s + c;
                         }
                     } else {
-                        s = 0.0 ;
+                        s = 0.0;
                         if( b1 >= 0.0 ) {
-                            t = 0.0 ;
-                            sqrDistance = c ;
+                            t = 0.0;
+                            sqrDistance = c;
                         } else if( -b1 >= a11 ) {
-                            t = 1.0 ;
-                            sqrDistance = a11 + 2.0 * b1 + c ;
+                            t = 1.0;
+                            sqrDistance = a11 + 2.0 * b1 + c;
                         } else {
-                            t = -b1 / a11 ;
-                            sqrDistance = b1 * t + c ;
+                            t = -b1 / a11;
+                            sqrDistance = b1 * t + c;
                         }
                     }
                 } else { // region 3
-                    s = 0.0 ;
+                    s = 0.0;
                     if( b1 >= 0.0 ) {
-                        t = 0.0 ;
-                        sqrDistance = c ;
+                        t = 0.0;
+                        sqrDistance = c;
                     } else if( -b1 >= a11 ) {
-                        t = 1.0 ;
-                        sqrDistance = a11 + 2.0 * b1 + c ;
+                        t = 1.0;
+                        sqrDistance = a11 + 2.0 * b1 + c;
                     } else {
-                        t = -b1 / a11 ;
-                        sqrDistance = b1 * t + c ;
+                        t = -b1 / a11;
+                        sqrDistance = b1 * t + c;
                     }
                 }
             } else if( t < 0.0 ) { // region 5
-                t = 0.0 ;
+                t = 0.0;
                 if( b0 >= 0.0 ) {
-                    s = 0.0 ;
-                    sqrDistance = c ;
+                    s = 0.0;
+                    sqrDistance = c;
                 } else if( -b0 >= a00 ) {
-                    s = 1.0 ;
-                    sqrDistance = a00 + 2.0 * b0 + c ;
+                    s = 1.0;
+                    sqrDistance = a00 + 2.0 * b0 + c;
                 } else {
-                    s = -b0 / a00 ;
-                    sqrDistance = b0 * s + c ;
+                    s = -b0 / a00;
+                    sqrDistance = b0 * s + c;
                 }
             } else { // region 0
                 // minimum at interior point
-                double invDet = double( 1.0 ) / det ;
-                s *= invDet ;
-                t *= invDet ;
+                double invDet = double( 1.0 ) / det;
+                s *= invDet;
+                t *= invDet;
                 sqrDistance = s * ( a00 * s + a01 * t + 2.0 * b0 )
-                    + t * ( a01 * s + a11 * t + 2.0 * b1 ) + c ;
+                    + t * ( a01 * s + a11 * t + 2.0 * b1 ) + c;
             }
         } else {
-            double tmp0, tmp1, numer, denom ;
+            double tmp0, tmp1, numer, denom;
 
             if( s < 0.0 ) { // region 2
-                tmp0 = a01 + b0 ;
-                tmp1 = a11 + b1 ;
+                tmp0 = a01 + b0;
+                tmp1 = a11 + b1;
                 if( tmp1 > tmp0 ) {
-                    numer = tmp1 - tmp0 ;
-                    denom = a00 - 2.0 * a01 + a11 ;
+                    numer = tmp1 - tmp0;
+                    denom = a00 - 2.0 * a01 + a11;
                     if( numer >= denom ) {
-                        s = 1.0 ;
-                        t = 0.0 ;
-                        sqrDistance = a00 + 2.0 * b0 + c ;
+                        s = 1.0;
+                        t = 0.0;
+                        sqrDistance = a00 + 2.0 * b0 + c;
                     } else {
-                        s = numer / denom ;
-                        t = 1.0 - s ;
+                        s = numer / denom;
+                        t = 1.0 - s;
                         sqrDistance = s * ( a00 * s + a01 * t + 2.0 * b0 )
-                            + t * ( a01 * s + a11 * t + 2.0 * b1 ) + c ;
+                            + t * ( a01 * s + a11 * t + 2.0 * b1 ) + c;
                     }
                 } else {
-                    s = 0.0 ;
+                    s = 0.0;
                     if( tmp1 <= 0.0 ) {
-                        t = 1.0 ;
-                        sqrDistance = a11 + 2.0 * b1 + c ;
+                        t = 1.0;
+                        sqrDistance = a11 + 2.0 * b1 + c;
                     } else if( b1 >= 0.0 ) {
-                        t = 0.0 ;
-                        sqrDistance = c ;
+                        t = 0.0;
+                        sqrDistance = c;
                     } else {
-                        t = -b1 / a11 ;
-                        sqrDistance = b1 * t + c ;
+                        t = -b1 / a11;
+                        sqrDistance = b1 * t + c;
                     }
                 }
             } else if( t < 0.0 ) { // region 6
-                tmp0 = a01 + b1 ;
-                tmp1 = a00 + b0 ;
+                tmp0 = a01 + b1;
+                tmp1 = a00 + b0;
                 if( tmp1 > tmp0 ) {
-                    numer = tmp1 - tmp0 ;
-                    denom = a00 - 2.0 * a01 + a11 ;
+                    numer = tmp1 - tmp0;
+                    denom = a00 - 2.0 * a01 + a11;
                     if( numer >= denom ) {
-                        t = 1.0 ;
-                        s = 0.0 ;
-                        sqrDistance = a11 + 2.0 * b1 + c ;
+                        t = 1.0;
+                        s = 0.0;
+                        sqrDistance = a11 + 2.0 * b1 + c;
                     } else {
-                        t = numer / denom ;
-                        s = 1.0 - t ;
+                        t = numer / denom;
+                        s = 1.0 - t;
                         sqrDistance = s * ( a00 * s + a01 * t + 2.0 * b0 )
-                            + t * ( a01 * s + a11 * t + 2.0 * b1 ) + c ;
+                            + t * ( a01 * s + a11 * t + 2.0 * b1 ) + c;
                     }
                 } else {
-                    t = 0.0 ;
+                    t = 0.0;
                     if( tmp1 <= 0.0 ) {
-                        s = 1.0 ;
-                        sqrDistance = a00 + 2.0 * b0 + c ;
+                        s = 1.0;
+                        sqrDistance = a00 + 2.0 * b0 + c;
                     } else if( b0 >= 0.0 ) {
-                        s = 0.0 ;
-                        sqrDistance = c ;
+                        s = 0.0;
+                        sqrDistance = c;
                     } else {
-                        s = -b0 / a00 ;
-                        sqrDistance = b0 * s + c ;
+                        s = -b0 / a00;
+                        sqrDistance = b0 * s + c;
                     }
                 }
             } else { // region 1
-                numer = a11 + b1 - a01 - b0 ;
+                numer = a11 + b1 - a01 - b0;
                 if( numer <= 0.0 ) {
-                    s = 0.0 ;
-                    t = 1.0 ;
-                    sqrDistance = a11 + 2.0 * b1 + c ;
+                    s = 0.0;
+                    t = 1.0;
+                    sqrDistance = a11 + 2.0 * b1 + c;
                 } else {
-                    denom = a00 - 2.0 * a01 + a11 ;
+                    denom = a00 - 2.0 * a01 + a11;
                     if( numer >= denom ) {
-                        s = 1.0 ;
-                        t = 0.0 ;
-                        sqrDistance = a00 + 2.0 * b0 + c ;
+                        s = 1.0;
+                        t = 0.0;
+                        sqrDistance = a00 + 2.0 * b0 + c;
                     } else {
-                        s = numer / denom ;
-                        t = 1.0 - s ;
+                        s = numer / denom;
+                        t = 1.0 - s;
                         sqrDistance = s * ( a00 * s + a01 * t + 2.0 * b0 )
-                            + t * ( a01 * s + a11 * t + 2.0 * b1 ) + c ;
+                            + t * ( a01 * s + a11 * t + 2.0 * b1 ) + c;
                     }
                 }
             }
@@ -251,14 +251,14 @@ namespace RINGMesh {
 
         // Account for numerical round-off error.
         if( sqrDistance < 0.0 ) {
-            sqrDistance = 0.0 ;
+            sqrDistance = 0.0;
         }
 
-        closest_point = V0 + s * edge0 + t * edge1 ;
-        lambda0 = 1.0 - s - t ;
-        lambda1 = s ;
-        lambda2 = t ;
-        return sqrt( sqrDistance ) ;
+        closest_point = V0 + s * edge0 + t * edge1;
+        lambda0 = 1.0 - s - t;
+        lambda1 = s;
+        lambda2 = t;
+        return sqrt( sqrDistance );
     }
 
     double point_tetra_distance(
@@ -269,24 +269,24 @@ namespace RINGMesh {
         const vec3& p3,
         vec3& nearest_p )
     {
-        vec3 vertices[4] = { p0, p1, p2, p3 } ;
-        double not_used0, not_used1, not_used2 ;
-        double dist = max_float64() ;
+        vec3 vertices[4] = { p0, p1, p2, p3 };
+        double not_used0, not_used1, not_used2;
+        double dist = max_float64();
         for( index_t f = 0; f < GEO::MeshCellDescriptors::tet_descriptor.nb_facets;
             f++ ) {
-            vec3 cur_p ;
+            vec3 cur_p;
             double distance =
                 point_triangle_distance( p,
                     vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][0]],
                     vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][1]],
                     vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][2]],
-                    cur_p, not_used0, not_used1, not_used2 ) ;
+                    cur_p, not_used0, not_used1, not_used2 );
             if( distance < dist ) {
-                dist = distance ;
-                nearest_p = cur_p ;
+                dist = distance;
+                nearest_p = cur_p;
             }
         }
-        return dist ;
+        return dist;
     }
 
     double point_pyramid_distance(
@@ -298,22 +298,22 @@ namespace RINGMesh {
         const vec3& p4,
         vec3& nearest_p )
     {
-        vec3 vertices[5] = { p0, p1, p2, p3, p4 } ;
-        double not_used0, not_used1, not_used2 ;
-        double dist = max_float64() ;
+        vec3 vertices[5] = { p0, p1, p2, p3, p4 };
+        double not_used0, not_used1, not_used2;
+        double dist = max_float64();
         for( index_t f = 0;
             f < GEO::MeshCellDescriptors::pyramid_descriptor.nb_facets; f++ ) {
-            vec3 cur_p ;
-            double distance = max_float64() ;
+            vec3 cur_p;
+            double distance = max_float64();
             index_t nb_vertices =
-                GEO::MeshCellDescriptors::pyramid_descriptor.nb_vertices_in_facet[f] ;
+                GEO::MeshCellDescriptors::pyramid_descriptor.nb_vertices_in_facet[f];
             if( nb_vertices == 3 ) {
                 distance =
                     point_triangle_distance( p,
                         vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][0]],
                         vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][1]],
                         vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][2]],
-                        cur_p, not_used0, not_used1, not_used2 ) ;
+                        cur_p, not_used0, not_used1, not_used2 );
             } else if( nb_vertices == 4 ) {
                 distance =
                     point_quad_distance( p,
@@ -321,16 +321,16 @@ namespace RINGMesh {
                         vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][1]],
                         vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][2]],
                         vertices[GEO::MeshCellDescriptors::pyramid_descriptor.facet_vertex[f][3]],
-                        cur_p ) ;
+                        cur_p );
             } else {
-                ringmesh_assert_not_reached ;
+                ringmesh_assert_not_reached;
             }
             if( distance < dist ) {
-                dist = distance ;
-                nearest_p = cur_p ;
+                dist = distance;
+                nearest_p = cur_p;
             }
         }
-        return dist ;
+        return dist;
     }
 
     double point_prism_distance(
@@ -343,23 +343,23 @@ namespace RINGMesh {
         const vec3& p5,
         vec3& nearest_p )
     {
-        vec3 vertices[6] = { p0, p1, p2, p3, p4, p5 } ;
-        double not_used0, not_used1, not_used2 ;
+        vec3 vertices[6] = { p0, p1, p2, p3, p4, p5 };
+        double not_used0, not_used1, not_used2;
 
-        double dist = max_float64() ;
+        double dist = max_float64();
         for( index_t f = 0; f < GEO::MeshCellDescriptors::prism_descriptor.nb_facets;
             f++ ) {
-            vec3 cur_p ;
-            double distance = max_float64() ;
+            vec3 cur_p;
+            double distance = max_float64();
             index_t nb_vertices =
-                GEO::MeshCellDescriptors::prism_descriptor.nb_vertices_in_facet[f] ;
+                GEO::MeshCellDescriptors::prism_descriptor.nb_vertices_in_facet[f];
             if( nb_vertices == 3 ) {
                 distance =
                     point_triangle_distance( p,
                         vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][0]],
                         vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][1]],
                         vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][2]],
-                        cur_p, not_used0, not_used1, not_used2 ) ;
+                        cur_p, not_used0, not_used1, not_used2 );
             } else if( nb_vertices == 4 ) {
                 distance =
                     point_quad_distance( p,
@@ -367,16 +367,16 @@ namespace RINGMesh {
                         vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][1]],
                         vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][2]],
                         vertices[GEO::MeshCellDescriptors::prism_descriptor.facet_vertex[f][3]],
-                        cur_p ) ;
+                        cur_p );
             } else {
-                ringmesh_assert_not_reached ;
+                ringmesh_assert_not_reached;
             }
             if( distance < dist ) {
-                dist = distance ;
-                nearest_p = cur_p ;
+                dist = distance;
+                nearest_p = cur_p;
             }
         }
-        return dist ;
+        return dist;
     }
 
     double point_hexa_distance(
@@ -392,24 +392,24 @@ namespace RINGMesh {
         vec3& nearest_p )
     {
         /// Review: Why not input an array ?
-        vec3 vertices[8] = { p0, p1, p2, p3, p4, p5, p6, p7 } ;
-        double dist = max_float64() ;
+        vec3 vertices[8] = { p0, p1, p2, p3, p4, p5, p6, p7 };
+        double dist = max_float64();
         for( index_t f = 0; f < GEO::MeshCellDescriptors::hex_descriptor.nb_facets;
             f++ ) {
-            vec3 cur_p ;
+            vec3 cur_p;
             double distance =
                 point_quad_distance( p,
                     vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][0]],
                     vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][1]],
                     vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][2]],
                     vertices[GEO::MeshCellDescriptors::hex_descriptor.facet_vertex[f][3]],
-                    cur_p ) ;
+                    cur_p );
             if( distance < dist ) {
-                dist = distance ;
-                nearest_p = cur_p ;
+                dist = distance;
+                nearest_p = cur_p;
             }
         }
-        return dist ;
+        return dist;
     }
 
     bool point_inside_tetra(
@@ -420,8 +420,8 @@ namespace RINGMesh {
         const vec3& p3,
         bool exact_predicates )
     {
-        vec3 vertices[4] = { p0, p1, p2, p3 } ;
-        Sign signs[4] ;
+        vec3 vertices[4] = { p0, p1, p2, p3 };
+        Sign signs[4];
         if( !exact_predicates ) {
             for( index_t f = 0;
                 f < GEO::MeshCellDescriptors::tet_descriptor.nb_facets; f++ ) {
@@ -429,11 +429,11 @@ namespace RINGMesh {
                     GEO::Geom::tetra_signed_volume( p,
                         vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][0]],
                         vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][1]],
-                        vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][2]] ) ;
+                        vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][2]] );
                 if( is_almost_zero( volume ) ) {
-                    return point_inside_tetra( p, p0, p1, p2, p3, true ) ;
+                    return point_inside_tetra( p, p0, p1, p2, p3, true );
                 }
-                signs[f] = sign( volume ) ;
+                signs[f] = sign( volume );
             }
         } else {
             for( index_t f = 0;
@@ -443,11 +443,11 @@ namespace RINGMesh {
                         GEO::PCK::orient_3d( p.data(),
                             vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][0]].data(),
                             vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][1]].data(),
-                            vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][2]].data() ) ) ;
+                            vertices[GEO::MeshCellDescriptors::tet_descriptor.facet_vertex[f][2]].data() ) );
             }
         }
         return ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0 && signs[3] >= 0 )
-            || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0 ) ;
+            || ( signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0 && signs[3] <= 0 );
     }
 
     bool circle_plane_intersection(
@@ -458,12 +458,12 @@ namespace RINGMesh {
         double r,
         std::vector< vec3 >& result )
     {
-        vec3 O_inter, D_inter ;
-        vec3 norm_N_plane = normalize( N_plane ) ;
-        vec3 norm_N_circle = normalize( N_circle ) ;
+        vec3 O_inter, D_inter;
+        vec3 norm_N_plane = normalize( N_plane );
+        vec3 norm_N_circle = normalize( N_circle );
         if( !plane_plane_intersection( O_plane, norm_N_plane, O_circle,
             norm_N_circle, O_inter, D_inter ) ) {
-            return false ;
+            return false;
         }
 
         // http://www.geometrictools.com/LibMathematics/Intersection/Intersection.html
@@ -471,28 +471,28 @@ namespace RINGMesh {
         // line is t*D+P, the circle center is C, and the circle radius is r,
         // then r^2 = |t*D+P-C|^2 = |D|^2*t^2 + 2*Dot(D,P-C)*t + |P-C|^2.  This
         // is a quadratic equation of the form:  a2*t^2 + 2*a1*t + a0 = 0.
-        vec3 diff = O_inter - O_circle ;
-        double a2 = D_inter.length2() ;
-        double a1 = dot( diff, D_inter ) ;
-        double a0 = diff.length2() - r * r ;
+        vec3 diff = O_inter - O_circle;
+        double a2 = D_inter.length2();
+        double a1 = dot( diff, D_inter );
+        double a0 = diff.length2() - r * r;
 
-        double discr = a1 * a1 - a0 * a2 ;
+        double discr = a1 * a1 - a0 * a2;
         if( discr < 0.0 ) {
-            return false ;
+            return false;
         }
 
         if( std::fabs( a2 ) < global_epsilon ) {
-            return false ;
+            return false;
         }
-        double inv = 1.0 / a2 ;
+        double inv = 1.0 / a2;
         if( discr < global_epsilon ) {
-            result.emplace_back( O_inter - ( a1 * inv ) * D_inter ) ;
+            result.emplace_back( O_inter - ( a1 * inv ) * D_inter );
         } else {
-            double root = sqrt( discr ) ;
-            result.emplace_back( O_inter - ( ( a1 + root ) * inv ) * D_inter ) ;
-            result.emplace_back( O_inter - ( ( a1 - root ) * inv ) * D_inter ) ;
+            double root = sqrt( discr );
+            result.emplace_back( O_inter - ( ( a1 + root ) * inv ) * D_inter );
+            result.emplace_back( O_inter - ( ( a1 - root ) * inv ) * D_inter );
         }
-        return true ;
+        return true;
     }
 
     bool plane_plane_intersection(
@@ -518,17 +518,17 @@ namespace RINGMesh {
         //   c1 = (d1 - d*d0)/det
         // where det = 1 - d^2.
 
-        double d = dot( N_P0, N_P1 ) ;
-        if( std::fabs( d - 1 ) < global_epsilon ) return false ;
+        double d = dot( N_P0, N_P1 );
+        if( std::fabs( d - 1 ) < global_epsilon ) return false;
 
-        double invDet = 1.0 / ( 1.0 - d * d ) ;
-        double const_P0 = dot( N_P0, O_P0 ) ;
-        double const_P1 = dot( N_P1, O_P1 ) ;
-        double c0 = ( const_P0 - d * const_P1 ) * invDet ;
-        double c1 = ( const_P1 - d * const_P0 ) * invDet ;
-        O_inter = c0 * N_P0 + c1 * N_P1 ;
-        D_inter = cross( N_P0, N_P1 ) ;
-        return true ;
+        double invDet = 1.0 / ( 1.0 - d * d );
+        double const_P0 = dot( N_P0, O_P0 );
+        double const_P1 = dot( N_P1, O_P1 );
+        double c0 = ( const_P0 - d * const_P1 ) * invDet;
+        double c1 = ( const_P1 - d * const_P0 ) * invDet;
+        O_inter = c0 * N_P0 + c1 * N_P1;
+        D_inter = cross( N_P0, N_P1 );
+        return true;
     }
 
     bool tetra_barycentric_coordinates(
@@ -539,23 +539,23 @@ namespace RINGMesh {
         const vec3& p3,
         double lambda[4] )
     {
-        double total_volume = GEO::Geom::tetra_signed_volume( p0, p1, p2, p3 ) ;
+        double total_volume = GEO::Geom::tetra_signed_volume( p0, p1, p2, p3 );
         if( total_volume < global_epsilon_3 ) {
             for( index_t i = 0; i < 4; i++ ) {
-                lambda[i] = 0 ;
+                lambda[i] = 0;
             }
-            return false ;
+            return false;
         }
-        double volume0 = GEO::Geom::tetra_signed_volume( p1, p3, p2, p ) ;
-        double volume1 = GEO::Geom::tetra_signed_volume( p0, p2, p3, p ) ;
-        double volume2 = GEO::Geom::tetra_signed_volume( p0, p3, p1, p ) ;
-        double volume3 = GEO::Geom::tetra_signed_volume( p0, p1, p2, p ) ;
+        double volume0 = GEO::Geom::tetra_signed_volume( p1, p3, p2, p );
+        double volume1 = GEO::Geom::tetra_signed_volume( p0, p2, p3, p );
+        double volume2 = GEO::Geom::tetra_signed_volume( p0, p3, p1, p );
+        double volume3 = GEO::Geom::tetra_signed_volume( p0, p1, p2, p );
 
-        lambda[0] = volume0 / total_volume ;
-        lambda[1] = volume1 / total_volume ;
-        lambda[2] = volume2 / total_volume ;
-        lambda[3] = volume3 / total_volume ;
-        return true ;
+        lambda[0] = volume0 / total_volume;
+        lambda[1] = volume1 / total_volume;
+        lambda[2] = volume2 / total_volume;
+        lambda[3] = volume3 / total_volume;
+        return true;
     }
 
     bool triangle_barycentric_coordinates(
@@ -565,22 +565,22 @@ namespace RINGMesh {
         const vec3& p2,
         double lambda[3] )
     {
-        double total_area = GEO::Geom::triangle_area( p0, p1, p2 ) ;
+        double total_area = GEO::Geom::triangle_area( p0, p1, p2 );
         if( total_area < global_epsilon_sq ) {
             for( index_t i = 0; i < 3; i++ ) {
-                lambda[i] = 0 ;
+                lambda[i] = 0;
             }
-            return false ;
+            return false;
         }
-        vec3 triangle_normal = cross( p2 - p0, p1 - p0 ) ;
-        double area0 = triangle_signed_area( p2, p1, p, triangle_normal ) ;
-        double area1 = triangle_signed_area( p0, p2, p, triangle_normal ) ;
-        double area2 = triangle_signed_area( p1, p0, p, triangle_normal ) ;
+        vec3 triangle_normal = cross( p2 - p0, p1 - p0 );
+        double area0 = triangle_signed_area( p2, p1, p, triangle_normal );
+        double area1 = triangle_signed_area( p0, p2, p, triangle_normal );
+        double area2 = triangle_signed_area( p1, p0, p, triangle_normal );
 
-        lambda[0] = area0 / total_area ;
-        lambda[1] = area1 / total_area ;
-        lambda[2] = area2 / total_area ;
-        return true ;
+        lambda[0] = area0 / total_area;
+        lambda[1] = area1 / total_area;
+        lambda[2] = area2 / total_area;
+        return true;
     }
 
     bool line_plane_intersection(
@@ -590,18 +590,18 @@ namespace RINGMesh {
         const vec3& N_plane,
         vec3& result )
     {
-        double dot_directions = dot( D_line, N_plane ) ;
+        double dot_directions = dot( D_line, N_plane );
         if( std::fabs( dot_directions ) > global_epsilon ) {
-            double plane_constant = 0.0 ;
+            double plane_constant = 0.0;
             for( index_t i = 0; i < 3; i++ ) {
-                plane_constant += O_plane[i] * N_plane[i] ;
+                plane_constant += O_plane[i] * N_plane[i];
             }
-            double signed_distance = dot( N_plane, O_line ) - plane_constant ;
-            result = O_line - signed_distance * D_line / dot_directions ;
-            return true ;
+            double signed_distance = dot( N_plane, O_line ) - plane_constant;
+            result = O_line - signed_distance * D_line / dot_directions;
+            return true;
         } else {
             // line is parallel to the plane
-            return false ;
+            return false;
         }
     }
 
@@ -612,21 +612,21 @@ namespace RINGMesh {
         const vec3& N_plane,
         vec3& result )
     {
-        vec3 segment_direction = normalize( seg1 - seg0 ) ;
-        vec3 segment_barycenter = 0.5 * ( seg0 + seg1 ) ;
-        vec3 line_plane_result ;
+        vec3 segment_direction = normalize( seg1 - seg0 );
+        vec3 segment_barycenter = 0.5 * ( seg0 + seg1 );
+        vec3 line_plane_result;
         if( line_plane_intersection( segment_barycenter, segment_direction, O_plane,
             N_plane, line_plane_result ) ) {
             if( ( line_plane_result - segment_barycenter ).length2()
                 > ( seg0 - segment_barycenter ).length2() + global_epsilon ) {
                 // result outside the segment
-                return false ;
+                return false;
             } else {
-                result = line_plane_result ;
-                return true ;
+                result = line_plane_result;
+                return true;
             }
         } else {
-            return false ;
+            return false;
         }
     }
 
@@ -638,15 +638,15 @@ namespace RINGMesh {
         double r,
         vec3& result )
     {
-        vec3 segment_plane_result ;
+        vec3 segment_plane_result;
         if( segment_plane_intersection( p0, p1, O_circle, N_circle,
             segment_plane_result ) ) {
             if( ( segment_plane_result - O_circle ).length() <= r ) {
-                result = segment_plane_result ;
-                return true ;
+                result = segment_plane_result;
+                return true;
             }
         }
-        return false ;
+        return false;
     }
 
     bool circle_triangle_intersection(
@@ -658,18 +658,18 @@ namespace RINGMesh {
         double r,
         std::vector< vec3 >& result )
     {
-        vec3 N_triangle = normalize( cross( p1 - p0, p2 - p0 ) ) ;
-        vec3 barycenter = ( p0 + p1 + p2 ) / 3 ;
-        std::vector< vec3 > inter_circle_plane ;
+        vec3 N_triangle = normalize( cross( p1 - p0, p2 - p0 ) );
+        vec3 barycenter = ( p0 + p1 + p2 ) / 3;
+        std::vector< vec3 > inter_circle_plane;
         if( circle_plane_intersection( barycenter, N_triangle, O_circle, N_circle, r,
             inter_circle_plane ) ) {
             for( const vec3& p : inter_circle_plane ) {
                 if( point_inside_triangle( p, p0, p1, p2 ) ) {
-                    result.push_back( p ) ;
+                    result.push_back( p );
                 }
             }
         }
-        return !result.empty() ;
+        return !result.empty();
     }
 
     bool point_segment_projection(
@@ -678,18 +678,18 @@ namespace RINGMesh {
         const vec3& p1,
         vec3& new_p )
     {
-        vec3 center = ( p0 + p1 ) * 0.5 ;
-        vec3 diff = p - center ;
-        vec3 edge = p1 - p0 ;
-        double extent = 0.5 * edge.length() ;
-        edge = normalize( edge ) ;
-        double d = dot( edge, diff ) ;
+        vec3 center = ( p0 + p1 ) * 0.5;
+        vec3 diff = p - center;
+        vec3 edge = p1 - p0;
+        double extent = 0.5 * edge.length();
+        edge = normalize( edge );
+        double d = dot( edge, diff );
 
         if( std::fabs( d ) <= extent ) {
-            new_p = center + d * edge ;
-            return true ;
+            new_p = center + d * edge;
+            return true;
         }
-        return false ;
+        return false;
     }
 
     void point_plane_projection(
@@ -698,10 +698,10 @@ namespace RINGMesh {
         const vec3& O_plane,
         vec3& projected_p )
     {
-        vec3 N_unit_plane = normalize( N_plane ) ;
-        vec3 v( p - O_plane ) ;
-        double distance = dot( v, N_unit_plane ) ;
-        projected_p = p - distance * N_unit_plane ;
+        vec3 N_unit_plane = normalize( N_plane );
+        vec3 v( p - O_plane );
+        double distance = dot( v, N_unit_plane );
+        projected_p = p - distance * N_unit_plane;
     }
 
     double point_segment_distance(
@@ -711,16 +711,16 @@ namespace RINGMesh {
         vec3& nearest_p )
     {
         if( point_segment_projection( p, p0, p1, nearest_p ) ) {
-            return length( nearest_p - p ) ;
+            return length( nearest_p - p );
         } else {
-            double p0_distance_sq = length2( p0 - p ) ;
-            double p1_distance_sq = length2( p1 - p ) ;
+            double p0_distance_sq = length2( p0 - p );
+            double p1_distance_sq = length2( p1 - p );
             if( p0_distance_sq < p1_distance_sq ) {
-                nearest_p = p0 ;
-                return std::sqrt( p0_distance_sq ) ;
+                nearest_p = p0;
+                return std::sqrt( p0_distance_sq );
             } else {
-                nearest_p = p1 ;
-                return std::sqrt( p1_distance_sq ) ;
+                nearest_p = p1;
+                return std::sqrt( p1_distance_sq );
             }
         }
     }
@@ -733,44 +733,44 @@ namespace RINGMesh {
         const vec3& p3,
         vec3& nearest_p )
     {
-        const vec3 center( ( p0 + p1 + p2 + p3 ) * 0.25 ) ;
-        vec3 edge0( p1 - p0 ) ;
-        vec3 edge1( p3 - p0 ) ;
-        vec3 axis[2] = { normalize( edge0 ), normalize( edge1 ) } ;
-        double extent[2] = { 0.5 * edge0.length(), 0.5 * edge1.length() } ;
+        const vec3 center( ( p0 + p1 + p2 + p3 ) * 0.25 );
+        vec3 edge0( p1 - p0 );
+        vec3 edge1( p3 - p0 );
+        vec3 axis[2] = { normalize( edge0 ), normalize( edge1 ) };
+        double extent[2] = { 0.5 * edge0.length(), 0.5 * edge1.length() };
 
-        vec3 diff = center - p ;
-        double b0 = dot( diff, axis[0] ) ;
-        double b1 = dot( diff, axis[1] ) ;
-        double s0 = -b0 ;
-        double s1 = -b1 ;
-        double sqrDistance = dot( diff, diff ) ;
+        vec3 diff = center - p;
+        double b0 = dot( diff, axis[0] );
+        double b1 = dot( diff, axis[1] );
+        double s0 = -b0;
+        double s1 = -b1;
+        double sqrDistance = dot( diff, diff );
 
         if( s0 < -extent[0] ) {
-            s0 = -extent[0] ;
+            s0 = -extent[0];
         } else if( s0 > extent[0] ) {
-            s0 = extent[0] ;
+            s0 = extent[0];
         }
-        sqrDistance += s0 * ( s0 + 2. * b0 ) ;
+        sqrDistance += s0 * ( s0 + 2. * b0 );
 
         if( s1 < -extent[1] ) {
-            s1 = -extent[1] ;
+            s1 = -extent[1];
         } else if( s1 > extent[1] ) {
-            s1 = extent[1] ;
+            s1 = extent[1];
         }
-        sqrDistance += s1 * ( s1 + 2. * b1 ) ;
+        sqrDistance += s1 * ( s1 + 2. * b1 );
 
         // Account for numerical round-off error.
         if( sqrDistance < 0 ) {
-            sqrDistance = 0 ;
+            sqrDistance = 0;
         }
 
-        double distance = std::sqrt( sqrDistance ) ;
-        nearest_p = center ;
-        nearest_p += s0 * axis[0] ;
-        nearest_p += s1 * axis[1] ;
+        double distance = std::sqrt( sqrDistance );
+        nearest_p = center;
+        nearest_p += s0 * axis[0];
+        nearest_p += s1 * axis[1];
 
-        return distance ;
+        return distance;
     }
 
     bool segment_triangle_intersection(
@@ -783,46 +783,46 @@ namespace RINGMesh {
     {
         // http://www.geometrictools.com/LibMathematics/Intersection/Intersection.html
         // Compute the offset origin, edges, and normal.
-        vec3 seg_center = ( seg0 + seg1 ) / 2 ;
-        vec3 diff = seg_center - trgl0 ;
-        vec3 edge1 = trgl1 - trgl0 ;
-        vec3 edge2 = trgl2 - trgl0 ;
-        vec3 normal = cross( edge1, edge2 ) ;
+        vec3 seg_center = ( seg0 + seg1 ) / 2;
+        vec3 diff = seg_center - trgl0;
+        vec3 edge1 = trgl1 - trgl0;
+        vec3 edge2 = trgl2 - trgl0;
+        vec3 normal = cross( edge1, edge2 );
 
         // Solve Q + t*D = b1*E1 + b2*E2 (Q = diff, D = segment direction,
         // E1 = edge1, E2 = edge2, N = Cross(E1,E2)) by
         //   |Dot(D,N)|*b1 = sign(Dot(D,N))*Dot(D,Cross(Q,E2))
         //   |Dot(D,N)|*b2 = sign(Dot(D,N))*Dot(D,Cross(E1,Q))
         //   |Dot(D,N)|*t = -sign(Dot(D,N))*Dot(Q,N)
-        vec3 D = normalize( seg1 - seg0 ) ;
-        double DdN = dot( D, normal ) ;
-        signed_index_t sign ;
+        vec3 D = normalize( seg1 - seg0 );
+        double DdN = dot( D, normal );
+        signed_index_t sign;
         if( DdN > global_epsilon ) {
-            sign = 1 ;
+            sign = 1;
         } else if( DdN < -global_epsilon ) {
-            sign = -1 ;
-            DdN = -DdN ;
+            sign = -1;
+            DdN = -DdN;
         } else {
             // Segment and triangle are parallel, call it a "no intersection"
             // even if the segment does intersect.
-            return false ;
+            return false;
         }
 
-        double DdQxE2 = sign * dot( D, cross( diff, edge2 ) ) ;
+        double DdQxE2 = sign * dot( D, cross( diff, edge2 ) );
         if( DdQxE2 >= 0 ) {
-            double DdE1xQ = sign * dot( D, cross( edge1, diff ) ) ;
+            double DdE1xQ = sign * dot( D, cross( edge1, diff ) );
             if( DdE1xQ >= 0 ) {
                 if( DdQxE2 + DdE1xQ <= DdN ) {
                     // Line intersects triangle, check if segment does.
-                    double QdN = -sign * dot( diff, normal ) ;
-                    double extDdN = length( seg1 - seg0 ) * DdN / 2. ;
+                    double QdN = -sign * dot( diff, normal );
+                    double extDdN = length( seg1 - seg0 ) * DdN / 2.;
                     if( -extDdN <= QdN && QdN <= extDdN ) {
                         // Segment intersects triangle.
-                        double inv = 1. / DdN ;
-                        double seg_parameter = QdN * inv ;
+                        double inv = 1. / DdN;
+                        double seg_parameter = QdN * inv;
 
-                        result = seg_center + seg_parameter * D ;
-                        return true ;
+                        result = seg_center + seg_parameter * D;
+                        return true;
                     }
                     // else: |t| > extent, no intersection
                 }
@@ -831,7 +831,7 @@ namespace RINGMesh {
             // else: b2 < 0, no intersection
         }
         // else: b1 < 0, no intersection
-        return false ;
+        return false;
     }
 
     void rotation_matrix_about_arbitrary_axis(
@@ -842,227 +842,227 @@ namespace RINGMesh {
         GEO::Matrix< 4, double >& rot_mat )
     {
         // Note: Rotation is impossible about an axis with null length.
-        ringmesh_assert( axis != vec3() ) ;
+        ringmesh_assert( axis != vec3() );
 
         if( degrees ) {
-            double pi = 3.141592653589793 ;
-            theta = theta * pi / 180. ;
+            double pi = 3.141592653589793;
+            theta = theta * pi / 180.;
         }
 
-        double axis_length = axis.length() ;
-        ringmesh_assert( axis_length > 0. ) ;
-        double x1 = origin[0] ;
-        double y1 = origin[1] ;
-        double z1 = origin[2] ;
-        double a = axis[0] / axis_length ;
-        double b = axis[1] / axis_length ;
-        double c = axis[2] / axis_length ;
-        double d = std::sqrt( b * b + c * c ) ;
-        double cos_angle = std::cos( theta ) ;
-        double sin_angle = std::sin( theta ) ;
+        double axis_length = axis.length();
+        ringmesh_assert( axis_length > 0. );
+        double x1 = origin[0];
+        double y1 = origin[1];
+        double z1 = origin[2];
+        double a = axis[0] / axis_length;
+        double b = axis[1] / axis_length;
+        double c = axis[2] / axis_length;
+        double d = std::sqrt( b * b + c * c );
+        double cos_angle = std::cos( theta );
+        double sin_angle = std::sin( theta );
 
-        GEO::Matrix< 4, double > T ;
-        T( 0, 0 ) = 1 ;
-        T( 0, 1 ) = 0 ;
-        T( 0, 2 ) = 0 ;
-        T( 0, 3 ) = -x1 ;
-        T( 1, 0 ) = 0 ;
-        T( 1, 1 ) = 1 ;
-        T( 1, 2 ) = 0 ;
-        T( 1, 3 ) = -y1 ;
-        T( 2, 0 ) = 0 ;
-        T( 2, 1 ) = 0 ;
-        T( 2, 2 ) = 1 ;
-        T( 2, 3 ) = -z1 ;
-        T( 3, 0 ) = 0 ;
-        T( 3, 1 ) = 0 ;
-        T( 3, 2 ) = 0 ;
-        T( 3, 3 ) = 1 ;
+        GEO::Matrix< 4, double > T;
+        T( 0, 0 ) = 1;
+        T( 0, 1 ) = 0;
+        T( 0, 2 ) = 0;
+        T( 0, 3 ) = -x1;
+        T( 1, 0 ) = 0;
+        T( 1, 1 ) = 1;
+        T( 1, 2 ) = 0;
+        T( 1, 3 ) = -y1;
+        T( 2, 0 ) = 0;
+        T( 2, 1 ) = 0;
+        T( 2, 2 ) = 1;
+        T( 2, 3 ) = -z1;
+        T( 3, 0 ) = 0;
+        T( 3, 1 ) = 0;
+        T( 3, 2 ) = 0;
+        T( 3, 3 ) = 1;
 
-        GEO::Matrix< 4, double > inv_T ;
-        inv_T( 0, 0 ) = 1. ;
-        inv_T( 0, 1 ) = 0. ;
-        inv_T( 0, 2 ) = 0. ;
-        inv_T( 0, 3 ) = x1 ;
-        inv_T( 1, 0 ) = 0. ;
-        inv_T( 1, 1 ) = 1. ;
-        inv_T( 1, 2 ) = 0. ;
-        inv_T( 1, 3 ) = y1 ;
-        inv_T( 2, 0 ) = 0. ;
-        inv_T( 2, 1 ) = 0. ;
-        inv_T( 2, 2 ) = 1. ;
-        inv_T( 2, 3 ) = z1 ;
-        inv_T( 3, 0 ) = 0. ;
-        inv_T( 3, 1 ) = 0. ;
-        inv_T( 3, 2 ) = 0. ;
-        inv_T( 3, 3 ) = 1. ;
+        GEO::Matrix< 4, double > inv_T;
+        inv_T( 0, 0 ) = 1.;
+        inv_T( 0, 1 ) = 0.;
+        inv_T( 0, 2 ) = 0.;
+        inv_T( 0, 3 ) = x1;
+        inv_T( 1, 0 ) = 0.;
+        inv_T( 1, 1 ) = 1.;
+        inv_T( 1, 2 ) = 0.;
+        inv_T( 1, 3 ) = y1;
+        inv_T( 2, 0 ) = 0.;
+        inv_T( 2, 1 ) = 0.;
+        inv_T( 2, 2 ) = 1.;
+        inv_T( 2, 3 ) = z1;
+        inv_T( 3, 0 ) = 0.;
+        inv_T( 3, 1 ) = 0.;
+        inv_T( 3, 2 ) = 0.;
+        inv_T( 3, 3 ) = 1.;
 
 #ifdef RINGMESH_DEBUG
-        GEO::Matrix< 4, double > computed_inv_T = T.inverse() ;
+        GEO::Matrix< 4, double > computed_inv_T = T.inverse();
 #endif
-        ringmesh_assert( inv_T( 0, 0 ) == computed_inv_T( 0, 0 ) ) ;
-        ringmesh_assert( inv_T( 0, 1 ) == computed_inv_T( 0, 1 ) ) ;
-        ringmesh_assert( inv_T( 0, 2 ) == computed_inv_T( 0, 2 ) ) ;
-        ringmesh_assert( inv_T( 0, 3 ) == computed_inv_T( 0, 3 ) ) ;
-        ringmesh_assert( inv_T( 1, 0 ) == computed_inv_T( 1, 0 ) ) ;
-        ringmesh_assert( inv_T( 1, 1 ) == computed_inv_T( 1, 1 ) ) ;
-        ringmesh_assert( inv_T( 1, 2 ) == computed_inv_T( 1, 2 ) ) ;
-        ringmesh_assert( inv_T( 1, 3 ) == computed_inv_T( 1, 3 ) ) ;
-        ringmesh_assert( inv_T( 2, 0 ) == computed_inv_T( 2, 0 ) ) ;
-        ringmesh_assert( inv_T( 2, 1 ) == computed_inv_T( 2, 1 ) ) ;
-        ringmesh_assert( inv_T( 2, 2 ) == computed_inv_T( 2, 2 ) ) ;
-        ringmesh_assert( inv_T( 2, 3 ) == computed_inv_T( 2, 3 ) ) ;
-        ringmesh_assert( inv_T( 3, 0 ) == computed_inv_T( 3, 0 ) ) ;
-        ringmesh_assert( inv_T( 3, 1 ) == computed_inv_T( 3, 1 ) ) ;
-        ringmesh_assert( inv_T( 3, 2 ) == computed_inv_T( 3, 2 ) ) ;
-        ringmesh_assert( inv_T( 3, 3 ) == computed_inv_T( 3, 3 ) ) ;
+        ringmesh_assert( inv_T( 0, 0 ) == computed_inv_T( 0, 0 ) );
+        ringmesh_assert( inv_T( 0, 1 ) == computed_inv_T( 0, 1 ) );
+        ringmesh_assert( inv_T( 0, 2 ) == computed_inv_T( 0, 2 ) );
+        ringmesh_assert( inv_T( 0, 3 ) == computed_inv_T( 0, 3 ) );
+        ringmesh_assert( inv_T( 1, 0 ) == computed_inv_T( 1, 0 ) );
+        ringmesh_assert( inv_T( 1, 1 ) == computed_inv_T( 1, 1 ) );
+        ringmesh_assert( inv_T( 1, 2 ) == computed_inv_T( 1, 2 ) );
+        ringmesh_assert( inv_T( 1, 3 ) == computed_inv_T( 1, 3 ) );
+        ringmesh_assert( inv_T( 2, 0 ) == computed_inv_T( 2, 0 ) );
+        ringmesh_assert( inv_T( 2, 1 ) == computed_inv_T( 2, 1 ) );
+        ringmesh_assert( inv_T( 2, 2 ) == computed_inv_T( 2, 2 ) );
+        ringmesh_assert( inv_T( 2, 3 ) == computed_inv_T( 2, 3 ) );
+        ringmesh_assert( inv_T( 3, 0 ) == computed_inv_T( 3, 0 ) );
+        ringmesh_assert( inv_T( 3, 1 ) == computed_inv_T( 3, 1 ) );
+        ringmesh_assert( inv_T( 3, 2 ) == computed_inv_T( 3, 2 ) );
+        ringmesh_assert( inv_T( 3, 3 ) == computed_inv_T( 3, 3 ) );
 
         // Note: If d = 0, so rotation is along x axis. So Rx = inv_Rx = Id
-        GEO::Matrix< 4, double > Rx ;
-        Rx( 0, 0 ) = 1. ;
-        Rx( 0, 1 ) = 0. ;
-        Rx( 0, 2 ) = 0. ;
-        Rx( 0, 3 ) = 0. ;
-        Rx( 1, 0 ) = 0. ;
-        Rx( 1, 3 ) = 0. ;
-        Rx( 2, 0 ) = 0. ;
-        Rx( 2, 3 ) = 0. ;
-        Rx( 3, 0 ) = 0. ;
-        Rx( 3, 1 ) = 0. ;
-        Rx( 3, 2 ) = 0. ;
-        Rx( 3, 3 ) = 1. ;
+        GEO::Matrix< 4, double > Rx;
+        Rx( 0, 0 ) = 1.;
+        Rx( 0, 1 ) = 0.;
+        Rx( 0, 2 ) = 0.;
+        Rx( 0, 3 ) = 0.;
+        Rx( 1, 0 ) = 0.;
+        Rx( 1, 3 ) = 0.;
+        Rx( 2, 0 ) = 0.;
+        Rx( 2, 3 ) = 0.;
+        Rx( 3, 0 ) = 0.;
+        Rx( 3, 1 ) = 0.;
+        Rx( 3, 2 ) = 0.;
+        Rx( 3, 3 ) = 1.;
         if( d == 0. ) {
-            Rx( 1, 1 ) = 1. ;
-            Rx( 1, 2 ) = 0. ;
-            Rx( 2, 1 ) = 0. ;
-            Rx( 2, 2 ) = 1. ;
+            Rx( 1, 1 ) = 1.;
+            Rx( 1, 2 ) = 0.;
+            Rx( 2, 1 ) = 0.;
+            Rx( 2, 2 ) = 1.;
         } else {
-            Rx( 1, 1 ) = c / d ;
-            Rx( 1, 2 ) = -b / d ;
-            Rx( 2, 1 ) = b / d ;
-            Rx( 2, 2 ) = c / d ;
+            Rx( 1, 1 ) = c / d;
+            Rx( 1, 2 ) = -b / d;
+            Rx( 2, 1 ) = b / d;
+            Rx( 2, 2 ) = c / d;
         }
 
-        GEO::Matrix< 4, double > inv_Rx ;
-        inv_Rx( 0, 0 ) = 1. ;
-        inv_Rx( 0, 1 ) = 0. ;
-        inv_Rx( 0, 2 ) = 0. ;
-        inv_Rx( 0, 3 ) = 0. ;
-        inv_Rx( 1, 0 ) = 0. ;
-        inv_Rx( 1, 3 ) = 0. ;
-        inv_Rx( 2, 0 ) = 0. ;
-        inv_Rx( 2, 3 ) = 0. ;
-        inv_Rx( 3, 0 ) = 0. ;
-        inv_Rx( 3, 1 ) = 0. ;
-        inv_Rx( 3, 2 ) = 0. ;
-        inv_Rx( 3, 3 ) = 1. ;
+        GEO::Matrix< 4, double > inv_Rx;
+        inv_Rx( 0, 0 ) = 1.;
+        inv_Rx( 0, 1 ) = 0.;
+        inv_Rx( 0, 2 ) = 0.;
+        inv_Rx( 0, 3 ) = 0.;
+        inv_Rx( 1, 0 ) = 0.;
+        inv_Rx( 1, 3 ) = 0.;
+        inv_Rx( 2, 0 ) = 0.;
+        inv_Rx( 2, 3 ) = 0.;
+        inv_Rx( 3, 0 ) = 0.;
+        inv_Rx( 3, 1 ) = 0.;
+        inv_Rx( 3, 2 ) = 0.;
+        inv_Rx( 3, 3 ) = 1.;
         if( d == 0. ) {
-            inv_Rx( 1, 1 ) = 1. ;
-            inv_Rx( 1, 2 ) = 0. ;
-            inv_Rx( 2, 1 ) = 0. ;
-            inv_Rx( 2, 2 ) = 1. ;
+            inv_Rx( 1, 1 ) = 1.;
+            inv_Rx( 1, 2 ) = 0.;
+            inv_Rx( 2, 1 ) = 0.;
+            inv_Rx( 2, 2 ) = 1.;
         } else {
-            inv_Rx( 1, 1 ) = c / d ;
-            inv_Rx( 1, 2 ) = b / d ;
-            inv_Rx( 2, 1 ) = -b / d ;
-            inv_Rx( 2, 2 ) = c / d ;
+            inv_Rx( 1, 1 ) = c / d;
+            inv_Rx( 1, 2 ) = b / d;
+            inv_Rx( 2, 1 ) = -b / d;
+            inv_Rx( 2, 2 ) = c / d;
         }
 
 #ifdef RINGMESH_DEBUG
-        GEO::Matrix< 4, double > computed_inv_Rx = Rx.inverse() ;
+        GEO::Matrix< 4, double > computed_inv_Rx = Rx.inverse();
 #endif
-        ringmesh_assert( inv_Rx( 0, 0 ) == computed_inv_Rx( 0, 0 ) ) ;
-        ringmesh_assert( inv_Rx( 0, 1 ) == computed_inv_Rx( 0, 1 ) ) ;
-        ringmesh_assert( inv_Rx( 0, 2 ) == computed_inv_Rx( 0, 2 ) ) ;
-        ringmesh_assert( inv_Rx( 0, 3 ) == computed_inv_Rx( 0, 3 ) ) ;
-        ringmesh_assert( inv_Rx( 1, 0 ) == computed_inv_Rx( 1, 0 ) ) ;
-        ringmesh_assert( inv_Rx( 1, 1 ) == computed_inv_Rx( 1, 1 ) ) ;
-        ringmesh_assert( inv_Rx( 1, 2 ) == computed_inv_Rx( 1, 2 ) ) ;
-        ringmesh_assert( inv_Rx( 1, 3 ) == computed_inv_Rx( 1, 3 ) ) ;
-        ringmesh_assert( inv_Rx( 2, 0 ) == computed_inv_Rx( 2, 0 ) ) ;
-        ringmesh_assert( inv_Rx( 2, 1 ) == computed_inv_Rx( 2, 1 ) ) ;
-        ringmesh_assert( inv_Rx( 2, 2 ) == computed_inv_Rx( 2, 2 ) ) ;
-        ringmesh_assert( inv_Rx( 2, 3 ) == computed_inv_Rx( 2, 3 ) ) ;
-        ringmesh_assert( inv_Rx( 3, 0 ) == computed_inv_Rx( 3, 0 ) ) ;
-        ringmesh_assert( inv_Rx( 3, 1 ) == computed_inv_Rx( 3, 1 ) ) ;
-        ringmesh_assert( inv_Rx( 3, 2 ) == computed_inv_Rx( 3, 2 ) ) ;
-        ringmesh_assert( inv_Rx( 3, 3 ) == computed_inv_Rx( 3, 3 ) ) ;
+        ringmesh_assert( inv_Rx( 0, 0 ) == computed_inv_Rx( 0, 0 ) );
+        ringmesh_assert( inv_Rx( 0, 1 ) == computed_inv_Rx( 0, 1 ) );
+        ringmesh_assert( inv_Rx( 0, 2 ) == computed_inv_Rx( 0, 2 ) );
+        ringmesh_assert( inv_Rx( 0, 3 ) == computed_inv_Rx( 0, 3 ) );
+        ringmesh_assert( inv_Rx( 1, 0 ) == computed_inv_Rx( 1, 0 ) );
+        ringmesh_assert( inv_Rx( 1, 1 ) == computed_inv_Rx( 1, 1 ) );
+        ringmesh_assert( inv_Rx( 1, 2 ) == computed_inv_Rx( 1, 2 ) );
+        ringmesh_assert( inv_Rx( 1, 3 ) == computed_inv_Rx( 1, 3 ) );
+        ringmesh_assert( inv_Rx( 2, 0 ) == computed_inv_Rx( 2, 0 ) );
+        ringmesh_assert( inv_Rx( 2, 1 ) == computed_inv_Rx( 2, 1 ) );
+        ringmesh_assert( inv_Rx( 2, 2 ) == computed_inv_Rx( 2, 2 ) );
+        ringmesh_assert( inv_Rx( 2, 3 ) == computed_inv_Rx( 2, 3 ) );
+        ringmesh_assert( inv_Rx( 3, 0 ) == computed_inv_Rx( 3, 0 ) );
+        ringmesh_assert( inv_Rx( 3, 1 ) == computed_inv_Rx( 3, 1 ) );
+        ringmesh_assert( inv_Rx( 3, 2 ) == computed_inv_Rx( 3, 2 ) );
+        ringmesh_assert( inv_Rx( 3, 3 ) == computed_inv_Rx( 3, 3 ) );
 
-        GEO::Matrix< 4, double > Ry ;
-        Ry( 0, 0 ) = d ;
-        Ry( 0, 1 ) = 0. ;
-        Ry( 0, 2 ) = -a ;
-        Ry( 0, 3 ) = 0. ;
-        Ry( 1, 0 ) = 0. ;
-        Ry( 1, 1 ) = 1. ;
-        Ry( 1, 2 ) = 0. ;
-        Ry( 1, 3 ) = 0. ;
-        Ry( 2, 0 ) = a ;
-        Ry( 2, 1 ) = 0. ;
-        Ry( 2, 2 ) = d ;
-        Ry( 2, 3 ) = 0. ;
-        Ry( 3, 0 ) = 0. ;
-        Ry( 3, 1 ) = 0. ;
-        Ry( 3, 2 ) = 0. ;
-        Ry( 3, 3 ) = 1. ;
+        GEO::Matrix< 4, double > Ry;
+        Ry( 0, 0 ) = d;
+        Ry( 0, 1 ) = 0.;
+        Ry( 0, 2 ) = -a;
+        Ry( 0, 3 ) = 0.;
+        Ry( 1, 0 ) = 0.;
+        Ry( 1, 1 ) = 1.;
+        Ry( 1, 2 ) = 0.;
+        Ry( 1, 3 ) = 0.;
+        Ry( 2, 0 ) = a;
+        Ry( 2, 1 ) = 0.;
+        Ry( 2, 2 ) = d;
+        Ry( 2, 3 ) = 0.;
+        Ry( 3, 0 ) = 0.;
+        Ry( 3, 1 ) = 0.;
+        Ry( 3, 2 ) = 0.;
+        Ry( 3, 3 ) = 1.;
 
-        GEO::Matrix< 4, double > inv_Ry ;
-        inv_Ry( 0, 0 ) = d ;
-        inv_Ry( 0, 1 ) = 0. ;
-        inv_Ry( 0, 2 ) = a ;
-        inv_Ry( 0, 3 ) = 0. ;
-        inv_Ry( 1, 0 ) = 0. ;
-        inv_Ry( 1, 1 ) = 1. ;
-        inv_Ry( 1, 2 ) = 0. ;
-        inv_Ry( 1, 3 ) = 0. ;
-        inv_Ry( 2, 0 ) = -a ;
-        inv_Ry( 2, 1 ) = 0. ;
-        inv_Ry( 2, 2 ) = d ;
-        inv_Ry( 2, 3 ) = 0. ;
-        inv_Ry( 3, 0 ) = 0. ;
-        inv_Ry( 3, 1 ) = 0. ;
-        inv_Ry( 3, 2 ) = 0. ;
-        inv_Ry( 3, 3 ) = 1. ;
+        GEO::Matrix< 4, double > inv_Ry;
+        inv_Ry( 0, 0 ) = d;
+        inv_Ry( 0, 1 ) = 0.;
+        inv_Ry( 0, 2 ) = a;
+        inv_Ry( 0, 3 ) = 0.;
+        inv_Ry( 1, 0 ) = 0.;
+        inv_Ry( 1, 1 ) = 1.;
+        inv_Ry( 1, 2 ) = 0.;
+        inv_Ry( 1, 3 ) = 0.;
+        inv_Ry( 2, 0 ) = -a;
+        inv_Ry( 2, 1 ) = 0.;
+        inv_Ry( 2, 2 ) = d;
+        inv_Ry( 2, 3 ) = 0.;
+        inv_Ry( 3, 0 ) = 0.;
+        inv_Ry( 3, 1 ) = 0.;
+        inv_Ry( 3, 2 ) = 0.;
+        inv_Ry( 3, 3 ) = 1.;
 
 #ifdef RINGMESH_DEBUG
-        GEO::Matrix< 4, double > computed_inv_Ry = Ry.inverse() ;
+        GEO::Matrix< 4, double > computed_inv_Ry = Ry.inverse();
 #endif
-        ringmesh_assert( inv_Ry( 0, 0 ) == computed_inv_Ry( 0, 0 ) ) ;
-        ringmesh_assert( inv_Ry( 0, 1 ) == computed_inv_Ry( 0, 1 ) ) ;
-        ringmesh_assert( inv_Ry( 0, 2 ) == computed_inv_Ry( 0, 2 ) ) ;
-        ringmesh_assert( inv_Ry( 0, 3 ) == computed_inv_Ry( 0, 3 ) ) ;
-        ringmesh_assert( inv_Ry( 1, 0 ) == computed_inv_Ry( 1, 0 ) ) ;
-        ringmesh_assert( inv_Ry( 1, 1 ) == computed_inv_Ry( 1, 1 ) ) ;
-        ringmesh_assert( inv_Ry( 1, 2 ) == computed_inv_Ry( 1, 2 ) ) ;
-        ringmesh_assert( inv_Ry( 1, 3 ) == computed_inv_Ry( 1, 3 ) ) ;
-        ringmesh_assert( inv_Ry( 2, 0 ) == computed_inv_Ry( 2, 0 ) ) ;
-        ringmesh_assert( inv_Ry( 2, 1 ) == computed_inv_Ry( 2, 1 ) ) ;
-        ringmesh_assert( inv_Ry( 2, 2 ) == computed_inv_Ry( 2, 2 ) ) ;
-        ringmesh_assert( inv_Ry( 2, 3 ) == computed_inv_Ry( 2, 3 ) ) ;
-        ringmesh_assert( inv_Ry( 3, 0 ) == computed_inv_Ry( 3, 0 ) ) ;
-        ringmesh_assert( inv_Ry( 3, 1 ) == computed_inv_Ry( 3, 1 ) ) ;
-        ringmesh_assert( inv_Ry( 3, 2 ) == computed_inv_Ry( 3, 2 ) ) ;
-        ringmesh_assert( inv_Ry( 3, 3 ) == computed_inv_Ry( 3, 3 ) ) ;
+        ringmesh_assert( inv_Ry( 0, 0 ) == computed_inv_Ry( 0, 0 ) );
+        ringmesh_assert( inv_Ry( 0, 1 ) == computed_inv_Ry( 0, 1 ) );
+        ringmesh_assert( inv_Ry( 0, 2 ) == computed_inv_Ry( 0, 2 ) );
+        ringmesh_assert( inv_Ry( 0, 3 ) == computed_inv_Ry( 0, 3 ) );
+        ringmesh_assert( inv_Ry( 1, 0 ) == computed_inv_Ry( 1, 0 ) );
+        ringmesh_assert( inv_Ry( 1, 1 ) == computed_inv_Ry( 1, 1 ) );
+        ringmesh_assert( inv_Ry( 1, 2 ) == computed_inv_Ry( 1, 2 ) );
+        ringmesh_assert( inv_Ry( 1, 3 ) == computed_inv_Ry( 1, 3 ) );
+        ringmesh_assert( inv_Ry( 2, 0 ) == computed_inv_Ry( 2, 0 ) );
+        ringmesh_assert( inv_Ry( 2, 1 ) == computed_inv_Ry( 2, 1 ) );
+        ringmesh_assert( inv_Ry( 2, 2 ) == computed_inv_Ry( 2, 2 ) );
+        ringmesh_assert( inv_Ry( 2, 3 ) == computed_inv_Ry( 2, 3 ) );
+        ringmesh_assert( inv_Ry( 3, 0 ) == computed_inv_Ry( 3, 0 ) );
+        ringmesh_assert( inv_Ry( 3, 1 ) == computed_inv_Ry( 3, 1 ) );
+        ringmesh_assert( inv_Ry( 3, 2 ) == computed_inv_Ry( 3, 2 ) );
+        ringmesh_assert( inv_Ry( 3, 3 ) == computed_inv_Ry( 3, 3 ) );
 
-        GEO::Matrix< 4, double > Rz ;
-        Rz( 0, 0 ) = cos_angle ;
-        Rz( 0, 1 ) = -sin_angle ;
-        Rz( 0, 2 ) = 0. ;
-        Rz( 0, 3 ) = 0. ;
-        Rz( 1, 0 ) = sin_angle ;
-        Rz( 1, 1 ) = cos_angle ;
-        Rz( 1, 2 ) = 0. ;
-        Rz( 1, 3 ) = 0. ;
-        Rz( 2, 0 ) = 0. ;
-        Rz( 2, 1 ) = 0. ;
-        Rz( 2, 2 ) = 1. ;
-        Rz( 2, 3 ) = 0. ;
-        Rz( 3, 0 ) = 0. ;
-        Rz( 3, 1 ) = 0. ;
-        Rz( 3, 2 ) = 0. ;
-        Rz( 3, 3 ) = 1. ;
+        GEO::Matrix< 4, double > Rz;
+        Rz( 0, 0 ) = cos_angle;
+        Rz( 0, 1 ) = -sin_angle;
+        Rz( 0, 2 ) = 0.;
+        Rz( 0, 3 ) = 0.;
+        Rz( 1, 0 ) = sin_angle;
+        Rz( 1, 1 ) = cos_angle;
+        Rz( 1, 2 ) = 0.;
+        Rz( 1, 3 ) = 0.;
+        Rz( 2, 0 ) = 0.;
+        Rz( 2, 1 ) = 0.;
+        Rz( 2, 2 ) = 1.;
+        Rz( 2, 3 ) = 0.;
+        Rz( 3, 0 ) = 0.;
+        Rz( 3, 1 ) = 0.;
+        Rz( 3, 2 ) = 0.;
+        Rz( 3, 3 ) = 1.;
 
-        rot_mat = inv_T * inv_Rx * inv_Ry * Rz * Ry * Rx * T ;
+        rot_mat = inv_T * inv_Rx * inv_Ry * Rz * Ry * Rx * T;
     }
 
     bool point_inside_triangle(
@@ -1072,43 +1072,43 @@ namespace RINGMesh {
         const vec3& p2,
         bool exact_predicates )
     {
-        vec3 n = cross( p2 - p0, p1 - p0 ) ;
-        vec3 q = p + n ;
+        vec3 n = cross( p2 - p0, p1 - p0 );
+        vec3 q = p + n;
 
-        Sign s1, s2, s3 ;
+        Sign s1, s2, s3;
         if( !exact_predicates ) {
-            double vol1 = GEO::Geom::tetra_signed_volume( p, q, p0, p1 ) ;
+            double vol1 = GEO::Geom::tetra_signed_volume( p, q, p0, p1 );
             if( is_almost_zero( vol1 ) ) {
-                return point_inside_triangle( p, p0, p1, p2, true ) ;
+                return point_inside_triangle( p, p0, p1, p2, true );
             }
-            s1 = sign( vol1 ) ;
-            double vol2 = GEO::Geom::tetra_signed_volume( p, q, p1, p2 ) ;
+            s1 = sign( vol1 );
+            double vol2 = GEO::Geom::tetra_signed_volume( p, q, p1, p2 );
             if( is_almost_zero( vol2 ) ) {
-                return point_inside_triangle( p, p0, p1, p2, true ) ;
+                return point_inside_triangle( p, p0, p1, p2, true );
             }
-            s2 = sign( vol2 ) ;
-            double vol3 = GEO::Geom::tetra_signed_volume( p, q, p2, p0 ) ;
+            s2 = sign( vol2 );
+            double vol3 = GEO::Geom::tetra_signed_volume( p, q, p2, p0 );
             if( is_almost_zero( vol3 ) ) {
-                return point_inside_triangle( p, p0, p1, p2, true ) ;
+                return point_inside_triangle( p, p0, p1, p2, true );
             }
-            s3 = sign( vol3 ) ;
+            s3 = sign( vol3 );
         } else {
             s1 = sign(
-                GEO::PCK::orient_3d( p.data(), q.data(), p0.data(), p1.data() ) ) ;
+                GEO::PCK::orient_3d( p.data(), q.data(), p0.data(), p1.data() ) );
             s2 = sign(
-                GEO::PCK::orient_3d( p.data(), q.data(), p1.data(), p2.data() ) ) ;
+                GEO::PCK::orient_3d( p.data(), q.data(), p1.data(), p2.data() ) );
             s3 = sign(
-                GEO::PCK::orient_3d( p.data(), q.data(), p2.data(), p0.data() ) ) ;
+                GEO::PCK::orient_3d( p.data(), q.data(), p2.data(), p0.data() ) );
             if( s1 == ZERO ) {
-                return s2 == s3 ;
+                return s2 == s3;
             } else if( s2 == ZERO ) {
-                return s1 == s3 ;
+                return s1 == s3;
             } else if( s3 == ZERO ) {
-                return s1 == s2 ;
+                return s1 == s2;
             }
         }
 
-        return s1 == s2 && s2 == s3 ;
+        return s1 == s2 && s2 == s3;
     }
 
     NNSearch::NNSearch(
@@ -1117,76 +1117,76 @@ namespace RINGMesh {
         bool copy )
         : nn_points_( nullptr ), delete_points_( true )
     {
-        nn_tree_ = GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
+        nn_tree_ = GEO::NearestNeighborSearch::create( 3, "BNN" );
         switch( location ) {
             case VERTICES: {
-                build_nn_search_vertices( mesh, copy ) ;
-                break ;
+                build_nn_search_vertices( mesh, copy );
+                break;
             }
             case EDGES: {
-                build_nn_search_edges( mesh ) ;
-                break ;
+                build_nn_search_edges( mesh );
+                break;
             }
             case FACETS: {
-                build_nn_search_facets( mesh ) ;
-                break ;
+                build_nn_search_facets( mesh );
+                break;
             }
             case CELLS: {
-                build_nn_search_cells( mesh ) ;
-                break ;
+                build_nn_search_cells( mesh );
+                break;
             }
             case CELL_FACETS: {
-                build_nn_search_cell_facets( mesh ) ;
-                break ;
+                build_nn_search_cell_facets( mesh );
+                break;
             }
             default:
-                ringmesh_assert_not_reached ;
-                break ;
+                ringmesh_assert_not_reached;
+                break;
         }
     }
 
     NNSearch::NNSearch( const std::vector< vec3 >& vertices, bool copy )
     {
-        index_t nb_vertices = static_cast< index_t >( vertices.size() ) ;
-        nn_tree_ = GEO::NearestNeighborSearch::create( 3, "BNN" ) ;
+        index_t nb_vertices = static_cast< index_t >( vertices.size() );
+        nn_tree_ = GEO::NearestNeighborSearch::create( 3, "BNN" );
         if( copy ) {
-            nn_points_ = new double[nb_vertices * 3] ;
-            delete_points_ = true ;
+            nn_points_ = new double[nb_vertices * 3];
+            delete_points_ = true;
             GEO::Memory::copy( nn_points_, vertices.data()->data(),
-                3 * nb_vertices * sizeof(double) ) ;
+                3 * nb_vertices * sizeof(double) );
         } else {
-            nn_points_ = const_cast< double* >( vertices.data()->data() ) ;
-            delete_points_ = false ;
+            nn_points_ = const_cast< double* >( vertices.data()->data() );
+            delete_points_ = false;
         }
-        nn_tree_->set_points( nb_vertices, nn_points_ ) ;
+        nn_tree_->set_points( nb_vertices, nn_points_ );
     }
 
     index_t NNSearch::get_colocated_index_mapping(
         double epsilon,
         std::vector< index_t >& index_map ) const
     {
-        index_map.resize( nn_tree_->nb_points() ) ;
+        index_map.resize( nn_tree_->nb_points() );
         for( index_t i = 0; i < index_map.size(); i++ ) {
-            index_map[i] = i ;
+            index_map[i] = i;
         }
-        index_t nb_threads = static_cast< index_t >( omp_get_max_threads() ) ;
-        std::vector< index_t > nb_colocalised_per_thread( nb_threads, 0 ) ;
+        index_t nb_threads = static_cast< index_t >( omp_get_max_threads() );
+        std::vector< index_t > nb_colocalised_per_thread( nb_threads, 0 );
         RINGMESH_PARALLEL_LOOP
         for( index_t i = 0; i < index_map.size(); i++ ) {
-            std::vector< index_t > results = get_neighbors( point( i ), epsilon ) ;
-            index_t id = *std::min_element( results.begin(), results.end() ) ;
+            std::vector< index_t > results = get_neighbors( point( i ), epsilon );
+            index_t id = *std::min_element( results.begin(), results.end() );
             if( id < i ) {
-                index_map[i] = id ;
-                index_t thread_id = static_cast< index_t >( omp_get_thread_num() ) ;
-                nb_colocalised_per_thread[thread_id]++ ;
+                index_map[i] = id;
+                index_t thread_id = static_cast< index_t >( omp_get_thread_num() );
+                nb_colocalised_per_thread[thread_id]++;
             }
         }
 
-        index_t nb_colocalised_vertices = 0 ;
+        index_t nb_colocalised_vertices = 0;
         for( index_t nb_colocalised : nb_colocalised_per_thread ) {
-            nb_colocalised_vertices += nb_colocalised ;
+            nb_colocalised_vertices += nb_colocalised;
         }
-        return nb_colocalised_vertices ;
+        return nb_colocalised_vertices;
     }
 
     index_t NNSearch::get_colocated_index_mapping(
@@ -1195,48 +1195,48 @@ namespace RINGMesh {
         std::vector< vec3 >& unique_points ) const
     {
         index_t nb_colocalised_vertices = get_colocated_index_mapping( epsilon,
-            index_map ) ;
-        unique_points.reserve( nb_points() - nb_colocalised_vertices ) ;
-        index_t offset = 0 ;
+            index_map );
+        unique_points.reserve( nb_points() - nb_colocalised_vertices );
+        index_t offset = 0;
         for( index_t p = 0; p < index_map.size(); p++ ) {
             if( index_map[p] == p ) {
-                unique_points.push_back( point( p ) ) ;
-                index_map[p] = p - offset ;
+                unique_points.push_back( point( p ) );
+                index_map[p] = p - offset;
             } else {
-                offset++ ;
-                index_map[p] = index_map[index_map[p]] ;
+                offset++;
+                index_map[p] = index_map[index_map[p]];
             }
         }
-        ringmesh_assert( offset == nb_colocalised_vertices ) ;
-        return offset ;
+        ringmesh_assert( offset == nb_colocalised_vertices );
+        return offset;
     }
 
     std::vector< index_t > NNSearch::get_neighbors(
         const vec3& v,
         double threshold_distance ) const
     {
-        std::vector< index_t > result ;
-        index_t nb_points = nn_tree_->nb_points() ;
+        std::vector< index_t > result;
+        index_t nb_points = nn_tree_->nb_points();
         if( nb_points != 0 ) {
-            double threshold_distance_sq = threshold_distance * threshold_distance ;
-            index_t nb_neighbors = std::min( index_t( 5 ), nb_points ) ;
-            index_t cur_neighbor = 0 ;
-            index_t prev_neighbor = 0 ;
+            double threshold_distance_sq = threshold_distance * threshold_distance;
+            index_t nb_neighbors = std::min( index_t( 5 ), nb_points );
+            index_t cur_neighbor = 0;
+            index_t prev_neighbor = 0;
             do {
-                prev_neighbor = cur_neighbor ;
-                cur_neighbor += nb_neighbors ;
-                std::vector< index_t > neighbors = get_neighbors( v, cur_neighbor ) ;
-                nb_neighbors = static_cast< index_t >( neighbors.size() ) ;
+                prev_neighbor = cur_neighbor;
+                cur_neighbor += nb_neighbors;
+                std::vector< index_t > neighbors = get_neighbors( v, cur_neighbor );
+                nb_neighbors = static_cast< index_t >( neighbors.size() );
                 for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
                     if( length2( v - point( neighbors[i] ) )
                         > threshold_distance_sq ) {
-                        break ;
+                        break;
                     }
-                    result.push_back( neighbors[i] ) ;
+                    result.push_back( neighbors[i] );
                 }
-            } while( result.size() == cur_neighbor && result.size() < nb_points ) ;
+            } while( result.size() == cur_neighbor && result.size() < nb_points );
         }
-        return result ;
+        return result;
 
     }
 
@@ -1244,107 +1244,107 @@ namespace RINGMesh {
         const vec3& v,
         index_t nb_neighbors ) const
     {
-        std::vector< index_t > result ;
+        std::vector< index_t > result;
         if( nn_tree_->nb_points() != 0 ) {
-            nb_neighbors = std::min( nb_neighbors, nn_tree_->nb_points() ) ;
-            std::vector< double > distances( nb_neighbors ) ;
-            result.resize( nb_neighbors ) ;
+            nb_neighbors = std::min( nb_neighbors, nn_tree_->nb_points() );
+            std::vector< double > distances( nb_neighbors );
+            result.resize( nb_neighbors );
             nn_tree_->get_nearest_neighbors( nb_neighbors, v.data(), &result[0],
-                &distances[0] ) ;
+                &distances[0] );
         }
-        return result ;
+        return result;
     }
 
     void NNSearch::build_nn_search_vertices( const GEO::Mesh& mesh, bool copy )
     {
-        const GEO::MeshVertices& mesh_vertices = mesh.vertices ;
-        index_t nb_vertices = mesh_vertices.nb() ;
+        const GEO::MeshVertices& mesh_vertices = mesh.vertices;
+        index_t nb_vertices = mesh_vertices.nb();
         if( nb_vertices == 0 ) {
-            return ;
+            return;
         }
         if( !copy ) {
-            nn_points_ = const_cast< double* >( mesh_vertices.point_ptr( 0 ) ) ;
-            delete_points_ = false ;
+            nn_points_ = const_cast< double* >( mesh_vertices.point_ptr( 0 ) );
+            delete_points_ = false;
         } else {
-            nn_points_ = new double[nb_vertices * 3] ;
+            nn_points_ = new double[nb_vertices * 3];
             GEO::Memory::copy( nn_points_, mesh_vertices.point_ptr( 0 ),
-                nb_vertices * 3 * sizeof(double) ) ;
+                nb_vertices * 3 * sizeof(double) );
         }
-        nn_tree_->set_points( nb_vertices, nn_points_ ) ;
+        nn_tree_->set_points( nb_vertices, nn_points_ );
     }
 
     void NNSearch::build_nn_search_edges( const GEO::Mesh& mesh )
     {
-        const GEO::MeshEdges& mesh_edges = mesh.edges ;
-        index_t nb_edges = mesh_edges.nb() ;
+        const GEO::MeshEdges& mesh_edges = mesh.edges;
+        index_t nb_edges = mesh_edges.nb();
         if( nb_edges == 0 ) {
-            return ;
+            return;
         }
-        nn_points_ = new double[nb_edges * 3] ;
+        nn_points_ = new double[nb_edges * 3];
         for( index_t i = 0; i < nb_edges; i++ ) {
-            index_t first_vertex_id = mesh_edges.vertex( i, 0 ) ;
-            const vec3& first_vertex_vec = mesh.vertices.point( first_vertex_id ) ;
-            index_t second_vertex_id = mesh.edges.vertex( i, 1 ) ;
-            const vec3& second_vertex_vec = mesh.vertices.point( second_vertex_id ) ;
+            index_t first_vertex_id = mesh_edges.vertex( i, 0 );
+            const vec3& first_vertex_vec = mesh.vertices.point( first_vertex_id );
+            index_t second_vertex_id = mesh.edges.vertex( i, 1 );
+            const vec3& second_vertex_vec = mesh.vertices.point( second_vertex_id );
 
-            vec3 center = ( first_vertex_vec + second_vertex_vec ) / 2. ;
-            index_t index_in_nn_search = 3 * i ;
-            fill_nn_search_points( index_in_nn_search, center ) ;
+            vec3 center = ( first_vertex_vec + second_vertex_vec ) / 2.;
+            index_t index_in_nn_search = 3 * i;
+            fill_nn_search_points( index_in_nn_search, center );
         }
-        nn_tree_->set_points( nb_edges, nn_points_ ) ;
+        nn_tree_->set_points( nb_edges, nn_points_ );
     }
 
     void NNSearch::build_nn_search_facets( const GEO::Mesh& mesh )
     {
-        index_t nb_facets = mesh.facets.nb() ;
+        index_t nb_facets = mesh.facets.nb();
         if( nb_facets == 0 ) {
-            return ;
+            return;
         }
-        nn_points_ = new double[nb_facets * 3] ;
+        nn_points_ = new double[nb_facets * 3];
         for( index_t i = 0; i < nb_facets; i++ ) {
-            vec3 center = GEO::Geom::mesh_facet_center( mesh, i ) ;
-            index_t index_in_nn_search = 3 * i ;
-            fill_nn_search_points( index_in_nn_search, center ) ;
+            vec3 center = GEO::Geom::mesh_facet_center( mesh, i );
+            index_t index_in_nn_search = 3 * i;
+            fill_nn_search_points( index_in_nn_search, center );
         }
-        nn_tree_->set_points( nb_facets, nn_points_ ) ;
+        nn_tree_->set_points( nb_facets, nn_points_ );
     }
 
     void NNSearch::build_nn_search_cell_facets( const GEO::Mesh& mesh )
     {
-        index_t nb_cell_facets = mesh.cell_facets.nb() ;
-        nn_points_ = new double[nb_cell_facets * 3] ;
-        index_t index_in_nn_search = 0 ;
+        index_t nb_cell_facets = mesh.cell_facets.nb();
+        nn_points_ = new double[nb_cell_facets * 3];
+        index_t index_in_nn_search = 0;
         for( index_t c = 0; c < mesh.cells.nb(); c++ ) {
             for( index_t f = 0; f < mesh.cells.nb_facets( c ); f++ ) {
-                vec3 center = mesh_cell_facet_barycenter( mesh, c, f ) ;
-                fill_nn_search_points( index_in_nn_search, center ) ;
-                index_in_nn_search += 3 ;
+                vec3 center = mesh_cell_facet_barycenter( mesh, c, f );
+                fill_nn_search_points( index_in_nn_search, center );
+                index_in_nn_search += 3;
             }
         }
-        nn_tree_->set_points( nb_cell_facets, nn_points_ ) ;
+        nn_tree_->set_points( nb_cell_facets, nn_points_ );
     }
 
     void NNSearch::build_nn_search_cells( const GEO::Mesh& mesh )
     {
-        index_t nb_cells = mesh.cells.nb() ;
+        index_t nb_cells = mesh.cells.nb();
         if( nb_cells == 0 ) {
-            return ;
+            return;
         }
-        nn_points_ = new double[nb_cells * 3] ;
+        nn_points_ = new double[nb_cells * 3];
         for( index_t i = 0; i < nb_cells; i++ ) {
-            vec3 center = mesh_cell_barycenter( mesh, i ) ;
-            index_t index_in_nn_search = 3 * i ;
-            fill_nn_search_points( index_in_nn_search, center ) ;
+            vec3 center = mesh_cell_barycenter( mesh, i );
+            index_t index_in_nn_search = 3 * i;
+            fill_nn_search_points( index_in_nn_search, center );
         }
-        nn_tree_->set_points( nb_cells, nn_points_ ) ;
+        nn_tree_->set_points( nb_cells, nn_points_ );
     }
 
     void NNSearch::fill_nn_search_points(
         index_t index_in_nn_search,
         const vec3& center )
     {
-        nn_points_[index_in_nn_search] = center.x ;
-        nn_points_[index_in_nn_search + 1] = center.y ;
-        nn_points_[index_in_nn_search + 2] = center.z ;
+        nn_points_[index_in_nn_search] = center.x;
+        nn_points_[index_in_nn_search + 1] = center.y;
+        nn_points_[index_in_nn_search + 2] = center.z;
     }
 }

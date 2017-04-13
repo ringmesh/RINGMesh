@@ -48,11 +48,11 @@
 #include <ringmesh/mesh/mesh.h>
 
 namespace RINGMesh {
-    class GeogramMeshBaseBuilder ;
-    class GeogramMesh0DBuilder ;
-    class GeogramMesh1DBuilder ;
-    class GeogramMesh2DBuilder ;
-    class GeogramMesh3DBuilder ;
+    class GeogramMeshBaseBuilder;
+    class GeogramMesh0DBuilder;
+    class GeogramMesh1DBuilder;
+    class GeogramMesh2DBuilder;
+    class GeogramMesh3DBuilder;
 }
 
 namespace RINGMesh {
@@ -64,14 +64,14 @@ namespace RINGMesh {
      * using a factory to build several encapsulating classes.
      */
     class RINGMESH_API GeogramMeshBase: public virtual MeshBase {
-    ringmesh_disable_copy( GeogramMeshBase ) ;
+    ringmesh_disable_copy( GeogramMeshBase );
 
-        friend class GeogramMeshBaseBuilder ;
+        friend class GeogramMeshBaseBuilder;
 
     public:
         virtual void save_mesh( const std::string& filename ) const override
         {
-            GEO::mesh_save( *mesh_, filename, GEO::MeshIOFlags() ) ;
+            GEO::mesh_save( *mesh_, filename, GEO::MeshIOFlags() );
         }
 
         /*!
@@ -80,7 +80,7 @@ namespace RINGMesh {
          */
         const GEO::Mesh& gfx_mesh() const
         {
-            return *mesh_ ;
+            return *mesh_;
         }
 
         virtual index_t nb_connected_components() const
@@ -97,7 +97,7 @@ namespace RINGMesh {
         //TODO maybe reimplement the function with a RINGMesh::Mesh??
         void print_mesh_bounded_attributes() const
         {
-            print_bounded_attributes( *mesh_ ) ;
+            print_bounded_attributes( *mesh_ );
         }
 
         /*
@@ -107,8 +107,8 @@ namespace RINGMesh {
          */
         const vec3& vertex( index_t v_id ) const
         {
-            ringmesh_assert( v_id < nb_vertices() ) ;
-            return mesh_->vertices.point( v_id ) ;
+            ringmesh_assert( v_id < nb_vertices() );
+            return mesh_->vertices.point( v_id );
         }
 
         /*
@@ -116,21 +116,21 @@ namespace RINGMesh {
          */
         index_t nb_vertices() const
         {
-            return mesh_->vertices.nb() ;
+            return mesh_->vertices.nb();
         }
         GEO::AttributesManager& vertex_attribute_manager() const
         {
-            return mesh_->vertices.attributes() ;
+            return mesh_->vertices.attributes();
         }
 
         static std::string default_extension_static()
         {
-            return "geogram" ;
+            return "geogram";
         }
 
         virtual std::string default_extension() const override
         {
-            return default_extension_static() ;
+            return default_extension_static();
         }
 
     protected:
@@ -140,13 +140,13 @@ namespace RINGMesh {
         }
 
     protected:
-        mutable std::unique_ptr< GEO::Mesh > mesh_ ;
-    } ;
+        mutable std::unique_ptr< GEO::Mesh > mesh_;
+    };
 
     class RINGMESH_API GeogramMesh0D: public virtual GeogramMeshBase,
         public virtual Mesh0D {
-    ringmesh_disable_copy( GeogramMesh0D ) ;
-        friend class GeogramMesh0DBuilder ;
+    ringmesh_disable_copy( GeogramMesh0D );
+        friend class GeogramMesh0DBuilder;
 
     public:
         GeogramMesh0D()
@@ -156,27 +156,27 @@ namespace RINGMesh {
         virtual ~GeogramMesh0D()
         {
         }
-        GeogramMesh0DBuilder* get_geogram_mesh_builder() ;
+        GeogramMesh0DBuilder* get_geogram_mesh_builder();
         static MeshType type_name_static()
         {
-            return "GeogramMesh0D" ;
+            return "GeogramMesh0D";
         }
 
         virtual MeshType type_name() const override
         {
-            return type_name_static() ;
+            return type_name_static();
         }
 
         static std::string default_extension_static()
         {
-            return "geogram" ;
+            return "geogram";
         }
-    } ;
+    };
 
     class RINGMESH_API GeogramMesh1D: public virtual GeogramMeshBase,
         public virtual Mesh1D {
-    ringmesh_disable_copy( GeogramMesh1D ) ;
-        friend class GeogramMesh1DBuilder ;
+    ringmesh_disable_copy( GeogramMesh1D );
+        friend class GeogramMesh1DBuilder;
 
     public:
         GeogramMesh1D()
@@ -188,17 +188,17 @@ namespace RINGMesh {
         }
         static MeshType type_name_static()
         {
-            return "GeogramMesh1D" ;
+            return "GeogramMesh1D";
         }
 
         virtual MeshType type_name() const override
         {
-            return type_name_static() ;
+            return type_name_static();
         }
 
         static std::string default_extension_static()
         {
-            return "geogram" ;
+            return "geogram";
         }
         /*
          * @brief Gets the index of an edge vertex.
@@ -208,26 +208,26 @@ namespace RINGMesh {
          */
         index_t edge_vertex( index_t edge_id, index_t vertex_id ) const
         {
-            return mesh_->edges.vertex( edge_id, vertex_id ) ;
+            return mesh_->edges.vertex( edge_id, vertex_id );
         }
         /*!
          * @brief Gets the number of all the edges in the whole Mesh.
          */
         index_t nb_edges() const
         {
-            return mesh_->edges.nb() ;
+            return mesh_->edges.nb();
         }
 
         GEO::AttributesManager& edge_attribute_manager() const
         {
-            return mesh_->edges.attributes() ;
+            return mesh_->edges.attributes();
         }
-    } ;
+    };
 
     class RINGMESH_API GeogramMesh2D: public virtual GeogramMeshBase,
         public virtual Mesh2D {
-    ringmesh_disable_copy( GeogramMesh2D ) ;
-        friend class GeogramMesh2DBuilder ;
+    ringmesh_disable_copy( GeogramMesh2D );
+        friend class GeogramMesh2DBuilder;
 
     public:
         GeogramMesh2D()
@@ -239,17 +239,17 @@ namespace RINGMesh {
         }
         static MeshType type_name_static()
         {
-            return "GeogramMesh2D" ;
+            return "GeogramMesh2D";
         }
 
         virtual MeshType type_name() const override
         {
-            return type_name_static() ;
+            return type_name_static();
         }
 
         static std::string default_extension_static()
         {
-            return "geogram" ;
+            return "geogram";
         }
         /*!
          * @brief Gets the vertex index by facet index and local vertex index.
@@ -260,14 +260,14 @@ namespace RINGMesh {
          */
         index_t facet_vertex( index_t facet_id, index_t vertex_id ) const
         {
-            return mesh_->facets.vertex( facet_id, vertex_id ) ;
+            return mesh_->facets.vertex( facet_id, vertex_id );
         }
         /*!
          * @brief Gets the number of all facets in the whole Mesh.
          */
         index_t nb_facets() const
         {
-            return mesh_->facets.nb() ;
+            return mesh_->facets.nb();
         }
         /*!
          * @brief Gets the number of vertices in the facet \param facet_id.
@@ -275,7 +275,7 @@ namespace RINGMesh {
          */
         index_t nb_facet_vertices( index_t facet_id ) const
         {
-            return mesh_->facets.nb_vertices( facet_id ) ;
+            return mesh_->facets.nb_vertices( facet_id );
         }
 
         /*!
@@ -287,11 +287,11 @@ namespace RINGMesh {
          */
         index_t facet_adjacent( index_t facet_id, index_t edge_id ) const
         {
-            return mesh_->facets.adjacent( facet_id, edge_id ) ;
+            return mesh_->facets.adjacent( facet_id, edge_id );
         }
         GEO::AttributesManager& facet_attribute_manager() const
         {
-            return mesh_->facets.attributes() ;
+            return mesh_->facets.attributes();
         }
         /*!
          * @brief Tests whether all the facets are triangles. when all the facets are triangles, storage and access is optimized.
@@ -299,14 +299,14 @@ namespace RINGMesh {
          */
         bool facets_are_simplicies() const
         {
-            return mesh_->facets.are_simplices() ;
+            return mesh_->facets.are_simplices();
         }
-    } ;
+    };
 
     class RINGMESH_API GeogramMesh3D: public virtual GeogramMeshBase,
         public virtual Mesh3D {
-    ringmesh_disable_copy( GeogramMesh3D ) ;
-        friend class GeogramMesh3DBuilder ;
+    ringmesh_disable_copy( GeogramMesh3D );
+        friend class GeogramMesh3DBuilder;
 
     public:
         GeogramMesh3D()
@@ -318,17 +318,17 @@ namespace RINGMesh {
         }
         static MeshType type_name_static()
         {
-            return "GeogramMesh3D" ;
+            return "GeogramMesh3D";
         }
 
         virtual MeshType type_name() const override
         {
-            return type_name_static() ;
+            return type_name_static();
         }
 
         static std::string default_extension_static()
         {
-            return "geogram" ;
+            return "geogram";
         }
         /*!
          * @brief Gets a vertex index by cell and local vertex index.
@@ -339,7 +339,7 @@ namespace RINGMesh {
          */
         index_t cell_vertex( index_t cell_id, index_t vertex_id ) const
         {
-            return mesh_->cells.vertex( cell_id, vertex_id ) ;
+            return mesh_->cells.vertex( cell_id, vertex_id );
         }
         /*!
          * @brief Gets a vertex index by cell and local edge and local vertex index.
@@ -354,7 +354,7 @@ namespace RINGMesh {
             index_t edge_id,
             index_t vertex_id ) const
         {
-            return mesh_->cells.edge_vertex( cell_id, edge_id, vertex_id ) ;
+            return mesh_->cells.edge_vertex( cell_id, edge_id, vertex_id );
         }
         /*!
          * @brief Gets a vertex by cell facet and local vertex index.
@@ -370,7 +370,7 @@ namespace RINGMesh {
             index_t facet_id,
             index_t vertex_id ) const
         {
-            return mesh_->cells.facet_vertex( cell_id, facet_id, vertex_id ) ;
+            return mesh_->cells.facet_vertex( cell_id, facet_id, vertex_id );
         }
         /*!
          * @brief Gets a facet index by cell and local facet index.
@@ -380,7 +380,7 @@ namespace RINGMesh {
          */
         index_t cell_facet( index_t cell_id, index_t facet_id ) const
         {
-            return mesh_->cells.facet( cell_id, facet_id ) ;
+            return mesh_->cells.facet( cell_id, facet_id );
         }
 
         /*!
@@ -390,14 +390,14 @@ namespace RINGMesh {
          */
         index_t nb_cell_facets( index_t cell_id ) const
         {
-            return mesh_->cells.nb_facets( cell_id ) ;
+            return mesh_->cells.nb_facets( cell_id );
         }
         /*!
          * @brief Gets the total number of facet in all cell
          */
         index_t nb_cell_facets() const
         {
-            return mesh_->cell_facets.nb() ;
+            return mesh_->cell_facets.nb();
         }
         /*!
          * @brief Gets the number of edges in a cell
@@ -406,7 +406,7 @@ namespace RINGMesh {
          */
         index_t nb_cell_edges( index_t cell_id ) const
         {
-            return mesh_->cells.nb_edges( cell_id ) ;
+            return mesh_->cells.nb_edges( cell_id );
         }
         /*!
          * @brief Gets the number of vertices of a facet in a cell
@@ -416,7 +416,7 @@ namespace RINGMesh {
          */
         index_t nb_cell_facet_vertices( index_t cell_id, index_t facet_id ) const
         {
-            return mesh_->cells.facet_nb_vertices( cell_id, facet_id ) ;
+            return mesh_->cells.facet_nb_vertices( cell_id, facet_id );
         }
         /*!
          * @brief Gets the number of vertices of a cell
@@ -425,38 +425,38 @@ namespace RINGMesh {
          */
         index_t nb_cell_vertices( index_t cell_id ) const
         {
-            return mesh_->cells.nb_vertices( cell_id ) ;
+            return mesh_->cells.nb_vertices( cell_id );
         }
         /*!
          * @brief Gets the number of cells in the Mesh.
          */
         index_t nb_cells() const
         {
-            return mesh_->cells.nb() ;
+            return mesh_->cells.nb();
         }
 
         index_t cell_begin( index_t cell_id ) const
         {
-            return mesh_->cells.corners_begin( cell_id ) ;
+            return mesh_->cells.corners_begin( cell_id );
         }
         index_t cell_end( index_t cell_id ) const
         {
-            return mesh_->cells.corners_end( cell_id ) ;
+            return mesh_->cells.corners_end( cell_id );
         }
         /*!
          * @return the index of the adjacent cell of \param cell_id along the facet \param facet_id
          */
         index_t cell_adjacent( index_t cell_id, index_t facet_id ) const
         {
-            return mesh_->cells.adjacent( cell_id, facet_id ) ;
+            return mesh_->cells.adjacent( cell_id, facet_id );
         }
         GEO::AttributesManager& cell_attribute_manager() const
         {
-            return mesh_->cells.attributes() ;
+            return mesh_->cells.attributes();
         }
         GEO::AttributesManager& cell_facet_attribute_manager() const
         {
-            return mesh_->cell_facets.attributes() ;
+            return mesh_->cell_facets.attributes();
         }
         /*!
          * @brief Gets the type of a cell.
@@ -464,7 +464,7 @@ namespace RINGMesh {
          */
         GEO::MeshCellType cell_type( index_t cell_id ) const
         {
-            return mesh_->cells.type( cell_id ) ;
+            return mesh_->cells.type( cell_id );
         }
         /*!
          * @brief Tests whether all the cells are tetrahedra. when all the cells are tetrahedra, storage and access is optimized.
@@ -472,7 +472,7 @@ namespace RINGMesh {
          */
         bool cells_are_simplicies() const
         {
-            return mesh_->cells.are_simplices() ;
+            return mesh_->cells.are_simplices();
         }
 
         /*!
@@ -480,9 +480,9 @@ namespace RINGMesh {
          */
         double cell_volume( index_t cell_id ) const
         {
-            return RINGMesh::mesh_cell_volume( *mesh_, cell_id ) ;
+            return RINGMesh::mesh_cell_volume( *mesh_, cell_id );
         }
-    } ;
+    };
 
-    void register_geogram_mesh() ;
+    void register_geogram_mesh();
 }

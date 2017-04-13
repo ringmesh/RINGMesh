@@ -46,7 +46,7 @@
  */
 
 namespace RINGMesh {
-    class GeoModelBuilder ;
+    class GeoModelBuilder;
 }
 
 namespace RINGMesh {
@@ -59,8 +59,8 @@ namespace RINGMesh {
      *          It has been tested on a very small number of geomodels.
      */
     class RINGMESH_API GeoModelBuilderRepair {
-    ringmesh_disable_copy( GeoModelBuilderRepair ) ;
-        friend class GeoModelBuilder ;
+    ringmesh_disable_copy( GeoModelBuilderRepair );
+        friend class GeoModelBuilder;
 
     public:
         /*!
@@ -72,26 +72,26 @@ namespace RINGMesh {
             COLOCATED_VERTICES,
             DEGENERATE_FACETS_EDGES,
             LINE_BOUNDARY_ORDER
-        } ;
+        };
 
         /*!
          * @brief Repair a GeoModel according a repair mode.
          * @param[in] repair_mode repair mode to apply.
          */
-        void repair( RepairMode repair_mode ) ;
+        void repair( RepairMode repair_mode );
     private:
-        GeoModelBuilderRepair( GeoModelBuilder& builder, GeoModel& geomodel ) ;
+        GeoModelBuilderRepair( GeoModelBuilder& builder, GeoModel& geomodel );
 
         /*!
          * All implemented repair for a GeoModel.
          */
-        void geomodel_mesh_repair() ;
+        void geomodel_mesh_repair();
         /*!
          * Remove the colocated vertices in all the GeoModelMeshEntities within
          * the GeoModel. GeoModelMeshEntities without any vertex anymore
          * (after the removal of the vertices) are removed off the GeoModel.
          */
-        void remove_colocated_entity_vertices_and_update_gm() ;
+        void remove_colocated_entity_vertices_and_update_gm();
         /*!
          * Remove the degenerated facets in all the Surfaces and all the
          * degenerate edges in all the Lines within
@@ -99,28 +99,28 @@ namespace RINGMesh {
          * Surfaces and Lines without any vertex anymore
          * (after the removal of the vertices) are removed off the GeoModel.
          */
-        void remove_degenerate_facets_and_edges_and_update_gm() ;
+        void remove_degenerate_facets_and_edges_and_update_gm();
         /*!
          * @brief For all the lines in the geomodel, switch line boundaries
          * if the way of their indices does not follow the way of the vertex indices.
          */
-        void repair_line_boundary_vertex_order() ;
+        void repair_line_boundary_vertex_order();
         /*!
          * @brief Detect and remove degenerate edges in a \param line.
          * @return the number of degenerate edges that have been removed from the line.
          */
-        index_t repair_line_mesh( const Line& line ) ;
+        index_t repair_line_mesh( const Line& line );
         void line_detect_degenerate_edges(
             const Line& L,
             std::vector< bool >& e_is_degenerate,
-            std::vector< index_t >& colocated_vertices ) ;
+            std::vector< index_t >& colocated_vertices );
         /*!
          * \note Copied and modified from geogram\mesh\mesh_repair.cpp
          */
         void surface_detect_degenerate_facets(
             const Surface& S,
             std::vector< index_t >& f_is_degenerate,
-            std::vector< index_t >& colocated_vertices ) ;
+            std::vector< index_t >& colocated_vertices );
         /*!
          * \note Copied and modified from geogram\mesh\mesh_repair.cpp
          *
@@ -135,14 +135,14 @@ namespace RINGMesh {
         bool facet_is_degenerate(
             const Surface& S,
             index_t f,
-            std::vector< index_t >& colocated_vertices ) ;
+            std::vector< index_t >& colocated_vertices );
 
         /*!
          * @brief Detect and remove degenerated facets in a Surface
          * @param[in,out] S Surface to check for potential degenerate facets.
          * @return the number of degenerate facets in \p S.
          */
-        index_t detect_degenerate_facets( const Surface& S ) ;
+        index_t detect_degenerate_facets( const Surface& S );
 
         /*!
          * @brief Remove degenerate facets and edges from the Surface
@@ -151,14 +151,14 @@ namespace RINGMesh {
          * of the geomodel that are empty once degenerate entities are removed
          * @pre Colocated vertices have already been removed
          */
-        void remove_degenerate_facets_and_edges( std::set< gmme_id >& to_remove ) ;
+        void remove_degenerate_facets_and_edges( std::set< gmme_id >& to_remove );
 
         /*!
          * @brief Remove colocated vertices of the geomodel.
          * @param[out] to_remove gmme_t of the entities of the geomodel that
          *  are empty once degenerate entities are removed
          */
-        void remove_colocated_entity_vertices( std::set< gmme_id >& to_remove ) ;
+        void remove_colocated_entity_vertices( std::set< gmme_id >& to_remove );
         /*!
          * Get the indices of the duplicated vertices that are on an inside border.
          * Only the vertex with the biggest index are added.
@@ -167,7 +167,7 @@ namespace RINGMesh {
          */
         void vertices_on_inside_boundary(
             const gmme_id& E_id,
-            std::set< index_t >& vertices ) ;
+            std::set< index_t >& vertices );
 
         /*!
          * @brief Checks if an edge is degenerate.
@@ -182,12 +182,12 @@ namespace RINGMesh {
         bool edge_is_degenerate(
             const Line& L,
             index_t e,
-            const std::vector< index_t >& colocated_vertices ) ;
+            const std::vector< index_t >& colocated_vertices );
 
     private:
-        GeoModelBuilder& builder_ ;
-        GeoModel& geomodel_ ;
-        GeoModelAccess geomodel_access_ ;
-    } ;
+        GeoModelBuilder& builder_;
+        GeoModel& geomodel_;
+        GeoModelAccess geomodel_access_;
+    };
 
 } //namespace RINGMesh
