@@ -52,51 +52,51 @@ namespace RINGMesh {
     public:
         static void div( const std::string& title )
         {
-            std::lock_guard< std::mutex > lock( lock_ ) ;
-            GEO::Logger::div( title ) ;
+            std::lock_guard< std::mutex > lock( lock_ );
+            GEO::Logger::div( title );
         }
 
         template< typename ...Args >
         static void out( const std::string& feature, const Args& ... args )
         {
-            std::lock_guard< std::mutex > lock( lock_ ) ;
-            log( GEO::Logger::out( feature ), args... ) ;
+            std::lock_guard< std::mutex > lock( lock_ );
+            log( GEO::Logger::out( feature ), args... );
         }
 
         template< typename ...Args >
         static void err( const std::string& feature, const Args& ... args )
         {
-            std::lock_guard< std::mutex > lock( lock_ ) ;
-            log( GEO::Logger::err( feature ), args... ) ;
+            std::lock_guard< std::mutex > lock( lock_ );
+            log( GEO::Logger::err( feature ), args... );
         }
 
         template< typename ...Args >
         static void warn( const std::string& feature, const Args& ... args )
         {
-            std::lock_guard< std::mutex > lock( lock_ ) ;
-            log( GEO::Logger::warn( feature ), args... ) ;
+            std::lock_guard< std::mutex > lock( lock_ );
+            log( GEO::Logger::warn( feature ), args... );
         }
 
         static GEO::Logger* instance()
         {
-            return GEO::Logger::instance() ;
+            return GEO::Logger::instance();
         }
 
     private:
         static void log( std::ostream& os )
         {
-            os << std::endl ;
+            os << std::endl;
         }
 
         template< class A0, class ...Args >
         static void log( std::ostream& os, const A0& a0, const Args& ...args )
         {
-            os << a0 ;
-            log( os, args... ) ;
+            os << a0;
+            log( os, args... );
         }
 
     private:
-        static std::mutex lock_ ;
-    } ;
+        static std::mutex lock_;
+    };
 
 }

@@ -42,126 +42,126 @@
  * @author Arnaud Botella
  */
 
-using namespace RINGMesh ;
+using namespace RINGMesh;
 
 void build_geomodel( GeoModel& geomodel )
 {
-    GeoModelBuilder builder( geomodel ) ;
+    GeoModelBuilder builder( geomodel );
 
-    vec3 v0( 0, 0, 0 ) ;
-    vec3 v1( 1, 0, 0 ) ;
-    vec3 v2( 1, 1, 0 ) ;
-    vec3 v3( 0, 1, 0 ) ;
-    vec3 v4( 0, 0, 1 ) ;
-    vec3 v5( 1, 0, 1 ) ;
-    vec3 v6( 1, 1, 1 ) ;
-    vec3 v7( 0, 1, 1 ) ;
+    vec3 v0( 0, 0, 0 );
+    vec3 v1( 1, 0, 0 );
+    vec3 v2( 1, 1, 0 );
+    vec3 v3( 0, 1, 0 );
+    vec3 v4( 0, 0, 1 );
+    vec3 v5( 1, 0, 1 );
+    vec3 v6( 1, 1, 1 );
+    vec3 v7( 0, 1, 1 );
 
-    std::vector< index_t > triangles ;
-    triangles.push_back( 0 ) ;
-    triangles.push_back( 1 ) ;
-    triangles.push_back( 2 ) ;
-    triangles.push_back( 0 ) ;
-    triangles.push_back( 2 ) ;
-    triangles.push_back( 3 ) ;
+    std::vector< index_t > triangles;
+    triangles.push_back( 0 );
+    triangles.push_back( 1 );
+    triangles.push_back( 2 );
+    triangles.push_back( 0 );
+    triangles.push_back( 2 );
+    triangles.push_back( 3 );
 
-    std::vector< index_t > surface_facet_ptr ;
-    surface_facet_ptr.push_back( 0 ) ;
-    surface_facet_ptr.push_back( 3 ) ;
-    surface_facet_ptr.push_back( 6 ) ;
+    std::vector< index_t > surface_facet_ptr;
+    surface_facet_ptr.push_back( 0 );
+    surface_facet_ptr.push_back( 3 );
+    surface_facet_ptr.push_back( 6 );
 
-    std::vector< vec3 > vertices( 4 ) ;
-    gmme_id id ;
+    std::vector< vec3 > vertices( 4 );
+    gmme_id id;
 
-    id = builder.topology.create_mesh_entity< Surface >() ;
-    vertices[0] = v0 ;
-    vertices[1] = v1 ;
-    vertices[2] = v2 ;
-    vertices[3] = v3 ;
+    id = builder.topology.create_mesh_entity< Surface >();
+    vertices[0] = v0;
+    vertices[1] = v1;
+    vertices[2] = v2;
+    vertices[3] = v3;
     builder.geometry.set_surface_geometry( id.index(), vertices, triangles,
-        surface_facet_ptr ) ;
+        surface_facet_ptr );
 
-    id = builder.topology.create_mesh_entity< Surface >() ;
-    vertices[0] = v1 ;
-    vertices[1] = v5 ;
-    vertices[2] = v6 ;
-    vertices[3] = v2 ;
+    id = builder.topology.create_mesh_entity< Surface >();
+    vertices[0] = v1;
+    vertices[1] = v5;
+    vertices[2] = v6;
+    vertices[3] = v2;
     builder.geometry.set_surface_geometry( id.index(), vertices, triangles,
-        surface_facet_ptr ) ;
+        surface_facet_ptr );
 
-    id = builder.topology.create_mesh_entity< Surface >() ;
-    vertices[0] = v4 ;
-    vertices[1] = v5 ;
-    vertices[2] = v6 ;
-    vertices[3] = v7 ;
+    id = builder.topology.create_mesh_entity< Surface >();
+    vertices[0] = v4;
+    vertices[1] = v5;
+    vertices[2] = v6;
+    vertices[3] = v7;
     builder.geometry.set_surface_geometry( id.index(), vertices, triangles,
-        surface_facet_ptr ) ;
+        surface_facet_ptr );
 
-    id = builder.topology.create_mesh_entity< Surface >() ;
-    vertices[0] = v0 ;
-    vertices[1] = v3 ;
-    vertices[2] = v7 ;
-    vertices[3] = v4 ;
+    id = builder.topology.create_mesh_entity< Surface >();
+    vertices[0] = v0;
+    vertices[1] = v3;
+    vertices[2] = v7;
+    vertices[3] = v4;
     builder.geometry.set_surface_geometry( id.index(), vertices, triangles,
-        surface_facet_ptr ) ;
+        surface_facet_ptr );
 
-    id = builder.topology.create_mesh_entity< Surface >() ;
-    vertices[0] = v3 ;
-    vertices[1] = v2 ;
-    vertices[2] = v6 ;
-    vertices[3] = v7 ;
+    id = builder.topology.create_mesh_entity< Surface >();
+    vertices[0] = v3;
+    vertices[1] = v2;
+    vertices[2] = v6;
+    vertices[3] = v7;
     builder.geometry.set_surface_geometry( id.index(), vertices, triangles,
-        surface_facet_ptr ) ;
+        surface_facet_ptr );
 
-    id = builder.topology.create_mesh_entity< Surface >() ;
-    vertices[0] = v0 ;
-    vertices[1] = v1 ;
-    vertices[2] = v5 ;
-    vertices[3] = v4 ;
+    id = builder.topology.create_mesh_entity< Surface >();
+    vertices[0] = v0;
+    vertices[1] = v1;
+    vertices[2] = v5;
+    vertices[3] = v4;
     builder.geometry.set_surface_geometry( id.index(), vertices, triangles,
-        surface_facet_ptr ) ;
+        surface_facet_ptr );
 }
 
 void check_vertex( const vec3& in, const vec3& result )
 {
     if( in != result ) {
-        throw RINGMeshException( "Test", "Verification failed" ) ;
+        throw RINGMeshException( "Test", "Verification failed" );
     }
 }
 
 void test_translate( GeoModel& geomodel )
 {
-    Logger::out( "TEST", "Test translation" ) ;
-    vec3 translation_vector( 1., 2.5, -3.5 ) ;
-    translate( geomodel, translation_vector ) ;
+    Logger::out( "TEST", "Test translation" );
+    vec3 translation_vector( 1., 2.5, -3.5 );
+    translate( geomodel, translation_vector );
 
-    const GeoModelMeshVertices& vertices = geomodel.mesh.vertices ;
-    check_vertex( vertices.vertex( 0 ), vec3( 1., 2.5, -3.5 ) ) ;
-    check_vertex( vertices.vertex( 1 ), vec3( 2., 2.5, -3.5 ) ) ;
-    check_vertex( vertices.vertex( 2 ), vec3( 2., 3.5, -3.5 ) ) ;
-    check_vertex( vertices.vertex( 3 ), vec3( 1., 3.5, -3.5 ) ) ;
-    check_vertex( vertices.vertex( 4 ), vec3( 2., 2.5, -2.5 ) ) ;
-    check_vertex( vertices.vertex( 5 ), vec3( 2., 3.5, -2.5 ) ) ;
-    check_vertex( vertices.vertex( 6 ), vec3( 1., 2.5, -2.5 ) ) ;
-    check_vertex( vertices.vertex( 7 ), vec3( 1., 3.5, -2.5 ) ) ;
+    const GeoModelMeshVertices& vertices = geomodel.mesh.vertices;
+    check_vertex( vertices.vertex( 0 ), vec3( 1., 2.5, -3.5 ) );
+    check_vertex( vertices.vertex( 1 ), vec3( 2., 2.5, -3.5 ) );
+    check_vertex( vertices.vertex( 2 ), vec3( 2., 3.5, -3.5 ) );
+    check_vertex( vertices.vertex( 3 ), vec3( 1., 3.5, -3.5 ) );
+    check_vertex( vertices.vertex( 4 ), vec3( 2., 2.5, -2.5 ) );
+    check_vertex( vertices.vertex( 5 ), vec3( 2., 3.5, -2.5 ) );
+    check_vertex( vertices.vertex( 6 ), vec3( 1., 2.5, -2.5 ) );
+    check_vertex( vertices.vertex( 7 ), vec3( 1., 3.5, -2.5 ) );
 }
 
 void test_rotation( GeoModel& geomodel )
 {
-    Logger::out( "TEST", "Test rotation" ) ;
-    vec3 origin( 1., 2.5, -3.5 ) ;
-    vec3 axis( 0, 0, 1 ) ;
-    rotate( geomodel, origin, axis, 90, true ) ;
+    Logger::out( "TEST", "Test rotation" );
+    vec3 origin( 1., 2.5, -3.5 );
+    vec3 axis( 0, 0, 1 );
+    rotate( geomodel, origin, axis, 90, true );
 
-    const GeoModelMeshVertices& vertices = geomodel.mesh.vertices ;
-    check_vertex( vertices.vertex( 0 ), vec3( 1., 2.5, -3.5 ) ) ;
-    check_vertex( vertices.vertex( 1 ), vec3( 1., 3.5, -3.5 ) ) ;
-    check_vertex( vertices.vertex( 2 ), vec3( 0., 3.5, -3.5 ) ) ;
-    check_vertex( vertices.vertex( 3 ), vec3( 0., 2.5, -3.5 ) ) ;
-    check_vertex( vertices.vertex( 4 ), vec3( 1., 3.5, -2.5 ) ) ;
-    check_vertex( vertices.vertex( 5 ), vec3( 0., 3.5, -2.5 ) ) ;
-    check_vertex( vertices.vertex( 6 ), vec3( 1., 2.5, -2.5 ) ) ;
-    check_vertex( vertices.vertex( 7 ), vec3( 0., 2.5, -2.5 ) ) ;
+    const GeoModelMeshVertices& vertices = geomodel.mesh.vertices;
+    check_vertex( vertices.vertex( 0 ), vec3( 1., 2.5, -3.5 ) );
+    check_vertex( vertices.vertex( 1 ), vec3( 1., 3.5, -3.5 ) );
+    check_vertex( vertices.vertex( 2 ), vec3( 0., 3.5, -3.5 ) );
+    check_vertex( vertices.vertex( 3 ), vec3( 0., 2.5, -3.5 ) );
+    check_vertex( vertices.vertex( 4 ), vec3( 1., 3.5, -2.5 ) );
+    check_vertex( vertices.vertex( 5 ), vec3( 0., 3.5, -2.5 ) );
+    check_vertex( vertices.vertex( 6 ), vec3( 1., 2.5, -2.5 ) );
+    check_vertex( vertices.vertex( 7 ), vec3( 0., 2.5, -2.5 ) );
 }
 
 void check_matrices(
@@ -170,9 +170,9 @@ void check_matrices(
 {
     for( index_t mat_i = 0; mat_i < 4; ++mat_i ) {
         for( index_t mat_j = 0; mat_j < 4; ++mat_j ) {
-            double diff = lhs( mat_i, mat_j ) - rhs( mat_i, mat_j ) ;
+            double diff = lhs( mat_i, mat_j ) - rhs( mat_i, mat_j );
             if( std::fabs( diff ) > global_epsilon ) {
-                throw RINGMeshException( "Test", "Error in rotation matrix" ) ;
+                throw RINGMeshException( "Test", "Error in rotation matrix" );
             }
         }
     }
@@ -180,114 +180,114 @@ void check_matrices(
 
 void test_rotation_matrix()
 {
-    const vec3 origin( 0, 0, 0 ) ;
-    const double pi = M_PI ;
-    const double step = 0.1 ;
+    const vec3 origin( 0, 0, 0 );
+    const double pi = M_PI;
+    const double step = 0.1;
 
-    GEO::Matrix< 4, double > rot_mat_degree ;
-    GEO::Matrix< 4, double > rot_mat_radian ;
-    GEO::Matrix< 4, double > result ;
-    result( 0, 3 ) = 0 ;
-    result( 1, 3 ) = 0 ;
-    result( 2, 3 ) = 0 ;
-    result( 3, 0 ) = 0 ;
-    result( 3, 1 ) = 0 ;
-    result( 3, 2 ) = 0 ;
-    result( 3, 3 ) = 1 ;
+    GEO::Matrix< 4, double > rot_mat_degree;
+    GEO::Matrix< 4, double > rot_mat_radian;
+    GEO::Matrix< 4, double > result;
+    result( 0, 3 ) = 0;
+    result( 1, 3 ) = 0;
+    result( 2, 3 ) = 0;
+    result( 3, 0 ) = 0;
+    result( 3, 1 ) = 0;
+    result( 3, 2 ) = 0;
+    result( 3, 3 ) = 1;
 
     // Tests rotation along x axis
-    vec3 axis( 1, 0, 0 ) ;
+    vec3 axis( 1, 0, 0 );
     for( double angle = 0.; angle <= 360.; angle += step ) {
         rotation_matrix_about_arbitrary_axis( origin, axis, angle, true,
-            rot_mat_degree ) ;
-        double angle_rad = angle * pi / 180. ;
+            rot_mat_degree );
+        double angle_rad = angle * pi / 180.;
         rotation_matrix_about_arbitrary_axis( origin, axis, angle_rad, false,
-            rot_mat_radian ) ;
-        result( 0, 0 ) = 1 ;
-        result( 0, 1 ) = 0 ;
-        result( 0, 2 ) = 0 ;
+            rot_mat_radian );
+        result( 0, 0 ) = 1;
+        result( 0, 1 ) = 0;
+        result( 0, 2 ) = 0;
 
-        result( 1, 0 ) = 0 ;
-        result( 1, 1 ) = std::cos( angle_rad ) ;
-        result( 1, 2 ) = -std::sin( angle_rad ) ;
+        result( 1, 0 ) = 0;
+        result( 1, 1 ) = std::cos( angle_rad );
+        result( 1, 2 ) = -std::sin( angle_rad );
 
-        result( 2, 0 ) = 0 ;
-        result( 2, 1 ) = std::sin( angle_rad ) ;
-        result( 2, 2 ) = std::cos( angle_rad ) ;
+        result( 2, 0 ) = 0;
+        result( 2, 1 ) = std::sin( angle_rad );
+        result( 2, 2 ) = std::cos( angle_rad );
 
-        check_matrices( rot_mat_degree, result ) ;
-        check_matrices( rot_mat_radian, result ) ;
+        check_matrices( rot_mat_degree, result );
+        check_matrices( rot_mat_radian, result );
     }
 
     // Tests rotation along y axis
-    axis = vec3( 0, 1, 0 ) ;
+    axis = vec3( 0, 1, 0 );
     for( double angle = 0.; angle <= 360.; angle += step ) {
         rotation_matrix_about_arbitrary_axis( origin, axis, angle, true,
-            rot_mat_degree ) ;
-        double angle_rad = angle * pi / 180. ;
+            rot_mat_degree );
+        double angle_rad = angle * pi / 180.;
         rotation_matrix_about_arbitrary_axis( origin, axis, angle_rad, false,
-            rot_mat_radian ) ;
-        result( 0, 0 ) = std::cos( angle_rad ) ;
-        result( 0, 1 ) = 0 ;
-        result( 0, 2 ) = std::sin( angle_rad ) ;
+            rot_mat_radian );
+        result( 0, 0 ) = std::cos( angle_rad );
+        result( 0, 1 ) = 0;
+        result( 0, 2 ) = std::sin( angle_rad );
 
-        result( 1, 0 ) = 0 ;
-        result( 1, 1 ) = 1 ;
-        result( 1, 2 ) = 0 ;
+        result( 1, 0 ) = 0;
+        result( 1, 1 ) = 1;
+        result( 1, 2 ) = 0;
 
-        result( 2, 0 ) = -std::sin( angle_rad ) ;
-        result( 2, 1 ) = 0 ;
-        result( 2, 2 ) = std::cos( angle_rad ) ;
+        result( 2, 0 ) = -std::sin( angle_rad );
+        result( 2, 1 ) = 0;
+        result( 2, 2 ) = std::cos( angle_rad );
 
-        check_matrices( rot_mat_degree, result ) ;
-        check_matrices( rot_mat_radian, result ) ;
+        check_matrices( rot_mat_degree, result );
+        check_matrices( rot_mat_radian, result );
     }
 
     // Tests rotation along z axis
-    axis = vec3( 0, 0, 1 ) ;
+    axis = vec3( 0, 0, 1 );
     for( double angle = 0.; angle <= 360.; angle += step ) {
         rotation_matrix_about_arbitrary_axis( origin, axis, angle, true,
-            rot_mat_degree ) ;
-        double angle_rad = angle * pi / 180. ;
+            rot_mat_degree );
+        double angle_rad = angle * pi / 180.;
         rotation_matrix_about_arbitrary_axis( origin, axis, angle_rad, false,
-            rot_mat_radian ) ;
-        result( 0, 0 ) = std::cos( angle_rad ) ;
-        result( 0, 1 ) = -std::sin( angle_rad ) ;
-        result( 0, 2 ) = 0 ;
+            rot_mat_radian );
+        result( 0, 0 ) = std::cos( angle_rad );
+        result( 0, 1 ) = -std::sin( angle_rad );
+        result( 0, 2 ) = 0;
 
-        result( 1, 0 ) = std::sin( angle_rad ) ;
-        result( 1, 1 ) = std::cos( angle_rad ) ;
-        result( 1, 2 ) = 0 ;
+        result( 1, 0 ) = std::sin( angle_rad );
+        result( 1, 1 ) = std::cos( angle_rad );
+        result( 1, 2 ) = 0;
 
-        result( 2, 0 ) = 0 ;
-        result( 2, 1 ) = 0 ;
-        result( 2, 2 ) = 1 ;
+        result( 2, 0 ) = 0;
+        result( 2, 1 ) = 0;
+        result( 2, 2 ) = 1;
 
-        check_matrices( rot_mat_degree, result ) ;
-        check_matrices( rot_mat_radian, result ) ;
+        check_matrices( rot_mat_degree, result );
+        check_matrices( rot_mat_radian, result );
     }
 }
 
 int main()
 {
-    using namespace RINGMesh ;
+    using namespace RINGMesh;
 
     try {
-        default_configure() ;
+        default_configure();
 
-        GeoModel geomodel ;
-        build_geomodel( geomodel ) ;
-        test_translate( geomodel ) ;
-        test_rotation_matrix() ;
-        test_rotation( geomodel ) ;
+        GeoModel geomodel;
+        build_geomodel( geomodel );
+        test_translate( geomodel );
+        test_rotation_matrix();
+        test_rotation( geomodel );
 
     } catch( const RINGMeshException& e ) {
-        Logger::err( e.category(), e.what() ) ;
-        return 1 ;
+        Logger::err( e.category(), e.what() );
+        return 1;
     } catch( const std::exception& e ) {
-        Logger::err( "Exception", e.what() ) ;
-        return 1 ;
+        Logger::err( "Exception", e.what() );
+        return 1;
     }
-    Logger::out( "TEST", "SUCCESS" ) ;
-    return 0 ;
+    Logger::out( "TEST", "SUCCESS" );
+    return 0;
 }

@@ -48,103 +48,103 @@
  */
 
 namespace {
-    using namespace RINGMesh ;
+    using namespace RINGMesh;
 
     void hello()
     {
-        print_header_information() ;
-        Logger::div( "RINGMesh-Translate" ) ;
-        Logger::out( "", "Welcome to RINGMesh-Translate !" ) ;
+        print_header_information();
+        Logger::div( "RINGMesh-Translate" );
+        Logger::out( "", "Welcome to RINGMesh-Translate !" );
     }
 
     void import_arg_group_translation()
     {
         GEO::CmdLine::declare_arg_group( "translation",
-            "Options to rotate a GeoModel" ) ;
+            "Options to rotate a GeoModel" );
         GEO::CmdLine::declare_arg( "translation:vector", "0 0 0",
-            "Translation vector to be written between quotation marks" ) ;
+            "Translation vector to be written between quotation marks" );
     }
 
     void import_arg_groups()
     {
-        CmdLine::import_arg_group( "in" ) ;
-        CmdLine::import_arg_group( "out" ) ;
-        import_arg_group_translation() ;
+        CmdLine::import_arg_group( "in" );
+        CmdLine::import_arg_group( "out" );
+        import_arg_group_translation();
     }
 
     vec3 extract_coords_from_string( const std::string& coords_in_string )
     {
-        std::vector< std::string > split_coords ;
-        split_coords.reserve( 3 ) ;
-        GEO::String::split_string( coords_in_string, ' ', split_coords, true ) ;
+        std::vector< std::string > split_coords;
+        split_coords.reserve( 3 );
+        GEO::String::split_string( coords_in_string, ' ', split_coords, true );
         if( split_coords.size() != 3 ) {
             throw RINGMeshException( "I/O",
-                "Vector (" + coords_in_string + ") has not exactly 3 components" ) ;
+                "Vector (" + coords_in_string + ") has not exactly 3 components" );
         }
-        vec3 coords_vec ;
+        vec3 coords_vec;
         for( index_t split_coords_itr = 0; split_coords_itr < 3;
             ++split_coords_itr ) {
             coords_vec[split_coords_itr] = GEO::String::to_double(
-                split_coords[split_coords_itr] ) ;
+                split_coords[split_coords_itr] );
         }
-        return coords_vec ;
+        return coords_vec;
     }
 
     void run()
     {
-        GEO::Stopwatch total( "Total time" ) ;
+        GEO::Stopwatch total( "Total time" );
 
-        std::string input_geomodel_name = GEO::CmdLine::get_arg( "in:geomodel" ) ;
+        std::string input_geomodel_name = GEO::CmdLine::get_arg( "in:geomodel" );
         if( input_geomodel_name.empty() ) {
             throw RINGMeshException( "I/O",
-                "Give at least a filename in in:geomodel" ) ;
+                "Give at least a filename in in:geomodel" );
         }
-        GeoModel geomodel ;
-        geomodel_load( geomodel, input_geomodel_name ) ;
+        GeoModel geomodel;
+        geomodel_load( geomodel, input_geomodel_name );
 
         std::string translation_vector_string = GEO::CmdLine::get_arg(
-            "translation:vector" ) ;
+            "translation:vector" );
         vec3 translation_vector = extract_coords_from_string(
-            translation_vector_string ) ;
+            translation_vector_string );
 
-        translate( geomodel, translation_vector ) ;
+        translate( geomodel, translation_vector );
 
-        std::string output_geomodel_name = GEO::CmdLine::get_arg( "out:geomodel" ) ;
+        std::string output_geomodel_name = GEO::CmdLine::get_arg( "out:geomodel" );
         if( output_geomodel_name.empty() ) {
             throw RINGMeshException( "I/O",
-                "Give at least a filename in out:geomodel" ) ;
+                "Give at least a filename in out:geomodel" );
         }
-        geomodel_save( geomodel, output_geomodel_name ) ;
+        geomodel_save( geomodel, output_geomodel_name );
     }
 }
 
 int main( int argc, char** argv )
 {
-    using namespace RINGMesh ;
+    using namespace RINGMesh;
 
     try {
 
-        default_configure() ;
-        hello() ;
-        import_arg_groups() ;
+        default_configure();
+        hello();
+        import_arg_groups();
 
         if( argc == 1 ) {
-            GEO::CmdLine::show_usage() ;
-            return 0 ;
+            GEO::CmdLine::show_usage();
+            return 0;
         }
 
-        std::vector< std::string > filenames ;
+        std::vector< std::string > filenames;
         if( !GEO::CmdLine::parse( argc, argv, filenames ) ) {
-            return 1 ;
+            return 1;
         }
-        run() ;
+        run();
 
     } catch( const RINGMeshException& e ) {
-        Logger::err( e.category(), e.what() ) ;
-        return 1 ;
+        Logger::err( e.category(), e.what() );
+        return 1;
     } catch( const std::exception& e ) {
-        Logger::err( "Exception", e.what() ) ;
-        return 1 ;
+        Logger::err( "Exception", e.what() );
+        return 1;
     }
-    return 0 ;
+    return 0;
 }

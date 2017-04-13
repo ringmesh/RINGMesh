@@ -53,56 +53,56 @@ namespace RINGMesh {
 
         bool initialized() const
         {
-            return initialized_ ;
+            return initialized_;
         }
 
         void clear()
         {
-            initialized_ = false ;
+            initialized_ = false;
         }
 
         double width() const
         {
-            return max_[0] - min_[0] ;
+            return max_[0] - min_[0];
         }
 
         double height() const
         {
-            return max_[1] - min_[1] ;
+            return max_[1] - min_[1];
         }
 
         double depth() const
         {
-            return max_[2] - min_[2] ;
+            return max_[2] - min_[2];
         }
 
         const vec3& min() const
         {
-            return min_ ;
+            return min_;
         }
 
         const vec3& max() const
         {
-            return max_ ;
+            return max_;
         }
 
         vec3 center() const
         {
-            return 0.5 * ( min() + max() ) ;
+            return 0.5 * ( min() + max() );
         }
 
         vec3 diagonal() const
         {
-            return max() - min() ;
+            return max() - min();
         }
 
-        void add_point( const vec3& p ) ;
+        void add_point( const vec3& p );
 
         void add_box( const Box3d& b )
         {
             if( b.initialized() ) {
-                add_point( b.min() ) ;
-                add_point( b.max() ) ;
+                add_point( b.min() );
+                add_point( b.max() );
             }
         }
 
@@ -110,44 +110,44 @@ namespace RINGMesh {
         {
             for( index_t c = 0; c < 3; ++c ) {
                 if( max()[c] < B.min()[c] ) {
-                    return false ;
+                    return false;
                 }
                 if( min()[c] > B.max()[c] ) {
-                    return false ;
+                    return false;
                 }
             }
-            return true ;
+            return true;
         }
 
         inline Box3d bbox_union( const Box3d& B ) const
         {
-            Box3d result = *this ;
-            result.add_box( B ) ;
-            return result ;
+            Box3d result = *this;
+            result.add_box( B );
+            return result;
         }
 
         bool contains( const vec3& b ) const
         {
             for( index_t c = 0; c < 3; ++c ) {
                 if( b[c] < min()[c] ) {
-                    return false ;
+                    return false;
                 }
                 if( b[c] > max()[c] ) {
-                    return false ;
+                    return false;
                 }
             }
-            return true ;
+            return true;
         }
 
-        double distance_to_center( const vec3& p ) const ;
+        double distance_to_center( const vec3& p ) const;
 
-        double signed_distance( const vec3& p ) const ;
+        double signed_distance( const vec3& p ) const;
 
     private:
-        bool initialized_ ;
-        vec3 min_ ;
-        vec3 max_ ;
+        bool initialized_;
+        vec3 min_;
+        vec3 max_;
 
-    } ;
+    };
 
 }
