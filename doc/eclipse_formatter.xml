@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <profiles version="1">
-<profile kind="CodeFormatterProfile" name="RINGMesh" version="1">
+<profile kind="CodeFormatterProfile" name="RINGMesh" version="2">
 <setting id="org.eclipse.cdt.core.formatter.insert_space_after_opening_paren_in_exception_specification" value="insert"/>
 <setting id="org.eclipse.cdt.core.formatter.insert_space_after_opening_paren_in_parenthesized_expression" value="insert"/>
 <setting id="org.eclipse.cdt.core.formatter.insert_space_before_closing_paren_in_for" value="insert"/>
@@ -23,7 +23,7 @@
 <setting id="org.eclipse.cdt.core.formatter.alignment_for_throws_clause_in_method_declaration" value="48"/>
 <setting id="org.eclipse.cdt.core.formatter.insert_space_before_comma_in_enum_declarations" value="do not insert"/>
 <setting id="org.eclipse.cdt.core.formatter.insert_space_after_binary_operator" value="insert"/>
-<setting id="org.eclipse.cdt.core.formatter.insert_space_before_semicolon" value="insert"/>
+<setting id="org.eclipse.cdt.core.formatter.insert_space_before_semicolon" value="do not insert"/>
 <setting id="org.eclipse.cdt.core.formatter.alignment_for_binary_expression" value="16"/>
 <setting id="org.eclipse.cdt.core.formatter.brace_position_for_method_declaration" value="next_line"/>
 <setting id="org.eclipse.cdt.core.formatter.insert_space_before_semicolon_in_for" value="do not insert"/>
@@ -72,7 +72,7 @@
 <setting id="org.eclipse.cdt.core.formatter.alignment_for_compact_if" value="16"/>
 <setting id="org.eclipse.cdt.core.formatter.insert_space_after_prefix_operator" value="do not insert"/>
 <setting id="org.eclipse.cdt.core.formatter.alignment_for_declarator_list" value="16"/>
-<setting id="org.eclipse.cdt.core.formatter.alignment_for_expressions_in_array_initializer" value="32"/>
+<setting id="org.eclipse.cdt.core.formatter.alignment_for_expressions_in_array_initializer" value="18"/>
 <setting id="org.eclipse.cdt.core.formatter.insert_space_before_closing_paren_in_method_declaration" value="insert"/>
 <setting id="org.eclipse.cdt.core.formatter.insert_space_after_opening_paren_in_while" value="insert"/>
 <setting id="org.eclipse.cdt.core.formatter.insert_space_between_empty_parens_in_exception_specification" value="do not insert"/>
