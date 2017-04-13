@@ -168,28 +168,26 @@ namespace RINGMesh {
          * @brief Get the GeoModelMeshEntity vertices from its index in the GeoModelMesh
          * @param[in] mesh_entity Unique id to a GeoModelMeshEntity
          * @param[in] geomodel_vertex_id Index of the query vertex in the geomodel
-         * @param[out] mesh_entity_vertex_ids Corresponding GeoModelMeshEntity vertices
+         * @return Corresponding GeoModelMeshEntity vertices
          */
-        void mesh_entity_vertex_id(
+        std::vector< index_t > mesh_entity_vertex_id(
             const gmme_id& mesh_entity,
-            index_t geomodel_vertex_id,
-            std::vector< index_t >& mesh_entity_vertex_ids ) const;
+            index_t geomodel_vertex_id ) const;
 
         /*!
          * @brief Get the vertices in GeoModelEntity corresponding to the given unique vertex
          * @param[in] v Vertex index in the geomodel
-         * @param[out] gme_vertices Result
+         * @return Corresponding GeoModelMeshEntity vertices
          */
-        void gme_vertices( index_t v, std::vector< GMEVertex >& gme_vertices ) const;
+        const std::vector< GMEVertex >& gme_vertices( index_t v ) const;
 
         /*!
          * @brief Get the vertex indices in the specified MeshEntity type
          * corresponding to the given unique vertex
          */
-        void gme_type_vertices(
+        std::vector< GMEVertex > gme_type_vertices(
             const MeshEntityType& entity_type,
-            index_t v,
-            std::vector< GMEVertex >& gme_vertices ) const;
+            index_t v ) const;
 
         /*!
          * @brief To use when building the geomodel by first adding its vertices
@@ -305,26 +303,24 @@ namespace RINGMesh {
              * of a specific type to a given geomodel vertex
              * @param[in] v Model vertex index
              * @param[in] mesh_entity_type Type of GeoModelMeshEntity
-             * @param[out] result corresponding vertices in GeoModelMeshEntities
+             * @return corresponding vertices in GeoModelMeshEntities
              * of a specific type
              */
-            void mesh_entity_vertex_indices(
+            std::vector< GMEVertex > mesh_entity_vertex_indices(
                 index_t v,
-                const MeshEntityType& mesh_entity_type,
-                std::vector< GMEVertex >& result ) const;
+                const MeshEntityType& mesh_entity_type ) const;
 
             /*!
              * @brief Returns all the corresponding vertices to a geomodel vertex
              * in a specific GeoModelMeshEntities
              * @param[in] v Model vertex index
              * @param[in] mesh_entity_id Unique id to a GeoModelMeshEntity
-             * @param[out] result corresponding vertices in the GeoModelMeshEntity
+             * @return corresponding vertices in the GeoModelMeshEntity
              * @returns All the corresponding vertices in their local indexing
              */
-            void mesh_entity_vertex_indices(
+            std::vector< index_t > mesh_entity_vertex_indices(
                 index_t v,
-                const gmme_id& mesh_entity_id,
-                std::vector< index_t >& result ) const;
+                const gmme_id& mesh_entity_id ) const;
 
             const GEO::Attribute< index_t >& vertex_map(
                 const gmme_id& mesh_entity_id ) const;

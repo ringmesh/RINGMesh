@@ -188,14 +188,13 @@ namespace {
         ringmesh_assert(
             std::count( vertices.begin(), vertices.end(), NO_ID ) == 0 );
         ringmesh_assert(
-            std::count( vertices_global.begin(), vertices_global.end(), NO_ID )
-                == 0 );
+            std::count( vertices_global.begin(), vertices_global.end(), NO_ID ) == 0 );
         // 0 is the default value of the geomodel_vertex_id
         // If we have only 0 either this is a degenerate facets, but most certainly
         // geomodel vertex ids are not good
         ringmesh_assert(
-            static_cast< index_t >( std::count( vertices_global.begin(),
-                vertices_global.end(), 0 ) ) != vertices_global.size() );
+            static_cast< index_t >( std::count( vertices_global.begin(), vertices_global.end(), 0 ) )
+            != vertices_global.size() );
 
         std::sort( vertices.begin(), vertices.end() );
         std::sort( vertices_global.begin(), vertices_global.end() );
@@ -301,9 +300,8 @@ namespace RINGMesh {
                 valid = false;
             }
 
-            std::vector< index_t > backward_vertices;
-            geomodel_vertices.mesh_entity_vertex_id( gmme(), geomodel_v,
-                backward_vertices );
+            std::vector< index_t > backward_vertices =
+                geomodel_vertices.mesh_entity_vertex_id( gmme(), geomodel_v );
             bool found_in_backward = false;
             for( index_t bv : backward_vertices ) {
                 if( bv == v ) {

@@ -218,7 +218,7 @@ namespace RINGMesh {
         }
     }
 
-    /**
+    /*!
      * @brief Sorts a container and suppresses all duplicated entities.
      * @param[in,out] container the container to sort
      * @param[in] cmp a comparator function
@@ -228,6 +228,18 @@ namespace RINGMesh {
     {
         std::sort( container.begin(), container.end(), cmp );
         container.erase( std::unique( container.begin(), container.end(), cmp ),
+            container.end() );
+    }
+
+    /*!
+     * @brief Sorts a container and suppresses all duplicated entities.
+     * @param[in,out] container the container to sort
+     */
+    template< typename CONTAINER >
+    inline void sort_unique( CONTAINER& container )
+    {
+        std::sort( container.begin(), container.end() );
+        container.erase( std::unique( container.begin(), container.end() ),
             container.end() );
     }
 }

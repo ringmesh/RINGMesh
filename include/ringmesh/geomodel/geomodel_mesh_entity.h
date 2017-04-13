@@ -381,11 +381,11 @@ namespace RINGMesh {
         virtual bool is_on_voi() const final;
 
         /*!
-         * @return 1, (one element here is one vertex)
+         * @return 0, no mesh_element are defined for corners.
          */
         virtual index_t nb_mesh_elements() const final
         {
-            return mesh0d_->nb_vertices();
+            return 0;
         }
         /*!
          * @return the number of vertices of the Corner
@@ -705,8 +705,7 @@ namespace RINGMesh {
             index_t vertex_index ) const final
         {
             ringmesh_assert( facet_index < nb_mesh_elements() );
-            ringmesh_assert(
-                vertex_index < nb_mesh_element_vertices( facet_index ) );
+            ringmesh_assert( vertex_index < nb_mesh_element_vertices( facet_index ) );
             return mesh2d_->facet_vertex( facet_index, vertex_index );
         }
 
@@ -718,8 +717,7 @@ namespace RINGMesh {
             index_t vertex_index ) const
         {
             ringmesh_assert( facet_index < nb_mesh_elements() );
-            ringmesh_assert(
-                vertex_index < nb_mesh_element_vertices( facet_index ) );
+            ringmesh_assert( vertex_index < nb_mesh_element_vertices( facet_index ) );
             return mesh2d_->next_facet_vertex( facet_index, vertex_index );
         }
 
@@ -731,8 +729,7 @@ namespace RINGMesh {
             index_t vertex_index ) const
         {
             ringmesh_assert( facet_index < nb_mesh_elements() );
-            ringmesh_assert(
-                vertex_index < nb_mesh_element_vertices( facet_index ) );
+            ringmesh_assert( vertex_index < nb_mesh_element_vertices( facet_index ) );
             return mesh2d_->prev_facet_vertex( facet_index, vertex_index );
         }
 
@@ -1057,8 +1054,7 @@ namespace RINGMesh {
         {
             if( is_meshed() ) {
                 ringmesh_assert( cell_index < nb_mesh_elements() );
-                ringmesh_assert(
-                    vertex_index < nb_mesh_element_vertices( cell_index ) );
+                ringmesh_assert( vertex_index < nb_mesh_element_vertices( cell_index ) );
                 return mesh3d_->cell_vertex( cell_index, vertex_index );
             }
             ringmesh_assert_not_reached;
@@ -1120,8 +1116,7 @@ namespace RINGMesh {
             if( is_meshed() ) {
                 ringmesh_assert( cell_index < nb_mesh_elements() );
                 ringmesh_assert( edge_index < nb_cell_edges( cell_index ) );
-                ringmesh_assert(
-                    vertex_index < nb_mesh_element_vertices( cell_index ) );
+                ringmesh_assert( vertex_index < nb_mesh_element_vertices( cell_index ) );
                 return mesh3d_->cell_edge_vertex( cell_index, edge_index,
                     vertex_index );
             }
@@ -1137,8 +1132,7 @@ namespace RINGMesh {
             if( is_meshed() ) {
                 ringmesh_assert( cell_index < nb_mesh_elements() );
                 ringmesh_assert( facet_index < nb_cell_facets( cell_index ) );
-                ringmesh_assert(
-                    vertex_index < nb_mesh_element_vertices( cell_index ) );
+                ringmesh_assert( vertex_index < nb_mesh_element_vertices( cell_index ) );
                 return mesh3d_->cell_facet_vertex( cell_index, facet_index,
                     vertex_index );
             }

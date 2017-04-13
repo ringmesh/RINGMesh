@@ -313,12 +313,12 @@ namespace {
                     index_t v1_model_id = geomodel_vertices.geomodel_vertex_id(
                         L.gmme(), 1 );
 
-                    std::vector< index_t > v0_surface_ids;
-                    geomodel_vertices.mesh_entity_vertex_id( S.gmme(), v0_model_id,
-                        v0_surface_ids );
-                    std::vector< index_t > v1_surface_ids;
-                    geomodel_vertices.mesh_entity_vertex_id( S.gmme(), v1_model_id,
-                        v1_surface_ids );
+                    std::vector< index_t > v0_surface_ids =
+                        geomodel_vertices.mesh_entity_vertex_id( S.gmme(),
+                            v0_model_id );
+                    std::vector< index_t > v1_surface_ids =
+                        geomodel_vertices.mesh_entity_vertex_id( S.gmme(),
+                            v1_model_id );
 
                     if( !S.has_inside_border() ) {
                         index_t v0 = v0_surface_ids[0];
@@ -361,10 +361,9 @@ namespace {
                     }
                     // Set a BSTONE at the line other extremity
                     const gmme_id& c1_id = L.boundary_gmme( 1 );
-                    std::vector< index_t > gme_vertices;
-                    geomodel_vertices.mesh_entity_vertex_id( S.gmme(),
-                        geomodel_vertices.geomodel_vertex_id( c1_id ),
-                        gme_vertices );
+                    std::vector< index_t > gme_vertices =
+                        geomodel_vertices.mesh_entity_vertex_id( S.gmme(),
+                            geomodel_vertices.geomodel_vertex_id( c1_id ) );
                     corners.insert( gme_vertices.front() + offset );
                 }
             }

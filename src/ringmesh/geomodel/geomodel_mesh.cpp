@@ -157,9 +157,8 @@ namespace RINGMesh {
         const gmme_id& mesh_entity_id,
         index_t mesh_entity_vertex_index ) const
     {
-        ringmesh_assert(
-            mesh_entity_vertex_index
-                < geomodel_.mesh_entity( mesh_entity_id ).nb_vertices() );
+        ringmesh_assert( mesh_entity_vertex_index <
+            geomodel_.mesh_entity( mesh_entity_id ).nb_vertices() );
 
         return vertex_map( mesh_entity_id )[mesh_entity_vertex_index];
     }
@@ -171,32 +170,32 @@ namespace RINGMesh {
         return gme_vertices_[v];
     }
 
-    void GeoModelMeshVertices::GeoModelVertexMapper::mesh_entity_vertex_indices(
+    std::vector< GMEVertex > GeoModelMeshVertices::GeoModelVertexMapper::mesh_entity_vertex_indices(
         index_t v,
-        const MeshEntityType& mesh_entity_type,
-        std::vector< GMEVertex >& result ) const
+        const MeshEntityType& mesh_entity_type ) const
     {
-        result.clear();
+        std::vector< GMEVertex > result;
         const std::vector< GMEVertex >& all_gmes = mesh_entity_vertex_indices( v );
         for( const GMEVertex& vertex : all_gmes ) {
             if( vertex.gmme.type() == mesh_entity_type ) {
                 result.push_back( vertex );
             }
         }
+        return result;
     }
 
-    void GeoModelMeshVertices::GeoModelVertexMapper::mesh_entity_vertex_indices(
+    std::vector< index_t > GeoModelMeshVertices::GeoModelVertexMapper::mesh_entity_vertex_indices(
         index_t v,
-        const gmme_id& mesh_entity_id,
-        std::vector< index_t >& result ) const
+        const gmme_id& mesh_entity_id ) const
     {
-        result.clear();
+        std::vector< index_t > result;
         std::vector< GMEVertex > all_gmes = mesh_entity_vertex_indices( v );
         for( const GMEVertex& vertex : all_gmes ) {
             if( vertex.gmme == mesh_entity_id ) {
                 result.push_back( vertex.v_index );
             }
         }
+        return result;
     }
 
     const GEO::Attribute< index_t >&
@@ -532,32 +531,29 @@ namespace RINGMesh {
         return geomodel_vertex_id( mesh_entity, entity_vertex_index );
     }
 
-    void GeoModelMeshVertices::mesh_entity_vertex_id(
+    std::vector< index_t > GeoModelMeshVertices::mesh_entity_vertex_id(
         const gmme_id& mesh_entity,
-        index_t geomodel_vertex_index,
-        std::vector< index_t >& mesh_entity_vertex_ids ) const
+        index_t geomodel_vertex_index ) const
     {
         test_and_initialize();
         ringmesh_assert( geomodel_vertex_index < nb() );
-        vertex_mapper_.mesh_entity_vertex_indices( geomodel_vertex_index,
-            mesh_entity, mesh_entity_vertex_ids );
+        return vertex_mapper_.mesh_entity_vertex_indices( geomodel_vertex_index,
+            mesh_entity );
     }
 
-    void GeoModelMeshVertices::gme_vertices(
-        index_t v,
-        std::vector< GMEVertex >& gme_vertices ) const
+    const std::vector< GMEVertex >& GeoModelMeshVertices::gme_vertices(
+        index_t v ) const
     {
         test_and_initialize();
-        gme_vertices = vertex_mapper_.mesh_entity_vertex_indices( v );
+        return vertex_mapper_.mesh_entity_vertex_indices( v );
     }
 
-    void GeoModelMeshVertices::gme_type_vertices(
+    std::vector< GMEVertex > GeoModelMeshVertices::gme_type_vertices(
         const MeshEntityType& entity_type,
-        index_t v,
-        std::vector< GMEVertex >& gme_vertices ) const
+        index_t v ) const
     {
         test_and_initialize();
-        vertex_mapper_.mesh_entity_vertex_indices( v, entity_type, gme_vertices );
+        return vertex_mapper_.mesh_entity_vertex_indices( v, entity_type );
     }
 
     index_t GeoModelMeshVertices::add_vertex( const vec3& point )
@@ -593,8 +589,7 @@ namespace RINGMesh {
 
         GeoModelBuilder builder( gm_ );
 
-        std::vector< GMEVertex > gme_v;
-        gme_vertices( v, gme_v );
+        const std::vector< GMEVertex >& gme_v = gme_vertices( v );
         for( const GMEVertex& info : gme_v ) {
             builder.geometry.set_mesh_entity_vertex( info.gmme, info.v_index, point,
                 false );
@@ -672,9 +667,7 @@ namespace RINGMesh {
 
         // Delete the vertices - false is to not remove
         // isolated vertices (here all the vertices)
-        std::unique_ptr< Mesh0DBuilder > builder = Mesh0DBuilder::create_builder(
-            *mesh_ );
-        builder->delete_vertices( to_delete_bool );
+        Mesh0DBuilder::create_builder( *mesh_ )->delete_vertices( to_delete_bool );
 
         vertex_mapper_.update_mesh_entity_maps_and_gmes( to_delete );
     }
@@ -976,10 +969,9 @@ namespace RINGMesh {
             case GEO::MESH_CONNECTOR:
                 return nb_connector( r );
             case GEO::MESH_NB_CELL_TYPES:
-                ringmesh_assert(
-                    region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * ( r + 1 )]
-                        - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r]
-                        == gm_.region( r ).nb_mesh_elements() );
+                ringmesh_assert( region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * ( r + 1 )]
+                    - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r]
+                    == gm_.region( r ).nb_mesh_elements() );
                 return region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * ( r + 1 )]
                     - region_cell_ptr_[GEO::MESH_NB_CELL_TYPES * r];
             default:
@@ -1242,7 +1234,7 @@ namespace RINGMesh {
                 } while( !S.empty() );
 
                 // Remove redundant occurrences and sort the remaining ones
-                GEO::sort_unique( surfaces );
+                sort_unique( surfaces );
 
                 // Determine if the corners should be duplicated or not because
                 // we need to duplicate only one side of the surface
@@ -1381,8 +1373,7 @@ namespace RINGMesh {
         index_t duplicate_vertex_index ) const
     {
         test_and_initialize_duplication();
-        ringmesh_assert(
-            duplicate_vertex_index < duplicated_vertex_indices_.size() );
+        ringmesh_assert( duplicate_vertex_index < duplicated_vertex_indices_.size() );
         return duplicated_vertex_indices_[duplicate_vertex_index];
     }
 
@@ -2040,9 +2031,8 @@ namespace RINGMesh {
             }
 
             for( index_t v = 0; v < vertices.nb(); v++ ) {
-                std::vector< GMEVertex > vertices_on_geomodel_region;
-                vertices.gme_type_vertices( Region::type_name_static(), v,
-                    vertices_on_geomodel_region );
+                std::vector< GMEVertex > vertices_on_geomodel_region =
+                    vertices.gme_type_vertices( Region::type_name_static(), v );
                 for( const GMEVertex& cur_vertex_on_geomodel : vertices_on_geomodel_region ) {
                     for( index_t att_e = 0; att_e < att_dim; att_e++ ) {
                         att_on_regions[cur_vertex_on_geomodel.gmme.index()][cur_vertex_on_geomodel.v_index

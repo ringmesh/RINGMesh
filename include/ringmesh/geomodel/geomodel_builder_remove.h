@@ -182,10 +182,8 @@ namespace RINGMesh {
                 store.end() );
 
             // QC
-            ringmesh_assert(
-                geomodel_.nb_mesh_entities( type_name )
-                    == nb_initial_mesh_entities_[type]
-                        - nb_removed_mesh_entities_[type] );
+            ringmesh_assert( geomodel_.nb_mesh_entities( type_name )
+                == nb_initial_mesh_entities_[type] - nb_removed_mesh_entities_[type] );
         }
 
         void clear_null_geological_entities( index_t type )
@@ -200,10 +198,8 @@ namespace RINGMesh {
                 store.end() );
 
             // QC
-            ringmesh_assert(
-                geomodel_.nb_geological_entities( type_name )
-                    == nb_initial_geological_entities_[type]
-                        - nb_removed_geological_entities_[type] );
+            ringmesh_assert( geomodel_.nb_geological_entities( type_name )
+                == nb_initial_geological_entities_[type] - nb_removed_geological_entities_[type] );
         }
         void update_mesh_entity_connectivity()
         {
