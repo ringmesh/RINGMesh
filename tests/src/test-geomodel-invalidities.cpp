@@ -71,7 +71,7 @@ int main()
     try {
         default_configure() ;
 
-        std::string input_model_file_name = ringmesh_test_data_path + "modelA6.ml" ;
+        std::string input_model_file_name = ringmesh_test_data_path + "save/modelA6.ml" ;
 
         GeoModel in ;
         bool loaded_model_is_valid = geomodel_load( in, input_model_file_name ) ;
