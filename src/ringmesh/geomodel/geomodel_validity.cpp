@@ -164,15 +164,15 @@ namespace {
      */
     bool is_edge_on_line( const GeoModel& geomodel, index_t v0, index_t v1 )
     {
-        std::vector< GMEVertex > v0_line_bme ;
-        geomodel.mesh.vertices.gme_type_vertices( Line::type_name_static(), v0,
-            v0_line_bme ) ;
+        std::vector< GMEVertex > v0_line_bme =
+            geomodel.mesh.vertices.gme_type_vertices( Line::type_name_static(),
+                v0 ) ;
         if( v0_line_bme.empty() ) {
             return false ;
         }
-        std::vector< GMEVertex > v1_line_bme ;
-        geomodel.mesh.vertices.gme_type_vertices( Line::type_name_static(), v1,
-            v1_line_bme ) ;
+        std::vector< GMEVertex > v1_line_bme =
+            geomodel.mesh.vertices.gme_type_vertices( Line::type_name_static(),
+                v1 ) ;
         if( v1_line_bme.empty() ) {
             return false ;
         }
@@ -403,8 +403,8 @@ namespace {
             std::vector< index_t > surfaces ;
             std::vector< index_t > regions ;
 
-            std::vector< GMEVertex > bmes ;
-            geomodel.mesh.vertices.gme_vertices( i, bmes ) ;
+            const std::vector< GMEVertex >& bmes =
+                geomodel.mesh.vertices.gme_vertices( i ) ;
 
             for( const GMEVertex& vertex : bmes ) {
                 const MeshEntityType& T = vertex.gmme.type() ;

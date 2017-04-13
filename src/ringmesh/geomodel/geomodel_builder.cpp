@@ -51,8 +51,8 @@ namespace {
     gmme_id find_corner( const GeoModel& geomodel, index_t geomodel_point_id )
     {
         const GeoModelMeshVertices& geomodel_vertices = geomodel.mesh.vertices ;
-        std::vector< GMEVertex > vertices ;
-        geomodel_vertices.gme_vertices( geomodel_point_id, vertices ) ;
+        const std::vector< GMEVertex >& vertices = geomodel_vertices.gme_vertices(
+            geomodel_point_id ) ;
         for( const GMEVertex& vertex : vertices ) {
             if( vertex.gmme.type() == Corner::type_name_static() ) {
                 return vertex.gmme ;
@@ -695,9 +695,9 @@ namespace RINGMesh {
 
             // Gets the next edge on border in the Surface
             index_t f = border_triangle.facet_ ;
-            std::vector< index_t > possible_v0_id ;
-            geomodel_vertices.mesh_entity_vertex_id( S.gmme(), border_triangle.v0_,
-                possible_v0_id ) ;
+            std::vector< index_t > possible_v0_id =
+                geomodel_vertices.mesh_entity_vertex_id( S.gmme(),
+                    border_triangle.v0_ ) ;
             ringmesh_assert( !possible_v0_id.empty() ) ;
             index_t v0_id = NO_ID ;
             for( index_t id : possible_v0_id ) {
