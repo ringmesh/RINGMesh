@@ -61,15 +61,15 @@ namespace RINGMesh {
         }
         bool operator==( const GMEVertex& rhs ) const
         {
-            return gmme == rhs.gmme && v_index == rhs.v_index ;
+            return gmme == rhs.gmme && v_index == rhs.v_index;
         }
         bool is_defined() const
         {
-            return gmme.is_defined() && v_index != NO_ID ;
+            return gmme.is_defined() && v_index != NO_ID;
         }
         /// GeoModelEntity index in the GeoModel that owns it
-        gmme_id gmme ;
+        gmme_id gmme;
         /// Index of the vertex in the GeoModelEntity
-        index_t v_index ;
-    } ;
+        index_t v_index;
+    };
 }

@@ -45,23 +45,23 @@
  */
 
 namespace GEO {
-    class Mesh ;
+    class Mesh;
 }
 
 namespace RINGMesh {
 
-    bool RINGMESH_API operator==( const vec3& u, const vec3& v ) ;
-    bool RINGMESH_API operator!=( const vec3& u, const vec3& v ) ;
+    bool RINGMESH_API operator==( const vec3& u, const vec3& v );
+    bool RINGMESH_API operator!=( const vec3& u, const vec3& v );
 
     /* @warning Duplicate from Geogram/basic/numeric.h */
     enum Sign {
         NEGATIVE = -1, ZERO = 0, POSITIVE = 1
-    } ;
+    };
     /* @warning Duplicate from Geogram/basic/numeric.h */
     template< typename T >
     inline Sign sign( T x )
     {
-        return ( x > 0 ) ? POSITIVE : ( ( x < 0 ) ? NEGATIVE : ZERO ) ;
+        return ( x > 0 ) ? POSITIVE : ( ( x < 0 ) ? NEGATIVE : ZERO );
     }
 
     /*!
@@ -71,7 +71,7 @@ namespace RINGMesh {
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
-        vec3& nearest_p ) ;
+        vec3& nearest_p );
 
     /*!
      * Computes the smallest distance between a point and a triangle
@@ -93,7 +93,7 @@ namespace RINGMesh {
         vec3& closest_point,
         double& lambda0,
         double& lambda1,
-        double& lambda2 ) ;
+        double& lambda2 );
 
     /*!
      * Computes the smallest distance between a point and a quad
@@ -111,7 +111,7 @@ namespace RINGMesh {
         const vec3& p1,
         const vec3& p2,
         const vec3& p3,
-        vec3& nearest_p ) ;
+        vec3& nearest_p );
 
     /*!
      * Computes the distance between a point and a tetrahedron
@@ -129,7 +129,7 @@ namespace RINGMesh {
         const vec3& p1,
         const vec3& p2,
         const vec3& p3,
-        vec3& nearest_p ) ;
+        vec3& nearest_p );
 
     /*!
      * Computes the distance between a point and a pyramid
@@ -149,7 +149,7 @@ namespace RINGMesh {
         const vec3& p2,
         const vec3& p3,
         const vec3& p4,
-        vec3& nearest_p ) ;
+        vec3& nearest_p );
 
     /*!
      * Computes the distance between a point and a prism
@@ -171,7 +171,7 @@ namespace RINGMesh {
         const vec3& p3,
         const vec3& p4,
         const vec3& p5,
-        vec3& nearest_p ) ;
+        vec3& nearest_p );
 
     /*!
      * Computes the distance between a point and a hexahedron
@@ -197,7 +197,7 @@ namespace RINGMesh {
         const vec3& p5,
         const vec3& p6,
         const vec3& p7,
-        vec3& nearest_p ) ;
+        vec3& nearest_p );
 
     /*!
      * Computes the intersection between a plane and a line
@@ -213,7 +213,7 @@ namespace RINGMesh {
         const vec3& D_line,
         const vec3& O_plane,
         const vec3& N_plane,
-        vec3& result ) ;
+        vec3& result );
 
     /*!
      * Computes the intersection between a plane and a segment
@@ -229,7 +229,7 @@ namespace RINGMesh {
         const vec3& seg1,
         const vec3& O_plane,
         const vec3& N_plane,
-        vec3& result ) ;
+        vec3& result );
 
     /*!
      * Computes the intersection of a segment and a triangle
@@ -247,7 +247,7 @@ namespace RINGMesh {
         const vec3& trgl0,
         const vec3& trgl1,
         const vec3& trgl2,
-        vec3& result ) ;
+        vec3& result );
 
     /*!
      * Computes the intersection(s) between a circle and a plane
@@ -265,7 +265,7 @@ namespace RINGMesh {
         const vec3& O_circle,
         const vec3& N_circle,
         double r,
-        std::vector< vec3 >& result ) ;
+        std::vector< vec3 >& result );
 
     /*!
      * Computes the intersection between a disk and a segment
@@ -283,7 +283,7 @@ namespace RINGMesh {
         const vec3& O_circle,
         const vec3& N_circle,
         double r,
-        vec3& result ) ;
+        vec3& result );
 
     /*!
      * Computes the intersection(s) between a circle and a triangle
@@ -303,7 +303,7 @@ namespace RINGMesh {
         const vec3& O_circle,
         const vec3& N_circle,
         double r,
-        std::vector< vec3 >& result ) ;
+        std::vector< vec3 >& result );
 
     /*!
      * Computes the intersection between two planes
@@ -321,7 +321,7 @@ namespace RINGMesh {
         const vec3& O_P1,
         const vec3& N_P1,
         vec3& O_inter,
-        vec3& N_inter ) ;
+        vec3& N_inter );
 
     /*!
      * Tests if a point is inside a triangle, more precisely if it is inside
@@ -338,7 +338,7 @@ namespace RINGMesh {
         const vec3& p0,
         const vec3& p1,
         const vec3& p2,
-        bool exact_predicates = false ) ;
+        bool exact_predicates = false );
 
     /*!
      * Tests if a point is inside a tetrahedron
@@ -356,7 +356,7 @@ namespace RINGMesh {
         const vec3& p1,
         const vec3& p2,
         const vec3& p3,
-        bool exact_predicates = false ) ;
+        bool exact_predicates = false );
 
     /*!
      * Computes the orthogonal projection of a point on a segment
@@ -370,7 +370,7 @@ namespace RINGMesh {
         const vec3& p,
         const vec3& p0,
         const vec3& p1,
-        vec3& new_p ) ;
+        vec3& new_p );
 
     /*!
      * Computes the orthogonal projection of a point on a plane
@@ -383,7 +383,7 @@ namespace RINGMesh {
         const vec3& p,
         const vec3& N_plane,
         const vec3& O_plane,
-        vec3& projected_p ) ;
+        vec3& projected_p );
 
     /*!
      * Computes barycentric coordinates of \p p
@@ -401,7 +401,7 @@ namespace RINGMesh {
         const vec3& p1,
         const vec3& p2,
         const vec3& p3,
-        double lambda[4] ) ;
+        double lambda[4] );
 
     /*!
      * Computes barycentric coordinates of \p p
@@ -417,7 +417,7 @@ namespace RINGMesh {
         const vec3& p0,
         const vec3& p1,
         const vec3& p2,
-        double lambda[3] ) ;
+        double lambda[3] );
 
     /*!
      * @brief Builds a rotational matrix about an arbitrary axis.
@@ -444,21 +444,21 @@ namespace RINGMesh {
         const vec3& axis,
         double theta,
         bool degrees,
-        GEO::Matrix< 4, double >& rot_mat ) ;
+        GEO::Matrix< 4, double >& rot_mat );
 
     class RINGMESH_API NNSearch {
-    ringmesh_disable_copy( NNSearch ) ;
+    ringmesh_disable_copy( NNSearch );
     public:
         enum MeshLocation {
             VERTICES, EDGES, FACETS, CELLS, CELL_FACETS, NB_LOCATION
-        } ;
+        };
         NNSearch( const GEO::Mesh& mesh, const MeshLocation& location, bool copy =
-            false ) ;
-        NNSearch( const std::vector< vec3 >& vertices, bool copy = true ) ;
+            false );
+        NNSearch( const std::vector< vec3 >& vertices, bool copy = true );
 
         ~NNSearch()
         {
-            if( delete_points_ ) delete[] nn_points_ ;
+            if( delete_points_ ) delete[] nn_points_;
         }
 
         /*!
@@ -472,7 +472,7 @@ namespace RINGMesh {
          */
         index_t get_colocated_index_mapping(
             double epsilon,
-            std::vector< index_t >& index_map ) const ;
+            std::vector< index_t >& index_map ) const;
         /*!
          * @brief Gets the \p index_map that link all the points
          * to a no duplicated list of index in the list of \p unique_points.
@@ -486,7 +486,7 @@ namespace RINGMesh {
         index_t get_colocated_index_mapping(
             double epsilon,
             std::vector< index_t >& index_map,
-            std::vector< vec3 >& unique_points ) const ;
+            std::vector< vec3 >& unique_points ) const;
         /*!
          * Gets the closest neighbor point
          * @param[in] v the point to test
@@ -494,9 +494,9 @@ namespace RINGMesh {
          */
         index_t get_closest_neighbor( const vec3& v ) const
         {
-            index_t nb_neighbors = 1 ;
-            index_t result = get_neighbors( v, nb_neighbors ).front() ;
-            return result ;
+            index_t nb_neighbors = 1;
+            index_t result = get_neighbors( v, nb_neighbors ).front();
+            return result;
         }
 
         /*!
@@ -507,7 +507,7 @@ namespace RINGMesh {
          */
         std::vector< index_t > get_neighbors(
             const vec3& v,
-            double threshold_distance ) const ;
+            double threshold_distance ) const;
 
         /*!
          * Gets the neighboring points of a given one sorted by increasing distance
@@ -518,38 +518,38 @@ namespace RINGMesh {
          */
         std::vector< index_t > get_neighbors(
             const vec3& v,
-            index_t nb_neighbors ) const ;
+            index_t nb_neighbors ) const;
 
         vec3 point( index_t v ) const
         {
             return vec3( nn_points_[3 * v], nn_points_[3 * v + 1],
-                nn_points_[3 * v + 2] ) ;
+                nn_points_[3 * v + 2] );
         }
 
         index_t nb_points() const
         {
-            return nn_tree_->nb_points() ;
+            return nn_tree_->nb_points();
         }
 
     private:
-        void build_nn_search_vertices( const GEO::Mesh& mesh, bool copy ) ;
-        void build_nn_search_edges( const GEO::Mesh& mesh ) ;
-        void build_nn_search_facets( const GEO::Mesh& mesh ) ;
-        void build_nn_search_cells( const GEO::Mesh& mesh ) ;
-        void build_nn_search_cell_facets( const GEO::Mesh& mesh ) ;
-        void fill_nn_search_points( index_t index_in_nn, const vec3& center ) ;
+        void build_nn_search_vertices( const GEO::Mesh& mesh, bool copy );
+        void build_nn_search_edges( const GEO::Mesh& mesh );
+        void build_nn_search_facets( const GEO::Mesh& mesh );
+        void build_nn_search_cells( const GEO::Mesh& mesh );
+        void build_nn_search_cell_facets( const GEO::Mesh& mesh );
+        void fill_nn_search_points( index_t index_in_nn, const vec3& center );
 
     private:
         /// KdTree to compute the nearest neighbor search
-        GEO::NearestNeighborSearch_var nn_tree_ ;
+        GEO::NearestNeighborSearch_var nn_tree_;
         /// Array of the points (size of 3xnumber of points)
-        double* nn_points_ ;
+        double* nn_points_;
         /*!
          * @brief Indicates if ann_points_ should ne deleted.
          * @details No need to delete nn_points_ if it is a simple pointer
          * to the mesh vertex array.
          */
-        bool delete_points_ ;
-    } ;
+        bool delete_points_;
+    };
 
 }

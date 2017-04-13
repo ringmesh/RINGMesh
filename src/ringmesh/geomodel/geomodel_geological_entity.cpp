@@ -44,16 +44,16 @@
 #include <ringmesh/geomodel/geomodel_mesh_entity.h>
 
 namespace {
-    using namespace RINGMesh ;
+    using namespace RINGMesh;
 
     bool check_has_children( const GeoModelGeologicalEntity& E )
     {
         if( E.nb_children() == 0 ) {
             Logger::warn( "GeoModel", E.type_name(), " ", E.index(),
-                " has no children" ) ;
-            return false ;
+                " has no children" );
+            return false;
         }
-        return true ;
+        return true;
     }
 }
 
@@ -61,90 +61,90 @@ namespace RINGMesh {
 
     const GeoModelMeshEntity& GeoModelGeologicalEntity::child( index_t x ) const
     {
-        return geomodel().mesh_entity( child_gmme( x ) ) ;
+        return geomodel().mesh_entity( child_gmme( x ) );
     }
 
     bool GeoModelGeologicalEntity::is_on_voi() const
     {
         for( index_t i = 0; i < nb_children(); i++ ) {
-            if( !child( i ).is_on_voi() ) return false ;
+            if( !child( i ).is_on_voi() ) return false;
         }
-        return true ;
+        return true;
     }
 
     bool GeoModelGeologicalEntity::is_index_valid() const
     {
-        return index() < geomodel().nb_geological_entities( type_name() ) ;
+        return index() < geomodel().nb_geological_entities( type_name() );
     }
 
     bool GeoModelGeologicalEntity::is_connectivity_valid() const
     {
-        bool valid = true ;
+        bool valid = true;
         if( nb_children() == 0 ) {
-            Logger::warn( "GeologicalEntity", gmge(), " is undefined. No child. " ) ;
-            valid = false ;
+            Logger::warn( "GeologicalEntity", gmge(), " is undefined. No child. " );
+            valid = false;
         } else {
             // All children must have this entity as a parent
-            const GeologicalEntityType entity_type = type_name() ;
+            const GeologicalEntityType entity_type = type_name();
             for( index_t i = 0; i < nb_children(); ++i ) {
-                const GeoModelMeshEntity& one_child = child( i ) ;
+                const GeoModelMeshEntity& one_child = child( i );
                 if( one_child.parent_gmge( entity_type ) != gmge() ) {
                     Logger::warn( "GeoModelEntity",
                         "Inconsistency child-parent between ", gmge(), " and ",
-                        one_child.gmme() ) ;
-                    valid = false ;
+                        one_child.gmme() );
+                    valid = false;
                 }
             }
         }
-        return valid ;
+        return valid;
     }
 
     bool GeoModelGeologicalEntity::is_identification_valid() const
     {
-        bool is_valid = true ;
+        bool is_valid = true;
         if( !gmge().is_defined() ) {
             Logger::err( "GeoModelGeologicalEntity",
                 " Entity associated to geomodel ", geomodel().name(),
-                "has no type and/or no index " ) ;
-            is_valid = false ;
+                "has no type and/or no index " );
+            is_valid = false;
             // No further checks are possible - This really should not happen
-            ringmesh_assert_not_reached ;
+            ringmesh_assert_not_reached;
         }
         if( !is_index_valid() ) {
             Logger::warn( "GeoModelGeologicalEntity", " Entity index ", gmge(),
-                " is not valid. " ) ;
+                " is not valid. " );
             // This really should not happen
-            is_valid = false ;
-            ringmesh_assert_not_reached ;
+            is_valid = false;
+            ringmesh_assert_not_reached;
         }
-        return is_valid ;
+        return is_valid;
     }
 
     bool GeoModelGeologicalEntity::is_valid() const
     {
-        return check_has_children( *this ) ;
+        return check_has_children( *this );
     }
 
     void GeoModelGeologicalEntity::initialize()
     {
-        ringmesh_register_GeoModelGeologicalEntity_creator( Contact ) ;
-        ringmesh_register_GeoModelGeologicalEntity_creator( Interface ) ;
-        ringmesh_register_GeoModelGeologicalEntity_creator( Layer ) ;
+        ringmesh_register_GeoModelGeologicalEntity_creator( Contact );
+        ringmesh_register_GeoModelGeologicalEntity_creator( Interface );
+        ringmesh_register_GeoModelGeologicalEntity_creator( Layer );
     }
 
     const MeshEntityType Contact::child_type_name() const
     {
-        return Line::type_name_static() ;
+        return Line::type_name_static();
     }
 
     const MeshEntityType Interface::child_type_name() const
     {
-        return Surface::type_name_static() ;
+        return Surface::type_name_static();
     }
 
     const MeshEntityType Layer::child_type_name() const
     {
-        return Region::type_name_static() ;
+        return Region::type_name_static();
     }
 
     std::unique_ptr< GeoModelGeologicalEntity > GeoModelGeologicalEntityAccess::create_geological_entity(
@@ -153,9 +153,9 @@ namespace RINGMesh {
         index_t index_in_geomodel )
     {
         GeoModelGeologicalEntity* GMGE =
-            GeoModelGeologicalEntityFactory::create_object( type, geomodel ) ;
-        GMGE->id_ = index_in_geomodel ;
-        return std::unique_ptr< GeoModelGeologicalEntity >( GMGE ) ;
+            GeoModelGeologicalEntityFactory::create_object( type, geomodel );
+        GMGE->id_ = index_in_geomodel;
+        return std::unique_ptr< GeoModelGeologicalEntity >( GMGE );
     }
 
 }

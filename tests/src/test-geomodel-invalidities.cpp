@@ -47,70 +47,72 @@
  * @author Pierre Anquez
  */
 
-using namespace RINGMesh ;
+using namespace RINGMesh;
 
-void make_geomodel_copy( const GeoModel& from, const std::string& name, GeoModel& to )
+void make_geomodel_copy(
+    const GeoModel& from,
+    const std::string& name,
+    GeoModel& to )
 {
-    GeoModelBuilder geomodel_breaker2( to ) ;
-    geomodel_breaker2.copy.copy_geomodel( from ) ;
-    geomodel_breaker2.info.set_geomodel_name( name ) ;
+    GeoModelBuilder geomodel_breaker2( to );
+    geomodel_breaker2.copy.copy_geomodel( from );
+    geomodel_breaker2.info.set_geomodel_name( name );
 }
 
 void verdict( const GeoModel& invalid_model, const std::string& feature )
 {
     if( is_geomodel_valid( invalid_model ) ) {
-        throw RINGMeshException( "RINGMesh Test",
-            "Fail to " + feature ) ;
+        throw RINGMeshException( "RINGMesh Test", "Fail to " + feature );
     } else {
-        Logger::out( "TEST", "Succeed to ", feature ) ;
+        Logger::out( "TEST", "Succeed to ", feature );
     }
 }
 
 int main()
 {
     try {
-        default_configure() ;
+        default_configure();
 
-        std::string input_model_file_name = ringmesh_test_data_path + "modelA6.ml" ;
+        std::string input_model_file_name = ringmesh_test_data_path + "modelA6.ml";
 
-        GeoModel in ;
-        bool loaded_model_is_valid = geomodel_load( in, input_model_file_name ) ;
+        GeoModel in;
+        bool loaded_model_is_valid = geomodel_load( in, input_model_file_name );
 
         if( !loaded_model_is_valid ) {
             throw RINGMeshException( "RINGMesh Test",
                 "Failed when loading model " + in.name()
-                    + ": the loaded model is not valid." ) ;
+                    + ": the loaded model is not valid." );
         }
 
-        Logger::out( "TEST", "Break geomodels:" ) ;
+        Logger::out( "TEST", "Break geomodels:" );
 
         {
-            GeoModel invalid_model ;
-            make_geomodel_copy( in, "broken model 1", invalid_model ) ;
-            GeoModelBuilder geomodel_breaker( invalid_model ) ;
+            GeoModel invalid_model;
+            make_geomodel_copy( in, "broken model 1", invalid_model );
+            GeoModelBuilder geomodel_breaker( invalid_model );
             geomodel_breaker.topology.add_mesh_entity_boundary(
-                invalid_model.surface( 0 ).gmme(), 4 ) ;
-            verdict( invalid_model, "detect artificial added surface boundary" ) ;
+                invalid_model.surface( 0 ).gmme(), 4 );
+            verdict( invalid_model, "detect artificial added surface boundary" );
         }
 
         {
-            GeoModel invalid_model ;
-            make_geomodel_copy( in, "broken model 2", invalid_model ) ;
-            GeoModelBuilder geomodel_breaker( invalid_model ) ;
+            GeoModel invalid_model;
+            make_geomodel_copy( in, "broken model 2", invalid_model );
+            GeoModelBuilder geomodel_breaker( invalid_model );
             geomodel_breaker.geology.add_mesh_entity_parent(
                 invalid_model.surface( 0 ).gmme(),
-                gmge_id( Interface::type_name_static(), 0 ) ) ;
-            verdict( invalid_model, "detect addition of incoherent parent" ) ;
+                gmge_id( Interface::type_name_static(), 0 ) );
+            verdict( invalid_model, "detect addition of incoherent parent" );
         }
 
     } catch( const RINGMeshException& e ) {
-        Logger::err( e.category(), e.what() ) ;
-        return 1 ;
+        Logger::err( e.category(), e.what() );
+        return 1;
     } catch( const std::exception& e ) {
-        Logger::err( "Exception", e.what() ) ;
-        return 1 ;
+        Logger::err( "Exception", e.what() );
+        return 1;
     }
-    Logger::out( "TEST", "SUCCESS" ) ;
-    return 0 ;
+    Logger::out( "TEST", "SUCCESS" );
+    return 0;
 
 }
