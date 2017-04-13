@@ -55,7 +55,7 @@
  */
 
 namespace {
-    using namespace RINGMesh ;
+    using namespace RINGMesh;
 
 #include "full_geomodel/io_abaqus.cpp"
 #include "full_geomodel/io_adeli.cpp"
@@ -75,22 +75,22 @@ namespace RINGMesh {
     bool geomodel_load( GeoModel& geomodel, const std::string& filename )
     {
         if( !GEO::FileSystem::is_file( filename ) ) {
-            throw RINGMeshException( "I/O", "File does not exist: " + filename ) ;
+            throw RINGMeshException( "I/O", "File does not exist: " + filename );
         }
-        Logger::out( "I/O", "Loading file ", filename, "..." ) ;
+        Logger::out( "I/O", "Loading file ", filename, "..." );
 
         std::unique_ptr< GeoModelIOHandler > handler(
-            GeoModelIOHandler::get_handler( filename ) ) ;
-        return handler->load( filename, geomodel ) ;
+            GeoModelIOHandler::get_handler( filename ) );
+        return handler->load( filename, geomodel );
     }
 
     void geomodel_save( const GeoModel& geomodel, const std::string& filename )
     {
-        Logger::out( "I/O", "Saving file ", filename, "..." ) ;
+        Logger::out( "I/O", "Saving file ", filename, "..." );
 
         std::unique_ptr< GeoModelIOHandler > handler(
-            GeoModelIOHandler::get_handler( filename ) ) ;
-        handler->save( geomodel, filename ) ;
+            GeoModelIOHandler::get_handler( filename ) );
+        handler->save( geomodel, filename );
     }
 
     /************************************************************************/
@@ -100,17 +100,17 @@ namespace RINGMesh {
      */
     void GeoModelIOHandler::initialize_full_geomodel_output()
     {
-        ringmesh_register_GeoModelIOHandler_creator( TetGenIOHandler, "tetgen" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( TSolidIOHandler, "so" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( CSMPIOHandler, "csmp" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( AsterIOHandler, "mail" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( VTKIOHandler, "vtk" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( GPRSIOHandler, "gprs" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( MSHIOHandler, "msh" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( MFEMIOHandler, "mfem" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( GeoModelHandlerGM, "gm" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( AbaqusIOHandler, "inp" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( AdeliIOHandler, "adeli" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( TetGenIOHandler, "tetgen" );
+        ringmesh_register_GeoModelIOHandler_creator( TSolidIOHandler, "so" );
+        ringmesh_register_GeoModelIOHandler_creator( CSMPIOHandler, "csmp" );
+        ringmesh_register_GeoModelIOHandler_creator( AsterIOHandler, "mail" );
+        ringmesh_register_GeoModelIOHandler_creator( VTKIOHandler, "vtk" );
+        ringmesh_register_GeoModelIOHandler_creator( GPRSIOHandler, "gprs" );
+        ringmesh_register_GeoModelIOHandler_creator( MSHIOHandler, "msh" );
+        ringmesh_register_GeoModelIOHandler_creator( MFEMIOHandler, "mfem" );
+        ringmesh_register_GeoModelIOHandler_creator( GeoModelHandlerGM, "gm" );
+        ringmesh_register_GeoModelIOHandler_creator( AbaqusIOHandler, "inp" );
+        ringmesh_register_GeoModelIOHandler_creator( AdeliIOHandler, "adeli" );
     }
 
 }

@@ -44,13 +44,13 @@ namespace RINGMesh {
     // Not the smartest but hopefully compiles in C++98
     static const MeshEntityType hard_encoded_mesh_entity_types_array[4] = {
         Corner::type_name_static(), Line::type_name_static(),
-        Surface::type_name_static(), Region::type_name_static() } ;
+        Surface::type_name_static(), Region::type_name_static() };
     static const std::vector< MeshEntityType > hard_encoded_mesh_entity_types(
         &hard_encoded_mesh_entity_types_array[0],
-        &hard_encoded_mesh_entity_types_array[4] ) ;
+        &hard_encoded_mesh_entity_types_array[4] );
 
-    MeshEntityTypeBoundaryMap MeshEntityTypeManager::boundary_relationships_ ;
-    MeshEntityTypeInBoundaryMap MeshEntityTypeManager::in_boundary_relationships_ ;
+    MeshEntityTypeBoundaryMap MeshEntityTypeManager::boundary_relationships_;
+    MeshEntityTypeInBoundaryMap MeshEntityTypeManager::in_boundary_relationships_;
     MeshEntityTypeManager::MeshEntityTypeManager()
     {
     }
@@ -58,124 +58,122 @@ namespace RINGMesh {
     MeshEntityTypeBoundaryMap::MeshEntityTypeBoundaryMap()
     {
         register_boundary( Corner::type_name_static(),
-            ForbiddenMeshEntityType::type_name_static() ) ;
-        register_boundary( Line::type_name_static(), Corner::type_name_static() ) ;
-        register_boundary( Surface::type_name_static(), Line::type_name_static() ) ;
-        register_boundary( Region::type_name_static(),
-            Surface::type_name_static() ) ;
+            ForbiddenMeshEntityType::type_name_static() );
+        register_boundary( Line::type_name_static(), Corner::type_name_static() );
+        register_boundary( Surface::type_name_static(), Line::type_name_static() );
+        register_boundary( Region::type_name_static(), Surface::type_name_static() );
     }
 
     MeshEntityTypeInBoundaryMap::MeshEntityTypeInBoundaryMap()
     {
-        register_in_boundary( Corner::type_name_static(),
-            Line::type_name_static() ) ;
+        register_in_boundary( Corner::type_name_static(), Line::type_name_static() );
         register_in_boundary( Line::type_name_static(),
-            Surface::type_name_static() ) ;
+            Surface::type_name_static() );
         register_in_boundary( Surface::type_name_static(),
-            Region::type_name_static() ) ;
+            Region::type_name_static() );
         register_in_boundary( Region::type_name_static(),
-            ForbiddenMeshEntityType::type_name_static() ) ;
+            ForbiddenMeshEntityType::type_name_static() );
     }
 
     bool MeshEntityTypeManager::is_corner( const MeshEntityType& type )
     {
-        return type == hard_encoded_mesh_entity_types[0] ;
+        return type == hard_encoded_mesh_entity_types[0];
     }
     bool MeshEntityTypeManager::is_line( const MeshEntityType& type )
     {
-        return type == hard_encoded_mesh_entity_types[1] ;
+        return type == hard_encoded_mesh_entity_types[1];
     }
     bool MeshEntityTypeManager::is_surface( const MeshEntityType& type )
     {
-        return type == hard_encoded_mesh_entity_types[2] ;
+        return type == hard_encoded_mesh_entity_types[2];
     }
     bool MeshEntityTypeManager::is_region( const MeshEntityType& type )
     {
-        return type == hard_encoded_mesh_entity_types[3] ;
+        return type == hard_encoded_mesh_entity_types[3];
     }
 
     bool MeshEntityTypeManager::is_valid_type( const MeshEntityType& type )
     {
-        return find( hard_encoded_mesh_entity_types, type ) != NO_ID ;
+        return find( hard_encoded_mesh_entity_types, type ) != NO_ID;
     }
 
     const MeshEntityType& MeshEntityTypeManager::boundary_type(
         const MeshEntityType& mesh_entity_type )
     {
         MeshEntityTypeMap::const_iterator itr = boundary_relationships_.map.find(
-            mesh_entity_type ) ;
-        ringmesh_assert( itr != boundary_relationships_.map.end() ) ;
-        return itr->second ;
+            mesh_entity_type );
+        ringmesh_assert( itr != boundary_relationships_.map.end() );
+        return itr->second;
     }
     const MeshEntityType& MeshEntityTypeManager::in_boundary_type(
         const MeshEntityType& mesh_entity_type )
     {
         MeshEntityTypeMap::const_iterator itr = in_boundary_relationships_.map.find(
-            mesh_entity_type ) ;
-        ringmesh_assert( itr != in_boundary_relationships_.map.end() ) ;
-        return itr->second ;
+            mesh_entity_type );
+        ringmesh_assert( itr != in_boundary_relationships_.map.end() );
+        return itr->second;
     }
 
     const std::vector< MeshEntityType >& MeshEntityTypeManager::mesh_entity_types()
     {
-        return hard_encoded_mesh_entity_types ;
+        return hard_encoded_mesh_entity_types;
     }
     index_t MeshEntityTypeManager::nb_mesh_entity_types()
     {
-        return static_cast< index_t >( hard_encoded_mesh_entity_types.size() ) ;
+        return static_cast< index_t >( hard_encoded_mesh_entity_types.size() );
 
     }
 
     index_t GeologicalTypeManager::nb_geological_entity_types() const
     {
-        return static_cast< index_t >( geological_entity_types_.size() ) ;
+        return static_cast< index_t >( geological_entity_types_.size() );
     }
     const std::vector< GeologicalEntityType >& GeologicalTypeManager::geological_entity_types() const
     {
-        return geological_entity_types_ ;
+        return geological_entity_types_;
     }
     const GeologicalEntityType& GeologicalTypeManager::geological_entity_type(
         index_t index ) const
     {
-        return geological_entity_types_.at( index ) ;
+        return geological_entity_types_.at( index );
     }
     index_t GeologicalTypeManager::geological_entity_type_index(
         const GeologicalEntityType& type ) const
     {
-        return find( geological_entity_types_, type ) ;
+        return find( geological_entity_types_, type );
     }
 
     bool GeologicalTypeManager::is_valid_type(
         const GeologicalEntityType& type ) const
     {
-        return contains( geological_entity_types_, type ) ;
+        return contains( geological_entity_types_, type );
     }
 
     std::vector< GeologicalEntityType > RelationshipManager::parent_types(
         const MeshEntityType& child_type ) const
     {
         MeshEntityToParents::const_iterator itr = child_to_parents_.find(
-            child_type ) ;
-        std::vector< GeologicalEntityType > result ;
+            child_type );
+        std::vector< GeologicalEntityType > result;
         if( itr != child_to_parents_.end() ) {
-            result.insert( result.begin(), itr->second.begin(), itr->second.end() ) ;
+            result.insert( result.begin(), itr->second.begin(), itr->second.end() );
         }
-        return result ;
+        return result;
     }
     index_t RelationshipManager::nb_parent_types(
         const MeshEntityType& child_type ) const
     {
-        return static_cast< index_t >( parent_types( child_type ).size() ) ;
+        return static_cast< index_t >( parent_types( child_type ).size() );
     }
     const MeshEntityType RelationshipManager::child_type(
         const GeologicalEntityType& parent_type ) const
     {
         GeologicalEntityToChild::const_iterator itr = parent_to_child_.find(
-            parent_type ) ;
+            parent_type );
         if( itr == parent_to_child_.end() ) {
-            return ForbiddenMeshEntityType::type_name_static() ;
+            return ForbiddenMeshEntityType::type_name_static();
         } else {
-            return itr->second ;
+            return itr->second;
         }
     }
 
