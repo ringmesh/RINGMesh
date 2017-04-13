@@ -48,16 +48,16 @@ namespace RINGMesh {
         int line )
     {
 #ifdef WIN32
-        DebugBreak() ;
+        DebugBreak();
 #endif
-        GEO::geo_assertion_failed( condition_string, file, line ) ;
+        GEO::geo_assertion_failed( condition_string, file, line );
     }
 
     void ringmesh_should_not_have_reached( const std::string& file, int line )
     {
 #ifdef WIN32
-        DebugBreak() ;
+        DebugBreak();
 #endif
-        GEO::geo_should_not_have_reached( file, line ) ;
+        GEO::geo_should_not_have_reached( file, line );
     }
 }
