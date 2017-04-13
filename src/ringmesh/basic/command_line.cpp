@@ -51,43 +51,43 @@ namespace RINGMesh {
         {
             GEO::CmdLine::declare_arg( "epsilon", 1e-7,
                 "Threshold for numerical precision (ratio of the bbox diagonal)",
-                GEO::CmdLine::ARG_ADVANCED ) ;
+                GEO::CmdLine::ARG_ADVANCED );
             GEO::CmdLine::declare_arg( "validity_save", false,
                 "Saves meshes representing geomodel inconsistencies",
-                GEO::CmdLine::ARG_ADVANCED ) ;
+                GEO::CmdLine::ARG_ADVANCED );
         }
 
         void import_arg_group_in()
         {
-            GEO::CmdLine::declare_arg_group( "in", "Input data" ) ;
+            GEO::CmdLine::declare_arg_group( "in", "Input data" );
             GEO::CmdLine::declare_arg( "in:geomodel", "",
-                "Filename of the input geological model" ) ;
+                "Filename of the input geological model" );
             GEO::CmdLine::declare_arg( "in:intersection_check", true,
                 "Toggle the surface intersection check at loading",
-                GEO::CmdLine::ARG_ADVANCED ) ;
+                GEO::CmdLine::ARG_ADVANCED );
             GEO::CmdLine::declare_arg( "in:wells", "",
-                "Filename of the input wells" ) ;
+                "Filename of the input wells" );
         }
 
         void import_arg_group_out()
         {
-            GEO::CmdLine::declare_arg_group( "out", "Output data" ) ;
+            GEO::CmdLine::declare_arg_group( "out", "Output data" );
             GEO::CmdLine::declare_arg( "out:geomodel", "",
-                "Saves the geological model" ) ;
+                "Saves the geological model" );
         }
 
         bool import_arg_group( const std::string& name )
         {
             if( name == "global" ) {
-                import_arg_group_global() ;
+                import_arg_group_global();
             } else if( name == "in" ) {
-                import_arg_group_in() ;
+                import_arg_group_in();
             } else if( name == "out" ) {
-                import_arg_group_out() ;
+                import_arg_group_out();
             } else {
-                return GEO::CmdLine::import_arg_group( name ) ;
+                return GEO::CmdLine::import_arg_group( name );
             }
-            return true ;
+            return true;
         }
 
     }

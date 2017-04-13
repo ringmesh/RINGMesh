@@ -51,37 +51,37 @@
  */
 
 namespace {
-    using namespace RINGMesh ;
+    using namespace RINGMesh;
 
     void convert_mesh( const std::string& mesh_in_name )
     {
-        GEO::Mesh mesh ;
-        GEO::mesh_load( mesh_in_name, mesh ) ;
-        std::string mesh_out_name = GEO::CmdLine::get_arg( "out:mesh" ) ;
+        GEO::Mesh mesh;
+        GEO::mesh_load( mesh_in_name, mesh );
+        std::string mesh_out_name = GEO::CmdLine::get_arg( "out:mesh" );
         if( mesh_out_name.empty() ) {
             throw RINGMeshException( "I/O",
-                "Give the parameter out:mesh to save the mesh" ) ;
+                "Give the parameter out:mesh to save the mesh" );
         }
-        GEO::mesh_save( mesh, mesh_out_name ) ;
+        GEO::mesh_save( mesh, mesh_out_name );
     }
 
     void convert_geomodel( const std::string& geomodel_in_name )
     {
-        GeoModel geomodel ;
-        geomodel_load( geomodel, geomodel_in_name ) ;
-        std::string geomodel_out_name = GEO::CmdLine::get_arg( "out:geomodel" ) ;
+        GeoModel geomodel;
+        geomodel_load( geomodel, geomodel_in_name );
+        std::string geomodel_out_name = GEO::CmdLine::get_arg( "out:geomodel" );
         if( geomodel_out_name.empty() ) {
             throw RINGMeshException( "I/O",
-                "Give the parameter out:geomodel to save the geomodel" ) ;
+                "Give the parameter out:geomodel to save the geomodel" );
         }
-        geomodel_save( geomodel, geomodel_out_name ) ;
+        geomodel_save( geomodel, geomodel_out_name );
     }
 
     void show_usage_example()
     {
-        Logger::div( "Example" ) ;
+        Logger::div( "Example" );
         Logger::out( "", "ringmeshconvert in:geomodel=path/to/input/geomodel.ext ",
-            "out:geomodel=path/to/output/geomodel.ext" ) ;
+            "out:geomodel=path/to/output/geomodel.ext" );
     }
 }
 
@@ -90,60 +90,59 @@ namespace RINGMesh {
     namespace CmdLine {
         void import_more_in_out()
         {
-            GEO::CmdLine::declare_arg( "in:mesh", "",
-                "Filename of the input mesh" ) ;
-            GEO::CmdLine::declare_arg( "out:mesh", "", "Saves the mesh" ) ;
+            GEO::CmdLine::declare_arg( "in:mesh", "", "Filename of the input mesh" );
+            GEO::CmdLine::declare_arg( "out:mesh", "", "Saves the mesh" );
         }
     }
 }
 int main( int argc, char** argv )
 {
-    using namespace RINGMesh ;
+    using namespace RINGMesh;
 
     try {
 
-        default_configure() ;
+        default_configure();
 
-        print_header_information() ;
-        Logger::div( "RINGMesh-Convert" ) ;
-        Logger::out( "", "Welcome to RINGMesh-Convert !" ) ;
+        print_header_information();
+        Logger::div( "RINGMesh-Convert" );
+        Logger::out( "", "Welcome to RINGMesh-Convert !" );
 
-        CmdLine::import_arg_group( "in" ) ;
-        CmdLine::import_arg_group( "out" ) ;
-        CmdLine::import_more_in_out() ;
+        CmdLine::import_arg_group( "in" );
+        CmdLine::import_arg_group( "out" );
+        CmdLine::import_more_in_out();
         if( argc == 1 ) {
-            GEO::CmdLine::show_usage() ;
-            show_usage_example() ;
-            return 0 ;
+            GEO::CmdLine::show_usage();
+            show_usage_example();
+            return 0;
         }
 
-        std::vector< std::string > filenames ;
+        std::vector< std::string > filenames;
         if( !GEO::CmdLine::parse( argc, argv, filenames ) ) {
-            show_usage_example() ;
-            return 1 ;
+            show_usage_example();
+            return 1;
         }
 
-        GEO::Stopwatch total( "Total time" ) ;
+        GEO::Stopwatch total( "Total time" );
 
-        std::string geomodel_in_name = GEO::CmdLine::get_arg( "in:geomodel" ) ;
-        std::string mesh_in_name = GEO::CmdLine::get_arg( "in:mesh" ) ;
+        std::string geomodel_in_name = GEO::CmdLine::get_arg( "in:geomodel" );
+        std::string mesh_in_name = GEO::CmdLine::get_arg( "in:mesh" );
         if( geomodel_in_name.empty() && mesh_in_name.empty() ) {
             throw RINGMeshException( "I/O",
-                "Give at least a filename in in:geomodel or in:mesh" ) ;
+                "Give at least a filename in in:geomodel or in:mesh" );
         }
 
         if( geomodel_in_name.empty() ) {
-            convert_mesh( mesh_in_name ) ;
+            convert_mesh( mesh_in_name );
         } else {
-            convert_geomodel( geomodel_in_name ) ;
+            convert_geomodel( geomodel_in_name );
         }
 
     } catch( const RINGMeshException& e ) {
-        Logger::err( e.category(), e.what() ) ;
-        return 1 ;
+        Logger::err( e.category(), e.what() );
+        return 1;
     } catch( const std::exception& e ) {
-        Logger::err( "Exception", e.what() ) ;
-        return 1 ;
+        Logger::err( "Exception", e.what() );
+        return 1;
     }
-    return 0 ;
+    return 0;
 }

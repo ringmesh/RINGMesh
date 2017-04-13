@@ -47,7 +47,7 @@
 
 namespace RINGMesh {
     // Implementation class
-    class GeoModelEntityFromMesh ;
+    class GeoModelEntityFromMesh;
 
     /*!
      * @brief To build a GeoModel from a set of disconnected polygonal surfaces
@@ -57,9 +57,9 @@ namespace RINGMesh {
         GeoModelBuilderSurfaceMesh( GeoModel& geomodel, const GEO::Mesh& mesh )
             : GeoModelBuilder( geomodel ), mesh_( mesh )
         {
-            from_surfaces.options_.compute_lines = true ;
-            from_surfaces.options_.compute_corners = true ;
-            from_surfaces.options_.compute_regions_brep = true ;
+            from_surfaces.options_.compute_lines = true;
+            from_surfaces.options_.compute_corners = true;
+            from_surfaces.options_.compute_regions_brep = true;
         }
 
         /*!
@@ -75,9 +75,9 @@ namespace RINGMesh {
          * vertices are duplicated in the input mesh
          *
          */
-        void build_polygonal_surfaces_from_connected_components() ;
+        void build_polygonal_surfaces_from_connected_components();
 
     private:
-        const GEO::Mesh& mesh_ ;
-    } ;
+        const GEO::Mesh& mesh_;
+    };
 }

@@ -48,7 +48,7 @@
  */
 
 namespace {
-    using namespace RINGMesh ;
+    using namespace RINGMesh;
 
 #ifdef RINGMESH_WITH_GEOLOGYJS
 #    include "boundary_geomodel/io_html.cpp"
@@ -65,10 +65,10 @@ namespace RINGMesh {
      */
     void GeoModelIOHandler::initialize_boundary_geomodel_output()
     {
-        ringmesh_register_GeoModelIOHandler_creator( MLIOHandler, "ml" ) ;
-        ringmesh_register_GeoModelIOHandler_creator( SMESHIOHandler, "smesh" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( MLIOHandler, "ml" );
+        ringmesh_register_GeoModelIOHandler_creator( SMESHIOHandler, "smesh" );
 #ifdef RINGMESH_WITH_GEOLOGYJS
-        ringmesh_register_GeoModelIOHandler_creator( HTMLIOHandler, "html" ) ;
+        ringmesh_register_GeoModelIOHandler_creator( HTMLIOHandler, "html" );
 #endif
     }
 }

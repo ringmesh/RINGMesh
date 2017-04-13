@@ -45,9 +45,9 @@
  */
 
 namespace RINGMesh {
-    class GeoModel ;
-    class MeshEntityType ;
-    class GeologicalEntityType ;
+    class GeoModel;
+    class MeshEntityType;
+    class GeologicalEntityType;
 }
 
 namespace RINGMesh {
@@ -57,7 +57,7 @@ namespace RINGMesh {
      * @details Output number of facets, vertices, and of the different entity types
      * @todo Implement a test are_geomodels_equals to be able to check that tests went well
      */
-    void RINGMESH_API print_geomodel( const GeoModel& geomodel ) ;
+    void RINGMESH_API print_geomodel( const GeoModel& geomodel );
 
     /*!
      * Output the number of vertices, edges, facets and cells.
@@ -65,19 +65,19 @@ namespace RINGMesh {
      * Also output the number of tetra, prisms, pyramids, hex and polyhedra if any.
      * @param[in] geomodel the geomodel to compute the statistics on
      */
-    void RINGMESH_API print_geomodel_mesh_stats( const GeoModel& geomodel ) ;
+    void RINGMESH_API print_geomodel_mesh_stats( const GeoModel& geomodel );
 
     /*!
      * Output the volume of the geomodel and the volume per cell type.
      * @param[in] geomodel the geomodel to compute the statistics on
      */
-    void RINGMESH_API print_geomodel_mesh_cell_volumes( const GeoModel& geomodel ) ;
+    void RINGMESH_API print_geomodel_mesh_cell_volumes( const GeoModel& geomodel );
 
     bool RINGMESH_API are_geomodel_surface_meshes_simplicial(
-        const GeoModel& geomodel ) ;
+        const GeoModel& geomodel );
 
     bool RINGMESH_API are_geomodel_region_meshes_simplicial(
-        const GeoModel& geomodel ) ;
+        const GeoModel& geomodel );
 
     /*!
      * @return the index of the mesh entity \param gme_type named as \param name
@@ -88,7 +88,7 @@ namespace RINGMesh {
     index_t RINGMESH_API find_mesh_entity_id_from_name(
         const GeoModel& geomodel,
         const MeshEntityType& gmme_type,
-        const std::string& name ) ;
+        const std::string& name );
 
     /*!
      * @return the index of the geological entity \param gme_type named as \param name
@@ -99,7 +99,7 @@ namespace RINGMesh {
     index_t RINGMESH_API find_geological_entity_id_from_name(
         const RINGMesh::GeoModel& geomodel,
         const RINGMesh::GeologicalEntityType& gmge_type,
-        const std::string& name ) ;
+        const std::string& name );
 
 #ifdef RINGMESH_WITH_TETGEN
 
@@ -111,7 +111,7 @@ namespace RINGMesh {
      * @param[in] add_steiner_points if true (default value), the mesher will add some points inside the region.
      */
     void RINGMESH_API tetrahedralize( GeoModel& geomodel, const std::string& method =
-        "TetGen", index_t region_id = NO_ID, bool add_steiner_points = true ) ;
+        "TetGen", index_t region_id = NO_ID, bool add_steiner_points = true );
 
     /*!
      * Compute the tetrahedral mesh of the input structural geomodel
@@ -127,7 +127,7 @@ namespace RINGMesh {
         const std::string& method,
         index_t region_id,
         bool add_steiner_points,
-        const std::vector< std::vector< vec3 > >& internal_vertices ) ;
+        const std::vector< std::vector< vec3 > >& internal_vertices );
 
 #endif
 
@@ -142,7 +142,7 @@ namespace RINGMesh {
      */
     void RINGMESH_API translate(
         GeoModel& geomodel,
-        const vec3& translation_vector ) ;
+        const vec3& translation_vector );
 
     /*!
      * \brief Rotate the boundary geomodel.
@@ -166,5 +166,5 @@ namespace RINGMesh {
         const vec3& origin,
         const vec3& axis,
         double angle,
-        bool degrees = false ) ;
+        bool degrees = false );
 }

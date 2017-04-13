@@ -61,23 +61,23 @@ extern "C" {
 #endif
 
 namespace RINGMesh {
-    class GeoModel ;
-    class Region ;
-    class TetraGen ;
-    class WellGroup ;
+    class GeoModel;
+    class Region;
+    class TetraGen;
+    class WellGroup;
 }
 
 namespace RINGMesh {
 
     class RINGMESH_API TetraGen: public GEO::Counted {
-    ringmesh_disable_copy( TetraGen ) ;
+    ringmesh_disable_copy( TetraGen );
     public:
-        virtual ~TetraGen() = default ;
+        virtual ~TetraGen() = default;
         static std::unique_ptr< TetraGen > create(
             GeoModel& M,
             index_t region_id,
-            const std::string& algo_name ) ;
-        static void initialize() ;
+            const std::string& algo_name );
+        static void initialize();
 
         /*!
          * Sets the boundaries of the domain
@@ -86,13 +86,13 @@ namespace RINGMesh {
          */
         void set_boundaries(
             const Region& region,
-            const WellGroup* wells = nullptr ) ;
+            const WellGroup* wells = nullptr );
 
         /*!
          * Set additional points to be in the output tetrahedral mesh
          * @param[in] points the points to add
          */
-        void set_internal_points( const std::vector< vec3 >& points ) ;
+        void set_internal_points( const std::vector< vec3 >& points );
 
         /*!
          * @brief Send the set of points/edges/triangles to MGTetra or TetGen
@@ -101,20 +101,20 @@ namespace RINGMesh {
          * are launched in order to control the outputs
          * @param[in] refine tells whether or not there are refined options to set (true by defaults)
          */
-        virtual bool tetrahedralize( bool refine = true ) = 0 ;
+        virtual bool tetrahedralize( bool refine = true ) = 0;
 
     protected:
-        TetraGen() ;
+        TetraGen();
 
     protected:
-        std::unique_ptr< GeoModelBuilder > builder_ ;
-        index_t output_region_ ;
-        GEO::Mesh tetmesh_constraint_ ;
-        const Region* region_ ;
-        const WellGroup* wells_ ;
-    } ;
+        std::unique_ptr< GeoModelBuilder > builder_;
+        index_t output_region_;
+        GEO::Mesh tetmesh_constraint_;
+        const Region* region_;
+        const WellGroup* wells_;
+    };
 
-    typedef GEO::Factory0< TetraGen > TetraGenFactory ;
+    typedef GEO::Factory0< TetraGen > TetraGenFactory;
 
 #define ringmesh_register_tetragen(type, name) \
     geo_register_creator(TetraGenFactory, type, name)
