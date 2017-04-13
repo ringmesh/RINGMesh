@@ -300,9 +300,8 @@ namespace RINGMesh {
                 valid = false ;
             }
 
-            std::vector< index_t > backward_vertices ;
-            geomodel_vertices.mesh_entity_vertex_id( gmme(), geomodel_v,
-                backward_vertices ) ;
+            std::vector< index_t > backward_vertices =
+                geomodel_vertices.mesh_entity_vertex_id( gmme(), geomodel_v ) ;
             bool found_in_backward = false ;
             for( index_t bv : backward_vertices ) {
                 if( bv == v ) {
