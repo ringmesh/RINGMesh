@@ -66,75 +66,12 @@ void get_line( GEO::LineInput& in )
     in.get_fields() ;
 }
 
-std::vector< std::string > extract_zip( const std::string& zip_file )
-{
-    std::string pwd = GEO::FileSystem::get_current_working_directory() ;
-    unzFile uz = unzOpen( zip_file.c_str() ) ;
-    std::vector< std::string > filenames ;
-    do {
-        char char_file_name[MAX_FILENAME] ;
-        if( unzGetCurrentFileInfo64( uz, nullptr, char_file_name,
-        MAX_FILENAME, nullptr, 0, nullptr, 0 ) != UNZ_OK ) {
-            throw RINGMeshException( "I/O", "Unable to get file name" ) ;
-        }
-        unzip_current_file( uz, char_file_name ) ;
-        filenames.push_back( pwd + "/" + char_file_name ) ;
-    } while( unzGoToNextFile( uz ) == UNZ_OK ) ;
-
-    return filenames ;
-}
-
-std::vector< std::string > get_gm_files( const std::string& file_name )
-{
-    std::string directory = GEO::FileSystem::dir_name( file_name ) + "/temp" ;
-    GEO::FileSystem::create_directory( directory ) ;
-    GEO::FileSystem::set_current_working_directory( directory ) ;
-    return extract_zip( file_name ) ;
-}
-
 void check_files( const std::string& file1, const std::string& file2 )
 {
     if( !compare_files( file1, file2 ) ) {
         throw RINGMeshException( "TEST",
             "Output file " + file1 + " does not match template file " + file2 ) ;
     }
-}
-
-void clean_files( const std::vector< std::string >& files )
-{
-    for( const std::string& file : files ) {
-        GEO::FileSystem::delete_file( file ) ;
-    }
-    GEO::FileSystem::delete_directory( GEO::FileSystem::dir_name( files.front() ) ) ;
-}
-
-void clean_everything(
-    const std::vector< std::string >& files1,
-    const std::vector< std::string >& files2,
-    const std::string& pwd )
-{
-    clean_files( files1 ) ;
-    clean_files( files2 ) ;
-    GEO::FileSystem::set_current_working_directory( pwd ) ;
-}
-
-void check_gm()
-{
-    std::string pwd = GEO::FileSystem::get_current_working_directory() ;
-    std::vector< std::string > template_files = get_gm_files(
-        ringmesh_test_data_path + "save/geomodel.gm" ) ;
-    std::vector< std::string > test_files = get_gm_files(
-        ringmesh_test_output_path + "geomodel.gm" ) ;
-
-    try {
-        for( index_t i = 0; i < template_files.size(); i++ ) {
-            check_files( test_files[i], template_files[i] ) ;
-        }
-    } catch( const RINGMeshException& e ) {
-        clean_everything( test_files, template_files, pwd ) ;
-        throw e ;
-    }
-    clean_everything( test_files, template_files, pwd ) ;
 }
 
 void check_output( GEO::LineInput& in )
@@ -160,9 +97,7 @@ void process_extension( const std::string& extension )
     GEO::LineInput in( ringmesh_test_data_path + "save/" + extension + ".txt" ) ;
     get_line( in ) ;
     io_geomodel( ringmesh_test_data_path + in.field( 0 ), extension ) ;
-    if( extension == "gm" ) {
-//        check_gm() ;
-    } else {
+    if( extension != "gm" ) {
         check_output( in ) ;
     }
     Logger::out( "TEST", "Format ", extension, " OK" ) ;
