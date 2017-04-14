@@ -601,19 +601,16 @@ namespace RINGMesh {
         builder->delete_cells( to_delete, remove_isolated_vertices );
     }
 
-    void GeoModelBuilderGeometry::set_surface_facet_adjacencies(
+    void GeoModelBuilderGeometry::set_surface_element_adjacency(
         index_t surface_id,
-        const std::vector< index_t >& facets_id,
-        const std::vector< index_t >& edges_id,
-        const std::vector< index_t >& adjacent_triangles )
+        index_t facet_id,
+        const std::vector< index_t >& adjacents )
     {
         std::unique_ptr< Mesh2DBuilder > builder = create_surface_builder(
             surface_id );
-        ringmesh_assert( facets_id.size() == edges_id.size() &&
-            facets_id.size() == adjacent_triangles.size() );
-        for( index_t i = 0; i < facets_id.size(); ++i ) {
-            builder->set_facet_adjacent( facets_id[i], edges_id[i],
-                adjacent_triangles[i] );
+        for( index_t facet_edge = 0; facet_edge < adjacents.size(); facet_edge++ ) {
+            builder->set_facet_adjacent( facet_id, facet_edge,
+                adjacents[facet_edge] );
         }
     }
 
@@ -971,7 +968,8 @@ namespace RINGMesh {
             surface_id );
         builder->assign_facet_triangle_mesh( triangle_vertices );
 
-        ringmesh_assert( adjacent_triangles.size() == surface.nb_mesh_elements() * 3 );
+        ringmesh_assert(
+            adjacent_triangles.size() == surface.nb_mesh_elements() * 3 );
         for( index_t f = 0; f < surface.nb_mesh_elements(); f++ ) {
             for( index_t v = 0; v < 3; v++ ) {
                 builder->set_facet_adjacent( f, v, adjacent_triangles[3 * f + v] );

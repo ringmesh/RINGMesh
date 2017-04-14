@@ -1176,26 +1176,21 @@ namespace RINGMesh {
         const std::vector< Box3d >& surface_boxes )
     {
         const Surface& S = geomodel_.surface( surface_id );
-        std::vector< index_t > facets_id;
-        std::vector< index_t > edges_id;
 
         for( index_t f = 0; f < S.nb_mesh_elements(); ++f ) {
+            std::vector< index_t > adjacent_facets_id( 3 );
             for( index_t e = 0; e < 3; ++e ) {
+                adjacent_facets_id[e] = S.facet_adjacent_index( f, e );
                 if( !S.is_on_border( f, e ) ) {
                     bool internal_border = is_edge_in_several_surfaces( geomodel_,
                         surface_id, f, e, surface_nns, surface_boxes );
                     if( internal_border ) {
-                        facets_id.push_back( f );
-                        edges_id.push_back( e );
+                        adjacent_facets_id[e] = NO_ID;
                     }
                 }
             }
-        }
-        if( facets_id.size() > 0 ) {
-            std::vector< index_t > adjacent_triangles_id( facets_id.size(),
-                GEO::NO_FACET );
-            geometry.set_surface_facet_adjacencies( surface_id, facets_id, edges_id,
-                adjacent_triangles_id );
+            geometry.set_surface_element_adjacency( surface_id, f,
+                adjacent_facets_id );
         }
     }
 

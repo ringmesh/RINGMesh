@@ -362,11 +362,10 @@ namespace RINGMesh {
          * @{
          */
 
-        void set_surface_facet_adjacencies(
+        void set_surface_element_adjacency(
             index_t surface_id,
-            const std::vector< index_t >& facets_ids,
-            const std::vector< index_t >& edges_ids,
-            const std::vector< index_t >& adjacent_triangles );
+            index_t facet_id,
+            const std::vector< index_t >& adjacents );
 
         /*!
          * @brief Computes and sets the adjacencies between the facets
