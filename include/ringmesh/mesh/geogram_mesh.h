@@ -47,7 +47,6 @@
 #include <ringmesh/mesh/mesh.h>
 
 namespace RINGMesh {
-    class GeogramMeshBaseBuilder;
     class GeogramMesh0DBuilder;
     class GeogramMesh1DBuilder;
     class GeogramMesh2DBuilder;
