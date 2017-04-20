@@ -132,7 +132,7 @@ namespace RINGMesh {
             Logger::warn( "Mesh0DBuilder",
                 "Falling back to GeogramMesh0DBuilder data structure" );
 
-//            builder = new GeogramMesh0DBuilder;
+            builder = new GeogramMesh0DBuilder;
         }
         builder->set_mesh( mesh );
         return std::unique_ptr< Mesh0DBuilder >( builder );
@@ -151,7 +151,7 @@ namespace RINGMesh {
             Logger::warn( "Mesh1DBuilder",
                 "Falling back to GeogramMesh1DBuilder data structure" );
 
-//            builder = new GeogramMesh1DBuilder;
+            builder = new GeogramMesh1DBuilder;
         }
         builder->set_mesh( mesh );
         return std::unique_ptr< Mesh1DBuilder >( builder );
@@ -170,7 +170,7 @@ namespace RINGMesh {
             Logger::warn( "Mesh2DBuilder",
                 "Falling back to GeogramMesh2DBuilder data structure" );
 
-//            builder = new GeogramMesh2DBuilder;
+            builder = new GeogramMesh2DBuilder;
         }
         builder->set_mesh( mesh );
         return std::unique_ptr< Mesh2DBuilder >( builder );
@@ -189,7 +189,7 @@ namespace RINGMesh {
             Logger::warn( "Mesh3DBuilder",
                 "Falling back to GeogramMesh3DBuilder data structure" );
 
-//            builder = new GeogramMesh3DBuilder;
+            builder = new GeogramMesh3DBuilder;
         }
         builder->set_mesh( mesh );
         return std::unique_ptr< Mesh3DBuilder >( builder );
