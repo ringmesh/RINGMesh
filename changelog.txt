@@ -24,6 +24,7 @@ Improvements:
       The GeoModelMesh has been modified according this modification.
  * Improve some designs by using the NRVO/RVO (Named Return Value Optimization)
  * Use C++11 smartpointers for all the pointers allocated on the heap
+ * Remove complex inheritance design of the GeogramMesh and GeogramMeshBuilder classes 
  
 Architecture:
  * All third party files (zlib, geogram) are now in a "third_party" directory at the RINGMesh root.
