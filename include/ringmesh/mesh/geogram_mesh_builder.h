@@ -100,7 +100,7 @@ namespace RINGMesh {
             mesh_->mesh_->clear( keep_attributes, keep_memory );
             clear_vertex_linked_objects();
         }
-        /**
+        /*!
          * \brief Fixes some defaults in a mesh.
          * \param[in] mode a combination of #MeshRepairMode flags.
          *  Combine them with the 'bitwise or' (|) operator.
@@ -382,7 +382,7 @@ namespace RINGMesh {
             mesh_ = &dynamic_cast< GeogramMesh2D& >( mesh );
             GeogramMeshBaseBuilder::set_mesh( *mesh_ );
         }
-        /**
+        /*!
          * \brief Removes the connected components that have an area
          *  smaller than a given threshold.
          * \param[in] min_area the connected components with an
@@ -490,7 +490,7 @@ namespace RINGMesh {
         {
             mesh_->mesh_->facets.set_adjacent( facet_id, edge_id, specifies );
         }
-        /*
+        /*!
          * \brief Copies a triangle mesh into this Mesh.
          * \details Facet adjacence are not computed.
          *   Facet and corner attributes are zeroed.
@@ -623,7 +623,7 @@ namespace RINGMesh {
             return mesh_->mesh_->cells.create_cells( nb_cells, type );
         }
 
-        /*
+        /*!
          * \brief Copies a tets mesh into this Mesh.
          * \details Cells adjacence are not computed.
          *   cell and corner attributes are zeroed.
