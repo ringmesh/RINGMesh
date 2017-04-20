@@ -146,8 +146,6 @@ namespace RINGMesh {
         virtual void set_mesh( MeshBase& mesh ) = 0;
     };
     using MeshBaseBuilderFactory = GEO::Factory0< MeshBaseBuilder >;
-#define ringmesh_register_mesh_base_builder(type) \
-    geo_register_creator(RINGMesh::MeshBaseBuilderFactory, type ## Builder, type::type_name_static())
 
     class RINGMESH_API Mesh0DBuilder: public virtual MeshBaseBuilder {
     ringmesh_disable_copy( Mesh0DBuilder );
