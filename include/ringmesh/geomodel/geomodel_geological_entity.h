@@ -106,9 +106,9 @@ namespace RINGMesh {
             : GeoModelEntity( geomodel, id, name, geological_feature )
         {
         }
-        virtual void copy( const GeoModelGeologicalEntity& from ) final
+        void copy_geological_entity( const GeoModelGeologicalEntity& from )
         {
-            GeoModelEntity::copy( from );
+            GeoModelEntity::copy_name_and_geol_feature(from);
             children_ = from.children_;
         }
 
@@ -218,7 +218,7 @@ namespace RINGMesh {
 
         void copy( const GeoModelGeologicalEntity& from )
         {
-            gmge_.copy( from );
+            gmge_.copy_geological_entity( from );
         }
 
     private:
