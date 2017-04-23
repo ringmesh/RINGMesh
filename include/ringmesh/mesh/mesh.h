@@ -163,7 +163,6 @@ namespace RINGMesh {
     class RINGMESH_API Mesh1D: public virtual MeshBase {
     ringmesh_disable_copy( Mesh1D );
         friend class Mesh1DBuilder;
-        friend class GeogramMeshBuilder;
 
     public:
         virtual ~Mesh1D() = default;
