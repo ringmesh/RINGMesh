@@ -469,6 +469,7 @@ namespace RINGMesh {
     {
         std::unique_ptr< Mesh2DBuilder > builder = create_surface_builder(
             surface_id );
+
         for( index_t facet_vertex = 0; facet_vertex < corners.size();
             facet_vertex++ ) {
             builder->set_facet_vertex( facet_id, facet_vertex,
@@ -483,6 +484,7 @@ namespace RINGMesh {
     {
         std::unique_ptr< Mesh3DBuilder > builder = create_region_builder(
             region_id );
+
         for( index_t cell_vertex = 0; cell_vertex < corners.size(); cell_vertex++ ) {
             builder->set_cell_vertex( cell_id, cell_vertex, corners[cell_vertex] );
         }
@@ -708,6 +710,21 @@ namespace RINGMesh {
         if( nb_disconnected_facets > 0 ) {
             duplicate_region_vertices_along_surface( region_id, surface_id );
         }
+    }
+
+    void GeoModelBuilderGeometry::invert_surface_normals( index_t surface_id )
+    {
+        ringmesh_assert( surface_id < geomodel_.nb_surfaces() );
+        Surface& surface =
+            dynamic_cast< Surface& >( geomodel_access_.modifiable_mesh_entity(
+                gmme_id( Surface::type_name_static(), surface_id ) ) );
+        /// TODO find a way to avoid the const_cast. May create a mesh2d which
+        /// is the same as the one of the surface, and then inverse the normals
+        /// in this new mesh2d. At the end the new mesh2d is assigned to the
+        /// surface (the previous mesh should be deleted?)... to discuss BC
+        std::unique_ptr< Mesh2DBuilder > builder = Mesh2DBuilder::create_builder(
+            const_cast< Mesh2D& >( surface.low_level_mesh_storage() ) );
+        builder->invert_normals();
     }
 
     struct ElementVertex {
@@ -947,7 +964,6 @@ namespace RINGMesh {
     {
         const Surface& surface = geomodel_.surface( surface_id );
         ringmesh_assert( surface.nb_vertices() > 0 );
-
         std::unique_ptr< Mesh2DBuilder > builder = create_surface_builder(
             surface_id );
         builder->assign_facet_triangle_mesh( triangle_vertices );
