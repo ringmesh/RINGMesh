@@ -48,11 +48,10 @@
 namespace {
     using namespace RINGMesh;
 
-    void compute_surface_bbox( const GeoModel& gm, index_t surface_id, Box3d& bbox )
+    void compute_mesh_entity_bbox( const GeoModelMeshEntity& entity, Box3d& bbox )
     {
-        const Surface& surface = gm.surface( surface_id );
-        for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
-            bbox.add_point( surface.vertex( v ) );
+        for( index_t v = 0; v < entity.nb_vertices(); v++ ) {
+            bbox.add_point( entity.vertex( v ) );
         }
     }
 
@@ -62,13 +61,23 @@ namespace {
         if( gm.universe().nb_boundaries() > 0 ) {
             const Universe& universe = gm.universe();
             for( index_t s = 0; s < universe.nb_boundaries(); s++ ) {
-                compute_surface_bbox( gm, universe.boundary_gmme( s ).index(),
-                    bbox );
+                compute_mesh_entity_bbox(
+                    gm.mesh_entity( universe.boundary_gmme( s ) ), bbox );
             }
         } else {
-            ringmesh_assert( gm.nb_surfaces() > 0 );
-            for( index_t s = 0; s < gm.nb_surfaces(); s++ ) {
-                compute_surface_bbox( gm, s, bbox );
+            if( gm.nb_surfaces() > 0 ) {
+                for( index_t s = 0; s < gm.nb_surfaces(); s++ ) {
+                    compute_mesh_entity_bbox( gm.surface( s ), bbox );
+                }
+            } else if( gm.nb_lines() > 0 ) {
+                for( index_t l = 0; l < gm.nb_lines(); l++ ) {
+                    compute_mesh_entity_bbox( gm.line( l ), bbox );
+                }
+            } else {
+                ringmesh_assert( gm.nb_corners() > 0 );
+                for( index_t c = 0; c < gm.nb_corners(); c++ ) {
+                    bbox.add_point( gm.corner( c ).vertex( 0 ) );
+                }
             }
         }
         return bbox.diagonal().length() * GEO::CmdLine::get_arg_double( "epsilon" );
