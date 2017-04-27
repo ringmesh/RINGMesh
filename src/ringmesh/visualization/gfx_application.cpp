@@ -206,7 +206,7 @@ namespace RINGMesh {
             for( index_t l = 0; l < GM_.nb_lines(); l++ ) {
                 compute_mesh_entity_bbox( GM_.line( l ), bbox_ );
             }
-            for( index_t c = 0; c < GM_.nb_lines(); c++ ) {
+            for( index_t c = 0; c < GM_.nb_corners(); c++ ) {
                 compute_mesh_entity_bbox( GM_.corner( c ), bbox_ );
             }
         }
