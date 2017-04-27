@@ -129,6 +129,13 @@ namespace {
         return true;
     }
 
+    void compute_mesh_entity_bbox( const GeoModelMeshEntity& entity, Box3d& bbox )
+    {
+        for( index_t v = 0; v < entity.nb_vertices(); v++ ) {
+            bbox.add_point( entity.vertex( v ) );
+        }
+    }
+
 }
 namespace RINGMesh {
 
@@ -189,13 +196,21 @@ namespace RINGMesh {
         reset_attribute_name();
 
         geomodel_load( GM_, filename );
-        for( GEO::index_t s = 0; s < GM_.nb_surfaces(); s++ ) {
-            const RINGMesh::Surface& S = GM_.surface( s );
-            for( GEO::index_t v = 0; v < S.nb_vertices(); ++v ) {
-                const vec3& p = S.vertex( v );
-                bbox_.add_point( p );
+        // Computation of the BBox is set with surface vertices
+        // or with those of lines and corners if the model has no surface
+        if( GM_.nb_surfaces() > 0 ) {
+            for( index_t s = 0; s < GM_.nb_surfaces(); s++ ) {
+                compute_mesh_entity_bbox( GM_.surface( s ), bbox_ );
+            }
+        } else {
+            for( index_t l = 0; l < GM_.nb_lines(); l++ ) {
+                compute_mesh_entity_bbox( GM_.line( l ), bbox_ );
+            }
+            for( index_t c = 0; c < GM_.nb_lines(); c++ ) {
+                compute_mesh_entity_bbox( GM_.corner( c ), bbox_ );
             }
         }
+
         selected_entity_type_ = 0;
         selected_entity_id_ = 0;
         entity_types_.emplace_back( "All" );
