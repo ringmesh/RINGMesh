@@ -88,29 +88,34 @@ namespace RINGMesh {
     std::unique_ptr< MeshBaseBuilder > MeshBaseBuilder::create_builder(
         MeshBase& mesh )
     {
-        MeshBaseBuilder* builder = MeshBaseBuilderFactory::create_object(
-            mesh.type_name() );
-        if( !builder ) {
-            builder = create_builder_0d( mesh );
-            if( !builder ) {
-                builder = create_builder_1d( mesh );
-                if( !builder ) {
-                    builder = create_builder_2d( mesh );
-                    if( !builder ) {
-                        builder = create_builder_3d( mesh );
+        MeshBaseBuilder* builder = nullptr;
+        Mesh0DBuilder* builder0d = create_builder_0d( mesh );
+        if( builder0d ) {
+            builder0d->set_mesh( dynamic_cast< Mesh0D& >( mesh ) );
+            builder = builder0d;
+        } else {
+            Mesh1DBuilder* builder1d = create_builder_1d( mesh );
+            if( builder1d ) {
+                builder1d->set_mesh( dynamic_cast< Mesh1D& >( mesh ) );
+                builder = builder1d;
+            } else {
+                Mesh2DBuilder* builder2d = create_builder_2d( mesh );
+                if( builder2d ) {
+                    builder2d->set_mesh( dynamic_cast< Mesh2D& >( mesh ) );
+                    builder = builder2d;
+                } else {
+                    Mesh3DBuilder* builder3d = create_builder_3d( mesh );
+                    if( builder3d ) {
+                        builder3d->set_mesh( dynamic_cast< Mesh3D& >( mesh ) );
+                        builder = builder3d;
                     }
                 }
             }
         }
         if( !builder ) {
-            Logger::warn( "MeshBaseBuilder",
-                "Could not create mesh data structure: ", mesh.type_name() );
-            Logger::warn( "MeshBaseBuilder",
-                "Falling back to GeogramMesh0DBuilder data structure" );
-
-            builder = new GeogramMeshBaseBuilder;
+            throw RINGMeshException( "MeshBaseBuilder",
+                "Could not create mesh data structure: " + mesh.type_name() );
         }
-        builder->set_mesh( mesh );
         return std::unique_ptr< MeshBaseBuilder >( builder );
     }
 
