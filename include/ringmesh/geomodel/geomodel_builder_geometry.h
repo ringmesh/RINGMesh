@@ -212,6 +212,22 @@ namespace RINGMesh {
             const std::vector< vec3 >& surface_vertices,
             const std::vector< index_t >& surface_facets,
             const std::vector< index_t >& surface_facet_ptr );
+
+        /*!
+         * @brief Sets the facets of a surface
+         * @param[in] surface_id Index of the surface
+         * @param[in] facets Indices of the mesh vertices defining the facets
+         * @param[in] facet_ptr Pointer to the beginning of a facet in facets
+         */
+        void set_surface_geometry(
+            index_t surface_id,
+            const std::vector< index_t >& facets,
+            const std::vector< index_t >& facet_ptr );
+
+        void set_surface_geometry(
+            index_t surface_id,
+            const std::vector< index_t >& triangle_vertices );
+
         /*!
          * @brief Set the points and tetras for a region
          *
@@ -398,20 +414,6 @@ namespace RINGMesh {
         GeoModelBuilderGeometry( GeoModelBuilder& builder, GeoModel& geomodel );
 
     private:
-        void assign_surface_mesh_facets(
-            index_t surface_id,
-            const std::vector< index_t >& facets,
-            const std::vector< index_t >& facet_ptr );
-
-        void assign_surface_triangle_mesh(
-            index_t surface_id,
-            const std::vector< index_t >& triangle_vertices );
-
-        void assign_surface_triangle_mesh(
-            index_t surface_id,
-            const std::vector< index_t >& triangle_vertices,
-            const std::vector< index_t >& adjacent_triangles );
-
         void assign_region_tet_mesh(
             index_t region_id,
             const std::vector< index_t >& tet_vertices );
