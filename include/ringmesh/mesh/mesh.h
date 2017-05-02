@@ -506,7 +506,7 @@ namespace RINGMesh {
                 false, f0 );
             vec3 norm;
             for( index_t facet_id = 0; facet_id < facet_ids.size(); ++facet_id ) {
-                norm += facet_normal( facet_id );
+                norm += facet_normal( facet_ids[facet_id] );
             }
             return normalize( norm );
         }
