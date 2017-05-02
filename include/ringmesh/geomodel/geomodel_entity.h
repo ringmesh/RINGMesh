@@ -223,17 +223,17 @@ namespace RINGMesh {
         }
 
     protected:
-        //@todo not used if editor is removed -> to delete
-        void copy_universe( const Universe& from )
+        virtual bool is_index_valid() const override
+        {
+            return true;
+        }
+
+    private:
+        void copy_universe(const Universe& from)
         {
             GeoModelEntity::copy_name_and_geol_feature(from);
             boundary_surfaces_ = from.boundary_surfaces_;
             boundary_surface_sides_ = from.boundary_surface_sides_;
-        }
-
-        virtual bool is_index_valid() const override
-        {
-            return true;
         }
 
     private:

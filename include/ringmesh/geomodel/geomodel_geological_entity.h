@@ -106,13 +106,15 @@ namespace RINGMesh {
             : GeoModelEntity( geomodel, id, name, geological_feature )
         {
         }
-        void copy_geological_entity( const GeoModelGeologicalEntity& from )
+
+        virtual bool is_index_valid() const;
+
+    private:
+        void copy_geological_entity(const GeoModelGeologicalEntity& from)
         {
             GeoModelEntity::copy_name_and_geol_feature(from);
             children_ = from.children_;
         }
-
-        virtual bool is_index_valid() const;
 
     protected:
         /// Entities constituting this one - see child_type( TYPE )

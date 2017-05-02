@@ -1273,13 +1273,6 @@ namespace RINGMesh {
             update_mesh_storage_type( Mesh3D::create_mesh( type ) );
         }
 
-        virtual void copy( const GeoModelMeshEntity& from ) final
-        {
-            const Region& region_from = dynamic_cast< const Region& >( from );
-            GeoModelMeshEntity::copy_mesh_entity( from );
-            sides_ = region_from.sides_;
-        }
-
         virtual bool is_mesh_valid() const final;
 
     private:
@@ -1290,6 +1283,13 @@ namespace RINGMesh {
         }
 
         virtual void change_mesh_data_structure( const MeshType type ) override;
+
+        virtual void copy_mesh_entity( const GeoModelMeshEntity& from ) final
+        {
+            const Region& region_from = dynamic_cast< const Region& >(from);
+            GeoModelMeshEntity::copy_mesh_entity(from);
+            sides_ = region_from.sides_;
+        }
 
     protected:
         /*! Additional information to store oriented boundary Surfaces
