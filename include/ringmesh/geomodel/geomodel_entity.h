@@ -160,7 +160,7 @@ namespace RINGMesh {
         {
         }
 
-        virtual void copy( const GeoModelEntity& from )
+        void copy_name_and_geol_feature( const GeoModelEntity& from )
         {
             name_ = from.name_;
             geol_feature_ = from.geol_feature_;
@@ -224,9 +224,9 @@ namespace RINGMesh {
 
     protected:
         //@todo not used if editor is removed -> to delete
-        void copy( const Universe& from )
+        void copy_universe( const Universe& from )
         {
-            GeoModelEntity::copy( from );
+            GeoModelEntity::copy_name_and_geol_feature(from);
             boundary_surfaces_ = from.boundary_surfaces_;
             boundary_surface_sides_ = from.boundary_surface_sides_;
         }
@@ -265,7 +265,7 @@ namespace RINGMesh {
 
         void copy( const Universe& from )
         {
-            universe_.copy( from );
+            universe_.copy_universe( from );
         }
 
     private:
