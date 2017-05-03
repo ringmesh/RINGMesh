@@ -38,8 +38,10 @@ cmake_minimum_required(VERSION 2.8)
 # Options of the RINGMesh project 
 # They can be set using CMake GUI, or in command line: cmake -D<var>:<type>=<value> MyProjectFolder
 
-# Configuration modes - Debug and Release by default 
-set(CMAKE_CONFIGURATION_TYPES Debug Release CACHE CMAKE_CONFIGURATION_TYPES "Configuration types")
+# Configuration modes - Debug and Release by default + RelWithDebInfo for Windows.
+# RelWithDebInfo is mandatory to debug some plugins in Windows in debug mode (e.g., a Gocad plugin) to
+# avoid issues in particular in the STL (e.g., bad transfer of std::string from Gocad to RINGMesh).
+set(CMAKE_CONFIGURATION_TYPES Debug Release RelWithDebInfo CACHE CMAKE_CONFIGURATION_TYPES "Configuration types")
 
 # If a path is specified RINGMesh will be compiled to work with - empty by default
 set(MG_TETRA "" CACHE PATH "Path to MG-Tetra")
