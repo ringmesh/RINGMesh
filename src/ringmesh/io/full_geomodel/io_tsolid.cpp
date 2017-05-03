@@ -82,7 +82,7 @@ namespace {
                 << "ZPOSITIVE Elevation" << std::endl
                 << "END_ORIGINAL_COORDINATE_SYSTEM" << std::endl;
 
-            const GeoModelMesh& mesh = geomodel.mesh; /// TODO still used?
+            const GeoModelMesh& mesh = geomodel.mesh;
             //mesh.set_duplicate_mode( GeoModelMeshCells::ALL ) ;
 
             std::vector< std::string > att_v_double_names;
@@ -100,6 +100,7 @@ namespace {
             std::vector< index_t > vertex_exported_id( mesh.vertices.nb(), NO_ID );
             std::vector< index_t > atom_exported_id(
                 mesh.cells.nb_duplicated_vertices(), NO_ID );
+//            const NNSearch& nn_search = mesh.cells.cell_nn_search();
             index_t nb_vertices_exported = 1;
             for( index_t r = 0; r < geomodel.nb_regions(); r++ ) {
                 const RINGMesh::Region& region = geomodel.region( r );
@@ -110,6 +111,7 @@ namespace {
                 // Export not duplicated vertices
                 for( index_t c = 0; c < region.nb_mesh_elements(); c++ ) {
                     index_t cell = mesh.cells.cell( r, c );
+                    vec3 cell_center = mesh.cells.barycenter( cell );
                     for( index_t v = 0; v < mesh.cells.nb_vertices( cell ); v++ ) {
                         index_t atom_id;
                         if( !mesh.cells.is_corner_duplicated( cell, v, atom_id ) ) {
@@ -117,11 +119,52 @@ namespace {
                             if( vertex_exported[vertex_id] ) continue;
                             vertex_exported[vertex_id] = true;
                             vertex_exported_id[vertex_id] = nb_vertices_exported;
-                            // PVRTX must be used instead of VRTX because
-                            // properties are not read by Gocad if it is VRTX.
+                            // PVRTX keyword must be used instead of VRTX keyword because
+                            // properties are not read by Gocad if it is VRTX keyword.
                             out << "PVRTX " << nb_vertices_exported++ << " "
                                 << mesh.vertices.vertex( vertex_id );
-                            /// TODO correct manager and if NNSearch to find vertex in region.
+
+                            /// Export of vertex attributes
+                            index_t vertex_id_in_reg = NO_ID;
+                            bool vertex_id_in_reg_found = false;
+                            /// As we export the non duplicated vertices,
+                            /// gme_vertices should be at size 1 (to check),
+                            /// so the loop should not be needed but I [BC]
+                            /// keep it for now since duplicated nodes is not
+                            /// operational yet...
+                            const std::vector< GMEVertex >& gme_vertices =
+                                mesh.vertices.gme_vertices( vertex_id );
+                            for( index_t gme_vertices_i = 0;
+                                gme_vertices_i < gme_vertices.size();
+                                ++gme_vertices_i ) {
+                                const GMEVertex& cur_gme_vertex =
+                                    gme_vertices[gme_vertices_i];
+                                if( cur_gme_vertex.gmme != region.gmme() ) {
+                                    continue;
+                                }
+                                std::vector< index_t > cells_around_vertex =
+                                    region.cells_around_vertex(
+                                        cur_gme_vertex.v_index, NO_ID );
+                                /// WARNING: the cell id in the region corresponding
+                                /// to the cell id in the GMM "cell" is not the
+                                /// variable "c" (in the for loop over the region cells).
+                                for( index_t cells_around_vertex_i = 0;
+                                    cells_around_vertex_i
+                                        < cells_around_vertex.size();
+                                    ++cells_around_vertex_i ) {
+                                    vec3 center = region.mesh_element_barycenter(
+                                        cells_around_vertex[cells_around_vertex_i] );
+                                    if( ( center - cell_center ).length()
+                                        < geomodel.epsilon() ) {
+                                        vertex_id_in_reg = cur_gme_vertex.v_index;
+                                        vertex_id_in_reg_found = true;
+                                        break;
+                                    }
+                                }
+                                if( vertex_id_in_reg_found ) {
+                                    break;
+                                }
+                            }
                             for( index_t attr_dbl_itr = 0;
                                 attr_dbl_itr < att_v_double_names.size();
                                 ++attr_dbl_itr ) {
@@ -129,13 +172,13 @@ namespace {
                                     reg_vertex_attr_mgr,
                                     att_v_double_names[attr_dbl_itr] ) ) {
                                     GEO::Attribute< double > cur_attr(
-                                        mesh.vertices.attribute_manager(),
+                                        reg_vertex_attr_mgr,
                                         att_v_double_names[attr_dbl_itr] );
                                     for( index_t dim_itr = 0;
                                         dim_itr < vertex_attr_dims[attr_dbl_itr];
                                         ++dim_itr ) {
                                         out << " "
-                                            << cur_attr[vertex_id
+                                            << cur_attr[vertex_id_in_reg
                                                 * vertex_attr_dims[attr_dbl_itr]
                                                 + dim_itr];
                                     }
@@ -196,17 +239,24 @@ namespace {
                             out << " " << atom_exported_id[atom_id];
                         }
                     }
+
+                    /// Export cell attributes
+                    vec3 center = mesh.cells.barycenter( cell );
+                    const std::vector< index_t > c_in_reg =
+                        region.cell_nn_search().get_neighbors( center,
+                            geomodel.epsilon() );
+                    ringmesh_assert( c_in_reg.size() == 1 );
                     for( index_t attr_dbl_itr = 0;
                         attr_dbl_itr < att_c_double_names.size(); ++attr_dbl_itr ) {
                         if( GEO::Attribute< double >::is_defined( reg_cell_attr_mgr,
                             att_c_double_names[attr_dbl_itr] ) ) {
                             GEO::Attribute< double > cur_attr(
-                                mesh.cells.attribute_manager(),
+                                reg_cell_attr_mgr,
                                 att_c_double_names[attr_dbl_itr] );
                             for( index_t dim_itr = 0;
                                 dim_itr < cell_attr_dims[attr_dbl_itr]; ++dim_itr ) {
                                 out << " "
-                                    << cur_attr[cell * cell_attr_dims[attr_dbl_itr]
+                                    << cur_attr[c_in_reg[0] * cell_attr_dims[attr_dbl_itr]
                                         + dim_itr];
                             }
                         } else {
