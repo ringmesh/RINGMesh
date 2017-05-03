@@ -65,10 +65,10 @@ namespace RINGMesh {
     void wait( const index_t milliseconds )
     {
 #ifdef WIN32
-        Sleep(milliseconds) ;
+        Sleep(milliseconds);
 #else
         // usleep takes microseconds
-        usleep( static_cast< __useconds_t >( milliseconds * 1000 ) ) ;
+        usleep( static_cast< __useconds_t >( milliseconds * 1000 ) );
 #endif
     }
 
@@ -81,12 +81,12 @@ namespace RINGMesh {
 
         virtual void run()
         {
-            app_.start() ;
+            app_.start();
         }
 
     private:
-        RINGMeshApplication& app_ ;
-    } ;
+        RINGMeshApplication& app_;
+    };
 
     class QuitAppThread: public GEO::Thread {
     public:
@@ -98,88 +98,87 @@ namespace RINGMesh {
         virtual void run()
         {
             // Wait some seconds to be sure that the windows is really opened
-            wait( 4000 ) ;
-            app_.quit() ;
+            wait( 4000 );
+            app_.quit();
         }
 
     private:
-        RINGMeshApplication& app_ ;
-    } ;
+        RINGMeshApplication& app_;
+    };
 
     void open_viewer_load_geomodel_then_close(
         const int argc,
         char** argv,
         const std::string& glup_profile )
     {
-        GEO::CmdLine::set_arg( "GLUP_profile", glup_profile ) ;
+        GEO::CmdLine::set_arg( "GLUP_profile", glup_profile );
 
-        RINGMeshApplication app( argc, argv ) ;
+        RINGMeshApplication app( argc, argv );
 
         // Create the threads for launching the app window
         // and the one for closing the window
-        StartAppThread* start_thread = new StartAppThread( app ) ;
-        QuitAppThread* quit_thread = new QuitAppThread( app ) ;
+        StartAppThread* start_thread = new StartAppThread( app );
+        QuitAppThread* quit_thread = new QuitAppThread( app );
 
         // Add the both threads in a group
-        GEO::ThreadGroup thread_group ;
-        thread_group.push_back( start_thread ) ;
-        thread_group.push_back( quit_thread ) ;
+        GEO::ThreadGroup thread_group;
+        thread_group.push_back( start_thread );
+        thread_group.push_back( quit_thread );
 
         // Run concurrently the both threads
-        GEO::Process::run_threads( thread_group ) ;
+        GEO::Process::run_threads( thread_group );
     }
 
 }
 
 int main()
 {
-    using namespace RINGMesh ;
+    using namespace RINGMesh;
 
     try {
-        default_configure() ;
+        default_configure();
 
-        char ringmesh_view[] = "ringmesh-view" ;
-        std::string input_model_file_name( ringmesh_test_data_path ) ;
-        input_model_file_name += "modelA6.ml" ;
-        char* input_model = &input_model_file_name[0] ;
+        char ringmesh_view[] = "ringmesh-view";
+        std::string input_model_file_name( ringmesh_test_data_path );
+        input_model_file_name += "modelA6.ml";
+        char* input_model = &input_model_file_name[0];
 
-        char* argv[2] = { ringmesh_view, input_model } ;
+        char* argv[2] = { ringmesh_view, input_model };
 
         // Two arguments: one for 'ringmeshview' and one for the input file
-        const int argc = 2 ;
+        const int argc = 2;
 
-        std::vector< std::string > GLUP_profiles( 1, "" ) ;
-        GLUP_profiles[0] = "auto" ;
+        std::vector< std::string > GLUP_profiles( 1, "" );
+        GLUP_profiles[0] = "auto";
 //        GLUP_profiles[1] = "GLUP150" ;
 //        GLUP_profiles[2] = "GLUP440" ;
 //        GLUP_profiles[3] = "VanillaGL" ;
 
         for( index_t profile = 0; profile < GLUP_profiles.size(); profile++ ) {
             open_viewer_load_geomodel_then_close( argc, argv,
-                GLUP_profiles[profile] ) ;
+                GLUP_profiles[profile] );
         }
 
     } catch( const RINGMeshException& e ) {
-        Logger::err( e.category() ) << e.what() << std::endl ;
-        return 1 ;
+        Logger::err( e.category(), e.what() );
+        return 1;
     } catch( const std::exception& e ) {
-        Logger::err( "Exception" ) << e.what() << std::endl ;
-        return 1 ;
+        Logger::err( "Exception", e.what() );
+        return 1;
     }
-    Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
-    return 0 ;
+    Logger::out( "TEST", "SUCCESS" );
+    return 0;
 }
 
 #else
 int main() {
 
-    using namespace RINGMesh ;
+    using namespace RINGMesh;
 
-    default_configure() ;
-    Logger::out("RINGMeshView")
-    << "To test RINGMesh viewer you need to configure "
-    << "the project with the RINGMESH_TEST_GRAPHICS option ON"
-    << std::endl ;
-    return 0 ;
+    default_configure();
+    Logger::out( "RINGMeshView",
+        "To test RINGMesh viewer you need to configure ",
+        "the project with the RINGMESH_TEST_GRAPHICS option ON" );
+    return 0;
 }
 #endif

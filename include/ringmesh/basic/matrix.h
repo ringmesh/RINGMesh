@@ -38,6 +38,7 @@
 #include <ringmesh/basic/common.h>
 
 #include <deque>
+#include <memory>
 
 /*!
  * @file Template matix declarations and definitions 
@@ -50,22 +51,22 @@ namespace RINGMesh {
      * */
     enum MatrixType {
         heavy = 0, light = 1, other = 2
-    } ;
+    };
 
     /*!
      * @brief Basic container for the sparse matrix, i.e. the "elements".
      * */
     template< typename T >
     struct ElementImpl {
-        const static index_t NOT_USED = index_t( -1 ) ;
+        const static index_t NOT_USED = index_t( -1 );
         ElementImpl()
             : index( NOT_USED )
         {
         }
 
-        T value ;
-        index_t index ;
-    } ;
+        T value;
+        index_t index;
+    };
 
     /*!
      * @brief Basic "Row" of the matrix, this stores the elements of the matrix in a line-oriented way
@@ -73,114 +74,108 @@ namespace RINGMesh {
     template< typename T >
     class RowImpl {
     public:
-        typedef ElementImpl< T > Element ;
+        using Element = ElementImpl< T >;
 
         RowImpl()
-            : nb_elements_( 0 ), capacity_( 4 )
+            : elements_( new Element[4] ), nb_elements_( 0 ), capacity_( 4 )
         {
-            elements_ = new Element[capacity_] ;
-        }
-
-        ~RowImpl()
-        {
-            delete[] elements_ ;
         }
 
         void set_element( index_t j, const T& value )
         {
-            index_t index ;
+            index_t index;
             if( !find( j, index ) ) {
-                push_element( j, value ) ;
+                push_element( j, value );
             } else {
-                elements_[index].value = value ;
+                elements_[index].value = value;
             }
         }
 
         void push_element( index_t j, const T& value )
         {
             if( nb_elements_ == capacity_ ) {
-                grow() ;
+                grow();
             }
-            Element& elt = elements_[nb_elements_++ ] ;
-            elt.index = j ;
-            elt.value = value ;
+            Element& elt = elements_[nb_elements_++ ];
+            elt.index = j;
+            elt.value = value;
         }
 
         bool find( index_t j, index_t& index ) const
         {
             for( index_t e = 0; e < nb_elements_; e++ ) {
                 if( elements_[e].index == j ) {
-                    index = e ;
-                    return true ;
+                    index = e;
+                    return true;
                 }
             }
-            return false ;
+            return false;
         }
 
         bool exist( index_t j )
         {
             for( index_t e = 0; e < nb_elements_; e++ ) {
                 if( elements_[e].index == j ) {
-                    return true ;
+                    return true;
                 }
             }
-            return false ;
+            return false;
         }
 
         bool get_element( index_t j, T& value ) const
         {
-            index_t index ;
+            index_t index;
             if( !find( j, index ) ) {
-                return false ;
+                return false;
             }
-            value = elements_[index].value ;
-            return true ;
+            value = elements_[index].value;
+            return true;
         }
 
         void element( index_t e, T& value ) const
         {
-            ringmesh_assert( e < nb_elements_ ) ;
-            value = elements_[e].value ;
+            ringmesh_assert( e < nb_elements_ );
+            value = elements_[e].value;
         }
 
         index_t index( index_t e ) const
         {
-            ringmesh_assert( e < nb_elements_ ) ;
-            return elements_[e].index ;
+            ringmesh_assert( e < nb_elements_ );
+            return elements_[e].index;
         }
 
         T& operator[]( index_t i ) const
         {
-            ringmesh_assert( i < nb_elements_ ) ;
-            return elements_[i].value ;
+            ringmesh_assert( i < nb_elements_ );
+            return elements_[i].value;
         }
 
         index_t nb_elements() const
         {
-            return nb_elements_ ;
+            return nb_elements_;
         }
 
     private:
         void reallocate( index_t new_capacity )
         {
-            Element* new_elements = new Element[new_capacity] ;
-            std::copy( elements_, elements_ + nb_elements_, new_elements ) ;
-            delete[] elements_ ;
-            elements_ = new_elements ;
+            Element* new_elements = new Element[new_capacity];
+            std::copy( elements_.get(), elements_.get() + nb_elements_,
+                new_elements );
+            elements_.reset( new_elements );
         }
 
         void grow()
         {
-            ringmesh_assert( capacity_ != 0 ) ;
-            capacity_ = capacity_ * 2 ;
-            reallocate( capacity_ ) ;
+            ringmesh_assert( capacity_ != 0 );
+            capacity_ = capacity_ * 2;
+            reallocate( capacity_ );
         }
 
     private:
-        Element* elements_ ;
-        index_t nb_elements_ ;
-        index_t capacity_ ;
-    } ;
+        std::unique_ptr< Element[] > elements_;
+        index_t nb_elements_;
+        index_t capacity_;
+    };
 
     /*!
      *  @brief This is the parent class for sparse matrices, the main difference between light and heavy type matrices
@@ -189,17 +184,10 @@ namespace RINGMesh {
     template< typename T, typename RowType >
     class SparseMatrixImpl {
     public:
-        typedef RowImpl< RowType > Row ;
+        using Row = RowImpl< RowType >;
         SparseMatrixImpl( bool is_symmetrical = false )
-            : rows_( nullptr ), ni_( 0 ), nj_( 0 ), is_symmetrical_( is_symmetrical )
+            : ni_( 0 ), nj_( 0 ), is_symmetrical_( is_symmetrical )
         {
-        }
-
-        ~SparseMatrixImpl()
-        {
-            if( rows_ ) {
-                delete[] rows_ ;
-            }
         }
 
         /*!
@@ -210,8 +198,8 @@ namespace RINGMesh {
          */
         bool exist( index_t i, index_t j ) const
         { // test existence of the i-j element
-            ringmesh_assert( i < ni_ && j < nj_ && i >= 0 && j >= 0 ) ;
-            return rows_[i].exist( j ) ;
+            ringmesh_assert( i < ni_ && j < nj_ && i >= 0 && j >= 0 );
+            return rows_[i].exist( j );
         }
 
         /*!
@@ -221,8 +209,8 @@ namespace RINGMesh {
          */
         index_t get_nb_elements_in_line( index_t i ) const
         {
-            ringmesh_assert( i < ni_ ) ;
-            return rows_[i].nb_elements() ;
+            ringmesh_assert( i < ni_ );
+            return rows_[i].nb_elements();
         }
 
         /*!
@@ -233,7 +221,7 @@ namespace RINGMesh {
          */
         index_t get_column_in_line( index_t i, index_t e ) const
         {
-            return rows_[i].index( e ) ;
+            return rows_[i].index( e );
         }
 
         /*!
@@ -245,8 +233,8 @@ namespace RINGMesh {
          */
         bool get_index_in_line( index_t i, index_t j, index_t& index ) const
         {
-            ringmesh_assert( i < ni_ && j < nj_ && i >= 0 && j >= 0 ) ;
-            return rows_[i].find( j, index ) ;
+            ringmesh_assert( i < ni_ && j < nj_ && i >= 0 && j >= 0 );
+            return rows_[i].find( j, index );
         }
 
         /*!
@@ -255,7 +243,7 @@ namespace RINGMesh {
          */
         index_t ni() const
         {
-            return ni_ ;
+            return ni_;
         }
 
         /*!
@@ -264,7 +252,7 @@ namespace RINGMesh {
          */
         index_t nj() const
         {
-            return nj_ ;
+            return nj_;
         }
 
         /*!
@@ -273,7 +261,7 @@ namespace RINGMesh {
          */
         bool is_symmetrical() const
         {
-            return is_symmetrical_ ;
+            return is_symmetrical_;
         }
 
         /*!
@@ -283,9 +271,9 @@ namespace RINGMesh {
          */
         void build_matrix( index_t ni, index_t nj )
         {
-            ni_ = ni ;
-            nj_ = nj ;
-            rows_ = new Row[ni] ;
+            ni_ = ni;
+            nj_ = nj;
+            rows_.reset( new Row[ni] );
         }
 
         /*!
@@ -297,14 +285,14 @@ namespace RINGMesh {
          * */
         void get_element_in_line( index_t i, index_t e, T& value ) const
         {
-            ringmesh_assert_not_reached ;
+            ringmesh_assert_not_reached;
         }
 
     protected:
-        Row* rows_ ;
-        index_t ni_, nj_ ;// matrix dimensions
-        bool is_symmetrical_ ;
-    } ;
+        std::unique_ptr< Row[] > rows_;
+        index_t ni_, nj_; // matrix dimensions
+        bool is_symmetrical_;
+    };
 
     /*!
      * declaration of a template class SparseMatrix, it will be specialazed for the different MatrixType
@@ -312,8 +300,8 @@ namespace RINGMesh {
     template< typename T, MatrixType Light = MatrixType(
         2 * sizeof(T) <= 2 * sizeof(index_t) + sizeof(T) ) >
     class SparseMatrix: public SparseMatrixImpl< T, T > {
-    ringmesh_disable_copy( SparseMatrix ) ;
-    } ;
+    ringmesh_disable_copy( SparseMatrix );
+    };
 
     /*!
      * specialization of SparseMatrix for MatrixType "light"
@@ -321,7 +309,7 @@ namespace RINGMesh {
     template< typename T >
     class SparseMatrix< T, light > : public SparseMatrixImpl< T, T > {
     public:
-        typedef SparseMatrix< T, light > thisclass ;
+        using thisclass = SparseMatrix< T, light >;
         SparseMatrix( bool is_symetrical = false )
             : SparseMatrixImpl< T, T >( is_symetrical )
         {
@@ -336,13 +324,12 @@ namespace RINGMesh {
          * */
         bool set_element( index_t i, index_t j, const T& value )
         {
-            this->rows_[i].set_element( j, value ) ;
+            this->rows_[i].set_element( j, value );
             if( this->is_symmetrical_ ) {
-                this->rows_[j].set_element( i, value ) ;
+                this->rows_[j].set_element( i, value );
             }
-            return true ;
+            return true;
         }
-
 
         /*!
          * set the value of element i-j in the matrix without verifying
@@ -354,11 +341,11 @@ namespace RINGMesh {
          * */
         bool push_element( index_t i, index_t j, const T& value )
         {
-            this->rows_[i].push_element( j, value ) ;
+            this->rows_[i].push_element( j, value );
             if( this->is_symmetrical_ ) {
-                this->rows_[j].push_element( i, value ) ;
+                this->rows_[j].push_element( i, value );
             }
-            return true ;
+            return true;
         }
 
         /*
@@ -370,7 +357,7 @@ namespace RINGMesh {
          * */
         bool get_element( index_t i, index_t j, T& value ) const
         { // valeur du i_j_ieme element stocke sur la ligne
-            return this->rows_[i].get_element( j, value ) ;
+            return this->rows_[i].get_element( j, value );
         }
 
         /*!
@@ -381,13 +368,13 @@ namespace RINGMesh {
          * */
         void get_element_in_line( index_t i, index_t e, T& value ) const
         { // valeur du e_ieme element stocke sur la ligne
-            value = this->rows_[i][e] ;
+            value = this->rows_[i][e];
         }
 
     private:
-        SparseMatrix( const thisclass& rhs ) ;
-        thisclass& operator=( const thisclass& rhs ) ;
-    } ;
+        SparseMatrix( const thisclass& rhs );
+        thisclass& operator=( const thisclass& rhs );
+    };
 
     /*!
      * specialization of SparseMatrix for MatrixType "heavy" ,
@@ -399,7 +386,7 @@ namespace RINGMesh {
     template< typename T >
     class SparseMatrix< T, heavy > : public SparseMatrixImpl< T, index_t > {
     public:
-        typedef SparseMatrix< T, heavy > thisclass ;
+        using thisclass = SparseMatrix< T, heavy >;
         SparseMatrix( bool is_symetrical = false )
             : SparseMatrixImpl< T, index_t >( is_symetrical )
         {
@@ -415,19 +402,19 @@ namespace RINGMesh {
         bool set_element( index_t i, index_t j, const T& value )
         {
             // small difference with light type: we fill a deque
-            index_t value_id ;
+            index_t value_id;
             if( this->exist( i, j ) ) {
-                value_id = get_value_id( i, j ) ;
-                values_[value_id] = value ;
+                value_id = get_value_id( i, j );
+                values_[value_id] = value;
             } else {
-                values_.push_back( value ) ;
-                value_id = values_.size() - 1 ;
+                values_.push_back( value );
+                value_id = values_.size() - 1;
             }
-            this->rows_[i].set_element( j, value_id ) ;
+            this->rows_[i].set_element( j, value_id );
             if( this->is_symmetrical_ ) {
-                this->rows_[j].set_element( i, value_id ) ;
+                this->rows_[j].set_element( i, value_id );
             }
-            return true ;
+            return true;
         }
 
         /*
@@ -439,12 +426,12 @@ namespace RINGMesh {
          * */
         bool get_element( index_t i, index_t j, T& value ) const
         {
-            index_t value_id ;
+            index_t value_id;
             if( !this->rows_[i].get_element( j, value_id ) ) {
-                return false ;
+                return false;
             }
-            value = values_[value_id] ;
-            return true ;
+            value = values_[value_id];
+            return true;
         }
 
         /*!
@@ -455,50 +442,48 @@ namespace RINGMesh {
          * */
         void get_element_in_line( index_t i, index_t e, T& value ) const
         {
-            index_t value_id = this->rows_[i][e] ;
-            value = values_[value_id] ;
+            index_t value_id = this->rows_[i][e];
+            value = values_[value_id];
         }
 
         void print_matrix( void )
         {
-            std::cout << "deque size = " << values_.size() << std::endl ;
+            std::cout << "deque size = " << values_.size() << std::endl;
         }
 
     private:
         index_t get_value_id( index_t i, index_t j )
         {
-            return this->rows_[i].find( j ) ;
+            return this->rows_[i].find( j );
         }
 
-        SparseMatrix( const thisclass& rhs ) ;
-        thisclass& operator=( const thisclass& rhs ) ;
+        SparseMatrix( const thisclass& rhs );
+        thisclass& operator=( const thisclass& rhs );
 
     private:
-        std::deque< T > values_ ;
-    } ;
+        std::deque< T > values_;
+    };
 
     // Note: without light or heavy, it does not compile on Windows.
     // Error C2770. BC
     template< typename T >
-    void product_matrix_by_vector(
+    std::vector< T > product_matrix_by_vector(
         const SparseMatrix< T, light >& mat1,
-        const std::vector< T >& mat2,
-        std::vector< T >& result )
+        const std::vector< T >& mat2 )
     {
-        ringmesh_assert( mat1.nj() == mat2.size() ) ;
-
+        ringmesh_assert( mat1.nj() == mat2.size() );
+        std::vector< T > result( mat1.ni(), 0 );
         RINGMESH_PARALLEL_LOOP
         for( index_t i = 0; i < mat1.ni(); ++i ) {
-            ringmesh_assert( i >= 0 && i < result.size() ) ;
-            result[i] = 0. ;
             for( index_t e = 0; e < mat1.get_nb_elements_in_line( i ); ++e ) {
-                index_t j = mat1.get_column_in_line( i, e ) ;
-                T i_j_result ;
-                mat1.get_element_in_line( i, e, i_j_result ) ;
-                i_j_result *= mat2[j] ;
-                result[i] += i_j_result ;
+                index_t j = mat1.get_column_in_line( i, e );
+                T i_j_result;
+                mat1.get_element_in_line( i, e, i_j_result );
+                i_j_result *= mat2[j];
+                result[i] += i_j_result;
             }
         }
+        return result;
     }
 
 }

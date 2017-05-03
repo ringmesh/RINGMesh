@@ -37,6 +37,8 @@
 
 #include <ringmesh/basic/common.h>
 
+#include <memory>
+
 #include <geogram/basic/attributes.h>
 
 #include <geogram/mesh/mesh.h>
@@ -46,18 +48,17 @@
 #include <ringmesh/mesh/aabb.h>
 
 namespace RINGMesh {
-    class GeoModel ;
-    class MeshBaseBuilder ;
-    class Mesh0DBuilder ;
-    class Mesh1DBuilder ;
-    class Mesh2DBuilder ;
-    class Mesh3DBuilder ;
-    class MeshAllDBuilder ;
+    class GeoModel;
+    class MeshBaseBuilder;
+    class Mesh0DBuilder;
+    class Mesh1DBuilder;
+    class Mesh2DBuilder;
+    class Mesh3DBuilder;
 }
 
 namespace RINGMesh {
 
-    typedef std::string MeshType ;
+    using MeshType = std::string;
 
     /*!
      * class base class for encapsulating Mesh structure
@@ -66,23 +67,22 @@ namespace RINGMesh {
      * @note For now, we encapsulate the GEO::Mesh class.
      */
     class RINGMESH_API MeshBase: public GEO::Counted {
-    ringmesh_disable_copy( MeshBase ) ;
-        friend class MeshBaseBuilder ;
+    ringmesh_disable_copy( MeshBase );
+        friend class MeshBaseBuilder;
 
     public:
+        virtual ~MeshBase() = default;
 
-        virtual ~MeshBase() ;
-
-        virtual void save_mesh( const std::string& filename ) const = 0 ;
+        virtual void save_mesh( const std::string& filename ) const = 0;
 
         /*!
          * get access to GEO::MESH... only for GFX..
          * @todo Remove this function as soon as the GEO::MeshGFX is encapsulated
          */
-        virtual const GEO::Mesh& gfx_mesh() const = 0 ;
+        virtual const GEO::Mesh& gfx_mesh() const = 0;
 
         //TODO maybe reimplement the function with a RINGMesh::Mesh??
-        virtual void print_mesh_bounded_attributes() const = 0 ;
+        virtual void print_mesh_bounded_attributes() const = 0;
         /*!
          * \name Vertex methods
          * @{
@@ -92,13 +92,13 @@ namespace RINGMesh {
          * @param[in] v_id the vertex, in 0.. @function nb_vetices()-1.
          * @return const reference to the point that corresponds to the vertex.
          */
-        virtual const vec3& vertex( index_t v_id ) const = 0 ;
+        virtual const vec3& vertex( index_t v_id ) const = 0;
         /*
          * @brief Gets the number of vertices in the Mesh.
          */
-        virtual index_t nb_vertices() const = 0 ;
+        virtual index_t nb_vertices() const = 0;
 
-        virtual GEO::AttributesManager& vertex_attribute_manager() const = 0 ;
+        virtual GEO::AttributesManager& vertex_attribute_manager() const = 0;
 
         /*!
          * @brief return the NNSearch at vertices
@@ -106,19 +106,19 @@ namespace RINGMesh {
          */
         const NNSearch& vertices_nn_search() const
         {
-            if( vertices_nn_search_ == nullptr ) {
-                std::vector< vec3 > vec_vertices( nb_vertices() ) ;
+            if( !vertices_nn_search_ ) {
+                std::vector< vec3 > vec_vertices( nb_vertices() );
                 for( index_t v = 0; v < nb_vertices(); ++v ) {
-                    vec_vertices[v] = vertex( v ) ;
+                    vec_vertices[v] = vertex( v );
                 }
-                vertices_nn_search_ = new NNSearch( vec_vertices, true ) ;
+                vertices_nn_search_.reset( new NNSearch( vec_vertices, true ) );
             }
-            return *vertices_nn_search_ ;
+            return *vertices_nn_search_.get();
         }
 
-        virtual MeshType type_name() const = 0 ;
+        virtual MeshType type_name() const = 0;
 
-        virtual std::string default_extension() const = 0 ;
+        virtual std::string default_extension() const = 0;
 
         /*!
          * @}
@@ -130,39 +130,30 @@ namespace RINGMesh {
          * @param[in] single_precision if true, vertices are stored in single precision (float),
          * else they are stored as double precision (double)..
          */
-        MeshBase()
-            : vertices_nn_search_( nullptr )
-        {
-        }
+        MeshBase() = default;
 
     protected:
-        mutable NNSearch* vertices_nn_search_ ;
-    } ;
+        mutable std::unique_ptr< NNSearch > vertices_nn_search_;
+    };
 
     /*!
      * class for encapsulating isolated vertices structure
      */
     class RINGMESH_API Mesh0D: public virtual MeshBase {
-    ringmesh_disable_copy( Mesh0D ) ;
-        friend class Mesh0DBuilder ;
+    ringmesh_disable_copy( Mesh0D );
+        friend class Mesh0DBuilder;
 
     public:
-        virtual ~Mesh0D()
-        {
-        }
+        virtual ~Mesh0D() = default;
 
-        static Mesh0D* create_mesh( const MeshType type ) ;
+        static std::unique_ptr< Mesh0D > create_mesh( const MeshType type );
     protected:
         /*!
          * @brief Mesh0D constructor.
          */
-        Mesh0D()
-            : MeshBase()
-        {
-        }
-    } ;
-    typedef GEO::SmartPointer< Mesh0D > Mesh0D_var ;
-    typedef GEO::Factory0< Mesh0D > Mesh0DFactory ;
+        Mesh0D() = default;
+    };
+    using Mesh0DFactory = GEO::Factory0< Mesh0D >;
 #define ringmesh_register_mesh_0d(type) \
     geo_register_creator(RINGMesh::Mesh0DFactory, type, type::type_name_static())
 
@@ -170,18 +161,13 @@ namespace RINGMesh {
      * class for encapsulating 1D mesh component
      */
     class RINGMESH_API Mesh1D: public virtual MeshBase {
-    ringmesh_disable_copy( Mesh1D ) ;
-        friend class Mesh1DBuilder ;
-        friend class GeogramMeshBuilder ;
+    ringmesh_disable_copy( Mesh1D );
+        friend class Mesh1DBuilder;
 
     public:
-        virtual ~Mesh1D()
-        {
-            if( edges_nn_search_ != nullptr ) delete edges_nn_search_ ;
-            if( edges_aabb_ != nullptr ) delete edges_aabb_ ;
-        }
+        virtual ~Mesh1D() = default;
 
-        static Mesh1D* create_mesh( const MeshType type ) ;
+        static std::unique_ptr< Mesh1D > create_mesh( const MeshType type );
 
         /*
          * @brief Gets the index of an edge vertex.
@@ -189,28 +175,28 @@ namespace RINGMesh {
          * @param[in] vertex_id local index of the vertex, in {0,1}
          * @return the global index of vertex \param vertex_id in edge \param edge_id.
          */
-        virtual index_t edge_vertex( index_t edge_id, index_t vertex_id ) const = 0 ;
+        virtual index_t edge_vertex( index_t edge_id, index_t vertex_id ) const = 0;
 
         /*!
          * @brief Gets the number of all the edges in the whole Mesh.
          */
-        virtual index_t nb_edges() const = 0 ;
+        virtual index_t nb_edges() const = 0;
 
         /*!
          * @brief Gets the length of the edge \param edge_id
          */
         double edge_length( index_t edge_id ) const
         {
-            const vec3& e0 = vertex( edge_vertex( edge_id, 0 ) ) ;
-            const vec3& e1 = vertex( edge_vertex( edge_id, 1 ) ) ;
-            return ( e1 - e0 ).length() ;
+            const vec3& e0 = vertex( edge_vertex( edge_id, 0 ) );
+            const vec3& e1 = vertex( edge_vertex( edge_id, 1 ) );
+            return ( e1 - e0 ).length();
         }
 
         vec3 edge_barycenter( index_t edge_id ) const
         {
-            const vec3& e0 = vertex( edge_vertex( edge_id, 0 ) ) ;
-            const vec3& e1 = vertex( edge_vertex( edge_id, 1 ) ) ;
-            return ( e1 + e0 ) / 2. ;
+            const vec3& e0 = vertex( edge_vertex( edge_id, 0 ) );
+            const vec3& e1 = vertex( edge_vertex( edge_id, 1 ) );
+            return ( e1 + e0 ) / 2.;
         }
 
         /*!
@@ -219,39 +205,35 @@ namespace RINGMesh {
          */
         const NNSearch& edges_nn_search() const
         {
-            if( edges_nn_search_ == nullptr ) {
-                std::vector< vec3 > edge_centers( nb_edges() ) ;
+            if( !edges_nn_search_ ) {
+                std::vector< vec3 > edge_centers( nb_edges() );
                 for( index_t e = 0; e < nb_edges(); ++e ) {
-                    edge_centers[e] = edge_barycenter( e ) ;
+                    edge_centers[e] = edge_barycenter( e );
                 }
-                edges_nn_search_ = new NNSearch( edge_centers, true ) ;
+                edges_nn_search_.reset( new NNSearch( edge_centers, true ) );
             }
-            return *edges_nn_search_ ;
+            return *edges_nn_search_.get();
         }
         /*!
          * @brief Creates an AABB tree for a Mesh edges
          */
         const AABBTree1D& edges_aabb() const
         {
-            if( edges_aabb_ == nullptr ) {
-                edges_aabb_ = new AABBTree1D( *this ) ;
+            if( !edges_aabb_ ) {
+                edges_aabb_.reset( new AABBTree1D( *this ) );
             }
-            return *edges_aabb_ ;
+            return *edges_aabb_.get();
         }
 
-        virtual GEO::AttributesManager& edge_attribute_manager() const = 0 ;
+        virtual GEO::AttributesManager& edge_attribute_manager() const = 0;
     protected:
-        Mesh1D()
-            : MeshBase(), edges_nn_search_( nullptr ), edges_aabb_( nullptr )
-        {
-        }
+        Mesh1D() = default;
 
     protected:
-        mutable NNSearch* edges_nn_search_ ;
-        mutable AABBTree1D* edges_aabb_ ;
-    } ;
-    typedef GEO::SmartPointer< Mesh1D > Mesh1D_var ;
-    typedef GEO::Factory0< Mesh1D > Mesh1DFactory ;
+        mutable std::unique_ptr< NNSearch > edges_nn_search_;
+        mutable std::unique_ptr< AABBTree1D > edges_aabb_;
+    };
+    using Mesh1DFactory = GEO::Factory0< Mesh1D >;
 #define ringmesh_register_mesh_1d(type) \
     geo_register_creator(RINGMesh::Mesh1DFactory, type, type::type_name_static())
 
@@ -259,17 +241,13 @@ namespace RINGMesh {
      * class for encapsulating 2D mesh component
      */
     class RINGMESH_API Mesh2D: public virtual MeshBase {
-    ringmesh_disable_copy( Mesh2D ) ;
-        friend class Mesh2DBuilder ;
+    ringmesh_disable_copy( Mesh2D );
+        friend class Mesh2DBuilder;
 
     public:
-        virtual ~Mesh2D()
-        {
-            if( nn_search_ != nullptr ) delete nn_search_ ;
-            if( facets_aabb_ != nullptr ) delete facets_aabb_ ;
-        }
+        virtual ~Mesh2D() = default;
 
-        static Mesh2D* create_mesh( const MeshType type ) ;
+        static std::unique_ptr< Mesh2D > create_mesh( const MeshType type );
 
         /*!
          * @brief Gets the vertex index by facet index and local vertex index.
@@ -278,17 +256,17 @@ namespace RINGMesh {
          */
         virtual index_t facet_vertex(
             index_t facet_id,
-            index_t vertex_id ) const = 0 ;
+            index_t vertex_id ) const = 0;
 
         /*!
          * @brief Gets the number of all facets in the whole Mesh.
          */
-        virtual index_t nb_facets() const = 0 ;
+        virtual index_t nb_facets() const = 0;
         /*!
          * @brief Gets the number of vertices in the facet \param facet_id.
          * @param[in] facet_id facet index
          */
-        virtual index_t nb_facet_vertices( index_t facet_id ) const = 0 ;
+        virtual index_t nb_facet_vertices( index_t facet_id ) const = 0;
         /*!
          * @brief Gets the next vertex index in the facet \param facet_id.
          * @param[in] facet_id facet index
@@ -296,11 +274,11 @@ namespace RINGMesh {
          */
         index_t next_facet_vertex( index_t facet_id, index_t vertex_id ) const
         {
-            ringmesh_assert( vertex_id < nb_facet_vertices( facet_id ) ) ;
+            ringmesh_assert( vertex_id < nb_facet_vertices( facet_id ) );
             if( vertex_id != nb_facet_vertices( facet_id ) - 1 ) {
-                return vertex_id + 1 ;
+                return vertex_id + 1;
             } else {
-                return 0 ;
+                return 0;
             }
         }
         /*!
@@ -319,7 +297,7 @@ namespace RINGMesh {
             index_t f,
             index_t e,
             index_t& next_f,
-            index_t& next_e ) const ;
+            index_t& next_e ) const;
 
         /*!
          * @brief Gets the previous vertex index in the facet \param facet_id.
@@ -328,11 +306,11 @@ namespace RINGMesh {
          */
         index_t prev_facet_vertex( index_t facet_id, index_t vertex_id ) const
         {
-            ringmesh_assert( vertex_id < nb_facet_vertices( facet_id ) ) ;
+            ringmesh_assert( vertex_id < nb_facet_vertices( facet_id ) );
             if( vertex_id > 0 ) {
-                return vertex_id - 1 ;
+                return vertex_id - 1;
             } else {
-                return nb_facet_vertices( facet_id ) - 1 ;
+                return nb_facet_vertices( facet_id ) - 1;
             }
         }
 
@@ -353,7 +331,7 @@ namespace RINGMesh {
             index_t f,
             index_t e,
             index_t& prev_f,
-            index_t& prev_e ) const ;
+            index_t& prev_e ) const;
 
         /*!
          * @brief Get the vertex index in a facet @param facet_index from its
@@ -362,7 +340,7 @@ namespace RINGMesh {
          */
         index_t vertex_index_in_facet(
             index_t facet_index,
-            index_t vertex_id ) const ;
+            index_t vertex_id ) const;
 
         /*!
          * @brief Compute closest vertex in a facet to a point
@@ -372,7 +350,7 @@ namespace RINGMesh {
          */
         index_t closest_vertex_in_facet(
             index_t facet_index,
-            const vec3& query_point ) const ;
+            const vec3& query_point ) const;
 
         /*!
          * @brief Get the first facet of the surface that has an edge linking the two vertices (ids in the surface)
@@ -381,25 +359,23 @@ namespace RINGMesh {
          * @param[in] in1 Index of the second vertex in the surface
          * @return NO_ID or the index of the facet
          */
-        index_t facet_from_vertex_ids( index_t in0, index_t in1 ) const ;
+        index_t facet_from_vertex_ids( index_t in0, index_t in1 ) const;
 
         /*!
          * @brief Determines the facets around a vertex
          * @param[in] vertex_id Index of the vertex in the surface
-         * @param[in] result Indices of the facets containing @param P
          * @param[in] border_only If true only facets on the border are considered
          * @param[in] f0 (Optional) Index of one facet containing the vertex @param P
-         * @return The number of facets found
+         * @return Indices of the facets containing @param P
          * @note If a facet containing the vertex is given, facets around this
          * vertex is search by propagation. Else, a first facet is found by brute
          * force algorithm, and then the other by propagation
          * @todo Try to use a AABB tree to remove @param first_facet. [PA]
          */
-        index_t facets_around_vertex(
+        std::vector< index_t > facets_around_vertex(
             index_t vertex_id,
-            std::vector< index_t >& result,
             bool border_only,
-            index_t f0 ) const ;
+            index_t f0 ) const;
 
         /*!
          * @brief Gets an adjacent facet index by facet index and local edge index.
@@ -410,20 +386,20 @@ namespace RINGMesh {
          */
         virtual index_t facet_adjacent(
             index_t facet_id,
-            index_t edge_id ) const = 0 ;
+            index_t edge_id ) const = 0;
 
-        virtual GEO::AttributesManager& facet_attribute_manager() const = 0 ;
+        virtual GEO::AttributesManager& facet_attribute_manager() const = 0;
         /*!
          * @brief Tests whether all the facets are triangles. when all the facets are triangles, storage and access is optimized.
          * @return True if all facets are triangles and False otherwise.
          */
-        virtual bool facets_are_simplicies() const = 0 ;
+        virtual bool facets_are_simplicies() const = 0;
         /*!
          * return true if the facet \param facet_id is a triangle
          */
         bool is_triangle( index_t facet_id ) const
         {
-            return nb_facet_vertices( facet_id ) == 3 ;
+            return nb_facet_vertices( facet_id ) == 3;
         }
 
         /*!
@@ -431,7 +407,7 @@ namespace RINGMesh {
          */
         bool is_edge_on_border( index_t facet_index, index_t vertex_index ) const
         {
-            return facet_adjacent( facet_index, vertex_index ) == NO_ID ;
+            return facet_adjacent( facet_index, vertex_index ) == NO_ID;
         }
 
         /*!
@@ -441,10 +417,10 @@ namespace RINGMesh {
         {
             for( index_t v = 0; v < nb_facet_vertices( facet_index ); v++ ) {
                 if( is_edge_on_border( facet_index, v ) ) {
-                    return true ;
+                    return true;
                 }
             }
-            return false ;
+            return false;
         }
 
         /*!
@@ -454,11 +430,9 @@ namespace RINGMesh {
          */
         double facet_edge_length( index_t facet_id, index_t vertex_id ) const
         {
-            const vec3& e0 = vertex( facet_vertex( facet_id, vertex_id ) ) ;
-            const vec3& e1 = vertex(
-                facet_vertex( facet_id,
-                    next_facet_vertex( facet_id, vertex_id ) ) ) ;
-            return ( e1 - e0 ).length() ;
+            const vec3& e0 = vertex( facet_edge_vertex( facet_id, vertex_id, 0 ) );
+            const vec3& e1 = vertex( facet_edge_vertex( facet_id, vertex_id, 1 ) );
+            return ( e1 - e0 ).length();
         }
         /*!
          * @brief Gets the barycenter of the edge starting at a given vertex
@@ -467,11 +441,29 @@ namespace RINGMesh {
          */
         vec3 facet_edge_barycenter( index_t facet_id, index_t vertex_id ) const
         {
-            const vec3& e0 = vertex( facet_vertex( facet_id, vertex_id ) ) ;
-            const vec3& e1 = vertex(
-                facet_vertex( facet_id,
-                    next_facet_vertex( facet_id, vertex_id ) ) ) ;
-            return ( e1 + e0 ) / 2. ;
+            const vec3& e0 = vertex( facet_edge_vertex( facet_id, vertex_id, 0 ) );
+            const vec3& e1 = vertex( facet_edge_vertex( facet_id, vertex_id, 1 ) );
+            return ( e1 + e0 ) / 2.;
+        }
+        /*!
+         * @brief Gets the vertex index on the facet edge
+         * @param[in] facet_id index of the facet
+         * @param[in] edge_id index of the edge in the facet \param facet_id
+         * @param[in] vertex_id index of the local vertex in the edge \param edge_id (0 or 1)
+         * @return the vertex index
+         */
+        index_t facet_edge_vertex(
+            index_t facet_id,
+            index_t edge_id,
+            index_t vertex_id ) const
+        {
+            ringmesh_assert( vertex_id < 2 );
+            if( vertex_id == 0 ) {
+                return facet_vertex( facet_id, edge_id );
+            } else {
+                return facet_vertex( facet_id,
+                    ( edge_id + vertex_id ) % nb_facet_vertices( facet_id ) );
+            }
         }
 
         /*!
@@ -481,12 +473,43 @@ namespace RINGMesh {
          */
         vec3 facet_normal( index_t facet_id ) const
         {
-            const vec3& p1 = vertex( facet_vertex( facet_id, 0 ) ) ;
-            const vec3& p2 = vertex( facet_vertex( facet_id, 1 ) ) ;
-            const vec3& p3 = vertex( facet_vertex( facet_id, 2 ) ) ;
-            vec3 norm = cross( p2 - p1, p3 - p1 ) ;
-            return normalize( norm ) ;
+            const vec3& p1 = vertex( facet_vertex( facet_id, 0 ) );
+            const vec3& p2 = vertex( facet_vertex( facet_id, 1 ) );
+            const vec3& p3 = vertex( facet_vertex( facet_id, 2 ) );
+            vec3 norm = cross( p2 - p1, p3 - p1 );
+            return normalize( norm );
         }
+
+        /*!
+         * @brief Computes the normal of the Mesh2D at the vertex location
+         * it computes the average value of facet normal neighbors
+         * @param[in] vertex_id the vertex index
+         * @param[in] f0 index of a facet that contain the vertex \param vertex_id
+         * @return the normal at the given vertex
+         */
+        vec3 normal_at_vertex( index_t vertex_id, index_t f0 = NO_ID ) const
+        {
+            ringmesh_assert( vertex_id < nb_vertices() );
+            index_t f = 0;
+            while( f0 == NO_ID && f < nb_facets() ) {
+                for( index_t lv = 0; lv < nb_facet_vertices( f ); lv++ ) {
+                    if( facet_vertex( f, lv ) == vertex_id ) {
+                        f0 = f;
+                        break;
+                    }
+                }
+                f++;
+            }
+
+            std::vector< index_t > facet_ids = facets_around_vertex( vertex_id,
+                false, f0 );
+            vec3 norm;
+            for( index_t facet_id : facet_ids ) {
+                norm += facet_normal( facet_id );
+            }
+            return normalize( norm );
+        }
+
         /*!
          * Computes the Mesh facet barycenter
          * @param[in] facet_id the facet index
@@ -494,13 +517,13 @@ namespace RINGMesh {
          */
         vec3 facet_barycenter( index_t facet_id ) const
         {
-            vec3 result( 0.0, 0.0, 0.0 ) ;
-            double count = 0.0 ;
+            vec3 result( 0.0, 0.0, 0.0 );
+            double count = 0.0;
             for( index_t v = 0; v < nb_facet_vertices( facet_id ); ++v ) {
-                result += vertex( facet_vertex( facet_id, v ) ) ;
-                count += 1.0 ;
+                result += vertex( facet_vertex( facet_id, v ) );
+                count += 1.0;
             }
-            return ( 1.0 / count ) * result ;
+            return ( 1.0 / count ) * result;
         }
         /*!
          * Computes the Mesh facet area
@@ -509,17 +532,17 @@ namespace RINGMesh {
          */
         double facet_area( index_t facet_id ) const
         {
-            double result = 0.0 ;
+            double result = 0.0;
             if( nb_facet_vertices( facet_id ) == 0 ) {
-                return result ;
+                return result;
             }
-            const vec3& p1 = vertex( facet_vertex( facet_id, 0 ) ) ;
+            const vec3& p1 = vertex( facet_vertex( facet_id, 0 ) );
             for( index_t i = 1; i + 1 < nb_facet_vertices( facet_id ); i++ ) {
-                const vec3& p2 = vertex( facet_vertex( facet_id, i ) ) ;
-                const vec3& p3 = vertex( facet_vertex( facet_id, i + 1 ) ) ;
-                result += 0.5 * length( cross( p2 - p1, p3 - p1 ) ) ;
+                const vec3& p2 = vertex( facet_vertex( facet_id, i ) );
+                const vec3& p3 = vertex( facet_vertex( facet_id, i + 1 ) );
+                result += 0.5 * length( cross( p2 - p1, p3 - p1 ) );
             }
-            return result ;
+            return result;
         }
 
         /*!
@@ -527,37 +550,33 @@ namespace RINGMesh {
          */
         const NNSearch& facets_nn_search() const
         {
-            if( nn_search_ == nullptr ) {
-                std::vector< vec3 > facet_centers( nb_facets() ) ;
+            if( !nn_search_ ) {
+                std::vector< vec3 > facet_centers( nb_facets() );
                 for( index_t f = 0; f < nb_facets(); ++f ) {
-                    facet_centers[f] = facet_barycenter( f ) ;
+                    facet_centers[f] = facet_barycenter( f );
                 }
-                nn_search_ = new NNSearch( facet_centers, true ) ;
+                nn_search_.reset( new NNSearch( facet_centers, true ) );
             }
-            return *nn_search_ ;
+            return *nn_search_.get();
         }
         /*!
          * @brief Creates an AABB tree for a Mesh facets
          */
         const AABBTree2D& facets_aabb() const
         {
-            if( facets_aabb_ == nullptr ) {
-                facets_aabb_ = new AABBTree2D( *this ) ;
+            if( !facets_aabb_ ) {
+                facets_aabb_.reset( new AABBTree2D( *this ) );
             }
-            return *facets_aabb_ ;
+            return *facets_aabb_;
         }
     protected:
-        Mesh2D()
-            : MeshBase(), nn_search_( nullptr ), facets_aabb_( nullptr )
-        {
-        }
+        Mesh2D() = default;
 
     protected:
-        mutable NNSearch* nn_search_ ;
-        mutable AABBTree2D* facets_aabb_ ;
-    } ;
-    typedef GEO::SmartPointer< Mesh2D > Mesh2D_var ;
-    typedef GEO::Factory0< Mesh2D > Mesh2DFactory ;
+        mutable std::unique_ptr< NNSearch > nn_search_;
+        mutable std::unique_ptr< AABBTree2D > facets_aabb_;
+    };
+    using Mesh2DFactory = GEO::Factory0< Mesh2D >;
 #define ringmesh_register_mesh_2d(type) \
     geo_register_creator(RINGMesh::Mesh2DFactory, type, type::type_name_static())
 
@@ -565,18 +584,13 @@ namespace RINGMesh {
      * class for encapsulating 3D mesh component
      */
     class RINGMESH_API Mesh3D: public virtual MeshBase {
-    ringmesh_disable_copy( Mesh3D ) ;
-        friend class Mesh3DBuilder ;
+    ringmesh_disable_copy( Mesh3D );
+        friend class Mesh3DBuilder;
 
     public:
-        virtual ~Mesh3D()
-        {
-            if( cell_facets_nn_search_ != nullptr ) delete cell_facets_nn_search_ ;
-            if( cell_nn_search_ != nullptr ) delete cell_nn_search_ ;
-            if( cell_aabb_ != nullptr ) delete cell_aabb_ ;
-        }
+        virtual ~Mesh3D() = default;
 
-        static Mesh3D* create_mesh( const MeshType type ) ;
+        static std::unique_ptr< Mesh3D > create_mesh( const MeshType type );
 
         /*!
          * @brief Gets a vertex index by cell and local vertex index.
@@ -585,7 +599,7 @@ namespace RINGMesh {
          * @return the global vertex index.
          * @precondition vertex_id<number of vertices of the cell.
          */
-        virtual index_t cell_vertex( index_t cell_id, index_t vertex_id ) const = 0 ;
+        virtual index_t cell_vertex( index_t cell_id, index_t vertex_id ) const = 0;
 
         /*!
          * @brief Gets a vertex index by cell and local edge and local vertex index.
@@ -598,7 +612,7 @@ namespace RINGMesh {
         virtual index_t cell_edge_vertex(
             index_t cell_id,
             index_t edge_id,
-            index_t vertex_id ) const = 0 ;
+            index_t vertex_id ) const = 0;
 
         /*!
          * @brief Gets a vertex by cell facet and local vertex index.
@@ -612,7 +626,7 @@ namespace RINGMesh {
         virtual index_t cell_facet_vertex(
             index_t cell_id,
             index_t facet_id,
-            index_t vertex_id ) const = 0 ;
+            index_t vertex_id ) const = 0;
 
         /*!
          * @brief Gets a facet index by cell and local facet index.
@@ -620,7 +634,7 @@ namespace RINGMesh {
          * @param[in] facet_id index of the facet in the cell \param cell_id
          * @return the global facet index.
          */
-        virtual index_t cell_facet( index_t cell_id, index_t facet_id ) const = 0 ;
+        virtual index_t cell_facet( index_t cell_id, index_t facet_id ) const = 0;
 
         /*!
          * Computes the Mesh cell edge length
@@ -630,9 +644,9 @@ namespace RINGMesh {
          */
         double cell_edge_length( index_t cell_id, index_t edge_id ) const
         {
-            const vec3& e0 = vertex( cell_edge_vertex( cell_id, edge_id, 0 ) ) ;
-            const vec3& e1 = vertex( cell_edge_vertex( cell_id, edge_id, 1 ) ) ;
-            return ( e1 - e0 ).length() ;
+            const vec3& e0 = vertex( cell_edge_vertex( cell_id, edge_id, 0 ) );
+            const vec3& e1 = vertex( cell_edge_vertex( cell_id, edge_id, 1 ) );
+            return ( e1 - e0 ).length();
         }
 
         /*!
@@ -643,9 +657,9 @@ namespace RINGMesh {
          */
         vec3 cell_edge_barycenter( index_t cell_id, index_t edge_id ) const
         {
-            const vec3& e0 = vertex( cell_edge_vertex( cell_id, edge_id, 0 ) ) ;
-            const vec3& e1 = vertex( cell_edge_vertex( cell_id, edge_id, 1 ) ) ;
-            return ( e1 + e0 ) / 2. ;
+            const vec3& e0 = vertex( cell_edge_vertex( cell_id, edge_id, 0 ) );
+            const vec3& e1 = vertex( cell_edge_vertex( cell_id, edge_id, 1 ) );
+            return ( e1 + e0 ) / 2.;
         }
 
         /*!
@@ -653,18 +667,18 @@ namespace RINGMesh {
          * @param[in] cell_id index of the cell
          * @return the number of facet of the cell \param cell_id
          */
-        virtual index_t nb_cell_facets( index_t cell_id ) const = 0 ;
+        virtual index_t nb_cell_facets( index_t cell_id ) const = 0;
         /*!
          * @brief Gets the total number of facet in a all cells
          */
-        virtual index_t nb_cell_facets() const = 0 ;
+        virtual index_t nb_cell_facets() const = 0;
 
         /*!
          * @brief Gets the number of edges in a cell
          * @param[in] cell_id index of the cell
          * @return the number of facet of the cell \param cell_id
          */
-        virtual index_t nb_cell_edges( index_t cell_id ) const = 0 ;
+        virtual index_t nb_cell_edges( index_t cell_id ) const = 0;
 
         /*!
          * @brief Gets the number of vertices of a facet in a cell
@@ -674,46 +688,44 @@ namespace RINGMesh {
          */
         virtual index_t nb_cell_facet_vertices(
             index_t cell_id,
-            index_t facet_id ) const = 0 ;
+            index_t facet_id ) const = 0;
 
         /*!
          * @brief Gets the number of vertices of a cell
          * @param[in] cell_id index of the cell
          * @return the number of vertices in the cell \param cell_id
          */
-        virtual index_t nb_cell_vertices( index_t cell_id ) const = 0 ;
+        virtual index_t nb_cell_vertices( index_t cell_id ) const = 0;
 
         /*!
          * @brief Gets the number of cells in the Mesh.
          */
-        virtual index_t nb_cells() const = 0 ;
+        virtual index_t nb_cells() const = 0;
 
-        virtual index_t cell_begin( index_t cell_id ) const = 0 ;
+        virtual index_t cell_begin( index_t cell_id ) const = 0;
 
-        virtual index_t cell_end( index_t cell_id ) const = 0 ;
+        virtual index_t cell_end( index_t cell_id ) const = 0;
 
         /*!
          * @return the index of the adjacent cell of \param cell_id along the facet \param facet_id
          */
-        virtual index_t cell_adjacent(
-            index_t cell_id,
-            index_t facet_id ) const = 0 ;
+        virtual index_t cell_adjacent( index_t cell_id, index_t facet_id ) const = 0;
 
-        virtual GEO::AttributesManager& cell_attribute_manager() const = 0 ;
+        virtual GEO::AttributesManager& cell_attribute_manager() const = 0;
 
-        virtual GEO::AttributesManager& cell_facet_attribute_manager() const = 0 ;
+        virtual GEO::AttributesManager& cell_facet_attribute_manager() const = 0;
 
         /*!
          * @brief Gets the type of a cell.
          * @param[in] cell_id the cell index, in 0..nb()-1
          */
-        virtual GEO::MeshCellType cell_type( index_t cell_id ) const = 0 ;
+        virtual GEO::MeshCellType cell_type( index_t cell_id ) const = 0;
 
         /*!
          * @brief Tests whether all the cells are tetrahedra. when all the cells are tetrahedra, storage and access is optimized.
          * @return True if all cells are tetrahedra and False otherwise.
          */
-        virtual bool cells_are_simplicies() const = 0 ;
+        virtual bool cells_are_simplicies() const = 0;
 
         /*!
          * Computes the Mesh cell facet barycenter
@@ -723,27 +735,27 @@ namespace RINGMesh {
          */
         vec3 cell_facet_barycenter( index_t cell_id, index_t facet_id ) const
         {
-            vec3 result( 0., 0., 0. ) ;
-            index_t nb_vertices = nb_cell_facet_vertices( cell_id, facet_id ) ;
+            vec3 result( 0., 0., 0. );
+            index_t nb_vertices = nb_cell_facet_vertices( cell_id, facet_id );
             for( index_t v = 0; v < nb_vertices; ++v ) {
-                result += vertex( cell_facet_vertex( cell_id, facet_id, v ) ) ;
+                result += vertex( cell_facet_vertex( cell_id, facet_id, v ) );
             }
-            ringmesh_assert( nb_vertices > 0 ) ;
+            ringmesh_assert( nb_vertices > 0 );
 
-            return result / nb_vertices ;
+            return result / static_cast< double >( nb_vertices );
         }
         /*!
          * Compute the non weighted barycenter of the \param cell_id
          */
         vec3 cell_barycenter( index_t cell_id ) const
         {
-            vec3 result( 0.0, 0.0, 0.0 ) ;
-            double count = 0.0 ;
+            vec3 result( 0.0, 0.0, 0.0 );
+            double count = 0.0;
             for( index_t v = 0; v < nb_cell_vertices( cell_id ); ++v ) {
-                result += vertex( cell_vertex( cell_id, v ) ) ;
-                count += 1.0 ;
+                result += vertex( cell_vertex( cell_id, v ) );
+                count += 1.0;
             }
-            return ( 1.0 / count ) * result ;
+            return ( 1.0 / count ) * result;
         }
         /*!
          * Computes the Mesh cell facet normal
@@ -753,29 +765,29 @@ namespace RINGMesh {
          */
         vec3 cell_facet_normal( index_t cell_id, index_t facet_id ) const
         {
-            ringmesh_assert( cell_id < nb_cells() ) ;
-            ringmesh_assert( facet_id < nb_cell_facets( cell_id ) ) ;
+            ringmesh_assert( cell_id < nb_cells() );
+            ringmesh_assert( facet_id < nb_cell_facets( cell_id ) );
 
-            const vec3& p1 = vertex( cell_facet_vertex( cell_id, facet_id, 0 ) ) ;
-            const vec3& p2 = vertex( cell_facet_vertex( cell_id, facet_id, 1 ) ) ;
-            const vec3& p3 = vertex( cell_facet_vertex( cell_id, facet_id, 2 ) ) ;
+            const vec3& p1 = vertex( cell_facet_vertex( cell_id, facet_id, 0 ) );
+            const vec3& p2 = vertex( cell_facet_vertex( cell_id, facet_id, 1 ) );
+            const vec3& p3 = vertex( cell_facet_vertex( cell_id, facet_id, 2 ) );
 
-            return cross( p2 - p1, p3 - p1 ) ;
+            return cross( p2 - p1, p3 - p1 );
         }
 
         /*!
          * @brief compute the volume of the cell \param cell_id.
          */
-        virtual double cell_volume( index_t cell_id ) const = 0 ;
+        virtual double cell_volume( index_t cell_id ) const = 0;
 
         index_t find_cell_corner( index_t cell_id, index_t vertex_id ) const
         {
             for( index_t v = 0; v < nb_cell_vertices( cell_id ); ++v ) {
                 if( cell_vertex( cell_id, v ) == vertex_id ) {
-                    return cell_vertex( cell_id, v ) ;
+                    return cell_vertex( cell_id, v );
                 }
             }
-            return NO_ID ;
+            return NO_ID;
         }
 
         /*!
@@ -784,84 +796,54 @@ namespace RINGMesh {
          */
         const NNSearch& cell_facets_nn_search() const
         {
-            if( cell_facets_nn_search_ == nullptr ) {
-                std::vector< vec3 > cell_facet_centers( nb_cell_facets() ) ;
-                index_t cf = 0 ;
+            if( !cell_facets_nn_search_ ) {
+                std::vector< vec3 > cell_facet_centers( nb_cell_facets() );
+                index_t cf = 0;
                 for( index_t c = 0; c < nb_cells(); ++c ) {
                     for( index_t f = 0; f < nb_cell_facets( c ); ++f ) {
-                        cell_facet_centers[cf] = cell_facet_barycenter( c, f ) ;
-                        ++cf ;
+                        cell_facet_centers[cf] = cell_facet_barycenter( c, f );
+                        ++cf;
                     }
                 }
-                cell_facets_nn_search_ = new NNSearch( cell_facet_centers, true ) ;
+                cell_facets_nn_search_.reset(
+                    new NNSearch( cell_facet_centers, true ) );
             }
-            return *cell_facets_nn_search_ ;
+            return *cell_facets_nn_search_.get();
         }
         /*!
          * @brief return the NNSearch at cells
          */
         const NNSearch& cells_nn_search() const
         {
-            if( cell_nn_search_ == nullptr ) {
-                std::vector< vec3 > cell_centers( nb_cells() ) ;
+            if( !cell_nn_search_ ) {
+                std::vector< vec3 > cell_centers( nb_cells() );
                 for( index_t c = 0; c < nb_cells(); ++c ) {
-                    cell_centers[c] = cell_barycenter( c ) ;
+                    cell_centers[c] = cell_barycenter( c );
                 }
-                cell_nn_search_ = new NNSearch( cell_centers, true ) ;
+                cell_nn_search_.reset( new NNSearch( cell_centers, true ) );
             }
-            return *cell_nn_search_ ;
+            return *cell_nn_search_.get();
         }
         /*!
          * @brief Creates an AABB tree for a Mesh cells
          */
         const AABBTree3D& cells_aabb() const
         {
-            if( cell_aabb_ == nullptr ) {
-                cell_aabb_ = new AABBTree3D( *this ) ;
+            if( !cell_aabb_ ) {
+                cell_aabb_.reset( new AABBTree3D( *this ) );
             }
-            return *cell_aabb_ ;
+            return *cell_aabb_.get();
         }
     protected:
-        Mesh3D()
-            :
-                MeshBase(),
-                cell_facets_nn_search_( nullptr ),
-                cell_nn_search_( nullptr ),
-                cell_aabb_( nullptr )
-        {
-        }
+        Mesh3D() = default;
 
     protected:
-        mutable NNSearch* cell_facets_nn_search_ ;
-        mutable NNSearch* cell_nn_search_ ;
-        mutable AABBTree3D* cell_aabb_ ;
-    } ;
-    typedef GEO::SmartPointer< Mesh3D > Mesh3D_var ;
-    typedef GEO::Factory0< Mesh3D > Mesh3DFactory ;
+        mutable std::unique_ptr< NNSearch > cell_facets_nn_search_;
+        mutable std::unique_ptr< NNSearch > cell_nn_search_;
+        mutable std::unique_ptr< AABBTree3D > cell_aabb_;
+    };
+    using Mesh3DFactory = GEO::Factory0< Mesh3D >;
 #define ringmesh_register_mesh_3d(type) \
     geo_register_creator(RINGMesh::Mesh3DFactory, type, type::type_name_static())
 
-    class RINGMESH_API MeshAllD: public virtual Mesh0D,
-        public virtual Mesh1D,
-        public virtual Mesh2D,
-        public virtual Mesh3D {
-    ringmesh_disable_copy( MeshAllD ) ;
-        friend class MeshAllDBuilder ;
-
-    public:
-        virtual ~MeshAllD()
-        {
-        }
-
-        static MeshAllD* create_mesh( const MeshType type ) ;
-    protected:
-        MeshAllD()
-            : Mesh0D(), Mesh1D(), Mesh2D(), Mesh3D()
-        {
-        }
-    } ;
-    typedef GEO::SmartPointer< MeshAllD > MeshAllD_var ;
-    typedef GEO::Factory0< MeshAllD > MeshAllDFactory ;
-#define ringmesh_register_mesh_alld(type) \
-    geo_register_creator(RINGMesh::MeshAllDFactory, type, type::type_name_static())
 }

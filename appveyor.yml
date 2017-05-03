@@ -1,14 +1,13 @@
 version: 1.0.{build}
 
+image: Visual Studio 2013
+
 environment:
   password:
     secure: 61164urZVvsMrnw+6P+GBQ==
     
 build:
   parallel: true
-  
-before_build:
- - del "C:\Program Files (x86)\MSBuild\14.0\Microsoft.Common.targets\ImportAfter\Xamarin.Common.targets"
  
 build_script:
  - cmd: >-

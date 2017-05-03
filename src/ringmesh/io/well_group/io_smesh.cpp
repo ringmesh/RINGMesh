@@ -36,25 +36,26 @@
 namespace {
     void merge_colocated_vertices( double epsilon, Mesh1D& mesh )
     {
-        std::vector< index_t > old2new ;
+        std::vector< index_t > old2new;
         index_t nb_colocated = mesh.vertices_nn_search().get_colocated_index_mapping(
-            epsilon, old2new ) ;
-        DEBUG( nb_colocated ) ;
+            epsilon, old2new );
+        DEBUG( nb_colocated );
         if( nb_colocated > 0 ) {
-            Mesh1DBuilder_var builder = Mesh1DBuilder::create_builder( mesh ) ;
+            std::unique_ptr< Mesh1DBuilder > builder = Mesh1DBuilder::create_builder(
+                mesh );
             for( index_t e = 0; e < mesh.nb_edges(); e++ ) {
                 for( index_t i = 0; i < 2; i++ ) {
-                    index_t v = mesh.edge_vertex( e, i ) ;
-                    builder->set_edge_vertex( e, i, old2new[v] ) ;
+                    index_t v = mesh.edge_vertex( e, i );
+                    builder->set_edge_vertex( e, i, old2new[v] );
                 }
             }
-            std::vector< bool > delete_vertices( mesh.nb_vertices(), false ) ;
+            std::vector< bool > delete_vertices( mesh.nb_vertices(), false );
             for( index_t v = 0; v < mesh.nb_vertices(); v++ ) {
                 if( old2new[v] != v ) {
-                    delete_vertices[v] = true ;
+                    delete_vertices[v] = true;
                 }
             }
-            builder->delete_vertices( delete_vertices ) ;
+            builder->delete_vertices( delete_vertices );
         }
     }
 
@@ -62,73 +63,67 @@ namespace {
     public:
         virtual void load( const std::string& filename, WellGroup& wells ) override
         {
-            GEO::LineInput in( filename ) ;
+            GEO::LineInput in( filename );
             if( !in.OK() ) {
-                throw RINGMeshException( "I/O", "Could not open file" ) ;
+                throw RINGMeshException( "I/O", "Could not open file" );
             }
 
-            Mesh1D* mesh = Mesh1D::create_mesh( GeogramMesh1D::type_name_static() ) ;
-            Mesh1DBuilder* builder = Mesh1DBuilder::create_builder( *mesh ) ;
-            std::string name = GEO::FileSystem::base_name( filename ) ;
+            std::unique_ptr< Mesh1D > mesh = Mesh1D::create_mesh(
+                GeogramMesh1D::type_name_static() );
+            std::unique_ptr< Mesh1DBuilder > builder = Mesh1DBuilder::create_builder(
+                *mesh );
+            std::string name = GEO::FileSystem::base_name( filename );
 
-            bool is_first_part = true ;
+            bool is_first_part = true;
 
             while( !in.eof() ) {
-                in.get_line() ;
-                in.get_fields() ;
-                if( in.nb_fields() == 0 ) continue ;
+                in.get_line();
+                in.get_fields();
+                if( in.nb_fields() == 0 ) continue;
                 if( GEO::String::string_starts_with( in.field( 0 ), "#" ) ) {
-                    continue ;
+                    continue;
                 }
                 if( is_first_part ) {
-                    index_t nb_vertices = in.field_as_uint( 0 ) ;
-                    builder->create_vertices( nb_vertices ) ;
-                    Box3d box ;
+                    index_t nb_vertices = in.field_as_uint( 0 );
+                    builder->create_vertices( nb_vertices );
+                    Box3d box;
 
                     for( index_t v = 0; v < nb_vertices; v++ ) {
                         do {
-                            in.get_line() ;
-                            in.get_fields() ;
-                        } while( in.nb_fields() == 0 ) ;
-                        vec3 point ;
-                        point[0] = in.field_as_double( 1 ) ;
-                        point[1] = in.field_as_double( 2 ) ;
-                        point[2] = in.field_as_double( 3 ) ;
-                        builder->set_vertex( v, point ) ;
-                        box.add_point( point ) ;
+                            in.get_line();
+                            in.get_fields();
+                        } while( in.nb_fields() == 0 );
+                        vec3 point;
+                        point[0] = in.field_as_double( 1 );
+                        point[1] = in.field_as_double( 2 );
+                        point[2] = in.field_as_double( 3 );
+                        builder->set_vertex( v, point );
+                        box.add_point( point );
                     }
-                    is_first_part = false ;
+                    is_first_part = false;
                 } else {
-                    index_t nb_edges = in.field_as_uint( 0 ) ;
-                    builder->create_edges( nb_edges ) ;
+                    index_t nb_edges = in.field_as_uint( 0 );
+                    builder->create_edges( nb_edges );
                     for( index_t e = 0; e < nb_edges; e++ ) {
                         do {
-                            in.get_line() ;
-                            in.get_fields() ;
-                        } while( in.nb_fields() == 0 ) ;
-                        builder->set_edge_vertex( e, 0, in.field_as_uint( 1 ) ) ;
-                        builder->set_edge_vertex( e, 1, in.field_as_uint( 2 ) ) ;
+                            in.get_line();
+                            in.get_fields();
+                        } while( in.nb_fields() == 0 );
+                        builder->set_edge_vertex( e, 0, in.field_as_uint( 1 ) );
+                        builder->set_edge_vertex( e, 1, in.field_as_uint( 2 ) );
                     }
-                    merge_colocated_vertices( wells.geomodel()->epsilon(), *mesh ) ;
-                    mesh->save_mesh( "test.geogram" ) ;
-                    index_t count = 0 ;
-                    for( index_t e = 0; e < mesh->nb_edges(); e++ ) {
-                        if( mesh->edge_length( e ) < wells.geomodel()->epsilon() ) count++ ;
-                    }
-                    DEBUG(count);
-                    wells.add_well( *mesh, name ) ;
-                    break ;
+                    merge_colocated_vertices( wells.geomodel()->epsilon(), *mesh );
+                    wells.add_well( *mesh, name );
+                    break;
                 }
             }
-            delete mesh ;
-            delete builder ;
         }
         virtual void save( const WellGroup& wells, const std::string& filename ) override
         {
-            ringmesh_unused( wells ) ;
-            ringmesh_unused( filename ) ;
+            ringmesh_unused( wells );
+            ringmesh_unused( filename );
             throw RINGMeshException( "I/O",
-                "Saving of a WellGroup from Smesh not implemented yet" ) ;
+                "Saving of a WellGroup from Smesh not implemented yet" );
         }
-    } ;
+    };
 }

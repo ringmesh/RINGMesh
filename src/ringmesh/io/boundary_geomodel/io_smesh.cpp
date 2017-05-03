@@ -44,52 +44,52 @@ namespace {
         virtual bool load( const std::string& filename, GeoModel& geomodel ) override
         {
             throw RINGMeshException( "I/O",
-                "Geological model loading of a from UCD mesh not yet implemented" ) ;
+                "Geological model loading of a from UCD mesh not yet implemented" );
         }
 
         virtual void save( const GeoModel& geomodel, const std::string& filename ) override
         {
-            std::ofstream out( filename.c_str() ) ;
+            std::ofstream out( filename.c_str() );
             if( out.bad() ) {
-                Logger::err( "I/O" ) << "Error when opening the file: "
-                    << filename.c_str() << std::endl ;
-                return ;
+                Logger::err( "I/O", "Error when opening the file: ",
+                    filename.c_str() );
+                return;
             }
-            out.precision( 16 ) ;
+            out.precision( 16 );
 
             /// 1. Write the unique vertices
-            out << "# Node list" << std::endl ;
+            out << "# Node list" << std::endl;
             out << "# node count, 3 dim, no attribute, no boundary marker"
-                << std::endl ;
-            out << geomodel.mesh.vertices.nb() << " 3 0 0" << std::endl ;
-            out << "# node index, node coordinates " << std::endl ;
+                << std::endl;
+            out << geomodel.mesh.vertices.nb() << " 3 0 0" << std::endl;
+            out << "# node index, node coordinates " << std::endl;
             for( index_t p = 0; p < geomodel.mesh.vertices.nb(); p++ ) {
-                const vec3& V = geomodel.mesh.vertices.vertex( p ) ;
+                const vec3& V = geomodel.mesh.vertices.vertex( p );
                 out << p << " " << " " << V.x << " " << V.y << " " << V.z
-                    << std::endl ;
+                    << std::endl;
             }
 
             /// 2. Write the triangles
-            out << "# Part 2 - facet list" << std::endl ;
-            out << "# facet count, no boundary marker" << std::endl ;
-            out << nb_facets( geomodel ) << "  0 " << std::endl ;
+            out << "# Part 2 - facet list" << std::endl;
+            out << "# facet count, no boundary marker" << std::endl;
+            out << nb_facets( geomodel ) << "  0 " << std::endl;
 
             for( index_t i = 0; i < geomodel.nb_surfaces(); ++i ) {
-                const Surface& S = geomodel.surface( i ) ;
+                const Surface& S = geomodel.surface( i );
                 for( index_t f = 0; f < S.nb_mesh_elements(); f++ ) {
-                    out << S.nb_mesh_element_vertices( f ) << " " ;
+                    out << S.nb_mesh_element_vertices( f ) << " ";
                     for( index_t v = 0; v < S.nb_mesh_element_vertices( f ); v++ ) {
                         out
-                            << geomodel.mesh.vertices.geomodel_vertex_id( S.gmme_id(),
-                                f, v ) << " " ;
+                            << geomodel.mesh.vertices.geomodel_vertex_id( S.gmme(),
+                                f, v ) << " ";
                     }
-                    out << std::endl ;
+                    out << std::endl;
                 }
             }
 
             // Do not forget the stupid zeros at the end of the file
-            out << std::endl << "0" << std::endl << "0" << std::endl ;
+            out << std::endl << "0" << std::endl << "0" << std::endl;
         }
-    } ;
+    };
 
 }

@@ -53,63 +53,63 @@
 namespace {
     void import_arg_group_stats()
     {
-        GEO::CmdLine::declare_arg_group( "stats", "Statistics options" ) ;
+        GEO::CmdLine::declare_arg_group( "stats", "Statistics options" );
         GEO::CmdLine::declare_arg( "stats:volume", false,
-            "Print statistics on the volume" ) ;
+            "Print statistics on the volume" );
         GEO::CmdLine::declare_arg( "stats:nb", true,
-            "Print statistics on the number of entities" ) ;
+            "Print statistics on the number of entities" );
     }
 }
 
 int main( int argc, char** argv )
 {
-    using namespace RINGMesh ;
+    using namespace RINGMesh;
 
     try {
 
-        default_configure() ;
+        default_configure();
 
-        print_header_information() ;
-        Logger::div( "RINGMesh-Stats" ) ;
-        Logger::out( "" ) << "Welcome to RINGMesh-Stats !" << std::endl ;
+        print_header_information();
+        Logger::div( "RINGMesh-Stats" );
+        Logger::out( "", "Welcome to RINGMesh-Stats !" );
 
-        CmdLine::import_arg_group( "in" ) ;
-        import_arg_group_stats() ;
+        CmdLine::import_arg_group( "in" );
+        import_arg_group_stats();
 
         if( argc == 1 ) {
-            GEO::CmdLine::show_usage() ;
-            return 0 ;
+            GEO::CmdLine::show_usage();
+            return 0;
         }
 
-        std::vector< std::string > filenames ;
+        std::vector< std::string > filenames;
         if( !GEO::CmdLine::parse( argc, argv, filenames ) ) {
-            return 1 ;
+            return 1;
         }
 
-        GEO::Stopwatch total( "Total time" ) ;
+        GEO::Stopwatch total( "Total time" );
 
-        std::string model_name = GEO::CmdLine::get_arg( "in:geomodel" ) ;
+        std::string model_name = GEO::CmdLine::get_arg( "in:geomodel" );
         if( model_name.empty() ) {
             throw RINGMeshException( "I/O",
-                "Give at least a filename in in:geomodel" ) ;
+                "Give at least a filename in in:geomodel" );
         }
-        GeoModel geomodel ;
-        geomodel_load( geomodel, model_name ) ;
+        GeoModel geomodel;
+        geomodel_load( geomodel, model_name );
 
         if( GEO::CmdLine::get_arg_bool( "stats:nb" ) ) {
-            print_geomodel_mesh_stats( geomodel ) ;
+            print_geomodel_mesh_stats( geomodel );
         }
 
         if( GEO::CmdLine::get_arg_bool( "stats:volume" ) ) {
-            print_geomodel_mesh_cell_volumes( geomodel ) ;
+            print_geomodel_mesh_cell_volumes( geomodel );
         }
 
     } catch( const RINGMeshException& e ) {
-        Logger::err( e.category() ) << e.what() << std::endl ;
-        return 1 ;
+        Logger::err( e.category(), e.what() );
+        return 1;
     } catch( const std::exception& e ) {
-        Logger::err( "Exception" ) << e.what() << std::endl ;
-        return 1 ;
+        Logger::err( "Exception", e.what() );
+        return 1;
     }
-    return 0 ;
+    return 0;
 }

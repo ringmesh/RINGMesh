@@ -46,7 +46,7 @@
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
 
 namespace RINGMesh {
-    class GeoModel ;
+    class GeoModel;
 }
 
 namespace RINGMesh {
@@ -54,7 +54,7 @@ namespace RINGMesh {
      * @brief Abstract base class describing one entity of a GeoModel
      */
     class RINGMESH_API GeoModelEntity {
-    ringmesh_disable_copy( GeoModelEntity ) ;
+    ringmesh_disable_copy( GeoModelEntity );
     public:
 
         /*!
@@ -78,45 +78,63 @@ namespace RINGMesh {
             FAULT,
             /// Volume Of Interest
             VOI
-        } ;
+        };
 
-        static GEOL_FEATURE determine_geological_type( const std::string& in ) ;
-        static std::string geol_name( GEOL_FEATURE ) ;
+        /*!
+         * @brief Map the name of a geological type with a value of GEOL_FEATURE
+         *
+         * @param[in] in Name of the feature. Can be
+         * \li "reverse_fault"
+         * \li "normal_fault"
+         * \li "fault"
+         * \li "top"
+         * \li "none"
+         * \li "topographic"
+         * \li "unconformity"
+         * \li "boundary"
+         * Other strings will end up in \p NO_GEOL
+         * @return The geological feature index
+         * @todo Add other types of unconformity, see RINGMesh::GeoModelEntity::TYPE. --GC
+         */
+        static GEOL_FEATURE determine_geological_type( const std::string& in );
+        /*!
+         * \return the (lowercase) string associated to a
+         * GeoModelELement::GEOL_FEATURE
+         */
+        static std::string geol_name( GEOL_FEATURE );
         static bool is_fault( GEOL_FEATURE T )
         {
-            return T == FAULT || T == REVERSE_FAULT || T == NORMAL_FAULT ;
+            return T == FAULT || T == REVERSE_FAULT || T == NORMAL_FAULT;
         }
         static bool is_stratigraphic_limit( GEOL_FEATURE T )
         {
-            return T == STRATI || T == UNCONFORMITY ;
+            return T == STRATI || T == UNCONFORMITY;
         }
 
-        virtual ~GeoModelEntity()
-        {
-        }
+        virtual ~GeoModelEntity();
 
-        virtual bool is_on_voi() const = 0 ;
-        virtual bool is_valid() const = 0 ;
+        virtual bool is_on_voi() const = 0;
+        virtual bool is_valid() const = 0;
 
         const GeoModel& geomodel() const
         {
-            return geomodel_ ;
+            return geomodel_;
         }
         const std::string& name() const
         {
-            return name_ ;
+            return name_;
         }
         index_t index() const
         {
-            return id_ ;
+            return id_;
         }
         bool has_geological_feature() const
         {
-            return geological_feature() != NO_GEOL ;
+            return geological_feature() != NO_GEOL;
         }
         GEOL_FEATURE geological_feature() const
         {
-            return geol_feature_ ;
+            return geol_feature_;
         }
 
     protected:
@@ -142,95 +160,92 @@ namespace RINGMesh {
         {
         }
 
-        virtual void copy( const GeoModelEntity& from )
+        void copy_name_and_geol_feature( const GeoModelEntity& from )
         {
-            name_ = from.name_ ;
-            geol_feature_ = from.geol_feature_ ;
+            name_ = from.name_;
+            geol_feature_ = from.geol_feature_;
         }
-        virtual bool is_index_valid() const = 0 ;
+        virtual bool is_index_valid() const = 0;
 
     protected:
         /// Reference to the GeoModel owning this entity
-        const GeoModel& geomodel_ ;
+        const GeoModel& geomodel_;
         /// Name of the entity - default is "Unnamed"
-        std::string name_ ;
+        std::string name_;
         /// Geological feature of this object - default is NO_GEOL
-        GEOL_FEATURE geol_feature_ ;
+        GEOL_FEATURE geol_feature_;
         /// Index of the entity
-        index_t id_ ;
-    } ;
-
-    typedef GeoModelEntity GME ;
+        index_t id_;
+    };
 
     class RINGMESH_API Universe: public GeoModelEntity {
-    ringmesh_disable_copy( Universe ) ;
+    ringmesh_disable_copy( Universe );
     public:
-        friend class UniverseAccess ;
+        friend class UniverseAccess;
 
-        Universe( const GeoModel& geomodel ) ;
+        Universe( const GeoModel& geomodel );
 
         static const UniverseType universe_type_name()
         {
-            return UniverseType() ;
+            return UniverseType();
         }
 
-        virtual ~Universe()
-        {
-        }
-        virtual bool is_valid() const override ;
+        virtual ~Universe() = default;
+
+        virtual bool is_valid() const override;
         virtual bool is_on_voi() const override
         {
-            return true ;
+            return true;
         }
         const UniverseType type_name() const
         {
-            return universe_type_name() ;
+            return universe_type_name();
         }
 
         index_t nb_boundaries() const
         {
-            return static_cast< index_t >( boundary_surfaces_.size() ) ;
+            return static_cast< index_t >( boundary_surfaces_.size() );
         }
-        gmme_t boundary_gmme( index_t i ) const
+        gmme_id boundary_gmme( index_t i ) const
         {
-            ringmesh_assert( i < nb_boundaries() ) ;
-            return boundary_surfaces_[i] ;
+            ringmesh_assert( i < nb_boundaries() );
+            return boundary_surfaces_[i];
         }
         bool side( index_t i ) const
         {
-            ringmesh_assert( i < nb_boundaries() ) ;
-            return boundary_surface_sides_[i] ;
+            ringmesh_assert( i < nb_boundaries() );
+            return boundary_surface_sides_[i];
         }
 
         virtual bool is_identification_valid() const
         {
-            return true ;
+            return true;
         }
 
     protected:
-        //@todo not used if editor is removed -> to delete
-        void copy( const Universe& from )
-        {
-            GME::copy( from ) ;
-            boundary_surfaces_ = from.boundary_surfaces_ ;
-            boundary_surface_sides_ = from.boundary_surface_sides_ ;
-        }
-
         virtual bool is_index_valid() const override
         {
-            return true ;
+            return true;
         }
 
     private:
-        std::vector< gmme_t > boundary_surfaces_ ;
-        std::vector< bool > boundary_surface_sides_ ;
+        void copy_universe(const Universe& from)
+        {
+            GeoModelEntity::copy_name_and_geol_feature(from);
+            boundary_surfaces_ = from.boundary_surfaces_;
+            boundary_surface_sides_ = from.boundary_surface_sides_;
+        }
 
-    } ;
+    private:
+        std::vector< gmme_id > boundary_surfaces_;
+        std::vector< bool > boundary_surface_sides_;
+
+    };
 
     class UniverseAccess {
-    ringmesh_disable_copy( UniverseAccess ) ;
-        friend class GeoModelBuilderTopology ;
-        friend class GeoModelBuilderRemoval ;
+    ringmesh_disable_copy( UniverseAccess );
+        friend class GeoModelBuilderTopology;
+        friend class GeoModelBuilderRemoval;
 
     private:
         UniverseAccess( Universe& universe )
@@ -238,23 +253,23 @@ namespace RINGMesh {
         {
         }
 
-        std::vector< gmme_t >& modifiable_boundaries()
+        std::vector< gmme_id >& modifiable_boundaries()
         {
-            return universe_.boundary_surfaces_ ;
+            return universe_.boundary_surfaces_;
         }
 
         std::vector< bool >& modifiable_sides()
         {
-            return universe_.boundary_surface_sides_ ;
+            return universe_.boundary_surface_sides_;
         }
 
         void copy( const Universe& from )
         {
-            universe_.copy( from ) ;
+            universe_.copy_universe( from );
         }
 
     private:
-        Universe& universe_ ;
-    } ;
+        Universe& universe_;
+    };
 
 } // namespace

@@ -36,7 +36,6 @@
 #pragma once
 
 #include <geogram/basic/geometry.h>
-#include <geogram/basic/logger.h>
 #include <geogram/basic/numeric.h>
 
 /*!
@@ -53,28 +52,26 @@ namespace RINGMesh {
 
     // Basic types used in RINGMesh
     // Using definitions of Geogram/basic/numeric.h   
-    using GEO::Numeric::float32 ;
-    using GEO::Numeric::float64 ;
+    using GEO::Numeric::float32;
+    using GEO::Numeric::float64;
 
-    using GEO::Numeric::max_float32 ;
-    using GEO::Numeric::min_float32 ;
-    using GEO::Numeric::max_float64 ;
-    using GEO::Numeric::min_float64 ;
+    using GEO::Numeric::max_float32;
+    using GEO::Numeric::min_float32;
+    using GEO::Numeric::max_float64;
+    using GEO::Numeric::min_float64;
 
-    static const double global_epsilon = 1E-8 ;
-    static const double global_epsilon_sq = global_epsilon * global_epsilon ;
-    static const double global_epsilon_3 = global_epsilon_sq * global_epsilon ;
+    static const double global_epsilon = 1E-8;
+    static const double global_epsilon_sq = global_epsilon * global_epsilon;
+    static const double global_epsilon_3 = global_epsilon_sq * global_epsilon;
 
     // This is an array of 3 doubles
-    using GEO::vec3 ;
+    using GEO::vec3;
     // This is an unsigned int
-    using GEO::index_t ;
+    using GEO::index_t;
     // This is an int
-    using GEO::signed_index_t ;
-
-    using GEO::Logger ;
+    using GEO::signed_index_t;
 
     // This is the value used in RINGMesh for a invalid index
-    static const index_t NO_ID = index_t( -1 ) ;
+    static const index_t NO_ID = index_t( -1 );
 
 }

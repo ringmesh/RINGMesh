@@ -33,42 +33,70 @@
  *     FRANCE
  */
 
-#include <ringmesh/io/io.h>
+#pragma once
 
-#include <ringmesh/geomodel/geomodel.h>
-#include <ringmesh/geomodel/geomodel_api.h>
-#include <ringmesh/geomodel/geomodel_builder.h>
-#include <ringmesh/geomodel/geomodel_builder_gocad.h>
-#include <ringmesh/geomodel/geomodel_entity.h>
-#include <ringmesh/geomodel/geomodel_validity.h>
+#include <ringmesh/basic/common.h>
+
+#include <mutex>
+
+#include <geogram/basic/logger.h>
 
 /*!
- * @file Implementation of classes to load and save surface GeoModels meshes
- * @author various
+ * @file Logger class declaration
+ * @author Arnaud Botella
  */
 
-namespace {
-    using namespace RINGMesh;
-
-#ifdef RINGMESH_WITH_GEOLOGYJS
-#    include "boundary_geomodel/io_html.cpp"
-#endif
-
-#include "boundary_geomodel/io_model3d.cpp"
-#include "boundary_geomodel/io_smesh.cpp"
-
-}
-/************************************************************************/
 namespace RINGMesh {
-    /*
-     * Initializes the possible handlers for IO GeoModel files
-     */
-    void GeoModelIOHandler::initialize_boundary_geomodel_output()
-    {
-        ringmesh_register_GeoModelIOHandler_creator( MLIOHandler, "ml" );
-        ringmesh_register_GeoModelIOHandler_creator( SMESHIOHandler, "smesh" );
-#ifdef RINGMESH_WITH_GEOLOGYJS
-        ringmesh_register_GeoModelIOHandler_creator( HTMLIOHandler, "html" );
-#endif
-    }
+
+    class RINGMESH_API Logger {
+    public:
+        static void div( const std::string& title )
+        {
+            std::lock_guard< std::mutex > lock( lock_ );
+            GEO::Logger::div( title );
+        }
+
+        template< typename ...Args >
+        static void out( const std::string& feature, const Args& ... args )
+        {
+            std::lock_guard< std::mutex > lock( lock_ );
+            log( GEO::Logger::out( feature ), args... );
+        }
+
+        template< typename ...Args >
+        static void err( const std::string& feature, const Args& ... args )
+        {
+            std::lock_guard< std::mutex > lock( lock_ );
+            log( GEO::Logger::err( feature ), args... );
+        }
+
+        template< typename ...Args >
+        static void warn( const std::string& feature, const Args& ... args )
+        {
+            std::lock_guard< std::mutex > lock( lock_ );
+            log( GEO::Logger::warn( feature ), args... );
+        }
+
+        static GEO::Logger* instance()
+        {
+            return GEO::Logger::instance();
+        }
+
+    private:
+        static void log( std::ostream& os )
+        {
+            os << std::endl;
+        }
+
+        template< class A0, class ...Args >
+        static void log( std::ostream& os, const A0& a0, const Args& ...args )
+        {
+            os << a0;
+            log( os, args... );
+        }
+
+    private:
+        static std::mutex lock_;
+    };
+
 }

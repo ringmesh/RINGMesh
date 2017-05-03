@@ -35,64 +35,74 @@
 
 #include <ringmesh/ringmesh_tests_config.h>
 
+#include <ringmesh/geomodel/geomodel.h>
 #include <ringmesh/geomodel/geomodel_builder.h>
 #include <ringmesh/geomodel/geomodel_validity.h>
 #include <ringmesh/io/io.h>
 
-/*! 
- * Load and fix a given structural model file.
- * @author Jeanne Pellerin
+/*! Tests the GeoModel invalidity tracking.
+ * Loads a .ml file, check its validity. Then, we alter the geomodel in order to
+ * break its validity and we check that we detect the invalidities.
+ * @returns 0 if success or an error code if not.
+ * @author Pierre Anquez
  */
+
+using namespace RINGMesh;
+
+void make_geomodel_copy(
+    const GeoModel& from,
+    const std::string& name,
+    GeoModel& to )
+{
+    GeoModelBuilder geomodel_breaker2( to );
+    geomodel_breaker2.copy.copy_geomodel( from );
+    geomodel_breaker2.info.set_geomodel_name( name );
+}
+
+void verdict( const GeoModel& invalid_model, const std::string& feature )
+{
+    if( is_geomodel_valid( invalid_model ) ) {
+        throw RINGMeshException( "RINGMesh Test", "Fail to " + feature );
+    } else {
+        Logger::out( "TEST", "Succeed to ", feature );
+    }
+}
+
 int main()
 {
-    using namespace RINGMesh;
-
     try {
         default_configure();
 
-        // Set an output log file
-        std::string log_file( ringmesh_test_output_path );
-        log_file += "log.txt";
-        GEO::FileLogger* file_logger = new GEO::FileLogger( log_file );
-        Logger::instance()->register_client( file_logger );
+        std::string input_model_file_name = ringmesh_test_data_path + "modelA6.ml";
 
-        GeoModel M;
-        std::string file_name( ringmesh_test_data_path );
-        file_name += "annot.ml";
+        GeoModel in;
+        bool loaded_model_is_valid = geomodel_load( in, input_model_file_name );
 
-        Logger::out( "RINGMesh Test", "Loading and fixing structural model:",
-            file_name );
-
-        // Set the debug directory for the validity checks
-        set_validity_errors_directory( ringmesh_test_output_path );
-
-        // Load the model
-        bool init_model_is_valid = geomodel_load( M, file_name );
-        if( init_model_is_valid ) {
+        if( !loaded_model_is_valid ) {
             throw RINGMeshException( "RINGMesh Test",
-                "Input test model " + M.name()
-                    + " must be invalid to check the repair functionalities." );
+                "Failed when loading model " + in.name()
+                    + ": the loaded model is not valid." );
         }
 
-        Logger::out( "RINGMesh Test", "Repairing" );
-        // Repair the model
+        Logger::out( "TEST", "Break geomodels:" );
 
-        GeoModelBuilder model_builder( M );
-        model_builder.repair.repair( GeoModelBuilderRepair::ALL );
+        {
+            GeoModel invalid_model;
+            make_geomodel_copy( in, "broken model 1", invalid_model );
+            GeoModelBuilder geomodel_breaker( invalid_model );
+            geomodel_breaker.topology.add_mesh_entity_boundary(
+                invalid_model.surface( 0 ).gmme(), 4 );
+            verdict( invalid_model, "detect artificial added surface boundary" );
+        }
 
-        // Test the validity again
-        if( is_geomodel_valid( M ) ) {
-            std::string fixed_file_name( ringmesh_test_output_path );
-            fixed_file_name += M.name() + "_repaired.ml";
-            geomodel_save( M, fixed_file_name );
-            Logger::out( "RINGMesh Test", "Invalid geological model ", M.name(),
-                " has been successfully fixed and is saved under: ",
-                fixed_file_name );
-            Logger::out( "TEST", "SUCCESS" );
-            return 0;
-        } else {
-            throw RINGMeshException( "RINGMesh Test",
-                "Fixing the invalid geological model " + M.name() + " failed." );
+        {
+            GeoModel invalid_model;
+            make_geomodel_copy( in, "broken model 2", invalid_model );
+            GeoModelBuilder geomodel_breaker( invalid_model );
+            geomodel_breaker.geology.add_mesh_entity_parent(
+                invalid_model.surface( 0 ).gmme(),
+                gmge_id( Interface::type_name_static(), 0 ) );
+            verdict( invalid_model, "detect addition of incoherent parent" );
         }
 
     } catch( const RINGMeshException& e ) {
@@ -102,4 +112,7 @@ int main()
         Logger::err( "Exception", e.what() );
         return 1;
     }
+    Logger::out( "TEST", "SUCCESS" );
+    return 0;
+
 }

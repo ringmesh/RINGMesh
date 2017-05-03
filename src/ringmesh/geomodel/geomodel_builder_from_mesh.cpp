@@ -44,71 +44,60 @@
  */
 
 namespace RINGMesh {
-    /*! @details Adds separately each connected component of the mesh
-     *          as a Surface of the geomodel under construction.
-     *          All the facets of the input mesh are visited and added to a
-     *          Surface of the GeoModel.
-     *          Connected components of the mesh are determined with a
-     *          propagation (or "coloriage" algorithm) using the adjacent_facet
-     *          information provided on the input GEO::Mesh.
-     *
-     * @todo Old code - old building - to delimit connected components
-     * vertices are duplicated in the input mesh
-     *
-     */
+
     void GeoModelBuilderSurfaceMesh::build_polygonal_surfaces_from_connected_components()
     {
         std::vector< index_t > global_vertex_id_to_id_in_cc( mesh_.vertices.nb(),
-            NO_ID ) ;
+            NO_ID );
 
-        std::vector< bool > visited( mesh_.facets.nb(), false ) ;
+        std::vector< bool > visited( mesh_.facets.nb(), false );
         for( index_t i = 0; i < mesh_.facets.nb(); i++ ) {
             if( !visited[i] ) {
-                std::vector< index_t > cc_corners ;
-                std::vector< index_t > cc_facets_ptr ;
-                std::vector< vec3 > cc_vertices ;
+                std::vector< index_t > cc_corners;
+                std::vector< index_t > cc_facets_ptr;
+                std::vector< vec3 > cc_vertices;
 
                 /// @todo Review : This should not be necessary as each vertex should
                 /// be in one and only one connected component. To test. [JP]
                 std::fill( global_vertex_id_to_id_in_cc.begin(),
-                    global_vertex_id_to_id_in_cc.end(), NO_ID ) ;
+                    global_vertex_id_to_id_in_cc.end(), NO_ID );
 
                 // First facet begin at corner 0
-                cc_facets_ptr.push_back( 0 ) ;
+                cc_facets_ptr.push_back( 0 );
 
                 // Propagate from facet #i 
-                std::stack< index_t > S ;
-                S.push( i ) ;
+                std::stack< index_t > S;
+                S.push( i );
                 while( !S.empty() ) {
-                    index_t f = S.top() ;
-                    S.pop() ;
-                    visited[f] = true ;
+                    index_t f = S.top();
+                    S.pop();
+                    visited[f] = true;
 
                     for( index_t c = mesh_.facets.corners_begin( f );
                         c < mesh_.facets.corners_end( f ); ++c ) {
-                        index_t v = mesh_.facet_corners.vertex( c ) ;
+                        index_t v = mesh_.facet_corners.vertex( c );
                         if( global_vertex_id_to_id_in_cc[v] == NO_ID ) {
                             index_t index =
-                                static_cast< index_t >( cc_vertices.size() ) ;
-                            global_vertex_id_to_id_in_cc[v] = index ;
-                            cc_vertices.push_back( mesh_.vertices.point( v ) ) ;
+                                static_cast< index_t >( cc_vertices.size() );
+                            global_vertex_id_to_id_in_cc[v] = index;
+                            cc_vertices.push_back( mesh_.vertices.point( v ) );
                         }
-                        cc_corners.push_back( global_vertex_id_to_id_in_cc[v] ) ;
+                        cc_corners.push_back( global_vertex_id_to_id_in_cc[v] );
 
-                        index_t n = mesh_.facet_corners.adjacent_facet( c ) ;
+                        index_t n = mesh_.facet_corners.adjacent_facet( c );
                         if( n != NO_ID && !visited[n] ) {
-                            visited[n] = true ;
-                            S.push( n ) ;
+                            visited[n] = true;
+                            S.push( n );
                         }
                     }
                     index_t nb_cc_corners =
-                        static_cast< index_t >( cc_corners.size() ) ;
-                    cc_facets_ptr.push_back( nb_cc_corners ) ;
+                        static_cast< index_t >( cc_corners.size() );
+                    cc_facets_ptr.push_back( nb_cc_corners );
                 }
 
-                gmme_t surface_gme = topology.create_mesh_entity< Surface >() ;
+                gmme_id surface_gme = topology.create_mesh_entity< Surface >();
                 geometry.set_surface_geometry( surface_gme.index(), cc_vertices,
-                    cc_corners, cc_facets_ptr ) ;
+                    cc_corners, cc_facets_ptr );
             }
         }
     }

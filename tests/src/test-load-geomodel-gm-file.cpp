@@ -46,73 +46,73 @@
  */
 
 namespace {
-    using namespace RINGMesh ;
+    using namespace RINGMesh;
 
     void load_geomodel( GeoModel& in, const std::string& filename )
     {
-        std::string input_model_file_name( ringmesh_test_data_path ) ;
-        input_model_file_name += filename ;
+        std::string input_model_file_name( ringmesh_test_data_path );
+        input_model_file_name += filename;
 
-        bool loaded_model_is_valid = geomodel_load( in, input_model_file_name ) ;
+        bool loaded_model_is_valid = geomodel_load( in, input_model_file_name );
 
         if( !loaded_model_is_valid ) {
             throw RINGMeshException( "RINGMesh Test",
                 "Failed when loading model " + in.name()
-                    + ": the loaded model is not valid." ) ;
+                    + ": the loaded model is not valid." );
         }
     }
 
     void save_and_compare_geomodels( const GeoModel& in )
     {
-        std::string output_model_file_name( ringmesh_test_output_path ) ;
-        output_model_file_name += "modelA1_saved_out.gm" ;
-        geomodel_save( in, output_model_file_name ) ;
+        std::string output_model_file_name( ringmesh_test_output_path );
+        output_model_file_name += "modelA1_saved_out.gm";
+        geomodel_save( in, output_model_file_name );
 
-        GeoModel in2 ;
-        bool reloaded_model_is_valid = geomodel_load( in2, output_model_file_name ) ;
+        GeoModel in2;
+        bool reloaded_model_is_valid = geomodel_load( in2, output_model_file_name );
 
         if( !reloaded_model_is_valid ) {
             throw RINGMeshException( "RINGMesh Test",
                 "Failed when reloading model " + in2.name()
-                    + ": the reloaded model is not valid." ) ;
+                    + ": the reloaded model is not valid." );
         }
 
-        std::string output_model_file_name_bis( ringmesh_test_output_path ) ;
-        output_model_file_name_bis += "modelA1_saved_out_bis.gm" ;
-        geomodel_save( in2, output_model_file_name_bis ) ;
+        std::string output_model_file_name_bis( ringmesh_test_output_path );
+        output_model_file_name_bis += "modelA1_saved_out_bis.gm";
+        geomodel_save( in2, output_model_file_name_bis );
 
         if( !compare_files( output_model_file_name, output_model_file_name_bis ) ) {
-            throw RINGMeshException( "TEST", "FAILED" ) ;
+            throw RINGMeshException( "TEST", "FAILED" );
         }
     }
 
     void test_file( const std::string& filename )
     {
-        GeoModel in ;
-        load_geomodel( in, filename ) ;
-        save_and_compare_geomodels( in ) ;
+        GeoModel in;
+        load_geomodel( in, filename );
+        save_and_compare_geomodels( in );
     }
 }
 
 int main()
 {
-    using namespace RINGMesh ;
+    using namespace RINGMesh;
 
     try {
-        default_configure() ;
+        default_configure();
 
-        Logger::out( "TEST" ) << "Test IO for a GeoModel in .gm" << std::endl ;
+        Logger::out( "TEST", "Test IO for a GeoModel in .gm" );
 
-        test_file( "modelA1_version0.gm" ) ;
-        test_file( "modelA1_version1.gm" ) ;
+        test_file( "modelA1_version0.gm" );
+        test_file( "modelA1_version1.gm" );
 
     } catch( const RINGMeshException& e ) {
-        Logger::err( e.category() ) << e.what() << std::endl ;
-        return 1 ;
+        Logger::err( e.category(), e.what() );
+        return 1;
     } catch( const std::exception& e ) {
-        Logger::err( "Exception" ) << e.what() << std::endl ;
-        return 1 ;
+        Logger::err( "Exception", e.what() );
+        return 1;
     }
-    Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
-    return 0 ;
+    Logger::out( "TEST", "SUCCESS" );
+    return 0;
 }

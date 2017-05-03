@@ -10,5 +10,5 @@ IMAGE_PATH             = @CMAKE_SOURCE_DIR@/doc
 
 # Input files
 
-INPUT                  = @CMAKE_SOURCE_DIR@/include/ringmesh @CMAKE_SOURCE_DIR@/src/ringmesh @CMAKE_SOURCE_DIR@/doc/dox @CMAKE_SOURCE_DIR@/src/third_party/geogram/src @CMAKE_SOURCE_DIR@/tests/src/
+INPUT                  = @CMAKE_SOURCE_DIR@/include/ringmesh @CMAKE_SOURCE_DIR@/src/ringmesh @CMAKE_SOURCE_DIR@/doc/dox @CMAKE_SOURCE_DIR@/third_party/geogram/src @CMAKE_SOURCE_DIR@/tests/src/
 
