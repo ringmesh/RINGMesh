@@ -5,6 +5,7 @@ New Features:
       Each call to Logger::XXX will output consistently in the console in multithreading environment
       The Logger uses variadic templates, you can use as many parameters as you want in the function.
  * Add possibility to run specific validity check on GeoModels (topology, geometry, all, ...)
+ * Add Feflow export using .fem file. Support wells as discrete fractures and mixed element mesh. 
 
 Bug fix:
  * Crash when GeoModelMesh was initialized before the GeoModelMeshEntity geometries were set.
