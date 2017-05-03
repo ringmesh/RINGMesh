@@ -214,21 +214,6 @@ namespace RINGMesh {
             const std::vector< index_t >& surface_facet_ptr );
 
         /*!
-         * @brief Sets the facets of a surface
-         * @param[in] surface_id Index of the surface
-         * @param[in] facets Indices of the mesh vertices defining the facets
-         * @param[in] facet_ptr Pointer to the beginning of a facet in facets
-         */
-        void set_surface_geometry(
-            index_t surface_id,
-            const std::vector< index_t >& facets,
-            const std::vector< index_t >& facet_ptr );
-
-        void set_surface_geometry(
-            index_t surface_id,
-            const std::vector< index_t >& triangle_vertices );
-
-        /*!
          * @brief Set the points and tetras for a region
          *
          * @param[in] region_id Index of the regions
@@ -292,6 +277,21 @@ namespace RINGMesh {
          * @{
          */
 
+        /*!
+         * @brief Sets the facets of a surface
+         * @param[in] surface_id Index of the surface
+         * @param[in] facets Indices of the mesh vertices defining the facets
+         * @param[in] facet_ptr Pointer to the beginning of a facet in facets
+         */
+        void set_surface_geometry(
+            index_t surface_id,
+            const std::vector< index_t >& facets,
+            const std::vector< index_t >& facet_ptr );
+
+        void set_surface_geometry(
+            index_t surface_id,
+            const std::vector< index_t >& triangle_vertices );
+            
         void set_surface_element_geometry(
             index_t surface_id,
             index_t facet_id,
