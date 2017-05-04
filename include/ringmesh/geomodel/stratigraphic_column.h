@@ -63,12 +63,20 @@ namespace RINGMesh {
          * @param[in] name Name of the feature
          * @param[in] type Rocktype
          */
-        RockFeature( const std::string& name, ROCKTYPE type );
+        RockFeature( const std::string& name, ROCKTYPE type )
+            : name_( name ), type_( type )
+        {
+        }
         /*!
          * @brief Simple constructor of RockFeature
          * @param[in] name Name of the feature
          */
-        RockFeature( const std::string& name );
+        RockFeature( const std::string& name )
+            : name_( name ), type_( ROCKTYPE::NONE )
+        {
+        }
+
+        ~RockFeature() = default;
         /*!
          *@return name of the feature
          */
@@ -80,9 +88,16 @@ namespace RINGMesh {
         {
             name_ = name;
         }
-        ~RockFeature();
-        const ROCKTYPE& get_rock_type() const;
-        void set_rock_type( ROCKTYPE type );
+
+        const ROCKTYPE& get_rock_type() const
+        {
+            return type_;
+        }
+
+        void set_rock_type( ROCKTYPE type )
+        {
+            type_ = type;
+        }
     private:
         std::string name_;
         ROCKTYPE type_;

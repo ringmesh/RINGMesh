@@ -37,32 +37,6 @@
 
 namespace RINGMesh {
 
-    RockFeature::RockFeature( const std::string& name )
-        : name_( name )
-    {
-        ROCKTYPE n = ROCKTYPE::NONE;
-        type_ = n;
-    }
-
-    RockFeature::RockFeature( const std::string& name, ROCKTYPE type )
-        : name_( name ), type_( type )
-    {
-    }
-
-    RockFeature::~RockFeature()
-    {
-    }
-
-    const ROCKTYPE& RockFeature::get_rock_type() const
-    {
-        return type_;
-    }
-
-    void RockFeature::set_rock_type( ROCKTYPE type )
-    {
-        type_ = type;
-    }
-
     StratigraphicUnit::StratigraphicUnit()
         : name_( "none" ), rock_( RockFeature( "none" ) )
     {
