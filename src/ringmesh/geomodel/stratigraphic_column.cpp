@@ -40,7 +40,7 @@ namespace RINGMesh {
     RockFeature::RockFeature( const std::string& name )
         : name_( name )
     {
-        ROCKTYPE n = NONE;
+        ROCKTYPE n = ROCKTYPE::NONE;
         type_ = n;
     }
 
@@ -64,20 +64,18 @@ namespace RINGMesh {
     }
 
     StratigraphicUnit::StratigraphicUnit()
-        :
-            name_( "none" ),
-            interface_top_( nullptr ),
-            interface_base_( nullptr ),
-            layer_( nullptr ),
-            relation_top_( CONFORMABLE ),
-            relation_base_( CONFORMABLE ),
-            rock_( RockFeature( "none" ) ),
-            min_thick_( 0 ),
-            max_thick_( max_float64() )
-
+        : name_( "none" ), rock_( RockFeature( "none" ) )
     {
     }
+
     StratigraphicUnit::StratigraphicUnit(
+        const std::string name,
+        const RockFeature& rock )
+        : name_( name ), rock_( rock )
+    {
+    }
+
+    UnsubdividedStratigraphicUnit::UnsubdividedStratigraphicUnit(
         const std::string name,
         const GeoModelGeologicalEntity& interface_base,
         const GeoModelGeologicalEntity& interface_top,
@@ -88,16 +86,14 @@ namespace RINGMesh {
         double min_thick,
         double max_thick )
         :
-            name_( name ),
+            StratigraphicUnit( name, rock ),
             interface_top_( &interface_top ),
             interface_base_( &interface_base ),
             layer_( &layer ),
             relation_top_( relation_top ),
             relation_base_( relation_base ),
-            rock_( rock ),
             min_thick_( min_thick ),
             max_thick_( max_thick )
-
     {
     }
 
@@ -146,7 +142,8 @@ namespace RINGMesh {
         return units_[index + 1];
     }
 
-    const StratigraphicUnit* StratigraphicColumn::get_unit( const std::string& name ) const
+    const StratigraphicUnit* StratigraphicColumn::get_unit(
+        const std::string& name ) const
     {
         index_t index = get_index( name );
         ringmesh_assert( index != NO_ID );
