@@ -47,8 +47,8 @@ namespace {
             StratigraphicColumnBuilderXML builder( column, geomodel,
                 GEO::FileSystem::base_name( filename, false ) );
             builder.load_file();
-            Logger::out( "I/O" ) << " Loaded stratigraphic column "
-                << geomodel.name() << " from " << filename << std::endl;
+            Logger::out( "I/O", " Loaded stratigraphic column ", geomodel.name(),
+                " from ", filename );
             GEO::FileSystem::set_current_working_directory( pwd );
         }
 

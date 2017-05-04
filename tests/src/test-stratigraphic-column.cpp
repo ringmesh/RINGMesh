@@ -46,8 +46,7 @@ using namespace RINGMesh;
 
 void test_rock_feature()
 {
-    RINGMesh::Logger::out( "RockFeature" ) << "Test RockFeature building and editing"
-        << std::endl;
+    RINGMesh::Logger::out( "RockFeature", "Test RockFeature building and editing" );
 
     RockFeature rock( "rock", NONE );
     if( rock.get_rock_type() != NONE ) {
@@ -74,8 +73,7 @@ void test_rock_feature()
 
 void test_stratigraphic_unit( const GeoModel& in )
 {
-    RINGMesh::Logger::out( "StratigraphicUnit" ) << "Test StratigraphicUnit building"
-        << std::endl;
+    RINGMesh::Logger::out( "StratigraphicUnit", "Test StratigraphicUnit building" );
 
     RockFeature rock( "rock", NONE );
     StratigraphicUnit test_strat_unit( "strat unit",
@@ -116,10 +114,10 @@ void test_stratigraphic_unit( const GeoModel& in )
 
 void test_stratigraphic_column_building( const GeoModel& in )
 {
-    RINGMesh::Logger::out( "StratigraphicColumn" )
-        << "Test StratigraphicColumn building" << std::endl;
-    RINGMesh::Logger::out( "StratigraphicColumn" )
-        << "Init RockFeature and StratigraphicUnit" << std::endl;
+    RINGMesh::Logger::out( "StratigraphicColumn",
+        "Test StratigraphicColumn building" );
+    RINGMesh::Logger::out( "StratigraphicColumn",
+        "Init RockFeature and StratigraphicUnit" );
 
     RockFeature rock( "rock", NONE );
 
@@ -149,8 +147,8 @@ void test_stratigraphic_column_building( const GeoModel& in )
         in.geological_entity( Layer::type_name_static(), 3 ), CONFORMABLE,
         CONFORMABLE, rock, 0, 10 );
 
-    RINGMesh::Logger::out( "StratigraphicColumn" )
-        << "First building with a vector of StratigraphicUnit" << std::endl;
+    RINGMesh::Logger::out( "StratigraphicColumn",
+        "First building with a vector of StratigraphicUnit" );
 
     std::vector< const StratigraphicUnit* > units;
     units.push_back( &one );
@@ -191,8 +189,8 @@ void test_stratigraphic_column_building( const GeoModel& in )
             "Failed when testing StratigraphicColumn::get_base_unit()" );
     }
 
-    RINGMesh::Logger::out( "StratigraphicColumn" )
-        << "Second building vith a vector of StratigraphicUnit" << std::endl;
+    RINGMesh::Logger::out( "StratigraphicColumn",
+        "Second building vith a vector of StratigraphicUnit" );
 
     StratigraphicColumn test2( "test 2" );
     test2.set_paradigm( CHRONOSTRATIGRAPHIC );
@@ -218,8 +216,8 @@ void test_stratigraphic_column_building( const GeoModel& in )
             "Failed when testing StratigraphicColumn::find_unit()" );
     }
 
-    RINGMesh::Logger::out( "StratigraphicColumn" )
-        << "Third building a mixed StratigraphicColumn" << std::endl;
+    RINGMesh::Logger::out( "StratigraphicColumn",
+        "Third building a mixed StratigraphicColumn" );
 
     std::vector< const StratigraphicUnit* > mixed;
     mixed.push_back( &one );
@@ -365,13 +363,13 @@ int main()
         test_load_from_gocad_xml_file();
         system( "Pause" );
     } catch( const RINGMeshException& e ) {
-        Logger::err( e.category() ) << e.what() << std::endl;
+        Logger::err( e.category(), e.what() );
         return 1;
     } catch( const std::exception& e ) {
-        Logger::err( "Exception" ) << e.what() << std::endl;
+        Logger::err( "Exception", e.what() );
         return 1;
     }
-    Logger::out( "TEST" ) << "SUCCESS" << std::endl;
+    Logger::out( "TEST", "SUCCESS" );
     return 0;
 }
 
