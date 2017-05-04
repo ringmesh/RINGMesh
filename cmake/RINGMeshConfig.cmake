@@ -31,7 +31,8 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
-SET(RINGMESH_ROOT_DIRECTORY ${CMAKE_MODULE_PATH}/..)
+get_filename_component(RINGMESH_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+SET(RINGMESH_ROOT_DIRECTORY "${RINGMESH_CMAKE_DIR}/..")
 
 find_path(RINGMesh_INCLUDE_DIR NAMES ringmesh PATHS ${RINGMESH_ROOT_DIRECTORY}/include)
 # On Windows there is no CMAKE_BUILD_TYPE variable since everything is in the same project.
