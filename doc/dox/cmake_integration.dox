@@ -34,7 +34,7 @@
  */
 
 
-/**
+/*!
 
 \page ringmesh_cmake_integration How to integrate RINGMesh in anther cmake project
 
