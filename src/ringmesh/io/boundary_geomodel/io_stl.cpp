@@ -106,7 +106,7 @@ namespace {
     }
 
     /*!
-     * STL is an (old) file format used in CAD softwares
+     * STL is an (old) file format used in CAD software
      * This is the ASCII export for this format
      * facet normal ni nj nk
      *   outer loop
