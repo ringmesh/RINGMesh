@@ -59,6 +59,12 @@ namespace RINGMesh {
          * \name general methods
          * @{
          */
+        /*!
+         * @brief Copy a mesh into this one.
+         * @param[in] rhs a const reference to the mesh to be copied.
+         * @param[in] copy_attributes if true, all attributes are copied.
+         * @return a modifiable reference to the point that corresponds to the vertex.
+         */
         virtual void copy( const MeshBase& rhs, bool copy_attributes ) = 0;
 
         virtual void load_mesh( const std::string& filename ) = 0;
@@ -83,6 +89,12 @@ namespace RINGMesh {
         /*!@}
          * \name Vertex related methods
          * @{
+         */
+        /*!
+         * @brief Sets a point.
+         * @param[in] v_id the vertex, in 0.. @function nb_vetices()-1.
+         * @param[in] vertex the vertex coordinates
+         * @return reference to the point that corresponds to the vertex.
          */
         virtual void set_vertex( index_t v_id, const vec3& vertex ) = 0;
         /*!
@@ -143,11 +155,7 @@ namespace RINGMesh {
         MeshBaseBuilder()
         {
         }
-        virtual void set_mesh( MeshBase& mesh ) = 0;
     };
-    using MeshBaseBuilderFactory = GEO::Factory0< MeshBaseBuilder >;
-#define ringmesh_register_mesh_base_builder(type) \
-    geo_register_creator(RINGMesh::MeshBaseBuilderFactory, type ## Builder, type::type_name_static())
 
     class RINGMESH_API Mesh0DBuilder: public virtual MeshBaseBuilder {
     ringmesh_disable_copy( Mesh0DBuilder );
@@ -156,7 +164,6 @@ namespace RINGMesh {
         {
         }
 
-        using MeshBaseBuilder::set_mesh;
         virtual void set_mesh( Mesh0D& mesh ) = 0;
 
         static std::unique_ptr< Mesh0DBuilder > create_builder( Mesh0D& mesh );
@@ -183,7 +190,6 @@ namespace RINGMesh {
         {
         }
 
-        using MeshBaseBuilder::set_mesh;
         virtual void set_mesh( Mesh1D& mesh ) = 0;
 
         static std::unique_ptr< Mesh1DBuilder > create_builder( Mesh1D& mesh );
@@ -254,7 +260,6 @@ namespace RINGMesh {
         {
         }
 
-        using MeshBaseBuilder::set_mesh;
         virtual void set_mesh( Mesh2D& mesh ) = 0;
 
         static std::unique_ptr< Mesh2DBuilder > create_builder( Mesh2D& mesh );
@@ -389,7 +394,6 @@ namespace RINGMesh {
         {
         }
 
-        using MeshBaseBuilder::set_mesh;
         virtual void set_mesh( Mesh3D& mesh ) = 0;
 
         static std::unique_ptr< Mesh3DBuilder > create_builder( Mesh3D& mesh );

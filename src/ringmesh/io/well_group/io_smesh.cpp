@@ -41,8 +41,8 @@ namespace {
             epsilon, old2new );
         DEBUG( nb_colocated );
         if( nb_colocated > 0 ) {
-            std::unique_ptr < Mesh1DBuilder > builder =
-                Mesh1DBuilder::create_builder( mesh );
+            std::unique_ptr< Mesh1DBuilder > builder = Mesh1DBuilder::create_builder(
+                mesh );
             for( index_t e = 0; e < mesh.nb_edges(); e++ ) {
                 for( index_t i = 0; i < 2; i++ ) {
                     index_t v = mesh.edge_vertex( e, i );
@@ -68,10 +68,10 @@ namespace {
                 throw RINGMeshException( "I/O", "Could not open file" );
             }
 
-            std::unique_ptr < Mesh1D > mesh = Mesh1D::create_mesh(
+            std::unique_ptr< Mesh1D > mesh = Mesh1D::create_mesh(
                 GeogramMesh1D::type_name_static() );
-            std::unique_ptr < Mesh1DBuilder > builder =
-                Mesh1DBuilder::create_builder( *mesh );
+            std::unique_ptr< Mesh1DBuilder > builder = Mesh1DBuilder::create_builder(
+                *mesh );
             std::string name = GEO::FileSystem::base_name( filename );
 
             bool is_first_part = true;

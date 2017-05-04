@@ -44,10 +44,10 @@ namespace {
                 throw RINGMeshException( "I/O", "Could not open file" );
             }
 
-            std::unique_ptr < Mesh1D > mesh = Mesh1D::create_mesh(
+            std::unique_ptr< Mesh1D > mesh = Mesh1D::create_mesh(
                 GeogramMesh1D::type_name_static() );
-            std::unique_ptr < Mesh1DBuilder > builder =
-                Mesh1DBuilder::create_builder( *mesh );
+            std::unique_ptr< Mesh1DBuilder > builder = Mesh1DBuilder::create_builder(
+                *mesh );
             std::string name;
             double z_sign = 1.0;
             vec3 vertex_ref;

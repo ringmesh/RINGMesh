@@ -159,7 +159,7 @@ namespace RINGMesh {
         const std::string& filename )
     {
         std::string ext = GEO::FileSystem::extension( filename );
-        return std::unique_ptr < GeoModelIOHandler > ( create( ext ) );
+        return std::unique_ptr< GeoModelIOHandler >( create( ext ) );
     }
 
 }

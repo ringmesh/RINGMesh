@@ -292,9 +292,9 @@ namespace RINGMesh {
         {
         }
 
-        virtual void copy( const GeoModelMeshEntity& from )
+        virtual void copy_mesh_entity( const GeoModelMeshEntity& from )
         {
-            GeoModelEntity::copy( from );
+            GeoModelEntity::copy_name_and_geol_feature(from);
             id_ = from.id_;
             boundaries_ = from.boundaries_;
             in_boundary_ = from.in_boundary_;
@@ -1273,13 +1273,6 @@ namespace RINGMesh {
             update_mesh_storage_type( Mesh3D::create_mesh( type ) );
         }
 
-        void copy( const GeoModelMeshEntity& from )
-        {
-            const Region& region_from = dynamic_cast< const Region& >( from );
-            GeoModelMeshEntity::copy( from );
-            sides_ = region_from.sides_;
-        }
-
         virtual bool is_mesh_valid() const final;
 
     private:
@@ -1290,6 +1283,13 @@ namespace RINGMesh {
         }
 
         virtual void change_mesh_data_structure( const MeshType type ) override;
+
+        virtual void copy_mesh_entity( const GeoModelMeshEntity& from ) final
+        {
+            const Region& region_from = dynamic_cast< const Region& >(from);
+            GeoModelMeshEntity::copy_mesh_entity(from);
+            sides_ = region_from.sides_;
+        }
 
     protected:
         /*! Additional information to store oriented boundary Surfaces
@@ -1377,7 +1377,7 @@ namespace RINGMesh {
 
         void copy( const GeoModelMeshEntity& from )
         {
-            gmme_.copy( from );
+            gmme_.copy_mesh_entity( from );
         }
 
         void change_mesh_data_structure( const MeshType type );
@@ -1388,7 +1388,7 @@ namespace RINGMesh {
             index_t id,
             const MeshType type )
         {
-            return std::unique_ptr < ENTITY > ( new ENTITY( geomodel, id, type ) );
+            return std::unique_ptr< ENTITY >( new ENTITY( geomodel, id, type ) );
         }
 
     private:

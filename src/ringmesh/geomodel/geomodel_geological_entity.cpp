@@ -155,7 +155,7 @@ namespace RINGMesh {
         GeoModelGeologicalEntity* GMGE =
             GeoModelGeologicalEntityFactory::create_object( type, geomodel );
         GMGE->id_ = index_in_geomodel;
-        return std::unique_ptr < GeoModelGeologicalEntity > ( GMGE );
+        return std::unique_ptr< GeoModelGeologicalEntity >( GMGE );
     }
 
 }

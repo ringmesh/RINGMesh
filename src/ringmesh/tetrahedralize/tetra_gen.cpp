@@ -431,7 +431,7 @@ namespace RINGMesh {
 
         mesher->builder_.reset( new GeoModelBuilder( M ) );
         mesher->output_region_ = region_id;
-        return std::unique_ptr < TetraGen > ( mesher );
+        return std::unique_ptr< TetraGen >( mesher );
     }
 
     TetraGen::TetraGen()
