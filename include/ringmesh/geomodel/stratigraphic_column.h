@@ -121,9 +121,7 @@ namespace RINGMesh {
          */
         StratigraphicUnit( const std::string name, const RockFeature& rock );
 
-        virtual ~StratigraphicUnit()
-        {
-        }
+        virtual ~StratigraphicUnit() = default;
 
         virtual const std::string& get_name() const
         {
@@ -186,6 +184,8 @@ namespace RINGMesh {
             double min_thick,
             double max_thick );
 
+        virtual ~UnsubdividedStratigraphicUnit() = default;
+
         virtual bool is_conformable_base() const final
         {
             return ( relation_base_ == RELATION::CONFORMABLE );
@@ -246,6 +246,8 @@ namespace RINGMesh {
             : StratigraphicUnit( name, rock ), units_( sub_units )
         {
         }
+
+        virtual ~SubdividedStratigraphicUnit() = default;
 
         virtual bool is_conformable_base() const final
         {
@@ -334,9 +336,7 @@ namespace RINGMesh {
         {
         }
 
-        virtual ~StratigraphicColumn()
-        {
-        }
+        ~StratigraphicColumn() = default;
 
         /*!
          * \name Stratigraphic Column edition
