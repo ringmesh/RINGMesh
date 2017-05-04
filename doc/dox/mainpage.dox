@@ -47,6 +47,7 @@ It includes one efficient data structure to represent meshed geological models: 
 - \link ringmesh_geo_model Description of the GeoModel \endlink
 - \link ringmesh_programming_guidelines RINGMesh Programming Guidelines \endlink
 - \link ringmesh_file_format RINGMesh File format \endlink
+- \link ringmesh_cmake_integration Use RINGMesh in a cmake project \endlink
 
 \image html ringmesh.svg
 
