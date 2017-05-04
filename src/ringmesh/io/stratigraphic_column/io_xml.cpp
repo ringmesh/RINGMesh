@@ -41,15 +41,15 @@ namespace {
             StratigraphicColumn& column,
             GeoModel& geomodel )
         {
-            std::string pwd = GEO::FileSystem::get_current_working_directory() ;
+            std::string pwd = GEO::FileSystem::get_current_working_directory();
             GEO::FileSystem::set_current_working_directory(
-                GEO::FileSystem::dir_name( filename ) ) ;
+                GEO::FileSystem::dir_name( filename ) );
             StratigraphicColumnBuilderXML builder( column, geomodel,
-                GEO::FileSystem::base_name( filename, false ) ) ;
-            builder.load_file() ;
+                GEO::FileSystem::base_name( filename, false ) );
+            builder.load_file();
             Logger::out( "I/O" ) << " Loaded stratigraphic column "
-                << geomodel.name() << " from " << filename << std::endl ;
-            GEO::FileSystem::set_current_working_directory( pwd ) ;
+                << geomodel.name() << " from " << filename << std::endl;
+            GEO::FileSystem::set_current_working_directory( pwd );
         }
 
         virtual void save(
@@ -57,9 +57,9 @@ namespace {
             const std::string& filename )
         {
             throw RINGMeshException( "I/O",
-                "Saving of a StratigraphicColumn not implemented yet" ) ;
+                "Saving of a StratigraphicColumn not implemented yet" );
         }
 
-    } ;
+    };
 
 }

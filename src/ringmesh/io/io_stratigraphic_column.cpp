@@ -41,7 +41,7 @@
 #include <ringmesh/geomodel/stratigraphic_column_builder.h>
 
 namespace {
-    using namespace RINGMesh ;
+    using namespace RINGMesh;
 
 #include "stratigraphic_column/io_xml.cpp"
 }
@@ -52,18 +52,18 @@ namespace RINGMesh {
         const std::string& format )
     {
         StratigraphicColumnIOHandler* handler =
-            StratigraphicColumnIOHandlerFactory::create_object( format ) ;
+            StratigraphicColumnIOHandlerFactory::create_object( format );
         if( !handler ) {
-            throw RINGMeshException( "I/O", "Unsupported file format: " + format ) ;
+            throw RINGMeshException( "I/O", "Unsupported file format: " + format );
         }
-        return handler ;
+        return handler;
     }
 
     StratigraphicColumnIOHandler* StratigraphicColumnIOHandler::get_handler(
         const std::string& filename )
     {
-        std::string ext = GEO::FileSystem::extension( filename ) ;
-        return create( ext ) ;
+        std::string ext = GEO::FileSystem::extension( filename );
+        return create( ext );
     }
 
     /*
@@ -72,6 +72,6 @@ namespace RINGMesh {
     void StratigraphicColumnIOHandler::initialize()
     {
         ringmesh_register_StratigraphicColumnIOHandler_creator(
-            XMLStratigraphicColumnIOHandler, "xml" ) ;
+            XMLStratigraphicColumnIOHandler, "xml" );
     }
 }

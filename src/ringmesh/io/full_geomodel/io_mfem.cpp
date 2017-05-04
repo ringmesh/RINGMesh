@@ -36,20 +36,20 @@
 namespace {
     /// Convert the cell type of RINGMesh to the MFEM one
     /// NO_ID for pyramids and prims because there are not supported by MFEM
-    static const index_t cell_type_mfem[4] = { 4, 5, NO_ID, NO_ID } ;
+    static const index_t cell_type_mfem[4] = { 4, 5, NO_ID, NO_ID };
 
     /// Convert the facet type of RINGMesh to the MFEM one
     /// NO_ID for polygons there are not supported by MFEM
-    static const index_t facet_type_mfem[3] = { 2, 3, NO_ID } ;
+    static const index_t facet_type_mfem[3] = { 2, 3, NO_ID };
 
     /// Convert the numerotation from RINGMesh to MFEM
     /// It works for Hexaedron and also for Tetrahedron (in this
     /// case, only the first four values of this table
     /// are used while iterating on vertices)
-    static const index_t cell2mfem[8] = { 0, 1, 3, 2, 4, 5, 7, 6 } ;
+    static const index_t cell2mfem[8] = { 0, 1, 3, 2, 4, 5, 7, 6 };
 
     /// MFEM works with Surface and Region index begin with 1
-    static const index_t mfem_offset = 1 ;
+    static const index_t mfem_offset = 1;
 
     /*!
      * Export for the MFEM format http://mfem.org/
@@ -62,25 +62,25 @@ namespace {
         virtual bool load( const std::string& filename, GeoModel& geomodel ) override
         {
             throw RINGMeshException( "I/O",
-                "Loading of a GeoModel from MFEM not implemented yet" ) ;
-            return false ;
+                "Loading of a GeoModel from MFEM not implemented yet" );
+            return false;
         }
         virtual void save( const GeoModel& geomodel, const std::string& filename ) override
         {
-            const GeoModelMesh& geomodel_mesh = geomodel.mesh ;
-            index_t nb_cells = geomodel_mesh.cells.nb() ;
+            const GeoModelMesh& geomodel_mesh = geomodel.mesh;
+            index_t nb_cells = geomodel_mesh.cells.nb();
             if( geomodel_mesh.cells.nb_tet() != nb_cells
                 && geomodel_mesh.cells.nb_hex() != nb_cells ) {
                 throw RINGMeshException( "I/O",
-                    "Export to MFEM format works only with full tet or full hex format" ) ;
+                    "Export to MFEM format works only with full tet or full hex format" );
             }
-            std::ofstream out( filename.c_str() ) ;
-            out.precision( 16 ) ;
+            std::ofstream out( filename.c_str() );
+            out.precision( 16 );
 
-            write_header( geomodel_mesh, out ) ;
-            write_cells( geomodel_mesh, out ) ;
-            write_facets( geomodel_mesh, out ) ;
-            write_vertices( geomodel_mesh, out ) ;
+            write_header( geomodel_mesh, out );
+            write_cells( geomodel_mesh, out );
+            write_facets( geomodel_mesh, out );
+            write_vertices( geomodel_mesh, out );
         }
 
     private:
@@ -92,13 +92,13 @@ namespace {
         void write_header( const GeoModelMesh& geomodel_mesh, std::ofstream& out )
         {
             // MFEM mesh version
-            out << "MFEM mesh v1.0" << std::endl ;
-            out << std::endl ;
+            out << "MFEM mesh v1.0" << std::endl;
+            out << std::endl;
 
             // Dimension is always 3 in our case
-            out << "dimension" << std::endl ;
-            out << dimension << std::endl ;
-            out << std::endl ;
+            out << "dimension" << std::endl;
+            out << dimension << std::endl;
+            out << std::endl;
         }
 
         /*!
@@ -113,18 +113,18 @@ namespace {
          */
         void write_cells( const GeoModelMesh& geomodel_mesh, std::ofstream& out )
         {
-            index_t nb_cells = geomodel_mesh.cells.nb() ;
-            out << "elements" << std::endl ;
-            out << nb_cells << std::endl ;
+            index_t nb_cells = geomodel_mesh.cells.nb();
+            out << "elements" << std::endl;
+            out << nb_cells << std::endl;
             for( index_t c = 0; c < nb_cells; c++ ) {
-                out << geomodel_mesh.cells.region( c ) + mfem_offset << " " ;
-                out << cell_type_mfem[geomodel_mesh.cells.type( c )] << " " ;
+                out << geomodel_mesh.cells.region( c ) + mfem_offset << " ";
+                out << cell_type_mfem[geomodel_mesh.cells.type( c )] << " ";
                 for( index_t v = 0; v < geomodel_mesh.cells.nb_vertices( c ); v++ ) {
-                    out << geomodel_mesh.cells.vertex( c, cell2mfem[v] ) << " " ;
+                    out << geomodel_mesh.cells.vertex( c, cell2mfem[v] ) << " ";
                 }
-                out << std::endl ;
+                out << std::endl;
             }
-            out << std::endl ;
+            out << std::endl;
         }
 
         /*!
@@ -139,20 +139,20 @@ namespace {
          */
         void write_facets( const GeoModelMesh& geomodel_mesh, std::ofstream& out )
         {
-            out << "boundary" << std::endl ;
-            out << geomodel_mesh.facets.nb() << std::endl ;
+            out << "boundary" << std::endl;
+            out << geomodel_mesh.facets.nb() << std::endl;
             for( index_t f = 0; f < geomodel_mesh.facets.nb(); f++ ) {
-                index_t not_used = 0 ;
-                out << geomodel_mesh.facets.surface( f ) + mfem_offset << " " ;
+                index_t not_used = 0;
+                out << geomodel_mesh.facets.surface( f ) + mfem_offset << " ";
                 out << facet_type_mfem[geomodel_mesh.facets.type( f, not_used )]
-                    << " " ;
+                    << " ";
                 for( index_t v = 0; v < geomodel_mesh.facets.nb_vertices( f );
                     v++ ) {
-                    out << geomodel_mesh.facets.vertex( f, v ) << " " ;
+                    out << geomodel_mesh.facets.vertex( f, v ) << " ";
                 }
-                out << std::endl ;
+                out << std::endl;
             }
-            out << std::endl ;
+            out << std::endl;
         }
 
         /*!
@@ -164,16 +164,16 @@ namespace {
          */
         void write_vertices( const GeoModelMesh& geomodel_mesh, std::ofstream& out )
         {
-            out << "vertices" << std::endl ;
-            out << geomodel_mesh.vertices.nb() << std::endl ;
-            out << dimension << std::endl ;
+            out << "vertices" << std::endl;
+            out << geomodel_mesh.vertices.nb() << std::endl;
+            out << dimension << std::endl;
             for( index_t v = 0; v < geomodel_mesh.vertices.nb(); v++ ) {
-                out << geomodel_mesh.vertices.vertex( v ) << std::endl ;
+                out << geomodel_mesh.vertices.vertex( v ) << std::endl;
             }
         }
 
     private:
-        static const index_t dimension = 3 ;
-    } ;
+        static const index_t dimension = 3;
+    };
 
 }
