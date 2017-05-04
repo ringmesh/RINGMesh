@@ -121,17 +121,6 @@ namespace RINGMesh {
          */
         StratigraphicUnit( const std::string name, const RockFeature& rock );
 
-//        StratigraphicUnit(
-//            const std::string name,
-//            const GeoModelGeologicalEntity& interface_base, // TODO interface
-//            const GeoModelGeologicalEntity& interface_top,
-//            const GeoModelGeologicalEntity& layer,
-//            RELATION relation_top,
-//            RELATION relation_base,
-//            const RockFeature& rock,
-//            double min_thick,
-//            double max_thick );
-
         virtual ~StratigraphicUnit()
         {
         }
@@ -156,34 +145,16 @@ namespace RINGMesh {
         }
 
         virtual bool is_conformable_base() const = 0;
-//        {
-//            return ( relation_base_ == CONFORMABLE );
-//        }
 
         virtual bool is_conformable_top() const = 0;
-//        {
-//            return ( relation_top_ == CONFORMABLE );
-//        }
 
         virtual RELATION get_relation_base() const = 0;
-//        {
-//            return relation_base_;
-//        }
 
         virtual RELATION get_relation_top() const = 0;
-//        {
-//            return relation_top_;
-//        }
 
         virtual const GeoModelGeologicalEntity& get_interface_base() const = 0;
-//        {
-//            return *interface_base_;
-//        }
 
         virtual const GeoModelGeologicalEntity& get_interface_top() const = 0;
-//        {
-//            return *interface_top_;
-//        }
 
         virtual double get_min_thick() const = 0;
 
@@ -356,7 +327,9 @@ namespace RINGMesh {
          * @brief Simple Constructor of StratigraphicColumn
          * @param[in] name Name of the unit
          */
-        StratigraphicColumn( const std::string& name, STRATIGRAPHIC_PARADIGM type )
+        StratigraphicColumn(
+            const std::string& name,
+            const STRATIGRAPHIC_PARADIGM type )
             : name_( name ), units_(), type_( type )
         {
         }
@@ -411,20 +384,19 @@ namespace RINGMesh {
 
         /*!
          * @param[in] unit Reference unit
-         * @return the StratigraphicUnit which position in the StratigraphicColumn is just above the reference unit
+         * @return the StratigraphicUnit which position in the StratigraphicColumn
+         * is just above the reference unit
          */
         const StratigraphicUnit* get_unit_above(
             const StratigraphicUnit& unit ) const;
         /*!
          * @param[in] unit Reference unit
-         * @return the StratigraphicUnit which position in the StratigraphicColumn is just below the reference unit
+         * @return the StratigraphicUnit which position in the StratigraphicColumn
+         * is just below the reference unit
          */
         const StratigraphicUnit* get_unit_below(
             const StratigraphicUnit& unit ) const;
 
-        /*!
-         * @brief Cannot be used if the StratigraphicUnit is a sub-column, using check_if_column(index) first is needed
-         */
         const StratigraphicUnit* get_unit( const index_t index ) const
         {
             return units_[index];
@@ -454,7 +426,7 @@ namespace RINGMesh {
          * @brief is_conformable_base for the Stratigraphic Column
          * @return true if the base of the last unit of the Stratigraphic Column is conformable
          */
-        virtual bool is_conformable_base() const
+        bool is_conformable_base() const
         {
             return ( units_.back()->is_conformable_base() );
         }
@@ -462,7 +434,7 @@ namespace RINGMesh {
          * @brief is_conformable_top for the Stratigraphic Column
          * @return true if the top of the first unit of the Stratigraphic Column is conformable
          */
-        virtual bool is_conformable_top() const
+        bool is_conformable_top() const
         {
             return ( units_.front()->is_conformable_top() );
         }
@@ -471,7 +443,7 @@ namespace RINGMesh {
          * @brief get_relation_base for the Stratigraphic Column
          * @return the relation of the base of the first unit of the StratigraphicColumn
          */
-        virtual RELATION get_relation_base()
+        RELATION get_relation_base()
         {
             return ( units_.back()->get_relation_base() );
         }
@@ -479,7 +451,7 @@ namespace RINGMesh {
          * @brief get_relation_top for the Stratigraphic Column
          * @return the relation of the top of the first unit of the StratigraphicColumn
          */
-        virtual RELATION get_relation_top()
+        RELATION get_relation_top()
         {
             return ( units_.front()->get_relation_top() );
         }
@@ -488,7 +460,7 @@ namespace RINGMesh {
          * @brief get_interface_base for the Stratigraphic Column
          * @return the base interface of the last unit in the Stratigraphic Column
          */
-        virtual const GeoModelGeologicalEntity& get_interface_base() const
+        const GeoModelGeologicalEntity& get_interface_base() const
         {
             return ( units_.back()->get_interface_base() );
         }
@@ -496,7 +468,7 @@ namespace RINGMesh {
          * @brief get_interface_top for the Stratigraphic Column
          * @return the top interface of the first unit in the Stratigraphic Column
          */
-        virtual const GeoModelGeologicalEntity& get_interface_top() const
+        const GeoModelGeologicalEntity& get_interface_top() const
         {
             return ( units_.front()->get_interface_top() );
         }
@@ -510,10 +482,13 @@ namespace RINGMesh {
          */
         double get_column_max_thick() const;
 
-        virtual const std::string& get_name() const
+        const std::string& get_name() const
         {
             return name_;
         }
+
+        /*! @}
+         */
 
     private:
         /*!
