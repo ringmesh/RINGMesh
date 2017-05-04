@@ -208,7 +208,7 @@ namespace {
             throw RINGMeshException( "I/O",
                 " The GeoModel " + M.name() + +" cannot be saved in .ml format" );
         }
-        out.precision( 16 );
+        out.precision( PRECISION );
 
         // Gocad Model3d headers
         out << "GOCAD Model3d 1" << std::endl << "HEADER {" << std::endl << "name: "

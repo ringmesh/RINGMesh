@@ -60,7 +60,7 @@ namespace {
     void save_geological_entities( const GeoModel& M, const std::string& file_name )
     {
         std::ofstream out( file_name.c_str() );
-        out.precision( 16 );
+        out.precision( PRECISION );
         if( out.bad() ) {
             throw RINGMeshException( "I/O",
                 "Error when opening the file: " + file_name );
@@ -112,7 +112,7 @@ namespace {
     void save_mesh_entities( const GeoModel& M, const std::string& file_name )
     {
         std::ofstream out( file_name.c_str() );
-        out.precision( 16 );
+        out.precision( PRECISION );
         if( out.bad() ) {
             throw RINGMeshException( "I/O",
                 "Error when opening the file: " + file_name );

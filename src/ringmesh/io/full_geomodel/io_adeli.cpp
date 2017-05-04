@@ -69,7 +69,7 @@ namespace {
         virtual void save( const GeoModel& geomodel, const std::string& filename ) override
         {
             std::ofstream out( filename.c_str() );
-            out.precision( 16 );
+            out.precision( PRECISION );
             const RINGMesh::GeoModelMesh& geomodel_mesh = geomodel.mesh;
             if( geomodel_mesh.cells.nb() != geomodel_mesh.cells.nb_tet() ) {
                 {
