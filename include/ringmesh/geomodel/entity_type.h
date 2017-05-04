@@ -120,10 +120,7 @@ namespace RINGMesh {
             : EntityType( type )
         {
         }
-        MeshEntityType()
-            : EntityType()
-        {
-        }
+        MeshEntityType() = default ;
     } ;
 
     /*!
@@ -140,10 +137,7 @@ namespace RINGMesh {
             : EntityType( type )
         {
         }
-        GeologicalEntityType()
-            : EntityType()
-        {
-        }
+        GeologicalEntityType() = default ;
     } ;
 
     /*!
@@ -158,9 +152,7 @@ namespace RINGMesh {
             return entity_type ;
         }
     private:
-        ForbiddenMeshEntityType()
-        {
-        }
+        ForbiddenMeshEntityType() = default ;
     } ;
 
     /*!
@@ -175,10 +167,7 @@ namespace RINGMesh {
             return entity_type ;
         }
     private:
-        ForbiddenGeologicalEntityType()
-        {
-
-        }
+        ForbiddenGeologicalEntityType() = default ;
     } ;
 
     /*!
@@ -201,7 +190,7 @@ namespace RINGMesh {
      *       the programming guidelines [JP]
      */
     template< class Entity_type_template >
-    struct gme_t {
+    struct gme_id {
         friend GeoModelMeshEntityAccess ;
         friend GeoModelGeologicalEntityAccess ;
     public:
@@ -215,21 +204,21 @@ namespace RINGMesh {
             return type_ ;
         }
 
-        bool operator!=( const gme_t& rhs ) const
+        bool operator!=( const gme_id& rhs ) const
         {
             return type_ != rhs.type_ || index_ != rhs.index_ ;
         }
-        bool operator==( const gme_t& rhs ) const
+        bool operator==( const gme_id& rhs ) const
         {
             return type_ == rhs.type_ && index_ == rhs.index_ ;
         }
 
-        friend std::ostream& operator<<( std::ostream& os, const gme_t& in )
+        friend std::ostream& operator<<( std::ostream& os, const gme_id& in )
         {
             os << in.type_ << " " << in.index_ ;
             return os ;
         }
-        bool operator<( const gme_t& rhs ) const
+        bool operator<( const gme_id& rhs ) const
         {
             if( type_ != rhs.type_ ) {
                 /// @warning Is this now enough for EntityType = std::string?
@@ -247,16 +236,16 @@ namespace RINGMesh {
             return type_ != ForbiddenMeshEntityType::type_name_static()
                 && index_ != NO_ID ;
         }
-        gme_t()
+        gme_id()
             : type_( ForbiddenMeshEntityType::type_name_static() ), index_( NO_ID )
         {
         }
-        gme_t( const Entity_type_template entity_type, index_t index )
+        gme_id( const Entity_type_template entity_type, index_t index )
             : type_( entity_type ), index_( index )
         {
         }
-        gme_t( const gme_t& from )
-            : gme_t( from.type_, from.index_ )
+        gme_id( const gme_id& from )
+            : gme_id( from.type_, from.index_ )
         {
         }
 
@@ -269,11 +258,11 @@ namespace RINGMesh {
     } ;
 
     /*!
-     * @brief This template is a specialization of a gme_t to the GeoModelGeologicalEntity
+     * @brief This template is a specialization of a gme_id to the GeoModelGeologicalEntity
      */
-    typedef gme_t< GeologicalEntityType > gmge_t ;
+    using gmge_id = gme_id< GeologicalEntityType > ;
     /*!
-     * @brief This template is a specialization of a gme_t to the GeoModelMeshEntity
+     * @brief This template is a specialization of a gme_id to the GeoModelMeshEntity
      */
-    typedef gme_t< MeshEntityType > gmme_t ;
+    using gmme_id = gme_id< MeshEntityType > ;
 }

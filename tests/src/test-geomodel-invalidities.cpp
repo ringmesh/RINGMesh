@@ -36,23 +36,44 @@
 #include <ringmesh/ringmesh_tests_config.h>
 
 #include <ringmesh/geomodel/geomodel.h>
+#include <ringmesh/geomodel/geomodel_builder.h>
 #include <ringmesh/geomodel/geomodel_validity.h>
 #include <ringmesh/io/io.h>
 
-/*!
- * @file Compare loading of surface GeoModel ml (Gocad)
- * and gm (RINGMesh own format) files
- * @author Arnaud Botella
+/*! Tests the GeoModel invalidity tracking.
+ * Loads a .ml file, check its validity. Then, we alter the geomodel in order to
+ * break its validity and we check that we detect the invalidities.
+ * @returns 0 if success or an error code if not.
+ * @author Pierre Anquez
  */
 
-namespace {
-    using namespace RINGMesh ;
+using namespace RINGMesh ;
 
-    void load_geomodel( GeoModel& in, const std::string& filename )
-    {
-        std::string input_model_file_name( ringmesh_test_data_path ) ;
-        input_model_file_name += filename ;
+void make_geomodel_copy( const GeoModel& from, const std::string& name, GeoModel& to )
+{
+    GeoModelBuilder geomodel_breaker2( to ) ;
+    geomodel_breaker2.copy.copy_geomodel( from ) ;
+    geomodel_breaker2.info.set_geomodel_name( name ) ;
+}
 
+void verdict( const GeoModel& invalid_model, const std::string& feature )
+{
+    if( is_geomodel_valid( invalid_model ) ) {
+        throw RINGMeshException( "RINGMesh Test",
+            "Fail to " + feature ) ;
+    } else {
+        Logger::out( "TEST", "Succeed to ", feature ) ;
+    }
+}
+
+int main()
+{
+    try {
+        default_configure() ;
+
+        std::string input_model_file_name = ringmesh_test_data_path + "modelA6.ml" ;
+
+        GeoModel in ;
         bool loaded_model_is_valid = geomodel_load( in, input_model_file_name ) ;
 
         if( !loaded_model_is_valid ) {
@@ -60,51 +81,27 @@ namespace {
                 "Failed when loading model " + in.name()
                     + ": the loaded model is not valid." ) ;
         }
-    }
 
-    void save_and_compare_geomodels( const GeoModel& in )
-    {
-        std::string output_model_file_name( ringmesh_test_output_path ) ;
-        output_model_file_name += "modelA1_saved_out.gm" ;
-        geomodel_save( in, output_model_file_name ) ;
+        Logger::out( "TEST", "Break geomodels:" ) ;
 
-        GeoModel in2 ;
-        bool reloaded_model_is_valid = geomodel_load( in2, output_model_file_name ) ;
-
-        if( !reloaded_model_is_valid ) {
-            throw RINGMeshException( "RINGMesh Test",
-                "Failed when reloading model " + in2.name()
-                    + ": the reloaded model is not valid." ) ;
+        {
+            GeoModel invalid_model ;
+            make_geomodel_copy( in, "broken model 1", invalid_model ) ;
+            GeoModelBuilder geomodel_breaker( invalid_model ) ;
+            geomodel_breaker.topology.add_mesh_entity_boundary(
+                invalid_model.surface( 0 ).gmme(), 4 ) ;
+            verdict( invalid_model, "detect artificial added surface boundary" ) ;
         }
 
-        std::string output_model_file_name_bis( ringmesh_test_output_path ) ;
-        output_model_file_name_bis += "modelA1_saved_out_bis.gm" ;
-        geomodel_save( in2, output_model_file_name_bis ) ;
-
-        if( !compare_files( output_model_file_name, output_model_file_name_bis ) ) {
-            throw RINGMeshException( "TEST", "FAILED" ) ;
+        {
+            GeoModel invalid_model ;
+            make_geomodel_copy( in, "broken model 2", invalid_model ) ;
+            GeoModelBuilder geomodel_breaker( invalid_model ) ;
+            geomodel_breaker.geology.add_mesh_entity_parent(
+                invalid_model.surface( 0 ).gmme(),
+                gmge_id( Interface::type_name_static(), 0 ) ) ;
+            verdict( invalid_model, "detect addition of incoherent parent" ) ;
         }
-    }
-
-    void test_file( const std::string& filename )
-    {
-        GeoModel in ;
-        load_geomodel( in, filename ) ;
-        save_and_compare_geomodels( in ) ;
-    }
-}
-
-int main()
-{
-    using namespace RINGMesh ;
-
-    try {
-        default_configure() ;
-
-        Logger::out( "TEST", "Test IO for a GeoModel in .gm" ) ;
-
-        test_file( "modelA1_version0.gm" ) ;
-        test_file( "modelA1_version1.gm" ) ;
 
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category(), e.what() ) ;
@@ -115,4 +112,5 @@ int main()
     }
     Logger::out( "TEST", "SUCCESS" ) ;
     return 0 ;
+
 }

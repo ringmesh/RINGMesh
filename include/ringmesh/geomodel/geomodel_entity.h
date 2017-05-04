@@ -80,7 +80,27 @@ namespace RINGMesh {
             VOI
         } ;
 
+        /*!
+         * @brief Map the name of a geological type with a value of GEOL_FEATURE
+         *
+         * @param[in] in Name of the feature. Can be
+         * \li "reverse_fault"
+         * \li "normal_fault"
+         * \li "fault"
+         * \li "top"
+         * \li "none"
+         * \li "topographic"
+         * \li "unconformity"
+         * \li "boundary"
+         * Other strings will end up in \p NO_GEOL
+         * @return The geological feature index
+         * @todo Add other types of unconformity, see RINGMesh::GeoModelEntity::TYPE. --GC
+         */
         static GEOL_FEATURE determine_geological_type( const std::string& in ) ;
+        /*!
+         * \return the (lowercase) string associated to a
+         * GeoModelELement::GEOL_FEATURE
+         */
         static std::string geol_name( GEOL_FEATURE ) ;
         static bool is_fault( GEOL_FEATURE T )
         {
@@ -91,9 +111,7 @@ namespace RINGMesh {
             return T == STRATI || T == UNCONFORMITY ;
         }
 
-        virtual ~GeoModelEntity()
-        {
-        }
+        virtual ~GeoModelEntity() ;
 
         virtual bool is_on_voi() const = 0 ;
         virtual bool is_valid() const = 0 ;
@@ -160,8 +178,6 @@ namespace RINGMesh {
         index_t id_ ;
     } ;
 
-    typedef GeoModelEntity GME ;
-
     class RINGMESH_API Universe: public GeoModelEntity {
     ringmesh_disable_copy( Universe ) ;
     public:
@@ -174,9 +190,8 @@ namespace RINGMesh {
             return UniverseType() ;
         }
 
-        virtual ~Universe()
-        {
-        }
+        virtual ~Universe() = default ;
+
         virtual bool is_valid() const override ;
         virtual bool is_on_voi() const override
         {
@@ -191,7 +206,7 @@ namespace RINGMesh {
         {
             return static_cast< index_t >( boundary_surfaces_.size() ) ;
         }
-        gmme_t boundary_gmme( index_t i ) const
+        gmme_id boundary_gmme( index_t i ) const
         {
             ringmesh_assert( i < nb_boundaries() ) ;
             return boundary_surfaces_[i] ;
@@ -211,7 +226,7 @@ namespace RINGMesh {
         //@todo not used if editor is removed -> to delete
         void copy( const Universe& from )
         {
-            GME::copy( from ) ;
+            GeoModelEntity::copy( from ) ;
             boundary_surfaces_ = from.boundary_surfaces_ ;
             boundary_surface_sides_ = from.boundary_surface_sides_ ;
         }
@@ -222,7 +237,7 @@ namespace RINGMesh {
         }
 
     private:
-        std::vector< gmme_t > boundary_surfaces_ ;
+        std::vector< gmme_id > boundary_surfaces_ ;
         std::vector< bool > boundary_surface_sides_ ;
 
     } ;
@@ -238,7 +253,7 @@ namespace RINGMesh {
         {
         }
 
-        std::vector< gmme_t >& modifiable_boundaries()
+        std::vector< gmme_id >& modifiable_boundaries()
         {
             return universe_.boundary_surfaces_ ;
         }

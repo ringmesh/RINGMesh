@@ -44,18 +44,7 @@
  */
 
 namespace RINGMesh {
-    /*! @details Adds separately each connected component of the mesh
-     *          as a Surface of the geomodel under construction.
-     *          All the facets of the input mesh are visited and added to a
-     *          Surface of the GeoModel.
-     *          Connected components of the mesh are determined with a
-     *          propagation (or "coloriage" algorithm) using the adjacent_facet
-     *          information provided on the input GEO::Mesh.
-     *
-     * @todo Old code - old building - to delimit connected components
-     * vertices are duplicated in the input mesh
-     *
-     */
+
     void GeoModelBuilderSurfaceMesh::build_polygonal_surfaces_from_connected_components()
     {
         std::vector< index_t > global_vertex_id_to_id_in_cc( mesh_.vertices.nb(),
@@ -106,7 +95,7 @@ namespace RINGMesh {
                     cc_facets_ptr.push_back( nb_cc_corners ) ;
                 }
 
-                gmme_t surface_gme = topology.create_mesh_entity< Surface >() ;
+                gmme_id surface_gme = topology.create_mesh_entity< Surface >() ;
                 geometry.set_surface_geometry( surface_gme.index(), cc_vertices,
                     cc_corners, cc_facets_ptr ) ;
             }

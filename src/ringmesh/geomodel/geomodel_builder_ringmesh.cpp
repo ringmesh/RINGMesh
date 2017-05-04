@@ -67,9 +67,7 @@ namespace RINGMesh {
             : builder_( builder )
         {
         }
-        virtual ~GeoModelBuilderGMImpl()
-        {
-        }
+        virtual ~GeoModelBuilderGMImpl() = default ;
 
         virtual void read_mesh_entity_line( GEO::LineInput& file_line ) = 0 ;
 
@@ -83,9 +81,7 @@ namespace RINGMesh {
             : GeoModelBuilderGMImpl( builder )
         {
         }
-        virtual ~GeoModelBuilderGMImpl_0()
-        {
-        }
+        virtual ~GeoModelBuilderGMImpl_0() = default ;
 
         virtual void read_mesh_entity_line( GEO::LineInput& file_line ) override
         {
@@ -96,22 +92,22 @@ namespace RINGMesh {
                         + GEO::String::to_string( file_line.line_number() )
                         + ", 4 fields are expected, the type, id, name, and geological feature" ) ;
             }
-            gmme_t entity = read_first_line( file_line ) ;
+            gmme_id entity = read_first_line( file_line ) ;
             read_second_line( file_line, entity ) ;
         }
 
     protected:
-        gmme_t read_first_line( GEO::LineInput& file_line )
+        gmme_id read_first_line( GEO::LineInput& file_line )
         {
 
-            gmme_t cur_gmme( MeshEntityType( file_line.field( 0 ) ),
+            gmme_id cur_gmme( MeshEntityType( file_line.field( 0 ) ),
                 file_line.field_as_uint( 1 ) ) ;
             builder_.info.set_mesh_entity_name( cur_gmme, file_line.field( 2 ) ) ;
             builder_.geology.set_mesh_entity_geol_feature( cur_gmme,
-                GME::determine_geological_type( file_line.field( 3 ) ) ) ;
+                GeoModelEntity::determine_geological_type( file_line.field( 3 ) ) ) ;
             return cur_gmme ;
         }
-        void read_second_line( GEO::LineInput& file_line, const gmme_t& entity )
+        void read_second_line( GEO::LineInput& file_line, const gmme_id& entity )
         {
             file_line.get_line() ;
             file_line.get_fields() ;
@@ -143,9 +139,7 @@ namespace RINGMesh {
             : GeoModelBuilderGMImpl_0( builder )
         {
         }
-        virtual ~GeoModelBuilderGMImpl_1()
-        {
-        }
+        virtual ~GeoModelBuilderGMImpl_1() = default ;
 
         virtual void read_mesh_entity_line( GEO::LineInput& file_line ) override
         {
@@ -158,7 +152,7 @@ namespace RINGMesh {
                         + ", 5 fields are expected, the type, id, name, "
                         + "geological feature, and mesh type" ) ;
             }
-            gmme_t entity = read_first_line( file_line  ) ;
+            gmme_id entity = read_first_line( file_line ) ;
 
             const std::string mesh_type = file_line.field( 4 ) ;
             builder_.geometry.change_mesh_data_structure( entity, mesh_type ) ;
@@ -172,15 +166,12 @@ namespace RINGMesh {
         const std::string& filename )
         : GeoModelBuilderFile( geomodel, filename ), file_version_( 0 )
     {
-        version_impl_[0] = new GeoModelBuilderGMImpl_0( *this ) ;
-        version_impl_[1] = new GeoModelBuilderGMImpl_1( *this ) ;
+        version_impl_[0].reset( new GeoModelBuilderGMImpl_0( *this ) ) ;
+        version_impl_[1].reset( new GeoModelBuilderGMImpl_1( *this ) ) ;
     }
 
     GeoModelBuilderGM::~GeoModelBuilderGM()
     {
-        for( index_t i = 0; i < NB_VERSION; i++ ) {
-            delete version_impl_[i] ;
-        }
     }
 
     void GeoModelBuilderGM::load_mesh_entities( const std::string& mesh_entity_file )
@@ -279,10 +270,11 @@ namespace RINGMesh {
                 } else {
                     GeologicalEntityType type( file_line.field( 0 ) ) ;
                     index_t id = file_line.field_as_uint( 1 ) ;
-                    gmge_t entity( type, id ) ;
+                    gmge_id entity( type, id ) ;
                     info.set_geological_entity_name( entity, file_line.field( 2 ) ) ;
                     geology.set_geological_entity_geol_feature( entity,
-                        GME::determine_geological_type( file_line.field( 3 ) ) ) ;
+                        GeoModelEntity::determine_geological_type(
+                            file_line.field( 3 ) ) ) ;
                     file_line.get_line() ;
                     file_line.get_fields() ;
                     for( index_t in_b = 0; in_b < file_line.nb_fields(); in_b++ ) {
@@ -303,7 +295,7 @@ namespace RINGMesh {
         do {
             char char_file_name[MAX_FILENAME] ;
             if( unzGetCurrentFileInfo64( uz, nullptr, char_file_name,
-                MAX_FILENAME, nullptr, 0, nullptr, 0 ) != UNZ_OK ) {
+            MAX_FILENAME, nullptr, 0, nullptr, 0 ) != UNZ_OK ) {
                 throw RINGMeshException( "I/O", "Unable to get file name" ) ;
             }
             std::string file_name( char_file_name ) ;
@@ -327,16 +319,20 @@ namespace RINGMesh {
             index_t id = NO_ID ;
             GEO::String::from_string( entity_id, id ) ;
             if( MeshEntityTypeManager::is_corner( entity_type ) ) {
-                Mesh0DBuilder_var builder = geometry.create_corner_builder( id ) ;
+                std::unique_ptr< Mesh0DBuilder > builder =
+                    geometry.create_corner_builder( id ) ;
                 builder->load_mesh( file_name ) ;
             } else if( MeshEntityTypeManager::is_line( entity_type ) ) {
-                Mesh1DBuilder_var builder = geometry.create_line_builder( id ) ;
+                std::unique_ptr< Mesh1DBuilder > builder =
+                    geometry.create_line_builder( id ) ;
                 builder->load_mesh( file_name ) ;
             } else if( MeshEntityTypeManager::is_surface( entity_type ) ) {
-                Mesh2DBuilder_var builder = geometry.create_surface_builder( id ) ;
+                std::unique_ptr< Mesh2DBuilder > builder =
+                    geometry.create_surface_builder( id ) ;
                 builder->load_mesh( file_name ) ;
             } else if( MeshEntityTypeManager::is_region( entity_type ) ) {
-                Mesh3DBuilder_var builder = geometry.create_region_builder( id ) ;
+                std::unique_ptr< Mesh3DBuilder > builder =
+                    geometry.create_region_builder( id ) ;
                 builder->load_mesh( file_name ) ;
             }
             GEO::FileSystem::delete_file( file_name ) ;

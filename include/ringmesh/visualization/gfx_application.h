@@ -54,6 +54,7 @@
 namespace RINGMesh {
 
     class RINGMESH_API RINGMeshApplication: public GEO::Application {
+    ringmesh_disable_copy( RINGMeshApplication ) ;
     public:
         enum ViewerType {
             GEOMODEL, MESH, NONE
@@ -104,6 +105,7 @@ namespace RINGMesh {
 
     private:
         class GeoModelViewer {
+        ringmesh_disable_copy( GeoModelViewer ) ;
         public:
             struct OldNewStatus {
                 void operator=( bool value )
@@ -157,9 +159,9 @@ namespace RINGMesh {
             void toggle_line_and_boundaries_visibility( index_t line_id ) ;
             void toggle_surface_and_boundaries_visibility( index_t surface_id ) ;
             void toggle_region_and_boundaries_visibility( index_t region_id ) ;
-            void toggle_geological_entity_visibility( const gmge_t& entity_id ) ;
+            void toggle_geological_entity_visibility( const gmge_id& entity_id ) ;
             void toggle_mesh_entity_and_boundaries_visibility(
-                const gmme_t& entity_id ) ;
+                const gmme_id& entity_id ) ;
 
         public:
             RINGMeshApplication& app_ ;
@@ -201,6 +203,7 @@ namespace RINGMesh {
         } ;
 
         class MeshViewer {
+        ringmesh_disable_copy( MeshViewer ) ;
         public:
             MeshViewer( RINGMeshApplication& app, const std::string& filename ) ;
 
@@ -243,8 +246,8 @@ namespace RINGMesh {
         } ;
 
     private:
-        std::vector< GeoModelViewer* > geomodels_ ;
-        std::vector< MeshViewer* > meshes_ ;
+        std::vector< std::unique_ptr< GeoModelViewer > > geomodels_ ;
+        std::vector< std::unique_ptr< MeshViewer > > meshes_ ;
         std::string ringmesh_file_extensions_ ;
         std::string geogram_file_extensions_ ;
         index_t current_viewer_ ;

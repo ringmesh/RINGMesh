@@ -42,7 +42,7 @@ namespace {
         const GeoModelGeologicalEntity& E )
     {
         /// First line:  TYPE - ID - NAME - GEOL
-        out << E.gmge_id() << " " << E.name() << " " ;
+        out << E.gmge() << " " << E.name() << " " ;
         out << GeoModelEntity::geol_name( E.geological_feature() ) << std::endl ;
 
         /// Second line:  IDS of children
@@ -187,7 +187,7 @@ namespace {
     template< typename ENTITY >
     std::string build_string_for_geomodel_entity_export( const ENTITY& entity )
     {
-        const gmme_t& id = entity.gmme_id() ;
+        const gmme_id& id = entity.gmme() ;
         std::string base_name = static_cast< std::string >( id.type() ) + "_"
             + GEO::String::to_string( id.index() ) ;
         return base_name + "." + entity.low_level_mesh_storage().default_extension() ;
@@ -228,7 +228,7 @@ namespace {
         std::vector< std::string >& filenames )
     {
         const std::string& type = ENTITY::type_name_static() ;
-        Logger* logger = Logger::instance() ;
+        GEO::Logger* logger = Logger::instance() ;
         bool logger_status = logger->is_quiet() ;
         logger->set_quiet( true ) ;
         RINGMESH_PARALLEL_LOOP_DYNAMIC
@@ -250,8 +250,8 @@ namespace {
             GeoModelBuilderGM builder( geomodel,
                 GEO::FileSystem::base_name( filename, false ) ) ;
             builder.build_geomodel() ;
-            Logger::out( "I/O" ) << " Loaded geomodel " << geomodel.name()
-                << " from " << filename << std::endl ;
+            Logger::out( "I/O", " Loaded geomodel ", geomodel.name(), " from ",
+                filename ) ;
             print_geomodel( geomodel ) ;
             bool is_valid = is_geomodel_valid( geomodel ) ;
             GEO::FileSystem::set_current_working_directory( pwd ) ;

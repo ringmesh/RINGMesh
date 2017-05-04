@@ -26,8 +26,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <third_party/zlib/zlib.h>
-#include <third_party/zlib/zip.h>
+#include <zlib/zlib.h>
+#include <zlib/zip.h>
 
 #ifdef STDC
 #  include <stddef.h>
@@ -183,7 +183,7 @@ typedef struct
 
 #ifndef NOCRYPT
 #define INCLUDECRYPTINGCODE_IFCRYPTALLOWED
-#include <third_party/zlib/crypt.h>
+#include <zlib/crypt.h>
 #endif
 
 local linkedlist_datablock_internal* allocate_new_datablock()

@@ -154,30 +154,26 @@ namespace {
         index_t nb_interfaces = M.nb_geological_entities(
             Interface::type_name_static() ) ;
         if( nb_interfaces == 0 ) {
-            Logger::err( "" ) << " The GeoModel " << M.name() << " has no Interface"
-                << std::endl ;
+            Logger::err( "", " The GeoModel ", M.name(), " has no Interface" ) ;
             return false ;
         }
         for( index_t i = 0; i < nb_interfaces; ++i ) {
             const GeoModelGeologicalEntity& E = M.geological_entity(
                 Interface::type_name_static(), i ) ;
             if( !E.has_geological_feature() ) {
-                Logger::err( "" ) << E.gmge_id() << " has no geological feature"
-                    << std::endl ;
+                Logger::err( "", E.gmge(), " has no geological feature" ) ;
                 return false ;
             }
         }
         for( index_t s = 0; s < M.nb_surfaces(); ++s ) {
             const Surface& S = M.surface( s ) ;
             if( !S.has_parent() ) {
-                Logger::err( "" ) << S.gmme_id()
-                    << " does not belong to any Interface of the geomodel"
-                    << std::endl ;
+                Logger::err( "", S.gmme(),
+                    " does not belong to any Interface of the geomodel" ) ;
                 return false ;
             }
             if( !S.is_simplicial() ) {
-                Logger::err( "" ) << S.gmme_id() << " is not triangulated "
-                    << std::endl ;
+                Logger::err( "", S.gmme(), " is not triangulated " ) ;
                 return false ;
             }
         }
@@ -235,7 +231,7 @@ namespace {
         for( index_t i = 0; i < M.nb_surfaces(); ++i ) {
             const Surface& s = M.surface( i ) ;
             out << "TFACE " << count << "  " ;
-            out << GME::geol_name( s.geological_feature() ) ;
+            out << GeoModelEntity::geol_name( s.geological_feature() ) ;
             out << " " << s.parent( Interface::type_name_static() ).name()
                 << std::endl ;
 
@@ -282,7 +278,7 @@ namespace {
 
             out << "GEOLOGICAL_FEATURE " << tsurf.name() << std::endl
                 << "GEOLOGICAL_TYPE " ;
-            out << GME::geol_name( tsurf.geological_feature() ) ;
+            out << GeoModelEntity::geol_name( tsurf.geological_feature() ) ;
             out << std::endl ;
             out << "PROPERTY_CLASS_HEADER Z {" << std::endl << "is_z:on" << std::endl
                 << "}" << std::endl ;
@@ -312,18 +308,18 @@ namespace {
                         << std::endl ;
                 }
                 for( index_t k = 0; k < S.nb_boundaries(); ++k ) {
-                    const Line& L = dynamic_cast< const Line& >( S.boundary( k ) ) ;
+                    const Line& L = S.boundary( k ) ;
                     index_t v0_model_id = geomodel_vertices.geomodel_vertex_id(
-                        L.gmme_id(), 0 ) ;
+                        L.gmme(), 0 ) ;
                     index_t v1_model_id = geomodel_vertices.geomodel_vertex_id(
-                        L.gmme_id(), 1 ) ;
+                        L.gmme(), 1 ) ;
 
-                    std::vector< index_t > v0_surface_ids ;
-                    geomodel_vertices.mesh_entity_vertex_id( S.gmme_id(),
-                        v0_model_id, v0_surface_ids ) ;
-                    std::vector< index_t > v1_surface_ids ;
-                    geomodel_vertices.mesh_entity_vertex_id( S.gmme_id(),
-                        v1_model_id, v1_surface_ids ) ;
+                    std::vector< index_t > v0_surface_ids =
+                        geomodel_vertices.mesh_entity_vertex_id( S.gmme(),
+                            v0_model_id ) ;
+                    std::vector< index_t > v1_surface_ids =
+                        geomodel_vertices.mesh_entity_vertex_id( S.gmme(),
+                            v1_model_id ) ;
 
                     if( !S.has_inside_border() ) {
                         index_t v0 = v0_surface_ids[0] ;
@@ -365,11 +361,10 @@ namespace {
                         }
                     }
                     // Set a BSTONE at the line other extremity
-                    const gmme_t& c1_id = L.boundary_gmme( 1 ) ;
-                    std::vector< index_t > gme_vertices ;
-                    geomodel_vertices.mesh_entity_vertex_id( S.gmme_id(),
-                        geomodel_vertices.geomodel_vertex_id( c1_id ),
-                        gme_vertices ) ;
+                    const gmme_id& c1_id = L.boundary_gmme( 1 ) ;
+                    std::vector< index_t > gme_vertices =
+                        geomodel_vertices.mesh_entity_vertex_id( S.gmme(),
+                            geomodel_vertices.geomodel_vertex_id( c1_id ) ) ;
                     corners.insert( gme_vertices.front() + offset ) ;
                 }
             }
@@ -404,8 +399,8 @@ namespace {
             // Check validity
             bool is_valid = is_geomodel_valid( geomodel ) ;
 
-            Logger::out( "I/O" ) << " Loaded geomodel " << geomodel.name()
-                << " from " << filename << std::endl ;
+            Logger::out( "I/O", " Loaded geomodel ", geomodel.name(), " from ",
+                filename ) ;
             return is_valid ;
         }
 

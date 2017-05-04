@@ -35,9 +35,10 @@
 
 #include <ringmesh/geogram_extension/geogram_extension.h>
 
+#include <algorithm>
+
 #include <geogram/basic/file_system.h>
 #include <geogram/basic/line_stream.h>
-#include <geogram/basic/logger.h>
 
 #include <geogram/mesh/mesh.h>
 #include <geogram/mesh/mesh_geometry.h>
@@ -51,23 +52,45 @@
 namespace {
     using namespace RINGMesh ;
 
-    bool is_attribute_a_double(
-        GEO::AttributesManager& att_manager,
-        const std::string& att_name )
+    std::vector< std::string > bounded_attribute_names(
+        GEO::AttributesManager& manager )
     {
-        return GEO::Attribute< double >::is_defined( att_manager, att_name ) ;
+        GEO::vector< std::string > names ;
+        manager.list_attribute_names( names ) ;
+        std::vector< std::string > bounded_names ;
+        bounded_names.reserve( names.size() ) ;
+        if( !names.empty() ) {
+            for( std::string name : names ) {
+                if( manager.find_attribute_store( name )->has_observers() ) {
+                    bounded_names.push_back( name ) ;
+                }
+            }
+        }
+        return bounded_names ;
     }
-}
 
-namespace RINGMesh {
+    void print_bounded_attributes(
+        const std::vector< std::string >& names,
+        const std::string& output_location )
+    {
+        if( !names.empty() ) {
+            Logger::err( "Attributes", "Attributes still bounded on ",
+                output_location, ":" ) ;
+            for( std::string name : names ) {
+                Logger::err( "Attributes", " ", name ) ;
+            }
+        }
+    }
 
-    using GEO::vec3 ;
-    using GEO::Mesh ;
+    void print_bounded_attributes(
+        GEO::AttributesManager& manager,
+        const std::string& output_location )
+    {
+        std::vector< std::string > names = bounded_attribute_names( manager ) ;
+        print_bounded_attributes( names, output_location ) ;
+    }
 
-    /***********************************************************************/
-    /* Loading and saving a GEO::Mesh                                      */
-
-    /*! 
+    /*!
      * @brief TSurfMeshIOHandler for importing .ts files into a mesh.
      */
     class TSurfMeshIOHandler final : public GEO::MeshIOHandler {
@@ -163,8 +186,7 @@ namespace RINGMesh {
                     for( index_t dim_itr = 0;
                         dim_itr < vertex_attr_dims[attr_dbl_itr]; ++dim_itr ) {
                         out << " "
-                            << cur_attr[v * vertex_attr_dims[attr_dbl_itr]
-                                + dim_itr] ;
+                            << cur_attr[v * vertex_attr_dims[attr_dbl_itr] + dim_itr] ;
                     }
                 }
                 out << std::endl ;
@@ -196,20 +218,19 @@ namespace RINGMesh {
             GEO::vector< std::string > att_v_names ;
             GEO::AttributesManager& mesh_vertex_mgr = mesh.vertices.attributes() ;
             mesh_vertex_mgr.list_attribute_names( att_v_names ) ;
-            for( index_t att_v = 0; att_v < mesh_vertex_mgr.nb();
-                att_v++ ) {
+            for( index_t att_v = 0; att_v < mesh_vertex_mgr.nb(); att_v++ ) {
 
                 if( att_v_names[att_v] == "point" ) {
                     continue ;
                 }
 
-                if( !is_attribute_a_double( mesh_vertex_mgr, att_v_names[att_v] ) ) {
+                if( !GEO::Attribute< double >::is_defined( mesh_vertex_mgr,
+                    att_v_names[att_v] ) ) {
                     continue ;
                 }
                 att_v_double_names.push_back( att_v_names[att_v] ) ;
-                index_t cur_dim =
-                    mesh_vertex_mgr.find_attribute_store(
-                        att_v_names[att_v] )->dimension() ;
+                index_t cur_dim = mesh_vertex_mgr.find_attribute_store(
+                    att_v_names[att_v] )->dimension() ;
                 vertex_attr_dims.push_back( cur_dim ) ;
             }
 
@@ -320,8 +341,7 @@ namespace RINGMesh {
                             3 ) ;
                         vertices_[mesh_dimension_ * v + 2] = in.field_as_double( 4 )
                             * z_sign_ ;
-                        if( in.field_matches( 0, "PVRTX" ) )
-                        {
+                        if( in.field_matches( 0, "PVRTX" ) ) {
                             index_t offset = 5 ;
                             for( index_t prop_name_itr = 0;
                                 prop_name_itr < vertex_property_names_.size();
@@ -330,7 +350,8 @@ namespace RINGMesh {
                                     v_attr_dim_itr
                                         < vertex_attribute_dims_[prop_name_itr];
                                     ++v_attr_dim_itr ) {
-                                    vertex_attributes_[prop_name_itr][v][v_attr_dim_itr] = in.field_as_double( offset ) ;
+                                    vertex_attributes_[prop_name_itr][v][v_attr_dim_itr] =
+                                        in.field_as_double( offset ) ;
                                     ++offset ;
                                 }
                             }
@@ -368,7 +389,7 @@ namespace RINGMesh {
                     if( !in.field_matches( 0, "PROPERTIES" ) ) {
                         continue ;
                     }
-                    vertex_property_names_.reserve( in.nb_fields() -1 ) ;
+                    vertex_property_names_.reserve( in.nb_fields() - 1 ) ;
                     for( index_t prop_name_itr = 1; prop_name_itr < in.nb_fields();
                         ++prop_name_itr ) {
                         vertex_property_names_.push_back(
@@ -458,10 +479,8 @@ namespace RINGMesh {
             for( index_t vertex_attributes_itr = 0;
                 vertex_attributes_itr < vertex_attributes_.size();
                 ++vertex_attributes_itr ) {
-                vertex_attributes_[vertex_attributes_itr].resize(
-                    nb_vertices_ ) ;
-                for( index_t vertex_itr = 0;
-                    vertex_itr < nb_vertices_;
+                vertex_attributes_[vertex_attributes_itr].resize( nb_vertices_ ) ;
+                for( index_t vertex_itr = 0; vertex_itr < nb_vertices_;
                     ++vertex_itr ) {
                     vertex_attributes_[vertex_attributes_itr][vertex_itr].resize(
                         vertex_attribute_dims_[vertex_attributes_itr], 0 ) ;
@@ -531,18 +550,19 @@ namespace RINGMesh {
         }
     } ;
 
+}
+
+namespace RINGMesh {
+
+    /***********************************************************************/
+    /* Loading and saving a GEO::Mesh                                      */
+
     void ringmesh_mesh_io_initialize()
     {
         geo_register_MeshIOHandler_creator( TSurfMeshIOHandler, "ts" ) ;
         geo_register_MeshIOHandler_creator( LINMeshIOHandler, "lin" ) ;
     }
 
-    /*!
-     * Computes the volume of a Mesh cell
-     * @param[in] M the mesh
-     * @param[in] c the cell index
-     * @return the volume of the cell
-     */
     double mesh_cell_signed_volume( const GEO::Mesh& M, index_t c )
     {
         double volume = 0 ;
@@ -613,13 +633,7 @@ namespace RINGMesh {
     {
         return std::fabs( mesh_cell_signed_volume( M, c ) ) ;
     }
-    /*!
-     * Computes the Mesh cell facet barycenter
-     * @param[in] M the mesh
-     * @param[in] cell the cell index
-     * @param[in] f the facet index in the cell
-     * @return the cell facet center
-     */
+
     vec3 mesh_cell_facet_barycenter( const GEO::Mesh& M, index_t cell, index_t f )
     {
         vec3 result( 0., 0., 0. ) ;
@@ -633,13 +647,6 @@ namespace RINGMesh {
         return result / static_cast< double >( nb_vertices ) ;
     }
 
-    /*!
-     * Computes the non weighted barycenter of a volumetric
-     * cell of a Mesh
-     * @param[in] M the mesh
-     * @param[in] cell the cell index
-     * @return the cell center
-     */
     vec3 mesh_cell_barycenter( const GEO::Mesh& M, index_t cell )
     {
         vec3 result( 0.0, 0.0, 0.0 ) ;
@@ -653,172 +660,16 @@ namespace RINGMesh {
 
     void print_bounded_attributes( const GEO::Mesh& M )
     {
-        {
-            GEO::vector< std::string > names ;
-            M.vertices.attributes().list_attribute_names( names ) ;
-            if( !names.empty() ) {
-                std::vector< bool > is_bounded( names.size(), false ) ;
-                bool failed = false ;
-                for( index_t a = 0; a < names.size(); a++ ) {
-                    if( names[a] == "point" ) continue ;
-                    is_bounded[a] = M.vertices.attributes().find_attribute_store(
-                        names[a] )->has_observers() ;
-                    if( is_bounded[a] ) failed = true ;
-                }
-                if( failed ) {
-                    Logger::err( "Attributes" )
-                        << "Attributes still bounded on vertices:" ;
-                    for( index_t a = 0; a < names.size(); a++ ) {
-                        if( is_bounded[a] ) {
-                            Logger::err( "Attributes" ) << " " << names[a] ;
-                        }
-                    }
-                    Logger::err( "Attributes" ) << std::endl ;
-                }
-            }
-        }
-        {
-            GEO::vector< std::string > names ;
-            M.edges.attributes().list_attribute_names( names ) ;
-            if( !names.empty() ) {
-                std::vector< bool > is_bounded( names.size() ) ;
-                bool failed = false ;
-                for( index_t a = 0; a < names.size(); a++ ) {
-                    is_bounded[a] = M.edges.attributes().find_attribute_store(
-                        names[a] )->has_observers() ;
-                    if( is_bounded[a] ) failed = true ;
-                }
-                if( failed ) {
-                    Logger::err( "Attributes" )
-                        << "Attributes still bounded on edges:" ;
-                    for( index_t a = 0; a < names.size(); a++ ) {
-                        if( is_bounded[a] ) {
-                            Logger::err( "Attributes" ) << " " << names[a] ;
-                        }
-                    }
-                    Logger::err( "Attributes" ) << std::endl ;
-                }
-            }
-        }
-        {
-            GEO::vector< std::string > names ;
-            M.facets.attributes().list_attribute_names( names ) ;
-            if( !names.empty() ) {
-                std::vector< bool > is_bounded( names.size() ) ;
-                bool failed = false ;
-                for( index_t a = 0; a < names.size(); a++ ) {
-                    is_bounded[a] = M.facets.attributes().find_attribute_store(
-                        names[a] )->has_observers() ;
-                    if( is_bounded[a] ) failed = true ;
-                }
-                if( failed ) {
-                    Logger::err( "Attributes" )
-                        << "Attributes still bounded on facets:" ;
-                    for( index_t a = 0; a < names.size(); a++ ) {
-                        if( is_bounded[a] ) {
-                            Logger::err( "Attributes" ) << " " << names[a] ;
-                        }
-                    }
-                    Logger::err( "Attributes" ) << std::endl ;
-                }
-            }
-        }
-        {
-            GEO::vector< std::string > names ;
-            M.facet_corners.attributes().list_attribute_names( names ) ;
-            if( !names.empty() ) {
-                std::vector< bool > is_bounded( names.size() ) ;
-                bool failed = false ;
-                for( index_t a = 0; a < names.size(); a++ ) {
-                    is_bounded[a] =
-                        M.facet_corners.attributes().find_attribute_store( names[a] )->has_observers() ;
-                    if( is_bounded[a] ) failed = true ;
-                }
-                if( failed ) {
-                    Logger::err( "Attributes" )
-                        << "Attributes still bounded on facet_corners:" ;
-                    for( index_t a = 0; a < names.size(); a++ ) {
-                        if( is_bounded[a] ) {
-                            Logger::err( "Attributes" ) << " " << names[a] ;
-                        }
-                    }
-                    Logger::err( "Attributes" ) << std::endl ;
-                }
-            }
-        }
-        {
-            GEO::vector< std::string > names ;
-            M.cells.attributes().list_attribute_names( names ) ;
-            if( !names.empty() ) {
-                std::vector< bool > is_bounded( names.size() ) ;
-                bool failed = false ;
-                for( index_t a = 0; a < names.size(); a++ ) {
-                    is_bounded[a] = M.cells.attributes().find_attribute_store(
-                        names[a] )->has_observers() ;
-                    if( is_bounded[a] ) {
-                        failed = true ;
-                    }
-                }
-                if( failed ) {
-                    Logger::err( "Attributes" )
-                        << "Attributes still bounded on cells:" ;
-                    for( index_t a = 0; a < names.size(); a++ ) {
-                        if( is_bounded[a] ) {
-                            Logger::err( "Attributes" ) << " " << names[a] ;
-                        }
-                    }
-                    Logger::err( "Attributes" ) << std::endl ;
-                }
-            }
-        }
-        {
-            GEO::vector< std::string > names ;
-            M.cell_corners.attributes().list_attribute_names( names ) ;
-            if( !names.empty() ) {
-                std::vector< bool > is_bounded( names.size() ) ;
-                bool failed = false ;
-                for( index_t a = 0; a < names.size(); a++ ) {
-                    is_bounded[a] = M.cell_corners.attributes().find_attribute_store(
-                        names[a] )->has_observers() ;
-                    if( is_bounded[a] ) failed = true ;
-                }
-                if( failed ) {
-                    Logger::err( "Attributes" )
-                        << "Attributes still bounded on cell_corners:" ;
-                    for( index_t a = 0; a < names.size(); a++ ) {
-                        if( is_bounded[a] ) {
-                            Logger::err( "Attributes" ) << " " << names[a] ;
-                        }
-                    }
-                    Logger::err( "Attributes" ) << std::endl ;
-                }
-            }
-        }
-        {
-            GEO::vector< std::string > names ;
-            M.cell_facets.attributes().list_attribute_names( names ) ;
-            if( !names.empty() ) {
-                std::vector< bool > is_bounded( names.size() ) ;
-                bool failed = false ;
-                for( index_t a = 0; a < names.size(); a++ ) {
-                    is_bounded[a] = M.cell_facets.attributes().find_attribute_store(
-                        names[a] )->has_observers() ;
-                    if( is_bounded[a] ) {
-                        failed = true ;
-                    }
-                }
-                if( failed ) {
-                    Logger::err( "Attributes" )
-                        << "Attributes still bounded on cell_facets:" ;
-                    for( index_t a = 0; a < names.size(); a++ ) {
-                        if( is_bounded[a] ) {
-                            Logger::err( "Attributes" ) << " " << names[a] ;
-                        }
-                    }
-                    Logger::err( "Attributes" ) << std::endl ;
-                }
-            }
-        }
+        std::vector< std::string > names = bounded_attribute_names(
+            M.vertices.attributes() ) ;
+        names.erase( std::find( names.begin(), names.end(), "point" ) ) ;
+        ::print_bounded_attributes( names, "vertices" ) ;
+        ::print_bounded_attributes( M.edges.attributes(), "edges" ) ;
+        ::print_bounded_attributes( M.facets.attributes(), "facets" ) ;
+        ::print_bounded_attributes( M.facet_corners.attributes(), "facet_corners" ) ;
+        ::print_bounded_attributes( M.cells.attributes(), "cells" ) ;
+        ::print_bounded_attributes( M.cell_corners.attributes(), "cell_corners" ) ;
+        ::print_bounded_attributes( M.cell_facets.attributes(), "cell_facets" ) ;
     }
 
 }

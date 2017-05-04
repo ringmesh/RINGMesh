@@ -37,6 +37,8 @@
 
 #include <ringmesh/basic/common.h>
 
+#include <memory>
+
 #include <geogram/mesh/mesh_repair.h>
 
 #include <ringmesh/mesh/mesh.h>
@@ -105,6 +107,14 @@ namespace RINGMesh {
          * @return the index of the first created vertex
          */
         virtual index_t create_vertices( index_t nb ) = 0 ;
+
+        /*!
+         * @brief set vertex coordinates from a std::vector of coordinates
+         * @param[in] points_xyz_coordinates a set of x, y, z coordinates
+         */
+        virtual void assign_vertices(
+            const std::vector< double >& points_xyz_coordinates ) = 0 ;
+
         /*!
          * @brief Deletes a set of vertices.
          * @param[in] to_delete     a vector of size @function nb(). If to_delete[e] is true,
@@ -128,15 +138,14 @@ namespace RINGMesh {
         /*!@}
          */
 
-        static MeshBaseBuilder* create_builder( MeshBase& mesh ) ;
+        static std::unique_ptr< MeshBaseBuilder > create_builder( MeshBase& mesh ) ;
     protected:
         MeshBaseBuilder()
         {
         }
         virtual void set_mesh( MeshBase& mesh ) = 0 ;
     } ;
-    typedef GEO::SmartPointer< MeshBaseBuilder > MeshBaseBuilder_var ;
-    typedef GEO::Factory0< MeshBaseBuilder > MeshBaseBuilderFactory ;
+    using MeshBaseBuilderFactory = GEO::Factory0< MeshBaseBuilder > ;
 #define ringmesh_register_mesh_base_builder(type) \
     geo_register_creator(RINGMesh::MeshBaseBuilderFactory, type ## Builder, type::type_name_static())
 
@@ -147,9 +156,10 @@ namespace RINGMesh {
         {
         }
 
+        using MeshBaseBuilder::set_mesh ;
         virtual void set_mesh( Mesh0D& mesh ) = 0 ;
 
-        static Mesh0DBuilder* create_builder( Mesh0D& mesh ) ;
+        static std::unique_ptr< Mesh0DBuilder > create_builder( Mesh0D& mesh ) ;
 
         virtual void remove_isolated_vertices()
         {
@@ -162,8 +172,7 @@ namespace RINGMesh {
         {
         }
     } ;
-    typedef GEO::SmartPointer< Mesh0DBuilder > Mesh0DBuilder_var ;
-    typedef GEO::Factory0< Mesh0DBuilder > Mesh0DBuilderFactory ;
+    using Mesh0DBuilderFactory = GEO::Factory0< Mesh0DBuilder > ;
 #define ringmesh_register_mesh_0d_builder(type) \
     geo_register_creator(RINGMesh::Mesh0DBuilderFactory, type ## Builder, type::type_name_static())
 
@@ -174,9 +183,10 @@ namespace RINGMesh {
         {
         }
 
+        using MeshBaseBuilder::set_mesh;
         virtual void set_mesh( Mesh1D& mesh ) = 0 ;
 
-        static Mesh1DBuilder* create_builder( Mesh1D& mesh ) ;
+        static std::unique_ptr< Mesh1DBuilder > create_builder( Mesh1D& mesh ) ;
 
         /*!
          * @brief Create a new edge.
@@ -233,8 +243,7 @@ namespace RINGMesh {
         {
         }
     } ;
-    typedef GEO::SmartPointer< Mesh1DBuilder > Mesh1DBuilder_var ;
-    typedef GEO::Factory0< Mesh1DBuilder > Mesh1DBuilderFactory ;
+    using Mesh1DBuilderFactory = GEO::Factory0< Mesh1DBuilder > ;
 #define ringmesh_register_mesh_1d_builder(type) \
     geo_register_creator(RINGMesh::Mesh1DBuilderFactory, type ## Builder, type::type_name_static())
 
@@ -245,9 +254,10 @@ namespace RINGMesh {
         {
         }
 
+        using MeshBaseBuilder::set_mesh;
         virtual void set_mesh( Mesh2D& mesh ) = 0 ;
 
-        static Mesh2DBuilder* create_builder( Mesh2D& mesh ) ;
+        static std::unique_ptr< Mesh2DBuilder > create_builder( Mesh2D& mesh ) ;
 
         /*!@}
          * \name Facet related methods
@@ -311,13 +321,10 @@ namespace RINGMesh {
          * \details Facet adjacence are not computed.
          *   Facet and corner attributes are zeroed.
          * \param[in] triangles facet to vertex links
-         * \param[in] steal_args if set, vertices and triangles
-         * are 'stolen' from the arguments
          * (using vector::swap).
          */
         virtual void assign_facet_triangle_mesh(
-            const std::vector< index_t >& triangles,
-            bool steal_args ) = 0 ;
+            const std::vector< index_t >& triangles ) = 0 ;
         /*!
          * @brief Removes all the facets and attributes.
          * @param[in] keep_attributes if true, then all the existing attribute
@@ -372,8 +379,7 @@ namespace RINGMesh {
         {
         }
     } ;
-    typedef GEO::SmartPointer< Mesh2DBuilder > Mesh2DBuilder_var ;
-    typedef GEO::Factory0< Mesh2DBuilder > Mesh2DBuilderFactory ;
+    using Mesh2DBuilderFactory = GEO::Factory0< Mesh2DBuilder > ;
 #define ringmesh_register_mesh_2d_builder(type) \
     geo_register_creator(RINGMesh::Mesh2DBuilderFactory, type ## Builder, type::type_name_static())
 
@@ -384,9 +390,10 @@ namespace RINGMesh {
         {
         }
 
+        using MeshBaseBuilder::set_mesh;
         virtual void set_mesh( Mesh3D& mesh ) = 0 ;
 
-        static Mesh3DBuilder* create_builder( Mesh3D& mesh ) ;
+        static std::unique_ptr< Mesh3DBuilder > create_builder( Mesh3D& mesh ) ;
 
         /*!
          * @brief Creates a contiguous chunk of cells of the same type.
@@ -403,13 +410,9 @@ namespace RINGMesh {
          * \details Cells adjacence are not computed.
          *   cell and corner attributes are zeroed.
          * \param[in] tets cells to vertex links
-         * \param[in] steal_args if set, vertices and tets
-         * are 'stolen' from the arguments
          * (using vector::swap).
          */
-        virtual void assign_cell_tet_mesh(
-            const std::vector< index_t >& tets,
-            bool steal_args ) = 0 ;
+        virtual void assign_cell_tet_mesh( const std::vector< index_t >& tets ) = 0 ;
         /*!
          * @brief Sets a vertex of a cell by local vertex index.
          * @param[in] cell_id index of the cell, in 0.. @function nb() - 1.
@@ -490,8 +493,7 @@ namespace RINGMesh {
         {
         }
     } ;
-    typedef GEO::SmartPointer< Mesh3DBuilder > Mesh3DBuilder_var ;
-    typedef GEO::Factory0< Mesh3DBuilder > Mesh3DBuilderFactory ;
+    using Mesh3DBuilderFactory = GEO::Factory0< Mesh3DBuilder > ;
 #define ringmesh_register_mesh_3d_builder(type) \
     geo_register_creator(RINGMesh::Mesh3DBuilderFactory, type ## Builder, type::type_name_static())
 

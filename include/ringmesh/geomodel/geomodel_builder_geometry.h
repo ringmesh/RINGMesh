@@ -64,7 +64,7 @@ namespace RINGMesh {
          * @param[in] id the GeoModelMeshEntity id to operate on
          * @param[in] type the new mesh data structure type
          */
-        void change_mesh_data_structure( const gmme_t& id, const MeshType type )
+        void change_mesh_data_structure( const gmme_id& id, const MeshType type )
         {
             GeoModelMeshEntityAccess gmme_access(
                 geomodel_access_.modifiable_mesh_entity( id ) ) ;
@@ -78,9 +78,9 @@ namespace RINGMesh {
          * @warn The client code is responsible for the memory unallocation.
          * You can use the smartpointer Mesh0DBuilder_var.
          */
-        Mesh0DBuilder* create_corner_builder( index_t corner_id )
+        std::unique_ptr< Mesh0DBuilder > create_corner_builder( index_t corner_id )
         {
-            gmme_t id( Corner::type_name_static(), corner_id ) ;
+            gmme_id id( Corner::type_name_static(), corner_id ) ;
             GeoModelMeshEntity& corner = geomodel_access_.modifiable_mesh_entity(
                 id ) ;
             GeoModelMeshEntityAccess corner_access( corner ) ;
@@ -96,9 +96,9 @@ namespace RINGMesh {
          * @warn The client code is responsible for the memory unallocation.
          * You can use the smartpointer Mesh1DBuilder_var.
          */
-        Mesh1DBuilder* create_line_builder( index_t line_id )
+        std::unique_ptr< Mesh1DBuilder > create_line_builder( index_t line_id )
         {
-            gmme_t id( Line::type_name_static(), line_id ) ;
+            gmme_id id( Line::type_name_static(), line_id ) ;
             GeoModelMeshEntity& line = geomodel_access_.modifiable_mesh_entity(
                 id ) ;
             GeoModelMeshEntityAccess line_access( line ) ;
@@ -114,9 +114,9 @@ namespace RINGMesh {
          * @warn The client code is responsible for the memory unallocation.
          * You can use the smartpointer Mesh2DBuilder_var.
          */
-        Mesh2DBuilder* create_surface_builder( index_t surface_id )
+        std::unique_ptr< Mesh2DBuilder > create_surface_builder( index_t surface_id )
         {
-            gmme_t id( Surface::type_name_static(), surface_id ) ;
+            gmme_id id( Surface::type_name_static(), surface_id ) ;
             GeoModelMeshEntity& surface = geomodel_access_.modifiable_mesh_entity(
                 id ) ;
             GeoModelMeshEntityAccess surface_access( surface ) ;
@@ -132,9 +132,9 @@ namespace RINGMesh {
          * @warn The client code is responsible for the memory unallocation.
          * You can use the smartpointer Mesh3DBuilder_var.
          */
-        Mesh3DBuilder* create_region_builder( index_t region_id )
+        std::unique_ptr< Mesh3DBuilder > create_region_builder( index_t region_id )
         {
-            gmme_t id( Region::type_name_static(), region_id ) ;
+            gmme_id id( Region::type_name_static(), region_id ) ;
             GeoModelMeshEntity& region = geomodel_access_.modifiable_mesh_entity(
                 id ) ;
             GeoModelMeshEntityAccess region_access( region ) ;
@@ -149,10 +149,10 @@ namespace RINGMesh {
          * than the input geomodel.
          */
         void copy_meshes( const GeoModel& from ) ;
-        void copy_meshes( const GeoModel& from, const MeshEntityType& entity_type) ;
-        void copy_mesh( const GeoModel& from, const gmme_t& mesh_entity ) ;
+        void copy_meshes( const GeoModel& from, const MeshEntityType& entity_type ) ;
+        void copy_mesh( const GeoModel& from, const gmme_id& mesh_entity ) ;
 
-        void assign_mesh_to_entity( const MeshBase& mesh, const gmme_t& to ) ;
+        void assign_mesh_to_entity( const MeshBase& mesh, const gmme_id& to ) ;
 
         /*!
          * \name Set entity geometry from geometrical positions
@@ -168,7 +168,7 @@ namespace RINGMesh {
          * its Lines, Surfaces...)
          */
         void set_mesh_entity_vertex(
-            const gmme_t& entity_id,
+            const gmme_id& entity_id,
             index_t v,
             const vec3& point,
             bool update ) ;
@@ -181,7 +181,7 @@ namespace RINGMesh {
          * @param[in] clear If true the mesh is cleared, keeping its attributes
          */
         void set_mesh_entity_vertices(
-            const gmme_t& entity_id,
+            const gmme_id& entity_id,
             const std::vector< vec3 >& points,
             bool clear ) ;
 
@@ -238,7 +238,7 @@ namespace RINGMesh {
          *                     the new position
          */
         void set_mesh_entity_vertex(
-            const gmme_t& entity_id,
+            const gmme_id& entity_id,
             index_t v,
             index_t geomodel_vertex ) ;
 
@@ -250,7 +250,7 @@ namespace RINGMesh {
          * @param[in] clear If true the mesh if cleared, keeping its attributes
          */
         void set_mesh_entity_vertices(
-            const gmme_t& entity_id,
+            const gmme_id& entity_id,
             const std::vector< index_t >& geomodel_vertices,
             bool clear ) ;
 
@@ -272,24 +272,15 @@ namespace RINGMesh {
             index_t line_id,
             const std::vector< index_t >& unique_vertices ) ;
 
-        /*!
-         * @brief Sets the vertices and facets for a surface
-         *
-         * @param[in] surface_id Index of the surface
-         * @param[in] geomodel_vertex_ids Indices of unique vertices in the GeoModel
-         * @param[in] facets Indices in the vertices vector to build facets
-         * @param[in] facet_ptr Pointer to the beginning of a facet in facets
+        /*! @}
+         * \name Set entity geometry using GeoModelMeshEntity vertices
+         * @{
          */
-        void set_surface_geometry(
-            index_t surface_id,
-            const std::vector< index_t >& geomodel_vertex_ids,
-            const std::vector< index_t >& surface_facets,
-            const std::vector< index_t >& surface_facet_ptr ) ;
 
         /*!
          * @brief Sets the facets of a surface
          * @param[in] surface_id Index of the surface
-         * @param[in] facets Indices of the geomodel vertices defining the facets
+         * @param[in] facets Indices of the mesh vertices defining the facets
          * @param[in] facet_ptr Pointer to the beginning of a facet in facets
          */
         void set_surface_geometry(
@@ -297,28 +288,10 @@ namespace RINGMesh {
             const std::vector< index_t >& facets,
             const std::vector< index_t >& facet_ptr ) ;
 
-        void set_surface_geometry(
-            index_t surface_id,
-            const std::vector< index_t >& triangle_corners ) ;
-
-        void set_surface_geometry_with_adjacencies(
-            index_t surface_id,
-            const std::vector< index_t >& triangle_corners,
-            const std::vector< index_t >& adjacent_triangles ) ;
-
         void set_surface_element_geometry(
             index_t surface_id,
             index_t facet_id,
             const std::vector< index_t >& corners ) ;
-
-        void set_surface_element_adjacency(
-            index_t surface_id,
-            index_t facet_id,
-            const std::vector< index_t >& adjacents ) ;
-
-        void set_region_geometry(
-            index_t region_id,
-            const std::vector< index_t >& tet_corners ) ;
 
         void set_region_element_geometry(
             index_t region_id,
@@ -337,7 +310,7 @@ namespace RINGMesh {
          * @return the first vertex index created
          */
         index_t create_mesh_entity_vertices(
-            const gmme_t& entity_id,
+            const gmme_id& entity_id,
             index_t nb_vertices ) ;
 
         index_t create_surface_facet(
@@ -366,10 +339,10 @@ namespace RINGMesh {
          * @{
          */
 
-        void delete_mesh_entity_mesh( const gmme_t& E_id ) ;
-        void delete_mesh_entity_isolated_vertices( const gmme_t& E_id ) ;
+        void delete_mesh_entity_mesh( const gmme_id& E_id ) ;
+        void delete_mesh_entity_isolated_vertices( const gmme_id& E_id ) ;
         void delete_mesh_entity_vertices(
-            const gmme_t& E_id,
+            const gmme_id& E_id,
             const std::vector< bool >& to_delete ) ;
         void delete_corner_vertex( index_t corner_id ) ;
         void delete_line_edges(

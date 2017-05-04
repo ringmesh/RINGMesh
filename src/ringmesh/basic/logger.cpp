@@ -33,51 +33,16 @@
  *     FRANCE
  */
 
-#pragma once
-
-#include <ringmesh/basic/common.h>
-
-#include <memory>
-
-#include <geogram/basic/line_stream.h>
-
-#include <zlib/unzip.h>
-
-#include <ringmesh/geomodel/geomodel_builder.h>
+#include <ringmesh/basic/logger.h>
 
 /*!
- * @file ringmesh/geomodel_builder_ringmesh.h
- * @brief Classes to build GeoModel from various inputs
- * @author 
+ * @file Implementation of Logger class
+ * @author Arnaud Botella
  */
 
 namespace RINGMesh {
-    class GeoModelBuilderGMImpl ;
+
+    std::mutex Logger::lock_ ;
+
 }
 
-namespace RINGMesh {
-
-    class RINGMESH_API GeoModelBuilderGM final : public GeoModelBuilderFile {
-    public:
-        static const index_t NB_VERSION = 2 ;
-        GeoModelBuilderGM( GeoModel& geomodel, const std::string& filename ) ;
-        virtual ~GeoModelBuilderGM() ;
-
-    private:
-        void load_geological_entities( const std::string& geological_entity_file ) ;
-
-        /*!
-         * @brief Load meshes of all the mesh entities from a zip file
-         * @param[in] uz the zip file
-         */
-        void load_meshes( unzFile& uz ) ;
-
-        virtual void load_file() final ;
-
-        void load_mesh_entities( const std::string& mesh_entity_file ) ;
-
-    private:
-        index_t file_version_ ;
-        std::unique_ptr< GeoModelBuilderGMImpl > version_impl_[NB_VERSION] ;
-    } ;
-}

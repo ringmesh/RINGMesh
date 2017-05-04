@@ -242,7 +242,7 @@ include_directories(${PROJECT_BINARY_DIR})
 #------------------------------------------------------------------------------------------------
 # GEOGRAM 
 # Set the path to Geogram code
-set(GEOGRAM_PATH ${PROJECT_SOURCE_DIR}/src/third_party/geogram)
+set(GEOGRAM_PATH ${PROJECT_SOURCE_DIR}/third_party/geogram)
 
 # Geogram platform dependent settings
 if(WIN32)
@@ -363,13 +363,10 @@ FOREACH(directory ${directories})
     ENDIF()
 ENDFOREACH()
 
+file(GLOB zlib_src "${PROJECT_SOURCE_DIR}/third_party/zlib/*.c")
+file(GLOB zlib_include "${PROJECT_SOURCE_DIR}/third_party/zlib/*.h")
 # Add configure file to ringmesh includes
 set(ringmesh_include ${ringmesh_include} ${generated_configure_file})
-
-#------------------------------------------------------------------------------------------------
-# Collect third_party library files
-file(GLOB zlib_src "${PROJECT_SOURCE_DIR}/src/third_party/zlib/*.c")
-file(GLOB zlib_include "${PROJECT_SOURCE_DIR}/include/third_party/zlib/*.h")
 
 # Group files of a project in directories
 # All the files should be added to the sources of the project
@@ -392,6 +389,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 
 # Add include directories of RINGMesh
 include_directories(${PROJECT_SOURCE_DIR}/include)
+include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/third_party)
 
 #add generated export file to include directories
 set(generated_export_file ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_export.h)

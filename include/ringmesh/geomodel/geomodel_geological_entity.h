@@ -42,6 +42,8 @@
 
 #include <ringmesh/basic/common.h>
 
+#include <memory>
+
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
 #include <ringmesh/geomodel/geomodel_entity.h>
 
@@ -58,23 +60,22 @@ namespace RINGMesh {
 
         static void initialize() ;
 
-        virtual ~GeoModelGeologicalEntity()
-        {
-        }
+        virtual ~GeoModelGeologicalEntity() = default ;
 
-        const gmge_t gmge_id() const
+        const gmge_id gmge() const
         {
-            return gmge_t( type_name(), id_ ) ;
+            return gmge_id( type_name(), id_ ) ;
         }
 
         const GeologicalEntityType entity_type() const
         {
-            return gmge_id().type() ;
+            return gmge().type() ;
         }
 
         virtual const MeshEntityType child_type_name() const = 0 ;
         virtual bool is_on_voi() const ;
         virtual bool is_connectivity_valid() const ;
+        virtual bool is_valid() const ;
         static const GeologicalEntityType type_name_static()
         {
             return ForbiddenGeologicalEntityType::type_name_static() ;
@@ -87,7 +88,7 @@ namespace RINGMesh {
         {
             return static_cast< index_t >( children_.size() ) ;
         }
-        const gmme_t& child_gmme( index_t x ) const
+        const gmme_id& child_gmme( index_t x ) const
         {
             ringmesh_assert( x < nb_children() ) ;
             return children_[x] ;
@@ -107,7 +108,7 @@ namespace RINGMesh {
         }
         virtual void copy( const GeoModelGeologicalEntity& from ) final
         {
-            GME::copy( from ) ;
+            GeoModelEntity::copy( from ) ;
             children_ = from.children_ ;
         }
 
@@ -115,7 +116,7 @@ namespace RINGMesh {
 
     protected:
         /// Entities constituting this one - see child_type( TYPE )
-        std::vector< gmme_t > children_ ;
+        std::vector< gmme_id > children_ ;
     } ;
 
     /// @todo Review: I am still not convinced that we always have to 
@@ -126,9 +127,7 @@ namespace RINGMesh {
             : GeoModelGeologicalEntity( geomodel )
         {
         }
-        virtual ~Contact()
-        {
-        }
+        virtual ~Contact() = default ;
 
         static const GeologicalEntityType type_name_static()
         {
@@ -139,8 +138,6 @@ namespace RINGMesh {
             return type_name_static() ;
         }
         virtual const MeshEntityType child_type_name() const override ;
-
-        virtual bool is_valid() const final ;
     } ;
 
     class RINGMESH_API Interface: public GeoModelGeologicalEntity {
@@ -149,9 +146,7 @@ namespace RINGMesh {
             : GeoModelGeologicalEntity( geomodel )
         {
         }
-        virtual ~Interface()
-        {
-        }
+        virtual ~Interface() = default ;
 
         static const GeologicalEntityType type_name_static()
         {
@@ -162,8 +157,6 @@ namespace RINGMesh {
             return type_name_static() ;
         }
         virtual const MeshEntityType child_type_name() const override ;
-
-        virtual bool is_valid() const final ;
     } ;
 
     class RINGMESH_API Layer: public GeoModelGeologicalEntity {
@@ -172,9 +165,7 @@ namespace RINGMesh {
             : GeoModelGeologicalEntity( geomodel )
         {
         }
-        virtual ~Layer()
-        {
-        }
+        virtual ~Layer() = default ;
 
         static const GeologicalEntityType type_name_static()
         {
@@ -185,8 +176,6 @@ namespace RINGMesh {
             return type_name_static() ;
         }
         virtual const MeshEntityType child_type_name() const override ;
-
-        virtual bool is_valid() const final ;
     } ;
 
     class GeoModelGeologicalEntityAccess {
@@ -212,17 +201,17 @@ namespace RINGMesh {
             return gmge_.id_ ;
         }
 
-        GME::GEOL_FEATURE& modifiable_geol_feature()
+        GeoModelEntity::GEOL_FEATURE& modifiable_geol_feature()
         {
             return gmge_.geol_feature_ ;
         }
 
-        std::vector< gmme_t >& modifiable_children()
+        std::vector< gmme_id >& modifiable_children()
         {
             return gmge_.children_ ;
         }
 
-        static GeoModelGeologicalEntity* create_geological_entity(
+        static std::unique_ptr< GeoModelGeologicalEntity > create_geological_entity(
             const GeologicalEntityType& type,
             const GeoModel& geomodel,
             index_t index_in_geomodel ) ;

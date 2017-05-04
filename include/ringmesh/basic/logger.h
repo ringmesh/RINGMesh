@@ -37,47 +37,66 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <memory>
+#include <mutex>
 
-#include <geogram/basic/line_stream.h>
-
-#include <zlib/unzip.h>
-
-#include <ringmesh/geomodel/geomodel_builder.h>
+#include <geogram/basic/logger.h>
 
 /*!
- * @file ringmesh/geomodel_builder_ringmesh.h
- * @brief Classes to build GeoModel from various inputs
- * @author 
+ * @file Logger class declaration
+ * @author Arnaud Botella
  */
 
 namespace RINGMesh {
-    class GeoModelBuilderGMImpl ;
-}
 
-namespace RINGMesh {
-
-    class RINGMESH_API GeoModelBuilderGM final : public GeoModelBuilderFile {
+    class RINGMESH_API Logger {
     public:
-        static const index_t NB_VERSION = 2 ;
-        GeoModelBuilderGM( GeoModel& geomodel, const std::string& filename ) ;
-        virtual ~GeoModelBuilderGM() ;
+        static void div( const std::string& title )
+        {
+            std::lock_guard< std::mutex > lock( lock_ ) ;
+            GEO::Logger::div( title ) ;
+        }
+
+        template< typename ...Args >
+        static void out( const std::string& feature, const Args& ... args )
+        {
+            std::lock_guard< std::mutex > lock( lock_ ) ;
+            log( GEO::Logger::out( feature ), args... ) ;
+        }
+
+        template< typename ...Args >
+        static void err( const std::string& feature, const Args& ... args )
+        {
+            std::lock_guard< std::mutex > lock( lock_ ) ;
+            log( GEO::Logger::err( feature ), args... ) ;
+        }
+
+        template< typename ...Args >
+        static void warn( const std::string& feature, const Args& ... args )
+        {
+            std::lock_guard< std::mutex > lock( lock_ ) ;
+            log( GEO::Logger::warn( feature ), args... ) ;
+        }
+
+        static GEO::Logger* instance()
+        {
+            return GEO::Logger::instance() ;
+        }
 
     private:
-        void load_geological_entities( const std::string& geological_entity_file ) ;
+        static void log( std::ostream& os )
+        {
+            os << std::endl ;
+        }
 
-        /*!
-         * @brief Load meshes of all the mesh entities from a zip file
-         * @param[in] uz the zip file
-         */
-        void load_meshes( unzFile& uz ) ;
-
-        virtual void load_file() final ;
-
-        void load_mesh_entities( const std::string& mesh_entity_file ) ;
+        template< class A0, class ...Args >
+        static void log( std::ostream& os, const A0& a0, const Args& ...args )
+        {
+            os << a0 ;
+            log( os, args... ) ;
+        }
 
     private:
-        index_t file_version_ ;
-        std::unique_ptr< GeoModelBuilderGMImpl > version_impl_[NB_VERSION] ;
+        static std::mutex lock_ ;
     } ;
+
 }

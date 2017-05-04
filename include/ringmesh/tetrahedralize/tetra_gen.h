@@ -37,17 +37,21 @@
 
 #include <ringmesh/basic/common.h>
 
-#include <geogram/basic/counted.h>
-#include <geogram/basic/smart_pointer.h>
+#include <memory>
+
 #include <geogram/basic/factory.h>
 
 #include <geogram/mesh/mesh.h>
 
+#include <ringmesh/geomodel/geomodel_builder.h>
+
+#include <ringmesh/mesh/mesh.h>
+
 /*!
-* @file ringmesh/tetragen.h
-* @brief API class interfacing GeoModel with external tetrahedral meshers 
-* @author Arnaud Botella
-*/
+ * @file ringmesh/tetragen.h
+ * @brief API class interfacing GeoModel with external tetrahedral meshers 
+ * @author Arnaud Botella
+ */
 
 #ifdef USE_MG_TETRA
 extern "C" {
@@ -58,7 +62,6 @@ extern "C" {
 
 namespace RINGMesh {
     class GeoModel ;
-    class GeoModelBuilder ;
     class Region ;
     class TetraGen ;
     class WellGroup ;
@@ -69,14 +72,26 @@ namespace RINGMesh {
     class RINGMESH_API TetraGen: public GEO::Counted {
     ringmesh_disable_copy( TetraGen ) ;
     public:
-        virtual ~TetraGen() ;
-        static TetraGen* create(
+        virtual ~TetraGen() = default ;
+        static std::unique_ptr< TetraGen > create(
             GeoModel& M,
             index_t region_id,
             const std::string& algo_name ) ;
         static void initialize() ;
 
-        void set_boundaries( const Region& region, const WellGroup* wells = nullptr ) ;
+        /*!
+         * Sets the boundaries of the domain
+         * @param[in] region The Region of the GeoModel to mesh
+         * @param[in] wells the wells to be conformal to
+         */
+        void set_boundaries(
+            const Region& region,
+            const WellGroup* wells = nullptr ) ;
+
+        /*!
+         * Set additional points to be in the output tetrahedral mesh
+         * @param[in] points the points to add
+         */
         void set_internal_points( const std::vector< vec3 >& points ) ;
 
         /*!
@@ -91,22 +106,15 @@ namespace RINGMesh {
     protected:
         TetraGen() ;
 
-        virtual void write_vertices_in_ringmesh_data_structure() = 0 ;
-        virtual void write_tet_in_ringmesh_data_structure() = 0 ;
-        void initialize_storage( index_t nb_points, index_t nb_tets ) ;
-        void set_point( index_t index, const double* point ) ;
-        void set_tetra( index_t index, int* tet ) ;
-
     protected:
-        GeoModelBuilder* builder_ ;
+        std::unique_ptr< GeoModelBuilder > builder_ ;
         index_t output_region_ ;
         GEO::Mesh tetmesh_constraint_ ;
         const Region* region_ ;
         const WellGroup* wells_ ;
     } ;
 
-    typedef GEO::SmartPointer< TetraGen > TetraGen_var ;
-    typedef GEO::Factory0< TetraGen > TetraGenFactory;
+    typedef GEO::Factory0< TetraGen > TetraGenFactory ;
 
 #define ringmesh_register_tetragen(type, name) \
     geo_register_creator(TetraGenFactory, type, name)

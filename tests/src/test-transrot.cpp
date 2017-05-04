@@ -71,7 +71,7 @@ void build_geomodel( GeoModel& geomodel )
     surface_facet_ptr.push_back( 6 ) ;
 
     std::vector< vec3 > vertices( 4 ) ;
-    gmme_t id ;
+    gmme_id id ;
 
     id = builder.topology.create_mesh_entity< Surface >() ;
     vertices[0] = v0 ;
@@ -131,7 +131,7 @@ void check_vertex( const vec3& in, const vec3& result )
 
 void test_translate( GeoModel& geomodel )
 {
-    Logger::out( "TEST" ) << "Test translation" << std::endl ;
+    Logger::out( "TEST", "Test translation" ) ;
     vec3 translation_vector( 1., 2.5, -3.5 ) ;
     translate( geomodel, translation_vector ) ;
 
@@ -148,7 +148,7 @@ void test_translate( GeoModel& geomodel )
 
 void test_rotation( GeoModel& geomodel )
 {
-    Logger::out( "TEST" ) << "Test rotation" << std::endl ;
+    Logger::out( "TEST", "Test rotation" ) ;
     vec3 origin( 1., 2.5, -3.5 ) ;
     vec3 axis( 0, 0, 1 ) ;
     rotate( geomodel, origin, axis, 90, true ) ;
@@ -282,12 +282,12 @@ int main()
         test_rotation( geomodel ) ;
 
     } catch( const RINGMeshException& e ) {
-        Logger::err( e.category() ) << e.what() << std::endl ;
+        Logger::err( e.category(), e.what() ) ;
         return 1 ;
     } catch( const std::exception& e ) {
-        Logger::err( "Exception" ) << e.what() << std::endl ;
+        Logger::err( "Exception", e.what() ) ;
         return 1 ;
     }
-    Logger::out( "TEST" ) << "SUCCESS" << std::endl ;
+    Logger::out( "TEST", "SUCCESS" ) ;
     return 0 ;
 }

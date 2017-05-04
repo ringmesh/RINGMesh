@@ -37,6 +37,8 @@
 
 #include <ringmesh/basic/common.h>
 
+#include <memory>
+
 #include <ringmesh/geomodel/geomodel_indexing_types.h>
 #include <ringmesh/geomodel/entity_type_manager.h>
 
@@ -66,10 +68,10 @@ namespace RINGMesh {
 namespace RINGMesh {
 
     /*! @todo Move this global variables in a function */
-    const std::string surface_att_name = "region" ;
-    const std::string region_att_name = "region" ;
-    const std::string cell_region_att_name = "cell_region" ;
-    const std::string facet_surface_att_name = "facet_surface" ;
+    static const std::string surface_att_name = "region" ;
+    static const std::string region_att_name = "region" ;
+    static const std::string cell_region_att_name = "cell_region" ;
+    static const std::string facet_surface_att_name = "facet_surface" ;
 
     class RINGMESH_API GeoModelMeshBase {
     protected:
@@ -146,7 +148,7 @@ namespace RINGMesh {
          * @return if found the vertex index in the geomodel, else NO_ID.
          */
         index_t geomodel_vertex_id(
-            const gmme_t& mesh_entity,
+            const gmme_id& mesh_entity,
             index_t entity_vertex_index = 0 ) const ;
 
         /*!
@@ -158,7 +160,7 @@ namespace RINGMesh {
          * @return if found the vertex index in the geomodel, else NO_ID.
          */
         index_t geomodel_vertex_id(
-            const gmme_t& mesh_entity,
+            const gmme_id& mesh_entity,
             index_t entity_mesh_element_index,
             index_t vertex_local_index ) const ;
 
@@ -166,36 +168,32 @@ namespace RINGMesh {
          * @brief Get the GeoModelMeshEntity vertices from its index in the GeoModelMesh
          * @param[in] mesh_entity Unique id to a GeoModelMeshEntity
          * @param[in] geomodel_vertex_id Index of the query vertex in the geomodel
-         * @param[out] mesh_entity_vertex_ids Corresponding GeoModelMeshEntity vertices
+         * @return Corresponding GeoModelMeshEntity vertices
          */
-        void mesh_entity_vertex_id(
-            const gmme_t& mesh_entity,
-            index_t geomodel_vertex_id,
-            std::vector< index_t >& mesh_entity_vertex_ids ) const ;
+        std::vector< index_t > mesh_entity_vertex_id(
+            const gmme_id& mesh_entity,
+            index_t geomodel_vertex_id ) const ;
 
         /*!
-         * @brief Get the vertices in GME corresponding to the given unique vertex
+         * @brief Get the vertices in GeoModelEntity corresponding to the given unique vertex
          * @param[in] v Vertex index in the geomodel
-         * @param[out] gme_vertices Result
+         * @return Corresponding GeoModelMeshEntity vertices
          */
-        void gme_vertices(
-            index_t v,
-            std::vector< GMEVertex >& gme_vertices ) const ;
+        const std::vector< GMEVertex >& gme_vertices( index_t v ) const ;
 
         /*!
          * @brief Get the vertex indices in the specified MeshEntity type
          * corresponding to the given unique vertex
          */
-        void gme_type_vertices(
+        std::vector< GMEVertex > gme_type_vertices(
             const MeshEntityType& entity_type,
-            index_t v,
-            std::vector< GMEVertex >& gme_vertices ) const ;
+            index_t v ) const ;
 
         /*!
          * @brief To use when building the geomodel by first adding its vertices
          * @return the first index of created vertices
          * @warning The client is responsible for setting the mapping between the points
-         * of the GME and the unique vertex
+         * of the GeoModelEntity and the unique vertex
          */
         index_t add_vertex( const vec3& point ) ;
         index_t add_vertices( const std::vector< vec3 >& points ) ;
@@ -209,7 +207,7 @@ namespace RINGMesh {
         void update_point( index_t v, const vec3& point ) ;
 
         void update_vertex_mapping(
-            const gmme_t& entity_id,
+            const gmme_id& entity_id,
             index_t entity_vertex_index,
             index_t geomodel_vertex_index ) ;
 
@@ -220,9 +218,9 @@ namespace RINGMesh {
          */
         void clear() ;
 
-        void unbind_geomodel_vertex_map( const gmme_t& mesh_entity_id ) ;
+        void unbind_geomodel_vertex_map( const gmme_id& mesh_entity_id ) ;
 
-        void bind_geomodel_vertex_map( const gmme_t& mesh_entity_id ) ;
+        void bind_geomodel_vertex_map( const gmme_id& mesh_entity_id ) ;
 
         const NNSearch& nn_search() const
         {
@@ -288,7 +286,7 @@ namespace RINGMesh {
              * @returns Model index of the GeoModelMeshEntity vertex
              */
             index_t geomodel_vertex_index(
-                const gmme_t& mesh_entity_id,
+                const gmme_id& mesh_entity_id,
                 index_t mesh_entity_vertex_index ) const ;
 
             /*!
@@ -305,31 +303,29 @@ namespace RINGMesh {
              * of a specific type to a given geomodel vertex
              * @param[in] v Model vertex index
              * @param[in] mesh_entity_type Type of GeoModelMeshEntity
-             * @param[out] result corresponding vertices in GeoModelMeshEntities
+             * @return corresponding vertices in GeoModelMeshEntities
              * of a specific type
              */
-            void mesh_entity_vertex_indices(
+            std::vector< GMEVertex > mesh_entity_vertex_indices(
                 index_t v,
-                const MeshEntityType& mesh_entity_type,
-                std::vector< GMEVertex >& result ) const ;
+                const MeshEntityType& mesh_entity_type ) const ;
 
             /*!
              * @brief Returns all the corresponding vertices to a geomodel vertex
              * in a specific GeoModelMeshEntities
              * @param[in] v Model vertex index
              * @param[in] mesh_entity_id Unique id to a GeoModelMeshEntity
-             * @param[out] result corresponding vertices in the GeoModelMeshEntity
+             * @return corresponding vertices in the GeoModelMeshEntity
              * @returns All the corresponding vertices in their local indexing
              */
-            void mesh_entity_vertex_indices(
+            std::vector< index_t > mesh_entity_vertex_indices(
                 index_t v,
-                const gmme_t& mesh_entity_id,
-                std::vector< index_t >& result ) const ;
+                const gmme_id& mesh_entity_id ) const ;
 
             const GEO::Attribute< index_t >& vertex_map(
-                const gmme_t& mesh_entity_id ) const ;
+                const gmme_id& mesh_entity_id ) const ;
 
-            GEO::Attribute< index_t >& vertex_map( const gmme_t& mesh_entity_id ) ;
+            GEO::Attribute< index_t >& vertex_map( const gmme_id& mesh_entity_id ) ;
 
             /*! @}
              * \name Updating
@@ -345,7 +341,7 @@ namespace RINGMesh {
              * @param[in] geomodel_entity_vertex_index Model vertex index to map with
              */
             void set_vertex_map_value(
-                const gmme_t& mesh_entity_id,
+                const gmme_id& mesh_entity_id,
                 index_t mesh_entity_vertex_index,
                 index_t geomodel_entity_vertex_index ) ;
 
@@ -408,10 +404,10 @@ namespace RINGMesh {
                 gme_vertices_[v].clear() ;
             }
 
-            void unbind_vertex_map( const gmme_t& mesh_entity_id ) ;
+            void unbind_vertex_map( const gmme_id& mesh_entity_id ) ;
 
             GEO::Attribute< index_t >& bind_vertex_map(
-                const gmme_t& mesh_entity_id ) ;
+                const gmme_id& mesh_entity_id ) ;
 
             /*!
              * @}
@@ -422,7 +418,7 @@ namespace RINGMesh {
              * @brief Initializes the given GeoModelMeshEntity vertex map
              * @param[in] mesh_entity_id Unique id to a GeoModelMeshEntity
              */
-            void initialize_mesh_entity_vertex_map( const gmme_t& mesh_entity_id ) ;
+            void initialize_mesh_entity_vertex_map( const gmme_id& mesh_entity_id ) ;
 
             /*!
              * @brief Tests if the given GeoModelMeshEntity vertex map is initialized.
@@ -431,7 +427,7 @@ namespace RINGMesh {
              * @return True is the map was initialized, false if not.
              */
             bool test_and_initialize_mesh_entity_vertex_map(
-                const gmme_t& mesh_entity_id ) ;
+                const gmme_id& mesh_entity_id ) ;
 
             /*!
              * @brief Tests if the given GeoModelMeshEntity vertex map exists.
@@ -439,7 +435,7 @@ namespace RINGMesh {
              * @return True is the map exists, false if not.
              */
             bool is_mesh_entity_vertex_map_initialized(
-                const gmme_t& mesh_entity_id ) const ;
+                const gmme_id& mesh_entity_id ) const ;
 
             /*!
              * @brief Unbinds all the GeoModelMeshEntity vertex maps
@@ -453,7 +449,7 @@ namespace RINGMesh {
              * @param[in] mesh_entity_id Unique id to a GeoModelMeshEntity
              */
             GEO::AttributesManager& mesh_entity_vertex_attribute_manager(
-                const gmme_t& mesh_entity_id ) const ;
+                const gmme_id& mesh_entity_id ) const ;
 
         private:
             GeoModelMeshVertices& geomodel_vertices_ ;
@@ -466,13 +462,13 @@ namespace RINGMesh {
             AttributeVector< index_t > region_vertex_maps_ ;
             std::map< MeshEntityType, AttributeVector< index_t >* > vertex_maps_ ;
 
-            /// GME Vertices for each geomodel vertex
+            /// GeoModelEntity Vertices for each geomodel vertex
             std::vector< std::vector< GMEVertex > > gme_vertices_ ;
         } ;
 
     private:
         /// Attached Mesh
-        Mesh0D_var mesh_ ;
+        std::unique_ptr< Mesh0D > mesh_ ;
         /// Mapper from/to GeoModelMeshEntity vertices
         GeoModelVertexMapper vertex_mapper_ ;
     } ;
@@ -703,7 +699,7 @@ namespace RINGMesh {
 
     private:
         /// Attached Mesh
-        Mesh2D_var mesh_ ;
+        std::unique_ptr< Mesh2D > mesh_ ;
 
         /// Attribute storing the surface index per facet
         GEO::Attribute< index_t > surface_id_ ;
@@ -788,7 +784,7 @@ namespace RINGMesh {
 
     private:
         /// Attached Mesh
-        Mesh1D_var mesh_ ;
+        std::unique_ptr< Mesh1D > mesh_ ;
 
         /*!
          * Vector storing the index of the starting edge index
@@ -1151,7 +1147,7 @@ namespace RINGMesh {
             POS_SIDE = 1
         } ;
         /// Action to do according a surface index
-        typedef std::pair< index_t, ActionOnSurface > action_on_surface ;
+        using action_on_surface = std::pair< index_t, ActionOnSurface > ;
 
         /*!
          * @brief Initialize the  cells from the cells
@@ -1209,7 +1205,7 @@ namespace RINGMesh {
 
     private:
         /// Attached Mesh
-        Mesh3D_var mesh_ ;
+        std::unique_ptr< Mesh3D > mesh_ ;
 
         /// Attribute storing the region index per cell
         GEO::Attribute< index_t > region_id_ ;
