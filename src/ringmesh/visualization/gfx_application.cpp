@@ -244,9 +244,8 @@ namespace RINGMesh {
 
     void RINGMeshApplication::GeoModelViewer::toggle_colored_layers()
     {
-        // To disable the key 'R'. If no layer within the model, layer is not
-        // a valid type.
-        if( !GM_.entity_type_manager().geological_entity_manager.is_valid_type(
+        // To disable the key 'R'.
+        if( GM_.entity_type_manager().geological_entity_manager.is_valid_type(
             Layer::type_name_static() ) ) {
             show_colored_layers_.new_status = false;
             return;
@@ -680,7 +679,7 @@ namespace RINGMesh {
         ImGui::Separator();
         ImGui::Checkbox( "Line [e]", &show_lines_ );
         draw_entity_style_editor( "##LineColor", line_style_ );
-        ImGui::Checkbox( "Vertices", &line_style_.visible_vertices_ );
+        ImGui::Checkbox( "Vertices##Line", &line_style_.visible_vertices_ );
         if( line_style_.visible_vertices_ ) {
             draw_entity_vertex_style_editor( "##LineVertexColor", line_style_ );
         }
@@ -688,7 +687,7 @@ namespace RINGMesh {
         ImGui::Separator();
         ImGui::Checkbox( "Surface [s]", &show_surface_ );
         draw_entity_style_editor( "##SurfaceColor", surface_style_ );
-        ImGui::Checkbox( "Vertices", &surface_style_.visible_vertices_ );
+        ImGui::Checkbox( "Vertices##Surface", &surface_style_.visible_vertices_ );
         if( surface_style_.visible_vertices_ ) {
             draw_entity_vertex_style_editor( "##SurfaceVertexColor",
                 surface_style_ );
@@ -698,7 +697,7 @@ namespace RINGMesh {
             ImGui::Separator();
             ImGui::Checkbox( "Region [v]", &show_volume_ );
             draw_entity_style_editor( "##VolumeColor", volume_style_ );
-            ImGui::Checkbox( "Vertices", &volume_style_.visible_vertices_ );
+            ImGui::Checkbox( "Vertices##Region", &volume_style_.visible_vertices_ );
             if( volume_style_.visible_vertices_ ) {
                 draw_entity_vertex_style_editor( "##VolumeVertexColor",
                     volume_style_ );
