@@ -61,14 +61,14 @@ namespace RINGMesh {
         index_t from,
         index_t to )
     {
-        ringmesh_assert( to < in.size() + 1 ) ;
-        ringmesh_assert( from < to ) ;
-        index_t nb_to_copy( to - from ) ;
-        GEO::vector< U > out( nb_to_copy ) ;
+        ringmesh_assert( to < in.size() + 1 );
+        ringmesh_assert( from < to );
+        index_t nb_to_copy( to - from );
+        GEO::vector< U > out( nb_to_copy );
         for( index_t i = 0; i < nb_to_copy; i++ ) {
-            out[i] = in[from + i] ;
+            out[i] = in[from + i];
         }
-        return out ;
+        return out;
     }
 
     /*!
@@ -79,8 +79,8 @@ namespace RINGMesh {
     template< typename T, typename U = T >
     GEO::vector< U > copy_std_vector_to_geo_vector( const std::vector< T >& in )
     {
-        index_t size = static_cast< index_t >( in.size() ) ;
-        return copy_std_vector_to_geo_vector< T, U >( in, 0, size ) ;
+        index_t size = static_cast< index_t >( in.size() );
+        return copy_std_vector_to_geo_vector< T, U >( in, 0, size );
     }
 
     /***********************************************************************/
@@ -88,7 +88,7 @@ namespace RINGMesh {
 
     /*! @brief complement the available MeshIOHandler
      */
-    void RINGMESH_API ringmesh_mesh_io_initialize() ;
+    void RINGMESH_API ringmesh_mesh_io_initialize();
 
     /******************************************************************/
     /* Operations on a GEO::Mesh                                      */
@@ -99,14 +99,14 @@ namespace RINGMesh {
      * @param[in] c the cell index
      * @return the signed volume of the cell
      */
-    double RINGMESH_API mesh_cell_signed_volume( const GEO::Mesh& M, index_t c ) ;
+    double RINGMESH_API mesh_cell_signed_volume( const GEO::Mesh& M, index_t c );
     /*!
      * Computes the volume of a Mesh cell
      * @param[in] M the mesh
      * @param[in] c the cell index
      * @return the volume of the cell
      */
-    double RINGMESH_API mesh_cell_volume( const GEO::Mesh& M, index_t c ) ;
+    double RINGMESH_API mesh_cell_volume( const GEO::Mesh& M, index_t c );
 
     /*!
      * Computes the Mesh cell facet barycenter
@@ -118,7 +118,7 @@ namespace RINGMesh {
     vec3 RINGMESH_API mesh_cell_facet_barycenter(
         const GEO::Mesh& M,
         index_t cell,
-        index_t f ) ;
+        index_t f );
 
     /*!
      * Computes the non weighted barycenter of a volumetric
@@ -127,7 +127,7 @@ namespace RINGMesh {
      * @param[in] cell the cell index
      * @return the cell center
      */
-    vec3 RINGMESH_API mesh_cell_barycenter( const GEO::Mesh& M, index_t cell ) ;
+    vec3 RINGMESH_API mesh_cell_barycenter( const GEO::Mesh& M, index_t cell );
 
     /*!
      * @brief Vector of pointers to Geogram attributes
@@ -137,10 +137,10 @@ namespace RINGMesh {
      */
     template< typename T >
     class AttributeVector: public std::vector< GEO::Attribute< T >* > {
-    ringmesh_disable_copy( AttributeVector ) ;
+    ringmesh_disable_copy( AttributeVector );
     public:
-        using base_class = std::vector< GEO::Attribute< T >* > ;
-        AttributeVector() = default ;
+        using base_class = std::vector< GEO::Attribute< T >* >;
+        AttributeVector() = default;
         AttributeVector( index_t size )
             : base_class( size, nullptr )
         {
@@ -152,78 +152,78 @@ namespace RINGMesh {
             const std::string& attribute_name )
         {
             base_class::operator[]( i ) = new GEO::Attribute< T >( manager,
-                attribute_name ) ;
+                attribute_name );
         }
 
         GEO::Attribute< T >& operator[]( index_t i )
         {
-            return *base_class::operator[]( i ) ;
+            return *base_class::operator[]( i );
         }
 
         const GEO::Attribute< T >& operator[]( index_t i ) const
         {
-            return *base_class::operator[]( i ) ;
+            return *base_class::operator[]( i );
         }
 
         bool is_attribute_bound( index_t i ) const
         {
-            return base_class::operator[]( i ) != nullptr ;
+            return base_class::operator[]( i ) != nullptr;
         }
 
         void unbind( index_t i )
         {
             if( base_class::operator[]( i ) ) {
                 // I am not sure, but unbind should do the deallocation [JP]
-                operator[]( i ).unbind() ;
-                delete base_class::operator[]( i ) ;
-                base_class::operator[]( i ) = nullptr ;
+                operator[]( i ).unbind();
+                delete base_class::operator[]( i );
+                base_class::operator[]( i ) = nullptr;
             }
         }
 
         ~AttributeVector()
         {
             for( index_t i = 0; i < base_class::size(); i++ ) {
-                unbind( i ) ;
+                unbind( i );
             }
         }
-    } ;
+    };
 
-    void RINGMESH_API print_bounded_attributes( const GEO::Mesh& M ) ;
+    void RINGMESH_API print_bounded_attributes( const GEO::Mesh& M );
 
     class RINGMESH_API ThreadSafeConsoleLogger: public GEO::ConsoleLogger {
-        using base_class = GEO::ConsoleLogger ;
+        using base_class = GEO::ConsoleLogger;
     public:
         void div( const std::string& title )
         {
-            std::lock_guard< std::mutex > lock( lock_ ) ;
-            base_class::div( title ) ;
+            std::lock_guard < std::mutex > lock( lock_ );
+            base_class::div( title );
         }
 
         void out( const std::string& str )
         {
-            std::lock_guard< std::mutex > lock( lock_ ) ;
-            base_class::out( str ) ;
+            std::lock_guard < std::mutex > lock( lock_ );
+            base_class::out( str );
         }
 
         void warn( const std::string& str )
         {
-            std::lock_guard< std::mutex > lock( lock_ ) ;
-            base_class::warn( str ) ;
+            std::lock_guard < std::mutex > lock( lock_ );
+            base_class::warn( str );
         }
 
         void err( const std::string& str )
         {
-            std::lock_guard< std::mutex > lock( lock_ ) ;
-            base_class::err( str ) ;
+            std::lock_guard < std::mutex > lock( lock_ );
+            base_class::err( str );
         }
 
         void status( const std::string& str )
         {
-            std::lock_guard< std::mutex > lock( lock_ ) ;
-            base_class::status( str ) ;
+            std::lock_guard < std::mutex > lock( lock_ );
+            base_class::status( str );
         }
 
     private:
-        std::mutex lock_ ;
-    } ;
+        std::mutex lock_;
+    };
 }
