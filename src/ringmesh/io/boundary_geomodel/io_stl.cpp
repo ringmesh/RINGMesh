@@ -89,11 +89,11 @@ namespace {
         end_triangle( out );
     }
 
-    void save_triangles( const GeoModel& M, std::ostream& out )
+    void save_triangles( const GeoModel& geomodel, std::ostream& out )
     {
-        for( index_t triangle = 0; triangle < M.mesh.facets.nb_triangle();
+        for( index_t triangle = 0; triangle < geomodel.mesh.facets.nb_triangle();
             triangle++ ) {
-            save_triangle( M, triangle, out );
+            save_triangle( geomodel, triangle, out );
         }
     }
 
