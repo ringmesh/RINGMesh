@@ -192,6 +192,6 @@ namespace RINGMesh {
     typedef GEO::SmartPointer< StratigraphicColumnIOHandler > StratigraphicColumnIOHandler_var;
     typedef GEO::Factory0< StratigraphicColumnIOHandler > StratigraphicColumnIOHandlerFactory;
 
-#define ringmesh_register_StratigraphicColumnIOHandler_creator( type, name ) \
+    #define ringmesh_register_StratigraphicColumnIOHandler_creator( type, name ) \
 		geo_register_creator( StratigraphicColumnIOHandlerFactory, type, name )
 }
