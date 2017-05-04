@@ -30,6 +30,10 @@ hand, "Write PEP8 compliant Python code" is a much better guideline. It
 specifies exactly what is required and how to test whether the guideline
 is being followed.
 
+# Naming convention
+
+Respect naming convention, e.g. avoid one-letter name (M instead of geomodel).
+
 # Yet another topic (add as many topics as you need)
 
 ## You get the idea
