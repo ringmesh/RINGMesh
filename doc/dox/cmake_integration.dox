@@ -45,7 +45,6 @@ Define a user-defined variable to get RINGMesh directory path
 -------------------------------------------------------------
 The code below define a variable RINGMesh_HOME containing the path to the RINGMesh directory.
 The user can change the default value (parent directory of the current cmake project).
-This variable must be written as presented here (RINGMesh_HOME).
 
 \code
 SET(RINGMesh_HOME "${PROJECT_SOURCE_DIR}/../RINGMesh" CACHE PATH "Path to RINGMesh project (mandatory dependency)")
