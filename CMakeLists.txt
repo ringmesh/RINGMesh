@@ -373,8 +373,8 @@ set(ringmesh_include ${ringmesh_include} ${generated_configure_file})
 # and the global property USE_FOLDERS must be ON
 source_group("Zlib" FILES ${zlib_src} ${zlib_include})
 
-set(tinyxml2_src "${PROJECT_SOURCE_DIR}/src/third_party/tinyxml2/tinyxml2.cpp")
-set(tinyxml2_include "${PROJECT_SOURCE_DIR}/include/third_party/tinyxml2/tinyxml2.h")
+set(tinyxml2_src "${PROJECT_SOURCE_DIR}/third_party/tinyxml2/tinyxml2.cpp")
+set(tinyxml2_include "${PROJECT_SOURCE_DIR}/third_party/tinyxml2/tinyxml2.h")
 
 # Group files of a project in directories
 # All the files should be added to the sources of the project
@@ -419,7 +419,7 @@ if(BUILD_RINGMESH_VIEW)
     message(STATUS "Configure ringmesh-view")
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
     message(STATUS "ringmesh-view directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
-    include(${CMAKE_SOURCE_DIR}/src/third_party/geogram/cmake/opengl.cmake)
+    include(${CMAKE_SOURCE_DIR}/third_party/geogram/cmake/opengl.cmake)
     add_ringmesh_binary(ringmesh-view geogram_gfx ${OPENGL_LIBRARIES})
     copy_for_windows()
 endif(BUILD_RINGMESH_VIEW)
