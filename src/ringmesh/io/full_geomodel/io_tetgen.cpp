@@ -39,58 +39,58 @@ namespace {
         virtual bool load( const std::string& filename, GeoModel& geomodel ) override
         {
             throw RINGMeshException( "I/O",
-                "Loading of a GeoModel from TetGen not implemented yet" ) ;
-            return false ;
+                "Loading of a GeoModel from TetGen not implemented yet" );
+            return false;
         }
         virtual void save( const GeoModel& geomodel, const std::string& filename ) override
         {
-            std::string directory = GEO::FileSystem::dir_name( filename ) ;
-            std::string file = GEO::FileSystem::base_name( filename ) ;
+            std::string directory = GEO::FileSystem::dir_name( filename );
+            std::string file = GEO::FileSystem::base_name( filename );
 
-            std::ostringstream oss_node ;
-            oss_node << directory << "/" << file << ".node" ;
-            std::ofstream node( oss_node.str().c_str() ) ;
-            node.precision( 16 ) ;
+            std::ostringstream oss_node;
+            oss_node << directory << "/" << file << ".node";
+            std::ofstream node( oss_node.str().c_str() );
+            node.precision( 16 );
 
-            const GeoModelMesh& mesh = geomodel.mesh ;
-            node << mesh.vertices.nb() << " 3 0 0" << std::endl ;
+            const GeoModelMesh& mesh = geomodel.mesh;
+            node << mesh.vertices.nb() << " 3 0 0" << std::endl;
             for( index_t v = 0; v < mesh.vertices.nb(); v++ ) {
-                node << v << SPACE << mesh.vertices.vertex( v ) << std::endl ;
+                node << v << SPACE << mesh.vertices.vertex( v ) << std::endl;
             }
 
-            std::ostringstream oss_ele ;
-            oss_ele << directory << "/" << file << ".ele" ;
-            std::ofstream ele( oss_ele.str().c_str() ) ;
-            std::ostringstream oss_neigh ;
-            oss_neigh << directory << "/" << file << ".neigh" ;
-            std::ofstream neigh( oss_neigh.str().c_str() ) ;
+            std::ostringstream oss_ele;
+            oss_ele << directory << "/" << file << ".ele";
+            std::ofstream ele( oss_ele.str().c_str() );
+            std::ostringstream oss_neigh;
+            oss_neigh << directory << "/" << file << ".neigh";
+            std::ofstream neigh( oss_neigh.str().c_str() );
 
-            ele << mesh.cells.nb() << " 4 1" << std::endl ;
-            neigh << mesh.cells.nb() << " 4" << std::endl ;
-            index_t nb_tet_exported = 0 ;
+            ele << mesh.cells.nb() << " 4 1" << std::endl;
+            neigh << mesh.cells.nb() << " 4" << std::endl;
+            index_t nb_tet_exported = 0;
             for( index_t m = 0; m < geomodel.nb_regions(); m++ ) {
                 for( index_t tet = 0; tet < mesh.cells.nb_tet( m ); tet++ ) {
-                    index_t cell = mesh.cells.tet( m, tet ) ;
+                    index_t cell = mesh.cells.tet( m, tet );
                     ele << nb_tet_exported << SPACE << mesh.cells.vertex( cell, 0 )
                         << SPACE << mesh.cells.vertex( cell, 1 ) << SPACE
                         << mesh.cells.vertex( cell, 2 ) << SPACE
                         << mesh.cells.vertex( cell, 3 ) << SPACE << m + 1
-                        << std::endl ;
-                    neigh << nb_tet_exported ;
+                        << std::endl;
+                    neigh << nb_tet_exported;
                     for( index_t f = 0; f < mesh.cells.nb_facets( tet ); f++ ) {
-                        neigh << SPACE ;
-                        index_t adj = mesh.cells.adjacent( cell, f ) ;
+                        neigh << SPACE;
+                        index_t adj = mesh.cells.adjacent( cell, f );
                         if( adj == GEO::NO_CELL ) {
-                            neigh << -1 ;
+                            neigh << -1;
                         } else {
-                            neigh << adj ;
+                            neigh << adj;
                         }
                     }
-                    neigh << std::endl ;
-                    nb_tet_exported++ ;
+                    neigh << std::endl;
+                    nb_tet_exported++;
                 }
             }
         }
-    } ;
+    };
 
 }

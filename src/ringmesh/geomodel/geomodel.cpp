@@ -46,32 +46,32 @@
 #include <ringmesh/geomodel/geomodel_geological_entity.h>
 
 namespace {
-    using namespace RINGMesh ;
+    using namespace RINGMesh;
 
     void compute_surface_bbox( const GeoModel& gm, index_t surface_id, Box3d& bbox )
     {
-        const Surface& surface = gm.surface( surface_id ) ;
+        const Surface& surface = gm.surface( surface_id );
         for( index_t v = 0; v < surface.nb_vertices(); v++ ) {
-            bbox.add_point( surface.vertex( v ) ) ;
+            bbox.add_point( surface.vertex( v ) );
         }
     }
 
     double compute_percentage_bbox_diagonal( const GeoModel& gm )
     {
-        Box3d bbox ;
+        Box3d bbox;
         if( gm.universe().nb_boundaries() > 0 ) {
-            const Universe& universe = gm.universe() ;
+            const Universe& universe = gm.universe();
             for( index_t s = 0; s < universe.nb_boundaries(); s++ ) {
                 compute_surface_bbox( gm, universe.boundary_gmme( s ).index(),
-                    bbox ) ;
+                    bbox );
             }
         } else {
-            ringmesh_assert( gm.nb_surfaces() > 0 ) ;
+            ringmesh_assert( gm.nb_surfaces() > 0 );
             for( index_t s = 0; s < gm.nb_surfaces(); s++ ) {
-                compute_surface_bbox( gm, s, bbox ) ;
+                compute_surface_bbox( gm, s, bbox );
             }
         }
-        return bbox.diagonal().length() * GEO::CmdLine::get_arg_double( "epsilon" ) ;
+        return bbox.diagonal().length() * GEO::CmdLine::get_arg_double( "epsilon" );
     }
 }
 
@@ -85,85 +85,85 @@ namespace RINGMesh {
     index_t GeoModel::nb_mesh_entities( const MeshEntityType& type ) const
     {
         if( MeshEntityTypeManager::is_corner( type ) ) {
-            return nb_corners() ;
+            return nb_corners();
         } else if( MeshEntityTypeManager::is_line( type ) ) {
-            return nb_lines() ;
+            return nb_lines();
         } else if( MeshEntityTypeManager::is_surface( type ) ) {
-            return nb_surfaces() ;
+            return nb_surfaces();
         } else if( MeshEntityTypeManager::is_region( type ) ) {
-            return nb_regions() ;
+            return nb_regions();
         } else {
-            ringmesh_assert_not_reached ;
-            return 0 ;
+            ringmesh_assert_not_reached;
+            return 0;
         }
     }
 
     const GeoModelMeshEntity& GeoModel::mesh_entity( gmme_id id ) const
     {
-        const MeshEntityType& type = id.type() ;
-        index_t index = id.index() ;
+        const MeshEntityType& type = id.type();
+        index_t index = id.index();
         if( MeshEntityTypeManager::is_corner( type ) ) {
-            return corner( index ) ;
+            return corner( index );
         } else if( MeshEntityTypeManager::is_line( type ) ) {
-            return line( index ) ;
+            return line( index );
         } else if( MeshEntityTypeManager::is_surface( type ) ) {
-            return surface( index ) ;
+            return surface( index );
         } else if( MeshEntityTypeManager::is_region( type ) ) {
-            return region( index ) ;
+            return region( index );
         }
-        ringmesh_assert_not_reached ;
-        return surface( 0 ) ;
+        ringmesh_assert_not_reached;
+        return surface( 0 );
     }
 
     const std::vector< std::unique_ptr< GeoModelMeshEntity > >& GeoModel::mesh_entities(
         const MeshEntityType& type ) const
     {
         if( MeshEntityTypeManager::is_corner( type ) ) {
-            return corners_ ;
+            return corners_;
         } else if( MeshEntityTypeManager::is_line( type ) ) {
-            return lines_ ;
+            return lines_;
         } else if( MeshEntityTypeManager::is_surface( type ) ) {
-            return surfaces_ ;
+            return surfaces_;
         } else if( MeshEntityTypeManager::is_region( type ) ) {
-            return regions_ ;
+            return regions_;
         } else {
-            ringmesh_assert_not_reached ;
-            return surfaces_ ;
+            ringmesh_assert_not_reached;
+            return surfaces_;
         }
     }
 
     const Corner& GeoModel::corner( index_t index ) const
     {
-        ringmesh_assert( index < corners_.size() ) ;
-        return *static_cast< const Corner* >( corners_[index].get() ) ;
+        ringmesh_assert( index < corners_.size() );
+        return *static_cast< const Corner* >( corners_[index].get() );
     }
     const Line& GeoModel::line( index_t index ) const
     {
-        ringmesh_assert( index < lines_.size() ) ;
-        return *static_cast< const Line* >( lines_[index].get() ) ;
+        ringmesh_assert( index < lines_.size() );
+        return *static_cast< const Line* >( lines_[index].get() );
     }
     const Surface& GeoModel::surface( index_t index ) const
     {
-        ringmesh_assert( index < surfaces_.size() ) ;
-        return *static_cast< const Surface* >( surfaces_[index].get() ) ;
+        ringmesh_assert( index < surfaces_.size() );
+        return *static_cast< const Surface* >( surfaces_[index].get() );
     }
     const Region& GeoModel::region( index_t index ) const
     {
-        ringmesh_assert( index < regions_.size() ) ;
-        return *static_cast< const Region* >( regions_[index].get() ) ;
+        ringmesh_assert( index < regions_.size() );
+        return *static_cast< const Region* >( regions_[index].get() );
     }
 
     void GeoModel::set_wells( const WellGroup* wells )
     {
-        wells_ = wells ;
+        wells_ = wells;
     }
 
     double GeoModel::epsilon() const
     {
         if( epsilon_ == -1 ) {
-            epsilon_ = compute_percentage_bbox_diagonal( *this ) ;
+            epsilon_ = compute_percentage_bbox_diagonal( *this );
         }
-        return epsilon_ ;
+        return epsilon_;
     }
 
 } // namespace
