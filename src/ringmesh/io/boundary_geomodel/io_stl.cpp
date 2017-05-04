@@ -128,6 +128,7 @@ namespace {
         {
             check_stl_validity( geomodel );
             std::ofstream out( filename.c_str() );
+            out.precision( 17 ) ;
             save_header( geomodel, out );
             save_triangles( geomodel, out );
             save_footer( geomodel, out );
