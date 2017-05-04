@@ -223,10 +223,8 @@ void test_stratigraphic_column_building( const GeoModel& in )
     mixed.push_back( &one );
     mixed.push_back( &two );
     mixed.push_back( &test1 );
-    std::cout << "apres vec de StratUnit mixed" << std::endl;
 
     StratigraphicColumn mix( "mix", mixed, CHRONOSTRATIGRAPHIC );
-    std::cout << "apres creation de StratiColumn mixed" << std::endl;
     if( !mix.is_conformable_base() ) {
         throw RINGMeshException( "RINGMesh Test",
             "Failed when testing StratigraphicColumn::is_conformable_base()" );
@@ -361,7 +359,7 @@ int main()
 
         //load StratigraphicColumn from gocad XML file
         test_load_from_gocad_xml_file();
-        system( "Pause" );
+
     } catch( const RINGMeshException& e ) {
         Logger::err( e.category(), e.what() );
         return 1;
