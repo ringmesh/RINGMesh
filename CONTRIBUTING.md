@@ -32,7 +32,11 @@ is being followed.
 
 # Naming convention
 
-Respect naming convention, e.g. avoid one-letter name (M instead of geomodel).
+## Respect naming convention, e.g. avoid one-letter name (M instead of geomodel).
+
+# C++ syntax
+
+## Prefer defaulted or deleted empty constructors and destructors.
 
 # Yet another topic (add as many topics as you need)
 
