@@ -48,13 +48,13 @@ void test_rock_feature()
 {
     RINGMesh::Logger::out( "RockFeature", "Test RockFeature building and editing" );
 
-    RockFeature rock( "rock", NONE );
-    if( rock.get_rock_type() != NONE ) {
+    RockFeature rock( "rock", ROCKTYPE::NONE );
+    if( rock.get_rock_type() != ROCKTYPE::NONE ) {
         throw RINGMeshException( "RINGMesh Test",
             "Failed when testing RockFeature::get_rock_type()" );
     }
-    rock.set_rock_type( MULTIPLE );
-    if( rock.get_rock_type() != MULTIPLE ) {
+    rock.set_rock_type( ROCKTYPE::MULTIPLE );
+    if( rock.get_rock_type() != ROCKTYPE::MULTIPLE ) {
         throw RINGMeshException( "RINGMesh Test",
             "Failed when changing RockFeature type" );
     }
@@ -75,12 +75,12 @@ void test_stratigraphic_unit( const GeoModel& in )
 {
     RINGMesh::Logger::out( "StratigraphicUnit", "Test StratigraphicUnit building" );
 
-    RockFeature rock( "rock", NONE );
-    StratigraphicUnit test_strat_unit( "strat unit",
+    RockFeature rock( "rock", ROCKTYPE::NONE );
+    UnsubdividedStratigraphicUnit test_strat_unit( "strat unit",
         in.geological_entity( Interface::type_name_static(), 1 ),
         in.geological_entity( Interface::type_name_static(), 0 ),
-        in.geological_entity( Layer::type_name_static(), 0 ), CONFORMABLE,
-        CONFORMABLE, rock, 0, 10 );
+        in.geological_entity( Layer::type_name_static(), 0 ), RELATION::CONFORMABLE,
+        RELATION::CONFORMABLE, rock, 0, 10 );
     if( test_strat_unit.get_name() != "strat unit" ) {
         throw RINGMeshException( "RINGMesh Test",
             "Failed when testing StratigraphicUnit::get_name()" );
@@ -94,11 +94,11 @@ void test_stratigraphic_unit( const GeoModel& in )
             "Failed when testing StratigraphicUnit::is_conformable_top()" );
     }
 
-    if( test_strat_unit.get_relation_base() != CONFORMABLE ) {
+    if( test_strat_unit.get_relation_base() != RELATION::CONFORMABLE ) {
         throw RINGMeshException( "RINGMesh Test",
             "Failed when testing StratigraphicUnit::get_relation_base()" );
     }
-    if( test_strat_unit.get_relation_top() != CONFORMABLE ) {
+    if( test_strat_unit.get_relation_top() != RELATION::CONFORMABLE ) {
         throw RINGMeshException( "RINGMesh Test",
             "Failed when testing StratigraphicUnit::get_relation_top()" );
     }
@@ -119,33 +119,33 @@ void test_stratigraphic_column_building( const GeoModel& in )
     RINGMesh::Logger::out( "StratigraphicColumn",
         "Init RockFeature and StratigraphicUnit" );
 
-    RockFeature rock( "rock", NONE );
+    RockFeature rock( "rock", ROCKTYPE::NONE );
 
     std::string one_name = "one";
     std::string two_name = "two";
     std::string three_name = "three";
     std::string four_name = "four";
 
-    StratigraphicUnit one( one_name,
+    UnsubdividedStratigraphicUnit one( one_name,
         in.geological_entity( Interface::type_name_static(), 1 ),
         in.geological_entity( Interface::type_name_static(), 0 ),
-        in.geological_entity( Layer::type_name_static(), 0 ), CONFORMABLE,
-        CONFORMABLE, rock, 0, 10 );
-    StratigraphicUnit two( two_name,
+        in.geological_entity( Layer::type_name_static(), 0 ), RELATION::CONFORMABLE,
+        RELATION::CONFORMABLE, rock, 0, 10 );
+    UnsubdividedStratigraphicUnit two( two_name,
         in.geological_entity( Interface::type_name_static(), 2 ),
         in.geological_entity( Interface::type_name_static(), 1 ),
-        in.geological_entity( Layer::type_name_static(), 1 ), CONFORMABLE,
-        CONFORMABLE, rock, 0, 10 );
-    StratigraphicUnit three( three_name,
+        in.geological_entity( Layer::type_name_static(), 1 ), RELATION::CONFORMABLE,
+        RELATION::CONFORMABLE, rock, 0, 10 );
+    UnsubdividedStratigraphicUnit three( three_name,
         in.geological_entity( Interface::type_name_static(), 3 ),
         in.geological_entity( Interface::type_name_static(), 2 ),
-        in.geological_entity( Layer::type_name_static(), 2 ), CONFORMABLE,
-        CONFORMABLE, rock, 0, 10 );
-    StratigraphicUnit four( four_name,
+        in.geological_entity( Layer::type_name_static(), 2 ), RELATION::CONFORMABLE,
+        RELATION::CONFORMABLE, rock, 0, 10 );
+    UnsubdividedStratigraphicUnit four( four_name,
         in.geological_entity( Interface::type_name_static(), 11 ),
         in.geological_entity( Interface::type_name_static(), 3 ),
-        in.geological_entity( Layer::type_name_static(), 3 ), CONFORMABLE,
-        CONFORMABLE, rock, 0, 10 );
+        in.geological_entity( Layer::type_name_static(), 3 ), RELATION::CONFORMABLE,
+        RELATION::CONFORMABLE, rock, 0, 10 );
 
     RINGMesh::Logger::out( "StratigraphicColumn",
         "First building with a vector of StratigraphicUnit" );
@@ -156,7 +156,8 @@ void test_stratigraphic_column_building( const GeoModel& in )
     units.push_back( &three );
     units.push_back( &four );
 
-    StratigraphicColumn test1( "test 1", units, CHRONOSTRATIGRAPHIC );
+    StratigraphicColumn test1( "test 1", units,
+        STRATIGRAPHIC_PARADIGM::CHRONOSTRATIGRAPHIC );
     if( test1.get_unit_above( two )->get_name() != "one" ) {
         throw RINGMeshException( "RINGMesh Test",
             "Failed when testing StratigraphicColumn::get_unit_above()" );
@@ -190,14 +191,10 @@ void test_stratigraphic_column_building( const GeoModel& in )
     }
 
     RINGMesh::Logger::out( "StratigraphicColumn",
-        "Second building vith a vector of StratigraphicUnit" );
+        "Second building with a vector of StratigraphicUnit" );
 
-    StratigraphicColumn test2( "test 2" );
-    test2.set_paradigm( CHRONOSTRATIGRAPHIC );
-    if( test2.get_paradigm() != CHRONOSTRATIGRAPHIC ) {
-        throw RINGMeshException( "RINGMesh Test",
-            "Failed when testing StratigraphicColumn::set_paradigm()" );
-    }
+    StratigraphicColumn test2( "test 2",
+        STRATIGRAPHIC_PARADIGM::CHRONOSTRATIGRAPHIC );
 
     test2.insert_top_unit( one );
     if( test2.get_top_unit()->get_name() != "one" ) {
@@ -211,9 +208,9 @@ void test_stratigraphic_column_building( const GeoModel& in )
             "Failed when testing StratigraphicColumn::insert_base_unit()" );
     }
 
-    if( test2.find_unit( "one" )->get_name() != "one" ) {
+    if( test2.get_unit( "one" )->get_name() != "one" ) {
         throw RINGMeshException( "RINGMesh Test",
-            "Failed when testing StratigraphicColumn::find_unit()" );
+            "Failed when testing StratigraphicColumn::get_unit()" );
     }
 
     RINGMesh::Logger::out( "StratigraphicColumn",
@@ -222,9 +219,15 @@ void test_stratigraphic_column_building( const GeoModel& in )
     std::vector< const StratigraphicUnit* > mixed;
     mixed.push_back( &one );
     mixed.push_back( &two );
-    mixed.push_back( &test1 );
+    std::vector< const StratigraphicUnit* > sub_units;
+    RockFeature rocks( "several", ROCKTYPE::MULTIPLE );
+    sub_units.push_back( &three );
+    sub_units.push_back( &four );
+    SubdividedStratigraphicUnit subdivided_unit( "subdivided", rocks, sub_units );
+    mixed.push_back( &subdivided_unit );
 
-    StratigraphicColumn mix( "mix", mixed, CHRONOSTRATIGRAPHIC );
+    StratigraphicColumn mix( "mix", mixed,
+        STRATIGRAPHIC_PARADIGM::CHRONOSTRATIGRAPHIC );
     if( !mix.is_conformable_base() ) {
         throw RINGMeshException( "RINGMesh Test",
             "Failed when testing StratigraphicColumn::is_conformable_base()" );
@@ -235,24 +238,24 @@ void test_stratigraphic_column_building( const GeoModel& in )
             "Failed when testing StratigraphicColumn::is_conformable_top()" );
     }
 
-    if( mix.get_relation_base() != CONFORMABLE ) {
+    if( mix.get_relation_base() != RELATION::CONFORMABLE ) {
         throw RINGMeshException( "RINGMesh Test",
             "Failed when testing StratigraphicColumn::get_relation_base()" );
     }
 
-    if( mix.get_relation_top() != CONFORMABLE ) {
+    if( mix.get_relation_top() != RELATION::CONFORMABLE ) {
         throw RINGMeshException( "RINGMesh Test",
             "Failed when testing StratigraphicColumn::get_relation_top()" );
     }
 
-    if( mix.get_min_thick() != 0 ) {
+    if( mix.get_column_min_thick() != 0 ) {
         throw RINGMeshException( "RINGMesh Test",
-            "Failed when testing StratigraphicColumn::get_min_thick()" );
+            "Failed when testing StratigraphicColumn::get_column_min_thick()" );
     }
 
-    if( mix.get_max_thick() != 60 ) {
+    if( mix.get_column_max_thick() != 60 ) {
         throw RINGMeshException( "RINGMesh Test",
-            "Failed when testing StratigraphicColumn::get_max_thick()" );
+            "Failed when testing StratigraphicColumn::get_column_max_thick()" );
     }
     std::cout << "get_max_thick" << std::endl;
 
@@ -269,7 +272,7 @@ void test_stratigraphic_column_building( const GeoModel& in )
     std::cout << "get_unit_below" << std::endl;
 
     mix.remove_unit( two );
-    if( mix.get_sub_column( 2 )->get_name() != "test 1" ) {
+    if( mix.get_unit(2)->get_name() != "subdivided" ) {
         throw RINGMeshException( "RINGMesh Test",
             "Failed when testing StratigraphicColumn::remove_unit()" );
     }
@@ -293,18 +296,6 @@ void test_stratigraphic_column_building( const GeoModel& in )
             "Failed when testing StratigraphicColumn::get_base_unit()" );
     }
     std::cout << "get_base_unit" << std::endl;
-
-    if( mix.find_unit( "one" )->get_name() != "one" ) {
-        throw RINGMeshException( "RINGMesh Test",
-            "Failed when testing StratigraphicColumn::find_unit()" );
-    }
-    std::cout << "find_unit" << std::endl;
-
-    if( mix.find_sub_column( "test 1" )->get_name() != "test 1" ) {
-        throw RINGMeshException( "RINGMesh Test",
-            "Failed when testing StratigraphicColumn::find_sub_unit()" );
-    }
-    std::cout << "find_sub_unit" << std::endl;
 }
 
 void test_load_from_gocad_xml_file()
@@ -318,7 +309,7 @@ void test_load_from_gocad_xml_file()
     std::string input_column_file_name( RINGMesh::ringmesh_test_data_path );
     input_column_file_name += "CloudSpin.xml";
 
-    StratigraphicColumn column( "test" );
+    StratigraphicColumn column( "test", STRATIGRAPHIC_PARADIGM::UNSPECIFIED );
 
     StratigraphicColumnBuilderXML sc_builder( column, in, input_column_file_name );
     sc_builder.load_file();

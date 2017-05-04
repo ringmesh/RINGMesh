@@ -136,8 +136,9 @@ namespace RINGMesh {
                     base_interface = &( model_.geological_entity(
                         GeologicalEntityType( "Interface" ), base_interface_id ) );
                 }
-                StratigraphicUnit unit( name_of_unit, *top_interface,
-                    *base_interface, *layer, CONFORMABLE, CONFORMABLE, rock, 0,
+                UnsubdividedStratigraphicUnit unit( name_of_unit, *top_interface,
+                    *base_interface, *layer, RELATION::CONFORMABLE,
+                    RELATION::CONFORMABLE, rock, 0,
                     std::numeric_limits< double >::max() );
                 units_vec_construction.push_back( &unit );
             }
@@ -146,11 +147,11 @@ namespace RINGMesh {
             units_vec_construction;
         STRATIGRAPHIC_PARADIGM paradigm_upper;
         if( paradigm_str == "chronostratigraphy" ) {
-            paradigm_upper = CHRONOSTRATIGRAPHIC;
+            paradigm_upper = STRATIGRAPHIC_PARADIGM::CHRONOSTRATIGRAPHIC;
         } else if( paradigm_str == "lithostratigraphy" ) {
-            paradigm_upper = LITHOSTRATIGRAPHIC;
+            paradigm_upper = STRATIGRAPHIC_PARADIGM::LITHOSTRATIGRAPHIC;
         } else {
-            paradigm_upper = BIOSTRATIGRAPHIC;
+            paradigm_upper = STRATIGRAPHIC_PARADIGM::BIOSTRATIGRAPHIC;
         }
         column_ = StratigraphicColumn( name_of_column, units_vec, paradigm_upper );
     }
