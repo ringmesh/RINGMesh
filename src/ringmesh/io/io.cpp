@@ -35,6 +35,7 @@
 
 #include <ringmesh/io/io.h>
 
+#include <cfenv>
 #include <cstring>
 
 #include <geogram/basic/file_system.h>
@@ -74,7 +75,7 @@ namespace RINGMesh {
                     if( std::strcmp( lFile.field( i ), rFile.field( i ) ) != 0 ) {
                         DEBUG( lFile.field( i ) );
                         DEBUG( rFile.field( i ) );
-                DEBUG( lFile.line_number() );
+                        DEBUG( lFile.line_number() );
                         return false;
                     }
                 }
@@ -88,6 +89,15 @@ namespace RINGMesh {
         GeoModelIOHandler::initialize_full_geomodel_output();
         GeoModelIOHandler::initialize_boundary_geomodel_output();
         WellGroupIOHandler::initialize();
+    }
+
+    void enable_truncated_floating_point()
+    {
+        std::fesetround( FE_DOWNWARD );
+    }
+    void desable_truncated_floating_point()
+    {
+        std::fesetround( FE_TONEAREST );
     }
 
     /***************************************************************************/
