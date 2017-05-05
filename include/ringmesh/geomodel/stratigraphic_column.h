@@ -185,7 +185,7 @@ namespace RINGMesh {
         RockFeature rock_;
     };
 
-    class UnsubdividedStratigraphicUnit: public StratigraphicUnit {
+    class RINGMESH_API UnsubdividedStratigraphicUnit: public StratigraphicUnit {
     public:
 
         UnsubdividedStratigraphicUnit(
@@ -251,7 +251,7 @@ namespace RINGMesh {
         double max_thick_;
     };
 
-    class SubdividedStratigraphicUnit: public StratigraphicUnit {
+    class RINGMESH_API SubdividedStratigraphicUnit: public StratigraphicUnit {
     public:
 
         SubdividedStratigraphicUnit(
