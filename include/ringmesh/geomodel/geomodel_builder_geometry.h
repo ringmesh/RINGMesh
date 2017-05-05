@@ -212,6 +212,7 @@ namespace RINGMesh {
             const std::vector< vec3 >& surface_vertices,
             const std::vector< index_t >& surface_facets,
             const std::vector< index_t >& surface_facet_ptr );
+
         /*!
          * @brief Set the points and tetras for a region
          *
@@ -287,6 +288,10 @@ namespace RINGMesh {
             const std::vector< index_t >& facets,
             const std::vector< index_t >& facet_ptr );
 
+        void set_surface_geometry(
+            index_t surface_id,
+            const std::vector< index_t >& triangle_vertices );
+            
         void set_surface_element_geometry(
             index_t surface_id,
             index_t facet_id,
@@ -362,11 +367,10 @@ namespace RINGMesh {
          * @{
          */
 
-        void set_surface_facet_adjacencies(
+        void set_surface_element_adjacency(
             index_t surface_id,
-            const std::vector< index_t >& facets_ids,
-            const std::vector< index_t >& edges_ids,
-            const std::vector< index_t >& adjacent_triangles );
+            index_t facet_id,
+            const std::vector< index_t >& adjacents );
 
         /*!
          * @brief Computes and sets the adjacencies between the facets
@@ -410,20 +414,6 @@ namespace RINGMesh {
         GeoModelBuilderGeometry( GeoModelBuilder& builder, GeoModel& geomodel );
 
     private:
-        void assign_surface_mesh_facets(
-            index_t surface_id,
-            const std::vector< index_t >& facets,
-            const std::vector< index_t >& facet_ptr );
-
-        void assign_surface_triangle_mesh(
-            index_t surface_id,
-            const std::vector< index_t >& triangle_vertices );
-
-        void assign_surface_triangle_mesh(
-            index_t surface_id,
-            const std::vector< index_t >& triangle_vertices,
-            const std::vector< index_t >& adjacent_triangles );
-
         void assign_region_tet_mesh(
             index_t region_id,
             const std::vector< index_t >& tet_vertices );

@@ -31,3 +31,5 @@ Improvements:
 Architecture:
  * All third party files (zlib, geogram) are now in a "third_party" directory at the RINGMesh root.
  * Removal of ThreeJS third party.
+ * Add formatter settings for Visual Studio 2013 (12.0) and Visual Studio 2015(14.0).
+      Formatters are uniform between Visual and Eclipse.

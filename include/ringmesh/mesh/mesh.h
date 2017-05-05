@@ -163,7 +163,6 @@ namespace RINGMesh {
     class RINGMESH_API Mesh1D: public virtual MeshBase {
     ringmesh_disable_copy( Mesh1D );
         friend class Mesh1DBuilder;
-        friend class GeogramMeshBuilder;
 
     public:
         virtual ~Mesh1D() = default;
@@ -505,7 +504,7 @@ namespace RINGMesh {
             std::vector< index_t > facet_ids = facets_around_vertex( vertex_id,
                 false, f0 );
             vec3 norm;
-            for( index_t facet_id = 0; facet_id < facet_ids.size(); ++facet_id ) {
+            for( index_t facet_id : facet_ids ) {
                 norm += facet_normal( facet_id );
             }
             return normalize( norm );
