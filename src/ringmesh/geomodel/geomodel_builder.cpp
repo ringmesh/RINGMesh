@@ -364,7 +364,7 @@ namespace RINGMesh {
                     } else {
                         ringmesh_assert(
                             sorted_triangles_[i - 1].first
-                            == sorted_triangles_[i].first );
+                                == sorted_triangles_[i].first );
                         if( sorted_triangles_[i - 1].second
                             != sorted_triangles_[i].second ) {
                             return sorted_triangles_[i + 1];
@@ -662,16 +662,17 @@ namespace RINGMesh {
             const GeoModelMeshVertices& geomodel_vertices = geomodel_.mesh.vertices;
             for( index_t s = 0; s < geomodel_.nb_surfaces(); ++s ) {
                 const Surface& S = geomodel_.surface( s );
+                gmme_id S_id = S.gmme();
                 for( index_t f = 0; f < S.nb_mesh_elements(); ++f ) {
                     for( index_t v = 0; v < S.nb_mesh_element_vertices( f ); ++v ) {
                         if( S.is_on_border( f, v ) ) {
                             index_t vertex = geomodel_vertices.geomodel_vertex_id(
-                                S.gmme(), f, v );
+                                S_id, f, v );
                             index_t next_vertex =
-                                geomodel_vertices.geomodel_vertex_id( S.gmme(), f,
+                                geomodel_vertices.geomodel_vertex_id( S_id, f,
                                     S.next_facet_vertex_index( f, v ) );
                             index_t previous_vertex =
-                                geomodel_vertices.geomodel_vertex_id( S.gmme(), f,
+                                geomodel_vertices.geomodel_vertex_id( S_id, f,
                                     S.prev_facet_vertex_index( f, v ) );
                             border_triangles_.push_back(
                                 BorderTriangle( s, f, vertex, next_vertex,
@@ -1263,7 +1264,7 @@ namespace RINGMesh {
     index_t GeoModelBuilderGeology::create_geological_entity_type(
         const GeologicalEntityType& type )
     {
-        ringmesh_assert( GeoModelGeologicalEntityFactory::has_creator(type ) );
+        ringmesh_assert( GeoModelGeologicalEntityFactory::has_creator( type ) );
 
         geomodel_access_.modifiable_entity_type_manager().geological_entity_manager.geological_entity_types_.push_back(
             type );

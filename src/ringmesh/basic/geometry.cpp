@@ -1225,6 +1225,7 @@ namespace RINGMesh {
             do {
                 prev_neighbor = cur_neighbor;
                 cur_neighbor += nb_neighbors;
+                result.reserve( cur_neighbor );
                 std::vector< index_t > neighbors = get_neighbors( v, cur_neighbor );
                 nb_neighbors = static_cast< index_t >( neighbors.size() );
                 for( index_t i = prev_neighbor; i < cur_neighbor; ++i ) {
