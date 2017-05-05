@@ -70,6 +70,7 @@ namespace {
         {
             std::ofstream out( filename.c_str() );
             out.precision( PRECISION );
+            out << std::fixed;
             const RINGMesh::GeoModelMesh& geomodel_mesh = geomodel.mesh;
             if( geomodel_mesh.cells.nb() != geomodel_mesh.cells.nb_tet() ) {
                 {
