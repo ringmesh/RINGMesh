@@ -54,7 +54,7 @@ SET(RINGMesh_HOME "${PROJECT_SOURCE_DIR}/../RINGMesh" CACHE PATH "Path to RINGMe
 Find the RINGMesh cmake configuration file
 ------------------------------------------
 The code below finds the RINGMesh cmake configuration file from the variable RINGMesh_HOME.
-Several variables are defined toward RINGMesh/geogram/zlib includes and RINGMesh/geogram libraries.
+Several variables are defined toward RINGMesh, geogram and zlib includes, and RINGMesh and geogram libraries.
 There are some variations between Linux and Windows. All RINGMesh includes are added to the current
 project includes. The RINGMesh libraries are added to a variable EXTRA_LIBS in which all the
 libraries, used in the current cmake project, i.e., not only RINGMesh, are added.
