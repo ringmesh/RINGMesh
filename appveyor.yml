@@ -24,7 +24,7 @@ build_script:
     cmake --build . --config Debug
     
 test_script:
- - cmd: ctest -V
+ - cmd: ctest -V -C Debug
  - cmd: cmake --build . --target RUN_TESTS --config Debug
 
 on_success:
