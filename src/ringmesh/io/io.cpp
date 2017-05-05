@@ -63,10 +63,16 @@ namespace RINGMesh {
             lFile.get_fields();
             rFile.get_fields();
             if( lFile.nb_fields() != rFile.nb_fields() ) {
+                DEBUG( lFile.nb_fields() );
+                DEBUG( rFile.nb_fields() );
+                DEBUG( lFile.current_line() );
+                DEBUG( rFile.current_line() );
                 return false;
             } else {
                 for( index_t i = 0; i < lFile.nb_fields(); i++ ) {
                     if( std::strcmp( lFile.field( i ), rFile.field( i ) ) != 0 ) {
+                        DEBUG( lFile.field( i ) );
+                        DEBUG( rFile.field( i ) );
                         return false;
                     }
                 }
