@@ -1171,7 +1171,6 @@ namespace RINGMesh {
         }
         index_t nb_threads = static_cast< index_t >( omp_get_max_threads() );
         std::vector< index_t > nb_colocalised_per_thread( nb_threads, 0 );
-        RINGMESH_PARALLEL_LOOP
         for( index_t i = 0; i < index_map.size(); i++ ) {
             std::vector< index_t > results = get_neighbors( point( i ), epsilon );
             index_t id = *std::min_element( results.begin(), results.end() );
