@@ -56,6 +56,7 @@ namespace {
 
 #include "boundary_geomodel/io_model3d.cpp"
 #include "boundary_geomodel/io_smesh.cpp"
+#include "boundary_geomodel/io_stl.cpp"
 
 }
 /************************************************************************/
@@ -67,6 +68,7 @@ namespace RINGMesh {
     {
         ringmesh_register_GeoModelIOHandler_creator( MLIOHandler, "ml" );
         ringmesh_register_GeoModelIOHandler_creator( SMESHIOHandler, "smesh" );
+        ringmesh_register_GeoModelIOHandler_creator( STLIOHandler, "stl" );
 #ifdef RINGMESH_WITH_GEOLOGYJS
         ringmesh_register_GeoModelIOHandler_creator( HTMLIOHandler, "html" );
 #endif
