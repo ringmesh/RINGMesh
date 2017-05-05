@@ -90,7 +90,6 @@ namespace {
     {
         GeoModel in;
         load_geomodel( in, filename );
-        return;
         save_and_compare_geomodels( in );
     }
 }
@@ -104,7 +103,7 @@ int main()
 
         Logger::out( "TEST", "Test IO for a GeoModel in .gm" );
 
-//        test_file( "modelA1_version0.gm" );
+        test_file( "modelA1_version0.gm" );
         test_file( "modelA1_version1.gm" );
 
     } catch( const RINGMeshException& e ) {
