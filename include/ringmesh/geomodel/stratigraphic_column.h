@@ -134,7 +134,7 @@ namespace RINGMesh {
          * @param[in] min_thick Minimum thickness of the layer
          * @param[in] max_thick Maximum thickness of the layer
          */
-        StratigraphicUnit( const std::string name, const RockFeature& rock );
+        StratigraphicUnit( const std::string& name, const RockFeature& rock );
 
         virtual ~StratigraphicUnit() = default;
 
@@ -189,7 +189,7 @@ namespace RINGMesh {
     public:
 
         UnsubdividedStratigraphicUnit(
-            const std::string name,
+            const std::string& name,
             const GeoModelGeologicalEntity& interface_base, // TODO interface
             const GeoModelGeologicalEntity& interface_top,
             const GeoModelGeologicalEntity& layer,
