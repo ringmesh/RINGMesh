@@ -60,12 +60,13 @@ namespace {
     {
         const GeoModelMeshVertices& geomodel_vertices = E.geomodel().mesh.vertices;
         /// Check that the stored geomodel vertex indices are in a valid range
+        gmme_id id = E.gmme();
         for( index_t i = 0; i < E.nb_vertices(); ++i ) {
-            if( geomodel_vertices.geomodel_vertex_id( E.gmme(), i ) == NO_ID
-                && geomodel_vertices.geomodel_vertex_id( E.gmme(), i )
+            if( geomodel_vertices.geomodel_vertex_id( id, i ) == NO_ID
+                && geomodel_vertices.geomodel_vertex_id( id, i )
                     >= E.geomodel().mesh.vertices.nb() ) {
                 Logger::warn( "GeoModelEntity", "Invalid geomodel vertex index in ",
-                    E.gmme() );
+                    id );
                 return false;
             }
         }
@@ -77,14 +78,14 @@ namespace {
      * @details In Debug mode, the connected components are saved into 
      * an Attribute on surface facets.
      */
-    index_t compute_nb_surface_connected_components( const Surface& M )
+    index_t compute_nb_surface_connected_components( const Surface& surface )
     {
         const index_t NO_COMPONENT = index_t( -1 );
-        GEO::Attribute< index_t > component( M.facet_attribute_manager(),
+        GEO::Attribute< index_t > component( surface.facet_attribute_manager(),
             "component" );
         component.fill( NO_COMPONENT );
         index_t nb_components = 0;
-        for( index_t facet = 0; facet < M.nb_mesh_elements(); facet++ ) {
+        for( index_t facet = 0; facet < surface.nb_mesh_elements(); facet++ ) {
             if( component[facet] == NO_COMPONENT ) {
                 std::stack< index_t > S;
                 S.push( facet );
@@ -93,8 +94,9 @@ namespace {
                     index_t cur_facet = S.top();
                     S.pop();
                     for( index_t edge = 0;
-                        edge < M.nb_mesh_element_vertices( cur_facet ); edge++ ) {
-                        index_t adj_facet = M.facet_adjacent_index( cur_facet,
+                        edge < surface.nb_mesh_element_vertices( cur_facet );
+                        edge++ ) {
+                        index_t adj_facet = surface.facet_adjacent_index( cur_facet,
                             edge );
                         if( adj_facet != NO_ID
                             && component[adj_facet] == NO_COMPONENT ) {
@@ -188,13 +190,14 @@ namespace {
         ringmesh_assert(
             std::count( vertices.begin(), vertices.end(), NO_ID ) == 0 );
         ringmesh_assert(
-            std::count( vertices_global.begin(), vertices_global.end(), NO_ID ) == 0 );
+            std::count( vertices_global.begin(), vertices_global.end(), NO_ID )
+                == 0 );
         // 0 is the default value of the geomodel_vertex_id
         // If we have only 0 either this is a degenerate facets, but most certainly
         // geomodel vertex ids are not good
         ringmesh_assert(
-            static_cast< index_t >( std::count( vertices_global.begin(), vertices_global.end(), 0 ) )
-            != vertices_global.size() );
+            static_cast< index_t >( std::count( vertices_global.begin(),
+                vertices_global.end(), 0 ) ) != vertices_global.size() );
 
         std::sort( vertices.begin(), vertices.end() );
         std::sort( vertices_global.begin(), vertices_global.end() );
@@ -206,7 +209,7 @@ namespace {
     /*!
      * @brief Returns true if the surface facet is incident twice to the same vertex
      */
-    bool facet_is_degenerate( const Surface& S, index_t f )
+    bool facet_is_degenerate( const Surface& S, const gmme_id& id, index_t f )
     {
         index_t nb_facet_vertices = S.nb_mesh_element_vertices( f );
         std::vector< index_t > corners( nb_facet_vertices, NO_ID );
@@ -216,8 +219,7 @@ namespace {
         for( index_t c = 0; c < S.nb_mesh_element_vertices( f ); ++c ) {
             index_t facet_vertex_index = S.mesh_element_vertex_index( f, c );
             corners[v] = facet_vertex_index;
-            corners_global[v] = geomodel_vertices.geomodel_vertex_id( S.gmme(), f,
-                v );
+            corners_global[v] = geomodel_vertices.geomodel_vertex_id( id, f, v );
             v++;
         }
         double area = S.mesh_element_size( f );
@@ -234,11 +236,12 @@ namespace {
         index_t nb_vertices_in_cell = region.nb_mesh_element_vertices( cell_index );
         std::vector< index_t > vertices( nb_vertices_in_cell, NO_ID );
         std::vector< index_t > vertices_global( nb_vertices_in_cell, NO_ID );
+        gmme_id id = region.gmme();
         const GeoModelMeshVertices& geomodel_vertices =
             region.geomodel().mesh.vertices;
         for( index_t v = 0; v < nb_vertices_in_cell; v++ ) {
             vertices[v] = region.mesh_element_vertex_index( cell_index, v );
-            vertices_global[v] = geomodel_vertices.geomodel_vertex_id( region.gmme(),
+            vertices_global[v] = geomodel_vertices.geomodel_vertex_id( id,
                 cell_index, v );
         }
         double volume = region.mesh_element_size( cell_index );
@@ -291,17 +294,18 @@ namespace RINGMesh {
         // Check that the global vertex has an index backward to 
         // the vertex of this entity
         const GeoModelMeshVertices& geomodel_vertices = geomodel().mesh.vertices;
+        gmme_id id = gmme();
         for( index_t v = 0; v < nb_vertices(); ++v ) {
-            index_t geomodel_v = geomodel_vertices.geomodel_vertex_id( gmme(), v );
+            index_t geomodel_v = geomodel_vertices.geomodel_vertex_id( id, v );
 
             if( geomodel_v == NO_ID ) {
-                Logger::warn( "GeoModelEntity", gmme(), " vertex ", v,
+                Logger::warn( "GeoModelEntity", id, " vertex ", v,
                     " is not mapped to the related global geomodel vertex indices." );
                 valid = false;
             }
 
             std::vector< index_t > backward_vertices =
-                geomodel_vertices.mesh_entity_vertex_id( gmme(), geomodel_v );
+                geomodel_vertices.mesh_entity_vertex_id( id, geomodel_v );
             bool found_in_backward = false;
             for( index_t bv : backward_vertices ) {
                 if( bv == v ) {
@@ -309,7 +313,7 @@ namespace RINGMesh {
                 }
             }
             if( !found_in_backward ) {
-                Logger::warn( "GeoModelEntity", "Error in mapping of ", gmme(),
+                Logger::warn( "GeoModelEntity", "Error in mapping of ", id,
                     " vertex ", v,
                     " to the related global geomodel vertex indices." );
                 valid = false;
@@ -331,21 +335,22 @@ namespace RINGMesh {
         const MeshEntityType& boundary_type = family.boundary_type( entity_type );
 
         bool valid = true;
+        gmme_id id = gmme();
         if( family.is_valid_type( boundary_type ) ) {
             for( index_t i = 0; i < nb_boundaries(); ++i ) {
                 const GeoModelMeshEntity& E = boundary( i );
                 bool found = false;
                 index_t j = 0;
                 while( !found && j < E.nb_in_boundary() ) {
-                    if( E.in_boundary_gmme( j ) == gmme() ) {
+                    if( E.in_boundary_gmme( j ) == id ) {
                         found = true;
                     }
                     j++;
                 }
                 if( !found ) {
                     Logger::warn( "GeoModelEntity",
-                        "Inconsistency boundary-in_boundary between ", gmme(),
-                        " and ", E.gmme() );
+                        "Inconsistency boundary-in_boundary between ", id, " and ",
+                        E.gmme() );
                     valid = false;
                 }
             }
@@ -362,9 +367,10 @@ namespace RINGMesh {
             entity_type );
 
         bool valid = true;
+        gmme_id id = gmme();
         if( family.is_valid_type( in_boundary_type ) ) {
             if( nb_in_boundary() == 0 ) {
-                Logger::warn( "GeoModelEntity", gmme(),
+                Logger::warn( "GeoModelEntity", id,
                     " is in the boundary of no entity " );
                 valid = false;
             }
@@ -373,15 +379,15 @@ namespace RINGMesh {
                 bool found = false;
                 index_t j = 0;
                 while( !found && j < E.nb_boundaries() ) {
-                    if( E.boundary_gmme( j ) == gmme() ) {
+                    if( E.boundary_gmme( j ) == id ) {
                         found = true;
                     }
                     j++;
                 }
                 if( !found ) {
                     Logger::warn( "GeoModelEntity",
-                        "Inconsistency in_boundary-boundary between ", gmme(),
-                        " and ", E.gmme() );
+                        "Inconsistency in_boundary-boundary between ", id, " and ",
+                        E.gmme() );
                     valid = false;
                 }
             }
@@ -398,6 +404,7 @@ namespace RINGMesh {
         bool valid = true;
         const std::vector< GeologicalEntityType > parent_types = family.parent_types(
             entity_type );
+        gmme_id id = gmme();
         for( const GeologicalEntityType& parent_type : parent_types ) {
             index_t nb_parent_entities_in_geomodel =
                 geomodel_.nb_geological_entities( parent_type );
@@ -416,23 +423,23 @@ namespace RINGMesh {
                         bool found = false;
                         index_t j = 0;
                         while( !found && j < E.nb_children() ) {
-                            if( E.child_gmme( j ) == gmme() ) {
+                            if( E.child_gmme( j ) == id ) {
                                 found = true;
                             }
                             j++;
                         }
                         if( !found ) {
                             Logger::warn( "GeoModelEntity",
-                                "Inconsistency parent-child between ", gmme(),
-                                " and ", E.gmge() );
+                                "Inconsistency parent-child between ", id, " and ",
+                                E.gmge() );
                             valid = false;
                         }
                     }
                 }
                 if( nb_found_parents != 1 ) {
-                    Logger::warn( "GeoModelEntity", gmme(), " has ",
-                        nb_found_parents, " geological parent entity of type ",
-                        parent_type, " (expected one)" );
+                    Logger::warn( "GeoModelEntity", id, " has ", nb_found_parents,
+                        " geological parent entity of type ", parent_type,
+                        " (expected one)" );
                     valid = false;
                 }
             }
@@ -646,22 +653,23 @@ namespace RINGMesh {
     bool Surface::is_mesh_valid() const
     {
         bool valid = true;
+        gmme_id id = gmme();
         // Check that the GEO::Mesh has the expected entities
         // at least 3 vertices and one facet.
         if( nb_vertices() < 3 ) {
-            Logger::warn( "GeoModelEntity", gmme(), " has less than 3 vertices " );
+            Logger::warn( "GeoModelEntity", id, " has less than 3 vertices " );
             valid = false;
         }
         if( mesh2d_->nb_facets() == 0 ) {
-            Logger::warn( "GeoModelEntity", gmme(), " has no facets " );
+            Logger::warn( "GeoModelEntity", id, " has no facets " );
             valid = false;
         }
 
         // No isolated vertices
         index_t nb_isolated_vertices = count_nb_isolated_vertices( *this );
         if( nb_isolated_vertices > 0 ) {
-            Logger::warn( "GeoModelEntity", gmme(), " mesh has ",
-                nb_isolated_vertices, " isolated vertices " );
+            Logger::warn( "GeoModelEntity", id, " mesh has ", nb_isolated_vertices,
+                " isolated vertices " );
             valid = false;
         }
 
@@ -669,12 +677,12 @@ namespace RINGMesh {
         // No facet incident to the same vertex check local and global indices
         index_t nb_degenerate = 0;
         for( index_t f = 0; f < mesh2d_->nb_facets(); f++ ) {
-            if( facet_is_degenerate( *this, f ) ) {
+            if( facet_is_degenerate( *this, id, f ) ) {
                 nb_degenerate++;
             }
         }
         if( nb_degenerate != 0 ) {
-            Logger::warn( "GeoModelEntity", gmme(), " mesh has ", nb_degenerate,
+            Logger::warn( "GeoModelEntity", id, " mesh has ", nb_degenerate,
                 " degenerate facets " );
             valid = false;
         }
@@ -689,7 +697,7 @@ namespace RINGMesh {
             }
         }
         if( nb_duplicated_f > 0 ) {
-            Logger::warn( "GeoModelEntity", gmme(), " mesh has ", nb_duplicated_f,
+            Logger::warn( "GeoModelEntity", id, " mesh has ", nb_duplicated_f,
                 " duplicated facets " );
             valid = false;
         }
@@ -697,7 +705,7 @@ namespace RINGMesh {
         // One connected component  
         index_t cc = compute_nb_surface_connected_components( *this );
         if( cc != 1 ) {
-            Logger::warn( "GeoModelEntity", gmme(), " mesh has ", cc,
+            Logger::warn( "GeoModelEntity", id, " mesh has ", cc,
                 " connected components " );
             valid = false;
         }
