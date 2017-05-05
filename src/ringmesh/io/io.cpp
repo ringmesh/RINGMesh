@@ -67,12 +67,14 @@ namespace RINGMesh {
                 DEBUG( rFile.nb_fields() );
                 DEBUG( lFile.current_line() );
                 DEBUG( rFile.current_line() );
+                DEBUG( lFile.line_number() );
                 return false;
             } else {
                 for( index_t i = 0; i < lFile.nb_fields(); i++ ) {
                     if( std::strcmp( lFile.field( i ), rFile.field( i ) ) != 0 ) {
                         DEBUG( lFile.field( i ) );
                         DEBUG( rFile.field( i ) );
+                DEBUG( lFile.line_number() );
                         return false;
                     }
                 }
