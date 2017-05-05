@@ -43,14 +43,14 @@ namespace RINGMesh {
     }
 
     StratigraphicUnit::StratigraphicUnit(
-        const std::string name,
+        const std::string& name,
         const RockFeature& rock )
         : name_( name ), rock_( rock )
     {
     }
 
     UnsubdividedStratigraphicUnit::UnsubdividedStratigraphicUnit(
-        const std::string name,
+        const std::string& name,
         const GeoModelGeologicalEntity& interface_base,
         const GeoModelGeologicalEntity& interface_top,
         const GeoModelGeologicalEntity& layer,
