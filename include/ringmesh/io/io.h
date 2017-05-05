@@ -51,7 +51,7 @@
 const std::string TAB = "\t";
 const std::string SPACE = " ";
 const std::string COMMA = ",";
-const std::streamsize PRECISION = 15;
+const std::streamsize PRECISION = 17;
 
 /*!
  * @file Global input - output functions of RINGMesh
