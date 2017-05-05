@@ -162,7 +162,6 @@ namespace {
                 }
             }
             out << "$EndElements" << std::endl;
-
         }
 
     private:
