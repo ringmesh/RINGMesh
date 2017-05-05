@@ -412,7 +412,6 @@ namespace RINGMesh {
 
             // Map and vertex
             gmme_id id = E.gmme();
-            RINGMESH_PARALLEL_LOOP
             for( index_t v = 0; v < E.nb_vertices(); v++ ) {
                 index_t local_count = count + v;
                 mesh_builder->set_vertex( local_count, E.vertex( v ) );
